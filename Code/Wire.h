@@ -48,6 +48,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::Vector2<double> oldPos;
 	bool clockwise;
 
+	sf::Vector2i offset;
 	int addedPoints;
 	bool right;
 	WireState state;

@@ -3458,16 +3458,17 @@ void Actor::UpdatePrePhysics()
 	//if( false )
 	Wire *wire = rightWire;
 	//while( wire != leftWire )
-
+	V2d wPos = position;
+	wPos += V2d( rightWire->offset.x, rightWire->offset.y );
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
-	{
+	{	
 		V2d newVel1, newVel2;
 		V2d wirePoint = wire->anchor.pos;
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
 
-		V2d wireDir1 = normalize( wirePoint - position );
-		V2d tes =  normalize( position - wirePoint );
+		V2d wireDir1 = normalize( wirePoint - wPos );
+		V2d tes =  normalize( wPos - wirePoint );
 		double temp = tes.x;
 		tes.x = tes.y;
 		tes.y = -temp;
@@ -3476,9 +3477,9 @@ void Actor::UpdatePrePhysics()
 		//velocity = dot( velocity, tes ) * tes;
 
 
-		V2d future = position + velocity;
+		V2d future = wPos + velocity;
 		
-		V2d seg = wirePoint - position;
+		V2d seg = wirePoint - wPos;
 		double segLength = length( seg );
 		V2d diff = wirePoint - future;
 		
@@ -3486,7 +3487,7 @@ void Actor::UpdatePrePhysics()
 		if( length( diff ) > wire->segmentLength )
 		{
 			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			newVel1 = future - position;
+			newVel1 = future - wPos;
 		}
 
 		
@@ -3496,8 +3497,8 @@ void Actor::UpdatePrePhysics()
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
 
-		V2d wireDir2 = normalize( wirePoint - position );
-		tes =  normalize( position - wirePoint );
+		V2d wireDir2 = normalize( wirePoint - wPos );
+		tes =  normalize( wPos - wirePoint );
 		temp = tes.x;
 		tes.x = tes.y;
 		tes.y = -temp;
@@ -3506,9 +3507,9 @@ void Actor::UpdatePrePhysics()
 		//velocity = dot( velocity, tes ) * tes;
 
 
-		future = position + velocity;
+		future = wPos + velocity;
 		
-		seg = wirePoint - position;
+		seg = wirePoint - wPos;
 		segLength = length( seg );
 		diff = wirePoint - future;
 		
@@ -3516,7 +3517,7 @@ void Actor::UpdatePrePhysics()
 		if( length( diff ) > wire->segmentLength )
 		{
 			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			newVel2 = future - position;
+			newVel2 = future - wPos;
 		}
 
 		V2d totalVelDir =  normalize( (newVel1 + newVel2 ) );//normalize( wireDir1 + wireDir2 );
@@ -3526,30 +3527,29 @@ void Actor::UpdatePrePhysics()
 
 		velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir ;
 	}
-
 	else if( rightWire->state == Wire::PULLING )
 	{
 		V2d wirePoint = wire->anchor.pos;
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
 
-		V2d tes =  normalize( position - wirePoint );
+		V2d tes =  normalize( wPos - wirePoint );
 		double temp = tes.x;
 		tes.x = tes.y;
 		tes.y = -temp;
 
-		double val = dot( velocity, normalize( wirePoint - position ) );
+		double val = dot( velocity, normalize( wirePoint - wPos ) );
 		V2d otherTes;
 		//if( val > 0 )
 		{
-			otherTes = val * normalize( wirePoint - position );
+			otherTes = val * normalize( wirePoint - wPos );
 		}
 		
 		 
 
 		V2d old = velocity;
 		
-		if( normalize( wirePoint - position ).y > 0 )
+		if( normalize( wirePoint - wPos ).y > 0 )
 		{
 		//	velocity -= V2d( 0, gravity );
 		}
@@ -3571,7 +3571,7 @@ void Actor::UpdatePrePhysics()
 		
 		}
 
-		V2d wireDir = normalize( wirePoint - position );
+		V2d wireDir = normalize( wirePoint - wPos );
 		double otherAccel = .5;
 		if( abs( wireDir.x ) < .7 )
 			{
@@ -3631,9 +3631,9 @@ void Actor::UpdatePrePhysics()
 		//velocity += otherTes;
 
 
-		V2d future = position + velocity;
+		V2d future = wPos + velocity;
 		
-		V2d seg = wirePoint - position;
+		V2d seg = wirePoint - wPos;
 		double segLength = length( seg );
 		V2d diff = wirePoint - future;
 		
@@ -3641,7 +3641,7 @@ void Actor::UpdatePrePhysics()
 		if( length( diff ) > wire->segmentLength )
 		{
 			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			velocity = future - position;
+			velocity = future - wPos;
 		}
 	}
 	else if( leftWire->state == Wire::PULLING  )
@@ -3651,16 +3651,16 @@ void Actor::UpdatePrePhysics()
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
 
-		V2d tes =  normalize( position - wirePoint );
+		V2d tes =  normalize( wPos - wirePoint );
 		double temp = tes.x;
 		tes.x = tes.y;
 		tes.y = -temp;
 
-		double val = dot( velocity, normalize( wirePoint - position ) );
+		double val = dot( velocity, normalize( wirePoint - wPos ) );
 		V2d otherTes;
 		if( val > 0 )
 		{
-			otherTes = val * normalize( wirePoint - position );
+			otherTes = val * normalize( wirePoint - wPos );
 		}
 
 		double accel = 1;
@@ -3675,7 +3675,7 @@ void Actor::UpdatePrePhysics()
 			speed -= accel;
 		}
 
-		V2d wireDir = normalize( wirePoint - position );
+		V2d wireDir = normalize( wirePoint - wPos );
 		double otherAccel = .5;
 		if( abs( wireDir.x ) < .7 )
 			{
@@ -3737,9 +3737,9 @@ void Actor::UpdatePrePhysics()
 		V2d old = velocity;
 
 
-		V2d future = position + velocity;
+		V2d future = wPos + velocity;
 		
-		V2d seg = wirePoint - position;
+		V2d seg = wirePoint - wPos;
 		double segLength = length( seg );
 		V2d diff = wirePoint - future;
 		
@@ -3747,7 +3747,7 @@ void Actor::UpdatePrePhysics()
 		if( length( diff ) > wire->segmentLength )
 		{
 			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			velocity = future - position;
+			velocity = future - wPos;
 		}
 	}
 
