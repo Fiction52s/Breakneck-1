@@ -193,7 +193,21 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			if( rcEdge != NULL )
 			{
-				anchor.pos = rcEdge->GetPoint( rcQuant );
+				if( rcQuant < 4 )
+				{
+					//cout << "lock1" << endl;
+					anchor.pos = rcEdge->v0;
+				}
+				else if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - 4 )
+				{
+					//cout << "lock2" << endl;
+					anchor.pos = rcEdge->v1;
+				}
+				else
+				{
+					anchor.pos = rcEdge->GetPoint( rcQuant );
+				}
+				
 				anchor.e = rcEdge;
 				anchor.quantity = rcQuant;
 				numPoints = 0;
@@ -544,21 +558,21 @@ void Wire::UpdateAnchors( V2d vel )
 		V2d wirePos = player->position + wireVec; 
 		V2d oldWirePos = oldPos + wireVec;
 
-		V2d A = oldPos;
-		V2d B = oldWirePos;
-		V2d C = wirePos;
-		V2d D = player->position;
+		quadOldPosA = oldPos;
+		quadOldWirePosB = oldWirePos;
+		quadWirePosC = wirePos;
+		quadPlayerPosD = player->position;
 
-		double top = min( A.y, min( B.y, min( C.y, D.y ) ) );
-		double bot = max( A.y, min( B.y, min( C.y, D.y ) ) );
-		double left = min( A.x, min( B.x, min( C.x, D.x ) ) );
-		double right = max( A.x, min( B.x, min( C.x, D.x ) ) );
+		double top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
+		double bot = max( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
+		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
+		double right = max( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
 
 		sf::Rect<double> r( left, top, right - left, bot - top );
 		player->owner->terrainTree->Query( this, r );
 	}
 	//UpdateState( false );
-	cout << "blah" << endl;
+	//cout << "blah" << endl;
 }
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
@@ -576,7 +590,7 @@ void Wire::TestPoint( Edge *e )
 
 	V2d p = e->v0;
 
-	if( p == realAnchor )
+	if( p == realAnchor ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
 		return;
 	}
@@ -727,6 +741,10 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( state == FIRING )
 	{
+		V2d along = normalize( quadOldWirePosB - quadOldPosA );
+		V2d other = normalize( quadWirePosC - quadOldWirePosB );
+
+
 		//double v0c = cross( e->v1 - 
 	}
 	else

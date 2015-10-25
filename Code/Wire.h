@@ -94,6 +94,12 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	Edge *rcEdge;
 	double rcQuant;
 
+	sf::Vector2<double> quadOldPosA;
+	sf::Vector2<double> quadOldWirePosB;
+	sf::Vector2<double> quadWirePosC;
+	sf::Vector2<double> quadPlayerPosD;
+	sf::Vector2<double> minPoint;
+
 	std::list<sf::Drawable*> progressDraw;
 };
 
