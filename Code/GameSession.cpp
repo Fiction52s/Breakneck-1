@@ -1275,7 +1275,7 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
-	cloudTileset = GetTileset( "cloud01.png", 1269, 350 );
+	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
 
 	SetupClouds();
@@ -3314,7 +3314,7 @@ bool GameSession::SetGroundPar()
 
 	if( ratiob > ratio + .001 )
 	{
-		cout << "flipped ratiob: " << ratiob << ", oldratio: " << ratio << endl;
+	//	cout << "flipped ratiob: " << ratiob << ", oldratio: " << ratio << endl;
 		flipped = true;
 	}
 	
@@ -3401,21 +3401,26 @@ void GameSession::SetupClouds()
 
 void GameSession::SetCloudParAndDraw()
 {
-	int depth = 10;
+	int depth = 8;
 	Vector2f orig( originalPos.x, originalPos.y );
+	int screenWidthFactor = 3;
 
 
 	for( int i = 0; i < NUM_CLOUDS; ++i )
 	{
 		if( view.getCenter().x < 0 )
 		{
-			clouds[i].setPosition( -((int)((orig.x + view.getCenter().x) / depth - .5) % ( -1920 * 3 ) - ( 1920 * 3 / 2 )), clouds[i].getPosition().y );
-			//cout << "neg: " << clouds[i].getPosition().x << endl;
+			int x = (int)((orig.x + view.getCenter().x) / depth - .5);
+			clouds[i].setPosition( -( x % ( 1920 * screenWidthFactor ) 
+				+ ( (1920 * screenWidthFactor) / 2 )), clouds[i].getPosition().y );
+		//	cout << "neg: " << clouds[i].getPosition().x << endl;
 		}
 		else
 		{
-			clouds[i].setPosition( -((int)((orig.x + view.getCenter().x) / depth + .5) % ( 1920 * 3 ) - ( 1920 * 3 / 2 )), clouds[i].getPosition().y );
-			//cout << "pos: " << clouds[i].getPosition().x << endl;
+			int x = (int)((orig.x + view.getCenter().x) / depth + .5);
+			clouds[i].setPosition( -(x % ( 1920 * screenWidthFactor ) 
+				- ( (1920 * screenWidthFactor) / 2 )), clouds[i].getPosition().y );
+		//	cout << "pos: " << clouds[i].getPosition().x << endl;
 		}
 
 		if( view.getCenter().y < 0 )
@@ -3426,6 +3431,7 @@ void GameSession::SetCloudParAndDraw()
 		{
 			clouds[i].setPosition( clouds[i].getPosition().x, -((int)((orig.y + view.getCenter().y) / depth + .5) % ( 1080 * 3 ) ));// - ( 1080 * 3 / 2 )));
 		}
+		//cout << "cloudpos: " << clouds[i].getPosition().x << ", " << clouds[i].getPosition().y << endl;
 		
 		preScreenTex->draw( clouds[i] );
 	}
@@ -3509,7 +3515,7 @@ void GameSession::SetUndergroundParAndDraw()
 		undergroundPar[1].position = Vector2f( right, top );
 		undergroundPar[2].position = Vector2f( right, bottom );
 		undergroundPar[3].position = Vector2f( left, bottom );
-		//preScreenTex->draw( undergroundPar, &underShader );
+		preScreenTex->draw( undergroundPar, &underShader );
 	}
 	
 		
