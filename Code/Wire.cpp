@@ -13,7 +13,7 @@ Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, quads( sf::Quads, (int)(ceil( maxTotalLength / 6.0 ) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 0, 15 )//, ts_redWire( NULL ) 
+	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 2, 15 )//, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 }
@@ -24,14 +24,21 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	ControllerState &prevInput = player->prevInput;
 
 	//V2d playerPos = player->position;
+	if( player->facingRight )
+	{
+		offset.x = abs( offset.x );
+	}
+	else
+	{
+		offset.x = -abs( offset.x );
+	}
 	double angle = player->GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
 	V2d gNormal( x, y );
-	cout << "gNormal: " << gNormal.x << ", " << gNormal.y << endl;
-	
+	V2d other( gNormal.y, -gNormal.x );
 	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y;
+	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
 	
 	/*V2d dir;
 	if( player->ground == NULL )
@@ -385,15 +392,21 @@ void Wire::UpdateAnchors( V2d vel )
 {
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );
-
+	if( player->facingRight )
+	{
+		offset.x = abs( offset.x );
+	}
+	else
+	{
+		offset.x = -abs( offset.x );
+	}
 	double angle = player->GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
 	V2d gNormal( x, y );
-	
-
+	V2d other( gNormal.y, -gNormal.x );
 	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y;
+	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
 
 	if( state == HIT || state == PULLING )
 	{
@@ -546,14 +559,22 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	//rayPortion > 1 &&
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );	
+	if( player->facingRight )
+	{
+		offset.x = abs( offset.x );
+	}
+	else
+	{
+		offset.x = -abs( offset.x );
+	}
 	double angle = player->GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
 	V2d gNormal( x, y );
-	
-
+	V2d other( gNormal.y, -gNormal.x );
 	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y;
+	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+
 	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
 	{
 		rcEdge = edge;
@@ -567,14 +588,21 @@ void Wire::TestPoint( Edge *e )
 	V2d p = e->v0;
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );
+	if( player->facingRight )
+	{
+		offset.x = abs( offset.x );
+	}
+	else
+	{
+		offset.x = -abs( offset.x );
+	}
 	double angle = player->GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
 	V2d gNormal( x, y );
-	
-
+	V2d other( gNormal.y, -gNormal.x );
 	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y;
+	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
 
 	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
@@ -748,17 +776,26 @@ void Wire::UpdateQuads()
 {
 	//if( state == FIRING )
 	//	++framesFiring;
-
+	if( player->facingRight )
+	{
+		offset.x = -abs( offset.x );
+		cout << "RIGHT offset.x is: " << offset.x << endl;
+	}
+	else
+	{
+		offset.x = abs( offset.x );
+		cout << "LEFT offset.x is: " << offset.x << endl;
+	}
 	//return;
 
 	double angle = player->GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
 	V2d gNormal( x, y );
-	
-
+	V2d other( -gNormal.y, gNormal.x );
 	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y;
+	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+
 	//cout << "starting update quads" << endl;
 	V2d alongDir;// = fireDir;
 	V2d otherDir;// = fireDir;
