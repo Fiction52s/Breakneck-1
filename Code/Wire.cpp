@@ -13,7 +13,7 @@ Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, quads( sf::Quads, (int)(ceil( maxTotalLength / 6.0 ) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 0, -10 )//, ts_redWire( NULL ) 
+	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 0, 15 )//, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 }
@@ -23,7 +23,15 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	ControllerState &currInput = player->currInput;
 	ControllerState &prevInput = player->prevInput;
 
+	//V2d playerPos = player->position;
+	double angle = player->GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y );
+	cout << "gNormal: " << gNormal.x << ", " << gNormal.y << endl;
+	
 	V2d playerPos = player->position;
+	playerPos += gNormal * (double)offset.y;
 	
 	/*V2d dir;
 	if( player->ground == NULL )
@@ -34,7 +42,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	{
 		dir = player->ground->Normal();
 	}*/
-	playerPos += V2d( offset.x, offset.y );
+	//playerPos += V2d( offset.x, offset.y );
 	bool triggerDown;
 	bool prevTriggerDown;
 
@@ -375,8 +383,18 @@ void Wire::SwapPoints( int aIndex, int bIndex )
 
 void Wire::UpdateAnchors( V2d vel )
 {
+	//V2d playerPos = player->position;
+	//playerPos += V2d( offset.x, offset.y );
+
+	double angle = player->GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y );
+	
+
 	V2d playerPos = player->position;
-	playerPos += V2d( offset.x, offset.y );
+	playerPos += gNormal * (double)offset.y;
+
 	if( state == HIT || state == PULLING )
 	{
 		//cout << "updating anchors" << endl;
@@ -526,8 +544,16 @@ void Wire::UpdateAnchors( V2d vel )
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
 	//rayPortion > 1 &&
+	//V2d playerPos = player->position;
+	//playerPos += V2d( offset.x, offset.y );	
+	double angle = player->GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y );
+	
+
 	V2d playerPos = player->position;
-	playerPos += V2d( offset.x, offset.y );	
+	playerPos += gNormal * (double)offset.y;
 	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
 	{
 		rcEdge = edge;
@@ -539,10 +565,18 @@ void Wire::TestPoint( Edge *e )
 {
 
 	V2d p = e->v0;
-	V2d playerPos = player->position;
-	playerPos += V2d( offset.x, offset.y );
+	//V2d playerPos = player->position;
+	//playerPos += V2d( offset.x, offset.y );
+	double angle = player->GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y );
+	
 
-	if( p == realAnchor ) //if applied to moving platforms this will need to account for rounding bugs.
+	V2d playerPos = player->position;
+	playerPos += gNormal * (double)offset.y;
+
+	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
 		return;
 	}
@@ -717,8 +751,14 @@ void Wire::UpdateQuads()
 
 	//return;
 
+	double angle = player->GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y );
+	
+
 	V2d playerPos = player->position;
-	playerPos += V2d( offset.x, offset.y );
+	playerPos += gNormal * (double)offset.y;
 	//cout << "starting update quads" << endl;
 	V2d alongDir;// = fireDir;
 	V2d otherDir;// = fireDir;

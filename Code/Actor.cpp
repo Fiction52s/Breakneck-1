@@ -3459,7 +3459,15 @@ void Actor::UpdatePrePhysics()
 	Wire *wire = rightWire;
 	//while( wire != leftWire )
 	V2d wPos = position;
-	wPos += V2d( rightWire->offset.x, rightWire->offset.y );
+	//wPos += V2d( rightWire->offset.x, rightWire->offset.y );
+	double angle = GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y );
+	//cout << "gNormal: " << gNormal.x << ", " << gNormal.y << endl;
+	
+	
+	wPos += gNormal * (double)rightWire->offset.y;
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
 		V2d newVel1, newVel2;
@@ -9269,7 +9277,11 @@ void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPorti
 
 double Actor::GroundedAngle()
 {
-	assert( ground != NULL );
+	if( ground == NULL )
+	{
+		return 0;
+	}
+	
 	V2d gn = ground->Normal();
 
 	double angle = 0;
