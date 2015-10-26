@@ -3414,12 +3414,14 @@ void Actor::UpdatePrePhysics()
 	if( hasPowerLeftWire )
 	{
 		leftWire->ClearDebug();
+		leftWire->UpdateAnchors( V2d( 0, 0 ) );
 		leftWire->UpdateState( touchEdgeWithLeftWire );
 	}
 
 	if( hasPowerRightWire )
 	{
 		rightWire->ClearDebug();
+		rightWire->UpdateAnchors( V2d( 0, 0 ) );
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
@@ -3458,16 +3460,34 @@ void Actor::UpdatePrePhysics()
 	//if( false )
 	Wire *wire = rightWire;
 	//while( wire != leftWire )
-	V2d wPos = position;
+	// = position;
 	//wPos += V2d( rightWire->offset.x, rightWire->offset.y );
-	double angle = GroundedAngle();
+	/*if( player->facingRight )
+	{
+		offset.x = -abs( offset.x );
+	}
+	else
+	{
+		offset.x = abs( offset.x );
+	}*/
+	//V2d playerPos;
+	/*double angle = GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
-	V2d gNormal( x, y );
-	//cout << "gNormal: " << gNormal.x << ", " << gNormal.y << endl;
-	
-	
-	wPos += gNormal * (double)rightWire->offset.y;
+	V2d gNormal( x, y ); 
+	V2d other( -gNormal.y, gNormal.x );
+
+	if( ground != NULL )
+	{
+		V2d pp = ground->GetPoint( edgeQuantity );
+		wPos = pp + gNormal * normalHeight;
+	}
+	else
+	{
+		wPos = position;
+	}
+	wPos += gNormal * (double)rightWire->offset.y + other * (double)rightWire->offset.x;*/
+	V2d wPos = rightWire->storedPlayerPos;
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
 		V2d newVel1, newVel2;
@@ -4652,6 +4672,7 @@ void Actor::UpdateReversePhysics()
 					else
 					{
 						V2d wVel = position - oldPos;
+						edgeQuantity = q;
 						leftWire->UpdateAnchors( wVel );
 						rightWire->UpdateAnchors( wVel );
 					}
@@ -4951,6 +4972,7 @@ void Actor::UpdateReversePhysics()
 					else
 					{
 						V2d wVel = position - oldPos;
+						edgeQuantity = q;
 						leftWire->UpdateAnchors( wVel );
 						rightWire->UpdateAnchors( wVel );
 					}
@@ -5326,6 +5348,7 @@ void Actor::UpdatePhysics()
 					else
 					{
 						V2d wVel = position - oldPos;
+						edgeQuantity = q;
 						leftWire->UpdateAnchors( wVel );
 						rightWire->UpdateAnchors( wVel );
 					}
@@ -5643,6 +5666,7 @@ void Actor::UpdatePhysics()
 					else
 					{
 						V2d wVel = position - oldPos;
+						edgeQuantity = q;
 						leftWire->UpdateAnchors( wVel );
 						rightWire->UpdateAnchors( wVel );
 					}
@@ -6281,6 +6305,14 @@ void Actor::UpdatePhysics()
 
 		}
 	}
+	
+	if( ground != NULL && movement == 0 )
+	{
+	//	cout << "extra update" << endl;
+	//	rightWire->UpdateAnchors( V2d( 0, 0 ) );
+	//	leftWire->UpdateAnchors( V2d( 0, 0 ) );
+	}
+
 }
 
 void Actor::UpdateHitboxes()
@@ -9559,6 +9591,17 @@ void Actor::AirMovement()
 				}
 			}
 		}
+	}
+}
+
+Vector2i Actor::GetWireOffset()
+{
+	switch( action )
+	{
+	case DASH:
+		return Vector2i( 0, 0 );
+	default:
+		return Vector2i( 8, 18 );
 	}
 }
 

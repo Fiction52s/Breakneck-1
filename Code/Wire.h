@@ -37,6 +37,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void SwapPoints( int aIndex, int bIndex );
 	void UpdateQuads();
 	void Reset();
+	sf::Vector2<double> GetOriginPos();
+	
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
@@ -47,6 +49,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::Vector2<double> realAnchor;
 	sf::Vector2<double> oldPos;
 	bool clockwise;
+	sf::Vector2<double> storedPlayerPos;
 
 	sf::Vector2i offset;
 	int addedPoints;

@@ -13,7 +13,7 @@ Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, quads( sf::Quads, (int)(ceil( maxTotalLength / 6.0 ) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 2, 15 )//, ts_redWire( NULL ) 
+	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 )//, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 }
@@ -24,22 +24,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	ControllerState &prevInput = player->prevInput;
 
 	//V2d playerPos = player->position;
-	if( player->facingRight )
-	{
-		offset.x = abs( offset.x );
-	}
-	else
-	{
-		offset.x = -abs( offset.x );
-	}
-	double angle = player->GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y );
-	V2d other( gNormal.y, -gNormal.x );
-	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
-	
+	V2d playerPos = GetOriginPos();
+	storedPlayerPos = playerPos;
+	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
 	/*V2d dir;
 	if( player->ground == NULL )
 	{
@@ -392,33 +379,27 @@ void Wire::UpdateAnchors( V2d vel )
 {
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );
-	if( player->facingRight )
-	{
-		offset.x = abs( offset.x );
-	}
-	else
-	{
-		offset.x = -abs( offset.x );
-	}
-	double angle = player->GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y );
-	V2d other( gNormal.y, -gNormal.x );
-	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	V2d playerPos = GetOriginPos();
 
 	if( state == HIT || state == PULLING )
 	{
-		//cout << "updating anchors" << endl;
-	//	rayCastMode = "check";
-		//rcEdge = NULL;
 
-
-		//sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
-		//line->append( sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Magenta ) );
 		
-		oldPos = playerPos - vel;
+		
+		
+		
+		oldPos = storedPlayerPos;////playerPos - vel;//
+
+	/*	if( vel.x == 0 && vel.y == 0 )
+		{
+			if( player->action == Actor::DASH )
+				cout << "dash" << endl;
+			else if( player->action == Actor::STAND )
+				cout << "stand" << endl;
+		cout << "oldpos: " << oldPos.x << ", " << oldPos.y << endl;
+		cout << "player: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
+		}*/
+
 		double radius = length( realAnchor - playerPos ); //new position after moving
 
 		if( numPoints == 0 )
@@ -435,7 +416,7 @@ void Wire::UpdateAnchors( V2d vel )
 		int counter = 0;
 		while( true )
 		{
-			//progressDraw.push_back( line );
+			
 			if( counter > 1 )
 			{
 				cout << "COUNTER: " << counter << endl;
@@ -447,6 +428,13 @@ void Wire::UpdateAnchors( V2d vel )
 			double bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
 
 			Rect<double> r( left, top, right - left, bottom - top );
+
+
+			/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
+			rs->setPosition( left, top );
+			rs->setFillColor( Color( 0, 255, 0, 100 ) );
+			progressDraw.push_back( rs );*/
+
 
 			//addedPoints = 0;
 			foundPoint = false;
@@ -532,7 +520,8 @@ void Wire::UpdateAnchors( V2d vel )
 	}
 	else if( state == FIRING )
 	{
-		oldPos = playerPos - vel;
+		//oldPos = playerPos - vel;
+		oldPos = storedPlayerPos;
 		V2d wireVec = fireDir * fireRate * (double)(framesFiring + 1 );
 		V2d wirePos = playerPos + wireVec; 
 		V2d oldWirePos = oldPos + wireVec;
@@ -552,6 +541,15 @@ void Wire::UpdateAnchors( V2d vel )
 	}
 	//UpdateState( false );
 	//cout << "blah" << endl;
+
+
+	/*CircleShape *cs = new CircleShape;
+	cs->setFillColor( Color::Red );
+	cs->setRadius( 4 );
+	cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+	cs->setPosition( playerPos.x, playerPos.y );
+	progressDraw.push_back( cs );*/
+	storedPlayerPos = playerPos;
 }
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
@@ -559,21 +557,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	//rayPortion > 1 &&
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );	
-	if( player->facingRight )
-	{
-		offset.x = abs( offset.x );
-	}
-	else
-	{
-		offset.x = -abs( offset.x );
-	}
-	double angle = player->GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y );
-	V2d other( gNormal.y, -gNormal.x );
-	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	V2d playerPos = GetOriginPos();
 
 	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
 	{
@@ -586,23 +570,12 @@ void Wire::TestPoint( Edge *e )
 {
 
 	V2d p = e->v0;
+
+	
+	
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );
-	if( player->facingRight )
-	{
-		offset.x = abs( offset.x );
-	}
-	else
-	{
-		offset.x = -abs( offset.x );
-	}
-	double angle = player->GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y );
-	V2d other( gNormal.y, -gNormal.x );
-	V2d playerPos = player->position;
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	V2d playerPos = GetOriginPos();
 
 	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
@@ -621,6 +594,19 @@ void Wire::TestPoint( Edge *e )
 
 	V2d oldVec = normalize( oldPos - realAnchor );
 	V2d newVec = normalize( playerPos - realAnchor );
+
+	//cout << "old: " << oldPos.x << ", " << oldPos.y << endl;
+	//cout << "new: " << playerPos.x << ", " << playerPos.y << endl;
+
+	/*sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
+	line->append( sf::Vertex(sf::Vector2f(realAnchor.x, realAnchor.y), Color::Black ) );
+	line->append( sf::Vertex(sf::Vector2f(oldPos.x, oldPos.y), Color::Black ) );
+	line->append( sf::Vertex(sf::Vector2f(realAnchor.x, realAnchor.y), Color::Black ) );
+	line->append( sf::Vertex(sf::Vector2f(playerPos.x, playerPos.y), Color::Black ) );*/
+
+
+	//progressDraw.push_back( line );
+
 	V2d pVec = normalize( p - realAnchor );
 
 	double oldAngle = atan2( oldVec.y, oldVec.x );
@@ -647,6 +633,13 @@ void Wire::TestPoint( Edge *e )
 		newAngle += 2 * PI;
 	if( pAngle < 0 )
 		pAngle += 2 * PI;
+
+	/*CircleShape *cs = new CircleShape;
+	cs->setFillColor( Color::Green );
+	cs->setRadius( 4 );
+	cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+	cs->setPosition( p.x, p.y );
+	progressDraw.push_back( cs );*/
 
 	//cout << "p: " << p.x << ", " << p.y << " old: " << oldAngle << ", new: " << newAngle << ", pangle: " << pAngle << endl;
 	bool tempClockwise = false;
@@ -709,18 +702,10 @@ void Wire::TestPoint( Edge *e )
 		return;
 	}
 
-
+	
 
 	//would be more efficient to remove this calculation and only do it once per frame
 	clockwise = tempClockwise;
-
-	
-	/*
-	points[numPoints + addedPoints].pos = p;
-	points[numPoints + addedPoints].angleDiff = angleDiff;
-	points[numPoints + addedPoints].e = e;
-	addedPoints++;*/
-	
 	
 	if( !foundPoint )
 	{
@@ -779,21 +764,27 @@ void Wire::UpdateQuads()
 	if( player->facingRight )
 	{
 		offset.x = -abs( offset.x );
-		cout << "RIGHT offset.x is: " << offset.x << endl;
 	}
 	else
 	{
 		offset.x = abs( offset.x );
-		cout << "LEFT offset.x is: " << offset.x << endl;
 	}
-	//return;
-
+	V2d playerPos;
 	double angle = player->GroundedAngle();
 	double x = sin( angle );
 	double y = -cos( angle );
-	V2d gNormal( x, y );
+	V2d gNormal( x, y ); 
 	V2d other( -gNormal.y, gNormal.x );
-	V2d playerPos = player->position;
+
+	if( player->ground != NULL )
+	{
+		V2d pp = player->ground->GetPoint( player->edgeQuantity );
+		playerPos = pp + gNormal * player->normalHeight;
+	}
+	else
+	{
+		playerPos = player->position;
+	}
 	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
 
 	//cout << "starting update quads" << endl;
@@ -1084,3 +1075,37 @@ void Wire::Reset()
 	framesFiring = 0;
 	frame = 0;
 }
+
+V2d Wire::GetOriginPos()
+{
+	offset = player->GetWireOffset();
+
+	if( player->facingRight )
+	{
+		offset.x = -abs( offset.x );
+	}
+	else
+	{
+		offset.x = abs( offset.x );
+	}
+	V2d playerPos;
+	double angle = player->GroundedAngle();
+	double x = sin( angle );
+	double y = -cos( angle );
+	V2d gNormal( x, y ); 
+	V2d other( -gNormal.y, gNormal.x );
+
+	if( player->ground != NULL )
+	{
+		V2d pp = player->ground->GetPoint( player->edgeQuantity );
+		playerPos = pp + gNormal * player->normalHeight;
+	}
+	else
+	{
+		playerPos = player->position;
+	}
+	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	return playerPos;
+}
+
+//actor should change the offset every frame based on its info. need a before movement wire position and a post movement wire position consistently
