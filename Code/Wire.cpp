@@ -427,7 +427,9 @@ void Wire::UpdateAnchors( V2d vel )
 			double top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
 			double bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
 
-			Rect<double> r( left, top, right - left, bottom - top );
+			double ex = 1;
+			Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, (bottom - top) + ex * 2 );
+			
 
 
 			/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
@@ -568,10 +570,13 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 
 void Wire::TestPoint( Edge *e )
 {
-
 	V2d p = e->v0;
 
-	
+	/*if( abs( p.x - points[numPoints-1].pos.x ) < 1 && abs( p.y - points[numPoints-1].pos.y ) < 1 )
+	{
+		//cout << "that was a close one" << endl;
+		return;
+	}*/
 	
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );

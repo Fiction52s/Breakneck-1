@@ -74,7 +74,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int animFactor;
 	double quadHalfWidth;
 	int numPoints;
-	const static int MAX_POINTS = 100;
+	const static int MAX_POINTS = 20000;
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];
 	sf::VertexArray quads;

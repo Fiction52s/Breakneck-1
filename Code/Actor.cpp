@@ -4171,7 +4171,10 @@ bool Actor::ResolvePhysics( V2d vel )
 	double minLeft = min( oldR.left, newR.left );
 	double minTop = min( oldR.top, newR.top );
 	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
-	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
+	
+
+	double ex = 1;
+	Rect<double> r( minLeft - ex, minTop - ex, (maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2 );
 
 	col = false;
 
@@ -9601,7 +9604,7 @@ Vector2i Actor::GetWireOffset()
 	case DASH:
 		return Vector2i( 0, 0 );
 	default:
-		return Vector2i( 8, 18 );
+		return Vector2i( 5, 18 );
 	}
 }
 
