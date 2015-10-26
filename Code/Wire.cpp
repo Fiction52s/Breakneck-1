@@ -422,20 +422,63 @@ void Wire::UpdateAnchors( V2d vel )
 				cout << "COUNTER: " << counter << endl;
 			}
 
-			double left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
+			V2d a = realAnchor - oldPos;
+			V2d b = realAnchor - playerPos;
+			double len = max( length( a ), length( b ) );
+
+			/*double left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
 			double right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
 			double top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
-			double bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
+			double bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );*/
+			V2d oldDir = oldPos - realAnchor;
+			V2d dir = playerPos - realAnchor;
+			double left;
+			double right;
+			double top;
+			double bottom;
+
+			if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x > 0 && dir.y < 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y < 0 ) )
+			{
+				top = realAnchor.y - len;
+			}
+			else
+			{
+				top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
+			}
+
+			if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x < 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y > 0 ) )
+			{
+				left = realAnchor.x - len;
+			}
+			else
+			{
+				left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
+			}
+
+			if( ( oldDir.x > 0 && oldDir.y < 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x > 0 && dir.y < 0 && oldDir.x > 0 && oldDir.y > 0 ) )
+			{
+				right = realAnchor.x + len;
+			}
+			else
+			{
+				right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
+			}
+
+			if( ( oldDir.x < 0 && oldDir.y > 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y > 0 && oldDir.x > 0 && oldDir.y > 0 ) )
+			{
+				bottom = realAnchor.y + len;
+			}
+			else
+			{
+				bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
+			}
 
 			double ex = 1;
 			Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, (bottom - top) + ex * 2 );
 			
 
 
-			/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
-			rs->setPosition( left, top );
-			rs->setFillColor( Color( 0, 255, 0, 100 ) );
-			progressDraw.push_back( rs );*/
+			
 
 
 			//addedPoints = 0;
@@ -525,6 +568,9 @@ void Wire::UpdateAnchors( V2d vel )
 		//oldPos = playerPos - vel;
 		oldPos = storedPlayerPos;
 		V2d wireVec = fireDir * fireRate * (double)(framesFiring + 1 );
+		
+		V2d diff = playerPos - oldPos;
+		
 		V2d wirePos = playerPos + wireVec; 
 		V2d oldWirePos = oldPos + wireVec;
 
@@ -534,12 +580,34 @@ void Wire::UpdateAnchors( V2d vel )
 		quadPlayerPosD = playerPos;
 
 		double top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
-		double bot = max( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
+		double bot = max( quadOldPosA.y, max( quadOldWirePosB.y, max( quadWirePosC.y, quadPlayerPosD.y ) ) );
 		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
-		double right = max( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
+		double right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
 
+		//cout << "A: " << quadOldPosA.x << ", " << quadOldPosA.y << ", B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << 
+		//	", C: " << quadWirePosC.x << ", " << quadWirePosC.y << ", D: " << quadPlayerPosD.x << ", " << quadPlayerPosD.y << endl;
 		sf::Rect<double> r( left, top, right - left, bot - top );
-		player->owner->terrainTree->Query( this, r );
+		//cout << "diff: " << diff.x << ", " << diff.y << ", size: " << r.width << ", " << r.height << endl;
+		/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
+		rs->setPosition( left, top );
+		rs->setFillColor( Color( 0, 255, 0, 100 ) );
+		progressDraw.push_back( rs );*/
+		//cout << "rect is: left: " << left << ", right: " << right << ", top: " << top << ", bot:" << bot << endl;
+		if( r.width == 0 || r.height == 0 )
+		{
+
+		}
+		else
+		{
+			//cout << "query" << endl;
+			player->owner->terrainTree->Query( this, r );
+			if( state != FIRING )
+			{
+				UpdateAnchors( V2d( 0, 0 ) );
+			}
+			
+
+		}
 	}
 	//UpdateState( false );
 	//cout << "blah" << endl;
@@ -746,9 +814,31 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	if( state == FIRING )
 	{
 		V2d along = normalize( quadOldWirePosB - quadOldPosA );
-		V2d other = normalize( quadWirePosC - quadOldWirePosB );
+		V2d other = normalize( quadOldPosA - quadPlayerPosD);
 
+		cout << "along: " << along.x << ", " << along.y << ", " << other.x << ", " << other.y << endl;
+		double alongQ = dot( e->v0 - quadOldPosA, along );
+		double otherQ = cross( e->v0 - quadOldPosA, along );
 
+		cout << "alongQ: " << alongQ << ", otherQ: " << otherQ << endl;
+		cout << "len other: " << length( quadOldPosA - quadPlayerPosD ) << ", " << "len now: " << length( quadOldWirePosB - quadOldPosA ) << endl;
+	//	cout << "B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << ", A: " << quadOldPosA.x << ", " << quadOldPosA.y << endl;
+		//cout << "part1" << endl;
+		if( otherQ >= 0  && otherQ <= length( quadOldPosA - quadPlayerPosD ) )
+		{
+		//	cout << "part2" << endl;
+			if( alongQ >= 0 && alongQ <= length( quadOldWirePosB - quadOldPosA ) )
+			{
+			//	cout << "testing point from sweep!" << endl;
+				//TestPoint( e );
+				cout << "adding this point special" << endl;
+				state = HIT;
+				numPoints = 0;
+				anchor.pos = e->v0;
+				anchor.quantity = 0;
+				anchor.e = e;
+			}
+		}
 		//double v0c = cross( e->v1 - 
 	}
 	else
