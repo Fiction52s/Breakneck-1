@@ -4120,8 +4120,8 @@ bool Actor::CheckStandUp()
 
 	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 
-		
-		Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
+		double ex = 1;
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight + 2 * ex);
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(r.width, r.height ));
 		rs.setFillColor( Color::Yellow );
@@ -6872,6 +6872,8 @@ void Actor::UpdatePostPhysics()
 				{
 					action = JUMP;
 					frame = 1;
+					//rightWire->UpdateAnchors(V2d( 0, 0 ));
+					//leftWire->UpdateAnchors(V2d( 0, 0 ));
 				}
 			//	cout << "jump" << endl;
 				
@@ -6881,6 +6883,7 @@ void Actor::UpdatePostPhysics()
 			{
 				action = JUMP;
 				frame = 1;
+				
 			}
 		}
 	}
@@ -6892,6 +6895,10 @@ void Actor::UpdatePostPhysics()
 		frame = 0;
 	}
 	//display action
+
+
+	rightWire->UpdateAnchors(V2d( 0, 0 ));
+	leftWire->UpdateAnchors(V2d( 0, 0 ));
 
 	if( record > 0 )
 	{
@@ -9680,7 +9687,7 @@ Vector2i Actor::GetWireOffset()
 		offset = Vector2i( 0, 0 );
 		break;
 	default:
-		offset = Vector2i( 5, 18 );
+		offset = Vector2i( 2, 18 );
 	}
 
 	if( reversed )

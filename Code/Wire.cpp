@@ -499,7 +499,7 @@ void Wire::UpdateAnchors( V2d vel )
 			if( foundPoint )
 			{
 				points[numPoints].pos = closestPoint;
-
+				
 
 				points[numPoints].test = normalize( closestPoint - realAnchor );
 				if( !clockwise )
@@ -790,6 +790,7 @@ void Wire::TestPoint( Edge *e )
 	else
 	{
 		double closestDist = length( realAnchor - closestPoint );
+		//not sure if switching the order of these does anything
 		if( angleDiff < closestDiff )
 		{
 			closestDiff = angleDiff;
@@ -798,12 +799,13 @@ void Wire::TestPoint( Edge *e )
 		}
 		else if( approxEquals( angleDiff, closestDiff ) )
 		{
-			if( anchorDist > closestDist )
+			if( anchorDist < closestDist )
 			{
 				closestDiff = angleDiff;
 				closestPoint = p;
 			}
 		}
+		
 	}
 }
 
@@ -846,6 +848,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 		V2d v0 = e->v0;
 		V2d v1 = e->v1;
 		TestPoint( e );
+		
 	}
 	
 	//TestPoint( v1 );
