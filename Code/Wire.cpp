@@ -23,7 +23,7 @@ Wire::Wire( Actor *p, bool r)
 
 void Wire::UpdateState( bool touchEdgeWithWire )
 {
-	cout << "update state" << endl;
+	//cout << "update state" << endl;
 	ControllerState &currInput = player->currInput;
 	ControllerState &prevInput = player->prevInput;
 
@@ -590,7 +590,7 @@ void Wire::UpdateAnchors( V2d vel )
 
 		//cout << "A: " << quadOldPosA.x << ", " << quadOldPosA.y << ", B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << 
 		//	", C: " << quadWirePosC.x << ", " << quadWirePosC.y << ", D: " << quadPlayerPosD.x << ", " << quadPlayerPosD.y << endl;
-		double ex = 5;
+		double ex = 1;
 		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
 		//cout << "diff: " << diff.x << ", " << diff.y << ", size: " << r.width << ", " << r.height << endl;
 		/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );

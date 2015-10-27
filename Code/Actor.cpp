@@ -4120,8 +4120,17 @@ bool Actor::CheckStandUp()
 
 	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 
-		double ex = 1;
-		Rect<double> r( position.x + b.offset.x - b.rw, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight + 2 * ex);
+		//hope this doesnt make weird issues sometimes ;_;
+		double ex = .001;
+		Rect<double> r;
+		if( reversed )
+		{
+			r = Rect<double>( position.x + b.offset.x - b.rw, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight + 2 * ex);
+		}
+		else
+		{
+			r = Rect<double>( position.x + b.offset.x - b.rw, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight + 2* ex);
+		}
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(r.width, r.height ));
 		rs.setFillColor( Color::Yellow );
@@ -4404,11 +4413,26 @@ void Actor::UpdateReversePhysics()
 				V2d nextNorm = e0n;
 				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
 				{
-					if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
-						groundSpeed = 0;
-						offsetX = -offsetX;
-						break;
+						if( groundSpeed >= -steepClimbSpeedThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+					}
+					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
+					{
+						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						leftGround = true;
+						action = JUMP;
+						frame = 1;
+						rightWire->UpdateAnchors( V2d( 0, 0 ) );
+						leftWire->UpdateAnchors( V2d( 0, 0 ) );
+						ground = NULL;
+						movingGround = NULL;
+						
 					}
 					else
 					{
@@ -4451,12 +4475,26 @@ void Actor::UpdateReversePhysics()
 				V2d nextNorm = e1n;
 				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
 				{
-
-					if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-						groundSpeed = 0;
-						offsetX = -offsetX;
-						break;
+						if( groundSpeed <= steepClimbSpeedThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+					}
+					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
+					{
+						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						leftGround = true;
+						action = JUMP;
+						frame = 1;
+						rightWire->UpdateAnchors( V2d( 0, 0 ) );
+						leftWire->UpdateAnchors( V2d( 0, 0 ) );
+						ground = NULL;
+						movingGround = NULL;
+						
 					}
 					else
 					{
@@ -5198,12 +5236,26 @@ void Actor::UpdatePhysics()
 				Edge *next = ground->edge0;
 				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
 				{
-					if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
+					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
-					//	cout << "success?: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
-					//		", scst: " << steepClimbSpeedThresh  << endl;
-						groundSpeed = 0;
-						break;
+						if( groundSpeed >= -steepClimbSpeedThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+					}
+					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
+					{
+						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						leftGround = true;
+						action = JUMP;
+						frame = 1;
+						rightWire->UpdateAnchors( V2d( 0, 0 ) );
+						leftWire->UpdateAnchors( V2d( 0, 0 ) );
+						ground = NULL;
+						movingGround = NULL;
+						
 					}
 					else
 					{
@@ -5249,11 +5301,26 @@ void Actor::UpdatePhysics()
 				Edge *next = ground->edge1;
 				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 				{
-
-					if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
+					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-						groundSpeed = 0;
-						break;
+						if( groundSpeed <= steepClimbSpeedThresh )
+						{
+							groundSpeed = 0;
+							break;
+						}
+					}
+					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
+					{
+						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						leftGround = true;
+						action = JUMP;
+						frame = 1;
+						rightWire->UpdateAnchors( V2d( 0, 0 ) );
+						leftWire->UpdateAnchors( V2d( 0, 0 ) );
+						ground = NULL;
+						movingGround = NULL;
+						
 					}
 					else
 					{
