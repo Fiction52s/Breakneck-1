@@ -80,6 +80,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::VertexArray quads;
 	int framesFiring;
 	double fireRate;
+	Edge *minSideEdge;
+	double minSideOther;
+	double minSideAlong;
 	sf::Vector2<double> fireDir;
 	WirePoint anchor;
 

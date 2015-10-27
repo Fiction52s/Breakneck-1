@@ -4437,7 +4437,10 @@ void Actor::UpdateReversePhysics()
 					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 					leftGround = true;
-
+					action = JUMP;
+					frame = 1;
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 					movingGround = NULL;
 				}
@@ -4481,7 +4484,10 @@ void Actor::UpdateReversePhysics()
 					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						
+					action = JUMP;
+					frame = 1;
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftGround = true;
 					reversed = false;
 					ground = NULL;
@@ -5230,7 +5236,10 @@ void Actor::UpdatePhysics()
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 					leftGround = true;
-
+					action = JUMP;
+					frame = 1;
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 					movingGround = NULL;
 				}
@@ -5278,6 +5287,11 @@ void Actor::UpdatePhysics()
 					leftGround = true;
 					ground = NULL;
 					movingGround = NULL;
+
+					action = JUMP;
+					frame = 1;
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}
 

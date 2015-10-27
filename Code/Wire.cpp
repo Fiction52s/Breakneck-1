@@ -16,10 +16,14 @@ Wire::Wire( Actor *p, bool r)
 	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 )//, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
+	minSideEdge = NULL;
+	minSideOther = -1;
+	minSideAlong = -1;
 }
 
 void Wire::UpdateState( bool touchEdgeWithWire )
 {
+	cout << "update state" << endl;
 	ControllerState &currInput = player->currInput;
 	ControllerState &prevInput = player->prevInput;
 
@@ -586,7 +590,8 @@ void Wire::UpdateAnchors( V2d vel )
 
 		//cout << "A: " << quadOldPosA.x << ", " << quadOldPosA.y << ", B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << 
 		//	", C: " << quadWirePosC.x << ", " << quadWirePosC.y << ", D: " << quadPlayerPosD.x << ", " << quadPlayerPosD.y << endl;
-		sf::Rect<double> r( left, top, right - left, bot - top );
+		double ex = 5;
+		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
 		//cout << "diff: " << diff.x << ", " << diff.y << ", size: " << r.width << ", " << r.height << endl;
 		/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
 		rs->setPosition( left, top );
@@ -600,13 +605,18 @@ void Wire::UpdateAnchors( V2d vel )
 		else
 		{
 			//cout << "query" << endl;
+			minSideEdge = NULL;
 			player->owner->terrainTree->Query( this, r );
-			if( state != FIRING )
+			if( minSideEdge != NULL )
 			{
+				storedPlayerPos = playerPos;
+				state = HIT;
+				numPoints = 0;
+				anchor.pos = minSideEdge->v0;
+				anchor.quantity = 0;
+				anchor.e = minSideEdge;
 				UpdateAnchors( V2d( 0, 0 ) );
 			}
-			
-
 		}
 	}
 	//UpdateState( false );
@@ -818,40 +828,34 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 		V2d along = normalize( quadOldWirePosB - quadOldPosA );
 		V2d other = normalize( quadOldPosA - quadPlayerPosD);
 
-		//cout << "along: " << along.x << ", " << along.y << ", " << other.x << ", " << other.y << endl;
 		double alongQ = dot( e->v0 - quadOldPosA, along );
 		double otherQ = cross( e->v0 - quadOldPosA, along );
 
-		//cout << "alongQ: " << alongQ << ", otherQ: " << otherQ << endl;
-		//cout << "len other: " << length( quadOldPosA - quadPlayerPosD ) << ", " << "len now: " << length( quadOldWirePosB - quadOldPosA ) << endl;
-	//	cout << "B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << ", A: " << quadOldPosA.x << ", " << quadOldPosA.y << endl;
-		//cout << "part1" << endl;
-		if( otherQ >= 0  && otherQ <= length( quadOldPosA - quadPlayerPosD ) )
+		//cout << "checking: " << e->v0.x << ", " << e->v0.y << ", along/other: " << alongQ << ", " << otherQ 
+		//	<< ", alongLen: " << length( quadOldWirePosB - quadOldPosA ) << ", otherLen: " << length( quadOldPosA - quadPlayerPosD ) << endl;
+		if( -otherQ >= 0  && -otherQ <= length( quadOldPosA - quadPlayerPosD ) )
 		{
-		//	cout << "part2" << endl;
 			if( alongQ >= 0 && alongQ <= length( quadOldWirePosB - quadOldPosA ) )
 			{
-			//	cout << "testing point from sweep!" << endl;
-				//TestPoint( e );
-		//		cout << "adding this point special" << endl;
-				state = HIT;
-				numPoints = 0;
-				anchor.pos = e->v0;
-				anchor.quantity = 0;
-				anchor.e = e;
+				if( minSideEdge == NULL 
+					|| ( minSideEdge != NULL 
+						&& ( otherQ < minSideOther 
+						|| ( otherQ == minSideOther && alongQ < minSideAlong ) ) ) )
+				{
+					minSideOther = otherQ;
+					minSideAlong = alongQ;
+					minSideEdge = e;
+			//		cout << "setting to: " << e->v0.x << ", " << e->v0.y << endl;
+				}
 			}
-		}
-		//double v0c = cross( e->v1 - 
+		} 
 	}
 	else
 	{
 		V2d v0 = e->v0;
 		V2d v1 = e->v1;
-		TestPoint( e );
-		
+		TestPoint( e );	
 	}
-	
-	//TestPoint( v1 );
 }
 
 //make multiples of the quads for each edge later
