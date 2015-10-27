@@ -816,12 +816,12 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 		V2d along = normalize( quadOldWirePosB - quadOldPosA );
 		V2d other = normalize( quadOldPosA - quadPlayerPosD);
 
-		cout << "along: " << along.x << ", " << along.y << ", " << other.x << ", " << other.y << endl;
+		//cout << "along: " << along.x << ", " << along.y << ", " << other.x << ", " << other.y << endl;
 		double alongQ = dot( e->v0 - quadOldPosA, along );
 		double otherQ = cross( e->v0 - quadOldPosA, along );
 
-		cout << "alongQ: " << alongQ << ", otherQ: " << otherQ << endl;
-		cout << "len other: " << length( quadOldPosA - quadPlayerPosD ) << ", " << "len now: " << length( quadOldWirePosB - quadOldPosA ) << endl;
+		//cout << "alongQ: " << alongQ << ", otherQ: " << otherQ << endl;
+		//cout << "len other: " << length( quadOldPosA - quadPlayerPosD ) << ", " << "len now: " << length( quadOldWirePosB - quadOldPosA ) << endl;
 	//	cout << "B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << ", A: " << quadOldPosA.x << ", " << quadOldPosA.y << endl;
 		//cout << "part1" << endl;
 		if( otherQ >= 0  && otherQ <= length( quadOldPosA - quadPlayerPosD ) )
@@ -831,7 +831,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 			{
 			//	cout << "testing point from sweep!" << endl;
 				//TestPoint( e );
-				cout << "adding this point special" << endl;
+		//		cout << "adding this point special" << endl;
 				state = HIT;
 				numPoints = 0;
 				anchor.pos = e->v0;
@@ -856,31 +856,8 @@ void Wire::UpdateQuads()
 {
 	//if( state == FIRING )
 	//	++framesFiring;
-	if( player->facingRight )
-	{
-		offset.x = -abs( offset.x );
-	}
-	else
-	{
-		offset.x = abs( offset.x );
-	}
-	V2d playerPos;
-	double angle = player->GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y ); 
-	V2d other( -gNormal.y, gNormal.x );
-
-	if( player->ground != NULL )
-	{
-		V2d pp = player->ground->GetPoint( player->edgeQuantity );
-		playerPos = pp + gNormal * player->normalHeight;
-	}
-	else
-	{
-		playerPos = player->position;
-	}
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	
+	V2d playerPos = GetOriginPos();
 
 	//cout << "starting update quads" << endl;
 	V2d alongDir;// = fireDir;

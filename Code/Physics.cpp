@@ -594,8 +594,9 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		//bool pointInRect = point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;		
 
-		
-		bool pointInRect = point.x >= min( left, oldLeft ) && point.x <= max( right, oldRight ) && point.y >= min( top, oldTop ) && point.y <= max( bottom, oldBottom );		
+		//hopefully will catch any rounding errors
+		double ex = .001;
+		bool pointInRect = point.x >= min( left, oldLeft ) - ex  && point.x <= max( right, oldRight ) + ex && point.y >= min( top, oldTop ) - ex && point.y <= max( bottom, oldBottom ) + ex;		
 
 
 		double unPoint = cross( normalize(e->v1 - e->v0), normalize( e->edge0->v0 - e->v0 ) );

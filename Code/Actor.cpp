@@ -4412,6 +4412,21 @@ void Actor::UpdateReversePhysics()
 					}
 					else
 					{
+						if( e0n.y > -steepThresh)
+						{
+							if( e0n.x < 0 )
+							{
+
+								action = STEEPSLIDE;
+								frame = 0;
+							}
+							else if( e0n.x > 0 )
+							{
+								action = STEEPCLIMB;
+								frame = 0;
+							}
+						}
+
 						ground = next;
 						q = length( ground->v1 - ground->v0 );	
 					}
@@ -4440,8 +4455,26 @@ void Actor::UpdateReversePhysics()
 						offsetX = -offsetX;
 						break;
 					}
-					ground = next;
-					q = 0;
+					else
+					{
+						if( e1n.y > -steepThresh)
+						{
+							if( e1n.x > 0 )
+							{
+								action = STEEPSLIDE;
+								frame = 0;
+							}
+							else if( e1n.x < 0 )
+							{
+								action = STEEPCLIMB;
+								frame = 0;
+							}
+							
+						}
+
+						ground = next;
+						q = 0;
+					}
 				}
 				else
 				{
@@ -5170,8 +5203,26 @@ void Actor::UpdatePhysics()
 					{
 					//	cout << "e0ny: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
 					//		", scst: " << steepClimbSpeedThresh  << endl;
+
+						if( e0n.y > -steepThresh )
+						{
+							if( e0n.x < 0 )
+							{
+								action = STEEPSLIDE;
+								frame = 0;
+							}
+							else if( e0n.x > 0 )
+							{
+								action = STEEPCLIMB;
+								frame = 0;
+							}
+						}
+						
+
+
 						ground = next;
 						q = length( ground->v1 - ground->v0 );	
+						
 					}
 				}
 				else
@@ -5197,6 +5248,22 @@ void Actor::UpdatePhysics()
 					}
 					else
 					{
+
+						if( e1n.y > -steepThresh)
+						{
+							if( e1n.x > 0 )
+							{
+								action = STEEPSLIDE;
+								frame = 0;
+							}
+							else if( e1n.x < 0 )
+							{
+								action = STEEPCLIMB;
+								frame = 0;
+							}
+							
+						}
+
 						ground = next;
 						q = 0;
 					}
@@ -9066,7 +9133,6 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-
 	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 	{
 		motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
@@ -9599,13 +9665,30 @@ void Actor::AirMovement()
 
 Vector2i Actor::GetWireOffset()
 {
+	Vector2i offset;
 	switch( action )
 	{
 	case DASH:
-		return Vector2i( 0, 0 );
+	case DOUBLE:
+		offset = Vector2i( 0, 0 );
+		break;
+	case STEEPSLIDE:
+		cout << "steep slide" << endl;
+		offset = Vector2i( 0, 0 );
+		break;
+	case SPRINT:
+		offset = Vector2i( 0, 0 );
+		break;
 	default:
-		return Vector2i( 5, 18 );
+		offset = Vector2i( 5, 18 );
 	}
+
+	if( reversed )
+	{
+		//offset.y = -offset.y;
+	}
+
+	return offset;
 }
 
 PlayerGhost::PlayerGhost()
