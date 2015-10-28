@@ -768,25 +768,33 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "point: " << point.x << ", " << point.y << ", oldBottom: " << oldBottom << ", " << bottom << endl;
 			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
 			{
-
-				
-				pointMinTime = ( point.x - oldRight ) / abs(vel.x);
-
+				double rightTime = ( point.x - oldRight ) / abs(vel.x);
+				V2d testRes =-vel * ( 1 - rightTime );
+				if( top + testRes.y <= point.y && bottom + testRes.y >= point.y )
+				{
+					pointMinTime = rightTime;
+					pointNormal.x = -1;
+				}
 
 			//	cout << "righttime: " << pointMinTime << endl;
-				pointNormal.x = -1;
+				
 			}
 			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x - .001 && left <= point.x  )
 			{
-			//	cout << "left" << endl;
-				pointMinTime = ( oldLeft - point.x ) / abs( vel.x );
-				pointNormal.x = 1;
+				double leftTime = ( oldLeft - point.x ) / abs( vel.x );
+				V2d testRes =-vel * ( 1 - leftTime );
+				if( top + testRes.y <= point.y && bottom + testRes.y >= point.y )
+				{
+					pointMinTime = leftTime;
+					pointNormal.x = 1;
+				}
 			}
 			
 			if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y + .001 && bottom >= point.y )
 			{
-				bool okay = false;
-				if( vel.x > 0 )
+				bool okay = true;
+				//not sure what this is for. find out the purpose.
+				/*if( vel.x > 0 )
 				{
 					if( oldLeft < edgeRight )
 					{
@@ -803,32 +811,50 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				else
 				{
 					okay = true;
-				}
+				}*/
 
-				//cout << "bottom cond okay: " << okay << endl;
+
+				
+
+				
+				cout << "right: " << right << ", px: " << point.x << ", pos: " << position.x << endl;
+				
+			//cout << "bottom cond okay: " << okay << endl;
 
 				bottomTime = ( point.y - oldBottom ) / abs( vel.y );
 
+				
+
 				if( okay && bottomTime < pointMinTime )
 				{
+					V2d testRes =-vel * ( 1 - bottomTime );
+					if( right + testRes.x >= point.x && left + testRes.x <= point.x )
+					{
+						pointMinTime = bottomTime;
+						pointNormal.x = 0;
+						pointNormal.y = -1;
+					}
 				//	cout << "bottom: " << bottomCond0 << ", " << bottomCond1 << ", " << bottomCond2 << endl;
 					//cout << "bottomtime: " << bottomTime << endl;
-					pointMinTime = bottomTime;
-					pointNormal.x = 0;
-					pointNormal.y = -1;
+					
 				}
+				
 				//pointMinTime = min( bottomTime, pointMinTime );
 			}
 			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y - .001 && top <= point.y )
 			{
 			//	cout << "top" << endl;
 				topTime = ( oldTop - point.y ) / abs( vel.y );
+				
 				if( topTime < pointMinTime )
 				{
-					pointMinTime = topTime;
-					pointNormal.x = 0;
-					pointNormal.y = 1;
-					//cout << "top!!!" << endl;
+					V2d testRes =-vel * ( 1 - topTime );
+					if( right + testRes.x >= point.x && left + testRes.x <= point.x )
+					{
+						pointMinTime = topTime;
+						pointNormal.x = 0;
+						pointNormal.y = 1;
+					}
 				}
 			}
 

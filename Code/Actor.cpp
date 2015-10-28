@@ -5974,7 +5974,7 @@ void Actor::UpdatePhysics()
 
 
 			bool tempCollision = ResolvePhysics( movementVec );
-
+			cout << "posx now: " << position.x << endl;
 			//wire->UpdateAnchors();
 
 
@@ -5983,7 +5983,12 @@ void Actor::UpdatePhysics()
 			{
 				collision = true;
 			//	if( length( minContact.resolution ) <= length(movementVec) )
+				
+				cout << "res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				position += minContact.resolution;
+
+
+
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;
@@ -6004,12 +6009,6 @@ void Actor::UpdatePhysics()
 					//cout << "here" << endl;
 				}
 
-				//if( abs(minContact.edge->Normal().x) > wallThresh )//approxEquals(minContact.edge->Normal().x,1) || approxEquals(minContact.edge->Normal().x,-1) )
-				//{
-
-				//	wallNormal = minContact.normal;//minContact.edge->Normal();
-				//}
-
 				if( abs(minContact.edge->Normal().x) > wallThresh )//approxEquals(minContact.edge->Normal().x,1) || approxEquals(minContact.edge->Normal().x,-1) )
 				{
 					wallNormal = minContact.edge->Normal();
@@ -6017,8 +6016,6 @@ void Actor::UpdatePhysics()
 
 
 				V2d extraDir =  normalize( minContact.edge->v1 - minContact.edge->v0 );
-
-				
 
 				if( (minContact.position == e->v0 && en.x < 0 && en.y < 0 ) )
 				{
@@ -6178,7 +6175,7 @@ void Actor::UpdatePhysics()
 				framesInAir = maxJumpHeightFrame + 1;
 				//cout << "min: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 			}
-
+			cout << "posx later: " << position.x << endl;
 			if( tempCollision )
 			{
 				V2d en = minContact.normal;//minContact.edge->Normal();
@@ -6278,6 +6275,7 @@ void Actor::UpdatePhysics()
 						//assert( minContact.edge->Normal().y == -1 );
 						cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX 
 							<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+						cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;
 						if( offsetX > 0 )
 						{
 							offsetX = b.rw;
