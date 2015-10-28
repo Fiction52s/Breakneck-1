@@ -965,9 +965,6 @@ void Actor::UpdatePrePhysics()
 			{
 				bounceGrounded = false;
 			}
-		
-
-			
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
@@ -5275,6 +5272,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
+							//cout << "steep transfer left" << endl;
 							ground = next;
 							q = length( ground->v1 - ground->v0 );	
 						}
@@ -5284,6 +5282,13 @@ void Actor::UpdatePhysics()
 					//	cout << "leave" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+						movementVec.y -= .01;
+						if( movementVec.x >= -.01 )
+						{
+							movementVec.x = -.01;
+						}
+
 						leftGround = true;
 						action = JUMP;
 						frame = 1;
@@ -5303,28 +5308,69 @@ void Actor::UpdatePhysics()
 						{
 							if( e0n.x < 0 )
 							{
-								action = STEEPSLIDE;
-								frame = 0;
+								if( gNormal.x >= 0 )
+								{
+									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+									movementVec.y -= .01;
+									if( movementVec.x >= -.01 )
+									{
+										movementVec.x = -.01;
+									}
+
+									leftGround = true;
+									action = JUMP;
+									frame = 1;
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									ground = NULL;
+									movingGround = NULL;
+								}
+								else
+								{
+									action = STEEPSLIDE;
+									frame = 0;
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									ground = next;
+									q = length( ground->v1 - ground->v0 );	
+								}
 							}
 							else if( e0n.x > 0 )
 							{
 								action = STEEPCLIMB;
 								frame = 0;
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								ground = next;
+								q = length( ground->v1 - ground->v0 );	
+							}
+							else
+							{
+								ground = next;
+								q = length( ground->v1 - ground->v0 );	
 							}
 						}
-						
-
-
-						ground = next;
-						q = length( ground->v1 - ground->v0 );	
-						
+						else
+						{
+							ground = next;
+							q = length( ground->v1 - ground->v0 );	
+						}
 					}
 				}
 				else
 				{
 				//	cout << "leave left 2" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+					movementVec = normalize( ground->v1 - ground->v0 ) * (extra);
+					//cout << "b4 vec: " << movementVec.x << ", " << movementVec.y << endl;
+					movementVec.y -= .01;
+					if( movementVec.x >= -.01 )
+					{
+						movementVec.x = -.01;
+					}
+					//cout << "after vec: " << movementVec.x << ", " << movementVec.y << endl;
 					leftGround = true;
 					action = JUMP;
 					frame = 1;
@@ -5351,13 +5397,20 @@ void Actor::UpdatePhysics()
 						{
 							ground = next;
 							q = 0;
+							//cout << "steep transfer right" << endl;
 						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
-						cout << "leave right 1" << endl;
+						//cout << "leave right 1" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+						movementVec.y -= .01;
+						if( movementVec.x <= .01 )
+						{
+							movementVec.x = .01;
+						}
 						leftGround = true;
 						action = JUMP;
 						frame = 1;
@@ -5374,29 +5427,76 @@ void Actor::UpdatePhysics()
 						{
 							if( e1n.x > 0 )
 							{
-								action = STEEPSLIDE;
-								frame = 0;
+								if( gNormal.x <= 0 )
+								{
+									//cout << "bab" << endl;
+									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+									movementVec.y -= .01;
+									if( movementVec.x <= .01 )
+									{
+										movementVec.x = .01;
+									}
+
+									leftGround = true;
+									action = JUMP;
+									frame = 1;
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									ground = NULL;
+									movingGround = NULL;
+
+								}
+								else
+								{
+									action = STEEPSLIDE;
+									frame = 0;
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									ground = next;
+									q = 0;
+								}
 							}
 							else if( e1n.x < 0 )
 							{
 								action = STEEPCLIMB;
 								frame = 0;
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								ground = next;
+								q = 0;
+							}
+							else
+							{
+								ground = next;
+								q = 0;
 							}
 							
 						}
-
-						ground = next;
-						q = 0;
+						else
+						{
+							ground = next;
+							q = 0;
+						}
+						
+						
 					}
 					
 				}
 				else
 				{
-					cout << "leave right 2" << endl;
+					
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						
+					
+					movementVec.y -= .01;
+					if( movementVec.x <= .01 )
+					{
+						movementVec.x = .01;
+					}
+
 					leftGround = true;
 					ground = NULL;
 					movingGround = NULL;
@@ -5977,7 +6077,7 @@ void Actor::UpdatePhysics()
 
 
 			bool tempCollision = ResolvePhysics( movementVec );
-			cout << "posx now: " << position.x << endl;
+			//cout << "posx now: " << position.x << endl;
 			//wire->UpdateAnchors();
 
 
@@ -5987,7 +6087,7 @@ void Actor::UpdatePhysics()
 				collision = true;
 			//	if( length( minContact.resolution ) <= length(movementVec) )
 				
-				cout << "res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+				//cout << "res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				position += minContact.resolution;
 
 
@@ -6178,7 +6278,7 @@ void Actor::UpdatePhysics()
 				framesInAir = maxJumpHeightFrame + 1;
 				//cout << "min: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 			}
-			cout << "posx later: " << position.x << endl;
+			//cout << "posx later: " << position.x << endl;
 			if( tempCollision )
 			{
 				V2d en = minContact.normal;//minContact.edge->Normal();
@@ -9185,7 +9285,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( pn.y < en.y )
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
-						cout << "sfdfdsfsdfdsfds" << endl;
+						//cout << "sfdfdsfsdfdsfds" << endl;
 						c->edge = prev;
 						return;
 
@@ -9208,7 +9308,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( nn.y < en.y )
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
-						cout << "herererere" << endl;
+						//cout << "herererere" << endl;
 					//	return;
 						c->edge = next;
 						return;

@@ -2245,13 +2245,13 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
 
 
-		coll.DebugDraw( preScreenTex );
+		//coll.DebugDraw( preScreenTex );
 
 		double minimapZoom = 20;
 
