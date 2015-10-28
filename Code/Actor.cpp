@@ -813,6 +813,7 @@ void Actor::UpdatePrePhysics()
 				action = GROUNDHITSTUN;
 				frame = 0;
 			}
+			bounceEdge = NULL;
 		}
 		
 		if( !dmgSuccess && !desperationMode )
@@ -970,6 +971,8 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				rightWire->Reset();
+				leftWire->Reset();
 				action = GRINDBALL;
 				grindEdge = ground;
 				grindMovingTerrain = movingGround;
@@ -1529,6 +1532,8 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				rightWire->Reset();
+				leftWire->Reset();
 				action = GRINDBALL;
 				grindEdge = ground;
 				grindMovingTerrain = movingGround;
@@ -1634,6 +1639,8 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				rightWire->Reset();
+				leftWire->Reset();
 				action = GRINDBALL;
 				grindEdge = ground;
 				grindMovingTerrain = movingGround;
@@ -1697,6 +1704,8 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				rightWire->Reset();
+				leftWire->Reset();
 				action = GRINDBALL;
 				grindEdge = ground;
 				grindMovingTerrain = movingGround;
@@ -5272,7 +5281,7 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
-						cout << "leave" << endl;
+					//	cout << "leave" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -5282,7 +5291,8 @@ void Actor::UpdatePhysics()
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
-						
+						//bounceEdge = NULL;
+						//grindEdge = NULL;
 					}
 					else
 					{
@@ -5312,7 +5322,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-					cout << "leave left 2" << endl;
+				//	cout << "leave left 2" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 					leftGround = true;
@@ -5345,7 +5355,7 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
-						cout << "leave right 1" << endl;
+						//cout << "leave right 1" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -5355,6 +5365,7 @@ void Actor::UpdatePhysics()
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
+						//break;
 					}
 					else
 					{
@@ -6265,7 +6276,8 @@ void Actor::UpdatePhysics()
 					if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //stops glitchyness with _\ weird offsets
 					{
 						//assert( minContact.edge->Normal().y == -1 );
-						cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
+						cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX 
+							<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
 						if( offsetX > 0 )
 						{
 							offsetX = b.rw;
@@ -6443,6 +6455,7 @@ void Actor::UpdatePhysics()
 				//cout << "gno: " << gno.x << ", " << gno.y << endl;
 				if( -gno.y > -steepThresh )
 				{
+				//	cout << "a" << endl;
 					groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );
 					if( velocity.x < 0 )
 					{
@@ -6456,14 +6469,15 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-					groundSpeed = dot( velocity, normalize( ground->v1 - ground->v0 ) );
+				//	cout << "b" << endl;
+					groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );
 					if( velocity.x < 0 )
 					{
-						groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+						//groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
 					}
 					else if( velocity.x > 0 )
 					{
-						groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+						//groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
 					}
 				}
 
@@ -9021,14 +9035,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				{
 					if( ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) )
 					{
-						cout << "first:" << edgeQuantity << ", " <<length( ground->v1 - ground->v0 )  << endl;
+					//	cout << "first:" << edgeQuantity << ", " <<length( ground->v1 - ground->v0 )  << endl;
 						b = true;
 					}
 				}
 				else if( groundSpeed < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
 				{
 					b = true;
-					cout << "second" << endl;
+				//	cout << "second" << endl;
 				}
 			}
 			a = false;
@@ -9055,11 +9069,149 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			}
+
+			if( c->weirdPoint )
+			{
+			//	cout << "weird point " << endl;
+				
+				Edge *edge = e;
+				Edge *prev = edge->edge0;
+				Edge *next = edge->edge1;
+
+				V2d v0 = edge->v0;
+				V2d v1 = edge->v1;
+				
+				//if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
+				//{
+				//	V2d pv0 = prev->v0;
+				//	V2d pv1 = prev->v1;
+
+				//	V2d pn = prev->Normal();
+				//	V2d en = e->Normal();
+				//	
+
+				//	if( ground == NULL )
+				//	{
+				//		cout << "a" << endl;
+				//		return;
+				//		//assert( !reversed );
+				//	}
+				//	else
+				//	{
+				//		if( pn.y >= 0 && en.y < 0 )
+				//		{
+				//			cout << "b" << endl;
+				//			return;
+				//		}
+				//		else
+				//		{
+				//			cout << "not b" << endl;
+				//		}
+				//	}
+
+
+				//	/*if( prev->Normal().y < edge->Normal().y )
+				//	{
+				//		//this could cause some glitches. patch them up as they come.
+				//		cout << "sfdfdsfsdfdsfds" << endl;
+				//		c->edge = prev;
+				//		
+				//		return;
+				//		//return; //not sure if this is good
+
+				//		//c->normal = V2d( 0, -1 );
+				//	}*/
+				//}
+				//else if( approxEquals( c->position.x, e->v1.x ) && approxEquals( c->position.y, e->v1.y ) )
+				//{
+				//	V2d nn = next->Normal();
+				//	V2d en = e->Normal();
+				//	
+
+				//	if( ground == NULL )
+				//	{
+				//		cout << "C" << endl;
+				//		return;
+				//		//assert( !reversed );
+				//	}
+				//	else
+				//	{
+				//		if( en.y < 0 && nn.y >= 0 )
+				//		{
+				//			cout << "d" << endl;
+				//			return;
+				//		}
+				//		else
+				//			cout << "not d" << endl;
+				//	}
+				//	/*if( nn.y < en.y )
+				//	{
+				//		//this could cause some glitches. patch them up as they come.
+				//		cout << "herererere" << endl;
+				//	//	return;
+				//		c->edge = next;
+				//		return;
+				//		//return; //not sure if this is good
+				//		//c->normal = V2d( 0, -1 );
+				//	}*/
+				//}
+				
+				////
+
+				if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
+				{
+					V2d pv0 = prev->v0;
+					V2d pv1 = prev->v1;
+
+					V2d pn = prev->Normal();
+					V2d en = e->Normal();
+					
+
+					if( ground == NULL && pn.y >= 0 && en.y < 0 )
+					{
+						//cout << "bhaehfdf" << endl; //falling off and you dont want to keep hitting the ground
+						assert( !reversed );
+						return;
+					}
+
+					if( ground != NULL && pn.y < en.y )
+					{
+						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
+						cout << "sfdfdsfsdfdsfds" << endl;
+						c->edge = prev;
+						return;
+
+						//c->normal = V2d( 0, -1 );
+					}
+				}
+				else if( approxEquals( c->position.x, e->v1.x ) && approxEquals( c->position.y, e->v1.y ) )
+				{
+					V2d nn = next->Normal();
+					V2d en = e->Normal();
+					if( ground == NULL && en.y < 0 && nn.y >= 0 )
+					{
+						//cout << "bhaehfdf" << endl;
+						//falling off and you dont want to keep hitting the ground
+						assert( !reversed );
+						return;
+					}
+
+					if( ground != NULL && nn.y < en.y )
+					{
+						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
+						cout << "herererere" << endl;
+					//	return;
+						c->edge = next;
+						return;
+						//c->normal = V2d( 0, -1 );
+					}
+				}
 			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )

@@ -2251,7 +2251,7 @@ int GameSession::Run( string fileN )
 		//grassTree->DebugDraw( preScreenTex );
 
 
-		//coll.DebugDraw( preScreenTex );
+		coll.DebugDraw( preScreenTex );
 
 		double minimapZoom = 20;
 

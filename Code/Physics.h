@@ -107,6 +107,7 @@ struct Contact
 	Edge *edge;
 	sf::Vector2<double> normal;
 	MovingTerrain *movingPlat;
+	bool weirdPoint;
 };
 
 struct Collider
