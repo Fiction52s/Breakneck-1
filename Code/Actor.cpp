@@ -60,6 +60,7 @@ Actor::Actor( GameSession *gs )
 		//playerLight = new Light( owner, lightPos, lightColor );
 		//dashStartSound.setBuffer( testBuffer );
 		
+		offSlopeByWallThresh = 15;
 		slopeLaunchMinSpeed = 15;
 
 		percentCloneChanged = 0;
@@ -4423,10 +4424,16 @@ void Actor::UpdateReversePhysics()
 							groundSpeed = 0;
 							break;
 						}
+						else
+						{
+							ground = next;
+							q = length( ground->v1 - ground->v0 );	
+						}
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
 						//cout << "d" << endl;
+						reversed = false;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -4489,9 +4496,15 @@ void Actor::UpdateReversePhysics()
 							offsetX = -offsetX;
 							break;
 						}
+						else
+						{
+							ground = next;
+							q = 0;
+						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
+						reversed = false;
 						//cout << "b" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -5237,7 +5250,7 @@ void Actor::UpdatePhysics()
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
 			bool changeOffset = offsetLeft || offsetRight;
-				
+		//	cout << "speed: " << groundSpeed << ", pass: " << (offsetX == -b.rw ) << ", " << (e1n.x <=0 ) << ", " << (q == groundLength && movement > 0) << ", q: " << q << ", len: " << groundLength << endl;
 			if( transferLeft )
 			{
 				//cout << "transfer left "<< endl;
@@ -5251,9 +5264,15 @@ void Actor::UpdatePhysics()
 							groundSpeed = 0;
 							break;
 						}
+						else
+						{
+							ground = next;
+							q = length( ground->v1 - ground->v0 );	
+						}
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
+						cout << "leave" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -5293,6 +5312,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
+					cout << "leave left 2" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 					leftGround = true;
@@ -5306,6 +5326,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( transferRight )
 			{
+			//	cout << "transferRight!" << endl;
 				Edge *next = ground->edge1;
 				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 				{
@@ -5316,9 +5337,15 @@ void Actor::UpdatePhysics()
 							groundSpeed = 0;
 							break;
 						}
+						else
+						{
+							ground = next;
+							q = 0;
+						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
+						cout << "leave right 1" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -5328,7 +5355,6 @@ void Actor::UpdatePhysics()
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
-						
 					}
 					else
 					{
@@ -5355,6 +5381,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
+				//	cout << "leave right 2" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -5765,33 +5792,53 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-								if( bounceGrounded && abs( groundSpeed ) > 1)
+								V2d testVel = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+								if( currInput.LUp() && testVel.y < -offSlopeByWallThresh )
 								{
-									storedBounceGroundSpeed = groundSpeed;
-									groundedWallBounce = true;
+									cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
+									velocity = testVel;
+						
+									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+						
+									leftGround = true;
+									ground = NULL;
+									movingGround = NULL;
+
+									action = JUMP;
+									frame = 1;
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								}
-								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
-
-								V2d oldv0 = ground->v0;
-								V2d oldv1 = ground->v1;
-
-								if( movingGround != NULL )
+								else
 								{
-									ground->v0 += movingGround->position;
-									ground->v1 += movingGround->position;
-								}
+									if( bounceGrounded && abs( groundSpeed ) > 1)
+									{
+										storedBounceGroundSpeed = groundSpeed;
+										groundedWallBounce = true;
+									}
+									//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 
-								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+									V2d oldv0 = ground->v0;
+									V2d oldv1 = ground->v1;
 
-								if( movingGround != NULL )
-								{
-									ground->v0 = oldv0;
-									ground->v1 = oldv1;
-								}
+									if( movingGround != NULL )
+									{
+										ground->v0 += movingGround->position;
+										ground->v1 += movingGround->position;
+									}
+
+									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+
+									if( movingGround != NULL )
+									{
+										ground->v0 = oldv0;
+										ground->v1 = oldv1;
+									}
 
 								
-								groundSpeed = 0;
-								edgeQuantity = q;
+									groundSpeed = 0;
+									edgeQuantity = q;
+								}
 								break;
 							}
 						}
@@ -6303,7 +6350,7 @@ void Actor::UpdatePhysics()
 			
 				
 				
-				cout << "offsetX: " <<offsetX << endl;
+				//cout << "offsetX: " <<offsetX << endl;
 				//cout << "offsetX: " << offsetX << endl;
 				//cout << "offset now!: " << offsetX << endl;
 				//V2d gn = ground->Normal();
@@ -9769,7 +9816,7 @@ Vector2i Actor::GetWireOffset()
 		offset = Vector2i( 0, 0 );
 		break;
 	case STEEPSLIDE:
-		cout << "steep slide" << endl;
+		//cout << "steep slide" << endl;
 		offset = Vector2i( 0, 0 );
 		break;
 	case SPRINT:

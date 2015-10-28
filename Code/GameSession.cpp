@@ -1275,6 +1275,9 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
+
+	cloneInactiveEnemyList = NULL;
+
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
 
