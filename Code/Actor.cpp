@@ -9180,7 +9180,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						return;
 					}
 
-					if( ground != NULL && pn.y < en.y )
+					//ground != NULL
+					if( pn.y < en.y )
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
 						cout << "sfdfdsfsdfdsfds" << endl;
@@ -9202,7 +9203,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						return;
 					}
 
-					if( ground != NULL && nn.y < en.y )
+					//ground != NULL
+					if( nn.y < en.y )
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
 						cout << "herererere" << endl;
