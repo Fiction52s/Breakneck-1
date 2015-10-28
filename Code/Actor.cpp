@@ -4413,16 +4413,20 @@ void Actor::UpdateReversePhysics()
 				V2d nextNorm = e0n;
 				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
 				{
+					//cout << "e0n: " << e0n.x << ", " << e0n.y << endl;
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
+						//cout << "c" << endl;
 						if( groundSpeed >= -steepClimbSpeedThresh )
 						{
+							offsetX = -offsetX;
 							groundSpeed = 0;
 							break;
 						}
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
+						//cout << "d" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -4475,16 +4479,20 @@ void Actor::UpdateReversePhysics()
 				V2d nextNorm = e1n;
 				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
 				{
+					//cout << "e1n: " << e1n.x << ", " << e1n.y << endl;
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
+					//	cout << "a" << endl;
 						if( groundSpeed <= steepClimbSpeedThresh )
 						{
 							groundSpeed = 0;
+							offsetX = -offsetX;
 							break;
 						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
+						//cout << "b" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;

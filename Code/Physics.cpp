@@ -652,8 +652,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			bool topCond0 = (prevEn.y > 0 && prevEn.x >= 0 && en.y >= 0 && en.x <= 0);
 			//bool topCond0 = (prevEn.y > 0 && en.y >= 0 && en.x <= 0);
 			bool topCond1 = ( prevEn.y <= 0 && prevEn.x > 0 && en.y > 0 && en.x < 0 );
-			bool topCond2 = prevEn.y > 0 && prevEn.x > 0 && en.x < 0 ;//( prevEn.y >= 0 && prevEn.x > 0 && en.y < 0 && en.x < 0 );
-			//bool topCond3 = prevEn.y > 0 && prevEn.x < 0 && en.y >=0 && en.x < 0;
+			bool topCond2 = prevEn.y > 0 && prevEn.x > 0 && en.x < 0;
 
 			bool topCond3 = prevEn.y > 0 || en.y > 0;
 			bool topCond4 = prevEn.y <= 0 && en.x < 0;
@@ -819,6 +818,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					pointMinTime = topTime;
 					pointNormal.x = 0;
 					pointNormal.y = 1;
+					cout << "top!!!" << endl;
 				}
 			}
 
