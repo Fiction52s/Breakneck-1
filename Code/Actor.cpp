@@ -5355,7 +5355,7 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
-						//cout << "leave right 1" << endl;
+						cout << "leave right 1" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						leftGround = true;
@@ -5392,7 +5392,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-				//	cout << "leave right 2" << endl;
+					cout << "leave right 2" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -5405,6 +5405,7 @@ void Actor::UpdatePhysics()
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					//break;
 					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}
 
@@ -5804,8 +5805,10 @@ void Actor::UpdatePhysics()
 							else
 							{
 								V2d testVel = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-								if( currInput.LUp() && testVel.y < -offSlopeByWallThresh )
+								//maybe want to do this on some ceilings but its hard for now. do i need it?
+								if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
 								{
+									assert( abs(eNorm.x ) > wallThresh );
 									cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
 									velocity = testVel;
 						

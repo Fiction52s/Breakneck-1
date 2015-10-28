@@ -817,7 +817,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				
 
 				
-				cout << "right: " << right << ", px: " << point.x << ", pos: " << position.x << endl;
+				//cout << "right: " << right << ", px: " << point.x << ", pos: " << position.x << endl;
 				
 			//cout << "bottom cond okay: " << okay << endl;
 
@@ -866,6 +866,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			double edgeYPos = edgeTop;
 			if( en.y > 0 ) //down
 			{
+				cout << "vel.y: " << vel.y << ", oldtop: " << oldTop << ", edgeypos: " << edgeYPos << ", top: " << top << endl;
 				if( vel.y < 0 && oldTop >= edgeYPos - .001 && top <= edgeYPos )
 				{
 					bool hit = true;
