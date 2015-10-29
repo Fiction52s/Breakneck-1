@@ -6959,11 +6959,15 @@ void Actor::UpdatePostPhysics()
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = LAND2;
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
 				}
 				else
 				{
 					action = LAND;
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
 				}
 			}
@@ -10077,8 +10081,12 @@ Vector2i Actor::GetWireOffset()
 	case SPRINT:
 		offset = Vector2i( 0, 0 );
 		break;
+	case LAND:
+	case LAND2:
+		offset = Vector2i( 0, 0 );
+		break;
 	default:
-		offset = Vector2i( 2, 18 );
+		offset = Vector2i( 2, 5 );
 	}
 
 	if( reversed )

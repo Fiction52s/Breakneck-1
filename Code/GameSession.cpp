@@ -19,7 +19,7 @@ using namespace sf;
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
-	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 )
+	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 )
 {
 	usePolyShader = true;
 	minimapTex = miniTex;
@@ -1281,6 +1281,8 @@ int GameSession::Run( string fileN )
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
 
+	sf::Texture &underTrans01Tex = *GetTileset( "undertrans01.png", 1920, 650 / 2 )->texture;
+
 	SetupClouds();
 	
 	undergroundTileset = GetTileset( "testterrain2.png", 96, 96 );//GetTileset( "underground01.png", 32, 32 );
@@ -1985,7 +1987,10 @@ int GameSession::Run( string fileN )
 		preScreenTex->setView( cloudView );
 		//cavedepth
 		if( SetGroundPar() )
+		{
 			preScreenTex->draw( groundPar, &mountain01Tex );
+			preScreenTex->draw( underTransPar, &underTrans01Tex );
+		}
 	
 		cloudView.setCenter( 960, 540 );	
 		preScreenTex->setView( cloudView );
@@ -3296,8 +3301,9 @@ bool GameSession::SetGroundPar()
 	float yView = view.getCenter().y / widthFactor;
 	//cout << "yView << " << yView << endl;
 	int tileHeight = 1080 / 2;//540;
+	int transTileHeight = 650 / 2;
 
-	if( yView > 1080 || yView < -tileHeight )
+	if( yView > 1080 + transTileHeight || yView < -tileHeight )
 	{
 		return false;
 	}
@@ -3344,6 +3350,18 @@ bool GameSession::SetGroundPar()
 	groundPar[i*4 + 2].texCoords = Vector2f( 1920, tileHeight * (i + 1) );
 	groundPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i + 1) );
 
+	int what = transTileHeight;//tileHeight / 2 + 100;
+
+	underTransPar[i*4].position = Vector2f( 0, what + (1080 - transTileHeight)  );
+	underTransPar[i*4+1].position = Vector2f( 1920 * ratio, what + (1080 - transTileHeight) );
+	underTransPar[i*4+2].position = Vector2f( 1920 * ratio, what + (1080) );
+	underTransPar[i*4+3].position = Vector2f( 0, what + (1080) );
+
+	underTransPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
+	underTransPar[i*4 + 1].texCoords = Vector2f( 1920, transTileHeight * i );
+	underTransPar[i*4 + 2].texCoords = Vector2f( 1920, transTileHeight * (i + 1) );
+	underTransPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i + 1) );
+
 	/*groundPar[i*4].color = Color::Blue;
 	groundPar[i*4+1].color = Color::Blue;
 	groundPar[i*4+2].color = Color::Blue;
@@ -3370,6 +3388,15 @@ bool GameSession::SetGroundPar()
 	groundPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i+1) );
 	groundPar[i*4+3].texCoords = Vector2f( 0, tileHeight * (i+1) );
 
+	underTransPar[i*4].position = Vector2f( 1920 * ratio , what + ( 1080 - transTileHeight) );
+	underTransPar[i*4+ 1].position = Vector2f( 1920, what + (1080 - transTileHeight) );
+	underTransPar[i*4+2].position = Vector2f( 1920, what + (1080) );
+	underTransPar[i*4+3].position = Vector2f( 1920 * ratio , what + (1080) );
+
+	underTransPar[i*4].texCoords = Vector2f( 0, transTileHeight * i );
+	underTransPar[i*4+1].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
+	underTransPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i+1) );
+	underTransPar[i*4+3].texCoords = Vector2f( 0, transTileHeight * (i+1) );
 	/*groundPar[i*4].color = Color::Red;
 	groundPar[i*4+1].color = Color::Red;
 	groundPar[i*4+2].color = Color::Red;
@@ -3503,14 +3530,17 @@ void GameSession::SetUndergroundParAndDraw()
 		undergroundPar[3].position = Vector2f( 0, 0 );*/
 	//}
 	//else
-	if( bottom < 0 )
+	int blah = 325 * 8 * 2 - 1800;
+	cout << "blah: " << blah << endl;
+	if( bottom < blah )
 	{
 	}
 	else
 	{
-		if( top < 0 )
+		
+		if( top < blah )
 		{
-			top = 0;
+			top = blah;
 		}
 		preScreenTex->setView( view );
 		//top = 0;
