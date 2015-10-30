@@ -167,7 +167,7 @@ void main()
 		vec4 DiffuseColor = texture2D(u_texture, pos);
 		vec3 NormalMap = texture2D(u_normals, pos).rgb;
 		vec2 fragC = gl_FragCoord.xy;
-		//fragC.y = 1 - fragC.y;
+		fragC.y = 1 - fragC.y;
 		vec3 LightDir = vec3(lights[i].pos.xy - (vec2( fragC.x, fragC.y) / Resolution.xy), lights[i].pos.z);
 		LightDir *= Resolution.x / Resolution.y * zoom;
 		LightDir.x *= Resolution.x / Resolution.y;
@@ -178,7 +178,8 @@ void main()
 		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLightsOn;
 		//float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
 		//float Attenuation = clamp(1.0 - D*D/(radius*radius), 0.0, 1.0); Attenuation *= Attenuation * 2;
-		float Attenuation = clamp(1.0 - D*D/(lights[i].radius*lights[i].radius * zoom), 0.0, 1.0); Attenuation *= clamp( Attenuation * lights[i].brightness, 0.0, 1.0 ); 
+		
+		float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
 		Attenuation = Attenuation;// / zoom;
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		vec3 FinalColor = DiffuseColor.rgb * Intensity;

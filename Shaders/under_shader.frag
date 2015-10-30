@@ -180,7 +180,7 @@ void main()
 		
 		//float Attenuation = clamp(1.0 - D*D/(radius*radius), 0.0, 1.0); Attenuation *= Attenuation * 2;
 		
-		float Attenuation = clamp(1.0 - D*D/(lights[i].radius*lights[i].radius * zoom), 0.0, 1.0); Attenuation *= clamp( Attenuation * lights[i].brightness, 0.0, 1.0 ); 
+		float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
 		Attenuation = Attenuation;// / zoom;
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		vec3 FinalColor = DiffuseColor.rgb * Intensity;

@@ -256,7 +256,7 @@ void main() {
 		//calculate attenuation
 		
 		//float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
-		float Attenuation = clamp(1.0 - D*D/(lights[i].radius*lights[i].radius * zoom), 0.0, 1.0); Attenuation *= clamp( Attenuation * lights[i].brightness, 0.0, 1.0 ); 
+		float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
 		
 		Attenuation = Attenuation;/// zoom;
 		//the calculation which brings it all together
