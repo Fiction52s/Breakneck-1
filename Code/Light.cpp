@@ -27,8 +27,8 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
 	cs.setPosition( p.x, p.y );
 
 	//falloff = Vector3f( .001, .2, .1 );
-	brightness = 10;
-	radius = 1;
+	brightness = 5;
+	radius = 3;
 	
 	//falloff /= 100.f;
 	depth = .075;//.075;//radius * .0075;

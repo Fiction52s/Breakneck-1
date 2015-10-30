@@ -8806,11 +8806,15 @@ void Actor::UpdatePostPhysics()
 	sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
 	sh.setParameter( "zoom", owner->cam.GetZoom() );
 
+	float windowx = owner->window->getSize().x;
+	float windowy = owner->window->getSize().y;
+
 	if( owner->lightsAtOnce > 0 )
 	{
+
 		float depth0 = owner->touchedLights[0]->depth;
 		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
-		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, depth0 );
+		Vector3f pos0( vi0.x / windowx, ( windowy - vi0.y) / windowy, depth0 ); 
 		Color c0 = owner->touchedLights[0]->color;
 		
 		//sh.setParameter( "On0", true );
@@ -8824,8 +8828,9 @@ void Actor::UpdatePostPhysics()
 	if( owner->lightsAtOnce > 1 )
 	{
 		float depth1 = owner->touchedLights[1]->depth;
-		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, depth1 ); 
+		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) );
+		
+		Vector3f pos1( vi1.x / windowx, ( windowy - vi1.y) / windowy, depth1 ); 
 		Color c1 = owner->touchedLights[1]->color;
 		
 		on[1] = true;
@@ -8839,7 +8844,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth2 = owner->touchedLights[2]->depth;
 		Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, depth2 ); 
+		Vector3f pos2( vi2.x / windowx, ( windowy - vi2.y) / windowy, depth2 ); 
 		Color c2 = owner->touchedLights[2]->color;
 		
 		on[2] = true;
@@ -8853,7 +8858,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth3 = owner->touchedLights[3]->depth;
 		Vector2i vi3 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[3]->pos.x, owner->touchedLights[3]->pos.y ) );
-		Vector3f pos3( vi3.x / (float)owner->window->getSize().x, -1 + vi3.y / (float)owner->window->getSize().y, depth3 ); 
+		Vector3f pos3( vi3.x / windowx, ( windowy - vi3.y) / windowy, depth3 ); 
 		Color c3 = owner->touchedLights[3]->color;
 		
 		on[3] = true;
@@ -8867,7 +8872,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth4 = owner->touchedLights[4]->depth;
 		Vector2i vi4 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[4]->pos.x, owner->touchedLights[4]->pos.y ) );
-		Vector3f pos4( vi4.x / (float)owner->window->getSize().x, -1 + vi4.y / (float)owner->window->getSize().y, depth4 ); 
+		Vector3f pos4( vi4.x / windowx, ( windowy - vi4.y) / windowy, depth4 ); 
 		Color c4 = owner->touchedLights[4]->color;
 		
 		
@@ -8881,7 +8886,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth5 = owner->touchedLights[5]->depth;
 		Vector2i vi5 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[5]->pos.x, owner->touchedLights[5]->pos.y ) );
-		Vector3f pos5( vi5.x / (float)owner->window->getSize().x, -1 + vi5.y / (float)owner->window->getSize().y, depth5 ); 
+		Vector3f pos5( vi5.x / windowx, ( windowy - vi5.y) / windowy, depth5 ); 
 		Color c5 = owner->touchedLights[5]->color;
 		
 		
@@ -8895,7 +8900,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth6 = owner->touchedLights[6]->depth;
 		Vector2i vi6 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[6]->pos.x, owner->touchedLights[6]->pos.y ) );
-		Vector3f pos6( vi6.x / (float)owner->window->getSize().x, -1 + vi6.y / (float)owner->window->getSize().y, depth6 ); 
+		Vector3f pos6( vi6.x / windowx, ( windowy - vi6.y) / windowy, depth6 ); 
 		Color c6 = owner->touchedLights[6]->color;
 		
 		on[6] = true;
@@ -8908,7 +8913,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth7 = owner->touchedLights[7]->depth;
 		Vector2i vi7 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[7]->pos.x, owner->touchedLights[7]->pos.y ) );
-		Vector3f pos7( vi7.x / (float)owner->window->getSize().x, -1 + vi7.y / (float)owner->window->getSize().y, depth7 ); 
+		Vector3f pos7( vi7.x / windowx, ( windowy - vi7.y) / windowy, depth7 ); 
 		Color c7 = owner->touchedLights[7]->color;
 		
 		on[7] = true;
@@ -8921,7 +8926,7 @@ void Actor::UpdatePostPhysics()
 	{
 		float depth8 = owner->touchedLights[8]->depth;
 		Vector2i vi8 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[8]->pos.x, owner->touchedLights[8]->pos.y ) );
-		Vector3f pos8( vi8.x / (float)owner->window->getSize().x, -1 + vi8.y / (float)owner->window->getSize().y, depth8 ); 
+		Vector3f pos8( vi8.x / windowx, ( windowy - vi8.y) / windowy, depth8 ); 
 		Color c8 = owner->touchedLights[8]->color;
 		
 		on[8] = true;

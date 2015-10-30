@@ -2562,14 +2562,21 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		on[i] = false;
 	}
 
+	
+	float windowx = window->getSize().x;
+	float windowy = window->getSize().y;
+	
 	if( lightsAtOnce > 0 )
 	{
 		float depth0 = touchedLights[0]->depth;
 		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, depth0 );
+		
+
+		Vector3f pos0( vi0.x / windowx, -1 + vi0.y / windowy, depth0 ); 
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
 		Color c0 = touchedLights[0]->color;
 		
-		//polyShader.setParameter( "On0", true );
+		//underShader.setParameter( "On0", true );
 		on[0] = true;
 		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
@@ -2581,11 +2588,12 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth1 = touchedLights[1]->depth;
 		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, depth1 ); 
+		Vector3f pos1( vi1.x / windowx, -1 + vi1.y / windowy, depth1 ); 
+		//Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, depth1 ); 
 		Color c1 = touchedLights[1]->color;
 		
 		on[1] = true;
-		//polyShader.setParameter( "On1", true );
+		//underShader.setParameter( "On1", true );
 		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
 		polyShader.setParameter( "Radius1", touchedLights[1]->radius );
@@ -2595,11 +2603,12 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth2 = touchedLights[2]->depth;
 		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, depth2 ); 
+		Vector3f pos2( vi2.x / windowx, -1 + vi2.y / windowy, depth2 ); 
+		//Vector3f pos2( vi2.x / (float)window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, depth2 ); 
 		Color c2 = touchedLights[2]->color;
 		
 		on[2] = true;
-		//polyShader.setParameter( "On2", true );
+		//underShader.setParameter( "On2", true );
 		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
 		polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
 		polyShader.setParameter( "Radius2", touchedLights[2]->radius );
@@ -2609,11 +2618,12 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth3 = touchedLights[3]->depth;
 		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
-		Vector3f pos3( vi3.x / (float)window->getSize().x, -1 + vi3.y / (float)window->getSize().y, depth3 ); 
+		Vector3f pos3( vi3.x / windowx, -1 + vi3.y / windowy, depth3 ); 
+		//Vector3f pos3( vi3.x / (float)window->getSize().x, ((float)window->getSize().y - vi3.y) / (float)window->getSize().y, depth3 ); 
 		Color c3 = touchedLights[3]->color;
 		
 		on[3] = true;
-		//polyShader.setParameter( "On3", true );
+		//underShader.setParameter( "On3", true );
 		polyShader.setParameter( "LightPos3", pos3 );
 		polyShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
 		polyShader.setParameter( "Radius3", touchedLights[3]->radius );
@@ -2623,7 +2633,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth4 = touchedLights[4]->depth;
 		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
-		Vector3f pos4( vi4.x / (float)window->getSize().x, -1 + vi4.y / (float)window->getSize().y, depth4 ); 
+		Vector3f pos4( vi4.x / windowx, -1 + vi4.y / windowy, depth4 ); 
+		//Vector3f pos4( vi4.x / (float)window->getSize().x, ((float)window->getSize().y - vi4.y) / (float)window->getSize().y, depth4 ); 
 		Color c4 = touchedLights[4]->color;
 		
 		
@@ -2637,7 +2648,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth5 = touchedLights[5]->depth;
 		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
-		Vector3f pos5( vi5.x / (float)window->getSize().x, -1 + vi5.y / (float)window->getSize().y, depth5 ); 
+		Vector3f pos5( vi5.x / windowx, -1 + vi5.y / windowy, depth5 ); 
+		//Vector3f pos5( vi5.x / (float)window->getSize().x, ((float)window->getSize().y - vi5.y) / (float)window->getSize().y, depth5 ); 
 		Color c5 = touchedLights[5]->color;
 		
 		
@@ -2651,7 +2663,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth6 = touchedLights[6]->depth;
 		Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
-		Vector3f pos6( vi6.x / (float)window->getSize().x, -1 + vi6.y / (float)window->getSize().y, depth6 ); 
+		Vector3f pos6( vi6.x / windowx, -1 + vi6.y / windowy, depth6 ); 
+		//Vector3f pos6( vi6.x / (float)window->getSize().x, ((float)window->getSize().y - vi6.y) / (float)window->getSize().y, depth6 ); 
 		Color c6 = touchedLights[6]->color;
 		
 		on[6] = true;
@@ -2664,7 +2677,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth7 = touchedLights[7]->depth;
 		Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
-		Vector3f pos7( vi7.x / (float)window->getSize().x, -1 + vi7.y / (float)window->getSize().y, depth7 ); 
+		Vector3f pos7( vi7.x / windowx, -1 + vi7.y / windowy, depth7 ); 
+		//Vector3f pos7( vi7.x / (float)window->getSize().x, ((float)window->getSize().y - vi7.y) / (float)window->getSize().y, depth7 ); 
 		Color c7 = touchedLights[7]->color;
 		
 		on[7] = true;
@@ -2677,7 +2691,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	{
 		float depth8 = touchedLights[8]->depth;
 		Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
-		Vector3f pos8( vi8.x / (float)window->getSize().x, -1 + vi8.y / (float)window->getSize().y, depth8 ); 
+		Vector3f pos8( vi8.x / windowx, -1 + vi8.y / windowy, depth8 ); 
+		//Vector3f pos8( vi8.x / (float)window->getSize().x, ((float)window->getSize().y - vi8.y) / (float)window->getSize().y, depth8 ); 
 		Color c8 = touchedLights[8]->color;
 		
 		on[8] = true;
@@ -3497,11 +3512,17 @@ void GameSession::SetUndergroundParAndDraw()
 		on[i] = false;
 	}
 
-		if( lightsAtOnce > 0 )
+	float windowx = window->getSize().x;
+	float windowy = window->getSize().y;
+	
+	if( lightsAtOnce > 0 )
 	{
 		float depth0 = touchedLights[0]->depth;
 		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, depth0 );
+		
+
+		Vector3f pos0( vi0.x / windowx, -1 + vi0.y / windowy, depth0 ); 
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
 		Color c0 = touchedLights[0]->color;
 		
 		//underShader.setParameter( "On0", true );
@@ -3516,7 +3537,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth1 = touchedLights[1]->depth;
 		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, depth1 ); 
+		Vector3f pos1( vi1.x / windowx, -1 + vi1.y / windowy, depth1 ); 
+		//Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, depth1 ); 
 		Color c1 = touchedLights[1]->color;
 		
 		on[1] = true;
@@ -3530,7 +3552,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth2 = touchedLights[2]->depth;
 		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, depth2 ); 
+		Vector3f pos2( vi2.x / windowx, -1 + vi2.y / windowy, depth2 ); 
+		//Vector3f pos2( vi2.x / (float)window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, depth2 ); 
 		Color c2 = touchedLights[2]->color;
 		
 		on[2] = true;
@@ -3544,7 +3567,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth3 = touchedLights[3]->depth;
 		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
-		Vector3f pos3( vi3.x / (float)window->getSize().x, -1 + vi3.y / (float)window->getSize().y, depth3 ); 
+		Vector3f pos3( vi3.x / windowx, -1 + vi3.y / windowy, depth3 ); 
+		//Vector3f pos3( vi3.x / (float)window->getSize().x, ((float)window->getSize().y - vi3.y) / (float)window->getSize().y, depth3 ); 
 		Color c3 = touchedLights[3]->color;
 		
 		on[3] = true;
@@ -3558,7 +3582,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth4 = touchedLights[4]->depth;
 		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
-		Vector3f pos4( vi4.x / (float)window->getSize().x, -1 + vi4.y / (float)window->getSize().y, depth4 ); 
+		Vector3f pos4( vi4.x / windowx, -1 + vi4.y / windowy, depth4 ); 
+		//Vector3f pos4( vi4.x / (float)window->getSize().x, ((float)window->getSize().y - vi4.y) / (float)window->getSize().y, depth4 ); 
 		Color c4 = touchedLights[4]->color;
 		
 		
@@ -3572,7 +3597,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth5 = touchedLights[5]->depth;
 		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
-		Vector3f pos5( vi5.x / (float)window->getSize().x, -1 + vi5.y / (float)window->getSize().y, depth5 ); 
+		Vector3f pos5( vi5.x / windowx, -1 + vi5.y / windowy, depth5 ); 
+		//Vector3f pos5( vi5.x / (float)window->getSize().x, ((float)window->getSize().y - vi5.y) / (float)window->getSize().y, depth5 ); 
 		Color c5 = touchedLights[5]->color;
 		
 		
@@ -3586,7 +3612,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth6 = touchedLights[6]->depth;
 		Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
-		Vector3f pos6( vi6.x / (float)window->getSize().x, -1 + vi6.y / (float)window->getSize().y, depth6 ); 
+		Vector3f pos6( vi6.x / windowx, -1 + vi6.y / windowy, depth6 ); 
+		//Vector3f pos6( vi6.x / (float)window->getSize().x, ((float)window->getSize().y - vi6.y) / (float)window->getSize().y, depth6 ); 
 		Color c6 = touchedLights[6]->color;
 		
 		on[6] = true;
@@ -3599,7 +3626,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth7 = touchedLights[7]->depth;
 		Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
-		Vector3f pos7( vi7.x / (float)window->getSize().x, -1 + vi7.y / (float)window->getSize().y, depth7 ); 
+		Vector3f pos7( vi7.x / windowx, -1 + vi7.y / windowy, depth7 ); 
+		//Vector3f pos7( vi7.x / (float)window->getSize().x, ((float)window->getSize().y - vi7.y) / (float)window->getSize().y, depth7 ); 
 		Color c7 = touchedLights[7]->color;
 		
 		on[7] = true;
@@ -3612,7 +3640,8 @@ void GameSession::SetUndergroundParAndDraw()
 	{
 		float depth8 = touchedLights[8]->depth;
 		Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
-		Vector3f pos8( vi8.x / (float)window->getSize().x, -1 + vi8.y / (float)window->getSize().y, depth8 ); 
+		Vector3f pos8( vi8.x / windowx, -1 + vi8.y / windowy, depth8 ); 
+		//Vector3f pos8( vi8.x / (float)window->getSize().x, ((float)window->getSize().y - vi8.y) / (float)window->getSize().y, depth8 ); 
 		Color c8 = touchedLights[8]->color;
 		
 		on[8] = true;
