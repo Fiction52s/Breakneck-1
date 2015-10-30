@@ -27,11 +27,11 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
 	cs.setPosition( p.x, p.y );
 
 	//falloff = Vector3f( .001, .2, .1 );
-	brightness = 2;
+	brightness = 10;
 	radius = 1;
 	
 	//falloff /= 100.f;
-	depth = .2;//.075;//radius * .0075;
+	depth = .075;//.075;//radius * .0075;
 }
 
 void Light::HandleQuery( QuadTreeCollider * qtc )
