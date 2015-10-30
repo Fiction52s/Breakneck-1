@@ -12,9 +12,10 @@ struct Light : QuadTreeEntrant
 	sf::Shader sh;
 	sf::CircleShape cs;
 	GameSession *owner;
-	sf::Vector3f falloff;
+	//sf::Vector3f falloff;
 	float depth;
-	double radius;
+	float radius;
+	float brightness;
 	void Draw( sf::RenderTarget *target );
 
 	sf::Vector2i pos;

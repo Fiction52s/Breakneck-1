@@ -27,8 +27,9 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
 	cs.setPosition( p.x, p.y );
 
 	//falloff = Vector3f( .001, .2, .1 );
-	falloff = Vector3f( .1, .01, .001 );
-	falloff *= 10.f;//4.f;
+	brightness = 2;
+	radius = 1;
+	
 	//falloff /= 100.f;
 	depth = .2;//.075;//radius * .0075;
 }
@@ -40,7 +41,8 @@ void Light::HandleQuery( QuadTreeCollider * qtc )
 
 bool Light::IsTouchingBox( const sf::Rect<double> &r )
 {
-	sf::Rect<double> r2( pos.x - radius, pos.y - radius, radius * 2, radius * 2);
+	float trueRad = 1000;
+	sf::Rect<double> r2( pos.x - trueRad, pos.y - trueRad, trueRad * 2 * 10, trueRad* 2 );
 	if( r.intersects( r2 ) )
 		return true;
 
@@ -49,10 +51,8 @@ bool Light::IsTouchingBox( const sf::Rect<double> &r )
 
 void Light::Draw( RenderTarget *target )
 {
-	Vector3f falloff2 = falloff;
 	//falloff2 *= 100.f;
 	sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
-	sh.setParameter( "falloff", falloff2 );
 	sh.setParameter( "zoom", owner->cam.GetZoom() );
 	sh.setParameter( "resolution", owner->window->getSize().x, owner->window->getSize().y);
 	//sh.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2, 
