@@ -8801,8 +8801,17 @@ void Actor::UpdatePostPhysics()
 		on[i] = false;
 	}
 
+	sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
+	sh.setParameter( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
+	sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
+	sh.setParameter( "zoom", owner->cam.GetZoom() );
+
 	if( owner->lightsAtOnce > 0 )
 	{
+		
+		
+
+		//cout << "here we go!" << endl;
 		float depth0 = owner->touchedLights[0]->depth;
 		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
 		Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, depth0 );
@@ -9556,7 +9565,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		//	(owner->window->getSize().y - vi.y) / (float)owner->window->getSize().x, .015 );
 
 		
-
+		
 		if( action != DEATH )
 		//if( action == RUN )
 		{

@@ -16,16 +16,21 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
 		cout << "LIGHt SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "light shader not loaded" );
 	}
+	
 	sh.setParameter( "pos", 0, 0 );
+	//rad = rad * 10.f;// * 10.f;
 	//sh.setParameter( "lightpos", 0, -300 );
-	cs.setRadius( rad );
+	cs.setRadius( 20 );
 	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	//cs.setPosition( 0, -300 );
 	cs.setPosition( p.x, p.y );
 
-	falloff = Vector3f( .001, 3, 1 );
-	depth = .015;
+	//falloff = Vector3f( .001, .2, .1 );
+	falloff = Vector3f( .1, .01, .001 );
+	falloff *= 10.f;//4.f;
+	//falloff /= 100.f;
+	depth = .2;//.075;//radius * .0075;
 }
 
 void Light::HandleQuery( QuadTreeCollider * qtc )
@@ -35,8 +40,7 @@ void Light::HandleQuery( QuadTreeCollider * qtc )
 
 bool Light::IsTouchingBox( const sf::Rect<double> &r )
 {
-	sf::FloatRect bounds = cs.getGlobalBounds();
-	sf::Rect<double> r2( bounds.left, bounds.top, bounds.width, bounds.height );
+	sf::Rect<double> r2( pos.x - radius, pos.y - radius, radius * 2, radius * 2);
 	if( r.intersects( r2 ) )
 		return true;
 
@@ -45,7 +49,27 @@ bool Light::IsTouchingBox( const sf::Rect<double> &r )
 
 void Light::Draw( RenderTarget *target )
 {
-	//sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
-	//target->draw( cs );
+	Vector3f falloff2 = falloff;
+	//falloff2 *= 100.f;
+	sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
+	sh.setParameter( "falloff", falloff2 );
+	sh.setParameter( "zoom", owner->cam.GetZoom() );
+	sh.setParameter( "resolution", owner->window->getSize().x, owner->window->getSize().y);
+	//sh.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2, 
+	//	owner->view.getCenter().y + owner->view.getSize().y / 2 );
 
+	Vector2i vi0 = Vector2i( owner->preScreenTex->mapCoordsToPixel( cs.getPosition() ) );
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+	Vector3f lightpos( vi0.x / (float)owner->window->getSize().x, -1 + vi0.y / (float)owner->window->getSize().y, depth );
+
+	sh.setParameter( "lightpos", lightpos );
+
+	
+	/*cs.setRadius( 20 );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( pos.x, pos.y );*/
+	//target->draw( cs );
+	/*cs.setRadius( rad );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( pos.x, pos.y );*/
 }

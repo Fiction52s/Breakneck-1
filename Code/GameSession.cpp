@@ -1287,10 +1287,10 @@ int GameSession::Run( string fileN )
 	
 	undergroundTileset = GetTileset( "testterrain2.png", 96, 96 );//GetTileset( "underground01.png", 32, 32 );
 	undergroundTilesetNormal = GetTileset( "testterrain2_NORMALS.png", 96, 96 );
-	undergroundPar[0].color = Color::Red;
+	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
 	undergroundPar[2].color = Color::Red;
-	undergroundPar[3].color = Color::Red;
+	undergroundPar[3].color = Color::Red;*/
 
 	undergroundPar[0].position = Vector2f( 0, 0 );
 	undergroundPar[1].position = Vector2f( 0, 0 );
@@ -2546,7 +2546,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
-
+	//polyShader.setParameter( "stuff", 10, 10, 10 );
+	
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
 	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
@@ -3474,6 +3475,9 @@ void GameSession::SetCloudParAndDraw()
 
 void GameSession::SetUndergroundParAndDraw()
 {
+
+	preScreenTex->setView( view );
+
 	underShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture );
 	underShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
 	underShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
@@ -3482,7 +3486,175 @@ void GameSession::SetUndergroundParAndDraw()
 	underShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 		view.getCenter().y + view.getSize().y / 2 );
 
-	/*underShader.setParameter( "On0", on[0] );
+	lightsAtOnce = 0;
+	tempLightLimit = 9;
+
+	sf::Rect<double> r( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2, view.getSize().x, view.getSize().y );
+	
+	queryMode = "lights"; 
+	lightTree->Query( this, r );
+
+	cout << "lights at once: " << lightsAtOnce << endl;
+	Vector2i vi = Mouse::getPosition();
+	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
+	//polyShader.setParameter( "stuff", 10, 10, 10 );
+	
+/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
+	pos0.y = 1 - pos0.y;
+	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+	pos1.y = 1 - pos1.y;
+	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+	pos2.y = 1 - pos2.y;*/
+	
+	bool on[9];
+	for( int i = 0; i < 9; ++i )
+	{
+		on[i] = false;
+	}
+
+	if( lightsAtOnce > 0 )
+	{
+		//cout << "here we go" << endl;
+		float depth0 = touchedLights[0]->depth;
+		Vector2i vi0 = Vector2i( preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) ) );
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+		Vector3f pos0( vi0.x / (float)window->getSize().x, -1 + vi0.y / (float)window->getSize().y, depth0 );
+			//pos0.y = 1 - pos0.y;
+		//Vector3f pos0( vi0.x, vi0.y, .015 );
+		//cout << pos0.x << ", " << pos0.y << endl;
+		Color c0 = touchedLights[0]->color;
+
+		Vector3f falloff0 = touchedLights[0]->falloff;
+
+		
+		//sh.setParameter( "On0", true );
+		on[0] = true;
+		underShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
+		underShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
+		underShader.setParameter( "Falloff0", falloff0 );
+	}
+	if( lightsAtOnce > 1 )
+	{
+		float depth1 = touchedLights[1]->depth;
+		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) );
+		Vector3f pos1( vi1.x / (float)window->getSize().x, -1 + vi1.y / (float)window->getSize().y, depth1 ); 
+		//	pos1.y = 1 - pos1.y;
+		Color c1 = touchedLights[1]->color;
+		Vector3f falloff1 = touchedLights[1]->falloff;
+		
+		on[1] = true;
+		//sh.setParameter( "On1", true );
+		underShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
+		underShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
+		underShader.setParameter( "Falloff1", falloff1 );
+	}
+	if( lightsAtOnce > 2 )
+	{
+		float depth2 = touchedLights[2]->depth;
+		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
+		Vector3f pos2( vi2.x / (float)window->getSize().x, -1 + vi2.y / (float)window->getSize().y, depth2 ); 
+		//	pos2.y = 1 - pos2.y;
+		Color c2 = touchedLights[2]->color;
+		Vector3f falloff2 = touchedLights[2]->falloff;
+		
+		on[2] = true;
+		//sh.setParameter( "On2", true );
+		underShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
+		underShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
+		underShader.setParameter( "Falloff2", falloff2 );
+	}
+	if( lightsAtOnce > 3 )
+	{
+		float depth3 = touchedLights[3]->depth;
+		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
+		Vector3f pos3( vi3.x / (float)window->getSize().x, -1 + vi3.y / (float)window->getSize().y, depth3 ); 
+		//	pos3.y = 1 - pos3.y;
+		Color c3 = touchedLights[3]->color;
+		Vector3f falloff3 = touchedLights[3]->falloff;
+		
+		on[3] = true;
+		//sh.setParameter( "On3", true );
+		underShader.setParameter( "LightPos3", pos3 );
+		underShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+		underShader.setParameter( "Falloff3", falloff3 );
+	}
+	if( lightsAtOnce > 4 )
+	{
+		float depth4 = touchedLights[4]->depth;
+		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
+		Vector3f pos4( vi4.x / (float)window->getSize().x, -1 + vi4.y / (float)window->getSize().y, depth4 ); 
+		//	pos4.y = 1 - pos4.y;
+		Color c4 = touchedLights[4]->color;
+		Vector3f falloff4 = touchedLights[4]->falloff;
+		
+		on[4] = true;
+		//sh.setParameter( "On4", true );
+		underShader.setParameter( "LightPos4", pos4 );
+		underShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+		underShader.setParameter( "Falloff4", falloff4 );
+	}
+	if( lightsAtOnce > 5 )
+	{
+		float depth5 = touchedLights[5]->depth;
+		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
+		Vector3f pos5( vi5.x / (float)window->getSize().x, -1 + vi5.y / (float)window->getSize().y, depth5 ); 
+		//	pos5.y = 1 - pos5.y;
+		Color c5 = touchedLights[5]->color;
+		Vector3f falloff5 = touchedLights[5]->falloff;
+		
+		on[5] = true;
+		//sh.setParameter( "On5", true );
+		underShader.setParameter( "LightPos5", pos5 );
+		underShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+		underShader.setParameter( "Falloff5", falloff5 );
+	}
+	if( lightsAtOnce > 6 )
+	{
+		float depth6 = touchedLights[6]->depth;
+		Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
+		Vector3f pos6( vi6.x / (float)window->getSize().x, -1 + vi6.y / (float)window->getSize().y, depth6 ); 
+		//	pos6.y = 1 - pos6.y;
+		Color c6 = touchedLights[6]->color;
+		Vector3f falloff6 = touchedLights[6]->falloff;
+		
+		on[6] = true;
+		//sh.setParameter( "On6", true );
+		underShader.setParameter( "LightPos6", pos6 );
+		underShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+		underShader.setParameter( "Falloff6", falloff6 );
+	}
+	if( lightsAtOnce > 7 )
+	{
+		float depth7 = touchedLights[7]->depth;
+		Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
+		Vector3f pos7( vi7.x / (float)window->getSize().x, -1 + vi7.y / (float)window->getSize().y, depth7 ); 
+		//	pos7.y = 1 - pos7.y;
+		Color c7 = touchedLights[7]->color;
+		Vector3f falloff7 = touchedLights[7]->falloff;
+		
+		on[7] = true;
+		//sh.setParameter( "On7", true );
+		underShader.setParameter( "LightPos7", pos7 );
+		underShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+		underShader.setParameter( "Falloff7", falloff7 );
+	}
+	if( lightsAtOnce > 8 )
+	{
+		float depth8 = touchedLights[8]->depth;
+		Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
+		Vector3f pos8( vi8.x / (float)window->getSize().x, -1 + vi8.y / (float)window->getSize().y, depth8 ); 
+		//	pos8.y = 1 - pos8.y;
+		Color c8 = touchedLights[8]->color;
+		Vector3f falloff8 = touchedLights[8]->falloff;
+		
+		on[8] = true;
+		//sh.setParameter( "On8", true );
+		underShader.setParameter( "LightPos8", pos8 );
+		underShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+		underShader.setParameter( "Falloff8", falloff8 );
+	}
+
+	underShader.setParameter( "On0", on[0] );
 	underShader.setParameter( "On1", on[1] );
 	underShader.setParameter( "On2", on[2] );
 	underShader.setParameter( "On3", on[3] );
@@ -3490,17 +3662,7 @@ void GameSession::SetUndergroundParAndDraw()
 	underShader.setParameter( "On5", on[5] );
 	underShader.setParameter( "On6", on[6] );
 	underShader.setParameter( "On7", on[7] );
-	underShader.setParameter( "On8", on[8] );*/
-
-	underShader.setParameter( "On0", false );
-	underShader.setParameter( "On1", false );
-	underShader.setParameter( "On2", false );
-	underShader.setParameter( "On3", false );
-	underShader.setParameter( "On4", false );
-	underShader.setParameter( "On5", false );
-	underShader.setParameter( "On6", false );
-	underShader.setParameter( "On7", false );
-	underShader.setParameter( "On8", false );
+	underShader.setParameter( "On8", on[8] );
 
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
@@ -3531,7 +3693,7 @@ void GameSession::SetUndergroundParAndDraw()
 	//}
 	//else
 	int blah = 325 * 8 * 2 - 1800;
-	cout << "blah: " << blah << endl;
+	//cout << "blah: " << blah << endl;
 	if( bottom < blah )
 	{
 	}
@@ -3542,7 +3704,7 @@ void GameSession::SetUndergroundParAndDraw()
 		{
 			top = blah;
 		}
-		preScreenTex->setView( view );
+		//preScreenTex->setView( view );
 		//top = 0;
 		undergroundPar[0].position = Vector2f( left, top );
 		undergroundPar[1].position = Vector2f( right, top );
