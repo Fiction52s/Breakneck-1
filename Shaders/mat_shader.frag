@@ -168,10 +168,17 @@ void main()
 		vec3 NormalMap = texture2D(u_normals, pos).rgb;
 		vec2 fragC = gl_FragCoord.xy;
 		fragC.y = 1 - fragC.y;
-		vec3 LightDir = vec3(lights[i].pos.xy - (vec2( fragC.x, fragC.y) / Resolution.xy), lights[i].pos.z);
-		LightDir *= Resolution.x / Resolution.y * zoom;
-		LightDir.x *= Resolution.x / Resolution.y;
+		//vec3 LightDir = vec3(lights[i].pos.xy - (vec2( fragC.x, fragC.y) / Resolution.xy), lights[i].pos.z);
+		//LightDir *= Resolution.x / Resolution.y * zoom;
+		//LightDir.x *= Resolution.x / Resolution.y;
+		
+		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), lights[i].pos.z);
+		LightDir *= zoom;
 		float D = length(LightDir);
+		
+		float radius = lights[i].radius;
+		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * lights[i].brightness/4;		
+	
 		vec3 N = normalize(NormalMap * 2.0 - 1.0);
 		vec3 L = normalize(LightDir);
 		vec3 Diffuse = (lights[i].color.rgb * lights[i].color.a) * max(dot(N, L), 0.0);
@@ -179,8 +186,8 @@ void main()
 		//float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
 		//float Attenuation = clamp(1.0 - D*D/(radius*radius), 0.0, 1.0); Attenuation *= Attenuation * 2;
 		
-		float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
-		Attenuation = Attenuation;// / zoom;
+		//float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
+		//Attenuation = Attenuation;// / zoom;
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		vec3 FinalColor = DiffuseColor.rgb * Intensity;
 		

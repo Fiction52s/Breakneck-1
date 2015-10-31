@@ -230,12 +230,16 @@ void main() {
 		//fragC.y = 1 - fragC.y;
 		
 		//The delta position of light
-		vec3 LightDir = vec3(lights[i].pos.xy - (fragC.xy / Resolution.xy), lights[i].pos.z);
+		//vec3 LightDir = vec3(lights[i].pos.xy - (fragC.xy / Resolution.xy), lights[i].pos.z);
 		
 		//Correct for aspect ratio
-		LightDir *= Resolution.x / Resolution.y * zoom;
-		LightDir.x *= Resolution.x / Resolution.y;
+		//LightDir *= Resolution.x / Resolution.y * zoom;
+		//LightDir.x *= Resolution.x / Resolution.y;
 
+		
+		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), lights[i].pos.z);
+		LightDir *= zoom;
+		
 		//Determine distance (used for attenuation) BEFORE we normalize our LightDir
 		float D = length(LightDir);
 
@@ -245,7 +249,12 @@ void main() {
 		//N.r = 1-N.r;
 		vec3 L = normalize(LightDir);
 		
-
+		
+		
+		
+		float radius = lights[i].radius;
+		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * lights[i].brightness;		
+		
 		//Pre-multiply light color with intensity
 		//Then perform "N dot L" to determine our diffuse term
 		vec3 Diffuse = (lights[i].color.rgb * lights[i].color.a) * max(dot(N, L), 0.0);
@@ -256,9 +265,10 @@ void main() {
 		//calculate attenuation
 		
 		//float Attenuation = 1.0 / ( lights[i].falloff.x + (lights[i].falloff.y*D) + (lights[i].falloff.z*D*D) );
-		float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
+		//float Attenuation = clamp(1.0 - D*D/(lights[i].radius), 0.0, 1.0); Attenuation *= Attenuation * lights[i].brightness;
 		
-		Attenuation = Attenuation;/// zoom;
+		
+		//Attenuation = Attenuation;/// zoom;
 		//the calculation which brings it all together
 		vec3 Intensity = Ambient + Diffuse * Attenuation;
 		
