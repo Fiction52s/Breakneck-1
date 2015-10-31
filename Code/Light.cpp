@@ -22,8 +22,7 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double br
 	//rad = rad * 10.f;// * 10.f;
 	//sh.setParameter( "lightpos", 0, -300 );
 	
-	//rad = 100;
-	brightness = 100;
+	//rad = 100;	
 	radius = rad;//rad / (110*brightness);
 	
 	cs.setRadius( rad );

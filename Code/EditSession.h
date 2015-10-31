@@ -172,7 +172,6 @@ struct EditSession : GUIHandler
 
 
 
-
 	bool showTerrainPath;
 	
 	sf::RenderWindow *w;

@@ -1078,13 +1078,15 @@ bool GameSession::OpenFile( string fileName )
 		for( int i = 0; i < numLights; ++i )
 		{
 			int x,y,r,g,b;
+			int radius = 1000;
+			float brightness = 5;
 			is >> x;
 			is >> y;
 			is >> r;
 			is >> g;
 			is >> b;
 
-			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), 1000, 20 );
+			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), radius, brightness );
 			lightTree->Insert( light );
 		}
 		cout << "loaded to here" << endl;		
@@ -1982,10 +1984,10 @@ int GameSession::Run( string fileN )
 
 		
 
-		cloudView.setCenter( 960, 540 );
-		//cloudView.setSize( 1920, 1080 );
 		
-		preScreenTex->setView( cloudView );
+		//cloudView.setSize( 1920, 1080 );
+		cloudView.setCenter( 960, 540 );
+		
 		//cavedepth
 		if( SetGroundPar() )
 		{
@@ -3298,9 +3300,13 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 bool GameSession::SetGroundPar()
 {	
+	
 	int widthFactor = 8;
 	float yView = view.getCenter().y / widthFactor;
-	//cout << "yView << " << yView << endl;
+	cloudView.setCenter( 960, 540 + yView );
+	int cloudBot = cloudView.getCenter().y + cloudView.getSize().y / 2;
+
+	cout << "yView << " << yView << endl;
 	int tileHeight = 1080 / 2;//540;
 	int transTileHeight = 650 / 2;
 
@@ -3308,7 +3314,7 @@ bool GameSession::SetGroundPar()
 	{
 		return false;
 	}
-
+	Vector2f offset( 0, -540 );
 	
 	int width = 1920 * widthFactor;
 	bool flipped = false;
@@ -3335,28 +3341,67 @@ bool GameSession::SetGroundPar()
 		i = 1;
 		
 	}
+	//preScreenTex->setView( cloudView );
+	float screenBottom = view.getCenter().y + view.getSize().y / 2;
+	float transBot;
+	
+	int groundBottom = 1080;
+	int groundTop = groundBottom - tileHeight;
+	preScreenTex->setView( view );
+	
 
+	transBot = groundBottom + transTileHeight;
+	//if( screenBottom >= 0 )
+	{
+		//cout << "undergroundPos: " << 
+		Vector2i po = preScreenTex->mapCoordsToPixel( Vector2f( 0, 0 ) );
+		preScreenTex->setView( cloudView );
+		Vector2f la = preScreenTex->mapPixelToCoords( po );
+		cout << "under: " << la.y << endl;
+		transBot = 540 + la.y;
+	//	Vector2f pix = preScreenTex->mapPixelToCoords( Vector2i( 1920, 1080 ) ).y;
+		//underground is visible
+		//transBot =  //1080 - screenBottom;;//cloudBot;//cloudBot; //
+		//transBot = view.getCenter().y / 2 / cam.GetZoom();
+	//	cout << "transbot: " << transBot << ", center: " << view.getCenter().y << endl;
+	}
+	//else
+	{
+		//underground isn't visible
+		
+		cout << "transbot no underground: " << transBot << endl;
+	}
+	int transTop = groundBottom;
 	//ratio = 1 - ratio;
 	
 	ratio = 1 - ratio;
 	//cout << "ratio: " << ratio << endl;
 
-	groundPar[i*4].position = Vector2f( 0, 1080 - tileHeight );
-	groundPar[i*4+1].position = Vector2f( 1920 * ratio, 1080 - tileHeight );
-	groundPar[i*4+2].position = Vector2f( 1920 * ratio, 1080 );
-	groundPar[i*4+3].position = Vector2f( 0, 1080 );
+	groundPar[i*4].position = Vector2f( 0, groundTop ) + offset;
+	groundPar[i*4+1].position = Vector2f( 1920 * ratio, groundTop) + offset;
+	groundPar[i*4+2].position = Vector2f( 1920 * ratio, groundBottom ) + offset;
+	groundPar[i*4+3].position = Vector2f( 0, groundBottom ) + offset;
+
+	
 
 	groundPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * i );
 	groundPar[i*4 + 1].texCoords = Vector2f( 1920, tileHeight * i );
 	groundPar[i*4 + 2].texCoords = Vector2f( 1920, tileHeight * (i + 1) );
 	groundPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i + 1) );
 
-	int what = transTileHeight;//tileHeight / 2 + 100;
+	//int what = transTileHeight;//tileHeight / 2 + 100;
 
-	underTransPar[i*4].position = Vector2f( 0, what + (1080 - transTileHeight)  );
-	underTransPar[i*4+1].position = Vector2f( 1920 * ratio, what + (1080 - transTileHeight) );
-	underTransPar[i*4+2].position = Vector2f( 1920 * ratio, what + (1080) );
-	underTransPar[i*4+3].position = Vector2f( 0, what + (1080) );
+//	int bottom = transTileHeight + (1080);
+	
+	//preScreenTex->setView( view );
+	if( screenBottom >= 0 )
+	{
+	//	bottom = preScreenTex->mapCoordsToPixel( Vector2f( 0, 0 ) ).y;//transTileHeight + 1080 - screenBottom;
+	}
+	underTransPar[i*4].position = Vector2f( 0, transTop  ) + offset;
+	underTransPar[i*4+1].position = Vector2f( 1920 * ratio, transTop ) + offset;
+	underTransPar[i*4+2].position = Vector2f( 1920 * ratio, transBot ) + offset;
+	underTransPar[i*4+3].position = Vector2f( 0, transBot ) + offset;
 
 	underTransPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
 	underTransPar[i*4 + 1].texCoords = Vector2f( 1920, transTileHeight * i );
@@ -3379,20 +3424,20 @@ bool GameSession::SetGroundPar()
 
 
 
-	groundPar[i*4].position = Vector2f( 1920 * ratio , 1080 - tileHeight );
-	groundPar[i*4+ 1].position = Vector2f( 1920, 1080 - tileHeight );
-	groundPar[i*4+2].position = Vector2f( 1920, 1080 );
-	groundPar[i*4+3].position = Vector2f( 1920 * ratio , 1080 );
+	groundPar[i*4].position = Vector2f( 1920 * ratio , groundTop ) + offset;
+	groundPar[i*4+ 1].position = Vector2f( 1920, groundTop ) + offset;
+	groundPar[i*4+2].position = Vector2f( 1920, groundBottom ) + offset;
+	groundPar[i*4+3].position = Vector2f( 1920 * ratio , groundBottom ) + offset;
 
 	groundPar[i*4].texCoords = Vector2f( 0, tileHeight * i );
 	groundPar[i*4+1].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * i );
 	groundPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i+1) );
 	groundPar[i*4+3].texCoords = Vector2f( 0, tileHeight * (i+1) );
 
-	underTransPar[i*4].position = Vector2f( 1920 * ratio , what + ( 1080 - transTileHeight) );
-	underTransPar[i*4+ 1].position = Vector2f( 1920, what + (1080 - transTileHeight) );
-	underTransPar[i*4+2].position = Vector2f( 1920, what + (1080) );
-	underTransPar[i*4+3].position = Vector2f( 1920 * ratio , what + (1080) );
+	underTransPar[i*4].position = Vector2f( 1920 * ratio , transTop ) + offset;
+	underTransPar[i*4+ 1].position = Vector2f( 1920, transTop ) + offset;
+	underTransPar[i*4+2].position = Vector2f( 1920, transBot ) + offset;
+	underTransPar[i*4+3].position = Vector2f( 1920 * ratio , transBot ) + offset;
 
 	underTransPar[i*4].texCoords = Vector2f( 0, transTileHeight * i );
 	underTransPar[i*4+1].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
@@ -3404,7 +3449,7 @@ bool GameSession::SetGroundPar()
 	groundPar[i*4+3].color = Color::Red;*/
 
 	
-	cloudView.setCenter( 960, 540 + yView );
+	
 	preScreenTex->setView( cloudView );
 
 	return true;
@@ -3494,7 +3539,6 @@ void GameSession::SetUndergroundParAndDraw()
 	queryMode = "lights"; 
 	lightTree->Query( this, r );
 
-	cout << "lights at once: " << lightsAtOnce << endl;
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
 	//polyShader.setParameter( "stuff", 10, 10, 10 );
@@ -3689,7 +3733,7 @@ void GameSession::SetUndergroundParAndDraw()
 		undergroundPar[3].position = Vector2f( 0, 0 );*/
 	//}
 	//else
-	int blah = 325 * 8 * 2 - 1800;
+	int blah = 0;
 	//cout << "blah: " << blah << endl;
 	if( bottom < blah )
 	{
