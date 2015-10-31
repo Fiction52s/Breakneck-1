@@ -1084,7 +1084,7 @@ bool GameSession::OpenFile( string fileName )
 			is >> g;
 			is >> b;
 
-			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), 100 );
+			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), 1000, 20 );
 			lightTree->Insert( light );
 		}
 		cout << "loaded to here" << endl;		
@@ -2096,7 +2096,7 @@ int GameSession::Run( string fileN )
 
 		//polyShader.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
 		//polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
-		polyShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
+		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 
 		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
@@ -3480,7 +3480,7 @@ void GameSession::SetUndergroundParAndDraw()
 
 	underShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture );
 	underShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
-	underShader.setParameter( "AmbientColor", .6, .6, 1, .8 );
+	underShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 	underShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 	underShader.setParameter( "zoom", cam.GetZoom() );
 	underShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 

@@ -5,10 +5,11 @@
 
 using namespace sf;
 using namespace std;
-Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
+Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double bright )
 	:color( c ), pos( p ), next( NULL )
 {
-	radius = rad;
+	brightness = bright;
+	//radius = rad;
 	owner = own;
 	if (!sh.loadFromFile("light_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -20,18 +21,23 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad )
 	sh.setParameter( "pos", 0, 0 );
 	//rad = rad * 10.f;// * 10.f;
 	//sh.setParameter( "lightpos", 0, -300 );
-	cs.setRadius( 20 );
+	
+	//rad = 100;
+	brightness = 100;
+	radius = rad;//rad / (110*brightness);
+	
+	cs.setRadius( rad );
 	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	//cs.setPosition( 0, -300 );
 	cs.setPosition( p.x, p.y );
 
 	//falloff = Vector3f( .001, .2, .1 );
-	brightness = 5;
-	radius = 3;
+	
+	//radius = 1;
 	
 	//falloff /= 100.f;
-	depth = .075;//.075;//radius * .0075;
+	depth = .075;//.075;//.075;//radius * .0075;
 }
 
 void Light::HandleQuery( QuadTreeCollider * qtc )
@@ -41,8 +47,8 @@ void Light::HandleQuery( QuadTreeCollider * qtc )
 
 bool Light::IsTouchingBox( const sf::Rect<double> &r )
 {
-	float trueRad = 1000;
-	sf::Rect<double> r2( pos.x - trueRad, pos.y - trueRad, trueRad * 2 * 10, trueRad* 2 );
+	//float trueRad = 1000;
+	sf::Rect<double> r2( pos.x - radius, pos.y - radius, radius * 2, radius* 2 );
 	if( r.intersects( r2 ) )
 		return true;
 

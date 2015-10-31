@@ -8801,7 +8801,7 @@ void Actor::UpdatePostPhysics()
 		on[i] = false;
 	}
 
-	sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
+	sh.setParameter( "AmbientColor", 1, 1, 1, 1 );
 	sh.setParameter( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
 	sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
 	sh.setParameter( "zoom", owner->cam.GetZoom() );
