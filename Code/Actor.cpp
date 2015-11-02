@@ -4903,6 +4903,9 @@ V2d Actor::UpdateReversePhysics()
 				{	
 					//wire problem could arise later because i dont update anchors when i hit an edge.
 					V2d oldPos = position;
+					//cout << "moving: " << (normalize( ground->v1 - ground->v0 ) * m).x << ", " << 
+					//	( normalize( ground->v1 - ground->v0 ) * m).y << endl;
+
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
@@ -5077,11 +5080,10 @@ V2d Actor::UpdateReversePhysics()
 			else
 				movement = steal;
 
-			edgeQuantity = q;
-
-			return leftGroundExtra;
+			edgeQuantity = q;	
 		}
 	}
+	return leftGroundExtra;
 }
 
 void Actor::UpdatePhysics()
@@ -5113,7 +5115,7 @@ void Actor::UpdatePhysics()
 			return;
 		}
 		movementVec = reverseExtra;
-		return;
+		//if you slide off a reversed edge you need a little push so you dont slide through the point.
 	}
 	else if( grindEdge != NULL )
 	{
