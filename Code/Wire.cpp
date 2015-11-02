@@ -80,11 +80,27 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			
 					if( currInput.LUp() )
 					{
-						fireDir.y -= 1;
+						if( player->reversed )
+						{
+							fireDir.y += 1;
+						}
+						else
+						{
+							fireDir.y -= 1;
+						}
+							
 					}
 					else if( currInput.LDown() )
 					{
-						fireDir.y += 1;
+						if( player->reversed )
+						{
+							fireDir.y -= 1;
+						}
+						else
+						{
+							fireDir.y += 1;
+						}
+						
 					}
 				}
 				else

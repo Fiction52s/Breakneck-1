@@ -77,6 +77,8 @@ struct Actor : QuadTreeCollider,
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
+	void RunMovement();
+	void AttackMovement();
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;

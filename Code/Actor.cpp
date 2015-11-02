@@ -60,8 +60,7 @@ Actor::Actor( GameSession *gs )
 		//playerLight = new Light( owner, lightPos, lightColor );
 		//dashStartSound.setBuffer( testBuffer );
 		
-		offSlopeByWallThresh = 15;
-		slopeLaunchMinSpeed = 15;
+		
 
 		percentCloneChanged = 0;
 		percentCloneRate = .01;
@@ -385,7 +384,9 @@ Actor::Actor( GameSession *gs )
 		clingSpeed = 3;
 
 		dashSpeed = 12;
-		steepClimbSpeedThresh = 15;
+		offSlopeByWallThresh = dashSpeed;
+		slopeLaunchMinSpeed = dashSpeed;
+		steepClimbSpeedThresh = dashSpeed;
 
 		jumpStrength = 27.5;
 
@@ -587,15 +588,61 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case STANDN:
-			action = STAND;
+
+			if( currInput.LLeft() || currInput.LRight() )
+			{
+				if( currInput.B )
+				{
+					action = DASH;
+				}
+				else
+				{
+					action = RUN;
+				}
+				facingRight = currInput.LRight();
+			}
+			else
+			{
+				action = STAND;	
+			}
 			frame = 0;
 			break;
 		case STANDD:
-			action = STAND;
+			if( currInput.LLeft() || currInput.LRight() )
+			{
+				if( currInput.B )
+				{
+					action = DASH;
+				}
+				else
+				{
+					action = RUN;
+				}
+				facingRight = currInput.LRight();
+			}
+			else
+			{
+				action = STAND;	
+			}
 			frame = 0;
 			break;
 		case STANDU:
-			action = STAND;
+			if( currInput.LLeft() || currInput.LRight() )
+			{
+				if( currInput.B )
+				{
+					action = DASH;
+				}
+				else
+				{
+					action = RUN;
+				}
+				facingRight = currInput.LRight();
+			}
+			else
+			{
+				action = STAND;	
+			}
 			frame = 0;
 			break;
 		case FAIR:
@@ -1220,24 +1267,21 @@ void Actor::UpdatePrePhysics()
 	
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( !currInput.LLeft() && !currInput.LRight() )
+				if( currInput.LUp() )
 				{
-					if( currInput.LUp() )
-					{
-						action = UAIR;
-						frame = 0;
-						break;
-					}
-					else if( currInput.LDown() )
-					{
-						action = DAIR;
-						frame = 0;
-						break;
-					}
+					action = UAIR;
+					frame = 0;
 				}
-
-				action = FAIR;
-				frame = 0;
+				else if( currInput.LDown() )
+				{
+					action = DAIR;
+					frame = 0;
+				}
+				else
+				{
+					action = FAIR;
+					frame = 0;
+				}
 			}
 
 			break;
@@ -1415,6 +1459,7 @@ void Actor::UpdatePrePhysics()
 					{
 						action = RUN;
 						frame = 0;
+						facingRight = currInput.LRight();
 					}
 					else if( currInput.LDown() )
 					{
@@ -1753,8 +1798,8 @@ void Actor::UpdatePrePhysics()
 					}
 				}
 			}
-			if( canStandUp )
-			{
+			//if( canStandUp )
+			//{
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -1863,7 +1908,7 @@ void Actor::UpdatePrePhysics()
 				}
 
 			}
-			}
+			//}
 			
 			if( currInput.B && !prevInput.B )
 			{
@@ -2410,61 +2455,7 @@ void Actor::UpdatePrePhysics()
 	case RUN:
 		{
 			//cout << "frame: " << frame << endl;
-			
-		if( currInput.LLeft() )
-		{
-			if( groundSpeed > 0 )
-			{
-				groundSpeed = 0;
-			}
-			else
-			{
-				if( groundSpeed > -maxRunInit )
-				{
-					groundSpeed -= runAccelInit / slowMultiple;
-					if( groundSpeed < -maxRunInit )
-						groundSpeed = -maxRunInit;
-				}
-				else
-				{
-					groundSpeed -= runAccel / slowMultiple;
-				}
-				
-			}
-			
-			if( currInput.B )
-			{
-				groundSpeed -= holdDashAccel / slowMultiple;
-			}
-
-			facingRight = false;
-		}
-		else if( currInput.LRight() )
-		{
-			if (groundSpeed < 0 )
-				groundSpeed = 0;
-			else
-			{
-				if( groundSpeed < maxRunInit )
-				{
-					groundSpeed += runAccelInit / slowMultiple;
-					if( groundSpeed > maxRunInit )
-						groundSpeed = maxRunInit;
-				}
-				else
-				{
-					groundSpeed += runAccel / slowMultiple;
-				}
-			}
-
-			if( currInput.B )
-			{
-				groundSpeed += holdDashAccel / slowMultiple;
-			}
-
-			facingRight = true;
-		}
-
+			RunMovement();
 		break;
 		}
 	case JUMP:
@@ -2860,7 +2851,7 @@ void Actor::UpdatePrePhysics()
 
 			
 
-			if( currInput.LLeft() )
+			if( !facingRight )//currInput.LLeft() )
 			{
 				if( groundSpeed > 0 )
 				{
@@ -2895,7 +2886,8 @@ void Actor::UpdatePrePhysics()
 				}
 				facingRight = false;
 			}
-			else if( currInput.LRight() )
+			//else if( currInput.LRight() )
+			else
 			{
 				if (groundSpeed < 0 )
 					groundSpeed = 0;
@@ -2934,8 +2926,9 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = standNHitboxes[frame];
 			}
 
+			AttackMovement();
 
-			if( currInput.LLeft() )
+			/*if( currInput.LLeft() )
 			{
 				if( groundSpeed < 0 )
 				{
@@ -2982,8 +2975,7 @@ void Actor::UpdatePrePhysics()
 			else
 			{
 				groundSpeed = 0;
-			}
-
+			}*/
 			break;
 
 		}
@@ -2994,54 +2986,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = standUHitboxes[frame];
 			}
 
-			if( currInput.LLeft() )
-			{
-				if( groundSpeed < 0 )
-				{
-					//
-					if( currInput.B && groundSpeed > -dashSpeed )
-					{
-						groundSpeed = -dashSpeed;
-					}
-				}
-				else
-				{
-					if( currInput.B )
-					{
-						groundSpeed = -dashSpeed;
-					}
-					else
-					{
-						groundSpeed = -maxRunInit;
-					}
-				}
-			}
-			else if( currInput.LRight() )
-			{
-				if( groundSpeed > 0 )
-				{
-					//
-					if( currInput.B && groundSpeed < dashSpeed )
-					{
-						groundSpeed = dashSpeed;
-					}
-				}
-				else
-				{
-					if( currInput.B )
-					{
-						groundSpeed = dashSpeed;
-					}
-					else
-					{
-						groundSpeed = maxRunInit;
-					}
-				}
-			}
-			else
-			{
-				groundSpeed = 0;
-			}
+			AttackMovement();
 
 			break;
 		}
@@ -3053,56 +2998,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = standDHitboxes[frame];
 			}
 
-			if( currInput.LLeft() )
-			{
-				if( groundSpeed < 0 )
-				{
-					//
-					if( currInput.B && groundSpeed > -dashSpeed )
-					{
-						groundSpeed = -dashSpeed;
-					}
-				}
-				else
-				{
-					if( currInput.B )
-					{
-						groundSpeed = -dashSpeed;
-					}
-					else
-					{
-						groundSpeed = -maxRunInit;
-					}
-				}
-			}
-			else if( currInput.LRight() )
-			{
-				if( groundSpeed > 0 )
-				{
-					//
-					if( currInput.B && groundSpeed < dashSpeed )
-					{
-						groundSpeed = dashSpeed;
-					}
-				}
-				else
-				{
-					if( currInput.B )
-					{
-						groundSpeed = dashSpeed;
-					}
-					else
-					{
-						groundSpeed = maxRunInit;
-					}
-				}
-			}
-			else
-			{
-				groundSpeed = 0;
-			}
-
-			break;
+			AttackMovement();
 			break;
 		}
 	case GRINDBALL:
@@ -8484,6 +8380,7 @@ void Actor::UpdatePostPhysics()
 				}
 				else if( bn.y >= 0 && -bn.y > -steepThresh )
 				{
+					
 					bounceFrame = 3;
 				}
 				else if( bn.y == 0 )
@@ -10111,6 +10008,134 @@ Vector2i Actor::GetWireOffset()
 	}
 
 	return offset;
+}
+
+void Actor::RunMovement()
+{
+	if( !facingRight )
+	{
+		if( groundSpeed > 0 )
+		{
+			groundSpeed = 0;
+		}
+		else
+		{
+			if( groundSpeed > -maxRunInit )
+			{
+				groundSpeed -= runAccelInit / slowMultiple;
+				if( groundSpeed < -maxRunInit )
+					groundSpeed = -maxRunInit;
+			}
+			else
+			{
+				groundSpeed -= runAccel / slowMultiple;
+			}
+				
+		}
+			
+		if( currInput.B )
+		{
+			groundSpeed -= holdDashAccel / slowMultiple;
+		}
+
+		facingRight = false;
+	}
+	else
+	{
+		if (groundSpeed < 0 )
+			groundSpeed = 0;
+		else
+		{
+			if( groundSpeed < maxRunInit )
+			{
+				groundSpeed += runAccelInit / slowMultiple;
+				if( groundSpeed > maxRunInit )
+					groundSpeed = maxRunInit;
+			}
+			else
+			{
+				groundSpeed += runAccel / slowMultiple;
+			}
+		}
+
+		if( currInput.B )
+		{
+			groundSpeed += holdDashAccel / slowMultiple;
+		}
+
+		facingRight = true;
+	}
+}
+
+void Actor::AttackMovement()
+{
+	if( currInput.LLeft() )
+	{
+		if( groundSpeed > 0 )
+		{
+			if( currInput.B )
+			{
+				groundSpeed = -dashSpeed;
+			}
+			else
+			{
+				groundSpeed = 0;
+			}
+		}
+		else
+		{
+			if( groundSpeed > -dashSpeed && currInput.B )
+			{
+				groundSpeed = -dashSpeed;
+			}
+			else if( groundSpeed > -maxRunInit )
+			{
+				groundSpeed -= runAccelInit / slowMultiple;
+				if( groundSpeed < -maxRunInit )
+					groundSpeed = -maxRunInit;
+			}
+			else
+			{
+				groundSpeed -= runAccel / slowMultiple;
+			}
+				
+		}
+	}
+	else if( currInput.LRight() )
+	{
+		if (groundSpeed < 0 )
+		{
+			if( currInput.B )
+			{
+				groundSpeed = dashSpeed;
+			}
+			else
+			{
+				groundSpeed = 0;
+			}
+		}
+		else
+		{
+			if( groundSpeed < dashSpeed && currInput.B )
+			{
+				groundSpeed = dashSpeed;
+			}
+			else if( groundSpeed < maxRunInit )
+			{
+				groundSpeed += runAccelInit / slowMultiple;
+				if( groundSpeed > maxRunInit )
+					groundSpeed = maxRunInit;
+			}
+			else
+			{
+				groundSpeed += runAccel / slowMultiple;
+			}
+		}
+	}
+	else
+	{
+		groundSpeed = 0;
+	}
 }
 
 PlayerGhost::PlayerGhost()

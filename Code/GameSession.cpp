@@ -1288,8 +1288,8 @@ int GameSession::Run( string fileN )
 
 	SetupClouds();
 	
-	undergroundTileset = GetTileset( "testterrain2.png", 96, 96 );//GetTileset( "underground01.png", 32, 32 );
-	undergroundTilesetNormal = GetTileset( "testterrain2_NORMALS.png", 96, 96 );
+	undergroundTileset = GetTileset( "terrainworld1.png", 128, 128 );//GetTileset( "underground01.png", 32, 32 );
+	undergroundTilesetNormal = GetTileset( "terrainworld1_NORMALS.png", 128, 128 );
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
 	undergroundPar[2].color = Color::Red;
@@ -1447,7 +1447,7 @@ int GameSession::Run( string fileN )
 	//bool goalPlayerCollision = false;
 	int returnVal = 0;
 
-	polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png", 96, 96 )->texture );
+	polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
 	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
@@ -2086,8 +2086,13 @@ int GameSession::Run( string fileN )
 		//window->draw( circle );
 		//window->draw(line, numPoints * 2, sf::Lines);
 		
+		//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//polyShader.setParameter( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
+
 		polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 		polyShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+
+
 		Vector2i vi = Mouse::getPosition();
 		//Vector2i vi = window->mapCoordsToPixel( Vector2f( player.position.x, player.position.y ) );
 		//Vector2i vi = window->mapCoordsToPixel( sf::Vector2f( 0, -300 ) );
@@ -3302,11 +3307,11 @@ bool GameSession::SetGroundPar()
 {	
 	
 	int widthFactor = 8;
-	float yView = view.getCenter().y / widthFactor;
+	int yView = view.getCenter().y / widthFactor;
 	cloudView.setCenter( 960, 540 + yView );
 	int cloudBot = cloudView.getCenter().y + cloudView.getSize().y / 2;
 
-	cout << "yView << " << yView << endl;
+	//cout << "yView << " << yView << endl;
 	int tileHeight = 1080 / 2;//540;
 	int transTileHeight = 650 / 2;
 
@@ -3314,7 +3319,7 @@ bool GameSession::SetGroundPar()
 	{
 		return false;
 	}
-	Vector2f offset( 0, -540 );
+	Vector2f offset( 0, -transTileHeight );
 	
 	int width = 1920 * widthFactor;
 	bool flipped = false;
@@ -3343,22 +3348,23 @@ bool GameSession::SetGroundPar()
 	}
 	//preScreenTex->setView( cloudView );
 	float screenBottom = view.getCenter().y + view.getSize().y / 2;
-	float transBot;
+	int transBot;
 	
 	int groundBottom = 1080;
 	int groundTop = groundBottom - tileHeight;
 	preScreenTex->setView( view );
 	
 
-	transBot = groundBottom + transTileHeight;
-	//if( screenBottom >= 0 )
+	transBot = groundBottom + transTileHeight + 1;
+
+	if( screenBottom >= 0 )
 	{
 		//cout << "undergroundPos: " << 
 		Vector2i po = preScreenTex->mapCoordsToPixel( Vector2f( 0, 0 ) );
 		preScreenTex->setView( cloudView );
 		Vector2f la = preScreenTex->mapPixelToCoords( po );
-		cout << "under: " << la.y << endl;
-		transBot = 540 + la.y;
+	//	cout << "under: " << la.y << endl;
+		transBot = -offset.y + la.y + 1;
 	//	Vector2f pix = preScreenTex->mapPixelToCoords( Vector2i( 1920, 1080 ) ).y;
 		//underground is visible
 		//transBot =  //1080 - screenBottom;;//cloudBot;//cloudBot; //
@@ -3368,8 +3374,8 @@ bool GameSession::SetGroundPar()
 	//else
 	{
 		//underground isn't visible
-		
-		cout << "transbot no underground: " << transBot << endl;
+	//	cout << "transtop: " << groundBottom << endl;
+	//	cout << "transbot no underground: " << transBot << endl;
 	}
 	int transTop = groundBottom;
 	//ratio = 1 - ratio;
@@ -3520,11 +3526,10 @@ void GameSession::SetCloudParAndDraw()
 
 void GameSession::SetUndergroundParAndDraw()
 {
-
 	preScreenTex->setView( view );
 
-	underShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture );
-	underShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+	underShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture );
+	underShader.setParameter( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 	underShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 	underShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 	underShader.setParameter( "zoom", cam.GetZoom() );
