@@ -283,6 +283,8 @@ struct Actor : QuadTreeCollider,
 	HitboxInfo *receivedHit;
 
 	sf::Vector2<double> storedBounceVel;
+	sf::Vector2<double> bounceNorm;
+	sf::Vector2<double> oldBounceNorm;
 	double storedBounceGroundSpeed;
 	
 	Wire *leftWire;

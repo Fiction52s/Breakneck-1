@@ -2291,11 +2291,12 @@ void Actor::UpdatePrePhysics()
 			}
 
 			framesSinceBounce = 0;
-			V2d bn = bounceEdge->Normal();
+			V2d bn = bounceNorm;//bounceEdge->Normal();
 			if( frame == actionLength[BOUNCEGROUND] - 1 )
 			{
 				action = BOUNCEAIR;
 				oldBounceEdge = bounceEdge;
+				oldBounceNorm  = bounceNorm;
 				frame = 0;
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
@@ -2927,55 +2928,6 @@ void Actor::UpdatePrePhysics()
 			}
 
 			AttackMovement();
-
-			/*if( currInput.LLeft() )
-			{
-				if( groundSpeed < 0 )
-				{
-					//
-					if( currInput.B && groundSpeed > -dashSpeed )
-					{
-						groundSpeed = -dashSpeed;
-					}
-				}
-				else
-				{
-					if( currInput.B )
-					{
-						groundSpeed = -dashSpeed;
-					}
-					else
-					{
-						groundSpeed = -maxRunInit;
-					}
-				}
-			}
-			else if( currInput.LRight() )
-			{
-				if( groundSpeed > 0 )
-				{
-					//
-					if( currInput.B && groundSpeed < dashSpeed )
-					{
-						groundSpeed = dashSpeed;
-					}
-				}
-				else
-				{
-					if( currInput.B )
-					{
-						groundSpeed = dashSpeed;
-					}
-					else
-					{
-						groundSpeed = maxRunInit;
-					}
-				}
-			}
-			else
-			{
-				groundSpeed = 0;
-			}*/
 			break;
 
 		}
@@ -6218,7 +6170,7 @@ void Actor::UpdatePhysics()
 				{
 					bounceEdge = minContact.edge;
 					bounceMovingTerrain = minContact.movingPlat;
-
+					bounceNorm = minContact.normal;
 					//cout << "b: " << bounceEdge->Normal().x << ", " << bounceEdge->Normal().y << endl;
 				
 
@@ -6243,7 +6195,7 @@ void Actor::UpdatePhysics()
 					offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
 					movement = 0;
-					cout << "bouncing: " << bounceQuant << endl;
+					//cout << "bouncing: " << bounceQuant << endl;
 				}
 				
 				
@@ -6726,7 +6678,7 @@ void Actor::UpdatePostPhysics()
 			action = BOUNCEGROUND;
 			frame = 0;
 
-			V2d bn = bounceEdge->Normal();
+			V2d bn = bounceNorm;//bounceEdge->Normal();
 
 			
 
@@ -8368,7 +8320,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( framesSinceBounce < 10 )
 			{
-				V2d bn = oldBounceEdge->Normal();
+				V2d bn = oldBounceNorm;//oldBounceEdge->Normal();
 				if( bn.y <= 0 && bn.y > -steepThresh )
 				{
 					bounceFrame = 3;
@@ -8421,7 +8373,7 @@ void Actor::UpdatePostPhysics()
 	case BOUNCEGROUND:
 		{
 			int bounceFrame = 0;
-			V2d bn = bounceEdge->Normal();
+			V2d bn = bounceNorm;//bounceEdge->Normal();
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
@@ -8506,11 +8458,13 @@ void Actor::UpdatePostPhysics()
 				{
 					if( facingRight )
 					{
+						
 						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
 					}
 					else
 					{
 						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+						
 					}
 					
 					//sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
@@ -8518,9 +8472,10 @@ void Actor::UpdatePostPhysics()
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				if( bounceFrame == 4 )
+				if( facingRight )//bounceFrame == 4 )
 				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+					//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
 				}
 				else
 				{
