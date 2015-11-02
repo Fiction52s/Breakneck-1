@@ -53,23 +53,16 @@ struct Actor : QuadTreeCollider,
 	Actor( GameSession *owner );
 	
 	void ActionEnded();
-
-	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
-
-
 	void UpdatePrePhysics();
-	
 	void ApplyHit( HitboxInfo *info );
-
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool CheckStandUp();
-	void UpdateReversePhysics();
+	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
-
 	void DebugDraw( sf::RenderTarget *target );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
@@ -79,6 +72,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2i GetWireOffset();
 	void RunMovement();
 	void AttackMovement();
+	
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
@@ -88,7 +82,6 @@ struct Actor : QuadTreeCollider,
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
-	//Light *playerLight;
 	Tileset *normal[Count];
 
 	sf::Sprite gsdodeca;
@@ -135,7 +128,8 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
-	bool bounceGrounded;
+
+	
 	double offSlopeByWallThresh;
 	const static int MAX_MOTION_GHOSTS = 2;
 	sf::Sprite motionGhosts[MAX_MOTION_GHOSTS];
@@ -256,6 +250,8 @@ struct Actor : QuadTreeCollider,
 
 	double offsetX;
 
+	bool bounceGrounded;
+
 	bool holdJump;
 
 	int wallJumpFrameCounter;
@@ -352,7 +348,7 @@ struct Actor : QuadTreeCollider,
 		bool hasGravReverse;
 
 		Edge *grindEdge;
-		
+		bool bounceGrounded;
 		double grindQuantity;
 		double grindSpeed;
 
@@ -404,6 +400,12 @@ struct Actor : QuadTreeCollider,
 		sf::Vector2<double> bubblePos[maxBubbles];
 		int bubbleFramesToLive[maxBubbles];
 		int currBubble;
+
+		sf::Vector2<double> bounceNorm;
+		sf::Vector2<double> oldBounceNorm;
+		double storedBounceGroundSpeed;
+
+		bool groundedWallBounce;
 	};
 	Stored stored;
 

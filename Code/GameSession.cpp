@@ -1448,6 +1448,10 @@ int GameSession::Run( string fileN )
 	int returnVal = 0;
 
 	polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
+	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
+
+	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
+		polyShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
 	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
@@ -2089,8 +2093,7 @@ int GameSession::Run( string fileN )
 		//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 		//polyShader.setParameter( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
-		polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		polyShader.setParameter( "u_normals", *GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+		
 
 
 		Vector2i vi = Mouse::getPosition();
@@ -2258,7 +2261,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+	//	DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
