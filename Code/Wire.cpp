@@ -403,7 +403,10 @@ void Wire::UpdateAnchors( V2d vel )
 
 	if( state == HIT || state == PULLING )
 	{
-
+		if( oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y )
+		{
+			//return;
+		}
 		
 		
 		
@@ -518,6 +521,12 @@ void Wire::UpdateAnchors( V2d vel )
 
 			if( foundPoint )
 			{
+				if( numPoints > 1 )
+				{
+					assert( !(closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) );
+				}
+
+
 				points[numPoints].pos = closestPoint;
 				
 
@@ -635,9 +644,7 @@ void Wire::UpdateAnchors( V2d vel )
 			}
 		}
 	}
-	//UpdateState( false );
-	//cout << "blah" << endl;
-
+	
 
 	/*CircleShape *cs = new CircleShape;
 	cs->setFillColor( Color::Red );

@@ -9088,10 +9088,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 
 		bool bb = false;
-		if( ground != NULL )
-		{
-			cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << ", gn is: " << ground->Normal().x << ", " << ground->Normal().y << endl;
-		}
+		//if( ground != NULL )
+		//{
+			//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << ", gn is: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+		//}
 		if( ground != NULL && groundSpeed != 0 )
 		{
 			V2d gn = ground->Normal();
@@ -9105,7 +9105,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			bool b = false;
 			if( !reversed )
 			{
-				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
+				if( groundSpeed > 0 )
 				{
 					if( ( ground->edge1 == e 
 							&& (( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 )) )
@@ -9114,7 +9114,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						a = true;
 					}
 				}
-				else if( groundSpeed < 0 )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				else if( groundSpeed < 0 )
 				{
 					if( ( ground->edge0 == e 
 							&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) ) ) 
@@ -9126,17 +9126,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			else
 			{
-				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
+				if( groundSpeed > 0 )
 				{
 					if( ( ground->edge0 == e 
 						&& ( ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) || ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) ) ) 
 						|| ground->edge1 == e )
 					{
-					//	cout << "first:" << edgeQuantity << ", " <<length( ground->v1 - ground->v0 )  << endl;
 						b = true;
 					}
 				}
-				else if( groundSpeed < 0 )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				else if( groundSpeed < 0 )
 				{
 					if( ground->edge1 == e && 
 						( ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) || ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) ) 
@@ -9144,7 +9143,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					{
 						b = true;
 					}
-				//	cout << "second" << endl;
 				}
 			}
 		//	a = false;
@@ -9173,16 +9171,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+		//		cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+		//		cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )
 			{
-				cout << "weird point " << endl;
+		//		cout << "weird point " << endl;
 				
 				Edge *edge = e;
 				Edge *prev = edge->edge0;
@@ -10094,7 +10092,7 @@ Vector2i Actor::GetWireOffset()
 		offset = Vector2i( 0, 0 );
 		break;
 	default:
-		offset = Vector2i( 2, 4.9 );
+		offset = Vector2i( 0, 4.9 );
 	}
 
 	if( reversed )
