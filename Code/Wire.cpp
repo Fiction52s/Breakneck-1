@@ -966,7 +966,7 @@ void Wire::UpdateQuads()
 		Vector2f topRight( 6, tileHeight * frame / animFactor );
 		Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
 		Vector2f bottomRight( 6, tileHeight * (frame / animFactor + 1 ) );
-		if( firingTakingUp > ( quads.getVertexCount() + extraBuffer ) / 4 )
+		if( firingTakingUp > quads.getVertexCount() / 4 )
 		{
 			cout << "firingTakingup: " << firingTakingUp << ", count: " << quads.getVertexCount() / 4 << endl;
 			assert( false );

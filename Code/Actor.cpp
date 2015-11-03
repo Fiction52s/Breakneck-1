@@ -9086,13 +9086,17 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	if( queryMode == "resolve" )
 	{
+
 		bool bb = false;
-		cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		if( ground != NULL )
+		{
+			cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << ", gn is: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+		}
 		if( ground != NULL && groundSpeed != 0 )
 		{
-
-			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
 			V2d gn = ground->Normal();
+			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
+			
 			V2d nextn = ground->edge1->Normal();
 			V2d prevn = ground->edge0->Normal();
 			bool sup = ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 );
@@ -9101,14 +9105,20 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			bool b = false;
 			if( !reversed )
 			{
-				if( groundSpeed > 0 && ground->edge1 == e )// && approxEquals( edgeQuantity, 0 ) )
+				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
 				{
-					if( ( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 ) )
+					if( ( ground->edge1 == e 
+							&& (( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 )) )
+						|| ground->edge0 == e )
+					{
 						a = true;
+					}
 				}
-				else if( groundSpeed < 0 && ground->edge0 == e )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				else if( groundSpeed < 0 )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
 				{
-					if( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) )
+					if( ( ground->edge0 == e 
+							&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) ) ) 
+						|| ground->edge1 == e )
 					{
 						a = true;
 					}
@@ -9116,17 +9126,21 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			else
 			{
-				if( groundSpeed > 0 && ground->edge1 == e )// && approxEquals( edgeQuantity, 0 ) )
+				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
 				{
-					if( ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) || ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) )
+					if( ( ground->edge0 == e 
+						&& ( ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) || ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) ) ) 
+						|| ground->edge1 == e )
 					{
 					//	cout << "first:" << edgeQuantity << ", " <<length( ground->v1 - ground->v0 )  << endl;
 						b = true;
 					}
 				}
-				else if( groundSpeed < 0 && ground->edge0 == e )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				else if( groundSpeed < 0 )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
 				{
-					if( ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) || ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) )
+					if( ground->edge1 == e && 
+						( ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) || ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) ) 
+						|| ground->edge0 == e )
 					{
 						b = true;
 					}
@@ -10080,7 +10094,7 @@ Vector2i Actor::GetWireOffset()
 		offset = Vector2i( 0, 0 );
 		break;
 	default:
-		offset = Vector2i( 2, 5 );
+		offset = Vector2i( 2, 4.9 );
 	}
 
 	if( reversed )
