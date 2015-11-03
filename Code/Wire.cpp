@@ -12,8 +12,8 @@ using namespace std;
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
-	, quads( sf::Quads, (int)(ceil( maxTotalLength / 6.0 ) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 )//, ts_redWire( NULL ) 
+	, extraBuffer( 8 ), quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
+	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 	minSideEdge = NULL;
@@ -954,7 +954,7 @@ void Wire::UpdateQuads()
 			currWireStart = playerPos;
 		}
 		
-
+		
 		int firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
 
@@ -966,7 +966,7 @@ void Wire::UpdateQuads()
 		Vector2f topRight( 6, tileHeight * frame / animFactor );
 		Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
 		Vector2f bottomRight( 6, tileHeight * (frame / animFactor + 1 ) );
-		if( firingTakingUp > quads.getVertexCount() / 4 )
+		if( firingTakingUp > ( quads.getVertexCount() + extraBuffer ) / 4 )
 		{
 			cout << "firingTakingup: " << firingTakingUp << ", count: " << quads.getVertexCount() / 4 << endl;
 			assert( false );

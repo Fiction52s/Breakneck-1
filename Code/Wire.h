@@ -39,6 +39,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void Reset();
 	sf::Vector2<double> GetOriginPos();
 	
+	int extraBuffer; //when swinging around edges sometimes the wire
+	//stretches some. This is attemping to hole up that problem. if it happens
+	//too much then I can go into it and solve the real problems.
 
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
@@ -85,6 +88,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	double minSideAlong;
 	sf::Vector2<double> fireDir;
 	WirePoint anchor;
+	
 
 	int triggerThresh;
 	int hitStallFrames;

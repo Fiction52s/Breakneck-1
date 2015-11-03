@@ -1726,12 +1726,14 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LDown() )
 				{
+					facingRight = currInput.LRight();
 					action = SPRINT;
 					frame = 0;
 					break;
 				}
 				else
 				{
+					facingRight = currInput.LRight();
 					action = RUN;
 					frame = 0;
 					break;
@@ -1938,11 +1940,8 @@ void Actor::UpdatePrePhysics()
 
 				V2d grindNorm = grindEdge->Normal();
 
-				
-
 				if( grindNorm.y < 0 )
 				{
-					
 					double extra = 0;
 					if( grindNorm.x > 0 )
 					{
@@ -1979,6 +1978,21 @@ void Actor::UpdatePrePhysics()
 						action = LAND;
 						frame = 0;
 						groundSpeed = grindSpeed;
+						if( !reversed )
+						{
+							if( currInput.LRight() )
+								facingRight = true;
+							else if( currInput.LLeft() )
+								facingRight = false;
+						}
+						else
+						{
+							if( currInput.LRight() )
+								facingRight = false;
+							else if( currInput.LLeft() )
+								facingRight = true;
+						}
+
 						grindEdge = NULL;
 						reversed = false;
 					}
@@ -2049,11 +2063,19 @@ void Actor::UpdatePrePhysics()
 								reversed = true;
 								hasGravReverse = false;
 
-								if( groundSpeed > 0 )
-									facingRight = false;
-								else if( groundSpeed < 0 )
+								if( !reversed )
 								{
-									facingRight = true;
+									if( currInput.LRight() )
+										facingRight = true;
+									else if( currInput.LLeft() )
+										facingRight = false;
+								}
+								else
+								{
+									if( currInput.LRight() )
+										facingRight = false;
+									else if( currInput.LLeft() )
+										facingRight = true;
 								}
 
 								action = LAND2;
