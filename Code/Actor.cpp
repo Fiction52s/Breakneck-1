@@ -1978,20 +1978,11 @@ void Actor::UpdatePrePhysics()
 						action = LAND;
 						frame = 0;
 						groundSpeed = grindSpeed;
-						if( !reversed )
-						{
-							if( currInput.LRight() )
-								facingRight = true;
-							else if( currInput.LLeft() )
-								facingRight = false;
-						}
-						else
-						{
-							if( currInput.LRight() )
-								facingRight = false;
-							else if( currInput.LLeft() )
-								facingRight = true;
-						}
+
+						if( currInput.LRight() )
+							facingRight = true;
+						else if( currInput.LLeft() )
+							facingRight = false;
 
 						grindEdge = NULL;
 						reversed = false;
@@ -2062,21 +2053,11 @@ void Actor::UpdatePrePhysics()
 								grindEdge = NULL;
 								reversed = true;
 								hasGravReverse = false;
-
-								if( !reversed )
-								{
-									if( currInput.LRight() )
-										facingRight = true;
-									else if( currInput.LLeft() )
-										facingRight = false;
-								}
-								else
-								{
-									if( currInput.LRight() )
-										facingRight = false;
-									else if( currInput.LLeft() )
-										facingRight = true;
-								}
+								
+								if( currInput.LRight() )
+									facingRight = true;
+								else if( currInput.LLeft() )
+									facingRight = false;
 
 								action = LAND2;
 								frame = 0;
@@ -2094,6 +2075,24 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDE:
 		{
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			{
+				framesGrinding = 0;
+				rightWire->Reset();
+				leftWire->Reset();
+				action = GRINDBALL;
+				grindEdge = ground;
+				grindMovingTerrain = movingGround;
+				frame = 0;
+				grindSpeed = groundSpeed;
+				grindQuantity = edgeQuantity;
+
+				if( reversed )
+				{
+					grindSpeed = -grindSpeed;
+				}
+				break;
+			}
 
 			if( currInput.A && !prevInput.A )
 			{
@@ -2209,13 +2208,24 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMB:
 		{
-
-			/*if( currInput.A && !prevInput.A )
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
-				action = JUMP;
+				framesGrinding = 0;
+				rightWire->Reset();
+				leftWire->Reset();
+				action = GRINDBALL;
+				grindEdge = ground;
+				grindMovingTerrain = movingGround;
 				frame = 0;
+				grindSpeed = groundSpeed;
+				grindQuantity = edgeQuantity;
+
+				if( reversed )
+				{
+					grindSpeed = -grindSpeed;
+				}
 				break;
-			}*/
+			}
 
 			if( currInput.A && !prevInput.A )
 			{
@@ -5002,7 +5012,7 @@ V2d Actor::UpdateReversePhysics()
 								}
 								else
 								{	
-									cout << "c" << endl;   
+									//cout << "c" << endl;   
 									//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
 									ground = minContact.edge;
 									movingGround = minContact.movingPlat;
@@ -9077,8 +9087,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	if( queryMode == "resolve" )
 	{
 		bool bb = false;
-
-		if( ground != NULL )
+		cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		if( ground != NULL && groundSpeed != 0 )
 		{
 
 			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
@@ -9091,34 +9101,42 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			bool b = false;
 			if( !reversed )
 			{
-				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
+				if( groundSpeed > 0 && ground->edge1 == e )// && approxEquals( edgeQuantity, 0 ) )
 				{
 					if( ( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 ) )
 						a = true;
 				}
-				else if( groundSpeed < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				else if( groundSpeed < 0 && ground->edge0 == e )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
 				{
-					a = true;
+					if( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) )
+					{
+						a = true;
+					}
 				}
 			}
 			else
 			{
-				if( groundSpeed > 0 )// && approxEquals( edgeQuantity, 0 ) )
+				if( groundSpeed > 0 && ground->edge1 == e )// && approxEquals( edgeQuantity, 0 ) )
 				{
-					if( ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) )
+					if( ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) || ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) )
 					{
 					//	cout << "first:" << edgeQuantity << ", " <<length( ground->v1 - ground->v0 )  << endl;
 						b = true;
 					}
 				}
-				else if( groundSpeed < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
+				else if( groundSpeed < 0 && ground->edge0 == e )//&& approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) )
 				{
-					b = true;
+					if( ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) || ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) )
+					{
+						b = true;
+					}
 				//	cout << "second" << endl;
 				}
 			}
-			a = false;
-			b = false;
+		//	a = false;
+		//	b = false;
+			
+			
 			//a = !reversed && ((groundSpeed > 0 && gn.x < 0 && nextn.x < 0 && nextn.y < 0) || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 )
 			//	|| ( groundSpeed > 0 && gn.x > 0 && nextn.x > 0 && prevn.y < 0 ) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 && prevn.y < 0 ));
 			//bool b = reversed && (( gn.x < 0 && nextn.x < 0 || ( gn.x > 0 && prevn.x > 0 )));
@@ -9134,23 +9152,23 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
 		
 		
-		//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << endl;
+		
 		
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )
 			{
-			//	cout << "weird point " << endl;
+				cout << "weird point " << endl;
 				
 				Edge *edge = e;
 				Edge *prev = edge->edge0;

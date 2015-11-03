@@ -2210,7 +2210,7 @@ int GameSession::Run( string fileN )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			preScreenTex->draw( *listVAIter->va, &borderTex );
+			//preScreenTex->draw( *listVAIter->va, &borderTex );
 			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
@@ -2261,7 +2261,7 @@ int GameSession::Run( string fileN )
 
 		
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
