@@ -231,6 +231,9 @@ struct Actor : QuadTreeCollider,
 	int framesInAir;
 	sf::Vector2<double> startAirDashVel;
 
+	int framesGrinding;
+	int framesNotGrinding;
+
 	Edge *ground;
 	MovingTerrain *movingGround;
 
@@ -406,6 +409,9 @@ struct Actor : QuadTreeCollider,
 		double storedBounceGroundSpeed;
 
 		bool groundedWallBounce;
+
+		int framesGrinding;
+		int framesNotGrinding;
 	};
 	Stored stored;
 

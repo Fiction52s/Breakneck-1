@@ -44,14 +44,14 @@ void Camera::Update( Actor *player )
 	V2d ideal;// = player->position;
 	//pos.x = player->position.x;
 	//pos.y = player->position.y;
-
+	V2d playerPos = player->position;
 	bool desp = player->desperationMode || player->action == Actor::DEATH;
 	if( desp )
 	{
 		offset.x = 0;
 		offset.y = 0;
-		pos.x = player->position.x;
-		pos.y = player->position.y;
+		pos.x = playerPos.x;
+		pos.y = playerPos.y;
 		zoomLevel = 0;
 		zoomFactor = 1;
 		return;
@@ -69,8 +69,8 @@ void Camera::Update( Actor *player )
 			offset.y += 3;
 		}
 		
-		pos.x = player->position.x + offset.x;
-		pos.y = player->position.y + offset.y;
+		pos.x = playerPos.x + offset.x;
+		pos.y = playerPos.y + offset.y;
 	}
 
 	if( desp )
@@ -95,9 +95,39 @@ void Camera::Update( Actor *player )
 
 
 	V2d pVel;
+	
+	double cap = 30;
 	if( player->grindEdge != NULL )
 	{
-		pVel = normalize( player->grindEdge->v1 - player->grindEdge->v0 ) * player->grindSpeed;
+		V2d grindDir = normalize( player->grindEdge->v1 - player->grindEdge->v0 );
+		V2d otherDir = grindDir;
+		double oTemp = otherDir.x;
+		otherDir.x = otherDir.y;
+		otherDir.y = -oTemp;
+		
+		if( player->framesGrinding < cap )
+		{
+			playerPos += otherDir * player->normalHeight * ( 1 -  player->framesGrinding / cap );
+		}
+		pVel = grindDir * player->grindSpeed;
+
+	}
+	else if( player->grindEdge == NULL )
+	{
+		double cap2 = cap;
+		if( player->framesGrinding < cap )
+			cap2 = player->framesGrinding;
+		if( player->framesNotGrinding <= cap2 )
+		{	
+			V2d otherDir;
+			if( player->ground != NULL )
+			{
+				otherDir = -player->ground->Normal();
+				V2d offset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
+				playerPos += offset;
+				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
+			}
+		}
 	}
 	else if( player->ground != NULL )
 	{
@@ -159,8 +189,8 @@ void Camera::Update( Actor *player )
 		zoomFactor = maxZoom;
 
 	//cout << "zoomFactor: " << zoomFactor << endl;
-	pos.x = player->position.x;
-	pos.y = player->position.y;
+	pos.x = playerPos.x;
+	pos.y = playerPos.y;
 	
 	double offX = pVel.x;
 	double offXMax = 5;

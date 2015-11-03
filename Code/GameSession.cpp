@@ -3308,7 +3308,8 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 bool GameSession::SetGroundPar()
 {	
-	
+	Color undertransColor( 255, 50, 255, 255 );
+	Color altTransColor( 0, 255, 255, 255 );
 	int widthFactor = 8;
 	int yView = view.getCenter().y / widthFactor;
 	cloudView.setCenter( 960, 540 + yView );
@@ -3316,7 +3317,7 @@ bool GameSession::SetGroundPar()
 
 	//cout << "yView << " << yView << endl;
 	int tileHeight = 1080 / 2;//540;
-	int transTileHeight = 650 / 2;
+	int transTileHeight = 750;//650 / 2;
 
 	if( yView > 1080 + transTileHeight || yView < -tileHeight )
 	{
@@ -3412,10 +3413,15 @@ bool GameSession::SetGroundPar()
 	underTransPar[i*4+2].position = Vector2f( 1920 * ratio, transBot ) + offset;
 	underTransPar[i*4+3].position = Vector2f( 0, transBot ) + offset;
 
-	underTransPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
+	/*underTransPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
 	underTransPar[i*4 + 1].texCoords = Vector2f( 1920, transTileHeight * i );
 	underTransPar[i*4 + 2].texCoords = Vector2f( 1920, transTileHeight * (i + 1) );
-	underTransPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i + 1) );
+	underTransPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i + 1) );*/
+
+	underTransPar[i*4].color = undertransColor;
+	underTransPar[i*4 + 1].color = undertransColor;
+	underTransPar[i*4 + 2].color = altTransColor;
+	underTransPar[i*4 + 3].color = altTransColor;
 
 	/*groundPar[i*4].color = Color::Blue;
 	groundPar[i*4+1].color = Color::Blue;
@@ -3448,10 +3454,16 @@ bool GameSession::SetGroundPar()
 	underTransPar[i*4+2].position = Vector2f( 1920, transBot ) + offset;
 	underTransPar[i*4+3].position = Vector2f( 1920 * ratio , transBot ) + offset;
 
-	underTransPar[i*4].texCoords = Vector2f( 0, transTileHeight * i );
+	/*underTransPar[i*4].texCoords = Vector2f( 0, transTileHeight * i );
 	underTransPar[i*4+1].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
 	underTransPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i+1) );
-	underTransPar[i*4+3].texCoords = Vector2f( 0, transTileHeight * (i+1) );
+	underTransPar[i*4+3].texCoords = Vector2f( 0, transTileHeight * (i+1) );*/
+
+	underTransPar[i*4].color = undertransColor;
+	underTransPar[i*4 + 1].color = undertransColor;
+	underTransPar[i*4 + 2].color = altTransColor;
+	underTransPar[i*4 + 3].color = altTransColor;
+
 	/*groundPar[i*4].color = Color::Red;
 	groundPar[i*4+1].color = Color::Red;
 	groundPar[i*4+2].color = Color::Red;

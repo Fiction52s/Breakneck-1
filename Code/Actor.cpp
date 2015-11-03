@@ -61,7 +61,7 @@ Actor::Actor( GameSession *gs )
 		//dashStartSound.setBuffer( testBuffer );
 		
 		
-
+		framesGrinding = 0;
 		percentCloneChanged = 0;
 		percentCloneRate = .01;
 		changingClone = false;
@@ -527,7 +527,7 @@ Actor::Actor( GameSession *gs )
 		}
 		else
 		{
-			hasPowerAirDash = false;
+			hasPowerAirDash = true;
 			hasPowerGravReverse = true;
 			hasPowerBounce = true;
 			hasPowerGrindBall = true;
@@ -944,12 +944,7 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			if( currInput.leftShoulder && !prevInput.leftShoulder )
-			{
-				//action = BOUNCEGROUND;
-				//frame = 0;
-				//break;
-			}
+		
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
@@ -1015,6 +1010,7 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				framesGrinding = 0;
 				rightWire->Reset();
 				leftWire->Reset();
 				action = GRINDBALL;
@@ -1108,6 +1104,14 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			if( currInput.B && !prevInput.B )
+			{
+				action = DASH;
+				frame = 0;
+				runTappingSound.stop();
+				break;
+			}
+
 
 			bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
 			if(!( currInput.LLeft() || currInput.LRight() ) )//&& t )
@@ -1190,13 +1194,7 @@ void Actor::UpdatePrePhysics()
 				}
 
 			}
-			if( currInput.B && !prevInput.B )
-			{
-					action = DASH;
-					frame = 0;
-					runTappingSound.stop();
-					break;
-			}
+			
 			break;
 		}
 	case JUMP:
@@ -1332,24 +1330,21 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( !currInput.LLeft() && !currInput.LRight() )
+				if( currInput.LUp() )
 				{
-					if( currInput.LUp() )
-					{
-						action = UAIR;
-						frame = 0;
-						break;
-					}
-					else if( currInput.LDown() )
-					{
-						action = DAIR;
-						frame = 0;
-						break;
-					}
+					action = UAIR;
+					frame = 0;
 				}
-
-				action = FAIR;
-				frame = 0;
+				else if( currInput.LDown() )
+				{
+					action = DAIR;
+					frame = 0;
+				}
+				else
+				{
+					action = FAIR;
+					frame = 0;
+				}
 			}
 
 			break;
@@ -1574,6 +1569,7 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				framesGrinding = 0;
 				rightWire->Reset();
 				leftWire->Reset();
 				action = GRINDBALL;
@@ -1681,6 +1677,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				framesGrinding = 0;
 				rightWire->Reset();
 				leftWire->Reset();
 				action = GRINDBALL;
@@ -1746,6 +1743,7 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
 			{
+				framesGrinding = 0;
 				rightWire->Reset();
 				leftWire->Reset();
 				action = GRINDBALL;
@@ -1825,6 +1823,13 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 				}
 				break;
+			}
+
+			
+			if( currInput.B && !prevInput.B )
+			{
+					action = DASH;
+					frame = 0;
 			}
 
 			if(!( currInput.LLeft() || currInput.LRight() ))
@@ -1910,11 +1915,6 @@ void Actor::UpdatePrePhysics()
 			}
 			//}
 			
-			if( currInput.B && !prevInput.B )
-			{
-					action = DASH;
-					frame = 0;
-			}
 			break;
 		}
 	case STANDN:
@@ -1969,6 +1969,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						framesNotGrinding = 0;
 						hasAirDash = true;
 						hasGravReverse = true;
 						hasDoubleJump = true;
@@ -2009,6 +2010,7 @@ void Actor::UpdatePrePhysics()
 
 							if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
 							{
+								framesNotGrinding = 0;
 								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 								action = JUMP;
 								frame = 0;
@@ -2056,6 +2058,7 @@ void Actor::UpdatePrePhysics()
 
 								action = LAND2;
 								frame = 0;
+								framesNotGrinding = 0;
 							}
 						}
 					}
@@ -2465,12 +2468,6 @@ void Actor::UpdatePrePhysics()
 		{
 			if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
 			{
-				
-
-				//velocity.x = groundSpeed;//(groundSpeed * normalize(ground->v1 - ground->v0 )).x;
-			//	if( (groundSpeed > 0 && ground->Normal().x > 0) || (groundSpeed < 0 && ground->Normal().x < 0 ) )
-				//	velocity.x = groundSpeed;// * normalize(ground->v1 - ground->v0 );
-
 				if( reversed )
 				{
 					velocity = -groundSpeed * normalize(ground->v1 - ground->v0 );
@@ -2485,8 +2482,22 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
+					if( currInput.B )
+					{
+						if( currInput.LRight() )
+						{
+							if( velocity.x < dashSpeed )
+								velocity.x = dashSpeed;
+						}
+						else if( currInput.LLeft() )
+						{
+							if( velocity.x > -dashSpeed )
+								velocity.x = -dashSpeed;
+						}
+					}
 					if( velocity.y > 0 )
 					{
+						//min jump velocity for jumping off of edges.
 						if( abs(velocity.x) < dashSpeed && length( velocity ) >= dashSpeed )
 						{
 					//		cout << "here: " << velocity.x << endl;
@@ -2964,6 +2975,8 @@ void Actor::UpdatePrePhysics()
 			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 			//cout << "grindspeedin update: " << grindSpeed << endl;
 			
+			framesGrinding++;
+			
 			//else
 			//grindSpeed =  ;
 			break;
@@ -3250,7 +3263,11 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
-
+	if( action != GRINDBALL )
+	{
+		//for camera smoothing
+		framesNotGrinding++;
+	}
 	
 	if( blah || record > 1 )
 	{
@@ -3266,14 +3283,14 @@ void Actor::UpdatePrePhysics()
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
-	if( hasPowerLeftWire )
+	if( hasPowerLeftWire && action != GRINDBALL )
 	{
 		leftWire->ClearDebug();
 		leftWire->UpdateAnchors( V2d( 0, 0 ) );
 		leftWire->UpdateState( touchEdgeWithLeftWire );
 	}
 
-	if( hasPowerRightWire )
+	if( hasPowerRightWire && action != GRINDBALL )
 	{
 		rightWire->ClearDebug();
 		rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -4272,7 +4289,7 @@ V2d Actor::UpdateReversePhysics()
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
 						//cout << "c" << endl;
-						if( groundSpeed >= -steepClimbSpeedThresh )
+						if( groundSpeed <= steepClimbSpeedThresh )
 						{
 							offsetX = -offsetX;
 							groundSpeed = 0;
@@ -4288,7 +4305,7 @@ V2d Actor::UpdateReversePhysics()
 					{
 						
 						reversed = false;
-						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .01;
@@ -4317,7 +4334,7 @@ V2d Actor::UpdateReversePhysics()
 								if( gNormal.x >= 0 )
 								{
 									reversed = false;
-									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 									movementVec.y += .01;
@@ -4412,7 +4429,7 @@ V2d Actor::UpdateReversePhysics()
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
 					//	cout << "a" << endl;
-						if( groundSpeed <= steepClimbSpeedThresh )
+						if( groundSpeed >= -steepClimbSpeedThresh )
 						{
 							groundSpeed = 0;
 							offsetX = -offsetX;
@@ -4428,7 +4445,7 @@ V2d Actor::UpdateReversePhysics()
 					{
 						reversed = false;
 						//cout << "b" << endl;
-						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .01;
@@ -4459,7 +4476,7 @@ V2d Actor::UpdateReversePhysics()
 								if( gNormal.x <= 0 )
 								{
 									reversed = false;
-									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 									movementVec.y += .01;
@@ -5109,13 +5126,14 @@ void Actor::UpdatePhysics()
 
 	if( reversed )
 	{
+		//if you slide off a reversed edge you need a little push so you dont slide through the point.
 		V2d reverseExtra = UpdateReversePhysics();
 		if( reverseExtra.x == 0 && reverseExtra.y == 0 )
 		{
 			return;
 		}
 		movementVec = reverseExtra;
-		//if you slide off a reversed edge you need a little push so you dont slide through the point.
+		
 	}
 	else if( grindEdge != NULL )
 	{
@@ -5670,7 +5688,7 @@ void Actor::UpdatePhysics()
 						
 						Edge *next = ground->edge1;
 
-						if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x > 0 ) )
+						if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 						{
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -9858,6 +9876,7 @@ void Actor::SaveState()
 	stored.oldBounceNorm = oldBounceNorm;
 	stored.groundedWallBounce = groundedWallBounce;
 	
+	stored.framesGrinding = framesGrinding;
 }
 
 void Actor::LoadState()
@@ -9933,6 +9952,7 @@ void Actor::LoadState()
 	oldBounceNorm = stored.oldBounceNorm;
 	groundedWallBounce = stored.groundedWallBounce;
 
+	framesGrinding = stored.framesGrinding;
 }
 
 void Actor::AirMovement()
