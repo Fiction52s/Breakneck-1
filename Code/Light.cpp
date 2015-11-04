@@ -5,6 +5,8 @@
 
 using namespace sf;
 using namespace std;
+
+
 Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double bright )
 	:color( c ), pos( p ), next( NULL )
 {

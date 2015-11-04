@@ -75,10 +75,11 @@ struct TerrainPolygon
 
 struct StaticLight
 {
-	StaticLight( sf::Color c, sf::Vector2i &pos, int radius );
+	StaticLight( sf::Color c, sf::Vector2i &pos, int radius, int brightness );
 	void Draw( sf::RenderTarget *target );
 	sf::Rect<double> GetAABB();
-	double radius;
+	int radius;
+	int brightness;
 	sf::Color color;
 	sf::Vector2i position;
 	void WriteFile( std::ofstream &of );
@@ -227,6 +228,7 @@ struct EditSession : GUIHandler
 	bool radiusOption;
 	bool lightPosDown;
 	double lightRadius;
+	int lightBrightness;
 	std::list<TerrainPolygon*> selectedPolygons;
 
 	sf::Sprite enemySprite;

@@ -7,6 +7,7 @@
 #include <iostream>
 #include "poly2tri/poly2tri.h"
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace sf;
@@ -779,8 +780,8 @@ void TerrainPolygon::ShowGrass( bool show )
 	}
 }
 
-StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos, int rad )
-	:color( c ), position( pos ), radius( rad )
+StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos, int rad, int bright )
+	:color( c ), position( pos ), radius( rad ), brightness( bright )
 {
 }
 
@@ -798,7 +799,8 @@ void StaticLight::Draw( RenderTarget *target )
 
 void StaticLight::WriteFile( std::ofstream &of )
 {
-	of << position.x << " " << position.y << " " << (int)color.r << " " << (int)color.g << " " << (int)color.b << endl;
+	of << position.x << " " << position.y << " " << (int)color.r << " " << (int)color.g << " " << (int)color.b << " " 
+		<< radius << " " << brightness << endl;
 	//of << type->name << " ";
 
 	//if( ground != NULL )
@@ -1064,7 +1066,12 @@ bool EditSession::OpenFile( string fileName )
 			is >> g;
 			is >> b;
 
-			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ) , 100 ) );
+			int rad;
+			int bright;
+			is >> rad;
+			is >> bright;
+
+			lights.push_back( new StaticLight( Color( r, g, b ), Vector2i( x,y ), rad, bright ) );
 		}
 
 
@@ -3156,6 +3163,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPanel = terrainOptionsPanel;
 									mode = menuDownStored;
 								}
+								else if( menuDownStored == EDIT && selectedLight != NULL )
+								{
+									//lightPanel->
+									string rStr = boost::lexical_cast<string>( (int)selectedLight->color.r );
+									string gStr = boost::lexical_cast<string>( (int)selectedLight->color.g );
+									string bStr = boost::lexical_cast<string>( (int)selectedLight->color.b );
+									
+	
+									lightPanel->textBoxes["red"]->text.setString( rStr );
+									lightPanel->textBoxes["green"]->text.setString( gStr );
+									lightPanel->textBoxes["blue"]->text.setString( bStr );
+									
+									showPanel = lightPanel;
+									mode = menuDownStored;
+								}
 								else
 								{
 									mode = EDIT;
@@ -4702,6 +4724,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( lightPosDown )
 				{
 					lightRadius = length( V2d( lightPos.x, lightPos.y ) - worldPos );
+					int lRad = lightRadius;
+					string lightRadstr = boost::lexical_cast<string>( lRad );
+					lightPanel->textBoxes["rad"]->text.setString( lightRadstr );
 				}
 				cs.setRadius( lightRadius );
 				cs.setFillColor( Color::White );
@@ -4819,6 +4844,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					else if( menuDownStored == EditSession::EDIT && selectedPolygons.size() > 0 )
 					{
 						textmag.setString( "TERRAIN\nOPTIONS" );
+					}
+					else if( menuDownStored == EditSession::EDIT && selectedLight != NULL )
+					{
+						textmag.setString( "LIGHT\nOPTIONS" );
 					}
 					else
 					{
@@ -5252,16 +5281,23 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			int red;
 			int green;
 			int blue;
+			int rad;
+			int bright;
 
 			stringstream ss;
 			string redstr = p->textBoxes["red"]->text.getString().toAnsiString();
 			string greenstr = p->textBoxes["green"]->text.getString().toAnsiString();
 			string bluestr = p->textBoxes["blue"]->text.getString().toAnsiString();
-			ss << redstr << " " << greenstr << " " << bluestr;
+			string radstr = p->textBoxes["rad"]->text.getString().toAnsiString();
+			string brightstr = p->textBoxes["bright"]->text.getString().toAnsiString();
+
+			ss << redstr << " " << greenstr << " " << bluestr << " " << radstr << " " << brightstr;
 
 			ss >> red;
 			ss >> green;
 			ss >> blue;
+			ss >> rad;
+			ss >> bright;
 
 			if( ss.fail() )
 			{
@@ -5270,7 +5306,16 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			lights.push_back( new StaticLight( Color( red, green, blue ), lightPos, lightRadius ) );
+			if( mode == EDIT && selectedLight != NULL )
+			{
+				selectedLight->color = Color( red, green, blue );
+				selectedLight->radius = rad;
+				selectedLight->brightness = bright;
+			}
+			else
+			{
+				lights.push_back( new StaticLight( Color( red, green, blue ), lightPos, rad, bright ) );
+			}
 			showPanel = NULL;
 		}
 	}
@@ -5373,15 +5418,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if( name == "light" )
 	{
-		Panel *p = new Panel( "light_options", 220, 220, this );
-		int textBoxX = 100;
-		p->AddButton( "ok", Vector2i( 100, 150 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "light_options", 240, 300, this );
+		int textBoxX = 130;
+		p->AddButton( "ok", Vector2i( 100, 230 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "255" );
 		p->AddTextBox( "green", Vector2i( textBoxX, 60 ), 60, 3, "0" );
 		p->AddTextBox( "blue", Vector2i( textBoxX, 100 ), 60, 3, "0" );
+		p->AddTextBox( "rad", Vector2i( textBoxX, 140 ), 60, 3, "1" );
+		p->AddTextBox( "bright", Vector2i( textBoxX, 180 ), 60, 3, "1" );
+		
 		p->AddLabel( "red_label", Vector2i( 20, 20 ), 20, "Red: " );
 		p->AddLabel( "green_label", Vector2i( 20, 60 ), 20, "Green: " );
 		p->AddLabel( "blue_label", Vector2i( 20, 100 ), 20, "Blue: " );
+		p->AddLabel( "rad_label", Vector2i( 20, 140 ), 20, "Radius: " );
+		p->AddLabel( "bright_label", Vector2i( 20, 180 ), 20, "Brightness: " );
 		return p;
 	}
 	return NULL;

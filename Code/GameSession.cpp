@@ -865,108 +865,14 @@ bool GameSession::OpenFile( string fileName )
 			while( testEdge != edges[currentEdgeIndex] );
 
 
-			/*V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-			V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-			V2d adjv0 = testEdge->v0 - bisector0 * inward;
-			V2d adjv1 = testEdge->v1 - bisector1 * inward;
-
-			borderVa[i*2].color = Color::Red;
-			borderVa[i*2].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
-			borderVa[i*2+1].color = Color::Red;
-			borderVa[i*2+1].position = Vector2f( adjv0.x, adjv0.y  );*/
+		
 			
 
 				//cout << "loaded to here" << endl;
 			//double left, right, bottom, top;
 			bool first = true;
 			
-			/*for( int i = 0; i < amount; ++i )
-			{
-				double movement = spacing;
-				while( movement > 0 )
-				{
-					testQuantity += movement;
-					double testLength = length( adjv1 - adjv0 );
-					if( testQuantity > testLength )
-					{
-						movement = testQuantity - testLength;
-						testEdge = testEdge->edge1;
-						bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-						bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-						adjv0 = testEdge->v0 - bisector0 * inward;
-						adjv1 = testEdge->v1 - bisector1 * inward;
-						testQuantity = 0;
-					}
-					else
-					{
-						movement = 0;
-					}
-				}
-
-				V2d spriteCenter = adjv0 + (adjv1 - adjv0) * testQuantity / length( testEdge->v1 - testEdge->v0 );//testEdge->GetPoint( testQuantity );
-				spriteCenter.x = floor( spriteCenter.x + .5 );
-				spriteCenter.y = floor( spriteCenter.y + .5 );
-			//	spriteCenter.y -= 8 * testEdge->Normal().y;
-			//	spriteCenter.x += 8 * testEdge->Normal().x;
-				VertexArray & testVa = (*va);
-				
-				int halfSize = size / 2;
-				testVa[i*4].position = Vector2f( spriteCenter.x - halfSize, spriteCenter.y - halfSize );
-				testVa[i*4+1].position = Vector2f( spriteCenter.x + halfSize, spriteCenter.y - halfSize );
-				testVa[i*4+2].position = Vector2f( spriteCenter.x + halfSize, spriteCenter.y + halfSize );
-				testVa[i*4+3].position = Vector2f( spriteCenter.x - halfSize, spriteCenter.y + halfSize );
-				//testVa[i*4].position = Vector2f( 0, i * 32 + 100 );
-				//testVa[i*4+1].position = Vector2f( 32, i * 32 + 100 );
-				//testVa[i*4+2].position = Vector2f( 32, (i+1) * 32+ 100 );
-				//testVa[i*4+3].position = Vector2f( 0, (i+1) * 32+100);
-				
-
-			//	cout << "vertex x: " << testVa[i].position.x << ", " <<
-			//		testVa[i+1].position.x << ", " <<
-			//		testVa[i+2].position.x << ", " <<
-			//		testVa[i+3].position.x << endl;
-
-				testVa[i*4].texCoords = Vector2f( 0, 0 );
-				testVa[i*4+1].texCoords = Vector2f( size, 0 );
-				testVa[i*4+2].texCoords = Vector2f( size, size );
-				testVa[i*4+3].texCoords = Vector2f( 0, size );
-				
-				if( first )
-				{
-					left = spriteCenter.x - halfSize;
-					right = spriteCenter.x + halfSize;
-					top = spriteCenter.y - halfSize;
-					bottom = spriteCenter.y + halfSize;
-
-					first = false;
-				}
-				else
-				{
-					double tempLeft = spriteCenter.x - halfSize;
-					double tempRight = spriteCenter.x + halfSize;
-					double tempTop = spriteCenter.y - halfSize;
-					double tempBottom = spriteCenter.y + halfSize;
-
-					if( tempLeft < left )
-						left = tempLeft;
-					if( tempRight > right )
-						right = tempRight;
-					if( tempTop < top )
-						top = tempTop;
-					if( tempBottom > bottom )
-						bottom = tempBottom;
-				}
-				
-
-
-				
-				//testva->aabb
-				//polygonBorders.push_back( va );
-
-			}
-			*/
-
-			
+		
 
 			TestVA * testva = new TestVA;
 			testva->next = NULL;
@@ -1078,15 +984,17 @@ bool GameSession::OpenFile( string fileName )
 		for( int i = 0; i < numLights; ++i )
 		{
 			int x,y,r,g,b;
-			int radius = 1000;
-			float brightness = 5;
+			int rad;
+			int bright;
 			is >> x;
 			is >> y;
 			is >> r;
 			is >> g;
 			is >> b;
+			is >> rad;
+			is >> bright;
 
-			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), radius, brightness );
+			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), rad, bright );
 			lightTree->Insert( light );
 		}
 		cout << "loaded to here" << endl;		
