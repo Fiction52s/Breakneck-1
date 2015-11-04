@@ -816,6 +816,11 @@ void StaticLight::WriteFile( std::ofstream &of )
 	//}
 }
 
+sf::Rect<double> StaticLight::GetAABB()
+{
+	return sf::Rect<double>( position.x - radius, position.y - radius, radius * 2, radius * 2 );
+}
+
 EditSession::EditSession( RenderWindow *wi)
 	:w( wi ), zoomMultiple( 1 )
 {
@@ -1904,6 +1909,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	bool showGraph = false;
 
 	selectedActor = NULL;
+	selectedLight = NULL;
+	selectedLightGrabbed = false;
 
 	trackingEnemy = NULL;
 	showPanel = NULL;
@@ -2111,6 +2118,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	selectedPlayer = false;
 	selectedActorGrabbed = false;
+	selectedLightGrabbed = false;
 
 	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -2372,9 +2380,69 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( showGrass )
 									break;
 
+								if( sf::Keyboard::isKeyPressed( Keyboard::F ) )
+								{
+									StaticLight *closest = NULL;
+									bool foundAny = false;
+									for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
+									{
+										if( (*it)->GetAABB().contains( worldPos.x, worldPos.y ) )
+										{
+											if( !foundAny )
+											{
+												foundAny = true;
+												closest = (*it);
+											}
+											else
+											{
+												if( length( V2d( closest->position.x, closest->position.y ) 
+													- worldPos ) > length( V2d( (*it)->position.x, (*it)->position.y ) 
+													- worldPos ) )
+												{
+													closest = (*it);
+												}
+											}
+										}	
+									}
+
+									if( closest == NULL )
+									{
+										selectedLightGrabbed = false;
+										selectedLight = NULL;
+										break;
+									}
+
+									selectedLightGrabbed = true;
+									lightGrabPos = Vector2i( worldPos.x, worldPos.y );
+
+									selectedLight = closest;
+									selectedActor = NULL;
+									selectedPlayer = false;
+
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										it != selectedPolygons.end(); ++it )
+									{
+										(*it)->SetSelected( false );
+
+									}
+									selectedPolygons.clear();
+
+
+									break;
+									//if( selectedLight
+									
+								}
+								else
+								{
+									selectedLightGrabbed = false;
+									selectedLight = NULL;
+								}
+
 								if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
 								{
 									selectedActor = NULL;
+									selectedLight = NULL;
+									selectedLightGrabbed = false;
 									selectedPlayer = true;
 									grabPlayer = true;
 									grabPos = Vector2i( worldPos.x, worldPos.y );
@@ -2515,6 +2583,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( empty )
 								{
 									selectedActor = NULL;
+									selectedLight = NULL;
 									selectedActorGrabbed = false;
 								}
 
@@ -2544,6 +2613,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								grabPlayer = false;
 								selectedActorGrabbed = false;
+								selectedLightGrabbed = false;
 							}
 							break;
 						}
@@ -2580,6 +2650,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									delete selectedActor;
 									
 									selectedActor = NULL;
+								}
+								else if( selectedLight != NULL )
+								{
+									lights.remove( selectedLight );
+									delete selectedLight;
+									selectedLight = NULL;
+									selectedLightGrabbed = false;
 								}
 								else
 								{
@@ -4187,7 +4264,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				break;
 			}
-
 		case EDIT:
 			{
 				if( makingRect )
@@ -4511,8 +4587,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				
 			}
+			else if( selectedLightGrabbed && length( V2d( lightGrabPos.x, lightGrabPos.y ) - worldPos ) > 10 )
+			{
+				selectedLight->position = Vector2i( worldPos.x, worldPos.y );
+			}
 		}
-
+		
+		
 
 		playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
@@ -4558,6 +4639,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				rs.setPosition( bounds.left, bounds.top );				
 
 				w->draw( rs );
+			}
+			else if( selectedLight != NULL )
+			{
+				//sf::FloatRect bounds = selectedLight->position.getGlobalBounds();
+				sf::RectangleShape lightAABB( sf::Vector2f( selectedLight->radius * 2, selectedLight->radius * 2 ) );
+
+				lightAABB.setOutlineColor( Color::Cyan );				
+				lightAABB.setFillColor( Color::Transparent );
+				lightAABB.setOrigin( lightAABB.getLocalBounds().width / 2, lightAABB.getLocalBounds().height / 2 );
+				lightAABB.setOutlineThickness( 5 );
+				lightAABB.setPosition( selectedLight->position.x, selectedLight->position.y );				
+
+				w->draw( lightAABB );
 			}
 		}
 

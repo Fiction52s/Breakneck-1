@@ -77,6 +77,7 @@ struct StaticLight
 {
 	StaticLight( sf::Color c, sf::Vector2i &pos, int radius );
 	void Draw( sf::RenderTarget *target );
+	sf::Rect<double> GetAABB();
 	double radius;
 	sf::Color color;
 	sf::Vector2i position;
@@ -184,6 +185,10 @@ struct EditSession : GUIHandler
 	std::map<std::string, ActorType*> types;
 	ActorParams *selectedActor;
 	ActorParams *editActor;
+
+	StaticLight *selectedLight;
+	bool selectedLightGrabbed;
+	sf::Vector2i lightGrabPos;
 
 	bool selectedPlayer;
 	bool grabPlayer;
