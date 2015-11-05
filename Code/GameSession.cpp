@@ -85,6 +85,11 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	{
 		AllocateEffect();
 	}
+
+	for( int i = 0; i < MAX_DYN_LIGHTS; ++i )
+	{
+		AllocateLight();
+	}
 	
 
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
@@ -2629,6 +2634,15 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	polyShader.setParameter( "On6", on[6] );
 	polyShader.setParameter( "On7", on[7] );
 	polyShader.setParameter( "On8", on[8] );
+
+	Color c = player.testLight->color;
+	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
+	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
+	polyShader.setParameter( "LightPosPlayer", posp );
+	polyShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
+	polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
+	polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
+	//polyShader.setParameter( "OnD0", true );
 }
 
 //save state to enter clone world
@@ -2722,6 +2736,23 @@ void GameSession::AllocateEffect()
 		b->next = inactiveEffects;
 		inactiveEffects->prev = b;
 		inactiveEffects = b;
+	}
+}
+
+void GameSession::AllocateLight()
+{
+	if( inactiveLights == NULL )
+	{
+		inactiveLights = new Light( this, Vector2i( 0, 0 ), Color( 255, 255, 255, 255 ), 1, 1 );
+		inactiveLights->prev = NULL;
+		inactiveLights->next = NULL;
+	}
+	else
+	{
+		Light *light= new Light( this, Vector2i( 0, 0 ), Color( 255, 255, 255, 255 ), 1, 1 );
+		light->next = inactiveLights;
+		inactiveLights->prev = light;
+		inactiveLights = light;
 	}
 }
 
@@ -2901,6 +2932,93 @@ void GameSession::GameStartMovie()
 	//startSeq->shipSprite.setPosition( startSeq->startPos );
 	//startSeq->stormSprite.setPosition( Vector2f( startSeq->startPos.x, startSeq->startPos.y + 200 ) );
 	//window->setView( oldView );
+}
+
+Light * GameSession::ActivateLight( int radius,  int brightness, const Color color )
+{
+	if( inactiveLights == NULL )
+	{
+		return NULL;
+	}
+	else
+	{
+		Light *l = inactiveLights;
+
+		if( inactiveEffects->next == NULL )
+		{
+			inactiveEffects = NULL;
+		}
+		else
+		{
+			inactiveLights = (Light*)(inactiveLights->next);
+			inactiveLights->prev = NULL;
+		}
+
+		//assert( ts != NULL );
+		l->next = NULL;
+		
+		if( activeLights != NULL )
+		{
+			activeLights->prev = l;
+			l->next = activeLights;
+			activeLights = l;
+		}
+		else
+		{
+			activeLights = l;
+		}
+
+		l->radius = radius;
+		l->brightness = brightness;
+		l->color = color;
+		//cout << "activating: " << b << " blah: " << b->prev << endl;
+		return l;
+	}
+}
+
+void GameSession::DeactivateLight( Light *light )
+{
+	Light *prev = light->prev;
+	Light *next = light->next;
+
+	if( prev == NULL && next == NULL )
+	{
+		activeLights = NULL;
+	}
+	else
+	{
+		if( light == activeLights )
+		{
+			next->prev = NULL;
+			activeLights = next;
+		}
+		else
+		{
+			if( prev != NULL )
+			{
+				prev->next = next;
+			}
+
+			if( next != NULL )
+			{
+				next->prev = prev;
+			}
+		}
+		
+	}
+
+
+	if( inactiveLights == NULL )
+	{
+		inactiveLights = light;
+		light->next = NULL;
+	}
+	else
+	{
+		light->next = inactiveLights;
+		inactiveLights->prev = light;
+		inactiveLights = light;
+	}	
 }
 
 PowerBar::PowerBar()
@@ -3632,6 +3750,14 @@ void GameSession::SetUndergroundParAndDraw()
 	underShader.setParameter( "On6", on[6] );
 	underShader.setParameter( "On7", on[7] );
 	underShader.setParameter( "On8", on[8] );
+
+	Color c = player.testLight->color;
+	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
+	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
+	underShader.setParameter( "LightPosPlayer", posp );
+	underShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
+	underShader.setParameter( "RadiusPlayer", player.testLight->radius );
+	underShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
 
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;

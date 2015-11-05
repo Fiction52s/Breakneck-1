@@ -8,10 +8,14 @@ using namespace sf;
 using namespace std;
 
 #define V2d sf::Vector2<double>
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
 
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+
+		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL, 200, 15 ); 
+
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
 		assert( Shader::isAvailable() && "help me" );
@@ -8757,8 +8761,18 @@ void Actor::UpdatePostPhysics()
 	
 	
 	
-
-
+	testLight->pos.x = position.x;
+	testLight->pos.y = position.y;
+	if( action == FAIR || action == UAIR || action == DAIR || action == STANDN || action == STANDU || action == STANDD )
+	{
+		testLight->brightness = 40;
+		testLight->radius = 150;
+	}
+	else
+	{
+		testLight->brightness = 15;
+		testLight->radius = 100;
+	}
 	//vi0 = vi1 = vi2 = vi;
 	
 

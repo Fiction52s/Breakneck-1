@@ -107,6 +107,10 @@ struct GameSession : QuadTreeCollider
 		int frameCount,
 		int animationFactor,
 		bool right );
+	void AllocateLight();
+	Light * ActivateLight( int radius,  int brightness, const sf::Color color );
+	void DeactivateLight( Light *light );
+
 
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;
@@ -117,6 +121,7 @@ struct GameSession : QuadTreeCollider
 	void LoadState();
 
 	const static int MAX_EFFECTS = 100;
+	const static int MAX_DYN_LIGHTS = 1;
 
 	std::list<MovingTerrain*> movingPlats;
 
@@ -204,6 +209,9 @@ struct GameSession : QuadTreeCollider
 
 	std::list<Light*> lights;
 	Light *lightList;
+
+	Light *inactiveLights;
+	Light *activeLights;
 
 	int deathWipeLength;
 	int deathWipeFrame;

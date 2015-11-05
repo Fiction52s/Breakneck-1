@@ -9,6 +9,7 @@
 #include "Input.h"
 #include <SFML/Graphics.hpp>
 #include "Wire.h"
+#include "Light.h"
 
 
 struct GameSession;
@@ -73,6 +74,8 @@ struct Actor : QuadTreeCollider,
 	void RunMovement();
 	void AttackMovement();
 	
+	Light *testLight;
+
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
