@@ -67,7 +67,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				fireDir = V2d( 0, 0 );
 
 
-				if( true )
+				if( false )
 				{
 					if( currInput.LLeft() )
 					{
@@ -339,8 +339,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				if( triggerDown && player->ground == NULL )
 				{
-						segmentLength += pullStrength;
-						totalLength += pullStrength;
+					segmentLength += pullStrength;
+					totalLength += pullStrength;
 				}
 			}
 
