@@ -203,7 +203,7 @@ Actor::Actor( GameSession *gs )
 		normal[DAIR] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
 		actionLength[DASH] = 45;
-		tileset[DASH] = owner->GetTileset( "dash.png", 64, 64 );
+		tileset[DASH] = owner->GetTileset( "dash.png", 128, 64 );
 		normal[DASH] = owner->GetTileset( "dash_NORMALS.png", 64, 64 );
 
 		actionLength[DOUBLE] = 28 + 10;
@@ -2187,9 +2187,14 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity = V2d( 0, 0 );
 				}
-
 			}
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			//else if( currInput.A && !prevInput.A && hasDoubleJump )
+			else if( currInput.A && !prevInput.A && hasDoubleJump && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				frame = 0;
+			}
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
 				if( !currInput.LLeft() && !currInput.LRight() )
 				{
@@ -8027,18 +8032,25 @@ void Actor::UpdatePostPhysics()
 
 			sprite->setTexture( *(tileset[DASH]->texture));
 
+			//3-8 is the cycle
 			sf::IntRect ir;
-			if( frame < 10 )
+			int checkFrame;
+			if( frame / 2 < 3 )
 			{
-				ir = tileset[DASH]->GetSubRect( frame / 2 );
+				checkFrame = frame / 2;
+				ir = tileset[DASH]->GetSubRect( checkFrame );
 			}
-			else if( frame < actionLength[DASH] - 2 )
+			else if( frame < actionLength[DASH] - 6 )
 			{
-				ir = tileset[DASH]->GetSubRect( 5 );
+				checkFrame = 3 + ( (frame/2 - 3) % 6 );
+				ir = tileset[DASH]->GetSubRect( checkFrame );
 			}
 			else
-				ir = tileset[DASH]->GetSubRect( 6 );
-			
+			{
+				checkFrame = 9 + (6 - ( actionLength[DASH] - frame )) / 2;
+				ir = tileset[DASH]->GetSubRect( checkFrame );
+			}
+		//	cout << "checkframe: " << checkFrame << endl;
 
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
@@ -9210,11 +9222,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )
