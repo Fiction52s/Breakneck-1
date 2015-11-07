@@ -508,7 +508,7 @@ Actor::Actor( GameSession *gs )
 			bubbleFramesToLive[i] = 0;
 			//bubblePos[i]
 		}
-		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 16, 32 );
+		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 
@@ -752,6 +752,8 @@ void Actor::UpdatePrePhysics()
 		{
 			desperationMode = false;
 			action = DEATH;
+			rightWire->Reset();
+			leftWire->Reset();
 			slowCounter = 1;
 			frame = 0;
 			owner->deathWipe = true;
@@ -8246,7 +8248,7 @@ void Actor::UpdatePostPhysics()
 		{
 			if( frame % 1 == 0 )
 			{
-				owner->ActivateEffect( ts_fx_airdash, position, false, 0, 10, 6, facingRight );
+				owner->ActivateEffect( ts_fx_airdash, V2d( position.x, position.y + 25 ), false, 0, 10, 4, facingRight );
 			}
 
 
@@ -9000,7 +9002,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 	assert( queryMode != "" );
 
-	
+	//if( ground != NULL )
+	//{
+	//	cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << ", gn is: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+	//}
 		
 	if( queryMode == "moving_resolve" )
 	{
@@ -9118,10 +9123,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 
 		bool bb = false;
-		//if( ground != NULL )
-		//{
-			//cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << ", gn is: " << ground->Normal().x << ", " << ground->Normal().y << endl;
-		//}
+		
 		if( ground != NULL && groundSpeed != 0 )
 		{
 			V2d gn = ground->Normal();
@@ -9159,17 +9161,21 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				if( groundSpeed > 0 )
 				{
 					if( ( ground->edge0 == e 
-						&& ( ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 ) || ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 ) ) ) 
+						&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) ) ) 
 						|| ground->edge1 == e )
 					{
+						//cout << "one" << endl;
 						b = true;
 					}
 				}
 				else if( groundSpeed < 0 )
 				{
-					if( ground->edge1 == e && 
-						( ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) || ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) ) 
-						|| ground->edge0 == e )
+					bool c = ground->edge1 == e;
+					bool h = ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 );
+					bool g = ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 );
+					bool d = h || g;
+					bool f = ground->edge0 == e;
+					if( (c && d) || f )
 					{
 						b = true;
 					}
@@ -9191,6 +9197,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			return;
 		}
 
+
+		
+
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
 		
 		
@@ -9201,11 +9210,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-		//		cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-		//		cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )

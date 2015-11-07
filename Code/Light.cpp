@@ -38,7 +38,7 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double br
 	//radius = 1;
 	
 	//falloff /= 100.f;
-	depth = .075;//.075;//.075;//radius * .0075;
+	depth = .075;//.075;//.075;//.075;//radius * .0075;
 }
 
 void Light::HandleQuery( QuadTreeCollider * qtc )

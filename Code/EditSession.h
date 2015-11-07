@@ -42,7 +42,7 @@ struct TerrainPolygon
 	
 	PointList points;
 	std::string material;
-	void RemoveSelectedPoints();
+	bool RemoveSelectedPoints();
 	void Finalize();
 	void Reset();
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );

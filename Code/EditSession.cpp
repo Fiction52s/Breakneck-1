@@ -236,7 +236,7 @@ void TerrainPolygon::Finalize()
 	grassVA = gva;
 }
 
-void TerrainPolygon::RemoveSelectedPoints()
+bool TerrainPolygon::RemoveSelectedPoints()
 {
 	PointList temp = points;
 
@@ -262,6 +262,8 @@ void TerrainPolygon::RemoveSelectedPoints()
 	//cout << "before killer finalize. poly size: " << poly->points.size() << endl;
 	Finalize();
 	SetSelected( true );
+
+	return true;
 }
 
 void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress )
@@ -3996,12 +3998,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 						PointList temp = (*it)->points;
 
+						
 						(*it)->Reset();
 
 						for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
 							++tempIt )
 						{
-							(*it)->points.push_back( (*tempIt ) );
+							//if( IsPointValid( (*tempIt) )
+							//{
+								(*it)->points.push_back( (*tempIt ) );
+							//}
 						}
 						(*it)->Finalize();
 						(*it)->SetSelected( true );

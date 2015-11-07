@@ -2,6 +2,7 @@
 
 uniform sampler2D u_texture;
 uniform sampler2D u_normals;   //normal map
+//uniform sampler2D u_pattern;
 
 uniform vec2 topLeft;
 uniform float zoom;
@@ -67,11 +68,16 @@ uniform float Brightness8;
 uniform float Radius8;
 uniform bool On8;
 
+uniform vec3 LightPosPlayer;
+uniform vec4 LightColorPlayer;
+uniform float BrightnessPlayer;
+uniform float RadiusPlayer;
+
 
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
 
 
-const int numLights = 9;
+const int numLights = 10;
 struct LightSource
 {
 	bool on;
@@ -82,17 +88,8 @@ struct LightSource
 };
 LightSource lights[numLights];
 
-void main()
+void InitLights()
 {
-	float size = 96.0;
-	vec2 fc = gl_FragCoord.xy;
-	fc.y = 1 - fc.y;
-	fc = fc * vec2( 960, 540 ) / Resolution;
-	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
-	//vec2 pixelPos = vec2( fc.x / zoom, fc.y / zoom );
-    vec2 pos = mod( topLeft + pixelPos, size ) / vec2( size );
-	gl_FragColor = texture2D( u_texture, pos );
-	
 	lights[0].on = On0;
 	lights[0].pos = LightPos0;
 	lights[0].color = LightColor0;//vec4( 1, 0, 0, 1 );//LightColor;
@@ -147,6 +144,45 @@ void main()
 	lights[8].brightness = Brightness8;
 	lights[8].radius = Radius8;
 	
+	lights[9].on = true;
+	lights[9].pos = LightPosPlayer;
+	lights[9].color = LightColorPlayer;
+	lights[9].brightness = BrightnessPlayer;
+	lights[9].radius = RadiusPlayer;
+}
+
+void main()
+{
+	InitLights();
+
+	float size = 128.0;
+	//float patternSize = 16.0;
+	
+	vec2 fc = gl_FragCoord.xy;
+	fc.y = 1 - fc.y;
+	fc = fc * vec2( 960, 540 ) / Resolution;
+	
+	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
+	
+	/*vec2 patternPos = mod( ((topLeft + pixelPos) / vec2(size)), patternSize ) / vec2( patternSize );
+	vec4 patternColor = texture2D( u_pattern, patternPos );
+    vec2 pos;
+	if( patternColor == vec4( 1, 1, 1, 1 ) )
+	{
+		pos = mod( topLeft + pixelPos, size) / vec2( size );
+		pos.x = pos.x / 2.0;
+	}
+	else// if( patternColor == vec4( 0, 0, 0, 0 ) )
+	{
+		pos = mod( topLeft + pixelPos, size) / vec2( size );
+		pos.x = pos.x / 2.0;
+		pos.x = pos.x + .5;
+	}*/
+	
+	vec2 pos = mod( topLeft + pixelPos, size) / vec2( size );
+	
+	//gl_FragColor = texture2D( u_texture, pos );
+	
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );
 	
 	
@@ -168,7 +204,8 @@ void main()
 		vec3 NormalMap = texture2D(u_normals, pos).rgb;
 		vec2 fragC = gl_FragCoord.xy;
 		fragC.y = 1 - fragC.y;
-		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), lights[i].pos.z);
+		float z = lights[i].pos.z;
+		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), z);
 		LightDir *= zoom;
 		float D = length(LightDir);
 		
@@ -177,8 +214,11 @@ void main()
 		vec3 Diffuse = (lights[i].color.rgb * lights[i].color.a) * max(dot(N, L), 0.0);
 		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLightsOn;
 		
-		float radius = lights[i].radius;
-		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * lights[i].brightness/4;		
+		float radius = lights[i].radius * 2;
+		float brightness = lights[i].brightness/4.0;
+		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * brightness;		
+		
+		
 		
 		
 		vec3 Intensity = Ambient + Diffuse * Attenuation;

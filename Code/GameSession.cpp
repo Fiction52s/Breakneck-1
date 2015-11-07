@@ -79,6 +79,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	inactiveEffects = NULL;
 	pauseImmuneEffects = NULL;
+	inactiveLights = NULL;
 
 	//sets up fx so that they can be used
 	for( int i = 0; i < MAX_EFFECTS; ++i )
@@ -1191,7 +1192,7 @@ bool GameSession::OpenFile( string fileName )
 
 int GameSession::Run( string fileN )
 {
-
+	//inactiveLights = NULL;
 	cloneInactiveEnemyList = NULL;
 
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
@@ -1203,6 +1204,10 @@ int GameSession::Run( string fileN )
 	
 	undergroundTileset = GetTileset( "terrainworld1.png", 128, 128 );//GetTileset( "underground01.png", 32, 32 );
 	undergroundTilesetNormal = GetTileset( "terrainworld1_NORMALS.png", 128, 128 );
+	//just to load it
+	//GetTileset( "terrainworld1_PATTERN.png", 16, 16 );
+
+
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
 	undergroundPar[2].color = Color::Red;
@@ -1214,7 +1219,7 @@ int GameSession::Run( string fileN )
 	undergroundPar[3].position = Vector2f( 0, 0 );
 
 
-	bool showFrameRate = false;
+	bool showFrameRate = true;
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
 
@@ -1365,6 +1370,7 @@ int GameSession::Run( string fileN )
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
 	polyShader.setParameter( "u_normals", *undergroundTilesetNormal->texture );//*GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+	polyShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
@@ -2174,7 +2180,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+	//	DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -3569,8 +3575,10 @@ void GameSession::SetUndergroundParAndDraw()
 {
 	preScreenTex->setView( view );
 
-	underShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture );
-	underShader.setParameter( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
+	underShader.setParameter( "u_texture", *GetTileset( "underground01.png" , 128, 128 )->texture );
+	underShader.setParameter( "u_normals", *GetTileset( "underground01_NORMALS.png", 128, 128 )->texture );
+	//underShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
+
 	underShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 	underShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 	underShader.setParameter( "zoom", cam.GetZoom() );

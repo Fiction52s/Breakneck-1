@@ -252,8 +252,10 @@ void main() {
 		
 		
 		
-		float radius = lights[i].radius;
-		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * lights[i].brightness;		
+		float radius = lights[i].radius * 2;
+		float brightness = lights[i].brightness;
+		brightness = 1;
+		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * brightness;		
 		
 		//Pre-multiply light color with intensity
 		//Then perform "N dot L" to determine our diffuse term

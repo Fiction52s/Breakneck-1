@@ -26,8 +26,8 @@ Camera::Camera()
 	zoomLevel3 = 1.75;
 
 	minZoom = 1;
-	maxOffset.x = 100 * 10;
-	maxOffset.y = 100 * 10;
+	maxOffset.x = 100 * 5;//10;
+	maxOffset.y = 100 * 5;//10;
 
 	left = 300;
 	right = -300;
@@ -112,7 +112,7 @@ void Camera::Update( Actor *player )
 		pVel = grindDir * player->grindSpeed;
 
 	}
-	else if( player->grindEdge == NULL )
+	else if( player->ground != NULL )
 	{
 		double cap2 = cap;
 		if( player->framesGrinding < cap )
@@ -128,9 +128,7 @@ void Camera::Update( Actor *player )
 				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
 			}
 		}
-	}
-	else if( player->ground != NULL )
-	{
+
 		pVel = normalize( player->ground->v1 - player->ground->v0 ) * player->groundSpeed;
 		if( player->reversed )
 		{
@@ -241,13 +239,13 @@ void Camera::Update( Actor *player )
 	}
 	//cout << "pVel.y: " << pVel.y << endl;
 	//cout << "offset.y << " << offset.y << " add: " << pVel.y * 1.0000001  << "what: " << pVel.y << endl;
-	if( offset.x < -300 * zoomFactor )
-		offset.x = -300 * zoomFactor;
-	else if( offset.x > 300 * zoomFactor )
-		offset.x = 300 * zoomFactor;
+	if( offset.x < -150 * zoomFactor )
+		offset.x = -150 * zoomFactor;
+	else if( offset.x > 150 * zoomFactor )
+		offset.x = 150 * zoomFactor;
 
-	if( offset.y < -100 * zoomFactor )
-		offset.y = -100 * zoomFactor;
+	if( offset.y < -50 * zoomFactor )
+		offset.y = -50 * zoomFactor;
 	else if( offset.y > 150 * zoomFactor )
 		offset.y = 150 * zoomFactor;
 
