@@ -37,7 +37,8 @@ RenderTexture *minimapTexture;
 sf::Texture worldMapTex;
 sf::Sprite worldMapSpr;
 
-sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+//sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+sf::View uiView( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
 void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
 {
@@ -209,15 +210,15 @@ void CustomMapsOption( LevelSelector &ls )
 
 	CustomMapsHandler customMapHandler( ls );
 
-	Panel p( "custom maps", 960 - ls.width, 540, &customMapHandler );
+	Panel p( "custom maps", 1920 - ls.width, 1080, &customMapHandler );
 	p.pos.x += ls.width;
 	p.AddButton( "Play", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "PLAY" );
 	p.AddButton( "Edit", Vector2i( 100, 100 ), Vector2f( 100, 50 ), "EDIT" );
 	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 175, 50 ), "CREATE NEW" );
-	p.AddButton( "Delete", Vector2i( 100, 300 ), Vector2f( 150, 50 ), "DELETE" );
+	p.AddButton( "Delete", Vector2i( 900, 300 ), Vector2f( 150, 50 ), "DELETE" );
 
 	Panel namePopup( "name popup", 300, 200, &customMapHandler );
-	namePopup.pos = Vector2i( 960 / 2, 540 / 2 );
+	namePopup.pos = Vector2i( 960, 540 );
 	namePopup.AddButton( "ok", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "OK" );	
 	namePopup.AddTextBox( "name", Vector2i( 10, 10 ), 100, 40, "test" );
 	//bool showNamePopup = false;
@@ -316,12 +317,11 @@ void CustomMapsOption( LevelSelector &ls )
 					{
 						if( customMapHandler.showNamePopup )
 						{
-							
-							namePopup.Update( true, mousePos.x /2, mousePos.y/2 );
+							namePopup.Update( true, mousePos.x, mousePos.y);
 						}
 						else
 						{
-							p.Update( true, mousePos.x /2, mousePos.y/2 );
+							p.Update( true, mousePos.x, mousePos.y);
 							//cout << "blah: " << mousePos.x << ", " << mousePos.y << endl;
 							ls.LeftClick( true, mousePos );
 						}
@@ -335,7 +335,7 @@ void CustomMapsOption( LevelSelector &ls )
 						if( customMapHandler.showNamePopup )
 						{
 							ls.newLevelName = "";
-							namePopup.Update( false, mousePos.x /2, mousePos.y/2 );
+							namePopup.Update( false, mousePos.x, mousePos.y );
 							if( ls.newLevelName != "" )
 							{
 								
@@ -387,7 +387,7 @@ void CustomMapsOption( LevelSelector &ls )
 						}
 						else
 						{
-							p.Update( false, mousePos.x/2, mousePos.y/2 );
+							p.Update( false, mousePos.x, mousePos.y );
 							ls.LeftClick( false, mousePos );
 							if( ls.text[ls.selectedIndex].getColor() == Color::Red )
 							{
@@ -460,7 +460,7 @@ int main()
 	int windowHeight = 1080;
 
 	LevelSelector ls( arial );
-	ls.windowStretch = Vector2f( windowWidth / 960.0, windowHeight / 540.0 );
+	ls.windowStretch = Vector2f( windowWidth / 1920, windowHeight / 1080 );
 	LoadMenus();
 
 	int currentMenuSelect = 0;
@@ -513,7 +513,7 @@ int main()
 	
 	
 	v.setCenter( 0, 0 );
-	v.setSize( 1920/ 2, 1080 / 2 );
+	v.setSize( 1920 / 2, 1080 / 2 );
 	window->setView( v );
 
 	sf::Text menu;
@@ -539,15 +539,18 @@ int main()
 	window->display();
 
 	Text mainMenu[5];
+	int fontSize = 32;
 
-	int h = 50;
+	int h = 100;
+	int yoffset = 200;
+	int xoffset = 200;
 	int index = 0;
 	Text &newText = mainMenu[index];
 	newText.setString( "New Campaign" );
 	newText.setFont( arial );
 	newText.setColor( Color::Red );
-	newText.setCharacterSize( 16 );
-	newText.setPosition( 100, 100 + 50 * index );
+	newText.setCharacterSize( fontSize );
+	newText.setPosition( xoffset, yoffset + h * index );
 	
 	++index;
 
@@ -555,8 +558,8 @@ int main()
 	loadText.setString( "Load Campaign" );
 	loadText.setFont( arial );
 	loadText.setColor( Color::Red );
-	loadText.setCharacterSize( 16 );
-	loadText.setPosition( 100, 100 + 50 * index );
+	loadText.setCharacterSize( fontSize );
+	loadText.setPosition( xoffset, yoffset + h * index );
 
 	++index; 
 
@@ -564,8 +567,8 @@ int main()
 	customText.setString( "Custom Maps" );
 	customText.setFont( arial );
 	customText.setColor( Color::Red );
-	customText.setCharacterSize( 16 );
-	customText.setPosition( 100, 100 + 50 * index );
+	customText.setCharacterSize( fontSize );
+	customText.setPosition( xoffset, yoffset + h * index );
 
 	++index;
 
@@ -573,8 +576,8 @@ int main()
 	optionsText.setString( "Options" );
 	optionsText.setFont( arial );
 	optionsText.setColor( Color::Red );
-	optionsText.setCharacterSize( 16 );
-	optionsText.setPosition( 100, 100 + 50 * index );
+	optionsText.setCharacterSize( fontSize );
+	optionsText.setPosition( xoffset, yoffset + h * index );
 
 	++index;
 
@@ -582,8 +585,8 @@ int main()
 	exitText.setString( "Exit" );
 	exitText.setFont( arial );
 	exitText.setColor( Color::Red );
-	exitText.setCharacterSize( 16 );
-	exitText.setPosition( 100, 100 + 50 * index );
+	exitText.setCharacterSize( fontSize );
+	exitText.setPosition( xoffset, yoffset + h * index );
 
 	
 	

@@ -132,6 +132,8 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 {
 	posx -= pos.x;
 	posy -= pos.y;
+
+
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for( std::map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
@@ -209,11 +211,11 @@ void Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int width, in
 	//textBoxes.push_back(  );
 }
 
-void Panel::AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text )
+void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int characterHeight, const std::string &text )
 {
 	assert( labels.count( name ) == 0 );
 	sf::Text *t = new sf::Text( text, arial, characterHeight );
-	t->setPosition( pos.x, pos.y );
+	t->setPosition( pos.x + labelPos.x, pos.y + labelPos.y );
 	t->setColor( Color::Black );
 
 	labels[name] = t;
@@ -288,6 +290,7 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	
 	cursor.setPosition( owner->pos.x + pos.x + text.getLocalBounds().width + leftBorder, owner->pos.y + pos.y );
 	text.setPosition( owner->pos.x + pos.x + leftBorder, owner->pos.y + pos.y );
+	//text.setPosition( owner->pos.x + pos.x + width / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + (characterHeight + verticalBorder) / 2 - text.getLocalBounds().height / 2);
 }
 
 void TextBox::SendKey( Keyboard::Key k, bool shift )

@@ -13,14 +13,14 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double br
 	brightness = bright;
 	//radius = rad;
 	owner = own;
-	if (!sh.loadFromFile("light_shader.frag", sf::Shader::Fragment))
+	/*if (!sh.loadFromFile("light_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
 		cout << "LIGHt SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "light shader not loaded" );
-	}
+	}*/
 	
-	sh.setParameter( "pos", 0, 0 );
+	//sh.setParameter( "pos", 0, 0 );
 	//rad = rad * 10.f;// * 10.f;
 	//sh.setParameter( "lightpos", 0, -300 );
 	
@@ -59,9 +59,9 @@ bool Light::IsTouchingBox( const sf::Rect<double> &r )
 void Light::Draw( RenderTarget *target )
 {
 	//falloff2 *= 100.f;
-	sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
-	sh.setParameter( "zoom", owner->cam.GetZoom() );
-	sh.setParameter( "resolution", owner->window->getSize().x, owner->window->getSize().y);
+	//sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
+	//sh.setParameter( "zoom", owner->cam.GetZoom() );
+	//sh.setParameter( "resolution", owner->window->getSize().x, owner->window->getSize().y);
 	//sh.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2, 
 	//	owner->view.getCenter().y + owner->view.getSize().y / 2 );
 
@@ -69,7 +69,7 @@ void Light::Draw( RenderTarget *target )
 		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
 	Vector3f lightpos( vi0.x / (float)owner->window->getSize().x, -1 + vi0.y / (float)owner->window->getSize().y, depth );
 
-	sh.setParameter( "lightpos", lightpos );
+	//sh.setParameter( "lightpos", lightpos );
 
 	
 	/*cs.setRadius( 20 );

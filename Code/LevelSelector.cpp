@@ -32,8 +32,8 @@ string TreeNode::GetLocalPath()
 
 LevelSelector::LevelSelector( Font & p_font )
 {		
-	width = 200;
-	height = 540;
+	width = 400;
+	height = 1080;
 	drawPanel.create( width, height );
 	drawPanel.clear();
 	entries = NULL;
@@ -43,9 +43,9 @@ LevelSelector::LevelSelector( Font & p_font )
 	mouseOverIndex = -1;
 	position = Vector2f( 0, 0 );
 	selectedIndex = 0;
-	fontHeight = 12;
-	xspacing = 20;
-	yspacing = 20;
+	fontHeight = 24;
+	xspacing = 40;
+	yspacing = 40;
 	mouseDownIndex = -1;
 	localPaths = NULL;
 	mouseDown = false;

@@ -23,6 +23,10 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
+ const double EditSession::PRIMARY_LIMIT = .999;
+
+
+
 TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	:grassTex( gt )
 {
@@ -237,7 +241,7 @@ void TerrainPolygon::Finalize()
 }
 
 bool TerrainPolygon::RemoveSelectedPoints()
-{
+{	
 	PointList temp = points;
 
 	Reset();
@@ -636,6 +640,152 @@ void TerrainPolygon::Reset()
 	va = NULL;
 }
 
+bool TerrainPolygon::IsRemovePointsOkay( EditSession *edit )
+{
+	list<PointPair> removalPairs;
+	removalPairs.push_back( PointPair() );
+	PointList::iterator prev, next;
+	bool first = true;
+	bool continuation = false;
+
+	TerrainPolygon tempPoly( grassTex );
+
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		if( !(*it).selected )
+		{
+			tempPoly.points.push_back( (*it) );
+		}
+	}
+
+	return edit->IsPolygonValid( tempPoly, this );
+
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		if( !(*it).selected )
+		{
+			continue;
+		}
+
+		if( it == points.begin() )
+		{
+			prev = points.end();
+			prev--;
+		}
+		else
+		{
+			prev = it;
+			prev--;
+		}
+
+		PointList::iterator temp = it;
+		++temp;
+		if( temp == points.end() )
+		{
+			next = points.begin();
+		}
+		else
+		{
+			next = it;
+			next++;
+		}
+		
+		if( (*prev).selected && first )
+		{
+			if( it == points.begin() )
+			{
+				continuation = true;
+				//removalPairs.back().second = (*it).pos;
+				//removalPairs.push_back( PointPair() );
+			}
+			continue;
+		}
+
+		if( first )
+		{
+			removalPairs.back().first = (*prev).pos;
+			first = false;
+		}
+		else if( !(*next).selected )
+		{
+			removalPairs.back().second = (*next).pos;
+			first = true;
+			removalPairs.push_back( PointPair() );
+		}
+
+
+		/*V2d itPos( (*it).pos.x, (*it).pos.y );
+		V2d nextPos( (*next).pos.x, (*next).pos.y );
+		V2d prevPos( (*prev).pos.x, (*prev).pos.y );
+		V2d along = normalize( nextPos - prevPos );
+		cout << "along: " << along.x << ", " << along.y << endl;
+		//V2d other( along.y, -along.x );
+
+		
+		//V2d vec = tPoint - backPoint;
+		//V2d normVec = normalize( vec );
+		
+		if( itPos.x == prevPos.x || itPos.y == prevPos.y )
+		{
+		}
+		else
+		{
+			V2d extreme( 0, 0 );
+			if( along.x > EditSession::PRIMARY_LIMIT )
+				extreme.x = 1;
+			else if( along.x < -EditSession::PRIMARY_LIMIT )
+				extreme.x = -1;
+			if( along.y > EditSession::PRIMARY_LIMIT )
+				extreme.y = 1;
+			else if( along.y < -EditSession::PRIMARY_LIMIT )
+				extreme.y = -1;
+
+			//extreme = normalize( extreme );
+
+			if( !( extreme.x == 0 && extreme.y == 0 ) )
+			{
+				cout << "returning false: " << extreme.x << ", " << extreme.y << endl;
+				return false;
+			}
+		}*/
+	}
+
+	if( continuation )
+	{
+		assert( !first );
+		for( PointList::iterator it = points.begin(); it != points.end(); ++it )		
+		{
+			assert( (*it).selected );
+			PointList::iterator temp = it;
+		}
+
+	}
+
+	return true;
+}
+
+bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
+{
+	TerrainPolygon tempPoly( grassTex );
+
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		if( !(*it).selected )
+		{
+			tempPoly.points.push_back( (*it) );
+		}
+		else
+		{
+			TerrainPoint & p = (*it);
+			p.pos += delta;
+
+			tempPoly.points.push_back( p );
+		}
+	}
+
+	return edit->IsPolygonValid( tempPoly, this );
+}
+
 bool TerrainPolygon::IsClockwise()
 {
 	assert( points.size() > 0 );
@@ -782,6 +932,26 @@ void TerrainPolygon::ShowGrass( bool show )
 	}
 }
 
+sf::Rect<int> TerrainPolygon::TempAABB()
+{
+	assert( points.size() > 1 );
+	PointList::iterator it = points.begin();
+	int l = (*it).pos.x;
+	int r = (*it).pos.x;
+	int t = (*it).pos.y;
+	int b = (*it).pos.y;
+	++it;
+	for( ; it != points.end(); ++it )
+	{
+		l = min( (*it).pos.x, l);
+		r = max( (*it).pos.x, r);
+		t = min( (*it).pos.y, t);
+		b = max( (*it).pos.y, b );
+	}
+
+	return Rect<int>( l, t, r- l, b - t );
+}
+
 StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos, int rad, int bright )
 	:color( c ), position( pos ), radius( rad ), brightness( bright )
 {
@@ -831,6 +1001,9 @@ EditSession::EditSession( RenderWindow *wi)
 	showTerrainPath = false;
 	minAngle = .99;
 	showPoints = false;
+	messagePopup = NULL;
+	errorPopup = NULL;
+	popupPanel = NULL;
 	//	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
 }
@@ -1900,7 +2073,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.
 	//rtt.create( 400, 400 );
 	//rtt.clear();
-
+	popupPanel = NULL;
 	validityRadius = 4;
 
 	extendingPolygon = NULL;
@@ -1965,6 +2138,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
+	messagePopup = CreatePopup( "message" );
+	errorPopup = CreatePopup( "error" );
 
 	types["patroller"] = patrollerType;
 	types["crawler"] = crawlerType;
@@ -2016,7 +2191,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	
 	sf::Vector2u wSize = w->getSize();
-	sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+	sf::View uiView( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 	//sf::View uiView( Vector2f( wSize.x / 2, wSize.y / 2 ), Vector2f( wSize.x, wSize.y ) );
 
 	//goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
@@ -2148,6 +2323,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		w->setView( uiView );
 		Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
+		
 		w->setView( view );
 		sf::Event ev;
 
@@ -2166,7 +2342,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( showPanel != NULL )
+								if( popupPanel != NULL )
+								{
+									popupPanel->Update( true, uiMouse.x, uiMouse.y );
+								}
+								else if( showPanel != NULL )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
 									break;
@@ -2177,7 +2357,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseButtonReleased:
 						{
-							if( showPanel != NULL )
+							if( popupPanel != NULL )
+							{
+								popupPanel->Update( false, uiMouse.x, uiMouse.y );
+							}
+							else if( showPanel != NULL )
 							{	
 								showPanel->Update( false, uiMouse.x, uiMouse.y );
 							}
@@ -2185,10 +2369,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseWheelMoved:
 						{
-							
+							break;
 						}
 					case Event::KeyPressed:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
+
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -2247,6 +2436,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									
 									if( !valid )
 									{
+										popupPanel = messagePopup;
 										break;
 									}
 
@@ -2348,6 +2538,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyReleased:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
+
+
 							if( ev.key.code == sf::Keyboard::E )
 							{
 								showPoints = false;
@@ -2376,13 +2572,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( popupPanel != NULL )
+								{
+									popupPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}
+
 								if( showPanel != NULL )
 								{	
 									//cout << "edit mouse update" << endl;
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
-
-									
-
 									break;
 								}
 
@@ -2603,6 +2802,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( popupPanel != NULL )
+								{
+									popupPanel->Update( false, uiMouse.x, uiMouse.y );
+									break;
+								}
+
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
@@ -2632,6 +2837,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
+
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -2643,10 +2853,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( CountSelectedPoints() > 0 )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
-										it != selectedPolygons.end(); ++it )
+									bool removeSuccess = IsRemovePointsOkay();
+
+									if( removeSuccess )
 									{
-										(*it)->RemoveSelectedPoints();
+										for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+											it != selectedPolygons.end(); ++it )
+										{
+											(*it)->RemoveSelectedPoints();
+										}
+									}
+									else
+									{
+										messagePopup->labels["message"]->setString( "problem removing points" );
+										popupPanel = messagePopup;
 									}
 								}
 								else if( selectedActor != NULL )
@@ -2714,6 +2934,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyReleased:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
+
+
 							if( ev.key.code == Keyboard::W )
 							{
 								pointGrab = false;
@@ -2966,6 +3192,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( popupPanel != NULL )
+								{
+									popupPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
@@ -2981,6 +3212,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( popupPanel != NULL )
+								{
+									popupPanel->Update( false, uiMouse.x, uiMouse.y );
+									break;
+								}
+
 								if( showPanel == NULL && trackingEnemy != NULL )
 								{
 									if( trackingEnemy->name == "patroller" )
@@ -3057,6 +3294,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
+
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -3076,11 +3318,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						case Event::MouseButtonPressed:
 							{
+								/*if( popupPanel != NULL )
+								{
+									popupPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}*/
 								break;
 							}
 						case Event::MouseButtonReleased:
 							{
-
+								/*if( popupPanel != NULL )
+								{
+									popupPanel->Update( false, uiMouse.x, uiMouse.y );
+									break;
+								}*/
 								break;
 							}
 						case Event::GainedFocus:
@@ -3291,11 +3542,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 					case Event::MouseButtonPressed:
 						{
-
+							if( popupPanel != NULL )
+							{
+								popupPanel->Update( true, uiMouse.x, uiMouse.y );
+								break;
+							}
 							break;
 						}
 					case Event::MouseButtonReleased:
 						{
+							if( popupPanel != NULL )
+							{
+								popupPanel->Update( false, uiMouse.x, uiMouse.y );
+								break;
+							}
 							break;
 						}
 					case Event::MouseWheelMoved:
@@ -3304,6 +3564,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
+
+
 							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
 							{
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
@@ -3348,6 +3614,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								if( popupPanel != NULL )
+								{
+									popupPanel->Update( true, uiMouse.x, uiMouse.y );
+									break;
+								}
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
@@ -3363,6 +3634,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseButtonReleased:
 						{
+							if( popupPanel != NULL )
+							{
+								popupPanel->Update( false, uiMouse.x, uiMouse.y );
+								break;
+							}
 							if( showPanel != NULL )
 							{	
 								showPanel->Update( false, uiMouse.x, uiMouse.y );
@@ -3393,6 +3669,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( popupPanel != NULL )
+							{
+								break;
+							}
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -3421,7 +3701,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 			//ones that aren't specific to mode
 			
-			if( mode != PAUSED && mode != SELECT_MODE )
+			if( mode != PAUSED && mode != SELECT_MODE && popupPanel == NULL )
 			{
 				switch( ev.type )
 				{
@@ -3646,7 +3926,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					testPoint = Vector2f(last.x, last.y) + dir * (float)len;
 					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}*/
-				if( showPanel != NULL )
+
+				
+
+				if( popupPanel != NULL || showPanel != NULL )
 					break;
 
 				if( //polygonInProgress->points.size() > 0 && 
@@ -3682,14 +3965,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					V2d extreme( 0, 0 );
 					V2d vec = tPoint - backPoint;
 					V2d normVec = normalize( vec );
-					double limit = .999;
-					if( normVec.x > limit )
+					
+					if( normVec.x > PRIMARY_LIMIT )
 						extreme.x = 1;
-					else if( normVec.x < -limit )
+					else if( normVec.x < -PRIMARY_LIMIT )
 						extreme.x = -1;
-					if( normVec.y > limit )
+					if( normVec.y > PRIMARY_LIMIT )
 						extreme.y = 1;
-					else if( normVec.y < -limit )
+					else if( normVec.y < -PRIMARY_LIMIT )
 						extreme.y = -1;
 
 					//extreme = normalize( extreme );
@@ -3933,6 +4216,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								break;
 						}
 					}*/
+					
+					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+							it != selectedPolygons.end(); ++it )
+					{
+						if( !(*it)->IsMovePointsOkay( this, pointGrabDelta ) )
+						{
+							validMove = false;
+							break;
+						}
+
+					}
 
 					if( validMove )
 					{
@@ -3940,6 +4234,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 						{
+
 							bool affected = false;
 
 							PointList & points = (*it)->points;
@@ -3976,7 +4271,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					else
 					{
-						cout << "NOT VALID move" << endl;
+						//cout << "NOT VALID move" << endl;
 					}
 
 				}
@@ -4270,12 +4565,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						colorSelection = validColor;
 					}
-					sf::Vertex activePreview[2] =
+
+					if( popupPanel == NULL )
 					{
-						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
-						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
-					};
-					w->draw( activePreview, 2, sf::Lines );
+						sf::Vertex activePreview[2] =
+						{
+							sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
+							sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+						};
+
+
+						w->draw( activePreview, 2, sf::Lines );
+					}
 
 					if( progressSize > 1 )
 					{
@@ -4883,6 +5184,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			showPanel->Draw( w );
 		}
 
+		if( popupPanel != NULL )
+		{
+			popupPanel->Draw( w );
+		}
+
 		w->setView( view );
 
 
@@ -5325,6 +5631,22 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "message_popup" )
+	{
+		if( b->name == "ok" )
+		{
+			//showPanel = NULL;
+			cout << "setting to null" << endl;
+			popupPanel = NULL;
+		}
+	}
+	else if( p->name == "error_popup" )
+	{
+		if( b->name == "ok" )
+		{
+			showPanel = NULL;
+		}
+	}
 	//cout <<"button" << endl;
 }
 
@@ -5593,6 +5915,170 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	return true;
 }
 
+bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
+{
+	Rect<int> polyAABB = poly.TempAABB();
+	polyAABB.left -= minimumEdgeLength;
+	polyAABB.top -= minimumEdgeLength;
+	polyAABB.width += minimumEdgeLength * 2;
+	polyAABB.height += minimumEdgeLength * 2;
+
+	for( list<TerrainPolygon*>::iterator polyIt = polygons.begin(); polyIt != polygons.end(); ++polyIt )
+	{
+		if( ignore == (*polyIt ) )
+		{
+			continue;
+		}
+		//eventually do a quad tree for this to speed it up
+		Rect<int> currAABB = (*polyIt)->TempAABB();
+		currAABB.left -= minimumEdgeLength;
+		currAABB.top -= minimumEdgeLength;
+		currAABB.width += minimumEdgeLength * 2;
+		currAABB.height += minimumEdgeLength * 2;
+
+		if( !polyAABB.intersects( currAABB ) )
+		{
+			continue;
+		}
+
+		//points vs points
+		/*for( PointList::iterator pit = (*polyIt)->points.begin(); pit != (*polyIt)->points.end(); ++pit )
+		{
+			for( PointList::iterator myPit = poly.points.begin(); myPit != poly.points.end(); ++myPit )
+			{
+				V2d mine( (*myPit).pos.x, (*myPit).pos.y );
+				V2d other( (*pit).pos.x, (*pit).pos.y );
+
+				if( length( mine - other ) < minimumEdgeLength )
+				{
+					return false;
+				}
+			}
+		}*/
+
+
+		//my points vs his lines
+		for( PointList::iterator myPit = poly.points.begin(); myPit != poly.points.end(); ++myPit )
+		{
+			Vector2i oldPoint, currPoint;
+			if( myPit == poly.points.begin() )
+			{
+				PointList::iterator temp = poly.points.end();
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+			else
+			{
+				PointList::iterator temp = myPit;
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+
+			currPoint = (*myPit).pos;
+
+			if( !IsPointValid( oldPoint, currPoint, (*polyIt) ) )
+			{
+
+				cout << "a: old: " << oldPoint.x << ", " << oldPoint.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
+				return false;
+			}
+			//IsPointValid(
+		}
+
+		//his points vs my lines
+		for( PointList::iterator pit = (*polyIt)->points.begin(); pit != (*polyIt)->points.end(); ++pit )
+		{
+			Vector2i oldPoint, currPoint;
+			if( pit == poly.points.begin() )
+			{
+				PointList::iterator temp = poly.points.end();
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+			else
+			{
+				PointList::iterator temp = pit;
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+
+			currPoint = (*pit).pos;
+
+			if( !IsPointValid( oldPoint, currPoint, &poly ) )
+			{
+				cout << "b" << endl;
+				return false;
+			}
+			//IsPointValid(
+		}
+
+		//my lines vs his lines
+		for( PointList::iterator myPit = poly.points.begin(); myPit != poly.points.end(); ++myPit )
+		{
+			PointList::iterator myPrev;
+			if( myPit == poly.points.begin() )
+			{
+				PointList::iterator temp = poly.points.end();
+				--temp;
+				myPrev = temp;
+			}
+			else
+			{
+				myPrev = myPit;
+				myPrev--;
+			}
+
+			for( PointList::iterator pit = (*polyIt)->points.begin(); pit != (*polyIt)->points.end(); ++pit )
+			{
+				PointList::iterator prev;
+				if( pit == (*polyIt)->points.begin() )
+				{
+					PointList::iterator temp = (*polyIt)->points.end();
+					--temp;
+					prev = temp;
+				}
+				else
+				{
+					prev = pit;
+					--prev;
+				}
+
+				LineIntersection li = SegmentIntersect( (*myPrev).pos, (*myPit).pos, (*prev).pos, (*pit).pos );
+				if( !li.parallel )
+				{
+					return false;
+				}
+			}
+		}
+
+
+
+		//hes inside me w/ no intersection
+		for( PointList::iterator pit = (*polyIt)->points.begin(); pit != (*polyIt)->points.end(); ++pit )
+		{
+			if( poly.ContainsPoint( Vector2f( (*pit).pos.x, (*pit).pos.y ) ) )
+			{
+				cout << "c" << endl;
+				return false;
+			}
+		}
+
+
+		//im inside him w/ no intersection
+		for( PointList::iterator myPit = poly.points.begin(); myPit != poly.points.end(); ++myPit )
+		{
+			if( (*polyIt)->ContainsPoint( Vector2f( (*myPit).pos.x, (*myPit).pos.y ) ) )
+			{
+				cout << "d" << endl;
+				return false;
+			}
+		}
+	}
+
+	cout << "true" << endl;
+	return true;
+}
+
 void EditSession::ExtendAdd()
 {
 	list<TerrainPolygon*>::iterator it = polygons.begin();
@@ -5664,6 +6150,41 @@ void EditSession::ExtendAdd()
 		polygons.push_back( currentBrush );
 		//polygonInProgress->Reset();
 	}
+}
+
+Panel * EditSession::CreatePopup( const std::string &type )
+{
+	if( type == "message" )
+	{
+		Panel *p = new Panel( "message_popup", 400, 100, this );
+		p->pos.x = 300;
+		p->pos.y = 300;
+		p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
+		p->AddLabel( "message", Vector2i( 10, 10 ), 12, "_EMPTY\n_MESSAGE_" );
+		return p;
+		//p->
+	}
+	else if( type == "error" )
+	{
+		Panel *p = new Panel( "error_popup", 400, 100, this );
+		p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
+		p->AddLabel( "message", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
+		return p;
+	}
+
+	return NULL;
+}
+
+bool EditSession::IsRemovePointsOkay()
+{
+	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+		it != selectedPolygons.end(); ++it )
+	{
+		if( !(*it)->IsRemovePointsOkay( this ) )
+			return false;
+		//(*it)->RemoveSelectedPoints();
+	}
+	return true;
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )

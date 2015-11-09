@@ -34,7 +34,9 @@ struct TerrainPoint
 };
 
 typedef std::list<TerrainPoint> PointList;
+typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
+struct EditSession;
 struct TerrainPolygon
 {
 	TerrainPolygon( sf::Texture *grassTex );
@@ -43,6 +45,7 @@ struct TerrainPolygon
 	PointList points;
 	std::string material;
 	bool RemoveSelectedPoints();
+	bool IsRemovePointsOkay(EditSession *edit);
 	void Finalize();
 	void Reset();
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
@@ -55,6 +58,9 @@ struct TerrainPolygon
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	bool IsTouching( TerrainPolygon *p );
+	bool IsMovePointsOkay( EditSession *edit,
+		sf::Vector2i delta );
+	sf::Rect<int> TempAABB();
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	sf::VertexArray *grassVA;
@@ -137,7 +143,7 @@ struct EditSession : GUIHandler
 {
 	EditSession( sf::RenderWindow *w);
 	~EditSession();
-	
+		
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
@@ -151,6 +157,11 @@ struct EditSession : GUIHandler
 
 	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
 	void ExtendAdd();
+	bool IsPolygonValid( TerrainPolygon &poly,
+		 TerrainPolygon *ignore );
+
+	const static double PRIMARY_LIMIT;
+
 	int validityRadius;
 	bool showGrass;
 	sf::Texture grassTex;
@@ -208,6 +219,7 @@ struct EditSession : GUIHandler
 
 	double minimumEdgeLength;
 	double minAngle;
+	
 	std::list<TerrainPolygon*> polygons;
 	TerrainPolygon *polygonInProgress;
 	std::list<sf::VertexArray*> progressDrawList;
@@ -234,7 +246,14 @@ struct EditSession : GUIHandler
 	sf::Sprite enemySprite;
 	ActorType *trackingEnemy;//bool trackingEnemy;
 	Panel *showPanel;
+	Panel *popupPanel;
 	bool trackingEnemyDown;
+
+	Panel * CreatePopup( const std::string &p );
+	Panel *messagePopup;
+	Panel *errorPopup;
+
+	bool IsRemovePointsOkay();
 
 	Panel *CreateOptionsPanel( const std::string &name );
 	void WriteGrass( TerrainPolygon * p, std::ofstream &of );

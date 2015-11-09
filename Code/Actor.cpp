@@ -555,7 +555,7 @@ Actor::Actor( GameSession *gs )
 		sh.setParameter( "hasPowerTimeSlow", hasPowerTimeSlow );
 		sh.setParameter( "hasPowerLeftWire", hasPowerLeftWire );
 		sh.setParameter( "hasPowerRightWire", hasPowerRightWire );
-		sh.setParameter( "hasPowerClones", hasPowerClones > 0 );
+		//sh.setParameter( "hasPowerClones", hasPowerClones > 0 );
 
 		//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 		//{
@@ -10150,6 +10150,19 @@ Vector2i Actor::GetWireOffset()
 	{
 		//offset.y = -offset.y;
 	}
+
+	//if( b.rh < normalHeight )
+	/*{
+		if( ground != NULL )
+		{
+			offset = Vector2i( 0, 5 );
+		}
+		else
+		{
+			offset = Vector2i( 0, 0 );
+		}
+		
+	}*/
 
 	return offset;
 }

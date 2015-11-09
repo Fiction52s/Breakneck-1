@@ -37,7 +37,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void SwapPoints( int aIndex, int bIndex );
 	void UpdateQuads();
 	void Reset();
-	sf::Vector2<double> GetOriginPos();
+	sf::Vector2<double> GetOriginPos( bool test );
 	
 	int extraBuffer; //when swinging around edges sometimes the wire
 	//stretches some. This is attemping to hole up that problem. if it happens

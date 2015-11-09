@@ -28,7 +28,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	ControllerState &prevInput = player->prevInput;
 
 	//V2d playerPos = player->position;
-	V2d playerPos = GetOriginPos();
+	V2d playerPos = GetOriginPos(true);
 	storedPlayerPos = playerPos;
 	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
 	/*V2d dir;
@@ -399,7 +399,7 @@ void Wire::UpdateAnchors( V2d vel )
 {
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );
-	V2d playerPos = GetOriginPos();
+	V2d playerPos = GetOriginPos(true);
 
 	if( state == HIT || state == PULLING )
 	{
@@ -408,7 +408,19 @@ void Wire::UpdateAnchors( V2d vel )
 			//return;
 		}
 		
-		
+		/*for( int i = numPoints - 1; i >= 0; --i )
+		{ 
+			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
+			if( result > 0 )
+			{
+				//cout << "removing point " << result << endl;
+				numPoints--;
+			}
+			else
+			{
+				break;
+			}
+		}*/
 		
 		
 		oldPos = storedPlayerPos;////playerPos - vel;//
@@ -435,6 +447,8 @@ void Wire::UpdateAnchors( V2d vel )
 			//line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
 			realAnchor = points[numPoints-1].pos;
 		}
+
+
 
 		int counter = 0;
 		while( true )
@@ -523,7 +537,13 @@ void Wire::UpdateAnchors( V2d vel )
 			{
 				if( numPoints > 1 )
 				{
-					assert( !(closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) );
+					
+					if( (closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) )
+					{
+						cout << "problem  point: " << closestPoint.x << ", " << closestPoint.y << endl;
+						break;
+					}
+					//assert( !(closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) );
 				}
 
 
@@ -660,7 +680,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	//rayPortion > 1 &&
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );	
-	V2d playerPos = GetOriginPos();
+	V2d playerPos = GetOriginPos(true);
 
 	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
 	{
@@ -681,7 +701,7 @@ void Wire::TestPoint( Edge *e )
 	
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );
-	V2d playerPos = GetOriginPos();
+	V2d playerPos = GetOriginPos(true);
 
 	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
@@ -887,7 +907,7 @@ void Wire::UpdateQuads()
 	//if( state == FIRING )
 	//	++framesFiring;
 	
-	V2d playerPos = GetOriginPos();
+	V2d playerPos = GetOriginPos(false);
 
 	//cout << "starting update quads" << endl;
 	V2d alongDir;// = fireDir;
@@ -914,7 +934,7 @@ void Wire::UpdateQuads()
 				if( numPoints == 0 )
 				{
 					currWirePos = anchor.pos;
-					currWireStart = playerPos;
+					currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
 					//alongDir = normalize(currWirePos - playerPos);
 				//	cout << "only rope from anchor to player" << endl;
 				}
@@ -931,7 +951,7 @@ void Wire::UpdateQuads()
 				if( pointI == numPoints )
 				{
 					currWirePos = points[pointI-1].pos;
-					currWireStart = playerPos;
+					currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
 					//alongDir = normalize( currWirePos - playerPos );
 					
 				//	cout << "beginning rope from player to points" << endl;
@@ -958,7 +978,7 @@ void Wire::UpdateQuads()
 			otherDir.x = otherDir.y;
 			otherDir.y = -temp;
 			currWirePos = playerPos + fireDir * fireRate * (double)framesFiring;
-			currWireStart = playerPos;
+			currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
 		}
 		
 		
@@ -1178,7 +1198,7 @@ void Wire::Reset()
 	frame = 0;
 }
 
-V2d Wire::GetOriginPos()
+V2d Wire::GetOriginPos( bool test )
 {
 	offset = player->GetWireOffset();
 
@@ -1206,6 +1226,10 @@ V2d Wire::GetOriginPos()
 	{
 		playerPos = player->position;
 	}
+
+	if( test )
+		playerPos = player->position;
+
 	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
 	return playerPos;
 }

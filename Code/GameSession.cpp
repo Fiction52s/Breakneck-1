@@ -1254,7 +1254,8 @@ int GameSession::Run( string fileN )
 	preScreenTex->setView( view );
 	//window->setView( view );
 
-	uiView = View( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
+	
+	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
 	window->setVerticalSyncEnabled( true );
 
@@ -2180,7 +2181,7 @@ int GameSession::Run( string fileN )
 
 		
 
-	//	DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -2230,8 +2231,8 @@ int GameSession::Run( string fileN )
 		const Texture &miniTex = minimapTex->getTexture();
 
 		Sprite minimapSprite( miniTex );
-		minimapSprite.setPosition( preScreenTex->getSize().x / 2 - 150, preScreenTex->getSize().y / 2 - 150 );
-		minimapSprite.setScale( .5, .5 );
+		minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
+		//minimapSprite.setScale( .5, .5 );
 		minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 
 		preScreenTex->setView( uiView );
