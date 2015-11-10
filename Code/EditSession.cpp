@@ -22,6 +22,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+#define cout std::cout
 
  const double EditSession::PRIMARY_LIMIT = .999;
 
@@ -3242,9 +3243,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									if( trackingEnemy->name == "patroller" )
 									{
-										mode = CREATE_PATROL_PATH;
+										showPanel = trackingEnemy->panel;
 										patrolPath.clear();
 										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+
+										//mode = CREATE_PATROL_PATH;
+										//patrolPath.clear();
+										//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
 									else if( trackingEnemy->name == "crawler" )
 									{
@@ -3530,13 +3535,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							else if( ev.key.code == Keyboard::Space )
 							{
 								showPanel = trackingEnemy->panel;
+								mode = CREATE_ENEMY;
+								/*showPanel = trackingEnemy->panel;
 								trackingEnemy = NULL;
 								ActorParams *actor = new ActorParams;
 								actor->SetAsPatroller( patrollerType, patrolPath.front(), patrolPath, 10, false );
 								groups["--"]->actors.push_back( actor);
 								actor->group = groups["--"];
 								patrolPath.clear();
-								mode = CREATE_ENEMY;
+								mode = CREATE_ENEMY;*/
 							}
 							break;
 						}
@@ -5432,14 +5439,41 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	Panel *p = b->owner;
 	if( p->name == "patroller_options" )
 	{
-		if( b->name == "ok" );
+		if( b->name == "ok" )
 		{
 			bool loop = p->checkBoxes["loop"]->checked;
+			int speed = 1; 
 
+			try
+			{
+				speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+			}
+			catch(boost::bad_lexical_cast &)
+			{
+				//error
+			}
 
+			//showPanel = trackingEnemy->panel;
 			
+			ActorParams *actor = new ActorParams;
+			//patrolPath.clear();
+			actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
+			groups["--"]->actors.push_back( actor);
+			actor->group = groups["--"];
+			trackingEnemy = NULL;
+			//mode = CREATE_ENEMY;
+			//patroller path should get set only from hitting the button within it to start the path check
 
 			showPanel = NULL;
+		}
+		else if( b->name == "createpath" )
+		{
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back( front );
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
 	else if( p->name == "crawler_options" )
@@ -5728,6 +5762,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
