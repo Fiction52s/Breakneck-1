@@ -61,6 +61,7 @@ struct TerrainPolygon
 	bool IsMovePointsOkay( EditSession *edit,
 		sf::Vector2i delta );
 	bool IsMovePointsOkay( EditSession *edit,
+		sf::Vector2i pointGrabDelta,
 		sf::Vector2i *deltas );
 	bool IsMovePolygonOkay( EditSession *edit, 
 		sf::Vector2i delta );

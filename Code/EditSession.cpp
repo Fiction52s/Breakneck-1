@@ -788,7 +788,7 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 	return edit->IsPolygonValid( tempPoly, this );
 }
 
-bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i *deltas )
+bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelta, Vector2i *deltas )
 {
 	TerrainPolygon tempPoly( grassTex );
 
@@ -805,7 +805,7 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i *deltas )
 		{
 			TerrainPoint p = (*it);
 			
-			p.pos += deltas[i];
+			p.pos += pointGrabDelta - deltas[i];
 
 			tempPoly.points.push_back( p );
 		}
@@ -4482,33 +4482,62 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 
 
+							V2d pos((*it2).pos.x + pointGrabDelta.x, (*it2).pos.y + pointGrabDelta.y );
+							V2d prevPos( (*prev).pos.x, (*prev).pos.y );
+							V2d nextPos( (*next).pos.x, (*next).pos.y );
+
 							V2d extreme( 0, 0 );
 							Vector2i vec = (*it2).pos - (*prev).pos;
 							V2d normVec = normalize( V2d( vec.x, vec.y ) );
+
+							V2d newVec = normalize( pos - V2d( (*prev).pos.x, (*prev).pos.y ) );
 		
 							if( !(*prev).selected )
 							{
 								if( normVec.x == 0 || normVec.y == 0 )
 								{
-									if( normVec.x == 0 )
+									if( newVec.x > prim_limit )
+										extreme.x = 1;
+									else if( newVec.x < -prim_limit )
+										extreme.x = -1;
+									if( newVec.y > prim_limit )
+										extreme.y = 1;
+									else if( newVec.y < -prim_limit )
+										extreme.y = -1;
+									/*double ff = dot( normalize( prevPos - pos ), extreme );
+									if( ff > prim_limit )
 									{
-										if( abs( pointGrabDelta.x ) < 20 )
+										if( normVec.x == 0 )
 										{
-											cout << "bb: " << pointGrabDelta.x << endl;
 											pointGrabPos.x = oldPointGrabPos.x;
-											validMove = false;
-											break;
 										}
 										else
 										{
-											cout << "bb: " << pointGrabDelta.x << endl;
+											pointGrabPos.y = oldPointGrabPos.y;
 										}
+										
+										validMove = false;
+										break;
+									} */
+									if( extreme.x != 0 )
+									{
+										pointGrabPos.y = oldPointGrabPos.y;
+										pointGrabDelta.y = 0;
 									}
+									
+									if( extreme.y != 0 )
+									{
+										pointGrabPos.x = oldPointGrabPos.x;
+										pointGrabDelta.x = 0;
+									}
+
+									
 									//pointGrabPos = oldPointGrabPos;
 								//	pointGrabPos = oldPointGrabPos;
 								}
 								else
 								{
+									
 									if( normVec.x > prim_limit )
 										extreme.x = 1;
 									else if( normVec.x < -prim_limit )
@@ -4517,7 +4546,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										extreme.y = 1;
 									else if( normVec.y < -prim_limit )
 										extreme.y = -1;
-
 									//extreme = normalize( extreme );
 
 								
@@ -4546,21 +4574,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								extreme = V2d( 0, 0 );
 
+								newVec = normalize( pos - V2d( (*next).pos.x, (*next).pos.y ) );
+								
 								if( normVec.x == 0 || normVec.y == 0 )
 								{
-									if( normVec.x == 0 )
+									if( newVec.x > prim_limit )
+										extreme.x = 1;
+									else if( newVec.x < -prim_limit )
+										extreme.x = -1;
+									if( newVec.y > prim_limit )
+										extreme.y = 1;
+									else if( newVec.y < -prim_limit )
+										extreme.y = -1;
+									
+									if( extreme.x != 0 )
 									{
-										if( abs( pointGrabDelta.x ) < 20 )
-										{
-											cout << "a: " << pointGrabDelta.x << endl;
-											pointGrabPos.x = oldPointGrabPos.x;
-											validMove = false;
-											break;
-										}
-										else
-										{
-											cout << "a: " << pointGrabDelta.x << endl;
-										}
+										pointGrabPos.y = oldPointGrabPos.y;
+										pointGrabDelta.y = 0;
+									}
+									
+									if( extreme.y != 0 )
+									{
+										pointGrabPos.x = oldPointGrabPos.x;
+										pointGrabDelta.x = 0;
 									}
 									//pointGrabPos = oldPointGrabPos;
 								//	pointGrabPos = oldPointGrabPos;
@@ -4600,7 +4636,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								cout << "diff: " << diff.x << ", " << diff.y << endl;
 								//pointGrabPos = oldPointGrabPos;
 							}
-							deltas[deltaIndex] = pointGrabDelta - diff;
+							deltas[deltaIndex] = diff;
 							
 							
 
@@ -4609,7 +4645,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 
 						//if( !(*it)->IsMovePointsOkay( this, pointGrabDelta - diff ) )
-						if( validMove && !(*it)->IsMovePointsOkay( this, deltas ) )
+						if( validMove && !(*it)->IsMovePointsOkay( this, pointGrabDelta, deltas ) )
 						{
 							validMove = false;
 						//	cout << "invalid" << endl;
@@ -4645,7 +4681,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									Vector2i delta = allDeltas[allDeltaIndex][deltaIndex];
 									cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
 									cout << "moving: " << delta.x << ", " << delta.y << endl;
-									(*pointIt).pos += delta; //pointGrabDelta - ;
+									(*pointIt).pos += pointGrabDelta - delta; //pointGrabDelta - ;
 									affected = true;
 								}
 
