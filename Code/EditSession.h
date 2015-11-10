@@ -161,6 +161,8 @@ struct EditSession : GUIHandler
 	void ExtendAdd();
 	bool IsPolygonValid( TerrainPolygon &poly,
 		 TerrainPolygon *ignore );
+	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
+
 
 	const static double PRIMARY_LIMIT;
 

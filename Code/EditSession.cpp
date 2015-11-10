@@ -2924,15 +2924,36 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == Keyboard::W )
 							{
-								if( CountSelectedPoints() > 0 )
+								int countPoints = CountSelectedPoints();
+								if( countPoints > 0 )
 								{
 									pointGrab = true;
-									pointGrabPos = Vector2i( worldPos.x, worldPos.y );
+
+									
+									if( Keyboard::isKeyPressed( Keyboard::G ) )
+									{
+										V2d graphPos = GraphPos( worldPos );
+										pointGrabPos = Vector2i( graphPos.x, graphPos.y );
+										//pointGrabPos = Vector2i( worldPos.x, worldPos.y );
+									}
+									else
+									{
+										pointGrabPos = Vector2i( worldPos.x, worldPos.y );
+									}
 								}
 								else if( selectedPolygons.size() > 0 )
 								{
 									polyGrab = true;
-									polyGrabPos = Vector2i( worldPos.x, worldPos.y );
+
+									if( Keyboard::isKeyPressed( Keyboard::G ) )
+									{
+										V2d graphPos = GraphPos( worldPos );
+										polyGrabPos = Vector2i( graphPos.x, graphPos.y );
+									}
+									else
+									{
+										polyGrabPos = Vector2i( worldPos.x, worldPos.y );
+									}
 								}
 							}
 							else if( ev.key.code == Keyboard::Q )
@@ -3980,6 +4001,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					adjX = ((int)testPoint.x) * 32;
 					adjY = ((int)testPoint.y) * 32;
 					
+					//V2d tempTest = GraphPos( testPoint
 					testPoint = Vector2f( adjX, adjY );
 					showGraph = true;
 				}
@@ -4187,13 +4209,128 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case EDIT:
 			{
+
+				V2d pPoint = worldPos;
+				Vector2i extra( 0, 0 );
+				bool blah = false;
+				if( //polygonInProgress->points.size() > 0 && 
+					Keyboard::isKeyPressed( Keyboard::G ) )
+				{
+					pPoint = GraphPos( worldPos );
+					showGraph = true;
+
+					int countSelected = CountSelectedPoints();
+					if( countSelected == 1 )
+					{
+						Vector2i pointSelected;
+						bool done = false;
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+							it != selectedPolygons.end(); ++it, !done )
+						{
+							for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit, !done )
+							{
+								if( (*pit).selected )
+								{
+									pointSelected = (*pit).pos;
+									done = true;
+								}
+							}
+						}
+
+						int xrem = pointSelected.x % 32;
+						int yrem = pointSelected.y % 32;
+						if( pointSelected.x > 0 )
+						{
+							if( xrem >= 32 / 2 )
+							{
+								extra.x = 32 - xrem;
+							}
+							else
+							{
+								extra.x = xrem;
+							}
+						}
+						else if( pointSelected.x < 0 )
+						{
+							if( xrem <= -32 / 2 )
+							{
+								extra.x = -32 - xrem;
+							}
+							else
+							{
+								extra.x = xrem;
+							}
+						}
+
+						if( pointSelected.y > 0 )
+						{
+							if( yrem >= 32 / 2 )
+							{
+								extra.y = 32 - yrem;
+							}
+							else
+							{
+								extra.y = yrem;
+							}
+						}
+						else if( pointSelected.y < 0 )
+						{
+							if( yrem <= -32 / 2 )
+							{
+								extra.y = -32 - yrem;
+							}
+							else
+							{
+								extra.y = yrem;
+							}
+						}
+						extra.y = -extra.y;
+						blah = true;
+						pointGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pointSelected;
+						//extra = Vector2i( x );
+					}
+					else
+					{
+						//Vector2i pointSelected;
+						/*int numOkay = 0;
+						bool done = false;
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+							it != selectedPolygons.end(); ++it, !done )
+						{
+							for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit, !done )
+							{
+								if( (*pit).selected )
+								{
+									if( (*pit).pos.x % 32 == (*pit).pos.y % 32 )
+									{
+									}
+									numOkay++;
+									done = true;
+								}
+							}
+						}*/
+					}
+				}
+
+
 				if( pointGrab )
 				{
-					
-					pointGrabDelta = Vector2i( worldPos.x, worldPos.y ) - pointGrabPos;
-					pointGrabPos = Vector2i( worldPos.x, worldPos.y );
 
-	
+					Vector2i test( pointGrabPos.x % 32, pointGrabPos.y % 32 );
+				//	cout << test.x << ", " << test.y << endl;
+					
+					if( blah )
+					{
+						
+					}
+					else
+					{
+						pointGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pointGrabPos;
+					}
+					//pointGrabDelta += extra;
+					//pointGrabDelta -= test;
+					pointGrabPos = Vector2i( pPoint.x, pPoint.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
+
 					bool validMove = true;
 					/*if( true )
 					{
@@ -4305,8 +4442,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				else if( polyGrab )
 				{
-					polyGrabDelta = Vector2i( worldPos.x, worldPos.y ) - polyGrabPos;
-					polyGrabPos = Vector2i( worldPos.x, worldPos.y );
+					polyGrabDelta = Vector2i( pPoint.x, pPoint.y ) - polyGrabPos;
+					polyGrabPos = Vector2i( pPoint.x, pPoint.y );
 					
 					bool moveOkay = true;
 					if( polyGrabDelta.x != 0 || polyGrabDelta.y != 0 )
@@ -6009,6 +6146,10 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 	polyAABB.width += minimumEdgeLength * 2;
 	polyAABB.height += minimumEdgeLength * 2;
 	
+	if( !poly.IsClockwise() )
+	{
+		return false;
+	}
 
 	//points close to other points on myself
 	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
@@ -6382,6 +6523,28 @@ bool EditSession::IsRemovePointsOkay()
 		//(*it)->RemoveSelectedPoints();
 	}
 	return true;
+}
+
+sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
+{
+	int adjX, adjY;			
+	realPos.x /= 32;
+	realPos.y /= 32;
+
+	if( realPos.x > 0 )
+		realPos.x += .5f;
+	else if( realPos.x < 0 )
+		realPos.x -= .5f;
+
+	if( realPos.y > 0 )
+		realPos.y += .5f;
+	else if( realPos.y < 0 )
+		realPos.y -= .5f;
+
+	adjX = ((int)realPos.x) * 32;
+	adjY = ((int)realPos.y) * 32;
+
+	return V2d( adjX, adjY );
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )
