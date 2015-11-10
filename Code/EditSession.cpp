@@ -4381,10 +4381,128 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					}*/
 					
+					Vector2i diff;
 					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 					{
-						if( !(*it)->IsMovePointsOkay( this, pointGrabDelta ) )
+						TerrainPolygon &poly = *(*it);
+
+						for( PointList::iterator it2 = poly.points.begin(); it2 != poly.points.end(); ++it2 )
+						{
+							if( !(*it2).selected )
+							{
+								continue;
+							}
+
+							PointList::iterator prev, next;
+							if( it2 == poly.points.begin() )
+							{
+								prev = poly.points.end();
+								prev--;
+							}
+							else
+							{
+								prev = it2;
+								prev--;
+							}
+
+							PointList::iterator temp = it2;
+							++temp;
+							if( temp == poly.points.end() )
+							{
+								next = poly.points.begin();
+							}
+							else
+							{
+								next = it2;
+								next++;
+							}
+
+
+							V2d extreme( 0, 0 );
+							Vector2i vec = (*it2).pos - (*prev).pos;
+							V2d normVec = normalize( V2d( vec.x, vec.y ) );
+		
+
+
+
+							if( normVec.x == 0 || normVec.y == 0 )
+							{
+								
+							}
+							else
+							{
+								if( normVec.x > PRIMARY_LIMIT )
+									extreme.x = 1;
+								else if( normVec.x < -PRIMARY_LIMIT )
+									extreme.x = -1;
+								if( normVec.y > PRIMARY_LIMIT )
+									extreme.y = 1;
+								else if( normVec.y < -PRIMARY_LIMIT )
+									extreme.y = -1;
+
+								//extreme = normalize( extreme );
+
+								
+								if( extreme.x != 0 )
+								{
+									//int diff = ;
+									diff.y = (*it2).pos.y - (*prev).pos.y;
+									
+									//(*it2).pos.y = (*prev).pos.y;
+									cout << "lining up x" << endl;
+								}
+
+								if( extreme.y != 0 )
+								{
+									diff.x = (*it2).pos.x - (*prev).pos.x;
+
+									cout << "lining up y" << endl;
+								}
+							}
+
+							
+
+							vec = (*it2).pos - (*next).pos;
+							normVec = normalize( V2d( vec.x, vec.y ) );
+
+							
+
+							if( normVec.x == 0 || normVec.y == 0 )
+							{
+							}
+							else
+							{
+								if( normVec.x > PRIMARY_LIMIT )
+									extreme.x = 1;
+								else if( normVec.x < -PRIMARY_LIMIT )
+									extreme.x = -1;
+								if( normVec.y > PRIMARY_LIMIT )
+									extreme.y = 1;
+								else if( normVec.y < -PRIMARY_LIMIT )
+									extreme.y = -1;
+
+								if( extreme.x != 0 )
+								{
+									//int diff = ;
+									diff.y = (*it2).pos.y - (*prev).pos.y;
+									
+									//(*it2).pos.y = (*prev).pos.y;
+								//	cout << "lining up x" << endl;
+								}
+
+								if( extreme.y != 0 )
+								{
+									diff.x = (*it2).pos.x - (*prev).pos.x;
+
+								//	cout << "lining up y" << endl;
+								}
+							}
+						}
+
+						
+
+						if( !(*it)->IsMovePointsOkay( this, pointGrabDelta + diff ) )
 						{
 							validMove = false;
 						//	cout << "invalid" << endl;
@@ -6145,11 +6263,66 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 	polyAABB.top -= minimumEdgeLength;
 	polyAABB.width += minimumEdgeLength * 2;
 	polyAABB.height += minimumEdgeLength * 2;
-	
+
+	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
+	{
+		PointList::iterator prev;
+		if( it == poly.points.begin() )
+		{
+			prev = poly.points.end();
+			prev--;
+		}
+		else
+		{
+			prev = it;
+			prev--;
+		}
+
+		V2d extreme( 0, 0 );
+		Vector2i vec = (*it).pos - (*prev).pos;
+		V2d normVec = normalize( V2d( vec.x, vec.y ) );
+		
+
+		if( normVec.x == 0 || normVec.y == 0 )
+		{
+			continue;
+		}
+
+		if( normVec.x > PRIMARY_LIMIT )
+			extreme.x = 1;
+		else if( normVec.x < -PRIMARY_LIMIT )
+			extreme.x = -1;
+		if( normVec.y > PRIMARY_LIMIT )
+			extreme.y = 1;
+		else if( normVec.y < -PRIMARY_LIMIT )
+			extreme.y = -1;
+
+		//extreme = normalize( extreme );
+
+		if( extreme.x != 0 )
+		{
+			(*it).pos.y = (*prev).pos.y;
+			cout << "lining up x" << endl;
+		}
+
+		if( extreme.y != 0 )
+		{
+			(*it).pos.x = (*prev).pos.x;
+			cout << "lining up y" << endl;
+		}
+		/*if( !( extreme.x == 0 && extreme.y == 0 ) )
+		{
+
+
+				return false;
+		}*/
+	}
+
 	if( !poly.IsClockwise() )
 	{
 		return false;
 	}
+
 
 	//points close to other points on myself
 	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
