@@ -776,7 +776,8 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 		}
 		else
 		{
-			TerrainPoint & p = (*it);
+			TerrainPoint p = (*it);
+			
 			p.pos += delta;
 
 			tempPoly.points.push_back( p );
@@ -784,6 +785,25 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 	}
 
 	return edit->IsPolygonValid( tempPoly, this );
+}
+
+bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
+{
+	TerrainPolygon tempPoly( grassTex );
+
+	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		TerrainPoint  p = (*it);
+		p.pos += delta;
+		tempPoly.points.push_back( p );
+	}
+
+	bool f = edit->IsPolygonValid( tempPoly, this );
+	if( !f )
+	{
+		cout << "failed delta: " << delta.x << ", " << delta.y << endl;
+	}
+	return f;
 }
 
 bool TerrainPolygon::IsClockwise()
@@ -4223,6 +4243,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						if( !(*it)->IsMovePointsOkay( this, pointGrabDelta ) )
 						{
 							validMove = false;
+						//	cout << "invalid" << endl;
 							break;
 						}
 
@@ -4279,33 +4300,50 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					polyGrabDelta = Vector2i( worldPos.x, worldPos.y ) - polyGrabPos;
 					polyGrabPos = Vector2i( worldPos.x, worldPos.y );
-	
-					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
-						it != selectedPolygons.end(); ++it )
+					
+					bool moveOkay = true;
+					if( polyGrabDelta.x != 0 || polyGrabDelta.y != 0 )
 					{
-						PointList & points = (*it)->points;
-
-						for( PointList::iterator pointIt = points.begin();
-							pointIt != points.end(); ++pointIt )
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						it != selectedPolygons.end(); ++it )
 						{
-							(*pointIt).pos += polyGrabDelta;		
+							if( !(*it)->IsMovePolygonOkay(this, polyGrabDelta ) )
+							{
+								moveOkay = false;
+								break;
+							}
 						}
+					}
+					else
+					{
+						moveOkay = false;
+					}
 
-						PointList temp = (*it)->points;
-
-						
-						(*it)->Reset();
-
-						for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
-							++tempIt )
+					if( moveOkay )
+					{
+						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+							it != selectedPolygons.end(); ++it )
 						{
-							//if( IsPointValid( (*tempIt) )
-							//{
+							PointList & points = (*it)->points;
+
+							for( PointList::iterator pointIt = points.begin();
+								pointIt != points.end(); ++pointIt )
+							{
+								(*pointIt).pos += polyGrabDelta;		
+							}
+
+							PointList temp = (*it)->points;
+
+							(*it)->Reset();
+
+							for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
+								++tempIt )
+							{
 								(*it)->points.push_back( (*tempIt ) );
-							//}
+							}
+							(*it)->Finalize();
+							(*it)->SetSelected( true );
 						}
-						(*it)->Finalize();
-						(*it)->SetSelected( true );
 					}
 				}
 				
@@ -5850,11 +5888,14 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	//cout << "p: " << p.x << ", " << p.y << endl;
 	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
 	{
-		V2d temp( (*it).pos.x, (*it).pos.y );
-		if( length( p - temp ) < validityRadius )
+		if( (*it).pos != point )
 		{
-			cout << "false type one:" << length( p - temp ) << " .. " << temp.x << ", " << temp.y << ", p: " << p.x << ", " << p.y << endl;
-			return false;
+			V2d temp( (*it).pos.x, (*it).pos.y );
+			if( length( p - temp ) < validityRadius )
+			{
+				cout << "false type one:" << length( p - temp ) << " .. " << temp.x << ", " << temp.y << ", p: " << p.x << ", " << p.y << endl;
+				return false;
+			}
 		}
 	}
 	PointList::iterator it = poly->points.begin();
@@ -5897,11 +5938,21 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 		double otherOffQuant = cross( v1 - old, pointDir );
 		
 		bool otherNearOnAxis = otherQuant > 0 && otherQuant < length( V2d( point.x, point.y ) - old );
-		bool otherNearOffAxis = abs( otherOffQuant ) < validityRadius;
+		bool otherNearOffAxis = abs( otherOffQuant ) < validityRadius;//otherOffQuant >= 0 && otherOffQuant < validityRadius;//abs( otherOffQuant ) < validityRadius;
 
+		
 		if( otherNearOnAxis && otherNearOffAxis )
 		{
-			cout << "false type three. quant: " << otherQuant << ", offQuant: " << otherOffQuant << endl;
+			
+			cout << "false type three. quant: " << otherQuant << ", offQuant: " << otherOffQuant << ", " << (v1-old).x <<", " << (v1-old).y << endl;
+			//cout << "v1: " << v1.x << ", " << v1.y << ", old: " << old.x << ", " << old.y << endl;
+
+			/*CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( point.x, point.y );
+			w->draw( cs );*/
 			return false;
 		}
 
@@ -5922,6 +5973,72 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 	polyAABB.top -= minimumEdgeLength;
 	polyAABB.width += minimumEdgeLength * 2;
 	polyAABB.height += minimumEdgeLength * 2;
+
+	//points close to other points on myself
+	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
+	{
+		for( PointList::iterator it2 = poly.points.begin(); it2 != poly.points.end(); ++it2 )
+		{
+			if( (*it).pos.x == (*it2).pos.x && (*it).pos.y == (*it2).pos.y )
+			{
+				continue;
+			}
+
+			V2d a( (*it).pos.x, (*it).pos.y );
+			V2d b( (*it2).pos.x, (*it2).pos.y );
+			if( length( a - b ) < validityRadius )
+			{
+				//cout << "len: " << length( a - b ) << endl;
+				return false;
+			}
+		}
+	}
+
+	//points close to lines on myself. do i need the previous stuff
+	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
+	{
+		PointList::iterator prev, next;
+		if( it == poly.points.begin() )
+		{
+			prev = poly.points.end();
+			prev--;
+		}
+		else
+		{
+			prev = it;
+			prev--;
+		}
+
+		PointList::iterator temp = it;
+		++temp;
+		if( temp == poly.points.end() )
+		{
+			next = poly.points.begin();
+		}
+		else
+		{
+			next = it;
+			next++;
+		}
+
+		//test for minimum angle difference between edges
+		V2d pos((*it).pos.x, (*it).pos.y );
+		V2d prevPos( (*prev).pos.x, (*prev).pos.y );
+		V2d nextPos( (*next).pos.x, (*next).pos.y );
+
+		
+		double ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
+		if( ff > minAngle )
+		{
+			//cout << "ff: " << ff << endl;
+			return false;
+		} 
+
+		if( !IsPointValid( (*prev).pos, (*it).pos, &poly ) )
+		{
+			return false;
+		}
+	}
 
 	for( list<TerrainPolygon*>::iterator polyIt = polygons.begin(); polyIt != polygons.end(); ++polyIt )
 	{
@@ -5989,9 +6106,9 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 		for( PointList::iterator pit = (*polyIt)->points.begin(); pit != (*polyIt)->points.end(); ++pit )
 		{
 			Vector2i oldPoint, currPoint;
-			if( pit == poly.points.begin() )
+			if( pit == (*polyIt)->points.begin() )
 			{
-				PointList::iterator temp = poly.points.end();
+				PointList::iterator temp = (*polyIt)->points.end();
 				--temp;
 				oldPoint = (*temp).pos;
 			}
@@ -6006,7 +6123,7 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 
 			if( !IsPointValid( oldPoint, currPoint, &poly ) )
 			{
-				cout << "b" << endl;
+				cout << "b: old: " << oldPoint.x << ", " << oldPoint.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
 				return false;
 			}
 			//IsPointValid(

@@ -60,6 +60,8 @@ struct TerrainPolygon
 	bool IsTouching( TerrainPolygon *p );
 	bool IsMovePointsOkay( EditSession *edit,
 		sf::Vector2i delta );
+	bool IsMovePolygonOkay( EditSession *edit, 
+		sf::Vector2i delta );
 	sf::Rect<int> TempAABB();
 	sf::Vertex *lines;
 	sf::VertexArray *va;
