@@ -120,16 +120,16 @@ bool GameController::UpdateState()
 
 	if( result == ERROR_SUCCESS )
 	{
-		double LX = state.Gamepad.sThumbLX;
-		double LY = state.Gamepad.sThumbLY;
+		float LX = state.Gamepad.sThumbLX;
+		float LY = state.Gamepad.sThumbLY;
 		//i dont think i need a magnitude, magnitude should be calculated for differences
 		//between controller states by some other function
-		double magnitude = sqrt( LX * LX + LY * LY );
+		float magnitude = sqrt( LX * LX + LY * LY );
 
-		double normalizedLX = LX / magnitude;
-		double normalizedLY = LY / magnitude;
+		float normalizedLX = LX / magnitude;
+		float normalizedLY = LY / magnitude;
 
-		double normalizedMagnitude = 0;
+		float normalizedMagnitude = 0;
 
 		if( magnitude > LEFT_STICK_DEADZONE )
 		{
@@ -142,7 +142,7 @@ bool GameController::UpdateState()
 		else 
 		{
 			magnitude = 0.0f;
-			normalizedMagnitude = 0.0;
+			normalizedMagnitude = 0.f;
 		}
 
 		m_state.leftStickMagnitude = normalizedMagnitude;
@@ -150,13 +150,13 @@ bool GameController::UpdateState()
 		if( normalizedLX < 0.0f )
 			m_state.leftStickRadians += PI;
 
-		double RX = state.Gamepad.sThumbRX;
-		double RY = state.Gamepad.sThumbRY;
+		float RX = state.Gamepad.sThumbRX;
+		float RY = state.Gamepad.sThumbRY;
 
 		magnitude = sqrt( RX * RX + RY * RY );
 
-		double normalizedRX = RX / magnitude;
-		double normalizedRY = RY / magnitude;
+		float normalizedRX = RX / magnitude;
+		float normalizedRY = RY / magnitude;
 
 		if( magnitude > RIGHT_STICK_DEADZONE )
 		{

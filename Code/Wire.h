@@ -20,13 +20,13 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		RELEASED
 	};
 
-	//sf::Vector2<double> 
+	//sf::Vector2f 
 	Wire( Actor *player, bool right );
-	void UpdateAnchors( sf::Vector2<double> vel );
+	void UpdateAnchors( sf::Vector2f vel );
 	void UpdateAnchors2();
-	void SetFireDirection( sf::Vector2<double> dir );
+	void SetFireDirection( sf::Vector2f dir );
 	void Check();
-	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
+	void HandleRayCollision( Edge *edge, float edgeQuantity, float rayPortion );
 	void UpdateState( bool touchEdgeWithWire );
 	void Draw( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
@@ -37,22 +37,22 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void SwapPoints( int aIndex, int bIndex );
 	void UpdateQuads();
 	void Reset();
-	sf::Vector2<double> GetOriginPos( bool test );
+	sf::Vector2f GetOriginPos( bool test );
 	
 	int extraBuffer; //when swinging around edges sometimes the wire
 	//stretches some. This is attemping to hole up that problem. if it happens
 	//too much then I can go into it and solve the real problems.
 
 	bool foundPoint;
-	sf::Vector2<double> closestPoint;
+	sf::Vector2f closestPoint;
 	Tileset *ts_wire;
 	//Tileset *ts_redWire;
-	//double closestInfo;
-	double closestDiff;
-	sf::Vector2<double> realAnchor;
-	sf::Vector2<double> oldPos;
+	//float closestInfo;
+	float closestDiff;
+	sf::Vector2f realAnchor;
+	sf::Vector2f oldPos;
 	bool clockwise;
-	sf::Vector2<double> storedPlayerPos;
+	sf::Vector2f storedPlayerPos;
 
 	sf::Vector2i offset;
 	int addedPoints;
@@ -62,31 +62,31 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	struct WirePoint
 	{
 		Edge *e;
-		double quantity;
+		float quantity;
 		bool start;
-		sf::Vector2<double> pos;
-		sf::Vector2<double> edgeEnd;
-		sf::Vector2<double> test;
+		sf::Vector2f pos;
+		sf::Vector2f edgeEnd;
+		sf::Vector2f test;
 		bool clockwise;
-		double angleDiff;
+		float angleDiff;
 	};
 
-	double maxTotalLength;
+	float maxTotalLength;
 
 	int frame;
 	int animFactor;
-	double quadHalfWidth;
+	float quadHalfWidth;
 	int numPoints;
 	const static int MAX_POINTS = 20000;
-	//sf::Vector2<double> points[16];
+	//sf::Vector2f points[16];
 	WirePoint points[MAX_POINTS];
 	sf::VertexArray quads;
 	int framesFiring;
-	double fireRate;
+	float fireRate;
 	Edge *minSideEdge;
-	double minSideOther;
-	double minSideAlong;
-	sf::Vector2<double> fireDir;
+	float minSideOther;
+	float minSideAlong;
+	sf::Vector2f fireDir;
 	WirePoint anchor;
 	
 
@@ -94,22 +94,22 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int hitStallFrames;
 	int hitStallCounter;
 
-	double totalLength;
-	//double minTotalLength;
-	double segmentLength;
-	double minSegmentLength;
-	double pullStrength;
+	float totalLength;
+	//float minTotalLength;
+	float segmentLength;
+	float minSegmentLength;
+	float pullStrength;
 
 	Actor *player;
 
 	Edge *rcEdge;
-	double rcQuant;
+	float rcQuant;
 
-	sf::Vector2<double> quadOldPosA;
-	sf::Vector2<double> quadOldWirePosB;
-	sf::Vector2<double> quadWirePosC;
-	sf::Vector2<double> quadPlayerPosD;
-	sf::Vector2<double> minPoint;
+	sf::Vector2f quadOldPosA;
+	sf::Vector2f quadOldWirePosB;
+	sf::Vector2f quadWirePosC;
+	sf::Vector2f quadPlayerPosD;
+	sf::Vector2f minPoint;
 
 	std::list<sf::Drawable*> progressDraw;
 };

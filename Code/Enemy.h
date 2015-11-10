@@ -41,7 +41,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Enemy *next;
 	GameSession *owner;
 	bool spawned;
-	sf::Rect<double> spawnRect;
+	sf::Rect<float> spawnRect;
 	HitboxInfo *receivedHit;
 	int slowMultiple;
 	int slowCounter;
@@ -49,7 +49,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool spawnedByClone;
 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<float> &r );
 
 	struct Stored
 	{
@@ -77,14 +77,14 @@ struct BasicEffect : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolvePhysics( sf::Vector2f vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
 
 	void Init( Tileset *ts, 
-		sf::Vector2<double> position, 
-		double angle, int frameCount,
+		sf::Vector2f position, 
+		float angle, int frameCount,
 		int animationFactor, bool right );
 	int frameCount;
 	sf::Sprite s;
@@ -96,7 +96,7 @@ struct BasicEffect : Enemy
 	bool facingRight;
 
 	int stored_frame;
-	//sf::Vector2<double> position;
+	//sf::Vector2f position;
 };
 
 struct Patroller : Enemy
@@ -123,8 +123,8 @@ struct Patroller : Enemy
 
 	bool dead;
 	int deathFrame;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
+	sf::Vector2f deathVector;
+	float deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	Tileset * ts_death;
@@ -135,13 +135,13 @@ struct Patroller : Enemy
 
 	int targetNode;
 	bool forward;
-	//sf::Vector2<double>
+	//sf::Vector2f
 	int frame;
 
-	double acceleration;
-	double speed;
+	float acceleration;
+	float speed;
 	int nodeWaitFrames;
-	sf::Vector2<double> position;
+	sf::Vector2f position;
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
@@ -161,12 +161,12 @@ struct Patroller : Enemy
 	{
 		bool dead;
 		int deathFrame;
-		//sf::Vector2<double> deathVector;
-		//double deathPartingSpeed;
+		//sf::Vector2f deathVector;
+		//float deathPartingSpeed;
 		int targetNode;
 		bool forward;
 		int frame;
-		sf::Vector2<double> position;
+		sf::Vector2f position;
 
 		int hitlagFrames;
 		int hitstunFrames;
@@ -176,7 +176,7 @@ struct Patroller : Enemy
 
 struct Crawler : Enemy
 {
-	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
+	Crawler( GameSession *owner, Edge *ground, float quantity, bool clockwise, float speed );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -189,7 +189,7 @@ struct Crawler : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolvePhysics( sf::Vector2f vel );
 	void ResetEnemy();
 	
 	void SaveEnemyState();
@@ -201,35 +201,35 @@ struct Crawler : Enemy
 	Tileset *ts_roll;
 
 	bool clockwise;
-	double groundSpeed;
+	float groundSpeed;
 	Edge *ground;
-	//sf::Vector2<double> offset;
-	double edgeQuantity;
+	//sf::Vector2f offset;
+	float edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	CollisionBox physBody;
-	sf::Vector2<double> position;
-	sf::Vector2<double> tempVel;
+	sf::Vector2f position;
+	sf::Vector2f tempVel;
 	
 
-	double rollFactor;
+	float rollFactor;
 	Contact minContact;
 	bool col;
 	std::string queryMode;
 	int possibleEdgeCount;
 
 	Edge *startGround;
-	double startQuant;
-	sf::Vector2<double> offset;
+	float startQuant;
+	sf::Vector2f offset;
 	int frame;
 	bool roll;
 	bool dead;
 	int deathFrame;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
+	sf::Vector2f deathVector;
+	float deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	Tileset * ts_death;
@@ -240,8 +240,8 @@ struct Crawler : Enemy
 
 struct BasicTurret : Enemy
 {
-	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
-		double bulletSpeed,
+	BasicTurret( GameSession *owner, Edge *ground, float quantity, 
+		float bulletSpeed,
 		int framesWait );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
@@ -264,8 +264,8 @@ struct BasicTurret : Enemy
 	Tileset *ts;
 	
 	const static int maxBullets = 16;
-	sf::Vector2<double> bulletPositions[maxBullets];
-	sf::Vector2<double> tempVel;
+	sf::Vector2f bulletPositions[maxBullets];
+	sf::Vector2f tempVel;
 	
 
 
@@ -278,7 +278,7 @@ struct BasicTurret : Enemy
 		Bullet();
 		Bullet *prev;
 		Bullet *next;
-		sf::Vector2<double> position;
+		sf::Vector2f position;
 		CollisionBox hurtBody;
 		CollisionBox hitBody;
 		CollisionBox physBody;
@@ -287,7 +287,7 @@ struct BasicTurret : Enemy
 		int slowMultiple;
 	};
 	Bullet *queryBullet;
-	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
+	bool ResolvePhysics( Bullet *b, sf::Vector2f vel );
 
 	void AddBullet();
 	void DeactivateBullet( Bullet *bullet );
@@ -301,13 +301,13 @@ struct BasicTurret : Enemy
 	int framesWait;
 	int firingCounter;
 	Edge *ground;
-	double edgeQuantity;
+	float edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	
-	sf::Vector2<double> position;
-	double angle;
+	sf::Vector2f position;
+	float angle;
 
 	Contact minContact;
 	bool col;
@@ -318,13 +318,13 @@ struct BasicTurret : Enemy
 	int deathFrame;
 	int animationFactor;
 	bool dead;
-	sf::Vector2<double> gn;
-	double bulletSpeed;
+	sf::Vector2f gn;
+	float bulletSpeed;
 };
 
 struct FootTrap : Enemy
 {
-	FootTrap( GameSession *owner, Edge *ground, double quantity );
+	FootTrap( GameSession *owner, Edge *ground, float quantity );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -336,7 +336,7 @@ struct FootTrap : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolvePhysics( sf::Vector2f vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
@@ -346,14 +346,14 @@ struct FootTrap : Enemy
 	Tileset *ts;
 
 	Edge *ground;
-	double edgeQuantity;
+	float edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 	
-	sf::Vector2<double> position;
-	double angle;
+	sf::Vector2f position;
+	float angle;
 
 	Contact minContact;
 	bool col;
@@ -364,10 +364,10 @@ struct FootTrap : Enemy
 	int deathFrame;
 	int animationFactor;
 	bool dead;
-	sf::Vector2<double> gn;
+	sf::Vector2f gn;
 
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
+	sf::Vector2f deathVector;
+	float deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	Tileset * ts_death;
@@ -388,7 +388,7 @@ struct FootTrap : Enemy
 
 struct Goal : Enemy
 {
-	Goal( GameSession *owner, Edge *ground, double quantity );
+	Goal( GameSession *owner, Edge *ground, float quantity );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -400,7 +400,7 @@ struct Goal : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolvePhysics( sf::Vector2f vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
@@ -410,14 +410,14 @@ struct Goal : Enemy
 	Tileset *ts;
 
 	Edge *ground;
-	double edgeQuantity;
+	float edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 	
-	sf::Vector2<double> position;
-	double angle;
+	sf::Vector2f position;
+	float angle;
 
 	//Contact minContact;
 	//bool col;
@@ -428,7 +428,7 @@ struct Goal : Enemy
 	int deathFrame;
 	int animationFactor;
 	bool dead;
-	sf::Vector2<double> gn;
+	sf::Vector2f gn;
 };
 
 struct EnemyParentNode;
@@ -438,9 +438,9 @@ struct EnemyParentNode;
 struct EnemyQNode
 {
 	EnemyQNode():parent(NULL),debug(NULL){}
-	sf::Vector2<double> pos;
-	double rw;
-	double rh;
+	sf::Vector2f pos;
+	float rw;
+	float rh;
 	sf::RenderWindow *debug;
 	EnemyParentNode *parent;
 	bool leaf;
@@ -450,7 +450,7 @@ struct EnemyQNode
 
 struct EnemyParentNode : EnemyQNode
 {
-	EnemyParentNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EnemyParentNode( const sf::Vector2f &pos, float rw, float rh );
 	EnemyQNode *children[4];
 	// 0    |     1
 	//--------------
@@ -461,7 +461,7 @@ struct EnemyParentNode : EnemyQNode
 struct EnemyLeafNode : EnemyQNode
 {
 	int objCount;
-	EnemyLeafNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EnemyLeafNode( const sf::Vector2f &pos, float rw, float rh );
 	Enemy *enemies[4];
 };
 
@@ -475,9 +475,9 @@ struct EnemyQuadTreeCollider
 	virtual void HandleEnemy( Enemy *e ) = 0;
 };
 
-void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<double> &r );
+void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<float> &r );
 
-bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<double> & ir );
+bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<float> & ir );
 
 
 

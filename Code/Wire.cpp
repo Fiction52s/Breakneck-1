@@ -7,12 +7,11 @@
 using namespace sf;
 using namespace std;
 
-#define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 10000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 20 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
-	, extraBuffer( 8 ), quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
+	, extraBuffer( 8 ), quads( sf::Quads, (int)((ceil( maxTotalLength / 6.f ) + extraBuffer) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
 	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
@@ -27,20 +26,20 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	ControllerState &currInput = player->currInput;
 	ControllerState &prevInput = player->prevInput;
 
-	//V2d playerPos = player->position;
-	V2d playerPos = GetOriginPos(true);
+	//Vector2f playerPos = player->position;
+	Vector2f playerPos = GetOriginPos(true);
 	storedPlayerPos = playerPos;
 	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
-	/*V2d dir;
+	/*Vector2f dir;
 	if( player->ground == NULL )
 	{
-		dir = V2d( 0, -1 );
+		dir = Vector2f( 0, -1 );
 	}
 	else
 	{
 		dir = player->ground->Normal();
 	}*/
-	//playerPos += V2d( offset.x, offset.y );
+	//playerPos += Vector2f( offset.x, offset.y );
 	bool triggerDown;
 	bool prevTriggerDown;
 
@@ -64,7 +63,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			if( triggerDown && !prevTriggerDown )
 			{
 				//cout << "firing" << endl;
-				fireDir = V2d( 0, 0 );
+				fireDir = Vector2f( 0, 0 );
 
 
 				if( false )
@@ -138,7 +137,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case HIT:
 		{
-			double total = 0;
+			float total = 0;
 			
 			if( numPoints > 0 )
 			{
@@ -177,7 +176,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				state = RELEASED;
 			}
 
-			double total = 0;
+			float total = 0;
 			
 			if( numPoints > 0 )
 			{
@@ -220,7 +219,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			rcEdge = NULL;
 			//rcQuantity = 0;
 			
-			RayCast( this, player->owner->terrainTree->startNode, playerPos, playerPos + fireDir * fireRate * (double)(framesFiring + 1 ) );
+			RayCast( this, player->owner->terrainTree->startNode, playerPos, playerPos + fireDir * fireRate * (float)(framesFiring + 1 ) );
 			
 			
 			//cout << "framesFiring " << framesFiring << endl;
@@ -258,7 +257,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case PULLING:
 		{
-			double total = 0;
+			float total = 0;
 			
 			if( numPoints > 0 )
 			{
@@ -279,7 +278,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			//if( total < totalLength )
 				totalLength = total;
 
-			V2d wn;
+			Vector2f wn;
 
 			if( numPoints == 0 )
 			{
@@ -290,7 +289,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 			else
 			{
-				double temp = length( points[numPoints-1].pos - playerPos );
+				float temp = length( points[numPoints-1].pos - playerPos );
 				//if( temp < segmentLength )
 				{
 					segmentLength = temp;
@@ -350,7 +349,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//totalLength -= pullStrength;
 
 				
-				double segmentChange = pullStrength;
+				float segmentChange = pullStrength;
 				if( segmentLength - pullStrength < minSegmentLength )
 					segmentChange = minSegmentLength - (segmentLength - pullStrength);
 
@@ -395,11 +394,11 @@ void Wire::SwapPoints( int aIndex, int bIndex )
 	points[bIndex] = temp;
 }
 
-void Wire::UpdateAnchors( V2d vel )
+void Wire::UpdateAnchors( Vector2f vel )
 {
-	//V2d playerPos = player->position;
-	//playerPos += V2d( offset.x, offset.y );
-	V2d playerPos = GetOriginPos(true);
+	//Vector2f playerPos = player->position;
+	//playerPos += Vector2f( offset.x, offset.y );
+	Vector2f playerPos = GetOriginPos(true);
 
 	if( state == HIT || state == PULLING )
 	{
@@ -410,7 +409,7 @@ void Wire::UpdateAnchors( V2d vel )
 		
 		/*for( int i = numPoints - 1; i >= 0; --i )
 		{ 
-			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
+			float result = cross( playerPos - points[numPoints-1].pos, points[i].test );
 			if( result > 0 )
 			{
 				//cout << "removing point " << result << endl;
@@ -435,7 +434,7 @@ void Wire::UpdateAnchors( V2d vel )
 		cout << "player: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
 		}*/
 
-		double radius = length( realAnchor - playerPos ); //new position after moving
+		float radius = length( realAnchor - playerPos ); //new position after moving
 
 		if( numPoints == 0 )
 		{
@@ -459,20 +458,20 @@ void Wire::UpdateAnchors( V2d vel )
 				cout << "COUNTER: " << counter << endl;
 			}
 
-			V2d a = realAnchor - oldPos;
-			V2d b = realAnchor - playerPos;
-			double len = max( length( a ), length( b ) );
+			Vector2f a = realAnchor - oldPos;
+			Vector2f b = realAnchor - playerPos;
+			float len = max( length( a ), length( b ) );
 
-			/*double left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
-			double right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
-			double top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
-			double bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );*/
-			V2d oldDir = oldPos - realAnchor;
-			V2d dir = playerPos - realAnchor;
-			double left;
-			double right;
-			double top;
-			double bottom;
+			/*float left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
+			float right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
+			float top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
+			float bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );*/
+			Vector2f oldDir = oldPos - realAnchor;
+			Vector2f dir = playerPos - realAnchor;
+			float left;
+			float right;
+			float top;
+			float bottom;
 
 			if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x > 0 && dir.y < 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y < 0 ) )
 			{
@@ -510,8 +509,8 @@ void Wire::UpdateAnchors( V2d vel )
 				bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
 			}
 
-			double ex = 1;
-			Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, (bottom - top) + ex * 2 );
+			float ex = 1;
+			Rect<float> r( left - ex, top - ex, (right - left) + ex * 2, (bottom - top) + ex * 2 );
 			
 
 
@@ -560,7 +559,7 @@ void Wire::UpdateAnchors( V2d vel )
 				//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
 				//cout << "numpoints now! " << numPoints << endl;
 
-				V2d oldAnchor = realAnchor;
+				Vector2f oldAnchor = realAnchor;
 				realAnchor = points[numPoints-1].pos;
 
 				radius = radius - length( oldAnchor - realAnchor );
@@ -600,7 +599,7 @@ void Wire::UpdateAnchors( V2d vel )
 
 		for( int i = numPoints - 1; i >= 0; --i )
 		{ 
-			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
+			float result = cross( playerPos - points[numPoints-1].pos, points[i].test );
 			if( result > 0 )
 			{
 				//cout << "removing point " << result << endl;
@@ -616,27 +615,27 @@ void Wire::UpdateAnchors( V2d vel )
 	{
 		//oldPos = playerPos - vel;
 		oldPos = storedPlayerPos;
-		V2d wireVec = fireDir * fireRate * (double)(framesFiring + 1 );
+		Vector2f wireVec = fireDir * fireRate * (float)(framesFiring + 1 );
 		
-		V2d diff = playerPos - oldPos;
+		Vector2f diff = playerPos - oldPos;
 		
-		V2d wirePos = playerPos + wireVec; 
-		V2d oldWirePos = oldPos + wireVec;
+		Vector2f wirePos = playerPos + wireVec; 
+		Vector2f oldWirePos = oldPos + wireVec;
 
 		quadOldPosA = oldPos;
 		quadOldWirePosB = oldWirePos;
 		quadWirePosC = wirePos;
 		quadPlayerPosD = playerPos;
 
-		double top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
-		double bot = max( quadOldPosA.y, max( quadOldWirePosB.y, max( quadWirePosC.y, quadPlayerPosD.y ) ) );
-		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
-		double right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
+		float top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
+		float bot = max( quadOldPosA.y, max( quadOldWirePosB.y, max( quadWirePosC.y, quadPlayerPosD.y ) ) );
+		float left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
+		float right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
 
 		//cout << "A: " << quadOldPosA.x << ", " << quadOldPosA.y << ", B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << 
 		//	", C: " << quadWirePosC.x << ", " << quadWirePosC.y << ", D: " << quadPlayerPosD.x << ", " << quadPlayerPosD.y << endl;
-		double ex = 1;
-		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
+		float ex = 1;
+		sf::Rect<float> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
 		//cout << "diff: " << diff.x << ", " << diff.y << ", size: " << r.width << ", " << r.height << endl;
 		/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
 		rs->setPosition( left, top );
@@ -660,7 +659,7 @@ void Wire::UpdateAnchors( V2d vel )
 				anchor.pos = minSideEdge->v0;
 				anchor.quantity = 0;
 				anchor.e = minSideEdge;
-				UpdateAnchors( V2d( 0, 0 ) );
+				UpdateAnchors( Vector2f( 0, 0 ) );
 			}
 		}
 	}
@@ -675,12 +674,12 @@ void Wire::UpdateAnchors( V2d vel )
 	storedPlayerPos = playerPos;
 }
 
-void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
+void Wire::HandleRayCollision( Edge *edge, float edgeQuantity, float rayPortion )
 {
 	//rayPortion > 1 &&
-	//V2d playerPos = player->position;
-	//playerPos += V2d( offset.x, offset.y );	
-	V2d playerPos = GetOriginPos(true);
+	//Vector2f playerPos = player->position;
+	//playerPos += Vector2f( offset.x, offset.y );	
+	Vector2f playerPos = GetOriginPos(true);
 
 	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
 	{
@@ -691,7 +690,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 
 void Wire::TestPoint( Edge *e )
 {
-	V2d p = e->v0;
+	Vector2f p = e->v0;
 
 	/*if( abs( p.x - points[numPoints-1].pos.x ) < 1 && abs( p.y - points[numPoints-1].pos.y ) < 1 )
 	{
@@ -699,18 +698,18 @@ void Wire::TestPoint( Edge *e )
 		return;
 	}*/
 	
-	//V2d playerPos = player->position;
-	//playerPos += V2d( offset.x, offset.y );
-	V2d playerPos = GetOriginPos(true);
+	//Vector2f playerPos = player->position;
+	//playerPos += Vector2f( offset.x, offset.y );
+	Vector2f playerPos = GetOriginPos(true);
 
 	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
 		return;
 	}
 
-	double radius = length( realAnchor - playerPos ); //new position after moving
+	float radius = length( realAnchor - playerPos ); //new position after moving
 
-	double anchorDist = length( realAnchor - p );
+	float anchorDist = length( realAnchor - p );
 	if( anchorDist > radius )
 	{
 		return;
@@ -718,8 +717,8 @@ void Wire::TestPoint( Edge *e )
 	
 	//cout << "anchordist: " << anchorDist << ", radius: " << radius << endl;
 
-	V2d oldVec = normalize( oldPos - realAnchor );
-	V2d newVec = normalize( playerPos - realAnchor );
+	Vector2f oldVec = normalize( oldPos - realAnchor );
+	Vector2f newVec = normalize( playerPos - realAnchor );
 
 	//cout << "old: " << oldPos.x << ", " << oldPos.y << endl;
 	//cout << "new: " << playerPos.x << ", " << playerPos.y << endl;
@@ -733,20 +732,20 @@ void Wire::TestPoint( Edge *e )
 
 	//progressDraw.push_back( line );
 
-	V2d pVec = normalize( p - realAnchor );
+	Vector2f pVec = normalize( p - realAnchor );
 
-	double oldAngle = atan2( oldVec.y, oldVec.x );
+	float oldAngle = atan2( oldVec.y, oldVec.x );
 	
 	
 
-	double newAngle = atan2( newVec.y, newVec.x );
+	float newAngle = atan2( newVec.y, newVec.x );
 	
 
-	double pAngle = atan2( pVec.y, pVec.x );
+	float pAngle = atan2( pVec.y, pVec.x );
 	
-	double angleDiff = abs( oldAngle - pAngle );
+	float angleDiff = abs( oldAngle - pAngle );
 
-	double maxAngleDiff = abs( newAngle - oldAngle );
+	float maxAngleDiff = abs( newAngle - oldAngle );
 
 	
 
@@ -842,7 +841,7 @@ void Wire::TestPoint( Edge *e )
 	}
 	else
 	{
-		double closestDist = length( realAnchor - closestPoint );
+		float closestDist = length( realAnchor - closestPoint );
 		//not sure if switching the order of these does anything
 		if( angleDiff < closestDiff )
 		{
@@ -868,11 +867,11 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( state == FIRING )
 	{
-		V2d along = normalize( quadOldWirePosB - quadOldPosA );
-		V2d other = normalize( quadOldPosA - quadPlayerPosD);
+		Vector2f along = normalize( quadOldWirePosB - quadOldPosA );
+		Vector2f other = normalize( quadOldPosA - quadPlayerPosD);
 
-		double alongQ = dot( e->v0 - quadOldPosA, along );
-		double otherQ = cross( e->v0 - quadOldPosA, along );
+		float alongQ = dot( e->v0 - quadOldPosA, along );
+		float otherQ = cross( e->v0 - quadOldPosA, along );
 
 		//cout << "checking: " << e->v0.x << ", " << e->v0.y << ", along/other: " << alongQ << ", " << otherQ 
 		//	<< ", alongLen: " << length( quadOldWirePosB - quadOldPosA ) << ", otherLen: " << length( quadOldPosA - quadPlayerPosD ) << endl;
@@ -895,8 +894,8 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else
 	{
-		V2d v0 = e->v0;
-		V2d v1 = e->v1;
+		Vector2f v0 = e->v0;
+		Vector2f v1 = e->v1;
 		TestPoint( e );	
 	}
 }
@@ -907,12 +906,12 @@ void Wire::UpdateQuads()
 	//if( state == FIRING )
 	//	++framesFiring;
 	
-	V2d playerPos = GetOriginPos(false);
+	Vector2f playerPos = GetOriginPos(false);
 
 	//cout << "starting update quads" << endl;
-	V2d alongDir;// = fireDir;
-	V2d otherDir;// = fireDir;
-	double temp;// = otherDir.x;
+	Vector2f alongDir;// = fireDir;
+	Vector2f otherDir;// = fireDir;
+	float temp;// = otherDir.x;
 	//otherDir.x = otherDir.y;
 	//otherDir.y = -temp;
 
@@ -925,8 +924,8 @@ void Wire::UpdateQuads()
 	{
 		for( int pointI = numPoints; pointI >= 0; --pointI )
 		{
-		V2d currWirePos;
-		V2d currWireStart;
+		Vector2f currWirePos;
+		Vector2f currWireStart;
 		if( hitOrPulling )
 		{	
 			if( pointI == 0 )
@@ -934,7 +933,7 @@ void Wire::UpdateQuads()
 				if( numPoints == 0 )
 				{
 					currWirePos = anchor.pos;
-					currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
+					currWireStart = playerPos + Vector2f( player->GetWireOffset().x, player->GetWireOffset().y );
 					//alongDir = normalize(currWirePos - playerPos);
 				//	cout << "only rope from anchor to player" << endl;
 				}
@@ -951,7 +950,7 @@ void Wire::UpdateQuads()
 				if( pointI == numPoints )
 				{
 					currWirePos = points[pointI-1].pos;
-					currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
+					currWireStart = playerPos + Vector2f( player->GetWireOffset().x, player->GetWireOffset().y );
 					//alongDir = normalize( currWirePos - playerPos );
 					
 				//	cout << "beginning rope from player to points" << endl;
@@ -977,16 +976,16 @@ void Wire::UpdateQuads()
 			temp = otherDir.x;
 			otherDir.x = otherDir.y;
 			otherDir.y = -temp;
-			currWirePos = playerPos + fireDir * fireRate * (double)framesFiring;
-			currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
+			currWirePos = playerPos + fireDir * fireRate * (float)framesFiring;
+			currWireStart = playerPos + Vector2f( player->GetWireOffset().x, player->GetWireOffset().y );
 		}
 		
 		
 		int firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
 
-		V2d endBack = currWirePos - otherDir * quadHalfWidth;
-		V2d endFront = currWirePos + otherDir * quadHalfWidth;
+		Vector2f endBack = currWirePos - otherDir * quadHalfWidth;
+		Vector2f endFront = currWirePos + otherDir * quadHalfWidth;
 
 		//cout << "fram: " << frame / animFactor << endl;
 		Vector2f topLeft( 0, tileHeight * frame / animFactor );
@@ -1004,14 +1003,14 @@ void Wire::UpdateQuads()
 		//cout << "fireTakingUp: " << firingTakingUp << endl;
 
 
-		V2d startPartial;
-		V2d endPartial;
+		Vector2f startPartial;
+		Vector2f endPartial;
 		
 		//cout << "startIndex: " << startIndex << ", firingTakingUp: " << firingTakingUp << endl;
 		for( int j = 0; j < firingTakingUp; ++j )
 		{
-			startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
-			endPartial = ( currWireStart + alongDir * (double)(tileHeight * ( j + 1 )) );
+			startPartial = ( currWireStart + alongDir * (float)(tileHeight * j) );
+			endPartial = ( currWireStart + alongDir * (float)(tileHeight * ( j + 1 )) );
 			
 			
 			//cout << "a: " << frame / animFactor << ", " << (tileHeight * (frame / animFactor)) << "startPartial: " << startPartial.x << ", " << startPartial.y << endl;
@@ -1030,11 +1029,11 @@ void Wire::UpdateQuads()
 				endPartial = currWirePos;
 			}
 
-			V2d startPartialBack = startPartial - otherDir * quadHalfWidth;
-			V2d startPartialFront = startPartial + otherDir * quadHalfWidth;
+			Vector2f startPartialBack = startPartial - otherDir * quadHalfWidth;
+			Vector2f startPartialFront = startPartial + otherDir * quadHalfWidth;
 
-			V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
-			V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
+			Vector2f endPartialBack = endPartial - otherDir * quadHalfWidth;
+			Vector2f endPartialFront = endPartial + otherDir * quadHalfWidth;
 			int index = (j + startIndex );
 			quads[index*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
 			quads[index*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
@@ -1106,7 +1105,7 @@ void Wire::Draw( RenderTarget *target )
 	}
 	else if( state == HIT || state == PULLING )
 	{
-		//V2d wirePos = wireEdge->GetPoint( wireQuant );
+		//Vector2f wirePos = wireEdge->GetPoint( wireQuant );
 		if( numPoints == 0 )
 		{
 			sf::Vertex line0[] =
@@ -1198,7 +1197,7 @@ void Wire::Reset()
 	frame = 0;
 }
 
-V2d Wire::GetOriginPos( bool test )
+Vector2f Wire::GetOriginPos( bool test )
 {
 	offset = player->GetWireOffset();
 
@@ -1210,16 +1209,16 @@ V2d Wire::GetOriginPos( bool test )
 	{
 		offset.x = abs( offset.x );
 	}
-	V2d playerPos;
-	double angle = player->GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y ); 
-	V2d other( -gNormal.y, gNormal.x );
+	Vector2f playerPos;
+	float angle = player->GroundedAngle();
+	float x = sin( angle );
+	float y = -cos( angle );
+	Vector2f gNormal( x, y ); 
+	Vector2f other( -gNormal.y, gNormal.x );
 
 	if( player->ground != NULL )
 	{
-		V2d pp = player->ground->GetPoint( player->edgeQuantity );
+		Vector2f pp = player->ground->GetPoint( player->edgeQuantity );
 		playerPos = pp + gNormal * player->normalHeight;
 	}
 	else
@@ -1230,7 +1229,7 @@ V2d Wire::GetOriginPos( bool test )
 	if( test )
 		playerPos = player->position;
 
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	playerPos += gNormal * (float)offset.y + other * (float)offset.x;
 	return playerPos;
 }
 

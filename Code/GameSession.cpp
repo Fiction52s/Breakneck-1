@@ -11,8 +11,7 @@
 #include <sstream>
 #include <ctime>
 
-#define TIMESTEP 1.0 / 60.0
-#define V2d sf::Vector2<double>
+#define TIMESTEP 1.f / 60.f
 
 using namespace std;
 using namespace sf;
@@ -62,7 +61,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	preScreenTex = preTex;
 
 	terrainTree = new QuadTree( 1000000, 1000000 );
-	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
+	//testTree = new EdgeLeafNode( Vector2f( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
 	//testTree->debug = rw;
 
@@ -93,7 +92,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	}
 	
 
-	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
+	//enemyTree = new EnemyLeafNode( Vector2f( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
 }
@@ -320,7 +319,7 @@ bool GameSession::OpenFile( string fileName )
 	if( is.is_open() )
 	{
 		is >> numPoints;
-		points = new Vector2<double>[numPoints];
+		points = new Vector2<float>[numPoints];
 		
 
 		is >> player.position.x;
@@ -361,7 +360,7 @@ bool GameSession::OpenFile( string fileName )
 				++pointCounter;
 			}
 
-			double left, right, top, bottom;
+			float left, right, top, bottom;
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				Edge *ee = new Edge();
@@ -375,10 +374,10 @@ bool GameSession::OpenFile( string fileName )
 
 				terrainTree->Insert( ee );
 
-				double localLeft = min( ee->v0.x, ee->v1.x );
-				double localRight = max( ee->v0.x, ee->v1.x );
-				double localTop = min( ee->v0.y, ee->v1.y );
-				double localBottom = max( ee->v0.y, ee->v1.y ); 
+				float localLeft = min( ee->v0.x, ee->v1.x );
+				float localRight = max( ee->v0.x, ee->v1.x );
+				float localTop = min( ee->v0.y, ee->v1.y );
+				float localBottom = max( ee->v0.y, ee->v1.y ); 
 				if( i == 0 )
 				{
 					left = localLeft;
@@ -442,29 +441,29 @@ bool GameSession::OpenFile( string fileName )
 
 			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
 			{
-				V2d A,B,C,D;
+				Vector2f A,B,C,D;
 				Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
-				V2d v0 = currE->v0;
-				V2d v1 = currE->v1;
+				Vector2f v0 = currE->v0;
+				Vector2f v1 = currE->v1;
 
-				double grassSize = 22;
-				double grassSpacing = -5;
+				float grassSize = 22;
+				float grassSpacing = -5;
 
-				double edgeLength = length( v1 - v0 );
-				double remainder = edgeLength / ( grassSize + grassSpacing );
+				float edgeLength = length( v1 - v0 );
+				float remainder = edgeLength / ( grassSize + grassSpacing );
 
-				double num = floor( remainder ) + 1;
+				float num = floor( remainder ) + 1;
 
 				int reps = (*it).reps;
 
-				V2d edgeDir = normalize( v1 - v0 );
+				Vector2f edgeDir = normalize( v1 - v0 );
 				
-				//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
-				V2d ABmin = v0 + edgeDir * ( edgeLength * (double)(*it).index / num - grassSize / 2 );
-				V2d ABmax = v0 + edgeDir * ( edgeLength * (double)( (*it).index + reps )/ num + grassSize / 2 );
-				double height = grassSize / 2;
-				V2d normal = normalize( v1 - v0 );
-				double temp = -normal.x;
+				//Vector2f ABmin = v0 + (v1-v0) * (float)(*it).index / num - grassSize / 2 );
+				Vector2f ABmin = v0 + edgeDir * ( edgeLength * (float)(*it).index / num - grassSize / 2 );
+				Vector2f ABmax = v0 + edgeDir * ( edgeLength * (float)( (*it).index + reps )/ num + grassSize / 2 );
+				float height = grassSize / 2;
+				Vector2f normal = normalize( v1 - v0 );
+				float temp = -normal.x;
 				normal.x = normal.y;
 				normal.y = temp;
 
@@ -513,11 +512,11 @@ bool GameSession::OpenFile( string fileName )
 
 			VertexArray *polygonVA = va;
 
-			double totalPerimeter = 0;
+			float totalPerimeter = 0;
 
 
-			double grassSize = 22;
-			double grassSpacing = -5;
+			float grassSize = 22;
+			float grassSpacing = -5;
 
 			Edge * testEdge = edges[currentEdgeIndex];
 
@@ -541,8 +540,8 @@ bool GameSession::OpenFile( string fileName )
 			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
 			{	
 				Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
-				V2d v0 = segEdge->v0;
-				V2d v1 = segEdge->v1;
+				Vector2f v0 = segEdge->v0;
+				Vector2f v1 = segEdge->v1;
 
 				int start = (*it).index;
 				int end = (*it).index + (*it).reps;
@@ -550,14 +549,14 @@ bool GameSession::OpenFile( string fileName )
 				int grassCount = (*it).reps + 1;
 				//cout << "Grasscount: " << grassCount << endl;
 
-				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+				float remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
 				int num = floor( remainder ) + 1;
 
 				for( int i = 0; i < grassCount; ++i )
 				{
 					//cout << "indexing at: " << i*4 + segIndex * 4 << endl;
-					V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
+					Vector2f posd = v0 + (v1 - v0 ) * ((float)( i + start ) / num);
 					Vector2f pos( posd.x, posd.y );
 
 					Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
@@ -599,32 +598,32 @@ bool GameSession::OpenFile( string fileName )
 
 			//testEdge = edges[currentEdgeIndex];
 			
-			double size = 16;
-			double inward = 16;
-			double spacing = 2;
+			float size = 16;
+			float inward = 16;
+			float spacing = 2;
 
 			int innerPolyPoints = 0;
 			do
 			{
-				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-				V2d adjv0 = testEdge->v0 - bisector0 * inward;
-				V2d adjv1 = testEdge->v1 - bisector1 * inward;
+				Vector2f bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				Vector2f bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				Vector2f adjv0 = testEdge->v0 - bisector0 * inward;
+				Vector2f adjv1 = testEdge->v1 - bisector1 * inward;
 
-				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
-				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
-				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
-				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+				Vector2f nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				Vector2f nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				Vector2f nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				Vector2f nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
 
 
-				//double remainder = length( adjv1 - adjv0 ) / size;
-				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				//float remainder = length( adjv1 - adjv0 ) / size;
+				float remainder = length( testEdge->v1- testEdge->v0 ) / size;
 				
 				//int num = remainder / size;
 
 				//remainder = remainder - floor( remainder );
 
-				//double eachAdd = remainder / num;
+				//float eachAdd = remainder / num;
 
 				int num = 1;
 				while( remainder > 1 )
@@ -642,44 +641,44 @@ bool GameSession::OpenFile( string fileName )
 			while( testEdge != edges[currentEdgeIndex] );
 			
 		
-			//double amount = totalPerimeter / spacing;
+			//float amount = totalPerimeter / spacing;
 
 			va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
 			VertexArray & borderVa = *va;
-			double testQuantity = 0;
+			float testQuantity = 0;
 
 			int i = 0;
 			do
 			{
-				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-				double q = cross( normalize( testEdge->v1 - testEdge->v0 ), normalize(testEdge->edge0->v0 - testEdge->v0) );
+				Vector2f bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
+				float q = cross( normalize( testEdge->v1 - testEdge->v0 ), normalize(testEdge->edge0->v0 - testEdge->v0) );
 				if( q > 0 )
 				{
 				//	bisector0 *= ( q );
 				}
 				
-				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-				V2d adjv0 = testEdge->v0 - testEdge->Normal() * inward;//testEdge->v0 - bisector0 * inward;//V2d( testEdge->v0.x, testEdge->v0.y + inward );//
-				V2d adjv1 = testEdge->v1 - testEdge->Normal() * inward;//testEdge->v1 - bisector1 * inward;//V2d( testEdge->v1.x, testEdge->v1.y + inward );
+				Vector2f bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
+				Vector2f adjv0 = testEdge->v0 - testEdge->Normal() * inward;//testEdge->v0 - bisector0 * inward;//Vector2f( testEdge->v0.x, testEdge->v0.y + inward );//
+				Vector2f adjv1 = testEdge->v1 - testEdge->Normal() * inward;//testEdge->v1 - bisector1 * inward;//Vector2f( testEdge->v1.x, testEdge->v1.y + inward );
 
-				V2d adje0v0 = testEdge->edge0->v0 - testEdge->edge0->Normal() * inward;
-				V2d adje0v1 = testEdge->edge0->v1 - testEdge->edge0->Normal() * inward;
+				Vector2f adje0v0 = testEdge->edge0->v0 - testEdge->edge0->Normal() * inward;
+				Vector2f adje0v1 = testEdge->edge0->v1 - testEdge->edge0->Normal() * inward;
 
-				V2d adje1v0 = testEdge->edge1->v0 - testEdge->edge1->Normal() * inward;
-				V2d adje1v1 = testEdge->edge1->v1 - testEdge->edge1->Normal() * inward;
+				Vector2f adje1v0 = testEdge->edge1->v0 - testEdge->edge1->Normal() * inward;
+				Vector2f adje1v1 = testEdge->edge1->v1 - testEdge->edge1->Normal() * inward;
 
 
-				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
-				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
-				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
-				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
+				Vector2f nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
+				Vector2f nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
+				Vector2f nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
+				Vector2f nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
 
 				LineIntersection li0 = lineIntersection( adjv0, adjv1, adje0v0, adje0v1 );
 				LineIntersection li1 = lineIntersection( adjv0, adjv1, adje1v0, adje1v1 );
 				//cout << "li0: " << li0.position.x << ", " << li0.position.y << endl;
 
-				//double remainder = length( adjv1 - adjv0 ) / size;
-				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
+				//float remainder = length( adjv1 - adjv0 ) / size;
+				float remainder = length( testEdge->v1- testEdge->v0 ) / size;
 				
 
 				
@@ -689,7 +688,7 @@ bool GameSession::OpenFile( string fileName )
 
 				//remainder = remainder - floor( remainder );
 
-				//double eachAdd = remainder / num;
+				//float eachAdd = remainder / num;
 
 				int num = 1;
 				while( remainder > 1 )
@@ -703,16 +702,16 @@ bool GameSession::OpenFile( string fileName )
 					Vector2f surface, inner, surfaceNext, innerNext;
 
 
-					surface = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)j / num, 
-							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)j / num );
-					surfaceNext = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)(j+1) / num, 
-							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)(j+1) / num );
+					surface = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (float)j / num, 
+							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (float)j / num );
+					surfaceNext = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (float)(j+1) / num, 
+							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (float)(j+1) / num );
 
 					if( j == 0 || j == num - 1 )
 					{
 						if( j == 0 && j == num - 1 )
 						{
-							V2d v00 = testEdge->v0 - bisector0 * inward;
+							Vector2f v00 = testEdge->v0 - bisector0 * inward;
 						
 
 							//inner = Vector2f( v00.x, v00.y );
@@ -721,7 +720,7 @@ bool GameSession::OpenFile( string fileName )
 							else
 								inner = Vector2f( v00.x, v00.y );
 
-							V2d v11 = testEdge->v1 - bisector1 * inward;
+							Vector2f v11 = testEdge->v1 - bisector1 * inward;
 
 							//innerNext = Vector2f( v11.x, v11.y );
 							if( !li1.parallel )
@@ -731,7 +730,7 @@ bool GameSession::OpenFile( string fileName )
 						}
 						else if( j == 0 )
 						{
-							V2d v00 = testEdge->v0 - bisector0 * inward;
+							Vector2f v00 = testEdge->v0 - bisector0 * inward;
 						
 
 							//inner = Vector2f( v00.x, v00.y );
@@ -742,15 +741,15 @@ bool GameSession::OpenFile( string fileName )
 								inner = Vector2f( v00.x, v00.y );
 
 						
-							innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
-								adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+							innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (float)(j+1) / num,
+								adjv0.y + (adjv1.y - adjv0.y) * (float)(j+1) / num );
 						}
 						else if( j == num - 1 )
 						{
-							V2d v11 = testEdge->v1 - bisector1 * inward;
+							Vector2f v11 = testEdge->v1 - bisector1 * inward;
 
-							inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
-								adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
+							inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (float)j / num,
+								adjv0.y + (adjv1.y - adjv0.y) * (float)j / num );
 
 							//innerNext = Vector2f( v11.x, v11.y );
 							if( !li1.parallel )
@@ -762,12 +761,12 @@ bool GameSession::OpenFile( string fileName )
 					else
 					{
 						
-						inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
-							adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
+						inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (float)j / num,
+							adjv0.y + (adjv1.y - adjv0.y) * (float)j / num );
 
 						
-						innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
-							adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
+						innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (float)(j+1) / num,
+							adjv0.y + (adjv1.y - adjv0.y) * (float)(j+1) / num );
 					}
 
 					
@@ -775,7 +774,7 @@ bool GameSession::OpenFile( string fileName )
 					//borderVa[i*4].color.a = 10;
 
 					Vector2f coordsTopLeft, coordsTopRight, coordsBottomLeft, coordsBottomRight;
-					V2d testN = testEdge->Normal();
+					Vector2f testN = testEdge->Normal();
 
 					int tileIndex = 0;
 					if( abs( testN.x ) > player.wallThresh )
@@ -875,7 +874,7 @@ bool GameSession::OpenFile( string fileName )
 			
 
 				//cout << "loaded to here" << endl;
-			//double left, right, bottom, top;
+			//float left, right, bottom, top;
 			bool first = true;
 			
 		
@@ -1031,7 +1030,7 @@ bool GameSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
 					Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
@@ -1105,7 +1104,7 @@ bool GameSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
 					bool clockwise;
@@ -1140,10 +1139,10 @@ bool GameSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
-					double bulletSpeed;
+					float bulletSpeed;
 					is >> bulletSpeed;
 
 					int framesWait;
@@ -1165,7 +1164,7 @@ bool GameSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
 					FootTrap *enemy = new FootTrap( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
@@ -1316,10 +1315,10 @@ int GameSession::Run( string fileN )
 		line[i*2+1] =  sf::Vertex( Vector2f( edges[i]->v1.x, edges[i]->v1.y ) );
 	}	
 
-	sf::Vector2<double> nLine( ( line[1].position - line[0].position).x, (line[1].position - line[0].position).y );
+	sf::Vector2f nLine( ( line[1].position - line[0].position).x, (line[1].position - line[0].position).y );
 	nLine = normalize( nLine );
 
-	sf::Vector2<double> lineNormal( -nLine.y, nLine.x );
+	sf::Vector2f lineNormal( -nLine.y, nLine.x );
 
 	sf::CircleShape circle( 30 );
 	circle.setFillColor( Color::Blue );
@@ -1328,12 +1327,12 @@ int GameSession::Run( string fileN )
 	
 
 	sf::Clock gameClock;
-	double currentTime = 0;
-	double accumulator = TIMESTEP + .1;
+	float currentTime = 0;
+	float accumulator = TIMESTEP + .1;
 
-	Vector2<double> otherPlayerPos;
+	Vector2<float> otherPlayerPos;
 	
-	double zoomMultiple = 1;
+	float zoomMultiple = 1;
 
 	Color borderColor = sf::Color::Green;
 	int max = 1000000;
@@ -1405,14 +1404,14 @@ int GameSession::Run( string fileN )
 
 	int frameCounterWait = 20;
 	int frameCounter = 0;
-	double total = 0;
+	float total = 0;
 
 	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 
 	while( !quit )
 	{
-		double newTime = gameClock.getElapsedTime().asSeconds();
-		double frameTime = newTime - currentTime;
+		float newTime = gameClock.getElapsedTime().asSeconds();
+		float frameTime = newTime - currentTime;
 
 		if ( frameTime > 0.25 )
 			frameTime = 0.25;	
@@ -1422,7 +1421,7 @@ int GameSession::Run( string fileN )
 		{
 			if( frameCounter == frameCounterWait )
 			{
-				double blah = 1.0 / frameTime;
+				float blah = 1.f / frameTime;
 				total += blah;
 				ss << total / ( frameCounterWait + 1 ) ;
 				frameRate.setString( ss.str() );
@@ -1433,7 +1432,7 @@ int GameSession::Run( string fileN )
 			}
 			else
 			{
-				double blah = 1.0 / frameTime;
+				float blah = 1.f / frameTime;
 				total += blah;
 				++frameCounter;
 			}
@@ -1799,9 +1798,9 @@ int GameSession::Run( string fileN )
 				//Vector2f diff = cam.pos - oldCam;
 
 
-				double camWidth = 960 * cam.GetZoom();
-				double camHeight = 540 * cam.GetZoom();
-				screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+				float camWidth = 960 * cam.GetZoom();
+				float camHeight = 540 * cam.GetZoom();
+				screenRect = sf::Rect<float>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 			
 			
 				
@@ -2024,7 +2023,7 @@ int GameSession::Run( string fileN )
 		blahblah.y = 1 - blahblah.y;
 
 
-		//polyShader.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+		//polyShader.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .f75 ) );
 		//polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
 		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
@@ -2058,7 +2057,7 @@ int GameSession::Run( string fileN )
 		
 		
 
-		sf::Rect<double> testRect( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2,
+		sf::Rect<float> testRect( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2,
 			view.getSize().x, view.getSize().y );
 
 		while( listVA != NULL )
@@ -2077,7 +2076,7 @@ int GameSession::Run( string fileN )
 		
 		
 
-		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+		//screenRect = sf::Rect<float>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		
 	
 
@@ -2094,20 +2093,20 @@ int GameSession::Run( string fileN )
 			if( usePolyShader )
 			{
 
-				sf::Rect<double> polyAndScreen;
-				sf::Rect<double> aabb = listVAIter->aabb;
-				double rightScreen = screenRect.left + screenRect.width;
-				double bottomScreen = screenRect.top + screenRect.height;
-				double rightPoly = aabb.left + aabb.width;
-				double bottomPoly = aabb.top + aabb.height;
+				sf::Rect<float> polyAndScreen;
+				sf::Rect<float> aabb = listVAIter->aabb;
+				float rightScreen = screenRect.left + screenRect.width;
+				float bottomScreen = screenRect.top + screenRect.height;
+				float rightPoly = aabb.left + aabb.width;
+				float bottomPoly = aabb.top + aabb.height;
 
-				double left = std::max( screenRect.left, aabb.left );
+				float left = std::max( screenRect.left, aabb.left );
 
-				double right = std::min( rightPoly, rightScreen );
+				float right = std::min( rightPoly, rightScreen );
 				
-				double top = std::max( screenRect.top, aabb.top );
+				float top = std::max( screenRect.top, aabb.top );
 
-				double bottom = std::min( bottomScreen, bottomPoly );
+				float bottom = std::min( bottomScreen, bottomPoly );
 
 
 				polyAndScreen.left = left;
@@ -2158,7 +2157,7 @@ int GameSession::Run( string fileN )
 		{
 			//alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 //			alphaTextSprite.setScale( .5, .5 );
-			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
+			alphaTextSprite.setScale( .5 * view.getSize().x / 960.f, .5 * view.getSize().y / 540.f );
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
 
@@ -2189,7 +2188,7 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( preScreenTex );
 
-		double minimapZoom = 20;
+		float minimapZoom = 20;
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
@@ -2208,8 +2207,8 @@ int GameSession::Run( string fileN )
 		//vv.setSize( 1920 * 10, 1080 * 10 );
 		queryMode = "border";
 		numBorders = 0;
-		sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-			vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
+		sf::Rect<float> minimapRect(vv.getCenter().x - vv.getSize().x / 2.f,
+			vv.getCenter().y - vv.getSize().y / 2.f, vv.getSize().x, vv.getSize().y );
 
 		borderTree->Query( this, minimapRect );
 
@@ -2314,7 +2313,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	if( queryMode == "enemy" )
 	{
 		Enemy *e = (Enemy*)qte;
-		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+		//sf::Rect<float> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( e->spawnRect.intersects( tempSpawnRect ) )
 		{
 			//cout << "spawning enemy!" << endl;
@@ -2404,7 +2403,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			//for( int i = 0; i < lightsAtOnce; ++i )
 			//{
-			//	if( length( V2d( touchedLights[i]->pos.x, touchedLights[i]->pos.y ) - position ) > length( V2d( light->pos.x, light->pos.y ) - position ) )//some calculation here
+			//	if( length( Vector2f( touchedLights[i]->pos.x, touchedLights[i]->pos.y ) - position ) > length( Vector2f( light->pos.x, light->pos.y ) - position ) )//some calculation here
 			//	{
 			//		touchedLights[i] = light;
 			//		break;
@@ -2433,7 +2432,7 @@ void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
+bool GameSession::TestVA::IsTouchingBox( const sf::Rect<float> &r )
 {
 	return IsBoxTouchingBox( aabb, r );
 }
@@ -2467,7 +2466,7 @@ void GameSession::RespawnPlayer()
 	powerBar.Reset();
 }
 
-void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
+void GameSession::UpdateTerrainShader( const sf::Rect<float> &aabb )
 {
 	lightsAtOnce = 0;
 	tempLightLimit = 9;
@@ -2476,14 +2475,14 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	lightTree->Query( this, aabb );
 
 	Vector2i vi = Mouse::getPosition();
-	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
+	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015f );
 	//polyShader.setParameter( "stuff", 10, 10, 10 );
 	
-/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
+/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .01f5 ); 
 	pos0.y = 1 - pos0.y;
-	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .01f5 ); 
 	pos1.y = 1 - pos1.y;
-	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .01f5 ); 
 	pos2.y = 1 - pos2.y;*/
 	
 	bool on[9];
@@ -2508,8 +2507,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		//underShader.setParameter( "On0", true );
 		on[0] = true;
-		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
+		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .f75 ) );
+		polyShader.setParameter( "LightColor0", c0.r / 255.f, c0.g / 255.f, c0.b / 255.f, 1 );
 		polyShader.setParameter( "Radius0", touchedLights[0]->radius );
 		polyShader.setParameter( "Brightness0", touchedLights[0]->brightness);
 		
@@ -2524,8 +2523,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[1] = true;
 		//underShader.setParameter( "On1", true );
-		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
+		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .f75 ) );
+		polyShader.setParameter( "LightColor1", c1.r / 255.f, c1.g / 255.f, c1.b / 255.f, 1 );
 		polyShader.setParameter( "Radius1", touchedLights[1]->radius );
 		polyShader.setParameter( "Brightness1", touchedLights[1]->brightness);
 	}
@@ -2539,8 +2538,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[2] = true;
 		//underShader.setParameter( "On2", true );
-		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
+		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .f75 ) );
+		polyShader.setParameter( "LightColor2", c2.r / 255.f, c2.g / 255.f, c2.b / 255.f, 1 );
 		polyShader.setParameter( "Radius2", touchedLights[2]->radius );
 		polyShader.setParameter( "Brightness2", touchedLights[2]->brightness);
 	}
@@ -2555,7 +2554,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		on[3] = true;
 		//underShader.setParameter( "On3", true );
 		polyShader.setParameter( "LightPos3", pos3 );
-		polyShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+		polyShader.setParameter( "LightColor3", c3.r / 255.f, c3.g / 255.f, c3.b / 255.f, 1 );
 		polyShader.setParameter( "Radius3", touchedLights[3]->radius );
 		polyShader.setParameter( "Brightness3", touchedLights[3]->brightness);
 	}
@@ -2570,7 +2569,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[4] = true;
 		polyShader.setParameter( "LightPos4", pos4 );
-		polyShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+		polyShader.setParameter( "LightColor4", c4.r / 255.f, c4.g / 255.f, c4.b / 255.f, 1 );
 		polyShader.setParameter( "Radius4", touchedLights[4]->radius );
 		polyShader.setParameter( "Brightness4", touchedLights[4]->brightness);
 	}
@@ -2585,7 +2584,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[5] = true;
 		polyShader.setParameter( "LightPos5", pos5 );
-		polyShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+		polyShader.setParameter( "LightColor5", c5.r / 255.f, c5.g / 255.f, c5.b / 255.f, 1 );
 		polyShader.setParameter( "Radius5", touchedLights[5]->radius );
 		polyShader.setParameter( "Brightness5", touchedLights[5]->brightness);
 	}
@@ -2599,7 +2598,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[6] = true;
 		polyShader.setParameter( "LightPos6", pos6 );
-		polyShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+		polyShader.setParameter( "LightColor6", c6.r / 255.f, c6.g / 255.f, c6.b / 255.f, 1 );
 		polyShader.setParameter( "Radius6", touchedLights[0]->radius );
 		polyShader.setParameter( "Brightness6", touchedLights[0]->brightness);
 	}
@@ -2613,7 +2612,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[7] = true;
 		polyShader.setParameter( "LightPos7", pos7 );
-		polyShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+		polyShader.setParameter( "LightColor7", c7.r / 255.f, c7.g / 255.f, c7.b / 255.f, 1 );
 		polyShader.setParameter( "Radius7", touchedLights[7]->radius );
 		polyShader.setParameter( "Brightness7", touchedLights[7]->brightness);
 	}
@@ -2627,7 +2626,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 		
 		on[8] = true;
 		polyShader.setParameter( "LightPos8", pos8 );
-		polyShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+		polyShader.setParameter( "LightColor8", c8.r / 255.f, c8.g / 255.f, c8.b / 255.f, 1 );
 		polyShader.setParameter( "Radius8", touchedLights[8]->radius );
 		polyShader.setParameter( "Brightness8", touchedLights[8]->brightness);
 	}
@@ -2646,7 +2645,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
 	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
 	polyShader.setParameter( "LightPosPlayer", posp );
-	polyShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
+	polyShader.setParameter( "LightColorPlayer", c.r / 255.f, c.g / 255.f, c.b / 255.f, 1 );
 	polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
 	polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
 	//polyShader.setParameter( "OnD0", true );
@@ -2763,7 +2762,7 @@ void GameSession::AllocateLight()
 	}
 }
 
-BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
+BasicEffect * GameSession::ActivateEffect( Tileset *ts, Vector2f pos, bool pauseImmune, float angle, int frameCount,
 	int animationFactor, bool right )
 {
 	if( inactiveEffects == NULL )
@@ -2901,7 +2900,7 @@ void GameSession::GameStartMovie()
 
 	player.velocity.x = 60;
 	player.velocity.y = 0;
-	player.hasDoubleJump = false;
+	player.hasfloatJump = false;
 
 	window->setView( movieView );
 	while( !quit )
@@ -3092,7 +3091,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	}*/
 	c = Color( 0, 0xee, 0xff );
 
-	double diffz = (double)points / (double)pointsPerLayer;
+	float diffz = (float)points / (float)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
 	diffz *= 60 * 4;
@@ -3210,19 +3209,19 @@ void Grass::HandleQuery( QuadTreeCollider *qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Grass::IsTouchingBox( const Rect<double> &r )
+bool Grass::IsTouchingBox( const Rect<float> &r )
 {
-	return isQuadTouchingQuad( V2d( r.left, r.top ), V2d( r.left + r.width, r.top ), 
-		V2d( r.left + r.width, r.top + r.height ), V2d( r.left, r.top + r.height ),
+	return isQuadTouchingQuad( Vector2f( r.left, r.top ), Vector2f( r.left + r.width, r.top ), 
+		Vector2f( r.left + r.width, r.top + r.height ), Vector2f( r.left, r.top + r.height ),
 		A, B, C, D );
 
 
-	/*double left = min( edge->v0.x, edge->v1.x );
-	double right = max( edge->v0.x, edge->v1.x );
-	double top = min( edge->v0.y, edge->v1.y );
-	double bottom = max( edge->v0.y, edge->v1.y );
+	/*float left = min( edge->v0.x, edge->v1.x );
+	float right = max( edge->v0.x, edge->v1.x );
+	float top = min( edge->v0.y, edge->v1.y );
+	float bottom = max( edge->v0.y, edge->v1.y );
 
-	Rect<double> er( left, top, right - left, bottom - top );
+	Rect<float> er( left, top, right - left, bottom - top );
 
 	if( er.intersects( r ) )
 	{
@@ -3304,7 +3303,7 @@ bool GameSession::GameStartSeq::Update()
 	if( frame < frameCount )
 	{
 		
-		V2d vel( 60, 0 );
+		Vector2f vel( 60, 0 );
 		//if( frame > 60 )
 			//vel.y = -20;
 
@@ -3361,16 +3360,16 @@ bool GameSession::SetGroundPar()
 	int width = 1920 * widthFactor;
 	bool flipped = false;
 	int a = ((int)view.getCenter().x) % width;
-	double ratio = a / (double)width;
+	float ratio = a / (float)width;
 	if( ratio < 0 )
 		ratio = 1 + ratio;
 
 	int b = ((int)view.getCenter().x) % (width * 2);
-	double ratiob = b / (double)(width);
+	float ratiob = b / (float)(width);
 	if( ratiob < 0 )
 		ratiob = 2 + ratiob;
 
-	if( ratiob > ratio + .001 )
+	if( ratiob > ratio + .001f )
 	{
 	//	cout << "flipped ratiob: " << ratiob << ", oldratio: " << ratio << endl;
 		flipped = true;
@@ -3589,20 +3588,20 @@ void GameSession::SetUndergroundParAndDraw()
 	lightsAtOnce = 0;
 	tempLightLimit = 9;
 
-	sf::Rect<double> r( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2, view.getSize().x, view.getSize().y );
+	sf::Rect<float> r( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2, view.getSize().x, view.getSize().y );
 	
 	queryMode = "lights"; 
 	lightTree->Query( this, r );
 
 	Vector2i vi = Mouse::getPosition();
-	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
+	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015f );
 	//polyShader.setParameter( "stuff", 10, 10, 10 );
 	
-/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
+/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .01f5 ); 
 	pos0.y = 1 - pos0.y;
-	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
+	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .01f5 ); 
 	pos1.y = 1 - pos1.y;
-	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
+	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .01f5 ); 
 	pos2.y = 1 - pos2.y;*/
 	
 	bool on[9];
@@ -3626,8 +3625,8 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		//underShader.setParameter( "On0", true );
 		on[0] = true;
-		underShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		underShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
+		underShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .f75 ) );
+		underShader.setParameter( "LightColor0", c0.r / 255.f, c0.g / 255.f, c0.b / 255.f, 1 );
 		underShader.setParameter( "Radius0", touchedLights[0]->radius );
 		underShader.setParameter( "Brightness0", touchedLights[0]->brightness);
 		
@@ -3642,8 +3641,8 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[1] = true;
 		//underShader.setParameter( "On1", true );
-		underShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		underShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
+		underShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .f75 ) );
+		underShader.setParameter( "LightColor1", c1.r / 255.f, c1.g / 255.f, c1.b / 255.f, 1 );
 		underShader.setParameter( "Radius1", touchedLights[1]->radius );
 		underShader.setParameter( "Brightness1", touchedLights[1]->brightness);
 	}
@@ -3657,8 +3656,8 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[2] = true;
 		//underShader.setParameter( "On2", true );
-		underShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		underShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
+		underShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .f75 ) );
+		underShader.setParameter( "LightColor2", c2.r / 255.f, c2.g / 255.f, c2.b / 255.f, 1 );
 		underShader.setParameter( "Radius2", touchedLights[2]->radius );
 		underShader.setParameter( "Brightness2", touchedLights[2]->brightness);
 	}
@@ -3673,7 +3672,7 @@ void GameSession::SetUndergroundParAndDraw()
 		on[3] = true;
 		//underShader.setParameter( "On3", true );
 		underShader.setParameter( "LightPos3", pos3 );
-		underShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+		underShader.setParameter( "LightColor3", c3.r / 255.f, c3.g / 255.f, c3.b / 255.f, 1 );
 		underShader.setParameter( "Radius3", touchedLights[3]->radius );
 		underShader.setParameter( "Brightness3", touchedLights[3]->brightness);
 	}
@@ -3688,7 +3687,7 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[4] = true;
 		underShader.setParameter( "LightPos4", pos4 );
-		underShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+		underShader.setParameter( "LightColor4", c4.r / 255.f, c4.g / 255.f, c4.b / 255.f, 1 );
 		underShader.setParameter( "Radius4", touchedLights[4]->radius );
 		underShader.setParameter( "Brightness4", touchedLights[4]->brightness);
 	}
@@ -3703,7 +3702,7 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[5] = true;
 		underShader.setParameter( "LightPos5", pos5 );
-		underShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+		underShader.setParameter( "LightColor5", c5.r / 255.f, c5.g / 255.f, c5.b / 255.f, 1 );
 		underShader.setParameter( "Radius5", touchedLights[5]->radius );
 		underShader.setParameter( "Brightness5", touchedLights[5]->brightness);
 	}
@@ -3717,7 +3716,7 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[6] = true;
 		underShader.setParameter( "LightPos6", pos6 );
-		underShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+		underShader.setParameter( "LightColor6", c6.r / 255.f, c6.g / 255.f, c6.b / 255.f, 1 );
 		underShader.setParameter( "Radius6", touchedLights[0]->radius );
 		underShader.setParameter( "Brightness6", touchedLights[0]->brightness);
 	}
@@ -3731,7 +3730,7 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[7] = true;
 		underShader.setParameter( "LightPos7", pos7 );
-		underShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+		underShader.setParameter( "LightColor7", c7.r / 255.f, c7.g / 255.f, c7.b / 255.f, 1 );
 		underShader.setParameter( "Radius7", touchedLights[7]->radius );
 		underShader.setParameter( "Brightness7", touchedLights[7]->brightness);
 	}
@@ -3745,7 +3744,7 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		on[8] = true;
 		underShader.setParameter( "LightPos8", pos8 );
-		underShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+		underShader.setParameter( "LightColor8", c8.r / 255.f, c8.g / 255.f, c8.b / 255.f, 1 );
 		underShader.setParameter( "Radius8", touchedLights[8]->radius );
 		underShader.setParameter( "Brightness8", touchedLights[8]->brightness);
 	}
@@ -3764,7 +3763,7 @@ void GameSession::SetUndergroundParAndDraw()
 	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
 	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
 	underShader.setParameter( "LightPosPlayer", posp );
-	underShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
+	underShader.setParameter( "LightColorPlayer", c.r / 255.f, c.g / 255.f, c.b / 255.f, 1 );
 	underShader.setParameter( "RadiusPlayer", player.testLight->radius );
 	underShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
 

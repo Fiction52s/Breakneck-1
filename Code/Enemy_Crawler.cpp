@@ -7,10 +7,8 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
-
-Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
+Crawler::Crawler( GameSession *owner, Edge *g, float q, bool cw, float s )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
 	ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
@@ -18,11 +16,11 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	sprite.setTexture( *ts_walk->texture );
 	sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	Vector2f gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
 	
-	spawnRect = sf::Rect<double>( gPoint.x - 16, gPoint.y - 16, 16 * 2, 16 * 2 );
+	spawnRect = sf::Rect<float>( gPoint.x - 16, gPoint.y - 16, 16 * 2, 16 * 2 );
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 2;
 	physBody.isCircle = true;
@@ -35,17 +33,17 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	startGround = ground;
 	startQuant = edgeQuantity;
 	frame = 0;
-	position = gPoint + ground->Normal() * 16.0;
+	position = gPoint + ground->Normal() * 16.f;
 }
 
 void Crawler::ResetEnemy()
 {
 	ground = startGround;
 	edgeQuantity = startQuant;
-	V2d gPoint = ground->GetPoint( edgeQuantity );
+	Vector2f gPoint = ground->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 
-	V2d gn = ground->Normal();
+	Vector2f gn = ground->Normal();
 	if( gn.x > 0 )
 		offset.x = physBody.rw;
 	else if( gn.x < 0 )
@@ -70,11 +68,11 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( queryMode == "resolve" )
 	{
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, Vector2f( 0, 0 ) );
 
 		if( c != NULL )
 		{
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.f0001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.f0001 ) ) )
 			{	
 
 				if( e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
@@ -116,8 +114,8 @@ void Crawler::UpdateHitboxes()
 {
 	if( ground != NULL )
 	{
-		V2d gn = ground->Normal();
-		double angle = 0;
+		Vector2f gn = ground->Normal();
+		float angle = 0;
 		if( !approxEquals( abs(offset.x), physBody.rw ) )
 		{
 			//this should never happen
@@ -135,8 +133,8 @@ void Crawler::UpdateHitboxes()
 		hurtBody.globalAngle = 0;
 	}
 
-	hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	hitBody.globalPosition = position + Vector2f( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
+	physBody.globalPosition = position;//+ Vector2f( -16, 0 );// + //physBody.offset + offset;
 }
 
 void Crawler::UpdatePrePhysics()
@@ -151,15 +149,15 @@ void Crawler::UpdatePrePhysics()
 
 void Crawler::UpdatePhysics()
 {
-	double movement = 0;
-	double maxMovement = min( physBody.rw, physBody.rh );
+	float movement = 0;
+	float maxMovement = min( physBody.rw, physBody.rh );
 	movement = groundSpeed;
 
 	while( movement != 0 )
 	{
 		//ground is always some value
 
-		double steal = 0;
+		float steal = 0;
 		if( movement > 0 )
 		{
 			if( movement > maxMovement )
@@ -177,15 +175,15 @@ void Crawler::UpdatePhysics()
 			}
 		}
 
-		double extra = 0;
+		float extra = 0;
 		bool leaveGround = false;
-		double q = edgeQuantity;
+		float q = edgeQuantity;
 
-		V2d gNormal = ground->Normal();
+		Vector2f gNormal = ground->Normal();
 
 
-		double m = movement;
-		double groundLength = length( ground->v1 - ground->v0 ); 
+		float m = movement;
+		float groundLength = length( ground->v1 - ground->v0 ); 
 
 		if( approxEquals( q, 0 ) )
 			q = 0;
@@ -194,8 +192,8 @@ void Crawler::UpdatePhysics()
 
 		Edge *e0 = ground->edge0;
 		Edge *e1 = ground->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
+		Vector2f e0n = e0->Normal();
+		Vector2f e1n = e1->Normal();
 
 		bool transferLeft = false;
 		bool transferRight = false;
@@ -210,33 +208,33 @@ void Crawler::UpdatePhysics()
 			}
 			else
 			{
-				if( rollFactor < 1.0 )
+				if( rollFactor < 1.f )
 				{ 
-					double oldRollFactor = rollFactor;
-					double rollStart = atan2( gNormal.y, gNormal.x );
-					V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-					double rollEnd = atan2( e1n.y, e1n.x );
+					float oldRollFactor = rollFactor;
+					float rollStart = atan2( gNormal.y, gNormal.x );
+					Vector2f startVec = Vector2f( cos( rollStart ), sin( rollStart ) );
+					float rollEnd = atan2( e1n.y, e1n.x );
 
 					if( rollStart < 0 )
 						rollStart += 2 * PI;
 					if( rollEnd < 0 )
 						rollEnd += 2 * PI;
 
-					V2d currentVec = position - ground->v1;
+					Vector2f currentVec = position - ground->v1;
 					currentVec = normalize( currentVec );
-					double rollCurrent = atan2( currentVec.y, currentVec.x );
+					float rollCurrent = atan2( currentVec.y, currentVec.x );
 					if( rollCurrent < 0 )
 						rollCurrent += 2 * PI;
 
 
-					double totalAngleDist = rollEnd - rollStart;
+					float totalAngleDist = rollEnd - rollStart;
 					if( rollEnd < rollStart )
 					{
 						totalAngleDist = ( 2 * PI - rollStart ) + rollEnd;
 					}
 
 
-					double angleDist = rollEnd - rollCurrent;
+					float angleDist = rollEnd - rollCurrent;
 
 					if( rollEnd < rollCurrent )
 					{
@@ -245,9 +243,9 @@ void Crawler::UpdatePhysics()
 
 					
 
-					double arcDist = angleDist * physBody.rw;
+					float arcDist = angleDist * physBody.rw;
 					//arcDist *= 100;
-					double oldArcDist = arcDist;
+					float oldArcDist = arcDist;
 					//m /= 10;
 					movement -= m;
 					if( movement < 0 )
@@ -258,7 +256,7 @@ void Crawler::UpdatePhysics()
 					if( m > arcDist )
 					{
 						//cout << "m: " << m << ", arcDist: " << arcDist << endl;
-						//double realMove = ;
+						//float realMove = ;
 						m -= arcDist;
 						if( approxEquals( m, 0 ) )
 						{
@@ -267,18 +265,18 @@ void Crawler::UpdatePhysics()
 						rollFactor = 1;
 						movement += m;
 
-						V2d oldPos = position;
-						V2d rollEndVec = V2d( cos( rollEnd ), sin ( rollEnd ) );
-						V2d newPos = ground->v1 + rollEndVec * physBody.rw;
+						Vector2f oldPos = position;
+						Vector2f rollEndVec = Vector2f( cos( rollEnd ), sin ( rollEnd ) );
+						Vector2f newPos = ground->v1 + rollEndVec * physBody.rw;
 
 						bool hit = ResolvePhysics( newPos - oldPos );
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position + minContact.resolution );
 							edgeQuantity = q;
-							V2d gn = ground->Normal();
+							Vector2f gn = ground->Normal();
 							roll = false;
 							break;
 						}			
@@ -289,27 +287,27 @@ void Crawler::UpdatePhysics()
 						arcDist -= m;
 						rollFactor = ( totalAngleDist - arcDist / physBody.rw ) / totalAngleDist;
 
-						V2d oldPos = position;
-						double trueAngle = rollStart + angleDist * rollFactor;
+						Vector2f oldPos = position;
+						float trueAngle = rollStart + angleDist * rollFactor;
 						if( trueAngle > PI * 2 )
 						{
 							trueAngle -= PI * 2;
 						}
 
-						V2d trueVec = V2d( cos( trueAngle ), sin( trueAngle ) );
+						Vector2f trueVec = Vector2f( cos( trueAngle ), sin( trueAngle ) );
 						
-						V2d newPos = ground->v1 + trueVec * physBody.rw;
+						Vector2f newPos = ground->v1 + trueVec * physBody.rw;
 
 						//cout << "current: " << rollCurrent << ", new: " << rollFactor << "total: " << totalAngleDist << ", arcdist: " << arcDist << endl;
 						//cout << "other vel: " << (newPos-oldPos).x << ", " << (newPos-oldPos).y << endl;
 						bool hit = ResolvePhysics( newPos - oldPos );
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 							ground = minContact.edge;
 							q = ground->GetQuantity( minContact.position + minContact.resolution );
 							edgeQuantity = q;
-							V2d gn = ground->Normal();
+							Vector2f gn = ground->Normal();
 							roll = false;
 							break;
 						}			
@@ -323,12 +321,12 @@ void Crawler::UpdatePhysics()
 			
 
 					//movement += m;
-					//rollFactor += .01;
+					//rollFactor += .01f;
 
-					//double diff = abs( rollStart - rollEnd );
+					//float diff = abs( rollStart - rollEnd );
 
-					//if( rollFactor > 1.0 )
-					//	rollFactor = 1.0;
+					//if( rollFactor > 1.f )
+					//	rollFactor = 1.f;
 				}
 				else
 				{
@@ -375,11 +373,11 @@ void Crawler::UpdatePhysics()
 				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
-					V2d eNorm = minContact.edge->Normal();
+					Vector2f eNorm = minContact.edge->Normal();
 					ground = minContact.edge;
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
-					V2d gn = ground->Normal();
+					Vector2f gn = ground->Normal();
 					break;
 				}			
 			}
@@ -402,14 +400,14 @@ void Crawler::UpdatePhysics()
 
 void Crawler::UpdatePhysics3()
 {
-	double movement = 0;
-	double maxMovement = min( physBody.rw, physBody.rh );
+	float movement = 0;
+	float maxMovement = min( physBody.rw, physBody.rh );
 	movement = groundSpeed;
 
 	while( movement != 0 )
 	{
 		//ground is always some value
-		double steal = 0;
+		float steal = 0;
 		if( movement > 0 )
 		{
 			if( movement > maxMovement )
@@ -427,15 +425,15 @@ void Crawler::UpdatePhysics3()
 			}
 		}
 
-		double extra = 0;
+		float extra = 0;
 		bool leaveGround = false;
-		double q = edgeQuantity;
+		float q = edgeQuantity;
 
-		V2d gNormal = ground->Normal();
+		Vector2f gNormal = ground->Normal();
 
 
-		double m = movement;
-		double groundLength = length( ground->v1 - ground->v0 ); 
+		float m = movement;
+		float groundLength = length( ground->v1 - ground->v0 ); 
 
 		if( approxEquals( q, 0 ) )
 			q = 0;
@@ -454,8 +452,8 @@ void Crawler::UpdatePhysics3()
 
 		Edge *e0 = ground->edge0;
 		Edge *e1 = ground->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
+		Vector2f e0n = e0->Normal();
+		Vector2f e1n = e1->Normal();
 
 		bool transferLeft = false;
 		bool transferRight = false;
@@ -700,7 +698,7 @@ void Crawler::UpdatePhysics3()
 				{
 					extra = (offset.x + movement) + physBody.rw;
 				}
-				double m = movement;
+				float m = movement;
 				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 				{
 					m -= extra;
@@ -723,10 +721,10 @@ void Crawler::UpdatePhysics3()
 
 				if(!approxEquals( m, 0 ) )
 				{
-					bool hit = ResolvePhysics( V2d( m, 0 ));
+					bool hit = ResolvePhysics( Vector2f( m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
-						V2d eNorm = minContact.edge->Normal();
+						Vector2f eNorm = minContact.edge->Normal();
 						if( eNorm.y < 0 )
 						{
 							//if( minContact.position.y >= position.y + physBody.rh - 5 )
@@ -771,7 +769,7 @@ void Crawler::UpdatePhysics3()
 					{
 						extra = (-offset.x + movement) + physBody.rw;
 					}
-					double m = movement;
+					float m = movement;
 					if( (m > 0 && extra > 0) || (m < 0 && extra < 0) )
 					{
 						m -= extra;
@@ -794,10 +792,10 @@ void Crawler::UpdatePhysics3()
 
 					if(!approxEquals( m, 0 ) )
 					{
-						bool hit = ResolvePhysics( V2d( -m, 0 ));
+						bool hit = ResolvePhysics( Vector2f( -m, 0 ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 							if( eNorm.y < 0 )
 							{
 								//if( minContact.position.y >= position.y + physBody.rh - 5 )
@@ -848,7 +846,7 @@ void Crawler::UpdatePhysics3()
 					{
 						extra = (-offset.y + movement) + physBody.rh;
 					}
-					double m = movement;
+					float m = movement;
 
 					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 					{
@@ -877,17 +875,17 @@ void Crawler::UpdatePhysics3()
 
 					if(!approxEquals( m, 0 ) )
 					{
-						bool hit = ResolvePhysics( V2d( 0, -m ));
+						bool hit = ResolvePhysics( Vector2f( 0, -m ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 
 							ground = minContact.edge;
 
 							q = ground->GetQuantity( minContact.position + minContact.resolution );
 							edgeQuantity = q;
 
-							V2d gn = ground->Normal();
+							Vector2f gn = ground->Normal();
 							if( gn.x > 0 )
 								offset.x = physBody.rw;
 							else if( gn.x < 0 )
@@ -915,7 +913,7 @@ void Crawler::UpdatePhysics3()
 					{
 						extra = (offset.y + movement) + physBody.rh;
 					}
-					double m = movement;
+					float m = movement;
 
 					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 					{
@@ -943,17 +941,17 @@ void Crawler::UpdatePhysics3()
 
 					if(!approxEquals( m, 0 ) )
 					{
-						bool hit = ResolvePhysics( V2d( 0, m ));
+						bool hit = ResolvePhysics( Vector2f( 0, m ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 
 							ground = minContact.edge;
 
 							q = ground->GetQuantity( minContact.position + minContact.resolution );
 							edgeQuantity = q;
 
-							V2d gn = ground->Normal();
+							Vector2f gn = ground->Normal();
 							if( gn.x > 0 )
 								offset.x = physBody.rw;
 							else if( gn.x < 0 )
@@ -1022,7 +1020,7 @@ void Crawler::UpdatePhysics3()
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
-						V2d eNorm = minContact.edge->Normal();
+						Vector2f eNorm = minContact.edge->Normal();
 
 						ground = minContact.edge;
 
@@ -1031,7 +1029,7 @@ void Crawler::UpdatePhysics3()
 						//groundSpeed = 0;
 						edgeQuantity = q;
 
-						V2d gn = ground->Normal();
+						Vector2f gn = ground->Normal();
 						if( gn.x > 0 )
 							offset.x = physBody.rw;
 						else if( gn.x < 0 )
@@ -1073,10 +1071,10 @@ void Crawler::UpdatePhysics3()
 
 void Crawler::UpdatePhysics2()
 {
-	double movement = 0;
-	double maxMovement = min( physBody.rw, physBody.rh );
-	V2d movementVec;
-	V2d lastExtra( 100000, 100000 );
+	float movement = 0;
+	float maxMovement = min( physBody.rw, physBody.rh );
+	Vector2f movementVec;
+	Vector2f lastExtra( 100000, 100000 );
 
 	//make sure ground != NULL
 	movement = groundSpeed;
@@ -1086,7 +1084,7 @@ void Crawler::UpdatePhysics2()
 	{
 		if( ground != NULL )
 		{
-			double steal = 0;
+			float steal = 0;
 			if( movement > 0 )
 			{
 				if( movement > maxMovement )
@@ -1104,15 +1102,15 @@ void Crawler::UpdatePhysics2()
 				}
 			}
 
-			double extra = 0;
+			float extra = 0;
 			bool leaveGround = false;
-			double q = edgeQuantity;
+			float q = edgeQuantity;
 
-			V2d gNormal = ground->Normal();
+			Vector2f gNormal = ground->Normal();
 
 
-			double m = movement;
-			double groundLength = length( ground->v1 - ground->v0 ); 
+			float m = movement;
+			float groundLength = length( ground->v1 - ground->v0 ); 
 
 			if( approxEquals( q, 0 ) )
 				q = 0;
@@ -1131,8 +1129,8 @@ void Crawler::UpdatePhysics2()
 
 			Edge *e0 = ground->edge0;
 			Edge *e1 = ground->edge1;
-			V2d e0n = e0->Normal();
-			V2d e1n = e1->Normal();
+			Vector2f e0n = e0->Normal();
+			Vector2f e1n = e1->Normal();
 
 			bool transferLeft = false;
 			bool transferRight = false;
@@ -1455,7 +1453,7 @@ void Crawler::UpdatePhysics2()
 				{
 					extra = (offset.x + movement) + physBody.rw;
 				}
-				double m = movement;
+				float m = movement;
 				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 				{
 					m -= extra;
@@ -1478,10 +1476,10 @@ void Crawler::UpdatePhysics2()
 
 				if(!approxEquals( m, 0 ) )
 				{
-					bool hit = ResolvePhysics( V2d( m, 0 ));
+					bool hit = ResolvePhysics( Vector2f( m, 0 ));
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
-						V2d eNorm = minContact.edge->Normal();
+						Vector2f eNorm = minContact.edge->Normal();
 						if( eNorm.y < 0 )
 						{
 							//if( minContact.position.y >= position.y + physBody.rh - 5 )
@@ -1526,7 +1524,7 @@ void Crawler::UpdatePhysics2()
 					{
 						extra = (-offset.x + movement) + physBody.rw;
 					}
-					double m = movement;
+					float m = movement;
 					if( (m > 0 && extra > 0) || (m < 0 && extra < 0) )
 					{
 						m -= extra;
@@ -1549,10 +1547,10 @@ void Crawler::UpdatePhysics2()
 
 					if(!approxEquals( m, 0 ) )
 					{
-						bool hit = ResolvePhysics( V2d( -m, 0 ));
+						bool hit = ResolvePhysics( Vector2f( -m, 0 ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 							if( eNorm.y < 0 )
 							{
 								//if( minContact.position.y >= position.y + physBody.rh - 5 )
@@ -1602,7 +1600,7 @@ void Crawler::UpdatePhysics2()
 					{
 						extra = (-offset.y + movement) + physBody.rh;
 					}
-					double m = movement;
+					float m = movement;
 
 					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 					{
@@ -1631,17 +1629,17 @@ void Crawler::UpdatePhysics2()
 
 					if(!approxEquals( m, 0 ) )
 					{
-						bool hit = ResolvePhysics( V2d( 0, -m ));
+						bool hit = ResolvePhysics( Vector2f( 0, -m ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 
 							ground = minContact.edge;
 
 							q = ground->GetQuantity( minContact.position + minContact.resolution );
 							edgeQuantity = q;
 
-							V2d gn = ground->Normal();
+							Vector2f gn = ground->Normal();
 							if( gn.x > 0 )
 								offset.x = physBody.rw;
 							else if( gn.x < 0 )
@@ -1669,7 +1667,7 @@ void Crawler::UpdatePhysics2()
 					{
 						extra = (offset.y + movement) + physBody.rh;
 					}
-					double m = movement;
+					float m = movement;
 
 					if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 					{
@@ -1697,17 +1695,17 @@ void Crawler::UpdatePhysics2()
 
 					if(!approxEquals( m, 0 ) )
 					{
-						bool hit = ResolvePhysics( V2d( 0, m ));
+						bool hit = ResolvePhysics( Vector2f( 0, m ));
 						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 						{
-							V2d eNorm = minContact.edge->Normal();
+							Vector2f eNorm = minContact.edge->Normal();
 
 							ground = minContact.edge;
 
 							q = ground->GetQuantity( minContact.position + minContact.resolution );
 							edgeQuantity = q;
 
-							V2d gn = ground->Normal();
+							Vector2f gn = ground->Normal();
 							if( gn.x > 0 )
 								offset.x = physBody.rw;
 							else if( gn.x < 0 )
@@ -1776,7 +1774,7 @@ void Crawler::UpdatePhysics2()
 					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
-						V2d eNorm = minContact.edge->Normal();
+						Vector2f eNorm = minContact.edge->Normal();
 
 						ground = minContact.edge;
 
@@ -1785,7 +1783,7 @@ void Crawler::UpdatePhysics2()
 						//groundSpeed = 0;
 						edgeQuantity = q;
 
-						V2d gn = ground->Normal();
+						Vector2f gn = ground->Normal();
 						if( gn.x > 0 )
 							offset.x = physBody.rw;
 						else if( gn.x < 0 )
@@ -1823,30 +1821,30 @@ void Crawler::UpdatePhysics2()
 	}
 }
 
-bool Crawler::ResolvePhysics( V2d vel )
+bool Crawler::ResolvePhysics( Vector2f vel )
 {
 	possibleEdgeCount = 0;
 
-	Rect<double> oldR( position.x + physBody.offset.x - physBody.rw, 
+	Rect<float> oldR( position.x + physBody.offset.x - physBody.rw, 
 		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
 	position += vel;
 	
-	Rect<double> newR( position.x + physBody.offset.x - physBody.rw, 
+	Rect<float> newR( position.x + physBody.offset.x - physBody.rw, 
 		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
 	//minContact.collisionPriority = 1000000;
 	
-	double oldRight = oldR.left + oldR.width;
-	double right = newR.left + newR.width;
+	float oldRight = oldR.left + oldR.width;
+	float right = newR.left + newR.width;
 
-	double oldBottom = oldR.top + oldR.height;
-	double bottom = newR.top + newR.height;
+	float oldBottom = oldR.top + oldR.height;
+	float bottom = newR.top + newR.height;
 
-	double maxRight = max( right, oldRight );
-	double maxBottom = max( oldBottom, bottom );
-	double minLeft = min( oldR.left, newR.left );
-	double minTop = min( oldR.top, newR.top );
-	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
-	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
+	float maxRight = max( right, oldRight );
+	float maxBottom = max( oldBottom, bottom );
+	float minLeft = min( oldR.left, newR.left );
+	float minTop = min( oldR.top, newR.top );
+	//Rect<float> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
+	Rect<float> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
 
 	
 	minContact.collisionPriority = 1000000;
@@ -1867,21 +1865,21 @@ bool Crawler::ResolvePhysics( V2d vel )
 
 void Crawler::UpdatePostPhysics()
 {
-	double spaceNeeded = 0;
-	V2d gn = ground->Normal();
-	V2d gPoint = ground->GetPoint( edgeQuantity );
+	float spaceNeeded = 0;
+	Vector2f gn = ground->Normal();
+	Vector2f gPoint = ground->GetPoint( edgeQuantity );
 	
 
-	double angle = 0;
+	float angle = 0;
 	
 	if( !roll )
 	{
-		position = gPoint + gn * 16.0;
+		position = gPoint + gn * 16.f;
 		angle = atan2( gn.x, -gn.y );
 		
 		sprite.setTexture( *ts_walk->texture );
 		sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
-		V2d pp = ground->GetPoint( edgeQuantity );
+		Vector2f pp = ground->GetPoint( edgeQuantity );
 		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 		sprite.setRotation( angle / PI * 180 );
 		sprite.setPosition( pp.x, pp.y );
@@ -1889,11 +1887,11 @@ void Crawler::UpdatePostPhysics()
 	}
 	else
 	{
-		V2d e1n = ground->edge1->Normal();
-		double rollStart = atan2( gn.y, gn.x );
-		double rollEnd = atan2( e1n.y, e1n.x );
-		double adjRollStart = rollStart;
-		double adjRollEnd = rollEnd;
+		Vector2f e1n = ground->edge1->Normal();
+		float rollStart = atan2( gn.y, gn.x );
+		float rollEnd = atan2( e1n.y, e1n.x );
+		float adjRollStart = rollStart;
+		float adjRollEnd = rollEnd;
 
 		if( rollStart < 0 )
 			adjRollStart += 2 * PI;
@@ -1901,7 +1899,7 @@ void Crawler::UpdatePostPhysics()
 			adjRollEnd += 2 * PI;
 
 
-	/*	double angleDist = rollEnd - rollStart;
+	/*	float angleDist = rollEnd - rollStart;
 
 		if( rollEnd < rollStart )
 		{
@@ -1911,14 +1909,14 @@ void Crawler::UpdatePostPhysics()
 		
 		if( adjRollEnd > adjRollStart )
 		{
-			angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
+			angle  = adjRollStart * ( 1.f - rollFactor ) + adjRollEnd  * rollFactor ;
 			
 			//angle = -angle;
 		}
 		else
 		{
 			
-			angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
+			angle = rollStart * ( 1.f - rollFactor ) + rollEnd  * rollFactor;
 
 			if( rollStart < 0 )
 				rollStart += 2 * PI;
@@ -1926,7 +1924,7 @@ void Crawler::UpdatePostPhysics()
 				rollEnd += 2 * PI;
 			//angle = -angle;
 		}
-		//angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor ;
+		//angle = rollStart * ( 1.f - rollFactor ) + rollEnd  * rollFactor ;
 		if( angle < 0 )
 			angle += PI * 2;
 		//angle = -angle;
@@ -1938,12 +1936,12 @@ void Crawler::UpdatePostPhysics()
 
 		
 
-		V2d angleVec = V2d( cos( angle ), sin( angle ) );
+		Vector2f angleVec = Vector2f( cos( angle ), sin( angle ) );
 		angleVec = normalize( angleVec );
 
-		position = gPoint + angleVec * 16.0;
+		position = gPoint + angleVec * 16.f;
 
-		angle += PI / 2.0;
+		angle += PI / 2.f;
 	
 			
 		
@@ -1956,8 +1954,8 @@ void Crawler::UpdatePostPhysics()
 
 		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 		sprite.setRotation( angle / PI * 180 );
-		V2d pp = ground->GetPoint( edgeQuantity );
-		//pp += angleVec * 16.0;
+		Vector2f pp = ground->GetPoint( edgeQuantity );
+		//pp += angleVec * 16.f;
 		sprite.setPosition( pp.x, pp.y );
 		//sprite.setPosition( position.x, position.y );
 		
@@ -2012,7 +2010,7 @@ void Crawler::DebugDraw( RenderTarget *target )
 	cs.setFillColor( Color::Cyan );
 	cs.setRadius( 10 );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	V2d g = ground->GetPoint( edgeQuantity );
+	Vector2f g = ground->GetPoint( edgeQuantity );
 	cs.setPosition( g.x, g.y );
 
 	owner->window->draw( cs );

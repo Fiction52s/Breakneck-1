@@ -3,29 +3,29 @@
 
 #include <SFML/Graphics.hpp>
 
-double cross( sf::Vector2<double> a, sf::Vector2<double> b );
+float cross( sf::Vector2f a, sf::Vector2f b );
 
 #define PI 3.14159265359
-double length( sf::Vector2<double> v);
+float length( sf::Vector2f v);
 
-sf::Vector2<double> normalize( sf::Vector2<double> v );
+sf::Vector2f normalize( sf::Vector2f v );
 
-double dot( sf::Vector2<double> a, sf::Vector2<double> b );
+float dot( sf::Vector2f a, sf::Vector2f b );
 
 struct LineIntersection
 {
-	LineIntersection(const sf::Vector2<double> &pos, bool p );
-	sf::Vector2<double> position;
+	LineIntersection(const sf::Vector2f &pos, bool p );
+	sf::Vector2f position;
 	bool parallel;
 };
 
-bool approxEquals( double a, double b );
+bool approxEquals( float a, float b );
 
-LineIntersection lineIntersection( sf::Vector2<double> a, sf::Vector2<double> b, sf::Vector2<double> c, sf::Vector2<double> d );
+LineIntersection lineIntersection( sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::Vector2f d );
 
-LineIntersection SegmentIntersect( sf::Vector2<double> a, 
-	sf::Vector2<double> b, sf::Vector2<double> c, 
-	sf::Vector2<double> d );
+LineIntersection SegmentIntersect( sf::Vector2f a, 
+	sf::Vector2f b, sf::Vector2f c, 
+	sf::Vector2f d );
 
 
 #endif

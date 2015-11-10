@@ -7,7 +7,7 @@
 struct GameSession;
 struct Light : QuadTreeEntrant
 {
-	Light( GameSession *owner, sf::Vector2i &p, sf::Color &c, double radius, double brightness );
+	Light( GameSession *owner, sf::Vector2i &p, sf::Color &c, float radius, float brightness );
 	Light * prev;
 	Light * next;
 	
@@ -24,7 +24,7 @@ struct Light : QuadTreeEntrant
 	sf::Color color;
 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<float> &r );
 };
 
 #endif

@@ -7,7 +7,7 @@ using namespace sf;
 using namespace std;
 
 
-Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double bright )
+Light::Light( GameSession *own, sf::Vector2i &p, Color &c, float rad, float bright )
 	:color( c ), pos( p ), next( NULL )
 {
 	brightness = bright;
@@ -33,12 +33,12 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double br
 	//cs.setPosition( 0, -300 );
 	cs.setPosition( p.x, p.y );
 
-	//falloff = Vector3f( .001, .2, .1 );
+	//falloff = Vector3f( .f01, .2, .1 );
 	
 	//radius = 1;
 	
 	//falloff /= 100.f;
-	depth = .075;//.075;//.075;//.075;//radius * .0075;
+	depth = .075f;//.f75;//.f75;//.f75;//radius * .f075;
 }
 
 void Light::HandleQuery( QuadTreeCollider * qtc )
@@ -46,10 +46,10 @@ void Light::HandleQuery( QuadTreeCollider * qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Light::IsTouchingBox( const sf::Rect<double> &r )
+bool Light::IsTouchingBox( const sf::Rect<float> &r )
 {
 	//float trueRad = 1000;
-	sf::Rect<double> r2( pos.x - radius, pos.y - radius, radius * 2, radius* 2 );
+	sf::Rect<float> r2( pos.x - radius, pos.y - radius, radius * 2, radius* 2 );
 	if( r.intersects( r2 ) )
 		return true;
 
@@ -66,7 +66,7 @@ void Light::Draw( RenderTarget *target )
 	//	owner->view.getCenter().y + owner->view.getSize().y / 2 );
 
 	Vector2i vi0 = Vector2i( owner->preScreenTex->mapCoordsToPixel( cs.getPosition() ) );
-		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
+		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .01f5 ); 
 	Vector3f lightpos( vi0.x / (float)owner->window->getSize().x, -1 + vi0.y / (float)owner->window->getSize().y, depth );
 
 	//sh.setParameter( "lightpos", lightpos );

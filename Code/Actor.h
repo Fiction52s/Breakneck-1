@@ -57,19 +57,19 @@ struct Actor : QuadTreeCollider,
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void ApplyHit( HitboxInfo *info );
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolvePhysics( sf::Vector2f vel );
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool CheckStandUp();
-	sf::Vector2<double> UpdateReversePhysics();
+	sf::Vector2f UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
-	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
+	void HandleRayCollision( Edge *edge, float edgeQuantity, float rayPortion );
 	void UpdateHitboxes();
 	void AirMovement();
-	double GroundedAngle();
-	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
+	float GroundedAngle();
+	float GroundedAngleAttack( sf::Vector2f &trueNormal );
 	sf::Vector2i GetWireOffset();
 	void RunMovement();
 	void AttackMovement();
@@ -79,7 +79,7 @@ struct Actor : QuadTreeCollider,
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
-	double steepClimbSpeedThresh;
+	float steepClimbSpeedThresh;
 	Contact minContact;
 	sf::Shader sh;
 	bool collision;
@@ -128,12 +128,12 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceSprint;
 
 	Tileset * ts_fx_airdash;
-	Tileset * ts_fx_double;
+	Tileset * ts_fx_float;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
 
 	
-	double offSlopeByWallThresh;
+	float offSlopeByWallThresh;
 	const static int MAX_MOTION_GHOSTS = 2;
 	sf::Sprite motionGhosts[MAX_MOTION_GHOSTS];
 	int numMotionGhosts;
@@ -141,10 +141,10 @@ struct Actor : QuadTreeCollider,
 	float percentCloneRate;
 	bool changingClone;
 
-	double holdDashAccel;
-	double wallThresh;
+	float holdDashAccel;
+	float wallThresh;
 
-	double airDashSpeed;
+	float airDashSpeed;
 
 	CollisionBox b;
 	CollisionBox hurtBody;
@@ -159,7 +159,7 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> standUHitboxes;
 
 
-	double steepThresh;
+	float steepThresh;
 
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 
@@ -178,40 +178,40 @@ struct Actor : QuadTreeCollider,
 	sf::SoundBuffer playerHitBuffer;
 	sf::Sound playerHitSound;
 
-	double dashHeight;
-	double normalHeight;
-	double doubleJumpHeight;
-	double sprintHeight;
+	float dashHeight;
+	float normalHeight;
+	float floatJumpHeight;
+	float sprintHeight;
 
-	double airSlow;
+	float airSlow;
 
-	double slopeLaunchMinSpeed;
-	double maxRunInit;
-	double maxGroundSpeed;
-	double runAccelInit;
-	double runGain;
-	double sprintAccel;
+	float slopeLaunchMinSpeed;
+	float maxRunInit;
+	float maxGroundSpeed;
+	float runAccelInit;
+	float runGain;
+	float sprintAccel;
 
-	double maxNormalRun;
-	double runAccel;
-	double maxFallSpeed;
-	double gravity;
+	float maxNormalRun;
+	float runAccel;
+	float maxFallSpeed;
+	float gravity;
 
-	double jumpStrength;
-	double airAccel;
-	double maxAirXSpeed;
-	double maxAirXControl;
-	double dashSpeed;
+	float jumpStrength;
+	float airAccel;
+	float maxAirXSpeed;
+	float maxAirXControl;
+	float dashSpeed;
 
-	double doubleJumpStrength;
+	float floatJumpStrength;
 
 	int timeSlowStrength;
 
-	sf::Vector2<double> wallJumpStrength;
-	double clingSpeed;
+	sf::Vector2f wallJumpStrength;
+	float clingSpeed;
 
 	bool col;
-	sf::Vector2<double> tempVel;
+	sf::Vector2f tempVel;
 	std::string queryMode;
 	MovingTerrain *currMovingTerrain;
 
@@ -223,16 +223,16 @@ struct Actor : QuadTreeCollider,
 	bool checkValid;
 
 	Edge *rcEdge;
-	double rcQuantity;
+	float rcQuantity;
 	std::string rayCastMode;
 
 	bool leftGround;
-	double grindActionCurrent;
+	float grindActionCurrent;
 	ControllerState prevInput;
 	ControllerState currInput;
-	sf::Vector2<double> oldVelocity;
+	sf::Vector2f oldVelocity;
 	int framesInAir;
-	sf::Vector2<double> startAirDashVel;
+	sf::Vector2f startAirDashVel;
 
 	int framesGrinding;
 	int framesNotGrinding;
@@ -245,16 +245,16 @@ struct Actor : QuadTreeCollider,
 
 	Edge *grindEdge;
 	MovingTerrain *grindMovingTerrain;
-	double grindQuantity;
-	double grindSpeed;
+	float grindQuantity;
+	float grindSpeed;
 
 	bool reversed;
 
-	double edgeQuantity;
+	float edgeQuantity;
 	
-	double groundOffsetX;
+	float groundOffsetX;
 
-	double offsetX;
+	float offsetX;
 
 	bool bounceGrounded;
 
@@ -262,21 +262,21 @@ struct Actor : QuadTreeCollider,
 
 	int wallJumpFrameCounter;
 
-	double groundSpeed;
+	float groundSpeed;
 
 	bool facingRight;
 	
-	bool hasDoubleJump;
+	bool hasfloatJump;
 
 	int slowMultiple;
 	int slowCounter;
 
-	sf::Vector2<double> wallNormal;
+	sf::Vector2f wallNormal;
 	int testGrassCount;
 	Action action;
 	int frame;
-	sf::Vector2<double> position;
-	sf::Vector2<double> velocity;
+	sf::Vector2f position;
+	sf::Vector2f velocity;
 	//CollisionBox *physBox;
 
 	int hitlagFrames;
@@ -284,10 +284,10 @@ struct Actor : QuadTreeCollider,
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
 
-	sf::Vector2<double> storedBounceVel;
-	sf::Vector2<double> bounceNorm;
-	sf::Vector2<double> oldBounceNorm;
-	double storedBounceGroundSpeed;
+	sf::Vector2f storedBounceVel;
+	sf::Vector2f bounceNorm;
+	sf::Vector2f oldBounceNorm;
+	float storedBounceGroundSpeed;
 	
 	Wire *leftWire;
 	Wire *rightWire;
@@ -296,7 +296,7 @@ struct Actor : QuadTreeCollider,
 
 	Edge *bounceEdge;
 	MovingTerrain *bounceMovingTerrain;
-	double bounceQuant;
+	float bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
 	bool groundedWallBounce;
@@ -316,7 +316,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_dashRepeat;
 	Tileset *ts_fx_land;
 	
-	sf::Vector2<double> bubblePos[maxBubbles];
+	sf::Vector2f bubblePos[maxBubbles];
 	int bubbleFramesToLive[maxBubbles];
 	int currBubble;
 
@@ -342,12 +342,12 @@ struct Actor : QuadTreeCollider,
 	struct Stored
 	{
 		bool leftGround;
-		double grindActionCurrent;
+		float grindActionCurrent;
 		ControllerState prevInput;
 		ControllerState currInput;
-		sf::Vector2<double> oldVelocity;
+		sf::Vector2f oldVelocity;
 		int framesInAir;
-		sf::Vector2<double> startAirDashVel;
+		sf::Vector2f startAirDashVel;
 		Edge *ground;
 		Edge *lastGround;
 		bool hasAirDash;
@@ -355,36 +355,36 @@ struct Actor : QuadTreeCollider,
 
 		Edge *grindEdge;
 		bool bounceGrounded;
-		double grindQuantity;
-		double grindSpeed;
+		float grindQuantity;
+		float grindSpeed;
 
 		bool reversed;
 
-		double edgeQuantity;
+		float edgeQuantity;
 	
-		double groundOffsetX;
+		float groundOffsetX;
 
-		double offsetX;
+		float offsetX;
 
 		bool holdJump;
 
 		int wallJumpFrameCounter;
 
-		double groundSpeed;
+		float groundSpeed;
 
 		bool facingRight;
 	
-		bool hasDoubleJump;
+		bool hasfloatJump;
 
 		int slowMultiple;
 		int slowCounter;
 
-		sf::Vector2<double> wallNormal;
+		sf::Vector2f wallNormal;
 
 		Action action;
 		int frame;
-		sf::Vector2<double> position;
-		sf::Vector2<double> velocity;
+		sf::Vector2f position;
+		sf::Vector2f velocity;
 		//CollisionBox *physBox;
 
 		int hitlagFrames;
@@ -392,10 +392,10 @@ struct Actor : QuadTreeCollider,
 		int invincibleFrames;
 		HitboxInfo *receivedHit;
 
-		sf::Vector2<double> storedBounceVel;
+		sf::Vector2f storedBounceVel;
 		Wire *wire;
 		Edge *bounceEdge;
-		double bounceQuant;
+		float bounceQuant;
 
 		Edge *oldBounceEdge;
 		int framesSinceBounce;
@@ -403,13 +403,13 @@ struct Actor : QuadTreeCollider,
 		bool touchEdgeWithLeftWire;
 		bool touchEdgeWithRightWire;
 
-		sf::Vector2<double> bubblePos[maxBubbles];
+		sf::Vector2f bubblePos[maxBubbles];
 		int bubbleFramesToLive[maxBubbles];
 		int currBubble;
 
-		sf::Vector2<double> bounceNorm;
-		sf::Vector2<double> oldBounceNorm;
-		double storedBounceGroundSpeed;
+		sf::Vector2f bounceNorm;
+		sf::Vector2f oldBounceNorm;
+		float storedBounceGroundSpeed;
 
 		bool groundedWallBounce;
 
@@ -419,7 +419,7 @@ struct Actor : QuadTreeCollider,
 	Stored stored;
 
 
-	//double rotation;
+	//float rotation;
 	
 
 
@@ -437,7 +437,7 @@ struct Actor : QuadTreeCollider,
 
 	
 
-	//sf::Vector2<double> bounceOffset;
+	//sf::Vector2f bounceOffset;
 
 };
 
@@ -479,15 +479,15 @@ struct PlayerGhost
 
 	struct P
 	{
-		sf::Vector2<double> position;
+		sf::Vector2f position;
 		Action action;
 		int frame;
 		sf::Sprite s;
 		bool showSword1;
 		sf::Sprite swordSprite1;
-		double angle;
+		float angle;
 		bool createBubble;
-		sf::Rect<double> screenRect;
+		sf::Rect<float> screenRect;
 	};
 	
 	void Draw( sf::RenderTarget *target );

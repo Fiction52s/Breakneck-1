@@ -7,7 +7,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
 Enemy::Enemy( GameSession *own, EnemyType t )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
@@ -34,7 +33,7 @@ void Enemy::HandleQuery( QuadTreeCollider * qtc )
 		qtc->HandleEntrant( this );
 }
 
-bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
+bool Enemy::IsTouchingBox( const sf::Rect<float> &r )
 {
 	return IsBoxTouchingBox( spawnRect, r );//r.intersects( spawnRect );// 
 }

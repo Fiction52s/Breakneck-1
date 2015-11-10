@@ -9,16 +9,16 @@
 struct Edge : QuadTreeEntrant
 {
 	Edge();
-	sf::Vector2<double> Normal();
-	sf::Vector2<double> GetPoint( double quantity );
-	double GetQuantity( sf::Vector2<double> p );
-	double GetQuantityGivenX( double x );
+	sf::Vector2f Normal();
+	sf::Vector2f GetPoint( float quantity );
+	float GetQuantity( sf::Vector2f p );
+	float GetQuantityGivenX( float x );
 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<float> &r );
 
-	sf::Vector2<double> v0;
-	sf::Vector2<double> v1;
+	sf::Vector2f v0;
+	sf::Vector2f v1;
 	Edge * GetEdge0();
 	Edge * GetEdge1();
 	Edge *edge0;
@@ -35,7 +35,7 @@ struct MovingTerrain
 	~MovingTerrain();
 	void AddPoint(sf::Vector2i p);
 	void Finalize();
-	void Query( QuadTreeCollider *qtc, const sf::Rect<double> &r );
+	void Query( QuadTreeCollider *qtc, const sf::Rect<float> &r );
 	void DebugDraw( sf::RenderTarget *target );
 	void Draw( sf::RenderTarget *target );
 	void UpdatePhysics();
@@ -49,17 +49,17 @@ struct MovingTerrain
 	int right;
 	int top;
 	int bottom;
-	sf::Vector2<double> position;
-	sf::Vector2<double> oldPosition;
+	sf::Vector2f position;
+	sf::Vector2f oldPosition;
 	sf::Vector2i *path; //global coords
 	int pathLength;
 	bool loop;
-	sf::Vector2<double> vel;
+	sf::Vector2f vel;
 	int slowMultiple;
 	int slowCounter;
 	int targetNode;
 	bool forward;
-	double speed;
+	float speed;
 	GameSession *owner;
 	int numTris;
 };
@@ -75,23 +75,23 @@ struct CollisionBox
 
 	
 	bool Intersects( CollisionBox &c );
-	//double offsetAngle;
-	sf::Vector2<double> globalPosition;
-	double globalAngle;
+	//float offsetAngle;
+	sf::Vector2f globalPosition;
+	float globalAngle;
 
-	sf::Vector2<double> offset;
+	sf::Vector2f offset;
 	void DebugDraw( sf::RenderTarget *target );
 
-	double rw; //radius or half width
-	double rh; //radius or half height
+	float rw; //radius or half width
+	float rh; //radius or half height
 	bool isCircle;
 	BoxType type;	
 };
 
 struct HitboxInfo
 {
-	double knockback; //0+
-	double drain; //0-1
+	float knockback; //0+
+	float drain; //0-1
 	int hitstunFrames; 
 	int hitlagFrames;
 	int damage;
@@ -101,11 +101,11 @@ struct Contact
 {
 	Contact();
 		
-	double collisionPriority;	
-	sf::Vector2<double> position;
-	sf::Vector2<double> resolution;
+	float collisionPriority;	
+	sf::Vector2f position;
+	sf::Vector2f resolution;
 	Edge *edge;
-	sf::Vector2<double> normal;
+	sf::Vector2f normal;
 	MovingTerrain *movingPlat;
 	bool weirdPoint;
 
@@ -117,10 +117,10 @@ struct Collider
 	~Collider();
 	
 	Contact *collideEdge( 
-		sf::Vector2<double> position, 
+		sf::Vector2f position, 
 		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel, 
-		const sf::Vector2<double> &tVel );
+		const sf::Vector2f &vel, 
+		const sf::Vector2f &tVel );
 	
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
@@ -135,9 +135,9 @@ struct EdgeParentNode;
 struct EdgeQNode
 {
 	EdgeQNode():parent(NULL),debug(NULL){}
-	sf::Vector2<double> pos;
-	double rw;
-	double rh;
+	sf::Vector2f pos;
+	float rw;
+	float rh;
 	sf::RenderWindow *debug;
 	EdgeParentNode *parent;
 	bool leaf;
@@ -147,7 +147,7 @@ struct EdgeQNode
 
 struct EdgeParentNode : EdgeQNode
 {
-	EdgeParentNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EdgeParentNode( const sf::Vector2f &pos, float rw, float rh );
 	EdgeQNode *children[4];
 	// 0    |     1
 	//--------------
@@ -158,7 +158,7 @@ struct EdgeParentNode : EdgeQNode
 struct EdgeLeafNode : EdgeQNode
 {
 	int objCount;
-	EdgeLeafNode( const sf::Vector2<double> &pos, double rw, double rh );
+	EdgeLeafNode( const sf::Vector2f &pos, float rw, float rh );
 	Edge *edges[4];
 };
 
@@ -172,29 +172,29 @@ struct EdgeQuadTreeCollider
 	virtual void HandleEdge( Edge *e ) = 0;
 };
 
-void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &r );
+void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<float> &r );
 
-bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir );
+bool IsEdgeTouchingBox( Edge *e, const sf::Rect<float> & ir );
 
 struct RayCastHandler
 {
-	virtual void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion ) = 0;
+	virtual void HandleRayCollision( Edge *edge, float edgeQuantity, float rayPortion ) = 0;
 };
 
 void RayCast( RayCastHandler *handler, QNode *node, 
-	sf::Vector2<double> startPoint, 
-	sf::Vector2<double> endPoint );
+	sf::Vector2f startPoint, 
+	sf::Vector2f endPoint );
 
-bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 );
+bool IsBoxTouchingBox( const sf::Rect<float> & r0, const sf::Rect<float> & r1 );
 
-bool isQuadTouchingQuad(  sf::Vector2<double> & A0, 
-						 sf::Vector2<double> & B0, 
-						 sf::Vector2<double> & C0, 
-						 sf::Vector2<double> & D0, 
-						 sf::Vector2<double> & A1, 
-						 sf::Vector2<double> & B1, 
-						 sf::Vector2<double> & C1, 
-						 sf::Vector2<double> & D1 );
+bool isQuadTouchingQuad(  sf::Vector2f & A0, 
+						 sf::Vector2f & B0, 
+						 sf::Vector2f & C0, 
+						 sf::Vector2f & D0, 
+						 sf::Vector2f & A1, 
+						 sf::Vector2f & B1, 
+						 sf::Vector2f & C1, 
+						 sf::Vector2f & D1 );
 //struct QuadTree
 //{
 //};

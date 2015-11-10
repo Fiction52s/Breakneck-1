@@ -23,10 +23,10 @@ struct Camera
 	float zoomLevel3;
 	
 	//new
-	double left;
-	double top;
-	double bottom;
-	double right;
+	float left;
+	float top;
+	float bottom;
+	float right;
 
 	void Update2( Actor *a );
 	void Update( Actor *a );

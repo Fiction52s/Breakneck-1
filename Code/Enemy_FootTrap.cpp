@@ -7,15 +7,14 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
-FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
+FootTrap::FootTrap( GameSession *owner, Edge *g, float q )
 		:Enemy( owner, EnemyType::FOOTTRAP ), ground( g ), edgeQuantity( q ), dead( false )
 {
 	ts = owner->GetTileset( "foottrap.png", 160, 80 );
 	sprite.setTexture( *ts->texture );
 	
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	Vector2f gPoint = g->GetPoint( edgeQuantity );
 	position = gPoint;
 
 	gn = g->Normal();
@@ -55,13 +54,13 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+	spawnRect = sf::Rect<float>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
 
 	ts_death = owner->GetTileset( "foottrapdeath.png", 160, 80 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
 
 	deathPartingSpeed = .3;
-	deathVector = V2d( 1, -1 );
+	deathVector = Vector2f( 1, -1 );
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
@@ -293,13 +292,13 @@ void FootTrap::DebugDraw(sf::RenderTarget *target)
 
 void FootTrap::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position + gn * 10.0;
+	hurtBody.globalPosition = position + gn * 10.f;
 	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position + gn * 10.0;
+	hitBody.globalPosition = position + gn * 10.f;
 	hitBody.globalAngle = 0;
 }
 
-bool FootTrap::ResolvePhysics( sf::Vector2<double> vel )
+bool FootTrap::ResolvePhysics( sf::Vector2f vel )
 {
 	return false;
 }

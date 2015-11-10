@@ -17,16 +17,16 @@ struct QuadTreeCollider
 struct QuadTreeEntrant
 {
 	virtual void HandleQuery( QuadTreeCollider * qtc ) = 0;
-	virtual bool IsTouchingBox( const sf::Rect<double> &r ) = 0;
+	virtual bool IsTouchingBox( const sf::Rect<float> &r ) = 0;
 };
 
 struct ParentNode;
 struct QNode
 {
 	QNode():parent(NULL){}
-	sf::Vector2<double> pos;
-	double rw;
-	double rh;
+	sf::Vector2f pos;
+	float rw;
+	float rh;
 //	sf::RenderTarget *debug;
 	ParentNode *parent;
 	bool leaf;
@@ -34,7 +34,7 @@ struct QNode
 
 struct ParentNode : QNode
 {
-	ParentNode( const sf::Vector2<double> &pos, double rw, double rh );
+	ParentNode( const sf::Vector2f &pos, float rw, float rh );
 	QNode *children[4];
 	std::list<QuadTreeEntrant*> extraChildren;
 	// 0    |     1
@@ -46,7 +46,7 @@ struct ParentNode : QNode
 struct LeafNode : QNode
 {
 	int objCount;
-	LeafNode( const sf::Vector2<double> &pos, double rw, double rh );
+	LeafNode( const sf::Vector2f &pos, float rw, float rh );
 	QuadTreeEntrant *entrants[4];
 };
 
@@ -57,10 +57,10 @@ struct QuadTree
 	//void Query( QuadTreeCollider *qtc, 
 	void DebugDraw( sf::RenderTarget *target );
 	void Insert( QuadTreeEntrant *qte );
-	void Query(QuadTreeCollider *qtc, const sf::Rect<double> &r );
+	void Query(QuadTreeCollider *qtc, const sf::Rect<float> &r );
 	QNode *startNode;
 private:
-	void rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
+	void rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<float> &r );
 	QNode * rInsert( QNode *node, QuadTreeEntrant *qte );
 	
 	void rDebugDraw( sf::RenderTarget *target, QNode *node );

@@ -4,24 +4,22 @@
 #include <iostream>
 #include "Enemy.h"
 
-#define V2d sf::Vector2<double>
-
 using namespace sf;
 using namespace std;
 
-ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
+ParentNode::ParentNode( const Vector2f &poss, float rww, float rhh )
 {
 	pos = poss;
 	rw = rww;
 	rh = rhh;
 	leaf = false;
-	children[0] = new LeafNode( V2d(pos.x - rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[1] = new LeafNode( V2d(pos.x + rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[2] = new LeafNode( V2d(pos.x - rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[3] = new LeafNode( V2d(pos.x + rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
+	children[0] = new LeafNode( Vector2f(pos.x - rw / 2.f, pos.y - rh / 2.f), rw / 2.f, rh / 2.f );
+	children[1] = new LeafNode( Vector2f(pos.x + rw / 2.f, pos.y - rh / 2.f), rw / 2.f, rh / 2.f );
+	children[2] = new LeafNode( Vector2f(pos.x - rw / 2.f, pos.y + rh / 2.f), rw / 2.f, rh / 2.f );
+	children[3] = new LeafNode( Vector2f(pos.x + rw / 2.f, pos.y + rh / 2.f), rw / 2.f, rh / 2.f );
 }
 
-LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
+LeafNode::LeafNode( const Vector2f &poss, float rww, float rhh )
 	:objCount(0)
 {
 	pos = poss;
@@ -38,20 +36,20 @@ LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
 QuadTree::QuadTree( int width, int height )
 	:startNode( NULL )
 {
-	startNode = new LeafNode( V2d( 0, 0), width, height);
+	startNode = new LeafNode( Vector2f( 0, 0), width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
 	//testTree->debug = rw;
 
 }
 
-void QuadTree::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
+void QuadTree::Query( QuadTreeCollider *qtc, const sf::Rect<float> &r )
 {
 	rQuery( qtc, startNode, r ); 	
 }
 
-void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r )
+void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<float> &r )
 {
-	sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+	sf::Rect<float> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 
 	if( node->leaf )
 	{
@@ -78,7 +76,7 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 		{
 			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
 			{
-				sf::Rect<double> r2 = r;
+				sf::Rect<float> r2 = r;
 				if( (*it)->IsTouchingBox( r2 ) )
 				{
 					(*it)->HandleQuery( qtc );
@@ -126,13 +124,13 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 	{
 		ParentNode *n = (ParentNode*)node;
 
-		double error = 0;
+		float error = 0;
 
-		sf::Rect<double> nw( node->pos.x - node->rw - error, node->pos.y - node->rh - error, 
+		sf::Rect<float> nw( node->pos.x - node->rw - error, node->pos.y - node->rh - error, 
 			node->rw + error, node->rh + error);
-		sf::Rect<double> ne( node->pos.x - error, node->pos.y - node->rh - error, node->rw + error, node->rh + error );
-		sf::Rect<double> sw( node->pos.x - node->rw - error, node->pos.y - error, node->rw + error, node->rh + error );
-		sf::Rect<double> se( node->pos.x - error, node->pos.y - error, node->rw + error, node->rh + error );
+		sf::Rect<float> ne( node->pos.x - error, node->pos.y - node->rh - error, node->rw + error, node->rh + error );
+		sf::Rect<float> sw( node->pos.x - node->rw - error, node->pos.y - error, node->rw + error, node->rh + error );
+		sf::Rect<float> se( node->pos.x - error, node->pos.y - error, node->rw + error, node->rh + error );
 
 		
 		bool nwt, net, swt, set;
@@ -216,7 +214,7 @@ void QuadTree::rDebugDraw( sf::RenderTarget *target, QNode *node )
 		{
 			rs.setFillColor( Color( 0, 100, 255, trans ) ); //blah == 4
 		}
-		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 		
 		rs.setPosition( node->pos.x, node->pos.y );
 
@@ -235,7 +233,7 @@ void QuadTree::rDebugDraw( sf::RenderTarget *target, QNode *node )
 		ParentNode *n = (ParentNode*)node;
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		//rs.setOutlineColor( Color::Red );
-		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
 		rs.setPosition( node->pos.x, node->pos.y );
 		rs.setFillColor( Color::Transparent );

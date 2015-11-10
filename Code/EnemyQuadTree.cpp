@@ -4,22 +4,20 @@
 using namespace sf;
 using namespace std;
 
-#define V2d sf::Vector2<double>
-
-EnemyParentNode::EnemyParentNode( const V2d &poss, double rww, double rhh )
+EnemyParentNode::EnemyParentNode( const Vector2f &poss, float rww, float rhh )
 {
 	pos = poss;
 	rw = rww;
 	rh = rhh;
 	leaf = false;
-	children[0] = new EnemyLeafNode( V2d(pos.x - rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[1] = new EnemyLeafNode( V2d(pos.x + rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[2] = new EnemyLeafNode( V2d(pos.x - rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[3] = new EnemyLeafNode( V2d(pos.x + rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );	
+	children[0] = new EnemyLeafNode( Vector2f(pos.x - rw / 2.f, pos.y - rh / 2.f), rw / 2.f, rh / 2.f );
+	children[1] = new EnemyLeafNode( Vector2f(pos.x + rw / 2.f, pos.y - rh / 2.f), rw / 2.f, rh / 2.f );
+	children[2] = new EnemyLeafNode( Vector2f(pos.x - rw / 2.f, pos.y + rh / 2.f), rw / 2.f, rh / 2.f );
+	children[3] = new EnemyLeafNode( Vector2f(pos.x + rw / 2.f, pos.y + rh / 2.f), rw / 2.f, rh / 2.f );	
 }
 
 
-EnemyLeafNode::EnemyLeafNode( const V2d &poss, double rww, double rhh )
+EnemyLeafNode::EnemyLeafNode( const Vector2f &poss, float rww, float rhh )
 	:objCount(0)
 {
 	pos = poss;
@@ -33,31 +31,31 @@ EnemyLeafNode::EnemyLeafNode( const V2d &poss, double rww, double rhh )
 	}
 }
 
-bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<double> & ir )
+bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<float> & ir )
 {
-	sf::Rect<double> er = e->spawnRect;
+	sf::Rect<float> er = e->spawnRect;
 
 	return er.intersects( ir );
 	
 
-	/*V2d as[4];
-	V2d bs[4];
-	as[0] = V2d( ir.left, ir.top );
-	bs[0] = V2d( ir.left + ir.width, ir.top );
+	/*Vector2f as[4];
+	Vector2f bs[4];
+	as[0] = Vector2f( ir.left, ir.top );
+	bs[0] = Vector2f( ir.left + ir.width, ir.top );
 
-	as[1] =  V2d( ir.left, ir.top + ir.height );
-	bs[1] = V2d( ir.left + ir.width, ir.top + ir.height );
+	as[1] =  Vector2f( ir.left, ir.top + ir.height );
+	bs[1] = Vector2f( ir.left + ir.width, ir.top + ir.height );
 
-	as[2] = V2d( ir.left, ir.top );
-	bs[2] = V2d( ir.left, ir.top + ir.height);
+	as[2] = Vector2f( ir.left, ir.top );
+	bs[2] = Vector2f( ir.left, ir.top + ir.height);
 
-	as[3] = V2d( ir.left + ir.width, ir.top );
-	bs[3] = V2d( ir.left + ir.width, ir.top + ir.height );
+	as[3] = Vector2f( ir.left + ir.width, ir.top );
+	bs[3] = Vector2f( ir.left + ir.width, ir.top + ir.height );
 
-	double erLeft = er.left;
-	double erRight = er.left + er.width;
-	double erTop = er.top;
-	double erBottom = er.top + er.height;
+	float erLeft = er.left;
+	float erRight = er.left + er.width;
+	float erTop = er.top;
+	float erBottom = er.top + er.height;
 
 	if( erLeft >= ir.left && erRight <= ir.left + ir.width && erTop >= ir.top && erBottom <= ir.top + ir.height )
 		return true;
@@ -72,12 +70,12 @@ bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<double> & ir )
 		if( !li.parallel )
 		{
 			
-				V2d a = as[i];
-				V2d b = bs[i];
-				double e1Left = min( a.x, b.x );
-				double e1Right = max( a.x, b.x );
-				double e1Top = min( a.y, b.y );
-				double e1Bottom = max( a.y, b.y );
+				Vector2f a = as[i];
+				Vector2f b = bs[i];
+				float e1Left = min( a.x, b.x );
+				float e1Right = max( a.x, b.x );
+				float e1Top = min( a.y, b.y );
+				float e1Bottom = max( a.y, b.y );
 
 				
 			//cout << "compares: " << e1Left << ", " << erRight << " .. " << e1Right << ", " << erLeft << endl;
@@ -137,10 +135,10 @@ EnemyQNode *Insert( EnemyQNode *node, Enemy* e )
 	{
 	//	cout << "inserting into parent" << endl;
 		EnemyParentNode *n = (EnemyParentNode*)node;
-		sf::Rect<double> nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
-		sf::Rect<double> ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
-		sf::Rect<double> sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
-		sf::Rect<double> se( node->pos.x, node->pos.y, node->rw, node->rh );
+		sf::Rect<float> nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
+		sf::Rect<float> ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
+		sf::Rect<float> sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
+		sf::Rect<float> se( node->pos.x, node->pos.y, node->rw, node->rh );
 
 		if( IsEnemyTouchingBox( e, nw ) )
 		{
@@ -194,10 +192,10 @@ void DebugDrawQuadTree( sf::RenderWindow *w, EnemyQNode *node )
 	//	rs.setOutlineThickness( 3 );
 		//rs.setFillColor( Color::Transparent );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
-		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
 		rs.setPosition( node->pos.x, node->pos.y );
-		//rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		//rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 
 		w->draw( rs );
 
@@ -213,7 +211,7 @@ void DebugDrawQuadTree( sf::RenderWindow *w, EnemyQNode *node )
 		EnemyParentNode *n = (EnemyParentNode*)node;
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		//rs.setOutlineColor( Color::Red );
-		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
 		rs.setPosition( node->pos.x, node->pos.y );
 		rs.setFillColor( Color::Transparent );
@@ -236,9 +234,9 @@ void DebugDrawQuadTree( sf::RenderWindow *w, EnemyQNode *node )
 	
 }
 
-void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<double> &r )
+void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<float> &r )
 {
-	sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+	sf::Rect<float> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 
 	if( node->leaf )
 	{

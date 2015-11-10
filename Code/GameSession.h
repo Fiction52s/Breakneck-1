@@ -48,12 +48,12 @@ struct GrassSegment
 
 struct Grass : QuadTreeEntrant
 {
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D; 
+	sf::Vector2f A;
+	sf::Vector2f B;
+	sf::Vector2f C;
+	sf::Vector2f D; 
 	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
+	bool IsTouchingBox( const sf::Rect<float> &r );
 
 	//bool prevGrass;
 };
@@ -83,7 +83,7 @@ struct GameSession : QuadTreeCollider
 	void ResetEnemies();
 	void rReset( QNode *node );
 	int CountActiveEnemies();
-	void UpdateTerrainShader( const sf::Rect<double> &aabb );
+	void UpdateTerrainShader( const sf::Rect<float> &aabb );
 	void LevelSpecifics();
 	bool SetGroundPar();
 	void SetCloudParAndDraw();
@@ -101,9 +101,9 @@ struct GameSession : QuadTreeCollider
 	void AllocateEffect();
 	BasicEffect * ActivateEffect( 
 		Tileset *ts, 
-		sf::Vector2<double> pos, 
+		sf::Vector2f pos, 
 		bool pauseImmune,
-		double angle, 
+		float angle, 
 		int frameCount,
 		int animationFactor,
 		bool right );
@@ -139,7 +139,7 @@ struct GameSession : QuadTreeCollider
 	sf::Shader polyShader;
 	sf::Shader cloneShader;
 	Edge **edges;
-	sf::Vector2<double> *points;
+	sf::Vector2f *points;
 	int numPoints;
 	sf::VertexArray *va;
 	ControllerState prevInput;
@@ -166,9 +166,9 @@ struct GameSession : QuadTreeCollider
 		bool show;
 		//TestVA *prev;
 		TestVA *next;
-		sf::Rect<double> aabb;
+		sf::Rect<float> aabb;
 		void HandleQuery( QuadTreeCollider * qtc );
-		bool IsTouchingBox( const sf::Rect<double> &r );
+		bool IsTouchingBox( const sf::Rect<float> &r );
 	};
 	TestVA *listVA;
 	std::string queryMode;
@@ -186,9 +186,9 @@ struct GameSession : QuadTreeCollider
 	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;
 
-	sf::Vector2<double> originalPos;
-	sf::Rect<double> screenRect;
-	sf::Rect<double> tempSpawnRect;
+	sf::Vector2f originalPos;
+	sf::Rect<float> screenRect;
+	sf::Rect<float> tempSpawnRect;
 
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;

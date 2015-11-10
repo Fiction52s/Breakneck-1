@@ -7,16 +7,14 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
-
-BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
+BasicTurret::BasicTurret( GameSession *owner, Edge *g, float q, float speed,int wait )
 		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 ), dead( false )
 {
 	ts = owner->GetTileset( "basicturret.png", 64, 32 );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	Vector2f gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	position = gPoint;
 
@@ -25,7 +23,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
-	//V2d gPoint = ground->GetPoint( edgeQuantity );
+	//Vector2f gPoint = ground->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
@@ -59,7 +57,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	dead = false;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+	spawnRect = sf::Rect<float>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
 }
 
 void BasicTurret::ResetEnemy()
@@ -78,11 +76,11 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 	if( e == ground )
 		return;
 
-	/*V2d v0 = e->v0;
-	V2d v1 = e->v1;
+	/*Vector2f v0 = e->v0;
+	Vector2f v1 = e->v1;
 
-	double result = cross( queryBullet->position - v0, normalize( v1 - v0 ) );
-	double d = dot( queryBullet->position - v0, normalize( v1 - v0 ) );
+	float result = cross( queryBullet->position - v0, normalize( v1 - v0 ) );
+	float d = dot( queryBullet->position - v0, normalize( v1 - v0 ) );
 
 	bool a = d >= -queryBullet->physBody.rw && d <= length( v1 - v0 ) + queryBullet->physBody.rw;
 	bool b = result >= 0 && result <= queryBullet->physBody.rw;
@@ -98,7 +96,7 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 		col = true;
 	}*/
 
-	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel, V2d( 0, 0 ) );
+	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel, Vector2f( 0, 0 ) );
 	
 
 	if( c != NULL )
@@ -127,7 +125,7 @@ void BasicTurret::UpdatePrePhysics()
 		if( b != NULL )
 		{
 			//cout << "firing bullet" << endl;
-			b->position = position ;//+ ground->Normal() * 16.0;
+			b->position = position ;//+ ground->Normal() * 16.f;
 			b->slowCounter = 1;
 			b->slowMultiple = 1;
 		}
@@ -150,9 +148,9 @@ void BasicTurret::UpdatePhysics()
 		Bullet *next = currBullet->next;
 		//cout << "moving bullet" << endl;
 
-		double movement = bulletSpeed / (double)currBullet->slowMultiple;
+		float movement = bulletSpeed / (float)currBullet->slowMultiple;
 		//cout << "movement at bullet " << i << ": "  << movement << endl;
-		double speed;
+		float speed;
 		while( movement > 0 )
 		{
 			if( movement > 8 )
@@ -409,12 +407,12 @@ void BasicTurret::UpdateHitboxes()
 	}
 }
 
-bool BasicTurret::ResolvePhysics( BasicTurret::Bullet * bullet, sf::Vector2<double> vel )
+bool BasicTurret::ResolvePhysics( BasicTurret::Bullet * bullet, sf::Vector2f vel )
 {
 	possibleEdgeCount = 0;
 	bullet->position += vel;
 	
-	Rect<double> r( bullet->position.x - 8, bullet->position.y - 8, 
+	Rect<float> r( bullet->position.x - 8, bullet->position.y - 8, 
 		2 * 8, 2 * 8 );
 	minContact.collisionPriority = 1000000;
 

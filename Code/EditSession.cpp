@@ -12,7 +12,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
@@ -24,7 +23,7 @@ using namespace sf;
 
 #define cout std::cout
 
- const double EditSession::PRIMARY_LIMIT = .999;
+ const float EditSession::PRIMARY_LIMIT = .999;
 
 
 
@@ -133,8 +132,8 @@ void TerrainPolygon::Finalize()
 	}
 	
 
-	double grassSize = 22;
-	double grassSpacing = -5;
+	float grassSize = 22;
+	float grassSpacing = -5;
 
 	numGrassTotal = 0;
 	int inds = 0;
@@ -154,11 +153,11 @@ void TerrainPolygon::Finalize()
 			//--temp;
 		}
 
-		V2d v0( (*it).pos.x, (*it).pos.y );
-		V2d v1( next.x, next.y );
+		Vector2f v0( (*it).pos.x, (*it).pos.y );
+		Vector2f v1( next.x, next.y );
 
 
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+		float remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 				
 		int num = floor( remainder ) + 1;
 
@@ -188,17 +187,17 @@ void TerrainPolygon::Finalize()
 			next = (*temp).pos;
 		}
 
-		V2d v0( (*it).pos.x, (*it).pos.y );
-		V2d v1( next.x, next.y );
+		Vector2f v0( (*it).pos.x, (*it).pos.y );
+		Vector2f v1( next.x, next.y );
 
 
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+		float remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
 		int num = floor( remainder ) + 1;
 
 		for( int j = 0; j < num; ++j )
 		{
-			V2d posd = v0 + (v1- v0) * ((double)j / num);
+			Vector2f posd = v0 + (v1- v0) * ((float)j / num);
 			Vector2f pos( posd.x, posd.y );
 
 			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
@@ -386,13 +385,13 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 	Finalize();
 }
 
-void TerrainPolygon::SwitchGrass( V2d mousePos )
+void TerrainPolygon::SwitchGrass( Vector2f mousePos )
 {
 	
 	VertexArray &grassVa = *grassVA;
-	double grassSize = 22;
-	double radius = grassSize / 2;
-	double grassSpacing = -5;
+	float grassSize = 22;
+	float radius = grassSize / 2;
+	float grassSpacing = -5;
 
 	int i = 0;
 
@@ -411,16 +410,16 @@ void TerrainPolygon::SwitchGrass( V2d mousePos )
 			next = (*temp).pos;
 		}
 
-		V2d v0( (*it).pos.x, (*it).pos.y );
-		V2d v1( next.x, next.y );
+		Vector2f v0( (*it).pos.x, (*it).pos.y );
+		Vector2f v1( next.x, next.y );
 
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+		float remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
 		int num = floor( remainder ) + 1;
 
 		for( int j = 0; j < num; ++j )
 		{
-			V2d pos = v0 + (v1- v0) * ((double)(j )/ num);
+			Vector2f pos = v0 + (v1- v0) * ((float)(j )/ num);
 
 			//Vector2f pos( posd.x, posd.y );
 				
@@ -470,7 +469,7 @@ void TerrainPolygon::UpdateGrass()
 	}
 }
 
-void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
+void TerrainPolygon::Draw( bool showPath, float zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	if( grassVA != NULL )
 		rt->draw( *grassVA, grassTex );
@@ -715,23 +714,23 @@ bool TerrainPolygon::IsRemovePointsOkay( EditSession *edit )
 		}
 
 
-		/*V2d itPos( (*it).pos.x, (*it).pos.y );
-		V2d nextPos( (*next).pos.x, (*next).pos.y );
-		V2d prevPos( (*prev).pos.x, (*prev).pos.y );
-		V2d along = normalize( nextPos - prevPos );
+		/*Vector2f itPos( (*it).pos.x, (*it).pos.y );
+		Vector2f nextPos( (*next).pos.x, (*next).pos.y );
+		Vector2f prevPos( (*prev).pos.x, (*prev).pos.y );
+		Vector2f along = normalize( nextPos - prevPos );
 		cout << "along: " << along.x << ", " << along.y << endl;
-		//V2d other( along.y, -along.x );
+		//Vector2f other( along.y, -along.x );
 
 		
-		//V2d vec = tPoint - backPoint;
-		//V2d normVec = normalize( vec );
+		//Vector2f vec = tPoint - backPoint;
+		//Vector2f normVec = normalize( vec );
 		
 		if( itPos.x == prevPos.x || itPos.y == prevPos.y )
 		{
 		}
 		else
 		{
-			V2d extreme( 0, 0 );
+			Vector2f extreme( 0, 0 );
 			if( along.x > EditSession::PRIMARY_LIMIT )
 				extreme.x = 1;
 			else if( along.x < -EditSession::PRIMARY_LIMIT )
@@ -1041,9 +1040,9 @@ void StaticLight::WriteFile( std::ofstream &of )
 	//}
 }
 
-sf::Rect<double> StaticLight::GetAABB()
+sf::Rect<float> StaticLight::GetAABB()
 {
-	return sf::Rect<double>( position.x - radius, position.y - radius, radius * 2, radius * 2 );
+	return sf::Rect<float>( position.x - radius, position.y - radius, radius * 2, radius * 2 );
 }
 
 EditSession::EditSession( RenderWindow *wi)
@@ -1126,9 +1125,9 @@ bool EditSession::OpenFile( string fileName )
 	ifstream is;
 	is.open( fileName );
 
-	double grassSize = 22;
-	double radius = grassSize / 2;
-	double grassSpacing = -5;
+	float grassSize = 22;
+	float radius = grassSize / 2;
+	float grassSpacing = -5;
 
 	if( is.is_open() )
 	{
@@ -1208,10 +1207,10 @@ bool EditSession::OpenFile( string fileName )
 					next = (*temp).pos;
 				}
 
-				V2d v0( (*it).pos.x, (*it).pos.y );
-				V2d v1( next.x, next.y );
+				Vector2f v0( (*it).pos.x, (*it).pos.y );
+				Vector2f v1( next.x, next.y );
 
-				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+				float remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
 				int num = floor( remainder ) + 1;
 
@@ -1351,7 +1350,7 @@ bool EditSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
 					int testIndex = 0;
@@ -1439,7 +1438,7 @@ bool EditSession::OpenFile( string fileName )
 
 					
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
 					bool clockwise;
@@ -1492,10 +1491,10 @@ bool EditSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
-					double bulletSpeed;
+					float bulletSpeed;
 					is >> bulletSpeed;
 
 					int framesWait;
@@ -1535,7 +1534,7 @@ bool EditSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					double edgeQuantity;
+					float edgeQuantity;
 					is >> edgeQuantity;
 
 					int testIndex = 0;
@@ -1710,9 +1709,9 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 	int edgesWithSegments = 0;
 
 	VertexArray &grassVa = *poly->grassVA;
-	double grassSize = 22;
-	double radius = grassSize / 2;
-	double grassSpacing = -5;
+	float grassSize = 22;
+	float radius = grassSize / 2;
+	float grassSpacing = -5;
 
 	int edgeIndex = 0;
 	int i = 0;
@@ -1731,10 +1730,10 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 			next = (*temp).pos;
 		}
 
-		V2d v0( (*it).pos.x, (*it).pos.y );
-		V2d v1( next.x, next.y );
+		Vector2f v0( (*it).pos.x, (*it).pos.y );
+		Vector2f v1( next.x, next.y );
 
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+		float remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
 		int num = floor( remainder ) + 1;
 
@@ -1746,7 +1745,7 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 		bool hasGrass = false;
 		for( int j = 0; j < num; ++j )
 		{
-			//V2d pos = v0 + (v1 - v0) * ((double)(j )/ num);
+			//Vector2f pos = v0 + (v1 - v0) * ((float)(j )/ num);
 
 			if( grassVa[i*4].color.a == 255 || grassVa[i*4].color.a == 254 )
 			{
@@ -1947,7 +1946,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			LineIntersection li = LimitSegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 			//cout << "li.par: " << li.parallel << ", others: lii: " << lii.x << ", " << lii.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
-			if( !li.parallel )//&& ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
+			if( !li.parallel )//&& ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - Vector2f(currPoint.x, currPoint.y) ) >= 5 )
 			{
 				if( emptyInter )
 				{
@@ -1960,9 +1959,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 				}
 				else
 				{
-					V2d blah( minIntersection - currPoint );
-					V2d blah2( lii - currPoint );
-					//cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
+					Vector2f blah( minIntersection - currPoint );
+					Vector2f blah2( lii - currPoint );
+					//cout << "lengths: " << length( li.position - Vector2f(currPoint.x, currPoint.y) ) << ", " << length( Vector2f( blah.x, blah.y ) ) << endl;
 					if( length( blah2 ) < length( blah ) )
 					{
 						minIntersection = lii;
@@ -2039,19 +2038,19 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
-				V2d( c.x, c.y ), V2d( d.x, d.y ) );
+	LineIntersection li = lineIntersection( Vector2f( a.x, a.y ), Vector2f( b.x, b.y ), 
+				Vector2f( c.x, c.y ), Vector2f( d.x, d.y ) );
 	if( !li.parallel )
 	{
-		double e1Left = min( a.x, b.x );
-		double e1Right = max( a.x, b.x );
-		double e1Top = min( a.y, b.y );
-		double e1Bottom = max( a.y, b.y );
+		float e1Left = min( a.x, b.x );
+		float e1Right = max( a.x, b.x );
+		float e1Top = min( a.y, b.y );
+		float e1Bottom = max( a.y, b.y );
 
-		double e2Left = min( c.x, d.x );
-		double e2Right = max( c.x, d.x );
-		double e2Top = min( c.y, d.y );
-		double e2Bottom = max( c.y, d.y );
+		float e2Left = min( c.x, d.x );
+		float e2Right = max( c.x, d.x );
+		float e2Top = min( c.y, d.y );
+		float e2Bottom = max( c.y, d.y );
 		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
 		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
 		if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
@@ -2075,19 +2074,19 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 
 LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
-				V2d( c.x, c.y ), V2d( d.x, d.y ) );
+	LineIntersection li = lineIntersection( Vector2f( a.x, a.y ), Vector2f( b.x, b.y ), 
+				Vector2f( c.x, c.y ), Vector2f( d.x, d.y ) );
 	if( !li.parallel )
 	{
-		double e1Left = min( a.x, b.x );
-		double e1Right = max( a.x, b.x );
-		double e1Top = min( a.y, b.y );
-		double e1Bottom = max( a.y, b.y );
+		float e1Left = min( a.x, b.x );
+		float e1Right = max( a.x, b.x );
+		float e1Top = min( a.y, b.y );
+		float e1Bottom = max( a.y, b.y );
 
-		double e2Left = min( c.x, d.x );
-		double e2Right = max( c.x, d.x );
-		double e2Top = min( c.y, d.y );
-		double e2Bottom = max( c.y, d.y );
+		float e2Left = min( c.x, d.x );
+		float e2Right = max( c.x, d.x );
+		float e2Top = min( c.y, d.y );
+		float e2Bottom = max( c.y, d.y );
 		//cout << "compares: " << e1Left << ", " << e2Right << " .. " << e1Right << ", " << e2Left << endl;
 		//cout << "compares y: " << e1Top << " <= " << e2Bottom << " && " << e1Bottom << " >= " << e2Top << endl;
 		if( e1Left <= e2Right && e1Right >= e2Left && e1Top <= e2Bottom && e1Bottom >= e2Top )
@@ -2097,9 +2096,9 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 			{
 				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
 				{
-					V2d &pos = li.position;
-					if( length( li.position - V2d( a.x, a.y ) ) > 1 &&  length( li.position - V2d( b.x, b.y ) ) > 1
-						&&  length( li.position - V2d( c.x, c.y ) ) > 1 &&  length( li.position - V2d( d.x, d.y ) ) > 1 )
+					Vector2f &pos = li.position;
+					if( length( li.position - Vector2f( a.x, a.y ) ) > 1 &&  length( li.position - Vector2f( b.x, b.y ) ) > 1
+						&&  length( li.position - Vector2f( c.x, c.y ) ) > 1 &&  length( li.position - Vector2f( d.x, d.y ) ) > 1 )
 					{
 						return li;
 					}
@@ -2270,12 +2269,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	bool quit = false;
 	polygonInProgress = new TerrainPolygon(&grassTex );
 	zoomMultiple = 1;
-	Vector2<double> prevWorldPos;
+	Vector2<float> prevWorldPos;
 	Vector2i pixelPos;
 	Vector2f tempWorldPos = w->mapPixelToCoords(sf::Mouse::getPosition( *w ));
-	Vector2<double> worldPos = Vector2<double>( tempWorldPos.x, tempWorldPos.y );
+	Vector2<float> worldPos = Vector2<float>( tempWorldPos.x, tempWorldPos.y );
 	bool panning = false;
-	Vector2<double> panAnchor;
+	Vector2<float> panAnchor;
 	minimumEdgeLength = 8;
 
 	Color borderColor = sf::Color::Green;
@@ -2326,7 +2325,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
 	
-	V2d menuDownPos;
+	Vector2f menuDownPos;
 	Emode menuDownStored;
 
 	mode = CREATE_TERRAIN;
@@ -2337,17 +2336,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	
 
 
-	double circleDist = 100;
-	double circleRadius = 50;
+	float circleDist = 100;
+	float circleRadius = 50;
 
-	V2d topPos =  V2d( 0, -1 ) * circleDist;
-	V2d upperRightPos = V2d( sqrt( 3.0 ) / 2, -.5 ) * circleDist;
-	V2d lowerRightPos = V2d( sqrt( 3.0 ) / 2, .5 ) * circleDist;
+	Vector2f topPos =  Vector2f( 0, -1 ) * circleDist;
+	Vector2f upperRightPos = Vector2f( sqrt( 3.f ) / 2, -.5 ) * circleDist;
+	Vector2f lowerRightPos = Vector2f( sqrt( 3.f ) / 2, .5 ) * circleDist;
 
-	V2d upperLeftPos = V2d( -sqrt( 3.0 ) / 2, -.5 ) * circleDist;
-	V2d lowerLeftPos = V2d( -sqrt( 3.0 ) / 2, .5 ) * circleDist;
+	Vector2f upperLeftPos = Vector2f( -sqrt( 3.f ) / 2, -.5 ) * circleDist;
+	Vector2f lowerLeftPos = Vector2f( -sqrt( 3.f ) / 2, .5 ) * circleDist;
 
-	V2d bottomPos = V2d( 0, 1 ) * circleDist;
+	Vector2f bottomPos = Vector2f( 0, 1 ) * circleDist;
 
 	string menuSelection = "";
 
@@ -2654,8 +2653,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											}
 											else
 											{
-												if( length( V2d( closest->position.x, closest->position.y ) 
-													- worldPos ) > length( V2d( (*it)->position.x, (*it)->position.y ) 
+												if( length( Vector2f( closest->position.x, closest->position.y ) 
+													- worldPos ) > length( Vector2f( (*it)->position.x, (*it)->position.y ) 
 													- worldPos ) )
 												{
 													closest = (*it);
@@ -2722,7 +2721,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( PointList::iterator it2 = (*it)->points.begin(); 
 										it2 != (*it)->points.end(); ++it2 )
 									{
-										if( length( worldPos - V2d( (*it2).pos.x, (*it2).pos.y ) ) < 8 * zoomMultiple )
+										if( length( worldPos - Vector2f( (*it2).pos.x, (*it2).pos.y ) ) < 8 * zoomMultiple )
 										{
 											if( (*it2).selected ) //selected 
 											{
@@ -2962,7 +2961,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									
 									if( Keyboard::isKeyPressed( Keyboard::G ) )
 									{
-										V2d graphPos = GraphPos( worldPos );
+										Vector2f graphPos = GraphPos( worldPos );
 										pointGrabPos = Vector2i( graphPos.x, graphPos.y );
 										//pointGrabPos = Vector2i( worldPos.x, worldPos.y );
 									}
@@ -2977,7 +2976,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( Keyboard::isKeyPressed( Keyboard::G ) )
 									{
-										V2d graphPos = GraphPos( worldPos );
+										Vector2f graphPos = GraphPos( worldPos );
 										polyGrabPos = Vector2i( graphPos.x, graphPos.y );
 									}
 									else
@@ -3439,14 +3438,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseButtonReleased:
 						{
-							V2d releasePos(uiMouse.x, uiMouse.y);
+							Vector2f releasePos(uiMouse.x, uiMouse.y);
 							
-							V2d worldTop = menuDownPos + topPos;
-							V2d worldUpperLeft = menuDownPos + upperLeftPos;
-							V2d worldUpperRight = menuDownPos + upperRightPos;
-							V2d worldLowerRight = menuDownPos + lowerRightPos;
-							V2d worldLowerLeft = menuDownPos + lowerLeftPos;
-							V2d worldBottom = menuDownPos + bottomPos;
+							Vector2f worldTop = menuDownPos + topPos;
+							Vector2f worldUpperLeft = menuDownPos + upperLeftPos;
+							Vector2f worldUpperRight = menuDownPos + upperRightPos;
+							Vector2f worldLowerRight = menuDownPos + lowerRightPos;
+							Vector2f worldLowerLeft = menuDownPos + lowerLeftPos;
+							Vector2f worldBottom = menuDownPos + bottomPos;
 
 
 							if( length( releasePos - worldTop ) < circleRadius )
@@ -3805,7 +3804,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							menuDownStored = mode;
 							mode = SELECT_MODE;
-							menuDownPos = V2d( uiMouse.x, uiMouse.y );
+							menuDownPos = Vector2f( uiMouse.x, uiMouse.y );
 							guiMenuSprite.setPosition( uiMouse.x, uiMouse.y );//pixelPos.x, pixelPos.y );//uiMouse.x, uiMouse.y );
 						}
 						break;
@@ -3838,17 +3837,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							zoomMultiple = 65536;
 						}
-						else if( abs(zoomMultiple - 1.0) < .1 )
+						else if( abs(zoomMultiple - 1.f) < .1 )
 						{
 							zoomMultiple = 1;
 						}
 				
-						Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
+						Vector2<float> ff = Vector2<float>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
 						view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
 						w->setView( view );
 						Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
-						Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-						Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
+						Vector2<float> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
+						Vector2<float> tempCenter = ff + ( worldPos - newWorldPos );
 						view.setCenter( tempCenter.x, tempCenter.y );
 						w->setView( view );
 						break;
@@ -3898,17 +3897,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								zoomMultiple = 65536;
 							}
-							else if( abs(zoomMultiple - 1.0) < .1 )
+							else if( abs(zoomMultiple - 1.f) < .1 )
 							{
 								zoomMultiple = 1;
 							}
 				
-							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
+							Vector2<float> ff = Vector2<float>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
 							view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
 							w->setView( view );
 							Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
-							Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-							Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
+							Vector2<float> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
+							Vector2<float> tempCenter = ff + ( worldPos - newWorldPos );
 							view.setCenter( tempCenter.x, tempCenter.y );
 							w->setView( view );
 
@@ -3960,8 +3959,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					Vector2i last = polygonInProgress->points.back();
 					Vector2f diff = testPoint - Vector2f(last.x, last.y);
 
-					double len;
-					double angle = atan2( -diff.y, diff.x );
+					float len;
+					float angle = atan2( -diff.y, diff.x );
 					if( angle < 0 )
 						angle += 2 * PI;
 					Vector2f dir;
@@ -3969,51 +3968,51 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					//cout << "angle : " << angle << endl;
 					if( angle + PI / 8 >= 2 * PI || angle < PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), V2d( 1, 0 ) );
+						len = dot( Vector2f( diff.x, diff.y ), Vector2f( 1, 0 ) );
 						dir = Vector2f( 1, 0 );
 					}
 					else if( angle < 3 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), normalize( V2d( 1, -1 ) ) );
-						V2d tt = normalize( V2d( 1, -1 ) );
+						len = dot( Vector2f( diff.x, diff.y ), normalize( Vector2f( 1, -1 ) ) );
+						Vector2f tt = normalize( Vector2f( 1, -1 ) );
 						dir = Vector2f( tt.x, tt.y );
 					}
 					else if( angle < 5 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), V2d( 0, -1 ) );
+						len = dot( Vector2f( diff.x, diff.y ), Vector2f( 0, -1 ) );
 						dir = Vector2f( 0, -1 );
 					}
 					else if( angle < 7 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, -1 )) );
-						V2d tt = normalize( V2d( -1, -1 ) );
+						len = dot( Vector2f( diff.x, diff.y ), normalize(Vector2f( -1, -1 )) );
+						Vector2f tt = normalize( Vector2f( -1, -1 ) );
 						dir = Vector2f( tt.x, tt.y );
 					}
 					else if( angle < 9 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), V2d( -1, 0 ) );
+						len = dot( Vector2f( diff.x, diff.y ), Vector2f( -1, 0 ) );
 						dir = Vector2f( -1, 0 );
 					}
 					else if( angle < 11 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, 1 )) );
-						V2d tt = normalize( V2d( -1, 1 ) );
+						len = dot( Vector2f( diff.x, diff.y ), normalize(Vector2f( -1, 1 )) );
+						Vector2f tt = normalize( Vector2f( -1, 1 ) );
 						dir = Vector2f( tt.x, tt.y );
 					}
 					else if( angle < 13 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), V2d( 0, 1 ) );
+						len = dot( Vector2f( diff.x, diff.y ), Vector2f( 0, 1 ) );
 						dir = Vector2f( 0, 1 );
 					}
 					else //( angle < 15 * PI / 8 )
 					{
-						len = dot( V2d( diff.x, diff.y ), normalize(V2d( 1, 1 )) );
-						V2d tt = normalize( V2d( 1, 1 ) );
+						len = dot( Vector2f( diff.x, diff.y ), normalize(Vector2f( 1, 1 )) );
+						Vector2f tt = normalize( Vector2f( 1, 1 ) );
 						dir = Vector2f( tt.x, tt.y );
 					}
 
 					testPoint = Vector2f(last.x, last.y) + dir * (float)len;
-					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+					//angle = asin( dot( ground->Normal(), Vector2f( 1, 0 ) ) ); 
 				}*/
 
 				
@@ -4042,7 +4041,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					adjX = ((int)testPoint.x) * 32;
 					adjY = ((int)testPoint.y) * 32;
 					
-					//V2d tempTest = GraphPos( testPoint
+					//Vector2f tempTest = GraphPos( testPoint
 					testPoint = Vector2f( adjX, adjY );
 					showGraph = true;
 				}
@@ -4050,11 +4049,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( polygonInProgress->points.size() > 0 )
 				{
 							
-					V2d backPoint = V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y );
-					V2d tPoint( testPoint.x, testPoint.y );
-					V2d extreme( 0, 0 );
-					V2d vec = tPoint - backPoint;
-					V2d normVec = normalize( vec );
+					Vector2f backPoint = Vector2f( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y );
+					Vector2f tPoint( testPoint.x, testPoint.y );
+					Vector2f extreme( 0, 0 );
+					Vector2f vec = tPoint - backPoint;
+					Vector2f normVec = normalize( vec );
 					
 					if( normVec.x > PRIMARY_LIMIT )
 						extreme.x = 1;
@@ -4069,7 +4068,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( !( extreme.x == 0 && extreme.y == 0 ) )
 					{
-						//double test = abs( cross( normalize( V2d( testPoint.x, testPoint.y ) - backPoint ), extreme ) );
+						//float test = abs( cross( normalize( Vector2f( testPoint.x, testPoint.y ) - backPoint ), extreme ) );
 						//cout << "test: " << test << endl;
 						//if( test  < 1 )
 						{
@@ -4101,7 +4100,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit )
 							{
 								Vector2i pointPos = (*pit).pos;
-								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
+								float dist = length( Vector2f( pointPos.x, pointPos.y ) - Vector2f( testPoint.x, testPoint.y ) );
 								if( dist < 8 * zoomMultiple )
 								{
 									extendingPolygon = (*it);
@@ -4171,7 +4170,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									continue;
 								}
 								Vector2i pointPos = (*pit).pos;
-								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
+								float dist = length( Vector2f( pointPos.x, pointPos.y ) - Vector2f( testPoint.x, testPoint.y ) );
 								if( dist < 8 * zoomMultiple )
 								{
 									//ExtendPolygon();
@@ -4213,8 +4212,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( validNearPolys )
 							{
-								if( !polygonInProgress->points.empty() && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->points.back().pos.x, 
-									polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
+								if( !polygonInProgress->points.empty() && length( Vector2f( testPoint.x, testPoint.y ) - Vector2<float>(polygonInProgress->points.back().pos.x, 
+									polygonInProgress->points.back().pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.f ) )
 								{
 									if( PointValid( polygonInProgress->points.back().pos, worldi ) )
 									{
@@ -4251,7 +4250,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		case EDIT:
 			{
 
-				V2d pPoint = worldPos;
+				Vector2f pPoint = worldPos;
 				Vector2i extra( 0, 0 );
 				bool blah = false;
 				if( //polygonInProgress->points.size() > 0 && 
@@ -4438,7 +4437,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						int deltaIndex = 0;
 						
 
-						double prim_limit = PRIMARY_LIMIT;
+						float prim_limit = PRIMARY_LIMIT;
 						if( Keyboard::isKeyPressed( Keyboard::LShift ) )
 						{
 							prim_limit = .99;
@@ -4482,9 +4481,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 
 
-							V2d extreme( 0, 0 );
+							Vector2f extreme( 0, 0 );
 							Vector2i vec = (*it2).pos - (*prev).pos;
-							V2d normVec = normalize( V2d( vec.x, vec.y ) );
+							Vector2f normVec = normalize( Vector2f( vec.x, vec.y ) );
 		
 							if( !(*prev).selected )
 							{
@@ -4542,9 +4541,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( !(*next).selected )
 							{
 								vec = (*it2).pos - (*next).pos;
-								normVec = normalize( V2d( vec.x, vec.y ) );
+								normVec = normalize( Vector2f( vec.x, vec.y ) );
 
-								extreme = V2d( 0, 0 );
+								extreme = Vector2f( 0, 0 );
 
 								if( normVec.x == 0 || normVec.y == 0 )
 								{
@@ -4763,7 +4762,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					enemyEdgePolygon = NULL;
 				
-					double testRadius = 200;
+					float testRadius = 200;
 					
 					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
@@ -4778,27 +4777,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								//prev is starting at 0. start normally at 1
 								int edgeIndex = 0;
-								double minDistance = 10000000;
+								float minDistance = 10000000;
 								int storedIndex;
-								double storedQuantity;
+								float storedQuantity;
 							
-								V2d closestPoint;
+								Vector2f closestPoint;
 
 								for( ; currIt != (*it)->points.end(); ++currIt )
 								{
-									double dist = abs(
+									float dist = abs(
 										cross( 
-										V2d( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
-										normalize( V2d( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) ) );
-									double testQuantity =  dot( 
-											V2d( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
-											normalize( V2d( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) );
+										Vector2f( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
+										normalize( Vector2f( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) ) );
+									float testQuantity =  dot( 
+											Vector2f( testPoint.x - (*prevIt).pos.x, testPoint.y - (*prevIt).pos.y ), 
+											normalize( Vector2f( (*currIt).pos.x - (*prevIt).pos.x, (*currIt).pos.y - (*prevIt).pos.y ) ) );
 
-									V2d pr( (*prevIt).pos.x, (*prevIt).pos.y );
-									V2d cu( (*currIt).pos.x, (*currIt).pos.y );
-									V2d te( testPoint.x, testPoint.y );
+									Vector2f pr( (*prevIt).pos.x, (*prevIt).pos.y );
+									Vector2f cu( (*currIt).pos.x, (*currIt).pos.y );
+									Vector2f te( testPoint.x, testPoint.y );
 									
-									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+									Vector2f newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(testQuantity / length( cu - pr ) ) );
 
 									//int testA = dist < 100;
@@ -4813,7 +4812,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										minDistance = dist;
 										storedIndex = edgeIndex;
-										double l = length( cu - pr );
+										float l = length( cu - pr );
 										
 										storedQuantity = testQuantity;
 										closestPoint = newPoint ;
@@ -4890,8 +4889,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
-					if( length( worldPos - Vector2<double>(patrolPath.back().x, 
-						patrolPath.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					if( length( worldPos - Vector2<float>(patrolPath.back().x, 
+						patrolPath.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.f ) )
 					{
 						Vector2i worldi( testPoint.x, testPoint.y );
 
@@ -4907,11 +4906,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					break;
 
 				
-				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.0, fullRect.top + fullRect.height / 2.0 );
+				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.f, fullRect.top + fullRect.height / 2.f );
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
-					if( length( ( worldPos - V2d( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<double>(selectedPolygons.front()->path.back().x, 
-						selectedPolygons.front()->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					if( length( ( worldPos - Vector2f( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<float>(selectedPolygons.front()->path.back().x, 
+						selectedPolygons.front()->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.f ) )
 					{
 						Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
 
@@ -4930,7 +4929,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		if( panning )
 		{
-			Vector2<double> temp = panAnchor - worldPos;
+			Vector2<float> temp = panAnchor - worldPos;
 			view.move( Vector2f( temp.x, temp.y ) );
 		}
 		
@@ -5224,16 +5223,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			(*it)->Draw( w );
 		}
 
-		//iconSprite.setScale( view.getSize().x / 960.0, view.getSize().y / 540.0 );
+		//iconSprite.setScale( view.getSize().x / 960.f, view.getSize().y / 540.f );
 		//iconSprite.setPosition( view.getCenter().x + 200 * iconSprite.getScale().x, view.getCenter().y - 250 * iconSprite.getScale().y );
 		
 		if( mode == EDIT )
 		{
-			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
+			if( selectedPlayer && grabPlayer && length( Vector2f( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
 				playerPosition = Vector2i( worldPos.x, worldPos.y );
 			}
-			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
+			else if( selectedActorGrabbed && length( Vector2f( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
 				/*if(  false && selectedActor != NULL && ( selectedActor->type->name == "crawler" 
 					|| selectedActor->type->name== "basicturret"
@@ -5241,8 +5240,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					|| selectedActor->type->name == "goal" ) )
 				{
 					enemyEdgePolygon = NULL;
-					V2d testPoint = worldPos;
-					double testRadius = 200;
+					Vector2f testPoint = worldPos;
+					float testRadius = 200;
 					
 					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
@@ -5257,27 +5256,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								//prev is starting at 0. start normally at 1
 								int edgeIndex = 0;
-								double minDistance = 10000000;
+								float minDistance = 10000000;
 								int storedIndex;
-								double storedQuantity;
+								float storedQuantity;
 							
-								V2d closestPoint;
+								Vector2f closestPoint;
 
 								for( ; currIt != (*it)->points.end(); ++currIt )
 								{
-									double dist = abs(
+									float dist = abs(
 										cross( 
-										V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
-										normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) ) );
-									double testQuantity =  dot( 
-											V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
-											normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) );
+										Vector2f( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
+										normalize( Vector2f( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) ) );
+									float testQuantity =  dot( 
+											Vector2f( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
+											normalize( Vector2f( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) );
 
-									V2d pr( (*prevIt).x, (*prevIt).y );
-									V2d cu( (*currIt).x, (*currIt).y );
-									V2d te( testPoint.x, testPoint.y );
+									Vector2f pr( (*prevIt).x, (*prevIt).y );
+									Vector2f cu( (*currIt).x, (*currIt).y );
+									Vector2f te( testPoint.x, testPoint.y );
 									
-									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+									Vector2f newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(testQuantity / length( cu - pr ) ) );
 
 									//int testA = dist < 100;
@@ -5292,7 +5291,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										minDistance = dist;
 										storedIndex = edgeIndex;
-										double l = length( cu - pr );
+										float l = length( cu - pr );
 										
 										storedQuantity = testQuantity;
 										closestPoint = newPoint ;
@@ -5341,7 +5340,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				
 			}
-			else if( selectedLightGrabbed && length( V2d( lightGrabPos.x, lightGrabPos.y ) - worldPos ) > 10 )
+			else if( selectedLightGrabbed && length( Vector2f( lightGrabPos.x, lightGrabPos.y ) - worldPos ) > 10 )
 			{
 				selectedLight->position = Vector2i( worldPos.x, worldPos.y );
 			}
@@ -5358,7 +5357,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		if( false )
 		//if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )
 		{
-			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
+			alphaTextSprite.setScale( .5 * view.getSize().x / 960.f, .5 * view.getSize().y / 540.f );
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
 			w->draw( alphaTextSprite );
@@ -5455,7 +5454,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				CircleShape cs;
 				if( lightPosDown )
 				{
-					lightRadius = length( V2d( lightPos.x, lightPos.y ) - worldPos );
+					lightRadius = length( Vector2f( lightPos.x, lightPos.y ) - worldPos );
 					int lRad = lightRadius;
 					string lightRadstr = boost::lexical_cast<string>( lRad );
 					lightPanel->textBoxes["rad"]->text.setString( lightRadstr );
@@ -5646,8 +5645,8 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			{
 				PointList::reverse_iterator rit = polygonInProgress->points.rbegin();
 				rit++;
-				double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) )
-					, normalize( V2d((*rit).pos.x, (*rit).pos.y ) - V2d( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) ) );
+				float ff = dot( normalize( Vector2f( point.x, point.y ) - Vector2f( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) )
+					, normalize( Vector2f((*rit).pos.x, (*rit).pos.y ) - Vector2f( polygonInProgress->points.back().pos.x, polygonInProgress->points.back().pos.y ) ) );
 				if( ff > minAngle )
 				{
 					//cout << "ff: " << ff << endl;
@@ -5659,9 +5658,9 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 		//return true;
 
 		//make sure I'm not too close to the very first point and that my line isn't too close to the first point either
-		//if( length( V2d( point.x, point.y ) - V2d( polygonInProgress->points.front().pos.x, polygonInProgress->points.front().pos.y ) ) < 8 )
+		//if( length( Vector2f( point.x, point.y ) - Vector2f( polygonInProgress->points.front().pos.x, polygonInProgress->points.front().pos.y ) ) < 8 )
 		{
-			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
+			float separation = length( Vector2f(point.x, point.y) - Vector2f(pre.x, pre.y) );
 			if( separation < minimumEdgeLength )
 			{
 				return false;
@@ -5669,10 +5668,10 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 			if( polygonInProgress->points.size() > 2  )
 			{
-				if( abs( cross( V2d( point.x, point.y ) - V2d( prev.x, prev.y), 
-					normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) ) ) < minimumEdgeLength
-					&& dot( V2d( point.x, point.y ) - V2d( prev.x, prev.y ), normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y )) ) 
-					>= length( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) )
+				if( abs( cross( Vector2f( point.x, point.y ) - Vector2f( prev.x, prev.y), 
+					normalize( Vector2f( pre.x, pre.y ) - Vector2f( prev.x, prev.y ) ) ) ) < minimumEdgeLength
+					&& dot( Vector2f( point.x, point.y ) - Vector2f( prev.x, prev.y ), normalize( Vector2f( pre.x, pre.y ) - Vector2f( prev.x, prev.y )) ) 
+					>= length( Vector2f( pre.x, pre.y ) - Vector2f( prev.x, prev.y ) ) )
 				{
 					return false;
 				}
@@ -5693,8 +5692,8 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			if( (*it).pos == polygonInProgress->points.back().pos )
 				continue;
 
-			LineIntersection li = lineIntersection( V2d( prev.x, prev.y ), V2d( point.x, point.y ),
-						V2d( pre.x, pre.y ), V2d( (*it).pos.x, (*it).pos.y ) );
+			LineIntersection li = lineIntersection( Vector2f( prev.x, prev.y ), Vector2f( point.x, point.y ),
+						Vector2f( pre.x, pre.y ), Vector2f( (*it).pos.x, (*it).pos.y ) );
 			float tempLeft = min( pre.x, (*it).pos.x ) - 0;
 			float tempRight = max( pre.x, (*it).pos.x ) + 0;
 			float tempTop = min( pre.y, (*it).pos.y ) - 0;
@@ -5702,7 +5701,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			if( !li.parallel )
 			{
 				
-				double separation = length( V2d(point.x, point.y) - V2d((*it).pos.x,(*it).pos.y ) );
+				float separation = length( Vector2f(point.x, point.y) - Vector2f((*it).pos.x,(*it).pos.y ) );
 				
 				if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
 				{
@@ -5729,18 +5728,18 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 				Vector2i ai = point - pre;
 				Vector2i bi = (*it).pos - pre;
-				V2d a(ai.x, ai.y);
-				V2d b(bi.x, bi.y);
-				double res = abs(cross( a, normalize( b )));
-				double des = dot( a, normalize( b ));
+				Vector2f a(ai.x, ai.y);
+				Vector2f b(bi.x, bi.y);
+				float res = abs(cross( a, normalize( b )));
+				float des = dot( a, normalize( b ));
 
 				Vector2i ci = (*it).pos - prev;
 				Vector2i di = point - prev;
-				V2d c( ci.x, ci.y);
-				V2d d( di.x, di.y );
+				Vector2f c( ci.x, ci.y);
+				Vector2f d( di.x, di.y );
 
-				double res2 = abs( cross( c, normalize( d ) ) );
-				double des2 = dot( c, normalize( d ) );
+				float res2 = abs( cross( c, normalize( d ) ) );
+				float des2 = dot( c, normalize( d ) );
 
 				//cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
 
@@ -5790,8 +5789,8 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			++it2;
 			for( ; it2 != p->points.end(); ++it2 )
 			{
-				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d((*it2).pos.x, (*it2).pos.y),
-					V2d( prev.x, prev.y ), V2d( point.x, point.y ) );
+				LineIntersection li = lineIntersection( Vector2f( prevPoint.x, prevPoint.y ), Vector2f((*it2).pos.x, (*it2).pos.y),
+					Vector2f( prev.x, prev.y ), Vector2f( point.x, point.y ) );
 				float tempLeft = min( prevPoint.x, (*it2).pos.x );
 				float tempRight = max( prevPoint.x, (*it2).pos.x );
 				float tempTop = min( prevPoint.y, (*it2).pos.y );
@@ -5861,7 +5860,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "ok" );
 		{
 			bool clockwise = p->checkBoxes["clockwise"]->checked;
-			double speed;
+			float speed;
 
 			stringstream ss;
 			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
@@ -5901,7 +5900,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			ss << bulletSpeedString;
 			
 
-			double bulletSpeed;
+			float bulletSpeed;
 			ss >> bulletSpeed;
 
 			if( ss.fail() )
@@ -6030,7 +6029,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				//it doesnt need to push this cuz its just storing the locals. draw from the center of the entire bounding box!
 
-			//	(*it)->path.push_back( Vector2i( ((*it)->right + (*it)->left) / 2.0, ((*it)->bottom - (*it)->top) / 2.0 ) );
+			//	(*it)->path.push_back( Vector2i( ((*it)->right + (*it)->left) / 2.f, ((*it)->bottom - (*it)->top) / 2.f ) );
 			}
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 			showPanel = NULL;
@@ -6299,13 +6298,13 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	//cout << "checking if the point is valid!!" << endl;
 	//check distance from points first
 
-	V2d p( point.x, point.y );
+	Vector2f p( point.x, point.y );
 	//cout << "p: " << p.x << ", " << p.y << endl;
 	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
 	{
 		if( (*it).pos != point )
 		{
-			V2d temp( (*it).pos.x, (*it).pos.y );
+			Vector2f temp( (*it).pos.x, (*it).pos.y );
 			if( length( p - temp ) < validityRadius )
 			{
 				cout << "false type one:" << length( p - temp ) << " .. " << temp.x << ", " << temp.y << ", p: " << p.x << ", " << p.y << endl;
@@ -6324,12 +6323,12 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 			continue;
 		}
 
-		V2d v0 = V2d( (*prev).pos.x, (*prev).pos.y );
-		V2d v1 = V2d( (*it).pos.x, (*it).pos.y );
-		V2d edgeDir = normalize( v1 - v0 );
+		Vector2f v0 = Vector2f( (*prev).pos.x, (*prev).pos.y );
+		Vector2f v1 = Vector2f( (*it).pos.x, (*it).pos.y );
+		Vector2f edgeDir = normalize( v1 - v0 );
 
-		double quant = dot( p - v0, edgeDir );
-		double offQuant = cross( p - v0, edgeDir );
+		float quant = dot( p - v0, edgeDir );
+		float offQuant = cross( p - v0, edgeDir );
 		//cout << "quant: " << quant << ", l: " << length( v1 - v0 ) << endl;
 		bool nearOnAxis = quant > 0 && quant < length( v1 - v0 );
 		bool nearOffAxis = abs( offQuant ) < validityRadius;
@@ -6343,16 +6342,16 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 			return false;
 		}
 
-		V2d pointDir;
+		Vector2f pointDir;
 		pointDir.x = point.x - oldPoint.x;
 		pointDir.y = point.y - oldPoint.y;
 		pointDir = normalize( pointDir );
 
-		V2d old( oldPoint.x, oldPoint.y );
-		double otherQuant = dot( v1 - old, pointDir );
-		double otherOffQuant = cross( v1 - old, pointDir );
+		Vector2f old( oldPoint.x, oldPoint.y );
+		float otherQuant = dot( v1 - old, pointDir );
+		float otherOffQuant = cross( v1 - old, pointDir );
 		
-		bool otherNearOnAxis = otherQuant > 0 && otherQuant < length( V2d( point.x, point.y ) - old );
+		bool otherNearOnAxis = otherQuant > 0 && otherQuant < length( Vector2f( point.x, point.y ) - old );
 		bool otherNearOffAxis = abs( otherOffQuant ) < validityRadius;//otherOffQuant >= 0 && otherOffQuant < validityRadius;//abs( otherOffQuant ) < validityRadius;
 
 		
@@ -6403,9 +6402,9 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 			prev--;
 		}
 
-		V2d extreme( 0, 0 );
+		Vector2f extreme( 0, 0 );
 		Vector2i vec = (*it).pos - (*prev).pos;
-		V2d normVec = normalize( V2d( vec.x, vec.y ) );
+		Vector2f normVec = normalize( Vector2f( vec.x, vec.y ) );
 		
 
 		if( normVec.x == 0 || normVec.y == 0 )
@@ -6459,8 +6458,8 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 				continue;
 			}
 
-			V2d a( (*it).pos.x, (*it).pos.y );
-			V2d b( (*it2).pos.x, (*it2).pos.y );
+			Vector2f a( (*it).pos.x, (*it).pos.y );
+			Vector2f b( (*it2).pos.x, (*it2).pos.y );
 			if( length( a - b ) < validityRadius )
 			{
 				//cout << "len: " << length( a - b ) << endl;
@@ -6497,12 +6496,12 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 		}
 
 		//test for minimum angle difference between edges
-		V2d pos((*it).pos.x, (*it).pos.y );
-		V2d prevPos( (*prev).pos.x, (*prev).pos.y );
-		V2d nextPos( (*next).pos.x, (*next).pos.y );
+		Vector2f pos((*it).pos.x, (*it).pos.y );
+		Vector2f prevPos( (*prev).pos.x, (*prev).pos.y );
+		Vector2f nextPos( (*next).pos.x, (*next).pos.y );
 
 		
-		double ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
+		float ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
 		if( ff > minAngle )
 		{
 			//cout << "ff: " << ff << endl;
@@ -6582,8 +6581,8 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 		{
 			for( PointList::iterator myPit = poly.points.begin(); myPit != poly.points.end(); ++myPit )
 			{
-				V2d mine( (*myPit).pos.x, (*myPit).pos.y );
-				V2d other( (*pit).pos.x, (*pit).pos.y );
+				Vector2f mine( (*myPit).pos.x, (*myPit).pos.y );
+				Vector2f other( (*pit).pos.x, (*pit).pos.y );
 
 				if( length( mine - other ) < minimumEdgeLength )
 				{
@@ -6823,7 +6822,7 @@ bool EditSession::IsRemovePointsOkay()
 	return true;
 }
 
-sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
+sf::Vector2f EditSession::GraphPos( sf::Vector2f realPos )
 {
 	int adjX, adjY;			
 	realPos.x /= 32;
@@ -6842,7 +6841,7 @@ sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 	adjX = ((int)realPos.x) * 32;
 	adjY = ((int)realPos.y) * 32;
 
-	return V2d( adjX, adjY );
+	return Vector2f( adjX, adjY );
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )
@@ -6908,7 +6907,7 @@ std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos,
 }
 
 std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity, bool clockwise, float speed )
+		int eIndex, float edgeQuantity, bool clockwise, float speed )
 {
 	type = t;
 	ground = edgePolygon;
@@ -6932,13 +6931,13 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
+			Vector2f pr( (*prev).pos.x, (*prev).pos.y );
+			Vector2f cu( (*curr).pos.x, (*curr).pos.y );
 
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+			Vector2f newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
 
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+			float angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
 
 			image.setPosition( newPoint.x, newPoint.y );
 			image.setRotation( angle );
@@ -6972,7 +6971,7 @@ std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon
 }
 
 std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity, double bulletSpeed, int framesWait )
+		int eIndex, float edgeQuantity, float bulletSpeed, int framesWait )
 {
 	type = t;
 	ground = edgePolygon;
@@ -6996,13 +6995,13 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
+			Vector2f pr( (*prev).pos.x, (*prev).pos.y );
+			Vector2f cu( (*curr).pos.x, (*curr).pos.y );
 
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+			Vector2f newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
 
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+			float angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
 
 			image.setPosition( newPoint.x, newPoint.y );
 			image.setRotation( angle );
@@ -7037,7 +7036,7 @@ std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePol
 }
 
 std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity )
+		int eIndex, float edgeQuantity )
 {
 	type = t;
 	ground = edgePolygon;
@@ -7061,13 +7060,13 @@ std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygo
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
+			Vector2f pr( (*prev).pos.x, (*prev).pos.y );
+			Vector2f cu( (*curr).pos.x, (*curr).pos.y );
 
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+			Vector2f newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
 
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+			float angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
 
 			image.setPosition( newPoint.x, newPoint.y );
 			image.setRotation( angle );
@@ -7089,7 +7088,7 @@ std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygo
 }
 
 std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity )
+		int eIndex, float edgeQuantity )
 {
 	type = t;
 	ground = edgePolygon;
@@ -7113,13 +7112,13 @@ std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
 	{
 		if( edgeIndex == testIndex )
 		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
+			Vector2f pr( (*prev).pos.x, (*prev).pos.y );
+			Vector2f cu( (*curr).pos.x, (*curr).pos.y );
 
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+			Vector2f newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 											(groundQuantity / length( cu - pr ) ) );
 
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+			float angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
 
 			image.setPosition( newPoint.x, newPoint.y );
 			image.setRotation( angle );

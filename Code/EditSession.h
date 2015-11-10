@@ -48,13 +48,13 @@ struct TerrainPolygon
 	bool IsRemovePointsOkay(EditSession *edit);
 	void Finalize();
 	void Reset();
-	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
+	void Draw( bool showPath, float zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
 	bool IsClockwise();
 	void UpdateGrass();
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
-	void SwitchGrass( sf::Vector2<double> mousePos );
+	void SwitchGrass( sf::Vector2f mousePos );
 	bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	bool IsTouching( TerrainPolygon *p );
@@ -87,7 +87,7 @@ struct StaticLight
 {
 	StaticLight( sf::Color c, sf::Vector2i &pos, int radius, int brightness );
 	void Draw( sf::RenderTarget *target );
-	sf::Rect<double> GetAABB();
+	sf::Rect<float> GetAABB();
 	int radius;
 	int brightness;
 	sf::Color color;
@@ -114,21 +114,21 @@ struct ActorParams
 	std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
 		std::list<sf::Vector2i> &globalPath, float speed, bool loop );
 	std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
+		int edgeIndex, float edgeQuantity, bool clockwise, float speed ); 
 	std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
+		int edgeIndex, float edgeQuantity, float bulletSpeed, int framesWait ); 
 	std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity ); 
+		int edgeIndex, float edgeQuantity ); 
 
 	std::string SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity ); 
+		int edgeIndex, float edgeQuantity ); 
 	//sf::Sprite icon;
 	sf::Sprite image;
 	std::list<std::string> params;
 	ActorGroup *group;
 	ActorType *type;
 	sf::Vector2i position;
-	double groundQuantity;
+	float groundQuantity;
 	TerrainPolygon *ground;
 	int edgeIndex;
 	void Draw( sf::RenderTarget *target );
@@ -163,10 +163,10 @@ struct EditSession : GUIHandler
 	void ExtendAdd();
 	bool IsPolygonValid( TerrainPolygon &poly,
 		 TerrainPolygon *ignore );
-	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
+	sf::Vector2f GraphPos( sf::Vector2f realPos );
 
 
-	const static double PRIMARY_LIMIT;
+	const static float PRIMARY_LIMIT;
 
 	int validityRadius;
 	bool showGrass;
@@ -197,7 +197,7 @@ struct EditSession : GUIHandler
 	sf::Vector2i playerPosition;
 	//sf::Vector2i goalPosition;
 	std::string currentFile;
-	double zoomMultiple;
+	float zoomMultiple;
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
@@ -223,8 +223,8 @@ struct EditSession : GUIHandler
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
 
-	double minimumEdgeLength;
-	double minAngle;
+	float minimumEdgeLength;
+	float minAngle;
 	
 	std::list<TerrainPolygon*> polygons;
 	TerrainPolygon *polygonInProgress;
@@ -241,11 +241,11 @@ struct EditSession : GUIHandler
 
 	int enemyEdgeIndex;
 	TerrainPolygon *enemyEdgePolygon;
-	double enemyEdgeQuantity;
+	float enemyEdgeQuantity;
 
 	bool radiusOption;
 	bool lightPosDown;
-	double lightRadius;
+	float lightRadius;
 	int lightBrightness;
 	std::list<TerrainPolygon*> selectedPolygons;
 
@@ -266,7 +266,7 @@ struct EditSession : GUIHandler
 	int CountSelectedPoints();
 
 	std::list<sf::Vector2i> patrolPath;
-	double minimumPathEdgeLength;
+	float minimumPathEdgeLength;
 
 	sf::IntRect fullRect;
 	

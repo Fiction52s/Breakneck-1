@@ -8,8 +8,6 @@
 using namespace sf;
 using namespace std;
 
-#define V2d sf::Vector2<double>
-
 //EDGE FUNCTIONS
 Edge::Edge()
 {
@@ -17,29 +15,29 @@ Edge::Edge()
 	edge1 = NULL;
 }
 
-V2d Edge::Normal()
+Vector2f Edge::Normal()
 {
-	V2d v = v1 - v0;
-	V2d temp = normalize( v );
-	return V2d( temp.y, -temp.x );
+	Vector2f v = v1 - v0;
+	Vector2f temp = normalize( v );
+	return Vector2f( temp.y, -temp.x );
 }
 
-V2d Edge::GetPoint( double quantity )
+Vector2f Edge::GetPoint( float quantity )
 {
 	//gets the point on a line w/ length quantity in the direction of the edge vector
-	V2d e( v1 - v0 );
+	Vector2f e( v1 - v0 );
 	e = normalize( e );
 	return v0 + quantity * e;
 }
 
-double Edge::GetQuantity( V2d p )
+float Edge::GetQuantity( Vector2f p )
 {
 	//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 
 	//normal to use dot product to get cos(0) =1
-	V2d vv = p - v0;
-	V2d e = normalize(v1 - v0);
-	double result = dot( vv, e );
-	double len = length( v1 - v0 );
+	Vector2f vv = p - v0;
+	Vector2f e = normalize(v1 - v0);
+	float result = dot( vv, e );
+	float len = length( v1 - v0 );
 	if( approxEquals( result, 0 ) )
 		return 0;
 	else if( approxEquals( result, length( v1 - v0 ) ) )
@@ -48,12 +46,12 @@ double Edge::GetQuantity( V2d p )
 		return result;
 }
 
-double Edge::GetQuantityGivenX( double x )
+float Edge::GetQuantityGivenX( float x )
 {
 
-	V2d e = normalize(v1 - v0);
-	double deltax = x - v0.x;
-	double factor = deltax / e.y;
+	Vector2f e = normalize(v1 - v0);
+	float deltax = x - v0.x;
+	float factor = deltax / e.y;
 }
 
 //pathparam is local. pointsParam is local
@@ -109,8 +107,8 @@ MovingTerrain::MovingTerrain( GameSession *own, Vector2i pos, list<Vector2i> &pa
 	for( it = pointsParam.begin(); it != pointsParam.end(); ++it )
 	{
 		Edge *e = new Edge;
-		e->v0 = V2d( (double)(*last).x, (double)(*last).y );
-		e->v1 = V2d( (double)(*it).x, (double)(*it).y );
+		e->v0 = Vector2f( (float)(*last).x, (float)(*last).y );
+		e->v1 = Vector2f( (float)(*it).x, (float)(*it).y );
 		edges.push_back( e );
 		last = it;
 	}
@@ -194,9 +192,9 @@ void MovingTerrain::Finalize()
 	
 }
 
-void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
+void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<float> &r )
 {
-	sf::Rect<double> realR = r;
+	sf::Rect<float> realR = r;
 	realR.left -= position.x;
 	realR.top -= position.y;
 	quadTree->Query( qtc, realR );
@@ -207,7 +205,7 @@ void MovingTerrain::UpdatePhysics()
 	//return;
 	oldPosition = position;
 
-	double movement = speed;
+	float movement = speed;
 	
 	/*if( PlayerSlowingMe() )
 	{
@@ -227,13 +225,13 @@ void MovingTerrain::UpdatePhysics()
 	//	return;
 
 
-	movement /= (double)slowMultiple;
+	movement /= (float)slowMultiple;
 
 	while( movement != 0 )
 	{
-		V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-		V2d diff = targetPoint - position;
-		double len = length( diff );
+		Vector2f targetPoint = Vector2f( path[targetNode].x, path[targetNode].y );
+		Vector2f diff = targetPoint - position;
+		float len = length( diff );
 		if( len >= abs( movement ) )
 		{
 			position += normalize( diff ) * movement;
@@ -299,8 +297,8 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 		cs.setFillColor( Color::Green );
 		cs.setRadius( 20 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		V2d realPos = position + edgeArray[i]->v0;
-		V2d realv1 = position + edgeArray[i]->v1;
+		Vector2f realPos = position + edgeArray[i]->v0;
+		Vector2f realv1 = position + edgeArray[i]->v1;
 		cs.setPosition( realPos.x, realPos.y );
 		//cout << i << ": " << realPos.x << ", " << realPos.y << endl;
 		target->draw( cs );
@@ -319,7 +317,7 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 
 void MovingTerrain::Draw( RenderTarget *target )
 {
-	sf::Rect<double> realRect( left + position.x, top + position.y, right - left, bottom - top );
+	sf::Rect<float> realRect( left + position.x, top + position.y, right - left, bottom - top );
 	owner->UpdateTerrainShader( realRect );
 	owner->polyShader.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2 - ( position.x - path[0].x ),
 			owner->view.getCenter().y - owner->view.getSize().y / 2 - ( position.y - path[0].y ) );
@@ -331,22 +329,22 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	//first, box with box aabb. can adjust it later
 	if( c.isCircle && this->isCircle )
 	{
-		double dist = length( this->globalPosition - c.globalPosition );
+		float dist = length( this->globalPosition - c.globalPosition );
 		//cout << "dist: " << dist << endl;
 		if( dist <= this->rw + c.rw )
 			return true;
 	}
 	else if( c.isCircle && !this->isCircle )
 	{
-		V2d pA = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pB = globalPosition + V2d( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pC = globalPosition + V2d( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d pD = globalPosition + V2d( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		Vector2f pA = globalPosition + Vector2f( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		Vector2f pB = globalPosition + Vector2f( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		Vector2f pC = globalPosition + Vector2f( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		Vector2f pD = globalPosition + Vector2f( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
 		
-		double A = cross( c.globalPosition - pA, normalize(pB - pA) );
-		double B = cross( c.globalPosition - pB, normalize(pC - pB) );
-		double C = cross( c.globalPosition - pC, normalize(pD - pC) );
-		double D = cross( c.globalPosition - pD, normalize(pA - pD) );
+		float A = cross( c.globalPosition - pA, normalize(pB - pA) );
+		float B = cross( c.globalPosition - pB, normalize(pC - pB) );
+		float C = cross( c.globalPosition - pC, normalize(pD - pC) );
+		float D = cross( c.globalPosition - pD, normalize(pA - pD) );
 
 		if( A <= c.rw && B <= c.rw && C <= c.rw && D <= c.rw )
 		{
@@ -358,15 +356,15 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else if( !c.isCircle && this->isCircle )
 	{
-		V2d pA = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pB = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pC = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d pD = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		Vector2f pA = c.globalPosition + Vector2f( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		Vector2f pB = c.globalPosition + Vector2f( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		Vector2f pC = c.globalPosition + Vector2f( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		Vector2f pD = c.globalPosition + Vector2f( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 		
-		double A = cross( globalPosition - pA, normalize(pB - pA) );
-		double B = cross( globalPosition - pB, normalize(pC - pB) );
-		double C = cross( globalPosition - pC, normalize(pD - pC) );
-		double D = cross( globalPosition - pD, normalize(pA - pD) );
+		float A = cross( globalPosition - pA, normalize(pB - pA) );
+		float B = cross( globalPosition - pB, normalize(pC - pB) );
+		float C = cross( globalPosition - pC, normalize(pD - pC) );
+		float D = cross( globalPosition - pD, normalize(pA - pD) );
 
 		//cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << ", rw: " << rw << endl;
 
@@ -380,15 +378,15 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else //both are boxes
 	{
-		V2d pA0 = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pB0 = globalPosition + V2d( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pC0 = globalPosition + V2d( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d pD0 = globalPosition + V2d( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		Vector2f pA0 = globalPosition + Vector2f( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		Vector2f pB0 = globalPosition + Vector2f( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
+		Vector2f pC0 = globalPosition + Vector2f( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		Vector2f pD0 = globalPosition + Vector2f( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
 
-		V2d pA1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pB1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pC1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d pD1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		Vector2f pA1 = c.globalPosition + Vector2f( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		Vector2f pB1 = c.globalPosition + Vector2f( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		Vector2f pC1 = c.globalPosition + Vector2f( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		Vector2f pD1 = c.globalPosition + Vector2f( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 
 		//finish this up!
 
@@ -425,8 +423,8 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 	}
 	else
 	{
-		V2d pos = globalPosition;
-		double angle = globalAngle;
+		Vector2f pos = globalPosition;
+		float angle = globalAngle;
 		sf::RectangleShape r;
 		if( type == Physics )
 		{
@@ -471,34 +469,34 @@ Collider::~Collider()
 	delete currentContact;
 }
 
-Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel, const V2d &tVel )
+Contact *Collider::collideEdge( Vector2f position, const CollisionBox &b, Edge *e, const Vector2f &vel, const Vector2f &tVel )
 {
 	if( b.isCircle )
 	{
-		double pointMinTime = 100;
+		float pointMinTime = 100;
 
-		V2d oldPosition = position - vel;
+		Vector2f oldPosition = position - vel;
 
-		V2d v0 = e->v0;
-		V2d v1 = e->v1;
+		Vector2f v0 = e->v0;
+		Vector2f v1 = e->v1;
 
-		double edgeLength = length( v1 - v0 );
-		double radius = b.rw;
-		V2d edgeNormal = e->Normal();
+		float edgeLength = length( v1 - v0 );
+		float radius = b.rw;
+		Vector2f edgeNormal = e->Normal();
 
-		double lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
-		double dist = cross( position - v0, normalize( v1 - v0 ) );
+		float lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
+		float dist = cross( position - v0, normalize( v1 - v0 ) );
 		
 		if( length( v0 - position ) <= radius )
 		{
-			V2d pointDir = normalize( v0 - position );
-			V2d velDir = normalize( vel );
+			Vector2f pointDir = normalize( v0 - position );
+			Vector2f velDir = normalize( vel );
 			bool hit = dot( vel, pointDir ) <= length( v0 - position );
 			if( hit )
 			{
 				currentContact->position = v0;
 				currentContact->edge = e;
-				currentContact->normal = V2d( 0, 0 );
+				currentContact->normal = Vector2f( 0, 0 );
 				currentContact->collisionPriority = 0;
 
 				CircleShape *cs = new CircleShape;
@@ -520,7 +518,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					+ radius * -edgeNormal, e->v0, e->v1 );
 
 
-				//double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
+				//float testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 				if( li.parallel )//|| abs( testing ) == 1 )
 				{
 					cout << "returning circle null1" << endl;
@@ -528,13 +526,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 
 
-				Vector2<double> intersect = li.position;
+				Vector2<float> intersect = li.position;
 
 
-				//double intersectQuantity = e->GetQuantity( intersect );
+				//float intersectQuantity = e->GetQuantity( intersect );
 
 
-				V2d newPosition = intersect + radius * edgeNormal;
+				Vector2f newPosition = intersect + radius * edgeNormal;
 
 				currentContact->resolution = newPosition - position;
 				currentContact->edge = e;
@@ -567,48 +565,48 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 	}
 	else
 	{
-		Vector2<double> oldPosition = position - vel;
-		double left = position.x - b.rw;
-		double right = position.x + b.rw;
-		double top = position.y - b.rh;
-		double bottom = position.y + b.rh;
+		Vector2<float> oldPosition = position - vel;
+		float left = position.x - b.rw;
+		float right = position.x + b.rw;
+		float top = position.y - b.rh;
+		float bottom = position.y + b.rh;
 
 	
 
-		double oldLeft = oldPosition.x - b.rw;
-		double oldRight = oldPosition.x + b.rw;
-		double oldTop = oldPosition.y - b.rh;
-		double oldBottom = oldPosition.y + b.rh;
+		float oldLeft = oldPosition.x - b.rw;
+		float oldRight = oldPosition.x + b.rw;
+		float oldTop = oldPosition.y - b.rh;
+		float oldBottom = oldPosition.y + b.rh;
 
 
-		double edgeLeft = min( e->v0.x, e->v1.x );
-		double edgeRight = max( e->v0.x, e->v1.x ); 
-		double edgeTop = min( e->v0.y, e->v1.y ); 
-		double edgeBottom = max( e->v0.y, e->v1.y ); 
+		float edgeLeft = min( e->v0.x, e->v1.x );
+		float edgeRight = max( e->v0.x, e->v1.x ); 
+		float edgeTop = min( e->v0.y, e->v1.y ); 
+		float edgeBottom = max( e->v0.y, e->v1.y ); 
 
-		V2d en = e->Normal();
-		V2d prevEn = e->edge0->Normal();
-		V2d point = e->v0;
-		//V2d v1 = e->v1;
+		Vector2f en = e->Normal();
+		Vector2f prevEn = e->edge0->Normal();
+		Vector2f point = e->v0;
+		//Vector2f v1 = e->v1;
 		//check for point collisions first
 
 		//bool pointInRect = point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;		
 
 		//hopefully will catch any rounding errors
-		double ex = .001;
+		float ex = .001f;
 		bool pointInRect = point.x >= min( left, oldLeft ) - ex  && point.x <= max( right, oldRight ) + ex && point.y >= min( top, oldTop ) - ex && point.y <= max( bottom, oldBottom ) + ex;		
 
 
-		double unPoint = cross( normalize(e->v1 - e->v0), normalize( e->edge0->v0 - e->v0 ) );
-		double leftTime = 1, rightTime = 1, bottomTime = 1, topTime = 1; // one whole timestep
+		float unPoint = cross( normalize(e->v1 - e->v0), normalize( e->edge0->v0 - e->v0 ) );
+		float leftTime = 1, rightTime = 1, bottomTime = 1, topTime = 1; // one whole timestep
 		
-		V2d intersect;
+		Vector2f intersect;
 
-		double pointMinTime = 100;
+		float pointMinTime = 100;
 		int type = 0;
-		V2d pointNormal(0,0);
+		Vector2f pointNormal(0,0);
 		
-		if( pointInRect && unPoint > -.0001 )
+		if( pointInRect && unPoint > -.0001f )
 		{
 			//cout << "uinpoint: " << unPoint << endl;
 			bool rightCond0 = (prevEn.x < 0 && prevEn.y >= 0 && en.x < 0 && en.y <= 0);
@@ -694,7 +692,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			topCond0 = topCond1 = topCond2 = false;
 
 			bool topPos = false, botPos = false, leftPos = false, rightPos = false;
-			double aaaa =  dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
+			float aaaa =  dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
 			if( aaaa > 0 )
 			{
 				bool topRight = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
@@ -725,7 +723,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else
 			{
-				//double bbbb = dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
+				//float bbbb = dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
 				//the equals signs are for straight edges connected to slopes. not sure why i need to test those points but i guess it makes sense
 				bool up = prevEn.x <= 0 && prevEn.y < 0 && en.x >= 0 && en.y < 0;
 				bool r = prevEn.x > 0 && prevEn.y <= 0 && en.x > 0 && en.y >= 0;
@@ -764,12 +762,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "prev: " << prevEn.x << ", " << prevEn.y << " n: " << en.x << ", " << en.y << endl;
 			//cout << "rightcond3: " << prevEn.x << ", " << prevEn.y << ", en: " << en.x << ", " << en.y << ", cond: " << rightCond3  << endl;
 			//cout << "oldright: " << oldRight << ", " << point.x << endl;
-			//.001 into 1 here
+			//.f01 into 1 here
 			//cout << "point: " << point.x << ", " << point.y << ", oldBottom: " << oldBottom << ", " << bottom << endl;
-			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001 && right >= point.x  )
+			if( (rightCond0 || rightCond1 || rightCond2 ) && vel.x > 0 && oldRight <= point.x + .001f && right >= point.x  )
 			{
 				rightTime = ( point.x - oldRight ) / abs(vel.x);
-				V2d testRes =-vel * ( 1 - rightTime );
+				Vector2f testRes =-vel * ( 1 - rightTime );
 				if( top + testRes.y <= point.y && bottom + testRes.y >= point.y )
 				{
 					pointMinTime = rightTime;
@@ -779,10 +777,10 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//	cout << "righttime: " << pointMinTime << endl;
 				
 			}
-			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x - .001 && left <= point.x  )
+			else if( ( leftCond0 || leftCond1 || leftCond2 ) && vel.x < 0 && oldLeft >= point.x - .001f && left <= point.x  )
 			{
 				leftTime = ( oldLeft - point.x ) / abs( vel.x );
-				V2d testRes =-vel * ( 1 - leftTime );
+				Vector2f testRes =-vel * ( 1 - leftTime );
 				if( top + testRes.y <= point.y && bottom + testRes.y >= point.y )
 				{
 					pointMinTime = leftTime;
@@ -790,7 +788,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 			}
 			
-			if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y + .001 && bottom >= point.y )
+			if( (bottomCond0 || bottomCond1 || bottomCond2 ) && vel.y > 0 && oldBottom <= point.y + .001f && bottom >= point.y )
 			{
 				bool okay = true;
 				//not sure what this is for. find out the purpose.
@@ -827,7 +825,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 				if( okay && bottomTime < pointMinTime )
 				{
-					V2d testRes =-vel * ( 1 - bottomTime );
+					Vector2f testRes =-vel * ( 1 - bottomTime );
 					//doesnt include the equals stuff because left/right is preferred
 
 					if( right + testRes.x >= point.x && left + testRes.x <= point.x )
@@ -865,14 +863,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				
 				//pointMinTime = min( bottomTime, pointMinTime );
 			}
-			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y - .001 && top <= point.y )
+			else if( (topCond0 || topCond1 || topCond2 ) && vel.y < 0 && oldTop >= point.y - .001f && top <= point.y )
 			{
 			//	cout << "top" << endl;
 				topTime = ( oldTop - point.y ) / abs( vel.y );
 				
 				if( topTime < pointMinTime )
 				{
-					V2d testRes =-vel * ( 1 - topTime );
+					Vector2f testRes =-vel * ( 1 - topTime );
 					if( right + testRes.x >= point.x && left + testRes.x <= point.x )
 					{
 						pointMinTime = topTime;
@@ -884,14 +882,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		}
 
-		double time = 100;
+		float time = 100;
 		if( en.x == 0 )
 		{
-			double edgeYPos = edgeTop;
+			float edgeYPos = edgeTop;
 			if( en.y > 0 ) //down
 			{
 				//cout << "vel.y: " << vel.y << ", oldtop: " << oldTop << ", edgeypos: " << edgeYPos << ", top: " << top << endl;
-				if( vel.y < 0 && oldTop >= edgeYPos - .001 && top <= edgeYPos )
+				if( vel.y < 0 && oldTop >= edgeYPos - .001f && top <= edgeYPos )
 				{
 					bool hit = true;
 
@@ -902,7 +900,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 					if( a && b )
 					{
-						intersect.x = (right + left ) / 2.0;
+						intersect.x = (right + left ) / 2.f;
 					}
 					else if(a  )
 					{
@@ -915,7 +913,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					else if( left <= edgeLeft && right >= edgeRight )
 					{
 						//cout << "blahhhhh:" << endl;
-						intersect.x = (edgeLeft + edgeRight ) / 2.0;
+						intersect.x = (edgeLeft + edgeRight ) / 2.f;
 					}
 					else
 					{
@@ -934,7 +932,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else //up
 			{
-				if( vel.y > 0 && oldBottom <= edgeYPos + .001 && bottom >= edgeYPos )
+				if( vel.y > 0 && oldBottom <= edgeYPos + .001f && bottom >= edgeYPos )
 				{
 					//cout << "this one: " << oldBottom << ", bottom: " << bottom << ", eyp: " << edgeYPos << endl;
 					
@@ -945,7 +943,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 					if( a && b )
 					{
-						intersect.x = (right + left ) / 2.0;
+						intersect.x = (right + left ) / 2.f;
 					}
 					else if(a  )
 					{
@@ -960,7 +958,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					else if( left <= edgeLeft && right >= edgeRight )
 					{
 						//cout << "blahhhhh:" << endl;
-						intersect.x = (edgeLeft + edgeRight ) / 2.0;
+						intersect.x = (edgeLeft + edgeRight ) / 2.f;
 					}
 					else
 					{
@@ -980,12 +978,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		}
 		else if( en.y == 0 )
 		{
-			double edgeXPos = edgeLeft;
+			float edgeXPos = edgeLeft;
 			if( en.x > 0 ) //right
 			{
 				//cout << "trying!: oldLeft: " << oldLeft << ", edgeXPos: " << edgeXPos <<", left: " << left << ", vel: " << vel.x << ", " << vel.y << endl;
 				//cout << "blah: " << (vel.x < 0 ) << ", " << (oldLeft >= edgeXPos ) << ", " << (left <= edgeXPos ) << endl;
-				if( vel.x < 0 && oldLeft >= edgeXPos - .001 && left <= edgeXPos )
+				if( vel.x < 0 && oldLeft >= edgeXPos - .001f && left <= edgeXPos )
 				{
 					bool a = top >= edgeTop && top <= edgeBottom;
 					bool b = bottom >= edgeTop && bottom <= edgeBottom;
@@ -995,7 +993,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 					if( a && b )
 					{
-						intersect.y = (bottom + top ) / 2.0;
+						intersect.y = (bottom + top ) / 2.f;
 					}
 					else if(a  )
 					{
@@ -1008,7 +1006,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					else if( top <= edgeTop && bottom >= edgeBottom )
 					{
 						//cout << "blahhhhh:" << endl;
-						intersect.y = (edgeTop + edgeBottom) / 2.0;
+						intersect.y = (edgeTop + edgeBottom) / 2.f;
 					}
 					else
 					{
@@ -1027,7 +1025,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			else //left
 			{
 				//cout << "attempting right: " << oldRight << ", " << edgeXPos << ", " << right << endl;
-				if( vel.x > 0 && oldRight <= edgeXPos + .001 && right >= edgeXPos )
+				if( vel.x > 0 && oldRight <= edgeXPos + .001f && right >= edgeXPos )
 				{
 					bool a = top >= edgeTop && top <= edgeBottom;
 					bool b = bottom >= edgeTop && bottom <= edgeBottom;
@@ -1036,7 +1034,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 					if( a && b )
 					{
-						intersect.y = (bottom + top ) / 2.0;
+						intersect.y = (bottom + top ) / 2.f;
 					}
 					else if(a  )
 					{
@@ -1049,7 +1047,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					else if( top <= edgeTop && bottom >= edgeBottom )
 					{
 						//cout << "blahhhhh:" << endl;
-						intersect.y = (edgeTop + edgeBottom) / 2.0;
+						intersect.y = (edgeTop + edgeBottom) / 2.f;
 					}
 					else
 					{
@@ -1076,8 +1074,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		}
 		else
 		{
-			Vector2<double> corner(0,0);
-			V2d opp;
+			Vector2<float> corner(0,0);
+			Vector2f opp;
 			if( en.x > 0 )
 			{
 				corner.x = left;
@@ -1100,24 +1098,24 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				opp.y = top;
 			}
 
-			double res = cross( corner - e->v0, e->v1 - e->v0 );
-			double oldRes = cross( (corner - vel ) - e->v0, e->v1 - e->v0 );
-			double resOpp = cross( opp - e->v0, e->v1 - e->v0 );
+			float res = cross( corner - e->v0, e->v1 - e->v0 );
+			float oldRes = cross( (corner - vel ) - e->v0, e->v1 - e->v0 );
+			float resOpp = cross( opp - e->v0, e->v1 - e->v0 );
 			//might remove the opp thing soon
 
-			double measureNormal = dot( en, normalize(-vel) );
+			float measureNormal = dot( en, normalize(-vel) );
 			//cout << "oldRes : " << oldRes << endl;
-			bool test = res < -.001 && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
+			bool test = res < -.001f && resOpp > 0 && measureNormal > 0 && ( vel.x != 0 || vel.y != 0 ) ;
 			//cout << "res: " << res << endl;
-			//oldRes >= -.001
+			//oldRes >= -.f01
 			
-			//if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
-			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
+			//if( res < -.f01 && oldRes >= -.f01 && resOpp > 0 && measureNormal > -.f01 && ( vel.x != 0 || vel.y != 0 )  )	
+			if( res < -.001f && oldRes >= -.001f && resOpp > 0 && measureNormal > -.001f && ( vel.x != 0 || vel.y != 0 )  )	
 			
 			{
 				//cout << "normal: " << e->Normal().x << ", " << e->Normal().y << endl;
 				LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
-				double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
+				float testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 				if( li.parallel || abs( testing ) == 1 )
 				{
 					//cout << "returning null1" << endl;
@@ -1125,15 +1123,15 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				}
 				intersect = li.position;
 
-				double intersectQuantity = e->GetQuantity( intersect );
+				float intersectQuantity = e->GetQuantity( intersect );
 
 				//cout << "test: " << test << " normal: " << en.x << ", " << en.y << " q: " << intersectQuantity << "len: " << length( e->v1 - e->v0 ) << endl;
 				//if( intersectQuantity < 0 )
 				//	intersectQuantity = 0;
 				//if( intersectQuantity >length( e->v1 - e->v0 ) )
 				//	intersectQuantity = length( e->v1 - e->v0 );
-				double len = length( e->v1 - e->v0 );
-				if( intersectQuantity < -.0001 || intersectQuantity > len + .0001 )
+				float len = length( e->v1 - e->v0 );
+				if( intersectQuantity < -.0001f || intersectQuantity > len + .0001f )
 				{
 					
 					//cout << "bad: " << en.x << ", " << en.y << "  " << intersectQuantity << ", len: " << length( e->v1 - e->v0 ) << endl;
@@ -1156,7 +1154,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					if( a || b  )
 					{
 						okay = false;
-						double t;
+						float t;
 						if( a )
 						{
 							t = cross( e->v1 - e->v0, normalize(e->edge0->v0 - e->v0) );
@@ -1169,7 +1167,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 						}
 						
 						okay = true;
-						if( t < -.001 )
+						if( t < -.001f )
 						{	
 							//okay = true;
 							currentContact->weirdPoint = false;
@@ -1186,7 +1184,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					{
 				//	cout << "using: " << intersectQuantity << ", length: " << length( e->v1 - e->v0 ) << endl;
 					//this is prob wrong
-					double tempTime = dot( intersect - ( corner - vel ), normalize( vel ) );
+					float tempTime = dot( intersect - ( corner - vel ), normalize( vel ) );
 					tempTime /= length( vel );
 					//cout << "tempTime: " << tempTime << endl;
 					//if( tempTime >= -4 )
@@ -1210,7 +1208,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			{
 				//cout << "res: " << res << ", " << oldRes << ", " << resOpp << ", " << measureNormal << endl;
 			
-				//cout << "baz: " << (res < 0 ) <<", " << ( oldRes >= -.001 ) << ", " << (resOpp > 0 ) << ", " << (measureNormal > -.001 ) << endl;
+				//cout << "baz: " << (res < 0 ) <<", " << ( oldRes >= -.f01 ) << ", " << (resOpp > 0 ) << ", " << (measureNormal > -.f01 ) << endl;
 			}
 
 
@@ -1240,7 +1238,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		else
 		{
 			currentContact->position = intersect;
-			currentContact->normal = V2d( 0, 0 );
+			currentContact->normal = Vector2f( 0, 0 );
 
 			CircleShape *cs = new CircleShape;
 			cs->setFillColor( Color::Yellow );
@@ -1295,21 +1293,21 @@ void Collider::ClearDebug()
 	progressDraw.clear();
 }
 
-EdgeParentNode::EdgeParentNode( const V2d &poss, double rww, double rhh )
+EdgeParentNode::EdgeParentNode( const Vector2f &poss, float rww, float rhh )
 {
 	pos = poss;
 	rw = rww;
 	rh = rhh;
 	leaf = false;
-	children[0] = new EdgeLeafNode( V2d(pos.x - rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[1] = new EdgeLeafNode( V2d(pos.x + rw / 2.0, pos.y - rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[2] = new EdgeLeafNode( V2d(pos.x - rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
-	children[3] = new EdgeLeafNode( V2d(pos.x + rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
+	children[0] = new EdgeLeafNode( Vector2f(pos.x - rw / 2.f, pos.y - rh / 2.f), rw / 2.f, rh / 2.f );
+	children[1] = new EdgeLeafNode( Vector2f(pos.x + rw / 2.f, pos.y - rh / 2.f), rw / 2.f, rh / 2.f );
+	children[2] = new EdgeLeafNode( Vector2f(pos.x - rw / 2.f, pos.y + rh / 2.f), rw / 2.f, rh / 2.f );
+	children[3] = new EdgeLeafNode( Vector2f(pos.x + rw / 2.f, pos.y + rh / 2.f), rw / 2.f, rh / 2.f );
 
 	
 }
 
-EdgeLeafNode::EdgeLeafNode( const V2d &poss, double rww, double rhh )
+EdgeLeafNode::EdgeLeafNode( const Vector2f &poss, float rww, float rhh )
 	:objCount(0)
 {
 	pos = poss;
@@ -1323,37 +1321,37 @@ EdgeLeafNode::EdgeLeafNode( const V2d &poss, double rww, double rhh )
 	}
 }
 
-sf::Rect<double> GetEdgeBox( Edge *e )
+sf::Rect<float> GetEdgeBox( Edge *e )
 {
-	double left = min( e->v0.x, e->v1.x );
-	double right = max( e->v0.x, e->v1.x );
-	double top = min( e->v0.y, e->v1.y );
-	double bottom = max( e->v0.y, e->v1.y );
-	return sf::Rect<double>( left, top, right - left, bottom - top );	
+	float left = min( e->v0.x, e->v1.x );
+	float right = max( e->v0.x, e->v1.x );
+	float top = min( e->v0.y, e->v1.y );
+	float bottom = max( e->v0.y, e->v1.y );
+	return sf::Rect<float>( left, top, right - left, bottom - top );	
 }
 
-bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
+bool IsEdgeTouchingBox( Edge *e, const sf::Rect<float> & ir )
 {
-	sf::Rect<double> er = GetEdgeBox( e );
+	sf::Rect<float> er = GetEdgeBox( e );
 
-	V2d as[4];
-	V2d bs[4];
-	as[0] = V2d( ir.left, ir.top );
-	bs[0] = V2d( ir.left + ir.width, ir.top );
+	Vector2f as[4];
+	Vector2f bs[4];
+	as[0] = Vector2f( ir.left, ir.top );
+	bs[0] = Vector2f( ir.left + ir.width, ir.top );
 
-	as[1] =  V2d( ir.left, ir.top + ir.height );
-	bs[1] = V2d( ir.left + ir.width, ir.top + ir.height );
+	as[1] =  Vector2f( ir.left, ir.top + ir.height );
+	bs[1] = Vector2f( ir.left + ir.width, ir.top + ir.height );
 
-	as[2] = V2d( ir.left, ir.top );
-	bs[2] = V2d( ir.left, ir.top + ir.height);
+	as[2] = Vector2f( ir.left, ir.top );
+	bs[2] = Vector2f( ir.left, ir.top + ir.height);
 
-	as[3] = V2d( ir.left + ir.width, ir.top );
-	bs[3] = V2d( ir.left + ir.width, ir.top + ir.height );
+	as[3] = Vector2f( ir.left + ir.width, ir.top );
+	bs[3] = Vector2f( ir.left + ir.width, ir.top + ir.height );
 
-	double erLeft = er.left;
-	double erRight = er.left + er.width;
-	double erTop = er.top;
-	double erBottom = er.top + er.height;
+	float erLeft = er.left;
+	float erRight = er.left + er.width;
+	float erTop = er.top;
+	float erBottom = er.top + er.height;
 
 	if( erLeft >= ir.left && erRight <= ir.left + ir.width && erTop >= ir.top && erBottom <= ir.top + ir.height )
 		return true;
@@ -1368,12 +1366,12 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 		if( !li.parallel )
 		{
 			
-				V2d a = as[i];
-				V2d b = bs[i];
-				double e1Left = min( a.x, b.x );
-				double e1Right = max( a.x, b.x );
-				double e1Top = min( a.y, b.y );
-				double e1Bottom = max( a.y, b.y );
+				Vector2f a = as[i];
+				Vector2f b = bs[i];
+				float e1Left = min( a.x, b.x );
+				float e1Right = max( a.x, b.x );
+				float e1Top = min( a.y, b.y );
+				float e1Bottom = max( a.y, b.y );
 
 				
 			//cout << "compares: " << e1Left << ", " << erRight << " .. " << e1Right << ", " << erLeft << endl;
@@ -1399,7 +1397,7 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 	return false;
 }
 
-bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 )
+bool IsBoxTouchingBox( const sf::Rect<float> & r0, const sf::Rect<float> & r1 )
 {
 	bool test = r0.intersects( r1 );
 	bool test2 =r0.left <= r1.left + r1.width 
@@ -1420,16 +1418,16 @@ bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 
 	return test2;
 }
 
-bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
+bool IsCircleTouchingCircle( Vector2f pos0, float rad_0, Vector2f pos1, float rad_1 )
 {
 	return length( pos1 - pos0 ) <= rad_0 + rad_1;
 }
 
-bool IsEdgeTouchingCircle( V2d v0, V2d v1, V2d pos, double rad )
+bool IsEdgeTouchingCircle( Vector2f v0, Vector2f v1, Vector2f pos, float rad )
 {
-	double dist = cross( pos - v0, normalize( v1 - v0 ) );
-	double q = dot( pos - v0, normalize( v1 - v0 ) );
-	double edgeLength = length( v1 - v0 );
+	float dist = cross( pos - v0, normalize( v1 - v0 ) );
+	float q = dot( pos - v0, normalize( v1 - v0 ) );
+	float edgeLength = length( v1 - v0 );
 
 
 	if( q < 0 )
@@ -1457,7 +1455,7 @@ bool IsEdgeTouchingCircle( V2d v0, V2d v1, V2d pos, double rad )
 	return false;
 }
 
-bool IsQuadTouchingCircle( V2d A, V2d B, V2d C, V2d D, V2d pos, double rad )
+bool IsQuadTouchingCircle( Vector2f A, Vector2f B, Vector2f C, Vector2f D, Vector2f pos, float rad )
 {
 	if( IsEdgeTouchingCircle( A,B, pos, rad ) 
 		|| IsEdgeTouchingCircle( B,C, pos, rad ) 
@@ -1469,40 +1467,40 @@ bool IsQuadTouchingCircle( V2d A, V2d B, V2d C, V2d D, V2d pos, double rad )
 	return false;
 }
 //top left is A then clockwise
-bool isQuadTouchingQuad( V2d &A0, V2d &B0, V2d &C0, V2d &D0, V2d &A1, V2d &B1, V2d &C1, V2d &D1 )
+bool isQuadTouchingQuad( Vector2f &A0, Vector2f &B0, Vector2f &C0, Vector2f &D0, Vector2f &A1, Vector2f &B1, Vector2f &C1, Vector2f &D1 )
 {
-	double AB = length( B0 - A0 );
-	double AD = length( D0 - A0 );
+	float AB = length( B0 - A0 );
+	float AD = length( D0 - A0 );
 
-	V2d normalizeAB = normalize( B0 - A0 );
-	V2d normalizeAD = normalize( D0 - A0 );
+	Vector2f normalizeAB = normalize( B0 - A0 );
+	Vector2f normalizeAD = normalize( D0 - A0 );
 	
 
-	double min1AB = min( dot( A1 - A0, normalizeAB ), min( dot( B1 - A0, normalizeAB ), min( dot( C1 - A0, normalizeAB ),
+	float min1AB = min( dot( A1 - A0, normalizeAB ), min( dot( B1 - A0, normalizeAB ), min( dot( C1 - A0, normalizeAB ),
 		dot( D1 - A0, normalizeAB ) ) ) );
-	double max1AB = max( dot( A1 - A0, normalizeAB ), max( dot( B1 - A0, normalizeAB ), max( dot( C1 - A0, normalizeAB ),
+	float max1AB = max( dot( A1 - A0, normalizeAB ), max( dot( B1 - A0, normalizeAB ), max( dot( C1 - A0, normalizeAB ),
 		dot( D1 - A0, normalizeAB ) ) ) );
 
-	double min1AD = min( dot( A1 - A0, normalizeAD ), min( dot( B1 - A0, normalizeAD ), min( dot( C1 - A0, normalizeAD ),
+	float min1AD = min( dot( A1 - A0, normalizeAD ), min( dot( B1 - A0, normalizeAD ), min( dot( C1 - A0, normalizeAD ),
 		dot( D1 - A0, normalizeAD ) ) ) );
-	double max1AD = max( dot( A1 - A0, normalizeAD ), max( dot( B1 - A0, normalizeAD ), max( dot( C1 - A0, normalizeAD ),
+	float max1AD = max( dot( A1 - A0, normalizeAD ), max( dot( B1 - A0, normalizeAD ), max( dot( C1 - A0, normalizeAD ),
 		dot( D1 - A0, normalizeAD ) ) ) );
 
 	
-	double AB1 = length( B1 - A1 );
-	double AD1 = length( D1 - A1 );
+	float AB1 = length( B1 - A1 );
+	float AD1 = length( D1 - A1 );
 
-	V2d normalizeAB1 = normalize( B1 - A1 );
-	V2d normalizeAD1 = normalize( D1 - A1 );
+	Vector2f normalizeAB1 = normalize( B1 - A1 );
+	Vector2f normalizeAD1 = normalize( D1 - A1 );
 
-	double min0AB = min( dot( A0 - A1, normalizeAB1 ), min( dot( B0 - A1, normalizeAB1 ), min( dot( C0 - A1, normalizeAB1 ),
+	float min0AB = min( dot( A0 - A1, normalizeAB1 ), min( dot( B0 - A1, normalizeAB1 ), min( dot( C0 - A1, normalizeAB1 ),
 		dot( D0 - A1, normalizeAB1 ) ) ) );
-	double max0AB = max( dot( A0 - A1, normalizeAB1 ), max( dot( B0 - A1, normalizeAB1 ), max( dot( C0 - A1, normalizeAB1 ),
+	float max0AB = max( dot( A0 - A1, normalizeAB1 ), max( dot( B0 - A1, normalizeAB1 ), max( dot( C0 - A1, normalizeAB1 ),
 		dot( D0 - A1, normalizeAB1 ) ) ) );
 
-	double min0AD = min( dot( A0 - A1, normalizeAD1 ), min( dot( B0 - A1, normalizeAD1 ), min( dot( C0 - A1, normalizeAD1 ),
+	float min0AD = min( dot( A0 - A1, normalizeAD1 ), min( dot( B0 - A1, normalizeAD1 ), min( dot( C0 - A1, normalizeAD1 ),
 		dot( D0 - A1, normalizeAD1 ) ) ) );
-	double max0AD = max( dot( A0 - A1, normalizeAD1 ), max( dot( B0 - A1, normalizeAD1 ), max( dot( C0 - A1, normalizeAD1 ),
+	float max0AD = max( dot( A0 - A1, normalizeAD1 ), max( dot( B0 - A1, normalizeAD1 ), max( dot( C0 - A1, normalizeAD1 ),
 		dot( D0 - A1, normalizeAD1 ) ) ) );
 
 	if( min1AB <= AB && max1AB >= 0 && min1AD <= AD && max1AD >= 0 
@@ -1573,10 +1571,10 @@ EdgeQNode *Insert( EdgeQNode *node, Edge* e )
 	{
 	//	cout << "inserting into parent" << endl;
 		EdgeParentNode *n = (EdgeParentNode*)node;
-		sf::Rect<double> nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
-		sf::Rect<double> ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
-		sf::Rect<double> sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
-		sf::Rect<double> se( node->pos.x, node->pos.y, node->rw, node->rh );
+		sf::Rect<float> nw( node->pos.x - node->rw, node->pos.y - node->rh, node->rw, node->rh);
+		sf::Rect<float> ne( node->pos.x, node->pos.y - node->rh, node->rw, node->rh );
+		sf::Rect<float> sw( node->pos.x - node->rw, node->pos.y, node->rw, node->rh );
+		sf::Rect<float> se( node->pos.x, node->pos.y, node->rw, node->rh );
 
 		if( IsEdgeTouchingBox( e, nw ) )
 		{
@@ -1633,10 +1631,10 @@ void DebugDrawQuadTree( sf::RenderWindow *w, EdgeQNode *node )
 	//	rs.setOutlineThickness( 3 );
 		//rs.setFillColor( Color::Transparent );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
-		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
 		rs.setPosition( node->pos.x, node->pos.y );
-		//rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		//rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 
 		w->draw( rs );
 
@@ -1652,7 +1650,7 @@ void DebugDrawQuadTree( sf::RenderWindow *w, EdgeQNode *node )
 		EdgeParentNode *n = (EdgeParentNode*)node;
 		sf::RectangleShape rs( sf::Vector2f( node->rw * 2, node->rh * 2 ) );
 		//rs.setOutlineColor( Color::Red );
-		rs.setOrigin( rs.getLocalBounds().width / 2.0, rs.getLocalBounds().height / 2.0 );
+		rs.setOrigin( rs.getLocalBounds().width / 2.f, rs.getLocalBounds().height / 2.f );
 		//rs.setPosition( node->pos.x - node->rw, node->pos.y - node->rh );
 		rs.setPosition( node->pos.x, node->pos.y );
 		rs.setFillColor( Color::Transparent );
@@ -1675,9 +1673,9 @@ void DebugDrawQuadTree( sf::RenderWindow *w, EdgeQNode *node )
 	
 }
 
-void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &r )
+void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<float> &r )
 {
-	sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+	sf::Rect<float> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 
 	if( node->leaf )
 	{
@@ -1707,7 +1705,7 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 	
 }
 
-/*void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint )
+/*void RayCast( RayCastHandler *handler, QNode *node, Vector2f startPoint, Vector2f endPoint )
 {
 
 	if( node->leaf )
@@ -1718,7 +1716,7 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 		e.v0 = startPoint;
 		e.v1 = endPoint;
 
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+		sf::Rect<float> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 	
 		if( IsEdgeTouchingBox( &e, nodeBox ) )
 		{
@@ -1728,7 +1726,7 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 				if( !li.parallel )
 				{
 					handler->HandleRayCollision( n->edges[i], n->edges[i]->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
+						dot( Vector2f( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
 				}
 			}
 		}
@@ -1747,7 +1745,7 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 
 
 //only works on edges
-void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint )
+void RayCast( RayCastHandler *handler, QNode *node, Vector2f startPoint, Vector2f endPoint )
 {
 	if( node->leaf )
 	{
@@ -1757,7 +1755,7 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 		e.v0 = startPoint;
 		e.v1 = endPoint;
 
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+		sf::Rect<float> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 	
 		if( IsEdgeTouchingBox( &e, nodeBox ) )
 		{
@@ -1767,7 +1765,7 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 				if( !li.parallel )
 				{
 					handler->HandleRayCollision( ((Edge*)(n->entrants[i])), ((Edge*)(n->entrants[i]))->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
+						dot( Vector2f( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
 				}
 			}
 		}
@@ -1781,7 +1779,7 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 		e.v0 = startPoint;
 		e.v1 = endPoint;
 
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+		sf::Rect<float> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
 
 		if( IsEdgeTouchingBox( &e, nodeBox ) )
 		{
@@ -1791,7 +1789,7 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 				if( !li.parallel )
 				{
 					handler->HandleRayCollision( ((Edge*)(*it)), ((Edge*)(*it))->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
+						dot( Vector2f( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
 				}
 			}
 
@@ -1808,7 +1806,7 @@ void Edge::HandleQuery( QuadTreeCollider * qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Edge::IsTouchingBox( const sf::Rect<double> &r )
+bool Edge::IsTouchingBox( const sf::Rect<float> &r )
 {
 	return IsEdgeTouchingBox( this, r );
 }

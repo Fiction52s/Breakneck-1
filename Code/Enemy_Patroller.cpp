@@ -7,8 +7,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
-
 
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::PATROLLER ), dead( false ), deathFrame( 0 )
@@ -16,7 +14,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.x = pos.x;
 	position.y = pos.y;
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	spawnRect = sf::Rect<float>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	pathLength = pathParam.size() + 1;
 	path = new Vector2i[pathLength];
@@ -78,7 +76,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	deathPartingSpeed = .3;
-	deathVector = V2d( 1, -1 );
+	deathVector = Vector2f( 1, -1 );
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
@@ -108,10 +106,10 @@ void Patroller::UpdatePrePhysics()
 void Patroller::UpdatePhysics()
 {
 	//cout << "setting to targetnode: " << targetNode << endl;
-	//position = V2d( path[targetNode].x, path[targetNode].y );
+	//position = Vector2f( path[targetNode].x, path[targetNode].y );
 
 
-	double movement = speed;
+	float movement = speed;
 	
 	if( PlayerSlowingMe() )
 	{
@@ -131,13 +129,13 @@ void Patroller::UpdatePhysics()
 		return;
 
 
-	movement /= (double)slowMultiple;
+	movement /= (float)slowMultiple;
 
 	while( movement != 0 )
 	{
-		V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-		V2d diff = targetPoint - position;
-		double len = length( diff );
+		Vector2f targetPoint = Vector2f( path[targetNode].x, path[targetNode].y );
+		Vector2f diff = targetPoint - position;
+		float len = length( diff );
 		if( len >= abs( movement ) )
 		{
 			position += normalize( diff ) * movement;

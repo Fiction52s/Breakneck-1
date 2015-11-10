@@ -7,7 +7,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
 
 BasicEffect::BasicEffect ( GameSession *owner )
@@ -17,7 +16,7 @@ BasicEffect::BasicEffect ( GameSession *owner )
 	pauseImmune = false;
 	frame = 0;
 	ts = NULL;
-	//ts = //owner->GetTileset( "double.png", 64, 64 ); //what
+	//ts = //owner->GetTileset( "float.png", 64, 64 ); //what
 	activated = false;
 	animationFactor = 1;
 	stored_frame = 0;
@@ -30,7 +29,7 @@ void BasicEffect::ResetEnemy()
 	//owner->DeactivateEffect( this );
 }
 
-void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right )
+void BasicEffect::Init( Tileset *t, sf::Vector2f pos, float angle, int fc, int af, bool right )
 {
 	//cout << "init: " << this << ", " << t->sourceName << endl;
 	s.setTexture( *t->texture );
@@ -142,7 +141,7 @@ void BasicEffect::UpdateHitboxes()
 {
 }
 
-bool BasicEffect::ResolvePhysics( sf::Vector2<double> vel )
+bool BasicEffect::ResolvePhysics( sf::Vector2f vel )
 {
 }
 

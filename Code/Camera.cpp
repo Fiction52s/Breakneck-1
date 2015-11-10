@@ -4,8 +4,7 @@
 #include "GameSession.h"
 
 using namespace std;
-
-#define V2d sf::Vector2<double>
+using namespace sf;
 
 Camera::Camera()
 {
@@ -41,10 +40,10 @@ Camera::Camera()
 void Camera::Update( Actor *player )
 {
 	GameSession *owner = player->owner;
-	V2d ideal;// = player->position;
+	Vector2f ideal;// = player->position;
 	//pos.x = player->position.x;
 	//pos.y = player->position.y;
-	V2d playerPos = player->position;
+	Vector2f playerPos = player->position;
 	bool desp = player->desperationMode || player->action == Actor::DEATH;
 	if( desp )
 	{
@@ -94,14 +93,14 @@ void Camera::Update( Actor *player )
 	}
 
 
-	V2d pVel;
+	Vector2f pVel;
 	
-	double cap = 30;
+	float cap = 30;
 	if( player->grindEdge != NULL )
 	{
-		V2d grindDir = normalize( player->grindEdge->v1 - player->grindEdge->v0 );
-		V2d otherDir = grindDir;
-		double oTemp = otherDir.x;
+		Vector2f grindDir = normalize( player->grindEdge->v1 - player->grindEdge->v0 );
+		Vector2f otherDir = grindDir;
+		float oTemp = otherDir.x;
 		otherDir.x = otherDir.y;
 		otherDir.y = -oTemp;
 		
@@ -114,16 +113,16 @@ void Camera::Update( Actor *player )
 	}
 	else if( player->ground != NULL )
 	{
-		double cap2 = cap;
+		float cap2 = cap;
 		if( player->framesGrinding < cap )
 			cap2 = player->framesGrinding;
 		if( player->framesNotGrinding <= cap2 )
 		{	
-			V2d otherDir;
+			Vector2f otherDir;
 			if( player->ground != NULL )
 			{
 				otherDir = -player->ground->Normal();
-				V2d offset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
+				Vector2f offset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
 				playerPos += offset;
 				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
 			}
@@ -146,16 +145,16 @@ void Camera::Update( Actor *player )
 
 		
 
-	//zoomFactor = abs(pVel.x) / 40.0 + 1;//length( pVel ) / 40 + 1;
+	//zoomFactor = abs(pVel.x) / 40.f + 1;//length( pVel ) / 40 + 1;
 	//zoomFactor = 2;
 	//zoomFactor = 1;
 
 	float temp;
-	V2d f;
+	Vector2f f;
 	if( player->ground != NULL )
 	{
-		temp = abs(player->groundSpeed) / 20.0;
-		f = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed * 10.0;
+		temp = abs(player->groundSpeed) / 20.f;
+		f = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed * 10.f;
 		//if( abs(temp - zoomFactor) > 1 )
 		if( player->reversed )
 			f = -f;
@@ -163,21 +162,21 @@ void Camera::Update( Actor *player )
 	}
 	else
 	{
-		temp = length( player->velocity ) / 20.0;
-		//temp = abs( player->velocity.x ) / 20.0;
+		temp = length( player->velocity ) / 20.f;
+		//temp = abs( player->velocity.x ) / 20.f;
 		//temp = zoomFactor;
-		f = player->velocity * 10.0;
+		f = player->velocity * 10.f;
 	}
 
-	double zDiff = temp - zoomFactor;
+	float zDiff = temp - zoomFactor;
 	if( zDiff > 0 )
 	{
-		zoomFactor += zDiff / 20.0/*35.0*/ / player->slowMultiple;
+		zoomFactor += zDiff / 20.f/*35.f*/ / player->slowMultiple;
 	}
 	else if( zDiff < 0 )
 	{
-	//	zoomFactor += zDiff / 350.0 / player->slowMultiple;
-		zoomFactor += zDiff / 250.0 / player->slowMultiple;
+	//	zoomFactor += zDiff / 350.f / player->slowMultiple;
+		zoomFactor += zDiff / 250.f / player->slowMultiple;
 	}
 
 	
@@ -191,8 +190,8 @@ void Camera::Update( Actor *player )
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
 	
-	double offX = pVel.x;
-	double offXMax = 5;
+	float offX = pVel.x;
+	float offXMax = 5;
 	if( offX > offXMax  )
 	{
 		offX = offXMax ;
@@ -201,11 +200,11 @@ void Camera::Update( Actor *player )
 	{
 		offX = -offXMax;
 	}
-	offset.x += offX;//pVel.x * 1.001;
+	offset.x += offX;//pVel.x * 1.f01;
 	//offset.y += pVel.y * .3;
 
-	double offY = pVel.y;
-	double offYMax = 3;
+	float offY = pVel.y;
+	float offYMax = 3;
 	if( offY > offYMax  )
 	{
 		offY = offYMax ;
@@ -239,7 +238,7 @@ void Camera::Update( Actor *player )
 		offset.y += (-offset.y) / 20;
 	}
 	//cout << "pVel.y: " << pVel.y << endl;
-	//cout << "offset.y << " << offset.y << " add: " << pVel.y * 1.0000001  << "what: " << pVel.y << endl;
+	//cout << "offset.y << " << offset.y << " add: " << pVel.y * 1.f000001  << "what: " << pVel.y << endl;
 	if( offset.x < -150 * zoomFactor )
 		offset.x = -150 * zoomFactor;
 	else if( offset.x > 150 * zoomFactor )
@@ -315,11 +314,11 @@ void Camera::Update2( Actor *player )
 	}
 
 	float temp;
-	V2d f;
+	Vector2f f;
 	if( player->ground != NULL )
 	{
-		temp = abs(player->groundSpeed) / 20.0;
-		f = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed * 10.0;
+		temp = abs(player->groundSpeed) / 20.f;
+		f = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed * 10.f;
 		//if( abs(temp - zoomFactor) > 1 )
 		if( player->reversed )
 			f = -f;
@@ -327,14 +326,14 @@ void Camera::Update2( Actor *player )
 	}
 	else
 	{
-		temp = length( player->velocity ) / 20.0;
-		//temp = abs( player->velocity.x ) / 20.0;
+		temp = length( player->velocity ) / 20.f;
+		//temp = abs( player->velocity.x ) / 20.f;
 		//temp = zoomFactor;
-		f = player->velocity * 10.0;
+		f = player->velocity * 10.f;
 	}
 
-	double zDiff = temp - zoomFactor;
-	zoomFactor += zDiff / 30.0 / player->slowMultiple;
+	float zDiff = temp - zoomFactor;
+	zoomFactor += zDiff / 30.f / player->slowMultiple;
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;
@@ -393,12 +392,12 @@ void Camera::Update2( Actor *player )
 		offset.y = maxOffset.y;*/
 
 	sf::Vector2f diff =sf::Vector2f( f.x, f.y ) - offset;
-	if( length( V2d( diff.x, diff.y ) ) < 90 )
+	if( length( Vector2f( diff.x, diff.y ) ) < 90 )
 	{
-		V2d dn = normalize( V2d( diff.x, diff.y ) ) * 90.0;
+		Vector2f dn = normalize( Vector2f( diff.x, diff.y ) ) * 90.f;
 
 	
-		//if( length( V2d(offset.x,offset.y) ) > length( V2d( offset.x,offset.y) + V2d(diff.x,diff.y) / 90.0 / (double)player->slowMultiple * (double)zoomFactor ) )
+		//if( length( Vector2f(offset.x,offset.y) ) > length( Vector2f( offset.x,offset.y) + Vector2f(diff.x,diff.y) / 90.f / (float)player->slowMultiple * (float)zoomFactor ) )
 		{
 		
 			diff.x = dn.x;
@@ -410,7 +409,7 @@ void Camera::Update2( Actor *player )
 	sf::Vector2f tOffset =  diff / 90.f / (float)player->slowMultiple * zoomFactor;
 	//offset.x += tOffset.x;
 	//offset.y += tOffset.y;
-	V2d to = (V2d( offset.x, offset.y) * ( 60.0 * player->slowMultiple - 1 ) + f) / ( 60.0 * player->slowMultiple);
+	Vector2f to = (Vector2f( offset.x, offset.y) * ( 60.f * player->slowMultiple - 1 ) + f) / ( 60.f * player->slowMultiple);
 	offset.x = to.x;
 	offset.y = to.y;
 

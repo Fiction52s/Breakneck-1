@@ -5,10 +5,10 @@ struct MacControllerState
 {
 	MacControllerState();
 	void Set( const MacControllerState &state );
-	double leftStickMagnitude; // 0 - 1.0
-	double leftStickRadians;
-	double rightStickMagnitude; // 0 - 1.0
-	double rightStickRadians;
+	float leftStickMagnitude; // 0 - 1.f
+	float leftStickRadians;
+	float rightStickMagnitude; // 0 - 1.f
+	float rightStickRadians;
 	char leftTrigger;
 	char rightTrigger;
 	bool start;

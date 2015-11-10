@@ -7,15 +7,14 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
-Goal::Goal( GameSession *owner, Edge *g, double q )
+Goal::Goal( GameSession *owner, Edge *g, float q )
 		:Enemy( owner, EnemyType::GOAL ), ground( g ), edgeQuantity( q ), dead( false )
 {
 	ts = owner->GetTileset( "goal.png", 96, 32 );
 	sprite.setTexture( *ts->texture );
 	
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	Vector2f gPoint = g->GetPoint( edgeQuantity );
 	position = gPoint;
 
 	gn = g->Normal();
@@ -42,14 +41,14 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	hurtBody.rw = 16;
 	hurtBody.rh = 16;
 
-	double angle = 0;
+	float angle = 0;
 		
 	angle = atan2( gn.x, -gn.y );
 		
 	hurtBody.globalAngle = angle;
 
 	hurtBody.globalPosition = position + 
-		V2d( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
+		Vector2f( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
 		hitBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 
 	frame = 0;
@@ -58,7 +57,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+	spawnRect = sf::Rect<float>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
 }
 
 void Goal::ResetEnemy()
@@ -233,7 +232,7 @@ void Goal::UpdateHitboxes()
 {
 }
 
-bool Goal::ResolvePhysics( sf::Vector2<double> vel )
+bool Goal::ResolvePhysics( sf::Vector2f vel )
 {
 	return false;
 }

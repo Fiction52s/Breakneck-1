@@ -19,7 +19,7 @@
 #include <boost/filesystem.hpp>
 
 
-#define TIMESTEP 1.0 / 60.0
+#define TIMESTEP 1.f / 60.f
 
 using namespace std;
 using namespace sf;
@@ -28,7 +28,6 @@ RenderWindow *window;
 View v;
 using namespace boost::filesystem;
 
-#define V2d sf::Vector2<double>
 GameController controller(0);
 
 RenderTexture *preScreenTexture;
