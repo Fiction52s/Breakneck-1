@@ -6008,6 +6008,7 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 	polyAABB.top -= minimumEdgeLength;
 	polyAABB.width += minimumEdgeLength * 2;
 	polyAABB.height += minimumEdgeLength * 2;
+	
 
 	//points close to other points on myself
 	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
@@ -6072,6 +6073,50 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 		if( !IsPointValid( (*prev).pos, (*it).pos, &poly ) )
 		{
 			return false;
+		}
+	}
+
+
+	//line intersection on myself
+	for( PointList::iterator it = poly.points.begin(); it != poly.points.end(); ++it )
+	{
+		PointList::iterator prev;
+		if( it == poly.points.begin() )
+		{
+			prev = poly.points.end();
+			prev--;
+		}
+		else
+		{
+			prev = it;
+			prev--;
+		}
+
+		for( PointList::iterator it2 = poly.points.begin(); it2 != poly.points.end(); ++it2 )
+		{
+			PointList::iterator prev2;
+			if( it2 == poly.points.begin() )
+			{
+				prev2 = poly.points.end();
+					prev2--;
+			}
+			else
+			{
+				prev2 = it2;
+				prev2--;
+			}
+
+			if( prev2 == prev || prev2 == it || it2 == prev || it2 == it )
+			{
+				continue;
+			}
+
+			LineIntersection li = LimitSegmentIntersect( (*prev).pos, (*it).pos, (*prev2).pos, (*it2).pos );
+
+			if( !li.parallel )
+			{
+				return false;
+			}
 		}
 	}
 
