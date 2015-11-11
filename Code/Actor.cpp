@@ -26,6 +26,14 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
+		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
+		{
+			cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "time slow shader not loaded" );
+		}*/
+
+
+
 		
 
 		if( !fairBuffer.loadFromFile( "fair.ogg" ) )
@@ -9756,8 +9764,12 @@ void Actor::Draw( sf::RenderTarget *target )
 			bubbleSprite.setScale( 2, 2 );
 			bubbleSprite.setOrigin( bubbleSprite.getLocalBounds().width / 2, bubbleSprite.getLocalBounds().height / 2 );
 			bubbleSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
-			bubbleSprite.setColor( Color( 255, 255, 255, 100 ) );
-			target->draw( bubbleSprite );
+			bubbleSprite.setColor( Color( 255, 255, 255, 200 ) );
+			//CircleShape cs;
+		//	cs.setFillColor( sf::Color::Transparent );
+			//cs.setRadius( 
+
+			//target->draw( bubbleSprite );// &timeSlowShader );
 		}
 	}
 }

@@ -2279,18 +2279,82 @@ int GameSession::Run( string fileN )
 			player.Draw( preScreenTex );
 		}
 	//	preScreenTex->setSmooth( true );
+		
+		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
+		
+		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
+		cloneShader.setParameter( "newscreen", player.percentCloneChanged );
+		cloneShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
+		cloneShader.setParameter( "zoom", cam.GetZoom() );
+
+		cloneShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
+			view.getCenter().y + view.getSize().y / 2 );
+
+		cloneShader.setParameter( "bubbleRadius", player.bubbleRadius );
+		
+		float windowx = window->getSize().x;
+		float windowy = window->getSize().y;
+
+		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[0].x, player.bubblePos[0].y ) );
+		Vector2f pos0( vi0.x / windowx, -1 + vi0.y / windowy ); 
+
+		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[1].x, player.bubblePos[1].y ) );
+		Vector2f pos1( vi1.x / windowx, -1 + vi1.y / windowy ); 
+
+		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[2].x, player.bubblePos[2].y ) );
+		Vector2f pos2( vi2.x / windowx, -1 + vi2.y / windowy ); 
+
+		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[3].x, player.bubblePos[3].y ) );
+		Vector2f pos3( vi3.x / windowx, -1 + vi3.y / windowy ); 
+
+		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[4].x, player.bubblePos[4].y ) );
+		Vector2f pos4( vi4.x / windowx, -1 + vi4.y / windowy ); 
+
+		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[5].x, player.bubblePos[5].y ) );
+		Vector2f pos5( vi5.x / windowx, -1 + vi5.y / windowy ); 
+
+		//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
+		//cout << "b0frame: " << player.bubbleFramesToLive[0] << endl;
+		//cout << "b1frame: " << player.bubbleFramesToLive[1] << endl;
+		//cout << "b2frame: " << player.bubbleFramesToLive[2] << endl;
+
+		cloneShader.setParameter( "bubble0", pos0 );
+		cloneShader.setParameter( "b0Frame", player.bubbleFramesToLive[0] );
+		cloneShader.setParameter( "bubble1", pos1 );
+		cloneShader.setParameter( "b1Frame", player.bubbleFramesToLive[1] );
+		cloneShader.setParameter( "bubble2", pos2 );
+		cloneShader.setParameter( "b2Frame", player.bubbleFramesToLive[2] );
+		cloneShader.setParameter( "bubble3", pos3 );
+		cloneShader.setParameter( "b3Frame", player.bubbleFramesToLive[3] );
+		cloneShader.setParameter( "bubble4", pos4 );
+		cloneShader.setParameter( "b4Frame", player.bubbleFramesToLive[4] );
+		cloneShader.setParameter( "bubble5", pos5 );
+		cloneShader.setParameter( "b5Frame", player.bubbleFramesToLive[5] );
+		
 		preScreenTex->display();
 		const Texture &preTex = preScreenTex->getTexture();
 		
 		Sprite preTexSprite( preTex );
 		preTexSprite.setPosition( -960 / 2, -540 / 2 );
 		preTexSprite.setScale( .5, .5 );
-		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
+
 		
-		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
-		cloneShader.setParameter( "newscreen", player.percentCloneChanged );
-		cloneShader.setParameter( "resolution", window->getSize().x, window->getSize().y);
-		cloneShader.setParameter( "zoom", cam.GetZoom() );
+		preScreenTex->setView( v );
+		preScreenTex->draw( preTexSprite, &cloneShader );
+
+		preScreenTex->setView( view );
+
+		if( player.action != Actor::DEATH )
+			player.Draw( preScreenTex );
+
+		preScreenTex->display();
+
+		preTexSprite.setTexture( preScreenTex->getTexture() );
+
+		preTexSprite.setPosition( -960 / 2, -540 / 2 );
+		preTexSprite.setScale( .5, .5 );
+
+		
 
 		window->draw( preTexSprite );//, &cloneShader );
 		}

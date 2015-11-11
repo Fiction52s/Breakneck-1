@@ -82,6 +82,7 @@ struct Actor : QuadTreeCollider,
 	double steepClimbSpeedThresh;
 	Contact minContact;
 	sf::Shader sh;
+	sf::Shader timeSlowShader;
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
