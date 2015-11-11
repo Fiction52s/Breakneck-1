@@ -4,29 +4,178 @@
 uniform sampler2D u_texture;   //diffuse map
 
 uniform float zoom;
-uniform vec2 resolution;
+uniform vec2 Resolution;
 uniform vec2 pos;
 uniform vec2 lightpos;
 uniform float newscreen;
-//layout(origin_upper_left) in vec4 gl_FragCoord;
+uniform vec2 topLeft;
+
+uniform vec2 bubble0;
+uniform float b0Frame;
+uniform vec2 bubble1;
+uniform float b1Frame;
+uniform vec2 bubble2;
+uniform float b2Frame;
+uniform vec2 bubble3;
+uniform float b3Frame;
+uniform vec2 bubble4;
+uniform float b4Frame;
+uniform vec2 bubble5;
+uniform float b5Frame;
+
+uniform float bubbleRadius;
+
+const int numBubbles = 6;
+struct Bubble
+{
+	bool on;
+	vec2 pos;
+	float frame;
+};
+Bubble bubbles[numBubbles];
+
+
+void InitBubbles()
+{
+	if( b0Frame == 0 )
+	{
+		bubbles[0].on = false;
+	}
+	else
+	{
+		bubbles[0].on = true;
+		bubbles[0].pos = bubble0;
+		bubbles[0].frame = b0Frame;
+	}
+	
+	if( b1Frame == 0 )
+	{
+		bubbles[1].on = false;
+	}
+	else
+	{
+		bubbles[1].on = true;
+		bubbles[1].pos = bubble1;
+		bubbles[1].frame = b1Frame;
+	}
+	
+	if( b2Frame == 0 )
+	{
+		bubbles[2].on = false;
+	}
+	else
+	{
+		bubbles[2].on = true;
+		bubbles[2].pos = bubble2;
+		bubbles[2].frame = b2Frame;
+	}
+	
+	if( b3Frame == 0 )
+	{
+		bubbles[3].on = false;
+	}
+	else
+	{
+		bubbles[3].on = true;
+		bubbles[3].pos = bubble3;
+		bubbles[3].frame = b3Frame;
+	}
+	
+	if( b4Frame == 0 )
+	{
+		bubbles[4].on = false;
+	}
+	else
+	{
+		bubbles[4].on = true;
+		bubbles[4].pos = bubble4;
+		bubbles[4].frame = b4Frame;
+	}
+	
+	if( b5Frame == 0 )
+	{
+		bubbles[5].on = false;
+	}
+	else
+	{
+		bubbles[5].on = true;
+		bubbles[5].pos = bubble5;
+		bubbles[5].frame = b5Frame;
+	}
+}
 
 void main()
 {
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1 - fc.y;
-	fc = fc * vec2( 960, 540 ) / resolution;
+	fc = fc * vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 	
-	if( pixelPos.y < 540 * newscreen )
+	vec2 fragC = gl_FragCoord.xy;
+	fragC.y = 1 - fragC.y;
+	
+	//vec2 pos = pixelPos + topLeft;
+	vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
+	
+	InitBubbles();
+	
+	vec4 col = DiffuseColor;
+	
+	
+	
+	for( int i = 0; i < numBubbles; i++ )
+	{
+		if( bubbles[i].on )
+		{
+			float D = length( bubbles[i].pos * Resolution.xy - vec2( fragC.x, fragC.y) ) * zoom;
+			vec2 dir = bubbles[i].pos * Resolution.xy - vec2( fragC.x, fragC.y) * zoom;
+			dir = normalize( dir );
+			float trueRad = bubbleRadius * 2;
+			float expandFrames = 20;
+			float trueFrame = ( 240 - bubbles[i].frame );
+			if( bubbles[i].frame > 240 - expandFrames )
+			{
+				trueRad = (trueRad + 100 ) * ( 240 - bubbles[i].frame ) / expandFrames;
+			}
+			
+			if( D <= trueRad )
+			{
+				if( bubbles[i].frame > 240 - expandFrames )
+				{
+					
+					col = texture2D( u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
+				}
+				
+				if( trueFrame < expandFrames )
+				{
+					col.r = 1 - col.r;
+					col.g = 1 - col.g;
+					col.b = 1 - col.b;
+				}
+				else
+				{
+					float gray = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+					col.r = gray;
+					col.g = gray;
+					col.b = gray;
+				}
+				break;
+			}
+		}
+	}
+	
+	/*if( pixelPos.y < 540 * newscreen )
 	{
 		vec4 DiffuseColor = texture2D( u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y - (1 - newscreen) ) );
-		gl_FragColor = gl_Color * DiffuseColor * vec4( 1, 0, 0, .5 );
-		//gl_FragColor = gl_Color * DiffuseColor;
+		gl_FragColor = col * DiffuseColor * vec4( 1, 0, 0, .5 );
 	}
 	else
 	{
 		vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y + newscreen) );
-		gl_FragColor = gl_Color * DiffuseColor;
-	}
+		gl_FragColor = col * DiffuseColor;
+	}*/
+	
+	
+	gl_FragColor = col;
 }
 

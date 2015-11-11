@@ -80,7 +80,7 @@ uniform bool hasPowerGrindBall;
 uniform bool hasPowerTimeSlow;
 uniform bool hasPowerLeftWire;
 uniform bool hasPowerRightWire;
-uniform bool hasPowerClones;
+//uniform bool hasPowerClones;
 
 const int numLights = 9;
 struct LightSource
@@ -126,15 +126,15 @@ vec4 BallColors( vec4 DiffuseColor )
 	}
 	
 	//magenta
-	if( !hasPowerRightWire && DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xff / 255.0 ) )
+	if( (!hasPowerRightWire && !hasPowerLeftWire) && DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xff / 255.0 ) )
 	{
 		DiffuseColor.rgb = vec3( 0, 0, 0 );
 	}
 	return DiffuseColor;
 }
 
-void main() {
-
+void InitLights()
+{
 	lights[0].on = On0;
 	lights[0].pos = LightPos0;
 	lights[0].color = LightColor0;//vec4( 1, 0, 0, 1 );//LightColor;
@@ -188,6 +188,11 @@ void main() {
 	lights[8].color = LightColor8;
 	lights[8].brightness = Brightness8;
 	lights[8].radius = Radius8;
+}
+
+void main() {
+
+	InitLights();
 	
     //RGBA of our diffuse color
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );//vec4( 1, 1, 1, 1 );  ////
@@ -229,14 +234,6 @@ void main() {
 		vec2 fragC = gl_FragCoord.xy;
 		//fragC.y = 1 - fragC.y;
 		
-		//The delta position of light
-		//vec3 LightDir = vec3(lights[i].pos.xy - (fragC.xy / Resolution.xy), lights[i].pos.z);
-		
-		//Correct for aspect ratio
-		//LightDir *= Resolution.x / Resolution.y * zoom;
-		//LightDir.x *= Resolution.x / Resolution.y;
-
-		
 		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), lights[i].pos.z);
 		LightDir *= zoom;
 		
@@ -245,16 +242,13 @@ void main() {
 
 		//normalize our vectors
 		vec3 N = normalize(NormalMap * 2.0 - 1.0);
-		//N.r = -N.r;
-		//N.r = 1-N.r;
 		vec3 L = normalize(LightDir);
 		
 		
 		
 		
 		float radius = lights[i].radius * 2;
-		float brightness = lights[i].brightness;
-		brightness = 1;
+		float brightness = lights[i].brightness / 4;
 		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * brightness;		
 		
 		//Pre-multiply light color with intensity

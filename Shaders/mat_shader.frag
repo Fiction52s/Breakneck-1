@@ -203,9 +203,7 @@ void main()
 		vec3 NormalMap = texture2D(u_normals, pos).rgb;
 		vec2 fragC = gl_FragCoord.xy;
 		fragC.y = 1 - fragC.y;
-		//vec3 LightDir = vec3(lights[i].pos.xy - (vec2( fragC.x, fragC.y) / Resolution.xy), lights[i].pos.z);
-		//LightDir *= Resolution.x / Resolution.y * zoom;
-		//LightDir.x *= Resolution.x / Resolution.y;
+		
 		float z = lights[i].pos.z;
 		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), z );
 		LightDir *= zoom;
