@@ -4376,12 +4376,13 @@ V2d Actor::UpdateReversePhysics()
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .01;
-						if( movementVec.x >= -.01 )
+						if( movementVec.x >= -.1 )
 						{
-							movementVec.x = -.01;
+							movementVec.x = -.1;
 						}
-						leftGroundExtra.y = .01;
-						leftGroundExtra.x = .01;
+						//leftGroundExtra.y = .01;
+						//leftGroundExtra.x = .01;
+
 
 						leftGround = true;
 						action = JUMP;
@@ -4390,6 +4391,8 @@ V2d Actor::UpdateReversePhysics()
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
+
+						leftGroundExtra = movementVec;
 						return leftGroundExtra;
 					}
 					else
@@ -4463,9 +4466,9 @@ V2d Actor::UpdateReversePhysics()
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 					movementVec.y += .01;
-					if( movementVec.x <= .01 )
+					if( movementVec.x <= .1 )
 					{
-						movementVec.x = .01;
+						movementVec.x = .1;
 					}
 
 					cout << "vel: " << velocity.x << ", " << velocity.y << endl;
@@ -4479,8 +4482,9 @@ V2d Actor::UpdateReversePhysics()
 					ground = NULL;
 					movingGround = NULL;
 
-					leftGroundExtra.y = .01;
-					leftGroundExtra.x = .01;
+					//leftGroundExtra.y = .01;
+					//leftGroundExtra.x = .1;
+					leftGroundExtra = movementVec;
 					return leftGroundExtra;
 
 					//break;
@@ -4516,9 +4520,9 @@ V2d Actor::UpdateReversePhysics()
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .01;
-						if( movementVec.x <= .01 )
+						if( movementVec.x <= .1 )
 						{
-							movementVec.x = .01;
+							movementVec.x = .1;
 						}
 
 						leftGround = true;
@@ -4529,8 +4533,9 @@ V2d Actor::UpdateReversePhysics()
 						ground = NULL;
 						movingGround = NULL;
 						
-						leftGroundExtra.y = .01;
-						leftGroundExtra.x = -.01;
+						leftGroundExtra = movementVec;
+						//leftGroundExtra.y = .01;
+						//leftGroundExtra.x = -.01;
 						return leftGroundExtra;
 
 					}
@@ -4547,9 +4552,9 @@ V2d Actor::UpdateReversePhysics()
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 									movementVec.y += .01;
-									if( movementVec.x <= .01 )
+									if( movementVec.x <= .1 )
 									{
-										movementVec.x = .01;
+										movementVec.x = .1;
 									}
 
 									leftGround = true;
@@ -4560,8 +4565,9 @@ V2d Actor::UpdateReversePhysics()
 									ground = NULL;
 									movingGround = NULL;
 
-									leftGroundExtra.y = .01;
-									leftGroundExtra.x = -.01;
+									leftGroundExtra = movementVec;
+									//leftGroundExtra.y = .01;
+									//leftGroundExtra.x = -.01;
 									return leftGroundExtra;
 
 								}
@@ -4605,9 +4611,9 @@ V2d Actor::UpdateReversePhysics()
 
 					cout  <<  "reverse right" << endl;
 					movementVec.y += .01;
-					if( movementVec.x <= .01 )
+					if( movementVec.x <= .1 )
 					{
-						movementVec.x = .01;
+						movementVec.x = .1;
 					}
 
 					action = JUMP;
@@ -4619,8 +4625,10 @@ V2d Actor::UpdateReversePhysics()
 					ground = NULL;
 					movingGround = NULL;
 
-					leftGroundExtra.y = .01;
-					leftGroundExtra.x = -.01;
+					//leftGroundExtra.y = .01;
+					//leftGroundExtra.x = -.01;
+					leftGroundExtra = movementVec;
+
 					return leftGroundExtra;
 					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}

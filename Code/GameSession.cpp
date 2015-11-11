@@ -2181,7 +2181,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
