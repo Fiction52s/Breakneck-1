@@ -1321,9 +1321,8 @@ bool EditSession::OpenFile( string fileName )
 				string typeName;
 				is >> typeName;
 
-				ActorParams *a = new ActorParams;
-				gr->actors.push_back( a );
-				a->group = gr;
+				ActorParams *a; //= new ActorParams;
+				
 
 
 				ActorType *at;
@@ -1374,7 +1373,8 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a->SetAsGoal( at, terrain, edgeIndex, edgeQuantity );
+					a = new GoalParams( this, terrain, edgeIndex, edgeQuantity );
+					//a->SetAsGoal( terrain, edgeIndex, edgeQuantity );
 				}
 				else if( typeName == "patroller" )
 				{
@@ -1422,7 +1422,8 @@ bool EditSession::OpenFile( string fileName )
 					float speed;
 					is >> speed;
 
-					a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a = new PatrollerParams( this, pos, globalPath, speed, loop );
 				}
 				else if( typeName == "crawler" )
 				{
@@ -1478,7 +1479,8 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
+					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
+					a = new CrawlerParams( this, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
 				}
 				else if( typeName == "basicturret" )
 				{
@@ -1521,7 +1523,8 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
+					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
+					a = new BasicTurretParams( this, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 				}
 				else if( typeName == "foottrap" )
 				{
@@ -1558,9 +1561,16 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
+					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
+					a = new FootTrapParams( this, terrain, edgeIndex, edgeQuantity );
 				}
-
+				else
+				{
+					assert( false && "unkown enemy type!" );
+				}
+				
+				gr->actors.push_back( a );
+				a->group = gr;
 			}
 		}
 
@@ -2426,6 +2436,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( popupPanel != NULL )
 							{
+								popupPanel->SendKey( ev.key.code, ev.key.shift );
 								break;
 							}
 
@@ -2890,6 +2901,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( popupPanel != NULL )
 							{
+								popupPanel->SendKey( ev.key.code, ev.key.shift );
 								break;
 							}
 
@@ -3350,10 +3362,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
-											ActorParams *actor = new ActorParams;
-											actor->group = groups["--"];
-											actor->SetAsGoal( goalType, enemyEdgePolygon, enemyEdgeIndex, 
+											ActorParams *actor = new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity );
+											actor->group = groups["--"];
+											//actor->SetAsGoal( goalType, enemyEdgePolygon, enemyEdgeIndex, 
+											//	enemyEdgeQuantity );
 											groups["--"]->actors.push_back( actor );
 										}
 									}
@@ -3383,6 +3396,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( popupPanel != NULL )
 							{
+								popupPanel->SendKey( ev.key.code, ev.key.shift );
 								break;
 							}
 
@@ -3518,7 +3532,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPanel = lightPanel;
 									mode = menuDownStored;
 								}
+								else if( menuDownStored == EDIT && selectedActor != NULL )
+								{
+									SetEnemyEditPanel();
+								}
 								else
+
 								{
 									mode = EDIT;
 								}
@@ -3655,6 +3674,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( popupPanel != NULL )
 							{
+								popupPanel->SendKey( ev.key.code, ev.key.shift );
 								break;
 							}
 
@@ -3760,6 +3780,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( popupPanel != NULL )
 							{
+								popupPanel->SendKey( ev.key.code, ev.key.shift );
 								break;
 							}
 							if( showPanel != NULL )
@@ -5871,11 +5892,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			//showPanel = trackingEnemy->panel;
 			
-			ActorParams *actor = new ActorParams;
-
+			ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
 			
 			//patrolPath.clear();
-			actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
+			//actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
 			groups["--"]->actors.push_back( actor);
 			actor->group = groups["--"];
 			trackingEnemy = NULL;
@@ -5914,9 +5934,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			ActorParams *actor = new ActorParams;							
-			actor->SetAsCrawler( types["crawler"], enemyEdgePolygon, enemyEdgeIndex, 
+			//ActorParams *actor = new ActorParams;							
+			ActorParams *actor = new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 				enemyEdgeQuantity, clockwise, speed );
+			//actor->SetAsCrawler( types["crawler"], enemyEdgePolygon, enemyEdgeIndex, 
+			//	enemyEdgeQuantity, clockwise, speed );
 			actor->group = groups["--"];
 			groups["--"]->actors.push_back( actor);
 			trackingEnemy = NULL;
@@ -5959,10 +5981,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			ActorParams *actor = new ActorParams;
-			actor->group = groups["--"];
-			actor->SetAsBasicTurret( types["basicturret"], enemyEdgePolygon, enemyEdgeIndex, 
+			//ActorParams *actor = new ActorParams;
+			ActorParams *actor = new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 				enemyEdgeQuantity, bulletSpeed, framesWait );
+			actor->group = groups["--"];
+			//actor->SetAsBasicTurret( types["basicturret"], 
 			groups["--"]->actors.push_back( actor);
 
 			showPanel = NULL;
@@ -5974,10 +5997,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" )
 		{
-			ActorParams *actor = new ActorParams;
-			actor->group = groups["--"];
-			actor->SetAsFootTrap( types["foottrap"], enemyEdgePolygon, enemyEdgeIndex, 
+			//= new ActorParams;
+			ActorParams *actor = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 				enemyEdgeQuantity );
+			actor->group = groups["--"];
+
+			//actor->SetAsFootTrap( types["foottrap"], 
 			groups["--"]->actors.push_back( actor );
 
 			showPanel = NULL;
@@ -6005,11 +6030,17 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			if( minEdgeSize < 8 )
 			{
-				assert( false && "made min edge length too small!" );
+				minimumEdgeLength = 8;
+				popupPanel = messagePopup;
+				p->textBoxes["minedgesize"]->text.setString( "8" );
+				messagePopup->labels["message"]->setString( "minimum edge length too low.\n Set to minimum of 8" );
+				//assert( false && "made min edge length too small!" );
+			}
+			else
+			{
+				minimumEdgeLength = minEdgeSize;
 			}
 
-
-			minimumEdgeLength = minEdgeSize;
 			showPanel = NULL;
 		}
 	}
@@ -6861,6 +6892,42 @@ bool EditSession::IsRemovePointsOkay()
 	return true;
 }
 
+
+void EditSession::SetEnemyEditPanel()
+{
+	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
+	//need to be able to apply paths simultaneously to multiples also
+	ActorType *type = selectedActor->type;
+	string name = type->name;
+
+	if( name == "patroller" )
+	{
+		/*Panel *p = new Panel( "patroller_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );*/
+
+		Panel *p = type->panel;
+		//p->textBoxes["group"] = selectedActor->group;
+		//p->checkBoxes["loop"] = selectedActor->params[
+	}
+	else if( name == "crawler" )
+	{
+	}
+	else if( name == "basicturret" )
+	{
+	}
+	else if( name == "foottrap" )
+	{
+	}
+	
+
+}
+
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 {
 	int adjX, adjY;			
@@ -6893,6 +6960,7 @@ ActorType::ActorType( const std::string & n, Panel *p )
 	//image.setTexture( imageTexture );
 }
 
+/*
 //returns an error msg or "success" on success
 std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos, 
 	list<Vector2i> &globalPath, float speed, bool loop )
@@ -7176,7 +7244,7 @@ std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
 	params.clear();
 
 	return "success";
-}
+}*/
 
 ActorParams::ActorParams()
 	:ground( NULL ), groundQuantity( 420.69 )
@@ -7208,10 +7276,11 @@ void ActorParams::WriteFile( ofstream &of )
 		of << "+air" << " " << position.x << " " << position.y << endl;
 	}
 
-	for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
+	/*for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
 	{
 		of << (*it) << endl;
-	}
+	}*/
+	WriteParamFile( of );
 }
 
 void ActorGroup::Draw( sf::RenderTarget *target )
@@ -7240,5 +7309,173 @@ void ActorGroup::WriteFile( std::ofstream &of )
 
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s )
+{
+}
+
+void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quantity )
+{
+	ground = poly;
+	poly->enemies.push_back( this );
+	edgeIndex = eIndex;
+	groundQuantity = quantity;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+	
+	int testIndex = 0;
+
+	Vector2i point;
+
+	PointList::iterator prev = ground->points.end();
+	prev--;
+	PointList::iterator curr = ground->points.begin();
+
+	for( ; curr != ground->points.end(); ++curr )
+	{
+		if( edgeIndex == testIndex )
+		{
+			V2d pr( (*prev).pos.x, (*prev).pos.y );
+			V2d cu( (*curr).pos.x, (*curr).pos.y );
+
+			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(groundQuantity / length( cu - pr ) ) );
+
+			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+
+			image.setPosition( newPoint.x, newPoint.y );
+			image.setRotation( angle );
+
+			break;
+		}
+		prev = curr;
+		++testIndex;
+	}
+	//adjust for ordery
+	if( edgeIndex == 0 )
+		edgeIndex = ground->points.size() - 1;
+	else
+		edgeIndex--;
+}
+
+PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+{
+	type = edit->types["patroller"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	position = pos;	
+
+	//list<Vector2i> localPath;
+	if( globalPath.size() > 1 )
+	{
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for( ; it != globalPath.end(); ++it )
+		{
+			Vector2i temp( (*it).x - pos.x, (*it).y - pos.y );
+			localPath.push_back( temp );
+		}
+	}
+
+	loop = p_loop;
+	speed = p_speed;
+	//ss << localPath.size();
+	//params.push_back( ss.str() );
+	//ss.str( "" );
+
+	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		ss << (*it).x  << " " << (*it).y;
+		params.push_back( ss.str() );
+		ss.str( "" );
+	}
+
+	if( loop )
+		params.push_back( "+loop" );
+	else
+		params.push_back( "-loop" );
+	
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );*/
+}
+
+void PatrollerParams::WriteParamFile( ofstream &of )
+{
+	of << localPath.size() << endl;
+
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		of << (*it).x  << " " << (*it).y << endl;
+	}
+
+	if( loop )
+	{
+		of << "+loop" << endl;
+	}
+	else
+	{
+		of << "-loop" << endl;
+	}
+
+	of.precision( 5 );
+	of << fixed << speed << endl;
+}
+
+CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+{
+	clockwise = p_clockwise;
+	speed = p_speed;
+
+	type = edit->types["crawler"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+}
+
+void CrawlerParams::WriteParamFile( ofstream &of )
+{
+	if( clockwise )
+		of << "+clockwise" << endl;
+	else
+		of << "-clockwise" << endl;
+	
+	of.precision( 5 );
+	of << fixed << speed << endl;
+}
+
+BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+{
+	bulletSpeed = p_bulletSpeed;
+	framesWait = p_framesWait;
+
+	type = edit->types["basicturret"];
+	
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+}
+
+void BasicTurretParams::WriteParamFile( ofstream &of )
+{
+	of << bulletSpeed << endl;
+	of << framesWait << endl;
+}
+
+FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+{
+	type = edit->types["foottrap"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+}
+
+void FootTrapParams::WriteParamFile( ofstream &of )
+{
+}
+
+GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+{
+	type = edit->types["goal"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+}
+
+void GoalParams::WriteParamFile( ofstream &of )
 {
 }

@@ -65,6 +65,7 @@ struct TerrainPolygon
 		sf::Vector2i *deltas );
 	bool IsMovePolygonOkay( EditSession *edit, 
 		sf::Vector2i delta );
+	
 	sf::Rect<int> TempAABB();
 	sf::Vertex *lines;
 	sf::VertexArray *va;
@@ -110,22 +111,24 @@ struct ActorGroup;
 struct ActorParams
 {
 	ActorParams();
+	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
 	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
-	std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
-		std::list<sf::Vector2i> &globalPath, float speed, bool loop );
-	std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
-	std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
-	std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity ); 
+	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
+	//	std::list<sf::Vector2i> &globalPath, float speed, bool loop );
+	//std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
+	//	int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
+	//std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
+	//	int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
+	//std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
+	//	int edgeIndex, double edgeQuantity ); 
 
-	std::string SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity ); 
+	//std::string SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
+	//	int edgeIndex, double edgeQuantity ); 
+	void AnchorToGround( TerrainPolygon *poly, 
+		int eIndex, double quantity );
 	//sf::Sprite icon;
 	sf::Sprite image;
-	std::list<std::string> params;
 	ActorGroup *group;
 	ActorType *type;
 	sf::Vector2i position;
@@ -134,6 +137,69 @@ struct ActorParams
 	int edgeIndex;
 	void Draw( sf::RenderTarget *target );
 };
+
+
+struct PatrollerParams : public ActorParams
+{
+	PatrollerParams( EditSession *edit,
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath, 
+		float speed,
+		bool loop );
+	void WriteParamFile( std::ofstream &of );
+	std::list<sf::Vector2i> localPath;
+	bool loop;
+	float speed;
+};
+
+struct CrawlerParams : public ActorParams
+{ 
+	CrawlerParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		bool clockwise, float speed );
+	void WriteParamFile( std::ofstream &of );
+	bool clockwise;
+	float speed;
+};
+
+struct BasicTurretParams : public ActorParams
+{
+	//std::string SetAsBasicTurret( ActorType *t, ); 
+	BasicTurretParams( EditSession *edit,  
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity, 
+		double bulletSpeed, 
+		int framesWait );
+	void WriteParamFile( std::ofstream &of );
+	float bulletSpeed;
+	int framesWait;
+};
+
+struct FootTrapParams : public ActorParams
+{
+	FootTrapParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	void WriteParamFile( std::ofstream &of );
+};
+
+struct GoalParams : public ActorParams
+{
+	GoalParams ( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	void WriteParamFile( std::ofstream &of );
+};
+
+//no params for goal and foottrap atm
+
+
+
+
 
 struct ActorGroup
 {
@@ -165,7 +231,7 @@ struct EditSession : GUIHandler
 	bool IsPolygonValid( TerrainPolygon &poly,
 		 TerrainPolygon *ignore );
 	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
-
+	void SetEnemyEditPanel();
 
 	const static double PRIMARY_LIMIT;
 

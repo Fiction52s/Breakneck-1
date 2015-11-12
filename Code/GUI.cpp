@@ -253,7 +253,10 @@ void Panel::Draw( RenderTarget *target )
 
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 {	
-	if( k == Keyboard::Return )
+	bool popup = false;
+	if( buttons.size() == 1 && textBoxes.empty() )
+		popup = true;
+	if( k == Keyboard::Return || popup )
 	{
 		
 		if( buttons.count( "ok" ) > 0 )
