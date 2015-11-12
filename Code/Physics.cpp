@@ -1505,9 +1505,19 @@ bool isQuadTouchingQuad( V2d &A0, V2d &B0, V2d &C0, V2d &D0, V2d &A1, V2d &B1, V
 	double max0AD = max( dot( A0 - A1, normalizeAD1 ), max( dot( B0 - A1, normalizeAD1 ), max( dot( C0 - A1, normalizeAD1 ),
 		dot( D0 - A1, normalizeAD1 ) ) ) );
 
-	if( min1AB <= AB && max1AB >= 0 && min1AD <= AD && max1AD >= 0 
-		&& min0AB <= AB1 && max0AB >= 0 && min0AB <= AB1 && max0AD >= 0 )
+	bool a = min1AB <= AB;
+	bool b = max1AB >= 0;
+	bool c = min1AD <= AD;
+	bool d = max1AD >= 0;
+	bool e = min0AB <= AB1;
+	bool f = max0AB >= 0;
+	bool g = min0AD <= AD1;
+	bool h = max0AD >= 0;
+
+	if( a && b && c && d && e && f && g && h )
 	{
+		//cout << "min1AB: " << min1AB << ", max1AB: " << max1AB << ", min1AD: " << min1AD << ", max1AD: " << max1AD << ", min0AB: " << min0AB <<
+		//	", max0AB: " << max0AB << ", "
 		return true;
 	}
 	else

@@ -1246,7 +1246,7 @@ int GameSession::Run( string fileN )
 	//healthSprite.setPosition( 10, 100 );
 	
 	//window->setPosition( pos );
-	window->setVerticalSyncEnabled( true );
+	//window->setVerticalSyncEnabled( true );
 	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
 
@@ -1257,7 +1257,7 @@ int GameSession::Run( string fileN )
 	
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
-	window->setVerticalSyncEnabled( true );
+	//window->setVerticalSyncEnabled( true );
 
 	
 	sf::RectangleShape bDraw;
@@ -2085,6 +2085,9 @@ int GameSession::Run( string fileN )
 		int timesDraw = 0;
 		TestVA * listVAIter = listVA;
 		//listVAIter->next = NULL;
+
+		UpdateTerrainShader( screenRect );
+
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
@@ -2115,7 +2118,8 @@ int GameSession::Run( string fileN )
 				polyAndScreen.width = right - left;
 				polyAndScreen.height = bottom - top;
 				
-				UpdateTerrainShader( polyAndScreen );//listVAIter->aabb );
+				//UpdateTerrainShader( polyAndScreen );//listVAIter->aabb );
+				
 				/*sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
 				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
 				rs.setOutlineColor( Color::Red );
@@ -2181,7 +2185,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );

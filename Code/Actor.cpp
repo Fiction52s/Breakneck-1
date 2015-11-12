@@ -9579,6 +9579,31 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 		if( g->IsTouchingBox( r ) )
 		{
+		//	sf::VertexArray va( sf::Quads, 4 );
+			/*va[0].position = Vector2f( g->A.x, g->A.y );
+			va[1].position = Vector2f( g->B.x, g->B.y );
+			va[2].position = Vector2f( g->C.x, g->C.y );
+			va[3].position = Vector2f( g->D.x, g->D.y );*/
+			
+
+			/*va[0].color = Color::Red;
+			va[1].color = Color::Red;
+			va[2].color = Color::Red;
+			va[3].color = Color::Red;
+
+			owner->preScreenTex->draw( va );
+
+			CircleShape cs;
+			cs.setFillColor( Color::Green );
+			cs.setRadius( 10000 );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( 0, 0 );//g->A.x, g->A.y );
+			cout << "pos: " << g->A.x << ", " << g->A.y << ", playerpos: " << position.x << ", " << position.y << endl;
+			
+			owner->preScreenTex->draw( cs );*/
+
+			//owner->preScreenTex->draw( va );
+
 			++testGrassCount;
 		}
 	}
