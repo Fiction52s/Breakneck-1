@@ -5961,19 +5961,20 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			//ActorParams *actor = new ActorParams;							
-			ActorParams *actor = new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+			if( mode == EDIT && selectedActor != NULL )
+			{
+				CrawlerParams *crawler = (CrawlerParams*)selectedActor;
+				crawler->speed = speed;
+				crawler->clockwise = clockwise;
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				CrawlerParams *crawler = new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 				enemyEdgeQuantity, clockwise, speed );
-			//actor->SetAsCrawler( types["crawler"], enemyEdgePolygon, enemyEdgeIndex, 
-			//	enemyEdgeQuantity, clockwise, speed );
-			actor->group = groups["--"];
-			groups["--"]->actors.push_back( actor);
-			trackingEnemy = NULL;
-
-			//cout << "clockwise: " << (int)clockwise << ", speed: " << speed << endl;
-			//do checks when switching focus from a text box or pressing ok. 
-			//for now just use pressing ok
-			//do checks? assign variables to the enemy
+				groups["--"]->actors.push_back( crawler);
+				crawler->group = groups["--"];
+				trackingEnemy = NULL;
+			}
 
 			showPanel = NULL;
 		}
@@ -6008,32 +6009,43 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			//ActorParams *actor = new ActorParams;
-			ActorParams *actor = new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+			if( mode == EDIT && selectedActor != NULL )
+			{
+				BasicTurretParams *basicTurret = (BasicTurretParams*)selectedActor;
+				basicTurret->bulletSpeed = bulletSpeed;
+				basicTurret->framesWait = framesWait;
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				BasicTurretParams *basicTurret = new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 				enemyEdgeQuantity, bulletSpeed, framesWait );
-			actor->group = groups["--"];
-			//actor->SetAsBasicTurret( types["basicturret"], 
-			groups["--"]->actors.push_back( actor);
+				groups["--"]->actors.push_back( basicTurret );
+				basicTurret->group = groups["--"];
+				trackingEnemy = NULL;
+			}
 
 			showPanel = NULL;
-			trackingEnemy = NULL;
-
 		}	
 	}
 	else if( p->name == "foottrap_options" )
 	{
 		if( b->name == "ok" )
 		{
-			//= new ActorParams;
-			ActorParams *actor = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+			if( mode == EDIT && selectedActor != NULL )
+			{
+				//FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
+				
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				FootTrapParams *footTrap = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 				enemyEdgeQuantity );
-			actor->group = groups["--"];
-
-			//actor->SetAsFootTrap( types["foottrap"], 
-			groups["--"]->actors.push_back( actor );
+				groups["--"]->actors.push_back( footTrap );
+				footTrap->group = groups["--"];
+				trackingEnemy = NULL;
+			}
 
 			showPanel = NULL;
-			trackingEnemy = NULL;
 		}
 	}
 	else if( p->name == "map_options" )
