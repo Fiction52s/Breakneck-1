@@ -3535,6 +3535,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								else if( menuDownStored == EDIT && selectedActor != NULL )
 								{
 									SetEnemyEditPanel();
+									mode = menuDownStored;
 								}
 								else
 
@@ -3615,8 +3616,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == Keyboard::Space )
 							{
-								showPanel = trackingEnemy->panel;
-								mode = CREATE_ENEMY;
+								if( selectedActor != NULL )
+								{
+									showPanel = selectedActor->type->panel;
+									mode = EDIT;
+								}
+								else
+								{
+									showPanel = trackingEnemy->panel;
+									mode = CREATE_ENEMY;
+								}
+								
 								/*showPanel = trackingEnemy->panel;
 								trackingEnemy = NULL;
 								ActorParams *actor = new ActorParams;
@@ -5879,7 +5889,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "ok" )
 		{
 			bool loop = p->checkBoxes["loop"]->checked;
-			int speed = 1; 
+			float speed = 1; 
 
 			try
 			{
@@ -5891,14 +5901,29 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 
 			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if( mode == EDIT && selectedActor != NULL )
+			{
+				PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+				patroller->speed = speed;
+				patroller->loop = loop;
+				patroller->SetPath( patrolPath );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				PatrollerParams *patroller = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
+				groups["--"]->actors.push_back( patroller);
+				patroller->group = groups["--"];
+				trackingEnemy = NULL;
+			}
 			
-			ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
+			
+
+			//ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
 			
 			//patrolPath.clear();
 			//actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
-			groups["--"]->actors.push_back( actor);
-			actor->group = groups["--"];
-			trackingEnemy = NULL;
+			
 			//mode = CREATE_ENEMY;
 			//patroller path should get set only from hitting the button within it to start the path check
 
@@ -5906,6 +5931,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		}
 		else if( b->name == "createpath" )
 		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
 			showPanel = NULL;
 			mode = CREATE_PATROL_PATH;
 			Vector2i front = patrolPath.front();
@@ -6892,7 +6919,6 @@ bool EditSession::IsRemovePointsOkay()
 	return true;
 }
 
-
 void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
@@ -6902,6 +6928,8 @@ void EditSession::SetEnemyEditPanel()
 
 	if( name == "patroller" )
 	{
+		PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+		
 		/*Panel *p = new Panel( "patroller_options", 200, 400, this );
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
@@ -6910,22 +6938,24 @@ void EditSession::SetEnemyEditPanel()
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );*/
-
 		Panel *p = type->panel;
-		//p->textBoxes["group"] = selectedActor->group;
-		//p->checkBoxes["loop"] = selectedActor->params[
+		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( patroller->speed ) );
+		p->checkBoxes["loop"]->checked = patroller->loop;
+		patrolPath = patroller->GetGlobalPath();
+		showPanel = p;
 	}
 	else if( name == "crawler" )
 	{
+		CrawlerParams *crawler = (CrawlerParams*)selectedActor;
 	}
 	else if( name == "basicturret" )
 	{
+		BasicTurretParams *basicTurret = (BasicTurretParams*)selectedActor;
 	}
 	else if( name == "foottrap" )
 	{
+		FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
 	}
-	
-
 }
 
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
@@ -6960,291 +6990,6 @@ ActorType::ActorType( const std::string & n, Panel *p )
 	//image.setTexture( imageTexture );
 }
 
-/*
-//returns an error msg or "success" on success
-std::string ActorParams::SetAsPatroller( ActorType *t, sf::Vector2i pos, 
-	list<Vector2i> &globalPath, float speed, bool loop )
-{
-	type = t;
-
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
-	image.setPosition( pos.x, pos.y );
-
-	params.clear();
-
-	stringstream ss;
-
-	position = pos;	
-
-	list<Vector2i> localPath;
-	if( globalPath.size() > 1 )
-	{
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for( ; it != globalPath.end(); ++it )
-		{
-			Vector2i temp( (*it).x - pos.x, (*it).y - pos.y );
-			localPath.push_back( temp );
-		}
-	}
-
-	ss << localPath.size();
-	params.push_back( ss.str() );
-	ss.str( "" );
-
-	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		ss << (*it).x  << " " << (*it).y;
-		params.push_back( ss.str() );
-		ss.str( "" );
-	}
-
-	if( loop )
-		params.push_back( "+loop" );
-	else
-		params.push_back( "-loop" );
-	
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );
-
-	
-	return "success";
-}
-
-std::string ActorParams::SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity, bool clockwise, float speed )
-{
-	type = t;
-	ground = edgePolygon;
-	edgePolygon->enemies.push_back( this );
-	edgeIndex = eIndex;
-	groundQuantity = edgeQuantity;
-
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
-	
-	//	image.setPosition( pos.x, pos.y );
-	int testIndex = 0;
-
-	Vector2i point;
-
-	PointList::iterator prev = ground->points.end();
-	prev--;
-	PointList::iterator curr = ground->points.begin();
-
-	for( ; curr != ground->points.end(); ++curr )
-	{
-		if( edgeIndex == testIndex )
-		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
-
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(groundQuantity / length( cu - pr ) ) );
-
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
-
-			image.setPosition( newPoint.x, newPoint.y );
-			image.setRotation( angle );
-
-			break;
-		}
-		prev = curr;
-		++testIndex;
-	}
-	//adjust for ordery
-	if( edgeIndex == 0 )
-		edgeIndex = ground->points.size() - 1;
-	else
-		edgeIndex--;
-
-
-	params.clear();
-
-	stringstream ss; 
-
-	if( clockwise )
-		params.push_back( "+clockwise" );
-	else
-		params.push_back( "-clockwise" );
-
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );	
-
-	return "success";
-}
-
-std::string ActorParams::SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity, double bulletSpeed, int framesWait )
-{
-	type = t;
-	ground = edgePolygon;
-	edgePolygon->enemies.push_back( this );
-	edgeIndex = eIndex;
-	groundQuantity = edgeQuantity;
-
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
-	
-	//	image.setPosition( pos.x, pos.y );
-	int testIndex = 0;
-
-	Vector2i point;
-
-	PointList::iterator prev = ground->points.end();
-	prev--;
-	PointList::iterator curr = ground->points.begin();
-
-	for( ; curr != ground->points.end(); ++curr )
-	{
-		if( edgeIndex == testIndex )
-		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
-
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(groundQuantity / length( cu - pr ) ) );
-
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
-
-			image.setPosition( newPoint.x, newPoint.y );
-			image.setRotation( angle );
-
-			break;
-		}
-		prev = curr;
-		++testIndex;
-	}
-	//adjust for ordery
-	if( edgeIndex == 0 )
-		edgeIndex = ground->points.size() - 1;
-	else
-		edgeIndex--;
-
-	params.clear();
-
-	stringstream ss; 
-
-	ss << bulletSpeed;
-
-	params.push_back( ss.str() ); 
-
-	ss.str("");
-
-	ss << framesWait;
-
-	params.push_back( ss.str() );
-
-
-	return "success";
-}
-
-std::string ActorParams::SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity )
-{
-	type = t;
-	ground = edgePolygon;
-	edgePolygon->enemies.push_back( this );
-	edgeIndex = eIndex;
-	groundQuantity = edgeQuantity;
-
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
-	
-	//	image.setPosition( pos.x, pos.y );
-	int testIndex = 0;
-
-	Vector2i point;
-
-	PointList::iterator prev = ground->points.end();
-	prev--;
-	PointList::iterator curr = ground->points.begin();
-
-	for( ; curr != ground->points.end(); ++curr )
-	{
-		if( edgeIndex == testIndex )
-		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
-
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(groundQuantity / length( cu - pr ) ) );
-
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
-
-			image.setPosition( newPoint.x, newPoint.y );
-			image.setRotation( angle );
-
-			break;
-		}
-		prev = curr;
-		++testIndex;
-	}
-	//adjust for ordery
-	if( edgeIndex == 0 )
-		edgeIndex = ground->points.size() - 1;
-	else
-		edgeIndex--;
-
-	params.clear();
-
-	return "success";
-}
-
-std::string ActorParams::SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
-		int eIndex, double edgeQuantity )
-{
-	type = t;
-	ground = edgePolygon;
-	edgePolygon->enemies.push_back( this );
-	edgeIndex = eIndex;
-	groundQuantity = edgeQuantity;
-
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
-	
-	//	image.setPosition( pos.x, pos.y );
-	int testIndex = 0;
-
-	Vector2i point;
-
-	PointList::iterator prev = ground->points.end();
-	prev--;
-	PointList::iterator curr = ground->points.begin();
-
-	for( ; curr != ground->points.end(); ++curr )
-	{
-		if( edgeIndex == testIndex )
-		{
-			V2d pr( (*prev).pos.x, (*prev).pos.y );
-			V2d cu( (*curr).pos.x, (*curr).pos.y );
-
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(groundQuantity / length( cu - pr ) ) );
-
-			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
-
-			image.setPosition( newPoint.x, newPoint.y );
-			image.setRotation( angle );
-
-			break;
-		}
-		prev = curr;
-		++testIndex;
-	}
-	//adjust for ordery
-	if( edgeIndex == 0 )
-		edgeIndex = ground->points.size() - 1;
-	else
-		edgeIndex--;
-
-	params.clear();
-
-	return "success";
-}*/
 
 ActorParams::ActorParams()
 	:ground( NULL ), groundQuantity( 420.69 )
@@ -7253,7 +6998,6 @@ ActorParams::ActorParams()
 
 void ActorParams::Draw( sf::RenderTarget *target )
 {
-	
 	target->draw( image );
 }
 
@@ -7358,26 +7102,16 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 }
 
 PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
-{
+{	
+	position = pos;	
 	type = edit->types["patroller"];
 
 	image.setTexture( type->imageTexture );
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
-	position = pos;	
-
 	//list<Vector2i> localPath;
-	if( globalPath.size() > 1 )
-	{
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for( ; it != globalPath.end(); ++it )
-		{
-			Vector2i temp( (*it).x - pos.x, (*it).y - pos.y );
-			localPath.push_back( temp );
-		}
-	}
+	SetPath( globalPath );
 
 	loop = p_loop;
 	speed = p_speed;
@@ -7400,6 +7134,37 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 	ss.precision( 5 );
 	ss << fixed << speed;
 	params.push_back( ss.str() );*/
+}
+
+void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	localPath.clear();
+	if( globalPath.size() > 1 )
+	{
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for( ; it != globalPath.end(); ++it )
+		{
+			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
+			localPath.push_back( temp );
+		}
+	}
+}
+
+void PatrollerParams::Draw( sf::RenderTarget *target )
+{
+	target->draw( image );
+}
+
+std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back( position );
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		globalPath.push_back( position + (*it) );
+	}
+	return globalPath;
 }
 
 void PatrollerParams::WriteParamFile( ofstream &of )

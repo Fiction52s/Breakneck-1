@@ -135,7 +135,7 @@ struct ActorParams
 	double groundQuantity;
 	TerrainPolygon *ground;
 	int edgeIndex;
-	void Draw( sf::RenderTarget *target );
+	virtual void Draw( sf::RenderTarget *target );
 };
 
 
@@ -147,6 +147,10 @@ struct PatrollerParams : public ActorParams
 		float speed,
 		bool loop );
 	void WriteParamFile( std::ofstream &of );
+	void SetPath( 
+		std::list<sf::Vector2i> &globalPath );
+	std::list<sf::Vector2i> GetGlobalPath();
+	void Draw( sf::RenderTarget *target );
 	std::list<sf::Vector2i> localPath;
 	bool loop;
 	float speed;
@@ -159,6 +163,7 @@ struct CrawlerParams : public ActorParams
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
 	void WriteParamFile( std::ofstream &of );
+	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
 	float speed;
 };
@@ -173,6 +178,7 @@ struct BasicTurretParams : public ActorParams
 		double bulletSpeed, 
 		int framesWait );
 	void WriteParamFile( std::ofstream &of );
+	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;
 };
@@ -184,6 +190,7 @@ struct FootTrapParams : public ActorParams
 		int edgeIndex, 
 		double edgeQuantity );
 	void WriteParamFile( std::ofstream &of );
+	//void Draw( sf::RenderTarget *target );
 };
 
 struct GoalParams : public ActorParams
@@ -193,6 +200,7 @@ struct GoalParams : public ActorParams
 		int edgeIndex, 
 		double edgeQuantity );
 	void WriteParamFile( std::ofstream &of );
+	//void Draw( sf::RenderTarget *target );
 };
 
 //no params for goal and foottrap atm
