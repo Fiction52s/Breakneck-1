@@ -13,7 +13,8 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
-
+		inBubble = false;
+		oldInBubble = false;
 		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL, 200, 15 ); 
 
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
@@ -688,7 +689,8 @@ void Actor::ActionEnded()
 			break;
 		case AIRDASH:
 			{
-				if( slowMultiple > 1 || rightWire->state == Wire::PULLING )
+				cout << "inBubble: " << inBubble << endl;
+				if( inBubble || rightWire->state == Wire::PULLING )
 				{
 					frame = actionLength[AIRDASH] - 1;
 				}
@@ -2184,7 +2186,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
-			if( !currInput.B)
+			if( !currInput.B )//|| ( oldInBubble && !inBubble ) )
 			{
 				action = JUMP;
 				frame = 1;
@@ -3780,10 +3782,12 @@ void Actor::UpdatePrePhysics()
 	}
 
 	bool bubbleCreated = false;
+	oldInBubble = inBubble;
+	inBubble = false;
 
-	if( hasPowerTimeSlow && currInput.leftShoulder|| cloneBubbleCreated )
+	if( hasPowerTimeSlow )
 	{
-		bool inBubble = false;
+		//calculate this all the time so I can give myself infinite airdash
 		for( int i = 0; i < maxBubbles; ++i )
 		{
 			if( bubbleFramesToLive[i] > 0 )
@@ -3792,11 +3796,15 @@ void Actor::UpdatePrePhysics()
 				{
 					inBubble = true;
 					break;
-					//slowCounter = 1;
-					//slowMultiple = timeSlowStrength;
 				}
 			}
 		}
+	}
+
+	if( hasPowerTimeSlow && currInput.leftShoulder|| cloneBubbleCreated )
+	{
+		
+		
 
 		
 
@@ -8892,6 +8900,8 @@ void Actor::UpdatePostPhysics()
 	//cout << "pos1: " << pos1.x << ", " << pos1.y << endl;
 	//cout << "pos2: " << pos2.x << ", " << pos2.y << endl;
 
+	//lighting stuff
+	{
 	bool on[9];
 	for( int i = 0; i < 9; ++i )
 	{
@@ -9042,6 +9052,8 @@ void Actor::UpdatePostPhysics()
 	sh.setParameter( "On6", on[6] );
 	sh.setParameter( "On7", on[7] );
 	sh.setParameter( "On8", on[8] );
+	
+	}
 
 	if( desperationMode )
 	{
@@ -9053,6 +9065,8 @@ void Actor::UpdatePostPhysics()
 		
 		sh.setParameter( "despFrame", -1 );
 	}
+
+
 
 
 	if( record > 0 )

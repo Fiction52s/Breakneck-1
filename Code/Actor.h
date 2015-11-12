@@ -285,6 +285,9 @@ struct Actor : QuadTreeCollider,
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
 
+	bool inBubble;
+	bool oldInBubble;
+
 	sf::Vector2<double> storedBounceVel;
 	sf::Vector2<double> bounceNorm;
 	sf::Vector2<double> oldBounceNorm;
