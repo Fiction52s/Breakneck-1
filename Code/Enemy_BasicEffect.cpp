@@ -120,9 +120,9 @@ bool BasicEffect::IHitPlayer()
 	return false;
 }
 
-bool BasicEffect::PlayerHitMe()
+ pair<bool, bool> BasicEffect::PlayerHitMe()
 {
-	return false;
+	return pair<bool, bool>(false,false);
 }
 
 bool BasicEffect::PlayerSlowingMe()

@@ -89,9 +89,13 @@ void Goal::UpdatePostPhysics()
 	{
 		UpdateHitboxes();
 
-		if( PlayerHitMe() )
+		pair<bool, bool> result = PlayerHitMe();
+		if( result.first )
 		{
-			owner->Pause( 6 );
+			if( !result.second )
+			{
+				owner->Pause( 6 );
+			}
 			dead = true;
 			receivedHit = NULL;
 
@@ -160,7 +164,7 @@ bool Goal::IHitPlayer()
 	return false;
 }
 
-bool Goal::PlayerHitMe()
+pair<bool, bool> Goal::PlayerHitMe()
 {
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
@@ -180,7 +184,7 @@ bool Goal::PlayerHitMe()
 		if( hit )
 		{
 			receivedHit = player.currHitboxInfo;
-			return true;
+			return pair<bool, bool>(true,false);
 		}
 		
 	}
@@ -206,13 +210,13 @@ bool Goal::PlayerHitMe()
 				if( hit )
 				{
 					receivedHit = player.currHitboxInfo;
-					return true;
+					return pair<bool, bool>(true,true);
 				}
 			}
 			//player.ghosts[i]->curhi
 		}
 	}
-	return false;
+	return pair<bool, bool>(false,false);
 }
 
 bool Goal::PlayerSlowingMe()

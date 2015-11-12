@@ -109,10 +109,15 @@ void FootTrap::UpdatePostPhysics()
 	{
 		UpdateHitboxes();
 
-		if( PlayerHitMe() )
+		pair<bool, bool> result = PlayerHitMe();
+		if( result.first )
 		{
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			owner->Pause( 6 );
+			if( !result.second )
+			{
+				owner->Pause( 6 );
+			}
+			
 			dead = true;
 			receivedHit = NULL;
 		}
@@ -191,7 +196,7 @@ bool FootTrap::IHitPlayer()
 	return false;
 }
 
-bool FootTrap::PlayerHitMe()
+pair<bool, bool> FootTrap::PlayerHitMe()
 {
 	Actor &player = owner->player;
 
@@ -212,7 +217,7 @@ bool FootTrap::PlayerHitMe()
 		if( hit )
 		{
 			receivedHit = player.currHitboxInfo;
-			return true;
+			return pair<bool, bool>(true,false);
 		}
 		
 	}
@@ -238,13 +243,13 @@ bool FootTrap::PlayerHitMe()
 				if( hit )
 				{
 					receivedHit = player.currHitboxInfo;
-					return true;
+					return pair<bool, bool>(true,true);
 				}
 			}
 			//player.ghosts[i]->curhi
 		}
 	}
-	return false;
+	return pair<bool, bool>(false,false);
 }
 
 bool FootTrap::PlayerSlowingMe()

@@ -1558,39 +1558,20 @@ int GameSession::Run( string fileN )
 				quit = true;
 				break;
 			}
-		//	if( !s && currInput.start )//sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )
-	//	{
-			
-		//	cout << "exit" << endl;
-		//	quit = true;
-		//	returnVal = 1;
-		//	break;
-			
-			//t = true;
-		//}
-		//	else if( s && !currInput.start )//!sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )
-		//{
-		//	s = false;
+	
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+			{
+				quit = true;
+				returnVal = 1;
+				break;
+			}
 
-//		}
-
-
-		if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
-		{
-			quit = true;
-			returnVal = 1;
-			break;
-		}
-
-		if( goalDestroyed )
-		{
-			quit = true;
-			returnVal = 1;
-			break;
-		}
-
-		
-
+			if( goalDestroyed )
+			{
+				quit = true;
+				returnVal = 1;
+				break;
+			}
 
 			prevInput = currInput;
 			player.prevInput = currInput;
@@ -1687,12 +1668,7 @@ int GameSession::Run( string fileN )
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
-
-
-
 			player.currInput = currInput;
-
-
 
 			if( pauseFrames > 0 )
 			{

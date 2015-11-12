@@ -208,11 +208,14 @@ void BasicTurret::UpdatePostPhysics()
 			currBullet = currBullet->next;
 		}
 
-
-		if( PlayerHitMe() )
+		pair<bool, bool> result = PlayerHitMe();
+		if( result.first )
 		{
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			owner->Pause( 10 );
+			if( !result.second )
+			{
+				owner->Pause( 10 );
+			}
 		//	dead = true;
 		//	receivedHit = NULL;
 		}
@@ -280,9 +283,9 @@ bool BasicTurret::IHitPlayer()
 	return false;
 }
 
-bool BasicTurret::PlayerHitMe()
+ pair<bool, bool> BasicTurret::PlayerHitMe()
 {
-	return false;
+	return pair<bool, bool>(false,false);
 }
 
 bool BasicTurret::PlayerSlowingMe()

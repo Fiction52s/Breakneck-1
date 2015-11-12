@@ -3291,12 +3291,12 @@ void Actor::UpdatePrePhysics()
 		{
 			if( framesInAir > 10 ) //to prevent you from clinging to walls awkwardly
 			{
-				cout << "movement" << endl;
+			//	cout << "movement" << endl;
 				AirMovement();
 			}
 			else
 			{
-				cout << "not movement" << endl;
+			//	cout << "not movement" << endl;
 			}
 			break;
 		}

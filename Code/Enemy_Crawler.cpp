@@ -1997,9 +1997,9 @@ bool Crawler::IHitPlayer()
 	return false;
 }
 
-bool Crawler::PlayerHitMe()
+ pair<bool, bool> Crawler::PlayerHitMe()
 {
-	return false;
+	return pair<bool, bool>(false,false);
 }
 
 void Crawler::UpdateSprite()

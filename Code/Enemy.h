@@ -28,7 +28,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual void Draw( sf::RenderTarget *target) = 0;
 	virtual bool IHitPlayer() = 0;
 	virtual void UpdateHitboxes() = 0;
-	virtual bool PlayerHitMe() = 0;
+	virtual std::pair<bool,bool> PlayerHitMe() = 0;
 	virtual bool PlayerSlowingMe() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target) = 0;
 	void SaveState();
@@ -72,7 +72,7 @@ struct BasicEffect : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
-	bool PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -110,7 +110,7 @@ struct Patroller : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
 	bool IHitPlayer();
-	bool PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe();
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -184,7 +184,7 @@ struct Crawler : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
-	bool PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -250,7 +250,7 @@ struct BasicTurret : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
-	bool PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -331,7 +331,7 @@ struct FootTrap : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
-	bool PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -395,7 +395,7 @@ struct Goal : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
-	bool PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
