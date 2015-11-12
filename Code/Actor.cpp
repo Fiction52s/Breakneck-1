@@ -1228,6 +1228,7 @@ void Actor::UpdatePrePhysics()
 				action = BOUNCEAIR;
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
+				//bounceEdge = NULL;
 				frame = 0;
 				break;
 			}
@@ -2348,10 +2349,16 @@ void Actor::UpdatePrePhysics()
 			V2d bn = bounceNorm;//bounceEdge->Normal();
 			if( frame == actionLength[BOUNCEGROUND] - 1 )
 			{
+				framesInAir = 0;
 				action = BOUNCEAIR;
 				oldBounceEdge = bounceEdge;
 				oldBounceNorm  = bounceNorm;
 				frame = 0;
+				if( boostBounce )
+				{
+					storedBounceVel *= 1.2;
+					boostBounce = false;
+				}
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 				V2d bounceNorm;
@@ -3282,10 +3289,24 @@ void Actor::UpdatePrePhysics()
 		}
 	case BOUNCEAIR:
 		{
+			if( framesInAir > 10 ) //to prevent you from clinging to walls awkwardly
+			{
+				cout << "movement" << endl;
+				AirMovement();
+			}
+			else
+			{
+				cout << "not movement" << endl;
+			}
 			break;
 		}
 	case BOUNCEGROUND:
 		{
+			if( !boostBounce && currInput.A && !prevInput.A )
+			{
+				boostBounce = true;
+			}
+
 			velocity.x = 0;
 			velocity.y = 0;
 			groundSpeed = 0;
@@ -4198,6 +4219,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	if( testGrassCount > 0 )
 	{
 		action = DEATH;
+		rightWire->Reset();
+		leftWire->Reset();
 		slowCounter = 1;
 		frame = 0;
 		owner->deathWipe = true;
@@ -6254,6 +6277,8 @@ void Actor::UpdatePhysics()
 			}
 
 			bool bounceOkay = true;
+			
+			int trueFramesInAir = framesInAir;
 			if( tempCollision )
 			{
 				framesInAir = maxJumpHeightFrame + 1;
@@ -6261,6 +6286,15 @@ void Actor::UpdatePhysics()
 
 			if( tempCollision )
 			{
+				if( bounceEdge != NULL )
+				{
+					bounceOkay = false;
+					bounceEdge = NULL;
+					oldBounceEdge = NULL;
+					action = JUMP;
+					frame = 1;
+					break;
+				}
 				V2d en = minContact.normal;
 				
 				if( en.y <= 0 && en.y > -steepThresh )
@@ -6295,10 +6329,10 @@ void Actor::UpdatePhysics()
 
 			
 
-			if( action == BOUNCEAIR && tempCollision && bounceOkay )
+			if( ( action == BOUNCEAIR || action == BOUNCEGROUND ) && tempCollision && bounceOkay )
 			{
 				//this condition might only work when not reversed? does it matter?
-				if( bounceEdge == NULL || ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
+				if( bounceEdge == NULL )//|| ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
 				{
 					bounceEdge = minContact.edge;
 					bounceMovingTerrain = minContact.movingPlat;
@@ -6326,7 +6360,34 @@ void Actor::UpdatePhysics()
 					offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
 					movement = 0;
+					break;
 					//cout << "bouncing: " << bounceQuant << endl;
+				}
+				else
+				{
+					//if( oldBounceEdge != NULL && minContact.edge != oldBounceEdge && action == BOUNCEAIR && framesInAir < 11 )
+					//if( bounceEdge != NULL && minContact.edge != bounceEdge )
+					{
+						if( action == BOUNCEAIR )
+						{
+							cout << "bounce air" << endl;
+						}
+						else
+						{
+							cout << "bounce ground" << endl;
+						}
+						cout << "stopped it here! framesinair: " << trueFramesInAir << endl;
+						bounceEdge = NULL;
+						oldBounceEdge = NULL;
+						action = JUMP;
+						frame = 1;
+						break;
+					}
+					
+					/*oldBounceEdge = bounceEdge;
+					bounceEdge = minContact.edge;
+					bounceNorm = minContact.normal;
+					bounceMovingTerrain = minContact.movingPlat;*/
 				}
 				
 				
@@ -6580,6 +6641,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
+
 				//cout << "setting newvel" << endl;
 				velocity = newVel;
 			}
@@ -6798,18 +6860,20 @@ void Actor::UpdatePostPhysics()
 	}
 	else if( bounceEdge != NULL )
 	{
-		cout << "bouncing here seriously" << endl;
+		V2d bn = bounceNorm;
+		//cout << "bouncing here seriously" << endl;
 		if( action == BOUNCEAIR )
 		{
+			
+
 			storedBounceVel = velocity;
 
 
-			
-
 			action = BOUNCEGROUND;
+			boostBounce = false;
 			frame = 0;
 
-			V2d bn = bounceNorm;//bounceEdge->Normal();
+			//bounceEdge->Normal();
 
 			
 
@@ -6918,7 +6982,19 @@ void Actor::UpdatePostPhysics()
 
 
 		}
+		else if( action == BOUNCEGROUND )
+		{
+			/*if( oldBounceEdge != NULL && bounceEdge != oldBounceEdge )
+			{
+				action = JUMP;
+				frame = 1;
+				bounceEdge = NULL;
+				cout << "action: " << action << endl;
+			}*/
 
+
+			
+		}
 
 	}
 	else if( ground != NULL )

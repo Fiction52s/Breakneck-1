@@ -4995,10 +4995,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		w->setView( view );
 
-		sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
+		/*sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
 		parTest.setFillColor( Color::Red );
 		parTest.setPosition( 0, 0 );
-		w->draw( parTest );
+		w->draw( parTest );*/
 
 		w->draw(border, 8, sf::Lines);
 
@@ -6229,7 +6229,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
-		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
+		//p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
 		
 		return p;
 	}
