@@ -19,6 +19,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	pathLength = pathParam.size() + 1;
+	cout << "pathLength: " << pathLength << endl;
 	path = new Vector2i[pathLength];
 	path[0] = pos;
 
@@ -30,9 +31,13 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 		//path.push_back( (*it) );
 
 	}
+
 	loop = loopP;
 	
 	speed = pspeed;
+
+
+
 	speed = 2;
 	frame = 0;
 
@@ -130,28 +135,28 @@ void Patroller::UpdatePhysics()
 	if( dead )
 		return;
 
-
-	movement /= (double)slowMultiple;
-
-	while( movement != 0 )
+	if( pathLength > 1 )
 	{
-		V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-		V2d diff = targetPoint - position;
-		double len = length( diff );
-		if( len >= abs( movement ) )
+		movement /= (double)slowMultiple;
+
+		while( movement != 0 )
 		{
-			position += normalize( diff ) * movement;
-			movement = 0;
-		}
-		else
-		{
-			position += diff;
-			movement -= length( diff );
-			AdvanceTargetNode();	
+			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
+			V2d diff = targetPoint - position;
+			double len = length( diff );
+			if( len >= abs( movement ) )
+			{
+				position += normalize( diff ) * movement;
+				movement = 0;
+			}
+			else
+			{
+				position += diff;
+				movement -= length( diff );
+				AdvanceTargetNode();	
+			}
 		}
 	}
-
-
 }
 
 void Patroller::AdvanceTargetNode()

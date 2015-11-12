@@ -5872,6 +5872,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//showPanel = trackingEnemy->panel;
 			
 			ActorParams *actor = new ActorParams;
+
+			
 			//patrolPath.clear();
 			actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
 			groups["--"]->actors.push_back( actor);
