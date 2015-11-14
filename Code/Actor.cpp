@@ -4424,15 +4424,15 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
-						
+						cout << "A" << endl;
 						reversed = false;
 						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .01;
-						if( movementVec.x >= -.1 )
+						if( movementVec.x <= .1 )
 						{
-							movementVec.x = -.1;
+							movementVec.x = .1;
 						}
 						//leftGroundExtra.y = .01;
 						//leftGroundExtra.x = .01;
@@ -4457,14 +4457,15 @@ V2d Actor::UpdateReversePhysics()
 							{
 								if( gNormal.x >= 0 )
 								{
+									cout << "A2" << endl;
 									reversed = false;
 									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 									movementVec.y += .01;
-									if( movementVec.x >= -.01 )
+									if( movementVec.x <= .1 )
 									{
-										movementVec.x = -.01;
+										movementVec.x = .1;
 									}	
 									leftGroundExtra.y = .01;
 									leftGroundExtra.x = .01;
@@ -4513,7 +4514,7 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else
 				{
-					cout  <<  "reverse left" << endl;
+					//cout  <<  "reverse left" << endl;
 					//cout << "d" << endl;
 					reversed = false;
 					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
@@ -4525,8 +4526,8 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = .1;
 					}
 
-					cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-					cout << "move: " << movementVec.x << ", " << movementVec.y << endl;
+					//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+					//cout << "move: " << movementVec.x << ", " << movementVec.y << endl;
 
 					leftGround = true;
 					action = JUMP;
@@ -4575,9 +4576,9 @@ V2d Actor::UpdateReversePhysics()
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .01;
-						if( movementVec.x <= .1 )
+						if( movementVec.x >= -.1 )
 						{
-							movementVec.x = .1;
+							movementVec.x = -.1;
 						}
 
 						leftGround = true;
@@ -4602,14 +4603,15 @@ V2d Actor::UpdateReversePhysics()
 							{
 								if( gNormal.x <= 0 )
 								{
+									//cout << "B2, extra: " << extra << endl;
 									reversed = false;
 									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 									movementVec.y += .01;
-									if( movementVec.x <= .1 )
+									if( movementVec.x >= -.1 )
 									{
-										movementVec.x = .1;
+										movementVec.x = -.1;
 									}
 
 									leftGround = true;
@@ -4664,11 +4666,11 @@ V2d Actor::UpdateReversePhysics()
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-					cout  <<  "reverse right" << endl;
+					//cout  <<  "reverse right" << endl;
 					movementVec.y += .01;
-					if( movementVec.x <= .1 )
+					if( movementVec.x >= -.1 )
 					{
-						movementVec.x = .1;
+						movementVec.x = -.1;
 					}
 
 					action = JUMP;
