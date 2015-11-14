@@ -220,7 +220,8 @@ struct ActorGroup
 
 struct EditSession : GUIHandler
 {
-	EditSession( sf::RenderWindow *w);
+	EditSession( sf::RenderWindow *w,
+		sf::RenderTexture *preScreenTex );
 	~EditSession();
 		
 	int Run(std::string fileName, 
@@ -242,7 +243,7 @@ struct EditSession : GUIHandler
 	void SetEnemyEditPanel();
 
 	const static double PRIMARY_LIMIT;
-
+	sf::RenderTexture *preScreenTex;
 	int validityRadius;
 	bool showGrass;
 	sf::Texture grassTex;

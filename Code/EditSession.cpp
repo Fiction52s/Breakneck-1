@@ -24,7 +24,7 @@ using namespace sf;
 
 #define cout std::cout
 
- const double EditSession::PRIMARY_LIMIT = .999;
+const double EditSession::PRIMARY_LIMIT = .999;
 
 
 
@@ -816,8 +816,6 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 	return edit->IsPolygonValid( tempPoly, this );
 }
 
-
-
 bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
 {
 	TerrainPolygon tempPoly( grassTex );
@@ -1046,15 +1044,17 @@ sf::Rect<double> StaticLight::GetAABB()
 	return sf::Rect<double>( position.x - radius, position.y - radius, radius * 2, radius * 2 );
 }
 
-EditSession::EditSession( RenderWindow *wi)
+EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), zoomMultiple( 1 )
 {
+	preScreenTex = preTex;
 	showTerrainPath = false;
 	minAngle = .99;
 	showPoints = false;
 	messagePopup = NULL;
 	errorPopup = NULL;
 	popupPanel = NULL;
+	confirm = NULL;
 	//	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
 }
@@ -1075,29 +1075,26 @@ void EditSession::Draw()
 	{
 		if( extendingPolygon == NULL )
 		{
-			(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+			(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
 		}
 		else
 		{
 			if( (*it) == extendingPolygon )
 			{
-				(*it)->Draw( showTerrainPath, zoomMultiple, w, true, extendingPoint );
+				(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, true, extendingPoint );
 			}
 			else
 			{
 				if( extendingPolygon == NULL )
 				{
-					(*it)->Draw( showTerrainPath, zoomMultiple, w, showPoints, extendingPoint );
+					(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
 				}
 				else
 				{
-					(*it)->Draw( showTerrainPath, zoomMultiple, w, false, extendingPoint );
+					(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, false, extendingPoint );
 				}
 			}
 		}
-		
-		
-		
 	}
 
 	int psize = polygonInProgress->points.size();
@@ -1112,7 +1109,7 @@ void EditSession::Draw()
 		for( PointList::iterator it = polygonInProgress->points.begin(); it != polygonInProgress->points.end(); ++it )
 		{
 			cs.setPosition( (*it).pos.x, (*it).pos.y );
-			w->draw( cs );
+			preScreenTex->draw( cs );
 		}		
 	}
 
@@ -1912,20 +1909,21 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	while( firstTime || currPoint != startPoint )
 	{
-		CircleShape cs;
+		/*CircleShape cs;
 		cs.setRadius( 3 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setFillColor( Color::Magenta );
-		cs.setPosition( currPoint.x, currPoint.y );
-		w->clear();
-		this->Draw();
-		w->draw( cs );
+		cs.setPosition( currPoint.x, currPoint.y );*/
+		
+		//preScreenTex->clear();
+		//this->Draw();
+		//preScreenTex->draw( cs );
 
-		cs.setPosition( nextPoint.x, nextPoint.y );
-		cs.setFillColor( Color::Yellow );
-		w->draw( cs );
+		//cs.setPosition( nextPoint.x, nextPoint.y );
+		//cs.setFillColor( Color::Yellow );
+		//preScreenTex->draw( cs );
 
-		w->display();
+		//preScreenTex->display();
 
 		
 		PointList::iterator min;
@@ -2136,6 +2134,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.create( 400, 400 );
 	//rtt.clear();
 
+	View v;
+	v.setCenter( 0, 0 );
+	v.setSize( 1920/ 2, 1080 / 2 );
+	w->setView( v );
+
 	confirm = CreatePopup( "confirmation" );
 	popupPanel = NULL;
 	validityRadius = 4;
@@ -2235,7 +2238,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
 		view.setSize( 1920, 1080 );
 
-	w->setView( view );
+	preScreenTex->setView( view );
 	Texture playerTex;
 	playerTex.loadFromFile( "stand.png" );
 	sf::Sprite playerSprite( playerTex );
@@ -2263,7 +2266,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
 	playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
 
-	w->setVerticalSyncEnabled( false );
+	w->setVerticalSyncEnabled( true );
 
 	OpenFile( fileName );
 
@@ -2285,7 +2288,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	zoomMultiple = 1;
 	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
-	Vector2f tempWorldPos = w->mapPixelToCoords(sf::Mouse::getPosition( *w ));
+	Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(sf::Mouse::getPosition( *w ));
 	Vector2<double> worldPos = Vector2<double>( tempWorldPos.x, tempWorldPos.y );
 	bool panning = false;
 	Vector2<double> panAnchor;
@@ -2378,17 +2381,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	while( !quit )
 	{
-		w->clear();
+		preScreenTex->clear();
 		prevWorldPos = worldPos;
 		pixelPos = sf::Mouse::getPosition( *w );
-		Vector2f tempWorldPos = w->mapPixelToCoords(pixelPos);
+		Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(pixelPos);
 		worldPos.x = tempWorldPos.x;
 		worldPos.y = tempWorldPos.y;
 
-		w->setView( uiView );
-		Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
+		preScreenTex->setView( uiView );
+		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		
-		w->setView( view );
+		preScreenTex->setView( view );
 		
 
 		testPoint.x = worldPos.x;
@@ -3881,12 +3884,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 						Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
 						view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-						w->setView( view );
-						Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
+						preScreenTex->setView( view );
+						Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(pixelPos);
 						Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
 						Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
 						view.setCenter( tempCenter.x, tempCenter.y );
-						w->setView( view );
+						preScreenTex->setView( view );
 						break;
 					}
 				case Event::KeyPressed:
@@ -3941,12 +3944,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
 							view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-							w->setView( view );
-							Vector2f newWorldPosTemp = w->mapPixelToCoords(pixelPos);
+							preScreenTex->setView( view );
+							Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(pixelPos);
 							Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
 							Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
 							view.setCenter( tempCenter.x, tempCenter.y );
-							w->setView( view );
+							preScreenTex->setView( view );
 
 							break;
 						}
@@ -4825,7 +4828,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
 					enemySprite.setRotation( 0 );
-					enemySprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+					enemySprite.setPosition( preScreenTex->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
 				}
 
 				if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
@@ -5011,7 +5014,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	/*	if( mode == PLACE_PLAYER )
 		{
-			playerSprite.setPosition( w->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
+			playerSprite.setPosition( preScreenTex->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
 			//cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
 		}
 		else
@@ -5022,27 +5025,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	/*	if( mode == PLACE_GOAL )
 		{
-			goalSprite.setPosition( w->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
+			goalSprite.setPosition( preScreenTex->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
 		}
 		else
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );*/
 		
 		
 
-		w->setView( view );
+		preScreenTex->setView( view );
 
 		/*sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
 		parTest.setFillColor( Color::Red );
 		parTest.setPosition( 0, 0 );
-		w->draw( parTest );*/
+		preScreenTex->draw( parTest );*/
 
-		w->draw(border, 8, sf::Lines);
+		preScreenTex->draw(border, 8, sf::Lines);
 
 		Draw();
 
 		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 		{
-			(*it).second->Draw( w );
+			(*it).second->Draw( preScreenTex );
 		}
 
 		
@@ -5072,7 +5075,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						};
 
 
-						w->draw( activePreview, 2, sf::Lines );
+						preScreenTex->draw( activePreview, 2, sf::Lines );
 					}
 
 					if( progressSize > 1 )
@@ -5085,7 +5088,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							v[i] = Vertex( Vector2f( (*it).pos.x, (*it).pos.y ) );
 							++i;
 						}
-						w->draw( v );
+						preScreenTex->draw( v );
 					}
 				}
 				break;
@@ -5131,7 +5134,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						rs.setOutlineThickness( 2 );
 						rs.setPosition( left, top );
 
-						w->draw( rs );
+						preScreenTex->draw( rs );
 					}
 				}
 				break;
@@ -5140,7 +5143,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				if( trackingEnemy != NULL )
 				{
-					w->draw( enemySprite );
+					preScreenTex->draw( enemySprite );
 				}
 				break;
 			}
@@ -5148,7 +5151,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				if( trackingEnemy != NULL )
 				{
-					w->draw( enemySprite );
+					preScreenTex->draw( enemySprite );
 				}
 				int pathSize = patrolPath.size();
 				if( pathSize > 0 )
@@ -5167,7 +5170,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
 						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
 					};
-					w->draw( activePreview, 2, sf::Lines );
+					preScreenTex->draw( activePreview, 2, sf::Lines );
 
 					if( pathSize > 1 )
 					{
@@ -5179,7 +5182,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							v[i] = Vertex( Vector2f( (*it).x, (*it).y ) );
 							++i;
 						}
-						w->draw( v );
+						preScreenTex->draw( v );
 					}
 				}
 				
@@ -5194,7 +5197,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					for( list<Vector2i>::iterator it = patrolPath.begin(); it != patrolPath.end(); ++it )
 					{
 						cs.setPosition( (*it).x, (*it).y );
-						w->draw( cs );
+						preScreenTex->draw( cs );
 					}		
 				}
 				break;
@@ -5225,7 +5228,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				rs.setOutlineThickness( 5 );
 				rs.setPosition( bounds.left, bounds.top );
 
-				w->draw( rs );
+				preScreenTex->draw( rs );
 
 				Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
 				if( pathSize > 0 )
@@ -5245,7 +5248,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
 						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
 					};
-					w->draw( activePreview, 2, sf::Lines );
+					preScreenTex->draw( activePreview, 2, sf::Lines );
 
 					if( pathSize > 1 )
 					{
@@ -5258,7 +5261,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							v[i] = Vertex( Vector2f( (*it).x + fullCenter.x, (*it).y + fullCenter.y) );
 							++i;
 						}
-						w->draw( v );
+						preScreenTex->draw( v );
 					}
 				}
 				
@@ -5276,7 +5279,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						//cout << "drawing" << endl;
 						cs.setPosition( (*it).x + fullCenter.x, (*it).y + fullCenter.y );
-						w->draw( cs );
+						preScreenTex->draw( cs );
 					}		
 				}
 
@@ -5285,7 +5288,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 				cs.setFillColor( Color::Magenta );
 				cs.setPosition( fullCenter.x, fullCenter.y );
-				w->draw( cs );*/
+				preScreenTex->draw( cs );*/
 				
 
 			}
@@ -5293,7 +5296,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
 		{
-			(*it)->Draw( w );
+			(*it)->Draw( preScreenTex );
 		}
 
 		//iconSprite.setScale( view.getSize().x / 960.0, view.getSize().y / 540.0 );
@@ -5423,9 +5426,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		playerSprite.setPosition( playerPosition.x, playerPosition.y );
 
-		w->draw( playerSprite );
+		preScreenTex->draw( playerSprite );
 		
-		//w->draw( iconSprite );
+		//preScreenTex->draw( iconSprite );
 
 		if( false )
 		//if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )
@@ -5433,7 +5436,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
-			w->draw( alphaTextSprite );
+			preScreenTex->draw( alphaTextSprite );
 		}
 
 		playerSprite.setPosition( playerPosition.x, playerPosition.y );
@@ -5451,7 +5454,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				rs.setOutlineThickness( 5 );
 				rs.setPosition( bounds.left, bounds.top );
 				//rs.setFillColor( Color::Magenta );
-				w->draw( rs );
+				preScreenTex->draw( rs );
 				//cout << "draw rectangle"  << endl;
 			}
 			else if( selectedPlayer )
@@ -5464,7 +5467,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				rs.setOutlineThickness( 5 );
 				rs.setPosition( bounds.left, bounds.top );				
 
-				w->draw( rs );
+				preScreenTex->draw( rs );
 			}
 			else if( selectedLight != NULL )
 			{
@@ -5477,7 +5480,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				lightAABB.setOutlineThickness( 5 );
 				lightAABB.setPosition( selectedLight->position.x, selectedLight->position.y );				
 
-				w->draw( lightAABB );
+				preScreenTex->draw( lightAABB );
 			}
 		}
 
@@ -5512,7 +5515,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				graphLines[i].position += adjustment;
 			}
 			
-			w->draw( graphLines );
+			preScreenTex->draw( graphLines );
 
 			for( int i = 0; i < numLines * 8; ++i )
 			{
@@ -5536,7 +5539,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				cs.setFillColor( Color::White );
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 				cs.setPosition( lightPos.x, lightPos.y );
-				w->draw( cs );
+				preScreenTex->draw( cs );
 			}
 		}
 
@@ -5544,10 +5547,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		{
 			playerZoomIcon.setPosition( playerPosition.x, playerPosition.y );
 			playerZoomIcon.setScale( zoomMultiple * 2, zoomMultiple * 2 );
-			w->draw( playerZoomIcon );
+			preScreenTex->draw( playerZoomIcon );
 		}
 		
-		w->setView( uiView );
+		preScreenTex->setView( uiView );
 
 
 		switch( mode )
@@ -5558,7 +5561,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case CREATE_ENEMY:
 				{
-					gs.Draw( w );
+					gs.Draw( preScreenTex );
 					//if( showPanel != NULL )
 					//{
 					//	showPanel->Draw( w );
@@ -5567,7 +5570,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case SELECT_MODE:
 				{
-					w->draw( guiMenuSprite );
+					preScreenTex->draw( guiMenuSprite );
 
 
 					Color c;
@@ -5580,7 +5583,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					cs.setFillColor( COLOR_BLUE );
 					cs.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
-					w->draw( cs );
+					preScreenTex->draw( cs );
 
 					sf::Text textblue;
 					textblue.setCharacterSize( 14 );
@@ -5589,12 +5592,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					textblue.setColor( sf::Color::White );
 					textblue.setOrigin( textblue.getLocalBounds().width / 2, textblue.getLocalBounds().height / 2 );
 					textblue.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
-					w->draw( textblue);
+					preScreenTex->draw( textblue);
 
 
 					cs.setFillColor( COLOR_GREEN );
 					cs.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
-					w->draw( cs );
+					preScreenTex->draw( cs );
 
 					sf::Text textgreen;
 					textgreen.setCharacterSize( 14 );
@@ -5603,16 +5606,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					textgreen.setColor( sf::Color::White );
 					textgreen.setOrigin( textgreen.getLocalBounds().width / 2, textgreen.getLocalBounds().height / 2 );
 					textgreen.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
-					w->draw( textgreen );
+					preScreenTex->draw( textgreen );
 
 
 					cs.setFillColor( COLOR_YELLOW );
 					cs.setPosition( (menuDownPos + bottomPos).x, (menuDownPos + bottomPos).y );
-					w->draw( cs );
+					preScreenTex->draw( cs );
 
 					cs.setFillColor( COLOR_ORANGE );
 					cs.setPosition( (menuDownPos + lowerLeftPos).x, (menuDownPos + lowerLeftPos).y );
-					w->draw( cs );
+					preScreenTex->draw( cs );
 
 					sf::Text textorange;
 					textorange.setString( "CREATE\nLIGHTS" );
@@ -5621,11 +5624,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					textorange.setColor( sf::Color::White );
 					textorange.setOrigin( textorange.getLocalBounds().width / 2, textorange.getLocalBounds().height / 2 );
 					textorange.setPosition( (menuDownPos + lowerLeftPos).x, (menuDownPos + lowerLeftPos).y );
-					w->draw( textorange );
+					preScreenTex->draw( textorange );
 
 					cs.setFillColor( COLOR_RED );
 					cs.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
-					w->draw( cs );
+					preScreenTex->draw( cs );
 
 					sf::Text textred;
 					textred.setString( "CREATE\nENEMIES" );
@@ -5634,11 +5637,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					textred.setColor( sf::Color::White );
 					textred.setOrigin( textred.getLocalBounds().width / 2, textred.getLocalBounds().height / 2 );
 					textred.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
-					w->draw( textred );
+					preScreenTex->draw( textred );
 
 					cs.setFillColor( COLOR_MAGENTA );
 					cs.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
-					w->draw( cs );
+					preScreenTex->draw( cs );
 
 					sf::Text textmag;
 					if( menuDownStored == EditSession::EDIT && selectedActor != NULL )
@@ -5664,7 +5667,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					textmag.setColor( sf::Color::White );
 					textmag.setOrigin( textmag.getLocalBounds().width / 2, textmag.getLocalBounds().height / 2 );
 					textmag.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
-					w->draw( textmag );
+					preScreenTex->draw( textmag );
 
 					break;
 				}
@@ -5678,17 +5681,25 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		if( showPanel != NULL )
 		{
 			//cout << "drawing panel" << endl;
-			showPanel->Draw( w );
+			showPanel->Draw( preScreenTex );
 		}
 
 		if( popupPanel != NULL )
 		{
-			popupPanel->Draw( w );
+			popupPanel->Draw( preScreenTex );
 		}
 
-		w->setView( view );
+		preScreenTex->setView( view );
 
 
+		preScreenTex->display();
+		const Texture &preTex = preScreenTex->getTexture();
+		
+		Sprite preTexSprite( preTex );
+		preTexSprite.setPosition( -960 / 2, -540 / 2 );
+		preTexSprite.setScale( .5, .5 );	
+		w->clear();
+		w->draw( preTexSprite  );
 		w->display();
 	}
 	
@@ -5785,7 +5796,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 						cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 						cs.setFillColor( Color::Magenta );
 						cs.setPosition( li.position.x, li.position.y );
-						w->draw( cs );
+						preScreenTex->draw( cs );
 
 						
 						return false;
@@ -6491,7 +6502,7 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 			cs.setFillColor( Color::Red );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( point.x, point.y );
-			w->draw( cs );*/
+			preScreenTex->draw( cs );*/
 			return false;
 		}
 
@@ -6916,9 +6927,9 @@ bool EditSession::ConfirmationPopup()
 {
 	confirmChoice = ConfirmChoices::NONE;
 
-	w->setView( uiView );	
+	preScreenTex->setView( uiView );	
 	Vector2i pixelPos = sf::Mouse::getPosition( *w );
-	Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
+	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 	
 
 	sf::Event ev;
@@ -6966,11 +6977,11 @@ bool EditSession::ConfirmationPopup()
 					break;	
 		}
 		cout << "drawing confirm" << endl;
-		confirm->Draw( w );
-		w->display();
+		//confirm->Draw( w );
+		//preScreenTex->display();
 	}
 
-	w->setView( view );
+	preScreenTex->setView( view );
 
 	if( confirmChoice == ConfirmChoices::CONFIRM )
 	{

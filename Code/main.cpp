@@ -68,7 +68,7 @@ void GameEditLoop( std::string filename)
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
-		EditSession es(window );
+		EditSession es(window, preScreenTexture );
 		result = es.Run( filename, lastViewCenter, lastViewSize );
 		if( result > 0 )
 			break;
@@ -98,7 +98,7 @@ void GameEditLoop2( std::string filename)
 		if( result > 0 )
 			break;
 
-		EditSession es(window );
+		EditSession es(window, preScreenTexture );
 		result = es.Run( filename, lastViewCenter, lastViewSize );
 	}
 }
