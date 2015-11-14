@@ -73,7 +73,11 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2i GetWireOffset();
 	void RunMovement();
 	void AttackMovement();
-	
+	void DodecaLateDraw(sf::RenderTarget *target);
+
+	// 0 is not started, 1 is right, 2 is
+	//left
+	bool airDashStall;
 	Light *testLight;
 
 	//unsaved vars
@@ -87,6 +91,9 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
 	Tileset *normal[Count];
+
+	Tileset *ts_dodecaSmall;
+	Tileset *ts_dodecaBig;
 
 	sf::Sprite gsdodeca;
 	sf::Sprite gstriblue;
@@ -335,6 +342,8 @@ struct Actor : QuadTreeCollider,
 	int hasPowerClones;
 
 
+	int lastWire;
+
 	//unstored while working on
 	bool dead;	
 
@@ -426,8 +435,9 @@ struct Actor : QuadTreeCollider,
 
 
 
-
+		//not added yet to the functions
 		bool boostBounce;
+		int lastWire;
 	};
 	Stored stored;
 

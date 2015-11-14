@@ -13,9 +13,12 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		lastWire = 0;
 		inBubble = false;
 		oldInBubble = false;
-		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL, 200, 15 ); 
+		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
+		//testLight->pos = Vector2i( 0, 0 );
+		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL , 200, 15 ); 
 
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
@@ -33,7 +36,8 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "time slow shader not loaded" );
 		}*/
 
-
+		ts_dodecaSmall = owner->GetTileset( "dodecasmall.png", 180, 180 );
+		ts_dodecaBig = owner->GetTileset( "dodecabig.png", 360, 360 );
 
 		
 
@@ -398,7 +402,7 @@ Actor::Actor( GameSession *gs )
 
 		dashSpeed = 12;
 		offSlopeByWallThresh = dashSpeed;
-		slopeLaunchMinSpeed = dashSpeed;
+		slopeLaunchMinSpeed = dashSpeed * .7;
 		steepClimbSpeedThresh = dashSpeed;
 
 		jumpStrength = 27.5;
@@ -693,6 +697,7 @@ void Actor::ActionEnded()
 				if( inBubble || rightWire->state == Wire::PULLING )
 				{
 					frame = actionLength[AIRDASH] - 1;
+					airDashStall = true;
 				}
 				else
 				{
@@ -1240,6 +1245,7 @@ void Actor::UpdatePrePhysics()
 				if( hasAirDash && !prevInput.B && currInput.B )
 				{
 					action = AIRDASH;
+					airDashStall = false;
 					frame = 0;
 					break;
 				}
@@ -1317,6 +1323,7 @@ void Actor::UpdatePrePhysics()
 				if( hasAirDash && !prevInput.B && currInput.B )
 				{
 					action = AIRDASH;
+					airDashStall = false;
 					frame = 0;
 					break;
 				}
@@ -1507,6 +1514,7 @@ void Actor::UpdatePrePhysics()
 				if( hasAirDash && !prevInput.B && currInput.B )
 				{
 					action = AIRDASH;
+					airDashStall = false;
 					frame = 0;
 					break;
 				}
@@ -1989,6 +1997,7 @@ void Actor::UpdatePrePhysics()
 						hasAirDash = true;
 						hasGravReverse = true;
 						hasDoubleJump = true;
+						lastWire = 0;
 						ground = grindEdge;
 						movingGround = grindMovingTerrain;
 						edgeQuantity = grindQuantity;
@@ -2061,6 +2070,7 @@ void Actor::UpdatePrePhysics()
 								hasAirDash = true;
 								hasGravReverse = true;
 								hasDoubleJump = true;
+								lastWire = 0;
 
 
 								ground = grindEdge;
@@ -3357,6 +3367,8 @@ void Actor::UpdatePrePhysics()
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
+	Wire::WireState oldLeftWireState = leftWire->state;
+	Wire::WireState oldRightWireState = rightWire->state;
 	if( hasPowerLeftWire && action != GRINDBALL )
 	{
 		leftWire->ClearDebug();
@@ -3434,6 +3446,8 @@ void Actor::UpdatePrePhysics()
 	}
 	wPos += gNormal * (double)rightWire->offset.y + other * (double)rightWire->offset.x;*/
 	
+	double accel = .15;
+	double triggerSpeed = 17;
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
 		V2d rwPos = rightWire->storedPlayerPos;
@@ -3531,14 +3545,15 @@ void Actor::UpdatePrePhysics()
 		//	velocity -= V2d( 0, gravity );
 		}
 		
-		double accel = .3;
+		
 		double speed = dot( velocity, tes ); 
+		
 
-		if( speed > 10 )
+		if( speed > triggerSpeed )
 		{
 			speed += accel;
 		}
-		else if( speed < -10 )
+		else if( speed < -triggerSpeed )
 		{
 			speed -= accel;
 		}
@@ -3650,14 +3665,14 @@ void Actor::UpdatePrePhysics()
 		//	velocity -= V2d( 0, gravity );
 		}
 		
-		double accel = .3;
+		//double accel = .3;
 		double speed = dot( velocity, tes ); 
 
-		if( speed > 10 )
+		if( speed > triggerSpeed )
 		{
 			speed += accel;
 		}
-		else if( speed < -10 )
+		else if( speed < -triggerSpeed )
 		{
 			speed -= accel;
 		}
@@ -3792,6 +3807,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( bubbleFramesToLive[i] > 0 )
 			{
+				//if( IsQuadTouchingCircle( hurtB
 				if( length( position - bubblePos[i] ) < bubbleRadius )
 				{
 					inBubble = true;
@@ -3799,6 +3815,12 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 		}
+	}
+
+	if( !inBubble && action == AIRDASH && airDashStall )
+	{
+		action = JUMP;
+		frame = 1;
 	}
 
 	if( hasPowerTimeSlow && currInput.leftShoulder|| cloneBubbleCreated )
@@ -4381,7 +4403,8 @@ V2d Actor::UpdateReversePhysics()
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				V2d nextNorm = e0n;
-				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
+				double yDist = abs( gNormal.x ) * -groundSpeed;
+				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
 				{
 					//cout << "e0n: " << e0n.x << ", " << e0n.y << endl;
 					if( e0n.x > 0 && e0n.y > -steepThresh )
@@ -4525,7 +4548,8 @@ V2d Actor::UpdateReversePhysics()
 			{
 				Edge *next = ground->edge1;
 				V2d nextNorm = e1n;
-				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
+				double yDist = abs( gNormal.x ) * -groundSpeed;
+				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
 				{
 					//cout << "e1n: " << e1n.x << ", " << e1n.y << endl;
 					if( e1n.x < 0 && e1n.y > -steepThresh )
@@ -4934,9 +4958,10 @@ V2d Actor::UpdateReversePhysics()
 					cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					if( groundSpeed > 0 )
 					{
+						double yDist = abs( gNormal.x ) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -4978,7 +5003,8 @@ V2d Actor::UpdateReversePhysics()
 						cout << "right"<< endl;
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
-						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						double yDist = abs( gNormal.x ) * -groundSpeed;
+						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 						{
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
@@ -5356,7 +5382,9 @@ void Actor::UpdatePhysics()
 			{
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
-				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
+				double yDist = abs( gNormal.x ) * groundSpeed;
+				//cout << "yDist: " << yDist << ", -slopeluanchspeed: " << -slopeLaunchMinSpeed << endl;
+				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
@@ -5374,7 +5402,7 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
-					//	cout << "leave" << endl;
+					
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
@@ -5478,8 +5506,9 @@ void Actor::UpdatePhysics()
 			else if( transferRight )
 			{
 			//	cout << "transferRight!" << endl;
+				double yDist = abs( gNormal.x ) * groundSpeed;
 				Edge *next = ground->edge1;
-				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
+				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 				{
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
@@ -5793,8 +5822,8 @@ void Actor::UpdatePhysics()
 					{
 						
 						Edge *next = ground->edge1;
-
-						if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
+						double yDist = abs( gNormal.x ) * groundSpeed;
+						if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 						{
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -5833,8 +5862,9 @@ void Actor::UpdatePhysics()
 					}
 					else if( groundSpeed < 0 )
 					{
+						double yDist = abs( gNormal.x ) * groundSpeed;
 						Edge *next = ground->edge0;
-						if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+						if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
@@ -6488,6 +6518,7 @@ void Actor::UpdatePhysics()
 					hasGravReverse = true;
 					hasAirDash = true;
 					hasDoubleJump = true;
+					lastWire = 0;
 				}
 
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
@@ -6570,6 +6601,7 @@ void Actor::UpdatePhysics()
 				hasAirDash = true;
 				hasDoubleJump = true;
 				reversed = true;
+				lastWire = 0;
 
 				b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
@@ -6906,6 +6938,7 @@ void Actor::UpdatePostPhysics()
 				hasGravReverse = true;
 				hasDoubleJump = true;
 				hasAirDash = true;
+				lastWire = 0;
 
 				if( abs( storedBounceVel.y ) < 10 )
 				{
@@ -9893,6 +9926,35 @@ void Actor::Draw( sf::RenderTarget *target )
 			//cs.setRadius( 
 
 			//target->draw( bubbleSprite );// &timeSlowShader );
+		}
+	}
+}
+
+void Actor::DodecaLateDraw(sf::RenderTarget *target)
+{
+	sf::Sprite dodecaSprite;
+	int dodecaFactor = 1;
+	for( int i = 0; i < maxBubbles; ++i )
+	{
+		if( bubbleFramesToLive[i] > 0 )
+		{
+			int trueFrame = bubbleLifeSpan - ( bubbleFramesToLive[i] );
+			//cout << "trueFrame: " << trueFrame << endl;
+			if( trueFrame / dodecaFactor < 9 )
+			{
+				dodecaSprite.setTexture( *ts_dodecaSmall->texture );
+				dodecaSprite.setTextureRect( ts_dodecaSmall->GetSubRect( trueFrame / dodecaFactor ) );
+				dodecaSprite.setOrigin( dodecaSprite.getLocalBounds().width / 2, dodecaSprite.getLocalBounds().height / 2 );
+			}
+			else
+			{
+				dodecaSprite.setTexture( *ts_dodecaBig->texture );
+				dodecaSprite.setTextureRect( ts_dodecaBig->GetSubRect( trueFrame / dodecaFactor - 9 ) );
+				dodecaSprite.setOrigin( dodecaSprite.getLocalBounds().width / 2, dodecaSprite.getLocalBounds().height / 2 );
+			}
+			dodecaSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
+
+			target->draw( dodecaSprite );
 		}
 	}
 }

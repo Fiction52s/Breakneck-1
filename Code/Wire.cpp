@@ -111,10 +111,23 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 				if( length( fireDir ) > .1 )
 				{
-					fireDir = normalize( fireDir );
-					state = FIRING;
-					framesFiring = 0;
-					frame = 0;
+					if( (right && ( player->lastWire == 0 || player->lastWire == 2 )) 
+						|| (!right && ( player->lastWire == 0 || player->lastWire == 1 ) ) )
+					{
+						if( right )
+						{
+							player->lastWire = 1;
+						}
+						else
+						{
+							player->lastWire = 2;
+						}
+
+						fireDir = normalize( fireDir );
+						state = FIRING;
+						framesFiring = 0;
+						frame = 0;
+					}
 				}
 			}
 			break;

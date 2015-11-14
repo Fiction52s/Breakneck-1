@@ -2327,6 +2327,8 @@ int GameSession::Run( string fileN )
 		if( player.action != Actor::DEATH )
 			player.Draw( preScreenTex );
 
+		player.DodecaLateDraw( preScreenTex );
+
 		preScreenTex->display();
 
 		preTexSprite.setTexture( preScreenTex->getTexture() );
@@ -2509,6 +2511,7 @@ void GameSession::RespawnPlayer()
 	player.rightWire->Reset();
 	player.leftWire->Reset();
 	powerBar.Reset();
+	player.lastWire = 0;
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )

@@ -195,6 +195,13 @@ bool isQuadTouchingQuad(  sf::Vector2<double> & A0,
 						 sf::Vector2<double> & B1, 
 						 sf::Vector2<double> & C1, 
 						 sf::Vector2<double> & D1 );
+
+bool IsQuadTouchingCircle( sf::Vector2<double> & A, 
+						  sf::Vector2<double> &B, 
+						  sf::Vector2<double> &C, 
+						  sf::Vector2<double> &D, 
+						  sf::Vector2<double> &pos, 
+						  double rad );
 //struct QuadTree
 //{
 //};
