@@ -345,6 +345,25 @@ struct EditSession : GUIHandler
 
 	sf::IntRect fullRect;
 	
+	bool ConfirmationPopup();
+	
+	enum ConfirmChoices
+	{
+		NONE,
+		CONFIRM,
+		CANCEL
+	};
+	ConfirmChoices confirmChoice; 
+
+	//0 for no choice
+	//1 for confirm
+	//2 for cancel
+
+	Panel *confirm;
+	sf::View uiView;
+	sf::View view;
+	//void GoPopup();
+
 
 	enum Emode
 	{

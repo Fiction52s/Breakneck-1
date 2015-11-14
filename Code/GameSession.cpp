@@ -117,6 +117,7 @@ GameSession::~GameSession()
 	}
 }
 
+
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
@@ -1277,32 +1278,10 @@ int GameSession::Run( string fileN )
 	//parTest.setTexture( *cloudTileset->texture );
 	//parTest.setPosition( 0, 0 );
 
-	/*groundPar[0].position = Vector2f( 0, 1080 - 300 );
-	groundPar[1].position = Vector2f( 1920 / 2, 1080 - 300 );
-	groundPar[2].position = Vector2f( 1920 / 2, 1080 );
-	groundPar[3].position = Vector2f( 0, 1080 );
 
-	groundPar[0].texCoords = Vector2f( 0, 0 );
-	groundPar[1].texCoords = Vector2f( 1920 / 2, 0 );
-	groundPar[2].texCoords = Vector2f( 1920 / 2, 300 );
-	groundPar[3].texCoords = Vector2f( 0, 300 );
-
-	groundPar[4].position = Vector2f( 1920 / 2, 1080 - 300 );
-	groundPar[5].position = Vector2f( 1920, 1080 - 300 );
-	groundPar[6].position = Vector2f( 1920, 1080 );
-	groundPar[7].position = Vector2f( 1920 / 2, 1080 );
-
-	groundPar[4].texCoords = Vector2f( 1920 / 2, 0 );
-	groundPar[5].texCoords = Vector2f( 1920, 0 );
-	groundPar[6].texCoords = Vector2f( 1920, 300 );
-	groundPar[7].texCoords = Vector2f( 1920 / 2, 300 );*/
 
 	groundTrans = Transform::Identity;
 	groundTrans.translate( 0, 0 );
-//	groundPar[0].position = Vector2f( 0, 1080 - 300 );
-//	groundPar[1].position = Vector2f( 1920, 1080 - 300 );
-//	groundPar[2].position = Vector2f( 1920, 1080 );
-//	groundPar[3].position = Vector2f( 0, 1080 );
 	
 
 	cam.pos.x = player.position.x;
@@ -2004,7 +1983,7 @@ int GameSession::Run( string fileN )
 		//polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
 		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
-
+		cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
 		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
@@ -2542,7 +2521,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	
 	float windowx = window->getSize().x;
 	float windowy = window->getSize().y;
-	
+	cout << "windowx: " << windowx << ", " << windowy << endl;
 	if( lightsAtOnce > 0 )
 	{
 		float depth0 = touchedLights[0]->depth;

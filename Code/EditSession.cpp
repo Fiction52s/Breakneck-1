@@ -2127,6 +2127,7 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
+	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 	//RenderTexture rtt;
 	//rtt.create( 0, 0 );
 	//rtt.clear(Color::Red);
@@ -2134,6 +2135,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//rtt.
 	//rtt.create( 400, 400 );
 	//rtt.clear();
+
+	confirm = CreatePopup( "confirmation" );
 	popupPanel = NULL;
 	validityRadius = 4;
 
@@ -2228,9 +2231,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
 	Color testColor( 0x75, 0x70, 0x90 );
-	View view( cameraPos, cameraSize );
+	view = View( cameraPos, cameraSize );
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
-		view.setSize( 960, 540 );
+		view.setSize( 1920, 1080 );
 
 	w->setView( view );
 	Texture playerTex;
@@ -2252,7 +2255,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	
 	sf::Vector2u wSize = w->getSize();
-	sf::View uiView( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
+	
 	//sf::View uiView( Vector2f( wSize.x / 2, wSize.y / 2 ), Vector2f( wSize.x, wSize.y ) );
 
 	//goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
@@ -2386,11 +2389,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
 		
 		w->setView( view );
-		sf::Event ev;
+		
 
 		testPoint.x = worldPos.x;
 		testPoint.y = worldPos.y;
 		
+		sf::Event ev;
 		while( w->pollEvent( ev ) )
 		{
 			switch( mode )
@@ -2449,6 +2453,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( ev.key.code == Keyboard::Space )
 							{
+								ConfirmationPopup();
 								if( showPoints && extendingPolygon )
 								{
 								}
@@ -6207,6 +6212,17 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "confirmation_popup" )
+	{
+		if( b->name == "confirm" )
+		{
+			confirmChoice = ConfirmChoices::CONFIRM;
+		}
+		else if( b->name == "cancel" )
+		{
+			confirmChoice = ConfirmChoices::CANCEL;
+		}
+	}
 	//cout <<"button" << endl;
 }
 
@@ -6896,6 +6912,76 @@ void EditSession::ExtendAdd()
 	}
 }
 
+bool EditSession::ConfirmationPopup()
+{
+	confirmChoice = ConfirmChoices::NONE;
+
+	w->setView( uiView );	
+	Vector2i pixelPos = sf::Mouse::getPosition( *w );
+	Vector2f uiMouse = w->mapPixelToCoords( pixelPos );
+	
+
+	sf::Event ev;
+	while( confirmChoice == ConfirmChoices::NONE )
+	{
+		while( w->pollEvent( ev ) )
+		{
+			switch( ev.type )
+			{
+			case Event::MouseButtonPressed:
+				{
+					if( ev.mouseButton.button == Mouse::Left )
+					{
+						confirm->Update( true, uiMouse.x, uiMouse.y );		
+					}			
+					break;
+				}
+			case Event::MouseButtonReleased:
+				{
+					confirm->Update( false, uiMouse.x, uiMouse.y );
+					break;
+				}
+			case Event::MouseWheelMoved:
+				{
+					break;
+				}
+			case Event::KeyPressed:
+				{
+					confirm->SendKey( ev.key.code, ev.key.shift );
+					break;
+				}
+			case Event::KeyReleased:
+				{
+					break;
+				}
+			case Event::LostFocus:
+				{
+					break;
+				}
+			case Event::GainedFocus:
+				{
+					break;
+				}
+			}
+					break;	
+		}
+		cout << "drawing confirm" << endl;
+		confirm->Draw( w );
+		w->display();
+	}
+
+	w->setView( view );
+
+	if( confirmChoice == ConfirmChoices::CONFIRM )
+	{
+		return true;
+	}
+	else if( confirmChoice == ConfirmChoices::CANCEL )
+	{
+		return false;
+	}
+}
+
 Panel * EditSession::CreatePopup( const std::string &type )
 {
 	if( type == "message" )
@@ -6913,6 +6999,14 @@ Panel * EditSession::CreatePopup( const std::string &type )
 		Panel *p = new Panel( "error_popup", 400, 100, this );
 		p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "message", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
+		return p;
+	}
+	else if( type == "confirmation" )
+	{
+		Panel *p = new Panel( "confirmation_popup", 400, 100, this );
+		p->AddButton( "confirm", Vector2i( 50, 25 ), Vector2f( 100, 50 ), "Confirm" );
+		p->AddButton( "cancel", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "Cancel" );
+		//p->AddLabel( "Cancel", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
 		return p;
 	}
 
