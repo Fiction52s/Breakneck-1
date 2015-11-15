@@ -16,6 +16,7 @@ Actor::Actor( GameSession *gs )
 		lastWire = 0;
 		inBubble = false;
 		oldInBubble = false;
+		slopeTooSteepLaunchLimitX = .1;
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
 		//testLight->pos = Vector2i( 0, 0 );
 		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL , 200, 15 ); 
@@ -1371,6 +1372,15 @@ void Actor::UpdatePrePhysics()
 	case LAND:
 	case LAND2:
 		{
+
+			//buffered grind ball works
+			if( hasPowerGrindBall && currInput.Y )//&& !prevInput.Y )
+			{
+				SetActionGrind();
+				break;
+			}
+
+
 			if( reversed )
 			{
 				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
@@ -4398,7 +4408,7 @@ V2d Actor::UpdateReversePhysics()
 						{
 							if( e0n.x < 0 )
 							{
-								if( gNormal.x >= 0 )
+								if( gNormal.x >= -slopeTooSteepLaunchLimitX )
 								{
 									cout << "A2" << endl;
 									reversed = false;
@@ -4544,7 +4554,7 @@ V2d Actor::UpdateReversePhysics()
 						{
 							if( e1n.x > 0 )
 							{
-								if( gNormal.x <= 0 )
+								if( gNormal.x <= slopeTooSteepLaunchLimitX )
 								{
 									//cout << "B2, extra: " << extra << endl;
 									reversed = false;
@@ -5383,7 +5393,7 @@ void Actor::UpdatePhysics()
 						{
 							if( e0n.x < 0 )
 							{
-								if( gNormal.x >= 0 )
+								if( gNormal.x >= -slopeTooSteepLaunchLimitX )
 								{
 									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -5503,7 +5513,7 @@ void Actor::UpdatePhysics()
 						{
 							if( e1n.x > 0 )
 							{
-								if( gNormal.x <= 0 )
+								if( gNormal.x <= slopeTooSteepLaunchLimitX )
 								{
 									//cout << "bab" << endl;
 									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
@@ -5526,6 +5536,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
+									//cout << "slidin" << endl;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );

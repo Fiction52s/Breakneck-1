@@ -256,6 +256,8 @@ struct Actor : QuadTreeCollider,
 	double grindQuantity;
 	double grindSpeed;
 
+	double slopeTooSteepLaunchLimitX;
+
 	bool reversed;
 
 	double edgeQuantity;
