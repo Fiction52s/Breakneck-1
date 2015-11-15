@@ -920,6 +920,15 @@ void Actor::UpdatePrePhysics()
 	{
 	case STAND:
 		{
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
+			{
+				SetActionGrind();
+
+				runTappingSound.stop();
+				break;
+			}
+
+
 			if( reversed )
 			{
 				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
@@ -1029,23 +1038,9 @@ void Actor::UpdatePrePhysics()
 				bounceGrounded = false;
 			}
 
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				framesGrinding = 0;
-				rightWire->Reset();
-				leftWire->Reset();
-				action = GRINDBALL;
-				grindEdge = ground;
-				grindMovingTerrain = movingGround;
-				frame = 0;
-				grindSpeed = groundSpeed;
-				grindQuantity = edgeQuantity;
-				
-
-				if( reversed )
-				{
-					grindSpeed = -grindSpeed;
-				}
+				SetActionGrind();
 
 				runTappingSound.stop();
 				break;
@@ -1591,24 +1586,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
-
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				framesGrinding = 0;
-				rightWire->Reset();
-				leftWire->Reset();
-				action = GRINDBALL;
-				grindEdge = ground;
-				grindMovingTerrain = movingGround;
-				frame = 0;
-				grindSpeed = groundSpeed;
-				grindQuantity = edgeQuantity;
-				//reversed = false;
+				SetActionGrind();
 
-				if( reversed )
-				{
-					grindSpeed = -grindSpeed;
-				}
+				//runTappingSound.stop();
 				break;
 			}
 
@@ -1700,22 +1682,9 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				framesGrinding = 0;
-				rightWire->Reset();
-				leftWire->Reset();
-				action = GRINDBALL;
-				grindEdge = ground;
-				grindMovingTerrain = movingGround;
-				frame = 0;
-				grindSpeed = groundSpeed;
-				grindQuantity = edgeQuantity;
-
-				if( reversed )
-				{
-					grindSpeed = -grindSpeed;
-				}
+				SetActionGrind();
 				break;
 			}
 
@@ -1768,22 +1737,9 @@ void Actor::UpdatePrePhysics()
 	case SPRINT:
 		{
 
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				framesGrinding = 0;
-				rightWire->Reset();
-				leftWire->Reset();
-				action = GRINDBALL;
-				grindEdge = ground;
-				grindMovingTerrain = movingGround;
-				frame = 0;
-				grindSpeed = groundSpeed;
-				grindQuantity = edgeQuantity;
-
-				if( reversed )
-				{
-					grindSpeed = -grindSpeed;
-				}
+				SetActionGrind();
 				break;
 			}
 
@@ -2006,9 +1962,17 @@ void Actor::UpdatePrePhysics()
 						groundSpeed = grindSpeed;
 
 						if( currInput.LRight() )
+						{
 							facingRight = true;
+							groundSpeed = abs( groundSpeed );
+						}
 						else if( currInput.LLeft() )
+						{
 							facingRight = false;
+							groundSpeed = -abs( groundSpeed );
+						}
+
+
 
 						grindEdge = NULL;
 						reversed = false;
@@ -2018,106 +1982,94 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					
-					
-						if( grindNorm.x > 0 )
-						{
-							position.x += b.rw + .1;
-						}
-						else if( grindNorm.x < 0 )
-						{
-							position.x += -b.rw - .1;
-						}
+					if( grindNorm.x > 0 )
+					{
+						position.x += b.rw + .1;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						position.x += -b.rw - .1;
+					}
 
-						if( grindNorm.y > 0 )
-							position.y += normalHeight + .1;
+					if( grindNorm.y > 0 )
+						position.y += normalHeight + .1;
 
-						if( !CheckStandUp() )
+					if( !CheckStandUp() )
+					{
+						position = op;
+					}
+					else
+					{
+						//abs( e0n.x ) < wallThresh )
+
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
 						{
-							position = op;
+							framesNotGrinding = 0;
+							velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							action = JUMP;
+							frame = 0;
+							ground = NULL;
+							movingGround = NULL;
+							grindEdge = NULL;
+							grindMovingTerrain = NULL;
+							reversed = false;
 						}
 						else
 						{
-							//abs( e0n.x ) < wallThresh )
-
-							if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
+						//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							if( grindNorm.x > 0 )
 							{
-								framesNotGrinding = 0;
-								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-								action = JUMP;
-								frame = 0;
-								ground = NULL;
-								movingGround = NULL;
-								grindEdge = NULL;
-								grindMovingTerrain = NULL;
-								reversed = false;
+								offsetX = b.rw;
+							}
+							else if( grindNorm.x < 0 )
+							{
+								offsetX = -b.rw;
 							}
 							else
 							{
-							//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-								if( grindNorm.x > 0 )
-								{
-									offsetX = b.rw;
-								}
-								else if( grindNorm.x < 0 )
-								{
-									offsetX = -b.rw;
-								}
-								else
-								{
-									offsetX = 0;
-								}
-
-								hasAirDash = true;
-								hasGravReverse = true;
-								hasDoubleJump = true;
-								lastWire = 0;
-
-
-								ground = grindEdge;
-								movingGround = grindMovingTerrain;
-								groundSpeed = -grindSpeed;
-								edgeQuantity = grindQuantity;
-								grindEdge = NULL;
-								reversed = true;
-								hasGravReverse = false;
-								
-								if( currInput.LRight() )
-									facingRight = true;
-								else if( currInput.LLeft() )
-									facingRight = false;
-
-								action = LAND2;
-								frame = 0;
-								framesNotGrinding = 0;
+								offsetX = 0;
 							}
+
+							hasAirDash = true;
+							hasGravReverse = true;
+							hasDoubleJump = true;
+							lastWire = 0;
+
+
+							ground = grindEdge;
+							movingGround = grindMovingTerrain;
+							groundSpeed = -grindSpeed;
+							edgeQuantity = grindQuantity;
+							grindEdge = NULL;
+							reversed = true;
+							hasGravReverse = false;
+								
+							if( currInput.LRight() )
+							{
+								facingRight = true;
+							//	groundSpeed = abs( groundSpeed );
+							}
+							else if( currInput.LLeft() )
+							{
+								facingRight = false;
+							//	groundSpeed = -abs( groundSpeed );
+							}
+
+							action = LAND2;
+							frame = 0;
+							framesNotGrinding = 0;
 						}
 					}
-
-
-					
-					//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-				}
-			
+				}		
+				//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+			}
 			break;
 		}
 	case STEEPSLIDE:
 		{
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				framesGrinding = 0;
-				rightWire->Reset();
-				leftWire->Reset();
-				action = GRINDBALL;
-				grindEdge = ground;
-				grindMovingTerrain = movingGround;
-				frame = 0;
-				grindSpeed = groundSpeed;
-				grindQuantity = edgeQuantity;
-
-				if( reversed )
-				{
-					grindSpeed = -grindSpeed;
-				}
+				SetActionGrind();
 				break;
 			}
 
@@ -2240,22 +2192,9 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMB:
 		{
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y && abs( groundSpeed ) > 5)
+			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				framesGrinding = 0;
-				rightWire->Reset();
-				leftWire->Reset();
-				action = GRINDBALL;
-				grindEdge = ground;
-				grindMovingTerrain = movingGround;
-				frame = 0;
-				grindSpeed = groundSpeed;
-				grindQuantity = edgeQuantity;
-
-				if( reversed )
-				{
-					grindSpeed = -grindSpeed;
-				}
+				SetActionGrind();
 				break;
 			}
 
@@ -4275,7 +4214,11 @@ V2d Actor::UpdateReversePhysics()
 	V2d lastExtra( 100000, 100000 );
 	wallNormal.x = 0;
 	wallNormal.y = 0;
-	if( ground != NULL )
+	if( grindEdge != NULL )
+	{
+		movement = grindSpeed;
+	}
+	else if( ground != NULL )
 	{
 		movement = groundSpeed;
 	}
@@ -5251,7 +5194,14 @@ void Actor::UpdatePhysics()
 	V2d lastExtra( 100000, 100000 );
 	wallNormal.x = 0;
 	wallNormal.y = 0;
-	if( ground != NULL ) movement = groundSpeed;
+	if( grindEdge != NULL )
+	{
+		movement = grindSpeed;
+	}
+	else if( ground != NULL )
+	{
+		movement = groundSpeed;
+	}
 	else
 	{
 		movementVec = velocity;
@@ -10494,6 +10444,56 @@ void Actor::AttackMovement()
 	}
 }
 
+void Actor::SetActionGrind()
+{
+	//double gSpeed = groundSpeed;
+	//if( reversed )
+	//	gSpeed = -gSpeed;
+	//groundSpeed = 10;
+	if( groundSpeed == 0 )
+	{
+		if( facingRight )
+		{
+
+			//cout << "dashspeed" << endl;
+			grindSpeed = dashSpeed;
+			//if( reversed )
+			//	grindSpeed = -dashSpeed;
+		}
+		else
+		{
+			grindSpeed = -dashSpeed;
+			//if( reversed )
+			//	grindSpeed = dashSpeed;
+		}
+	}
+	else if( groundSpeed > 0 )
+	{
+		grindSpeed = std::max( groundSpeed, dashSpeed );
+	}
+	else
+	{
+		grindSpeed = std::min( groundSpeed, -dashSpeed );
+	}
+	
+
+
+	framesGrinding = 0;
+	rightWire->Reset();
+	leftWire->Reset();
+	action = GRINDBALL;
+	grindEdge = ground;
+	grindMovingTerrain = movingGround;
+	frame = 0;
+	grindQuantity = edgeQuantity;
+				
+
+	if( reversed )
+	{
+	//	grindSpeed = -grindSpeed;
+	}
+}
+
 PlayerGhost::PlayerGhost()
 	:currFrame( 0 ), currHitboxes( NULL )
 {
@@ -10587,4 +10587,5 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 		}
 	}
 }
+
 

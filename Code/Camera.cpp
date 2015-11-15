@@ -107,24 +107,37 @@ void Camera::Update( Actor *player )
 		
 		if( player->framesGrinding < cap )
 		{
-			playerPos += otherDir * player->normalHeight * ( 1 -  player->framesGrinding / cap );
+			
+			playerPos += otherDir * player->normalHeight * (1 - player->framesGrinding / cap );
+			//cout << "height on: " << playerPos.y << endl;
 		}
 		pVel = grindDir * player->grindSpeed;
-
+		
+		if( player->reversed )
+		{
+			pVel = -pVel;
+		}
 	}
 	else if( player->ground != NULL )
 	{
 		double cap2 = cap;
 		if( player->framesGrinding < cap )
-			cap2 = player->framesGrinding;
+		{
+			//cout << "bad trigger" << endl;
+			player->framesNotGrinding = cap - player->framesGrinding;
+			//cap2 = player->framesGrinding;
+		}
+		
 		if( player->framesNotGrinding <= cap2 )
 		{	
 			V2d otherDir;
 			if( player->ground != NULL )
 			{
 				otherDir = -player->ground->Normal();
+				
 				V2d offset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
 				playerPos += offset;
+				//cout << "height off: " << playerPos.y << endl;
 				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
 			}
 		}

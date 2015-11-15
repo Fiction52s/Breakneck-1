@@ -74,7 +74,7 @@ struct Actor : QuadTreeCollider,
 	void RunMovement();
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
-
+	void SetActionGrind();
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;

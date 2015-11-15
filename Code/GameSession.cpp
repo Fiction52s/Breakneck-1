@@ -1983,7 +1983,7 @@ int GameSession::Run( string fileN )
 		//polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
 		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
-		cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
+		//cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
 		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
@@ -2521,7 +2521,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	
 	float windowx = window->getSize().x;
 	float windowy = window->getSize().y;
-	cout << "windowx: " << windowx << ", " << windowy << endl;
+	//cout << "windowx: " << windowx << ", " << windowy << endl;
 	if( lightsAtOnce > 0 )
 	{
 		float depth0 = touchedLights[0]->depth;
