@@ -1372,12 +1372,15 @@ void Actor::UpdatePrePhysics()
 	case LAND:
 	case LAND2:
 		{
-
 			//buffered grind ball works
 			if( hasPowerGrindBall && currInput.Y )//&& !prevInput.Y )
 			{
-				SetActionGrind();
-				break;
+				//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
+				if( !reversed || ( hasPowerGravReverse && reversed ) )
+				{
+					SetActionGrind();
+					break;
+				}
 			}
 
 
