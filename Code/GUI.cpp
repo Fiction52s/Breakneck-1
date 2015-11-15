@@ -567,7 +567,6 @@ Button::Button( const string &n, int posx, int posy, int width, int height, sf::
 	text.setFont( f );
 	text.setColor( Color::White );
 	text.setCharacterSize( characterHeight );
-	text.setPosition( owner->pos.x + pos.x + width / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + height / 2 - text.getLocalBounds().height / 2);
 }
 
 bool Button::Update( bool mouseDown, int posx, int posy )
@@ -603,6 +602,8 @@ bool Button::Update( bool mouseDown, int posx, int posy )
 
 void Button::Draw( RenderTarget *target )
 {
+	text.setPosition( owner->pos.x + pos.x + size.x / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + size.y / 2 - text.getLocalBounds().height / 2);
+
 	sf::RectangleShape rs;
 	rs.setSize( size );
 	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );

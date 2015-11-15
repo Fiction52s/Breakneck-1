@@ -264,7 +264,7 @@ struct EditSession : GUIHandler
 	TerrainPolygon *extendingPolygon;
 	TerrainPoint *extendingPoint;
 
-
+	sf::View v;
 
 
 	bool showTerrainPath;

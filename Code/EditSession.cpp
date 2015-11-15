@@ -1809,7 +1809,6 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 	}
 }
 
-
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 {
 
@@ -2126,15 +2125,6 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
-	//RenderTexture rtt;
-	//rtt.create( 0, 0 );
-	//rtt.clear(Color::Red);
-	
-	//rtt.
-	//rtt.create( 400, 400 );
-	//rtt.clear();
-
-	View v;
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
 	w->setView( v );
@@ -2381,7 +2371,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	while( !quit )
 	{
-		preScreenTex->clear();
+		
 		prevWorldPos = worldPos;
 		pixelPos = sf::Mouse::getPosition( *w );
 		Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(pixelPos);
@@ -5030,7 +5020,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		else
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );*/
 		
-		
+		preScreenTex->clear();
 
 		preScreenTex->setView( view );
 
@@ -6927,14 +6917,28 @@ bool EditSession::ConfirmationPopup()
 {
 	confirmChoice = ConfirmChoices::NONE;
 
-	preScreenTex->setView( uiView );	
-	Vector2i pixelPos = sf::Mouse::getPosition( *w );
-	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+	w->setView( v );
 	
+	//preScreenTex->setView( uiView );	
+	
+	preScreenTex->display();
+	const Texture &preTex = preScreenTex->getTexture();
+	Sprite preTexSprite( preTex );
+	preTexSprite.setPosition( -960 / 2, -540 / 2 );
+	preTexSprite.setScale( .5, .5 );	
+
+	preScreenTex->setView( uiView );
+	
+	//preScreenTex->setView( view );
+	
+	//cout << "uiMouse: " << uiMouse.x << ", " << uiMouse.y << endl;
 
 	sf::Event ev;
 	while( confirmChoice == ConfirmChoices::NONE )
 	{
+		Vector2i pixelPos = sf::Mouse::getPosition( *w );
+		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		w->clear();
 		while( w->pollEvent( ev ) )
 		{
 			switch( ev.type )
@@ -6976,12 +6980,25 @@ bool EditSession::ConfirmationPopup()
 			}
 					break;	
 		}
-		cout << "drawing confirm" << endl;
-		//confirm->Draw( w );
+		//cout << "drawing confirm" << endl;
+
+		w->setView( v );
+
+		w->draw( preTexSprite );
+
+		w->setView( uiView );
+
+		confirm->Draw( w );
+
+		w->setView( v );
+
+		w->display();
 		//preScreenTex->display();
 	}
 
 	preScreenTex->setView( view );
+	w->setView( v );
+	//preScreenTex->setView( view );
 
 	if( confirmChoice == ConfirmChoices::CONFIRM )
 	{
@@ -7017,6 +7034,7 @@ Panel * EditSession::CreatePopup( const std::string &type )
 		Panel *p = new Panel( "confirmation_popup", 400, 100, this );
 		p->AddButton( "confirm", Vector2i( 50, 25 ), Vector2f( 100, 50 ), "Confirm" );
 		p->AddButton( "cancel", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "Cancel" );
+		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
 		//p->AddLabel( "Cancel", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
 		return p;
 	}
