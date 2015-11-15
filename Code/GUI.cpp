@@ -215,7 +215,7 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 {
 	assert( labels.count( name ) == 0 );
 	sf::Text *t = new sf::Text( text, arial, characterHeight );
-	t->setPosition( pos.x + labelPos.x, pos.y + labelPos.y );
+	t->setPosition( labelPos.x, labelPos.y );
 	t->setColor( Color::Black );
 
 	labels[name] = t;
@@ -231,7 +231,12 @@ void Panel::Draw( RenderTarget *target )
 
 	for( map<string,sf::Text*>::iterator it = labels.begin(); it != labels.end(); ++it )
 	{
+		Vector2f labelPos = (*it).second->getPosition();
+
+		(*it).second->setPosition( pos.x + labelPos.x, pos.y + labelPos.y );
 		target->draw( *(*it).second );
+
+		(*it).second->setPosition( labelPos.x, labelPos.y );
 	}
 
 	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )

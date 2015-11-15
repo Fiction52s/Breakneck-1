@@ -2129,7 +2129,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	v.setSize( 1920/ 2, 1080 / 2 );
 	w->setView( v );
 
-	confirm = CreatePopup( "confirmation" );
+	confirm = CreatePopupPanel( "confirmation" );
 	popupPanel = NULL;
 	validityRadius = 4;
 
@@ -2195,8 +2195,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
-	messagePopup = CreatePopup( "message" );
-	errorPopup = CreatePopup( "error" );
+	messagePopup = CreatePopupPanel( "message" );
+	errorPopup = CreatePopupPanel( "error" );
 
 	types["patroller"] = patrollerType;
 	types["crawler"] = crawlerType;
@@ -2446,7 +2446,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( ev.key.code == Keyboard::Space )
 							{
-								ConfirmationPopup();
+							//	ConfirmationPop();
+								MessagePop( "hello" );
 								if( showPoints && extendingPolygon )
 								{
 								}
@@ -6197,7 +6198,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
-	else if( p->name == "message_popup" )
+	/*else if( p->name == "message_popup" )
 	{
 		if( b->name == "ok" )
 		{
@@ -6205,7 +6206,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			cout << "setting to null" << endl;
 			popupPanel = NULL;
 		}
-	}
+	}*/
 	else if( p->name == "error_popup" )
 	{
 		if( b->name == "ok" )
@@ -6913,7 +6914,7 @@ void EditSession::ExtendAdd()
 	}
 }
 
-bool EditSession::ConfirmationPopup()
+bool EditSession::ConfirmationPop()
 {
 	confirmChoice = ConfirmChoices::NONE;
 
@@ -7010,23 +7011,114 @@ bool EditSession::ConfirmationPopup()
 	}
 }
 
-Panel * EditSession::CreatePopup( const std::string &type )
+void EditSession::MessagePop( const std::string &message )
+{
+	messagePopup->labels["message"]->setString( message );
+	bool closePopup = false;
+	w->setView( v );
+	
+	preScreenTex->display();
+	const Texture &preTex = preScreenTex->getTexture();
+	Sprite preTexSprite( preTex );
+	preTexSprite.setPosition( -960 / 2, -540 / 2 );
+	preTexSprite.setScale( .5, .5 );	
+
+	preScreenTex->setView( uiView );
+
+	sf::Event ev;
+	while( !closePopup )
+	{
+		Vector2i pixelPos = sf::Mouse::getPosition( *w );
+		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		w->clear();
+
+		while( w->pollEvent( ev ) )
+		{
+			switch( ev.type )
+			{
+			case Event::MouseButtonPressed:
+				{
+					if( ev.mouseButton.button == Mouse::Left )
+					{
+						//if( uiMouse.x < messagePopup->pos.x 
+						//messagePopup->Update( true, uiMouse.x, uiMouse.y );		
+					}			
+					break;
+				}
+			case Event::MouseButtonReleased:
+				{
+					closePopup = true;
+					//messagePopup->Update( false, uiMouse.x, uiMouse.y );
+					break;
+				}
+			case Event::MouseWheelMoved:
+				{
+					break;
+				}
+			case Event::KeyPressed:
+				{
+					closePopup = true;
+					//messagePopup->SendKey( ev.key.code, ev.key.shift );
+					break;
+				}
+			case Event::KeyReleased:
+				{
+					break;
+				}
+			case Event::LostFocus:
+				{
+					break;
+				}
+			case Event::GainedFocus:
+				{
+					break;
+				}
+			}
+			break;	
+		}
+
+		w->setView( v );
+
+		w->draw( preTexSprite );
+
+		w->setView( uiView );
+
+		messagePopup->Draw( w );
+
+		w->setView( v );
+
+		w->display();
+	}
+
+	preScreenTex->setView( view );
+	w->setView( v );
+	//preScreenTex->setView( view );
+}
+
+void EditSession::ErrorPop( const std::string &error )
+{
+
+}
+
+Panel * EditSession::CreatePopupPanel( const std::string &type )
 {
 	if( type == "message" )
 	{
 		Panel *p = new Panel( "message_popup", 400, 100, this );
 		p->pos.x = 300;
 		p->pos.y = 300;
-		p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
+		//p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "message", Vector2i( 10, 10 ), 12, "_EMPTY\n_MESSAGE_" );
+		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
 		return p;
 		//p->
 	}
 	else if( type == "error" )
 	{
 		Panel *p = new Panel( "error_popup", 400, 100, this );
-		p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
+		//p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "message", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
+		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
 		return p;
 	}
 	else if( type == "confirmation" )

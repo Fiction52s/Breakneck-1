@@ -331,7 +331,7 @@ struct EditSession : GUIHandler
 	Panel *popupPanel;
 	bool trackingEnemyDown;
 
-	Panel * CreatePopup( const std::string &p );
+	Panel * CreatePopupPanel( const std::string &p );
 	Panel *messagePopup;
 	Panel *errorPopup;
 
@@ -346,7 +346,11 @@ struct EditSession : GUIHandler
 
 	sf::IntRect fullRect;
 	
-	bool ConfirmationPopup();
+	bool ConfirmationPop();
+	void MessagePop( const std::string &message );
+	void ErrorPop( const std::string &error );
+
+	//bool closePopup; //for messsage/error only
 	
 	enum ConfirmChoices
 	{
