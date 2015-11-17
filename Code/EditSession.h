@@ -101,9 +101,12 @@ struct StaticLight
 struct ActorType
 {
 	ActorType( const std::string & name, Panel *panel );
+	void SetBounds();
 	std::string name;
 	sf::Texture iconTexture;
 	sf::Texture imageTexture;
+	int width;
+	int height;
 	Panel *panel;
 };
 
@@ -127,6 +130,7 @@ struct ActorParams
 	//	int edgeIndex, double edgeQuantity ); 
 	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
+	virtual void SetBoundingQuad();
 	//sf::Sprite icon;
 	sf::Sprite image;
 	ActorGroup *group;
@@ -135,7 +139,12 @@ struct ActorParams
 	double groundQuantity;
 	TerrainPolygon *ground;
 	int edgeIndex;
+	PointList::iterator edgeStart;
+	PointList::iterator edgeEnd;
+	sf::VertexArray boundingQuad;
 	virtual void Draw( sf::RenderTarget *target );
+	virtual void DrawQuad( sf::RenderTarget *target );
+
 };
 
 
@@ -326,6 +335,7 @@ struct EditSession : GUIHandler
 	std::list<TerrainPolygon*> selectedPolygons;
 
 	sf::Sprite enemySprite;
+	sf::RectangleShape enemyQuad;
 	ActorType *trackingEnemy;//bool trackingEnemy;
 	Panel *showPanel;
 	Panel *popupPanel;

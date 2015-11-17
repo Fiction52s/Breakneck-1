@@ -1055,6 +1055,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	errorPopup = NULL;
 	popupPanel = NULL;
 	confirm = NULL;
+	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 	//	VertexArray *va = new VertexArray( sf::Lines, 
 //	progressDrawList.push( new 
 }
@@ -4820,6 +4821,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
 					enemySprite.setRotation( 0 );
 					enemySprite.setPosition( preScreenTex->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+
+					enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2 );
+					enemyQuad.setRotation( 0 );
+					enemyQuad.setPosition( enemySprite.getPosition() );
 				}
 
 				if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
@@ -4874,7 +4879,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									
 									//cout << testA << " " << testB << " " << testC << " " << testD << endl;
 
-									if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2 
+									int hw = trackingEnemy->width / 2;
+									int hh = trackingEnemy->height / 2;
+									if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
 										&& length( newPoint - te ) < length( closestPoint - te ) )
 									{
 										minDistance = dist;
@@ -4888,6 +4895,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
 										enemySprite.setPosition( closestPoint.x, closestPoint.y );
 										enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+
+										enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
+										enemyQuad.setRotation( enemySprite.getRotation() );
+										enemyQuad.setPosition( enemySprite.getPosition() );
 									}
 									else
 									{
@@ -5135,6 +5146,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( trackingEnemy != NULL )
 				{
 					preScreenTex->draw( enemySprite );
+					preScreenTex->draw( enemyQuad );
 				}
 				break;
 			}
@@ -5143,6 +5155,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( trackingEnemy != NULL )
 				{
 					preScreenTex->draw( enemySprite );
+					preScreenTex->draw( enemyQuad );
 				}
 				int pathSize = patrolPath.size();
 				if( pathSize > 0 )
@@ -6243,7 +6256,10 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 			trackingEnemy->imageTexture.getSize().y ) );
 
 		enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
-	
+		
+		enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
+
+
 		cout << "set your cursor as the image" << endl;
 	}
 	else
@@ -7210,17 +7226,47 @@ sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )
 {
-	
 	iconTexture.loadFromFile( name + "_icon.png" );
 	//icon.setTexture( iconTexture );
 	imageTexture.loadFromFile( name + "_editor.png" );
 	//image.setTexture( imageTexture );
+	SetBounds();
 }
 
+void ActorType::SetBounds()
+{
+	if( name == "patroller" )
+	{
+		width = 0;
+		height = 0;
+	}
+	else if( name == "foottrap" )
+	{
+		width = 32;
+		height = 32;
+	}
+	else if( name == "basicturret" )
+	{
+		width = 32;
+		height = 32;
+	}
+	else if( name == "goal" )
+	{
+		width = 32;
+		height = 32;
+	}
+	else if( name == "crawler" )
+	{
+		width = 32;
+		height = 32;
+	}
+}
 
 ActorParams::ActorParams()
-	:ground( NULL ), groundQuantity( 420.69 )
+	:ground( NULL ), groundQuantity( 420.69 ), boundingQuad( sf::Quads, 4 )
 {
+	for( int i = 0; i < 4; ++i )
+		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
 
 void ActorParams::Draw( sf::RenderTarget *target )
@@ -7254,11 +7300,17 @@ void ActorParams::WriteFile( ofstream &of )
 	WriteParamFile( of );
 }
 
+void ActorParams::DrawQuad( sf::RenderTarget *target )
+{
+	target->draw( boundingQuad );
+}
+
 void ActorGroup::Draw( sf::RenderTarget *target )
 {
 	for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
 		(*it)->Draw( target );
+		(*it)->DrawQuad( target );
 	}
 }
 
@@ -7281,6 +7333,37 @@ void ActorGroup::WriteFile( std::ofstream &of )
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s )
 {
+}
+
+void ActorParams::SetBoundingQuad()
+{
+	//float note
+	if( ground != NULL )
+	{
+		V2d v0( (*edgeStart).pos.x, (*edgeStart).pos.y );
+		V2d v1( (*edgeEnd).pos.x, (*edgeEnd).pos.y );
+		V2d along = normalize( v1 - v0 );
+		V2d other( along.y, -along.x );
+
+		V2d startGround = v0 + along * groundQuantity;
+		V2d leftGround = startGround - along * ( type->width / 2.0 );
+		V2d rightGround = startGround + along * ( type->width / 2.0 );
+		V2d leftAir = leftGround + other * (double)type->height;
+		V2d rightAir = rightGround + other * (double)type->height;
+
+		boundingQuad[0].position = Vector2f( leftGround.x, leftGround.y );
+		boundingQuad[1].position = Vector2f( leftAir.x, leftAir.y );
+		boundingQuad[2].position = Vector2f( rightAir.x, rightAir.y );
+		boundingQuad[3].position = Vector2f( rightGround.x, rightGround.y );
+	}
+	else
+	{
+		//patroller doesnt need a box because its not physical with the environment
+		boundingQuad[0].position = Vector2f( position.x - type->width / 2, position.y - type->height / 2);
+		boundingQuad[1].position = Vector2f( position.x + type->width / 2, position.y - type->height / 2);
+		boundingQuad[2].position = Vector2f( position.x + type->width / 2, position.y + type->height / 2);
+		boundingQuad[3].position = Vector2f( position.x - type->width / 2, position.y + type->height / 2);
+	}
 }
 
 void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quantity )
@@ -7316,6 +7399,9 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 			image.setPosition( newPoint.x, newPoint.y );
 			image.setRotation( angle );
 
+			edgeStart = prev;
+			edgeEnd = curr;
+
 			break;
 		}
 		prev = curr;
@@ -7342,6 +7428,8 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 
 	loop = p_loop;
 	speed = p_speed;
+
+	SetBoundingQuad();
 	//ss << localPath.size();
 	//params.push_back( ss.str() );
 	//ss.str( "" );
@@ -7423,6 +7511,8 @@ CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
 
 	type = edit->types["crawler"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
 }
 
 void CrawlerParams::WriteParamFile( ofstream &of )
@@ -7444,6 +7534,8 @@ BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 	type = edit->types["basicturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
 }
 
 void BasicTurretParams::WriteParamFile( ofstream &of )
@@ -7456,6 +7548,8 @@ FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon
 {
 	type = edit->types["foottrap"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
 }
 
 void FootTrapParams::WriteParamFile( ofstream &of )
@@ -7466,6 +7560,8 @@ GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_
 {
 	type = edit->types["goal"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
 }
 
 void GoalParams::WriteParamFile( ofstream &of )
