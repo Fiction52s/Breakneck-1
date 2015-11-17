@@ -2867,8 +2867,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( removeSuccess == 0 )
 									{
-										messagePopup->labels["message"]->setString( "problem removing points" );
-										popupPanel = messagePopup;
+										MessagePop( "problem removing points" );
+										//messagePopup->labels["message"]->setString( "problem removing points" );
+										//popupPanel = messagePopup;
 									}
 								}
 								else if( selectedActor != NULL )
@@ -6029,9 +6030,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			if( minEdgeSize < 8 )
 			{
 				minimumEdgeLength = 8;
-				popupPanel = messagePopup;
+				//popupPanel = messagePopup;
 				p->textBoxes["minedgesize"]->text.setString( "8" );
-				messagePopup->labels["message"]->setString( "minimum edge length too low.\n Set to minimum of 8" );
+				//messagePopup->labels["message"]->setString( "minimum edge length too low.\n Set to minimum of 8" );
+				MessagePop( "minimum edge length too low.\n Set to minimum of 8" );
 				//assert( false && "made min edge length too small!" );
 			}
 			else
