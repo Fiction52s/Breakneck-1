@@ -641,14 +641,9 @@ void TerrainPolygon::Reset()
 	va = NULL;
 }
 
-bool TerrainPolygon::IsRemovePointsOkay( EditSession *edit )
-{
-	list<PointPair> removalPairs;
-	removalPairs.push_back( PointPair() );
-	PointList::iterator prev, next;
-	bool first = true;
-	bool continuation = false;
 
+bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
+{
 	TerrainPolygon tempPoly( grassTex );
 
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
@@ -659,110 +654,34 @@ bool TerrainPolygon::IsRemovePointsOkay( EditSession *edit )
 		}
 	}
 
-	return edit->IsPolygonValid( tempPoly, this );
+	bool isPolyValid = edit->IsPolygonValid( tempPoly, this );
 
-	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
+	
+	return isPolyValid;
+}
+
+
+//0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
+int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
+{
+	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
-		if( !(*it).selected )
+		if( (*(*it)->edgeStart).selected || (*(*it)->edgeEnd).selected )
 		{
-			continue;
-		}
+			bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 
-		if( it == points.begin() )
-		{
-			prev = points.end();
-			prev--;
-		}
-		else
-		{
-			prev = it;
-			prev--;
-		}
-
-		PointList::iterator temp = it;
-		++temp;
-		if( temp == points.end() )
-		{
-			next = points.begin();
-		}
-		else
-		{
-			next = it;
-			next++;
-		}
-		
-		if( (*prev).selected && first )
-		{
-			if( it == points.begin() )
+			if( removeSelectedActors )
 			{
-				continuation = true;
-				//removalPairs.back().second = (*it).pos;
-				//removalPairs.push_back( PointPair() );
+				return 1;
 			}
-			continue;
-		}
-
-		if( first )
-		{
-			removalPairs.back().first = (*prev).pos;
-			first = false;
-		}
-		else if( !(*next).selected )
-		{
-			removalPairs.back().second = (*next).pos;
-			first = true;
-			removalPairs.push_back( PointPair() );
-		}
-
-
-		/*V2d itPos( (*it).pos.x, (*it).pos.y );
-		V2d nextPos( (*next).pos.x, (*next).pos.y );
-		V2d prevPos( (*prev).pos.x, (*prev).pos.y );
-		V2d along = normalize( nextPos - prevPos );
-		cout << "along: " << along.x << ", " << along.y << endl;
-		//V2d other( along.y, -along.x );
-
-		
-		//V2d vec = tPoint - backPoint;
-		//V2d normVec = normalize( vec );
-		
-		if( itPos.x == prevPos.x || itPos.y == prevPos.y )
-		{
-		}
-		else
-		{
-			V2d extreme( 0, 0 );
-			if( along.x > EditSession::PRIMARY_LIMIT )
-				extreme.x = 1;
-			else if( along.x < -EditSession::PRIMARY_LIMIT )
-				extreme.x = -1;
-			if( along.y > EditSession::PRIMARY_LIMIT )
-				extreme.y = 1;
-			else if( along.y < -EditSession::PRIMARY_LIMIT )
-				extreme.y = -1;
-
-			//extreme = normalize( extreme );
-
-			if( !( extreme.x == 0 && extreme.y == 0 ) )
+			else
 			{
-				cout << "returning false: " << extreme.x << ", " << extreme.y << endl;
-				return false;
+				return 0;
 			}
-		}*/
+		}
 	}
 
-	if( continuation )
-	{
-		assert( !first );
-		for( PointList::iterator it = points.begin(); it != points.end(); ++it )		
-		{
-			assert( (*it).selected );
-			PointList::iterator temp = it;
-		}
-
-	}
-
-	return true;
+	return -1;	
 }
 
 bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
@@ -1056,8 +975,6 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	popupPanel = NULL;
 	confirm = NULL;
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
-	//	VertexArray *va = new VertexArray( sf::Lines, 
-//	progressDrawList.push( new 
 }
 
 EditSession::~EditSession()
@@ -2916,17 +2833,39 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( CountSelectedPoints() > 0 )
 								{
-									bool removeSuccess = IsRemovePointsOkay();
+									int removeSuccess = IsRemovePointsOkay();
 
-									if( removeSuccess )
+									if( removeSuccess == 1 )
 									{
+										//go through each polygon and get rid of the actors which are deleted by deleting points
+										for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+											it != selectedPolygons.end(); ++it )
+										{
+											list<ActorParams*>::iterator et = (*it)->enemies.begin();
+											while( et != (*it)->enemies.end() )
+											{
+												bool deleted = (*(*et)->edgeStart).selected || (*(*et)->edgeEnd).selected;
+												if (deleted)
+												{
+													(*et)->group->actors.remove( (*et ) );
+													delete (*et); //deleting actor
+													(*it)->enemies.erase(et++); 
+												}
+												else
+												{
+													++et;
+												}
+											}
+										}
+
+
 										for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 											it != selectedPolygons.end(); ++it )
 										{
 											(*it)->RemoveSelectedPoints();
 										}
 									}
-									else
+									else if( removeSuccess == 0 )
 									{
 										messagePopup->labels["message"]->setString( "problem removing points" );
 										popupPanel = messagePopup;
@@ -6229,7 +6168,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	}
 	else if( p->name == "confirmation_popup" )
 	{
-		if( b->name == "confirm" )
+		if( b->name == "confirmOK" )
 		{
 			confirmChoice = ConfirmChoices::CONFIRM;
 		}
@@ -6930,8 +6869,11 @@ void EditSession::ExtendAdd()
 	}
 }
 
-bool EditSession::ConfirmationPop()
+bool EditSession::ConfirmationPop( const std::string &question )
 {
+
+	confirm->labels["question"]->setString( question );
+
 	confirmChoice = ConfirmChoices::NONE;
 
 	w->setView( v );
@@ -7140,8 +7082,10 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	else if( type == "confirmation" )
 	{
 		Panel *p = new Panel( "confirmation_popup", 400, 100, this );
-		p->AddButton( "confirm", Vector2i( 50, 25 ), Vector2f( 100, 50 ), "Confirm" );
+
+		p->AddButton( "confirmOK", Vector2i( 50, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddButton( "cancel", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "Cancel" );
+		p->AddLabel( "question", Vector2i( 10, 10 ), 12, "_EMPTY\n_QUESTION_" );
 		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
 		//p->AddLabel( "Cancel", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
 		return p;
@@ -7150,16 +7094,42 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	return NULL;
 }
 
-bool EditSession::IsRemovePointsOkay()
+//-1 means you denied it, 0 means it didnt work, and 1 means it will work
+int EditSession::IsRemovePointsOkay()
 {
+	bool terrainOkay = true;
 	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 		it != selectedPolygons.end(); ++it )
 	{
-		if( !(*it)->IsRemovePointsOkay( this ) )
-			return false;
-		//(*it)->RemoveSelectedPoints();
+		bool res = (*it)->IsRemovePointsOkayTerrain( this );
+		if( !res )
+		{
+			terrainOkay = false;
+			break;
+		}
 	}
-	return true;
+
+	if( !terrainOkay )
+	{
+		return 0;
+	}
+
+	bool enemiesOkay = false;
+	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+		it != selectedPolygons.end(); ++it )
+	{
+		int res = (*it)->IsRemovePointsOkayEnemies( this );
+		if( res == 1 )
+		{
+			return 1;
+		}
+		else if( res == 0 )
+		{
+			return -1;
+		}
+	}
+
+	return 1;
 }
 
 void EditSession::SetEnemyEditPanel()

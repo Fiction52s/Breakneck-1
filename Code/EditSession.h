@@ -45,7 +45,8 @@ struct TerrainPolygon
 	PointList points;
 	std::string material;
 	bool RemoveSelectedPoints();
-	bool IsRemovePointsOkay(EditSession *edit);
+	bool IsRemovePointsOkayTerrain(EditSession *edit);
+	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
 	void Reset();
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
@@ -345,7 +346,7 @@ struct EditSession : GUIHandler
 	Panel *messagePopup;
 	Panel *errorPopup;
 
-	bool IsRemovePointsOkay();
+	int IsRemovePointsOkay();
 
 	Panel *CreateOptionsPanel( const std::string &name );
 	void WriteGrass( TerrainPolygon * p, std::ofstream &of );
@@ -356,7 +357,7 @@ struct EditSession : GUIHandler
 
 	sf::IntRect fullRect;
 	
-	bool ConfirmationPop();
+	bool ConfirmationPop( const std::string &question );
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 
