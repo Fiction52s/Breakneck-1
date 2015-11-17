@@ -338,8 +338,7 @@ struct EditSession : GUIHandler
 	sf::Sprite enemySprite;
 	sf::RectangleShape enemyQuad;
 	ActorType *trackingEnemy;//bool trackingEnemy;
-	Panel *showPanel;
-	Panel *popupPanel;
+	Panel *showPanel;	
 	bool trackingEnemyDown;
 
 	Panel * CreatePopupPanel( const std::string &p );

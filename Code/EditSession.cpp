@@ -972,7 +972,6 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	showPoints = false;
 	messagePopup = NULL;
 	errorPopup = NULL;
-	popupPanel = NULL;
 	confirm = NULL;
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 }
@@ -2048,7 +2047,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	w->setView( v );
 
 	confirm = CreatePopupPanel( "confirmation" );
-	popupPanel = NULL;
 	validityRadius = 4;
 
 	extendingPolygon = NULL;
@@ -2318,11 +2316,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( popupPanel != NULL )
-								{
-									popupPanel->Update( true, uiMouse.x, uiMouse.y );
-								}
-								else if( showPanel != NULL )
+								if( showPanel != NULL )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
 									break;
@@ -2333,11 +2327,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseButtonReleased:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->Update( false, uiMouse.x, uiMouse.y );
-							}
-							else if( showPanel != NULL )
+							if( showPanel != NULL )
 							{	
 								showPanel->Update( false, uiMouse.x, uiMouse.y );
 							}
@@ -2349,12 +2339,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->SendKey( ev.key.code, ev.key.shift );
-								break;
-							}
-
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -2365,7 +2349,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( ev.key.code == Keyboard::Space )
 							{
 							//	ConfirmationPop();
-								MessagePop( "hello" );
+								//MessagePop( "hello" );
 								if( showPoints && extendingPolygon )
 								{
 								}
@@ -2415,7 +2399,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									
 									if( !valid )
 									{
-										popupPanel = messagePopup;
+										MessagePop( "unable to complete polygon" );
+										//popupPanel = messagePopup;
 										break;
 									}
 
@@ -2517,12 +2502,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyReleased:
 						{
-							if( popupPanel != NULL )
-							{
-								break;
-							}
-
-
 							if( ev.key.code == sf::Keyboard::E )
 							{
 								showPoints = false;
@@ -2551,12 +2530,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( popupPanel != NULL )
-								{
-									popupPanel->Update( true, uiMouse.x, uiMouse.y );
-									break;
-								}
-
 								if( showPanel != NULL )
 								{	
 									//cout << "edit mouse update" << endl;
@@ -2781,12 +2754,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( popupPanel != NULL )
-								{
-									popupPanel->Update( false, uiMouse.x, uiMouse.y );
-									break;
-								}
-
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
@@ -2816,12 +2783,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->SendKey( ev.key.code, ev.key.shift );
-								break;
-							}
-
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -2869,7 +2830,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										MessagePop( "problem removing points" );
 										//messagePopup->labels["message"]->setString( "problem removing points" );
-										//popupPanel = messagePopup;
 									}
 								}
 								else if( selectedActor != NULL )
@@ -2958,12 +2918,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyReleased:
 						{
-							if( popupPanel != NULL )
-							{
-								break;
-							}
-
-
 							if( ev.key.code == Keyboard::W )
 							{
 								pointGrab = false;
@@ -3227,11 +3181,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( popupPanel != NULL )
-								{
-									popupPanel->Update( true, uiMouse.x, uiMouse.y );
-									break;
-								}
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
@@ -3247,12 +3196,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( popupPanel != NULL )
-								{
-									popupPanel->Update( false, uiMouse.x, uiMouse.y );
-									break;
-								}
-
 								if( showPanel == NULL && trackingEnemy != NULL )
 								{
 									if( trackingEnemy->name == "patroller" )
@@ -3334,12 +3277,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->SendKey( ev.key.code, ev.key.shift );
-								break;
-							}
-
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -3359,20 +3296,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						case Event::MouseButtonPressed:
 							{
-								/*if( popupPanel != NULL )
-								{
-									popupPanel->Update( true, uiMouse.x, uiMouse.y );
-									break;
-								}*/
 								break;
 							}
 						case Event::MouseButtonReleased:
 							{
-								/*if( popupPanel != NULL )
-								{
-									popupPanel->Update( false, uiMouse.x, uiMouse.y );
-									break;
-								}*/
 								break;
 							}
 						case Event::GainedFocus:
@@ -3600,20 +3527,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 					case Event::MouseButtonPressed:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->Update( true, uiMouse.x, uiMouse.y );
-								break;
-							}
 							break;
 						}
 					case Event::MouseButtonReleased:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->Update( false, uiMouse.x, uiMouse.y );
-								break;
-							}
 							break;
 						}
 					case Event::MouseWheelMoved:
@@ -3622,13 +3539,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->SendKey( ev.key.code, ev.key.shift );
-								break;
-							}
-
-
 							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
 							{
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
@@ -3673,11 +3583,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								if( popupPanel != NULL )
-								{
-									popupPanel->Update( true, uiMouse.x, uiMouse.y );
-									break;
-								}
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
@@ -3693,11 +3598,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::MouseButtonReleased:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->Update( false, uiMouse.x, uiMouse.y );
-								break;
-							}
 							if( showPanel != NULL )
 							{	
 								showPanel->Update( false, uiMouse.x, uiMouse.y );
@@ -3728,11 +3628,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( popupPanel != NULL )
-							{
-								popupPanel->SendKey( ev.key.code, ev.key.shift );
-								break;
-							}
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
@@ -3761,7 +3656,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 			//ones that aren't specific to mode
 			
-			if( mode != PAUSED && mode != SELECT_MODE && popupPanel == NULL )
+			if( mode != PAUSED && mode != SELECT_MODE )
 			{
 				switch( ev.type )
 				{
@@ -3989,7 +3884,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 				
 
-				if( popupPanel != NULL || showPanel != NULL )
+				if( showPanel != NULL )
 					break;
 
 				if( //polygonInProgress->points.size() > 0 && 
@@ -5008,7 +4903,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						colorSelection = validColor;
 					}
 
-					if( popupPanel == NULL )
+					//if( popupPanel == NULL )
 					{
 						sf::Vertex activePreview[2] =
 						{
@@ -5628,11 +5523,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			showPanel->Draw( preScreenTex );
 		}
 
-		if( popupPanel != NULL )
-		{
-			popupPanel->Draw( preScreenTex );
-		}
-
 		preScreenTex->setView( view );
 
 
@@ -6030,9 +5920,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			if( minEdgeSize < 8 )
 			{
 				minimumEdgeLength = 8;
-				//popupPanel = messagePopup;
+				
 				p->textBoxes["minedgesize"]->text.setString( "8" );
-				//messagePopup->labels["message"]->setString( "minimum edge length too low.\n Set to minimum of 8" );
+				
 				MessagePop( "minimum edge length too low.\n Set to minimum of 8" );
 				//assert( false && "made min edge length too small!" );
 			}
@@ -6152,15 +6042,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
-	/*else if( p->name == "message_popup" )
-	{
-		if( b->name == "ok" )
-		{
-			//showPanel = NULL;
-			cout << "setting to null" << endl;
-			popupPanel = NULL;
-		}
-	}*/
 	else if( p->name == "error_popup" )
 	{
 		if( b->name == "ok" )
