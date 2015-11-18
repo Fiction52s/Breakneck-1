@@ -3,7 +3,8 @@
 
 #include "Physics.h"
 
-struct Gate: public Edge
+
+struct Gate : public Edge
 {
 	Gate();
 	enum GateType
@@ -12,6 +13,9 @@ struct Gate: public Edge
 	};
 	GateType type;
 	bool locked;
+	sf::VertexArray thickLine;
+	void UpdateLine();
+	void Draw( sf::RenderTarget *target );
 };
 
 #endif

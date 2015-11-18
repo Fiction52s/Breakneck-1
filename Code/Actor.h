@@ -349,6 +349,8 @@ struct Actor : QuadTreeCollider,
 	//unstored while working on
 	bool dead;	
 
+
+	bool hasKey;
 	//end unstored
 
 	void SaveState();

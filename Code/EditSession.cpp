@@ -3194,7 +3194,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 
-									bool result = CanCreateGate( testInfo.v0, testInfo.v1 );
+									bool result = CanCreateGate( testInfo );
 
 									if( result )
 									{
@@ -7460,8 +7460,31 @@ void EditSession::SetEnemyEditPanel()
 	}
 }
 
-bool EditSession::CanCreateGate( Vector2i &v0, Vector2i &v1 )
+bool EditSession::CanCreateGate( GateInfo &testGate )
 {
+	Vector2i v0 = testGate.v0;
+	Vector2i v1 = testGate.v1;
+
+	//no duplicate points
+	for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+	{
+		if( v0 == (*it)->v0 || v0 == (*it)->v1 || v0 == (*it)->v0 || v0 == (*it)->v1 )
+		{
+			return false;
+		}
+	}
+
+	if( testGate.poly0 == testGate.poly1 )
+	{
+		if( testGate.vertexIndex0 + 1 == testGate.vertexIndex1 
+			|| testGate.vertexIndex0 - 1 == testGate.vertexIndex1 
+			|| testGate.vertexIndex0 == 0 && testGate.vertexIndex1 == testGate.poly1->points.size() 
+			|| testGate.vertexIndex1 == 0 && testGate.vertexIndex0 == testGate.poly1->points.size() )
+		{
+			return false;
+		}
+	}
+	
 	//get aabb, check intersection with polygons. check line intersections with those polygons
 
 	int left = min( v0.x, v1.x );

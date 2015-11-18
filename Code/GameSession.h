@@ -145,6 +145,7 @@ struct GameSession : QuadTreeCollider
 	int numGates;
 	Gate **gates;
 	int testGateCount;
+	Gate *gateList;
 
 	sf::VertexArray *va;
 	ControllerState prevInput;

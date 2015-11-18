@@ -67,10 +67,10 @@ Key::Key( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &pathPar
 	hitBody.rh = keySize/2;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 0;
 	hitboxInfo->drain = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->hitstunFrames = 0;
 	hitboxInfo->knockback = 0;
 
 	targetNode = 1;
@@ -186,6 +186,7 @@ void Key::AdvanceTargetNode()
 
 void Key::UpdatePostPhysics()
 {
+	Actor &player = owner->player;
 	if( !dead )
 	{
 		UpdateHitboxes();
@@ -193,18 +194,20 @@ void Key::UpdatePostPhysics()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
+		 //no hitlag ever
+			if( result.second )
 			{
-				owner->Pause( 6 );
-			}
-		
-			dead = true;
-			receivedHit = NULL;
+				dead = true;
+				receivedHit = NULL;
+				player.hasKey = true;
+			}	
 		}
 
 		if( IHitPlayer() )
 		{
+			dead = true;
+			receivedHit = NULL;
+			player.hasKey = true;
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -289,7 +292,7 @@ bool Key::IHitPlayer()
 	
 	if( hitBody.Intersects( player.hurtBody ) )
 	{
-		player.ApplyHit( hitboxInfo );
+		//player.ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;

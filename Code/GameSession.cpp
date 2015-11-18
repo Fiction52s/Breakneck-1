@@ -1261,6 +1261,7 @@ bool GameSession::OpenFile( string fileName )
 			Gate * gate = new Gate;
 			gate->v0 = point0;
 			gate->v1 = point1;
+			gate->UpdateLine();
 			gateTree->Insert( gate );
 			gates[i] = gate;
 		}
@@ -1610,6 +1611,11 @@ int GameSession::Run( string fileN )
 
 				RespawnPlayer();
 				ResetEnemies();
+
+				for( int i = 0; i < numGates; ++i )
+				{
+					gates[i]->locked = true;
+				}
 
 				activeEnemyList = NULL;
 				pauseImmuneEffects = NULL;
@@ -2178,12 +2184,9 @@ int GameSession::Run( string fileN )
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
-		//cout << "times draw: " << timesDraw << endl;
-		//cout << "drew: " << timesDraw << endl;
-		//for( list<VertexArray*>::iterator it = polygonBorders.begin(); it != polygonBorders.end(); ++it )
-	//	{
-	//		window->draw( *(*it ), &borderTex);//GetTileset( "testrocks.png", 25, 25 )->texture );
-	//	}
+	
+
+
 		UpdateEnemiesDraw();
 
 		if( player.action != Actor::GRINDBALL )
@@ -2392,6 +2395,18 @@ int GameSession::Run( string fileN )
 
 		player.DodecaLateDraw( preScreenTex );
 
+		testGateCount = 0;
+		queryMode = "gate";
+		gateList = NULL;
+		gateTree->Query( this, screenRect );
+
+		while( gateList != NULL )
+		{
+			gateList->Draw( preScreenTex );
+			Gate *next = (Gate*)gateList->edge1;
+			gateList = next;
+		}
+
 		preScreenTex->display();
 
 		preTexSprite.setTexture( preScreenTex->getTexture() );
@@ -2522,6 +2537,21 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			//}
 		}
 	
+	}
+	else if( queryMode == "gate" )
+	{
+		Gate *g = (Gate*)qte;
+
+		if( gateList == NULL )
+		{
+			gateList = (Gate*)qte;
+		}
+		else
+		{
+			g->edge1 = gateList;
+			gateList = g;
+		}
+		++testGateCount;
 	}
 }
 

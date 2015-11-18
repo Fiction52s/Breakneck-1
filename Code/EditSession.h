@@ -301,8 +301,7 @@ struct EditSession : GUIHandler
 	bool QuadPolygonIntersect( TerrainPolygon *poly, 
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
-	bool CanCreateGate( sf::Vector2i &v0,
-		sf::Vector2i &v1 );
+	bool CanCreateGate( GateInfo &testGate );
 	std::list<GateInfo*> gates;
 	GateInfo *selectedGate;
 

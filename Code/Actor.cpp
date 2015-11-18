@@ -16,6 +16,7 @@ Actor::Actor( GameSession *gs )
 		lastWire = 0;
 		inBubble = false;
 		oldInBubble = false;
+		hasKey = false;
 		slopeTooSteepLaunchLimitX = .1;
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
 		//testLight->pos = Vector2i( 0, 0 );
@@ -9136,11 +9137,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 	assert( queryMode != "" );
 
-	//if( ground != NULL )
-	//{
-	//	cout << "attempting. n: " << e->Normal().x << ", " << e->Normal().y << ", gn is: " << ground->Normal().x << ", " << ground->Normal().y << endl;
-	//}
-		
 	if( queryMode == "moving_resolve" )
 	{
 		if( e == ground )
@@ -9711,6 +9707,23 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			//owner->preScreenTex->draw( va );
 
 			++testGrassCount;
+		}
+	}
+	else if( queryMode == "gate" )
+	{
+		Gate *g = (Gate*)qte;
+		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+		if( g->locked && g->IsTouchingBox( r ) )
+		{
+			if( hasKey )
+			{
+				g->locked = false;
+				hasKey = false;
+			}
+			else
+			{
+				++owner->testGateCount;
+			}
 		}
 	}
 	

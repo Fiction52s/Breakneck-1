@@ -515,10 +515,6 @@ struct Key : Enemy
 	Stored stored;
 };
 
-struct Gate
-{
-};
-
 struct EnemyParentNode;
 
 
