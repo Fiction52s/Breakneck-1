@@ -56,6 +56,11 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 }
 
+bool Edge::IsTouchingBox( const sf::Rect<double> &r )
+{
+	return IsEdgeTouchingBox( this, r );
+}
+
 //pathparam is local. pointsParam is local
 MovingTerrain::MovingTerrain( GameSession *own, Vector2i pos, list<Vector2i> &pathParam, list<Vector2i> &pointsParam,
 	bool loopP, float pspeed )
@@ -1818,7 +1823,3 @@ void Edge::HandleQuery( QuadTreeCollider * qtc )
 	qtc->HandleEntrant( this );
 }
 
-bool Edge::IsTouchingBox( const sf::Rect<double> &r )
-{
-	return IsEdgeTouchingBox( this, r );
-}

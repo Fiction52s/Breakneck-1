@@ -10,7 +10,7 @@
 #include <SFML/Graphics.hpp>
 #include "Light.h"
 #include "Camera.h"
-
+#include "Gate.h"
 
 struct PowerBar
 {
@@ -141,6 +141,11 @@ struct GameSession : QuadTreeCollider
 	Edge **edges;
 	sf::Vector2<double> *points;
 	int numPoints;
+
+	int numGates;
+	Gate **gates;
+	int testGateCount;
+
 	sf::VertexArray *va;
 	ControllerState prevInput;
 	ControllerState currInput;
@@ -194,6 +199,7 @@ struct GameSession : QuadTreeCollider
 	QuadTree * enemyTree;
 	QuadTree * lightTree;
 	QuadTree * grassTree;
+	QuadTree * gateTree;
 	
 
 	bool usePolyShader;

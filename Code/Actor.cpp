@@ -4209,6 +4209,23 @@ bool Actor::ResolvePhysics( V2d vel )
 
 		owner->powerBar.Damage( 100000000 );
 	}
+
+	queryMode = "gate";
+	owner->testGateCount = 0;
+	owner->gateTree->Query( this, r );
+
+	if( owner->testGateCount > 0 )
+	{
+		action = DEATH;
+		rightWire->Reset();
+		leftWire->Reset();
+		slowCounter = 1;
+		frame = 0;
+		owner->deathWipe = true;
+
+		owner->powerBar.Damage( 100000000 );
+	}
+
 	//need to fix the quad tree but this works!
 	//cout << "test grass count: " << testGrassCount << endl;
 	//if( minContact.edge != NULL )

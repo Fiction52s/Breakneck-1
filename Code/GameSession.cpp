@@ -74,6 +74,10 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	lightTree = new QuadTree( 1000000, 1000000 );
 
+	gateTree = new QuadTree( 1000000, 1000000 );
+
+
+
 	listVA = NULL;
 	lightList = NULL;
 
@@ -1241,6 +1245,26 @@ bool GameSession::OpenFile( string fileName )
 			}
 		}
 		
+		is >> numGates;
+		gates = new Gate*[numGates];
+		for( int i = 0; i < numGates; ++i )
+		{
+			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+			is >> poly0Index;
+			is >> vertexIndex0;
+			is >> poly1Index;
+			is >> vertexIndex1;
+
+			V2d point0 = edges[polyIndex[poly0Index] + vertexIndex0]->v0;
+			V2d point1 = edges[polyIndex[poly1Index] + vertexIndex1]->v0;
+
+			Gate * gate = new Gate;
+			gate->v0 = point0;
+			gate->v1 = point1;
+			gateTree->Insert( gate );
+			gates[i] = gate;
+		}
+
 		is.close();
 	}
 	else
