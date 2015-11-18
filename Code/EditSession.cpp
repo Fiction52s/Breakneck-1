@@ -26,8 +26,6 @@ using namespace sf;
 
 const double EditSession::PRIMARY_LIMIT = .999;
 
-
-
 TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	:grassTex( gt )
 {
@@ -641,7 +639,6 @@ void TerrainPolygon::Reset()
 	va = NULL;
 }
 
-
 bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 {
 	TerrainPolygon tempPoly( grassTex );
@@ -659,7 +656,6 @@ bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 	
 	return isPolyValid;
 }
-
 
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
 int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
@@ -980,6 +976,56 @@ void StaticLight::WriteFile( std::ofstream &of )
 sf::Rect<double> StaticLight::GetAABB()
 {
 	return sf::Rect<double>( position.x - radius, position.y - radius, radius * 2, radius * 2 );
+}
+
+GateInfo::GateInfo()
+	:thickLine( sf::Quads, 4 )
+{
+	thickLine[0].color = Color( 255, 0, 0, 255 );
+	thickLine[1].color = Color( 255, 0, 0, 255 );
+	thickLine[2].color = Color( 255, 0, 0, 255 );
+	thickLine[3].color = Color( 255, 0, 0, 255 );
+}
+
+void GateInfo::WriteFile( ofstream &of )
+{
+	of << poly0->writeIndex << " " << vertexIndex0 << " " << poly1->writeIndex << " " << vertexIndex1 << endl;
+}
+
+void GateInfo::UpdateLine()
+{
+	double width = 5;
+	V2d dv0( v0.x, v0.y );
+	V2d dv1( v1.x, v1.y );
+	V2d along = normalize( dv1 - dv0 );
+	V2d other( along.y, -along.x );
+	
+	V2d leftv0 = dv0 - other * width;
+	V2d rightv0 = dv0 + other * width;
+
+	V2d leftv1 = dv1 - other * width;
+	V2d rightv1 = dv1 + other * width;
+
+	
+	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
+	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
+	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
+	thickLine[3].position = Vector2f( rightv0.x, rightv0.y );
+}
+
+void GateInfo::Draw( sf::RenderTarget *target )
+{
+	CircleShape cs( 5 );
+	cs.setFillColor( Color::Red );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+	cs.setPosition( v0.x, v0.y );
+	target->draw( cs );
+
+	cs.setPosition( v1.x, v1.y );
+	target->draw( cs );
+
+	target->draw( thickLine );
 }
 
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
@@ -1545,7 +1591,87 @@ bool EditSession::OpenFile( string fileName )
 			}
 		}
 
+		int numGates;
+		is >> numGates;
+		cout << "numgates: " << numGates << endl;
+		for( int i = 0; i < numGates; ++i )
+		{
+			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+			is >> poly0Index;
+			is >> vertexIndex0;
+			is >> poly1Index;
+			is >> vertexIndex1;
 
+			int testIndex = 0;
+			TerrainPolygon *terrain0 = NULL;
+			TerrainPolygon *terrain1 = NULL;
+			bool first = true;
+			for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+			{
+				if( testIndex == poly0Index )
+				{
+					terrain0 = (*it);
+
+					if( first )
+						first = false;
+					else
+						break;
+				}
+				if( testIndex == poly1Index )
+				{
+					terrain1 = (*it);
+
+					if( first )
+						first = false;
+					else
+						break;
+				}
+				testIndex++;
+			}
+
+			GateInfo *gi = new GateInfo;
+			gi->poly0 = terrain0;
+			gi->poly1 = terrain1;
+			gi->vertexIndex0 = vertexIndex0;
+			gi->vertexIndex1 = vertexIndex1;
+
+			int index = 0;
+			for( PointList::iterator it = gi->poly0->points.begin(); it != gi->poly0->points.end(); ++it )
+			{
+				if( index == vertexIndex0 )
+				{
+					gi->v0 = (*it).pos;
+					break;
+				}
+				++index;
+			}
+
+			index = 0;
+			cout << "poly1: " << gi->poly1 << endl;
+			for( PointList::iterator it = gi->poly1->points.begin(); it != gi->poly1->points.end(); ++it )
+			{
+				if( index == vertexIndex1 )
+				{
+					gi->v1 = (*it).pos;
+					break;
+				}
+				++index;
+			}
+
+			gi->UpdateLine();
+			if( gi->poly0 == gi->poly1 )
+			{
+				gi->poly0->attachedGates.push_back( gi );
+			}
+			else
+			{
+				gi->poly0->attachedGates.push_back( gi );
+				gi->poly1->attachedGates.push_back( gi );
+			}
+			
+			
+			gates.push_back( gi );
+		}
 
 		is.close();
 
@@ -1680,6 +1806,14 @@ void EditSession::WriteFile(string fileName)
 		(*it).second->WriteFile( of );
 		//(*it).second->( w );
 	}
+
+	of << gates.size() << endl;
+	for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+	{
+		(*it)->WriteFile( of );
+	}
+
+	
 
 	//enemies here
 
@@ -3024,6 +3158,79 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									(*it)->ShowGrass( true );
 								}
+							}
+							else if( ev.key.code == Keyboard::B )
+							{
+								int countPoints = CountSelectedPoints();
+								bool first = true;
+								bool ddone = false;
+
+								GateInfo testInfo;
+								if( countPoints == 2 )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end() && !ddone; ++it )
+									{
+										int index = 0;
+										for( PointList::iterator it2 = (*it)->points.begin(); it2 != (*it)->points.end() && !ddone; ++it2 )
+										{
+											if( (*it2).selected ) //selected
+											{
+												if( first )
+												{
+													testInfo.poly0 = (*it);
+													testInfo.vertexIndex0 = index;
+													testInfo.v0 = (*it2).pos;
+													first = false;
+												}
+												else
+												{
+													testInfo.poly1 = (*it);
+													testInfo.vertexIndex1 = index;
+													ddone = true;
+													testInfo.v1 = (*it2).pos;
+												}
+											}
+											++index;
+										}
+									}
+
+									bool result = CanCreateGate( testInfo.v0, testInfo.v1 );
+
+									if( result )
+									{
+										MessagePop( "gate created" );
+										GateInfo *gi = new GateInfo;
+										gi->poly0 = testInfo.poly0;
+										gi->vertexIndex0 = testInfo.vertexIndex0;
+										gi->v0 = testInfo.v0;
+										gi->poly1 = testInfo.poly1;
+										gi->vertexIndex1 = testInfo.vertexIndex1;
+										gi->v1 = testInfo.v1;
+										gi->UpdateLine();
+
+										if( gi->poly0 == gi->poly1 )
+										{
+											gi->poly0->attachedGates.push_back( gi );
+										}
+										else
+										{
+											gi->poly0->attachedGates.push_back( gi );
+											gi->poly1->attachedGates.push_back( gi );
+										}
+										
+										gates.push_back( gi );
+									}
+									else
+									{
+										MessagePop( "gate would intersect some terrain" );
+									}
+								}
+								else
+								{
+									MessagePop( "you require two points to create a gate" );
+								}
+
+								
 							}
 							break;
 						}
@@ -5000,6 +5207,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 		{
 			(*it).second->Draw( preScreenTex );
+		}
+
+		for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+		{
+			//cout << "drawing gate" << endl;
+			(*it)->Draw( preScreenTex );
 		}
 
 		
@@ -7245,6 +7458,50 @@ void EditSession::SetEnemyEditPanel()
 	{
 		FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
 	}
+}
+
+bool EditSession::CanCreateGate( Vector2i &v0, Vector2i &v1 )
+{
+	//get aabb, check intersection with polygons. check line intersections with those polygons
+
+	int left = min( v0.x, v1.x );
+	int right = max( v0.x, v1.x );
+	int top = min( v0.y, v1.y );
+	int bot = max( v0.y, v1.y );
+
+	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		//aabb collide
+		if( left <= (*it)->right && right >= (*it)->left && top <= (*it)->bottom && bot >= (*it)->top )
+		{
+			PointList::iterator prev;
+			for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit )
+			{
+				if( pit == (*it)->points.begin() )
+				{
+					prev = (*it)->points.end();
+					--prev;
+				}
+				else
+				{
+					prev = pit;
+					--prev;
+				}
+
+				Vector2i prevPos = (*prev).pos;
+				Vector2i pos = (*pit).pos;
+
+				LineIntersection li = LimitSegmentIntersect( prevPos, pos, v0, v1 );
+
+				if( !li.parallel )
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
 }
 
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )

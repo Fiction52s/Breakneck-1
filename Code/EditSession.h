@@ -33,6 +33,22 @@ struct TerrainPoint
 	//int special;
 };
 
+struct TerrainPolygon;
+struct GateInfo
+{
+	GateInfo();
+	TerrainPolygon *poly0;
+	int vertexIndex0;
+	TerrainPolygon *poly1;
+	int vertexIndex1;
+	sf::VertexArray thickLine;
+	sf::Vector2i v0;
+	sf::Vector2i v1;
+	void UpdateLine();
+	void WriteFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+};
+
 typedef std::list<TerrainPoint> PointList;
 typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
@@ -83,7 +99,7 @@ struct TerrainPolygon
 	std::list<ActorParams*> enemies;
 	int writeIndex;
 	bool isGrassShowing;
-
+	std::list<GateInfo*> attachedGates;
 };
 
 struct StaticLight
@@ -97,6 +113,7 @@ struct StaticLight
 	sf::Vector2i position;
 	void WriteFile( std::ofstream &of );
 };
+
 
 
 struct ActorType
@@ -284,6 +301,10 @@ struct EditSession : GUIHandler
 	bool QuadPolygonIntersect( TerrainPolygon *poly, 
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
+	bool CanCreateGate( sf::Vector2i &v0,
+		sf::Vector2i &v1 );
+	std::list<GateInfo*> gates;
+	GateInfo *selectedGate;
 
 
 	const static double PRIMARY_LIMIT;
