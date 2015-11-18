@@ -1023,8 +1023,6 @@ bool GameSession::OpenFile( string fileName )
 				if( typeName == "goal" )
 				{
 					//always grounded
-					string airStr;
-					is >> airStr;
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -1041,20 +1039,13 @@ bool GameSession::OpenFile( string fileName )
 				}
 				else if( typeName == "patroller" )
 				{
-					string airStr;
-					is >> airStr;
-
+					
 					int xPos,yPos;
 
-					if( airStr == "+air" )
-					{
-						is >> xPos;
-						is >> yPos;
-					}
-					else
-					{
-						assert( false && "air wrong gamesession" );
-					}
+					//always air
+
+					is >> xPos;
+					is >> yPos;
 					
 
 					int pathLength;
@@ -1093,6 +1084,75 @@ bool GameSession::OpenFile( string fileName )
 
 					Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
 					enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				}
+				else if( typeName == "key" )
+				{
+					Vector2i pos;
+
+					//no need to include that it is in the air because keys are always in the air
+
+					int xPos,yPos;
+
+					//always air
+
+					is >> xPos;
+					is >> yPos;
+					
+
+					int pathLength;
+					is >> pathLength;
+
+					list<Vector2i> localPath;
+					for( int i = 0; i < pathLength; ++i )
+					{
+						int localX,localY;
+						is >> localX;
+						is >> localY;
+						localPath.push_back( Vector2i( localX, localY ) );
+					}
+
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+
+					if( loopStr == "+loop" )
+					{
+						loop = true;
+					}
+					else if( loopStr == "-loop" )
+					{
+						loop = false;
+					}
+					else
+					{
+						assert( false && "should be a boolean" );
+					}
+
+
+					float speed;
+					is >> speed;
+
+					int stayFrames;
+					is >> stayFrames;
+
+					bool teleport;
+					string teleStr;
+					is >> teleStr;
+					if( teleStr == "+tele" )
+					{
+						teleport = true;
+					}
+					else if( teleStr == "-tele" )
+					{
+						teleport = false;
+					}
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
+					//a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
+					Key *key = new Key( this, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );	
+					enemyTree->Insert( key );
 				}
 				else if( typeName == "crawler" )
 				{

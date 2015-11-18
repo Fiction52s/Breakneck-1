@@ -666,7 +666,8 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 {
 	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
-		if( (*(*it)->edgeStart).selected || (*(*it)->edgeEnd).selected )
+		if( (*it)->type->canBeGrounded && 
+			( (*(*it)->groundInfo->edgeStart).selected || (*(*it)->groundInfo->edgeEnd).selected ) )
 		{
 			bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 
@@ -732,7 +733,25 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 		++i;
 	}
 
-	return edit->IsPolygonValid( tempPoly, this );
+	bool res = edit->IsPolygonValid( tempPoly, this );
+	if( !res )
+		return false;
+	
+	for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end(); ++it )
+	{
+		for( list<ActorParams*>::iterator ait = (*it).second->actors.begin(); ait != (*it).second->actors.end(); ++ait )
+		{
+			//need to round these floats probably
+			sf::VertexArray &bva = (*ait)->boundingQuad;
+			if( edit->QuadPolygonIntersect( &tempPoly, Vector2i( bva[0].position.x, bva[0].position.y ), 
+				Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
+				 Vector2i( bva[3].position.x, bva[3].position.y ) ) )
+			{
+				cout << "polygon collide with quad" << endl;
+				return false;
+			}
+		}
+	}
 }
 
 bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
@@ -1255,8 +1274,6 @@ bool EditSession::OpenFile( string fileName )
 				if( typeName == "goal" )
 				{
 					//always grounded
-					string airStr;
-					is >> airStr;
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -1294,18 +1311,9 @@ bool EditSession::OpenFile( string fileName )
 				{
 					Vector2i pos;
 
-					string airStr;
-					is >> airStr;
-
-					if( airStr == "+air" )
-					{
-						is >> pos.x;
-						is >> pos.y;
-					}
-					else
-					{
-						assert( false && "air wrong" );
-					}
+					//always air
+					is >> pos.x;
+					is >> pos.y;
 
 					int pathLength;
 					is >> pathLength;
@@ -1339,12 +1347,66 @@ bool EditSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a = new PatrollerParams( this, pos, globalPath, speed, loop );
 				}
+				else if( typeName == "key" )
+				{
+					Vector2i pos;
+
+					//always in air
+					is >> pos.x;
+					is >> pos.y;
+
+
+					int pathLength;
+					is >> pathLength;
+					
+					list<Vector2i> globalPath;
+					globalPath.push_back( Vector2i( pos.x, pos.y ) );
+
+					for( int i = 0; i < pathLength; ++i )
+					{
+						int localX,localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
+					}
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+					if( loopStr == "+loop" )
+						loop = true;
+					else if( loopStr == "-loop" )
+						loop = false;
+					else
+						assert( false && "should be a boolean" );
+
+
+					float speed;
+					is >> speed;
+
+					int stayFrames;
+					is >> stayFrames;
+
+					bool teleport;
+					string teleStr;
+					is >> teleStr;
+					if( teleStr == "+tele" )
+					{
+						teleport = true;
+					}
+					else if( teleStr == "-tele" )
+					{
+						teleport = false;
+					}
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
+					a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
+				}
 				else if( typeName == "crawler" )
 				{
 
 					//always grounded
-					string airStr;
-					is >> airStr;
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -1399,8 +1461,6 @@ bool EditSession::OpenFile( string fileName )
 				else if( typeName == "basicturret" )
 				{
 					//always grounded
-					string airStr;
-					is >> airStr;
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -1443,9 +1503,6 @@ bool EditSession::OpenFile( string fileName )
 				else if( typeName == "foottrap" )
 				{
 					//always grounded
-					string airStr;
-					is >> airStr;
-
 					int terrainIndex;
 					is >> terrainIndex;
 
@@ -1997,6 +2054,54 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
+bool EditSession::QuadPolygonIntersect( TerrainPolygon *poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+{
+	TerrainPolygon quadPoly( poly->grassTex );
+	quadPoly.points.push_back( TerrainPoint( a, false ) );
+	quadPoly.points.push_back( TerrainPoint( b, false ) );
+	quadPoly.points.push_back( TerrainPoint( c, false ) );
+	quadPoly.points.push_back( TerrainPoint( d, false ) );
+
+	bool touching = poly->IsTouching( &quadPoly );
+	return touching;
+
+	/*int qLeft = min( a.x, min( b.x, min( c.x, d.x ) ) );
+	int qRight = max( a.x, min( b.x, min( c.x, d.x ) ) );
+	int qTop = min( a.y, min( b.y, min( c.y, d.y ) ) );
+	int qBot = max( a.y, min( b.y, min( c.y, d.y ) ) );
+
+	if( poly->left >= qLeft && poly->right <= qRight && poly->top >= qTop && poly->bottom <= qBot )
+	{
+		return true;
+	}
+
+	IntRect ri( qLeft, qTop, qRight - qLeft, qBot - qTop );
+	IntRect riPoly( poly->left, poly->top, poly->right - poly->left, poly->bottom - poly->top );
+
+	if( !ri.intersects( riPoly ) )
+	{
+		return false;
+	}
+
+	bool containsA = poly->ContainsPoint( Vector2f( a.x, a.y ) );
+	bool containsB = poly->ContainsPoint( Vector2f( b.x, b.y ) );
+	bool containsC = poly->ContainsPoint( Vector2f( c.x, c.y ) );
+	bool containsD = poly->ContainsPoint( Vector2f( d.x, d.y ) );
+
+	if( containsA || containsB || containsC || containsD )
+	{
+		return true;
+	}
+
+	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
+	{
+		Vector2i &p = (*it).pos;
+		
+	}
+
+	return false;*/
+}
+
 LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
 	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
@@ -2097,6 +2202,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
+	Panel *keyPanel = CreateOptionsPanel( "key" );
+	ActorType *keyType = new ActorType( "key", keyPanel );
+
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
@@ -2115,6 +2223,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	errorPopup = CreatePopupPanel( "error" );
 
 	types["patroller"] = patrollerType;
+	types["key"] = keyType;
 	types["crawler"] = crawlerType;
 	types["basicturret"] = basicTurretType;
 	types["foottrap"] = footTrapType;
@@ -2129,6 +2238,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s2( basicTurretType->iconTexture );
 	sf::Sprite s3( footTrapType->iconTexture );
 	sf::Sprite s4( goalType->iconTexture );
+	sf::Sprite s5( keyType->iconTexture );
 
 
 	gs.Set( 0, 0, s0, "patroller" );
@@ -2136,6 +2246,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs.Set( 0, 1, s2, "basicturret" );
 	gs.Set( 1, 1, s3, "foottrap" );
 	gs.Set( 2, 0, s4, "goal" );
+	gs.Set( 2, 1, s5, "key" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -2805,7 +2916,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											list<ActorParams*>::iterator et = (*it)->enemies.begin();
 											while( et != (*it)->enemies.end() )
 											{
-												bool deleted = (*(*et)->edgeStart).selected || (*(*et)->edgeEnd).selected;
+												bool deleted = (*(*et)->groundInfo->edgeStart).selected || (*(*et)->groundInfo->edgeEnd).selected;
 												if (deleted)
 												{
 													(*et)->group->actors.remove( (*et ) );
@@ -2834,9 +2945,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else if( selectedActor != NULL )
 								{
-									if( selectedActor->ground != NULL )
+									if( selectedActor->groundInfo != NULL && selectedActor->groundInfo->ground != NULL )
 									{
-										selectedActor->ground->enemies.remove( selectedActor );
+										selectedActor->groundInfo->ground->enemies.remove( selectedActor );
 									}
 									selectedActor->group->actors.remove( selectedActor );
 									delete selectedActor;
@@ -3207,6 +3318,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//mode = CREATE_PATROL_PATH;
 										//patrolPath.clear();
 										//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+									}
+									else if( trackingEnemy->name == "key" )
+									{
+										showPanel = trackingEnemy->panel;
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
 									else if( trackingEnemy->name == "crawler" )
 									{
@@ -5246,9 +5363,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				else*/
 				{
-					if( selectedActor->type->name == "patroller" )
+					if( selectedActor->type->name == "patroller" || selectedActor->type->name == "key" )
 					{
-						
 						selectedActor->position = Vector2i( worldPos.x, worldPos.y );
 						selectedActor->image.setPosition( worldPos.x, worldPos.y );
 					}
@@ -5791,6 +5907,64 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
+	
+	else if( p->name == "key_options" )
+	{
+		if( b->name == "ok" )
+		{
+			bool loop = p->checkBoxes["loop"]->checked;
+			float speed = 1; 
+			int stayFrames = 0;
+			bool teleport = p->checkBoxes["teleport"]->checked;
+
+			try
+			{
+				speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+			}
+			catch(boost::bad_lexical_cast &)
+			{
+				//error
+			}
+
+			try
+			{
+				stayFrames = boost::lexical_cast<int>( p->textBoxes["stayframes"]->text.getString().toAnsiString() );
+			}
+			catch(boost::bad_lexical_cast &)
+			{
+				//error
+			}
+
+			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if( mode == EDIT && selectedActor != NULL )
+			{
+				KeyParams *key = (KeyParams*)selectedActor;
+				key->speed = speed;
+				key->loop = loop;
+				key->stayFrames = stayFrames;
+				key->teleport = teleport;
+				key->SetPath( patrolPath );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				KeyParams *key = new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport );
+				groups["--"]->actors.push_back( key );
+				key->group = groups["--"];
+				trackingEnemy = NULL;
+			}
+
+			showPanel = NULL;
+		}
+		else if( b->name == "createpath" )
+		{
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back( front );
+		}
+	}
 	else if( p->name == "crawler_options" )
 	{
 		if( b->name == "ok" );
@@ -6106,6 +6280,23 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
+	if( name == "key" )
+	{
+		Panel *p = new Panel( "key_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddLabel( "teleport_label", Vector2i( 100, 150 ), 20, "teleport" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddCheckBox( "teleport", Vector2i( 180, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
+		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
@@ -6675,6 +6866,8 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 		}
 	}
 
+
+
 	//cout << "true" << endl;
 	return true;
 }
@@ -7083,41 +7276,61 @@ ActorType::ActorType( const std::string & n, Panel *p )
 	//icon.setTexture( iconTexture );
 	imageTexture.loadFromFile( name + "_editor.png" );
 	//image.setTexture( imageTexture );
-	SetBounds();
+	Init();
 }
 
-void ActorType::SetBounds()
+void ActorType::Init()
 {
 	if( name == "patroller" )
 	{
 		width = 0;
 		height = 0;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 	else if( name == "foottrap" )
 	{
 		width = 32;
 		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
 	else if( name == "basicturret" )
 	{
 		width = 32;
 		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
 	else if( name == "goal" )
 	{
 		width = 32;
 		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
 	else if( name == "crawler" )
 	{
 		width = 32;
 		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
+	else if( name == "key" )
+	{
+		width = 0;
+		height = 0;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+
 }
 
 ActorParams::ActorParams()
-	:ground( NULL ), groundQuantity( 420.69 ), boundingQuad( sf::Quads, 4 )
+	:boundingQuad( sf::Quads, 4 ) //, ground( NULL ), groundQuantity( 420.69 ), 
 {
+	groundInfo = NULL;
+
 	for( int i = 0; i < 4; ++i )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
@@ -7137,14 +7350,31 @@ void ActorParams::WriteFile( ofstream &of )
 	//dont need number of params because the actortype determines that.
 	of << type->name << " ";
 
-	if( ground != NULL )
+	if( type->canBeGrounded && type->canBeAerial )
 	{
-		of << "-air" << " " << ground->writeIndex << " " << edgeIndex << " " << groundQuantity << endl;
+		if( groundInfo != NULL )
+		{
+			of << "-air" << " " << groundInfo->ground->writeIndex << " " << groundInfo->edgeIndex << " " << groundInfo->groundQuantity << endl;
+		}
+		else
+		{
+			of << "+air" << " " << position.x << " " << position.y << endl;
+		}
+	}
+	else if( type->canBeGrounded )
+	{
+		assert( groundInfo != NULL );
+		of << groundInfo->ground->writeIndex << " " << groundInfo->edgeIndex << " " << groundInfo->groundQuantity << endl;
+	}
+	else if( type->canBeAerial )
+	{
+		of << position.x << " " << position.y << endl;
 	}
 	else
 	{
-		of << "+air" << " " << position.x << " " << position.y << endl;
+		assert( false );
 	}
+	
 
 	/*for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
 	{
@@ -7191,14 +7421,14 @@ TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 void ActorParams::SetBoundingQuad()
 {
 	//float note
-	if( ground != NULL )
+	if( type->canBeGrounded && groundInfo != NULL )
 	{
-		V2d v0( (*edgeStart).pos.x, (*edgeStart).pos.y );
-		V2d v1( (*edgeEnd).pos.x, (*edgeEnd).pos.y );
+		V2d v0( (*groundInfo->edgeStart).pos.x, (*groundInfo->edgeStart).pos.y );
+		V2d v1( (*groundInfo->edgeEnd).pos.x, (*groundInfo->edgeEnd).pos.y );
 		V2d along = normalize( v1 - v0 );
 		V2d other( along.y, -along.x );
 
-		V2d startGround = v0 + along * groundQuantity;
+		V2d startGround = v0 + along * groundInfo->groundQuantity;
 		V2d leftGround = startGround - along * ( type->width / 2.0 );
 		V2d rightGround = startGround + along * ( type->width / 2.0 );
 		V2d leftAir = leftGround + other * (double)type->height;
@@ -7221,10 +7451,18 @@ void ActorParams::SetBoundingQuad()
 
 void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quantity )
 {
-	ground = poly;
+	if( groundInfo != NULL )
+	{
+		delete groundInfo;
+		groundInfo = NULL;
+	}
+
+	groundInfo = new GroundInfo;
+	
+	groundInfo->ground = poly;
 	poly->enemies.push_back( this );
-	edgeIndex = eIndex;
-	groundQuantity = quantity;
+	groundInfo->edgeIndex = eIndex;
+	groundInfo->groundQuantity = quantity;
 
 	image.setTexture( type->imageTexture );
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
@@ -7233,27 +7471,27 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 
 	Vector2i point;
 
-	PointList::iterator prev = ground->points.end();
+	PointList::iterator prev = groundInfo->ground->points.end();
 	prev--;
-	PointList::iterator curr = ground->points.begin();
+	PointList::iterator curr = groundInfo->ground->points.begin();
 
-	for( ; curr != ground->points.end(); ++curr )
+	for( ; curr != groundInfo->ground->points.end(); ++curr )
 	{
-		if( edgeIndex == testIndex )
+		if( groundInfo->edgeIndex == testIndex )
 		{
 			V2d pr( (*prev).pos.x, (*prev).pos.y );
 			V2d cu( (*curr).pos.x, (*curr).pos.y );
 
-			V2d newPoint( pr.x + (cu.x - pr.x) * (groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(groundQuantity / length( cu - pr ) ) );
+			V2d newPoint( pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+											(groundInfo->groundQuantity / length( cu - pr ) ) );
 
 			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
 
 			image.setPosition( newPoint.x, newPoint.y );
 			image.setRotation( angle );
 
-			edgeStart = prev;
-			edgeEnd = curr;
+			groundInfo->edgeStart = prev;
+			groundInfo->edgeEnd = curr;
 
 			break;
 		}
@@ -7261,10 +7499,95 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 		++testIndex;
 	}
 	//adjust for ordery
-	if( edgeIndex == 0 )
-		edgeIndex = ground->points.size() - 1;
+	if( groundInfo->edgeIndex == 0 )
+		groundInfo->edgeIndex = groundInfo->ground->points.size() - 1;
 	else
-		edgeIndex--;
+		groundInfo->edgeIndex--;
+}
+
+KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
+					 int p_stayFrames, bool p_teleport )
+{	
+	position = pos;	
+	type = edit->types["key"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetPath( globalPath );
+
+	loop = p_loop;
+	speed = p_speed;
+	stayFrames = p_stayFrames;
+	teleport = p_teleport;
+
+
+	SetBoundingQuad();
+}
+
+void KeyParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	localPath.clear();
+	if( globalPath.size() > 1 )
+	{
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for( ; it != globalPath.end(); ++it )
+		{
+			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
+			localPath.push_back( temp );
+		}
+	}
+}
+
+void KeyParams::Draw( sf::RenderTarget *target )
+{
+	target->draw( image );
+}
+
+std::list<sf::Vector2i> KeyParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back( position );
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		globalPath.push_back( position + (*it) );
+	}
+	return globalPath;
+}
+
+void KeyParams::WriteParamFile( ofstream &of )
+{
+	of << localPath.size() << endl;
+
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		of << (*it).x  << " " << (*it).y << endl;
+	}
+
+	if( loop )
+	{
+		of << "+loop" << endl;
+	}
+	else
+	{
+		of << "-loop" << endl;
+	}
+
+	of.precision( 5 );
+	of << fixed << speed << endl;
+
+	of << stayFrames << endl;
+	
+	if( teleport )
+	{
+		of << "+tele" << endl;
+	}
+	else
+	{
+		of << "-tele" << endl;
+	}
 }
 
 PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )

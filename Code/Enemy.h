@@ -16,6 +16,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		BASICTURRET,
 		FOOTTRAP,
 		GOAL,
+		KEY,
 		Count
 	};
 
@@ -429,6 +430,93 @@ struct Goal : Enemy
 	int animationFactor;
 	bool dead;
 	sf::Vector2<double> gn;
+};
+
+struct Key : Enemy
+{
+	enum KeyType
+	{
+		RED,
+		GREEN,
+		BLUE
+	};
+
+	Key( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed, int stayFrames, bool teleport );
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	void AdvanceTargetNode();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	bool teleport;
+	int stayFrames;
+
+	bool dead;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	//std::list<sf::Vector2i> path;
+	sf::Vector2i *path; //global
+	int pathLength;
+	bool loop;
+
+	int targetNode;
+	bool forward;
+	//sf::Vector2<double>
+	int frame;
+
+	double acceleration;
+	double speed;
+	int nodeWaitFrames;
+	sf::Vector2<double> position;
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	KeyType type;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct Gate
+{
 };
 
 struct EnemyParentNode;

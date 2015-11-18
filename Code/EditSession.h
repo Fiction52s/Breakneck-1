@@ -102,12 +102,14 @@ struct StaticLight
 struct ActorType
 {
 	ActorType( const std::string & name, Panel *panel );
-	void SetBounds();
+	void Init();
 	std::string name;
 	sf::Texture iconTexture;
 	sf::Texture imageTexture;
 	int width;
 	int height;
+	bool canBeGrounded;
+	bool canBeAerial;
 	Panel *panel;
 };
 
@@ -137,12 +139,23 @@ struct ActorParams
 	ActorGroup *group;
 	ActorType *type;
 	sf::Vector2i position;
-	double groundQuantity;
-	TerrainPolygon *ground;
-	int edgeIndex;
-	PointList::iterator edgeStart;
-	PointList::iterator edgeEnd;
+
+	//if groundInfo is not null
+	//then you can handle ground, even 
+	//if you arent on it
+	struct GroundInfo
+	{
+		PointList::iterator edgeStart;
+		PointList::iterator edgeEnd;
+		double groundQuantity;
+		TerrainPolygon *ground;
+		int edgeIndex;
+	};
+	
+	GroundInfo *groundInfo;
+
 	sf::VertexArray boundingQuad;
+	
 	virtual void Draw( sf::RenderTarget *target );
 	virtual void DrawQuad( sf::RenderTarget *target );
 
@@ -165,6 +178,28 @@ struct PatrollerParams : public ActorParams
 	bool loop;
 	float speed;
 };
+
+struct KeyParams : public ActorParams
+{
+	KeyParams( EditSession *edit,
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath, 
+		float speed,
+		bool loop,
+		int stayFrames,
+		bool teleport );
+	void WriteParamFile( std::ofstream &of );
+	void SetPath( 
+		std::list<sf::Vector2i> &globalPath );
+	std::list<sf::Vector2i> GetGlobalPath();
+	void Draw( sf::RenderTarget *target );
+	std::list<sf::Vector2i> localPath;
+	bool loop;
+	float speed;
+	int stayFrames;
+	bool teleport;
+};
+
 
 struct CrawlerParams : public ActorParams
 { 
@@ -214,11 +249,6 @@ struct GoalParams : public ActorParams
 };
 
 //no params for goal and foottrap atm
-
-
-
-
-
 struct ActorGroup
 {
 	ActorGroup( const std::string &name );
@@ -251,6 +281,10 @@ struct EditSession : GUIHandler
 		 TerrainPolygon *ignore );
 	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
 	void SetEnemyEditPanel();
+	bool QuadPolygonIntersect( TerrainPolygon *poly, 
+		sf::Vector2i a, sf::Vector2i b, 
+		sf::Vector2i c, sf::Vector2i d );
+
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
