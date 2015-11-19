@@ -5211,6 +5211,8 @@ V2d Actor::UpdateReversePhysics()
 	return leftGroundExtra;
 }
 
+//eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
+//for universal substeps. guess box2d makes more sense now doesn't it XD
 void Actor::UpdatePhysics()
 {
 	if( action == DEATH )
@@ -5270,6 +5272,26 @@ void Actor::UpdatePhysics()
 					movement -= gLen - q;
 					grindEdge = e1;
 					q = 0;
+					V2d v0 = grindEdge->v0;
+
+					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
+					queryMode = "gate";
+					owner->testGateCount = 0;
+					owner->gateTree->Query( this, r );
+
+					if( owner->testGateCount > 0 )
+					{
+						action = DEATH;
+						rightWire->Reset();
+						leftWire->Reset();
+						slowCounter = 1;
+						frame = 0;
+						owner->deathWipe = true;
+
+						owner->powerBar.Damage( 100000000 );
+						return;
+					}
+					
 				}
 				else
 				{
@@ -5283,6 +5305,26 @@ void Actor::UpdatePhysics()
 				if( extra < 0 )
 				{
 					movement -= movement - extra;
+
+					V2d v0 = grindEdge->v0;
+					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
+					queryMode = "gate";
+					owner->testGateCount = 0;
+					owner->gateTree->Query( this, r );
+
+					if( owner->testGateCount > 0 )
+					{
+						action = DEATH;
+						rightWire->Reset();
+						leftWire->Reset();
+						slowCounter = 1;
+						frame = 0;
+						owner->deathWipe = true;
+
+						owner->powerBar.Damage( 100000000 );
+						return;
+					}
+
 					grindEdge = e0;
 					q = length( e0->v1 - e0->v0 );
 				}
@@ -9712,17 +9754,37 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if( queryMode == "gate" )
 	{
 		Gate *g = (Gate*)qte;
-		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-		if( g->locked && g->IsTouchingBox( r ) )
+		
+		if( action == GRINDBALL )
 		{
-			if( hasKey )
+			if( g->locked && ( g->v0 == grindEdge->v0 || g->v1 == grindEdge->v0 ) )
 			{
-				g->locked = false;
-				hasKey = false;
+				if( hasKey )
+				{
+					g->locked = false;
+					hasKey = false;
+				}
+				else
+				{
+					++owner->testGateCount;
+				}
 			}
-			else
+		}
+		else
+		{
+			Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+
+			if( g->locked && g->IsTouchingBox( r ) )
 			{
-				++owner->testGateCount;
+				if( hasKey )
+				{
+					g->locked = false;
+					hasKey = false;
+				}
+				else
+				{
+					++owner->testGateCount;
+				}
 			}
 		}
 	}
