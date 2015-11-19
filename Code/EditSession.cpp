@@ -237,6 +237,8 @@ void TerrainPolygon::Finalize()
 		delete grassVA;
 	}
 	grassVA = gva;
+
+	
 }
 
 bool TerrainPolygon::RemoveSelectedPoints()
@@ -703,9 +705,35 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 		++pIndex;
 	}
 
+	for( list<GateInfo*>::iterator it = attachedGates.begin(); it != attachedGates.end(); ++it )
+	{
+		if( (*(*it)->v0It).selected )
+		{
+			(*it)->v0 += delta;
+		}
+		if( (*(*it)->v1It).selected )
+		{
+			(*it)->v1 += delta;
+		}
+		
+		tempPoly.attachedGates.push_back( (*it) );
+	}
 
+	bool result = edit->IsPolygonValid( tempPoly, this );
 
-	return edit->IsPolygonValid( tempPoly, this );
+	for( list<GateInfo*>::iterator it = attachedGates.begin(); it != attachedGates.end(); ++it )
+	{
+		if( (*(*it)->v0It).selected )
+		{
+			(*it)->v0 -= delta;
+		}
+		if( (*(*it)->v1It).selected )
+		{
+			(*it)->v1 -= delta;
+		}
+	}
+
+	return result;
 }
 
 bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelta, Vector2i *deltas )
@@ -733,9 +761,34 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 		++i;
 	}
 
+	for( list<GateInfo*>::iterator it = attachedGates.begin(); it != attachedGates.end(); ++it )
+	{
+		if( (*(*it)->v0It).selected )
+		{
+			(*it)->v0 += pointGrabDelta - deltas[(*it)->vertexIndex0];	
+		}
+		if( (*(*it)->v1It).selected )
+		{
+			(*it)->v1 += pointGrabDelta - deltas[(*it)->vertexIndex1];
+		}
+		tempPoly.attachedGates.push_back( (*it) );
+	}
+
 	bool res = edit->IsPolygonValid( tempPoly, this );
 	if( !res )
 		return false;
+
+	for( list<GateInfo*>::iterator it = attachedGates.begin(); it != attachedGates.end(); ++it )
+	{
+		if( (*(*it)->v0It).selected )
+		{
+			(*it)->v0 -= pointGrabDelta - deltas[(*it)->vertexIndex0];	
+		}
+		if( (*(*it)->v1It).selected )
+		{
+			(*it)->v1 -= pointGrabDelta - deltas[(*it)->vertexIndex1];
+		}
+	}
 	
 	for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end(); ++it )
 	{
@@ -4963,10 +5016,30 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								(*it)->Finalize();
 								(*it)->SetSelected( true );
 								
+								Vector2i newPos0;
+								Vector2i newPos1;
+
+								for( list<GateInfo*>::iterator git = (*it)->attachedGates.begin(); git != (*it)->attachedGates.end(); ++git )
+								{
+									/*newPos0 = (*(*git)->v0It ).pos;
+									newPos1 = (*(*git)->v1It ).pos;
+									cout << "newPos0: " << newPos0.x << ", " << newPos0.y << endl;
+									if( newPos0 != (*git)->v0 || newPos1 != (*git)->v1 )
+									{
+										(*git)->v0 = newPos0;
+										(*git)->v1 = newPos1;
+										(*git)->UpdateLine();
+									}*/
+								}
 							}
 
 							++allDeltaIndex;
+
+							
 						}
+
+						
+						
 					}
 					else
 					{
@@ -6834,10 +6907,10 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 
 	for( list<GateInfo*>::iterator git = poly->attachedGates.begin(); git != poly->attachedGates.end(); ++git )
 	{
-		LineIntersection li = SegmentIntersect( (*git)->v0, (*git)->v1, oldPoint, point );
+		LineIntersection li = LimitSegmentIntersect( (*git)->v0, (*git)->v1, oldPoint, point );
 		if( !li.parallel )
 		{
-			return false;
+		//	return false;
 		}
 	}
 
