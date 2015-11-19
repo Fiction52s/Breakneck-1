@@ -2249,9 +2249,6 @@ int GameSession::Run( string fileN )
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( vv.getCenter().x, vv.getCenter().y );
 		
-
-
-		//vv.setSize( 1920 * 10, 1080 * 10 );
 		queryMode = "border";
 		numBorders = 0;
 		sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
@@ -2262,13 +2259,45 @@ int GameSession::Run( string fileN )
 		listVAIter = listVA;
 		while( listVAIter != NULL )
 		{
-			//if( listVAIter->grassVA != NULL )
-			//	minimapTex->draw( *listVAIter->grassVA, &grassTex );
-			
 			minimapTex->draw( *listVAIter->terrainVA );
-			//preScreenTex->draw( *listVAIter->va, &borderTex );
 			listVAIter = listVAIter->next;
-			//timesDraw++; 
+		}
+
+		Enemy *current = activeEnemyList;
+		while( current != NULL )
+		{
+			if( current->type == Enemy::KEY )
+			{
+				Key * k = (Key*)current;
+				CircleShape cs;
+				cs.setFillColor( Color::Red );
+				cs.setRadius( 20 );
+				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+				cs.setPosition( k->position.x, k->position.y );
+				minimapTex->draw( cs );
+			}
+			current = current->next;
+		}
+
+		testGateCount = 0;
+		queryMode = "gate";
+		gateList = NULL;
+		gateTree->Query( this, minimapRect );
+		while( gateList != NULL )
+		{
+			//gateList->Draw( preScreenTex );
+			if( gateList->locked )
+			{
+				sf::Vertex activePreview[2] =
+				{
+					sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), Color::Red ),
+					sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), Color::Red )
+				};
+				minimapTex->draw( activePreview, 2, sf::Lines );
+			}
+
+			Gate *next = (Gate*)gateList->edge1;
+			gateList = next;
 		}
 		
 		minimapTex->draw( cs );

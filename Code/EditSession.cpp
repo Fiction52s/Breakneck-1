@@ -2304,6 +2304,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	selectedActor = NULL;
 	selectedLight = NULL;
+	selectedGate = NULL;
 	selectedLightGrabbed = false;
 
 	trackingEnemy = NULL;
@@ -2785,6 +2786,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( showGrass )
 									break;
 
+								//lights
 								if( sf::Keyboard::isKeyPressed( Keyboard::F ) )
 								{
 									StaticLight *closest = NULL;
@@ -2822,6 +2824,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									selectedLight = closest;
 									selectedActor = NULL;
+									selectedGate = NULL;
 									selectedPlayer = false;
 
 									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
@@ -2843,10 +2846,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									selectedLight = NULL;
 								}
 
+								//grab player
 								if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
 								{
 									selectedActor = NULL;
 									selectedLight = NULL;
+									selectedGate = NULL;
 									selectedLightGrabbed = false;
 									selectedPlayer = true;
 									grabPlayer = true;
@@ -2862,6 +2867,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								bool emptySpace = true;
 
+								//points
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
 								{
@@ -2903,7 +2909,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 								}
 
-								
+								//polygons
 								if( emptySpace )
 								{
 									for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
@@ -2956,7 +2962,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									selectedPolygons.clear();
 								}
 								
-							//	cout << "here before loop" << endl;
+								//enemies
 								bool empty = true;
 								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
 								{
@@ -2983,12 +2989,47 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 								}
 
+								if( empty )
+								{
+									GateInfo *closest = NULL;
+									double closestDist = 50;
+									for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+									{
+										double extra = 50;
+										double gLeft = std::min( (*it)->v0.x, (*it)->v1.x ) - extra;
+										double gRight = std::max( (*it)->v0.x, (*it)->v1.x ) + extra;
+										double gTop = std::min( (*it)->v0.y, (*it)->v1.y ) - extra;
+										double gBot = std::max( (*it)->v0.y, (*it)->v1.y ) + extra;
+										Rect<double> r( gLeft, gTop, gRight - gLeft, gBot - gTop );
 
+										//aabb collision
+										if( gLeft <= worldPos.x && gRight >= worldPos.x && gTop <= worldPos.y && gBot >= worldPos.y )
+										{
+											V2d v0((*it)->v0.x, (*it)->v0.y );
+
+											double dist = abs(cross( worldPos - v0, normalize( V2d( (*it)->v1.x, (*it)->v1.y ) - v0 ) ));
+											if( dist < closestDist )
+											{
+												closest = (*it);
+												closestDist = dist;
+											}
+										}
+									}
+
+
+									if( closest != NULL )
+									{
+										selectedGate = closest;
+										empty = false;
+									}
+
+								}
 							//	cout << "made it!!!" << endl;
 								if( empty )
 								{
 									selectedActor = NULL;
 									selectedLight = NULL;
+									selectedGate = NULL;
 									selectedActorGrabbed = false;
 								}
 
@@ -3094,6 +3135,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									delete selectedLight;
 									selectedLight = NULL;
 									selectedLightGrabbed = false;
+								}
+								else if( selectedGate != NULL )
+								{
+									gates.remove( selectedGate );
+									selectedGate->poly0->attachedGates.remove( selectedGate );
+									selectedGate->poly1->attachedGates.remove( selectedGate );
+									delete selectedGate;
+									selectedGate = NULL;
 								}
 								else
 								{
@@ -3688,6 +3737,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								selectedPlayer = false;
 								selectedActor = NULL;
+								selectedGate = NULL;
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
 								{
@@ -3728,8 +3778,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									SetEnemyEditPanel();
 									mode = menuDownStored;
 								}
+								else if( menuDownStored == EDIT && selectedGate != NULL )
+								{
+									//
+									//mode = menuDownStored;
+								}
 								else
-
 								{
 									mode = EDIT;
 								}
@@ -5625,6 +5679,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				preScreenTex->draw( rs );
 				//cout << "draw rectangle"  << endl;
 			}
+			else if( selectedGate != NULL )
+			{
+				int gLeft = std::min( selectedGate->v0.x, selectedGate->v1.x );
+				int gRight = std::max( selectedGate->v0.x, selectedGate->v1.x );
+				int gTop = std::min( selectedGate->v0.y, selectedGate->v1.y );
+				int gBot = std::max( selectedGate->v0.y, selectedGate->v1.y );
+				sf::RectangleShape rs( sf::Vector2f( gRight - gLeft, gBot - gTop ) );
+				
+				rs.setOutlineColor( Color::Cyan );				
+				rs.setFillColor( Color::Transparent );
+				rs.setOutlineThickness( 5 );
+				rs.setPosition( gLeft, gTop );
+				preScreenTex->draw( rs );
+			}
 			else if( selectedPlayer )
 			{
 				sf::FloatRect bounds = playerSprite.getGlobalBounds();
@@ -5815,6 +5883,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( menuDownStored == EditSession::EDIT && selectedActor != NULL )
 					{
 						textmag.setString( "EDIT\nENEMY" );
+					}
+					else if( menuDownStored == EditSession::EDIT && selectedGate != NULL )
+					{
+						textmag.setString( "EDIT\nGATE" );
 					}
 					else if( menuDownStored == EditSession::EDIT && selectedPolygons.size() > 0 )
 					{

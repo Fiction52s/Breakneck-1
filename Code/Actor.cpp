@@ -695,7 +695,7 @@ void Actor::ActionEnded()
 			break;
 		case AIRDASH:
 			{
-				cout << "inBubble: " << inBubble << endl;
+				//cout << "inBubble: " << inBubble << endl;
 				if( inBubble || rightWire->state == Wire::PULLING )
 				{
 					frame = actionLength[AIRDASH] - 1;
