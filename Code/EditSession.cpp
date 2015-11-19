@@ -685,6 +685,7 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 {
 	TerrainPolygon tempPoly( grassTex );
 
+	int pIndex = 0;
 	for( PointList::iterator it = points.begin(); it != points.end(); ++it )
 	{
 		if( !(*it).selected )
@@ -699,7 +700,10 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 
 			tempPoly.points.push_back( p );
 		}
+		++pIndex;
 	}
+
+
 
 	return edit->IsPolygonValid( tempPoly, this );
 }
@@ -1641,6 +1645,7 @@ bool EditSession::OpenFile( string fileName )
 				if( index == vertexIndex0 )
 				{
 					gi->v0 = (*it).pos;
+					gi->v0It = it;
 					break;
 				}
 				++index;
@@ -1653,6 +1658,7 @@ bool EditSession::OpenFile( string fileName )
 				if( index == vertexIndex1 )
 				{
 					gi->v1 = (*it).pos;
+					gi->v1It = it;
 					break;
 				}
 				++index;
@@ -2642,7 +2648,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											break;
 										}
 									}
-									
+
+									//if( !IsPolygonValid( *polygonInProgress, NULL ) )
+									//	valid = false;
+
 									if( !valid )
 									{
 										MessagePop( "unable to complete polygon" );
@@ -2880,6 +2889,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											{
 												(*it2).selected = false;
 												emptySpace = false;
+												selectedGate = NULL;
 												break;
 											}
 											else
@@ -2899,6 +2909,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 												(*it2).selected = true;
 												emptySpace = false;
+												selectedGate = NULL;
 												break;
 
 
@@ -2951,6 +2962,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 								}
 
+								
+
 								if( emptySpace )
 								{
 									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
@@ -2963,7 +2976,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								
 								//enemies
-								bool empty = true;
+								bool empty = emptySpace;
 								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
 								{
 									list<ActorParams*> &actors = it->second->actors;
@@ -3229,6 +3242,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													testInfo.poly0 = (*it);
 													testInfo.vertexIndex0 = index;
 													testInfo.v0 = (*it2).pos;
+													testInfo.v0It = it2;
 													first = false;
 												}
 												else
@@ -3237,6 +3251,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													testInfo.vertexIndex1 = index;
 													ddone = true;
 													testInfo.v1 = (*it2).pos;
+													testInfo.v1It = it2;
 												}
 											}
 											++index;
@@ -3255,6 +3270,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										gi->poly1 = testInfo.poly1;
 										gi->vertexIndex1 = testInfo.vertexIndex1;
 										gi->v1 = testInfo.v1;
+										gi->v0It = testInfo.v0It;
+										gi->v1It = testInfo.v1It;
 										gi->UpdateLine();
 
 										if( gi->poly0 == gi->poly1 )
@@ -6815,7 +6832,14 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 		prev = it;
 	}
 
-	
+	for( list<GateInfo*>::iterator git = poly->attachedGates.begin(); git != poly->attachedGates.end(); ++git )
+	{
+		LineIntersection li = SegmentIntersect( (*git)->v0, (*git)->v1, oldPoint, point );
+		if( !li.parallel )
+		{
+			return false;
+		}
+	}
 
 
 	return true;
@@ -7149,6 +7173,64 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 				return false;
 			}
 		}
+
+		for( PointList::iterator pit = poly.points.begin(); pit != poly.points.end(); ++pit )
+		{
+			Vector2i oldPoint, currPoint;
+			if( pit == poly.points.begin() )
+			{
+				PointList::iterator temp = poly.points.end();
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+			else
+			{
+				PointList::iterator temp = pit;
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+
+			currPoint = (*pit).pos;
+
+			for( list<GateInfo*>::iterator it = (*polyIt)->attachedGates.begin(); it != (*polyIt)->attachedGates.end(); ++it )
+			{
+				LineIntersection li = LimitSegmentIntersect( oldPoint, currPoint, (*it)->v0, (*it)->v1 );
+				if( !li.parallel )
+				{
+					return false;
+				}
+			}
+		}
+
+
+		for( PointList::iterator pit = (*polyIt)->points.begin(); pit != (*polyIt)->points.end(); ++pit )
+		{
+			Vector2i oldPoint, currPoint;
+			if( pit == (*polyIt)->points.begin() )
+			{
+				PointList::iterator temp = (*polyIt)->points.end();
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+			else
+			{
+				PointList::iterator temp = pit;
+				--temp;
+				oldPoint = (*temp).pos;
+			}
+
+			currPoint = (*pit).pos;
+
+			for( list<GateInfo*>::iterator it = poly.attachedGates.begin(); it != poly.attachedGates.end(); ++it )
+			{
+				LineIntersection li = LimitSegmentIntersect( oldPoint, currPoint, (*it)->v0, (*it)->v1 );
+				if( !li.parallel )
+				{
+					return false;
+				}
+			}
+		}
+		
 	}
 
 

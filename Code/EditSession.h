@@ -33,6 +33,9 @@ struct TerrainPoint
 	//int special;
 };
 
+typedef std::list<TerrainPoint> PointList;
+typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
+
 struct TerrainPolygon;
 struct GateInfo
 {
@@ -42,6 +45,8 @@ struct GateInfo
 	TerrainPolygon *poly1;
 	int vertexIndex1;
 	sf::VertexArray thickLine;
+	PointList::iterator v0It;
+	PointList::iterator v1It;
 	sf::Vector2i v0;
 	sf::Vector2i v1;
 	void UpdateLine();
@@ -49,8 +54,7 @@ struct GateInfo
 	void Draw( sf::RenderTarget *target );
 };
 
-typedef std::list<TerrainPoint> PointList;
-typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
+
 
 struct EditSession;
 struct TerrainPolygon
