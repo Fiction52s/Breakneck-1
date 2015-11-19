@@ -201,6 +201,11 @@ struct GameSession : QuadTreeCollider
 	QuadTree * lightTree;
 	QuadTree * grassTree;
 	QuadTree * gateTree;
+
+	//int numKeys;
+	//Key *keys;
+	std::list<Key*> keyList;
+
 	
 
 	bool usePolyShader;

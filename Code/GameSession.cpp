@@ -1155,8 +1155,9 @@ bool GameSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
 					//a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
-					Key *key = new Key( this, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );	
-					enemyTree->Insert( key );
+					Key *key = new Key( this, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
+					keyList.push_back( key );
+					AddEnemy( key );
 				}
 				else if( typeName == "crawler" )
 				{
@@ -1617,7 +1618,7 @@ int GameSession::Run( string fileN )
 					gates[i]->locked = true;
 				}
 
-				activeEnemyList = NULL;
+				
 				pauseImmuneEffects = NULL;
 				cloneInactiveEnemyList = NULL;
 			}
@@ -2263,20 +2264,17 @@ int GameSession::Run( string fileN )
 			listVAIter = listVAIter->next;
 		}
 
-		Enemy *current = activeEnemyList;
-		while( current != NULL )
+		for( list<Key*>::iterator it = keyList.begin(); it != keyList.end(); ++it )
 		{
-			if( current->type == Enemy::KEY )
+			if( !(*it)->dead )
 			{
-				Key * k = (Key*)current;
 				CircleShape cs;
 				cs.setFillColor( Color::Red );
-				cs.setRadius( 20 );
+				cs.setRadius( 40 );
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-				cs.setPosition( k->position.x, k->position.y );
+				cs.setPosition( (*it)->position.x, (*it)->position.y );
 				minimapTex->draw( cs );
 			}
-			current = current->next;
 		}
 
 		testGateCount = 0;
@@ -3003,6 +3001,15 @@ void GameSession::ResetEnemies()
 	}
 
 	rReset( enemyTree->startNode );
+
+	activeEnemyList = NULL;
+
+	for( list<Key*>::iterator it = keyList.begin(); it != keyList.end(); ++it )
+	{
+		(*it)->Reset();
+		AddEnemy( (*it) );
+		//(*it)->spawned = true;
+	}
 }
 
 void GameSession::rReset( QNode *node )
