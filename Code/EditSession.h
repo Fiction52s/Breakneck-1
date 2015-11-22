@@ -23,32 +23,44 @@ struct GrassSeg
 	int reps;
 };
 
+struct TerrainPolygon;
+struct GatePoint
+{
+	TerrainPolygon *poly;
+	int vertexIndex;
+};
+
 struct TerrainPoint
 {
 	TerrainPoint( sf::Vector2i &pos, bool selected );
-
+	~TerrainPoint()
+	{
+		//delete gate;
+	}
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
+	GatePoint *gate;
+	TerrainPoint *next;
+	TerrainPoint *prev;
 	//int special;
 };
 
-typedef std::list<TerrainPoint> PointList;
 typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
-struct TerrainPolygon;
+
+
+
 struct GateInfo
 {
 	GateInfo();
+	TerrainPoint *point0;
+	TerrainPoint *point1;
 	TerrainPolygon *poly0;
 	int vertexIndex0;
 	TerrainPolygon *poly1;
 	int vertexIndex1;
 	sf::VertexArray thickLine;
-	PointList::iterator v0It;
-	PointList::iterator v1It;
-	sf::Vector2i v0;
-	sf::Vector2i v1;
 	void UpdateLine();
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
@@ -62,13 +74,19 @@ struct TerrainPolygon
 	TerrainPolygon( sf::Texture *grassTex );
 	~TerrainPolygon();
 	
-	PointList points;
+	TerrainPoint *pointStart;
+	TerrainPoint *pointEnd;
+	int numPoints;
+	void AddPoint( TerrainPoint* tp);
+	void RemovePoint( TerrainPoint *tp );
+	void ClearPoints();
 	std::string material;
 	bool RemoveSelectedPoints();
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
 	void Reset();
+	void SoftReset();
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
 	bool IsClockwise();
@@ -88,6 +106,9 @@ struct TerrainPolygon
 		sf::Vector2i delta );
 	
 	sf::Rect<int> TempAABB();
+
+	void Move( sf::Vector2i move );
+
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	sf::VertexArray *grassVA;
@@ -103,7 +124,7 @@ struct TerrainPolygon
 	std::list<ActorParams*> enemies;
 	int writeIndex;
 	bool isGrassShowing;
-	std::list<GateInfo*> attachedGates;
+	bool finalized;
 };
 
 struct StaticLight
@@ -166,8 +187,8 @@ struct ActorParams
 	//if you arent on it
 	struct GroundInfo
 	{
-		PointList::iterator edgeStart;
-		PointList::iterator edgeEnd;
+		TerrainPoint *edgeStart;
+		TerrainPoint *edgeEnd;
 		double groundQuantity;
 		TerrainPolygon *ground;
 		int edgeIndex;
