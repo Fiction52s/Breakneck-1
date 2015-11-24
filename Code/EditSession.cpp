@@ -4623,8 +4623,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						bool okay = true;
 						if( extendingPolygon != NULL && polygonInProgress->numPoints > 0 )
 						{
+							//no error checking for extending polygon yet. ugh T_T you got this
+
+
 							okay = !extendingPolygon->ContainsPoint( testPoint );
 							
+							/*if( polygonInProgress->numPoints > 1 )
+							{
+								okay = IsPointValid( polygonInProgress->pointStart->pos, 
+								Vector2i( testPoint.x, testPoint.y ), polygonInProgress );
+							}*/
 
 							if( okay )
 							{
