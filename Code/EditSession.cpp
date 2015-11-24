@@ -56,6 +56,8 @@ TerrainPolygon::~TerrainPolygon()
 		(*it)->group->actors.remove( (*it ) );
 		delete (*it);
 	}
+
+	ClearPoints();
 }
 
 void TerrainPolygon::Move( Vector2i move )
@@ -1255,7 +1257,7 @@ void GateInfo::UpdateLine()
 	V2d leftv1 = dv1 - other * width;
 	V2d rightv1 = dv1 + other * width;
 
-	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
+	cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
 	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
 	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
@@ -2350,11 +2352,15 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			otherPoly = temp;
 			curr = min;
 			
-			cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
+			//cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
 
 			currPoint = minIntersection;
 
-			z.AddPoint( new TerrainPoint( currPoint, false ) );
+			TerrainPoint *tp = new TerrainPoint( currPoint, false );
+			
+			
+			z.AddPoint( tp );
+			
 			
 			nextPoint = curr->pos;
 		}
@@ -2363,9 +2369,35 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 			currPoint = curr->pos;
 
-			z.AddPoint( new TerrainPoint( currPoint, false ) );
+			TerrainPoint *tp = new TerrainPoint( currPoint, false );
+			tp->gate = curr->gate;
+			if( tp->gate != NULL )
+			{
+			//	cout << "other gate not null!" << endl;
+				if( curr == tp->gate->point0 )
+				{
+			//		cout << "putting a" << endl;
+					tp->gate->point0 = tp;
+				}
+				else if( curr == tp->gate->point1 )
+				{
+			//		cout << "putting b at: " << tp->pos.x << ", " << tp->pos.y << endl;
+					tp->gate->point1 = tp;
+					
+				}
+				else
+				{
+					//cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y << ", "
+					//	<< tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << ", " << endl;
+					//cout << "tp: " << tp->pos.x << ", " << tp->pos.y << endl;
+					assert( false );
+					//tp->gate = NULL;
+					//tp->gate == NULL;
+				}
+			}
+			z.AddPoint( tp );
 
-			cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
+			//cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
 			if( currPoint == startPoint && !firstTime )
 				break;
@@ -2386,7 +2418,29 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	//cout << "poly size: " << z.points.size() << endl;
 	for( TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next )
 	{
-		poly->AddPoint( new TerrainPoint(*zit) );
+		TerrainPoint *tp = new TerrainPoint(*zit);
+		if( tp->gate != NULL )
+		{
+			//cout << "new polygon will have gate" << endl;
+			if( zit == tp->gate->point0 )
+			{
+				tp->gate->point0 = tp;
+				tp->gate->poly0 = poly;
+			//	cout << "checking a at: " << tp->pos.x << ", " << tp->pos.y << endl;
+			}
+			else
+			{
+				tp->gate->point1 = tp;
+				tp->gate->poly1 = poly;
+		//		cout << "checking b at: " << tp->pos.x << ", " << tp->pos.y << endl;
+			}
+
+		//	cout << "tpgate0: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y << ", tpgate1: " <<
+		//		tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+			//tp->gate->UpdateLine();
+		}
+		poly->AddPoint( tp );
+
 	}
 
 	poly->Finalize();
@@ -2892,7 +2946,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									list<TerrainPolygon*>::iterator it = polygons.begin();
 									bool added = false;
-									polygonInProgress->Finalize();
+									polygonInProgress->Finalize(); //i should check if i can remove this
 									bool recursionDone = false;
 									TerrainPolygon *currentBrush = polygonInProgress;
 
@@ -2908,9 +2962,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												polygonInProgress->Reset();
 						
 												cout << "after adding: " << (*it)->numPoints << endl;
+
+												
+
 												polygons.erase( it );
 
 												currentBrush = temp;
+
+												for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
+												{
+													if( tp->gate != NULL )
+													{
+														cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
+															<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+														//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
+													}
+												}
 
 												it = polygons.begin();
 
@@ -2935,9 +3002,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else
 									{
+										
+										for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
+										{
+											//if( tp->gate != NULL )
+											//{
+											//	cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
+											//		<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+											//	//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
+											//}
+												
+										}
 
 										polygons.push_back( currentBrush );
 										polygonInProgress->Reset();
+
+										
+
 									}
 								}
 
@@ -3496,7 +3577,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( result )
 									{
-										MessagePop( "gate created" );
+										//MessagePop( "gate created" );
 										GateInfo *gi = new GateInfo;
 										gi->edit = this;
 										gi->poly0 = testInfo.poly0;
@@ -5245,7 +5326,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						polyGrabPos = Vector2i( pPoint.x, pPoint.y );//Vector2i( pPoint.x, pPoint.y );
 					
-						cout << "delta: " << polyGrabDelta.x << ", " << polyGrabDelta.y << endl;
+						//cout << "delta: " << polyGrabDelta.x << ", " << polyGrabDelta.y << endl;
 						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
 						it != selectedPolygons.end(); ++it )
 						{

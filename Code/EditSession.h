@@ -44,7 +44,7 @@ struct TerrainPoint
 	bool selected;
 	std::list<int> grass;
 	GateInfo *gate;
-	bool firstPoint; //might not be needed
+	bool firstPoint; 
 	TerrainPoint *next;
 	TerrainPoint *prev;
 	//int special;
