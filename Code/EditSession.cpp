@@ -38,6 +38,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	numPoints = 0;
 	pointStart = NULL;
 	pointEnd = NULL;
+	movingPointMode = false;
 }
 
 TerrainPolygon::~TerrainPolygon()
@@ -128,6 +129,12 @@ void TerrainPolygon::Finalize()
 	
 	VertexArray & v = *va;
 	Color testColor( 0x75, 0x70, 0x90 );
+	Color selectCol( 0x77, 0xBB, 0xDD );
+
+	if( selected )
+	{
+		testColor = selectCol;
+	}
 	for( int i = 0; i < tris.size(); ++i )
 	{	
 		p2t::Point *p = tris[i]->GetPoint( 0 );	
@@ -516,11 +523,44 @@ void TerrainPolygon::UpdateGrass()
 
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
+	if( movingPointMode )
+	{
+
+			int i = 0;
+			TerrainPoint *curr = pointStart;
+			while( curr != NULL )
+			{
+				lines[i*2].position = Vector2f( curr->pos.x, curr->pos.y );
+
+				TerrainPoint *temp = curr->next;
+				if( temp == NULL )
+				{
+					lines[i*2+1].position = Vector2f( pointStart->pos.x, pointStart->pos.y );
+				}
+				else
+				{
+					lines[i*2+1].position = Vector2f( temp->pos.x, temp->pos.y );
+				}
+				
+				curr = temp;
+				++i;
+			}
+
+			rt->draw( lines, numPoints * 2, sf::Lines );
+
+
+			//lines
+			
+		
+		return;
+	}
+
+
 	if( grassVA != NULL )
 		rt->draw( *grassVA, grassTex );
 
 	if( va != NULL )
-	rt->draw( *va );
+		rt->draw( *va );
 
 	if( selected )
 	{
@@ -808,72 +848,107 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 
 bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 {
-	TerrainPolygon tempPoly( grassTex );
-
-	int pIndex = 0;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
-		if( !curr->selected )
+		if( curr->selected )
 		{
-			tempPoly.AddPoint( new TerrainPoint( *curr ) );
+			curr->pos += delta;
 		}
-		else
-		{
-			TerrainPoint *tp = new TerrainPoint( *curr );
-			tp->pos += delta;
-			tempPoly.AddPoint( tp );	
-		}
-		++pIndex;
 	}
 
-	bool result = edit->IsPolygonValid( tempPoly, this );
+	bool result = edit->IsPolygonValid( *this, this );
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->selected )
+		{
+			curr->pos -= delta;
+		}
+	}
 
 	return result;
 }
 
 bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelta, Vector2i *deltas )
 {
-	TerrainPolygon tempPoly( grassTex );
+	//TerrainPolygon tempPoly( grassTex );
 
 	int arraySize = numPoints;
 
 	int i = 0;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
-		if( !curr->selected )
+		if( curr->selected )
 		{
-			tempPoly.AddPoint( new TerrainPoint( *curr ) );
+			curr->pos += pointGrabDelta - deltas[i];
+		//	tempPoly.AddPoint( new TerrainPoint( *curr ) );
 		}
-		else
+		/*else
 		{
 			TerrainPoint *tp = new TerrainPoint( *curr );
 			
 			tp->pos += pointGrabDelta - deltas[i];
 
 			tempPoly.AddPoint( tp );
-		}
+		}*/
 
 		++i;
 	}
 
-	bool res = edit->IsPolygonValid( tempPoly, this );
-
-	if( !res )
-		return false;
 	
-	for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end(); ++it )
+
+	bool res = edit->IsPolygonValid( *this, this );
+
+	bool result;
+	if( !res )
 	{
-		for( list<ActorParams*>::iterator ait = (*it).second->actors.begin(); ait != (*it).second->actors.end(); ++ait )
+		result = false;
+	}
+	else
+	{
+		bool res2 = true;
+		for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end() && res2; ++it )
 		{
-			//need to round these floats probably
-			sf::VertexArray &bva = (*ait)->boundingQuad;
-			if( edit->QuadPolygonIntersect( &tempPoly, Vector2i( bva[0].position.x, bva[0].position.y ), 
-				Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
-				 Vector2i( bva[3].position.x, bva[3].position.y ) ) )
+			for( list<ActorParams*>::iterator ait = (*it).second->actors.begin(); ait != (*it).second->actors.end(); ++ait )
 			{
-				cout << "polygon collide with quad" << endl;
-				return false;
+				//need to round these floats probably
+				sf::VertexArray &bva = (*ait)->boundingQuad;
+				if( edit->QuadPolygonIntersect( this, Vector2i( bva[0].position.x, bva[0].position.y ), 
+					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
+					 Vector2i( bva[3].position.x, bva[3].position.y ) ) )
+				{
+					cout << "polygon collide with quad" << endl;
+					res2 = false;
+					break;
+				}
 			}
+		}
+		result = res2;
+	}
+	
+
+	i = 0;
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->selected )
+		{
+			curr->pos -= pointGrabDelta - deltas[i];
+		}
+		++i;
+	}
+
+	return result;
+}
+
+void TerrainPolygon::MoveSelectedPoints( Vector2i move )
+{
+	movingPointMode = true;
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->selected )
+		{
+			curr->pos += move;
 		}
 	}
 }
@@ -3401,8 +3476,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.key.code == Keyboard::W )
 							{
+								if( pointGrab )
+								{
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										if( (*it)->movingPointMode )
+										{
+											(*it)->SoftReset();
+											(*it)->Finalize();
+											(*it)->movingPointMode = false;
+										}
+										
+									}
+								}
+
 								pointGrab = false;
 								polyGrab = false;
+
 							}
 							else if( ev.key.code == Keyboard::Q )
 							{
@@ -4990,7 +5080,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							deltas[deltaIndex] = diff;
 							
-							
 
 							++deltaIndex;
 						}
@@ -5040,6 +5129,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( affected )
 							{
+								(*it)->movingPointMode = true;
 								/*PointList temp = (*it)->points;
 
 								(*it)->Reset();
@@ -7269,6 +7359,8 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 			//cout << "ff: " << ff << endl;
 			return false;
 		} 
+
+
 
 		/*if( !IsPointValid( prev->pos, curr->pos, &poly ) )
 		{

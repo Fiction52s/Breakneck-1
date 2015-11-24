@@ -104,6 +104,8 @@ struct TerrainPolygon
 		sf::Vector2i *deltas );
 	bool IsMovePolygonOkay( EditSession *edit, 
 		sf::Vector2i delta );
+	void MoveSelectedPoints(sf::Vector2i move);
+	bool movingPointMode;
 	
 	sf::Rect<int> TempAABB();
 
