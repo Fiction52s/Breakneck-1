@@ -290,10 +290,10 @@ void TerrainPolygon::Finalize()
 	grassVA = gva;	
 }
 
-bool TerrainPolygon::RemoveSelectedPoints()
+void TerrainPolygon::RemoveSelectedPoints()
 {	
 	SoftReset();
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	for( TerrainPoint *curr = pointStart; curr != NULL; )
 	{
 		if( curr->selected )
 		{
@@ -301,12 +301,16 @@ bool TerrainPolygon::RemoveSelectedPoints()
 			RemovePoint( curr );
 			curr = temp;
 		}
+		else
+		{
+			curr = curr->next;
+		}
 	}
 	//Reset();
 
+
 	Finalize();
 	SetSelected( true );
-	return true;
 }
 
 void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress )
@@ -2828,6 +2832,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									polygonInProgress->RemovePoint( polygonInProgress->pointEnd );
 								}
+								
 								/*else if( mode == SELECT_POLYGONS )
 								{
 									list<TerrainPolygon*>::iterator it = polygons.begin();

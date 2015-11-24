@@ -81,7 +81,7 @@ struct TerrainPolygon
 	void RemovePoint( TerrainPoint *tp );
 	void ClearPoints();
 	std::string material;
-	bool RemoveSelectedPoints();
+	void RemoveSelectedPoints();
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
@@ -125,6 +125,7 @@ struct TerrainPolygon
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;
+
 };
 
 struct StaticLight
