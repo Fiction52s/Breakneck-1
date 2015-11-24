@@ -760,6 +760,18 @@ void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 	{
 		pointEnd = tp->prev;
 	}
+
+	GateInfo *gi = tp->gate;
+	if( gi != NULL )
+	{
+		gi->point0->gate = NULL;
+		gi->point1->gate = NULL;
+		gi->edit->gates.remove( gi );
+		delete gi;
+	}
+	//delete tp;
+
+
 	--numPoints;
 }
 
@@ -1873,6 +1885,7 @@ bool EditSession::OpenFile( string fileName )
 			gi->poly1 = terrain1;
 			gi->vertexIndex0 = vertexIndex0;
 			gi->vertexIndex1 = vertexIndex1;
+			gi->edit = this;
 
 			int index = 0;
 			for( TerrainPoint *curr = gi->poly0->pointStart; curr != NULL; curr = curr->next )
@@ -3483,6 +3496,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										MessagePop( "gate created" );
 										GateInfo *gi = new GateInfo;
+										gi->edit = this;
 										gi->poly0 = testInfo.poly0;
 										gi->vertexIndex0 = testInfo.vertexIndex0;
 										gi->point0 = testInfo.point0;

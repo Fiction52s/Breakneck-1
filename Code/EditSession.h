@@ -52,7 +52,7 @@ struct TerrainPoint
 
 typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
-
+struct EditSession;
 
 
 struct GateInfo
@@ -65,6 +65,7 @@ struct GateInfo
 	TerrainPolygon *poly1;
 	int vertexIndex1;
 	sf::VertexArray thickLine;
+	EditSession *edit;
 	void UpdateLine();
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
@@ -72,7 +73,7 @@ struct GateInfo
 
 
 
-struct EditSession;
+
 struct TerrainPolygon
 {
 	TerrainPolygon( sf::Texture *grassTex );
