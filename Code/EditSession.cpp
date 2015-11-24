@@ -1203,7 +1203,30 @@ GateInfo::GateInfo()
 
 void GateInfo::WriteFile( ofstream &of )
 {
-	of << poly0->writeIndex << " " << vertexIndex0 << " " << poly1->writeIndex << " " << vertexIndex1 << endl;
+	int index0 = 0, index1 = 0;
+	TerrainPoint *curr = poly0->pointStart;
+	while( curr != NULL )
+	{
+		if( curr == point0 )
+		{
+			break;
+		}
+		++index0;
+		curr = curr->next;
+	}
+
+	curr = poly1->pointStart;
+	while( curr != NULL )
+	{
+		if( curr == point1 )
+		{
+			break;
+		}
+		++index1;
+		curr = curr->next;
+	}
+
+	of << poly0->writeIndex << " " << index0 << " " << poly1->writeIndex << " " << index1 << endl;
 }
 
 void GateInfo::UpdateLine()
