@@ -67,6 +67,11 @@ void TerrainPolygon::Move( Vector2i move )
 	{
 		TerrainPoint *temp = curr->next;
 		curr->pos += move;
+		if( curr->gate != NULL )
+		{
+			curr->gate->UpdateLine();
+			//cout << "updating line" << endl;
+		}
 		curr = temp;
 	}
 
@@ -949,6 +954,10 @@ void TerrainPolygon::MoveSelectedPoints( Vector2i move )
 		if( curr->selected )
 		{
 			curr->pos += move;
+			if( curr->gate != NULL )
+			{
+				curr->gate->UpdateLine();
+			}
 		}
 	}
 }
@@ -1201,7 +1210,7 @@ void GateInfo::UpdateLine()
 {
 	double width = 5;
 	V2d dv0( point0->pos.x, point0->pos.y );
-	V2d dv1( point1->pos.x, point0->pos.y );
+	V2d dv1( point1->pos.x, point1->pos.y );
 	V2d along = normalize( dv1 - dv0 );
 	V2d other( along.y, -along.x );
 	
@@ -1211,6 +1220,7 @@ void GateInfo::UpdateLine()
 	V2d leftv1 = dv1 - other * width;
 	V2d rightv1 = dv1 + other * width;
 
+	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
 	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
 	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
@@ -1847,6 +1857,7 @@ bool EditSession::OpenFile( string fileName )
 				if( index == vertexIndex0 )
 				{
 					gi->point0 = curr;
+					curr->gate = gi;					
 					break;
 				}
 				++index;
@@ -1859,6 +1870,7 @@ bool EditSession::OpenFile( string fileName )
 				if( index == vertexIndex1 )
 				{
 					gi->point1 = curr;
+					curr->gate = gi;
 					break;
 				}
 				++index;
@@ -3451,9 +3463,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										gi->poly0 = testInfo.poly0;
 										gi->vertexIndex0 = testInfo.vertexIndex0;
 										gi->point0 = testInfo.point0;
+										gi->point0->gate = gi;
+
 										gi->poly1 = testInfo.poly1;
 										gi->vertexIndex1 = testInfo.vertexIndex1;
 										gi->point1 = testInfo.point1;
+										gi->point1->gate = gi;
 										gi->UpdateLine();
 
 										gates.push_back( gi );
@@ -5118,9 +5133,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									//Vector2i temp = (*pointIt).pos + pointGrabDelta;
 									
 									Vector2i delta = allDeltas[allDeltaIndex][deltaIndex];
-									cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
-									cout << "moving: " << delta.x << ", " << delta.y << endl;
+								//	cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
+								//	cout << "moving: " << delta.x << ", " << delta.y << endl;
 									curr->pos += pointGrabDelta - delta; //pointGrabDelta - ;
+
+									if( curr->gate != NULL )
+									{
+										curr->gate->UpdateLine();
+									}
 									affected = true;
 								}
 
@@ -8025,7 +8045,7 @@ void ActorGroup::WriteFile( std::ofstream &of )
 }
 
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
-	:pos( p ), selected( s )
+	:pos( p ), selected( s ), gate( NULL )
 {
 }
 

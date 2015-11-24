@@ -24,10 +24,13 @@ struct GrassSeg
 };
 
 struct TerrainPolygon;
+struct GateInfo;
+
 struct GatePoint
 {
-	TerrainPolygon *poly;
+	//TerrainPolygon *poly;
 	int vertexIndex;
+	GateInfo *info;
 };
 
 struct TerrainPoint
@@ -40,7 +43,8 @@ struct TerrainPoint
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
-	GatePoint *gate;
+	GateInfo *gate;
+	bool firstPoint; //might not be needed
 	TerrainPoint *next;
 	TerrainPoint *prev;
 	//int special;
