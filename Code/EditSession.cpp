@@ -3385,6 +3385,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								else if( selectedGate != NULL )
 								{
 									gates.remove( selectedGate );
+									selectedGate->point0->gate = NULL;
+									selectedGate->point1->gate = NULL;
 									delete selectedGate;
 									selectedGate = NULL;
 								}
