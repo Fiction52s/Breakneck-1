@@ -402,15 +402,67 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 			{
 				for( TerrainPoint *progressCurr = inProgress->pointStart; progressCurr != NULL; progressCurr = progressCurr->next )
 				{
-					newList.AddPoint( new TerrainPoint( *progressCurr ) );
+					TerrainPoint *tp = new TerrainPoint( *progressCurr );
+					tp->gate = progressCurr->gate;
+					if( tp->gate != NULL )
+					{
+						if( progressCurr == tp->gate->point0 )
+						{
+							tp->gate->point0 = tp;
+						}
+						else if( progressCurr == tp->gate->point1 )
+						{
+							tp->gate->point1 = tp;	
+						}
+						else
+						{
+							assert( false );
+						}
+					}
+		
+					newList.AddPoint( tp );
 				}
 
 				curr = end;
-				newList.AddPoint( new TerrainPoint( *end ) );	
+				TerrainPoint *tp = new TerrainPoint( *end );
+				tp->gate = end->gate;
+				if( tp->gate != NULL )
+				{
+					if( end == tp->gate->point0 )
+					{
+						tp->gate->point0 = tp;
+					}
+					else if( end == tp->gate->point1 )
+					{
+						tp->gate->point1 = tp;	
+					}
+					else
+					{
+						assert( false );
+					}
+				}
+				newList.AddPoint( tp );	
 			}
 			else
 			{
-				newList.AddPoint( new TerrainPoint( *curr ) );
+				TerrainPoint *tp = new TerrainPoint( *curr );
+				tp->gate = curr->gate;
+				if( tp->gate != NULL )
+				{
+					if( curr == tp->gate->point0 )
+					{
+						tp->gate->point0 = tp;
+					}
+					else if( curr == tp->gate->point1 )
+					{
+						tp->gate->point1 = tp;	
+					}
+					else
+					{
+						assert( false );
+					}
+				}
+				newList.AddPoint( tp );
 			}
 		}
 	}	else
@@ -422,13 +474,47 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 			{	
 				for( TerrainPoint *progressCurr = inProgress->pointStart; progressCurr != NULL; progressCurr = progressCurr->next )
 				{
-					newList.AddPoint( new TerrainPoint( *progressCurr ) );
+					TerrainPoint *tp = new TerrainPoint( *progressCurr ); 
+					tp->gate = progressCurr->gate;
+					if( tp->gate != NULL )
+					{
+						if( progressCurr == tp->gate->point0 )
+						{
+							tp->gate->point0 = tp;
+						}
+						else if( progressCurr == tp->gate->point1 )
+						{
+							tp->gate->point1 = tp;	
+						}
+						else
+						{
+							assert( false );
+						}
+					}
+					newList.AddPoint( tp );
 				}	
 				break;
 			}
 			else
 			{
-				newList.AddPoint( new TerrainPoint( *curr ) );
+				TerrainPoint *tp = new TerrainPoint( *curr );
+				tp->gate = curr->gate;
+				if( tp->gate != NULL )
+				{
+					if( curr == tp->gate->point0 )
+					{
+						tp->gate->point0 = tp;
+					}
+					else if( curr == tp->gate->point1 )
+					{
+						tp->gate->point1 = tp;	
+					}
+					else
+					{
+						assert( false );
+					}
+				}
+				newList.AddPoint( tp );
 			}
 		}
 	}
@@ -438,7 +524,24 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 
 	for( TerrainPoint *curr = newList.pointStart; curr != NULL; curr = curr->next )
 	{
-		AddPoint( new TerrainPoint( *curr ) );
+		TerrainPoint *tp = new TerrainPoint( *curr );
+		tp->gate = curr->gate;
+		if( tp->gate != NULL )
+		{
+			if( curr == tp->gate->point0 )
+			{
+				tp->gate->point0 = tp;
+			}
+			else if( curr == tp->gate->point1 )
+			{
+				tp->gate->point1 = tp;	
+			}
+			else
+			{
+				assert( false );
+			}
+		}
+		AddPoint( tp );
 	}
 
 	Finalize();
