@@ -319,8 +319,11 @@ struct EditSession : GUIHandler
 
 	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
 	void ExtendAdd();
-	bool IsPolygonValid( TerrainPolygon &poly,
+	bool IsPolygonExternallyValid( TerrainPolygon &poly,
 		 TerrainPolygon *ignore );
+	bool IsPolygonInternallyValid( TerrainPolygon &poly );
+	bool IsPolygonValid( TerrainPolygon &poly,
+		TerrainPolygon *ignore );
 	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
 	void SetEnemyEditPanel();
 	bool QuadPolygonIntersect( TerrainPolygon *poly, 
@@ -340,8 +343,11 @@ struct EditSession : GUIHandler
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
 	bool polyGrab;
+	//sf::Vector2i polyGrabPos;
+	//sf::Vector2f polyGrabPos;
 	sf::Vector2i polyGrabPos;
 	sf::Vector2i polyGrabDelta;
+	sf::Vector2f polyMove;
 
 	bool makingRect;
 	sf::Vector2i rectStart;

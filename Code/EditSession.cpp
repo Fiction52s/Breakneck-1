@@ -49,6 +49,7 @@ TerrainPolygon::~TerrainPolygon()
 
 	if( grassVA != NULL )
 		delete grassVA;
+
 	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
 		(*it)->group->actors.remove( (*it ) );
@@ -59,7 +60,7 @@ TerrainPolygon::~TerrainPolygon()
 void TerrainPolygon::Move( Vector2i move )
 {
 	assert( finalized );
-
+	
 	TerrainPoint *curr = pointStart;
 	while( curr != NULL )
 	{
@@ -68,31 +69,38 @@ void TerrainPolygon::Move( Vector2i move )
 		curr = temp;
 	}
 
+	for( int i = 0; i < numPoints; ++i )
+	{
+		//lines
+		lines[i*2].position += Vector2f( move.x, move.y );
+		lines[i*2+1].position += Vector2f( move.x, move.y );
+	}
+
+	for( int i = 0; i < vaSize; ++i )
+	{
+		VertexArray &vaa = *va;
+
+		//triangles
+		vaa[i].position += Vector2f( move.x, move.y );
+		//vaa[i*3+1].position += Vector2f( move.x, move.y );
+		//vaa[i*3+2].position += Vector2f( move.x, move.y );
+	}
+
 	for( int i = 0; i < numGrassTotal; ++i )
 	{
+		//quads
 		VertexArray &gva = *grassVA;
 		gva[i*4].position += Vector2f( move.x, move.y );
 		gva[i*4+1].position += Vector2f( move.x, move.y );
 		gva[i*4+2].position += Vector2f( move.x, move.y );
 		gva[i*4+3].position += Vector2f( move.x, move.y );
 	}
-
-	for( int i = 0; i < numPoints; ++i )
-	{
-		VertexArray &vaa = *va;
-		vaa[i*4].position += Vector2f( move.x, move.y );
-		vaa[i*4+1].position += Vector2f( move.x, move.y );
-		vaa[i*4+2].position += Vector2f( move.x, move.y );
-		vaa[i*4+3].position += Vector2f( move.x, move.y );
-
-		lines[i*2].position += Vector2f( move.x, move.y );
-		lines[i*2+1].position += Vector2f( move.x, move.y );
-	}
-
+	return;
 }
 
 void TerrainPolygon::Finalize()
 {
+	finalized = true;
 	isGrassShowing = false;
 	material = "mat";
 	lines = new sf::Vertex[numPoints*2+1];
@@ -275,10 +283,10 @@ void TerrainPolygon::Finalize()
 	
 	}
 
-	if( grassVA != NULL )
+	/*if( grassVA != NULL )
 	{
 		delete grassVA;
-	}
+	}*/
 	grassVA = gva;	
 }
 
@@ -715,6 +723,7 @@ void TerrainPolygon::Reset()
 		delete va;
 	if( grassVA != NULL )
 		delete grassVA;
+
 	lines = NULL;
 	va = NULL;
 	grassVA = NULL;
@@ -729,6 +738,7 @@ void TerrainPolygon::SoftReset()
 		delete va;
 	if( grassVA != NULL )
 		delete grassVA;
+
 	lines = NULL;
 	va = NULL;
 	grassVA = NULL;
@@ -758,7 +768,7 @@ bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 	{
 		if( !curr->selected )
 		{
-			tempPoly.AddPoint( curr );
+			tempPoly.AddPoint( new TerrainPoint(*curr) );
 		}
 	}
 
@@ -875,7 +885,7 @@ bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
 		tempPoly.AddPoint( tp );
 	}
 
-	bool f = edit->IsPolygonValid( tempPoly, this );
+	bool f = edit->IsPolygonExternallyValid( tempPoly, this );
 	if( !f )
 	{
 		cout << "failed delta: " << delta.x << ", " << delta.y << endl;
@@ -2600,7 +2610,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	V2d menuDownPos;
 	Emode menuDownStored;
 
-	mode = CREATE_TERRAIN;
+	//mode = CREATE_TERRAIN;
+	mode = EDIT;
 	Emode stored = mode;
 	bool canCreatePoint = true;
 	gs.active = true;
@@ -3168,6 +3179,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							break;
 						}
+					case Event::MouseMoved:
+						{
+							//delta
+							//cout << "delta mouse: " << ev.mouseMove.x << ", " << ev.mouseMove.y << endl;
+							break;
+						}
 					case Event::KeyPressed:
 						{
 							if( showPanel != NULL )
@@ -3276,18 +3293,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										pointGrabPos = Vector2i( worldPos.x, worldPos.y );
 									}
 								}
-								else if( selectedPolygons.size() > 0 )
+								else if( selectedPolygons.size() > 0 && !polyGrab )
 								{
 									polyGrab = true;
 
 									if( Keyboard::isKeyPressed( Keyboard::G ) )
 									{
 										V2d graphPos = GraphPos( worldPos );
-										polyGrabPos = Vector2i( graphPos.x, graphPos.y );
+										polyGrabPos = Vector2i( graphPos.x, graphPos.y );//Vector2i( graphPos.x, graphPos.y );
 									}
 									else
 									{
+										//cout << "grab pos: " << endl;
 										polyGrabPos = Vector2i( worldPos.x, worldPos.y );
+
+										//polyGrabPos = //pixelPos;//Vector2i( worldPos.x, worldPos.y );
 									}
 								}
 							}
@@ -4984,6 +5004,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( validMove )
 					{
+						cout << "moving" << endl;
 						//cout << "valid move" << endl;
 						//int 
 						allDeltaIndex = 0;
@@ -5040,7 +5061,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					else
 					{
-						//cout << "NOT VALID move" << endl;
+						cout << "NOT VALID move" << endl;
 					}
 
 					for( int i = 0; i < numSelectedPolys; ++i )
@@ -5052,12 +5073,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				else if( polyGrab )
 				{
-					polyGrabDelta = Vector2i( pPoint.x, pPoint.y ) - polyGrabPos;
-					polyGrabPos = Vector2i( pPoint.x, pPoint.y );
-					
+					//Vector2i test = (pixelPos - polyGrabPos);
+					//V2d blahDelta( test.x, test.y );
+					polyGrabDelta = Vector2i( pPoint.x, pPoint.y ) - Vector2i( polyGrabPos.x, polyGrabPos.y );
+					//polyGrabDelta.x = blahDelta.x * 1080.0/1920.0;
+					//polyGrabDelta.y = blahDelta.y;
 					bool moveOkay = true;
 					if( polyGrabDelta.x != 0 || polyGrabDelta.y != 0 )
 					{
+						polyGrabPos = Vector2i( pPoint.x, pPoint.y );//Vector2i( pPoint.x, pPoint.y );
+					
+						cout << "delta: " << polyGrabDelta.x << ", " << polyGrabDelta.y << endl;
 						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
 						it != selectedPolygons.end(); ++it )
 						{
@@ -6918,175 +6944,13 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 	return true;
 }
 
-bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
+bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 {
 	Rect<int> polyAABB = poly.TempAABB();
 	polyAABB.left -= minimumEdgeLength;
 	polyAABB.top -= minimumEdgeLength;
 	polyAABB.width += minimumEdgeLength * 2;
 	polyAABB.height += minimumEdgeLength * 2;
-
-
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
-	{
-		TerrainPoint *prev;
-		if( curr == poly.pointStart )
-		{
-			prev = poly.pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		V2d extreme( 0, 0 );
-		Vector2i vec = curr->pos - prev->pos;
-		V2d normVec = normalize( V2d( vec.x, vec.y ) );
-		
-
-		if( normVec.x == 0 || normVec.y == 0 )
-		{
-			continue;
-		}
-
-		if( normVec.x > PRIMARY_LIMIT )
-			extreme.x = 1;
-		else if( normVec.x < -PRIMARY_LIMIT )
-			extreme.x = -1;
-		if( normVec.y > PRIMARY_LIMIT )
-			extreme.y = 1;
-		else if( normVec.y < -PRIMARY_LIMIT )
-			extreme.y = -1;
-
-		//extreme = normalize( extreme );
-
-		if( extreme.x != 0 )
-		{
-			curr->pos.y = prev->pos.y;
-			cout << "lining up x" << endl;
-		}
-
-		if( extreme.y != 0 )
-		{
-			curr->pos.x = prev->pos.x;
-			cout << "lining up y" << endl;
-		}
-		/*if( !( extreme.x == 0 && extreme.y == 0 ) )
-		{
-
-
-				return false;
-		}*/
-	}
-
-	if( !poly.IsClockwise() )
-	{
-		return false;
-	}
-
-
-	//points close to other points on myself
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
-	{
-		for( TerrainPoint *curr2 = poly.pointStart; curr2 != NULL; curr2 = curr2->next )
-		{
-			if( curr->pos.x == curr2->pos.x && curr->pos.y == curr2->pos.y )
-			{
-				continue;
-			}
-
-			V2d a( curr->pos.x, curr->pos.y );
-			V2d b( curr2->pos.x, curr2->pos.y );
-			if( length( a - b ) < validityRadius )
-			{
-				//cout << "len: " << length( a - b ) << endl;
-				return false;
-			}
-		}
-	}
-
-	//points close to lines on myself. do i need the previous stuff
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
-	{
-		TerrainPoint *prev, *next;
-		if( curr == poly.pointStart )
-		{
-			prev = poly.pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = poly.pointStart;
-		}
-		else
-		{
-			next = curr->next;
-		}
-
-		//test for minimum angle difference between edges
-		V2d pos(curr->pos.x, curr->pos.y );
-		V2d prevPos( prev->pos.x, prev->pos.y );
-		V2d nextPos( next->pos.x, next->pos.y );
-
-		
-		double ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
-		if( ff > minAngle )
-		{
-			//cout << "ff: " << ff << endl;
-			return false;
-		} 
-
-		if( !IsPointValid( prev->pos, curr->pos, &poly ) )
-		{
-			return false;
-		}
-	}
-
-
-	//line intersection on myself
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
-	{
-		TerrainPoint *prev;
-		if( curr == poly.pointStart )
-		{
-			prev = poly.pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		for( TerrainPoint *curr2 = poly.pointStart; curr2 != NULL; curr2 = curr2->next )
-		{
-			TerrainPoint *prev2;
-			
-			if( curr2 == poly.pointStart )
-			{
-				prev2 = poly.pointEnd;
-			}
-			else
-			{
-				prev2 = curr2->prev;
-			}
-
-			if( prev2 == prev || prev2 == curr || curr2 == prev || curr2 == curr )
-			{
-				continue;
-			}
-
-			LineIntersection li = LimitSegmentIntersect( prev->pos, curr->pos, prev2->pos, curr2->pos );
-
-			if( !li.parallel )
-			{
-				return false;
-			}
-		}
-	}
 
 	for( list<TerrainPolygon*>::iterator polyIt = polygons.begin(); polyIt != polygons.end(); ++polyIt )
 	{
@@ -7284,6 +7148,177 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 
 	//cout << "true" << endl;
 	return true;
+}
+
+bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
+{
+	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	{
+		TerrainPoint *prev;
+		if( curr == poly.pointStart )
+		{
+			prev = poly.pointEnd;
+		}
+		else
+		{
+			prev = curr->prev;
+		}
+
+		V2d extreme( 0, 0 );
+		Vector2i vec = curr->pos - prev->pos;
+		V2d normVec = normalize( V2d( vec.x, vec.y ) );
+		
+
+		if( normVec.x == 0 || normVec.y == 0 )
+		{
+			continue;
+		}
+
+		if( normVec.x > PRIMARY_LIMIT )
+			extreme.x = 1;
+		else if( normVec.x < -PRIMARY_LIMIT )
+			extreme.x = -1;
+		if( normVec.y > PRIMARY_LIMIT )
+			extreme.y = 1;
+		else if( normVec.y < -PRIMARY_LIMIT )
+			extreme.y = -1;
+
+		//extreme = normalize( extreme );
+
+		if( extreme.x != 0 )
+		{
+			curr->pos.y = prev->pos.y;
+			cout << "lining up x" << endl;
+		}
+
+		if( extreme.y != 0 )
+		{
+			curr->pos.x = prev->pos.x;
+			cout << "lining up y" << endl;
+		}
+		/*if( !( extreme.x == 0 && extreme.y == 0 ) )
+		{
+
+
+				return false;
+		}*/
+	}
+
+	if( !poly.IsClockwise() )
+	{
+		return false;
+	}
+
+	//points close to other points on myself
+	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	{
+		for( TerrainPoint *curr2 = poly.pointStart; curr2 != NULL; curr2 = curr2->next )
+		{
+			if( curr->pos.x == curr2->pos.x && curr->pos.y == curr2->pos.y )
+			{
+				continue;
+			}
+
+			V2d a( curr->pos.x, curr->pos.y );
+			V2d b( curr2->pos.x, curr2->pos.y );
+			if( length( a - b ) < validityRadius )
+			{
+				//cout << "len: " << length( a - b ) << endl;
+				return false;
+			}
+		}
+	}
+
+	//points close to lines on myself. do i need the previous stuff
+	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	{
+		TerrainPoint *prev, *next;
+		if( curr == poly.pointStart )
+		{
+			prev = poly.pointEnd;
+		}
+		else
+		{
+			prev = curr->prev;
+		}
+
+		TerrainPoint *temp = curr->next;
+		if( temp == NULL )
+		{
+			next = poly.pointStart;
+		}
+		else
+		{
+			next = curr->next;
+		}
+
+		//test for minimum angle difference between edges
+		V2d pos(curr->pos.x, curr->pos.y );
+		V2d prevPos( prev->pos.x, prev->pos.y );
+		V2d nextPos( next->pos.x, next->pos.y );
+
+		
+		double ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
+		if( ff > minAngle )
+		{
+			//cout << "ff: " << ff << endl;
+			return false;
+		} 
+
+		/*if( !IsPointValid( prev->pos, curr->pos, &poly ) )
+		{
+			cout << "blahzzz" << endl;
+			return false;
+		}*/
+	}
+
+
+	//line intersection on myself
+	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	{
+		TerrainPoint *prev;
+		if( curr == poly.pointStart )
+		{
+			prev = poly.pointEnd;
+		}
+		else
+		{
+			prev = curr->prev;
+		}
+
+		for( TerrainPoint *curr2 = poly.pointStart; curr2 != NULL; curr2 = curr2->next )
+		{
+			TerrainPoint *prev2;
+			
+			if( curr2 == poly.pointStart )
+			{
+				prev2 = poly.pointEnd;
+			}
+			else
+			{
+				prev2 = curr2->prev;
+			}
+
+			if( prev2 == prev || prev2 == curr || curr2 == prev || curr2 == curr )
+			{
+				continue;
+			}
+
+			LineIntersection li = LimitSegmentIntersect( prev->pos, curr->pos, prev2->pos, curr2->pos );
+
+			if( !li.parallel )
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
+{
+	return IsPolygonExternallyValid( poly, ignore ) && IsPolygonInternallyValid( poly );
 }
 
 void EditSession::ExtendAdd()
