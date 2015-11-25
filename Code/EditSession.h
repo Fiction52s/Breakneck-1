@@ -73,7 +73,7 @@ struct GateInfo
 };
 
 
-
+typedef std::map<TerrainPoint*,std::list<ActorParams*>> EnemyMap;
 
 struct TerrainPolygon
 {
@@ -130,7 +130,8 @@ struct TerrainPolygon
 	int top;
 	int bottom;
 	std::list<sf::Vector2i> path;
-	std::list<ActorParams*> enemies;
+	
+	EnemyMap enemies;
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;

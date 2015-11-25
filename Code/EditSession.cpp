@@ -216,10 +216,13 @@ TerrainPolygon::~TerrainPolygon()
 	if( grassVA != NULL )
 		delete grassVA;
 
-	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
-		(*it)->group->actors.remove( (*it ) );
-		delete (*it);
+		for( list<ActorParams*>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
+		{
+			(*it)->group->actors.remove( (*it ) );
+			delete (*it);
+		}
 	}
 
 	ClearPoints();
@@ -1112,20 +1115,23 @@ bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
 int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 {
-	for( list<ActorParams*>::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
-		if( (*it)->type->canBeGrounded && 
-			( (*(*it)->groundInfo->edgeStart).selected || (*(*it)->groundInfo->edgeEnd).selected ) )
+		for( list<ActorParams*>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
-			bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
+			if( (*it)->type->canBeGrounded && 
+				( (*(*it)->groundInfo->edgeStart).selected || (*(*it)->groundInfo->edgeEnd).selected ) )
+			{
+				bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 
-			if( removeSelectedActors )
-			{
-				return 1;
-			}
-			else
-			{
-				return 0;
+				if( removeSelectedActors )
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
 			}
 		}
 	}
@@ -2663,7 +2669,18 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 					//tp->gate == NULL;
 				}
 			}
+
+			list<ActorParams*> &en = z.enemies[tp];
+			en = currentPoly->enemies[curr];
+			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+			{
+				(*it)->groundInfo->ground = currentPoly;
+				(*it)->groundInfo->edgeStart = tp;
+				//(*it)->groundInfo->edgeEnd = tp->;
+			}
+			
 			z.AddPoint( tp );
+
 
 			//cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
 
@@ -2707,6 +2724,15 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		//		tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
 			//tp->gate->UpdateLine();
 		}
+
+		list<ActorParams*> &en = poly->enemies[tp];
+		en = poly->enemies[curr];
+		for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+		{
+			(*it)->groundInfo->ground = poly;
+			(*it)->groundInfo->edgeStart = tp;
+		}
+
 		poly->AddPoint( tp );
 
 	}
@@ -3683,19 +3709,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 											it != selectedPolygons.end(); ++it )
 										{
-											list<ActorParams*>::iterator et = (*it)->enemies.begin();
-											while( et != (*it)->enemies.end() )
+											for( EnemyMap::iterator mapIt = (*it)->enemies.begin(); mapIt != (*it)->enemies.end(); ++mapIt)
 											{
-												bool deleted = (*(*et)->groundInfo->edgeStart).selected || (*(*et)->groundInfo->edgeEnd).selected;
-												if (deleted)
+												list<ActorParams*>::iterator et = (*mapIt).second.begin();
+												while( et != (*mapIt).second.end() )
 												{
-													(*et)->group->actors.remove( (*et ) );
-													delete (*et); //deleting actor
-													(*it)->enemies.erase(et++); 
-												}
-												else
-												{
-													++et;
+													bool deleted = (*(*et)->groundInfo->edgeStart).selected || (*(*et)->groundInfo->edgeEnd).selected;
+													if (deleted)
+													{
+														(*et)->group->actors.remove( (*et ) );
+														delete (*et); //deleting actor
+														(*it)->enemies[(*et)->groundInfo->edgeStart].erase(et++); 
+													}
+													else
+													{
+														++et;
+													}
 												}
 											}
 										}
@@ -3717,7 +3746,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									if( selectedActor->groundInfo != NULL && selectedActor->groundInfo->ground != NULL )
 									{
-										selectedActor->groundInfo->ground->enemies.remove( selectedActor );
+										selectedActor->groundInfo->ground->enemies[selectedActor->groundInfo->edgeStart].remove( selectedActor );
 									}
 									selectedActor->group->actors.remove( selectedActor );
 									delete selectedActor;
@@ -8454,7 +8483,7 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 	groundInfo = new GroundInfo;
 	
 	groundInfo->ground = poly;
-	poly->enemies.push_back( this );
+	
 
 	//groundInfo->edgeIndex = eIndex;
 	groundInfo->groundQuantity = quantity;
@@ -8492,6 +8521,8 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 		prev = curr;
 		++testIndex;
 	}
+
+	poly->enemies[groundInfo->edgeStart].push_back( this );
 
 	//adjust for ordery
 	/*if( groundInfo->edgeIndex == 0 )
