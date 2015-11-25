@@ -95,6 +95,7 @@ struct TerrainPolygon
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
 	bool IsClockwise();
+	void AlignExtremes( double primLimit );
 	void UpdateGrass();
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );

@@ -41,6 +41,171 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 }
 
+void TerrainPolygon::AlignExtremes( double primLimit )
+{
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		TerrainPoint *prev;
+		if( curr == pointStart )
+		{
+			prev = pointEnd;
+		}
+		else
+		{
+			prev = curr->prev;
+		}
+
+		TerrainPoint *next;
+		if( curr == pointEnd )
+		{
+			next = pointStart;
+		}
+		else
+		{
+			next = curr->next;
+		}
+
+		V2d prevExtreme( 0, 0 );
+		V2d nextExtreme( 0, 0 );
+		Vector2i prevVec = curr->pos - prev->pos;
+		Vector2i nextVec = curr->pos - next->pos;
+		V2d prevNormVec = normalize( V2d( prevVec.x, prevVec.y ) );
+		V2d nextNormVec = normalize( V2d( nextVec.x, nextVec.y ) );
+
+		if( prevNormVec.x > primLimit )
+			prevExtreme.x = 1;
+		else if( prevNormVec.x < -primLimit )
+			prevExtreme.x = -1;
+		if( prevNormVec.y > primLimit )
+			prevExtreme.y = 1;
+		else if( prevNormVec.y < -primLimit )
+			prevExtreme.y = -1;
+
+		if( nextNormVec.x > primLimit )
+			nextExtreme.x = 1;
+		else if( nextNormVec.x < -primLimit )
+			nextExtreme.x = -1;
+		if( nextNormVec.y > primLimit )
+			nextExtreme.y = 1;
+		else if( nextNormVec.y < -primLimit )
+			nextExtreme.y = -1;
+
+
+		if( finalized )
+		{
+			if( !curr->selected )
+			{
+				continue;
+			}
+
+			bool prevValid = true, nextValid = true;
+			if( nextNormVec.x == 0 || nextNormVec.y == 0 )
+			{
+				nextValid = false;
+			} 
+
+			if( prevNormVec.x == 0 || prevNormVec.y == 0 )
+			{
+				prevValid = false;
+			} 
+
+			if( prevValid && nextValid )
+			{
+				if( prevExtreme.x != 0 )
+				{
+					if( nextExtreme.x != 0 )
+					{
+						cout << "a" << endl;
+						prev->pos.y = curr->pos.y;
+						next->pos.y = curr->pos.y;
+					}
+					else if( nextExtreme.y != 0 )
+					{
+						cout << "b" << endl;
+						curr->pos.y = prev->pos.y;
+						curr->pos.x = next->pos.x;
+					}
+					else
+					{
+						cout << "c" << endl;
+						curr->pos.y = prev->pos.y;
+					}
+				}
+				else if( prevExtreme.y != 0 )
+				{
+					if( nextExtreme.y != 0 )
+					{
+						cout << "d" << endl;
+						prev->pos.x = curr->pos.x;
+						next->pos.x = curr->pos.x;
+					}
+					else if( nextExtreme.x != 0 )
+					{
+						cout << "e" << endl;
+						curr->pos.x = prev->pos.x;
+						curr->pos.y = next->pos.y;
+					}
+					else
+					{
+						cout << "f" << endl;
+						curr->pos.x = prev->pos.x;
+					}
+				}
+			}
+			else if( prevValid )
+			{
+				if( prevExtreme.y != 0 )
+				{
+					curr->pos.x = prev->pos.x;
+				}
+				else if( prevExtreme.x != 0 )
+				{
+					curr->pos.y = prev->pos.y;
+				}
+			}
+			else if( nextValid )
+			{
+				if( nextExtreme.y != 0 )
+				{
+					curr->pos.x = next->pos.x;
+				}
+				else if( nextExtreme.x != 0 )
+				{
+					curr->pos.y = next->pos.y;
+				}
+			}
+			else
+			{
+				continue;
+			}
+		}
+		else
+		{
+			if( nextNormVec.x == 0 || nextNormVec.y == 0 )
+			{
+				continue;
+			}
+
+
+			if( nextExtreme.x != 0 )
+			{
+				curr->pos.y = next->pos.y;
+				//cout << "lining up x" << endl;
+			}
+
+			if( nextExtreme.y != 0 )
+			{
+				curr->pos.x = next->pos.x;
+				//cout << "lining up y" << endl;
+			}
+		}
+
+		
+
+
+	}
+}
+
 TerrainPolygon::~TerrainPolygon()
 {
 	if( lines != NULL )
@@ -5303,7 +5468,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									if( extreme.x != 0 )
 									{
 										//int diff = ;
-										diff.y = curr->pos.y - next->pos.y;
+										//diff.y = curr->pos.y - next->pos.y;
 									
 										//(*it2).pos.y = (*prev).pos.y;
 										cout << "lining up x222: " << diff.y << endl;
@@ -5311,7 +5476,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( extreme.y != 0 )
 									{
-										diff.x = curr->pos.x - next->pos.x;
+										//diff.x = curr->pos.x - next->pos.x;
 
 										cout << "lining up y222: " << diff.x << endl;
 									}
@@ -5344,7 +5509,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( validMove )
 					{
-						cout << "moving" << endl;
+						//cout << "moving" << endl;
 						//cout << "valid move" << endl;
 						//int 
 						allDeltaIndex = 0;
@@ -5407,7 +5572,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					else
 					{
-						cout << "NOT VALID move" << endl;
+						//cout << "NOT VALID move" << endl;
 					}
 
 					for( int i = 0; i < numSelectedPolys; ++i )
@@ -7498,57 +7663,8 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 
 bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 {
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
-	{
-		TerrainPoint *prev;
-		if( curr == poly.pointStart )
-		{
-			prev = poly.pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
+	poly.AlignExtremes( PRIMARY_LIMIT );
 
-		V2d extreme( 0, 0 );
-		Vector2i vec = curr->pos - prev->pos;
-		V2d normVec = normalize( V2d( vec.x, vec.y ) );
-		
-
-		if( normVec.x == 0 || normVec.y == 0 )
-		{
-			continue;
-		}
-
-		if( normVec.x > PRIMARY_LIMIT )
-			extreme.x = 1;
-		else if( normVec.x < -PRIMARY_LIMIT )
-			extreme.x = -1;
-		if( normVec.y > PRIMARY_LIMIT )
-			extreme.y = 1;
-		else if( normVec.y < -PRIMARY_LIMIT )
-			extreme.y = -1;
-
-		//extreme = normalize( extreme );
-
-		if( extreme.x != 0 )
-		{
-			curr->pos.y = prev->pos.y;
-			cout << "lining up x" << endl;
-		}
-
-		if( extreme.y != 0 )
-		{
-			curr->pos.x = prev->pos.x;
-			cout << "lining up y" << endl;
-		}
-		/*if( !( extreme.x == 0 && extreme.y == 0 ) )
-		{
-
-
-				return false;
-		}*/
-	}
 
 	if( !poly.IsClockwise() )
 	{
@@ -7663,6 +7779,7 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 
 	return true;
 }
+
 
 bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 {
