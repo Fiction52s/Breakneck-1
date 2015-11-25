@@ -600,6 +600,8 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 							assert( false );
 						}
 					}
+
+					//cant be enemies here because its the in progress polygon
 		
 					newList.AddPoint( tp );
 				}
@@ -622,6 +624,13 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 						assert( false );
 					}
 				}
+
+				if( enemies.count( curr ) > 0 )
+				{
+					list<ActorParams*> &en = newList.enemies[tp];
+					en = enemies[curr];
+				}
+
 				newList.AddPoint( tp );	
 			}
 			else
@@ -643,10 +652,18 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 						assert( false );
 					}
 				}
+
+				if( enemies.count( curr ) > 0 )
+				{
+					list<ActorParams*> &en = newList.enemies[tp];
+					en = enemies[curr];
+				}
+
 				newList.AddPoint( tp );
 			}
 		}
-	}	else
+	}	
+	else
 	{
 		cout << "other type: " << inProgresscw << endl;
 		for( TerrainPoint *curr = end; curr != NULL; curr = curr->next )
@@ -672,6 +689,9 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 							assert( false );
 						}
 					}
+
+					//in progress so no enemies
+
 					newList.AddPoint( tp );
 				}	
 				break;
@@ -695,6 +715,13 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 						assert( false );
 					}
 				}
+
+				if( enemies.count( curr ) > 0 )
+				{
+					list<ActorParams*> &en = newList.enemies[tp];
+					en = enemies[curr];
+				}
+
 				newList.AddPoint( tp );
 			}
 		}
@@ -722,6 +749,20 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 				assert( false );
 			}
 		}
+
+		if( newList.enemies.count( curr ) > 0 )
+		{
+			list<ActorParams*> &en = enemies[tp];
+			en = newList.enemies[curr];
+			//cout << "zsize: " << en.size() << endl;
+			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+			{
+				//cout << "setting new ground on actor params" << endl;
+				(*it)->groundInfo->ground = this;
+				(*it)->groundInfo->edgeStart = tp;
+			}
+		}
+
 		AddPoint( tp );
 	}
 
