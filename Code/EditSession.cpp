@@ -665,7 +665,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 	}	
 	else
 	{
-		cout << "other type: " << inProgresscw << endl;
+		//cout << "other type: " << inProgresscw << endl;
 		for( TerrainPoint *curr = end; curr != NULL; curr = curr->next )
 		{
 			if( curr == start )
@@ -5174,13 +5174,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 							}
 
+							cout << "valid: " << validNearPolys << endl;
+
 							if( validNearPolys )
 							{
 								if( polygonInProgress->numPoints > 0 && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->pointEnd->pos.x, 
 									polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 								{
+									cout << "check1" << endl;
 									if( PointValid( polygonInProgress->pointEnd->pos, worldi ) )
 									{
+										cout << "blah1" << endl;
 										polygonInProgress->AddPoint( new TerrainPoint( worldi, false ) );
 									}
 								}
@@ -6695,16 +6699,16 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				TerrainPoint *rcurr = polygonInProgress->pointEnd;
 				rcurr = rcurr->prev;
 
-				for( ; rcurr != NULL; rcurr = rcurr->prev )
-				{
+				//for( ; rcurr != NULL; rcurr = rcurr->prev )
+				//{
 					double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y ) )
 					, normalize( V2d(rcurr->pos.x, rcurr->pos.y ) - V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y ) ) );
 					if( ff > minAngle )
 					{
-						//cout << "ff: " << ff << endl;
+						cout << "ff: " << ff << endl;
 						return false;
 					}
-				}
+				//}
 			}
 		}
 
@@ -6716,6 +6720,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
 			if( separation < minimumEdgeLength )
 			{
+				cout << "return a" << endl;
 				return false;
 			}
 
@@ -6726,6 +6731,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 					&& dot( V2d( point.x, point.y ) - V2d( prev.x, prev.y ), normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y )) ) 
 					>= length( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) )
 				{
+					cout << "return b" << endl;
 					return false;
 				}
 			}
@@ -6775,7 +6781,6 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 				if( separation < minimumEdgeLength )
 				{
-					
 					return false;
 				}
 
