@@ -1162,8 +1162,6 @@ bool GameSession::OpenFile( string fileName )
 				else if( typeName == "crawler" )
 				{
 					//always grounded
-					string airStr;
-					is >> airStr;
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -1197,8 +1195,6 @@ bool GameSession::OpenFile( string fileName )
 				else if( typeName == "basicturret" )
 				{
 					//always grounded
-					string airStr;
-					is >> airStr;
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -1221,9 +1217,9 @@ bool GameSession::OpenFile( string fileName )
 				}
 				else if( typeName == "foottrap" )
 				{
+					cout << "loading foottrap" << endl;
 					//always grounded
-					string airStr;
-					is >> airStr;
+					
 
 					int terrainIndex;
 					is >> terrainIndex;
@@ -2228,7 +2224,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+	//	DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -2468,7 +2464,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( e->spawnRect.intersects( tempSpawnRect ) )
 		{
-			//cout << "spawning enemy!" << endl;
+			cout << "spawning enemy! of type: " << e->type << endl;
 			assert( e->spawned == false );
 			e->spawned = true;
 

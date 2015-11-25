@@ -47,6 +47,7 @@ struct TerrainPoint
 	bool firstPoint; 
 	TerrainPoint *next;
 	TerrainPoint *prev;
+	int GetEdgeIndex();
 	//int special;
 };
 
@@ -170,18 +171,9 @@ struct ActorParams
 	ActorParams();
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
-	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
-	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
-	//	std::list<sf::Vector2i> &globalPath, float speed, bool loop );
-	//std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
-	//std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
-	//std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity ); 
 
-	//std::string SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity ); 
+
+
 	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
 	virtual void SetBoundingQuad();
@@ -200,7 +192,8 @@ struct ActorParams
 		TerrainPoint *edgeEnd;
 		double groundQuantity;
 		TerrainPolygon *ground;
-		int edgeIndex;
+		int GetEdgeIndex();
+		//int edgeIndex;
 	};
 	
 	GroundInfo *groundInfo;

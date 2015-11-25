@@ -8333,7 +8333,8 @@ void ActorParams::WriteFile( ofstream &of )
 	{
 		if( groundInfo != NULL )
 		{
-			of << "-air" << " " << groundInfo->ground->writeIndex << " " << groundInfo->edgeIndex << " " << groundInfo->groundQuantity << endl;
+			int edgeIndex = groundInfo->GetEdgeIndex();
+			of << "-air" << " " << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
 		}
 		else
 		{
@@ -8343,7 +8344,10 @@ void ActorParams::WriteFile( ofstream &of )
 	else if( type->canBeGrounded )
 	{
 		assert( groundInfo != NULL );
-		of << groundInfo->ground->writeIndex << " " << groundInfo->edgeIndex << " " << groundInfo->groundQuantity << endl;
+
+		int edgeIndex = groundInfo->GetEdgeIndex();
+
+		of << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
 	}
 	else if( type->canBeAerial )
 	{
@@ -8397,6 +8401,17 @@ TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 {
 }
 
+int ActorParams::GroundInfo::GetEdgeIndex()
+{
+	int index = 0;
+	for( TerrainPoint *curr = ground->pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr == edgeStart )
+			return index;
+		++index;
+	}
+}
+
 void ActorParams::SetBoundingQuad()
 {
 	//float note
@@ -8428,7 +8443,7 @@ void ActorParams::SetBoundingQuad()
 	}
 }
 
-void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quantity )
+void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
 {
 	if( groundInfo != NULL )
 	{
@@ -8440,7 +8455,8 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 	
 	groundInfo->ground = poly;
 	poly->enemies.push_back( this );
-	groundInfo->edgeIndex = eIndex;
+
+	//groundInfo->edgeIndex = eIndex;
 	groundInfo->groundQuantity = quantity;
 
 	image.setTexture( type->imageTexture );
@@ -8455,7 +8471,7 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 
 	for( ; curr != NULL; curr = curr->next )
 	{
-		if( groundInfo->edgeIndex == testIndex )
+		if( edgeIndex == testIndex )
 		{
 			V2d pr( prev->pos.x, prev->pos.y );
 			V2d cu( curr->pos.x, curr->pos.y );
@@ -8476,11 +8492,12 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int eIndex, double quant
 		prev = curr;
 		++testIndex;
 	}
+
 	//adjust for ordery
-	if( groundInfo->edgeIndex == 0 )
+	/*if( groundInfo->edgeIndex == 0 )
 		groundInfo->edgeIndex = groundInfo->ground->numPoints - 1;
 	else
-		groundInfo->edgeIndex--;
+		groundInfo->edgeIndex--;*/
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
