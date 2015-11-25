@@ -274,6 +274,16 @@ void TerrainPolygon::Move( Vector2i move )
 		gva[i*4+2].position += Vector2f( move.x, move.y );
 		gva[i*4+3].position += Vector2f( move.x, move.y );
 	}
+
+	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	{
+		list<ActorParams*> &actorList = (*it).second;
+		for( list<ActorParams*>::iterator ait = actorList.begin(); ait != actorList.end(); ++ait )
+		{
+			(*ait)->UpdateGroundedSprite();
+			(*ait)->SetBoundingQuad();
+		}
+	}
 	return;
 }
 
@@ -2686,14 +2696,14 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			{
 				list<ActorParams*> &en = z.enemies[tp];
 				en = currentPoly->enemies[curr];
-				cout << "cSIze: " << currentPoly->enemies.size() << endl;
-				cout << "test: " << en.size() << endl;
-				for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+				//cout << "cSIze: " << currentPoly->enemies.size() << endl;
+				//cout << "test: " << en.size() << endl;
+				/*for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
 				{
 					(*it)->groundInfo->ground = &z;
 					(*it)->groundInfo->edgeStart = tp;
 					//(*it)->groundInfo->edgeEnd = tp->;
-				}
+				}*/
 			}
 			
 			z.AddPoint( tp );
@@ -2747,10 +2757,10 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		{
 			list<ActorParams*> &en = poly->enemies[tp];
 			en = z.enemies[zit];
-			cout << "zsize: " << en.size() << endl;
+			//cout << "zsize: " << en.size() << endl;
 			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
 			{
-				cout << "setting new ground on actor params" << endl;
+				//cout << "setting new ground on actor params" << endl;
 				(*it)->groundInfo->ground = poly;
 				(*it)->groundInfo->edgeStart = tp;
 			}
@@ -8506,6 +8516,29 @@ void ActorParams::SetBoundingQuad()
 	}
 }
 
+
+void ActorParams::UpdateGroundedSprite()
+{	
+	assert( groundInfo != NULL && groundInfo->ground != NULL );
+	
+	TerrainPoint *edge = groundInfo->edgeStart;
+	TerrainPoint *next = edge->next;
+	if( next == NULL )
+		next = groundInfo->ground->pointStart;
+
+
+	V2d pr( edge->pos.x, edge->pos.y );
+	V2d cu( next->pos.x, next->pos.y );
+
+	V2d newPoint( pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+									(groundInfo->groundQuantity / length( cu - pr ) ) );
+
+	double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+
+	image.setPosition( newPoint.x, newPoint.y );
+	image.setRotation( angle );
+}
+
 void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
 {
 	if( groundInfo != NULL )
@@ -8544,10 +8577,10 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 
 			double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
 
-			image.setPosition( newPoint.x, newPoint.y );
-			image.setRotation( angle );
-
 			groundInfo->edgeStart = prev;
+
+			UpdateGroundedSprite();
+
 			//groundInfo->edgeEnd = curr;
 
 			break;

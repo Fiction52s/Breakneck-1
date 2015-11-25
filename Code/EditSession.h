@@ -178,6 +178,7 @@ struct ActorParams
 
 	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
+	void UpdateGroundedSprite();
 	virtual void SetBoundingQuad();
 	//sf::Sprite icon;
 	sf::Sprite image;
