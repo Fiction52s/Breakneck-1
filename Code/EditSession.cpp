@@ -216,6 +216,11 @@ TerrainPolygon::~TerrainPolygon()
 	if( grassVA != NULL )
 		delete grassVA;
 
+	ClearPoints();
+}
+
+void TerrainPolygon::DestroyEnemies()
+{
 	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
 		for( list<ActorParams*>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
@@ -224,8 +229,6 @@ TerrainPolygon::~TerrainPolygon()
 			delete (*it);
 		}
 	}
-
-	ClearPoints();
 }
 
 void TerrainPolygon::Move( Vector2i move )
@@ -1119,8 +1122,12 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 	{
 		for( list<ActorParams*>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
+			TerrainPoint *edgeEnd = (*it)->groundInfo->edgeStart->next;
+			if( edgeEnd == NULL )
+				edgeEnd = (*it)->groundInfo->ground->pointStart;
+
 			if( (*it)->type->canBeGrounded && 
-				( (*(*it)->groundInfo->edgeStart).selected || (*(*it)->groundInfo->edgeEnd).selected ) )
+				( (*(*it)->groundInfo->edgeStart).selected || edgeEnd->selected ) )
 			{
 				bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 
@@ -2438,6 +2445,9 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 
 void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 {
+	//cout << "brush: " << brush->enemies.size() << endl;
+	//cout << "poly: " << poly->enemies.size() << endl;
+
 
 	TerrainPolygon z( &grassTex );
 	//1: choose start point
@@ -2670,13 +2680,20 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 				}
 			}
 
-			list<ActorParams*> &en = z.enemies[tp];
-			en = currentPoly->enemies[curr];
-			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+			
+
+			if( currentPoly->enemies.count( curr ) > 0 )
 			{
-				(*it)->groundInfo->ground = currentPoly;
-				(*it)->groundInfo->edgeStart = tp;
-				//(*it)->groundInfo->edgeEnd = tp->;
+				list<ActorParams*> &en = z.enemies[tp];
+				en = currentPoly->enemies[curr];
+				cout << "cSIze: " << currentPoly->enemies.size() << endl;
+				cout << "test: " << en.size() << endl;
+				for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+				{
+					(*it)->groundInfo->ground = &z;
+					(*it)->groundInfo->edgeStart = tp;
+					//(*it)->groundInfo->edgeEnd = tp->;
+				}
 			}
 			
 			z.AddPoint( tp );
@@ -2724,13 +2741,19 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		//		tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
 			//tp->gate->UpdateLine();
 		}
+		
 
-		list<ActorParams*> &en = poly->enemies[tp];
-		en = poly->enemies[curr];
-		for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+		if( z.enemies.count( zit ) > 0 )
 		{
-			(*it)->groundInfo->ground = poly;
-			(*it)->groundInfo->edgeStart = tp;
+			list<ActorParams*> &en = poly->enemies[tp];
+			en = z.enemies[zit];
+			cout << "zsize: " << en.size() << endl;
+			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+			{
+				cout << "setting new ground on actor params" << endl;
+				(*it)->groundInfo->ground = poly;
+				(*it)->groundInfo->edgeStart = tp;
+			}
 		}
 
 		poly->AddPoint( tp );
@@ -3714,7 +3737,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												list<ActorParams*>::iterator et = (*mapIt).second.begin();
 												while( et != (*mapIt).second.end() )
 												{
-													bool deleted = (*(*et)->groundInfo->edgeStart).selected || (*(*et)->groundInfo->edgeEnd).selected;
+													TerrainPoint *edgeEnd = (*et)->groundInfo->edgeStart->next;
+													if( edgeEnd == NULL )
+														edgeEnd = (*et)->groundInfo->ground->pointStart;
+
+													bool deleted = (*(*et)->groundInfo->edgeStart).selected || edgeEnd->selected;
 													if (deleted)
 													{
 														(*et)->group->actors.remove( (*et ) );
@@ -8439,6 +8466,10 @@ int ActorParams::GroundInfo::GetEdgeIndex()
 			return index;
 		++index;
 	}
+
+	
+	//assert( false && "could not find correct edge index" );
+	return -1;
 }
 
 void ActorParams::SetBoundingQuad()
@@ -8447,7 +8478,10 @@ void ActorParams::SetBoundingQuad()
 	if( type->canBeGrounded && groundInfo != NULL )
 	{
 		V2d v0( (*groundInfo->edgeStart).pos.x, (*groundInfo->edgeStart).pos.y );
-		V2d v1( (*groundInfo->edgeEnd).pos.x, (*groundInfo->edgeEnd).pos.y );
+		TerrainPoint *edgeEnd = groundInfo->edgeStart->next;
+		if( edgeEnd == NULL )
+			edgeEnd = groundInfo->ground->pointStart;
+		V2d v1( edgeEnd->pos.x, edgeEnd->pos.y );
 		V2d along = normalize( v1 - v0 );
 		V2d other( along.y, -along.x );
 
@@ -8514,7 +8548,7 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 			image.setRotation( angle );
 
 			groundInfo->edgeStart = prev;
-			groundInfo->edgeEnd = curr;
+			//groundInfo->edgeEnd = curr;
 
 			break;
 		}

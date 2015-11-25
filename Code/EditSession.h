@@ -85,6 +85,7 @@ struct TerrainPolygon
 	int numPoints;
 	void AddPoint( TerrainPoint* tp);
 	void RemovePoint( TerrainPoint *tp );
+	void DestroyEnemies();
 	void ClearPoints();
 	std::string material;
 	void RemoveSelectedPoints();
@@ -190,7 +191,7 @@ struct ActorParams
 	struct GroundInfo
 	{
 		TerrainPoint *edgeStart;
-		TerrainPoint *edgeEnd;
+		//TerrainPoint *edgeEnd;
 		double groundQuantity;
 		TerrainPolygon *ground;
 		int GetEdgeIndex();
