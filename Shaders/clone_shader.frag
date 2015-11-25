@@ -133,20 +133,25 @@ void main()
 			float trueRad = bubbleRadius * 2;
 			float expandFrames = 20;
 			float trueFrame = ( 240 - bubbles[i].frame );
-			if( bubbles[i].frame > 240 - expandFrames )
+			if( trueFrame < expandFrames )
 			{
-				trueRad = (trueRad + 100 ) * ( 240 - bubbles[i].frame ) / expandFrames;
+				trueRad = (trueRad + 80 ) * ( 240 - bubbles[i].frame ) / expandFrames;
 			}
+			else if( trueFrame == expandFrames )
+			{
+				trueRad = (trueRad + 40 ) * ( 240 - bubbles[i].frame - 1 ) / expandFrames;
+			}
+			
 			
 			if( D <= trueRad )
 			{
-				if( bubbles[i].frame > 240 - expandFrames )
+				/*if( bubbles[i].frame > 240 - expandFrames )
 				{
 					
 					col = texture2D( u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
-				}
+				}*/
 				
-				if( trueFrame < expandFrames )
+				if( trueFrame <= expandFrames )
 				{
 					col.r = 1 - col.r;
 					col.g = 1 - col.g;
@@ -155,7 +160,7 @@ void main()
 				else
 				{
 					float gray = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-					col.r = gray;
+					col.r = gray + .5;
 					col.g = gray;
 					col.b = gray;
 				}
