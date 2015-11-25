@@ -555,7 +555,8 @@ Actor::Actor( GameSession *gs )
 			//wire still under development
 			hasPowerLeftWire = true;
 			hasPowerRightWire = true;
-			hasPowerClones = MAX_GHOSTS;
+			//hasPowerClones = MAX_GHOSTS;
+			hasPowerClones = 0;
 		}
 
 		//do this a little later.

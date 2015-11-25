@@ -16,6 +16,8 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
+	//cout << "player " << owner->player.position.x << ", " << owner->player.position.y << endl;
+	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
 	position = gPoint;
 
 	gn = g->Normal();

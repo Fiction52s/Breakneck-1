@@ -23,55 +23,80 @@ struct GrassSeg
 	int reps;
 };
 
+struct TerrainPolygon;
+struct GateInfo;
+
+struct GatePoint
+{
+	//TerrainPolygon *poly;
+	int vertexIndex;
+	GateInfo *info;
+};
+
 struct TerrainPoint
 {
 	TerrainPoint( sf::Vector2i &pos, bool selected );
-
+	~TerrainPoint()
+	{
+		//delete gate;
+	}
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
+	GateInfo *gate;
+	bool firstPoint; 
+	TerrainPoint *next;
+	TerrainPoint *prev;
+	int GetEdgeIndex();
 	//int special;
 };
 
-typedef std::list<TerrainPoint> PointList;
 typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
-struct TerrainPolygon;
+struct EditSession;
+
+
 struct GateInfo
 {
 	GateInfo();
+	TerrainPoint *point0;
+	TerrainPoint *point1;
 	TerrainPolygon *poly0;
 	int vertexIndex0;
 	TerrainPolygon *poly1;
 	int vertexIndex1;
 	sf::VertexArray thickLine;
-	PointList::iterator v0It;
-	PointList::iterator v1It;
-	sf::Vector2i v0;
-	sf::Vector2i v1;
+	EditSession *edit;
 	void UpdateLine();
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
 };
 
 
+typedef std::map<TerrainPoint*,std::list<ActorParams*>> EnemyMap;
 
-struct EditSession;
 struct TerrainPolygon
 {
 	TerrainPolygon( sf::Texture *grassTex );
 	~TerrainPolygon();
 	
-	PointList points;
+	TerrainPoint *pointStart;
+	TerrainPoint *pointEnd;
+	int numPoints;
+	void AddPoint( TerrainPoint* tp);
+	void RemovePoint( TerrainPoint *tp );
+	void ClearPoints();
 	std::string material;
-	bool RemoveSelectedPoints();
+	void RemoveSelectedPoints();
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
 	void Reset();
+	void SoftReset();
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
 	bool IsClockwise();
+	void AlignExtremes( double primLimit );
 	void UpdateGrass();
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
@@ -86,8 +111,13 @@ struct TerrainPolygon
 		sf::Vector2i *deltas );
 	bool IsMovePolygonOkay( EditSession *edit, 
 		sf::Vector2i delta );
+	void MoveSelectedPoints(sf::Vector2i move);
+	bool movingPointMode;
 	
 	sf::Rect<int> TempAABB();
+
+	void Move( sf::Vector2i move );
+
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	sf::VertexArray *grassVA;
@@ -100,10 +130,12 @@ struct TerrainPolygon
 	int top;
 	int bottom;
 	std::list<sf::Vector2i> path;
-	std::list<ActorParams*> enemies;
+	
+	EnemyMap enemies;
 	int writeIndex;
 	bool isGrassShowing;
-	std::list<GateInfo*> attachedGates;
+	bool finalized;
+
 };
 
 struct StaticLight
@@ -140,18 +172,9 @@ struct ActorParams
 	ActorParams();
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
-	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, bool clockwise, float speed );
-	//std::string SetAsPatroller( ActorType *t, sf::Vector2i pos, 
-	//	std::list<sf::Vector2i> &globalPath, float speed, bool loop );
-	//std::string SetAsCrawler( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity, bool clockwise, float speed ); 
-	//std::string SetAsBasicTurret( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity, double bulletSpeed, int framesWait ); 
-	//std::string SetAsFootTrap( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity ); 
 
-	//std::string SetAsGoal( ActorType *t, TerrainPolygon *edgePolygon,
-	//	int edgeIndex, double edgeQuantity ); 
+
+
 	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
 	virtual void SetBoundingQuad();
@@ -166,11 +189,12 @@ struct ActorParams
 	//if you arent on it
 	struct GroundInfo
 	{
-		PointList::iterator edgeStart;
-		PointList::iterator edgeEnd;
+		TerrainPoint *edgeStart;
+		TerrainPoint *edgeEnd;
 		double groundQuantity;
 		TerrainPolygon *ground;
-		int edgeIndex;
+		int GetEdgeIndex();
+		//int edgeIndex;
 	};
 	
 	GroundInfo *groundInfo;
@@ -298,8 +322,11 @@ struct EditSession : GUIHandler
 
 	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
 	void ExtendAdd();
-	bool IsPolygonValid( TerrainPolygon &poly,
+	bool IsPolygonExternallyValid( TerrainPolygon &poly,
 		 TerrainPolygon *ignore );
+	bool IsPolygonInternallyValid( TerrainPolygon &poly );
+	bool IsPolygonValid( TerrainPolygon &poly,
+		TerrainPolygon *ignore );
 	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
 	void SetEnemyEditPanel();
 	bool QuadPolygonIntersect( TerrainPolygon *poly, 
@@ -319,8 +346,11 @@ struct EditSession : GUIHandler
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
 	bool polyGrab;
+	//sf::Vector2i polyGrabPos;
+	//sf::Vector2f polyGrabPos;
 	sf::Vector2i polyGrabPos;
 	sf::Vector2i polyGrabDelta;
+	sf::Vector2f polyMove;
 
 	bool makingRect;
 	sf::Vector2i rectStart;
