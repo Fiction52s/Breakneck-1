@@ -132,6 +132,7 @@ struct TerrainPolygon
 	bool IsMovePolygonOkay( EditSession *edit, 
 		sf::Vector2i delta );
 	void MoveSelectedPoints(sf::Vector2i move);
+	void UpdateBounds();
 	bool movingPointMode;
 	
 	sf::Rect<int> TempAABB();

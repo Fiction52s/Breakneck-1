@@ -418,6 +418,25 @@ void TerrainPolygon::Move( Vector2i move )
 	return;
 }
 
+void TerrainPolygon::UpdateBounds()
+{
+	TerrainPoint *curr = pointStart;
+	//PointList::iterator it = points.begin();
+	left = curr->pos.x;
+	right = curr->pos.x;
+	top = curr->pos.y;
+	bottom = curr->pos.y;
+	curr = curr->next;
+	while( curr != NULL )
+	{
+		left = min( curr->pos.x, left );
+		right = max( curr->pos.x, right );
+		top = min( curr->pos.y, top );
+		bottom = max( curr->pos.y, bottom );
+		curr = curr->next;
+	}
+}
+
 void TerrainPolygon::Finalize()
 {
 	finalized = true;
@@ -489,23 +508,7 @@ void TerrainPolygon::Finalize()
 		}
 	}
 
-	{
-		curr = pointStart;
-		//PointList::iterator it = points.begin();
-		left = curr->pos.x;
-		right = curr->pos.x;
-		top = curr->pos.y;
-		bottom = curr->pos.y;
-		curr = curr->next;
-		while( curr != NULL )
-		{
-			left = min( curr->pos.x, left );
-			right = max( curr->pos.x, right );
-			top = min( curr->pos.y, top );
-			bottom = max( curr->pos.y, bottom );
-			curr = curr->next;
-		}
-	}
+	UpdateBounds();
 	
 
 	double grassSize = 22;
@@ -3868,6 +3871,50 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( !pasteBrushes.empty() )
 								{
+									bool validPaste = true;
+									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
+										tbIt != pasteBrushes.end(); ++tbIt )
+									{										
+										for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
+											it != polygons.end() && validPaste; ++it )
+										{
+											TerrainPolygon *currentBrush = new TerrainPolygon( (*it)->grassTex );
+										
+											for( TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
+												curr = curr->next )
+											{
+												currentBrush->AddPoint( new TerrainPoint(*curr) );
+											}
+
+											currentBrush->UpdateBounds();
+
+											for( TerrainPoint *curr = currentBrush->pointStart; curr != NULL && validPaste;
+												curr = curr->next )
+											{
+												TerrainPoint *prev;
+												if( curr == currentBrush->pointStart )
+												{
+													prev = currentBrush->pointEnd;
+												}
+												else
+												{
+													prev = curr->prev;
+												}
+
+												if( !IsPointValid( prev->pos, curr->pos, (*it) ) )
+												{
+													validPaste = false;
+												}
+
+
+											}
+
+											delete currentBrush;
+										}
+									}
+
+									if( validPaste)
+									{
 									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
 										tbIt != pasteBrushes.end(); ++tbIt )
 									{
@@ -3886,8 +3933,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											cout << "adding" << endl;
 											currentBrush->AddPoint( new TerrainPoint(*curr) );
 										}
-									//	TerrainPolygon *currentBrush = polygonInProgress;
 
+										currentBrush->UpdateBounds();
+
+										
+
+									//	TerrainPolygon *currentBrush = polygonInProgress;
+										
 										while( it != polygons.end() )
 										{
 											TerrainPolygon *temp = (*it);
@@ -3928,7 +3980,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											}
 											else
 											{
-												//cout << "not" << endl;
+												cout << "not" << endl;
 											}
 											++it;
 										}
@@ -3974,6 +4026,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 
 									ClearPasteBrushes();
+									}
+									else
+									{
+										MessagePop( "invalid paste" );
+									}
 								}
 
 								
