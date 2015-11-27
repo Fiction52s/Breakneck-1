@@ -6027,9 +6027,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							int deltaIndex = 0;
 							for( TerrainPoint *curr = points; curr != NULL; curr = curr->next )
 							{
+								TerrainPoint *prev;
+								if( curr == (*it)->pointStart )
+								{
+									prev = (*it)->pointEnd;
+								}
+								else
+								{
+									prev = curr->prev;
+								}
+
+
 								if( curr->selected ) //selected
 								{					
-
+									
+									
 									//Vector2i temp = (*pointIt).pos + pointGrabDelta;
 									
 									Vector2i delta = allDeltas[allDeltaIndex][deltaIndex];
@@ -6041,6 +6053,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										curr->gate->UpdateLine();
 									}
+
+									if( (*it)->enemies.count( curr ) > 0 )
+									{
+										list<ActorParams*> &enemies = (*it)->enemies[curr];
+										for( list<ActorParams*>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
+										{
+											//(*ait)->UpdateGroundedSprite();
+
+										}
+										//revquant is the quantity from the edge's v1
+										//double revQuant = 
+									}
+
 									affected = true;
 								}
 
@@ -6050,6 +6075,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( affected )
 							{
 								(*it)->movingPointMode = true;
+
+								for( map<TerrainPoint*,list<ActorParams*>>::iterator mit = (*it)->enemies.begin();
+									mit != (*it)->enemies.end(); ++mit )
+								{
+									list<ActorParams*> &enemies = (*mit).second;//(*it)->enemies[curr];
+									for( list<ActorParams*>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
+									{
+										(*ait)->UpdateGroundedSprite();
+										(*ait)->SetBoundingQuad();
+									}
+									//revquant is the quantity from the edge's v1
+									//double revQuant = 	
+								}
+
 								/*PointList temp = (*it)->points;
 
 								(*it)->Reset();
