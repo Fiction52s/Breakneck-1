@@ -4729,6 +4729,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
 							}
+
+							if( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete )
+							{
+								if( trackingEnemy != NULL )
+								{
+									trackingEnemy = NULL;
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
