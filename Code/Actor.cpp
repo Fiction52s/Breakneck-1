@@ -7187,7 +7187,7 @@ void Actor::UpdatePostPhysics()
 			if( collision )
 			{
 				//cout << "wallcling" << endl;
-				if( length( wallNormal ) > 0 && oldVelocity.y > 0 )
+				if( length( wallNormal ) > 0 && oldVelocity.y >= 8 )
 				//if( false )
 				{
 				//	cout << "wallnormal active: " << wallNormal.x << ", " << wallNormal.y << endl;

@@ -26,6 +26,137 @@ using namespace sf;
 
 const double EditSession::PRIMARY_LIMIT = .999;
 
+
+TerrainBrush::TerrainBrush( TerrainPolygon *poly )
+	:pointStart(NULL),pointEnd(NULL),lines( sf::Lines, poly->numPoints * 2 ), numPoints( 0 )
+{
+	//assert( poly->finalized );
+
+	TerrainPoint *curr = poly->pointStart;
+	left = curr->pos.x;
+	right = curr->pos.x; 
+	top = curr->pos.y; 
+	bot = curr->pos.y;
+
+	curr = curr->next;
+	for( ; curr != NULL; curr = curr->next )
+	{
+		if( curr->pos.x < left )
+			left = curr->pos.x;
+		else if( curr->pos.x > right )
+			right = curr->pos.x;
+
+		if( curr->pos.y < top )
+			top = curr->pos.y;
+		else if( curr->pos.y > bot )
+			bot = curr->pos.y;
+
+		TerrainPoint *tp = new TerrainPoint( *curr );
+		tp->gate = NULL;
+		AddPoint( tp );
+	}
+	UpdateLines();
+	//centerPos = Vector2f( left + width / 2.f, top + height / 2.f );
+}
+
+TerrainBrush::TerrainBrush( TerrainBrush &brush )
+	:pointStart( NULL ), pointEnd( NULL ), numPoints( 0 ),
+		lines( sf::Lines, brush.numPoints * 2 )
+{
+	left = brush.left;
+	right = brush.right;
+	top = brush.top;
+	bot = brush.bot;
+	pointStart = NULL;
+	pointEnd = NULL;
+
+
+
+	for( TerrainPoint *tp = brush.pointStart; tp != NULL; tp = tp->next )
+	{
+		AddPoint( new TerrainPoint( *tp ) );
+	}
+
+	UpdateLines();
+}
+
+TerrainBrush::~TerrainBrush()
+{
+	TerrainPoint *curr = pointStart; 
+	while( curr != NULL )
+	{
+		TerrainPoint *temp = curr->next;
+		delete curr;
+		curr = temp;
+	}
+}
+
+void TerrainBrush::UpdateLines()
+{
+	int index = 0;
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		TerrainPoint *prev;
+		if( curr == pointStart )
+			prev = pointEnd;
+		else
+			prev = curr->prev;
+
+		lines[index*2].position = Vector2f( prev->pos.x, prev->pos.y );
+		lines[index*2+1].position = Vector2f( curr->pos.x, curr->pos.y );
+
+		++index;
+	}
+}
+
+void TerrainBrush::Draw( sf::RenderTarget *target )
+{
+	target->draw( lines );
+
+	CircleShape cs;
+	cs.setRadius( 5 );
+	cs.setFillColor( Color::Red );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		cs.setPosition( curr->pos.x, curr->pos.y );
+		target->draw( cs );
+	}
+}
+
+void TerrainBrush::Move( Vector2i delta )
+{
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		curr->pos.x += delta.x;
+		curr->pos.y += delta.y;
+	}
+	UpdateLines();
+	//centerPos.x += delta.x;
+	//centerPos.y += delta.y;
+}
+
+void TerrainBrush::AddPoint( TerrainPoint *tp )
+{
+	if( pointStart == NULL )
+	{
+		pointStart = tp;
+		pointEnd = tp;
+		tp->prev = NULL;
+		tp->next = NULL;
+	}
+	else
+	{
+		pointEnd->next = tp;
+		tp->prev = pointEnd;
+		pointEnd = tp;
+		pointEnd->next = NULL;
+	}
+
+	++numPoints;
+}
+
 TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	:grassTex( gt )
 {
@@ -3397,7 +3528,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								}
 							}
-							else if( ev.key.code == sf::Keyboard::V || ev.key.code == sf::Keyboard::Delete )
+							else if( ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete )
 							{
 								//cout << "PRESSING V: " << polygonInProgress->points.size() << endl;
 								if( polygonInProgress->numPoints > 0 )
@@ -3735,6 +3866,118 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									break;
 								}
 
+								if( !pasteBrushes.empty() )
+								{
+									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
+										tbIt != pasteBrushes.end(); ++tbIt )
+									{
+										list<TerrainPolygon*>::iterator it = polygons.begin();
+										bool added = false;
+										//polygonInProgress->Finalize(); //i should check if i can remove this
+										bool recursionDone = false;
+
+										cout << "b4" << endl;
+										TerrainPolygon *currentBrush = new TerrainPolygon( (*it)->grassTex );
+										
+										//cout << "after: " << (unsigned int)((*tbIt)->pointStart) << endl;
+										for( TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
+											curr = curr->next )
+										{
+											cout << "adding" << endl;
+											currentBrush->AddPoint( new TerrainPoint(*curr) );
+										}
+									//	TerrainPolygon *currentBrush = polygonInProgress;
+
+										while( it != polygons.end() )
+										{
+											TerrainPolygon *temp = (*it);
+											if( currentBrush->IsTouching( temp ) )
+											{
+												cout << "before addi: " << (*it)->numPoints << endl;
+						
+												Add( currentBrush, temp );
+
+												//currentBrush->Reset();
+												delete currentBrush;
+												currentBrush = NULL;
+												//polygonInProgress->Reset();
+						
+												cout << "after adding: " << (*it)->numPoints << endl;
+
+												
+
+												polygons.erase( it );
+
+												currentBrush = temp;
+
+												/*for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
+												{
+													if( tp->gate != NULL )
+													{
+														cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
+															<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+														//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
+													}
+												}*/
+
+												it = polygons.begin();
+
+												added = true;
+							
+												continue;
+											}
+											else
+											{
+												//cout << "not" << endl;
+											}
+											++it;
+										}
+				
+									//add final check for validity here
+				
+										if( !added )
+										{
+											cout << "not added" << endl;
+											TerrainPolygon *brushPoly = new TerrainPolygon( polygonInProgress->grassTex );
+										
+											for( TerrainPoint *curr = (*tbIt)->pointStart; curr !=  NULL;
+												curr = curr->next )
+											{
+												brushPoly->AddPoint( new TerrainPoint(*curr) );
+											}
+
+											brushPoly->Finalize();
+											polygons.push_back( brushPoly );
+											
+										}
+										else
+										{
+											cout << "was added" << endl;
+											for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
+											{
+												//if( tp->gate != NULL )
+												//{
+												//	cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
+												//		<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+												//	//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
+												//}
+												
+											}
+
+											polygons.push_back( currentBrush );
+											
+											//polygonInProgress->Reset();
+
+										
+
+										}
+									}
+
+									ClearPasteBrushes();
+								}
+
+								
+
 								if( showGrass )
 								{
 									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
@@ -3770,8 +4013,63 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								break;
 							}
 
+							if( ev.key.code == Keyboard::C && ev.key.control )
+							{
+								if( selectedPolygons.size() > 0 )
+								{
+									ClearCopyBrushes();
 
-							if( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete )
+									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										it != selectedPolygons.end(); ++it )
+									{
+										copyBrushes.push_back( new TerrainBrush( (*it) ) );
+									}
+								}
+							}
+							else if( ev.key.code == Keyboard::V && ev.key.control )
+							{
+								ClearPasteBrushes();
+
+								if( copyBrushes.size() > 0 )
+								{
+									//pasteBrushes = copyBrushes;
+									
+									CopyToPasteBrushes();
+									
+									pastePos = Vector2i( worldPos.x, worldPos.y );
+
+									//find the overall bounding box of all the copied polygons
+									list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
+									int trueLeft = (*tbIt)->left;
+									int trueRight = (*tbIt)->right;
+									int trueTop = (*tbIt)->top;								
+									int trueBot = (*tbIt)->bot;
+
+									++tbIt;
+									for( ; tbIt != pasteBrushes.end(); ++tbIt )
+									{
+										if( (*tbIt)->left < trueLeft )
+											trueLeft = (*tbIt)->left;
+										if( (*tbIt)->right > trueRight )
+											trueRight = (*tbIt)->right;
+										if( (*tbIt)->top < trueTop )
+											trueTop = (*tbIt)->top;
+										if( (*tbIt)->bot > trueBot )
+											trueBot = (*tbIt)->bot;
+									}
+
+									Vector2i trueCenter( (trueRight + trueLeft) / 2, (trueTop + trueBot)/2 );
+								
+									//move it to the cursors position originally
+									Vector2i startDiff = pastePos - trueCenter;
+									for( tbIt = pasteBrushes.begin(); tbIt != pasteBrushes.end(); ++tbIt )
+									{
+										(*tbIt)->Move( startDiff );
+									}
+								}
+
+							}
+							else if( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete )
 							{
 								if( CountSelectedPoints() > 0 )
 								{
@@ -4567,7 +4865,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && patrolPath.size() > 1 )
+							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) && patrolPath.size() > 1 )
 							{
 								patrolPath.pop_back();
 							}
@@ -4629,7 +4927,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( ( ev.key.code == Keyboard::V || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
+							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
 							{
 								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
@@ -4977,6 +5275,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( showPanel != NULL )
 					break;
 
+				
+
 				if( //polygonInProgress->points.size() > 0 && 
 					Keyboard::isKeyPressed( Keyboard::G ) )
 				{
@@ -5003,6 +5303,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					showGraph = true;
 				}
 
+				
 				if( polygonInProgress->numPoints > 0 )
 				{
 							
@@ -5213,6 +5514,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					
 					
 				}
+				
+
 				break;
 			}
 		case EDIT:
@@ -5221,6 +5524,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				V2d pPoint = worldPos;
 				Vector2i extra( 0, 0 );
 				bool blah = false;
+
+
+				if( !pasteBrushes.empty() )
+				{
+					Vector2i pasteGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pastePos;
+					pastePos = Vector2i( pPoint.x, pPoint.y );
+					for( list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end(); ++it )
+					{
+						(*it)->Move( pasteGrabDelta );
+					}
+				}
+				else
+				{
+
 				if( //polygonInProgress->points.size() > 0 && 
 					Keyboard::isKeyPressed( Keyboard::G ) )
 				{
@@ -5320,6 +5637,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 				}
 
+
+				
+				
 
 				if( pointGrab )
 				{
@@ -5759,7 +6079,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 				}
 				
-				
+				}
 
 				break;
 			}
@@ -6050,6 +6370,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case EDIT:
 			{
+				if( !pasteBrushes.empty() )
+				{
+					for( list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end(); ++it )
+					{
+						(*it)->Draw( preScreenTex );
+					}
+				}
+
 				if( makingRect )
 				{
 					int xDiff = ((int)worldPos.x) - rectStart.x;
@@ -6092,6 +6420,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						preScreenTex->draw( rs );
 					}
 				}
+
 				break;
 			}
 		case CREATE_ENEMY:
@@ -8336,6 +8665,36 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	}
 
 	return true;
+}
+
+void EditSession::ClearCopyBrushes()
+{
+	for( list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
+		++it )
+	{
+		delete (*it);
+	}
+	copyBrushes.clear();
+}
+
+void EditSession::ClearPasteBrushes()
+{
+	for( list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end();
+		++it )
+	{
+		delete (*it);
+	}
+	pasteBrushes.clear();
+}
+
+void EditSession::CopyToPasteBrushes()
+{
+	for( list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
+		++it )
+	{
+		TerrainBrush* tb  = new TerrainBrush( *(*it) );
+		pasteBrushes.push_back( tb );
+	}
 }
 
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )

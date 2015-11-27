@@ -55,6 +55,25 @@ typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
 struct EditSession;
 
+struct TerrainBrush
+{
+	TerrainBrush( TerrainPolygon *poly );
+	TerrainBrush( TerrainBrush &brush );
+	~TerrainBrush();
+	void AddPoint( TerrainPoint* tp);
+	void UpdateLines();
+	void Move( sf::Vector2i delta );
+	void Draw( sf::RenderTarget *target );
+	int numPoints;
+	sf::VertexArray lines;
+	TerrainPoint *pointStart;
+	TerrainPoint *pointEnd;
+	int left;
+	int right;
+	int top;
+	int bot;
+	
+};
 
 struct GateInfo
 {
@@ -208,7 +227,6 @@ struct ActorParams
 
 };
 
-
 struct PatrollerParams : public ActorParams
 {
 	PatrollerParams( EditSession *edit,
@@ -246,7 +264,6 @@ struct KeyParams : public ActorParams
 	int stayFrames;
 	bool teleport;
 };
-
 
 struct CrawlerParams : public ActorParams
 { 
@@ -469,6 +486,12 @@ struct EditSession : GUIHandler
 	sf::View view;
 	//void GoPopup();
 
+	std::list<TerrainBrush*> copyBrushes;
+	std::list<TerrainBrush*> pasteBrushes;
+	void ClearCopyBrushes();
+	void ClearPasteBrushes();
+	void CopyToPasteBrushes();
+	sf::Vector2i pastePos;
 
 	enum Emode
 	{
