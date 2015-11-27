@@ -26,7 +26,6 @@ using namespace sf;
 
 const double EditSession::PRIMARY_LIMIT = .999;
 
-
 TerrainBrush::TerrainBrush( TerrainPolygon *poly )
 	:pointStart(NULL),pointEnd(NULL),lines( sf::Lines, poly->numPoints * 2 ), numPoints( 0 )
 {
@@ -37,6 +36,10 @@ TerrainBrush::TerrainBrush( TerrainPolygon *poly )
 	right = curr->pos.x; 
 	top = curr->pos.y; 
 	bot = curr->pos.y;
+
+	TerrainPoint *p = new TerrainPoint( *curr );
+	p->gate = NULL;
+	AddPoint( p );
 
 	curr = curr->next;
 	for( ; curr != NULL; curr = curr->next )
@@ -4079,7 +4082,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
 										it != selectedPolygons.end(); ++it )
 									{
-										copyBrushes.push_back( new TerrainBrush( (*it) ) );
+										TerrainBrush *tb = new TerrainBrush( (*it) );
+										copyBrushes.push_back( tb );
 									}
 								}
 							}

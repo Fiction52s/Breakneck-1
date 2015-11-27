@@ -2020,7 +2020,15 @@ void Actor::UpdatePrePhysics()
 						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
 						{
 							framesNotGrinding = 0;
-							velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							if( reversed )
+							{
+								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * -grindSpeed;
+							}
+							else
+							{
+								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							}
+							
 							action = JUMP;
 							frame = 0;
 							ground = NULL;
@@ -2217,7 +2225,23 @@ void Actor::UpdatePrePhysics()
 			{
 				action = JUMP;
 				frame = 0;
-				groundSpeed *= .5;
+
+				groundSpeed = 0;
+				/*if( gNorm.x < 0 )
+				{
+					if( groundSpeed > 0 )
+					{
+						groundSpeed = 0;
+					}
+				}
+				else if( gNorm.x > 0 )
+				{
+					if( groundSpeed < 0 )
+					{
+						groundSpeed = 0;
+					}
+				}*/
+				//groundSpeed = 0;
 				//ground = NULL;
 				break;
 			}
@@ -3174,14 +3198,27 @@ void Actor::UpdatePrePhysics()
 				}
 				velocity = V2d( 0, 0 );//startAirDashVel;
 			
+				double keepHorizontalLimit = 30;
+				double removeSpeedFactor = .5;
 
 				if( currInput.LUp() )
 				{
+					if( !(currInput.LLeft() || currInput.LRight() ) && abs(startAirDashVel.x) >= keepHorizontalLimit )
+					{
+						velocity.x = startAirDashVel.x * removeSpeedFactor;
+						//cout << "velocity.x: " << velocity.x << endl;
+					}
+					
 					velocity.y = -airDashSpeed;
-				
 				}
 				else if( currInput.LDown() )
 				{
+					if( !(currInput.LLeft() || currInput.LRight() ) && abs(startAirDashVel.x) >= keepHorizontalLimit )
+					{	
+						velocity.x = startAirDashVel.x * removeSpeedFactor;
+						//cout << "velocity.x: " << velocity.x << endl;
+					}
+
 					velocity.y = airDashSpeed;
 				}
 
@@ -3228,13 +3265,21 @@ void Actor::UpdatePrePhysics()
 	case STEEPCLIMB:
 		{
 			//if( groundSpeed > 0 )
+
+			//the factor is just to make you climb a little farther
+			float factor = .7;
+			if( currInput.LUp() )
+			{
+				factor = .5;
+			}
+
 			if( reversed )
 			{
-				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			else
 			{
-				groundSpeed += dot( V2d( 0, gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			
 			break;
