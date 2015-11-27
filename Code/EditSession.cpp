@@ -4132,7 +4132,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete )
 							{
-								if( CountSelectedPoints() > 0 )
+								if( !pasteBrushes.empty() )
+								{
+									ClearPasteBrushes();
+								}
+								else if( CountSelectedPoints() > 0 )
 								{
 									int removeSuccess = IsRemovePointsOkay();
 
