@@ -418,6 +418,8 @@ void TerrainPolygon::Move( Vector2i move )
 			(*ait)->SetBoundingQuad();
 		}
 	}
+
+	UpdateBounds();
 	return;
 }
 
@@ -437,6 +439,40 @@ void TerrainPolygon::UpdateBounds()
 		top = min( curr->pos.y, top );
 		bottom = max( curr->pos.y, bottom );
 		curr = curr->next;
+	}
+
+	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	{
+		list<ActorParams*> &en = (*it).second;
+		for( list<ActorParams*>::iterator ait = en.begin(); ait != en.end(); ++ait )
+		{
+			sf::VertexArray & bq = (*ait)->boundingQuad;
+			for( int i = 0; i < 4; ++i )
+			{
+				int x = bq[i].position.x;
+				int y = bq[i].position.y;
+				if( x < left )
+				{
+					left = x;
+				}
+				if( x > right )
+				{
+					right = x;
+				}
+				if( y < top )
+				{
+					top = y;
+				}
+				if( y > bottom )
+				{
+					//cout << "adjusting botton from: " << bottom << " to " << y << endl;
+					bottom = y;
+					
+				}
+					
+			}
+
+		}
 	}
 }
 
@@ -1383,16 +1419,33 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 		++i;
 	}
 
-	
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->selected )
+		{
+			if( enemies.count( curr ) > 0 )
+			{
+				list<ActorParams*> &en = enemies[curr];
+				for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+				{
+					(*it)->SetBoundingQuad();
+				}
+			}
+		}
+	}
+
+	UpdateBounds();
 
 	bool res = edit->IsPolygonValid( *this, this );
 
-	bool result;
+
+	
+	bool result = true;
 	if( !res )
 	{
 		result = false;
 	}
-	else
+	/*else
 	{
 		bool res2 = true;
 		for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end() && res2; ++it )
@@ -1400,6 +1453,7 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 			for( list<ActorParams*>::iterator ait = (*it).second->actors.begin(); ait != (*it).second->actors.end(); ++ait )
 			{
 				//need to round these floats probably
+
 				sf::VertexArray &bva = (*ait)->boundingQuad;
 				if( edit->QuadPolygonIntersect( this, Vector2i( bva[0].position.x, bva[0].position.y ), 
 					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
@@ -1409,10 +1463,14 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 					res2 = false;
 					break;
 				}
+				else
+				{
+					cout << "no collision with quad" << endl;
+				}
 			}
 		}
 		result = res2;
-	}
+	}*/
 	
 
 	i = 0;
@@ -1424,6 +1482,23 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 		}
 		++i;
 	}
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->selected )
+		{
+			if( enemies.count( curr ) > 0 )
+			{
+				list<ActorParams*> &en = enemies[curr];
+				for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+				{
+					(*it)->SetBoundingQuad();
+				}
+			}
+		}
+	}
+
+	UpdateBounds();
 
 	return result;
 }
@@ -1451,16 +1526,61 @@ bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
 
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
-		TerrainPoint  *tp =  new TerrainPoint( *curr );
-		tp->pos += delta;
-		tempPoly.AddPoint( tp );
+		//TerrainPoint  *tp =  new TerrainPoint( *curr );
+		//tp->pos += delta;
+		//tempPoly.AddPoint( tp );
+
+		curr->pos += delta;
 	}
 
-	bool f = edit->IsPolygonExternallyValid( tempPoly, this );
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( enemies.count( curr ) > 0 )
+		{
+			list<ActorParams*> &actors = enemies[curr];
+			for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+			{
+				(*it)->UpdateGroundedSprite();
+				(*it)->SetBoundingQuad();
+			}
+		}
+	}
+
+
+	UpdateBounds();
+	//tempPoly.UpdateBounds();
+
+	bool f = edit->IsPolygonExternallyValid( *this, this );
 	if( !f )
 	{
+
 		cout << "failed delta: " << delta.x << ", " << delta.y << endl;
 	}
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		curr->pos -= delta;
+
+		
+	}
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( enemies.count( curr ) > 0 )
+		{
+			list<ActorParams*> &actors = enemies[curr];
+			for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+			{
+				(*it)->UpdateGroundedSprite();
+				(*it)->SetBoundingQuad();
+			}
+		}
+	}
+
+	
+
+	UpdateBounds();
+
 	return f;
 }
 
@@ -2994,6 +3114,11 @@ bool EditSession::QuadPolygonIntersect( TerrainPolygon *poly, Vector2i a, Vector
 	quadPoly.AddPoint( new TerrainPoint( b, false ) );
 	quadPoly.AddPoint( new TerrainPoint( c, false ) );
 	quadPoly.AddPoint( new TerrainPoint( d, false ) );
+	quadPoly.UpdateBounds();
+
+	//cout << "quad bottom: " << quadPoly.bottom << endl;
+	//cout << "poly top: " << poly->top << endl;
+	
 
 	bool touching = poly->IsTouching( &quadPoly );
 	return touching;
@@ -6060,7 +6185,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										for( list<ActorParams*>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
 										{
 											//(*ait)->UpdateGroundedSprite();
-
+											
 										}
 										//revquant is the quantity from the edge's v1
 										//double revQuant = 
@@ -6071,6 +6196,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								++deltaIndex;
 							}
+
+							(*it)->UpdateBounds();
 
 							if( affected )
 							{
@@ -8010,7 +8137,7 @@ bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, Terra
 
 bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 {
-	Rect<int> polyAABB = poly.TempAABB();
+	Rect<int> polyAABB( poly.left, poly.top, poly.right - poly.left, poly.bottom - poly.top );
 	polyAABB.left -= minimumEdgeLength;
 	polyAABB.top -= minimumEdgeLength;
 	polyAABB.width += minimumEdgeLength * 2;
@@ -8023,7 +8150,8 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 			continue;
 		}
 		//eventually do a quad tree for this to speed it up
-		Rect<int> currAABB = (*polyIt)->TempAABB();
+		Rect<int> currAABB( (*polyIt)->left, (*polyIt)->top, (*polyIt)->right - (*polyIt)->left,
+			(*polyIt)->bottom - (*polyIt)->top);
 		currAABB.left -= minimumEdgeLength;
 		currAABB.top -= minimumEdgeLength;
 		currAABB.width += minimumEdgeLength * 2;
@@ -8205,6 +8333,60 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 				}
 			}*/
 		}
+
+		//me touching his enemies
+		for( EnemyMap::iterator it = (*polyIt)->enemies.begin(); it != (*polyIt)->enemies.end(); ++it )
+		{
+			for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+			{
+				//need to round these floats probably
+				//cout << "calling this" << endl;
+				sf::VertexArray &bva = (*ait)->boundingQuad;
+				//V2d along = (*ait)->groundInfo->
+				if( QuadPolygonIntersect( &poly, Vector2i( bva[0].position.x, bva[0].position.y ), 
+					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
+						Vector2i( bva[3].position.x, bva[3].position.y ) ) )
+				{
+					
+					//cout << "poly top: " << poly.top << endl;
+					//cout << "other bottom: " << (*polyIt)->bottom << endl;
+
+					//cout << "touched polygon!" << endl;
+					return false;
+				}
+				else
+				{
+					//cout << "no collision" << endl;
+				}
+			}
+		}
+
+		//him touching my enemies
+		for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
+		{
+			for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+			{
+				//need to round these floats probably
+				//cout << "calling this" << endl;
+				sf::VertexArray &bva = (*ait)->boundingQuad;
+				//V2d along = (*ait)->groundInfo->
+				if( QuadPolygonIntersect( (*polyIt), Vector2i( bva[0].position.x, bva[0].position.y ), 
+					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
+						Vector2i( bva[3].position.x, bva[3].position.y ) ) )
+				{
+					
+					//cout << "poly top: " << poly.top << endl;
+					//cout << "other bottom: " << (*polyIt)->bottom << endl;
+
+					//cout << "touched polygon!" << endl;
+					return false;
+				}
+				else
+				{
+					//cout << "no collision" << endl;
+				}
+			}
+		}
 		
 	}
 
@@ -8330,9 +8512,65 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 		}
 	}
 
+	/*for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
+	{
+		V2d a,b,c,d;
+		TerrainPoint *curr = (*it).first;
+		TerrainPoint *next;
+		if( curr == poly.pointEnd )
+			next = poly.pointStart;
+		else
+			next = curr->next;
+
+		V2d along = normalize( V2d( next->pos.x, next->pos.y ) - V2d( curr->pos.x, curr->pos.y ) );
+		V2d other( along.y, -along.x );
+
+		for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+		{
+			double groundQuant = (*ait)->groundInfo->groundQuantity;
+			double halfWidth = (*ait)->type->width / 2.0;
+			double height = (*ait)->type->height;
+
+			V2d groundPos = V2d( curr->pos.x, curr->pos.y ) + along * groundQuant;
+
+			a = groundPos - along * halfWidth;
+			b = a + other * height;
+			d = groundPos + along * halfWidth;
+			c = d + other * height;
+			
+			bool quadIntersect = QuadPolygonIntersect( &poly,
+				Vector2i( a.x, a.y ), Vector2i( b.x, b.y ), Vector2i( c.x, c.y ), Vector2i( d.x, d.y ) );
+
+			cout << "quadiunter: " << quadIntersect << endl;
+			if( quadIntersect )
+				return false;
+		}
+
+		
+	}*/
+	//for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end() && res2; ++it )
+	for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
+	{
+		for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+		{
+			//need to round these floats probably
+
+			sf::VertexArray &bva = (*ait)->boundingQuad;
+			if( QuadPolygonIntersect( &poly, Vector2i( bva[0].position.x, bva[0].position.y ), 
+				Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
+					Vector2i( bva[3].position.x, bva[3].position.y ) ) )
+			{
+				return false;
+			}
+			else
+			{
+				
+			}
+		}
+	}
+
 	return true;
 }
-
 
 bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 {
@@ -9013,10 +9251,10 @@ void ActorParams::SetBoundingQuad()
 		V2d other( along.y, -along.x );
 
 		V2d startGround = v0 + along * groundInfo->groundQuantity;
-		V2d leftGround = startGround - along * ( type->width / 2.0 );
-		V2d rightGround = startGround + along * ( type->width / 2.0 );
-		V2d leftAir = leftGround + other * (double)type->height;
-		V2d rightAir = rightGround + other * (double)type->height;
+		V2d leftGround = startGround - along * ( type->width / 2.0) + other * 1.0;
+		V2d rightGround = startGround + along * ( type->width / 2.0) + other * 1.0;
+		V2d leftAir = leftGround + other * (double)(type->height - 1) ;
+		V2d rightAir = rightGround + other * (double)(type->height - 1 );
 
 		boundingQuad[0].position = Vector2f( leftGround.x, leftGround.y );
 		boundingQuad[1].position = Vector2f( leftAir.x, leftAir.y );
@@ -9033,7 +9271,6 @@ void ActorParams::SetBoundingQuad()
 	}
 }
 
-
 void ActorParams::UpdateGroundedSprite()
 {	
 	assert( groundInfo != NULL && groundInfo->ground != NULL );
@@ -9043,9 +9280,22 @@ void ActorParams::UpdateGroundedSprite()
 	if( next == NULL )
 		next = groundInfo->ground->pointStart;
 
+	
 
 	V2d pr( edge->pos.x, edge->pos.y );
 	V2d cu( next->pos.x, next->pos.y );
+
+
+	//this shouldn't remain here. i need more detailed checking.
+	double groundLength = length( pr - cu );
+	if( groundInfo->groundQuantity + type->width / 2 > groundLength )
+	{
+		groundInfo->groundQuantity = groundLength - type->width / 2;
+	}
+	else if( groundInfo->groundQuantity - type->width / 2 < 0 )
+	{
+		groundInfo->groundQuantity = type->width / 2;
+	}
 
 	V2d newPoint( pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 									(groundInfo->groundQuantity / length( cu - pr ) ) );
@@ -9096,8 +9346,9 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 
 			groundInfo->edgeStart = prev;
 
+			
 			UpdateGroundedSprite();
-
+			SetBoundingQuad();
 			//groundInfo->edgeEnd = curr;
 
 			break;
@@ -9107,6 +9358,8 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 	}
 
 	poly->enemies[groundInfo->edgeStart].push_back( this );
+
+	poly->UpdateBounds();
 
 	//adjust for ordery
 	/*if( groundInfo->edgeIndex == 0 )
