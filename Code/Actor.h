@@ -152,6 +152,13 @@ struct Actor : QuadTreeCollider,
 	double holdDashAccel;
 	double wallThresh;
 
+	double bounceBoostSpeed;
+	double steepSlideGravFactor;
+	double steepSlideFastGravFactor;
+
+	double steepClimbGravFactor;
+	double steepClimbFastFactor;
+
 	double airDashSpeed;
 
 	CollisionBox b;

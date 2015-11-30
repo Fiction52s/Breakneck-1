@@ -18,6 +18,13 @@ Actor::Actor( GameSession *gs )
 		oldInBubble = false;
 		hasKey = false;
 		slopeTooSteepLaunchLimitX = .1;
+		steepSlideFastGravFactor = 1.9 / 3.0;
+		steepSlideGravFactor = 1.3 / 3.0;
+		
+		steepClimbGravFactor = .7;
+		steepClimbFastFactor = .5;
+
+
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
 		//testLight->pos = Vector2i( 0, 0 );
 		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL , 200, 15 ); 
@@ -90,6 +97,8 @@ Actor::Actor( GameSession *gs )
 		despCounter = 0;
 
 		holdJump = false;
+
+		bounceBoostSpeed = 10;
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -2344,14 +2353,10 @@ void Actor::UpdatePrePhysics()
 				oldBounceEdge = bounceEdge;
 				oldBounceNorm  = bounceNorm;
 				frame = 0;
-				if( boostBounce )
-				{
-					storedBounceVel *= 1.2;
-					boostBounce = false;
-				}
+				
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
-				V2d bounceNorm;
+			//	V2d bounceNorm;
 				if( bn.y < 0 )
 				{
 					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
@@ -2426,7 +2431,11 @@ void Actor::UpdatePrePhysics()
 					velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
 				}
 
-
+				if( boostBounce )
+				{
+					velocity += bn * bounceBoostSpeed;
+					boostBounce = false;
+				}
 
 
 				//velocity = length( storedBounceVel ) * bounceEdge->Normal();
@@ -2578,7 +2587,7 @@ void Actor::UpdatePrePhysics()
 
 
 
-			if( holdJump && !currInput.A )
+			if( holdJump && !currInput.A && framesInAir > 1 )
 			{
 				if( velocity.y < -8 )
 				{
@@ -3032,13 +3041,23 @@ void Actor::UpdatePrePhysics()
 	case STEEPSLIDE:
 		{
 			//if( groundSpeed > 0 )
-			double fac = gravity * 2.0 / 3;
+			double fac = gravity * steepSlideGravFactor;//gravity * 2.0 / 3.0;
+
+			if( currInput.LDown() )
+			{
+				//cout << "fast slide" << endl;
+				fac = gravity * steepSlideFastGravFactor;
+			}
+
 			if( reversed )
 			{
+
 				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			else
 			{
+				
+
 				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			break;
@@ -3267,10 +3286,11 @@ void Actor::UpdatePrePhysics()
 			//if( groundSpeed > 0 )
 
 			//the factor is just to make you climb a little farther
-			float factor = .7;
+			float factor = steepClimbGravFactor;//.7 ;
 			if( currInput.LUp() )
 			{
-				factor = .5;
+				//cout << "speeding up climb!" << endl;
+				factor = steepClimbFastFactor;//.5;
 			}
 
 			if( reversed )
@@ -3514,7 +3534,7 @@ void Actor::UpdatePrePhysics()
 
 		totalVelDir = normalize( wireDir1 + wireDir2 );
 
-		velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir ;
+		velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
 	}
 	else if( rightWire->state == Wire::PULLING )
 	{

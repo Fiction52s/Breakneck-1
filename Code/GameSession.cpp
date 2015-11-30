@@ -2242,7 +2242,7 @@ int GameSession::Run( string fileN )
 		
 		CircleShape cs;
 		cs.setFillColor( Color::Green );
-		cs.setRadius( 50 );
+		cs.setRadius( 60 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( vv.getCenter().x, vv.getCenter().y );
 		

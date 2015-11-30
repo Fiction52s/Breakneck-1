@@ -1872,6 +1872,9 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), zoomMultiple( 1 )
 {
+	//adding 5 for random distance buffer
+	playerHalfWidth = 32;
+	playerHalfHeight = 32;
 	preScreenTex = preTex;
 	showTerrainPath = false;
 	minAngle = .99;
@@ -6831,7 +6834,24 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		{
 			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
-				playerPosition = Vector2i( worldPos.x, worldPos.y );
+				bool okay = true;
+				for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+				{
+					Vector2i a( playerPosition.x - playerHalfWidth, playerPosition.y - playerHalfHeight );
+					Vector2i b( playerPosition.x + playerHalfWidth, playerPosition.y - playerHalfHeight );
+					Vector2i c( playerPosition.x + playerHalfWidth, playerPosition.y + playerHalfHeight );
+					Vector2i d( playerPosition.x - playerHalfWidth, playerPosition.y + playerHalfHeight );
+					if( QuadPolygonIntersect( (*it), a,b,c,d ) )
+					{
+						okay = false;
+						break;
+					}
+				}
+				
+				if( okay )
+				{
+					playerPosition = Vector2i( worldPos.x, worldPos.y );
+				}
 			}
 			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
@@ -8039,6 +8059,44 @@ void EditSession::ExtendPolygon()
 
 
 	polygonInProgress->Reset();
+}
+
+bool EditSession::IsExtendPointOkay( TerrainPolygon *poly, sf::Vector2f testPoint )
+{
+	Vector2i worldi( testPoint.x, testPoint.y );
+	assert( extendingPolygon != NULL );
+
+	bool okay = !extendingPolygon->ContainsPoint( testPoint );
+
+	if( okay )
+	{
+		TerrainPoint * okayPoint = extendingPolygon->pointStart;
+		TerrainPoint *okayPrevPoint = extendingPolygon->pointEnd;
+		for( ; okayPoint != NULL; okayPoint = okayPoint->next )
+		{
+								
+			//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
+			Vector2i a = polygonInProgress->pointEnd->pos;
+			Vector2i b = worldi;
+			Vector2i c = okayPrevPoint->pos;
+			Vector2i d = okayPoint->pos;
+
+								
+			LineIntersection li = LimitSegmentIntersect( a,b,c,d );
+			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+			//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
+			if( !li.parallel )//&& lii != a && lii != b && lii != c && lii != d )
+			{
+				okay = false;
+				break;
+			}
+			okayPrevPoint = okayPoint;
+		}
+								
+								
+	}
+
+	return okay;
 }
 
 bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly )

@@ -339,7 +339,8 @@ struct EditSession : GUIHandler
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
-
+	bool IsExtendPointOkay( TerrainPolygon *poly,
+		sf::Vector2f testPoint );
 	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
 	void ExtendAdd();
 	bool IsPolygonExternallyValid( TerrainPolygon &poly,
@@ -404,6 +405,8 @@ struct EditSession : GUIHandler
 
 	bool selectedPlayer;
 	bool grabPlayer;
+	int playerHalfWidth;
+	int playerHalfHeight;
 	sf::Vector2i grabPos;
 	bool selectedActorGrabbed;
 
