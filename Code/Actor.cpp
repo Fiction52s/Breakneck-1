@@ -1700,7 +1700,8 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				frame = 10;
+				if( frame == actionLength[DASH] - 2 )
+					frame = 10;
 			}
 			break;
 		}
@@ -4326,51 +4327,6 @@ V2d Actor::UpdateReversePhysics()
 
 	movement = -movement;
 
-	if( grindEdge != NULL )
-	{
-		Edge *e0 = grindEdge->edge0;
-		Edge *e1 = grindEdge->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
-		
-		double q = grindQuantity;
-		while( !approxEquals(movement, 0 ) )
-		{
-			double gLen = length( grindEdge->v1 - grindEdge->v0 );
-			if( movement > 0 )
-			{
-				double extra = q + movement - gLen;
-				if( extra > 0 )
-				{
-					movement -= gLen - q;
-					grindEdge = e1;
-					q = 0;
-				}
-				else
-				{
-					q += movement;
-					movement = 0;
-				}
-			}
-			else if( movement < 0 )
-			{
-				double extra = q + movement;
-				if( extra < 0 )
-				{
-					movement -= movement - extra;
-					grindEdge = e0;
-					q = length( e0->v1 - e0->v0 );
-				}
-				else
-				{
-					q += movement;
-					movement = 0;
-				}
-			}
-		}
-		grindQuantity = q;
-		return leftGroundExtra;
-	}
 		
 	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
 	{
@@ -5295,6 +5251,11 @@ void Actor::UpdatePhysics()
 	wallNormal.y = 0;
 	if( grindEdge != NULL )
 	{
+		if( reversed )
+		{
+			reversed = false;
+			grindSpeed = -grindSpeed;
+		}
 		movement = grindSpeed;
 	}
 	else if( ground != NULL )
@@ -5307,19 +5268,10 @@ void Actor::UpdatePhysics()
 	}
 
 
-	if( reversed )
+	
+	if( grindEdge != NULL )
 	{
-		//if you slide off a reversed edge you need a little push so you dont slide through the point.
-		V2d reverseExtra = UpdateReversePhysics();
-		if( reverseExtra.x == 0 && reverseExtra.y == 0 )
-		{
-			return;
-		}
-		movementVec = reverseExtra;
 		
-	}
-	else if( grindEdge != NULL )
-	{
 		//cout << "grindSpeed: " << grindSpeed << endl;
 		Edge *e0 = grindEdge->edge0;
 		Edge *e1 = grindEdge->edge1;
@@ -5404,7 +5356,18 @@ void Actor::UpdatePhysics()
 		grindQuantity = q;
 		return;
 	}
-	
+	else if( reversed )
+	{
+		//if you slide off a reversed edge you need a little push so you dont slide through the point.
+		V2d reverseExtra = UpdateReversePhysics();
+		if( reverseExtra.x == 0 && reverseExtra.y == 0 )
+		{
+			return;
+		}
+		movementVec = reverseExtra;
+		
+	}
+
 	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
 	{
 		if( ground != NULL )
