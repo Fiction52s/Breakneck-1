@@ -2233,10 +2233,25 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
-				frame = 0;
-
-				groundSpeed = 0;
+				double sp = 20.0;
+				double extra = 1.0;
+				if( gNorm.x > 0 && currInput.LLeft() )
+				{
+					groundSpeed = std::min( groundSpeed - extra, -sp );
+				}
+				else if( gNorm.x < 0 && currInput.LRight() )
+				{
+					groundSpeed = std::max( groundSpeed + extra, sp );
+				}
+				else
+				{
+					action = JUMP;
+					frame = 0;
+	
+					//groundSpeed = 0;
+				}
+				
+				
 				/*if( gNorm.x < 0 )
 				{
 					if( groundSpeed > 0 )
