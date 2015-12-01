@@ -1426,7 +1426,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					if( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) )
+					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
 						action = DASH;
 						frame = 0;
@@ -1483,7 +1483,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					if( currInput.B )
+					if( currInput.B || !canStandUp )
 					{
 						action = DASH;
 						frame = 0;

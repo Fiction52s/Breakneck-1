@@ -17,6 +17,8 @@
 #include "GameSession.h"
 #include "LevelSelector.h"
 #include <boost/filesystem.hpp>
+#include "Primitive3D.h"
+#include <SFML/OpenGL.hpp>
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -39,6 +41,19 @@ sf::Sprite worldMapSpr;
 
 //sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 sf::View uiView( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
+
+void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar )
+{
+    const GLdouble pi = 3.1415926535897932384626433832795;
+    GLdouble fW, fH;
+
+    //fH = tan( (fovY / 2) / 180 * pi ) * zNear;
+    fH = tan( fovY / 360 * pi ) * zNear;
+    fW = fH * aspect;
+
+    glFrustum( -fW, fW, -fH, fH, zNear, zFar );
+}
+
 
 void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
 {
@@ -595,12 +610,33 @@ int main()
 	//ls.UpdateMapList();
 	//ls.Print();
 	
+	Primitive prim;
+
+	glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
+	glClearColor(0.0f, 0.0f, 0.0f, 0.5f);				// Black Background
+	glClearDepth(1.0f);									// Depth Buffer Setup
+	glEnable(GL_DEPTH_TEST);							// Enables Depth Testing
+	glDepthFunc(GL_LEQUAL);								// The type Of Depth Testing To Do
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
+
+	glViewport(0,0,1920,1080);						// Reset The Current Viewport
+
+	glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
+	glLoadIdentity();									// Reset The Projection Matrix
+
+	// Calculate The Aspect Ratio Of The Window
+	perspectiveGL(45.0f,(GLfloat)1920/(GLfloat)1080,0.1f,100.0f);
+
+	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
+	glLoadIdentity();	
+
+
 	//cout << "beginning input loop" << endl;
 	while( !quit )
 	{
 		window->clear();
 		
-		//ls.MouseUpdate( sf::Mouse::getPosition( *window ) ); 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
 
 		while( window->pollEvent( ev ) )
 		{
@@ -714,12 +750,29 @@ int main()
 			}
 		}
 
+		window->pushGLStates();
 		window->setView( v );
 		window->draw( titleSprite );
 		window->draw( menu );	
+		window->popGLStates();
+		
+		//window->setView( window->getDefaultView() );
+		
+		
+		//window->setView( //window->getDefaultView() );
 
-		window->setView( uiView );		
-			
+		
+		
+		prim.DrawTetrahedron( window );
+
+		
+		//prim.Draw2( window );
+
+		window->pushGLStates();
+		
+		window->setView( uiView );
+
+
 		for( int i = 0; i < 5; ++i )
 		{
 			if( i == currentMenuSelect )
@@ -734,18 +787,13 @@ int main()
 			window->draw( mainMenu[i] );
 		}
 
-		//window->setView( v
+		window->popGLStates();
 
 		window->display();
 	}
 
 
-	sf::Vector2i pos( 0, 0 );
-
-	//window->setPosition( pos );
-	
-	//window->setFramerateLimit( 60 );
-	
+	sf::Vector2i pos( 0, 0 );	
 	
 	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	window->setView( view );
