@@ -3564,6 +3564,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 
+									if( PolyIntersectGate( *polygonInProgress ) )
+									{
+										valid = false;
+									}
+
 									//if( !IsPolygonValid( *polygonInProgress, NULL ) )
 									//	valid = false;
 
@@ -3687,7 +3692,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == sf::Keyboard::E )
 							{
-								if( !showPoints )
+								//if( !showPoints )
+								if( false ) // this is only turned off for the beta build so I don't have to debug this.
 								{
 									showPoints = true;
 									extendingPolygon = NULL;
@@ -3702,10 +3708,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.key.code == sf::Keyboard::E )
 							{
+								if( false ) //only for this build
+								{
+
 								showPoints = false;
 								extendingPolygon = NULL;
 								extendingPoint = NULL;
 								polygonInProgress->ClearPoints();
+								}
 							}
 							break;
 						}
@@ -8445,8 +8455,13 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 				}
 			}
 		}
+
+		
 		
 	}
+
+	if( PolyIntersectGate( poly ) )
+		return false;
 
 
 
@@ -8626,6 +8641,36 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 			}
 		}
 	}
+
+
+	TerrainPoint *prev;
+	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->gate != NULL )
+		{
+			if( curr == poly.pointStart )
+			{
+				prev = poly.pointEnd;
+			}
+			else
+			{
+				prev = curr->prev;
+			}
+
+			Vector2i prevPos = prev->pos;
+			Vector2i pos = curr->pos;
+
+			LineIntersection li = LimitSegmentIntersect( prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos );
+
+			if( !li.parallel )
+			{
+				return false;
+			}
+			
+		}
+	}
+	
+
 
 	return true;
 }
@@ -9103,6 +9148,35 @@ void EditSession::CopyToPasteBrushes()
 		TerrainBrush* tb  = new TerrainBrush( *(*it) );
 		pasteBrushes.push_back( tb );
 	}
+}
+
+bool EditSession::PolyIntersectGate( TerrainPolygon &poly )
+{
+	//can be optimized with bounding box checks.
+	for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+	{
+		Vector2i point0 = (*it)->point0->pos;
+		Vector2i point1 = (*it)->point1->pos;
+
+		for( TerrainPoint *my = poly.pointStart; my != NULL; my = my->next )
+		{
+			TerrainPoint *prev;
+			if( my == poly.pointStart )
+				prev = poly.pointEnd;
+			else
+			{
+				prev = my->prev;
+			}
+
+			LineIntersection li = LimitSegmentIntersect( point0, point1, prev->pos, my->pos );
+			if( !li.parallel )
+			{
+				return true;
+			}
+		}	
+	}
+
+	return false;
 }
 
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )

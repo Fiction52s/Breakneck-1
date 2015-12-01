@@ -118,6 +118,7 @@ struct TerrainPolygon
 	bool IsClockwise();
 	void AlignExtremes( double primLimit );
 	void UpdateGrass();
+	
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
 	void SwitchGrass( sf::Vector2<double> mousePos );
@@ -354,6 +355,8 @@ struct EditSession : GUIHandler
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
+
+	bool PolyIntersectGate( TerrainPolygon &poly );
 	std::list<GateInfo*> gates;
 	GateInfo *selectedGate;
 
