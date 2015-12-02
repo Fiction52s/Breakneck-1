@@ -96,6 +96,9 @@ Actor::Actor( GameSession *gs )
 		maxDespFrames = 120;
 		despCounter = 0;
 
+		framesSinceClimbBoost = 0;
+		climbBoostLimit = 5;
+
 		holdJump = false;
 
 		bounceBoostSpeed = 10;
@@ -2231,10 +2234,11 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.A && !prevInput.A )
+			if( currInput.A && !prevInput.A && framesSinceClimbBoost > climbBoostLimit )
 			{
+				framesSinceClimbBoost = 0;
 				double sp = 20.0;
-				double extra = 1.0;
+				double extra = 10.0;
 				if( gNorm.x > 0 && currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
@@ -2269,6 +2273,11 @@ void Actor::UpdatePrePhysics()
 				//groundSpeed = 0;
 				//ground = NULL;
 				break;
+			}
+			else
+			{
+				//purposely counts outside of time slow so you can get extra boosts in time slow for now
+				
 			}
 
 			if( reversed )
@@ -3550,7 +3559,21 @@ void Actor::UpdatePrePhysics()
 
 		totalVelDir = normalize( wireDir1 + wireDir2 );
 
-		velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
+		V2d otherDir( totalVelDir.y, -totalVelDir.x );
+		double dotvel =dot( velocity, otherDir );
+		if( dotvel > 0 )
+		{
+			velocity += -otherDir * 1.0;
+		}
+		else if( dotvel < 0 )
+		{
+			velocity += otherDir * 1.0;
+		}
+		else
+		{
+		}
+		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
+		velocity += totalVelDir * 3.0;
 	}
 	else if( rightWire->state == Wire::PULLING )
 	{
@@ -9203,6 +9226,8 @@ void Actor::UpdatePostPhysics()
 		
 		//if( !longAirdash )
 			++frame;
+
+		++framesSinceClimbBoost;
 
 		slowCounter = 1;
 

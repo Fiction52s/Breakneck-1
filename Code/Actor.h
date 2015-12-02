@@ -358,6 +358,9 @@ struct Actor : QuadTreeCollider,
 
 
 	bool hasKey;
+
+	int framesSinceClimbBoost;
+	int climbBoostLimit;
 	//end unstored
 
 	void SaveState();
