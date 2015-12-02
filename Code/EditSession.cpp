@@ -3267,6 +3267,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *keyPanel = CreateOptionsPanel( "key" );
 	ActorType *keyType = new ActorType( "key", keyPanel );
 
+	ActorType *greenKeyType = new ActorType( "greenkey", keyPanel );
+	ActorType *blueKeyType = new ActorType( "bluekey", keyPanel );
+
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
@@ -3290,10 +3293,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["basicturret"] = basicTurretType;
 	types["foottrap"] = footTrapType;
 	types["goal"] = goalType;
+	types["greenkey"] = greenKeyType;
+	types["bluekey"] = blueKeyType;
 
-
-	GridSelector gs( 3, 2, 32, 32, this );
-	gs.active = false;
+	enemySelectPanel = new Panel( "enemyselection", 300, 500, this );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 2, 32, 32 );
+	
+	//GridSelector gs( 3, 2, 32, 32, this );
+	gs->active = false;
 
 	sf::Sprite s0( patrollerType->iconTexture );
 	sf::Sprite s1( crawlerType->iconTexture );
@@ -3303,12 +3310,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s5( keyType->iconTexture );
 
 
-	gs.Set( 0, 0, s0, "patroller" );
-	gs.Set( 1, 0, s1, "crawler" );
-	gs.Set( 0, 1, s2, "basicturret" );
-	gs.Set( 1, 1, s3, "foottrap" );
-	gs.Set( 2, 0, s4, "goal" );
-	gs.Set( 2, 1, s5, "key" );
+	gs->Set( 0, 0, s0, "patroller" );
+	gs->Set( 1, 0, s1, "crawler" );
+	gs->Set( 0, 1, s2, "basicturret" );
+	gs->Set( 1, 1, s3, "foottrap" );
+	gs->Set( 2, 0, s4, "goal" );
+	gs->Set( 2, 1, s5, "key" );
+
+	gateSelectorPopup = CreatePopupPanel( "gateselector" );
+	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 3, 1, 32, 32 );
+	
+	sf::Sprite ss0( greenKeyType->iconTexture );
+	sf::Sprite ss1( blueKeyType->iconTexture );
+	gateSel->Set( 0, 0, s5, "redkey" );
+	gateSel->Set( 1, 0, s5, "greenkey" );
+	gateSel->Set( 2, 0, s5, "bluekey" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -3428,7 +3444,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	mode = EDIT;
 	Emode stored = mode;
 	bool canCreatePoint = true;
-	gs.active = true;
+	gs->active = true;
 
 	
 
@@ -4453,6 +4469,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( result )
 									{
+										GridSelectPop( "GateType" );
 										//MessagePop( "gate created" );
 										GateInfo *gi = new GateInfo;
 										gi->edit = this;
@@ -4765,10 +4782,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
 								}
-								else if( gs.active )
+								/*else if( gs.active )
 								{
 									gs.Update( true, uiMouse.x, uiMouse.y );
-								}
+								}*/
 							}
 							break;
 						}
@@ -4845,13 +4862,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{	
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
 								}
-								else if( gs.active )
+								/*else if( gs.active )
 								{
 									if( gs.Update( false, uiMouse.x, uiMouse.y ) )
 									{
 										cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
 									}
-								}
+								}*/
 
 								
 							}
@@ -5007,19 +5024,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								else
 								{
 									mode = EDIT;
+									showPanel = NULL;
 								}
 							}
 							else if( menuSelection == "upperleft" )
 							{
 								mode = CREATE_ENEMY;
+								showPanel = enemySelectPanel;
 							}
 							else if( menuSelection == "upperright" )
 							{
 								mode = CREATE_TERRAIN;
+								showPanel = NULL;
 							}
 							else if( menuSelection == "lowerleft" )
 							{
 								mode = CREATE_LIGHTS;
+								showPanel = NULL;
 							}
 							else if( menuSelection == "lowerright" )
 							{
@@ -7129,7 +7150,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 			case CREATE_ENEMY:
 				{
-					gs.Draw( preScreenTex );
+					//enemySelectPanel->Draw( preScreenTex );
+					//gs.Draw( preScreenTex );
 					//if( showPanel != NULL )
 					//{
 					//	showPanel->Draw( w );
@@ -7515,7 +7537,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//mode = CREATE_ENEMY;
 			//patroller path should get set only from hitting the button within it to start the path check
 
-			showPanel = NULL;
+			showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
 		{
@@ -7576,7 +7598,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				trackingEnemy = NULL;
 			}
 
-			showPanel = NULL;
+			showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
 		{
@@ -7622,7 +7644,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				trackingEnemy = NULL;
 			}
 
-			showPanel = NULL;
+			showPanel = enemySelectPanel;
 		}
 	}
 	else if( p->name == "basicturret_options" )
@@ -7670,7 +7692,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				trackingEnemy = NULL;
 			}
 
-			showPanel = NULL;
+			showPanel = enemySelectPanel;
 		}	
 	}
 	else if( p->name == "foottrap_options" )
@@ -7691,7 +7713,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				trackingEnemy = NULL;
 			}
 
-			showPanel = NULL;
+			showPanel = enemySelectPanel;
 		}
 	}
 	else if( p->name == "map_options" )
@@ -7865,24 +7887,31 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 
 void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & name )
 {
-	if( name != "not set" )
+	Panel *panel = gs->owner;
+	if( panel == enemySelectPanel )
 	{
-		trackingEnemy = types[name];
-		enemySprite.setTexture( trackingEnemy->imageTexture );
+		if( name != "not set" )
+		{
+			trackingEnemy = types[name];
+			enemySprite.setTexture( trackingEnemy->imageTexture );
 
-		enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
-			trackingEnemy->imageTexture.getSize().y ) );
+			enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
+				trackingEnemy->imageTexture.getSize().y ) );
 
-		enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
+			enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
 		
-		enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
+			enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
 
+			
+			showPanel = NULL;
+			
 
-		cout << "set your cursor as the image" << endl;
-	}
-	else
-	{
-		cout << "not set" << endl;
+			cout << "set your cursor as the image" << endl;
+		}
+		else
+		{
+			cout << "not set" << endl;
+		}
 	}
 }
 
@@ -8942,6 +8971,95 @@ void EditSession::ErrorPop( const std::string &error )
 
 }
 
+int EditSession::GridSelectPop( const std::string &type )
+{
+	int selectedIndex = -1;
+
+	//messagePopup->labels["message"]->setString( message );
+	bool closePopup = false;
+	w->setView( v );
+	
+	preScreenTex->display();
+	const Texture &preTex = preScreenTex->getTexture();
+	Sprite preTexSprite( preTex );
+	preTexSprite.setPosition( -960 / 2, -540 / 2 );
+	preTexSprite.setScale( .5, .5 );	
+
+	preScreenTex->setView( uiView );
+
+	sf::Event ev;
+	while( !closePopup )
+	{
+		Vector2i pixelPos = sf::Mouse::getPosition( *w );
+		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		w->clear();
+
+		while( w->pollEvent( ev ) )
+		{
+			switch( ev.type )
+			{
+			case Event::MouseButtonPressed:
+				{
+					if( ev.mouseButton.button == Mouse::Left )
+					{
+						gateSelectorPopup->Update( true, uiMouse.x, uiMouse.y );
+						//if( uiMouse.x < messagePopup->pos.x 
+						//messagePopup->Update( true, uiMouse.x, uiMouse.y );		
+					}			
+					break;
+				}
+			case Event::MouseButtonReleased:
+				{
+					//closePopup = true;
+					gateSelectorPopup->Update( false, uiMouse.x, uiMouse.y );
+					break;
+				}
+			case Event::MouseWheelMoved:
+				{
+					break;
+				}
+			case Event::KeyPressed:
+				{
+					closePopup = true;
+					//messagePopup->SendKey( ev.key.code, ev.key.shift );
+					break;
+				}
+			case Event::KeyReleased:
+				{
+					break;
+				}
+			case Event::LostFocus:
+				{
+					break;
+				}
+			case Event::GainedFocus:
+				{
+					break;
+				}
+			}
+			break;	
+		}
+
+		w->setView( v );
+
+		w->draw( preTexSprite );
+
+		w->setView( uiView );
+
+		//messagePopup->Draw( w );
+		gateSelectorPopup->Draw( w );
+
+		w->setView( v );
+
+		w->display();
+	}
+
+	preScreenTex->setView( view );
+	w->setView( v );
+
+	return selectedIndex;
+}
+
 Panel * EditSession::CreatePopupPanel( const std::string &type )
 {
 	if( type == "message" )
@@ -8972,6 +9090,11 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 		p->AddLabel( "question", Vector2i( 10, 10 ), 12, "_EMPTY\n_QUESTION_" );
 		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
 		//p->AddLabel( "Cancel", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
+		return p;
+	}
+	else if( type == "gateselector" )
+	{
+		Panel *p = new Panel( "gate_popup", 400, 400, this );
 		return p;
 	}
 

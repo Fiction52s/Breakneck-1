@@ -11,7 +11,7 @@ struct GUIHandler;
 struct GridSelector
 {
 
-	GridSelector( int xSize, int ySize, int iconX, int iconY, GUIHandler *handler  );
+	GridSelector( int xSize, int ySize, int iconX, int iconY, Panel * p );
 	void Set( int xi, int yi, sf::Sprite s, const std::string &name );
 	void Draw( sf::RenderTarget *target );
 	bool Update( bool mouseDown, int posx, int posy );
@@ -25,7 +25,8 @@ struct GridSelector
 	int focusX;
 	int focusY;
 	sf::Vector2i pos;
-	GUIHandler *handler;
+	Panel *owner;
+	//GUIHandler *handler;
 };
 
 
@@ -93,6 +94,10 @@ struct Panel
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	void AddCheckBox( const std::string &name, sf::Vector2i pos );
+	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
+		int sizex, int sizey, 
+		int tilesizex, int tilesizey );
+	
 
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void SendEvent( Button *b, const std::string & e );
@@ -108,6 +113,7 @@ struct Panel
 	std::map<std::string, Button*> buttons;
 	std::map<std::string, sf::Text*> labels;
 	std::map<std::string, CheckBox*> checkBoxes;
+	std::map<std::string, GridSelector*> gridSelectors;
 
 	sf::Vector2i pos;
 	sf::Vector2f size;

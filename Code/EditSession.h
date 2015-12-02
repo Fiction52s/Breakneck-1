@@ -356,6 +356,7 @@ struct EditSession : GUIHandler
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
 
+	
 	bool PolyIntersectGate( TerrainPolygon &poly );
 	std::list<GateInfo*> gates;
 	GateInfo *selectedGate;
@@ -459,6 +460,10 @@ struct EditSession : GUIHandler
 	Panel *messagePopup;
 	Panel *errorPopup;
 
+	Panel *gateSelectorPopup;
+
+	Panel *enemySelectPanel;
+
 	int IsRemovePointsOkay();
 
 	Panel *CreateOptionsPanel( const std::string &name );
@@ -471,6 +476,7 @@ struct EditSession : GUIHandler
 	sf::IntRect fullRect;
 	
 	bool ConfirmationPop( const std::string &question );
+	int GridSelectPop( const std::string &type );
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 

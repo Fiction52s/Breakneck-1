@@ -5,9 +5,8 @@
 using namespace sf;
 using namespace std;
 
-GridSelector::GridSelector( int xSizep, int ySizep, int iconX, int iconY, GUIHandler *h )
-	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( false ),
-	handler( h )
+GridSelector::GridSelector( int xSizep, int ySizep, int iconX, int iconY, Panel *p )
+	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( false ), owner( p )
 {
 	icons = new Sprite *[xSize];
 	names = new string *[xSize];
@@ -97,7 +96,7 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 			if( tempX == focusX && tempY == focusY )
 			{
 				cout << "tempX: " << tempX << ", tempY: " << tempY << endl;
-				handler->GridSelectorCallback( this, names[tempX][tempY] );
+				owner->SendEvent( this, names[tempX][tempY] );//->GridSelectorCallback( this, names[tempX][tempY] );
 				return true;
 		//		cout << "success!" << endl;
 			}
@@ -166,6 +165,11 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 		bool temp = (*it).second->Update( mouseDown, posx, posy );
 	}
 
+	for( map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
+	{
+		bool temp = (*it).second->Update( mouseDown, posx, posy );
+	}
+
 	//if( b.Update( mouseDown, posx, posy ) )
 	{
 	}
@@ -221,6 +225,14 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 	labels[name] = t;
 }
 
+GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos, int sizex, int sizey, int tilesizex, int tilesizey )
+{
+	assert( gridSelectors.count( name ) == 0 );
+	GridSelector *gs = new GridSelector( sizex, sizey, tilesizex, tilesizey, this );
+	gridSelectors[name] = gs;
+	return gs;
+}
+
 void Panel::Draw( RenderTarget *target )
 {
 	sf::RectangleShape rs;
@@ -254,6 +266,10 @@ void Panel::Draw( RenderTarget *target )
 		(*it).second->Draw( target );
 	}
 	
+	for( map<string,GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
+	{
+		(*it).second->Draw( target );
+	}
 }
 
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
@@ -278,6 +294,8 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 			(*it).second->SendKey( k, shift );
 	}
 }
+
+
 
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
 	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n ), owner( p )
