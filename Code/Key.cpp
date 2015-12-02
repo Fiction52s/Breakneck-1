@@ -204,7 +204,19 @@ void Key::AdvanceTargetNode()
 void Key::UpdatePostPhysics()
 {
 	Actor &player = owner->player;
-	if( !dead )
+
+	bool checkHit = true;
+
+
+	//the player already has this key
+	if( keyType == Key::RED && player.hasRedKey 
+		|| keyType == Key::GREEN && player.hasGreenKey 
+		|| keyType == Key::BLUE && player.hasBlueKey )
+	{
+		checkHit = false;
+	}
+
+	if( !dead && checkHit )
 	{
 		UpdateHitboxes();
 
@@ -216,7 +228,12 @@ void Key::UpdatePostPhysics()
 			{
 				dead = true;
 				receivedHit = NULL;
-				player.hasKey = true;
+				if( keyType == Key::RED )
+					player.hasRedKey = true;
+				else if( keyType == Key::GREEN )
+					player.hasGreenKey = true;
+				else if( keyType == Key::BLUE )
+					player.hasBlueKey = true;
 			}	
 		}
 
@@ -224,7 +241,12 @@ void Key::UpdatePostPhysics()
 		{
 			dead = true;
 			receivedHit = NULL;
-			player.hasKey = true;
+			if( keyType == Key::RED )
+				player.hasRedKey = true;
+			else if( keyType == Key::GREEN )
+				player.hasGreenKey = true;
+			else if( keyType == Key::BLUE )
+				player.hasBlueKey = true;
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -326,7 +348,13 @@ void Key::UpdateHitboxes()
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Key::PlayerHitMe()
 {
+	
 	Actor &player = owner->player;
+
+	
+		
+
+
 	if( player.currHitboxes != NULL )
 	{
 		bool hit = false;

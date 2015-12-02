@@ -357,7 +357,9 @@ struct Actor : QuadTreeCollider,
 	bool dead;	
 
 
-	bool hasKey;
+	bool hasRedKey;
+	bool hasBlueKey;
+	bool hasGreenKey;
 
 	int framesSinceClimbBoost;
 	int climbBoostLimit;

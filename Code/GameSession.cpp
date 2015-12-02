@@ -2279,7 +2279,7 @@ int GameSession::Run( string fileN )
 				}
 				else if( (*it)->keyType == Key::BLUE )
 				{
-					cs.setFillColor( Color::Blue );
+					cs.setFillColor( Color( 77, 150, 249) );
 				}
 				
 				cs.setRadius( 40 );
@@ -2644,6 +2644,9 @@ void GameSession::RespawnPlayer()
 	player.leftWire->Reset();
 	powerBar.Reset();
 	player.lastWire = 0;
+	player.hasRedKey = false;
+	player.hasGreenKey = false;
+	player.hasBlueKey = false;
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )

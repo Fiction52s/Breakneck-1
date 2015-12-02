@@ -17,7 +17,7 @@ Gate::Gate( GateType p_type )
 		c = Color::Green;
 		break;
 	case BLUE:
-		c = Color::Blue;
+		c =  Color( 77, 150, 249);
 		break;
 	}
 	thickLine[0].color = c;

@@ -16,7 +16,9 @@ Actor::Actor( GameSession *gs )
 		lastWire = 0;
 		inBubble = false;
 		oldInBubble = false;
-		hasKey = false;
+		hasRedKey = false;
+		hasGreenKey = false;
+		hasBlueKey = false;
 		slopeTooSteepLaunchLimitX = .1;
 		steepSlideFastGravFactor = 1.9 / 3.0;
 		steepSlideGravFactor = 1.3 / 3.0;
@@ -9828,10 +9830,20 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( g->locked && ( g->v0 == grindEdge->v0 || g->v1 == grindEdge->v0 ) )
 			{
-				if( hasKey )
+				if( g->type == Gate::RED && hasRedKey )
 				{
 					g->locked = false;
-					hasKey = false;
+					hasRedKey = false;
+				}
+				else if( g->type == Gate::GREEN && hasGreenKey )
+				{
+					g->locked = false;
+					hasRedKey = false;
+				}
+				else if( g->type == Gate::BLUE && hasBlueKey )
+				{
+					g->locked = false;
+					hasRedKey = false;
 				}
 				else
 				{
@@ -9845,10 +9857,20 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 			if( g->locked && g->IsTouchingBox( r ) )
 			{
-				if( hasKey )
+				if( g->type == Gate::RED && hasRedKey )
 				{
 					g->locked = false;
-					hasKey = false;
+					hasRedKey = false;
+				}
+				else if( g->type == Gate::GREEN && hasGreenKey )
+				{
+					g->locked = false;
+					hasGreenKey = false;
+				}
+				else if( g->type == Gate::BLUE && hasBlueKey )
+				{
+					g->locked = false;
+					hasBlueKey = false;
 				}
 				else
 				{
