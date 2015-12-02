@@ -2268,7 +2268,20 @@ int GameSession::Run( string fileN )
 			if( !(*it)->dead )
 			{
 				CircleShape cs;
-				cs.setFillColor( Color::Red );
+			
+				if( (*it)->keyType == Key::RED )
+				{
+					cs.setFillColor( Color::Red );
+				}
+				else if( (*it)->keyType == Key::GREEN )
+				{
+					cs.setFillColor( Color::Green );
+				}
+				else if( (*it)->keyType == Key::BLUE )
+				{
+					cs.setFillColor( Color::Blue );
+				}
+				
 				cs.setRadius( 40 );
 				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 				cs.setPosition( (*it)->position.x, (*it)->position.y );
@@ -2287,8 +2300,8 @@ int GameSession::Run( string fileN )
 			{
 				sf::Vertex activePreview[2] =
 				{
-					sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), Color::Red ),
-					sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), Color::Red )
+					sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
+					sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c )
 				};
 				minimapTex->draw( activePreview, 2, sf::Lines );
 			}

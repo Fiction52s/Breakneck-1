@@ -9,23 +9,23 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Key::Key( GameSession *owner, const string &keyType, sf::Vector2i pos, std::list<sf::Vector2i> &pathParam, bool p_loop, float p_speed, int p_stayFrames, bool p_teleport )
+Key::Key( GameSession *owner, const string &p_keyType, sf::Vector2i pos, std::list<sf::Vector2i> &pathParam, bool p_loop, float p_speed, int p_stayFrames, bool p_teleport )
 	:Enemy( owner, EnemyType::KEY ), dead( false ), deathFrame( 0 )
 {
 	int keySize = 50;
-	if( keyType == "red" )
+	if( p_keyType == "red" )
 	{
-		type = KeyType::RED;
+		keyType = KeyType::RED;
 		ts = owner->GetTileset( "key.png", keySize, keySize );
 	}
-	else if( keyType == "green" )
+	else if( p_keyType == "green" )
 	{
-		type = KeyType::GREEN;
+		keyType = KeyType::GREEN;
 		ts = owner->GetTileset( "greenkey.png", keySize, keySize );
 	}
-	else if( keyType == "blue" )
+	else if( p_keyType == "blue" )
 	{
-		type = KeyType::BLUE;
+		keyType = KeyType::BLUE;
 		ts = owner->GetTileset( "bluekey.png", keySize, keySize );
 	}
 	else

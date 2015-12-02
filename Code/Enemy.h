@@ -498,7 +498,7 @@ struct Key : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
-	KeyType type;
+	KeyType keyType;
 
 	struct Stored
 	{
