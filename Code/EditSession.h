@@ -77,7 +77,16 @@ struct TerrainBrush
 
 struct GateInfo
 {
+	enum GateTypes
+	{
+		RED,
+		GREEN,
+		BLUE,
+		Count
+	};
+
 	GateInfo();
+	void SetType( const std::string &gType );
 	TerrainPoint *point0;
 	TerrainPoint *point1;
 	TerrainPolygon *poly0;
@@ -89,6 +98,9 @@ struct GateInfo
 	void UpdateLine();
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
+
+	GateTypes type;
+	
 };
 
 
@@ -254,7 +266,8 @@ struct KeyParams : public ActorParams
 		float speed,
 		bool loop,
 		int stayFrames,
-		bool teleport );
+		bool teleport,
+		const std::string &keyType );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
@@ -265,6 +278,7 @@ struct KeyParams : public ActorParams
 	float speed;
 	int stayFrames;
 	bool teleport;
+	std::string keyType;
 };
 
 struct CrawlerParams : public ActorParams
@@ -476,7 +490,8 @@ struct EditSession : GUIHandler
 	sf::IntRect fullRect;
 	
 	bool ConfirmationPop( const std::string &question );
-	int GridSelectPop( const std::string &type );
+	void GridSelectPop( const std::string &type );
+	std::string tempGridResult;
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 

@@ -441,7 +441,7 @@ struct Key : Enemy
 		BLUE
 	};
 
-	Key( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed, int stayFrames, bool teleport );
+	Key( GameSession *owner, const std::string &keyType, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed, int stayFrames, bool teleport );
 	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

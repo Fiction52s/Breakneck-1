@@ -5,19 +5,31 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Gate::Gate()
-	:Edge(), type( NORMAL ), locked( true ), thickLine( sf::Quads, 4 )
+Gate::Gate( GateType p_type )
+	:Edge(), type( p_type ), locked( true ), thickLine( sf::Quads, 4 )
 {
-	thickLine[0].color = Color( 255, 0, 0, 255 );
-	thickLine[1].color = Color( 255, 0, 0, 255 );
-	thickLine[2].color = Color( 255, 0, 0, 255 );
-	thickLine[3].color = Color( 255, 0, 0, 255 );
+	switch( type )
+	{
+	case RED:
+		c = Color::Red;
+		break;
+	case GREEN:
+		c = Color::Green;
+		break;
+	case BLUE:
+		c = Color::Blue;
+		break;
+	}
+	thickLine[0].color = c;
+	thickLine[1].color = c;
+	thickLine[2].color = c;
+	thickLine[3].color = c;
 }
 
 void Gate::Draw( sf::RenderTarget *target )
 {
 	CircleShape cs( 5 );
-	cs.setFillColor( Color::Red );
+	cs.setFillColor( c );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
 	cs.setPosition( v0.x, v0.y );

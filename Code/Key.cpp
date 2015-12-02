@@ -9,10 +9,30 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Key::Key( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &pathParam, bool p_loop, float p_speed, int p_stayFrames, bool p_teleport )
+Key::Key( GameSession *owner, const string &keyType, sf::Vector2i pos, std::list<sf::Vector2i> &pathParam, bool p_loop, float p_speed, int p_stayFrames, bool p_teleport )
 	:Enemy( owner, EnemyType::KEY ), dead( false ), deathFrame( 0 )
 {
 	int keySize = 50;
+	if( keyType == "red" )
+	{
+		type = KeyType::RED;
+		ts = owner->GetTileset( "key.png", keySize, keySize );
+	}
+	else if( keyType == "green" )
+	{
+		type = KeyType::GREEN;
+		ts = owner->GetTileset( "greenkey.png", keySize, keySize );
+	}
+	else if( keyType == "blue" )
+	{
+		type = KeyType::BLUE;
+		ts = owner->GetTileset( "bluekey.png", keySize, keySize );
+	}
+	else
+	{
+		assert( false );
+	}
+	
 	position.x = pos.x;
 	position.y = pos.y;
 
@@ -41,10 +61,7 @@ Key::Key( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &pathPar
 	frame = 0;
 
 	animationFactor = 3;
-
 	
-	
-	ts = owner->GetTileset( "key.png", keySize, keySize );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );

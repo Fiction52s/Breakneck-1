@@ -5,8 +5,8 @@
 using namespace sf;
 using namespace std;
 
-GridSelector::GridSelector( int xSizep, int ySizep, int iconX, int iconY, Panel *p )
-	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( false ), owner( p )
+GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, Panel *p )
+	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true ), owner( p )
 {
 	icons = new Sprite *[xSize];
 	names = new string *[xSize];
@@ -22,10 +22,14 @@ GridSelector::GridSelector( int xSizep, int ySizep, int iconX, int iconY, Panel 
 		}
 	}
 
-	pos.x = 32;
-	pos.y = 32;
+	pos.x = p_pos.x;
+	pos.y = p_pos.y;
 	focusX = -1;
 	focusY = -1;
+	//selectedX = -1;
+	//selectedY = -1;
+	selectedX = 0;
+	selectedY = 0;
 }
 
 void GridSelector::Set( int xi, int yi, Sprite s, const std::string &name )
@@ -42,7 +46,8 @@ void GridSelector::Draw( sf::RenderTarget *target )
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f( xSize * tileSizeX, ySize * tileSizeY ) );
 		rs.setFillColor( Color::Yellow );
-		rs.setPosition( pos.x, pos.y );
+		Vector2i truePos( pos.x + owner->pos.x, pos.y + owner->pos.y );
+		rs.setPosition( truePos.x, truePos.y );
 
 		target->draw( rs );
 
@@ -52,8 +57,13 @@ void GridSelector::Draw( sf::RenderTarget *target )
 			{
 				Sprite &s = icons[x][y];
 				Vector2f realPos = s.getPosition();
-				s.setPosition( Vector2f( realPos.x + pos.x, realPos.y + pos.y ) );
+				if( x == selectedX && y == selectedY )
+				{
+					s.setColor( Color::Blue );
+				}
+				s.setPosition( Vector2f( realPos.x + truePos.x, realPos.y + truePos.y ) );
 				target->draw( s );
+				s.setColor( Color::White );
 				s.setPosition( realPos );
 			}
 		}
@@ -69,19 +79,15 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	}
 	if( mouseDown )
 	{
-
 		sf::Rect<int> r( pos.x, pos.y, xSize * tileSizeX, ySize * tileSizeY );
 		if( r.contains( sf::Vector2i( posx, posy ) ) )
 		{
-			
 			focusX = ( posx - pos.x ) / tileSizeX;
 			focusY = ( posy - pos.y ) / tileSizeY;
 			cout << "contains index: " << focusX << ", " << focusY << endl;
 		}
 		else
 		{
-		//	cout << "doesn't contain!" << endl;
-		//	cout << "pos: " << posx << ", " << posy << endl;
 			focusX = -1;
 			focusY = -1;
 		}
@@ -95,6 +101,8 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 			int tempY = ( posy - pos.y ) / tileSizeY;
 			if( tempX == focusX && tempY == focusY )
 			{
+				selectedX = tempX;
+				selectedY = tempY;
 				cout << "tempX: " << tempX << ", tempY: " << tempY << endl;
 				owner->SendEvent( this, names[tempX][tempY] );//->GridSelectorCallback( this, names[tempX][tempY] );
 				return true;
@@ -228,7 +236,7 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos, int sizex, int sizey, int tilesizex, int tilesizey )
 {
 	assert( gridSelectors.count( name ) == 0 );
-	GridSelector *gs = new GridSelector( sizex, sizey, tilesizex, tilesizey, this );
+	GridSelector *gs = new GridSelector( pos, sizex, sizey, tilesizex, tilesizey, this );
 	gridSelectors[name] = gs;
 	return gs;
 }

@@ -1101,7 +1101,6 @@ bool GameSession::OpenFile( string fileName )
 
 					is >> xPos;
 					is >> yPos;
-					
 
 					int pathLength;
 					is >> pathLength;
@@ -1115,6 +1114,8 @@ bool GameSession::OpenFile( string fileName )
 						localPath.push_back( Vector2i( localX, localY ) );
 					}
 
+					string keyType;
+					is >> keyType;
 
 					bool loop;
 					string loopStr;
@@ -1155,7 +1156,7 @@ bool GameSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
 					//a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
-					Key *key = new Key( this, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
+					Key *key = new Key( this, keyType, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
 					keyList.push_back( key );
 					AddEnemy( key );
 				}
@@ -1246,7 +1247,9 @@ bool GameSession::OpenFile( string fileName )
 		gates = new Gate*[numGates];
 		for( int i = 0; i < numGates; ++i )
 		{
+			int gType;
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+			is >> gType;
 			is >> poly0Index;
 			is >> vertexIndex0;
 			is >> poly1Index;
@@ -1255,7 +1258,7 @@ bool GameSession::OpenFile( string fileName )
 			V2d point0 = edges[polyIndex[poly0Index] + vertexIndex0]->v0;
 			V2d point1 = edges[polyIndex[poly1Index] + vertexIndex1]->v0;
 
-			Gate * gate = new Gate;
+			Gate * gate = new Gate( (Gate::GateType)gType );
 			gate->v0 = point0;
 			gate->v1 = point1;
 			gate->UpdateLine();

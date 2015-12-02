@@ -1804,6 +1804,22 @@ GateInfo::GateInfo()
 	thickLine[3].color = Color( 255, 0, 0, 255 );
 }
 
+void GateInfo::SetType( const std::string &gType )
+{
+	if( gType == "red" )
+	{
+		type = GateTypes::RED;
+	}
+	else if( gType == "green" )
+	{
+		type = GateTypes::GREEN;
+	}
+	else if( gType == "blue" )
+	{
+		type = GateTypes::BLUE;
+	}
+}
+
 void GateInfo::WriteFile( ofstream &of )
 {
 	int index0 = 0, index1 = 0;
@@ -1829,7 +1845,7 @@ void GateInfo::WriteFile( ofstream &of )
 		curr = curr->next;
 	}
 
-	of << poly0->writeIndex << " " << index0 << " " << poly1->writeIndex << " " << index1 << endl;
+	of << (int)type << " " << poly0->writeIndex << " " << index0 << " " << poly1->writeIndex << " " << index1 << endl;
 }
 
 void GateInfo::UpdateLine()
@@ -1848,6 +1864,24 @@ void GateInfo::UpdateLine()
 
 	cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
+	Color c;
+	if( type == GateTypes::RED )
+	{
+		c = Color( 255, 0, 0 );
+	}
+	else if( type == GateTypes::GREEN )
+	{
+		c = Color( 0, 255, 0 );
+	}
+	else if( type == GateTypes::BLUE )
+	{
+		c = Color( 0, 0, 255 );
+	}
+	thickLine[0].color = c;
+	thickLine[1].color = c;
+	thickLine[2].color = c;
+	thickLine[3].color = c;
+
 	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
 	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
 	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
@@ -1856,8 +1890,22 @@ void GateInfo::UpdateLine()
 
 void GateInfo::Draw( sf::RenderTarget *target )
 {
+	Color c;
+	if( type == GateTypes::RED)
+	{
+		c = Color( 255, 0, 0 );
+	}
+	else if( type == GateTypes::GREEN )
+	{
+		c = Color( 0, 255, 0 );
+	}
+	else if( type == GateTypes::BLUE )
+	{
+		c = Color( 0, 0, 255 );
+	}
+
 	CircleShape cs( 5 );
-	cs.setFillColor( Color::Red );
+	cs.setFillColor( c );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
 	cs.setPosition( point0->pos.x, point0->pos.y );
@@ -2246,7 +2294,6 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-
 					int pathLength;
 					is >> pathLength;
 					
@@ -2260,6 +2307,9 @@ bool EditSession::OpenFile( string fileName )
 						is >> localY;
 						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
 					}
+
+					string keyType;
+					is >> keyType;
 
 					bool loop;
 					string loopStr;
@@ -2292,7 +2342,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
-					a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
+					a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport, keyType );
 				}
 				else if( typeName == "crawler" )
 				{
@@ -2441,7 +2491,9 @@ bool EditSession::OpenFile( string fileName )
 		cout << "numgates: " << numGates << endl;
 		for( int i = 0; i < numGates; ++i )
 		{
+			int gType;
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+			is >> gType;
 			is >> poly0Index;
 			is >> vertexIndex0;
 			is >> poly1Index;
@@ -2479,6 +2531,7 @@ bool EditSession::OpenFile( string fileName )
 			gi->poly1 = terrain1;
 			gi->vertexIndex0 = vertexIndex0;
 			gi->vertexIndex1 = vertexIndex1;
+			gi->type = (GateInfo::GateTypes)gType;
 			gi->edit = this;
 
 			int index = 0;
@@ -3264,11 +3317,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
-	Panel *keyPanel = CreateOptionsPanel( "key" );
-	ActorType *keyType = new ActorType( "key", keyPanel );
+	
+	ActorType *keyType = new ActorType( "key", NULL );
 
-	ActorType *greenKeyType = new ActorType( "greenkey", keyPanel );
-	ActorType *blueKeyType = new ActorType( "bluekey", keyPanel );
+	ActorType *greenKeyType = new ActorType( "greenkey", NULL );
+	ActorType *blueKeyType = new ActorType( "bluekey", NULL );
 
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
@@ -3296,8 +3349,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["greenkey"] = greenKeyType;
 	types["bluekey"] = blueKeyType;
 
+	Panel *keyPanel = CreateOptionsPanel( "key" );
+
+	keyType->panel = keyPanel;
+	greenKeyType->panel = keyPanel;
+	blueKeyType->panel = keyPanel;
+
 	enemySelectPanel = new Panel( "enemyselection", 300, 500, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 2, 32, 32 );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 3, 32, 32 );
 	
 	//GridSelector gs( 3, 2, 32, 32, this );
 	gs->active = false;
@@ -3309,22 +3368,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s4( goalType->iconTexture );
 	sf::Sprite s5( keyType->iconTexture );
 
+	sf::Sprite ss0( greenKeyType->iconTexture );
+	sf::Sprite ss1( blueKeyType->iconTexture );
+
 
 	gs->Set( 0, 0, s0, "patroller" );
 	gs->Set( 1, 0, s1, "crawler" );
 	gs->Set( 0, 1, s2, "basicturret" );
 	gs->Set( 1, 1, s3, "foottrap" );
 	gs->Set( 2, 0, s4, "goal" );
-	gs->Set( 2, 1, s5, "key" );
+	gs->Set( 0, 2, s5, "key" );
+	gs->Set( 1, 2, ss0, "greenkey" );
+	gs->Set( 2, 2, ss1, "bluekey" );
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 3, 1, 32, 32 );
 	
-	sf::Sprite ss0( greenKeyType->iconTexture );
-	sf::Sprite ss1( blueKeyType->iconTexture );
-	gateSel->Set( 0, 0, s5, "redkey" );
-	gateSel->Set( 1, 0, s5, "greenkey" );
-	gateSel->Set( 2, 0, s5, "bluekey" );
+
+	gateSel->Set( 0, 0, s5, "red" );
+	gateSel->Set( 1, 0, ss0, "green" );
+	gateSel->Set( 2, 0, ss1, "blue" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -3868,9 +3931,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												}
 												else
 												{
-													for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
+													for( list<TerrainPolygon*>::iterator it2 = selectedPolygons.begin(); it2 != selectedPolygons.end(); ++it2 )
 													{
-														curr->selected = false;
+														for( TerrainPoint *curr = (*it2)->pointStart; curr != NULL; curr = curr->next )
+														{
+															curr->selected = false;
+														}
 													}
 												}
 
@@ -4469,9 +4535,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( result )
 									{
-										GridSelectPop( "GateType" );
+										GridSelectPop( "gatetype" );
+
+										
 										//MessagePop( "gate created" );
 										GateInfo *gi = new GateInfo;
+
+										gi->SetType( tempGridResult );
+										//gi->type = tempGridResult;
+
 										gi->edit = this;
 										gi->poly0 = testInfo.poly0;
 										gi->vertexIndex0 = testInfo.vertexIndex0;
@@ -4483,6 +4555,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										gi->point1 = testInfo.point1;
 										gi->point1->gate = gi;
 										gi->UpdateLine();
+
+
+										
 
 										gates.push_back( gi );
 									}
@@ -7592,7 +7667,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				KeyParams *key = new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport );
+				GridSelector * gs = p->gridSelectors["keytype"];
+				KeyParams *key = new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gs->names[gs->selectedX][gs->selectedY] );
+				
 				groups["--"]->actors.push_back( key );
 				key->group = groups["--"];
 				trackingEnemy = NULL;
@@ -7885,13 +7962,18 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 {
 }
 
-void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & name )
+void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_name )
 {
+	string name = p_name;
 	Panel *panel = gs->owner;
 	if( panel == enemySelectPanel )
 	{
 		if( name != "not set" )
 		{
+			//if( name == "greenkey" || name == "bluekey" )
+			//{
+			//	name = "key";
+		//	}
 			trackingEnemy = types[name];
 			enemySprite.setTexture( trackingEnemy->imageTexture );
 
@@ -7911,6 +7993,20 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & na
 		else
 		{
 			cout << "not set" << endl;
+		}
+	}
+	else if( panel == gateSelectorPopup )
+	{
+		//cout << "callback!" << endl;
+		if( name != "not set" )
+		{
+			//cout << "real result" << endl;
+			tempGridResult = name;
+			//showPanel = NULL;
+		}
+		else
+		{
+		//	cout << "not set" << endl;
 		}
 	}
 }
@@ -7938,7 +8034,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	if( name == "key" )
 	{
-		Panel *p = new Panel( "key_options", 200, 400, this );
+		Panel *p = new Panel( "key_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -7949,6 +8045,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
 		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 300 ), 3, 1, 32, 32 );
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -8971,10 +9071,10 @@ void EditSession::ErrorPop( const std::string &error )
 
 }
 
-int EditSession::GridSelectPop( const std::string &type )
+void EditSession::GridSelectPop( const std::string &type )
 {
 	int selectedIndex = -1;
-
+	tempGridResult = "nothing";
 	//messagePopup->labels["message"]->setString( message );
 	bool closePopup = false;
 	w->setView( v );
@@ -8987,12 +9087,23 @@ int EditSession::GridSelectPop( const std::string &type )
 
 	preScreenTex->setView( uiView );
 
+	Vector2i pixelPos = sf::Mouse::getPosition( *w );
+	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+
+	gateSelectorPopup->pos.x = uiMouse.x;
+	gateSelectorPopup->pos.y = uiMouse.y;
+
 	sf::Event ev;
 	while( !closePopup )
 	{
-		Vector2i pixelPos = sf::Mouse::getPosition( *w );
-		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		pixelPos = sf::Mouse::getPosition( *w );
+		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		w->clear();
+
+		if( tempGridResult != "nothing" )
+		{
+			return;
+		}
 
 		while( w->pollEvent( ev ) )
 		{
@@ -9011,7 +9122,10 @@ int EditSession::GridSelectPop( const std::string &type )
 			case Event::MouseButtonReleased:
 				{
 					//closePopup = true;
-					gateSelectorPopup->Update( false, uiMouse.x, uiMouse.y );
+					if( ev.mouseButton.button == Mouse::Left )
+					{
+						gateSelectorPopup->Update( false, uiMouse.x, uiMouse.y );
+					}
 					break;
 				}
 			case Event::MouseWheelMoved:
@@ -9020,7 +9134,7 @@ int EditSession::GridSelectPop( const std::string &type )
 				}
 			case Event::KeyPressed:
 				{
-					closePopup = true;
+					//closePopup = true;
 					//messagePopup->SendKey( ev.key.code, ev.key.shift );
 					break;
 				}
@@ -9056,8 +9170,6 @@ int EditSession::GridSelectPop( const std::string &type )
 
 	preScreenTex->setView( view );
 	w->setView( v );
-
-	return selectedIndex;
 }
 
 Panel * EditSession::CreatePopupPanel( const std::string &type )
@@ -9094,7 +9206,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	}
 	else if( type == "gateselector" )
 	{
-		Panel *p = new Panel( "gate_popup", 400, 400, this );
+		Panel *p = new Panel( "gate_popup", 100, 150, this );
 		return p;
 	}
 
@@ -9624,12 +9736,28 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
-					 int p_stayFrames, bool p_teleport )
+					 int p_stayFrames, bool p_teleport, const string &p_keyType )
 {	
 	position = pos;	
+	keyType = p_keyType;
+
 	type = edit->types["key"];
 
-	image.setTexture( type->imageTexture );
+	if( keyType == "red" )
+	{
+		image.setTexture( type->imageTexture );
+	}
+	else if( keyType == "green" )
+	{
+		image.setTexture( edit->types["greenkey"]->imageTexture );
+	}
+	else if( keyType == "blue" )
+	{
+		image.setTexture( edit->types["bluekey"]->imageTexture );
+	}
+	
+
+	
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
@@ -9683,6 +9811,8 @@ void KeyParams::WriteParamFile( ofstream &of )
 	{
 		of << (*it).x  << " " << (*it).y << endl;
 	}
+
+	of << keyType << endl;
 
 	if( loop )
 	{

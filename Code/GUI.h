@@ -11,7 +11,7 @@ struct GUIHandler;
 struct GridSelector
 {
 
-	GridSelector( int xSize, int ySize, int iconX, int iconY, Panel * p );
+	GridSelector( sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY, Panel * p );
 	void Set( int xi, int yi, sf::Sprite s, const std::string &name );
 	void Draw( sf::RenderTarget *target );
 	bool Update( bool mouseDown, int posx, int posy );
@@ -26,6 +26,8 @@ struct GridSelector
 	int focusY;
 	sf::Vector2i pos;
 	Panel *owner;
+	int selectedX;
+	int selectedY;
 	//GUIHandler *handler;
 };
 

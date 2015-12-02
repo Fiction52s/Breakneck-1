@@ -6,13 +6,18 @@
 
 struct Gate : public Edge
 {
-	Gate();
+	
 	enum GateType
 	{
-		NORMAL
+		RED,
+		GREEN,
+		BLUE,
+		Count		
 	};
+	Gate( GateType type);
 	GateType type;
 	bool locked;
+	sf::Color c;
 	sf::VertexArray thickLine;
 	void UpdateLine();
 	void Draw( sf::RenderTarget *target );
