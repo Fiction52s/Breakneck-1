@@ -4477,12 +4477,33 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								else
 								{
 									
+									int erasedGates = 0;
 									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
 										it != selectedPolygons.end(); ++it )
 									{
 										polygons.remove( (*it) );
+										
+										for( list<GateInfo*>::iterator git = gates.begin(); git != gates.end(); )
+										{
+											if( (*git)->poly0 == (*it) || (*git)->poly1 == (*it) )
+											{
+												delete (*git);
+												git = gates.erase( git );
+												++erasedGates;
+											}
+											else
+											{
+												++git;
+											}
+										}
 										(*it)->DestroyEnemies();
 										delete (*it);
+									}
+									if( erasedGates > 0 )
+									{
+										stringstream ss;
+										ss << "destroyed " << erasedGates << " gates";
+										MessagePop( ss.str() );
 									}
 									selectedPolygons.clear();
 

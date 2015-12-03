@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <SFML/Graphics.hpp>
+#include "LevelServer.h"
 
 struct TreeNode
 {
@@ -51,7 +52,7 @@ struct LevelSelector
 	int yspacing;
 	sf::Vector2f windowStretch;
 	std::string newLevelName;
-
+	LevelServer levelServer;
 	sf::RenderTexture drawPanel;
 };
 

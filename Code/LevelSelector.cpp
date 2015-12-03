@@ -1,5 +1,6 @@
 #include "LevelSelector.h"
 #include <iostream>
+#include <SFML/Network.hpp>
 
 using namespace boost::filesystem;
 using namespace std;
@@ -59,6 +60,41 @@ LevelSelector::LevelSelector( Font & p_font )
 void LevelSelector::UpdateMapList()
 {
 	ClearEntries();
+
+	/*sf::Ftp ftp;
+	Ftp::Response re = ftp.connect("ftp.breakneckgame.com", 21, sf::seconds( 5 ) );
+	if( re.isOk() )
+	{
+		ftp.login("test@breakneckgame.com", "password123");
+		sf::Ftp::DirectoryResponse response = ftp.getWorkingDirectory();
+		if (response.isOk())
+		cout << "Current directory: " << response.getDirectory() << endl;
+		
+		sf::Ftp::ListingResponse res = ftp.getDirectoryListing();
+		if (res.isOk())
+		{
+			const std::vector<std::string>& listing = res.getListing();
+			for (std::vector<std::string>::const_iterator it = listing.begin(); it != listing.end(); ++it)
+			{
+				ftp.download( (*it),"Maps/Downloads", sf::Ftp::Ascii); 
+			}
+		}
+		//ftp.download("map online.brknk", "Maps/Downloads", sf::Ftp::Ascii);
+
+		ftp.disconnect();
+	}
+	else
+	{
+		cout << "COULDNT CONNECT WITH SERVER" << endl;
+	}*/
+	//sf::Http &http = levelServer.http;
+	
+	
+	std::string path = "test/";
+	std::string file = "map_online.brknk";
+   bool goodDownload = levelServer.DownloadFile( path, file );
+
+   
 	UpdateMapList( entries, "Maps" );
 
 	text = new Text[numTotalEntries];
@@ -66,6 +102,9 @@ void LevelSelector::UpdateMapList()
 	localPaths = new string[numTotalEntries];
 
 	dirNode = new TreeNode*[numTotalEntries];
+
+	
+
 
 	Tex( 0, 0, entries );
 }
