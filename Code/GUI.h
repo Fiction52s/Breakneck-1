@@ -11,7 +11,8 @@ struct GUIHandler;
 struct GridSelector
 {
 
-	GridSelector( sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY, Panel * p );
+	GridSelector( sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY, 
+		bool displaySelected, bool displayMouseOver, Panel * p );
 	void Set( int xi, int yi, sf::Sprite s, const std::string &name );
 	void Draw( sf::RenderTarget *target );
 	bool Update( bool mouseDown, int posx, int posy );
@@ -28,6 +29,10 @@ struct GridSelector
 	Panel *owner;
 	int selectedX;
 	int selectedY;
+	int mouseOverX;
+	int mouseOverY;
+	bool displaySelected;
+	bool displayMouseOver;
 	//GUIHandler *handler;
 };
 
@@ -98,7 +103,9 @@ struct Panel
 	void AddCheckBox( const std::string &name, sf::Vector2i pos );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
-		int tilesizex, int tilesizey );
+		int tilesizex, int tilesizey,
+		bool displaySelected,
+		bool displayMouseOver );
 	
 
 	void SendKey( sf::Keyboard::Key k, bool shift );

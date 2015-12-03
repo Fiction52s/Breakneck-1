@@ -17,6 +17,23 @@
 using namespace std;
 using namespace sf;
 
+//Ground - 1155aa
+//
+//Steep Floor - 4488cc
+//
+//Steep Ceiling - 55aaff
+//
+//Ceiling - 88ccff
+//
+//Wall - 6688ee
+
+#define COLOR_GROUND Color( 0x11, 0x55, 0xaa )
+#define COLOR_STEEP_GROUND Color( 0x44, 0x88, 0xcc )
+#define COLOR_STEEP_CEILING Color( 0x55, 0xaa, 0xff )
+#define COLOR_CEILING Color( 0x88, 0xcc, 0xff )
+#define COLOR_WALL Color( 0x66, 0x88, 0xee )
+
+
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 )
@@ -609,11 +626,11 @@ bool GameSession::OpenFile( string fileName )
 
 			va = new VertexArray( sf::Quads, polyPoints * 4 );
 			VertexArray &edgeVa = *va;
-			Color groundColor = Color::Red;
-			Color wallColor = Color::Green;
-			Color steepGroundColor = Color::Magenta;
-			Color steepCeilingColor = Color::Yellow;
-			Color ceilingColor = Color::Cyan;
+			Color groundColor = COLOR_GROUND;
+			Color wallColor = COLOR_WALL;
+			Color steepGroundColor = COLOR_STEEP_GROUND;
+			Color steepCeilingColor = COLOR_STEEP_CEILING;
+			Color ceilingColor = COLOR_CEILING;
 			
 			Vector2f *innerPoints = new Vector2f[polyPoints];
 			double in = 0;
@@ -642,6 +659,10 @@ bool GameSession::OpenFile( string fileName )
 				else if( testN.y > 0 ) //ceil
 				{
 					edgeColor = ceilingColor;
+				}
+				else
+				{
+					edgeColor = groundColor;
 				}
 
 				edgeVa[index*4].color = edgeColor;

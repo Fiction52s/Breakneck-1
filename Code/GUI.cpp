@@ -5,9 +5,12 @@
 using namespace sf;
 using namespace std;
 
-GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, Panel *p )
+GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, bool p_displaySelected,
+						   bool p_displayMouseOver, Panel *p )
 	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true ), owner( p )
 {
+	displaySelected = p_displaySelected;
+	displayMouseOver = p_displayMouseOver;
 	icons = new Sprite *[xSize];
 	names = new string *[xSize];
 	for( int i = 0; i < xSize; ++i )
@@ -30,6 +33,8 @@ GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, i
 	//selectedY = -1;
 	selectedX = 0;
 	selectedY = 0;
+	mouseOverX = -1;
+	mouseOverY = -1;
 }
 
 void GridSelector::Set( int xi, int yi, Sprite s, const std::string &name )
@@ -57,16 +62,28 @@ void GridSelector::Draw( sf::RenderTarget *target )
 			{
 				Sprite &s = icons[x][y];
 				Vector2f realPos = s.getPosition();
-				if( x == selectedX && y == selectedY )
-				{
-					s.setColor( Color::Blue );
-				}
 				s.setPosition( Vector2f( realPos.x + truePos.x, realPos.y + truePos.y ) );
+
 				target->draw( s );
-				s.setColor( Color::White );
+				//s.setColor( Color::White );
 				s.setPosition( realPos );
 			}
 		}
+
+		if( displaySelected )//selectedX >= 0 && selectedY >= 0 )
+		{
+			Sprite &s = icons[selectedX][selectedY];
+			Vector2f rectPos = s.getPosition() + Vector2f( truePos.x, truePos.y );
+			//s.setPosition( Vector2f( realPos.x + truePos.x, realPos.y + truePos.y ) );
+			sf::RectangleShape re;
+			re.setFillColor( Color::Transparent );
+			re.setOutlineColor( Color::Green );
+			re.setOutlineThickness( 3 );
+			re.setPosition( rectPos.x, rectPos.y );
+			re.setSize( Vector2f( tileSizeX, tileSizeY ) );
+			target->draw( re );
+		}
+
 	}
 }
 
@@ -233,10 +250,11 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 	labels[name] = t;
 }
 
-GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos, int sizex, int sizey, int tilesizex, int tilesizey )
+GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos, int sizex, int sizey, int tilesizex, int tilesizey
+									  , bool displaySelected, bool displayMouseOver )
 {
 	assert( gridSelectors.count( name ) == 0 );
-	GridSelector *gs = new GridSelector( pos, sizex, sizey, tilesizex, tilesizey, this );
+	GridSelector *gs = new GridSelector( pos, sizex, sizey, tilesizex, tilesizey, displaySelected, displayMouseOver, this );
 	gridSelectors[name] = gs;
 	return gs;
 }

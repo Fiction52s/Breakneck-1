@@ -8,6 +8,7 @@
 #include "poly2tri/poly2tri.h"
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include "Physics.h"
 
 using namespace std;
 using namespace sf;
@@ -3395,8 +3396,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	blueKeyType->panel = keyPanel;
 
 	enemySelectPanel = new Panel( "enemyselection", 300, 500, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 3, 32, 32 );
-	
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 3, 32, 32, false, true );
+	//gs->selectedX = -1;
+	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
 	gs->active = false;
 
@@ -3421,7 +3423,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
-	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 3, 1, 32, 32 );
+	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 3, 1, 32, 32, false, true );
 	
 
 	gateSel->Set( 0, 0, s5, "red" );
@@ -4935,9 +4937,45 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+
+
 								if( showPanel == NULL && trackingEnemy != NULL )
 								{
-									if( trackingEnemy->name == "patroller" )
+									V2d a( enemyQuad.getPoint( 0 ).x, enemyQuad.getPoint( 0 ).y );
+									V2d b( enemyQuad.getPoint( 1 ).x, enemyQuad.getPoint( 1 ).y );
+									V2d c( enemyQuad.getPoint( 2 ).x, enemyQuad.getPoint( 2 ).y );
+									V2d d( enemyQuad.getPoint( 3 ).x, enemyQuad.getPoint( 3 ).y );
+
+									bool placementOkay = true;
+									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && placementOkay; ++it )
+									{
+										ActorGroup *ag = (*it).second;
+										for( list<ActorParams*>::iterator git = ag->actors.begin(); git != ag->actors.end(); ++git )
+										{
+											ActorParams *params = (*git);
+											V2d pa( params->boundingQuad[0].position.x, params->boundingQuad[0].position.y );
+											V2d pb( params->boundingQuad[1].position.x, params->boundingQuad[1].position.y );
+											V2d pc( params->boundingQuad[2].position.x, params->boundingQuad[2].position.y );
+											V2d pd( params->boundingQuad[3].position.x, params->boundingQuad[3].position.y );
+											//isQuadTouchingQuad( 
+
+											
+											cout << "testing vs: " << params->type->height << endl;
+											if( isQuadTouchingQuad( pa, pb, pc, pd, a, b, c, d ) )
+											{
+												placementOkay = false;
+												break;
+											}
+											
+										}
+										
+									}
+
+									if( !placementOkay )
+									{
+										MessagePop( "can't place on top of another actor" );
+									}
+									else if( trackingEnemy->name == "patroller" )
 									{
 										showPanel = trackingEnemy->panel;
 										patrolPath.clear();
@@ -7666,7 +7704,20 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				PatrollerParams *patroller = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
 				groups["--"]->actors.push_back( patroller);
 				patroller->group = groups["--"];
-				trackingEnemy = NULL;
+				//trackingEnemy = NULL;
+
+				//trackingEnemy = types[name];
+				//enemySprite.setTexture( trackingEnemy->imageTexture );
+
+				//enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
+				//	trackingEnemy->imageTexture.getSize().y ) );
+
+				//enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
+		
+				//enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
+
+			
+				showPanel = NULL;
 			}
 			
 			
@@ -7679,7 +7730,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//mode = CREATE_ENEMY;
 			//patroller path should get set only from hitting the button within it to start the path check
 
-			showPanel = enemySelectPanel;
+			//showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
 		{
@@ -7804,10 +7855,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				enemyEdgeQuantity, clockwise, speed );
 				groups["--"]->actors.push_back( crawler);
 				crawler->group = groups["--"];
-				trackingEnemy = NULL;
+				//trackingEnemy = NULL;
+				showPanel = NULL;
 			}
 
-			showPanel = enemySelectPanel;
+			//showPanel = enemySelectPanel;
 		}
 	}
 	else if( p->name == "basicturret_options" )
@@ -8102,113 +8154,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 	cout << cb->name << " was " << e << endl;
 }
 
-Panel * EditSession::CreateOptionsPanel( const std::string &name )
-{
-	if( name == "patroller" )
-	{
-		Panel *p = new Panel( "patroller_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-		//p->
-	}
-	if( name == "key" )
-	{
-		Panel *p = new Panel( "key_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddLabel( "teleport_label", Vector2i( 100, 150 ), 20, "teleport" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddCheckBox( "teleport", Vector2i( 180, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
-		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 330 ), 3, 1, 32, 32 );
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-		//p->
-	}
-	else if( name == "crawler" )
-	{
-		Panel *p = new Panel( "crawler_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-	}
-	else if( name == "basicturret" )
-	{
-		Panel *p = new Panel( "basicturret_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
-		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-	}
-	else if( name == "foottrap" )
-	{
-		Panel *p = new Panel( "foottrap_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-	}
-	else if( name == "map" )
-	{
-		Panel *p = new Panel( "map_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
-		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
-		return p;
-	}
-	else if( name == "terrain" )
-	{
-		Panel *p = new Panel( "terrain_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
-		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
-		//p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
-		
-		return p;
-	}
-	else if( name == "light" )
-	{
-		Panel *p = new Panel( "light_options", 240, 300, this );
-		int textBoxX = 130;
-		p->AddButton( "ok", Vector2i( 100, 230 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "255" );
-		p->AddTextBox( "green", Vector2i( textBoxX, 60 ), 60, 3, "0" );
-		p->AddTextBox( "blue", Vector2i( textBoxX, 100 ), 60, 3, "0" );
-		p->AddTextBox( "rad", Vector2i( textBoxX, 140 ), 60, 3, "1" );
-		p->AddTextBox( "bright", Vector2i( textBoxX, 180 ), 60, 3, "1" );
-		
-		p->AddLabel( "red_label", Vector2i( 20, 20 ), 20, "Red: " );
-		p->AddLabel( "green_label", Vector2i( 20, 60 ), 20, "Green: " );
-		p->AddLabel( "blue_label", Vector2i( 20, 100 ), 20, "Blue: " );
-		p->AddLabel( "rad_label", Vector2i( 20, 140 ), 20, "Radius: " );
-		p->AddLabel( "bright_label", Vector2i( 20, 180 ), 20, "Brightness: " );
-		return p;
-	}
-	return NULL;
-}
+
 
 int EditSession::CountSelectedPoints()
 {
@@ -9337,6 +9283,114 @@ int EditSession::IsRemovePointsOkay()
 	return 1;
 }
 
+Panel * EditSession::CreateOptionsPanel( const std::string &name )
+{
+	if( name == "patroller" )
+	{
+		Panel *p = new Panel( "patroller_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
+	if( name == "key" )
+	{
+		Panel *p = new Panel( "key_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddLabel( "teleport_label", Vector2i( 100, 150 ), 20, "teleport" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddCheckBox( "teleport", Vector2i( 180, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
+		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 330 ), 3, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
+	else if( name == "crawler" )
+	{
+		Panel *p = new Panel( "crawler_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "basicturret" )
+	{
+		Panel *p = new Panel( "basicturret_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
+		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "foottrap" )
+	{
+		Panel *p = new Panel( "foottrap_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "map" )
+	{
+		Panel *p = new Panel( "map_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
+		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		return p;
+	}
+	else if( name == "terrain" )
+	{
+		Panel *p = new Panel( "terrain_options", 200, 400, this );
+		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
+		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		//p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
+		
+		return p;
+	}
+	else if( name == "light" )
+	{
+		Panel *p = new Panel( "light_options", 240, 300, this );
+		int textBoxX = 130;
+		p->AddButton( "ok", Vector2i( 100, 230 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "255" );
+		p->AddTextBox( "green", Vector2i( textBoxX, 60 ), 60, 3, "0" );
+		p->AddTextBox( "blue", Vector2i( textBoxX, 100 ), 60, 3, "0" );
+		p->AddTextBox( "rad", Vector2i( textBoxX, 140 ), 60, 3, "1" );
+		p->AddTextBox( "bright", Vector2i( textBoxX, 180 ), 60, 3, "1" );
+		
+		p->AddLabel( "red_label", Vector2i( 20, 20 ), 20, "Red: " );
+		p->AddLabel( "green_label", Vector2i( 20, 60 ), 20, "Green: " );
+		p->AddLabel( "blue_label", Vector2i( 20, 100 ), 20, "Blue: " );
+		p->AddLabel( "rad_label", Vector2i( 20, 140 ), 20, "Radius: " );
+		p->AddLabel( "bright_label", Vector2i( 20, 180 ), 20, "Brightness: " );
+		return p;
+	}
+	return NULL;
+}
+
 void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
@@ -9365,6 +9419,8 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "crawler" )
 	{
 		CrawlerParams *crawler = (CrawlerParams*)selectedActor;
+		Panel *p = type->panel;
+
 	}
 	else if( name == "basicturret" )
 	{
@@ -9373,6 +9429,46 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "foottrap" )
 	{
 		FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
+	}
+	else if( name == "key" )
+	{
+		KeyParams *key = (KeyParams*)selectedActor;
+		Panel *p = type->panel;
+
+		/*p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddLabel( "teleport_label", Vector2i( 100, 150 ), 20, "teleport" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddCheckBox( "teleport", Vector2i( 180, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
+		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 330 ), 3, 1, 32, 32 );
+*/
+		patrolPath = key->GetGlobalPath();
+		
+		p->textBoxes["group"]->text.setString( key->group->name );
+		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>(key->speed) );
+		p->textBoxes["stayframes"]->text.setString( boost::lexical_cast<string>(key->stayFrames) );
+		p->checkBoxes["loop"]->checked = key->loop;
+		p->checkBoxes["teleport"]->checked = key->loop;
+		
+		GridSelector &gs = *p->gridSelectors["keytype"];
+		gs.selectedY = 0;
+		switch( key->gateType )
+		{
+		case GateInfo::RED:
+			gs.selectedX = 0;
+			break;
+		case GateInfo::GREEN:
+			gs.selectedX = 1;
+			break;
+		case GateInfo::BLUE:
+			gs.selectedX = 2;
+			break;
+		}
 	}
 }
 

@@ -3415,6 +3415,8 @@ void Actor::UpdatePrePhysics()
 
 	Wire::WireState oldLeftWireState = leftWire->state;
 	Wire::WireState oldRightWireState = rightWire->state;
+
+
 	if( hasPowerLeftWire && action != GRINDBALL )
 	{
 		leftWire->ClearDebug();
@@ -3497,6 +3499,7 @@ void Actor::UpdatePrePhysics()
 	if( framesInAir > 1 )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
+		lastWire = 0;
 		V2d rwPos = rightWire->storedPlayerPos;
 		V2d lwPos = rightWire->storedPlayerPos;
 		V2d newVel1, newVel2;
@@ -3580,6 +3583,7 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( rightWire->state == Wire::PULLING )
 	{
+		lastWire = 1;
 		V2d wPos = rightWire->storedPlayerPos;
 		V2d wirePoint = wire->anchor.pos;
 		if( wire->numPoints > 0 )
@@ -3699,6 +3703,7 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( leftWire->state == Wire::PULLING  )
 	{
+		lastWire = 2;
 		wire = leftWire;
 		V2d wPos = leftWire->storedPlayerPos;
 		V2d wirePoint = wire->anchor.pos;
