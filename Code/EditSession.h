@@ -267,7 +267,7 @@ struct KeyParams : public ActorParams
 		bool loop,
 		int stayFrames,
 		bool teleport,
-		const std::string &keyType );
+		GateInfo::GateTypes gType );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
@@ -278,7 +278,7 @@ struct KeyParams : public ActorParams
 	float speed;
 	int stayFrames;
 	bool teleport;
-	std::string keyType;
+	GateInfo::GateTypes gateType;
 };
 
 struct CrawlerParams : public ActorParams

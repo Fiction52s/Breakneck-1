@@ -792,7 +792,7 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
-	if( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) )
+	if( hasPowerClones &&  ( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) ) )
 	{
 		if( record == 0 )
 		{
@@ -3494,6 +3494,7 @@ void Actor::UpdatePrePhysics()
 	
 	double accel = .15;
 	double triggerSpeed = 17;
+	if( framesInAir > 1 )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
 		V2d rwPos = rightWire->storedPlayerPos;

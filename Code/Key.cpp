@@ -9,29 +9,26 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Key::Key( GameSession *owner, const string &p_keyType, sf::Vector2i pos, std::list<sf::Vector2i> &pathParam, bool p_loop, float p_speed, int p_stayFrames, bool p_teleport )
+Key::Key( GameSession *owner, Key::KeyType p_keyType, sf::Vector2i pos, std::list<sf::Vector2i> &pathParam, bool p_loop, float p_speed, int p_stayFrames, bool p_teleport )
 	:Enemy( owner, EnemyType::KEY ), dead( false ), deathFrame( 0 )
 {
+	keyType = p_keyType;
 	int keySize = 50;
-	if( p_keyType == "red" )
+	switch( keyType )
 	{
-		keyType = KeyType::RED;
+	case RED:
 		ts = owner->GetTileset( "key.png", keySize, keySize );
-	}
-	else if( p_keyType == "green" )
-	{
-		keyType = KeyType::GREEN;
+		break;
+	case GREEN:
 		ts = owner->GetTileset( "greenkey.png", keySize, keySize );
-	}
-	else if( p_keyType == "blue" )
-	{
-		keyType = KeyType::BLUE;
+		break;
+	case BLUE:
 		ts = owner->GetTileset( "bluekey.png", keySize, keySize );
-	}
-	else
-	{
+		break;
+	default:
 		assert( false );
 	}
+	
 	
 	position.x = pos.x;
 	position.y = pos.y;

@@ -350,6 +350,8 @@ TerrainPolygon::~TerrainPolygon()
 	if( grassVA != NULL )
 		delete grassVA;
 
+	//DestroyEnemies();
+
 	ClearPoints();
 }
 
@@ -363,6 +365,7 @@ void TerrainPolygon::DestroyEnemies()
 			delete (*it);
 		}
 	}
+	enemies.clear();
 }
 
 void TerrainPolygon::Move( Vector2i move )
@@ -1399,9 +1402,30 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 
 	int arraySize = numPoints;
 
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		TerrainPoint *next;
+		if( curr == pointEnd )
+			next = pointStart;
+		else
+			next = curr->next;
+		//eventually this will let you move the points and keep the actors in the right spots. for now just give a popup
+		//more of the code is below
+		
+		if( ( curr->selected || next->selected ) && enemies.count( curr ) > 0 )
+		{
+			//cout << "move not okay" << endl;
+			edit->pointGrab = false;
+			edit->MessagePop( "sorry, in this build you can't yet move points\n that have enemies attached to their edges" );
+			return false;
+		}
+	}
+
 	int i = 0;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
+
+
 		if( curr->selected )
 		{
 			curr->pos += pointGrabDelta - deltas[i];
@@ -1419,10 +1443,23 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 		++i;
 	}
 
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	//eventually going to need this back again!
+
+	/*for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
-		if( curr->selected )
+		TerrainPoint *next;
+		if( curr == pointEnd )
+			next = pointStart;
+		else
+			next = curr->next;
+
+
+		//eventually this will let you move the points and keep the actors in the right spots. for now just give a popup
+		
+		if( curr->selected || next->selected )
 		{
+			//edit->MessagePop( "sorry, in this build you can't yet move points\n that have enemies attached to their edges" );
+			//return false;
 			if( enemies.count( curr ) > 0 )
 			{
 				list<ActorParams*> &en = enemies[curr];
@@ -1432,7 +1469,7 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 				}
 			}
 		}
-	}
+	}*/
 
 	UpdateBounds();
 
@@ -2308,8 +2345,8 @@ bool EditSession::OpenFile( string fileName )
 						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
 					}
 
-					string keyType;
-					is >> keyType;
+					int gateType;
+					is >> gateType;
 
 					bool loop;
 					string loopStr;
@@ -2342,7 +2379,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
-					a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport, keyType );
+					a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport, (GateInfo::GateTypes)gateType );
 				}
 				else if( typeName == "crawler" )
 				{
@@ -2599,6 +2636,7 @@ void EditSession::WriteFile(string fileName)
 
 	if( !hasGoal )
 	{
+		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
 		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
 			<< endl;
 		return;
@@ -2812,6 +2850,15 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	//cout << "brush: " << brush->enemies.size() << endl;
 	//cout << "poly: " << poly->enemies.size() << endl;
 
+	int totalEnemies = brush->enemies.size() + poly->enemies.size();
+	if( totalEnemies > 0 )
+	{
+		stringstream ss;
+		ss << "destroying " << totalEnemies << " enemies to create the polygons.\n Sorry for how messy this is at the moment!";
+		MessagePop( ss.str() );
+		brush->DestroyEnemies();
+		poly->DestroyEnemies();
+	}
 
 	TerrainPolygon z( &grassTex );
 	//1: choose start point
@@ -3050,14 +3097,6 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			{
 				list<ActorParams*> &en = z.enemies[tp];
 				en = currentPoly->enemies[curr];
-				//cout << "cSIze: " << currentPoly->enemies.size() << endl;
-				//cout << "test: " << en.size() << endl;
-				/*for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
-				{
-					(*it)->groundInfo->ground = &z;
-					(*it)->groundInfo->edgeStart = tp;
-					//(*it)->groundInfo->edgeEnd = tp->;
-				}*/
 			}
 			
 			z.AddPoint( tp );
@@ -3378,8 +3417,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 1, s3, "foottrap" );
 	gs->Set( 2, 0, s4, "goal" );
 	gs->Set( 0, 2, s5, "key" );
-	gs->Set( 1, 2, ss0, "greenkey" );
-	gs->Set( 2, 2, ss1, "bluekey" );
+	//gs->Set( 1, 2, ss0, "greenkey" );
+	//gs->Set( 2, 2, ss1, "bluekey" );
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 3, 1, 32, 32 );
@@ -3973,6 +4012,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												{
 													if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
 													{
+														selectedActor = NULL;
+														selectedGate = NULL;
+														selectedLight = NULL;
 														selectedPolygons.push_back( (*it) );
 														(*it)->SetSelected( true );
 													}
@@ -3984,6 +4026,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														{
 															(*selIt)->SetSelected( false );
 														}
+														selectedActor = NULL;
+														selectedGate = NULL;
+														selectedLight = NULL;
 														selectedPolygons.clear();
 														selectedPolygons.push_back( (*it) );
 														(*it)->SetSelected( true );
@@ -4436,6 +4481,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										it != selectedPolygons.end(); ++it )
 									{
 										polygons.remove( (*it) );
+										(*it)->DestroyEnemies();
 										delete (*it);
 									}
 									selectedPolygons.clear();
@@ -7668,7 +7714,26 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			else if( mode == CREATE_ENEMY )
 			{
 				GridSelector * gs = p->gridSelectors["keytype"];
-				KeyParams *key = new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gs->names[gs->selectedX][gs->selectedY] );
+
+				//eventually can convert this between indexes or something to simplify when i have more types
+				string name = gs->names[gs->selectedX][gs->selectedY];
+
+				GateInfo::GateTypes gType;
+				if( name == "red" )
+				{
+					gType = GateInfo::RED;
+				}
+				else if( name == "green" )
+				{
+					gType = GateInfo::GREEN;
+				}
+				else if( name == "blue" )
+				{
+					gType = GateInfo::BLUE;
+				}
+
+				
+				KeyParams *key = new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gType );
 				
 				groups["--"]->actors.push_back( key );
 				key->group = groups["--"];
@@ -8035,7 +8100,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	if( name == "key" )
 	{
 		Panel *p = new Panel( "key_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
@@ -8045,7 +8110,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
 		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 300 ), 3, 1, 32, 32 );
+		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 330 ), 3, 1, 32, 32 );
 		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
 		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
 		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
@@ -9736,22 +9801,22 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
-					 int p_stayFrames, bool p_teleport, const string &p_keyType )
+					 int p_stayFrames, bool p_teleport, GateInfo::GateTypes gType )
 {	
 	position = pos;	
-	keyType = p_keyType;
+	gateType = gType;
 
 	type = edit->types["key"];
 
-	if( keyType == "red" )
+	if( gateType == GateInfo::RED )
 	{
 		image.setTexture( type->imageTexture );
 	}
-	else if( keyType == "green" )
+	else if( gateType == GateInfo::GREEN )
 	{
 		image.setTexture( edit->types["greenkey"]->imageTexture );
 	}
-	else if( keyType == "blue" )
+	else if( gateType == GateInfo::BLUE )
 	{
 		image.setTexture( edit->types["bluekey"]->imageTexture );
 	}
@@ -9812,7 +9877,7 @@ void KeyParams::WriteParamFile( ofstream &of )
 		of << (*it).x  << " " << (*it).y << endl;
 	}
 
-	of << keyType << endl;
+	of << (int)gateType << endl;
 
 	if( loop )
 	{

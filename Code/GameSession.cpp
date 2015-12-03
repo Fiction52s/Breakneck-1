@@ -504,6 +504,7 @@ bool GameSession::OpenFile( string fileName )
 			va = new VertexArray( sf::Triangles , tris.size() * 3 );
 			VertexArray & v = *va;
 			Color testColor( 0x75, 0x70, 0x90 );
+			testColor = Color::White;
 			for( int i = 0; i < tris.size(); ++i )
 			{	
 				p2t::Point *p = tris[i]->GetPoint( 0 );	
@@ -604,7 +605,131 @@ bool GameSession::OpenFile( string fileName )
 
 			//testEdge = edges[currentEdgeIndex];
 			
-			double size = 16;
+			//va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
+
+			va = new VertexArray( sf::Quads, polyPoints * 4 );
+			VertexArray &edgeVa = *va;
+			Color groundColor = Color::Red;
+			Color wallColor = Color::Green;
+			Color steepGroundColor = Color::Magenta;
+			Color steepCeilingColor = Color::Yellow;
+			Color ceilingColor = Color::Cyan;
+			
+			Vector2f *innerPoints = new Vector2f[polyPoints];
+			double in = 0;
+
+			int index = 0;
+			do
+			{
+				Edge *te = testEdge;
+				V2d testN = te->Normal();
+				Color edgeColor;
+				
+
+				//calculate color
+				if( abs( testN.x ) > player.wallThresh ) //wall
+				{
+					edgeColor = wallColor;
+				}
+				else if( testN.y < 0 && testN.y >= -player.steepThresh ) //might be an equal or not equal prob here with checks for player //steepground
+				{
+					edgeColor = steepGroundColor;
+				}
+				else if( testN.y > 0 && testN.y <= player.steepThresh ) //steepceil
+				{
+					edgeColor = steepCeilingColor;
+				}
+				else if( testN.y > 0 ) //ceil
+				{
+					edgeColor = ceilingColor;
+				}
+
+				edgeVa[index*4].color = edgeColor;
+				edgeVa[index*4+1].color = edgeColor;
+				edgeVa[index*4+2].color = edgeColor;
+				edgeVa[index*4+3].color = edgeColor;
+
+				//set positions for quads
+
+				edgeVa[index*4].position = Vector2f( te->v0.x, te->v0.y );
+				edgeVa[index*4+1].position = Vector2f( te->v1.x, te->v1.y );
+
+				V2d bisector0 = normalize( normalize( te->edge0->v0 - te->v0 ) + normalize( te->v1 - te->v0 ) );
+				V2d otherBi0( bisector0.y, -bisector0.x );
+
+				V2d bisector1 = normalize( normalize( te->edge1->v1 - te->v1 ) + normalize( te->v0 - te->v1 ) );
+
+				in = 8;
+
+				//innerPoints[index]
+				V2d in0 = V2d( te->v0 + bisector0 * in );
+				V2d in1 = V2d( te->v1 + bisector1 * in );
+
+				V2d teNormal = -te->Normal();
+				//V2d nextNormal = -te->edge1->Normal();
+				V2d prevNormal = -te->edge0->Normal();
+
+
+
+
+				
+				//if( cross( 
+				//edgeVa[index*4+2].position = Vector2f( in1.x, in1.y );
+				//edgeVa[index*4+3].position = Vector2f( in0.x, in0.y );
+
+				LineIntersection li = lineIntersection( te->edge0->v0 + prevNormal * in, te->v0 + prevNormal * in,
+					te->v0 + teNormal * in, te->v1 + teNormal * in );
+
+				if( li.parallel )
+				{
+
+					V2d in0 = V2d( te->v0 + teNormal * in );
+					V2d in1 = V2d( te->v1 + teNormal * in );
+
+					//edgeVa[index*4+2].position = Vector2f( in1.x, in1.y );
+					//edgeVa[index*4+3].position = Vector2f( in0.x, in0.y );
+					innerPoints[index] = Vector2f( in0.x, in0.y );
+					//cout << "assigning index: " << index << ": " << in0.x << ", " << in0.y << endl;
+				}
+				else
+				{
+					V2d intersect = li.position;
+					
+					innerPoints[index] = Vector2f( intersect.x, intersect.y );
+					//cout << "assigning index: " << index << ": " << intersect.x << ", " << intersect.y << endl;
+					//V2d in0 = V2d( te->v0 + teNormal * in );
+					//V2d in1 = V2d( te->v1 + teNormal * in );
+
+				}
+
+
+
+				++index;
+				testEdge = testEdge->edge1;
+			}
+			while( testEdge != edges[currentEdgeIndex] );
+
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				Vector2f nextPos;
+				if( i == polyPoints - 1 )
+				{
+					nextPos = innerPoints[0];
+				}
+				else
+				{
+					nextPos = innerPoints[i+1];
+				}
+
+				//cout << "i: " << i << ", innerposi: " << innerPoints[i].x << ", " << innerPoints[i].y << ", nextpos: " << nextPos.x << ", " << nextPos.y << endl;
+				edgeVa[i*4+2].position = nextPos;
+				edgeVa[i*4+3].position = innerPoints[i];
+
+			}
+
+			delete [] innerPoints;
+
+			/*double size = 16;
 			double inward = 16;
 			double spacing = 2;
 
@@ -648,6 +773,9 @@ bool GameSession::OpenFile( string fileName )
 			
 		
 			//double amount = totalPerimeter / spacing;
+
+			
+
 
 			va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
 			VertexArray & borderVa = *va;
@@ -875,7 +1003,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 			while( testEdge != edges[currentEdgeIndex] );
 
-
+			*/
 		
 			
 
@@ -1114,8 +1242,8 @@ bool GameSession::OpenFile( string fileName )
 						localPath.push_back( Vector2i( localX, localY ) );
 					}
 
-					string keyType;
-					is >> keyType;
+					int gateType;
+					is >> gateType;
 
 					bool loop;
 					string loopStr;
@@ -1156,7 +1284,7 @@ bool GameSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
 					//a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
-					Key *key = new Key( this, keyType, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
+					Key *key = new Key( this, (Key::KeyType)gateType, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
 					keyList.push_back( key );
 					AddEnemy( key );
 				}
@@ -1430,12 +1558,13 @@ int GameSession::Run( string fileN )
 	//bool goalPlayerCollision = false;
 	int returnVal = 0;
 
-	polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
+	//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
+	polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 256, 256 )->texture );
 	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
 	polyShader.setParameter( "u_normals", *undergroundTilesetNormal->texture );//*GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
-	polyShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
+	//polyShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
@@ -2179,7 +2308,7 @@ int GameSession::Run( string fileN )
 				preScreenTex->draw( *listVAIter->terrainVA );
 			}
 			//cout << "drawing border" << endl;
-			preScreenTex->draw( *listVAIter->va, &borderTex );
+			preScreenTex->draw( *listVAIter->va );//, &borderTex );
 			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
@@ -2256,10 +2385,21 @@ int GameSession::Run( string fileN )
 
 		borderTree->Query( this, minimapRect );
 
+		Color testColor( 0x75, 0x70, 0x90 );
 		listVAIter = listVA;
 		while( listVAIter != NULL )
 		{
+			int vertexCount = listVAIter->terrainVA->getVertexCount();
+			for( int i = 0; i < vertexCount; ++i )
+			{
+				(*listVAIter->terrainVA)[i].color = testColor;
+			}
 			minimapTex->draw( *listVAIter->terrainVA );
+			for( int i = 0; i < vertexCount; ++i )
+			{
+				(*listVAIter->terrainVA)[i].color = Color::White;
+			}
+
 			listVAIter = listVAIter->next;
 		}
 
