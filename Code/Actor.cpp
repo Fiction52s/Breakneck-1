@@ -952,6 +952,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
+
 						action = STEEPCLIMB;
 						frame = 0;
 						break;
@@ -1718,14 +1719,147 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMP;
 				frame = 0;
 				break;
 			}
-			else if( currInput.B && !prevInput.B )
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				action = STANDD;
+				frame = 0;
+				break;
+			}
+
+			if( reversed )
+			{
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+				{
+				
+					if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+							
+						action = STEEPCLIMB;
+
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+					
+				}
+				else
+				{
+					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
+					{
+						action = DASH;
+						frame = 0;
+
+						if( currInput.LLeft() )
+							facingRight = false;
+						else if( currInput.LRight() )
+							facingRight = true;
+					}
+					else if( currInput.LLeft() || currInput.LRight() )
+					{
+						action = RUN;
+						frame = 0;
+					}
+					else if( currInput.LDown() )
+					{
+						action = SLIDE;
+						frame = 0;
+					}
+					else
+					{
+						action = STAND;
+						frame = 0;
+					}
+				}
+			}
+			else
+			{
+			
+				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+				{
+					
+					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPCLIMB;
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+					
+				}
+				else
+				{
+					if( currInput.B || !canStandUp )
+					{
+						action = DASH;
+						frame = 0;
+
+						if( currInput.LLeft() )
+							facingRight = false;
+						else if( currInput.LRight() )
+							facingRight = true;
+					}
+					else if( currInput.LLeft() || currInput.LRight() )
+					{
+						action = RUN;
+						frame = 0;
+						facingRight = currInput.LRight();
+					}
+					else if( currInput.LDown() )
+					{
+						action = SLIDE;
+						frame = 0;
+					}
+					else
+					{
+						action = STAND;
+						frame = 0;
+					}
+				}
+			}
+		
+
+
+
+
+
+
+
+
+
+			
+			/*else if( currInput.B && !prevInput.B )
 			{
 					action = DASH;
 					frame = 0;
@@ -1762,7 +1896,7 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 					break;
 				}
-			}
+			}*/
 		}
 	case SPRINT:
 		{
@@ -4535,6 +4669,7 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else if( e0n.x > 0 )
 							{
+								facingRight = false;
 								action = STEEPCLIMB;
 								frame = 0;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -4684,6 +4819,8 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else if( e1n.x < 0 )
 							{
+								cout << "setting to climb??" << endl;
+								facingRight = true;
 								action = STEEPCLIMB;
 								frame = 0;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5554,6 +5691,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
+									facingRight = true;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5564,6 +5702,7 @@ void Actor::UpdatePhysics()
 							}
 							else if( e0n.x > 0 )
 							{
+								facingRight = false;
 								action = STEEPCLIMB;
 								frame = 0;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5677,6 +5816,7 @@ void Actor::UpdatePhysics()
 								else
 								{
 									//cout << "slidin" << endl;
+									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5687,6 +5827,8 @@ void Actor::UpdatePhysics()
 							}
 							else if( e1n.x < 0 )
 							{
+								cout << "this here??" << endl;
+								facingRight = true;
 								action = STEEPCLIMB;
 								frame = 0;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
