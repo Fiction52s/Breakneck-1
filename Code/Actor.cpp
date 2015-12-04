@@ -3703,21 +3703,21 @@ void Actor::UpdatePrePhysics()
 		double dotvel =dot( velocity, otherDir );
 		if( dotvel > 0 )
 		{
-			velocity += -otherDir * 1.0;
+			velocity += -otherDir * 1.0 / (double)slowMultiple;
 		}
 		else if( dotvel < 0 )
 		{
-			velocity += otherDir * 1.0;
+			velocity += otherDir * 1.0 / (double)slowMultiple;
 		}
 		else
 		{
 		}
 		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
-		velocity += totalVelDir * 3.0;
+		velocity += totalVelDir * 3.0 / (double)slowMultiple;
 	}
 	else if( rightWire->state == Wire::PULLING )
 	{
-		lastWire = 1;
+		//lastWire = 1;
 		V2d wPos = rightWire->storedPlayerPos;
 		V2d wirePoint = wire->anchor.pos;
 		if( wire->numPoints > 0 )
@@ -3837,7 +3837,7 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( leftWire->state == Wire::PULLING  )
 	{
-		lastWire = 2;
+		//lastWire = 2;
 		wire = leftWire;
 		V2d wPos = leftWire->storedPlayerPos;
 		V2d wirePoint = wire->anchor.pos;
@@ -3956,6 +3956,10 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+	if( ground != NULL )
+	{
+		lastWire = 0;
+	}
 
 	
 	
@@ -4819,7 +4823,7 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else if( e1n.x < 0 )
 							{
-								cout << "setting to climb??" << endl;
+								//cout << "setting to climb??" << endl;
 								facingRight = true;
 								action = STEEPCLIMB;
 								frame = 0;
@@ -5691,7 +5695,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									facingRight = true;
+									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5816,7 +5820,7 @@ void Actor::UpdatePhysics()
 								else
 								{
 									//cout << "slidin" << endl;
-									facingRight = false;
+									facingRight = true;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10048,10 +10052,49 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
+
+	int showMotionGhosts = 0;
+	if( ground != NULL )
 	{
-		motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
-		target->draw( motionGhosts[i] );
+		double gs = abs( groundSpeed );
+		if( gs >= dashSpeed )
+		{
+			showMotionGhosts = 1;
+		}
+		else if( gs >= dashSpeed * 2 )
+		{
+			showMotionGhosts = 2;
+		}
+		else if( gs >= dashSpeed * 3 )
+		{
+			showMotionGhosts = MAX_MOTION_GHOSTS;
+		}
+	}
+	else
+	{
+		double len = length( velocity );
+		if( len >= dashSpeed )
+		{
+			showMotionGhosts = 2;
+		}
+		else if( len >= dashSpeed * 2 )
+		{
+			showMotionGhosts = MAX_MOTION_GHOSTS;
+		}
+		else
+		{
+			showMotionGhosts = 1;
+		}
+	}
+
+	if( showMotionGhosts )
+	{
+		for( int i = 0; i < showMotionGhosts; ++i )
+		{
+		
+			motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
+			target->draw( motionGhosts[i] );
+		}
 	}
 
 	if( action != GRINDBALL )

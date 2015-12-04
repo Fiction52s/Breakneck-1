@@ -177,6 +177,10 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				state = PULLING;
 			}
+			else if( player->ground != NULL && hitStallCounter >= hitStallFrames && prevTriggerDown && !triggerDown )
+			{
+				state = RELEASED;
+			}
 			break;
 		}
 	case PULLING:
