@@ -10061,13 +10061,9 @@ void Actor::Draw( sf::RenderTarget *target )
 		{
 			showMotionGhosts = 1;
 		}
-		else if( gs >= dashSpeed * 2 )
+		else if( gs >= dashSpeed * 1.5 )
 		{
 			showMotionGhosts = 2;
-		}
-		else if( gs >= dashSpeed * 3 )
-		{
-			showMotionGhosts = MAX_MOTION_GHOSTS;
 		}
 	}
 	else
@@ -10076,10 +10072,6 @@ void Actor::Draw( sf::RenderTarget *target )
 		if( len >= dashSpeed )
 		{
 			showMotionGhosts = 2;
-		}
-		else if( len >= dashSpeed * 2 )
-		{
-			showMotionGhosts = MAX_MOTION_GHOSTS;
 		}
 		else
 		{
