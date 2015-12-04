@@ -5289,6 +5289,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							else if( menuSelection == "upperleft" )
 							{
 								mode = CREATE_ENEMY;
+								trackingEnemy = NULL;
 								showPanel = enemySelectPanel;
 							}
 							else if( menuSelection == "upperright" )
@@ -5365,11 +5366,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( selectedActor != NULL )
 								{
 									showPanel = selectedActor->type->panel;
+									((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 									mode = EDIT;
 								}
 								else
 								{
 									showPanel = trackingEnemy->panel;
+									
 									mode = CREATE_ENEMY;
 								}
 								
@@ -7776,7 +7779,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				PatrollerParams *patroller = (PatrollerParams*)selectedActor;
 				patroller->speed = speed;
 				patroller->loop = loop;
-				patroller->SetPath( patrolPath );
+				//patroller->SetPath( patrolPath );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -7796,9 +7799,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				//enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
 
 			
-				showPanel = NULL;
+				
 			}
-			
+			showPanel = NULL;
 			
 
 			//ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
@@ -7861,6 +7864,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				key->stayFrames = stayFrames;
 				key->teleport = teleport;
 				key->SetPath( patrolPath );
+				
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -7889,9 +7893,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				groups["--"]->actors.push_back( key );
 				key->group = groups["--"];
 				//trackingEnemy = NULL;
-				showPanel = NULL;
+				
 			}
-
+			showPanel = NULL;
 			//showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
@@ -7936,9 +7940,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				groups["--"]->actors.push_back( crawler);
 				crawler->group = groups["--"];
 				//trackingEnemy = NULL;
-				showPanel = NULL;
+				
 			}
-
+			showPanel = NULL;
 			//showPanel = enemySelectPanel;
 		}
 	}
@@ -7985,9 +7989,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				groups["--"]->actors.push_back( basicTurret );
 				basicTurret->group = groups["--"];
 				//trackingEnemy = NULL;
-				showPanel = NULL;
+				
 			}
-
+			showPanel = NULL;
 			//showPanel = enemySelectPanel;
 		}	
 	}
@@ -8009,7 +8013,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				trackingEnemy = NULL;
 				showPanel = NULL;
 			}
-
+			showPanel = NULL;
 			//showPanel = enemySelectPanel;
 		}
 	}
@@ -10139,6 +10143,7 @@ void KeyParams::WriteParamFile( ofstream &of )
 
 PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
 {	
+	lines = NULL;
 	position = pos;	
 	type = edit->types["patroller"];
 
@@ -10176,21 +10181,84 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 
 void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
+	if( lines != NULL )
+	{
+		delete lines;
+		lines = NULL;
+	}
+	
+	
+	
+
 	localPath.clear();
 	if( globalPath.size() > 1 )
 	{
+
+		int numLines = globalPath.size();
+	
+		lines = new VertexArray( sf::LinesStrip, numLines );
+		cout << "numlines: " << numLines << endl;
+		VertexArray &li = *lines;
+		li[0].position = Vector2f( 0, 0 );
+		li[0].color = Color::Magenta;
+
+		int index = 1;
 		list<Vector2i>::iterator it = globalPath.begin();
 		++it;
 		for( ; it != globalPath.end(); ++it )
 		{
+			
 			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
 			localPath.push_back( temp );
+
+			cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f( temp.x, temp.y );
+			li[index].color = Color::Magenta;
+			++index;
 		}
 	}
+
+	
+	
 }
 
 void PatrollerParams::Draw( sf::RenderTarget *target )
 {
+	VertexArray &li = *lines;
+	int localPathSize = localPath.size();
+	if( localPathSize > 0 )
+	{
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position += Vector2f( position.x, position.y );
+		}
+	}
+	
+	target->draw( li );
+
+	
+
+	if( loop )
+	{
+
+		//draw the line between the first and last
+		sf::Vertex vertices[2] =
+		{
+			sf::Vertex(li[localPathSize].position, Color::Magenta),
+			sf::Vertex(li[0].position, Color::White )
+		};
+
+		target->draw(vertices, 2, sf::Lines);
+	}
+
+	if( localPathSize > 0 )
+	{
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position -= Vector2f( position.x, position.y );
+		}
+	}
+
 	target->draw( image );
 }
 

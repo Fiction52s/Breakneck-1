@@ -254,6 +254,7 @@ struct PatrollerParams : public ActorParams
 	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw( sf::RenderTarget *target );
 	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
 	bool loop;
 	float speed;
 };
