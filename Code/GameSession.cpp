@@ -27,11 +27,23 @@ using namespace sf;
 //
 //Wall - 6688ee
 
-#define COLOR_GROUND Color( 0x11, 0x55, 0xaa )
-#define COLOR_STEEP_GROUND Color( 0x44, 0x88, 0xcc )
-#define COLOR_STEEP_CEILING Color( 0x55, 0xaa, 0xff )
-#define COLOR_CEILING Color( 0x88, 0xcc, 0xff )
-#define COLOR_WALL Color( 0x66, 0x88, 0xee )
+
+//Ground - 0d2d7d
+//
+//Steep Floor - 2244cc
+//
+//Wall - 0088cc
+//
+//Steep Ceiling - 2dcded
+//
+//Ceiling - 99ffff
+
+
+#define COLOR_GROUND Color( 0x1d, 0x2d, 0x7d )
+#define COLOR_STEEP_GROUND Color( 0x22, 0x44, 0xcc )
+#define COLOR_STEEP_CEILING Color( 0x2d, 0xcd, 0xed )
+#define COLOR_CEILING Color( 0x99, 0xff, 0xff )
+#define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
@@ -1580,7 +1592,7 @@ int GameSession::Run( string fileN )
 	int returnVal = 0;
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
-	polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 256, 256 )->texture );
+	polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 512, 512 )->texture );
 	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 

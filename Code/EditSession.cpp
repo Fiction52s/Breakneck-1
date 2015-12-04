@@ -2852,10 +2852,38 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	//cout << "poly: " << poly->enemies.size() << endl;
 
 	int totalEnemies = brush->enemies.size() + poly->enemies.size();
-	if( totalEnemies > 0 )
+	int totalGates = 0;
+
+	for( TerrainPoint *curr = brush->pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->gate != NULL )
+		{
+			GateInfo *g = curr->gate;
+			curr->gate->point0->gate = NULL;	
+			curr->gate->point1->gate = NULL;
+			gates.remove( g );
+			totalGates++;
+			delete g;
+		}
+	}
+	for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->gate != NULL )
+		{
+			GateInfo *g = curr->gate;
+			gates.remove( g );
+			g->point0->gate = NULL;	
+			g->point1->gate = NULL;
+			
+			totalGates++;
+			delete g;
+		}
+	}
+
+	if( totalEnemies > 0 || totalGates > 0)
 	{
 		stringstream ss;
-		ss << "destroying " << totalEnemies << " enemies to create the polygons.\n Sorry for how messy this is at the moment!";
+		ss << "destroying " << totalEnemies << " enemies, and " <<  totalGates << " gates to create the polygons.\n Sorry for how messy this is at the moment!";
 		MessagePop( ss.str() );
 		brush->DestroyEnemies();
 		poly->DestroyEnemies();
@@ -4941,12 +4969,28 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( showPanel == NULL && trackingEnemy != NULL )
 								{
-									V2d a( enemyQuad.getPoint( 0 ).x, enemyQuad.getPoint( 0 ).y );
-									V2d b( enemyQuad.getPoint( 1 ).x, enemyQuad.getPoint( 1 ).y );
-									V2d c( enemyQuad.getPoint( 2 ).x, enemyQuad.getPoint( 2 ).y );
-									V2d d( enemyQuad.getPoint( 3 ).x, enemyQuad.getPoint( 3 ).y );
-
 									bool placementOkay = true;
+									//air enemy
+									if( enemyQuad.getLocalBounds().width == 0 ) 
+									{
+										
+									}
+									else
+									{
+									
+
+									sf::Transform tf = enemyQuad.getTransform();
+									
+									Vector2f fa = tf.transformPoint( enemyQuad.getPoint( 0 ) );
+									Vector2f fb = tf.transformPoint( enemyQuad.getPoint( 1 ) );
+									Vector2f fc = tf.transformPoint( enemyQuad.getPoint( 2 ) );
+									Vector2f fd = tf.transformPoint( enemyQuad.getPoint( 3 ) );
+									V2d a( fa.x, fa.y );
+									V2d b( fb.x, fb.y );
+									V2d c( fc.x, fc.y );
+									V2d d( fd.x, fd.y );
+
+									
 									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && placementOkay; ++it )
 									{
 										ActorGroup *ag = (*it).second;
@@ -4959,16 +5003,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											V2d pd( params->boundingQuad[3].position.x, params->boundingQuad[3].position.y );
 											//isQuadTouchingQuad( 
 
-											
+											cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y <<
+												", " << c.x << ", " << c.y << ", " << d.x << ", " << d.y << endl;
+											cout << "pa: " << pa.x << ", " << pa.y << ", pb: " << pb.x << ", " << pb.y <<
+												", " << pc.x << ", " << pc.y << ", " << pd.x << ", " << pd.y << endl;
+
 											cout << "testing vs: " << params->type->height << endl;
 											if( isQuadTouchingQuad( pa, pb, pc, pd, a, b, c, d ) )
 											{
+												cout << "IS TOUCHING" << endl;
 												placementOkay = false;
 												break;
 											}
 											
 										}
 										
+									}
+
 									}
 
 									if( !placementOkay )
@@ -4978,6 +5029,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									else if( trackingEnemy->name == "patroller" )
 									{
 										showPanel = trackingEnemy->panel;
+
+										showPanel->textBoxes["name"]->text.setString( "test" );
+										showPanel->textBoxes["group"]->text.setString( "not test" );
+										showPanel->textBoxes["speed"]->text.setString( "10" );
+										showPanel->checkBoxes["loop"]->checked = false;
+
+
 										patrolPath.clear();
 										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 
@@ -4988,6 +5046,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									else if( trackingEnemy->name == "key" )
 									{
 										showPanel = trackingEnemy->panel;
+
+										showPanel->textBoxes["name"]->text.setString( "test" );
+										showPanel->textBoxes["group"]->text.setString( "not test" );
+										showPanel->textBoxes["speed"]->text.setString( "10" );
+										showPanel->checkBoxes["loop"]->checked = false;
+										showPanel->checkBoxes["teleport"]->checked = false;
+
+										showPanel->gridSelectors["keytype"]->selectedX = 0;
+										
+										//SetPanelDefault( trackingEnemy );
 										patrolPath.clear();
 										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
@@ -4997,6 +5065,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
+											showPanel->checkBoxes["clockwise"]->checked = false;
+											showPanel->textBoxes["speed"]->text.setString( "10" );
 											//trackingEnemy = NULL;
 										}
 									}
@@ -5005,6 +5077,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
+											showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
+											showPanel->textBoxes["waitframes"]->text.setString( "10" );
 										}
 									}
 									else if( trackingEnemy->name == "foottrap" )
@@ -5012,7 +5088,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( enemyEdgePolygon != NULL )
 										{
 											showPanel = trackingEnemy->panel;
-
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
 											/*showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new ActorParams;
@@ -5026,7 +5103,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( enemyEdgePolygon != NULL )
 										{
-											showPanel = trackingEnemy->panel;
+											//showPanel = trackingEnemy->panel;
+											showPanel = enemySelectPanel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity );
@@ -5070,6 +5148,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( trackingEnemy != NULL )
 								{
 									trackingEnemy = NULL;
+									showPanel = enemySelectPanel;
 								}
 							}
 							break;
@@ -7809,10 +7888,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				
 				groups["--"]->actors.push_back( key );
 				key->group = groups["--"];
-				trackingEnemy = NULL;
+				//trackingEnemy = NULL;
+				showPanel = NULL;
 			}
 
-			showPanel = enemySelectPanel;
+			//showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
 		{
@@ -7904,10 +7984,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				enemyEdgeQuantity, bulletSpeed, framesWait );
 				groups["--"]->actors.push_back( basicTurret );
 				basicTurret->group = groups["--"];
-				trackingEnemy = NULL;
+				//trackingEnemy = NULL;
+				showPanel = NULL;
 			}
 
-			showPanel = enemySelectPanel;
+			//showPanel = enemySelectPanel;
 		}	
 	}
 	else if( p->name == "foottrap_options" )
@@ -7926,9 +8007,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				groups["--"]->actors.push_back( footTrap );
 				footTrap->group = groups["--"];
 				trackingEnemy = NULL;
+				showPanel = NULL;
 			}
 
-			showPanel = enemySelectPanel;
+			//showPanel = enemySelectPanel;
 		}
 	}
 	else if( p->name == "map_options" )
@@ -9391,12 +9473,22 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	return NULL;
 }
 
+void EditSession::SetPanelDefault( ActorType *type )
+{
+	if( type->name == "key" )
+	{
+
+	}
+}
+
 void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
 	//need to be able to apply paths simultaneously to multiples also
 	ActorType *type = selectedActor->type;
 	string name = type->name;
+
+	Panel *p = type->panel;
 
 	if( name == "patroller" )
 	{
@@ -9410,7 +9502,11 @@ void EditSession::SetEnemyEditPanel()
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );*/
-		Panel *p = type->panel;
+		
+
+
+		p->textBoxes["group"]->text.setString( patroller->group->name );
+
 		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( patroller->speed ) );
 		p->checkBoxes["loop"]->checked = patroller->loop;
 		patrolPath = patroller->GetGlobalPath();
@@ -9419,16 +9515,35 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "crawler" )
 	{
 		CrawlerParams *crawler = (CrawlerParams*)selectedActor;
-		Panel *p = type->panel;
+		
+		p->textBoxes["group"]->text.setString( crawler->group->name );
 
+		p->checkBoxes["clockwise"]->checked = crawler->clockwise;
+		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( crawler->speed ) );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+
+		
+		showPanel = p;
 	}
 	else if( name == "basicturret" )
 	{
 		BasicTurretParams *basicTurret = (BasicTurretParams*)selectedActor;
+
+		//p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
+		//p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->textBoxes["group"]->text.setString( basicTurret->group->name );
+		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( basicTurret->bulletSpeed ) );
+		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( basicTurret->framesWait ) );
+		showPanel = p;
 	}
 	else if( name == "foottrap" )
 	{
 		FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
+
+		p->textBoxes["group"]->text.setString( footTrap->group->name );
+
+		showPanel = p;
 	}
 	else if( name == "key" )
 	{
@@ -9469,6 +9584,8 @@ void EditSession::SetEnemyEditPanel()
 			gs.selectedX = 2;
 			break;
 		}
+
+		showPanel = p;
 	}
 }
 

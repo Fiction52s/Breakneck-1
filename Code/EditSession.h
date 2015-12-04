@@ -369,7 +369,7 @@ struct EditSession : GUIHandler
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
-
+	void SetPanelDefault( ActorType *type );
 	
 	bool PolyIntersectGate( TerrainPolygon &poly );
 	std::list<GateInfo*> gates;
