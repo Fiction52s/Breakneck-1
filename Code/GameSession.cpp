@@ -39,7 +39,7 @@ using namespace sf;
 //Ceiling - 99ffff
 
 
-#define COLOR_GROUND Color( 0x1d, 0x2d, 0x7d )
+#define COLOR_GROUND Color( 0x0d, 0x2d, 0x7d )
 #define COLOR_STEEP_GROUND Color( 0x22, 0x44, 0xcc )
 #define COLOR_STEEP_CEILING Color( 0x2d, 0xcd, 0xed )
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
@@ -2389,7 +2389,7 @@ int GameSession::Run( string fileN )
 
 		
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );

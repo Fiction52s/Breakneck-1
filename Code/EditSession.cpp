@@ -3423,7 +3423,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	greenKeyType->panel = keyPanel;
 	blueKeyType->panel = keyPanel;
 
-	enemySelectPanel = new Panel( "enemyselection", 300, 500, this );
+	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
 	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 3, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
@@ -10041,6 +10041,7 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
 					 int p_stayFrames, bool p_teleport, GateInfo::GateTypes gType )
 {	
+	lines = NULL;
 	position = pos;	
 	gateType = gType;
 
@@ -10077,21 +10078,76 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 
 void KeyParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
+	if( lines != NULL )
+	{
+		delete lines;
+		lines = NULL;
+	}
+
 	localPath.clear();
 	if( globalPath.size() > 1 )
 	{
+		int numLines = globalPath.size();
+	
+		lines = new VertexArray( sf::LinesStrip, numLines );
+		VertexArray &li = *lines;
+		li[0].position = Vector2f( 0, 0 );
+		li[0].color = Color::Magenta;
+
+		int index = 1;
 		list<Vector2i>::iterator it = globalPath.begin();
 		++it;
 		for( ; it != globalPath.end(); ++it )
 		{
 			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
 			localPath.push_back( temp );
+
+			li[index].position = Vector2f( temp.x, temp.y );
+			li[index].color = Color::Magenta;
+			++index;
 		}
 	}
 }
 
 void KeyParams::Draw( sf::RenderTarget *target )
 {
+	int localPathSize = localPath.size();
+
+	if( localPathSize > 0 )
+	{
+		VertexArray &li = *lines;
+	
+	
+			for( int i = 0; i < localPathSize+1; ++i )
+			{
+				li[i].position += Vector2f( position.x, position.y );
+			}
+	
+	
+		target->draw( li );
+
+	
+
+		if( loop )
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White )
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+	
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position -= Vector2f( position.x, position.y );
+		}
+	}
+
 	target->draw( image );
 }
 
@@ -10197,7 +10253,6 @@ void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
 		int numLines = globalPath.size();
 	
 		lines = new VertexArray( sf::LinesStrip, numLines );
-		cout << "numlines: " << numLines << endl;
 		VertexArray &li = *lines;
 		li[0].position = Vector2f( 0, 0 );
 		li[0].color = Color::Magenta;
@@ -10211,7 +10266,7 @@ void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
 			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
 			localPath.push_back( temp );
 
-			cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
 			li[index].position = Vector2f( temp.x, temp.y );
 			li[index].color = Color::Magenta;
 			++index;
@@ -10224,35 +10279,37 @@ void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
 
 void PatrollerParams::Draw( sf::RenderTarget *target )
 {
-	VertexArray &li = *lines;
 	int localPathSize = localPath.size();
+
 	if( localPathSize > 0 )
 	{
-		for( int i = 0; i < localPathSize+1; ++i )
+		VertexArray &li = *lines;
+	
+	
+			for( int i = 0; i < localPathSize+1; ++i )
+			{
+				li[i].position += Vector2f( position.x, position.y );
+			}
+	
+	
+		target->draw( li );
+
+	
+
+		if( loop )
 		{
-			li[i].position += Vector2f( position.x, position.y );
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White )
+			};
+
+			target->draw(vertices, 2, sf::Lines);
 		}
-	}
-	
-	target->draw( li );
 
 	
-
-	if( loop )
-	{
-
-		//draw the line between the first and last
-		sf::Vertex vertices[2] =
-		{
-			sf::Vertex(li[localPathSize].position, Color::Magenta),
-			sf::Vertex(li[0].position, Color::White )
-		};
-
-		target->draw(vertices, 2, sf::Lines);
-	}
-
-	if( localPathSize > 0 )
-	{
 		for( int i = 0; i < localPathSize+1; ++i )
 		{
 			li[i].position -= Vector2f( position.x, position.y );

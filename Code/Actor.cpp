@@ -4524,6 +4524,7 @@ V2d Actor::UpdateReversePhysics()
 								}
 								else
 								{
+									facingRight = true;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -4672,6 +4673,7 @@ V2d Actor::UpdateReversePhysics()
 								}
 								else
 								{
+									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6543,6 +6545,8 @@ void Actor::UpdatePhysics()
 				//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
+				//cout << "offsetX: " << offsetX << endl;
+
 				//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
 				if( false )
 				{
@@ -7469,7 +7473,7 @@ void Actor::UpdatePostPhysics()
 		if( ground != NULL )
 		{
 			double angle = GroundedAngle();
-
+			cout << "angle: " << angle << endl;
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
@@ -10181,10 +10185,12 @@ double Actor::GroundedAngle()
 {
 	if( ground == NULL )
 	{
+		//cout << "ground is null" << endl;
 		return 0;
 	}
 	
 	V2d gn = ground->Normal();
+	//cout << "gn: " << gn.x << ", " << gn.y << endl;
 
 	double angle = 0;
 	
@@ -10193,8 +10199,10 @@ double Actor::GroundedAngle()
 	{
 		V2d e0n = ground->edge0->Normal();
 		V2d e1n = ground->edge1->Normal();
-		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 )
-		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) && e1n.x > 0 );
+		bool a = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 );
+		bool b =( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) && e1n.x > 0 );
+		extraCase = a || b;
+		//cout << "extra: " << extraCase << endl;
 	}
 	else
 	{
@@ -10208,8 +10216,15 @@ double Actor::GroundedAngle()
 	}
 	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
 	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
-	if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
+	//cout << "offsetX: " << offsetX << ", b.rw: " << b.rw << endl;
+
+	//approxequals is broken????????
+
+	//note: approxequals is broken??
+	bool okayOffset = abs( abs(offsetX) - b.rw ) < .001;
+	if( !okayOffset || extraCase )
 	{
+		//cout << "bad offset: " << offsetX << endl;
 		if( reversed )
 			angle = PI;
 	}
