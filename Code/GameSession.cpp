@@ -45,14 +45,28 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
-
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
-	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 )
+	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
+	onTopPar( sf::Quads, 4 * 6 )
 {
 	usePolyShader = true;
 	minimapTex = miniTex;
 
+	ts_keyHolder = GetTileset( "keyholder.png", 115, 40 );
+	keyHolderSprite.setTexture( *ts_keyHolder->texture );
+	keyHolderSprite.setPosition( 10, 50 );
+
+	if (!onTopShader.loadFromFile("ontop_shader.frag", sf::Shader::Fragment ) )
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+		usePolyShader = false;
+	}
+
+	
+	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -2119,11 +2133,15 @@ int GameSession::Run( string fileN )
 		//cloudView.setSize( 1920, 1080 );
 		cloudView.setCenter( 960, 540 );
 		
+		preScreenTex->setView( view );
+
+		SetParOnTop( preScreenTex );
+
 		//cavedepth
-		if( SetGroundPar() )
+		//if( SetGroundPar() )
 		{
-			preScreenTex->draw( groundPar, &mountain01Tex );
-			preScreenTex->draw( underTransPar, &underTrans01Tex );
+		//	preScreenTex->draw( groundPar, &mountain01Tex );
+			//preScreenTex->draw( underTransPar, &underTrans01Tex );
 		}
 	
 		cloudView.setCenter( 960, 540 );	
@@ -2236,7 +2254,7 @@ int GameSession::Run( string fileN )
 		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 		//cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
-		polyShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
+		polyShader.setParameter( "Resolution", 1920, 1080 );// window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
 		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y + view.getSize().y / 2 );
@@ -2489,7 +2507,8 @@ int GameSession::Run( string fileN )
 		const Texture &miniTex = minimapTex->getTexture();
 
 		Sprite minimapSprite( miniTex );
-		minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
+		//minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
+		minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
 		//minimapSprite.setScale( .5, .5 );
 		minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 
@@ -2499,6 +2518,36 @@ int GameSession::Run( string fileN )
 		//window->setView( uiView );
 	//	window->draw( healthSprite );
 		powerBar.Draw( preScreenTex );
+
+		preScreenTex->draw( keyHolderSprite );
+
+
+		sf::RectangleShape keyR( Vector2f( 33, 33 ) );
+		keyR.setPosition( keyHolderSprite.getPosition().x + 4, keyHolderSprite.getPosition().y + 4 );
+		if( player.hasRedKey )
+		{
+			//keyR.setPosition( keyHolderSprite.getPosition().x + 3, keyHolderSprite.getPosition().y + 4 );
+			keyR.setFillColor( Color::Red );
+			preScreenTex->draw( keyR );
+		//	cout << "drawing red key" << endl; 
+		}
+
+		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
+		if( player.hasBlueKey )
+		{
+			keyR.setFillColor( Color::Blue );
+			preScreenTex->draw( keyR );
+			//cout << "drawing blue key" << endl; 
+		}
+
+		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
+		if( player.hasGreenKey )
+		{
+			
+			keyR.setFillColor( Color::Green );
+			preScreenTex->draw( keyR );
+		//	cout << "drawing green key" << endl; 
+		}
 
 		if( showFrameRate )
 		{
@@ -2539,10 +2588,9 @@ int GameSession::Run( string fileN )
 	//	preScreenTex->setSmooth( true );
 		
 		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
-		
 		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
 		cloneShader.setParameter( "newscreen", player.percentCloneChanged );
-		cloneShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
+		cloneShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
 		cloneShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
@@ -2550,8 +2598,8 @@ int GameSession::Run( string fileN )
 
 		cloneShader.setParameter( "bubbleRadius", player.bubbleRadius );
 		
-		float windowx = window->getSize().x;
-		float windowy = window->getSize().y;
+		float windowx = 1920;//window->getSize().x;
+		float windowy = 1080;//window->getSize().y;
 
 		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[0].x, player.bubblePos[0].y ) );
 		Vector2f pos0( vi0.x / windowx, -1 + vi0.y / windowy ); 
@@ -2848,8 +2896,8 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	}
 
 	
-	float windowx = window->getSize().x;
-	float windowy = window->getSize().y;
+	float windowx = 1920;//window->getSize().x;
+	float windowy = 1080;//window->getSize().y;
 	//cout << "windowx: " << windowx << ", " << windowy << endl;
 	if( lightsAtOnce > 0 )
 	{
@@ -3703,11 +3751,104 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 }
 
+void GameSession::SetParOnTop( sf::RenderTarget *target )
+{
+	//closeBack0.setPosition( -960, -400 );
+	//closeBack0.setTextureRect( IntRect( 0, 0, 1920, 400 ) );
+	//closeBack0.setColor( Color::Red );
+	
+	sf::RectangleShape rs;
+	rs.setSize( Vector2f( view.getSize().x, 540 / 2 + 2 ) );
+	rs.setFillColor( Color::White );
+	rs.setPosition( view.getCenter().x - view.getSize().x / 2, -540 / 2 - 2 );
+
+	onTopShader.setParameter( "Resolution", 1920, 1080 );
+	onTopShader.setParameter( "zoom", cam.GetZoom() );
+	onTopShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
+		view.getCenter().y + view.getSize().y / 2 + 2 );
+
+	preScreenTex->draw( rs, &onTopShader );
+	//preScreenTex->draw( rs );
+
+
+	/*int tilesWide = 3;
+	int totalWidth = 1920 * tilesWide;
+	int camLeft = view.getCenter().x - view.getSize().x / 2;
+	int camRight = view.getCenter().x + view.getSize().x / 2;
+	int diff = camLeft / totalWidth;
+
+	sf::RectangleShape r0( Vector2f( 1920, 400 ) );
+
+	r0.setPosition( diff * totalWidth, -400 );
+	r0.setFillColor( Color::Red );
+
+	preScreenTex->draw( r0 );
+
+	r0.setPosition( 1920 + diff * totalWidth, -400 );
+	r0.setFillColor( Color::Green );
+
+	preScreenTex->draw( r0 );
+
+	r0.setPosition( 1920 * 2 + diff * totalWidth, -400 );
+	r0.setFillColor( Color::Blue );
+
+	
+	preScreenTex->draw( r0 );*/
+
+
+	
+	/*int tilesWide = 6;
+	int zoom = 1;
+	int height = 400;
+	int width = 1920;
+	int totalWidth = width * tilesWide;
+	for( int i = 0; i < tilesWide; ++i )
+	{
+		onTopPar[i*4].color = Color::Blue;
+		onTopPar[i*4+1].color= Color::Red;
+		onTopPar[i*4+2].color= Color::Red;
+		onTopPar[i*4+3].color= Color::Blue;
+	}
+
+	Vector2f delta;
+	delta.x = cam.pos.x / zoom;
+	delta.y = cam.pos.y / zoom;
+
+	cout << "blah: " << (int)cam.pos.x % totalWidth << endl;
+	for( int i = 0; i < tilesWide; ++i )
+	{
+		int x;
+		if( cam.pos.x >= 0 )
+		{
+			x = i * width + cam.pos.x - ;//- (int)cam.pos.x % totalWidth;
+
+			onTopPar[i*4].position = Vector2f( x, -height );
+			onTopPar[i*4+1].position = Vector2f( x + width, -height );
+			onTopPar[i*4+2].position = Vector2f( x + width, 0 );
+			onTopPar[i*4+3].position = Vector2f( x, 0 );
+		}
+		else
+		{
+			x = i * width + cam.pos.x - (int)cam.pos.x % totalWidth;
+			onTopPar[i*4].position = Vector2f( x, -height );
+			onTopPar[i*4+1].position = Vector2f( x + width, -height );
+			onTopPar[i*4+2].position = Vector2f( x + width, 0 );
+			onTopPar[i*4+3].position = Vector2f( x, 0 );
+		}
+
+		
+		
+	}
+
+	target->draw( onTopPar );*/
+	
+}
+
 bool GameSession::SetGroundPar()
 {	
 	Color undertransColor( 255, 50, 255, 255 );
 	Color altTransColor( 0, 255, 255, 255 );
-	int widthFactor = 8;
+	int widthFactor = 1;
 	int yView = view.getCenter().y / widthFactor;
 	cloudView.setCenter( 960, 540 + yView );
 	int cloudBot = cloudView.getCenter().y + cloudView.getSize().y / 2;
@@ -3718,7 +3859,7 @@ bool GameSession::SetGroundPar()
 
 	if( yView > 1080 + transTileHeight || yView < -tileHeight )
 	{
-		return false;
+	//	return false;
 	}
 	Vector2f offset( 0, -transTileHeight );
 	
@@ -3805,25 +3946,15 @@ bool GameSession::SetGroundPar()
 	{
 	//	bottom = preScreenTex->mapCoordsToPixel( Vector2f( 0, 0 ) ).y;//transTileHeight + 1080 - screenBottom;
 	}
-	underTransPar[i*4].position = Vector2f( 0, transTop  ) + offset;
+	/*underTransPar[i*4].position = Vector2f( 0, transTop  ) + offset;
 	underTransPar[i*4+1].position = Vector2f( 1920 * ratio, transTop ) + offset;
 	underTransPar[i*4+2].position = Vector2f( 1920 * ratio, transBot ) + offset;
 	underTransPar[i*4+3].position = Vector2f( 0, transBot ) + offset;
 
-	/*underTransPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
-	underTransPar[i*4 + 1].texCoords = Vector2f( 1920, transTileHeight * i );
-	underTransPar[i*4 + 2].texCoords = Vector2f( 1920, transTileHeight * (i + 1) );
-	underTransPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i + 1) );*/
-
 	underTransPar[i*4].color = undertransColor;
 	underTransPar[i*4 + 1].color = undertransColor;
 	underTransPar[i*4 + 2].color = altTransColor;
-	underTransPar[i*4 + 3].color = altTransColor;
-
-	/*groundPar[i*4].color = Color::Blue;
-	groundPar[i*4+1].color = Color::Blue;
-	groundPar[i*4+2].color = Color::Blue;
-	groundPar[i*4+3].color = Color::Blue;*/
+	underTransPar[i*4 + 3].color = altTransColor;*/
 
 	if( flipped )
 	{
@@ -3846,25 +3977,15 @@ bool GameSession::SetGroundPar()
 	groundPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i+1) );
 	groundPar[i*4+3].texCoords = Vector2f( 0, tileHeight * (i+1) );
 
-	underTransPar[i*4].position = Vector2f( 1920 * ratio , transTop ) + offset;
+	/*underTransPar[i*4].position = Vector2f( 1920 * ratio , transTop ) + offset;
 	underTransPar[i*4+ 1].position = Vector2f( 1920, transTop ) + offset;
 	underTransPar[i*4+2].position = Vector2f( 1920, transBot ) + offset;
 	underTransPar[i*4+3].position = Vector2f( 1920 * ratio , transBot ) + offset;
 
-	/*underTransPar[i*4].texCoords = Vector2f( 0, transTileHeight * i );
-	underTransPar[i*4+1].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * i );
-	underTransPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), transTileHeight * (i+1) );
-	underTransPar[i*4+3].texCoords = Vector2f( 0, transTileHeight * (i+1) );*/
-
 	underTransPar[i*4].color = undertransColor;
 	underTransPar[i*4 + 1].color = undertransColor;
 	underTransPar[i*4 + 2].color = altTransColor;
-	underTransPar[i*4 + 3].color = altTransColor;
-
-	/*groundPar[i*4].color = Color::Red;
-	groundPar[i*4+1].color = Color::Red;
-	groundPar[i*4+2].color = Color::Red;
-	groundPar[i*4+3].color = Color::Red;*/
+	underTransPar[i*4 + 3].color = altTransColor;*/
 
 	
 	
@@ -3945,7 +4066,7 @@ void GameSession::SetUndergroundParAndDraw()
 	//underShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 
 	underShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
-	underShader.setParameter( "Resolution", window->getSize().x, window->getSize().y);
+	underShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
 	underShader.setParameter( "zoom", cam.GetZoom() );
 	underShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 		view.getCenter().y + view.getSize().y / 2 );
@@ -3975,8 +4096,8 @@ void GameSession::SetUndergroundParAndDraw()
 		on[i] = false;
 	}
 
-	float windowx = window->getSize().x;
-	float windowy = window->getSize().y;
+	float windowx = 1920;//window->getSize().x;
+	float windowy = 1080;//window->getSize().y;
 	
 	if( lightsAtOnce > 0 )
 	{

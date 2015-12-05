@@ -3135,7 +3135,11 @@ void Actor::UpdatePrePhysics()
 						if( gNorm.x < 0 )
 						{
 							//up a slope
-							groundSpeed += sprintAccel / 2 / slowMultiple;
+							double upMax = .3;
+							double factor = abs( gNorm.x );
+							if( factor > upMax  )
+								factor = upMax;
+							groundSpeed += sprintAccel * factor / slowMultiple;
 						}
 						else
 						{
@@ -7619,7 +7623,7 @@ void Actor::UpdatePostPhysics()
 		if( ground != NULL )
 		{
 			double angle = GroundedAngle();
-			cout << "angle: " << angle << endl;
+			//cout << "angle: " << angle << endl;
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
@@ -9193,12 +9197,12 @@ void Actor::UpdatePostPhysics()
 	}
 
 	sh.setParameter( "AmbientColor", 1, 1, 1, 1 );
-	sh.setParameter( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
+	sh.setParameter( "Resolution", 1920, 1080 );//owner->window->getSize().x, owner->window->getSize().y );
 	sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
 	sh.setParameter( "zoom", owner->cam.GetZoom() );
 
-	float windowx = owner->window->getSize().x;
-	float windowy = owner->window->getSize().y;
+	float windowx = 1920;//owner->window->getSize().x;
+	float windowy = 1080;//owner->window->getSize().y;
 
 	if( owner->lightsAtOnce > 0 )
 	{

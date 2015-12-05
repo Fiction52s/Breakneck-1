@@ -249,7 +249,13 @@ void CustomMapsOption( LevelSelector &ls )
 		
 		Vector2i mousePos = sf::Mouse::getPosition( *window );
 		//mousePos /= 2;
-		ls.MouseUpdate( mousePos );
+		
+
+		//window.setView( uiView );
+		Vector2f uiMouse = window->mapPixelToCoords( mousePos );
+
+		ls.MouseUpdate( uiMouse );
+		//Vector2f uiMouse = Vector2f( mousePos.x   window->getSize().x, mousePos.y ) * Vector2f(, window->getSize().y );
 
 		//if( !customMapHandler.showNamePopup )
 		
@@ -332,13 +338,13 @@ void CustomMapsOption( LevelSelector &ls )
 					{
 						if( customMapHandler.showNamePopup )
 						{
-							namePopup.Update( true, mousePos.x, mousePos.y);
+							namePopup.Update( true, uiMouse.x, uiMouse.y);
 						}
 						else
 						{
-							p.Update( true, mousePos.x, mousePos.y);
+							p.Update( true, uiMouse.x, uiMouse.y);
 							//cout << "blah: " << mousePos.x << ", " << mousePos.y << endl;
-							ls.LeftClick( true, mousePos );
+							ls.LeftClick( true, uiMouse );
 						}
 					}
 					break;
@@ -350,7 +356,7 @@ void CustomMapsOption( LevelSelector &ls )
 						if( customMapHandler.showNamePopup )
 						{
 							ls.newLevelName = "";
-							namePopup.Update( false, mousePos.x, mousePos.y );
+							namePopup.Update( false, uiMouse.x, uiMouse.y );
 							if( ls.newLevelName != "" )
 							{
 								
@@ -402,8 +408,8 @@ void CustomMapsOption( LevelSelector &ls )
 						}
 						else
 						{
-							p.Update( false, mousePos.x, mousePos.y );
-							ls.LeftClick( false, mousePos );
+							p.Update( false, uiMouse.x, uiMouse.y );
+							ls.LeftClick( false, uiMouse );
 							if( ls.text[ls.selectedIndex].getColor() == Color::Red )
 							{
 								p.buttons["Create New"]->text.setString( "CREATE NEW" );
@@ -458,7 +464,7 @@ void ExitOption()
 int main()
 {
 	preScreenTexture = new RenderTexture;
-	preScreenTexture->create( 960 * 2, 540 * 2 );
+	preScreenTexture->create( 1920, 1080 );
 	preScreenTexture->clear();
 
 	minimapTexture = new RenderTexture;
@@ -475,11 +481,12 @@ int main()
 	int windowHeight = 1080;
 
 	LevelSelector ls( arial );
-	ls.windowStretch = Vector2f( windowWidth / 1920, windowHeight / 1080 );
+	//ls.windowStretch = Vector2f( windowWidth / 1920, windowHeight / 1080 );
 	LoadMenus();
 
 	int currentMenuSelect = 0;
 
+	
 	if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
 	{
 		fullWindow = false;
@@ -737,7 +744,16 @@ int main()
 					}
 					break;
 				}
+			case sf::Event::Resized:
+				{
+					windowWidth = window->getSize().x;
+					windowHeight = window->getSize().y;
+					cout << "window: " << windowWidth << ", " << windowHeight << endl;
+					break;
+				}
+				
 			}
+			
 		}
 
 		if( controller.UpdateState() )

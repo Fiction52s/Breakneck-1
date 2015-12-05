@@ -109,11 +109,12 @@ void LevelSelector::UpdateMapList()
 	Tex( 0, 0, entries );
 }
 
-void LevelSelector::MouseUpdate( sf::Vector2i mousePos )
+void LevelSelector::MouseUpdate( sf::Vector2f mousePos )
 {
-	Vector2f realPos( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
 
-	Vector2f adjPos( realPos.x - position.x, realPos.y - position.y );
+	//Vector2f realPos( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
+
+	Vector2f adjPos( mousePos.x - position.x, mousePos.y - position.y );
 	if( adjPos.x >= 0 && adjPos.x <= width && adjPos.y >= 0 && adjPos.y < yspacing * numTotalEntries )
 	{
 		mouseOverIndex = (int)adjPos.y / yspacing;
@@ -125,7 +126,7 @@ void LevelSelector::MouseUpdate( sf::Vector2i mousePos )
 	}
 }
 
-void LevelSelector::LeftClick( bool click, sf::Vector2i mousePos )
+void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 {
 	if( click )
 	{
@@ -134,9 +135,9 @@ void LevelSelector::LeftClick( bool click, sf::Vector2i mousePos )
 			mouseDown = true;
 			//this needs to be different at different resolutions!!
 			//mouseDownPos = Vector2f( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
-			Vector2f realPos( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
+			//Vector2f realPos( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
 
-			Vector2f adjPos( realPos.x - position.x, realPos.y - position.y );
+			Vector2f adjPos( mousePos.x - position.x, mousePos.y - position.y );
 			if( adjPos.x >= 0 && adjPos.x <= width && adjPos.y >= 0 && adjPos.y < yspacing * numTotalEntries )
 			{
 				mouseDownIndex = (int)adjPos.y / yspacing;
@@ -152,9 +153,9 @@ void LevelSelector::LeftClick( bool click, sf::Vector2i mousePos )
 	{
 		if( mouseDown )
 		{
-			Vector2f realPos( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
+			//Vector2f realPos( mousePos.x / windowStretch.x, mousePos.y / windowStretch.y );
 
-			Vector2f adjPos( realPos.x - position.x, realPos.y - position.y );
+			Vector2f adjPos( mousePos.x - position.x, mousePos.y - position.y );
 			if( adjPos.x >= 0 && adjPos.x <= width && adjPos.y >= 0 && adjPos.y < yspacing * numTotalEntries )
 			{
 				int testIndex = (int)adjPos.y / yspacing;

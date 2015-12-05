@@ -28,8 +28,8 @@ struct LevelSelector
 	void ClearEntries();
 	void ClearEntries(TreeNode *n);
 	void Draw( sf::RenderTarget *target );
-	void MouseUpdate( sf::Vector2i mousePos );
-	void LeftClick( bool click, sf::Vector2i mousePos );
+	void MouseUpdate( sf::Vector2f mousePos );
+	void LeftClick( bool click, sf::Vector2f mousePos );
 	//std::list<std::string> maps;
 	TreeNode *entries;
 	void Print();
@@ -50,7 +50,7 @@ struct LevelSelector
 	int fontHeight;
 	int xspacing;
 	int yspacing;
-	sf::Vector2f windowStretch;
+	//sf::Vector2f windowStretch;
 	std::string newLevelName;
 	LevelServer levelServer;
 	sf::RenderTexture drawPanel;

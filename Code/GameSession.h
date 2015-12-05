@@ -74,6 +74,9 @@ struct GameSession : QuadTreeCollider
 	void Test( Edge *e );
 	void AddEnemy( Enemy * e );
 	void RemoveEnemy( Enemy * e );
+
+	void SetParOnTop(sf::RenderTarget *target );
+
 	void UpdateEnemiesPrePhysics();
 	void UpdateEnemiesPhysics();
 	void UpdateEnemiesPostPhysics();
@@ -125,9 +128,17 @@ struct GameSession : QuadTreeCollider
 
 	std::list<MovingTerrain*> movingPlats;
 
+	sf::Shader onTopShader;
+
+	Tileset *ts_keyHolder;
+	sf::Sprite keyHolderSprite;
+
 	sf::VertexArray groundPar;
 	sf::VertexArray underTransPar;
 	sf::VertexArray undergroundPar;
+
+	sf::VertexArray onTopPar;
+	sf::Sprite closeBack0;
 	Tileset *undergroundTileset;
 	Tileset *undergroundTilesetNormal;
 	sf::Shader underShader;

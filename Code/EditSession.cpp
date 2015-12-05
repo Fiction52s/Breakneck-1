@@ -3328,7 +3328,9 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
-	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
+	int width = 1920;//1920 - w->getSize().x;
+	int height = 1080; //1080 - w->getSize().y;
+	uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
 	w->setView( v );
@@ -3484,7 +3486,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 
 	
-	sf::Vector2u wSize = w->getSize();
+	//sf::Vector2u wSize = w->getSize();
 	
 	//sf::View uiView( Vector2f( wSize.x / 2, wSize.y / 2 ), Vector2f( wSize.x, wSize.y ) );
 
@@ -3605,12 +3607,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		prevWorldPos = worldPos;
 		pixelPos = sf::Mouse::getPosition( *w );
+		pixelPos.x *= 1920.f / w->getSize().x;
+		pixelPos.y *= 1080.f / w->getSize().y;
+
+
 		Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(pixelPos);
 		worldPos.x = tempWorldPos.x;
 		worldPos.y = tempWorldPos.y;
 
 		preScreenTex->setView( uiView );
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		//uiMouse.x *= 1920.f / w->getSize().x;
+		//uiMouse.y *= 1080.f / w->getSize().y;
+		//cout << "uiMouse: " << uiMouse.x << ", " << uiMouse.y << endl;
 		
 		preScreenTex->setView( view );
 		
@@ -6624,7 +6633,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				{
 					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
 					enemySprite.setRotation( 0 );
-					enemySprite.setPosition( preScreenTex->mapPixelToCoords( sf::Mouse::getPosition( *w ) ) );
+
+					
+					//Vector2i mouse = sf::Mouse::getPosition( *w );
+					//Vector2f realmouse( mouse.x, mouse.y );
+					
+					Vector2f p = preScreenTex->mapPixelToCoords( pixelPos );
+
+					//p.x *= 
+					//p.y *= 1080.f / w->getSize().y;
+					//cout << "p: " << p.x << ", " << p.y << endl;
+					enemySprite.setPosition( p );
 
 					enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2 );
 					enemyQuad.setRotation( 0 );
@@ -7128,7 +7147,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
 				bool okay = true;
-				for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+				/*for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 				{
 					Vector2i a( playerPosition.x - playerHalfWidth, playerPosition.y - playerHalfHeight );
 					Vector2i b( playerPosition.x + playerHalfWidth, playerPosition.y - playerHalfHeight );
@@ -7139,7 +7158,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						okay = false;
 						break;
 					}
-				}
+				}*/
 				
 				if( okay )
 				{
@@ -9027,6 +9046,8 @@ bool EditSession::ConfirmationPop( const std::string &question )
 	while( confirmChoice == ConfirmChoices::NONE )
 	{
 		Vector2i pixelPos = sf::Mouse::getPosition( *w );
+		pixelPos.x *= 1920 / w->getSize().x;
+		pixelPos.y *= 1920 / w->getSize().x;
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		w->clear();
 		while( w->pollEvent( ev ) )
@@ -9118,6 +9139,8 @@ void EditSession::MessagePop( const std::string &message )
 	while( !closePopup )
 	{
 		Vector2i pixelPos = sf::Mouse::getPosition( *w );
+		pixelPos.x *= 1920 / w->getSize().x;
+		pixelPos.y *= 1920 / w->getSize().x;
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		w->clear();
 
@@ -9206,6 +9229,8 @@ void EditSession::GridSelectPop( const std::string &type )
 	preScreenTex->setView( uiView );
 
 	Vector2i pixelPos = sf::Mouse::getPosition( *w );
+	pixelPos.x *= 1920 / w->getSize().x;
+	pixelPos.y *= 1920 / w->getSize().y;
 	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 
 	gateSelectorPopup->pos.x = uiMouse.x;
@@ -9215,6 +9240,8 @@ void EditSession::GridSelectPop( const std::string &type )
 	while( !closePopup )
 	{
 		pixelPos = sf::Mouse::getPosition( *w );
+		pixelPos.x *= 1920 / w->getSize().x;
+		pixelPos.y *= 1920 / w->getSize().y;
 		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		w->clear();
 
