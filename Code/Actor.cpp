@@ -454,10 +454,10 @@ Actor::Actor( GameSession *gs )
 		maxGroundSpeed = 100;
 		runAccelInit = .5;
 		
-		runAccel = .01;
+		runAccel = .03;
 		sprintAccel = .85;
 
-		holdDashAccel = .05;
+		holdDashAccel = .07;
 
 		dashHeight = 10;
 		normalHeight = 20;
@@ -3097,18 +3097,22 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						double minFactor = .2;
+						double factor = abs( gNorm.x );
+						factor = std::max( factor, minFactor );
+
 						if( gNorm.x > 0 )
 						{
 							//up a slope
 							double upMax = .3;
-							double factor = abs( gNorm.x );
+							
 							if( factor > upMax  )
 								factor = upMax;
 							groundSpeed -= sprintAccel * factor / slowMultiple; 
 						}
 						else
-						{
-							groundSpeed -= sprintAccel * abs( gNorm.x ) / slowMultiple;
+						{	
+							groundSpeed -= sprintAccel * factor / slowMultiple;
 							//down a slope
 						}
 					}
@@ -3132,18 +3136,22 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						double minFactor = .2;
+						double factor = abs( gNorm.x );
+						factor = std::max( factor, minFactor );
+
 						if( gNorm.x < 0 )
 						{
 							//up a slope
 							double upMax = .3;
-							double factor = abs( gNorm.x );
+							
 							if( factor > upMax  )
 								factor = upMax;
-							groundSpeed += sprintAccel * factor / slowMultiple;
+							groundSpeed += sprintAccel * factor / slowMultiple; 
 						}
 						else
-						{
-							groundSpeed += sprintAccel * abs( gNorm.x ) / slowMultiple;
+						{	
+							groundSpeed += sprintAccel * factor / slowMultiple;
 							//down a slope
 						}
 					}

@@ -3758,14 +3758,14 @@ void GameSession::SetParOnTop( sf::RenderTarget *target )
 	//closeBack0.setColor( Color::Red );
 	
 	sf::RectangleShape rs;
-	rs.setSize( Vector2f( view.getSize().x, 540 / 2 + 2 ) );
+	rs.setSize( Vector2f( view.getSize().x, 311 / 2 + 6 ) );
 	rs.setFillColor( Color::White );
-	rs.setPosition( view.getCenter().x - view.getSize().x / 2, -540 / 2 - 2 );
+	rs.setPosition( view.getCenter().x - view.getSize().x / 2, - 311 / 2 - 6 );
 
 	onTopShader.setParameter( "Resolution", 1920, 1080 );
 	onTopShader.setParameter( "zoom", cam.GetZoom() );
 	onTopShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
-		view.getCenter().y + view.getSize().y / 2 + 2 );
+		view.getCenter().y + view.getSize().y / 2 );
 
 	preScreenTex->draw( rs, &onTopShader );
 	//preScreenTex->draw( rs );
