@@ -156,29 +156,30 @@ void main()
 
 	InitLights();
 	
-	float size = 128.0;
-	float patternSize = 16.0;
+	float size = 512.0;
+	//float patternSize = 16.0;
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1 - fc.y;
 	fc = fc * vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 	//vec2 pixelPos = vec2( fc.x / zoom, fc.y / zoom );
 	
-	vec2 patternPos = mod( ((topLeft + pixelPos) / vec2(size)), patternSize ) / vec2( patternSize );
-	vec4 patternColor = texture2D( u_pattern, patternPos );
-    vec2 pos;
-	if( patternColor == vec4( 1, 1, 1, 1 ) )
-	{
-		pos = mod( topLeft + pixelPos, size) / vec2( size );
-		pos.x = pos.x / 2.0;
-	}
-	else// if( patternColor == vec4( 0, 0, 0, 0 ) )
-	{
-		pos = mod( topLeft + pixelPos, size) / vec2( size );
-		pos.x = pos.x / 2.0;
-		pos.x = pos.x + .5;
-	}
-	//vec2 pos = mod( topLeft + pixelPos, size) / vec2( size );
+	//vec2 patternPos = mod( ((topLeft + pixelPos) / vec2(size)), patternSize ) / vec2( patternSize );
+	//vec4 patternColor = texture2D( u_pattern, patternPos );
+    //vec2 pos;
+	//if( patternColor == vec4( 1, 1, 1, 1 ) )
+	//{
+	//	pos = mod( topLeft + pixelPos, size) / vec2( size );
+	//	pos.x = pos.x / 2.0;
+	//}
+	//else// if( patternColor == vec4( 0, 0, 0, 0 ) )
+	//{
+	//	pos = mod( topLeft + pixelPos, size) / vec2( size );
+	//	pos.x = pos.x / 2.0;
+	//	pos.x = pos.x + .5;
+	//}
+	//pos = mod( topLeft + pixelPos, size) / vec2( size );
+	vec2 pos = mod( topLeft + pixelPos, size) / vec2( size );
 	//gl_FragColor = texture2D( u_texture, pos );
 	
 	vec4 finalfinal = vec4( 0, 0, 0, 0 );
