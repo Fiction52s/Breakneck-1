@@ -3701,10 +3701,11 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {
 	View vah = view;
-	double zoom = view.getSize().x / 1920.0 * 2;
-	zoom *= 1;
+	double zoom = view.getSize().x / 960.0;
+	zoom *= 2;
 	//cout << "camzoom: " << cam.GetZoom() << ", my zoom: " << zoom << endl;
-	vah.setSize( 1920.0 * zoom, 1080.0 * zoom );
+	vah.setSize( 960 * zoom, 540 * zoom );
+	//vah.setCenter( vah.getCenter().x / 2, vah.getCenter().y / 2 );
 	cout << "vah: " << vah.getCenter().x << ", " << vah.getCenter().y << ", si: " << vah.getSize().x << ", " << vah.getSize().y << endl;
 	cout << "view: " << view.getCenter().x << ", " << view.getCenter().y << ", si: " << view.getSize().x << ", " << view.getSize().y << endl;
 	sf::RectangleShape rs;

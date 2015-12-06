@@ -410,7 +410,7 @@ Actor::Actor( GameSession *gs )
 		steepThresh = .4; // go between 0 and 1
 
 		gravity = 1.9;
-		maxFallSpeed = 60;
+		maxFallSpeed = 100;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 25;
@@ -2688,7 +2688,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( reversed )
 				{
-					velocity = -groundSpeed * normalize(ground->v1 - ground->v0 );
+					velocity = -groundSpeed * normalize(V2d( 0, -1 ) + normalize(ground->v1 - ground->v0 ));
 					ground = NULL;
 					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
@@ -2699,7 +2699,21 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
+					double blah = .3;
+
+					V2d dir( 0, 0 );
+					if( groundSpeed > 0 && gNorm.x > 0 )
+					{
+						dir = V2d( blah, 0 );
+					}
+					else if( groundSpeed < 0 && gNorm.x < 0 )
+					{
+						dir = V2d( -blah, 0 );
+					}
+
+					
+
+					velocity = groundSpeed * normalize(dir + normalize(ground->v1 - ground->v0 ));
 					if( currInput.B )
 					{
 						if( currInput.LRight() )
