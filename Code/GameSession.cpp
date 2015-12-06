@@ -2115,7 +2115,7 @@ int GameSession::Run( string fileN )
 		{
 
 
-		view.setSize( Vector2f( 1920 * cam.GetZoom(), 1080 * cam.GetZoom()) );
+		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
 		lastViewSize = view.getSize();
 
 		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );
@@ -3298,68 +3298,6 @@ void GameSession::LevelSpecifics()
 	{
 	//	player.velocity.x = 60;
 	}
-}
-
-//theres a bug on the new slope for the movie where you hold dash and up and you glitch out on a /\ slope. prob priority
-void GameSession::GameStartMovie()
-{
-	startSeq = new GameStartSeq( this );
-	activeSequence = startSeq;
-
-	cout << "Starting movie" << endl;
-	bool quit = false;
-	//sf::View movieView( Vector2f( -460,  ), Vector2f( 960, 540 ) );
-	sf::View movieView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
-
-	
-	startSeq->shipSprite.setPosition( 480, 270 );
-	sf::RectangleShape rs( Vector2f( 960, 540 ) );
-	rs.setPosition( Vector2f( 0, 0 ) );
-	rs.setFillColor( Color::Black );
-	
-
-	//View oldView = window->getView();
-
-	player.velocity.x = 60;
-	player.velocity.y = 0;
-	player.hasDoubleJump = false;
-
-	window->setView( movieView );
-	while( !quit )
-	{
-		controller.UpdateState();
-		currInput = controller.GetState();
-
-		if( currInput.LRight() && !prevInput.LRight() )
-		{
-			break;
-		}
-
-		window->clear( Color::Black );
-
-		window->setView( bgView );
-
-		window->draw( background );
-
-		window->setView( movieView );
-
-		 
-		//preScreenTex->setView( view );
-
-		window->draw( rs );
-
-		startSeq->stormSprite.setPosition( 0, -440 );
-		window->draw( startSeq->stormSprite );
-		startSeq->stormSprite.setPosition( 0, 440 );
-		window->draw( startSeq->stormSprite );
-
-		window->draw( startSeq->shipSprite );
-		window->display();
-	}
-
-	//startSeq->shipSprite.setPosition( startSeq->startPos );
-	//startSeq->stormSprite.setPosition( Vector2f( startSeq->startPos.x, startSeq->startPos.y + 200 ) );
-	//window->setView( oldView );
 }
 
 Light * GameSession::ActivateLight( int radius,  int brightness, const Color color )
