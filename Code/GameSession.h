@@ -129,6 +129,8 @@ struct GameSession : QuadTreeCollider
 	std::list<MovingTerrain*> movingPlats;
 
 	sf::Shader onTopShader;
+	void SetParMountains( sf::RenderTarget *target );
+	sf::Shader mountainShader;
 
 	Tileset *ts_keyHolder;
 	sf::Sprite keyHolderSprite;

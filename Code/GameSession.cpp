@@ -62,10 +62,17 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	{
 		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
-		usePolyShader = false;
 	}
 
-	
+	if (!mountainShader.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "mountain SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
+
+	mountainShader.setParameter( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
+
 	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
@@ -2135,6 +2142,8 @@ int GameSession::Run( string fileN )
 		
 		preScreenTex->setView( view );
 
+		SetParMountains( preScreenTex );
+
 		SetParOnTop( preScreenTex );
 
 		//cavedepth
@@ -3751,6 +3760,34 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 
 }
 
+void GameSession::SetParMountains( sf::RenderTarget *target )
+{
+	View vah = view;
+	double zoom = view.getSize().x / 1920.0 * 2;
+	zoom *= 1;
+	cout << "camzoom: " << cam.GetZoom() << ", my zoom: " << zoom << endl;
+	//vah.setSize( 1920.0 * zoom, 1080.0 * zoom );
+
+	sf::RectangleShape rs;
+	rs.setSize( Vector2f( view.getSize().x, 512 / 2 ) );
+	rs.setFillColor( Color::White );
+	rs.setPosition( view.getCenter().x - view.getSize().x / 2, - 512 / 2 );
+
+	mountainShader.setParameter( "Resolution", 1920, 1080 );
+	mountainShader.setParameter( "zoom", zoom );
+	mountainShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
+		view.getCenter().y + view.getSize().y / 2 );
+
+	//mountainShader.setParameter( "topLeft", vah.getCenter().x - vah.getSize().x / 2,
+		//vah.getCenter().y + vah.getSize().y / 2 );
+
+	preScreenTex->setView( vah );
+
+	preScreenTex->draw( rs, &mountainShader );
+
+	preScreenTex->setView( view );
+}
+
 void GameSession::SetParOnTop( sf::RenderTarget *target )
 {
 	//closeBack0.setPosition( -960, -400 );
@@ -3766,7 +3803,6 @@ void GameSession::SetParOnTop( sf::RenderTarget *target )
 	onTopShader.setParameter( "zoom", cam.GetZoom() );
 	onTopShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
 		view.getCenter().y + view.getSize().y / 2 );
-	onTopShader.setParameter( "boxTopLeft", rs.getGlobalBounds().left, rs.getGlobalBounds().top + rs.getLocalBounds().height );
 
 	preScreenTex->draw( rs, &onTopShader );
 	//preScreenTex->draw( rs );
