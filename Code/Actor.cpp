@@ -10064,7 +10064,6 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-
 	int showMotionGhosts = 0;
 	if( ground != NULL )
 	{
@@ -10170,6 +10169,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 			sh.setParameter( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			sh.setParameter( "u_normals", *normal[action]->texture );
+			//sprite->setScale( 2, 2 );
 
 			target->draw( *sprite, &sh );
 			//target->draw( cs );
