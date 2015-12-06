@@ -3332,7 +3332,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	int height = 1080; //1080 - w->getSize().y;
 	uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
 	v.setCenter( 0, 0 );
-	v.setSize( 1920/ 2, 1080 / 2 );
+	v.setSize( 1920, 1080 );
 	w->setView( v );
 
 	confirm = CreatePopupPanel( "confirmation" );
@@ -5601,7 +5601,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 				
 						Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-						view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
+						view.setSize( Vector2f( 1920 * (zoomMultiple), 1080 * ( zoomMultiple ) ) );
 						preScreenTex->setView( view );
 						Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(pixelPos);
 						Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
@@ -5661,7 +5661,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 				
 							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-							view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
+							view.setSize( Vector2f( 1920 * (zoomMultiple), 1080 * ( zoomMultiple ) ) );
 							preScreenTex->setView( view );
 							Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(pixelPos);
 							Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
@@ -7566,8 +7566,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		const Texture &preTex = preScreenTex->getTexture();
 		
 		Sprite preTexSprite( preTex );
-		preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		preTexSprite.setScale( .5, .5 );	
+		preTexSprite.setPosition( -960, -540 );
 		w->clear();
 		w->draw( preTexSprite  );
 		w->display();

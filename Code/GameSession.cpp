@@ -1501,7 +1501,7 @@ int GameSession::Run( string fileN )
 	background = Sprite( backTex );
 	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
 	background.setPosition( 0, 0 );
-	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
+	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 1920, 1080 ) );
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
@@ -1518,7 +1518,8 @@ int GameSession::Run( string fileN )
 	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
 
-	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
+	//note: 300 300?
+	view = View( Vector2f( 300, 300 ), sf::Vector2f( 1920, 1080 ) );
 	preScreenTex->setView( view );
 	//window->setView( view );
 
@@ -1645,7 +1646,7 @@ int GameSession::Run( string fileN )
 
 	View v;
 	v.setCenter( 0, 0 );
-	v.setSize( 1920/ 2, 1080 / 2 );
+	v.setSize( 1920, 1080 );
 	window->setView( v );
 
 	stringstream ss;
@@ -2027,8 +2028,8 @@ int GameSession::Run( string fileN )
 				//Vector2f diff = cam.pos - oldCam;
 
 
-				double camWidth = 960 * cam.GetZoom();
-				double camHeight = 540 * cam.GetZoom();
+				double camWidth = 1920 * cam.GetZoom();
+				double camHeight = 1080 * cam.GetZoom();
 				screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 			
 			
@@ -2106,8 +2107,7 @@ int GameSession::Run( string fileN )
 			const Texture &preTex = preScreenTex->getTexture();
 		
 			Sprite preTexSprite( preTex );
-			preTexSprite.setPosition( -960 / 2, -540 / 2 );
-			preTexSprite.setScale( .5, .5 );		
+			preTexSprite.setPosition( -960, -540 );	
 
 			window->draw( preTexSprite  );
 		}
@@ -2142,9 +2142,9 @@ int GameSession::Run( string fileN )
 		
 		preScreenTex->setView( view );
 
-		SetParMountains( preScreenTex );
+		//SetParMountains( preScreenTex );
 
-		SetParOnTop( preScreenTex );
+		//SetParOnTop( preScreenTex );
 
 		//cavedepth
 		//if( SetGroundPar() )
@@ -2650,8 +2650,8 @@ int GameSession::Run( string fileN )
 		const Texture &preTex = preScreenTex->getTexture();
 		
 		Sprite preTexSprite( preTex );
-		preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		preTexSprite.setScale( .5, .5 );
+		preTexSprite.setPosition( -960, -540 );
+		//preTexSprite.setScale( .5, .5 );
 
 		
 		preScreenTex->setView( v );
@@ -2680,8 +2680,7 @@ int GameSession::Run( string fileN )
 
 		preTexSprite.setTexture( preScreenTex->getTexture() );
 
-		preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		preTexSprite.setScale( .5, .5 );
+		preTexSprite.setPosition( -960, -540 );
 
 		
 
@@ -3298,68 +3297,6 @@ void GameSession::LevelSpecifics()
 	{
 	//	player.velocity.x = 60;
 	}
-}
-
-//theres a bug on the new slope for the movie where you hold dash and up and you glitch out on a /\ slope. prob priority
-void GameSession::GameStartMovie()
-{
-	startSeq = new GameStartSeq( this );
-	activeSequence = startSeq;
-
-	cout << "Starting movie" << endl;
-	bool quit = false;
-	//sf::View movieView( Vector2f( -460,  ), Vector2f( 960, 540 ) );
-	sf::View movieView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
-
-	
-	startSeq->shipSprite.setPosition( 480, 270 );
-	sf::RectangleShape rs( Vector2f( 960, 540 ) );
-	rs.setPosition( Vector2f( 0, 0 ) );
-	rs.setFillColor( Color::Black );
-	
-
-	//View oldView = window->getView();
-
-	player.velocity.x = 60;
-	player.velocity.y = 0;
-	player.hasDoubleJump = false;
-
-	window->setView( movieView );
-	while( !quit )
-	{
-		controller.UpdateState();
-		currInput = controller.GetState();
-
-		if( currInput.LRight() && !prevInput.LRight() )
-		{
-			break;
-		}
-
-		window->clear( Color::Black );
-
-		window->setView( bgView );
-
-		window->draw( background );
-
-		window->setView( movieView );
-
-		 
-		//preScreenTex->setView( view );
-
-		window->draw( rs );
-
-		startSeq->stormSprite.setPosition( 0, -440 );
-		window->draw( startSeq->stormSprite );
-		startSeq->stormSprite.setPosition( 0, 440 );
-		window->draw( startSeq->stormSprite );
-
-		window->draw( startSeq->shipSprite );
-		window->display();
-	}
-
-	//startSeq->shipSprite.setPosition( startSeq->startPos );
-	//startSeq->stormSprite.setPosition( Vector2f( startSeq->startPos.x, startSeq->startPos.y + 200 ) );
-	//window->setView( oldView );
 }
 
 Light * GameSession::ActivateLight( int radius,  int brightness, const Color color )

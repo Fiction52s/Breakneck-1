@@ -537,7 +537,7 @@ int main()
 	
 	
 	v.setCenter( 0, 0 );
-	v.setSize( 1920 / 2, 1080 / 2 );
+	v.setSize( 1920, 1080 );
 	window->setView( v );
 
 	sf::Text menu;
@@ -811,7 +811,8 @@ int main()
 
 	sf::Vector2i pos( 0, 0 );	
 	
-	View view( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
+	
+	View view( Vector2f( 960, 540), sf::Vector2f( 1920, 1080) );
 	window->setView( view );
 	
 	bool edit = false;
