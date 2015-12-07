@@ -132,6 +132,9 @@ struct GameSession : QuadTreeCollider
 	void SetParMountains( sf::RenderTarget *target );
 	sf::Shader mountainShader;
 
+	sf::Shader mountainShader1;
+	void SetParMountains1( sf::RenderTarget *target );
+
 	Tileset *ts_keyHolder;
 	sf::Sprite keyHolderSprite;
 

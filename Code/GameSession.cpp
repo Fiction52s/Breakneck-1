@@ -73,6 +73,15 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	mountainShader.setParameter( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
 
+	if (!mountainShader1.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "mountain SHADER 1 NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
+
+	mountainShader1.setParameter( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
+
 	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
 	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
@@ -2144,6 +2153,8 @@ int GameSession::Run( string fileN )
 
 		SetParMountains( preScreenTex );
 
+		SetParMountains1( preScreenTex );
+
 		SetParOnTop( preScreenTex );
 
 		//cavedepth
@@ -3701,36 +3712,67 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {
 	View vah = view;
+	double zoomFactor = 8.0;
+	double yChange = 0;
 	double zoom = view.getSize().x / 960.0;
-	zoom *= 2;
-	//cout << "camzoom: " << cam.GetZoom() << ", my zoom: " << zoom << endl;
-	vah.setSize( 960 * zoom, 540 * zoom );
-	//vah.setCenter( vah.getCenter().x / 2, vah.getCenter().y / 2 );
-	//cout << "vah: " << vah.getCenter().x << ", " << vah.getCenter().y << ", si: " << vah.getSize().x << ", " << vah.getSize().y << endl;
-	//cout << "view: " << view.getCenter().x << ", " << view.getCenter().y << ", si: " << view.getSize().x << ", " << view.getSize().y << endl;
+	double addZoom = (zoom - 1) / zoomFactor;
+	double newZoom = 1 + addZoom;
+
+	vah.setSize( 960 * newZoom, 540 * newZoom );
+	vah.setCenter( vah.getCenter().x / zoomFactor, vah.getCenter().y / zoomFactor );
+
 	sf::RectangleShape rs;
 	rs.setSize( Vector2f( vah.getSize().x, 512 ) );
 	rs.setFillColor( Color::Red );
-	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, - 512 );
+	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, - 512 + yChange );
 
 	mountainShader.setParameter( "Resolution", 1920, 1080 );
-	mountainShader.setParameter( "zoom", zoom );
-	//mountainShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
-	//	view.getCenter().y + view.getSize().y / 2 );
-
-	//mountainShader.setParameter( "topLeft", (vah.getCenter().x - vah.getSize().x) / 2.f,
-	//	(vah.getCenter().y + vah.getSize().y) / 2.f - 512 );
-
-	//mountainShader.setParameter( "topLeft",(vah.getCenter().x - vah.getSize().x) / 2.f,
-	//	view.getCenter().y + view.getSize().y / 2 );
+	mountainShader.setParameter( "zoom", newZoom );
+	
 	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
 	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
 	preScreenTex->setView( vah );
 	trueBotLeft = preScreenTex->mapPixelToCoords( tempPos );
+	trueBotLeft.y -= yChange;
+
 
 	mountainShader.setParameter( "topLeft", trueBotLeft );
 
 	preScreenTex->draw( rs, &mountainShader );
+
+	preScreenTex->setView( view );
+}
+
+void GameSession::SetParMountains1( sf::RenderTarget *target )
+{
+	View vah = view;
+	double zoomFactor = 4;
+	double yChange = 200;
+	double zoom = view.getSize().x / 960.0;
+	double addZoom = (zoom - 1) / zoomFactor;
+	double newZoom = 1 + addZoom;
+
+	//vah.setSize( 960 * newZoom, 540 * newZoom );
+	vah.setSize( 960 * newZoom, 540 * newZoom );
+	vah.setCenter( vah.getCenter().x / zoomFactor, vah.getCenter().y / zoomFactor );
+	
+	sf::RectangleShape rs;
+	rs.setSize( Vector2f( vah.getSize().x, 512 ) );
+	//rs.setFillColor( Color::Red );
+	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, -512 + yChange );//- 512 );
+
+	mountainShader1.setParameter( "Resolution", 1920, 1080 );
+	mountainShader1.setParameter( "zoom", newZoom );
+	
+	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
+	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
+	preScreenTex->setView( vah );
+	trueBotLeft = preScreenTex->mapPixelToCoords( tempPos );
+	trueBotLeft.y -= yChange;
+
+	mountainShader1.setParameter( "topLeft", trueBotLeft );
+
+	preScreenTex->draw( rs, &mountainShader1 );
 
 	preScreenTex->setView( view );
 }
