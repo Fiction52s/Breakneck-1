@@ -13,6 +13,7 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	dead = false;
 	ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 	sprite.setTexture( *ts_walk->texture );
@@ -21,8 +22,34 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
-	
-	spawnRect = sf::Rect<double>( gPoint.x - 16, gPoint.y - 16, 16 * 2, 16 * 2 );
+
+
+
+	spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
+
+	hurtBody.type = CollisionBox::Hurt;
+	hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = 32;
+	hurtBody.rh = 32;
+
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = 32;
+	hitBody.rh = 32;
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 100;
+	hitboxInfo->drain = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 0;
+
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 2;
 	physBody.isCircle = true;
@@ -56,6 +83,8 @@ void Crawler::ResetEnemy()
 		offset.y = -physBody.rh;
 
 	position = gPoint + offset;
+
+	dead = false;
 }
 
 void Crawler::HandleEntrant( QuadTreeEntrant *qte )
@@ -135,7 +164,10 @@ void Crawler::UpdateHitboxes()
 		hurtBody.globalAngle = 0;
 	}
 
-	hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
+	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
+	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
+	hitBody.globalPosition = position;
+	hurtBody.globalPosition = position;
 	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
@@ -147,6 +179,8 @@ void Crawler::UpdatePrePhysics()
 		frame = 0;
 	}
 	groundSpeed = 1.5;
+
+	
 }
 
 void Crawler::UpdatePhysics()
@@ -154,6 +188,8 @@ void Crawler::UpdatePhysics()
 	double movement = 0;
 	double maxMovement = min( physBody.rw, physBody.rh );
 	movement = groundSpeed;
+
+	movement /= slowMultiple;
 
 	while( movement != 0 )
 	{
@@ -1867,100 +1903,116 @@ bool Crawler::ResolvePhysics( V2d vel )
 
 void Crawler::UpdatePostPhysics()
 {
-	double spaceNeeded = 0;
-	V2d gn = ground->Normal();
-	V2d gPoint = ground->GetPoint( edgeQuantity );
+	if( !dead )
+	{
+		double spaceNeeded = 0;
+		V2d gn = ground->Normal();
+		V2d gPoint = ground->GetPoint( edgeQuantity );
 	
 
-	double angle = 0;
+		double angle = 0;
 	
-	if( !roll )
-	{
-		position = gPoint + gn * 16.0;
-		angle = atan2( gn.x, -gn.y );
-		
-		sprite.setTexture( *ts_walk->texture );
-		sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
-		V2d pp = ground->GetPoint( edgeQuantity );
-		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-		sprite.setRotation( angle / PI * 180 );
-		sprite.setPosition( pp.x, pp.y );
-
-	}
-	else
-	{
-		V2d e1n = ground->edge1->Normal();
-		double rollStart = atan2( gn.y, gn.x );
-		double rollEnd = atan2( e1n.y, e1n.x );
-		double adjRollStart = rollStart;
-		double adjRollEnd = rollEnd;
-
-		if( rollStart < 0 )
-			adjRollStart += 2 * PI;
-		if( rollEnd < 0 )
-			adjRollEnd += 2 * PI;
-
-
-	/*	double angleDist = rollEnd - rollStart;
-
-		if( rollEnd < rollStart )
+		if( !roll )
 		{
-			angleDist = ( 2 * PI - rollStart ) + rollEnd;
-		}
-*/
+			position = gPoint + gn * 16.0;
+			angle = atan2( gn.x, -gn.y );
 		
-		if( adjRollEnd > adjRollStart )
-		{
-			angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-			
-			//angle = -angle;
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+
 		}
 		else
 		{
-			
-			angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
+			V2d e1n = ground->edge1->Normal();
+			double rollStart = atan2( gn.y, gn.x );
+			double rollEnd = atan2( e1n.y, e1n.x );
+			double adjRollStart = rollStart;
+			double adjRollEnd = rollEnd;
 
 			if( rollStart < 0 )
-				rollStart += 2 * PI;
+				adjRollStart += 2 * PI;
 			if( rollEnd < 0 )
-				rollEnd += 2 * PI;
-			//angle = -angle;
-		}
-		//angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor ;
-		if( angle < 0 )
-			angle += PI * 2;
-		//angle = -angle;
-		//angle -= PI / 2;
+				adjRollEnd += 2 * PI;
 		
-
-		
-		
-
-		
-
-		V2d angleVec = V2d( cos( angle ), sin( angle ) );
-		angleVec = normalize( angleVec );
-
-		position = gPoint + angleVec * 16.0;
-
-		angle += PI / 2.0;
-	
+			if( adjRollEnd > adjRollStart )
+			{
+				angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
+			}
+			else
+			{
 			
-		
-		//cout << "rollStart: " << adjRollStart << ", rollEnd: " << adjRollEnd << ", factor: " << rollFactor << ", angle: " << angle << endl;
+				angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
 
-		sprite.setTexture( *ts_roll->texture );
-		sprite.setTextureRect( ts_roll->GetSubRect( frame / rollAnimationFactor ) );
+				if( rollStart < 0 )
+					rollStart += 2 * PI;
+				if( rollEnd < 0 )
+					rollEnd += 2 * PI;
+			}
+
+			if( angle < 0 )
+				angle += PI * 2;
 
 		
 
-		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-		sprite.setRotation( angle / PI * 180 );
-		V2d pp = ground->GetPoint( edgeQuantity );
-		//pp += angleVec * 16.0;
-		sprite.setPosition( pp.x, pp.y );
-		//sprite.setPosition( position.x, position.y );
+			V2d angleVec = V2d( cos( angle ), sin( angle ) );
+			angleVec = normalize( angleVec );
+
+			position = gPoint + angleVec * 16.0;
+
+			angle += PI / 2.0;
+	
+
+			sprite.setTexture( *ts_roll->texture );
+			sprite.setTextureRect( ts_roll->GetSubRect( frame / rollAnimationFactor ) );
+
 		
+
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setPosition( pp.x, pp.y );
+		}
+
+		UpdateHitboxes();
+
+		if( PlayerSlowingMe() )
+		{
+			if( slowMultiple == 1 )
+			{
+				slowCounter = 1;
+				slowMultiple = 5;
+				cout << "yes slow" << endl;
+			}
+		}
+		else
+		{
+			slowCounter = 1;
+			slowMultiple = 1;
+			cout << "no slow" << endl;
+		}
+
+		pair<bool, bool> result = PlayerHitMe();
+		if( result.first )
+		{
+		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
+			if( !result.second )
+			{
+				owner->Pause( 6 );
+			}
+			
+			dead = true;
+			receivedHit = NULL;
+		}
+
+		if( IHitPlayer() )
+		{
+		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		}
+
 	}
 	if( slowCounter == slowMultiple )
 	{
@@ -1979,11 +2031,22 @@ void Crawler::UpdatePostPhysics()
 	}
 
 	//sprite.setPosition( position );
-	UpdateHitboxes();
+	//UpdateHitboxes();
 }
 
 bool Crawler::PlayerSlowingMe()
 {
+	Actor &player = owner->player;
+	for( int i = 0; i < player.maxBubbles; ++i )
+	{
+		if( player.bubbleFramesToLive[i] > 0 )
+		{
+			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			{
+				return true;
+			}
+		}
+	}
 	return false;
 }
 
@@ -1994,11 +2057,70 @@ void Crawler::Draw(sf::RenderTarget *target )
 
 bool Crawler::IHitPlayer()
 {
+	Actor &player = owner->player;
+	
+	if( hitBody.Intersects( player.hurtBody ) )
+	{
+		player.ApplyHit( hitboxInfo );
+		return true;
+	}
+	
 	return false;
 }
 
  pair<bool, bool> Crawler::PlayerHitMe()
 {
+	Actor &player = owner->player;
+
+	if( player.currHitboxes != NULL )
+	{
+		bool hit = false;
+
+		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		{
+			if( hurtBody.Intersects( (*it) ) )
+			{
+				hit = true;
+				break;
+			}
+		}
+		
+
+		if( hit )
+		{
+			receivedHit = player.currHitboxInfo;
+			return pair<bool, bool>(true,false);
+		}
+		
+	}
+
+	for( int i = 0; i < player.recordedGhosts; ++i )
+	{
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		{
+			if( player.ghosts[i]->currHitboxes != NULL )
+			{
+				bool hit = false;
+				
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				{
+					if( hurtBody.Intersects( (*it) ) )
+					{
+						hit = true;
+						break;
+					}
+				}
+		
+
+				if( hit )
+				{
+					receivedHit = player.currHitboxInfo;
+					return pair<bool, bool>(true,true);
+				}
+			}
+			//player.ghosts[i]->curhi
+		}
+	}
 	return pair<bool, bool>(false,false);
 }
 

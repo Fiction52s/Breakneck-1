@@ -32,6 +32,30 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	
 	ts_bullet = owner->GetTileset( "basicbullet.png", 16, 16 );
 
+
+	hurtBody.type = CollisionBox::Hurt;
+	hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = 16;
+	hurtBody.rh = 16;
+
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = 16;
+	hitBody.rh = 16;
+	
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 100;
+	hitboxInfo->drain = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 0;
+
 	activeBullets = NULL;
 	inactiveBullets = NULL;
 
@@ -64,10 +88,13 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 void BasicTurret::ResetEnemy()
 {
+	dead = false;
 	frame = 0;
 	deathFrame = 0;
-
-
+	while( activeBullets != NULL )
+	{
+		DeactivateBullet( activeBullets );
+	}
 }
 
 void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
@@ -120,7 +147,7 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicTurret::UpdatePrePhysics()
 {
-	if( frame == 12 * animationFactor )
+	if( frame == 12 * animationFactor && slowCounter == 1 )
 	{
 		//cout << "firing" << endl;
 		Bullet *b = ActivateBullet();
@@ -183,30 +210,36 @@ void BasicTurret::UpdatePhysics()
 void BasicTurret::UpdatePostPhysics()
 {
 	PlayerSlowingMe();
+
+	UpdateBulletHitboxes();
+	Bullet *currBullet = activeBullets;
+	while( currBullet != NULL )
+	{
+		if( currBullet->slowCounter == currBullet->slowMultiple )
+		{
+			currBullet->frame++;
+			currBullet->slowCounter = 1;
+		}
+		else
+		{
+			currBullet->slowCounter++;
+		}
+
+			
+		//++frame;
+		if( currBullet->frame == 11 )
+			currBullet->frame = 0;
+
+		currBullet = currBullet->next;
+	}
+
+	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
+
 	if( !dead )
 	{
 		UpdateHitboxes();
 
-		Bullet *currBullet = activeBullets;
-		while( currBullet != NULL )
-		{
-			if( currBullet->slowCounter == currBullet->slowMultiple )
-			{
-				currBullet->frame++;
-				currBullet->slowCounter = 1;
-			}
-			else
-			{
-				currBullet->slowCounter++;
-			}
-
-			
-			//++frame;
-			if( currBullet->frame == 11 )
-				currBullet->frame = 0;
-
-			currBullet = currBullet->next;
-		}
+		
 
 		pair<bool, bool> result = PlayerHitMe();
 		if( result.first )
@@ -214,15 +247,28 @@ void BasicTurret::UpdatePostPhysics()
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			if( !result.second )
 			{
-				owner->Pause( 10 );
+				owner->Pause( 6 );
+				dead = true;
+				receivedHit = NULL;
 			}
 		//	dead = true;
 		//	receivedHit = NULL;
 		}
 
+		
+
 		if( IHitPlayer() )
 		{
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		}
+
+		if( IHitPlayerWithBullets() )
+		{
+		}
+
+		if( frame == 26 * animationFactor )
+		{
+			frame = 0;
 		}
 	}
 
@@ -245,10 +291,7 @@ void BasicTurret::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 27 * animationFactor )
-	{
-		frame = 0;
-	}
+	
 
 	if( deathFrame == 60 )
 	{
@@ -264,7 +307,7 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 	target->draw( sprite );
 }
 
-bool BasicTurret::IHitPlayer()
+bool BasicTurret::IHitPlayerWithBullets()
 {
 	Actor &player = owner->player;
 	
@@ -283,10 +326,76 @@ bool BasicTurret::IHitPlayer()
 	return false;
 }
 
+bool BasicTurret::IHitPlayer()
+{
+	Actor &player = owner->player;
+	if( hitBody.Intersects( player.hurtBody ) )
+	{
+		player.ApplyHit( hitboxInfo );
+		return true;
+	}
+}
+
  pair<bool, bool> BasicTurret::PlayerHitMe()
 {
+	Actor &player = owner->player;
+
+	if( player.currHitboxes != NULL )
+	{
+		bool hit = false;
+
+		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		{
+			if( hurtBody.Intersects( (*it) ) )
+			{
+				hit = true;
+				break;
+			}
+		}
+		
+
+		if( hit )
+		{
+			receivedHit = player.currHitboxInfo;
+			return pair<bool, bool>(true,false);
+		}
+		
+	}
+
+	for( int i = 0; i < player.recordedGhosts; ++i )
+	{
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		{
+			if( player.ghosts[i]->currHitboxes != NULL )
+			{
+				bool hit = false;
+				
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				{
+					if( hurtBody.Intersects( (*it) ) )
+					{
+						hit = true;
+						break;
+					}
+				}
+		
+
+				if( hit )
+				{
+					receivedHit = player.currHitboxInfo;
+					return pair<bool, bool>(true,true);
+				}
+			}
+			//player.ghosts[i]->curhi
+		}
+	}
 	return pair<bool, bool>(false,false);
 }
+
+ pair<bool, bool> BasicTurret::PlayerHitMyBullets()
+ {
+	 	return pair<bool, bool>(false,false);
+ }
 
 bool BasicTurret::PlayerSlowingMe()
 {
@@ -320,7 +429,32 @@ bool BasicTurret::PlayerSlowingMe()
 			currBullet->slowMultiple = 1;
 		}
 		currBullet = currBullet->next;
-	}	
+	}
+
+	//Actor &player = owner->player;
+	bool found = false;
+	for( int i = 0; i < player.maxBubbles; ++i )
+	{
+		if( player.bubbleFramesToLive[i] > 0 )
+		{
+			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			{
+				found = true;
+				if( slowMultiple == 1 )
+				{
+					slowCounter = 1;
+					slowMultiple = 5;
+				}
+				break;
+			}
+		}
+	}
+
+	if( !found )
+	{
+		slowCounter = 1;
+		slowMultiple = 1;
+	}
 
 	/*for( int i = 0; i < player.maxBubbles; ++i )
 		{
@@ -399,6 +533,14 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 }
 
 void BasicTurret::UpdateHitboxes()
+{
+	hurtBody.globalPosition = position + gn * 32.0;
+	hurtBody.globalAngle = 0;
+	hitBody.globalPosition = position + gn * 32.0;
+	hitBody.globalAngle = 0;
+}
+
+void BasicTurret::UpdateBulletHitboxes()
 {
 	Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )

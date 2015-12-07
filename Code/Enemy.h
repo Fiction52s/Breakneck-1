@@ -210,6 +210,7 @@ struct Crawler : Enemy
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> position;
 	sf::Vector2<double> tempVel;
 	
@@ -251,12 +252,16 @@ struct BasicTurret : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
+	bool IHitPlayerWithBullets();
 	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool, bool> PlayerHitMyBullets();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	
+	void UpdateBulletHitboxes();
+
+
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
@@ -299,6 +304,8 @@ struct BasicTurret : Enemy
 	Bullet *inactiveBullets;
 	HitboxInfo *bulletHitboxInfo;
 
+	
+
 	int framesWait;
 	int firingCounter;
 	Edge *ground;
@@ -306,6 +313,7 @@ struct BasicTurret : Enemy
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
 	
 	sf::Vector2<double> position;
 	double angle;

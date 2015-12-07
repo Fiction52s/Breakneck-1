@@ -2427,7 +2427,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -3712,13 +3712,14 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {
 	View vah = view;
-	double zoomFactor = 4.0;
+	double zoomFactor = 8.0;
 	double yChange = 0;
 	double zoom = view.getSize().x / 960.0;
 	double addZoom = (zoom - 1) / zoomFactor;
 	double newZoom = 1 + addZoom;
 
 	vah.setSize( 960 * newZoom, 540 * newZoom );
+	//vah.setSize( 960 * zoom, 540 * zoom );
 	vah.setCenter( vah.getCenter().x / zoomFactor, vah.getCenter().y / zoomFactor );
 
 	sf::RectangleShape rs;
@@ -3746,7 +3747,7 @@ void GameSession::SetParMountains( sf::RenderTarget *target )
 void GameSession::SetParMountains1( sf::RenderTarget *target )
 {
 	View vah = view;
-	double zoomFactor = 2;
+	double zoomFactor = 4;
 	double yChange = 200;
 	double zoom = view.getSize().x / 960.0;
 	double addZoom = (zoom - 1) / zoomFactor;
