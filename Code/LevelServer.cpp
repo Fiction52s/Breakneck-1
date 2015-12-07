@@ -25,6 +25,7 @@ bool LevelServer::DownloadFile( const std::string &path, const std::string &fnam
 		file.open(localFile);
 		file.write(body.c_str(), body.size());
 		file.close();
+		cout << "request succeeded. downloaded map" << endl;
 		return true;
     }
     else

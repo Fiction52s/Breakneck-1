@@ -3712,7 +3712,7 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {
 	View vah = view;
-	double zoomFactor = 8.0;
+	double zoomFactor = 4.0;
 	double yChange = 0;
 	double zoom = view.getSize().x / 960.0;
 	double addZoom = (zoom - 1) / zoomFactor;
@@ -3746,7 +3746,7 @@ void GameSession::SetParMountains( sf::RenderTarget *target )
 void GameSession::SetParMountains1( sf::RenderTarget *target )
 {
 	View vah = view;
-	double zoomFactor = 4;
+	double zoomFactor = 2;
 	double yChange = 200;
 	double zoom = view.getSize().x / 960.0;
 	double addZoom = (zoom - 1) / zoomFactor;

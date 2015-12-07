@@ -1763,6 +1763,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
+					//you can't dash on the ceiling with no horizontal input. probably a weakness
 					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
 						action = DASH;
@@ -1822,6 +1823,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( currInput.B || !canStandUp )
 					{
+						cout << "start dash" << endl;
 						action = DASH;
 						frame = 0;
 
@@ -1848,6 +1850,7 @@ void Actor::UpdatePrePhysics()
 					}
 				}
 			}
+			break;
 		
 
 
@@ -2372,22 +2375,25 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A && framesSinceClimbBoost > climbBoostLimit )
 			{
+				cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
 				double sp = 20.0;
 				double extra = 10.0;
 				if( gNorm.x > 0 && currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
+					//cout << "climb left" << endl;
 				}
 				else if( gNorm.x < 0 && currInput.LRight() )
 				{
 					groundSpeed = std::max( groundSpeed + extra, sp );
+					//cout << "climb right" << endl;
 				}
 				else
 				{
 					action = JUMP;
 					frame = 0;
-	
+					//cout << "jumping" << endl;
 					//groundSpeed = 0;
 				}
 				
@@ -2688,7 +2694,19 @@ void Actor::UpdatePrePhysics()
 			{
 				if( reversed )
 				{
-					velocity = -groundSpeed * normalize(V2d( 0, -1 ) + normalize(ground->v1 - ground->v0 ));
+
+					//so you dont jump straight up on a nearly vertical edge
+					double blah = .3;
+
+					V2d dir( 0, 0 );
+					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
+					{
+						dir = V2d( -blah, 0 );
+					}
+
+					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
+					velocity = -groundSpeed * trueNormal;
+					//velocity = -groundSpeed * normalize(V2d( 0, -1 ) + normalize(ground->v1 - ground->v0 ));
 					ground = NULL;
 					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
@@ -2702,18 +2720,14 @@ void Actor::UpdatePrePhysics()
 					double blah = .3;
 
 					V2d dir( 0, 0 );
-					if( groundSpeed > 0 && gNorm.x > 0 )
+					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
 					{
 						dir = V2d( blah, 0 );
 					}
-					else if( groundSpeed < 0 && gNorm.x < 0 )
-					{
-						dir = V2d( -blah, 0 );
-					}
-
 					
-
-					velocity = groundSpeed * normalize(dir + normalize(ground->v1 - ground->v0 ));
+					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
+					velocity = groundSpeed * trueNormal;
+					
 					if( currInput.B )
 					{
 						if( currInput.LRight() )
