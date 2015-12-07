@@ -2158,7 +2158,7 @@ int GameSession::Run( string fileN )
 		
 		//float depth = 3;
 		//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
-		SetCloudParAndDraw();
+		//SetCloudParAndDraw();
 
 
 		
@@ -3706,22 +3706,29 @@ void GameSession::SetParMountains( sf::RenderTarget *target )
 	//cout << "camzoom: " << cam.GetZoom() << ", my zoom: " << zoom << endl;
 	vah.setSize( 960 * zoom, 540 * zoom );
 	//vah.setCenter( vah.getCenter().x / 2, vah.getCenter().y / 2 );
-	cout << "vah: " << vah.getCenter().x << ", " << vah.getCenter().y << ", si: " << vah.getSize().x << ", " << vah.getSize().y << endl;
-	cout << "view: " << view.getCenter().x << ", " << view.getCenter().y << ", si: " << view.getSize().x << ", " << view.getSize().y << endl;
+	//cout << "vah: " << vah.getCenter().x << ", " << vah.getCenter().y << ", si: " << vah.getSize().x << ", " << vah.getSize().y << endl;
+	//cout << "view: " << view.getCenter().x << ", " << view.getCenter().y << ", si: " << view.getSize().x << ", " << view.getSize().y << endl;
 	sf::RectangleShape rs;
-	rs.setSize( Vector2f( vah.getSize().x, 512 / 2 ) );
-	rs.setFillColor( Color::White );
-	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, - 512 / 2 );
+	rs.setSize( Vector2f( vah.getSize().x, 512 ) );
+	rs.setFillColor( Color::Red );
+	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, - 512 );
 
 	mountainShader.setParameter( "Resolution", 1920, 1080 );
 	mountainShader.setParameter( "zoom", zoom );
 	//mountainShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
 	//	view.getCenter().y + view.getSize().y / 2 );
 
-	mountainShader.setParameter( "topLeft", vah.getCenter().x - vah.getSize().x / 2,
-		vah.getCenter().y + vah.getSize().y / 2 );
+	//mountainShader.setParameter( "topLeft", (vah.getCenter().x - vah.getSize().x) / 2.f,
+	//	(vah.getCenter().y + vah.getSize().y) / 2.f - 512 );
 
+	//mountainShader.setParameter( "topLeft",(vah.getCenter().x - vah.getSize().x) / 2.f,
+	//	view.getCenter().y + view.getSize().y / 2 );
+	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
+	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
 	preScreenTex->setView( vah );
+	trueBotLeft = preScreenTex->mapPixelToCoords( tempPos );
+
+	mountainShader.setParameter( "topLeft", trueBotLeft );
 
 	preScreenTex->draw( rs, &mountainShader );
 

@@ -160,7 +160,7 @@ void main()
 	
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1 - fc.y;
-	fc = fc * vec2( 960, 540 ) / Resolution;
+	fc = fc * vec2( 960 , 540 ) / Resolution;
 	
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 	
