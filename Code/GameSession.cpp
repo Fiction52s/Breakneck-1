@@ -1239,6 +1239,7 @@ bool GameSession::OpenFile( string fileName )
 
 					//always air
 
+
 					is >> xPos;
 					is >> yPos;
 					
@@ -1708,7 +1709,7 @@ int GameSession::Run( string fileN )
 		while ( accumulator >= TIMESTEP  )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
-			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
+			bool skipInput = false;//sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 			if( oneFrameMode )
 			{
 				//controller.UpdateState();
@@ -2427,7 +2428,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );

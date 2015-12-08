@@ -1049,7 +1049,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerBounce && currInput.X )
 			{
-				bounceGrounded = true;
+			//	bounceGrounded = true;
 			}
 			else
 			{

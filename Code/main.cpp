@@ -443,7 +443,8 @@ void CustomMapsOption( LevelSelector &ls )
 void NewCampaignOption()
 {
 	GameSession gs( controller, window, preScreenTexture, minimapTexture );
-	gs.Run( "test3.brknk" );
+	gs.Run( "Maps/aba.brknk" );
+
 }
 
 void LoadCampaignOption()
@@ -506,7 +507,7 @@ int main()
         //sf::RenderWindow window(i.front(), "SFML WORKS!", sf::Style::Fullscreen);
 		//window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 		//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-		window = new sf::RenderWindow( i.front(), "Breakneck", sf::Style::Default );
+		window = new sf::RenderWindow( i.front(), "Breakneck", sf::Style::None );
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 
@@ -617,7 +618,7 @@ int main()
 	//ls.UpdateMapList();
 	//ls.Print();
 	
-	Primitive prim;
+	/*Primitive prim;
 
 	glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
 	glClearColor(0.0f, 0.0f, 0.0f, 0.5f);				// Black Background
@@ -635,7 +636,7 @@ int main()
 	perspectiveGL(45.0f,(GLfloat)1920/(GLfloat)1080,0.1f,100.0f);
 
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
-	glLoadIdentity();	
+	glLoadIdentity();	*/
 
 
 	//cout << "beginning input loop" << endl;
@@ -722,8 +723,8 @@ int main()
 					else
 					{
 						//titleMusic.stop();
-						GameEditLoop2( "test3.brknk" );
-						window->setView( v );
+						//GameEditLoop2( "Maps/aba.brknk" );
+						//window->setView( v );
 						//titleMusic.play();
 					}
 					break;
@@ -761,8 +762,26 @@ int main()
 			ControllerState cs = controller.GetState();
 			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
 			{
-				GameEditLoop2( "test3.brknk" );
-				window->setView( v );
+				switch( currentMenuSelect )
+				{
+				case 0:
+					NewCampaignOption();
+					break;
+				case 1:
+					LoadCampaignOption();
+					break;
+				case 2:
+					CustomMapsOption( ls );
+					break;
+				case 3:
+					OptionsOption();
+					break;
+				case 4:
+					ExitOption();
+					break;
+				}
+				//GameEditLoop2( "test3.brknk" );
+				//window->setView( v );
 			}
 		}
 
@@ -779,7 +798,7 @@ int main()
 
 		
 		
-		prim.DrawTetrahedron( window );
+		//prim.DrawTetrahedron( window );
 
 		
 		//prim.Draw2( window );

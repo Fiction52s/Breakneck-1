@@ -92,7 +92,7 @@ void LevelSelector::UpdateMapList()
 	
 	std::string path = "test/";
 	std::string file = "map_online.brknk";
-   bool goodDownload = levelServer.DownloadFile( path, file );
+ //  bool goodDownload = levelServer.DownloadFile( path, file );
 
    
 	UpdateMapList( entries, "Maps" );
