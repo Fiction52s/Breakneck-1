@@ -33,16 +33,16 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 16;
-	hurtBody.rh = 16;
+	hurtBody.rw = 32;
+	hurtBody.rh = 32;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 16;
-	hitBody.rh = 16;
+	hitBody.rw = 32;
+	hitBody.rh = 32;
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
@@ -57,7 +57,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+	spawnRect = sf::Rect<double>( gPoint.x - 80, gPoint.y - 80, 80 * 2, 80 * 2 );
 
 	ts_death = owner->GetTileset( "foottrapdeath.png", 160, 80 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
