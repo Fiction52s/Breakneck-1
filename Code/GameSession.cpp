@@ -2457,7 +2457,7 @@ int GameSession::Run( string fileN )
 
 		borderTree->Query( this, minimapRect );
 
-		Color testColor( 0x75, 0x70, 0x90 );
+		Color testColor( 0x75, 0x70, 0x90, 191 );
 		listVAIter = listVA;
 		while( listVAIter != NULL )
 		{
@@ -2575,18 +2575,18 @@ int GameSession::Run( string fileN )
 		}
 
 		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
-		if( player.hasBlueKey )
+		if( player.hasGreenKey )
 		{
-			keyR.setFillColor( Color::Blue );
+			keyR.setFillColor( Color::Green );
 			preScreenTex->draw( keyR );
 			//cout << "drawing blue key" << endl; 
 		}
 
 		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
-		if( player.hasGreenKey )
+		if( player.hasBlueKey )
 		{
 			
-			keyR.setFillColor( Color::Green );
+			keyR.setFillColor( Color::Blue );
 			preScreenTex->draw( keyR );
 		//	cout << "drawing green key" << endl; 
 		}

@@ -103,7 +103,7 @@ Actor::Actor( GameSession *gs )
 
 		holdJump = false;
 
-		bounceBoostSpeed = 10;
+		bounceBoostSpeed = 5;
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -233,6 +233,9 @@ Actor::Actor( GameSession *gs )
 		ts_airBounceFlame = owner->GetTileset( "bouncejumpflame.png", 128, 128 );
 		ts_runBounceFlame = owner->GetTileset( "bouncerunflame.png", 128, 96 );
 
+		ts_bounceBoost = owner->GetTileset( "bounceboost_256x192.png", 256, 192 );
+
+		
 		airBounceFlameFrames = 20 * 3;
 		runBounceFlameFrames = 21 * 3;
 
@@ -336,7 +339,7 @@ Actor::Actor( GameSession *gs )
 		tileset[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
 		normal[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
 
-		actionLength[BOUNCEGROUND] = 5;
+		actionLength[BOUNCEGROUND] = 15;
 		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce.png", 96, 96 );
 		normal[BOUNCEGROUND] = owner->GetTileset( "bounce_NORMALS.png", 96, 96 );
 
@@ -467,6 +470,7 @@ Actor::Actor( GameSession *gs )
 		sprintAccel = .85;
 
 		holdDashAccel = .07;
+		bounceFlameAccel = .15;
 
 		dashHeight = 10;
 		normalHeight = 20;
@@ -1275,16 +1279,19 @@ void Actor::UpdatePrePhysics()
 				break;
 			}*/
 
-			if( hasPowerBounce && currInput.X && !prevInput.X )
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
+				//bounceGrounded = true;
 				bounceFlameOn = true;
 				airBounceFrame = 0;
-				//action = BOUNCEAIR;
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				//bounceEdge = NULL;
-				//frame = 0;
 				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
 			}
 
 			if( hasPowerAirDash )
@@ -1361,13 +1368,19 @@ void Actor::UpdatePrePhysics()
 	case DOUBLE:
 		{
 
-			if( hasPowerBounce && currInput.X && !prevInput.X )
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
+				//bounceGrounded = true;
 				bounceFlameOn = true;
-				//action = BOUNCEAIR;
+				airBounceFrame = 0;
 				oldBounceEdge = NULL;
-				//frame = 0;
+				bounceMovingTerrain = NULL;
 				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
 			}
 
 			if( hasPowerAirDash )
@@ -2340,6 +2353,19 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDE:
 		{
+
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				runBounceFrame = 0;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
+
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
 				SetActionGrind();
@@ -2465,6 +2491,19 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMB:
 		{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				runBounceFrame = 0;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
+
+
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
 				SetActionGrind();
@@ -2607,14 +2646,14 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			/*if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				action = DOUBLE;
 				frame = 0;
 				bounceFlameOn = true;
 				airBounceFrame = 13 * 3;
 				break;
-			}
+			}*/
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
@@ -2652,7 +2691,7 @@ void Actor::UpdatePrePhysics()
 
 			framesSinceBounce = 0;
 			V2d bn = bounceNorm;//bounceEdge->Normal();
-			if( frame == actionLength[BOUNCEGROUND] - 1 )
+			if( frame == actionLength[BOUNCEGROUND] - 1 || boostBounce )
 			{
 				framesInAir = 0;
 				action = BOUNCEAIR;
@@ -2734,18 +2773,21 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 				//	cout << "F" << endl;
-					velocity = V2d( -storedBounceVel.x, storedBounceVel.y );
+					velocity = V2d( -storedBounceVel.x, storedBounceVel.y ); 
 				}
 
-				double lenVel = length( storedBounceVel );
+				//velocity += V2d( 0, -gravity * slowMultiple );
+
+
+				/*double lenVel = length( storedBounceVel );
 				double reflX = cross( normalize( -storedBounceVel ), bn );
 				double reflY = dot( normalize( -storedBounceVel ), bn );
 				V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
-				velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
+				velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;*/
 
 				if( boostBounce )
 				{
-					velocity += bn * bounceBoostSpeed;
+					velocity += bn * bounceBoostSpeed / (double)slowMultiple;
 					boostBounce = false;
 				}
 
@@ -3188,39 +3230,57 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = dashSpeed;
 			}
 
+			double minFactor = .2;
+			double factor = abs( gNorm.x );
+			factor = std::max( factor, minFactor );
+
 			if( currInput.LDown() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
 				if( facingRight )
 				{
-					groundSpeed += sprintAccel * abs( gNorm.x );
+					groundSpeed += sprintAccel * factor / slowMultiple;
 				}
 				else 
 				{
-					groundSpeed -= sprintAccel * abs( gNorm.x );
+					groundSpeed -= sprintAccel * factor / slowMultiple;
 				}
 			}
 			else if( currInput.LUp() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
+				double upMax = .3;
+
+				factor = std::min( factor, upMax );
+
 				if( facingRight )
 				{
-					groundSpeed += sprintAccel/2;
+					groundSpeed += sprintAccel * factor / slowMultiple; 
 				}
 				else 
-				{
-					groundSpeed -= sprintAccel/2;
+				{	
+					groundSpeed -= sprintAccel * factor / slowMultiple; 
 				}
 			}
 			else
 			{
+				if( !bounceFlameOn )
+				{
+					if( facingRight )
+					{
+						groundSpeed += holdDashAccel / slowMultiple;
+					}
+					else
+					{
+						groundSpeed -= holdDashAccel / slowMultiple;
+					}
+				}
+			}
+
+			if( bounceFlameOn )
+			{
 				if( facingRight )
-				{
-					groundSpeed += holdDashAccel;
-				}
+					groundSpeed += bounceFlameAccel / slowMultiple;
 				else
-				{
-					groundSpeed -= holdDashAccel;
-				}
-			
+					groundSpeed -= bounceFlameAccel / slowMultiple;
 			}
 			break;
 		}
@@ -3325,10 +3385,21 @@ void Actor::UpdatePrePhysics()
 							
 							if( factor > upMax  )
 								factor = upMax;
+
+							if( bounceFlameOn )
+							{
+								groundSpeed -= bounceFlameAccel / slowMultiple;
+							}
+
 							groundSpeed -= sprintAccel * factor / slowMultiple; 
 						}
 						else
 						{	
+							if( bounceFlameOn )
+							{
+								groundSpeed -= bounceFlameAccel / slowMultiple;
+							}
+
 							groundSpeed -= sprintAccel * factor / slowMultiple;
 							//down a slope
 						}
@@ -3364,10 +3435,22 @@ void Actor::UpdatePrePhysics()
 							
 							if( factor > upMax  )
 								factor = upMax;
+
+							if( bounceFlameOn )
+							{
+								groundSpeed += bounceFlameAccel / slowMultiple;
+							}
+
 							groundSpeed += sprintAccel * factor / slowMultiple; 
 						}
 						else
 						{	
+
+							if( bounceFlameOn )
+							{
+								groundSpeed += bounceFlameAccel / slowMultiple;
+							}
+
 							groundSpeed += sprintAccel * factor / slowMultiple;
 							//down a slope
 						}
@@ -3723,9 +3806,19 @@ void Actor::UpdatePrePhysics()
 		}
 	case BOUNCEGROUND:
 		{
+			
+
 			if( !boostBounce && currInput.A && !prevInput.A )
 			{
+				
 				boostBounce = true;
+
+				
+				V2d bouncePos = bounceEdge->GetPoint( bounceQuant );
+				V2d bn = bounceEdge->Normal();
+				double angle = atan2( bn.x, -bn.y );
+				bouncePos += bn * 80.0;
+				owner->ActivateEffect( ts_bounceBoost, bouncePos, false, angle, 30, 1, facingRight );
 			}
 
 			velocity.x = 0;
@@ -3735,15 +3828,18 @@ void Actor::UpdatePrePhysics()
 		}
 	case BOUNCEGROUNDEDWALL:
 		{
+			//cout << "isfacing right: " << facingRight << endl;
 			if( frame == 0 )
 			{
-				storedBounceGroundSpeed = groundSpeed;
+				//cout << "storedBounceGround: " << groundSpeed << endl;
+				//storedBounceGroundSpeed = groundSpeed;
 				groundSpeed = 0;
 			}
 			else if( frame == 6 )
 			{
-				groundSpeed = -storedBounceGroundSpeed;
 				
+				groundSpeed = -storedBounceGroundSpeed;
+				cout << "set ground speed to: " << groundSpeed << endl;
 			}
 			break;
 		}
@@ -5317,7 +5413,7 @@ V2d Actor::UpdateReversePhysics()
 
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
-								storedBounceGroundSpeed = groundSpeed;
+								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
 
@@ -5403,7 +5499,7 @@ V2d Actor::UpdateReversePhysics()
 						{
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
-								storedBounceGroundSpeed = groundSpeed;
+								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
 
@@ -5444,7 +5540,7 @@ V2d Actor::UpdateReversePhysics()
 						{
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
-								storedBounceGroundSpeed = groundSpeed;
+								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
 
@@ -5603,7 +5699,7 @@ V2d Actor::UpdateReversePhysics()
 						{
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
-								storedBounceGroundSpeed = groundSpeed;
+								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
 
@@ -6327,7 +6423,7 @@ void Actor::UpdatePhysics()
 						{
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
-								storedBounceGroundSpeed = groundSpeed;
+								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
 
@@ -6367,7 +6463,7 @@ void Actor::UpdatePhysics()
 						{
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
-								storedBounceGroundSpeed = groundSpeed;
+								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
 
@@ -6386,7 +6482,8 @@ void Actor::UpdatePhysics()
 					}
 				}
 
-				if( !approxEquals( m, 0 ) )
+				//only want this to fire if secret doesn't happen
+				else//if( !approxEquals( m, 0 ) )
 				{	
 					bool down = true;
 					V2d oldPos = position;
@@ -6538,7 +6635,7 @@ void Actor::UpdatePhysics()
 								{
 									if( bounceFlameOn && abs( groundSpeed ) > 1)
 									{
-										storedBounceGroundSpeed = groundSpeed;
+										storedBounceGroundSpeed = groundSpeed * slowMultiple;
 										groundedWallBounce = true;
 									}
 									//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
@@ -7734,6 +7831,8 @@ void Actor::UpdatePostPhysics()
 		//cout << "bounce" << endl;
 		action = BOUNCEGROUNDEDWALL;
 		frame = 0;
+
+		facingRight = !facingRight;
 	}
 	//display action
 
@@ -9290,10 +9389,10 @@ void Actor::UpdatePostPhysics()
 		}
 	case BOUNCEGROUNDEDWALL:
 		{
-			if( frame == 0 )
-			{
-				facingRight = !facingRight;
-			}
+			//if( frame == 0 && slowCounter == 1 )
+			//{
+				
+			//}
 
 			sprite->setTexture( *(tileset[BOUNCEGROUNDEDWALL]->texture));
 
@@ -9392,19 +9491,27 @@ void Actor::UpdatePostPhysics()
 		{
 			bounceFlameSprite.setTexture( *ts_airBounceFlame->texture );
 			bounceFlameSprite.setTextureRect( ts_airBounceFlame->GetSubRect( airBounceFrame / 3 ) );
-			if( !facingRight )
+
+			//double angle = 0;
+			//angle = atan2( velocity.y, velocity.x );
+
+			if( velocity.x < 0  )
 			{
 				sf::IntRect r = bounceFlameSprite.getTextureRect();
 				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
 			}
+
 			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height / 2 );
 			bounceFlameSprite.setPosition( sprite->getPosition() );
+			
+			//bounceFlameSprite.setRotation( angle / PI * 180 );
+			bounceFlameSprite.setRotation( 0 );
 		}
 		else
 		{
 			bounceFlameSprite.setTexture( *ts_runBounceFlame->texture );
 			bounceFlameSprite.setTextureRect( ts_runBounceFlame->GetSubRect( runBounceFrame / 3 ) );
-			if( !facingRight )
+			if( ( groundSpeed < 0 && !reversed ) || ( groundSpeed > 0 && reversed ) )
 			{
 				sf::IntRect r = bounceFlameSprite.getTextureRect();
 				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
@@ -11033,11 +11140,18 @@ void Actor::RunMovement()
 			}
 				
 		}
-			
-		if( currInput.B )
+		
+		if( bounceFlameOn )
+		{
+			groundSpeed -= bounceFlameAccel / slowMultiple;
+		}
+		else if( currInput.B )
 		{
 			groundSpeed -= holdDashAccel / slowMultiple;
 		}
+
+		
+
 
 		facingRight = false;
 	}
@@ -11059,10 +11173,16 @@ void Actor::RunMovement()
 			}
 		}
 
-		if( currInput.B )
+		if( bounceFlameOn )
+		{
+			groundSpeed += bounceFlameAccel / slowMultiple;
+		}
+		else if( currInput.B )
 		{
 			groundSpeed += holdDashAccel / slowMultiple;
 		}
+
+		
 
 		facingRight = true;
 	}

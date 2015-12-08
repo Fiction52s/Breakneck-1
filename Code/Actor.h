@@ -140,7 +140,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
 
-
+	//new variables in here that need to work with clone power later
 	int runBounceFlameFrames;
 	int runBounceFrame;
 	Tileset *ts_runBounceFlame;
@@ -151,6 +151,9 @@ struct Actor : QuadTreeCollider,
 
 	bool bounceFlameOn;
 	sf::Sprite bounceFlameSprite;
+	double bounceFlameAccel;
+
+	Tileset *ts_bounceBoost;
 
 
 	
