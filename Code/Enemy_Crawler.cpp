@@ -67,6 +67,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 
 void Crawler::ResetEnemy()
 {
+	roll = false;
 	ground = startGround;
 	edgeQuantity = startQuant;
 	V2d gPoint = ground->GetPoint( edgeQuantity );
@@ -85,6 +86,22 @@ void Crawler::ResetEnemy()
 	position = gPoint + offset;
 
 	dead = false;
+
+	//----update the sprite
+	double angle = 0;
+	position = gPoint + gn * 16.0;
+	angle = atan2( gn.x, -gn.y );
+		
+	sprite.setTexture( *ts_walk->texture );
+	sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
+	V2d pp = ground->GetPoint( edgeQuantity );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	sprite.setRotation( angle / PI * 180 );
+	sprite.setPosition( pp.x, pp.y );
+	//----
+
+	UpdateHitboxes();
+
 }
 
 void Crawler::HandleEntrant( QuadTreeEntrant *qte )
@@ -179,8 +196,6 @@ void Crawler::UpdatePrePhysics()
 		frame = 0;
 	}
 	groundSpeed = 1.5;
-
-	
 }
 
 void Crawler::UpdatePhysics()
@@ -1976,6 +1991,7 @@ void Crawler::UpdatePostPhysics()
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setPosition( pp.x, pp.y );
 		}
+	
 
 		UpdateHitboxes();
 
@@ -2014,6 +2030,7 @@ void Crawler::UpdatePostPhysics()
 		}
 
 	}
+
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
@@ -2052,7 +2069,8 @@ bool Crawler::PlayerSlowingMe()
 
 void Crawler::Draw(sf::RenderTarget *target )
 {
-	target->draw( sprite );
+	if( !dead )
+		target->draw( sprite );
 }
 
 bool Crawler::IHitPlayer()
@@ -2130,16 +2148,20 @@ void Crawler::UpdateSprite()
 
 void Crawler::DebugDraw( RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setFillColor( Color::Cyan );
-	cs.setRadius( 10 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	V2d g = ground->GetPoint( edgeQuantity );
-	cs.setPosition( g.x, g.y );
+	if( !dead )
+	{
 
-	owner->window->draw( cs );
+		CircleShape cs;
+		cs.setFillColor( Color::Cyan );
+		cs.setRadius( 10 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		V2d g = ground->GetPoint( edgeQuantity );
+		cs.setPosition( g.x, g.y );
 
-	physBody.DebugDraw( target );
+		//owner->window->draw( cs );
+		//UpdateHitboxes();
+		physBody.DebugDraw( target );
+	}
 //	hurtBody.DebugDraw( target );
 //	hitBody.DebugDraw( target );
 }

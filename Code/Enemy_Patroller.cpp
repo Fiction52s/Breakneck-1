@@ -101,8 +101,14 @@ void Patroller::ResetEnemy()
 	forward = true;
 	dead = false;
 	deathFrame = 0;
+	frame = 0;
 	position.x = path[0].x;
 	position.y = path[0].y;
+
+	UpdateHitboxes();
+
+	UpdateSprite();
+	
 }
 
 void Patroller::UpdatePrePhysics()
