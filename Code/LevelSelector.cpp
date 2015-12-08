@@ -297,7 +297,7 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 				for (vector<path>::const_iterator it (v.begin()); it != v.end(); ++it)
 				{
 					UpdateMapList( newDir, relativePath + "/" + (*it).filename().string() );
-					//cout << "   " << *it << '\n';
+					cout << "   " << *it << '\n';
 				}
 			}
 			else
