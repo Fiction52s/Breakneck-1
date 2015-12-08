@@ -785,11 +785,11 @@ int main()
 			}
 		}
 
-		window->pushGLStates();
+		//window->pushGLStates();
 		window->setView( v );
 		window->draw( titleSprite );
 		window->draw( menu );	
-		window->popGLStates();
+		//window->popGLStates();
 		
 		//window->setView( window->getDefaultView() );
 		
@@ -803,7 +803,7 @@ int main()
 		
 		//prim.Draw2( window );
 
-		window->pushGLStates();
+		//window->pushGLStates();
 		
 		window->setView( uiView );
 
@@ -822,7 +822,7 @@ int main()
 			window->draw( mainMenu[i] );
 		}
 
-		window->popGLStates();
+		//window->popGLStates();
 
 		window->display();
 	}

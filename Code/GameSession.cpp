@@ -80,7 +80,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	mountainShader1.setParameter( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
+	mountainShader1.setParameter( "u_texture", *GetTileset( "w1mountains2.png", 1920, 406 )->texture );
 
 	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
@@ -2510,12 +2510,33 @@ int GameSession::Run( string fileN )
 			//gateList->Draw( preScreenTex );
 			if( gateList->locked )
 			{
-				sf::Vertex activePreview[2] =
+
+				V2d along = normalize(gateList->v1 - gateList->v0);
+				V2d other( along.y, -along.x );
+				double width = 25;
+				
+				
+
+				V2d leftGround = gateList->v0 + other * -width;
+				V2d rightGround = gateList->v0 + other * width;
+				V2d leftAir = gateList->v1 + other * -width;
+				V2d rightAir = gateList->v1 + other * width;
+				
+				sf::Vertex activePreview[4] =
 				{
-					sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
-					sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c )
+					//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
+					//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
+
+					sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
+					sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
+
+
+					sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->c ),
+
+					
+					sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->c )
 				};
-				minimapTex->draw( activePreview, 2, sf::Lines );
+				minimapTex->draw( activePreview, 4, sf::Quads );
 			}
 
 			Gate *next = (Gate*)gateList->edge1;
@@ -3713,8 +3734,8 @@ void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {
 	View vah = view;
-	double zoomFactor = 8.0;
-	double yChange = 0;
+	double zoomFactor = 6.0;
+	double yChange = 100;
 	double zoom = view.getSize().x / 960.0;
 	double addZoom = (zoom - 1) / zoomFactor;
 	double newZoom = 1 + addZoom;
@@ -3730,6 +3751,7 @@ void GameSession::SetParMountains( sf::RenderTarget *target )
 
 	mountainShader.setParameter( "Resolution", 1920, 1080 );
 	mountainShader.setParameter( "zoom", newZoom );
+	mountainShader.setParameter( "size", 1920, 1024 );
 	
 	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
 	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
@@ -3759,12 +3781,14 @@ void GameSession::SetParMountains1( sf::RenderTarget *target )
 	vah.setCenter( vah.getCenter().x / zoomFactor, vah.getCenter().y / zoomFactor );
 	
 	sf::RectangleShape rs;
-	rs.setSize( Vector2f( vah.getSize().x, 512 ) );
+	rs.setSize( Vector2f( vah.getSize().x, 406 ) );
 	//rs.setFillColor( Color::Red );
-	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, -512 + yChange );//- 512 );
+	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, -406 + yChange );//- 512 );
 
 	mountainShader1.setParameter( "Resolution", 1920, 1080 );
 	mountainShader1.setParameter( "zoom", newZoom );
+	mountainShader1.setParameter( "size", 1920, 812 );
+	
 	
 	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
 	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );

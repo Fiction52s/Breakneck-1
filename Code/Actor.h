@@ -140,6 +140,19 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
 
+
+	int runBounceFlameFrames;
+	int runBounceFrame;
+	Tileset *ts_runBounceFlame;
+	
+	int airBounceFlameFrames;
+	int airBounceFrame;
+	Tileset *ts_airBounceFlame;
+
+	bool bounceFlameOn;
+	sf::Sprite bounceFlameSprite;
+
+
 	
 	double offSlopeByWallThresh;
 	const static int MAX_MOTION_GHOSTS = 2;
