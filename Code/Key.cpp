@@ -165,6 +165,8 @@ void Key::UpdatePhysics()
 			}
 		}
 	}
+
+	PhysicsResponse();
 }
 
 void Key::AdvanceTargetNode()
@@ -198,7 +200,7 @@ void Key::AdvanceTargetNode()
 	}
 }
 
-void Key::UpdatePostPhysics()
+void Key::PhysicsResponse()
 {
 	Actor &player = owner->player;
 
@@ -247,6 +249,11 @@ void Key::UpdatePostPhysics()
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
+}
+
+void Key::UpdatePostPhysics()
+{
+	
 
 	UpdateSprite();
 

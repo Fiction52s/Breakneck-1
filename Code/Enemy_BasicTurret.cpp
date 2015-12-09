@@ -177,7 +177,7 @@ void BasicTurret::UpdatePhysics()
 		Bullet *next = currBullet->next;
 		//cout << "moving bullet" << endl;
 
-		double movement = bulletSpeed / (double)currBullet->slowMultiple;
+		double movement = bulletSpeed / (double)currBullet->slowMultiple / NUM_STEPS;
 		//cout << "movement at bullet " << i << ": "  << movement << endl;
 		double speed;
 		while( movement > 0 )
@@ -205,9 +205,11 @@ void BasicTurret::UpdatePhysics()
 		currBullet = next;
 		++i;
 	}
+
+	PhysicsResponse();
 }
 
-void BasicTurret::UpdatePostPhysics()
+void BasicTurret::PhysicsResponse()
 {
 	PlayerSlowingMe();
 
@@ -271,6 +273,11 @@ void BasicTurret::UpdatePostPhysics()
 			frame = 0;
 		}
 	}
+}
+
+void BasicTurret::UpdatePostPhysics()
+{
+	
 
 	
 	//cout << "slowcounter: " << slowCounter << endl;

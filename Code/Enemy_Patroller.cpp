@@ -38,7 +38,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 
 
-	speed = 2;
+	//speed = 2;
 	frame = 0;
 
 	animationFactor = 3;
@@ -122,7 +122,7 @@ void Patroller::UpdatePhysics()
 	//position = V2d( path[targetNode].x, path[targetNode].y );
 
 
-	double movement = speed;
+	double movement = speed / NUM_STEPS;
 	
 	if( PlayerSlowingMe() )
 	{
@@ -163,6 +163,34 @@ void Patroller::UpdatePhysics()
 			}
 		}
 	}
+
+	PhysicsResponse();
+}
+
+void Patroller::PhysicsResponse()
+{
+	if( !dead )
+	{
+		UpdateHitboxes();
+
+		pair<bool,bool> result = PlayerHitMe();
+		if( result.first )
+		{
+		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
+			if( !result.second )
+			{
+				owner->Pause( 6 );
+			}
+		
+			dead = true;
+			receivedHit = NULL;
+		}
+
+		if( IHitPlayer() )
+		{
+		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		}
+	}
 }
 
 void Patroller::AdvanceTargetNode()
@@ -198,28 +226,7 @@ void Patroller::AdvanceTargetNode()
 
 void Patroller::UpdatePostPhysics()
 {
-	if( !dead )
-	{
-		UpdateHitboxes();
-
-		pair<bool,bool> result = PlayerHitMe();
-		if( result.first )
-		{
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
-			{
-				owner->Pause( 6 );
-			}
-		
-			dead = true;
-			receivedHit = NULL;
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-	}
+	
 
 	UpdateSprite();
 

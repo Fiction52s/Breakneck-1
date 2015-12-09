@@ -107,6 +107,9 @@ struct Patroller : Enemy
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
@@ -182,6 +185,7 @@ struct Crawler : Enemy
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void PhysicsResponse();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
@@ -249,6 +253,7 @@ struct BasicTurret : Enemy
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void PhysicsResponse();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
@@ -454,6 +459,7 @@ struct Key : Enemy
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void PhysicsResponse();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);

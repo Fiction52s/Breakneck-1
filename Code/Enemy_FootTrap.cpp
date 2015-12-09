@@ -103,10 +103,7 @@ void FootTrap::UpdatePhysics()
 		slowMultiple = 1;
 		slowCounter = 1;
 	}
-}
 
-void FootTrap::UpdatePostPhysics()
-{
 	if( !dead )
 	{
 		UpdateHitboxes();
@@ -129,6 +126,13 @@ void FootTrap::UpdatePostPhysics()
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
+}
+
+
+
+void FootTrap::UpdatePostPhysics()
+{
+	
 
 	
 

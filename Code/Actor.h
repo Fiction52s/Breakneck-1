@@ -58,7 +58,11 @@ struct Actor : QuadTreeCollider,
 	void UpdatePrePhysics();
 	void ApplyHit( HitboxInfo *info );
 	bool ResolvePhysics( sf::Vector2<double> vel );
+
 	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool CheckStandUp();

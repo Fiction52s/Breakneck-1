@@ -220,11 +220,23 @@ void GameSession::UpdateEnemiesPrePhysics()
 
 void GameSession::UpdateEnemiesPhysics()
 {
-	Enemy *current = activeEnemyList;
-	while( current != NULL )
+	player.physicsOver = false;
+	///for( int i = 0; i < NUM_STEPS; ++i )
+	//	player.UpdatePhysics( );
+
+
+	for( int i = 0; i < NUM_STEPS; ++i )
 	{
-		current->UpdatePhysics();
-		current = current->next;
+		player.UpdatePhysics();
+
+		Enemy *current = activeEnemyList;
+		while( current != NULL )
+		{
+			
+			current->UpdatePhysics();
+		
+			current = current->next;
+		}
 	}
 }
 
@@ -1277,7 +1289,6 @@ bool GameSession::OpenFile( string fileName )
 
 					float speed;
 					is >> speed;
-
 					Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
 					enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 				}
@@ -1709,7 +1720,7 @@ int GameSession::Run( string fileN )
 		while ( accumulator >= TIMESTEP  )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
-			bool skipInput = false;//sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
+			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 			if( oneFrameMode )
 			{
 				//controller.UpdateState();
@@ -2011,7 +2022,7 @@ int GameSession::Run( string fileN )
 					(*it)->UpdatePhysics();
 				}
 
-				player.UpdatePhysics( );
+				
 
 				UpdateEnemiesPhysics();
 

@@ -4443,9 +4443,7 @@ void Actor::UpdatePrePhysics()
 	groundedWallBounce = false;
 
 
-	groundSpeed /= slowMultiple;
-	velocity /= (double)slowMultiple;
-	grindSpeed /= slowMultiple;
+	
 
 	touchEdgeWithLeftWire = false;
 	touchEdgeWithRightWire = false;
@@ -5768,6 +5766,10 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
+	double temp_groundSpeed = groundSpeed / slowMultiple;
+	V2d temp_velocity = velocity / (double)slowMultiple;
+	double temp_grindSpeed = temp_grindSpeed / slowMultiple;
+
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
@@ -5782,16 +5784,19 @@ void Actor::UpdatePhysics()
 			reversed = false;
 			grindSpeed = -grindSpeed;
 		}
-		movement = grindSpeed;
+		movement = temp_grindSpeed / NUM_STEPS;
 	}
 	else if( ground != NULL )
 	{
-		movement = groundSpeed;
+		movement = temp_groundSpeed / NUM_STEPS;
 	}
 	else
 	{
-		movementVec = velocity;
+		movementVec = temp_velocity / NUM_STEPS;
 	}
+
+	if( physicsOver )
+		return;
 
 
 	
@@ -7296,14 +7301,360 @@ void Actor::UpdatePhysics()
 
 		}
 	}
-	
-	if( ground != NULL && movement == 0 )
+
+	PhysicsResponse();
+}
+
+void Actor::PhysicsResponse()
+{
+	//velocity *= (double)slowMultiple;
+	//groundSpeed *= slowMultiple;
+	//grindSpeed *= slowMultiple;
+
+	V2d gn;
+
+	if( grindEdge != NULL )
 	{
-	//	cout << "extra update" << endl;
-	//	rightWire->UpdateAnchors( V2d( 0, 0 ) );
-	//	leftWire->UpdateAnchors( V2d( 0, 0 ) );
+		framesInAir = 0;
+
+		V2d oldv0 = grindEdge->v0;
+		V2d oldv1 = grindEdge->v1;
+
+
+		if( grindMovingTerrain != NULL )
+		{
+			grindEdge->v0 += grindMovingTerrain->position;
+			grindEdge->v1 += grindMovingTerrain->position;
+		}
+
+
+		V2d grindPoint = grindEdge->GetPoint( grindQuantity );
+
+		if( grindMovingTerrain != NULL )
+		{
+			grindEdge->v0 = oldv0;
+			grindEdge->v1 = oldv1;
+		}
+
+		position = grindPoint;
+	}
+	else if( bounceEdge != NULL )
+	{
+		V2d bn = bounceNorm;
+
+		if( action == BOUNCEAIR || bounceFlameOn )
+		{
+			physicsOver = true;
+			//cout << "BOUNCING HERE" << endl;
+
+			storedBounceVel = velocity;
+			bounceFlameOn = false;
+
+			action = BOUNCEGROUND;
+			boostBounce = false;
+			frame = 0;
+
+			if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
+				{
+					facingRight = !facingRight;
+				}
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
+					facingRight = !facingRight;
+			}
+			else if( bn.y == 0  )
+			{
+				facingRight = !facingRight;
+			}
+			else if( bn.y < 0 )
+			{
+				hasGravReverse = true;
+				hasDoubleJump = true;
+				hasAirDash = true;
+				lastWire = 0;
+
+				if( abs( storedBounceVel.y ) < 10 )
+				{
+					//cout << "land: " << abs(storedBounceVel.y) << endl;
+					bounceFlameOn = true;
+					runBounceFrame = 4 * 3;
+					action = LAND;
+					frame = 0;
+					//bounceEdge = NULL;
+					ground = bounceEdge;
+					edgeQuantity = bounceQuant;
+					bounceEdge = NULL;
+					
+				}
+			}
+
+			if( bn.y != 0 )
+			{
+				if( bounceEdge != NULL )
+				{
+					V2d oldv0 = bounceEdge->v0;
+					V2d oldv1 = bounceEdge->v1;
+
+					if( bounceMovingTerrain != NULL )
+					{
+						bounceEdge->v0 += bounceMovingTerrain->position;
+						bounceEdge->v1 += bounceMovingTerrain->position;
+					}
+
+					position = bounceEdge->GetPoint( bounceQuant );
+
+					if( bounceMovingTerrain != NULL )
+					{
+						bounceEdge->v0 = oldv0;
+						bounceEdge->v1 = oldv1;
+					}
+				}
+				else
+				{
+					V2d oldv0 = ground->v0;
+					V2d oldv1 = ground->v1;
+
+					if( movingGround != NULL )
+					{
+						ground->v0 += movingGround->position;
+						ground->v1 += movingGround->position;
+					}
+
+					position = ground->GetPoint( bounceQuant );
+
+					if( movingGround != NULL )
+					{
+						ground->v0 = oldv0;
+						ground->v1 = oldv1;
+					}
+				}
+		
+				position.x += offsetX + b.offset.x;
+
+				if( bn.y > 0 )
+				{
+					{
+						position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					}
+				}
+				else
+				{
+					if( bn.y < 0 )
+					{
+						position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					}
+				}
+			}
+		}
+
+	}
+	else if( ground != NULL )
+	{
+		framesInAir = 0;
+		gn = ground->Normal();
+		if( collision )
+		{
+			if( action == AIRHITSTUN )
+			{
+				action = GROUNDHITSTUN;
+				frame = 0;
+			}
+			else
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					action = LAND2;
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
+					frame = 0;
+				}
+				else
+				{
+					//cout << "l" << endl;
+					action = LAND;
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
+					frame = 0;
+				}
+			}
+		}
+
+
+		V2d oldv0 = ground->v0;
+		V2d oldv1 = ground->v1;
+
+		if( movingGround != NULL )
+		{
+			ground->v0 += movingGround->position;
+			ground->v1 += movingGround->position;
+		}
+
+		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
+
+		if( movingGround != NULL )
+		{
+			ground->v0 = oldv0;
+			ground->v1 = oldv1;
+		}
+		
+		position = groundPoint;
+		
+		position.x += offsetX + b.offset.x;
+
+		if( reversed )
+		{
+			if( gn.y > 0 || abs( offsetX ) != b.rw )
+			{
+				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			}
+		}
+		else
+		{
+			if( gn.y < 0 || abs( offsetX ) != b.rw )
+			{
+				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+			}
+		}
+
+		if( reversed )
+		{
+			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (-gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
+			{
+				action = LAND2;
+				frame = 0;
+			}
+		}
+		else
+		{
+			
+			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
+			{
+				action = LAND2;
+				frame = 0;
+			}
+			else
+			{
+
+			}
+		}
+		
+	}
+	else
+	{
+		if( slowCounter == slowMultiple )
+		{
+			if( wallJumpFrameCounter < wallJumpMovementLimit )
+				wallJumpFrameCounter++;
+			framesInAir++;
+
+			if( action == BOUNCEAIR && oldBounceEdge != NULL )
+			{
+				framesSinceBounce++;
+			}
+		}
+
+		if( action == GROUNDHITSTUN )
+		{
+			action = AIRHITSTUN;
+			frame = 0;
+		}
+
+		if( action != AIRHITSTUN )
+		{
+			Action oldAction = action;
+			if( collision )
+			{
+				if( length( wallNormal ) > 0 && oldVelocity.y >= 8 )
+				{
+					if( wallNormal.x > 0)
+					{
+						if( currInput.LLeft() )
+						{
+							
+							facingRight = true;
+							action = WALLCLING;
+							frame = 0;
+						}
+					}
+					else
+					{
+						if( currInput.LRight() )
+						{
+							facingRight = false;
+							action = WALLCLING;
+							frame = 0;
+						}
+					
+					}
+				}
+			}
+			
+			if( oldAction == WALLCLING )
+			{
+				bool stopWallClinging = false;
+				if( collision && length( wallNormal ) > 0 )
+				{
+					if( wallNormal.x > 0 )
+					{
+						if( !currInput.LLeft() )
+						{
+							stopWallClinging = true;
+						}
+					}
+					else
+					{
+						if( !currInput.LRight() )
+						{
+							stopWallClinging = true;
+						}
+					}
+				}
+				else
+				{
+					stopWallClinging = true;
+					
+				}
+
+				if( stopWallClinging )
+				{
+					action = JUMP;
+					frame = 1;
+				}
+			}
+
+			if( leftGround )
+			{
+				action = JUMP;
+				frame = 1;
+				
+			}
+		}
 	}
 
+	if( groundedWallBounce )
+	{
+		action = BOUNCEGROUNDEDWALL;
+		frame = 0;
+
+		//already bounced by here i think
+		if( groundSpeed < 0 )
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+	}
+
+	rightWire->UpdateAnchors(V2d( 0, 0 ));
+	leftWire->UpdateAnchors(V2d( 0, 0 ));
+
+	UpdateHitboxes();
 }
 
 void Actor::UpdateHitboxes()
@@ -7423,6 +7774,11 @@ void Actor::UpdatePostPhysics()
 	//	rightWire->segmentLength = length( rightWire->points[rightWire->numPoints-1].pos - position );
 	}
 
+	
+	V2d gn;
+	if( ground != NULL )
+		gn = ground->Normal();
+
 	if( action == DEATH )
 	{
 		sh.setParameter( "On0", false );
@@ -7454,404 +7810,6 @@ void Actor::UpdatePostPhysics()
 		//	slowCounter++;
 		return;
 	}
-
-	velocity *= (double)slowMultiple;
-	groundSpeed *= slowMultiple;
-	grindSpeed *= slowMultiple;
-
-	V2d gn;
-
-	if( grindEdge != NULL )
-	{
-		framesInAir = 0;
-
-		V2d oldv0 = grindEdge->v0;
-		V2d oldv1 = grindEdge->v1;
-
-
-		if( grindMovingTerrain != NULL )
-		{
-			grindEdge->v0 += grindMovingTerrain->position;
-			grindEdge->v1 += grindMovingTerrain->position;
-		}
-
-
-		V2d grindPoint = grindEdge->GetPoint( grindQuantity );
-
-		if( grindMovingTerrain != NULL )
-		{
-			grindEdge->v0 = oldv0;
-			grindEdge->v1 = oldv1;
-		}
-
-		position = grindPoint;
-	//	assert( action != AIRHITSTUN );
-	}
-	else if( bounceEdge != NULL )
-	{
-		V2d bn = bounceNorm;
-		//cout << "bouncing here seriously" << endl;
-		if( action == BOUNCEAIR || bounceFlameOn )
-		{
-			cout << "BOUNCING HERE" << endl;
-
-			storedBounceVel = velocity;
-			bounceFlameOn = false;
-
-			action = BOUNCEGROUND;
-			boostBounce = false;
-			frame = 0;
-
-			//bounceEdge->Normal();
-
-			
-
-			if( bn.y <= 0 && bn.y > -steepThresh )
-			{
-				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
-				{
-					facingRight = !facingRight;
-				}
-			}
-			else if( bn.y >= 0 && -bn.y > -steepThresh )
-			{
-				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
-					facingRight = !facingRight;
-			}
-			else if( bn.y == 0  )
-			{
-				facingRight = !facingRight;
-			}
-			else if( bn.y < 0 )
-			{
-				hasGravReverse = true;
-				hasDoubleJump = true;
-				hasAirDash = true;
-				lastWire = 0;
-
-				if( abs( storedBounceVel.y ) < 10 )
-				{
-					bounceFlameOn = true;
-					runBounceFrame = 4 * 3;
-					action = LAND;
-					frame = 0;
-					//bounceEdge = NULL;
-					ground = bounceEdge;
-					edgeQuantity = bounceQuant;
-					bounceEdge = NULL;
-					
-				}
-			}
-			else if( bn.y > 0 )
-			{
-			
-			}
-
-
-			if( bn.y != 0 )
-			{
-				if( bounceEdge != NULL )
-				{
-					V2d oldv0 = bounceEdge->v0;
-					V2d oldv1 = bounceEdge->v1;
-
-					if( bounceMovingTerrain != NULL )
-					{
-						bounceEdge->v0 += bounceMovingTerrain->position;
-						bounceEdge->v1 += bounceMovingTerrain->position;
-					}
-
-					position = bounceEdge->GetPoint( bounceQuant );
-
-					if( bounceMovingTerrain != NULL )
-					{
-						bounceEdge->v0 = oldv0;
-						bounceEdge->v1 = oldv1;
-					}
-					
-				}
-				else
-				{
-					V2d oldv0 = ground->v0;
-					V2d oldv1 = ground->v1;
-
-					if( movingGround != NULL )
-					{
-						ground->v0 += movingGround->position;
-						ground->v1 += movingGround->position;
-					}
-
-					position = ground->GetPoint( bounceQuant );
-
-					if( movingGround != NULL )
-					{
-						ground->v0 = oldv0;
-						ground->v1 = oldv1;
-					}
-				}
-		
-				position.x += offsetX + b.offset.x;
-
-			
-
-		
-				if( bn.y > 0 )
-				{
-					{
-						position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-						//cout << "offset: " << b.offset.y << endl;
-					}
-				}
-				else
-				{
-					if( bn.y < 0 )
-					{
-						position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-						//cout << "offset: " << b.offset.y << endl;
-					}
-				}
-			}
-
-
-		}
-		else if( action == BOUNCEGROUND )
-		{
-			/*if( oldBounceEdge != NULL && bounceEdge != oldBounceEdge )
-			{
-				action = JUMP;
-				frame = 1;
-				bounceEdge = NULL;
-				cout << "action: " << action << endl;
-			}*/
-
-
-			
-		}
-
-	}
-	else if( ground != NULL )
-	{
-		framesInAir = 0;
-		gn = ground->Normal();
-		if( collision )
-		{
-			//cout << "collision!" << endl;
-			if( action == AIRHITSTUN )
-			{
-				action = GROUNDHITSTUN;
-				frame = 0;
-			}
-			else
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					action = LAND2;
-					rightWire->UpdateAnchors(V2d( 0, 0 ));
-					leftWire->UpdateAnchors(V2d( 0, 0 ));
-					frame = 0;
-				}
-				else
-				{
-					action = LAND;
-					rightWire->UpdateAnchors(V2d( 0, 0 ));
-					leftWire->UpdateAnchors(V2d( 0, 0 ));
-					frame = 0;
-				}
-			}
-		}
-
-
-		V2d oldv0 = ground->v0;
-		V2d oldv1 = ground->v1;
-
-		if( movingGround != NULL )
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
-		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
-
-		if( movingGround != NULL )
-		{
-			ground->v0 = oldv0;
-			ground->v1 = oldv1;
-		}
-		
-		//cout << "groundPoint : " << groundPoint.x << ", " << groundPoint.y << endl;
-		
-		position = groundPoint;
-		
-		position.x += offsetX + b.offset.x;
-
-		if( reversed )
-		{
-			if( gn.y > 0 || abs( offsetX ) != b.rw )
-			{
-				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-			}
-		}
-		else
-		{
-			if( gn.y < 0 || abs( offsetX ) != b.rw )
-			{
-				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-				//cout << "offset: " << b.offset.y << endl;
-			}
-		}
-
-		if( reversed )
-		{
-			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (-gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
-			{
-				action = LAND2;
-				frame = 0;
-			}
-		}
-		else
-		{
-			
-			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
-			{
-				action = LAND2;
-				frame = 0;
-			}
-			else
-			{
-
-			}
-		}
-		
-	}
-	else
-	{
-		if( slowCounter == slowMultiple )
-		{
-			if( wallJumpFrameCounter < wallJumpMovementLimit )
-				wallJumpFrameCounter++;
-			framesInAir++;
-
-			if( action == BOUNCEAIR && oldBounceEdge != NULL )
-			{
-				framesSinceBounce++;
-			}
-		}
-
-		if( action == GROUNDHITSTUN )
-		{
-			action = AIRHITSTUN;
-			frame = 0;
-		}
-
-		//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-		//cout << owner->movingPlats.front()->vel.x << ", " << owner->movingPlats.front()->vel.y << endl;
-		if( action != AIRHITSTUN )
-		{
-			Action oldAction = action;
-			if( collision )
-			{
-				//cout << "wallcling" << endl;
-				if( length( wallNormal ) > 0 && oldVelocity.y >= 8 )
-				//if( false )
-				{
-				//	cout << "wallnormal active: " << wallNormal.x << ", " << wallNormal.y << endl;
-					//cout << "wallcling" << endl;
-					if( wallNormal.x > 0)
-					{
-						
-						//cout << "facing right: " << endl;
-						if( currInput.LLeft() )
-						{
-							
-							facingRight = true;
-							action = WALLCLING;
-							frame = 0;
-						}
-					}
-					else
-					{
-						if( currInput.LRight() )
-						{
-						//	cout << "facing left: " << endl;
-							facingRight = false;
-							action = WALLCLING;
-							frame = 0;
-						}
-					
-					}
-				}
-			}
-			
-			if( oldAction == WALLCLING )
-			{
-				bool stopWallClinging = false;
-				if( collision && length( wallNormal ) > 0 )
-				{
-					//cout << "wallNormal: " << wallNormal.x << ", " << wallNormal.y << endl;
-					if( wallNormal.x > 0 )
-					{
-						if( !currInput.LLeft() )
-						{
-							stopWallClinging = true;
-						}
-
-					}
-					else
-					{
-						if( !currInput.LRight() )
-						{
-							stopWallClinging = true;
-						}
-					}
-				}
-				else
-				{
-					stopWallClinging = true;
-					
-				}
-
-				if( stopWallClinging )
-				{
-					action = JUMP;
-					frame = 1;
-					//rightWire->UpdateAnchors(V2d( 0, 0 ));
-					//leftWire->UpdateAnchors(V2d( 0, 0 ));
-				}
-			//	cout << "jump" << endl;
-				
-			}
-
-			if( leftGround )
-			{
-				action = JUMP;
-				frame = 1;
-				
-			}
-		}
-	}
-
-	if( groundedWallBounce )
-	{
-		//cout << "bounce" << endl;
-		action = BOUNCEGROUNDEDWALL;
-		frame = 0;
-
-		//already bounced by here i think
-		if( groundSpeed < 0 )
-		{
-			facingRight = true;
-		}
-		else
-		{
-			facingRight = false;
-		}
-		//facingRight = !facingRight;
-	}
-	//display action
-
-
-	rightWire->UpdateAnchors(V2d( 0, 0 ));
-	leftWire->UpdateAnchors(V2d( 0, 0 ));
 
 	if( record > 0 )
 	{
@@ -10455,6 +10413,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 void Actor::ApplyHit( HitboxInfo *info )
 {
+	//use the first hit you got. no stacking hits for now
 	if( invincibleFrames == 0 )
 	{
 		if( receivedHit == NULL || info->damage > receivedHit->damage )

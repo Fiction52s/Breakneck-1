@@ -81,10 +81,6 @@ void Goal::UpdatePrePhysics()
 
 void Goal::UpdatePhysics()
 {
-}
-
-void Goal::UpdatePostPhysics()
-{
 	if( !dead )
 	{
 		UpdateHitboxes();
@@ -108,6 +104,11 @@ void Goal::UpdatePostPhysics()
 		}
 	}
 
+}
+
+void Goal::UpdatePostPhysics()
+{
+	
 	
 
 	if( slowCounter == slowMultiple )

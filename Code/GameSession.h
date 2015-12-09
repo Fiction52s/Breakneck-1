@@ -180,6 +180,8 @@ struct GameSession : QuadTreeCollider
 	sf::Sprite clouds[NUM_CLOUDS];
 	Tileset *cloudTileset;
 
+#define NUM_STEPS 5.0
+
 	struct TestVA : QuadTreeEntrant
 	{
 		sf::VertexArray *va;
