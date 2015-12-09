@@ -1861,6 +1861,7 @@ int GameSession::Run( string fileN )
 				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
 				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
 				keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
+				keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
 			
 				keyboardInput.rightStickPad = 0;
 				if( Keyboard::isKeyPressed( Keyboard::A ) )

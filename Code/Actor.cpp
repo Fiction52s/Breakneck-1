@@ -103,7 +103,7 @@ Actor::Actor( GameSession *gs )
 
 		holdJump = false;
 
-		bounceBoostSpeed = 5;
+		bounceBoostSpeed = 4.7;
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -2657,6 +2657,9 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
+				bounceFlameOn = true;
+				airBounceFrame = 13 * 3;
+
 				if( currInput.LUp() )
 				{
 					action = UAIR;
@@ -2787,7 +2790,7 @@ void Actor::UpdatePrePhysics()
 
 				if( boostBounce )
 				{
-					velocity += bn * bounceBoostSpeed / (double)slowMultiple;
+					velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
 					boostBounce = false;
 				}
 
@@ -5568,7 +5571,8 @@ V2d Actor::UpdateReversePhysics()
 					//break;
 				}
 
-				if( !approxEquals( m, 0 ) )
+				else // is this correct?
+				//if( !approxEquals( m, 0 ) )
 				{	
 					//wire problem could arise later because i dont update anchors when i hit an edge.
 					V2d oldPos = position;
@@ -7832,7 +7836,16 @@ void Actor::UpdatePostPhysics()
 		action = BOUNCEGROUNDEDWALL;
 		frame = 0;
 
-		facingRight = !facingRight;
+		//already bounced by here i think
+		if( groundSpeed < 0 )
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+		//facingRight = !facingRight;
 	}
 	//display action
 
