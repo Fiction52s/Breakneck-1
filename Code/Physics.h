@@ -5,6 +5,7 @@
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
+#define NUM_STEPS 10.0
 
 struct Edge : QuadTreeEntrant
 {

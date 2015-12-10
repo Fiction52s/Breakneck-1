@@ -4832,15 +4832,15 @@ V2d Actor::UpdateReversePhysics()
 	wallNormal.y = 0;
 	if( grindEdge != NULL )
 	{
-		movement = grindSpeed;
+		movement = grindSpeed / (double)slowMultiple / NUM_STEPS;
 	}
 	else if( ground != NULL )
 	{
-		movement = groundSpeed;
+		movement = groundSpeed / (double)slowMultiple / NUM_STEPS;
 	}
 	else
 	{
-		movementVec = velocity;
+		movementVec = velocity / (double)slowMultiple / NUM_STEPS;
 	}
 
 	movement = -movement;
@@ -4911,7 +4911,7 @@ V2d Actor::UpdateReversePhysics()
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
 			bool changeOffset = offsetLeft || offsetRight;
-				
+			
 			if( transferLeft )
 			{
 				//cout << "transfer left "<< endl;
@@ -4948,6 +4948,14 @@ V2d Actor::UpdateReversePhysics()
 						{
 							movementVec.x = .1;
 						}
+
+						if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "6 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+					}
+						
 						//leftGroundExtra.y = .01;
 						//leftGroundExtra.x = .01;
 
@@ -4981,6 +4989,14 @@ V2d Actor::UpdateReversePhysics()
 									{
 										movementVec.x = .1;
 									}	
+
+									if( movingGround != NULL )
+									{
+										movementVec += currMovingTerrain->vel / (double)slowMultiple / NUM_STEPS;
+										cout << "7 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+											", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+									}
+
 									leftGroundExtra.y = .01;
 									leftGroundExtra.x = .01;
 
@@ -5042,6 +5058,15 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = .1;
 					}
 
+					
+					if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "2 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+					}
+					
+
 					//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 					//cout << "move: " << movementVec.x << ", " << movementVec.y << endl;
 
@@ -5097,6 +5122,13 @@ V2d Actor::UpdateReversePhysics()
 							movementVec.x = -.1;
 						}
 
+						if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "3 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+					}
+
 						leftGround = true;
 						action = JUMP;
 						frame = 1;
@@ -5129,6 +5161,13 @@ V2d Actor::UpdateReversePhysics()
 									{
 										movementVec.x = -.1;
 									}
+
+									if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "4 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+					}
 
 									leftGround = true;
 									action = JUMP;
@@ -5190,6 +5229,13 @@ V2d Actor::UpdateReversePhysics()
 					if( movementVec.x >= -.1 )
 					{
 						movementVec.x = -.1;
+					}
+
+					if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "5 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
 					}
 
 					action = JUMP;
@@ -5492,8 +5538,9 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else
 							{
-								ground = next;
-								q = length( ground->v1 - ground->v0 );	
+								//ground = next;
+								//q = length( ground->v1 - ground->v0 );	
+								cout << "possible bug reversed. solved secret??" << endl;
 							}
 						}
 						else if( abs( e0n.x ) >= wallThresh )
@@ -5534,8 +5581,12 @@ V2d Actor::UpdateReversePhysics()
 								offsetX = -offsetX;
 								break;
 							}
-							ground = next;
-							q = 0;
+							else
+							{
+								cout << "possible other bug reversed. solved secret??" << endl;
+								//ground = next;
+								//q = 0;
+							}
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
@@ -5768,7 +5819,7 @@ void Actor::UpdatePhysics()
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;
-	double temp_grindSpeed = temp_grindSpeed / slowMultiple;
+	double temp_grindSpeed = grindSpeed / slowMultiple;
 
 	leftGround = false;
 	double movement = 0;
@@ -5796,14 +5847,14 @@ void Actor::UpdatePhysics()
 	}
 
 	if( physicsOver )
+	{
+		//still need to do hitbox/hurtbox responses if hes not moving
 		return;
-
-
+	}
 	
+
 	if( grindEdge != NULL )
 	{
-		
-		//cout << "grindSpeed: " << grindSpeed << endl;
 		Edge *e0 = grindEdge->edge0;
 		Edge *e1 = grindEdge->edge1;
 		V2d e0n = e0->Normal();
@@ -5812,6 +5863,7 @@ void Actor::UpdatePhysics()
 		double q = grindQuantity;
 		while( !approxEquals(movement, 0 ) )
 		{
+			//cout << "movement: " << movement << endl;
 			double gLen = length( grindEdge->v1 - grindEdge->v0 );
 			if( movement > 0 )
 			{
@@ -5885,6 +5937,8 @@ void Actor::UpdatePhysics()
 			}
 		}
 		grindQuantity = q;
+
+		PhysicsResponse();
 		return;
 	}
 	else if( reversed )
@@ -5893,6 +5947,7 @@ void Actor::UpdatePhysics()
 		V2d reverseExtra = UpdateReversePhysics();
 		if( reverseExtra.x == 0 && reverseExtra.y == 0 )
 		{
+			PhysicsResponse();
 			return;
 		}
 		movementVec = reverseExtra;
@@ -6407,7 +6462,8 @@ void Actor::UpdatePhysics()
 
 				if( approxEquals( m, 0 ) )
 				{
-					cout << "secret1: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+
+					cout << "secret1: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX << ", " << groundSpeed <<  endl;
 
 					if( groundSpeed > 0 )
 					{
@@ -6423,8 +6479,10 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-								ground = next;
-								q = 0;
+								//ground = next;
+								//q = 0;
+								cout << "possible bug. solved secret left??" << endl;
+								break;
 							}
 					
 						}
@@ -6464,8 +6522,10 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-								ground = next;
-								q = length( ground->v1 - ground->v0 );	
+								cout << "possible bug. solved secret??" << endl;
+								//ground = next;
+								//q = length( ground->v1 - ground->v0 );	
+								break;
 							}
 						}
 						else if( abs( e0n.x ) >= wallThresh )
@@ -9780,8 +9840,80 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( queryMode == "moving_resolve" )
 	{
-		if( e == ground )
+		bool bb = false;
+		
+		if( ground != NULL && groundSpeed != 0 )
+		{
+			V2d gn = ground->Normal();
+			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
+			
+			V2d nextn = ground->edge1->Normal();
+			V2d prevn = ground->edge0->Normal();
+			bool sup = ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 );
+			//cout << "sup: " << sup << endl;
+			bool a = false;
+			bool b = false;
+			if( !reversed )
+			{
+				if( groundSpeed > 0 )
+				{
+					if( ( ground->edge1 == e 
+							&& (( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 )) )
+						|| ground->edge0 == e )
+					{
+						a = true;
+					}
+				}
+				else if( groundSpeed < 0 )
+				{
+					if( ( ground->edge0 == e 
+							&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) ) ) 
+						|| ground->edge1 == e )
+					{
+						a = true;
+					}
+				}
+			}
+			else
+			{
+				if( groundSpeed > 0 )
+				{
+					if( ( ground->edge0 == e 
+						&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) ) ) 
+						|| ground->edge1 == e )
+					{
+						//cout << "one" << endl;
+						b = true;
+					}
+				}
+				else if( groundSpeed < 0 )
+				{
+					bool c = ground->edge1 == e;
+					bool h = ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 );
+					bool g = ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 );
+					bool d = h || g;
+					bool f = ground->edge0 == e;
+					if( (c && d) || f )
+					{
+						b = true;
+					}
+				}
+			}
+		//	a = false;
+		//	b = false;
+			
+			
+			//a = !reversed && ((groundSpeed > 0 && gn.x < 0 && nextn.x < 0 && nextn.y < 0) || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 )
+			//	|| ( groundSpeed > 0 && gn.x > 0 && nextn.x > 0 && prevn.y < 0 ) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 && prevn.y < 0 ));
+			//bool b = reversed && (( gn.x < 0 && nextn.x < 0 || ( gn.x > 0 && prevn.x > 0 )));
+			bb = ( a || b );
+		}
+
+		
+		if( e == ground || bb )
+		{
 			return;
+		}
 
 		V2d temp0 = e->v0;
 		V2d temp1 = e->v1;
@@ -9800,7 +9932,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		V2d blah( tempVel - currMovingTerrain->vel );
 		//cout << "tempnew: " << blah.x << ", " << blah.y << endl;
-		Contact *c = owner->coll.collideEdge( position + b.offset - currMovingTerrain->vel, b, e, tempVel, currMovingTerrain->vel );
+		Contact *c = owner->coll.collideEdge( position + b.offset - currMovingTerrain->vel, b, e, tempVel - currMovingTerrain->vel, V2d( 0, 0 ) );//currMovingTerrain->vel );
 
 		e->v0 = temp0;
 		e->v1 = temp1;
@@ -9846,6 +9978,70 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
+
+			if( c->weirdPoint )
+			{
+		//		cout << "weird point " << endl;
+				
+				Edge *edge = e;
+				Edge *prev = edge->edge0;
+				Edge *next = edge->edge1;
+
+				V2d v0 = edge->v0;
+				V2d v1 = edge->v1;				
+
+				if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
+				{
+					V2d pv0 = prev->v0;
+					V2d pv1 = prev->v1;
+
+					V2d pn = prev->Normal();
+					V2d en = e->Normal();
+					
+
+					if( ground == NULL && pn.y >= 0 && en.y < 0 )
+					{
+						//cout << "bhaehfdf" << endl; //falling off and you dont want to keep hitting the ground
+						assert( !reversed );
+						return;
+					}
+
+					//ground != NULL
+					if( pn.y < en.y )
+					{
+						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
+						//cout << "sfdfdsfsdfdsfds" << endl;
+						c->edge = prev;
+						return;
+
+						//c->normal = V2d( 0, -1 );
+					}
+				}
+				else if( approxEquals( c->position.x, e->v1.x ) && approxEquals( c->position.y, e->v1.y ) )
+				{
+					V2d nn = next->Normal();
+					V2d en = e->Normal();
+					if( ground == NULL && en.y < 0 && nn.y >= 0 )
+					{
+						//cout << "bhaehfdf" << endl;
+						//falling off and you dont want to keep hitting the ground
+						assert( !reversed );
+						return;
+					}
+
+					//ground != NULL
+					if( nn.y < en.y )
+					{
+						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
+						//cout << "herererere" << endl;
+					//	return;
+						c->edge = next;
+						return;
+						//c->normal = V2d( 0, -1 );
+					}
+				}
+			}
+
 
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
@@ -9997,84 +10193,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				Edge *next = edge->edge1;
 
 				V2d v0 = edge->v0;
-				V2d v1 = edge->v1;
-				
-				//if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
-				//{
-				//	V2d pv0 = prev->v0;
-				//	V2d pv1 = prev->v1;
-
-				//	V2d pn = prev->Normal();
-				//	V2d en = e->Normal();
-				//	
-
-				//	if( ground == NULL )
-				//	{
-				//		cout << "a" << endl;
-				//		return;
-				//		//assert( !reversed );
-				//	}
-				//	else
-				//	{
-				//		if( pn.y >= 0 && en.y < 0 )
-				//		{
-				//			cout << "b" << endl;
-				//			return;
-				//		}
-				//		else
-				//		{
-				//			cout << "not b" << endl;
-				//		}
-				//	}
-
-
-				//	/*if( prev->Normal().y < edge->Normal().y )
-				//	{
-				//		//this could cause some glitches. patch them up as they come.
-				//		cout << "sfdfdsfsdfdsfds" << endl;
-				//		c->edge = prev;
-				//		
-				//		return;
-				//		//return; //not sure if this is good
-
-				//		//c->normal = V2d( 0, -1 );
-				//	}*/
-				//}
-				//else if( approxEquals( c->position.x, e->v1.x ) && approxEquals( c->position.y, e->v1.y ) )
-				//{
-				//	V2d nn = next->Normal();
-				//	V2d en = e->Normal();
-				//	
-
-				//	if( ground == NULL )
-				//	{
-				//		cout << "C" << endl;
-				//		return;
-				//		//assert( !reversed );
-				//	}
-				//	else
-				//	{
-				//		if( en.y < 0 && nn.y >= 0 )
-				//		{
-				//			cout << "d" << endl;
-				//			return;
-				//		}
-				//		else
-				//			cout << "not d" << endl;
-				//	}
-				//	/*if( nn.y < en.y )
-				//	{
-				//		//this could cause some glitches. patch them up as they come.
-				//		cout << "herererere" << endl;
-				//	//	return;
-				//		c->edge = next;
-				//		return;
-				//		//return; //not sure if this is good
-				//		//c->normal = V2d( 0, -1 );
-				//	}*/
-				//}
-				
-				////
+				V2d v1 = edge->v1;				
 
 				if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
 				{
@@ -10128,7 +10247,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) )
 			{	
 				
 

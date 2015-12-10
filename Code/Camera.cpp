@@ -99,6 +99,7 @@ void Camera::Update( Actor *player )
 	double cap = 30;
 	if( player->grindEdge != NULL )
 	{
+		//cout << "here!" << endl;
 		V2d grindDir = normalize( player->grindEdge->v1 - player->grindEdge->v0 );
 		V2d otherDir = grindDir;
 		double oTemp = otherDir.x;
@@ -112,6 +113,7 @@ void Camera::Update( Actor *player )
 			//cout << "height on: " << playerPos.y << endl;
 		}
 		pVel = grindDir * player->grindSpeed;
+		//cout << "grindspeed: " << player->grindSpeed << endl;
 		
 		if( player->reversed )
 		{

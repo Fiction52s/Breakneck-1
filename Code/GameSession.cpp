@@ -227,6 +227,11 @@ void GameSession::UpdateEnemiesPhysics()
 
 	for( int i = 0; i < NUM_STEPS; ++i )
 	{
+		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+		{
+			(*it)->UpdatePhysics();
+		}
+
 		player.UpdatePhysics();
 
 		Enemy *current = activeEnemyList;
@@ -1936,6 +1941,22 @@ int GameSession::Run( string fileN )
 				controller.UpdateState();
 				currInput = controller.GetState();
 
+				/*bool leftShoulder = currInput.leftShoulder;
+				bool rightShoulder = currInput.rightShoulder;
+				bool A = currInput.A;
+				bool X = currInput.X;
+				bool Y = currInput.Y;
+				bool B = currInput.B;
+				
+				currInput.A = rightShoulder;
+				currInput.rightShoulder = A;
+
+				currInput.X = Y;
+				currInput.leftShoulder = X;
+				currInput.Y = leftShoulder;*/
+				
+
+
 				//currInput.X |= currInput.rightShoulder;
 
 			//currInput.B;//|= currInput.rightTrigger > 200;
@@ -2017,10 +2038,7 @@ int GameSession::Run( string fileN )
 				UpdateEnemiesPrePhysics();
 
 
-				for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
-				{
-					(*it)->UpdatePhysics();
-				}
+				
 
 				
 

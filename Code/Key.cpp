@@ -124,7 +124,7 @@ void Key::UpdatePrePhysics()
 
 void Key::UpdatePhysics()
 {
-	double movement = speed;
+	double movement = speed / NUM_STEPS;
 	
 	if( PlayerSlowingMe() )
 	{

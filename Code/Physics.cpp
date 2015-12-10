@@ -209,6 +209,7 @@ void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
 
 void MovingTerrain::UpdatePhysics()
 {
+	Actor &player = owner->player;
 	//return;
 	oldPosition = position;
 
@@ -232,7 +233,8 @@ void MovingTerrain::UpdatePhysics()
 	//	return;
 
 
-	movement /= (double)slowMultiple;
+	movement /= (double)slowMultiple * NUM_STEPS;
+	//cout << "movement: " << movement << endl;
 
 	while( movement != 0 )
 	{
@@ -247,8 +249,14 @@ void MovingTerrain::UpdatePhysics()
 		else
 		{
 			position += diff;
+			
+			//player
+
 			movement -= length( diff );
-			AdvanceTargetNode();	
+			AdvanceTargetNode();
+			break;
+
+			//break here so that platform movement is purely linear each frame
 		}
 	}
 
