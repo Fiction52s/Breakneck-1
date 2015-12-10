@@ -10544,7 +10544,7 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-	if( bounceFlameOn && !dead )
+	if( bounceFlameOn && action != DEATH )
 	{
 		target->draw( bounceFlameSprite );
 	}
