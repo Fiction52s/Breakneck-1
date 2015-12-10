@@ -3513,7 +3513,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 		break;
 	}*/
 	c = Color( 0, 0xee, 0xff );
-
+	cout << "points: " << points << endl;
 	double diffz = (double)points / (double)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
@@ -3524,24 +3524,35 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
 	rs.setFillColor( c );
 
+	
+
 	target->draw( panelSprite );
 	target->draw( rs );
 }
 
 bool PowerBar::Damage( int power )
 {
-	points -= power;
-	if( points <= 0 )
+	cout << "points: " << points << ", power: " << power << endl;
+	
+	cout << "newpoints: " << points << endl;
+	while( power > 0 )
 	{
-		if( layer > 0 )
+		points -= power;
+		if( points <= 0 )
 		{
-			layer--;
-			points = pointsPerLayer + points;
-		}
-		else
-		{
-			points = 0;
-			return false;
+			power = -points;
+			if( layer > 0 )
+			{
+				layer--;
+				points = pointsPerLayer;
+				cout << "layer switch: " << points << endl;
+			}
+			else
+			{
+				points = 0;
+				cout << "DONE DEAD: " << points << endl;
+				return false;
+			}
 		}
 	}
 

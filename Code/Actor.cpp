@@ -4793,7 +4793,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		frame = 0;
 		owner->deathWipe = true;
 
-		owner->powerBar.Damage( 100000000 );
+		owner->powerBar.Damage( 1000000 );
 	}
 
 	queryMode = "gate";
@@ -4809,7 +4809,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		frame = 0;
 		owner->deathWipe = true;
 
-		owner->powerBar.Damage( 100000000 );
+		owner->powerBar.Damage( 1000000 );
 	}
 
 	//need to fix the quad tree but this works!
@@ -5889,7 +5889,7 @@ void Actor::UpdatePhysics()
 						frame = 0;
 						owner->deathWipe = true;
 
-						owner->powerBar.Damage( 100000000 );
+						owner->powerBar.Damage( 1000000 );
 						return;
 					}
 					
@@ -5922,7 +5922,7 @@ void Actor::UpdatePhysics()
 						frame = 0;
 						owner->deathWipe = true;
 
-						owner->powerBar.Damage( 100000000 );
+						owner->powerBar.Damage( 1000000 );
 						return;
 					}
 
@@ -10544,7 +10544,7 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-	if( bounceFlameOn )
+	if( bounceFlameOn && !dead )
 	{
 		target->draw( bounceFlameSprite );
 	}
