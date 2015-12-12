@@ -277,6 +277,7 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[SPRINT] = 8 * 3;
 		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
+		//tileset[SPRINT] = owner->GetTileset( "sprint_96x48.png", 96, 48 );		
 		normal[SPRINT] = owner->GetTileset( "sprint_NORMALS.png", 128, 64 );		
 
 		actionLength[STAND] = 20 * 8;
@@ -417,7 +418,7 @@ Actor::Actor( GameSession *gs )
 
 		framesInAir = 0;
 		wallJumpFrameCounter = 0;
-		wallJumpMovementLimit = 10; //10 frames
+		wallJumpMovementLimit = 12; //10 frames
 
 		steepThresh = .4; // go between 0 and 1
 
@@ -1319,7 +1320,7 @@ void Actor::UpdatePrePhysics()
 			if( CheckWall( false ) )
 			{
 				//cout << "special walljump right" << endl;
-				if( currInput.LRight() && !prevInput.LRight() )
+				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -1332,7 +1333,7 @@ void Actor::UpdatePrePhysics()
 			if( CheckWall( true ) )
 			{		
 				//cout << "special walljump left" << endl;
-				if( currInput.LLeft() && !prevInput.LLeft() )
+				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
 				{
 					
 					action = WALLJUMP;
@@ -1397,7 +1398,7 @@ void Actor::UpdatePrePhysics()
 
 			if( CheckWall( false ) )
 			{
-				if( currInput.LRight() && !prevInput.LRight() )
+				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -1409,7 +1410,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{				
-				if( currInput.LLeft() && !prevInput.LLeft() )
+				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -1576,6 +1577,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLCLING:
 		{
+			if( !currInput.LDown() )
 			if( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) )
 			{
 
@@ -1608,7 +1610,7 @@ void Actor::UpdatePrePhysics()
 
 			if( CheckWall( false ) )
 			{
-				if( currInput.LRight() && !prevInput.LRight() )
+				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -1620,7 +1622,7 @@ void Actor::UpdatePrePhysics()
 			
 			if( CheckWall( true ) )
 			{				
-				if( currInput.LLeft() && !prevInput.LLeft() )
+				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
 				{
 					action = WALLJUMP;
 					frame = 0;
@@ -2514,43 +2516,21 @@ void Actor::UpdatePrePhysics()
 			{
 				//cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
-				double sp = 20.0;
+				double sp = 28.0;
 				double extra = 10.0;
 				if( gNorm.x > 0 && currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
-					//cout << "climb left" << endl;
 				}
 				else if( gNorm.x < 0 && currInput.LRight() )
 				{
 					groundSpeed = std::max( groundSpeed + extra, sp );
-					//cout << "climb right" << endl;
 				}
 				else
 				{
 					action = JUMP;
 					frame = 0;
-					//cout << "jumping" << endl;
-					//groundSpeed = 0;
 				}
-				
-				
-				/*if( gNorm.x < 0 )
-				{
-					if( groundSpeed > 0 )
-					{
-						groundSpeed = 0;
-					}
-				}
-				else if( gNorm.x > 0 )
-				{
-					if( groundSpeed < 0 )
-					{
-						groundSpeed = 0;
-					}
-				}*/
-				//groundSpeed = 0;
-				//ground = NULL;
 				break;
 			}
 			else
@@ -3153,7 +3133,7 @@ void Actor::UpdatePrePhysics()
 
 				velocity.y = -wallJumpStrength.y;
 			}
-			else if( frame > 11 )
+			else if( frame >= wallJumpMovementLimit )
 			{
 				AirMovement();
 			}
@@ -3173,6 +3153,8 @@ void Actor::UpdatePrePhysics()
 			}
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{
+				cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << endl;
+
 				AirMovement();
 			}
 
@@ -7605,17 +7587,7 @@ void Actor::PhysicsResponse()
 	}
 	else
 	{
-		if( slowCounter == slowMultiple )
-		{
-			if( wallJumpFrameCounter < wallJumpMovementLimit )
-				wallJumpFrameCounter++;
-			framesInAir++;
-
-			if( action == BOUNCEAIR && oldBounceEdge != NULL )
-			{
-				framesSinceBounce++;
-			}
-		}
+		
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -7824,6 +7796,8 @@ void Actor::UpdateHitboxes()
 void Actor::UpdatePostPhysics()
 {
 	
+
+
 	//rightWire->UpdateState( false );
 	if( rightWire->numPoints == 0 )
 	{
@@ -9788,12 +9762,21 @@ void Actor::UpdatePostPhysics()
 		owner->powerBar.Charge( 20 );
 	}*/
 
+
+	
+
 	if( slowCounter == slowMultiple )
 	{
-	//	bool longAirdash = slowMultiple > 1 && action == AIRDASH;
-		
-		//if( !longAirdash )
-			++frame;
+		if( wallJumpFrameCounter < wallJumpMovementLimit )
+			wallJumpFrameCounter++;
+		framesInAir++;
+
+		if( action == BOUNCEAIR && oldBounceEdge != NULL )
+		{
+			framesSinceBounce++;
+		}
+
+		++frame;
 
 		++framesSinceClimbBoost;
 

@@ -2854,7 +2854,8 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	int totalEnemies = brush->enemies.size() + poly->enemies.size();
 	int totalGates = 0;
 
-	for( TerrainPoint *curr = brush->pointStart; curr != NULL; curr = curr->next )
+	//deleting gates for adding. need to just make this more specific. 
+	/*for( TerrainPoint *curr = brush->pointStart; curr != NULL; curr = curr->next )
 	{
 		if( curr->gate != NULL )
 		{
@@ -2878,7 +2879,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			totalGates++;
 			delete g;
 		}
-	}
+	}*/
 
 	if( totalEnemies > 0 || totalGates > 0)
 	{

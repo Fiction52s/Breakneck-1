@@ -2458,7 +2458,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+	//	DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -2466,7 +2466,7 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( preScreenTex );
 
-		double minimapZoom = 20;
+		double minimapZoom = 20;// + cam.GetZoom();
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
@@ -3513,7 +3513,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 		break;
 	}*/
 	c = Color( 0, 0xee, 0xff );
-	cout << "points: " << points << endl;
+	//cout << "points: " << points << endl;
 	double diffz = (double)points / (double)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
