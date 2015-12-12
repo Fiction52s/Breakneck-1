@@ -4828,7 +4828,7 @@ V2d Actor::UpdateReversePhysics()
 	movement = -movement;
 
 		
-	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
+	while( (ground != NULL && !approxEquals( movement, 0 )) || ( ground == NULL && length( movementVec ) > 0 ) )
 	{
 		if( ground != NULL )
 		{
@@ -5936,7 +5936,7 @@ void Actor::UpdatePhysics()
 		
 	}
 
-	while( (ground != NULL && movement != 0) || ( ground == NULL && length( movementVec ) > 0 ) )
+	while( (ground != NULL && !approxEquals( movement, 0 ) ) || ( ground == NULL && length( movementVec ) > 0 ) )
 	{
 		if( ground != NULL )
 		{
@@ -6413,6 +6413,8 @@ void Actor::UpdatePhysics()
 				}
 				else 
 				{
+
+					cout << "movement: " << movement << ", extra: " << extra << endl;
 					extra = (q + movement);
 				}
 					
