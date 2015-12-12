@@ -7675,12 +7675,14 @@ void Actor::PhysicsResponse()
 		frame = 0;
 
 		//already bounced by here i think
-		if( groundSpeed < 0 )
+		if( storedBounceGroundSpeed < 0 )
 		{
+			cout << "facing right: " << groundSpeed << endl;
 			facingRight = true;
 		}
 		else
 		{
+			cout << "facing left: " << groundSpeed << endl;
 			facingRight = false;
 		}
 	}
