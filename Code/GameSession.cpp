@@ -2458,7 +2458,7 @@ int GameSession::Run( string fileN )
 
 		
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -3532,9 +3532,9 @@ void PowerBar::Draw( sf::RenderTarget *target )
 
 bool PowerBar::Damage( int power )
 {
-	cout << "points: " << points << ", power: " << power << endl;
+	//cout << "points: " << points << ", power: " << power << endl;
 	
-	cout << "newpoints: " << points << endl;
+	//cout << "newpoints: " << points << endl;
 	while( power > 0 )
 	{
 		points -= power;
@@ -3545,14 +3545,18 @@ bool PowerBar::Damage( int power )
 			{
 				layer--;
 				points = pointsPerLayer;
-				cout << "layer switch: " << points << endl;
+				//cout << "layer switch: " << points << endl;
 			}
 			else
 			{
 				points = 0;
-				cout << "DONE DEAD: " << points << endl;
+				//cout << "DONE DEAD: " << points << endl;
 				return false;
 			}
+		}
+		else
+		{
+			break;
 		}
 	}
 

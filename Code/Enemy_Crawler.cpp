@@ -204,7 +204,7 @@ void Crawler::UpdatePhysics()
 	double maxMovement = min( physBody.rw, physBody.rh );
 	movement = groundSpeed;
 
-	movement /= slowMultiple / NUM_STEPS;
+	movement /= slowMultiple * NUM_STEPS;
 
 	while( movement != 0 )
 	{
@@ -253,7 +253,12 @@ void Crawler::UpdatePhysics()
 
 		if( q == groundLength )
 		{
-			if( !roll )
+			if( gNormal == e1n )
+			{
+				q = 0;
+				ground = e1;
+			}
+			else if( !roll )
 			{
 				roll = true;
 				rollFactor = 0;
@@ -449,6 +454,8 @@ void Crawler::UpdatePhysics()
 
 		edgeQuantity = q;
 	}
+
+	PhysicsResponse();
 }
 
 bool Crawler::ResolvePhysics( V2d vel )
@@ -497,6 +504,7 @@ void Crawler::PhysicsResponse()
 {
 	if( !dead )
 	{
+		//cout << "response" << endl;
 		double spaceNeeded = 0;
 		V2d gn = ground->Normal();
 		V2d gPoint = ground->GetPoint( edgeQuantity );
@@ -515,7 +523,6 @@ void Crawler::PhysicsResponse()
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
 			sprite.setPosition( pp.x, pp.y );
-
 		}
 		else
 		{
@@ -578,14 +585,14 @@ void Crawler::PhysicsResponse()
 			{
 				slowCounter = 1;
 				slowMultiple = 5;
-				cout << "yes slow" << endl;
+			//	cout << "yes slow" << endl;
 			}
 		}
 		else
 		{
 			slowCounter = 1;
 			slowMultiple = 1;
-			cout << "no slow" << endl;
+		//	cout << "no slow" << endl;
 		}
 
 		pair<bool, bool> result = PlayerHitMe();
@@ -649,7 +656,9 @@ bool Crawler::PlayerSlowingMe()
 void Crawler::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
+	{
 		target->draw( sprite );
+	}
 }
 
 bool Crawler::IHitPlayer()

@@ -6414,7 +6414,7 @@ void Actor::UpdatePhysics()
 				else 
 				{
 
-					cout << "movement: " << movement << ", extra: " << extra << endl;
+					//cout << "movement: " << movement << ", extra: " << extra << endl;
 					extra = (q + movement);
 				}
 					
