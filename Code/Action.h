@@ -87,16 +87,24 @@ struct ApplyBrushAction : Action
 	Brush appliedBrush;
 };
 
-struct AddToPolygonAction : Action
+struct AddBrushAction : Action
 {
-	AddToPolygonAction(TerrainPolygon *brush, TerrainPolygon *poly );
+	AddBrushAction(Brush *brush, Brush *intersectingPolys );
 	void Perform();
 	void Undo();
 
 
-	TerrainPolygon *oldPoly;
-	TerrainPolygon *brush;
-	TerrainPolygon *newPoly;
+	Brush *oldPolys;
+	Brush *brush;
+	Brush *intersectingPolys;
+	Brush newPolys;
+};
+
+struct AddToPolygonAction : Action
+{
+	AddToPolygonAction();
+	void Perform();
+	void Undo();
 };
 
 struct CreateActorAction : Action

@@ -126,27 +126,32 @@ void ApplyBrushAction::Undo()
 	//leave it this way for now
 }
 
-AddToPolygonAction::AddToPolygonAction( TerrainPolygon *p_brush, TerrainPolygon *poly )
-	:brush( p_brush ), oldPoly( poly ), newPoly( NULL 
+AddBrushAction::AddBrushAction( Brush *p_brush, Brush *p_intersectingPolys )
+	:brush( p_brush ), intersectingPolys( p_intersectingPolys )
 {
-	//session->Add( 
+	assert( brush->terrainOnly );
+	
+	//intersectingPolys->
+	//adding multiple polygons is actually adding them one at a time and doing the checks each time.
+	//this is the same way i have to do the checks to see if i can add in the first place
 }
 
 
-void AddToPolygonAction::Perform()
+void AddBrushAction::Perform()
 {
 	assert( session != NULL );
-
+	assert( !performed );
 
 	//all checks are done before this is performed so it doesnt have to care
 	
 	//combine old polygon and new polygon into a new one, and store the 2 old ones.
 }
 
-void AddToPolygonAction::Undo()
+void AddBrushAction::Undo()
 {
 	//remove the polygon from the active list, but store it in case you need it for later
 	assert( session != NULL );
+	assert( performed );
 }
 
 CreateActorAction::CreateActorAction()
