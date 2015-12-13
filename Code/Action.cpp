@@ -7,7 +7,7 @@ using namespace sf;
 using namespace std;
 
 ISelectable::ISelectable( ISelectable::ISelectableType p_selectableType )
-	:selectableType( p_selectableType )
+	:selectableType( p_selectableType ), active( true )
 {
 }
 
@@ -68,7 +68,7 @@ Action::Action( Action *p_next )
 
 //get a linked list of the points involved. 
 ApplyBrushAction::ApplyBrushAction( Brush *p_brush )
-	:brush( p_brush ), appliedBrush( NULL );
+	:brush( p_brush )
 {
 	//poly->CopyPoints( pointStart, pointEnd );
 	//numPoints = poly->numPoints;
@@ -107,14 +107,19 @@ void ApplyBrushAction::Perform()
 	//session->polygons.push_back( createdPoly );
 }
 
-void CreatePolygonAction::Undo()
+void ApplyBrushAction::Undo()
 {
 	assert( session != NULL );
 	assert( performed );
 	
-	session->polygons.remove( createdPoly );
-	
-	
+	//deactivate everything first. when you deactivate something it sets its active bool to false
+	//so you dont try to deactivate something that you have already deleted.
+	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+	{
+		(*it)->Deactivate();
+	}
+
+	appliedBrush.Destroy();
 
 	//need to remove actors and gates attached to this? or would undos 
 	//back to this point always give me the same thing back?

@@ -26,8 +26,11 @@ struct ISelectable
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;
+	virtual void Deactivate();
+
 
 	ISelectableType selectableType;
+	bool active;
 };
 
 typedef std::list<ISelectable*> SelectList;
@@ -81,7 +84,7 @@ struct ApplyBrushAction : Action
 	void Undo();
 
 	Brush *brush; //action doesn't own this
-	Brush *appliedBrush;
+	Brush appliedBrush;
 };
 
 struct AddToPolygonAction : Action
