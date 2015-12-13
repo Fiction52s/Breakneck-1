@@ -6,7 +6,7 @@
 
 struct ISelectable
 {
-	enum ISelectableTypes
+	enum ISelectableType
 	{
 		TERRAIN,
 		ACTOR,
@@ -18,6 +18,30 @@ struct ISelectable
 	//is a rectangle intersecting me
 	//is a move valid
 	//execute move
+	ISelectable( ISelectableType type );
+	virtual bool ContainsPoint( sf::Vector2i point ) = 0;
+	virtual bool Intersects( sf::IntRect rect ) = 0;
+	virtual bool IsMoveOkay( sf::Vector2i delta ) = 0;
+	virtual void Move( sf::Vector2i delta ) = 0;
+	virtual void BrushDraw( sf::RenderTarget *target, 
+		bool valid ) = 0;
+	virtual void Draw( sf::RenderTarget *target ) = 0;
+
+	ISelectableType selectableType;
+};
+
+typedef std::list<ISelectable*> SelectList;
+typedef SelectList::iterator SelectIter;
+
+struct Brush
+{
+	Brush();
+	SelectList objects;
+	void AddObject( ISelectable *obj );
+	void Clear();
+	void Destroy();
+
+	bool terrainOnly;
 };
 
 struct Action
@@ -36,32 +60,40 @@ struct Action
 		DELETE_GATE,
 		Count
 	};
-	Action();
+	Action( Action *next = NULL );
 	virtual void Perform() = 0;
 	virtual void Undo() = 0;
 
 	Action *next;
 	ActionType actionType;
+	bool performed;
 	static EditSession *session;
 };
 
-struct CreatePolygonAction : Action
+struct ApplyBrushAction : Action
 {
-	CreatePolygonAction();
+	ApplyBrushAction( Brush *brush );
+	//TerrainPoint *pointStart;
+	//TerrainPoint *pointEnd;
+	//int numPoints;
+	
 	void Perform();
 	void Undo();
 
-	TerrainPolygon *createdPolygon;
+	Brush *brush; //action doesn't own this
+	Brush *appliedBrush;
 };
 
 struct AddToPolygonAction : Action
 {
-	AddToPolygonAction();
+	AddToPolygonAction(TerrainPolygon *brush, TerrainPolygon *poly );
 	void Perform();
 	void Undo();
 
+
+	TerrainPolygon *oldPoly;
+	TerrainPolygon *brush;
 	TerrainPolygon *newPoly;
-	TerrainPolygon *destroyedPolys;
 };
 
 struct CreateActorAction : Action

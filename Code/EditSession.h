@@ -48,6 +48,7 @@ struct TerrainPoint
 	TerrainPoint *next;
 	TerrainPoint *prev;
 	int GetEdgeIndex();
+
 	//int special;
 };
 
@@ -109,8 +110,12 @@ typedef std::map<TerrainPoint*,std::list<ActorParams*>> EnemyMap;
 struct TerrainPolygon
 {
 	TerrainPolygon( sf::Texture *grassTex );
+	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
 	~TerrainPolygon();
 	
+	void CopyPoints( TerrainPoint *&start,
+		TerrainPoint *&end );
+
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
 	int numPoints;
@@ -247,7 +252,7 @@ struct PatrollerParams : public ActorParams
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath, 
 		float speed,
-		bool loop );
+		bool loop ); 
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );

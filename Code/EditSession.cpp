@@ -9,6 +9,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include "Physics.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -174,6 +175,32 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	pointStart = NULL;
 	pointEnd = NULL;
 	movingPointMode = false;
+}
+
+TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
+{
+	grassTex = poly.grassTex;
+	if(  pointsOnly )
+	{
+		va = NULL;
+		lines = NULL;
+		selected = false;
+		grassVA = NULL;
+		isGrassShowing = false;
+		finalized = false;
+		numPoints = 0;
+		pointStart = NULL;
+		pointEnd = NULL;
+		movingPointMode = false;
+
+		poly.CopyPoints( pointStart, pointEnd );
+		numPoints = poly.numPoints;
+	}
+	else
+	{
+
+		assert( false && "havent implemented yet" );
+	}	
 }
 
 void TerrainPolygon::AlignExtremes( double primLimit )
@@ -1663,6 +1690,41 @@ bool TerrainPolygon::IsClockwise()
     return sum < 0;
 }
 
+
+
+void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
+{
+	//start.prev = &end;
+	//end.next = &start;
+	TerrainPoint *copyCurr = NULL;
+	TerrainPoint *copyPrev = NULL;
+	TerrainPoint *prev = pointEnd;
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		copyCurr = new TerrainPoint( curr->pos, false );
+
+		if( curr == pointStart )
+		{
+			start = copyCurr;
+
+			prev = pointEnd;
+		}
+		else if( curr == pointEnd )
+		{
+			end = copyCurr;
+
+			end->next = start;
+			start->prev = end;
+		}
+		else if( copyPrev != NULL )
+		{
+			copyCurr->prev = copyPrev;
+			copyPrev->next = copyCurr;
+		}
+		copyPrev = copyCurr;
+	}
+}
+
 bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 {
 	assert( p != this );
@@ -1958,6 +2020,7 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), zoomMultiple( 1 )
 {
+	Action::session = this;
 	//adding 5 for random distance buffer
 	playerHalfWidth = 32;
 	playerHalfHeight = 32;
@@ -3149,7 +3212,9 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 		firstTime = false;
 	}
 
-	poly->Reset();
+	//poly->Reset();
+
+	TerrainPolygon *newPolygon = new TerrainPolygon( &grassTex );
 	//cout << "poly size: " << z.points.size() << endl;
 	for( TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next )
 	{
@@ -3160,13 +3225,13 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			if( zit == tp->gate->point0 )
 			{
 				tp->gate->point0 = tp;
-				tp->gate->poly0 = poly;
+				tp->gate->poly0 = newPolygon;
 			//	cout << "checking a at: " << tp->pos.x << ", " << tp->pos.y << endl;
 			}
 			else
 			{
 				tp->gate->point1 = tp;
-				tp->gate->poly1 = poly;
+				tp->gate->poly1 = newPolygon;
 		//		cout << "checking b at: " << tp->pos.x << ", " << tp->pos.y << endl;
 			}
 
@@ -3793,8 +3858,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									if( !added )
 									{
 										polygonInProgress->Finalize();
-										polygons.push_back( polygonInProgress );
+										Action *action = new CreatePolygonAction( polygonInProgress );
+										action->Perform();
+										//polygons.push_back( polygonInProgress );
 										polygonInProgress = new TerrainPolygon(&grassTex );
+
+										delete action;
 									}
 									else
 									{
@@ -9919,6 +9988,11 @@ TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s ), gate( NULL )
 {
 }
+
+void CopyList( TerrainPoint &startPoint, 
+		TerrainPoint &endPoint,
+		TerrainPoint &resultStartPoint,
+		TerrainPoint &resultEndPoint );
 
 int ActorParams::GroundInfo::GetEdgeIndex()
 {
