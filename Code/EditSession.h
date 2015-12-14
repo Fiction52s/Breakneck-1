@@ -9,6 +9,37 @@
 #include "GUI.h"
 #include "Tileset.h"
 
+struct ISelectable
+{
+	enum ISelectableType
+	{
+		TERRAIN,
+		ACTOR,
+		GATE,
+		Count
+	};
+	//copyable
+	//is a point inside me
+	//is a rectangle intersecting me
+	//is a move valid
+	//execute move
+	ISelectable( ISelectableType type );
+	virtual bool ContainsPoint( sf::Vector2i point ) = 0;
+	virtual bool Intersects( sf::IntRect rect ) = 0;
+	virtual bool IsMoveOkay( sf::Vector2i delta ) = 0;
+	virtual void Move( sf::Vector2i delta ) = 0;
+	virtual void BrushDraw( sf::RenderTarget *target, 
+		bool valid ) = 0;
+	virtual void Draw( sf::RenderTarget *target ) = 0;
+	virtual void Deactivate() = 0;
+
+
+	ISelectableType selectableType;
+	bool active;
+};
+
+typedef std::list<ISelectable*> SelectList;
+typedef SelectList::iterator SelectIter;
 
 struct ActorParams;
 
@@ -106,8 +137,7 @@ struct GateInfo
 
 
 typedef std::map<TerrainPoint*,std::list<ActorParams*>> EnemyMap;
-
-struct TerrainPolygon
+struct TerrainPolygon : ISelectable
 {
 	TerrainPolygon( sf::Texture *grassTex );
 	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
@@ -151,6 +181,18 @@ struct TerrainPolygon
 		sf::Vector2i delta );
 	void MoveSelectedPoints(sf::Vector2i move);
 	void UpdateBounds();
+
+	bool ContainsPoint( sf::Vector2i point );
+	bool Intersects( sf::IntRect rect );
+	bool IsMoveOkay( sf::Vector2i delta );
+	//void Move( sf::Vector2i delta );
+	void BrushDraw( sf::RenderTarget *target, 
+		bool valid );
+	void Draw( sf::RenderTarget *target );
+	void Deactivate();
+
+
+
 	bool movingPointMode;
 	
 	sf::Rect<int> TempAABB();
@@ -345,6 +387,9 @@ struct ActorGroup
 	void WriteFile( std::ofstream &of );
 };
 
+struct Brush;
+struct Action;
+
 struct EditSession : GUIHandler
 {
 	EditSession( sf::RenderWindow *w,
@@ -504,6 +549,11 @@ struct EditSession : GUIHandler
 
 	//bool closePopup; //for messsage/error only
 	
+	Brush *progressBrush;
+	std::list<Action*> doneActionStack;
+	std::list<Action*> undoneActionStack;
+	//std::list<Action*>::iterator currAction;
+
 	enum ConfirmChoices
 	{
 		NONE,

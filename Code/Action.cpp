@@ -1,5 +1,6 @@
 #include "Action.h"
 #include <assert.h>
+#include <iostream>
 
 EditSession *Action::session = NULL;
 
@@ -41,6 +42,8 @@ void Brush::AddObject( ISelectable *obj )
 	{
 		terrainOnly = false;
 	}
+
+	objects.push_back( obj );
 }
 
 void Brush::Clear()
@@ -66,6 +69,11 @@ Action::Action( Action *p_next )
 {
 }
 
+Action::~Action()
+{
+
+}
+
 //get a linked list of the points involved. 
 ApplyBrushAction::ApplyBrushAction( Brush *p_brush )
 	:brush( p_brush )
@@ -76,18 +84,105 @@ ApplyBrushAction::ApplyBrushAction( Brush *p_brush )
 
 void ApplyBrushAction::Perform()
 {
+	//cout << "performing!" << endl;
 	assert( session != NULL );
 	assert( !performed );
 
 	performed = true;
 
-	for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
+	if( appliedBrush.objects.size() > 0 )
 	{
-		switch( (*it)->selectableType )
+		for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+		{
+			switch( (*it)->selectableType )
+			{
+			case ISelectable::TERRAIN:
+				{
+					TerrainPolygon *tp = (TerrainPolygon*)(*it);
+					session->polygons.push_back( tp );
+
+					//add terrain to the environment. this comes first
+					break;
+				}
+			case ISelectable::ACTOR:
+				{
+					//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
+					//no, creating with a brush actually makes a copy of the brush when you set it down
+					//be sure to update everything accordingly to point to the right spots
+					break;
+				}
+			case ISelectable::GATE:
+				{
+					//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+	
+		for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
+		{
+			switch( (*it)->selectableType )
+			{
+			case ISelectable::TERRAIN:
+				{
+					TerrainPolygon *tp = (TerrainPolygon*)(*it);
+					TerrainPolygon *poly = new TerrainPolygon( *tp, true );
+					poly->Finalize();
+					//TerrainPolygon *poly = new TerrainPolygon( //(*it)
+					appliedBrush.AddObject( poly );
+
+					session->polygons.push_back( poly );
+
+					//add terrain to the environment. this comes first
+					break;
+				}
+			case ISelectable::ACTOR:
+				{
+					//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
+					//no, creating with a brush actually makes a copy of the brush when you set it down
+					//be sure to update everything accordingly to point to the right spots
+					break;
+				}
+			case ISelectable::GATE:
+				{
+					//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
+					break;
+				}
+			}
+		}
+	
+	}
+	//session->polygons.push_back( createdPoly );
+}
+
+void ApplyBrushAction::Undo()
+{
+	//cout << "undoing" << endl;
+	assert( session != NULL );
+	assert( performed );
+	
+	performed = false;
+
+	//deactivate everything first. when you deactivate something it sets its active bool to false
+	//so you dont try to deactivate something that you have already deleted.
+	/*for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+	{
+		(*it)->Deactivate();
+	}*/
+
+	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+	{
+	switch( (*it)->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
-				//add terrain to the environment. this comes first
+				//cout << "removing polygon!" << endl;
+				//cout << "before undo: " << session->polygons.size() << endl;
+				session->polygons.remove( (TerrainPolygon*)(*it) );
+				//cout << "there are now: " << session->polygons.size() << endl;
 				break;
 			}
 		case ISelectable::ACTOR:
@@ -104,22 +199,8 @@ void ApplyBrushAction::Perform()
 			}
 		}
 	}
-	//session->polygons.push_back( createdPoly );
-}
 
-void ApplyBrushAction::Undo()
-{
-	assert( session != NULL );
-	assert( performed );
-	
-	//deactivate everything first. when you deactivate something it sets its active bool to false
-	//so you dont try to deactivate something that you have already deleted.
-	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
-	{
-		(*it)->Deactivate();
-	}
-
-	appliedBrush.Destroy();
+	//appliedBrush.Destroy();
 
 	//need to remove actors and gates attached to this? or would undos 
 	//back to this point always give me the same thing back?

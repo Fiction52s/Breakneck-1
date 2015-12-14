@@ -4,37 +4,7 @@
 #include "EditSession.h"
 #include <list>
 
-struct ISelectable
-{
-	enum ISelectableType
-	{
-		TERRAIN,
-		ACTOR,
-		GATE,
-		Count
-	};
-	//copyable
-	//is a point inside me
-	//is a rectangle intersecting me
-	//is a move valid
-	//execute move
-	ISelectable( ISelectableType type );
-	virtual bool ContainsPoint( sf::Vector2i point ) = 0;
-	virtual bool Intersects( sf::IntRect rect ) = 0;
-	virtual bool IsMoveOkay( sf::Vector2i delta ) = 0;
-	virtual void Move( sf::Vector2i delta ) = 0;
-	virtual void BrushDraw( sf::RenderTarget *target, 
-		bool valid ) = 0;
-	virtual void Draw( sf::RenderTarget *target ) = 0;
-	virtual void Deactivate();
 
-
-	ISelectableType selectableType;
-	bool active;
-};
-
-typedef std::list<ISelectable*> SelectList;
-typedef SelectList::iterator SelectIter;
 
 struct Brush
 {
@@ -64,6 +34,7 @@ struct Action
 		Count
 	};
 	Action( Action *next = NULL );
+	virtual ~Action();
 	virtual void Perform() = 0;
 	virtual void Undo() = 0;
 

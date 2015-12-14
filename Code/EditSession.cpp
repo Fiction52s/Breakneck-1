@@ -163,7 +163,7 @@ void TerrainBrush::AddPoint( TerrainPoint *tp )
 }
 
 TerrainPolygon::TerrainPolygon( sf::Texture *gt)
-	:grassTex( gt )
+	:ISelectable( ISelectable::TERRAIN ), grassTex( gt )
 {
 	va = NULL;
 	lines = NULL;
@@ -178,6 +178,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 }
 
 TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
+	:ISelectable( ISelectable::TERRAIN )
 {
 	grassTex = poly.grassTex;
 	if(  pointsOnly )
@@ -1701,22 +1702,24 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 	TerrainPoint *prev = pointEnd;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
+		cout << "copying " << endl;
 		copyCurr = new TerrainPoint( curr->pos, false );
 
 		if( curr == pointStart )
 		{
 			start = copyCurr;
 
-			prev = pointEnd;
+			//prev = pointEnd;
 		}
 		else if( curr == pointEnd )
 		{
 			end = copyCurr;
 
-			end->next = start;
-			start->prev = end;
+			//end->next = start;
+			//start->prev = end;
 		}
-		else if( copyPrev != NULL )
+		
+		if( copyPrev != NULL )
 		{
 			copyCurr->prev = copyPrev;
 			copyPrev->next = copyCurr;
@@ -1794,6 +1797,8 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p )
 	return false;
 }
 
+
+
 void TerrainPolygon::ShowGrass( bool show )
 {
 	
@@ -1851,6 +1856,38 @@ sf::Rect<int> TerrainPolygon::TempAABB()
 
 	return Rect<int>( l, t, r- l, b - t );
 }
+
+//--ISELECTABLE FUNCTIONS--//
+
+bool TerrainPolygon::ContainsPoint( sf::Vector2i point )
+{
+	return false;
+}
+
+bool TerrainPolygon::Intersects( sf::IntRect rect )
+{
+	return false;
+}
+
+bool TerrainPolygon::IsMoveOkay( sf::Vector2i delta )
+{
+	return false;
+}
+	//void Move( sf::Vector2i delta );
+void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
+{
+}
+
+void TerrainPolygon::Draw( sf::RenderTarget *target )
+{
+}
+
+void TerrainPolygon::Deactivate()
+{
+}
+//--ISELECTABLE FUNCTIONS END--//
+
+
 
 StaticLight::StaticLight( sf::Color c, sf::Vector2i &pos, int rad, int bright )
 	:color( c ), position( pos ), radius( rad ), brightness( bright )
@@ -2031,6 +2068,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	messagePopup = NULL;
 	errorPopup = NULL;
 	confirm = NULL;
+	progressBrush = new Brush();
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 }
 
@@ -2041,6 +2079,7 @@ EditSession::~EditSession()
 	{
 		delete (*it);
 	}
+	delete progressBrush;
 }
 
 void EditSession::Draw()
@@ -3857,13 +3896,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 									if( !added )
 									{
-										polygonInProgress->Finalize();
-										Action *action = new CreatePolygonAction( polygonInProgress );
+										progressBrush->Clear();
+										
+										//polygonInProgress->Finalize();
+
+										progressBrush->AddObject( polygonInProgress );
+
+										Action *action = new ApplyBrushAction( progressBrush );
+										//cout << "performing!" << endl;
 										action->Perform();
 										//polygons.push_back( polygonInProgress );
 										polygonInProgress = new TerrainPolygon(&grassTex );
 
-										delete action;
+										doneActionStack.push_back( action );
+
+										//delete action;
 									}
 									else
 									{
@@ -3926,6 +3973,30 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									extendingPolygon = NULL;
 									extendingPoint = NULL;
 									polygonInProgress->ClearPoints();
+								}
+							}
+							else if( ev.key.code == sf::Keyboard::Z && ev.key.control )
+							{
+								if( doneActionStack.size() > 0 )
+								{
+									Action *action = doneActionStack.back();
+									doneActionStack.pop_back();
+
+									action->Undo();
+
+									undoneActionStack.push_back( action );
+								}
+							}
+							else if( ev.key.code == sf::Keyboard::Y && ev.key.control )
+							{
+								if( undoneActionStack.size() > 0 )
+								{
+									Action *action = undoneActionStack.back();
+									undoneActionStack.pop_back();
+
+									action->Perform();
+
+									doneActionStack.push_back( action );
 								}
 							}
 							
@@ -5700,11 +5771,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								returnVal = 1;
 							}
 						}
-						else if( ev.key.code == sf::Keyboard::Z )
-						{
-							panning = true;
-							panAnchor = worldPos;	
-						}
+						//else if( ev.key.code == sf::Keyboard::Z )
+						//{
+						//	panning = true;
+						//	panAnchor = worldPos;	
+						//}
 						else if( ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash )
 						{
 							if( ev.key.code == sf::Keyboard::Equal )
@@ -5745,10 +5816,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 				case Event::KeyReleased:
 					{
-						if( ev.key.code == sf::Keyboard::Z )
-						{
-							panning = false;
-						}
+						//if( ev.key.code == sf::Keyboard::Z )
+						//{
+						//	panning = false;
+						//}
 						break;
 					}
 				case Event::LostFocus:
@@ -6048,17 +6119,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 							}
 
-							cout << "valid: " << validNearPolys << endl;
+							//cout << "valid: " << validNearPolys << endl;
 
 							if( validNearPolys )
 							{
 								if( polygonInProgress->numPoints > 0 && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->pointEnd->pos.x, 
 									polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 								{
-									cout << "check1" << endl;
+								//	cout << "check1" << endl;
 									if( PointValid( polygonInProgress->pointEnd->pos, worldi ) )
 									{
-										cout << "blah1" << endl;
+								//		cout << "blah1" << endl;
 										polygonInProgress->AddPoint( new TerrainPoint( worldi, false ) );
 									}
 								}
@@ -9985,7 +10056,7 @@ void ActorGroup::WriteFile( std::ofstream &of )
 }
 
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
-	:pos( p ), selected( s ), gate( NULL )
+	:pos( p ), selected( s ), gate( NULL ), prev( NULL ), next( NULL )
 {
 }
 
