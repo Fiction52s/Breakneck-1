@@ -2,10 +2,13 @@
 #include <assert.h>
 #include <iostream>
 
+
 EditSession *Action::session = NULL;
 
 using namespace sf;
 using namespace std;
+
+
 
 ISelectable::ISelectable( ISelectable::ISelectableType p_selectableType )
 	:selectableType( p_selectableType ), active( true )
@@ -36,9 +39,9 @@ Brush::Brush()
 {
 }
 
-void Brush::AddObject( ISelectable *obj )
+void Brush::AddObject( SelectPtr obj )
 {
-	if( obj->selectableType != ISelectable::TERRAIN )
+	if( (*obj)->selectableType != ISelectable::TERRAIN )
 	{
 		terrainOnly = false;
 	}
@@ -54,10 +57,13 @@ void Brush::Clear()
 
 void Brush::Destroy()
 {
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
-	{
-		delete (*it);
-	}
+	//automatically delete on clear now if there are no other
+	//references
+
+	//for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	//{
+		//delete (*(*it));
+	//}
 	
 	Clear();
 }
@@ -74,21 +80,30 @@ Action::~Action()
 
 }
 
-//get a linked list of the points involved. 
+//get a brush that I don't own and make a copy of it which I can 
+//add and remove from the world at will
+
 ApplyBrushAction::ApplyBrushAction( Brush *brush )
 	//:brush( p_brush )
 {
 	for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
 	{
-		switch( (*it)->selectableType )
+		switch( (*(*it))->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
-				TerrainPolygon *tp = (TerrainPolygon*)(*it);
-				TerrainPolygon *poly = new TerrainPolygon( *tp, true );
+				TerrainPolygon *tp = (TerrainPolygon*)(*(*it));
+				
+				SelectPtr selectable( new TerrainPolygon( *tp, true ) );
+				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( selectable );
+
 				poly->Finalize();
+
+				appliedBrush.AddObject( selectable );
+				//poly->Finalize();
 				//TerrainPolygon *poly = new TerrainPolygon( //(*it)
-				appliedBrush.AddObject( poly );
+				//appliedBrush.AddObject( 
+				//	 );
 
 				//session->polygons.push_back( poly );
 
@@ -123,12 +138,12 @@ void ApplyBrushAction::Perform()
 	
 	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
 	{
-		switch( (*it)->selectableType )
+		switch( (*(*it))->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
-				TerrainPolygon *tp = (TerrainPolygon*)(*it);
-				session->polygons.push_back( tp );
+				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
+				session->polygons.push_back( poly );
 
 				//add terrain to the environment. this comes first
 				break;
@@ -147,8 +162,6 @@ void ApplyBrushAction::Perform()
 			}
 		}
 	}
-	
-
 }
 
 void ApplyBrushAction::Undo()

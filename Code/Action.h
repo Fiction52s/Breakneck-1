@@ -5,12 +5,11 @@
 #include <list>
 
 
-
 struct Brush
 {
 	Brush();
 	SelectList objects;
-	void AddObject( ISelectable *obj );
+	void AddObject( SelectPtr obj );
 	void Clear();
 	void Destroy();
 

@@ -3926,7 +3926,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												
 										}
 
-										polygons.push_back( currentBrush );
+										//progressBrush->Clear();
+
+										//need to push this
+										//polygons.push_back( currentBrush );
 										polygonInProgress->Reset();
 
 										

@@ -8,6 +8,10 @@
 #include "VectorMath.h"
 #include "GUI.h"
 #include "Tileset.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/pointer_cast.hpp>
+
+
 
 struct ISelectable
 {
@@ -38,8 +42,11 @@ struct ISelectable
 	bool active;
 };
 
-typedef std::list<ISelectable*> SelectList;
+typedef boost::shared_ptr<ISelectable*> SelectPtr;
+typedef std::list<SelectPtr> SelectList;
 typedef SelectList::iterator SelectIter;
+
+
 
 struct ActorParams;
 
@@ -218,6 +225,8 @@ struct TerrainPolygon : ISelectable
 	bool finalized;
 
 };
+
+typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 
 struct StaticLight
 {
@@ -493,7 +502,7 @@ struct EditSession : GUIHandler
 	double minimumEdgeLength;
 	double minAngle;
 	
-	std::list<TerrainPolygon*> polygons;
+	std::list<PolyPtr> polygons;
 	TerrainPolygon *polygonInProgress;
 	std::list<sf::VertexArray*> progressDrawList;
 	
