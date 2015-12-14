@@ -75,87 +75,80 @@ Action::~Action()
 }
 
 //get a linked list of the points involved. 
-ApplyBrushAction::ApplyBrushAction( Brush *p_brush )
-	:brush( p_brush )
+ApplyBrushAction::ApplyBrushAction( Brush *brush )
+	//:brush( p_brush )
 {
-	//poly->CopyPoints( pointStart, pointEnd );
-	//numPoints = poly->numPoints;
+	for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
+	{
+		switch( (*it)->selectableType )
+		{
+		case ISelectable::TERRAIN:
+			{
+				TerrainPolygon *tp = (TerrainPolygon*)(*it);
+				TerrainPolygon *poly = new TerrainPolygon( *tp, true );
+				poly->Finalize();
+				//TerrainPolygon *poly = new TerrainPolygon( //(*it)
+				appliedBrush.AddObject( poly );
+
+				//session->polygons.push_back( poly );
+
+				//add terrain to the environment. this comes first
+				break;
+			}
+		case ISelectable::ACTOR:
+			{
+				//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
+				//no, creating with a brush actually makes a copy of the brush when you set it down
+				//be sure to update everything accordingly to point to the right spots
+				break;
+			}
+		case ISelectable::GATE:
+			{
+				//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
+				break;
+			}
+		}
+	}
 }
 
 void ApplyBrushAction::Perform()
 {
 	//cout << "performing!" << endl;
 	assert( session != NULL );
+	assert( appliedBrush.objects.size() > 0 );
 	assert( !performed );
 
 	performed = true;
 
-	if( appliedBrush.objects.size() > 0 )
+	
+	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
 	{
-		for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+		switch( (*it)->selectableType )
 		{
-			switch( (*it)->selectableType )
+		case ISelectable::TERRAIN:
 			{
-			case ISelectable::TERRAIN:
-				{
-					TerrainPolygon *tp = (TerrainPolygon*)(*it);
-					session->polygons.push_back( tp );
+				TerrainPolygon *tp = (TerrainPolygon*)(*it);
+				session->polygons.push_back( tp );
 
-					//add terrain to the environment. this comes first
-					break;
-				}
-			case ISelectable::ACTOR:
-				{
-					//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
-					//no, creating with a brush actually makes a copy of the brush when you set it down
-					//be sure to update everything accordingly to point to the right spots
-					break;
-				}
-			case ISelectable::GATE:
-				{
-					//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
-					break;
-				}
+				//add terrain to the environment. this comes first
+				break;
+			}
+		case ISelectable::ACTOR:
+			{
+				//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
+				//no, creating with a brush actually makes a copy of the brush when you set it down
+				//be sure to update everything accordingly to point to the right spots
+				break;
+			}
+		case ISelectable::GATE:
+			{
+				//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
+				break;
 			}
 		}
 	}
-	else
-	{
 	
-		for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
-		{
-			switch( (*it)->selectableType )
-			{
-			case ISelectable::TERRAIN:
-				{
-					TerrainPolygon *tp = (TerrainPolygon*)(*it);
-					TerrainPolygon *poly = new TerrainPolygon( *tp, true );
-					poly->Finalize();
-					//TerrainPolygon *poly = new TerrainPolygon( //(*it)
-					appliedBrush.AddObject( poly );
 
-					session->polygons.push_back( poly );
-
-					//add terrain to the environment. this comes first
-					break;
-				}
-			case ISelectable::ACTOR:
-				{
-					//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
-					//no, creating with a brush actually makes a copy of the brush when you set it down
-					//be sure to update everything accordingly to point to the right spots
-					break;
-				}
-			case ISelectable::GATE:
-				{
-					//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
-					break;
-				}
-			}
-		}
-	
-	}
-	//session->polygons.push_back( createdPoly );
 }
 
 void ApplyBrushAction::Undo()
