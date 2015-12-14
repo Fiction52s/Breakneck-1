@@ -3900,7 +3900,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										
 										//polygonInProgress->Finalize();
 
-										progressBrush->AddObject( polygonInProgress );
+										//progressBrush->AddObject( polygonInProgress );
 
 										Action *action = new ApplyBrushAction( progressBrush );
 										//cout << "performing!" << endl;
@@ -4048,6 +4048,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( showGrass )
 									break;
+
+
 
 								//lights
 								if( sf::Keyboard::isKeyPressed( Keyboard::F ) )

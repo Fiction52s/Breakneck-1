@@ -28,7 +28,7 @@ struct ISelectable
 	//is a move valid
 	//execute move
 	ISelectable( ISelectableType type );
-	virtual bool ContainsPoint( sf::Vector2i point ) = 0;
+	virtual bool ContainsPoint( sf::Vector2f test ) = 0;
 	virtual bool Intersects( sf::IntRect rect ) = 0;
 	virtual bool IsMoveOkay( sf::Vector2i delta ) = 0;
 	virtual void Move( sf::Vector2i delta ) = 0;
@@ -42,7 +42,7 @@ struct ISelectable
 	bool active;
 };
 
-typedef boost::shared_ptr<ISelectable*> SelectPtr;
+typedef boost::shared_ptr<ISelectable> SelectPtr;
 typedef std::list<SelectPtr> SelectList;
 typedef SelectList::iterator SelectIter;
 
@@ -176,7 +176,7 @@ struct TerrainPolygon : ISelectable
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
 	void SwitchGrass( sf::Vector2<double> mousePos );
-	bool ContainsPoint( sf::Vector2f p );
+	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	bool IsTouching( TerrainPolygon *p );
 	bool IsMovePointsOkay( EditSession *edit,
@@ -189,7 +189,7 @@ struct TerrainPolygon : ISelectable
 	void MoveSelectedPoints(sf::Vector2i move);
 	void UpdateBounds();
 
-	bool ContainsPoint( sf::Vector2i point );
+	bool ContainsPoint( sf::Vector2f point );
 	bool Intersects( sf::IntRect rect );
 	bool IsMoveOkay( sf::Vector2i delta );
 	//void Move( sf::Vector2i delta );
@@ -502,7 +502,8 @@ struct EditSession : GUIHandler
 	double minimumEdgeLength;
 	double minAngle;
 	
-	std::list<PolyPtr> polygons;
+	//std::list<PolyPtr> polygons;
+	std::list<TerrainPolygon*> polygons;
 	TerrainPolygon *polygonInProgress;
 	std::list<sf::VertexArray*> progressDrawList;
 	
@@ -558,9 +559,15 @@ struct EditSession : GUIHandler
 
 	//bool closePopup; //for messsage/error only
 	
+	//new stuff
 	Brush *progressBrush;
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;
+
+	sf::Rect<float> selectRect;
+	sf::Vector2i pointMouseDown;
+
+
 	//std::list<Action*>::iterator currAction;
 
 	enum ConfirmChoices
@@ -586,6 +593,8 @@ struct EditSession : GUIHandler
 	void ClearPasteBrushes();
 	void CopyToPasteBrushes();
 	sf::Vector2i pastePos;
+
+	
 
 	enum Emode
 	{

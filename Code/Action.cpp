@@ -41,7 +41,7 @@ Brush::Brush()
 
 void Brush::AddObject( SelectPtr obj )
 {
-	if( (*obj)->selectableType != ISelectable::TERRAIN )
+	if( obj->selectableType != ISelectable::TERRAIN )
 	{
 		terrainOnly = false;
 	}
@@ -88,18 +88,22 @@ ApplyBrushAction::ApplyBrushAction( Brush *brush )
 {
 	for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
 	{
-		switch( (*(*it))->selectableType )
+		switch( (*it)->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
-				TerrainPolygon *tp = (TerrainPolygon*)(*(*it));
+				PolyPtr tp = boost::dynamic_pointer_cast<TerrainPolygon>(*it);
 				
 				SelectPtr selectable( new TerrainPolygon( *tp, true ) );
+				//PolyPtr ptr = boost::dynamic_pointer_cast<ISelectable>( selectable );
 				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( selectable );
 
 				poly->Finalize();
 
 				appliedBrush.AddObject( selectable );
+
+
+
 				//poly->Finalize();
 				//TerrainPolygon *poly = new TerrainPolygon( //(*it)
 				//appliedBrush.AddObject( 
@@ -138,12 +142,12 @@ void ApplyBrushAction::Perform()
 	
 	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
 	{
-		switch( (*(*it))->selectableType )
+		switch((*it)->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
 				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
-				session->polygons.push_back( poly );
+				//session->polygons.push_back( poly );
 
 				//add terrain to the environment. this comes first
 				break;
@@ -187,7 +191,12 @@ void ApplyBrushAction::Undo()
 			{
 				//cout << "removing polygon!" << endl;
 				//cout << "before undo: " << session->polygons.size() << endl;
-				session->polygons.remove( (TerrainPolygon*)(*it) );
+				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
+				
+				
+				//session->polygons.remove( (TerrainPolygon*)(*it) );
+				
+				
 				//cout << "there are now: " << session->polygons.size() << endl;
 				break;
 			}
