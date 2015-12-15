@@ -110,7 +110,7 @@ struct AddToPolygonAction : Action
 	void Undo();
 };
 
-struct MoveBrushAction : Action
+/*struct MoveBrushAction : Action
 {
 	MoveBrushAction( Brush *brush, sf::Vector2i delta );
 	void Perform();
@@ -118,7 +118,7 @@ struct MoveBrushAction : Action
 
 	Brush movingBrush;
 	Vector2i delta;
-};
+};*/
 
 struct DeleteActorAction : Action
 {

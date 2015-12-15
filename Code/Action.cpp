@@ -153,7 +153,10 @@ void RemoveBrushAction::Perform()
 	assert( session != NULL );
 	assert( !performed );
 	performed = true;
+
 	storedBrush.Deactivate();
+
+	cout << "performing remove brush" << endl;
 }
 
 void RemoveBrushAction::Undo()
@@ -163,8 +166,11 @@ void RemoveBrushAction::Undo()
 
 	performed = false;
 	storedBrush.Activate();
+
+	cout << "undoing remove brush" << endl;
 }
 
+//use for add and subtract
 ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 {
 	original = *p_orig;
@@ -218,7 +224,7 @@ void EditObjectAction::Undo()
 	//restore the old parameters
 }
 
-MoveBrushAction::MoveBrushAction( Brush *brush, Vector2i p_delta )
+/*MoveBrushAction::MoveBrushAction( Brush *brush, Vector2i p_delta )
 	:delta( p_delta )
 {
 	movingBrush = *brush;
@@ -240,7 +246,7 @@ void MoveBrushAction::Undo()
 
 	movingBrush.Move( -delta );
 	//move the object back
-}
+}*/
 
 DeletePointsAction::DeletePointsAction()
 {

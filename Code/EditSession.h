@@ -39,7 +39,9 @@ struct ISelectable
 		boost::shared_ptr<ISelectable> & select ) = 0;
 	virtual void Activate( EditSession *edit,
 		boost::shared_ptr<ISelectable> & select) = 0;
-		
+	virtual bool CanApply() = 0;
+	virtual bool CanAdd() = 0;
+	//virtual bool CanSubtract() = 0;
 
 	ISelectableType selectableType;
 	bool active;
@@ -156,7 +158,7 @@ struct TerrainPolygon : ISelectable
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
-	bool IsTouching( boost::shared_ptr<TerrainPolygon> p );
+	
 	bool IsMovePointsOkay( EditSession *edit,
 		sf::Vector2i delta );
 	bool IsMovePointsOkay( EditSession *edit,
@@ -178,6 +180,18 @@ struct TerrainPolygon : ISelectable
 		boost::shared_ptr<ISelectable> & select);
 	void Activate( EditSession *edit,
 		boost::shared_ptr<ISelectable> & select);
+	
+	bool IsTouching( boost::shared_ptr<TerrainPolygon> &p );
+	//bool IsTouching( TerrainPolygon * p );
+	bool BoundsOverlap( TerrainPolygon *poly );
+	bool LinesIntersect( TerrainPolygon *poly );
+	bool PointsTooClose( TerrainPolygon *poly );
+	bool LinesTooClose( TerrainPolygon *poly );
+
+
+	bool CanApply();
+	bool CanAdd();
+
 
 
 
@@ -298,6 +312,9 @@ struct ActorParams : ISelectable
 
 	virtual void DrawQuad( sf::RenderTarget *target );
 
+	virtual bool CanApply() = 0;
+	bool CanAdd();
+
 	//sf::Sprite icon;
 	sf::Sprite image;
 	ActorGroup *group;
@@ -338,8 +355,12 @@ struct PatrollerParams : public ActorParams
 		std::list<sf::Vector2i> &globalPath );
 	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw( sf::RenderTarget *target );
+
+	bool CanApply();
+
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
+
 	bool loop;
 	float speed;
 };
@@ -359,6 +380,7 @@ struct KeyParams : public ActorParams
 		std::list<sf::Vector2i> &globalPath );
 	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw( sf::RenderTarget *target );
+	bool CanApply();
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
 	bool loop;
@@ -375,6 +397,7 @@ struct CrawlerParams : public ActorParams
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
 	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
 	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
 	float speed;
@@ -390,6 +413,7 @@ struct BasicTurretParams : public ActorParams
 		double bulletSpeed, 
 		int framesWait );
 	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;
@@ -401,6 +425,7 @@ struct FootTrapParams : public ActorParams
 		boost::shared_ptr<TerrainPolygon> edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
+	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
 	//void Draw( sf::RenderTarget *target );
 };
@@ -411,6 +436,7 @@ struct GoalParams : public ActorParams
 		boost::shared_ptr<TerrainPolygon> edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
+	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
 	//void Draw( sf::RenderTarget *target );
 };

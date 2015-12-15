@@ -19,6 +19,12 @@ ActorParams::ActorParams()
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
 
+bool ActorParams::CanAdd()
+{
+	assert( false );
+	return false; //shouldn't get called anyway
+}
+
 void ActorParams::Draw( sf::RenderTarget *target )
 {
 	target->draw( image );
@@ -254,8 +260,6 @@ bool ActorParams::IsPlacementOkay()
 	return false;
 }
 
-
-
 void ActorParams::Move( sf::Vector2i delta )
 {
 	if( groundInfo != NULL )
@@ -283,12 +287,14 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 {
-	//group->actors.remove( this );
+	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
+	group->actors.remove( actor );
 }
 
 void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 {
-	
+	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
+	group->actors.push_back( actor );
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
@@ -327,6 +333,12 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 
 
 	SetBoundingQuad();
+}
+
+bool KeyParams::CanApply()
+{
+	return true;
+	//for now can apply anywhere. should you only be able to apply when not on the same spot as other keys??
 }
 
 void KeyParams::SetPath(std::list<sf::Vector2i> &globalPath)
@@ -488,6 +500,12 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 	params.push_back( ss.str() );*/
 }
 
+bool PatrollerParams::CanApply()
+{
+	return true;
+	//see note for keyparams
+}
+
 void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
 	if( lines != NULL )
@@ -617,6 +635,13 @@ CrawlerParams::CrawlerParams( EditSession *edit, PolyPtr p_edgePolygon, int p_ed
 	SetBoundingQuad();	
 }
 
+bool CrawlerParams::CanApply()
+{
+	//hmm not sure about this now
+
+	return true;
+}
+
 void CrawlerParams::WriteParamFile( ofstream &of )
 {
 	if( clockwise )
@@ -640,6 +665,13 @@ BasicTurretParams::BasicTurretParams( EditSession *edit, PolyPtr p_edgePolygon, 
 	SetBoundingQuad();
 }
 
+bool BasicTurretParams::CanApply()
+{
+	//hmm not sure about this now
+
+	return true;
+}
+
 void BasicTurretParams::WriteParamFile( ofstream &of )
 {
 	of << bulletSpeed << endl;
@@ -654,6 +686,13 @@ FootTrapParams::FootTrapParams( EditSession *edit, PolyPtr p_edgePolygon, int p_
 	SetBoundingQuad();
 }
 
+bool FootTrapParams::CanApply()
+{
+	//hmm not sure about this now
+
+	return true;
+}
+
 void FootTrapParams::WriteParamFile( ofstream &of )
 {
 }
@@ -664,6 +703,13 @@ GoalParams::GoalParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeInde
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
+}
+
+bool GoalParams::CanApply()
+{
+	//hmm not sure about this now
+
+	return true;
 }
 
 void GoalParams::WriteParamFile( ofstream &of )
