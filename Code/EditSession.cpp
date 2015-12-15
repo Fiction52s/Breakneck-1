@@ -184,8 +184,8 @@ void TerrainPolygon::Deactivate(EditSession *edit)
 	//remove enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
-		list<ActorParams*> params = (*it).second;
-		for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+		list<ActorPtr> params = (*it).second;
+		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
 			(*pit)->Deactivate( edit );
 		}
@@ -212,8 +212,8 @@ void TerrainPolygon::Activate( EditSession *edit )
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
-		list<ActorParams*> params = (*it).second;
-		for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+		list<ActorPtr> params = (*it).second;
+		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
 			(*pit)->Activate( edit );
 		}
@@ -442,15 +442,15 @@ TerrainPolygon::~TerrainPolygon()
 
 void TerrainPolygon::DestroyEnemies()
 {
-	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
+	/*for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
-		for( list<ActorParams*>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
+		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
 			(*it)->group->actors.remove( (*it ) );
 			delete (*it);
 		}
 	}
-	enemies.clear();
+	enemies.clear();*/
 }
 
 void TerrainPolygon::Move( Vector2i move )
@@ -499,8 +499,8 @@ void TerrainPolygon::Move( Vector2i move )
 
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
-		list<ActorParams*> &actorList = (*it).second;
-		for( list<ActorParams*>::iterator ait = actorList.begin(); ait != actorList.end(); ++ait )
+		list<ActorPtr> &actorList = (*it).second;
+		for( list<ActorPtr>::iterator ait = actorList.begin(); ait != actorList.end(); ++ait )
 		{
 			(*ait)->UpdateGroundedSprite();
 			(*ait)->SetBoundingQuad();
@@ -531,8 +531,8 @@ void TerrainPolygon::UpdateBounds()
 
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
-		list<ActorParams*> &en = (*it).second;
-		for( list<ActorParams*>::iterator ait = en.begin(); ait != en.end(); ++ait )
+		list<ActorPtr> &en = (*it).second;
+		for( list<ActorPtr>::iterator ait = en.begin(); ait != en.end(); ++ait )
 		{
 			sf::VertexArray & bq = (*ait)->boundingQuad;
 			for( int i = 0; i < 4; ++i )
@@ -888,7 +888,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 				if( enemies.count( curr ) > 0 )
 				{
-					list<ActorParams*> &en = newList.enemies[tp];
+					list<ActorPtr> &en = newList.enemies[tp];
 					en = enemies[curr];
 				}
 
@@ -916,7 +916,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 				if( enemies.count( curr ) > 0 )
 				{
-					list<ActorParams*> &en = newList.enemies[tp];
+					list<ActorPtr> &en = newList.enemies[tp];
 					en = enemies[curr];
 				}
 
@@ -979,7 +979,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 				if( enemies.count( curr ) > 0 )
 				{
-					list<ActorParams*> &en = newList.enemies[tp];
+					list<ActorPtr> &en = newList.enemies[tp];
 					en = enemies[curr];
 				}
 
@@ -1013,10 +1013,10 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 		if( newList.enemies.count( curr ) > 0 )
 		{
-			list<ActorParams*> &en = enemies[tp];
+			list<ActorPtr> &en = enemies[tp];
 			en = newList.enemies[curr];
 			//cout << "zsize: " << en.size() << endl;
-			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+			for( list<ActorPtr>::iterator it = en.begin(); it != en.end(); ++it )
 			{
 				//cout << "setting new ground on actor params" << endl;
 				
@@ -1438,7 +1438,7 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 {
 	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
-		for( list<ActorParams*>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
+		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
 			TerrainPoint *edgeEnd = (*it)->groundInfo->edgeStart->next;
 			if( edgeEnd == NULL )
@@ -1617,8 +1617,8 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelt
 		{
 			if( enemies.count( curr ) > 0 )
 			{
-				list<ActorParams*> &en = enemies[curr];
-				for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+				list<ActorPtr> &en = enemies[curr];
+				for( list<ActorPtr>::iterator it = en.begin(); it != en.end(); ++it )
 				{
 					(*it)->SetBoundingQuad();
 				}
@@ -1665,8 +1665,8 @@ bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
 	{
 		if( enemies.count( curr ) > 0 )
 		{
-			list<ActorParams*> &actors = enemies[curr];
-			for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+			list<ActorPtr> &actors = enemies[curr];
+			for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 			{
 				(*it)->UpdateGroundedSprite();
 				(*it)->SetBoundingQuad();
@@ -1696,8 +1696,8 @@ bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
 	{
 		if( enemies.count( curr ) > 0 )
 		{
-			list<ActorParams*> &actors = enemies[curr];
-			for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+			list<ActorPtr> &actors = enemies[curr];
+			for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 			{
 				(*it)->UpdateGroundedSprite();
 				(*it)->SetBoundingQuad();
@@ -2392,7 +2392,8 @@ bool EditSession::OpenFile( string fileName )
 				string typeName;
 				is >> typeName;
 
-				ActorParams *a; //= new ActorParams;
+				//ActorParams *a; //= new ActorParams;
+				ActorPtr a;
 				
 
 
@@ -2442,7 +2443,9 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a = new GoalParams( this, terrain, edgeIndex, edgeQuantity );
+					a.reset( new GoalParams( this, terrain, edgeIndex, edgeQuantity ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
 					//a->SetAsGoal( terrain, edgeIndex, edgeQuantity );
 				}
 				else if( typeName == "patroller" )
@@ -2483,7 +2486,7 @@ bool EditSession::OpenFile( string fileName )
 					is >> speed;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a = new PatrollerParams( this, pos, globalPath, speed, loop );
+					a.reset( new PatrollerParams( this, pos, globalPath, speed, loop ) );
 				}
 				else if( typeName == "key" )
 				{
@@ -2541,7 +2544,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
-					a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport, (GateInfo::GateTypes)gateType );
+					a.reset( new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport, (GateInfo::GateTypes)gateType ) );
 				}
 				else if( typeName == "crawler" )
 				{
@@ -2596,7 +2599,9 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
-					a = new CrawlerParams( this, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
+					a.reset( new CrawlerParams( this, terrain, edgeIndex, edgeQuantity, clockwise, speed ) ); 
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
 				}
 				else if( typeName == "basicturret" )
 				{
@@ -2638,7 +2643,9 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
-					a = new BasicTurretParams( this, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
+					a.reset( new BasicTurretParams( this, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
 				}
 				else if( typeName == "foottrap" )
 				{
@@ -2673,7 +2680,9 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
-					a = new FootTrapParams( this, terrain, edgeIndex, edgeQuantity );
+					a.reset( new FootTrapParams( this, terrain, edgeIndex, edgeQuantity ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
 				}
 				else
 				{
@@ -2786,7 +2795,7 @@ void EditSession::WriteFile(string fileName)
 	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 	{
 		ActorGroup *group = (*it).second;
-		for( list<ActorParams*>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
+		for( list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
 		{
 			if( (*it2)->type == types["goal"] )
 			{
@@ -3286,7 +3295,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 
 			if( currentPoly->enemies.count( curr ) > 0 )
 			{
-				list<ActorParams*> &en = z.enemies[tp];
+				list<ActorPtr> &en = z.enemies[tp];
 				en = currentPoly->enemies[curr];
 			}
 			
@@ -3341,10 +3350,10 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 
 		if( z.enemies.count( zit ) > 0 )
 		{
-			list<ActorParams*> &en = poly->enemies[tp];
+			list<ActorPtr> &en = poly->enemies[tp];
 			en = z.enemies[zit];
 			//cout << "zsize: " << en.size() << endl;
-			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
+			for( list<ActorPtr>::iterator it = en.begin(); it != en.end(); ++it )
 			{
 				//cout << "setting new ground on actor params" << endl;
 				(*it)->groundInfo->ground = poly;
@@ -4154,13 +4163,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 									{
 										ActorGroup *ag = (*it).second;
-										for( list<ActorParams*>::iterator it2 = ag->actors.begin(); it2 != ag->actors.end(); ++it2 )
+										for( list<ActorPtr>::iterator it2 = ag->actors.begin(); it2 != ag->actors.end(); ++it2 )
 										{
 											if( (*it2)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
 											{
 												cout << "selecting enemy" << endl;
-												ISelectable* iselect = boost::dynamic_pointer_cast<ISelectable>( (*it2) );
-												SelectPtr sp(iselect);
+												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it2) );
 												selectedBrush->AddObject( sp );
 												emptysp = false;
 												pointMouseDown = Vector2i( worldPos.x, worldPos.y );
@@ -4385,14 +4393,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								bool empty = emptySpace;
 								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
 								{
-									list<ActorParams*> &actors = it->second->actors;
-									for( list<ActorParams*>::iterator it2 = actors.begin(); it2 != actors.end() && empty; ++it2 )
+									list<ActorPtr> &actors = it->second->actors;
+									for( list<ActorPtr>::iterator it2 = actors.begin(); it2 != actors.end() && empty; ++it2 )
 									{
 										sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
 										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
 										{
-											selectedActor = (*it2);
-											selectedActorGrabbed = true;
+											//selectedActor = (*it2);
+											/*selectedActorGrabbed = true;
 											grabPos = Vector2i( worldPos.x, worldPos.y );
 
 											empty = false;
@@ -4403,7 +4411,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											{
 												(*it3)->SetSelected( false );
 											}
-											selectedPolygons.clear();
+											selectedPolygons.clear();*/
 										}
 									}
 								}
@@ -4743,7 +4751,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											for( EnemyMap::iterator mapIt = (*it)->enemies.begin(); mapIt != (*it)->enemies.end(); ++mapIt)
 											{
-												list<ActorParams*>::iterator et = (*mapIt).second.begin();
+												list<ActorPtr>::iterator et = (*mapIt).second.begin();
 												while( et != (*mapIt).second.end() )
 												{
 													TerrainPoint *edgeEnd = (*et)->groundInfo->edgeStart->next;
@@ -4753,9 +4761,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													bool deleted = (*(*et)->groundInfo->edgeStart).selected || edgeEnd->selected;
 													if (deleted)
 													{
-														(*et)->group->actors.remove( (*et ) );
-														delete (*et); //deleting actor
-														(*it)->enemies[(*et)->groundInfo->edgeStart].erase(et++); 
+														//delete enemy here
+
+
+													//	(*et)->group->actors.remove( (*et ) );
+													//	delete (*et); //deleting actor
+													//	(*it)->enemies[(*et)->groundInfo->edgeStart].erase(et++); 
 													}
 													else
 													{
@@ -4780,14 +4791,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else if( selectedActor != NULL )
 								{
-									if( selectedActor->groundInfo != NULL && selectedActor->groundInfo->ground != NULL )
+									/*if( selectedActor->groundInfo != NULL && selectedActor->groundInfo->ground != NULL )
 									{
 										selectedActor->groundInfo->ground->enemies[selectedActor->groundInfo->edgeStart].remove( selectedActor );
 									}
 									selectedActor->group->actors.remove( selectedActor );
 									delete selectedActor;
 									
-									selectedActor = NULL;
+									selectedActor = NULL;*/
 								}
 								else if( selectedLight != NULL )
 								{
@@ -5295,9 +5306,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && placementOkay; ++it )
 									{
 										ActorGroup *ag = (*it).second;
-										for( list<ActorParams*>::iterator git = ag->actors.begin(); git != ag->actors.end(); ++git )
+										for( list<ActorPtr>::iterator git = ag->actors.begin(); git != ag->actors.end(); ++git )
 										{
-											ActorParams *params = (*git);
+											ActorParams *params = (*git).get();
 											V2d pa( params->boundingQuad[0].position.x, params->boundingQuad[0].position.y );
 											V2d pb( params->boundingQuad[1].position.x, params->boundingQuad[1].position.y );
 											V2d pc( params->boundingQuad[2].position.x, params->boundingQuad[2].position.y );
@@ -5407,8 +5418,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//showPanel = trackingEnemy->panel;
 											showPanel = enemySelectPanel;
 											trackingEnemy = NULL;
-											ActorParams *actor = new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity );
+											ActorPtr actor( new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity ) );
 											actor->group = groups["--"];
 											//actor->SetAsGoal( goalType, enemyEdgePolygon, enemyEdgeIndex, 
 											//	enemyEdgeQuantity );
@@ -6778,8 +6789,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( (*it)->enemies.count( curr ) > 0 )
 									{
-										list<ActorParams*> &enemies = (*it)->enemies[curr];
-										for( list<ActorParams*>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
+										list<ActorPtr> &enemies = (*it)->enemies[curr];
+										for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
 										{
 											//(*ait)->UpdateGroundedSprite();
 											
@@ -6800,11 +6811,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								(*it)->movingPointMode = true;
 
-								for( map<TerrainPoint*,list<ActorParams*>>::iterator mit = (*it)->enemies.begin();
+								for( map<TerrainPoint*,list<ActorPtr>>::iterator mit = (*it)->enemies.begin();
 									mit != (*it)->enemies.end(); ++mit )
 								{
-									list<ActorParams*> &enemies = (*mit).second;//(*it)->enemies[curr];
-									for( list<ActorParams*>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
+									list<ActorPtr> &enemies = (*mit).second;//(*it)->enemies[curr];
+									for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
 									{
 										(*ait)->UpdateGroundedSprite();
 										(*ait)->SetBoundingQuad();
@@ -8103,7 +8114,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				PatrollerParams *patroller = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
+				ActorPtr patroller( new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
 				groups["--"]->actors.push_back( patroller);
 				patroller->group = groups["--"];
 				//trackingEnemy = NULL;
@@ -8208,7 +8219,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				}
 
 				
-				KeyParams *key = new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gType );
+				ActorPtr key( new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gType ) );
 				
 				groups["--"]->actors.push_back( key );
 				key->group = groups["--"];
@@ -8255,9 +8266,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				CrawlerParams *crawler = new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity, clockwise, speed );
-				groups["--"]->actors.push_back( crawler);
+				ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
+				
+				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
+				enemyEdgePolygon->UpdateBounds();
+				
+
+				groups["--"]->actors.push_back( crawler );
 				crawler->group = groups["--"];
 				//trackingEnemy = NULL;
 				
@@ -8304,8 +8319,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				BasicTurretParams *basicTurret = new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity, bulletSpeed, framesWait );
+				ActorPtr basicTurret( new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+				enemyEdgeQuantity, bulletSpeed, framesWait ) );
+
+				enemyEdgePolygon->enemies[basicTurret->groundInfo->edgeStart].push_back( basicTurret );
+				enemyEdgePolygon->UpdateBounds();
+
 				groups["--"]->actors.push_back( basicTurret );
 				basicTurret->group = groups["--"];
 				//trackingEnemy = NULL;
@@ -8326,8 +8345,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				FootTrapParams *footTrap = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity );
+				ActorPtr footTrap( new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+				enemyEdgeQuantity ) );
+
+				enemyEdgePolygon->enemies[footTrap->groundInfo->edgeStart].push_back( footTrap );
+				enemyEdgePolygon->UpdateBounds();
+
 				groups["--"]->actors.push_back( footTrap );
 				footTrap->group = groups["--"];
 				trackingEnemy = NULL;
@@ -8972,7 +8995,7 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 		//me touching his enemies
 		for( EnemyMap::iterator it = (*polyIt)->enemies.begin(); it != (*polyIt)->enemies.end(); ++it )
 		{
-			for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+			for( list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
 			{
 				//need to round these floats probably
 				//cout << "calling this" << endl;
@@ -8999,7 +9022,7 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 		//him touching my enemies
 		for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
 		{
-			for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+			for( list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
 			{
 				//need to round these floats probably
 				//cout << "calling this" << endl;
@@ -9191,7 +9214,7 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 	//for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end() && res2; ++it )
 	for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
 	{
-		for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
+		for( list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
 		{
 			//need to round these floats probably
 
@@ -10127,7 +10150,7 @@ void ActorType::Init()
 
 void ActorGroup::Draw( sf::RenderTarget *target )
 {
-	for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
 		(*it)->Draw( target );
 		(*it)->DrawQuad( target );
@@ -10144,7 +10167,7 @@ void ActorGroup::WriteFile( std::ofstream &of )
 {
 	//group name and number of actors in the group
 	of << name << " " << actors.size() << endl;
-	for( list<ActorParams*>::iterator it = actors.begin(); it != actors.end(); ++it )
+	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
 		(*it)->WriteFile( of );
 	}

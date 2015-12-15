@@ -118,7 +118,7 @@ struct TerrainBrush
 
 
 
-typedef std::map<TerrainPoint*,std::list<ActorParams*>> EnemyMap;
+
 struct TerrainPolygon : ISelectable
 {
 	TerrainPolygon( sf::Texture *grassTex );
@@ -195,7 +195,9 @@ struct TerrainPolygon : ISelectable
 	int bottom;
 	std::list<sf::Vector2i> path;
 	
-	EnemyMap enemies;
+	//enemymap
+	std::map<TerrainPoint*,std::list<
+		boost::shared_ptr<ActorParams>>> enemies;
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;
@@ -270,7 +272,8 @@ struct ActorParams : ISelectable
 	ActorParams();
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
-	void AnchorToGround( boost::shared_ptr<TerrainPolygon> poly, 
+	void AnchorToGround( 
+		boost::shared_ptr<TerrainPolygon> poly, 
 		int eIndex, double quantity );
 	void UpdateGroundedSprite();
 	virtual void SetBoundingQuad();
@@ -313,6 +316,8 @@ struct ActorParams : ISelectable
 };
 
 typedef boost::shared_ptr<ActorParams> ActorPtr;
+typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
+
 
 struct PatrollerParams : public ActorParams
 {
@@ -408,7 +413,7 @@ struct ActorGroup
 {
 	ActorGroup( const std::string &name );
 	std::string name;
-	std::list<ActorParams*> actors;
+	std::list<ActorPtr> actors;
 	void Draw( sf::RenderTarget *target );
 	void WriteFile( std::ofstream &of );
 };

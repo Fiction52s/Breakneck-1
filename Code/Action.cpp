@@ -178,8 +178,8 @@ void ApplyBrushAction::Perform()
 				//add in enemies
 				for( EnemyMap::iterator it = poly->enemies.begin(); it != poly->enemies.end(); ++it )
 				{
-					list<ActorParams*> params = (*it).second;
-					for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+					list<ActorPtr> params = (*it).second;
+					for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 					{
 						(*pit)->Activate( session );
 					}
@@ -251,8 +251,8 @@ void ApplyBrushAction::Undo()
 				//remove enemies
 				for( EnemyMap::iterator it = poly->enemies.begin(); it != poly->enemies.end(); ++it )
 				{
-					list<ActorParams*> params = (*it).second;
-					for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+					list<ActorPtr> params = (*it).second;
+					for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 					{
 						//(*pit)->Deactivate( edit );
 					}

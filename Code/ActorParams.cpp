@@ -172,11 +172,12 @@ void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 	
 	groundInfo->ground = poly;
 	
-
+	cout << "type: " << type->name << ", " << type->width  << endl;
 	//groundInfo->edgeIndex = eIndex;
 	groundInfo->groundQuantity = quantity;
-
+	
 	image.setTexture( type->imageTexture );
+	//cout << "finished anchor to ground" << endl;
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
 	
 	int testIndex = 0;
@@ -211,9 +212,8 @@ void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 		++testIndex;
 	}
 
-	poly->enemies[groundInfo->edgeStart].push_back( this );
-
-	poly->UpdateBounds();
+	cout << "finished anchor to ground" << endl;
+	
 
 	//adjust for ordery
 	/*if( groundInfo->edgeIndex == 0 )
@@ -283,7 +283,7 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate( EditSession *edit )
 {
-	group->actors.remove( this );
+	//group->actors.remove( this );
 }
 
 void ActorParams::Activate( EditSession *edit )
@@ -611,9 +611,13 @@ CrawlerParams::CrawlerParams( EditSession *edit, PolyPtr p_edgePolygon, int p_ed
 	speed = p_speed;
 
 	type = edit->types["crawler"];
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
 	SetBoundingQuad();
+
+	
+	
 }
 
 void CrawlerParams::WriteParamFile( ofstream &of )
