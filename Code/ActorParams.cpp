@@ -281,12 +281,12 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 	image.setColor( Color::White );
 }
 
-void ActorParams::Deactivate( EditSession *edit )
+void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 {
 	//group->actors.remove( this );
 }
 
-void ActorParams::Activate( EditSession *edit )
+void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 {
 	
 }
@@ -614,10 +614,7 @@ CrawlerParams::CrawlerParams( EditSession *edit, PolyPtr p_edgePolygon, int p_ed
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
-	SetBoundingQuad();
-
-	
-	
+	SetBoundingQuad();	
 }
 
 void CrawlerParams::WriteParamFile( ofstream &of )

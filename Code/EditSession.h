@@ -35,8 +35,11 @@ struct ISelectable
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;
-	virtual void Deactivate(EditSession *edit ) = 0;
-	virtual void Activate( EditSession *edit ) = 0;
+	virtual void Deactivate(EditSession *edit,
+		boost::shared_ptr<ISelectable> & select ) = 0;
+	virtual void Activate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select) = 0;
+		
 
 	ISelectableType selectableType;
 	bool active;
@@ -171,8 +174,10 @@ struct TerrainPolygon : ISelectable
 	void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	void Draw( sf::RenderTarget *target );
-	void Deactivate(EditSession *edit );
-	void Activate( EditSession *edit );
+	void Deactivate(EditSession *edit,
+		boost::shared_ptr<ISelectable> & select);
+	void Activate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select);
 
 
 
@@ -286,8 +291,10 @@ struct ActorParams : ISelectable
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	virtual void Draw( sf::RenderTarget *target );
-	virtual void Deactivate( EditSession *edit );
-	virtual void Activate( EditSession *edit );
+	virtual void Deactivate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select);
+	virtual void Activate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select );
 
 	virtual void DrawQuad( sf::RenderTarget *target );
 

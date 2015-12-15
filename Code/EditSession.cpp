@@ -177,9 +177,11 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 }
 
-void TerrainPolygon::Deactivate(EditSession *edit)
+void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr &select )
 {
-	//edit->polygons.remove( this );
+	
+	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
+	edit->polygons.remove( poly );
 	
 	//remove enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -187,7 +189,8 @@ void TerrainPolygon::Deactivate(EditSession *edit)
 		list<ActorPtr> params = (*it).second;
 		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
-			(*pit)->Deactivate( edit );
+			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>( (*pit ) );
+			(*pit)->Deactivate( edit, ptr );
 		}
 	}
 
@@ -205,9 +208,11 @@ void TerrainPolygon::Deactivate(EditSession *edit)
 	}
 }
 
-void TerrainPolygon::Activate( EditSession *edit )
+void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 {
-	//edit->polygons.push_back( this );
+	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
+
+	edit->polygons.push_back( poly );
 
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -215,7 +220,8 @@ void TerrainPolygon::Activate( EditSession *edit )
 		list<ActorPtr> params = (*it).second;
 		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
-			(*pit)->Activate( edit );
+			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>( (*pit ) );
+			(*pit)->Activate( edit, ptr );
 		}
 	}
 
@@ -3972,9 +3978,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										
 										polygonInProgress->Finalize();
 
-										//progressBrush->AddObject( polygonInProgress );
+										progressBrush->AddObject( polygonInProgress );
 									
-
 
 										Action *action = new ApplyBrushAction( progressBrush );
 										//cout << "performing!" << endl;

@@ -54,6 +54,10 @@ struct ApplyBrushAction : Action
 	
 	void Perform();
 	void Undo();
+	//void ApplyTerrain( PolyPtr &poly );
+	//void ApplyActor( ActorPtr &actor );
+	//void ApplyGate( GatePtr &gate );
+
 
 	//Brush *brush; //action doesn't own this
 	Brush appliedBrush;
