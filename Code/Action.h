@@ -12,6 +12,7 @@ struct Brush
 	void AddObject( SelectPtr obj );
 	void Clear();
 	void Destroy();
+	void Move( sf::Vector2i delta );
 
 	bool terrainOnly;
 };

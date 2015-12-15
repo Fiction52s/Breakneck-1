@@ -203,6 +203,12 @@ bool IsQuadTouchingCircle( sf::Vector2<double> & A,
 						  sf::Vector2<double> &D, 
 						  sf::Vector2<double> &pos, 
 						  double rad );
+
+bool QuadContainsPoint( sf::Vector2<double> &A, 
+						sf::Vector2<double> &B, 
+						sf::Vector2<double> &C, 
+						sf::Vector2<double> &D, 
+						sf::Vector2<double> &point );
 //struct QuadTree
 //{
 //};

@@ -1539,6 +1539,25 @@ bool isQuadTouchingQuad( V2d &A0, V2d &B0, V2d &C0, V2d &D0, V2d &A1, V2d &B1, V
 	}
 }
 
+bool QuadContainsPoint( V2d &A, V2d &B, V2d&C, V2d&D, V2d&point )
+{
+	V2d AB = B - A;
+	V2d AD = D - A;
+	V2d pointA = point - A;
+	double pointAB = dot( pointA, normalize( AB ) );
+	double pointAD = dot( pointA, normalize( AD ) );
+
+	if( pointAB * pointAB <= dot( AB,AB ) )
+	{
+		if( pointAD * pointAD <= dot( AD, AD ) )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 EdgeQNode *Insert( EdgeQNode *node, Edge* e )
 {
 	if( node->leaf )

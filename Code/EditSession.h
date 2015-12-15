@@ -257,18 +257,28 @@ struct ActorType
 };
 
 struct ActorGroup;
-struct ActorParams
+struct ActorParams : ISelectable
 {
 	ActorParams();
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
-
-
-
 	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
 	void UpdateGroundedSprite();
 	virtual void SetBoundingQuad();
+
+	//ISelectable( ISelectableType type );
+	virtual bool ContainsPoint( sf::Vector2f test );
+	virtual bool Intersects( sf::IntRect rect );
+	virtual bool IsMoveOkay( sf::Vector2i delta );
+	virtual void Move( sf::Vector2i delta );
+	virtual void BrushDraw( sf::RenderTarget *target, 
+		bool valid );
+	virtual void Draw( sf::RenderTarget *target );
+	virtual void Deactivate();
+
+	virtual void DrawQuad( sf::RenderTarget *target );
+
 	//sf::Sprite icon;
 	sf::Sprite image;
 	ActorGroup *group;
@@ -292,10 +302,12 @@ struct ActorParams
 
 	sf::VertexArray boundingQuad;
 	
-	virtual void Draw( sf::RenderTarget *target );
-	virtual void DrawQuad( sf::RenderTarget *target );
+	
+	
 
 };
+
+typedef boost::shared_ptr<ActorParams> ActorPtr;
 
 struct PatrollerParams : public ActorParams
 {
@@ -566,6 +578,10 @@ struct EditSession : GUIHandler
 
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
+
+	Brush *selectedBrush;
+
+	bool moveActive;
 
 
 	//std::list<Action*>::iterator currAction;
