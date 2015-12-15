@@ -30,7 +30,7 @@ struct ISelectable
 	ISelectable( ISelectableType type );
 	virtual bool ContainsPoint( sf::Vector2f test ) = 0;
 	virtual bool Intersects( sf::IntRect rect ) = 0;
-	virtual bool IsMoveOkay( sf::Vector2i delta ) = 0;
+	virtual bool IsPlacementOkay() = 0;
 	virtual void Move( sf::Vector2i delta ) = 0;
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid ) = 0;
@@ -40,6 +40,7 @@ struct ISelectable
 
 	ISelectableType selectableType;
 	bool active;
+	bool selected;
 };
 
 typedef boost::shared_ptr<ISelectable> SelectPtr;
@@ -191,7 +192,7 @@ struct TerrainPolygon : ISelectable
 
 	bool ContainsPoint( sf::Vector2f point );
 	bool Intersects( sf::IntRect rect );
-	bool IsMoveOkay( sf::Vector2i delta );
+	bool IsPlacementOkay();
 	//void Move( sf::Vector2i delta );
 	void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
@@ -270,7 +271,7 @@ struct ActorParams : ISelectable
 	//ISelectable( ISelectableType type );
 	virtual bool ContainsPoint( sf::Vector2f test );
 	virtual bool Intersects( sf::IntRect rect );
-	virtual bool IsMoveOkay( sf::Vector2i delta );
+	virtual bool IsPlacementOkay();
 	virtual void Move( sf::Vector2i delta );
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid );

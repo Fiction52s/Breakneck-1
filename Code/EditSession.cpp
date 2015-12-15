@@ -1702,7 +1702,7 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 	TerrainPoint *prev = pointEnd;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
-		cout << "copying " << endl;
+		//cout << "copying " << endl;
 		copyCurr = new TerrainPoint( curr->pos, false );
 
 		if( curr == pointStart )
@@ -1865,7 +1865,7 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 	return false;
 }
 
-bool TerrainPolygon::IsMoveOkay( sf::Vector2i delta )
+bool TerrainPolygon::IsPlacementOkay()
 {
 	return false;
 }
@@ -4072,7 +4072,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											if( (*it2)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
 											{
-												//cout << "selecting enemy of type" <<  << endl;
+												cout << "selecting enemy" << endl;
 												ISelectable* iselect = boost::dynamic_pointer_cast<ISelectable>( (*it2) );
 												SelectPtr sp(iselect);
 												selectedBrush->AddObject( sp );

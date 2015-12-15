@@ -11,7 +11,7 @@ using namespace std;
 
 
 ISelectable::ISelectable( ISelectable::ISelectableType p_selectableType )
-	:selectableType( p_selectableType ), active( true )
+	:selectableType( p_selectableType ), active( true ), selected( false )
 {
 }
 

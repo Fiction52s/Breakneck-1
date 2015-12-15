@@ -1547,9 +1547,9 @@ bool QuadContainsPoint( V2d &A, V2d &B, V2d&C, V2d&D, V2d&point )
 	double pointAB = dot( pointA, normalize( AB ) );
 	double pointAD = dot( pointA, normalize( AD ) );
 
-	if( pointAB * pointAB <= dot( AB,AB ) )
+	if( pointAB >= 0 && pointAB * pointAB <= dot( AB,AB ) )
 	{
-		if( pointAD * pointAD <= dot( AD, AD ) )
+		if( pointAD >= 0 && pointAD * pointAD <= dot( AD, AD ) )
 		{
 			return true;
 		}

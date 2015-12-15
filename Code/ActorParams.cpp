@@ -240,7 +240,7 @@ bool ActorParams::ContainsPoint( sf::Vector2f test )
 
 	bool result = QuadContainsPoint( A,B,C,D, V2d( test.x, test.y ) );
 
-	cout << "result: " << result << endl;
+	//cout << "result: " << result << endl;
 	return result;
 }
 
@@ -249,7 +249,7 @@ bool ActorParams::Intersects( sf::IntRect rect )
 	return false;
 }
 
-bool ActorParams::IsMoveOkay( sf::Vector2i delta )
+bool ActorParams::IsPlacementOkay()
 {
 	return false;
 }
@@ -269,6 +269,7 @@ void ActorParams::Move( sf::Vector2i delta )
 void ActorParams::BrushDraw( sf::RenderTarget *target, 
 		bool valid )
 {
+
 }
 
 void ActorParams::Deactivate()
