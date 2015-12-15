@@ -14,8 +14,12 @@ struct Brush
 	void Destroy();
 	void Move( sf::Vector2i delta );
 	void Draw( sf::RenderTarget *target );
+	void Deactivate();
+	void Activate();
 
 	bool terrainOnly;
+	static EditSession *session;
+	//bool activated;
 };
 
 struct Action
@@ -71,6 +75,18 @@ struct RemoveBrushAction : Action
 	void Undo();
 
 	Brush storedBrush;
+};
+
+struct ReplaceBrushAction : Action
+{
+	ReplaceBrushAction( Brush *original,
+		Brush *replacement );
+
+	void Perform();
+	void Undo();
+
+	Brush original;
+	Brush replacement;
 };
 
 struct AddBrushAction : Action

@@ -4,6 +4,7 @@
 
 
 EditSession *Action::session = NULL;
+EditSession *Brush::session = NULL;
 
 using namespace sf;
 using namespace std;
@@ -84,6 +85,21 @@ void Brush::Draw( RenderTarget *target )
 	}
 }
 
+void Brush::Deactivate()
+{
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{
+		(*it)->Deactivate( session, (*it) );
+	}
+}
+
+void Brush::Activate()
+{
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{
+		(*it)->Activate( session, (*it) );
+	}
+}
 
 
 Action::Action( Action *p_next )
@@ -103,50 +119,6 @@ ApplyBrushAction::ApplyBrushAction( Brush *brush )
 	//:brush( p_brush )
 {
 	appliedBrush = *brush;
-	return;
-	//should be all i need^
-	for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
-	{
-		switch( (*it)->selectableType )
-		{
-		case ISelectable::TERRAIN:
-			{
-				PolyPtr tp = boost::dynamic_pointer_cast<TerrainPolygon>(*it);
-				
-				SelectPtr selectable( new TerrainPolygon( *tp, true ) );
-				//PolyPtr ptr = boost::dynamic_pointer_cast<ISelectable>( selectable );
-				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( selectable );
-
-				
-
-				appliedBrush.AddObject( selectable );
-
-
-
-				//poly->Finalize();
-				//PolyPtr poly = new TerrainPolygon( //(*it)
-				//appliedBrush.AddObject( 
-				//	 );
-
-				//session->polygons.push_back( poly );
-
-				//add terrain to the environment. this comes first
-				break;
-			}
-		case ISelectable::ACTOR:
-			{
-				//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
-				//no, creating with a brush actually makes a copy of the brush when you set it down
-				//be sure to update everything accordingly to point to the right spots
-				break;
-			}
-		case ISelectable::GATE:
-			{
-				//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
-				break;
-			}
-		}
-	}
 }
 
 void ApplyBrushAction::Perform()
@@ -157,75 +129,7 @@ void ApplyBrushAction::Perform()
 	assert( !performed );
 
 	performed = true;
-	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
-	{
-	//	//should be all i need. i can change this when i need to update everything to smart pointers
-		if( (*it)->selectableType == ISelectable::TERRAIN )
-		{
-			(*it)->Activate( session, (*it) );
-		}
-	}
-	//cout << "done perfroming" << endl;
-	return;
-
-	//ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( (*it) );
-	
-	//for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
-	//{
-	//	switch((*it)->selectableType )
-	//	{
-	//	case ISelectable::TERRAIN:
-	//		{
-	//			/*PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
-
-	//			session->polygons.push_back( poly );
-
-	//			//add in enemies
-	//			for( EnemyMap::iterator it = poly->enemies.begin(); it != poly->enemies.end(); ++it )
-	//			{
-	//				list<ActorPtr> params = (*it).second;
-	//				for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
-	//				{
-	//					(*pit)->Activate( session );
-	//				}
-	//			}
-
-	//			//add in gates
-	//			for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
-	//			{
-	//				if( curr->gate != NULL )
-	//				{
-	//					if( curr->gate->edit == NULL )
-	//					{
-	//						curr->gate->edit = session;
-	//						session->gates.push_back( curr->gate );
-	//					}
-	//				}
-	//			}*/
-
-
-	//			//session->polygons.push_back( poly );
-
-	//			//add terrain to the environment. this comes first
-	//			break;
-	//		}
-	//	case ISelectable::ACTOR:
-	//		{
-	//			//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
-	//			//no, creating with a brush actually makes a copy of the brush when you set it down
-	//			//be sure to update everything accordingly to point to the right spots
-	//			
-	//			//actor->group->actors.push_back( actor );
-
-	//			break;
-	//		}
-	//	case ISelectable::GATE:
-	//		{
-	//			//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
-	//			break;
-	//		}
-	//	}
-	//}
+	appliedBrush.Activate();
 }
 
 void ApplyBrushAction::Undo()
@@ -235,76 +139,7 @@ void ApplyBrushAction::Undo()
 	
 	performed = false;
 
-	//deactivate everything first. when you deactivate something it sets its active bool to false
-	//so you dont try to deactivate something that you have already deleted.
-	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
-	{
-		if( (*it)->selectableType == ISelectable::TERRAIN )
-			(*it)->Deactivate( session, (*it) );
-	}
-	return;
-
-	//for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
-	//{
-	//	switch( (*it)->selectableType )
-	//	{
-	//	case ISelectable::TERRAIN:
-	//		{
-	//			//cout << "removing polygon!" << endl;
-	//			//cout << "before undo: " << session->polygons.size() << endl;
-	//			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
-	//			
-	//			session->polygons.remove( poly );
-	//
-	//			//remove enemies
-	//			for( EnemyMap::iterator it = poly->enemies.begin(); it != poly->enemies.end(); ++it )
-	//			{
-	//				list<ActorPtr> params = (*it).second;
-	//				for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
-	//				{
-	//					//(*pit)->Deactivate( edit );
-	//				}
-	//			}
-
-	//			//remove gates
-	//			for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
-	//			{
-	//				if( curr->gate != NULL )
-	//				{
-	//					if( curr->gate->edit != NULL )
-	//					{
-	//						curr->gate->edit = NULL;
-	//						session->gates.remove( curr->gate );
-	//					}
-	//				}
-	//			}
-	//			
-	//			//session->polygons.remove( (TerrainPolygon*)(*it) );
-	//			
-	//			
-	//			//cout << "there are now: " << session->polygons.size() << endl;
-	//			break;
-	//		}
-	//	case ISelectable::ACTOR:
-	//		{
-	//			//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
-	//			//no, creating with a brush actually makes a copy of the brush when you set it down
-	//			//be sure to update everything accordingly to point to the right spots
-	//			break;
-	//		}
-	//	case ISelectable::GATE:
-	//		{
-	//			//add brushes 2nd. only gates that connect two terrain parts of a brush can be included in a brush
-	//			break;
-	//		}
-	//	}
-	//}
-
-	//appliedBrush.Destroy();
-
-	//need to remove actors and gates attached to this? or would undos 
-	//back to this point always give me the same thing back?
-	//leave it this way for now
+	appliedBrush.Deactivate();
 }
 
 RemoveBrushAction::RemoveBrushAction( Brush *brush )
@@ -317,10 +152,7 @@ void RemoveBrushAction::Perform()
 	assert( session != NULL );
 	assert( !performed );
 	performed = true;
-	for( SelectIter it = storedBrush.objects.begin(); it != storedBrush.objects.end(); ++it )
-	{
-	//	(*it)->Deactivate( session );
-	}
+	storedBrush.Deactivate();
 }
 
 void RemoveBrushAction::Undo()
@@ -329,18 +161,17 @@ void RemoveBrushAction::Undo()
 	assert( performed );
 
 	performed = false;
-	for( SelectIter it = storedBrush.objects.begin(); it != storedBrush.objects.end(); ++it )
-	{
-	//	(*it)->Activate( session );
-	}
+	storedBrush.Activate();
 }
 
 
 
-AddBrushAction::AddBrushAction( Brush *p_brush, Brush *p_intersectingPolys )
-	:brush( p_brush ), intersectingPolys( p_intersectingPolys )
+ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 {
-	assert( brush->terrainOnly );
+	original = *p_orig;
+
+	replacement = *p_replacement;
+	//assert( brush->terrainOnly );
 	
 	//intersectingPolys->
 	//adding multiple polygons is actually adding them one at a time and doing the checks each time.
@@ -348,17 +179,18 @@ AddBrushAction::AddBrushAction( Brush *p_brush, Brush *p_intersectingPolys )
 }
 
 
-void AddBrushAction::Perform()
+void ReplaceBrushAction::Perform()
 {
 	assert( session != NULL );
 	assert( !performed );
+
 
 	//all checks are done before this is performed so it doesnt have to care
 	
 	//combine old polygon and new polygon into a new one, and store the 2 old ones.
 }
 
-void AddBrushAction::Undo()
+void ReplaceBrushAction::Undo()
 {
 	//remove the polygon from the active list, but store it in case you need it for later
 	assert( session != NULL );

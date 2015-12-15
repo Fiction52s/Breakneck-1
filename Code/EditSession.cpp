@@ -2120,6 +2120,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), zoomMultiple( 1 )
 {
 	Action::session = this;
+	Brush::session = this;
 	//adding 5 for random distance buffer
 	playerHalfWidth = 32;
 	playerHalfHeight = 32;
