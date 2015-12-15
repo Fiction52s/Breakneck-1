@@ -13,6 +13,7 @@ struct Brush
 	void Clear();
 	void Destroy();
 	void Move( sf::Vector2i delta );
+	void Draw( sf::RenderTarget *target );
 
 	bool terrainOnly;
 };
@@ -56,6 +57,13 @@ struct ApplyBrushAction : Action
 
 	Brush *brush; //action doesn't own this
 	Brush appliedBrush;
+};
+
+struct RemoveBrushAction : Action
+{
+	RemoveBrushAction( Brush *brush );
+
+	Brush storedBrush;
 };
 
 struct AddBrushAction : Action

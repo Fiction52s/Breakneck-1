@@ -254,32 +254,42 @@ bool ActorParams::IsPlacementOkay()
 	return false;
 }
 
+
+
 void ActorParams::Move( sf::Vector2i delta )
 {
-	assert( groundInfo == NULL );
+	if( groundInfo != NULL )
+	{
+		//do nothing, the polygon will move for you
+	}
+	else
+	{
+		position.x += delta.x;
+		position.y += delta.y;
 
-	position.x += delta.x;
-	position.y += delta.y;
+		SetBoundingQuad();
 
-	SetBoundingQuad();
-
-	image.setPosition( position.x, position.y );
+		image.setPosition( position.x, position.y );
+	}
 }
 
 void ActorParams::BrushDraw( sf::RenderTarget *target, 
 		bool valid )
 {
-
+	image.setColor( Color( 255, 255, 255, 100 ) );
+	target->draw( image );
+	image.setColor( Color::White );
 }
 
-void ActorParams::Deactivate()
+void ActorParams::Deactivate( EditSession *edit )
 {
+	group->actors.remove( this );
 }
 
-
-
-
-
+void ActorParams::Activate( EditSession *edit )
+{
+	group->actors.push_back( this );
+}
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
 					 int p_stayFrames, bool p_teleport, GateInfo::GateTypes gType )

@@ -177,6 +177,62 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 }
 
+void TerrainPolygon::Deactivate(EditSession *edit)
+{
+	edit->polygons.remove( this );
+	
+	//remove enemies
+	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	{
+		list<ActorParams*> params = (*it).second;
+		for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+		{
+			(*pit)->Deactivate( edit );
+		}
+	}
+
+	//remove gates
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->gate != NULL )
+		{
+			if( curr->gate->edit != NULL )
+			{
+				curr->gate->edit = NULL;
+				edit->gates.remove( curr->gate );
+			}
+		}
+	}
+}
+
+void TerrainPolygon::Activate( EditSession *edit )
+{
+	edit->polygons.push_back( this );
+
+	//add in enemies
+	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
+	{
+		list<ActorParams*> params = (*it).second;
+		for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+		{
+			(*pit)->Deactivate( edit );
+		}
+	}
+
+	//add in gates
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->gate != NULL )
+		{
+			if( curr->gate->edit == NULL )
+			{
+				curr->gate->edit = edit;
+				edit->gates.push_back( curr->gate );
+			}
+		}
+	}
+}
+
 TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
 	:ISelectable( ISelectable::TERRAIN )
 {
@@ -2067,6 +2123,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	progressBrush = new Brush();
 	selectedBrush = new Brush();
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
+	moveActive = false;
 }
 
 EditSession::~EditSession()
@@ -4048,6 +4105,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								bool emptysp = true;
 
+								if( moveActive )
+								{
+									moveActive = false;
+
+									Action *ac = new ApplyBrushAction( selectedBrush );
+									ac->Perform();
+									delete ac;
+
+									selectedBrush->Clear();
+
+									break;
+								}
+
 								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 								{
 									if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
@@ -4056,6 +4126,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										ISelectable* iselect = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 										SelectPtr sp(iselect);
 										selectedBrush->AddObject( sp );
+										//polygons.remove( (*it) );
 										emptysp = false;
 										pointMouseDown = Vector2i( worldPos.x, worldPos.y );
 										moveActive = true;
@@ -4089,18 +4160,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( emptysp )
 								{
-									Vector2i currMouse( worldPos.x, worldPos.y );
-									Vector2i delta = currMouse - pointMouseDown;
-									pointMouseDown = currMouse;
+									//Vector2i currMouse( worldPos.x, worldPos.y );
+									//Vector2i delta = currMouse - pointMouseDown;
+									//pointMouseDown = currMouse;
 
 									cout << "applying" << endl;
-									selectedBrush->Move( delta );
+									//selectedBrush->Move( delta );
 									
 									moveActive = false;
 
 									Action *ac = new ApplyBrushAction( selectedBrush );
 									ac->Perform();
 									delete ac;
+
+									selectedBrush->Clear();
 								}
 
 								break;
@@ -7500,6 +7573,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		if( mode == EDIT )
 		{
+			if( moveActive )//&& Mouse::isButtonPressed( Mouse::Left ) )
+			{
+				Vector2i currMouse( worldPos.x, worldPos.y );
+				Vector2i delta = currMouse - pointMouseDown;
+				pointMouseDown = currMouse;
+				
+				selectedBrush->Move( delta );
+				selectedBrush->Draw( preScreenTex );
+			}
 			if( selectedActor != NULL )
 			{
 				

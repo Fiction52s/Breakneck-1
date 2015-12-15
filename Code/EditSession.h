@@ -12,7 +12,7 @@
 #include <boost/pointer_cast.hpp>
 
 
-
+struct EditSession;
 struct ISelectable
 {
 	enum ISelectableType
@@ -35,8 +35,8 @@ struct ISelectable
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;
-	virtual void Deactivate() = 0;
-
+	virtual void Deactivate(EditSession *edit ) = 0;
+	virtual void Activate( EditSession *edit ) = 0;
 
 	ISelectableType selectableType;
 	bool active;
@@ -197,7 +197,8 @@ struct TerrainPolygon : ISelectable
 	void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	void Draw( sf::RenderTarget *target );
-	void Deactivate();
+	void Deactivate(EditSession *edit );
+	void Activate( EditSession *edit );
 
 
 
@@ -276,7 +277,8 @@ struct ActorParams : ISelectable
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	virtual void Draw( sf::RenderTarget *target );
-	virtual void Deactivate();
+	virtual void Deactivate( EditSession *edit );
+	virtual void Activate( EditSession *edit );
 
 	virtual void DrawQuad( sf::RenderTarget *target );
 
@@ -302,10 +304,6 @@ struct ActorParams : ISelectable
 	GroundInfo *groundInfo;
 
 	sf::VertexArray boundingQuad;
-	
-	
-	
-
 };
 
 typedef boost::shared_ptr<ActorParams> ActorPtr;

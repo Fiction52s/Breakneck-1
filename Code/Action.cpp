@@ -76,6 +76,14 @@ void Brush::Move( Vector2i delta )
 	}
 }
 
+void Brush::Draw( RenderTarget *target )
+{
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{
+		(*it)->BrushDraw( target, true );
+	}
+}
+
 
 
 Action::Action( Action *p_next )
