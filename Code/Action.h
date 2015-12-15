@@ -55,13 +55,16 @@ struct ApplyBrushAction : Action
 	void Perform();
 	void Undo();
 
-	Brush *brush; //action doesn't own this
+	//Brush *brush; //action doesn't own this
 	Brush appliedBrush;
 };
 
 struct RemoveBrushAction : Action
 {
 	RemoveBrushAction( Brush *brush );
+
+	void Perform();
+	void Undo();
 
 	Brush storedBrush;
 };

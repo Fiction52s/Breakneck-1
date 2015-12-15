@@ -102,6 +102,9 @@ Action::~Action()
 ApplyBrushAction::ApplyBrushAction( Brush *brush )
 	//:brush( p_brush )
 {
+	appliedBrush = *brush;
+	return;
+	//should be all i need^
 	for( SelectIter it = brush->objects.begin(); it != brush->objects.end(); ++it )
 	{
 		switch( (*it)->selectableType )
@@ -114,7 +117,7 @@ ApplyBrushAction::ApplyBrushAction( Brush *brush )
 				//PolyPtr ptr = boost::dynamic_pointer_cast<ISelectable>( selectable );
 				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( selectable );
 
-				poly->Finalize();
+				
 
 				appliedBrush.AddObject( selectable );
 
@@ -154,10 +157,19 @@ void ApplyBrushAction::Perform()
 	assert( !performed );
 
 	performed = true;
-
+	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+	{
+		//should be all i need. i can change this when i need to update everything to smart pointers
+		(*it)->Activate( session );
+	}
+	return;
 	
 	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
 	{
+		
+		
+
+
 		switch((*it)->selectableType )
 		{
 		case ISelectable::TERRAIN:
@@ -191,6 +203,11 @@ void ApplyBrushAction::Undo()
 	assert( performed );
 	
 	performed = false;
+
+	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
+	{
+		(*it)->Deactivate();
+	}
 
 	//deactivate everything first. when you deactivate something it sets its active bool to false
 	//so you dont try to deactivate something that you have already deleted.
@@ -237,6 +254,36 @@ void ApplyBrushAction::Undo()
 	//back to this point always give me the same thing back?
 	//leave it this way for now
 }
+
+RemoveBrushAction::RemoveBrushAction( Brush *brush )
+{
+	storedBrush = *brush;
+}
+
+void RemoveBrushAction::Perform()
+{
+	assert( session != NULL );
+	assert( !performed );
+	performed = true;
+	for( SelectIter it = storedBrush.objects.begin(); it != storedBrush.objects.end(); ++it )
+	{
+		(*it)->Deactivate( session );
+	}
+}
+
+void RemoveBrushAction::Undo()
+{
+	assert( session != NULL );
+	assert( performed );
+
+	performed = false;
+	for( SelectIter it = storedBrush.objects.begin(); it != storedBrush.objects.end(); ++it )
+	{
+		(*it)->Activate( session );
+	}
+}
+
+
 
 AddBrushAction::AddBrushAction( Brush *p_brush, Brush *p_intersectingPolys )
 	:brush( p_brush ), intersectingPolys( p_intersectingPolys )

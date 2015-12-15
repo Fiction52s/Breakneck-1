@@ -3952,9 +3952,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										progressBrush->Clear();
 										
-										//polygonInProgress->Finalize();
+										polygonInProgress->Finalize();
 
 										//progressBrush->AddObject( polygonInProgress );
+									
+
 
 										Action *action = new ApplyBrushAction( progressBrush );
 										//cout << "performing!" << endl;
