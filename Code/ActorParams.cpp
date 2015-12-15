@@ -160,7 +160,7 @@ void ActorParams::UpdateGroundedSprite()
 	image.setRotation( angle );
 }
 
-void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
+void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 {
 	if( groundInfo != NULL )
 	{
@@ -288,7 +288,7 @@ void ActorParams::Deactivate( EditSession *edit )
 
 void ActorParams::Activate( EditSession *edit )
 {
-	group->actors.push_back( this );
+	
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
@@ -605,7 +605,7 @@ void PatrollerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
-CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+CrawlerParams::CrawlerParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
@@ -627,7 +627,7 @@ void CrawlerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
-BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+BasicTurretParams::BasicTurretParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
@@ -645,7 +645,7 @@ void BasicTurretParams::WriteParamFile( ofstream &of )
 	of << framesWait << endl;
 }
 
-FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+FootTrapParams::FootTrapParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 {
 	type = edit->types["foottrap"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -657,7 +657,7 @@ void FootTrapParams::WriteParamFile( ofstream &of )
 {
 }
 
-GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+GoalParams::GoalParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 {
 	type = edit->types["goal"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );

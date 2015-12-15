@@ -28,7 +28,7 @@ using namespace sf;
 
 const double EditSession::PRIMARY_LIMIT = .999;
 
-TerrainBrush::TerrainBrush( TerrainPolygon *poly )
+TerrainBrush::TerrainBrush( PolyPtr poly )
 	:pointStart(NULL),pointEnd(NULL),lines( sf::Lines, poly->numPoints * 2 ), numPoints( 0 )
 {
 	//assert( poly->finalized );
@@ -179,7 +179,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 
 void TerrainPolygon::Deactivate(EditSession *edit)
 {
-	edit->polygons.remove( this );
+	//edit->polygons.remove( this );
 	
 	//remove enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -207,7 +207,7 @@ void TerrainPolygon::Deactivate(EditSession *edit)
 
 void TerrainPolygon::Activate( EditSession *edit )
 {
-	edit->polygons.push_back( this );
+	//edit->polygons.push_back( this );
 
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -215,7 +215,7 @@ void TerrainPolygon::Activate( EditSession *edit )
 		list<ActorParams*> params = (*it).second;
 		for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
-			(*pit)->Deactivate( edit );
+			(*pit)->Activate( edit );
 		}
 	}
 
@@ -769,7 +769,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( true );
 }
 
-void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress )
+void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
 {
 	if( inProgress->numPoints < 2 )
 	{
@@ -1019,7 +1019,13 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Te
 			for( list<ActorParams*>::iterator it = en.begin(); it != en.end(); ++it )
 			{
 				//cout << "setting new ground on actor params" << endl;
-				(*it)->groundInfo->ground = this;
+				
+				
+				
+				
+				//(*it)->groundInfo->ground = this;
+
+				//extending is broken right now. this line above needs to be uncommented!^
 				(*it)->groundInfo->edgeStart = tp;
 			}
 		}
@@ -1784,9 +1790,9 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 	}
 }
 
-bool TerrainPolygon::IsTouching( TerrainPolygon *p )
+bool TerrainPolygon::IsTouching( PolyPtr p )
 {
-	assert( p != this );
+	assert( p.get() != this );
 	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
 	{	
 		//return true;
@@ -1928,15 +1934,13 @@ bool TerrainPolygon::IsPlacementOkay()
 	//void Move( sf::Vector2i delta );
 void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 {
+	//cout << "brush draw polygon" << endl;
 }
 
 void TerrainPolygon::Draw( sf::RenderTarget *target )
 {
 }
 
-void TerrainPolygon::Deactivate()
-{
-}
 //--ISELECTABLE FUNCTIONS END--//
 
 
@@ -2128,10 +2132,11 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 
 EditSession::~EditSession()
 {
-	delete polygonInProgress;
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	//delete polygonInProgress;
+	polygonInProgress.reset();
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		delete (*it);
+		(*it).reset();
 	}
 	delete progressBrush;
 }
@@ -2139,7 +2144,7 @@ EditSession::~EditSession()
 void EditSession::Draw()
 {
 	
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( extendingPolygon == NULL )
 		{
@@ -2204,7 +2209,7 @@ bool EditSession::OpenFile( string fileName )
 
 		while( numPoints > 0 )
 		{
-			TerrainPolygon *poly = new TerrainPolygon( &grassTex );
+			PolyPtr poly(  new TerrainPolygon( &grassTex ) );
 			polygons.push_back( poly );
 			is >> poly->material;
 
@@ -2311,7 +2316,7 @@ bool EditSession::OpenFile( string fileName )
 		is >> movingPlatformNum;
 		for( int i = 0; i < movingPlatformNum; ++i )
 		{
-			TerrainPolygon *poly = new TerrainPolygon( &grassTex );
+			PolyPtr poly( new TerrainPolygon( &grassTex ) );
 			polygons.push_back( poly );
 			is >> poly->material;
 
@@ -2418,8 +2423,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> edgeQuantity;
 
 					int testIndex = 0;
-					TerrainPolygon *terrain = NULL;
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if( testIndex == terrainIndex )
 						{
@@ -2571,8 +2576,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> speed;
 
 					int testIndex = 0;
-					TerrainPolygon *terrain = NULL;
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if( testIndex == terrainIndex )
 						{
@@ -2613,8 +2618,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> framesWait;
 
 					int testIndex = 0;
-					TerrainPolygon *terrain = NULL;
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if( testIndex == terrainIndex )
 						{
@@ -2648,8 +2653,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> edgeQuantity;
 
 					int testIndex = 0;
-					TerrainPolygon *terrain = NULL;
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if( testIndex == terrainIndex )
 						{
@@ -2694,10 +2699,10 @@ bool EditSession::OpenFile( string fileName )
 			is >> vertexIndex1;
 
 			int testIndex = 0;
-			TerrainPolygon *terrain0 = NULL;
-			TerrainPolygon *terrain1 = NULL;
+			PolyPtr terrain0(  NULL );
+			PolyPtr terrain1( NULL );
 			bool first = true;
-			for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+			for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 			{
 				if( testIndex == poly0Index )
 				{
@@ -2806,7 +2811,7 @@ void EditSession::WriteFile(string fileName)
 
 	int pointCount = 0;
 	int movingPlatCount = 0;
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		
 		
@@ -2823,7 +2828,7 @@ void EditSession::WriteFile(string fileName)
 	of << playerPosition.x << " " << playerPosition.y << endl;
 
 	int writeIndex = 0;
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( (*it)->path.size() < 2 )
 		{
@@ -2846,7 +2851,7 @@ void EditSession::WriteFile(string fileName)
 	of << movingPlatCount << endl;
 
 	writeIndex = 0;
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( (*it)->path.size() > 1 )
 		{
@@ -2905,7 +2910,7 @@ void EditSession::WriteFile(string fileName)
 
 }
 
-void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
+void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 {
 	int edgesWithSegments = 0;
 
@@ -3002,7 +3007,7 @@ void EditSession::WriteGrass( TerrainPolygon* poly, ofstream &of )
 	}
 }
 
-void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
+void EditSession::Add( PolyPtr brush, PolyPtr poly )
 {
 	//cout << "brush: " << brush->enemies.size() << endl;
 	//cout << "poly: " << poly->enemies.size() << endl;
@@ -3054,12 +3059,12 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 	bool firstPolygon = true;
 
 
-	TerrainPolygon *currentPoly = NULL;
-	TerrainPolygon *otherPoly = NULL;
+	PolyPtr currentPoly = NULL;
+	PolyPtr otherPoly = NULL;
 	TerrainPoint *curr = poly->pointStart;
 	TerrainPoint *start;	
 
-	TerrainPolygon *minPoly = NULL;
+	PolyPtr minPoly = NULL;
 
 
 	//get which polygon I should start on
@@ -3228,7 +3233,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 			//cout << "switching polygon and adding point" << endl;
 			
 			//push back intersection
-			TerrainPolygon *temp = currentPoly;
+			PolyPtr temp = currentPoly;
 			currentPoly = otherPoly;
 			otherPoly = temp;
 			curr = min;
@@ -3307,7 +3312,7 @@ void EditSession::Add( TerrainPolygon *brush, TerrainPolygon *poly )
 
 	//poly->Reset();
 
-	TerrainPolygon *newPolygon = new TerrainPolygon( &grassTex );
+	PolyPtr newPolygon( new TerrainPolygon( &grassTex ) );
 	//cout << "poly size: " << z.points.size() << endl;
 	for( TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next )
 	{
@@ -3390,20 +3395,24 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
-bool EditSession::QuadPolygonIntersect( TerrainPolygon *poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+bool EditSession::QuadPolygonIntersect( TerrainPolygon* poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-	TerrainPolygon quadPoly( poly->grassTex );
-	quadPoly.AddPoint( new TerrainPoint( a, false ) );
-	quadPoly.AddPoint( new TerrainPoint( b, false ) );
-	quadPoly.AddPoint( new TerrainPoint( c, false ) );
-	quadPoly.AddPoint( new TerrainPoint( d, false ) );
-	quadPoly.UpdateBounds();
+
+	PolyPtr quadPoly( new TerrainPolygon( poly->grassTex ) );
+	//TerrainPolygon quadPoly( poly->grassTex );
+	quadPoly->AddPoint( new TerrainPoint( a, false ) );
+	quadPoly->AddPoint( new TerrainPoint( b, false ) );
+	quadPoly->AddPoint( new TerrainPoint( c, false ) );
+	quadPoly->AddPoint( new TerrainPoint( d, false ) );
+	quadPoly->UpdateBounds();
+
+	//PolyPtr blah( &quadPoly );
 
 	//cout << "quad bottom: " << quadPoly.bottom << endl;
 	//cout << "poly top: " << poly->top << endl;
 	
 
-	bool touching = poly->IsTouching( &quadPoly );
+	bool touching = poly->IsTouching( quadPoly );
 	return touching;
 
 	/*int qLeft = min( a.x, min( b.x, min( c.x, d.x ) ) );
@@ -3672,7 +3681,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	//mode = "neutral";
 	bool quit = false;
-	polygonInProgress = new TerrainPolygon(&grassTex );
+	polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
 	zoomMultiple = 1;
 	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
@@ -3870,10 +3879,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 
 
-									for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
 										//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
-										if( !IsPointValid( polygonInProgress->pointEnd->pos, polygonInProgress->pointStart->pos, (*it) ) )
+										if( !IsPointValid( polygonInProgress->pointEnd->pos, polygonInProgress->pointStart->pos, (*it).get() ) )
 										{
 											valid = false;
 											break;
@@ -3898,15 +3907,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
 									//	break;
 
-									list<TerrainPolygon*>::iterator it = polygons.begin();
+									list<PolyPtr>::iterator it = polygons.begin();
 									bool added = false;
 									polygonInProgress->Finalize(); //i should check if i can remove this
 									bool recursionDone = false;
-									TerrainPolygon *currentBrush = polygonInProgress;
+									PolyPtr currentBrush = polygonInProgress;
 
 										while( it != polygons.end() )
 										{
-											TerrainPolygon *temp = (*it);
+											PolyPtr temp = (*it);
 											if( temp != currentBrush && currentBrush->IsTouching( temp ) )
 											{
 												cout << "before addi: " << (*it)->numPoints << endl;
@@ -3962,7 +3971,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//cout << "performing!" << endl;
 										action->Perform();
 										//polygons.push_back( polygonInProgress );
-										polygonInProgress = new TerrainPolygon(&grassTex );
+										polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
 
 										doneActionStack.push_back( action );
 
@@ -4010,7 +4019,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								
 								/*else if( mode == SELECT_POLYGONS )
 								{
-									list<TerrainPolygon*>::iterator it = polygons.begin();
+									list<PolyPtr>::iterator it = polygons.begin();
 									while( it != polygons.end() )
 									{
 										if( (*it)->selected )
@@ -4111,23 +4120,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									moveActive = false;
 
-									Action *ac = new ApplyBrushAction( selectedBrush );
-									ac->Perform();
-									delete ac;
+									//cout << "turning moveActive to false" << endl;
 
-									selectedBrush->Clear();
+									//Action *ac = new ApplyBrushAction( selectedBrush );
+									//ac->Perform();
+									//delete ac;
+
+									//selectedBrush->Clear();
 
 									break;
 								}
 
-								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 								{
 									if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
 									{
 										cout << "SELECTING" << endl;
-										ISelectable* iselect = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-										SelectPtr sp(iselect);
+										SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 										selectedBrush->AddObject( sp );
+
+										//Action *rba = new RemoveBrushAction( selectedBrush );
+										//rba->Perform();
 										//polygons.remove( (*it) );
 										emptysp = false;
 										pointMouseDown = Vector2i( worldPos.x, worldPos.y );
@@ -4222,7 +4235,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									selectedGate = NULL;
 									selectedPlayer = false;
 
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 										it != selectedPolygons.end(); ++it )
 									{
 										(*it)->SetSelected( false );
@@ -4263,7 +4276,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								bool emptySpace = true;
 
 								//points
-								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
 								{
 									for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
@@ -4285,7 +4298,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												}
 												else
 												{
-													for( list<TerrainPolygon*>::iterator it2 = selectedPolygons.begin(); it2 != selectedPolygons.end(); ++it2 )
+													for( list<PolyPtr>::iterator it2 = selectedPolygons.begin(); it2 != selectedPolygons.end(); ++it2 )
 													{
 														for( TerrainPoint *curr = (*it2)->pointStart; curr != NULL; curr = curr->next )
 														{
@@ -4310,7 +4323,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								//polygons
 								if( emptySpace )
 								{
-									for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
+									for( list<PolyPtr>::iterator it = polygons.begin(); 
 										it != polygons.end(); ++it )
 									{
 											if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
@@ -4335,7 +4348,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													}
 													else
 													{
-														for( list<TerrainPolygon*>::iterator selIt = 
+														for( list<PolyPtr>::iterator selIt = 
 															selectedPolygons.begin(); 
 															selIt != selectedPolygons.end(); ++selIt )
 														{
@@ -4359,7 +4372,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( emptySpace )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 										it != selectedPolygons.end(); ++it )
 									{
 										(*it)->SetSelected( false );
@@ -4385,7 +4398,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											empty = false;
 											//cout << "enemy selected" << endl;
 
-											for( list<TerrainPolygon*>::iterator it3 = selectedPolygons.begin(); 
+											for( list<PolyPtr>::iterator it3 = selectedPolygons.begin(); 
 												it3 != selectedPolygons.end(); ++it3 )
 											{
 												(*it3)->SetSelected( false );
@@ -4458,10 +4471,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
 										tbIt != pasteBrushes.end(); ++tbIt )
 									{										
-										for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
+										for( list<PolyPtr>::iterator it = polygons.begin(); 
 											it != polygons.end() && validPaste; ++it )
 										{
-											TerrainPolygon *currentBrush = new TerrainPolygon( (*it)->grassTex );
+											PolyPtr currentBrush( new TerrainPolygon( (*it)->grassTex ) );
 										
 											for( TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
 												curr = curr->next )
@@ -4484,7 +4497,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													prev = curr->prev;
 												}
 
-												if( !IsPointValid( prev->pos, curr->pos, (*it) ) )
+												if( !IsPointValid( prev->pos, curr->pos, (*it).get() ) )
 												{
 													validPaste = false;
 												}
@@ -4492,7 +4505,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 											}
 
-											delete currentBrush;
+											//delete currentBrush;
+											currentBrush.reset();
 										}
 									}
 
@@ -4501,13 +4515,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
 										tbIt != pasteBrushes.end(); ++tbIt )
 									{
-										list<TerrainPolygon*>::iterator it = polygons.begin();
+										list<PolyPtr>::iterator it = polygons.begin();
 										bool added = false;
 										//polygonInProgress->Finalize(); //i should check if i can remove this
 										bool recursionDone = false;
 
 										cout << "b4" << endl;
-										TerrainPolygon *currentBrush = new TerrainPolygon( (*it)->grassTex );
+										PolyPtr currentBrush( new TerrainPolygon( (*it)->grassTex ) );
 										
 										//cout << "after: " << (unsigned int)((*tbIt)->pointStart) << endl;
 										for( TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
@@ -4521,11 +4535,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 										
 
-									//	TerrainPolygon *currentBrush = polygonInProgress;
+									//	PolyPtr currentBrush = polygonInProgress;
 										
 										while( it != polygons.end() )
 										{
-											TerrainPolygon *temp = (*it);
+											PolyPtr temp = (*it);
 											if( currentBrush->IsTouching( temp ) )
 											{
 												cout << "before addi: " << (*it)->numPoints << endl;
@@ -4533,7 +4547,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												Add( currentBrush, temp );
 
 												//currentBrush->Reset();
-												delete currentBrush;
+												//delete currentBrush;
+												currentBrush.reset();
 												currentBrush = NULL;
 												//polygonInProgress->Reset();
 						
@@ -4573,7 +4588,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										if( !added )
 										{
 											cout << "not added" << endl;
-											TerrainPolygon *brushPoly = new TerrainPolygon( polygonInProgress->grassTex );
+											PolyPtr brushPoly( new TerrainPolygon( polygonInProgress->grassTex ) );
 										
 											for( TerrainPoint *curr = (*tbIt)->pointStart; curr !=  NULL;
 												curr = curr->next )
@@ -4620,7 +4635,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( showGrass )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 									{
 										(*it)->UpdateGrass();
 									}
@@ -4659,7 +4674,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									ClearCopyBrushes();
 
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 										it != selectedPolygons.end(); ++it )
 									{
 										TerrainBrush *tb = new TerrainBrush( (*it) );
@@ -4723,7 +4738,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									if( removeSuccess == 1 )
 									{
 										//go through each polygon and get rid of the actors which are deleted by deleting points
-										for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 											it != selectedPolygons.end(); ++it )
 										{
 											for( EnemyMap::iterator mapIt = (*it)->enemies.begin(); mapIt != (*it)->enemies.end(); ++mapIt)
@@ -4751,7 +4766,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 
 
-										for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+										for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 											it != selectedPolygons.end(); ++it )
 										{
 											(*it)->RemoveSelectedPoints();
@@ -4793,7 +4808,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									
 									int erasedGates = 0;
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 										it != selectedPolygons.end(); ++it )
 									{
 										polygons.remove( (*it) );
@@ -4812,7 +4827,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											}
 										}
 										(*it)->DestroyEnemies();
-										delete (*it);
+										//delete (*it);
+										(*it).reset();
 									}
 									if( erasedGates > 0 )
 									{
@@ -4873,7 +4889,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							else if( ev.key.code == Keyboard::R )
 							{
 								showGrass = true;
-								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
 									(*it)->ShowGrass( true );
 								}
@@ -4887,7 +4903,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								GateInfo testInfo;
 								if( countPoints == 2 )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end() && !ddone; ++it )
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end() && !ddone; ++it )
 									{
 										int index = 0;
 										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL && !ddone; curr = curr->next )
@@ -4963,7 +4979,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( pointGrab )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 									{
 										if( (*it)->movingPointMode )
 										{
@@ -5030,7 +5046,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									bool emptySpace = true;
 
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 										it != selectedPolygons.end(); ++it )
 									{
 										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
@@ -5097,7 +5113,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( emptySpace )
 									{
-										for( list<TerrainPolygon*>::iterator it = polygons.begin(); 
+										for( list<PolyPtr>::iterator it = polygons.begin(); 
 											it != polygons.end(); ++it )
 										{
 												
@@ -5134,7 +5150,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														}
 														else
 														{
-														/*	for( list<TerrainPolygon*>::iterator selIt = 
+														/*	for( list<PolyPtr>::iterator selIt = 
 																selectedPolygons.begin(); 
 																selIt != selectedPolygons.end(); ++selIt )
 															{
@@ -5156,7 +5172,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( emptySpace )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 										it != selectedPolygons.end(); ++it )
 									{
 										(*it)->SetSelected( false );
@@ -5182,7 +5198,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											empty = false;
 											//cout << "enemy selected" << endl;
 
-											for( list<TerrainPolygon*>::iterator it3 = selectedPolygons.begin(); 
+											for( list<PolyPtr>::iterator it3 = selectedPolygons.begin(); 
 												it3 != selectedPolygons.end(); ++it3 )
 											{
 												(*it3)->SetSelected( false );
@@ -5204,11 +5220,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							else if( ev.key.code == Keyboard::R )
 							{
 								showGrass = false;
-								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
 									
 									//showGrass = true;
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 									{
 										(*it)->ShowGrass( false );
 									}
@@ -5520,7 +5536,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								selectedPlayer = false;
 								selectedActor = NULL;
 								selectedGate = NULL;
-								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
 								{
 									(*it)->SetSelected( false );
@@ -5708,7 +5724,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
 							{
-								for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
 									(*it)->path.pop_back();
 								}
@@ -5717,7 +5733,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								if( selectedPolygons.front()->path.size() == 1 )
 								{
-									for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 									{
 										(*it)->path.pop_back();
 									}
@@ -6119,7 +6135,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
 					bool emptySpace = true;
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if((*it)->ContainsPoint( testPoint ) )
 						{
@@ -6132,7 +6148,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					if( showPoints && extendingPolygon == NULL )
 					{
 						bool none = true;
-						for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
 							for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
 							{
@@ -6244,9 +6260,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							bool validNearPolys = true;
 							if( polygonInProgress->numPoints > 0 )
 							{
-								for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 								{
-									if( !IsPointValid( polygonInProgress->pointEnd->pos, worldi, (*it) ) )
+									if( !IsPointValid( polygonInProgress->pointEnd->pos, worldi, (*it).get() ) )
 									{
 										validNearPolys = false;
 										break;
@@ -6328,7 +6344,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						Vector2i pointSelected;
 						bool done = false;
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end() && !done; ++it )
 						{
 							for( TerrainPoint *curr = (*it)->pointStart; curr != NULL && !done; curr = curr->next )
@@ -6398,7 +6414,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						//Vector2i pointSelected;
 						/*int numOkay = 0;
 						bool done = false;
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it, !done )
 						{
 							for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit, !done )
@@ -6441,7 +6457,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					bool validMove = true;
 					/*if( true )
 					{
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 						{
 							bool affected = false;
@@ -6465,7 +6481,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										prev = (*tempIt).pos;
 									}
 
-									for( list<TerrainPolygon*>::iterator tit = polygons.begin();
+									for( list<PolyPtr>::iterator tit = polygons.begin();
 										tit != polygons.end(); ++tit )
 									{
 										if( (*tit) != (*it) )
@@ -6493,7 +6509,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					int numSelectedPolys = selectedPolygons.size();
 					Vector2i** allDeltas = new Vector2i*[numSelectedPolys];
 					int allDeltaIndex = 0;
-					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+					for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 					{
 						TerrainPolygon &poly = *(*it);
@@ -6723,7 +6739,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						//cout << "valid move" << endl;
 						//int 
 						allDeltaIndex = 0;
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 						{
 
@@ -6846,7 +6862,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						polyGrabPos = Vector2i( pPoint.x, pPoint.y );//Vector2i( pPoint.x, pPoint.y );
 					
 						//cout << "delta: " << polyGrabDelta.x << ", " << polyGrabDelta.y << endl;
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 						it != selectedPolygons.end(); ++it )
 						{
 							if( !(*it)->IsMovePolygonOkay(this, polyGrabDelta ) )
@@ -6863,7 +6879,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( moveOkay )
 					{
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 						{
 							(*it)->Move( polyGrabDelta );
@@ -6893,7 +6909,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 				if( showGrass && Mouse::isButtonPressed( Mouse::Button::Left ) )
 				{
-					for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+					for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 					{
 						(*it)->SwitchGrass( worldPos );
 					}
@@ -6935,7 +6951,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 					double testRadius = 200;
 					
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
 							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
@@ -7090,7 +7106,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
 
-						for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+						for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 						{
 							(*it)->path.push_back( worldi );
 						}
@@ -7423,7 +7439,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
 				bool okay = true;
-				/*for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+				/*for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 				{
 					Vector2i a( playerPosition.x - playerHalfWidth, playerPosition.y - playerHalfHeight );
 					Vector2i b( playerPosition.x + playerHalfWidth, playerPosition.y - playerHalfHeight );
@@ -7452,7 +7468,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					V2d testPoint = worldPos;
 					double testRadius = 200;
 					
-					for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
 							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
@@ -8010,11 +8026,11 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	return true;
 
 	int i = 0;
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		//cout << "polygon " << i << " out of " << polygons.size() << " ... " << (*it)->points.size()  << endl;
 		++i;
-		TerrainPolygon *p = (*it);
+		PolyPtr p = (*it);
 		
 		if( eLeft <= p->right && eRight >= p->left && eTop <= p->bottom && eBottom >= p->top )
 		{	
@@ -8374,7 +8390,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			assert( selectedPolygons.size() > 0 );
 
 			int left, right, top, bottom;
-			list<TerrainPolygon*>::iterator it = selectedPolygons.begin();
+			list<PolyPtr>::iterator it = selectedPolygons.begin();
 			left = (*it)->left;
 			right = (*it)->right;
 			top = (*it)->top;
@@ -8408,7 +8424,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			fullRect.height = bottom - top;
 
 
-			for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+			for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 			{
 				//it doesnt need to push this cuz its just storing the locals. draw from the center of the entire bounding box!
 
@@ -8549,7 +8565,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 int EditSession::CountSelectedPoints()
 {
 	int count = 0;
-	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 	{
 		for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
 		{
@@ -8568,15 +8584,15 @@ void EditSession::ExtendPolygon()
 	{
 		//test final line
 
-		list<TerrainPolygon*>::iterator it = polygons.begin();
+		list<PolyPtr>::iterator it = polygons.begin();
 		bool added = false;
 		polygonInProgress->Finalize();
 		bool recursionDone = false;
-		TerrainPolygon *currentBrush = polygonInProgress;
+		PolyPtr currentBrush = polygonInProgress;
 
 			while( it != polygons.end() )
 			{
-				TerrainPolygon *temp = (*it);
+				PolyPtr temp = (*it);
 				if( temp != currentBrush && currentBrush->IsTouching( temp ) )
 				{
 					//cout << "before addi: " << (*it)->points.size() << endl;
@@ -8622,7 +8638,7 @@ void EditSession::ExtendPolygon()
 	polygonInProgress->Reset();
 }
 
-bool EditSession::IsExtendPointOkay( TerrainPolygon *poly, sf::Vector2f testPoint )
+bool EditSession::IsExtendPointOkay( PolyPtr poly, sf::Vector2f testPoint )
 {
 	Vector2i worldi( testPoint.x, testPoint.y );
 	assert( extendingPolygon != NULL );
@@ -8660,7 +8676,7 @@ bool EditSession::IsExtendPointOkay( TerrainPolygon *poly, sf::Vector2f testPoin
 	return okay;
 }
 
-bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly )
+bool EditSession::IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon* poly )
 {
 	//cout << "checking if the point is valid!!" << endl;
 	//check distance from points first
@@ -8762,9 +8778,9 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 	polyAABB.width += minimumEdgeLength * 2;
 	polyAABB.height += minimumEdgeLength * 2;
 
-	for( list<TerrainPolygon*>::iterator polyIt = polygons.begin(); polyIt != polygons.end(); ++polyIt )
+	for( list<PolyPtr>::iterator polyIt = polygons.begin(); polyIt != polygons.end(); ++polyIt )
 	{
-		if( ignore == (*polyIt ) )
+		if( ignore == (*polyIt ).get() )
 		{
 			continue;
 		}
@@ -8812,7 +8828,7 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 
 			currPoint = my->pos;
 
-			if( !IsPointValid( oldPoint, currPoint, (*polyIt) ) )
+			if( !IsPointValid( oldPoint, currPoint, (*polyIt).get() ) )
 			{
 
 				cout << "a: old: " << oldPoint.x << ", " << oldPoint.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
@@ -8989,7 +9005,7 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 				//cout << "calling this" << endl;
 				sf::VertexArray &bva = (*ait)->boundingQuad;
 				//V2d along = (*ait)->groundInfo->
-				if( QuadPolygonIntersect( (*polyIt), Vector2i( bva[0].position.x, bva[0].position.y ), 
+				if( QuadPolygonIntersect( (*polyIt).get(), Vector2i( bva[0].position.x, bva[0].position.y ), 
 					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
 						Vector2i( bva[3].position.x, bva[3].position.y ) ) )
 				{
@@ -9233,11 +9249,11 @@ bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 
 void EditSession::ExtendAdd()
 {
-	list<TerrainPolygon*>::iterator it = polygons.begin();
+	list<PolyPtr>::iterator it = polygons.begin();
 	bool added = false;
 	//polygonInProgress->Finalize();
 	bool recursionDone = false;
-	TerrainPolygon *currentBrush = extendingPolygon;
+	PolyPtr currentBrush = extendingPolygon;
 
 	showPoints = false;
 	extendingPolygon = NULL;
@@ -9245,7 +9261,7 @@ void EditSession::ExtendAdd()
 
 	while( it != polygons.end() )
 	{
-		TerrainPolygon *temp = (*it);
+		PolyPtr temp = (*it);
 		if( temp != currentBrush && currentBrush->IsTouching( temp ) )
 		{
 			//cout << "before addi: " << (*it)->points.size() << endl;
@@ -9264,7 +9280,8 @@ void EditSession::ExtendAdd()
 			
 			//currentBrush->Reset();
 			polygons.remove( currentBrush );
-			delete currentBrush;
+			//delete currentBrush;
+			currentBrush.reset();
 
 			//polygonInProgress->Reset();
 						
@@ -9647,7 +9664,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 int EditSession::IsRemovePointsOkay()
 {
 	bool terrainOkay = true;
-	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 		it != selectedPolygons.end(); ++it )
 	{
 		bool res = (*it)->IsRemovePointsOkayTerrain( this );
@@ -9664,7 +9681,7 @@ int EditSession::IsRemovePointsOkay()
 	}
 
 	bool enemiesOkay = false;
-	for( list<TerrainPolygon*>::iterator it = selectedPolygons.begin(); 
+	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 		it != selectedPolygons.end(); ++it )
 	{
 		int res = (*it)->IsRemovePointsOkayEnemies( this );
@@ -9937,7 +9954,7 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	int top = min( v0.y, v1.y );
 	int bot = max( v0.y, v1.y );
 
-	for( list<TerrainPolygon*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		//aabb collide
 		if( left <= (*it)->right && right >= (*it)->left && top <= (*it)->bottom && bot >= (*it)->top )

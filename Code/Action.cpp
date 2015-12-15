@@ -124,7 +124,7 @@ ApplyBrushAction::ApplyBrushAction( Brush *brush )
 
 
 				//poly->Finalize();
-				//TerrainPolygon *poly = new TerrainPolygon( //(*it)
+				//PolyPtr poly = new TerrainPolygon( //(*it)
 				//appliedBrush.AddObject( 
 				//	 );
 
@@ -162,19 +162,41 @@ void ApplyBrushAction::Perform()
 		//should be all i need. i can change this when i need to update everything to smart pointers
 		(*it)->Activate( session );
 	}
+	//cout << "done perfroming" << endl;
 	return;
 	
 	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
 	{
-		
-		
-
-
 		switch((*it)->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
 				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
+
+				session->polygons.push_back( poly );
+
+				//add in enemies
+				for( EnemyMap::iterator it = poly->enemies.begin(); it != poly->enemies.end(); ++it )
+				{
+					list<ActorParams*> params = (*it).second;
+					for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+					{
+						(*pit)->Activate( session );
+					}
+				}
+
+				//add in gates
+				for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
+				{
+					if( curr->gate != NULL )
+					{
+						if( curr->gate->edit == NULL )
+						{
+							curr->gate->edit = session;
+							session->gates.push_back( curr->gate );
+						}
+					}
+				}
 				//session->polygons.push_back( poly );
 
 				//add terrain to the environment. this comes first
@@ -185,6 +207,9 @@ void ApplyBrushAction::Perform()
 				//add last. order could possibly not matter because just adding the stuff to the list shouldnt change anything?
 				//no, creating with a brush actually makes a copy of the brush when you set it down
 				//be sure to update everything accordingly to point to the right spots
+				ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( (*it) );
+				//actor->group->actors.push_back( actor );
+
 				break;
 			}
 		case ISelectable::GATE:
@@ -204,11 +229,6 @@ void ApplyBrushAction::Undo()
 	
 	performed = false;
 
-	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
-	{
-		(*it)->Deactivate();
-	}
-
 	//deactivate everything first. when you deactivate something it sets its active bool to false
 	//so you dont try to deactivate something that you have already deleted.
 	/*for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
@@ -218,7 +238,7 @@ void ApplyBrushAction::Undo()
 
 	for( SelectIter it = appliedBrush.objects.begin(); it != appliedBrush.objects.end(); ++it )
 	{
-	switch( (*it)->selectableType )
+		switch( (*it)->selectableType )
 		{
 		case ISelectable::TERRAIN:
 			{
@@ -226,6 +246,30 @@ void ApplyBrushAction::Undo()
 				//cout << "before undo: " << session->polygons.size() << endl;
 				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
 				
+				session->polygons.remove( poly );
+	
+				//remove enemies
+				for( EnemyMap::iterator it = poly->enemies.begin(); it != poly->enemies.end(); ++it )
+				{
+					list<ActorParams*> params = (*it).second;
+					for( list<ActorParams*>::iterator pit = params.begin(); pit != params.end(); ++pit )
+					{
+						//(*pit)->Deactivate( edit );
+					}
+				}
+
+				//remove gates
+				for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
+				{
+					if( curr->gate != NULL )
+					{
+						if( curr->gate->edit != NULL )
+						{
+							curr->gate->edit = NULL;
+							session->gates.remove( curr->gate );
+						}
+					}
+				}
 				
 				//session->polygons.remove( (TerrainPolygon*)(*it) );
 				

@@ -67,7 +67,7 @@ struct GateInfo;
 
 struct GatePoint
 {
-	//TerrainPolygon *poly;
+	//boost::shared_ptr<TerrainPolygon> poly;
 	int vertexIndex;
 	GateInfo *info;
 };
@@ -97,7 +97,7 @@ struct EditSession;
 
 struct TerrainBrush
 {
-	TerrainBrush( TerrainPolygon *poly );
+	TerrainBrush( boost::shared_ptr<TerrainPolygon> poly );
 	TerrainBrush( TerrainBrush &brush );
 	~TerrainBrush();
 	void AddPoint( TerrainPoint* tp);
@@ -115,33 +115,7 @@ struct TerrainBrush
 	
 };
 
-struct GateInfo
-{
-	enum GateTypes
-	{
-		RED,
-		GREEN,
-		BLUE,
-		Count
-	};
 
-	GateInfo();
-	void SetType( const std::string &gType );
-	TerrainPoint *point0;
-	TerrainPoint *point1;
-	TerrainPolygon *poly0;
-	int vertexIndex0;
-	TerrainPolygon *poly1;
-	int vertexIndex1;
-	sf::VertexArray thickLine;
-	EditSession *edit;
-	void UpdateLine();
-	void WriteFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
-
-	GateTypes type;
-	
-};
 
 
 typedef std::map<TerrainPoint*,std::list<ActorParams*>> EnemyMap;
@@ -175,11 +149,11 @@ struct TerrainPolygon : ISelectable
 	void UpdateGrass();
 	
 	void ShowGrass( bool show );
-	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, TerrainPolygon *inProgress );
+	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
-	bool IsTouching( TerrainPolygon *p );
+	bool IsTouching( boost::shared_ptr<TerrainPolygon> p );
 	bool IsMovePointsOkay( EditSession *edit,
 		sf::Vector2i delta );
 	bool IsMovePointsOkay( EditSession *edit,
@@ -228,7 +202,39 @@ struct TerrainPolygon : ISelectable
 
 };
 
+
+
 typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
+
+
+struct GateInfo
+{
+	enum GateTypes
+	{
+		RED,
+		GREEN,
+		BLUE,
+		Count
+	};
+
+	GateInfo();
+	void SetType( const std::string &gType );
+	TerrainPoint *point0;
+	TerrainPoint *point1;
+	boost::shared_ptr<TerrainPolygon> poly0;
+	int vertexIndex0;
+	boost::shared_ptr<TerrainPolygon> poly1;
+	int vertexIndex1;
+	sf::VertexArray thickLine;
+	EditSession *edit;
+	void UpdateLine();
+	void WriteFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	GateTypes type;
+	
+};
+
 
 struct StaticLight
 {
@@ -264,7 +270,7 @@ struct ActorParams : ISelectable
 	ActorParams();
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
-	void AnchorToGround( TerrainPolygon *poly, 
+	void AnchorToGround( boost::shared_ptr<TerrainPolygon> poly, 
 		int eIndex, double quantity );
 	void UpdateGroundedSprite();
 	virtual void SetBoundingQuad();
@@ -296,7 +302,7 @@ struct ActorParams : ISelectable
 		TerrainPoint *edgeStart;
 		//TerrainPoint *edgeEnd;
 		double groundQuantity;
-		TerrainPolygon *ground;
+		boost::shared_ptr<TerrainPolygon> ground;
 		int GetEdgeIndex();
 		//int edgeIndex;
 	};
@@ -353,7 +359,7 @@ struct KeyParams : public ActorParams
 struct CrawlerParams : public ActorParams
 { 
 	CrawlerParams( EditSession *edit, 
-		TerrainPolygon *edgePolygon,
+		boost::shared_ptr<TerrainPolygon> edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
 	void WriteParamFile( std::ofstream &of );
@@ -366,7 +372,7 @@ struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
 	BasicTurretParams( EditSession *edit,  
-		TerrainPolygon *edgePolygon,
+		boost::shared_ptr<TerrainPolygon> edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity, 
 		double bulletSpeed, 
@@ -380,7 +386,7 @@ struct BasicTurretParams : public ActorParams
 struct FootTrapParams : public ActorParams
 {
 	FootTrapParams( EditSession *edit,
-		TerrainPolygon *edgePolygon,
+		boost::shared_ptr<TerrainPolygon> edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
 	void WriteParamFile( std::ofstream &of );
@@ -390,7 +396,7 @@ struct FootTrapParams : public ActorParams
 struct GoalParams : public ActorParams
 {
 	GoalParams ( EditSession *edit,
-		TerrainPolygon *edgePolygon,
+		boost::shared_ptr<TerrainPolygon> edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
 	void WriteParamFile( std::ofstream &of );
@@ -426,18 +432,18 @@ struct EditSession : GUIHandler
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
-	bool IsExtendPointOkay( TerrainPolygon *poly,
+	bool IsExtendPointOkay( boost::shared_ptr<TerrainPolygon> poly,
 		sf::Vector2f testPoint );
-	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon *poly );
+	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon * poly );
 	void ExtendAdd();
 	bool IsPolygonExternallyValid( TerrainPolygon &poly,
-		 TerrainPolygon *ignore );
+		 TerrainPolygon* ignore );
 	bool IsPolygonInternallyValid( TerrainPolygon &poly );
 	bool IsPolygonValid( TerrainPolygon &poly,
-		TerrainPolygon *ignore );
+		TerrainPolygon* ignore );
 	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
 	void SetEnemyEditPanel();
-	bool QuadPolygonIntersect( TerrainPolygon *poly, 
+	bool QuadPolygonIntersect( TerrainPolygon* poly, 
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
@@ -470,7 +476,7 @@ struct EditSession : GUIHandler
 
 	void ExtendPolygon();
 	bool showPoints;
-	TerrainPolygon *extendingPolygon;
+	boost::shared_ptr<TerrainPolygon> extendingPolygon;
 	TerrainPoint *extendingPoint;
 
 	sf::View v;
@@ -501,7 +507,7 @@ struct EditSession : GUIHandler
 	bool selectedActorGrabbed;
 
 	//CREATE_TERRAIN mode
-	void Add( TerrainPolygon *brush, TerrainPolygon *poly);	
+	void Add( boost::shared_ptr<TerrainPolygon> brush, boost::shared_ptr<TerrainPolygon> poly);	
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
@@ -513,9 +519,10 @@ struct EditSession : GUIHandler
 	double minimumEdgeLength;
 	double minAngle;
 	
-	//std::list<PolyPtr> polygons;
-	std::list<TerrainPolygon*> polygons;
-	TerrainPolygon *polygonInProgress;
+	std::list<boost::shared_ptr<TerrainPolygon>> polygons;
+	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;
+	//std::list<boost::shared_ptr<TerrainPolygon>> polygons;
+	boost::shared_ptr<TerrainPolygon> polygonInProgress;
 	std::list<sf::VertexArray*> progressDrawList;
 	
 	//sf::Text polygonTimeoutText;
@@ -528,14 +535,14 @@ struct EditSession : GUIHandler
 	bool lightActive;
 
 	int enemyEdgeIndex;
-	TerrainPolygon *enemyEdgePolygon;
+	boost::shared_ptr<TerrainPolygon> enemyEdgePolygon;
 	double enemyEdgeQuantity;
 
 	bool radiusOption;
 	bool lightPosDown;
 	double lightRadius;
 	int lightBrightness;
-	std::list<TerrainPolygon*> selectedPolygons;
+	
 
 	sf::Sprite enemySprite;
 	sf::RectangleShape enemyQuad;
@@ -554,7 +561,7 @@ struct EditSession : GUIHandler
 	int IsRemovePointsOkay();
 
 	Panel *CreateOptionsPanel( const std::string &name );
-	void WriteGrass( TerrainPolygon * p, std::ofstream &of );
+	void WriteGrass( boost::shared_ptr<TerrainPolygon>  p, std::ofstream &of );
 	int CountSelectedPoints();
 
 	std::list<sf::Vector2i> patrolPath;

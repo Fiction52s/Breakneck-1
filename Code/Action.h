@@ -143,7 +143,7 @@ struct DeletePointsAction : Action
 	void Perform();
 	void Undo();
 
-	TerrainPolygon *oldPolygon; //copy
+	PolyPtr oldPolygon; //copy
 	std::list<TerrainPoint*> points;
 };
 
