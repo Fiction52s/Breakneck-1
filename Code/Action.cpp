@@ -102,6 +102,8 @@ void Brush::Activate()
 }
 
 
+//Action::Action( ActionType p_actionType, Action *p_next )
+//	:actionType( p_actionType ), next(p_next), performed( false )
 Action::Action( Action *p_next )
 	:next(p_next), performed( false )
 {
@@ -116,7 +118,6 @@ Action::~Action()
 //add and remove from the world at will
 
 ApplyBrushAction::ApplyBrushAction( Brush *brush )
-	//:brush( p_brush )
 {
 	appliedBrush = *brush;
 }
@@ -164,8 +165,6 @@ void RemoveBrushAction::Undo()
 	storedBrush.Activate();
 }
 
-
-
 ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 {
 	original = *p_orig;
@@ -178,13 +177,13 @@ ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 	//this is the same way i have to do the checks to see if i can add in the first place
 }
 
-
 void ReplaceBrushAction::Perform()
 {
 	assert( session != NULL );
 	assert( !performed );
 
-
+	original.Deactivate();
+	replacement.Activate();
 	//all checks are done before this is performed so it doesnt have to care
 	
 	//combine old polygon and new polygon into a new one, and store the 2 old ones.
@@ -195,77 +194,51 @@ void ReplaceBrushAction::Undo()
 	//remove the polygon from the active list, but store it in case you need it for later
 	assert( session != NULL );
 	assert( performed );
+
+	//original.Activate()
+	replacement.Deactivate();
+	original.Activate();
 }
 
-CreateActorAction::CreateActorAction()
+EditObjectAction::EditObjectAction()
 {
 }
 
-void CreateActorAction::Perform()
-{
-	assert( session != NULL );
-	
-	//put the actor into the active list
-}
-
-void CreateActorAction::Undo()
-{
-	assert( session != NULL );
-
-	//remove the actor from the active list and store it
-}
-
-DeleteActorAction::DeleteActorAction()
-{
-}
-
-void DeleteActorAction::Perform()
-{
-	assert( session != NULL );
-	
-	//take the actor out of the active list and store it
-}
-
-void DeleteActorAction::Undo()
-{
-	assert( session != NULL );
-
-	//put the actor back into the active list
-}
-
-EditActorAction::EditActorAction()
-{
-}
-
-void EditActorAction::Perform()
+void EditObjectAction::Perform()
 {
 	assert( session != NULL );
 	
 	//set the parameters and store the old parameters
 }
 
-void EditActorAction::Undo()
+void EditObjectAction::Undo()
 {
 	assert( session != NULL );
 
 	//restore the old parameters
 }
 
-MoveObjectAction::MoveObjectAction()
+MoveBrushAction::MoveBrushAction( Brush *brush, Vector2i p_delta )
+	:delta( p_delta )
 {
+	movingBrush = *brush;
 }
 
-void MoveObjectAction::Perform()
+void MoveBrushAction::Perform()
 {
 	assert( session != NULL );
+	assert( !performed );
 	
-	//just move the object
+	performed = false;
+	movingBrush.Move( delta );
 }
 
-void MoveObjectAction::Undo()
+void MoveBrushAction::Undo()
 {
 	assert( session != NULL );
+	assert( performed );
 
+	movingBrush.Move( -delta );
 	//move the object back
 }
 

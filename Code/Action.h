@@ -14,8 +14,8 @@ struct Brush
 	void Destroy();
 	void Move( sf::Vector2i delta );
 	void Draw( sf::RenderTarget *target );
-	void Deactivate();
-	void Activate();
+	void Deactivate();//multiple calls covered?
+	void Activate();//multiple calls covered?
 
 	bool terrainOnly;
 	static EditSession *session;
@@ -26,18 +26,19 @@ struct Action
 {
 	enum ActionType
 	{
-		CREATE_POLYGON,
-		ADD_TO_POLYGON,
-		CREATE_ACTOR,
+		APPLY_BRUSH,
+		REMOVE_BRUSH,
+		REPLACE_BRUSH,
 		DESTROY_ACTOR,
-		EDIT_ACTOR,
-		MOVE_OBJECT,
+		MOVE_BRUSH,
 		MOVE_POINTS,
 		DELETE_POINTS,
+		EDIT_OBJECT,
 		CREATE_GATE,
 		DELETE_GATE,
 		Count
 	};
+	//Action( ActionType actionType, Action *next = NULL );
 	Action( Action *next = NULL );
 	virtual ~Action();
 	virtual void Perform() = 0;
@@ -109,12 +110,14 @@ struct AddToPolygonAction : Action
 	void Undo();
 };
 
-struct CreateActorAction : Action
+struct MoveBrushAction : Action
 {
-	CreateActorAction();
-	ActorParams *actor;
+	MoveBrushAction( Brush *brush, sf::Vector2i delta );
 	void Perform();
 	void Undo();
+
+	Brush movingBrush;
+	Vector2i delta;
 };
 
 struct DeleteActorAction : Action
@@ -126,24 +129,16 @@ struct DeleteActorAction : Action
 	ActorParams *actor;
 };
 
-struct EditActorAction : Action
+struct EditObjectAction : Action
 {
-	EditActorAction();
+	EditObjectAction();
 	void Perform();
 	void Undo();
 
 	ActorParams *actor;
 };
 
-struct MoveObjectAction : Action
-{
-	MoveObjectAction();
-	void Perform();
-	void Undo();
 
-	ISelectable * obj;
-	sf::Vector2i delta;
-};
 
 //should this be split up or should the others
 //be in lists
