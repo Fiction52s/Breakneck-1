@@ -188,6 +188,8 @@ void ReplaceBrushAction::Perform()
 	assert( session != NULL );
 	assert( !performed );
 
+	performed = true;
+
 	original.Deactivate();
 	replacement.Activate();
 	//all checks are done before this is performed so it doesnt have to care
@@ -201,6 +203,7 @@ void ReplaceBrushAction::Undo()
 	assert( session != NULL );
 	assert( performed );
 
+	performed = false;
 	//original.Activate()
 	replacement.Deactivate();
 	original.Activate();

@@ -480,23 +480,6 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 
 	edit->polygons.push_back( poly );
 
-	for( list<PolyPtr>::iterator it = edit->polygons.begin(); it != edit->polygons.end(); ++it )
-	{
-		if( (*it).get() == this )
-		{
-			continue;
-		}
-
-		if( !TooClose( (*it).get(), false, 8 ) )
-		{
-			//cout << "would be able to apply here" << endl;
-		}
-		else if( !TooClose( (*it).get(), true, 8 ) )
-		{
-			//cout << "would be able to add here but not apply" << endl;
-		}
-	}
-
 
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -3884,9 +3867,9 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 		firstTime = false;
 	}
 
-	//poly->Reset();
+	poly->Reset();
 
-	PolyPtr newPolygon( new TerrainPolygon( &grassTex ) );
+	//PolyPtr newPolygon( new TerrainPolygon( &grassTex ) );
 	//cout << "poly size: " << z.points.size() << endl;
 	for( TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next )
 	{
@@ -3897,13 +3880,13 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 			if( zit == tp->gate->point0 )
 			{
 				tp->gate->point0 = tp;
-				tp->gate->poly0 = newPolygon;
+				tp->gate->poly0 = poly;
 			//	cout << "checking a at: " << tp->pos.x << ", " << tp->pos.y << endl;
 			}
 			else
 			{
 				tp->gate->point1 = tp;
-				tp->gate->poly1 = newPolygon;
+				tp->gate->poly1 = poly;
 		//		cout << "checking b at: " << tp->pos.x << ", " << tp->pos.y << endl;
 			}
 
@@ -4430,12 +4413,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									bool valid = true;
 
 
+									//test for the last line segment intersecting with the polygon
 									TerrainPoint * test = polygonInProgress->pointStart;
 									TerrainPoint * prev = test;
 									test = test->next;
 
-									//cout << "lastline: " << polygonInProgress->points.back().pos.x << ", " << polygonInProgress->points.back().pos.y <<
-									//	" .. " << polygonInProgress->points.front().pos.x << ", " << polygonInProgress->points.front().pos.y << endl;
 									for( ; test != NULL; test = test->next )
 									{
 										Vector2i a = prev->pos;
@@ -4449,9 +4431,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											valid = false;
 										}
-
-										
-
 										prev = test;
 									}
 
@@ -4471,9 +4450,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										valid = false;
 									}
 
-									//if( !IsPolygonValid( *polygonInProgress, NULL ) )
-									//	valid = false;
-
 									if( !valid )
 									{
 										MessagePop( "unable to complete polygon" );
@@ -4481,105 +4457,86 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										break;
 									}
 
-									//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos ) )
-									//	break;
-
+									
 									list<PolyPtr>::iterator it = polygons.begin();
 									bool added = false;
-									polygonInProgress->Finalize(); //i should check if i can remove this
+									
 									bool recursionDone = false;
 									PolyPtr currentBrush = polygonInProgress;
 
-										//while( it != polygons.end() )
-									while( false )
-										{
-											PolyPtr temp = (*it);
-											if( temp != currentBrush && currentBrush->IsTouching( temp ) )
-											{
-												cout << "before addi: " << (*it)->numPoints << endl;
-						
-												Add( currentBrush, temp );
+									list<PolyPtr> intersectingPolys;
 
-												polygonInProgress->Reset();
-						
-												cout << "after adding: " << (*it)->numPoints << endl;
+									polygonInProgress->UpdateBounds();
 
-												
-
-												polygons.erase( it );
-
-												currentBrush = temp;
-
-												for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
-												{
-													if( tp->gate != NULL )
-													{
-														cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
-															<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
-														//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
-													}
-												}
-
-												it = polygons.begin();
-
-												added = true;
-							
-												continue;
-											}
-											else
-											{
-												//cout << "not" << endl;
-											}
-											++it;
-										}
-				
-									//add final check for validity here
-				
-									if( !added )
+									bool applyOkay = true;
+									for(; it != polygons.end(); ++it )
 									{
-										progressBrush->Clear();
-										
-										polygonInProgress->Finalize();
+										if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
+										{
+											applyOkay = false;
+											break;
+										}
+										else if( polygonInProgress->LinesIntersect( (*it).get() ) )
+										{
+											//not too close and I intersect, so I can add
+											intersectingPolys.push_back( (*it) );
+										}
+										//polygoninprogress is already not in the polygons list
+										//if( (*it).get() == this )
+										//{
+										//	continue;
+										//}
+									}
 
-										progressBrush->AddObject( polygonInProgress );
-									
-
-										Action *action = new ApplyBrushAction( progressBrush );
-										//cout << "performing!" << endl;
-										action->Perform();
-										//polygons.push_back( polygonInProgress );
-										polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
-
-										doneActionStack.push_back( action );
-
-										//delete action;
+									if( !applyOkay )
+									{
+										MessagePop( "polygon is invalid!!! new message" );
 									}
 									else
 									{
-										
-										for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
+										if( intersectingPolys.empty() )
 										{
-											//if( tp->gate != NULL )
-											//{
-											//	cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
-											//		<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
-											//	//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
-											//}
-												
+											polygonInProgress->Finalize();
+
+											progressBrush->Clear();
+											progressBrush->AddObject( polygonInProgress );
+									
+											Action *action = new ApplyBrushAction( progressBrush );
+											action->Perform();
+											doneActionStack.push_back( action );
+
+											PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+											polygonInProgress = newPoly;
 										}
+										else
+										{
+											//add each of the intersecting polygons onto the polygonInProgress,
+											//then do a replacebrushaction
 
-										//progressBrush->Clear();
 
-										//need to push this
-										//polygons.push_back( currentBrush );
-										polygonInProgress->Reset();
+											Brush orig;
+											for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+											{
+												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+												orig.AddObject( sp );
 
-										
+												Add( (*it), polygonInProgress );
+												
+											}
 
+											progressBrush->Clear();
+											progressBrush->AddObject( polygonInProgress );
+											Action * action = new ReplaceBrushAction( &orig, progressBrush );
+											action->Perform();
+											doneActionStack.push_back( action );
+
+											PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+											polygonInProgress = newPoly;
+
+										}
 									}
 								}
-
-								if( polygonInProgress->numPoints <= 2 && polygonInProgress->numPoints > 0  )
+								else if( polygonInProgress->numPoints <= 2 && polygonInProgress->numPoints > 0  )
 								{
 									cout << "cant finalize. cant make polygon" << endl;
 									polygonInProgress->ClearPoints();
