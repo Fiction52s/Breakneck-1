@@ -487,13 +487,13 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 			continue;
 		}
 
-		if( this->TooClose( (*it).get(), false, 8 ) )
+		if( !TooClose( (*it).get(), false, 8 ) )
 		{
-			cout << "too close not intersecting" << endl;
+			//cout << "would be able to apply here" << endl;
 		}
-		else if( this->TooClose( (*it).get(), true, 8 ) )
+		else if( !TooClose( (*it).get(), true, 8 ) )
 		{
-			cout << "too close with intersecting allowed" << endl;
+			//cout << "would be able to add here but not apply" << endl;
 		}
 	}
 
@@ -2335,6 +2335,8 @@ bool TerrainPolygon::SegmentWithinDistanceOfPoint( sf::Vector2i startSeg, sf::Ve
 		//cout << "v1: " << v1.x << ", " << v1.y << endl;
 		return true;
 	}
+
+	return false;
 }
 
 //doesn't check for line intersections. just point/line distances for validity
@@ -2457,6 +2459,8 @@ bool TerrainPolygon::TooClose( TerrainPolygon *poly, bool intersectAllowed, int 
 			return true;
 		}
 	}
+
+	return false;
 }
 
 sf::Rect<int> TerrainPolygon::TempAABB()
@@ -4486,7 +4490,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									bool recursionDone = false;
 									PolyPtr currentBrush = polygonInProgress;
 
-										while( it != polygons.end() )
+										//while( it != polygons.end() )
+									while( false )
 										{
 											PolyPtr temp = (*it);
 											if( temp != currentBrush && currentBrush->IsTouching( temp ) )
