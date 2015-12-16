@@ -182,11 +182,28 @@ struct TerrainPolygon : ISelectable
 		boost::shared_ptr<ISelectable> & select);
 	
 	bool IsTouching( boost::shared_ptr<TerrainPolygon> &p );
+	bool Contains( TerrainPolygon *poly );
 	//bool IsTouching( TerrainPolygon * p );
 	bool BoundsOverlap( TerrainPolygon *poly );
 	bool LinesIntersect( TerrainPolygon *poly );
-	bool PointsTooClose( TerrainPolygon *poly );
-	bool LinesTooClose( TerrainPolygon *poly );
+	bool PointTooCloseToPoints( sf::Vector2i point,
+		int minDistance );
+	bool PointTooClose( sf::Vector2i point,
+		int minDistance );
+	bool LinesTooClose( TerrainPolygon *poly,
+		int minDistance );
+	bool PointTooCloseToLines( sf::Vector2i point,
+		int minDistance );
+	bool SegmentTooClose( sf::Vector2i a,
+		sf::Vector2i b, int minDistance );
+	bool SegmentWithinDistanceOfPoint(
+		sf::Vector2i startSeg,
+		sf::Vector2i endSeg,
+		sf::Vector2i testPoint,
+		int distance );
+	bool TooClose( TerrainPolygon *poly,
+		bool intersectAllowed,
+		int minDistance );
 
 
 	bool CanApply();

@@ -22,6 +22,13 @@ double length( sf::Vector2<double> v)
 	return sqrt( vx * vx + vy * vy );
 }
 
+double lengthSqr( sf::Vector2<double> v )
+{
+	double vx = v.x;
+	double vy = v.y;
+	return vx * vx + vy * vy;
+}
+
 sf::Vector2<double> normalize( sf::Vector2<double> v )
 {
 	double vLen = length( v );

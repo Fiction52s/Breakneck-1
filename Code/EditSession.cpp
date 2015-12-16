@@ -480,6 +480,24 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 
 	edit->polygons.push_back( poly );
 
+	for( list<PolyPtr>::iterator it = edit->polygons.begin(); it != edit->polygons.end(); ++it )
+	{
+		if( (*it).get() == this )
+		{
+			continue;
+		}
+
+		if( this->TooClose( (*it).get(), false, 8 ) )
+		{
+			cout << "too close not intersecting" << endl;
+		}
+		else if( this->TooClose( (*it).get(), true, 8 ) )
+		{
+			cout << "too close with intersecting allowed" << endl;
+		}
+	}
+
+
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
@@ -2062,25 +2080,20 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 	}
 }
 
+//returns true if LinesIntersect or 
 bool TerrainPolygon::IsTouching( PolyPtr &p )
 {
+	//make sure its not ourselves!
 	assert( p.get() != this );
+
+	//check aabb
 	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
 	{	
-		//return true;
-
-		//points.push_back( points.front() );
-		//p->points.push_back( p->points.front() );
-
-		
 		TerrainPoint *curr = pointStart;
 		Vector2i currPos = curr->pos;
 		curr = curr->next;
 		Vector2i nextPos;
 		
-
-		
-
 		for( ;; curr = curr->next )
 		{
 			if( curr == NULL )
@@ -2092,7 +2105,8 @@ bool TerrainPolygon::IsTouching( PolyPtr &p )
 			TerrainPoint *pit = p->pointStart;
 			Vector2i pcurr = pit->pos;
 			pit = pit->next;
-			Vector2i pnext;// = (*pit);
+
+			Vector2i pnext;
 
 			for( ;; pit = pit->next )		
 			{
@@ -2105,9 +2119,7 @@ bool TerrainPolygon::IsTouching( PolyPtr &p )
 
 				if( !li.parallel )
 				{
-					//points.pop_back();
-					//p->points.pop_back();
-					cout << "touching!" << endl;
+					//cout << "touching!" << endl;
 					return true;
 				}
 
@@ -2124,10 +2136,6 @@ bool TerrainPolygon::IsTouching( PolyPtr &p )
 			}
 		}
 	}
-
-	//points.pop_back();
-	//p->points.pop_back();
-
 	return false;
 }
 
@@ -2166,6 +2174,288 @@ void TerrainPolygon::ShowGrass( bool show )
 			grassVa[i*4+2].color.a = 255;
 			grassVa[i*4+3].color.a = 255;
 		}*/
+	}
+}
+
+
+
+bool TerrainPolygon::BoundsOverlap( TerrainPolygon *poly )
+{
+	if( left <= poly->right && right >= poly->left && top <= poly->bottom && bottom >= poly->top )
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
+{
+	//my lines vs his lines
+	for( TerrainPoint *my = pointStart; my != NULL; my = my->next )
+	{
+		TerrainPoint *myPrev;
+		if( my == pointStart )
+		{
+			myPrev = pointEnd;
+		}
+		else
+		{
+			myPrev = my->prev;
+		}
+
+		for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
+		{
+			TerrainPoint *prev;
+			if( pcurr == poly->pointStart )
+			{
+				prev = poly->pointEnd;
+			}
+			else
+			{
+				prev = pcurr->prev;
+			}
+
+			LineIntersection li = EditSession::SegmentIntersect( (*myPrev).pos, my->pos, (*prev).pos, pcurr->pos );
+			if( !li.parallel )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+//buggy?
+bool TerrainPolygon::PointTooCloseToPoints( Vector2i point, int minDistance )
+{
+	V2d p( point.x, point.y );
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		V2d currP( curr->pos.x, curr->pos.y );
+		V2d diff = p - currP;
+		
+
+		if( lengthSqr( diff ) < minDistance * minDistance )
+		{
+			//cout << "blah: " << lengthSqr( diff ) << endl;
+			cout << "diff: " << diff.x << ", " << diff.y << endl;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool TerrainPolygon::Contains( TerrainPolygon *poly )
+{
+	//hes inside me w/ no intersection
+	for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
+	{
+		//if all points are inside me
+		if( !ContainsPoint( Vector2f( pcurr->pos.x, pcurr->pos.y ) ) )
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool TerrainPolygon::PointTooClose( sf::Vector2i point, int minDistance )
+{
+	bool a = PointTooCloseToPoints( point, minDistance );
+	bool b = PointTooCloseToLines( point, minDistance );
+	if( a || b )
+	{
+		if( a )
+			cout << "A point too close" << endl;
+		else
+			cout << "B point too close" << endl;
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance )
+{
+	V2d p( point.x, point.y );
+
+	TerrainPoint *pcurr = pointStart;
+	TerrainPoint *prev = pointEnd;
+
+	for( ; pcurr != NULL; pcurr = pcurr->next )
+	{
+		if( pcurr == pointStart )
+		{
+			prev = pointEnd;
+		}
+		else
+		{
+			prev = pcurr->prev;
+		}
+		//if( pcurr->pos == oldPoint || pcurr->pos == oldPoint )
+		//{
+		//	prev = pcurr;
+		//	continue;
+		//}
+		
+		if( SegmentWithinDistanceOfPoint( prev->pos, pcurr->pos, point, minDistance ) )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool TerrainPolygon::SegmentWithinDistanceOfPoint( sf::Vector2i startSeg, sf::Vector2i endSeg, sf::Vector2i testPoint, int distance )
+{
+	V2d p( testPoint.x, testPoint.y );
+
+	V2d v0 = V2d( startSeg.x, startSeg.y );
+	V2d v1 = V2d( endSeg.x, endSeg.y );
+	V2d edgeDir = normalize( v1 - v0 );
+
+	double quant = dot( p - v0, edgeDir );
+	double offQuant = cross( p - v0, edgeDir );
+	bool nearOnAxis = quant > 0 && quant < length( v1 - v0 );
+
+	bool nearOffAxis = abs( offQuant ) < distance;
+
+	if( nearOnAxis && nearOffAxis )
+	{
+		//cout << "false type two. quant:" << quant << ", offquant: " << offQuant << endl;
+		//cout << "p: " << p.x << ", " << p.y << endl;
+		//cout << "v0: " << v0.x << ", " << v0.y << endl;
+		//cout << "v1: " << v1.x << ", " << v1.y << endl;
+		return true;
+	}
+}
+
+//doesn't check for line intersections. just point/line distances for validity
+bool TerrainPolygon::SegmentTooClose( Vector2i a, Vector2i b, int minDistance )
+{
+	//if points are too close to points, or too close to lines
+	//if my points are too close to his lines
+	if( PointTooClose( a, minDistance ) || PointTooClose( b, minDistance ) )
+	{
+		cout << "pointtoo close" << endl;
+		return true;
+	}
+	else
+	{
+		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+		{
+			TerrainPoint *prev;
+			if( curr == pointStart )
+			{
+				prev = pointEnd;
+			}
+			else
+			{
+				prev = curr->prev;
+			}
+
+			if( SegmentWithinDistanceOfPoint( a,b, curr->pos, minDistance ) )
+			{
+				cout << "line stuff" << endl;
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+bool TerrainPolygon::LinesTooClose( TerrainPolygon *poly, int minDistance )
+{
+	//my lines with his points
+	for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
+	{
+		Vector2i oldPoint, currPoint;
+		if( pcurr == poly->pointStart )
+		{
+			oldPoint = poly->pointEnd->pos;
+		}
+		else
+		{
+			oldPoint = pcurr->prev->pos;
+		}
+
+		currPoint = pcurr->pos;
+
+		if( SegmentTooClose( oldPoint, currPoint, minDistance ) )
+		{
+			cout << "lines 1" << endl;
+			return true;
+		}
+	}
+
+	//his lines with my points
+	for( TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next )
+	{
+		Vector2i oldPoint, currPoint;
+		if( pcurr == pointStart )
+		{
+			oldPoint = pointEnd->pos;
+		}
+		else
+		{
+			oldPoint = pcurr->prev->pos;
+		}
+
+		currPoint = pcurr->pos;
+
+		if( poly->SegmentTooClose( oldPoint, currPoint, minDistance ) )
+		{
+			cout << "lines 2" << endl;
+			return true;
+		}
+	}
+
+	/*for( list<GateInfo*>::iterator git = poly->attachedGates.begin(); git != poly->attachedGates.end(); ++git )
+	{
+		LineIntersection li = LimitSegmentIntersect( (*git)->v0, (*git)->v1, oldPoint, point );
+		if( !li.parallel )
+		{
+		//	return false;
+		}
+	}*/
+
+
+	return false;
+
+		//if( !IsPointValid( oldPoint, currPoint, this ) )
+		//{
+		//	cout << "b: old: " << oldPoint.x << ", " << oldPoint.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
+		//	return false;
+		//}
+		//IsPointValid(
+}
+
+bool TerrainPolygon::TooClose( TerrainPolygon *poly, bool intersectAllowed, int minDistance )
+{
+	if( LinesTooClose( poly, minDistance ) )
+	{
+		cout << "reason 1" << endl;
+		return true;
+	}
+
+	if( intersectAllowed )
+	{
+		return false;
+	}
+	else
+	{
+		if( LinesIntersect( poly ) )
+		{
+			cout << "reason 2" << endl;
+			return true;
+		}
 	}
 }
 
