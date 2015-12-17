@@ -40,6 +40,22 @@ Brush::Brush()
 {
 }
 
+void Brush::Select()
+{
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{	
+		(*it)->selected = true;
+	}
+}
+
+void Brush::Deselect()
+{
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{	
+		(*it)->selected = false;
+	}
+}
+
 void Brush::AddObject( SelectPtr obj )
 {
 	if( obj->selectableType != ISelectable::TERRAIN )

@@ -2660,6 +2660,9 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), zoomMultiple( 1 )
 {
+	editMouseDownBox = false;
+	editMouseDownMove = false;
+	editMoveThresh = 5;
 	Action::session = this;
 	Brush::session = this;
 	//adding 5 for random distance buffer
@@ -4650,6 +4653,56 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								bool emptysp = true;
 
+								if( !( editMouseDownMove || editMouseDownBox ) )
+								{
+									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+									{
+										if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
+										{
+
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+
+											if( sp->selected )
+											{
+
+											}
+											else
+											{
+												if( !( Keyboard::isKeyPressed( Keyboard::LShift ) || 
+												Keyboard::isKeyPressed( Keyboard::RShift ) ) )
+												{
+													selectedBrush->Deselect();
+													selectedBrush->Clear();
+												}
+
+												grabbedObject = sp;
+												selectedBrush->AddObject( sp );
+												sp->selected = true;
+											}
+
+											emptysp = false;
+											break;
+										}
+									}
+
+									editMouseGrabPos = Vector2i( worldPos.x, worldPos.y );
+									//editMouseDown = true;
+
+									if( emptysp )
+									{	
+										editMouseDownMove = false;
+										editMouseDownBox = true;
+										editStartMove = false;
+									}
+									else
+									{
+										editMouseDownMove = true;
+										editStartMove = false;
+										editMouseDownBox = false;
+									}
+								}
+								break;
+
 								if( moveActive )//&& !Keyboard::isKeyPressed( Keyboard::LShift ) )
 								{
 									moveActive = false;
@@ -4997,6 +5050,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
 									break;
 								}
+
+								if( editMouseDownBox && !editStartMove )
+								{
+									selectedBrush->Deselect();
+									selectedBrush->Clear();
+									selectedBrush->AddObject( grabbedObject );
+								}
+
+								editMouseDownBox = false;
+								editMouseDownMove = false;
+								editStartMove = false;
 
 								if( !pasteBrushes.empty() )
 								{
@@ -7022,6 +7086,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 				}
 
+				if( ( editMouseDownMove && !editStartMove && length( V2d( editMouseGrabPos.x, editMouseGrabPos.y ) - worldPos ) > editMoveThresh * zoomMultiple ) )
+				{
+					editStartMove = true;
+					Vector2i pos( worldPos.x, worldPos.y );
+					Vector2i delta = pos - editMouseGrabPos;
+
+					selectedBrush->Move( delta );
+
+					editMouseGrabPos = pos;
+				}
+				else if( editMouseDownMove && editStartMove )
+				{
+					Vector2i pos( worldPos.x, worldPos.y );
+					Vector2i delta = pos - editMouseGrabPos;
+
+					selectedBrush->Move( delta );
+
+					editMouseGrabPos = pos;
+				}
+				else if( editMouseDownBox )
+				{
+					//stuff
+				}
 
 				
 				

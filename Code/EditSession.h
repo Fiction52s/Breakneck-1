@@ -224,7 +224,7 @@ struct TerrainPolygon : ISelectable
 	int numGrassTotal;
 	sf::Texture *grassTex;
 	int vaSize;
-	bool selected;
+	//bool selected;
 	int left;
 	int right;
 	int top;
@@ -643,6 +643,12 @@ struct EditSession : GUIHandler
 	Brush *selectedBrush;
 
 	bool moveActive;
+	bool editMouseDownBox;
+	bool editMouseDownMove;
+	bool editStartMove;
+	int editMoveThresh;
+	SelectPtr grabbedObject;
+	sf::Vector2i editMouseGrabPos;
 
 
 	//std::list<Action*>::iterator currAction;
