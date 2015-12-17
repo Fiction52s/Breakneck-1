@@ -41,6 +41,7 @@ struct ISelectable
 		boost::shared_ptr<ISelectable> & select) = 0;
 	virtual bool CanApply() = 0;
 	virtual bool CanAdd() = 0;
+	virtual void SetSelected( bool select ) = 0;
 	//virtual bool CanSubtract() = 0;
 
 	ISelectableType selectableType;
@@ -206,6 +207,8 @@ struct TerrainPolygon : ISelectable
 		int minDistance );
 
 
+
+
 	bool CanApply();
 	bool CanAdd();
 
@@ -328,6 +331,8 @@ struct ActorParams : ISelectable
 		boost::shared_ptr<ISelectable> & select );
 
 	virtual void DrawQuad( sf::RenderTarget *target );
+
+	virtual void SetSelected( bool select );
 
 	virtual bool CanApply() = 0;
 	bool CanAdd();

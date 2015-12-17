@@ -40,19 +40,11 @@ Brush::Brush()
 {
 }
 
-void Brush::Select()
+void Brush::SetSelected( bool select )
 {
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
 	{	
-		(*it)->selected = true;
-	}
-}
-
-void Brush::Deselect()
-{
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
-	{	
-		(*it)->selected = false;
+		(*it)->SetSelected( select );
 	}
 }
 

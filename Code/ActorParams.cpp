@@ -19,6 +19,12 @@ ActorParams::ActorParams()
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
 
+void ActorParams::SetSelected( bool select )
+{
+	cout << "------selected: " << select << endl;
+	selected = select;
+}
+
 bool ActorParams::CanAdd()
 {
 	assert( false );
@@ -27,6 +33,18 @@ bool ActorParams::CanAdd()
 
 void ActorParams::Draw( sf::RenderTarget *target )
 {
+	//cout << "Selected: " << selected << endl;
+	//if( selected )
+	//{
+		sf::RectangleShape rs;
+		rs.setFillColor( Color::Transparent );
+		rs.setOutlineColor( Color::Green );
+		rs.setOutlineThickness( 20 );
+		rs.setPosition( image.getPosition() );
+		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
+		target->draw( rs );
+		//cout << "selected draw" << endl;
+	//}
 	target->draw( image );
 }
 
@@ -414,6 +432,18 @@ void KeyParams::Draw( sf::RenderTarget *target )
 	}
 
 	target->draw( image );
+
+	if( selected )
+	{
+		sf::RectangleShape rs;
+		rs.setFillColor( Color::Transparent );
+		rs.setOutlineColor( Color::Green );
+		rs.setOutlineThickness( 20 );
+		rs.setPosition( image.getPosition() );
+		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
+		target->draw( rs );
+		//cout << "selected draw" << endl;
+	}
 }
 
 std::list<sf::Vector2i> KeyParams::GetGlobalPath()
@@ -588,6 +618,18 @@ void PatrollerParams::Draw( sf::RenderTarget *target )
 	}
 
 	target->draw( image );
+
+	if( selected )
+	{
+		sf::RectangleShape rs;
+		rs.setFillColor( Color::Transparent );
+		rs.setOutlineColor( Color::Green );
+		rs.setOutlineThickness( 20 );
+		rs.setPosition( image.getPosition() );
+		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
+		target->draw( rs );
+		//cout << "selected draw" << endl;
+	}
 }
 
 std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()

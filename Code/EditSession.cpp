@@ -4655,6 +4655,46 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( !( editMouseDownMove || editMouseDownBox ) )
 								{
+
+									if( emptysp )
+										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+										{
+											for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+												ait != (*it).second->actors.end(); ++ait )
+											{
+
+												if( (*ait)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
+												{
+													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
+
+													if( sp->selected )
+													{
+
+													}
+													else
+													{
+														if( !( Keyboard::isKeyPressed( Keyboard::LShift ) || 
+														Keyboard::isKeyPressed( Keyboard::RShift ) ) )
+														{
+															selectedBrush->SetSelected( false );
+															selectedBrush->Clear();
+														}
+
+														sp->SetSelected( true );
+
+														grabbedObject = sp;
+														selectedBrush->AddObject( sp );
+														//sp->selected = true;
+												
+													}
+
+													emptysp = false;
+													break;
+												}
+											}
+										}
+
+									if( emptysp )
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
 										if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
@@ -4671,13 +4711,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												if( !( Keyboard::isKeyPressed( Keyboard::LShift ) || 
 												Keyboard::isKeyPressed( Keyboard::RShift ) ) )
 												{
-													selectedBrush->Deselect();
+													selectedBrush->SetSelected( false );
 													selectedBrush->Clear();
 												}
 
+												sp->SetSelected( true );
+
 												grabbedObject = sp;
 												selectedBrush->AddObject( sp );
-												sp->selected = true;
+												//sp->selected = true;
+												
 											}
 
 											emptysp = false;
@@ -5053,7 +5096,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( editMouseDownBox && !editStartMove )
 								{
-									selectedBrush->Deselect();
+									selectedBrush->SetSelected( false );
 									selectedBrush->Clear();
 									selectedBrush->AddObject( grabbedObject );
 								}

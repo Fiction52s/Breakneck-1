@@ -16,8 +16,7 @@ struct Brush
 	void Draw( sf::RenderTarget *target );
 	void Deactivate();//multiple calls covered?
 	void Activate();//multiple calls covered?
-	void Select();
-	void Deselect();
+	void SetSelected( bool select );
 
 	bool terrainOnly;
 	static EditSession *session;
