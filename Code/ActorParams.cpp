@@ -34,8 +34,8 @@ bool ActorParams::CanAdd()
 void ActorParams::Draw( sf::RenderTarget *target )
 {
 	//cout << "Selected: " << selected << endl;
-	//if( selected )
-	//{
+	if( selected )
+	{
 		sf::RectangleShape rs;
 		rs.setFillColor( Color::Transparent );
 		rs.setOutlineColor( Color::Green );
@@ -44,7 +44,7 @@ void ActorParams::Draw( sf::RenderTarget *target )
 		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
 		target->draw( rs );
 		//cout << "selected draw" << endl;
-	//}
+	}
 	target->draw( image );
 }
 
@@ -270,7 +270,21 @@ bool ActorParams::ContainsPoint( sf::Vector2f test )
 
 bool ActorParams::Intersects( sf::IntRect rect )
 {
-	return false;
+	V2d A( boundingQuad[0].position.x, boundingQuad[0].position.y );
+	V2d B( boundingQuad[1].position.x, boundingQuad[1].position.y );
+	V2d C( boundingQuad[2].position.x, boundingQuad[2].position.y );
+	V2d D( boundingQuad[3].position.x, boundingQuad[3].position.y );
+
+	V2d rA( rect.left, rect.top );
+	V2d rB( rect.left + rect.width, rect.top );
+	V2d rC( rect.left + rect.width, rect.top + rect.height );
+	V2d rD( rect.left, rect.top + rect.height );
+	if( isQuadTouchingQuad( A, B, C, D, rA, rB, rC, rD ) )
+	{
+		return true;
+	}
+	else
+		return false;
 }
 
 bool ActorParams::IsPlacementOkay()

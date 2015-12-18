@@ -2480,7 +2480,7 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 
 	poly.UpdateBounds();
 
-	if( IsTouching( &poly ) || poly.Contains( this ) )
+	if( IsTouching( &poly ) || poly.Contains( this ) ) //don't need this contains polys cuz im just using this for selection for now
 	{
 		return true;
 	}
@@ -5162,7 +5162,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										selectedBrush->Clear();
 									}
 
-									if( selectionEmpty )
+									//if( selectionEmpty )
 										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 										{
 											for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
@@ -5197,7 +5197,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											}
 										}
 
-									if( selectionEmpty )
+									//if( selectionEmpty )
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
 										if( (*it)->Intersects( r ) )
