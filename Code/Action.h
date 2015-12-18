@@ -111,15 +111,19 @@ struct AddToPolygonAction : Action
 	void Undo();
 };
 
-/*struct MoveBrushAction : Action
+//--NOTE: DOESNT ACTUALLY MOVE BRUSH
+//IF PARAMETER IS SET
+struct MoveBrushAction : Action
 {
-	MoveBrushAction( Brush *brush, sf::Vector2i delta );
+	MoveBrushAction( Brush *brush, sf::Vector2i delta, 
+		bool moveOnFirstPerform );
 	void Perform();
 	void Undo();
 
 	Brush movingBrush;
-	Vector2i delta;
-};*/
+	bool moveOnFirstPerform;
+	sf::Vector2i delta;
+};
 
 struct DeleteActorAction : Action
 {

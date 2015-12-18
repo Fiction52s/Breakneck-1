@@ -548,7 +548,7 @@ struct EditSession : GUIHandler
 	sf::Vector2i playerPosition;
 	//sf::Vector2i goalPosition;
 	std::string currentFile;
-	double zoomMultiple;
+	static double zoomMultiple;
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
@@ -654,6 +654,7 @@ struct EditSession : GUIHandler
 	int editMoveThresh;
 	SelectPtr grabbedObject;
 	sf::Vector2i editMouseGrabPos;
+	sf::Vector2i editMouseOrigPos;
 
 
 	//std::list<Action*>::iterator currAction;

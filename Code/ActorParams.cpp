@@ -39,8 +39,8 @@ void ActorParams::Draw( sf::RenderTarget *target )
 		sf::RectangleShape rs;
 		rs.setFillColor( Color::Transparent );
 		rs.setOutlineColor( Color::Green );
-		rs.setOutlineThickness( 20 );
-		rs.setPosition( image.getPosition() );
+		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
+		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
 		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
 		target->draw( rs );
 		//cout << "selected draw" << endl;
@@ -432,14 +432,13 @@ void KeyParams::Draw( sf::RenderTarget *target )
 	}
 
 	target->draw( image );
-
 	if( selected )
 	{
 		sf::RectangleShape rs;
 		rs.setFillColor( Color::Transparent );
 		rs.setOutlineColor( Color::Green );
-		rs.setOutlineThickness( 20 );
-		rs.setPosition( image.getPosition() );
+		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
+		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
 		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
 		target->draw( rs );
 		//cout << "selected draw" << endl;
@@ -624,8 +623,8 @@ void PatrollerParams::Draw( sf::RenderTarget *target )
 		sf::RectangleShape rs;
 		rs.setFillColor( Color::Transparent );
 		rs.setOutlineColor( Color::Green );
-		rs.setOutlineThickness( 20 );
-		rs.setPosition( image.getPosition() );
+		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
+		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
 		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
 		target->draw( rs );
 		//cout << "selected draw" << endl;

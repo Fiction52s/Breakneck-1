@@ -27,6 +27,7 @@ using namespace sf;
 #define cout std::cout
 
 const double EditSession::PRIMARY_LIMIT = .999;
+double EditSession::zoomMultiple = 1;
 
 TerrainBrush::TerrainBrush( PolyPtr poly )
 	:pointStart(NULL),pointEnd(NULL),lines( sf::Lines, poly->numPoints * 2 ), numPoints( 0 )
@@ -2658,8 +2659,9 @@ void GateInfo::Draw( sf::RenderTarget *target )
 }
 
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
-	:w( wi ), zoomMultiple( 1 )
+	:w( wi )
 {
+	zoomMultiple = 1;
 	editMouseDownBox = false;
 	editMouseDownMove = false;
 	editMoveThresh = 5;
@@ -4728,7 +4730,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 
+									
 									editMouseGrabPos = Vector2i( worldPos.x, worldPos.y );
+									editMouseOrigPos = editMouseGrabPos;
 									//editMouseDown = true;
 
 									if( emptysp )
@@ -5094,7 +5098,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									break;
 								}
 
-								if( editMouseDownBox && !editStartMove )
+								if( editStartMove )
+								{
+									Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
+									Action *action = new MoveBrushAction( selectedBrush, delta, false );
+
+									action->Perform();
+
+									doneActionStack.push_back( action );
+
+									
+								}
+								else if( editMouseDownBox && !editStartMove )
 								{
 									selectedBrush->SetSelected( false );
 									selectedBrush->Clear();

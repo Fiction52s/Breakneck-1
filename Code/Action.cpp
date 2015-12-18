@@ -313,5 +313,39 @@ void DeleteGateAction::Undo()
 	//destroy the gate
 }
 
+//doesn't make a copy of the brush!
+MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform )
+	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform )
+{
+	movingBrush = *p_brush;
+}
+
+void MoveBrushAction::Perform()
+{
+	assert( session != NULL );
+	assert( !performed );
+
+	performed = true;
+
+	if( !moveOnFirstPerform )
+	{
+		moveOnFirstPerform = true;
+	}
+	else
+	{
+		movingBrush.Move( delta );
+	}
+}
+
+void MoveBrushAction::Undo()
+{
+	assert( session != NULL );
+	assert( performed );
+
+	performed = false;
+
+	movingBrush.Move( -delta );
+}
+
 
 
