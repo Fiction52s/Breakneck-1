@@ -641,6 +641,7 @@ struct EditSession : GUIHandler
 	Brush *progressBrush;
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;
+	void ClearUndoneActions();
 
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;

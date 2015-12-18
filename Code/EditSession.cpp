@@ -4529,6 +4529,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											action->Perform();
 											doneActionStack.push_back( action );
 
+											ClearUndoneActions();
+
 											PolyPtr newPoly( new TerrainPolygon(&grassTex) );
 											polygonInProgress = newPoly;
 										}
@@ -4555,6 +4557,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											Action * action = new ReplaceBrushAction( &orig, progressBrush );
 											action->Perform();
 											doneActionStack.push_back( action );
+
+											ClearUndoneActions();
 
 											PolyPtr newPoly( new TerrainPolygon(&grassTex) );
 											polygonInProgress = newPoly;
@@ -5127,6 +5131,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									action->Perform();
 
 									doneActionStack.push_back( action );
+
+									ClearUndoneActions();
+
 								}
 								else if( editMouseDownBox )
 								{
@@ -5609,6 +5616,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									doneActionStack.push_back( remove );
 									
+									ClearUndoneActions();
 
 									/*int erasedGates = 0;
 									for( list<PolyPtr>::iterator it = selectedPolygons.begin();
@@ -6363,12 +6371,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								selectedPlayer = false;
 								selectedActor = NULL;
 								selectedGate = NULL;
-								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
+								
+								if( menuDownStored == EDIT )
+								{
+									selectedBrush->SetSelected( false );
+									selectedBrush->Clear();
+								}
+								
+								/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 									it != selectedPolygons.end(); ++it )
 								{
 									(*it)->SetSelected( false );
 								}
-								selectedPolygons.clear();
+								selectedPolygons.clear();*/
 							}
 							else if( menuDownStored == CREATE_TERRAIN && menuSelection != "none" )
 							{
@@ -6422,6 +6437,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( menuSelection == "upperright" )
 							{
+								
+
 								mode = CREATE_TERRAIN;
 								showPanel = NULL;
 							}
@@ -9437,7 +9454,14 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 	cout << cb->name << " was " << e << endl;
 }
 
-
+void EditSession::ClearUndoneActions()
+{
+	for( list<Action*>::iterator it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it )
+	{
+		delete (*it);
+	}
+	undoneActionStack.clear();
+}
 
 int EditSession::CountSelectedPoints()
 {
