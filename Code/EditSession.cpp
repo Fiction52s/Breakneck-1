@@ -2065,10 +2065,10 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 }
 
 //returns true if LinesIntersect or 
-bool TerrainPolygon::IsTouching( PolyPtr &p )
+bool TerrainPolygon::IsTouching( TerrainPolygon *p  )
 {
 	//make sure its not ourselves!
-	assert( p.get() != this );
+	assert( p != this );
 
 	//check aabb
 	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
@@ -2472,7 +2472,20 @@ sf::Rect<int> TerrainPolygon::TempAABB()
 
 bool TerrainPolygon::Intersects( sf::IntRect rect )
 {
-	return false;
+	TerrainPolygon poly( grassTex );
+	poly.AddPoint( new TerrainPoint( Vector2i( rect.left, rect.top ), false ) );
+	poly.AddPoint( new TerrainPoint( Vector2i( rect.left + rect.width, rect.top ), false ) );
+	poly.AddPoint( new TerrainPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false ) );
+	poly.AddPoint( new TerrainPoint( Vector2i( rect.left, rect.top + rect.height ), false ) );
+
+	poly.UpdateBounds();
+
+	if( IsTouching( &poly ) || poly.Contains( this ) )
+	{
+		return true;
+	}
+	else
+		return false;
 }
 
 bool TerrainPolygon::IsPlacementOkay()
@@ -2661,10 +2674,12 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi )
 {
+	grabbedObject = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
 	editMouseDownMove = false;
 	editMoveThresh = 5;
+	editStartMove = false;
 	Action::session = this;
 	Brush::session = this;
 	//adding 5 for random distance buffer
@@ -3961,20 +3976,20 @@ bool EditSession::QuadPolygonIntersect( TerrainPolygon* poly, Vector2i a, Vector
 {
 
 	//TerrainPolygon *quadPoly = new TerrainPolygon( poly->grassTex );
-	PolyPtr quadPoly( new TerrainPolygon( poly->grassTex ) );
-	//TerrainPolygon quadPoly( poly->grassTex );
-	quadPoly->AddPoint( new TerrainPoint( a, false ) );
-	quadPoly->AddPoint( new TerrainPoint( b, false ) );
-	quadPoly->AddPoint( new TerrainPoint( c, false ) );
-	quadPoly->AddPoint( new TerrainPoint( d, false ) );
-	quadPoly->UpdateBounds();
+	//PolyPtr quadPoly( new TerrainPolygon( poly->grassTex ) );
+	TerrainPolygon quadPoly( poly->grassTex );
+	quadPoly.AddPoint( new TerrainPoint( a, false ) );
+	quadPoly.AddPoint( new TerrainPoint( b, false ) );
+	quadPoly.AddPoint( new TerrainPoint( c, false ) );
+	quadPoly.AddPoint( new TerrainPoint( d, false ) );
+	quadPoly.UpdateBounds();
 
 	//PolyPtr blah( &quadPoly );
 
 	//cout << "quad bottom: " << quadPoly.bottom << endl;
 	//cout << "poly top: " << poly->top << endl;
 	
-	bool touching = poly->IsTouching( quadPoly );
+	bool touching = poly->IsTouching( &quadPoly );
 
 	//delete quadPoly;
 
@@ -4503,8 +4518,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											polygonInProgress->Finalize();
 
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
+
 											progressBrush->Clear();
-											progressBrush->AddObject( polygonInProgress );
+											
+
+											progressBrush->AddObject( sp );
 									
 											Action *action = new ApplyBrushAction( progressBrush );
 											action->Perform();
@@ -4529,8 +4548,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												
 											}
 
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
+
 											progressBrush->Clear();
-											progressBrush->AddObject( polygonInProgress );
+											progressBrush->AddObject( sp );
 											Action * action = new ReplaceBrushAction( &orig, progressBrush );
 											action->Perform();
 											doneActionStack.push_back( action );
@@ -5106,14 +5127,108 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									action->Perform();
 
 									doneActionStack.push_back( action );
-
-									
 								}
-								else if( editMouseDownBox && !editStartMove )
+								else if( editMouseDownBox )
 								{
-									selectedBrush->SetSelected( false );
-									selectedBrush->Clear();
-									selectedBrush->AddObject( grabbedObject );
+									//selectedBrush->SetSelected( false );
+									//selectedBrush->Clear();
+
+									Vector2i currPos( worldPos.x, worldPos.y );
+
+									int left = std::min( editMouseOrigPos.x, currPos.x );
+									int right = std::max( editMouseOrigPos.x, currPos.x );
+									int top = std::min( editMouseOrigPos.y, currPos.y );
+									int bot = std::max( editMouseOrigPos.y, currPos.y );
+									
+									
+									sf::Rect<int> r( left, top, right - left, bot - top );
+									//check this rectangle for the intersections, but do that next
+
+									bool selectionEmpty = true;
+
+									bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
+
+									if( !shift )
+									{
+										cout << "clearing everything" << endl;
+										selectedBrush->SetSelected( false );
+										selectedBrush->Clear();
+									}
+
+									if( selectionEmpty )
+										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+										{
+											for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+												ait != (*it).second->actors.end(); ++ait )
+											{
+												if( (*ait)->Intersects( r ) )
+												{
+													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
+
+													if( shift )
+													{
+														if( sp->selected )
+														{
+															sp->SetSelected( false );
+															selectedBrush->RemoveObject( sp ); //might be slow?
+														}
+														else
+														{
+															sp->SetSelected( true );
+															selectedBrush->AddObject( sp );
+														}
+													}
+													else
+													{
+														sp->SetSelected( true );
+														selectedBrush->AddObject( sp );
+													}
+
+
+													selectionEmpty = false;
+												}
+											}
+										}
+
+									if( selectionEmpty )
+									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+									{
+										if( (*it)->Intersects( r ) )
+										{
+
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+
+											if( shift )
+											{
+												if( sp->selected )
+												{
+													sp->SetSelected( false );
+													selectedBrush->RemoveObject( sp );
+												}
+												else
+												{
+													sp->SetSelected( true );
+													selectedBrush->AddObject( sp );
+												}
+											}
+											else
+											{
+												sp->SetSelected( true );
+												selectedBrush->AddObject( sp );
+											}
+
+											selectionEmpty = false;
+											//break;
+										}
+									}
+									
+									if( selectionEmpty )
+									{
+										selectedBrush->SetSelected( false );
+										selectedBrush->Clear();
+									}
+
+									//selectedBrush->AddObject( grabbedObject );
 								}
 
 								editMouseDownBox = false;
@@ -5195,7 +5310,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										while( it != polygons.end() )
 										{
 											PolyPtr temp = (*it);
-											if( currentBrush->IsTouching( temp ) )
+											if( currentBrush->IsTouching( temp.get() ) )
 											{
 												cout << "before addi: " << (*it)->numPoints << endl;
 						
@@ -5805,7 +5920,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											it != polygons.end(); ++it )
 										{
 												
-												if( tempRectPoly.IsTouching( (*it) )
+											if( tempRectPoly.IsTouching( (*it).get() )
 													|| (
 													(*it)->left >= tempRectPoly.left
 													&& (*it)->right <= tempRectPoly.right
@@ -7959,6 +8074,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 				}
 
+				if( editMouseDownBox )
+				{
+					Vector2i currPos( worldPos.x, worldPos.y );
+
+					int left = std::min( editMouseOrigPos.x, currPos.x );
+					int right = std::max( editMouseOrigPos.x, currPos.x );
+					int top = std::min( editMouseOrigPos.y, currPos.y );
+					int bot = std::max( editMouseOrigPos.y, currPos.y );
+
+					sf::RectangleShape rs( Vector2f( right - left, bot - top ) );
+					rs.setFillColor( Color( 200, 200, 200, 80 ) );
+					rs.setPosition( left, top );
+					preScreenTex->draw( rs );
+				}
+
 				if( makingRect )
 				{
 					int xDiff = ((int)worldPos.x) - rectStart.x;
@@ -9340,7 +9470,7 @@ void EditSession::ExtendPolygon()
 			while( it != polygons.end() )
 			{
 				PolyPtr temp = (*it);
-				if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+				if( temp != currentBrush && currentBrush->IsTouching( temp.get() ) )
 				{
 					//cout << "before addi: " << (*it)->points.size() << endl;
 						
@@ -10009,7 +10139,7 @@ void EditSession::ExtendAdd()
 	while( it != polygons.end() )
 	{
 		PolyPtr temp = (*it);
-		if( temp != currentBrush && currentBrush->IsTouching( temp ) )
+		if( temp != currentBrush && currentBrush->IsTouching( temp.get() ) )
 		{
 			//cout << "before addi: " << (*it)->points.size() << endl;
 			/*cout << "currisze: " << currentBrush->points.size() << ", tempsize: " << temp->points.size() << endl;	

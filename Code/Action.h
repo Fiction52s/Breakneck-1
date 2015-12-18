@@ -9,7 +9,8 @@ struct Brush
 {
 	Brush();
 	SelectList objects;
-	void AddObject( SelectPtr obj );
+	void AddObject( SelectPtr &obj );
+	void RemoveObject( SelectPtr &obj );
 	void Clear();
 	void Destroy();
 	void Move( sf::Vector2i delta );

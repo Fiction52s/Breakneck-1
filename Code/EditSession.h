@@ -182,7 +182,7 @@ struct TerrainPolygon : ISelectable
 	void Activate( EditSession *edit,
 		boost::shared_ptr<ISelectable> & select);
 	
-	bool IsTouching( boost::shared_ptr<TerrainPolygon> &p );
+	bool IsTouching( TerrainPolygon *poly );
 	bool Contains( TerrainPolygon *poly );
 	//bool IsTouching( TerrainPolygon * p );
 	bool BoundsOverlap( TerrainPolygon *poly );
