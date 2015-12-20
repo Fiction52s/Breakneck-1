@@ -423,7 +423,7 @@ Actor::Actor( GameSession *gs )
 		steepThresh = .4; // go between 0 and 1
 
 		gravity = 1.9;
-		maxFallSpeed = 100;
+		maxFallSpeed = 60;//100;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 25;
@@ -1325,6 +1325,15 @@ void Actor::UpdatePrePhysics()
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = true;
+
+					if( currInput.A )
+					{
+						longWallJump = true;
+					}
+					else
+					{
+						longWallJump = false;
+					}
 					break;
 				}
 			}
@@ -1339,6 +1348,15 @@ void Actor::UpdatePrePhysics()
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = false;
+
+					if( currInput.A )
+					{
+						longWallJump = true;
+					}
+					else
+					{
+						longWallJump = false;
+					}
 					break;
 				}
 			}
@@ -1403,6 +1421,15 @@ void Actor::UpdatePrePhysics()
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = true;
+
+					if( currInput.A )
+					{
+						longWallJump = true;
+					}
+					else
+					{
+						longWallJump = false;
+					}
 					break;
 				}
 			}
@@ -1415,6 +1442,15 @@ void Actor::UpdatePrePhysics()
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = false;
+
+					if( currInput.A )
+					{
+						longWallJump = true;
+					}
+					else
+					{
+						longWallJump = false;
+					}
 					break;
 				}
 			}
@@ -1577,14 +1613,22 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLCLING:
 		{
-			if( !currInput.LDown() )
-			if( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) )
+			if( !currInput.LDown() && ( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) ) )
 			{
-
 				action = WALLJUMP;
 				frame = 0;
+
+				if( currInput.A )
+				{
+					longWallJump = true;
+				}
+				else
+				{
+					longWallJump = false;
+				}
 				//facingRight = !facingRight;
 			}
+
 			break;
 		}
 	case WALLJUMP:
@@ -1613,6 +1657,16 @@ void Actor::UpdatePrePhysics()
 				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
 					action = WALLJUMP;
+
+					if( currInput.A )
+					{
+						longWallJump = true;
+					}
+					else
+					{
+						longWallJump = false;
+					}
+
 					frame = 0;
 					facingRight = true;
 					break;
@@ -1627,6 +1681,15 @@ void Actor::UpdatePrePhysics()
 					action = WALLJUMP;
 					frame = 0;
 					facingRight = false;
+
+					if( currInput.A )
+					{
+						longWallJump = true;
+					}
+					else
+					{
+						longWallJump = false;
+					}
 					break;
 				}
 			}
@@ -3121,17 +3184,29 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 )
 			{
 				wallJumpFrameCounter = 0;
-			
-				if( facingRight )
+				double strengthX = wallJumpStrength.x;
+				double strengthY = wallJumpStrength.y;
+
+				if( !longWallJump )
 				{
-					velocity.x = wallJumpStrength.x;
+					strengthX = strengthX + 4;
 				}
 				else
 				{
-					velocity.x = -wallJumpStrength.x;
+					strengthY = strengthY + 3;
+				}
+				
+
+				if( facingRight )
+				{
+					velocity.x = strengthX;
+				}
+				else
+				{
+					velocity.x = -strengthX;
 				}
 
-				velocity.y = -wallJumpStrength.y;
+				velocity.y = -strengthY;
 			}
 			else if( frame >= wallJumpMovementLimit )
 			{
@@ -4412,7 +4487,7 @@ void Actor::UpdatePrePhysics()
 	
 	//cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;m
-	collision = false;
+	
 	
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
@@ -4421,15 +4496,16 @@ void Actor::UpdatePrePhysics()
 
 	//if( ground != NULL )
 	//	cout << "groundspeed: " << groundSpeed << endl;
-
-	groundedWallBounce = false;
+	
 
 
 	
 
 	touchEdgeWithLeftWire = false;
 	touchEdgeWithRightWire = false;
-
+	oldAction = action;
+	collision = false;
+	groundedWallBounce = false;
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	
@@ -5798,6 +5874,10 @@ void Actor::UpdatePhysics()
 	{
 		return;
 	}
+
+	
+	
+
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;
@@ -7599,7 +7679,7 @@ void Actor::PhysicsResponse()
 
 		if( action != AIRHITSTUN )
 		{
-			Action oldAction = action;
+			//oldAction = action;
 			if( collision )
 			{
 				if( length( wallNormal ) > 0 && oldVelocity.y >= 8 )
@@ -7608,7 +7688,7 @@ void Actor::PhysicsResponse()
 					{
 						if( currInput.LLeft() )
 						{
-							
+							//cout << "setting to wallcling" << endl;
 							facingRight = true;
 							action = WALLCLING;
 							frame = 0;
@@ -7618,6 +7698,7 @@ void Actor::PhysicsResponse()
 					{
 						if( currInput.LRight() )
 						{
+							//cout << "setting to wallcling" << endl;
 							facingRight = false;
 							action = WALLCLING;
 							frame = 0;
@@ -7627,7 +7708,7 @@ void Actor::PhysicsResponse()
 				}
 			}
 			
-			if( oldAction == WALLCLING )
+			else if( oldAction == WALLCLING )
 			{
 				bool stopWallClinging = false;
 				if( collision && length( wallNormal ) > 0 )
@@ -7655,6 +7736,7 @@ void Actor::PhysicsResponse()
 
 				if( stopWallClinging )
 				{
+					//cout << "stop wall clinging" << endl;
 					action = JUMP;
 					frame = 1;
 				}
@@ -10472,12 +10554,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				else if( g->type == Gate::GREEN && hasGreenKey )
 				{
 					g->locked = false;
-					hasRedKey = false;
+					hasGreenKey = false;
 				}
 				else if( g->type == Gate::BLUE && hasBlueKey )
 				{
 					g->locked = false;
-					hasRedKey = false;
+					hasBlueKey = false;
 				}
 				else
 				{

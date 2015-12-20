@@ -159,7 +159,7 @@ struct Actor : QuadTreeCollider,
 
 	Tileset *ts_bounceBoost;
 
-
+	
 	
 	double offSlopeByWallThresh;
 	const static int MAX_MOTION_GHOSTS = 2;
@@ -383,6 +383,10 @@ struct Actor : QuadTreeCollider,
 
 	int framesSinceClimbBoost;
 	int climbBoostLimit;
+
+	bool longWallJump;
+	Action oldAction;
+
 	//end unstored
 
 	void SaveState();
