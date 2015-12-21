@@ -305,6 +305,18 @@ struct ActorType
 	Panel *panel;
 };
 
+struct GroundInfo
+{
+	TerrainPoint *edgeStart;
+	//TerrainPoint *edgeEnd;
+	double groundQuantity;
+	//not sure if this should be smart
+	TerrainPolygon *ground;
+	//boost::shared_ptr<TerrainPolygon> ground;
+	int GetEdgeIndex();
+	//int edgeIndex;
+};
+
 struct ActorGroup;
 struct ActorParams : ISelectable
 {
@@ -346,15 +358,7 @@ struct ActorParams : ISelectable
 	//if groundInfo is not null
 	//then you can handle ground, even 
 	//if you arent on it
-	struct GroundInfo
-	{
-		TerrainPoint *edgeStart;
-		//TerrainPoint *edgeEnd;
-		double groundQuantity;
-		boost::shared_ptr<TerrainPolygon> ground;
-		int GetEdgeIndex();
-		//int edgeIndex;
-	};
+	
 	
 	GroundInfo *groundInfo;
 
@@ -510,6 +514,8 @@ struct EditSession : GUIHandler
 	void SetPanelDefault( ActorType *type );
 	
 	bool PolyIntersectGate( TerrainPolygon &poly );
+
+	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	std::list<GateInfo*> gates;
 	GateInfo *selectedGate;
 

@@ -3924,7 +3924,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 			for( list<ActorPtr>::iterator it = en.begin(); it != en.end(); ++it )
 			{
 				//cout << "setting new ground on actor params" << endl;
-				(*it)->groundInfo->ground = poly;
+				(*it)->groundInfo->ground = poly.get();
 				(*it)->groundInfo->edgeStart = tp;
 			}
 		}
@@ -6909,7 +6909,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}*/
 
-				
+				GroundInfo g = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
+				if( g.ground == NULL )
+				{
+					cout << "no ground" << endl;
+				}
+				else
+				{
+					cout << "gi: " << g.GetEdgeIndex() << endl;
+				}
 
 				if( showPanel != NULL )
 					break;
@@ -10946,6 +10954,218 @@ bool EditSession::PolyIntersectGate( TerrainPolygon &poly )
 
 	return false;
 }
+
+GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
+{
+	GroundInfo gi;
+	double testRadius = 200;
+	//PolyPtr poly = NULL;
+	gi.ground = NULL;
+
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+		{
+			TerrainPoint *prev = (*it)->pointEnd;
+			TerrainPoint *curr = (*it)->pointStart;
+
+			//prev is starting at 0. start normally at 1
+			//int edgeIndex = 0;
+			//gi.ground = NULL;
+			//groundQuantity;
+			//gi.edgeStart = NULL;
+
+			double minDistance = 10000000;
+			//int storedIndex;
+			TerrainPoint *storedEdge = NULL;
+			TerrainPolygon *storedPoly = NULL;
+			double storedQuantity;
+							
+			V2d closestPoint;
+
+			for( ; curr != NULL; curr = curr->next )
+			{
+				double dist = abs(
+					cross( 
+					V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
+					normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) ) );
+				double testQuantity =  dot( 
+						V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
+						normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) );
+
+				V2d pr( prev->pos.x, prev->pos.y );
+				V2d cu( curr->pos.x, curr->pos.y );
+				V2d te( testPoint.x, testPoint.y );
+									
+				V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+						(testQuantity / length( cu - pr ) ) );
+
+				//int hw = trackingEnemy->width / 2;
+				//int hh = trackingEnemy->height / 2;
+				//if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
+				//	&& length( newPoint - te ) < length( closestPoint - te ) )
+				if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) 
+					&& length( newPoint - te ) < length( closestPoint - te ) )
+				{
+					minDistance = dist;
+
+					storedPoly = (*it).get();
+					storedEdge = curr;
+					storedQuantity = testQuantity;
+
+					//storedIndex = edgeIndex;
+					double l = length( cu - pr );
+										
+					
+					closestPoint = newPoint;
+					//minDistance = length( closestPoint - te )  
+										
+					/*enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
+					enemySprite.setPosition( closestPoint.x, closestPoint.y );
+					enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+
+					enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
+					enemyQuad.setRotation( enemySprite.getRotation() );
+					enemyQuad.setPosition( enemySprite.getPosition() );*/
+				}
+				else
+				{
+										
+					//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
+				}
+
+				prev = curr;
+				//++edgeIndex;
+			}
+
+			
+			gi.edgeStart = storedEdge;
+			gi.groundQuantity = storedQuantity;
+			gi.ground = storedPoly;
+			
+			//enemyEdgeIndex = storedIndex;
+			
+			//enemyEdgeQuantity = storedQuantity;
+								
+			enemyEdgePolygon = (*it);
+								
+
+			//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
+			//cout << "minDist: " << minDistance << endl;
+
+			break;
+		}
+		if( testPoint.x >= (*it)->left - testRadius 
+			&& testPoint.x <= (*it)->right + testRadius
+			&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
+		{
+
+		}
+	}
+
+	return gi;
+
+	/*if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
+		|| trackingEnemy->name == "basicturret"
+		|| trackingEnemy->name == "foottrap" 
+		|| trackingEnemy->name == "goal" ) )
+	{
+		enemyEdgePolygon = NULL;
+				
+		double testRadius = 200;
+					
+		for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+		{
+			if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+				&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
+			{
+				TerrainPoint *prev = (*it)->pointEnd;
+				TerrainPoint *curr = (*it)->pointStart;
+
+				if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+				{
+					//prev is starting at 0. start normally at 1
+					int edgeIndex = 0;
+					double minDistance = 10000000;
+					int storedIndex;
+					double storedQuantity;
+							
+					V2d closestPoint;
+
+					for( ; curr != NULL; curr = curr->next )
+					{
+						double dist = abs(
+							cross( 
+							V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
+							normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) ) );
+						double testQuantity =  dot( 
+								V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
+								normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) );
+
+						V2d pr( prev->pos.x, prev->pos.y );
+						V2d cu( curr->pos.x, curr->pos.y );
+						V2d te( testPoint.x, testPoint.y );
+									
+						V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+								(testQuantity / length( cu - pr ) ) );
+
+						//int testA = dist < 100;
+						//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
+						//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
+						//int testD = length( newPoint - te ) < length( closestPoint - te );
+									
+						//cout << testA << " " << testB << " " << testC << " " << testD << endl;
+
+						int hw = trackingEnemy->width / 2;
+						int hh = trackingEnemy->height / 2;
+						if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
+							&& length( newPoint - te ) < length( closestPoint - te ) )
+						{
+							minDistance = dist;
+							storedIndex = edgeIndex;
+							double l = length( cu - pr );
+										
+							storedQuantity = testQuantity;
+							closestPoint = newPoint ;
+							//minDistance = length( closestPoint - te )  
+										
+							enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
+							enemySprite.setPosition( closestPoint.x, closestPoint.y );
+							enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+
+							enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
+							enemyQuad.setRotation( enemySprite.getRotation() );
+							enemyQuad.setPosition( enemySprite.getPosition() );
+						}
+						else
+						{
+										
+							//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
+						}
+
+						prev = curr;
+						++edgeIndex;
+					}
+
+					enemyEdgeIndex = storedIndex;
+
+					enemyEdgeQuantity = storedQuantity;
+								
+					enemyEdgePolygon = (*it);
+								
+
+					//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
+					//cout << "minDist: " << minDistance << endl;
+
+					break;
+				}
+			}
+		}
+
+
+	}*/
+}
+				
 
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 {

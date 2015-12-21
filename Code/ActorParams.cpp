@@ -100,7 +100,7 @@ void ActorParams::DrawQuad( sf::RenderTarget *target )
 	target->draw( boundingQuad );
 }
 
-int ActorParams::GroundInfo::GetEdgeIndex()
+int GroundInfo::GetEdgeIndex()
 {
 	int index = 0;
 	for( TerrainPoint *curr = ground->pointStart; curr != NULL; curr = curr->next )
@@ -194,7 +194,7 @@ void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 
 	groundInfo = new GroundInfo;
 	
-	groundInfo->ground = poly;
+	groundInfo->ground = poly.get();
 	
 	cout << "type: " << type->name << ", " << type->width  << endl;
 	//groundInfo->edgeIndex = eIndex;
