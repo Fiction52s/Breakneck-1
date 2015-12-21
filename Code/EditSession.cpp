@@ -727,7 +727,7 @@ void TerrainPolygon::DestroyEnemies()
 	enemies.clear();*/
 }
 
-void TerrainPolygon::Move( Vector2i move )
+void TerrainPolygon::Move( SelectPtr &me, Vector2i move )
 {
 	assert( finalized );
 	
@@ -2682,6 +2682,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	editStartMove = false;
 	Action::session = this;
 	Brush::session = this;
+	ActorParams::session = this;
 	//adding 5 for random distance buffer
 	playerHalfWidth = 32;
 	playerHalfHeight = 32;
@@ -2696,6 +2697,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	selectedBrush = new Brush();
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 	moveActive = false;
+	extendingPolygon = NULL;
 }
 
 EditSession::~EditSession()
@@ -3011,7 +3013,7 @@ bool EditSession::OpenFile( string fileName )
 					else
 						edgeIndex++;
 
-					a.reset( new GoalParams( this, terrain, edgeIndex, edgeQuantity ) );
+					a.reset( new GoalParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 					//a->SetAsGoal( terrain, edgeIndex, edgeQuantity );
@@ -3167,7 +3169,7 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
-					a.reset( new CrawlerParams( this, terrain, edgeIndex, edgeQuantity, clockwise, speed ) ); 
+					a.reset( new CrawlerParams( this, terrain.get(), edgeIndex, edgeQuantity, clockwise, speed ) ); 
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -3211,7 +3213,7 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
-					a.reset( new BasicTurretParams( this, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
+					a.reset( new BasicTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -3248,7 +3250,7 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
-					a.reset( new FootTrapParams( this, terrain, edgeIndex, edgeQuantity ) );
+					a.reset( new FootTrapParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -7757,7 +7759,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
 							it != selectedPolygons.end(); ++it )
 						{
-							(*it)->Move( polyGrabDelta );
+							//(*it)->Move( polyGrabDelta );
+
+
+
 							/*PointList & points = (*it)->points;
 
 							for( PointList::iterator pointIt = points.begin();
@@ -7903,7 +7908,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								enemyEdgeQuantity = storedQuantity;
 								
-								enemyEdgePolygon = (*it);
+								enemyEdgePolygon = (*it).get();
 								
 
 								//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
@@ -9146,13 +9151,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			else if( mode == CREATE_ENEMY )
 			{
 				ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
-				
-				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
-				enemyEdgePolygon->UpdateBounds();
-				
 
 				groups["--"]->actors.push_back( crawler );
 				crawler->group = groups["--"];
+
+				//ActorPtr actor( this );
+				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
+				enemyEdgePolygon->UpdateBounds();
 				//trackingEnemy = NULL;
 				
 			}
@@ -11047,7 +11052,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			
 			//enemyEdgeQuantity = storedQuantity;
 								
-			enemyEdgePolygon = (*it);
+			//enemyEdgePolygon = (*it);
 								
 
 			//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;

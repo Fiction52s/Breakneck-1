@@ -31,7 +31,8 @@ struct ISelectable
 	virtual bool ContainsPoint( sf::Vector2f test ) = 0;
 	virtual bool Intersects( sf::IntRect rect ) = 0;
 	virtual bool IsPlacementOkay() = 0;
-	virtual void Move( sf::Vector2i delta ) = 0;
+	virtual void Move( boost::shared_ptr<ISelectable> &me,
+		sf::Vector2i delta ) = 0;
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;
@@ -219,7 +220,7 @@ struct TerrainPolygon : ISelectable
 	
 	sf::Rect<int> TempAABB();
 
-	void Move( sf::Vector2i move );
+	void Move( SelectPtr &me, sf::Vector2i move );
 
 	sf::Vertex *lines;
 	sf::VertexArray *va;
@@ -307,6 +308,7 @@ struct ActorType
 
 struct GroundInfo
 {
+	GroundInfo();
 	TerrainPoint *edgeStart;
 	//TerrainPoint *edgeEnd;
 	double groundQuantity;
@@ -320,12 +322,20 @@ struct GroundInfo
 struct ActorGroup;
 struct ActorParams : ISelectable
 {
-	ActorParams();
+	enum PosType
+	{
+		GROUND_ONLY,
+		AIR_ONLY,
+		GROUND_AND_AIR
+	};
+
+	static EditSession *session;
+	ActorParams( PosType posType );
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
-	void AnchorToGround( 
-		boost::shared_ptr<TerrainPolygon> poly, 
+	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
+	void UnAnchor(boost::shared_ptr<ActorParams> &me );
 	void UpdateGroundedSprite();
 	virtual void SetBoundingQuad();
 
@@ -333,7 +343,7 @@ struct ActorParams : ISelectable
 	virtual bool ContainsPoint( sf::Vector2f test );
 	virtual bool Intersects( sf::IntRect rect );
 	virtual bool IsPlacementOkay();
-	virtual void Move( sf::Vector2i delta );
+	virtual void Move( SelectPtr &me, sf::Vector2i delta );
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	virtual void Draw( sf::RenderTarget *target );
@@ -354,7 +364,7 @@ struct ActorParams : ISelectable
 	ActorGroup *group;
 	ActorType *type;
 	sf::Vector2i position;
-
+	PosType posType;
 	//if groundInfo is not null
 	//then you can handle ground, even 
 	//if you arent on it
@@ -376,6 +386,7 @@ struct PatrollerParams : public ActorParams
 		std::list<sf::Vector2i> &globalPath, 
 		float speed,
 		bool loop ); 
+	PatrollerParams( EditSession *edit );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
@@ -401,6 +412,7 @@ struct KeyParams : public ActorParams
 		int stayFrames,
 		bool teleport,
 		GateInfo::GateTypes gType );
+	KeyParams( EditSession *edit );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
@@ -419,9 +431,11 @@ struct KeyParams : public ActorParams
 struct CrawlerParams : public ActorParams
 { 
 	CrawlerParams( EditSession *edit, 
-		boost::shared_ptr<TerrainPolygon> edgePolygon,
+		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
+	CrawlerParams( EditSession *edit );
+
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	//void Draw( sf::RenderTarget *target );
@@ -433,7 +447,7 @@ struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
 	BasicTurretParams( EditSession *edit,  
-		boost::shared_ptr<TerrainPolygon> edgePolygon,
+		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity, 
 		double bulletSpeed, 
@@ -448,9 +462,10 @@ struct BasicTurretParams : public ActorParams
 struct FootTrapParams : public ActorParams
 {
 	FootTrapParams( EditSession *edit,
-		boost::shared_ptr<TerrainPolygon> edgePolygon,
+		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
+	FootTrapParams( EditSession *edit );
 	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
 	//void Draw( sf::RenderTarget *target );
@@ -459,9 +474,10 @@ struct FootTrapParams : public ActorParams
 struct GoalParams : public ActorParams
 {
 	GoalParams ( EditSession *edit,
-		boost::shared_ptr<TerrainPolygon> edgePolygon,
+		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
+	GoalParams ( EditSession *edit );
 	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
 	//void Draw( sf::RenderTarget *target );
@@ -601,7 +617,7 @@ struct EditSession : GUIHandler
 	bool lightActive;
 
 	int enemyEdgeIndex;
-	boost::shared_ptr<TerrainPolygon> enemyEdgePolygon;
+	TerrainPolygon *enemyEdgePolygon;
 	double enemyEdgeQuantity;
 
 	bool radiusOption;

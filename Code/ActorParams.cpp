@@ -10,8 +10,11 @@ using namespace sf;
 #define cout std::cout
 #define V2d sf::Vector2<double>
 
-ActorParams::ActorParams()
-	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ) //, ground( NULL ), groundQuantity( 420.69 ), 
+
+EditSession * ActorParams::session = NULL;
+
+ActorParams::ActorParams( ActorParams::PosType p_posType )
+	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ) //, ground( NULL ), groundQuantity( 420.69 ), 
 {
 	groundInfo = NULL;
 
@@ -100,6 +103,12 @@ void ActorParams::DrawQuad( sf::RenderTarget *target )
 	target->draw( boundingQuad );
 }
 
+GroundInfo::GroundInfo()
+	:edgeStart( NULL ), groundQuantity( -1 ), ground( NULL )
+{
+
+}
+
 int GroundInfo::GetEdgeIndex()
 {
 	int index = 0;
@@ -184,27 +193,32 @@ void ActorParams::UpdateGroundedSprite()
 	image.setRotation( angle );
 }
 
-void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
+void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
 {
-	if( groundInfo != NULL )
+	assert( groundInfo == NULL );
+	/*if( groundInfo != NULL )
 	{
-		delete groundInfo;
-		groundInfo = NULL;
-	}
+		cout << "unanchor" << endl;
+		
+		//UnAnchor( actor );
+		cout << "end unanchor" << endl;
+		
+		//delete groundInfo;
+		//groundInfo = NULL;
+	}*/
+
+
 
 	groundInfo = new GroundInfo;
 	
-	groundInfo->ground = poly.get();
+	groundInfo->ground = poly;
 	
-	cout << "type: " << type->name << ", " << type->width  << endl;
-	//groundInfo->edgeIndex = eIndex;
 	groundInfo->groundQuantity = quantity;
 	
-	image.setTexture( type->imageTexture );
-	//cout << "finished anchor to ground" << endl;
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
-	
 	int testIndex = 0;
+
+	image.setTexture( type->imageTexture );	
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
 
 	Vector2i point;
 
@@ -228,7 +242,6 @@ void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 			
 			UpdateGroundedSprite();
 			SetBoundingQuad();
-			//groundInfo->edgeEnd = curr;
 
 			break;
 		}
@@ -236,14 +249,44 @@ void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 		++testIndex;
 	}
 
-	cout << "finished anchor to ground" << endl;
 	
+}
 
-	//adjust for ordery
-	/*if( groundInfo->edgeIndex == 0 )
-		groundInfo->edgeIndex = groundInfo->ground->numPoints - 1;
-	else
-		groundInfo->edgeIndex--;*/
+void ActorParams::UnAnchor( ActorPtr &actor )
+{
+	assert( groundInfo != NULL );
+	if( groundInfo != NULL )
+	{
+		position = Vector2i( image.getPosition().x, image.getPosition().y );
+
+		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+
+		//groundInfo->ground->enemies.clear();
+		//i get deleted when i remove myself from the terrain polygon????
+
+		//group->actors.front().use_count();
+
+		//ActorPtr actor( this );
+		//group->actors.
+		//cout << "use count: " << actor.use_count() << endl;
+		
+		//groundInfo->ground->enemies.clear();
+		
+		//cout << 
+		//SelectPtr select = boost::dynamic_pointer_cast<ISelectable>		
+		groundInfo->ground->enemies[groundInfo->edgeStart].remove( actor );
+		//cout << "After remove" << endl;
+
+		//cout << "use count: " << actor.use_count() << endl;
+
+		delete groundInfo;
+		groundInfo = NULL;
+
+		//cout << "About to bound" << endl;
+		SetBoundingQuad();
+		//cout << "just bounded" << endl;
+		//image.setPosition( 
+	}
 }
 
 bool ActorParams::ContainsPoint( sf::Vector2f test )
@@ -292,21 +335,54 @@ bool ActorParams::IsPlacementOkay()
 	return false;
 }
 
-void ActorParams::Move( sf::Vector2i delta )
+void ActorParams::Move( SelectPtr &me, sf::Vector2i delta )
 {
+	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( me );
 	if( groundInfo != NULL )
 	{
-		//do nothing, the polygon will move for you
+		//cout << "starting blah" << endl;
+		UnAnchor( actor );
+		//cout << "finishing blah" << endl;
 	}
-	else
-	{
-		position.x += delta.x;
+	/*	position.x += delta.x;
 		position.y += delta.y;
 
 		SetBoundingQuad();
 
-		image.setPosition( position.x, position.y );
-	}
+		image.setPosition( position.x, position.y );*/
+		//do nothing, the polygon will move for you
+	//}
+	//else
+	//{
+		position.x += delta.x;
+		position.y += delta.y;
+
+		GroundInfo gi = session->ConvertPointToGround( position );
+		//cout << "After conversion" << endl;
+		if( gi.ground != NULL )
+		{
+		//	cout << "A" << endl;
+			//PolyPtr p( gi.ground );
+			AnchorToGround( gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
+			cout << "new anchored" << endl;
+			SetBoundingQuad();
+			UpdateGroundedSprite();
+
+			//p->enemies[groundInfo->edgeStart].push_back( actor );
+			//p->UpdateBounds();
+			cout << "new end" << endl;
+		}
+		else
+		{
+		//	cout << "B" << endl;
+			SetBoundingQuad();
+
+			image.setPosition( position.x, position.y );
+		}
+	//	cout << "donesies!" << endl;
+
+		
+	//}
 }
 
 void ActorParams::BrushDraw( sf::RenderTarget *target, 
@@ -331,6 +407,7 @@ void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
 					 int p_stayFrames, bool p_teleport, GateInfo::GateTypes gType )
+	:ActorParams( PosType::AIR_ONLY )
 {	
 	lines = NULL;
 	position = pos;	
@@ -506,6 +583,7 @@ void KeyParams::WriteParamFile( ofstream &of )
 }
 
 PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
 	position = pos;	
@@ -522,6 +600,46 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 	speed = p_speed;
 
 	SetBoundingQuad();
+	//ss << localPath.size();
+	//params.push_back( ss.str() );
+	//ss.str( "" );
+
+	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		ss << (*it).x  << " " << (*it).y;
+		params.push_back( ss.str() );
+		ss.str( "" );
+	}
+
+	if( loop )
+		params.push_back( "+loop" );
+	else
+		params.push_back( "-loop" );
+	
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );*/
+}
+
+PatrollerParams::PatrollerParams( EditSession *edit )
+	:ActorParams( PosType::AIR_ONLY )
+{	
+	lines = NULL;
+	//position = pos;	
+	type = edit->types["patroller"];
+
+	//image.setTexture( type->imageTexture );
+	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	//image.setPosition( pos.x, pos.y );
+
+	//list<Vector2i> localPath;
+	//SetPath( globalPath );
+
+	//loop = p_loop;
+	//speed = p_speed;
+
+	//SetBoundingQuad();
+
 	//ss << localPath.size();
 	//params.push_back( ss.str() );
 	//ss.str( "" );
@@ -678,7 +796,8 @@ void PatrollerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
-CrawlerParams::CrawlerParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+	:ActorParams( PosType::GROUND_ONLY )
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
@@ -688,6 +807,12 @@ CrawlerParams::CrawlerParams( EditSession *edit, PolyPtr p_edgePolygon, int p_ed
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
+}
+
+CrawlerParams::CrawlerParams( EditSession *edit )
+	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
+{
+	type = edit->types["crawler"];
 }
 
 bool CrawlerParams::CanApply()
@@ -708,7 +833,8 @@ void CrawlerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
-BasicTurretParams::BasicTurretParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+	:ActorParams( PosType::GROUND_ONLY )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
@@ -733,7 +859,8 @@ void BasicTurretParams::WriteParamFile( ofstream &of )
 	of << framesWait << endl;
 }
 
-FootTrapParams::FootTrapParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )	
 {
 	type = edit->types["foottrap"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -752,7 +879,8 @@ void FootTrapParams::WriteParamFile( ofstream &of )
 {
 }
 
-GoalParams::GoalParams( EditSession *edit, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
 {
 	type = edit->types["goal"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );

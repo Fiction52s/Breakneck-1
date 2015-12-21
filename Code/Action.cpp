@@ -96,7 +96,7 @@ void Brush::Move( Vector2i delta )
 {
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
 	{
-		(*it)->Move( delta );
+		(*it)->Move( (*it), delta );
 	}
 }
 
