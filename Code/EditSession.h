@@ -335,6 +335,7 @@ struct ActorParams : ISelectable
 	void WriteFile( std::ofstream &of );
 	void AnchorToGround( TerrainPolygon *poly, 
 		int eIndex, double quantity );
+	void AnchorToGround( GroundInfo &gi );
 	void UnAnchor(boost::shared_ptr<ActorParams> &me );
 	void UpdateGroundedSprite();
 	virtual void SetBoundingQuad();

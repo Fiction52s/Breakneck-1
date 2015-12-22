@@ -252,6 +252,18 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 	
 }
 
+void ActorParams::AnchorToGround( GroundInfo &gi )
+{
+	groundInfo = new GroundInfo;
+	*groundInfo = gi;
+
+	image.setTexture( type->imageTexture );	
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+
+	UpdateGroundedSprite();
+	SetBoundingQuad();
+}
+
 void ActorParams::UnAnchor( ActorPtr &actor )
 {
 	assert( groundInfo != NULL );

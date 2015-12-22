@@ -5135,8 +5135,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( moveAction != NULL )
 									{
+
 										moveAction->subActions.push_back( action );
-										doneActionStack.push_back( action );
+										//cout << "moveAction size: " << moveAction->subActions.size() << endl;
+										doneActionStack.push_back( moveAction );
 									}
 									else
 									{
@@ -11029,7 +11031,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 					minDistance = dist;
 
 					storedPoly = (*it).get();
-					storedEdge = curr;
+					storedEdge = prev;
 					storedQuantity = testQuantity;
 
 					//storedIndex = edgeIndex;

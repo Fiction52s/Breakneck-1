@@ -397,6 +397,8 @@ LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
 
 	gi = *actor->groundInfo;
 
+	//cout << "stored: " << gi.GetEdgeIndex() << ", " << gi.groundQuantity << endl;
+
 }
 
 void LeaveGroundAction::Perform()
@@ -418,7 +420,12 @@ void LeaveGroundAction::Undo()
 
 	assert( actor->groundInfo == NULL );
 
-	actor->AnchorToGround( gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
+	//cout << "applied: " << gi.GetEdgeIndex() << ", " << gi.groundQuantity << endl;
+	actor->AnchorToGround( gi );//gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
+
+	gi.ground->enemies[gi.edgeStart].push_back( actor );
+	gi.ground->UpdateBounds();
+	//cout << "undoing and adding to ground" << endl;
 }
 
 CompoundAction::CompoundAction()
