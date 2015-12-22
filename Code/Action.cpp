@@ -431,6 +431,35 @@ void LeaveGroundAction::Undo()
 	//cout << "undoing and adding to ground" << endl;
 }
 
+GroundAction::GroundAction( ActorPtr &p_actor )
+	:actor( p_actor )
+{
+	gi = *actor->groundInfo;
+}
+
+void GroundAction::Perform()
+{
+	assert( session != NULL );
+	assert( !performed );
+
+	actor->AnchorToGround( gi );
+
+	gi.ground->enemies[gi.edgeStart].push_back( actor );
+	gi.ground->UpdateBounds();
+
+	performed = true;
+}
+
+void GroundAction::Undo()
+{
+	assert( session != NULL );
+	assert( performed );
+
+	performed = false;
+
+	actor->UnAnchor( actor );
+}
+
 CompoundAction::CompoundAction()
 	//:actionType( COMPOUND )
 {

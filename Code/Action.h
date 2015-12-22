@@ -162,6 +162,10 @@ struct GroundAction : Action
 	GroundAction( ActorPtr &actor );
 	void Perform();
 	void Undo();
+
+	ActorPtr actor;
+	GroundInfo gi;
+	//sf::Vector2i oldPos;
 };
 
 struct DeleteActorAction : Action

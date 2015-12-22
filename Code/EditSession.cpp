@@ -5128,33 +5128,39 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( editStartMove )
 								{
-									/*bool single = selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR );
+									bool done = false;
+									bool single = selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
 									if( single )
 									{
 										ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
 										if( actor->groundInfo != NULL )
 										{
 											Action *action = new GroundAction( actor );
-											
+											action->performed = true;
+											moveAction->subActions.push_back( action );
+											doneActionStack.push_back( moveAction );
+											done = true;
 										}
-									}*/
-
-
-									Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
-									Action *action = new MoveBrushAction( selectedBrush, delta, false );
-
-									action->Perform();
-
-									if( moveAction != NULL )
-									{
-
-										moveAction->subActions.push_back( action );
-										//cout << "moveAction size: " << moveAction->subActions.size() << endl;
-										doneActionStack.push_back( moveAction );
 									}
-									else
+
+									if( !done )
 									{
-										doneActionStack.push_back( action );
+										Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
+										Action *action = new MoveBrushAction( selectedBrush, delta, false );
+
+										action->Perform();
+
+										if( moveAction != NULL )
+										{
+
+											moveAction->subActions.push_back( action );
+											//cout << "moveAction size: " << moveAction->subActions.size() << endl;
+											doneActionStack.push_back( moveAction );
+										}
+										else
+										{
+											doneActionStack.push_back( action );
+										}
 									}
 
 									
