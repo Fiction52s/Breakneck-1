@@ -260,7 +260,7 @@ void ActorParams::UnAnchor( ActorPtr &actor )
 		position = Vector2i( image.getPosition().x, image.getPosition().y );
 
 		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
-
+		image.setRotation( 0 );
 		//groundInfo->ground->enemies.clear();
 		//i get deleted when i remove myself from the terrain polygon????
 
@@ -337,52 +337,40 @@ bool ActorParams::IsPlacementOkay()
 
 void ActorParams::Move( SelectPtr &me, sf::Vector2i delta )
 {
-	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( me );
-	if( groundInfo != NULL )
-	{
-		//cout << "starting blah" << endl;
-		UnAnchor( actor );
-		//cout << "finishing blah" << endl;
-	}
-	/*	position.x += delta.x;
-		position.y += delta.y;
+	assert( groundInfo == NULL );
 
+	//ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( me );
+	//if( groundInfo != NULL )
+	//{
+	//	UnAnchor( actor );
+	//}
+	
+	position.x += delta.x;
+	position.y += delta.y;
+
+	SetBoundingQuad();
+
+	image.setPosition( position.x, position.y );
+	
+	/*if( session->worldPosGround.ground != NULL )
+	{
+		
+		AnchorToGround( session->worldPosGround.ground, session->worldPosGround.GetEdgeIndex(), session->worldPosGround.groundQuantity );
+		
+		SetBoundingQuad();
+		UpdateGroundedSprite();
+		//session->editStartMove = false;
+
+		//p->enemies[groundInfo->edgeStart].push_back( actor );
+		//p->UpdateBounds();
+		//cout << "new end" << endl;
+	}
+	else
+	{
 		SetBoundingQuad();
 
-		image.setPosition( position.x, position.y );*/
-		//do nothing, the polygon will move for you
-	//}
-	//else
-	//{
-		position.x += delta.x;
-		position.y += delta.y;
-
-		GroundInfo gi = session->ConvertPointToGround( position );
-		//cout << "After conversion" << endl;
-		if( gi.ground != NULL )
-		{
-		//	cout << "A" << endl;
-			//PolyPtr p( gi.ground );
-			AnchorToGround( gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
-			cout << "new anchored" << endl;
-			SetBoundingQuad();
-			UpdateGroundedSprite();
-
-			//p->enemies[groundInfo->edgeStart].push_back( actor );
-			//p->UpdateBounds();
-			cout << "new end" << endl;
-		}
-		else
-		{
-		//	cout << "B" << endl;
-			SetBoundingQuad();
-
-			image.setPosition( position.x, position.y );
-		}
-	//	cout << "donesies!" << endl;
-
-		
-	//}
+		image.setPosition( position.x, position.y );
+	}*/
 }
 
 void ActorParams::BrushDraw( sf::RenderTarget *target, 

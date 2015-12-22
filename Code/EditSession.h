@@ -495,6 +495,7 @@ struct ActorGroup
 
 struct Brush;
 struct Action;
+struct CompoundAction;
 
 struct EditSession : GUIHandler
 {
@@ -535,6 +536,8 @@ struct EditSession : GUIHandler
 	std::list<GateInfo*> gates;
 	GateInfo *selectedGate;
 
+
+	GroundInfo worldPosGround;
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
@@ -669,6 +672,7 @@ struct EditSession : GUIHandler
 	sf::Vector2i pointMouseDown;
 
 	Brush *selectedBrush;
+	CompoundAction *moveAction;
 
 	bool moveActive;
 	bool editMouseDownBox;

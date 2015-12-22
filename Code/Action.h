@@ -4,7 +4,7 @@
 #include "EditSession.h"
 #include <list>
 
-
+struct CompoundAction;
 struct Brush
 {
 	Brush();
@@ -15,6 +15,7 @@ struct Brush
 	void Destroy();
 	void Move( sf::Vector2i delta );
 	void Draw( sf::RenderTarget *target );
+	CompoundAction * UnAnchor(); //only works with grounded actors
 	void Deactivate();//multiple calls covered?
 	void Activate();//multiple calls covered?
 	void SetSelected( bool select );
@@ -38,18 +39,29 @@ struct Action
 		EDIT_OBJECT,
 		CREATE_GATE,
 		DELETE_GATE,
+		COMPOUND,
 		Count
 	};
 	//Action( ActionType actionType, Action *next = NULL );
-	Action( Action *next = NULL );
+	Action();
 	virtual ~Action();
 	virtual void Perform() = 0;
 	virtual void Undo() = 0;
 
-	Action *next;
+	//Action *next;
+	//Action *prev;
 	ActionType actionType;
 	bool performed;
 	static EditSession *session;
+};
+
+struct CompoundAction : Action
+{
+	CompoundAction();
+	~CompoundAction();
+	std::list<Action*> subActions;
+	void Perform();
+	void Undo();
 };
 
 struct ApplyBrushAction : Action
@@ -116,7 +128,7 @@ struct AddToPolygonAction : Action
 //IF PARAMETER IS SET
 struct MoveBrushAction : Action
 {
-	MoveBrushAction( Brush *brush, sf::Vector2i delta, 
+	MoveBrushAction( Brush *brush, sf::Vector2i delta,
 		bool moveOnFirstPerform );
 	void Perform();
 	void Undo();
@@ -124,6 +136,33 @@ struct MoveBrushAction : Action
 	Brush movingBrush;
 	bool moveOnFirstPerform;
 	sf::Vector2i delta;
+};
+
+struct SwitchGroundAction : Action
+{
+	SwitchGroundAction( ActorPtr &actor,
+		GroundInfo &oldGround, GroundInfo &newGround );
+	void Perform();
+	void Undo();
+};
+
+struct LeaveGroundAction : Action
+{
+	LeaveGroundAction( ActorPtr &actor );
+		//sf::Vector2i newPos );
+
+	ActorPtr actor;
+	GroundInfo gi;
+	void Perform();
+	void Undo();
+};
+
+struct GroundAction : Action
+{
+	GroundAction( ActorPtr &actor,
+		sf::Vector2i oldPos, GroundInfo &newGround );
+	void Perform();
+	void Undo();
 };
 
 struct DeleteActorAction : Action

@@ -4364,6 +4364,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(pixelPos);
 		worldPos.x = tempWorldPos.x;
 		worldPos.y = tempWorldPos.y;
+		worldPosGround = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
 
 		preScreenTex->setView( uiView );
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
@@ -5132,7 +5133,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									action->Perform();
 
-									doneActionStack.push_back( action );
+									if( moveAction != NULL )
+									{
+										moveAction->subActions.push_back( action );
+										doneActionStack.push_back( action );
+									}
+									else
+									{
+										doneActionStack.push_back( action );
+									}
+
+									
 
 									ClearUndoneActions();
 
@@ -7291,6 +7302,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					editStartMove = true;
 					Vector2i pos( worldPos.x, worldPos.y );
 					Vector2i delta = pos - editMouseGrabPos;
+
+					moveAction = selectedBrush->UnAnchor();
+					moveAction->Perform();
 
 					selectedBrush->Move( delta );
 

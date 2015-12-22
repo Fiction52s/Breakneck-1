@@ -94,11 +94,40 @@ void Brush::Destroy()
 
 void Brush::Move( Vector2i delta )
 {
+	//if( objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR )
+	//{
+
+	//}
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
 	{
 		(*it)->Move( (*it), delta );
 	}
 }
+
+//returns the compound action of selected actors unanchoring
+CompoundAction * Brush::UnAnchor() //only works with grounded actors
+{
+	CompoundAction * action = NULL;
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{
+		if( (*it)->selectableType == ISelectable::ACTOR )
+		{
+			ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( (*it) );
+			
+			Action *newAction = new LeaveGroundAction( actor );
+
+			if( action == NULL )
+			{
+				action = new CompoundAction;
+			}
+			
+			action->subActions.push_back( newAction );
+		}
+	}
+
+	return action;
+}
+
 
 void Brush::Draw( RenderTarget *target )
 {
@@ -127,8 +156,8 @@ void Brush::Activate()
 
 //Action::Action( ActionType p_actionType, Action *p_next )
 //	:actionType( p_actionType ), next(p_next), performed( false )
-Action::Action( Action *p_next )
-	:next(p_next), performed( false )
+Action::Action( )
+	:performed( false )
 {
 }
 
@@ -246,7 +275,6 @@ void EditObjectAction::Perform()
 void EditObjectAction::Undo()
 {
 	assert( session != NULL );
-
 	//restore the old parameters
 }
 
@@ -360,6 +388,67 @@ void MoveBrushAction::Undo()
 	performed = false;
 
 	movingBrush.Move( -delta );
+}
+
+LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
+	:actor( p_actor )
+{
+	assert( actor->groundInfo != NULL );
+
+	gi = *actor->groundInfo;
+
+}
+
+void LeaveGroundAction::Perform()
+{
+	assert( session != NULL );
+	assert( !performed );
+
+	performed = true;
+
+	actor->UnAnchor( actor );
+}
+
+void LeaveGroundAction::Undo()
+{
+	assert( session != NULL );
+	assert( performed );
+
+	performed = false;
+
+	assert( actor->groundInfo == NULL );
+
+	actor->AnchorToGround( gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
+}
+
+CompoundAction::CompoundAction()
+	//:actionType( COMPOUND )
+{
+
+}
+
+CompoundAction::~CompoundAction()
+{
+	for( list<Action*>::iterator it = subActions.begin(); it != subActions.end(); ++it )
+	{
+		delete (*it);
+	}
+}
+
+void CompoundAction::Perform()
+{
+	for( list<Action*>::iterator it = subActions.begin(); it != subActions.end(); ++it )
+	{
+		(*it)->Perform();
+	}
+}
+
+void CompoundAction::Undo()
+{
+	for( list<Action*>::reverse_iterator rit = subActions.rbegin(); rit != subActions.rend(); ++rit )
+	{
+		(*rit)->Undo();
+	}
 }
 
 
