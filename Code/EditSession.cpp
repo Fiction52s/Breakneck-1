@@ -5128,6 +5128,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( editStartMove )
 								{
+									/*bool single = selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR );
+									if( single )
+									{
+										ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
+										if( actor->groundInfo != NULL )
+										{
+											Action *action = new GroundAction( actor );
+											
+										}
+									}*/
+
+
 									Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
 									Action *action = new MoveBrushAction( selectedBrush, delta, false );
 
@@ -7317,9 +7329,48 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					Vector2i pos( worldPos.x, worldPos.y );
 					Vector2i delta = pos - editMouseGrabPos;
 
-					selectedBrush->Move( delta );
+					if( selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR )
+					{
+						ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
+						if( actor->type->canBeGrounded )
+						{
+							if( worldPosGround.ground != NULL )
+							{
+								if( actor->groundInfo != NULL )
+								{
+									actor->UnAnchor( actor );
+								}
+
+								actor->AnchorToGround( worldPosGround );
+								worldPosGround.ground->enemies[worldPosGround.edgeStart].push_back( actor );
+								worldPosGround.ground->UpdateBounds();
+
+								//editStartMove = false;
+							}
+							else
+							{
+								if( actor->groundInfo != NULL )
+								{
+									actor->UnAnchor( actor );
+								}
+
+								selectedBrush->Move( delta );
+								//actor->UnAnchor( actor );
+							}
+						}
+						else
+						{
+							selectedBrush->Move( delta );
+						}
+					}
+					else
+					{
+						selectedBrush->Move( delta );
+					}
 
 					editMouseGrabPos = pos;
+
+
 				}
 				else if( editMouseDownBox )
 				{

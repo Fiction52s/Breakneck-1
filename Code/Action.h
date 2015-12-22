@@ -159,8 +159,7 @@ struct LeaveGroundAction : Action
 
 struct GroundAction : Action
 {
-	GroundAction( ActorPtr &actor,
-		sf::Vector2i oldPos, GroundInfo &newGround );
+	GroundAction( ActorPtr &actor );
 	void Perform();
 	void Undo();
 };

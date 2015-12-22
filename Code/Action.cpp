@@ -113,15 +113,18 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 		if( (*it)->selectableType == ISelectable::ACTOR )
 		{
 			ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( (*it) );
-			
-			Action *newAction = new LeaveGroundAction( actor );
 
-			if( action == NULL )
+			if( actor->groundInfo != NULL )
 			{
-				action = new CompoundAction;
-			}
+				Action *newAction = new LeaveGroundAction( actor );
+
+				if( action == NULL )
+				{
+					action = new CompoundAction;
+				}
 			
-			action->subActions.push_back( newAction );
+				action->subActions.push_back( newAction );
+			}
 		}
 	}
 
