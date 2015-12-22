@@ -5135,10 +5135,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
 										if( actor->groundInfo != NULL )
 										{
-											Action *action = new GroundAction( actor );
-											action->performed = true;
-											moveAction->subActions.push_back( action );
-											doneActionStack.push_back( moveAction );
+											Action *gAction = new GroundAction( actor );
+											gAction->performed = true;
+
+											if( moveAction != NULL )
+											{
+												moveAction->subActions.push_back( gAction );
+												doneActionStack.push_back( moveAction );
+											}
+											else
+											{
+												Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
+												Action *action = new MoveBrushAction( selectedBrush, delta, false );
+
+												action->Perform();
+
+												moveAction = new CompoundAction;
+												moveAction->subActions.push_back( action );
+												moveAction->subActions.push_back( gAction );
+												doneActionStack.push_back( moveAction );
+											}
+											
 											done = true;
 										}
 									}
@@ -7324,7 +7341,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					Vector2i delta = pos - editMouseGrabPos;
 
 					moveAction = selectedBrush->UnAnchor();
-					moveAction->Perform();
+					if( moveAction != NULL )
+						moveAction->Perform();
 
 					selectedBrush->Move( delta );
 
