@@ -116,14 +116,18 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 
 			if( actor->groundInfo != NULL )
 			{
-				Action *newAction = new LeaveGroundAction( actor );
-
-				if( action == NULL )
+				if( objects.size() == 1 || actor->type->canBeAerial )
 				{
-					action = new CompoundAction;
-				}
+
+					Action *newAction = new LeaveGroundAction( actor );
+
+					if( action == NULL )
+					{
+						action = new CompoundAction;
+					}
 			
-				action->subActions.push_back( newAction );
+					action->subActions.push_back( newAction );
+				}
 			}
 		}
 	}

@@ -267,6 +267,9 @@ void ActorParams::AnchorToGround( GroundInfo &gi )
 void ActorParams::UnAnchor( ActorPtr &actor )
 {
 	assert( groundInfo != NULL );
+	//if( groundInfo == NULL )
+	//	return;
+
 	if( groundInfo != NULL )
 	{
 		position = Vector2i( image.getPosition().x, image.getPosition().y );
@@ -349,20 +352,23 @@ bool ActorParams::IsPlacementOkay()
 
 void ActorParams::Move( SelectPtr &me, sf::Vector2i delta )
 {
-	assert( groundInfo == NULL );
+	//assert( groundInfo == NULL );
 
 	//ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( me );
 	//if( groundInfo != NULL )
 	//{
 	//	UnAnchor( actor );
 	//}
+	if( groundInfo == NULL )
+	{
+		position.x += delta.x;
+		position.y += delta.y;
+
+		SetBoundingQuad();
+
+		image.setPosition( position.x, position.y );
+	}
 	
-	position.x += delta.x;
-	position.y += delta.y;
-
-	SetBoundingQuad();
-
-	image.setPosition( position.x, position.y );
 	
 	/*if( session->worldPosGround.ground != NULL )
 	{

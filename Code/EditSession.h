@@ -534,6 +534,7 @@ struct EditSession : GUIHandler
 	bool PolyIntersectGate( TerrainPolygon &poly );
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
+	void CreateActor( ActorPtr &actor );
 	std::list<GateInfo*> gates;
 	GateInfo *selectedGate;
 

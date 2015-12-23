@@ -6268,12 +6268,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//showPanel = trackingEnemy->panel;
 											showPanel = enemySelectPanel;
 											trackingEnemy = NULL;
-											ActorPtr actor( new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+											ActorPtr goal( new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity ) );
-											actor->group = groups["--"];
+											goal->group = groups["--"];
 											//actor->SetAsGoal( goalType, enemyEdgePolygon, enemyEdgeIndex, 
 											//	enemyEdgeQuantity );
-											groups["--"]->actors.push_back( actor );
+											//groups["--"]->actors.push_back( actor );
+
+											CreateActor( goal );
 										}
 									}
 								}
@@ -9090,8 +9092,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			else if( mode == CREATE_ENEMY )
 			{
 				ActorPtr patroller( new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
-				groups["--"]->actors.push_back( patroller);
+				//groups["--"]->actors.push_back( patroller);
 				patroller->group = groups["--"];
+
+				CreateActor( patroller );
 				//trackingEnemy = NULL;
 
 				//trackingEnemy = types[name];
@@ -9196,8 +9200,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				
 				ActorPtr key( new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gType ) );
 				
-				groups["--"]->actors.push_back( key );
+				//groups["--"]->actors.push_back( key );
 				key->group = groups["--"];
+
+				CreateActor( key );
 				//trackingEnemy = NULL;
 				
 			}
@@ -9242,13 +9248,23 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			else if( mode == CREATE_ENEMY )
 			{
 				ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
-
-				groups["--"]->actors.push_back( crawler );
 				crawler->group = groups["--"];
+				//groups["--"]->actors.push_back( crawler );
+				
 
 				//ActorPtr actor( this );
 				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
 				enemyEdgePolygon->UpdateBounds();
+
+
+				CreateActor( crawler );
+				/*Brush b;
+				SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(crawler);
+				b.AddObject( select );
+				Action * action = new ApplyBrushAction( &b );
+				action->Perform();
+				doneActionStack.push_back( action );*/
+				//action->p
 				//trackingEnemy = NULL;
 				
 			}
@@ -9300,8 +9316,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				enemyEdgePolygon->enemies[basicTurret->groundInfo->edgeStart].push_back( basicTurret );
 				enemyEdgePolygon->UpdateBounds();
 
-				groups["--"]->actors.push_back( basicTurret );
+				//groups["--"]->actors.push_back( basicTurret );
 				basicTurret->group = groups["--"];
+
+				CreateActor( basicTurret );
 				//trackingEnemy = NULL;
 				
 			}
@@ -9326,10 +9344,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				enemyEdgePolygon->enemies[footTrap->groundInfo->edgeStart].push_back( footTrap );
 				enemyEdgePolygon->UpdateBounds();
 
-				groups["--"]->actors.push_back( footTrap );
+				//groups["--"]->actors.push_back( footTrap );
 				footTrap->group = groups["--"];
 				trackingEnemy = NULL;
 				showPanel = NULL;
+
+				CreateActor( footTrap );
 			}
 			showPanel = NULL;
 			//showPanel = enemySelectPanel;
@@ -11049,6 +11069,16 @@ bool EditSession::PolyIntersectGate( TerrainPolygon &poly )
 	}
 
 	return false;
+}
+
+void EditSession::CreateActor( ActorPtr &actor )
+{
+	Brush b;
+	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(actor);
+	b.AddObject( select );
+	Action * action = new ApplyBrushAction( &b );
+	action->Perform();
+	doneActionStack.push_back( action );
 }
 
 GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
