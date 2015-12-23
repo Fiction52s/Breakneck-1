@@ -28,6 +28,7 @@ using namespace sf;
 
 const double EditSession::PRIMARY_LIMIT = .999;
 double EditSession::zoomMultiple = 1;
+EditSession * TerrainPolygon::session = NULL;
 
 TerrainBrush::TerrainBrush( PolyPtr poly )
 	:pointStart(NULL),pointEnd(NULL),lines( sf::Lines, poly->numPoints * 2 ), numPoints( 0 )
@@ -180,7 +181,29 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 
 bool TerrainPolygon::CanApply()
 {
-	return true;
+	bool applyOkay = true;
+	for(list<PolyPtr>::iterator it = session->polygons.begin() ; it != session->polygons.end(); ++it )
+	{
+		if( (*it).get() == this )
+			continue;
+		
+
+		if( this->LinesTooClose( (*it).get(), session->minimumEdgeLength ) || this->LinesIntersect( (*it).get() ) 
+			|| this->Contains( (*it).get() ) || (*it)->Contains( this ) )
+		{
+			applyOkay = false;
+			break;
+		}
+
+		//else if( this->LinesIntersect( (*it).get() ) )
+		//{
+			//not too close and I intersect, so I can add
+			//intersectingPolys.push_back( (*it) );
+
+		//}
+	}
+
+	return applyOkay;
 }
 
 bool CanApply()
@@ -2683,6 +2706,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	Action::session = this;
 	Brush::session = this;
 	ActorParams::session = this;
+	TerrainPolygon::session = this;
 	//adding 5 for random distance buffer
 	playerHalfWidth = 32;
 	playerHalfHeight = 32;
@@ -2698,6 +2722,9 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 	moveActive = false;
 	extendingPolygon = NULL;
+
+	player.reset( new PlayerParams( this, Vector2i( 0, 0 ) ) );
+	groups["player"]->actors.push_back( player );
 }
 
 EditSession::~EditSession()
@@ -2774,8 +2801,8 @@ bool EditSession::OpenFile( string fileName )
 	{
 		int numPoints;
 		is >> numPoints;
-		is >> playerPosition.x;
-		is >> playerPosition.y;
+		is >> player->position.x;
+		is >> player->position.y;
 
 		while( numPoints > 0 )
 		{
@@ -3404,7 +3431,7 @@ void EditSession::WriteFile(string fileName)
 	
 
 	of << pointCount << endl;
-	of << playerPosition.x << " " << playerPosition.y << endl;
+	of << player->position.x << " " << player->position.y << endl;
 
 	int writeIndex = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -4168,6 +4195,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["goal"] = goalType;
 	types["greenkey"] = greenKeyType;
 	types["bluekey"] = blueKeyType;
+	playerType = new ActorType( "player", NULL );
+	player->type = playerType;
+	
 
 	Panel *keyPanel = CreateOptionsPanel( "key" );
 
@@ -4259,7 +4289,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	//Vector2f vs(  );
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
-		view.setCenter( (float)playerPosition.x, (float)playerPosition.y );
+		view.setCenter( (float)player->position.x, (float)player->position.y );
 
 	//mode = "neutral";
 	bool quit = false;
@@ -4685,6 +4715,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( !( editMouseDownMove || editMouseDownBox ) )
 								{
+
+									/*if( emptysp )
+									{
+										if( player->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
+										{
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( player );
+											selectedBrush->AddObject( sp );
+											sp->SetSelected( true );
+										}
+									}*/
 
 									if( emptysp )
 										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
@@ -5181,9 +5221,31 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 
 									
+									bool validMove = false;
+									
+									
+									//check if valid
 
-									ClearUndoneActions();
+									if( selectedBrush->CanApply() )
+									{
+										validMove = true;
+									}
+									//selected
 
+
+									if( validMove )
+									{
+										ClearUndoneActions();
+									}
+									else
+									{
+										Action * action = doneActionStack.back();
+										doneActionStack.pop_back();
+
+										action->Undo();
+
+										delete action;
+									}
 								}
 								else if( editMouseDownBox )
 								{
@@ -5659,7 +5721,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									selectedGate = NULL;
 								}
 								else
-								{
+								{									
 									cout << "performed removal" << endl;
 									Action *remove = new RemoveBrushAction( selectedBrush );
 									remove->Perform();
@@ -8442,7 +8504,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 				if( okay )
 				{
-					playerPosition = Vector2i( worldPos.x, worldPos.y );
+					player->position = Vector2i( worldPos.x, worldPos.y );
 				}
 			}
 			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
@@ -8560,7 +8622,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		
 
-		playerSprite.setPosition( playerPosition.x, playerPosition.y );
+		playerSprite.setPosition( player->position.x, player->position.y );
 
 		preScreenTex->draw( playerSprite );
 		
@@ -8575,7 +8637,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			preScreenTex->draw( alphaTextSprite );
 		}
 
-		playerSprite.setPosition( playerPosition.x, playerPosition.y );
+		playerSprite.setPosition( player->position.x, player->position.y );
 
 		if( mode == EDIT )
 		{
@@ -8704,7 +8766,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		if( zoomMultiple > 7 )
 		{
-			playerZoomIcon.setPosition( playerPosition.x, playerPosition.y );
+			playerZoomIcon.setPosition( player->position.x, player->position.y );
 			playerZoomIcon.setScale( zoomMultiple * 2, zoomMultiple * 2 );
 			preScreenTex->draw( playerZoomIcon );
 		}
@@ -11366,6 +11428,13 @@ void ActorType::Init()
 	{
 		width = 50;
 		height = 50;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if( name == "player" )
+	{
+		width = 20;
+		height = 100;
 		canBeGrounded = false;
 		canBeAerial = true;
 	}

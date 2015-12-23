@@ -54,8 +54,6 @@ typedef boost::shared_ptr<ISelectable> SelectPtr;
 typedef std::list<SelectPtr> SelectList;
 typedef SelectList::iterator SelectIter;
 
-
-
 struct ActorParams;
 
 struct GrassSeg
@@ -241,6 +239,7 @@ struct TerrainPolygon : ISelectable
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;
+	static EditSession *session;
 
 };
 
@@ -484,6 +483,17 @@ struct GoalParams : public ActorParams
 	//void Draw( sf::RenderTarget *target );
 };
 
+struct PlayerParams : public ActorParams
+{
+	PlayerParams( EditSession *edit, 
+		sf::Vector2i pos );
+
+	bool CanApply();
+	void WriteParamFile( std::ofstream &of );
+};
+
+
+
 //no params for goal and foottrap atm
 struct ActorGroup
 {
@@ -685,7 +695,8 @@ struct EditSession : GUIHandler
 	sf::Vector2i editMouseGrabPos;
 	sf::Vector2i editMouseOrigPos;
 
-
+	ActorPtr player;
+	ActorType *playerType;
 	//std::list<Action*>::iterator currAction;
 
 	enum ConfirmChoices

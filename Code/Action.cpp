@@ -160,6 +160,23 @@ void Brush::Activate()
 	}
 }
 
+bool Brush::CanApply()
+{
+	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	{
+		if( !(*it)->CanApply() )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Brush::CanAdd()
+{
+}
+
+
 
 //Action::Action( ActionType p_actionType, Action *p_next )
 //	:actionType( p_actionType ), next(p_next), performed( false )

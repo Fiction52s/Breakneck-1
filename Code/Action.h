@@ -19,7 +19,8 @@ struct Brush
 	void Deactivate();//multiple calls covered?
 	void Activate();//multiple calls covered?
 	void SetSelected( bool select );
-
+	bool CanApply();
+	bool CanAdd();
 	bool terrainOnly;
 	static EditSession *session;
 	//bool activated;

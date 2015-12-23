@@ -401,12 +401,21 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 {
+	if( session->player.get() == this )
+	{
+		return;
+	}
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.remove( actor );
 }
 
 void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 {
+	if( session->player.get() == this )
+	{
+		return;
+	}
+
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
 }
@@ -823,9 +832,11 @@ CrawlerParams::CrawlerParams( EditSession *edit )
 
 bool CrawlerParams::CanApply()
 {
+	if( groundInfo != NULL )
+		return true;
 	//hmm not sure about this now
 
-	return true;
+	return false;
 }
 
 void CrawlerParams::WriteParamFile( ofstream &of )
@@ -854,9 +865,11 @@ BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 
 bool BasicTurretParams::CanApply()
 {
+	if( groundInfo != NULL )
+		return true;
 	//hmm not sure about this now
 
-	return true;
+	return false;
 }
 
 void BasicTurretParams::WriteParamFile( ofstream &of )
@@ -876,9 +889,11 @@ FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon
 
 bool FootTrapParams::CanApply()
 {
+	if( groundInfo != NULL )
+		return true;
 	//hmm not sure about this now
 
-	return true;
+	return false;
 }
 
 void FootTrapParams::WriteParamFile( ofstream &of )
@@ -896,11 +911,40 @@ GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_
 
 bool GoalParams::CanApply()
 {
+	if( groundInfo != NULL )
+		return true;
 	//hmm not sure about this now
 
-	return true;
+	return false;
 }
 
 void GoalParams::WriteParamFile( ofstream &of )
+{
+}
+
+//remnove the postype thing. we have 2 bools for that already
+PlayerParams::PlayerParams( EditSession *edit, sf::Vector2i pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	position = pos;
+}
+
+bool PlayerParams::CanApply()
+{
+	sf::IntRect me( position.x - image.getLocalBounds().width / 2, position.y - image.getLocalBounds().height / 2, 
+		image.getLocalBounds().width, image.getLocalBounds().height );
+	for( list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it )
+	{
+		
+		if( (*it)->Intersects( me ) )
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+void PlayerParams::WriteParamFile( std::ofstream &of )
 {
 }
