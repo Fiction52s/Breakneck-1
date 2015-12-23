@@ -2723,8 +2723,15 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	moveActive = false;
 	extendingPolygon = NULL;
 
+	ActorGroup *playerGroup = new ActorGroup( "player" );
+	groups["player"] = playerGroup;
+	
+	playerType = new ActorType( "player", NULL );
+	types["player"] = playerType;
+
 	player.reset( new PlayerParams( this, Vector2i( 0, 0 ) ) );
 	groups["player"]->actors.push_back( player );
+	
 }
 
 EditSession::~EditSession()
@@ -2803,6 +2810,9 @@ bool EditSession::OpenFile( string fileName )
 		is >> numPoints;
 		is >> player->position.x;
 		is >> player->position.y;
+
+		player->image.setPosition( player->position.x, player->position.y );
+		player->SetBoundingQuad();
 
 		while( numPoints > 0 )
 		{
@@ -4154,10 +4164,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 //	p.AddTextBox( Vector2i( 200, 200 ), 200, 15, "testing" );
 
 	ActorGroup *emptyGroup = new ActorGroup( "--" );
-	//emptyGroup->name = "";
 	groups[emptyGroup->name] = emptyGroup;
 
-
+	//groups["player"]->actors.push_back( player );
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
 	Panel *terrainOptionsPanel = CreateOptionsPanel( "terrain" );
 
@@ -4182,6 +4191,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *goalPanel = CreateOptionsPanel( "goal" );
 	ActorType *goalType = new ActorType( "goal", goalPanel );
 
+	
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
 	messagePopup = CreatePopupPanel( "message" );
@@ -4195,8 +4205,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["goal"] = goalType;
 	types["greenkey"] = greenKeyType;
 	types["bluekey"] = blueKeyType;
-	playerType = new ActorType( "player", NULL );
-	player->type = playerType;
+
+	
+	
 	
 
 	Panel *keyPanel = CreateOptionsPanel( "key" );
@@ -4248,9 +4259,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		view.setSize( 1920, 1080 );
 
 	preScreenTex->setView( view );
-	Texture playerTex;
-	playerTex.loadFromFile( "stand.png" );
-	sf::Sprite playerSprite( playerTex );
+	//Texture playerTex;
+	//playerTex.loadFromFile( "stand.png" );
+	//sf::Sprite playerSprite( playerTex );
 
 	//Texture goalTex;
 	//goalTex.loadFromFile( "goal.png" );
@@ -4272,8 +4283,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	//goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
 
-	playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
-	playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
+	//playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
+	//playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
 
 	w->setVerticalSyncEnabled( true );
 
@@ -4956,7 +4967,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 
 								//grab player
-								if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
+								/*if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
 								{
 									selectedActor = NULL;
 									selectedLight = NULL;
@@ -4972,7 +4983,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									grabPlayer = false;
 									selectedPlayer = false;
-								}
+								}*/
 
 								bool emptySpace = true;
 
@@ -5722,13 +5733,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else
 								{									
-									cout << "performed removal" << endl;
-									Action *remove = new RemoveBrushAction( selectedBrush );
-									remove->Perform();
+									//cout << "performed removal" << endl;
+									bool perform = true;
 
-									doneActionStack.push_back( remove );
+									//need to make sure to test for this on turning stuff into brushes
+									if( selectedBrush->objects.size() == 1 )
+									{
+										SelectPtr test = boost::dynamic_pointer_cast<ISelectable>( player );
+
+										if( test == selectedBrush->objects.front() )
+										{
+											perform = false;
+										}
+									}
+
+									if( perform )
+									{
+										Action *remove = new RemoveBrushAction( selectedBrush );
+										remove->Perform();
+
+										doneActionStack.push_back( remove );
 									
-									ClearUndoneActions();
+										ClearUndoneActions();
+									}
 
 									/*int erasedGates = 0;
 									for( list<PolyPtr>::iterator it = selectedPolygons.begin();
@@ -8622,9 +8649,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		
 		
 
-		playerSprite.setPosition( player->position.x, player->position.y );
+		//playerSprite.setPosition( player->position.x, player->position.y );
 
-		preScreenTex->draw( playerSprite );
+		//preScreenTex->draw( playerSprite );
 		
 		//preScreenTex->draw( iconSprite );
 
@@ -8637,7 +8664,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			preScreenTex->draw( alphaTextSprite );
 		}
 
-		playerSprite.setPosition( player->position.x, player->position.y );
+		//playerSprite.setPosition( player->position.x, player->position.y );
 
 		if( mode == EDIT )
 		{
@@ -8680,15 +8707,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 			else if( selectedPlayer )
 			{
-				sf::FloatRect bounds = playerSprite.getGlobalBounds();
-				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
+//				sf::FloatRect bounds = playerSprite.getGlobalBounds();
+//				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
 
-				rs.setOutlineColor( Color::Cyan );				
-				rs.setFillColor( Color::Transparent );
-				rs.setOutlineThickness( 5 );
-				rs.setPosition( bounds.left, bounds.top );				
+	//			rs.setOutlineColor( Color::Cyan );				
+	//			rs.setFillColor( Color::Transparent );
+	//			rs.setOutlineThickness( 5 );
+	//			rs.setPosition( bounds.left, bounds.top );				
 
-				preScreenTex->draw( rs );
+	//			preScreenTex->draw( rs );
 			}
 			else if( selectedLight != NULL )
 			{
@@ -11433,8 +11460,8 @@ void ActorType::Init()
 	}
 	else if( name == "player" )
 	{
-		width = 20;
-		height = 100;
+		width = 40;
+		height = 64;
 		canBeGrounded = false;
 		canBeAerial = true;
 	}

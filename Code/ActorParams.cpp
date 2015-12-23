@@ -401,20 +401,20 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 {
-	if( session->player.get() == this )
-	{
-		return;
-	}
+	//if( session->player.get() == this )
+	//{
+	//	return;
+	//}
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.remove( actor );
 }
 
 void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 {
-	if( session->player.get() == this )
-	{
-		return;
-	}
+	//if( session->player.get() == this )
+	//{
+	//	return;
+	//}
 
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
@@ -927,6 +927,13 @@ PlayerParams::PlayerParams( EditSession *edit, sf::Vector2i pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;
+
+	type = edit->types["player"];
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
 }
 
 bool PlayerParams::CanApply()
@@ -944,7 +951,16 @@ bool PlayerParams::CanApply()
 	return true;
 }
 
-
 void PlayerParams::WriteParamFile( std::ofstream &of )
 {
+}
+
+void PlayerParams::Deactivate( EditSession *edit, boost::shared_ptr<ISelectable> & select)
+{
+	//nothing
+}
+
+void PlayerParams::Activate( EditSession *edit, boost::shared_ptr<ISelectable> & select )
+{
+	//nothing
 }

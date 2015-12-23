@@ -490,6 +490,10 @@ struct PlayerParams : public ActorParams
 
 	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
+	void Deactivate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select);
+	void Activate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select );
 };
 
 
