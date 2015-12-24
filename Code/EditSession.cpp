@@ -3977,14 +3977,14 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 {
 	//list<PolyPtr> orig = polys;
 	//polys.clear(); //new polys;
-
+	
 	for( list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt )
 	{
 		TerrainPolygon *poly = (*polyIt).get();
 		list<TerrainPoint*> untouched;
 		for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
 		{
-			if( brush->ContainsPoint( Vector2f( curr->pos.x, curr->pos.y ) ) )
+			if( !brush->ContainsPoint( Vector2f( curr->pos.x, curr->pos.y ) ) )
 			{
 				untouched.push_back( curr );
 			}
@@ -3996,31 +3996,51 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 
 		while( !untouched.empty() )
 		{
+			cout << "untouched is not empty!:" << untouched.size() << endl;
 			//PolyPtr newPoly( new TerrainPolygon( &grassTex ) );
 			list<Vector2i> newPoints;
 
 			
 			TerrainPoint *start = untouched.front();
-			untouched.pop_front();
+			//untouched.pop_front();
 
 			TerrainPoint *curr = start;
 			TerrainPoint *next = NULL;
+
+			Vector2i currPoint = curr->pos;
 			
 			
 			do//while( next != start )
 			{
 				if( currentPoly == poly )
 				{
-					next = start->next;
+					if( curr->next == NULL )
+					{
+						next = poly->pointStart;
+					}
+					else
+					{
+						next = curr->next;
+					}
+					
 				}
 				else
 				{
-					next = start->prev;
+					if( curr->prev == NULL )
+					{
+						next = brush->pointEnd;
+					}
+					else
+					{
+						next = curr->prev;
+					}
+					
 				}
 
-				
-				newPoints.push_back( curr->pos );
-				untouched.remove( curr );//untouched.pop_front();
+				//untouched.remove( curr );
+				newPoints.push_back( currPoint );
+				untouched.remove( curr );
+				//untouched.pop_front();
 			
 				TerrainPoint *min;
 				Vector2i minIntersection;
@@ -4028,7 +4048,7 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 
 				//get closest intersection to my current point
 				for( TerrainPoint *other = otherPoly->pointStart; other != NULL; other = other->next )
-				{																															{
+				{																															
 					TerrainPoint *otherPrev;
 					if( other == otherPoly->pointStart )
 					{
@@ -4039,7 +4059,7 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 						otherPrev = other->prev;
 					}
 
-					LineIntersection li = LimitSegmentIntersect( curr->pos, next->pos, otherPrev->pos, other->pos );
+					LineIntersection li = LimitSegmentIntersect( currPoint, next->pos, otherPrev->pos, other->pos );
 					Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
 					if( !li.parallel )
 					{
@@ -4047,57 +4067,47 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 						{
 							emptyInter = false;
 							minIntersection = lii;
-							min = other;
+							if( currentPoly == poly )
+								min = other;
+							else
+								min = otherPrev;
 						}
 						else
 						{
-							V2d blah( minIntersection - curr->pos );
-							V2d blah2( lii - curr->pos );
+							V2d blah( minIntersection - currPoint );
+							V2d blah2( lii - currPoint );
 							if( length( blah2 ) < length( blah ) )
 							{
 								minIntersection = lii;
-								min = other;
+								if( currentPoly == poly )
+									min = other;
+								else
+									min = otherPrev;
 							}
 						}
 					}
 				}
-				
 
 				if( !emptyInter )
 				{
-					//if( currPoint == startPoint && !firstTime )
-					//{
-					//	cout << "secondary break" << endl;
-					//	break;
-					//}
-					//cout << "switching polygon and adding point" << endl;
 					TerrainPolygon *temp = currentPoly;
 					currentPoly = otherPoly;
 					otherPoly = temp;
 
-					newPoints.push_back( minIntersection );
-					//push back intersection
-					//PolyPtr temp = currentPoly;
-					//currentPoly = otherPoly;
-					//otherPoly = temp;
-					//curr = min;
+					//newPoints.push_back( minIntersection );
+
+					currPoint = minIntersection;
+
 					curr = min;
-					//cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
 
-					//currPoint = minIntersection;
 
-					//TerrainPoint *tp = new TerrainPoint( currPoint, false );
-			
-			
-					//z.AddPoint( tp );
-			
-			
-					//nextPoint = curr->pos;
 				}
 				else
 				{
 					curr = next;
+					currPoint = next->pos;
 				}
+				
 			}
 			while( curr != start );
 
@@ -4107,11 +4117,11 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 			{
 				TerrainPoint *p = new TerrainPoint( (*it), false );
 				newPoly->AddPoint( p );
+				cout << "point: " << p->pos.x << ", " << p->pos.y << endl;
 			}
 			newPoly->Finalize();
 			results.push_back( newPoly );
-		
-	}
+			cout << "results pushing back" << endl;
 		}
 	}
 }
