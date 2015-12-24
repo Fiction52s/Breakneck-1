@@ -3996,7 +3996,7 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 
 		while( !untouched.empty() )
 		{
-			cout << "untouched is not empty!:" << untouched.size() << endl;
+			//cout << "untouched is not empty!:" << untouched.size() << endl;
 			//PolyPtr newPoly( new TerrainPolygon( &grassTex ) );
 			list<Vector2i> newPoints;
 
@@ -4117,11 +4117,11 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 			{
 				TerrainPoint *p = new TerrainPoint( (*it), false );
 				newPoly->AddPoint( p );
-				cout << "point: " << p->pos.x << ", " << p->pos.y << endl;
+				//cout << "point: " << p->pos.x << ", " << p->pos.y << endl;
 			}
 			newPoly->Finalize();
 			results.push_back( newPoly );
-			cout << "results pushing back" << endl;
+			//cout << "results pushing back" << endl;
 		}
 	}
 }
@@ -4737,8 +4737,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//polygonInProgress->Finalize();
 											polygonInProgress->FixWinding();
 
-
-											if( false )
+											//hold shift ATM to activate subtraction
+											if( !( Keyboard::isKeyPressed( Keyboard::LShift ) ||
+												Keyboard::isKeyPressed( Keyboard::RShift ) ) )
 											{
 												Brush orig;
 												for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
