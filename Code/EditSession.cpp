@@ -4039,7 +4039,12 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 
 				//untouched.remove( curr );
 				newPoints.push_back( currPoint );
-				untouched.remove( curr );
+				if( currentPoly == poly && currPoint == curr->pos )
+				{
+					untouched.remove( curr );
+					//cout << "untouched now has: " << untouched.size() << endl;
+				}
+				
 				//untouched.pop_front();
 			
 				TerrainPoint *min;
