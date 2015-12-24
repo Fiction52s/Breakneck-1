@@ -608,8 +608,15 @@ struct EditSession : GUIHandler
 	bool selectedActorGrabbed;
 
 	//CREATE_TERRAIN mode
-	void Add( boost::shared_ptr<TerrainPolygon> brush, boost::shared_ptr<TerrainPolygon> poly);	
+	void Add( boost::shared_ptr<TerrainPolygon> brush, 
+		boost::shared_ptr<TerrainPolygon> poly);	
+	void Sub( TerrainPolygon *brush,
+		std::list<PolyPtr> &polys,
+		std::list<PolyPtr> &results );
+	
+	
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
+
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d );
@@ -727,6 +734,7 @@ struct EditSession : GUIHandler
 	void CopyToPasteBrushes();
 	sf::Vector2i pastePos;
 
+	
 	
 
 	enum Emode

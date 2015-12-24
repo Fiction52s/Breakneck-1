@@ -3788,7 +3788,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 		TerrainPoint * other = otherPoly->pointStart;
 		Vector2i otherCurrPoint = other->pos;
 		other = other->next;
-		Vector2i otherNextPoint;// = (*++bit);
+		Vector2i otherNextPoint;
 		Vector2i minPoint;
 		
 		LineIntersection li1 = SegmentIntersect( currPoint, nextPoint, otherPoly->pointEnd->pos, otherCurrPoint );
@@ -3796,11 +3796,9 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 		if( !li1.parallel && ( lii1 != currPoint && lii1 != nextPoint && lii1 != otherPoly->pointEnd->pos && lii1 != otherCurrPoint ) ) 
 		{
 			minIntersection = lii1;
-			minPoint = otherCurrPoint;//otherCurrPoint;
-			min = otherPoly->pointStart;//--otherIt;
-			//++otherIt;
+			minPoint = otherCurrPoint;
+			min = otherPoly->pointStart;
 			emptyInter = false;
-			//cout << "using this" << endl;
 		}
 
 		for(; other != NULL; other = other->next )
@@ -3808,8 +3806,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 			otherNextPoint = other->pos;
 			LineIntersection li = LimitSegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
 			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-			//cout << "li.par: " << li.parallel << ", others: lii: " << lii.x << ", " << lii.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
-			if( !li.parallel )//&& ( lii != currPoint && lii != nextPoint && lii != otherCurrPoint && lii != otherNextPoint ) ) //&& (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))//&& length( li.position - V2d(currPoint.x, currPoint.y) ) >= 5 )
+			if( !li.parallel )
 			{
 				if( emptyInter )
 				{
@@ -3974,6 +3971,149 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 	}
 
 	poly->Finalize();
+}
+
+void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::list<PolyPtr> &results )
+{
+	//list<PolyPtr> orig = polys;
+	//polys.clear(); //new polys;
+
+	for( list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt )
+	{
+		TerrainPolygon *poly = (*polyIt).get();
+		list<TerrainPoint*> untouched;
+		for( TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next )
+		{
+			if( brush->ContainsPoint( Vector2f( curr->pos.x, curr->pos.y ) ) )
+			{
+				untouched.push_back( curr );
+			}
+		}
+
+		bool onBrush = false;
+		TerrainPolygon *currentPoly = poly;
+		TerrainPolygon *otherPoly = brush;
+
+		while( !untouched.empty() )
+		{
+			//PolyPtr newPoly( new TerrainPolygon( &grassTex ) );
+			list<Vector2i> newPoints;
+
+			
+			TerrainPoint *start = untouched.front();
+			untouched.pop_front();
+
+			TerrainPoint *curr = start;
+			TerrainPoint *next = NULL;
+			
+			
+			do//while( next != start )
+			{
+				if( currentPoly == poly )
+				{
+					next = start->next;
+				}
+				else
+				{
+					next = start->prev;
+				}
+
+				
+				newPoints.push_back( curr->pos );
+				untouched.remove( curr );//untouched.pop_front();
+			
+				TerrainPoint *min;
+				Vector2i minIntersection;
+				bool emptyInter = true;
+
+				//get closest intersection to my current point
+				for( TerrainPoint *other = otherPoly->pointStart; other != NULL; other = other->next )
+				{																															{
+					TerrainPoint *otherPrev;
+					if( other == otherPoly->pointStart )
+					{
+						otherPrev = otherPoly->pointEnd;
+					}
+					else
+					{
+						otherPrev = other->prev;
+					}
+
+					LineIntersection li = LimitSegmentIntersect( curr->pos, next->pos, otherPrev->pos, other->pos );
+					Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+					if( !li.parallel )
+					{
+						if( emptyInter )
+						{
+							emptyInter = false;
+							minIntersection = lii;
+							min = other;
+						}
+						else
+						{
+							V2d blah( minIntersection - curr->pos );
+							V2d blah2( lii - curr->pos );
+							if( length( blah2 ) < length( blah ) )
+							{
+								minIntersection = lii;
+								min = other;
+							}
+						}
+					}
+				}
+				
+
+				if( !emptyInter )
+				{
+					//if( currPoint == startPoint && !firstTime )
+					//{
+					//	cout << "secondary break" << endl;
+					//	break;
+					//}
+					//cout << "switching polygon and adding point" << endl;
+					TerrainPolygon *temp = currentPoly;
+					currentPoly = otherPoly;
+					otherPoly = temp;
+
+					newPoints.push_back( minIntersection );
+					//push back intersection
+					//PolyPtr temp = currentPoly;
+					//currentPoly = otherPoly;
+					//otherPoly = temp;
+					//curr = min;
+					curr = min;
+					//cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
+
+					//currPoint = minIntersection;
+
+					//TerrainPoint *tp = new TerrainPoint( currPoint, false );
+			
+			
+					//z.AddPoint( tp );
+			
+			
+					//nextPoint = curr->pos;
+				}
+				else
+				{
+					curr = next;
+				}
+			}
+			while( curr != start );
+
+
+			PolyPtr newPoly( new TerrainPolygon( &grassTex ) );
+			for( list<Vector2i>::iterator it = newPoints.begin(); it != newPoints.end(); ++it )
+			{
+				TerrainPoint *p = new TerrainPoint( (*it), false );
+				newPoly->AddPoint( p );
+			}
+			newPoly->Finalize();
+			results.push_back( newPoly );
+		
+	}
+		}
+	}
 }
 
 LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
@@ -4587,31 +4727,82 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//polygonInProgress->Finalize();
 											polygonInProgress->FixWinding();
 
-											Brush orig;
-											for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+
+											if( false )
 											{
-												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-												orig.AddObject( sp );
+												Brush orig;
+												for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+												{
+													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+													orig.AddObject( sp );
 
-												Add( (*it), polygonInProgress );
+													Add( (*it), polygonInProgress );
 												
+												}
+
+
+
+												SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
+
+												progressBrush->Clear();
+												progressBrush->AddObject( sp );
+												cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
+												Action * action = new ReplaceBrushAction( &orig, progressBrush );
+												action->Perform();
+												doneActionStack.push_back( action );
+
+												ClearUndoneActions();
+
+												PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+												polygonInProgress = newPoly;
 											}
+											else
+											{
+												cout << "subtracting!" << endl;
+												//SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
+
+												//progressBrush->Clear();
+												//progressBrush->AddObject( sp );
+												Brush orig;
+												for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+												{
+													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+													orig.AddObject( sp );
+
+													//Add( (*it), polygonInProgress );
+												}
 
 
+												list<PolyPtr> results;
+												Sub( polygonInProgress.get(), intersectingPolys, results );
 
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
+												Brush resultBrush;
+												for( list<PolyPtr>::iterator it = results.begin(); 
+													it != results.end(); ++it )
+												{
+													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+													resultBrush.AddObject( sp );
+												}
 
-											progressBrush->Clear();
-											progressBrush->AddObject( sp );
-											cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
-											Action * action = new ReplaceBrushAction( &orig, progressBrush );
-											action->Perform();
-											doneActionStack.push_back( action );
+												cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
+												Action * action = new ReplaceBrushAction( &orig, &resultBrush );
+												action->Perform();
+												doneActionStack.push_back( action );
 
-											ClearUndoneActions();
+												ClearUndoneActions();
 
-											PolyPtr newPoly( new TerrainPolygon(&grassTex) );
-											polygonInProgress = newPoly;
+												polygonInProgress->ClearPoints();
+
+												//Brush orig;
+												//for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+												//{
+												//	SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+												//	orig.AddObject( sp );
+
+												//	Add( (*it), polygonInProgress );
+												
+												//}
+											}
 
 										}
 									}
