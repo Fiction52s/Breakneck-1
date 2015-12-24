@@ -3504,7 +3504,8 @@ void EditSession::WriteFile(string fileName)
 		(*it)->WriteFile( of );
 	}
 
-	of << groups.size() << endl;
+	//minus 1 because of the player group
+	of << groups.size() - 1 << endl;
 	//write the stuff for goals and remove them from the enemy stuff
 
 	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
@@ -3628,8 +3629,8 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 	//cout << "brush: " << brush->enemies.size() << endl;
 	//cout << "poly: " << poly->enemies.size() << endl;
 
-	int totalEnemies = brush->enemies.size() + poly->enemies.size();
-	int totalGates = 0;
+	//int totalEnemies = brush->enemies.size() + poly->enemies.size();
+	//int totalGates = 0;
 
 	//deleting gates for adding. need to just make this more specific. 
 	/*for( TerrainPoint *curr = brush->pointStart; curr != NULL; curr = curr->next )
@@ -3658,14 +3659,14 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 		}
 	}*/
 
-	if( totalEnemies > 0 || totalGates > 0)
-	{
-		stringstream ss;
-		ss << "destroying " << totalEnemies << " enemies, and " <<  totalGates << " gates to create the polygons.\n Sorry for how messy this is at the moment!";
-		MessagePop( ss.str() );
-		brush->DestroyEnemies();
-		poly->DestroyEnemies();
-	}
+	//if( totalEnemies > 0 || totalGates > 0)
+	//{
+	//	stringstream ss;
+	//	ss << "destroying " << totalEnemies << " enemies, and " <<  totalGates << " gates to create the polygons.\n Sorry for how messy this is at the moment!";
+	//	MessagePop( ss.str() );
+	//	brush->DestroyEnemies();
+	//	poly->DestroyEnemies();
+	//}
 
 	TerrainPolygon z( &grassTex );
 	//1: choose start point
@@ -4583,6 +4584,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//add each of the intersecting polygons onto the polygonInProgress,
 											//then do a replacebrushaction
 
+											//polygonInProgress->Finalize();
+											polygonInProgress->FixWinding();
 
 											Brush orig;
 											for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
@@ -4594,10 +4597,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												
 											}
 
+
+
 											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
 
 											progressBrush->Clear();
 											progressBrush->AddObject( sp );
+											cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
 											Action * action = new ReplaceBrushAction( &orig, progressBrush );
 											action->Perform();
 											doneActionStack.push_back( action );
@@ -7050,15 +7056,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}*/
 
-				GroundInfo g = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
-				if( g.ground == NULL )
-				{
-					cout << "no ground" << endl;
-				}
-				else
-				{
-					cout << "gi: " << g.GetEdgeIndex() << endl;
-				}
+			//	GroundInfo g = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
+			//	if( g.ground == NULL )
+			//	{
+			//		cout << "no ground" << endl;
+			//	}
+			//	else
+			//	{
+			//		cout << "gi: " << g.GetEdgeIndex() << endl;
+			//	}
 
 				if( showPanel != NULL )
 					break;
@@ -11486,6 +11492,9 @@ ActorGroup::ActorGroup( const std::string &n )
 void ActorGroup::WriteFile( std::ofstream &of )
 {
 	//group name and number of actors in the group
+	if( name == "player" )
+		return;
+
 	of << name << " " << actors.size() << endl;
 	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
