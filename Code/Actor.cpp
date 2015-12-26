@@ -430,8 +430,8 @@ Actor::Actor( GameSession *gs )
 		clingSpeed = 3;
 
 		dashSpeed = 12;
-		offSlopeByWallThresh = dashSpeed;
-		slopeLaunchMinSpeed = dashSpeed * .7;
+		offSlopeByWallThresh = dashSpeed;//18;
+		slopeLaunchMinSpeed = 15;//dashSpeed * .7;
 		steepClimbSpeedThresh = dashSpeed;
 
 		jumpStrength = 27.5;
