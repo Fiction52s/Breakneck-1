@@ -1463,15 +1463,49 @@ bool GameSession::OpenFile( string fileName )
 			is >> poly1Index;
 			is >> vertexIndex1;
 
-			V2d point0 = edges[polyIndex[poly0Index] + vertexIndex0]->v0;
-			V2d point1 = edges[polyIndex[poly1Index] + vertexIndex1]->v0;
-
 			Gate * gate = new Gate( (Gate::GateType)gType );
-			gate->v0 = point0;
-			gate->v1 = point1;
-			gate->UpdateLine();
-			gateTree->Insert( gate );
+
+			Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
+			Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
+
+			gate->temp0prev = edge0->edge0;
+			gate->temp0next = edge0;
+			gate->temp1prev = edge1->edge0;
+			gate->temp1next = edge1;
+
+			
+			V2d point0 = edge0->v0;
+			V2d point1 = edge1->v0;
+
+			gate->edgeA = new Edge;
+			gate->edgeA->edgeType = Edge::GATE;
+			gate->edgeB = new Edge;
+			gate->edgeB->edgeType = Edge::GATE;
+
+			gate->edgeA->v0 = point0;
+			gate->edgeA->v1 = point1;
+
+			gate->edgeB->v0 = point1;
+			gate->edgeB->v1 = point0;
+			
+			gate->next = NULL;
+			gate->prev = NULL;
+
+			//gate->v0 = point0;
+			//gate->v1 = point1;
+			
+			
 			gates[i] = gate;
+
+			gate->SetLocked( true );
+
+			gate->UpdateLine();
+
+			//terrainTree->Insert( gate->edgeA );
+			//terrainTree->Insert( gate->edgeB );
+
+			cout << "inserting gate: " << gate->edgeA << endl;
+			gateTree->Insert( gate );
 		}
 
 		is.close();
@@ -2541,16 +2575,16 @@ int GameSession::Run( string fileN )
 			if( gateList->locked )
 			{
 
-				V2d along = normalize(gateList->v1 - gateList->v0);
+				V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
 				V2d other( along.y, -along.x );
 				double width = 25;
 				
 				
 
-				V2d leftGround = gateList->v0 + other * -width;
-				V2d rightGround = gateList->v0 + other * width;
-				V2d leftAir = gateList->v1 + other * -width;
-				V2d rightAir = gateList->v1 + other * width;
+				V2d leftGround = gateList->edgeA->v0 + other * -width;
+				V2d rightGround = gateList->edgeA->v0 + other * width;
+				V2d leftAir = gateList->edgeA->v1 + other * -width;
+				V2d rightAir = gateList->edgeA->v1 + other * width;
 				
 				sf::Vertex activePreview[4] =
 				{
@@ -2569,7 +2603,7 @@ int GameSession::Run( string fileN )
 				minimapTex->draw( activePreview, 4, sf::Quads );
 			}
 
-			Gate *next = (Gate*)gateList->edge1;
+			Gate *next = gateList->next;//edgeA->edge1;
 			gateList = next;
 		}
 		
@@ -2734,8 +2768,10 @@ int GameSession::Run( string fileN )
 
 		while( gateList != NULL )
 		{
+			
+			
 			gateList->Draw( preScreenTex );
-			Gate *next = (Gate*)gateList->edge1;
+			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
 			gateList = next;
 		}
 
@@ -2877,12 +2913,18 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		if( gateList == NULL )
 		{
 			gateList = (Gate*)qte;
+			gateList->next = NULL;
+			gateList->prev = NULL;
+			
+			cout << "setting gate: " << gateList->edgeA << endl;
 		}
 		else
 		{
-			g->edge1 = gateList;
+			g->next = gateList;
 			gateList = g;
 		}
+
+		cout << "gate" << endl;
 		++testGateCount;
 	}
 }

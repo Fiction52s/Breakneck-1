@@ -11714,6 +11714,17 @@ TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 {
 }
 
+bool TerrainPoint::ContainsPoint( Vector2f test )
+{
+	bool contains = length( V2d( test.x, test.y ) - V2d( pos.x, pos.y ) ) <= POINT_RADIUS;
+	return contains;
+}
+
+bool TerrainPoint::Intersects( IntRect rect )
+{
+
+}
+
 void CopyList( TerrainPoint &startPoint, 
 		TerrainPoint &endPoint,
 		TerrainPoint &resultStartPoint,

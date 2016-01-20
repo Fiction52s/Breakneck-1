@@ -10244,6 +10244,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{
+			if( c->edge->edgeType == Edge::GATE )
+			{
+				cout << "GATEEEEee" << endl;
+			}
+
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
 			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
@@ -10544,7 +10549,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		
 		if( action == GRINDBALL )
 		{
-			if( g->locked && ( g->v0 == grindEdge->v0 || g->v1 == grindEdge->v0 ) )
+			if( g->locked && ( g->edgeA->v0 == grindEdge->v0 || g->edgeA->v1 == grindEdge->v0 ) )
 			{
 				if( g->type == Gate::RED && hasRedKey )
 				{
@@ -10571,7 +10576,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
-			if( g->locked && g->IsTouchingBox( r ) )
+			if( g->locked && g->edgeA->IsTouchingBox( r ) )
 			{
 				if( g->type == Gate::RED && hasRedKey )
 				{
