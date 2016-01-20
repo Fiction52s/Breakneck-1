@@ -93,9 +93,27 @@ struct TerrainPoint
 	TerrainPoint *prev;
 	int GetEdgeIndex();
 
+	bool ContainsPoint( sf::Vector2f test );
+	bool Intersects( sf::IntRect rect );
+	bool IsPlacementOkay();
+	void Move( boost::shared_ptr<ISelectable> &me,
+		sf::Vector2i delta );
+	void BrushDraw( sf::RenderTarget *target, 
+		bool valid );
+	void Draw( sf::RenderTarget *target );
+	void Deactivate(EditSession *edit,
+		boost::shared_ptr<ISelectable> & select );
+	void Activate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select);
+	bool CanApply();
+	bool CanAdd();
+	void SetSelected( bool select );
+
+	static const int POINT_RADIUS = 5;
 	//int special;
 };
 
+typedef boost::shared_ptr<TerrainPoint> PointPtr;
 typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
 
 struct EditSession;
