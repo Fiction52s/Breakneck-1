@@ -3,8 +3,7 @@
 
 #include "Physics.h"
 
-
-struct Gate : public Edge
+struct Gate : public QuadTreeEntrant//: public Edge
 {
 	
 	enum GateType
@@ -14,12 +13,30 @@ struct Gate : public Edge
 		BLUE,
 		Count		
 	};
-	Gate( GateType type);
+	Gate( GateType type );
 	GateType type;
 	bool locked;
 	sf::Color c;
 	sf::VertexArray thickLine;
 	void UpdateLine();
+	void SetLocked( bool on );
+
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+
+
+	Edge *temp0prev;
+	Edge *temp0next;
+	Edge *temp1prev;
+	Edge *temp1next;
+
+	Edge *edgeA;
+	Edge *edgeB;
+
+	Gate *next;
+	Gate *prev;
+	//
+
 	void Draw( sf::RenderTarget *target );
 };
 
