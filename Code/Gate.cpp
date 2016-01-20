@@ -79,7 +79,7 @@ void Gate::SetLocked( bool on )
 		temp0prev->edge1 = edgeA;
 
 		edgeA->edge1 = temp1next;
-		temp0prev->edge0 = edgeA;
+		temp1next->edge0 = edgeA;
 
 		edgeB->edge0 = temp1prev;
 		temp1prev->edge1 = edgeB;
@@ -97,7 +97,8 @@ void Gate::SetLocked( bool on )
 
 void Gate::HandleQuery( QuadTreeCollider *qtc )
 {
-	edgeA->HandleQuery( qtc );
+	qtc->HandleEntrant( this );
+	//edgeA->HandleQuery( qtc );
 }
 
 bool Gate::IsTouchingBox( const sf::Rect<double> &r )

@@ -4854,7 +4854,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		owner->powerBar.Damage( 1000000 );
 	}
 
-	queryMode = "gate";
+	/*queryMode = "gate";
 	owner->testGateCount = 0;
 	owner->gateTree->Query( this, r );
 
@@ -4868,7 +4868,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		owner->deathWipe = true;
 
 		owner->powerBar.Damage( 1000000 );
-	}
+	}*/
 
 	//need to fix the quad tree but this works!
 	//cout << "test grass count: " << testGrassCount << endl;
@@ -5938,7 +5938,7 @@ void Actor::UpdatePhysics()
 					V2d v0 = grindEdge->v0;
 
 					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
-					queryMode = "gate";
+					/*queryMode = "gate";
 					owner->testGateCount = 0;
 					owner->gateTree->Query( this, r );
 
@@ -5953,7 +5953,7 @@ void Actor::UpdatePhysics()
 
 						owner->powerBar.Damage( 1000000 );
 						return;
-					}
+					}*/
 					
 				}
 				else
@@ -5971,7 +5971,7 @@ void Actor::UpdatePhysics()
 
 					V2d v0 = grindEdge->v0;
 					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
-					queryMode = "gate";
+					/*queryMode = "gate";
 					owner->testGateCount = 0;
 					owner->gateTree->Query( this, r );
 
@@ -5986,7 +5986,7 @@ void Actor::UpdatePhysics()
 
 						owner->powerBar.Damage( 1000000 );
 						return;
-					}
+					}*/
 
 					grindEdge = e0;
 					q = length( e0->v1 - e0->v0 );

@@ -1501,8 +1501,8 @@ bool GameSession::OpenFile( string fileName )
 
 			gate->UpdateLine();
 
-			//terrainTree->Insert( gate->edgeA );
-			//terrainTree->Insert( gate->edgeB );
+			terrainTree->Insert( gate->edgeA );
+			terrainTree->Insert( gate->edgeB );
 
 			cout << "inserting gate: " << gate->edgeA << endl;
 			gateTree->Insert( gate );
@@ -2492,7 +2492,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
