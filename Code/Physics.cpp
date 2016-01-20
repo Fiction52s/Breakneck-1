@@ -15,7 +15,6 @@ Edge::Edge()
 {
 	edge0 = NULL;
 	edge1 = NULL;
-	edgeType = EdgeType::REGULAR;
 }
 
 V2d Edge::Normal()

@@ -9,13 +9,6 @@
 
 struct Edge : QuadTreeEntrant
 {
-	enum EdgeType
-	{
-		REGULAR,
-		GATE,
-		Count
-	};
-
 	Edge();
 	sf::Vector2<double> Normal();
 	sf::Vector2<double> GetPoint( double quantity );
@@ -31,7 +24,6 @@ struct Edge : QuadTreeEntrant
 	Edge * GetEdge1();
 	Edge *edge0;
 	Edge *edge1;
-	EdgeType edgeType;
 };
 
 struct GameSession;
