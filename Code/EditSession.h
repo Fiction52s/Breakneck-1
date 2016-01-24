@@ -87,7 +87,8 @@ struct TerrainPoint
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
-	GateInfo *gate;
+	boost::shared_ptr<GateInfo> gate;
+	//GateInfo *gate;
 	bool firstPoint; 
 	TerrainPoint *next;
 	TerrainPoint *prev;
@@ -294,6 +295,7 @@ struct GateInfo
 	
 };
 
+typedef boost::shared_ptr<GateInfo> GateInfoPtr;
 
 struct StaticLight
 {
@@ -567,7 +569,7 @@ struct EditSession : GUIHandler
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	void CreateActor( ActorPtr &actor );
-	std::list<GateInfo*> gates;
+	std::list<GateInfoPtr> gates;
 	GateInfo *selectedGate;
 
 
@@ -762,7 +764,7 @@ struct EditSession : GUIHandler
 	//TerrainPoint *gatePoint1;
 	sf::Vector2i gatePoint0;
 	sf::Vector2i gatePoint1;
-	GateInfo *modifyGate;
+	GateInfoPtr modifyGate;
 	
 
 	enum Emode

@@ -1652,13 +1652,15 @@ void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 		pointEnd = tp->prev;
 	}
 
-	GateInfo *gi = tp->gate;
+	GateInfoPtr gi = tp->gate;
 	if( gi != NULL )
 	{
 		gi->point0->gate = NULL;
 		gi->point1->gate = NULL;
 		gi->edit->gates.remove( gi );
-		delete gi;
+		//delete gi;
+
+		//was deleting just fine before, but now it needs to be adjusted for undo/redo
 	}
 	//delete tp;
 
@@ -3341,7 +3343,9 @@ bool EditSession::OpenFile( string fileName )
 				testIndex++;
 			}
 
-			GateInfo *gi = new GateInfo;
+			//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
+			GateInfoPtr gi( new GateInfo );
+			//GateInfo *gi = new GateInfo;
 			gi->poly0 = terrain0;
 			gi->poly1 = terrain1;
 			gi->vertexIndex0 = vertexIndex0;
@@ -3355,7 +3359,7 @@ bool EditSession::OpenFile( string fileName )
 				if( index == vertexIndex0 )
 				{
 					gi->point0 = curr;
-					curr->gate = gi;					
+					curr->gate = gi;				
 					break;
 				}
 				++index;
@@ -3515,7 +3519,7 @@ void EditSession::WriteFile(string fileName)
 	}
 
 	of << gates.size() << endl;
-	for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+	for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
 	{
 		(*it)->WriteFile( of );
 	}
@@ -5349,7 +5353,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								{
 									GateInfo *closest = NULL;
 									double closestDist = 50;
-									for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+									for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
 									{
 										double extra = 50;
 										double gLeft = std::min( (*it)->point0->pos.x, (*it)->point1->pos.x ) - extra;
@@ -5366,8 +5370,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											double dist = abs(cross( worldPos - v0, normalize( V2d( (*it)->point1->pos.x, (*it)->point1->pos.y ) - v0 ) ));
 											if( dist < closestDist )
 											{
-												closest = (*it);
-												closestDist = dist;
+												//closest = (*it);
+												//closestDist = dist;
 											}
 										}
 									}
@@ -5375,8 +5379,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( closest != NULL )
 									{
-										selectedGate = closest;
-										empty = false;
+										//selectedGate = closest;
+										//empty = false;
 									}
 
 								}
@@ -5950,10 +5954,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 								else if( selectedGate != NULL )
 								{
-									gates.remove( selectedGate );
+									//gates.remove( selectedGate );
 									selectedGate->point0->gate = NULL;
 									selectedGate->point1->gate = NULL;
-									delete selectedGate;
+									//delete selectedGate;
 									selectedGate = NULL;
 								}
 								else
@@ -6106,7 +6110,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									bool result = CanCreateGate( testInfo );
 
-									if( result )
+									/*if( result )
 									{
 
 										
@@ -6140,7 +6144,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									else
 									{
 										MessagePop( "gate would intersect some terrain" );
-									}
+									}*/
 								}
 								else
 								{
@@ -7078,12 +7082,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												if( gatePoints == 0 )
 												{
 
-													for( list<GateInfo*>::iterator git = gates.begin(); git != gates.end() && !found; ++git )
+													for( list<GateInfoPtr>::iterator git = gates.begin(); git != gates.end() && !found; ++git )
 													{
 														if( (*git)->point0 == curr || (*git)->point1 == curr )
 														{
 
-															GateInfo *gi = (*git);
+															GateInfoPtr gi = (*git);
 
 															view.setCenter( curr->pos.x, curr->pos.y );
 															preScreenTex->setView( view );
@@ -8571,7 +8575,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			(*it).second->Draw( preScreenTex );
 		}
 
-		for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+		for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
 		{
 			//cout << "drawing gate" << endl;
 			(*it)->Draw( preScreenTex );
@@ -8857,7 +8861,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						gates.remove( modifyGate );
 						modifyGate->point0->gate = NULL;
 						modifyGate->point1->gate = NULL;
-						delete modifyGate;
+						//delete modifyGate;
 						modifyGate = NULL;
 					}
 					else
@@ -8926,13 +8930,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 						}
 						else
-						{
-										
+						{			
 							//MessagePop( "gate created" );
-							GateInfo *gi = new GateInfo;
+							//GateInfoPtr gi = shared_ptr<GateInfo>( new GateInfo );
+							GateInfoPtr gi( new GateInfo );
+							//GateInfo *gi = new GateInfo;
 
 							gi->SetType( tempGridResult );
-							//gi->type = tempGridResult;
 
 							gi->edit = this;
 							gi->poly0 = testGateInfo.poly0;
@@ -8945,10 +8949,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							gi->point1 = testGateInfo.point1;
 							gi->point1->gate = gi;
 							gi->UpdateLine();
-
-
-										
-
 							gates.push_back( gi );
 						}
 					}
@@ -11514,7 +11514,7 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	Vector2i v1 = testGate.point1->pos;
 
 	//no duplicate points
-	for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+	for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
 	{
 		if( v0 == (*it)->point0->pos || v0 == (*it)->point1->pos || v1 == (*it)->point0->pos || v1 == (*it)->point1->pos )
 		{
@@ -11606,7 +11606,7 @@ void EditSession::CopyToPasteBrushes()
 bool EditSession::PolyIntersectGate( TerrainPolygon &poly )
 {
 	//can be optimized with bounding box checks.
-	for( list<GateInfo*>::iterator it = gates.begin(); it != gates.end(); ++it )
+	for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
 	{
 		Vector2i point0 = (*it)->point0->pos;
 		Vector2i point1 = (*it)->point1->pos;
