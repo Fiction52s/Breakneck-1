@@ -230,9 +230,16 @@ struct DeleteGateAction : Action
 	GateInfoPtr gate;
 };
 
-struct ModifyGateAction
+struct ModifyGateAction : Action
 {
+	ModifyGateAction( GateInfoPtr &ptr, const
+		std::string &type );
+	void Perform();
+	void Undo();
 
+	GateInfoPtr gate;
+	GateInfo::GateTypes oldType;
+	std::string newType;
 };
 
 

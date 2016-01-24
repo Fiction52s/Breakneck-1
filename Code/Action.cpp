@@ -419,6 +419,37 @@ void DeleteGateAction::Undo()
 	//destroy the gate
 }
 
+ModifyGateAction::ModifyGateAction( GateInfoPtr &ptr, const std::string &type )
+	:newType( type )
+{
+	gate = ptr;
+	oldType = gate->type;
+}
+
+void ModifyGateAction::Perform()
+{
+	assert( session != NULL );
+	assert( !performed );
+
+	performed = true;
+
+	gate->SetType( newType );
+	gate->UpdateLine();
+}
+
+void ModifyGateAction::Undo()
+{
+	assert( session != NULL );
+	assert( performed );
+
+	performed = false;
+	
+
+	//gate->SetType( oldType );
+	gate->type = oldType;
+	gate->UpdateLine();
+}
+
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform )
 	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform )

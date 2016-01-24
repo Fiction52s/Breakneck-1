@@ -8895,8 +8895,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					else
 					{
-						modifyGate->SetType( tempGridResult );
-						modifyGate->UpdateLine();
+
+						Action * action = new ModifyGateAction( modifyGate, tempGridResult );
+						action->Perform();
+						doneActionStack.push_back( action );
+
+						//modifyGate->SetType( tempGridResult );
+						//modifyGate->UpdateLine();
 						modifyGate = NULL;
 					}
 					break;
