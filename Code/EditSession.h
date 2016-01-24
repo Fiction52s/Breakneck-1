@@ -713,6 +713,7 @@ struct EditSession : GUIHandler
 	sf::Vector2i pointMouseDown;
 
 	Brush *selectedBrush;
+	std::list<TerrainPoint*> selectedPoints;
 	CompoundAction *moveAction;
 
 	bool moveActive;
@@ -752,7 +753,15 @@ struct EditSession : GUIHandler
 	void CopyToPasteBrushes();
 	sf::Vector2i pastePos;
 
-	
+	int gatePoints;
+
+	GateInfo testGateInfo;
+	//TerrainPolygon *gatePoly0;
+	//TerrainPolygon *gatePoly1;
+	//TerrainPoint *gatePoint0;
+	//TerrainPoint *gatePoint1;
+	sf::Vector2i gatePoint0;
+	sf::Vector2i gatePoint1;
 	
 
 	enum Emode
@@ -768,7 +777,8 @@ struct EditSession : GUIHandler
 		CREATE_ENEMY,
 		DRAW_PATROL_PATH,
 		CREATE_TERRAIN_PATH,
-		CREATE_LIGHTS
+		CREATE_LIGHTS,
+		CREATE_GATES
 	};
 
 	Emode mode;

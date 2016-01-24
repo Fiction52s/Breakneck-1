@@ -1478,9 +1478,9 @@ bool GameSession::OpenFile( string fileName )
 			V2d point1 = edge1->v0;
 
 			gate->edgeA = new Edge;
-			gate->edgeA->edgeType = Edge::GATE;
+			gate->edgeA->edgeType = Edge::CLOSED_GATE;
 			gate->edgeB = new Edge;
-			gate->edgeB->edgeType = Edge::GATE;
+			gate->edgeB->edgeType = Edge::CLOSED_GATE;
 
 			gate->edgeA->v0 = point0;
 			gate->edgeA->v1 = point1;
@@ -1506,6 +1506,9 @@ bool GameSession::OpenFile( string fileName )
 
 			cout << "inserting gate: " << gate->edgeA << endl;
 			gateTree->Insert( gate );
+
+			gateMap[gate->edgeA] = gate;
+			gateMap[gate->edgeB] = gate;
 		}
 
 		is.close();

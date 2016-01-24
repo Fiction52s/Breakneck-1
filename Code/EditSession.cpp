@@ -4939,17 +4939,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( !( editMouseDownMove || editMouseDownBox ) )
 								{
-
-									/*if( emptysp )
-									{
-										if( player->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
-										{
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( player );
-											selectedBrush->AddObject( sp );
-											sp->SetSelected( true );
-										}
-									}*/
-
 									if( emptysp )
 										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 										{
@@ -5057,6 +5046,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									break;
 								}
 
+								if( false )
+								{
+								/*for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+									//extended aabb 
+									int range = 8;
+									if( worldPos.x <= (*it)->right + range && worldPos.x >= (*it)->left - range
+										&& worldPos.y <= (*it)->bottom + range && worldPos.y >= (*it)->top - range )
+									{
+										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
+										{
+											if( length( worldPos - V2d( curr->pos.x, curr->pos.y ) ) <= range )
+											{
+												selected
+											}
+										}
+									}
+								}*/
+								}
+								else
+								{
 								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 								{
 									if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
@@ -5065,14 +5075,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 										selectedBrush->AddObject( sp );
 
-										//Action *rba = new RemoveBrushAction( selectedBrush );
-										//rba->Perform();
-										//polygons.remove( (*it) );
 										emptysp = false;
 										pointMouseDown = Vector2i( worldPos.x, worldPos.y );
 										moveActive = true;
 										break;
 									}
+								}
 								}
 
 								if( emptysp )
@@ -6798,8 +6806,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( menuSelection == "lowerleft" )
 							{
-								mode = CREATE_LIGHTS;
+								//mode = CREATE_LIGHTS;
+								mode = CREATE_GATES;
+								gatePoints = 0;
 								showPanel = NULL;
+								showPoints = true;
+								/*for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+									
+								}*/
 							}
 							else if( menuSelection == "lowerright" )
 							{
@@ -7031,6 +7046,94 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 					break;
 				}
+			case CREATE_GATES:
+				{
+					switch( ev.type )
+					{
+					case Event::MouseButtonPressed:
+						{
+							if( ev.mouseButton.button == Mouse::Left )
+							{
+								bool found = false;
+								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								{
+									//extended aabb 
+									int range = 8 * zoomMultiple;
+									if( worldPos.x <= (*it)->right + range && worldPos.x >= (*it)->left - range
+										&& worldPos.y <= (*it)->bottom + range && worldPos.y >= (*it)->top - range )
+									{
+										int index = 0;
+										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
+										{
+											if( length( worldPos - V2d( curr->pos.x, curr->pos.y ) ) <= range )
+											{
+												if( gatePoints == 0 )
+												{
+													found = true;
+													gatePoints = 1;
+													testGateInfo.poly0 = (*it);
+													testGateInfo.point0 = curr;
+													testGateInfo.vertexIndex0 = index;
+													//gatePoint0 = curr;
+													//gatePoint0.y = worldPos.y;
+												}
+												else
+												{
+													found = true;
+													gatePoints = 2;
+													
+													testGateInfo.poly1 = (*it);
+													testGateInfo.point1 = curr;
+													testGateInfo.vertexIndex1 = index;
+												}
+											}
+
+											++index;
+										}
+									}
+								}
+
+								if( !found )
+								{
+									gatePoints = 0;
+								}
+
+							}
+							break;
+						}
+					case Event::MouseButtonReleased:
+						{
+							break;
+						}
+					case Event::MouseWheelMoved:
+						{
+							break;
+						}
+					case Event::MouseMoved:
+						{
+							//delta
+							break;
+						}
+					case Event::KeyPressed:
+						{
+							break;
+						}
+					case Event::KeyReleased:
+						{
+							
+							break;
+						}
+					case Event::LostFocus:
+						{
+							break;
+						}
+					case Event::GainedFocus:
+						{
+							break;
+						}
+					}
+				}
+				break;
 			}
 
 			
@@ -8714,6 +8817,91 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				
 
 			}
+		case CREATE_GATES:
+			{
+				if( gatePoints > 0 )
+				{
+					CircleShape cs( 5 * zoomMultiple );
+					cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+					cs.setPosition( testGateInfo.point0->pos.x, testGateInfo.point0->pos.y );
+					cs.setFillColor( COLOR_TEAL );
+
+					V2d origin( testGateInfo.point0->pos.x, testGateInfo.point0->pos.y );
+					
+					V2d pointB;
+					if( gatePoints > 1 )
+					{
+						pointB = V2d( testGateInfo.point1->pos.x, testGateInfo.point1->pos.y );
+					}
+					else
+					{
+						pointB = worldPos;
+					}
+
+
+					V2d axis = normalize( worldPos - origin );
+					V2d other( axis.y, -axis.x );
+
+
+					double width = 4.0 * zoomMultiple;
+					V2d closeA = origin + other * width;
+					V2d closeB = origin - other * width;
+					V2d farA = pointB + other * width;
+					V2d farB = pointB - other * width;
+
+					sf::Vertex quad[4] = { 
+						sf::Vertex( Vector2f( closeA.x, closeA.y ), Color::White ),
+						sf::Vertex( Vector2f( farA.x, farA.y ), Color::White ),
+						sf::Vertex( Vector2f( farB.x, farB.y ), Color::White ),
+						sf::Vertex( Vector2f( closeB.x , closeB.y ), Color::White )
+					};
+
+					preScreenTex->draw( quad, 4, sf::Quads );
+					preScreenTex->draw( cs );
+				}
+
+				if( gatePoints > 1 )
+				{								
+
+					bool result = CanCreateGate( testGateInfo );
+
+					if( result )
+					{
+						GridSelectPop( "gatetype" );
+
+										
+						//MessagePop( "gate created" );
+						GateInfo *gi = new GateInfo;
+
+						gi->SetType( tempGridResult );
+						//gi->type = tempGridResult;
+
+						gi->edit = this;
+						gi->poly0 = testGateInfo.poly0;
+						gi->vertexIndex0 = testGateInfo.vertexIndex0;
+						gi->point0 = testGateInfo.point0;
+						gi->point0->gate = gi;
+
+						gi->poly1 = testGateInfo.poly1;
+						gi->vertexIndex1 = testGateInfo.vertexIndex1;
+						gi->point1 = testGateInfo.point1;
+						gi->point1->gate = gi;
+						gi->UpdateLine();
+
+
+										
+
+						gates.push_back( gi );
+					}
+					else
+					{
+						MessagePop( "gate would intersect some terrain" );
+					}
+
+					gatePoints = 0;
+				}
+			}
+			break;
 		}
 		
 		for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )

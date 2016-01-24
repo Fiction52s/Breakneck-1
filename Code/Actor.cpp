@@ -10244,9 +10244,17 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{
-			if( c->edge->edgeType == Edge::GATE )
+			if( c->edge->edgeType == Edge::OPEN_GATE )
 			{
 				cout << "GATEEEEee" << endl;
+				return;
+			}
+			else if( c->edge->edgeType == Edge::CLOSED_GATE )
+			{
+				c->edge->edgeType = Edge::OPEN_GATE;
+				Gate *g = owner->gateMap[c->edge];
+				g->SetLocked( false );
+				return;
 			}
 
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point

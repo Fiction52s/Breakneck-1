@@ -89,6 +89,14 @@ void Gate::SetLocked( bool on )
 	}
 	else
 	{
+		locked = false;
+
+
+		temp0next->edge0 = temp0prev;
+		temp0prev->edge1 = temp0next;
+
+		temp1next->edge0 = temp1prev;
+		temp1prev->edge1 = temp1next;
 		//locked = false;
 		//edge0->edge1 = edge1;
 		//edge1->edge0 = edge0;

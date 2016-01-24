@@ -12,7 +12,8 @@ struct Edge : QuadTreeEntrant
 	enum EdgeType
 	{
 		REGULAR,
-		GATE,
+		OPEN_GATE,
+		CLOSED_GATE,
 		Count
 	};
 

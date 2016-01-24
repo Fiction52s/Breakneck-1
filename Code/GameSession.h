@@ -220,6 +220,8 @@ struct GameSession : QuadTreeCollider
 	QuadTree * grassTree;
 	QuadTree * gateTree;
 
+	std::map<Edge*, Gate*> gateMap;
+
 	//int numKeys;
 	//Key *keys;
 	std::list<Key*> keyList;
