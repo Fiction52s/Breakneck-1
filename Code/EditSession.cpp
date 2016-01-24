@@ -8921,29 +8921,36 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 						GridSelectPop( "gatetype" );
 
+						if( tempGridResult == "delete" )
+						{
+
+						}
+						else
+						{
 										
-						//MessagePop( "gate created" );
-						GateInfo *gi = new GateInfo;
+							//MessagePop( "gate created" );
+							GateInfo *gi = new GateInfo;
 
-						gi->SetType( tempGridResult );
-						//gi->type = tempGridResult;
+							gi->SetType( tempGridResult );
+							//gi->type = tempGridResult;
 
-						gi->edit = this;
-						gi->poly0 = testGateInfo.poly0;
-						gi->vertexIndex0 = testGateInfo.vertexIndex0;
-						gi->point0 = testGateInfo.point0;
-						gi->point0->gate = gi;
+							gi->edit = this;
+							gi->poly0 = testGateInfo.poly0;
+							gi->vertexIndex0 = testGateInfo.vertexIndex0;
+							gi->point0 = testGateInfo.point0;
+							gi->point0->gate = gi;
 
-						gi->poly1 = testGateInfo.poly1;
-						gi->vertexIndex1 = testGateInfo.vertexIndex1;
-						gi->point1 = testGateInfo.point1;
-						gi->point1->gate = gi;
-						gi->UpdateLine();
+							gi->poly1 = testGateInfo.poly1;
+							gi->vertexIndex1 = testGateInfo.vertexIndex1;
+							gi->point1 = testGateInfo.point1;
+							gi->point1->gate = gi;
+							gi->UpdateLine();
 
 
 										
 
-						gates.push_back( gi );
+							gates.push_back( gi );
+						}
 					}
 					else
 					{
@@ -10059,7 +10066,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			confirmChoice = ConfirmChoices::CANCEL;
 		}
 	}
-	else if( panel == gateSelectorPopup )
+	else if( p == gateSelectorPopup )
 	{
 		tempGridResult = "delete";
 	}
