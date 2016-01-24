@@ -8883,14 +8883,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( tempGridResult == "delete" )
 					{
-						gates.remove( modifyGate );
-						modifyGate->point0->gate = NULL;
-						modifyGate->point1->gate = NULL;
-						//delete modifyGate;
+						Action * action = new DeleteGateAction( modifyGate );
+						action->Perform();
+						doneActionStack.push_back( action );
 
-						//cout << "removing gate with: " << modifyGate.use_count() << endl;
+						//gates.remove( modifyGate );
+						//modifyGate->point0->gate = NULL;
+						//modifyGate->point1->gate = NULL;
+
 						modifyGate = NULL;
-						//cout << "after gate with: " << modifyGate.use_count() << endl;
 					}
 					else
 					{
@@ -8965,7 +8966,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							Action * action = new CreateGateAction( testGateInfo, tempGridResult );
 							action->Perform();
 							doneActionStack.push_back( action );
-							cout << "creating action and pushing back" << endl;
 
 							/*GateInfoPtr gi( new GateInfo );
 							//GateInfo *gi = new GateInfo;

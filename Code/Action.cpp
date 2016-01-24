@@ -355,12 +355,12 @@ CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 	gate->poly0 = info.poly0;
 	gate->vertexIndex0 = info.vertexIndex0;
 	gate->point0 = info.point0;
-	gate->point0->gate = gate;
+	//gate->point0->gate = gate;
 
 	gate->poly1 = info.poly1;
 	gate->vertexIndex1 = info.vertexIndex1;
 	gate->point1 = info.point1;
-	gate->point1->gate = gate;
+	//gate->point1->gate = gate;
 
 
 	gate->UpdateLine();
@@ -372,7 +372,10 @@ void CreateGateAction::Perform()
 	assert( !performed );
 
 	performed = true;
+
 	session->gates.push_back( gate );
+	gate->point0->gate = gate;
+	gate->point1->gate = gate;
 	//create the gate
 }
 
@@ -381,9 +384,11 @@ void CreateGateAction::Undo()
 	assert( session != NULL );
 	assert( performed );
 
-	cout << "undoing gate creation" << endl;
 	performed = false;
+
 	session->gates.remove( gate );
+	gate->point0->gate = NULL;
+	gate->point1->gate = NULL;
 	//destroy the gate
 }
 
@@ -398,6 +403,8 @@ void DeleteGateAction::Perform()
 	
 	performed = true;
 	session->gates.remove( gate );
+	gate->point0->gate = NULL;
+	gate->point1->gate = NULL;
 	//create the gate
 }
 
@@ -407,6 +414,8 @@ void DeleteGateAction::Undo()
 
 	performed = false;
 	session->gates.push_back( gate );
+	gate->point0->gate = gate;
+	gate->point1->gate = gate;
 	//destroy the gate
 }
 
