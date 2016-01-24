@@ -213,23 +213,27 @@ struct DeletePointsAction : Action
 
 struct CreateGateAction : Action
 {
-	CreateGateAction();
+	CreateGateAction( GateInfo &info, 
+		const std::string &type);
 	void Perform();
 	void Undo();
 
-	GateInfo *gi;
+	GateInfoPtr gate;	
 };
 
 struct DeleteGateAction : Action
 {
-	DeleteGateAction();
+	DeleteGateAction( GateInfoPtr &ptr );
 	void Perform();
 	void Undo();
 
-	GateInfo *gi;
+	GateInfoPtr gate;
 };
 
+struct ModifyGateAction
+{
 
+};
 
 
 

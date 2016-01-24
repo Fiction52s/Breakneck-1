@@ -4879,6 +4879,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									Action *action = doneActionStack.back();
 									doneActionStack.pop_back();
 
+									//cout << "undoing an action" << endl;
 									action->Undo();
 
 									undoneActionStack.push_back( action );
@@ -7149,6 +7150,30 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
+							if( ev.key.code == sf::Keyboard::Z && ev.key.control )
+							{
+								if( doneActionStack.size() > 0 )
+								{
+									Action *action = doneActionStack.back();
+									doneActionStack.pop_back();
+
+									action->Undo();
+
+									undoneActionStack.push_back( action );
+								}
+							}
+							else if( ev.key.code == sf::Keyboard::Y && ev.key.control )
+							{
+								if( undoneActionStack.size() > 0 )
+								{
+									Action *action = undoneActionStack.back();
+									undoneActionStack.pop_back();
+
+									action->Perform();
+
+									doneActionStack.push_back( action );
+								}
+							}
 							break;
 						}
 					case Event::KeyReleased:
@@ -8862,7 +8887,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						modifyGate->point0->gate = NULL;
 						modifyGate->point1->gate = NULL;
 						//delete modifyGate;
+
+						//cout << "removing gate with: " << modifyGate.use_count() << endl;
 						modifyGate = NULL;
+						//cout << "after gate with: " << modifyGate.use_count() << endl;
 					}
 					else
 					{
@@ -8933,7 +8961,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{			
 							//MessagePop( "gate created" );
 							//GateInfoPtr gi = shared_ptr<GateInfo>( new GateInfo );
-							GateInfoPtr gi( new GateInfo );
+
+							Action * action = new CreateGateAction( testGateInfo, tempGridResult );
+							action->Perform();
+							doneActionStack.push_back( action );
+							cout << "creating action and pushing back" << endl;
+
+							/*GateInfoPtr gi( new GateInfo );
 							//GateInfo *gi = new GateInfo;
 
 							gi->SetType( tempGridResult );
@@ -8949,7 +8983,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							gi->point1 = testGateInfo.point1;
 							gi->point1->gate = gi;
 							gi->UpdateLine();
-							gates.push_back( gi );
+							gates.push_back( gi );*/
 						}
 					}
 					else
