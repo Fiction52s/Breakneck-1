@@ -762,6 +762,7 @@ struct EditSession : GUIHandler
 	//TerrainPoint *gatePoint1;
 	sf::Vector2i gatePoint0;
 	sf::Vector2i gatePoint1;
+	GateInfo *modifyGate;
 	
 
 	enum Emode

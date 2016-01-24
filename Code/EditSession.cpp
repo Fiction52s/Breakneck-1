@@ -4278,6 +4278,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	v.setSize( 1920/ 2, 1080 / 2 );
 	w->setView( v );
 
+	modifyGate = NULL;
+
 	confirm = CreatePopupPanel( "confirmation" );
 	validityRadius = 4;
 
@@ -4406,6 +4408,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gateSel->Set( 0, 0, s5, "red" );
 	gateSel->Set( 1, 0, ss0, "green" );
 	gateSel->Set( 2, 0, ss1, "blue" );
+
+	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 80 ), Vector2f( 80, 40 ), "delete" );
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -6104,6 +6108,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( result )
 									{
+
+										
+
 										GridSelectPop( "gatetype" );
 
 										
@@ -7054,8 +7061,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
+								modifyGate = NULL;
 								bool found = false;
-								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end() && !found; ++it )
 								{
 									//extended aabb 
 									int range = 8 * zoomMultiple;
@@ -7063,19 +7071,38 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										&& worldPos.y <= (*it)->bottom + range && worldPos.y >= (*it)->top - range )
 									{
 										int index = 0;
-										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
+										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL && !found; curr = curr->next )
 										{
 											if( length( worldPos - V2d( curr->pos.x, curr->pos.y ) ) <= range )
 											{
 												if( gatePoints == 0 )
 												{
-													found = true;
-													gatePoints = 1;
-													testGateInfo.poly0 = (*it);
-													testGateInfo.point0 = curr;
-													testGateInfo.vertexIndex0 = index;
-													//gatePoint0 = curr;
-													//gatePoint0.y = worldPos.y;
+
+													for( list<GateInfo*>::iterator git = gates.begin(); git != gates.end() && !found; ++git )
+													{
+														if( (*git)->point0 == curr || (*git)->point1 == curr )
+														{
+
+															GateInfo *gi = (*git);
+
+															view.setCenter( curr->pos.x, curr->pos.y );
+															preScreenTex->setView( view );
+
+															modifyGate = gi;
+															
+															
+															found = true;
+														}
+													}
+
+													if( !found )
+													{
+														found = true;
+														gatePoints = 1;
+														testGateInfo.poly0 = (*it);
+														testGateInfo.point0 = curr;
+														testGateInfo.vertexIndex0 = index;
+													}
 												}
 												else
 												{
@@ -7085,6 +7112,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													testGateInfo.poly1 = (*it);
 													testGateInfo.point1 = curr;
 													testGateInfo.vertexIndex1 = index;
+													view.setCenter( testGateInfo.point1->pos.x, testGateInfo.point1->pos.y );
+													preScreenTex->setView( view );
 												}
 											}
 
@@ -8819,6 +8848,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case CREATE_GATES:
 			{
+				if( modifyGate != NULL )
+				{
+					GridSelectPop( "gatetype" );
+
+					if( tempGridResult == "delete" )
+					{
+						gates.remove( modifyGate );
+						modifyGate->point0->gate = NULL;
+						modifyGate->point1->gate = NULL;
+						delete modifyGate;
+						modifyGate = NULL;
+					}
+					else
+					{
+						modifyGate->SetType( tempGridResult );
+						modifyGate->UpdateLine();
+						modifyGate = NULL;
+					}
+					break;
+				}
+
 				if( gatePoints > 0 )
 				{
 					CircleShape cs( 5 * zoomMultiple );
@@ -8867,6 +8917,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( result )
 					{
+						
+
 						GridSelectPop( "gatetype" );
 
 										
@@ -10007,6 +10059,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			confirmChoice = ConfirmChoices::CANCEL;
 		}
 	}
+	else if( panel == gateSelectorPopup )
+	{
+		tempGridResult = "delete";
+	}
 	//cout <<"button" << endl;
 }
 
@@ -11043,12 +11099,18 @@ void EditSession::GridSelectPop( const std::string &type )
 	preTexSprite.setPosition( -960 / 2, -540 / 2 );
 	preTexSprite.setScale( .5, .5 );	
 
+
 	preScreenTex->setView( uiView );
 
 	Vector2i pixelPos = sf::Mouse::getPosition( *w );
 	pixelPos.x *= 1920 / w->getSize().x;
 	pixelPos.y *= 1920 / w->getSize().y;
+	pixelPos = Vector2i( 960, 540 );
+
+
 	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+
+
 
 	gateSelectorPopup->pos.x = uiMouse.x;
 	gateSelectorPopup->pos.y = uiMouse.y;
@@ -11076,6 +11138,8 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						gateSelectorPopup->Update( true, uiMouse.x, uiMouse.y );
+						//if you click outside of the box, delete the gate
+						
 						//if( uiMouse.x < messagePopup->pos.x 
 						//messagePopup->Update( true, uiMouse.x, uiMouse.y );		
 					}			
@@ -11168,7 +11232,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	}
 	else if( type == "gateselector" )
 	{
-		Panel *p = new Panel( "gate_popup", 100, 150, this );
+		Panel *p = new Panel( "gate_popup", 200, 150, this );
 		return p;
 	}
 
