@@ -355,7 +355,7 @@ Actor::Actor( GameSession *gs )
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
 		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
-		actionLength[JUMPSQUAT] = 3;
+		actionLength[JUMPSQUAT] = 4;
 		tileset[JUMPSQUAT] = owner->GetTileset( "jump.png", 64, 64 );
 		normal[JUMPSQUAT] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 		
@@ -429,7 +429,7 @@ Actor::Actor( GameSession *gs )
 		steepThresh = .4; // go between 0 and 1
 
 		gravity = 1.9;
-		maxFallSpeed = 60;//100;
+		maxFallSpeed = 40;//100;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 25;
@@ -458,7 +458,7 @@ Actor::Actor( GameSession *gs )
 		
 		airDashSpeed = 12;
 
-		airSlow = 1;//.3;
+		airSlow = .7;//.3;
 
 		groundOffsetX = 0;
 
@@ -629,9 +629,9 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case JUMPSQUAT:
-			action = JUMP;
 			frame = 0;
-			groundSpeed = storedGroundSpeed;
+			//never happens
+			
 			break;
 		case LAND:
 			frame = 0;
@@ -1398,6 +1398,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMPSQUAT:
 		{
+			if( frame == actionLength[JUMPSQUAT] - 1 )
+			{
+				action = JUMP;
+				frame = 0;
+				groundSpeed = storedGroundSpeed;
+			}
 		}
 		break;
 	case DOUBLE:
@@ -7546,7 +7552,21 @@ void Actor::UpdatePhysics()
 				V2d alongVel = V2d( -minContact.normal.y, minContact.normal.x );
 				
 				double groundLength = length( ground->v1 - ground->v0 );
-				groundSpeed = dot( velocity, alongVel );//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+
+				V2d testVel = velocity;
+
+				if( testVel.y > 0 )
+				{
+					testVel.y *= .7;
+					//alongVel.y *= .5;
+				//	cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
+				//	cout << "alongVel: " << alongVel.x << ", " << alongVel.y << endl;
+					//testVel.y *= .5;
+				}
+				//testVel.y /= 2.0
+				//cout << "groundspeed: " << groundSpeed << endl;
+
+				groundSpeed = dot( testVel, alongVel );//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				//cout << "setting groundSpeed: " << groundSpeed << endl;
 				V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
 				
@@ -7562,10 +7582,12 @@ void Actor::UpdatePhysics()
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
 				{
 					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7);
+					cout << "left boost: " << groundSpeed << endl;
 				}
 				else if( velocity.x > 0 && gNorm.y <= -steepThresh )
 				{
 					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7 );
+					cout << "right boost: " << groundSpeed << endl;
 				}
 				//groundSpeed  = max( abs( velocity.x ), ( - ) );
 				
@@ -7574,7 +7596,7 @@ void Actor::UpdatePhysics()
 				//	groundSpeed = -groundSpeed;
 				}
 
-				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
+				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
 
 				movement = 0;
 			
@@ -8171,15 +8193,15 @@ void Actor::UpdateHitboxes()
 	if( action == AIRDASH )
 	{
 		hurtBody.isCircle = true;
-		hurtBody.rw = b.rw;
-		hurtBody.rh = b.rw;
+		hurtBody.rw = 7;//b.rw;
+		hurtBody.rh = 10;//b.rw;
 		//hurtBody.offset = 
 	}
 	else
 	{
 		hurtBody.isCircle = false;
-		hurtBody.rw = b.rw;
-		hurtBody.rh = b.rh;
+		hurtBody.rw = 7;//b.rw;//b.rw - 5;
+		hurtBody.rh = 10;//b.rh;//b.rh - 10;
 		
 		hurtBody.offset = b.offset;
 	}
