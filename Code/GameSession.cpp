@@ -1887,6 +1887,9 @@ int GameSession::Run( string fileN )
 				returnVal = 1;
 				break;
 			}
+			
+			if( pauseFrames == 0 )
+			{
 
 			prevInput = currInput;
 			player.prevInput = currInput;
@@ -2000,7 +2003,10 @@ int GameSession::Run( string fileN )
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
+
 			player.currInput = currInput;
+
+			}
 
 			if( pauseFrames > 0 )
 			{
@@ -2021,7 +2027,9 @@ int GameSession::Run( string fileN )
 				}
 
 				//cam.offset.y += 10;
-				cam.Update( &player );
+				
+				
+				//cam.Update( &player );
 				
 				//view fx that are outside of hitlag pausing
 				Enemy *currFX = activeEnemyList;

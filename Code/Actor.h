@@ -47,6 +47,7 @@ struct Actor : QuadTreeCollider,
 		BOUNCEAIR,
 		BOUNCEGROUND,
 		BOUNCEGROUNDEDWALL,
+		JUMPSQUAT,
 		DEATH,
 		Count
 	};
@@ -159,7 +160,7 @@ struct Actor : QuadTreeCollider,
 
 	Tileset *ts_bounceBoost;
 
-	
+	bool test;
 	
 	double offSlopeByWallThresh;
 	const static int MAX_MOTION_GHOSTS = 2;
@@ -387,6 +388,12 @@ struct Actor : QuadTreeCollider,
 	bool longWallJump;
 	Action oldAction;
 
+	bool currAttackHit;
+	double storedGroundSpeed;
+	
+	bool holdDouble;
+	int framesSinceDouble;
+	
 	//end unstored
 
 	void SaveState();
@@ -535,6 +542,7 @@ struct PlayerGhost
 		BOUNCEAIR,
 		BOUNCEGROUND,
 		BOUNCEGROUNDEDWALL,
+		JUMPSQUAT,
 		DEATH,
 		Count
 	};

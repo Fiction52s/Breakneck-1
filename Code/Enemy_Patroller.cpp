@@ -16,6 +16,9 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.x = pos.x;
 	position.y = pos.y;
 
+	initHealth = 60;
+	health = initHealth;
+
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	pathLength = pathParam.size() + 1;
@@ -108,12 +111,25 @@ void Patroller::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
+	health = initHealth;
 	
 }
 
 void Patroller::UpdatePrePhysics()
 {
-	
+	if( !dead && receivedHit != NULL )
+	{
+		owner->Pause( 4 );
+		
+		//gotta factor in getting hit by a clone
+		health -= 20;
+
+		cout << "health now: " << health << endl;
+
+		if( health <= 0 )
+			dead = true;
+		receivedHit = NULL;
+	}
 }
 
 void Patroller::UpdatePhysics()
@@ -176,14 +192,22 @@ void Patroller::PhysicsResponse()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
+			owner->player.test = true;
+			owner->player.currAttackHit = true;
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
+			/*if( !result.second )
 			{
-				owner->Pause( 6 );
+				owner->Pause( 8 );
 			}
 		
-			dead = true;
-			receivedHit = NULL;
+			health -= 20;
+
+			if( health <= 0 )
+				dead = true;
+
+			receivedHit = NULL;*/
+			//dead = true;
+			//receivedHit = NULL;
 		}
 
 		if( IHitPlayer() )

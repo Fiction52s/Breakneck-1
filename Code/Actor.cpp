@@ -13,6 +13,8 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		test = false;
+
 		lastWire = 0;
 		inBubble = false;
 		oldInBubble = false;
@@ -125,7 +127,8 @@ Actor::Actor( GameSession *gs )
 
 		//setup hitboxes
 		{
-		for( int j = 4; j < 10; ++j )
+		//for( int j = 4; j < 10; ++j )
+		for( int j = 0; j < 7; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
@@ -251,7 +254,7 @@ Actor::Actor( GameSession *gs )
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
-		actionLength[FAIR] = 10 * 2;
+		actionLength[FAIR] = 10;//10 * 2;
 		tileset[FAIR] = owner->GetTileset( "fair.png", 80, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
@@ -352,6 +355,9 @@ Actor::Actor( GameSession *gs )
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
 		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
+		actionLength[JUMPSQUAT] = 3;
+		tileset[JUMPSQUAT] = owner->GetTileset( "jump.png", 64, 64 );
+		normal[JUMPSQUAT] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 		
 
 		}
@@ -461,7 +467,7 @@ Actor::Actor( GameSession *gs )
 		grindQuantity = 0;
 		grindSpeed = 0;
 
-		maxRunInit = 8;
+		maxRunInit = 6;
 		maxAirXControl = maxRunInit;
 
 		maxGroundSpeed = 100;
@@ -497,8 +503,8 @@ Actor::Actor( GameSession *gs )
 		hurtBody.offset.x = 0;
 		hurtBody.offset.y = 0;
 		hurtBody.isCircle = false;
-		hurtBody.rw = 10;
-		hurtBody.rh = normalHeight;
+		hurtBody.rw = 5;//10;
+		hurtBody.rh = normalHeight - 5;//normalHeight;
 		hurtBody.type = CollisionBox::BoxType::Hurt;
 
 		currHitboxes = NULL;
@@ -621,6 +627,11 @@ void Actor::ActionEnded()
 			break;
 		case JUMP:
 			frame = 1;
+			break;
+		case JUMPSQUAT:
+			action = JUMP;
+			frame = 0;
+			groundSpeed = storedGroundSpeed;
 			break;
 		case LAND:
 			frame = 0;
@@ -1027,7 +1038,7 @@ void Actor::UpdatePrePhysics()
 		
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				action = JUMPSQUAT;
 				frame = 0;
 				break;
 			}
@@ -1102,7 +1113,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				action = JUMPSQUAT;
 				frame = 0;
 				runTappingSound.stop();
 				break;
@@ -1311,6 +1322,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = DOUBLE;
 				frame = 0;
+				holdDouble = true;
 				break;
 			}
 
@@ -1384,6 +1396,10 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
+	case JUMPSQUAT:
+		{
+		}
+		break;
 	case DOUBLE:
 		{
 
@@ -1649,6 +1665,7 @@ void Actor::UpdatePrePhysics()
 			{
 				action = DOUBLE;
 				frame = 0;
+				holdDouble = true;
 				break;
 			}
 
@@ -1722,14 +1739,183 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
+
+			if( hasPowerAirDash )
+			{
+				if( hasAirDash && !prevInput.B && currInput.B )
+				{
+					bounceFlameOn = false;
+					action = AIRDASH;
+					airDashStall = false;
+					frame = 0;
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				frame = 0;
+				holdDouble = true;
+				break;
+			}
+
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				if( currInput.LUp() )
+				{
+					action = UAIR;
+					frame = 0;
+				}
+				else if( currInput.LDown() )
+				{
+					action = DAIR;
+					frame = 0;
+				}
+				else
+				{
+					action = FAIR;
+					frame = 0;
+				}
+			}
+
+			}
 			break;
 		}
 	case DAIR:
 		{
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
+
+			if( hasPowerAirDash )
+			{
+				if( hasAirDash && !prevInput.B && currInput.B )
+				{
+					bounceFlameOn = false;
+					action = AIRDASH;
+					airDashStall = false;
+					frame = 0;
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				frame = 0;
+				holdDouble = true;
+				break;
+			}
+
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				if( currInput.LUp() )
+				{
+					action = UAIR;
+					frame = 0;
+				}
+				else if( currInput.LDown() )
+				{
+					action = DAIR;
+					frame = 0;
+				}
+				else
+				{
+					action = FAIR;
+					frame = 0;
+				}
+			}
+			}
 			break;
 		}
 	case UAIR:
 		{
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
+
+			if( hasPowerAirDash )
+			{
+				if( hasAirDash && !prevInput.B && currInput.B )
+				{
+					bounceFlameOn = false;
+					action = AIRDASH;
+					airDashStall = false;
+					frame = 0;
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				holdDouble = true;
+				frame = 0;
+				break;
+			}
+
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				if( currInput.LUp() )
+				{
+					action = UAIR;
+					frame = 0;
+				}
+				else if( currInput.LDown() )
+				{
+					action = DAIR;
+					frame = 0;
+				}
+				else
+				{
+					action = FAIR;
+					frame = 0;
+				}
+			}
+			}
 			break;
 		}
 	case DASH:
@@ -1796,7 +1982,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				action = JUMPSQUAT;
 				frame = 0;
 				break;
 			}
@@ -1868,7 +2054,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				action = JUMPSQUAT;
 				frame = 0;
 				break;
 			}
@@ -2110,7 +2296,7 @@ void Actor::UpdatePrePhysics()
 			//{
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				action = JUMPSQUAT;
 				frame = 0;
 				break;
 			}
@@ -2347,6 +2533,7 @@ void Actor::UpdatePrePhysics()
 								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 							}
 							
+
 							action = JUMP;
 							frame = 0;
 							ground = NULL;
@@ -2439,7 +2626,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				action = JUMPSQUAT;
 				frame = 0;
 				break;
 			}
@@ -2529,6 +2716,7 @@ void Actor::UpdatePrePhysics()
 			else if( currInput.A && !prevInput.A && hasDoubleJump && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				action = DOUBLE;
+				holdDouble = true;
 				frame = 0;
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
@@ -2591,7 +2779,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					action = JUMP;
+					action = JUMPSQUAT;
 					frame = 0;
 				}
 				break;
@@ -3047,17 +3235,30 @@ void Actor::UpdatePrePhysics()
 		else
 		{
 
-
-			if( holdJump && velocity.y >= -8 )
-				holdJump = false;
-
-
-
-			if( holdJump && !currInput.A && framesInAir > 1 )
+			if( hasDoubleJump )
 			{
-				if( velocity.y < -8 )
+				if( holdJump && velocity.y >= -8 )
+					holdJump = false;
+
+				if( holdJump && !currInput.A && framesInAir > 2 )
 				{
-					velocity.y = -8;
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+			else
+			{
+				if( holdDouble && velocity.y >= -8 )
+					holdDouble = false;
+
+				if( holdDouble && !currInput.A && framesInAir > 2 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
 				}
 			}
 
@@ -3167,6 +3368,15 @@ void Actor::UpdatePrePhysics()
 		}
 		break;
 		}
+	case JUMPSQUAT:
+		{
+			if( frame == 0 )
+			{
+				storedGroundSpeed = groundSpeed;
+				groundSpeed = 0;
+			}
+		}
+		break;
 	case WALLCLING:
 		{
 			
@@ -3216,6 +3426,33 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
+			if( hasDoubleJump )
+			{
+				if( holdJump && velocity.y >= -8 )
+					holdJump = false;
+
+				if( holdJump && !currInput.A && framesInAir > 2 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+			else
+			{
+				if( holdDouble && velocity.y >= -8 )
+					holdDouble = false;
+
+				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+
 			//currHitboxes = fairHitboxes;
 			if( fairHitboxes.count( frame ) > 0 )
 			{
@@ -3224,6 +3461,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
+				currAttackHit = false;
 				fairSound.play();
 			}
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
@@ -3237,10 +3475,43 @@ void Actor::UpdatePrePhysics()
 		}
 	case DAIR:
 		{
+			if( hasDoubleJump )
+			{
+				if( holdJump && velocity.y >= -8 )
+					holdJump = false;
+
+				if( holdJump && !currInput.A && framesInAir > 2 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+			else
+			{
+				if( holdDouble && velocity.y >= -8 )
+					holdDouble = false;
+
+				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+
 			if( dairHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = dairHitboxes[frame];
 			}
+
+			if( frame == 0 )
+			{
+				currAttackHit = false;
+			}
+
 
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{		
@@ -3250,9 +3521,41 @@ void Actor::UpdatePrePhysics()
 		}
 	case UAIR:
 		{
+			if( hasDoubleJump )
+			{
+				if( holdJump && velocity.y >= -8 )
+					holdJump = false;
+
+				if( holdJump && !currInput.A && framesInAir > 2 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+			else
+			{
+				if( holdDouble && velocity.y >= -8 )
+					holdDouble = false;
+
+				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
+			}
+
 			if( uairHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = uairHitboxes[frame];
+			}
+
+			if( frame == 0 )
+			{
+				currAttackHit = false;
 			}
 
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
@@ -3350,7 +3653,7 @@ void Actor::UpdatePrePhysics()
 		//	b.offset.y = -5;
 			if( frame == 0 )
 			{
-
+				framesSinceDouble = 0;
 			
 			
 				owner->ActivateEffect( ts_fx_double, 
@@ -3383,6 +3686,17 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
+				
+				if( holdDouble && velocity.y >= -8 )
+					holdDouble = false;
+
+				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
+				{
+					if( velocity.y < -8 )
+					{
+						velocity.y = -8;
+					}
+				}
 				
 						
 				AirMovement();
@@ -3958,9 +4272,14 @@ void Actor::UpdatePrePhysics()
 		else if( velocity.x < -maxAirXSpeed )
 			velocity.x = -maxAirXSpeed;
 
-		if( velocity.y > 0 && velocity.y < 10 )
+		//if( velocity.y > 0 && velocity.y < 10 )
+		//{
+			//velocity += V2d( 0, gravity / slowMultiple * .6 );
+		//	velocity += V2d( 0, gravity / slowMultiple * .3 );
+		//}
+		if( abs( velocity.y ) < 4 && action != AIRDASH )
 		{
-			velocity += V2d( 0, gravity / slowMultiple * .6 );
+			velocity += V2d( 0, gravity / slowMultiple * .4 );
 		}
 		else
 		{
@@ -5875,7 +6194,8 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-	
+	//if( test )
+	//	return;
 	
 
 
@@ -7882,7 +8202,7 @@ void Actor::UpdateHitboxes()
 void Actor::UpdatePostPhysics()
 {
 	
-
+	test = false;
 
 	//rightWire->UpdateState( false );
 	if( rightWire->numPoints == 0 )
@@ -8221,6 +8541,50 @@ void Actor::UpdatePostPhysics()
 		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 		sprite->setPosition( position.x, position.y );
 
+		break;
+		}
+	case JUMPSQUAT:
+		{
+			sprite->setTexture( *(tileset[JUMPSQUAT]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[JUMPSQUAT]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[JUMPSQUAT]->GetSubRect( 0 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			double angle = GroundedAngle();
+		
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+		
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );	
 		break;
 		}
 	case LAND: 
@@ -8678,13 +9042,16 @@ void Actor::UpdatePostPhysics()
 			if( facingRight )
 			{
 				
-				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
+				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
+				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
 				if( showSword1 )
-					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
+					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
+					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
+				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
+				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
 				
@@ -8692,7 +9059,8 @@ void Actor::UpdatePostPhysics()
 				{
 					offset.x = -offset.x;
 
-					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
+					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
 					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
@@ -9856,6 +10224,7 @@ void Actor::UpdatePostPhysics()
 		if( wallJumpFrameCounter < wallJumpMovementLimit )
 			wallJumpFrameCounter++;
 		framesInAir++;
+		framesSinceDouble++;
 
 		if( action == BOUNCEAIR && oldBounceEdge != NULL )
 		{
@@ -11195,6 +11564,10 @@ void Actor::AirMovement()
 			{
 				velocity.x -= airAccel;
 			}
+			//else if( speedyJump && velocity.x > -dashSpeed )
+			//{
+			//	velocity.x = -dashSpeed;
+			//}
 			else if( velocity.x > -maxAirXControl )
 			{
 				velocity.x = -maxAirXControl;
@@ -11206,6 +11579,10 @@ void Actor::AirMovement()
 			{
 				velocity.x += airAccel;
 			}
+			//else if( speedyJump && velocity.x < dashSpeed )
+			//{
+			//	velocity.x = dashSpeed;
+			//}
 			else if( velocity.x < maxAirXControl )
 			{
 				velocity.x = maxAirXControl;

@@ -62,11 +62,11 @@ void Camera::Update( Actor *player )
 	{
 		if( owner->pauseFrames % 2 == 0 )
 		{
-			offset.y -= 3;
+		//	offset.y -= 3;
 		}
 		else
 		{
-			offset.y += 3;
+		//	offset.y += 3;
 		}
 		
 		pos.x = playerPos.x + offset.x;
@@ -144,7 +144,15 @@ void Camera::Update( Actor *player )
 			}
 		}
 
-		pVel = normalize( player->ground->v1 - player->ground->v0 ) * player->groundSpeed;
+		if( player->action != Actor::JUMPSQUAT )
+		{
+			pVel = normalize( player->ground->v1 - player->ground->v0 ) * player->groundSpeed;
+		}
+		else
+		{
+			pVel = normalize( player->ground->v1 - player->ground->v0 ) * player->storedGroundSpeed;
+		}
+		
 		if( player->reversed )
 		{
 			pVel = -pVel;

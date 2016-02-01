@@ -48,6 +48,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	int slowCounter;
 	EnemyType type;
 	bool spawnedByClone;
+	int initHealth;
+	int health;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
