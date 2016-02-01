@@ -394,6 +394,8 @@ struct Actor : QuadTreeCollider,
 	bool holdDouble;
 	int framesSinceDouble;
 	
+	sf::Shader swordShader;
+
 	//end unstored
 
 	void SaveState();

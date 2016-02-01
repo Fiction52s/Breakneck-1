@@ -119,7 +119,7 @@ void Patroller::UpdatePrePhysics()
 {
 	if( !dead && receivedHit != NULL )
 	{
-		owner->Pause( 4 );
+		owner->Pause( 5 );
 		
 		//gotta factor in getting hit by a clone
 		health -= 20;

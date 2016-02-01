@@ -13,6 +13,8 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+
+
 		test = false;
 
 		lastWire = 0;
@@ -42,6 +44,15 @@ Actor::Actor( GameSession *gs )
 			cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "player shader not loaded" );
 		}
+
+
+		if (!swordShader.loadFromFile("sword_shader.frag", sf::Shader::Fragment))
+		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+		{
+			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "sword shader not loaded" );
+		}
+		swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
 		{
@@ -128,7 +139,7 @@ Actor::Actor( GameSession *gs )
 		//setup hitboxes
 		{
 		//for( int j = 4; j < 10; ++j )
-		for( int j = 0; j < 7; ++j )
+		for( int j = 3; j < 8; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
@@ -11145,17 +11156,23 @@ void Actor::Draw( sf::RenderTarget *target )
 			{
 			case FAIR:
 				{
-					target->draw( fairSword1 );
+					//not the corect logic but works for now
+					if( owner->pauseFrames > 0 )
+						target->draw( fairSword1, &swordShader );
+					else
+					{
+						target->draw( fairSword1 );
+					}
 					break;
 				}
 			case DAIR:
 				{
-					target->draw( dairSword1 );
+					target->draw( dairSword1, &swordShader );
 					break;
 				}
 			case UAIR:
 				{
-					target->draw( uairSword1 );
+					target->draw( uairSword1, &swordShader );
 					break;
 				}
 			case STANDN:
