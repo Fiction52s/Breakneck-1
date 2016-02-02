@@ -139,7 +139,7 @@ Actor::Actor( GameSession *gs )
 		//setup hitboxes
 		{
 		//for( int j = 4; j < 10; ++j )
-		for( int j = 3; j < 8; ++j )
+		for( int j = 2; j < 8; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
@@ -465,7 +465,7 @@ Actor::Actor( GameSession *gs )
 		collision = false;
 	
 		airAccel = 1.5;
-		maxAirXSpeed = 100;
+		
 		
 		airDashSpeed = 12;
 
@@ -481,7 +481,13 @@ Actor::Actor( GameSession *gs )
 		maxRunInit = 6;
 		maxAirXControl = maxRunInit;
 
-		maxGroundSpeed = 100;
+		//max ground speed should probably start around 60-80 and then get powerups to rise to 100
+		//for world 1 lets do the lowest number for the beta
+		double maxXSpeed = 60;
+		maxGroundSpeed = maxXSpeed;
+		maxAirXSpeed = maxXSpeed;
+
+
 		runAccelInit = .5;
 		
 		runAccel = .03;
@@ -1050,6 +1056,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMPSQUAT;
+				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -1125,6 +1132,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMPSQUAT;
+				bufferedAttack = false;
 				frame = 0;
 				runTappingSound.stop();
 				break;
@@ -2000,6 +2008,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMPSQUAT;
+				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -2072,6 +2081,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMPSQUAT;
+				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -2314,6 +2324,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMPSQUAT;
+				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -2644,6 +2655,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				action = JUMPSQUAT;
+				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -2797,6 +2809,7 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					action = JUMPSQUAT;
+					bufferedAttack = false;
 					frame = 0;
 				}
 				break;
@@ -6211,8 +6224,8 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-	//if( test )
-	//	return;
+	if( test )
+		return;
 	
 
 
@@ -8237,6 +8250,8 @@ void Actor::UpdatePostPhysics()
 	
 	test = false;
 
+
+
 	//rightWire->UpdateState( false );
 	if( rightWire->numPoints == 0 )
 	{
@@ -10259,6 +10274,8 @@ void Actor::UpdatePostPhysics()
 		framesInAir++;
 		framesSinceDouble++;
 
+
+
 		if( action == BOUNCEAIR && oldBounceEdge != NULL )
 		{
 			framesSinceBounce++;
@@ -10274,6 +10291,9 @@ void Actor::UpdatePostPhysics()
 
 		if( invincibleFrames > 0 )
 			--invincibleFrames;
+
+		//if( flashFrames > 0 )
+		//	--flashFrames;
 	}
 	else
 		slowCounter++;
@@ -11157,7 +11177,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			case FAIR:
 				{
 					//not the corect logic but works for now
-					if( owner->pauseFrames > 0 )
+					if( flashFrames > 0 )
 						target->draw( fairSword1, &swordShader );
 					else
 					{
@@ -11167,12 +11187,18 @@ void Actor::Draw( sf::RenderTarget *target )
 				}
 			case DAIR:
 				{
-					target->draw( dairSword1, &swordShader );
+					if( flashFrames > 0 )
+						target->draw( dairSword1, &swordShader );
+					else
+						target->draw( dairSword1 );
 					break;
 				}
 			case UAIR:
 				{
-					target->draw( uairSword1, &swordShader );
+					if( flashFrames > 0 )
+						target->draw( uairSword1, &swordShader );
+					else
+						target->draw( uairSword1 );
 					break;
 				}
 			case STANDN:

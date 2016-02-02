@@ -395,6 +395,11 @@ struct Actor : QuadTreeCollider,
 	int framesSinceDouble;
 	
 	sf::Shader swordShader;
+	//bool hitlagFlash;
+	sf::Color flashColor;
+	int flashFrames;
+
+	bool bufferedAttack;
 
 	//end unstored
 

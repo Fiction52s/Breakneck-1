@@ -757,6 +757,13 @@ struct EditSession : GUIHandler
 
 	int gatePoints;
 
+	sf::VertexArray fullBounds;
+	int leftBound;
+	int topBound;
+	int boundWidth;
+	int boundHeight;
+	void UpdateFullBounds();
+
 	GateInfo testGateInfo;
 	//TerrainPolygon *gatePoly0;
 	//TerrainPolygon *gatePoly1;

@@ -2697,8 +2697,14 @@ void GateInfo::Draw( sf::RenderTarget *target )
 }
 
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
-	:w( wi )
+	:w( wi ), fullBounds( sf::Quads, 16 )
 {
+	for( int i = 0; i < 16; ++i )
+	{
+		fullBounds[i].color = COLOR_ORANGE;
+		fullBounds[i].position = Vector2f( 0, 0 );
+	}
+
 	grabbedObject = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
@@ -2795,6 +2801,34 @@ void EditSession::Draw()
 	
 }
 
+void EditSession::UpdateFullBounds()
+{
+	int boundRectWidth = 10 * zoomMultiple;
+		//top rect
+	fullBounds[0].position = Vector2f( leftBound, topBound - boundRectWidth );
+	fullBounds[1].position = Vector2f( leftBound + boundWidth, topBound - boundRectWidth );
+	fullBounds[2].position = Vector2f( leftBound + boundWidth, topBound + boundRectWidth );
+	fullBounds[3].position = Vector2f( leftBound, topBound + boundRectWidth );
+
+	//right rect
+	fullBounds[4].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, topBound );
+	fullBounds[5].position = Vector2f( ( leftBound + boundWidth ) + boundRectWidth, topBound );
+	fullBounds[6].position = Vector2f( ( leftBound + boundWidth ) + boundRectWidth, topBound + boundHeight );
+	fullBounds[7].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, topBound + boundHeight );
+
+	//bottom rect
+	fullBounds[8].position = Vector2f( leftBound, ( topBound + boundHeight ) - boundRectWidth );
+	fullBounds[9].position = Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) - boundRectWidth );
+	fullBounds[10].position = Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) + boundRectWidth );
+	fullBounds[11].position = Vector2f( leftBound, ( topBound + boundHeight ) + boundRectWidth );
+
+	//left rect
+	fullBounds[12].position = Vector2f( leftBound - boundRectWidth, topBound );
+	fullBounds[13].position = Vector2f( leftBound + boundRectWidth, topBound );
+	fullBounds[14].position = Vector2f( leftBound + boundRectWidth, topBound + boundHeight );
+	fullBounds[15].position = Vector2f( leftBound - boundRectWidth, topBound + boundHeight );
+}
+
 bool EditSession::OpenFile( string fileName )
 {
 	currentFile = fileName;
@@ -2808,6 +2842,16 @@ bool EditSession::OpenFile( string fileName )
 
 	if( is.is_open() )
 	{
+		is >> leftBound;
+		is >> topBound;
+		is >> boundWidth;
+		is >> boundHeight;
+
+		
+		UpdateFullBounds();
+		
+
+
 		int numPoints;
 		is >> numPoints;
 		is >> player->position.x;
@@ -3428,6 +3472,9 @@ void EditSession::WriteFile(string fileName)
 
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
+
+	of << leftBound << " " << topBound << " " << boundWidth << " " << boundHeight << endl;
+
 
 	int pointCount = 0;
 	int movingPlatCount = 0;
@@ -7231,24 +7278,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						if( ev.mouseWheel.delta > 0 )
 						{
 							zoomMultiple /= 2;
+							UpdateFullBounds();
 						}
 						else if( ev.mouseWheel.delta < 0 )
 						{
 							zoomMultiple *= 2;
+							UpdateFullBounds();
 						}
 
 						if( zoomMultiple < .25 )
 						{
 							zoomMultiple = .25;
+							UpdateFullBounds();
 							cout << "min zoom" << endl;
 						}
 						else if( zoomMultiple > 65536 )
 						{
 							zoomMultiple = 65536;
+							UpdateFullBounds();
 						}
 						else if( abs(zoomMultiple - 1.0) < .1 )
 						{
 							zoomMultiple = 1;
+							UpdateFullBounds();
 						}
 				
 						Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
@@ -7291,24 +7343,29 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( ev.key.code == sf::Keyboard::Equal )
 							{
 								zoomMultiple /= 2;
+								UpdateFullBounds();
 							}
 							else if( ev.key.code == sf::Keyboard::Dash )
 							{
 								zoomMultiple *= 2;
+								UpdateFullBounds();
 							}
 
 							if( zoomMultiple < .25 )
 							{
 								zoomMultiple = .25;
+								UpdateFullBounds();
 								cout << "min zoom" << endl;
 							}
 							else if( zoomMultiple > 65536 )
 							{
 								zoomMultiple = 65536;
+								UpdateFullBounds();
 							}
 							else if( abs(zoomMultiple - 1.0) < .1 )
 							{
 								zoomMultiple = 1;
+								UpdateFullBounds();
 							}
 				
 							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
@@ -9290,6 +9347,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		}
 
+		
+
 		if( zoomMultiple > 7 )
 		{
 			playerZoomIcon.setPosition( player->position.x, player->position.y );
@@ -9297,6 +9356,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			preScreenTex->draw( playerZoomIcon );
 		}
 		
+		preScreenTex->draw( fullBounds );
+
 		preScreenTex->setView( uiView );
 
 

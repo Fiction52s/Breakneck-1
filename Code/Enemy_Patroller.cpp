@@ -9,6 +9,8 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::PATROLLER ), dead( false ), deathFrame( 0 )
@@ -16,7 +18,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 60;
+	initHealth = 40;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
@@ -88,6 +90,8 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	deathPartingSpeed = .3;
 	deathVector = V2d( 1, -1 );
 
+	facingRight = true;
+	 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
@@ -96,6 +100,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 {
+
 }
 
 void Patroller::ResetEnemy()
@@ -119,7 +124,7 @@ void Patroller::UpdatePrePhysics()
 {
 	if( !dead && receivedHit != NULL )
 	{
-		owner->Pause( 5 );
+		//owner->Pause( 5 );
 		
 		//gotta factor in getting hit by a clone
 		health -= 20;
@@ -128,6 +133,7 @@ void Patroller::UpdatePrePhysics()
 
 		if( health <= 0 )
 			dead = true;
+
 		receivedHit = NULL;
 	}
 }
@@ -185,15 +191,31 @@ void Patroller::UpdatePhysics()
 
 void Patroller::PhysicsResponse()
 {
-	if( !dead )
+	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
+			cout << "color blue" << endl;
+			//triggers multiple times per frame? bad?
 			owner->player.test = true;
 			owner->player.currAttackHit = true;
+			owner->player.flashColor = COLOR_BLUE;
+			owner->player.flashFrames = 5;
+			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			{
+				owner->player.velocity.y = 4;//.5;
+			}
+
+			cout << "frame: " << owner->player.frame << endl;
+
+			//owner->player.frame--;
+			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+			
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
@@ -250,7 +272,8 @@ void Patroller::AdvanceTargetNode()
 
 void Patroller::UpdatePostPhysics()
 {
-	
+	if( receivedHit != NULL )
+		owner->Pause( 5 );
 
 	UpdateSprite();
 
@@ -316,7 +339,7 @@ void Patroller::Draw( sf::RenderTarget *target )
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			//target->draw( bloodSprite );
 		}
 		
 		target->draw( topDeathSprite );

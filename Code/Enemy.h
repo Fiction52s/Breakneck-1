@@ -161,7 +161,7 @@ struct Patroller : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
-
+	bool facingRight;
 
 	struct Stored
 	{

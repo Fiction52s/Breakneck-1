@@ -2026,6 +2026,7 @@ int GameSession::Run( string fileN )
 					break;
 				}
 
+				player.flashFrames--;
 				//cam.offset.y += 10;
 				
 				
