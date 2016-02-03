@@ -26,6 +26,8 @@ void Enemy::Reset()
 	spawnedByClone = false;
 
 	ResetEnemy();
+
+	//cout << "resetting enemy!" << endl;
 }
 
 void Enemy::HandleQuery( QuadTreeCollider * qtc )

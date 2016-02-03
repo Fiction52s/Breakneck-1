@@ -105,6 +105,7 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 
 void Patroller::ResetEnemy()
 {
+	//spawned = false;
 	targetNode = 1;
 	forward = true;
 	dead = false;
