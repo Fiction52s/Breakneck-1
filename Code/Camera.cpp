@@ -40,6 +40,14 @@ Camera::Camera()
 
 void Camera::Update( Actor *player )
 {
+	if( player->currInput.LDown() )
+	{
+	//	maxOffset.y = 900;
+	}
+	else
+	{
+	//	maxOffset.y = 500;
+	}
 	GameSession *owner = player->owner;
 	V2d ideal;// = player->position;
 	//pos.x = player->position.x;
@@ -203,7 +211,11 @@ void Camera::Update( Actor *player )
 		zoomFactor += zDiff / 250.0 / player->slowMultiple;
 	}
 
-	
+	//if( player->ground == NULL && player->velocity.y == player->maxFallSpeed )
+	//{
+	//	cout << "zoom out" << endl;
+	//	zoomFactor += .03;
+	//}
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;

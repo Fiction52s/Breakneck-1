@@ -18,7 +18,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 40;
+	initHealth = 60;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
@@ -347,6 +347,18 @@ void Patroller::Draw( sf::RenderTarget *target )
 
 
 
+}
+
+void Patroller::DrawMinimap( sf::RenderTarget *target )
+{
+	CircleShape enemyCircle;
+	enemyCircle.setFillColor( COLOR_BLUE );
+	enemyCircle.setRadius( 30 );
+	enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
+	enemyCircle.setPosition( position.x, position.y );
+	enemyCircle.setOutlineColor( Color::Red );
+	enemyCircle.setOutlineThickness( 20 );
+	target->draw( enemyCircle );
 }
 
 bool Patroller::IHitPlayer()

@@ -14,6 +14,15 @@
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 using namespace std;
 using namespace sf;
 
@@ -400,6 +409,12 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
+		int leftBounds, boundsWidth, topBounds, boundsHeight;
+		is >> leftBounds;
+		is >> topBounds;
+		is >> boundsWidth;
+		is >> boundsHeight;
+
 		is >> numPoints;
 		points = new Vector2<double>[numPoints];
 		
@@ -2504,7 +2519,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -2512,19 +2527,17 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( preScreenTex );
 
-		double minimapZoom = 20;// + cam.GetZoom();
+		double minimapZoom = 6 * cam.GetZoom();// + cam.GetZoom();
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
 		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
+
 		minimapTex->setView( vv );
 		minimapTex->clear( Color( 0, 0, 0, 191 ) );
 		
-		CircleShape cs;
-		cs.setFillColor( Color::Green );
-		cs.setRadius( 60 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( vv.getCenter().x, vv.getCenter().y );
+
+		
 		
 		queryMode = "border";
 		numBorders = 0;
@@ -2619,7 +2632,33 @@ int GameSession::Run( string fileN )
 			gateList = next;
 		}
 		
-		minimapTex->draw( cs );
+
+		CircleShape playerCircle;
+		playerCircle.setFillColor( COLOR_TEAL );
+		playerCircle.setRadius( 60 );
+		playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
+		playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
+		minimapTex->draw( playerCircle );
+
+		queryMode = "enemyminimap";
+		enemyTree->Query( this, minimapRect );
+
+		Enemy *currEnemy = activeEnemyList;
+		int counter = 0;
+		//CircleShape enemyCircle;
+
+		//enemyCircle.setFillColor( COLOR_BLUE );
+		//enemyCircle.setRadius( 60 );
+		//enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
+		
+		
+		while( currEnemy != NULL )
+		{
+			//enemyCircle.setPosition( vv.getCenter().x, vv.getCenter().y );	
+			//enemyCircle.setPosition( currEnemy->
+			currEnemy->DrawMinimap( minimapTex );
+			currEnemy = currEnemy->next;
+		}
 
 		minimapTex->display();
 		const Texture &miniTex = minimapTex->getTexture();
@@ -2829,6 +2868,25 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 
 			AddEnemy( e );
 		}
+	}
+	else if( queryMode == "enemyminimap" )
+	{
+		Enemy *e = (Enemy*)qte;
+
+		//if( e->spawnRect.intersects( tempSpawnRect ) )
+		//{
+			//cout << "spawning enemy! of type: " << e->type << endl;
+			if( !e->spawned )
+			{
+				e->DrawMinimap( minimapTex );
+			}
+			
+			//e->spawned = true;
+
+			
+
+			//AddEnemy( e );
+		//}
 	}
 	else if( queryMode == "border" )
 	{

@@ -27,6 +27,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual void UpdatePhysics() = 0;
 	virtual void UpdatePostPhysics() = 0;
 	virtual void Draw( sf::RenderTarget *target) = 0;
+	virtual void DrawMinimap( sf::RenderTarget *target ){};
 	virtual bool IHitPlayer() = 0;
 	virtual void UpdateHitboxes() = 0;
 	virtual std::pair<bool,bool> PlayerHitMe() = 0;
@@ -114,6 +115,7 @@ struct Patroller : Enemy
 
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
