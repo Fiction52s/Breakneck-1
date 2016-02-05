@@ -14,7 +14,7 @@ Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
 
-
+		flashFrames = 0;
 		test = false;
 
 		lastWire = 0;
@@ -11176,7 +11176,6 @@ void Actor::Draw( sf::RenderTarget *target )
 			{
 			case FAIR:
 				{
-					//not the corect logic but works for now
 					if( flashFrames > 0 )
 						target->draw( fairSword1, &swordShader );
 					else
