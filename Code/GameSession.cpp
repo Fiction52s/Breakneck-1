@@ -1930,9 +1930,29 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 	}
 	//bringing it all together
 
+	if( topEdges.back()->v0 == rightEdges.front()->v1 )
+	{
+		topEdges.back()->edge0 = rightEdges.front();
+		rightEdges.front()->edge1 = topEdges.back();
+	}
+	if( rightEdges.back()->v0 == bottomEdges.front()->v1 )
+	{
+		rightEdges.back()->edge0 = bottomEdges.front();
+		bottomEdges.front()->edge1 = rightEdges.back();
+	}
+	if( bottomEdges.back()->v0 == leftEdges.front()->v1 )
+	{
+		bottomEdges.back()->edge0 = leftEdges.front();
+		leftEdges.front()->edge1 = bottomEdges.back();
+	}
+	if( leftEdges.back()->v0 == topEdges.front()->v1 )
+	{
+		leftEdges.back()->edge0 = topEdges.front();
+		topEdges.front()->edge1 = leftEdges.back();
+	}
+	
 
-	topEdges.back()->edge0 = rightEdges.front();
-	rightEdges.front()->edge1 = topEdges.back();
+	
 
 
 	debugBorders = new VertexArray( sf::Lines, ( topEdges.size() + rightEdges.size() + bottomEdges.size() + leftEdges.size() ) * 2 );
@@ -1945,7 +1965,7 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
 		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
 
-		cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
+		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
 		terrainTree->Insert( (*it) );
 
 		++i;
@@ -1958,7 +1978,7 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
 		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
 
-		cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
+		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
 		terrainTree->Insert( (*it) );
 
 		++i;
@@ -1971,7 +1991,7 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
 		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
 
-		cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
+		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
 		terrainTree->Insert( (*it) );
 
 		++i;
@@ -1984,7 +2004,7 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
 		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
 
-		cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
+		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
 		terrainTree->Insert( (*it) );
 
 		++i;
