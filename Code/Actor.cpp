@@ -46,13 +46,13 @@ Actor::Actor( GameSession *gs )
 		}
 
 
-		if (!swordShader.loadFromFile("sword_shader.frag", sf::Shader::Fragment))
+		//if (!swordShader.loadFromFile("sword_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-		{
-			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "sword shader not loaded" );
-		}
-		swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
+		//{
+		//	cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+		//	assert( 0 && "sword shader not loaded" );
+		//}
+		//swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
 		{

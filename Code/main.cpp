@@ -513,8 +513,36 @@ int main()
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 
-	//window->setVerticalSyncEnabled( false );
-	window->setVerticalSyncEnabled( true );
+	//window->setVerticalSyncEnabled( true );
+	window->setVerticalSyncEnabled( false );
+	window->setFramerateLimit( 60 );
+	/*Clock gameClock;
+	double currentTime = 0;
+	while( true )
+	{
+		double newTime = gameClock.getElapsedTime().asSeconds();
+		double frameTime = newTime - currentTime;
+
+		window->clear(Color::Blue);
+
+		sf::Event ev;
+		while( window->pollEvent( ev ) )
+		{
+		}
+
+		preScreenTexture->clear(Color::Red);
+		preScreenTexture->display();
+		Sprite spr( preScreenTexture->getTexture() );
+
+		window->draw( spr );
+		window->draw( spr );
+		window->draw( spr );
+		window->draw( spr );
+		window->draw( spr );
+
+		window->display();
+	}*/
+	
 	//window->setFramerateLimit( 60 );
 	//test.clear();
 

@@ -75,6 +75,8 @@ struct GameSession : QuadTreeCollider
 	void AddEnemy( Enemy * e );
 	void RemoveEnemy( Enemy * e );
 
+	void SetGlobalBorders( int leftBounds, int boundsWidth, int topBounds, int boundsHeight );
+
 	void SetParOnTop(sf::RenderTarget *target );
 
 	void UpdateEnemiesPrePhysics();
@@ -93,6 +95,9 @@ struct GameSession : QuadTreeCollider
 	
 	void SetUndergroundParAndDraw();
 	void SetupClouds();
+
+
+	sf::VertexArray *debugBorders;
 
 	void DebugDrawActors();
 

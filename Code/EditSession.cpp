@@ -4497,7 +4497,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
 	//playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
 
-	w->setVerticalSyncEnabled( true );
+	//w->setVerticalSyncEnabled( true );
+	//w->setFramerateLimit( 60 );
 
 	OpenFile( fileName );
 
