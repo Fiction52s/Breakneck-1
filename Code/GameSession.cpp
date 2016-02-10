@@ -404,6 +404,423 @@ int GameSession::CountActiveEnemies()
 	return counter;
 }
 
+bool GameSession::LoadLights( ifstream &is, map<int, int> &polyIndex )
+{
+	int numLights;
+	is >> numLights;
+	for( int i = 0; i < numLights; ++i )
+	{
+		int x,y,r,g,b;
+		int rad;
+		int bright;
+		is >> x;
+		is >> y;
+		is >> r;
+		is >> g;
+		is >> b;
+		is >> rad;
+		is >> bright;
+
+		Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), rad, bright );
+		lightTree->Insert( light );
+	}
+
+	return true;
+}
+
+bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
+{
+	int numMovingPlats;
+	is >> numMovingPlats;
+	for( int i = 0; i < numMovingPlats; ++i )
+	{
+		string matStr;
+		is >> matStr;
+
+
+		int polyPoints;
+		is >> polyPoints;
+
+		list<Vector2i> poly;
+
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			int px, py;
+			is >> px;
+			is >> py;
+			
+			poly.push_back( Vector2i( px, py ) );
+		}
+
+
+			
+		list<Vector2i>::iterator it = poly.begin();
+		int left = (*it).x;
+		int right = (*it).x;
+		int top = (*it).y;
+		int bottom = (*it).y;
+			
+		for( ;it != poly.end(); ++it )
+		{
+			if( (*it).x < left )
+				left = (*it).x;
+
+			if( (*it).x > right )
+				right = (*it).x;
+
+			if( (*it).y < top )
+				top = (*it).y;
+
+			if( (*it).y > bottom )
+				bottom = (*it).y;
+		}
+
+
+		//might need to round for perfect accuracy here
+		Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
+
+		for( it = poly.begin(); it != poly.end(); ++it )
+		{
+			(*it).x -= center.x;
+			(*it).y -= center.y;
+		}
+
+		int pathPoints;
+		is >> pathPoints;
+
+		list<Vector2i> path;
+
+		for( int i = 0; i < pathPoints; ++i )
+		{
+			int x,y;
+			is >> x;
+			is >> y;
+			path.push_back( Vector2i( x, y ) );
+		}
+
+			
+		MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 5 );
+		movingPlats.push_back( mt );
+	}
+
+	return true;
+}
+
+bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
+{
+	is >> numGates;
+	gates = new Gate*[numGates];
+	for( int i = 0; i < numGates; ++i )
+	{
+		int gType;
+		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+		is >> gType;
+		is >> poly0Index;
+		is >> vertexIndex0;
+		is >> poly1Index;
+		is >> vertexIndex1;
+
+		Gate * gate = new Gate( (Gate::GateType)gType );
+
+		Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
+		Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
+
+		gate->temp0prev = edge0->edge0;
+		gate->temp0next = edge0;
+		gate->temp1prev = edge1->edge0;
+		gate->temp1next = edge1;
+
+			
+		V2d point0 = edge0->v0;
+		V2d point1 = edge1->v0;
+
+		gate->edgeA = new Edge;
+		gate->edgeA->edgeType = Edge::CLOSED_GATE;
+		gate->edgeA->info = gate;
+		gate->edgeB = new Edge;
+		gate->edgeB->edgeType = Edge::CLOSED_GATE;
+		gate->edgeB->info = gate;
+
+		gate->edgeA->v0 = point0;
+		gate->edgeA->v1 = point1;
+
+		gate->edgeB->v0 = point1;
+		gate->edgeB->v1 = point0;
+			
+		gate->next = NULL;
+		gate->prev = NULL;
+
+		//gate->v0 = point0;
+		//gate->v1 = point1;
+			
+			
+		gates[i] = gate;
+
+		gate->SetLocked( true );
+
+		gate->UpdateLine();
+
+		terrainTree->Insert( gate->edgeA );
+		terrainTree->Insert( gate->edgeB );
+
+		cout << "inserting gate: " << gate->edgeA << endl;
+		gateTree->Insert( gate );
+
+		gateMap[gate->edgeA] = gate;
+		gateMap[gate->edgeB] = gate;
+	}
+
+	return true;
+}
+
+bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
+{
+	int numGroups;
+	is >> numGroups;
+	for( int i = 0; i < numGroups; ++i )
+	{
+		string gName;
+		is >> gName;
+		int numActors;
+		is >> numActors;
+
+		for( int j = 0; j < numActors; ++j )
+		{
+			string typeName;
+			is >> typeName;
+
+			if( typeName == "goal" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "patroller" )
+			{
+					
+				int xPos,yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+					
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for( int i = 0; i < pathLength; ++i )
+				{
+					int localX,localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back( Vector2i( localX, localY ) );
+				}
+
+
+				bool loop;
+				string loopStr;
+				is >> loopStr;
+
+				if( loopStr == "+loop" )
+				{
+					loop = true;
+				}
+				else if( loopStr == "-loop" )
+				{
+					loop = false;
+				}
+				else
+				{
+					assert( false && "should be a boolean" );
+				}
+
+
+				float speed;
+				is >> speed;
+				Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
+			else if( typeName == "key" )
+			{
+				Vector2i pos;
+
+				//no need to include that it is in the air because keys are always in the air
+
+				int xPos,yPos;
+
+				//always air
+
+				is >> xPos;
+				is >> yPos;
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for( int i = 0; i < pathLength; ++i )
+				{
+					int localX,localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back( Vector2i( localX, localY ) );
+				}
+
+				int gateType;
+				is >> gateType;
+
+				bool loop;
+				string loopStr;
+				is >> loopStr;
+
+				if( loopStr == "+loop" )
+				{
+					loop = true;
+				}
+				else if( loopStr == "-loop" )
+				{
+					loop = false;
+				}
+				else
+				{
+					assert( false && "should be a boolean" );
+				}
+
+
+				float speed;
+				is >> speed;
+
+				int stayFrames;
+				is >> stayFrames;
+
+				bool teleport;
+				string teleStr;
+				is >> teleStr;
+				if( teleStr == "+tele" )
+				{
+					teleport = true;
+				}
+				else if( teleStr == "-tele" )
+				{
+					teleport = false;
+				}
+
+				//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+				//a = new PatrollerParams( this, pos, globalPath, speed, loop );
+				//a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
+				Key *key = new Key( this, (Key::KeyType)gateType, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
+				keyList.push_back( key );
+				AddEnemy( key );
+			}
+			else if( typeName == "crawler" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				bool clockwise;
+				string cwStr;
+				is >> cwStr;
+
+				if( cwStr == "+clockwise" )
+					clockwise = true;
+				else if( cwStr == "-clockwise" )
+					clockwise = false;
+				else
+				{
+					assert( false && "boolean problem" );
+				}
+
+				float speed;
+				is >> speed;
+
+				Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
+				//enemyTree = Insert( enemyTree, enemy );
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "basicturret" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				double bulletSpeed;
+				is >> bulletSpeed;
+
+				int framesWait;
+				is >> framesWait;
+
+				BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
+				//enemyTree = Insert( enemyTree, enemy );
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "foottrap" )
+			{
+				cout << "loading foottrap" << endl;
+				//always grounded
+					
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				FootTrap *enemy = new FootTrap( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
+			else
+			{
+				assert( false && "not a valid type name" );
+			}
+
+		}
+	}
+	return true;
+}
+
 bool GameSession::OpenFile( string fileName )
 {
 	currentFile = fileName;
@@ -1139,405 +1556,22 @@ bool GameSession::OpenFile( string fileName )
 			//cout << "loaded to here" << endl;
 			++polyCounter;
 		}
-		//cout << "insertCount: " << insertCount << endl;
-		//cout << "polyCOUNTER: " << polyCounter << endl;
 		
-			cout << "loaded to here" << endl;
-		int numMovingPlats;
-		is >> numMovingPlats;
-		for( int i = 0; i < numMovingPlats; ++i )
-		{
-			string matStr;
-			is >> matStr;
+		LoadMovingPlats( is );
 
+		LoadLights( is );
 
-			int polyPoints;
-			is >> polyPoints;
-
-			list<Vector2i> poly;
-
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				int px, py;
-				is >> px;
-				is >> py;
-			
-				poly.push_back( Vector2i( px, py ) );
-			}
-
-
-			
-			list<Vector2i>::iterator it = poly.begin();
-			int left = (*it).x;
-			int right = (*it).x;
-			int top = (*it).y;
-			int bottom = (*it).y;
-			
-			for( ;it != poly.end(); ++it )
-			{
-				if( (*it).x < left )
-					left = (*it).x;
-
-				if( (*it).x > right )
-					right = (*it).x;
-
-				if( (*it).y < top )
-					top = (*it).y;
-
-				if( (*it).y > bottom )
-					bottom = (*it).y;
-			}
-
-
-			//might need to round for perfect accuracy here
-			Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
-
-			for( it = poly.begin(); it != poly.end(); ++it )
-			{
-				(*it).x -= center.x;
-				(*it).y -= center.y;
-			}
-
-			int pathPoints;
-			is >> pathPoints;
-
-			list<Vector2i> path;
-
-			for( int i = 0; i < pathPoints; ++i )
-			{
-				int x,y;
-				is >> x;
-				is >> y;
-				path.push_back( Vector2i( x, y ) );
-			}
-
-			
-			MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 5 );
-			movingPlats.push_back( mt );
-		}
-
-		int numLights;
-		is >> numLights;
-		for( int i = 0; i < numLights; ++i )
-		{
-			int x,y,r,g,b;
-			int rad;
-			int bright;
-			is >> x;
-			is >> y;
-			is >> r;
-			is >> g;
-			is >> b;
-			is >> rad;
-			is >> bright;
-
-			Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), rad, bright );
-			lightTree->Insert( light );
-		}
-		cout << "loaded to here" << endl;		
-
-		int numGroups;
-		is >> numGroups;
-		for( int i = 0; i < numGroups; ++i )
-		{
-			string gName;
-			is >> gName;
-			int numActors;
-			is >> numActors;
-
-			for( int j = 0; j < numActors; ++j )
-			{
-				string typeName;
-				is >> typeName;
-
-				if( typeName == "goal" )
-				{
-					//always grounded
-
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-
-					enemyTree->Insert( enemy );
-				}
-				else if( typeName == "patroller" )
-				{
-					
-					int xPos,yPos;
-
-					//always air
-
-
-					is >> xPos;
-					is >> yPos;
-					
-
-					int pathLength;
-					is >> pathLength;
-
-					list<Vector2i> localPath;
-					for( int i = 0; i < pathLength; ++i )
-					{
-						int localX,localY;
-						is >> localX;
-						is >> localY;
-						localPath.push_back( Vector2i( localX, localY ) );
-					}
-
-
-					bool loop;
-					string loopStr;
-					is >> loopStr;
-
-					if( loopStr == "+loop" )
-					{
-						loop = true;
-					}
-					else if( loopStr == "-loop" )
-					{
-						loop = false;
-					}
-					else
-					{
-						assert( false && "should be a boolean" );
-					}
-
-
-					float speed;
-					is >> speed;
-					Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
-					enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
-				}
-				else if( typeName == "key" )
-				{
-					Vector2i pos;
-
-					//no need to include that it is in the air because keys are always in the air
-
-					int xPos,yPos;
-
-					//always air
-
-					is >> xPos;
-					is >> yPos;
-
-					int pathLength;
-					is >> pathLength;
-
-					list<Vector2i> localPath;
-					for( int i = 0; i < pathLength; ++i )
-					{
-						int localX,localY;
-						is >> localX;
-						is >> localY;
-						localPath.push_back( Vector2i( localX, localY ) );
-					}
-
-					int gateType;
-					is >> gateType;
-
-					bool loop;
-					string loopStr;
-					is >> loopStr;
-
-					if( loopStr == "+loop" )
-					{
-						loop = true;
-					}
-					else if( loopStr == "-loop" )
-					{
-						loop = false;
-					}
-					else
-					{
-						assert( false && "should be a boolean" );
-					}
-
-
-					float speed;
-					is >> speed;
-
-					int stayFrames;
-					is >> stayFrames;
-
-					bool teleport;
-					string teleStr;
-					is >> teleStr;
-					if( teleStr == "+tele" )
-					{
-						teleport = true;
-					}
-					else if( teleStr == "-tele" )
-					{
-						teleport = false;
-					}
-
-					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
-					//a = new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport );
-					Key *key = new Key( this, (Key::KeyType)gateType, Vector2i( xPos, yPos ), localPath, loop, speed, stayFrames, teleport );
-					keyList.push_back( key );
-					AddEnemy( key );
-				}
-				else if( typeName == "crawler" )
-				{
-					//always grounded
-
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					bool clockwise;
-					string cwStr;
-					is >> cwStr;
-
-					if( cwStr == "+clockwise" )
-						clockwise = true;
-					else if( cwStr == "-clockwise" )
-						clockwise = false;
-					else
-					{
-						assert( false && "boolean problem" );
-					}
-
-					float speed;
-					is >> speed;
-
-					Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
-					//enemyTree = Insert( enemyTree, enemy );
-					enemyTree->Insert( enemy );
-				}
-				else if( typeName == "basicturret" )
-				{
-					//always grounded
-
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					double bulletSpeed;
-					is >> bulletSpeed;
-
-					int framesWait;
-					is >> framesWait;
-
-					BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
-					//enemyTree = Insert( enemyTree, enemy );
-					enemyTree->Insert( enemy );
-				}
-				else if( typeName == "foottrap" )
-				{
-					cout << "loading foottrap" << endl;
-					//always grounded
-					
-
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					FootTrap *enemy = new FootTrap( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-
-					enemyTree->Insert( enemy );
-				}
-				else
-				{
-					assert( false && "not a valid type name" );
-				}
-
-			}
-		}
+		LoadEnemies( is );
 		
-		is >> numGates;
-		gates = new Gate*[numGates];
-		for( int i = 0; i < numGates; ++i )
-		{
-			int gType;
-			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
-			is >> gType;
-			is >> poly0Index;
-			is >> vertexIndex0;
-			is >> poly1Index;
-			is >> vertexIndex1;
-
-			Gate * gate = new Gate( (Gate::GateType)gType );
-
-			Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
-			Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
-
-			gate->temp0prev = edge0->edge0;
-			gate->temp0next = edge0;
-			gate->temp1prev = edge1->edge0;
-			gate->temp1next = edge1;
-
-			
-			V2d point0 = edge0->v0;
-			V2d point1 = edge1->v0;
-
-			gate->edgeA = new Edge;
-			gate->edgeA->edgeType = Edge::CLOSED_GATE;
-			gate->edgeA->info = gate;
-			gate->edgeB = new Edge;
-			gate->edgeB->edgeType = Edge::CLOSED_GATE;
-			gate->edgeB->info = gate;
-
-			gate->edgeA->v0 = point0;
-			gate->edgeA->v1 = point1;
-
-			gate->edgeB->v0 = point1;
-			gate->edgeB->v1 = point0;
-			
-			gate->next = NULL;
-			gate->prev = NULL;
-
-			//gate->v0 = point0;
-			//gate->v1 = point1;
-			
-			
-			gates[i] = gate;
-
-			gate->SetLocked( true );
-
-			gate->UpdateLine();
-
-			terrainTree->Insert( gate->edgeA );
-			terrainTree->Insert( gate->edgeB );
-
-			cout << "inserting gate: " << gate->edgeA << endl;
-			gateTree->Insert( gate );
-
-			gateMap[gate->edgeA] = gate;
-			gateMap[gate->edgeB] = gate;
-		}
+		LoadGates( is );
 
 		is.close();
 
-
+		//loading done. now setup
 
 		SetGlobalBorders(leftBounds, boundsWidth, topBounds, boundsHeight );
-
 		CreateZones();
+		SetupZones();
 	}
 	else
 	{
@@ -2191,6 +2225,52 @@ void GameSession::CreateZones()
 	}
 }
 
+void GameSession::SetupZones()
+{
+	//setup subzones
+	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	{
+		for( list<Zone*>::iterator it2 = zones.begin(); it != zones.end(); ++it )
+		{
+			if( (*it) == (*it2) ) 
+				continue;
+
+			if( (*it)->ContainsZone( (*it2) ) )
+			{
+				(*it)->subZones.push_back( (*it2) );
+			}
+		}
+	}
+
+	//add enemies to the correct zone.
+	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
+	{
+		Vector2i truePos( (*it)->spawnRect.left + (*it)->spawnRect.width / 2, 
+			(*it)->spawnRect.top + (*it)->spawnRect.height / 2 );
+
+		for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
+		{
+			bool hasPoint = (*zit)->ContainsPoint( truePos );
+			if( hasPoint )
+			{
+				bool mostSpecific = true;
+				for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
+				{
+					if( (*zit2)->ContainsPoint( truePos ) )
+					{
+						mostSpecific = false;
+						break;
+					}
+				}
+
+				if( mostSpecific )
+				{
+					(*it)->zone = (*zit);
+				}
+			}
+		}
+	}
+}
 
 
 int GameSession::Run( string fileN )

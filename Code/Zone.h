@@ -12,9 +12,19 @@ struct Zone
 {
 	Zone( TerrainPolygon & tp );
 	~Zone();
+	
+	void Draw( sf::RenderTarget *target );
+
+	bool ContainsPoint( sf::Vector2i point );
+	bool ContainsZone( Zone *z );
+	bool ContainsPlayer();
+	Zone * ContainsPointMostSpecific( 
+		sf::Vector2i test );
+
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;
-	void Draw( sf::RenderTarget *target );
+	std::list<sf::Vector2i> points;
+	std::list<Zone*> subZones;
 };
 
 

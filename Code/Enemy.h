@@ -5,6 +5,7 @@
 #include <list>
 
 
+struct Zone;
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {
@@ -51,6 +52,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool spawnedByClone;
 	int initHealth;
 	int health;
+
+	Zone *zone;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );

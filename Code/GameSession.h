@@ -67,6 +67,18 @@ struct GameSession : QuadTreeCollider
 	~GameSession();
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
+	bool LoadEdges(std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	bool LoadMovingPlats(std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	bool LoadLights( std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	bool LoadGates( std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	bool LoadEnemies( std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	std::list<Enemy*> fullEnemyList;
+
 	sf::RenderWindow *window;
 	std::string currentFile;
 	std::list<Tileset*> tilesetList;
@@ -98,6 +110,7 @@ struct GameSession : QuadTreeCollider
 	void SetupClouds();
 
 	void CreateZones();
+	void SetupZones();
 
 	sf::VertexArray *debugBorders;
 

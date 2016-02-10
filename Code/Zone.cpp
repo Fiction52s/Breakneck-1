@@ -26,6 +26,7 @@ Zone::Zone( TerrainPolygon &tp )
 	TerrainPoint * curr = tp.pointStart;
 	while( curr != NULL )
 	{
+		points.push_back( curr->pos );
 		polyline.push_back( new p2t::Point(curr->pos.x, curr->pos.y ) );
 		++numPoints;
 		curr = curr->next;
@@ -71,4 +72,64 @@ Zone::~Zone()
 void Zone::Draw( RenderTarget *target )
 {
 	target->draw( *definedArea );
+}
+
+bool Zone::ContainsPoint( sf::Vector2i test )
+{
+	int pointCount = points.size();
+
+	bool c = false;
+
+	Vector2i prev = points.back();
+	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		if ( ( ( (*it).y > test.y ) != ( prev.y > test.y ) ) &&
+			(test.x < (prev.x-(*it).x) * (test.y-(*it).y) / (prev.y-(*it).y) + (*it).x) )
+				c = !c;
+
+		prev = (*it);
+	}
+
+	return c;
+}
+
+bool Zone::ContainsZone( Zone *z )
+{
+	Vector2i p( z->gates.front()->edge0->v0.x, z->gates.front()->edge0->v0.y );
+	return ContainsPoint( p );
+}
+
+bool Zone::ContainsPlayer()
+{
+
+}
+
+Zone* Zone::ContainsPointMostSpecific( sf::Vector2i test )
+{
+	bool contains = ContainsPoint( test );
+
+	if( contains )
+	{
+		if( subZones.empty() )
+		{
+			return this;
+		}
+		else
+		{
+			for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
+			{
+				Zone * z = ContainsPointMostSpecific( test );
+				if( z != NULL )
+				{
+					return z;
+				}
+			}
+
+			return this;
+		}
+	}
+	else
+	{
+		return NULL;
+	}
 }

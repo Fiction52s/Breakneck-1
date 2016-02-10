@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Zone.h"
 
 using namespace std;
 using namespace sf;
@@ -11,7 +12,7 @@ using namespace sf;
 
 Enemy::Enemy( GameSession *own, EnemyType t )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
-	spawnedByClone( false ), type( t )
+	spawnedByClone( false ), type( t ),zone( NULL )
 {
 
 }
