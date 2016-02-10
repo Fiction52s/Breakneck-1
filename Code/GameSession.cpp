@@ -829,7 +829,6 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
-		int leftBounds, boundsWidth, topBounds, boundsHeight;
 		is >> leftBounds;
 		is >> topBounds;
 		is >> boundsWidth;
@@ -1569,7 +1568,7 @@ bool GameSession::OpenFile( string fileName )
 
 		//loading done. now setup
 
-		SetGlobalBorders(leftBounds, boundsWidth, topBounds, boundsHeight );
+		SetGlobalBorders();
 		CreateZones();
 		SetupZones();
 	}
@@ -1591,7 +1590,7 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 	return a.first > b.first;
 }
 
-void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBounds, int boundsHeight )
+void GameSession::SetGlobalBorders()
 {
 	//borders not allowed to intersect w/ gates
 

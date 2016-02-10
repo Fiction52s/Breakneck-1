@@ -175,12 +175,6 @@ void Camera::Update( Actor *player )
 	pVel.y /= player->slowMultiple;
 		
 
-		
-
-	//zoomFactor = abs(pVel.x) / 40.0 + 1;//length( pVel ) / 40 + 1;
-	//zoomFactor = 2;
-	//zoomFactor = 1;
-
 	float temp;
 	V2d f;
 	if( player->ground != NULL )
@@ -211,11 +205,6 @@ void Camera::Update( Actor *player )
 		zoomFactor += zDiff / 250.0 / player->slowMultiple;
 	}
 
-	//if( player->ground == NULL && player->velocity.y == player->maxFallSpeed )
-	//{
-	//	cout << "zoom out" << endl;
-	//	zoomFactor += .03;
-	//}
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;
@@ -273,8 +262,8 @@ void Camera::Update( Actor *player )
 	{
 		offset.y += (-offset.y) / 20;
 	}
-	//cout << "pVel.y: " << pVel.y << endl;
-	//cout << "offset.y << " << offset.y << " add: " << pVel.y * 1.0000001  << "what: " << pVel.y << endl;
+	
+
 	if( offset.x < -150 * zoomFactor )
 		offset.x = -150 * zoomFactor;
 	else if( offset.x > 150 * zoomFactor )
@@ -287,16 +276,6 @@ void Camera::Update( Actor *player )
 
 	pos.x += offset.x;
 	pos.y += offset.y;
-
-
-	/*if(pVel.x > 0 )
-	{
-		pos.x += left;
-	}
-	else if( pVel.x < 0 )
-	{
-		pos.x -= bottom;
-	}*/
 
 	if( pVel.y > 0 )
 	{
@@ -316,9 +295,35 @@ void Camera::Update( Actor *player )
 		ideal.x += right * zoomFactor;
 	}
 
+	double camWidth = 960 * GetZoom();
+	double camHeight = 540 * GetZoom();
 
-	//zoomFactor = 1;
+	double rightExtra = (pos.x + camWidth / 2) - ( owner->leftBounds + owner->boundsWidth );
+	double leftExtra = owner->leftBounds - ( pos.x - camWidth / 2 );
+	double botExtra = (pos.y + camHeight / 2) - (owner->topBounds + owner->boundsHeight );
+	double topExtra = owner->topBounds - (pos.y - camHeight / 2 );
+
+	if( rightExtra > 0 )
+	{
+		//cout << "moving left" << endl;
+		pos.x -= rightExtra;
+	}
+	else if( leftExtra > 0 )
+	{
+		//cout << "moving right" << endl;
+		pos.x += leftExtra;
+	}
 	
+	if( botExtra > 0 )
+	{
+		//cout << "moving up" << endl;
+		pos.y -= botExtra;
+	}
+	else if( topExtra > 0 )
+	{
+		//cout << "moving down" << endl;
+		pos.y += topExtra;
+	}	
 }
 
 void Camera::Update2( Actor *player )

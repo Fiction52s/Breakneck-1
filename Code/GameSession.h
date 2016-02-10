@@ -88,8 +88,12 @@ struct GameSession : QuadTreeCollider
 	void AddEnemy( Enemy * e );
 	void RemoveEnemy( Enemy * e );
 
-	void SetGlobalBorders( int leftBounds, int boundsWidth, int topBounds, int boundsHeight );
-
+	void SetGlobalBorders();
+	int leftBounds;
+	int topBounds;
+	int boundsWidth;
+	int boundsHeight;
+	
 	void SetParOnTop(sf::RenderTarget *target );
 
 	void UpdateEnemiesPrePhysics();

@@ -439,7 +439,7 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		gravity = 1.9;
+		gravity = 1.9;//1.9;
 		maxFallSpeed = 40;//100;
 
 		wallJumpStrength.x = 10;
@@ -459,7 +459,7 @@ Actor::Actor( GameSession *gs )
 		ground = NULL;
 		movingGround = NULL;
 		groundSpeed = 0;
-		maxNormalRun = 100;
+		maxNormalRun = 60; //adjust up w/ more power?
 	
 		facingRight = true;
 		collision = false;
