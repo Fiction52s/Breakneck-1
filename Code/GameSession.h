@@ -11,6 +11,7 @@
 #include "Light.h"
 #include "Camera.h"
 #include "Gate.h"
+#include "Zone.h"
 
 struct PowerBar
 {
@@ -96,6 +97,7 @@ struct GameSession : QuadTreeCollider
 	void SetUndergroundParAndDraw();
 	void SetupClouds();
 
+	void CreateZones();
 
 	sf::VertexArray *debugBorders;
 
@@ -153,6 +155,7 @@ struct GameSession : QuadTreeCollider
 	Tileset *undergroundTilesetNormal;
 	sf::Shader underShader;
 
+	std::list<Zone*> zones;
 
 	sf::Transform groundTrans;
 	Camera cam;

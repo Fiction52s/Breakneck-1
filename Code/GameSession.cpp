@@ -11,6 +11,8 @@
 #include <sstream>
 #include <ctime>
 #include <boost/bind.hpp>
+#include "EditSession.h"
+#include "Zone.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -1495,8 +1497,10 @@ bool GameSession::OpenFile( string fileName )
 
 			gate->edgeA = new Edge;
 			gate->edgeA->edgeType = Edge::CLOSED_GATE;
+			gate->edgeA->info = gate;
 			gate->edgeB = new Edge;
 			gate->edgeB->edgeType = Edge::CLOSED_GATE;
+			gate->edgeB->info = gate;
 
 			gate->edgeA->v0 = point0;
 			gate->edgeA->v1 = point1;
@@ -1532,6 +1536,8 @@ bool GameSession::OpenFile( string fileName )
 
 
 		SetGlobalBorders(leftBounds, boundsWidth, topBounds, boundsHeight );
+
+		CreateZones();
 	}
 	else
 	{
@@ -1929,31 +1935,43 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 
 	}
 	//bringing it all together
+	int topEdgesSize = topEdges.size();
+	int rightEdgesSize = rightEdges.size();
+	int bottomEdgesSize = bottomEdges.size();
+	int leftEdgesSize = leftEdges.size();
 
-	if( topEdges.back()->v0 == rightEdges.front()->v1 )
+	if( topEdgesSize > 0 && rightEdgesSize > 0 )
 	{
-		topEdges.back()->edge0 = rightEdges.front();
-		rightEdges.front()->edge1 = topEdges.back();
+		if( topEdges.back()->v0 == rightEdges.front()->v1 )
+		{
+			topEdges.back()->edge0 = rightEdges.front();
+			rightEdges.front()->edge1 = topEdges.back();
+		}
 	}
-	if( rightEdges.back()->v0 == bottomEdges.front()->v1 )
+	if( rightEdgesSize > 0 && bottomEdgesSize > 0 )
 	{
-		rightEdges.back()->edge0 = bottomEdges.front();
-		bottomEdges.front()->edge1 = rightEdges.back();
+		if( rightEdges.back()->v0 == bottomEdges.front()->v1 )
+		{
+			rightEdges.back()->edge0 = bottomEdges.front();
+			bottomEdges.front()->edge1 = rightEdges.back();
+		}
 	}
-	if( bottomEdges.back()->v0 == leftEdges.front()->v1 )
+	if( bottomEdgesSize > 0 && leftEdgesSize > 0 )
 	{
-		bottomEdges.back()->edge0 = leftEdges.front();
-		leftEdges.front()->edge1 = bottomEdges.back();
+		if( bottomEdges.back()->v0 == leftEdges.front()->v1 )
+		{
+			bottomEdges.back()->edge0 = leftEdges.front();
+			leftEdges.front()->edge1 = bottomEdges.back();
+		}
 	}
-	if( leftEdges.back()->v0 == topEdges.front()->v1 )
+	if( leftEdgesSize > 0 && topEdgesSize > 0 )
 	{
-		leftEdges.back()->edge0 = topEdges.front();
-		topEdges.front()->edge1 = leftEdges.back();
+		if( leftEdges.back()->v0 == topEdges.front()->v1 )
+		{
+			leftEdges.back()->edge0 = topEdges.front();
+			topEdges.front()->edge1 = leftEdges.back();
+		}
 	}
-	
-
-	
-
 
 	debugBorders = new VertexArray( sf::Lines, ( topEdges.size() + rightEdges.size() + bottomEdges.size() + leftEdges.size() ) * 2 );
 	VertexArray &db = *debugBorders;
@@ -2012,6 +2030,122 @@ void GameSession::SetGlobalBorders(int leftBounds, int boundsWidth, int topBound
 
 }
 
+void GameSession::CreateZones()
+{
+	//no gates, no zones!
+	for( int i = 0; i < numGates; ++i )
+	{
+		Gate *g = gates[i];
+		Edge *curr = g->edgeA;
+
+		TerrainPolygon tp( NULL );
+		V2d v0 = curr->v0;
+		V2d v1 = curr->v1;
+		list<Gate*> currGates;
+
+		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+		curr = curr->edge1;
+		while( true )
+		{
+			if( curr == g->edgeA )
+			{
+				//we found a zone!
+
+				if( !tp.IsClockwise() )
+				{
+					cout << "found a zone!!!" << endl;
+					bool okayZone = true;
+					for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
+					{
+						for( list<Gate*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
+						{
+							for( list<Gate*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
+							{
+								if( (*cit) == (*git) )
+								{
+									okayZone = false;
+								}
+							}
+							//for( list<Gate*>::iterator git =
+							
+						}
+					}
+
+					if( okayZone )
+					{
+						Zone *z = new Zone( tp );
+						z->gates = currGates;
+						zones.push_back( z );
+						//cout << "actually creating a new zone!" << endl;
+					}
+					
+
+				}
+				else
+				{
+					cout << "woulda been a zone" << endl;
+				}
+
+				break;
+			}
+			else if( curr == g->edgeB )
+			{
+				cout << "not a zone even" << endl;
+				break;
+			}
+
+
+			tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+			if( curr->edgeType == Edge::CLOSED_GATE )
+			{
+				Gate *g = (Gate*)curr->info;
+
+				currGates.push_back( g );
+			}
+
+			curr = curr->edge1;
+		}
+
+		curr = g->edgeB;
+
+		TerrainPolygon tpb( NULL );
+
+		tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+		curr = curr->edge1;
+		while( true )
+		{
+			if( curr == g->edgeB )
+			{
+				//we found a zone!
+
+				if( !tp.IsClockwise() )
+				{
+					cout << "found a zone!!!" << endl;
+				}
+				else
+				{
+					cout << "woulda been a zone" << endl;
+				}
+
+				break;
+			}
+			else if( curr == g->edgeA )
+			{
+				break;
+			}
+
+
+			tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+			curr = curr->edge1;
+		}
+		
+		//tp.AddPoint( new TerrainPoint( 
+	}
+}
 
 
 
@@ -2970,6 +3104,10 @@ int GameSession::Run( string fileN )
 		if( player.action != Actor::DEATH )
 			player.Draw( preScreenTex );
 
+		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+		{
+			(*it)->Draw( preScreenTex );
+		}
 		
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
@@ -3470,7 +3608,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			gateList->next = NULL;
 			gateList->prev = NULL;
 			
-			cout << "setting gate: " << gateList->edgeA << endl;
+			//cout << "setting gate: " << gateList->edgeA << endl;
 		}
 		else
 		{
@@ -3478,7 +3616,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			gateList = g;
 		}
 
-		cout << "gate" << endl;
+		//cout << "gate" << endl;
 		++testGateCount;
 	}
 }

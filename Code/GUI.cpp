@@ -90,6 +90,7 @@ void GridSelector::Draw( sf::RenderTarget *target )
 //returns true if a selection has been made
 bool GridSelector::Update( bool mouseDown, int posx, int posy )
 {
+	//cout << "update: " << posx << ", " << posy << endl;
 	if( !active )
 	{
 		assert( false && "trying to update inactive grid selector" );
@@ -154,6 +155,7 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 
 void Panel::Update( bool mouseDown, int posx, int posy )
 {
+	//cout << "posx: " << posx << ", posy: " << posy << ", pos.x: " << pos.x << ", pos.y: " << pos.y << endl;
 	posx -= pos.x;
 	posy -= pos.y;
 
@@ -192,6 +194,7 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 
 	for( map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
 	{
+		cout << "sending pos: " << posx << ", " << posy << endl;
 		bool temp = (*it).second->Update( mouseDown, posx, posy );
 	}
 

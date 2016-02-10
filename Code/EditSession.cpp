@@ -2803,7 +2803,7 @@ void EditSession::Draw()
 
 void EditSession::UpdateFullBounds()
 {
-	int boundRectWidth = 10 * zoomMultiple;
+	int boundRectWidth = 5 * zoomMultiple;
 		//top rect
 	fullBounds[0].position = Vector2f( leftBound, topBound - boundRectWidth );
 	fullBounds[1].position = Vector2f( leftBound + boundWidth, topBound - boundRectWidth );
@@ -10180,6 +10180,7 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 
 void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_name )
 {
+	cout << "grid selector callback!" << endl;
 	string name = p_name;
 	Panel *panel = gs->owner;
 	if( panel == enemySelectPanel )
@@ -10213,10 +10214,10 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	}
 	else if( panel == gateSelectorPopup )
 	{
-		//cout << "callback!" << endl;
+		cout << "callback!" << endl;
 		if( name != "not set" )
 		{
-			//cout << "real result" << endl;
+			cout << "real result" << endl;
 			tempGridResult = name;
 			//showPanel = NULL;
 		}
@@ -11195,6 +11196,7 @@ void EditSession::ErrorPop( const std::string &error )
 
 void EditSession::GridSelectPop( const std::string &type )
 {
+	//cout << "grid select popupppp" << endl;
 	int selectedIndex = -1;
 	tempGridResult = "nothing";
 	//messagePopup->labels["message"]->setString( message );
@@ -11227,8 +11229,8 @@ void EditSession::GridSelectPop( const std::string &type )
 	while( !closePopup )
 	{
 		pixelPos = sf::Mouse::getPosition( *w );
-		pixelPos.x *= 1920 / w->getSize().x;
-		pixelPos.y *= 1920 / w->getSize().y;
+		pixelPos.x *= 1920.0 / w->getSize().x;
+		pixelPos.y *= 1080.0 / w->getSize().y;
 		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		w->clear();
 
@@ -11245,6 +11247,7 @@ void EditSession::GridSelectPop( const std::string &type )
 				{
 					if( ev.mouseButton.button == Mouse::Left )
 					{
+						cout << "are we here: " << uiMouse.x << ", " << uiMouse.y << endl;
 						gateSelectorPopup->Update( true, uiMouse.x, uiMouse.y );
 						//if you click outside of the box, delete the gate
 						
@@ -11258,6 +11261,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					//closePopup = true;
 					if( ev.mouseButton.button == Mouse::Left )
 					{
+						cout << "are we real: " << uiMouse.x << ", " << uiMouse.y << endl;
 						gateSelectorPopup->Update( false, uiMouse.x, uiMouse.y );
 					}
 					break;

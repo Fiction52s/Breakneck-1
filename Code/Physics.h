@@ -34,6 +34,8 @@ struct Edge : QuadTreeEntrant
 	Edge *edge0;
 	Edge *edge1;
 	EdgeType edgeType;
+
+	void *info;
 };
 
 struct GameSession;
