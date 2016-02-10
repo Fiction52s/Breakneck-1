@@ -2041,7 +2041,11 @@ void GameSession::CreateZones()
 		TerrainPolygon tp( NULL );
 		V2d v0 = curr->v0;
 		V2d v1 = curr->v1;
-		list<Gate*> currGates;
+		list<Edge*> currGates;
+
+		
+		currGates.push_back( curr );
+		
 
 		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
 
@@ -2054,13 +2058,15 @@ void GameSession::CreateZones()
 
 				if( !tp.IsClockwise() )
 				{
-					cout << "found a zone!!!" << endl;
+					//cout << "found a zone aaa!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
 					bool okayZone = true;
+
+
 					for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
 					{
-						for( list<Gate*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
+						for( list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
 						{
-							for( list<Gate*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
+							for( list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
 							{
 								if( (*cit) == (*git) )
 								{
@@ -2077,21 +2083,21 @@ void GameSession::CreateZones()
 						Zone *z = new Zone( tp );
 						z->gates = currGates;
 						zones.push_back( z );
-						//cout << "actually creating a new zone!" << endl;
+					//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
 					}
 					
 
 				}
 				else
 				{
-					cout << "woulda been a zone" << endl;
+					//cout << "woulda been a zone" << endl;
 				}
 
 				break;
 			}
 			else if( curr == g->edgeB )
 			{
-				cout << "not a zone even" << endl;
+				//cout << "not a zone even" << endl;
 				break;
 			}
 
@@ -2100,15 +2106,21 @@ void GameSession::CreateZones()
 
 			if( curr->edgeType == Edge::CLOSED_GATE )
 			{
-				Gate *g = (Gate*)curr->info;
-
-				currGates.push_back( g );
+				//cout << "found another gate AA" << endl;
+				currGates.push_back( curr );
 			}
 
 			curr = curr->edge1;
 		}
 
+		
+		currGates.clear();
+
 		curr = g->edgeB;
+
+		
+		currGates.push_back( curr );
+		
 
 		TerrainPolygon tpb( NULL );
 
@@ -2121,13 +2133,39 @@ void GameSession::CreateZones()
 			{
 				//we found a zone!
 
-				if( !tp.IsClockwise() )
+				if( !tpb.IsClockwise() )
 				{
-					cout << "found a zone!!!" << endl;
+					//cout << "found a zone bbb!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
+					bool okayZone = true;
+					for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
+					{
+						for( list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
+						{
+							for( list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
+							{
+								if( (*cit) == (*git) )
+								{
+									okayZone = false;
+								}
+							}
+							//for( list<Gate*>::iterator git =
+							
+						}
+					}
+
+					if( okayZone )
+					{
+						Zone *z = new Zone( tpb );
+						z->gates = currGates;
+						zones.push_back( z );
+						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
+					}
+					
+
 				}
 				else
 				{
-					cout << "woulda been a zone" << endl;
+					//cout << "woulda been a zone" << endl;
 				}
 
 				break;
@@ -2139,6 +2177,12 @@ void GameSession::CreateZones()
 
 
 			tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+			if( curr->edgeType == Edge::CLOSED_GATE )
+			{
+				//cout << "found another gate BB" << endl;
+				currGates.push_back( curr );
+			}
 
 			curr = curr->edge1;
 		}

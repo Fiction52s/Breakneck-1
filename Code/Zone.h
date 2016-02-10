@@ -6,12 +6,14 @@
 #include <list>
 #include "EditSession.h"
 
+//typedef std::pair <Gate*,bool> GateBool;
+
 struct Zone
 {
 	Zone( TerrainPolygon & tp );
 	~Zone();
 	sf::VertexArray *definedArea;
-	std::list<Gate*> gates;
+	std::list<Edge*> gates;
 	void Draw( sf::RenderTarget *target );
 };
 
