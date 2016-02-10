@@ -3,6 +3,8 @@
 
 #include "Physics.h"
 
+struct Zone;
+
 struct Gate : public QuadTreeEntrant//: public Edge
 {
 	
@@ -32,6 +34,9 @@ struct Gate : public QuadTreeEntrant//: public Edge
 
 	Edge *edgeA;
 	Edge *edgeB;
+
+	Zone *zoneA;//edgeA is part of zoneA
+	Zone *zoneB;
 
 	Gate *next;
 	Gate *prev;

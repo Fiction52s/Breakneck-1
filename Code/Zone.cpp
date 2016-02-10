@@ -17,6 +17,7 @@ using namespace sf;
 using namespace std;
 
 Zone::Zone( TerrainPolygon &tp )
+	:active( false )
 {
 	vector<p2t::Point*> polyline;
 
@@ -71,7 +72,8 @@ Zone::~Zone()
 
 void Zone::Draw( RenderTarget *target )
 {
-	target->draw( *definedArea );
+	if( !active )
+		target->draw( *definedArea );
 }
 
 bool Zone::ContainsPoint( sf::Vector2i test )
@@ -99,10 +101,10 @@ bool Zone::ContainsZone( Zone *z )
 	return ContainsPoint( p );
 }
 
-bool Zone::ContainsPlayer()
-{
-
-}
+//bool Zone::ContainsPlayer()
+//{
+//
+//}
 
 Zone* Zone::ContainsPointMostSpecific( sf::Vector2i test )
 {

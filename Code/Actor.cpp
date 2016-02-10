@@ -10668,13 +10668,21 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( c->edge->edgeType == Edge::OPEN_GATE )
 			{
-				cout << "GATEEEEee" << endl;
+				//cout << "GATEEEEee" << endl;
 				return;
 			}
 			else if( c->edge->edgeType == Edge::CLOSED_GATE )
 			{
-				c->edge->edgeType = Edge::OPEN_GATE;
+				//c->edge->edgeType = Edge::OPEN_GATE;
 				Gate *g = owner->gateMap[c->edge];
+				if( c->edge == g->edgeA )
+				{
+					g->zoneB->active = true;
+				}
+				else
+				{
+					g->zoneA->active = true;
+				}
 				g->SetLocked( false );
 				return;
 			}

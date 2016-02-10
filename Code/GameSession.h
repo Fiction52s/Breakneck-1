@@ -232,6 +232,7 @@ struct GameSession : QuadTreeCollider
 	Enemy *cloneInactiveEnemyList;
 
 	sf::Vector2<double> originalPos;
+	Zone *originalZone;
 	sf::Rect<double> screenRect;
 	sf::Rect<double> tempSpawnRect;
 

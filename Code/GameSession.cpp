@@ -1557,13 +1557,13 @@ bool GameSession::OpenFile( string fileName )
 			++polyCounter;
 		}
 		
-		LoadMovingPlats( is );
+		LoadMovingPlats( is, polyIndex );
 
-		LoadLights( is );
+		LoadLights( is, polyIndex );
 
-		LoadEnemies( is );
+		LoadEnemies( is, polyIndex );
 		
-		LoadGates( is );
+		LoadGates( is, polyIndex );
 
 		is.close();
 
@@ -2227,10 +2227,11 @@ void GameSession::CreateZones()
 
 void GameSession::SetupZones()
 {
+	cout << "setupzones" << endl;
 	//setup subzones
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
-		for( list<Zone*>::iterator it2 = zones.begin(); it != zones.end(); ++it )
+		for( list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2 )
 		{
 			if( (*it) == (*it2) ) 
 				continue;
@@ -2242,6 +2243,7 @@ void GameSession::SetupZones()
 		}
 	}
 
+		cout << "1" << endl;
 	//add enemies to the correct zone.
 	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
 	{
@@ -2270,8 +2272,57 @@ void GameSession::SetupZones()
 			}
 		}
 	}
-}
 
+	cout << "2" << endl;
+	//which zone is the player in?
+	for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
+	{
+		Vector2i truePos = Vector2i( player.position.x, player.position.y );
+		bool hasPoint = (*zit)->ContainsPoint( truePos );
+		if( hasPoint )
+		{
+			bool mostSpecific = true;
+			for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
+			{
+				if( (*zit2)->ContainsPoint( truePos ) )
+				{
+					mostSpecific = false;
+					break;
+				}
+			}
+
+			if( mostSpecific )
+			{
+				originalZone = (*zit);
+			}
+		}
+	}
+
+	originalZone->active = true;
+	
+	cout << "3" << endl;
+	//assign correct zones to gates
+	for( int i = 0; i < numGates; ++i )
+	{
+		int done = 0;
+		for( list<Zone*>::iterator it = zones.begin(); it != zones.end() && done < 2; ++it )
+		{
+			for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end() && done < 2; ++eit )
+			{
+				if( gates[i]->edgeA == (*eit) )
+				{
+					gates[i]->zoneA = (*it);
+				}
+				else if( gates[i]->edgeB == (*eit) )
+				{
+					gates[i]->zoneB = (*it);
+				}
+			}
+		}
+	}
+
+	
+}
 
 int GameSession::Run( string fileN )
 {
@@ -2610,9 +2661,18 @@ int GameSession::Run( string fileN )
 				RespawnPlayer();
 				ResetEnemies();
 
+				//temporary
+				for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+				{
+					(*it)->active = false;
+				}
+				originalZone->active = true;
+
+				//later don't relock gates in a level unless there is a "level reset"
 				for( int i = 0; i < numGates; ++i )
 				{
-					gates[i]->locked = true;
+					gates[i]->SetLocked( true );
+					//gates[i]->locked = true;
 				}
 
 				
@@ -3604,7 +3664,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Enemy *e = (Enemy*)qte;
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-		if( e->spawnRect.intersects( tempSpawnRect ) )
+		if( e->spawnRect.intersects( tempSpawnRect ) && e->zone->active )
 		{
 			//cout << "spawning enemy! of type: " << e->type << endl;
 			assert( e->spawned == false );

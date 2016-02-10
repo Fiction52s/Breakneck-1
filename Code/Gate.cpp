@@ -6,7 +6,7 @@ using namespace sf;
 #define V2d sf::Vector2<double>
 
 Gate::Gate( GateType p_type )
-	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 )
+	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL )
 {
 	switch( type )
 	{
@@ -75,6 +75,9 @@ void Gate::SetLocked( bool on )
 	{
 		locked = true;
 
+		edgeA->edgeType = Edge::CLOSED_GATE;
+		edgeB->edgeType = Edge::CLOSED_GATE;
+
 		edgeA->edge0 = temp0prev;
 		temp0prev->edge1 = edgeA;
 
@@ -91,6 +94,8 @@ void Gate::SetLocked( bool on )
 	{
 		locked = false;
 
+		edgeA->edgeType = Edge::OPEN_GATE;
+		edgeB->edgeType = Edge::OPEN_GATE;
 
 		temp0next->edge0 = temp0prev;
 		temp0prev->edge1 = temp0next;

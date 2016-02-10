@@ -17,7 +17,7 @@ struct Zone
 
 	bool ContainsPoint( sf::Vector2i point );
 	bool ContainsZone( Zone *z );
-	bool ContainsPlayer();
+	//bool ContainsPlayer();
 	Zone * ContainsPointMostSpecific( 
 		sf::Vector2i test );
 
@@ -25,6 +25,7 @@ struct Zone
 	std::list<Edge*> gates;
 	std::list<sf::Vector2i> points;
 	std::list<Zone*> subZones;
+	bool active;
 };
 
 
