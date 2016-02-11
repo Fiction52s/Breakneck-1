@@ -2282,6 +2282,31 @@ void GameSession::CreateZones()
 		//tp.AddPoint( new TerrainPoint( 
 	}
 
+	for( int i = 0; i < numGates; ++i )
+	{
+	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	{
+		cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
+		//cout << i << ", it gates: " << (*it)->gates.size() << endl;
+		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
+		{
+			if( gates[i]->edgeA == (*eit) )
+			{
+				cout << "gate: " << gates[i] << ", gate zone a: " << (*it ) << endl;
+				gates[i]->zoneA = (*it);
+				//done++;
+			}
+			else if( gates[i]->edgeB == (*eit) )
+			{
+				cout << "gate: " << gates[i] << ", gate zone B: " << (*it ) << endl;
+				//cout << "gate zone B: " << (*it ) << endl;
+				gates[i]->zoneB = (*it);
+				//done++;
+			}
+		}
+	}
+	}
+
 	//list<Gate*> ;
 	list<Edge*> outsideGates;
 
@@ -2327,9 +2352,30 @@ void GameSession::CreateZones()
 		z->gates = outsideGates;
 		zones.push_back( z );
 
+		for( list<Edge*>::iterator it = outsideGates.begin(); it != outsideGates.end(); ++it )
+		{
+			Gate *g = (Gate*)(*it)->info;
+			if( g->zoneA == NULL )
+			{
+				g->zoneA = z;
+			}
+			else if( g->zoneB == NULL )
+			{
+				g->zoneB = z;
+			}
+
+		}
+
 		
+	
 		//TerrainPolygon tp( NULL );
 		
+	}
+
+	cout << "gate testing: " << endl;
+	for( int i = 0; i < numGates; ++i )
+	{
+		cout << "gate " << i << ": " << gates[i]->zoneA << ", " << gates[i]->zoneB << endl;
 	}
 }
 
@@ -2350,8 +2396,6 @@ void GameSession::SetupZones()
 			}
 		}
 	}
-
-	
 
 		cout << "1" << endl;
 	//add enemies to the correct zone.
@@ -2439,30 +2483,7 @@ void GameSession::SetupZones()
 	//}
 	
 
-	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-	{
-		cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
-		//cout << i << ", it gates: " << (*it)->gates.size() << endl;
-		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
-		{
-			for( int i = 0; i < numGates; ++i )
-			{
-				if( gates[i]->edgeA == (*eit) )
-				{
-					cout << "gate: " << gates[i] << ", gate zone a: " << (*it ) << endl;
-					gates[i]->zoneA = (*it);
-					//done++;
-				}
-				else if( gates[i]->edgeB == (*eit) )
-				{
-					cout << "gate: " << gates[i] << ", gate zone B: " << (*it ) << endl;
-					//cout << "gate zone B: " << (*it ) << endl;
-					gates[i]->zoneB = (*it);
-					//done++;
-				}
-			}
-		}
-	}
+	
 	
 
 

@@ -124,7 +124,7 @@ void Zone::Init()
 
 			for( list<Gate*>::iterator git = unlockedGates.begin(); git != unlockedGates.end(); ++git )
 			{
-				//(*git)->SetLocked( false );
+				(*git)->SetLocked( false );
 			}
 
 			vector<p2t::Point*> holePolyline;
@@ -134,6 +134,11 @@ void Zone::Init()
 
 
 			holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+			
+			/*holePolyline.push_back( new p2t::Point(-1000, -1000) );
+			holePolyline.push_back( new p2t::Point(1000, -1000 ) );
+			holePolyline.push_back( new p2t::Point(1000, 1000 ) );
+			holePolyline.push_back( new p2t::Point(-1000, 1000 ) );*/
 
 			curr = curr->edge0;
 
@@ -147,12 +152,12 @@ void Zone::Init()
 			cout << "unlocked gates: " << unlockedGates.size() << endl;
 			cout << "would be adding a hole" << endl;
 			
-			//cdt->AddHole( holePolyline );
+			cdt->AddHole( holePolyline );
 
 			for( int i = 0; i < numHolePoints; ++i )
 			{
 				cout << "point: " << holePolyline[i]->x << ", " << holePolyline[i]->y << endl;
-				delete holePolyline[i];
+			//	delete holePolyline[i];
 			}
 
 			for( list<Gate*>::iterator git = unlockedGates.begin(); git != unlockedGates.end(); ++git )
