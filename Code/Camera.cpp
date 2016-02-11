@@ -306,23 +306,23 @@ void Camera::Update( Actor *player )
 	if( rightExtra > 0 )
 	{
 		//cout << "moving left" << endl;
-		pos.x -= rightExtra;
+		//pos.x -= rightExtra;
 	}
 	else if( leftExtra > 0 )
 	{
 		//cout << "moving right" << endl;
-		pos.x += leftExtra;
+		//pos.x += leftExtra;
 	}
 	
 	if( botExtra > 0 )
 	{
 		//cout << "moving up" << endl;
-		pos.y -= botExtra;
+		//pos.y -= botExtra;
 	}
 	else if( topExtra > 0 )
 	{
 		//cout << "moving down" << endl;
-		pos.y += topExtra;
+		//pos.y += topExtra;
 	}	
 }
 

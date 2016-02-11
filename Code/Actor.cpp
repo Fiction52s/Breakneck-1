@@ -24,8 +24,9 @@ Actor::Actor( GameSession *gs )
 		hasGreenKey = false;
 		hasBlueKey = false;
 		slopeTooSteepLaunchLimitX = .1;
-		steepSlideFastGravFactor = 1.9 / 3.0;
-		steepSlideGravFactor = 1.3 / 3.0;
+		
+		steepSlideGravFactor = .1;
+		steepSlideFastGravFactor = .2;
 		
 		steepClimbGravFactor = .7;
 		steepClimbFastFactor = .5;
@@ -439,19 +440,18 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		gravity = 1.9;//1.9;
-		maxFallSpeed = 40;//100;
+		
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 25;
 		clingSpeed = 3;
 
-		dashSpeed = 12;
+		
 		offSlopeByWallThresh = dashSpeed;//18;
 		slopeLaunchMinSpeed = 15;//dashSpeed * .7;
 		steepClimbSpeedThresh = dashSpeed;
 
-		jumpStrength = 27.5;
+		
 
 		hasDoubleJump = true;
 		doubleJumpStrength = 26.5;
@@ -466,9 +466,14 @@ Actor::Actor( GameSession *gs )
 	
 		airAccel = 1.5;
 		
+		gravity = 1.7;//1.9; // 1 
+		jumpStrength = 27.5; // 2 
+		dashSpeed = 9;//12; // 3
+		airDashSpeed = dashSpeed;
+		maxFallSpeed = 30;//100; // 4
 		
-		airDashSpeed = 12;
-
+		maxRunInit = 4;
+		maxAirXControl = 6;//maxRunInit;
 		airSlow = .7;//.3;
 
 		groundOffsetX = 0;
@@ -478,8 +483,8 @@ Actor::Actor( GameSession *gs )
 		grindQuantity = 0;
 		grindSpeed = 0;
 
-		maxRunInit = 6;
-		maxAirXControl = maxRunInit;
+		
+		
 
 		//max ground speed should probably start around 60-80 and then get powerups to rise to 100
 		//for world 1 lets do the lowest number for the beta
@@ -491,7 +496,7 @@ Actor::Actor( GameSession *gs )
 		runAccelInit = .5;
 		
 		runAccel = .03;
-		sprintAccel = .85;
+		sprintAccel = .3;//.85;
 
 		holdDashAccel = .07;
 		bounceFlameAccel = .15;
@@ -10674,7 +10679,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			else if( c->edge->edgeType == Edge::CLOSED_GATE )
 			{
 				//c->edge->edgeType = Edge::OPEN_GATE;
-				Gate *g = owner->gateMap[c->edge];
+				Gate *g = (Gate*)c->edge->info;//owner->gateMap[c->edge];
 				if( c->edge == g->edgeA )
 				{
 					g->zoneB->active = true;
@@ -11185,7 +11190,10 @@ void Actor::Draw( sf::RenderTarget *target )
 			case FAIR:
 				{
 					if( flashFrames > 0 )
+					{
 						target->draw( fairSword1, &swordShader );
+						//cout << "shader!" << endl;
+					}
 					else
 					{
 						target->draw( fairSword1 );

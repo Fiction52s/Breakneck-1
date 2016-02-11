@@ -246,11 +246,14 @@ struct GameSession : QuadTreeCollider
 	QuadTree * grassTree;
 	QuadTree * gateTree;
 
-	std::map<Edge*, Gate*> gateMap;
+	//std::map<Edge*, Gate*> gateMap;
 
 	//int numKeys;
 	//Key *keys;
 	std::list<Key*> keyList;
+
+	Edge *borderEdge; 
+	//for creating the outside zone
 
 	
 

@@ -566,8 +566,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		cout << "inserting gate: " << gate->edgeA << endl;
 		gateTree->Insert( gate );
 
-		gateMap[gate->edgeA] = gate;
-		gateMap[gate->edgeB] = gate;
+		//gateMap[gate->edgeA] = gate;
+		//gateMap[gate->edgeB] = gate;
 	}
 
 	return true;
@@ -1592,6 +1592,7 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 
 void GameSession::SetGlobalBorders()
 {
+	borderEdge = NULL;
 	//borders not allowed to intersect w/ gates
 
 	V2d topLeft( leftBounds, topBounds );
@@ -1660,6 +1661,7 @@ void GameSession::SetGlobalBorders()
 
 
 				topEdges.push_back( newSeg );
+				borderEdge = newSeg;
 
 
 				first = false;
@@ -1698,7 +1700,20 @@ void GameSession::SetGlobalBorders()
 
 		//cout << "creating final seg!!!" << endl;
 		topEdges.push_back( newSeg );
+		borderEdge = newSeg;
 	}
+
+	if( inters.empty() )
+	{
+		Edge *newSeg = new Edge;
+		newSeg->v0 = topRight;
+		newSeg->v1 = topLeft;
+		newSeg->edgeType = Edge::BORDER;
+
+		topEdges.push_back( newSeg );
+		borderEdge = newSeg;
+	}
+
 	}
 	//right section-------------------
 	{
@@ -1752,6 +1767,7 @@ void GameSession::SetGlobalBorders()
 
 
 				rightEdges.push_back( newSeg );
+				borderEdge = newSeg;
 
 
 				first = false;
@@ -1786,6 +1802,18 @@ void GameSession::SetGlobalBorders()
 		newSeg->edge1 = edge;
 
 		rightEdges.push_back( newSeg );
+		borderEdge = newSeg;
+	}
+
+	if( inters.empty() )
+	{
+		Edge *newSeg = new Edge;
+		newSeg->v0 = bottomRight;
+		newSeg->v1 = topRight;
+		newSeg->edgeType = Edge::BORDER;
+
+		rightEdges.push_back( newSeg );
+		borderEdge = newSeg;
 	}
 
 	}
@@ -1841,7 +1869,7 @@ void GameSession::SetGlobalBorders()
 
 
 				bottomEdges.push_back( newSeg );
-
+				borderEdge = newSeg;
 
 				first = false;
 				segInProcess = false;
@@ -1875,6 +1903,18 @@ void GameSession::SetGlobalBorders()
 		newSeg->edge1 = edge;
 
 		bottomEdges.push_back( newSeg );
+		borderEdge = newSeg;
+	}
+
+	if( inters.empty() )
+	{
+		Edge *newSeg = new Edge;
+		newSeg->v0 = bottomLeft;
+		newSeg->v1 = bottomRight;
+		newSeg->edgeType = Edge::BORDER;
+
+		bottomEdges.push_back( newSeg );
+		borderEdge = newSeg;
 	}
 
 	}
@@ -1930,6 +1970,7 @@ void GameSession::SetGlobalBorders()
 
 
 				leftEdges.push_back( newSeg );
+				borderEdge = newSeg;
 
 
 				first = false;
@@ -1964,6 +2005,18 @@ void GameSession::SetGlobalBorders()
 		newSeg->edge1 = edge;
 
 		leftEdges.push_back( newSeg );
+		borderEdge = newSeg;
+	}
+
+	if( inters.empty() )
+	{
+		Edge *newSeg = new Edge;
+		newSeg->v0 = topLeft;
+		newSeg->v1 = bottomLeft;
+		newSeg->edgeType = Edge::BORDER;
+
+		leftEdges.push_back( newSeg );
+		borderEdge = newSeg;
 	}
 
 	}
@@ -2006,7 +2059,11 @@ void GameSession::SetGlobalBorders()
 		}
 	}
 
-	debugBorders = new VertexArray( sf::Lines, ( topEdges.size() + rightEdges.size() + bottomEdges.size() + leftEdges.size() ) * 2 );
+	int debugBorderCount = ( topEdges.size() + rightEdges.size() + bottomEdges.size() + leftEdges.size() ) * 2;
+	debugBorders = new VertexArray( sf::Lines, debugBorderCount );
+	
+	cout << "debugBorderCount: " << debugBorderCount << endl;
+
 	VertexArray &db = *debugBorders;
 	int i = 0;
 	for( list<Edge*>::iterator it = topEdges.begin(); it != topEdges.end(); ++it )
@@ -2116,6 +2173,7 @@ void GameSession::CreateZones()
 						Zone *z = new Zone( tp );
 						z->gates = currGates;
 						zones.push_back( z );
+						//cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
 					//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
 					}
 					
@@ -2189,6 +2247,7 @@ void GameSession::CreateZones()
 					if( okayZone )
 					{
 						Zone *z = new Zone( tpb );
+						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
 						z->gates = currGates;
 						zones.push_back( z );
 						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
@@ -2222,6 +2281,56 @@ void GameSession::CreateZones()
 		
 		//tp.AddPoint( new TerrainPoint( 
 	}
+
+	//list<Gate*> ;
+	list<Edge*> outsideGates;
+
+	int numOutsideGates = 0;
+	for( int i = 0; i < numGates; ++i )
+	{
+		Gate *g = gates[i];
+		if( g->zoneA == NULL )
+		{
+			outsideGates.push_back( g->edgeA );
+			numOutsideGates++;
+		}
+		else if( g->zoneB == NULL )
+		{
+			outsideGates.push_back( g->edgeB );
+			numOutsideGates++;
+		}
+	}
+
+	cout << "numoutside gates!!: " << numOutsideGates << endl;
+
+	if( numOutsideGates > 0 )
+	{
+		assert( borderEdge != NULL );
+
+		TerrainPolygon tp( NULL );
+		Edge *curr = borderEdge;
+		
+		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+		curr = curr->edge1;
+
+		while( curr != borderEdge )
+		{
+			tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+			curr = curr->edge1;
+		}
+
+		tp.FixWinding();
+
+		Zone *z = new Zone( tp );
+		z->gates = outsideGates;
+		zones.push_back( z );
+
+		
+		//TerrainPolygon tp( NULL );
+		
+	}
 }
 
 void GameSession::SetupZones()
@@ -2241,6 +2350,8 @@ void GameSession::SetupZones()
 			}
 		}
 	}
+
+	
 
 		cout << "1" << endl;
 	//add enemies to the correct zone.
@@ -2299,28 +2410,67 @@ void GameSession::SetupZones()
 
 	originalZone->active = true;
 	
-	cout << "3" << endl;
+	cout << "3: numgates: " << numGates << endl;
+	cout << "num zones: " << zones.size() << endl;
 	//assign correct zones to gates
-	for( int i = 0; i < numGates; ++i )
+	//for( int i = 0; i < numGates; ++i )
+	//{
+	//	
+
+	//	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	//	{
+	//		cout << i << ", it gates: " << (*it)->gates.size() << endl;
+	//		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
+	//		{
+	//			if( gates[i]->edgeA == (*eit) )
+	//			{
+	//				cout << "gate zone a: " << (*it ) << endl;
+	//				gates[i]->zoneA = (*it);
+	//				//done++;
+	//			}
+	//			else if( gates[i]->edgeB == (*eit) )
+	//			{
+	//				cout << "gate zone B: " << (*it ) << endl;
+	//				gates[i]->zoneB = (*it);
+	//				//done++;
+	//			}
+	//		}
+	//	}
+	//}
+	
+
+	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
-		int done = 0;
-		for( list<Zone*>::iterator it = zones.begin(); it != zones.end() && done < 2; ++it )
+		cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
+		//cout << i << ", it gates: " << (*it)->gates.size() << endl;
+		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
 		{
-			for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end() && done < 2; ++eit )
+			for( int i = 0; i < numGates; ++i )
 			{
 				if( gates[i]->edgeA == (*eit) )
 				{
+					cout << "gate: " << gates[i] << ", gate zone a: " << (*it ) << endl;
 					gates[i]->zoneA = (*it);
+					//done++;
 				}
 				else if( gates[i]->edgeB == (*eit) )
 				{
+					cout << "gate: " << gates[i] << ", gate zone B: " << (*it ) << endl;
+					//cout << "gate zone B: " << (*it ) << endl;
 					gates[i]->zoneB = (*it);
+					//done++;
 				}
 			}
 		}
 	}
-
 	
+
+
+
+	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	{
+		(*it)->Init();
+	}
 }
 
 int GameSession::Run( string fileN )
@@ -2964,6 +3114,61 @@ int GameSession::Run( string fileN )
 			accumulator -= TIMESTEP;
 		}
 
+		//gravity = 1.9;//1.9; // 1 
+		//jumpStrength = 27.5; // 2 
+		//dashSpeed = 9;//12; // 3
+		//airDashSpeed = dashSpeed;
+		//maxFallSpeed = 40;//100; // 4
+
+		double gravFactor = .01;
+		double jumpStrengthFactor = .01;
+		double dashSpeedFactor = .01;
+		double maxFallSpeedFactor = .01;
+
+		if( Keyboard::isKeyPressed( Keyboard::Q ) )
+		{
+			player.gravity += gravFactor;
+			cout << "grav: " << player.gravity << endl;
+		}
+		if( Keyboard::isKeyPressed( Keyboard::A ) )
+		{
+			player.gravity -= gravFactor;
+			cout << "grav: " << player.gravity << endl;
+		}
+
+		if( Keyboard::isKeyPressed( Keyboard::W ) )
+		{
+			player.jumpStrength += jumpStrengthFactor;
+			cout << "jumpstrength: " << player.jumpStrength << endl;
+		}
+		if( Keyboard::isKeyPressed( Keyboard::S ) )
+		{
+			player.jumpStrength -= jumpStrengthFactor;
+			cout << "jumpstrength: " << player.jumpStrength << endl;
+		}
+
+		if( Keyboard::isKeyPressed( Keyboard::E ) )
+		{
+			player.dashSpeed += dashSpeedFactor;
+			cout << "dashspeed: " << player.dashSpeed << endl;
+		}
+		if( Keyboard::isKeyPressed( Keyboard::D ) )
+		{
+			player.dashSpeed -= dashSpeedFactor;
+			cout << "dashspeed: " << player.dashSpeed << endl;
+		}
+
+		if( Keyboard::isKeyPressed( Keyboard::R ) )
+		{
+			player.maxFallSpeed += maxFallSpeedFactor;
+			cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
+		}
+		if( Keyboard::isKeyPressed( Keyboard::F ) )
+		{
+			player.maxFallSpeed -= maxFallSpeedFactor;
+			cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
+		}
+
 
 		sf::Event ev;
 		while( window->pollEvent( ev ) )
@@ -2988,6 +3193,8 @@ int GameSession::Run( string fileN )
 					zoomMultiple = 65536;
 				}
 			}
+
+			
 		}
 		Vector2f camOffset;
 		

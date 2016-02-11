@@ -1,5 +1,6 @@
 #include "Zone.h"
 #include "poly2tri/poly2tri.h"
+#include <iostream>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -19,21 +20,242 @@ using namespace std;
 Zone::Zone( TerrainPolygon &tp )
 	:active( false )
 {
-	vector<p2t::Point*> polyline;
-
 	tp.FixWinding();
 
-	int numPoints = 0;
 	TerrainPoint * curr = tp.pointStart;
+
 	while( curr != NULL )
 	{
 		points.push_back( curr->pos );
-		polyline.push_back( new p2t::Point(curr->pos.x, curr->pos.y ) );
-		++numPoints;
 		curr = curr->next;
+	}
+}
+
+Zone::~Zone()
+{
+	delete definedArea;
+}
+
+void Zone::Init()
+{
+	vector<p2t::Point*> polyline;
+
+	int numPoints = 0;
+	
+	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	{
+		polyline.push_back( new p2t::Point((*it).x, (*it).y ) );
 	}
 
 	p2t::CDT * cdt = new p2t::CDT( polyline );
+
+	//cout << "adding holes for my: " << subZones.size() << " subzones" << endl;
+	list<Zone*> possibleSubs = subZones;
+
+	list<list<Zone*>> groupedZones;
+	
+	//list<Edge*> startingEdges;
+
+	cout << "starting while loop!: " << possibleSubs.size() << endl;
+
+	/*groupedZones.push_back( list<Zone*>() );
+	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
+	{
+		//testing only
+		groupedZones.back().push_back( (*it ) );
+	}*/
+
+	cout << "while loop with: " << possibleSubs.size() << endl;
+	while( !possibleSubs.empty() )
+	{
+		
+		Zone *front = possibleSubs.front();
+
+		possibleSubs.pop_front();
+
+		Edge *e = NULL;
+		list<Gate*> unlockedGates;
+		//groupedZones.push_back( list<Zone*>() );
+		//groupedZones.back().push_back( front );
+
+		//cout << "now: " << groupedZones.size() << " groups " << endl;
+
+
+		//possibleSubs.clear();
+		cout << "front has: " << front->gates.size() << " gates" << endl;
+		for( list<Edge*>::iterator eit = front->gates.begin(); eit != front->gates.end(); ++eit )
+		{
+			Gate *g = (Gate*)(*eit)->info;
+
+			cout << "cmon: " << possibleSubs.size() << endl;
+			cout << "gates sides: " << g->zoneA << ", " << g->zoneB << endl;
+			for( list<Zone*>::iterator posIt = possibleSubs.begin(); posIt != possibleSubs.end();)
+			{
+
+				if( (*posIt) == g->zoneA || (*posIt) == g->zoneB )
+				{
+					cout << "removing from list" << endl;
+					//can be a multiple but it shouldn't matter cuz its just changing the unlock/lock
+					unlockedGates.push_back( g );
+					
+					//g->SetLocked( false );
+					//groupedZones.back().push_back( (*posIt ) );
+
+					
+					posIt = possibleSubs.erase( posIt );
+					//possibleSubs.erase( posIt++ );
+				}
+				else
+				{
+					cout << "not removing. " << g->zoneA << ", " << g->zoneB << ", " <<  (*posIt) << endl;
+					++posIt;
+				}
+			}
+		}
+		
+		//if( unlockedGates.empty() )
+		//{
+			assert( front->gates.size() > 0 );
+
+			//Gate *g = (Gate*)front->gates.front()->info;
+
+			Edge *startEdge = front->gates.front()->edge0;
+			Edge *curr = startEdge;
+
+			for( list<Gate*>::iterator git = unlockedGates.begin(); git != unlockedGates.end(); ++git )
+			{
+				//(*git)->SetLocked( false );
+			}
+
+			vector<p2t::Point*> holePolyline;
+
+			int numHolePoints = 1;
+
+
+
+			holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+
+			curr = curr->edge0;
+
+			while( curr != startEdge )
+			{
+				holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+				++numHolePoints;
+				curr = curr->edge0;
+			}
+
+			cout << "unlocked gates: " << unlockedGates.size() << endl;
+			cout << "would be adding a hole" << endl;
+			
+			//cdt->AddHole( holePolyline );
+
+			for( int i = 0; i < numHolePoints; ++i )
+			{
+				cout << "point: " << holePolyline[i]->x << ", " << holePolyline[i]->y << endl;
+				delete holePolyline[i];
+			}
+
+			for( list<Gate*>::iterator git = unlockedGates.begin(); git != unlockedGates.end(); ++git )
+			{
+				(*git)->SetLocked( true );
+			}
+			//Edge *startEdge = front->gates.front()->ed
+		//}
+		//else
+		//{
+
+		//}
+
+	}
+
+	//have unlockedGates in a list
+	//have number of polygons to form
+	//have starting points for the polygons
+
+	/*for( list<Gate*>::iterator it = unlockedGates.begin(); it != unlockedGates.end(); ++it )
+	{
+		
+	}*/
+
+	int numPolys = groupedZones.size();
+	cout << "groupedZones: " << numPolys << endl;
+	//for( list<list<Zone*>>::iterator it = groupedZones.begin(); it != groupedZones.end(); ++it )
+	//{
+	//		
+	//		list<Zone*> & group = (*it);
+
+	//		Zone *first = group.front();
+
+	//		cout << "first size: " << first->gates.size() << endl;
+	//		Edge *firstGate = first->gates.front();
+
+	//		Edge *curr = firstGate;
+
+	//		vector<p2t::Point*> holePolyline;
+
+	//		int numHolePoints = 1;
+	//		holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+	//		//TerrainPolygon tp( NULL );
+	//		
+	//		//tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+	//		curr = curr->edge0;
+
+	//		while( curr != firstGate )
+	//		{
+	//		//	tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+	//			holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+	//			++numHolePoints;
+	//			curr = curr->edge0;
+	//		}
+
+	//		//cdt->AddHole( holePolyline );
+
+	//		//should be clockwise now
+
+	//		for( int i = 0; i < numHolePoints; ++i )
+	//		{
+	//			delete holePolyline[i];
+	//		}
+	//		/*for( list<Zone*>::iterator it2 = group.begin(); it2 != group.end(); ++it2 )
+	//		{
+
+	//			for( list<Zone*>::iterator it3 = group.begin(); it3 != group.end(); ++it3 )
+	//			{
+
+	//			}
+	//		}*/
+	//}
+
+	//for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
+	//{
+	//	for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
+	//	{
+	//		Gate *g = (Gate*)(*eit)->info;
+
+	//		for( list<Zone*>::iterator it2 = subZones.begin(); it2 != subZones.end(); ++it2 )
+	//		{
+	//			if( (*it2) == (*it ) )
+	//			{
+	//				continue;
+	//			}
+
+	//			for( list<Edge*>::iterator eit2 = (*it2)->gates.begin(); eit2 != (*it2)->gates.end(); ++eit2 )
+	//			{
+	//				Gate *g2 = (Gate*)(*eit2)->info;
+
+	//				if( g == g2 )
+	//				{
+
+	//				}
+	//			}
+	//		}
+
+	//	}
+	//	//(*it)->AddHoles( cdt );
+	//	break;
+	//}
+	
 	cdt->Triangulate();
 	vector<p2t::Triangle*> tris;
 	tris = cdt->GetTriangles();
@@ -65,15 +287,29 @@ Zone::Zone( TerrainPolygon &tp )
 	}
 }
 
-Zone::~Zone()
+void Zone::AddHoles( p2t::CDT *cdt )
 {
-	delete definedArea;
+	//vector<p2t::Point*> polyline;
+
+	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	{
+	//	polyline.push_back( new p2t::Point((*it).x, (*it).y ) );
+	}
+	//cout << "adding hole!" << endl;
+	//cdt->AddHole( polyline );
+
+	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
+	{
+		(*it)->AddHoles( cdt );
+	}
 }
 
 void Zone::Draw( RenderTarget *target )
 {
 	if( !active )
+	{
 		target->draw( *definedArea );
+	}
 }
 
 bool Zone::ContainsPoint( sf::Vector2i test )
