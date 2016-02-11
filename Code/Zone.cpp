@@ -72,6 +72,7 @@ void Zone::Init()
 		}
 	}
 
+	list<p2t::Point*> allHolePoints;
 	while( !relGates.empty() )
 	{
 		vector<p2t::Point*> holePolyline;
@@ -81,7 +82,9 @@ void Zone::Init()
 		relGates.pop_front();
 
 		Edge *curr = start;
-		holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+		p2t::Point *p = new p2t::Point(curr->v0.x, curr->v0.y );
+		holePolyline.push_back( p );
+		allHolePoints.push_back( p );
 
 		curr = curr->edge1;
 
@@ -99,7 +102,9 @@ void Zone::Init()
 				}
 			}
 
-			holePolyline.push_back( new p2t::Point(curr->v0.x, curr->v0.y ) );
+			p2t::Point *p = new p2t::Point(curr->v0.x, curr->v0.y );
+			holePolyline.push_back( p );
+			allHolePoints.push_back( p );
 
 			curr = curr->edge1;
 		}
@@ -342,6 +347,11 @@ void Zone::Init()
 	{
 		delete polyline[i];
 	//	delete tris[i];
+	}
+	
+	for( list<p2t::Point*>::iterator it = allHolePoints.begin(); it != allHolePoints.end(); ++it )
+	{
+		delete (*it);
 	}
 }
 
