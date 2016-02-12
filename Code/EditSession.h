@@ -274,6 +274,7 @@ struct GateInfo
 		RED,
 		GREEN,
 		BLUE,
+		CRITICAL,
 		Count
 	};
 

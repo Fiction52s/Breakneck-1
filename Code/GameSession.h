@@ -36,6 +36,26 @@ struct PowerBar
 	void Charge( int power );
 };
 
+struct Critical : QuadTreeEntrant
+{
+	Critical::Critical( 
+		sf::Vector2<double> &pointA, 
+		sf::Vector2<double> &pointB );
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+	void Draw( sf::RenderTarget *target );
+
+	sf::Vector2<double> pos;
+	float radius;
+	sf::Vector2<double> anchorA;
+	sf::Vector2<double> anchorB;
+	CollisionBox box;
+	bool active;
+
+	Critical *next;
+	Critical *prev;
+};
+
 struct GrassSegment
 {
 	GrassSegment( int edgeI, int grassIndex, int rep )
@@ -205,7 +225,7 @@ struct GameSession : QuadTreeCollider
 	sf::Sprite clouds[NUM_CLOUDS];
 	Tileset *cloudTileset;
 
-
+	Critical *drawCritical;
 
 	struct TestVA : QuadTreeEntrant
 	{
@@ -245,6 +265,7 @@ struct GameSession : QuadTreeCollider
 	QuadTree * lightTree;
 	QuadTree * grassTree;
 	QuadTree * gateTree;
+	QuadTree * itemTree;
 
 	//std::map<Edge*, Gate*> gateMap;
 

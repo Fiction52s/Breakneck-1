@@ -132,6 +132,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	preScreenTex = preTex;
 
+	//soon make these the actual size of the bordered level
 	terrainTree = new QuadTree( 1000000, 1000000 );
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
@@ -147,6 +148,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	gateTree = new QuadTree( 1000000, 1000000 );
 
+	itemTree = new QuadTree( 1000000, 1000000 );
 
 
 	listVA = NULL;
@@ -190,6 +192,13 @@ GameSession::~GameSession()
 	{
 		delete (*it);
 	}
+
+	delete terrainTree;
+	delete enemyTree;
+	delete lightTree;
+	delete grassTree;
+	delete gateTree;
+	delete itemTree;
 }
 
 
@@ -520,10 +529,29 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		is >> poly1Index;
 		is >> vertexIndex1;
 
-		Gate * gate = new Gate( (Gate::GateType)gType );
-
 		Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
 		Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
+
+		V2d point0 = edge0->v0;
+		V2d point1 = edge1->v0;
+
+		Gate::GateType gateType = (Gate::GateType)gType;
+		if( gateType == Gate::CRITICAL )
+		{
+			Critical *crit = new Critical( point0, point1 );
+			//wastes space for the gates already made but idk what to change. make it a new system?
+			//lets try it for now lol
+
+			//the extra pointers just get stuffed at the end
+			--numGates;
+			--i;
+			//will have to differentiate later for more items. but not for now!
+			itemTree->Insert( crit );
+			
+			continue;
+		}
+
+		Gate * gate = new Gate( gateType );
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
@@ -531,8 +559,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		gate->temp1next = edge1;
 
 			
-		V2d point0 = edge0->v0;
-		V2d point1 = edge1->v0;
+		
 
 		gate->edgeA = new Edge;
 		gate->edgeA->edgeType = Edge::CLOSED_GATE;
@@ -3619,6 +3646,16 @@ int GameSession::Run( string fileN )
 			}
 		}
 
+		queryMode = "item";
+		drawCritical = NULL;
+		itemTree->Query( this, minimapRect );
+		while( drawCritical != NULL )
+		{
+			//cout << "draw crit " << endl;
+			drawCritical->Draw( preScreenTex );
+			drawCritical = drawCritical->next;
+		}
+
 		testGateCount = 0;
 		queryMode = "gate";
 		gateList = NULL;
@@ -4029,6 +4066,22 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 
 		//cout << "gate" << endl;
 		++testGateCount;
+	}
+	else if( queryMode == "item" )
+	{
+		Critical *c = (Critical*)qte;
+
+		if( drawCritical == NULL )
+		{
+			drawCritical = (Critical*)qte;
+			drawCritical->next = NULL;
+			drawCritical->prev = NULL;
+		}
+		else
+		{
+			c->next = drawCritical;
+			drawCritical = c;
+		}
 	}
 }
 
@@ -5566,4 +5619,60 @@ void GameSession::SetUndergroundParAndDraw()
 	//cloudView.setCenter( cloudView.getCenter().x, center.y );
 
 	
+}
+
+Critical::Critical( V2d &pointA, V2d &pointB )
+{
+	anchorA = pointA;
+	anchorB = pointB;
+	
+	V2d dir( anchorB - anchorA );
+	double len = length( dir );
+	dir = normalize( dir );
+	
+	pos = anchorA + dir * len / 2.0; //+ ( anchorB - anchorA ) / 2.0;
+	radius = 100;
+
+	next = NULL;
+	prev = NULL;
+
+	box.rw = radius;
+	box.rh = radius;
+	box.globalPosition = pos;
+	box.isCircle = true;	
+	
+	active = true;
+}
+
+void Critical::HandleQuery( QuadTreeCollider * qtc )
+{
+	qtc->HandleEntrant( this );
+}
+
+bool Critical::IsTouchingBox( const sf::Rect<double> &r )
+{
+	sf::Rect<double> circleBox( pos.x - radius, pos.y - radius, radius * 2, radius * 2 );
+	return circleBox.intersects( r );
+}
+
+void Critical::Draw( RenderTarget *target )
+{
+	if( active )
+	{
+		CircleShape cs( radius );
+		cs.setFillColor( Color::Magenta );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( pos.x, pos.y );
+
+		target->draw( cs );
+	}
+	else
+	{
+		CircleShape cs( radius );
+		cs.setFillColor( Color::Black );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( pos.x, pos.y );
+
+		target->draw( cs );
+	}
 }

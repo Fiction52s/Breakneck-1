@@ -114,7 +114,7 @@ void Zone::Init()
 	
 	//list<Edge*> startingEdges;
 
-	cout << "starting while loop!: " << possibleSubs.size() << endl;
+	//cout << "starting while loop!: " << possibleSubs.size() << endl;
 
 	/*groupedZones.push_back( list<Zone*>() );
 	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
@@ -123,7 +123,7 @@ void Zone::Init()
 		groupedZones.back().push_back( (*it ) );
 	}*/
 
-	cout << "while loop with: " << possibleSubs.size() << endl;
+	//cout << "while loop with: " << possibleSubs.size() << endl;
 	//while( !possibleSubs.empty() )
 	//{
 	//	
@@ -240,8 +240,8 @@ void Zone::Init()
 		
 	}*/
 
-	int numPolys = groupedZones.size();
-	cout << "groupedZones: " << numPolys << endl;
+	//int numPolys = groupedZones.size();
+	//cout << "groupedZones: " << numPolys << endl;
 	//for( list<list<Zone*>>::iterator it = groupedZones.begin(); it != groupedZones.end(); ++it )
 	//{
 	//		

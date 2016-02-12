@@ -2597,6 +2597,16 @@ void GateInfo::SetType( const std::string &gType )
 	{
 		type = GateTypes::BLUE;
 	}
+	else if( gType == "critical" )
+	{
+		cout << "set type critical" << endl;
+		type = GateTypes::CRITICAL;
+	}
+	else
+	{
+		assert( false );
+	}
+
 }
 
 void GateInfo::WriteFile( ofstream &of )
@@ -2656,6 +2666,10 @@ void GateInfo::UpdateLine()
 	{
 		c = Color( 0, 0, 255 );
 	}
+	else if( type == GateTypes::CRITICAL )
+	{
+		c = Color( 255, 255, 0 );
+	}
 	thickLine[0].color = c;
 	thickLine[1].color = c;
 	thickLine[2].color = c;
@@ -2681,6 +2695,10 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	else if( type == GateTypes::BLUE )
 	{
 		c = Color( 0, 0, 255 );
+	}
+	else if( type == GateTypes::CRITICAL )
+	{
+		c = Color( 255, 255, 0 );
 	}
 
 	CircleShape cs( 5 );
@@ -4441,6 +4459,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	sf::Sprite ss0( greenKeyType->iconTexture );
 	sf::Sprite ss1( blueKeyType->iconTexture );
+	sf::Sprite ss2( blueKeyType->iconTexture );
+	ss2.setColor( Color::Magenta );
 
 
 	gs->Set( 0, 0, s0, "patroller" );
@@ -4453,12 +4473,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
-	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 3, 1, 32, 32, false, true );
+	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 4, 1, 32, 32, false, true );
 	
 
 	gateSel->Set( 0, 0, s5, "red" );
 	gateSel->Set( 1, 0, ss0, "green" );
 	gateSel->Set( 2, 0, ss1, "blue" );
+	gateSel->Set( 3, 0, ss2, "critical" );
 
 	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 80 ), Vector2f( 80, 40 ), "delete" );
 
@@ -10217,7 +10238,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		cout << "callback!" << endl;
 		if( name != "not set" )
 		{
-			cout << "real result" << endl;
+			cout << "real result: " << name << endl;
 			tempGridResult = name;
 			//showPanel = NULL;
 		}

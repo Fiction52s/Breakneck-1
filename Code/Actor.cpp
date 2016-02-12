@@ -5208,6 +5208,9 @@ bool Actor::ResolvePhysics( V2d vel )
 		owner->powerBar.Damage( 1000000 );
 	}
 
+	queryMode = "item";
+	owner->itemTree->Query( this, r );
+
 	/*queryMode = "gate";
 	owner->testGateCount = 0;
 	owner->gateTree->Query( this, r );
@@ -11042,6 +11045,32 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 		}
+	}
+	else if( queryMode == "item" )
+	{
+		Critical *c = (Critical*)qte;
+
+		if( currHitboxes != NULL )
+		{
+			for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+			{
+				if( (*it).Intersects( c->box ) )
+				{
+					cout << "destroy critical connection yay" << endl;
+					c->active = false;
+					return;
+					//activate critical connection yay
+				}
+			}
+		}
+
+		if( hurtBody.Intersects( c->box ) )
+		{
+			c->active = false;
+			return;
+		}
+
+		//check with my hurtbox also!
 	}
 	
 	++possibleEdgeCount;

@@ -13,6 +13,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		RED,
 		GREEN,
 		BLUE,
+		CRITICAL,
 		Count		
 	};
 	Gate( GateType type );

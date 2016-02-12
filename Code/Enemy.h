@@ -536,6 +536,7 @@ struct Key : Enemy
 	Stored stored;
 };
 
+
 struct EnemyParentNode;
 
 
