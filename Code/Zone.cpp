@@ -29,6 +29,8 @@ Zone::Zone( TerrainPolygon &tp )
 		points.push_back( curr->pos );
 		curr = curr->next;
 	}
+
+	activeNext = NULL;
 }
 
 Zone::~Zone()

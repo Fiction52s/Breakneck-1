@@ -137,6 +137,7 @@ struct GameSession : QuadTreeCollider
 
 	void CreateZones();
 	void SetupZones();
+	
 
 	sf::VertexArray *debugBorders;
 
@@ -254,6 +255,15 @@ struct GameSession : QuadTreeCollider
 	std::string fileName;
 	bool goalDestroyed;
 	sf::View cloudView;
+
+	void ActivateZone(Zone * z);
+	Zone *activatedZoneList;
+
+	void UnlockGate( Gate *g );
+	Gate *unlockedGateList;
+
+
+
 	Enemy *activeEnemyList;
 	Enemy *inactiveEnemyList;
 	Enemy *pauseImmuneEffects;

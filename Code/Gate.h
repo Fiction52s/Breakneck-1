@@ -41,6 +41,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 
 	Gate *next;
 	Gate *prev;
+
+	Gate *activeNext;
 	//
 
 	void Draw( sf::RenderTarget *target );

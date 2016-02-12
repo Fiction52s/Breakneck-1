@@ -10685,13 +10685,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				Gate *g = (Gate*)c->edge->info;//owner->gateMap[c->edge];
 				if( c->edge == g->edgeA )
 				{
-					g->zoneB->active = true;
+					owner->ActivateZone( g->zoneB );
 				}
 				else
 				{
-					g->zoneA->active = true;
+					owner->ActivateZone( g->zoneA );
 				}
-				g->SetLocked( false );
+
+				owner->UnlockGate( g );
+
 				return;
 			}
 
@@ -11059,7 +11061,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( (*it).Intersects( c->box ) )
 					{
 						currentCheckPoint = c;
+						owner->activatedZoneList = NULL;
 						owner->inactiveEnemyList = NULL;
+						owner->unlockedGateList = NULL;
 						//cout << "destroy critical connection yay" << endl;
 						c->active = false;
 						return;
@@ -11072,7 +11076,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				currentCheckPoint = c;
 				owner->inactiveEnemyList = NULL;
+				owner->unlockedGateList = NULL;
+				owner->activatedZoneList = NULL;
+
 				c->active = false;
+				
 				return;
 			}
 		}

@@ -2545,6 +2545,8 @@ int GameSession::Run( string fileN )
 	//inactiveLights = NULL;
 	inactiveEnemyList = NULL;
 	cloneInactiveEnemyList = NULL;
+	unlockedGateList = NULL;
+	activatedZoneList = NULL;
 
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
@@ -2866,8 +2868,9 @@ int GameSession::Run( string fileN )
 			if( skipInput )
 				oneFrameMode = true;
 
-
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::K ) || player.dead || ( currInput.back && !prevInput.back ) )
+			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
+			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
+			if( k || levelReset || player.dead || ( currInput.back && !prevInput.back ) )
 			{
 				if( player.record > 1 )
 				{
@@ -2877,29 +2880,54 @@ int GameSession::Run( string fileN )
 
 				RespawnPlayer();
 
-				if( player.currentCheckPoint == NULL )
+				if( levelReset )
 				{
 					ResetEnemies();
+
+					for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+					{
+						(*it)->active = false;
+					}
+					originalZone->active = true;
+
+					//later don't relock gates in a level unless there is a "level reset"
+					for( int i = 0; i < numGates; ++i )
+					{
+						gates[i]->SetLocked( true );
+					}
 				}
 				else
 				{
 					ResetInactiveEnemies();
+					
+					while( activatedZoneList != NULL )
+					{
+						activatedZoneList->active = false;
+						activatedZoneList = activatedZoneList->activeNext;
+					}
+
+					while( unlockedGateList != NULL )
+					{
+						//cout << "relocking gate " << endl;
+						unlockedGateList->SetLocked( true );
+						unlockedGateList = unlockedGateList->activeNext;
+					}
+					
+					/*if( player.currentCheckPoint == NULL )
+					{
+						ResetEnemies();
+					}
+					else
+					{
+						ResetInactiveEnemies();
+					}*/
 				}
+
+				
 				
 
-				//temporary
-				for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-				{
-					(*it)->active = false;
-				}
-				originalZone->active = true;
-
-				//later don't relock gates in a level unless there is a "level reset"
-				for( int i = 0; i < numGates; ++i )
-				{
-					gates[i]->SetLocked( true );
-					//gates[i]->locked = true;
-				}
+				
+				
 
 				
 				pauseImmuneEffects = NULL;
@@ -5683,6 +5711,37 @@ void GameSession::SetUndergroundParAndDraw()
 	//cloudView.setCenter( cloudView.getCenter().x, center.y );
 
 	
+}
+
+void GameSession::ActivateZone( Zone *z )
+{
+	z->active = true;
+	if( activatedZoneList == NULL )
+	{
+		activatedZoneList = z;
+		z->activeNext = NULL;
+	}
+	else
+	{
+		z->activeNext = activatedZoneList;
+		activatedZoneList = z;
+	}
+}
+
+void GameSession::UnlockGate( Gate *g )
+{
+	g->SetLocked( false );
+
+	if( unlockedGateList == NULL )
+	{
+		unlockedGateList = g;
+		g->activeNext = NULL;
+	}
+	else
+	{
+		g->activeNext = unlockedGateList;
+		unlockedGateList = g;
+	}
 }
 
 Critical::Critical( V2d &pointA, V2d &pointB )

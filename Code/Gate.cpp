@@ -27,6 +27,8 @@ Gate::Gate( GateType p_type )
 
 	edgeA = NULL;
 	edgeB = NULL;
+
+	activeNext = NULL;
 }
 
 void Gate::Draw( sf::RenderTarget *target )
