@@ -226,6 +226,7 @@ struct GameSession : QuadTreeCollider
 	Tileset *cloudTileset;
 
 	Critical *drawCritical;
+	
 
 	struct TestVA : QuadTreeEntrant
 	{

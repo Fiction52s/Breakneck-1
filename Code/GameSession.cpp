@@ -4109,7 +4109,15 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 
 void GameSession::RespawnPlayer()
 {
-	player.position = originalPos;
+	if( player.currentCheckPoint == NULL )
+	{
+		player.position = originalPos;
+	}
+	else
+	{
+		player.position = player.currentCheckPoint->pos;
+	}
+	
 	player.action = player.JUMP;
 	player.frame = 1;
 	player.velocity.x = 0;

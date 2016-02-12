@@ -11,7 +11,7 @@
 #include "Wire.h"
 #include "Light.h"
 
-
+struct Critical;
 struct GameSession;
 struct PlayerGhost;
 
@@ -400,6 +400,8 @@ struct Actor : QuadTreeCollider,
 	int flashFrames;
 
 	bool bufferedAttack;
+
+	Critical *currentCheckPoint;
 
 	//end unstored
 

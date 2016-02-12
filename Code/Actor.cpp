@@ -13,7 +13,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
-
+		currentCheckPoint = NULL;
 		flashFrames = 0;
 		test = false;
 
@@ -11050,25 +11050,31 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Critical *c = (Critical*)qte;
 
-		if( currHitboxes != NULL )
+		if( c->active )
 		{
-			for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+			if( currHitboxes != NULL )
 			{
-				if( (*it).Intersects( c->box ) )
+				for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
 				{
-					cout << "destroy critical connection yay" << endl;
-					c->active = false;
-					return;
-					//activate critical connection yay
+					if( (*it).Intersects( c->box ) )
+					{
+						currentCheckPoint = c;
+						//cout << "destroy critical connection yay" << endl;
+						c->active = false;
+						return;
+						//activate critical connection yay
+					}
 				}
 			}
-		}
 
-		if( hurtBody.Intersects( c->box ) )
-		{
-			c->active = false;
-			return;
+			if( hurtBody.Intersects( c->box ) )
+			{
+				currentCheckPoint = c;
+				c->active = false;
+				return;
+			}
 		}
+	
 
 		//check with my hurtbox also!
 	}
