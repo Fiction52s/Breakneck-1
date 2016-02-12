@@ -237,9 +237,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			rcEdge = NULL;
 			//rcQuantity = 0;
 			
+			rayCancel = false;
 			RayCast( this, player->owner->terrainTree->startNode, playerPos, playerPos + fireDir * fireRate * (double)(framesFiring + 1 ) );
 			
-			
+			if( rayCancel )
+			{
+				Reset();
+			}
+
 			//cout << "framesFiring " << framesFiring << endl;
 
 			if( rcEdge != NULL )
@@ -694,6 +699,12 @@ void Wire::UpdateAnchors( V2d vel )
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
+	if( edge->edgeType == Edge::BORDER || edge->edgeType == Edge::OPEN_GATE
+		|| edge->edgeType == Edge::CLOSED_GATE )
+	{
+		rayCancel = true;
+		return;
+	}
 	//rayPortion > 1 &&
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );	

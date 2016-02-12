@@ -105,6 +105,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	Edge *rcEdge;
 	double rcQuant;
 
+	bool rayCancel;
+
 	sf::Vector2<double> quadOldPosA;
 	sf::Vector2<double> quadOldWirePosB;
 	sf::Vector2<double> quadWirePosC;
