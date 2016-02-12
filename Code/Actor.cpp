@@ -11059,6 +11059,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( (*it).Intersects( c->box ) )
 					{
 						currentCheckPoint = c;
+						owner->inactiveEnemyList = NULL;
 						//cout << "destroy critical connection yay" << endl;
 						c->active = false;
 						return;
@@ -11070,6 +11071,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			if( hurtBody.Intersects( c->box ) )
 			{
 				currentCheckPoint = c;
+				owner->inactiveEnemyList = NULL;
 				c->active = false;
 				return;
 			}

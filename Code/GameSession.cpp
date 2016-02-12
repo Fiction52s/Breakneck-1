@@ -356,6 +356,25 @@ void GameSession::RemoveEnemy( Enemy *e )
 		
 	}
 
+	if( e->type != e->BASICEFFECT )
+	{
+		if( inactiveEnemyList == NULL )
+		{
+			inactiveEnemyList = e;
+			e->next = NULL;
+			e->prev = NULL;
+		}
+		else
+		{
+			//cout << "creating more dead clone enemies" << endl;
+			e->next = inactiveEnemyList;
+			inactiveEnemyList->prev = e;
+			inactiveEnemyList = e;
+		}
+	}
+
+	//might need to give enemies a second next/prev pair for clone power?
+	//totally does >.> CLONE POWER
 	if( player.record > 0 )
 	{
 		if( cloneInactiveEnemyList == NULL )
@@ -2524,6 +2543,7 @@ void GameSession::SetupZones()
 int GameSession::Run( string fileN )
 {
 	//inactiveLights = NULL;
+	inactiveEnemyList = NULL;
 	cloneInactiveEnemyList = NULL;
 
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
@@ -2856,7 +2876,16 @@ int GameSession::Run( string fileN )
 				}
 
 				RespawnPlayer();
-				ResetEnemies();
+
+				if( player.currentCheckPoint == NULL )
+				{
+					ResetEnemies();
+				}
+				else
+				{
+					ResetInactiveEnemies();
+				}
+				
 
 				//temporary
 				for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
@@ -4527,6 +4556,30 @@ void GameSession::ResetEnemies()
 		AddEnemy( (*it) );
 		//(*it)->spawned = true;
 	}
+}
+
+void GameSession::ResetInactiveEnemies()
+{
+	Enemy *curr = activeEnemyList;
+	while( curr != NULL )
+	{
+		Enemy *temp = curr->next;
+		if( curr->type == Enemy::BASICEFFECT )
+		{
+			DeactivateEffect( (BasicEffect*)curr );
+		}
+
+		curr = temp;
+	}
+
+	Enemy *e = inactiveEnemyList;
+	while( e != NULL )
+	{
+		e->Reset();
+		e = e->next;
+	}
+
+	inactiveEnemyList = NULL;
 }
 
 void GameSession::rReset( QNode *node )

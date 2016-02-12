@@ -123,6 +123,7 @@ struct GameSession : QuadTreeCollider
 	void UpdateEnemiesDraw();
 	void RespawnPlayer();
 	void ResetEnemies();
+	void ResetInactiveEnemies();
 	void rReset( QNode *node );
 	int CountActiveEnemies();
 	void UpdateTerrainShader( const sf::Rect<double> &aabb );
@@ -253,6 +254,7 @@ struct GameSession : QuadTreeCollider
 	bool goalDestroyed;
 	sf::View cloudView;
 	Enemy *activeEnemyList;
+	Enemy *inactiveEnemyList;
 	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;
 
