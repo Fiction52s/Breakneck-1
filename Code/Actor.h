@@ -230,14 +230,17 @@ struct Actor : QuadTreeCollider,
 
 	double maxNormalRun;
 	double runAccel;
-	double maxFallSpeed;
+	double maxFallSpeedSlow;
+	double maxFallSpeedFast;
 	double gravity;
+	//double fastFallGravity;
 
 	double jumpStrength;
 	double airAccel;
 	double maxAirXSpeed;
 	double maxAirXControl;
 	double dashSpeed;
+	double slideGravFactor;
 
 	double doubleJumpStrength;
 

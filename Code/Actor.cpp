@@ -25,8 +25,7 @@ Actor::Actor( GameSession *gs )
 		hasBlueKey = false;
 		slopeTooSteepLaunchLimitX = .1;
 		
-		steepSlideGravFactor = .1;
-		steepSlideFastGravFactor = .2;
+		
 		
 		steepClimbGravFactor = .7;
 		steepClimbFastFactor = .5;
@@ -367,7 +366,7 @@ Actor::Actor( GameSession *gs )
 		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
 		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
-		actionLength[JUMPSQUAT] = 4;
+		actionLength[JUMPSQUAT] = 3;
 		tileset[JUMPSQUAT] = owner->GetTileset( "jump.png", 64, 64 );
 		normal[JUMPSQUAT] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 		
@@ -440,7 +439,8 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		
+		steepSlideGravFactor = .5;
+		steepSlideFastGravFactor = .7;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 25;
@@ -454,7 +454,7 @@ Actor::Actor( GameSession *gs )
 		
 
 		hasDoubleJump = true;
-		doubleJumpStrength = 26.5;
+		
 
 		ground = NULL;
 		movingGround = NULL;
@@ -466,11 +466,16 @@ Actor::Actor( GameSession *gs )
 	
 		airAccel = 1.5;
 		
-		gravity = 1.7;//1.9; // 1 
-		jumpStrength = 27.5; // 2 
-		dashSpeed = 9;//12; // 3
+		gravity = 1;//1.9; // 1 
+		jumpStrength = 21.5;//18;//25;//27.5; // 2 
+		doubleJumpStrength = 20;//17;//23;//26.5;
+		dashSpeed = 10;//12; // 3
 		airDashSpeed = dashSpeed;
-		maxFallSpeed = 30;//100; // 4
+		maxFallSpeedSlow = 30;//30;//100; // 4
+		maxFallSpeedFast = 60;
+
+		slideGravFactor = .45;
+
 		
 		maxRunInit = 4;
 		maxAirXControl = 6;//maxRunInit;
@@ -758,7 +763,7 @@ void Actor::ActionEnded()
 		case AIRDASH:
 			{
 				//cout << "inBubble: " << inBubble << endl;
-				if( inBubble || rightWire->state == Wire::PULLING )
+				if( inBubble )//|| rightWire->state == Wire::PULLING )
 				{
 					frame = actionLength[AIRDASH] - 1;
 					airDashStall = true;
@@ -1332,12 +1337,22 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					bounceFlameOn = false;
 					action = AIRDASH;
 					airDashStall = false;
-					frame = 0;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
 					break;
 				}
 			}
@@ -1450,12 +1465,22 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					action = AIRDASH;
 					bounceFlameOn = false;
 					airDashStall = false;
-					frame = 0;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
 					break;
 				}
 			}
@@ -1681,11 +1706,21 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					action = AIRDASH;
 					airDashStall = false;
-					frame = 0;
+
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
 					break;
 				}
 			}
@@ -1788,12 +1823,22 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					bounceFlameOn = false;
 					action = AIRDASH;
 					airDashStall = false;
-					frame = 0;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
 					break;
 				}
 			}
@@ -1849,12 +1894,22 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					bounceFlameOn = false;
 					action = AIRDASH;
 					airDashStall = false;
-					frame = 0;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
 					break;
 				}
 			}
@@ -1909,12 +1964,22 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					bounceFlameOn = false;
 					action = AIRDASH;
 					airDashStall = false;
-					frame = 0;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
 					break;
 				}
 			}
@@ -2801,7 +2866,7 @@ void Actor::UpdatePrePhysics()
 			{
 				//cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
-				double sp = 28.0;
+				double sp = jumpStrength + 1;//28.0;
 				double extra = 10.0;
 				if( gNorm.x > 0 && currInput.LLeft() )
 				{
@@ -2902,12 +2967,21 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerAirDash )
 			{
-				if( hasAirDash && !prevInput.B && currInput.B )
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					bounceFlameOn = false;
 					action = AIRDASH;
 					airDashStall = false;
-					frame = 0;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
 					break;
 				}
 			}
@@ -3195,7 +3269,17 @@ void Actor::UpdatePrePhysics()
 					V2d dir( 0, 0 );
 					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
 					{
-						dir = V2d( -blah, 0 );
+						//dir = V2d( -blah, 0 );
+					}
+
+					if( (groundSpeed > 0 && gNorm.x < 0 ) )
+					{
+						dir = V2d( 2, 0 );
+						//dir = V2d( -blah, 0 );
+					}
+					else if( ( groundSpeed < 0 && gNorm.x > 0 ) )
+					{
+						dir = V2d( -2, 0 );//-.5, 0 );
 					}
 
 					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
@@ -3222,10 +3306,39 @@ void Actor::UpdatePrePhysics()
 					{
 						dir = V2d( blah, 0 );
 					}
+					else if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
+					{
+						cout << "this!" << endl;
+						if( groundSpeed > 0 )
+						{
+							//dir = V2d( .7, 0 );
+						}
+						else
+						{
+							//dir = V2d( -.7, 0 );
+						}
+						
+					}
 					
 					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
 					velocity = groundSpeed * trueNormal;
 					
+					if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
+					{
+						cout << "this!" << endl;
+						if( groundSpeed > 0 )
+						{
+							//velocity.y /= 2;
+							//dir = V2d( .7, 0 );
+						}
+						else
+						{
+							//velocity.y /= 2;
+							//dir = V2d( -.7, 0 );
+						}
+						
+					}
+
 					if( currInput.B )
 					{
 						if( currInput.LRight() )
@@ -3742,14 +3855,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
-			double fac = gravity * 2.0 / 3;
+			//double fac = gravity * 2.0 / 3;
 			if( reversed )
 			{
-				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			else
 			{
-				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			//groundSpeed = 
 			break;
@@ -4312,17 +4425,26 @@ void Actor::UpdatePrePhysics()
 			//velocity += V2d( 0, gravity / slowMultiple * .6 );
 		//	velocity += V2d( 0, gravity / slowMultiple * .3 );
 		//}
-		if( abs( velocity.y ) < 4 && action != AIRDASH )
+		if( velocity.y >= maxFallSpeedSlow )
 		{
-			velocity += V2d( 0, gravity / slowMultiple * .4 );
+			velocity += V2d( 0, gravity * .5 / slowMultiple );
+		}
+		else if( velocity.y < 0 )
+		{
+			velocity += V2d( 0, gravity * 1.2 / slowMultiple );
+		}
+		else if( abs( velocity.y ) < 4 && action != AIRDASH )
+		{
+			velocity += V2d( 0, gravity / slowMultiple );
+			//velocity += V2d( 0, gravity / slowMultiple * .4 );
 		}
 		else
 		{
 			velocity += V2d( 0, gravity / slowMultiple );
 		}
 
-		if( velocity.y > maxFallSpeed )
-			velocity.y = maxFallSpeed;
+		if( velocity.y > maxFallSpeedFast )
+			velocity.y = maxFallSpeedFast;
 	}
 	else
 	{
@@ -4852,7 +4974,7 @@ void Actor::UpdatePrePhysics()
 	//	cout << "groundspeed: " << groundSpeed << endl;
 	
 
-
+	//cout << "groundspeed: " << groundSpeed << endl;
 	
 
 	touchEdgeWithLeftWire = false;

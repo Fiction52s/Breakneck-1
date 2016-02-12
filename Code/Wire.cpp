@@ -699,10 +699,13 @@ void Wire::UpdateAnchors( V2d vel )
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	if( edge->edgeType == Edge::BORDER || edge->edgeType == Edge::OPEN_GATE
-		|| edge->edgeType == Edge::CLOSED_GATE )
+	if( edge->edgeType == Edge::BORDER || edge->edgeType == Edge::CLOSED_GATE )
 	{
 		rayCancel = true;
+		return;
+	}
+	else if( edge->edgeType == Edge::OPEN_GATE )
+	{
 		return;
 	}
 	//rayPortion > 1 &&

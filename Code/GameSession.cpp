@@ -358,6 +358,7 @@ void GameSession::RemoveEnemy( Enemy *e )
 
 	if( e->type != e->BASICEFFECT )
 	{
+		cout << "adding an inactive enemy!" << endl;
 		if( inactiveEnemyList == NULL )
 		{
 			inactiveEnemyList = e;
@@ -2902,12 +2903,14 @@ int GameSession::Run( string fileN )
 					
 					while( activatedZoneList != NULL )
 					{
+						//cout << "respawn: deactivated a zone!" << endl;
 						activatedZoneList->active = false;
 						activatedZoneList = activatedZoneList->activeNext;
 					}
 
 					while( unlockedGateList != NULL )
 					{
+					//	cout << "respawn: locking a gate!" << endl;
 						//cout << "relocking gate " << endl;
 						unlockedGateList->SetLocked( true );
 						unlockedGateList = unlockedGateList->activeNext;
@@ -3265,13 +3268,13 @@ int GameSession::Run( string fileN )
 
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
-			player.maxFallSpeed += maxFallSpeedFactor;
-			cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
+			//player.maxFallSpeedSlo += maxFallSpeedFactor;
+			//cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
 		}
 		if( Keyboard::isKeyPressed( Keyboard::F ) )
 		{
-			player.maxFallSpeed -= maxFallSpeedFactor;
-			cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
+		//	player.maxFallSpeed -= maxFallSpeedFactor;
+		//	cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
 		}
 
 
@@ -4606,8 +4609,9 @@ void GameSession::ResetInactiveEnemies()
 	Enemy *e = inactiveEnemyList;
 	while( e != NULL )
 	{
+		Enemy *temp = e->next;
 		e->Reset();
-		e = e->next;
+		e = temp;
 	}
 
 	inactiveEnemyList = NULL;
@@ -5715,16 +5719,20 @@ void GameSession::SetUndergroundParAndDraw()
 
 void GameSession::ActivateZone( Zone *z )
 {
-	z->active = true;
-	if( activatedZoneList == NULL )
+	//cout << "ACTIVATE ZONE!!!" << endl;
+	if( !z->active )
 	{
-		activatedZoneList = z;
-		z->activeNext = NULL;
-	}
-	else
-	{
-		z->activeNext = activatedZoneList;
-		activatedZoneList = z;
+		z->active = true;
+		if( activatedZoneList == NULL )
+		{
+			activatedZoneList = z;
+			z->activeNext = NULL;
+		}
+		else
+		{
+			z->activeNext = activatedZoneList;
+			activatedZoneList = z;
+		}
 	}
 }
 
