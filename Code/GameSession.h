@@ -45,6 +45,7 @@ struct Critical : QuadTreeEntrant
 	bool IsTouchingBox( const sf::Rect<double> &r );
 	void Draw( sf::RenderTarget *target );
 
+	sf::VertexArray bar;
 	sf::Vector2<double> pos;
 	float radius;
 	sf::Vector2<double> anchorA;

@@ -5686,6 +5686,7 @@ void GameSession::SetUndergroundParAndDraw()
 }
 
 Critical::Critical( V2d &pointA, V2d &pointB )
+	:bar( sf::Quads, 4 )
 {
 	anchorA = pointA;
 	anchorB = pointB;
@@ -5706,6 +5707,28 @@ Critical::Critical( V2d &pointA, V2d &pointB )
 	box.isCircle = true;	
 	
 	active = true;
+
+	double width = 5;
+	V2d along = normalize( anchorB - anchorA );
+	V2d other( along.y, -along.x );
+	
+	V2d leftv0 = anchorA - other * width;
+	V2d rightv0 = anchorA + other * width;
+
+	V2d leftv1 = anchorB - other * width;
+	V2d rightv1 = anchorB + other * width;
+
+	
+	Color c = Color::Black;
+	bar[0].color = c;
+	bar[1].color = c;
+	bar[2].color = c;
+	bar[3].color = c;
+
+	bar[0].position = Vector2f( leftv0.x, leftv0.y );
+	bar[1].position = Vector2f( leftv1.x, leftv1.y );
+	bar[2].position = Vector2f( rightv1.x, rightv1.y );
+	bar[3].position = Vector2f( rightv0.x, rightv0.y );
 }
 
 void Critical::HandleQuery( QuadTreeCollider * qtc )
@@ -5728,6 +5751,8 @@ void Critical::Draw( RenderTarget *target )
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( pos.x, pos.y );
 
+		
+		target->draw( bar );
 		target->draw( cs );
 	}
 	else
@@ -5737,6 +5762,7 @@ void Critical::Draw( RenderTarget *target )
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( pos.x, pos.y );
 
+		target->draw( bar );
 		target->draw( cs );
 	}
 }
