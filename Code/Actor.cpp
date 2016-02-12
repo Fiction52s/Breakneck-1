@@ -443,13 +443,13 @@ Actor::Actor( GameSession *gs )
 		steepSlideFastGravFactor = .7;
 
 		wallJumpStrength.x = 10;
-		wallJumpStrength.y = 25;
+		wallJumpStrength.y = 20;
 		clingSpeed = 3;
 
 		
 		offSlopeByWallThresh = dashSpeed;//18;
 		slopeLaunchMinSpeed = 15;//dashSpeed * .7;
-		steepClimbSpeedThresh = dashSpeed;
+		steepClimbSpeedThresh = dashSpeed - 1;
 
 		
 
@@ -469,7 +469,7 @@ Actor::Actor( GameSession *gs )
 		gravity = 1;//1.9; // 1 
 		jumpStrength = 21.5;//18;//25;//27.5; // 2 
 		doubleJumpStrength = 20;//17;//23;//26.5;
-		dashSpeed = 10;//12; // 3
+		dashSpeed = 9.5;//12; // 3
 		airDashSpeed = dashSpeed;
 		maxFallSpeedSlow = 30;//30;//100; // 4
 		maxFallSpeedFast = 60;
@@ -2724,9 +2724,26 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
-				bufferedAttack = false;
-				frame = 0;
+				if( gNorm.x < 0 && currInput.LRight() )
+				{
+					action = STEEPCLIMB;
+					facingRight = true;
+					groundSpeed = 10;
+					frame = 0;
+				}
+				else if( gNorm.x > 0 && currInput.LLeft() )
+				{
+					action = STEEPCLIMB;
+					facingRight = false;
+					groundSpeed = -10;
+					frame = 0;
+				}
+				else
+				{
+					action = JUMPSQUAT;
+					bufferedAttack = false;
+					frame = 0;
+				}
 				break;
 			}
 
@@ -3269,17 +3286,30 @@ void Actor::UpdatePrePhysics()
 					V2d dir( 0, 0 );
 					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
 					{
-						//dir = V2d( -blah, 0 );
+						/*if( groundSpeed > 0 )
+						{
+							dir = V2d( blah, 0 );
+							cout << "bbb" << endl;
+						}
+						else
+						{
+							dir = V2d( blah, 0 );
+							cout << "aaa" << endl;
+						}*/
+						
 					}
-
-					if( (groundSpeed > 0 && gNorm.x < 0 ) )
+					else if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
 					{
-						dir = V2d( 2, 0 );
-						//dir = V2d( -blah, 0 );
-					}
-					else if( ( groundSpeed < 0 && gNorm.x > 0 ) )
-					{
-						dir = V2d( -2, 0 );//-.5, 0 );
+						//cout << "this!" << endl;
+						/*if( groundSpeed > 0 )
+						{
+							dir = V2d( 2, 0 );
+						}
+						else
+						{
+							dir = V2d( -2, 0 );
+						}*/
+						
 					}
 
 					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
@@ -3305,23 +3335,39 @@ void Actor::UpdatePrePhysics()
 					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
 					{
 						dir = V2d( blah, 0 );
-					}
-					else if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
-					{
-						cout << "this!" << endl;
 						if( groundSpeed > 0 )
 						{
-							//dir = V2d( .7, 0 );
+							//dir = V2d( blah, 0 );
 						}
 						else
 						{
-							//dir = V2d( -.7, 0 );
+							//dir = V2d( blah, 0 );
+							//dir = V2d( -blah, 0 );
+						}
+						
+					}
+					else if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
+					{
+						//cout << "this!" << endl;
+						double bb = 0;
+						dir = V2d( bb, 0 );
+						if( groundSpeed > 0 )
+						{
+							//dir = V2d( blah, 0 );
+						}
+						else
+						{
+							//dir = V2d( -blah, 0 );
 						}
 						
 					}
 					
 					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
 					velocity = groundSpeed * trueNormal;
+					if( velocity.y < 0 )
+					{
+						velocity.y *= .7;
+					}
 					
 					if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
 					{
@@ -3547,11 +3593,11 @@ void Actor::UpdatePrePhysics()
 
 				if( !longWallJump )
 				{
-					strengthX = strengthX + 4;
+					strengthX = strengthX;
 				}
 				else
 				{
-					strengthY = strengthY + 3;
+					strengthY = strengthY;// + 3;
 				}
 				
 
@@ -7716,6 +7762,10 @@ void Actor::UpdatePhysics()
 				//	cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
 				//	cout << "alongVel: " << alongVel.x << ", " << alongVel.y << endl;
 					//testVel.y *= .5;
+				}
+				else if( testVel.y < 0 )
+				{
+					testVel.y *= .1;
 				}
 				//testVel.y /= 2.0
 				//cout << "groundspeed: " << groundSpeed << endl;

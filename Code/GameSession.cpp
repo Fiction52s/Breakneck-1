@@ -4212,6 +4212,15 @@ void GameSession::RespawnPlayer()
 	cam.zoomFactor = 1;
 	cam.zoomLevel = 0;
 	cam.offset = Vector2f( 0, 0 );
+
+	for( int i = 0; i < player.maxBubbles; ++i )
+	{
+		player.bubbleFramesToLive[i] = 0;
+		//if( player.bubbleFramesToLive[i] > 0 )
+		//{
+			
+		//}
+	}
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
