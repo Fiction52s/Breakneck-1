@@ -4175,6 +4175,9 @@ void GameSession::RespawnPlayer()
 	player.hasRedKey = false;
 	player.hasGreenKey = false;
 	player.hasBlueKey = false;
+	player.hasDoubleJump = true;
+	player.hasAirDash = true;
+	player.hasGravReverse = true;
 	cam.zoomFactor = 1;
 	cam.zoomLevel = 0;
 	cam.offset = Vector2f( 0, 0 );
