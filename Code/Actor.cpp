@@ -6115,6 +6115,29 @@ V2d Actor::UpdateReversePhysics()
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
+
+								if( e0->edgeType == Edge::CLOSED_GATE )
+								{
+									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY A" << endl;
+									Gate *g = (Gate*)e0->info;
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
+
+									if( e0 == g->edgeA )
+									{
+										owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										owner->ActivateZone( g->zoneA );
+									}
+
+									offsetX = -offsetX;
+									break;
+
+								}
+
+
 								groundSpeed = 0;
 								offsetX = -offsetX;
 								break;
@@ -6128,12 +6151,32 @@ V2d Actor::UpdateReversePhysics()
 						}
 						else if( abs( e0n.x ) >= wallThresh )
 						{
+							if( e0->edgeType == Edge::CLOSED_GATE )
+							{
+								Gate *g = (Gate*)e0->info;
+								//g->SetLocked( false );
+								owner->UnlockGate( g );
+
+								if( e0 == g->edgeA )
+								{
+									owner->ActivateZone( g->zoneB );
+								}
+								else
+								{
+									owner->ActivateZone( g->zoneA );
+								}
+
+								offsetX = -offsetX;
+								break;
+
+							}
+
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
 								storedBounceGroundSpeed = groundSpeed * slowMultiple;
 								groundedWallBounce = true;
 							}
-
+							//cout << "xxxxxx" << endl;
 							groundSpeed = 0;
 							offsetX = -offsetX;
 							break;
@@ -6160,6 +6203,28 @@ V2d Actor::UpdateReversePhysics()
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
+								if( e1->edgeType == Edge::CLOSED_GATE )
+								{
+									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
+									Gate *g = (Gate*)e1->info;
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
+
+									if( e1 == g->edgeA )
+									{
+										owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										owner->ActivateZone( g->zoneA );
+									}
+
+									offsetX = -offsetX;
+									break;
+
+								}
+
+
 								groundSpeed = 0;
 								offsetX = -offsetX;
 								break;
@@ -6173,6 +6238,27 @@ V2d Actor::UpdateReversePhysics()
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
+							//attemping to fix reverse secret issues on gates
+							if( e1->edgeType == Edge::CLOSED_GATE )
+							{
+								Gate *g = (Gate*)e1->info;
+								//g->SetLocked( false );
+								owner->UnlockGate( g );
+
+								if( e1 == g->edgeA )
+								{
+									owner->ActivateZone( g->zoneB );
+								}
+								else
+								{
+									owner->ActivateZone( g->zoneA );
+								}
+
+								offsetX = -offsetX;
+								break;
+
+							}
+
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
 								storedBounceGroundSpeed = groundSpeed * slowMultiple;
@@ -7064,6 +7150,27 @@ void Actor::UpdatePhysics()
 						{
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
+
+								if( e1->edgeType == Edge::CLOSED_GATE )
+								{
+									cout << "similar secret but not reversed B" << endl;
+									Gate *g = (Gate*)e1->info;
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
+
+									if( e1 == g->edgeA )
+									{
+										owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										owner->ActivateZone( g->zoneA );
+									}
+
+									break;
+
+								}
+
 								groundSpeed = 0;
 								break;
 							}
@@ -7078,6 +7185,27 @@ void Actor::UpdatePhysics()
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
+							if( e1->edgeType == Edge::CLOSED_GATE )
+							{
+								cout << "similar secret but not reversed A" << endl;
+								Gate *g = (Gate*)e1->info;
+								//g->SetLocked( false );
+								owner->UnlockGate( g );
+
+								if( e1 == g->edgeA )
+								{
+									owner->ActivateZone( g->zoneB );
+								}
+								else
+								{
+									owner->ActivateZone( g->zoneA );
+								}
+
+								break;
+
+							}
+
+
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
 								storedBounceGroundSpeed = groundSpeed * slowMultiple;
@@ -7107,6 +7235,26 @@ void Actor::UpdatePhysics()
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
+								if( e0->edgeType == Edge::CLOSED_GATE )
+								{
+									cout << "similar secret but not reversed C" << endl;
+									Gate *g = (Gate*)e0->info;
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
+
+									if( e0 == g->edgeA )
+									{
+										owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										owner->ActivateZone( g->zoneA );
+									}
+
+									break;
+
+								}
+
 								groundSpeed = 0;
 								break;
 							}
@@ -7120,6 +7268,26 @@ void Actor::UpdatePhysics()
 						}
 						else if( abs( e0n.x ) >= wallThresh )
 						{
+							if( e0->edgeType == Edge::CLOSED_GATE )
+								{
+									cout << "similar secret but not reversed D" << endl;
+									Gate *g = (Gate*)e0->info;
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
+
+									if( e0 == g->edgeA )
+									{
+										owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										owner->ActivateZone( g->zoneA );
+									}
+
+									break;
+
+								}
+
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
 								storedBounceGroundSpeed = groundSpeed * slowMultiple;
