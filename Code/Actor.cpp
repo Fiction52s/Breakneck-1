@@ -27,8 +27,8 @@ Actor::Actor( GameSession *gs )
 		
 		
 		
-		steepClimbGravFactor = .7;
-		steepClimbFastFactor = .5;
+		steepClimbGravFactor = 1;//.7;
+		steepClimbFastFactor = .7;
 
 		
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );

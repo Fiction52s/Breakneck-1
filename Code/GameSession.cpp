@@ -5729,6 +5729,9 @@ void GameSession::SetUndergroundParAndDraw()
 //only activates zones if they're inactive. 
 void GameSession::ActivateZone( Zone *z )
 {
+	if( z == NULL )
+		return;
+	//assert( z != NULL );
 	//cout << "ACTIVATE ZONE!!!" << endl;
 	if( !z->active )
 	{
