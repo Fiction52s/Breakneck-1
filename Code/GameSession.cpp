@@ -5761,6 +5761,8 @@ void GameSession::UnlockGate( Gate *g )
 		g->activeNext = unlockedGateList;
 		unlockedGateList = g;
 	}
+
+
 }
 
 Critical::Critical( V2d &pointA, V2d &pointB )

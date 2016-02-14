@@ -5497,6 +5497,20 @@ V2d Actor::UpdateReversePhysics()
 			
 			if( transferLeft )
 			{
+				if( e0->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate * g = (Gate*)e0->info;
+					owner->UnlockGate( g );
+
+					if( e0 == g->edgeA )
+					{
+						owner->ActivateZone( g->zoneB );
+					}
+					else
+					{
+						owner->ActivateZone( g->zoneA );
+					}
+				}
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				V2d nextNorm = e0n;
@@ -5671,6 +5685,21 @@ V2d Actor::UpdateReversePhysics()
 			}
 			else if( transferRight )
 			{
+				if( e1->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate * g = (Gate*)e1->info;
+					owner->UnlockGate( g );
+
+					if( e1 == g->edgeA )
+					{
+						owner->ActivateZone( g->zoneB );
+					}
+					else
+					{
+						owner->ActivateZone( g->zoneA );
+					}
+				}
+
 				Edge *next = ground->edge1;
 				V2d nextNorm = e1n;
 				double yDist = abs( gNormal.x ) * -groundSpeed;
@@ -6694,6 +6723,20 @@ void Actor::UpdatePhysics()
 			//on reverse doesnt need to fly up off of edges
 			if( transferLeft )
 			{
+				if( e0->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate * g = (Gate*)e0->info;
+					owner->UnlockGate( g );
+
+					if( e0 == g->edgeA )
+					{
+						owner->ActivateZone( g->zoneB );
+					}
+					else
+					{
+						owner->ActivateZone( g->zoneA );
+					}
+				}
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				double yDist = abs( gNormal.x ) * groundSpeed;
@@ -6821,6 +6864,20 @@ void Actor::UpdatePhysics()
 			}
 			else if( transferRight )
 			{
+				if( e1->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate * g = (Gate*)e1->info;
+					owner->UnlockGate( g );
+
+					if( e1 == g->edgeA )
+					{
+						owner->ActivateZone( g->zoneB );
+					}
+					else
+					{
+						owner->ActivateZone( g->zoneA );
+					}
+				}
 			//	cout << "transferRight!" << endl;
 				double yDist = abs( gNormal.x ) * groundSpeed;
 				Edge *next = ground->edge1;
@@ -6837,7 +6894,7 @@ void Actor::UpdatePhysics()
 						{
 							ground = next;
 							q = 0;
-							//cout << "steep transfer right" << endl;
+							cout << "steep transfer right" << endl;
 						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )

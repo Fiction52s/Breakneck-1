@@ -18,7 +18,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	action = STAND;
 	gravity = 1;
 	clockwise = true;
-
+	receivedHit = NULL;
 
 	groundSpeed = 0;
 	dead = false;
@@ -94,7 +94,7 @@ void BossCrawler::ResetEnemy()
 	dead = false;
 
 	//----update the sprite
-	double angle = 0;
+	//double angle = 0;
 	position = gPoint + gn * 16.0;
 	angle = atan2( gn.x, -gn.y );
 		
@@ -169,14 +169,15 @@ void BossCrawler::UpdateHitboxes()
 	if( ground != NULL )
 	{
 		V2d gn = ground->Normal();
-		double angle = 0;
+		//angle = 0;
+		//double angle = 0;
 		if( !approxEquals( abs(offset.x), physBody.rw ) )
 		{
 			//this should never happen
 		}
 		else
 		{
-			angle = atan2( gn.x, -gn.y );
+			//angle = atan2( gn.x, -gn.y );
 		}
 		hitBody.globalAngle = angle;
 		hurtBody.globalAngle = angle;
@@ -366,7 +367,7 @@ void BossCrawler::UpdatePhysics()
 
 		while( movement != 0 )
 		{
-			cout << "stuck here? " << endl;
+			//cout << "stuck here? " << endl;
 		//ground is always some value
 
 		double steal = 0;
@@ -662,6 +663,7 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case RUN:
 		{
+			cout << "putting sprite at the correct angle: " << angle << endl;
 			sprite.setTexture( *ts_walk->texture );
 			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
