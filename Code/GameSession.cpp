@@ -806,7 +806,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float speed;
 				is >> speed;
 
-				Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
+				BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				//Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
 
@@ -3635,7 +3636,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );

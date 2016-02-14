@@ -8,11 +8,19 @@ using namespace std;
 using namespace sf;
 
 #define V2d sf::Vector2<double>
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
+	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q )
 {
+	cout << "creating the boss crawler" << endl;
+	action = STAND;
+	gravity = 1;
+	clockwise = false;
+
+
+	groundSpeed = 0;
 	dead = false;
 	ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
@@ -22,8 +30,6 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
-
-
 
 	spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
 
@@ -65,7 +71,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	position = gPoint + ground->Normal() * 16.0;
 }
 
-void Crawler::ResetEnemy()
+void BossCrawler::ResetEnemy()
 {
 	roll = false;
 	ground = startGround;
@@ -104,7 +110,7 @@ void Crawler::ResetEnemy()
 
 }
 
-void Crawler::HandleEntrant( QuadTreeEntrant *qte )
+void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 {
 	assert( queryMode != "" );
 
@@ -158,7 +164,7 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 	++possibleEdgeCount;
 }
 
-void Crawler::UpdateHitboxes()
+void BossCrawler::UpdateHitboxes()
 {
 	if( ground != NULL )
 	{
@@ -188,26 +194,176 @@ void Crawler::UpdateHitboxes()
 	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
-void Crawler::UpdatePrePhysics()
+void BossCrawler::UpdatePrePhysics()
 {
-	if( ( !roll && frame == 17 * crawlAnimationFactor )
-		|| ( roll && frame == 7 * rollAnimationFactor ) )
+	int standLength = 60;
+	int shootLength = 60;
+	int lungeLandLength = 20;
+	int rollLength = 60;
+	int stunLength = 60;
+	bool doneRunning = false;
+
+	double runSpeed = 10;
+	double rollSpeed = 15;
+	double lungeSpeed = 10;
+
+	V2d gNormal;
+	if( ground != NULL )
 	{
-		frame = 0;
+		gNormal = ground->Normal();
 	}
-	groundSpeed = 1.5;
+
+	switch( action )
+	{
+	case STAND:
+		{
+			if( frame == standLength - 1 )
+			{
+				action = RUN;
+				frame = 0;
+				//randomly choose to LUNGE or RUN or SHOOT
+			}
+		}
+		break;
+	case SHOOT:
+		{
+			if( frame == shootLength - 1 )
+			{
+				//randomly choose LUNGE or RUN
+			}
+		}
+		break;
+	case LUNGE:
+		{
+		}
+		break;
+	case LUNGEAIR:
+		{
+		}
+		break;
+	case LUNGELAND:
+		{
+			if( frame == lungeLandLength - 1 )
+			{
+				action = STAND;
+				frame = 0;
+			}
+		}
+		break;
+	case RUN:
+		{
+			if( doneRunning )
+			{
+				//could shoot between LUNGE or SHOOT or ROLL
+			}
+		}
+		break;
+	case ROLL:
+		{
+			if( frame == rollLength - 1 )
+			{
+				action = STAND;
+				frame = 0;
+			}
+		}
+	case STUNNED:
+		{
+			if( frame == stunLength - 1 )
+			{
+				if( ground != NULL ) //ground
+				{
+					action = STAND;
+					frame = 0;
+				}
+				else //air
+				{
+					//stall it out on its last frame until you land
+					--frame;
+				}
+			}
+		}
+		break;
+	}
+
+	switch( action )
+	{
+	case STAND:
+		{
+		}
+		break;
+	case SHOOT:
+		{
+		}
+		break;
+	case LUNGE:
+		{
+		}
+		break;
+	case LUNGEAIR:
+		{
+			velocity += V2d( 0, gravity / slowMultiple );
+		}
+		break;
+	case LUNGELAND:
+		{
+		}
+		break;
+	case RUN:
+		{
+			if( clockwise )
+			{
+				groundSpeed = runSpeed;
+			}
+			else
+			{
+				groundSpeed = -runSpeed;
+			}
+		}
+		break;
+	case ROLL:
+		{
+			if( clockwise )
+			{
+				groundSpeed = rollSpeed;
+			}
+			else
+			{
+				groundSpeed = -rollSpeed;
+			}
+		}
+	case STUNNED:
+		{
+			if( ground != NULL && gNormal.y > 0 )
+			{
+				ground = NULL;
+				velocity = V2d( 0, 0 );
+			}
+			else if( ground == NULL )
+			{
+				velocity += V2d( 0, gravity / slowMultiple );
+			}
+			else
+			{
+				groundSpeed = 0; //maybe while stunned he should roll using gravity
+			}
+		}
+		break;
+	}
 }
 
-void Crawler::UpdatePhysics()
+void BossCrawler::UpdatePhysics()
 {
 	double movement = 0;
 	double maxMovement = min( physBody.rw, physBody.rh );
-	movement = groundSpeed;
+	
 
-	movement /= slowMultiple * NUM_STEPS;
-
-	while( movement != 0 )
+	if( ground != NULL )
 	{
+		movement = groundSpeed;
+		movement /= slowMultiple * NUM_STEPS;
+
+		while( movement != 0 )
+		{
 		//ground is always some value
 
 		double steal = 0;
@@ -453,16 +609,34 @@ void Crawler::UpdatePhysics()
 
 		edgeQuantity = q;
 	}
+	}
+	else
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * NUM_STEPS;
+
+		bool hit = ResolvePhysics( movementVec );
+		if( hit )
+		{
+			//V2d eNorm = minContact.edge->Normal();
+			ground = minContact.edge;
+			edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
+			//= q;
+			//V2d gn = ground->Normal();
+			//break;
+		}			
+	}
 
 	PhysicsResponse();
 }
 
-bool Crawler::ResolvePhysics( V2d vel )
+bool BossCrawler::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
 
 	Rect<double> oldR( position.x + physBody.offset.x - physBody.rw, 
 		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	
 	position += vel;
 	
 	Rect<double> newR( position.x + physBody.offset.x - physBody.rw, 
@@ -499,85 +673,51 @@ bool Crawler::ResolvePhysics( V2d vel )
 	return col;
 }
 
-void Crawler::PhysicsResponse()
+void BossCrawler::PhysicsResponse()
 {
-	if( !dead )
+	if( !dead && receivedHit == NULL )
 	{
-		//cout << "response" << endl;
-		double spaceNeeded = 0;
-		V2d gn = ground->Normal();
-		V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
-		double angle = 0;
-	
-		if( !roll )
+		if( ground != NULL )
 		{
+			V2d gn = ground->Normal();
+			V2d gPoint = ground->GetPoint( edgeQuantity );
 			position = gPoint + gn * 16.0;
 			angle = atan2( gn.x, -gn.y );
-		
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
 		}
 		else
 		{
-			V2d e1n = ground->edge1->Normal();
-			double rollStart = atan2( gn.y, gn.x );
-			double rollEnd = atan2( e1n.y, e1n.x );
-			double adjRollStart = rollStart;
-			double adjRollEnd = rollEnd;
-
-			if( rollStart < 0 )
-				adjRollStart += 2 * PI;
-			if( rollEnd < 0 )
-				adjRollEnd += 2 * PI;
-		
-			if( adjRollEnd > adjRollStart )
-			{
-				angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-			}
-			else
-			{
-			
-				angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-				if( rollStart < 0 )
-					rollStart += 2 * PI;
-				if( rollEnd < 0 )
-					rollEnd += 2 * PI;
-			}
-
-			if( angle < 0 )
-				angle += PI * 2;
-
-		
-
-			V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			angleVec = normalize( angleVec );
-
-			position = gPoint + angleVec * 16.0;
-
-			angle += PI / 2.0;
-	
-
-			sprite.setTexture( *ts_roll->texture );
-			sprite.setTextureRect( ts_roll->GetSubRect( frame / rollAnimationFactor ) );
-
-		
-
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setPosition( pp.x, pp.y );
+			angle = 0;
 		}
-	
 
 		UpdateHitboxes();
 
+		pair<bool,bool> result = PlayerHitMe();
+		if( result.first )
+		{
+			//cout << "color blue" << endl;
+			//triggers multiple times per frame? bad?
+			owner->player.test = true;
+			owner->player.currAttackHit = true;
+			owner->player.flashColor = COLOR_BLUE;
+			owner->player.flashFrames = 5;
+			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			{
+				owner->player.velocity.y = 4;//.5;
+			}
+		
+			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+
+		}
+
+		if( IHitPlayer() )
+		{
+		}
+	}
+
+	if( !dead )
+	{
 		if( PlayerSlowingMe() )
 		{
 			if( slowMultiple == 1 )
@@ -593,30 +733,94 @@ void Crawler::PhysicsResponse()
 			slowMultiple = 1;
 		//	cout << "no slow" << endl;
 		}
-
-		pair<bool, bool> result = PlayerHitMe();
-		if( result.first )
-		{
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
-			{
-				owner->Pause( 6 );
-			}
-			
-			dead = true;
-			receivedHit = NULL;
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-
 	}
 }
 
-void Crawler::UpdatePostPhysics()
+void BossCrawler::UpdatePostPhysics()
 {
+	switch( action )
+	{
+	case STAND:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+		break;
+	case SHOOT:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+		break;
+	case LUNGE:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+		break;
+	case LUNGEAIR:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+
+			
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			//sprite.setRotation( 0 );
+			sprite.setPosition( position.x, position.y );
+		}
+	case LUNGELAND:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+		break;
+	case RUN:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+		break;
+	case ROLL:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+	case STUNNED:
+		{
+			sprite.setTexture( *ts_walk->texture );
+			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
+		}
+		break;
+	}
+
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
@@ -632,11 +836,13 @@ void Crawler::UpdatePostPhysics()
 		slowCounter++;
 	}
 
+
+
 	//sprite.setPosition( position );
 	//UpdateHitboxes();
 }
 
-bool Crawler::PlayerSlowingMe()
+bool BossCrawler::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -652,7 +858,7 @@ bool Crawler::PlayerSlowingMe()
 	return false;
 }
 
-void Crawler::Draw(sf::RenderTarget *target )
+void BossCrawler::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -660,7 +866,7 @@ void Crawler::Draw(sf::RenderTarget *target )
 	}
 }
 
-bool Crawler::IHitPlayer()
+bool BossCrawler::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
@@ -673,7 +879,7 @@ bool Crawler::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Crawler::PlayerHitMe()
+ pair<bool, bool> BossCrawler::PlayerHitMe()
 {
 	Actor &player = owner->player;
 
@@ -729,11 +935,11 @@ bool Crawler::IHitPlayer()
 	return pair<bool, bool>(false,false);
 }
 
-void Crawler::UpdateSprite()
+void BossCrawler::UpdateSprite()
 {
 }
 
-void Crawler::DebugDraw( RenderTarget *target )
+void BossCrawler::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -753,10 +959,10 @@ void Crawler::DebugDraw( RenderTarget *target )
 //	hitBody.DebugDraw( target );
 }
 
-void Crawler::SaveEnemyState()
+void BossCrawler::SaveEnemyState()
 {
 }
 
-void Crawler::LoadEnemyState()
+void BossCrawler::LoadEnemyState()
 {
 }

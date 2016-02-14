@@ -18,6 +18,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		FOOTTRAP,
 		GOAL,
 		KEY,
+		BOSS_CRAWLER,
 		Count
 	};
 
@@ -536,6 +537,90 @@ struct Key : Enemy
 	Stored stored;
 };
 
+struct BossCrawler : Enemy
+{
+	enum Action
+	{
+		STAND,
+		SHOOT,
+		LUNGE,
+		LUNGELAND,
+		LUNGEAIR,
+		RUN,
+		ROLL,
+		STUNNED,
+		Count
+	};
+	Action action;
+	int frame;
+	double gravity;
+	bool clockwise;
+	sf::Vector2<double> velocity;
+	double angle;
+	//sf::Vector2<double> position;
+
+	BossCrawler( GameSession *owner, Edge *ground, double quantity );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void UpdatePhysics2();
+	void UpdatePhysics3();
+	sf::Sprite sprite;
+	Tileset *ts_walk;
+	Tileset *ts_roll;
+	
+
+	double groundSpeed;
+	Edge *ground;
+	
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> position;
+	sf::Vector2<double> tempVel;
+	
+
+	double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	sf::Vector2<double> offset;
+	
+	bool roll;
+	bool dead;
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
 
 struct EnemyParentNode;
 
