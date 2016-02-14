@@ -17,7 +17,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	cout << "creating the boss crawler" << endl;
 	action = STAND;
 	gravity = 1;
-	clockwise = false;
+	clockwise = true;
 
 
 	groundSpeed = 0;
@@ -219,6 +219,7 @@ void BossCrawler::UpdatePrePhysics()
 		{
 			if( frame == standLength - 1 )
 			{
+				cout << "stand -> run" << endl;
 				action = RUN;
 				frame = 0;
 				//randomly choose to LUNGE or RUN or SHOOT
@@ -353,17 +354,19 @@ void BossCrawler::UpdatePrePhysics()
 
 void BossCrawler::UpdatePhysics()
 {
-	double movement = 0;
+	
 	double maxMovement = min( physBody.rw, physBody.rh );
 	
 
 	if( ground != NULL )
 	{
+		double movement = 0;
 		movement = groundSpeed;
 		movement /= slowMultiple * NUM_STEPS;
 
 		while( movement != 0 )
 		{
+			cout << "stuck here? " << endl;
 		//ground is always some value
 
 		double steal = 0;
@@ -409,145 +412,11 @@ void BossCrawler::UpdatePhysics()
 
 		if( q == groundLength )
 		{
+			q = 0;
+			ground = e1;
 			if( gNormal == e1n )
 			{
-				q = 0;
-				ground = e1;
-			}
-			else if( !roll )
-			{
-				roll = true;
-				rollFactor = 0;
-				frame = 0;
-			}
-			else
-			{
-				if( rollFactor < 1.0 )
-				{ 
-					double oldRollFactor = rollFactor;
-					double rollStart = atan2( gNormal.y, gNormal.x );
-					V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-					double rollEnd = atan2( e1n.y, e1n.x );
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-
-					V2d currentVec = position - ground->v1;
-					currentVec = normalize( currentVec );
-					double rollCurrent = atan2( currentVec.y, currentVec.x );
-					if( rollCurrent < 0 )
-						rollCurrent += 2 * PI;
-
-
-					double totalAngleDist = rollEnd - rollStart;
-					if( rollEnd < rollStart )
-					{
-						totalAngleDist = ( 2 * PI - rollStart ) + rollEnd;
-					}
-
-
-					double angleDist = rollEnd - rollCurrent;
-
-					if( rollEnd < rollCurrent )
-					{
-						angleDist = ( 2 * PI - rollCurrent ) + rollEnd;
-					}
-
-					
-
-					double arcDist = angleDist * physBody.rw;
-					//arcDist *= 100;
-					double oldArcDist = arcDist;
-					//m /= 10;
-					movement -= m;
-					if( movement < 0 )
-					{
-						assert( false );
-						movement = 0;
-					}
-					if( m > arcDist )
-					{
-						//cout << "m: " << m << ", arcDist: " << arcDist << endl;
-						//double realMove = ;
-						m -= arcDist;
-						if( approxEquals( m, 0 ) )
-						{
-							m = 0;
-						}
-						rollFactor = 1;
-						movement += m;
-
-						V2d oldPos = position;
-						V2d rollEndVec = V2d( cos( rollEnd ), sin ( rollEnd ) );
-						V2d newPos = ground->v1 + rollEndVec * physBody.rw;
-
-						bool hit = ResolvePhysics( newPos - oldPos );
-						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-						{
-							V2d eNorm = minContact.edge->Normal();
-							ground = minContact.edge;
-							q = ground->GetQuantity( minContact.position + minContact.resolution );
-							edgeQuantity = q;
-							V2d gn = ground->Normal();
-							roll = false;
-							break;
-						}			
-					}
-					else
-					{
-						//m = 0;
-						arcDist -= m;
-						rollFactor = ( totalAngleDist - arcDist / physBody.rw ) / totalAngleDist;
-
-						V2d oldPos = position;
-						double trueAngle = rollStart + angleDist * rollFactor;
-						if( trueAngle > PI * 2 )
-						{
-							trueAngle -= PI * 2;
-						}
-
-						V2d trueVec = V2d( cos( trueAngle ), sin( trueAngle ) );
-						
-						V2d newPos = ground->v1 + trueVec * physBody.rw;
-
-						//cout << "current: " << rollCurrent << ", new: " << rollFactor << "total: " << totalAngleDist << ", arcdist: " << arcDist << endl;
-						//cout << "other vel: " << (newPos-oldPos).x << ", " << (newPos-oldPos).y << endl;
-						bool hit = ResolvePhysics( newPos - oldPos );
-						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-						{
-							V2d eNorm = minContact.edge->Normal();
-							ground = minContact.edge;
-							q = ground->GetQuantity( minContact.position + minContact.resolution );
-							edgeQuantity = q;
-							V2d gn = ground->Normal();
-							roll = false;
-							break;
-						}			
-						//rollFactor = 
-					}
-
-
-
-
-					
-			
-
-					//movement += m;
-					//rollFactor += .01;
-
-					//double diff = abs( rollStart - rollEnd );
-
-					//if( rollFactor > 1.0 )
-					//	rollFactor = 1.0;
-				}
-				else
-				{
-					ground = e1;
-					q = 0;
-					roll = false;
-				}
+				
 			}
 		}
 		else
@@ -608,7 +477,8 @@ void BossCrawler::UpdatePhysics()
 			movement = steal;
 
 		edgeQuantity = q;
-	}
+		}
+	
 	}
 	else
 	{

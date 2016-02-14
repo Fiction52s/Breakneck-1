@@ -53,7 +53,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool spawnedByClone;
 	int initHealth;
 	int health;
-
+	sf::Vector2<double> position;
 	Zone *zone;
 
 	void HandleQuery( QuadTreeCollider * qtc );
@@ -153,7 +153,6 @@ struct Patroller : Enemy
 	double acceleration;
 	double speed;
 	int nodeWaitFrames;
-	sf::Vector2<double> position;
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
@@ -223,7 +222,6 @@ struct Crawler : Enemy
 	CollisionBox hitBody;
 	CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> position;
 	sf::Vector2<double> tempVel;
 	
 
@@ -328,7 +326,6 @@ struct BasicTurret : Enemy
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 	
-	sf::Vector2<double> position;
 	double angle;
 
 	Contact minContact;
@@ -374,7 +371,6 @@ struct FootTrap : Enemy
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 	
-	sf::Vector2<double> position;
 	double angle;
 
 	Contact minContact;
@@ -438,7 +434,6 @@ struct Goal : Enemy
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 	
-	sf::Vector2<double> position;
 	double angle;
 
 	//Contact minContact;
@@ -506,7 +501,6 @@ struct Key : Enemy
 	double acceleration;
 	double speed;
 	int nodeWaitFrames;
-	sf::Vector2<double> position;
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
@@ -593,7 +587,6 @@ struct BossCrawler : Enemy
 	CollisionBox hitBody;
 	CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> position;
 	sf::Vector2<double> tempVel;
 	
 

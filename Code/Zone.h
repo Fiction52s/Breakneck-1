@@ -18,7 +18,7 @@ struct Zone
 	void Draw( sf::RenderTarget *target );
 	void AddHoles( p2t::CDT *cdt );
 
-	bool ContainsPoint( sf::Vector2i point );
+	bool ContainsPoint( sf::Vector2<double> point );
 	bool ContainsZone( Zone *z );
 	//bool ContainsPlayer();
 	Zone * ContainsPointMostSpecific( 

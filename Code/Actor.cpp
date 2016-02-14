@@ -7968,7 +7968,7 @@ void Actor::UpdatePhysics()
 				//	groundSpeed = -groundSpeed;
 				}
 
-				cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
+				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
 
 				movement = 0;
 			

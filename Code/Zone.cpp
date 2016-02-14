@@ -382,7 +382,7 @@ void Zone::Draw( RenderTarget *target )
 	}
 }
 
-bool Zone::ContainsPoint( sf::Vector2i test )
+bool Zone::ContainsPoint( V2d test )
 {
 	int pointCount = points.size();
 
@@ -403,7 +403,7 @@ bool Zone::ContainsPoint( sf::Vector2i test )
 
 bool Zone::ContainsZone( Zone *z )
 {
-	Vector2i p( z->gates.front()->edge0->v0.x, z->gates.front()->edge0->v0.y );
+	V2d p( z->gates.front()->edge0->v0.x, z->gates.front()->edge0->v0.y );
 	return ContainsPoint( p );
 }
 
@@ -414,8 +414,8 @@ bool Zone::ContainsZone( Zone *z )
 
 Zone* Zone::ContainsPointMostSpecific( sf::Vector2i test )
 {
-	bool contains = ContainsPoint( test );
-
+	//bool contains = ContainsPoint( test );
+	bool contains = false;
 	if( contains )
 	{
 		if( subZones.empty() )

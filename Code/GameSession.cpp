@@ -2449,18 +2449,15 @@ void GameSession::SetupZones()
 	//add enemies to the correct zone.
 	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
 	{
-		Vector2i truePos( (*it)->spawnRect.left + (*it)->spawnRect.width / 2, 
-			(*it)->spawnRect.top + (*it)->spawnRect.height / 2 );
-
 		for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
 		{
-			bool hasPoint = (*zit)->ContainsPoint( truePos );
+			bool hasPoint = (*zit)->ContainsPoint( (*it)->position );
 			if( hasPoint )
 			{
 				bool mostSpecific = true;
 				for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
 				{
-					if( (*zit2)->ContainsPoint( truePos ) )
+					if( (*zit2)->ContainsPoint( (*it)->position ) )
 					{
 						mostSpecific = false;
 						break;
@@ -2479,14 +2476,14 @@ void GameSession::SetupZones()
 	//which zone is the player in?
 	for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
 	{
-		Vector2i truePos = Vector2i( player.position.x, player.position.y );
-		bool hasPoint = (*zit)->ContainsPoint( truePos );
+		//Vector2i truePos = Vector2i( player.position.x, player.position.y );
+		bool hasPoint = (*zit)->ContainsPoint( player.position );
 		if( hasPoint )
 		{
 			bool mostSpecific = true;
 			for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
 			{
-				if( (*zit2)->ContainsPoint( truePos ) )
+				if( (*zit2)->ContainsPoint( player.position ) )
 				{
 					mostSpecific = false;
 					break;
