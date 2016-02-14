@@ -548,7 +548,7 @@ struct BossCrawler : Enemy
 	Action action;
 	int frame;
 	double gravity;
-	bool clockwise;
+	bool facingRight;
 	sf::Vector2<double> velocity;
 	double angle;
 	//sf::Vector2<double> position;

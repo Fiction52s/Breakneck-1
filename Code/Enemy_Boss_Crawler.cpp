@@ -14,10 +14,10 @@ using namespace sf;
 BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q )
 {
-	cout << "creating the boss crawler" << endl;
+	//cout << "creating the boss crawler" << endl;
 	action = STAND;
 	gravity = 1;
-	clockwise = true;
+	facingRight = false;
 	receivedHit = NULL;
 
 	groundSpeed = 0;
@@ -312,7 +312,7 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case RUN:
 		{
-			if( clockwise )
+			if( facingRight )
 			{
 				groundSpeed = runSpeed;
 			}
@@ -324,7 +324,7 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case ROLL:
 		{
-			if( clockwise )
+			if( facingRight )
 			{
 				groundSpeed = rollSpeed;
 			}
@@ -411,67 +411,129 @@ void BossCrawler::UpdatePhysics()
 		bool transferLeft = false;
 		bool transferRight = false;
 
-		if( q == groundLength )
+		if( facingRight )
 		{
-			q = 0;
-			ground = e1;
+			if( q == groundLength )
+			{
+				q = 0;
+									ground = e1;
 			if( gNormal == e1n )
 			{
 				
 			}
 		}
-		else
-		{
-			if( movement > 0 )
-			{	
-				extra = (q + movement) - groundLength;
-			}
-			else 
-			{
-				extra = (q + movement);
-			}
-					
-			if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+			else
 			{
 				if( movement > 0 )
+				{	
+					extra = (q + movement) - groundLength;
+				}
+				else 
 				{
-					q = groundLength;
+					extra = (q + movement);
+				}
+					
+				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+				{
+					if( movement > 0 )
+					{
+						q = groundLength;
+					}
+					else
+					{
+						q = 0;
+					}
+					movement = extra;
+					m -= extra;
+						
 				}
 				else
 				{
+					movement = 0;
+					q += m;
+				}
+				
+				if( !approxEquals( m, 0 ) )//	if(m != 0 )
+				{	
+					bool down = true;
+					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					{
+						V2d eNorm = minContact.edge->Normal();
+						ground = minContact.edge;
+						q = ground->GetQuantity( minContact.position + minContact.resolution );
+						edgeQuantity = q;
+						V2d gn = ground->Normal();
+						break;
+					}			
+				}
+				else
+				{
+					ground = e1;
 					q = 0;
 				}
-				movement = extra;
-				m -= extra;
-						
-			}
-			else
-			{
-				movement = 0;
-				q += m;
-			}
-				
-			if( !approxEquals( m, 0 ) )//	if(m != 0 )
-			{	
-				bool down = true;
-				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					V2d eNorm = minContact.edge->Normal();
-					ground = minContact.edge;
-					q = ground->GetQuantity( minContact.position + minContact.resolution );
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
-					break;
-				}			
-			}
-			else
-			{
-				ground = e1;
-				q = 0;
 			}
 		}
-
+		else //counter clockwise
+		{
+			double e0Length = length( e0->v1 - e0->v0 );
+			if( q == 0 )
+			{
+				q = e0Length;
+				ground = e0;
+			}
+			else
+			{
+				if( movement > 0 )
+				{	
+					extra = (q + movement) - groundLength;
+				}
+				else 
+				{
+					extra = (q + movement);
+				}
+					
+				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
+				{
+					if( movement > 0 )
+					{
+						q = groundLength;
+					}
+					else
+					{
+						q = 0;
+					}
+					movement = extra;
+					m -= extra;
+						
+				}
+				else
+				{
+					movement = 0;
+					q += m;
+				}
+				
+				if( !approxEquals( m, 0 ) )//	if(m != 0 )
+				{	
+					bool down = true;
+					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					{
+						V2d eNorm = minContact.edge->Normal();
+						ground = minContact.edge;
+						q = ground->GetQuantity( minContact.position + minContact.resolution );
+						edgeQuantity = q;
+						V2d gn = ground->Normal();
+						break;
+					}			
+				}
+				else
+				{
+					ground = e0;
+					q = e0Length;
+				}
+			}
+		}
 		if( movement == extra )
 			movement += steal;
 		else
@@ -691,6 +753,12 @@ void BossCrawler::UpdatePostPhysics()
 			sprite.setPosition( pp.x, pp.y );
 		}
 		break;
+	}
+
+	if( !facingRight)
+	{
+		sf::IntRect r = sprite.getTextureRect();
+		sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
 	}
 
 	if( slowCounter == slowMultiple )
