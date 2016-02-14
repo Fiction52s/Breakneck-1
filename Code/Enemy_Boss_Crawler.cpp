@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include <cstdlib>
 
 using namespace std;
 using namespace sf;
@@ -129,7 +130,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 
-				if( e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
+				if( ground != NULL && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
 				{
 					return;
 				}
@@ -199,10 +200,12 @@ void BossCrawler::UpdatePrePhysics()
 {
 	int standLength = 60;
 	int shootLength = 60;
+	int lungeLength = 20;
 	int lungeLandLength = 20;
 	int rollLength = 60;
 	int stunLength = 60;
 	bool doneRunning = false;
+	int runFrames = 60;
 
 	double runSpeed = 10;
 	double rollSpeed = 15;
@@ -220,9 +223,36 @@ void BossCrawler::UpdatePrePhysics()
 		{
 			if( frame == standLength - 1 )
 			{
-				cout << "stand -> run" << endl;
-				action = RUN;
+				int r = rand() % 4;
+				int r1 = rand() % 2;
+				switch( r )
+				{
+				case 0:
+					action = RUN;
+					
+					if( r1 == 0 )
+					{
+						facingRight = true;
+					}
+					else
+					{
+						facingRight = false;
+					}
+
+					break;
+				case 1:
+					action = LUNGE;
+					break;
+				case 2:
+					action = ROLL;
+					break;
+				case 3:
+					action = SHOOT;
+					break;
+				}
 				frame = 0;
+				//cout << "stand -> run" << endl;
+				
 				//randomly choose to LUNGE or RUN or SHOOT
 			}
 		}
@@ -231,12 +261,24 @@ void BossCrawler::UpdatePrePhysics()
 		{
 			if( frame == shootLength - 1 )
 			{
+				action = STAND;
+				frame = 0;
 				//randomly choose LUNGE or RUN
 			}
 		}
 		break;
 	case LUNGE:
 		{
+			if( frame == lungeLength - 1 )
+			{
+				assert( ground != NULL );
+
+				V2d normal = ground->Normal();
+				ground = NULL;
+				velocity = normal * 20.0;
+				action = LUNGEAIR;
+				frame = 0;
+			}
 		}
 		break;
 	case LUNGEAIR:
@@ -254,8 +296,22 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case RUN:
 		{
-			if( doneRunning )
+			if( frame == runFrames - 1 || doneRunning )
 			{
+				int r = rand() % 3;
+				switch( r )
+				{
+				case 0:
+					action = ROLL;
+					break;
+				case 1:
+					action = LUNGE;
+					break;
+				case 2:
+					action = SHOOT;
+					break;
+				}
+				frame = 0;
 				//could shoot between LUNGE or SHOOT or ROLL
 			}
 		}
@@ -291,27 +347,36 @@ void BossCrawler::UpdatePrePhysics()
 	{
 	case STAND:
 		{
+			groundSpeed = 0;
+			cout << "stand" << endl;
 		}
 		break;
 	case SHOOT:
 		{
+			cout << "shoot" << endl;
 		}
 		break;
 	case LUNGE:
 		{
+			groundSpeed = 0;
+			cout << "lunge" << endl;
 		}
 		break;
 	case LUNGEAIR:
 		{
+			cout << "lunge air" << endl;
 			velocity += V2d( 0, gravity / slowMultiple );
 		}
 		break;
 	case LUNGELAND:
 		{
+			groundSpeed = 0;
+			cout << "lunge land" << endl;
 		}
 		break;
 	case RUN:
 		{
+			cout << "run" << endl;
 			if( facingRight )
 			{
 				groundSpeed = runSpeed;
@@ -324,6 +389,7 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case ROLL:
 		{
+			cout << "roll" << endl;
 			if( facingRight )
 			{
 				groundSpeed = rollSpeed;
@@ -333,8 +399,10 @@ void BossCrawler::UpdatePrePhysics()
 				groundSpeed = -rollSpeed;
 			}
 		}
+		break;
 	case STUNNED:
 		{
+			cout << "stunned" << endl;
 			if( ground != NULL && gNormal.y > 0 )
 			{
 				ground = NULL;
@@ -355,9 +423,7 @@ void BossCrawler::UpdatePrePhysics()
 
 void BossCrawler::UpdatePhysics()
 {
-	
 	double maxMovement = min( physBody.rw, physBody.rh );
-	
 
 	if( ground != NULL )
 	{
@@ -554,6 +620,8 @@ void BossCrawler::UpdatePhysics()
 			//V2d eNorm = minContact.edge->Normal();
 			ground = minContact.edge;
 			edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
+			action = LUNGELAND;
+			frame = 0;
 			//= q;
 			//V2d gn = ground->Normal();
 			//break;
@@ -713,6 +781,7 @@ void BossCrawler::UpdatePostPhysics()
 			//sprite.setRotation( 0 );
 			sprite.setPosition( position.x, position.y );
 		}
+		break;
 	case LUNGELAND:
 		{
 			sprite.setTexture( *ts_walk->texture );
@@ -888,8 +957,9 @@ void BossCrawler::DebugDraw( RenderTarget *target )
 		cs.setFillColor( Color::Cyan );
 		cs.setRadius( 10 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		V2d g = ground->GetPoint( edgeQuantity );
-		cs.setPosition( g.x, g.y );
+		//V2d g = ground->GetPoint( edgeQuantity );
+		//cs.setPosition( g.x, g.y );
+		cs.setPosition( position.x, position.y );
 
 		//owner->window->draw( cs );
 		//UpdateHitboxes();
