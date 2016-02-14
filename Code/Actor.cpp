@@ -23,12 +23,8 @@ Actor::Actor( GameSession *gs )
 		hasRedKey = false;
 		hasGreenKey = false;
 		hasBlueKey = false;
-		slopeTooSteepLaunchLimitX = .1;
 		
 		
-		
-		steepClimbGravFactor = 1;//.7;
-		steepClimbFastFactor = .7;
 
 		
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
@@ -46,12 +42,12 @@ Actor::Actor( GameSession *gs )
 		}
 
 
-		//if (!swordShader.loadFromFile("sword_shader.frag", sf::Shader::Fragment))
+		if (!swordShader.loadFromFile("sword_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-		//{
-		//	cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-		//	assert( 0 && "sword shader not loaded" );
-		//}
+		{
+			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "sword shader not loaded" );
+		}
 		//swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
@@ -439,13 +435,18 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		steepSlideGravFactor = .5;
-		steepSlideFastGravFactor = .7;
+		steepSlideGravFactor = .2;
+		steepSlideFastGravFactor = .3;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 20;
 		clingSpeed = 3;
 
+		slopeTooSteepLaunchLimitX = .1;
+		
+		
+		steepClimbGravFactor = .3;//.7;
+		steepClimbFastFactor = .1;
 		
 		offSlopeByWallThresh = dashSpeed;//18;
 		slopeLaunchMinSpeed = 15;//dashSpeed * .7;
@@ -593,7 +594,7 @@ Actor::Actor( GameSession *gs )
 		
 
 
-		bool noPowers = false;
+		bool noPowers = true;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
@@ -2883,8 +2884,8 @@ void Actor::UpdatePrePhysics()
 			{
 				//cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
-				double sp = jumpStrength + 1;//28.0;
-				double extra = 10.0;
+				double sp = 5;//jumpStrength + 1;//28.0;
+				double extra = 5.0;
 				if( gNorm.x > 0 && currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
@@ -7980,7 +7981,7 @@ void Actor::UpdatePhysics()
 
 				V2d testVel = velocity;
 
-				if( testVel.y > 0 )
+				if( testVel.y > 20 )
 				{
 					testVel.y *= .7;
 					//alongVel.y *= .5;
@@ -7988,7 +7989,7 @@ void Actor::UpdatePhysics()
 				//	cout << "alongVel: " << alongVel.x << ", " << alongVel.y << endl;
 					//testVel.y *= .5;
 				}
-				else if( testVel.y < 0 )
+				else if( testVel.y < 30 )
 				{
 					testVel.y *= .1;
 				}
@@ -8011,12 +8012,12 @@ void Actor::UpdatePhysics()
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
 				{
 					groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7);
-					cout << "left boost: " << groundSpeed << endl;
+					//cout << "left boost: " << groundSpeed << endl;
 				}
 				else if( velocity.x > 0 && gNorm.y <= -steepThresh )
 				{
 					groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7 );
-					cout << "right boost: " << groundSpeed << endl;
+					//cout << "right boost: " << groundSpeed << endl;
 				}
 				//groundSpeed  = max( abs( velocity.x ), ( - ) );
 				

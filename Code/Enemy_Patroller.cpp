@@ -105,6 +105,7 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 
 void Patroller::ResetEnemy()
 {
+	//cout << "resetting enemy" << endl;
 	//spawned = false;
 	targetNode = 1;
 	forward = true;
@@ -113,6 +114,8 @@ void Patroller::ResetEnemy()
 	frame = 0;
 	position.x = path[0].x;
 	position.y = path[0].y;
+	receivedHit = NULL;
+	
 
 	UpdateHitboxes();
 
@@ -170,6 +173,7 @@ void Patroller::UpdatePhysics()
 
 		while( movement != 0 )
 		{
+			cout << "movement loop? "<< endl;
 			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
 			V2d diff = targetPoint - position;
 			double len = length( diff );
@@ -325,6 +329,7 @@ void Patroller::UpdateSprite()
 
 void Patroller::Draw( sf::RenderTarget *target )
 {
+	//cout << "draw" << endl;
 	if( !dead )
 	{
 		target->draw( sprite );

@@ -794,7 +794,7 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case RUN:
 		{
-			cout << "putting sprite at the correct angle: " << angle << endl;
+		//	cout << "putting sprite at the correct angle: " << angle << endl;
 			sprite.setTexture( *ts_walk->texture );
 			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );

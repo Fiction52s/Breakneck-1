@@ -2897,8 +2897,33 @@ int GameSession::Run( string fileN )
 				}
 				else
 				{
+					//cout << "reset actives" << endl;
+					Enemy *curr = activeEnemyList;
+					while( curr != NULL )
+					{
+						Enemy *temp = curr->next;
+						if( curr->type == Enemy::BASICEFFECT )
+						{
+							DeactivateEffect( (BasicEffect*)curr );
+						}
+						else
+						{
+						//	cout << "restting: " << (int)curr->type << endl;
+							curr->Reset();
+						}
+
+						curr = temp;
+					}
+
+					activeEnemyList = NULL;
+
+					
+					//cout << "dont resetting actives" << endl;
+
 					ResetInactiveEnemies();
 					
+					//cout << "also done with inactives" << endl;
+
 					while( activatedZoneList != NULL )
 					{
 						//cout << "respawn: deactivated a zone!" << endl;
@@ -3169,7 +3194,7 @@ int GameSession::Run( string fileN )
 				UpdateEnemiesPostPhysics();
 				
 
-
+				//cout << "updating loop" << endl;
 
 				//Vector2f oldCam = cam.pos;
 				//float oldCamZoom = cam.GetZoom();
@@ -3220,6 +3245,7 @@ int GameSession::Run( string fileN )
 			accumulator -= TIMESTEP;
 		}
 
+		//cout << "every time" << endl;
 		//gravity = 1.9;//1.9; // 1 
 		//jumpStrength = 27.5; // 2 
 		//dashSpeed = 9;//12; // 3
@@ -3588,7 +3614,7 @@ int GameSession::Run( string fileN )
 		}
 	
 
-
+		cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
 
 		if( player.action != Actor::GRINDBALL )
@@ -3633,7 +3659,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -3641,7 +3667,7 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( preScreenTex );
 
-		double minimapZoom = 6 * cam.GetZoom();// + cam.GetZoom();
+		double minimapZoom = 8 * cam.GetZoom();// + cam.GetZoom();
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
@@ -3763,6 +3789,8 @@ int GameSession::Run( string fileN )
 		playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
 		playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
 		minimapTex->draw( playerCircle );
+
+
 
 		queryMode = "enemyminimap";
 		enemyTree->Query( this, minimapRect );
@@ -4601,21 +4629,10 @@ void GameSession::ResetEnemies()
 
 void GameSession::ResetInactiveEnemies()
 {
-	Enemy *curr = activeEnemyList;
-	while( curr != NULL )
-	{
-		Enemy *temp = curr->next;
-		if( curr->type == Enemy::BASICEFFECT )
-		{
-			DeactivateEffect( (BasicEffect*)curr );
-		}
-
-		curr = temp;
-	}
-
 	Enemy *e = inactiveEnemyList;
 	while( e != NULL )
 	{
+		cout << "reset inactive enemy" << endl;
 		Enemy *temp = e->next;
 		e->Reset();
 		e = temp;
