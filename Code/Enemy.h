@@ -624,6 +624,7 @@ struct Monitor : Enemy
 {
 	enum MonitorType
 	{
+		NONE,
 		BLUE,
 		GREEN,
 		YELLOW,
@@ -634,13 +635,14 @@ struct Monitor : Enemy
 		Count
 	};
 
-	Monitor( GameSession *owner );
+	Monitor( GameSession *owner,
+		MonitorType mType );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	void Draw( sf::RenderTarget *target);
-	void DrawMinimap( sf::RenderTarget *target ){};
+	void DrawMinimap( sf::RenderTarget *target );
 	bool IHitPlayer();
 	void UpdateHitboxes();
 	std::pair<bool,bool> PlayerHitMe();

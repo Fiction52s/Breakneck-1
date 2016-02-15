@@ -665,7 +665,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				is >> xPos;
 				is >> yPos;
-					
+				
+				int mType;
+				is >> mType;
+				
 
 				int pathLength;
 				is >> pathLength;
@@ -701,7 +704,18 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float speed;
 				is >> speed;
 				Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				//enemy->Monitor::MonitorType
 				
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+
+				if( monitorType != Monitor::NONE )
+				{
+					cout << "creating monitor!!!" << endl;
+					enemy->monitor = new Monitor( this, monitorType );
+				}
+				
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
 				fullEnemyList.push_back( enemy );
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
@@ -3614,7 +3628,7 @@ int GameSession::Run( string fileN )
 		}
 	
 
-		cout << "enemies draw" << endl;
+		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
 
 		if( player.action != Actor::GRINDBALL )

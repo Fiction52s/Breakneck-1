@@ -14,7 +14,8 @@ using namespace sf;
 EditSession * ActorParams::session = NULL;
 
 ActorParams::ActorParams( ActorParams::PosType p_posType )
-	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ) //, ground( NULL ), groundQuantity( 420.69 ), 
+	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
+		monitorType( MonitorType::NONE )
 {
 	groundInfo = NULL;
 
@@ -791,6 +792,8 @@ std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()
 
 void PatrollerParams::WriteParamFile( ofstream &of )
 {
+	of << (int)monitorType << endl;
+
 	of << localPath.size() << endl;
 
 	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )

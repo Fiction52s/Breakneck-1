@@ -332,6 +332,16 @@ void Patroller::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead )
 	{
+		if( monitor != NULL )
+		{
+			//owner->AddEnemy( monitor );
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( COLOR_BLUE );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 		target->draw( sprite );
 	}
 	else

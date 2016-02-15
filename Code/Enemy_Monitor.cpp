@@ -14,8 +14,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Monitor::Monitor( GameSession *owner )
-	:Enemy( owner, Enemy::MONITOR )
+Monitor::Monitor( GameSession *owner, MonitorType mType )
+	:Enemy( owner, Enemy::MONITOR ), monitorType( mType )
 {
 }
 
@@ -50,6 +50,11 @@ void Monitor::UpdatePostPhysics()
 
 void Monitor::Draw( sf::RenderTarget *target)
 {
+	sf::CircleShape cs;
+	cs.setRadius( 50 );
+	cs.setFillColor( Color::Blue );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
 }
 
 void Monitor::DrawMinimap( sf::RenderTarget *target )
@@ -58,6 +63,7 @@ void Monitor::DrawMinimap( sf::RenderTarget *target )
 
 bool Monitor::IHitPlayer()
 {
+	return false;
 }
 
 void Monitor::UpdateHitboxes()
@@ -66,10 +72,12 @@ void Monitor::UpdateHitboxes()
 
 std::pair<bool,bool> Monitor::PlayerHitMe()
 {
+	return pair<bool,bool>( false, false );
 }
 
 bool Monitor::PlayerSlowingMe()
 {
+	return false;
 }
 
 void Monitor::DebugDraw(sf::RenderTarget *target)

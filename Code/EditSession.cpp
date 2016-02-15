@@ -3127,6 +3127,9 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
+					int mType;
+					is >> mType;
+
 					int pathLength;
 					is >> pathLength;
 					
@@ -3158,6 +3161,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new PatrollerParams( this, pos, globalPath, speed, loop ) );
+					a->monitorType = (ActorParams::MonitorType)mType;
 				}
 				else if( typeName == "key" )
 				{
@@ -4397,14 +4401,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
 	Panel *terrainOptionsPanel = CreateOptionsPanel( "terrain" );
 
-	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
-	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
+	
 
 	
 	ActorType *keyType = new ActorType( "key", NULL );
 
 	ActorType *greenKeyType = new ActorType( "greenkey", NULL );
 	ActorType *blueKeyType = new ActorType( "bluekey", NULL );
+
+	types["key"] = keyType;
+	types["greenkey"] = greenKeyType;
+	types["bluekey"] = blueKeyType;
+
+	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
+	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
@@ -4425,13 +4435,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	errorPopup = CreatePopupPanel( "error" );
 
 	types["patroller"] = patrollerType;
-	types["key"] = keyType;
+	
 	types["crawler"] = crawlerType;
 	types["basicturret"] = basicTurretType;
 	types["foottrap"] = footTrapType;
 	types["goal"] = goalType;
-	types["greenkey"] = greenKeyType;
-	types["bluekey"] = blueKeyType;
+	
 
 	
 	
@@ -9762,7 +9771,28 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
+				GridSelector * gs = p->gridSelectors["monitortype"];
+
+				//eventually can convert this between indexes or something to simplify when i have more types
+				string name = gs->names[gs->selectedX][gs->selectedY];
+
+				ActorParams::MonitorType monitorType;
+				if( name == "red" )
+				{
+					monitorType = ActorParams::RED;
+				}
+				else if( name == "green" )
+				{
+					monitorType = ActorParams::GREEN;
+				}
+				else if( name == "blue" )
+				{
+					monitorType = ActorParams::BLUE;
+				}
+
+
 				ActorPtr patroller( new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				patroller->monitorType = monitorType;
 				//groups["--"]->actors.push_back( patroller);
 				patroller->group = groups["--"];
 
@@ -11414,14 +11444,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
 	if( name == "patroller" )
 	{
-		Panel *p = new Panel( "patroller_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "patroller_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 3, 1, 32, 32, true, true);
+		//cout << "created................." << endl;
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -11556,6 +11592,21 @@ void EditSession::SetEnemyEditPanel()
 		p->checkBoxes["loop"]->checked = patroller->loop;
 		patrolPath = patroller->GetGlobalPath();
 		showPanel = p;
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( patroller->monitorType )
+		{
+		case ActorParams::RED:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 2;
+			break;
+		}
 	}
 	else if( name == "crawler" )
 	{
@@ -11978,7 +12029,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 	}*/
 }
-				
 
 sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 {

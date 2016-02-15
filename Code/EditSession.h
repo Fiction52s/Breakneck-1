@@ -349,6 +349,19 @@ struct ActorParams : ISelectable
 		GROUND_AND_AIR
 	};
 
+	enum MonitorType
+	{
+		NONE,
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		WHITE,
+		Count
+	};
+
 	static EditSession *session;
 	ActorParams( PosType posType );
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
@@ -392,7 +405,7 @@ struct ActorParams : ISelectable
 	
 	
 	GroundInfo *groundInfo;
-
+	MonitorType monitorType;
 	sf::VertexArray boundingQuad;
 };
 
