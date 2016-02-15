@@ -6,6 +6,7 @@
 
 
 struct Zone;
+struct Monitor;
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {
@@ -19,8 +20,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		GOAL,
 		KEY,
 		BOSS_CRAWLER,
+		MONITOR,
 		Count
 	};
+
+	
 
 	Enemy( GameSession *owner, EnemyType t );
 	//virtual void HandleEdge( Edge *e ) = 0;
@@ -55,6 +59,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	int health;
 	sf::Vector2<double> position;
 	Zone *zone;
+	Monitor *monitor;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
@@ -613,6 +618,40 @@ struct BossCrawler : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
+};
+
+struct Monitor : Enemy
+{
+	enum MonitorType
+	{
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		WHITE,
+		Count
+	};
+
+	Monitor( GameSession *owner );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw( sf::RenderTarget *target);
+	void DrawMinimap( sf::RenderTarget *target ){};
+	bool IHitPlayer();
+	void UpdateHitboxes();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void Reset();
+	void ResetEnemy();
+
+	MonitorType monitorType;
 };
 
 struct EnemyParentNode;

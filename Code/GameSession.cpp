@@ -4789,10 +4789,12 @@ PowerBar::PowerBar()
 	
 	minUse = 1;
 	
-	panelTex.loadFromFile( "lifebar.png" );
+	//panelTex.loadFromFile( "lifebar.png" );
+	panelTex.loadFromFile( "powerbarmockup.png" );
 	panelSprite.setTexture( panelTex );
-	panelSprite.setScale( 4, 4 );
-	panelSprite.setPosition( 10, 100 );
+	//panelSprite.setScale( 10, 10 );
+	panelSprite.setPosition( 0, 280 );
+	panelSprite.setColor( Color( 255, 255, 255, 150 ) );
 
 	//powerRect.setPosition( 42, 108 );
 	//powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 ) );
@@ -4850,14 +4852,17 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	diffz *= 60 * 4;
 
 	sf::RectangleShape rs;
-	rs.setPosition( 42, 108 + diffz );
-	rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
+	//rs.setPosition( 42, 108 + diffz );
+	//rs.setPosition( 0, 108 + diffz );
+	//rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
+	rs.setPosition( 0, 200 );
+	rs.setSize( Vector2f( 100, 500 ) );
 	rs.setFillColor( c );
 
 	
 
 	target->draw( panelSprite );
-	target->draw( rs );
+	//target->draw( rs );
 }
 
 bool PowerBar::Damage( int power )

@@ -470,7 +470,7 @@ Actor::Actor( GameSession *gs )
 		gravity = 1;//1.9; // 1 
 		jumpStrength = 21.5;//18;//25;//27.5; // 2 
 		doubleJumpStrength = 20;//17;//23;//26.5;
-		dashSpeed = 9.5;//12; // 3
+		dashSpeed = 9;//12; // 3
 		airDashSpeed = dashSpeed;
 		maxFallSpeedSlow = 30;//30;//100; // 4
 		maxFallSpeedFast = 60;
