@@ -20,7 +20,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		GOAL,
 		KEY,
 		BOSS_CRAWLER,
-		MONITOR,
+		GATEMONITOR,
 		Count
 	};
 
@@ -636,7 +636,8 @@ struct Monitor : Enemy
 	};
 
 	Monitor( GameSession *owner,
-		MonitorType mType );
+		MonitorType mType,
+		Enemy *e_host );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -650,10 +651,13 @@ struct Monitor : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	void SaveEnemyState();
 	void LoadEnemyState();
-	void Reset();
 	void ResetEnemy();
 
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	Enemy *host;
 	MonitorType monitorType;
+	bool respawnSpecial;
 };
 
 struct EnemyParentNode;

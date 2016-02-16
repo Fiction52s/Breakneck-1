@@ -284,6 +284,7 @@ void GameSession::UpdateEnemiesDraw()
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
+	//	cout << "draw" << endl;
 		current->Draw( preScreenTex );
 		current = current->next;
 	}
@@ -358,6 +359,13 @@ void GameSession::RemoveEnemy( Enemy *e )
 
 	if( e->type != e->BASICEFFECT )
 	{
+		if( e->monitor != NULL )
+		{
+			cout << "adding monitor!" << endl;
+			e->monitor->position = e->position;
+			AddEnemy( e->monitor );
+		}
+
 		cout << "adding an inactive enemy!" << endl;
 		if( inactiveEnemyList == NULL )
 		{
@@ -711,7 +719,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				if( monitorType != Monitor::NONE )
 				{
 					cout << "creating monitor!!!" << endl;
-					enemy->monitor = new Monitor( this, monitorType );
+					enemy->monitor = new Monitor( this, monitorType, enemy );
 				}
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
@@ -2883,6 +2891,7 @@ int GameSession::Run( string fileN )
 
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
+			Enemy *monitorList = NULL;
 			if( k || levelReset || player.dead || ( currInput.back && !prevInput.back ) )
 			{
 				if( player.record > 1 )
@@ -2912,7 +2921,22 @@ int GameSession::Run( string fileN )
 				else
 				{
 					//cout << "reset actives" << endl;
+
+
 					Enemy *curr = activeEnemyList;
+					/*while( curr != NULL )
+					{
+						if( curr->type == Enemy::GATEMONITOR )
+						{
+							Monitor *mon = (Monitor*)curr;
+							mon->respawnSpecial = true;
+						}
+						curr = curr->next;
+
+					}
+
+
+					curr = activeEnemyList;*/
 					while( curr != NULL )
 					{
 						Enemy *temp = curr->next;
@@ -2922,8 +2946,23 @@ int GameSession::Run( string fileN )
 						}
 						else
 						{
-						//	cout << "restting: " << (int)curr->type << endl;
 							curr->Reset();
+							if( curr->type == Enemy::GATEMONITOR )
+							{
+								Monitor *mon = (Monitor*)curr;
+								mon->respawnSpecial = true;
+								if( monitorList == NULL )
+								{
+									monitorList = curr;
+								}
+								else
+								{
+									curr->next = monitorList;
+									monitorList = curr;
+								}
+							}
+						//	cout << "restting: " << (int)curr->type << endl;
+							
 						}
 
 						curr = temp;
@@ -2935,6 +2974,20 @@ int GameSession::Run( string fileN )
 					//cout << "dont resetting actives" << endl;
 
 					ResetInactiveEnemies();
+
+					//put the live monitors back out there
+					while( monitorList != NULL )
+					{
+						Enemy *tempNext = monitorList->next;
+						monitorList->next = NULL;
+						//cout << "ADDING ENEMY MONITORLIST" << endl;
+						Monitor *mon = (Monitor*)monitorList;
+						if( mon->respawnSpecial )
+						{
+							AddEnemy( monitorList );
+						}
+						monitorList = tempNext;
+					}
 					
 					//cout << "also done with inactives" << endl;
 
@@ -3673,7 +3726,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -4643,13 +4696,66 @@ void GameSession::ResetEnemies()
 
 void GameSession::ResetInactiveEnemies()
 {
+	Enemy *monitorList = NULL;
+
 	Enemy *e = inactiveEnemyList;
+	
+	while( e != NULL )
+	{
+		if( e->monitor != NULL )
+		{
+			e->monitor->respawnSpecial = true;
+		}
+		e = e->next;
+	}
+
+	e = inactiveEnemyList;
 	while( e != NULL )
 	{
 		cout << "reset inactive enemy" << endl;
 		Enemy *temp = e->next;
+
+		
 		e->Reset();
+		if( e->type == Enemy::GATEMONITOR )
+		{
+			if( monitorList == NULL )
+			{
+				monitorList = e;
+			}
+			else
+			{
+				e->next = monitorList;
+				monitorList = e;
+			}
+		}
+		else
+		{
+			if( e->monitor != NULL )
+			{
+				Monitor *mon = (Monitor*)e;
+				mon->respawnSpecial = false;
+			}
+		}
+
 		e = temp;
+	}
+
+	while( monitorList != NULL )
+	{
+		Enemy *tempNext = monitorList->next;
+		monitorList->next = NULL;
+		Monitor *mon = (Monitor*)monitorList;
+		//if  
+		if( mon->respawnSpecial ) //the host is already dead
+		{
+			AddEnemy( monitorList );
+		}
+		else //host is going to be spawned again
+		{
+			
+		}
+		monitorList = tempNext;
 	}
 
 	inactiveEnemyList = NULL;
