@@ -2984,7 +2984,7 @@ int GameSession::Run( string fileN )
 						Monitor *mon = (Monitor*)monitorList;
 						if( mon->respawnSpecial )
 						{
-							cout << "adding in this thing other: " << mon << endl;
+							//cout << "adding in this thing other: " << mon << endl;
 							AddEnemy( monitorList );
 						}
 						monitorList = tempNext;
@@ -4713,7 +4713,7 @@ void GameSession::ResetInactiveEnemies()
 	e = inactiveEnemyList;
 	while( e != NULL )
 	{
-		cout << "reset inactive enemy" << endl;
+		//cout << "reset inactive enemy" << endl;
 		Enemy *temp = e->next;
 
 		
@@ -4751,7 +4751,7 @@ void GameSession::ResetInactiveEnemies()
 		//if  
 		if( mon->respawnSpecial ) //the host is already dead
 		{
-			cout << "adding in this thing" << endl;
+			//cout << "adding in this thing" << endl;
 			AddEnemy( monitorList );
 		}
 		else //host is going to be spawned again
