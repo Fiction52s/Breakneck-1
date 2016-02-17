@@ -201,7 +201,6 @@ GameSession::~GameSession()
 	delete itemTree;
 }
 
-
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {

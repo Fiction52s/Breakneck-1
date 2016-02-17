@@ -451,8 +451,9 @@ void ModifyGateAction::Undo()
 }
 
 //doesn't make a copy of the brush!
-MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform )
-	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform )
+MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
+	list<PointMoveInfo> &points )
+	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points )
 {
 	movingBrush = *p_brush;
 }
@@ -471,6 +472,14 @@ void MoveBrushAction::Perform()
 	else
 	{
 		movingBrush.Move( delta );
+
+		for( list<PointMoveInfo>::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+		{
+			TerrainPolygon *poly = (*it).poly;
+
+			(*it).point->pos += (*it).delta;
+			//put a function here soon
+		}
 	}
 }
 
@@ -482,6 +491,14 @@ void MoveBrushAction::Undo()
 	performed = false;
 
 	movingBrush.Move( -delta );
+
+	for( list<PointMoveInfo>::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+	{
+		TerrainPolygon *poly = (*it).poly;
+
+		(*it).point->pos -= (*it).delta;
+		//put a function here soon
+	}
 }
 
 LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )

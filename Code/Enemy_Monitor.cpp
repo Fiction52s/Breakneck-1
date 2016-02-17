@@ -20,7 +20,7 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 {
 	host = e_host;
 	double radius = 60;
-
+	respawnSpecial = true; //doesnt matter. set in frame
 	
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -29,10 +29,6 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 	hurtBody.offset.y = 0;
 	hurtBody.rw = radius;
 	hurtBody.rh = radius;
-
-
-	
-	
 	
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;

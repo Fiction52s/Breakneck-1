@@ -12,6 +12,7 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
+
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::PATROLLER ), dead( false ), deathFrame( 0 )
 {

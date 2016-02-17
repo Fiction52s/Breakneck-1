@@ -435,8 +435,8 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		steepSlideGravFactor = .2;
-		steepSlideFastGravFactor = .3;
+		steepSlideGravFactor = .32;
+		steepSlideFastGravFactor = .4;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 20;

@@ -1458,7 +1458,24 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	if( va != NULL )
 		rt->draw( *va );
 
-	if( selected )
+
+	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		CircleShape cs;
+		cs.setRadius( 8 * zoomMultiple );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+
+		if( curr->selected )
+			cs.setFillColor( Color::Red );
+		else
+			cs.setFillColor( Color::Green );
+
+		cs.setPosition( curr->pos.x, curr->pos.y );
+		rt->draw( cs );
+	}
+
+	//always do this now for awhile
+	if( false )
 	{
 		if( !isGrassShowing )
 		{
@@ -1713,6 +1730,8 @@ void TerrainPolygon::ClearPoints()
 	pointEnd = NULL;
 	numPoints = 0;
 }
+
+//void TerrainPolygon::MovePoint(
 
 bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 {
@@ -5064,7 +5083,59 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											}
 										}
 
-									if( emptysp )
+									//concerning selecting a point
+									if( true )
+									{
+										double rad = 8 * zoomMultiple;
+										for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+										{
+											//if its not even close dont check
+											if( !(*it)->TempAABB().intersects( Rect<int>( worldPos.x - rad, worldPos.y - rad, rad * 2,
+												rad * 2 ) ) )
+											{
+												continue;
+											}
+
+											TerrainPoint *tp = (*it)->pointStart;
+											while( tp != NULL )
+											{
+												V2d tpPos( tp->pos.x, tp->pos.y );
+												double dist = length( tpPos - worldPos );
+												if( dist <= rad )
+												{
+													cout << "close enough" << endl;
+													if( !tp->selected )
+													{
+														cout << "selecting a point!" << endl;
+														//select a point
+														selectedPoints.push_back( PointMoveInfo( (*it).get(), tp ) );
+														tp->selected = true;
+													}
+													else
+													{
+														//deselect a point
+														for( list<PointMoveInfo>::iterator it = selectedPoints.begin();
+															it != selectedPoints.end(); ++it )
+														{
+															if( (*it).point == tp )
+															{
+																selectedPoints.erase( it );
+																break;
+															}
+														}
+														tp->selected = false;
+													}
+													
+													//selectedPoints.push_back( tp );
+													
+												}
+												tp = tp->next;
+											}
+										}
+									}
+
+									//if( emptysp )
+									if( false )
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
 										if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
@@ -5488,7 +5559,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( editStartMove )
 								{
 									bool done = false;
-									bool single = selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+									bool single = selectedBrush->objects.size() == 1 
+										&& selectedPoints.size() == 0
+										&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
 									if( single )
 									{
 										ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
@@ -5505,7 +5578,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											else
 											{
 												Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
-												Action *action = new MoveBrushAction( selectedBrush, delta, false );
+												Action *action = new MoveBrushAction( selectedBrush, delta, false, list<PointMoveInfo>() );
 
 												action->Perform();
 
@@ -5522,7 +5595,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									if( !done )
 									{
 										Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
-										Action *action = new MoveBrushAction( selectedBrush, delta, false );
+										Action *action = new MoveBrushAction( selectedBrush, delta, false, selectedPoints );
 
 										action->Perform();
 

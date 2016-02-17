@@ -139,10 +139,6 @@ struct TerrainBrush
 	
 };
 
-
-
-
-
 struct TerrainPolygon : ISelectable
 {
 	TerrainPolygon( sf::Texture *grassTex );
@@ -152,6 +148,8 @@ struct TerrainPolygon : ISelectable
 	void CopyPoints( TerrainPoint *&start,
 		TerrainPoint *&end );
 
+	void MovePoint( sf::Vector2i &delta,
+		TerrainPoint *tp );
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
 	int numPoints;
@@ -262,10 +260,7 @@ struct TerrainPolygon : ISelectable
 
 };
 
-
-
 typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
-
 
 struct GateInfo
 {
@@ -309,8 +304,6 @@ struct StaticLight
 	sf::Vector2i position;
 	void WriteFile( std::ofstream &of );
 };
-
-
 
 struct ActorType
 {
@@ -411,7 +404,6 @@ struct ActorParams : ISelectable
 
 typedef boost::shared_ptr<ActorParams> ActorPtr;
 typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
-
 
 struct PatrollerParams : public ActorParams
 {
@@ -530,8 +522,6 @@ struct PlayerParams : public ActorParams
 		boost::shared_ptr<ISelectable> & select );
 };
 
-
-
 //no params for goal and foottrap atm
 struct ActorGroup
 {
@@ -545,6 +535,20 @@ struct ActorGroup
 struct Brush;
 struct Action;
 struct CompoundAction;
+
+struct PointMoveInfo
+{
+	PointMoveInfo( TerrainPolygon *pol,
+		TerrainPoint *poi )
+		:poly( pol ), 
+		 point( poi ),
+		 delta( 0, 0 )
+	{}
+	TerrainPoint *point;
+	//std::list<double> enemyEdgeQuantities;
+	TerrainPolygon *poly;
+	sf::Vector2i delta;
+};
 
 struct EditSession : GUIHandler
 {
@@ -728,8 +732,22 @@ struct EditSession : GUIHandler
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
 
+
+
+
+	//----------------------
+
+
+
 	Brush *selectedBrush;
-	std::list<TerrainPoint*> selectedPoints;
+	std::list<PointMoveInfo> selectedPoints;
+	
+
+
+
+
+	//----------------------
+
 	CompoundAction *moveAction;
 
 	bool moveActive;
@@ -808,7 +826,5 @@ struct EditSession : GUIHandler
 	Emode mode;
 	
 };
-
-
 
 #endif

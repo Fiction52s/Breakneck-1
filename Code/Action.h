@@ -127,14 +127,19 @@ struct AddToPolygonAction : Action
 
 //--NOTE: DOESNT ACTUALLY MOVE BRUSH
 //IF PARAMETER IS SET
+
+
+
 struct MoveBrushAction : Action
 {
 	MoveBrushAction( Brush *brush, sf::Vector2i delta,
-		bool moveOnFirstPerform );
+		bool moveOnFirstPerform,
+		std::list<PointMoveInfo> &points);
 	void Perform();
 	void Undo();
 
 	Brush movingBrush;
+	std::list<PointMoveInfo> movingPoints;
 	bool moveOnFirstPerform;
 	sf::Vector2i delta;
 };
