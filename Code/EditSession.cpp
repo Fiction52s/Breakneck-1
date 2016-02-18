@@ -30,6 +30,7 @@ const double EditSession::PRIMARY_LIMIT = .999;
 double EditSession::zoomMultiple = 1;
 EditSession * TerrainPolygon::session = NULL;
 
+
 TerrainBrush::TerrainBrush( PolyPtr poly )
 	:pointStart(NULL),pointEnd(NULL),lines( sf::Lines, poly->numPoints * 2 ), numPoints( 0 )
 {

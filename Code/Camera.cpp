@@ -177,9 +177,10 @@ void Camera::Update( Actor *player )
 
 	float temp;
 	V2d f;
+	double kk = 18.0;
 	if( player->ground != NULL )
 	{
-		temp = abs(player->groundSpeed) / 20.0;
+		temp = abs(player->groundSpeed) / kk;
 		f = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed * 10.0;
 		//if( abs(temp - zoomFactor) > 1 )
 		if( player->reversed )
@@ -188,7 +189,7 @@ void Camera::Update( Actor *player )
 	}
 	else
 	{
-		temp = length( player->velocity ) / 20.0;
+		temp = length( player->velocity ) / kk;
 		//temp = abs( player->velocity.x ) / 20.0;
 		//temp = zoomFactor;
 		f = player->velocity * 10.0;
