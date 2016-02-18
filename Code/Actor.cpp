@@ -1031,6 +1031,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						cout << "this steep 2" << endl;
 						if( groundSpeed < 0 )
 							facingRight = true;
 						else 
@@ -1053,6 +1054,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						cout << "this steep 3" << endl;
 						if( groundSpeed < 0 )
 							facingRight = true;
 						else 
@@ -2078,7 +2080,7 @@ void Actor::UpdatePrePhysics()
 
 			if( reversed )
 			{
-				if( -gNorm.y > -steepThresh )
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
@@ -2096,10 +2098,11 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				if( gNorm.y > -steepThresh )
+				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
+						//cout << "steep clzzzimb" << endl;
 						action = STEEPCLIMB;
 						frame = 0;
 						break;
@@ -2797,6 +2800,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
+					cout << "is it really this wtf" << endl;
 					action = LAND2;
 					frame = 0;
 					//not steep
@@ -2970,6 +2974,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
+					cout << "blahzzz" << endl;
 					action = LAND2;
 					frame = 0;
 					//not steep
@@ -5817,11 +5822,11 @@ V2d Actor::UpdateReversePhysics()
 									}
 
 									if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "4 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}
+									{
+										movementVec += currMovingTerrain->vel / (double)slowMultiple;
+										cout << "4 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+											", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+									}
 									cout << "airborne 3" << endl;
 									leftGround = true;
 									action = JUMP;
@@ -6802,7 +6807,10 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
-					cout << "airborne 5" << endl;
+						ground = next;
+						q = length( ground->v1 - ground->v0 );	
+						cout << "airborne 5" << endl;
+					/*cout << "airborne 5" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
@@ -6818,7 +6826,7 @@ void Actor::UpdatePhysics()
 						rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
-						movingGround = NULL;
+						movingGround = NULL;*/
 						//bounceEdge = NULL;
 						//grindEdge = NULL;
 					}
@@ -6852,6 +6860,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
+									cout << "this steep" << endl;
 									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
@@ -6863,6 +6872,7 @@ void Actor::UpdatePhysics()
 							}
 							else if( e0n.x > 0 )
 							{
+								cout << "this steepclimb" << endl;
 								facingRight = false;
 								action = STEEPCLIMB;
 								frame = 0;
@@ -6945,8 +6955,11 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
+						ground = next;
+						q = 0;
+						cout << "airborne 13" << endl;
 						//cout << "leave right 1" << endl;
-						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+						/*velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y -= .01;
@@ -6961,7 +6974,8 @@ void Actor::UpdatePhysics()
 						rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
-						movingGround = NULL;
+						movingGround = NULL;*/
+						
 						//break;
 					}
 					else
@@ -6994,6 +7008,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
+									cout << "this steep 1" << endl;
 									//cout << "slidin" << endl;
 									facingRight = true;
 									action = STEEPSLIDE;
@@ -7218,13 +7233,130 @@ void Actor::UpdatePhysics()
 				{
 					if( movement > 0 )
 					{
-						q = groundLength;
+
+						cout << "checking for airborne" << endl;
 						
+						
+						double yDist = abs( gNormal.x ) * groundSpeed;
+						if( gNormal.x < 0 
+							&& e1n.y < 0 
+							&& abs( e1n.x ) < wallThresh 
+							&& e1n.x >= 0 
+							&& yDist > slopeLaunchMinSpeed
+							&& currInput.LUp() )
+						{
+
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+							movementVec.y -= .01;
+							if( movementVec.x <= .01 )
+							{
+								movementVec.x = .01;
+							}
+							cout << "real slope jump A" << endl;
+							leftGround = true;
+							action = JUMP;
+							frame = 1;
+							rightWire->UpdateAnchors( V2d( 0, 0 ) );
+							leftWire->UpdateAnchors( V2d( 0, 0 ) );
+							ground = NULL;
+							movingGround = NULL;
+
+							break;
+						}
+						else
+						{
+							if( gNormal.y > -steepThresh && e1n.x >= 0
+								&& abs( e1n.x ) < wallThresh && groundSpeed > 5 )
+							{
+								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+								movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+								movementVec.y -= .01;
+								if( movementVec.x <= .01 )
+								{
+									movementVec.x = .01;
+								}
+								cout << "real slope jump D" << endl;
+								leftGround = true;
+								action = JUMP;
+								frame = 1;
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								ground = NULL;
+								movingGround = NULL;
+								break;
+							}
+							else
+							{
+								q = groundLength;
+							}
+							
+						}
 						//here is where i really lift off
 					}
 					else
 					{
-						q = 0;
+						double yDist = abs( gNormal.x ) * groundSpeed;
+						if( gNormal.x > 0 
+							&& e1n.y < 0 
+							&& abs( e1n.x ) < wallThresh 
+							&& e1n.x <= 0 
+							&& yDist > slopeLaunchMinSpeed 
+							&& currInput.LUp() )
+						{
+
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+							movementVec.y -= .01;
+							if( movementVec.x <= .01 )
+							{
+								movementVec.x = .01;
+							}
+							cout << "real slope jump B" << endl;
+							leftGround = true;
+							action = JUMP;
+							frame = 1;
+							rightWire->UpdateAnchors( V2d( 0, 0 ) );
+							leftWire->UpdateAnchors( V2d( 0, 0 ) );
+							ground = NULL;
+							movingGround = NULL;
+							break;
+						}
+						else
+						{
+							if( gNormal.y > -steepThresh && e0n.x <= 0
+								&& abs( e0n.x ) < wallThresh && groundSpeed < -5 )
+							{
+								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+								movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+								movementVec.y -= .01;
+								if( movementVec.x <= .01 )
+								{
+									movementVec.x = .01;
+								}
+								cout << "real slope jump C" << endl;
+								leftGround = true;
+								action = JUMP;
+								frame = 1;
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								ground = NULL;
+								movingGround = NULL;
+								break;
+							}
+							else
+							{
+								q = 0;
+								cout << "setting 0" << endl;
+							}
+							
+							
+						}
+						
 					}
 					movement = extra;
 					m -= extra;
@@ -7330,7 +7462,7 @@ void Actor::UpdatePhysics()
 							leftGround = true;
 							ground = NULL;
 							movingGround = NULL;
-							//cout << "leaving ground RIGHT!!!!!!!!" << endl;
+							cout << "leaving ground RIGHT!!!!!!!!" << endl;
 						}
 					}
 					else if( groundSpeed < 0 )
@@ -7410,6 +7542,7 @@ void Actor::UpdatePhysics()
 							leftGround = true;
 
 							ground = NULL;
+							cout << "not sure leaving ground left" << endl;
 							movingGround = NULL;
 						}
 					}
@@ -8291,6 +8424,10 @@ void Actor::UpdatePhysics()
 		}
 	}
 
+	if( ground == NULL )
+	{
+		cout << "not grounded now" << endl;
+	}
 	PhysicsResponse();
 }
 
@@ -8456,6 +8593,7 @@ void Actor::PhysicsResponse()
 			{
 				if( currInput.LLeft() || currInput.LRight() )
 				{
+					cout << "blahaaa" << endl;
 					action = LAND2;
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
 					leftWire->UpdateAnchors(V2d( 0, 0 ));
@@ -8463,6 +8601,7 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
+					cout << "blahbbb" << endl;
 					//cout << "l" << endl;
 					action = LAND;
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
@@ -8522,6 +8661,7 @@ void Actor::PhysicsResponse()
 			
 			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
 			{
+				cout << "here no: " << action << endl;
 				action = LAND2;
 				frame = 0;
 			}
@@ -8746,7 +8886,7 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-	
+	cout << "action: " << action << endl;
 	test = false;
 
 
