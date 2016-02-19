@@ -82,7 +82,9 @@ Actor::Actor( GameSession *gs )
 		playerHitSound.setBuffer( playerHitBuffer );
 		playerHitSound.setVolume( 0 );
 
-		if( !dashStartBuffer.loadFromFile( "dashstart.ogg" ) )
+		//if( !dashStartBuffer.loadFromFile( "dashstart.ogg" ) )
+		//if( !dashStartBuffer.loadFromFile( "a_dash.wav" ) )
+		if( !dashStartBuffer.loadFromFile( "a_dash.ogg" ) )
 		{
 			assert( 0 && "failed to load test dashstart noise" );
 		}
@@ -435,8 +437,8 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		steepSlideGravFactor = .32;
-		steepSlideFastGravFactor = .4;
+		steepSlideGravFactor = .4;
+		steepSlideFastGravFactor = .5;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 20;
@@ -594,7 +596,7 @@ Actor::Actor( GameSession *gs )
 		
 
 
-		bool noPowers = true;
+		bool noPowers = false;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
@@ -2974,7 +2976,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
-					cout << "blahzzz" << endl;
+					//cout << "blahzzz" << endl;
 					action = LAND2;
 					frame = 0;
 					//not steep
@@ -3414,7 +3416,7 @@ void Actor::UpdatePrePhysics()
 					
 					if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
 					{
-						cout << "this!" << endl;
+						//cout << "this!" << endl;
 						if( groundSpeed > 0 )
 						{
 							//velocity.y /= 2;
@@ -3471,7 +3473,7 @@ void Actor::UpdatePrePhysics()
 		}
 		else
 		{
-			cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
+			//cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
 			if( hasDoubleJump )
 			{
 				if( holdJump && velocity.y >= -8 )
@@ -3501,7 +3503,7 @@ void Actor::UpdatePrePhysics()
 
 			if( framesInAir > 1 || velocity.y < 0 )
 				AirMovement();
-			cout << "vel at end: " << velocity.x << ", " << velocity.y << endl;
+			//cout << "vel at end: " << velocity.x << ", " << velocity.y << endl;
 			//cout << "midvel : " << velocity.x << ", " << velocity.y << endl;	
 			/*if( currInput.LLeft() )
 			{
@@ -4385,6 +4387,8 @@ void Actor::UpdatePrePhysics()
 			{
 				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
+
+			cout << "groundspeed: " << groundSpeed << endl;
 			
 			break;
 		}
@@ -7267,7 +7271,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
-							if( gNormal.y > -steepThresh && e1n.x >= 0
+							if( gNormal.x < 0 && gNormal.y > -steepThresh && e1n.x >= 0
 								&& abs( e1n.x ) < wallThresh && groundSpeed > 5 )
 							{
 								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
@@ -7278,6 +7282,7 @@ void Actor::UpdatePhysics()
 								{
 									movementVec.x = .01;
 								}
+								//why did i put these in again? from steep slope right
 								cout << "real slope jump D" << endl;
 								leftGround = true;
 								action = JUMP;
@@ -7327,7 +7332,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
-							if( gNormal.y > -steepThresh && e0n.x <= 0
+							if( gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0
 								&& abs( e0n.x ) < wallThresh && groundSpeed < -5 )
 							{
 								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
@@ -7947,7 +7952,7 @@ void Actor::UpdatePhysics()
 				}				
 				
 				double blah = length( velocity ) - length( minContact.resolution );
-				cout << "blah: " << blah << endl;
+				//cout << "blah: " << blah << endl;
 				//wish i knew what this one meant
 				//extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
 				//extraVel = (length( velocity ) - length( minContact.resolution )) * extraDir;
@@ -7956,12 +7961,13 @@ void Actor::UpdatePhysics()
 					//extraVel = -extraVel;
 				}
 
+				//might still need some more work
 				extraVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
 				
 				//extraVel = V2d( 0, 0 );
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-				cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-				cout << "newvel: " << newVel.x << ", " << newVel.y << endl;
+				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+				//cout << "newvel: " << newVel.x << ", " << newVel.y << endl;
 				//newVel = extraDir * length( velocity );//extraVel;
 				//newVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
 				//extraVel = newVel;
@@ -8202,8 +8208,13 @@ void Actor::UpdatePhysics()
 				
 				double groundLength = length( ground->v1 - ground->v0 );
 
+				V2d gNorm = ground->Normal();
+
 				V2d testVel = velocity;
 
+				//might use those steep slope things again to make sure he doesnt climb too fast
+				//maybe adjust these for frames in the air. don't let you touch the edge the second you jump
+				//so that you let your velocity die down a little
 				if( testVel.y > 20 )
 				{
 					testVel.y *= .7;
@@ -8212,6 +8223,19 @@ void Actor::UpdatePhysics()
 				//	cout << "alongVel: " << alongVel.x << ", " << alongVel.y << endl;
 					//testVel.y *= .5;
 				}
+				/*else if( gNorm.y < 0 && gNorm.y > -steepThresh )
+				{
+					if( testVel.y < -30 )
+					{
+						cout << "severely reducing " << endl;
+						testVel.y = -5;
+						
+					}
+				}
+				else if( gNorm.y > 0 && gNorm.y < steepThresh )
+				{
+					cout << "reversed steep case" << endl;
+				}*/
 				else if( testVel.y < -30 )
 				{
 					//testVel.y = -30;
@@ -8222,8 +8246,8 @@ void Actor::UpdatePhysics()
 
 				groundSpeed = dot( testVel, alongVel );//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				//cout << "setting groundSpeed: " << groundSpeed << endl;
-				V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-				
+				//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
+				gNorm = ground->Normal();
 
 				//if( gNorm.y <= -steepThresh )
 				{
@@ -8424,10 +8448,10 @@ void Actor::UpdatePhysics()
 		}
 	}
 
-	if( ground == NULL )
+	/*if( ground == NULL )
 	{
 		cout << "not grounded now" << endl;
-	}
+	}*/
 	PhysicsResponse();
 }
 
@@ -8593,7 +8617,7 @@ void Actor::PhysicsResponse()
 			{
 				if( currInput.LLeft() || currInput.LRight() )
 				{
-					cout << "blahaaa" << endl;
+					//cout << "blahaaa" << endl;
 					action = LAND2;
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
 					leftWire->UpdateAnchors(V2d( 0, 0 ));
@@ -8601,7 +8625,7 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
-					cout << "blahbbb" << endl;
+					//cout << "blahbbb" << endl;
 					//cout << "l" << endl;
 					action = LAND;
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
@@ -8661,7 +8685,7 @@ void Actor::PhysicsResponse()
 			
 			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
 			{
-				cout << "here no: " << action << endl;
+				cout << "here no: " << action << ", " << offsetX << endl;
 				action = LAND2;
 				frame = 0;
 			}
@@ -8886,7 +8910,7 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-	cout << "action: " << action << endl;
+	//cout << "action: " << action << endl;
 	test = false;
 
 
@@ -9885,13 +9909,14 @@ void Actor::UpdatePostPhysics()
 	case DASH:
 		{
 			
-			if( frame == 0 )
+			if( frame == 0 && currInput.B && !prevInput.B )
 			{
 				dashStartSound.stop();
 				//if( slowMultiple != 1)
 				//	dashStartSound.setPitch( .2 );
 				//else
 				//	dashStartSound.setPitch( 1 );
+				cout << "playing dash sound" << endl;
 				dashStartSound.play();
 			}
 

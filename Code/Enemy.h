@@ -660,6 +660,45 @@ struct Monitor : Enemy
 	bool respawnSpecial;
 };
 
+struct HealthFly : Enemy
+{
+	enum FlyType
+	{
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		WHITE,
+		Count
+	};
+
+	Monitor( GameSession *owner,
+		MonitorType mType,
+		Enemy *e_host );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw( sf::RenderTarget *target);
+	void DrawMinimap( sf::RenderTarget *target );
+	bool IHitPlayer();
+	void UpdateHitboxes();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	Enemy *host;
+	MonitorType monitorType;
+	bool respawnSpecial;
+};
+
 struct EnemyParentNode;
 
 
