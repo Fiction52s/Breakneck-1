@@ -5110,13 +5110,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													{
 														cout << "selecting a point!" << endl;
 														//select a point
-														selectedPoints.push_back( PointMoveInfo( (*it).get(), tp ) );
-														//pointPolyList.insert( tp );
-														bool hasPoly = false;
-														for( list<TerrainPolygon*>::iterator pit = pointPolyList.begin();
-															pit != pointPolyList.end(); ++pit )
+														selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
+														
+
+														/*bool hasPoly = false;
+														for( PointMap::iterator pit = selectedPoints.begin();
+															pit != selectedPoints.end(); ++pit )
 														{
-															if( (*pit) == (*it).get() )
+															if( (*pit).first == (*it).get() )
 															{
 																hasPoly = true;
 																break;
@@ -5125,7 +5126,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														if( !hasPoly )
 														{
 															pointPolyList.push_back( (*it).get() );
-														}
+														}*/
 														tp->selected = true;
 														emptysp = false;
 													}
@@ -5133,18 +5134,27 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													{
 														//deselect a point
 														TerrainPolygon *removedPoly;
-														for( list<PointMoveInfo>::iterator it = selectedPoints.begin();
+														PointMap::iterator tempIt;
+														for( PointMap::iterator it = selectedPoints.begin();
 															it != selectedPoints.end(); ++it )
 														{
-															if( (*it).point == tp )
+															list<PointMoveInfo> &pList = (*it).second;
+															for( list<PointMoveInfo>::iterator pit = pList.begin();
+																pit != pList.end(); ++pit )
 															{
-																removedPoly = (*it).poly;
-																selectedPoints.erase( it );
+																tempIt = it;
+																//removedPoly = (*it).poly;
+																pList.erase( pit );
 																break;
 															}
 														}
 
-														bool hasPoly = false;
+														if( (*tempIt).second.empty() )
+														{
+															selectedPoints.erase( tempIt );
+														}
+
+														/*bool hasPoly = false;
 														for( list<PointMoveInfo>::iterator it = selectedPoints.begin();
 															it != selectedPoints.end(); ++it )
 														{
@@ -5158,7 +5168,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														if( !hasPoly )
 														{
 															pointPolyList.remove( removedPoly );
-														}
+														}*/
 
 														tp->selected = false;
 														emptysp = false;
@@ -5620,7 +5630,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											else
 											{
 												Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
-												Action *action = new MoveBrushAction( selectedBrush, delta, false, list<PointMoveInfo>() );
+												Action *action = new MoveBrushAction( selectedBrush, delta, false, PointMap() );
 
 												action->Perform();
 
@@ -5637,17 +5647,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									if( !done )
 									{
 										//here the delta being subtracted is the points original position
-										for( list<PointMoveInfo>::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+										for( PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit )
 										{
-											(*it).delta = (*it).point->pos - (*it).delta;
+											list<PointMoveInfo> &pList = (*mit).second;
+											for( list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it )
+											{
+												(*it).delta = (*it).point->pos - (*it).delta;
+											}
 										}
 
-										for( list<TerrainPolygon*>::iterator it = pointPolyList.begin(); it != pointPolyList.end(); ++it )
-										{
-											(*it)->SoftReset();
-											(*it)->Finalize();
-											(*it)->movingPointMode = false;
-										}
+									//	for( PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit )
+									//	{
+											//(*mit).first->movingPointMode = false;
+										//}
 
 										Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
 										Action *action = new MoveBrushAction( selectedBrush, delta, false, selectedPoints );
@@ -8022,11 +8034,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					Vector2i pos( worldPos.x, worldPos.y );
 					Vector2i delta = pos - editMouseGrabPos;
 
-
-					for( list<PointMoveInfo>::iterator it = selectedPoints.begin(); it != selectedPoints.end();
-						++it )
+					for( PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit )
 					{
-						(*it).delta = (*it).point->pos;
+						list<PointMoveInfo> &pList = (*mit).second;
+						for( list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it )
+						{
+							(*it).delta = (*it).point->pos;
+						}
 					}
 
 					moveAction = selectedBrush->UnAnchor();
@@ -10466,13 +10480,15 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	pointGrabPos = Vector2i( worldPos.x, worldPos.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
 	bool validMove = true;
 
-	int numSelectedPolys = pointPolyList.size();
+	//num polys
+	int numSelectedPolys = selectedPoints.size();
 	Vector2i** allDeltas = new Vector2i*[numSelectedPolys];
 	int allDeltaIndex = 0;
-	for( list<TerrainPolygon*>::iterator it = pointPolyList.begin();
-			it != pointPolyList.end(); ++it )
+	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+	//for( list<TerrainPolygon*>::iterator it = pointPolyList.begin();
+	//		it != pointPolyList.end(); ++it )
 	{
-		TerrainPolygon &poly = *(*it);
+		TerrainPolygon &poly = *((*it).first);
 
 		int polySize = poly.numPoints;
 		Vector2i *deltas = new Vector2i[polySize];
@@ -10678,20 +10694,21 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	if( validMove )
 	{
 		allDeltaIndex = 0;
-		for( list<TerrainPolygon*>::iterator it = pointPolyList.begin();
-			it != pointPolyList.end(); ++it )
+		for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+		//for( list<TerrainPolygon*>::iterator it = pointPolyList.begin();
+		//	it != pointPolyList.end(); ++it )
 		{
-
+			TerrainPolygon *poly = (*it).first;
 			bool affected = false;
 
-			TerrainPoint *points = (*it)->pointStart;
+			TerrainPoint *points = poly->pointStart;
 			int deltaIndex = 0;
 			for( TerrainPoint *curr = points; curr != NULL; curr = curr->next )
 			{
 				TerrainPoint *prev;
-				if( curr == (*it)->pointStart )
+				if( curr == poly->pointStart )
 				{
-					prev = (*it)->pointEnd;
+					prev = poly->pointEnd;
 				}
 				else
 				{
@@ -10711,9 +10728,9 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 						curr->gate->UpdateLine();
 					}
 
-					if( (*it)->enemies.count( curr ) > 0 )
+					if( poly->enemies.count( curr ) > 0 )
 					{
-						list<ActorPtr> &enemies = (*it)->enemies[curr];
+						list<ActorPtr> &enemies = poly->enemies[curr];
 						for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
 						{
 							//(*ait)->UpdateGroundedSprite();
@@ -10729,14 +10746,14 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 				++deltaIndex;
 			}
 
-			(*it)->UpdateBounds();
+			poly->UpdateBounds();
 
 			if( affected )
 			{
-				(*it)->movingPointMode = true;
+				poly->movingPointMode = true;
 
-				for( map<TerrainPoint*,list<ActorPtr>>::iterator mit = (*it)->enemies.begin();
-					mit != (*it)->enemies.end(); ++mit )
+				for( map<TerrainPoint*,list<ActorPtr>>::iterator mit = poly->enemies.begin();
+					mit != poly->enemies.end(); ++mit )
 				{
 					list<ActorPtr> &enemies = (*mit).second;//(*it)->enemies[curr];
 					for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )

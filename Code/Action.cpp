@@ -452,7 +452,7 @@ void ModifyGateAction::Undo()
 
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
-	list<PointMoveInfo> &points )
+	PointMap &points )
 	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points )
 {
 	movingBrush = *p_brush;
@@ -473,12 +473,17 @@ void MoveBrushAction::Perform()
 	{
 		movingBrush.Move( delta );
 
-		for( list<PointMoveInfo>::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+		for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
 		{
-			TerrainPolygon *poly = (*it).poly;
+			list<PointMoveInfo> &pList = (*it).second;
+			for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+			{
+				(*pit).point->pos += (*pit).delta;
+			}
 
-			(*it).point->pos += (*it).delta;
-			//put a function here soon
+			(*it).first->SoftReset();
+			(*it).first->Finalize();
+			(*it).first->movingPointMode = false;
 		}
 	}
 }
@@ -492,12 +497,17 @@ void MoveBrushAction::Undo()
 
 	movingBrush.Move( -delta );
 
-	for( list<PointMoveInfo>::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+	for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
 	{
-		TerrainPolygon *poly = (*it).poly;
+		list<PointMoveInfo> &pList = (*it).second;
+		for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+		{
+			(*pit).point->pos -= (*pit).delta;
+		}
 
-		(*it).point->pos -= (*it).delta;
-		//put a function here soon
+		(*it).first->SoftReset();
+		(*it).first->Finalize();
+		(*it).first->movingPointMode = false;
 	}
 }
 

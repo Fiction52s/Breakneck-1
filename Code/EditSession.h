@@ -10,7 +10,7 @@
 #include "Tileset.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
-#include <set>
+#include <map>
 
 
 struct EditSession;
@@ -539,17 +539,18 @@ struct CompoundAction;
 
 struct PointMoveInfo
 {
-	PointMoveInfo( TerrainPolygon *pol,
-		TerrainPoint *poi )
-		:poly( pol ), 
-		 point( poi ),
+	PointMoveInfo( TerrainPoint *poi )
+		:point( poi ),
 		 delta( 0, 0 )
 	{}
 	TerrainPoint *point;
 	//std::list<double> enemyEdgeQuantities;
-	TerrainPolygon *poly;
+	//TerrainPolygon *poly;
 	sf::Vector2i delta;
 };
+
+typedef std::map<TerrainPolygon*,
+	std::list<PointMoveInfo>> PointMap;
 
 struct EditSession : GUIHandler
 {
@@ -746,8 +747,8 @@ struct EditSession : GUIHandler
 
 
 	Brush *selectedBrush;
-	std::list<PointMoveInfo> selectedPoints;
-	std::list<TerrainPolygon*> pointPolyList;
+	PointMap selectedPoints;
+	//std::list<TerrainPolygon*> pointPolyList;
 	
 
 
