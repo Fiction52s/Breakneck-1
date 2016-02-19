@@ -21,6 +21,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		KEY,
 		BOSS_CRAWLER,
 		GATEMONITOR,
+		HEALTHFLY,
 		Count
 	};
 
@@ -674,9 +675,8 @@ struct HealthFly : Enemy
 		Count
 	};
 
-	Monitor( GameSession *owner,
-		MonitorType mType,
-		Enemy *e_host );
+	HealthFly( GameSession *owner,
+		FlyType fType );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -695,8 +695,7 @@ struct HealthFly : Enemy
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	Enemy *host;
-	MonitorType monitorType;
-	bool respawnSpecial;
+	FlyType flyType;
 };
 
 struct EnemyParentNode;

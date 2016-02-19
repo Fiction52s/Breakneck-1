@@ -10,6 +10,7 @@
 #include "Tileset.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
+#include <set>
 
 
 struct EditSession;
@@ -589,7 +590,9 @@ struct EditSession : GUIHandler
 	void CreateActor( ActorPtr &actor );
 	std::list<GateInfoPtr> gates;
 	GateInfo *selectedGate;
-
+	
+	void MoveSelectedPoints( 
+		sf::Vector2i delta );
 
 	GroundInfo worldPosGround;
 
@@ -741,6 +744,7 @@ struct EditSession : GUIHandler
 
 	Brush *selectedBrush;
 	std::list<PointMoveInfo> selectedPoints;
+	std::list<TerrainPolygon*> pointPolyList;
 	
 
 

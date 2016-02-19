@@ -591,12 +591,7 @@ Actor::Actor( GameSession *gs )
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 
-
-
-		
-
-
-		bool noPowers = false;
+		bool noPowers = true;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
