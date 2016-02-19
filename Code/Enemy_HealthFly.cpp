@@ -54,7 +54,7 @@ void HealthFly::UpdatePhysics()
 	bool ihit = IHitPlayer();
 	if( ihit || hitMe.first )
 	{
-		//cout << "got the monitor!" << endl;
+		//give player health right here!
 
 		owner->RemoveEnemy( this );
 		//get rid of me
