@@ -5632,6 +5632,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( !done )
 									{
+										//here the delta being subtracted is the points original position
+										for( list<PointMoveInfo>::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+										{
+											(*it).delta = (*it).point->pos - (*it).delta;
+										}
 										Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
 										Action *action = new MoveBrushAction( selectedBrush, delta, false, selectedPoints );
 
@@ -8004,11 +8009,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					Vector2i pos( worldPos.x, worldPos.y );
 					Vector2i delta = pos - editMouseGrabPos;
 
+
+					for( list<PointMoveInfo>::iterator it = selectedPoints.begin(); it != selectedPoints.end();
+						++it )
+					{
+						(*it).delta = (*it).point->pos;
+					}
+
 					moveAction = selectedBrush->UnAnchor();
 					if( moveAction != NULL )
 						moveAction->Perform();
 
 					selectedBrush->Move( delta );
+					MoveSelectedPoints( delta );
 
 					editMouseGrabPos = pos;
 				}
