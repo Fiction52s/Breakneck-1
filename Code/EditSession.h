@@ -592,9 +592,12 @@ struct EditSession : GUIHandler
 	GateInfo *selectedGate;
 	
 	void MoveSelectedPoints( 
-		sf::Vector2i delta );
+		//sf::Vector2i delta );
+		sf::Vector2<double> worldPos );
 
 	GroundInfo worldPosGround;
+
+
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;

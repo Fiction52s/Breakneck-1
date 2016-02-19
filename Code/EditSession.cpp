@@ -5209,6 +5209,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									
 									editMouseGrabPos = Vector2i( worldPos.x, worldPos.y );
+
+									//12345
+									pointGrabPos = Vector2i( worldPos.x, worldPos.y );
+
 									editMouseOrigPos = editMouseGrabPos;
 									//editMouseDown = true;
 
@@ -5637,9 +5641,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										{
 											(*it).delta = (*it).point->pos - (*it).delta;
 										}
+
+										for( list<TerrainPolygon*>::iterator it = pointPolyList.begin(); it != pointPolyList.end(); ++it )
+										{
+											(*it)->SoftReset();
+											(*it)->Finalize();
+											(*it)->movingPointMode = false;
+										}
+
 										Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
 										Action *action = new MoveBrushAction( selectedBrush, delta, false, selectedPoints );
 
+										
 										action->Perform();
 
 										if( moveAction != NULL )
@@ -8021,7 +8034,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						moveAction->Perform();
 
 					selectedBrush->Move( delta );
-					MoveSelectedPoints( delta );
+					//MoveSelectedPoints( delta );
+					MoveSelectedPoints( worldPos );
 
 					editMouseGrabPos = pos;
 				}
@@ -8070,8 +8084,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						selectedBrush->Move( delta );
 
-						MoveSelectedPoints( delta );
-						
+						//MoveSelectedPoints( delta );
+						MoveSelectedPoints( worldPos );
+
 					}
 
 					editMouseGrabPos = pos;
@@ -10438,17 +10453,17 @@ int EditSession::CountSelectedPoints()
 	return count;
 }
 
-void EditSession::MoveSelectedPoints( sf::Vector2i delta )
+void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 {
 	//Vector2i pos( worldPos.x, worldPos.y );
 					//Vector2i delta = pos - editMouseGrabPos;
 	//Vector2i test( pointGrabPos.x % 32, pointGrabPos.y % 32 );
 					
-	pointGrabDelta = delta;
-	//pointGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pointGrabPos;
+	//pointGrabDelta = delta;
+	pointGrabDelta = Vector2i( worldPos.x, worldPos.y ) - pointGrabPos;
 	
-//	Vector2i oldPointGrabPos = pointGrabPos;
-	//pointGrabPos = Vector2i( pPoint.x, pPoint.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
+	Vector2i oldPointGrabPos = pointGrabPos;
+	pointGrabPos = Vector2i( worldPos.x, worldPos.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
 	bool validMove = true;
 
 	int numSelectedPolys = pointPolyList.size();
@@ -10531,13 +10546,13 @@ void EditSession::MoveSelectedPoints( sf::Vector2i delta )
 
 					if( extreme.x != 0 )
 					{
-						//pointGrabPos.y = oldPointGrabPos.y;
+						pointGrabPos.y = oldPointGrabPos.y;
 						pointGrabDelta.y = 0;
 					}
 									
 					if( extreme.y != 0 )
 					{
-					//	pointGrabPos.x = oldPointGrabPos.x;
+						pointGrabPos.x = oldPointGrabPos.x;
 						pointGrabDelta.x = 0;
 					}
 				}
@@ -10594,13 +10609,13 @@ void EditSession::MoveSelectedPoints( sf::Vector2i delta )
 									
 					if( extreme.x != 0 )
 					{
-						//pointGrabPos.y = oldPointGrabPos.y;
+						pointGrabPos.y = oldPointGrabPos.y;
 						pointGrabDelta.y = 0;
 					}
 									
 					if( extreme.y != 0 )
 					{
-						//pointGrabPos.x = oldPointGrabPos.x;
+						pointGrabPos.x = oldPointGrabPos.x;
 						pointGrabDelta.x = 0;
 					}
 					//pointGrabPos = oldPointGrabPos;
