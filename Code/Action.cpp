@@ -467,6 +467,12 @@ void MoveBrushAction::Perform()
 
 	if( !moveOnFirstPerform )
 	{
+		for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+		{
+			(*it).first->SoftReset();
+			(*it).first->Finalize();
+			(*it).first->movingPointMode = false;
+		}
 		moveOnFirstPerform = true;
 	}
 	else

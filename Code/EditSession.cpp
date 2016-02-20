@@ -5105,9 +5105,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												double dist = length( tpPos - worldPos );
 												if( dist <= rad )
 												{
+													bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
 													cout << "close enough" << endl;
 													if( !tp->selected )
 													{
+														if( !shift )
+														{
+															for( PointMap::iterator pmit = selectedPoints.begin();
+																pmit != selectedPoints.end(); ++pmit )
+															{
+																list<PointMoveInfo> & pList = (*pmit).second;
+																for( list<PointMoveInfo>::iterator pit = pList.begin();
+																	pit != pList.end(); ++pit )
+																{
+																	(*pit).point->selected = false;
+																	//(*pit).point->SetSelected( false );
+																}
+															}
+															selectedPoints.clear();
+														}
+														
 														cout << "selecting a point!" << endl;
 														//select a point
 														selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
@@ -5132,27 +5149,35 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													}
 													else
 													{
+														//point is selected
+
 														//deselect a point
 														TerrainPolygon *removedPoly;
 														PointMap::iterator tempIt;
+														bool found = false;
 														for( PointMap::iterator it = selectedPoints.begin();
-															it != selectedPoints.end(); ++it )
+															it != selectedPoints.end() && !found; ++it )
 														{
 															list<PointMoveInfo> &pList = (*it).second;
 															for( list<PointMoveInfo>::iterator pit = pList.begin();
-																pit != pList.end(); ++pit )
+																pit != pList.end() && !found; ++pit )
 															{
-																tempIt = it;
-																//removedPoly = (*it).poly;
-																pList.erase( pit );
-																break;
+																if( (*pit).point == tp )
+																{
+																	pList.erase( pit );
+																	if( (*it).second.empty() )
+																	{
+																		selectedPoints.erase( it );
+																	}
+																	found = true;
+																	
+																	//removedPoly = (*it).poly;
+																	
+																}
 															}
 														}
 
-														if( (*tempIt).second.empty() )
-														{
-															selectedPoints.erase( tempIt );
-														}
+														
 
 														/*bool hasPoly = false;
 														for( list<PointMoveInfo>::iterator it = selectedPoints.begin();
@@ -8112,8 +8137,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					//stuff
 				}
 
-				
-				
 
 				if( pointGrab )
 				{
