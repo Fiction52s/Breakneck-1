@@ -2606,17 +2606,25 @@ GateInfo::GateInfo()
 
 void GateInfo::SetType( const std::string &gType )
 {
-	if( gType == "red" )
+	if( gType == "grey" )
 	{
-		type = GateTypes::RED;
+		type = GateTypes::GREY;
+	}
+	else if( gType == "black" )
+	{
+		type = GateTypes::BLACK;
+	}
+	else if( gType == "blue" )
+	{
+		type = GateTypes::BLUE;
 	}
 	else if( gType == "green" )
 	{
 		type = GateTypes::GREEN;
 	}
-	else if( gType == "blue" )
+	else if( gType == "red" )
 	{
-		type = GateTypes::BLUE;
+		type = GateTypes::RED;
 	}
 	else if( gType == "critical" )
 	{
@@ -2675,6 +2683,14 @@ void GateInfo::UpdateLine()
 	cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
 	Color c;
+	if( type == GateTypes::GREY )
+	{
+		c = Color( 150, 150, 150 );
+	}
+	else if( type == GateTypes::BLACK )
+	{
+		c = Color( 50, 50, 50 );
+	}
 	if( type == GateTypes::RED )
 	{
 		c = Color( 255, 0, 0 );
@@ -2705,7 +2721,15 @@ void GateInfo::UpdateLine()
 void GateInfo::Draw( sf::RenderTarget *target )
 {
 	Color c;
-	if( type == GateTypes::RED)
+	if( type == GateTypes::GREY )
+	{
+		c = Color( 150, 150, 150 );
+	}
+	else if( type == GateTypes::BLACK )
+	{
+		c = Color( 50, 50, 50 );
+	}
+	else if( type == GateTypes::RED)
 	{
 		c = Color( 255, 0, 0 );
 	}
@@ -4503,13 +4527,24 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
-	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 4, 1, 32, 32, false, true );
+	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 4, 2, 32, 32, false, true );
 	
+	sf::Texture greyTex;
+	greyTex.loadFromFile( "greygatecolor.png" );
+	sf::Sprite greySpr( greyTex );
 
-	gateSel->Set( 0, 0, s5, "red" );
-	gateSel->Set( 1, 0, ss0, "green" );
+	sf::Texture blackTex;
+	blackTex.loadFromFile( "blackgatecolor.png" );
+	sf::Sprite blackSpr( blackTex );
+
+
+
+	gateSel->Set( 0, 0, greySpr, "grey" );
+	gateSel->Set( 1, 0, blackSpr, "black" );
 	gateSel->Set( 2, 0, ss1, "blue" );
-	gateSel->Set( 3, 0, ss2, "critical" );
+	gateSel->Set( 3, 0, ss0, "green" );
+	gateSel->Set( 0, 1, s5, "red" );
+	gateSel->Set( 1, 1, ss2, "critical" );
 
 	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 80 ), Vector2f( 80, 40 ), "delete" );
 
@@ -5111,7 +5146,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 													{
 														if( !shift )
 														{
-															ClearSelectedPoints();
+															//ClearSelectedPoints();
 														}
 														
 														//cout << "selecting a point!" << endl;
@@ -5141,50 +5176,32 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 														//point is selected
 
 														//deselect a point
-														TerrainPolygon *removedPoly;
-														PointMap::iterator tempIt;
-														bool found = false;
-														for( PointMap::iterator it = selectedPoints.begin();
-															it != selectedPoints.end() && !found; ++it )
-														{
-															list<PointMoveInfo> &pList = (*it).second;
-															for( list<PointMoveInfo>::iterator pit = pList.begin();
-																pit != pList.end() && !found; ++pit )
-															{
-																if( (*pit).point == tp )
-																{
-																	pList.erase( pit );
-																	if( (*it).second.empty() )
-																	{
-																		selectedPoints.erase( it );
-																	}
-																	found = true;
-																	
-																	//removedPoly = (*it).poly;
-																	
-																}
-															}
-														}
+														//TerrainPolygon *removedPoly;
+														//PointMap::iterator tempIt;
+														//bool found = false;
+														//for( PointMap::iterator it = selectedPoints.begin();
+														//	it != selectedPoints.end() && !found; ++it )
+														//{
+														//	list<PointMoveInfo> &pList = (*it).second;
+														//	for( list<PointMoveInfo>::iterator pit = pList.begin();
+														//		pit != pList.end() && !found; ++pit )
+														//	{
+														//		if( (*pit).point == tp )
+														//		{
+														//			pList.erase( pit );
+														//			if( (*it).second.empty() )
+														//			{
+														//				selectedPoints.erase( it );
+														//			}
+														//			found = true;
+														//			
+														//			//removedPoly = (*it).poly;
+														//			
+														//		}
+														//	}
+														//}
 
-														
-
-														/*bool hasPoly = false;
-														for( list<PointMoveInfo>::iterator it = selectedPoints.begin();
-															it != selectedPoints.end(); ++it )
-														{
-															if( (*it).poly == removedPoly )
-															{
-																hasPoly = true;
-																break;
-															}
-														}
-
-														if( !hasPoly )
-														{
-															pointPolyList.remove( removedPoly );
-														}*/
-
-														tp->selected = false;
+														//tp->selected = false;
 														emptysp = false;
 													}
 													

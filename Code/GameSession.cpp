@@ -578,7 +578,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 			continue;
 		}
 
-		Gate * gate = new Gate( gateType );
+		Gate * gate = new Gate( this, gateType );
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
@@ -3260,6 +3260,10 @@ int GameSession::Run( string fileN )
 
 				UpdateEnemiesPostPhysics();
 				
+				for( int i = 0; i < numGates; ++i )
+				{
+					gates[i]->Update();
+				}
 
 				//cout << "updating loop" << endl;
 

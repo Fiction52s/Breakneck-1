@@ -2,7 +2,9 @@
 #define __GATE_H__
 
 #include "Physics.h"
+#include "Tileset.h"
 
+struct GameSession;
 struct Zone;
 
 struct Gate : public QuadTreeEntrant//: public Edge
@@ -10,23 +12,43 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	
 	enum GateType
 	{
-		RED,
-		GREEN,
+		GREY,
+		BLACK,
 		BLUE,
+		GREEN,
+		RED,
 		CRITICAL,
-		Count		
+		Type_Count		
 	};
-	Gate( GateType type );
+
+	enum GateState
+	{
+		HARDEN,
+		HARD,
+		SOFTEN,
+		SOFT,
+		DISSOLVE,
+		OPEN,
+		State_Count
+	};
+	Gate( GameSession *owner, GateType type );
 	GateType type;
+	GameSession *owner;
+	GateState gState;
 	bool locked;
+	int frame;
 	sf::Color c;
 	sf::VertexArray thickLine;
+	sf::VertexArray *gQuads;
+	Tileset *ts;
 	void UpdateLine();
 	void SetLocked( bool on );
+	void Update();
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
 
+	void Draw( sf::RenderTarget *target );
 
 	Edge *temp0prev;
 	Edge *temp0next;
@@ -45,7 +67,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	Gate *activeNext;
 	//
 
-	void Draw( sf::RenderTarget *target );
+	
 };
 
 #endif
