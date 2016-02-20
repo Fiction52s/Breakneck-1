@@ -1462,7 +1462,7 @@ bool IsEdgeTouchingCircle( V2d v0, V2d v1, V2d pos, double rad )
 	}
 	else
 	{
-		if( dist < rad )
+		if( abs(dist) < rad )
 		{
 			return true;
 		}
@@ -1471,13 +1471,16 @@ bool IsEdgeTouchingCircle( V2d v0, V2d v1, V2d pos, double rad )
 	return false;
 }
 
-bool IsQuadTouchingCircle( V2d A, V2d B, V2d C, V2d D, V2d pos, double rad )
+bool IsQuadTouchingCircle( V2d &A, V2d &B, V2d &C, V2d &D, V2d &pos, double rad )
 {
-	if( IsEdgeTouchingCircle( A,B, pos, rad ) 
-		|| IsEdgeTouchingCircle( B,C, pos, rad ) 
-		|| IsEdgeTouchingCircle( C,D, pos, rad ) 
-		|| IsEdgeTouchingCircle( D,A, pos, rad ) )
+	bool a = IsEdgeTouchingCircle( A,B, pos, rad );
+	bool b = IsEdgeTouchingCircle( B,C, pos, rad );
+	bool c = IsEdgeTouchingCircle( C,D, pos, rad );
+	bool d = IsEdgeTouchingCircle( D,A, pos, rad );
+	
+	if( a || b || c || d )
 	{
+		//cout << a << ", " << b << ", " << c << ", " << d << endl;
 		return true;
 	}
 	return false;

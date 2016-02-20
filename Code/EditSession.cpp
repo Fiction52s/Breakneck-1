@@ -5106,26 +5106,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												if( dist <= rad )
 												{
 													bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
-													cout << "close enough" << endl;
+													//cout << "close enough" << endl;
 													if( !tp->selected )
 													{
 														if( !shift )
 														{
-															for( PointMap::iterator pmit = selectedPoints.begin();
-																pmit != selectedPoints.end(); ++pmit )
-															{
-																list<PointMoveInfo> & pList = (*pmit).second;
-																for( list<PointMoveInfo>::iterator pit = pList.begin();
-																	pit != pList.end(); ++pit )
-																{
-																	(*pit).point->selected = false;
-																	//(*pit).point->SetSelected( false );
-																}
-															}
-															selectedPoints.clear();
+															ClearSelectedPoints();
 														}
 														
-														cout << "selecting a point!" << endl;
+														//cout << "selecting a point!" << endl;
 														//select a point
 														selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
 														
@@ -5760,41 +5749,116 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 
 									//if( selectionEmpty )
-										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+									{
+										for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+											ait != (*it).second->actors.end(); ++ait )
 										{
-											for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
-												ait != (*it).second->actors.end(); ++ait )
+											if( (*ait)->Intersects( r ) )
 											{
-												if( (*ait)->Intersects( r ) )
-												{
-													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
+												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
 
-													if( shift )
+												if( shift )
+												{
+													if( sp->selected )
 													{
-														if( sp->selected )
-														{
-															sp->SetSelected( false );
-															selectedBrush->RemoveObject( sp ); //might be slow?
-														}
-														else
-														{
-															sp->SetSelected( true );
-															selectedBrush->AddObject( sp );
-														}
+														sp->SetSelected( false );
+														selectedBrush->RemoveObject( sp ); //might be slow?
 													}
 													else
 													{
 														sp->SetSelected( true );
 														selectedBrush->AddObject( sp );
 													}
+												}
+												else
+												{
+													sp->SetSelected( true );
+													selectedBrush->AddObject( sp );
+												}
 
 
-													selectionEmpty = false;
+												selectionEmpty = false;
+											}
+										}
+									}
+
+									if( true ) //always use point selection for now
+									{
+										bool shift = Keyboard::isKeyPressed( Keyboard::LShift )
+											|| Keyboard::isKeyPressed( Keyboard::RShift );
+										if( !shift )
+										{
+											ClearSelectedPoints();
+										}
+
+										for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+										{
+											double rad = 8 * zoomMultiple;
+											IntRect adjustedR( r.left - rad, r.top, r.width, r.height );
+
+											//aabb w/ polygon
+
+											if( (*it)->Intersects( adjustedR ) )
+											{
+												TerrainPoint *curr = (*it)->pointStart;
+												while( curr != NULL )
+												{
+													if( IsQuadTouchingCircle( V2d( r.left, r.top ), 
+														V2d( r.left + r.width, r.top ),
+														V2d( r.left + r.width, r.top + r.height ),
+														V2d( r.left, r.top + r.height ),
+														V2d( curr->pos.x, curr->pos.y ), rad ) 
+														|| adjustedR.contains( curr->pos ) )
+													{
+														if( !curr->selected )
+														{
+															curr->selected = true;
+															selectedPoints[(*it).get()].push_back( PointMoveInfo( curr ) );
+														}
+													}
+													curr = curr->next;
 												}
 											}
 										}
+										
+										//for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+										//{
+										//	list<PointMoveInfo> &pList = (*it).second;
 
-									//if( selectionEmpty )
+										//	for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+										//	{
+										//		Vector2i pointPos = (*pit).point->pos;
+										//		double rad = 8 * zoomMultiple;
+										//		
+										//		//check if the point is within the quad that i drew
+										//		if( IsQuadTouchingCircle( V2d( r.left, r.top ), 
+										//			V2d( r.left + r.width, r.top ),
+										//			V2d( r.left + r.width, r.top + r.height ),
+										//			V2d( r.left, r.top + r.height ),
+										//			V2d( pointPos.x, pointPos.y ), rad ) )
+										//		{
+										//			bool shift = Keyboard::isKeyPressed( Keyboard::LShift )
+										//				|| Keyboard::isKeyPressed( Keyboard::RShift );
+
+										//			if( shift )
+										//			{
+
+										//			}
+										//			else
+										//			{
+										//				//clear selectedPoints //make this a function
+										//			}
+										//		}
+										//	}
+										//}
+										//Rect<double> 
+										//if( IsQuadTouchingCircle( V2d( 
+									}
+
+
+									else
+									//if( false ) //polygon selection. don't use it for a little bit
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
 										if( (*it)->Intersects( r ) )
@@ -10488,6 +10552,22 @@ int EditSession::CountSelectedPoints()
 		}
 	}
 	return count;
+}
+
+void EditSession::ClearSelectedPoints()
+{
+	for( PointMap::iterator pmit = selectedPoints.begin();
+		pmit != selectedPoints.end(); ++pmit )
+	{
+		list<PointMoveInfo> & pList = (*pmit).second;
+		for( list<PointMoveInfo>::iterator pit = pList.begin();
+			pit != pList.end(); ++pit )
+		{
+			(*pit).point->selected = false;
+			//(*pit).point->SetSelected( false );
+		}
+	}
+	selectedPoints.clear();
 }
 
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
