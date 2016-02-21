@@ -1439,7 +1439,7 @@ bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
 	return length( pos1 - pos0 ) <= rad_0 + rad_1;
 }
 
-bool IsEdgeTouchingCircle( V2d v0, V2d v1, V2d pos, double rad )
+bool IsEdgeTouchingCircle( V2d &v0, V2d &v1, V2d &pos, double rad )
 {
 	double dist = cross( pos - v0, normalize( v1 - v0 ) );
 	double q = dot( pos - v0, normalize( v1 - v0 ) );

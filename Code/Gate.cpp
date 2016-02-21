@@ -1,6 +1,7 @@
 #include "Gate.h"
 #include "GameSession.h"
 #include <iostream>
+#include "Physics.h"
 
 using namespace std;
 using namespace sf;
@@ -182,6 +183,35 @@ void Gate::Update()
 			frame = 0;
 		}
 		break;
+	}
+
+	double radius = 200;
+	//double dist = length( owner->player.position
+	if( IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+	{
+		if( gState == SOFTEN )
+		{
+			gState = HARDEN;
+			//frame should be the inverse so that it can get harder while from its partially softened state.
+		}
+		else if( gState == SOFT )
+		{
+			gState = HARDEN;
+			frame = 0;
+		}
+	}
+	else
+	{
+		if( gState == HARDEN )
+		{
+			gState = SOFTEN;
+			//inverse frame;
+		}
+		else if( gState == HARD )
+		{
+			gState = SOFTEN;
+			frame = 0;
+		}
 	}
 
 	int tileWidth = 12;
