@@ -550,11 +550,29 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 	{
 		int gType;
 		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+		string behindyouStr;
+
 		is >> gType;
 		is >> poly0Index;
 		is >> vertexIndex0;
 		is >> poly1Index;
 		is >> vertexIndex1;
+		is >> behindyouStr;
+		
+		bool reformBehindYou;
+		if( behindyouStr == "+reform" )
+		{
+			reformBehindYou = true;
+		}
+		else if( behindyouStr == "-reform" )
+		{
+			reformBehindYou = false;
+		}
+		else
+		{
+			cout << "behind you error: " << behindyouStr << endl;
+			assert( false );
+		}
 
 		Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
 		Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
@@ -578,7 +596,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 			continue;
 		}
 
-		Gate * gate = new Gate( this, gateType );
+		Gate * gate = new Gate( this, gateType, reformBehindYou );
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;

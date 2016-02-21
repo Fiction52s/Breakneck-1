@@ -293,7 +293,7 @@ struct GateInfo
 	void UpdateLine();
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
-
+	bool reformBehindYou;
 	GateTypes type;
 	
 };

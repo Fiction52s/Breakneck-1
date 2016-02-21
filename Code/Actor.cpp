@@ -8883,8 +8883,6 @@ void Actor::PhysicsResponse()
 		double crossD = cross( D - edge->v0, nEdge );
 		if( crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0 )
 		{
-			//owner->UnlockGate( g );
-
 			if( edge == g->edgeA )
 			{
 				owner->ActivateZone( g->zoneA );
@@ -8894,7 +8892,23 @@ void Actor::PhysicsResponse()
 				owner->ActivateZone( g->zoneB );
 			}
 			//cout << "clear!---------------------------------" << endl;
-			g->gState = Gate::OPEN;
+			
+			if( g->reformBehindYou )
+			{
+				owner->LockGate( g );
+				g->gState = Gate::REFORM;
+				cout << "LOCKING BEHIND YOU" << endl;
+			}
+			else
+			{
+				g->gState = Gate::DISSOLVE;
+			}
+			
+			//g->type = Gate::BLUE;
+			//
+
+
+
 			//set gate action to disperse
 			//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
 			//it only enters this state if you already unlock it though
@@ -12764,6 +12778,11 @@ void Actor::SetActionGrind()
 
 bool Actor::CanUnlockGate( Gate *g )
 {
+	if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER )
+	{
+		return false;
+	}
+
 	switch( g->type )
 	{
 	case Gate::GREY:

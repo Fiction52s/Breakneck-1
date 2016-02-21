@@ -2598,6 +2598,7 @@ sf::Rect<double> StaticLight::GetAABB()
 GateInfo::GateInfo()
 	:thickLine( sf::Quads, 4 )
 {
+	reformBehindYou = false;
 	thickLine[0].color = Color( 255, 0, 0, 255 );
 	thickLine[1].color = Color( 255, 0, 0, 255 );
 	thickLine[2].color = Color( 255, 0, 0, 255 );
@@ -2663,7 +2664,18 @@ void GateInfo::WriteFile( ofstream &of )
 		curr = curr->next;
 	}
 
-	of << (int)type << " " << poly0->writeIndex << " " << index0 << " " << poly1->writeIndex << " " << index1 << endl;
+	of << (int)type << " " << poly0->writeIndex << " " 
+		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
+
+	if( reformBehindYou )
+	{
+		of << "+reform" << endl;
+	}
+	else
+	{
+		of << "-reform" << endl;
+	}
+		//endl;
 }
 
 void GateInfo::UpdateLine()
@@ -3421,11 +3433,28 @@ bool EditSession::OpenFile( string fileName )
 		{
 			int gType;
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+
+			string reformBehindYouStr;
+
 			is >> gType;
 			is >> poly0Index;
 			is >> vertexIndex0;
 			is >> poly1Index;
 			is >> vertexIndex1;
+			is >> reformBehindYouStr;
+			bool reformBehindYou;
+			if( reformBehindYouStr == "+reform" )
+			{
+				reformBehindYou = true;
+			}
+			else if( reformBehindYouStr == "-reform" )
+			{
+				reformBehindYou = false;
+			}
+			else
+			{
+				assert( false );
+			}
 
 			int testIndex = 0;
 			PolyPtr terrain0(  NULL );
@@ -3457,6 +3486,7 @@ bool EditSession::OpenFile( string fileName )
 			//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
 			GateInfoPtr gi( new GateInfo );
 			//GateInfo *gi = new GateInfo;
+			gi->reformBehindYou = reformBehindYou;
 			gi->poly0 = terrain0;
 			gi->poly1 = terrain1;
 			gi->vertexIndex0 = vertexIndex0;

@@ -28,10 +28,14 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		SOFTEN,
 		SOFT,
 		DISSOLVE,
+		REFORM,
+		LOCKFOREVER,
 		OPEN,
 		State_Count
 	};
-	Gate( GameSession *owner, GateType type );
+	bool reformBehindYou;
+	Gate( GameSession *owner, GateType type,
+		bool reformBehindYou );
 	GateType type;
 	GameSession *owner;
 	GateState gState;

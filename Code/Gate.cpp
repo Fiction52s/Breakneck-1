@@ -7,8 +7,9 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Gate::Gate( GameSession *p_owner, GateType p_type )
-	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner )
+Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
+	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
+	reformBehindYou( p_reformBehindYou )
 {
 	edgeA = NULL;
 	edgeB = NULL;
@@ -115,7 +116,73 @@ void Gate::UpdateLine()
 void Gate::Update()
 {
 	//gates can be timeslowed? don't worry about it just yet. 
-	
+	switch( gState )
+	{
+	case HARDEN:
+		{
+			if( frame == 10 )
+			{
+				gState = HARD;
+				frame = 0;
+			}
+		}
+		break;
+	case HARD:
+		{
+			if( frame == 3 * 3 )
+			{
+				frame = 0;
+			}
+		}
+		break;
+	case SOFTEN:
+		{
+			if( frame == 10 )
+			{
+				gState = SOFT;
+				frame = 0;
+			}
+		}
+		break;
+	case SOFT:
+		{
+			if( frame == 3 * 3 )
+			{
+				frame = 0;
+			}
+		}
+		break;
+	case DISSOLVE:
+		{
+			//whatever length
+			if( frame == 10 )
+			{
+				gState = OPEN;
+				frame = 0;
+			}
+		}
+		break;
+	case REFORM:
+		{
+			//whatever length
+			if( frame == 10 )
+			{
+				gState = LOCKFOREVER;
+			}
+		}
+		break;
+	case LOCKFOREVER:
+		{
+			//whatever the last frame of lockforever is
+			frame = 10;
+		}
+		break;
+	case OPEN:
+		{
+			frame = 0;
+		}
+		break;
+	}
 
 	int tileWidth = 12;
 	int tileHeight = 64;
@@ -203,11 +270,9 @@ void Gate::Update()
 		break;
 	}
 
+
+	
 	++frame;
-	if( frame == 3 * 3 )
-	{
-		frame = 0;
-	}
 }
 
 void Gate::SetLocked( bool on )

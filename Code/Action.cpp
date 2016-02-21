@@ -360,6 +360,8 @@ CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 	gate->poly1 = info.poly1;
 	gate->vertexIndex1 = info.vertexIndex1;
 	gate->point1 = info.point1;
+
+	gate->reformBehindYou = info.reformBehindYou;
 	//gate->point1->gate = gate;
 
 
