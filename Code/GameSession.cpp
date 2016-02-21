@@ -5909,8 +5909,36 @@ void GameSession::UnlockGate( Gate *g )
 		g->activeNext = unlockedGateList;
 		unlockedGateList = g;
 	}
+}
 
+void GameSession::LockGate( Gate *g )
+{
+	//inefficient but i can adjust it later using prev pointers
+	g->SetLocked( true );
 
+	//Enemy *prev = e->prev;
+	//Enemy *next = e->next;
+
+	if( unlockedGateList->activeNext == NULL )
+	{
+		unlockedGateList = NULL;
+	}
+	else
+	{
+		Gate *gate = unlockedGateList;
+		while( gate != NULL )
+		{
+			if( gate->activeNext == g )
+			{
+				Gate *gate2 = gate->activeNext->activeNext;
+				g->activeNext = NULL;
+				gate->activeNext = gate2;
+				break;
+			}
+			gate = gate->activeNext;
+		}
+	}
+	
 }
 
 Critical::Critical( V2d &pointA, V2d &pointB )

@@ -11,6 +11,7 @@
 #include "Wire.h"
 #include "Light.h"
 
+struct Gate;
 struct Critical;
 struct GameSession;
 struct PlayerGhost;
@@ -84,7 +85,9 @@ struct Actor : QuadTreeCollider,
 	//left
 	bool airDashStall;
 	Light *testLight;
-
+	//Gate *gateTouched;
+	Edge *gateTouched;
+	
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;

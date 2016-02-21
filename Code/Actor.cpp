@@ -24,7 +24,8 @@ Actor::Actor( GameSession *gs )
 		hasGreenKey = false;
 		hasBlueKey = false;
 		
-		
+
+		gateTouched = NULL;
 
 		
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
@@ -5423,12 +5424,13 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "item";
 	owner->itemTree->Query( this, r );
 
-	/*queryMode = "gate";
+	queryMode = "gate";
 	owner->testGateCount = 0;
 	owner->gateTree->Query( this, r );
 
-	if( owner->testGateCount > 0 )
+	/*if( owner->testGateCount > 0 )
 	{
+		cout << "ON" << endl;
 		action = DEATH;
 		rightWire->Reset();
 		leftWire->Reset();
@@ -5548,11 +5550,13 @@ V2d Actor::UpdateReversePhysics()
 
 					if( e0 == g->edgeA )
 					{
-						owner->ActivateZone( g->zoneB );
+						gateTouched = g->edgeB;
+					//	owner->ActivateZone( g->zoneB );
 					}
 					else
 					{
-						owner->ActivateZone( g->zoneA );
+						gateTouched = g->edgeA;
+					//	owner->ActivateZone( g->zoneA );
 					}
 				}
 				//cout << "transfer left "<< endl;
@@ -5738,11 +5742,13 @@ V2d Actor::UpdateReversePhysics()
 
 					if( e1 == g->edgeA )
 					{
-						owner->ActivateZone( g->zoneB );
+						gateTouched = g->edgeB;
+					//	owner->ActivateZone( g->zoneB );
 					}
 					else
 					{
-						owner->ActivateZone( g->zoneA );
+						gateTouched = g->edgeA;
+					//	owner->ActivateZone( g->zoneA );
 					}
 				}
 
@@ -6200,11 +6206,13 @@ V2d Actor::UpdateReversePhysics()
 
 									if( e0 == g->edgeA )
 									{
-										owner->ActivateZone( g->zoneB );
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
-										owner->ActivateZone( g->zoneA );
+										gateTouched = g->edgeA;
+									//	owner->ActivateZone( g->zoneA );
 									}
 
 									offsetX = -offsetX;
@@ -6234,11 +6242,13 @@ V2d Actor::UpdateReversePhysics()
 
 								if( e0 == g->edgeA )
 								{
-									owner->ActivateZone( g->zoneB );
+									gateTouched = g->edgeB;
+									//owner->ActivateZone( g->zoneB );
 								}
 								else
 								{
-									owner->ActivateZone( g->zoneA );
+									gateTouched = g->edgeA;
+									//owner->ActivateZone( g->zoneA );
 								}
 
 								offsetX = -offsetX;
@@ -6287,11 +6297,13 @@ V2d Actor::UpdateReversePhysics()
 
 									if( e1 == g->edgeA )
 									{
-										owner->ActivateZone( g->zoneB );
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
-										owner->ActivateZone( g->zoneA );
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
 									}
 
 									offsetX = -offsetX;
@@ -6322,11 +6334,13 @@ V2d Actor::UpdateReversePhysics()
 
 								if( e1 == g->edgeA )
 								{
-									owner->ActivateZone( g->zoneB );
+									gateTouched = g->edgeB;
+									//owner->ActivateZone( g->zoneB );
 								}
 								else
 								{
-									owner->ActivateZone( g->zoneA );
+									gateTouched = g->edgeA;
+									//owner->ActivateZone( g->zoneA );
 								}
 
 								offsetX = -offsetX;
@@ -6777,11 +6791,13 @@ void Actor::UpdatePhysics()
 
 					if( e0 == g->edgeA )
 					{
-						owner->ActivateZone( g->zoneB );
+						gateTouched = g->edgeB;
+						//owner->ActivateZone( g->zoneB );
 					}
 					else
 					{
-						owner->ActivateZone( g->zoneA );
+						gateTouched = g->edgeA;
+						//owner->ActivateZone( g->zoneA );
 					}
 				}
 				//cout << "transfer left "<< endl;
@@ -6924,11 +6940,13 @@ void Actor::UpdatePhysics()
 
 					if( e1 == g->edgeA )
 					{
-						owner->ActivateZone( g->zoneB );
+						gateTouched = g->edgeB;
+						//owner->ActivateZone( g->zoneB );
 					}
 					else
 					{
-						owner->ActivateZone( g->zoneA );
+						gateTouched = g->edgeA;
+						//owner->ActivateZone( g->zoneA );
 					}
 				}
 			//	cout << "transferRight!" << endl;
@@ -7398,11 +7416,13 @@ void Actor::UpdatePhysics()
 
 									if( e1 == g->edgeA )
 									{
-										owner->ActivateZone( g->zoneB );
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
-										owner->ActivateZone( g->zoneA );
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
 									}
 
 									break;
@@ -7432,11 +7452,13 @@ void Actor::UpdatePhysics()
 
 								if( e1 == g->edgeA )
 								{
-									owner->ActivateZone( g->zoneB );
+									gateTouched = g->edgeB;
+									//owner->ActivateZone( g->zoneB );
 								}
 								else
 								{
-									owner->ActivateZone( g->zoneA );
+									gateTouched = g->edgeA;
+									//owner->ActivateZone( g->zoneA );
 								}
 
 								break;
@@ -7482,11 +7504,13 @@ void Actor::UpdatePhysics()
 
 									if( e0 == g->edgeA )
 									{
-										owner->ActivateZone( g->zoneB );
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
-										owner->ActivateZone( g->zoneA );
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
 									}
 
 									break;
@@ -7515,11 +7539,13 @@ void Actor::UpdatePhysics()
 
 									if( e0 == g->edgeA )
 									{
-										owner->ActivateZone( g->zoneB );
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
-										owner->ActivateZone( g->zoneA );
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
 									}
 
 									break;
@@ -8797,6 +8823,53 @@ void Actor::PhysicsResponse()
 	leftWire->UpdateAnchors(V2d( 0, 0 ));
 
 	UpdateHitboxes();
+
+	if( gateTouched != NULL )
+	{
+		Edge *edge = gateTouched;
+		Gate *g = (Gate*)gateTouched->info;
+
+
+		V2d A( b.globalPosition.x - b.rw, b.globalPosition.y - b.rh );
+		V2d B( b.globalPosition.x + b.rw, b.globalPosition.y - b.rh );
+		V2d C( b.globalPosition.x + b.rw, b.globalPosition.y + b.rh );
+		V2d D( b.globalPosition.x - b.rw, b.globalPosition.y + b.rh );
+		V2d nEdge = normalize( edge->v1 - edge->v0 );
+
+		double crossA = cross( A - edge->v0, nEdge );
+		double crossB = cross( B - edge->v0, nEdge );
+		double crossC = cross( C - edge->v0, nEdge );
+		double crossD = cross( D - edge->v0, nEdge );
+		if( crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0 )
+		{
+			//owner->UnlockGate( g );
+
+			if( edge == g->edgeA )
+			{
+				owner->ActivateZone( g->zoneA );
+			}
+			else
+			{
+				owner->ActivateZone( g->zoneB );
+			}
+			//cout << "clear!---------------------------------" << endl;
+			g->gState = Gate::OPEN;
+			//set gate action to disperse
+			//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
+			//it only enters this state if you already unlock it though
+			gateTouched = NULL;
+		}
+		else if( crossA < 0 && crossB < 0 && crossC < 0 && crossD < 0 )
+		{
+			gateTouched = NULL;
+			owner->LockGate( g );
+			//cout << "went back" << endl;
+		}
+		else
+		{
+			//cout << "not clear" << endl;
+		}
+	}
 }
 
 void Actor::UpdateHitboxes()
@@ -11332,15 +11405,19 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			else if( c->edge->edgeType == Edge::CLOSED_GATE )
 			{
+				
 				//c->edge->edgeType = Edge::OPEN_GATE;
 				Gate *g = (Gate*)c->edge->info;//owner->gateMap[c->edge];
+				
 				if( c->edge == g->edgeA )
 				{
-					owner->ActivateZone( g->zoneB );
+					gateTouched = g->edgeB;
+					//owner->ActivateZone( g->zoneB );
 				}
 				else
 				{
-					owner->ActivateZone( g->zoneA );
+					gateTouched = g->edgeA;
+					//owner->ActivateZone( g->zoneA );
 				}
 
 				owner->UnlockGate( g );

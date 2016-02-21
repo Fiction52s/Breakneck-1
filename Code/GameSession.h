@@ -260,6 +260,7 @@ struct GameSession : QuadTreeCollider
 	Zone *activatedZoneList;
 
 	void UnlockGate( Gate *g );
+	void LockGate( Gate *g );
 	Gate *unlockedGateList;
 
 

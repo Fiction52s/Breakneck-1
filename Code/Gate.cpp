@@ -41,10 +41,14 @@ void Gate::Draw( sf::RenderTarget *target )
 
 	if( gQuads != NULL )
 	{
-		if( locked )
+		if( gState != OPEN )
 		{
 			target->draw( *gQuads, ts->texture );
 		}
+		//if( locked )
+		//{
+			
+		//}
 	}
 
 }
