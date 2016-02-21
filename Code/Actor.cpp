@@ -5546,17 +5546,20 @@ V2d Actor::UpdateReversePhysics()
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
-					owner->UnlockGate( g );
+					if( CanUnlockGate( g ) )
+					{
+						owner->UnlockGate( g );
 
-					if( e0 == g->edgeA )
-					{
-						gateTouched = g->edgeB;
-					//	owner->ActivateZone( g->zoneB );
-					}
-					else
-					{
-						gateTouched = g->edgeA;
-					//	owner->ActivateZone( g->zoneA );
+						if( e0 == g->edgeA )
+						{
+							gateTouched = g->edgeB;
+						//	owner->ActivateZone( g->zoneB );
+						}
+						else
+						{
+							gateTouched = g->edgeA;
+						//	owner->ActivateZone( g->zoneA );
+						}
 					}
 				}
 				//cout << "transfer left "<< endl;
@@ -5738,17 +5741,18 @@ V2d Actor::UpdateReversePhysics()
 				if( e1->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e1->info;
-					owner->UnlockGate( g );
+					if( CanUnlockGate( g ) )
+					{
+						owner->UnlockGate( g );
 
-					if( e1 == g->edgeA )
-					{
-						gateTouched = g->edgeB;
-					//	owner->ActivateZone( g->zoneB );
-					}
-					else
-					{
-						gateTouched = g->edgeA;
-					//	owner->ActivateZone( g->zoneA );
+						if( e1 == g->edgeA )
+						{
+							gateTouched = g->edgeB;
+						}
+						else
+						{
+							gateTouched = g->edgeA;
+						}
 					}
 				}
 
@@ -6201,22 +6205,26 @@ V2d Actor::UpdateReversePhysics()
 								{
 									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY A" << endl;
 									Gate *g = (Gate*)e0->info;
-									//g->SetLocked( false );
-									owner->UnlockGate( g );
 
-									if( e0 == g->edgeA )
+									if( CanUnlockGate( g ) )
 									{
-										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-									//	owner->ActivateZone( g->zoneA );
-									}
+										//g->SetLocked( false );
+										owner->UnlockGate( g );
 
-									offsetX = -offsetX;
-									break;
+										if( e0 == g->edgeA )
+										{
+											gateTouched = g->edgeB;
+											//owner->ActivateZone( g->zoneB );
+										}
+										else
+										{
+											gateTouched = g->edgeA;
+										//	owner->ActivateZone( g->zoneA );
+										}
+
+										offsetX = -offsetX;
+										break;
+									}
 
 								}
 
@@ -6238,21 +6246,25 @@ V2d Actor::UpdateReversePhysics()
 							{
 								Gate *g = (Gate*)e0->info;
 								//g->SetLocked( false );
-								owner->UnlockGate( g );
 
-								if( e0 == g->edgeA )
+								if( CanUnlockGate( g ) )
 								{
-									gateTouched = g->edgeB;
-									//owner->ActivateZone( g->zoneB );
-								}
-								else
-								{
-									gateTouched = g->edgeA;
-									//owner->ActivateZone( g->zoneA );
-								}
+									owner->UnlockGate( g );
 
-								offsetX = -offsetX;
-								break;
+									if( e0 == g->edgeA )
+									{
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
+									}
+
+									offsetX = -offsetX;
+									break;
+								}
 
 							}
 
@@ -6292,22 +6304,27 @@ V2d Actor::UpdateReversePhysics()
 								{
 									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
 									Gate *g = (Gate*)e1->info;
-									//g->SetLocked( false );
-									owner->UnlockGate( g );
 
-									if( e1 == g->edgeA )
+									if( CanUnlockGate( g ) )
 									{
-										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
-									}
+										//g->SetLocked( false );
+										owner->UnlockGate( g );
 
-									offsetX = -offsetX;
-									break;
+										if( e1 == g->edgeA )
+										{
+											gateTouched = g->edgeB;
+											//owner->ActivateZone( g->zoneB );
+										}
+										else
+										{
+											gateTouched = g->edgeA;
+											//owner->ActivateZone( g->zoneA );
+										}
+
+										offsetX = -offsetX;
+										break;
+
+									}
 
 								}
 
@@ -6329,23 +6346,26 @@ V2d Actor::UpdateReversePhysics()
 							if( e1->edgeType == Edge::CLOSED_GATE )
 							{
 								Gate *g = (Gate*)e1->info;
-								//g->SetLocked( false );
-								owner->UnlockGate( g );
 
-								if( e1 == g->edgeA )
+								if( CanUnlockGate( g ) )
 								{
-									gateTouched = g->edgeB;
-									//owner->ActivateZone( g->zoneB );
-								}
-								else
-								{
-									gateTouched = g->edgeA;
-									//owner->ActivateZone( g->zoneA );
-								}
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
 
-								offsetX = -offsetX;
-								break;
+									if( e1 == g->edgeA )
+									{
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
+									}
 
+									offsetX = -offsetX;
+									break;
+								}
 							}
 
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
@@ -6787,17 +6807,21 @@ void Actor::UpdatePhysics()
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
-					owner->UnlockGate( g );
 
-					if( e0 == g->edgeA )
+					if( CanUnlockGate( g ) )
 					{
-						gateTouched = g->edgeB;
-						//owner->ActivateZone( g->zoneB );
-					}
-					else
-					{
-						gateTouched = g->edgeA;
-						//owner->ActivateZone( g->zoneA );
+						owner->UnlockGate( g );
+
+						if( e0 == g->edgeA )
+						{
+							gateTouched = g->edgeB;
+							//owner->ActivateZone( g->zoneB );
+						}
+						else
+						{
+							gateTouched = g->edgeA;
+							//owner->ActivateZone( g->zoneA );
+						}
 					}
 				}
 				//cout << "transfer left "<< endl;
@@ -6936,17 +6960,21 @@ void Actor::UpdatePhysics()
 				if( e1->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e1->info;
-					owner->UnlockGate( g );
 
-					if( e1 == g->edgeA )
+					if( CanUnlockGate( g ) )
 					{
-						gateTouched = g->edgeB;
-						//owner->ActivateZone( g->zoneB );
-					}
-					else
-					{
-						gateTouched = g->edgeA;
-						//owner->ActivateZone( g->zoneA );
+						owner->UnlockGate( g );
+
+						if( e1 == g->edgeA )
+						{
+							gateTouched = g->edgeB;
+							//owner->ActivateZone( g->zoneB );
+						}
+						else
+						{
+							gateTouched = g->edgeA;
+							//owner->ActivateZone( g->zoneA );
+						}
 					}
 				}
 			//	cout << "transferRight!" << endl;
@@ -7412,20 +7440,23 @@ void Actor::UpdatePhysics()
 									cout << "similar secret but not reversed B" << endl;
 									Gate *g = (Gate*)e1->info;
 									//g->SetLocked( false );
-									owner->UnlockGate( g );
-
-									if( e1 == g->edgeA )
+									if( CanUnlockGate( g ) )
 									{
-										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
-									}
+										owner->UnlockGate( g );
 
-									break;
+										if( e1 == g->edgeA )
+										{
+											gateTouched = g->edgeB;
+											//owner->ActivateZone( g->zoneB );
+										}
+										else
+										{
+											gateTouched = g->edgeA;
+											//owner->ActivateZone( g->zoneA );
+										}
+
+										break;
+									}
 
 								}
 
@@ -7447,22 +7478,25 @@ void Actor::UpdatePhysics()
 							{
 								cout << "similar secret but not reversed A" << endl;
 								Gate *g = (Gate*)e1->info;
-								//g->SetLocked( false );
-								owner->UnlockGate( g );
 
-								if( e1 == g->edgeA )
+								if( CanUnlockGate( g ) )
 								{
-									gateTouched = g->edgeB;
-									//owner->ActivateZone( g->zoneB );
-								}
-								else
-								{
-									gateTouched = g->edgeA;
-									//owner->ActivateZone( g->zoneA );
-								}
+									//g->SetLocked( false );
+									owner->UnlockGate( g );
 
-								break;
+									if( e1 == g->edgeA )
+									{
+										gateTouched = g->edgeB;
+										//owner->ActivateZone( g->zoneB );
+									}
+									else
+									{
+										gateTouched = g->edgeA;
+										//owner->ActivateZone( g->zoneA );
+									}
 
+									break;
+								}
 							}
 
 
@@ -7499,21 +7533,25 @@ void Actor::UpdatePhysics()
 								{
 									cout << "similar secret but not reversed C" << endl;
 									Gate *g = (Gate*)e0->info;
-									//g->SetLocked( false );
-									owner->UnlockGate( g );
 
-									if( e0 == g->edgeA )
+									if( CanUnlockGate( g ) )
 									{
-										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
-									}
+										//g->SetLocked( false );
+										owner->UnlockGate( g );
 
-									break;
+										if( e0 == g->edgeA )
+										{
+											gateTouched = g->edgeB;
+											//owner->ActivateZone( g->zoneB );
+										}
+										else
+										{
+											gateTouched = g->edgeA;
+											//owner->ActivateZone( g->zoneA );
+										}
+
+										break;
+									}
 
 								}
 
@@ -7535,21 +7573,24 @@ void Actor::UpdatePhysics()
 									cout << "similar secret but not reversed D" << endl;
 									Gate *g = (Gate*)e0->info;
 									//g->SetLocked( false );
-									owner->UnlockGate( g );
 
-									if( e0 == g->edgeA )
+									if( CanUnlockGate( g ) )
 									{
-										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
-									}
+										owner->UnlockGate( g );
 
-									break;
+										if( e0 == g->edgeA )
+										{
+											gateTouched = g->edgeB;
+											//owner->ActivateZone( g->zoneB );
+										}
+										else
+										{
+											gateTouched = g->edgeA;
+											//owner->ActivateZone( g->zoneA );
+										}
 
+										break;
+									}
 								}
 
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
@@ -11409,20 +11450,23 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				//c->edge->edgeType = Edge::OPEN_GATE;
 				Gate *g = (Gate*)c->edge->info;//owner->gateMap[c->edge];
 				
-				if( c->edge == g->edgeA )
+				if( CanUnlockGate( g ) )
 				{
-					gateTouched = g->edgeB;
-					//owner->ActivateZone( g->zoneB );
-				}
-				else
-				{
-					gateTouched = g->edgeA;
-					//owner->ActivateZone( g->zoneA );
-				}
 
-				owner->UnlockGate( g );
+					if( c->edge == g->edgeA )
+					{
+						gateTouched = g->edgeB;
+					}
+					else
+					{
+						gateTouched = g->edgeA;
+					}
 
-				return;
+					owner->UnlockGate( g );
+
+					return;
+
+				}
 			}
 
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
@@ -12716,6 +12760,39 @@ void Actor::SetActionGrind()
 	{
 	//	grindSpeed = -grindSpeed;
 	}
+}
+
+bool Actor::CanUnlockGate( Gate *g )
+{
+	switch( g->type )
+	{
+	case Gate::GREY:
+		return true;
+		break;
+	case Gate::BLACK:
+		return false;
+		break;
+	case Gate::BLUE:
+		if( hasBlueKey )
+		{
+			hasBlueKey = false;
+			return true;
+		}
+		break;
+	case Gate::GREEN:
+		if( hasGreenKey )
+		{
+			hasGreenKey = false;
+			return true;
+		}
+		break;
+	case Gate::RED:
+		{
+		}
+		break;
+	}
+
+	return false;
 }
 
 PlayerGhost::PlayerGhost()

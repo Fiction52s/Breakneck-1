@@ -81,6 +81,7 @@ struct Actor : QuadTreeCollider,
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();
+	bool CanUnlockGate( Gate *g );
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
@@ -384,9 +385,13 @@ struct Actor : QuadTreeCollider,
 	bool dead;	
 
 
-	bool hasRedKey;
+	
 	bool hasBlueKey;
 	bool hasGreenKey;
+	bool hasYellowKey;
+	bool hasOrangeKey;
+	bool hasRedKey;
+	bool hasMagentaKey;
 
 	int framesSinceClimbBoost;
 	int climbBoostLimit;

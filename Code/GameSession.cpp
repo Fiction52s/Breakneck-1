@@ -2910,11 +2910,12 @@ int GameSession::Run( string fileN )
 						(*it)->active = false;
 					}
 					originalZone->active = true;
-
+					//
 					//later don't relock gates in a level unless there is a "level reset"
 					for( int i = 0; i < numGates; ++i )
 					{
 						gates[i]->SetLocked( true );
+						gates[i]->gState = Gate::SOFT;
 					}
 				}
 				else
@@ -3003,6 +3004,7 @@ int GameSession::Run( string fileN )
 					//	cout << "respawn: locking a gate!" << endl;
 						//cout << "relocking gate " << endl;
 						unlockedGateList->SetLocked( true );
+						unlockedGateList->gState = Gate::SOFT;
 						unlockedGateList = unlockedGateList->activeNext;
 					}
 					
@@ -4275,6 +4277,7 @@ void GameSession::RespawnPlayer()
 		player.position = player.currentCheckPoint->pos;
 	}
 	
+	player.gateTouched = NULL;
 	player.action = player.JUMP;
 	player.frame = 1;
 	player.velocity.x = 0;
@@ -4300,9 +4303,14 @@ void GameSession::RespawnPlayer()
 	player.leftWire->Reset();
 	powerBar.Reset();
 	player.lastWire = 0;
+	
+	
+	//actually keys should be set based on which ones you had at the last checkpoint
 	player.hasRedKey = false;
 	player.hasGreenKey = false;
 	player.hasBlueKey = false;
+	
+
 	player.hasDoubleJump = true;
 	player.hasAirDash = true;
 	player.hasGravReverse = true;
@@ -5918,7 +5926,7 @@ void GameSession::LockGate( Gate *g )
 
 	//Enemy *prev = e->prev;
 	//Enemy *next = e->next;
-
+	assert( unlockedGateList != NULL );
 	if( unlockedGateList->activeNext == NULL )
 	{
 		unlockedGateList = NULL;
