@@ -656,6 +656,10 @@ struct Monitor : Enemy
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
+	int animationFactor;
+	sf::Sprite sprite;
+	Tileset *ts;
+	int frame;
 	Enemy *host;
 	MonitorType monitorType;
 	bool respawnSpecial;

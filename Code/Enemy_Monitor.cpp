@@ -18,8 +18,16 @@ using namespace sf;
 Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 	:Enemy( owner, Enemy::GATEMONITOR ), monitorType( mType )
 {
+	
+	ts = owner->GetTileset( "monitor.png", 64, 64 );
+	IntRect subRect = ts->GetSubRect( 0 );
+	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( subRect );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	
+	
 	host = e_host;
-	double radius = 60;
+	double radius = 40;
 	respawnSpecial = true; //doesnt matter. set in frame
 	
 	hurtBody.type = CollisionBox::Hurt;
@@ -37,6 +45,10 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 	hitBody.offset.y = 0;
 	hitBody.rw = radius;
 	hitBody.rh = radius;
+
+	frame = 0;
+	animationFactor = 3;
+
 }
 
 void Monitor::HandleEntrant( QuadTreeEntrant *qte )
@@ -46,6 +58,10 @@ void Monitor::HandleEntrant( QuadTreeEntrant *qte )
 
 void Monitor::UpdatePrePhysics()
 {
+	if( frame == 22 * animationFactor )
+	{
+		frame = 0;
+	}
 	//empty
 }
 
@@ -68,17 +84,24 @@ void Monitor::UpdatePhysics()
 
 void Monitor::UpdatePostPhysics()
 {
+	IntRect subRect = ts->GetSubRect( frame / animationFactor );
+	sprite.setTextureRect( subRect );
+	sprite.setPosition( position.x, position.y );
+	//no slowing for now
+	++frame;
 	//empty
 }
 
 void Monitor::Draw( sf::RenderTarget *target)
 {
 	sf::CircleShape cs;
-	cs.setRadius( 60 );
+	cs.setRadius( 40 );
 	cs.setFillColor( Color( 0, 255, 0, 100 ) );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
+
+	target->draw( sprite );
 }
 
 void Monitor::DrawMinimap( sf::RenderTarget *target )
