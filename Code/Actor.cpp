@@ -441,7 +441,7 @@ Actor::Actor( GameSession *gs )
 		steepSlideGravFactor = .4;
 		steepSlideFastGravFactor = .5;
 
-		wallJumpStrength.x = 10;
+		wallJumpStrength.x = 11;
 		wallJumpStrength.y = 20;
 		clingSpeed = 3;
 
@@ -6826,28 +6826,54 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
+				V2d nextNorm = next->Normal();
 				double yDist = abs( gNormal.x ) * groundSpeed;
 				//cout << "yDist: " << yDist << ", -slopeluanchspeed: " << -slopeLaunchMinSpeed << endl;
-				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
+				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
 						if( groundSpeed >= -steepClimbSpeedThresh )
 						{
+							cout << "not enough speed left" << endl;
 							groundSpeed = 0;
 							break;
 						}
 						else
 						{
-							//cout << "steep transfer left" << endl;
 							ground = next;
-							q = length( ground->v1 - ground->v0 );	
+							q = length( ground->v1 - ground->v0 );		
+							cout << "steep transfer left" << endl;
+							
 						}
 					}
 					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
-						ground = next;
-						q = length( ground->v1 - ground->v0 );	
+						if( nextNorm.x > -.1 )
+						{
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+							movementVec.y -= .01;
+							if( movementVec.x >= -.01 )
+							{
+								movementVec.x = -.01;
+							}
+							cout << "airborne new" << endl;
+							leftGround = true;
+							action = JUMP;
+							frame = 1;
+							rightWire->UpdateAnchors( V2d( 0, 0 ) );
+							leftWire->UpdateAnchors( V2d( 0, 0 ) );
+							ground = NULL;
+							movingGround = NULL;
+
+						}
+						else
+						{
+							ground = next;
+							q = length( ground->v1 - ground->v0 );	
+						}
 						cout << "airborne 5" << endl;
 					/*cout << "airborne 5" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
@@ -6980,9 +7006,10 @@ void Actor::UpdatePhysics()
 			//	cout << "transferRight!" << endl;
 				double yDist = abs( gNormal.x ) * groundSpeed;
 				Edge *next = ground->edge1;
+				V2d nextNorm = next->Normal();
 				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh 
 					&& !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 
-					&& yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
+					&& yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
 				{
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
@@ -7000,26 +7027,39 @@ void Actor::UpdatePhysics()
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
-						ground = next;
-						q = 0;
 						cout << "airborne 13" << endl;
-						//cout << "leave right 1" << endl;
-						/*velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-						movementVec.y -= .01;
-						if( movementVec.x <= .01 )
+						if( nextNorm.x < .1 )
 						{
-							movementVec.x = .01;
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+							movementVec.y -= .01;
+							if( movementVec.x <= .01 )
+							{
+								movementVec.x = .01;
+							}
+							cout << "airborne 8" << endl;
+							leftGround = true;
+							action = JUMP;
+							frame = 1;
+							rightWire->UpdateAnchors( V2d( 0, 0 ) );
+							leftWire->UpdateAnchors( V2d( 0, 0 ) );
+							ground = NULL;
+							movingGround = NULL;
+							//jump
 						}
-						cout << "airborne 8" << endl;
-						leftGround = true;
-						action = JUMP;
-						frame = 1;
-						rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						leftWire->UpdateAnchors( V2d( 0, 0 ) );
-						ground = NULL;
-						movingGround = NULL;*/
+						else
+						{
+							//no jump
+							ground = next;
+							q = 0;
+						}
+						
+
+
+						
+						//cout << "leave right 1" << endl;
+						
 						
 						//break;
 					}

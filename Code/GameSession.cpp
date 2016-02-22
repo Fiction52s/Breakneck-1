@@ -3282,6 +3282,7 @@ int GameSession::Run( string fileN )
 				
 				for( int i = 0; i < numGates; ++i )
 				{
+					//cout << "testing if gate is real: " << i << ": " <<  gates[i]->frame << endl;
 					gates[i]->Update();
 				}
 

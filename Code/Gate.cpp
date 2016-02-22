@@ -12,6 +12,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
+	cout << "zzzz owner: " << owner->fileName << endl;
 	edgeA = NULL;
 	edgeB = NULL;
 
@@ -62,7 +63,7 @@ void Gate::UpdateLine()
 	{
 	case GREY:
 		c = Color( 100, 100, 100 );
-		ts = owner->GetTileset( "greygatetest.png", 12, 64 );
+		ts = owner->GetTileset( "greygate.png", 32, 32 );
 		break;
 	case BLACK:
 		c = Color( 0, 0, 0 );
@@ -147,7 +148,7 @@ void Gate::Update()
 		break;
 	case SOFT:
 		{
-			if( frame == 3 * 3 )
+			if( frame == 12 * 3 )
 			{
 				frame = 0;
 			}
@@ -187,35 +188,42 @@ void Gate::Update()
 
 	double radius = 200;
 	//double dist = length( owner->player.position
-	if( IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
-	{
-		if( gState == SOFTEN )
-		{
-			gState = HARDEN;
-			//frame should be the inverse so that it can get harder while from its partially softened state.
-		}
-		else if( gState == SOFT )
-		{
-			gState = HARDEN;
-			frame = 0;
-		}
-	}
-	else
-	{
-		if( gState == HARDEN )
-		{
-			gState = SOFTEN;
-			//inverse frame;
-		}
-		else if( gState == HARD )
-		{
-			gState = SOFTEN;
-			frame = 0;
-		}
-	}
+	//cout << "before: " << this << endl;
+	//cout << "blah: " << ts->sourceName << endl;
+	//cout << "owner: " << owner->fileName << endl;
+	//cout << "b2: " << owner->player.action << endl;
+	//cout << "playerpos: " << owner->player.position.x << ", " << owner->player.position.y << endl;
+	//cout << "edgeA: " << edgeA << endl;
+	//if( IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+	//{
+	//	cout << "edge is touching circle!" << endl;
+	//	if( gState == SOFTEN )
+	//	{
+	//		gState = HARDEN;
+	//		//frame should be the inverse so that it can get harder while from its partially softened state.
+	//	}
+	//	else if( gState == SOFT )
+	//	{
+	//		gState = HARDEN;
+	//		frame = 0;
+	//	}
+	//}
+	//else
+	//{
+	//	if( gState == HARDEN )
+	//	{
+	//		gState = SOFTEN;
+	//		//inverse frame;
+	//	}
+	//	else if( gState == HARD )
+	//	{
+	//		gState = SOFTEN;
+	//		frame = 0;
+	//	}
+	//}
 
-	int tileWidth = 12;
-	int tileHeight = 64;
+	int tileWidth = 32;
+	int tileHeight = 32;
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
 	int numTiles = numT;
@@ -247,7 +255,51 @@ void Gate::Update()
 	//cout << "gq: " << gq.getVertexCount() << endl;
 	if( type == GREY )
 	{
-		IntRect subRect = ts->GetSubRect( f );
+		int realFrame = -1;
+		switch( gState )
+		{
+		case HARDEN:
+			{
+				realFrame = frame;
+			}
+			break;
+		case HARD:
+			{
+				realFrame = 10;
+			}
+			break;
+		case SOFTEN:
+			{
+				realFrame = 10 + frame;
+			}
+			break;
+		case SOFT:
+			{
+				realFrame = 21 + frame / 3;
+			}
+			break;
+		case DISSOLVE:
+			{
+				realFrame = 34 + frame;
+			}
+			break;
+		case REFORM:
+			{
+				realFrame = 0;
+			}
+			break;
+		case LOCKFOREVER:
+			{
+				realFrame  = 1;
+			}
+			break;
+		case OPEN:
+			{
+				realFrame = 0;
+			}
+			break;
+		}
+		IntRect subRect = ts->GetSubRect( realFrame );
 		for( int i = 0; i < numTiles - 1; ++i )
 		{
 			
