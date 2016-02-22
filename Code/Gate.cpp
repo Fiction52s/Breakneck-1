@@ -123,7 +123,7 @@ void Gate::Update()
 	{
 	case HARDEN:
 		{
-			if( frame == 10 )
+			if( frame == 9 )
 			{
 				gState = HARD;
 				frame = 0;
@@ -158,10 +158,18 @@ void Gate::Update()
 	case DISSOLVE:
 		{
 			//whatever length
-			if( frame == 10 )
+			if( frame == 9 * 4 )
 			{
-				gState = OPEN;
-				frame = 0;
+				if( reformBehindYou )
+				{
+					gState = REFORM;
+					frame = 0;
+				}
+				else
+				{
+					gState = OPEN;
+					frame = 0;
+				}
 			}
 		}
 		break;
@@ -274,7 +282,7 @@ void Gate::Update()
 			break;
 		case DISSOLVE:
 			{
-				realFrame = 34 + frame;
+				realFrame = 34 + frame / 4;
 			}
 			break;
 		case REFORM:

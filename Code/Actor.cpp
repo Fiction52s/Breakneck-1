@@ -8896,14 +8896,14 @@ void Actor::PhysicsResponse()
 			if( g->reformBehindYou )
 			{
 				owner->LockGate( g );
-				g->gState = Gate::REFORM;
+				//g->gState = Gate::REFORM;
 				cout << "LOCKING BEHIND YOU" << endl;
 			}
 			else
 			{
-				g->gState = Gate::DISSOLVE;
+				
 			}
-			
+			g->gState = Gate::DISSOLVE;
 			//g->type = Gate::BLUE;
 			//
 
