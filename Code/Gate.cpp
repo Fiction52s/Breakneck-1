@@ -62,7 +62,7 @@ void Gate::UpdateLine()
 	{
 	case GREY:
 		c = Color( 100, 100, 100 );
-		ts = owner->GetTileset( "greygatetest.png", 12, 64 );
+		ts = owner->GetTileset( "greygate.png", 32, 32 );
 		break;
 	case BLACK:
 		c = Color( 0, 0, 0 );
@@ -100,7 +100,7 @@ void Gate::UpdateLine()
 	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
 	thickLine[3].position = Vector2f( rightv0.x, rightv0.y );
 
-	int tileHeight = 64;
+	int tileHeight = 32;
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
 	int numTiles = numT;
@@ -116,6 +116,8 @@ void Gate::UpdateLine()
 
 void Gate::Update()
 {
+
+
 	//gates can be timeslowed? don't worry about it just yet. 
 	switch( gState )
 	{
@@ -147,7 +149,7 @@ void Gate::Update()
 		break;
 	case SOFT:
 		{
-			if( frame == 3 * 3 )
+			if( frame == 12 * 3 )
 			{
 				frame = 0;
 			}
@@ -214,8 +216,8 @@ void Gate::Update()
 		}
 	}
 
-	int tileWidth = 12;
-	int tileHeight = 64;
+	int tileWidth = 32;
+	int tileHeight = 32;
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
 	int numTiles = numT;
@@ -247,7 +249,54 @@ void Gate::Update()
 	//cout << "gq: " << gq.getVertexCount() << endl;
 	if( type == GREY )
 	{
-		IntRect subRect = ts->GetSubRect( f );
+		int realFrame = -1;
+		switch( gState )
+		{
+		case HARDEN:
+			{
+				realFrame = frame;
+			}
+			break;
+		case HARD:
+			{
+				realFrame = 10;
+			}
+			break;
+		case SOFTEN:
+			{
+				realFrame = 10 + frame;
+			}
+			break;
+		case SOFT:
+			{
+				realFrame = 21 + frame / 3;
+			}
+			break;
+		case DISSOLVE:
+			{
+				realFrame = 34 + frame;
+			}
+			break;
+		case REFORM:
+			{
+				realFrame = 0;
+			}
+			break;
+		case LOCKFOREVER:
+			{
+				realFrame  = 1;
+			}
+			break;
+		case OPEN:
+			{
+				realFrame = 0;
+			}
+			break;
+		}
+		//IntRect subRect = ts->GetSubRect( realFrame );
+		assert( realFrame >= 0 );
+
+		IntRect subRect = ts->GetSubRect( realFrame );
 		for( int i = 0; i < numTiles - 1; ++i )
 		{
 			
