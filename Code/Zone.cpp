@@ -57,11 +57,27 @@ void Zone::Init()
 	list<list<Zone*>> groupedZones;
 
 	list<Edge*> relGates;
+	
 	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
 	{
 		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
 		{
 			Gate *g = (Gate*)(*eit)->info;
+
+			/*if( g->zoneA == g->zoneB )//g->zoneB )
+			{
+				cout << "--------------------------------------------------------------" << endl;
+				//cout << "UNLOCKING BLAH" << endl;
+				//g->SetLocked( false );
+				continue;
+			//	skip = true;
+			//	curr = prev->edge1;
+			}
+			else
+			{
+				cout << "za: " << g->zoneA << ", zb: " << g->zoneB << endl;
+			}*/
+
 
 			if( g->zoneA == this )
 			{
@@ -73,6 +89,9 @@ void Zone::Init()
 			}
 		}
 	}
+	cout << "relgates: " << relGates.size() << endl;
+
+
 
 	list<p2t::Point*> allHolePoints;
 	while( !relGates.empty() )
@@ -92,23 +111,67 @@ void Zone::Init()
 
 		while( curr != start )
 		{
-			for( list<Edge*>::iterator it = relGates.begin(); it != relGates.end(); )
+			bool skip = false;
+			bool found = false;
+			//if edge is gate type
+			if( curr->edgeType == Edge::CLOSED_GATE || curr->edgeType == Edge::OPEN_GATE )
 			{
-				if( curr == (*it) )
+				for( list<Edge*>::iterator it = relGates.begin(); it != relGates.end(); )
 				{
-					it = relGates.erase( it );
+					if( curr == (*it) )
+					{
+						found = true;
+						//Edge *prev = curr->edge0;
+						Gate *g = (Gate*)curr->info;
+					
+						/*if( g->zoneA == g->zoneB )//g->zoneB )
+						{
+							cout << "--------------------------------------------------------------" << endl;
+							cout << "UNLOCKING BLAH" << endl;
+							g->SetLocked( false );
+							skip = true;
+							curr = prev->edge1;
+						}
+						else
+						{
+							cout << "za: " << g->zoneA << ", zb: " << g->zoneB << endl;
+						}*/
+					
+						it = relGates.erase( it );
+						break;
+					}
+					else
+					{
+						++it;
+					}
 				}
-				else
+				
+				//this fixes a loose gate so that the correct shadow polygon can be created.
+				if( !found )
 				{
-					++it;
+					Gate *g = (Gate*)curr->info;
+					Edge *prev = curr->edge0;
+
+					g->SetLocked( false );
+					curr = prev->edge1;
+					g->SetLocked( true );
+					skip = true;
+					//it = relGates.erase( it );
+				//	cout << "gza: " << g->zoneA << ", gzb: " << g->zoneB << endl;
+					//break;
+					
 				}
 			}
+			
 
-			p2t::Point *p = new p2t::Point(curr->v0.x, curr->v0.y );
-			holePolyline.push_back( p );
-			allHolePoints.push_back( p );
+			if( !skip )
+			{
+				p2t::Point *p = new p2t::Point(curr->v0.x, curr->v0.y );
+				holePolyline.push_back( p );
+				allHolePoints.push_back( p );
 
-			curr = curr->edge1;
+				curr = curr->edge1;
+			}
 		}
 
 		cdt->AddHole( holePolyline );

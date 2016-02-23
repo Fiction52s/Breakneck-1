@@ -195,7 +195,16 @@ void Crawler::UpdatePrePhysics()
 	{
 		frame = 0;
 	}
-	groundSpeed = 1.5;
+
+	if( clockwise )
+	{
+		groundSpeed = 1.5;
+	}
+	else
+	{
+		groundSpeed = -1.5;
+	}
+	
 }
 
 void Crawler::UpdatePhysics()
@@ -251,7 +260,7 @@ void Crawler::UpdatePhysics()
 		bool transferLeft = false;
 		bool transferRight = false;
 
-		if( q == groundLength )
+		if( movement > 0 && q == groundLength )
 		{
 			if( gNormal == e1n )
 			{
@@ -394,6 +403,133 @@ void Crawler::UpdatePhysics()
 				}
 			}
 		}
+		else if( movement < 0 && q == 0 )
+		{
+			if( gNormal == e0n )
+			{
+				q = length( e0->v1 - e0->v0 );
+				ground = e0;
+			}
+			else if( !roll )
+			{
+				roll = true;
+				rollFactor = 0;
+				frame = 0;
+			}
+			else
+			{
+				//cout << "rollfactor: " << rollFactor << endl;
+				if( rollFactor < 1 )
+				{ 
+					double oldRollFactor = rollFactor;
+					double rollStart = atan2( gNormal.y, gNormal.x );
+					V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
+					double rollEnd = atan2( e0n.y, e0n.x );
+
+					if( rollStart < 0 )
+						rollStart += 2 * PI;
+					if( rollEnd < 0 )
+						rollEnd += 2 * PI;
+
+					V2d currentVec = position - ground->v1;
+					currentVec = normalize( currentVec );
+					double rollCurrent = atan2( currentVec.y, currentVec.x );
+					if( rollCurrent < 0 )
+						rollCurrent += 2 * PI;
+
+
+					double totalAngleDist = rollEnd - rollStart;
+					if( rollEnd < rollStart )
+					{
+						totalAngleDist = ( 2 * PI - rollStart ) + rollEnd;
+					}
+
+
+					double angleDist = rollEnd - rollCurrent;
+
+					if( rollEnd < rollCurrent )
+					{
+						angleDist = ( 2 * PI - rollCurrent ) + rollEnd;
+					}
+
+					
+
+					double arcDist = angleDist * physBody.rw;
+					//arcDist *= 100;
+					double oldArcDist = arcDist;
+					//m /= 10;
+					movement -= m;
+					if( movement > 0 )
+					{
+						assert( false );
+						movement = 0;
+					}
+					if( m < -arcDist )
+					{
+						cout << "a" << endl;
+						m += arcDist;
+						if( approxEquals( m, 0 ) )
+						{
+							m = 0;
+						}
+						rollFactor = 1;
+						movement += m;
+
+						V2d oldPos = position;
+						V2d rollEndVec = V2d( cos( rollEnd ), sin ( rollEnd ) );
+						V2d newPos = ground->v1 + rollEndVec * physBody.rw;
+
+						bool hit = ResolvePhysics( newPos - oldPos );
+						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+						{
+							V2d eNorm = minContact.edge->Normal();
+							ground = minContact.edge;
+							q = ground->GetQuantity( minContact.position + minContact.resolution );
+							edgeQuantity = q;
+							V2d gn = ground->Normal();
+							roll = false;
+							break;
+						}			
+					}
+					else
+					{
+						cout << "b" << endl;
+						arcDist -= m;
+						rollFactor = ( totalAngleDist - arcDist / physBody.rw ) / totalAngleDist;
+
+						V2d oldPos = position;
+						double trueAngle = rollStart + angleDist * rollFactor;
+						if( trueAngle > PI * 2 )
+						{
+							trueAngle -= PI * 2;
+						}
+
+						V2d trueVec = V2d( cos( trueAngle ), sin( trueAngle ) );
+						
+						V2d newPos = ground->v1 + trueVec * physBody.rw;
+
+						bool hit = ResolvePhysics( newPos - oldPos );
+						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+						{
+							V2d eNorm = minContact.edge->Normal();
+							ground = minContact.edge;
+							q = ground->GetQuantity( minContact.position + minContact.resolution );
+							edgeQuantity = q;
+							V2d gn = ground->Normal();
+							roll = false;
+							break;
+						}			
+						//rollFactor = 
+					}
+				}
+				else
+				{
+					ground = e0;
+					q = length( e0->v1 - e0->v0 );
+					roll = false;
+				}
+			}
+		}
 		else
 		{
 			if( movement > 0 )
@@ -517,7 +653,16 @@ void Crawler::PhysicsResponse()
 			angle = atan2( gn.x, -gn.y );
 		
 			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
+			IntRect r = ts_walk->GetSubRect( frame / crawlAnimationFactor );
+			if( !clockwise )
+			{
+				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+			}
+			else
+			{
+				sprite.setTextureRect( r );
+			}
+			
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -565,7 +710,16 @@ void Crawler::PhysicsResponse()
 	
 
 			sprite.setTexture( *ts_roll->texture );
-			sprite.setTextureRect( ts_roll->GetSubRect( frame / rollAnimationFactor ) );
+			IntRect r = ts_roll->GetSubRect( frame / rollAnimationFactor );
+			if( clockwise )
+			{
+				sprite.setTextureRect( r );
+			}
+			else
+			{
+				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+			}
+			
 
 		
 

@@ -7811,13 +7811,14 @@ void Actor::UpdatePhysics()
 										//movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						
 										//leftGround = true;
-										//ground = NULL;
-										//movingGround = NULL;
+										
 										//cout << "airborne 12" << endl;
 										action = JUMPSQUAT;
-										frame = 0;
+										frame = 1;
+										
 										rightWire->UpdateAnchors( V2d( 0, 0 ) );
 										leftWire->UpdateAnchors( V2d( 0, 0 ) );
+										break;
 
 									}
 								}
@@ -9393,7 +9394,19 @@ void Actor::UpdatePostPhysics()
 
 
 			double angle = GroundedAngle();
-		
+			if( reversed )
+			{
+				//need to fill this in for reversed!
+			}
+			else
+			{
+				if( gn.y > -steepThresh )
+				{
+					angle = 0;
+				}
+			}
+
+			
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );

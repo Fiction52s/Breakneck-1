@@ -5150,8 +5150,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											}
 										}
 
+
+										bool alt = Keyboard::isKeyPressed( Keyboard::LAlt ) ||
+											Keyboard::isKeyPressed( Keyboard::RAlt );
 									//concerning selecting a point
-									if( true )
+									if( alt )
 									{
 										double rad = 8 * zoomMultiple;
 										for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -5243,8 +5246,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 
+									else
 									//if( emptysp )
-									if( false )
+									//if(  )
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
 										if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
@@ -5830,7 +5834,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 
-									if( true ) //always use point selection for now
+
+									bool alt = Keyboard::isKeyPressed( Keyboard::LAlt )
+										|| Keyboard::isKeyPressed( Keyboard::RAlt );
+									if( alt ) //always use point selection for now
 									{
 										bool shift = Keyboard::isKeyPressed( Keyboard::LShift )
 											|| Keyboard::isKeyPressed( Keyboard::RShift );

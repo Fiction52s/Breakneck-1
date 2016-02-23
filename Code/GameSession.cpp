@@ -845,8 +845,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float speed;
 				is >> speed;
 
-				BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				//Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, clockwise, speed );
+				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed );
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
 
@@ -2446,7 +2447,8 @@ void GameSession::CreateZones()
 			{
 				g->zoneA = z;
 			}
-			else if( g->zoneB == NULL )
+			
+			if( g->zoneB == NULL )
 			{
 				g->zoneB = z;
 			}
@@ -2536,7 +2538,10 @@ void GameSession::SetupZones()
 		}
 	}
 
-	originalZone->active = true;
+	if( originalZone != NULL )
+	{
+		originalZone->active = true;
+	}
 	
 	cout << "3: numgates: " << numGates << endl;
 	cout << "num zones: " << zones.size() << endl;
@@ -4105,7 +4110,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Enemy *e = (Enemy*)qte;
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-		if( e->spawnRect.intersects( tempSpawnRect ) && e->zone->active )
+		if( e->spawnRect.intersects( tempSpawnRect ) && ( e->zone == NULL || e->zone->active ) )
 		{
 			//cout << "spawning enemy! of type: " << e->type << endl;
 			assert( e->spawned == false );

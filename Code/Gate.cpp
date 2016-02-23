@@ -110,7 +110,9 @@ void Gate::UpdateLine()
 		numTiles += 1;
 	}
 	int numVertices = numTiles * 4;
-	gQuads = new VertexArray( sf::Quads, numVertices );
+
+	if( type == Gate::GREY )
+		gQuads = new VertexArray( sf::Quads, numVertices );
 	//cout << "giving gquads value!" << endl;
 }
 
