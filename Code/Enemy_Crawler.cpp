@@ -275,139 +275,160 @@ void Crawler::UpdatePhysics()
 			}
 			else
 			{
-				if( rollFactor < 1.0 )
-				{ 
-					double oldRollFactor = rollFactor;
-					double rollStart = atan2( gNormal.y, gNormal.x );
-					V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-					double rollEnd = atan2( e1n.y, e1n.x );
+				double angle = m / physBody.rw;
+				V2d currVec = position - ground->v1;
+				V2d newPos;
+				newPos.x = currVec.x * cos( angle ) - 
+					currVec.y * sin( angle ) + ground->v1.x;
+				newPos.y = currVec.x * sin( angle ) + 
+					currVec.y * cos( angle ) + ground->v1.y;
 
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
+				bool hit = ResolvePhysics( newPos - position );
+				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+				{
+					V2d eNorm = minContact.edge->Normal();
+					ground = minContact.edge;
+					q = ground->GetQuantity( minContact.position + minContact.resolution );
+					edgeQuantity = q;
+					V2d gn = ground->Normal();
+					roll = false;
+					//cout << "hitting" << endl;
+					break;
+				}			
 
-					V2d currentVec = position - ground->v1;
-					currentVec = normalize( currentVec );
-					double rollCurrent = atan2( currentVec.y, currentVec.x );
-					if( rollCurrent < 0 )
-						rollCurrent += 2 * PI;
+				//if( rollFactor < 1.0 )
+				//{ 
+				//	double oldRollFactor = rollFactor;
+				//	double rollStart = atan2( gNormal.y, gNormal.x );
+				//	V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
+				//	double rollEnd = atan2( e1n.y, e1n.x );
 
+				//	if( rollStart < 0 )
+				//		rollStart += 2 * PI;
+				//	if( rollEnd < 0 )
+				//		rollEnd += 2 * PI;
 
-					double totalAngleDist = rollEnd - rollStart;
-					if( rollEnd < rollStart )
-					{
-						totalAngleDist = ( 2 * PI - rollStart ) + rollEnd;
-					}
-
-
-					double angleDist = rollEnd - rollCurrent;
-
-					if( rollEnd < rollCurrent )
-					{
-						angleDist = ( 2 * PI - rollCurrent ) + rollEnd;
-					}
-
-					
-
-					double arcDist = angleDist * physBody.rw;
-					//arcDist *= 100;
-					double oldArcDist = arcDist;
-					//m /= 10;
-					movement -= m;
-					if( movement < 0 )
-					{
-						assert( false );
-						movement = 0;
-					}
-					if( m > arcDist )
-					{
-						//cout << "m: " << m << ", arcDist: " << arcDist << endl;
-						//double realMove = ;
-						m -= arcDist;
-						if( approxEquals( m, 0 ) )
-						{
-							m = 0;
-						}
-						rollFactor = 1;
-						movement += m;
-
-						V2d oldPos = position;
-						V2d rollEndVec = V2d( cos( rollEnd ), sin ( rollEnd ) );
-						V2d newPos = ground->v1 + rollEndVec * physBody.rw;
-
-						bool hit = ResolvePhysics( newPos - oldPos );
-						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-						{
-							V2d eNorm = minContact.edge->Normal();
-							ground = minContact.edge;
-							q = ground->GetQuantity( minContact.position + minContact.resolution );
-							edgeQuantity = q;
-							V2d gn = ground->Normal();
-							roll = false;
-							break;
-						}			
-					}
-					else
-					{
-						//m = 0;
-						arcDist -= m;
-						rollFactor = ( totalAngleDist - arcDist / physBody.rw ) / totalAngleDist;
-
-						V2d oldPos = position;
-						double trueAngle = rollStart + angleDist * rollFactor;
-						if( trueAngle > PI * 2 )
-						{
-							trueAngle -= PI * 2;
-						}
-
-						V2d trueVec = V2d( cos( trueAngle ), sin( trueAngle ) );
-						
-						V2d newPos = ground->v1 + trueVec * physBody.rw;
-
-						//cout << "current: " << rollCurrent << ", new: " << rollFactor << "total: " << totalAngleDist << ", arcdist: " << arcDist << endl;
-						//cout << "other vel: " << (newPos-oldPos).x << ", " << (newPos-oldPos).y << endl;
-						bool hit = ResolvePhysics( newPos - oldPos );
-						if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-						{
-							V2d eNorm = minContact.edge->Normal();
-							ground = minContact.edge;
-							q = ground->GetQuantity( minContact.position + minContact.resolution );
-							edgeQuantity = q;
-							V2d gn = ground->Normal();
-							roll = false;
-							break;
-						}			
-						//rollFactor = 
-					}
+				//	V2d currentVec = position - ground->v1;
+				//	currentVec = normalize( currentVec );
+				//	double rollCurrent = atan2( currentVec.y, currentVec.x );
+				//	if( rollCurrent < 0 )
+				//		rollCurrent += 2 * PI;
 
 
+				//	double totalAngleDist = rollEnd - rollStart;
+				//	if( rollEnd < rollStart )
+				//	{
+				//		totalAngleDist = ( 2 * PI - rollStart ) + rollEnd;
+				//	}
 
 
-					
+				//	double angleDist = rollEnd - rollCurrent;
+
+				//	if( rollEnd < rollCurrent )
+				//	{
+				//		angleDist = ( 2 * PI - rollCurrent ) + rollEnd;
+				//	}
+
+				//	
+
+				//	double arcDist = angleDist * physBody.rw;
+				//	//arcDist *= 100;
+				//	double oldArcDist = arcDist;
+				//	//m /= 10;
+				//	movement -= m;
+				//	if( movement < 0 )
+				//	{
+				//		assert( false );
+				//		movement = 0;
+				//	}
+				//	if( m > arcDist )
+				//	{
+				//		//cout << "m: " << m << ", arcDist: " << arcDist << endl;
+				//		//double realMove = ;
+				//		m -= arcDist;
+				//		if( approxEquals( m, 0 ) )
+				//		{
+				//			m = 0;
+				//		}
+				//		rollFactor = 1;
+				//		movement += m;
+
+				//		V2d oldPos = position;
+				//		V2d rollEndVec = V2d( cos( rollEnd ), sin ( rollEnd ) );
+				//		V2d newPos = ground->v1 + rollEndVec * physBody.rw;
+
+				//		bool hit = ResolvePhysics( newPos - oldPos );
+				//		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+				//		{
+				//			V2d eNorm = minContact.edge->Normal();
+				//			ground = minContact.edge;
+				//			q = ground->GetQuantity( minContact.position + minContact.resolution );
+				//			edgeQuantity = q;
+				//			V2d gn = ground->Normal();
+				//			roll = false;
+				//			break;
+				//		}			
+				//	}
+				//	else
+				//	{
+				//		//m = 0;
+				//		arcDist -= m;
+				//		rollFactor = ( totalAngleDist - arcDist / physBody.rw ) / totalAngleDist;
+
+				//		V2d oldPos = position;
+				//		double trueAngle = rollStart + angleDist * rollFactor;
+				//		if( trueAngle > PI * 2 )
+				//		{
+				//			trueAngle -= PI * 2;
+				//		}
+
+				//		V2d trueVec = V2d( cos( trueAngle ), sin( trueAngle ) );
+				//		
+				//		V2d newPos = ground->v1 + trueVec * physBody.rw;
+
+				//		//cout << "current: " << rollCurrent << ", new: " << rollFactor << "total: " << totalAngleDist << ", arcdist: " << arcDist << endl;
+				//		//cout << "other vel: " << (newPos-oldPos).x << ", " << (newPos-oldPos).y << endl;
+				//		bool hit = ResolvePhysics( newPos - oldPos );
+				//		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+				//		{
+				//			V2d eNorm = minContact.edge->Normal();
+				//			ground = minContact.edge;
+				//			q = ground->GetQuantity( minContact.position + minContact.resolution );
+				//			edgeQuantity = q;
+				//			V2d gn = ground->Normal();
+				//			roll = false;
+				//			break;
+				//		}			
+				//		//rollFactor = 
+				//	}
+
+
+
+
+				//	
 			
 
-					//movement += m;
-					//rollFactor += .01;
+				//	//movement += m;
+				//	//rollFactor += .01;
 
-					//double diff = abs( rollStart - rollEnd );
+				//	//double diff = abs( rollStart - rollEnd );
 
-					//if( rollFactor > 1.0 )
-					//	rollFactor = 1.0;
-				}
-				else
-				{
-					ground = e1;
-					q = 0;
-					roll = false;
-				}
+				//	//if( rollFactor > 1.0 )
+				//	//	rollFactor = 1.0;
+				//}
+				//else
+				//{
+				//	ground = e1;
+				//	q = 0;
+				//	roll = false;
+				//}
 			}
 		}
 		else if( movement < 0 && q == 0 )
 		{
 			if( gNormal == e0n )
 			{
-				cout << "what" << endl;
+			//	cout << "what" << endl;
 				q = length( e0->v1 - e0->v0 );
 				ground = e0;
 			}
@@ -419,40 +440,34 @@ void Crawler::UpdatePhysics()
 			}
 			else
 			{
-				//rollFactor = 
-				//double rollFactor = ( totalAngleDist - arcDist / physBody.rw ) / totalAngleDist;
-				if( rollFactor < 1.0 )
-				{
-					//V2d start = gNormal;
-					//V2d end = e0n;
-					double angle = m / physBody.rw;
-					V2d currVec = position - ground->v0;
-					V2d newPos;
-					newPos.x = currVec.x * cos( angle ) - 
-						currVec.y * sin( angle ) + ground->v0.x;
-					newPos.y = currVec.x * sin( angle ) + 
-						currVec.y * cos( angle ) + ground->v0.y;
+				double angle = m / physBody.rw;
+				V2d currVec = position - ground->v0;
+				V2d newPos;
+				newPos.x = currVec.x * cos( angle ) - 
+					currVec.y * sin( angle ) + ground->v0.x;
+				newPos.y = currVec.x * sin( angle ) + 
+					currVec.y * cos( angle ) + ground->v0.y;
 
-					bool hit = ResolvePhysics( newPos - position );
-					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-					{
-						V2d eNorm = minContact.edge->Normal();
-						ground = minContact.edge;
-						q = ground->GetQuantity( minContact.position + minContact.resolution );
-						edgeQuantity = q;
-						V2d gn = ground->Normal();
-						roll = false;
-						//cout << "hitting" << endl;
-						break;
-					}			
-				}
-				else
+				bool hit = ResolvePhysics( newPos - position );
+				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
-					ground = e0;
-					q = length( e0->v1 - e0->v0 );
+					V2d eNorm = minContact.edge->Normal();
+					ground = minContact.edge;
+					q = ground->GetQuantity( minContact.position + minContact.resolution );
+					edgeQuantity = q;
+					V2d gn = ground->Normal();
 					roll = false;
+					//cout << "hitting" << endl;
+					break;
+				}			
+				//}
+				//else
+				//{
+				//	ground = e0;
+				//	q = length( e0->v1 - e0->v0 );
+				//	roll = false;
 					//cout << "roll now false" << endl;
-				}
+				//}
 				//if( rollFactor < 1.0 )
 				//{ 
 				//	double oldRollFactor = rollFactor;
@@ -698,6 +713,7 @@ void Crawler::UpdatePhysics()
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
 					V2d gn = ground->Normal();
+					cout << "hit" << endl;
 					break;
 				}			
 			}
@@ -809,7 +825,7 @@ void Crawler::PhysicsResponse()
 			
 			if( clockwise )
 			{
-				V2d e1n = ground->edge1->Normal();
+				/*V2d e1n = ground->edge1->Normal();
 				double rollStart = atan2( gn.y, gn.x );
 				double rollEnd = atan2( e1n.y, e1n.x );
 				double adjRollStart = rollStart;
@@ -845,6 +861,10 @@ void Crawler::PhysicsResponse()
 
 				position = gPoint + angleVec * 16.0;
 
+				angle += PI / 2.0;*/
+
+				V2d vec = normalize( position - ground->v1 );
+				angle = atan2( vec.y, vec.x );
 				angle += PI / 2.0;
 	
 
@@ -867,7 +887,7 @@ void Crawler::PhysicsResponse()
 			else
 			{
 				//angle = 
-				V2d e0n = ground->edge0->Normal();
+				/*V2d e0n = ground->edge0->Normal();
 				double rollStart = atan2( gn.y, gn.x );
 				double rollEnd = atan2( e0n.y, e0n.x );
 				double adjRollStart = rollStart;
@@ -894,16 +914,16 @@ void Crawler::PhysicsResponse()
 				}
 
 				if( angle < 0 )
-					angle += PI * 2;
+					angle += PI * 2;*/
 
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
+			
 
 			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
 			//	angleVec = normalize( angleVec );
 
 			//	position = gPoint + angleVec * 16.0;
-
+				V2d vec = normalize( position - ground->v0 );
+				angle = atan2( vec.y, vec.x );
 				angle += PI / 2.0;
 	
 
