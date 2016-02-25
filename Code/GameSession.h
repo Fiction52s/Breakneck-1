@@ -16,6 +16,17 @@
 struct PowerBar
 {
 	PowerBar();
+
+	int pointsPerDot;
+	int dotsPerLine;
+	int dotWidth;
+	int dotHeight;
+	int linesPerBar;
+
+	int fullLines;
+	int partialLine;
+	//int 
+
 	int pointsPerLayer;
 	int points;
 	int layer;

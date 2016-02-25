@@ -412,6 +412,9 @@ struct Actor : QuadTreeCollider,
 
 	bool bufferedAttack;
 
+	int drainCounter;
+	int drainCounterMax;
+
 	Critical *currentCheckPoint;
 
 	//end unstored

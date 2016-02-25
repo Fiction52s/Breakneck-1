@@ -4999,10 +4999,16 @@ void GameSession::DeactivateLight( Light *light )
 
 PowerBar::PowerBar()
 {
-	pointsPerLayer = 240 * 10;
-	maxLayer = 6;
+	pointsPerDot = 2;
+	dotsPerLine = 6;
+	dotWidth = 10;
+	dotHeight = 10;
+	linesPerBar = 60;
+
+	pointsPerLayer = 2 * 6 * 60;//3 * 6 * 60//240 * 10;
+	maxLayer = 0;//6;
 	points = pointsPerLayer;//pointsPerLayer * ( maxLayer + 1 );
-	layer = maxLayer;
+	layer = maxLayer;//maxLayer;
 	
 	minUse = 1;
 	
@@ -5030,8 +5036,11 @@ void PowerBar::Reset()
 
 void PowerBar::Draw( sf::RenderTarget *target )
 {
-	//0x99a9b9
-	Color c;
+	int fullLines = points / pointsPerDot / dotsPerLine;
+	int partial = points % ( dotsPerLine * pointsPerDot );//pointsPerLayer - fullLines * pointsPerDot * dotsPerLine;
+	//cout << "fullLines: " << fullLines << endl;
+	//cout << "partial: " << partial << endl;
+	//Color c;
 	/*switch( layer )
 	{
 	case 0:
@@ -5061,25 +5070,81 @@ void PowerBar::Draw( sf::RenderTarget *target )
 		c = Color( 0xff, 0xff, 0xff );
 		break;
 	}*/
-	c = Color( 0, 0xee, 0xff );
+	//c = Color( 0, 0xee, 0xff );
+
+
+	sf::RectangleShape rs;
+
+
+	//primary portion
+	rs.setPosition( 50, 180 + 600 );
+	rs.setFillColor( COLOR_TEAL );
+	rs.setSize( Vector2f( 60, -fullLines * dotHeight ) );
+	target->draw( rs );
+
+	//secondary portion
+	rs.setPosition( rs.getGlobalBounds().left, rs.getGlobalBounds().top - dotHeight );
+	rs.setSize( Vector2f( (partial / pointsPerDot) * dotWidth, dotHeight ) );
+	target->draw( rs );
+
+	//tertiary portion
+	int singleDot = partial % pointsPerDot;
+	if( singleDot == 1 )
+	{
+		rs.setPosition( rs.getGlobalBounds().left + rs.getLocalBounds().width,
+			rs.getPosition().y );
+		rs.setSize( Vector2f( dotWidth, dotHeight ) );
+		rs.setFillColor( COLOR_BLUE );
+		target->draw( rs );
+	}
+
+	//draw full tanks
+	int tankWidth = 32;
+	int tankHeight = 32;
+	int tankSpacing = 20;
+	rs.setFillColor( COLOR_TEAL );
+	rs.setSize( Vector2f( tankWidth, tankHeight ) );
+	rs.setPosition( 0, 180 + 600 - tankHeight );
+	for( int i = 0; i < layer - 1; ++i )
+	{
+		target->draw( rs );
+		rs.setPosition( rs.getPosition().x, rs.getPosition().y - tankHeight - tankSpacing );
+	}
+
+	//only need this until I get a background
+
+	rs.setFillColor( Color( 100, 100, 100 ) );
+	target->draw( rs );
+
+	rs.setFillColor( COLOR_TEAL );
+	//in progress tank
+	int off = ceil( (points / (double)pointsPerLayer) * 32.0);
+	//cout << "off: " << off << endl;
+	rs.setPosition( rs.getPosition().x, rs.getPosition().y + tankHeight );
+	rs.setSize( Vector2f( tankWidth, -off ) );
+	target->draw( rs );
+	
+
+	//0x99a9b9
+	
 	//cout << "points: " << points << endl;
 	double diffz = (double)points / (double)pointsPerLayer;
 	assert( diffz <= 1 );
 	diffz = 1 - diffz;
 	diffz *= 60 * 4;
 
-	sf::RectangleShape rs;
+	
 	//rs.setPosition( 42, 108 + diffz );
 	//rs.setPosition( 0, 108 + diffz );
 	//rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
-	rs.setPosition( 0, 200 );
-	rs.setSize( Vector2f( 100, 500 ) );
-	rs.setFillColor( c );
+	//rs.setPosition( 0, 200 );
+	//rs.setSize( Vector2f( 100, 500 ) );
+	
 
 	
 
-	target->draw( panelSprite );
-	//target->draw( rs );
+	//target->draw( panelSprite );
+	target->draw( rs );
 }
 
 bool PowerBar::Damage( int power )
@@ -5119,7 +5184,7 @@ bool PowerBar::Use( int power )
 {
 	if( layer == 0 )
 	{
-		if( points - power < minUse )
+		if( points - power <= 0 )
 		{
 			return false;
 		}
@@ -5138,6 +5203,27 @@ bool PowerBar::Use( int power )
 		}
 	}
 	return true;
+	/*if( layer == 0 )
+	{
+		if( points - power < minUse )
+		{
+			return false;
+		}
+		else
+		{
+			points -= power;
+		}
+	}
+	else
+	{
+		points -= power;
+		if( points <= 0 )
+		{
+			points = pointsPerLayer + points;
+			layer--;
+		}
+	}
+	return true;*/
 }
 
 void PowerBar::Recover( int power )

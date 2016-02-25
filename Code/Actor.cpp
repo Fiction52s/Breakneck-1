@@ -13,6 +13,8 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		drainCounterMax = 4;
+		drainCounter = 0;
 		currentCheckPoint = NULL;
 		flashFrames = 0;
 		test = false;
@@ -543,7 +545,8 @@ Actor::Actor( GameSession *gs )
 
 		currHitboxInfo = new HitboxInfo();
 		currHitboxInfo->damage = 100;
-		currHitboxInfo->drain = 0;
+		currHitboxInfo->drainX = 0;
+		currHitboxInfo->drainY = 0;
 		currHitboxInfo->hitlagFrames = 0;
 		currHitboxInfo->hitstunFrames = 30;
 		currHitboxInfo->knockback = 0;
@@ -805,8 +808,17 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
+	if( drainCounter == drainCounterMax)
+	{
+		owner->powerBar.Use( 1 );	
+		drainCounter = 0;
+	}
+	else
+	{
+		drainCounter++;
+	}
 	//cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
-	owner->powerBar.Use( 1 );	
+	
 	
 
 	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
@@ -944,11 +956,32 @@ void Actor::UpdatePrePhysics()
 			{
 				action = AIRHITSTUN;
 				frame = 0;
+				if( receivedHit->knockback > 0 )
+				{
+					velocity = receivedHit->knockback * receivedHit->kbDir;
+				}
+				else
+				{
+					velocity.x *= receivedHit->drainX;
+					velocity.y *= receivedHit->drainY;
+				}
+				
 			}
 			else
 			{
 				action = GROUNDHITSTUN;
 				frame = 0;
+
+				if( receivedHit->knockback > 0 )
+				{
+					groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+				}
+				else
+				{
+					groundSpeed *= receivedHit->drainX * abs(gNorm.y) + receivedHit->drainY * abs(gNorm.x);
+				}
+				
+				//dot( receivedHit->kbDir, normalize( ground->v1 - ground->v0 ) ) * receivedHit->knockback;
 			}
 			bounceEdge = NULL;
 		}

@@ -51,7 +51,8 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
-	hitboxInfo->drain = 0;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 0;
@@ -68,7 +69,8 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	
 	bulletHitboxInfo = new HitboxInfo;
 	bulletHitboxInfo->damage = 100;
-	bulletHitboxInfo->drain = 0;
+	bulletHitboxInfo->drainX = 0;
+	bulletHitboxInfo->drainY = 0;
 	bulletHitboxInfo->hitlagFrames = 0;
 	bulletHitboxInfo->hitstunFrames = 10;
 	bulletHitboxInfo->knockback = 0;

@@ -82,7 +82,8 @@ Key::Key( GameSession *owner, Key::KeyType p_keyType, sf::Vector2i pos, std::lis
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
-	hitboxInfo->drain = 0;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 0;
 	hitboxInfo->knockback = 0;

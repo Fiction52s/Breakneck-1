@@ -46,7 +46,8 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
-	hitboxInfo->drain = 0;
+	hitboxInfo->drainX = .5;
+	hitboxInfo->drainY = .5;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 0;

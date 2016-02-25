@@ -50,7 +50,8 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
-	hitboxInfo->drain = 0;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 0;
@@ -194,6 +195,19 @@ void Crawler::UpdateHitboxes()
 		}
 		hitBody.globalAngle = angle;
 		hurtBody.globalAngle = angle;
+
+		V2d knockbackDir( 1, -1 );
+		knockbackDir = normalize( knockbackDir );
+		if( groundSpeed > 0 )
+		{
+			hitboxInfo->kbDir = knockbackDir;
+			hitboxInfo->knockback = 15;
+		}
+		else
+		{
+			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
+			hitboxInfo->knockback = 15;
+		}
 	}
 	else
 	{
@@ -1141,6 +1155,20 @@ bool Crawler::IHitPlayer()
 	
 	if( hitBody.Intersects( player.hurtBody ) )
 	{
+		if( player.position.x < position.x )
+		{
+			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
+			cout << "left" << endl;
+		}
+		else if( player.position.x > position.x )
+		{
+			cout << "right" << endl;
+			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
+		}
+		else
+		{
+			//dont change it
+		}
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}

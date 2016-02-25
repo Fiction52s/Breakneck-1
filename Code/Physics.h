@@ -104,7 +104,10 @@ struct CollisionBox
 struct HitboxInfo
 {
 	double knockback; //0+
-	double drain; //0-1
+	sf::Vector2<double> kbDir;
+	//double drain; //0-1
+	double drainX;
+	double drainY;
 	int hitstunFrames; 
 	int hitlagFrames;
 	int damage;
