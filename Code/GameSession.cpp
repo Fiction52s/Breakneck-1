@@ -2699,7 +2699,7 @@ int GameSession::Run( string fileN )
 	circle.setFillColor( Color::Blue );
 
 
-	
+	sf::Clock inGameClock;
 
 	sf::Clock gameClock;
 	double currentTime = 0;
@@ -2795,7 +2795,11 @@ int GameSession::Run( string fileN )
 
 		if( showFrameRate )
 		{
-			if( frameCounter == frameCounterWait )
+			ss << inGameClock.getElapsedTime().asSeconds();
+			frameRate.setString( ss.str() );
+			ss.clear();
+			ss.str("");
+			/*if( frameCounter == frameCounterWait )
 			{
 				double blah = 1.0 / frameTime;
 				total += blah;
@@ -2811,7 +2815,7 @@ int GameSession::Run( string fileN )
 				double blah = 1.0 / frameTime;
 				total += blah;
 				++frameCounter;
-			}
+			}*/
 		}
 		
 
@@ -2916,6 +2920,8 @@ int GameSession::Run( string fileN )
 			Enemy *monitorList = NULL;
 			if( k || levelReset || player.dead || ( currInput.back && !prevInput.back ) )
 			{
+				inGameClock.restart();
+
 				if( player.record > 1 )
 				{
 					player.LoadState();

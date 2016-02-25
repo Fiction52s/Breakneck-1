@@ -2242,6 +2242,40 @@ void Actor::UpdatePrePhysics()
 							facingRight = false;
 						else if( currInput.LRight() )
 							facingRight = true;
+						else
+						{
+							if( gNorm.x > 0 && groundSpeed > 0 )
+							{
+								facingRight = true;
+							}
+							else if( gNorm.x < 0 && groundSpeed < 0 )
+							{
+								facingRight = false;
+							}
+							else
+							{
+								if( groundSpeed > 0 )//velocity.x > 0 )
+								{
+									facingRight = true;
+								}
+								else if( groundSpeed < 0 )//velocity.x < 0 )
+								{
+									facingRight = false;
+								}
+								else
+								{
+									if( gNorm.x > 0 )
+									{
+										facingRight = true;
+									}
+									else if( gNorm.x < 0 )
+									{
+										facingRight = false;
+									}
+								}
+							}
+
+						}
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
@@ -2292,7 +2326,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( currInput.B || !canStandUp )
 					{
-						cout << "start dash" << endl;
+						//cout << "start dash" << endl;
 						action = DASH;
 						frame = 0;
 
@@ -2300,6 +2334,39 @@ void Actor::UpdatePrePhysics()
 							facingRight = false;
 						else if( currInput.LRight() )
 							facingRight = true;
+						else
+						{
+							if( gNorm.x > 0 && groundSpeed > 0 )
+							{
+								facingRight = true;
+							}
+							else if( gNorm.x < 0 && groundSpeed < 0 )
+							{
+								facingRight = false;
+							}
+							else
+							{
+								if( groundSpeed > 0 )//velocity.x > 0 )
+								{
+									facingRight = true;
+								}
+								else if( groundSpeed < 0 )//velocity.x < 0 )
+								{
+									facingRight = false;
+								}
+								else
+								{
+									if( gNorm.x > 0 )
+									{
+										facingRight = true;
+									}
+									else if( gNorm.x < 0 )
+									{
+										facingRight = false;
+									}
+								}
+							}
+						}
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
