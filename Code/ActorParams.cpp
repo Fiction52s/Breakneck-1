@@ -421,6 +421,43 @@ void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 	group->actors.push_back( actor );
 }
 
+HealthFlyParams::HealthFlyParams( EditSession *edit,
+		sf::Vector2i pos, int p_color )
+		:ActorParams( ActorParams::AIR_ONLY )
+{
+	type = edit->types["healthfly"];
+	position = pos;
+	
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+	
+	color = p_color;
+
+	SetBoundingQuad();
+}
+
+//HealthFlyParams::HealthFlyParams( EditSession *edit )
+//{
+//}
+
+void HealthFlyParams::WriteParamFile( std::ofstream &of )
+{
+	of << color << endl;
+}
+
+void HealthFlyParams::Draw( sf::RenderTarget *target )
+{
+	target->draw( image );
+}
+
+
+bool HealthFlyParams::CanApply()
+{
+	return true;
+}
+
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
 					 int p_stayFrames, bool p_teleport, GateInfo::GateTypes gType )
 	:ActorParams( PosType::AIR_ONLY )

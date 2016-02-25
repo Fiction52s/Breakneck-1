@@ -15,11 +15,24 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-HealthFly::HealthFly( GameSession *owner, FlyType fType )
+HealthFly::HealthFly( GameSession *owner, Vector2i &pos, FlyType fType )
 	:Enemy( owner, Enemy::HEALTHFLY ), flyType( fType )
 {
+	position.x = pos.x;
+	position.y = pos.y;
+
+	initHealth = 60;
+	health = initHealth;
+
+	//frame = 0;
+	//dead = false;
+
+	//animationFactor = 3;
+
+	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+
 	double radius = 20;
-	
+	position = V2d( pos.x, pos.y );
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -28,6 +41,7 @@ HealthFly::HealthFly( GameSession *owner, FlyType fType )
 	hurtBody.rw = radius;
 	hurtBody.rh = radius;
 	
+	
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
@@ -35,6 +49,11 @@ HealthFly::HealthFly( GameSession *owner, FlyType fType )
 	hitBody.offset.y = 0;
 	hitBody.rw = radius;
 	hitBody.rh = radius;
+
+	hurtBody.globalPosition = position;
+	hurtBody.globalAngle = 0;
+	hitBody.globalPosition = position;
+	hitBody.globalAngle = 0;
 }
 
 void HealthFly::HandleEntrant( QuadTreeEntrant *qte )
@@ -71,6 +90,7 @@ void HealthFly::UpdatePostPhysics()
 
 void HealthFly::Draw( sf::RenderTarget *target)
 {
+	cout << "drawing health fly" << endl;
 	sf::CircleShape cs;
 	cs.setRadius( 20 );
 	cs.setFillColor( Color( 0, 255, 0, 100 ) );

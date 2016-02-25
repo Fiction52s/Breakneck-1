@@ -435,6 +435,19 @@ struct PatrollerParams : public ActorParams
 	float speed;
 };
 
+struct HealthFlyParams : public ActorParams
+{
+	HealthFlyParams( EditSession *edit,
+		sf::Vector2i pos, int type ); 
+	//HealthFlyParams( EditSession *edit );
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	bool CanApply();
+	int color;
+};
+
+
 struct KeyParams : public ActorParams
 {
 	KeyParams( EditSession *edit,
@@ -616,7 +629,7 @@ struct EditSession : GUIHandler
 
 	GroundInfo worldPosGround;
 
-
+	sf::Vector2i airPos;
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;

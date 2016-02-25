@@ -3221,6 +3221,24 @@ bool EditSession::OpenFile( string fileName )
 					a->monitorType = (ActorParams::MonitorType)mType;
 					
 				}
+				else if( typeName == "healthfly" )
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					//int mType;
+					//is >> mType;
+
+					int color;
+					is >> color;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new HealthFlyParams( this, pos, color ) );
+					//a->monitorType = (ActorParams::MonitorType)mType;
+				}
 				else if( typeName == "key" )
 				{
 					Vector2i pos;
@@ -4529,6 +4547,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
+	Panel *healthflyPanel = CreateOptionsPanel( "healthfly" );
+	ActorType *healthflyType = new ActorType( "healthfly", healthflyPanel );
+
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
@@ -4551,7 +4572,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	errorPopup = CreatePopupPanel( "error" );
 
 	types["patroller"] = patrollerType;
-	
+	types["healthfly"] = healthflyType;
 	types["crawler"] = crawlerType;
 	types["crawlerreverser"] = crawlerReverserType;
 	types["basicturret"] = basicTurretType;
@@ -4583,6 +4604,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s4( goalType->iconTexture );
 	sf::Sprite s5( keyType->iconTexture );
 	sf::Sprite s6( crawlerReverserType->iconTexture );
+	sf::Sprite s7( healthflyType->iconTexture );
 
 	sf::Sprite ss0( greenKeyType->iconTexture );
 	sf::Sprite ss1( blueKeyType->iconTexture );
@@ -4597,6 +4619,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 2, 0, s4, "goal" );
 	gs->Set( 0, 2, s5, "key" );
 	gs->Set( 2, 1, s6, "crawlerreverser" );
+	gs->Set( 2, 2, s7, "healthfly" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -6932,6 +6955,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//mode = CREATE_PATROL_PATH;
 										//patrolPath.clear();
 										//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+									}
+									else if( trackingEnemy->name == "healthfly" )
+									{
+										showPanel = trackingEnemy->panel;
+
+										showPanel->textBoxes["name"]->text.setString( "test" );
+										showPanel->textBoxes["group"]->text.setString( "not test" );	
+
+										airPos = Vector2i( worldPos.x, worldPos.y );
 									}
 									else if( trackingEnemy->name == "key" )
 									{
@@ -10206,7 +10238,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
-	
 	else if( p->name == "key_options" )
 	{
 		if( b->name == "ok" )
@@ -10425,6 +10456,52 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			showPanel = NULL;
 			//showPanel = enemySelectPanel;
+		}
+	}
+	else if( p->name == "healthfly_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				HealthFlyParams *fly = (HealthFlyParams*)select;
+				fly->color = 0;
+				//patroller->speed = speed;
+				//patroller->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				/*GridSelector * gs = p->gridSelectors["monitortype"];
+
+				//eventually can convert this between indexes or something to simplify when i have more types
+				string name = gs->names[gs->selectedX][gs->selectedY];
+
+				ActorParams::MonitorType monitorType;
+				if( name == "red" )
+				{
+					monitorType = ActorParams::RED;
+				}
+				else if( name == "green" )
+				{
+					monitorType = ActorParams::GREEN;
+				}
+				else if( name == "blue" )
+				{
+					monitorType = ActorParams::BLUE;
+				}*/
+
+
+				ActorPtr fly( new HealthFlyParams( this, airPos, 0 ) );
+				fly->monitorType = ActorParams::MonitorType::NONE; //monitorType;
+				//groups["--"]->actors.push_back( patroller);
+				fly->group = groups["--"];
+
+				CreateActor( fly );
+			}
+			showPanel = NULL;
 		}
 	}
 	else if( p->name == "map_options" )
@@ -12168,6 +12245,22 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
+	if( name == "healthfly" )
+	{
+		Panel *p = new Panel( "healthfly_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 3, 1, 32, 32, true, true);
+		//cout << "created................." << endl;
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
 	if( name == "key" )
 	{
 		Panel *p = new Panel( "key_options", 200, 500, this );
@@ -12792,6 +12885,13 @@ ActorType::ActorType( const std::string & n, Panel *p )
 void ActorType::Init()
 {
 	if( name == "patroller" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if( name == "healthfly" )
 	{
 		width = 32;
 		height = 32;

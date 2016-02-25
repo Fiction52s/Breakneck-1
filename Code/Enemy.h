@@ -701,6 +701,7 @@ struct HealthFly : Enemy
 	};
 
 	HealthFly( GameSession *owner,
+		sf::Vector2i &pos,
 		FlyType fType );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

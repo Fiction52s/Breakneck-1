@@ -933,6 +933,31 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if( typeName == "healthfly" )
+			{
+				int xPos,yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+				
+				int color;
+				is >> color;
+				
+				HealthFly::FlyType fType = (HealthFly::FlyType)color;
+				//Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				//enemy->Monitor::MonitorType
+				
+				HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
+				
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
 			else
 			{
 				assert( false && "not a valid type name" );
@@ -5006,7 +5031,7 @@ PowerBar::PowerBar()
 	linesPerBar = 60;
 
 	pointsPerLayer = 2 * 6 * 60;//3 * 6 * 60//240 * 10;
-	maxLayer = 0;//6;
+	maxLayer = 1;//6;
 	points = pointsPerLayer;//pointsPerLayer * ( maxLayer + 1 );
 	layer = maxLayer;//maxLayer;
 	
@@ -5105,7 +5130,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	rs.setFillColor( COLOR_TEAL );
 	rs.setSize( Vector2f( tankWidth, tankHeight ) );
 	rs.setPosition( 0, 180 + 600 - tankHeight );
-	for( int i = 0; i < layer - 1; ++i )
+	for( int i = 0; i < layer; ++i )
 	{
 		target->draw( rs );
 		rs.setPosition( rs.getPosition().x, rs.getPosition().y - tankHeight - tankSpacing );
@@ -5113,16 +5138,16 @@ void PowerBar::Draw( sf::RenderTarget *target )
 
 	//only need this until I get a background
 
-	rs.setFillColor( Color( 100, 100, 100 ) );
-	target->draw( rs );
+	//rs.setFillColor( Color( 100, 100, 100 ) );
+	//target->draw( rs );
 
-	rs.setFillColor( COLOR_TEAL );
+	/*rs.setFillColor( COLOR_TEAL );
 	//in progress tank
 	int off = ceil( (points / (double)pointsPerLayer) * 32.0);
 	//cout << "off: " << off << endl;
 	rs.setPosition( rs.getPosition().x, rs.getPosition().y + tankHeight );
 	rs.setSize( Vector2f( tankWidth, -off ) );
-	target->draw( rs );
+	target->draw( rs );*/
 	
 
 	//0x99a9b9
@@ -5144,7 +5169,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	
 
 	//target->draw( panelSprite );
-	target->draw( rs );
+	//target->draw( rs );
 }
 
 bool PowerBar::Damage( int power )
