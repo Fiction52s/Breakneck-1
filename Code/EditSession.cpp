@@ -10418,7 +10418,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				//groups["--"]->actors.push_back( footTrap );
 				footTrap->group = groups["--"];
-				trackingEnemy = NULL;
+				//trackingEnemy = NULL;
 				showPanel = NULL;
 
 				CreateActor( footTrap );
