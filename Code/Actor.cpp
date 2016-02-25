@@ -5164,7 +5164,7 @@ void Actor::UpdatePrePhysics()
 
 bool Actor::CheckWall( bool right )
 {
-	double wThresh = 5;
+	double wThresh = 8;
 	V2d vel;
 	if( right )
 	{
