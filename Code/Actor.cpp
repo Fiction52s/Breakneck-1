@@ -1671,11 +1671,11 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 						{
-							if( velocity.x > 0 )
+							if( groundSpeed > 0 )//velocity.x > 0 )
 							{
 								facingRight = true;
 							}
-							else if( velocity.x < 0 )
+							else if( groundSpeed < 0 )//velocity.x < 0 )
 							{
 								facingRight = false;
 							}
@@ -2763,6 +2763,15 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
+				action = JUMPSQUAT;
+				bufferedAttack = false;
+				frame = 0;
+				break;
+			}
+
+			if( currInput.B && !prevInput.B )
+			//if( currInput.A && !prevInput.A )
+			{
 				if( gNorm.x < 0 && currInput.LRight() )
 				{
 					action = STEEPCLIMB;
@@ -2777,12 +2786,12 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = -10;
 					frame = 0;
 				}
-				else
+				/*else
 				{
 					action = JUMPSQUAT;
 					bufferedAttack = false;
 					frame = 0;
-				}
+				}*/
 				break;
 			}
 
@@ -2919,26 +2928,32 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.A && !prevInput.A && framesSinceClimbBoost > climbBoostLimit )
+			if( currInput.A && !prevInput.A )
+			{
+				action = JUMPSQUAT;
+				bufferedAttack = false;
+				frame = 0;
+				break;
+			}
+
+			if( currInput.B && !prevInput.B && framesSinceClimbBoost > climbBoostLimit )
 			{
 				//cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
 				double sp = 5;//jumpStrength + 1;//28.0;
 				double extra = 5.0;
-				if( gNorm.x > 0 && currInput.LLeft() )
+				if( gNorm.x > 0 )//&& currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
 				}
-				else if( gNorm.x < 0 && currInput.LRight() )
+				else if( gNorm.x < 0 )// && currInput.LRight() )
 				{
 					groundSpeed = std::max( groundSpeed + extra, sp );
 				}
-				else
+				/*else
 				{
-					action = JUMPSQUAT;
-					bufferedAttack = false;
-					frame = 0;
-				}
+					
+				}*/
 				break;
 			}
 			else
@@ -2946,6 +2961,8 @@ void Actor::UpdatePrePhysics()
 				//purposely counts outside of time slow so you can get extra boosts in time slow for now
 				
 			}
+
+			
 
 			if( reversed )
 			{
@@ -8077,7 +8094,10 @@ void Actor::UpdatePhysics()
 			bool bounceOkay = true;
 			
 			int trueFramesInAir = framesInAir;
-			if( tempCollision )
+
+			//note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
+			//also theres a jump && false condition that would need to be changed back
+			if( tempCollision && minContact.normal.y >= 0 )
 			{
 				framesInAir = maxJumpHeightFrame + 1;
 			}
@@ -8194,7 +8214,7 @@ void Actor::UpdatePhysics()
 			//	cout << "bouncing" << endl;
 			}
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
-			else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			else if( ((action == JUMP && /*!holdJump*/false) || framesInAir > maxJumpHeightFrame || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
 				
 				//b.rh = dashHeight;
