@@ -23,6 +23,10 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
 
+	if( !clockwise )
+	{
+		groundSpeed = -groundSpeed;
+	}
 
 
 	spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
@@ -195,16 +199,6 @@ void Crawler::UpdatePrePhysics()
 	{
 		frame = 0;
 	}
-
-	if( clockwise )
-	{
-		groundSpeed = 1.5;
-	}
-	else
-	{
-		groundSpeed = -1.5;
-	}
-	
 }
 
 void Crawler::UpdatePhysics()
@@ -262,6 +256,11 @@ void Crawler::UpdatePhysics()
 
 		if( movement > 0 && q == groundLength )
 		{
+			double c = cross( e1n, gNormal );
+			double d = dot( e1n, gNormal );
+			cout << "c: " << c << ", d: " << d << endl;
+			//if( c >= -.5 && d > 0 )
+			//if( d > . )
 			if( gNormal == e1n )
 			{
 				q = 0;
@@ -275,13 +274,49 @@ void Crawler::UpdatePhysics()
 			}
 			else
 			{
-				double angle = m / physBody.rw;
+				double angle = m / 3.0 /  physBody.rw;
 				V2d currVec = position - ground->v1;
 				V2d newPos;
 				newPos.x = currVec.x * cos( angle ) - 
 					currVec.y * sin( angle ) + ground->v1.x;
 				newPos.y = currVec.x * sin( angle ) + 
 					currVec.y * cos( angle ) + ground->v1.y;
+				V2d newVec = newPos - ground->v1;
+				double rollNew = atan2( newVec.y, newVec.x );
+				if( rollNew < 0 )
+				{
+					rollNew += 2 * PI;
+				}
+
+				double oldRollFactor = rollFactor;
+				double rollStart = atan2( gNormal.y, gNormal.x );
+				V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
+				double rollEnd = atan2( e1n.y, e1n.x );
+
+				if( rollStart < 0 )
+					rollStart += 2 * PI;
+				if( rollEnd < 0 )
+					rollEnd += 2 * PI;
+
+				//cout << "totalAngleDist: " << totalAngleDist << endl;
+				//cout << "angleDist: " << angleDist << endl;
+				//cout << "rollEnd: " << rollEnd << endl;
+				//cout << "rollNew: " << rollNew << endl;
+
+				bool changed = false;
+				if( rollEnd > rollStart && rollNew > rollEnd )
+				{
+					changed = true;
+					newPos = ground->v1 + e1n * physBody.rw;
+				}
+				else if( rollEnd < rollStart && rollNew < rollEnd )
+				{
+					changed = true;
+					newPos = ground->v1 + e1n * physBody.rw;
+				}
+
+				//V2d newVec = newPos - ground->v1;
+
 
 				bool hit = ResolvePhysics( newPos - position );
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -294,7 +329,16 @@ void Crawler::UpdatePhysics()
 					roll = false;
 					//cout << "hitting" << endl;
 					break;
-				}			
+				}
+
+				if( changed )
+				{
+					ground = e1;
+					q = 0;
+					roll = false;
+				}
+				//if no hit
+
 
 				//if( rollFactor < 1.0 )
 				//{ 
@@ -426,6 +470,8 @@ void Crawler::UpdatePhysics()
 		}
 		else if( movement < 0 && q == 0 )
 		{
+			double d = dot( e1n, gNormal );
+
 			if( gNormal == e0n )
 			{
 			//	cout << "what" << endl;
@@ -440,13 +486,41 @@ void Crawler::UpdatePhysics()
 			}
 			else
 			{
-				double angle = m / physBody.rw;
+				double angle = m / 3.0 / physBody.rw;
 				V2d currVec = position - ground->v0;
 				V2d newPos;
 				newPos.x = currVec.x * cos( angle ) - 
 					currVec.y * sin( angle ) + ground->v0.x;
 				newPos.y = currVec.x * sin( angle ) + 
 					currVec.y * cos( angle ) + ground->v0.y;
+				V2d newVec = newPos - ground->v0;
+				double rollNew = atan2( newVec.y, newVec.x );
+				if( rollNew < 0 )
+				{
+					rollNew += 2 * PI;
+				}
+
+				double oldRollFactor = rollFactor;
+				double rollStart = atan2( gNormal.y, gNormal.x );
+				V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
+				double rollEnd = atan2( e0n.y, e0n.x );
+
+				if( rollStart < 0 )
+					rollStart += 2 * PI;
+				if( rollEnd < 0 )
+					rollEnd += 2 * PI;
+
+				bool changed = false;
+				if( rollEnd < rollStart && rollNew < rollEnd )
+				{
+					changed = true;
+					newPos = ground->v0 + e0n * physBody.rw;
+				}
+				else if( rollEnd > rollStart && rollNew > rollEnd )
+				{
+					changed = true;
+					newPos = ground->v0 + e0n * physBody.rw;
+				}
 
 				bool hit = ResolvePhysics( newPos - position );
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
@@ -459,7 +533,15 @@ void Crawler::UpdatePhysics()
 					roll = false;
 					//cout << "hitting" << endl;
 					break;
-				}			
+				}	
+
+				if( changed )
+				{
+					ground = e0;
+					q = length( e0->v1 - e0->v0 );
+					roll = false;
+				}
+
 				//}
 				//else
 				//{

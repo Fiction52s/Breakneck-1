@@ -3219,6 +3219,7 @@ bool EditSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new PatrollerParams( this, pos, globalPath, speed, loop ) );
 					a->monitorType = (ActorParams::MonitorType)mType;
+					
 				}
 				else if( typeName == "key" )
 				{
@@ -6914,7 +6915,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											showPanel->textBoxes["name"]->text.setString( "test" );
 											showPanel->textBoxes["group"]->text.setString( "not test" );
 											showPanel->checkBoxes["clockwise"]->checked = false;
-											showPanel->textBoxes["speed"]->text.setString( "10" );
+											showPanel->textBoxes["speed"]->text.setString( "1.5" );
 											//trackingEnemy = NULL;
 										}
 									}
@@ -7129,6 +7130,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							cout << "menu: " << menuSelection << endl;
 							if( menuSelection == "top" )
 							{
+								bool single = selectedBrush->objects.size() == 1 
+									&& selectedPoints.size() == 0
+									&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
 								if( menuDownStored == EDIT && selectedPolygons.size() > 0 )
 								{
 									showPanel = terrainOptionsPanel;
@@ -7149,7 +7153,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPanel = lightPanel;
 									mode = menuDownStored;
 								}
-								else if( menuDownStored == EDIT && selectedActor != NULL )
+								else if( menuDownStored == EDIT && single )
 								{
 									SetEnemyEditPanel();
 									mode = menuDownStored;
@@ -9783,7 +9787,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					preScreenTex->draw( cs );
 
 					sf::Text textmag;
-					if( menuDownStored == EditSession::EDIT && selectedActor != NULL )
+
+					bool single = selectedBrush->objects.size() == 1 
+						&& selectedPoints.size() == 0
+						&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+					if( menuDownStored == EditSession::EDIT && single )// && selectedActor != NULL )
 					{
 						textmag.setString( "EDIT\nENEMY" );
 					}
@@ -10061,9 +10069,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			//showPanel = trackingEnemy->panel;
 			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
-			if( mode == EDIT && selectedActor != NULL )
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
 			{
-				PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+				ISelectable *select = selectedBrush->objects.front().get();				
+				PatrollerParams *patroller = (PatrollerParams*)select;
 				patroller->speed = speed;
 				patroller->loop = loop;
 				//patroller->SetPath( patrolPath );
@@ -10239,9 +10249,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			if( mode == EDIT && selectedActor != NULL )
+			//not sure if this is what i need
+			//if( mode == EDIT && selectedActor != NULL )
+			if( mode == EDIT )
 			{
-				CrawlerParams *crawler = (CrawlerParams*)selectedActor;
+				ISelectable *select = selectedBrush->objects.front().get();				
+				CrawlerParams *crawler = (CrawlerParams*)select;
 				crawler->speed = speed;
 				crawler->clockwise = clockwise;
 			}
@@ -10302,9 +10315,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
-			if( mode == EDIT && selectedActor != NULL )
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
 			{
-				BasicTurretParams *basicTurret = (BasicTurretParams*)selectedActor;
+				ISelectable *select = selectedBrush->objects.front().get();				
+				BasicTurretParams *basicTurret = (BasicTurretParams*)select;
 				basicTurret->bulletSpeed = bulletSpeed;
 				basicTurret->framesWait = framesWait;
 			}
@@ -10331,7 +10346,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" )
 		{
-			if( mode == EDIT && selectedActor != NULL )
+			if( mode == EDIT )//&& selectedActor != NULL )
 			{
 				//FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
 				
@@ -12125,7 +12140,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
 		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -12200,14 +12215,21 @@ void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
 	//need to be able to apply paths simultaneously to multiples also
-	ActorType *type = selectedActor->type;
+	ISelectable *sp = selectedBrush->objects.front().get();
+	assert( sp->selectableType == ISelectable::ACTOR );
+	ActorParams *ap = (ActorParams*)sp;
+	
+	
+	
+	//ActorType *type = selectedActor->type;
+	ActorType *type = ap->type;
 	string name = type->name;
 
 	Panel *p = type->panel;
 
 	if( name == "patroller" )
 	{
-		PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+		PatrollerParams *patroller = (PatrollerParams*)ap;
 		
 		/*Panel *p = new Panel( "patroller_options", 200, 400, this );
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
@@ -12218,8 +12240,10 @@ void EditSession::SetEnemyEditPanel()
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );*/
 		
-
-
+		//cout << "blah: " << p->textBoxes.size() << endl;
+		//cout << "f: " << patroller->group << endl;
+		//p->textBoxes["group"]->text.setString( "hahah" );
+		//cout << "blah2: " << p->textBoxes["group"]->text.getString().toAnsiString() << endl;
 		p->textBoxes["group"]->text.setString( patroller->group->name );
 
 		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( patroller->speed ) );
@@ -12244,8 +12268,9 @@ void EditSession::SetEnemyEditPanel()
 	}
 	else if( name == "crawler" )
 	{
-		CrawlerParams *crawler = (CrawlerParams*)selectedActor;
+		CrawlerParams *crawler = (CrawlerParams*)ap;
 		
+		cout << "hmm: " << name << endl;
 		p->textBoxes["group"]->text.setString( crawler->group->name );
 
 		p->checkBoxes["clockwise"]->checked = crawler->clockwise;
@@ -12255,10 +12280,11 @@ void EditSession::SetEnemyEditPanel()
 
 		
 		showPanel = p;
+		
 	}
 	else if( name == "basicturret" )
 	{
-		BasicTurretParams *basicTurret = (BasicTurretParams*)selectedActor;
+		BasicTurretParams *basicTurret = (BasicTurretParams*)ap;
 
 		//p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		//p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
@@ -12269,7 +12295,7 @@ void EditSession::SetEnemyEditPanel()
 	}
 	else if( name == "foottrap" )
 	{
-		FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
+		FootTrapParams *footTrap = (FootTrapParams*)ap;
 
 		p->textBoxes["group"]->text.setString( footTrap->group->name );
 
@@ -12277,7 +12303,7 @@ void EditSession::SetEnemyEditPanel()
 	}
 	else if( name == "key" )
 	{
-		KeyParams *key = (KeyParams*)selectedActor;
+		KeyParams *key = (KeyParams*)ap;
 		Panel *p = type->panel;
 
 		/*p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
