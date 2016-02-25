@@ -150,6 +150,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	itemTree = new QuadTree( 1000000, 1000000 );
 
+	crawlerReverserTree = new QuadTree( 1000000, 1000000 );
 
 	listVA = NULL;
 	lightList = NULL;
@@ -280,6 +281,14 @@ void GameSession::UpdateEnemiesPostPhysics()
 
 void GameSession::UpdateEnemiesDraw()
 {
+	CrawlerReverser *cr = drawCrawlerReversers;
+	while( cr != NULL )
+	{
+		cr->Draw( preScreenTex );
+		cr = cr->drawNext;
+	}
+	//CrawlerReverser *cr = 
+
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
@@ -852,6 +861,31 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				fullEnemyList.push_back( enemy );
 
 				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "crawlerreverser" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				CrawlerReverser *cr = new CrawlerReverser( this, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity );
+
+				cout << "inserting reverser!!" << endl;
+				crawlerReverserTree->Insert( cr );
+				//Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity, clockwise, speed );
+				//enemyTree = Insert( enemyTree, enemy );
+				//fullEnemyList.push_back( enemy );
+
+				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "basicturret" )
 			{
@@ -2585,6 +2619,7 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	drawCrawlerReversers = NULL;
 	//inactiveLights = NULL;
 	inactiveEnemyList = NULL;
 	cloneInactiveEnemyList = NULL;
@@ -2620,6 +2655,7 @@ int GameSession::Run( string fileN )
 	arial.loadFromFile( "arial.ttf" );
 
 	sf::Text frameRate( "00", arial, 30 );
+	frameRate.setColor( Color::Red );
 
 	activeSequence = NULL;
 
@@ -3335,6 +3371,10 @@ int GameSession::Run( string fileN )
 						}
 					}
 				}
+
+				queryMode = "crawlerreverser";
+				drawCrawlerReversers = NULL;
+				crawlerReverserTree->Query( this, screenRect );
 			
 				if( player.record > 0 )
 				{
@@ -4269,6 +4309,20 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			c->next = drawCritical;
 			drawCritical = c;
+		}
+	}
+	else if( queryMode == "crawlerreverser" )
+	{
+		CrawlerReverser *cr = (CrawlerReverser*)qte;
+		if( drawCrawlerReversers == NULL )
+		{
+			drawCrawlerReversers = cr;
+			cr->drawNext = NULL;
+		}
+		else
+		{
+			cr->drawNext = drawCrawlerReversers;
+			drawCrawlerReversers = cr;
 		}
 	}
 }

@@ -476,6 +476,18 @@ struct CrawlerParams : public ActorParams
 	float speed;
 };
 
+struct CrawlerReverserParams : public ActorParams
+{
+	CrawlerReverserParams( 
+		EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	//CrawlerParams( EditSession *edit );
+
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
 struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 

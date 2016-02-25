@@ -281,7 +281,8 @@ struct GameSession : QuadTreeCollider
 	QuadTree * grassTree;
 	QuadTree * gateTree;
 	QuadTree * itemTree;
-
+	QuadTree * crawlerReverserTree;
+	CrawlerReverser *drawCrawlerReversers;
 	//std::map<Edge*, Gate*> gateMap;
 
 	//int numKeys;

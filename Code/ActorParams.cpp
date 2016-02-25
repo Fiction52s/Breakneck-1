@@ -853,6 +853,30 @@ void CrawlerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
+CrawlerReverserParams::CrawlerReverserParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+	int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	type = edit->types["crawlerreverser"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+bool CrawlerReverserParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void CrawlerReverserParams::WriteParamFile( ofstream &of )
+{
+}
+
 BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
 	:ActorParams( PosType::GROUND_ONLY )
 {

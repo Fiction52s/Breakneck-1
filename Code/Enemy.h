@@ -191,6 +191,23 @@ struct Patroller : Enemy
 	Stored stored;
 };
 
+struct CrawlerReverser : QuadTreeEntrant
+{
+	CrawlerReverser( GameSession* owner,
+		Edge *edge, double quantity );
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+	void Draw( sf::RenderTarget *target );
+	sf::Vector2<double> position;
+	Edge *ground;
+	double quantity;
+	Tileset *ts;
+	sf::Sprite sprite;
+	CollisionBox hurtBody;
+	CrawlerReverser *drawNext;
+	
+};
+
 struct Crawler : Enemy
 {
 	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
@@ -224,6 +241,8 @@ struct Crawler : Enemy
 	//sf::Vector2<double> offset;
 	double edgeQuantity;
 
+	CrawlerReverser *lastReverser;
+
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	CollisionBox physBody;
@@ -255,6 +274,8 @@ struct Crawler : Enemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 };
+
+
 
 struct BasicTurret : Enemy
 {

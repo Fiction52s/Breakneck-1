@@ -3336,6 +3336,43 @@ bool EditSession::OpenFile( string fileName )
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if( typeName == "crawlerreverser" )
+				{
+					//always grounded
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing crawler_reverser" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
+					a.reset( new CrawlerReverserParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
 				else if( typeName == "basicturret" )
 				{
 					//always grounded
@@ -4495,6 +4532,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
+	Panel *crawlerReverserPanel = NULL;
+	ActorType *crawlerReverserType = new ActorType( "crawlerreverser", crawlerReverserPanel );
+
 	Panel *basicTurretPanel = CreateOptionsPanel( "basicturret" );
 	ActorType *basicTurretType = new ActorType( "basicturret", basicTurretPanel );
 
@@ -4513,6 +4553,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["patroller"] = patrollerType;
 	
 	types["crawler"] = crawlerType;
+	types["crawlerreverser"] = crawlerReverserType;
 	types["basicturret"] = basicTurretType;
 	types["foottrap"] = footTrapType;
 	types["goal"] = goalType;
@@ -4541,6 +4582,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s3( footTrapType->iconTexture );
 	sf::Sprite s4( goalType->iconTexture );
 	sf::Sprite s5( keyType->iconTexture );
+	sf::Sprite s6( crawlerReverserType->iconTexture );
 
 	sf::Sprite ss0( greenKeyType->iconTexture );
 	sf::Sprite ss1( blueKeyType->iconTexture );
@@ -4554,6 +4596,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 1, s3, "foottrap" );
 	gs->Set( 2, 0, s4, "goal" );
 	gs->Set( 0, 2, s5, "key" );
+	gs->Set( 2, 1, s6, "crawlerreverser" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -6919,6 +6962,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//trackingEnemy = NULL;
 										}
 									}
+									else if( trackingEnemy->name == "crawlerreverser" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											ActorPtr crawlerReverser( new CrawlerReverserParams( this, 
+												enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity ) );
+											crawlerReverser->group = groups["--"];
+											//groups["--"]->actors.push_back( crawlerReverser );
+											enemyEdgePolygon->enemies[crawlerReverser->groundInfo->edgeStart].push_back( crawlerReverser );
+											enemyEdgePolygon->UpdateBounds();
+
+
+											CreateActor( crawlerReverser );
+										}
+									}
 									else if( trackingEnemy->name == "basicturret" )
 									{
 										if( enemyEdgePolygon != NULL )
@@ -8769,7 +8827,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemyQuad.setPosition( enemySprite.getPosition() );
 				}
 
-				if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
+				if( showPanel == NULL && trackingEnemy != NULL && ( 
+					   trackingEnemy->name == "crawler" 
+					|| trackingEnemy->name == "crawlerreverser"
 					|| trackingEnemy->name == "basicturret"
 					|| trackingEnemy->name == "foottrap" 
 					|| trackingEnemy->name == "goal" ) )
@@ -10263,9 +10323,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
 				crawler->group = groups["--"];
 				//groups["--"]->actors.push_back( crawler );
-				
-
-				//ActorPtr actor( this );
 				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
 				enemyEdgePolygon->UpdateBounds();
 
@@ -12164,6 +12221,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	/*else if( name == "crawlerreverser" )
+	{
+		//Panel *p = new Panel( "crawlerreverser_options", 200, 400, this );
+		//p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		//p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		//p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}*/
+
 	else if( name == "map" )
 	{
 		Panel *p = new Panel( "map_options", 200, 400, this );
@@ -12753,6 +12820,13 @@ void ActorType::Init()
 		canBeAerial = false;
 	}
 	else if( name == "crawler" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+	else if( name == "crawlerreverser" )
 	{
 		width = 32;
 		height = 32;
