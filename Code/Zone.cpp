@@ -118,7 +118,7 @@ void Zone::Init()
 			{
 				assert( 0 && "gates go on forever" );
 			}
-			ecounter++;
+			//ecounter++;
 
 			bool skip = false;
 			bool found = false;

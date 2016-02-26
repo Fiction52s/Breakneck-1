@@ -9,10 +9,20 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	initHealth = 60;
+	health = initHealth;
 	lastReverser = false;
 	dead = false;
 	ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
@@ -29,6 +39,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 		groundSpeed = -groundSpeed;
 	}
 
+	receivedHit = NULL;
 
 	spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
 
@@ -73,6 +84,8 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 
 void Crawler::ResetEnemy()
 {
+	health = initHealth;
+
 	roll = false;
 	ground = startGround;
 	edgeQuantity = startQuant;
@@ -224,6 +237,20 @@ void Crawler::UpdateHitboxes()
 
 void Crawler::UpdatePrePhysics()
 {
+	if( !dead && receivedHit != NULL )
+	{	
+		//gotta factor in getting hit by a clone
+		health -= 20;
+
+		//cout << "health now: " << health << endl;
+
+		if( health <= 0 )
+			dead = true;
+
+		receivedHit = NULL;
+	}
+
+
 	if( ( !roll && frame == 17 * crawlAnimationFactor )
 		|| ( roll && frame == 7 * rollAnimationFactor ) )
 	{
@@ -901,7 +928,7 @@ bool Crawler::ResolvePhysics( V2d vel )
 
 void Crawler::PhysicsResponse()
 {
-	if( !dead )
+	if( !dead && receivedHit == NULL )
 	{
 		//cout << "response" << endl;
 		double spaceNeeded = 0;
@@ -1081,14 +1108,33 @@ void Crawler::PhysicsResponse()
 		pair<bool, bool> result = PlayerHitMe();
 		if( result.first )
 		{
+			cout << "hit here!" << endl;
+			//triggers multiple times per frame? bad?
+			owner->player.test = true;
+			owner->player.currAttackHit = true;
+			owner->player.flashColor = COLOR_BLUE;
+			owner->player.flashFrames = 5;
+			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->powerBar.Charge( 2 * 6 * 1 );
+
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			{
+				owner->player.velocity.y = 4;//.5;
+			}
+
+			//cout << "frame: " << owner->player.frame << endl;
+
+			//owner->player.frame--;
+			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
+			
+			/*if( !result.second )
 			{
 				owner->Pause( 6 );
-			}
+			}*/
 			
-			dead = true;
-			receivedHit = NULL;
+			//dead = true;
+			//receivedHit = NULL;
 		}
 
 		if( IHitPlayer() )
@@ -1106,6 +1152,9 @@ void Crawler::PhysicsResponse()
 
 void Crawler::UpdatePostPhysics()
 {
+	if( receivedHit != NULL )
+		owner->Pause( 5 );
+
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
@@ -1120,6 +1169,8 @@ void Crawler::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
+
+	//need to calculate frames in here!!!!
 
 	//sprite.setPosition( position );
 	//UpdateHitboxes();
@@ -1158,11 +1209,11 @@ bool Crawler::IHitPlayer()
 		if( player.position.x < position.x )
 		{
 			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
-			cout << "left" << endl;
+			//cout << "left" << endl;
 		}
 		else if( player.position.x > position.x )
 		{
-			cout << "right" << endl;
+			//cout << "right" << endl;
 			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
 		}
 		else

@@ -3818,7 +3818,7 @@ void Actor::UpdatePrePhysics()
 			}
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{
-				cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << endl;
+				//cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << endl;
 
 				AirMovement();
 			}

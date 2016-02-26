@@ -9,9 +9,21 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 		:Enemy( owner, EnemyType::FOOTTRAP ), ground( g ), edgeQuantity( q ), dead( false )
 {
+	initHealth = 40;
+	health = initHealth;
+
 	ts = owner->GetTileset( "foottrap.png", 160, 80 );
 	sprite.setTexture( *ts->texture );
 	
@@ -19,6 +31,8 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	//cout << "player " << owner->player.position.x << ", " << owner->player.position.y << endl;
 	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
 	position = gPoint;
+
+	receivedHit = NULL;
 
 	gn = g->Normal();
 	angle = atan2( gn.x, -gn.y );
@@ -72,6 +86,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 
 void FootTrap::ResetEnemy()
 {
+	health = initHealth;
 	frame = 0;
 	deathFrame = 0;
 	dead = false;
@@ -83,6 +98,18 @@ void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 
 void FootTrap::UpdatePrePhysics()
 {
+	if( !dead && receivedHit != NULL )
+	{	
+		
+		//gotta factor in getting hit by a clone
+		health -= 20;
+		cout << "damaging: " << health << endl;
+		if( health <= 0 )
+			dead = true;
+
+		receivedHit = NULL;
+	}
+
 	if( frame == 0 )
 	{
 		
@@ -105,21 +132,26 @@ void FootTrap::UpdatePhysics()
 		slowCounter = 1;
 	}
 
-	if( !dead )
+	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
 		pair<bool, bool> result = PlayerHitMe();
 		if( result.first )
 		{
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
+			//cout << "hit here!" << endl;
+			//triggers multiple times per frame? bad?
+			owner->player.test = true;
+			owner->player.currAttackHit = true;
+			owner->player.flashColor = COLOR_BLUE;
+			owner->player.flashFrames = 5;
+			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->powerBar.Charge( 2 * 6 * 1 );
+
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
-				owner->Pause( 6 );
+				owner->player.velocity.y = 4;//.5;
 			}
-			
-			dead = true;
-			receivedHit = NULL;
 		}
 
 		if( IHitPlayer() )
@@ -133,7 +165,8 @@ void FootTrap::UpdatePhysics()
 
 void FootTrap::UpdatePostPhysics()
 {
-	
+	if( receivedHit != NULL )
+		owner->Pause( 5 );
 
 	
 
