@@ -46,10 +46,22 @@ void ActorParams::Draw( sf::RenderTarget *target )
 		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
 		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
 		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
-		target->draw( rs );
+		//target->draw( rs );
 		//cout << "selected draw" << endl;
 	}
-	target->draw( image );
+
+	//temporary checks might make it lag less?
+
+	Vector2f viewCenter = target->getView().getCenter();
+	Vector2f viewSize = target->getView().getSize();
+	if( image.getGlobalBounds().intersects( FloatRect( viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+		viewSize.x, viewSize.y ) ) )
+	{
+		target->draw( image );
+	}
+	
+
+
 }
 
 void ActorParams::WriteFile( ofstream &of )

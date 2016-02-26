@@ -1473,7 +1473,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			cs.setFillColor( Color::Green );
 
 		cs.setPosition( curr->pos.x, curr->pos.y );
-		rt->draw( cs );
+	//	rt->draw( cs );
 	}
 
 	//always do this now for awhile
