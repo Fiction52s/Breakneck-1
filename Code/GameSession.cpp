@@ -3092,7 +3092,8 @@ int GameSession::Run( string fileN )
 
 					while( unlockedGateList != NULL )
 					{
-					//	cout << "respawn: locking a gate!" << endl;
+						assert( unlockedGateList != unlockedGateList->activeNext );
+						cout << "respawn: locking a gate: " << unlockedGateList << endl;
 						//cout << "relocking gate " << endl;
 						unlockedGateList->SetLocked( true );
 						unlockedGateList->gState = Gate::SOFT;
@@ -6102,6 +6103,7 @@ void GameSession::UnlockGate( Gate *g )
 {
 	g->SetLocked( false );
 
+	cout << "adding gate to unlock list: " << g << endl;
 	if( unlockedGateList == NULL )
 	{
 		unlockedGateList = g;
@@ -6129,8 +6131,17 @@ void GameSession::LockGate( Gate *g )
 	else
 	{
 		Gate *gate = unlockedGateList;
+		if( g == unlockedGateList )
+		{
+			unlockedGateList = unlockedGateList->activeNext;
+			//g->activeNext = unlockedGateList->activeNext;
+			//unlockedGateList = g;
+			//break;
+		} 
+		else
 		while( gate != NULL )
 		{
+			//do i need this? i feel like i need this
 			if( gate->activeNext == g )
 			{
 				Gate *gate2 = gate->activeNext->activeNext;

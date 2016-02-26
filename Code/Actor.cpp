@@ -9039,7 +9039,7 @@ void Actor::PhysicsResponse()
 		{
 			gateTouched = NULL;
 			owner->LockGate( g );
-			//cout << "went back" << endl;
+			cout << "went back" << endl;
 		}
 		else
 		{
@@ -12911,10 +12911,15 @@ void Actor::SetActionGrind()
 
 bool Actor::CanUnlockGate( Gate *g )
 {
-	if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER )
+	//if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER 
+	//	|| g->gState == Gate::DISSOLVE
+	//	|| g->gState )
+	if( !g->locked )
 	{
 		return false;
 	}
+
+	cout << "this gate is still locked" << endl;
 
 	switch( g->type )
 	{
