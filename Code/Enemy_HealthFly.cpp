@@ -18,8 +18,15 @@ using namespace sf;
 HealthFly::HealthFly( GameSession *owner, Vector2i &pos, FlyType fType )
 	:Enemy( owner, Enemy::HEALTHFLY ), flyType( fType )
 {
+	ts = owner->GetTileset( "healthfly.png", 32, 32 );
+
+	sprite.setTexture( *ts->texture );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	
 	position.x = pos.x;
 	position.y = pos.y;
+
+	sprite.setPosition( position.x, position.y );
 
 	initHealth = 60;
 	health = initHealth;
@@ -74,7 +81,7 @@ void HealthFly::UpdatePhysics()
 	if( ihit || hitMe.first )
 	{
 		//give player health right here!
-
+		owner->powerBar.Charge( 2 * 6 * 4 ); //4 rows currently
 		owner->RemoveEnemy( this );
 		//get rid of me
 	}
@@ -90,13 +97,14 @@ void HealthFly::UpdatePostPhysics()
 
 void HealthFly::Draw( sf::RenderTarget *target)
 {
-	cout << "drawing health fly" << endl;
-	sf::CircleShape cs;
+	//cout << "drawing health fly" << endl;
+	target->draw( sprite );
+	/*sf::CircleShape cs;
 	cs.setRadius( 20 );
 	cs.setFillColor( Color( 0, 255, 0, 100 ) );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
-	target->draw( cs );
+	target->draw( cs );*/
 }
 
 void HealthFly::DrawMinimap( sf::RenderTarget *target )

@@ -722,6 +722,8 @@ struct HealthFly : Enemy
 	CollisionBox hitBody;
 	Enemy *host;
 	FlyType flyType;
+	sf::Sprite sprite;
+	Tileset *ts;
 };
 
 struct EnemyParentNode;

@@ -2540,6 +2540,7 @@ void GameSession::SetupZones()
 
 			if( (*it)->ContainsZone( (*it2) ) )
 			{
+				cout << "contains zone!" << endl;
 				(*it)->subZones.push_back( (*it2) );
 			}
 		}

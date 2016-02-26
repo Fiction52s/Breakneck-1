@@ -58,6 +58,7 @@ void Zone::Init()
 
 	list<Edge*> relGates;
 	
+	cout << "subZones: " << subZones.size() << endl;
 	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
 	{
 		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
@@ -92,10 +93,12 @@ void Zone::Init()
 	cout << "relgates: " << relGates.size() << endl;
 
 
-
+	int emergency = 200;
+	int ecounter = 0;
 	list<p2t::Point*> allHolePoints;
 	while( !relGates.empty() )
 	{
+		
 		vector<p2t::Point*> holePolyline;
 
 		Edge *start = relGates.front();
@@ -111,6 +114,12 @@ void Zone::Init()
 
 		while( curr != start )
 		{
+			if( ecounter == emergency )
+			{
+				assert( 0 && "gates go on forever" );
+			}
+			ecounter++;
+
 			bool skip = false;
 			bool found = false;
 			//if edge is gate type
@@ -149,6 +158,8 @@ void Zone::Init()
 				//this fixes a loose gate so that the correct shadow polygon can be created.
 				if( !found )
 				{
+					cout << "fixing loose gate" << endl;
+
 					Gate *g = (Gate*)curr->info;
 					Edge *prev = curr->edge0;
 
@@ -466,7 +477,10 @@ bool Zone::ContainsPoint( V2d test )
 
 bool Zone::ContainsZone( Zone *z )
 {
-	V2d p( z->gates.front()->edge0->v0.x, z->gates.front()->edge0->v0.y );
+	//midpoint on the gate
+	V2d p( 
+		( z->gates.front()->edge0->v0.x + z->gates.front()->edge1->v1.x ) / 2, 
+		( z->gates.front()->edge0->v0.y + z->gates.front()->edge0->v1.y ) / 2);
 	return ContainsPoint( p );
 }
 
