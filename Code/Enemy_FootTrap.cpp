@@ -63,7 +63,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	hitboxInfo->drainX = .5;
 	hitboxInfo->drainY = .5;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
 	frame = 0;

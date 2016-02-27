@@ -938,7 +938,7 @@ void Actor::UpdatePrePhysics()
 	{
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
-		invincibleFrames = 30;//receivedHit->damage;
+		invincibleFrames = receivedHit->hitstunFrames + 10;//25;//receivedHit->damage;
 		
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
@@ -3487,19 +3487,22 @@ void Actor::UpdatePrePhysics()
 					if( bounceFlameOn )
 						airBounceFrame = 13 * 3;
 
-					double blah = .3;
+					double blah = .25;
 
 					V2d dir( 0, 0 );
 					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
 					{
+						dir = V2d( blah, 0 );
 						//dir = V2d( blah, 0 );
 						if( groundSpeed > 0 )
 						{
-							//dir = V2d( blah, 0 );
+							cout << "right" << endl;
+							
 						}
 						else
 						{
-							//dir = V2d( blah, 0 );
+							cout << "left" << endl;
+							//dir = V2d( -blah, 0 );
 							//dir = V2d( -blah, 0 );
 						}
 						
@@ -11636,6 +11639,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				V2d v0 = edge->v0;
 				V2d v1 = edge->v1;				
 
+				//note: approxequals could be broken slightly
 				if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
 				{
 					V2d pv0 = prev->v0;

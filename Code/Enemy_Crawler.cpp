@@ -64,7 +64,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
 	crawlAnimationFactor = 2;

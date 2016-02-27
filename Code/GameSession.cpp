@@ -2645,6 +2645,8 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	originalZone = NULL;
+
 	drawCrawlerReversers = NULL;
 	//inactiveLights = NULL;
 	inactiveEnemyList = NULL;
