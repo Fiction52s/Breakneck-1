@@ -18,9 +18,12 @@ using namespace sf;
 HealthFly::HealthFly( GameSession *owner, Vector2i &pos, FlyType fType )
 	:Enemy( owner, Enemy::HEALTHFLY ), flyType( fType )
 {
-	ts = owner->GetTileset( "healthfly.png", 32, 32 );
+	frame = 0;
+	animationFactor = 4;
+	ts = owner->GetTileset( "healthfly_64x64.png", 64, 64 );
 
 	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	
 	position.x = pos.x;
@@ -48,6 +51,7 @@ HealthFly::HealthFly( GameSession *owner, Vector2i &pos, FlyType fType )
 	hurtBody.rw = radius;
 	hurtBody.rh = radius;
 	
+	caught = false;
 	
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
@@ -70,6 +74,10 @@ void HealthFly::HandleEntrant( QuadTreeEntrant *qte )
 
 void HealthFly::UpdatePrePhysics()
 {
+	if( frame == 5 * animationFactor ) //5 frames of animation
+	{
+		frame = 0;
+	}
 	//empty
 }
 
@@ -80,9 +88,13 @@ void HealthFly::UpdatePhysics()
 	bool ihit = IHitPlayer();
 	if( ihit || hitMe.first )
 	{
-		//give player health right here!
-		owner->powerBar.Charge( 2 * 6 * 4 ); //4 rows currently
-		owner->RemoveEnemy( this );
+		if( !caught )
+		{
+			caught = true;
+			//give player health right here!
+			owner->powerBar.Charge( 2 * 6 * 4 ); //4 rows currently
+		}
+		//owner->RemoveEnemy( this );
 		//get rid of me
 	}
 
@@ -92,6 +104,29 @@ void HealthFly::UpdatePhysics()
 
 void HealthFly::UpdatePostPhysics()
 {
+	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+
+	if( slowCounter == slowMultiple )
+	{
+		
+		++frame;
+		slowCounter = 1;
+	
+		//if( dead )
+		//{
+		//	deathFrame++;
+		//}
+
+	}
+	else
+	{
+		slowCounter++;
+	}
+
+	if( caught )
+	{
+		owner->RemoveEnemy( this );
+	}
 	//empty
 }
 
@@ -217,6 +252,8 @@ void HealthFly::LoadEnemyState()
 
 void HealthFly::ResetEnemy()
 {
+	caught = false;
+	frame = 0;
 	//owner->
 	//cout << "resetting monitor" << endl;
 }

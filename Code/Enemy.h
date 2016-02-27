@@ -329,6 +329,8 @@ struct BasicTurret : Enemy
 		int frame;
 		int slowCounter;
 		int slowMultiple;
+		int maxFramesToLive;
+		int framesToLive;
 	};
 	Bullet *queryBullet;
 	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
@@ -724,6 +726,9 @@ struct HealthFly : Enemy
 	FlyType flyType;
 	sf::Sprite sprite;
 	Tileset *ts;
+	int frame;
+	int animationFactor;
+	bool caught;
 };
 
 struct EnemyParentNode;

@@ -149,6 +149,19 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicTurret::UpdatePrePhysics()
 {
+//	DeactivateBullet( currBullet );
+	Bullet *currBullet = activeBullets;
+	while( currBullet != NULL )
+	{
+		Bullet *next = currBullet->next;
+		if( currBullet->framesToLive == 0 )
+		{
+			DeactivateBullet( currBullet );
+		}
+		currBullet = next;
+	}
+	
+
 	if( frame == 12 * animationFactor && slowCounter == 1 )
 	{
 		//cout << "firing" << endl;
@@ -159,6 +172,7 @@ void BasicTurret::UpdatePrePhysics()
 			b->position = position ;//+ ground->Normal() * 16.0;
 			b->slowCounter = 1;
 			b->slowMultiple = 1;
+			b->framesToLive = b->maxFramesToLive;
 		}
 		else
 		{
@@ -285,7 +299,14 @@ void BasicTurret::UpdatePostPhysics()
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
+		
 		++frame;
+		Bullet *currBullet = activeBullets;
+		while( currBullet != NULL )
+		{
+			currBullet->framesToLive--;
+			currBullet = currBullet->next;
+		}
 	//	cout << "frame" << endl;
 		slowCounter = 1;
 	
@@ -726,6 +747,7 @@ BasicTurret::Bullet * BasicTurret::ActivateBullet()
 }
 
 BasicTurret::Bullet::Bullet()
-	:prev( NULL ), next( NULL ), frame( 0 ), slowCounter( 1 ), slowMultiple( 1 )
+	:prev( NULL ), next( NULL ), frame( 0 ), slowCounter( 1 ), slowMultiple( 1 ), maxFramesToLive( 120 )
 {
+	//framesToLive = maxFramesToLive;
 }

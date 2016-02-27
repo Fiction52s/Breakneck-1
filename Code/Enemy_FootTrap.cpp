@@ -24,7 +24,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	initHealth = 40;
 	health = initHealth;
 
-	ts = owner->GetTileset( "foottrap.png", 160, 80 );
+	ts = owner->GetTileset( "foottrap_128x48.png", 128, 48 );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -72,7 +72,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 80, gPoint.y - 80, 80 * 2, 80 * 2 );
+	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
 
 	ts_death = owner->GetTileset( "foottrapdeath.png", 160, 80 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
