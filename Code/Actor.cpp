@@ -2193,6 +2193,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
+				cout << "cant stand up" << endl;
 				if( frame == actionLength[DASH] - 2 )
 					frame = 10;
 			}
@@ -5652,6 +5653,13 @@ V2d Actor::UpdateReversePhysics()
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
 				|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ));
+
+			//bool a = q == 0 && movement < 0;
+			//bool c = ((gNormal.x == 0 && e0n.x == 0 )
+			//	|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
+			//	|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ));
+
+			
 			bool transferRight = q == groundLength && movement > 0 //&& (groundSpeed > steepClimbSpeedThresh || e1n.y <= -steepThresh )
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
@@ -5661,8 +5669,10 @@ V2d Actor::UpdateReversePhysics()
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
 			bool changeOffset = offsetLeft || offsetRight;
 			
+			//cout << "a: " << a << " b: " << c << endl;
 			if( transferLeft )
 			{
+				//cout << "transfer left" << endl;
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
@@ -6924,6 +6934,38 @@ void Actor::UpdatePhysics()
 			//on reverse doesnt need to fly up off of edges
 			if( transferLeft )
 			{
+				if( ground->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate * g = (Gate*)ground->info;
+					if( g->edgeA == ground )
+					{
+						cout << "i am edgeA w/ edge0: ";
+					}
+					else
+					{
+						cout << "i am edgeB w/ edge0: ";
+					}
+					cout << ground->edge0 << ", ";
+
+					if( ground->edge0 == g->temp0next )
+					{
+						cout << "temp0next" << endl;
+					}
+					else if( ground->edge0 == g->temp0prev )
+					{
+						cout << "temp0prev" << endl;
+					}
+					else if( ground->edge0 == g->temp1prev )
+					{
+						cout << "temp1prev" << endl;
+					}
+					else if( ground->edge0 == g->temp1prev )
+					{
+						cout << "temp1prev" << endl;
+					}
+				}
+				cout << "gNormal: " << gNormal.x << ", " << gNormal.y << ", edge0: " << ground->edge0->Normal().x 
+					<< ", " << ground->edge0->Normal().y << endl;
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
@@ -6959,6 +7001,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
+							cout << "tff" << endl;
 							//cout << "steep transfer left" << endl;
 							ground = next;
 							q = length( ground->v1 - ground->v0 );	
@@ -7240,6 +7283,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
+				//cout << "co: " << changeOffset << endl;
 				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
@@ -7919,7 +7963,7 @@ void Actor::UpdatePhysics()
 										ground->v1 = oldv1;
 									}
 
-									cout << "this case?" << endl;
+									cout << "this case?: " << eNorm.x << ", " << eNorm.y << endl;
 								
 									groundSpeed = 0;
 									edgeQuantity = q;
@@ -11573,9 +11617,98 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 
 		
+		
+
 		if( e == ground || bb )
 		{
 			return;
+		}
+
+		//so you can run on gates without transfer issues hopefully
+		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+		{
+			Gate *g = (Gate*)ground->info;
+			Edge *edgeA = g->edgeA;
+			Edge *edgeB = g->edgeB;
+			if( ground == g->edgeA )
+			{
+				if( e == edgeB->edge0 
+					|| e == edgeB->edge1
+					|| e == edgeB )
+				{
+					return;
+				}
+
+				
+			}
+			else if( ground == g->edgeB )
+			{
+				if( e == edgeA->edge0 
+					|| e == edgeA->edge1
+					|| e == edgeA )
+				{
+					return;
+				}
+			}
+		}
+		else if( ground != NULL )
+		{
+			if( groundSpeed > 0 )
+			{
+				if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->edge0->info;
+					Edge *e0 = ground->edge0;
+					if( e0 == g->edgeA )
+					{
+						Edge *edgeB = g->edgeB;
+						if( e == edgeB->edge0 
+							|| e == edgeB->edge1
+							|| e == edgeB )
+						{
+							return;
+						}
+					}
+					else if( e0 == g->edgeB )
+					{
+						Edge *edgeA = g->edgeA;
+						if( e == edgeA->edge0 
+							|| e == edgeA->edge1
+							|| e == edgeA )
+						{
+							return;
+						}
+					}
+				}
+			}
+			else if( groundSpeed < 0 )
+			{
+				if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->edge1->info;
+					Edge *e1 = ground->edge1;
+					if( e1 == g->edgeA )
+					{
+						Edge *edgeB = g->edgeB;
+						if( e == edgeB->edge0 
+							|| e == edgeB->edge1
+							|| e == edgeB )
+						{
+							return;
+						}
+					}
+					else if( e1 == g->edgeB )
+					{
+						Edge *edgeA = g->edgeA;
+						if( e == edgeA->edge0 
+							|| e == edgeA->edge1
+							|| e == edgeA )
+						{
+							return;
+						}
+					}
+				}
+			}
 		}
 
 
@@ -11745,15 +11878,41 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if ( action != GRINDBALL )
 		{
-			if( ( e->Normal().y <= 0 && !reversed && ground != NULL ) || ( e->Normal().y >= 0 && reversed && ground != NULL ) )
+			if( ground != NULL )
 			{
-				return;
+
+				V2d en = e->Normal();
+				if( reversed )
+				{
+					if( en.y >= 0 )
+					{
+						return;
+					}
+				}
+				else
+				{
+					if( en.y <= 0 )
+					{
+						return;
+					}
+				}
+			
+
+				if( ground->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->info;
+					if( e == g->edgeA || e == g->edgeB )
+					{
+						//cout << "returnning early" << endl;
+						return;
+					}
+				}
 			}
 		}
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//if( IsEdgeTouchingBox( e, r ) )
 		//{
-			checkValid = false;
+		checkValid = false;
 
 		//}
 	}
@@ -11773,6 +11932,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		if( ground == e )
 			return;
+
+		if( e->edgeType == Edge::OPEN_GATE )
+		{
+			return;
+		}
+
 		Contact *c = owner->coll.collideEdge( position + tempVel , b, e, tempVel, V2d( 0, 0 ) );
 		
 		if( c != NULL )
@@ -12923,7 +13088,7 @@ bool Actor::CanUnlockGate( Gate *g )
 		return false;
 	}
 
-	cout << "this gate is still locked" << endl;
+	//cout << "this gate is still locked" << endl;
 
 	switch( g->type )
 	{

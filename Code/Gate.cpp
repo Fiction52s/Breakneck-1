@@ -112,7 +112,12 @@ void Gate::UpdateLine()
 	int numVertices = numTiles * 4;
 
 	if( type == Gate::GREY )
-		gQuads = new VertexArray( sf::Quads, numVertices );
+	{
+		if( gQuads == NULL )
+		{
+			gQuads = new VertexArray( sf::Quads, numVertices );
+		}
+	}
 	//cout << "giving gquads value!" << endl;
 }
 
@@ -378,6 +383,12 @@ void Gate::SetLocked( bool on )
 
 		edgeA->edge1 = temp1next;
 		temp1next->edge0 = edgeA;
+
+		//edgeB->edge0 = temp0prev;
+		//temp0prev->edge1 = edgeB;
+
+	//	edgeB->edge1 = temp1next;
+	//	temp1next->edge0 = edgeB;
 
 		edgeB->edge0 = temp1prev;
 		temp1prev->edge1 = edgeB;
