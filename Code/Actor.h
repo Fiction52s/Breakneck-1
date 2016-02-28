@@ -214,6 +214,9 @@ struct Actor : QuadTreeCollider,
 	sf::SoundBuffer dashStartBuffer;
 	sf::Sound dashStartSound;
 
+	sf::SoundBuffer jumpBuffer;
+	sf::Sound jumpSound;
+
 
 	sf::SoundBuffer playerHitBuffer;
 	sf::Sound playerHitSound;

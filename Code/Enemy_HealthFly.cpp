@@ -92,7 +92,9 @@ void HealthFly::UpdatePhysics()
 		{
 			caught = true;
 			//give player health right here!
-			owner->powerBar.Charge( 2 * 6 * 4 ); //4 rows currently
+			int rows = 10;
+			int rowCap = 2 * 6;
+			owner->powerBar.Charge( rowCap * rows ); 
 		}
 		//owner->RemoveEnemy( this );
 		//get rid of me

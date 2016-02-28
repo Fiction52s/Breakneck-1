@@ -92,7 +92,15 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "failed to load test dashstart noise" );
 		}
 		dashStartSound.setBuffer( dashStartBuffer);
-		dashStartSound.setVolume( 0 );
+		dashStartSound.setVolume( 10 );
+		dashStartSound.setLoop( true );
+
+		if( !jumpBuffer.loadFromFile( "a_jump.ogg" ) )
+		{
+			assert( 0 && "failed to load test jump noise" );
+		}
+		jumpSound.setBuffer( jumpBuffer);
+		jumpSound.setVolume( 20 );
 
 		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
 		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
@@ -190,7 +198,8 @@ Actor::Actor( GameSession *gs )
 		cb.rh = 48;
 		cb.offset.x = 32;
 		cb.offset.y = 0;
-		for( int j = 1; j <= 4; ++j )
+		//for( int j = 1; j <= 4; ++j )
+		for( int j =2; j <= 7; ++j )
 		{
 			standNHitboxes[j] = new list<CollisionBox>;
 			standNHitboxes[j]->push_back( cb );
@@ -207,7 +216,7 @@ Actor::Actor( GameSession *gs )
 		cb.rh = 48;
 		cb.offset.x = 32;
 		cb.offset.y = 0;
-		for( int j = 2; j <= 7; ++j )
+		for( int j = 2; j <= 15; ++j )
 		{
 			standDHitboxes[j] = new list<CollisionBox>;
 			standDHitboxes[j]->push_back( cb );
@@ -746,6 +755,7 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case DASH:
+			//dashStartSound.stop();
 			action = STAND;
 			frame = 0;
 			break;
@@ -938,7 +948,7 @@ void Actor::UpdatePrePhysics()
 	{
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
-		invincibleFrames = receivedHit->hitstunFrames + 10;//25;//receivedHit->damage;
+		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
@@ -1023,6 +1033,29 @@ void Actor::UpdatePrePhysics()
 		bounceFlameOn = false;
 	}
 	
+	if( action == AIRHITSTUN )
+	{
+		if( hitstunFrames == 0 )
+		{
+			//cout << "air done" << endl;
+			action = JUMP;
+			frame = 1;
+			prevInput = ControllerState();
+		}
+		
+	}
+	else if( action == GROUNDHITSTUN )
+	{
+		if( hitstunFrames == 0 )
+		{
+			//cout << "ground done" << endl;
+			action = LAND;
+			frame = 0;
+			prevInput = ControllerState();
+		}
+		
+	}
+
 	switch( action )
 	{
 	case STAND:
@@ -1696,6 +1729,15 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
+					if( currInput.A && !prevInput.A )
+					{
+						action = JUMPSQUAT;
+						bufferedAttack = false;
+						frame = 0;
+						//runTappingSound.stop();
+						break;
+					}
+
 					if( currInput.B || !canStandUp )
 					{
 						if( currInput.LLeft() )
@@ -1704,23 +1746,26 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 						{
-							if( groundSpeed > 0 )//velocity.x > 0 )
+							if( currInput.LDown() )
 							{
-								facingRight = true;
-							}
-							else if( groundSpeed < 0 )//velocity.x < 0 )
-							{
-								facingRight = false;
-							}
-							else
-							{
-								if( gNorm.x > 0 )
+								if( groundSpeed > 0 )//velocity.x > 0 )
 								{
 									facingRight = true;
 								}
-								else if( gNorm.x < 0 )
+								else if( groundSpeed < 0 )//velocity.x < 0 )
 								{
 									facingRight = false;
+								}
+								else
+								{
+									if( gNorm.x > 0 )
+									{
+										facingRight = true;
+									}
+									else if( gNorm.x < 0 )
+									{
+										facingRight = false;
+									}
 								}
 							}
 							
@@ -2086,10 +2131,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
-
+			
 			//don't break becaus eyou can cancel this
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
+
 				//bounceGrounded = true;
 				bounceFlameOn = true;
 				runBounceFrame = 0;
@@ -2104,7 +2150,7 @@ void Actor::UpdatePrePhysics()
 			{
 				bounceFlameOn = false;
 				SetActionGrind();
-
+				//dashStartSound.setLoop( false );
 				//runTappingSound.stop();
 				break;
 			}
@@ -3115,20 +3161,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRHITSTUN:
 		{
-			if( hitstunFrames == 0 )
-			{
-				action = JUMP;
-				frame = 1;
-			}
+			
 			break;
 		}
 	case GROUNDHITSTUN:
 		{
-			if( hitstunFrames == 0 )
-			{
-				action = LAND;
-				frame = 0;
-			}
+			
 			break;
 		}
 	case WIREHOLD:
@@ -3435,6 +3473,8 @@ void Actor::UpdatePrePhysics()
 		{
 			if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
 			{
+				jumpSound.play();
+
 				if( reversed )
 				{
 					if( bounceFlameOn )
@@ -8840,11 +8880,13 @@ void Actor::PhysicsResponse()
 		{
 			if( action == AIRHITSTUN )
 			{
+				//cout << "setting to ground hitstun!!!" << endl;
 				action = GROUNDHITSTUN;
 				frame = 0;
 			}
-			else
+			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND )
 			{
+				//cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					//cout << "blahaaa" << endl;
@@ -8855,6 +8897,7 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
+					//cout << "blahaaa" << endl;
 					//cout << "blahbbb" << endl;
 					//cout << "l" << endl;
 					action = LAND;
@@ -8941,7 +8984,7 @@ void Actor::PhysicsResponse()
 			//oldAction = action;
 			if( collision )
 			{
-				if( length( wallNormal ) > 0 && oldVelocity.y >= 8 )
+				if( length( wallNormal ) > 0 && oldVelocity.y >= 0 )
 				{
 					if( wallNormal.x > 0)
 					{
@@ -9259,6 +9302,21 @@ void Actor::UpdatePostPhysics()
 		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
 		p.showSword1 = false;
 	}
+
+	if( action != DASH && dashStartSound.getStatus() == Sound::Playing )
+	{
+		dashStartSound.stop();
+	}
+	/*switch( oldAction )
+	{
+	case DASH:
+		{
+			if( action != DASH )
+			{
+				dashStartSound.stop();
+			}
+		}
+	}*/
 
 	switch( action )
 	{
@@ -10212,15 +10270,16 @@ void Actor::UpdatePostPhysics()
 	case DASH:
 		{
 			
-			if( frame == 0 && currInput.B && !prevInput.B )
+			if( frame == 0 )//&& currInput.B && !prevInput.B )
 			{
 				dashStartSound.stop();
 				//if( slowMultiple != 1)
 				//	dashStartSound.setPitch( .2 );
 				//else
 				//	dashStartSound.setPitch( 1 );
-				cout << "playing dash sound" << endl;
+				//cout << "playing dash sound" << endl;
 				dashStartSound.play();
+				dashStartSound.setLoop( true );
 			}
 
 			//if( slowMultiple != 1)
@@ -11294,6 +11353,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 {
 	Edge *e = (Edge*)qte;
 
+	if( e->edgeType == Edge::OPEN_GATE )
+	{
+		return;
+	}
+
 	assert( queryMode != "" );
 
 	if( queryMode == "moving_resolve" )
@@ -11825,11 +11889,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) )
-			{	
-				
+			bool closedGate = (c->edge->edgeType == Edge::CLOSED_GATE);
+			bool minGate = (minContact.edge != NULL && minContact.edge->edgeType == Edge::CLOSED_GATE );
 
-				if( c->collisionPriority == minContact.collisionPriority )
+			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) )//|| ( closedGate && !minGate ) )
+			{	
+				if( c->collisionPriority == minContact.collisionPriority )//&& !closedGate )
 				{
 					if(( c->normal.x == 0 && c->normal.y == 0 ) )//|| minContact.normal.y  0 )
 					//if( length(c->resolution) > length(minContact.resolution) )
@@ -11896,19 +11961,59 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						return;
 					}
 				}
-			
-
+				
+				
+				//for travelling so you don't hit the other side of the gate on accident
 				if( ground->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate *g = (Gate*)ground->info;
-					if( e == g->edgeA || e == g->edgeB )
+					if( ground == g->edgeA )
 					{
+						if( e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1 )
+						{
+							return;
+						}
+					}
+					else
+					{
+						if( e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1 )
+						{
+							return;
+						}
+					}
+					
+					if( e == g->edgeA && ground == g->edgeB
+						|| e == g->edgeB && ground == g->edgeA )//|| e == g->edgeB )
+					{
+						
 						//cout << "returnning early" << endl;
 						return;
 					}
 				}
+				else if( groundSpeed > 0 && ground->edge1->edgeType == Edge::CLOSED_GATE )
+				{
+					Edge *e1 = ground->edge1;
+					Gate *g = (Gate*)e1->info;
+					if( e == g->edgeA && e1 == g->edgeB 
+						|| e == g->edgeB && e1 == g->edgeA )
+					{
+						return;
+					}
+				}
+				else if( groundSpeed < 0 && ground->edge0->edgeType == Edge::CLOSED_GATE )
+				{
+					Edge *e0 = ground->edge0;
+					Gate *g = (Gate*)e0->info;
+					if( e == g->edgeA && e0 == g->edgeB 
+						|| e == g->edgeB && e0 == g->edgeA )
+					{
+						return;
+					}
+				}
+				
 			}
 		}
+		cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//if( IsEdgeTouchingBox( e, r ) )
 		//{

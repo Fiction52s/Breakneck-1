@@ -1233,6 +1233,33 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		if( pointMinTime <= time )
 		{
+			if( point == e->v0 )
+			{
+				Edge *e0 = e->edge0;
+				if( e0->edgeType == Edge::CLOSED_GATE )
+				{
+
+					//return NULL;
+					/*Gate *g = (Gate*)e0->info;
+					if( e0 == g->edgeA )
+					{
+
+					}
+					else
+					{
+
+					}*/
+				}
+				
+			}
+			else if( point == e->v1 )
+			{
+				Edge *e1 = e->edge1;
+				if( e1->edgeType == Edge::CLOSED_GATE )
+				{
+				//	return NULL;
+				}
+			}
 			time = pointMinTime;
 			currentContact->position = point;
 			currentContact->normal = pointNormal;
