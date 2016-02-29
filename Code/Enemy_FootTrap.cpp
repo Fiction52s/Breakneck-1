@@ -105,7 +105,10 @@ void FootTrap::UpdatePrePhysics()
 		health -= 20;
 		cout << "damaging: " << health << endl;
 		if( health <= 0 )
+		{
+			AttemptSpawnMonitor();
 			dead = true;
+		}
 
 		receivedHit = NULL;
 	}
@@ -203,6 +206,17 @@ void FootTrap::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
+		if( monitor != NULL )
+		{
+			//owner->AddEnemy( monitor );
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( COLOR_BLUE );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+
 		target->draw( sprite );
 	}
 	else

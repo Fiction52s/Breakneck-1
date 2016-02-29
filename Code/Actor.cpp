@@ -5589,9 +5589,9 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "item";
 	owner->itemTree->Query( this, r );
 
-	queryMode = "gate";
-	owner->testGateCount = 0;
-	owner->gateTree->Query( this, r );
+	//queryMode = "gate";
+	//owner->testGateCount = 0;
+	//owner->gateTree->Query( this, r );
 
 	/*if( owner->testGateCount > 0 )
 	{
@@ -7008,19 +7008,21 @@ void Actor::UpdatePhysics()
 						cout << "temp1prev" << endl;
 					}
 				}
-				cout << "gNormal: " << gNormal.x << ", " << gNormal.y << ", edge0: " << ground->edge0->Normal().x 
-					<< ", " << ground->edge0->Normal().y << endl;
+				//cout << "gNormal: " << gNormal.x << ", " << gNormal.y << ", edge0: " << ground->edge0->Normal().x 
+				//	<< ", " << ground->edge0->Normal().y << endl;
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
-
+					cout << "testing for unlock gate" << endl;
 					if( CanUnlockGate( g ) )
 					{
+						cout << "unlock gate" << endl;
 						owner->UnlockGate( g );
 
 						if( e0 == g->edgeA )
 						{
 							gateTouched = g->edgeB;
+
 							//owner->ActivateZone( g->zoneB );
 						}
 						else
@@ -7028,6 +7030,7 @@ void Actor::UpdatePhysics()
 							gateTouched = g->edgeA;
 							//owner->ActivateZone( g->zoneA );
 						}
+						//break;
 					}
 				}
 				//cout << "transfer left "<< endl;
@@ -9117,6 +9120,13 @@ void Actor::PhysicsResponse()
 			else
 			{
 				
+			}
+
+			if( g->type == Gate::BLUE )
+			{
+				assert( hasBlueKey );
+				cout << "getting rid of blue key and setting it to dissolve!!" << endl;
+				hasBlueKey = false;
 			}
 			g->gState = Gate::DISSOLVE;
 			//g->type = Gate::BLUE;
@@ -12220,7 +12230,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		else
 		{
 			Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-
+			cout << "this better not be happening lol" << endl;
 			if( g->locked && g->edgeA->IsTouchingBox( r ) )
 			{
 				if( g->type == Gate::RED && hasRedKey )
@@ -13192,8 +13202,9 @@ bool Actor::CanUnlockGate( Gate *g )
 	//if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER 
 	//	|| g->gState == Gate::DISSOLVE
 	//	|| g->gState )
-	if( !g->locked )
+	if( g->gState == Gate::OPEN )//!g->locked )
 	{
+		cout << "return early" << endl;
 		return false;
 	}
 
@@ -13208,16 +13219,18 @@ bool Actor::CanUnlockGate( Gate *g )
 		return false;
 		break;
 	case Gate::BLUE:
+		cout << "has blue key: " << hasBlueKey << endl;
 		if( hasBlueKey )
 		{
-			hasBlueKey = false;
+			
+			//hasBlueKey = false;
 			return true;
 		}
 		break;
 	case Gate::GREEN:
 		if( hasGreenKey )
 		{
-			hasGreenKey = false;
+			//hasGreenKey = false;
 			return true;
 		}
 		break;

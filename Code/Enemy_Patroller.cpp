@@ -139,16 +139,7 @@ void Patroller::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			
-			if( monitor != NULL )
-			{
-				if( !owner->player.CaptureMonitor( monitor ) )
-				{
-					//cout << "adding monitor!" << endl;
-					monitor->position = position;
-					owner->AddEnemy( monitor );
-				}
-			}
+			AttemptSpawnMonitor();
 			dead = true;
 		}
 
@@ -351,7 +342,7 @@ void Patroller::Draw( sf::RenderTarget *target )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
-			cs.setRadius( 50 );
+			cs.setRadius( 40 );
 			cs.setFillColor( COLOR_BLUE );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );

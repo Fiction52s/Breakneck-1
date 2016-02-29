@@ -74,6 +74,8 @@ void HealthFly::HandleEntrant( QuadTreeEntrant *qte )
 
 void HealthFly::UpdatePrePhysics()
 {
+	
+
 	if( frame == 5 * animationFactor ) //5 frames of animation
 	{
 		frame = 0;
@@ -127,6 +129,8 @@ void HealthFly::UpdatePostPhysics()
 
 	if( caught )
 	{
+		//should the one in patroller be in post or pre physics?
+		AttemptSpawnMonitor();
 		owner->RemoveEnemy( this );
 	}
 	//empty

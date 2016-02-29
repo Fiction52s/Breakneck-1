@@ -17,6 +17,19 @@ Enemy::Enemy( GameSession *own, EnemyType t )
 
 }
 
+void Enemy::AttemptSpawnMonitor()
+{
+	if( monitor != NULL )
+	{
+		if( !owner->player.CaptureMonitor( monitor ) )
+		{
+			//cout << "adding monitor!" << endl;
+			monitor->position = position;
+			owner->AddEnemy( monitor );
+		}
+	}
+}
+
 void Enemy::Reset()
 {
 	slowMultiple = 1;
