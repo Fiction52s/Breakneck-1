@@ -138,7 +138,19 @@ void Patroller::UpdatePrePhysics()
 		cout << "health now: " << health << endl;
 
 		if( health <= 0 )
+		{
+			
+			if( monitor != NULL )
+			{
+				if( !owner->player.CaptureMonitor( monitor ) )
+				{
+					//cout << "adding monitor!" << endl;
+					monitor->position = position;
+					owner->AddEnemy( monitor );
+				}
+			}
 			dead = true;
+		}
 
 		receivedHit = NULL;
 	}

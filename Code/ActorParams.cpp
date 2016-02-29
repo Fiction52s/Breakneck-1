@@ -456,6 +456,7 @@ HealthFlyParams::HealthFlyParams( EditSession *edit,
 
 void HealthFlyParams::WriteParamFile( std::ofstream &of )
 {
+	of << (int)monitorType << endl;
 	of << color << endl;
 }
 
@@ -893,6 +894,7 @@ bool CrawlerParams::CanApply()
 
 void CrawlerParams::WriteParamFile( ofstream &of )
 {
+	of << (int)monitorType << endl;
 	if( clockwise )
 		of << "+clockwise" << endl;
 	else
@@ -950,6 +952,7 @@ bool BasicTurretParams::CanApply()
 
 void BasicTurretParams::WriteParamFile( ofstream &of )
 {
+	of << (int)monitorType << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
 }
@@ -974,6 +977,7 @@ bool FootTrapParams::CanApply()
 
 void FootTrapParams::WriteParamFile( ofstream &of )
 {
+	of << (int)monitorType << endl;
 }
 
 GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )

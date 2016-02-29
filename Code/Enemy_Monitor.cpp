@@ -18,7 +18,6 @@ using namespace sf;
 Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 	:Enemy( owner, Enemy::GATEMONITOR ), monitorType( mType )
 {
-	
 	ts = owner->GetTileset( "monitor.png", 64, 64 );
 	IntRect subRect = ts->GetSubRect( 0 );
 	sprite.setTexture( *ts->texture );
@@ -48,7 +47,7 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 
 	frame = 0;
 	animationFactor = 3;
-
+	
 }
 
 void Monitor::HandleEntrant( QuadTreeEntrant *qte )
@@ -68,6 +67,12 @@ void Monitor::UpdatePrePhysics()
 void Monitor::UpdatePhysics()
 {
 	UpdateHitboxes();
+
+	if( monitorType == BLUE && owner->player.hasBlueKey )
+	{
+		return;
+	}
+
 	pair<bool,bool> hitMe = PlayerHitMe();
 	bool ihit = IHitPlayer();
 	if( ihit || hitMe.first )

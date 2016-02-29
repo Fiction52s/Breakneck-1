@@ -134,6 +134,16 @@ void HealthFly::UpdatePostPhysics()
 
 void HealthFly::Draw( sf::RenderTarget *target)
 {
+	if( monitor != NULL )
+	{
+		//owner->AddEnemy( monitor );
+		CircleShape cs;
+		cs.setRadius( 30 );
+		cs.setFillColor( COLOR_BLUE );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+	}
 	//cout << "drawing health fly" << endl;
 	target->draw( sprite );
 	/*sf::CircleShape cs;

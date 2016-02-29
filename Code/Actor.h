@@ -15,6 +15,7 @@ struct Gate;
 struct Critical;
 struct GameSession;
 struct PlayerGhost;
+struct Monitor;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -60,7 +61,7 @@ struct Actor : QuadTreeCollider,
 	void UpdatePrePhysics();
 	void ApplyHit( HitboxInfo *info );
 	bool ResolvePhysics( sf::Vector2<double> vel );
-
+	bool CaptureMonitor( Monitor *m );
 	void UpdatePhysics();
 	void PhysicsResponse();
 	bool physicsOver;

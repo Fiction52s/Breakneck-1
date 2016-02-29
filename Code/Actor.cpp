@@ -13230,6 +13230,39 @@ bool Actor::CanUnlockGate( Gate *g )
 	return false;
 }
 
+bool Actor::CaptureMonitor( Monitor * m )
+{
+	assert( m != NULL );
+
+	switch( m->monitorType )
+	{
+	case Monitor::BLUE:
+		if( hasBlueKey )
+		{
+			return false;
+		}
+		else
+		{
+			hasBlueKey = true;
+			return true;
+		}
+		break;
+	case Monitor::GREEN:
+		if( hasGreenKey )
+		{
+			return false;
+		}
+		else
+		{
+			hasGreenKey = true;
+			return true;
+		}
+		break;
+	default:
+		assert( 0 && "didnt finish these" );
+	}
+}
+
 PlayerGhost::PlayerGhost()
 	:currFrame( 0 ), currHitboxes( NULL )
 {

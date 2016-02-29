@@ -367,12 +367,12 @@ void GameSession::RemoveEnemy( Enemy *e )
 
 	if( e->type != e->BASICEFFECT )
 	{
-		if( e->monitor != NULL )
+		/*if( e->monitor != NULL )
 		{
 			cout << "adding monitor!" << endl;
 			e->monitor->position = e->position;
 			AddEnemy( e->monitor );
-		}
+		}*/
 
 		cout << "adding an inactive enemy!" << endl;
 		if( inactiveEnemyList == NULL )
@@ -743,6 +743,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
 				{
+					cout << "new monitor of type-----------------------------: " << monitorType << endl;
 					enemy->monitor = new Monitor( this, monitorType, enemy );
 				}
 				
