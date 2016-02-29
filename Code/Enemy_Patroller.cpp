@@ -14,7 +14,7 @@ using namespace sf;
 
 
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
-	:Enemy( owner, EnemyType::PATROLLER ), dead( false ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::PATROLLER ), deathFrame( 0 )
 {
 	position.x = pos.x;
 	position.y = pos.y;

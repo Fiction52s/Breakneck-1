@@ -12452,14 +12452,17 @@ void EditSession::SetEnemyEditPanel()
 		gs.selectedY = 0;
 		switch( patroller->monitorType )
 		{
-		case ActorParams::RED:
+		case ActorParams::NONE:
 			gs.selectedX = 0;
 			break;
-		case ActorParams::GREEN:
+		case ActorParams::RED:
 			gs.selectedX = 1;
 			break;
-		case ActorParams::BLUE:
+		case ActorParams::GREEN:
 			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 0;
 			break;
 		}
 	}
@@ -12475,6 +12478,23 @@ void EditSession::SetEnemyEditPanel()
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( crawler->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 0;
+			break;
+		}
 		
 		showPanel = p;
 		
@@ -12488,6 +12508,25 @@ void EditSession::SetEnemyEditPanel()
 		p->textBoxes["group"]->text.setString( basicTurret->group->name );
 		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( basicTurret->bulletSpeed ) );
 		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( basicTurret->framesWait ) );
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( basicTurret->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 0;
+			break;
+		}
+
 		showPanel = p;
 	}
 	else if( name == "foottrap" )
@@ -12495,6 +12534,24 @@ void EditSession::SetEnemyEditPanel()
 		FootTrapParams *footTrap = (FootTrapParams*)ap;
 
 		p->textBoxes["group"]->text.setString( footTrap->group->name );
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( footTrap->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 0;
+			break;
+		}
 
 		showPanel = p;
 	}

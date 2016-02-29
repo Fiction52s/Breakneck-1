@@ -12,7 +12,7 @@ using namespace sf;
 
 Enemy::Enemy( GameSession *own, EnemyType t )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
-	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL )
+	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL ), dead( false )
 {
 
 }
@@ -23,7 +23,7 @@ void Enemy::AttemptSpawnMonitor()
 	{
 		if( !owner->player.CaptureMonitor( monitor ) )
 		{
-			//cout << "adding monitor!" << endl;
+			cout << "adding monitor!" << endl;
 			monitor->position = position;
 			owner->AddEnemy( monitor );
 		}

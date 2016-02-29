@@ -3051,7 +3051,7 @@ int GameSession::Run( string fileN )
 					//cout << "reset actives" << endl;
 
 
-					Enemy *curr = activeEnemyList;
+					
 					/*while( curr != NULL )
 					{
 						if( curr->type == Enemy::GATEMONITOR )
@@ -3065,6 +3065,8 @@ int GameSession::Run( string fileN )
 
 
 					curr = activeEnemyList;*/
+
+					Enemy *curr = activeEnemyList;
 					while( curr != NULL )
 					{
 						Enemy *temp = curr->next;
@@ -3112,8 +3114,11 @@ int GameSession::Run( string fileN )
 						Monitor *mon = (Monitor*)monitorList;
 						if( mon->respawnSpecial )
 						{
+							if( mon->host->dead )
+							{
 							//cout << "adding in this thing other: " << mon << endl;
-							AddEnemy( monitorList );
+								AddEnemy( monitorList );
+							}
 						}
 						monitorList = tempNext;
 					}

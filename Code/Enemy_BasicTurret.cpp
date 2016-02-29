@@ -11,7 +11,7 @@ using namespace sf;
 
 BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
 		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
-		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 ), dead( false )
+		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
 {
 	ts = owner->GetTileset( "basicturret.png", 64, 32 );
 	sprite.setTexture( *ts->texture );

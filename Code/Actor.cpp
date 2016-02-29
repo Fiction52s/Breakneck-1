@@ -11790,7 +11790,57 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 
 
-		
+		if( e->edge0->edgeType == Edge::CLOSED_GATE )
+		{
+			Edge *e0 = e->edge0;
+			Gate *g = (Gate*)e0->info;
+			Edge *ea = g->edgeA;
+			double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
+			if( ca > 0 )
+			{
+				if( e0 == g->edgeB )
+				{
+					return;
+				}
+			}
+			else if( ca < 0 )
+			{
+				if( e0 == g->edgeA )
+				{
+					return;
+				}
+			}
+			else
+			{
+				assert( 0 && "gate collision stuff" );
+			}
+		}
+		else if( e->edge1->edgeType == Edge::CLOSED_GATE )
+		{
+			Edge *e1 = e->edge1;
+			Gate *g = (Gate*)e1->info;
+			Edge *ea = g->edgeA;
+			double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
+			if( ca > 0 )
+			{
+				if( e1 == g->edgeB )
+				{
+					return;
+				}
+			}
+			else if( ca < 0 )
+			{
+				if( e1 == g->edgeA )
+				{
+					return;
+				}
+			}
+			else
+			{
+				assert( 0 && "gate collision stuff" );
+			}
+		}
+			
 
 		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
 		

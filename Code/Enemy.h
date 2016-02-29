@@ -62,12 +62,14 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	sf::Vector2<double> position;
 	Zone *zone;
 	Monitor *monitor;
+	bool dead;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
 
 	struct Stored
 	{
+		bool dead;
 		Enemy *prev;
 		Enemy *next;
 		bool spawned;		
@@ -140,7 +142,7 @@ struct Patroller : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
-	bool dead;
+	
 	int deathFrame;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
@@ -263,7 +265,6 @@ struct Crawler : Enemy
 	sf::Vector2<double> offset;
 	int frame;
 	bool roll;
-	bool dead;
 	int deathFrame;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
@@ -276,7 +277,6 @@ struct Crawler : Enemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 };
-
 
 
 struct BasicTurret : Enemy
@@ -367,7 +367,6 @@ struct BasicTurret : Enemy
 	int frame;
 	int deathFrame;
 	int animationFactor;
-	bool dead;
 	sf::Vector2<double> gn;
 	double bulletSpeed;
 };
@@ -412,7 +411,6 @@ struct FootTrap : Enemy
 	int frame;
 	int deathFrame;
 	int animationFactor;
-	bool dead;
 	sf::Vector2<double> gn;
 
 	sf::Vector2<double> deathVector;

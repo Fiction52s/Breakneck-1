@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
-		:Enemy( owner, EnemyType::FOOTTRAP ), ground( g ), edgeQuantity( q ), dead( false )
+		:Enemy( owner, EnemyType::FOOTTRAP ), ground( g ), edgeQuantity( q )
 {
 	initHealth = 40;
 	health = initHealth;
@@ -86,6 +86,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 
 void FootTrap::ResetEnemy()
 {
+	cout << "reset" << endl;
 	health = initHealth;
 	frame = 0;
 	deathFrame = 0;
@@ -98,6 +99,7 @@ void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 
 void FootTrap::UpdatePrePhysics()
 {
+	//cout << "dead: " << dead << endl;
 	if( !dead && receivedHit != NULL )
 	{	
 		
@@ -106,6 +108,7 @@ void FootTrap::UpdatePrePhysics()
 		cout << "damaging: " << health << endl;
 		if( health <= 0 )
 		{
+			cout << "attempting. blue key is: " << owner->player.hasBlueKey << endl;
 			AttemptSpawnMonitor();
 			dead = true;
 		}
@@ -168,6 +171,7 @@ void FootTrap::UpdatePhysics()
 
 void FootTrap::UpdatePostPhysics()
 {
+
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
@@ -199,6 +203,8 @@ void FootTrap::UpdatePostPhysics()
 		owner->RemoveEnemy( this );
 	}
 
+
+	//cout << "dead post: " << dead << endl;
 	UpdateSprite();
 }
 

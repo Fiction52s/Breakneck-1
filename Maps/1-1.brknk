@@ -1307,99 +1307,155 @@ mat
 1
 -- 57
 crawler 5 1 50.0203
+0
 +clockwise
 2.00000
 crawler 12 0 73.00000
+0
 -clockwise
 1.50000
 crawler 7 9 23.91394
+0
 +clockwise
 2.00000
 crawler 9 0 121.85986
+0
 -clockwise
 1.50000
 crawler 13 2 39.60225
+0
 -clockwise
 1.50000
 crawler 6 3 54.31628
+0
 -clockwise
 1.50000
 foottrap 14 1 664.97958
+0
 foottrap 14 22 853.61759
+0
 foottrap 14 22 598.73766
+0
 foottrap 14 22 270.02964
+0
 foottrap 14 18 61.99902
+0
 foottrap 14 14 53.99902
+0
 foottrap 14 9 413.45768
+0
 foottrap 16 0 60.50000
+0
 foottrap 16 0 161.50000
+0
 foottrap 16 0 258.50000
+0
 foottrap 16 0 375.50000
+0
 crawler 27 1 69.53790
+0
 +clockwise
 3.00000
 crawler 26 1 29.31753
+0
 +clockwise
 3.00000
 crawler 25 0 37.32533
+0
 +clockwise
 3.00000
 foottrap 18 1 29.08594
+0
 foottrap 19 1 24.08594
+0
 crawler 17 5 131.55078
+0
 -clockwise
 1.50000
 crawler 17 8 100.62437
+0
 +clockwise
 1.50000
 healthfly 16071 5108
 0
+0
 healthfly 16128 5168
+0
 0
 healthfly 16190 5110
 0
+0
 healthfly 16371 5375
+0
 0
 healthfly 9311 5403
 0
+0
 healthfly 9406 5422
 0
+0
 crawler 31 174 111.50100
+0
 -clockwise
 1.50000
 crawler 31 191 61.59423
+0
 -clockwise
 1.50000
 crawler 31 200 45.67450
+0
 +clockwise
 1.50000
 crawler 31 212 202.02020
+0
 -clockwise
 1.50000
 crawler 31 216 370.02014
+0
 -clockwise
 1.50000
 foottrap 31 244 563.40576
+0
 foottrap 31 255 52.00000
+0
 foottrap 31 257 710.34265
+0
 foottrap 31 257 1111.60168
+0
 foottrap 31 258 376.38796
+0
 foottrap 31 258 650.72292
+0
 foottrap 31 258 897.38350
+0
 foottrap 31 258 1152.01987
+0
 foottrap 31 264 60.26077
+0
 foottrap 31 264 132.80538
+0
 foottrap 31 264 199.88135
+0
 foottrap 31 265 121.90939
+0
 foottrap 31 269 55.99902
+0
 foottrap 31 269 140.00000
+0
 foottrap 31 269 221.99902
+0
 foottrap 31 282 75.85453
+0
 foottrap 31 282 191.86160
+0
 foottrap 31 282 322.16694
+0
 foottrap 31 290 281.92717
+0
 foottrap 31 292 517.39680
+0
 foottrap 31 355 106.35156
+0
 goal 31 382 124.00000
 4
 1 4 9 20 2 -reform

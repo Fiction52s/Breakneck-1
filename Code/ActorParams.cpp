@@ -880,6 +880,7 @@ CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
 CrawlerParams::CrawlerParams( EditSession *edit )
 	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
 {
+	
 	type = edit->types["crawler"];
 }
 
