@@ -3229,15 +3229,15 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-					//int mType;
-					//is >> mType;
+					int mType;
+					is >> mType;
 
 					int color;
 					is >> color;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new HealthFlyParams( this, pos, color ) );
-					//a->monitorType = (ActorParams::MonitorType)mType;
+					a->monitorType = (ActorParams::MonitorType)mType;
 				}
 				else if( typeName == "key" )
 				{
@@ -3246,6 +3246,8 @@ bool EditSession::OpenFile( string fileName )
 					//always in air
 					is >> pos.x;
 					is >> pos.y;
+
+
 
 					int pathLength;
 					is >> pathLength;
@@ -3308,10 +3310,11 @@ bool EditSession::OpenFile( string fileName )
 					int edgeIndex;
 					is >> edgeIndex;
 
-					
-
 					double edgeQuantity;
 					is >> edgeQuantity;
+
+					int mType;
+					is >> mType;
 
 					bool clockwise;
 					string cwStr;
@@ -3351,6 +3354,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
 					a.reset( new CrawlerParams( this, terrain.get(), edgeIndex, edgeQuantity, clockwise, speed ) ); 
+					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -3403,6 +3407,9 @@ bool EditSession::OpenFile( string fileName )
 
 					double edgeQuantity;
 					is >> edgeQuantity;
+					
+					int mType;
+					is >> mType;
 
 					double bulletSpeed;
 					is >> bulletSpeed;
@@ -3432,6 +3439,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 					a.reset( new BasicTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
+					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -3446,6 +3454,9 @@ bool EditSession::OpenFile( string fileName )
 
 					double edgeQuantity;
 					is >> edgeQuantity;
+
+					int mType;
+					is >> mType;
 
 					int testIndex = 0;
 					PolyPtr terrain( NULL );
@@ -3469,6 +3480,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
 					a.reset( new FootTrapParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
+					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -10140,6 +10152,33 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	return true;
 }
 
+//helper function to assign monitor types
+ActorParams::MonitorType GetMonitorType( Panel *p )
+{
+	GridSelector *gs = p->gridSelectors["monitortype"];
+	string name = gs->names[gs->selectedX][gs->selectedY];
+
+	ActorParams::MonitorType monitorType;
+	if( name == "none" )
+	{
+		monitorType == ActorParams::NONE;
+	}
+	else if( name == "red" )
+	{
+		monitorType = ActorParams::RED;
+	}
+	else if( name == "green" )
+	{
+		monitorType = ActorParams::GREEN;
+	}
+	else if( name == "blue" )
+	{
+		monitorType = ActorParams::BLUE;
+	}
+
+	return monitorType;
+}
+
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
 	Panel *p = b->owner;
@@ -10172,28 +10211,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				GridSelector * gs = p->gridSelectors["monitortype"];
-
 				//eventually can convert this between indexes or something to simplify when i have more types
-				string name = gs->names[gs->selectedX][gs->selectedY];
-
-				ActorParams::MonitorType monitorType;
-				if( name == "red" )
-				{
-					monitorType = ActorParams::RED;
-				}
-				else if( name == "green" )
-				{
-					monitorType = ActorParams::GREEN;
-				}
-				else if( name == "blue" )
-				{
-					monitorType = ActorParams::BLUE;
-				}
 
 
 				ActorPtr patroller( new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
-				patroller->monitorType = monitorType;
+				patroller->monitorType = GetMonitorType( p );
 				//groups["--"]->actors.push_back( patroller);
 				patroller->group = groups["--"];
 
@@ -10351,8 +10373,14 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
+				
+
+				//eventually can convert this between indexes or something to simplify when i have more types
+				
+
 				ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
 				crawler->group = groups["--"];
+				crawler->monitorType = GetMonitorType( p );
 				//groups["--"]->actors.push_back( crawler );
 				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
 				enemyEdgePolygon->UpdateBounds();
@@ -10421,6 +10449,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				//groups["--"]->actors.push_back( basicTurret );
 				basicTurret->group = groups["--"];
+				basicTurret->monitorType = GetMonitorType( p );
 
 				CreateActor( basicTurret );
 				//trackingEnemy = NULL;
@@ -10449,6 +10478,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				//groups["--"]->actors.push_back( footTrap );
 				footTrap->group = groups["--"];
+				footTrap->monitorType = GetMonitorType( p );
 				//trackingEnemy = NULL;
 				showPanel = NULL;
 
@@ -10474,30 +10504,14 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				/*GridSelector * gs = p->gridSelectors["monitortype"];
-
-				//eventually can convert this between indexes or something to simplify when i have more types
-				string name = gs->names[gs->selectedX][gs->selectedY];
-
-				ActorParams::MonitorType monitorType;
-				if( name == "red" )
-				{
-					monitorType = ActorParams::RED;
-				}
-				else if( name == "green" )
-				{
-					monitorType = ActorParams::GREEN;
-				}
-				else if( name == "blue" )
-				{
-					monitorType = ActorParams::BLUE;
-				}*/
+				
 
 
 				ActorPtr fly( new HealthFlyParams( this, airPos, 0 ) );
-				fly->monitorType = ActorParams::MonitorType::NONE; //monitorType;
+				fly->monitorType = GetMonitorType( p ); //monitorType;
 				//groups["--"]->actors.push_back( patroller);
 				fly->group = groups["--"];
+				
 
 				CreateActor( fly );
 			}
@@ -12236,11 +12250,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 3, 1, 32, 32, true, true);
-		//cout << "created................." << endl;
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -12252,11 +12266,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 3, 1, 32, 32, true, true);
-		//cout << "created................." << endl;
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -12284,33 +12298,56 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if( name == "crawler" )
 	{
-		Panel *p = new Panel( "crawler_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "crawler_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
 		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+
+		//sf::Sprite ss;
+		//ss.setColor( Color::White );
+		//ss.setTextureRect( IntRect
+
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
 	else if( name == "basicturret" )
 	{
-		Panel *p = new Panel( "basicturret_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "basicturret_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
 	else if( name == "foottrap" )
 	{
-		Panel *p = new Panel( "foottrap_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "foottrap_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
