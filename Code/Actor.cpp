@@ -92,15 +92,17 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "failed to load test dashstart noise" );
 		}
 		dashStartSound.setBuffer( dashStartBuffer);
-		dashStartSound.setVolume( 10 );
-		dashStartSound.setLoop( true );
+		dashStartSound.setVolume( 0 );
+		//dashStartSound.setVolume( 10 );
+		//dashStartSound.setLoop( true );
 
 		if( !jumpBuffer.loadFromFile( "a_jump.ogg" ) )
 		{
 			assert( 0 && "failed to load test jump noise" );
 		}
 		jumpSound.setBuffer( jumpBuffer);
-		jumpSound.setVolume( 20 );
+		//jumpSound.setVolume( 20 );
+		jumpSound.setVolume( 0 );
 
 		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
 		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
@@ -462,9 +464,7 @@ Actor::Actor( GameSession *gs )
 		steepClimbGravFactor = .3;//.7;
 		steepClimbFastFactor = .1;
 		
-		offSlopeByWallThresh = dashSpeed;//18;
-		slopeLaunchMinSpeed = 5;//dashSpeed * .7;
-		steepClimbSpeedThresh = dashSpeed - 1;
+		
 
 		
 
@@ -489,6 +489,10 @@ Actor::Actor( GameSession *gs )
 		maxFallSpeedSlow = 30;//30;//100; // 4
 		maxFallSpeedFast = 60;
 
+
+		offSlopeByWallThresh = dashSpeed;//18;
+		slopeLaunchMinSpeed = 5;//dashSpeed * .7;
+		steepClimbSpeedThresh = dashSpeed - 1;
 		slideGravFactor = .45;
 
 		
@@ -8692,7 +8696,7 @@ void Actor::UpdatePhysics()
 
 				
 				velocity = newVel;
-				cout << "setting newvel: " << velocity.x << ", " << velocity.y << endl;
+				//cout << "setting newvel: " << velocity.x << ", " << velocity.y << endl;
 
 			}
 			else
@@ -10279,7 +10283,7 @@ void Actor::UpdatePostPhysics()
 				//	dashStartSound.setPitch( 1 );
 				//cout << "playing dash sound" << endl;
 				dashStartSound.play();
-				dashStartSound.setLoop( true );
+				//dashStartSound.setLoop( true );
 			}
 
 			//if( slowMultiple != 1)
@@ -12013,7 +12017,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				
 			}
 		}
-		cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
+		//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//if( IsEdgeTouchingBox( e, r ) )
 		//{

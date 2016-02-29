@@ -2646,7 +2646,7 @@ void GameSession::SetupZones()
 int GameSession::Run( string fileN )
 {
 	originalZone = NULL;
-
+	
 	drawCrawlerReversers = NULL;
 	//inactiveLights = NULL;
 	inactiveEnemyList = NULL;
@@ -3830,7 +3830,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );

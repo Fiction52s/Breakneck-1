@@ -232,8 +232,9 @@ struct Crawler : Enemy
 	void UpdatePhysics2();
 	void UpdatePhysics3();
 	sf::Sprite sprite;
-	Tileset *ts_walk;
-	Tileset *ts_roll;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
 
 	bool clockwise;
 	double groundSpeed;
