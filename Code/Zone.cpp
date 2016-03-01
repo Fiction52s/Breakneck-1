@@ -158,7 +158,7 @@ void Zone::Init()
 				//this fixes a loose gate so that the correct shadow polygon can be created.
 				if( !found )
 				{
-					cout << "fixing loose gate" << endl;
+					//cout << "fixing loose gate" << endl;
 
 					Gate *g = (Gate*)curr->info;
 					Edge *prev = curr->edge0;
@@ -168,7 +168,7 @@ void Zone::Init()
 					g->SetLocked( true );
 					skip = true;
 					//it = relGates.erase( it );
-				//	cout << "gza: " << g->zoneA << ", gzb: " << g->zoneB << endl;
+					//cout << "gza: " << g->zoneA << ", gzb: " << g->zoneB << endl;
 					//break;
 					
 				}
@@ -478,10 +478,25 @@ bool Zone::ContainsPoint( V2d test )
 bool Zone::ContainsZone( Zone *z )
 {
 	//midpoint on the gate
+	for( list<Vector2i>::iterator it = z->points.begin(); it != z->points.end(); ++it )
+	{
+		if( !ContainsPoint( V2d( (*it).x, (*it).y ) ) )
+		{
+			return false;
+		}
+	}
+	return true;
+
+	/*for( list<Edge*>::iterator it = z->gates.begin(); it != z->gates.end(); ++it )
+	{
+	}
+
+
+	z->
 	V2d p( 
 		( z->gates.front()->edge0->v0.x + z->gates.front()->edge1->v1.x ) / 2, 
 		( z->gates.front()->edge0->v0.y + z->gates.front()->edge0->v1.y ) / 2);
-	return ContainsPoint( p );
+	return ContainsPoint( p );*/
 }
 
 //bool Zone::ContainsPlayer()
