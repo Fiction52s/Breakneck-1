@@ -1164,21 +1164,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( currInput.LDown() )
-				{
-					action = STANDD;
-					frame = 0;
-				}
-				else if( currInput.LUp() )
-				{
-					action = STANDU;
-					frame = 0;
-				}
-				else
-				{
-					action = STANDN;
-					frame = 0;
-				}
+				GroundAttack();
 			}
 			else if( currInput.LDown() )
 			{
@@ -1267,21 +1253,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( currInput.LDown() )
-				{
-					action = STANDD;
-					frame = 0;
-				}
-				else if( currInput.LUp() )
-				{
-					action = STANDU;
-					frame = 0;
-				}
-				else
-				{
-					action = STANDN;
-					frame = 0;
-				}
+				GroundAttack();
 
 				runTappingSound.stop();
 				break;
@@ -1809,15 +1781,23 @@ void Actor::UpdatePrePhysics()
 				action = WALLJUMP;
 				frame = 0;
 
-				if( currInput.A )
+				/*if( currInput.A )
 				{
 					longWallJump = true;
 				}
 				else
 				{
 					longWallJump = false;
-				}
+				}*/
 				//facingRight = !facingRight;
+			}
+			else if( currInput.A && !prevInput.A )
+			{
+				if( hasDoubleJump )
+				{
+					action = DOUBLE;
+					frame = 0;
+				}
 			}
 
 			break;
@@ -2207,21 +2187,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( currInput.LDown() )
-				{
-					action = STANDD;
-					frame = 0;
-				}
-				else if( currInput.LUp() )
-				{
-					action = STANDU;
-					frame = 0;
-				}
-				else
-				{
-					action = STANDN;
-					frame = 0;
-				}
+				GroundAttack();
 				break;
 			}
 
@@ -2591,21 +2557,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( currInput.LDown() )
-				{
-					action = STANDD;
-					frame = 0;
-				}
-				else if( currInput.LUp() )
-				{
-					action = STANDU;
-					frame = 0;
-				}
-				else
-				{
-					action = STANDN;
-					frame = 0;
-				}
+				GroundAttack();
 				break;
 			}
 
@@ -3422,21 +3374,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				if( currInput.LDown() )
-				{
-					action = STANDD;
-					frame = 0;
-				}
-				else if( currInput.LUp() )
-				{
-					action = STANDU;
-					frame = 0;
-				}
-				else
-				{
-					action = STANDN;
-					frame = 0;
-				}
+				GroundAttack();
 
 				runTappingSound.stop();
 				break;
@@ -8730,6 +8668,45 @@ void Actor::UpdatePhysics()
 		cout << "not grounded now" << endl;
 	}*/
 	PhysicsResponse();
+}
+
+void Actor::GroundAttack()
+{
+	//assert( ground != NULL );
+	V2d gNorm = ground->Normal();
+
+	if( currInput.LDown() )
+	{
+		if( gNorm.x > 0 && groundSpeed > 0 || gNorm.x < 0 && groundSpeed < 0 )
+		{
+			//going down
+			action = STANDN;
+		}
+		else
+		{
+			action = STANDD;
+		}
+
+		frame = 0;
+	}
+	else if( currInput.LUp() )
+	{
+		if( gNorm.x > 0 && groundSpeed < 0 || gNorm.x < 0 && groundSpeed > 0 )
+		{
+			//going up
+			action = STANDN;	
+		}
+		else
+		{
+			action = STANDU;
+		}
+		frame = 0;
+	}
+	else
+	{
+		action = STANDN;
+		frame = 0;
+	}
 }
 
 void Actor::PhysicsResponse()

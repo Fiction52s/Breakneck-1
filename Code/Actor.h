@@ -65,6 +65,7 @@ struct Actor : QuadTreeCollider,
 	void UpdatePhysics();
 	void PhysicsResponse();
 	bool physicsOver;
+	void GroundAttack();
 
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );

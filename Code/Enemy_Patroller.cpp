@@ -19,7 +19,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 60;
+	initHealth = 40;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
@@ -78,7 +78,8 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->knockback = 4;
+	//hitboxInfo->kbDir;
 
 	targetNode = 1;
 	forward = true;
@@ -178,7 +179,7 @@ void Patroller::UpdatePhysics()
 
 		while( movement != 0 )
 		{
-			cout << "movement loop? "<< endl;
+			//cout << "movement loop? "<< endl;
 			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
 			V2d diff = targetPoint - position;
 			double len = length( diff );
@@ -401,6 +402,15 @@ void Patroller::UpdateHitboxes()
 	hurtBody.globalAngle = 0;
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
+
+	if( owner->player.ground != NULL )
+	{
+		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
+	}
+	else
+	{
+		hitboxInfo->kbDir = normalize( -owner->player.velocity );
+	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)

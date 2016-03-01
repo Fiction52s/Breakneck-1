@@ -10161,7 +10161,7 @@ ActorParams::MonitorType GetMonitorType( Panel *p )
 	ActorParams::MonitorType monitorType;
 	if( name == "none" )
 	{
-		monitorType == ActorParams::NONE;
+		monitorType = ActorParams::NONE;
 	}
 	else if( name == "red" )
 	{
@@ -12470,8 +12470,6 @@ void EditSession::SetEnemyEditPanel()
 		case ActorParams::BLUE:
 			gs.selectedX = 3;
 			break;
-		default:
-			gs.selectedX = 0;
 		}
 	}
 	else if( name == "crawler" )
@@ -12502,8 +12500,7 @@ void EditSession::SetEnemyEditPanel()
 		case ActorParams::BLUE:
 			gs.selectedX = 3;
 			break;
-		default:
-			gs.selectedX = 0;
+		
 		}
 		
 		showPanel = p;
@@ -12533,7 +12530,7 @@ void EditSession::SetEnemyEditPanel()
 			gs.selectedX = 2;
 			break;
 		case ActorParams::BLUE:
-			gs.selectedX = 0;
+			gs.selectedX = 3;
 			break;
 		}
 
@@ -12559,11 +12556,37 @@ void EditSession::SetEnemyEditPanel()
 			gs.selectedX = 2;
 			break;
 		case ActorParams::BLUE:
-			gs.selectedX = 0;
+			gs.selectedX = 3;
 			break;
+		default:
+			assert( 0 && "blah" );
 		}
 
 		showPanel = p;
+	}
+	else if( name == "healthfly" )
+	{
+		HealthFlyParams *fly = (HealthFlyParams*)ap;
+
+		p->textBoxes["group"]->text.setString( fly->group->name );
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( fly->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 3;
+			break;
+		}
 	}
 	else if( name == "key" )
 	{
