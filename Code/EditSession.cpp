@@ -10175,6 +10175,12 @@ ActorParams::MonitorType GetMonitorType( Panel *p )
 	{
 		monitorType = ActorParams::BLUE;
 	}
+	else
+	{
+		cout << "panel: " << p->name << ", name: " << name << endl;
+		assert( false );
+	}
+	
 
 	return monitorType;
 }
@@ -12462,8 +12468,10 @@ void EditSession::SetEnemyEditPanel()
 			gs.selectedX = 2;
 			break;
 		case ActorParams::BLUE:
-			gs.selectedX = 0;
+			gs.selectedX = 3;
 			break;
+		default:
+			gs.selectedX = 0;
 		}
 	}
 	else if( name == "crawler" )
@@ -12492,8 +12500,10 @@ void EditSession::SetEnemyEditPanel()
 			gs.selectedX = 2;
 			break;
 		case ActorParams::BLUE:
-			gs.selectedX = 0;
+			gs.selectedX = 3;
 			break;
+		default:
+			gs.selectedX = 0;
 		}
 		
 		showPanel = p;
