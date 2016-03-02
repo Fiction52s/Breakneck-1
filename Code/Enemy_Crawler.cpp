@@ -369,12 +369,13 @@ void Crawler::UpdatePhysics()
 				//cout << "rollNew: " << rollNew << endl;
 
 				bool changed = false;
-				if( rollEnd > rollStart && rollNew > rollEnd )
+				if( rollEnd > rollStart && ( rollNew > rollEnd || rollNew < rollStart ) )
 				{
 					changed = true;
 					newPos = ground->v1 + e1n * physBody.rw;
 				}
-				else if( rollEnd < rollStart && rollNew < rollEnd )
+				//else if( rollEnd < rollStart && rollNew < rollEnd )
+				else if( rollEnd < rollStart && ( rollNew > rollEnd && rollNew < rollStart ) )
 				{
 					changed = true;
 					newPos = ground->v1 + e1n * physBody.rw;
@@ -447,13 +448,13 @@ void Crawler::UpdatePhysics()
 					rollEnd += 2 * PI;
 
 				bool changed = false;
-				if( rollEnd < rollStart && rollNew < rollEnd )
+				if( rollEnd < rollStart && ( rollNew < rollEnd || rollNew > rollStart ) )
 				{
 					//cout << "first" << endl;
 					changed = true;
 					newPos = ground->v0 + e0n * physBody.rw;
 				}
-				else if( rollEnd > rollStart && rollNew < rollEnd )//rollNew > rollEnd )
+				else if( rollEnd > rollStart && ( rollNew < rollEnd && rollNew > rollStart ) )
 				{
 					//cout << "second: " << rollStart << ", end: " << rollEnd << ", new: " << rollNew << endl;
 					changed = true;
