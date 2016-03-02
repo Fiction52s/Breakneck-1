@@ -12357,6 +12357,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+
 	/*else if( name == "crawlerreverser" )
 	{
 		//Panel *p = new Panel( "crawlerreverser_options", 200, 400, this );

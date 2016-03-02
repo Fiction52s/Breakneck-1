@@ -9,6 +9,15 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
 		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
@@ -333,6 +342,17 @@ void BasicTurret::UpdatePostPhysics()
 
 void BasicTurret::Draw(sf::RenderTarget *target )
 {
+	if( monitor != NULL )
+	{
+		//owner->AddEnemy( monitor );
+		CircleShape cs;
+		cs.setRadius( 40 );
+		cs.setFillColor( COLOR_BLUE );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+	}
+
 	target->draw( bulletVA, ts_bullet->texture );
 	target->draw( sprite );
 }

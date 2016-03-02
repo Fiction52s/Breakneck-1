@@ -592,6 +592,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		Gate::GateType gateType = (Gate::GateType)gType;
 		if( gateType == Gate::CRITICAL )
 		{
+			cout << "MAKING NEW CRITICAL" << endl;
 			Critical *crit = new Critical( point0, point1 );
 			//wastes space for the gates already made but idk what to change. make it a new system?
 			//lets try it for now lol

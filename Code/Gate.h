@@ -16,9 +16,13 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		BLACK,
 		BLUE,
 		GREEN,
+		YELLOW,
+		ORANGE,
 		RED,
+		MAGENTA,
+		WHITE,
 		CRITICAL,
-		Type_Count		
+		Count
 	};
 
 	enum GateState

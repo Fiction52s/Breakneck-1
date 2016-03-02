@@ -13292,6 +13292,11 @@ void Actor::AttackMovement()
 			}
 		}
 	}
+	else if( currInput.LDown() || currInput.LUp() )
+	{
+		//groundspeed stays the same
+		
+	}
 	else
 	{
 		groundSpeed = 0;
