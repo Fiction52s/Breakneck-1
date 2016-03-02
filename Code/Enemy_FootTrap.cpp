@@ -24,21 +24,24 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	initHealth = 40;
 	health = initHealth;
 
-	ts = owner->GetTileset( "foottrap_128x48.png", 128, 48 );
+	double height = 48;
+	ts = owner->GetTileset( "foottrap_128x48.png", 128, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	//cout << "player " << owner->player.position.x << ", " << owner->player.position.y << endl;
 	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
-	position = gPoint;
+	
 
 	receivedHit = NULL;
 
 	gn = g->Normal();
 	angle = atan2( gn.x, -gn.y );
 
+	position = gPoint + gn * height / 2.0;
+
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
@@ -358,9 +361,9 @@ void FootTrap::DebugDraw(sf::RenderTarget *target)
 
 void FootTrap::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position + gn * 10.0;
+	hurtBody.globalPosition = position - gn * 10.0;
 	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position + gn * 10.0;
+	hitBody.globalPosition = position - gn * 10.0;
 	hitBody.globalAngle = 0;
 }
 

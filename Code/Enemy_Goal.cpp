@@ -12,14 +12,17 @@ using namespace sf;
 Goal::Goal( GameSession *owner, Edge *g, double q )
 		:Enemy( owner, EnemyType::GOAL ), ground( g ), edgeQuantity( q ), dead( false )
 {
-	ts = owner->GetTileset( "goal.png", 96, 32 );
+	double height = 32;
+	ts = owner->GetTileset( "goal.png", 96, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
-	position = gPoint;
+
 
 	gn = g->Normal();
 	angle = atan2( gn.x, -gn.y );
+
+	position = gPoint + gn * height / 2.0;
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );

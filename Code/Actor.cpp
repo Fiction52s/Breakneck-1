@@ -8346,7 +8346,7 @@ void Actor::UpdatePhysics()
 			//	cout << "bouncing" << endl;
 			}
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
-			else if( ((action == JUMP && /*!holdJump*/false) || framesInAir > maxJumpHeightFrame || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
 				
 				//b.rh = dashHeight;

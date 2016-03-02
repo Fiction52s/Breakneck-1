@@ -25,14 +25,20 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	initHealth = 80;
 	health = initHealth;
 
-	ts = owner->GetTileset( "basicturret.png", 64, 32 );
+	double height = 32;
+
+	ts = owner->GetTileset( "basicturret.png", 64, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
-	position = gPoint;
+	
+	
 
 	gn = g->Normal();
+
+	position = gPoint + gn * height / 2.0;
+
 	angle = atan2( gn.x, -gn.y );
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );

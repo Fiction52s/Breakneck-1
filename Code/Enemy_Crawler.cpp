@@ -27,14 +27,16 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	dead = false;
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
-	ts = owner->GetTileset( "crawler_128x128.png", 128, 128 );
+
+	double height = 128;
+	ts = owner->GetTileset( "crawler_128x128.png", 128, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
-
+	position = gPoint + ground->Normal() * height / 2.0;
 	if( !clockwise )
 	{
 		groundSpeed = -groundSpeed;
@@ -80,7 +82,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	startGround = ground;
 	startQuant = edgeQuantity;
 	frame = 0;
-	position = gPoint + ground->Normal() * 16.0;
+	
 }
 
 void Crawler::ResetEnemy()

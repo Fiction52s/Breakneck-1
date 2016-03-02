@@ -315,6 +315,10 @@ void GameSession::Test( Edge *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
+	//if( e->type == Enemy::BASICTURRET )
+	//{
+	//	cout << "ADDING BASIC TURRET NOW: " << endl;
+//	}
 //	cout << "adding enemy: " << e << endl;
 	if( activeEnemyList != NULL )
 	{
@@ -920,7 +924,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesWait;
 
 				BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
-				
+				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
+				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
 				{
@@ -2636,6 +2641,7 @@ void GameSession::SetupZones()
 
 	if( originalZone != NULL )
 	{
+		cout << "setting original zone to active: " << originalZone << endl;
 		originalZone->active = true;
 	}
 	
@@ -3871,7 +3877,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -4225,8 +4231,19 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	if( queryMode == "enemy" )
 	{
 		Enemy *e = (Enemy*)qte;
+
+
+		bool a = e->spawnRect.intersects( tempSpawnRect );
+		bool b = ( e->zone == NULL || e->zone->active ); 
+
+		if( e->type == Enemy::BASICTURRET )
+		{
+			cout << "QUERYING BASIC TURRET: " << a << ", " << b << ", zone: " << e->zone << endl;
+		}
+
+		
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-		if( e->spawnRect.intersects( tempSpawnRect ) && ( e->zone == NULL || e->zone->active ) )
+		if( a && b )
 		{
 			//cout << "spawning enemy! of type: " << e->type << endl;
 			assert( e->spawned == false );
