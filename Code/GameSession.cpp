@@ -2385,6 +2385,26 @@ void GameSession::CreateZones()
 
 			if( curr->edgeType == Edge::CLOSED_GATE )
 			{
+				//this loop is so both sides of a gate can't be hit in the same zone
+				bool okayGate = true;
+				for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+				{
+					Gate *otherGate = (Gate*)(*it);
+					Gate *thisGate = (Gate*)curr;
+
+					if( otherGate == thisGate )
+					{
+						okayGate = false;
+						break;
+					}
+				}
+
+				if( !okayGate )
+				{
+					cout << "GATE IS NOT OKAY" << endl;
+					break;
+				}
+
 				//cout << "found another gate AA" << endl;
 				currGates.push_back( curr );
 			}
@@ -2677,12 +2697,27 @@ void GameSession::SetupZones()
 	
 	
 
-
+	/*for( int i = 0; i < numGates; ++i )
+	{
+		if( gates[i]->zoneA == gates[i]->zoneB )
+		{
+			cout << "BAEHRFIWE$WEIHGWEHTOIHWETOWEHITEWHTEW " << endl;
+			gates[i]->SetLocked( false );
+		}
+	}*/
 
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
 		(*it)->Init();
 	}
+
+	/*for( int i = 0; i < numGates; ++i )
+	{
+		if( gates[i]->zoneA == gates[i]->zoneB )
+		{
+			gates[i]->SetLocked( true );
+		}
+	}*/
 }
 
 int GameSession::Run( string fileN )
@@ -3877,7 +3912,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );

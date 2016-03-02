@@ -158,7 +158,7 @@ void Zone::Init()
 				//this fixes a loose gate so that the correct shadow polygon can be created.
 				if( !found )
 				{
-					//cout << "fixing loose gate" << endl;
+					cout << "fixing loose gate" << endl;
 
 					Gate *g = (Gate*)curr->info;
 					Edge *prev = curr->edge0;
@@ -168,7 +168,7 @@ void Zone::Init()
 					g->SetLocked( true );
 					skip = true;
 					//it = relGates.erase( it );
-					//cout << "gza: " << g->zoneA << ", gzb: " << g->zoneB << endl;
+					cout << "gza: " << g->zoneA << ", gzb: " << g->zoneB << endl;
 					//break;
 					
 				}
