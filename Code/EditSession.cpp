@@ -10211,6 +10211,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				PatrollerParams *patroller = (PatrollerParams*)select;
+				patroller->monitorType = GetMonitorType( p );
 				patroller->speed = speed;
 				patroller->loop = loop;
 				//patroller->SetPath( patrolPath );
@@ -10222,6 +10223,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				ActorPtr patroller( new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
 				patroller->monitorType = GetMonitorType( p );
+				//cout << "set patroller monitor type to: " << patroller->monitorType << endl;
 				//groups["--"]->actors.push_back( patroller);
 				patroller->group = groups["--"];
 
@@ -10374,6 +10376,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				CrawlerParams *crawler = (CrawlerParams*)select;
+				crawler->monitorType = GetMonitorType( p );
 				crawler->speed = speed;
 				crawler->clockwise = clockwise;
 			}
@@ -10442,6 +10445,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				BasicTurretParams *basicTurret = (BasicTurretParams*)select;
+				basicTurret->monitorType = GetMonitorType( p );
 				basicTurret->bulletSpeed = bulletSpeed;
 				basicTurret->framesWait = framesWait;
 			}
@@ -10471,8 +10475,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		{
 			if( mode == EDIT )//&& selectedActor != NULL )
 			{
-				//FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
-				
+				FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
+				footTrap->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -10503,6 +10507,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				HealthFlyParams *fly = (HealthFlyParams*)select;
+				fly->monitorType = GetMonitorType( p );
 				fly->color = 0;
 				//patroller->speed = speed;
 				//patroller->loop = loop;
