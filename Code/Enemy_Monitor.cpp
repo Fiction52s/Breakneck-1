@@ -78,7 +78,26 @@ void Monitor::UpdatePhysics()
 	if( ihit || hitMe.first )
 	{
 		//cout << "got the monitor!" << endl;
-
+		switch( monitorType )
+		{
+		case BLUE:
+			owner->player.hasBlueKey = true;
+			break;
+		case GREEN:
+			break;
+		case YELLOW:
+			break;
+		case ORANGE:
+			break;
+		case RED:
+			break;
+		case MAGENTA:
+			break;
+		case WHITE:
+			break;
+		default:
+			assert( false );
+		}
 		owner->RemoveEnemy( this );
 		//get rid of me
 	}

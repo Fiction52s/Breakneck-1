@@ -22,6 +22,9 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
 {
+	initHealth = 80;
+	health = initHealth;
+
 	ts = owner->GetTileset( "basicturret.png", 64, 32 );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
@@ -158,6 +161,23 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicTurret::UpdatePrePhysics()
 {
+	if( !dead && receivedHit != NULL )
+	{	
+		//gotta factor in getting hit by a clone
+		health -= 20;
+
+		//cout << "health now: " << health << endl;
+
+		if( health <= 0 )
+		{
+			AttemptSpawnMonitor();
+			dead = true;
+		}
+
+		receivedHit = NULL;
+	}
+
+
 //	DeactivateBullet( currBullet );
 	Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
@@ -272,11 +292,23 @@ void BasicTurret::PhysicsResponse()
 		if( result.first )
 		{
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			if( !result.second )
+			/*if( !result.second )
 			{
 				owner->Pause( 6 );
 				dead = true;
 				receivedHit = NULL;
+			}*/
+
+			owner->player.test = true;
+			owner->player.currAttackHit = true;
+			owner->player.flashColor = COLOR_BLUE;
+			owner->player.flashFrames = 5;
+			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->powerBar.Charge( 2 * 6 * 3 );
+
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			{
+				owner->player.velocity.y = 4;//.5;
 			}
 		//	dead = true;
 		//	receivedHit = NULL;
