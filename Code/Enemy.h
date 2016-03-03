@@ -220,6 +220,7 @@ struct Crawler : Enemy
 	void UpdatePhysics();
 	void PhysicsResponse();
 	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
@@ -379,6 +380,7 @@ struct FootTrap : Enemy
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
@@ -440,6 +442,7 @@ struct Goal : Enemy
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
@@ -454,7 +457,9 @@ struct Goal : Enemy
 	
 
 	sf::Sprite sprite;
+	sf::Sprite miniSprite;
 	Tileset *ts;
+	Tileset *ts_mini;
 
 	Edge *ground;
 	double edgeQuantity;
@@ -589,6 +594,7 @@ struct BossCrawler : Enemy
 	void UpdatePhysics();
 	void PhysicsResponse();
 	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();

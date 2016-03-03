@@ -14,8 +14,14 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 {
 	double height = 32;
 	ts = owner->GetTileset( "goal.png", 96, height );
+	ts_mini = owner->GetTileset( "goal_minimap.png", 32, 32 );
 	sprite.setTexture( *ts->texture );
 	
+	miniSprite.setTexture( *ts_mini->texture );
+	miniSprite.setScale( 20, 20 );
+	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height / 2 );
+	
+
 	V2d gPoint = g->GetPoint( edgeQuantity );
 
 
@@ -23,6 +29,8 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	angle = atan2( gn.x, -gn.y );
 
 	position = gPoint + gn * height / 2.0;
+
+	miniSprite.setPosition( position.x, position.y );
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
@@ -152,6 +160,16 @@ void Goal::UpdatePostPhysics()
 void Goal::Draw(sf::RenderTarget *target )
 {
 	target->draw( sprite );
+}
+
+void Goal::DrawMinimap( sf::RenderTarget *target )
+{
+	/*CircleShape cs;
+	cs.setRadius( 80 );
+	cs.setFillColor(  );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );*/
+	target->draw( miniSprite );
 }
 
 bool Goal::IHitPlayer()

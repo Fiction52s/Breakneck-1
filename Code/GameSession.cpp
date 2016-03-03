@@ -4150,7 +4150,8 @@ int GameSession::Run( string fileN )
 
 		//coll.DebugDraw( preScreenTex );
 
-		double minimapZoom = 8 * cam.GetZoom();// + cam.GetZoom();
+		//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
+		double minimapZoom = 12;// * cam.GetZoom();// + cam.GetZoom();
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
@@ -4158,6 +4159,7 @@ int GameSession::Run( string fileN )
 
 		minimapTex->setView( vv );
 		minimapTex->clear( Color( 0, 0, 0, 191 ) );
+		//minimapTex->clear( Color( 0, 0, 0, 255 ) );
 		
 
 		
@@ -4302,7 +4304,8 @@ int GameSession::Run( string fileN )
 		//minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
 		minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
 		//minimapSprite.setScale( .5, .5 );
-		minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
+		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
+		minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
 
 		preScreenTex->setView( uiView );
 		preScreenTex->draw( minimapSprite );

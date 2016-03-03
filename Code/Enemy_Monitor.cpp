@@ -130,6 +130,12 @@ void Monitor::Draw( sf::RenderTarget *target)
 
 void Monitor::DrawMinimap( sf::RenderTarget *target )
 {
+	/*CircleShape cs;
+	cs.setRadius( 80 );
+	cs.setFillColor( COLOR_BLUE );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
+	target->draw( cs );*/
 }
 
 bool Monitor::IHitPlayer()
