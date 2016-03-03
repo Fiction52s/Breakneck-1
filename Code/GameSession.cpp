@@ -892,7 +892,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				CrawlerReverser *cr = new CrawlerReverser( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 
-				cout << "inserting reverser!!" << endl;
 				crawlerReverserTree->Insert( cr );
 				//Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed );
@@ -900,6 +899,26 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//fullEnemyList.push_back( enemy );
 
 				//enemyTree->Insert( enemy );
+			}
+			else if( typeName == "bosscrawler" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity );
+
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "basicturret" )
 			{

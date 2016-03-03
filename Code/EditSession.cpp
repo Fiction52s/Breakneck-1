@@ -3395,6 +3395,43 @@ bool EditSession::OpenFile( string fileName )
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if( typeName == "bosscrawler" )
+				{
+					//always grounded
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing bosscrawler" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
+					a.reset( new BossCrawlerParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
 				else if( typeName == "basicturret" )
 				{
 					//always grounded
@@ -4635,8 +4672,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 3, 0, s3, "foottrap" );
 	gs->Set( 0, 1, s4, "goal" );
 	gs->Set( 1, 1, s6, "crawlerreverser" );
-	gs->Set( 1, 2, s7, "healthfly" );
-	gs->Set( 1, 3, s8, "bosscrawler" );
+	gs->Set( 2, 1, s7, "healthfly" );
+	gs->Set( 3, 1, s8, "bosscrawler" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -8901,6 +8938,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					|| trackingEnemy->name == "crawlerreverser"
 					|| trackingEnemy->name == "basicturret"
 					|| trackingEnemy->name == "foottrap" 
+					|| trackingEnemy->name == "bosscrawler"
 					|| trackingEnemy->name == "goal" ) )
 				{
 					enemyEdgePolygon = NULL;
@@ -13088,6 +13126,13 @@ void ActorType::Init()
 	{
 		width = 32;
 		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+	else if( name == "bosscrawler" )
+	{
+		width = 128;
+		height = 144;
 		canBeGrounded = true;
 		canBeAerial = false;
 	}

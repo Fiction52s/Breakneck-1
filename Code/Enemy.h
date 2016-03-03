@@ -574,6 +574,7 @@ struct BossCrawler : Enemy
 		STUNNED,
 		Count
 	};
+	Tileset *ts_test;
 	Action action;
 	int frame;
 	double gravity;

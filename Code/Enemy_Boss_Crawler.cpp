@@ -15,6 +15,11 @@ using namespace sf;
 BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q )
 {
+	double width = 128;
+	double height = 144;
+	ts_test = owner->GetTileset( "bosscrawler_128x144.png", width, height );
+	
+	
 	//cout << "creating the boss crawler" << endl;
 	action = STAND;
 	gravity = 1;
@@ -32,7 +37,8 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
+	spawnRect = sf::Rect<double>( gPoint.x - width / 2, gPoint.y - height / 2, width, height );
+	//spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -740,12 +746,15 @@ void BossCrawler::PhysicsResponse()
 
 void BossCrawler::UpdatePostPhysics()
 {
+	sprite.setTexture( *ts_test->texture );
+	sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
+	sprite.setScale( 1.3, 1.3 );
 	switch( action )
 	{
 	case STAND:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -754,8 +763,8 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case SHOOT:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -764,8 +773,8 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case LUNGE:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -774,8 +783,8 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case LUNGEAIR:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 
 			
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -785,8 +794,8 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case LUNGELAND:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -796,8 +805,8 @@ void BossCrawler::UpdatePostPhysics()
 	case RUN:
 		{
 		//	cout << "putting sprite at the correct angle: " << angle << endl;
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -806,8 +815,8 @@ void BossCrawler::UpdatePostPhysics()
 		break;
 	case ROLL:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+			//sprite.setTexture( *ts_walk->texture );
+			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
@@ -815,8 +824,8 @@ void BossCrawler::UpdatePostPhysics()
 		}
 	case STUNNED:
 		{
-			sprite.setTexture( *ts_walk->texture );
-			sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+		//	sprite.setTexture( *ts_walk->texture );
+		//	sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 			V2d pp = ground->GetPoint( edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
