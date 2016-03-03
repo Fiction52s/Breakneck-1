@@ -527,7 +527,7 @@ void Crawler::UpdatePhysics()
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
 					V2d gn = ground->Normal();
-					cout << "hit" << endl;
+					//cout << "hit 1" << endl;
 					break;
 				}			
 			}

@@ -2314,13 +2314,16 @@ void GameSession::CreateZones()
 	for( int i = 0; i < numGates; ++i )
 	{
 		Gate *g = gates[i];
+		cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
+			<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
+		
 		Edge *curr = g->edgeA;
 
 		TerrainPolygon tp( NULL );
 		V2d v0 = curr->v0;
 		V2d v1 = curr->v1;
 		list<Edge*> currGates;
-
+		list<Gate*> ignoreGates;
 		
 		currGates.push_back( curr );
 		
@@ -2330,7 +2333,7 @@ void GameSession::CreateZones()
 		curr = curr->edge1;
 		while( true )
 		{
-			if( curr == g->edgeA )
+			if( curr->v0 == g->edgeA->v0 )//curr == g->edgeA )
 			{
 				//we found a zone!
 
@@ -2361,7 +2364,7 @@ void GameSession::CreateZones()
 						Zone *z = new Zone( tp );
 						z->gates = currGates;
 						zones.push_back( z );
-						//cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
+						cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
 					//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
 					}
 					
@@ -2376,7 +2379,8 @@ void GameSession::CreateZones()
 			}
 			else if( curr == g->edgeB )
 			{
-				//cout << "not a zone even" << endl;
+				//currGates.push_back( curr );
+				cout << "not a zone even" << endl;
 				break;
 			}
 
@@ -2385,15 +2389,18 @@ void GameSession::CreateZones()
 
 			if( curr->edgeType == Edge::CLOSED_GATE )
 			{
+				Gate *thisGate = (Gate*)curr->info;
 				//this loop is so both sides of a gate can't be hit in the same zone
 				bool okayGate = true;
+				bool quitLoop = false;
 				for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
 				{
-					Gate *otherGate = (Gate*)(*it);
-					Gate *thisGate = (Gate*)curr;
+					Gate *otherGate = (Gate*)(*it)->info;
+					
 
 					if( otherGate == thisGate )
 					{
+						//currGates.erase( it );
 						okayGate = false;
 						break;
 					}
@@ -2401,19 +2408,103 @@ void GameSession::CreateZones()
 
 				if( !okayGate )
 				{
-					cout << "GATE IS NOT OKAY" << endl;
-					break;
+					currGates.push_back( curr );
+					Edge *cc = curr->edge0;
+					//TerrainPoint *tempPoint = NULL;
+					TerrainPoint *tempPoint = tp.pointEnd;
+					tp.RemovePoint( tempPoint );
+					delete tempPoint;
+					cout << "removing from a( " << g << " ) start: " << tp.numPoints << endl;
+					
+					while( true )
+					{
+						if( cc->edgeType == Edge::CLOSED_GATE )
+						{
+							Gate *ccGate = (Gate*)cc->info;
+							if( ccGate == thisGate )
+								break;
+							else
+							{
+								bool foundIgnore = false;
+								for( list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it )
+								{
+									if( (*it) == ccGate )
+									{
+										foundIgnore = true;
+										break;
+									}
+								}
+
+								if( foundIgnore )
+								{
+									Edge *temp = cc->edge1;
+									ccGate->SetLocked( false );
+									cc = temp->edge0;
+									ccGate->SetLocked( true );
+									continue;
+								}
+							}
+						}
+
+
+						if( true )
+						//if( tp.pointStart != NULL )
+						{
+							tempPoint = tp.pointEnd;
+							tp.RemovePoint( tempPoint );
+							delete tempPoint;
+							cout << "removing from a: " << tp.numPoints << endl;
+
+							if( tp.pointStart == tp.pointEnd )
+							{
+								quitLoop = true;
+								break;
+							}
+						}
+						else
+						{
+							quitLoop = true;
+							break;
+						}
+
+						cc = cc->edge0;
+					}
+
+					if( quitLoop )
+					{
+						cout << "quitloop a" << endl;
+						break;
+					}
+
+					Edge *pr = cc->edge0;
+					thisGate->SetLocked( false );
+					curr = pr->edge1->edge1;
+					//tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+					ignoreGates.push_back( thisGate );
+					thisGate->SetLocked( true );
+
+					cout << "GATE IS NOT OKAY A: " << tp.numPoints << endl;
+					//break;
+					continue;
+				}
+				else
+				{
+					//cout << "found another gate AA: " <<  << endl;
 				}
 
 				//cout << "found another gate AA" << endl;
 				currGates.push_back( curr );
 			}
+			else
+			{
 
+			}
 			curr = curr->edge1;
 		}
 
 		
 		currGates.clear();
+		ignoreGates.clear();
 
 		curr = g->edgeB;
 
@@ -2428,7 +2519,7 @@ void GameSession::CreateZones()
 		curr = curr->edge1;
 		while( true )
 		{
-			if( curr == g->edgeB )
+			if( curr->v0 == g->edgeB->v0 )//curr == g->edgeB )
 			{
 				//we found a zone!
 
@@ -2455,7 +2546,7 @@ void GameSession::CreateZones()
 					if( okayZone )
 					{
 						Zone *z = new Zone( tpb );
-						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
+						cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
 						z->gates = currGates;
 						zones.push_back( z );
 						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
@@ -2472,6 +2563,8 @@ void GameSession::CreateZones()
 			}
 			else if( curr == g->edgeA )
 			{
+				//currGates.push_back( curr );
+				//cout << "not a zone even b" << endl;
 				break;
 			}
 
@@ -2480,7 +2573,123 @@ void GameSession::CreateZones()
 
 			if( curr->edgeType == Edge::CLOSED_GATE )
 			{
-				//cout << "found another gate BB" << endl;
+				bool quitLoop = false;
+				bool okayGate = true;
+				Gate *thisGate = (Gate*)curr->info;
+				for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+				{
+					Gate *otherGate = (Gate*)(*it)->info;
+					
+
+					if( otherGate == thisGate )
+					{
+						okayGate = false;
+						break;
+					}
+				}
+
+				if( !okayGate )
+				{
+					currGates.push_back( curr );
+					//TerrainPoint *tempPoint = NULL;
+					TerrainPoint *tempPoint = tpb.pointEnd;
+					tpb.RemovePoint( tempPoint );
+					delete tempPoint;
+					cout << "removing from b( " << g << " ) start: " << tpb.numPoints << endl;
+
+					Edge *cc = curr->edge0;
+					
+					
+					while( true )
+					{
+						if( cc->edgeType == Edge::CLOSED_GATE )
+						{
+							
+							Gate *ccGate = (Gate*)cc->info;
+							if( ccGate == thisGate )
+								break;
+							else
+							{
+								bool foundIgnore = false;
+								for( list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it )
+								{
+									if( (*it) == ccGate )
+									{
+										foundIgnore = true;
+										break;
+									}
+								}
+
+								if( foundIgnore )
+								{
+									Edge *temp = cc->edge1;
+									ccGate->SetLocked( false );
+									cc = temp->edge0;
+									ccGate->SetLocked( true );
+									continue;
+								}
+								//for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+								//{
+								//	//Gate *otherGate = (Gate*)(*it)->info;
+					
+								//	if( 
+								//	//if( otherGate == thisGate )
+								//	//{
+								//	//	okayGate = false;
+								//	//	break;
+								//	//}
+								//}
+							}
+						}
+
+						if( true )
+						//if( tpb.pointStart != NULL )
+						{
+							tempPoint = tpb.pointEnd;
+							tpb.RemovePoint( tempPoint );
+							delete tempPoint;
+							cout << "removing from b: " << tpb.numPoints << endl;
+							if( tpb.pointStart == tpb.pointEnd )
+							{
+								quitLoop = true;
+								break;
+							}
+								
+						}
+						else
+						{
+							quitLoop = true;
+							break;
+						}
+						
+						
+						cc = cc->edge0;
+
+						
+						
+					}
+
+					if( quitLoop )
+					{
+						cout << "quitloop b" << endl;
+						break;
+					}
+
+					Edge *pr = cc->edge0;
+					thisGate->SetLocked( false );
+					curr = pr->edge1->edge1;
+					//tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+					ignoreGates.push_back( thisGate );
+					thisGate->SetLocked( true );
+					cout << "GATE IS NOT OKAY B: " << tpb.numPoints << endl;
+					continue;
+				}
+				else
+				{
+				//	cout << "found another gate BB: " << curr-> << endl;
+				}
+
+				
 				currGates.push_back( curr );
 			}
 
@@ -2490,8 +2699,11 @@ void GameSession::CreateZones()
 		//tp.AddPoint( new TerrainPoint( 
 	}
 
+
+
 	for( int i = 0; i < numGates; ++i )
 	{
+		//gates[i]->SetLocked( true );
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
 		cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
@@ -2701,7 +2913,6 @@ void GameSession::SetupZones()
 	{
 		if( gates[i]->zoneA == gates[i]->zoneB )
 		{
-			cout << "BAEHRFIWE$WEIHGWEHTOIHWETOWEHITEWHTEW " << endl;
 			gates[i]->SetLocked( false );
 		}
 	}*/

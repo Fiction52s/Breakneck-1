@@ -4574,6 +4574,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *footTrapPanel = CreateOptionsPanel( "foottrap" );
 	ActorType *footTrapType = new ActorType( "foottrap", footTrapPanel );
 
+	Panel *bossCrawlerPanel = NULL;//CreateOptionsPanel( "bosscrawler" );
+	ActorType *bossCrawlerType = new ActorType( "bosscrawler", bossCrawlerPanel );
+
 	Panel *goalPanel = CreateOptionsPanel( "goal" );
 	ActorType *goalType = new ActorType( "goal", goalPanel );
 
@@ -4589,6 +4592,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["crawlerreverser"] = crawlerReverserType;
 	types["basicturret"] = basicTurretType;
 	types["foottrap"] = footTrapType;
+	types["bosscrawler"] = bossCrawlerType;
 	types["goal"] = goalType;
 	
 
@@ -4603,7 +4607,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	blueKeyType->panel = keyPanel;
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 3, 3, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 4, 4, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
@@ -4617,6 +4621,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s5( keyType->iconTexture );
 	sf::Sprite s6( crawlerReverserType->iconTexture );
 	sf::Sprite s7( healthflyType->iconTexture );
+	sf::Sprite s8( bossCrawlerType->iconTexture );
 
 	sf::Sprite ss0( greenKeyType->iconTexture );
 	sf::Sprite ss1( blueKeyType->iconTexture );
@@ -4626,12 +4631,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	gs->Set( 0, 0, s0, "patroller" );
 	gs->Set( 1, 0, s1, "crawler" );
-	gs->Set( 0, 1, s2, "basicturret" );
-	gs->Set( 1, 1, s3, "foottrap" );
-	gs->Set( 2, 0, s4, "goal" );
-	gs->Set( 0, 2, s5, "key" );
-	gs->Set( 2, 1, s6, "crawlerreverser" );
-	gs->Set( 2, 2, s7, "healthfly" );
+	gs->Set( 2, 0, s2, "basicturret" );
+	gs->Set( 3, 0, s3, "foottrap" );
+	gs->Set( 0, 1, s4, "goal" );
+	gs->Set( 1, 1, s6, "crawlerreverser" );
+	gs->Set( 1, 2, s7, "healthfly" );
+	gs->Set( 1, 3, s8, "bosscrawler" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -7047,6 +7052,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												enemyEdgeQuantity );
 											groups["--"]->actors.push_back( actor );*/
 										}
+									}
+									else if( trackingEnemy->name == "bosscrawler" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossCrawler( new BossCrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex,
+											enemyEdgeQuantity ) );
+										bossCrawler->group = groups["--"];
+
+										CreateActor( bossCrawler );
+										//groups["--"]->name
+										/*if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
+											showPanel->checkBoxes["clockwise"]->checked = false;
+											showPanel->textBoxes["speed"]->text.setString( "1.5" );
+											//trackingEnemy = NULL;
+										}*/
 									}
 									else if( trackingEnemy->name == "goal" )
 									{
