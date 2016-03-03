@@ -929,6 +929,32 @@ void CrawlerReverserParams::WriteParamFile( ofstream &of )
 {
 }
 
+BossCrawlerParams::BossCrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+	int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	type = edit->types["bosscrawler"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+bool BossCrawlerParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void BossCrawlerParams::WriteParamFile( ofstream &of )
+{
+	//no params its a boss!
+}
+
+
 BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
 	:ActorParams( PosType::GROUND_ONLY )
 {

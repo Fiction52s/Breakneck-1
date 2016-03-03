@@ -501,6 +501,18 @@ struct CrawlerReverserParams : public ActorParams
 	bool CanApply();
 };
 
+struct BossCrawlerParams : public ActorParams
+{
+	BossCrawlerParams( 
+		EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	//CrawlerParams( EditSession *edit );
+
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
 struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
