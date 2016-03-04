@@ -8981,7 +8981,7 @@ void Actor::PhysicsResponse()
 				{
 					if( wallNormal.x > 0)
 					{
-						if( currInput.LLeft() )
+						if( currInput.LLeft() && !currInput.LDown() )
 						{
 							//cout << "setting to wallcling" << endl;
 							facingRight = true;
@@ -8991,7 +8991,7 @@ void Actor::PhysicsResponse()
 					}
 					else
 					{
-						if( currInput.LRight() )
+						if( currInput.LRight() && !currInput.LDown() )
 						{
 							//cout << "setting to wallcling" << endl;
 							facingRight = false;
@@ -9010,14 +9010,14 @@ void Actor::PhysicsResponse()
 				{
 					if( wallNormal.x > 0 )
 					{
-						if( !currInput.LLeft() )
+						if( !currInput.LLeft() || currInput.LDown() )
 						{
 							stopWallClinging = true;
 						}
 					}
 					else
 					{
-						if( !currInput.LRight() )
+						if( !currInput.LRight() || currInput.LDown() )
 						{
 							stopWallClinging = true;
 						}

@@ -10538,7 +10538,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		{
 			if( mode == EDIT )//&& selectedActor != NULL )
 			{
-				FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
+				ISelectable *select = selectedBrush->objects.front().get();				
+				FootTrapParams *footTrap = (FootTrapParams*)select;
+				//FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
 				footTrap->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
