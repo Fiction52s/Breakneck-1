@@ -9085,7 +9085,23 @@ void Actor::PhysicsResponse()
 		double crossB = cross( B - edge->v0, nEdge );
 		double crossC = cross( C - edge->v0, nEdge );
 		double crossD = cross( D - edge->v0, nEdge );
-		if( crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0 )
+
+		bool activate = crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0;
+
+		g->SetLocked( true );
+		if( ground != NULL &&  ( groundSpeed > 0 && ground->edge0 == gateTouched )
+			|| ( groundSpeed < 0 && ground->edge1 == gateTouched ) )
+		{
+
+			activate = true;
+		}
+		else
+		{
+			//cout << "groundSpeed: " << groundSpeed << ", " << 
+		}
+		g->SetLocked( false );
+
+		if( activate )
 		{
 			if( edge == g->edgeA )
 			{
