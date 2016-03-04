@@ -22,12 +22,13 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
 {
-	initHealth = 80;
+	initHealth = 60;
 	health = initHealth;
 
-	double height = 32;
+	double width = 112;
+	double height = 64;
 
-	ts = owner->GetTileset( "basicturret.png", 64, height );
+	ts = owner->GetTileset( "basicturret_112x64.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -48,7 +49,7 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	sprite.setRotation( angle / PI * 180 );
 
 	
-	ts_bullet = owner->GetTileset( "basicbullet.png", 16, 16 );
+	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
 
 
 	hurtBody.type = CollisionBox::Hurt;
@@ -167,6 +168,11 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicTurret::UpdatePrePhysics()
 {
+	if( frame == 26 * animationFactor )
+	{
+		frame = 0;
+	}
+
 	if( !dead && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
@@ -193,6 +199,11 @@ void BasicTurret::UpdatePrePhysics()
 		{
 			DeactivateBullet( currBullet );
 		}
+		else
+		{
+			if( currBullet->frame == 12 )
+				currBullet->frame = 0;
+		}
 		currBullet = next;
 	}
 	
@@ -203,11 +214,12 @@ void BasicTurret::UpdatePrePhysics()
 		Bullet *b = ActivateBullet();
 		if( b != NULL )
 		{
-			//cout << "firing bullet" << endl;
+		//	cout << "firing bullet" << endl;
 			b->position = position ;//+ ground->Normal() * 16.0;
 			b->slowCounter = 1;
 			b->slowMultiple = 1;
 			b->framesToLive = b->maxFramesToLive;
+			b->frame = 0;
 		}
 		else
 		{
@@ -265,26 +277,7 @@ void BasicTurret::PhysicsResponse()
 	PlayerSlowingMe();
 
 	UpdateBulletHitboxes();
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		if( currBullet->slowCounter == currBullet->slowMultiple )
-		{
-			currBullet->frame++;
-			currBullet->slowCounter = 1;
-		}
-		else
-		{
-			currBullet->slowCounter++;
-		}
-
-			
-		//++frame;
-		if( currBullet->frame == 11 )
-			currBullet->frame = 0;
-
-		currBullet = currBullet->next;
-	}
+	
 
 	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
 
@@ -332,11 +325,6 @@ void BasicTurret::PhysicsResponse()
 		if( IHitPlayerWithBullets() )
 		{
 		}
-
-		if( frame == 26 * animationFactor )
-		{
-			frame = 0;
-		}
 	}
 }
 
@@ -347,18 +335,32 @@ void BasicTurret::UpdatePostPhysics()
 		owner->Pause( 5 );
 	}
 
+	Bullet *currBullet = activeBullets;
+	while( currBullet != NULL )
+	{
+		if( currBullet->slowCounter == currBullet->slowMultiple )
+		{
+			currBullet->frame++;
+			currBullet->framesToLive--;
+			currBullet->slowCounter = 1;
+		}
+		else
+		{
+			currBullet->slowCounter++;
+		}
+
+			
+		//++frame;
+		
+
+		currBullet = currBullet->next;
+	}
 	
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
 		
-		++frame;
-		Bullet *currBullet = activeBullets;
-		while( currBullet != NULL )
-		{
-			currBullet->framesToLive--;
-			currBullet = currBullet->next;
-		}
+		++frame;		
 	//	cout << "frame" << endl;
 		slowCounter = 1;
 	
@@ -580,16 +582,17 @@ bool BasicTurret::PlayerSlowingMe()
 
 void BasicTurret::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor / 14 ) );//frame / animationFactor ) );
 
 	int i = 0;
 	Bullet *currBullet = activeBullets;
+	int rad = 16;
 	while( currBullet != NULL )
 	{	
-		bulletVA[i*4].position = Vector2f( currBullet->position.x - 8, currBullet->position.y - 8 );
-		bulletVA[i*4+1].position = Vector2f( currBullet->position.x + 8, currBullet->position.y - 8 );
-		bulletVA[i*4+2].position = Vector2f( currBullet->position.x + 8, currBullet->position.y + 8 );
-		bulletVA[i*4+3].position = Vector2f( currBullet->position.x - 8, currBullet->position.y + 8 );
+		bulletVA[i*4].position = Vector2f( currBullet->position.x - rad, currBullet->position.y - rad );
+		bulletVA[i*4+1].position = Vector2f( currBullet->position.x + rad, currBullet->position.y - rad );
+		bulletVA[i*4+2].position = Vector2f( currBullet->position.x + rad, currBullet->position.y + rad );
+		bulletVA[i*4+3].position = Vector2f( currBullet->position.x - rad, currBullet->position.y + rad );
 
 		sf::IntRect rect = ts_bullet->GetSubRect( currBullet->frame );
 
@@ -710,29 +713,29 @@ void BasicTurret::AddBullet()
 		inactiveBullets = b;
 	}
 
-
+	double rad = 16;
 	inactiveBullets->hurtBody.isCircle = true;
 	inactiveBullets->hurtBody.globalAngle = 0;
 	inactiveBullets->hurtBody.offset.x = 0;
 	inactiveBullets->hurtBody.offset.y = 0;
-	inactiveBullets->hurtBody.rw = 8;
-	inactiveBullets->hurtBody.rh = 8;
+	inactiveBullets->hurtBody.rw = rad;
+	inactiveBullets->hurtBody.rh = rad;
 
 	inactiveBullets->hitBody.type = CollisionBox::Hit;
 	inactiveBullets->hitBody.isCircle = true;
 	inactiveBullets->hitBody.globalAngle = 0;
 	inactiveBullets->hitBody.offset.x = 0;
 	inactiveBullets->hitBody.offset.y = 0;
-	inactiveBullets->hitBody.rw = 8;
-	inactiveBullets->hitBody.rh = 8;
+	inactiveBullets->hitBody.rw = rad;
+	inactiveBullets->hitBody.rh = rad;
 
 	inactiveBullets->physBody.type = CollisionBox::Physics;
 	inactiveBullets->physBody.isCircle = true;
 	inactiveBullets->physBody.globalAngle = 0;
 	inactiveBullets->physBody.offset.x = 0;
 	inactiveBullets->physBody.offset.y = 0;
-	inactiveBullets->physBody.rw = 8;
-	inactiveBullets->physBody.rh = 8;
+	inactiveBullets->physBody.rw = rad;
+	inactiveBullets->physBody.rh = rad;
 }
 
 void BasicTurret::DeactivateBullet( Bullet *b )

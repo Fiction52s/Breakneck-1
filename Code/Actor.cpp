@@ -9089,10 +9089,10 @@ void Actor::PhysicsResponse()
 		bool activate = crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0;
 
 		g->SetLocked( true );
-		if( ground != NULL &&  ( groundSpeed > 0 && ground->edge0 == gateTouched )
-			|| ( groundSpeed < 0 && ground->edge1 == gateTouched ) )
+		if( ground != NULL && ground != gateTouched && ( ( groundSpeed > 0 && ground->edge0 == gateTouched )
+			|| ( groundSpeed < 0 && ground->edge1 == gateTouched ) ) )
 		{
-
+			//glitch here because you are actually grounded ON the gate, so this doesnt work out.
 			activate = true;
 		}
 		else
