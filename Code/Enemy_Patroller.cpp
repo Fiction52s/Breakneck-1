@@ -376,10 +376,15 @@ void Patroller::DrawMinimap( sf::RenderTarget *target )
 {
 	CircleShape enemyCircle;
 	enemyCircle.setFillColor( COLOR_BLUE );
-	enemyCircle.setRadius( 40 );
+	enemyCircle.setRadius( 50 );
 	enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
 	enemyCircle.setPosition( position.x, position.y );
 	target->draw( enemyCircle );
+
+	if( monitor != NULL )
+	{
+		monitor->DrawMinimap( target );
+	}
 }
 
 bool Patroller::IHitPlayer()

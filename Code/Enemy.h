@@ -291,6 +291,7 @@ struct BasicTurret : Enemy
 	void UpdatePhysics();
 	void PhysicsResponse();
 	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
 	bool IHitPlayerWithBullets();
@@ -688,6 +689,8 @@ struct Monitor : Enemy
 	CollisionBox hitBody;
 	int animationFactor;
 	sf::Sprite sprite;
+	sf::Sprite miniSprite;
+	Tileset *ts_mini;
 	Tileset *ts;
 	int frame;
 	Enemy *host;

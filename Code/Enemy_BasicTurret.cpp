@@ -395,6 +395,21 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 	target->draw( sprite );
 }
 
+void BasicTurret::DrawMinimap( sf::RenderTarget *target )
+{
+	CircleShape cs;
+	cs.setRadius( 50 );
+	cs.setFillColor( COLOR_BLUE );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
+	target->draw( cs );
+
+	if( monitor != NULL )
+	{
+		monitor->DrawMinimap( target );
+	}
+}
+
 bool BasicTurret::IHitPlayerWithBullets()
 {
 	Actor &player = owner->player;

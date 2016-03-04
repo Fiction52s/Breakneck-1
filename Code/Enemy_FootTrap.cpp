@@ -249,11 +249,16 @@ void FootTrap::Draw(sf::RenderTarget *target )
 void FootTrap::DrawMinimap( sf::RenderTarget *target )
 {
 	CircleShape cs;
-	cs.setRadius( 40 );
+	cs.setRadius( 50 );
 	cs.setFillColor( COLOR_BLUE );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
+
+	if( monitor != NULL )
+	{
+		monitor->DrawMinimap( target );
+	}
 }
 
 bool FootTrap::IHitPlayer()

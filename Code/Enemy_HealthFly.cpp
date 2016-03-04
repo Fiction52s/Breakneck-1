@@ -7,6 +7,7 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
 #define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
@@ -108,7 +109,15 @@ void HealthFly::UpdatePhysics()
 
 void HealthFly::UpdatePostPhysics()
 {
+	if( caught )
+	{
+		//should the one in patroller be in post or pre physics?
+		AttemptSpawnMonitor();
+		owner->RemoveEnemy( this );
+	}
+
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+
 
 	if( slowCounter == slowMultiple )
 	{
@@ -127,12 +136,7 @@ void HealthFly::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( caught )
-	{
-		//should the one in patroller be in post or pre physics?
-		AttemptSpawnMonitor();
-		owner->RemoveEnemy( this );
-	}
+	
 	//empty
 }
 
@@ -160,6 +164,19 @@ void HealthFly::Draw( sf::RenderTarget *target)
 
 void HealthFly::DrawMinimap( sf::RenderTarget *target )
 {
+	CircleShape cs;
+	cs.setFillColor( COLOR_TEAL );
+	cs.setRadius( 50 );
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
+	target->draw( cs );
+
+	if( monitor != NULL )
+	{
+		monitor->miniSprite.setPosition( position.x, position.y );
+		target->draw( monitor->miniSprite );
+		//monitor->DrawMinimap( target );
+	}
 }
 
 bool HealthFly::IHitPlayer()

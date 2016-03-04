@@ -19,10 +19,17 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 	:Enemy( owner, Enemy::GATEMONITOR ), monitorType( mType )
 {
 	ts = owner->GetTileset( "monitor.png", 64, 64 );
+	ts_mini = owner->GetTileset( "monitor_minimap_64x64.png", 64, 64 );
+	
 	IntRect subRect = ts->GetSubRect( 0 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( subRect );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+
+	miniSprite.setTexture( *ts_mini->texture );
+	miniSprite.setScale( 6, 6 );
+	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height / 2 );
+	
 	
 	
 	host = e_host;
@@ -111,6 +118,8 @@ void Monitor::UpdatePostPhysics()
 	IntRect subRect = ts->GetSubRect( frame / animationFactor );
 	sprite.setTextureRect( subRect );
 	sprite.setPosition( position.x, position.y );
+
+	miniSprite.setPosition( position.x, position.y );
 	//no slowing for now
 	++frame;
 	//empty
@@ -130,6 +139,8 @@ void Monitor::Draw( sf::RenderTarget *target)
 
 void Monitor::DrawMinimap( sf::RenderTarget *target )
 {
+	
+	target->draw( miniSprite );
 	/*CircleShape cs;
 	cs.setRadius( 80 );
 	cs.setFillColor( COLOR_BLUE );
