@@ -4741,6 +4741,7 @@ void GameSession::RespawnPlayer()
 	player.leftWire->Reset();
 	powerBar.Reset();
 	player.lastWire = 0;
+	player.desperationMode = false;
 	
 	
 	//actually keys should be set based on which ones you had at the last checkpoint

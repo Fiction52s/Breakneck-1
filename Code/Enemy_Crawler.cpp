@@ -25,6 +25,7 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	health = initHealth;
 	lastReverser = false;
 	dead = false;
+	deathFrame = 0;
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 
@@ -843,6 +844,12 @@ void Crawler::UpdatePostPhysics()
 	else
 	{
 		slowCounter++;
+	}
+
+	
+	if( deathFrame == 60 )
+	{
+		owner->RemoveEnemy( this );
 	}
 
 	//need to calculate frames in here!!!!

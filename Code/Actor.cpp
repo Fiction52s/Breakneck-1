@@ -822,14 +822,23 @@ void Actor::ActionEnded()
 
 void Actor::UpdatePrePhysics()
 {
-	if( drainCounter == drainCounterMax)
+	if( !desperationMode )
 	{
-		owner->powerBar.Use( 1 );	
-		drainCounter = 0;
-	}
-	else
-	{
-		drainCounter++;
+		if( drainCounter == drainCounterMax)
+		{
+			bool stillHasHealth = owner->powerBar.Use( 1 );	
+
+			if( !stillHasHealth )
+			{
+				desperationMode = true;
+				despCounter = 0;
+			}
+			drainCounter = 0;
+		}
+		else
+		{
+			drainCounter++;
+		}
 	}
 	//cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
 	
@@ -963,7 +972,7 @@ void Actor::UpdatePrePhysics()
 			if( grindEdge != NULL )
 			{
 				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
-				owner->powerBar.Damage( receivedHit->damage ); //double damage for now
+				owner->powerBar.Damage( receivedHit->damage ); //double damage for now bleh
 				grindSpeed *= .8;
 			}
 			else if( ground == NULL )
