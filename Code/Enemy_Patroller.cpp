@@ -16,6 +16,7 @@ using namespace sf;
 Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::PATROLLER ), deathFrame( 0 )
 {
+	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
@@ -25,7 +26,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	pathLength = pathParam.size() + 1;
-	cout << "pathLength: " << pathLength << endl;
+	//cout << "pathLength: " << pathLength << endl;
 	path = new Vector2i[pathLength];
 	path[0] = pos;
 
@@ -136,7 +137,7 @@ void Patroller::UpdatePrePhysics()
 		//gotta factor in getting hit by a clone
 		health -= 20;
 
-		cout << "health now: " << health << endl;
+		//cout << "health now: " << health << endl;
 
 		if( health <= 0 )
 		{
@@ -209,21 +210,23 @@ void Patroller::PhysicsResponse()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
-			cout << "color blue" << endl;
+			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
 			owner->player.test = true;
 			owner->player.currAttackHit = true;
 			owner->player.flashColor = COLOR_BLUE;
 			owner->player.flashFrames = 5;
 			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->powerBar.Charge( 2 * 6 * 1 );
+			owner->powerBar.Charge( 2 * 6 * 3 );
+			owner->player.desperationMode = false;
+
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
 				owner->player.velocity.y = 4;//.5;
 			}
 
-			cout << "frame: " << owner->player.frame << endl;
+		//	cout << "frame: " << owner->player.frame << endl;
 
 			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
@@ -285,7 +288,9 @@ void Patroller::AdvanceTargetNode()
 void Patroller::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
+	{
 		owner->Pause( 5 );
+	}
 
 	UpdateSprite();
 

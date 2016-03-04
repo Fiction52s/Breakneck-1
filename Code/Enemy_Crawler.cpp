@@ -791,7 +791,8 @@ void Crawler::PhysicsResponse()
 			owner->player.flashColor = COLOR_BLUE;
 			owner->player.flashFrames = 5;
 			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->powerBar.Charge( 2 * 6 * 3 );
+			owner->player.desperationMode = false;
+			owner->powerBar.Charge( 2 * 6 * 2 );
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{

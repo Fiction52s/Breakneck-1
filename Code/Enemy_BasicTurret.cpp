@@ -310,7 +310,9 @@ void BasicTurret::PhysicsResponse()
 			owner->player.flashColor = COLOR_BLUE;
 			owner->player.flashFrames = 5;
 			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->player.desperationMode = false;
 			owner->powerBar.Charge( 2 * 6 * 3 );
+
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
@@ -340,7 +342,10 @@ void BasicTurret::PhysicsResponse()
 
 void BasicTurret::UpdatePostPhysics()
 {
-	
+	if( receivedHit != NULL )
+	{
+		owner->Pause( 5 );
+	}
 
 	
 	//cout << "slowcounter: " << slowCounter << endl;
