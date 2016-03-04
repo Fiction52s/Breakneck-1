@@ -52,6 +52,13 @@ void Gate::Draw( sf::RenderTarget *target )
 			
 		//}
 	}
+	else
+	{
+		if( gState != OPEN )
+		{
+			target->draw( thickLine );
+		}
+	}
 
 }
 
@@ -66,6 +73,7 @@ void Gate::UpdateLine()
 		break;
 	case BLACK:
 		c = Color( 0, 0, 0 );
+		//ts = owner->GetTileset( "blackgate_64x64.png", 64, 64 );
 		break;
 	case BLUE:
 		c =  Color( 77, 150, 249);
@@ -111,7 +119,7 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
-	if( type == Gate::GREY )
+	if( type == Gate::GREY )// || type == Gate::BLACK )
 	{
 		if( gQuads == NULL )
 		{
