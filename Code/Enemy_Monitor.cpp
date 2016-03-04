@@ -27,7 +27,7 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 
 	miniSprite.setTexture( *ts_mini->texture );
-	miniSprite.setScale( 6, 6 );
+	miniSprite.setScale( 8, 8 );
 	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height / 2 );
 	
 	

@@ -175,7 +175,6 @@ void HealthFly::DrawMinimap( sf::RenderTarget *target )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-		//monitor->DrawMinimap( target );
 	}
 }
 

@@ -383,7 +383,8 @@ void Patroller::DrawMinimap( sf::RenderTarget *target )
 
 	if( monitor != NULL )
 	{
-		monitor->DrawMinimap( target );
+		monitor->miniSprite.setPosition( position.x, position.y );
+		target->draw( monitor->miniSprite );
 	}
 }
 
