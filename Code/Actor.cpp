@@ -11818,32 +11818,35 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				endAngle += 2 * PI;
 			}
 
-			//double temp = startAngle;
-			//startAngle = endAngle;
-			//endAngle = temp;
+			double temp = startAngle;
+			startAngle = endAngle;
+			endAngle = temp;
 
 			if( endAngle < startAngle )
 			{
 				if( pAngle >= endAngle || pAngle <= startAngle )
 				{
+					
 				}
 				else
 				{
 					cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
+					return;
 				}
 			}
 			else
 			{
 				if( pAngle >= startAngle && pAngle <= endAngle )
 				{
+					
 					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
 					//	", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
+					
 				}
 				else
 				{
+					cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					return;
 					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
 						", p: " << pVec.x << ", " << pVec.y << endl;
 					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
@@ -11879,6 +11882,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				endAngle += 2 * PI;
 			}
+			
+			double temp = startAngle;
+			startAngle = endAngle;
+			endAngle = temp;
 
 			//double temp = startAngle;
 			//startAngle = endAngle;
@@ -11888,12 +11895,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				if( pAngle >= endAngle || pAngle <= startAngle )
 				{
-					cout << "return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
+					
 				}
 				else
 				{
-					
+					cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					return;
 				}
 			}
 			else
@@ -11902,11 +11909,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				{
 					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
 					//	", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
+					
 				}
 				else
 				{
+					cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					return;
+
 					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
 						", p: " << pVec.x << ", " << pVec.y << endl;
 					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
@@ -13400,7 +13409,7 @@ bool Actor::CanUnlockGate( Gate *g )
 		return false;
 		break;
 	case Gate::BLUE:
-		cout << "has blue key: " << hasBlueKey << endl;
+		//cout << "has blue key: " << hasBlueKey << endl;
 		if( hasBlueKey )
 		{
 			
