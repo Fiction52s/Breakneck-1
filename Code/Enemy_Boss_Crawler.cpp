@@ -22,8 +22,10 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	
 	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
 
+	initHealth = 400;
+	health = initHealth;
 
-	numBullets = 6;
+	numBullets = 5;
 	bullets = new Bullet[numBullets];
 	bulletRadius = 16;
 	
@@ -53,16 +55,16 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
+	hurtBody.rw = 64;
+	hurtBody.rh = 64;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 32;
-	hitBody.rh = 32;
+	hitBody.rw = 64;
+	hitBody.rh = 64;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
@@ -118,6 +120,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 
 void BossCrawler::ResetEnemy()
 {
+	health = initHealth;
 	roll = false;
 	ground = startGround;
 	edgeQuantity = startQuant;
@@ -125,17 +128,6 @@ void BossCrawler::ResetEnemy()
 	sprite.setPosition( gPoint.x, gPoint.y );
 
 	V2d gn = ground->Normal();
-	if( gn.x > 0 )
-		offset.x = physBody.rw;
-	else if( gn.x < 0 )
-		offset.x = -physBody.rw;
-	if( gn.y > 0 )
-		offset.y = physBody.rh;
-	else if( gn.y < 0 )
-		offset.y = -physBody.rh;
-
-	position = gPoint + offset;
-
 	dead = false;
 
 	//----update the sprite
@@ -153,6 +145,18 @@ void BossCrawler::ResetEnemy()
 
 	UpdateHitboxes();
 
+	for( int i = 0; i < numBullets; ++i )
+	{
+		bullets[i].active = false;
+	}
+
+	action = STAND;
+	frame = 0;
+
+	//action = LUNGE
+	//action = STAND;
+	facingRight = false;
+	groundSpeed = 0;
 }
 
 void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
@@ -397,6 +401,31 @@ void BossCrawler::UpdateHitboxes()
 
 void BossCrawler::UpdatePrePhysics()
 {
+	if( !owner->cam.bossCrawler )
+	{
+		owner->cam.bossCrawler = true;
+		owner->cam.pos.x = position.x;
+		owner->cam.pos.y = position.y - 50;
+		owner->cam.zoomFactor = 1.5;
+	}
+
+	if( !dead && receivedHit != NULL )
+	{	
+		//gotta factor in getting hit by a clone
+		health -= 20;
+
+		//cout << "health now: " << health << endl;
+
+		if( health <= 0 )
+		{
+			AttemptSpawnMonitor();
+			dead = true;
+		}
+
+		receivedHit = NULL;
+	}
+
+
 	int standLength = 60;
 	int shootLength = 60;
 	int lungeLength = 20;
@@ -713,13 +742,23 @@ void BossCrawler::UpdatePhysics()
 		{
 			if( q == groundLength )
 			{
-				q = 0;
-									ground = e1;
-			if( gNormal == e1n )
-			{
+				if( e1n.y == -1 && gNormal.x < 0 && action == ROLL )
+				{
+					velocity = normalize( ground->v1 - ground->v0 ) * groundSpeed;
+					ground = NULL;
+					frame = 0;
+					return;
+				}
+				else
+				{
+					q = 0;
+					ground = e1;
+					if( gNormal == e1n )
+					{
 				
+					}
+				}
 			}
-		}
 			else
 			{
 				if( movement > 0 )
@@ -777,8 +816,18 @@ void BossCrawler::UpdatePhysics()
 			double e0Length = length( e0->v1 - e0->v0 );
 			if( q == 0 )
 			{
-				q = e0Length;
-				ground = e0;
+				if( e0n.y == -1 && gNormal.x > 0 && action == ROLL )
+				{
+					velocity = normalize( ground->v1 - ground->v0 ) * groundSpeed;
+					ground = NULL;
+					frame = 0;
+					return;
+				}
+				else
+				{
+					q = e0Length;
+					ground = e0;
+				}
 			}
 			else
 			{
@@ -852,7 +901,14 @@ void BossCrawler::UpdatePhysics()
 			//V2d eNorm = minContact.edge->Normal();
 			ground = minContact.edge;
 			edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
-			action = LUNGELAND;
+			if( action == ROLL )
+			{
+				facingRight = !facingRight;
+			}
+			else
+			{
+				action = LUNGELAND;
+			}
 			frame = 0;
 			//= q;
 			//V2d gn = ground->Normal();
@@ -1001,7 +1057,9 @@ void BossCrawler::PhysicsResponse()
 			owner->player.currAttackHit = true;
 			owner->player.flashColor = COLOR_BLUE;
 			owner->player.flashFrames = 5;
+			owner->player.desperationMode = false;
 			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->powerBar.Charge( 2 * 6 * 2 );
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
@@ -1039,6 +1097,9 @@ void BossCrawler::PhysicsResponse()
 
 void BossCrawler::UpdatePostPhysics()
 {
+	if( receivedHit != NULL )
+		owner->Pause( 5 );
+
 	UpdateBulletSprites();
 
 	sprite.setTexture( *ts_test->texture );
@@ -1112,11 +1173,22 @@ void BossCrawler::UpdatePostPhysics()
 		{
 			//sprite.setTexture( *ts_walk->texture );
 			//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
+			if( ground != NULL )
+			{
+				V2d pp = ground->GetPoint( edgeQuantity );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+				sprite.setRotation( angle / PI * 180 );
+				sprite.setPosition( pp.x, pp.y );
+			}
+			else
+			{
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);		
+				sprite.setPosition( position.x, position.y );
+			}
+			
+			
 		}
+		break;
 	case STUNNED:
 		{
 		//	sprite.setTexture( *ts_walk->texture );
@@ -1325,6 +1397,7 @@ void BossCrawler::FireBullets()
 	V2d norm = ground->Normal();
 	for( int i = 0; i < numBullets; ++i )
 	{
+
 		V2d vel = norm * launchSpeed + V2d( 0, -3 ) * (double)i;
 		bullets[i].active = true;
 		bullets[i].position = position;
@@ -1332,6 +1405,16 @@ void BossCrawler::FireBullets()
 		bullets[i].slowCounter = 1;
 		bullets[i].slowMultiple = 1;
 		bullets[i].velocity = vel;
+	}
+
+	if( norm.y == -1 )
+	{
+		bullets[0].velocity = V2d( 0, -launchSpeed );
+		bullets[1].velocity = normalize( V2d( launchSpeed, -launchSpeed ) ) * launchSpeed;
+		bullets[2].velocity = normalize( V2d( -launchSpeed, -launchSpeed ) ) * launchSpeed;
+
+		bullets[3].velocity = normalize( V2d( launchSpeed * 2, -launchSpeed ) ) * launchSpeed;
+		bullets[4].velocity = normalize( V2d( -launchSpeed * 2, -launchSpeed ) ) * launchSpeed;
 	}
 }
 

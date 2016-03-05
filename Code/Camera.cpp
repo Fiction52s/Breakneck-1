@@ -9,6 +9,8 @@ using namespace std;
 
 Camera::Camera()
 {
+	bossCrawler = false;
+
 	offset.x = 0;
 	offset.y = 0;
 
@@ -40,6 +42,11 @@ Camera::Camera()
 
 void Camera::Update( Actor *player )
 {
+	if( bossCrawler )
+	{
+		return;
+	}
+
 	if( player->currInput.LDown() )
 	{
 	//	maxOffset.y = 900;

@@ -1808,6 +1808,11 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 				}
 			}
+			else if( currInput.LDown() )
+			{
+				action = JUMP;
+				frame = 1;
+			}
 
 			break;
 		}
@@ -9695,7 +9700,7 @@ void Actor::UpdatePostPhysics()
 			
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
+			sprite->setRotation( 0 );//angle / PI * 180 );
 		
 			V2d oldv0 = ground->v0;
 			V2d oldv1 = ground->v1;
@@ -9714,10 +9719,10 @@ void Actor::UpdatePostPhysics()
 				ground->v1 = oldv1;
 			}
 
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );	
+			//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			sprite->setPosition( pp.x + offsetX, pp.y );
+			//else
+			//	sprite->setPosition( pp.x, pp.y );	
 		break;
 		}
 	case LAND: 

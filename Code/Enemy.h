@@ -688,6 +688,8 @@ struct BossCrawler : Enemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 	
+	int maxHitsPerFrame;
+	int hitsThisFrame;
 	
 };
 

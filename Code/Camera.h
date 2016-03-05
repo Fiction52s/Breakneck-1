@@ -28,6 +28,8 @@ struct Camera
 	double bottom;
 	double right;
 
+	bool bossCrawler;
+
 	void Update2( Actor *a );
 	void Update( Actor *a );
 };

@@ -96,7 +96,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
-	if (!polyShader.loadFromFile("mat_shader.frag", sf::Shader::Fragment ) )
+	if (!polyShader.loadFromFile("mat_shader2.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
 		cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
@@ -3112,7 +3112,8 @@ int GameSession::Run( string fileN )
 	int returnVal = 0;
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
-	polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 512, 512 )->texture );
+	//polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 512, 512 )->texture );
+	polyShader.setParameter( "u_texture", *GetTileset( "w1_terrain_512x512.png", 512, 512 )->texture );
 	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
@@ -3166,11 +3167,11 @@ int GameSession::Run( string fileN )
 
 		if( showFrameRate )
 		{
-			ss << inGameClock.getElapsedTime().asSeconds();
+			/*ss << inGameClock.getElapsedTime().asSeconds();
 			frameRate.setString( ss.str() );
 			ss.clear();
-			ss.str("");
-			/*if( frameCounter == frameCounterWait )
+			ss.str("");*/
+			if( frameCounter == frameCounterWait )
 			{
 				double blah = 1.0 / frameTime;
 				total += blah;
@@ -3186,7 +3187,7 @@ int GameSession::Run( string fileN )
 				double blah = 1.0 / frameTime;
 				total += blah;
 				++frameCounter;
-			}*/
+			}
 		}
 		
 
@@ -4049,8 +4050,8 @@ int GameSession::Run( string fileN )
 			if( listVAIter->grassVA != NULL )
 				preScreenTex->draw( *listVAIter->grassVA, &grassTex );
 
-			//if( usePolyShader )
-			if(false )
+			if( usePolyShader )
+			//if(false )
 			{
 
 				sf::Rect<double> polyAndScreen;
@@ -4142,7 +4143,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -4796,6 +4797,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	float windowx = 1920;//window->getSize().x;
 	float windowy = 1080;//window->getSize().y;
 	//cout << "windowx: " << windowx << ", " << windowy << endl;
+
 	if( lightsAtOnce > 0 )
 	{
 		float depth0 = touchedLights[0]->depth;
@@ -6163,7 +6165,7 @@ void GameSession::SetUndergroundParAndDraw()
 		view.getCenter().y + view.getSize().y / 2 );
 
 	lightsAtOnce = 0;
-	tempLightLimit = 9;
+	tempLightLimit = 0;//9; //only for now
 
 	sf::Rect<double> r( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2, view.getSize().x, view.getSize().y );
 	
