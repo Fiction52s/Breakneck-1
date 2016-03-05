@@ -8724,6 +8724,7 @@ void Actor::PhysicsResponse()
 	//groundSpeed *= slowMultiple;
 	//grindSpeed *= slowMultiple;
 
+
 	V2d gn;
 
 	if( grindEdge != NULL )
@@ -8867,6 +8868,48 @@ void Actor::PhysicsResponse()
 	}
 	else if( ground != NULL )
 	{
+		bool leaveGround = false;
+		if( ground->edgeType == Edge::CLOSED_GATE )
+		{
+			Gate *g = (Gate*)ground->info;
+				
+			if( CanUnlockGate( g ) )
+			{
+				if( ground == g->edgeA )
+				{
+					gateTouched = g->edgeB;
+				}
+				else
+				{
+					gateTouched = g->edgeA;
+				}
+
+				owner->UnlockGate( g );
+
+				action = JUMP;
+				frame = 1;
+				
+				framesInAir = 0;
+
+				velocity = groundSpeed * normalize( ground->v1 - ground->v0 );
+				//velocity = V2d( 0, 0 );
+				leaveGround = true;
+				ground = NULL;
+				//return;
+
+			}
+		}
+		/*if( ground->edgeType == Edge::OPEN_GATE )
+		{
+			cout << "SETTING TO JUMP" << endl;
+			action = JUMP;
+			frame = 1;
+			ground = NULL;
+			framesInAir = 0;
+		}*/
+
+		if( !leaveGround )
+		{
 		framesInAir = 0;
 		gn = ground->Normal();
 		if( collision )
@@ -8959,6 +9002,8 @@ void Actor::PhysicsResponse()
 			{
 
 			}
+		}
+
 		}
 		
 	}
@@ -13398,12 +13443,13 @@ bool Actor::CanUnlockGate( Gate *g )
 		return false;
 	}
 
+	bool canUnlock = false;
 	//cout << "this gate is still locked" << endl;
 
 	switch( g->type )
 	{
 	case Gate::GREY:
-		return true;
+		canUnlock = true;
 		break;
 	case Gate::BLACK:
 		return false;
@@ -13414,14 +13460,14 @@ bool Actor::CanUnlockGate( Gate *g )
 		{
 			
 			//hasBlueKey = false;
-			return true;
+			canUnlock = true;
 		}
 		break;
 	case Gate::GREEN:
 		if( hasGreenKey )
 		{
 			//hasGreenKey = false;
-			return true;
+			canUnlock = true;
 		}
 		break;
 	case Gate::RED:
@@ -13429,8 +13475,7 @@ bool Actor::CanUnlockGate( Gate *g )
 		}
 		break;
 	}
-
-	return false;
+	return canUnlock;
 }
 
 bool Actor::CaptureMonitor( Monitor * m )

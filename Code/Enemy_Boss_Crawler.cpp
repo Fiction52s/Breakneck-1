@@ -13,11 +13,19 @@ using namespace sf;
 
 
 BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q )
+	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), numBullets( 6 ), 
+		bulletVA( sf::Quads, numBullets * 4 )
 {
 	double width = 128;
 	double height = 144;
 	ts_test = owner->GetTileset( "bosscrawler_128x144.png", width, height );
+	
+	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
+
+
+	numBullets = 6;
+	bullets = new Bullet[numBullets];
+	bulletRadius = 16;
 	
 	
 	//cout << "creating the boss crawler" << endl;
@@ -73,10 +81,39 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	physBody.rh = 64;
 	physBody.type = CollisionBox::BoxType::Physics;
 
+	for( int i = 0; i < numBullets; ++i )
+	{
+		Bullet &b = bullets[i];
+		b.hurtBody.isCircle = true;
+		b.hurtBody.globalAngle = 0;
+		b.hurtBody.offset.x = 0;
+		b.hurtBody.offset.y = 0;
+		b.hurtBody.rw = bulletRadius;
+		b.hurtBody.rh = bulletRadius;
+
+		b.hitBody.type = CollisionBox::Hit;
+		b.hitBody.isCircle = true;
+		b.hitBody.globalAngle = 0;
+		b.hitBody.offset.x = 0;
+		b.hitBody.offset.y = 0;
+		b.hitBody.rw = bulletRadius;
+		b.hitBody.rh = bulletRadius;
+
+		b.physBody.type = CollisionBox::Physics;
+		b.physBody.isCircle = true;
+		b.physBody.globalAngle = 0;
+		b.physBody.offset.x = 0;
+		b.physBody.offset.y = 0;
+		b.physBody.rw = bulletRadius;
+		b.physBody.rh = bulletRadius;
+	}
+
 	startGround = ground;
 	startQuant = edgeQuantity;
 	frame = 0;
 	position = gPoint + ground->Normal() * physBody.rh; //16.0;
+
+	bulletGrav = .5;
 }
 
 void BossCrawler::ResetEnemy()
@@ -125,8 +162,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 	Edge *e = (Edge*)qte;
 
 
-	if( ground == e )
-			return;
+	
 
 	if( e->edgeType == Edge::OPEN_GATE )
 	{
@@ -135,6 +171,9 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( queryMode == "resolve" )
 	{
+
+		if( ground == e )
+			return;
 
 		if( e->edge0->edgeType == Edge::CLOSED_GATE )
 		{
@@ -163,36 +202,29 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 				endAngle += 2 * PI;
 			}
 
-			//double temp = startAngle;
-			//startAngle = endAngle;
-			//endAngle = temp;
+			double temp = startAngle;
+			startAngle = endAngle;
+			endAngle = temp;
 
 			if( endAngle < startAngle )
 			{
 				if( pAngle >= endAngle || pAngle <= startAngle )
 				{
+					
 				}
 				else
 				{
-					cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
+					return;
 				}
 			}
 			else
 			{
 				if( pAngle >= startAngle && pAngle <= endAngle )
 				{
-					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-					//	", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
 				}
 				else
 				{
-					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-						", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;*/
+					return;
 				}
 			}
 			
@@ -224,6 +256,10 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				endAngle += 2 * PI;
 			}
+			
+			double temp = startAngle;
+			startAngle = endAngle;
+			endAngle = temp;
 
 			//double temp = startAngle;
 			//startAngle = endAngle;
@@ -231,31 +267,34 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 
 			if( endAngle < startAngle )
 			{
+				/*if( pAngle > startAngle && pAngle < endAngle )
+				{
+					return;
+				}*/
+
+
 				if( pAngle >= endAngle || pAngle <= startAngle )
 				{
-					cout << "return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
 				}
 				else
 				{
-					
+					return;
 				}
 			}
 			else
 			{
+				/*if( pAngle < startAngle || pAngle > endAngle )
+				{
+					cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					return;
+				}*/
+				
 				if( pAngle >= startAngle && pAngle <= endAngle )
 				{
-					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-					//	", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					//return;
 				}
 				else
-				{
-					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-						", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;*/
+				{	
+					return;
 				}
 			}
 		}
@@ -297,6 +336,28 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 					col = true;
 					
 				}
+			}
+		}
+	}
+	else if( queryMode == "bullet" )
+	{
+		Edge *e = (Edge*)qte;
+
+		Bullet &b = bullets[queryIndex];
+		Contact *c = owner->coll.collideEdge( b.position + tempVel, b.physBody, e, tempVel, V2d( 0, 0 ) );
+	
+
+		if( c != NULL )
+		{
+			//cout << "touched something at all" << endl;
+			if( !col )
+			{
+				minContact = *c;
+				col = true;
+			}
+			else if( c->collisionPriority < minContact.collisionPriority )
+			{
+				minContact = *c;
 			}
 		}
 	}
@@ -491,6 +552,10 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case SHOOT:
 		{
+			if( frame == 30 )
+			{
+				FireBullets();
+			}
 			cout << "shoot" << endl;
 		}
 		break;
@@ -557,11 +622,40 @@ void BossCrawler::UpdatePrePhysics()
 		}
 		break;
 	}
+
+	for( int i = 0; i < numBullets; ++i )
+	{
+		Bullet &b = bullets[i];
+		if( b.active )
+		{
+			b.velocity += V2d( 0, bulletGrav );
+		}
+	}
 }
 
 void BossCrawler::UpdatePhysics()
 {
 	double maxMovement = min( physBody.rw, physBody.rh );
+
+	//bullet movement
+
+	for( int i = 0; i < numBullets; ++i )
+	{
+		
+		Bullet &b = bullets[i];
+
+		if( b.active )
+		{
+
+			V2d movementVec = b.velocity / (double)b.slowMultiple / NUM_STEPS;
+
+			if( ResolveBulletPhysics( i, movementVec ) )
+			{
+				b.active = false;
+			}
+		}
+	}
+
 
 	if( ground != NULL )
 	{
@@ -812,8 +906,76 @@ bool BossCrawler::ResolvePhysics( V2d vel )
 	return col;
 }
 
+bool BossCrawler::ResolveBulletPhysics( int i, V2d vel )
+{
+	possibleEdgeCount = 0;
+
+	Bullet &b = bullets[i];
+	
+	b.position += vel;
+	
+	Rect<double> r( b.position.x - bulletRadius, b.position.y - bulletRadius, 
+		2 * bulletRadius, 2 * bulletRadius );
+	minContact.collisionPriority = 1000000;
+
+	col = false;
+
+	tempVel = vel;
+	minContact.edge = NULL;
+
+	queryIndex = i;
+	//queryBullet = bullet;
+	queryMode = "bullet";
+	owner->terrainTree->Query( this, r );
+
+	return col;
+}
+
+void BossCrawler::UpdateBulletSprites()
+{
+	for( int i = 0; i < numBullets; ++i )
+	{
+		Bullet &b = bullets[i];
+		if( b.active )
+		{
+			bulletVA[i*4+0].position = Vector2f( b.position.x - bulletRadius, b.position.y - bulletRadius );
+			bulletVA[i*4+1].position = Vector2f( b.position.x + bulletRadius, b.position.y - bulletRadius );
+			bulletVA[i*4+2].position = Vector2f( b.position.x + bulletRadius, b.position.y + bulletRadius );
+			bulletVA[i*4+3].position = Vector2f( b.position.x - bulletRadius, b.position.y + bulletRadius );
+			
+			//cout << "b.frame: " << b.frame << endl;
+			IntRect sub = ts_bullet->GetSubRect( b.frame );
+			bulletVA[i*4+0].texCoords = Vector2f( sub.left, sub.top );
+			bulletVA[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+			bulletVA[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+			bulletVA[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+		}
+		else
+		{
+			bulletVA[i*4+0].position = Vector2f( 0, 0 );
+			bulletVA[i*4+1].position = Vector2f( 0, 0 );
+			bulletVA[i*4+2].position = Vector2f( 0, 0 );
+			bulletVA[i*4+3].position = Vector2f( 0, 0 );
+		}
+	}
+}
+
+void BossCrawler::UpdateBulletHitboxes()
+{
+	for( int i = 0; i < numBullets; ++i )
+	{
+		Bullet &b = bullets[i];
+		b.hurtBody.globalPosition = b.position;
+		b.hurtBody.globalAngle = 0;
+		b.hitBody.globalPosition = b.position;
+		b.hitBody.globalAngle = 0;
+	}
+}
+
 void BossCrawler::PhysicsResponse()
 {
+	UpdateBulletHitboxes();
+
 	if( !dead && receivedHit == NULL )
 	{
 		if( ground != NULL )
@@ -877,6 +1039,8 @@ void BossCrawler::PhysicsResponse()
 
 void BossCrawler::UpdatePostPhysics()
 {
+	UpdateBulletSprites();
+
 	sprite.setTexture( *ts_test->texture );
 	sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
 	sprite.setScale( 1.3, 1.3 );
@@ -986,6 +1150,27 @@ void BossCrawler::UpdatePostPhysics()
 		slowCounter++;
 	}
 
+	for( int i = 0; i < numBullets; ++i )
+	{
+		Bullet &b = bullets[i];
+		if( b.active )
+		{
+			if( b.slowCounter == b.slowMultiple )
+			{
+				b.frame++;
+				if( b.frame == 12 )
+				{
+					b.frame = 0;
+				}
+				b.slowCounter = 1;
+			}
+			else
+			{
+				b.slowCounter++;
+			}
+		}
+	}
+
 
 
 	//sprite.setPosition( position );
@@ -1013,6 +1198,11 @@ void BossCrawler::Draw(sf::RenderTarget *target )
 	if( !dead )
 	{
 		target->draw( sprite );
+
+		sf::RenderStates states;
+		states.texture = ts_bullet->texture;
+
+		target->draw( bulletVA, states );
 	}
 }
 
@@ -1126,4 +1316,27 @@ void BossCrawler::SaveEnemyState()
 
 void BossCrawler::LoadEnemyState()
 {
+}
+
+void BossCrawler::FireBullets()
+{
+	double launchSpeed = 10;
+	//double grav = 1;
+	V2d norm = ground->Normal();
+	for( int i = 0; i < numBullets; ++i )
+	{
+		V2d vel = norm * launchSpeed + V2d( 0, -3 ) * (double)i;
+		bullets[i].active = true;
+		bullets[i].position = position;
+		bullets[i].frame = 0;
+		bullets[i].slowCounter = 1;
+		bullets[i].slowMultiple = 1;
+		bullets[i].velocity = vel;
+	}
+}
+
+BossCrawler::Bullet::Bullet()
+	:frame( 0 ), slowCounter( 1 ), slowMultiple( 1 ), active( false )
+{
+
 }

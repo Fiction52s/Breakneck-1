@@ -580,7 +580,36 @@ struct BossCrawler : Enemy
 		STUNNED,
 		Count
 	};
+	
+	struct Bullet
+	{
+		Bullet();
+		//Bullet *prev;
+		//Bullet *next;
+		sf::Vector2<double> position;
+		sf::Vector2<double> velocity;
+		CollisionBox hurtBody;
+		CollisionBox hitBody;
+		CollisionBox physBody;
+		bool active;
+		int frame;
+		int slowCounter;
+		int slowMultiple;
+		
+		//int maxFramesToLive;
+		//int framesToLive;
+	};
+	
 	Tileset *ts_test;
+	Tileset *ts_bullet;
+
+	double bulletGrav;
+	int bulletRadius;
+	int numBullets;
+	Bullet *bullets;
+	int queryIndex;
+
+	sf::VertexArray bulletVA;
 	Action action;
 	int frame;
 	double gravity;
@@ -604,12 +633,20 @@ struct BossCrawler : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolveBulletPhysics( int i,
+		sf::Vector2<double> vel );
 	void ResetEnemy();
 	
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void UpdatePhysics2();
 	void UpdatePhysics3();
+
+	void FireBullets();
+	void UpdateBulletSprites();
+	void UpdateBulletHitboxes();
+
+
 	sf::Sprite sprite;
 	Tileset *ts_walk;
 	Tileset *ts_roll;
@@ -650,6 +687,8 @@ struct BossCrawler : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
+	
+	
 };
 
 struct Monitor : Enemy

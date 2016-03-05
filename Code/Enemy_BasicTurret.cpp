@@ -126,26 +126,6 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 	if( e == ground )
 		return;
 
-	/*V2d v0 = e->v0;
-	V2d v1 = e->v1;
-
-	double result = cross( queryBullet->position - v0, normalize( v1 - v0 ) );
-	double d = dot( queryBullet->position - v0, normalize( v1 - v0 ) );
-
-	bool a = d >= -queryBullet->physBody.rw && d <= length( v1 - v0 ) + queryBullet->physBody.rw;
-	bool b = result >= 0 && result <= queryBullet->physBody.rw;
-	//cout << "rw: " << queryBullet->physBody.rw << endl;
-
-	//cout << "D: " << d << ", " << "result: "  << result << ", length: " << length( v1 - v0 ) << " : a,b: " <<
-	//	a << ", " << b << endl;
-	
-
-	if( a && b ) 
-	{
-		//cout << "bullet hit edge" << endl;
-		col = true;
-	}*/
-
 	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel, V2d( 0, 0 ) );
 	
 
@@ -197,12 +177,13 @@ void BasicTurret::UpdatePrePhysics()
 		Bullet *next = currBullet->next;
 		if( currBullet->framesToLive == 0 )
 		{
+			//put this in post physics too?
 			DeactivateBullet( currBullet );
 		}
 		else
 		{
-			if( currBullet->frame == 12 )
-				currBullet->frame = 0;
+			//if( currBullet->frame == 12 )
+			//	currBullet->frame = 0;
 		}
 		currBullet = next;
 	}
@@ -335,12 +316,18 @@ void BasicTurret::UpdatePostPhysics()
 		owner->Pause( 5 );
 	}
 
+	UpdateSprite();
+
 	Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
 	{
 		if( currBullet->slowCounter == currBullet->slowMultiple )
 		{
 			currBullet->frame++;
+			if( currBullet->frame == 12 )
+			{
+				currBullet->frame = 0;
+			}
 			currBullet->framesToLive--;
 			currBullet->slowCounter = 1;
 		}
@@ -382,7 +369,7 @@ void BasicTurret::UpdatePostPhysics()
 		owner->RemoveEnemy( this );
 	}
 
-	UpdateSprite();
+	
 }
 
 void BasicTurret::Draw(sf::RenderTarget *target )
