@@ -69,14 +69,14 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
-	physBody.rw = 16;
-	physBody.rh = 16;
+	physBody.rw = 64;
+	physBody.rh = 64;
 	physBody.type = CollisionBox::BoxType::Physics;
 
 	startGround = ground;
 	startQuant = edgeQuantity;
 	frame = 0;
-	position = gPoint + ground->Normal() * 16.0;
+	position = gPoint + ground->Normal() * physBody.rh; //16.0;
 }
 
 void BossCrawler::ResetEnemy()
@@ -103,7 +103,7 @@ void BossCrawler::ResetEnemy()
 
 	//----update the sprite
 	//double angle = 0;
-	position = gPoint + gn * 16.0;
+	position = gPoint + gn * physBody.rh;//16.0;
 	angle = atan2( gn.x, -gn.y );
 		
 	sprite.setTexture( *ts_walk->texture );
@@ -128,8 +128,139 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 	if( ground == e )
 			return;
 
+	if( e->edgeType == Edge::OPEN_GATE )
+	{
+		return;
+	}
+
 	if( queryMode == "resolve" )
 	{
+
+		if( e->edge0->edgeType == Edge::CLOSED_GATE )
+		{
+			V2d pVec = normalize( position - e->v0 );
+			double pAngle = atan2( -pVec.y, pVec.x );
+
+			if( pAngle < 0 )
+			{
+				pAngle += 2 * PI;
+			}
+
+			Edge *e0 = e->edge0;
+			Gate *g = (Gate*)e0->info;
+
+			V2d startVec = normalize( e0->v0 - e->v0 );
+			V2d endVec = normalize( e->v1 - e->v0 );
+
+			double startAngle = atan2( -startVec.y, startVec.x );
+			if( startAngle < 0 )
+			{
+				startAngle += 2 * PI;
+			}
+			double endAngle = atan2( -endVec.y, endVec.x );
+			if( endAngle < 0 )
+			{
+				endAngle += 2 * PI;
+			}
+
+			//double temp = startAngle;
+			//startAngle = endAngle;
+			//endAngle = temp;
+
+			if( endAngle < startAngle )
+			{
+				if( pAngle >= endAngle || pAngle <= startAngle )
+				{
+				}
+				else
+				{
+					cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					//return;
+				}
+			}
+			else
+			{
+				if( pAngle >= startAngle && pAngle <= endAngle )
+				{
+					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+					//	", p: " << pVec.x << ", " << pVec.y << endl;
+					cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					//return;
+				}
+				else
+				{
+					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+						", p: " << pVec.x << ", " << pVec.y << endl;
+					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					return;*/
+				}
+			}
+			
+
+		}
+		else if( e->edge1->edgeType == Edge::CLOSED_GATE )
+		{
+			V2d pVec = normalize( position - e->v1 );
+			double pAngle = atan2( -pVec.y, pVec.x );
+
+			if( pAngle < 0 )
+			{
+				pAngle += 2 * PI;
+			}
+
+			Edge *e1 = e->edge1;
+			Gate *g = (Gate*)e1->info;
+
+			V2d startVec = normalize( e->v0 - e->v1 );
+			V2d endVec = normalize( e1->v1 - e->v1 );
+
+			double startAngle = atan2( -startVec.y, startVec.x );
+			if( startAngle < 0 )
+			{
+				startAngle += 2 * PI;
+			}
+			double endAngle = atan2( -endVec.y, endVec.x );
+			if( endAngle < 0 )
+			{
+				endAngle += 2 * PI;
+			}
+
+			//double temp = startAngle;
+			//startAngle = endAngle;
+			//endAngle = temp;
+
+			if( endAngle < startAngle )
+			{
+				if( pAngle >= endAngle || pAngle <= startAngle )
+				{
+					cout << "return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					//return;
+				}
+				else
+				{
+					
+				}
+			}
+			else
+			{
+				if( pAngle >= startAngle && pAngle <= endAngle )
+				{
+					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+					//	", p: " << pVec.x << ", " << pVec.y << endl;
+					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					//return;
+				}
+				else
+				{
+					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+						", p: " << pVec.x << ", " << pVec.y << endl;
+					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					return;*/
+				}
+			}
+		}
+
+
 		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
 
 		if( c != NULL )
@@ -689,7 +820,7 @@ void BossCrawler::PhysicsResponse()
 		{
 			V2d gn = ground->Normal();
 			V2d gPoint = ground->GetPoint( edgeQuantity );
-			position = gPoint + gn * 16.0;
+			position = gPoint + gn * physBody.rh;
 			angle = atan2( gn.x, -gn.y );
 		}
 		else
