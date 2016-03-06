@@ -23,10 +23,10 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	
 	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
 
-	initHealth = 400;
+	initHealth = 80 * 10;
 	health = initHealth;
 
-	numBullets = 5;
+	numBullets = 6;
 	bullets = new Bullet[numBullets];
 	bulletRadius = 16;
 	
@@ -80,7 +80,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
 	crawlAnimationFactor = 2;
@@ -200,6 +200,94 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( ground == e )
 			return;
+
+			//so you can run on gates without transfer issues hopefully
+		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+		{
+			Gate *g = (Gate*)ground->info;
+			Edge *edgeA = g->edgeA;
+			Edge *edgeB = g->edgeB;
+			if( ground == g->edgeA )
+			{
+				if( e == edgeB->edge0 
+					|| e == edgeB->edge1
+					|| e == edgeB )
+				{
+					return;
+				}
+
+				
+			}
+			else if( ground == g->edgeB )
+			{
+				if( e == edgeA->edge0 
+					|| e == edgeA->edge1
+					|| e == edgeA )
+				{
+					return;
+				}
+			}
+		}
+		else if( ground != NULL )
+		{
+			if( groundSpeed > 0 )
+			{
+				if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->edge0->info;
+					Edge *e0 = ground->edge0;
+					if( e0 == g->edgeA )
+					{
+						Edge *edgeB = g->edgeB;
+						if( e == edgeB->edge0 
+							|| e == edgeB->edge1
+							|| e == edgeB )
+						{
+							return;
+						}
+					}
+					else if( e0 == g->edgeB )
+					{
+						Edge *edgeA = g->edgeA;
+						if( e == edgeA->edge0 
+							|| e == edgeA->edge1
+							|| e == edgeA )
+						{
+							return;
+						}
+					}
+				}
+			}
+			else if( groundSpeed < 0 )
+			{
+				if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->edge1->info;
+					Edge *e1 = ground->edge1;
+					if( e1 == g->edgeA )
+					{
+						Edge *edgeB = g->edgeB;
+						if( e == edgeB->edge0 
+							|| e == edgeB->edge1
+							|| e == edgeB )
+						{
+							return;
+						}
+					}
+					else if( e1 == g->edgeB )
+					{
+						Edge *edgeA = g->edgeA;
+						if( e == edgeA->edge0 
+							|| e == edgeA->edge1
+							|| e == edgeA )
+						{
+							return;
+						}
+					}
+				}
+			}
+		}
+
 
 		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
 
@@ -425,6 +513,29 @@ void BossCrawler::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hurtBody.globalPosition = position;
 	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	
+	//test knockback
+	V2d knockbackDir( 1, -1 );
+	knockbackDir = normalize( knockbackDir );
+	hitboxInfo->knockback = 8;
+	
+
+
+	if( action == ROLL )
+	{
+		//hurtBody.rw = 64;
+		//hurtBody.rh = 64;
+		hitBody.rw = 128;
+		hitBody.rh = 128;
+	}
+	else
+	{
+		hitBody.rw = 64;
+		hitBody.rh = 64;
+		//hurtBody.rw = 128;
+		//hurtBody.rh = 128;
+		
+	}
 }
 
 void BossCrawler::UpdatePrePhysics()
@@ -446,7 +557,7 @@ void BossCrawler::UpdatePrePhysics()
 		if( hitsCounter == hitsBeforeHurt )
 		{
 			hitsCounter = 0;
-			invincibleFrames = 10;
+			invincibleFrames = 180;
 		}
 		//invincibleFrames = 10;
 		//cout << "health now: " << health << endl;
@@ -461,17 +572,17 @@ void BossCrawler::UpdatePrePhysics()
 	}
 
 
-	int standLength = 60;
-	int shootLength = 60;
+	int standLength = 20;
+	int shootLength = 30;
 	int lungeLength = 20;
 	int lungeLandLength = 20;
-	int rollLength = 60;
+	int rollLength = 200;
 	int stunLength = 60;
 	bool doneRunning = false;
 	int runFrames = 60;
 
 	double runSpeed = 10;
-	double rollSpeed = 15;
+	double rollSpeed = 17;//15;
 	double lungeSpeed = 10;
 
 	V2d gNormal;
@@ -537,8 +648,28 @@ void BossCrawler::UpdatePrePhysics()
 				assert( ground != NULL );
 
 				V2d normal = ground->Normal();
+				V2d along = normalize( ground->v1 - ground->v0 );
+				V2d other( along.y, -along.x );
+
+
 				ground = NULL;
+
+				int lr = rand() % 3;
+				if( lr == 0 )
+				{
+					normal = normalize( normal + along * .5 );
+				}
+				else if( lr == 1 )
+				{
+					normal = normalize( normal - along * .5 );
+				}
+				else
+				{
+				}
 				velocity = normal * 20.0;
+
+				
+
 				action = LUNGEAIR;
 				frame = 0;
 			}
@@ -616,7 +747,7 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case SHOOT:
 		{
-			if( frame == 30 )
+			if( frame == 20 )
 			{
 				FireBullets();
 			}
@@ -939,12 +1070,15 @@ void BossCrawler::UpdatePhysics()
 			if( action == ROLL )
 			{
 				facingRight = !facingRight;
+				
+				frame = ( 150 + 13 ) - (rand() % 30);
 			}
 			else
 			{
 				action = LUNGELAND;
+				frame = 0;
 			}
-			frame = 0;
+			
 			//= q;
 			//V2d gn = ground->Normal();
 			//break;
@@ -1105,13 +1239,16 @@ void BossCrawler::PhysicsResponse()
 
 		}
 
-		if( IHitPlayer() )
-		{
-		}
+		
 	}
 
 	if( !dead )
 	{
+		//can hit back on the same frame because im a boss? maybe everyone should be able to hit back on the same frame
+		if( IHitPlayer() )
+		{
+		}
+
 		if( PlayerSlowingMe() )
 		{
 			if( slowMultiple == 1 )
@@ -1331,6 +1468,18 @@ bool BossCrawler::IHitPlayer()
 	
 	if( hitBody.Intersects( player.hurtBody ) )
 	{
+		hitboxInfo->kbDir = normalize( player.position - position );
+		//knockback stuff?
+		if( player.position.x < position.x )
+		{
+			//hitboxInfo->kbDir = V2d( -1, -1 ); //-abs( hitboxInfo->kbDir.x );
+		}
+		else if( player.position.x > position.x )
+		{
+			//hitboxInfo->kbDir = V2d( 1, -1 );//abs( hitboxInfo->kbDir.x );
+		}
+
+
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}
@@ -1419,6 +1568,7 @@ void BossCrawler::DebugDraw( RenderTarget *target )
 		//owner->window->draw( cs );
 		//UpdateHitboxes();
 		physBody.DebugDraw( target );
+		hitBody.DebugDraw( target );
 	}
 //	hurtBody.DebugDraw( target );
 //	hitBody.DebugDraw( target );
@@ -1439,8 +1589,13 @@ void BossCrawler::FireBullets()
 	V2d norm = ground->Normal();
 	for( int i = 0; i < numBullets; ++i )
 	{
-
+		
 		V2d vel = norm * launchSpeed + V2d( 0, -3 ) * (double)i;
+		if( owner->player.position.x < position.x - 200 && vel.x > 0 
+			|| owner->player.position.x > position.x + 200 && vel.x < 0 )
+		{
+			vel.x = -vel.x;
+		}
 		bullets[i].active = true;
 		bullets[i].position = position;
 		bullets[i].frame = 0;
@@ -1451,12 +1606,27 @@ void BossCrawler::FireBullets()
 
 	if( norm.y == -1 )
 	{
-		bullets[0].velocity = V2d( 0, -launchSpeed );
-		bullets[1].velocity = normalize( V2d( launchSpeed, -launchSpeed ) ) * launchSpeed;
-		bullets[2].velocity = normalize( V2d( -launchSpeed, -launchSpeed ) ) * launchSpeed;
+		//bullets[0].velocity = V2d( 0, -launchSpeed * 2 );
+		bullets[0].velocity = normalize( V2d( launchSpeed, -launchSpeed ) ) * launchSpeed * 1.5;
+		bullets[1].velocity = normalize( V2d( -launchSpeed, -launchSpeed ) ) * launchSpeed * 1.5;
 
-		bullets[3].velocity = normalize( V2d( launchSpeed * 2, -launchSpeed ) ) * launchSpeed;
-		bullets[4].velocity = normalize( V2d( -launchSpeed * 2, -launchSpeed ) ) * launchSpeed;
+		bullets[2].velocity = normalize( V2d( launchSpeed * 2, -launchSpeed ) ) * launchSpeed;
+		bullets[3].velocity = normalize( V2d( -launchSpeed * 2, -launchSpeed ) ) * launchSpeed;
+
+		bullets[4].velocity = normalize( V2d( -launchSpeed, -launchSpeed ) ) * launchSpeed * 3.0;
+		bullets[5].velocity = normalize( V2d( -launchSpeed, -launchSpeed ) ) * launchSpeed  * 3.0;
+	}
+	else if( norm.y == 1 )
+	{
+		//bullets[0].velocity = V2d( 0, -launchSpeed * 2 );
+		bullets[0].velocity = normalize( V2d( launchSpeed, launchSpeed ) ) * launchSpeed * 1.5;
+		bullets[1].velocity = normalize( V2d( -launchSpeed, launchSpeed ) ) * launchSpeed * 1.5;
+
+		bullets[2].velocity = normalize( V2d( launchSpeed * 2, launchSpeed ) ) * launchSpeed;
+		bullets[3].velocity = normalize( V2d( -launchSpeed * 2, launchSpeed ) ) * launchSpeed;
+
+		bullets[4].velocity = normalize( V2d( -launchSpeed, launchSpeed ) ) * launchSpeed * 3.0;
+		bullets[5].velocity = normalize( V2d( -launchSpeed, launchSpeed ) ) * launchSpeed  * 3.0;
 	}
 }
 

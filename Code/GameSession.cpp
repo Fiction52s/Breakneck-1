@@ -3301,7 +3301,7 @@ int GameSession::Run( string fileN )
 				}
 
 				RespawnPlayer();
-
+				pauseFrames = 0;
 				if( levelReset )
 				{
 					ResetEnemies();
@@ -4706,6 +4706,7 @@ void GameSession::RespawnPlayer()
 		player.position = player.currentCheckPoint->pos;
 	}
 	
+	
 	player.gateTouched = NULL;
 	player.action = player.JUMP;
 	player.frame = 1;
@@ -4733,6 +4734,8 @@ void GameSession::RespawnPlayer()
 	powerBar.Reset();
 	player.lastWire = 0;
 	player.desperationMode = false;
+
+	player.flashFrames = 0;
 	
 	
 	//actually keys should be set based on which ones you had at the last checkpoint

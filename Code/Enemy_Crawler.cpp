@@ -110,6 +110,7 @@ void Crawler::ResetEnemy()
 
 	position = gPoint + offset;
 
+	deathFrame = 0;
 	dead = false;
 
 	//----update the sprite
@@ -606,7 +607,7 @@ bool Crawler::ResolvePhysics( V2d vel )
 
 void Crawler::PhysicsResponse()
 {
-	if( !dead && receivedHit == NULL )
+	if( !dead  )
 	{
 		//cout << "response" << endl;
 		double spaceNeeded = 0;
@@ -783,25 +784,27 @@ void Crawler::PhysicsResponse()
 		//	cout << "no slow" << endl;
 		}
 
-		pair<bool, bool> result = PlayerHitMe();
-		if( result.first )
+		if( receivedHit == NULL )
 		{
-			cout << "hit here!" << endl;
-			//triggers multiple times per frame? bad?
-			owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->player.desperationMode = false;
-			owner->powerBar.Charge( 2 * 6 * 2 );
-
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			pair<bool, bool> result = PlayerHitMe();
+			if( result.first )
 			{
-				owner->player.velocity.y = 4;//.5;
-			}
+				//cout << "hit here!" << endl;
+				//triggers multiple times per frame? bad?
+				owner->player.test = true;
+				owner->player.currAttackHit = true;
+				owner->player.flashColor = COLOR_BLUE;
+				owner->player.flashFrames = 5;
+				owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+				owner->player.desperationMode = false;
+				owner->powerBar.Charge( 2 * 6 * 2 );
 
-			//cout << "frame: " << owner->player.frame << endl;
+				if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+				{
+					owner->player.velocity.y = 4;//.5;
+				}
+
+															//cout << "frame: " << owner->player.frame << endl;
 
 			//owner->player.frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
@@ -814,6 +817,7 @@ void Crawler::PhysicsResponse()
 			
 			//dead = true;
 			//receivedHit = NULL;
+			}
 		}
 
 		if( IHitPlayer() )
