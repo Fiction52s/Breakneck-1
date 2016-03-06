@@ -179,7 +179,12 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 		if( ground == e )
 			return;
 
-		if( e->edge0->edgeType == Edge::CLOSED_GATE )
+		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+
+		double len0 = length( c->position - e->v0 );
+		double len1 = length( c->position - e->v1 );
+
+		if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
 		{
 			V2d pVec = normalize( position - e->v0 );
 			double pAngle = atan2( -pVec.y, pVec.x );
@@ -234,7 +239,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 			
 
 		}
-		else if( e->edge1->edgeType == Edge::CLOSED_GATE )
+		else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
 		{
 			V2d pVec = normalize( position - e->v1 );
 			double pAngle = atan2( -pVec.y, pVec.x );
@@ -304,7 +309,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 		}
 
 
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+		
 
 		if( c != NULL )
 		{

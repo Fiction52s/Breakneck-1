@@ -17,7 +17,17 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	activeNext = NULL;
 	ts = NULL;
-	gState = SOFT;
+
+	if( type != BLACK )
+	{
+		gState = SOFT;
+	}
+	else
+	{
+		gState = HARD;
+
+	}
+	
 
 	gQuads = NULL;
 	frame = 0;
@@ -64,19 +74,25 @@ void Gate::Draw( sf::RenderTarget *target )
 
 void Gate::UpdateLine()
 {
+
+	int tileHeight;// = 32;
 	Color c( Color::White );
 	switch( type )
 	{
 	case GREY:
 		c = Color( 100, 100, 100 );
 		ts = owner->GetTileset( "greygate.png", 32, 32 );
+		tileHeight = 32;
 		break;
 	case BLACK:
 		c = Color( 0, 0, 0 );
-		//ts = owner->GetTileset( "blackgate_64x64.png", 64, 64 );
+		ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
+		tileHeight = 64;
 		break;
 	case BLUE:
 		c =  Color( 77, 150, 249);
+		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
+		tileHeight = 64;
 		break;
 	case GREEN:
 		c = Color::Green;
@@ -108,7 +124,7 @@ void Gate::UpdateLine()
 	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
 	thickLine[3].position = Vector2f( rightv0.x, rightv0.y );
 
-	int tileHeight = 32;
+	
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
 	int numTiles = numT;
@@ -119,7 +135,7 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
-	if( type == Gate::GREY )// || type == Gate::BLACK )
+	if( type == Gate::GREY || type == Gate::BLACK || type == BLUE )
 	{
 		if( gQuads == NULL )
 		{
@@ -134,113 +150,133 @@ void Gate::Update()
 
 
 	//gates can be timeslowed? don't worry about it just yet. 
-	switch( gState )
+	if( type == GREY || type == BLUE )
 	{
-	case HARDEN:
+		switch( gState )
 		{
-			if( frame == 9 )
+		case HARDEN:
+			{
+				if( frame == 9 )
+				{
+					gState = HARD;
+					frame = 0;
+				}
+			}
+			break;
+		case HARD:
+			{
+				if( frame == 3 * 3 )
+				{
+					frame = 0;
+				}
+			}
+			break;
+		case SOFTEN:
+			{
+				if( frame == 10 )
+				{
+					gState = SOFT;
+					frame = 0;
+				}
+			}
+			break;
+		case SOFT:
+			{
+				if( frame == 12 * 3 )
+				{
+					frame = 0;
+				}
+			}
+			break;
+		case DISSOLVE:
+			{
+				//whatever length
+				if( frame == 9 * 4 )
+				{
+					if( reformBehindYou )
+					{
+						gState = REFORM;
+						frame = 0;
+					}
+					else
+					{
+						gState = OPEN;
+						frame = 0;
+					}
+				}
+			}
+			break;
+		case REFORM:
+			{
+				//whatever length
+				if( frame == 10 )
+				{
+					gState = LOCKFOREVER;
+				}
+			}
+			break;
+		case LOCKFOREVER:
+			{
+				//whatever the last frame of lockforever is
+				frame = 10;
+			}
+			break;
+		case OPEN:
+			{
+				frame = 0;
+			}
+			break;
+		}
+	}
+	else if( type == BLACK )
+	{
+		if( gState == REFORM )
+		{
+			if( frame == 11 * 3 )
 			{
 				gState = HARD;
 				frame = 0;
 			}
 		}
-		break;
-	case HARD:
-		{
-			if( frame == 3 * 3 )
-			{
-				frame = 0;
-			}
-		}
-		break;
-	case SOFTEN:
-		{
-			if( frame == 10 )
-			{
-				gState = SOFT;
-				frame = 0;
-			}
-		}
-		break;
-	case SOFT:
-		{
-			if( frame == 12 * 3 )
-			{
-				frame = 0;
-			}
-		}
-		break;
-	case DISSOLVE:
-		{
-			//whatever length
-			if( frame == 9 * 4 )
-			{
-				if( reformBehindYou )
-				{
-					gState = REFORM;
-					frame = 0;
-				}
-				else
-				{
-					gState = OPEN;
-					frame = 0;
-				}
-			}
-		}
-		break;
-	case REFORM:
-		{
-			//whatever length
-			if( frame == 10 )
-			{
-				gState = LOCKFOREVER;
-			}
-		}
-		break;
-	case LOCKFOREVER:
-		{
-			//whatever the last frame of lockforever is
-			frame = 10;
-		}
-		break;
-	case OPEN:
+		else
 		{
 			frame = 0;
 		}
-		break;
 	}
-
-	double radius = 200;
+	double radius = 300;
 	//double dist = length( owner->player.position
-	if( IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+	if( type == BLUE )
 	{
-		if( gState == SOFTEN )
+		if( !owner->player.hasBlueKey && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
 		{
-			gState = HARDEN;
-			//frame should be the inverse so that it can get harder while from its partially softened state.
+			if( gState == SOFTEN )
+			{
+				gState = HARDEN;
+				//frame should be the inverse so that it can get harder while from its partially softened state.
+			}
+			else if( gState == SOFT )
+			{
+				gState = HARDEN;
+				frame = 0;
+			}
 		}
-		else if( gState == SOFT )
+		else
 		{
-			gState = HARDEN;
-			frame = 0;
-		}
-	}
-	else
-	{
-		if( gState == HARDEN )
-		{
-			gState = SOFTEN;
-			//inverse frame;
-		}
-		else if( gState == HARD )
-		{
-			gState = SOFTEN;
-			frame = 0;
+			if( gState == HARDEN )
+			{
+				gState = SOFTEN;
+				//inverse frame;
+			}
+			else if( gState == HARD )
+			{
+				gState = SOFTEN;
+				frame = 0;
+			}
 		}
 	}
 
-	int tileWidth = 32;
-	int tileHeight = 32;
+	int tileWidth = ts->tileWidth;
+	int tileHeight = ts->tileHeight;
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
 	int numTiles = numT;
@@ -270,51 +306,71 @@ void Gate::Update()
 	Vector2f rightv0f( rightv0.x, rightv0.y );
 	int f = frame / 3;
 	//cout << "gq: " << gq.getVertexCount() << endl;
-	if( type == GREY )
+
+	if( type == GREY || type == BLACK || type == BLUE )
 	{
 		int realFrame = -1;
-		switch( gState )
+
+		if( type == GREY || type == BLUE )
 		{
-		case HARDEN:
+			switch( gState )
 			{
-				realFrame = frame;
+			case HARDEN:
+				{
+					realFrame = frame;
+				}
+				break;
+			case HARD:
+				{
+					realFrame = 10;
+				}
+				break;
+			case SOFTEN:
+				{
+					realFrame = 10 + frame;
+				}
+				break;
+			case SOFT:
+				{
+					realFrame = 21 + frame / 3;
+				}
+				break;
+			case DISSOLVE:
+				{
+					realFrame = 34 + frame / 4;
+				}
+				break;
+			case REFORM:
+				{
+					realFrame = 0;
+				}
+				break;
+			case LOCKFOREVER:
+				{
+					realFrame  = 1;
+				}
+				break;
+			case OPEN:
+				{
+					realFrame = 0;
+				}
+				break;
 			}
-			break;
-		case HARD:
+		}
+		else if( type == BLACK )
+		{
+			switch( gState )
 			{
-				realFrame = 10;
+				case HARD:
+					realFrame = 11;
+					break;
+				case REFORM:
+					realFrame = frame / 3;
+					break;
+				default:
+					cout << "state : " << gState << endl;
+					break;
 			}
-			break;
-		case SOFTEN:
-			{
-				realFrame = 10 + frame;
-			}
-			break;
-		case SOFT:
-			{
-				realFrame = 21 + frame / 3;
-			}
-			break;
-		case DISSOLVE:
-			{
-				realFrame = 34 + frame / 4;
-			}
-			break;
-		case REFORM:
-			{
-				realFrame = 0;
-			}
-			break;
-		case LOCKFOREVER:
-			{
-				realFrame  = 1;
-			}
-			break;
-		case OPEN:
-			{
-				realFrame = 0;
-			}
-			break;
 		}
 		//IntRect subRect = ts->GetSubRect( realFrame );
 		assert( realFrame >= 0 );

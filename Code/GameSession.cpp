@@ -3953,10 +3953,6 @@ int GameSession::Run( string fileN )
 		}
 		
 		
-
-		
-
-
 		
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f(64, 64) );
@@ -4113,6 +4109,18 @@ int GameSession::Run( string fileN )
 		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 		{
 			(*it)->Draw( preScreenTex );
+		}
+
+		testGateCount = 0;
+		queryMode = "gate";
+		gateList = NULL;
+		gateTree->Query( this, screenRect );
+
+		while( gateList != NULL )
+		{
+			gateList->Draw( preScreenTex );
+			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
+			gateList = next;
 		}
 		
 
@@ -4451,19 +4459,7 @@ int GameSession::Run( string fileN )
 
 		player.DodecaLateDraw( preScreenTex );
 
-		testGateCount = 0;
-		queryMode = "gate";
-		gateList = NULL;
-		gateTree->Query( this, screenRect );
-
-		while( gateList != NULL )
-		{
-			
-			
-			gateList->Draw( preScreenTex );
-			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
-			gateList = next;
-		}
+		
 
 		//enemyTree->DebugDraw( preScreenTex );
 
@@ -4504,12 +4500,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 
 		bool a = e->spawnRect.intersects( tempSpawnRect );
 		bool b = ( e->zone == NULL || e->zone->active ); 
-
-		if( e->type == Enemy::BASICTURRET )
-		{
-			cout << "QUERYING BASIC TURRET: " << a << ", " << b << ", zone: " << e->zone << endl;
-		}
-
 		
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( a && b )

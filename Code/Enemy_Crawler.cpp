@@ -30,7 +30,8 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 
 	double height = 128;
-	ts = owner->GetTileset( "crawler_128x128.png", 128, height );
+	double width = 128;
+	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -45,7 +46,8 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 
 	receivedHit = NULL;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
+	double size = max( width, height );
+	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -76,8 +78,8 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
-	physBody.rw = 16;
-	physBody.rh = 16;
+	physBody.rw = 32;
+	physBody.rh = 32;
 	physBody.type = CollisionBox::BoxType::Physics;
 
 	startGround = ground;
@@ -112,7 +114,7 @@ void Crawler::ResetEnemy()
 
 	//----update the sprite
 	double angle = 0;
-	position = gPoint + gn * 16.0;
+	position = gPoint + gn * 32.0;
 	angle = atan2( gn.x, -gn.y );
 		
 	//sprite.setTexture( *ts_walk->texture );
@@ -616,7 +618,7 @@ void Crawler::PhysicsResponse()
 	
 		if( !roll )
 		{
-			position = gPoint + gn * 16.0;
+			position = gPoint + gn * 32.0;
 			angle = atan2( gn.x, -gn.y );
 		
 //			sprite.setTexture( *ts_walk->texture );

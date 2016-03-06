@@ -11841,8 +11841,20 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 
-		if( e->edge0->edgeType == Edge::CLOSED_GATE )
+		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
+
+		if( c != NULL )
 		{
+		bool surface = ( c->normal.x == 0 && c->normal.y == 0 );
+
+		//these make sure its a point of conention and not the other edge end point
+		double len0 = length( c->position - e->v0 );
+		double len1 = length( c->position - e->v1 );
+		
+		
+		if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
+		{
+			//cout << "len0: " << len0 << endl;
 			V2d pVec = normalize( position - e->v0 );
 			double pAngle = atan2( -pVec.y, pVec.x );
 
@@ -11880,7 +11892,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
-					cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+				//	cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
 					return;
 				}
 			}
@@ -11895,7 +11907,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
-					cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+				//	cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
 					return;
 					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
 						", p: " << pVec.x << ", " << pVec.y << endl;
@@ -11906,8 +11918,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			
 
 		}
-		else if( e->edge1->edgeType == Edge::CLOSED_GATE )
+		else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
 		{
+			//cout << "len1: " << len1 << endl;
 			V2d pVec = normalize( position - e->v1 );
 			double pAngle = atan2( -pVec.y, pVec.x );
 
@@ -11949,7 +11962,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
-					cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
 					return;
 				}
 			}
@@ -11963,7 +11976,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
-					cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+					//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
 					return;
 
 					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
@@ -11973,6 +11986,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 		}
+		
 
 		/*if( e->edge0->edgeType == Edge::CLOSED_GATE )
 		{
@@ -12027,14 +12041,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}*/
 			
 
-		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
+		
 		
 		
 		
 		
 
-		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-		{
+		//if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+		//{
 			if( c->edge->edgeType == Edge::OPEN_GATE )
 			{
 				//cout << "GATEEEEee" << endl;

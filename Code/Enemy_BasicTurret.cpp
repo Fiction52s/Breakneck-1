@@ -57,16 +57,16 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 16;
-	hurtBody.rh = 16;
+	hurtBody.rw = 32;
+	hurtBody.rh = 32;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 16;
-	hitBody.rh = 16;
+	hitBody.rw = 32;
+	hitBody.rh = 32;
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
@@ -104,7 +104,8 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	dead = false;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+	double size = max( width, height );
+	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 }
 
 void BasicTurret::ResetEnemy()
@@ -622,20 +623,23 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 		currBullet = currBullet->next;
 	}
 
-	sf::CircleShape cs;
+	/*sf::CircleShape cs;
 	cs.setFillColor( Color( 0, 255, 0, 100 ) );
 	cs.setRadius( 15 );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
+	cs.setPosition( position.x, position.y );*/
 	
-	target->draw( cs );
+	//target->draw( cs );
+
+	hitBody.DebugDraw( target );
+	hurtBody.DebugDraw( target );
 }
 
 void BasicTurret::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position + gn * 32.0;
+	hurtBody.globalPosition = position + gn * 16.0;
 	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position + gn * 32.0;
+	hitBody.globalPosition = position + gn * 16.0;
 	hitBody.globalAngle = 0;
 }
 
@@ -658,8 +662,8 @@ bool BasicTurret::ResolvePhysics( BasicTurret::Bullet * bullet, sf::Vector2<doub
 	possibleEdgeCount = 0;
 	bullet->position += vel;
 	
-	Rect<double> r( bullet->position.x - 8, bullet->position.y - 8, 
-		2 * 8, 2 * 8 );
+	Rect<double> r( bullet->position.x - 16, bullet->position.y - 16, 
+		2 * 16, 2 * 16 );
 	minContact.collisionPriority = 1000000;
 
 	col = false;
