@@ -8473,7 +8473,16 @@ void Actor::UpdatePhysics()
 				//testVel.y /= 2.0
 				//cout << "groundspeed: " << groundSpeed << endl;
 
-				groundSpeed = dot( testVel, alongVel );//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					groundSpeed = dot( testVel, alongVel );
+				}
+				else
+				{
+					groundSpeed = 0;
+				}
+
+				//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				//cout << "setting groundSpeed: " << groundSpeed << endl;
 				//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
 				gNorm = ground->Normal();
