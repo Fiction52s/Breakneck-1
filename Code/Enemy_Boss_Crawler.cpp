@@ -16,6 +16,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), numBullets( 6 ), 
 		bulletVA( sf::Quads, numBullets * 4 )
 {
+	invincibleFrames = 0;
 	double width = 128;
 	double height = 144;
 	ts_test = owner->GetTileset( "bosscrawler_128x144.png", width, height );
@@ -40,14 +41,22 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	dead = false;
 	ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
-	sprite.setTexture( *ts_walk->texture );
-	sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	//sprite.setTexture( *ts_walk->texture );
+	//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
+
+	sprite.setTexture( *ts_test->texture );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+
+
+
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
 
-	spawnRect = sf::Rect<double>( gPoint.x - width / 2, gPoint.y - height / 2, width, height );
+
+	double size = max( width, height );
+	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 	//spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
 
 	hurtBody.type = CollisionBox::Hurt;
@@ -116,15 +125,25 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	position = gPoint + ground->Normal() * physBody.rh; //16.0;
 
 	bulletGrav = .5;
+
+	hitsBeforeHurt = 4;
+	hitsCounter = 0;
 }
 
 void BossCrawler::ResetEnemy()
 {
+	hitsCounter = 0;
+	//owner->cam.bossCrawler = false;
+	invincibleFrames = 0;
 	health = initHealth;
 	roll = false;
 	ground = startGround;
 	edgeQuantity = startQuant;
 	V2d gPoint = ground->GetPoint( edgeQuantity );
+
+	sprite.setTexture( *ts_test->texture );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+
 	sprite.setPosition( gPoint.x, gPoint.y );
 
 	V2d gn = ground->Normal();
@@ -132,11 +151,14 @@ void BossCrawler::ResetEnemy()
 
 	//----update the sprite
 	//double angle = 0;
+
+
+
 	position = gPoint + gn * physBody.rh;//16.0;
 	angle = atan2( gn.x, -gn.y );
 		
-	sprite.setTexture( *ts_walk->texture );
-	sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
+	//sprite.setTexture( *ts_walk->texture );
+	//sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
 	V2d pp = ground->GetPoint( edgeQuantity );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation( angle / PI * 180 );
@@ -181,6 +203,8 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 
 		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
 
+		if( c != NULL )
+		{
 		double len0 = length( c->position - e->v0 );
 		double len1 = length( c->position - e->v1 );
 
@@ -311,8 +335,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 
 		
 
-		if( c != NULL )
-		{
+		
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 
@@ -419,6 +442,13 @@ void BossCrawler::UpdatePrePhysics()
 		//gotta factor in getting hit by a clone
 		health -= 20;
 
+		hitsCounter++;
+		if( hitsCounter == hitsBeforeHurt )
+		{
+			hitsCounter = 0;
+			invincibleFrames = 10;
+		}
+		//invincibleFrames = 10;
 		//cout << "health now: " << health << endl;
 
 		if( health <= 0 )
@@ -1215,6 +1245,8 @@ void BossCrawler::UpdatePostPhysics()
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
+		if( invincibleFrames > 0 )
+			--invincibleFrames;
 		slowCounter = 1;
 	
 		if( dead )
@@ -1308,6 +1340,11 @@ bool BossCrawler::IHitPlayer()
 
  pair<bool, bool> BossCrawler::PlayerHitMe()
 {
+	if( invincibleFrames > 0 )
+	{
+		return pair<bool,bool>(false,false);
+	}
+
 	Actor &player = owner->player;
 
 	if( player.currHitboxes != NULL )

@@ -322,7 +322,7 @@ void Gate::Update()
 				break;
 			case HARD:
 				{
-					realFrame = 10;
+					realFrame = 9;
 				}
 				break;
 			case SOFTEN:

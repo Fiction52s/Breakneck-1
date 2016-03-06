@@ -4744,9 +4744,14 @@ void GameSession::RespawnPlayer()
 	player.hasDoubleJump = true;
 	player.hasAirDash = true;
 	player.hasGravReverse = true;
-	cam.zoomFactor = 1;
-	cam.zoomLevel = 0;
-	cam.offset = Vector2f( 0, 0 );
+
+	if( !cam.bossCrawler )
+	{
+		cam.zoomFactor = 1;
+		cam.zoomLevel = 0;
+		cam.offset = Vector2f( 0, 0 );
+	}
+	
 
 	for( int i = 0; i < player.maxBubbles; ++i )
 	{

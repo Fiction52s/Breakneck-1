@@ -616,6 +616,10 @@ struct BossCrawler : Enemy
 	bool facingRight;
 	sf::Vector2<double> velocity;
 	double angle;
+
+	int hitsBeforeHurt;
+	int hitsCounter;
+	int invincibleFrames;
 	//sf::Vector2<double> position;
 
 	BossCrawler( GameSession *owner, Edge *ground, double quantity );

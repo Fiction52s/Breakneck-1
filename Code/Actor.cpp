@@ -8473,7 +8473,7 @@ void Actor::UpdatePhysics()
 				//testVel.y /= 2.0
 				//cout << "groundspeed: " << groundSpeed << endl;
 
-				if( currInput.LLeft() || currInput.LRight() )
+				if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
 				{
 					groundSpeed = dot( testVel, alongVel );
 				}
