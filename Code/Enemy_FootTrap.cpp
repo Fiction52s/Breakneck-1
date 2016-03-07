@@ -77,10 +77,10 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 
 	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
 
-	ts_death = owner->GetTileset( "foottrapdeath.png", 160, 80 );
+	//ts_death = owner->GetTileset( "foottrapdeath.png", 160, 80 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
 
-	deathPartingSpeed = .3;
+	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
@@ -89,7 +89,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 
 void FootTrap::ResetEnemy()
 {
-	cout << "reset" << endl;
+	//cout << "reset" << endl;
 	health = initHealth;
 	frame = 0;
 	deathFrame = 0;
@@ -108,10 +108,10 @@ void FootTrap::UpdatePrePhysics()
 		
 		//gotta factor in getting hit by a clone
 		health -= 20;
-		cout << "damaging: " << health << endl;
+		//cout << "damaging: " << health << endl;
 		if( health <= 0 )
 		{
-			cout << "attempting. blue key is: " << owner->player.hasBlueKey << endl;
+			//cout << "attempting. blue key is: " << owner->player.hasBlueKey << endl;
 			AttemptSpawnMonitor();
 			dead = true;
 		}
@@ -202,9 +202,10 @@ void FootTrap::UpdatePostPhysics()
 		frame = 0;
 	}
 
-	if( deathFrame == 60 )
+	if( deathFrame == 30 )
 	{
 		owner->RemoveEnemy( this );
+		return;
 	}
 
 
@@ -353,15 +354,15 @@ void FootTrap::UpdateSprite()
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 
-	botDeathSprite.setTexture( *ts_death->texture );
-	botDeathSprite.setTextureRect( ts_death->GetSubRect( 1 ) );
-	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height );
+	botDeathSprite.setTexture( *ts->texture );
+	botDeathSprite.setTextureRect( ts->GetSubRect( 9 ) );
+	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2  );
 	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
-	topDeathSprite.setTexture( *ts_death->texture );
-	topDeathSprite.setTextureRect( ts_death->GetSubRect( 0 ) );
-	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height );
+	topDeathSprite.setTexture( *ts->texture );
+	topDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
+	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );

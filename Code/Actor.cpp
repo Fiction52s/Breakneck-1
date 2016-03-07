@@ -216,8 +216,8 @@ Actor::Actor( GameSession *gs )
 		}
 
 		cb.isCircle = false;
-		cb.rw = 100;
-		cb.rh = 30;
+		cb.rw = 80;
+		cb.rh = 20;
 		cb.offset.x = 32;
 		cb.offset.y = 0;
 		for( int j = 2; j <= 15; ++j )
@@ -7151,7 +7151,7 @@ void Actor::UpdatePhysics()
 				{
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-						if( groundSpeed <= steepClimbSpeedThresh )
+						if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB )
 						{
 							groundSpeed = 0;
 							break;
@@ -7563,7 +7563,7 @@ void Actor::UpdatePhysics()
 							else
 							{
 								q = 0;
-								cout << "setting 0" << endl;
+								cout << "setting 0-1" << endl;
 							}
 							
 							
@@ -8484,7 +8484,7 @@ void Actor::UpdatePhysics()
 				{
 					if( gNorm.y > -steepThresh )
 					{
-
+						groundSpeed = dot( testVel, alongVel );
 					}
 					else
 					{

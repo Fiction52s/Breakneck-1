@@ -106,6 +106,12 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	double size = max( width, height );
 
+	deathPartingSpeed = .4;
+	deathVector = V2d( -1, -1 );
+
+	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	bloodSprite.setTexture( *ts_testBlood->texture );
+
 
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
@@ -325,7 +331,6 @@ void BasicTurret::UpdatePostPhysics()
 		owner->Pause( 5 );
 	}
 
-	UpdateSprite();
 
 	Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
@@ -370,35 +375,55 @@ void BasicTurret::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
-
 	
 
-	if( deathFrame == 60 )
+	if( deathFrame == 30 )
 	{
 		owner->RemoveEnemy( this );
+		return;
 	}
 
-	
+	UpdateSprite();
 }
 
 void BasicTurret::Draw(sf::RenderTarget *target )
 {
-	if( monitor != NULL )
+	if( !dead )
 	{
-		//owner->AddEnemy( monitor );
-		CircleShape cs;
-		cs.setRadius( 40 );
-		cs.setFillColor( COLOR_BLUE );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
+		if( monitor != NULL )
+		{
+			//owner->AddEnemy( monitor );
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( COLOR_BLUE );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		target->draw( sprite );
 	}
+	else
+	{
+		target->draw( botDeathSprite );
+
+		if( deathFrame / 3 < 6 )
+		{
+			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
+			bloodSprite.setPosition( position.x, position.y );
+			bloodSprite.setScale( 2, 2 );
+			target->draw( bloodSprite );
+		}
+		
+		target->draw( topDeathSprite );
+	}
+	
 
 	if( activeBullets != NULL )
 	{
 		target->draw( bulletVA, ts_bullet->texture );
 	}
-	target->draw( sprite );
+	
 }
 
 void BasicTurret::DrawMinimap( sf::RenderTarget *target )
@@ -636,6 +661,23 @@ void BasicTurret::UpdateSprite()
 		++i;
 		notBullet = notBullet->next;
 	}
+
+	if( dead )
+	{
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 2 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, 
+			botDeathSprite.getLocalBounds().height / 2  );
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
+
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 4 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, 
+			topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+	}
 }
 
 void BasicTurret::DebugDraw(sf::RenderTarget *target)
@@ -663,9 +705,9 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 
 void BasicTurret::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position + gn * 16.0;
+	hurtBody.globalPosition = position;// + gn * 8.0;
 	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position + gn * 16.0;
+	hitBody.globalPosition = position;// + gn * 8.0;
 	hitBody.globalAngle = 0;
 }
 
