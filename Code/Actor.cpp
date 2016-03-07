@@ -196,6 +196,7 @@ Actor::Actor( GameSession *gs )
 			}
 		}
 
+		
 		cb.rw = 48;
 		cb.rh = 48;
 		cb.offset.x = 32;
@@ -214,8 +215,9 @@ Actor::Actor( GameSession *gs )
 			}
 		}
 
-		cb.rw = 48;
-		cb.rh = 48;
+		cb.isCircle = false;
+		cb.rw = 100;
+		cb.rh = 30;
 		cb.offset.x = 32;
 		cb.offset.y = 0;
 		for( int j = 2; j <= 15; ++j )
@@ -231,6 +233,7 @@ Actor::Actor( GameSession *gs )
 			}
 		}
 
+		cb.isCircle = true;
 		cb.rw = 48;
 		cb.rh = 48;
 		cb.offset.x = 0;
@@ -286,7 +289,7 @@ Actor::Actor( GameSession *gs )
 		normal[JUMP] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 
 		actionLength[LAND] = 1;
-		tileset[LAND] = owner->GetTileset( "land.png", 64, 64 );
+		tileset[LAND] = owner->GetTileset( "land_64x64.png", 64, 64 );
 		normal[LAND] = owner->GetTileset( "land_NORMALS.png", 64, 64 );
 
 		actionLength[LAND2] = 1;
@@ -298,11 +301,11 @@ Actor::Actor( GameSession *gs )
 		normal[RUN] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
 
 		actionLength[SLIDE] = 1;
-		tileset[SLIDE] = owner->GetTileset( "slide.png", 64, 64 );
+		tileset[SLIDE] = owner->GetTileset( "slide_64x64.png", 64, 64 );
 		normal[SLIDE] = owner->GetTileset( "slide_NORMALS.png", 64, 64 );
 
-		actionLength[SPRINT] = 8 * 3;
-		tileset[SPRINT] = owner->GetTileset( "sprint.png", 128, 64 );		
+		actionLength[SPRINT] = 8 * 4;
+		tileset[SPRINT] = owner->GetTileset( "sprint_128x64.png", 128, 64 );		
 		//tileset[SPRINT] = owner->GetTileset( "sprint_96x48.png", 96, 48 );		
 		normal[SPRINT] = owner->GetTileset( "sprint_NORMALS.png", 128, 64 );		
 
@@ -327,7 +330,7 @@ Actor::Actor( GameSession *gs )
 		normal[UAIR] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
 
 		actionLength[WALLCLING] = 1;
-		tileset[WALLCLING] = owner->GetTileset( "wallcling.png", 64, 64 );
+		tileset[WALLCLING] = owner->GetTileset( "wallcling_64x64.png", 64, 64 );
 		normal[WALLCLING] = owner->GetTileset( "wallcling_NORMALS.png", 64, 64 );
 
 		actionLength[WALLJUMP] = 9 * 2;
@@ -549,8 +552,8 @@ Actor::Actor( GameSession *gs )
 		hurtBody.offset.x = 0;
 		hurtBody.offset.y = 0;
 		hurtBody.isCircle = false;
-		hurtBody.rw = 5;//10;
-		hurtBody.rh = normalHeight - 5;//normalHeight;
+		hurtBody.rw = 7;//10;
+		hurtBody.rh = 15;//normalHeight - 5;//normalHeight;
 		hurtBody.type = CollisionBox::BoxType::Hurt;
 
 		currHitboxes = NULL;
@@ -1351,7 +1354,7 @@ void Actor::UpdatePrePhysics()
 					{
 						frame = 0;
 					}
-					frame = frame * 3;
+					frame = frame * 4;
 
 					runTappingSound.stop();
 					break;
@@ -2641,7 +2644,7 @@ void Actor::UpdatePrePhysics()
 					|| (currInput.LUp() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) ) )
 				{
 					action = RUN;
-					frame = frame / 3;
+					frame = frame / 4;
 					if( frame < 3)
 					{
 						frame = frame + 1;
@@ -3436,7 +3439,7 @@ void Actor::UpdatePrePhysics()
 					if( bounceFlameOn )
 						airBounceFrame = 13 * 3;
 					//so you dont jump straight up on a nearly vertical edge
-					double blah = .3;
+					double blah = .5;
 
 					V2d dir( 0, 0 );
 					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
@@ -8479,7 +8482,14 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-					groundSpeed = 0;
+					if( gNorm.y > -steepThresh )
+					{
+
+					}
+					else
+					{
+						groundSpeed = 0;
+					}
 				}
 
 				//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
@@ -9234,8 +9244,8 @@ void Actor::UpdateHitboxes()
 		}
 		else
 		{
-			angle = atan2( gn.x, -gn.y );
 			gn = ground->Normal();
+			angle = atan2( gn.x, -gn.y );
 			gd = normalize( ground->v1 - ground->v0 );
 		}
 	}
@@ -9288,26 +9298,106 @@ void Actor::UpdateHitboxes()
 	
 	if( action == AIRDASH )
 	{
-		hurtBody.isCircle = true;
-		hurtBody.rw = 7;//b.rw;
-		hurtBody.rh = 10;//b.rw;
+		//hurtBody.isCircle = true;
+		hurtBody.rw = 10;
+		hurtBody.rh = 10;
 		//hurtBody.offset = 
 	}
 	else
 	{
+		if( action == DASH )
+		{
+			hurtBody.rh = 10;
+		}
+		else if( action == SPRINT )
+		{
+			hurtBody.rh = 12;
+		}
+		else if( action == STEEPCLIMB )
+		{
+			hurtBody.rh = 12;
+		}
+		else
+		{
+			hurtBody.rh = 15;
+		}
+
 		hurtBody.isCircle = false;
-		hurtBody.rw = 7;//b.rw;//b.rw - 5;
-		hurtBody.rh = 10;//b.rh;//b.rh - 10;
+		hurtBody.rw = 7;
+		
 		
 		hurtBody.offset = b.offset;
 	}
 
 	
+
+	if( ground != NULL )
+	{
+		if( gn.x == 0 )
+		{
+			hurtBody.globalPosition = position + hurtBody.offset ;//+ V2d( 0, -hurtBody.rh );
+			hurtBody.globalAngle = angle;
+		}
+		else if( gn.y > -steepThresh )
+		{
+			double xoff = 0;
+			if( gn.x > 0 )
+			{
+				xoff = 10;
+			}
+			else if( gn.x < 0 )
+			{
+				xoff = -10;
+			}
+
+			
+			//might not work reversed
+			hurtBody.globalPosition = ground->GetPoint( edgeQuantity ) + V2d( 0, -1 ) * (double)(b.rh) + V2d( xoff, 0 );// + hurtBody.rh );
+
+			if( action == STEEPCLIMB )
+			{
+			}
+			else if( action == STEEPSLIDE )
+			{
+				hurtBody.globalPosition += V2d( 0, 15 );
+			}
+			hurtBody.globalAngle = 0;
+			//hurtBody.offset = V2d( 0, 0 );
+		}
+		else
+		{
+			hurtBody.globalPosition = ground->GetPoint( edgeQuantity ) + gn * (double)(b.rh);// + hurtBody.rh );
+			hurtBody.globalAngle = angle;
+		}
+	}
+	else
+	{
+		hurtBody.globalPosition = position + hurtBody.offset;
+		hurtBody.globalAngle = angle;
+	}
+	
+
+	
+	
 	
 	//cout << "hurtbody offset: " << hurtBody.offset.x << ", " << hurtBody.offset.y << endl;
 	
-	hurtBody.globalPosition = position + hurtBody.offset;
-	hurtBody.globalAngle = angle;
+	//if( ground != NULL )
+	//{
+	//	hurtBody.globalPosition = ground->GetPoint( edgeQuantity ) + gn * (double)( b.rh + 5 );
+	//	if( angle == 0 || approxEquals( angle, PI ) )
+	//	{
+	//	//	hurtBody.globalPosition.x += offsetX;
+	//	}
+	//	hurtBody.globalAngle = angle;
+	//}
+	//else
+	//{
+	//	hurtBody.globalPosition = position;
+	//	hurtBody.globalAngle = 0;
+	//}
+
+	
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
 	//			hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 	//hurtBody.globalPosition = position;
@@ -9564,7 +9654,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else*/
 			{
-				sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 3 ) );
+				sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 4 ) );
 			}
 			
 		}
@@ -9577,7 +9667,7 @@ void Actor::UpdatePostPhysics()
 			}
 			else*/
 			{
-				ir = tileset[SPRINT]->GetSubRect( frame / 3 );
+				ir = tileset[SPRINT]->GetSubRect( frame / 4 );
 			}
 
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );

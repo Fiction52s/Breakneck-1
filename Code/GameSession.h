@@ -240,11 +240,28 @@ struct GameSession : QuadTreeCollider
 	Tileset *cloudTileset;
 
 	Critical *drawCritical;
+	static int IsFlatGround( sf::Vector2<double> &normal );
+	static int IsSlopedGround( sf::Vector2<double> &normal );
+	static int IsSteepGround(  sf::Vector2<double> &normal );
+	static int IsWall( sf::Vector2<double> &normal );
+
+	sf::VertexArray * SetupBorderQuads(
+		int currentEdgeIndex,
+		Tileset *ts,
+		int (*ValidEdge)(sf::Vector2<double> &)
+		);
 	
 
 	struct TestVA : QuadTreeEntrant
 	{
-		sf::VertexArray *va;
+		//sf::VertexArray *va;
+		sf::VertexArray *groundva;
+		Tileset *ts_border;
+		sf::VertexArray *slopeva;
+		sf::VertexArray *steepva;
+		sf::VertexArray *wallva;
+		
+		
 		sf::VertexArray *terrainVA;
 		sf::VertexArray *grassVA;
 		bool show;

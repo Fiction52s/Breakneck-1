@@ -73,8 +73,8 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 10;
 
 	activeBullets = NULL;
 	inactiveBullets = NULL;
@@ -105,6 +105,9 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	dead = false;
 
 	double size = max( width, height );
+
+
+	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 }
 
@@ -190,7 +193,8 @@ void BasicTurret::UpdatePrePhysics()
 	}
 	
 
-	if( frame == 12 * animationFactor && slowCounter == 1 )
+	//if( frame == 12 * animationFactor && slowCounter == 1 )
+	if( frame == 0 && slowCounter == 1 )
 	{
 		//cout << "firing" << endl;
 		Bullet *b = ActivateBullet();
@@ -390,7 +394,10 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 		target->draw( cs );
 	}
 
-	target->draw( bulletVA, ts_bullet->texture );
+	if( activeBullets != NULL )
+	{
+		target->draw( bulletVA, ts_bullet->texture );
+	}
 	target->draw( sprite );
 }
 
@@ -434,6 +441,21 @@ bool BasicTurret::IHitPlayer()
 	Actor &player = owner->player;
 	if( hitBody.Intersects( player.hurtBody ) )
 	{
+		if( player.position.x < position.x )
+		{
+			hitboxInfo->kbDir = V2d( -1, -1 );
+			//cout << "left" << endl;
+		}
+		else if( player.position.x > position.x )
+		{
+			//cout << "right" << endl;
+			hitboxInfo->kbDir = V2d( 1, -1 );
+		}
+		else
+		{
+			//dont change it
+		}
+
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}
@@ -622,7 +644,7 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 	while( currBullet != NULL )
 	{
 		currBullet->hitBody.DebugDraw( target );
-		currBullet->hurtBody.DebugDraw( target );
+		//currBullet->hurtBody.DebugDraw( target );
 
 		currBullet = currBullet->next;
 	}
@@ -708,7 +730,7 @@ void BasicTurret::AddBullet()
 		inactiveBullets = b;
 	}
 
-	double rad = 16;
+	double rad = 12;
 	inactiveBullets->hurtBody.isCircle = true;
 	inactiveBullets->hurtBody.globalAngle = 0;
 	inactiveBullets->hurtBody.offset.x = 0;
