@@ -624,6 +624,7 @@ struct BossCrawler : Enemy
 
 	BossCrawler( GameSession *owner, Edge *ground, double quantity );
 	void HandleEntrant( QuadTreeEntrant *qte );
+	bool IHitPlayerWithBullets();
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void PhysicsResponse();
@@ -665,6 +666,7 @@ struct BossCrawler : Enemy
 	CollisionBox hitBody;
 	CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
+	HitboxInfo *bulletHitboxInfo;
 	sf::Vector2<double> tempVel;
 	
 

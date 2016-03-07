@@ -83,6 +83,14 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
+	bulletHitboxInfo = new HitboxInfo;
+	bulletHitboxInfo->damage = 100;
+	bulletHitboxInfo->drainX = 0;
+	bulletHitboxInfo->drainY = 0;
+	bulletHitboxInfo->hitlagFrames = 0;
+	bulletHitboxInfo->hitstunFrames = 10;
+	bulletHitboxInfo->knockback = 0;
+
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 2;
 	physBody.isCircle = true;
@@ -1228,7 +1236,8 @@ void BossCrawler::PhysicsResponse()
 			owner->player.flashFrames = 5;
 			owner->player.desperationMode = false;
 			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->powerBar.Charge( 2 * 6 * 2 );
+			//owner->powerBar.Charge( 2 * 6 * 2 );
+			//owner->powerBar.Charge( 6 );
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
@@ -1246,6 +1255,10 @@ void BossCrawler::PhysicsResponse()
 	{
 		//can hit back on the same frame because im a boss? maybe everyone should be able to hit back on the same frame
 		if( IHitPlayer() )
+		{
+		}
+
+		if( IHitPlayerWithBullets() )
 		{
 		}
 
@@ -1484,6 +1497,25 @@ bool BossCrawler::IHitPlayer()
 		return true;
 	}
 	
+	return false;
+}
+
+bool BossCrawler::IHitPlayerWithBullets()
+{
+	Actor &player = owner->player;
+	
+	for( int i = 0; i < numBullets; ++i )
+	{
+		Bullet &b = bullets[i];
+		if( b.active )
+		{
+			if( b.hitBody.Intersects( player.hurtBody ) )
+			{
+				player.ApplyHit( bulletHitboxInfo );
+				return true;
+			}
+		}
+	}
 	return false;
 }
 

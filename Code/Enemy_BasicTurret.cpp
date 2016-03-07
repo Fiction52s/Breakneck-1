@@ -268,11 +268,12 @@ void BasicTurret::PhysicsResponse()
 		UpdateHitboxes();
 
 		
-
-		pair<bool, bool> result = PlayerHitMe();
-		if( result.first )
+		if( receivedHit == NULL )
 		{
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
+			pair<bool, bool> result = PlayerHitMe();
+			if( result.first )
+			{
+									//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 6 );
@@ -280,21 +281,22 @@ void BasicTurret::PhysicsResponse()
 				receivedHit = NULL;
 			}*/
 
-			owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->player.desperationMode = false;
-			owner->powerBar.Charge( 2 * 6 * 3 );
+				owner->player.test = true;
+				owner->player.currAttackHit = true;
+				owner->player.flashColor = COLOR_BLUE;
+				owner->player.flashFrames = 5;
+				owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+				owner->player.desperationMode = false;
+				owner->powerBar.Charge( 2 * 6 * 3 );
 
 
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
-			{
-				owner->player.velocity.y = 4;//.5;
-			}
-		//	dead = true;
+				if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+				{
+					owner->player.velocity.y = 4;//.5;
+				}
+				//	dead = true;
 		//	receivedHit = NULL;
+			}
 		}
 
 		
@@ -304,9 +306,11 @@ void BasicTurret::PhysicsResponse()
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 
-		if( IHitPlayerWithBullets() )
-		{
-		}
+		
+	}
+
+	if( IHitPlayerWithBullets() )
+	{
 	}
 }
 
