@@ -756,8 +756,9 @@ int main()
 							//OptionsOption();
 							break;
 						case 4:
-							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-							gs->Run( "Maps/1-5.brknk" );
+							CustomMapsOption( ls );
+							//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							//gs->Run( "Maps/1-5.brknk" );
 							//ExitOption();
 							break;
 						}
@@ -844,9 +845,9 @@ int main()
 					break;
 				case 4:
 					//replace this before releasing
-					CustomMapsOption( ls );
-					//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-					//gs->Run( "Maps/1-5.brknk" );
+					//CustomMapsOption( ls );
+					gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+					gs->Run( "Maps/1-5.brknk" );
 					//ExitOption();
 					break;
 				}
