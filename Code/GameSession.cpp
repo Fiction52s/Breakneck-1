@@ -4748,7 +4748,6 @@ void GameSession::RespawnPlayer()
 	{
 		player.position = player.currentCheckPoint->pos;
 	}
-	
 	player.gateTouched = NULL;
 	player.action = player.JUMP;
 	player.frame = 1;

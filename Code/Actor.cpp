@@ -13,6 +13,9 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		motionGhostSpacing = 6;
+		ghostSpacingCounter = 0;
+
 		drainCounterMax = 4;
 		drainCounter = 0;
 		currentCheckPoint = NULL;
@@ -51,6 +54,7 @@ Actor::Actor( GameSession *gs )
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
 		}
+		swordShader.setParameter( "energyColor", COLOR_TEAL );
 		//swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
@@ -317,7 +321,7 @@ Actor::Actor( GameSession *gs )
 		tileset[STANDD] = owner->GetTileset( "standd.png", 96, 48 );
 		normal[STANDD] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[STANDN] = 5 * 2;
+		actionLength[STANDN] = 5 * 4;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
@@ -848,11 +852,7 @@ void Actor::UpdatePrePhysics()
 	
 
 	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
-	for( int i = MAX_MOTION_GHOSTS-1; i > 0; --i )
-	{
-		motionGhosts[i] = motionGhosts[i-1];
-	}
-	motionGhosts[0] = *sprite;
+	
 
 	
 
@@ -6727,7 +6727,7 @@ void Actor::UpdatePhysics()
 	if( test )
 		return;
 	
-
+	
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;
@@ -9221,6 +9221,23 @@ void Actor::PhysicsResponse()
 			//cout << "not clear" << endl;
 		}
 	}
+
+	//only for motion ghosts
+	UpdateSprite();
+
+	if( ghostSpacingCounter == motionGhostSpacing )
+	{
+		ghostSpacingCounter = 0;
+		for( int i = MAX_MOTION_GHOSTS-1; i > 0; --i )
+		{
+			motionGhosts[i] = motionGhosts[i-1];
+		}
+		motionGhosts[0] = *sprite;
+	}
+	else
+	{
+		ghostSpacingCounter++;
+	}
 }
 
 void Actor::UpdateHitboxes()
@@ -9483,1743 +9500,8 @@ void Actor::UpdatePostPhysics()
 		}
 	}*/
 
-	switch( action )
-	{
-	case STAND:
-		{	
-			
-		sprite->setTexture( *(tileset[STAND]->texture));
-			
-		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-		{
-			sprite->setTextureRect( tileset[STAND]->GetSubRect( frame / 8 ) );
-		}
-		else
-		{
-			sf::IntRect ir = tileset[STAND]->GetSubRect( frame / 8 );
-				
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-
-
-		if( ground != NULL )
-		{
-			double angle = GroundedAngle();
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-			
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-			sprite->setRotation( angle / PI * 180 );
-
-
-			//cout << "angle: " << angle / PI * 180  << endl;
-		}
-
-		//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		//sprite->setPosition( position.x, position.y );
-		//cout << "setting to frame: " << frame / 4 << endl;
-		break;
-		}
-	case RUN:
-		{	
-			
-		if( frame == 0 )
-			{
-				runTappingSound.stop();
-				runTappingSound.play();
-			}
-
-		
-
-		//if( bounceGrounded )
-		//{
-		////	sprite->setTexture( *(ts_bounceRun->texture));
-		//}
-		//else
-		//{
-		//	
-		//}
-
-		sprite->setTexture( *(tileset[RUN]->texture));
-		
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-		{
-			/*if( bounceGrounded )
-			{
-				sprite->setTextureRect( ts_bounceRun->GetSubRect( frame / 4 ) );
-			}
-			else*/
-			{
-				sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
-			}
-			
-		}
-		else
-		{
-			sf::IntRect ir;                                              
-			/*if( bounceGrounded )
-			{
-				ir = ts_bounceRun->GetSubRect( frame / 4 );
-			}
-			else*/
-			{
-				ir = tileset[RUN]->GetSubRect( frame / 4 );
-			}
-			 
-				
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-			
-
-		if( ground != NULL )
-		{
-			double angle = GroundedAngle();
-			//cout << "angle: " << angle << endl;
-			//sprite->setOrigin( b.rw, 2 * b.rh );
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-			//sprite->setPosition( position.x, position.y );
-			
-			//sprite->setPosition( position.x, position.y );
-			//cout << "angle: " << angle / PI * 180  << endl;
-
-			if( frame % 5 == 0 && abs( groundSpeed ) > 0 )
-			{
-				//owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
-			}
-		}
-		break;
-		}
-	case SPRINT:
-		{	
-		
-		/*if( bounceGrounded )
-		{
-			sprite->setTexture( *(ts_bounceSprint->texture));
-		}
-		else*/
-		{
-			sprite->setTexture( *(tileset[SPRINT]->texture));
-		}
-		
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-		{
-			/*if( bounceGrounded )
-			{
-				sprite->setTextureRect( ts_bounceSprint->GetSubRect( frame / 3 ) );
-			}
-			else*/
-			{
-				sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 4 ) );
-			}
-			
-		}
-		else
-		{
-			sf::IntRect ir;                                              
-			/*if( bounceGrounded )
-			{
-				ir = ts_bounceSprint->GetSubRect( frame / 3 );
-			}
-			else*/
-			{
-				ir = tileset[SPRINT]->GetSubRect( frame / 4 );
-			}
-
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-			
-
-		if( ground != NULL )
-		{
-			double angle = GroundedAngle();
-
-			//sprite->setOrigin( b.rw, 2 * b.rh );
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-		}
-		break;
-		}
-	case JUMP:
-		{
-		sprite->setTexture( *(tileset[JUMP]->texture));
-		{
-		sf::IntRect ir;
-
-		if( frame == 0 )
-		{
-			ir = tileset[JUMP]->GetSubRect( 0 );
-		}
-		else if( velocity.y < -15)
-		{
-			ir = tileset[JUMP]->GetSubRect( 1 );
-		}
-		else if( velocity.y < 7 )
-		{
-			ir = tileset[JUMP]->GetSubRect( 2 );
-		}
-		else if( velocity.y < 9 )
-		{
-			ir = tileset[JUMP]->GetSubRect( 3 );
-		}
-		else if( velocity.y < 12 )
-		{
-			ir = tileset[JUMP]->GetSubRect( 4 );
-		}
-		else if( velocity.y < 35)
-		{
-			ir = tileset[JUMP]->GetSubRect( 5 );
-		}
-		else if( velocity.y < 37 )
-		{
-			ir = tileset[JUMP]->GetSubRect( 6 );
-		}
-		else if( velocity.y < 40 )
-		{
-			ir = tileset[JUMP]->GetSubRect( 7 );
-		}
-		else
-		{
-			ir = tileset[JUMP]->GetSubRect( 8 );
-		}
-
-		if( frame > 0 )
-		{
-			sprite->setRotation( 0 );
-		}
-
-		if( ( !facingRight && !reversed ) )
-		{
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-		else
-		{
-			sprite->setTextureRect( ir );
-		}
-		}
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
-
-		break;
-		}
-	case JUMPSQUAT:
-		{
-			sprite->setTexture( *(tileset[JUMPSQUAT]->texture));
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[JUMPSQUAT]->GetSubRect( 0 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[JUMPSQUAT]->GetSubRect( 0 );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-
-
-			double angle = GroundedAngle();
-			if( reversed )
-			{
-				//need to fill this in for reversed!
-			}
-			else
-			{
-				if( gn.y > -steepThresh )
-				{
-					angle = 0;
-				}
-			}
-
-			
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( 0 );//angle / PI * 180 );
-		
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-			sprite->setPosition( pp.x + offsetX, pp.y );
-			//else
-			//	sprite->setPosition( pp.x, pp.y );	
-		break;
-		}
-	case LAND: 
-		{
-
-		
-
-		sprite->setTexture( *(tileset[LAND]->texture));
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-		{
-			sprite->setTextureRect( tileset[LAND]->GetSubRect( 0 ) );
-		}
-		else
-		{
-			sf::IntRect ir = tileset[LAND]->GetSubRect( 0 );
-				
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-
-
-		double angle = GroundedAngle();
-		
-
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-		sprite->setRotation( angle / PI * 180 );
-		
-		V2d oldv0 = ground->v0;
-		V2d oldv1 = ground->v1;
-
-		if( movingGround != NULL )
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
-		V2d pp = ground->GetPoint( edgeQuantity );
-
-		if( movingGround != NULL )
-		{
-			ground->v0 = oldv0;
-			ground->v1 = oldv1;
-		}
-
-		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-			sprite->setPosition( pp.x + offsetX, pp.y );
-		else
-			sprite->setPosition( pp.x, pp.y );
-
-		if( frame == 0 )
-		{
-			V2d fxPos;
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				fxPos = V2d( pp.x + offsetX, pp.y );
-			else
-				fxPos = pp;
-
-			fxPos += gn * 8.0;
-
-			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 14, 1, facingRight );
-		}
-
-
-		break;
-		}
-	case LAND2: 
-		{
-		sprite->setTexture( *(tileset[LAND2]->texture));
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-		{
-			sprite->setTextureRect( tileset[LAND2]->GetSubRect( 0 ) );
-		}
-		else
-		{
-			sf::IntRect ir = tileset[LAND2]->GetSubRect( 0 );
-				
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-		
-		double angle = GroundedAngle();
-
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-		sprite->setRotation( angle / PI * 180 );
-		
-		V2d oldv0 = ground->v0;
-		V2d oldv1 = ground->v1;
-
-		if( movingGround != NULL )
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
-		V2d pp = ground->GetPoint( edgeQuantity );
-
-		if( movingGround != NULL )
-		{
-			ground->v0 = oldv0;
-			ground->v1 = oldv1;
-		}
-
-		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-			sprite->setPosition( pp.x + offsetX, pp.y );
-		else
-			sprite->setPosition( pp.x, pp.y );
-		break;
-		}
-	case WALLCLING:
-		{
-		sprite->setTexture( *(tileset[WALLCLING]->texture));
-		if( facingRight )
-		{
-			sprite->setTextureRect( tileset[WALLCLING]->GetSubRect( 0 ) );
-		}
-		else
-		{
-			sf::IntRect ir = tileset[WALLCLING]->GetSubRect( 0 );
-				
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
-		sprite->setRotation( 0 );
-		break;
-		}
-	case WALLJUMP:
-		{
-			sprite->setTexture( *(tileset[WALLJUMP]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[WALLJUMP]->GetSubRect( frame / 2 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[WALLJUMP]->GetSubRect( frame / 2 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case SLIDE:
-		{
-		sprite->setTexture( *(tileset[SLIDE]->texture));
-		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-		{
-			sprite->setTextureRect( tileset[SLIDE]->GetSubRect( 0 ) );
-		}
-		else
-		{
-			sf::IntRect ir = tileset[SLIDE]->GetSubRect( 0 );
-				
-			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-		}
-
-		double angle = GroundedAngle();
-
-		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-		sprite->setRotation( angle / PI * 180 );
-		
-		V2d oldv0 = ground->v0;
-		V2d oldv1 = ground->v1;
-
-		if( movingGround != NULL )
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
-		V2d pp = ground->GetPoint( edgeQuantity );
-
-		if( movingGround != NULL )
-		{
-			ground->v0 = oldv0;
-			ground->v1 = oldv1;
-		}
-
-		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-		break;
-		}
-	case STANDN:
-		{
-			int startFrame = 1;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 4;
-
-			sprite->setTexture( *(tileset[STANDN]->texture));
-
-			//Vector2i offset( 24, -16 );
-			Vector2i offset( 24, 0 );
-
-
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 2 ) );
-
-				if( showSword1 )
-					standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 2 - startFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 2 );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-				
-				if( showSword1  )
-				{
-					sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 2 - startFrame );
-					standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-
-					offset.x = -offset.x;
-				}
-
-				
-			}
-
-			
-			V2d trueNormal;
-			double angle = GroundedAngleAttack( trueNormal );
-
-			if( showSword1 )
-			{
-				standingNSword1.setOrigin( standingNSword1.getLocalBounds().width / 2, standingNSword1.getLocalBounds().height);
-				standingNSword1.setRotation( angle / PI * 180 );
-
-			
-				//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-
-			//V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
-			//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
-			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
-			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
-
-			pos += trueNormal * (double)offset.y;
-			pos += truDir * (double)offset.x;
-
-			standingNSword1.setPosition( pos.x, pos.y );
-
-			if( record > 0 )
-			{
-				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingNSword1;
-			}
-
-			break;
-		}
-	case STANDD:
-		{
-			int startFrame = 2;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 7;
-
-
-			sprite->setTexture( *(tileset[STANDD]->texture));
-
-			Vector2i offset( 24, 0 );
-
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
-
-				if( showSword1 )
-					standingDSword1.setTextureRect( ts_standingDSword1->GetSubRect( frame / 2 - startFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[STANDD]->GetSubRect( frame / 2 );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-
-				if( showSword1  )
-				{
-					sf::IntRect irSword = ts_standingDSword1->GetSubRect( frame / 2 - startFrame );
-					standingDSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-
-					offset.x = -offset.x;
-				}
-			}
-			
-			V2d trueNormal;
-			double angle = GroundedAngleAttack( trueNormal );
-
-			if( showSword1 )
-			{
-				standingDSword1.setOrigin( standingDSword1.getLocalBounds().width / 2, standingDSword1.getLocalBounds().height);
-				standingDSword1.setRotation( angle / PI * 180 );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-
-			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
-			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
-
-			pos += trueNormal * (double)offset.y;
-			pos += truDir * (double)offset.x;
-
-			standingDSword1.setPosition( pos.x, pos.y );
-
-			if( record > 0 )
-			{
-				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingDSword1;
-			}
-
-			break;
-		}
-	case STANDU:
-		{
-			int startFrame = 1;
-			showSword1 = frame >= startFrame && frame <= 18;
-
-
-			sprite->setTexture( *(tileset[STANDU]->texture));
-
-			Vector2i offset( 0, 32 );
-
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[STANDU]->GetSubRect( frame ) );
-
-				if( showSword1 )
-					standingUSword1.setTextureRect( ts_standingUSword1->GetSubRect( frame - startFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[STANDU]->GetSubRect( frame );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-
-				if( showSword1  )
-				{
-					sf::IntRect irSword = ts_standingUSword1->GetSubRect( frame - startFrame );
-					standingUSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-
-					offset.x = -offset.x;
-				}
-			}
-			
-			V2d trueNormal;
-			double angle = GroundedAngleAttack( trueNormal );
-
-			if( showSword1 )
-			{
-				standingUSword1.setOrigin( standingUSword1.getLocalBounds().width / 2, standingUSword1.getLocalBounds().height);
-				standingUSword1.setRotation( angle / PI * 180 );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-
-			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
-			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
-
-			pos += trueNormal * (double)offset.y;
-			pos += truDir * (double)offset.x;
-
-			standingUSword1.setPosition( pos.x, pos.y );
-
-			if( record > 0 )
-			{
-				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingUSword1;
-			}
-			break;
-		}
-	case FAIR:
-		{
-			
-
-
-			int startFrame = 1;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
-			sprite->setTexture( *(tileset[FAIR]->texture));
-
-			Vector2i offset( 32, -16 );
-
-			if( facingRight )
-			{
-				
-				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
-				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
-				if( showSword1 )
-					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
-					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
-				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-
-				
-				if( showSword1  )
-				{
-					offset.x = -offset.x;
-
-					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
-					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
-					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-				}
-					
-			}
-
-			if( showSword1 )
-			{
-				fairSword1.setOrigin( fairSword1.getLocalBounds().width / 2, fairSword1.getLocalBounds().height / 2 );
-				fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-
-			if( record > 0 )
-			{
-				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = fairSword1;
-			}
-			
-			break;
-		}
-	case DAIR:
-		{
-			int startFrame = 0;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
-
-			Vector2i offset( 0, 40 );
-
-			sprite->setTexture( *(tileset[DAIR]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[DAIR]->GetSubRect( frame / 2 ) );
-
-				if( showSword1 )
-					dairSword1.setTextureRect( ts_dairSword1->GetSubRect( frame / 2 - startFrame ) );
-			}
-			else
-			{
-				//offset.x = -offset.x;
-
-				sf::IntRect ir = tileset[DAIR]->GetSubRect( frame / 2 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-
-				if( showSword1  )
-				{
-					//offset.x = -offset.x;
-
-					sf::IntRect irSword = ts_dairSword1->GetSubRect( frame / 2 - startFrame );
-					dairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-				}
-			}
-
-			if( showSword1 )
-			{
-				dairSword1.setOrigin( dairSword1.getLocalBounds().width / 2, dairSword1.getLocalBounds().height / 2 );
-				dairSword1.setPosition( position.x + offset.x, position.y + offset.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case UAIR:
-		{
-			int startFrame = 0;
-			showSword1 = frame / 3 >= startFrame && frame / 3 <= 5;
-			sprite->setTexture( *(tileset[UAIR]->texture));
-
-			Vector2i offset( 8, -24 );
-
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[UAIR]->GetSubRect( frame / 3 ) );
-
-				if( showSword1 )
-					uairSword1.setTextureRect( ts_uairSword1->GetSubRect( frame / 3 - startFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-
-				if( showSword1 )
-				{
-					//offset.x = -offset.x;
-
-					sf::IntRect irSword = ts_uairSword1->GetSubRect( frame / 3 - startFrame );
-					uairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-				}
-
-				offset.x = -offset.x;
-			}
-
-			if( showSword1 )
-			{
-				uairSword1.setOrigin( uairSword1.getLocalBounds().width / 2, uairSword1.getLocalBounds().height / 2 );
-				uairSword1.setPosition( position.x + offset.x, position.y + offset.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case DOUBLE:
-		{
 	
-			int fr = frame;
-			if ( frame > 27)
-			{
-				fr = 27;
-			}
-			sprite->setTexture( *(tileset[DOUBLE]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[DOUBLE]->GetSubRect( fr / 1 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[DOUBLE]->GetSubRect( fr / 1 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case DASH:
-		{
-			
-			if( frame == 0 )//&& currInput.B && !prevInput.B )
-			{
-				dashStartSound.stop();
-				//if( slowMultiple != 1)
-				//	dashStartSound.setPitch( .2 );
-				//else
-				//	dashStartSound.setPitch( 1 );
-				//cout << "playing dash sound" << endl;
-				dashStartSound.play();
-				//dashStartSound.setLoop( true );
-			}
-
-			//if( slowMultiple != 1)
-			//		dashStartSound.setPitch( .2 );
-			//	else
-			//		dashStartSound.setPitch( 1 );
-
-			sprite->setTexture( *(tileset[DASH]->texture));
-
-			//3-8 is the cycle
-			sf::IntRect ir;
-			int checkFrame;
-			if( frame / 2 < 3 )
-			{
-				checkFrame = frame / 2;
-				ir = tileset[DASH]->GetSubRect( checkFrame );
-			}
-			else if( frame < actionLength[DASH] - 6 )
-			{
-				checkFrame = 3 + ( (frame/2 - 3) % 6 );
-				ir = tileset[DASH]->GetSubRect( checkFrame );
-			}
-			else
-			{
-				checkFrame = 9 + (6 - ( actionLength[DASH] - frame )) / 2;
-				ir = tileset[DASH]->GetSubRect( checkFrame );
-			}
-		//	cout << "checkframe: " << checkFrame << endl;
-
-
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( ir );
-			}
-			else
-			{
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-
-			
-			double angle = GroundedAngle();
-			
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-
-			if( frame == 0 )
-			{
-				owner->ActivateEffect( ts_fx_dashStart, 
-					pp + gn * 16.0, false, angle, 7, 3, facingRight );
-			}
-			else if( frame % 5 == 0 )
-			{
-				owner->ActivateEffect( ts_fx_dashRepeat, 
-					pp + gn * 8.0, false, angle, 12, 3, facingRight );
-			}
-
-			break;
-		}
-	case GRINDBALL:
-		{
-			assert( grindEdge != NULL );
-			sprite->setTexture( *(tileset[GRINDBALL]->texture));
-
-			sf::IntRect ir;
-			
-			ir = tileset[GRINDBALL]->GetSubRect( 0 );
-			
-			grindActionCurrent += grindSpeed / 20;
-			while( grindActionCurrent >= grindActionLength )
-			{
-				grindActionCurrent -= grindActionLength;
-			}
-			while( grindActionCurrent < 0 )
-			{
-				grindActionCurrent += grindActionLength;
-			}
-
-			int grindActionInt = grindActionCurrent;
-
-
-
-
-			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( grindActionInt * 5 % grindActionLength   ) );
-			gstriblue.setTextureRect( tsgstriblue->GetSubRect( grindActionInt * 5 % grindActionLength ) );
-			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt ) );
-			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( grindActionInt * 5 % grindActionLength ) );
-			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ));
-			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
-			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt ) );
-
-			
-
-			if( facingRight )
-			{
-				sprite->setTextureRect( ir );
-			}
-			else
-			{
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-
-			double angle = 0;
-
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-
-			}
-			else
-			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-		//	sprite->setRotation( angle / PI * 180 );
-			sprite->setRotation( 0 );
-			
-			V2d oldv0 = grindEdge->v0;
-			V2d oldv1 = grindEdge->v1;
-
-
-			if( grindMovingTerrain != NULL )
-			{
-				grindEdge->v0 += grindMovingTerrain->position;
-				grindEdge->v1 += grindMovingTerrain->position;
-			}
-
-			V2d pp = grindEdge->GetPoint( grindQuantity );
-
-			if( grindMovingTerrain != NULL )
-			{
-				grindEdge->v0 = oldv0;
-				grindEdge->v1 = oldv1;
-			}
-			
-			sprite->setPosition( pp.x, pp.y );
-
-
-			gsdodeca.setOrigin( gsdodeca.getLocalBounds().width / 2, gsdodeca.getLocalBounds().height / 2);
-			gstriblue.setOrigin( gstriblue.getLocalBounds().width / 2, gstriblue.getLocalBounds().height / 2);
-			gstricym.setOrigin( gstricym.getLocalBounds().width / 2, gstricym.getLocalBounds().height / 2);
-			gstrigreen.setOrigin( gstrigreen.getLocalBounds().width / 2, gstrigreen.getLocalBounds().height / 2);
-			gstrioran.setOrigin( gstrioran.getLocalBounds().width / 2, gstrioran.getLocalBounds().height / 2);
-			gstripurp.setOrigin( gstripurp.getLocalBounds().width / 2, gstripurp.getLocalBounds().height / 2);
-			gstrirgb.setOrigin( gstrirgb.getLocalBounds().width / 2, gstrirgb.getLocalBounds().height / 2);
-
-
-			gsdodeca.setPosition( pp.x, pp.y );
-			gstriblue.setPosition( pp.x, pp.y );
-			gstricym.setPosition( pp.x, pp.y );
-			gstrigreen.setPosition( pp.x, pp.y );
-			gstrioran.setPosition( pp.x, pp.y );
-			gstripurp.setPosition( pp.x, pp.y );
-			gstrirgb.setPosition( pp.x, pp.y );
-
-			break;
-		}
-	case STEEPSLIDE:
-		{
-			sprite->setTexture( *(tileset[STEEPSLIDE]->texture));
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[STEEPSLIDE]->GetSubRect( 0 ) );
-			//	sprite->setOrigin( sprite->getLocalBounds().width - 10, sprite->getLocalBounds().height);
-			}
-			else
-			{
-				sf::IntRect ir = tileset[STEEPSLIDE]->GetSubRect( 0 );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			//	sprite->setOrigin( 10, sprite->getLocalBounds().height);
-			}
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-				//this should never happen
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			sprite->setPosition( pp.x, pp.y );
-			//if( angle == 0 )
-			//	sprite->setPosition( pp.x + offsetX, pp.y );
-			//else
-			//	sprite->setPosition( pp.x, pp.y );
-			break;
-		}
-	case AIRDASH:
-		{
-			if( frame % 1 == 0 )
-			{
-				owner->ActivateEffect( ts_fx_airdash, V2d( position.x, position.y + 25 ), false, 0, 10, 4, facingRight );
-			}
-
-
-			sprite->setTexture( *(tileset[AIRDASH]->texture));
-
-			int f = 0;
-			if( currInput.LUp() )
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					f = 2;
-				}
-				else
-				{
-					f = 1;
-				}
-			}
-			else if( currInput.LDown() )
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					f = 4;
-				}
-				else
-				{
-					f = 5;
-				}
-			}
-			else
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					f = 3;
-				}
-				else
-				{
-					f = 0;
-				}
-			}
-			if( facingRight )
-			{
-				
-				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( f ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( f );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case STEEPCLIMB:
-		{
-			sprite->setTexture( *(tileset[STEEPCLIMB]->texture));
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[STEEPCLIMB]->GetSubRect( frame / 4 ) );
-			//	sprite->setOrigin( sprite->getLocalBounds().width - 10, sprite->getLocalBounds().height);
-			}
-			else
-			{
-				sf::IntRect ir = tileset[STEEPCLIMB]->GetSubRect( frame / 4 );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			//	sprite->setOrigin( 10, sprite->getLocalBounds().height);
-			}
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-				//this should never happen
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			sprite->setPosition( pp.x, pp.y );
-			//if( angle == 0 )
-			//	sprite->setPosition( pp.x + offsetX, pp.y );
-			//else
-			//	sprite->setPosition( pp.x, pp.y );
-			break;
-		}
-	case AIRHITSTUN:
-		{
-			if( frame == 0 )
-			{
-				playerHitSound.stop();
-				playerHitSound.play();
-			}
-
-			sprite->setTexture( *(tileset[AIRHITSTUN]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[AIRHITSTUN]->GetSubRect( 0 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[AIRHITSTUN]->GetSubRect( 0 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case GROUNDHITSTUN:
-		{
-			sprite->setTexture( *(tileset[GROUNDHITSTUN]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[GROUNDHITSTUN]->GetSubRect( 0 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[GROUNDHITSTUN]->GetSubRect( 0 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			
-			double angle = GroundedAngle();
-
-		
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-			break;
-		}
-	case WIREHOLD:
-		{
-			sprite->setTexture( *(tileset[WIREHOLD]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[WIREHOLD]->GetSubRect( 0 ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[WIREHOLD]->GetSubRect( 0 );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case BOUNCEAIR:
-		{
-			int bounceFrame = 0;
-			if( oldBounceEdge == NULL )
-			{
-				bounceFrame = 6;
-			}
-			else if( framesSinceBounce < 10 )
-			{
-				V2d bn = oldBounceNorm;//oldBounceEdge->Normal();
-				if( bn.y <= 0 && bn.y > -steepThresh )
-				{
-					bounceFrame = 3;
-					if( facingRight )
-					{
-						//facingRight = false;
-
-					}
-				}
-				else if( bn.y >= 0 && -bn.y > -steepThresh )
-				{
-					
-					bounceFrame = 3;
-				}
-				else if( bn.y == 0 )
-				{
-					bounceFrame = 3;
-				}
-				else if( bn.y < 0 )
-				{
-					bounceFrame = 1;
-				}
-				else if( bn.y > 0 )
-				{
-					bounceFrame = 5;
-				}
-			}
-			else
-			{
-				bounceFrame = 6;
-			}
-			
-			
-
-			sprite->setTexture( *(tileset[BOUNCEAIR]->texture));
-			if( facingRight )
-			{
-				sprite->setTextureRect( tileset[BOUNCEAIR]->GetSubRect( bounceFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[BOUNCEAIR]->GetSubRect( bounceFrame );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
-	case BOUNCEGROUND:
-		{
-			int bounceFrame = 0;
-			V2d bn = bounceNorm;//bounceEdge->Normal();
-
-			if( bn.y <= 0 && bn.y > -steepThresh )
-			{
-				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
-					bounceFrame = 0;
-				else
-					bounceFrame = 2;
-				//facingRight = !facingRight;
-			}
-			else if( bn.y >= 0 && -bn.y > -steepThresh )
-			{
-				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
-					bounceFrame = 4;
-				else
-					bounceFrame = 2;
-				//facingRight = !facingRight;
-			}
-			else if( bn.y == 0 )
-			{
-				bounceFrame = 2;
-			//	facingRight = !facingRight;
-			}
-			else if( bn.y < 0 )
-			{
-				bounceFrame = 0;
-			}
-			else if( bn.y > 0 )
-			{
-				bounceFrame = 4;
-			}
-
-
-
-			
-			sprite->setTexture( *(tileset[BOUNCEGROUND]->texture));
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[BOUNCEGROUND]->GetSubRect( bounceFrame  ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[BOUNCEGROUND]->GetSubRect( bounceFrame  );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-
-
-			//bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
-			//	|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-						angle = PI;
-			}
-			else
-			{
-				angle = atan2( bn.x, -bn.y );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-
-			if( abs( bn.x ) >= wallThresh )
-			{
-				if( bn.x > 0 )
-				{
-					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-				}
-				else
-				{
-					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-				}
-			}
-			else if( bn.y <= 0 && bn.y > -steepThresh )
-			{
-				if( bounceFrame == 0 )
-				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
-				}
-				else
-				{
-					if( facingRight )
-					{
-						
-						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-					}
-					else
-					{
-						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-						
-					}
-					
-					//sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
-				}
-			}
-			else if( bn.y >= 0 && -bn.y > -steepThresh )
-			{
-				if( facingRight )//bounceFrame == 4 )
-				{
-					//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
-					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-				}
-				else
-				{
-					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-				}	
-			}
-			else if( bn.y < 0 )
-			{
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
-			}
-			else if( bn.y > 0 )
-			{
-				//cout << "this one" << endl;
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
-			}
-
-			
-			sprite->setPosition( position.x, position.y );
-		//		sprite->setRotation( angle / PI * 180 );
-
-			V2d oldv0 = bounceEdge->v0;
-			V2d oldv1 = bounceEdge->v1;
-
-			if( bounceMovingTerrain != NULL )
-			{
-				bounceEdge->v0 += bounceMovingTerrain->position;
-				bounceEdge->v1 += bounceMovingTerrain->position;
-			}
-
-			V2d pp = bounceEdge->GetPoint( bounceQuant );
-
-			if( bounceMovingTerrain != NULL )
-			{
-				bounceEdge->v0 = oldv0;
-				bounceEdge->v1 = oldv1;
-			}
-				
-				//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				//	sprite->setPosition( pp.x + offsetX, pp.y );
-				//else
-				//	sprite->setPosition( pp.x, pp.y );
-
-			break;
-		}
-	case BOUNCEGROUNDEDWALL:
-		{
-			//if( frame == 0 && slowCounter == 1 )
-			//{
-				
-			//}
-
-			sprite->setTexture( *(tileset[BOUNCEGROUNDEDWALL]->texture));
-
-			sf::IntRect ir;
-			if( frame < 6 )
-			{
-				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 0 );
-			}
-			else if( frame < 20 )
-			{
-				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 1 );
-			}
-			else
-			{
-				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 2 );
-			}
-			
-
-
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( ir );
-			}
-			else
-			{
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-
-			double angle = 0;
-			if( !approxEquals( abs(offsetX), b.rw ) )
-			{
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				angle = atan2( gn.x, -gn.y );
-			}
-
-			if( frame < 6 )
-			{
-				if( ( facingRight && !reversed ) || (!facingRight && reversed ) )
-				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2 - 3, sprite->getLocalBounds().height);
-				}
-				else
-				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2 + 3, sprite->getLocalBounds().height);
-				}
-				
-				angle = 0;
-				if( reversed )
-					angle = PI;
-			}
-			else
-			{
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			}
-			
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-
-			break;
-		}
-	case DEATH:
-		{
-		
-		}
-	}
-
-	if( bounceFlameOn )
-	{
-		if( ground == NULL )
-		{
-			bounceFlameSprite.setTexture( *ts_airBounceFlame->texture );
-			bounceFlameSprite.setTextureRect( ts_airBounceFlame->GetSubRect( airBounceFrame / 3 ) );
-
-			//double angle = 0;
-			//angle = atan2( velocity.y, velocity.x );
-
-			if( velocity.x < 0  )
-			{
-				sf::IntRect r = bounceFlameSprite.getTextureRect();
-				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-
-			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height / 2 );
-			bounceFlameSprite.setPosition( sprite->getPosition() );
-			
-			//bounceFlameSprite.setRotation( angle / PI * 180 );
-			bounceFlameSprite.setRotation( 0 );
-		}
-		else
-		{
-			bounceFlameSprite.setTexture( *ts_runBounceFlame->texture );
-			bounceFlameSprite.setTextureRect( ts_runBounceFlame->GetSubRect( runBounceFrame / 3 ) );
-			if( ( groundSpeed < 0 && !reversed ) || ( groundSpeed > 0 && reversed ) )
-			{
-				sf::IntRect r = bounceFlameSprite.getTextureRect();
-				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height );
-			bounceFlameSprite.setPosition( sprite->getPosition() );
-			bounceFlameSprite.setRotation( sprite->getRotation() );
-			
-		}
-	}
+	UpdateSprite();
 	
 	
 
@@ -12679,11 +10961,35 @@ void Actor::Draw( sf::RenderTarget *target )
 		{
 			showMotionGhosts = 2;
 		}
+		else if( gs >= dashSpeed * 1.7 )
+		{
+			showMotionGhosts = 3;
+		}
+		else if( gs >= dashSpeed * 2 ) 
+		{
+			showMotionGhosts = 4;
+		}
+		else if( gs >= dashSpeed * 2.3 )
+		{
+			showMotionGhosts = 5;
+		}
 	}
 	else
 	{
 		double len = length( velocity );
-		if( len >= dashSpeed )
+		if( len >= dashSpeed * 2 )
+		{
+			showMotionGhosts = 5;
+		}
+		else if( len >= dashSpeed * 1.7 )
+		{
+			showMotionGhosts = 4;
+		}
+		else if( len >= dashSpeed * 1.5 )
+		{
+			showMotionGhosts = 3;
+		}
+		else if( len >= dashSpeed )
 		{
 			showMotionGhosts = 2;
 		}
@@ -12693,13 +10999,20 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 	}
 
+	showMotionGhosts = 4;
 	if( showMotionGhosts )
 	{
+		swordShader.setParameter( "isTealAlready", 0 );
+		
 		for( int i = 0; i < showMotionGhosts; ++i )
 		{
-		
-			motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
-			target->draw( motionGhosts[i] );
+			float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
+			swordShader.setParameter( "opacity", opac );
+			//cout << "setting : " << i << endl;
+			//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
+			//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
+			//target->draw( fairSword1, &swordShader );
+			target->draw( motionGhosts[i], &swordShader );
 		}
 	}
 
@@ -12785,6 +11098,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		if( showSword1 )
 		{
+			swordShader.setParameter( "isTealAlready", 1 );
 			switch( action )
 			{
 			case FAIR:
@@ -12984,6 +11298,1750 @@ void Actor::DebugDraw( RenderTarget *target )
 	leftWire->DebugDraw( target );
 	rightWire->DebugDraw( target );
 
+}
+
+void Actor::UpdateSprite()
+{
+
+	V2d gn( 0, 0 );
+	if( ground != NULL )
+	{
+		gn = ground->Normal();
+	}
+	switch( action )
+	{
+	case STAND:
+		{	
+			
+		sprite->setTexture( *(tileset[STAND]->texture));
+			
+		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			sprite->setTextureRect( tileset[STAND]->GetSubRect( frame / 8 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[STAND]->GetSubRect( frame / 8 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+
+
+		if( ground != NULL )
+		{
+			double angle = GroundedAngle();
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+			
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+			sprite->setRotation( angle / PI * 180 );
+
+
+			//cout << "angle: " << angle / PI * 180  << endl;
+		}
+
+		//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		//sprite->setPosition( position.x, position.y );
+		//cout << "setting to frame: " << frame / 4 << endl;
+		break;
+		}
+	case RUN:
+		{	
+			
+		if( frame == 0 )
+			{
+				runTappingSound.stop();
+				runTappingSound.play();
+			}
+
+		
+
+		//if( bounceGrounded )
+		//{
+		////	sprite->setTexture( *(ts_bounceRun->texture));
+		//}
+		//else
+		//{
+		//	
+		//}
+
+		sprite->setTexture( *(tileset[RUN]->texture));
+		
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			/*if( bounceGrounded )
+			{
+				sprite->setTextureRect( ts_bounceRun->GetSubRect( frame / 4 ) );
+			}
+			else*/
+			{
+				sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
+			}
+			
+		}
+		else
+		{
+			sf::IntRect ir;                                              
+			/*if( bounceGrounded )
+			{
+				ir = ts_bounceRun->GetSubRect( frame / 4 );
+			}
+			else*/
+			{
+				ir = tileset[RUN]->GetSubRect( frame / 4 );
+			}
+			 
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+			
+
+		if( ground != NULL )
+		{
+			double angle = GroundedAngle();
+			//cout << "angle: " << angle << endl;
+			//sprite->setOrigin( b.rw, 2 * b.rh );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+			//sprite->setPosition( position.x, position.y );
+			
+			//sprite->setPosition( position.x, position.y );
+			//cout << "angle: " << angle / PI * 180  << endl;
+
+			if( frame % 5 == 0 && abs( groundSpeed ) > 0 )
+			{
+				//owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
+			}
+		}
+		break;
+		}
+	case SPRINT:
+		{	
+		
+		/*if( bounceGrounded )
+		{
+			sprite->setTexture( *(ts_bounceSprint->texture));
+		}
+		else*/
+		{
+			sprite->setTexture( *(tileset[SPRINT]->texture));
+		}
+		
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			/*if( bounceGrounded )
+			{
+				sprite->setTextureRect( ts_bounceSprint->GetSubRect( frame / 3 ) );
+			}
+			else*/
+			{
+				sprite->setTextureRect( tileset[SPRINT]->GetSubRect( frame / 4 ) );
+			}
+			
+		}
+		else
+		{
+			sf::IntRect ir;                                              
+			/*if( bounceGrounded )
+			{
+				ir = ts_bounceSprint->GetSubRect( frame / 3 );
+			}
+			else*/
+			{
+				ir = tileset[SPRINT]->GetSubRect( frame / 4 );
+			}
+
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+			
+
+		if( ground != NULL )
+		{
+			double angle = GroundedAngle();
+
+			//sprite->setOrigin( b.rw, 2 * b.rh );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+		}
+		break;
+		}
+	case JUMP:
+		{
+		sprite->setTexture( *(tileset[JUMP]->texture));
+		{
+		sf::IntRect ir;
+
+		if( frame == 0 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 0 );
+		}
+		else if( velocity.y < -15)
+		{
+			ir = tileset[JUMP]->GetSubRect( 1 );
+		}
+		else if( velocity.y < 7 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 2 );
+		}
+		else if( velocity.y < 9 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 3 );
+		}
+		else if( velocity.y < 12 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 4 );
+		}
+		else if( velocity.y < 35)
+		{
+			ir = tileset[JUMP]->GetSubRect( 5 );
+		}
+		else if( velocity.y < 37 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 6 );
+		}
+		else if( velocity.y < 40 )
+		{
+			ir = tileset[JUMP]->GetSubRect( 7 );
+		}
+		else
+		{
+			ir = tileset[JUMP]->GetSubRect( 8 );
+		}
+
+		if( frame > 0 )
+		{
+			sprite->setRotation( 0 );
+		}
+
+		if( ( !facingRight && !reversed ) )
+		{
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		else
+		{
+			sprite->setTextureRect( ir );
+		}
+		}
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+
+		break;
+		}
+	case JUMPSQUAT:
+		{
+			sprite->setTexture( *(tileset[JUMPSQUAT]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[JUMPSQUAT]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[JUMPSQUAT]->GetSubRect( 0 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			double angle = GroundedAngle();
+			if( reversed )
+			{
+				//need to fill this in for reversed!
+			}
+			else
+			{
+				if( gn.y > -steepThresh )
+				{
+					angle = 0;
+				}
+			}
+
+			
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( 0 );//angle / PI * 180 );
+		
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			sprite->setPosition( pp.x + offsetX, pp.y );
+			//else
+			//	sprite->setPosition( pp.x, pp.y );	
+		break;
+		}
+	case LAND: 
+		{
+
+		
+
+		sprite->setTexture( *(tileset[LAND]->texture));
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			sprite->setTextureRect( tileset[LAND]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[LAND]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+
+
+		double angle = GroundedAngle();
+		
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+		sprite->setRotation( angle / PI * 180 );
+		
+		V2d oldv0 = ground->v0;
+		V2d oldv1 = ground->v1;
+
+		if( movingGround != NULL )
+		{
+			ground->v0 += movingGround->position;
+			ground->v1 += movingGround->position;
+		}
+
+		V2d pp = ground->GetPoint( edgeQuantity );
+
+		if( movingGround != NULL )
+		{
+			ground->v0 = oldv0;
+			ground->v1 = oldv1;
+		}
+
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			sprite->setPosition( pp.x + offsetX, pp.y );
+		else
+			sprite->setPosition( pp.x, pp.y );
+
+		if( frame == 0 )
+		{
+			V2d fxPos;
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				fxPos = V2d( pp.x + offsetX, pp.y );
+			else
+				fxPos = pp;
+
+			fxPos += gn * 8.0;
+
+			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 14, 1, facingRight );
+		}
+
+
+		break;
+		}
+	case LAND2: 
+		{
+		sprite->setTexture( *(tileset[LAND2]->texture));
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			sprite->setTextureRect( tileset[LAND2]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[LAND2]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		
+		double angle = GroundedAngle();
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+		sprite->setRotation( angle / PI * 180 );
+		
+		V2d oldv0 = ground->v0;
+		V2d oldv1 = ground->v1;
+
+		if( movingGround != NULL )
+		{
+			ground->v0 += movingGround->position;
+			ground->v1 += movingGround->position;
+		}
+
+		V2d pp = ground->GetPoint( edgeQuantity );
+
+		if( movingGround != NULL )
+		{
+			ground->v0 = oldv0;
+			ground->v1 = oldv1;
+		}
+
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			sprite->setPosition( pp.x + offsetX, pp.y );
+		else
+			sprite->setPosition( pp.x, pp.y );
+		break;
+		}
+	case WALLCLING:
+		{
+		sprite->setTexture( *(tileset[WALLCLING]->texture));
+		if( facingRight )
+		{
+			sprite->setTextureRect( tileset[WALLCLING]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[WALLCLING]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		sprite->setRotation( 0 );
+		break;
+		}
+	case WALLJUMP:
+		{
+			sprite->setTexture( *(tileset[WALLJUMP]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[WALLJUMP]->GetSubRect( frame / 2 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[WALLJUMP]->GetSubRect( frame / 2 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case SLIDE:
+		{
+		sprite->setTexture( *(tileset[SLIDE]->texture));
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			sprite->setTextureRect( tileset[SLIDE]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[SLIDE]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+
+		double angle = GroundedAngle();
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+		sprite->setRotation( angle / PI * 180 );
+		
+		V2d oldv0 = ground->v0;
+		V2d oldv1 = ground->v1;
+
+		if( movingGround != NULL )
+		{
+			ground->v0 += movingGround->position;
+			ground->v1 += movingGround->position;
+		}
+
+		V2d pp = ground->GetPoint( edgeQuantity );
+
+		if( movingGround != NULL )
+		{
+			ground->v0 = oldv0;
+			ground->v1 = oldv1;
+		}
+
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+		break;
+		}
+	case STANDN:
+		{
+			int startFrame = 1;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 4;
+
+			sprite->setTexture( *(tileset[STANDN]->texture));
+
+			//Vector2i offset( 24, -16 );
+			Vector2i offset( 24, 0 );
+
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 4 ) );
+
+				if( showSword1 )
+					standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 4 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+				
+				if( showSword1  )
+				{
+					sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 4 - startFrame );
+					standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
+
+				
+			}
+
+			
+			V2d trueNormal;
+			double angle = GroundedAngleAttack( trueNormal );
+
+			if( showSword1 )
+			{
+				standingNSword1.setOrigin( standingNSword1.getLocalBounds().width / 2, standingNSword1.getLocalBounds().height);
+				standingNSword1.setRotation( angle / PI * 180 );
+
+			
+				//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			//V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
+			//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			standingNSword1.setPosition( pos.x, pos.y );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword1 = showSword1;
+				p.swordSprite1 = standingNSword1;
+			}
+
+			break;
+		}
+	case STANDD:
+		{
+			int startFrame = 2;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 7;
+
+
+			sprite->setTexture( *(tileset[STANDD]->texture));
+
+			Vector2i offset( 24, 0 );
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
+
+				if( showSword1 )
+					standingDSword1.setTextureRect( ts_standingDSword1->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STANDD]->GetSubRect( frame / 2 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1  )
+				{
+					sf::IntRect irSword = ts_standingDSword1->GetSubRect( frame / 2 - startFrame );
+					standingDSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
+			}
+			
+			V2d trueNormal;
+			double angle = GroundedAngleAttack( trueNormal );
+
+			if( showSword1 )
+			{
+				standingDSword1.setOrigin( standingDSword1.getLocalBounds().width / 2, standingDSword1.getLocalBounds().height);
+				standingDSword1.setRotation( angle / PI * 180 );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			standingDSword1.setPosition( pos.x, pos.y );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword1 = showSword1;
+				p.swordSprite1 = standingDSword1;
+			}
+
+			break;
+		}
+	case STANDU:
+		{
+			int startFrame = 1;
+			showSword1 = frame >= startFrame && frame <= 18;
+
+
+			sprite->setTexture( *(tileset[STANDU]->texture));
+
+			Vector2i offset( 0, 32 );
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STANDU]->GetSubRect( frame ) );
+
+				if( showSword1 )
+					standingUSword1.setTextureRect( ts_standingUSword1->GetSubRect( frame - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STANDU]->GetSubRect( frame );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1  )
+				{
+					sf::IntRect irSword = ts_standingUSword1->GetSubRect( frame - startFrame );
+					standingUSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
+			}
+			
+			V2d trueNormal;
+			double angle = GroundedAngleAttack( trueNormal );
+
+			if( showSword1 )
+			{
+				standingUSword1.setOrigin( standingUSword1.getLocalBounds().width / 2, standingUSword1.getLocalBounds().height);
+				standingUSword1.setRotation( angle / PI * 180 );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			standingUSword1.setPosition( pos.x, pos.y );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword1 = showSword1;
+				p.swordSprite1 = standingUSword1;
+			}
+			break;
+		}
+	case FAIR:
+		{
+			int startFrame = 1;
+			showSword1 = frame >= startFrame && frame / 2 <= 9;
+			sprite->setTexture( *(tileset[FAIR]->texture));
+
+			Vector2i offset( 32, -16 );
+
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
+				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
+				if( showSword1 )
+					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
+					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
+				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				
+				if( showSword1  )
+				{
+					offset.x = -offset.x;
+
+					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
+					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
+					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+					
+			}
+
+			if( showSword1 )
+			{
+				fairSword1.setOrigin( fairSword1.getLocalBounds().width / 2, fairSword1.getLocalBounds().height / 2 );
+				fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword1 = showSword1;
+				p.swordSprite1 = fairSword1;
+			}
+			
+			break;
+		}
+	case DAIR:
+		{
+			int startFrame = 0;
+			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
+
+			Vector2i offset( 0, 40 );
+
+			sprite->setTexture( *(tileset[DAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[DAIR]->GetSubRect( frame / 2 ) );
+
+				if( showSword1 )
+					dairSword1.setTextureRect( ts_dairSword1->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				//offset.x = -offset.x;
+
+				sf::IntRect ir = tileset[DAIR]->GetSubRect( frame / 2 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1  )
+				{
+					//offset.x = -offset.x;
+
+					sf::IntRect irSword = ts_dairSword1->GetSubRect( frame / 2 - startFrame );
+					dairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+			}
+
+			if( showSword1 )
+			{
+				dairSword1.setOrigin( dairSword1.getLocalBounds().width / 2, dairSword1.getLocalBounds().height / 2 );
+				dairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case UAIR:
+		{
+			int startFrame = 0;
+			showSword1 = frame / 3 >= startFrame && frame / 3 <= 5;
+			sprite->setTexture( *(tileset[UAIR]->texture));
+
+			Vector2i offset( 8, -24 );
+
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[UAIR]->GetSubRect( frame / 3 ) );
+
+				if( showSword1 )
+					uairSword1.setTextureRect( ts_uairSword1->GetSubRect( frame / 3 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword1 )
+				{
+					//offset.x = -offset.x;
+
+					sf::IntRect irSword = ts_uairSword1->GetSubRect( frame / 3 - startFrame );
+					uairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+
+				offset.x = -offset.x;
+			}
+
+			if( showSword1 )
+			{
+				uairSword1.setOrigin( uairSword1.getLocalBounds().width / 2, uairSword1.getLocalBounds().height / 2 );
+				uairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case DOUBLE:
+		{
+	
+			int fr = frame;
+			if ( frame > 27)
+			{
+				fr = 27;
+			}
+			sprite->setTexture( *(tileset[DOUBLE]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[DOUBLE]->GetSubRect( fr / 1 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[DOUBLE]->GetSubRect( fr / 1 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case DASH:
+		{
+			
+			if( frame == 0 )//&& currInput.B && !prevInput.B )
+			{
+				dashStartSound.stop();
+				//if( slowMultiple != 1)
+				//	dashStartSound.setPitch( .2 );
+				//else
+				//	dashStartSound.setPitch( 1 );
+				//cout << "playing dash sound" << endl;
+				dashStartSound.play();
+				//dashStartSound.setLoop( true );
+			}
+
+			//if( slowMultiple != 1)
+			//		dashStartSound.setPitch( .2 );
+			//	else
+			//		dashStartSound.setPitch( 1 );
+
+			sprite->setTexture( *(tileset[DASH]->texture));
+
+			//3-8 is the cycle
+			sf::IntRect ir;
+			int checkFrame;
+			if( frame / 2 < 3 )
+			{
+				checkFrame = frame / 2;
+				ir = tileset[DASH]->GetSubRect( checkFrame );
+			}
+			else if( frame < actionLength[DASH] - 6 )
+			{
+				checkFrame = 3 + ( (frame/2 - 3) % 6 );
+				ir = tileset[DASH]->GetSubRect( checkFrame );
+			}
+			else
+			{
+				checkFrame = 9 + (6 - ( actionLength[DASH] - frame )) / 2;
+				ir = tileset[DASH]->GetSubRect( checkFrame );
+			}
+		//	cout << "checkframe: " << checkFrame << endl;
+
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			
+			double angle = GroundedAngle();
+			
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			if( frame == 0 )
+			{
+				owner->ActivateEffect( ts_fx_dashStart, 
+					pp + gn * 16.0, false, angle, 7, 3, facingRight );
+			}
+			else if( frame % 5 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_dashRepeat, 
+					pp + gn * 8.0, false, angle, 12, 3, facingRight );
+			}
+
+			break;
+		}
+	case GRINDBALL:
+		{
+			assert( grindEdge != NULL );
+			sprite->setTexture( *(tileset[GRINDBALL]->texture));
+
+			sf::IntRect ir;
+			
+			ir = tileset[GRINDBALL]->GetSubRect( 0 );
+			
+			grindActionCurrent += grindSpeed / 20;
+			while( grindActionCurrent >= grindActionLength )
+			{
+				grindActionCurrent -= grindActionLength;
+			}
+			while( grindActionCurrent < 0 )
+			{
+				grindActionCurrent += grindActionLength;
+			}
+
+			int grindActionInt = grindActionCurrent;
+
+
+
+
+			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( grindActionInt * 5 % grindActionLength   ) );
+			gstriblue.setTextureRect( tsgstriblue->GetSubRect( grindActionInt * 5 % grindActionLength ) );
+			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt ) );
+			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( grindActionInt * 5 % grindActionLength ) );
+			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ));
+			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
+			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt ) );
+
+			
+
+			if( facingRight )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			double angle = 0;
+
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+
+			}
+			else
+			{
+				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		//	sprite->setRotation( angle / PI * 180 );
+			sprite->setRotation( 0 );
+			
+			V2d oldv0 = grindEdge->v0;
+			V2d oldv1 = grindEdge->v1;
+
+
+			if( grindMovingTerrain != NULL )
+			{
+				grindEdge->v0 += grindMovingTerrain->position;
+				grindEdge->v1 += grindMovingTerrain->position;
+			}
+
+			V2d pp = grindEdge->GetPoint( grindQuantity );
+
+			if( grindMovingTerrain != NULL )
+			{
+				grindEdge->v0 = oldv0;
+				grindEdge->v1 = oldv1;
+			}
+			
+			sprite->setPosition( pp.x, pp.y );
+
+
+			gsdodeca.setOrigin( gsdodeca.getLocalBounds().width / 2, gsdodeca.getLocalBounds().height / 2);
+			gstriblue.setOrigin( gstriblue.getLocalBounds().width / 2, gstriblue.getLocalBounds().height / 2);
+			gstricym.setOrigin( gstricym.getLocalBounds().width / 2, gstricym.getLocalBounds().height / 2);
+			gstrigreen.setOrigin( gstrigreen.getLocalBounds().width / 2, gstrigreen.getLocalBounds().height / 2);
+			gstrioran.setOrigin( gstrioran.getLocalBounds().width / 2, gstrioran.getLocalBounds().height / 2);
+			gstripurp.setOrigin( gstripurp.getLocalBounds().width / 2, gstripurp.getLocalBounds().height / 2);
+			gstrirgb.setOrigin( gstrirgb.getLocalBounds().width / 2, gstrirgb.getLocalBounds().height / 2);
+
+
+			gsdodeca.setPosition( pp.x, pp.y );
+			gstriblue.setPosition( pp.x, pp.y );
+			gstricym.setPosition( pp.x, pp.y );
+			gstrigreen.setPosition( pp.x, pp.y );
+			gstrioran.setPosition( pp.x, pp.y );
+			gstripurp.setPosition( pp.x, pp.y );
+			gstrirgb.setPosition( pp.x, pp.y );
+
+			break;
+		}
+	case STEEPSLIDE:
+		{
+			sprite->setTexture( *(tileset[STEEPSLIDE]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STEEPSLIDE]->GetSubRect( 0 ) );
+			//	sprite->setOrigin( sprite->getLocalBounds().width - 10, sprite->getLocalBounds().height);
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STEEPSLIDE]->GetSubRect( 0 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			//	sprite->setOrigin( 10, sprite->getLocalBounds().height);
+			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+					angle = PI;
+				//this should never happen
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			sprite->setPosition( pp.x, pp.y );
+			//if( angle == 0 )
+			//	sprite->setPosition( pp.x + offsetX, pp.y );
+			//else
+			//	sprite->setPosition( pp.x, pp.y );
+			break;
+		}
+	case AIRDASH:
+		{
+			if( frame % 1 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_airdash, V2d( position.x, position.y + 25 ), false, 0, 10, 4, facingRight );
+			}
+
+
+			sprite->setTexture( *(tileset[AIRDASH]->texture));
+
+			int f = 0;
+			if( currInput.LUp() )
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 2;
+				}
+				else
+				{
+					f = 1;
+				}
+			}
+			else if( currInput.LDown() )
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 4;
+				}
+				else
+				{
+					f = 5;
+				}
+			}
+			else
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 3;
+				}
+				else
+				{
+					f = 0;
+				}
+			}
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( f ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( f );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case STEEPCLIMB:
+		{
+			sprite->setTexture( *(tileset[STEEPCLIMB]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STEEPCLIMB]->GetSubRect( frame / 4 ) );
+			//	sprite->setOrigin( sprite->getLocalBounds().width - 10, sprite->getLocalBounds().height);
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STEEPCLIMB]->GetSubRect( frame / 4 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			//	sprite->setOrigin( 10, sprite->getLocalBounds().height);
+			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+					angle = PI;
+				//this should never happen
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			sprite->setPosition( pp.x, pp.y );
+			//if( angle == 0 )
+			//	sprite->setPosition( pp.x + offsetX, pp.y );
+			//else
+			//	sprite->setPosition( pp.x, pp.y );
+			break;
+		}
+	case AIRHITSTUN:
+		{
+			if( frame == 0 )
+			{
+				playerHitSound.stop();
+				playerHitSound.play();
+			}
+
+			sprite->setTexture( *(tileset[AIRHITSTUN]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[AIRHITSTUN]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[AIRHITSTUN]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case GROUNDHITSTUN:
+		{
+			sprite->setTexture( *(tileset[GROUNDHITSTUN]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[GROUNDHITSTUN]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[GROUNDHITSTUN]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			
+			double angle = GroundedAngle();
+
+		
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+			break;
+		}
+	case WIREHOLD:
+		{
+			sprite->setTexture( *(tileset[WIREHOLD]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[WIREHOLD]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[WIREHOLD]->GetSubRect( 0 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case BOUNCEAIR:
+		{
+			int bounceFrame = 0;
+			if( oldBounceEdge == NULL )
+			{
+				bounceFrame = 6;
+			}
+			else if( framesSinceBounce < 10 )
+			{
+				V2d bn = oldBounceNorm;//oldBounceEdge->Normal();
+				if( bn.y <= 0 && bn.y > -steepThresh )
+				{
+					bounceFrame = 3;
+					if( facingRight )
+					{
+						//facingRight = false;
+
+					}
+				}
+				else if( bn.y >= 0 && -bn.y > -steepThresh )
+				{
+					
+					bounceFrame = 3;
+				}
+				else if( bn.y == 0 )
+				{
+					bounceFrame = 3;
+				}
+				else if( bn.y < 0 )
+				{
+					bounceFrame = 1;
+				}
+				else if( bn.y > 0 )
+				{
+					bounceFrame = 5;
+				}
+			}
+			else
+			{
+				bounceFrame = 6;
+			}
+			
+			
+
+			sprite->setTexture( *(tileset[BOUNCEAIR]->texture));
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[BOUNCEAIR]->GetSubRect( bounceFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[BOUNCEAIR]->GetSubRect( bounceFrame );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case BOUNCEGROUND:
+		{
+			int bounceFrame = 0;
+			V2d bn = bounceNorm;//bounceEdge->Normal();
+
+			if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
+					bounceFrame = 0;
+				else
+					bounceFrame = 2;
+				//facingRight = !facingRight;
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
+					bounceFrame = 4;
+				else
+					bounceFrame = 2;
+				//facingRight = !facingRight;
+			}
+			else if( bn.y == 0 )
+			{
+				bounceFrame = 2;
+			//	facingRight = !facingRight;
+			}
+			else if( bn.y < 0 )
+			{
+				bounceFrame = 0;
+			}
+			else if( bn.y > 0 )
+			{
+				bounceFrame = 4;
+			}
+
+
+
+			
+			sprite->setTexture( *(tileset[BOUNCEGROUND]->texture));
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[BOUNCEGROUND]->GetSubRect( bounceFrame  ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[BOUNCEGROUND]->GetSubRect( bounceFrame  );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			//bool extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
+			//	|| ( offsetX > 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+						angle = PI;
+			}
+			else
+			{
+				angle = atan2( bn.x, -bn.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
+			if( abs( bn.x ) >= wallThresh )
+			{
+				if( bn.x > 0 )
+				{
+					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+				}
+			}
+			else if( bn.y <= 0 && bn.y > -steepThresh )
+			{
+				if( bounceFrame == 0 )
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
+				}
+				else
+				{
+					if( facingRight )
+					{
+						
+						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+					}
+					else
+					{
+						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+						
+					}
+					
+					//sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
+				}
+			}
+			else if( bn.y >= 0 && -bn.y > -steepThresh )
+			{
+				if( facingRight )//bounceFrame == 4 )
+				{
+					//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+				}	
+			}
+			else if( bn.y < 0 )
+			{
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
+			}
+			else if( bn.y > 0 )
+			{
+				//cout << "this one" << endl;
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
+			}
+
+			
+			sprite->setPosition( position.x, position.y );
+		//		sprite->setRotation( angle / PI * 180 );
+
+			V2d oldv0 = bounceEdge->v0;
+			V2d oldv1 = bounceEdge->v1;
+
+			if( bounceMovingTerrain != NULL )
+			{
+				bounceEdge->v0 += bounceMovingTerrain->position;
+				bounceEdge->v1 += bounceMovingTerrain->position;
+			}
+
+			V2d pp = bounceEdge->GetPoint( bounceQuant );
+
+			if( bounceMovingTerrain != NULL )
+			{
+				bounceEdge->v0 = oldv0;
+				bounceEdge->v1 = oldv1;
+			}
+				
+				//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				//	sprite->setPosition( pp.x + offsetX, pp.y );
+				//else
+				//	sprite->setPosition( pp.x, pp.y );
+
+			break;
+		}
+	case BOUNCEGROUNDEDWALL:
+		{
+			//if( frame == 0 && slowCounter == 1 )
+			//{
+				
+			//}
+
+			sprite->setTexture( *(tileset[BOUNCEGROUNDEDWALL]->texture));
+
+			sf::IntRect ir;
+			if( frame < 6 )
+			{
+				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 0 );
+			}
+			else if( frame < 20 )
+			{
+				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 1 );
+			}
+			else
+			{
+				ir = tileset[BOUNCEGROUNDEDWALL]->GetSubRect( 2 );
+			}
+			
+
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			double angle = 0;
+			if( !approxEquals( abs(offsetX), b.rw ) )
+			{
+				if( reversed )
+					angle = PI;
+			}
+			else
+			{
+				angle = atan2( gn.x, -gn.y );
+			}
+
+			if( frame < 6 )
+			{
+				if( ( facingRight && !reversed ) || (!facingRight && reversed ) )
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width / 2 - 3, sprite->getLocalBounds().height);
+				}
+				else
+				{
+					sprite->setOrigin( sprite->getLocalBounds().width / 2 + 3, sprite->getLocalBounds().height);
+				}
+				
+				angle = 0;
+				if( reversed )
+					angle = PI;
+			}
+			else
+			{
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			}
+			
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			break;
+		}
+	case DEATH:
+		{
+		
+		}
+	}
+	
+	if( bounceFlameOn )
+	{
+		if( ground == NULL )
+		{
+			bounceFlameSprite.setTexture( *ts_airBounceFlame->texture );
+			bounceFlameSprite.setTextureRect( ts_airBounceFlame->GetSubRect( airBounceFrame / 3 ) );
+
+			//double angle = 0;
+			//angle = atan2( velocity.y, velocity.x );
+
+			if( velocity.x < 0  )
+			{
+				sf::IntRect r = bounceFlameSprite.getTextureRect();
+				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+			}
+
+			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height / 2 );
+			bounceFlameSprite.setPosition( sprite->getPosition() );
+			
+			//bounceFlameSprite.setRotation( angle / PI * 180 );
+			bounceFlameSprite.setRotation( 0 );
+		}
+		else
+		{
+			bounceFlameSprite.setTexture( *ts_runBounceFlame->texture );
+			bounceFlameSprite.setTextureRect( ts_runBounceFlame->GetSubRect( runBounceFrame / 3 ) );
+			if( ( groundSpeed < 0 && !reversed ) || ( groundSpeed > 0 && reversed ) )
+			{
+				sf::IntRect r = bounceFlameSprite.getTextureRect();
+				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+			}
+			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height );
+			bounceFlameSprite.setPosition( sprite->getPosition() );
+			bounceFlameSprite.setRotation( sprite->getRotation() );
+			
+		}
+	}
 }
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

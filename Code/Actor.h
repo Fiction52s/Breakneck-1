@@ -55,7 +55,7 @@ struct Actor : QuadTreeCollider,
 	};
 
 	Actor( GameSession *owner );
-	
+	void UpdateSprite();
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -169,9 +169,11 @@ struct Actor : QuadTreeCollider,
 	bool test;
 	
 	double offSlopeByWallThresh;
-	const static int MAX_MOTION_GHOSTS = 2;
+	const static int MAX_MOTION_GHOSTS = 4;
 	sf::Sprite motionGhosts[MAX_MOTION_GHOSTS];
 	int numMotionGhosts;
+	int motionGhostSpacing;
+	int ghostSpacingCounter;
 	float percentCloneChanged;
 	float percentCloneRate;
 	bool changingClone;
