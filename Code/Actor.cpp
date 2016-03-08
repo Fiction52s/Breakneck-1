@@ -10916,6 +10916,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( (*it).Intersects( c->box ) )
 					{
 						currentCheckPoint = c;
+						c->hadBlueKey = hasBlueKey;
 						owner->activatedZoneList = NULL;
 						owner->inactiveEnemyList = NULL;
 						owner->unlockedGateList = NULL;
@@ -10930,6 +10931,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			if( hurtBody.Intersects( c->box ) )
 			{
 				currentCheckPoint = c;
+				c->hadBlueKey = hasBlueKey;
 				owner->inactiveEnemyList = NULL;
 				owner->unlockedGateList = NULL;
 				owner->activatedZoneList = NULL;

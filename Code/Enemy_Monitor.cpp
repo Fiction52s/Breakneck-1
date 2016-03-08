@@ -127,12 +127,12 @@ void Monitor::UpdatePostPhysics()
 
 void Monitor::Draw( sf::RenderTarget *target)
 {
-	sf::CircleShape cs;
+	/*sf::CircleShape cs;
 	cs.setRadius( 40 );
 	cs.setFillColor( Color( 0, 255, 0, 100 ) );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
-	target->draw( cs );
+	target->draw( cs );*/
 
 	target->draw( sprite );
 }

@@ -151,10 +151,226 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 		if( ground == e )
 			return;
 
+		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+		{
+			Gate *g = (Gate*)ground->info;
+			Edge *edgeA = g->edgeA;
+			Edge *edgeB = g->edgeB;
+			if( ground == g->edgeA )
+			{
+				if( e == edgeB->edge0 
+					|| e == edgeB->edge1
+					|| e == edgeB )
+				{
+					return;
+				}
+
+				
+			}
+			else if( ground == g->edgeB )
+			{
+				if( e == edgeA->edge0 
+					|| e == edgeA->edge1
+					|| e == edgeA )
+				{
+					return;
+				}
+			}
+		}
+		else if( ground != NULL )
+		{
+			if( groundSpeed > 0 )
+			{
+				if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->edge0->info;
+					Edge *e0 = ground->edge0;
+					if( e0 == g->edgeA )
+					{
+						Edge *edgeB = g->edgeB;
+						if( e == edgeB->edge0 
+							|| e == edgeB->edge1
+							|| e == edgeB )
+						{
+							return;
+						}
+					}
+					else if( e0 == g->edgeB )
+					{
+						Edge *edgeA = g->edgeA;
+						if( e == edgeA->edge0 
+							|| e == edgeA->edge1
+							|| e == edgeA )
+						{
+							return;
+						}
+					}
+				}
+			}
+			else if( groundSpeed < 0 )
+			{
+				if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)ground->edge1->info;
+					Edge *e1 = ground->edge1;
+					if( e1 == g->edgeA )
+					{
+						Edge *edgeB = g->edgeB;
+						if( e == edgeB->edge0 
+							|| e == edgeB->edge1
+							|| e == edgeB )
+						{
+							return;
+						}
+					}
+					else if( e1 == g->edgeB )
+					{
+						Edge *edgeA = g->edgeA;
+						if( e == edgeA->edge0 
+							|| e == edgeA->edge1
+							|| e == edgeA )
+						{
+							return;
+						}
+					}
+				}
+			}
+		}
+
 		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+
+
+
 
 		if( c != NULL )
 		{
+			double len0 = length( c->position - e->v0 );
+			double len1 = length( c->position - e->v1 );
+
+			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
+			{
+				V2d pVec = normalize( position - e->v0 );
+				double pAngle = atan2( -pVec.y, pVec.x );
+
+				if( pAngle < 0 )
+				{
+					pAngle += 2 * PI;
+				}
+
+				Edge *e0 = e->edge0;
+				Gate *g = (Gate*)e0->info;
+
+				V2d startVec = normalize( e0->v0 - e->v0 );
+				V2d endVec = normalize( e->v1 - e->v0 );
+
+				double startAngle = atan2( -startVec.y, startVec.x );
+				if( startAngle < 0 )
+				{
+					startAngle += 2 * PI;
+				}
+				double endAngle = atan2( -endVec.y, endVec.x );
+				if( endAngle < 0 )
+				{
+					endAngle += 2 * PI;
+				}
+
+				double temp = startAngle;
+				startAngle = endAngle;
+				endAngle = temp;
+
+				if( endAngle < startAngle )
+				{
+					if( pAngle >= endAngle || pAngle <= startAngle )
+					{
+					
+					}
+					else
+					{
+						return;
+					}
+				}
+				else
+				{
+					if( pAngle >= startAngle && pAngle <= endAngle )
+					{
+					}
+					else
+					{
+						return;
+					}
+				}
+			
+
+			}
+			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
+			{
+				V2d pVec = normalize( position - e->v1 );
+				double pAngle = atan2( -pVec.y, pVec.x );
+
+				if( pAngle < 0 )
+				{
+					pAngle += 2 * PI;
+				}
+
+				Edge *e1 = e->edge1;
+				Gate *g = (Gate*)e1->info;
+
+				V2d startVec = normalize( e->v0 - e->v1 );
+				V2d endVec = normalize( e1->v1 - e->v1 );
+
+				double startAngle = atan2( -startVec.y, startVec.x );
+				if( startAngle < 0 )
+				{
+					startAngle += 2 * PI;
+				}
+				double endAngle = atan2( -endVec.y, endVec.x );
+				if( endAngle < 0 )
+				{
+					endAngle += 2 * PI;
+				}
+			
+				double temp = startAngle;
+				startAngle = endAngle;
+				endAngle = temp;
+
+				//double temp = startAngle;
+				//startAngle = endAngle;
+				//endAngle = temp;
+
+				if( endAngle < startAngle )
+				{
+					/*if( pAngle > startAngle && pAngle < endAngle )
+					{
+						return;
+					}*/
+
+
+					if( pAngle >= endAngle || pAngle <= startAngle )
+					{
+					}
+					else
+					{
+						return;
+					}
+				}
+				else
+				{
+					/*if( pAngle < startAngle || pAngle > endAngle )
+					{
+						cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;
+					}*/
+				
+					if( pAngle >= startAngle && pAngle <= endAngle )
+					{
+					}
+					else
+					{	
+						return;
+					}
+				}
+			}
+
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 
@@ -931,7 +1147,7 @@ void Crawler::Draw(sf::RenderTarget *target )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
-			cs.setRadius( 40 );
+			cs.setRadius( 55 );
 			cs.setFillColor( COLOR_BLUE );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );

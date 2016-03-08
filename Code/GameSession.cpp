@@ -4744,10 +4744,19 @@ void GameSession::RespawnPlayer()
 	if( player.currentCheckPoint == NULL )
 	{
 		player.position = originalPos;
+
+		//actually keys should be set based on which ones you had at the last checkpoint
+		player.hasRedKey = false;
+		player.hasGreenKey = false;
+		player.hasBlueKey = false;
 	}
 	else
 	{
 		player.position = player.currentCheckPoint->pos;
+
+		player.hasRedKey = false;
+		player.hasGreenKey = false;
+		player.hasBlueKey = player.currentCheckPoint->hadBlueKey;
 	}
 	player.gateTouched = NULL;
 	player.action = player.JUMP;
@@ -4780,10 +4789,7 @@ void GameSession::RespawnPlayer()
 	player.flashFrames = 0;
 	
 	
-	//actually keys should be set based on which ones you had at the last checkpoint
-	player.hasRedKey = false;
-	player.hasGreenKey = false;
-	player.hasBlueKey = false;
+	
 	
 
 	player.hasDoubleJump = true;
@@ -5081,10 +5087,17 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 				double realHeight0 = in;//sub.height;
 				double realHeight1 = in;//sub.height;
 				
+				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
+				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
+
+				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
+				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
+
+				//if( d0 <= 0
 
 				rcEdge = NULL;
 				rayIgnoreEdge = te;
-				rayStart = te->v0 + startAlong * along;
+				rayStart = te->v0 + ( startAlong ) * along;
 				rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
 				RayCast( this, terrainTree->startNode, rayStart, rayEnd );
 
@@ -5094,11 +5107,10 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 				{
 					currStartInner = rcEdge->GetPoint( rcQuantity );
 					realHeight0 = length( currStartInner - currStartOuter );
-					//te->v0 + startAlong * along - rcQuantity * other; //rcEdge->GetPoint( rcQuantity );//te->v0 - other * realHeight
 				}
 
 				rcEdge = NULL;
-				rayStart = te->v0 + endAlong * along;
+				rayStart = te->v0 + ( endAlong ) * along;
 				rayEnd = currEndInner;
 				RayCast( this, terrainTree->startNode, rayStart, rayEnd );
 
@@ -5111,11 +5123,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 
 				
 				//RayCast( this, terrainTree, position, V2d( position.x - 100, position.y ) );
-				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
-				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
-
-				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
-				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
+				
 				//if( i == 0 && d0 <= 0 )
 				//{
 				//	Edge *prev = te->edge0;
@@ -5327,6 +5335,23 @@ void GameSession::Pause( int frames )
 
 void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
+	double d0 = dot(normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
+		normalize( rayIgnoreEdge->edge0->v1 - rayIgnoreEdge->edge0->v0 ));
+	double c0 = cross( normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
+		normalize( rayIgnoreEdge->edge1->v0 - rayIgnoreEdge->edge0->v0 ) );
+
+
+	double d1 = dot( normalize( rayIgnoreEdge->edge1->v1 - rayIgnoreEdge->edge1->v0 ), 
+		normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ) );
+	double c1 = cross( normalize( rayIgnoreEdge->edge1->v1 - rayIgnoreEdge->edge1->v0 ), 
+		normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ) );
+	if( edge == rayIgnoreEdge->edge1 && ( d1 >= 0  || c1 > 0 ) )
+		return;
+	if( edge == rayIgnoreEdge->edge0 && ( d0 >= 0 || c0 > 0 ) )
+	{
+		return;
+	}
+
 	if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
 		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
 	{
@@ -6799,6 +6824,8 @@ void GameSession::LockGate( Gate *g )
 Critical::Critical( V2d &pointA, V2d &pointB )
 	:bar( sf::Quads, 4 )
 {
+	hadBlueKey = false;
+
 	anchorA = pointA;
 	anchorB = pointB;
 	

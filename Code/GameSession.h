@@ -64,6 +64,8 @@ struct Critical : QuadTreeEntrant
 	CollisionBox box;
 	bool active;
 
+	bool hadBlueKey;
+
 	Critical *next;
 	Critical *prev;
 };
