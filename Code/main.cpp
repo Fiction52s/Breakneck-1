@@ -758,7 +758,7 @@ int main()
 						case 4:
 							CustomMapsOption( ls );
 							//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-							//gs->Run( "Maps/1-5.brknk" );
+							//gs->Run( "Maps/1-6.brknk" );
 							//ExitOption();
 							break;
 						}

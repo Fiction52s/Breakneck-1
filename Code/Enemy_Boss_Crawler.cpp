@@ -565,7 +565,7 @@ void BossCrawler::UpdatePrePhysics()
 		if( hitsCounter == hitsBeforeHurt )
 		{
 			hitsCounter = 0;
-			invincibleFrames = 180;
+			invincibleFrames = 30;
 		}
 		//invincibleFrames = 10;
 		//cout << "health now: " << health << endl;
@@ -580,7 +580,7 @@ void BossCrawler::UpdatePrePhysics()
 	}
 
 
-	int standLength = 20;
+	int standLength = 40;
 	int shootLength = 30;
 	int lungeLength = 20;
 	int lungeLandLength = 20;
