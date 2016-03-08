@@ -107,7 +107,11 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	double size = max( width, height );
 
 	deathPartingSpeed = .4;
-	deathVector = V2d( -1, -1 );
+
+	Transform t;
+	t.rotate( angle / PI * 180 );
+	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
+	deathVector = V2d( newPoint.x, newPoint.y );
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
@@ -670,6 +674,7 @@ void BasicTurret::UpdateSprite()
 			botDeathSprite.getLocalBounds().height / 2  );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
+		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
 		topDeathSprite.setTextureRect( ts->GetSubRect( 4 ) );
@@ -677,6 +682,7 @@ void BasicTurret::UpdateSprite()
 			topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setRotation( sprite.getRotation() );
 	}
 }
 

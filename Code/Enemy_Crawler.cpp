@@ -28,13 +28,15 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	deathFrame = 0;
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
+	attackFrame = -1;
+	attackMult = 10;
 
 	double height = 128;
 	double width = 128;
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	roll = false;
@@ -85,18 +87,25 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	startGround = ground;
 	startQuant = edgeQuantity;
 	frame = 0;
-	
+
+	deathPartingSpeed = .4;
+
+	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	bloodSprite.setTexture( *ts_testBlood->texture );
 }
 
 void Crawler::ResetEnemy()
 {
 	health = initHealth;
-
+	attackFrame = -1;
+	lastReverser = false;
 	roll = false;
 	ground = startGround;
 	edgeQuantity = startQuant;
 	V2d gPoint = ground->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
+	frame = 0;
+	position = gPoint + ground->Normal() * 64.0 / 2.0;
 
 	V2d gn = ground->Normal();
 	if( gn.x > 0 )
@@ -108,14 +117,14 @@ void Crawler::ResetEnemy()
 	else if( gn.y < 0 )
 		offset.y = -physBody.rh;
 
-	position = gPoint + offset;
+	//position = gPoint + offset;
 
 	deathFrame = 0;
 	dead = false;
 
 	//----update the sprite
 	double angle = 0;
-	position = gPoint + gn * 32.0;
+	//position = gPoint + gn * 32.0;
 	angle = atan2( gn.x, -gn.y );
 		
 	//sprite.setTexture( *ts_walk->texture );
@@ -244,6 +253,9 @@ void Crawler::UpdateHitboxes()
 
 void Crawler::UpdatePrePhysics()
 {
+	if( dead )
+		return;
+
 	if( !dead && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
@@ -255,25 +267,42 @@ void Crawler::UpdatePrePhysics()
 		{
 			AttemptSpawnMonitor();
 			dead = true;
+
+			
 		}
 
 		receivedHit = NULL;
 	}
 
-
-	if( !roll && frame == 16 * crawlAnimationFactor )
+	if( attackFrame == 2 * attackMult )
 	{
-		frame = 0;
+		attackFrame = -1;
 	}
+	//if( attacking )
+	//{
+	//}
+	//else
+	//{
 
-	if ( roll && frame == 10 * rollAnimationFactor )
-	{
-		frame = rollAnimationFactor * 2; 
-	}
+		if( !roll && frame == 16 * crawlAnimationFactor )
+		{
+			frame = 0;
+		}
+
+		if ( roll && frame == 10 * rollAnimationFactor )
+		{
+			frame = rollAnimationFactor * 2; 
+		}
+	//}
 }
 
 void Crawler::UpdatePhysics()
 {
+	if( dead )
+	{
+		return;
+	}
+
 	double movement = 0;
 	double maxMovement = min( physBody.rw, physBody.rh );
 	movement = groundSpeed;
@@ -825,6 +854,12 @@ void Crawler::PhysicsResponse()
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 
+		//gotta get the correct angle upon death
+		Transform t;
+		t.rotate( angle / PI * 180 );
+		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
+		deathVector = V2d( newPoint.x, newPoint.y );
+
 		queryMode = "reverse";
 
 		//physbody is a circle
@@ -838,27 +873,34 @@ void Crawler::UpdatePostPhysics()
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
+	if( deathFrame == 30 )
+	{
+		owner->RemoveEnemy( this );
+		return;
+	}
+
+	UpdateSprite();
+
+
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
 		slowCounter = 1;
-	
+		
 		if( dead )
 		{
 			deathFrame++;
+		}
+		else
+		{
+			if( attackFrame >= 0 )
+				++attackFrame;
 		}
 	}
 	else
 	{
 		slowCounter++;
 	}
-
-	
-	if( deathFrame == 60 )
-	{
-		owner->RemoveEnemy( this );
-	}
-
 	//need to calculate frames in here!!!!
 
 	//sprite.setPosition( position );
@@ -897,6 +939,22 @@ void Crawler::Draw(sf::RenderTarget *target )
 		}
 		target->draw( sprite );
 	}
+	else
+	{
+		target->draw( botDeathSprite );
+
+		if( deathFrame / 3 < 6 )
+		{
+			
+			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
+			bloodSprite.setPosition( position.x, position.y );
+			bloodSprite.setScale( 2, 2 );
+			target->draw( bloodSprite );
+		}
+		
+		target->draw( topDeathSprite );
+	}
 }
 
 void Crawler::DrawMinimap( sf::RenderTarget *target )
@@ -919,7 +977,7 @@ bool Crawler::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( player.invincibleFrames == 0 && hitBody.Intersects( player.hurtBody ) )
 	{
 		if( player.position.x < position.x )
 		{
@@ -935,6 +993,7 @@ bool Crawler::IHitPlayer()
 		{
 			//dont change it
 		}
+		attackFrame = 0;
 		player.ApplyHit( hitboxInfo );
 		return true;
 	}
@@ -1000,6 +1059,30 @@ bool Crawler::IHitPlayer()
 
 void Crawler::UpdateSprite()
 {
+	if( dead )
+	{
+		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 31 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
+		botDeathSprite.setRotation( sprite.getRotation() );
+
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 30 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setRotation( sprite.getRotation() );
+	}
+	else
+	{
+		if( attackFrame >= 0 )
+		{
+			sprite.setTextureRect( ts->GetSubRect( 28 + attackFrame / attackMult ) );
+		}
+	}
 }
 
 void Crawler::DebugDraw( RenderTarget *target )

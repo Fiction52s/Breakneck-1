@@ -81,7 +81,12 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
 
 	deathPartingSpeed = .4;
-	deathVector = V2d( 1, -1 );
+
+	Transform t;
+	t.rotate( angle / PI * 180 );
+	Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
+	deathVector = V2d( newPoint.x, newPoint.y );
+	//deathVector = V2d( 1, -1 );
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
@@ -359,12 +364,14 @@ void FootTrap::UpdateSprite()
 	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2  );
 	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + deathVector.y * deathPartingSpeed * deathFrame );
+	botDeathSprite.setRotation( sprite.getRotation() );
 
 	topDeathSprite.setTexture( *ts->texture );
 	topDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
 	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+	topDeathSprite.setRotation( sprite.getRotation() );
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 }
 

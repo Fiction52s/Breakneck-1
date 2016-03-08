@@ -254,6 +254,8 @@ struct Crawler : Enemy
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
 	
+	int attackFrame;
+	int attackMult;
 
 	double rollFactor;
 	Contact minContact;
@@ -266,14 +268,15 @@ struct Crawler : Enemy
 	sf::Vector2<double> offset;
 	int frame;
 	bool roll;
+
 	int deathFrame;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
+
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
