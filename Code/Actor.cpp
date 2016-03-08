@@ -154,7 +154,7 @@ Actor::Actor( GameSession *gs )
 		//setup hitboxes
 		{
 		//for( int j = 4; j < 10; ++j )
-		for( int j = 2*2; j < 8*2; ++j )
+		for( int j = 2*2; j < 7 *2; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
@@ -169,9 +169,9 @@ Actor::Actor( GameSession *gs )
 
 
 		cb.offset.x = 0;
-		cb.offset.y = -8;
+		cb.offset.y = -14;
 
-		for( int j = 0; j <= 5; ++j )
+		for( int j = 0; j <= 12; ++j )
 		{
 			uairHitboxes[j] = new list<CollisionBox>;
 			uairHitboxes[j]->push_back( cb );
@@ -185,9 +185,11 @@ Actor::Actor( GameSession *gs )
 		}
 
 
+		cb.rw = 64;
+		cb.rh = 64;
 		cb.offset.x = 0;
 		cb.offset.y = 32;
-		for( int j = 3; j <= 9; ++j )
+		for( int j = 2; j <= 9; ++j )
 		{
 			dairHitboxes[j] = new list<CollisionBox>;
 			dairHitboxes[j]->push_back( cb );

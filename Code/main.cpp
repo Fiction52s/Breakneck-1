@@ -727,7 +727,7 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::M )
 					{
-						WorldSelectMenu();
+						//WorldSelectMenu();
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
 					{
