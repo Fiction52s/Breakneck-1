@@ -148,7 +148,7 @@ struct Patroller : Enemy
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
+	//Tileset * ts_death;
 	//std::list<sf::Vector2i> path;
 	sf::Vector2i *path; //global
 	int pathLength;
