@@ -23,7 +23,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	
 	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
 
-	initHealth = 80 * 10;
+	initHealth = 60 * 8;
 	health = initHealth;
 
 	numBullets = 6;
@@ -55,7 +55,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	roll = false;
 
 
-	double size = max( width, height );
+	double size = max( width * 5, height * 5 );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 	//spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
 
@@ -141,7 +141,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 void BossCrawler::ResetEnemy()
 {
 	hitsCounter = 0;
-	//owner->cam.bossCrawler = false;
+	owner->cam.bossCrawler = false;
 	invincibleFrames = 0;
 	health = initHealth;
 	roll = false;
@@ -221,6 +221,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 					|| e == edgeB->edge1
 					|| e == edgeB )
 				{
+					cout << "RETURN A" << endl;
 					return;
 				}
 
@@ -232,6 +233,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 					|| e == edgeA->edge1
 					|| e == edgeA )
 				{
+					cout << "RETURN B" << endl;
 					return;
 				}
 			}
@@ -251,6 +253,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeB->edge1
 							|| e == edgeB )
 						{
+							cout << "RETURN C" << endl;
 							return;
 						}
 					}
@@ -261,6 +264,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeA->edge1
 							|| e == edgeA )
 						{
+							cout << "RETURN D" << endl;
 							return;
 						}
 					}
@@ -279,6 +283,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeB->edge1
 							|| e == edgeB )
 						{
+							cout << "RETURN E" << endl;
 							return;
 						}
 					}
@@ -289,6 +294,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeA->edge1
 							|| e == edgeA )
 						{
+							cout << "RETURN F" << endl;
 							return;
 						}
 					}
@@ -432,13 +438,14 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 		
 
 		
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			if( !col || (minContact.collisionPriority < 0 ) 
+				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 
-				if( ground != NULL && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
+				/*if( ground != NULL && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
 				{
 					return;
-				}
+				}*/
 
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
@@ -750,7 +757,7 @@ void BossCrawler::UpdatePrePhysics()
 	case STAND:
 		{
 			groundSpeed = 0;
-			cout << "stand" << endl;
+			//cout << "stand" << endl;
 		}
 		break;
 	case SHOOT:
@@ -759,30 +766,30 @@ void BossCrawler::UpdatePrePhysics()
 			{
 				FireBullets();
 			}
-			cout << "shoot" << endl;
+			//cout << "shoot" << endl;
 		}
 		break;
 	case LUNGE:
 		{
 			groundSpeed = 0;
-			cout << "lunge" << endl;
+			//cout << "lunge" << endl;
 		}
 		break;
 	case LUNGEAIR:
 		{
-			cout << "lunge air" << endl;
+			//cout << "lunge air" << endl;
 			velocity += V2d( 0, gravity / slowMultiple );
 		}
 		break;
 	case LUNGELAND:
 		{
 			groundSpeed = 0;
-			cout << "lunge land" << endl;
+			//cout << "lunge land" << endl;
 		}
 		break;
 	case RUN:
 		{
-			cout << "run" << endl;
+			//cout << "run" << endl;
 			if( facingRight )
 			{
 				groundSpeed = runSpeed;
@@ -795,7 +802,7 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case ROLL:
 		{
-			cout << "roll" << endl;
+			//cout << "roll" << endl;
 			if( facingRight )
 			{
 				groundSpeed = rollSpeed;
@@ -808,7 +815,7 @@ void BossCrawler::UpdatePrePhysics()
 		break;
 	case STUNNED:
 		{
-			cout << "stunned" << endl;
+			//cout << "stunned" << endl;
 			if( ground != NULL && gNormal.y > 0 )
 			{
 				ground = NULL;

@@ -10549,7 +10549,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			bool closedGate = (c->edge->edgeType == Edge::CLOSED_GATE);
 			bool minGate = (minContact.edge != NULL && minContact.edge->edgeType == Edge::CLOSED_GATE );
 
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) )//|| ( closedGate && !minGate ) )
+			if( !col || (minContact.collisionPriority < 0 ) 
+				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) )//|| ( closedGate && !minGate ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )//&& !closedGate )
 				{
