@@ -3134,7 +3134,7 @@ int GameSession::Run( string fileN )
 	
 	bool skipped = false;
 	bool oneFrameMode = false;
-	bool quit = false;
+	quit = false;
 
 	controller.UpdateState();
 	currInput = controller.GetState();

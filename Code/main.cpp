@@ -517,9 +517,9 @@ int main()
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 
-	window->setVerticalSyncEnabled( true );
-	//window->setVerticalSyncEnabled( false );
-	//window->setFramerateLimit( 60 );
+	//window->setVerticalSyncEnabled( true );
+	window->setVerticalSyncEnabled( false );
+	window->setFramerateLimit( 60 );
 
 
 
@@ -683,6 +683,9 @@ int main()
 
 
 	//cout << "beginning input loop" << endl;
+
+	bool moveDown = false;
+	bool moveUp = false;
 	while( !quit )
 	{
 		window->clear();
@@ -756,9 +759,9 @@ int main()
 							//OptionsOption();
 							break;
 						case 4:
-							CustomMapsOption( ls );
-							//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-							//gs->Run( "Maps/1-6.brknk" );
+							//CustomMapsOption( ls );
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-5.brknk" );
 							//ExitOption();
 							break;
 						}
@@ -873,6 +876,32 @@ int main()
 				}*/
 				//GameEditLoop2( "test3.brknk" );
 				//window->setView( v );
+			}
+			if( (cs.LDown() || cs.PDown()) && !moveDown )
+			{
+				currentMenuSelect++;
+				if( currentMenuSelect > 4 )
+					currentMenuSelect = 0;
+				moveDown = true;
+			}
+			else if( ( cs.LUp() || cs.PUp() ) && !moveUp )
+			{
+				currentMenuSelect--;
+				if( currentMenuSelect < 0 )
+					currentMenuSelect = 4;
+				moveUp = true;
+			}
+			else
+			{
+			}
+
+			if( !(cs.LDown() || cs.PDown()) )
+			{
+				moveDown = false;
+			}
+			if( ! ( cs.LUp() || cs.PUp() ) )
+			{
+				moveUp = false;
 			}
 		}
 

@@ -252,6 +252,7 @@ void Gate::Update()
 			if( gState == SOFTEN )
 			{
 				gState = HARDEN;
+				frame = 0;
 				//frame should be the inverse so that it can get harder while from its partially softened state.
 			}
 			else if( gState == SOFT )
@@ -265,6 +266,7 @@ void Gate::Update()
 			if( gState == HARDEN )
 			{
 				gState = SOFTEN;
+				frame = 0;
 				//inverse frame;
 			}
 			else if( gState == HARD )

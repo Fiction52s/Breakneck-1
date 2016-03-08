@@ -23,7 +23,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	
 	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
 
-	initHealth = 60 * 8;
+	initHealth = 60 * 10;
 	health = initHealth;
 
 	numBullets = 6;
@@ -581,6 +581,7 @@ void BossCrawler::UpdatePrePhysics()
 		{
 			AttemptSpawnMonitor();
 			dead = true;
+			owner->quit = true;
 		}
 
 		receivedHit = NULL;

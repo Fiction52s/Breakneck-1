@@ -11020,7 +11020,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 	showMotionGhosts = 4;
-	if( showMotionGhosts )
+	if( showMotionGhosts && !desperationMode )
 	{
 		swordShader.setParameter( "isTealAlready", 0 );
 		

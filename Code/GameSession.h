@@ -107,7 +107,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Edge *rcEdge;
 	double rcQuantity;
 	Edge *rayIgnoreEdge;
-
+	bool quit;
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,
