@@ -957,7 +957,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 			}
 			else if( typeName == "foottrap" )
 			{
-				cout << "loading foottrap" << endl;
+				//cout << "loading foottrap" << endl;
 				//always grounded
 					
 
@@ -2370,8 +2370,8 @@ void GameSession::CreateZones()
 	for( int i = 0; i < numGates; ++i )
 	{
 		Gate *g = gates[i];
-		cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
-			<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
+		//cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
+		//	<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
 		
 		Edge *curr = g->edgeA;
 
@@ -2420,7 +2420,7 @@ void GameSession::CreateZones()
 						Zone *z = new Zone( tp );
 						z->gates = currGates;
 						zones.push_back( z );
-						cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
+					//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
 					//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
 					}
 					
@@ -2436,7 +2436,7 @@ void GameSession::CreateZones()
 			else if( curr == g->edgeB )
 			{
 				//currGates.push_back( curr );
-				cout << "not a zone even" << endl;
+				//cout << "not a zone even" << endl;
 				break;
 			}
 
@@ -2470,7 +2470,7 @@ void GameSession::CreateZones()
 					TerrainPoint *tempPoint = tp.pointEnd;
 					tp.RemovePoint( tempPoint );
 					delete tempPoint;
-					cout << "removing from a( " << g << " ) start: " << tp.numPoints << endl;
+					//cout << "removing from a( " << g << " ) start: " << tp.numPoints << endl;
 					
 					while( true )
 					{
@@ -2509,7 +2509,7 @@ void GameSession::CreateZones()
 							tempPoint = tp.pointEnd;
 							tp.RemovePoint( tempPoint );
 							delete tempPoint;
-							cout << "removing from a: " << tp.numPoints << endl;
+							//cout << "removing from a: " << tp.numPoints << endl;
 
 							if( tp.pointStart == tp.pointEnd )
 							{
@@ -2528,7 +2528,7 @@ void GameSession::CreateZones()
 
 					if( quitLoop )
 					{
-						cout << "quitloop a" << endl;
+						//cout << "quitloop a" << endl;
 						break;
 					}
 
@@ -2539,7 +2539,7 @@ void GameSession::CreateZones()
 					ignoreGates.push_back( thisGate );
 					thisGate->SetLocked( true );
 
-					cout << "GATE IS NOT OKAY A: " << tp.numPoints << endl;
+					//cout << "GATE IS NOT OKAY A: " << tp.numPoints << endl;
 					//break;
 					continue;
 				}
@@ -2602,7 +2602,7 @@ void GameSession::CreateZones()
 					if( okayZone )
 					{
 						Zone *z = new Zone( tpb );
-						cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
+						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
 						z->gates = currGates;
 						zones.push_back( z );
 						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
@@ -2651,7 +2651,7 @@ void GameSession::CreateZones()
 					TerrainPoint *tempPoint = tpb.pointEnd;
 					tpb.RemovePoint( tempPoint );
 					delete tempPoint;
-					cout << "removing from b( " << g << " ) start: " << tpb.numPoints << endl;
+					//cout << "removing from b( " << g << " ) start: " << tpb.numPoints << endl;
 
 					Edge *cc = curr->edge0;
 					
@@ -2704,7 +2704,7 @@ void GameSession::CreateZones()
 							tempPoint = tpb.pointEnd;
 							tpb.RemovePoint( tempPoint );
 							delete tempPoint;
-							cout << "removing from b: " << tpb.numPoints << endl;
+							//cout << "removing from b: " << tpb.numPoints << endl;
 							if( tpb.pointStart == tpb.pointEnd )
 							{
 								quitLoop = true;
@@ -2727,7 +2727,7 @@ void GameSession::CreateZones()
 
 					if( quitLoop )
 					{
-						cout << "quitloop b" << endl;
+						//cout << "quitloop b" << endl;
 						break;
 					}
 
@@ -2737,7 +2737,7 @@ void GameSession::CreateZones()
 					//tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
 					ignoreGates.push_back( thisGate );
 					thisGate->SetLocked( true );
-					cout << "GATE IS NOT OKAY B: " << tpb.numPoints << endl;
+					//cout << "GATE IS NOT OKAY B: " << tpb.numPoints << endl;
 					continue;
 				}
 				else
@@ -2762,19 +2762,19 @@ void GameSession::CreateZones()
 		//gates[i]->SetLocked( true );
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
-		cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
+		//cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
 		//cout << i << ", it gates: " << (*it)->gates.size() << endl;
 		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
 		{
 			if( gates[i]->edgeA == (*eit) )
 			{
-				cout << "gate: " << gates[i] << ", gate zone a: " << (*it ) << endl;
+			//	cout << "gate: " << gates[i] << ", gate zone a: " << (*it ) << endl;
 				gates[i]->zoneA = (*it);
 				//done++;
 			}
 			else if( gates[i]->edgeB == (*eit) )
 			{
-				cout << "gate: " << gates[i] << ", gate zone B: " << (*it ) << endl;
+			//	cout << "gate: " << gates[i] << ", gate zone B: " << (*it ) << endl;
 				//cout << "gate zone B: " << (*it ) << endl;
 				gates[i]->zoneB = (*it);
 				//done++;
@@ -2802,7 +2802,7 @@ void GameSession::CreateZones()
 		}
 	}
 
-	cout << "numoutside gates!!: " << numOutsideGates << endl;
+	//cout << "numoutside gates!!: " << numOutsideGates << endl;
 
 	if( numOutsideGates > 0 )
 	{
@@ -2849,11 +2849,11 @@ void GameSession::CreateZones()
 		
 	}
 
-	cout << "gate testing: " << endl;
+	/*cout << "gate testing: " << endl;
 	for( int i = 0; i < numGates; ++i )
 	{
 		cout << "gate " << i << ": " << gates[i]->zoneA << ", " << gates[i]->zoneB << endl;
-	}
+	}*/
 }
 
 void GameSession::SetupZones()
@@ -5184,105 +5184,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 	}
 	while( te != edges[currentEdgeIndex] );
 
-	//extra = 0;
-	//do
-	//{
-	//	V2d eNorm = te->Normal();
-	//	int valid = ValidEdge( eNorm );
-	//	if( valid != -1 )
-	//	{
-	//		double len = length( te->v1 - te->v0 );
-	//		int numQuads = len / tw;
-	//		double quadWidth = len / numQuads;
-
-	//		if( numQuads == 0 )
-	//		{
-	//			numQuads = 1;
-	//			quadWidth = 8;//std::min( len, 16 );
-	//			//quadWidth =;
-	//		}
-
-	//		V2d along = normalize( te->v1 - te->v0 );
-	//		V2d other( along.y, -along.x );
-
-	//		double in = 128 - 16;
-	//		double out = 16;
-
-	//		V2d startInner = te->v0 - other * in;
-	//		V2d startOuter = te->v0 + other * out;
-
-	//		//end inner
-
-	//		Vector2f ei = va[extra + 3].position;
-	//		ei += va[extra + numQuads * 4]
-	//		va[extra + 3].position = Vector2f( 
-
-	//		if( i == 0 && d0 <= 0 )
-	//		{
-	//			Edge *prev = te->edge0;
-	//			V2d pNorm = prev->Normal();
-	//			V2d prevEndInner = prev->v1 - pNorm * in;
-	//			V2d prevEndOuter = prev->v1 + pNorm * out;
-	//			//V2d prevEndOuter = prev->v1 - 
-
-	//			va[extra + i * 4 + 0].position = Vector2f( ( currStartOuter.x + prevEndOuter.x ) / 2.0, 
-	//				( currStartOuter.y + prevEndOuter.y ) / 2.0 );
-	//				
-	//			va[extra + i * 4 + 3].position = Vector2f( (currStartInner.x + prevEndInner.x) / 2.0, 
-	//				( currStartInner.y + prevEndInner.y ) / 2.0  );
-	//		}
-	//		else
-	//		{
-	//			va[extra + i * 4 + 0].position = Vector2f( currStartOuter.x, currStartOuter.y );
-	//			va[extra + i * 4 + 3].position = Vector2f( currStartInner.x, currStartInner.y );
-	//		}
-
-	//		if( i == numQuads - 1 && d1 <= 0 )
-	//		{
-	//			Edge *next = te->edge1;
-	//			V2d nNorm = next->Normal();
-	//			V2d nextStartInner = next->v0 - nNorm * in;
-	//			V2d nextStartOuter = next->v0 + nNorm * out;
-	//			va[extra + i * 4 + 2].position = Vector2f( ( currEndInner.x + nextStartInner.x ) / 2, 
-	//				( currEndInner.y + nextStartInner.y ) / 2 );
-
-	//			va[extra + i * 4 + 1].position = Vector2f( ( currEndOuter.x + nextStartOuter.x ) / 2.0, 
-	//				( currEndOuter.y + nextStartOuter.y ) / 2.0 );
-
-	//		}
-	//		else
-	//		{
-	//			va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
-	//			va[extra + i * 4 + 1].position = Vector2f( currEndOuter.x, currEndOuter.y );
-	//		}
-
-
-	//		extra += numQuads * 4;
-	//}
-	//while( te != edges[currentEdgeIndex] );
 	
-	/*for( int i = 0; i < numTotalQuads; ++i )
-	{
-		if( i == 0 )
-		{
-			va[i*4 + 2].position = (va[i*4 + 2].position + va[3].position ) / 2.f;
-		}
-		else
-		{
-			va[i*4 + 2].position = (va[i*4 + 2].position + va[(i-1)*4 + 3].position ) / 2.f;
-		}
-
-		if( i == numTotalQuads - 1 )
-		{
-			va[i*4 + 3].position = (va[i*4 + 3].position + va[2].position ) / 2.f;
-		}
-		else
-		{
-			va[i*4 + 3].position = ( va[i*4 + 3].position + va[(i+1)*4 + 2].position ) / 2.f;
-		}
-	}*/
-	
-
 	return currVA;
 }
 

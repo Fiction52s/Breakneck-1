@@ -9347,6 +9347,10 @@ void Actor::UpdateHitboxes()
 		{
 			hurtBody.rh = 12;
 		}
+		else if( action == DOUBLE )
+		{
+			hurtBody.rh = 10;
+		}
 		else
 		{
 			hurtBody.rh = 15;

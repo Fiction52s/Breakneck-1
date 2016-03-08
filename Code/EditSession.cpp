@@ -3126,7 +3126,7 @@ bool EditSession::OpenFile( string fileName )
 
 
 				ActorType *at;
-				cout << "typename: " << typeName << endl;
+				//cout << "typename: " << typeName << endl;
 				if( types.count( typeName ) == 0 )
 				{
 					assert( false && "bad typename" );
