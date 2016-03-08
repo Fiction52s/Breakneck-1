@@ -280,7 +280,7 @@ Actor::Actor( GameSession *gs )
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
-		actionLength[FAIR] = 10;//10 * 2;
+		actionLength[FAIR] = 10 * 2;//10 * 2;
 		tileset[FAIR] = owner->GetTileset( "fair.png", 80, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
@@ -10279,16 +10279,16 @@ void Actor::UpdatePostPhysics()
 			if( facingRight )
 			{
 				
-				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
-				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
+				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
+				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
 				if( showSword1 )
-					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
-					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
+					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
+					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
-				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
-				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
+				sf::IntRect ir = tileset[FAIR]->GetSubRect( frame / 2 );
+				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
 				
@@ -10296,8 +10296,8 @@ void Actor::UpdatePostPhysics()
 				{
 					offset.x = -offset.x;
 
-					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
-					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
+					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
+					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
 					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
@@ -12826,17 +12826,26 @@ void Actor::Draw( sf::RenderTarget *target )
 					rs.setPosition( standingNSword1.getPosition() );
 					rs.setFillColor( Color::Red );
 					target->draw( rs );*/
-					target->draw( standingNSword1 );
+					if( flashFrames > 0 )
+						target->draw( standingNSword1, &swordShader );
+					else
+						target->draw( standingNSword1 );
 					break;
 				}
 			case STANDD:
 				{
-					target->draw( standingDSword1 );
+					if( flashFrames > 0 )
+						target->draw( standingDSword1, &swordShader );
+					else
+						target->draw( standingDSword1 );
 					break;
 				}
 			case STANDU:
 				{
-					target->draw( standingUSword1 );
+					if( flashFrames > 0 )
+						target->draw( standingUSword1, &swordShader );
+					else
+						target->draw( standingUSword1 );
 					break;
 				}
 			}

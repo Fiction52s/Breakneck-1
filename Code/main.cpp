@@ -608,7 +608,8 @@ int main()
 	int xoffset = 200;
 	int index = 0;
 	Text &newText = mainMenu[index];
-	newText.setString( "New Campaign" );
+	//newText.setString( "New Campaign" );
+	newText.setString( "Level 1" );
 	newText.setFont( arial );
 	newText.setColor( Color::Red );
 	newText.setCharacterSize( fontSize );
@@ -617,7 +618,8 @@ int main()
 	++index;
 
 	Text &loadText = mainMenu[index];
-	loadText.setString( "Load Campaign" );
+	//loadText.setString( "Load Campaign" );
+	loadText.setString( "Level 2" );
 	loadText.setFont( arial );
 	loadText.setColor( Color::Red );
 	loadText.setCharacterSize( fontSize );
@@ -626,7 +628,8 @@ int main()
 	++index; 
 
 	Text &customText = mainMenu[index];
-	customText.setString( "Custom Maps" );
+	customText.setString( "Level 3" );
+	//customText.setString( "Custom Maps" );
 	customText.setFont( arial );
 	customText.setColor( Color::Red );
 	customText.setCharacterSize( fontSize );
@@ -635,7 +638,8 @@ int main()
 	++index;
 
 	Text &optionsText = mainMenu[index];
-	optionsText.setString( "Options" );
+	//optionsText.setString( "Options" );
+	optionsText.setString( "Level 4" );
 	optionsText.setFont( arial );
 	optionsText.setColor( Color::Red );
 	optionsText.setCharacterSize( fontSize );
@@ -644,7 +648,9 @@ int main()
 	++index;
 
 	Text &exitText = mainMenu[index];
-	exitText.setString( "Exit" );
+	//exitText.setString( "Exit" );
+	exitText.setString( "Level 5 ( Boss )" );
+
 	exitText.setFont( arial );
 	exitText.setColor( Color::Red );
 	exitText.setCharacterSize( fontSize );
@@ -725,25 +731,38 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
 					{
+						GameSession *gs = NULL;
 						//select from option menu
 						switch( currentMenuSelect )
 						{
 						case 0:
-							NewCampaignOption();
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-1.brknk" );
+							//NewCampaignOption();
 							break;
 						case 1:
-							LoadCampaignOption();
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-2.brknk" );
+							//LoadCampaignOption();
 							break;
 						case 2:
-							CustomMapsOption( ls );
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-3.brknk" );
+							//CustomMapsOption( ls );
 							break;
 						case 3:
-							OptionsOption();
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-4.brknk" );
+							//OptionsOption();
 							break;
 						case 4:
-							ExitOption();
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-5.brknk" );
+							//ExitOption();
 							break;
 						}
+
+						delete gs;
 					}
 					else if( ev.key.code == Keyboard::Up )
 					{
@@ -799,7 +818,41 @@ int main()
 			ControllerState cs = controller.GetState();
 			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
 			{
+				GameSession *gs = NULL;
+				//select from option menu
 				switch( currentMenuSelect )
+				{
+				case 0:
+					gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+					gs->Run( "Maps/1-1.brknk" );
+					//NewCampaignOption();
+					break;
+				case 1:
+					gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+					gs->Run( "Maps/1-2.brknk" );
+					//LoadCampaignOption();
+					break;
+				case 2:
+					gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+					gs->Run( "Maps/1-3.brknk" );
+					//CustomMapsOption( ls );
+					break;
+				case 3:
+					gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+					gs->Run( "Maps/1-4.brknk" );
+					//OptionsOption();
+					break;
+				case 4:
+					//replace this before releasing
+					CustomMapsOption( ls );
+					//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+					//gs->Run( "Maps/1-5.brknk" );
+					//ExitOption();
+					break;
+				}
+
+				delete gs;
+				/*switch( currentMenuSelect )
 				{
 				case 0:
 					NewCampaignOption();
@@ -816,7 +869,7 @@ int main()
 				case 4:
 					ExitOption();
 					break;
-				}
+				}*/
 				//GameEditLoop2( "test3.brknk" );
 				//window->setView( v );
 			}
