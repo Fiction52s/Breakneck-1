@@ -84,7 +84,7 @@ BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
 	hitboxInfo->knockback = 0;
 
 	bulletHitboxInfo = new HitboxInfo;
-	bulletHitboxInfo->damage = 100;
+	bulletHitboxInfo->damage = 40;
 	bulletHitboxInfo->drainX = 0;
 	bulletHitboxInfo->drainY = 0;
 	bulletHitboxInfo->hitlagFrames = 0;
@@ -1241,7 +1241,7 @@ void BossCrawler::PhysicsResponse()
 			owner->player.currAttackHit = true;
 			owner->player.flashColor = COLOR_BLUE;
 			owner->player.flashFrames = 5;
-			owner->player.desperationMode = false;
+			//owner->player.desperationMode = false;
 			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
 			//owner->powerBar.Charge( 2 * 6 * 2 );
 			//owner->powerBar.Charge( 6 );

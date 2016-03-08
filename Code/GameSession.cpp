@@ -3204,11 +3204,11 @@ int GameSession::Run( string fileN )
 
 		if( showFrameRate )
 		{
-			/*ss << inGameClock.getElapsedTime().asSeconds();
+			ss << inGameClock.getElapsedTime().asSeconds();
 			frameRate.setString( ss.str() );
 			ss.clear();
-			ss.str("");*/
-			if( frameCounter == frameCounterWait )
+			ss.str("");
+			/*if( frameCounter == frameCounterWait )
 			{
 				double blah = 1.0 / frameTime;
 				total += blah;
@@ -3224,7 +3224,7 @@ int GameSession::Run( string fileN )
 				double blah = 1.0 / frameTime;
 				total += blah;
 				++frameCounter;
-			}
+			}*/
 		}
 		
 

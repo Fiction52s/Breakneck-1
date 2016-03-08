@@ -154,7 +154,7 @@ Actor::Actor( GameSession *gs )
 		//setup hitboxes
 		{
 		//for( int j = 4; j < 10; ++j )
-		for( int j = 2*2; j < 7 *2; ++j )
+		for( int j = 2; j < 7 *2; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
