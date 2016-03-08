@@ -208,7 +208,7 @@ Actor::Actor( GameSession *gs )
 		cb.offset.x = 32;
 		cb.offset.y = 0;
 		//for( int j = 1; j <= 4; ++j )
-		for( int j =2; j <= 7; ++j )
+		for( int j = 0; j <= 10; ++j )
 		{
 			standNHitboxes[j] = new list<CollisionBox>;
 			standNHitboxes[j]->push_back( cb );
@@ -274,7 +274,7 @@ Actor::Actor( GameSession *gs )
 		airBounceFlameFrames = 20 * 3;
 		runBounceFlameFrames = 21 * 3;
 
-		actionLength[DAIR] = 10 * 2;
+		actionLength[DAIR] = 10 * 2 - 8;
 		tileset[DAIR] = owner->GetTileset( "dair.png", 96, 64 );
 		normal[DAIR] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
@@ -286,7 +286,7 @@ Actor::Actor( GameSession *gs )
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
-		actionLength[FAIR] = 10 * 2;//10 * 2;
+		actionLength[FAIR] = 10 * 2 - 6;//10 * 2;
 		tileset[FAIR] = owner->GetTileset( "fair.png", 80, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
@@ -323,7 +323,7 @@ Actor::Actor( GameSession *gs )
 		tileset[STANDD] = owner->GetTileset( "standd.png", 96, 48 );
 		normal[STANDD] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[STANDN] = 5 * 4;
+		actionLength[STANDN] = 5 * 3;
 		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
@@ -331,7 +331,7 @@ Actor::Actor( GameSession *gs )
 		tileset[STANDU] = owner->GetTileset( "standu.png", 64, 80 );
 		normal[STANDU] = owner->GetTileset( "standu_NORMALS.png", 64, 80 );
 
-		actionLength[UAIR] = 6 * 3;
+		actionLength[UAIR] = 6 * 3 - 3;
 		tileset[UAIR] = owner->GetTileset( "uair.png", 80, 80 );
 		normal[UAIR] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
 
@@ -1495,6 +1495,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMPSQUAT:
 		{
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				bufferedAttack = true;
+			}
+
 			if( frame == actionLength[JUMPSQUAT] - 1 )
 			{
 				action = JUMP;
@@ -3479,12 +3484,14 @@ void Actor::UpdatePrePhysics()
 					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
 					reversed = false;
+
 					//facingRight = !facingRight;
 					
 
 				}
 				else
 				{
+
 
 					if( bounceFlameOn )
 						airBounceFrame = 13 * 3;
@@ -3591,6 +3598,10 @@ void Actor::UpdatePrePhysics()
 		}
 		else
 		{
+			//if( bufferedAttack )
+			//{
+			//	bufferedAttack = false;
+			//}
 			//cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
 			if( hasDoubleJump )
 			{
@@ -7447,7 +7458,7 @@ void Actor::UpdatePhysics()
 					if( movement > 0 )
 					{
 
-						cout << "checking for airborne" << endl;
+						//cout << "checking for airborne" << endl;
 						
 						
 						double yDist = abs( gNormal.x ) * groundSpeed;
@@ -11835,7 +11846,7 @@ void Actor::UpdateSprite()
 	case STANDN:
 		{
 			int startFrame = 1;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 4;
+			showSword1 = frame / 3 >= startFrame && frame / 3 <= 4;
 
 			sprite->setTexture( *(tileset[STANDN]->texture));
 
@@ -11845,20 +11856,20 @@ void Actor::UpdateSprite()
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
-				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 4 ) );
+				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 3 ) );
 
 				if( showSword1 )
-					standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 4 - startFrame ) );
+					standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 3 - startFrame ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 4 );
+				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 3 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 				
 				if( showSword1  )
 				{
-					sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 4 - startFrame );
+					sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 3 - startFrame );
 					standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 

@@ -91,12 +91,21 @@ struct Grass : QuadTreeEntrant
 	//bool prevGrass;
 };
 
-struct GameSession : QuadTreeCollider
+struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	GameSession(GameController &c, sf::RenderWindow *rw, 
 		sf::RenderTexture *preTex,
 		sf::RenderTexture *miniTex);
+
 	~GameSession();
+	void HandleRayCollision( Edge *edge, 
+		double edgeQuantity, double rayPortion );
+	sf::Vector2<double> rayStart;
+	sf::Vector2<double> rayEnd;
+	Edge *rcEdge;
+	double rcQuantity;
+	Edge *rayIgnoreEdge;
+
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,

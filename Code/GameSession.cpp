@@ -1325,7 +1325,8 @@ bool GameSession::OpenFile( string fileName )
 
 			//ground
 
-			Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
+			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
+			Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
 			VertexArray *groundVA = SetupBorderQuads( currentEdgeIndex, ts_border,
 				&GameSession::IsFlatGround );
 			VertexArray *slopeVA = SetupBorderQuads( currentEdgeIndex, ts_border,
@@ -4127,9 +4128,9 @@ int GameSession::Run( string fileN )
 			//preScreenTex->draw( *listVAIter->va );
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
-			preScreenTex->draw( *listVAIter->slopeva, rs );
-			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->wallva, rs );
+			preScreenTex->draw( *listVAIter->steepva, rs );
+			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
 			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
@@ -4194,7 +4195,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -5001,7 +5002,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, int (*ValidEdge)(sf::Vector2<double> & ) )
 {
 	int tw = 8;//64;
-	int th = 64;
+	int th = 128;
 	int numTotalQuads = 0;
 	Edge *te = edges[currentEdgeIndex];
 	do
@@ -5058,48 +5059,89 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
 
-			V2d startInner = te->v0 - other * (double)(48); //in
-			V2d startOuter = te->v0 + other * (double)(16); //out
+			double in = 128 - 16;
+			double out = 16;
+
+			V2d startInner = te->v0 - other * in;
+			V2d startOuter = te->v0 + other * out;
 
 			for( int i = 0; i < numQuads; ++i )
 			{
-				int realIndex = valid * 8 + varietyCounter;
+				int realIndex = valid * 16 + varietyCounter;
 				IntRect sub = ts->GetSubRect( realIndex );
 
-				V2d currStartInner = startInner + (double)i * quadWidth * along;
-				V2d currStartOuter = startOuter + (double)i * quadWidth * along;
-				V2d currEndInner = currStartInner + quadWidth * along;
-				V2d currEndOuter = currStartOuter + quadWidth * along;
+				double startAlong = (double)i * quadWidth;
+				double endAlong = (double)(i+1) * quadWidth;
+
+				V2d currStartInner = startInner + startAlong * along;
+				V2d currStartOuter = startOuter + startAlong * along;
+				V2d currEndInner = startInner + endAlong * along;
+				V2d currEndOuter = startOuter + endAlong * along;
 						
-				
+				double realHeight0 = in;//sub.height;
+				double realHeight1 = in;//sub.height;
 				
 
-				if( i == 0 )
+				rcEdge = NULL;
+				rayIgnoreEdge = te;
+				rayStart = te->v0 + startAlong * along;
+				rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
+				RayCast( this, terrainTree->startNode, rayStart, rayEnd );
+
+
+				//start ray
+				if( rcEdge != NULL )
 				{
-					Edge *prev = te->edge0;
-					V2d pNorm = prev->Normal();
-					V2d prevEndInner = prev->v1 - pNorm * (double)48;
-					V2d prevEndOuter = prev->v1 + pNorm * (double)16;
-					//V2d prevEndOuter = prev->v1 - 
-
-					va[extra + i * 4 + 0].position = Vector2f( ( currStartOuter.x + prevEndOuter.x ) / 2.0, 
-						( currStartOuter.y + prevEndOuter.y ) / 2.0 );
-					
-					va[extra + i * 4 + 3].position = Vector2f( (currStartInner.x + prevEndInner.x) / 2.0, 
-						( currStartInner.y + prevEndInner.y ) / 2.0  );
+					currStartInner = rcEdge->GetPoint( rcQuantity );
+					realHeight0 = length( currStartInner - currStartOuter );
+					//te->v0 + startAlong * along - rcQuantity * other; //rcEdge->GetPoint( rcQuantity );//te->v0 - other * realHeight
 				}
-				else
+
+				rcEdge = NULL;
+				rayStart = te->v0 + endAlong * along;
+				rayEnd = currEndInner;
+				RayCast( this, terrainTree->startNode, rayStart, rayEnd );
+
+				//end ray
+				if( rcEdge != NULL )
+				{
+					currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
+					realHeight1 = length( currEndInner - currStartOuter );
+				}
+
+				
+				//RayCast( this, terrainTree, position, V2d( position.x - 100, position.y ) );
+				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
+				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
+
+				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
+				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
+				//if( i == 0 && d0 <= 0 )
+				//{
+				//	Edge *prev = te->edge0;
+				//	V2d pNorm = prev->Normal();
+				//	V2d prevEndInner = prev->v1 - pNorm * in;
+				//	V2d prevEndOuter = prev->v1 + pNorm * out;
+				//	//V2d prevEndOuter = prev->v1 - 
+
+				//	va[extra + i * 4 + 0].position = Vector2f( ( currStartOuter.x + prevEndOuter.x ) / 2.0, 
+				//		( currStartOuter.y + prevEndOuter.y ) / 2.0 );
+				//	
+				//	va[extra + i * 4 + 3].position = Vector2f( (currStartInner.x + prevEndInner.x) / 2.0, 
+				//		( currStartInner.y + prevEndInner.y ) / 2.0  );
+				//}
+				//else
 				{
 					va[extra + i * 4 + 0].position = Vector2f( currStartOuter.x, currStartOuter.y );
 					va[extra + i * 4 + 3].position = Vector2f( currStartInner.x, currStartInner.y );
 				}
 
-				if( i == numQuads - 1 )
+				/*if( i == numQuads - 1 && d1 <= 0 )
 				{
 					Edge *next = te->edge1;
 					V2d nNorm = next->Normal();
-					V2d nextStartInner = next->v0 - nNorm * (double)48;
-					V2d nextStartOuter = next->v0 + nNorm * (double)16;
+					V2d nextStartInner = next->v0 - nNorm * in;
+					V2d nextStartOuter = next->v0 + nNorm * out;
 					va[extra + i * 4 + 2].position = Vector2f( ( currEndInner.x + nextStartInner.x ) / 2, 
 						( currEndInner.y + nextStartInner.y ) / 2 );
 
@@ -5107,7 +5149,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 						( currEndOuter.y + nextStartOuter.y ) / 2.0 );
 
 				}
-				else
+				else*/
 				{
 					va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
 					va[extra + i * 4 + 1].position = Vector2f( currEndOuter.x, currEndOuter.y );
@@ -5119,11 +5161,16 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 				
 				va[extra + i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
 				va[extra + i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				va[extra + i * 4 + 2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-				va[extra + i * 4 + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+				va[extra + i * 4 + 2].texCoords = Vector2f( sub.left + sub.width, realHeight1);
+				va[extra + i * 4 + 3].texCoords = Vector2f( sub.left, realHeight0);
 
+				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
+				va[extra + i * 4 + 1].color = COLOR_YELLOW;
+				va[extra + i * 4 + 2].color = COLOR_MAGENTA;
+				va[extra + i * 4 + 3].color = COLOR_TEAL;
+*/
 				++varietyCounter;
-				if( varietyCounter == 8 )
+				if( varietyCounter == 16 )
 				{
 					varietyCounter = 0;
 				}
@@ -5137,9 +5184,103 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 	}
 	while( te != edges[currentEdgeIndex] );
 
-	
-	
+	//extra = 0;
+	//do
+	//{
+	//	V2d eNorm = te->Normal();
+	//	int valid = ValidEdge( eNorm );
+	//	if( valid != -1 )
+	//	{
+	//		double len = length( te->v1 - te->v0 );
+	//		int numQuads = len / tw;
+	//		double quadWidth = len / numQuads;
 
+	//		if( numQuads == 0 )
+	//		{
+	//			numQuads = 1;
+	//			quadWidth = 8;//std::min( len, 16 );
+	//			//quadWidth =;
+	//		}
+
+	//		V2d along = normalize( te->v1 - te->v0 );
+	//		V2d other( along.y, -along.x );
+
+	//		double in = 128 - 16;
+	//		double out = 16;
+
+	//		V2d startInner = te->v0 - other * in;
+	//		V2d startOuter = te->v0 + other * out;
+
+	//		//end inner
+
+	//		Vector2f ei = va[extra + 3].position;
+	//		ei += va[extra + numQuads * 4]
+	//		va[extra + 3].position = Vector2f( 
+
+	//		if( i == 0 && d0 <= 0 )
+	//		{
+	//			Edge *prev = te->edge0;
+	//			V2d pNorm = prev->Normal();
+	//			V2d prevEndInner = prev->v1 - pNorm * in;
+	//			V2d prevEndOuter = prev->v1 + pNorm * out;
+	//			//V2d prevEndOuter = prev->v1 - 
+
+	//			va[extra + i * 4 + 0].position = Vector2f( ( currStartOuter.x + prevEndOuter.x ) / 2.0, 
+	//				( currStartOuter.y + prevEndOuter.y ) / 2.0 );
+	//				
+	//			va[extra + i * 4 + 3].position = Vector2f( (currStartInner.x + prevEndInner.x) / 2.0, 
+	//				( currStartInner.y + prevEndInner.y ) / 2.0  );
+	//		}
+	//		else
+	//		{
+	//			va[extra + i * 4 + 0].position = Vector2f( currStartOuter.x, currStartOuter.y );
+	//			va[extra + i * 4 + 3].position = Vector2f( currStartInner.x, currStartInner.y );
+	//		}
+
+	//		if( i == numQuads - 1 && d1 <= 0 )
+	//		{
+	//			Edge *next = te->edge1;
+	//			V2d nNorm = next->Normal();
+	//			V2d nextStartInner = next->v0 - nNorm * in;
+	//			V2d nextStartOuter = next->v0 + nNorm * out;
+	//			va[extra + i * 4 + 2].position = Vector2f( ( currEndInner.x + nextStartInner.x ) / 2, 
+	//				( currEndInner.y + nextStartInner.y ) / 2 );
+
+	//			va[extra + i * 4 + 1].position = Vector2f( ( currEndOuter.x + nextStartOuter.x ) / 2.0, 
+	//				( currEndOuter.y + nextStartOuter.y ) / 2.0 );
+
+	//		}
+	//		else
+	//		{
+	//			va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
+	//			va[extra + i * 4 + 1].position = Vector2f( currEndOuter.x, currEndOuter.y );
+	//		}
+
+
+	//		extra += numQuads * 4;
+	//}
+	//while( te != edges[currentEdgeIndex] );
+	
+	/*for( int i = 0; i < numTotalQuads; ++i )
+	{
+		if( i == 0 )
+		{
+			va[i*4 + 2].position = (va[i*4 + 2].position + va[3].position ) / 2.f;
+		}
+		else
+		{
+			va[i*4 + 2].position = (va[i*4 + 2].position + va[(i-1)*4 + 3].position ) / 2.f;
+		}
+
+		if( i == numTotalQuads - 1 )
+		{
+			va[i*4 + 3].position = (va[i*4 + 3].position + va[2].position ) / 2.f;
+		}
+		else
+		{
+			va[i*4 + 3].position = ( va[i*4 + 3].position + va[(i+1)*4 + 2].position ) / 2.f;
+		}
+	}*/
 	
 
 	return currVA;
@@ -5280,6 +5421,22 @@ void GameSession::LoadState()
 void GameSession::Pause( int frames )
 {
 	pauseFrames = frames;
+}
+
+void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
+{
+	if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
+		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
+	//if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
+	
+//	{
+//		rcEdge = edge;
+//		rcQuantity = edgeQuantity;
+//	}
 }
 
 void GameSession::AllocateEffect()
