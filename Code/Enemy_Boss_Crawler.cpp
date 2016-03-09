@@ -238,65 +238,57 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 		}
-		else if( ground != NULL )
+		if( ground != NULL )
 		{
-			if( groundSpeed > 0 )
+			if( ground->edge0->edgeType == Edge::CLOSED_GATE )
 			{
-				if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+				Gate *g = (Gate*)ground->edge0->info;
+				Edge *e0 = ground->edge0;
+				if( e0 == g->edgeA )
 				{
-					Gate *g = (Gate*)ground->edge0->info;
-					Edge *e0 = ground->edge0;
-					if( e0 == g->edgeA )
+					Edge *edgeB = g->edgeB;
+					if( e == edgeB->edge0 
+						|| e == edgeB->edge1
+						|| e == edgeB )
 					{
-						Edge *edgeB = g->edgeB;
-						if( e == edgeB->edge0 
-							|| e == edgeB->edge1
-							|| e == edgeB )
-						{
-							//cout << "RETURN C" << endl;
-							return;
-						}
+						return;
 					}
-					else if( e0 == g->edgeB )
+				}
+				else if( e0 == g->edgeB )
+				{
+					Edge *edgeA = g->edgeA;
+					if( e == edgeA->edge0 
+						|| e == edgeA->edge1
+						|| e == edgeA )
 					{
-						Edge *edgeA = g->edgeA;
-						if( e == edgeA->edge0 
-							|| e == edgeA->edge1
-							|| e == edgeA )
-						{
-							//cout << "RETURN D" << endl;
-							return;
-						}
+						return;
 					}
 				}
 			}
-			else if( groundSpeed < 0 )
+			
+			
+			if( ground->edge1->edgeType == Edge::CLOSED_GATE )
 			{
-				if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+				Gate *g = (Gate*)ground->edge1->info;
+				Edge *e1 = ground->edge1;
+				if( e1 == g->edgeA )
 				{
-					Gate *g = (Gate*)ground->edge1->info;
-					Edge *e1 = ground->edge1;
-					if( e1 == g->edgeA )
+					Edge *edgeB = g->edgeB;
+					if( e == edgeB->edge0 
+						|| e == edgeB->edge1
+						|| e == edgeB )
 					{
-						Edge *edgeB = g->edgeB;
-						if( e == edgeB->edge0 
-							|| e == edgeB->edge1
-							|| e == edgeB )
-						{
-						//	cout << "RETURN E" << endl;
-							return;
-						}
+						return;
 					}
-					else if( e1 == g->edgeB )
+				}
+				else if( e1 == g->edgeB )
+				{
+					Edge *edgeA = g->edgeA;
+					if( e == edgeA->edge0 
+						|| e == edgeA->edge1
+						|| e == edgeA )
 					{
-						Edge *edgeA = g->edgeA;
-						if( e == edgeA->edge0 
-							|| e == edgeA->edge1
-							|| e == edgeA )
-						{
-						//	cout << "RETURN F" << endl;
-							return;
-						}
+						return;
 					}
 				}
 			}

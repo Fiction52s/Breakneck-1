@@ -502,8 +502,9 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		double lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
 		double dist = cross( position - v0, normalize( v1 - v0 ) );
-		
-		if( length( v0 - position ) <= radius )
+		bool d = dot( -vel, edgeNormal ) > 0;
+
+		if( d && length( v0 - position ) <= radius )
 		{
 			V2d pointDir = normalize( v0 - position );
 			V2d velDir = normalize( vel );
@@ -526,7 +527,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				return currentContact;
 			}
 		}
-		if( dot( -vel, edgeNormal ) > 0 && dist >= 0 && dist <= radius )
+		if( d && dist >= 0 && dist <= radius )
 		{
 			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
 			{

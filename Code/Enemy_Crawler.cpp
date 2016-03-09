@@ -151,7 +151,7 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 		if( ground == e )
 			return;
 
-		/*if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
 		{
 			Gate *g = (Gate*)ground->info;
 			Edge *edgeA = g->edgeA;
@@ -177,65 +177,61 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 		}
-		else if( ground != NULL )
+		if( ground != NULL )
 		{
-			if( groundSpeed > 0 )
+			if( ground->edge0->edgeType == Edge::CLOSED_GATE )
 			{
-				if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+				Gate *g = (Gate*)ground->edge0->info;
+				Edge *e0 = ground->edge0;
+				if( e0 == g->edgeA )
 				{
-					Gate *g = (Gate*)ground->edge0->info;
-					Edge *e0 = ground->edge0;
-					if( e0 == g->edgeA )
+					Edge *edgeB = g->edgeB;
+					if( e == edgeB->edge0 
+						|| e == edgeB->edge1
+						|| e == edgeB )
 					{
-						Edge *edgeB = g->edgeB;
-						if( e == edgeB->edge0 
-							|| e == edgeB->edge1
-							|| e == edgeB )
-						{
-							return;
-						}
+						return;
 					}
-					else if( e0 == g->edgeB )
+				}
+				else if( e0 == g->edgeB )
+				{
+					Edge *edgeA = g->edgeA;
+					if( e == edgeA->edge0 
+						|| e == edgeA->edge1
+						|| e == edgeA )
 					{
-						Edge *edgeA = g->edgeA;
-						if( e == edgeA->edge0 
-							|| e == edgeA->edge1
-							|| e == edgeA )
-						{
-							return;
-						}
+						return;
 					}
 				}
 			}
-			else if( groundSpeed < 0 )
+			
+			
+			if( ground->edge1->edgeType == Edge::CLOSED_GATE )
 			{
-				if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+				Gate *g = (Gate*)ground->edge1->info;
+				Edge *e1 = ground->edge1;
+				if( e1 == g->edgeA )
 				{
-					Gate *g = (Gate*)ground->edge1->info;
-					Edge *e1 = ground->edge1;
-					if( e1 == g->edgeA )
+					Edge *edgeB = g->edgeB;
+					if( e == edgeB->edge0 
+						|| e == edgeB->edge1
+						|| e == edgeB )
 					{
-						Edge *edgeB = g->edgeB;
-						if( e == edgeB->edge0 
-							|| e == edgeB->edge1
-							|| e == edgeB )
-						{
-							return;
-						}
+						return;
 					}
-					else if( e1 == g->edgeB )
+				}
+				else if( e1 == g->edgeB )
+				{
+					Edge *edgeA = g->edgeA;
+					if( e == edgeA->edge0 
+						|| e == edgeA->edge1
+						|| e == edgeA )
 					{
-						Edge *edgeA = g->edgeA;
-						if( e == edgeA->edge0 
-							|| e == edgeA->edge1
-							|| e == edgeA )
-						{
-							return;
-						}
+						return;
 					}
 				}
 			}
-		}*/
+		}
 
 		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
 
@@ -247,137 +243,143 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 			double len0 = length( c->position - e->v0 );
 			double len1 = length( c->position - e->v1 );
 
-			//if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
-			//{
-			//	V2d pVec = normalize( position - e->v0 );
-			//	double pAngle = atan2( -pVec.y, pVec.x );
+			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
+			{
+				V2d pVec = normalize( position - e->v0 );
+				double pAngle = atan2( -pVec.y, pVec.x );
 
-			//	if( pAngle < 0 )
-			//	{
-			//		pAngle += 2 * PI;
-			//	}
+				if( pAngle < 0 )
+				{
+					pAngle += 2 * PI;
+				}
 
-			//	Edge *e0 = e->edge0;
-			//	Gate *g = (Gate*)e0->info;
+				Edge *e0 = e->edge0;
+				Gate *g = (Gate*)e0->info;
 
-			//	V2d startVec = normalize( e0->v0 - e->v0 );
-			//	V2d endVec = normalize( e->v1 - e->v0 );
+				V2d startVec = normalize( e0->v0 - e->v0 );
+				V2d endVec = normalize( e->v1 - e->v0 );
 
-			//	double startAngle = atan2( -startVec.y, startVec.x );
-			//	if( startAngle < 0 )
-			//	{
-			//		startAngle += 2 * PI;
-			//	}
-			//	double endAngle = atan2( -endVec.y, endVec.x );
-			//	if( endAngle < 0 )
-			//	{
-			//		endAngle += 2 * PI;
-			//	}
+				double startAngle = atan2( -startVec.y, startVec.x );
+				if( startAngle < 0 )
+				{
+					startAngle += 2 * PI;
+				}
+				double endAngle = atan2( -endVec.y, endVec.x );
+				if( endAngle < 0 )
+				{
+					endAngle += 2 * PI;
+				}
 
-			//	double temp = startAngle;
-			//	startAngle = endAngle;
-			//	endAngle = temp;
+				double temp = startAngle;
+				startAngle = endAngle;
+				endAngle = temp;
 
-			//	if( endAngle < startAngle )
-			//	{
-			//		if( pAngle >= endAngle || pAngle <= startAngle )
-			//		{
-			//		
-			//		}
-			//		else
-			//		{
-			//			return;
-			//		}
-			//	}
-			//	else
-			//	{
-			//		if( pAngle >= startAngle && pAngle <= endAngle )
-			//		{
-			//		}
-			//		else
-			//		{
-			//			return;
-			//		}
-			//	}
-			//
+				if( endAngle < startAngle )
+				{
+					if( pAngle >= endAngle || pAngle <= startAngle )
+					{
+					
+					}
+					else
+					{
+						return;
+					}
+				}
+				else
+				{
+					if( pAngle >= startAngle && pAngle <= endAngle )
+					{
+					}
+					else
+					{
+						return;
+					}
+				}
+			
 
-			//}
-			//else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
-			//{
-			//	V2d pVec = normalize( position - e->v1 );
-			//	double pAngle = atan2( -pVec.y, pVec.x );
+			}
+			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
+			{
+				V2d pVec = normalize( position - e->v1 );
+				double pAngle = atan2( -pVec.y, pVec.x );
 
-			//	if( pAngle < 0 )
-			//	{
-			//		pAngle += 2 * PI;
-			//	}
+				if( pAngle < 0 )
+				{
+					pAngle += 2 * PI;
+				}
 
-			//	Edge *e1 = e->edge1;
-			//	Gate *g = (Gate*)e1->info;
+				Edge *e1 = e->edge1;
+				Gate *g = (Gate*)e1->info;
 
-			//	V2d startVec = normalize( e->v0 - e->v1 );
-			//	V2d endVec = normalize( e1->v1 - e->v1 );
+				V2d startVec = normalize( e->v0 - e->v1 );
+				V2d endVec = normalize( e1->v1 - e->v1 );
 
-			//	double startAngle = atan2( -startVec.y, startVec.x );
-			//	if( startAngle < 0 )
-			//	{
-			//		startAngle += 2 * PI;
-			//	}
-			//	double endAngle = atan2( -endVec.y, endVec.x );
-			//	if( endAngle < 0 )
-			//	{
-			//		endAngle += 2 * PI;
-			//	}
-			//
-			//	double temp = startAngle;
-			//	startAngle = endAngle;
-			//	endAngle = temp;
+				double startAngle = atan2( -startVec.y, startVec.x );
+				if( startAngle < 0 )
+				{
+					startAngle += 2 * PI;
+				}
+				double endAngle = atan2( -endVec.y, endVec.x );
+				if( endAngle < 0 )
+				{
+					endAngle += 2 * PI;
+				}
+			
+				double temp = startAngle;
+				startAngle = endAngle;
+				endAngle = temp;
 
-			//	//double temp = startAngle;
-			//	//startAngle = endAngle;
-			//	//endAngle = temp;
+				//double temp = startAngle;
+				//startAngle = endAngle;
+				//endAngle = temp;
 
-			//	if( endAngle < startAngle )
-			//	{
-			//		/*if( pAngle > startAngle && pAngle < endAngle )
-			//		{
-			//			return;
-			//		}*/
+				if( endAngle < startAngle )
+				{
+					/*if( pAngle > startAngle && pAngle < endAngle )
+					{
+						return;
+					}*/
 
 
-			//		if( pAngle >= endAngle || pAngle <= startAngle )
-			//		{
-			//		}
-			//		else
-			//		{
-			//			return;
-			//		}
-			//	}
-			//	else
-			//	{
-			//		/*if( pAngle < startAngle || pAngle > endAngle )
-			//		{
-			//			cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-			//			return;
-			//		}*/
-			//	
-			//		if( pAngle >= startAngle && pAngle <= endAngle )
-			//		{
-			//		}
-			//		else
-			//		{	
-			//			return;
-			//		}
-			//	}
-			//}
+					if( pAngle >= endAngle || pAngle <= startAngle )
+					{
+					}
+					else
+					{
+						return;
+					}
+				}
+				else
+				{
+					/*if( pAngle < startAngle || pAngle > endAngle )
+					{
+						cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;
+					}*/
+				
+					if( pAngle >= startAngle && pAngle <= endAngle )
+					{
+					}
+					else
+					{	
+						return;
+					}
+				}
+			}
 
 			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 
-				if( e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
+				if( groundSpeed > 0 && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
 				{
+					//cout << "blah" << endl;
 					return;
 				}
+				//else if( groundSpeed < 0 && e == ground->edge0 && ( c->normal.x == 0 && c->normal.y == 0 ) )
+				//{
+				//	//cout << "blah" << endl;
+				//	return;
+				//}
 
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
@@ -579,17 +581,20 @@ void Crawler::UpdatePhysics()
 			//if( d > . )
 			if( gNormal == e1n )
 			{
+				//cout << "t1" << endl;
 				q = 0;
 				ground = e1;
 			}
 			else if( !roll )
 			{
+				//cout << "roll is true" << endl;
 				roll = true;
 				rollFactor = 0;
 				frame = 0;
 			}
 			else
 			{
+				//cout << "rollin" << endl;
 				double angle = m / 3.0 /  physBody.rw;
 				V2d currVec = position - ground->v1;
 				V2d newPos;
@@ -650,6 +655,7 @@ void Crawler::UpdatePhysics()
 
 				if( changed )
 				{
+				//	cout << "t2" << endl;
 					ground = e1;
 					q = 0;
 					roll = false;
@@ -776,7 +782,7 @@ void Crawler::UpdatePhysics()
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
 					V2d gn = ground->Normal();
-					//cout << "hit 1" << endl;
+					cout << "hit 1: " << gn.x << ", " << gn.y << endl;
 					break;
 				}			
 			}
@@ -784,6 +790,7 @@ void Crawler::UpdatePhysics()
 			{
 				if( clockwise )
 				{
+					cout << "t33" << endl;
 					ground = e1;
 					q = 0;
 				}
