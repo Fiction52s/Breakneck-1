@@ -1303,7 +1303,12 @@ void Crawler::UpdateSprite()
 	{
 		if( attackFrame >= 0 )
 		{
-			sprite.setTextureRect( ts->GetSubRect( 28 + attackFrame / attackMult ) );
+			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
+			if( !clockwise )
+			{
+				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
+			}
+			sprite.setTextureRect( r );
 		}
 	}
 }

@@ -1456,6 +1456,15 @@ void BossCrawler::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
+		if( action == ROLL )
+		{
+			CircleShape cs;
+			cs.setRadius( 128 );
+			cs.setFillColor( COLOR_BLUE );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 		target->draw( sprite );
 
 		sf::RenderStates states;
