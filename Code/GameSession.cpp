@@ -4758,6 +4758,7 @@ void GameSession::RespawnPlayer()
 		player.hasGreenKey = false;
 		player.hasBlueKey = player.currentCheckPoint->hadBlueKey;
 	}
+
 	player.gateTouched = NULL;
 	player.action = player.JUMP;
 	player.frame = 1;

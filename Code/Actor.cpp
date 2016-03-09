@@ -4517,7 +4517,7 @@ void Actor::UpdatePrePhysics()
 				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 
-			cout << "groundspeed: " << groundSpeed << endl;
+			//cout << "groundspeed: " << groundSpeed << endl;
 			
 			break;
 		}

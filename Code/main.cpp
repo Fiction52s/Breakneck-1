@@ -517,9 +517,9 @@ int main()
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 
-	//window->setVerticalSyncEnabled( true );
-	window->setVerticalSyncEnabled( false );
-	window->setFramerateLimit( 60 );
+	window->setVerticalSyncEnabled( true );
+	//window->setVerticalSyncEnabled( false );
+	//window->setFramerateLimit( 60 );
 
 
 
