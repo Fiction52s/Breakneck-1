@@ -132,6 +132,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	preScreenTex = preTex;
 
+	terrainBGTree = new QuadTree( 1000000, 1000000 );
 	//soon make these the actual size of the bordered level
 	terrainTree = new QuadTree( 1000000, 1000000 );
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
@@ -553,6 +554,196 @@ bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
 	}
 
 	return true;
+}
+
+bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
+{
+	int bgPlatformNum0;
+	is >> bgPlatformNum0;
+	for( int i = 0; i < bgPlatformNum0; ++i )
+	{
+		//layer is 1
+
+		string material;
+		is >> material;
+
+		int polyPoints;
+		is >> polyPoints;
+		
+		list<Vector2i> poly;
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			int x,y, special;
+			is >> x;
+			is >> y;
+			poly.push_back( Vector2i( x, y ) );
+		}
+
+
+
+		list<Vector2i>::iterator it = poly.begin();
+		list<Edge*> realEdges;
+		double left, right, top, bottom;
+		for( ; it != poly.end(); ++it )
+		{
+			Edge *ee = new Edge();
+					
+  			//edges[currentEdgeIndex + i] = ee;
+			ee->v0 = V2d( (*it).x, (*it).y );
+			list<Vector2i>::iterator temp = it;
+			++temp;
+			if( temp == poly.end() )
+			{
+				ee->v1 = V2d( poly.front().x, poly.front().y );
+			}
+			else
+			{
+				ee->v1 = V2d( (*temp).x, (*temp).y );
+			}
+			
+			realEdges.push_back( ee );
+			terrainBGTree->Insert( ee );
+
+			double localLeft = min( ee->v0.x, ee->v1.x );
+			double localRight = max( ee->v0.x, ee->v1.x );
+			double localTop = min( ee->v0.y, ee->v1.y );
+			double localBottom = max( ee->v0.y, ee->v1.y ); 
+			if( i == 0 )
+			{
+				left = localLeft;
+				right = localRight;
+				top = localTop;
+				bottom = localBottom;
+			}
+			else
+			{
+				left = min( left, localLeft );
+				right = max( right, localRight );
+				top = min( top, localTop);
+				bottom = max( bottom, localBottom);
+			}
+		}
+
+
+		for( list<Edge*>::iterator eit = realEdges.begin(); eit != realEdges.end(); ++eit )
+		{
+			Edge * ee = (*eit);//edges[i + currentEdgeIndex];
+
+			Edge *prev;
+			if( eit == realEdges.begin() )
+			{
+				prev = realEdges.back();
+			}
+			else
+			{
+				eit--;
+				prev = (*eit);
+				eit++;
+			}
+
+			Edge *next;
+			eit++;
+			if( eit == realEdges.end() )
+			{
+				next = realEdges.front();
+				eit--;
+			}
+			else
+			{
+				next = (*eit);
+				eit--;
+			}
+
+			ee->edge0 = prev;
+			ee->edge1 = next;
+		}
+
+
+		vector<p2t::Point*> polyline;
+		//for( int i = 0; i < polyPoints; ++i )
+		for( list<Vector2i>::iterator pit = poly.begin(); pit != poly.end(); ++pit )
+		{
+			polyline.push_back( new p2t::Point( (*pit).x, (*pit).y ) );
+		}
+
+		p2t::CDT * cdt = new p2t::CDT( polyline );
+	
+		cdt->Triangulate();
+		vector<p2t::Triangle*> tris;
+		tris = cdt->GetTriangles();
+
+			
+		va = new VertexArray( sf::Triangles , tris.size() * 3 );
+		VertexArray & v = *va;
+		Color testColor( 0x75, 0x70, 0x90 );
+		testColor = Color::White;
+		for( int i = 0; i < tris.size(); ++i )
+		{	
+			p2t::Point *p = tris[i]->GetPoint( 0 );	
+			p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+			p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+			v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+		}
+
+		polygons.push_back( va );
+
+		VertexArray *polygonVA = va;
+
+		//ground, slope, steep, wall
+
+		//ground
+
+		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
+		Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
+		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+			&GameSession::IsFlatGround );
+		VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+			&GameSession::IsSlopedGround );
+		VertexArray *steepVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+			&GameSession::IsSteepGround );
+		VertexArray *wallVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+			&GameSession::IsWall );
+
+		bool first = true;
+			
+		
+
+		TestVA * testva = new TestVA;
+		testva->next = NULL;
+		//testva->va = va;
+		testva->aabb.left = left;
+		testva->aabb.top = top;
+		testva->aabb.width = right - left;
+		testva->aabb.height = bottom - top;
+		testva->terrainVA = polygonVA;
+		testva->grassVA = NULL;//grassVA;
+
+		testva->ts_border = ts_border;
+		testva->groundva = groundVA;
+		testva->slopeva = slopeVA;
+		testva->steepva = steepVA;
+		testva->wallva = wallVA;
+		
+			
+		//cout << "before insert border: " << insertCount << endl;
+		borderTree->Insert( testva );
+
+
+		//cout << "after insert border: " << insertCount << endl;
+		//insertCount++;
+			
+
+		delete cdt;
+		for( int i = 0; i < polyPoints; ++i )
+		{
+			delete polyline[i];
+		//	delete tris[i];
+		}
+
+		//no grass for now
+	}
 }
 
 bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
@@ -1319,7 +1510,6 @@ bool GameSession::OpenFile( string fileName )
 				grassVA = NULL;
 			}
 
-			//VertexArray * grassVA = va;
 
 			//ground, slope, steep, wall
 
@@ -1327,439 +1517,15 @@ bool GameSession::OpenFile( string fileName )
 
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 			Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
-			VertexArray *groundVA = SetupBorderQuads( currentEdgeIndex, ts_border,
+			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
-			VertexArray *slopeVA = SetupBorderQuads( currentEdgeIndex, ts_border,
+			VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsSlopedGround );
-			VertexArray *steepVA = SetupBorderQuads( currentEdgeIndex, ts_border,
+			VertexArray *steepVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsSteepGround );
-			VertexArray *wallVA = SetupBorderQuads( currentEdgeIndex, ts_border,
+			VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsWall );
 
-			
-
-			
-
-			//va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
-
-
-			//va = new VertexArray( sf::Quads, 
-
-			//start comment here
-
-			//va = new VertexArray( sf::Quads, polyPoints * 4 );
-			//VertexArray &edgeVa = *va;
-			//Color groundColor = COLOR_GROUND;
-			//Color wallColor = COLOR_WALL;
-			//Color steepGroundColor = COLOR_STEEP_GROUND;
-			//Color steepCeilingColor = COLOR_STEEP_CEILING;
-			//Color ceilingColor = COLOR_CEILING;
-			//
-			//Vector2f *innerPoints = new Vector2f[polyPoints];
-			//double in = 0;
-
-			//int index = 0;
-			//do
-			//{
-			//	Edge *te = testEdge;
-			//	V2d testN = te->Normal();
-			//	Color edgeColor;
-			//	
-
-			//	//calculate color
-			//	if( abs( testN.x ) > player.wallThresh ) //wall
-			//	{
-			//		edgeColor = wallColor;
-			//	}
-			//	else if( testN.y < 0 && testN.y >= -player.steepThresh ) //might be an equal or not equal prob here with checks for player //steepground
-			//	{
-			//		edgeColor = steepGroundColor;
-			//	}
-			//	else if( testN.y > 0 && testN.y <= player.steepThresh ) //steepceil
-			//	{
-			//		edgeColor = steepCeilingColor;
-			//	}
-			//	else if( testN.y > 0 ) //ceil
-			//	{
-			//		edgeColor = ceilingColor;
-			//	}
-			//	else
-			//	{
-			//		edgeColor = groundColor;
-			//	}
-
-			//	edgeVa[index*4].color = edgeColor;
-			//	edgeVa[index*4+1].color = edgeColor;
-			//	edgeVa[index*4+2].color = edgeColor;
-			//	edgeVa[index*4+3].color = edgeColor;
-
-			//	//set positions for quads
-
-			//	edgeVa[index*4].position = Vector2f( te->v0.x, te->v0.y );
-			//	edgeVa[index*4+1].position = Vector2f( te->v1.x, te->v1.y );
-
-			//	V2d bisector0 = normalize( normalize( te->edge0->v0 - te->v0 ) + normalize( te->v1 - te->v0 ) );
-			//	V2d otherBi0( bisector0.y, -bisector0.x );
-
-			//	V2d bisector1 = normalize( normalize( te->edge1->v1 - te->v1 ) + normalize( te->v0 - te->v1 ) );
-
-			//	in = 8;
-
-			//	//innerPoints[index]
-			//	V2d in0 = V2d( te->v0 + bisector0 * in );
-			//	V2d in1 = V2d( te->v1 + bisector1 * in );
-
-			//	V2d teNormal = -te->Normal();
-			//	//V2d nextNormal = -te->edge1->Normal();
-			//	V2d prevNormal = -te->edge0->Normal();
-
-
-
-
-			//	
-			//	//if( cross( 
-			//	//edgeVa[index*4+2].position = Vector2f( in1.x, in1.y );
-			//	//edgeVa[index*4+3].position = Vector2f( in0.x, in0.y );
-
-			//	LineIntersection li = lineIntersection( te->edge0->v0 + prevNormal * in, te->v0 + prevNormal * in,
-			//		te->v0 + teNormal * in, te->v1 + teNormal * in );
-
-			//	if( li.parallel )
-			//	{
-
-			//		V2d in0 = V2d( te->v0 + teNormal * in );
-			//		V2d in1 = V2d( te->v1 + teNormal * in );
-
-			//		//edgeVa[index*4+2].position = Vector2f( in1.x, in1.y );
-			//		//edgeVa[index*4+3].position = Vector2f( in0.x, in0.y );
-			//		innerPoints[index] = Vector2f( in0.x, in0.y );
-			//		//cout << "assigning index: " << index << ": " << in0.x << ", " << in0.y << endl;
-			//	}
-			//	else
-			//	{
-			//		V2d intersect = li.position;
-			//		
-			//		innerPoints[index] = Vector2f( intersect.x, intersect.y );
-			//		//cout << "assigning index: " << index << ": " << intersect.x << ", " << intersect.y << endl;
-			//		//V2d in0 = V2d( te->v0 + teNormal * in );
-			//		//V2d in1 = V2d( te->v1 + teNormal * in );
-
-			//	}
-
-
-
-			//	++index;
-			//	testEdge = testEdge->edge1;
-			//}
-			//while( testEdge != edges[currentEdgeIndex] );
-
-			//for( int i = 0; i < polyPoints; ++i )
-			//{
-			//	Vector2f nextPos;
-			//	if( i == polyPoints - 1 )
-			//	{
-			//		nextPos = innerPoints[0];
-			//	}
-			//	else
-			//	{
-			//		nextPos = innerPoints[i+1];
-			//	}
-
-			//	//cout << "i: " << i << ", innerposi: " << innerPoints[i].x << ", " << innerPoints[i].y << ", nextpos: " << nextPos.x << ", " << nextPos.y << endl;
-			//	edgeVa[i*4+2].position = nextPos;
-			//	edgeVa[i*4+3].position = innerPoints[i];
-
-			//}
-
-			//delete [] innerPoints;
-			
-
-
-//stop comment here
-
-
-
-
-			/*double size = 16;
-			double inward = 16;
-			double spacing = 2;
-
-			int innerPolyPoints = 0;
-			do
-			{
-				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-				V2d adjv0 = testEdge->v0 - bisector0 * inward;
-				V2d adjv1 = testEdge->v1 - bisector1 * inward;
-
-				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
-				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
-				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
-				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
-
-
-				//double remainder = length( adjv1 - adjv0 ) / size;
-				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
-				
-				//int num = remainder / size;
-
-				//remainder = remainder - floor( remainder );
-
-				//double eachAdd = remainder / num;
-
-				int num = 1;
-				while( remainder > 1 )
-				{
-					++num;
-					remainder -= 1;
-				}
-				
-
-				innerPolyPoints += num;
-				
-
-				testEdge = testEdge->edge1;
-			}
-			while( testEdge != edges[currentEdgeIndex] );
-			
-		
-			//double amount = totalPerimeter / spacing;
-
-			
-
-
-			va = new VertexArray( sf::Quads, innerPolyPoints * 4 );
-			VertexArray & borderVa = *va;
-			double testQuantity = 0;
-
-			int i = 0;
-			do
-			{
-				V2d bisector0 = normalize( testEdge->Normal() + testEdge->edge0->Normal() );
-				double q = cross( normalize( testEdge->v1 - testEdge->v0 ), normalize(testEdge->edge0->v0 - testEdge->v0) );
-				if( q > 0 )
-				{
-				//	bisector0 *= ( q );
-				}
-				
-				V2d bisector1 = normalize( testEdge->Normal() + testEdge->edge1->Normal() );
-				V2d adjv0 = testEdge->v0 - testEdge->Normal() * inward;//testEdge->v0 - bisector0 * inward;//V2d( testEdge->v0.x, testEdge->v0.y + inward );//
-				V2d adjv1 = testEdge->v1 - testEdge->Normal() * inward;//testEdge->v1 - bisector1 * inward;//V2d( testEdge->v1.x, testEdge->v1.y + inward );
-
-				V2d adje0v0 = testEdge->edge0->v0 - testEdge->edge0->Normal() * inward;
-				V2d adje0v1 = testEdge->edge0->v1 - testEdge->edge0->Normal() * inward;
-
-				V2d adje1v0 = testEdge->edge1->v0 - testEdge->edge1->Normal() * inward;
-				V2d adje1v1 = testEdge->edge1->v1 - testEdge->edge1->Normal() * inward;
-
-
-				V2d nbisector0 = normalize( testEdge->edge1->Normal() + testEdge->Normal() );
-				V2d nbisector1 = normalize( testEdge->edge1->Normal() + testEdge->edge1->edge1->Normal() );
-				V2d nadjv0 = testEdge->edge1->v0 - nbisector0 * inward;
-				V2d nadjv1 = testEdge->edge1->v1 - nbisector1 * inward;
-
-				LineIntersection li0 = lineIntersection( adjv0, adjv1, adje0v0, adje0v1 );
-				LineIntersection li1 = lineIntersection( adjv0, adjv1, adje1v0, adje1v1 );
-				//cout << "li0: " << li0.position.x << ", " << li0.position.y << endl;
-
-				//double remainder = length( adjv1 - adjv0 ) / size;
-				double remainder = length( testEdge->v1- testEdge->v0 ) / size;
-				
-
-				
-				bool clockwiseAngle0 = cross( testEdge->edge0->v0 - testEdge->v0, testEdge->v1 - testEdge->v0 ) > 0;
-				bool clockwiseAngle1 = cross( testEdge->v0 - testEdge->v1, testEdge->edge1->v1 - testEdge->v1 ) > 0;
-				//int num = remainder / size;
-
-				//remainder = remainder - floor( remainder );
-
-				//double eachAdd = remainder / num;
-
-				int num = 1;
-				while( remainder > 1 )
-				{
-					++num;
-					remainder -= 1;
-				}
-
-				for( int j = 0; j < num; ++j )
-				{
-					Vector2f surface, inner, surfaceNext, innerNext;
-
-
-					surface = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)j / num, 
-							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)j / num );
-					surfaceNext = Vector2f( testEdge->v0.x + (testEdge->v1.x - testEdge->v0.x) * (double)(j+1) / num, 
-							testEdge->v0.y + (testEdge->v1.y - testEdge->v0.y) * (double)(j+1) / num );
-
-					if( j == 0 || j == num - 1 )
-					{
-						if( j == 0 && j == num - 1 )
-						{
-							V2d v00 = testEdge->v0 - bisector0 * inward;
-						
-
-							//inner = Vector2f( v00.x, v00.y );
-							if( !li0.parallel )
-								inner = Vector2f( li0.position.x, li0.position.y );
-							else
-								inner = Vector2f( v00.x, v00.y );
-
-							V2d v11 = testEdge->v1 - bisector1 * inward;
-
-							//innerNext = Vector2f( v11.x, v11.y );
-							if( !li1.parallel )
-								innerNext = Vector2f( li1.position.x, li1.position.y );
-							else
-								innerNext = Vector2f( v11.x, v11.y );
-						}
-						else if( j == 0 )
-						{
-							V2d v00 = testEdge->v0 - bisector0 * inward;
-						
-
-							//inner = Vector2f( v00.x, v00.y );
-
-							if( !li0.parallel )
-								inner = Vector2f( li0.position.x, li0.position.y );
-							else
-								inner = Vector2f( v00.x, v00.y );
-
-						
-							innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
-								adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
-						}
-						else if( j == num - 1 )
-						{
-							V2d v11 = testEdge->v1 - bisector1 * inward;
-
-							inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
-								adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
-
-							//innerNext = Vector2f( v11.x, v11.y );
-							if( !li1.parallel )
-								innerNext = Vector2f( li1.position.x, li1.position.y );
-							else
-								innerNext = Vector2f( v11.x, v11.y );
-						}
-					}
-					else
-					{
-						
-						inner = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)j / num,
-							adjv0.y + (adjv1.y - adjv0.y) * (double)j / num );
-
-						
-						innerNext = Vector2f( adjv0.x + ( adjv1.x - adjv0.x ) * (double)(j+1) / num,
-							adjv0.y + (adjv1.y - adjv0.y) * (double)(j+1) / num );
-					}
-
-					
-					//borderVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-					//borderVa[i*4].color.a = 10;
-
-					Vector2f coordsTopLeft, coordsTopRight, coordsBottomLeft, coordsBottomRight;
-					V2d testN = testEdge->Normal();
-
-					int tileIndex = 0;
-					if( abs( testN.x ) > player.wallThresh )
-					{
-						tileIndex = 2;
-					}
-					else if( testN.y < 0 && testN.y >= -player.steepThresh ) //might be an equal or not equal prob here with checks for player
-					{
-						tileIndex = 3;
-					}
-					else if( testN.y > 0 && testN.y <= player.steepThresh )
-					{
-						tileIndex = 4;
-					}
-					else if( testN.y > 0 )
-					{
-						tileIndex = 1;
-					}
-					
-
-					int tileX = tileIndex % 3;
-					int tileY = tileIndex / 3;
-					
-					
-
-					coordsTopLeft = Vector2f( tileX * size, tileY * size );
-					coordsTopRight = Vector2f( (tileX + 1) * size, tileY * size );
-					coordsBottomLeft = Vector2f( tileX * size, (tileY+1) * size );
-					coordsBottomRight = Vector2f( (tileX+1) * size, (tileY+1) * size );
-					coordsBottomLeft.y -= 1;
-					coordsBottomRight.y -= 1;
-
-					coordsBottomRight.x -= 1;
-					coordsTopRight.x -= 1;
-					
-					Vector2f adjSurface = surface;
-					//adjSurface.x = floor( adjSurface.x + .5 );
-					//adjSurface.y = floor( adjSurface.y + .5 );
-
-					Vector2f adjInner = inner;
-					//adjInner.x = floor( adjInner.x + .5 );
-					//adjInner.y = floor( adjInner.y + .5 );
-
-					Vector2f adjSurfaceNext = surfaceNext;
-					//adjSurfaceNext.x = floor( adjSurfaceNext.x + .5 );
-					//adjSurfaceNext.y = floor( adjSurfaceNext.y + .5 );
-
-					Vector2f adjInnerNext = innerNext;
-					//adjInnerNext.x = floor( adjInnerNext.x + .5 );
-					//adjInnerNext.y = floor( adjInnerNext.y + .5 );
-
-				//	borderVa[i*4].color = Color( 0x0d, 0, 0x80 );
-					borderVa[i*4].position = adjSurface;
-					borderVa[i*4].texCoords = coordsTopLeft;
-
-				//	borderVa[i*4+1].color = Color::Blue;
-					//borderVa[i*4+1].color.a = 10;
-					borderVa[i*4+1].position = adjInner;
-					borderVa[i*4+1].texCoords = coordsBottomLeft;
-
-				//	borderVa[i*4+2].color = Color::Blue;
-					//borderVa[i*4+2].color.a = 10;
-					borderVa[i*4+2].position = adjInnerNext;
-					borderVa[i*4+2].texCoords = coordsBottomRight;
-
-				//	borderVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
-					//borderVa[i*4+3].color.a = 10;
-					borderVa[i*4+3].position = adjSurfaceNext;
-					borderVa[i*4+3].texCoords = coordsTopRight;
-					++i;
-
-					//borderVa[i*4].position = Vector2f( testEdge->v0.x, testEdge->v0.y );
-					//borderVa[i*4].texCoords = Vector2f( 0, 0 );
-
-					////borderVa[i*4+1].color = Color::Blue;
-					//borderVa[i*4+1].position = Vector2f( adjv0.x, adjv0.y  );
-					//borderVa[i*4+1].texCoords = Vector2f( 0, size );
-
-					////borderVa[i*4+2].color = Color::Green;
-					//borderVa[i*4+2].position = Vector2f( nadjv0.x, nadjv0.y  );
-					//borderVa[i*4+2].texCoords = Vector2f( size, size );
-
-					////borderVa[i*4+3].color = Color::Magenta;
-					//borderVa[i*4+3].position = Vector2f( testEdge->edge1->v0.x, testEdge->edge1->v0.y  );
-					//borderVa[i*4+3].texCoords = Vector2f( size, 0 );
-					//++i;
-				}
-
-				
-
-				testEdge = testEdge->edge1;
-			}
-			while( testEdge != edges[currentEdgeIndex] );
-
-			*/
-		
-			
-
-				//cout << "loaded to here" << endl;
-			//double left, right, bottom, top;
 			bool first = true;
 			
 		
@@ -1801,6 +1567,8 @@ bool GameSession::OpenFile( string fileName )
 		}
 		
 		LoadMovingPlats( is, polyIndex );
+
+		LoadBGPlats( is, polyIndex );
 
 		LoadLights( is, polyIndex );
 
@@ -5006,12 +4774,25 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//polyShader.setParameter( "OnD0", true );
 }
 
-VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, int (*ValidEdge)(sf::Vector2<double> & ) )
+VertexArray * GameSession::SetupBorderQuads( int bgLayer, 
+	Edge *startEdge, Tileset *ts, int (*ValidEdge)(sf::Vector2<double> & ) )
 {
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
+
+	assert( qt != NULL );
+
 	int tw = 8;//64;
 	int th = 128;
 	int numTotalQuads = 0;
-	Edge *te = edges[currentEdgeIndex];
+	Edge *te = startEdge;//edges[currentEdgeIndex];
 	do
 	{
 		V2d eNorm = te->Normal();
@@ -5031,7 +4812,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 		}
 		te = te->edge1;
 	}
-	while( te != edges[currentEdgeIndex] );
+	while( te != startEdge );
 
 	VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
 	
@@ -5040,7 +4821,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 	VertexArray &va = *currVA;
 			
 	int extra = 0;
-	te = edges[currentEdgeIndex];
+	te = startEdge;
 	int varietyCounter = 0;
 	do
 	{
@@ -5100,7 +4881,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 				rayIgnoreEdge = te;
 				rayStart = te->v0 + ( startAlong ) * along;
 				rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
-				RayCast( this, terrainTree->startNode, rayStart, rayEnd );
+				RayCast( this, qt->startNode, rayStart, rayEnd );
 
 
 				//start ray
@@ -5113,7 +4894,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 				rcEdge = NULL;
 				rayStart = te->v0 + ( endAlong ) * along;
 				rayEnd = currEndInner;
-				RayCast( this, terrainTree->startNode, rayStart, rayEnd );
+				RayCast( this, qt->startNode, rayStart, rayEnd );
 
 				//end ray
 				if( rcEdge != NULL )
@@ -5191,7 +4972,7 @@ VertexArray * GameSession::SetupBorderQuads( int currentEdgeIndex, Tileset *ts, 
 		
 		te = te->edge1;
 	}
-	while( te != edges[currentEdgeIndex] );
+	while( te != startEdge );
 
 	
 	return currVA;

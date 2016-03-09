@@ -112,6 +112,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,
 		std::map<int, int> &polyIndex);
+	bool LoadBGPlats( std::ifstream &is,
+		std::map<int, int> &polyIndex );
 	bool LoadMovingPlats(std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	bool LoadLights( std::ifstream &is,
@@ -257,7 +259,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	static int IsWall( sf::Vector2<double> &normal );
 
 	sf::VertexArray * SetupBorderQuads(
-		int currentEdgeIndex,
+		int bgLayer,
+		Edge *start,
+		//int currentEdgeIndex,
 		Tileset *ts,
 		int (*ValidEdge)(sf::Vector2<double> &)
 		);
@@ -314,6 +318,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Rect<double> screenRect;
 	sf::Rect<double> tempSpawnRect;
 
+	QuadTree *terrainBGTree;
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 	QuadTree * lightTree;

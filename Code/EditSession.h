@@ -187,6 +187,8 @@ struct TerrainPolygon : ISelectable
 	void MoveSelectedPoints(sf::Vector2i move);
 	void UpdateBounds();
 
+	void SetLayer( int p_layer );
+
 	bool ContainsPoint( sf::Vector2f point );
 	bool Intersects( sf::IntRect rect );
 	bool IsPlacementOkay();
@@ -258,6 +260,8 @@ struct TerrainPolygon : ISelectable
 	bool isGrassShowing;
 	bool finalized;
 	static EditSession *session;
+
+	int layer; //0 is game layer. 1 is bg
 
 };
 

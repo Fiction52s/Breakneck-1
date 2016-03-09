@@ -169,6 +169,7 @@ void TerrainBrush::AddPoint( TerrainPoint *tp )
 TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	:ISelectable( ISelectable::TERRAIN ), grassTex( gt )
 {
+	layer = 0;
 	va = NULL;
 	lines = NULL;
 	selected = false;
@@ -808,6 +809,31 @@ void TerrainPolygon::Move( SelectPtr &me, Vector2i move )
 
 	UpdateBounds();
 	return;
+}
+
+void TerrainPolygon::SetLayer( int newLayer )
+{
+	Color testColor( 0x75, 0x70, 0x90 );
+	if( newLayer != layer )
+	{
+		layer = newLayer;
+		if( newLayer == 0 )
+		{
+			VertexArray &v = *va;
+			for( int i = 0; i < vaSize; ++i )
+			{
+				v[i].color = testColor;
+			}
+		}
+		else if( newLayer == 1 )
+		{
+			VertexArray &v = *va;
+			for( int i = 0; i < vaSize; ++i )
+			{
+				v[i].color = COLOR_BLUE;
+			}
+		}
+	}
 }
 
 void TerrainPolygon::UpdateBounds()
@@ -3077,6 +3103,32 @@ bool EditSession::OpenFile( string fileName )
 				poly->path.push_back( Vector2i( x, y ) );
 			}
 		}
+
+
+		int bgPlatformNum0;
+		is >> bgPlatformNum0;
+		for( int i = 0; i < bgPlatformNum0; ++i )
+		{
+			PolyPtr poly( new TerrainPolygon( &grassTex ) );
+			//poly->layer = 1;
+			polygons.push_back( poly );
+			is >> poly->material;
+
+			int polyPoints;
+			is >> polyPoints;
+			
+			for( int i = 0; i < polyPoints; ++i )
+			{
+				int x,y, special;
+				is >> x;
+				is >> y;
+				poly->AddPoint( new TerrainPoint(  Vector2i(x,y), false ) );
+			}
+
+			poly->Finalize();
+			poly->SetLayer( 1 );
+			//no grass for now
+		}
 		
 
 		//lights here
@@ -3646,6 +3698,8 @@ bool EditSession::OpenFile( string fileName )
 	
 }
 
+
+
 void EditSession::WriteFile(string fileName)
 {
 	bool hasGoal = false;
@@ -3680,13 +3734,22 @@ void EditSession::WriteFile(string fileName)
 
 	int pointCount = 0;
 	int movingPlatCount = 0;
+	int bgPlatCount0 = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		
-		
-
-		if( (*it)->path.size() == 0 )
-			pointCount += (*it)->numPoints;
+		//if( (*it)->path.size() == 0 )
+		if( (*it)->path.size() < 2 )
+		{
+			if( (*it)->layer == 0 )
+			{
+				pointCount += (*it)->numPoints;
+			}
+			else if( (*it)->layer == 1 )
+			{
+				bgPlatCount0++;
+			}
+			
+		}
 		else
 			movingPlatCount++;
 	}
@@ -3699,7 +3762,7 @@ void EditSession::WriteFile(string fileName)
 	int writeIndex = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		if( (*it)->path.size() < 2 )
+		if( (*it)->layer == 0 && (*it)->path.size() < 2 )
 		{
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
@@ -3722,7 +3785,7 @@ void EditSession::WriteFile(string fileName)
 	writeIndex = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		if( (*it)->path.size() > 1 )
+		if( (*it)->layer == 0 && (*it)->path.size() >= 2 )
 		{
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
@@ -3749,7 +3812,28 @@ void EditSession::WriteFile(string fileName)
 		}
 	}
 
-	
+	of << bgPlatCount0 << endl;
+	writeIndex = 0;
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		if( (*it)->layer == 1 )// && (*it)->path.size() < 2 )
+		{
+			//writeindex doesnt matter much for these for now
+			(*it)->writeIndex = writeIndex;
+			++writeIndex;
+
+			of << (*it)->material << endl;
+
+			of <<  (*it)->numPoints << endl;
+
+			for( TerrainPoint *pcurr = (*it)->pointStart;  pcurr != NULL; pcurr = pcurr->next )
+			{
+				of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
+			}
+
+			//WriteGrass( (*it), of );
+		}
+	}
 
 	of << lights.size() << endl;
 	for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
@@ -3779,6 +3863,9 @@ void EditSession::WriteFile(string fileName)
 
 
 }
+
+
+
 
 void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 {
@@ -6636,6 +6723,38 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 
 								
+							}
+							else if( ev.key.code == Keyboard::P )
+							{
+								if( selectedBrush != NULL )
+								{
+									SelectList &sl = selectedBrush->objects;
+									for( SelectList::iterator it = sl.begin(); it != sl.end(); ++it )
+									{
+										if( (*it)->selectableType == ISelectable::TERRAIN )
+										{
+											SelectPtr &select = (*it);
+											PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
+											poly->SetLayer( 1 );
+										}
+									}
+								}
+							}
+							else if( ev.key.code == Keyboard::O )
+							{
+								if( selectedBrush != NULL )
+								{
+									SelectList &sl = selectedBrush->objects;
+									for( SelectList::iterator it = sl.begin(); it != sl.end(); ++it )
+									{
+										if( (*it)->selectableType == ISelectable::TERRAIN )
+										{
+											SelectPtr &select = (*it);
+											PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
+											poly->SetLayer( 0 );
+										}
+									}
+								}
 							}
 							break;
 						}
