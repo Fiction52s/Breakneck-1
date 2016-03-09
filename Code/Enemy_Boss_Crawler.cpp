@@ -221,7 +221,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 					|| e == edgeB->edge1
 					|| e == edgeB )
 				{
-					cout << "RETURN A" << endl;
+				//	cout << "RETURN A" << endl;
 					return;
 				}
 
@@ -233,7 +233,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 					|| e == edgeA->edge1
 					|| e == edgeA )
 				{
-					cout << "RETURN B" << endl;
+					//cout << "RETURN B" << endl;
 					return;
 				}
 			}
@@ -253,7 +253,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeB->edge1
 							|| e == edgeB )
 						{
-							cout << "RETURN C" << endl;
+							//cout << "RETURN C" << endl;
 							return;
 						}
 					}
@@ -264,7 +264,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeA->edge1
 							|| e == edgeA )
 						{
-							cout << "RETURN D" << endl;
+							//cout << "RETURN D" << endl;
 							return;
 						}
 					}
@@ -283,7 +283,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeB->edge1
 							|| e == edgeB )
 						{
-							cout << "RETURN E" << endl;
+						//	cout << "RETURN E" << endl;
 							return;
 						}
 					}
@@ -294,7 +294,7 @@ void BossCrawler::HandleEntrant( QuadTreeEntrant *qte )
 							|| e == edgeA->edge1
 							|| e == edgeA )
 						{
-							cout << "RETURN F" << endl;
+						//	cout << "RETURN F" << endl;
 							return;
 						}
 					}

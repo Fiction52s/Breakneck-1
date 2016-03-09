@@ -7016,7 +7016,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
-							cout << "tff" << endl;
+							//cout << "tff" << endl;
 							//cout << "steep transfer left" << endl;
 							ground = next;
 							q = length( ground->v1 - ground->v0 );	
@@ -7026,7 +7026,7 @@ void Actor::UpdatePhysics()
 					{
 						ground = next;
 						q = length( ground->v1 - ground->v0 );	
-						cout << "airborne 5" << endl;
+						//cout << "airborne 5" << endl;
 					/*cout << "airborne 5" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -7066,7 +7066,7 @@ void Actor::UpdatePhysics()
 									{
 										movementVec.x = -.01;
 									}
-									cout << "airborne 6" << endl;
+									//cout << "airborne 6" << endl;
 									leftGround = true;
 									action = JUMP;
 									frame = 1;
@@ -7077,7 +7077,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									cout << "this steep" << endl;
+								//	cout << "this steep" << endl;
 									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
@@ -7089,7 +7089,7 @@ void Actor::UpdatePhysics()
 							}
 							else if( e0n.x > 0 )
 							{
-								cout << "this steepclimb" << endl;
+							//	cout << "this steepclimb" << endl;
 								facingRight = false;
 								action = STEEPCLIMB;
 								frame = 0;
@@ -7122,7 +7122,7 @@ void Actor::UpdatePhysics()
 					{
 						movementVec.x = -.01;
 					}
-					cout << "airborne 7" << endl;
+					//cout << "airborne 7" << endl;
 					//cout << "after vec: " << movementVec.x << ", " << movementVec.y << endl;
 					leftGround = true;
 					action = JUMP;
@@ -7173,14 +7173,14 @@ void Actor::UpdatePhysics()
 						{
 							ground = next;
 							q = 0;
-							cout << "steep transfer right" << endl;
+					//		cout << "steep transfer right" << endl;
 						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
 						ground = next;
 						q = 0;
-						cout << "airborne 13" << endl;
+					//	cout << "airborne 13" << endl;
 						//cout << "leave right 1" << endl;
 						/*velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -7219,7 +7219,7 @@ void Actor::UpdatePhysics()
 									{
 										movementVec.x = .01;
 									}
-									cout << "airborne 9" << endl;
+						//			cout << "airborne 9" << endl;
 									leftGround = true;
 									action = JUMP;
 									frame = 1;
@@ -7231,7 +7231,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									cout << "this steep 1" << endl;
+						//			cout << "this steep 1" << endl;
 									//cout << "slidin" << endl;
 									facingRight = true;
 									action = STEEPSLIDE;
@@ -7244,7 +7244,7 @@ void Actor::UpdatePhysics()
 							}
 							else if( e1n.x < 0 )
 							{
-								cout << "this here??" << endl;
+						//		cout << "this here??" << endl;
 								facingRight = true;
 								action = STEEPCLIMB;
 								frame = 0;
@@ -7286,7 +7286,7 @@ void Actor::UpdatePhysics()
 					leftGround = true;
 					ground = NULL;
 					movingGround = NULL;
-					cout << "airborne 10" << endl;
+					//cout << "airborne 10" << endl;
 					action = JUMP;
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7563,7 +7563,7 @@ void Actor::UpdatePhysics()
 								{
 									movementVec.x = .01;
 								}
-								cout << "real slope jump C" << endl;
+							//	cout << "real slope jump C" << endl;
 								leftGround = true;
 								action = JUMP;
 								frame = 1;
@@ -7576,7 +7576,7 @@ void Actor::UpdatePhysics()
 							else
 							{
 								q = 0;
-								cout << "setting 0-1" << endl;
+								//cout << "setting 0-1" << endl;
 							}
 							
 							
@@ -7602,7 +7602,7 @@ void Actor::UpdatePhysics()
 				if( approxEquals( m, 0 ) )
 				{
 
-					cout << "secret1: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX << ", " << groundSpeed <<  endl;
+					//cout << "secret1: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX << ", " << groundSpeed <<  endl;
 
 					if( groundSpeed > 0 )
 					{
@@ -7616,7 +7616,7 @@ void Actor::UpdatePhysics()
 
 								if( e1->edgeType == Edge::CLOSED_GATE )
 								{
-									cout << "similar secret but not reversed B" << endl;
+									//cout << "similar secret but not reversed B" << endl;
 									Gate *g = (Gate*)e1->info;
 									//g->SetLocked( false );
 									if( CanUnlockGate( g ) )
@@ -7646,7 +7646,7 @@ void Actor::UpdatePhysics()
 							{
 								//ground = next;
 								//q = 0;
-								cout << "possible bug. solved secret left??" << endl;
+							//	cout << "possible bug. solved secret left??" << endl;
 								break;
 							}
 					
@@ -7655,7 +7655,7 @@ void Actor::UpdatePhysics()
 						{
 							if( e1->edgeType == Edge::CLOSED_GATE )
 							{
-								cout << "similar secret but not reversed A" << endl;
+							//	cout << "similar secret but not reversed A" << endl;
 								Gate *g = (Gate*)e1->info;
 
 								if( CanUnlockGate( g ) )
@@ -7697,7 +7697,7 @@ void Actor::UpdatePhysics()
 							leftGround = true;
 							ground = NULL;
 							movingGround = NULL;
-							cout << "leaving ground RIGHT!!!!!!!!" << endl;
+						//	cout << "leaving ground RIGHT!!!!!!!!" << endl;
 						}
 					}
 					else if( groundSpeed < 0 )
@@ -7710,7 +7710,7 @@ void Actor::UpdatePhysics()
 							{
 								if( e0->edgeType == Edge::CLOSED_GATE )
 								{
-									cout << "similar secret but not reversed C" << endl;
+							//		cout << "similar secret but not reversed C" << endl;
 									Gate *g = (Gate*)e0->info;
 
 									if( CanUnlockGate( g ) )
@@ -7739,7 +7739,7 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-								cout << "possible bug. solved secret??" << endl;
+						//		cout << "possible bug. solved secret??" << endl;
 								//ground = next;
 								//q = length( ground->v1 - ground->v0 );	
 								break;
@@ -7749,7 +7749,7 @@ void Actor::UpdatePhysics()
 						{
 							if( e0->edgeType == Edge::CLOSED_GATE )
 								{
-									cout << "similar secret but not reversed D" << endl;
+							//		cout << "similar secret but not reversed D" << endl;
 									Gate *g = (Gate*)e0->info;
 									//g->SetLocked( false );
 
@@ -7788,7 +7788,7 @@ void Actor::UpdatePhysics()
 							leftGround = true;
 
 							ground = NULL;
-							cout << "not sure leaving ground left" << endl;
+						//	cout << "not sure leaving ground left" << endl;
 							movingGround = NULL;
 						}
 					}
@@ -7898,7 +7898,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									cout << "xx" << endl;
+//									cout << "xx" << endl;
 
 									V2d oldv0 = ground->v0;
 									V2d oldv1 = ground->v1;
@@ -7929,7 +7929,7 @@ void Actor::UpdatePhysics()
 								if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
 								{
 									assert( abs(eNorm.x ) > wallThresh );
-									cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
+							//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
 									velocity = testVel;
 						
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -7937,7 +7937,7 @@ void Actor::UpdatePhysics()
 									leftGround = true;
 									ground = NULL;
 									movingGround = NULL;
-									cout << "airborne 11" << endl;
+							//		cout << "airborne 11" << endl;
 									action = JUMP;
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7978,7 +7978,7 @@ void Actor::UpdatePhysics()
 										ground->v1 = oldv1;
 									}
 
-									cout << "this case?: " << eNorm.x << ", " << eNorm.y << endl;
+								//	cout << "this case?: " << eNorm.x << ", " << eNorm.y << endl;
 								
 									groundSpeed = 0;
 									edgeQuantity = q;
@@ -8006,7 +8006,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
-							cout << "Sdfsdfd" << endl;
+					//		cout << "Sdfsdfd" << endl;
 
 						V2d oldv0 = ground->v0;
 							V2d oldv1 = ground->v1;
