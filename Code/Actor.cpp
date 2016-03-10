@@ -154,7 +154,7 @@ Actor::Actor( GameSession *gs )
 		//setup hitboxes
 		{
 		//for( int j = 4; j < 10; ++j )
-		for( int j = 2; j < 7 *2; ++j )
+		for( int j = 0; j < 8 *2; ++j )
 		{
 			fairHitboxes[j] = new list<CollisionBox>;
 			fairHitboxes[j]->push_back( cb );
@@ -203,12 +203,12 @@ Actor::Actor( GameSession *gs )
 		}
 
 		
-		cb.rw = 48;
-		cb.rh = 48;
-		cb.offset.x = 32;
-		cb.offset.y = 0;
+		cb.rw = 64;
+		cb.rh = 64;
+		cb.offset.x = 36;
+		cb.offset.y = -6;
 		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j <= 10; ++j )
+		for( int j = 0; j < 8; ++j )
 		{
 			standNHitboxes[j] = new list<CollisionBox>;
 			standNHitboxes[j]->push_back( cb );
@@ -286,8 +286,8 @@ Actor::Actor( GameSession *gs )
 		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
 		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
-		actionLength[FAIR] = 10 * 2 - 6;//10 * 2;
-		tileset[FAIR] = owner->GetTileset( "fair.png", 80, 64 );
+		actionLength[FAIR] = 8 * 2;
+		tileset[FAIR] = owner->GetTileset( "fair_64x64.png", 64, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
 		actionLength[JUMP] = 2;
@@ -323,8 +323,8 @@ Actor::Actor( GameSession *gs )
 		tileset[STANDD] = owner->GetTileset( "standd.png", 96, 48 );
 		normal[STANDD] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[STANDN] = 5 * 3;
-		tileset[STANDN] = owner->GetTileset( "standn.png", 128, 64 );
+		actionLength[STANDN] = 4 * 3;
+		tileset[STANDN] = owner->GetTileset( "standn_80x64.png", 80, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
 		actionLength[STANDU] = 20;
@@ -409,7 +409,7 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
-		ts_fairSword1 = owner->GetTileset( "fairsword1.png", 144, 128 );
+		ts_fairSword1 = owner->GetTileset( "fairsword1_144x128.png", 144, 128 );
 		fairSword1.setTexture( *ts_fairSword1->texture );
 
 		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 128, 144 );
@@ -418,7 +418,7 @@ Actor::Actor( GameSession *gs )
 		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 160, 128 );
 		uairSword1.setTexture( *ts_uairSword1->texture );
 
-		ts_standingNSword1 = owner->GetTileset( "standnsword1.png", 112, 80 );
+		ts_standingNSword1 = owner->GetTileset( "standnsword1_144x96.png", 144, 96 );
 		standingNSword1.setTexture( *ts_standingNSword1->texture );
 
 		ts_standingDSword1 = owner->GetTileset( "standdsword1.png", 160, 48 );
@@ -11852,13 +11852,14 @@ void Actor::UpdateSprite()
 		}
 	case STANDN:
 		{
-			int startFrame = 1;
-			showSword1 = frame / 3 >= startFrame && frame / 3 <= 4;
+			int startFrame = 0;
+			showSword1 = true;
 
 			sprite->setTexture( *(tileset[STANDN]->texture));
 
 			//Vector2i offset( 24, -16 );
-			Vector2i offset( 24, 0 );
+			//Vector2i offset( 24, 0 );
+			Vector2i offset( 32, 0 );
 
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
@@ -12112,8 +12113,9 @@ void Actor::UpdateSprite()
 		}
 	case FAIR:
 		{
-			int startFrame = 1;
-			showSword1 = frame >= startFrame && frame / 2 <= 9;
+			cout << "fair frame : " << frame / 2 << endl;
+			int startFrame = 0;
+			showSword1 = true;//frame >= startFrame && frame / 2 <= 9;
 			sprite->setTexture( *(tileset[FAIR]->texture));
 
 			Vector2i offset( 32, -16 );
