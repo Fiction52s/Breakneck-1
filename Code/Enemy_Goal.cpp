@@ -12,13 +12,14 @@ using namespace sf;
 Goal::Goal( GameSession *owner, Edge *g, double q )
 		:Enemy( owner, EnemyType::GOAL ), ground( g ), edgeQuantity( q ), dead( false )
 {
-	double height = 32;
-	ts = owner->GetTileset( "goal.png", 96, height );
-	ts_mini = owner->GetTileset( "goal_minimap.png", 32, 32 );
+	double height = 160;
+	double width = 128;
+	ts = owner->GetTileset( "goal_128x160.png", width, height );
+	ts_mini = owner->GetTileset( "goal_minimap_32x40.png", 32, 40 );
 	sprite.setTexture( *ts->texture );
 	
 	miniSprite.setTexture( *ts_mini->texture );
-	miniSprite.setScale( 20, 20 );
+	miniSprite.setScale( 10, 10 );
 	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height / 2 );
 	
 
@@ -51,8 +52,8 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 16;
-	hurtBody.rh = 16;
+	hurtBody.rw = 40;
+	hurtBody.rh = 40;
 
 	double angle = 0;
 		
@@ -70,7 +71,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 24, gPoint.y - 24, 24 * 2, 24 * 2 );
+	spawnRect = sf::Rect<double>( gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160 );
 }
 
 void Goal::ResetEnemy()

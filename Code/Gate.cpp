@@ -76,7 +76,8 @@ void Gate::UpdateLine()
 {
 
 	int tileHeight;// = 32;
-	Color c( Color::White );
+	//Color c( Color::White );
+
 	switch( type )
 	{
 	case GREY:
@@ -370,7 +371,7 @@ void Gate::Update()
 					realFrame = frame / 3;
 					break;
 				default:
-					cout << "state : " << gState << endl;
+					//cout << "state : " << gState << endl;
 					break;
 			}
 		}

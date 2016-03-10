@@ -2967,7 +2967,10 @@ int GameSession::Run( string fileN )
 		double frameTime = newTime - currentTime;
 
 		if ( frameTime > 0.25 )
+		{
 			frameTime = 0.25;	
+		}
+		//frameTime = 0.167;//0.25;	
         currentTime = newTime;
 
 		if( showFrameRate )
@@ -2976,29 +2979,12 @@ int GameSession::Run( string fileN )
 			frameRate.setString( ss.str() );
 			ss.clear();
 			ss.str("");
-			/*if( frameCounter == frameCounterWait )
-			{
-				double blah = 1.0 / frameTime;
-				total += blah;
-				ss << total / ( frameCounterWait + 1 ) ;
-				frameRate.setString( ss.str() );
-				ss.clear();
-				ss.str( "" );
-				frameCounter = 0;
-				total = 0;
-			}
-			else
-			{
-				double blah = 1.0 / frameTime;
-				total += blah;
-				++frameCounter;
-			}*/
 		}
 		
 
 		accumulator += frameTime;
 
-		
+		window->clear();
 		preScreenTex->clear();
 		preScreenTex->setSmooth( false );
 
@@ -3031,7 +3017,7 @@ int GameSession::Run( string fileN )
 					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 					
 					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
-					screenShot = Keyboard::isKeyPressed( sf::Keyboard::Num0 ) && !tookScreenShot;
+					screenShot = Keyboard::isKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
 					
 					if( screenShot )
 					{
@@ -3087,11 +3073,11 @@ int GameSession::Run( string fileN )
 			}
 			else
 			{
-				window->clear();
+				
 			}
 
-			if( skipInput )
-				oneFrameMode = true;
+			//if( skipInput )
+			//	oneFrameMode = true;
 
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
@@ -3381,8 +3367,7 @@ int GameSession::Run( string fileN )
 			player.currInput = currInput;
 
 			}
-
-			if( pauseFrames > 0 )
+			else if( pauseFrames > 0 )
 			{
 				if( player.changingClone )
 				{
@@ -3397,7 +3382,8 @@ int GameSession::Run( string fileN )
 
 					//pauseFrames--;
 					accumulator -= TIMESTEP;
-					break;
+					//break;
+					continue;
 				}
 
 				player.flashFrames--;
@@ -3424,8 +3410,15 @@ int GameSession::Run( string fileN )
 
 
 				pauseFrames--;
+				//accumulator = 0;
+				
 				accumulator -= TIMESTEP;
-				break;
+				
+				
+
+				//currentTime = gameClock.getElapsedTime().asSeconds();
+				//break;
+				continue;
 			}
 
 			if( deathWipe )
@@ -3547,38 +3540,7 @@ int GameSession::Run( string fileN )
 		double dashSpeedFactor = .01;
 		double maxFallSpeedFactor = .01;
 
-		if( Keyboard::isKeyPressed( Keyboard::Q ) )
-		{
-			player.gravity += gravFactor;
-			cout << "grav: " << player.gravity << endl;
-		}
-		if( Keyboard::isKeyPressed( Keyboard::A ) )
-		{
-			player.gravity -= gravFactor;
-			cout << "grav: " << player.gravity << endl;
-		}
-
-		if( Keyboard::isKeyPressed( Keyboard::W ) )
-		{
-			player.jumpStrength += jumpStrengthFactor;
-			cout << "jumpstrength: " << player.jumpStrength << endl;
-		}
-		if( Keyboard::isKeyPressed( Keyboard::S ) )
-		{
-			player.jumpStrength -= jumpStrengthFactor;
-			cout << "jumpstrength: " << player.jumpStrength << endl;
-		}
-
-		if( Keyboard::isKeyPressed( Keyboard::E ) )
-		{
-			player.dashSpeed += dashSpeedFactor;
-			cout << "dashspeed: " << player.dashSpeed << endl;
-		}
-		if( Keyboard::isKeyPressed( Keyboard::D ) )
-		{
-			player.dashSpeed -= dashSpeedFactor;
-			cout << "dashspeed: " << player.dashSpeed << endl;
-		}
+		
 
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
@@ -3963,7 +3925,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -4066,7 +4028,7 @@ int GameSession::Run( string fileN )
 				V2d rightGround = gateList->edgeA->v0 + other * width;
 				V2d leftAir = gateList->edgeA->v1 + other * -width;
 				V2d rightAir = gateList->edgeA->v1 + other * width;
-				
+				//cout << "drawing color: " << gateList->c.b << endl;
 				sf::Vertex activePreview[4] =
 				{
 					//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),

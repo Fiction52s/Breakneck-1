@@ -782,7 +782,7 @@ void Crawler::UpdatePhysics()
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
 					V2d gn = ground->Normal();
-					cout << "hit 1: " << gn.x << ", " << gn.y << endl;
+					//cout << "hit 1: " << gn.x << ", " << gn.y << endl;
 					break;
 				}			
 			}
@@ -790,13 +790,13 @@ void Crawler::UpdatePhysics()
 			{
 				if( clockwise )
 				{
-					cout << "t33" << endl;
+					//cout << "t33" << endl;
 					ground = e1;
 					q = 0;
 				}
 				else
 				{
-					cout << "here>? " << endl;
+					//cout << "here>? " << endl;
 					ground = e0;
 					q = length( e0->v1 - e0->v0 );
 				}

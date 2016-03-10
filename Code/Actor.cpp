@@ -12113,7 +12113,7 @@ void Actor::UpdateSprite()
 		}
 	case FAIR:
 		{
-			cout << "fair frame : " << frame / 2 << endl;
+			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
 			showSword1 = true;//frame >= startFrame && frame / 2 <= 9;
 			sprite->setTexture( *(tileset[FAIR]->texture));
