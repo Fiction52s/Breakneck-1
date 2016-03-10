@@ -1526,6 +1526,8 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsWall );
 
+			VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
+
 			bool first = true;
 			
 		
@@ -1545,6 +1547,7 @@ bool GameSession::OpenFile( string fileName )
 			testva->slopeva = slopeVA;
 			testva->steepva = steepVA;
 			testva->wallva = wallVA;
+			testva->triva = triVA;
 		
 			
 			//cout << "before insert border: " << insertCount << endl;
@@ -3862,6 +3865,9 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
+
+			if( listVAIter->triva != NULL )
+				preScreenTex->draw( *listVAIter->triva, rs );
 			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
@@ -4937,6 +4943,178 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	while( te != startEdge );
 
 	
+	return currVA;
+}
+
+sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Tileset *ts )
+{
+
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
+
+	assert( qt != NULL );
+
+	int tw = 8;
+	int th = 128;
+	//double an = th * PI / 6;
+	double an = PI / 12.0;
+	
+	int numTotalTris = 0;
+	Edge *te = startEdge;
+	do
+	{
+		Edge *e1 = te->edge1;
+		V2d eNorm = te->Normal();
+		V2d along = normalize( te->v1 - te->v0 );
+		V2d nextAlong = normalize( e1->v1 - e1->v0 );
+		double c = cross( nextAlong, along );
+		if( c > 0 )
+		{
+			V2d endVec = normalize( te->v0 - te->v1 );
+			V2d startVec = normalize( e1->v1 - te->v1 );
+
+			double startAngle = atan2( -startVec.y, startVec.x );
+			if( startAngle < 0 )
+			{
+				startAngle += 2 * PI;
+			}
+			double endAngle = atan2( -endVec.y, endVec.x );
+			if( endAngle < 0 )
+			{
+				endAngle += 2 * PI;
+			}
+
+			/*double temp = startAngle;
+			startAngle = endAngle;
+			endAngle = temp;*/
+
+			if( endAngle > startAngle )
+			{
+				startAngle += 2 * PI;
+			}
+
+			
+
+			double angleDiff = (startAngle - endAngle);
+
+			int numTris = angleDiff / an;
+			//go counter clockwise
+
+
+			
+			
+				
+			/*if( numTris == 0 )
+			{
+				numTris = 1;
+			}*/
+
+			numTotalTris += numTris;
+		}
+		te = te->edge1;
+	}
+	while( te != startEdge );
+
+	if( numTotalTris == 0 )
+	{
+		//cout << "no tris here" << endl;
+		return NULL;
+	}
+	else
+	{
+		//cout << "numtotaltris: " << numTotalTris << endl;
+	}
+
+	VertexArray *currVA = new VertexArray( sf::Triangles, numTotalTris * 3 );
+	
+
+	IntRect sub = ts->GetSubRect( 0 );
+
+	VertexArray &va = *currVA;
+
+	int extra = 0;
+	te = startEdge;
+	int varietyCounter = 0;
+	do
+	{
+		Edge *e1 = te->edge1;
+		V2d eNorm = te->Normal();
+		V2d along = normalize( te->v1 - te->v0 );
+		V2d nextAlong = normalize( e1->v1 - e1->v0 );
+		double c = cross( nextAlong, along );
+		if( c > 0 )
+		{
+			V2d endVec = normalize( te->v0 - te->v1 );
+			endVec = -V2d( endVec.y, -endVec.x );
+			endVec = -te->Normal();
+			V2d startVec = normalize( e1->v1 - te->v1 );
+			startVec = -V2d( startVec.y, -startVec.x );
+			startVec = -e1->Normal();
+
+			double startAngle = atan2( -startVec.y, startVec.x );
+			if( startAngle < 0 )
+			{
+				startAngle += 2 * PI;
+			}
+			double endAngle = atan2( -endVec.y, endVec.x );
+			if( endAngle < 0 )
+			{
+				endAngle += 2 * PI;
+			}
+
+			/*double temp = startAngle;
+			startAngle = endAngle;
+			endAngle = temp;*/
+
+			if( endAngle > startAngle )
+			{
+				startAngle += 2 * PI;
+			}
+
+			double angleDiff = (startAngle - endAngle);
+			int numTris = angleDiff / an;
+			//cout << "angleDiff: " << angleDiff << endl;
+			
+			
+			//double triWidth = (startAngle - endAngle) / numTris;
+			
+			V2d centerPos( te->v1.x, te->v1.y );
+			for( int i = 0; i < numTris; ++i )
+			{
+				double currAngle = startAngle - (double)i/numTris * angleDiff;
+				double nextAngle = startAngle - (double)(i+1)/numTris * angleDiff;
+				V2d currVec = V2d( cos( currAngle), -sin( currAngle ) );
+				V2d nextVec = V2d( cos( nextAngle ), -sin( nextAngle ) );
+
+				V2d inside = centerPos + currVec * (double)th;
+				V2d insideNext = centerPos + nextVec * (double)th;
+
+				va[extra + i*3 + 0].position = Vector2f( centerPos.x, centerPos.y );
+				va[extra + i*3 + 1].position = Vector2f( inside.x, inside.y );
+				va[extra + i*3 + 2].position = Vector2f( insideNext.x, insideNext.y );
+
+				int blah = 20;
+				//va[extra + i*3 + 0].color = Color( i * 20, i * 20, i * 20 );//Color::Red;
+				//va[extra + i*3 + 1].color = Color( i * 20, i * 20, i * 20 );
+				//va[extra + i*3 + 2].color = Color( i * 20, i * 20, i * 20 );
+
+				va[extra + i*3 + 0].texCoords = Vector2f( sub.left, sub.top );
+				va[extra + i*3 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+				va[extra + i*3 + 2].texCoords = Vector2f( sub.left, sub.top + sub.height );
+			}
+
+			extra += numTris * 3;
+		}
+	}
+	while( te != startEdge );
+
 	return currVA;
 }
 

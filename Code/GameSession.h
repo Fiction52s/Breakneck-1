@@ -265,6 +265,13 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Tileset *ts,
 		int (*ValidEdge)(sf::Vector2<double> &)
 		);
+
+	sf::VertexArray *SetupBorderTris(
+		int bgLayer,
+		Edge *start,
+		Tileset *ts );
+
+
 	
 
 	struct TestVA : QuadTreeEntrant
@@ -275,6 +282,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *slopeva;
 		sf::VertexArray *steepva;
 		sf::VertexArray *wallva;
+		sf::VertexArray *triva;
 		
 		
 		sf::VertexArray *terrainVA;
