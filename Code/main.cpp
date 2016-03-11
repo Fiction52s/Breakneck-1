@@ -565,17 +565,17 @@ int main()
 
 	std::cout << "opened window" << endl;
 	sf::Texture t;
-	t.loadFromFile( "title.png" );
+	t.loadFromFile( "title_1920x1080.png" );
 	
 	Sprite titleSprite;
 	titleSprite.setTexture( t );
 	titleSprite.setOrigin( titleSprite.getLocalBounds().width / 2, titleSprite.getLocalBounds().height / 2 );
 	titleSprite.setPosition( 0, 0 );
-	titleSprite.setScale( 2, 2 );
+	//titleSprite.setScale( 2, 2 );
 	
 	
 	v.setCenter( 0, 0 );
-	v.setSize( 1920 / 2, 1080 / 2 );
+	v.setSize( 1920, 1080 );
 	window->setView( v );
 
 	sf::Text menu;
@@ -585,7 +585,7 @@ int main()
 	
 	menu.setFont( arial );
 	menu.setOrigin( menu.getLocalBounds().width / 2, menu.getLocalBounds().height / 2 );
-	menu.setPosition( 0, 0 );
+	menu.setPosition( -600, 200 );
 
 	sf::Event ev;
 	bool quit = false;
@@ -759,9 +759,9 @@ int main()
 							//OptionsOption();
 							break;
 						case 4:
-							CustomMapsOption( ls );
-							//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-							//gs->Run( "Maps/1-5.brknk" );
+							//CustomMapsOption( ls );
+							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							gs->Run( "Maps/1-5.brknk" );
 							//ExitOption();
 							break;
 						}

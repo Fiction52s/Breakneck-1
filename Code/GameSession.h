@@ -271,8 +271,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Edge *start,
 		Tileset *ts );
 
-
-	
+	sf::VertexArray *SetupTransitions(
+		int bgLayer,
+		Edge *start,
+		Tileset *ts );
 
 	struct TestVA : QuadTreeEntrant
 	{

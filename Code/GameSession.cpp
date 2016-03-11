@@ -1526,7 +1526,8 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsWall );
 
-			VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
+			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
+			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 
 			bool first = true;
 			
@@ -4961,7 +4962,7 @@ sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Ti
 
 	assert( qt != NULL );
 
-	int tw = 8;
+	int tw = 32;
 	int th = 128;
 	//double an = th * PI / 6;
 	double an = PI / 12.0;
@@ -5032,7 +5033,7 @@ sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Ti
 		//cout << "numtotaltris: " << numTotalTris << endl;
 	}
 
-	VertexArray *currVA = new VertexArray( sf::Triangles, numTotalTris * 3 );
+	VertexArray *currVA = new VertexArray( sf::Quads, numTotalTris * 4 );
 	
 
 	IntRect sub = ts->GetSubRect( 0 );
@@ -5091,27 +5092,180 @@ sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Ti
 				double currAngle = startAngle - (double)i/numTris * angleDiff;
 				double nextAngle = startAngle - (double)(i+1)/numTris * angleDiff;
 				V2d currVec = V2d( cos( currAngle), -sin( currAngle ) );
+
+				V2d currNorm( currVec.y, -currVec.x );
+
 				V2d nextVec = V2d( cos( nextAngle ), -sin( nextAngle ) );
 
-				V2d inside = centerPos + currVec * (double)th;
-				V2d insideNext = centerPos + nextVec * (double)th;
+				//length( //length( inside - insideNext);
 
-				va[extra + i*3 + 0].position = Vector2f( centerPos.x, centerPos.y );
-				va[extra + i*3 + 1].position = Vector2f( inside.x, inside.y );
-				va[extra + i*3 + 2].position = Vector2f( insideNext.x, insideNext.y );
+				V2d inside = centerPos + currVec * 48.0 - currNorm * (double)tw / 2.0;
+				V2d insideNext = centerPos + nextVec * 48.0 + currNorm * (double)tw / 2.0;
+				
+				
+				V2d outLeft = centerPos - currNorm * (double)tw / 2.0 - currVec * 16.0;
+				V2d outRight = centerPos + currNorm * (double)tw / 2.0 - currVec * 16.0;
 
-				int blah = 20;
+				//va[extra + i*3 + 0].position = Vector2f( centerPos.x, centerPos.y );
+				va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
+				va[extra + i*4 + 1].position = Vector2f( outRight.x, outRight.y );
+				va[extra + i*4 + 2].position = Vector2f( insideNext.x, insideNext.y );
+				va[extra + i*4 + 3].position = Vector2f( inside.x, inside.y );
+
+				//int blah = 20;
 				//va[extra + i*3 + 0].color = Color( i * 20, i * 20, i * 20 );//Color::Red;
 				//va[extra + i*3 + 1].color = Color( i * 20, i * 20, i * 20 );
 				//va[extra + i*3 + 2].color = Color( i * 20, i * 20, i * 20 );
 
-				va[extra + i*3 + 0].texCoords = Vector2f( sub.left, sub.top );
-				va[extra + i*3 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-				va[extra + i*3 + 2].texCoords = Vector2f( sub.left, sub.top + sub.height );
+				va[extra + i*4 + 0].texCoords = Vector2f( sub.left, sub.top );
+				va[extra + i*4 + 1].texCoords = Vector2f( sub.left + tw, sub.top );
+				va[extra + i*4 + 2].texCoords = Vector2f( sub.left + tw, sub.top + sub.height );
+				va[extra + i*4 + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
 			}
 
-			extra += numTris * 3;
+			extra += numTris * 4;
 		}
+	}
+	while( te != startEdge );
+
+	return currVA;
+}
+
+sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, Tileset *ts )
+{
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
+
+	int tw = 128;//64;//8;
+	int th = 128;
+
+	assert( qt != NULL );
+
+
+	int numTotalQuads = 0;
+	Edge *te = startEdge;
+	do
+	{
+		Edge *e1 = te->edge1;
+		V2d eNorm = te->Normal();
+		V2d along = normalize( te->v1 - te->v0 );
+		V2d nextAlong = normalize( e1->v1 - e1->v0 );
+		double c = cross( nextAlong, along );
+		if( c > 0 )
+		{
+			numTotalQuads++;
+			//V2d endVec = normalize( te->v0 - te->v1 );
+			//V2d startVec = normalize( e1->v1 - te->v1 );
+
+			//double startAngle = atan2( -startVec.y, startVec.x );
+			//if( startAngle < 0 )
+			//{
+			//	startAngle += 2 * PI;
+			//}
+			//double endAngle = atan2( -endVec.y, endVec.x );
+			//if( endAngle < 0 )
+			//{
+			//	endAngle += 2 * PI;
+			//}
+
+			///*double temp = startAngle;
+			//startAngle = endAngle;
+			//endAngle = temp;*/
+
+			//if( endAngle > startAngle )
+			//{
+			//	startAngle += 2 * PI;
+			//}
+
+			//
+
+			//double angleDiff = (startAngle - endAngle);
+
+			//int numTris = angleDiff / an;
+			////go counter clockwise
+
+
+			//
+			//
+			//	
+			///*if( numTris == 0 )
+			//{
+			//	numTris = 1;
+			//}*/
+
+			//numTotalTris += numTris;
+		}
+		te = te->edge1;
+	}
+	while( te != startEdge );
+
+	if( numTotalQuads == 0 )
+	{
+		return NULL;
+	}
+
+	VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
+	VertexArray &va = *currVA;
+
+	IntRect sub = ts->GetSubRect( 0 );
+
+	te = startEdge;
+	int extra = 0;
+	do
+	{
+		Edge *e1 = te->edge1;
+		V2d eNorm = te->Normal();
+		V2d along = normalize( te->v1 - te->v0 );
+		V2d nextAlong = normalize( e1->v1 - e1->v0 );
+		double c = cross( nextAlong, along );
+		int i = 0;
+		if( c > 0 )
+		{
+			V2d currNorm = te->Normal();
+			V2d nextNorm = e1->Normal();
+
+			V2d half = normalize( ( currNorm + nextNorm ) / 2.0 );
+			V2d oppHalf = -half;
+
+			double outDist = 16.0;
+			double inDist = 128.0 - outDist;//48.0;
+
+			V2d out = te->v1 + half * outDist;
+			V2d in = te->v1 + oppHalf * inDist;
+
+			V2d otherHalf( half.y, -half.x );
+
+			double hw = tw / 2.0;
+			V2d outLeft = out - otherHalf * hw;
+			V2d outRight = out + otherHalf * hw;
+			V2d inLeft = in - otherHalf * hw;
+			V2d inRight = in + otherHalf * hw;
+
+			va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
+			va[extra + i*4 + 1].position = Vector2f( outRight.x, outRight.y );
+			va[extra + i*4 + 2].position = Vector2f( inRight.x, inRight.y );
+			va[extra + i*4 + 3].position = Vector2f( inLeft.x, inLeft.y );
+
+			//int blah = 20;
+			//va[extra + i*3 + 0].color = Color( i * 20, i * 20, i * 20 );//Color::Red;
+			//va[extra + i*3 + 1].color = Color( i * 20, i * 20, i * 20 );
+			//va[extra + i*3 + 2].color = Color( i * 20, i * 20, i * 20 );
+
+			va[extra + i*4 + 0].texCoords = Vector2f( sub.left, sub.top );
+			va[extra + i*4 + 1].texCoords = Vector2f( sub.left + tw, sub.top );
+			va[extra + i*4 + 2].texCoords = Vector2f( sub.left + tw, sub.top + sub.height );
+			va[extra + i*4 + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+
+			extra += 4;
+		}
+		te = te->edge1;
 	}
 	while( te != startEdge );
 
