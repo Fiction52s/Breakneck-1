@@ -3080,8 +3080,8 @@ int GameSession::Run( string fileN )
 				
 			}
 
-			//if( skipInput )
-			//	oneFrameMode = true;
+			if( skipInput )
+				oneFrameMode = true;
 
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
@@ -3932,7 +3932,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -4761,6 +4761,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	int tw = 8;//64;
 	int th = 128;
 	int numTotalQuads = 0;
+	double test = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 	do
 	{
@@ -4768,7 +4769,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		int valid = ValidEdge( eNorm );
 		if( valid != -1 )//eNorm.x == 0 )
 		{
-			double len = length( te->v1 - te->v0 );
+			double len = length( te->v1 - te->v0 ) + test * 2;
 			int numQuads = len / tw;
 			//double quadWidth = len / numQuads;
 				
@@ -4792,6 +4793,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	int extra = 0;
 	te = startEdge;
 	int varietyCounter = 0;
+	
 	do
 	{
 		V2d eNorm = te->Normal();
@@ -4800,7 +4802,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		{
 			
 
-			double len = length( te->v1 - te->v0 );
+			double len = length( te->v1 - te->v0 ) + test * 2;
 			int numQuads = len / tw;
 			double quadWidth = len / numQuads;
 
@@ -4816,11 +4818,12 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
 
-			double in = 128 - 16;
 			double out = 16;
+			double in = 128 - out;
+			
 
-			V2d startInner = te->v0 - other * in;
-			V2d startOuter = te->v0 + other * out;
+			V2d startInner = te->v0 - along * test - other * in;
+			V2d startOuter = te->v0 - along * test + other * out;
 
 			for( int i = 0; i < numQuads; ++i )
 			{
@@ -4848,7 +4851,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 				rcEdge = NULL;
 				rayIgnoreEdge = te;
-				rayStart = te->v0 + ( startAlong ) * along;
+				rayStart = te->v0 - along * test + ( startAlong ) * along;
 				rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
 				RayCast( this, qt->startNode, rayStart, rayEnd );
 
@@ -4861,7 +4864,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				}
 
 				rcEdge = NULL;
-				rayStart = te->v0 + ( endAlong ) * along;
+				rayStart = te->v0 - along * test + ( endAlong ) * along;
 				rayEnd = currEndInner;
 				RayCast( this, qt->startNode, rayStart, rayEnd );
 

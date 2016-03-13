@@ -7416,7 +7416,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								bool single = selectedBrush->objects.size() == 1 
 									&& selectedPoints.size() == 0
 									&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-								if( menuDownStored == EDIT && selectedPolygons.size() > 0 )
+								//bool singlePoly = selectedBrush->objects.size() == 1 
+								//	&& selectedPoints.size() == 0
+								//	&& selectedBrush->objects.front()->selectableType == ISelectable::TERRAIN;
+								bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
+								if( menuDownStored == EDIT && onlyPoly )
 								{
 									showPanel = terrainOptionsPanel;
 									mode = menuDownStored;
@@ -7598,18 +7602,25 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
 							{
-								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								if( selectedBrush != NULL && !selectedBrush->objects.size() > 1 )
 								{
-									(*it)->path.pop_back();
+									for( SelectIter it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it )
+								//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									{
+										TerrainPolygon *tp = (TerrainPolygon*)(*it).get();
+										tp->path.pop_back();
+									}
 								}
+								
 							}
 							else if( ev.key.code == Keyboard::Space )
 							{
-								if( selectedPolygons.front()->path.size() == 1 )
+								if( selectedBrush != NULL && !selectedBrush->objects.empty() )
 								{
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
+									if( tp->path.size() == 1 )
 									{
-										(*it)->path.pop_back();
+										tp->path.pop_back();
 									}
 								}
 								showPanel = terrainOptionsPanel;
@@ -9214,16 +9225,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.0, fullRect.top + fullRect.height / 2.0 );
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
-					if( length( ( worldPos - V2d( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<double>(selectedPolygons.front()->path.back().x, 
-						selectedPolygons.front()->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					if( selectedBrush != NULL && !selectedBrush->objects.empty() )
 					{
-						Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
-
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+						TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
+						if( length( ( worldPos - V2d( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<double>(tp->path.back().x, 
+							tp->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
 						{
-							(*it)->path.push_back( worldi );
-						}
-					}					
+							Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
+
+							for( SelectIter it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it )
+							{
+								TerrainPolygon *tp1 = (TerrainPolygon*)(*it).get();
+								tp1->path.push_back( worldi );
+							}
+							//for( 
+							//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+							//{
+							//	(*it)->path.push_back( worldi );
+							//}
+						}		
+					}
 				}
 				break;
 			}
@@ -9472,8 +9493,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			}
 		case CREATE_TERRAIN_PATH:
 			{
-				
-				int pathSize = selectedPolygons.front()->path.size();
+				TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
+
+				int pathSize = tp->path.size();//selectedPolygons.front()->path.size();
 
 				sf::FloatRect bounds;
 				bounds.left = fullRect.left;
@@ -9493,7 +9515,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
 				if( pathSize > 0 )
 				{
-					Vector2i backPoint = selectedPolygons.front()->path.back();
+					Vector2i backPoint = tp->path.back();
 					backPoint += fullCenter;
 			
 					Color validColor = Color::Magenta;
@@ -9515,8 +9537,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						VertexArray v( sf::LinesStrip, pathSize );
 						int i = 0;
 
-						for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
-							it != selectedPolygons.front()->path.end(); ++it )
+						for( list<sf::Vector2i>::iterator it = tp->path.begin(); 
+							it != tp->path.end(); ++it )
 						{
 							v[i] = Vertex( Vector2f( (*it).x + fullCenter.x, (*it).y + fullCenter.y) );
 							++i;
@@ -9534,14 +9556,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					//Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
 
-					for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
-							it != selectedPolygons.front()->path.end(); ++it )
+					//for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
+					//		it != selectedPolygons.front()->path.end(); ++it )
+					for( list<Vector2i>::iterator it = tp->path.begin(); it != tp->path.end(); ++it )
 					{
+						//TerrainPolygon *tp1 = (TerrainPolygon*)(*it).get();
 						//cout << "drawing" << endl;
 						cs.setPosition( (*it).x + fullCenter.x, (*it).y + fullCenter.y );
 						preScreenTex->draw( cs );
 					}		
 				}
+
+				break;
 
 /*				CircleShape cs;
 				cs.setRadius( 5 * zoomMultiple  );
@@ -10077,6 +10103,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					bool single = selectedBrush->objects.size() == 1 
 						&& selectedPoints.size() == 0
 						&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+					bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
+
 					if( menuDownStored == EditSession::EDIT && single )// && selectedActor != NULL )
 					{
 						textmag.setString( "EDIT\nENEMY" );
@@ -10085,7 +10113,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						textmag.setString( "EDIT\nGATE" );
 					}
-					else if( menuDownStored == EditSession::EDIT && selectedPolygons.size() > 0 )
+					else if( menuDownStored == EditSession::EDIT && onlyPoly )
 					{
 						textmag.setString( "TERRAIN\nOPTIONS" );
 					}
@@ -10757,41 +10785,50 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		}
 		else if( b->name == "create_path" )
 		{
-			cout << "setting mode to create path terrain" << endl;
+			//cout << "setting mode to create path terrain" << endl;
 			mode = CREATE_TERRAIN_PATH;
 			//patrolPath.clear();
 
-			
+			bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
-			assert( selectedPolygons.size() > 0 );
+			
+			//TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
+
+			assert( onlyPoly );//singlePoly );
+			//assert( selectedPolygons.size() > 0 );
 
 			int left, right, top, bottom;
-			list<PolyPtr>::iterator it = selectedPolygons.begin();
-			left = (*it)->left;
-			right = (*it)->right;
-			top = (*it)->top;
-			bottom = (*it)->bottom;
-			(*it)->path.clear();
-			(*it)->path.push_back( Vector2i( 0, 0 ) );
+			SelectIter it = selectedBrush->objects.begin();
+
+			TerrainPolygon *tp = (TerrainPolygon*)(*it).get();
+
+			left = tp->left;
+			right = tp->right;
+			top = tp->top;
+			bottom = tp->bottom;
+			tp->path.clear();
+			tp->path.push_back( Vector2i( 0, 0 ) );
 			++it;
 
-			for(  ;it != selectedPolygons.end(); ++it )
+			for(  ;it != selectedBrush->objects.end(); ++it )
 			{
-				(*it)->path.clear();
+				tp = (TerrainPolygon*)(*it).get();
 
-				if( (*it)->left < left )
-					left = (*it)->left;
+				tp->path.clear();
 
-				if( (*it)->right > right )
-					right = (*it)->right;
+				if( tp->left < left )
+					left = tp->left;
 
-				if( (*it)->top < top )
-					top = (*it)->top;
+				if( tp->right > right )
+					right = tp->right;
 
-				if( (*it)->bottom > bottom )
-					bottom = (*it)->bottom;
+				if( tp->top < top )
+					top = tp->top;
 
-				(*it)->path.push_back( Vector2i( 0, 0 ) );
+				if( tp->bottom > bottom )
+					bottom = tp->bottom;
+
+				tp->path.push_back( Vector2i( 0, 0 ) );
 			}
 
 			fullRect.left = left;

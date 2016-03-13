@@ -1266,6 +1266,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			currentContact->normal = pointNormal;
 			currentContact->weirdPoint = false;
 
+			//cout << "point: " << time << endl;
+
 			if( time == 100 )
 			return NULL;
 
@@ -1277,7 +1279,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 			progressDraw.push_back( cs );	
 
-			//cout << "point " << endl;
+
 		}
 		else
 		{

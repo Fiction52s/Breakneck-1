@@ -54,6 +54,9 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
+	sf::Vector2<double> movingPlatExtra;
+
+
 	Actor( GameSession *owner );
 	void UpdateSprite();
 	void ActionEnded();

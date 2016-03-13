@@ -579,7 +579,7 @@ int main()
 	window->setView( v );
 
 	sf::Text menu;
-	menu.setString( "\t\tPress any button to start \nFor help and information check CONTROLS AND INFO.txt\n\t\tBreakneck Alpha 12-8-2015");
+	menu.setString( "\t\tPress any button to start \nFor help and information check CONTROLS AND INFO.txt\n\t\tBreakneck Beta. Updated 3-11-2015");
 	menu.setCharacterSize( 20 );
 	menu.setColor( Color::Red );
 	
@@ -759,9 +759,9 @@ int main()
 							//OptionsOption();
 							break;
 						case 4:
-							//CustomMapsOption( ls );
-							gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-							gs->Run( "Maps/1-5.brknk" );
+							CustomMapsOption( ls );
+							//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+							//gs->Run( "Maps/1-5.brknk" );
 							//ExitOption();
 							break;
 						}

@@ -5450,6 +5450,12 @@ bool Actor::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	//if( movingPlatExtra.x != 0 || movingPlatExtra.y != 0 )
+	//{
+	//	vel += movingPlatExtra;
+	//	movingPlatExtra.x = 0;
+	//	movingPlatExtra.y = 0;
+	//}
 	position += vel;
 	
 	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -5499,9 +5505,9 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( col )
 	{
-		if( col )
+		if( minContact.movingPlat != NULL )
 		{
-			//cout << "norm: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+
 		}
 		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 		{
@@ -6732,6 +6738,11 @@ V2d Actor::UpdateReversePhysics()
 //for universal substeps. guess box2d makes more sense now doesn't it XD
 void Actor::UpdatePhysics()
 {
+	if( movingGround != NULL )
+	{
+		position += movingGround->vel / NUM_STEPS;// + normalize( movingGround->vel ) * .01;
+	}
+
 	if( action == DEATH )
 	{
 		return;
@@ -6739,7 +6750,6 @@ void Actor::UpdatePhysics()
 
 	if( test )
 		return;
-	
 	
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
@@ -6880,7 +6890,7 @@ void Actor::UpdatePhysics()
 		
 	}
 
-	while( (ground != NULL && !approxEquals( movement, 0 ) ) || ( ground == NULL && length( movementVec ) > 0 ) )
+	do
 	{
 		if( ground != NULL )
 		{
@@ -7926,7 +7936,10 @@ void Actor::UpdatePhysics()
 							{
 								V2d testVel = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 								//maybe want to do this on some ceilings but its hard for now. do i need it?
-								if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
+								//if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
+
+								//might cause some weird stuff w/ bounce but i can figure it out later
+								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
 								{
 									assert( abs(eNorm.x ) > wallThresh );
 							//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
@@ -8082,6 +8095,7 @@ void Actor::UpdatePhysics()
 			{
 				collision = true;			
 				position += minContact.resolution;
+				//cout << "resolving: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;
@@ -8708,7 +8722,7 @@ void Actor::UpdatePhysics()
 
 		}
 	}
-
+	while( (ground != NULL && !approxEquals( movement, 0 ) ) || ( ground == NULL && length( movementVec ) > 0 ) );
 	/*if( ground == NULL )
 	{
 		cout << "not grounded now" << endl;
@@ -9904,8 +9918,26 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		V2d temp0 = e->v0;
 		V2d temp1 = e->v1;
 		
-		e->v0 += currMovingTerrain->oldPosition;
-		e->v1 += currMovingTerrain->oldPosition;
+		V2d temp0prev = e->edge0->v0;
+		V2d temp1prev = e->edge0->v1;
+
+		V2d temp0next = e->edge1->v0;
+		V2d temp1next = e->edge1->v1;
+
+		//e->v0 += currMovingTerrain->oldPosition;
+		//e->v1 += currMovingTerrain->oldPosition;
+
+		V2d oldv0 = e->v0 + currMovingTerrain->oldPosition;
+		V2d oldv1 = e->v1 + currMovingTerrain->oldPosition;
+
+		e->v0 += currMovingTerrain->position;
+		e->v1 += currMovingTerrain->position;
+
+		e->edge0->v0 += currMovingTerrain->position;
+		e->edge0->v1 += currMovingTerrain->position;
+
+		e->edge1->v0 += currMovingTerrain->position;
+		e->edge1->v1 += currMovingTerrain->position;
 
 		//e->v0 += currMovingTerrain->position;
 		//e->v1 += currMovingTerrain->position;
@@ -9918,10 +9950,78 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		V2d blah( tempVel - currMovingTerrain->vel );
 		//cout << "tempnew: " << blah.x << ", " << blah.y << endl;
-		Contact *c = owner->coll.collideEdge( position + b.offset - currMovingTerrain->vel, b, e, tempVel - currMovingTerrain->vel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+		//Contact *c = owner->coll.collideEdge( position + b.offset - currMovingTerrain->vel / NUM_STEPS, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS, V2d( 0, 0 ) );//currMovingTerrain->vel );
+		//Contact *c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS /*+ normalize( currMovingTerrain->vel ) * 1.0*/, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS - normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );//currMovingTerrain->vel );
+		Contact *c = NULL;
+		//if( true )
+		double oldLen = length( position - oldv0 );
+		double newLen = length( position - e->v0 );
+
+		double oldLen1 = length( position - oldv1 );
+		double newLen1 = length( position - e->v1 );
+
+		V2d en = e->Normal();
+		//cout << "oldLen: " << oldLen << ", newLen: " << newLen << endl;
+		//if( ground != NULL )
+		//{
+		//	c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel - currMovingTerrain->vel / NUM_STEPS- normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );
+		//}
+		double d = dot( normalize( currMovingTerrain->vel ), en );
+
+
+		if( ground != NULL )
+		{
+			c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );
+		}
+		else if( d >= 0 )//oldLen >= newLen || oldLen1 >= newLen1 )
+		{
+			
+			if( ground != NULL )
+			{
+				cout << "a: " << d << endl;
+				//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+				//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS + normalize( currMovingTerrain->vel ) * 1.0, b, e, tempVel, V2d( 0, 0 ) );
+				c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + currMovingTerrain->vel / NUM_STEPS, V2d( 0, 0 ) );//currMovingTerrain->vel );	
+			}
+			else
+			{
+				cout << "b: " << d << endl;
+				c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS /*- normalize( currMovingTerrain->vel ) * .1*/, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS - normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );//currMovingTerrain->vel );	
+			}
+			
+			
+		}
+		//else if( ground != NULL )
+		//{
+		//	//cout << "b" << endl;
+		//	//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS /*- normalize( currMovingTerrain->vel ) * .1*/, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS - normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );//currMovingTerrain->vel );
+		//	c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );
+		//}
+		else
+		{
+			cout << "c: " << d << endl;
+
+			if( ground != NULL )
+			{
+				c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+			}
+			else
+			{
+				c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+			}
+			
+		}
+
+		 
+		//Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel - currMovingTerrain->vel / NUM_STEPS, V2d( 0, 0 ) );//currMovingTerrain->vel );
 
 		e->v0 = temp0;
 		e->v1 = temp1;
+
+		e->edge0->v0 = temp0prev;
+		e->edge0->v1 = temp1prev;
+		e->edge1->v0 = temp0next;
+		e->edge1->v1 = temp1next;
 
 		//if( c != NULL )
 		//{
@@ -9930,6 +10030,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
 		{	
+			//cout << "col" << endl;
 			/*if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
