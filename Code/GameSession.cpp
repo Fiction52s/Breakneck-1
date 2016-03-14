@@ -4109,6 +4109,8 @@ int GameSession::Run( string fileN )
 		powerBar.Draw( preScreenTex );
 
 		preScreenTex->draw( topbarSprite );
+
+		preScreenTex->draw( player.kinFace );
 		//topbarSprite.draw( preScreenTex );
 
 		//preScreenTex->draw( keyHolderSprite );

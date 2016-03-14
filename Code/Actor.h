@@ -54,6 +54,14 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
+	
+	enum Expr
+	{
+		NEUTRAL,
+		HURT
+	};
+	
+	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;
 

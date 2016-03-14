@@ -13,6 +13,13 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		ts_kinFace = owner->GetTileset( "visor_256x64.png", 256, 64 );
+		kinFace.setTexture( *ts_kinFace->texture );
+		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
+		kinFace.setPosition( 2, 63 );
+
+		expr = NEUTRAL;
+
 		motionGhostSpacing = 6;
 		ghostSpacingCounter = 0;
 
@@ -970,6 +977,9 @@ void Actor::UpdatePrePhysics()
 		
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
+
+		expr = Expr::HURT;
+		
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		bool dmgSuccess = owner->powerBar.Damage( receivedHit->damage );
 		if( true )
@@ -1055,6 +1065,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if( hitstunFrames == 0 )
 		{
+			expr = Expr::NEUTRAL;
 			//cout << "air done" << endl;
 			action = JUMP;
 			frame = 1;
@@ -1066,6 +1077,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if( hitstunFrames == 0 )
 		{
+			expr = Expr::NEUTRAL;
 			//cout << "ground done" << endl;
 			action = LAND;
 			frame = 0;
@@ -10264,6 +10276,22 @@ void Actor::UpdatePostPhysics()
 	}
 
 	UpdateHitboxes();
+
+	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr ) );
+	/*switch( expr )
+	{
+	case Expr::NEUTRAL:
+		{
+			kinFace.setTextureRect( ts_kinFace->GetSubRect( Expr::NEUTRAL ) );
+		}
+		break;
+	case Expr::HURT:
+		{
+			kinFace.setTextureRect( ts_kinFace->GetSubRect( Expr::NEUTRAL ) );
+		}
+		break;
+	}*/
+
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
 }
