@@ -5450,12 +5450,7 @@ bool Actor::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-	//if( movingPlatExtra.x != 0 || movingPlatExtra.y != 0 )
-	//{
-	//	vel += movingPlatExtra;
-	//	movingPlatExtra.x = 0;
-	//	movingPlatExtra.y = 0;
-	//}
+	
 	position += vel;
 	
 	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -5482,7 +5477,6 @@ bool Actor::ResolvePhysics( V2d vel )
 	tempVel = vel;
 	minContact.edge = NULL;
 
-
 	//cout << "---STARTING QUERY--- vel: " << vel.x << ", " << vel.y << endl;
 	queryMode = "resolve";
 
@@ -5495,7 +5489,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	owner->terrainTree->Query( this, r );
 
 
-
+	testr = false;
 	queryMode = "moving_resolve";
 	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
 	{
@@ -5505,10 +5499,10 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( col )
 	{
-		if( minContact.movingPlat != NULL )
+		/*if( minContact.movingPlat != NULL )
 		{
-
-		}
+			velocity += minContact.movingPlat->vel;
+		}*/
 		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 		{
 			
@@ -6736,11 +6730,430 @@ V2d Actor::UpdateReversePhysics()
 
 //eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
 //for universal substeps. guess box2d makes more sense now doesn't it XD
+
+void Actor::UpdateFullPhysics()
+{
+	possibleEdgeCount = 0;
+	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	
+	//position += vel;
+	
+	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	minContact.collisionPriority = 1000000;
+	
+	double oldRight = oldR.left + oldR.width;
+	double right = newR.left + newR.width;
+
+	double oldBottom = oldR.top + oldR.height;
+	double bottom = newR.top + newR.height;
+
+	double maxRight = max( right, oldRight );
+	double maxBottom = max( oldBottom, bottom );
+	double minLeft = min( oldR.left, newR.left );
+	double minTop = min( oldR.top, newR.top );
+	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
+	
+
+	double ex = 5;//1
+	Rect<double> r( minLeft - ex, minTop - ex, (maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2 );
+
+	col = false;
+
+	tempVel = V2d( 0, 0 );
+	minContact.edge = NULL;
+
+	
+
+	Edge *oldGround = ground;
+	double oldGs = groundSpeed;
+	
+	testr = true;
+	queryMode = "moving_resolve";
+	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
+	{
+		currMovingTerrain = (*it);
+		(*it)->Query( this, r );
+	}
+
+	if( col )
+	{
+		if( minContact.movingPlat != NULL )
+		{
+
+		}
+		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+		{
+			
+			minContact.normal = minContact.edge->Normal();
+			//cout << "setting the normal to: " << minContact.normal.x << ", " <<minContact.normal.y << endl;
+		}
+		else
+		{
+			if( oldGround != NULL )
+			{
+				if( oldGs > 0 && minContact.edge == oldGround->edge0 
+
+					|| ( oldGs > 0 && minContact.edge == oldGround->edge1 ) 
+					|| minContact.edge == oldGround )
+				{
+					//col = false;
+					//cout << "setting false" << endl;
+				}
+			}
+			
+		}
+
+		//position += minContact.resolution;
+		//cout << "ressssolve: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+	}
+
+	if( col )
+	{
+
+		collision = true;			
+		position += minContact.resolution;
+
+		//if( minContact.movingPlat != NULL )
+		//{
+		//	//velocity += minContact.movingPlat->vel * NUM_STEPS;
+		//}
+
+		//cout << "resolving: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+		Edge *e = minContact.edge;
+		V2d en = e->Normal();
+		Edge *e0 = e->edge0;
+		Edge *e1 = e->edge1;
+		V2d e0n = e0->Normal();
+		V2d e1n = e1->Normal();
+
+		if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
+		{
+			if( minContact.position == minContact.edge->v0 ) 
+			{
+				if( minContact.edge->edge0->Normal().y <= 0 )
+				{
+					minContact.edge = minContact.edge->edge0;
+				}
+			}
+		}
+
+		if( abs(minContact.edge->Normal().x) > wallThresh )
+		{
+			wallNormal = minContact.edge->Normal();
+		}
+
+
+		V2d extraDir =  normalize( minContact.edge->v1 - minContact.edge->v0 );
+
+		if( (minContact.position == e->v0 && en.x < 0 && en.y < 0 ) )
+		{
+			V2d te = e0->v0 - e0->v1;
+			if( te.x > 0 )
+			{
+				extraDir = V2d( 0, -1 );
+				wallNormal = extraDir;
+			}
+		}
+		else if( (minContact.position == e->v1 && en.x < 0 && en.y > 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.x > 0 )
+			{
+				extraDir = V2d( 0, -1 );
+				wallNormal = extraDir;
+			}
+		}
+
+		else if( (minContact.position == e->v1 && en.x < 0 && en.y < 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.x < 0 )
+			{
+				extraDir = V2d( 0, 1 );
+				wallNormal = extraDir;
+			}
+		}
+		else if( (minContact.position == e->v0 && en.x > 0 && en.y < 0 ) )
+		{
+			V2d te = e0->v0 - e0->v1;
+			if( te.x > 0 )
+			{	
+				extraDir = V2d( 0, -1 );
+				wallNormal = extraDir;
+			}
+		}
+		else if( (minContact.position == e->v1 && en.x > 0 && en.y < 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.x < 0 )
+			{
+				extraDir = V2d( 0, 1 );
+				wallNormal = V2d( 1, 0 );//extraDir;
+			}
+		}
+		else if( (minContact.position == e->v0 && en.x > 0 && en.y > 0 ) )
+		{
+			V2d te = e0->v0 - e0->v1;
+			if( te.x < 0 )
+			{
+				extraDir = V2d( 0, 1 );
+				wallNormal = V2d( 1, 0 );
+			}
+		}
+
+				
+
+
+		if( (minContact.position == e->v1 && en.x > 0 && en.y > 0 ) )
+		{
+			V2d te = e1->v1 - e1->v0;
+			if( te.y < 0 )
+			{
+				extraDir = V2d( -1, 0 );
+			}
+		}
+		else if( (minContact.position == e->v0 && en.x < 0 && en.y > 0 ) )
+		{
+			V2d te = e0->v0 - e0->v1;
+			if( te.y < 0 )
+			{
+				extraDir = V2d( -1, 0 );
+			}
+		}
+				
+		if( minContact.normal.x != 0 || minContact.normal.y != 0 )
+		{
+			if( abs( minContact.normal.x ) > wallThresh || ( minContact.normal.y > 0 && abs( minContact.normal.x ) > .9 ) )
+			{
+				wallNormal = minContact.normal;
+			}
+			extraDir = V2d( minContact.normal.y, -minContact.normal.x );
+		}				
+				
+		double blah = length( velocity ) - length( minContact.resolution );
+		//cout << "blah: " << blah << endl;
+		//wish i knew what this one meant
+		//extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
+		//extraVel = (length( velocity ) - length( minContact.resolution )) * extraDir;
+		if( dot( velocity, extraDir ) < 0 )
+		{
+			//extraVel = -extraVel;
+		}
+
+		//might still need some more work
+		//extraVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
+				
+		V2d newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+
+		velocity = newVel;
+				
+		/*if( length( stealVec ) > 0 )
+		{
+			stealVec = length( stealVec ) * normalize( extraDir );
+		}
+		if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
+		{
+			break;		
+		}
+		if( length( extraVel ) > 0 )
+		{
+			lastExtra.x = extraVel.x;
+			lastExtra.y = extraVel.y;
+		}*/
+		int maxJumpHeightFrame = 10;
+
+		if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING ) && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+		{
+			//if( minContact.movingPlat != NULL )
+			//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
+
+
+			//b.rh = dashHeight;
+			//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
+			//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
+			offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+
+			//cout << "offsetX: " << offsetX << endl;
+
+			//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
+			if( false )
+			{
+				//cout << "prevented glitchy offset: " << offsetX << endl;
+			}
+			else
+			{
+				//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 )
+
+				if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //stops glitchyness with _\ weird offsets
+				{
+					//assert( minContact.edge->Normal().y == -1 );
+					cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX 
+						<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+					cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;
+					if( offsetX > 0 )
+					{
+						offsetX = b.rw;
+						minContact.position.x = position.x - b.rw;
+					}
+					else
+					{
+						offsetX = -b.rw;
+						minContact.position.x = position.x + b.rw;
+					}
+				}
+
+			if( b.rh == doubleJumpHeight )
+			{
+				b.offset.y = (normalHeight - doubleJumpHeight);
+			}
+
+				
+			//cout << "LANDINGGGGGG------" << endl;
+			assert( !(minContact.normal.x == 0 && minContact.normal.y == 0 ) );
+			//cout << "normal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+			//if(!( minContact.normal.x == 0 && minContact.normal.y == 0 ) && minContact.edge->Normal().y == 0 )
+			//{
+			//	minContact.edge = minContact.edge->edge0;
+			//}
+			groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
+			ground = minContact.edge;
+			movingGround = minContact.movingPlat;
+
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+
+				//minContact.position += minContafct
+			}
+
+				
+
+			edgeQuantity = minContact.edge->GetQuantity( minContact.position );
+				
+			//edgeQuantity -= .01;
+			//cout << "landing edge quantity is: " << edgeQuantity << ", edge length is: " << length( ground->v1 - ground->v0 ) << endl;
+
+			if( movingGround != NULL )
+			{
+
+				//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			V2d alongVel = V2d( -minContact.normal.y, minContact.normal.x );
+				
+			double groundLength = length( ground->v1 - ground->v0 );
+
+			V2d gNorm = ground->Normal();
+
+			V2d testVel = velocity;
+
+			//might use those steep slope things again to make sure he doesnt climb too fast
+			//maybe adjust these for frames in the air. don't let you touch the edge the second you jump
+			//so that you let your velocity die down a little
+			if( testVel.y > 20 )
+			{
+				testVel.y *= .7;
+			}
+			else if( testVel.y < -30 )
+			{
+				//testVel.y = -30;
+				testVel.y *= .5;
+			}
+			//testVel.y /= 2.0
+			//cout << "groundspeed: " << groundSpeed << endl;
+
+			if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
+			{
+				groundSpeed = dot( testVel, alongVel );
+			}
+			else
+			{
+				if( gNorm.y > -steepThresh )
+				{
+					groundSpeed = dot( testVel, alongVel );
+				}
+				else
+				{
+					groundSpeed = 0;
+				}
+			}
+
+			//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+			//cout << "setting groundSpeed: " << groundSpeed << endl;
+			//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
+			gNorm = ground->Normal();
+
+			//if( gNorm.y <= -steepThresh )
+			{
+				hasGravReverse = true;
+				hasAirDash = true;
+				hasDoubleJump = true;
+				lastWire = 0;
+			}
+
+			if( velocity.x < 0 && gNorm.y <= -steepThresh )
+			{
+				groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7);
+				//cout << "left boost: " << groundSpeed << endl;
+			}
+			else if( velocity.x > 0 && gNorm.y <= -steepThresh )
+			{
+				groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7 );
+				//cout << "right boost: " << groundSpeed << endl;
+			}
+			//groundSpeed  = max( abs( velocity.x ), ( - ) );
+				
+			if( velocity.x < 0 )
+			{
+			//	groundSpeed = -groundSpeed;
+			}
+
+			//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << ", offset: " << offsetX << endl;
+
+			//movement = 0;
+			
+				
+				
+			//cout << "offsetX: " <<offsetX << endl;
+			//cout << "offsetX: " << offsetX << endl;
+			//cout << "offset now!: " << offsetX << endl;
+			//V2d gn = ground->Normal();
+				
+			if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
+			{
+				//cout << "super secret fix offsetx1: " << offsetX << endl;
+				//offsetX = b.rw;
+			}
+			if( ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals( offsetX, -b.rw ) ) 
+			{
+				//cout << "super secret fix offsetx2: " << offsetX << endl;
+				//offsetX = -b.rw;
+			}
+		}
+			}
+
+		PhysicsResponse();
+	}
+
+	
+
+}
+
 void Actor::UpdatePhysics()
 {
 	if( movingGround != NULL )
 	{
-		position += movingGround->vel / NUM_STEPS;// + normalize( movingGround->vel ) * .01;
+		position += movingGround->vel;// + normalize( movingGround->vel ) * .01;
+	}
+	else
+	{
+		//UpdateFullPhysics();
 	}
 
 	if( action == DEATH )
@@ -8095,6 +8508,12 @@ void Actor::UpdatePhysics()
 			{
 				collision = true;			
 				position += minContact.resolution;
+
+				//if( minContact.movingPlat != NULL )
+				//{
+				//	//velocity += minContact.movingPlat->vel * NUM_STEPS;
+				//}
+
 				//cout << "resolving: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
@@ -8222,6 +8641,16 @@ void Actor::UpdatePhysics()
 				
 				//extraVel = V2d( 0, 0 );
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+				//if( minContact.movingPlat != NULL )
+				//{
+				//	if( dot( newVel, normalize( minContact.movingPlat->vel ) ) < minContact.movingPlat->speed )
+				//	{
+				//		V2d temp = newVel;
+				//		newVel = minContact.movingPlat->vel;
+				//		newVel.y = temp.y;
+				//	}
+				//	//newVel += minContact.movingPlat->vel;
+				//}
 				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 				//cout << "newvel: " << newVel.x << ", " << newVel.y << endl;
 				//newVel = extraDir * length( velocity );//extraVel;
@@ -8392,7 +8821,10 @@ void Actor::UpdatePhysics()
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
-				
+				//if( minContact.movingPlat != NULL )
+				//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
+
+
 				//b.rh = dashHeight;
 				//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
 				//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
@@ -8453,12 +8885,21 @@ void Actor::UpdatePhysics()
 				{
 					ground->v0 += movingGround->position;
 					ground->v1 += movingGround->position;
+
+					//minContact.position += minContafct
 				}
 
+				
+
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
+				
+				//edgeQuantity -= .01;
+				//cout << "landing edge quantity is: " << edgeQuantity << ", edge length is: " << length( ground->v1 - ground->v0 ) << endl;
 
 				if( movingGround != NULL )
 				{
+
+					//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
 					ground->v0 = oldv0;
 					ground->v1 = oldv1;
 				}
@@ -9840,6 +10281,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( queryMode == "moving_resolve" )
 	{
+		
+
 		bool bb = false;
 		
 		if( ground != NULL && groundSpeed != 0 )
@@ -9968,26 +10411,40 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		//}
 		double d = dot( normalize( currMovingTerrain->vel ), en );
 
-
+		if( !testr )
 		if( ground != NULL )
 		{
+			//return;
 			c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );
 		}
-		else if( d >= 0 )//oldLen >= newLen || oldLen1 >= newLen1 )
+		else
 		{
-			
-			if( ground != NULL )
-			{
-				cout << "a: " << d << endl;
-				//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
-				//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS + normalize( currMovingTerrain->vel ) * 1.0, b, e, tempVel, V2d( 0, 0 ) );
-				c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + currMovingTerrain->vel / NUM_STEPS, V2d( 0, 0 ) );//currMovingTerrain->vel );	
-			}
-			else
-			{
-				cout << "b: " << d << endl;
-				c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS /*- normalize( currMovingTerrain->vel ) * .1*/, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS - normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );//currMovingTerrain->vel );	
-			}
+		
+			c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel /*+ normalize( currMovingTerrain->vel ) * .2*/, 
+				b, e, tempVel - currMovingTerrain->vel/* - normalize( currMovingTerrain->vel ) * .5*/ , V2d( 0, 0 ) );
+			//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
+			//	b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );
+		}
+
+		if( testr  )
+		{
+		
+		if( d >= 0 )//oldLen >= newLen || oldLen1 >= newLen1 )
+		{
+			c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
+				b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );//currMovingTerrain->vel );	
+			//if( ground != NULL )
+			//{
+			//	cout << "a: " << d << endl;
+			//	//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+			//	//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS + normalize( currMovingTerrain->vel ) * 1.0, b, e, tempVel, V2d( 0, 0 ) );
+			//	c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + currMovingTerrain->vel, V2d( 0, 0 ) );//currMovingTerrain->vel );	
+			//}
+			//else
+			//{
+			//	cout << "b: " << d << endl;
+			//	
+			//}
 			
 			
 		}
@@ -9999,17 +10456,18 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		//}
 		else
 		{
-			cout << "c: " << d << endl;
-
-			if( ground != NULL )
-			{
-				c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
-			}
-			else
-			{
-				c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
-			}
+			//cout << "c: " << d << endl;
+			c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+			//if( ground != NULL )
+			//{
+			//	c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
+			//}
+			//else
+			//{
+			//	
+			//}
 			
+		}
 		}
 
 		 
@@ -10057,13 +10515,22 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}*/
 
+
+
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+				//if( testr )
+				//{
+				//	if( e->Normal().y >= 0 ) //not ground
+				//	{
+				//		return;
+				//	}
+				//}
+				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )
@@ -10130,11 +10597,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 
 
-
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+			//position += c->movingPlat->vel;
+			//position += c->resolution;
+			if( !col || (minContact.collisionPriority < 0 ) 
+				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
 			{	
 				
-
+				//position += minContact.resolution;
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
 					if(( c->normal.x == 0 && c->normal.y == 0 ) )//|| minContact.normal.y  0 )
@@ -10170,6 +10639,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					col = true;
 					
 				}
+			}
+			else
+			{
+				//position += minContact.resolution;
+				//position += minContact.resolution;
 			}
 		}
 	}
@@ -10580,11 +11054,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-			//	cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )

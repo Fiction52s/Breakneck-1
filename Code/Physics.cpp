@@ -1130,6 +1130,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			
 			{
+				
 				//cout << "normal: " << e->Normal().x << ", " << e->Normal().y << endl;
 				LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
 				double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
@@ -1223,7 +1224,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else
 			{
-				//cout << "res: " << res << ", " << oldRes << ", " << resOpp << ", " << measureNormal << endl;
+			//	cout << "res: " << res << ", " << oldRes << ", " << resOpp << ", " << measureNormal << endl;
 			
 				//cout << "baz: " << (res < 0 ) <<", " << ( oldRes >= -.001 ) << ", " << (resOpp > 0 ) << ", " << (measureNormal > -.001 ) << endl;
 			}

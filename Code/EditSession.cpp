@@ -7600,7 +7600,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					case Event::KeyPressed:
 						{
-							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) && selectedPolygons.front()->path.size() > 1 )
+							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) ) 
 							{
 								if( selectedBrush != NULL && !selectedBrush->objects.size() > 1 )
 								{
@@ -7608,7 +7608,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 									{
 										TerrainPolygon *tp = (TerrainPolygon*)(*it).get();
-										tp->path.pop_back();
+										if( tp->path.size() > 1 )
+										{
+											tp->path.pop_back();
+										}
 									}
 								}
 								

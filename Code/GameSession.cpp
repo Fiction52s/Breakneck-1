@@ -2770,6 +2770,10 @@ int GameSession::Run( string fileN )
 	unlockedGateList = NULL;
 	activatedZoneList = NULL;
 
+	topbar = GetTileset( "topbar_308x128.png", 308, 128 );
+	topbarSprite.setTexture( *topbar->texture );
+	topbarSprite.setPosition( 2, 16 );
+
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
 
@@ -3932,7 +3936,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 
 		//grassTree->DebugDraw( preScreenTex );
@@ -4104,7 +4108,10 @@ int GameSession::Run( string fileN )
 	//	window->draw( healthSprite );
 		powerBar.Draw( preScreenTex );
 
-		preScreenTex->draw( keyHolderSprite );
+		preScreenTex->draw( topbarSprite );
+		//topbarSprite.draw( preScreenTex );
+
+		//preScreenTex->draw( keyHolderSprite );
 
 
 		sf::RectangleShape keyR( Vector2f( 33, 33 ) );
@@ -4136,7 +4143,7 @@ int GameSession::Run( string fileN )
 
 		if( showFrameRate )
 		{
-			preScreenTex->draw( frameRate );
+		//	preScreenTex->draw( frameRate );
 		}
 		
 

@@ -55,7 +55,10 @@ struct Actor : QuadTreeCollider,
 	};
 
 	sf::Vector2<double> movingPlatExtra;
+	bool testr;
 
+	Tileset *ts_kinFace;
+	sf::Sprite kinFace;
 
 	Actor( GameSession *owner );
 	void UpdateSprite();
@@ -66,6 +69,7 @@ struct Actor : QuadTreeCollider,
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	bool CaptureMonitor( Monitor *m );
 	void UpdatePhysics();
+	void UpdateFullPhysics();
 	void PhysicsResponse();
 	bool physicsOver;
 	void GroundAttack();
@@ -289,6 +293,7 @@ struct Actor : QuadTreeCollider,
 
 	int framesGrinding;
 	int framesNotGrinding;
+
 
 	Edge *ground;
 	MovingTerrain *movingGround;
