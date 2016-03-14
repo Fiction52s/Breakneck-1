@@ -706,6 +706,9 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		VertexArray *wallVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsWall );
 
+		
+
+
 		bool first = true;
 			
 		
@@ -884,6 +887,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				fullEnemyList.push_back( enemy );
 
 				enemyTree->Insert( enemy );
+
+				goalPos = enemy->position;
+				cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
 			}
 			else if( typeName == "patroller" )
 			{
@@ -1241,6 +1247,9 @@ bool GameSession::OpenFile( string fileName )
 		originalPos.x = player.position.x;
 		originalPos.y = player.position.y;
 
+		is >> goalPos.x;
+		is >> goalPos.y;
+
 		int pointsLeft = numPoints;
 
 		int pointCounter = 0;
@@ -1529,6 +1538,10 @@ bool GameSession::OpenFile( string fileName )
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
 			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 
+			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
+			VertexArray *energyFlowVA = SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
+
+
 			bool first = true;
 			
 		
@@ -1549,7 +1562,7 @@ bool GameSession::OpenFile( string fileName )
 			testva->steepva = steepVA;
 			testva->wallva = wallVA;
 			testva->triva = triVA;
-		
+			testva->flowva = energyFlowVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
 			borderTree->Insert( testva );
@@ -3873,6 +3886,11 @@ int GameSession::Run( string fileN )
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
+
+			if( listVAIter->flowva != NULL )
+			{
+				preScreenTex->draw( *listVAIter->flowva );
+			}
 			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
@@ -4755,6 +4773,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 VertexArray * GameSession::SetupBorderQuads( int bgLayer, 
 	Edge *startEdge, Tileset *ts, int (*ValidEdge)(sf::Vector2<double> & ) )
 {
+	rayMode = "border_quads";
 	QuadTree *qt = NULL;
 	if( bgLayer == 0 )
 	{
@@ -4958,6 +4977,185 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	
 	return currVA;
 }
+
+sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tileset *ts )
+{
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
+
+	assert( qt != NULL );
+	//goalPos;
+	rayMode = "energy_flow";
+
+	Edge *te = start;
+
+	//step one, get a list of the entrance points
+	//check their ray distance and determine how many quads we want total,
+		//while also storing start and end vectors for each quad
+
+	//store start point and end point for each line
+	cout << "part1  of the algorithm" << endl;
+	int numTotalQuads = 0;
+	list<pair<V2d,V2d>> rays;
+	do
+	{
+		V2d norm = te->Normal();
+		V2d v0 = te->v0;
+		V2d v1 = te->v1;
+		V2d along = normalize( v1 - v0 );
+		double c = cross( goalPos - v0, along );
+		double maxRayLength = 1000;
+		//eventually make this larger because don't want to do it too close to parallel
+		if( c > 0 ) //facing the goal
+		{
+			double len = length( te->v1 - te->v0 );
+			double spacing = 8;
+			double width = 8;
+
+			//double fullSpace = spacing + width;
+
+			//int numStartPoints = len / fullSpace;
+			//double sideSpacing = ( len - numStartPoints * fullSpace ) / 2;
+
+			//for( int i = 0; i < numStartPoints; ++i )
+			double quant = 4; //start point
+			int quads = 0;
+			while( quant < len - width )
+			{
+				double rayLength = 0;
+				V2d rayPoint;
+
+				rcEdge = NULL;
+				rayStart = v0 + along * quant;
+				V2d goalDir = normalize( rayStart - goalPos );
+				cout << "goal dir: " << goalDir.x << ", " << goalDir.y << ", rayStart: " << rayStart.x << ", " << rayStart.y << 
+					", gaolPos: " << goalPos.x << ", " << goalPos.y << endl;
+				rayEnd = rayStart + goalDir * maxRayLength;//rayStart - norm * maxRayLength;
+				RayCast( this, qt->startNode, rayStart, rayEnd );
+
+				//start ray
+				if( rcEdge != NULL )
+				{
+					rayPoint = rcEdge->GetPoint( rcQuantity );
+					
+					//rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
+					
+					
+					//currStartInner = rcEdge->GetPoint( rcQuantity );
+					//realHeight0 = length( currStartInner - currStartOuter );
+				}
+				else
+				{
+					//rays.push_back( pair<V2d,V2d>(rayStart, rayEnd) );
+				}
+
+				rays.push_back(  pair<V2d,V2d>(rayStart, rayEnd) );
+
+				quant += spacing + width;
+				++quads;
+			}
+
+			numTotalQuads += quads;
+			//numTotalQuads += numQuads;	
+			
+		}
+		te = te->edge1;
+	}
+	while( te != start );
+
+	if( numTotalQuads == 0 )
+	{
+		return NULL;
+	}
+
+	cout << "part2  of the algorithm: " << numTotalQuads << endl;
+	VertexArray *VA = new VertexArray( sf::Quads, numTotalQuads * 4 );
+
+	VertexArray &va = *VA;
+
+	int index = 0;
+	for( list<pair<V2d,V2d>>::iterator it = rays.begin(); it != rays.end(); ++it )
+	{
+		
+		V2d start = (*it).first;
+		V2d end = (*it).second;
+
+		V2d along = normalize( end - start );
+		V2d other( along.y, -along.x );
+
+
+		double width = 8;
+		V2d startLeft = start; //- other * width / 2.0;
+		V2d startRight = start + other * width;//width / 2.0;
+		V2d endLeft = end;// - other * width / 2.0;
+		V2d endRight = end + other * width;// * width / 2.0;
+
+		
+
+		va[index*4+0].color = Color::Red;
+		va[index*4+1].color = Color::Red;
+		va[index*4+2].color = Color::Red;
+		va[index*4+3].color = Color::Red;
+
+		va[index*4+0].position = Vector2f( startLeft.x, startLeft.y );
+		va[index*4+1].position = Vector2f( startRight.x, startRight.y );
+		va[index*4+2].position = Vector2f( endRight.x, endRight.y );
+		va[index*4+3].position = Vector2f( endLeft.x, endLeft.y );
+
+
+		//va[index*4+3].position = //Color::Red;
+
+		index++;
+	}
+
+	return VA;
+
+	//int extra = 0;
+	//do
+	//{
+	//	V2d norm = te->Normal();
+	//	V2d v0 = te->v0;
+	//	V2d v1 = te->v1;
+	//	V2d along = normalize( v1 - v0 );
+	//	double c = cross( goalPos - v0, along );
+	//	//eventually make this larger because don't want to do it too close to parallel
+	//	if( c > 0 ) //facing the goal
+	//	{
+	//		double len = length( te->v1 - te->v0 );
+	//		double spacing = 8;
+
+	//		int numQuads = len / spacing;
+
+	//		double sideSpacing = ( len - numQuads * spacing ) / 2;
+
+	//		va[extra + i * 4 + 0].color = Color::Red;
+	//		va[extra + i * 4 + 1].color = Color::Red;
+	//		va[extra + i * 4 + 2].color = Color::Red;
+	//		va[extra + i * 4 + 3].color = Color::Red;
+
+	//		for( int i = 0; i < numQuads; ++i )
+	//		{
+	//			//va[extra + i * 4 + 0].po
+	//		}
+
+	//					
+
+	//	}
+
+	//	extra += numQuads * 4;
+	//	te = te->edge1;
+	//}
+	//while( te != start );
+}
+
+
 
 sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Tileset *ts )
 {
@@ -5423,28 +5621,40 @@ void GameSession::Pause( int frames )
 
 void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	double d0 = dot(normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
-		normalize( rayIgnoreEdge->edge0->v1 - rayIgnoreEdge->edge0->v0 ));
-	double c0 = cross( normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
-		normalize( rayIgnoreEdge->edge1->v0 - rayIgnoreEdge->edge0->v0 ) );
-
-
-	double d1 = dot( normalize( rayIgnoreEdge->edge1->v1 - rayIgnoreEdge->edge1->v0 ), 
-		normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ) );
-	double c1 = cross( normalize( rayIgnoreEdge->edge1->v1 - rayIgnoreEdge->edge1->v0 ), 
-		normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ) );
-	if( edge == rayIgnoreEdge->edge1 && ( d1 >= 0  || c1 > 0 ) )
-		return;
-	if( edge == rayIgnoreEdge->edge0 && ( d0 >= 0 || c0 > 0 ) )
+	if( rayMode == "border_quads" )
 	{
-		return;
+		double d0 = dot(normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
+			normalize( rayIgnoreEdge->edge0->v1 - rayIgnoreEdge->edge0->v0 ));
+		double c0 = cross( normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
+			normalize( rayIgnoreEdge->edge1->v0 - rayIgnoreEdge->edge0->v0 ) );
+
+
+		double d1 = dot( normalize( rayIgnoreEdge->edge1->v1 - rayIgnoreEdge->edge1->v0 ), 
+			normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ) );
+		double c1 = cross( normalize( rayIgnoreEdge->edge1->v1 - rayIgnoreEdge->edge1->v0 ), 
+			normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ) );
+		if( edge == rayIgnoreEdge->edge1 && ( d1 >= 0  || c1 > 0 ) )
+			return;
+		if( edge == rayIgnoreEdge->edge0 && ( d0 >= 0 || c0 > 0 ) )
+		{
+			return;
+		}
+
+		if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
+			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+		{
+			rcEdge = edge;
+			rcQuantity = edgeQuantity;
+		}
 	}
-
-	if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
-		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+	else if( rayMode == "energy_flow" )
 	{
-		rcEdge = edge;
-		rcQuantity = edgeQuantity;
+		if(( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
+			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+		{
+			rcEdge = edge;
+			rcQuantity = edgeQuantity;
+		}
 	}
 	//if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
 	

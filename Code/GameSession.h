@@ -261,6 +261,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	static int IsSteepGround(  sf::Vector2<double> &normal );
 	static int IsWall( sf::Vector2<double> &normal );
 
+	
 	sf::VertexArray * SetupBorderQuads(
 		int bgLayer,
 		Edge *start,
@@ -268,6 +269,13 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Tileset *ts,
 		int (*ValidEdge)(sf::Vector2<double> &)
 		);
+
+	sf::Vector2<double> goalPos;
+	std::string rayMode;
+	sf::VertexArray * SetupEnergyFlow(
+		int bgLayer,
+		Edge *start,
+		Tileset *ts );
 
 	sf::VertexArray *SetupBorderTris(
 		int bgLayer,
@@ -288,6 +296,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *steepva;
 		sf::VertexArray *wallva;
 		sf::VertexArray *triva;
+		sf::VertexArray *flowva;
 		
 		
 		sf::VertexArray *terrainVA;

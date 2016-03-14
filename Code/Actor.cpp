@@ -8833,7 +8833,11 @@ void Actor::UpdatePhysics()
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
-				//if( minContact.movingPlat != NULL )
+				if( minContact.movingPlat != NULL )
+				{
+					//minContact.position += minContact.movingPlat->vel * minContact.collisionPriority;//(1 -minContact.collisionPriority );
+					minContact.position -= minContact.movingPlat->vel;
+				}
 				//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
 
 
@@ -9147,9 +9151,17 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
-
+				if( minContact.movingPlat != NULL )
+				{
+					//velocity = newVel + minContact.movingPlat->vel;
+				//	minContact.position -= minContact.movingPlat->vel;
+				}
+				//else
+				{
+					velocity = newVel;
+				}
 				
-				velocity = newVel;
+				
 				//cout << "setting newvel: " << velocity.x << ", " << velocity.y << endl;
 
 			}
@@ -10447,9 +10459,21 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else
 		{
-		
-			c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel /*+ normalize( currMovingTerrain->vel ) * .2*/, 
-				b, e, tempVel - currMovingTerrain->vel/* - normalize( currMovingTerrain->vel ) * .5*/ , V2d( 0, 0 ) );
+			if( d >= 0 )
+			{
+				c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
+					b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );
+			}
+			else
+			{
+				c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );	
+			}
+
+			/*c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel, 
+				b, e, tempVel - currMovingTerrain->vel, V2d( 0, 0 ) );*/
+
+
+
 			//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
 			//	b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );
 		}

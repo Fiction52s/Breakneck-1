@@ -2958,6 +2958,11 @@ bool EditSession::OpenFile( string fileName )
 		is >> player->position.x;
 		is >> player->position.y;
 
+		int goalPosX;
+		int goalPosY; //discard these
+		is >> goalPosX;
+		is >> goalPosY;
+
 		player->image.setPosition( player->position.x, player->position.y );
 		player->SetBoundingQuad();
 
@@ -3758,6 +3763,38 @@ void EditSession::WriteFile(string fileName)
 
 	of << pointCount << endl;
 	of << player->position.x << " " << player->position.y << endl;
+
+	bool quitLoop = false;
+	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && !quitLoop; ++it )
+	{
+		ActorGroup *ag = (*it).second;
+		for( list<ActorPtr>::iterator ait = ag->actors.begin(); ait != ag->actors.end() && !quitLoop; ++ait )
+		{
+			if( (*ait)->type->name == "goal" )
+			{
+				TerrainPoint *start = (*ait)->groundInfo->edgeStart;
+				TerrainPoint *end = NULL;
+				if( start->next != NULL )
+					end = start->next;
+				else
+				{
+					end = (*ait)->groundInfo->ground->pointStart;
+				}
+				V2d s( start->pos.x, start->pos.y );
+				V2d e( end->pos.x, end->pos.y );
+				V2d along = normalize( e - s );
+				V2d pos = s + along * (*ait)->groundInfo->groundQuantity;
+				Vector2i pi( pos.x, pos.y );//floor( pos.x + .5 ), floor( pos.y + .5 );
+				of << pi.x << " " << pi.y << endl;
+				//of << (*ait)->position.x << " " << (*ait)->position.y << endl;
+				//only should be one goal, but this isnt enforced yet
+				quitLoop = true;
+			}
+		}
+		//(*it).second->WriteFile( of );
+		//(*it).second->( w );
+	}
+
 
 	int writeIndex = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
