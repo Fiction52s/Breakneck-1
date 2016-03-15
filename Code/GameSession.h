@@ -204,6 +204,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void SetParMountains( sf::RenderTarget *target );
 	sf::Shader mountainShader;
 
+	sf::Shader flowShader;
+	float flowRadius;
+	int flowFrameCount;
+	int flowFrame;
+	//float flowRadius1;
+	float maxFlowRadius;
+	float radDiff;
+	float flowSpacing;
+	float maxFlowRings;
+
+
+
 	sf::Shader mountainShader1;
 	void SetParMountains1( sf::RenderTarget *target );
 

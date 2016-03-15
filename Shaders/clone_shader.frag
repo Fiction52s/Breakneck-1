@@ -115,7 +115,38 @@ void main()
 	fragC.y = 1 - fragC.y;
 	
 	//vec2 pos = pixelPos + topLeft;
-	vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
+	float xtex = gl_TexCoord[0].x;
+	float ytex = gl_TexCoord[0].y;
+	
+	vec4 sum = vec4( 0.0 );
+	float blur = 1.0;
+	//vec2 tc = gl_TexCoord[0].xy; 
+	vec2 tc = gl_FragCoord.xy;//gl_TexCoord[0].xy; 
+	
+	float hstep = 1;
+	float vstep = 0;
+	
+	sum += texture2D(u_texture, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
+    sum += texture2D(u_texture, vec2(tc.x - 3.0*blur*hstep, tc.y - 3.0*blur*vstep)) * 0.0540540541;
+    sum += texture2D(u_texture, vec2(tc.x - 2.0*blur*hstep, tc.y - 2.0*blur*vstep)) * 0.1216216216;
+    sum += texture2D(u_texture, vec2(tc.x - 1.0*blur*hstep, tc.y - 1.0*blur*vstep)) * 0.1945945946;
+
+    sum += texture2D(u_texture, vec2(tc.x, tc.y)) * 0.2270270270;
+
+    sum += texture2D(u_texture, vec2(tc.x + 1.0*blur*hstep, tc.y + 1.0*blur*vstep)) * 0.1945945946;
+    sum += texture2D(u_texture, vec2(tc.x + 2.0*blur*hstep, tc.y + 2.0*blur*vstep)) * 0.1216216216;
+    sum += texture2D(u_texture, vec2(tc.x + 3.0*blur*hstep, tc.y + 3.0*blur*vstep)) * 0.0540540541;
+    sum += texture2D(u_texture, vec2(tc.x + 4.0*blur*hstep, tc.y + 4.0*blur*vstep)) * 0.0162162162;
+
+    //discard alpha for our simple demo, multiply by vertex color and return
+    
+	
+	
+	float diffx = ( xtex - .5 );
+	float diffy = abs( ytex - .5 );
+	
+	float blurFactor = .01;
+	vec4 DiffuseColor = texture2D(u_texture, vec2( xtex, ytex ) );
 	
 	InitBubbles();
 	
@@ -181,6 +212,6 @@ void main()
 	}*/
 	
 	
-	gl_FragColor = col;
+	gl_FragColor = col;// * vec4(sum.rgb, 1.0);
 }
 

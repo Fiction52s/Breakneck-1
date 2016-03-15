@@ -62,6 +62,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 )
 {
+	
+
 	usePolyShader = true;
 	minimapTex = miniTex;
 
@@ -75,6 +77,24 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
+
+	if( !flowShader.loadFromFile( "flow_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	
+	flowFrameCount = 60 * 4;
+	flowFrame = 0;
+	maxFlowRadius = 10000;
+	radDiff = 200;
+	flowSpacing = 600;
+	maxFlowRings = 20;
+
+	flowShader.setParameter( "radDiff", radDiff );
+	flowShader.setParameter( "Resolution", 1920, 1080 );// window->getSize().x, window->getSize().y);
+	flowShader.setParameter( "flowSpacing", flowSpacing );
+	flowShader.setParameter( "maxFlowRings", maxFlowRadius / maxFlowRings );
+
 
 	if (!mountainShader.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -2862,6 +2882,8 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	flowShader.setParameter( "goalPos", goalPos.x, goalPos.y );
+
 	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
 	//parTest.setFillColor( Color::Red );
 	//Texture tex;
@@ -3510,7 +3532,22 @@ int GameSession::Run( string fileN )
 				double camHeight = 540 * cam.GetZoom();
 				screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 			
-			
+				//flowShader.setParameter( "radius0", flow
+				
+				
+				flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
+
+				flowShader.setParameter( "radius", flowRadius / maxFlowRings );
+				//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
+				flowShader.setParameter( "zoom", cam.GetZoom() );
+				
+
+
+				++flowFrame;
+				if( flowFrame == flowFrameCount )
+				{
+					flowFrame = 0;
+				}
 				
 				queryMode = "enemy";
 
@@ -3632,7 +3669,8 @@ int GameSession::Run( string fileN )
 		view.setCenter( cam.pos.x, cam.pos.y );
 		lastViewCenter = view.getCenter();
 
-
+		flowShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
+					view.getCenter().y + view.getSize().y / 2 );
 		
 		//window->setView( bgView );
 		preScreenTex->setView( bgView );
@@ -3897,7 +3935,8 @@ int GameSession::Run( string fileN )
 			timesDraw++; 
 		}
 	
-		preScreenTex->draw( *goalVAstuff );
+		
+		preScreenTex->draw( *goalVAstuff, &flowShader );
 
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
@@ -5189,7 +5228,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 	bool insideTerrain = false;
 	bool knowInside = false;
 	double rayLen = 100;
-	double width = 8;
+	double width = 16;
 
 	list<list<pair<V2d,bool>>> allInfo;
 	//cout << "number of divs: " << divs << endl;
