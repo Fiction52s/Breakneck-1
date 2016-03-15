@@ -107,6 +107,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Edge *rcEdge;
 	double rcQuantity;
 	Edge *rayIgnoreEdge;
+	Edge *rayIgnoreEdge1;
 	bool quit;
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
@@ -272,10 +273,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::Vector2<double> goalPos;
 	std::string rayMode;
-	sf::VertexArray * SetupEnergyFlow(
+	sf::VertexArray * SetupEnergyFlow1(
 		int bgLayer,
 		Edge *start,
 		Tileset *ts );
+
+	sf::VertexArray *SetupEnergyFlow();
 
 	sf::VertexArray *SetupBorderTris(
 		int bgLayer,

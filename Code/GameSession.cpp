@@ -1539,7 +1539,7 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
-			VertexArray *energyFlowVA = SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
+			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
 
 
 			bool first = true;
@@ -1562,7 +1562,7 @@ bool GameSession::OpenFile( string fileName )
 			testva->steepva = steepVA;
 			testva->wallva = wallVA;
 			testva->triva = triVA;
-			testva->flowva = energyFlowVA;
+			//testva->flowva = energyFlowVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
 			borderTree->Insert( testva );
@@ -2774,6 +2774,7 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	
 	originalZone = NULL;
 	
 	drawCrawlerReversers = NULL;
@@ -2870,7 +2871,7 @@ int GameSession::Run( string fileN )
 	//parTest.setTexture( *cloudTileset->texture );
 	//parTest.setPosition( 0, 0 );
 
-
+	VertexArray *goalVAstuff = SetupEnergyFlow();
 
 	groundTrans = Transform::Identity;
 	groundTrans.translate( 0, 0 );
@@ -3887,15 +3888,16 @@ int GameSession::Run( string fileN )
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
 
-			if( listVAIter->flowva != NULL )
+		/*	if( listVAIter->flowva != NULL )
 			{
 				preScreenTex->draw( *listVAIter->flowva );
-			}
+			}*/
 			//preScreenTex->draw( *listVAIter->va );
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
 	
+		preScreenTex->draw( *goalVAstuff );
 
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
@@ -4978,7 +4980,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	return currVA;
 }
 
-sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tileset *ts )
+sf::VertexArray * GameSession::SetupEnergyFlow1( int bgLayer, Edge *start, Tileset *ts )
 {
 	QuadTree *qt = NULL;
 	if( bgLayer == 0 )
@@ -5016,7 +5018,10 @@ sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tilese
 		if( c > 0 ) //facing the goal
 		{
 			double len = length( te->v1 - te->v0 );
-			double spacing = 8;
+			V2d mid = (te->v0 + te->v1) / 2.0;
+			double lenMid = length( goalPos - mid );
+			double transition = 1000.0;
+			double spacing = 8 + 8 * ( lenMid / transition );
 			double width = 8;
 
 			//double fullSpace = spacing + width;
@@ -5034,9 +5039,10 @@ sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tilese
 
 				rcEdge = NULL;
 				rayStart = v0 + along * quant;
+				rayIgnoreEdge = te;
 				V2d goalDir = normalize( rayStart - goalPos );
-				cout << "goal dir: " << goalDir.x << ", " << goalDir.y << ", rayStart: " << rayStart.x << ", " << rayStart.y << 
-					", gaolPos: " << goalPos.x << ", " << goalPos.y << endl;
+				//cout << "goal dir: " << goalDir.x << ", " << goalDir.y << ", rayStart: " << rayStart.x << ", " << rayStart.y << 
+				//	", gaolPos: " << goalPos.x << ", " << goalPos.y << endl;
 				rayEnd = rayStart + goalDir * maxRayLength;//rayStart - norm * maxRayLength;
 				RayCast( this, qt->startNode, rayStart, rayEnd );
 
@@ -5045,7 +5051,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tilese
 				{
 					rayPoint = rcEdge->GetPoint( rcQuantity );
 					
-					//rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
+					rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
 					
 					
 					//currStartInner = rcEdge->GetPoint( rcQuantity );
@@ -5053,10 +5059,10 @@ sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tilese
 				}
 				else
 				{
-					//rays.push_back( pair<V2d,V2d>(rayStart, rayEnd) );
+					rays.push_back( pair<V2d,V2d>(rayStart, rayEnd) );
 				}
 
-				rays.push_back(  pair<V2d,V2d>(rayStart, rayEnd) );
+				//rays.push_back(  pair<V2d,V2d>(rayStart, rayEnd) );
 
 				quant += spacing + width;
 				++quads;
@@ -5155,7 +5161,187 @@ sf::VertexArray * GameSession::SetupEnergyFlow( int bgLayer, Edge *start, Tilese
 	//while( te != start );
 }
 
+typedef pair<V2d, V2d> pairV2d;
+sf::VertexArray * GameSession::SetupEnergyFlow()
+{
+	int bgLayer = 0;
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
 
+	assert( qt != NULL );
+	//goalPos;
+	rayMode = "energy_flow";
+	rayIgnoreEdge1 = NULL;
+	rayIgnoreEdge = NULL;
+
+	double angle = 0;
+	double divs = 24;
+	double moveAngle = (2 * PI) / divs;
+	double tau = 2 * PI;
+	double startRadius = 50;
+	bool insideTerrain = false;
+	bool knowInside = false;
+	double rayLen = 100;
+	double width = 8;
+
+	list<pair<V2d,bool>> allInfo;
+	cout << "number of divs: " << divs << endl;
+	for( int i = 0; i < divs; ++i )//while( angle <= PI * 2 )
+	{
+		cout << "div " << i << endl;
+		double angle = (tau / divs) * i;
+		V2d rayDir( cos( angle ), sin( angle ) );
+
+		rayStart = goalPos + rayDir * startRadius;
+		rayEnd = rayStart + rayDir * rayLen;
+		//rayIgnoreEdge->
+		//while( rcEdge 
+		bool rayOkay = rayEnd.x >= leftBounds && rayEnd.y >= topBounds && rayEnd.x <= leftBounds + boundsWidth 
+			&& rayEnd.y <= topBounds + boundsHeight;
+		
+		
+		Edge *cEdge = NULL;
+		list<pair<V2d, bool>> pointList; //if true, then its facing the ray
+
+		
+		while( rayOkay )
+		{
+			cout << "ray start: " << rayStart.x << ", " << rayStart.y << endl;
+			rcEdge = NULL;
+
+			RayCast( this, qt->startNode, rayStart, rayEnd );
+			//rayStart = v0 + along * quant;
+			//rayIgnoreEdge = te;
+			//V2d goalDir = normalize( rayStart - goalPos );
+			//rayEnd = rayStart + goalDir * maxRayLength;//rayStart - norm * maxRayLength;
+			
+			
+			//start ray
+			if( rcEdge != NULL )
+			{
+				
+				if( rcEdge->edgeType == Edge::BORDER )
+				{
+					cout << "secret break" << endl;
+					break;
+				}
+				
+				rayIgnoreEdge1 = rayIgnoreEdge;
+				rayIgnoreEdge = rcEdge;
+
+				V2d rn = rcEdge->Normal();
+				double d = dot( rn, rayDir );
+				V2d hitPoint = rcEdge->GetPoint( rcQuantity );
+				if( d > 0 )
+				{
+					if( pointList.size() > 0 && pointList.back().second == false )
+					{
+						cout << "failing here" << endl;
+					}
+					pointList.push_back( pair<V2d,bool>( hitPoint, false ) ); //not facing the ray, so im inside
+				}
+				else if( d < 0 )
+				{
+					if( pointList.size() > 0 && pointList.back().second == true)
+					{
+						cout << "failing here111" << endl;
+					}
+					pointList.push_back( pair<V2d,bool>( hitPoint, true ) ); // facing the ray, so im outside
+				}
+				else
+				{
+
+				}
+				//rayPoint = rcEdge->GetPoint( rcQuantity );	
+				//rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
+				rayStart = hitPoint;
+				rayEnd = hitPoint + rayDir * rayLen;
+
+				
+					
+				//currStartInner = rcEdge->GetPoint( rcQuantity );
+				//realHeight0 = length( currStartInner - currStartOuter );
+			
+			}
+			else
+			{
+				rayStart = rayEnd;
+				rayEnd = rayStart + rayDir * rayLen;
+			}
+
+			rayOkay = length( (goalPos + rayDir * startRadius) - rayEnd ) <= 10000;
+			//rayOkay = rayEnd.x >= leftBounds && rayEnd.y >= topBounds && rayEnd.x <= leftBounds + boundsWidth 
+			//	&& rayEnd.y <= topBounds + boundsHeight;
+		}
+
+		if( pointList.size() > 0 )
+		{
+			if( pointList.front().second == false )
+			{
+				pointList.push_front( pair<V2d,bool>( goalPos + rayDir * startRadius, true ) );
+			}
+			if( pointList.back().second == true )
+			{
+				pointList.pop_back();
+			//	pointList.push_back( pair<V2d,bool>( rayEnd, false ) );
+			}
+		}
+
+		for(list<pair<V2d,bool>>::iterator it = pointList.begin(); it != pointList.end(); ++it )
+		{
+			allInfo.push_back( (*it) );
+		}
+
+		//true then false
+
+		//always an even number of them
+	}
+
+	if( allInfo.empty() )
+	{
+		return NULL;
+	}
+
+	cout << "number of quads: " << allInfo.size() << endl;
+	VertexArray *VA = new VertexArray( sf::Quads, (allInfo.size() / 2) * 4 );
+	VertexArray &va = *VA;
+	int extra = 0;
+	for(list<pair<V2d,bool>>::iterator it = allInfo.begin(); it != allInfo.end(); ++it )
+	{
+		V2d startPoint = (*it).first;
+		++it;
+		V2d endPoint = (*it).first;
+
+		V2d along = normalize( endPoint - startPoint );
+		V2d other( along.y, -along.x );
+
+		V2d startLeft = startPoint - other * width / 2.0;
+		V2d startRight = startPoint + other * width / 2.0;
+		V2d endLeft = endPoint - other * width / 2.0;
+		V2d endRight = endPoint + other * width / 2.0;
+
+		va[extra + 0].color = Color::Red;
+		va[extra + 1].color = Color::Red;
+		va[extra + 2].color = Color::Red;
+		va[extra + 3].color = Color::Red;
+
+		va[extra + 0].position = Vector2f( startLeft.x, startLeft.y );
+		va[extra + 1].position = Vector2f( startRight.x, startRight.y );
+		va[extra + 2].position = Vector2f( endRight.x, endRight.y );
+		va[extra + 3].position = Vector2f( endLeft.x, endLeft.y );
+
+		extra += 4;
+	}
+
+	return VA;
+}
 
 sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Tileset *ts )
 {
@@ -5649,7 +5835,7 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 	}
 	else if( rayMode == "energy_flow" )
 	{
-		if(( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
+		if( edge != rayIgnoreEdge && edge != rayIgnoreEdge1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
 			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
 		{
 			rcEdge = edge;

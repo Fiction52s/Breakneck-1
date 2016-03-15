@@ -11106,11 +11106,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
 			{
-				cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
+				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
 			else //point
 			{
-				cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
+				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
 			if( c->weirdPoint )
