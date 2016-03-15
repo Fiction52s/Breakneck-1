@@ -5178,11 +5178,11 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 	assert( qt != NULL );
 	//goalPos;
 	rayMode = "energy_flow";
-	rayIgnoreEdge1 = NULL;
-	rayIgnoreEdge = NULL;
+	//rayIgnoreEdge1 = NULL;
+	//rayIgnoreEdge = NULL;
 
 	double angle = 0;
-	double divs = 24;
+	double divs = 64;
 	double moveAngle = (2 * PI) / divs;
 	double tau = 2 * PI;
 	double startRadius = 50;
@@ -5191,11 +5191,18 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 	double rayLen = 100;
 	double width = 8;
 
-	list<pair<V2d,bool>> allInfo;
-	cout << "number of divs: " << divs << endl;
+	list<list<pair<V2d,bool>>> allInfo;
+	//cout << "number of divs: " << divs << endl;
 	for( int i = 0; i < divs; ++i )//while( angle <= PI * 2 )
+	//int i = 3;
+	//int i = 23;
 	{
-		cout << "div " << i << endl;
+		rayIgnoreEdge1 = NULL;
+		rayIgnoreEdge = NULL;
+
+		allInfo.push_back( list<pair<V2d,bool>>() );
+		list<pair<V2d,bool>> &pointList = allInfo.back();
+		//cout << "div " << i << endl;
 		double angle = (tau / divs) * i;
 		V2d rayDir( cos( angle ), sin( angle ) );
 
@@ -5208,12 +5215,12 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 		
 		
 		Edge *cEdge = NULL;
-		list<pair<V2d, bool>> pointList; //if true, then its facing the ray
+		//list<pair<V2d, bool>> pointList; //if true, then its facing the ray
 
 		
 		while( rayOkay )
 		{
-			cout << "ray start: " << rayStart.x << ", " << rayStart.y << endl;
+			//cout << "ray start: " << rayStart.x << ", " << rayStart.y << endl;
 			rcEdge = NULL;
 
 			RayCast( this, qt->startNode, rayStart, rayEnd );
@@ -5229,7 +5236,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 				
 				if( rcEdge->edgeType == Edge::BORDER )
 				{
-					cout << "secret break" << endl;
+				//	cout << "secret break" << endl;
 					break;
 				}
 				
@@ -5243,17 +5250,29 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 				{
 					if( pointList.size() > 0 && pointList.back().second == false )
 					{
-						cout << "failing here" << endl;
+						//cout << "failing here: " << i << endl;
+						assert( 0 );
 					}
-					pointList.push_back( pair<V2d,bool>( hitPoint, false ) ); //not facing the ray, so im inside
+					else
+					{
+						
+						pointList.push_back( pair<V2d,bool>( hitPoint, false ) ); //not facing the ray, so im inside
+						//cout << "adding false: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
+					}
 				}
 				else if( d < 0 )
 				{
 					if( pointList.size() > 0 && pointList.back().second == true)
 					{
-						cout << "failing here111" << endl;
+						//cout << "failing here111 " << i << endl;
+						assert( 0 );
 					}
-					pointList.push_back( pair<V2d,bool>( hitPoint, true ) ); // facing the ray, so im outside
+					else
+					{
+						
+						pointList.push_back( pair<V2d,bool>( hitPoint, true ) ); // facing the ray, so im outside
+						//cout << "adding true: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
+					}
 				}
 				else
 				{
@@ -5285,19 +5304,19 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 		{
 			if( pointList.front().second == false )
 			{
+			//	cout << "adding to front!" << endl;
+				//pointList.pop_front();
 				pointList.push_front( pair<V2d,bool>( goalPos + rayDir * startRadius, true ) );
 			}
 			if( pointList.back().second == true )
 			{
-				pointList.pop_back();
-			//	pointList.push_back( pair<V2d,bool>( rayEnd, false ) );
+				//pointList.pop_back();
+			//	cout << "popping from back!" << endl;
+				pointList.push_back( pair<V2d,bool>( rayEnd, false ) );
 			}
 		}
 
-		for(list<pair<V2d,bool>>::iterator it = pointList.begin(); it != pointList.end(); ++it )
-		{
-			allInfo.push_back( (*it) );
-		}
+		assert( pointList.size() % 2 == 0 );
 
 		//true then false
 
@@ -5309,35 +5328,46 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 		return NULL;
 	}
 
-	cout << "number of quads: " << allInfo.size() << endl;
-	VertexArray *VA = new VertexArray( sf::Quads, (allInfo.size() / 2) * 4 );
+	int totalPoints = 0;
+	for(list<list<pair<V2d,bool>>>::iterator it = allInfo.begin(); it != allInfo.end(); ++it )
+	{
+		list<pair<V2d,bool>> &pointList = (*it);
+		totalPoints += pointList.size();
+	}
+
+	cout << "number of quads: " << totalPoints / 2 << endl;
+	VertexArray *VA = new VertexArray( sf::Quads, (totalPoints / 2) * 4 );
 	VertexArray &va = *VA;
 	int extra = 0;
-	for(list<pair<V2d,bool>>::iterator it = allInfo.begin(); it != allInfo.end(); ++it )
+	for(list<list<pair<V2d,bool>>>::iterator it2 = allInfo.begin(); it2 != allInfo.end(); ++it2 )
 	{
-		V2d startPoint = (*it).first;
-		++it;
-		V2d endPoint = (*it).first;
+		list<pair<V2d,bool>> &pointList = (*it2);
+		for(list<pair<V2d,bool>>::iterator it = pointList.begin(); it != pointList.end(); ++it )
+		{
+			V2d startPoint = (*it).first;
+			++it;
+			V2d endPoint = (*it).first;
 
-		V2d along = normalize( endPoint - startPoint );
-		V2d other( along.y, -along.x );
+			V2d along = normalize( endPoint - startPoint );
+			V2d other( along.y, -along.x );
 
-		V2d startLeft = startPoint - other * width / 2.0;
-		V2d startRight = startPoint + other * width / 2.0;
-		V2d endLeft = endPoint - other * width / 2.0;
-		V2d endRight = endPoint + other * width / 2.0;
+			V2d startLeft = startPoint - other * width / 2.0;
+			V2d startRight = startPoint + other * width / 2.0;
+			V2d endLeft = endPoint - other * width / 2.0;
+			V2d endRight = endPoint + other * width / 2.0;
 
-		va[extra + 0].color = Color::Red;
-		va[extra + 1].color = Color::Red;
-		va[extra + 2].color = Color::Red;
-		va[extra + 3].color = Color::Red;
+			va[extra + 0].color = Color::Red;
+			va[extra + 1].color = Color::Red;
+			va[extra + 2].color = Color::Red;
+			va[extra + 3].color = Color::Red;
 
-		va[extra + 0].position = Vector2f( startLeft.x, startLeft.y );
-		va[extra + 1].position = Vector2f( startRight.x, startRight.y );
-		va[extra + 2].position = Vector2f( endRight.x, endRight.y );
-		va[extra + 3].position = Vector2f( endLeft.x, endLeft.y );
+			va[extra + 0].position = Vector2f( startLeft.x, startLeft.y );
+			va[extra + 1].position = Vector2f( startRight.x, startRight.y );
+			va[extra + 2].position = Vector2f( endRight.x, endRight.y );
+			va[extra + 3].position = Vector2f( endLeft.x, endLeft.y );
 
-		extra += 4;
+			extra += 4;
+		}
 	}
 
 	return VA;
@@ -5835,6 +5865,11 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 	}
 	else if( rayMode == "energy_flow" )
 	{
+		if( edge->edgeType == Edge::CLOSED_GATE )
+		{
+			return;
+		}
+
 		if( edge != rayIgnoreEdge && edge != rayIgnoreEdge1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
 			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
 		{
