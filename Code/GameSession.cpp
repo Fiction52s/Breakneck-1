@@ -3019,10 +3019,28 @@ int GameSession::Run( string fileN )
 
 		if( showFrameRate )
 		{
-			ss << inGameClock.getElapsedTime().asSeconds();
+			if( frameCounter == frameCounterWait )
+			{
+				double blah = 1.0 / frameTime;
+				total += blah;
+				ss << total / ( frameCounterWait + 1 ) ;
+				frameRate.setString( ss.str() );
+				ss.clear();
+				ss.str( "" );
+				frameCounter = 0;
+				total = 0;
+			}
+			else
+			{
+				double blah = 1.0 / frameTime;
+				total += blah;
+				++frameCounter;
+			}
+
+			/*ss << inGameClock.getElapsedTime().asSeconds();
 			frameRate.setString( ss.str() );
 			ss.clear();
-			ss.str("");
+			ss.str("");*/
 		}
 		
 
@@ -4204,7 +4222,7 @@ int GameSession::Run( string fileN )
 
 		if( showFrameRate )
 		{
-		//	preScreenTex->draw( frameRate );
+			preScreenTex->draw( frameRate );
 		}
 		
 
