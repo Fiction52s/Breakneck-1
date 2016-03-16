@@ -83,17 +83,18 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	
-	flowFrameCount = 60 * 4;
+	flowFrameCount = 60;
 	flowFrame = 0;
 	maxFlowRadius = 10000;
-	radDiff = 200;
+	radDiff = 100;
 	flowSpacing = 600;
-	maxFlowRings = 20;
+	maxFlowRings = 40;
 
 	flowShader.setParameter( "radDiff", radDiff );
 	flowShader.setParameter( "Resolution", 1920, 1080 );// window->getSize().x, window->getSize().y);
 	flowShader.setParameter( "flowSpacing", flowSpacing );
 	flowShader.setParameter( "maxFlowRings", maxFlowRadius / maxFlowRings );
+	
 
 
 	if (!mountainShader.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
@@ -172,6 +173,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	itemTree = new QuadTree( 1000000, 1000000 );
 
 	crawlerReverserTree = new QuadTree( 1000000, 1000000 );
+
+	envPlantTree = new QuadTree( 1000000, 1000000 );
 
 	listVA = NULL;
 	lightList = NULL;
@@ -1546,6 +1549,8 @@ bool GameSession::OpenFile( string fileName )
 
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 			Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
+
+
 			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
 			VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
@@ -1554,6 +1559,10 @@ bool GameSession::OpenFile( string fileName )
 				&GameSession::IsSteepGround );
 			VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsWall );
+
+			Tileset *ts_plant = GetTileset( "testgrass.png", 32, 32 );
+
+			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
 			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
@@ -1567,6 +1576,7 @@ bool GameSession::OpenFile( string fileName )
 		
 
 			TestVA * testva = new TestVA;
+			testva->plantva = NULL; //temporary
 			testva->next = NULL;
 			//testva->va = va;
 			testva->aabb.left = left;
@@ -1582,6 +1592,8 @@ bool GameSession::OpenFile( string fileName )
 			testva->steepva = steepVA;
 			testva->wallva = wallVA;
 			testva->triva = triVA;
+			testva->plantva = plantVA;
+			testva->ts_plant = ts_plant;
 			//testva->flowva = energyFlowVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
@@ -2794,7 +2806,7 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
-	
+	totalGameFrames = 0;	
 	originalZone = NULL;
 	
 	drawCrawlerReversers = NULL;
@@ -3146,6 +3158,7 @@ int GameSession::Run( string fileN )
 			Enemy *monitorList = NULL;
 			if( k || levelReset || player.dead || ( currInput.back && !prevInput.back ) )
 			{
+				totalGameFrames = 0;
 				inGameClock.restart();
 
 				if( player.record > 1 )
@@ -3506,6 +3519,7 @@ int GameSession::Run( string fileN )
 			}
 			else
 			{
+				totalGameFrames++;
 				player.UpdatePrePhysics();
 
 			
@@ -3558,7 +3572,7 @@ int GameSession::Run( string fileN )
 				flowShader.setParameter( "radius", flowRadius / maxFlowRings );
 				//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
 				flowShader.setParameter( "zoom", cam.GetZoom() );
-				
+				flowShader.setParameter( "playerPos", player.position.x, player.position.y );
 
 
 				++flowFrame;
@@ -3593,7 +3607,12 @@ int GameSession::Run( string fileN )
 				queryMode = "crawlerreverser";
 				drawCrawlerReversers = NULL;
 				crawlerReverserTree->Query( this, screenRect );
-			
+				
+
+				queryMode = "envplant";
+				envPlantTree->Query( this, screenRect );
+
+
 				if( player.record > 0 )
 				{
 					player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
@@ -3943,6 +3962,12 @@ int GameSession::Run( string fileN )
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
+
+			if( listVAIter->plantva != NULL )
+			{
+				rs.texture = listVAIter->ts_plant->texture;
+				preScreenTex->draw( *listVAIter->plantva, rs );
+			}
 
 		/*	if( listVAIter->flowva != NULL )
 			{
@@ -4538,6 +4563,25 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			drawCrawlerReversers = cr;
 		}
 	}
+	else if( queryMode == "envplant" )
+	{
+		EnvPlant *ep = (EnvPlant*)qte;
+
+		if( !ep->activated )
+		{
+
+			int idleLength = ep->idleLength;
+			int idleFactor = ep->idleFactor;
+
+			IntRect sub = ep->ts->GetSubRect( (totalGameFrames % ( idleLength * idleFactor )) / idleFactor );
+			VertexArray &eva = *ep->va;
+			eva[ep->vaIndex + 0].texCoords = Vector2f( sub.left, sub.top );
+			eva[ep->vaIndex + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+			eva[ep->vaIndex + 2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+			eva[ep->vaIndex + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+		}
+		//va[ep->
+	}
 }
 
 void GameSession::DebugDrawActors()
@@ -4827,6 +4871,91 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
 	polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
 	//polyShader.setParameter( "OnD0", true );
+}
+
+struct PlantInfo
+{
+	PlantInfo( Edge*e, double q, double w )
+		:edge( e), quant( q), quadWidth(w)
+	{
+	}
+	Edge *edge;
+	double quant;
+	double quadWidth;
+};
+
+sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, int (*ValidEdge)(sf::Vector2<double> &) )
+{
+	list<PlantInfo> info;
+
+	int tw = 32;
+	int th = 32;
+
+	Edge *te = startEdge;
+	do
+	{
+		//V2d eNorm = te->Normal();
+		//int valid = ValidEdge( eNorm );
+		int valid = 0;
+		if( valid != -1 )//eNorm.x == 0 )
+		{
+			double len = length( te->v1 - te->v0 );
+			int numQuads = len / tw;
+			double quadWidth = len / numQuads;
+				
+			if( numQuads > 0 )
+			{
+				for(int i = 0; i < numQuads; ++i )
+				{
+					int r = rand() % 2;
+					if( r == 0 )
+					{
+						info.push_back( PlantInfo( te, quadWidth * i, quadWidth ) );
+					}
+				}
+			}
+		}
+		te = te->edge1;
+	}
+	while( te != startEdge );
+
+	int infoSize = info.size();
+	int vaSize = infoSize * 4;
+
+	if( infoSize == 0 )
+	{
+		return NULL;
+	}
+
+	//cout << "number of plants: " << infoSize << endl;
+	VertexArray *va = new VertexArray( sf::Quads, vaSize );
+
+	int vaIndex = 0;
+	for( list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it )
+	{
+		V2d groundPoint = (*it).edge->GetPoint( (*it).quant );
+		V2d norm = (*it).edge->Normal();
+		double w = (*it).quadWidth;
+		V2d along = normalize( (*it).edge->v1 - (*it).edge->v0 );
+		//V2d other( along.y, -along.x );
+		
+		V2d groundLeft = groundPoint;
+		V2d groundRight = groundPoint + w * along;
+		V2d airLeft = groundPoint + norm * (double)th;
+		V2d airRight = groundPoint + w * along + norm * (double)th;
+
+		EnvPlant * ep = new EnvPlant( groundLeft,airLeft,airRight,groundRight, vaIndex, va, ts );
+
+		envPlantTree->Insert( ep );
+
+		vaIndex += 4;
+	}
+
+	return va;
+	/*for( int i = 0; i < infoSize; ++i )
+	{
+
+	}*/
 }
 
 VertexArray * GameSession::SetupBorderQuads( int bgLayer, 
@@ -6270,8 +6399,8 @@ PowerBar::PowerBar()
 {
 	pointsPerDot = 2;
 	dotsPerLine = 6;
-	dotWidth = 10;
-	dotHeight = 10;
+	dotWidth = 9;
+	dotHeight = 9;
 	linesPerBar = 60;
 
 	pointsPerLayer = 2 * 6 * 60;//3 * 6 * 60//240 * 10;
@@ -6573,6 +6702,31 @@ bool Grass::IsTouchingBox( const Rect<double> &r )
 		return true;
 	}*/
 }
+
+EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, VertexArray *v, Tileset *t )
+	:A(a),B(b),C(c),D(d), vaIndex( vi ), va( v ), frame( 0 ), activated( false ), next( NULL ), ts( t ),
+	idleLength( 4 ), idleFactor( 3 ), disperseLength( 5 ), disperseFactor( 3 )
+{
+	VertexArray &eva = *va;
+	eva[vaIndex+0].position = Vector2f( A.x, A.y );
+	eva[vaIndex+1].position = Vector2f( B.x, B.y );
+	eva[vaIndex+2].position = Vector2f( C.x, C.y );
+	eva[vaIndex+3].position = Vector2f( D.x, D.y );
+}
+
+void EnvPlant::HandleQuery( QuadTreeCollider *qtc )
+{
+	qtc->HandleEntrant( this );
+}
+
+bool EnvPlant::IsTouchingBox( const Rect<double> &r )
+{
+	return isQuadTouchingQuad( V2d( r.left, r.top ), V2d( r.left + r.width, r.top ), 
+		V2d( r.left + r.width, r.top + r.height ), V2d( r.left, r.top + r.height ),
+		A, B, C, D );
+}
+
+
 
 GameSession::GameStartSeq::GameStartSeq( GameSession *own )
 	:stormVA( sf::Quads, 6 * 3 * 4 ) 

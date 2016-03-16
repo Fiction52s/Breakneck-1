@@ -93,6 +93,35 @@ struct Grass : QuadTreeEntrant
 	//bool prevGrass;
 };
 
+struct EnvPlant : QuadTreeEntrant
+{
+	EnvPlant(sf::Vector2<double>&a,
+		sf::Vector2<double>&b,
+		sf::Vector2<double>&c,
+		sf::Vector2<double>&d,
+		int vi, sf::VertexArray *v,
+		Tileset *ts );
+
+	//Tileset *ts;
+	int vaIndex;
+	Tileset *ts;
+	sf::VertexArray *va;
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D;
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+	EnvPlant *next;
+	bool activated;
+	int frame;
+	int idleLength;
+	int idleFactor;
+	int disperseLength;
+	int disperseFactor;
+	//EnvPlant *prev;
+};
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	GameSession(GameController &c, sf::RenderWindow *rw, 
@@ -214,7 +243,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float flowSpacing;
 	float maxFlowRings;
 
-
+	int totalGameFrames;
+	//int totalFrames; //including pausing?
 
 	sf::Shader mountainShader1;
 	void SetParMountains1( sf::RenderTarget *target );
@@ -283,6 +313,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int (*ValidEdge)(sf::Vector2<double> &)
 		);
 
+	sf::VertexArray * SetupPlants(
+		Edge *start,
+		Tileset *ts);//,
+		//int (*ValidEdge)(sf::Vector2<double> &));
+
 	sf::Vector2<double> goalPos;
 	std::string rayMode;
 	sf::VertexArray * SetupEnergyFlow1(
@@ -312,6 +347,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *wallva;
 		sf::VertexArray *triva;
 		sf::VertexArray *flowva;
+		sf::VertexArray *plantva;
+		Tileset *ts_plant;
 		
 		
 		sf::VertexArray *terrainVA;
@@ -363,7 +400,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree * gateTree;
 	QuadTree * itemTree;
 	QuadTree * crawlerReverserTree;
+	QuadTree *envPlantTree;
 	CrawlerReverser *drawCrawlerReversers;
+	
 	//std::map<Edge*, Gate*> gateMap;
 
 	//int numKeys;
