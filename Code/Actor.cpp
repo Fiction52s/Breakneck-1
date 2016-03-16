@@ -5569,6 +5569,9 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "item";
 	owner->itemTree->Query( this, r );
 
+	queryMode = "envplant";
+	owner->envPlantTree->Query( this, r );
+
 	//queryMode = "gate";
 	//owner->testGateCount = 0;
 	//owner->gateTree->Query( this, r );
@@ -11571,6 +11574,26 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	
 
 		//check with my hurtbox also!
+	}
+	else if( queryMode == "envplant" )
+	{
+		EnvPlant *ev = (EnvPlant*)qte;
+		
+		if( !ev->activated )
+		{
+			ev->activated = true;
+			if( owner->activeEnvPlants == NULL )
+			{
+				ev->next = NULL;
+				owner->activeEnvPlants = ev;
+			}
+			else
+			{
+				ev->next = owner->activeEnvPlants;
+				owner->activeEnvPlants = ev;
+			}
+			ev->frame = 0;
+		}
 	}
 	
 	++possibleEdgeCount;

@@ -3172,12 +3172,16 @@ int GameSession::Run( string fileN )
 				if( levelReset )
 				{
 					ResetEnemies();
+					ResetPlants(); //eventually maybe treat these to reset like the rest of the stuff
+					//only w/ checkpoints. but for now its always back
 
 					for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 					{
 						(*it)->active = false;
 					}
-					originalZone->active = true;
+
+					if( originalZone != NULL )
+						originalZone->active = true;
 					//
 					//later don't relock gates in a level unless there is a "level reset"
 					for( int i = 0; i < numGates; ++i )
@@ -3205,6 +3209,7 @@ int GameSession::Run( string fileN )
 
 
 					curr = activeEnemyList;*/
+					ResetPlants();
 
 					Enemy *curr = activeEnemyList;
 					while( curr != NULL )
@@ -3608,6 +3613,37 @@ int GameSession::Run( string fileN )
 				drawCrawlerReversers = NULL;
 				crawlerReverserTree->Query( this, screenRect );
 				
+				EnvPlant *ev = activeEnvPlants;
+				EnvPlant *prevPlant = NULL;
+				while( ev != NULL )
+				{
+					EnvPlant *tempNext = ev->next;
+
+					ev->frame++;
+					if( ev->frame == ev->disperseLength * ev->disperseFactor )
+					{
+						VertexArray &eva = *ev->va;
+						eva[ev->vaIndex+0].position = Vector2f(0,0);
+						eva[ev->vaIndex+1].position = Vector2f(0,0);
+						eva[ev->vaIndex+2].position = Vector2f(0,0);
+						eva[ev->vaIndex+3].position = Vector2f(0,0);
+
+						if( ev == activeEnvPlants )
+						{
+							activeEnvPlants = ev->next;
+						}
+						else
+						{
+							prevPlant->next = ev->next;
+						}
+					}
+					else
+					{
+						prevPlant = ev;
+					}
+					
+					ev = tempNext;
+				}
 
 				queryMode = "envplant";
 				envPlantTree->Query( this, screenRect );
@@ -6163,27 +6199,53 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 
 void GameSession::ResetEnemies()
 {
-	Enemy *curr = activeEnemyList;
-	while( curr != NULL )
-	{
-		Enemy *temp = curr->next;
-		if( curr->type == Enemy::BASICEFFECT )
-		{
-			DeactivateEffect( (BasicEffect*)curr );
-		}
-
-		curr = temp;
-	}
-
-	rReset( enemyTree->startNode );
-
+	rResetEnemies( enemyTree->startNode );
 	activeEnemyList = NULL;
 
-	for( list<Key*>::iterator it = keyList.begin(); it != keyList.end(); ++it )
+	//for( list<Key*>::iterator it = keyList.begin(); it != keyList.end(); ++it )
+	//{
+	//	(*it)->Reset();
+	//	AddEnemy( (*it) );
+	//	//(*it)->spawned = true;
+	//}
+}
+
+void GameSession::ResetPlants()
+{
+	rResetPlants( envPlantTree->startNode );
+
+	activeEnvPlants = NULL;
+}
+
+void GameSession::rResetPlants( QNode *node )
+{
+	if( node->leaf )
 	{
-		(*it)->Reset();
-		AddEnemy( (*it) );
-		//(*it)->spawned = true;
+		LeafNode *n = (LeafNode*)node;
+
+		for( int i = 0; i < n->objCount; ++i )
+		{			
+			EnvPlant *ev = (EnvPlant*)(n->entrants[i]);
+			//cout << "reset1" << endl;
+			ev->Reset();
+		}
+	}
+	else
+	{
+		//shouldn't this check for box touching box right here??
+		ParentNode *n = (ParentNode*)node;
+		for( int i = 0; i < 4; ++i )
+		{
+			rResetPlants( n->children[i] );
+		}
+
+		for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
+		{
+			EnvPlant *ev = (EnvPlant *)(*it);
+			//cout << "reset2" << endl;
+			ev->Reset();
+		}
+		
 	}
 }
 
@@ -6256,7 +6318,7 @@ void GameSession::ResetInactiveEnemies()
 	inactiveEnemyList = NULL;
 }
 
-void GameSession::rReset( QNode *node )
+void GameSession::rResetEnemies( QNode *node )
 {
 	if( node->leaf )
 	{
@@ -6281,7 +6343,7 @@ void GameSession::rReset( QNode *node )
 		for( int i = 0; i < 4; ++i )
 		{
 		//	cout << "\tresetting child: " << i << endl;
-			rReset( n->children[i] );
+			rResetEnemies( n->children[i] );
 		}
 
 		for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
@@ -6707,6 +6769,11 @@ EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, Vertex
 	:A(a),B(b),C(c),D(d), vaIndex( vi ), va( v ), frame( 0 ), activated( false ), next( NULL ), ts( t ),
 	idleLength( 4 ), idleFactor( 3 ), disperseLength( 5 ), disperseFactor( 3 )
 {
+	SetupQuad();
+}
+
+void EnvPlant::SetupQuad()
+{
 	VertexArray &eva = *va;
 	eva[vaIndex+0].position = Vector2f( A.x, A.y );
 	eva[vaIndex+1].position = Vector2f( B.x, B.y );
@@ -6726,7 +6793,15 @@ bool EnvPlant::IsTouchingBox( const Rect<double> &r )
 		A, B, C, D );
 }
 
+void EnvPlant::Reset()
+{
+	//cout << "resetting plant!" << endl;
+	next = NULL;
+	activated = false;
+	frame = 0;
 
+	SetupQuad();
+}
 
 GameSession::GameStartSeq::GameStartSeq( GameSession *own )
 	:stormVA( sf::Quads, 6 * 3 * 4 ) 

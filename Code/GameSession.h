@@ -101,6 +101,8 @@ struct EnvPlant : QuadTreeEntrant
 		sf::Vector2<double>&d,
 		int vi, sf::VertexArray *v,
 		Tileset *ts );
+	void Reset();
+	void SetupQuad();
 
 	//Tileset *ts;
 	int vaIndex;
@@ -113,6 +115,7 @@ struct EnvPlant : QuadTreeEntrant
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
 	EnvPlant *next;
+	//EnvPlant *prev;
 	bool activated;
 	int frame;
 	int idleLength;
@@ -178,8 +181,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEnemiesDraw();
 	void RespawnPlayer();
 	void ResetEnemies();
+	void ResetPlants();
 	void ResetInactiveEnemies();
-	void rReset( QNode *node );
+	void rResetEnemies( QNode *node );
+	void rResetPlants( QNode *node );
 	int CountActiveEnemies();
 	void UpdateTerrainShader( const sf::Rect<double> &aabb );
 	void LevelSpecifics();
@@ -243,6 +248,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float flowSpacing;
 	float maxFlowRings;
 
+	EnvPlant *activeEnvPlants;
 	int totalGameFrames;
 	//int totalFrames; //including pausing?
 
