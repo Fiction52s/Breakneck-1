@@ -4002,8 +4002,8 @@ int GameSession::Run( string fileN )
 
 			if( listVAIter->plantva != NULL )
 			{
-				rs.texture = listVAIter->ts_plant->texture;
-				preScreenTex->draw( *listVAIter->plantva, rs );
+				//rs.texture = listVAIter->ts_plant->texture;
+				//preScreenTex->draw( *listVAIter->plantva, rs );
 			}
 
 		/*	if( listVAIter->flowva != NULL )
@@ -5419,7 +5419,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 	bool insideTerrain = false;
 	bool knowInside = false;
 	double rayLen = 100;
-	double width = 16;
+	double width = 50;
 
 	list<list<pair<V2d,bool>>> allInfo;
 	//cout << "number of divs: " << divs << endl;
@@ -5581,10 +5581,10 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 			V2d along = normalize( endPoint - startPoint );
 			V2d other( along.y, -along.x );
 
-			V2d startLeft = startPoint - other * width / 2.0;
-			V2d startRight = startPoint + other * width / 2.0;
-			V2d endLeft = endPoint - other * width / 2.0;
-			V2d endRight = endPoint + other * width / 2.0;
+			V2d startLeft = startPoint - other * width / 2.0 + along * 16.0;
+			V2d startRight = startPoint + other * width / 2.0 + along * 16.0;
+			V2d endLeft = endPoint - other * width / 2.0 - along * 16.0;
+			V2d endRight = endPoint + other * width / 2.0 - along * 16.0;
 
 			va[extra + 0].color = Color::Red;
 			va[extra + 1].color = Color::Red;
@@ -6776,9 +6776,11 @@ bool Grass::IsTouchingBox( const Rect<double> &r )
  //groundLeft,airLeft,airRight,groundRight
 EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, VertexArray *v, Tileset *t )
 	:A(a),B(b),C(c),D(d), vaIndex( vi ), va( v ), frame( 0 ), activated( false ), next( NULL ), ts( t ),
-	idleLength( 4 ), idleFactor( 3 ), disperseLength( 60 ), disperseFactor( 6 )
+	idleLength( 4 ), idleFactor( 3 )
 {
 	particle = new AirParticleEffect( ( b + c ) / 2.0 );
+	disperseLength = particle->maxDurationToLive + particle->emitDuration;
+	disperseFactor = 1;
 	SetupQuad();
 }
 

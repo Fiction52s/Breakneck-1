@@ -29,6 +29,7 @@ struct AirParticleEffect
 	sf::Vector2<double> dir;
 	sf::IntRect particleSize;
 	
+	double maxDurationToLive;
 	int pastParts;
 	double particleAcc;
 	double particleRate; //release particles as

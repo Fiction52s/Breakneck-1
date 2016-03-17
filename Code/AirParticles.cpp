@@ -18,7 +18,7 @@ using namespace std;
 using namespace sf;
 
 AirParticleEffect::AirParticleEffect( V2d &pos )
-	:emitFrame( 0 ), emitDuration( 180 ), particleRate( 1 ), position( pos ), particleAcc( 0 )
+	:emitFrame( 0 ), emitDuration( 30 ), particleRate( 1 ), position( pos ), particleAcc( 0 )
 {
 	dir = V2d( 0, 0 );
 	numParticles = emitDuration * particleRate;
@@ -28,6 +28,7 @@ AirParticleEffect::AirParticleEffect( V2d &pos )
 	int numPoints = numParticles * 4;
 	particles = new VertexArray( sf::Quads, numPoints );
 	pastParts = 0;
+	maxDurationToLive = 45;
 
 	//testing
 	sf::VertexArray &va = *particles;
@@ -35,7 +36,7 @@ AirParticleEffect::AirParticleEffect( V2d &pos )
 
 	for( int i = 0; i < numPoints; ++i )
 	{
-		va[i].color = Color::Red;
+		va[i].color = COLOR_TEAL;//Color::Red;
 	}
 
 	particleSize = IntRect( 0, 0, 8, 8 );
@@ -69,7 +70,7 @@ void AirParticleEffect::ResetParticle( int index )
 {
 	int i = index;
 	sf::VertexArray &va = *particles;
-	durationToLive[i] = 180;
+	durationToLive[i] = maxDurationToLive;
 
 	Transform t;
 	int r = ( rand() % 30 ) - 15;
@@ -145,13 +146,33 @@ void AirParticleEffect::Update( V2d &playerPos )
 	}
 
 	V2d playerDir;
+	VertexArray &va = *particles;
+	int maxA = 200;
 	for( int i = 0; i < totalParts; ++i )
 	{
 		if( durationToLive[i] > 0 )
 		{
 			playerDir = normalize( playerPos - positions[i] );
 			positions[i] += velocities[i];
-			velocities[i] = velocities[i] + playerDir * .2;
+			velocities[i] = normalize ( velocities[i] + playerDir * .4 ) * length( velocities[i] );
+
+			if( durationToLive[i] < maxDurationToLive / 2.0 )
+			{
+				va[i*4+0].color.a = i / 10.0 * maxA;
+				va[i*4+1].color.a = i / 10.0 * maxA;
+				va[i*4+2].color.a = i / 10.0 * maxA;
+				va[i*4+3].color.a = i / 10.0 * maxA;
+			}
+			else
+			{
+
+				va[i*4+0].color.a = maxA;
+				va[i*4+1].color.a = maxA;
+				va[i*4+2].color.a = maxA;
+				va[i*4+3].color.a = maxA;
+			}
+			
+
 			durationToLive[i]--;
 			UpdateParticle(i);
 		}
