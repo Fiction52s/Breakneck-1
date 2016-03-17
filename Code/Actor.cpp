@@ -13,6 +13,18 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		re = new RotaryParticleEffect( this );
+		//ae = new AirParticleEffect( position );
+
+		level1SpeedThresh = 35;
+		level2SpeedThresh = 50;
+		speedChangeUp = .5;
+		speedChangeDown = .1;
+
+		speedLevel = 0;
+		speedBarTarget = 0;
+		currentSpeedBar = 0;
+
 		ts_kinFace = owner->GetTileset( "visor_256x64.png", 256, 64 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
@@ -10292,6 +10304,80 @@ void Actor::UpdatePostPhysics()
 
 	UpdateHitboxes();
 
+
+	double speed;
+	if( ground != NULL ) //ground
+	{
+		speed = abs(groundSpeed);
+	}
+	else //air
+	{
+		speed = length( velocity );
+	}
+
+	
+	
+	//double transitionFramesUp = 60 * 3;
+	//double transitionFramesDown = 60 * 3;
+	//double fUp = 1.0 / transitionFramesUp;
+	//double fDown = 1.0 / transitionFramesDown;
+
+	if( speed > currentSpeedBar )
+	{
+		currentSpeedBar += speedChangeUp;
+		if( currentSpeedBar > speed )
+			currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
+	}
+	else if( speed < currentSpeedBar )
+	{
+		currentSpeedBar -= speedChangeDown;
+		if( currentSpeedBar < speed )
+		{
+			currentSpeedBar = speed;
+		}
+		//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
+	}
+	
+	re->Update( position );
+
+	if( currentSpeedBar >= level2SpeedThresh )
+	{
+		speedLevel = 2;
+	}
+	else if( currentSpeedBar >= level1SpeedThresh )
+	{
+		speedLevel = 1;
+	}
+	else
+	{
+		speedLevel = 0;
+	}
+
+	CircleShape cs;
+	cs.setFillColor( Color::Transparent );
+	switch( speedLevel )
+	{
+	case 0:
+		cs.setOutlineColor( Color::Blue );
+		cs.setOutlineThickness( 10 );
+		cs.setRadius( 32 );
+		break;
+	case 1:
+		cs.setOutlineColor( Color::Magenta );
+		cs.setOutlineThickness( 10 );
+		cs.setRadius( 64 );
+		break;
+	case 2:
+		cs.setOutlineColor( Color::Green );
+		cs.setOutlineThickness( 10 );
+		cs.setRadius( 128 );
+		break;
+	}
+	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	cs.setPosition( position.x, position.y );
+	speedCircle = cs;
+
+
 	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr ) );
 	/*switch( expr )
 	{
@@ -11622,6 +11708,8 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
+	//target->draw( speedCircle );
+	
 	if( bounceFlameOn && action != DEATH )
 	{
 		target->draw( bounceFlameSprite );
@@ -11895,6 +11983,8 @@ void Actor::Draw( sf::RenderTarget *target )
 			//target->draw( bubbleSprite );// &timeSlowShader );
 		}
 	}
+
+	target->draw( *re->particles );
 }
 
 void Actor::DodecaLateDraw(sf::RenderTarget *target)

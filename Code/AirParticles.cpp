@@ -1,6 +1,7 @@
 #include "AirParticles.h"
 #include <iostream>
 #include "VectorMath.h"
+#include "Actor.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -16,6 +17,7 @@
 
 using namespace std;
 using namespace sf;
+
 
 AirParticleEffect::AirParticleEffect( V2d &pos )
 	:emitFrame( 0 ), emitDuration( 30 ), particleRate( 1 ), position( pos ), particleAcc( 0 )
@@ -184,6 +186,222 @@ void AirParticleEffect::Update( V2d &playerPos )
 }
 
 AirParticleEffect::~AirParticleEffect()
+{
+	delete [] durationToLive;
+	delete [] velocities;
+	delete [] positions;
+	delete particles;
+}
+
+RotaryParticleEffect::RotaryParticleEffect( Actor *pl )
+	:emitFrame( 0 ), particleRate( 1 ), particleAcc( 0 ), player( pl )
+{
+	position = pl->position;
+	dir = V2d( 0, 0 );
+	angularVel = .5;
+	radius = 30;
+	angle = 0; //just for now?
+	maxDurationToLive = 30;
+	numParticles = maxDurationToLive * particleRate; //continuous //emitDuration * particleRate;
+	durationToLive = new double[numParticles];
+	velocities = new V2d[numParticles];
+	positions = new V2d[numParticles];
+	int numPoints = numParticles * 4;
+	//cout << "creating rotary with 
+	particles = new VertexArray( sf::Quads, numPoints );
+	pastParts = 0;
+	radius = 0;
+
+	//testing
+	sf::VertexArray &va = *particles;
+	
+
+	for( int i = 0; i < numPoints; ++i )
+	{
+		va[i].color = COLOR_TEAL;//Color::Red;
+	}
+
+	particleSize = IntRect( 0, 0, 8, 8 );
+
+	for( int i = 0; i < numParticles; ++i )
+	{
+		ResetParticle( i );
+	}
+
+	for( int i = 0; i < numParticles; ++i )
+	{
+		durationToLive[i] = 0;
+	}
+	//cout << "constructor" << endl;
+}
+
+void RotaryParticleEffect::SetRadius( int r )
+{
+	radius = r;
+}
+
+void RotaryParticleEffect::SetDirection( V2d &direction )
+{
+	dir = direction;
+}
+
+void RotaryParticleEffect::KillParticle( int index )
+{
+	sf::VertexArray &va = *particles;
+	va[index * 4+0].position = Vector2f( 0, 0 );
+	va[index * 4+1].position = Vector2f( 0, 0 );
+	va[index * 4+2].position = Vector2f( 0, 0 );
+	va[index * 4+3].position = Vector2f( 0, 0 );
+}
+
+void RotaryParticleEffect::ResetParticle( int index )
+{
+	//cout << "resetting particle" << endl;
+	position = player->position;
+	int i = index;
+	sf::VertexArray &va = *particles;
+	durationToLive[i] = maxDurationToLive;
+
+	Transform t;
+	int r = ( rand() % 4 ) - 2;
+	t.rotate( r );
+
+	V2d d = dir;
+	Vector2f rotated = t.transformPoint( Vector2f( d.x, d.y ) );
+	 d = V2d( rotated.x, rotated.y );
+	
+	velocities[i] = d * 4.0;
+	velocities[i] = V2d( 0, 0 ); //d * .5;
+
+	Vector2f adir( cos( angle ), sin(angle ) );
+	Transform at;
+	at.rotate( angularVel / radius );
+	adir = at.transformPoint( adir );
+	V2d adirD( adir.x, adir.y );
+	adirD *= radius;
+
+
+
+	positions[i] = position ;//+ adirD;
+
+	angle += angularVel / radius;
+	if( angle > PI * 2.0 )
+	{
+		angle -= PI * 2.0;
+	}
+
+	va[i*4+0].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left, particleSize.top );
+	va[i*4+1].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left + particleSize.width, particleSize.top );
+	va[i*4+2].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left + particleSize.width , particleSize.top + particleSize.height );
+	va[i*4+3].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left , particleSize.top + particleSize.height  );
+}
+
+void RotaryParticleEffect::Reset()
+{
+	pastParts = 0;
+	particleAcc = 0;
+	emitFrame = 0;
+	for( int i = 0; i < numParticles; ++i )
+	{
+		ResetParticle( i );
+		durationToLive[i] = 0;
+	}
+}
+
+void RotaryParticleEffect::UpdateParticle( int index )
+{
+	int i = index;
+	sf::VertexArray &va = *particles;
+	va[i*4+0].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left, particleSize.top );
+	va[i*4+1].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left + particleSize.width, particleSize.top );
+	va[i*4+2].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left + particleSize.width , particleSize.top + particleSize.height );
+	va[i*4+3].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left , particleSize.top + particleSize.height  );
+}
+
+void RotaryParticleEffect::Update( V2d &playerPos )
+{
+	position = player->position;
+	int totalParts = particleAcc;
+	if( emitFrame < maxDurationToLive )
+	{
+		if( pastParts < numParticles - 1 )
+		{
+		
+			if( totalParts >= numParticles - 1 )
+			{
+				totalParts = numParticles - 1;
+			}
+		
+			for( int i = pastParts; i <= totalParts; ++i )
+			{
+				//cout << "creating particle " << i << endl;
+				ResetParticle( i );
+			}
+
+
+			pastParts = totalParts;
+			particleAcc += particleRate;
+		}
+		emitFrame++;
+	}
+	else
+	{
+		//angle = 0;
+		emitFrame = 0;
+		pastParts = 0;
+		totalParts = 0;
+		particleAcc = 0;
+	}
+
+	V2d playerDir;
+	VertexArray &va = *particles;
+	int maxA = 200;
+	for( int i = 0; i < totalParts; ++i )
+	{
+		if( durationToLive[i] > 0 )
+		{
+			playerDir = normalize( playerPos - positions[i] );
+			positions[i] += velocities[i];
+			//velocities[i] = normalize ( velocities[i] + playerDir * .4 ) * length( velocities[i] );
+
+			if( durationToLive[i] < maxDurationToLive / 2.0 )
+			{
+				va[i*4+0].color.a = i / 10.0 * maxA;
+				va[i*4+1].color.a = i / 10.0 * maxA;
+				va[i*4+2].color.a = i / 10.0 * maxA;
+				va[i*4+3].color.a = i / 10.0 * maxA;
+			}
+			else
+			{
+
+				va[i*4+0].color.a = maxA;
+				va[i*4+1].color.a = maxA;
+				va[i*4+2].color.a = maxA;
+				va[i*4+3].color.a = maxA;
+			}
+			
+
+			durationToLive[i]--;
+			UpdateParticle(i);
+		}
+		else
+		{
+			KillParticle( i );
+		}
+	}
+
+	
+}
+
+RotaryParticleEffect::~RotaryParticleEffect()
 {
 	delete [] durationToLive;
 	delete [] velocities;

@@ -2816,9 +2816,17 @@ int GameSession::Run( string fileN )
 	unlockedGateList = NULL;
 	activatedZoneList = NULL;
 
-	topbar = GetTileset( "topbar_308x128.png", 308, 128 );
-	topbarSprite.setTexture( *topbar->texture );
-	topbarSprite.setPosition( 2, 16 );
+	ts_leftHUD = GetTileset( "lefthud_560x1080.png", 560, 1080 );
+	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
+	speedBarSprite.setTexture( *ts_speedBar->texture );
+	//speedBarSprite.setPosition( 0, 176 );
+	leftHUDSprite.setTexture( *ts_leftHUD->texture );
+	leftHUDBlankSprite.setTexture( *ts_leftHUD->texture );
+	leftHUDBlankSprite.setTextureRect( ts_leftHUD->GetSubRect( 0 ) );
+	leftHUDSprite.setTextureRect( ts_leftHUD->GetSubRect( 1 ) );
+	//topbar = GetTileset( "topbar_308x128.png", 308, 128 );
+	//topbarSprite.setTexture( *topbar->texture );
+	//topbarSprite.setPosition( 2, 16 );
 
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
@@ -4076,7 +4084,7 @@ int GameSession::Run( string fileN )
 		EnvPlant *drawPlant = activeEnvPlants;
 		while( drawPlant != NULL )
 		{
-			preScreenTex->draw( *drawPlant->particle->particles );
+			//preScreenTex->draw( *drawPlant->particle->particles );
 			drawPlant = drawPlant->next;
 		}
 
@@ -4250,13 +4258,20 @@ int GameSession::Run( string fileN )
 		preScreenTex->setView( uiView );
 		preScreenTex->draw( minimapSprite );
 
+		
+		preScreenTex->draw( leftHUDBlankSprite );
+		preScreenTex->draw( speedBarSprite );
+		preScreenTex->draw( player.kinFace );
+		powerBar.Draw( preScreenTex );
+		preScreenTex->draw( leftHUDSprite );
+
 		//window->setView( uiView );
 	//	window->draw( healthSprite );
-		powerBar.Draw( preScreenTex );
+		
 
-		preScreenTex->draw( topbarSprite );
+		//preScreenTex->draw( topbarSprite );
 
-		preScreenTex->draw( player.kinFace );
+		//preScreenTex->draw( player.kinFace );
 		//topbarSprite.draw( preScreenTex );
 
 		//preScreenTex->draw( keyHolderSprite );

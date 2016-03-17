@@ -286,8 +286,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int testGateCount;
 	Gate *gateList;
 
-	Tileset *topbar;
-	sf::Sprite topbarSprite;
+	Tileset *ts_leftHUD;
+	Tileset *ts_speedBar;
+	sf::Sprite leftHUDSprite;
+	sf::Sprite leftHUDBlankSprite;
+	sf::Sprite speedBarSprite;
+	//sf::Sprite topbarSprite;
 
 	sf::VertexArray *va;
 	ControllerState prevInput;

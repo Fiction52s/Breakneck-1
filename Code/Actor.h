@@ -10,6 +10,7 @@
 #include <SFML/Graphics.hpp>
 #include "Wire.h"
 #include "Light.h"
+#include "AirParticles.h"
 
 struct Gate;
 struct Critical;
@@ -106,6 +107,21 @@ struct Actor : QuadTreeCollider,
 	//Gate *gateTouched;
 	Edge *gateTouched;
 	
+	double level1SpeedThresh;
+	double level2SpeedThresh;
+	double speedChangeUp;
+	double speedChangeDown;
+	int speedLevel; //0,1,2
+	double speedBarTarget;
+	double currentSpeedBar;
+	sf::CircleShape speedCircle;
+
+	RotaryParticleEffect *re;
+	//AirParticleEffect *ae;
+	//double speedBarVel;
+
+
+
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
