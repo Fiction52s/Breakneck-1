@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Gate.h"
 #include "Zone.h"
+#include "AirParticles.h"
 
 struct PowerBar
 {
@@ -107,6 +108,7 @@ struct EnvPlant : QuadTreeEntrant
 	//Tileset *ts;
 	int vaIndex;
 	Tileset *ts;
+	AirParticleEffect *particle;
 	sf::VertexArray *va;
 	sf::Vector2<double> A;
 	sf::Vector2<double> B;

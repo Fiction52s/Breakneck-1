@@ -3613,11 +3613,12 @@ int GameSession::Run( string fileN )
 				drawCrawlerReversers = NULL;
 				crawlerReverserTree->Query( this, screenRect );
 				
-				EnvPlant *ev = activeEnvPlants;
 				EnvPlant *prevPlant = NULL;
+				EnvPlant *ev = activeEnvPlants;
 				while( ev != NULL )
 				{
 					EnvPlant *tempNext = ev->next;
+					ev->particle->Update( player.position );
 
 					ev->frame++;
 					if( ev->frame == ev->disperseLength * ev->disperseFactor )
@@ -4070,6 +4071,13 @@ int GameSession::Run( string fileN )
 		{
 			//(*it)->DebugDraw( preScreenTex );
 			(*it)->Draw( preScreenTex );
+		}
+
+		EnvPlant *drawPlant = activeEnvPlants;
+		while( drawPlant != NULL )
+		{
+			preScreenTex->draw( *drawPlant->particle->particles );
+			drawPlant = drawPlant->next;
 		}
 
 		
@@ -6765,10 +6773,12 @@ bool Grass::IsTouchingBox( const Rect<double> &r )
 	}*/
 }
 
+ //groundLeft,airLeft,airRight,groundRight
 EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, VertexArray *v, Tileset *t )
 	:A(a),B(b),C(c),D(d), vaIndex( vi ), va( v ), frame( 0 ), activated( false ), next( NULL ), ts( t ),
-	idleLength( 4 ), idleFactor( 3 ), disperseLength( 5 ), disperseFactor( 3 )
+	idleLength( 4 ), idleFactor( 3 ), disperseLength( 60 ), disperseFactor( 6 )
 {
+	particle = new AirParticleEffect( ( b + c ) / 2.0 );
 	SetupQuad();
 }
 
@@ -6795,12 +6805,15 @@ bool EnvPlant::IsTouchingBox( const Rect<double> &r )
 
 void EnvPlant::Reset()
 {
+	
 	//cout << "resetting plant!" << endl;
 	next = NULL;
 	activated = false;
 	frame = 0;
 
 	SetupQuad();
+
+	particle->Reset();
 }
 
 GameSession::GameStartSeq::GameStartSeq( GameSession *own )

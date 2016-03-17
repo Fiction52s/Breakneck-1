@@ -1,4 +1,6 @@
 #include "AirParticles.h"
+#include <iostream>
+#include "VectorMath.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -18,6 +20,7 @@ using namespace sf;
 AirParticleEffect::AirParticleEffect( V2d &pos )
 	:emitFrame( 0 ), emitDuration( 180 ), particleRate( 1 ), position( pos ), particleAcc( 0 )
 {
+	dir = V2d( 0, 0 );
 	numParticles = emitDuration * particleRate;
 	durationToLive = new double[numParticles];
 	velocities = new V2d[numParticles];
@@ -33,7 +36,6 @@ AirParticleEffect::AirParticleEffect( V2d &pos )
 	for( int i = 0; i < numPoints; ++i )
 	{
 		va[i].color = Color::Red;
-		
 	}
 
 	particleSize = IntRect( 0, 0, 8, 8 );
@@ -68,22 +70,59 @@ void AirParticleEffect::ResetParticle( int index )
 	int i = index;
 	sf::VertexArray &va = *particles;
 	durationToLive[i] = 180;
-	velocities[i] = dir * 4.0;
+
+	Transform t;
+	int r = ( rand() % 30 ) - 15;
+	t.rotate( r );
+
+	V2d d = dir;
+	Vector2f rotated = t.transformPoint( Vector2f( d.x, d.y ) );
+	 d = V2d( rotated.x, rotated.y );
+	
+	velocities[i] = d * 4.0;
+	positions[i] = position;
+
 	va[i*4+0].position = Vector2f( position.x, position.y ) 
 		+ Vector2f( particleSize.left, particleSize.top );
 	va[i*4+1].position = Vector2f( position.x, position.y ) 
-		+ Vector2f( particleSize.left, particleSize.top + particleSize.height );
-	va[i*4+2].position = Vector2f( position.x, position.y ) 
-		+ Vector2f( particleSize.left + particleSize.width, particleSize.top + particleSize.height );
-	va[i*4+3].position = Vector2f( position.x, position.y ) 
 		+ Vector2f( particleSize.left + particleSize.width, particleSize.top );
+	va[i*4+2].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( particleSize.left + particleSize.width , particleSize.top + particleSize.height );
+	va[i*4+3].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( particleSize.left , particleSize.top + particleSize.height  );
 }
 
-void AirParticleEffect::Update()
+void AirParticleEffect::Reset()
 {
+	pastParts = 0;
+	particleAcc = 0;
+	emitFrame = 0;
+	for( int i = 0; i < numParticles; ++i )
+	{
+		ResetParticle( i );
+		durationToLive[i] = 0;
+	}
+}
+
+void AirParticleEffect::UpdateParticle( int index )
+{
+	int i = index;
+	sf::VertexArray &va = *particles;
+	va[i*4+0].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left, particleSize.top );
+	va[i*4+1].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left + particleSize.width, particleSize.top );
+	va[i*4+2].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left + particleSize.width , particleSize.top + particleSize.height );
+	va[i*4+3].position = Vector2f( positions[i].x, positions[i].y ) 
+		+ Vector2f( particleSize.left , particleSize.top + particleSize.height  );
+}
+
+void AirParticleEffect::Update( V2d &playerPos )
+{
+	int totalParts = particleAcc;
 	if( emitFrame < emitDuration )
 	{
-		int totalParts = particleAcc;
 		if( pastParts < numParticles - 1 )
 		{
 		
@@ -94,6 +133,7 @@ void AirParticleEffect::Update()
 		
 			for( int i = pastParts; i <= totalParts; ++i )
 			{
+				//cout << "creating particle " << i << endl;
 				ResetParticle( i );
 			}
 
@@ -101,23 +141,25 @@ void AirParticleEffect::Update()
 			pastParts = totalParts;
 			particleAcc += particleRate;
 		}
-
-	
-		for( int i = 0; i < numParticles; ++i )
-		{
-			if( durationToLive[i] > 0 )
-			{
-				positions[i] += velocities[i];
-				durationToLive[i]--;
-			}
-		}
 		emitFrame++;
 	}
-	else
-	{
-		
-	}
 
+	V2d playerDir;
+	for( int i = 0; i < totalParts; ++i )
+	{
+		if( durationToLive[i] > 0 )
+		{
+			playerDir = normalize( playerPos - positions[i] );
+			positions[i] += velocities[i];
+			velocities[i] = velocities[i] + playerDir * .2;
+			durationToLive[i]--;
+			UpdateParticle(i);
+		}
+		else
+		{
+			KillParticle( i );
+		}
+	}
 }
 
 AirParticleEffect::~AirParticleEffect()

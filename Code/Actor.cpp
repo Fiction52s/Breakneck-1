@@ -11582,6 +11582,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		if( !ev->activated )
 		{
 			ev->activated = true;
+			if( ground != NULL )
+			{
+				ev->particle->dir = normalize( normalize( ground->v1 - ground->v0 ) * groundSpeed );
+			}
+			else
+			{
+				ev->particle->dir = normalize( velocity );
+			}
+			
 			if( owner->activeEnvPlants == NULL )
 			{
 				ev->next = NULL;

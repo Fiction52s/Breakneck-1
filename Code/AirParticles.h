@@ -16,11 +16,13 @@ struct Emitter
 struct AirParticleEffect
 {
 	AirParticleEffect( sf::Vector2<double> &position );
-	void Update();
+	void Update( sf::Vector2<double> &playerPos );
 	void SetDirection( sf::Vector2<double> &direction );
 	~AirParticleEffect();
+	void UpdateParticle( int index );
 	void KillParticle( int index );
 	void ResetParticle( int index );
+	void Reset();
 	int emitFrame;
 	int emitDuration;
 	double angleRange;
