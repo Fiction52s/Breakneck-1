@@ -2806,6 +2806,7 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
 	originalZone = NULL;
 	
@@ -4685,6 +4686,7 @@ void GameSession::RespawnPlayer()
 		player.hasBlueKey = player.currentCheckPoint->hadBlueKey;
 	}
 
+	
 	player.gateTouched = NULL;
 	player.action = player.JUMP;
 	player.frame = 1;
@@ -4744,6 +4746,8 @@ void GameSession::RespawnPlayer()
 	{
 		player.motionGhosts[i].setPosition( player.position.x, player.position.y );
 	}
+
+	player.SetExpr( Actor::Expr::Expr_NEUTRAL );
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )

@@ -58,10 +58,17 @@ struct Actor : QuadTreeCollider,
 	
 	enum Expr
 	{
-		NEUTRAL,
-		HURT
+		Expr_NEUTRAL,
+		Expr_EYES_CLOSED,
+		Expr_LOOK_LEFT,
+		Expr_RUN,
+		Expr_SPRINT,
+		Expr_HURT,
+		Expr_NONE
 	};
 	
+	void SetActionExpr( Action a );
+	void SetExpr( Expr ex );
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;

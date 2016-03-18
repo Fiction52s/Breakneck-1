@@ -28,12 +28,12 @@ Actor::Actor( GameSession *gs )
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
-		ts_kinFace = owner->GetTileset( "visor_256x64.png", 256, 64 );
+		ts_kinFace = owner->GetTileset( "visor_512x128.png", 512, 128 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 		kinFace.setPosition( 2, 63 );
 
-		expr = NEUTRAL;
+		SetExpr( Expr::Expr_NEUTRAL );
 
 		motionGhostSpacing = 6;
 		ghostSpacingCounter = 0;
@@ -464,8 +464,7 @@ Actor::Actor( GameSession *gs )
 		//ts_bounceSprint = owner->GetTileset( "bouncesprint.png", 128, 64 );
 
 		grindActionLength = 32;
-
-		action = JUMP;
+		SetActionExpr( JUMP );
 		frame = 1;
 		
 		timeSlowStrength = 5;
@@ -716,7 +715,7 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case WALLJUMP:
-			action = JUMP;
+			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case STANDN:
@@ -731,13 +730,13 @@ void Actor::ActionEnded()
 				}
 				else
 				{
-					action = RUN;
+					SetActionExpr( RUN );
 				}
 				facingRight = currInput.LRight();
 			}
 			else
 			{
-				action = STAND;	
+				SetActionExpr( STAND );
 			}
 			frame = 0;
 			break;
@@ -752,13 +751,13 @@ void Actor::ActionEnded()
 				}
 				else
 				{
-					action = RUN;
+					SetActionExpr( RUN );
 				}
 				facingRight = currInput.LRight();
 			}
 			else
 			{
-				action = STAND;	
+				SetActionExpr( STAND );
 			}
 			frame = 0;
 			break;
@@ -773,35 +772,35 @@ void Actor::ActionEnded()
 				}
 				else
 				{
-					action = RUN;
+					SetActionExpr( RUN );
 				}
 				facingRight = currInput.LRight();
 			}
 			else
 			{
-				action = STAND;	
+				SetActionExpr( STAND );
 			}
 			frame = 0;
 			break;
 		case FAIR:
-			action = JUMP;
+			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case DAIR:
-			action = JUMP;
+			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case UAIR:
-			action = JUMP;
+			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case DASH:
 			//dashStartSound.stop();
-			action = STAND;
+			SetActionExpr( STAND );
 			frame = 0;
 			break;
 		case DOUBLE:
-			action = JUMP;
+			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case SLIDE:
@@ -823,7 +822,7 @@ void Actor::ActionEnded()
 				}
 				else
 				{
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 				}
 			break;
@@ -999,7 +998,8 @@ void Actor::UpdatePrePhysics()
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
 
-		expr = Expr::HURT;
+		SetExpr( Expr::Expr_HURT );
+		//expr = Expr::Expr_HURT;
 		
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		bool dmgSuccess = owner->powerBar.Damage( receivedHit->damage );
@@ -1086,9 +1086,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if( hitstunFrames == 0 )
 		{
-			expr = Expr::NEUTRAL;
-			//cout << "air done" << endl;
-			action = JUMP;
+			SetActionExpr( JUMP );
 			frame = 1;
 			prevInput = ControllerState();
 		}
@@ -1098,9 +1096,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if( hitstunFrames == 0 )
 		{
-			expr = Expr::NEUTRAL;
-			//cout << "ground done" << endl;
-			action = LAND;
+			SetActionExpr( LAND );
 			frame = 0;
 			prevInput = ControllerState();
 		}
@@ -1184,7 +1180,8 @@ void Actor::UpdatePrePhysics()
 		
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
+				//action = JUMPSQUAT;
 				bufferedAttack = false;
 				frame = 0;
 				break;
@@ -1200,12 +1197,13 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LDown() )
 				{
-					action = SPRINT;
+					SetActionExpr( SPRINT );
 					frame = 0;
 				}
 				else
 				{
-					action = RUN;
+					SetActionExpr( RUN );
+					
 					frame = 0;
 				}
 				break;
@@ -1248,7 +1246,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
 				runTappingSound.stop();
@@ -1336,7 +1334,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					action = STAND;
+					SetActionExpr( STAND );
 					frame = 0;
 				}
 				runTappingSound.stop();
@@ -1351,7 +1349,7 @@ void Actor::UpdatePrePhysics()
 					
 					if( ( currInput.LDown() && gNorm.x < 0 ) || ( currInput.LUp() && gNorm.x > 0 ) )
 					{
-						action = SPRINT;
+						SetActionExpr( SPRINT );
 					}
 					
 					groundSpeed = 0;
@@ -1364,7 +1362,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( ( currInput.LDown() && gNorm.x > 0 ) || ( currInput.LUp() && gNorm.x < 0 ) )
 					{
-						action = SPRINT;
+						SetActionExpr( SPRINT );
 					}
 
 					groundSpeed = 0;
@@ -1377,7 +1375,7 @@ void Actor::UpdatePrePhysics()
 					|| (currInput.LUp() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) )
 				{
 					
-					action = SPRINT;
+					SetActionExpr( SPRINT );
 					frame = frame / 4;
 
 					if( frame < 3 )
@@ -1539,7 +1537,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == actionLength[JUMPSQUAT] - 1 )
 			{
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 0;
 				groundSpeed = storedGroundSpeed;
 			}
@@ -1707,7 +1705,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
-						action = RUN;
+						SetActionExpr( RUN );
 						frame = 0;
 					}
 					else if( currInput.LDown() )
@@ -1717,7 +1715,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = STAND;
+						SetActionExpr( STAND );
 						frame = 0;
 					}
 				}
@@ -1765,7 +1763,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( currInput.A && !prevInput.A )
 					{
-						action = JUMPSQUAT;
+						SetActionExpr( JUMPSQUAT );
 						bufferedAttack = false;
 						frame = 0;
 						//runTappingSound.stop();
@@ -1814,7 +1812,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
-						action = RUN;
+						SetActionExpr( RUN );
 						frame = 0;
 						facingRight = currInput.LRight();
 					}
@@ -1825,7 +1823,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = STAND;
+						SetActionExpr( STAND );
 						frame = 0;
 					}
 				}
@@ -1861,7 +1859,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.LDown() )
 			{
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 1;
 			}
 
@@ -2244,7 +2242,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
 				break;
@@ -2262,7 +2260,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( currInput.LLeft() || currInput.LRight() )
 					{
-						action = RUN;
+						SetActionExpr( RUN );
 						frame = 0;
 					}
 					else
@@ -2304,7 +2302,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
 				break;
@@ -2396,7 +2394,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
-						action = RUN;
+						SetActionExpr( RUN );
 						frame = 0;
 					}
 					else if( currInput.LDown() )
@@ -2489,7 +2487,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
-						action = RUN;
+						SetActionExpr( RUN );
 						frame = 0;
 						facingRight = currInput.LRight();
 					}
@@ -2618,7 +2616,7 @@ void Actor::UpdatePrePhysics()
 			//{
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
 				break;
@@ -2669,7 +2667,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = RUN;
+						SetActionExpr( RUN );
 					}
 
 					groundSpeed = 0;
@@ -2685,8 +2683,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = RUN;
-						
+						SetActionExpr( RUN );
 					}
 
 					groundSpeed = 0;
@@ -2697,7 +2694,7 @@ void Actor::UpdatePrePhysics()
 				else if( !( (currInput.LDown() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
 					|| (currInput.LUp() && ((gNorm.x < 0 && facingRight) || ( gNorm.x > 0 && !facingRight ) )) ) )
 				{
-					action = RUN;
+					SetActionExpr( RUN );
 					frame = frame / 4;
 					if( frame < 3)
 					{
@@ -2845,7 +2842,7 @@ void Actor::UpdatePrePhysics()
 							}
 							
 
-							action = JUMP;
+							SetActionExpr( JUMP );
 							frame = 0;
 							ground = NULL;
 							movingGround = NULL;
@@ -2937,7 +2934,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
 				break;
@@ -3040,7 +3037,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( !currInput.B )//|| ( oldInBubble && !inBubble ) )
 			{
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 1;
 				
 				if( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
@@ -3104,7 +3101,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMPSQUAT;
+				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
 				break;
@@ -3202,7 +3199,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( !currInput.X )
 			{
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 1;
 			}
 
@@ -3265,7 +3262,7 @@ void Actor::UpdatePrePhysics()
 			{
 
 
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 1;
 				bounceFlameOn = false;
 				bounceEdge = NULL;
@@ -3437,7 +3434,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 0;
 				runTappingSound.stop();
 				break;
@@ -5161,7 +5158,7 @@ void Actor::UpdatePrePhysics()
 
 	if( !inBubble && action == AIRDASH && airDashStall )
 	{
-		action = JUMP;
+	SetActionExpr( JUMP );
 		frame = 1;
 	}
 
@@ -5801,7 +5798,7 @@ V2d Actor::UpdateReversePhysics()
 
 						cout << "airborne 2" << endl;
 						leftGround = true;
-						action = JUMP;
+						SetActionExpr( JUMP );
 						frame = 1;
 						rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5842,7 +5839,7 @@ V2d Actor::UpdateReversePhysics()
 									leftGroundExtra.x = .01;
 
 									leftGround = true;
-									action = JUMP;
+									SetActionExpr( JUMP );
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5913,7 +5910,7 @@ V2d Actor::UpdateReversePhysics()
 					//cout << "move: " << movementVec.x << ", " << movementVec.y << endl;
 
 					leftGround = true;
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -5990,7 +5987,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 
 						leftGround = true;
-						action = JUMP;
+						SetActionExpr( JUMP );
 						frame = 1;
 						rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6030,7 +6027,7 @@ V2d Actor::UpdateReversePhysics()
 									}
 									cout << "airborne 3" << endl;
 									leftGround = true;
-									action = JUMP;
+									SetActionExpr( JUMP );
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6098,7 +6095,7 @@ V2d Actor::UpdateReversePhysics()
 							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
 					}
 					cout << "airborne 4" << endl;
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7541,7 +7538,7 @@ void Actor::UpdatePhysics()
 									}
 									//cout << "airborne 6" << endl;
 									leftGround = true;
-									action = JUMP;
+									SetActionExpr( JUMP );
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7598,7 +7595,7 @@ void Actor::UpdatePhysics()
 					//cout << "airborne 7" << endl;
 					//cout << "after vec: " << movementVec.x << ", " << movementVec.y << endl;
 					leftGround = true;
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7694,7 +7691,7 @@ void Actor::UpdatePhysics()
 									}
 						//			cout << "airborne 9" << endl;
 									leftGround = true;
-									action = JUMP;
+									SetActionExpr( JUMP );
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7760,7 +7757,7 @@ void Actor::UpdatePhysics()
 					ground = NULL;
 					movingGround = NULL;
 					//cout << "airborne 10" << endl;
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7953,7 +7950,7 @@ void Actor::UpdatePhysics()
 							}
 							cout << "real slope jump A" << endl;
 							leftGround = true;
-							action = JUMP;
+							SetActionExpr( JUMP );
 							frame = 1;
 							rightWire->UpdateAnchors( V2d( 0, 0 ) );
 							leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7978,7 +7975,7 @@ void Actor::UpdatePhysics()
 								//why did i put these in again? from steep slope right
 								cout << "real slope jump D" << endl;
 								leftGround = true;
-								action = JUMP;
+								SetActionExpr( JUMP );
 								frame = 1;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -8015,7 +8012,7 @@ void Actor::UpdatePhysics()
 							}
 							cout << "real slope jump B" << endl;
 							leftGround = true;
-							action = JUMP;
+							SetActionExpr( JUMP );
 							frame = 1;
 							rightWire->UpdateAnchors( V2d( 0, 0 ) );
 							leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -8038,7 +8035,7 @@ void Actor::UpdatePhysics()
 								}
 							//	cout << "real slope jump C" << endl;
 								leftGround = true;
-								action = JUMP;
+								SetActionExpr( JUMP );
 								frame = 1;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -8414,7 +8411,7 @@ void Actor::UpdatePhysics()
 									ground = NULL;
 									movingGround = NULL;
 							//		cout << "airborne 11" << endl;
-									action = JUMP;
+									SetActionExpr( JUMP );
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -8468,7 +8465,7 @@ void Actor::UpdatePhysics()
 										//leftGround = true;
 										
 										//cout << "airborne 12" << endl;
-										action = JUMPSQUAT;
+										SetActionExpr( JUMPSQUAT );
 										frame = 1;
 										
 										rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -8764,7 +8761,7 @@ void Actor::UpdatePhysics()
 					bounceOkay = false;
 					bounceEdge = NULL;
 					oldBounceEdge = NULL;
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 					break;
 				}
@@ -8852,7 +8849,7 @@ void Actor::UpdatePhysics()
 						cout << "stopped it here! framesinair: " << trueFramesInAir << endl;
 						bounceEdge = NULL;
 						oldBounceEdge = NULL;
-						action = JUMP;
+						SetActionExpr( JUMP );
 						frame = 1;
 						break;
 					}
@@ -9440,7 +9437,7 @@ void Actor::PhysicsResponse()
 
 				owner->UnlockGate( g );
 
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 1;
 				
 				framesInAir = 0;
@@ -9631,14 +9628,14 @@ void Actor::PhysicsResponse()
 				if( stopWallClinging )
 				{
 					//cout << "stop wall clinging" << endl;
-					action = JUMP;
+					SetActionExpr( JUMP );
 					frame = 1;
 				}
 			}
 
 			if( leftGround )
 			{
-				action = JUMP;
+				SetActionExpr( JUMP );
 				frame = 1;
 				
 			}
@@ -14500,6 +14497,53 @@ bool Actor::CaptureMonitor( Monitor * m )
 	default:
 		assert( 0 && "didnt finish these" );
 	}
+}
+
+void Actor::SetExpr( Expr ex )
+{
+	expr = ex;
+}
+
+void Actor::SetActionExpr( Action a )
+{
+	//SetExpr( Expr_NEUTRAL );
+	switch( action )
+	{
+	case STAND:
+		break;
+	case RUN:
+		//SetExpr( Expr_NEUTRAL );
+		break;
+	case SPRINT:
+		break;
+	}
+
+
+	switch( a )
+	{
+	case WALLJUMP:
+	case JUMP:
+	case DASH:
+	case LAND:
+	case LAND2:
+	case DOUBLE:
+	case WALLCLING:
+	case SLIDE:
+	case STEEPSLIDE:
+	case STEEPCLIMB:
+	case STAND:
+		SetExpr( Expr_NEUTRAL );
+		break;
+	case RUN:
+		SetExpr( Expr_RUN );
+		//SetExpr( Expr_NEUTRAL );
+		break;
+	case SPRINT:
+		SetExpr( Expr_SPRINT );
+		break;
+	}
+
+	action = a;
 }
 
 PlayerGhost::PlayerGhost()
