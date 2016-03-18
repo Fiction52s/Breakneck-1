@@ -117,6 +117,7 @@ struct Actor : QuadTreeCollider,
 	sf::CircleShape speedCircle;
 
 	RotaryParticleEffect *re;
+	double rotaryAngle;
 	//AirParticleEffect *ae;
 	//double speedBarVel;
 

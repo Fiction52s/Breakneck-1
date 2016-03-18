@@ -10235,6 +10235,8 @@ void Actor::UpdatePostPhysics()
 		ghosts[record-1]->currFrame++;
 	}
 
+	rotaryAngle = sprite->getRotation() / 180 * PI;
+
 	if( ghostFrame < PlayerGhost::MAX_FRAMES )
 		ghostFrame++;
 	/*else
@@ -11708,8 +11710,9 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-	//target->draw( speedCircle );
-	
+	target->draw( speedCircle );
+	target->draw( *re->particles );
+
 	if( bounceFlameOn && action != DEATH )
 	{
 		target->draw( bounceFlameSprite );
@@ -11984,7 +11987,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 	}
 
-	target->draw( *re->particles );
+	
 }
 
 void Actor::DodecaLateDraw(sf::RenderTarget *target)

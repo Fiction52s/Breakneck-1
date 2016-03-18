@@ -198,10 +198,10 @@ RotaryParticleEffect::RotaryParticleEffect( Actor *pl )
 {
 	position = pl->position;
 	dir = V2d( 0, 0 );
-	angularVel = .5;
-	radius = 30;
+	angularVel = 5;
+	radius = 32;
 	angle = 0; //just for now?
-	maxDurationToLive = 30;
+	maxDurationToLive = 60;
 	numParticles = maxDurationToLive * particleRate; //continuous //emitDuration * particleRate;
 	durationToLive = new double[numParticles];
 	velocities = new V2d[numParticles];
@@ -210,7 +210,6 @@ RotaryParticleEffect::RotaryParticleEffect( Actor *pl )
 	//cout << "creating rotary with 
 	particles = new VertexArray( sf::Quads, numPoints );
 	pastParts = 0;
-	radius = 0;
 
 	//testing
 	sf::VertexArray &va = *particles;
@@ -273,16 +272,38 @@ void RotaryParticleEffect::ResetParticle( int index )
 	velocities[i] = d * 4.0;
 	velocities[i] = V2d( 0, 0 ); //d * .5;
 
-	Vector2f adir( cos( angle ), sin(angle ) );
+	
+
+
+	//Vector2f adir( cos( angle ), sin(angle ) );
+	//cout << "rot: " << player->rotaryAngle << endl;
+
+	
+	//Vector2f dirRotNorm( sin( angle ), -cos(angle) );
+	V2d velDir = normalize(player->velocity);
+	if( player->ground != NULL )
+	{
+		velDir = normalize(normalize( player->ground->v1 - player->ground->v0 ) * player->groundSpeed);
+		if( player->groundSpeed == 0 )
+		{
+			velDir = normalize( player->ground->v1 - player->ground->v0 ) * 1.0;
+		}
+	}
+	Vector2f vd( velDir.x, velDir.y );
+	double f = atan2( velDir.y, velDir.x );
+
+	Vector2f adir( 0, sin( angle ) );
 	Transform at;
-	at.rotate( angularVel / radius );
+	at.rotate( f / PI * 180.0 );//player->rotaryAngle / PI * 180 );//player->sprite->getRotation() );
 	adir = at.transformPoint( adir );
+	//at.transformPoint( adir );
+	//Vector2f blah = at.transformPoint( adir );
 	V2d adirD( adir.x, adir.y );
-	adirD *= radius;
+	adirD *= radius;//10.0;
 
 
-
-	positions[i] = position ;//+ adirD;
+	//cout << "ang: " << angularVel << ", radius: " << radius << ", adirD: " << adirD.x << ", " << adirD.y << endl;
+	positions[i] = position + adirD;
 
 	angle += angularVel / radius;
 	if( angle > PI * 2.0 )
@@ -330,36 +351,49 @@ void RotaryParticleEffect::Update( V2d &playerPos )
 {
 	position = player->position;
 	int totalParts = particleAcc;
-	if( emitFrame < maxDurationToLive )
+
+	ResetParticle( emitFrame );
+
+	emitFrame++;
+	if( emitFrame == numParticles )
 	{
-		if( pastParts < numParticles - 1 )
+		emitFrame = 0;
+		pastParts = 0;
+		totalParts = 0;
+		particleAcc = 0;
+	}
+
+	//if( emitFrame <  numParticles )
+	//{
+	
+		/*if( pastParts < numParticles - 1 )
 		{
 		
 			if( totalParts >= numParticles - 1 )
 			{
 				totalParts = numParticles - 1;
 			}
-		
-			for( int i = pastParts; i <= totalParts; ++i )
+			
+
+			if( pastParts == 0 )
 			{
-				//cout << "creating particle " << i << endl;
-				ResetParticle( i );
+				ResetParticle( 0 );
+			}
+			else
+			{
+				for( int i = pastParts + 1; i <= totalParts; ++i )
+				{
+					cout << "creating particle " << i << endl;
+					ResetParticle( i );
+				}
 			}
 
 
 			pastParts = totalParts;
 			particleAcc += particleRate;
-		}
-		emitFrame++;
-	}
-	else
-	{
-		//angle = 0;
-		emitFrame = 0;
-		pastParts = 0;
-		totalParts = 0;
-		particleAcc = 0;
-	}
+		}*/
+	
+	//}
 
 	V2d playerDir;
 	VertexArray &va = *particles;

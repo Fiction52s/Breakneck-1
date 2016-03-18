@@ -5434,7 +5434,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 	bool insideTerrain = false;
 	bool knowInside = false;
 	double rayLen = 100;
-	double width = 50;
+	double width = 16;
 
 	list<list<pair<V2d,bool>>> allInfo;
 	//cout << "number of divs: " << divs << endl;

@@ -58,6 +58,9 @@ struct RotaryParticleEffect
 	void Reset();
 	int emitFrame;
 	int emitDuration;
+
+
+
 	double angleRange;
 	sf::Vector2<double> dir;
 	sf::IntRect particleSize;
