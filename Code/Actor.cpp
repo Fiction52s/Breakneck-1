@@ -14,6 +14,8 @@ Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
 		re = new RotaryParticleEffect( this );
+		re1 = new RotaryParticleEffect( this );
+		re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
 		level1SpeedThresh = 35;
@@ -10341,6 +10343,7 @@ void Actor::UpdatePostPhysics()
 	}
 	
 	re->Update( position );
+	re1->Update( position );
 
 	if( currentSpeedBar >= level2SpeedThresh )
 	{
@@ -11711,7 +11714,11 @@ void Actor::ApplyHit( HitboxInfo *info )
 void Actor::Draw( sf::RenderTarget *target )
 {
 	target->draw( speedCircle );
-	target->draw( *re->particles );
+	if( action == DASH )
+	{
+		target->draw( *re->particles );
+		target->draw( *re1->particles );
+	}
 
 	if( bounceFlameOn && action != DEATH )
 	{

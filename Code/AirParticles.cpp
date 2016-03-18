@@ -198,10 +198,10 @@ RotaryParticleEffect::RotaryParticleEffect( Actor *pl )
 {
 	position = pl->position;
 	dir = V2d( 0, 0 );
-	angularVel = 5;
-	radius = 32;
+	angularVel = 1;
+	radius = 8;
 	angle = 0; //just for now?
-	maxDurationToLive = 60;
+	maxDurationToLive = 15;
 	numParticles = maxDurationToLive * particleRate; //continuous //emitDuration * particleRate;
 	durationToLive = new double[numParticles];
 	velocities = new V2d[numParticles];
@@ -408,10 +408,10 @@ void RotaryParticleEffect::Update( V2d &playerPos )
 
 			if( durationToLive[i] < maxDurationToLive / 2.0 )
 			{
-				va[i*4+0].color.a = i / 10.0 * maxA;
-				va[i*4+1].color.a = i / 10.0 * maxA;
-				va[i*4+2].color.a = i / 10.0 * maxA;
-				va[i*4+3].color.a = i / 10.0 * maxA;
+				va[i*4+0].color.a = i / (maxDurationToLive / 2.0) * maxA;
+				va[i*4+1].color.a = i / (maxDurationToLive / 2.0) * maxA;
+				va[i*4+2].color.a = i / (maxDurationToLive / 2.0) * maxA;
+				va[i*4+3].color.a = i / (maxDurationToLive / 2.0) * maxA;
 			}
 			else
 			{
