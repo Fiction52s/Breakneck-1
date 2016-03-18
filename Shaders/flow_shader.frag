@@ -43,16 +43,24 @@ void main()
 		|| (radius <= radDiff && len + (radDiff - radius) > maxFlowRings);
 	float alpha = rand( vec2( pos.x + radius, pos.y + radius ) );
 	//0, 0x66, 0xcc
-	finalfinal = vec4( 0, 0x66 / 255.0 * float(res) , 0xcc / 255.0 * float(res), alpha * .9 );
+	finalfinal = vec4( 0, 0x66 / 255.0 * float(res) , 0xcc / 255.0 * float(res), alpha * .7 );
 	
 	if( !res )
 		finalfinal = vec4( 0, 0, 0, 1 );
 	
 	//0, 0xee, 0xff
-	if( res && realLen <= playerToGoal && dot( normalize( goalPos - playerPos ), normalize( goalPos - pos )) > .99 )
+	float d = dot( normalize( goalPos - playerPos ), normalize( goalPos - pos ));
+	
+	if( res && realLen <= playerToGoal - 40 && d > .99 )
 	{
-		finalfinal = vec4( 0, 0xee / 255.0, 0xff / 255.0, alpha * .9 );
+		float f = 1 - ((1 - d) / .01);
+		//d -= (1- d) * 25;
+		//if( d < .01 )
+		//	d = .01;
+		finalfinal = vec4( 0, 0xee / 255.0 * f, 0xff / 255.0 * f, .5) + vec4( 0,0x66 / 255.0 * (1-f), 0xcc / 255.0 * ( 1-f), .5 ); 
+		finalfinal.a = alpha * 5.0;
 	}
+	
 	
 	//if( (len < radius && len > radius - radDiff)
 	//	|| (radius <= radDiff && len + (radDiff - radius) > maxFlowRings) )
