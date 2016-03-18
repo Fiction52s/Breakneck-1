@@ -610,7 +610,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		//bool pointInRect = point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;		
 
 		//hopefully will catch any rounding errors
-		double ex = .001;
+		double ex = .1;//.001;
 		bool pointInRect = point.x >= min( left, oldLeft ) - ex  && point.x <= max( right, oldRight ) + ex && point.y >= min( top, oldTop ) - ex && point.y <= max( bottom, oldBottom ) + ex;		
 
 
@@ -902,6 +902,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		double time = 100;
 		if( en.x == 0 )
 		{
+			//cout << "hitting now" << endl;
 			double edgeYPos = edgeTop;
 			if( en.y > 0 ) //down
 			{
@@ -953,8 +954,18 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				{
 					//cout << "this one: " << oldBottom << ", bottom: " << bottom << ", eyp: " << edgeYPos << endl;
 					
-					bool a = left >= edgeLeft && left <= edgeRight;
-					bool b = right >= edgeLeft && right <= edgeRight;
+					//rounding errors are the devil lol. this stops him from falling thru the stage in that one part
+					//on the left of 1-4 where you hold right for 2 frames as you fall off the steep slope
+					//and go through a corner
+					
+					
+					bool a = left >= edgeLeft - .00001 && left <= edgeRight + .00001;
+					bool b = right >= edgeLeft - .00001 && right <= edgeRight + .00001;
+
+					/*bool a = left >= edgeLeft && left <= edgeRight;
+					bool b = right >= edgeLeft && right <= edgeRight;*/
+					
+					
 					//cout << "edge l/r: " << edgeLeft << ", " << edgeRight << ", l/r: " << left << ", " << right << endl;
 					bool hit = true;
 

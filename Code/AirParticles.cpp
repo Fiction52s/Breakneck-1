@@ -350,7 +350,7 @@ void RotaryParticleEffect::UpdateParticle( int index )
 void RotaryParticleEffect::Update( V2d &playerPos )
 {
 	position = player->position;
-	int totalParts = particleAcc;
+	int totalParts = emitFrame;
 
 	ResetParticle( emitFrame );
 

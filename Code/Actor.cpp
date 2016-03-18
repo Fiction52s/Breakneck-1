@@ -13,6 +13,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		ground = NULL;
 		re = new RotaryParticleEffect( this );
 		re1 = new RotaryParticleEffect( this );
 		re1->angle += PI;
@@ -725,6 +726,8 @@ void Actor::ActionEnded()
 				if( currInput.B )
 				{
 					action = DASH;
+					re->Reset();
+					re1->Reset();
 				}
 				else
 				{
@@ -744,6 +747,8 @@ void Actor::ActionEnded()
 				if( currInput.B )
 				{
 					action = DASH;
+					re->Reset();
+					re1->Reset();
 				}
 				else
 				{
@@ -763,6 +768,8 @@ void Actor::ActionEnded()
 				if( currInput.B )
 				{
 					action = DASH;
+					re->Reset();
+					re1->Reset();
 				}
 				else
 				{
@@ -1185,6 +1192,8 @@ void Actor::UpdatePrePhysics()
 			else if( currInput.B && !prevInput.B )
 			{
 				action = DASH;
+				re->Reset();
+				re1->Reset();
 				frame = 0;
 			}
 			else if( currInput.LLeft() || currInput.LRight() )
@@ -1302,6 +1311,8 @@ void Actor::UpdatePrePhysics()
 			if( currInput.B && !prevInput.B )
 			{
 				action = DASH;
+				re->Reset();
+				re1->Reset();
 				frame = 0;
 				runTappingSound.stop();
 				break;
@@ -1684,6 +1695,8 @@ void Actor::UpdatePrePhysics()
 				{
 					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
+						re->Reset();
+						re1->Reset();
 						action = DASH;
 						frame = 0;
 
@@ -1794,6 +1807,8 @@ void Actor::UpdatePrePhysics()
 						
 						action = DASH;
 						frame = 0;
+						re->Reset();
+						re1->Reset();
 
 						
 					}
@@ -2336,6 +2351,8 @@ void Actor::UpdatePrePhysics()
 					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
 						action = DASH;
+						re->Reset();
+						re1->Reset();
 						frame = 0;
 
 						if( currInput.LLeft() )
@@ -2428,6 +2445,8 @@ void Actor::UpdatePrePhysics()
 					{
 						//cout << "start dash" << endl;
 						action = DASH;
+						re->Reset();
+						re1->Reset();
 						frame = 0;
 
 						if( currInput.LLeft() )
@@ -2615,6 +2634,8 @@ void Actor::UpdatePrePhysics()
 			if( currInput.B && !prevInput.B )
 			{
 					action = DASH;
+					re->Reset();
+					re1->Reset();
 					frame = 0;
 			}
 
@@ -10341,9 +10362,13 @@ void Actor::UpdatePostPhysics()
 		}
 		//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
 	}
-	
-	re->Update( position );
-	re1->Update( position );
+
+
+	if( action == DASH )
+	{
+		re->Update( position );	
+		re1->Update( position );
+	}
 
 	if( currentSpeedBar >= level2SpeedThresh )
 	{
