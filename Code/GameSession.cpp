@@ -62,6 +62,12 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 )
 {
+	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
 	
 
 	usePolyShader = true;
@@ -2820,6 +2826,9 @@ int GameSession::Run( string fileN )
 	ts_leftHUD = GetTileset( "lefthud_560x1080.png", 560, 1080 );
 	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
 	speedBarSprite.setTexture( *ts_speedBar->texture );
+
+	speedBarShader.setParameter( "u_texture", *ts_speedBar->texture );
+
 	//speedBarSprite.setPosition( 0, 176 );
 	leftHUDSprite.setTexture( *ts_leftHUD->texture );
 	leftHUDBlankSprite.setTexture( *ts_leftHUD->texture );
@@ -2904,6 +2913,7 @@ int GameSession::Run( string fileN )
 	OpenFile( fileName );
 	
 	flowShader.setParameter( "goalPos", goalPos.x, goalPos.y );
+	
 
 	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
 	//parTest.setFillColor( Color::Red );
@@ -3589,12 +3599,34 @@ int GameSession::Run( string fileN )
 				flowShader.setParameter( "playerPos", player.position.x, player.position.y );
 
 
+
 				++flowFrame;
 				if( flowFrame == flowFrameCount )
 				{
 					flowFrame = 0;
 				}
 				
+				int speedLevel = player.speedLevel;
+				speedBarShader.setParameter( "level", (float)speedLevel );
+				//speedBarShader.setParameter( "quant", (float)currentSpeedBar );
+				float quant = 0;
+				if( speedLevel == 0 )
+				{
+					quant = (float)(player.currentSpeedBar / player.level1SpeedThresh);
+				}
+				else if( speedLevel == 1 )
+				{
+					quant = (float)((player.currentSpeedBar-player.level1SpeedThresh) / ( player.level2SpeedThresh - player.level1SpeedThresh) );
+				}
+				else 
+				{
+					quant = (float)((player.currentSpeedBar-player.level2SpeedThresh) / ( player.maxGroundSpeed - player.level2SpeedThresh) );
+					
+				}
+
+				cout << "quant: " << quant << endl;
+				speedBarShader.setParameter( "quant", quant );
+
 				queryMode = "enemy";
 
 				tempSpawnRect = screenRect;
@@ -4261,7 +4293,7 @@ int GameSession::Run( string fileN )
 
 		
 		preScreenTex->draw( leftHUDBlankSprite );
-		preScreenTex->draw( speedBarSprite );
+		preScreenTex->draw( speedBarSprite, &speedBarShader );
 		preScreenTex->draw( player.kinFace );
 		powerBar.Draw( preScreenTex );
 		preScreenTex->draw( leftHUDSprite );
@@ -6564,7 +6596,7 @@ void PowerBar::Draw( sf::RenderTarget *target )
 
 
 	//primary portion
-	rs.setPosition( 50, 180 + 600 );
+	rs.setPosition( 4, 180 + 600 );
 	rs.setFillColor( COLOR_TEAL );
 	rs.setSize( Vector2f( 60, -fullLines * dotHeight ) );
 	target->draw( rs );
@@ -6594,8 +6626,8 @@ void PowerBar::Draw( sf::RenderTarget *target )
 	rs.setPosition( 0, 180 + 600 - tankHeight );
 	for( int i = 0; i < layer; ++i )
 	{
-		target->draw( rs );
-		rs.setPosition( rs.getPosition().x, rs.getPosition().y - tankHeight - tankSpacing );
+		//target->draw( rs );
+		//rs.setPosition( rs.getPosition().x, rs.getPosition().y - tankHeight - tankSpacing );
 	}
 
 	//only need this until I get a background

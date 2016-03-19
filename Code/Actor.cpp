@@ -19,10 +19,10 @@ Actor::Actor( GameSession *gs )
 		re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
-		level1SpeedThresh = 35;
-		level2SpeedThresh = 50;
+		level1SpeedThresh = 32;
+		level2SpeedThresh = 45;
 		speedChangeUp = .5;
-		speedChangeDown = .1;
+		speedChangeDown = .07;
 
 		speedLevel = 0;
 		speedBarTarget = 0;
@@ -31,7 +31,7 @@ Actor::Actor( GameSession *gs )
 		ts_kinFace = owner->GetTileset( "visor_512x128.png", 512, 128 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
-		kinFace.setPosition( 2, 63 );
+		kinFace.setPosition( 2, 48 );
 
 		SetExpr( Expr::Expr_NEUTRAL );
 

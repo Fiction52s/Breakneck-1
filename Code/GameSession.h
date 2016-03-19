@@ -288,6 +288,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	Tileset *ts_leftHUD;
 	Tileset *ts_speedBar;
+	sf::Shader speedBarShader;
 	sf::Sprite leftHUDSprite;
 	sf::Sprite leftHUDBlankSprite;
 	sf::Sprite speedBarSprite;
