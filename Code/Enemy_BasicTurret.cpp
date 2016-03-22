@@ -299,6 +299,7 @@ void BasicTurret::PhysicsResponse()
 				owner->player.currAttackHit = true;
 				owner->player.flashColor = COLOR_BLUE;
 				owner->player.flashFrames = 5;
+				owner->player.currentSpeedBar += .8;
 				owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
 				owner->player.desperationMode = false;
 				owner->powerBar.Charge( 2 * 6 * 3 );

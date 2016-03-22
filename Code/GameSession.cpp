@@ -3578,6 +3578,18 @@ int GameSession::Run( string fileN )
 				//Vector2f oldCam = cam.pos;
 				//float oldCamZoom = cam.GetZoom();
 
+
+				oldZoom = cam.GetZoom();
+				oldCamBotLeft = view.getCenter();
+				oldCamBotLeft.x -= view.getSize().x / 2;
+				oldCamBotLeft.y += view.getSize().y / 2;
+
+
+				//polyShader.setParameter( "oldZoom", cam.GetZoom() );
+				//polyShader.setParameter( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
+				//	view.getCenter().y + view.getSize().y / 2 );
+
+
 				cam.Update( &player );
 
 
@@ -3624,7 +3636,7 @@ int GameSession::Run( string fileN )
 					
 				}
 
-				cout << "quant: " << quant << endl;
+				//cout << "quant: " << quant << endl;
 				speedBarShader.setParameter( "quant", quant );
 
 				queryMode = "enemy";
@@ -3689,6 +3701,8 @@ int GameSession::Run( string fileN )
 
 				queryMode = "envplant";
 				envPlantTree->Query( this, screenRect );
+
+
 
 
 				if( player.record > 0 )
@@ -3924,10 +3938,21 @@ int GameSession::Run( string fileN )
 		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 		//cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
+
+
+		Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, 
+			view.getCenter().y + view.getSize().y / 2 );
+
+		Vector2f playertest = ( botLeft - oldCamBotLeft ) / 5.f;
+		//cout << "test: " << playertest.x << ", " << playertest.y << endl;
 		polyShader.setParameter( "Resolution", 1920, 1080 );// window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
-		polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-			view.getCenter().y + view.getSize().y / 2 );
+		polyShader.setParameter( "topLeft", botLeft ); //just need to change the name topleft eventually
+		polyShader.setParameter( "playertest", playertest );
+		//polyShader.setParameter( "zoom", cam.GetZoom() );
+		//polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
+		//	view.getCenter().y + view.getSize().y / 2 );
+
 		
 		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 

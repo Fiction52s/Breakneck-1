@@ -286,6 +286,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int testGateCount;
 	Gate *gateList;
 
+	float oldZoom;
+	sf::Vector2f oldCamBotLeft;
+
 	Tileset *ts_leftHUD;
 	Tileset *ts_speedBar;
 	sf::Shader speedBarShader;
