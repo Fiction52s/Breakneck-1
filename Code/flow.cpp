@@ -13,13 +13,13 @@ Flow::Flow( const Vector2i &p, int w, int h )
 	numPoissonSteps = 50;
 	gridScale = 1;
 	timeStep = 1 / 60.f;
-	viscosity = 0.0f;
+	viscosity = 0.9f;
 	inkLongevity = .9995f;
 	pressureClearEachStep = true;
 	inkColor = Color::Red;
 	pos = p;
 	dt = 1.f / 60.f;
-	diff = 0.0f;
+	diff = 0.00075f;
 
 	size = (width +2 ) * (height+2);
 
@@ -247,7 +247,7 @@ void Flow::Update()
 		//cout << "influencing: " << gx << ", " << gy << endl;
 		m_u_prev[IX(gx,gy)] = 100;// * gx;
 		m_v_prev[IX(gx,gy)] = 100;// * gy;
-		m_dens_prev[IX(gx,gy)] = 100;
+		m_dens_prev[IX(gx,gy)] = 30;
 		//m_dens[IX(gx,gy)] = 1;
 		//cout << "before: " << m_dens[IX(gx,gy)] << endl;
 		//m_dens[IX(gx,gy)] = .8;
