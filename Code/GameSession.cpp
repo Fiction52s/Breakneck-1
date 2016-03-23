@@ -13,6 +13,7 @@
 #include <boost/bind.hpp>
 #include "EditSession.h"
 #include "Zone.h"
+#include "Flow.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -2812,6 +2813,8 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	
+
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
 	originalZone = NULL;
@@ -3035,6 +3038,10 @@ int GameSession::Run( string fileN )
 	double total = 0;
 
 	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
+
+	int flowSize = 60;
+	Flow *f = new Flow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize );
+	f->player = &player;
 
 	while( !quit )
 	{
@@ -3578,6 +3585,8 @@ int GameSession::Run( string fileN )
 				//Vector2f oldCam = cam.pos;
 				//float oldCamZoom = cam.GetZoom();
 
+				f->Update();
+
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -4112,6 +4121,8 @@ int GameSession::Run( string fileN )
 			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
 			gateList = next;
 		}
+
+		f->Draw( preScreenTex );
 		
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
