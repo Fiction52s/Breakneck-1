@@ -3039,7 +3039,7 @@ int GameSession::Run( string fileN )
 
 	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 
-	int flowSize = 60;
+	int flowSize = 80;
 	Flow *f = new Flow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize );
 	f->player = &player;
 

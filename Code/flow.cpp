@@ -1,6 +1,7 @@
 #include "flow.h"
 #include <iostream>
 #include "Actor.h"
+#include <assert.h>
 
 using namespace std;
 using namespace sf;
@@ -237,16 +238,22 @@ void Flow::Update()
 	//m_dens[IX(10,10)] = 100;
 
 	float h = 1.0f / width;
-	int tileSize = 8;
+	int tileSize = 32;
 	float force = 1;
 	int gx = (((int)player->position.x) - pos.x ) / tileSize;
 	int gy = (((int)player->position.y) - pos.y ) / tileSize;
 
 	if( gx >= 0 && gx <= width + 1 && gy >= 0 && gy <= height + 1 )
 	{
+		sf::Vector2<double> vel = player->velocity;
+		if( player->ground != NULL )
+		{
+			vel = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed;
+		}
+		double mult = 10;
 		//cout << "influencing: " << gx << ", " << gy << endl;
-		m_u_prev[IX(gx,gy)] = 100;// * gx;
-		m_v_prev[IX(gx,gy)] = 100;// * gy;
+		m_u_prev[IX(gx,gy)] = -vel.x;//vel.x * mult;//100;// * gx;
+		m_v_prev[IX(gx,gy)] = -vel.y;//100;//vel.y * mult;// * gy;
 		m_dens_prev[IX(gx,gy)] = 30;
 		//m_dens[IX(gx,gy)] = 1;
 		//cout << "before: " << m_dens[IX(gx,gy)] << endl;
@@ -284,10 +291,27 @@ void Flow::Update()
 			float d2 = m_dens[IX(i+1,j)];
 			float d3 = m_dens[IX(i+1,j+1)];
 
-			v[index*4+0].color = Color( d0 * 255, d0 * 255, d0 * 255 );//Color( 255, 0,0, 255 * m_dens[i]);
-			v[index*4+1].color = Color( d2 * 255, d2 * 255, d2 * 255 );//Color( 255, 0,0, 255 * m_dens[i]);
-			v[index*4+2].color = Color( d3 * 255, d3 * 255, d3 * 255 );//Color( 255, 0,0, 255 * m_dens[i]);
-			v[index*4+3].color = Color( d1 * 255, d1 * 255, d1 * 255 );//Color( 255, 0,0, 255 * m_dens[i]);
+			/*assert( d0 <= 1 );
+			assert( d1 <= 1 );
+			assert( d2 <= 1 );
+			assert( d3 <= 1 );*/
+
+			d0 *= 255;
+			d1 *= 255;
+			d2 *= 255;
+			d3 *= 255;
+
+			d0 = std::min( 255.f, d0 );
+			d1 = std::min( 255.f, d1 );
+			d2 = std::min( 255.f, d2 );
+			d3 = std::min( 255.f, d3 );
+
+			
+
+			v[index*4+0].color = Color( d0, d0, d0);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+1].color = Color( d2, d2, d2);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+2].color = Color( d3, d3, d3);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+3].color = Color( d1, d1, d1);//Color( 255, 0,0, 255 * m_dens[i]);
 
 			++index;
 		}
