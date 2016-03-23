@@ -20,7 +20,7 @@ Flow::Flow( const Vector2i &p, int w, int h )
 	inkColor = Color::Red;
 	pos = p;
 	dt = 1.f / 60.f;
-	diff = 0.00075f;
+	diff = .001f;//0.00075f;
 
 	size = (width +2 ) * (height+2);
 
@@ -92,8 +92,8 @@ Flow::~Flow()
 	//delete [] zeros;
 }
 
-
 //s = sources, 
+//add source field s to field x
 void Flow::AddSource( float *x, float *s )
 {
 	for( int i = 0; i < size; ++i )
@@ -102,17 +102,21 @@ void Flow::AddSource( float *x, float *s )
 	}
 }
 
+//b == 0: all edges are continuous
+//b == 1: left/right reflect, others are continuous
+//b == 2: top/bottom reflect, others are continous
 void Flow::SetBound( int b, float *x )
 {
 	int i;
 	for( i = 1; i <= height; ++i )
 	{
-		x[IX(0,i)] =		( b == 1 ? -x[IX(1,i)] : x[IX(1,i)] );
-		x[IX(width+1,i)] =  ( b == 1 ? -x[IX(width,i)] : x[IX(width,i)] );
-		x[IX(i,0)] =		( b == 2 ? -x[IX(i,1)] : x[IX(i,1)] );
-		x[IX(i,height+1)] =	( b == 2 ? -x[IX(i,height)] : x[IX(i,height)] );
+		x[IX(0,i)] =		( b == 1 ? -x[IX(1,i)] : x[IX(1,i)] ); //left side  //if b == 1 then (0,i) has -
+		x[IX(width+1,i)] =  ( b == 1 ? -x[IX(width,i)] : x[IX(width,i)] ); //right side
+		x[IX(i,0)] =		( b == 2 ? -x[IX(i,1)] : x[IX(i,1)] ); //top
+		x[IX(i,height+1)] =	( b == 2 ? -x[IX(i,height)] : x[IX(i,height)] ); //bottom
 	}
 
+	//corners average their 2 neighbors into their value
 	x[IX(0,0)] = 0.5 * (x[IX(1,0)]+x[IX(0,1)]);
 	x[IX(0,height+1)] = 0.5 * (x[IX(1,height+1)] + x[IX(0,height)]);
 	x[IX(width+1,0)] = 0.5 * (x[IX(width,0)] + x[IX(width+1,1)]);
@@ -227,22 +231,35 @@ void Flow::CreateTextures()
 {
 }
 
+void Flow::Reset()
+{
+	for ( int i=0 ; i< size ; i++ ) 
+	{
+		m_u_prev[i] = m_v_prev[i] = m_dens_prev[i] = m_u[i] = m_v[i] = m_dens[i] = 0.0f;
+	}
+}
+
 void Flow::Update()
 {
 	for ( int i=0 ; i< size ; i++ ) 
 	{
-		m_u_prev[i] = m_v_prev[i] = m_dens_prev[i] = 0.0f;
+		m_dens_prev[i] = 0.0f;
+		//m_u_prev[i] = 0.0f;
+		//m_v_prev[i] = 0.0f;
+		//m_v_prev[i] = .01f;
+		//m_u_prev[i] = m_v_prev[i] = m_dens_prev[i] = 0.0f;
 	//	m_dens_prev[i] = 0.0f;
 	}
 
 	//m_dens[IX(10,10)] = 100;
 
 	float h = 1.0f / width;
-	int tileSize = 32;
+	int tileSize = 16;
 	float force = 1;
 	int gx = (((int)player->position.x) - pos.x ) / tileSize;
 	int gy = (((int)player->position.y) - pos.y ) / tileSize;
 
+	m_dens_prev[IX((width+2)/2,(width+2)/2)] = 30;
 	if( gx >= 0 && gx <= width + 1 && gy >= 0 && gy <= height + 1 )
 	{
 		sf::Vector2<double> vel = player->velocity;
@@ -250,11 +267,11 @@ void Flow::Update()
 		{
 			vel = normalize(player->ground->v1 - player->ground->v0 ) * player->groundSpeed;
 		}
-		double mult = 10;
+		double mult = 20;
 		//cout << "influencing: " << gx << ", " << gy << endl;
-		m_u_prev[IX(gx,gy)] = -vel.x;//vel.x * mult;//100;// * gx;
-		m_v_prev[IX(gx,gy)] = -vel.y;//100;//vel.y * mult;// * gy;
-		m_dens_prev[IX(gx,gy)] = 30;
+		m_u_prev[IX(gx,gy)] = vel.x * mult;//vel.x * mult;//100;// * gx;
+		m_v_prev[IX(gx,gy)] = vel.y * mult;//100;//-vel.y;//100;//vel.y * mult;// * gy;
+		//m_dens_prev[IX(gx,gy)] = 30;
 		//m_dens[IX(gx,gy)] = 1;
 		//cout << "before: " << m_dens[IX(gx,gy)] << endl;
 		//m_dens[IX(gx,gy)] = .8;
@@ -306,12 +323,16 @@ void Flow::Update()
 			d2 = std::min( 255.f, d2 );
 			d3 = std::min( 255.f, d3 );
 
-			
+			float fac = 2;
+			float a0 = std::min( 255.f, d0 * fac );
+			float a1 = std::min( 255.f, d1 * fac );
+			float a2 = std::min( 255.f, d2 * fac );
+			float a3 = std::min( 255.f, d3 * fac );
 
-			v[index*4+0].color = Color( d0, d0, d0);//Color( 255, 0,0, 255 * m_dens[i]);
-			v[index*4+1].color = Color( d2, d2, d2);//Color( 255, 0,0, 255 * m_dens[i]);
-			v[index*4+2].color = Color( d3, d3, d3);//Color( 255, 0,0, 255 * m_dens[i]);
-			v[index*4+3].color = Color( d1, d1, d1);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+0].color = Color( d0, 0, 0, a0 ); //Color( d0, d0, d0);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+1].color = Color( d2, 0, 0, a2 );//Color( d2, d2, d2);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+2].color = Color( d3, 0, 0, a3 );//Color( d3, d3, d3);//Color( 255, 0,0, 255 * m_dens[i]);
+			v[index*4+3].color = Color( d1, 0, 0, a1 );//Color( d1, d1, d1);//Color( 255, 0,0, 255 * m_dens[i]);
 
 			++index;
 		}
@@ -378,6 +399,8 @@ void Flow::Update()
 	//drawing is done!!
 }
 
+//gauss seidel linear solver because it uses the values of x as it computes them instead of waiting 
+//to update between iterations like a jacobi solver
 void Flow::LinSolve( int b, float *x, float *x0, float a, float c )
 {
 	int i,j,k;

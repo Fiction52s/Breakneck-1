@@ -34,6 +34,7 @@ struct Flow
 	void VelocityStep( float *u, float *v, float *u0, float *v0 );
 	void Project( float *u, float *v, float *p, float *div );
 	void LinSolve( int b, float *x, float *x0, float a, float c );
+	void Reset();
 
 	Actor *player;
 	float diff;
