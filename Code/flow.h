@@ -67,4 +67,61 @@ struct Flow
 	sf::Shader *shaders;
 };
 
+struct GPUFlow
+{
+	enum Textures
+	{
+		TEXTURE_BUFFER,
+		TEXTURE_VELOCITY,
+		TEXTURE_DENSITY,
+		TEXTURE_DIVERGENCE,
+		TEXTURE_PRESSURE,
+		//TEXTURE_VORTICITY,
+		//TEXTURE_VELOCITY_OFFSETS,
+		//TEXTURE_PRESSURE_OFFETTS,
+		TEXTURE_COUNT
+	};
+
+	enum Shaders
+	{
+		SHADER_ADVECT,
+		SHADER_BOUNDARY,
+		SHADER_DIVERGENCE,
+		SHADER_GRADIENT,
+		SHADER_JACOBI,
+		SHADER_IMPULSE,
+		SHADER_COUNT
+	};
+
+	sf::Vector2i position;
+	int numJacobiSteps;
+	float visc;
+	sf::Shader *currShader;
+	void ExecuteShaderRect(
+		Textures tex );
+	sf::RenderTexture **textures;
+	GPUFlow( const sf::Vector2i &p, int w, int h );
+	void Update();
+	void Draw( sf::RenderTarget *target );
+	void SetDiffuse( Textures xTex, Textures bTex );
+	void AddSource( Textures receiver, Textures source );
+	void VelocityStep();
+	void SetImpulse();
+	void SetAdvect(Textures velTex, Textures quantityTex);
+	void SetJacobi( float alpha, float rBeta, Textures xTex, Textures bTex );
+	void SetDivergence( Textures wTex );
+	void SetGradient( Textures wTex, Textures pTex );
+	void SetBoundary( sf::Vector2f &offset, Textures xTex );
+	~GPUFlow();
+	void Reset();
+	
+	sf::Shader *shaders;
+
+	Actor *player;
+	float timestep;
+	float tileSize;
+	int width;
+	int height;
+};
+
 #endif
