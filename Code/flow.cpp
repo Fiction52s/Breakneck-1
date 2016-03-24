@@ -405,7 +405,7 @@ void Flow::Update()
 void Flow::LinSolve( int b, float *x, float *x0, float a, float c )
 {
 	int i,j,k;
-	for( k = 0; k < 20; ++k )
+	for( k = 0; k < 1; ++k )
 	{
 		for( i = 1; i <= width; ++i )
 		{

@@ -83,12 +83,12 @@ void GPUFlow::ExecuteShaderRect( Textures tex )
 	textures[TEXTURE_BUFFER] = temp;
 }
 
-void GPUFlow::SetImpulse()
+void GPUFlow::SetImpulse( Textures tex )
 {
 	Vector2f playerCoords = Vector2f( player->position.x, player->position.y ) - Vector2f(position.x, position.y);
 	//playerCoords.y = -playerCoords.y;
 	
-
+	textures[tex]->display();
 
 	playerCoords.x /= width * 3;// * 2;
 	playerCoords.y /= height * 3;// * 2;
@@ -106,6 +106,7 @@ void GPUFlow::SetImpulse()
 	Shader &sh = shaders[SHADER_IMPULSE];
 	sh.setParameter( "Resolution", Vector2f( width, height) );
 	sh.setParameter( "playerCoords", playerCoords );
+	sh.setParameter( "tex", textures[tex]->getTexture() );
 	currShader = &sh;
 }
 
@@ -180,21 +181,20 @@ void GPUFlow::SetDiffuse( Textures xTex, Textures bTex )
 	//textures[bTex]->display();
 	if( visc > 0 )
 	{
-		float a =   (width * height * timestep * visc);
+		float a =  width * height / timestep / visc;//1;//(width * height * timestep * visc);//.001; 
 		float stencilFactor = 1.0f / (4.0f + a );
 		//float a = (width*height) * timestep * visc;
 		//float stencilFactor = 1.0f / (4.0f * a );
 		
 		SetJacobi( a, stencilFactor, xTex, bTex );
 		Shader &sh = shaders[SHADER_JACOBI];
-		for( int i = 0; i < 20; ++i )
+		for( int i = 0; i < 5; ++i )
 		//for( int i = 0; i < numJacobiSteps; ++i )
 		{	
 			ExecuteShaderRect( xTex );
 			textures[xTex]->display();
 			sh.setParameter( "x", textures[xTex]->getTexture());
 		}
-		
 	}
 	//LinSolve( b, x, x0, a, ( 1 + 4 * a ) );
 }
@@ -217,6 +217,7 @@ void GPUFlow::Draw( sf::RenderTarget *target )
 	sp.setTexture( textures[t]->getTexture() );
 	sp.setPosition( position.x, position.y );
 	sp.setScale( 3, 3 );
+	//this is why i have to scale by three in the shader coords
 
 	target->draw( sp );
 	/*RenderStates rs;
@@ -247,7 +248,7 @@ void GPUFlow::VelocityStep()
 
 void GPUFlow::Update()
 {
-	SetImpulse();
+	SetImpulse( TEXTURE_VELOCITY );
 	//ExecuteShaderRect( TEXTURE_DENSITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 

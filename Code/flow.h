@@ -106,7 +106,7 @@ struct GPUFlow
 	void SetDiffuse( Textures xTex, Textures bTex );
 	void AddSource( Textures receiver, Textures source );
 	void VelocityStep();
-	void SetImpulse();
+	void SetImpulse( Textures tex );
 	void SetAdvect(Textures velTex, Textures quantityTex);
 	void SetJacobi( float alpha, float rBeta, Textures xTex, Textures bTex );
 	void SetDivergence( Textures wTex );

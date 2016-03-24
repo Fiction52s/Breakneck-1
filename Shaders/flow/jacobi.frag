@@ -18,8 +18,9 @@ void main()
 	vec4 xT = texture2D( x, (gl_FragCoord.xy + vec2( 0, 1 )) / texSize );
 	
 	//b sample, from center
-	vec4 bC = texture2D( b, gl_FragCoord.xy );
+	vec4 bC = texture2D( b, gl_FragCoord.xy / texSize );
 	
-	
-	gl_FragColor = (xL + xR + xB + xT + alpha * bC ) * rBeta;
+	//(bC + alpha * ( xL + xR + xB + xT )) / rBeta;
+	//gl_FragColor = //(bC + alpha * ( xL + xR + xB + xT )) * rBeta;
+	gl_FragColor = bC * .005+ (xL + xR + xB + xT ) / 4;//(xL + xR + xB + xT + 1 * bC ) * .1;
 }

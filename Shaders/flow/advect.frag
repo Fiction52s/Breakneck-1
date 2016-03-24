@@ -10,18 +10,63 @@ uniform float rdx; //1 / grid scale
 uniform float timestep;
 uniform vec2 texSize;
 
-vec4 f4texRECTbilerp(sampler2D tex, vec2 s)
+vec4 encode(vec2 v){
+	vec4 rgba;
+	
+	v += 128.;
+
+	int ix = int( v.x * 256. ); // convert to int to split accurately
+	int v1x = ix / 256; // hi
+	int v1y = ix - v1x * 256; // lo 
+
+	rgba.r = float( v1x + 1 ) / 255.; // normalize
+	rgba.g = float( v1y + 1 ) / 255.;
+
+	int iy = int( v.y * 256.);
+	int v2x = iy / 256; // hi
+	int v2y = iy - v2x * 256; // lo 
+
+	rgba.b = float( v2x + 1 ) / 255.;
+	rgba.a = float( v2y + 1 ) / 255.;
+
+	return rgba - 1./256.;
+}
+		
+// color to velocity vector 
+vec2 decode(vec4 c){
+	vec2 v = vec2(0.);
+
+	int ir = int(c.r*255.);
+	int ig = int(c.g*255.);
+	int irg = ir*256 + ig;
+	v.x = float(irg) / 256.; 
+
+	int ib = int(c.b*255.);
+	int ia = int(c.a*255.);
+	int iba = ib*256 + ia;
+	v.y = float(iba) / 256.; 
+
+	v -= 128.;
+	return v;
+}
+
+vec4 f4texRECTbilerp(sampler2D tex, vec2 blah)
 {
+  vec2 s = blah;
+ 
+
   vec4 st;
   st.xy = floor(s - 0.5) + 0.5;
   st.zw = st.xy + 1;
   
+  
+  
   vec2 t = s - st.xy; //interpolating factors 
     
-  vec4 tex11 = texture2D(tex, st.xy);
-  vec4 tex21 = texture2D(tex, st.zy);
-  vec4 tex12 = texture2D(tex, st.xw);
-  vec4 tex22 = texture2D(tex, st.zw);
+  vec4 tex11 = texture2D(tex, st.xy / texSize);
+  vec4 tex21 = texture2D(tex, st.zy/ texSize);
+  vec4 tex12 = texture2D(tex, st.xw/ texSize);
+  vec4 tex22 = texture2D(tex, st.zw/ texSize);
 
   // bilinear interpolation
   return mix(mix(tex11, tex21, t.x), mix(tex12, tex22, t.x), t.y);
@@ -52,7 +97,7 @@ vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
     vec4 xcubic = cubic(fxy.x);
     vec4 ycubic = cubic(fxy.y);
 
-    vec4 c = texCoords.xxyy + vec2(-0.5, +1.5).xyxy;
+    vec4 c = texCoords.xxyy + vec2(-0.5, 1.5).xyxy;
     
     vec4 s = vec4(xcubic.xz + xcubic.yw, ycubic.xz + ycubic.yw);
     vec4 offset = c + vec4(xcubic.yw, ycubic.yw) / s;
@@ -74,11 +119,10 @@ vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
 
 void main()
 {
-//gl_TexCoord[0].x, gl_TexCoord[0].y
 	//follow the vector field back in time
 	vec2 pos2 = gl_FragCoord.xy / texSize;
 	//vec2 pos = 
-	vec2 pos = (gl_FragCoord.xy / texSize ) - vec2(timestep) * vec2(rdx) * texture2D(u, gl_FragCoord.xy / texSize ).xy;
-	gl_FragColor = textureBicubic( x, pos );//f4texRECTbilerp( x, pos );//textureBicubic( x, pos );
+	vec2 pos = (gl_FragCoord.xy ) - vec2(timestep) * vec2(rdx) * vec2( 10, 0 );//* decode( texture2D(u, gl_FragCoord.xy / texSize ) );
+	gl_FragColor = f4texRECTbilerp( x, pos );//f4texRECTbilerp( x, pos );//textureBicubic( x, pos );
 	//gl_FragColor = texture2D( x, pos2 );//vec4( gl_FragCoord.x / texSize.x, gl_FragCoord.y / texSize.y, 0, 1 );//textureBicubic( x, pos2 );
 	}
