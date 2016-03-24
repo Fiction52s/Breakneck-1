@@ -73,6 +73,9 @@ uniform vec4 LightColorPlayer;
 uniform float BrightnessPlayer;
 uniform float RadiusPlayer;
 
+vec2 oldBotLeft;
+float oldZoom;
+vec2 playertest;
 
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
 
@@ -153,7 +156,29 @@ void main()
 	
 	if( numLightsOn == 0 )
 	{
-		vec4 DiffuseColor = texture2D(u_texture, pos);
+		//vec2 diff = topLeft - oldBotLeft;
+		//diff = normalize( diff );
+		//diff = diff / vec2( 3 );
+		vec2 pos2 = pos;
+		//pos2.x = pos2.x + diff.x;
+		//pos2.y = pos2.y + diff.y;
+		
+		pos2.x = pos2.x - .1;//playertest.x;
+		pos2.y = pos2.y + playertest.y;
+		pos2.x = float( pos2.x < 0 ) * 1 + pos2.x;
+		pos2.y = float( pos2.y < 0 ) * 1 + pos2.y;
+		
+		vec4 DiffuseColor;
+		
+		//int max = 5;
+		//for( int i = 0; i < max; i++ )
+		//{
+		//	float div = i / float(max);
+		//	DiffuseColor += texture2D(u_texture, pos * ( 1 - div ) + pos2 * div ) / vec4(max);
+		//}
+		 //= (texture2D(u_texture, pos) * vec4(.5) + texture2D(u_texture, pos2) * vec4(.5));
+		
+		DiffuseColor = texture2D(u_texture, pos );
 		
 		vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
 		vec3 Intensity = Ambient;//.000001;

@@ -15,12 +15,13 @@ GPUFlow::GPUFlow( const sf::Vector2i &p, int w, int h )
 	shaders = new Shader[SHADER_COUNT];
 	textures = new RenderTexture*[TEXTURE_COUNT];
 	numJacobiSteps = 50;
+	tileSize = 1;
 
 	for( int i = 0; i < TEXTURE_COUNT; ++i )
 	{
 		textures[i] = new RenderTexture;
 		textures[i]->create( w, h );
-		textures[i]->clear(Color::Transparent); 
+		textures[i]->clear(Color::Black); 
 	}
 
 	if (!shaders[SHADER_ADVECT].loadFromFile("advect.frag", sf::Shader::Fragment ) )
@@ -71,7 +72,7 @@ void GPUFlow::ExecuteShaderRect( Textures tex )
 	RenderStates renderState;
 	renderState.shader = currShader;
 
-	textures[TEXTURE_BUFFER]->clear( Color::Transparent );
+	textures[TEXTURE_BUFFER]->clear( Color::Black );
 	//textures[tex]->clear( Color::Transparent );
 
 	textures[TEXTURE_BUFFER]->draw( rs, renderState );
@@ -84,8 +85,27 @@ void GPUFlow::ExecuteShaderRect( Textures tex )
 
 void GPUFlow::SetImpulse()
 {
+	Vector2f playerCoords = Vector2f( player->position.x, player->position.y ) - Vector2f(position.x, position.y);
+	//playerCoords.y = -playerCoords.y;
+	
+
+
+	playerCoords.x /= width * 3;// * 2;
+	playerCoords.y /= height * 3;// * 2;
+
+	//playerCoords.y = 1 - playerCoords.y;
+
+	//if( playerCoords.x < 0 || playerCoords.y < 0 )
+	//{
+	//	//to take it out of play
+	//	playerCoords.x = -1;
+	//	playerCoords.y = -1;
+	//}
+	
+	
 	Shader &sh = shaders[SHADER_IMPULSE];
 	sh.setParameter( "Resolution", Vector2f( width, height) );
+	sh.setParameter( "playerCoords", playerCoords );
 	currShader = &sh;
 }
 
@@ -93,8 +113,8 @@ void GPUFlow::SetAdvect( Textures velTex, Textures quantityTex )
 {
 	Shader &sh = shaders[SHADER_ADVECT];
 
-	Vector2u blah = textures[quantityTex]->getSize();
-	Vector2f si( blah.x, blah.y );
+	
+	
 
 	textures[velTex]->display();
 	textures[quantityTex]->display();
@@ -103,6 +123,8 @@ void GPUFlow::SetAdvect( Textures velTex, Textures quantityTex )
 	sh.setParameter( "x", textures[quantityTex]->getTexture() );
 	sh.setParameter( "rdx", 1.f / tileSize );
 	sh.setParameter( "timestep", timestep );
+	Vector2u blah = textures[quantityTex]->getSize();
+	Vector2f si( blah.x, blah.y );
 	sh.setParameter( "texSize", si );
 	currShader = &sh;
 }
@@ -116,6 +138,11 @@ void GPUFlow::SetJacobi( float alpha, float rBeta, Textures xTex, Textures bTex 
 	sh.setParameter( "rBeta", rBeta );
 	sh.setParameter( "x", textures[xTex]->getTexture() );
 	sh.setParameter( "b", textures[bTex]->getTexture() );
+
+	Vector2u blah = textures[xTex]->getSize();
+	Vector2f si( blah.x, blah.y );
+	sh.setParameter( "texSize", si );
+
 	currShader = &sh;
 }
 
@@ -150,15 +177,17 @@ void GPUFlow::SetBoundary( Vector2f &offset, Textures xTex )
 
 void GPUFlow::SetDiffuse( Textures xTex, Textures bTex )
 {	
-	textures[bTex]->display();
+	//textures[bTex]->display();
 	if( visc > 0 )
 	{
-		float a =   (width * height) / (timestep * visc);
+		float a =   (width * height * timestep * visc);
 		float stencilFactor = 1.0f / (4.0f + a );
+		//float a = (width*height) * timestep * visc;
+		//float stencilFactor = 1.0f / (4.0f * a );
 		
 		SetJacobi( a, stencilFactor, xTex, bTex );
 		Shader &sh = shaders[SHADER_JACOBI];
-		for( int i = 0; i < 1; ++i )
+		for( int i = 0; i < 20; ++i )
 		//for( int i = 0; i < numJacobiSteps; ++i )
 		{	
 			ExecuteShaderRect( xTex );

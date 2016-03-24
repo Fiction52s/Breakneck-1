@@ -12,5 +12,6 @@ void main()
 	vec4 wB = texture2D( w, gl_FragCoord.xy - vec2( 0, 1 ) );
 	vec4 wT = texture2D( w, gl_FragCoord.xy + vec2( 0, 1 ) );
 	
-	gl_FragColor = halfrdx * ((wR.x - wL.x) + (wT.y - wB.y) );
+	gl_FragColor.rgb = vec3 (halfrdx * ((wR.x - wL.x) + (wT.y - wB.y) ) );
+	gl_FragColor.a = 1;
 }
