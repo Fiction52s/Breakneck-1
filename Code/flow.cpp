@@ -187,10 +187,10 @@ void Flow::VelocityStep( float *u, float *v, float *u0, float *v0 )
 	AddSource( u, u0 ); AddSource( v, v0 );
 	SWAP( u0, u ); Diffuse( 1, u, u0 );
 	SWAP( v0, v ); Diffuse( 2, v, v0 );
-	/*Project( u, v, u0, v0 );
+	Project( u, v, u0, v0 );
 	SWAP( u0, u ); SWAP( v0, v );
 	Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
-	Project( u, v, u0, v0 );*/
+	Project( u, v, u0, v0 );
 }
 
 void Flow::Project( float *u, float *v, float *p, float *div )
@@ -285,7 +285,7 @@ void Flow::Update()
 	//AddSource
 	
 	VelocityStep( m_u, m_v, m_u_prev, m_v_prev );
-	//DensityStep( m_dens, m_dens_prev, m_u, m_v );
+	DensityStep( m_dens, m_dens_prev, m_u, m_v );
 
 	VertexArray &v = *va;
 	VertexArray &vl = *velLines;
@@ -303,7 +303,7 @@ void Flow::Update()
 			v[index*4+2].position = indexPos + Vector2f( pos.x + tileSize, pos.y + tileSize );
 			v[index*4+3].position = indexPos + Vector2f( pos.x, pos.y + tileSize );
 
-			float *&ar = m_u;
+			float *&ar = m_dens;
 			float d0 = ar[IX(i,j)];
 			float d1 = ar[IX(i,j+1)];
 			float d2 = ar[IX(i+1,j)];
@@ -405,7 +405,7 @@ void Flow::Update()
 void Flow::LinSolve( int b, float *x, float *x0, float a, float c )
 {
 	int i,j,k;
-	for( k = 0; k < 1; ++k )
+	for( k = 0; k < 20; ++k )
 	{
 		for( i = 1; i <= width; ++i )
 		{

@@ -10,6 +10,7 @@ uniform float rdx; //1 / grid scale
 uniform float timestep;
 uniform vec2 texSize;
 
+
 vec4 encode(vec2 v){
 	vec4 rgba;
 	
@@ -122,7 +123,10 @@ void main()
 	//follow the vector field back in time
 	vec2 pos2 = gl_FragCoord.xy / texSize;
 	//vec2 pos = 
-	vec2 pos = (gl_FragCoord.xy ) - vec2(timestep) * vec2(rdx) * vec2( 10, 0 );//* decode( texture2D(u, gl_FragCoord.xy / texSize ) );
+	vec4 velColor = (texture2D(u, gl_FragCoord.xy / texSize ));
+	vec2 vel = normalize(vec2( velColor.x + velColor.y - 1, velColor.z + velColor.w - 1 ));
+	vel = vel * vec2( 5 );
+	vec2 pos = gl_FragCoord.xy - vec2(timestep) * vec2(rdx) * vel;
 	gl_FragColor = f4texRECTbilerp( x, pos );//f4texRECTbilerp( x, pos );//textureBicubic( x, pos );
 	//gl_FragColor = texture2D( x, pos2 );//vec4( gl_FragCoord.x / texSize.x, gl_FragCoord.y / texSize.y, 0, 1 );//textureBicubic( x, pos2 );
 	}

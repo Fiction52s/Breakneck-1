@@ -22,5 +22,6 @@ void main()
 	
 	//(bC + alpha * ( xL + xR + xB + xT )) / rBeta;
 	//gl_FragColor = //(bC + alpha * ( xL + xR + xB + xT )) * rBeta;
-	gl_FragColor = bC * .005+ (xL + xR + xB + xT ) / 4;//(xL + xR + xB + xT + 1 * bC ) * .1;
+	//gl_FragColor = bC * alpha + (xL + xR + xB + xT ) *rBeta;//(xL + xR + xB + xT + 1 * bC ) * .1;
+	gl_FragColor = (bC *alpha + xL + xR + xB + xT ) * rBeta;
 }
