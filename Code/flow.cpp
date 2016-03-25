@@ -184,13 +184,22 @@ void Flow::Diffuse( int b, float *x, float *x0 )
 
 void Flow::VelocityStep( float *u, float *v, float *u0, float *v0 )
 {
-	AddSource( u, u0 ); AddSource( v, v0 );
-	SWAP( u0, u ); Diffuse( 1, u, u0 );
-	SWAP( v0, v ); Diffuse( 2, v, v0 );
-	Project( u, v, u0, v0 );
-	SWAP( u0, u ); SWAP( v0, v );
-	Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
-	Project( u, v, u0, v0 );
+	//AddSource( u, u0 ); AddSource( v, v0 );
+	//SWAP( u0, u ); Diffuse( 1, u, u0 );
+	//SWAP( v0, v ); Diffuse( 2, v, v0 );
+	//Project( u, v, u0, v0 );
+	//SWAP( u0, u ); SWAP( v0, v );
+	//Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
+	//Project( u, v, u0, v0 );
+	
+	
+	//AddSource( u, u0 ); AddSource( v, v0 );
+	//SWAP( u0, u ); Diffuse( 1, u, u0 );
+	//SWAP( v0, v ); Diffuse( 2, v, v0 );
+	//Project( u, v, u0, v0 );
+	//SWAP( u0, u ); SWAP( v0, v );
+	//Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
+	//Project( u, v, u0, v0 );
 }
 
 void Flow::Project( float *u, float *v, float *p, float *div )
@@ -201,6 +210,7 @@ void Flow::Project( float *u, float *v, float *p, float *div )
 	//h = 1.0 / N;
 	h = 1.f / width;
 
+	//compute the divergence of the velocity field
 	for( i = 1; i <= width; ++i )
 	{
 		for( j = 1; j <= height; ++j )
@@ -213,6 +223,8 @@ void Flow::Project( float *u, float *v, float *p, float *div )
 
 	SetBound( 0, div ); SetBound( 0, p );
 
+
+	//compute pressure disturbance
 	LinSolve( 0, p, div, 1, 4 );
 
 	for( i = 1; i <= width; ++i )
@@ -260,6 +272,8 @@ void Flow::Update()
 	int gy = (((int)player->position.y) - pos.y ) / tileSize;
 
 	m_dens_prev[IX((width+2)/2,(width+2)/2)] = 30;
+	//m_u_prev[IX(32,32)] = 0;
+	//m_v_prev[IX(32,32)] = 10;
 	if( gx >= 0 && gx <= width + 1 && gy >= 0 && gy <= height + 1 )
 	{
 		sf::Vector2<double> vel = player->velocity;

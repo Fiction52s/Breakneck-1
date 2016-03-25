@@ -9,44 +9,21 @@ uniform vec2 Resolution;
 uniform vec2 playerCoords;
 uniform sampler2D tex;
 
-vec4 encode(vec2 v){
-	vec4 rgba;
-	
-	v += 128.;
-
-	int ix = int( v.x * 256. ); // convert to int to split accurately
-	int v1x = ix / 256; // hi
-	int v1y = ix - v1x * 256; // lo 
-
-	rgba.r = float( v1x + 1 ) / 255.; // normalize
-	rgba.g = float( v1y + 1 ) / 255.;
-
-	int iy = int( v.y * 256.);
-	int v2x = iy / 256; // hi
-	int v2y = iy - v2x * 256; // lo 
-
-	rgba.b = float( v2x + 1 ) / 255.;
-	rgba.a = float( v2y + 1 ) / 255.;
-
-	return rgba - 1./256.;
+vec2 colorToVec( vec4 col )
+{
+	vec2 temp = col.xy;
+	temp = (temp - .5) * 2;
+	float mag = col.z * 256.0;
+	temp *= vec2( mag ); //magnitude
+	return temp;
 }
 
-// color to velocity vector 
-vec2 decode(vec4 c){
-	vec2 v = vec2(0.);
-
-	int ir = int(c.r*255.);
-	int ig = int(c.g*255.);
-	int irg = ir*256 + ig;
-	v.x = float(irg) / 256.; 
-
-	int ib = int(c.b*255.);
-	int ia = int(c.a*255.);
-	int iba = ib*256 + ia;
-	v.y = float(iba) / 256.; 
-
-	v -= 128.;
-	return v;
+vec3 vecToColorRGB( vec2 ve )
+{
+	float len = length( ve );
+	vec3 temp = vec3( normalize(ve), len / 256.0 );
+	temp = (temp * .5) + .5;
+	return temp;
 }
 
 void main()
@@ -58,7 +35,7 @@ void main()
 	vec4 oldCol = texture2D( tex, gl_FragCoord.xy / Resolution.xy );
 	if( abs( fc.x - playerCoords.x ) < .05 && abs( fc.y - playerCoords.y ) < .05 )
 	{
-		gl_FragColor = oldCol + vec4( 1, 1, 0, 1 );//encode( decode( oldCol ) );// + vec2( 10, 5 ) );//oldCol + vec4( .5, .5, .5, 1 );//encode( vec2( -5, -5 ) );//oldCol + vec4( .5, .5, .5, 1 );
+		gl_FragColor = oldCol + vec4( 1, 1, .1, 1 );//vec4( vecToColorRGB( vec2( -.0001, -.0005 ) ), 1 );//vec4( 1, 1, .1, 1 );//+ vec4( vecToColorXY( vec2( -1, 0 ) ), 0, 0 );
 	}
 	else
 	{

@@ -101,7 +101,10 @@ struct GPUFlow
 		Textures tex );
 	sf::RenderTexture **textures;
 	GPUFlow( const sf::Vector2i &p, int w, int h );
+	void Update2();
 	void Update();
+	void Project( Textures velTex, 
+		Textures pTex, Textures divTex );
 	void DensityStep();
 	void Draw( sf::RenderTarget *target );
 	void SetDiffuse( Textures xTex, Textures bTex );

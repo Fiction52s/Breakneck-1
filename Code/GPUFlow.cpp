@@ -88,6 +88,7 @@ void GPUFlow::ExecuteShaderRect( Textures tex )
 
 void GPUFlow::SetImpulse( Textures tex )
 {
+	
 	Vector2f playerCoords = Vector2f( player->position.x, player->position.y ) - Vector2f(position.x, position.y);
 	//playerCoords.y = -playerCoords.y;
 	
@@ -96,6 +97,10 @@ void GPUFlow::SetImpulse( Textures tex )
 	playerCoords.x /= width * 3;// * 2;
 	playerCoords.y /= height * 3;// * 2;
 
+	if( tex == TEXTURE_DENSITY )
+	{
+		playerCoords = Vector2f( .5, .5 );
+	}
 	//playerCoords.y = 1 - playerCoords.y;
 
 	//if( playerCoords.x < 0 || playerCoords.y < 0 )
@@ -196,7 +201,7 @@ void GPUFlow::SetDiffuse( Textures xTex, Textures bTex )
 	//textures[bTex]->display();
 	if( visc > 0 )
 	{
-		float a =  timestep * visc;//1;//(width * height * timestep * visc);//.001; 
+		float a = timestep * visc;//1;//(width * height * timestep * visc);//.001; 
 		float stencilFactor = 1.0f / (4.0f + a );
 		//float a = (width*height) * timestep * visc;
 		//float stencilFactor = 1.0f / (4.0f * a );
@@ -207,7 +212,7 @@ void GPUFlow::SetDiffuse( Textures xTex, Textures bTex )
 		//for( int i = 0; i < numJacobiSteps; ++i )
 		{	
 			ExecuteShaderRect( xTex );
-			textures[xTex]->display();
+			//textures[xTex]->display();
 			sh.setParameter( "x", textures[xTex]->getTexture());
 		}
 	}
@@ -226,7 +231,7 @@ GPUFlow::~GPUFlow()
 
 void GPUFlow::Draw( sf::RenderTarget *target )
 {	
-	Textures t = TEXTURE_DENSITY;
+	Textures t = TEXTURE_VELOCITY;
 	//textures[t]->display();
 	Sprite sp;
 	sp.setTexture( textures[t]->getTexture() );
@@ -252,85 +257,30 @@ void GPUFlow::AddSource( Textures receiver, Textures source )
 
 void GPUFlow::VelocityStep()
 {
-	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+
+
 	
-	//advect velocity
-	SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
-	ExecuteShaderRect( TEXTURE_VELOCITY );
-
-	//advect density
-	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
-	ExecuteShaderRect( TEXTURE_DENSITY );
-
-	//adding impulse
-	SetImpulse( TEXTURE_DENSITY );
-	ExecuteShaderRect( TEXTURE_DENSITY );
-
-	//diffuse velocity
-	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
-
-	//project
-	SetDivergence( TEXTURE_VELOCITY );
-	ExecuteShaderRect( TEXTURE_DIVERGENCE );
-
-	//solve for poisson pressure using jacobi
-	// u = gradient( p );
-
-	//clear pressure each update for now
-	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
-
-	SetJacobi( -width * height, 0.25f, TEXTURE_PRESSURE,
-		TEXTURE_DIVERGENCE );
-	for( int i = 0; i < 20; ++i )
-	{
-		ExecuteShaderRect( TEXTURE_PRESSURE );
-	}
-
-	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
-	ExecuteShaderRect( TEXTURE_VELOCITY );
-
-
-	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
-	ExecuteShaderRect( TEXTURE_VELOCITY );
-}
-
-void GPUFlow::DensityStep()
-{
-	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
 	
-	//advect velocity
-	SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
-	ExecuteShaderRect( TEXTURE_VELOCITY );
-
-	//advect density
-	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
-	ExecuteShaderRect( TEXTURE_DENSITY );
-
 	//adding impulse
 	SetImpulse( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 
-	//adding impulse
-	SetImpulse( TEXTURE_DENSITY );
-	ExecuteShaderRect( TEXTURE_DENSITY );
-
-	//diffuse velocity
 	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
 
-	//project
+	//SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+
 	SetDivergence( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_DIVERGENCE );
 
-	//solve for poisson pressure using jacobi
-	// u = gradient( p );
+	//textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
 
-	//clear pressure each update for now
-	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
-
-	//SetJacobi( -width * height, 0.25f, TEXTURE_PRESSURE,
-	SetJacobi( -1, 0.25f, TEXTURE_PRESSURE,
+	SetJacobi( 1, 0.25f, TEXTURE_PRESSURE,
 		TEXTURE_DIVERGENCE );
-
 	Shader &sh = shaders[SHADER_JACOBI];
 	for( int i = 0; i < 20; ++i )
 	{
@@ -342,17 +292,256 @@ void GPUFlow::DensityStep()
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 
 
+
+
+
+
+
+	////textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+
+	//Project( TEXTURE_VELOCITY, TEXTURE_PRESSURE, TEXTURE_DIVERGENCE );
+
+	//SetGradient( TEXTURE_VELOCITY,TEXTURE_PRESSURE );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+
+	
+	//Project( TEXTURE_VELOCITY, TEXTURE_PRESSURE, TEXTURE_DIVERGENCE );
+	//adding impulse
+	//SetImpulse( TEXTURE_DENSITY );
+	//ExecuteShaderRect( TEXTURE_DENSITY );
+
+	//advect velocity
+	//SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	////advect density
+	//SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	//ExecuteShaderRect( TEXTURE_DENSITY );
+
+	//
+
+	////diffuse velocity
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+	////project
+	//SetDivergence( TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_DIVERGENCE );
+
+	////solve for poisson pressure using jacobi
+	//// u = gradient( p );
+
+	////clear pressure each update for now
+	//textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+
+	//SetJacobi( -width * height, 0.25f, TEXTURE_PRESSURE,
+	//	TEXTURE_DIVERGENCE );
+	//for( int i = 0; i < 20; ++i )
+	//{
+	//	ExecuteShaderRect( TEXTURE_PRESSURE );
+	//}
+
+	//SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+
+	//SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+}
+
+void GPUFlow::Project(Textures velTex, Textures pTex, Textures divTex )
+{
+	//project
+
+	//get divergence of the velocity
+	SetDivergence( velTex );
+	ExecuteShaderRect( divTex );
+
+	// u = gradient( p );
+
+	//clear pressure each update for now
+	
+
+	//solve for poisson pressure using jacobi
+	/*SetJacobi( -1, 0.25f, TEXTURE_PRESSURE,
+		TEXTURE_DIVERGENCE );*/
+	SetJacobi( 1, 0.25f, pTex,
+		divTex );
+
+	Shader &sh = shaders[SHADER_JACOBI];
+	for( int i = 0; i < 20; ++i )
+	{
+		ExecuteShaderRect( pTex );
+		sh.setParameter( "x", textures[pTex]->getTexture());
+	}
+}
+
+void GPUFlow::DensityStep()
+{
+	//adding impulse
+	SetImpulse( TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	
+	
+	//SetDiffuse( TEXTURE_DENSITY, TEXTURE_DENSITY );
+	//ExecuteShaderRect( TEXTURE_DENSITY );
+
+	//advect ink
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	
+
+	//advect velocity
+	//SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	////advect density/ink
+	//SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	//ExecuteShaderRect( TEXTURE_DENSITY );
+
+	////adding impulse
+	//SetImpulse( TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	
+
+	////diffuse velocity
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+	//Project( TEXTURE_VELOCITY, TEXTURE_PRESSURE, TEXTURE_DIVERGENCE );
+
+	//SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+
 	//SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
 	//ExecuteShaderRect( TEXTURE_VELOCITY );
 }
 
 void GPUFlow::Update()
 {
-	//input
-	
+	//again, try to do the same thing as the cpu solver just for now
+
+	//adding impulse
+	SetImpulse( TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	SetImpulse( TEXTURE_VELOCITY );
+	ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	//advect ink
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+	SetDivergence( TEXTURE_VELOCITY );
+	ExecuteShaderRect( TEXTURE_DIVERGENCE );
+
+	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+
+	SetJacobi( 1, 0.25f, TEXTURE_PRESSURE,
+		TEXTURE_DIVERGENCE );
+	Shader &sh = shaders[SHADER_JACOBI];
+
+	for( int i = 0; i < 20; ++i )
+	{
+		ExecuteShaderRect( TEXTURE_PRESSURE );
+		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+	}
+
+	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	ExecuteShaderRect( TEXTURE_VELOCITY );
+	//VelocityStep();
+	//DensityStep();
+	//adding impulse density
+	/*SetImpulse( TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	SetDiffuse( TEXTURE_DENSITY, TEXTURE_PRESSURE );
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );*/
+
+	//set the impulses
+
+	//velocitystep
+
+
+	//densitystep
+
+	//ready to draw
+
+}
+
+void GPUFlow::Update2()
+{
+	DensityStep();
+
+	//1. Add Impulse ---------------------------------
+
+	//adding impulse velocity
+	//SetImpulse( TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	////adding impulse density
+	//SetImpulse( TEXTURE_DENSITY );
+	//ExecuteShaderRect( TEXTURE_DENSITY );
+
+	////2. Advect --------------------------------
+	//	//-creates a divergent field which must be corrected in step 4
+
+	////advect velocity
+	//SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	////advect ink
+	//SetAdvect( TEXTURE_DENSITY, TEXTURE_DENSITY );
+	//ExecuteShaderRect( TEXTURE_DENSITY );
+
+	////3. Apply VorticityConfinement --------------------------------
+	//	//-not doing this yet
+
+	////4. Diffuse( if viscosity > 0 ) ---------------------------------------
+	//	//-diffuses velocity, solving a poisson problem
+
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+
+	//5. Project( computes divergence-free velocity from divergent field ) ---------------------------
+		//-a. Compute the divergence of the velocity field
+		//-b. Solve the poisson equation, Laplacian(p) = div(u),
+			//for p using Jacobi iteration
+		//-c. now that we have p, compute the divergence free velocity: u = gradient(p)
+
+	//a: compute the divergence
+	//SetDivergence( TEXTURE_VELOCITY );
+	//ExecuteShaderRect( TEXTURE_DIVERGENCE );
+
+	////b: solve the poisson equation for p
+	//textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+	//SetJacobi( 1, 0.25f, TEXTURE_PRESSURE, TEXTURE_DIVERGENCE );
+
+	//Shader &sh = shaders[SHADER_JACOBI];
+	//for( int i = 0; i < 20; ++i )
+	//{
+	//	ExecuteShaderRect( TEXTURE_PRESSURE );
+	//	sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+	//}
+
+	////c: compute the divergence free velocity
+	//SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	////input
+	//Velo
 
 	//VelocityStep();
-	DensityStep();
+	//DensityStep();
 	
 
 	//advect velocity
