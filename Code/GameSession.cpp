@@ -3201,6 +3201,7 @@ int GameSession::Run( string fileN )
 				pauseFrames = 0;
 				if( levelReset )
 				{
+					//cout << "resetting level" << endl;
 					ResetEnemies();
 					ResetPlants(); //eventually maybe treat these to reset like the rest of the stuff
 					//only w/ checkpoints. but for now its always back
@@ -3217,8 +3218,11 @@ int GameSession::Run( string fileN )
 					for( int i = 0; i < numGates; ++i )
 					{
 						gates[i]->SetLocked( true );
-						gates[i]->gState = Gate::SOFT;
+						if( gates[i]->type != Gate::BLACK )
+							gates[i]->gState = Gate::SOFT;
 					}
+
+					//cout << "finished resetting level" << endl;
 				}
 				else
 				{
@@ -4781,8 +4785,12 @@ void GameSession::RespawnPlayer()
 	player.recordedGhosts = 0;
 	player.blah = false;
 	player.receivedHit = NULL;
-	player.rightWire->Reset();
-	player.leftWire->Reset();
+
+	if( player.hasPowerLeftWire )
+		player.leftWire->Reset();
+	else if( player.hasPowerRightWire )
+		player.rightWire->Reset();
+	
 	powerBar.Reset();
 	player.lastWire = 0;
 	player.desperationMode = false;

@@ -20,7 +20,8 @@ Flow::Flow( const Vector2i &p, int w, int h )
 	inkColor = Color::Red;
 	pos = p;
 	dt = 1.f / 60.f;
-	diff = .001f;//0.00075f;
+	//diff = .001f;//0.00075f;
+	diff = 0;
 
 	size = (width +2 ) * (height+2);
 
@@ -123,6 +124,9 @@ void Flow::SetBound( int b, float *x )
 	x[IX(width+1,height+1)] = 0.5 * (x[IX(width, height+1)] + x[IX(width+1,height)]);
 }
 
+
+//d and d0 are quantities, u and v are the velocity. 
+//bilinear interpolate after subtracting the velocity. store in the new d from the old d
 void Flow::Advect( int b, float *d, float *d0, float *u, float *v )
 {
 	int i,j,i0,j0,i1,j1;
@@ -175,6 +179,7 @@ void Flow::DensityStep( float *x, float *x0, float *u, float *v )
 	Advect( 0, x, x0, u, v );
 }
 
+//poisson solve where x is x param and x0 is b param
 void Flow::Diffuse( int b, float *x, float *x0 )
 {
 	float a = dt * diff * width * height;
@@ -184,13 +189,14 @@ void Flow::Diffuse( int b, float *x, float *x0 )
 
 void Flow::VelocityStep( float *u, float *v, float *u0, float *v0 )
 {
-	//AddSource( u, u0 ); AddSource( v, v0 );
-	//SWAP( u0, u ); Diffuse( 1, u, u0 );
-	//SWAP( v0, v ); Diffuse( 2, v, v0 );
-	//Project( u, v, u0, v0 );
-	//SWAP( u0, u ); SWAP( v0, v );
-	//Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
-	//Project( u, v, u0, v0 );
+	//why am i linear solving on the velocities w/ the old velocities?
+	AddSource( u, u0 ); AddSource( v, v0 );
+	SWAP( u0, u ); Diffuse( 1, u, u0 );
+	SWAP( v0, v ); Diffuse( 2, v, v0 );
+	Project( u, v, u0, v0 );
+	SWAP( u0, u ); SWAP( v0, v );
+	Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
+	Project( u, v, u0, v0 );
 	
 	
 	//AddSource( u, u0 ); AddSource( v, v0 );
@@ -202,6 +208,9 @@ void Flow::VelocityStep( float *u, float *v, float *u0, float *v0 )
 	//Project( u, v, u0, v0 );
 }
 
+//compute the divergence (div) of velocity (u and v) and then computes
+//the pressure disturbance(p) and subtracts the gradient of the pressure disturbance
+//from the velocity to get the divergence free velocity
 void Flow::Project( float *u, float *v, float *p, float *div )
 {
 	int i,j,k;
@@ -210,7 +219,7 @@ void Flow::Project( float *u, float *v, float *p, float *div )
 	//h = 1.0 / N;
 	h = 1.f / width;
 
-	//compute the divergence of the velocity field
+	//compute the divergence of the velocity field and at the same time set the pressure to zero
 	for( i = 1; i <= width; ++i )
 	{
 		for( j = 1; j <= height; ++j )
@@ -227,6 +236,7 @@ void Flow::Project( float *u, float *v, float *p, float *div )
 	//compute pressure disturbance
 	LinSolve( 0, p, div, 1, 4 );
 
+	//subtract gradient of the pressure from the velocity
 	for( i = 1; i <= width; ++i )
 	{
 		for( j = 1; j <= height; ++j )
@@ -271,6 +281,8 @@ void Flow::Update()
 	int gx = (((int)player->position.x) - pos.x ) / tileSize;
 	int gy = (((int)player->position.y) - pos.y ) / tileSize;
 
+
+	//set the impulses to both density and velocity (addsource actually adds them)
 	m_dens_prev[IX((width+2)/2,(width+2)/2)] = 30;
 	//m_u_prev[IX(32,32)] = 0;
 	//m_v_prev[IX(32,32)] = 10;

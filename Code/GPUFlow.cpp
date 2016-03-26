@@ -60,6 +60,7 @@ GPUFlow::GPUFlow( const sf::Vector2i &p, int w, int h )
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
+	
 }
 
 //executes the shader in currShader over the rectangle of the fluid area
@@ -88,7 +89,6 @@ void GPUFlow::ExecuteShaderRect( Textures tex )
 
 void GPUFlow::SetImpulse( Textures tex )
 {
-	
 	Vector2f playerCoords = Vector2f( player->position.x, player->position.y ) - Vector2f(position.x, position.y);
 	//playerCoords.y = -playerCoords.y;
 	
@@ -96,10 +96,11 @@ void GPUFlow::SetImpulse( Textures tex )
 
 	playerCoords.x /= width * 3;// * 2;
 	playerCoords.y /= height * 3;// * 2;
-
+	Vector2f vel = Vector2f( player->velocity.x, player->velocity.y );
 	if( tex == TEXTURE_DENSITY )
 	{
-		playerCoords = Vector2f( .5, .5 );
+		vel = Vector2f( 128, 0 );
+	//	playerCoords = Vector2f( .5, .5 );
 	}
 	//playerCoords.y = 1 - playerCoords.y;
 
@@ -114,6 +115,7 @@ void GPUFlow::SetImpulse( Textures tex )
 	Shader &sh = shaders[SHADER_IMPULSE];
 	sh.setParameter( "Resolution", Vector2f( width, height) );
 	sh.setParameter( "playerCoords", playerCoords );
+	sh.setParameter( "vel", vel );
 	sh.setParameter( "tex", textures[tex]->getTexture() );
 	currShader = &sh;
 }
@@ -199,10 +201,12 @@ void GPUFlow::SetBoundary( Vector2f &offset, Textures xTex )
 void GPUFlow::SetDiffuse( Textures xTex, Textures bTex )
 {	
 	//textures[bTex]->display();
-	if( visc > 0 )
+	//return;
+	//if( visc > 0 )
 	{
+		
 		float a = timestep * visc;//1;//(width * height * timestep * visc);//.001; 
-		float stencilFactor = 1.0f / (4.0f + a );
+		float stencilFactor = 1.0f / (4.0 + a);
 		//float a = (width*height) * timestep * visc;
 		//float stencilFactor = 1.0f / (4.0f * a );
 		
@@ -234,12 +238,29 @@ void GPUFlow::Draw( sf::RenderTarget *target )
 	Textures t = TEXTURE_VELOCITY;
 	//textures[t]->display();
 	Sprite sp;
-	sp.setTexture( textures[t]->getTexture() );
+	sp.setTexture( textures[TEXTURE_DENSITY]->getTexture() );
 	sp.setPosition( position.x, position.y );
 	sp.setScale( 3, 3 );
-	//this is why i have to scale by three in the shader coords
+	
+	target->draw( sp );
+
+	sp.setPosition( position.x + width * 3 + 5, position.y );
+	sp.setTexture( textures[TEXTURE_VELOCITY]->getTexture() );
 
 	target->draw( sp );
+
+	sp.setPosition( position.x + (width * 3 + 5) * 2, position.y );
+	sp.setTexture( textures[TEXTURE_DIVERGENCE]->getTexture() );
+
+	target->draw( sp );
+
+	sp.setPosition( position.x + (width * 3 + 5) * 3, position.y );
+	sp.setTexture( textures[TEXTURE_PRESSURE]->getTexture() );
+
+	target->draw( sp );
+	//this is why i have to scale by three in the shader coords
+
+
 	/*RenderStates rs;
 	rs.shader = &shaders[SHADER_IMPULSE];
 	target->draw( sp, rs );*/
@@ -421,6 +442,41 @@ void GPUFlow::DensityStep()
 	//ExecuteShaderRect( TEXTURE_VELOCITY );
 }
 
+Vector2f Normalize( Vector2f vec )
+{
+	float len = sqrt( vec.x * vec.x + vec.y * vec.y );
+	vec.x /= len;
+	vec.y /= len;
+	return vec;
+}
+
+Vector2f Test( Color c )
+{
+	float r = c.r / 256.0;
+	float g = c.g / 256.0;
+	float b = c.b;// / 256.0;
+
+	Vector2f test( r, g );
+	cout << "teststart: " << test.x << ", " << test.y << ", mag: " << b << endl;
+	Vector2f no = Normalize( test );
+	no *= b;
+	
+	//cout << "test: " << test.x << ", " << test.y << endl;
+	return no;
+}
+
+Color Test2( Vector2f vec )
+{
+	Color c;
+
+	float len = sqrt( vec.x * vec.x + vec.y * vec.y );
+	c.b = len;
+	c.r = vec.x / len * 256;
+	c.g = vec.y / len * 256;
+
+	return c;
+}
+
 void GPUFlow::Update()
 {
 	//again, try to do the same thing as the cpu solver just for now
@@ -432,21 +488,30 @@ void GPUFlow::Update()
 	SetImpulse( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 
+	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	
 	SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 
-	//advect ink
 	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
 	ExecuteShaderRect( TEXTURE_DENSITY );
 
-	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	
 
 	SetDivergence( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_DIVERGENCE );
 
 	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+	textures[TEXTURE_PRESSURE]->display();
 
-	SetJacobi( 1, 0.25f, TEXTURE_PRESSURE,
+	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	ExecuteShaderRect( TEXTURE_VELOCITY );
+	/*
+
+	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+	textures[TEXTURE_PRESSURE]->display();
+
+	SetJacobi( -1, 0.25f, TEXTURE_PRESSURE,
 		TEXTURE_DIVERGENCE );
 	Shader &sh = shaders[SHADER_JACOBI];
 
@@ -457,7 +522,80 @@ void GPUFlow::Update()
 	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	ExecuteShaderRect( TEXTURE_VELOCITY );*/
+
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	
+	/*SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+
+
+	SetDivergence( TEXTURE_VELOCITY );
+	ExecuteShaderRect( TEXTURE_DIVERGENCE );
+
+
+	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+	textures[TEXTURE_PRESSURE]->display();
+
+	SetJacobi( -1, 0.25f, TEXTURE_PRESSURE,
+		TEXTURE_DIVERGENCE );
+	Shader &sh = shaders[SHADER_JACOBI];
+
+	for( int i = 0; i < 20; ++i )
+	{
+		ExecuteShaderRect( TEXTURE_PRESSURE );
+		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+	}
+
+	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
+	ExecuteShaderRect( TEXTURE_VELOCITY );*/
+
+	//Color c( 1, 1, 10 );
+	//Vector2f t = Test( c );
+	//cout << "test: " << t.x << ", " << t.y << endl;
+
+	//Color back = Test2( t );
+	//cout << "col: " << (int)back.r << ", " << (int)back.g << ", " << (int)back.b << endl;
+
+	
+	//advect ink
+	/*SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	SetImpulse( TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
+
+	SetImpulse( TEXTURE_VELOCITY );
+	ExecuteShaderRect( TEXTURE_VELOCITY );
+
+	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+
+	SetDivergence( TEXTURE_VELOCITY );
+	ExecuteShaderRect( TEXTURE_DIVERGENCE );
+
+	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+	textures[TEXTURE_PRESSURE]->display();
+
+	SetJacobi( -1, 0.25f, TEXTURE_PRESSURE,
+		TEXTURE_DIVERGENCE );
+	Shader &sh = shaders[SHADER_JACOBI];
+
+	for( int i = 0; i < 20; ++i )
+	{
+		ExecuteShaderRect( TEXTURE_PRESSURE );
+		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+	}
+
+	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );*/
+	//ExecuteShaderRect( TEXTURE_VELOCITY );
+
+
 	//VelocityStep();
 	//DensityStep();
 	//adding impulse density

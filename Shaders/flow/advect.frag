@@ -14,7 +14,9 @@ vec2 colorToVec( vec4 col )
 {
 	vec2 temp = col.xy;
 	temp = (temp - .5) * 2;
+	temp = normalize( temp );
 	float mag = col.z * 256.0;
+	
 	temp *= vec2( mag ); //magnitude
 	return temp;
 }
@@ -22,8 +24,8 @@ vec2 colorToVec( vec4 col )
 vec3 vecToColorRGB( vec2 ve )
 {
 	float len = length( ve );
-	vec3 temp = vec3( normalize(ve), len / 256.0 );
-	temp = (temp * .5) + .5;
+	vec3 temp = vec3( normalize(ve), 1 );//len / 256.0 );
+	temp.xy = (temp.xy * .5) + .5;
 	return temp;
 }
 
@@ -41,9 +43,9 @@ vec4 f4texRECTbilerp(sampler2D tex, vec2 blah)
   vec2 t = s - st.xy; //interpolating factors 
     
   vec4 tex11 = texture2D(tex, st.xy / texSize);
-  vec4 tex21 = texture2D(tex, st.zy/ texSize);
-  vec4 tex12 = texture2D(tex, st.xw/ texSize);
-  vec4 tex22 = texture2D(tex, st.zw/ texSize);
+  vec4 tex21 = texture2D(tex, st.zy / texSize);
+  vec4 tex12 = texture2D(tex, st.xw / texSize);
+  vec4 tex22 = texture2D(tex, st.zw / texSize);
 
   t /= texSize;
   
@@ -98,10 +100,13 @@ vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
 
 void main()
 {
-	vec4 velColor = (texture2D(u, gl_FragCoord.xy / texSize ));
+	vec4 velColor = (texture2D(u, gl_FragCoord.xy / texSize ));//vec4( 1, .5, .5, 1 );//(texture2D(u, gl_FragCoord.xy / texSize ));
 	vec2 vel = colorToVec( velColor );
+	//vel.x = 128;
+	//vel.y = 0;
 	
 	//follow the vector field back in time
-	vec2 pos = gl_FragCoord.xy - vec2(timestep) * vec2(rdx) * vel;
+	vec2 pos = gl_FragCoord.xy - vec2(timestep) * vel;
+	//vec2 pos = gl_FragCoord.xy - vec2(1) * vec2(rdx) * vel;
 	gl_FragColor = f4texRECTbilerp( x, pos );
 }

@@ -371,11 +371,21 @@ void Gate::Update()
 					realFrame = frame / 3;
 					break;
 				default:
-					//cout << "state : " << gState << endl;
+					cout << "state : " << gState << endl;
 					break;
 			}
 		}
+
+		
 		//IntRect subRect = ts->GetSubRect( realFrame );
+		
+
+		if( realFrame < 0 )
+		{
+			cout << "type: " << type << endl;
+			cout << "gState: " << gState << endl;
+		}
+
 		assert( realFrame >= 0 );
 
 		IntRect subRect = ts->GetSubRect( realFrame );

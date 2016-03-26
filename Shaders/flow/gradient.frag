@@ -11,16 +11,18 @@ vec2 colorToVec( vec4 col )
 {
 	vec2 temp = col.xy;
 	temp = (temp - .5) * 2;
-	float mag = col.z * 256.0;
-	temp *= vec2( mag ); //magnitude
+	//temp = normalize( temp );
+	//float mag = col.z * 256.0;
+	
+	//temp *= vec2( mag ); //magnitude
 	return temp;
 }
 
-vec3 vecToColorRGB( vec2 ve )
+vec2 vecToColorRG( vec2 ve )
 {
 	float len = length( ve );
 	vec3 temp = vec3( normalize(ve), len / 256.0 );
-	temp = (temp * .5) + .5;
+	temp.xy = (temp.xy * .5) + .5;
 	return temp;
 }
 
@@ -36,9 +38,10 @@ void main()
 	
 	vec2 grad = vec2(halfrdx) * vec2( pR - pL, pT - pB );
 	
-	colVec -= grad;
+	//col.xy -= grad;
+	//colVec -= grad;
 	
-	col.xyz = vecToColorRGB( colVec );
+	//col.xyz = vecToColorRGB( colVec );
 	
 	gl_FragColor = col;
 }
