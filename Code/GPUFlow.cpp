@@ -501,8 +501,18 @@ void GPUFlow::Update()
 	SetDivergence( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_DIVERGENCE );
 
-	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
+	textures[TEXTURE_PRESSURE]->clear( Color::Black );
 	textures[TEXTURE_PRESSURE]->display();
+
+	SetJacobi( 1, 0.25f, TEXTURE_PRESSURE,
+		TEXTURE_DIVERGENCE );
+	Shader &sh = shaders[SHADER_JACOBI];
+
+	for( int i = 0; i < 20; ++i )
+	{
+		ExecuteShaderRect( TEXTURE_PRESSURE );
+		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
 	ExecuteShaderRect( TEXTURE_VELOCITY );

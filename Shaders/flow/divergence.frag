@@ -10,18 +10,12 @@ vec2 colorToVec( vec4 col )
 {
 	vec2 temp = col.xy;
 	temp = (temp - .5) * 2;
-	temp = normalize( temp );
-	
-	float mag = col.z * 256.0;
-	
-	temp *= vec2( mag ); //magnitude
 	return temp;
 }
 
-vec3 vecToColorRGB( vec2 ve )
+vec4 vecToColor( vec2 ve )
 {
-	float len = length( ve );
-	vec3 temp = vec3( normalize(ve), len / 256.0 );
+	vec4 temp = vec4( ve, 0, 1 );
 	temp.xy = (temp.xy * .5) + .5;
 	return temp;
 }
@@ -39,6 +33,6 @@ void main()
 	//vec2 wT = (texture2D( w, (gl_FragCoord.xy + vec2( 0, 1 )) / texSize )).xy;
 	
 	
-	gl_FragColor =  vec4(halfrdx * ((wR.x - wL.x) + (wT.y - wB.y )));
+	gl_FragColor =  vec4(halfrdx * 64*((wR.x - wL.x) + (wT.y - wB.y )));
 	//gl_FragColor.a = 1;
 }

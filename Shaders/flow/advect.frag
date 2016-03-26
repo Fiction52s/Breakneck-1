@@ -14,17 +14,12 @@ vec2 colorToVec( vec4 col )
 {
 	vec2 temp = col.xy;
 	temp = (temp - .5) * 2;
-	temp = normalize( temp );
-	float mag = col.z * 256.0;
-	
-	temp *= vec2( mag ); //magnitude
 	return temp;
 }
 
-vec3 vecToColorRGB( vec2 ve )
+vec4 vecToColor( vec2 ve )
 {
-	float len = length( ve );
-	vec3 temp = vec3( normalize(ve), 1 );//len / 256.0 );
+	vec4 temp = vec4( ve, 0, 1 );
 	temp.xy = (temp.xy * .5) + .5;
 	return temp;
 }
@@ -106,7 +101,7 @@ void main()
 	//vel.y = 0;
 	
 	//follow the vector field back in time
-	vec2 pos = gl_FragCoord.xy - vec2(timestep) * vel;
+	vec2 pos = gl_FragCoord.xy - vec2(timestep) * vec2( rdx ) * vel;
 	//vec2 pos = gl_FragCoord.xy - vec2(1) * vec2(rdx) * vel;
 	gl_FragColor = f4texRECTbilerp( x, pos );
 }

@@ -14,18 +14,12 @@ vec2 colorToVec( vec4 col )
 {
 	vec2 temp = col.xy;
 	temp = (temp - .5) * 2;
-	temp = normalize( temp );
-	
-	float mag = col.z * 256.0;
-	
-	temp *= vec2( mag ); //magnitude
 	return temp;
 }
 
-vec3 vecToColorRGB( vec2 ve )
+vec4 vecToColor( vec2 ve )
 {
-	float len = length( ve );
-	vec3 temp = vec3( normalize(ve), len / 256.0 );
+	vec4 temp = vec4( ve, 0, 1 );
 	temp.xy = (temp.xy * .5) + .5;
 	return temp;
 }
@@ -39,7 +33,7 @@ void main()
 	vec4 oldCol = texture2D( tex, gl_FragCoord.xy / Resolution.xy );
 	if( abs( fc.x - playerCoords.x ) < .05 && abs( fc.y - playerCoords.y ) < .05 )
 	{
-		gl_FragColor = vec4( vecToColorRGB( vel * 10 ), 1 );//vec4( 1, .5, .1, 1 );//vec4( vecToColorRGB( vec2( 100, 100 ) ), 1 );//vec4( 1, 1, .1, 1 );//vec4( vecToColorRGB( vec2( -.0001, -.0005 ) ), 1 );//vec4( 1, 1, .1, 1 );//+ vec4( vecToColorXY( vec2( -1, 0 ) ), 0, 0 );
+		gl_FragColor = vec4( vecToColor( normalize(vel) ) );//vec4( 1, .5, .1, 1 );//vec4( vecToColorRGB( vec2( 100, 100 ) ), 1 );//vec4( 1, 1, .1, 1 );//vec4( vecToColorRGB( vec2( -.0001, -.0005 ) ), 1 );//vec4( 1, 1, .1, 1 );//+ vec4( vecToColorXY( vec2( -1, 0 ) ), 0, 0 );
 	}
 	else
 	{
