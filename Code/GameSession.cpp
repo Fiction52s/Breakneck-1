@@ -3040,9 +3040,9 @@ int GameSession::Run( string fileN )
 	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 
 	int flowSize = 64;
-	GPUFlow *f = new GPUFlow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize ); 
+	//GPUFlow *f = new GPUFlow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize ); 
 	//Flow *f = new Flow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize );
-	f->player = &player;
+	//f->player = &player;
 
 	while( !quit )
 	{
@@ -3195,7 +3195,7 @@ int GameSession::Run( string fileN )
 				}
 
 
-				f->Reset();
+				//f->Reset();
 
 				RespawnPlayer();
 				pauseFrames = 0;
@@ -3593,7 +3593,7 @@ int GameSession::Run( string fileN )
 				//Vector2f oldCam = cam.pos;
 				//float oldCamZoom = cam.GetZoom();
 
-				f->Update();
+				//f->Update();
 
 
 				oldZoom = cam.GetZoom();
@@ -4130,7 +4130,7 @@ int GameSession::Run( string fileN )
 			gateList = next;
 		}
 
-		f->Draw( preScreenTex );
+		//f->Draw( preScreenTex );
 		
 
 		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )

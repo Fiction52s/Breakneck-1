@@ -15,11 +15,12 @@ struct Flow
 		TEXTURE_DIVERGENCE,
 		TEXTURE_PRESSURE,
 		//TEXTURE_VORTICITY,
-		//TEXTURE_VELOCITY_OFFSETS,
-		//TEXTURE_PRESSURE_OFFETTS,
+		TEXTURE_VELOCITY_OFFSETS,
+		TEXTURE_PRESSURE_OFFETTS,
 		TEXTURE_COUNT
 	};
 
+	
 	sf::VertexArray *va;
 	sf::VertexArray *velLines;
 	void Update();
@@ -92,6 +93,12 @@ struct GPUFlow
 		SHADER_IMPULSE,
 		SHADER_COUNT
 	};
+
+	/*sf::RectangleShape boundLeft;
+	sf::RectangleShape boundRight;
+	sf::RectangleShape boundTop;
+	sf::RectangleShape boundBot;*/
+
 
 	sf::Vector2i position;
 	int numJacobiSteps;

@@ -20,8 +20,8 @@ Flow::Flow( const Vector2i &p, int w, int h )
 	inkColor = Color::Red;
 	pos = p;
 	dt = 1.f / 60.f;
-	//diff = .001f;//0.00075f;
-	diff = 0;
+	diff = .001f;//0.00075f;
+	//diff = 0;
 
 	size = (width +2 ) * (height+2);
 
@@ -191,10 +191,10 @@ void Flow::VelocityStep( float *u, float *v, float *u0, float *v0 )
 {
 	//why am i linear solving on the velocities w/ the old velocities?
 	AddSource( u, u0 ); AddSource( v, v0 );
-	SWAP( u0, u ); Diffuse( 1, u, u0 );
-	SWAP( v0, v ); Diffuse( 2, v, v0 );
-	Project( u, v, u0, v0 );
-	SWAP( u0, u ); SWAP( v0, v );
+	//SWAP( u0, u ); Diffuse( 1, u, u0 );
+	//SWAP( v0, v ); Diffuse( 2, v, v0 );
+	//Project( u, v, u0, v0 );
+	//SWAP( u0, u ); SWAP( v0, v );
 	Advect( 1, u, u0, u0, v0 ); Advect( 2, v, v0, u0, v0 );
 	Project( u, v, u0, v0 );
 	
@@ -224,8 +224,8 @@ void Flow::Project( float *u, float *v, float *p, float *div )
 	{
 		for( j = 1; j <= height; ++j )
 		{
-			div[IX(i,j)] = -0.5 * h * ( u[IX(i+1,j)] - u[IX(i-1,j)] +
-				v[IX(i,j+1)] - v[IX(i,j-1)] );
+			div[IX(i,j)] = -0.5 * h * ( (u[IX(i+1,j)] - u[IX(i-1,j)]) +
+				(v[IX(i,j+1)] - v[IX(i,j-1)] ) );
 			p[IX(i,j)] = 0;
 		}
 	}
@@ -329,7 +329,7 @@ void Flow::Update()
 			v[index*4+2].position = indexPos + Vector2f( pos.x + tileSize, pos.y + tileSize );
 			v[index*4+3].position = indexPos + Vector2f( pos.x, pos.y + tileSize );
 
-			float *&ar = m_dens;
+			float *&ar = m_u;
 			float d0 = ar[IX(i,j)];
 			float d1 = ar[IX(i,j+1)];
 			float d2 = ar[IX(i+1,j)];

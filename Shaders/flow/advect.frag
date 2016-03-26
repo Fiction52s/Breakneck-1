@@ -42,10 +42,14 @@ vec4 f4texRECTbilerp(sampler2D tex, vec2 blah)
   vec4 tex12 = texture2D(tex, st.xw / texSize);
   vec4 tex22 = texture2D(tex, st.zw / texSize);
 
-  t /= texSize;
+  vec4 text = texture2D( tex, t / texSize );
+  //t /= texSize;
+  
   
   // bilinear interpolation
-  return mix(mix(tex11, tex21, t.x), mix(tex12, tex22, t.x), t.y);
+  return mix(mix(tex11, tex21, text.x), mix(tex12, tex22, t.x), text.y);
+ // return mix( mix( tex11, tex21 ), tex12, tex22 );
+	
 }
 
 vec4 cubic(float v)
@@ -64,7 +68,7 @@ vec4 textureBicubic(sampler2D sampler, vec2 texCoords){
    //vec2 texSize = textureSize(sampler, 0);
    vec2 invTexSize = 1.0 / texSize;
    
-   texCoords = texCoords * texSize - 0.5;
+   texCoords = texCoords - .5;// * texSize - 0.5;
 
    
     vec2 fxy = fract(texCoords);
@@ -103,5 +107,16 @@ void main()
 	//follow the vector field back in time
 	vec2 pos = gl_FragCoord.xy - vec2(timestep) * vec2( rdx ) * vel;
 	//vec2 pos = gl_FragCoord.xy - vec2(1) * vec2(rdx) * vel;
-	gl_FragColor = f4texRECTbilerp( x, pos );
+	//gl_FragColor = f4texRECTbilerp( x, pos );//textureBicubic( x, pos );//f4texRECTbilerp( x, pos );
+	
+	vec4 xL = texture2D( x, (pos - vec2( 1, 0 )) / texSize );
+	vec4 xR = texture2D( x, (pos + vec2( 1, 0 )) / texSize);
+	vec4 xB = texture2D( x, (pos - vec2( 0, 1 )) / texSize );
+	vec4 xT = texture2D( x, (pos + vec2( 0, 1 )) / texSize );
+	
+	//b sample, from center
+	//vec4 bC = texture2D( b, gl_FragCoord.xy / texSize );
+	
+	gl_FragColor = (xL + xR + xB + xT) / 4;//texture2D( x, pos / texSize );//
+	
 }

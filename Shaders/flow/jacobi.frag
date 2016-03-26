@@ -19,6 +19,7 @@ void main()
 	
 	//b sample, from center
 	vec4 bC = texture2D( b, gl_FragCoord.xy / texSize );
+	bC = -bC;
 	
 	gl_FragColor = (bC *alpha + xL + xR + xB + xT ) * rBeta;
 	

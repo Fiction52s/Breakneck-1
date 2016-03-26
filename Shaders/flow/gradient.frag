@@ -29,15 +29,15 @@ void main()
 	float pT = ( texture2D( p, (gl_FragCoord.xy + vec2( 0, 1 )) / texSize ).x );
 	
 	vec4 col = texture2D( w, gl_FragCoord.xy / texSize );
-	vec2 colVec = colorToVec( col ) * 256 / 60.0;
+	vec2 colVec = colorToVec( col );// * 256 / 60.0;
 	
 	vec2 grad = vec2(halfrdx) * vec2( pR - pL, pT - pB );
 	
-	col.xy -= grad;
+	//col.xy -= grad;
 	//col.xy /= 256 * 60.0;
-	//colVec -= grad;
+	colVec -= grad;
 	//colVec.xy *= 256 / 60.0;
-	//col = vecToColor( colVec );
+	col = vecToColor( colVec );
 	
 	gl_FragColor = col;
 }

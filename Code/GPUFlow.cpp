@@ -24,6 +24,19 @@ GPUFlow::GPUFlow( const sf::Vector2i &p, int w, int h )
 		textures[i]->clear(Color::Black); 
 	}
 
+	/*boundLeft.setSize( Vector2f( 1, height + 2 ) );
+	boundLeft.setPosition( position.x - 1, position.y - 1 );
+
+	boundRight.setSize( Vector2f( 1, height + 2 ) );
+	boundRight.setPosition( position.x + 1, position.y - 1 );
+
+	boundTop.setSize( Vector2f( width, 1 ) );
+	boundTop.setPosition( position.x, position.y - 1 );
+
+	boundBot.setSize( Vector2f( width, 1 ) );
+	boundBot.setPosition( position.x, position.y + height + 1 );*/
+
+
 	if (!shaders[SHADER_ADVECT].loadFromFile("advect.frag", sf::Shader::Fragment ) )
 	{
 		cout << "advect SHADER NOT LOADING CORRECTLY" << endl;
@@ -86,6 +99,11 @@ void GPUFlow::ExecuteShaderRect( Textures tex )
 
 
 }
+
+//void GPUFlow::ExecuteBounds()
+//{
+//
+//}
 
 void GPUFlow::SetImpulse( Textures tex )
 {
@@ -195,6 +213,11 @@ void GPUFlow::SetBoundary( Vector2f &offset, Textures xTex )
 	sh.setParameter( "offset", offset );
 	sh.setParameter( "scale", tileSize );
 	sh.setParameter( "x", textures[xTex]->getTexture() );
+
+	Vector2u blah = textures[xTex]->getSize();
+	Vector2f si( blah.x, blah.y );
+	sh.setParameter( "texSize", si );
+
 	currShader = &sh;
 }
 
@@ -488,23 +511,23 @@ void GPUFlow::Update()
 	SetImpulse( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 
-	SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
+	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
+	ExecuteShaderRect( TEXTURE_DENSITY );
 	
 	SetAdvect( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_VELOCITY );
 
-	SetAdvect( TEXTURE_VELOCITY, TEXTURE_DENSITY );
-	ExecuteShaderRect( TEXTURE_DENSITY );
-
 	
+
+	//SetDiffuse( TEXTURE_VELOCITY, TEXTURE_VELOCITY );
 
 	SetDivergence( TEXTURE_VELOCITY );
 	ExecuteShaderRect( TEXTURE_DIVERGENCE );
 
-	textures[TEXTURE_PRESSURE]->clear( Color::Black );
+	textures[TEXTURE_PRESSURE]->clear( Color::Transparent );
 	textures[TEXTURE_PRESSURE]->display();
 
-	SetJacobi( 1, 0.25f, TEXTURE_PRESSURE,
+	SetJacobi( -1, 0.25f, TEXTURE_PRESSURE,
 		TEXTURE_DIVERGENCE );
 	Shader &sh = shaders[SHADER_JACOBI];
 
