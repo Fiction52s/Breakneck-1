@@ -4075,10 +4075,10 @@ int GameSession::Run( string fileN )
 			//preScreenTex->draw( *listVAIter->va );
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
-			preScreenTex->draw( *listVAIter->wallva, rs );
+			/*preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
-			preScreenTex->draw( *listVAIter->groundva, rs );
+			preScreenTex->draw( *listVAIter->groundva, rs );*/
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
@@ -4747,7 +4747,7 @@ void GameSession::RespawnPlayer()
 	if( player.currentCheckPoint == NULL )
 	{
 		player.position = originalPos;
-
+		
 		//actually keys should be set based on which ones you had at the last checkpoint
 		player.hasRedKey = false;
 		player.hasGreenKey = false;
@@ -4757,12 +4757,15 @@ void GameSession::RespawnPlayer()
 	{
 		player.position = player.currentCheckPoint->pos;
 
+
 		player.hasRedKey = false;
 		player.hasGreenKey = false;
 		player.hasBlueKey = player.currentCheckPoint->hadBlueKey;
 	}
 
-	
+	player.followerPos = player.position;
+	player.followerVel = V2d( 0, 0 );
+
 	player.gateTouched = NULL;
 	player.action = player.JUMP;
 	player.frame = 1;

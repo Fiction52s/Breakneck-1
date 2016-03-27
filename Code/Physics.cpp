@@ -502,7 +502,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 
 		double lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
 		double dist = cross( position - v0, normalize( v1 - v0 ) );
-		bool d = dot( -vel, edgeNormal ) > 0;
+		double testD = dot( -vel, edgeNormal );
+		bool d = testD > 0;
 
 		if( d && length( v0 - position ) <= radius )
 		{
@@ -569,7 +570,42 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else //special side/hit case for colliding with points
 			{
-			//	cout << "blah" << endl;
+				if( lineQuantity < 0 && lineQuantity > -radius ) //v0
+				{
+					//cout << "bb" << endl;
+					//dist is dot
+					double extra = -lineQuantity;
+					double y = sqrt( radius * radius - extra * extra );
+
+					V2d nVel = normalize( vel );
+					double lenVel = length( vel );
+					//V2d negvNorm = normalize( -vel );
+					currentContact->resolution = (lenVel - y ) * -nVel;
+					currentContact->edge = e;
+					currentContact->normal = V2d( 0, 0 );
+					currentContact->position = e->v0;
+					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
+					return currentContact;
+				}
+				else if( lineQuantity <= edgeLength + radius )//v1
+				{
+					
+					//dist is dot
+					double extra = lineQuantity - edgeLength;
+					double y = sqrt( radius * radius - extra * extra );
+					//cout << "a extra: " << extra << ", normal: " << e->Normal().x << ", " << e->Normal().y << endl;
+					//cout << "TestD: " << testD << ", vel: " << vel.x << ", " << vel.y << endl;
+					V2d nVel = normalize( vel );
+					double lenVel = length( vel );
+					//V2d negvNorm = normalize( -vel );
+					currentContact->resolution = (lenVel - y ) * -nVel;
+					currentContact->edge = e;
+					currentContact->normal = V2d( 0, 0 );
+					currentContact->position = e->v1;
+					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
+					return currentContact;
+				}
+				//cout << "UNDONE CASE" << endl;
 				//use right triangeles from the vertex to the circle point and cross product to figure out the y. then use
 				//radius and the y to find the x value which is the value along the velocity that you should go until you
 				//collide. thats how u get resolution here and other stuff. don't need it for this build so do it later

@@ -123,8 +123,9 @@ struct Actor : QuadTreeCollider,
 	double currentSpeedBar;
 	sf::CircleShape speedCircle;
 
-	RotaryParticleEffect *re;
-	RotaryParticleEffect *re1;
+	//RotaryParticleEffect *re;
+	//RotaryParticleEffect *re1;
+	ParticleTrail *pTrail;
 	double rotaryAngle;
 	//AirParticleEffect *ae;
 	//double speedBarVel;
@@ -190,6 +191,10 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
+
+	sf::Vector2<double> followerPos;
+	sf::Vector2<double> followerVel;
+	double followerFac;
 
 	//new variables in here that need to work with clone power later
 	int runBounceFlameFrames;

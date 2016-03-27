@@ -13,10 +13,15 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		followerPos = V2d( 0, 0 );
+		followerVel = V2d( 0, 0 );
+		followerFac = 1.0 / 60.0;
+
 		ground = NULL;
-		re = new RotaryParticleEffect( this );
-		re1 = new RotaryParticleEffect( this );
-		re1->angle += PI;
+		//re = new RotaryParticleEffect( this );
+		//re1 = new RotaryParticleEffect( this );
+		pTrail = new ParticleTrail( this );
+		//re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
 		level1SpeedThresh = 32;
@@ -725,8 +730,8 @@ void Actor::ActionEnded()
 				if( currInput.B )
 				{
 					action = DASH;
-					re->Reset();
-					re1->Reset();
+					//re->Reset();
+					//re1->Reset();
 				}
 				else
 				{
@@ -746,8 +751,8 @@ void Actor::ActionEnded()
 				if( currInput.B )
 				{
 					action = DASH;
-					re->Reset();
-					re1->Reset();
+					//re->Reset();
+					//re1->Reset();
 				}
 				else
 				{
@@ -767,8 +772,8 @@ void Actor::ActionEnded()
 				if( currInput.B )
 				{
 					action = DASH;
-					re->Reset();
-					re1->Reset();
+					//re->Reset();
+					//re1->Reset();
 				}
 				else
 				{
@@ -1189,8 +1194,8 @@ void Actor::UpdatePrePhysics()
 			else if( currInput.B && !prevInput.B )
 			{
 				action = DASH;
-				re->Reset();
-				re1->Reset();
+				//re->Reset();
+				//re1->Reset();
 				frame = 0;
 			}
 			else if( currInput.LLeft() || currInput.LRight() )
@@ -1309,8 +1314,8 @@ void Actor::UpdatePrePhysics()
 			if( currInput.B && !prevInput.B )
 			{
 				action = DASH;
-				re->Reset();
-				re1->Reset();
+				/*re->Reset();
+				re1->Reset();*/
 				frame = 0;
 				runTappingSound.stop();
 				break;
@@ -1693,8 +1698,8 @@ void Actor::UpdatePrePhysics()
 				{
 					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
-						re->Reset();
-						re1->Reset();
+						/*re->Reset();
+						re1->Reset();*/
 						action = DASH;
 						frame = 0;
 
@@ -1805,8 +1810,8 @@ void Actor::UpdatePrePhysics()
 						
 						action = DASH;
 						frame = 0;
-						re->Reset();
-						re1->Reset();
+						/*re->Reset();
+						re1->Reset();*/
 
 						
 					}
@@ -2349,8 +2354,8 @@ void Actor::UpdatePrePhysics()
 					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
 						action = DASH;
-						re->Reset();
-						re1->Reset();
+						/*re->Reset();
+						re1->Reset();*/
 						frame = 0;
 
 						if( currInput.LLeft() )
@@ -2443,8 +2448,8 @@ void Actor::UpdatePrePhysics()
 					{
 						//cout << "start dash" << endl;
 						action = DASH;
-						re->Reset();
-						re1->Reset();
+						/*re->Reset();
+						re1->Reset();*/
 						frame = 0;
 
 						if( currInput.LLeft() )
@@ -2632,8 +2637,8 @@ void Actor::UpdatePrePhysics()
 			if( currInput.B && !prevInput.B )
 			{
 					action = DASH;
-					re->Reset();
-					re1->Reset();
+					/*re->Reset();
+					re1->Reset();*/
 					frame = 0;
 			}
 
@@ -9975,7 +9980,9 @@ void Actor::UpdatePostPhysics()
 	
 	V2d gn;
 	if( ground != NULL )
+	{
 		gn = ground->Normal();
+	}
 
 	if( action == DEATH )
 	{
@@ -10363,9 +10370,11 @@ void Actor::UpdatePostPhysics()
 
 	if( action == DASH )
 	{
-		re->Update( position );	
-		re1->Update( position );
+		/*re->Update( position );	
+		re1->Update( position );*/
 	}
+
+	pTrail->Update( position );
 
 	if( currentSpeedBar >= level2SpeedThresh )
 	{
@@ -10406,6 +10415,16 @@ void Actor::UpdatePostPhysics()
 
 
 	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr ) );
+
+
+	followerPos += followerVel;
+
+	V2d testVel = position - followerPos;
+	if( ground != NULL )
+	{
+		//testVel = groundSpeed * normalize( ground->v1 - ground->v0 );
+	}
+	followerVel = followerVel * ( 1 - followerFac ) + testVel * followerFac;
 	/*switch( expr )
 	{
 	case Expr::NEUTRAL:
@@ -11736,11 +11755,12 @@ void Actor::ApplyHit( HitboxInfo *info )
 void Actor::Draw( sf::RenderTarget *target )
 {
 	target->draw( speedCircle );
-	if( action == DASH )
+	/*if( action == DASH )
 	{
 		target->draw( *re->particles );
 		target->draw( *re1->particles );
-	}
+	}*/
+	target->draw( *pTrail->particles );
 
 	if( bounceFlameOn && action != DEATH )
 	{
@@ -12016,6 +12036,14 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 	}
 
+	/*Color followerCol = Color::Red;
+	sf::Vertex follower[2] = 
+	{
+		Vertex( Vector2f( position.x, position.y ), followerCol ),
+		Vertex( Vector2f( followerPos.x, followerPos.y ), followerCol )
+	};
+	target->draw( follower, 2, sf::Lines );*/
+	
 	
 }
 

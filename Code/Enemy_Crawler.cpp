@@ -240,6 +240,8 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( c != NULL )
 		{
+
+			//cout << "testing" << endl;
 			double len0 = length( c->position - e->v0 );
 			double len1 = length( c->position - e->v1 );
 
@@ -372,8 +374,11 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 
 				if( groundSpeed > 0 && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
 				{
+
+					//WHY DO I HAVE THIS WTF
+
 					//cout << "blah" << endl;
-					return;
+					//return;
 				}
 				//else if( groundSpeed < 0 && e == ground->edge0 && ( c->normal.x == 0 && c->normal.y == 0 ) )
 				//{
@@ -526,7 +531,6 @@ void Crawler::UpdatePhysics()
 	movement = groundSpeed;
 
 	movement /= slowMultiple * NUM_STEPS;
-
 	while( movement != 0 )
 	{
 		//ground is always some value
@@ -763,6 +767,7 @@ void Crawler::UpdatePhysics()
 				}
 				movement = extra;
 				m -= extra;
+				//cout << "adjusting m to: " << m << endl;
 						
 			}
 			else
@@ -777,12 +782,25 @@ void Crawler::UpdatePhysics()
 				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
+					//cout << "m: " << m << ", ground: " << ground << ", edge0: " << ground->edge0 << ", " 
+					//	<< "minedge: " << minContact.edge << endl;
 					V2d eNorm = minContact.edge->Normal();
 					ground = minContact.edge;
-					q = ground->GetQuantity( minContact.position + minContact.resolution );
+					if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+					{
+						//point
+					//	cout << "point!" << endl;
+						q = ground->GetQuantity( minContact.position );
+					}
+					else
+					{
+						//cout << "point!" << endl;
+						q = ground->GetQuantity( minContact.position + minContact.resolution );
+					}
 					edgeQuantity = q;
 					V2d gn = ground->Normal();
-					//cout << "hit 1: " << gn.x << ", " << gn.y << endl;
+					//cout << "hit 1: " << gn.x << ", " << gn.y << ", ground is now: " << ground << endl;
+					
 					break;
 				}			
 			}
