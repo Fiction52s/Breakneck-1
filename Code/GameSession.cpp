@@ -58,10 +58,11 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
-GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, RenderTexture *miniTex )
+GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
+	RenderTexture *ppt, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 )
+	onTopPar( sf::Quads, 4 * 6 ), postProcessTex(  ppt )
 {
 	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -69,6 +70,12 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
+
+	if( !glowShader.loadFromFile( "glow_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	glowShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
 	
 
 	usePolyShader = true;
@@ -3087,7 +3094,9 @@ int GameSession::Run( string fileN )
 
 		window->clear();
 		preScreenTex->clear();
+		postProcessTex->clear();
 		preScreenTex->setSmooth( false );
+		postProcessTex->setSmooth( false );
 
 		
 		coll.ClearDebug();		
@@ -4169,6 +4178,16 @@ int GameSession::Run( string fileN )
 
 		DebugDrawActors();
 
+		preScreenTex->display();
+		//Sprite pstSprite;
+		sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
+		//pstSprite.setTexture( preScreenTex->getTexture() );
+		//RenderStates postState;
+		//postState.shader = &glowShader;
+		glowShader.setParameter( "tex", preScreenTex->getTexture() );
+		postProcessTex->draw( rectPost, &glowShader );
+
+
 
 		//grassTree->DebugDraw( preScreenTex );
 
@@ -4469,6 +4488,13 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "bubble5", pos5 );
 		cloneShader.setParameter( "b5Frame", player.bubbleFramesToLive[5] );
 		
+
+		postProcessTex->display();
+		sf::Sprite pptSpr;
+		pptSpr.setTexture( postProcessTex->getTexture() );
+		preScreenTex->draw( pptSpr );
+
+
 		preScreenTex->display();
 		const Texture &preTex = preScreenTex->getTexture();
 		
@@ -4476,7 +4502,6 @@ int GameSession::Run( string fileN )
 		preTexSprite.setPosition( -960 / 2, -540 / 2 );
 		preTexSprite.setScale( .5, .5 );
 
-		
 		preScreenTex->setView( v );
 		preScreenTex->draw( preTexSprite, &cloneShader );
 

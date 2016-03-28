@@ -131,6 +131,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	GameSession(GameController &c, sf::RenderWindow *rw, 
 		sf::RenderTexture *preTex,
+		sf::RenderTexture *postProc,
 		sf::RenderTexture *miniTex);
 
 	~GameSession();
@@ -295,6 +296,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite leftHUDSprite;
 	sf::Sprite leftHUDBlankSprite;
 	sf::Sprite speedBarSprite;
+
+	sf::Shader glowShader;
 	//sf::Sprite topbarSprite;
 
 	sf::VertexArray *va;
@@ -306,6 +309,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<sf::VertexArray*> polygonBorders;
 
 	sf::RenderTexture *preScreenTex;
+	sf::RenderTexture *postProcessTex;
 	sf::RenderTexture *minimapTex;
 	sf::Sprite background;
 	sf::View bgView;
