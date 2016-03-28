@@ -9321,6 +9321,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			goalSprite.setPosition( goalPosition.x, goalPosition.y );*/
 		
 		preScreenTex->clear();
+
 		preScreenTex->setView( view );
 
 		/*sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
