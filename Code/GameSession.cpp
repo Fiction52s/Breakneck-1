@@ -4372,7 +4372,7 @@ int GameSession::Run( string fileN )
 		postProcessTex->draw( rectPost, &glowShader );
 
 		//for( int i = 0; i < 3; ++i )
-		//{
+		{
 			postProcessTex->display();
 			hBlurShader.setParameter( "tex", postProcessTex->getTexture() );
 			postProcessTex1->draw( rectPost, &hBlurShader );
@@ -4380,7 +4380,7 @@ int GameSession::Run( string fileN )
 			postProcessTex1->display();
 			hBlurShader.setParameter( "tex", postProcessTex1->getTexture() );
 			postProcessTex->draw( rectPost, &hBlurShader );
-		//}
+		}
 		
 
 
@@ -4389,7 +4389,7 @@ int GameSession::Run( string fileN )
 		sf::Sprite pptSpr;
 		pptSpr.setTexture( postProcessTex->getTexture() );
 		RenderStates blahRender;
-		blahRender.blendMode = sf::BlendAlpha;
+		blahRender.blendMode = sf::BlendAdd;
 
 		preScreenTex->draw( pptSpr, blahRender );
 		}
