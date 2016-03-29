@@ -59,10 +59,10 @@ using namespace sf;
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
-	RenderTexture *ppt, RenderTexture *miniTex )
+	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 ), postProcessTex(  ppt )
+	onTopPar( sf::Quads, 4 * 6 ), postProcessTex(  ppt ), postProcessTex1(ppt1)
 {
 	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -76,6 +76,18 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	glowShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+
+	if( !hBlurShader.loadFromFile( "hblur_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	hBlurShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+
+	if( !vBlurShader.loadFromFile( "vblur_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	vBlurShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
 	
 
 	usePolyShader = true;
@@ -3095,6 +3107,7 @@ int GameSession::Run( string fileN )
 		window->clear();
 		preScreenTex->clear();
 		postProcessTex->clear();
+		postProcessTex1->clear();
 		preScreenTex->setSmooth( false );
 		postProcessTex->setSmooth( false );
 
@@ -4176,16 +4189,9 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
-		preScreenTex->display();
-		//Sprite pstSprite;
-		sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
-		//pstSprite.setTexture( preScreenTex->getTexture() );
-		//RenderStates postState;
-		//postState.shader = &glowShader;
-		glowShader.setParameter( "tex", preScreenTex->getTexture() );
-		postProcessTex->draw( rectPost, &glowShader );
+		
 
 
 
@@ -4351,7 +4357,64 @@ int GameSession::Run( string fileN )
 		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 		minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
 
+		preScreenTex->display();
+
 		preScreenTex->setView( uiView );
+
+		sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
+		rectPost.setPosition( 0, 0 );
+
+		if( true )
+		{
+		
+		glowShader.setParameter( "tex", preScreenTex->getTexture() );
+		//glowShader.setParameter( "old", postProcessTex->getTexture() );
+		postProcessTex->draw( rectPost, &glowShader );
+
+		//for( int i = 0; i < 3; ++i )
+		//{
+			postProcessTex->display();
+			hBlurShader.setParameter( "tex", postProcessTex->getTexture() );
+			postProcessTex1->draw( rectPost, &hBlurShader );
+
+			postProcessTex1->display();
+			hBlurShader.setParameter( "tex", postProcessTex1->getTexture() );
+			postProcessTex->draw( rectPost, &hBlurShader );
+		//}
+		
+
+
+		postProcessTex->display();
+
+		sf::Sprite pptSpr;
+		pptSpr.setTexture( postProcessTex->getTexture() );
+		RenderStates blahRender;
+		blahRender.blendMode = sf::BlendAlpha;
+
+		preScreenTex->draw( pptSpr, blahRender );
+		}
+		else
+		{
+			for( int i = 0; i < 3; ++i )
+			{
+				hBlurShader.setParameter( "tex", preScreenTex->getTexture() );
+				postProcessTex->draw( rectPost, &hBlurShader );
+
+				postProcessTex->display();
+				vBlurShader.setParameter( "tex", postProcessTex->getTexture() );
+				preScreenTex->draw( rectPost, &vBlurShader );
+
+				if( i < 2 )
+				{
+					preScreenTex->display();
+				}
+			}
+		}
+
+		//postProcessTex->display();
+
+
+
 		preScreenTex->draw( minimapSprite );
 
 		
@@ -4489,10 +4552,7 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "b5Frame", player.bubbleFramesToLive[5] );
 		
 
-		postProcessTex->display();
-		sf::Sprite pptSpr;
-		pptSpr.setTexture( postProcessTex->getTexture() );
-		preScreenTex->draw( pptSpr );
+		
 
 
 		preScreenTex->display();
@@ -4507,8 +4567,9 @@ int GameSession::Run( string fileN )
 
 		preScreenTex->setView( view );
 
-		if( player.action != Actor::DEATH )
-			player.Draw( preScreenTex );
+		//draws the player again on top of everything
+		/*if( player.action != Actor::DEATH )
+			player.Draw( preScreenTex );*/
 
 		player.DodecaLateDraw( preScreenTex );
 

@@ -132,6 +132,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GameSession(GameController &c, sf::RenderWindow *rw, 
 		sf::RenderTexture *preTex,
 		sf::RenderTexture *postProc,
+		sf::RenderTexture *postProc1,
 		sf::RenderTexture *miniTex);
 
 	~GameSession();
@@ -298,6 +299,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite speedBarSprite;
 
 	sf::Shader glowShader;
+	sf::Shader hBlurShader;
+	sf::Shader vBlurShader;
+
 	//sf::Sprite topbarSprite;
 
 	sf::VertexArray *va;
@@ -310,6 +314,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::RenderTexture *preScreenTex;
 	sf::RenderTexture *postProcessTex;
+	sf::RenderTexture *postProcessTex1;
 	sf::RenderTexture *minimapTex;
 	sf::Sprite background;
 	sf::View bgView;
