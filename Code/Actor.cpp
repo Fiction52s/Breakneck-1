@@ -10425,6 +10425,12 @@ void Actor::UpdatePostPhysics()
 		//testVel = groundSpeed * normalize( ground->v1 - ground->v0 );
 	}
 	followerVel = followerVel * ( 1 - followerFac ) + testVel * followerFac;
+
+	if( ground != NULL ) //doesn't work when grinding or bouncing yet
+	{
+		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
+	}
+
 	/*switch( expr )
 	{
 	case Expr::NEUTRAL:
@@ -11760,7 +11766,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( *re->particles );
 		target->draw( *re1->particles );
 	}*/
-	//target->draw( *pTrail->particles );
+	target->draw( *pTrail->particles );
 
 	if( bounceFlameOn && action != DEATH )
 	{

@@ -59,11 +59,18 @@ using namespace sf;
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
-	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *miniTex )
+	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 ), postProcessTex(  ppt ), postProcessTex1(ppt1)
+	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
+	postProcessTex2( ppt2 )
 {
+	preScreenTex->setSmooth( false );
+	postProcessTex->setSmooth( false );
+	postProcessTex1->setSmooth( false );
+	postProcessTex2->setSmooth( false );
+
+
 	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
@@ -77,18 +84,38 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	}
 	glowShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
 
+
+
 	if( !hBlurShader.loadFromFile( "hblur_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	hBlurShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+	hBlurShader.setParameter( "texSize", Vector2f( 1920/2, 1080/2 ) );
 
 	if( !vBlurShader.loadFromFile( "vblur_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	vBlurShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+	vBlurShader.setParameter( "texSize", Vector2f( 1920/2, 1080/2 ) );
 	
+
+	if( !motionBlurShader.loadFromFile( "motionblur_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	motionBlurShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+
+	
+
+	if( !shockwaveShader.loadFromFile( "shockwave_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	shockwaveShader.setParameter( "resolution", Vector2f( 1920, 1080 ) );
+	shockwaveShader.setParameter( "texSize", Vector2f( 580, 580 ) );
+	shockwaveTex.loadFromFile( "shockwave_580x580.png" );
+	shockwaveShader.setParameter( "shockwaveTex", shockwaveTex );
+
 
 	usePolyShader = true;
 	minimapTex = miniTex;
@@ -3108,8 +3135,8 @@ int GameSession::Run( string fileN )
 		preScreenTex->clear();
 		postProcessTex->clear();
 		postProcessTex1->clear();
-		preScreenTex->setSmooth( false );
-		postProcessTex->setSmooth( false );
+		postProcessTex2->clear();
+		
 
 		
 		coll.ClearDebug();		
@@ -3623,6 +3650,8 @@ int GameSession::Run( string fileN )
 				oldCamBotLeft.x -= view.getSize().x / 2;
 				oldCamBotLeft.y += view.getSize().y / 2;
 
+				oldView = view;
+
 
 				//polyShader.setParameter( "oldZoom", cam.GetZoom() );
 				//polyShader.setParameter( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
@@ -4097,10 +4126,10 @@ int GameSession::Run( string fileN )
 			//preScreenTex->draw( *listVAIter->va );
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
-			/*preScreenTex->draw( *listVAIter->wallva, rs );
+			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
-			preScreenTex->draw( *listVAIter->groundva, rs );*/
+			preScreenTex->draw( *listVAIter->groundva, rs );
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
@@ -4122,6 +4151,60 @@ int GameSession::Run( string fileN )
 	
 		
 		preScreenTex->draw( *goalVAstuff, &flowShader );
+
+		
+		//motion blur
+		if( false )
+		{
+			preScreenTex->display();
+			//for motion blur
+
+
+			preScreenTex->setView( uiView );
+			sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
+			rectPost.setPosition( 0, 0 );
+			//Vector2f camVel = cam.pos - oldCamCenter;
+			
+			Vector2f botLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, 
+				view.getCenter().y + view.getSize().y / 2 );
+			
+
+			motionBlurShader.setParameter( "tex", preScreenTex->getTexture() );
+			/*motionBlurShader.setParameter( "oldBotLeft", oldCamBotLeft );
+			motionBlurShader.setParameter( "botLeft", botLeft );
+			motionBlurShader.setParameter( "oldZoom", oldZoom );
+			motionBlurShader.setParameter( "zoom", cam.GetZoom() );*/
+			//negative player y because of bottom left origin
+
+			V2d t = player.velocity;
+			double maxBlur = 8;
+			t.x = t.x / player.maxGroundSpeed * maxBlur;
+			t.y = t.y / player.maxGroundSpeed * maxBlur;
+
+			
+			Vector2f testVel = Vector2f( player.velocity.x, -player.velocity.y );
+
+			motionBlurShader.setParameter( "testVel", Vector2f( t.x, t.y ) );
+
+			motionBlurShader.setParameter( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse() );
+			motionBlurShader.setParameter( "g_previousViewProjectionMatrix", oldView.getTransform() );
+
+			
+			postProcessTex->draw( rectPost, &motionBlurShader );
+
+			postProcessTex->display();
+
+			sf::Sprite pptSpr;
+			pptSpr.setTexture( postProcessTex->getTexture() );
+			//pptSpr.setScale( 2, 2 );
+			//RenderStates blahRender;
+			//blahRender.blendMode = sf::BlendAdd;//sf::BlendAdd;
+
+			preScreenTex->draw( pptSpr );
+			//postProcessTex->display();
+			preScreenTex->setView( view );
+		}
+
 
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
@@ -4151,6 +4234,8 @@ int GameSession::Run( string fileN )
 			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
 			gateList = next;
 		}
+
+		
 
 		//f->Draw( preScreenTex );
 		
@@ -4357,29 +4442,106 @@ int GameSession::Run( string fileN )
 		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 		minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
 
+		//for post processing
 		preScreenTex->display();
-
-		preScreenTex->setView( uiView );
-
-		sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
-		rectPost.setPosition( 0, 0 );
 
 		if( true )
 		{
+			//sf::RectangleShape blah( Vector2f( 1920, 1080 ) );
+			Sprite blah;
+			blah.setTexture( preScreenTex->getTexture() );
+			postProcessTex2->draw( blah );
+			//postProcessTex2->clear( Color::Red );
+			postProcessTex2->display();
+
+
+
+			Vector2f shockSize( 580/2, 580/2 );
+			sf::RectangleShape rectPost( shockSize );
+			rectPost.setOrigin( rectPost.getLocalBounds().width / 2, rectPost.getLocalBounds().height / 2 );
+			rectPost.setPosition( player.position.x, player.position.y ); //testing for now
+
+			Sprite shockSprite;
+			shockSprite.setTexture( shockwaveTex );
+			shockSprite.setOrigin( shockSprite.getLocalBounds().width / 2, shockSprite.getLocalBounds().height / 2 );
+			shockSprite.setPosition( player.position.x, player.position.y );
+			//rectPost.setPosition( 0, 0 );
+
+			Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y );
+
+			shockwaveShader.setParameter( "underTex", postProcessTex2->getTexture() );
+			shockwaveShader.setParameter( "shockSize", Vector2f( 580, 580 ) );
+			shockwaveShader.setParameter( "botLeft", Vector2f( rectPost.getPosition().x - rectPost.getSize().x / 2 - botLeft.x, 
+				rectPost.getPosition().y - rectPost.getSize().y / 2 + rectPost.getSize().y - botLeft.y ) );
+			shockwaveShader.setParameter( "zoom", cam.GetZoom() );
+			//preScreenTex->draw( shockSprite );
+			preScreenTex->draw( shockSprite, &shockwaveShader );
+
+			//postProcessTex2->draw( rectPost, &shockwaveShader );
+			//postProcessTex2->display();
+
+			//sf::Sprite pptSpr;
+			//pptSpr.setTexture( postProcessTex2->getTexture() );
+			//preScreenTex->draw( pptSpr );
+		}
+
+
+		preScreenTex->setView( uiView );
+
 		
+		
+		if( false )
+		{
+			sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
+			rectPost.setPosition( 0, 0 );
+			//Vector2f camVel = cam.pos - oldCamCenter;
+			
+			Vector2f botLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, 
+				view.getCenter().y + view.getSize().y / 2 );
+			
+
+			motionBlurShader.setParameter( "tex", preScreenTex->getTexture() );
+			motionBlurShader.setParameter( "oldBotLeft", oldCamBotLeft );
+			motionBlurShader.setParameter( "botLeft", botLeft );
+			motionBlurShader.setParameter( "oldZoom", oldZoom );
+			motionBlurShader.setParameter( "zoom", cam.GetZoom() );
+
+			motionBlurShader.setParameter( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse() );
+			motionBlurShader.setParameter( "g_previousViewProjectionMatrix", oldView.getTransform() );
+
+			
+			postProcessTex->draw( rectPost, &motionBlurShader );
+
+			postProcessTex->display();
+
+			sf::Sprite pptSpr;
+			pptSpr.setTexture( postProcessTex->getTexture() );
+			//pptSpr.setScale( 2, 2 );
+			//RenderStates blahRender;
+			//blahRender.blendMode = sf::BlendAdd;//sf::BlendAdd;
+
+			preScreenTex->draw( pptSpr );
+			//postProcessTex->display();
+			
+		}
+		else if( false )
+		{
+		sf::RectangleShape rectPost( Vector2f( 1920/2, 1080/2 ) );
+		rectPost.setPosition( 0, 0 );
 		glowShader.setParameter( "tex", preScreenTex->getTexture() );
 		//glowShader.setParameter( "old", postProcessTex->getTexture() );
 		postProcessTex->draw( rectPost, &glowShader );
 
-		//for( int i = 0; i < 3; ++i )
+		for( int i = 0; i < 3; ++i )
 		{
 			postProcessTex->display();
 			hBlurShader.setParameter( "tex", postProcessTex->getTexture() );
+			
 			postProcessTex1->draw( rectPost, &hBlurShader );
 
 			postProcessTex1->display();
-			hBlurShader.setParameter( "tex", postProcessTex1->getTexture() );
-			postProcessTex->draw( rectPost, &hBlurShader );
+			vBlurShader.setParameter( "tex", postProcessTex1->getTexture() );
+			postProcessTex->draw( rectPost, &vBlurShader );
 		}
 		
 
@@ -4388,13 +4550,16 @@ int GameSession::Run( string fileN )
 
 		sf::Sprite pptSpr;
 		pptSpr.setTexture( postProcessTex->getTexture() );
+		pptSpr.setScale( 2, 2 );
 		RenderStates blahRender;
 		blahRender.blendMode = sf::BlendAdd;
 
 		preScreenTex->draw( pptSpr, blahRender );
 		}
-		else
+		else if( false )
 		{
+			sf::RectangleShape rectPost( Vector2f( 1920/2, 1080/2 ) );
+			rectPost.setPosition( 0, 0 );
 			for( int i = 0; i < 3; ++i )
 			{
 				hBlurShader.setParameter( "tex", preScreenTex->getTexture() );

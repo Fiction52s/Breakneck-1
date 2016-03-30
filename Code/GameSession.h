@@ -129,10 +129,12 @@ struct EnvPlant : QuadTreeEntrant
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
-	GameSession(GameController &c, sf::RenderWindow *rw, 
+	GameSession(GameController &c, 
+		sf::RenderWindow *rw, 
 		sf::RenderTexture *preTex,
 		sf::RenderTexture *postProc,
 		sf::RenderTexture *postProc1,
+		sf::RenderTexture *postProc2,
 		sf::RenderTexture *miniTex);
 
 	~GameSession();
@@ -290,6 +292,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	float oldZoom;
 	sf::Vector2f oldCamBotLeft;
+	sf::View oldView;
 
 	Tileset *ts_leftHUD;
 	Tileset *ts_speedBar;
@@ -299,8 +302,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite speedBarSprite;
 
 	sf::Shader glowShader;
+	sf::Shader motionBlurShader;
 	sf::Shader hBlurShader;
 	sf::Shader vBlurShader;
+
+	sf::Shader shockwaveShader;
+	sf::Vector2f testShock;
+	sf::Texture shockwaveTex;
+	//sf::Sprite shockwaveSprite;
 
 	//sf::Sprite topbarSprite;
 
@@ -315,6 +324,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderTexture *preScreenTex;
 	sf::RenderTexture *postProcessTex;
 	sf::RenderTexture *postProcessTex1;
+	sf::RenderTexture *postProcessTex2;
 	sf::RenderTexture *minimapTex;
 	sf::Sprite background;
 	sf::View bgView;
