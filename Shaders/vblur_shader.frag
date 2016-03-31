@@ -14,19 +14,13 @@ uniform sampler2D tex;
 uniform sampler2D old;
 uniform vec2 texSize;
 
-const vec4 TEAL = vec4( 0, 0xee / 255.0, 0xff / 255.0, 1 );
-
-
 uniform float offset[3] = float[]( 0.0, 1.3846153846, 3.2307692308 );
 //uniform float weight[3] = float[]( 0.2270270270, 0.3162162162, 0.0702702703 );
 
 uniform float weight[5] = float[]( 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 );
 
 
-bool IsGlowing( vec4 col )
-{
-	return col.rgb == TEAL.rgb;
-}
+
 
 void main()
 {

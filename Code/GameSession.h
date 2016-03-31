@@ -309,6 +309,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Shader shockwaveShader;
 	sf::Vector2f testShock;
 	sf::Texture shockwaveTex;
+	int shockTestFrame;
 	//sf::Sprite shockwaveSprite;
 
 	//sf::Sprite topbarSprite;

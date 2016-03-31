@@ -107,12 +107,12 @@ void InitBubbles()
 void main()
 {
 	vec2 fc = gl_FragCoord.xy;
-	fc.y = 1 - fc.y;
-	fc = fc * vec2( 1920, 1080 ) / Resolution;//vec2( 1920, 1080 ) / Resolution;//vec2( 960, 540 ) / Resolution;
+	fc.y = 1.0 - fc.y;
+	fc = fc * vec2( 1920.0, 1080.0 ) / Resolution;//vec2( 1920, 1080 ) / Resolution;//vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 	
 	vec2 fragC = gl_FragCoord.xy;
-	fragC.y = 1 - fragC.y;
+	fragC.y = 1.0 - fragC.y;
 	
 	//vec2 pos = pixelPos + topLeft;
 	float xtex = gl_TexCoord[0].x;
@@ -123,8 +123,8 @@ void main()
 	//vec2 tc = gl_TexCoord[0].xy; 
 	vec2 tc = gl_FragCoord.xy;//gl_TexCoord[0].xy; 
 	
-	float hstep = 1;
-	float vstep = 0;
+	float hstep = 1.0;
+	float vstep = 0.0;
 	
 	sum += texture2D(u_texture, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;
     sum += texture2D(u_texture, vec2(tc.x - 3.0*blur*hstep, tc.y - 3.0*blur*vstep)) * 0.0540540541;
@@ -161,16 +161,16 @@ void main()
 			float D = length( bubbles[i].pos * Resolution.xy - vec2( fragC.x, fragC.y) ) * zoom;
 			vec2 dir = bubbles[i].pos * Resolution.xy - vec2( fragC.x, fragC.y) * zoom;
 			dir = normalize( dir );
-			float trueRad = bubbleRadius * 2;
-			float expandFrames = 20;
-			float trueFrame = ( 240 - bubbles[i].frame );
+			float trueRad = bubbleRadius * 2.0;
+			float expandFrames = 20.0;
+			float trueFrame = ( 240.0 - bubbles[i].frame );
 			if( trueFrame < expandFrames )
 			{
-				trueRad = (trueRad + 80 ) * ( 240 - bubbles[i].frame ) / expandFrames;
+				trueRad = (trueRad + 80.0 ) * ( 240.0 - bubbles[i].frame ) / expandFrames;
 			}
 			else if( trueFrame == expandFrames )
 			{
-				trueRad = (trueRad + 40 ) * ( 240 - bubbles[i].frame - 1 ) / expandFrames;
+				trueRad = (trueRad + 40.0 ) * ( 240.0 - bubbles[i].frame - 1.0 ) / expandFrames;
 			}
 			
 			
@@ -184,9 +184,9 @@ void main()
 				
 				if( trueFrame <= expandFrames )
 				{
-					col.r = 1 - col.r;
-					col.g = 1 - col.g;
-					col.b = 1 - col.b;
+					col.r = 1.0 - col.r;
+					col.g = 1.0 - col.g;
+					col.b = 1.0 - col.b;
 				}
 				else
 				{
@@ -199,17 +199,6 @@ void main()
 			}
 		}
 	}
-	
-	/*if( pixelPos.y < 540 * newscreen )
-	{
-		vec4 DiffuseColor = texture2D( u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y - (1 - newscreen) ) );
-		gl_FragColor = col * DiffuseColor * vec4( 1, 0, 0, .5 );
-	}
-	else
-	{
-		vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y + newscreen) );
-		gl_FragColor = col * DiffuseColor;
-	}*/
 	
 	
 	gl_FragColor = col;// * vec4(sum.rgb, 1.0);

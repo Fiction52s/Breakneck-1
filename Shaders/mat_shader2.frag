@@ -99,9 +99,8 @@ void main()
 	//InitLights();
 	
 	float size = 512.0;
-	//float patternSize = 16.0;
 	vec2 fc = gl_FragCoord.xy;
-	fc.y = 1 - fc.y;
+	fc.y = 1.0 - fc.y;
 	fc = fc * vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
 	//vec2 pixelPos = vec2( fc.x / zoom, fc.y / zoom );
@@ -110,7 +109,7 @@ void main()
 	vec2 pos = mod( topLeft + pixelPos, size) / vec2( size );
 	//gl_FragColor = texture2D( u_texture, pos );
 	
-	vec4 finalfinal = vec4( 0, 0, 0, 0 );
+	vec4 finalfinal = vec4( 0.0, 0.0, 0.0, 0.0 );
 	
 	
 	
@@ -139,7 +138,7 @@ void main()
 		LightDir *= zoom;
 		float D = length(LightDir);
 		
-		float radius = lights[i].radius*2;
+		float radius = lights[i].radius*2.0;
 		float brightness = lights[i].brightness/4;
 		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * brightness;	
 	
@@ -165,8 +164,8 @@ void main()
 		
 		pos2.x = pos2.x - .1;//playertest.x;
 		pos2.y = pos2.y + playertest.y;
-		pos2.x = float( pos2.x < 0 ) * 1 + pos2.x;
-		pos2.y = float( pos2.y < 0 ) * 1 + pos2.y;
+		pos2.x = float( pos2.x < 0 ) * 1.0 + pos2.x;
+		pos2.y = float( pos2.y < 0 ) * 1.0 + pos2.y;
 		
 		vec4 DiffuseColor;
 		

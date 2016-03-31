@@ -14,15 +14,16 @@ uniform sampler2D tex;
 uniform sampler2D old;
 uniform vec2 texSize;
 
-const vec4 TEAL = vec4( 0, 0xee / 255.0, 0xff / 255.0, 1 );
+const vec3 TEAL = vec3( 0.0, 0xee / 255.0, 0xff / 255.0 );
+const vec3 BLUE = vec3( 0.0, 0x66 / 255.0, 0xcc / 255.0 );
 
 bool IsGlowing( vec4 col )
 {
-	return col.rgb == TEAL.rgb;
+	return col.rgb == TEAL || col.rgb == BLUE;
 }
 
 void main()
 {
-	vec4 col = texture2D(tex, gl_FragCoord.xy / texSize );
-	gl_FragColor = vec4( 0, 0, 0, 1 ) + float(IsGlowing( col ) ) * col;
+	vec4 col = texture2D(tex, gl_FragCoord.xy / texSize * 2.0 );
+	gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 ) + float(IsGlowing( col ) ) * col;
 }

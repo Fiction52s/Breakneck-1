@@ -96,39 +96,39 @@ LightSource lights[numLights];
 vec4 BallColors( vec4 DiffuseColor )
 {		
 	//blue
-	if( !hasPowerAirDash && DiffuseColor.rgb == vec3( 0, 0x66/ 255.0, 0xcc / 255.0 ) )
+	if( !hasPowerAirDash && DiffuseColor.rgb == vec3( 0.0, 0x66/ 255.0, 0xcc / 255.0 ) )
 	{
-		DiffuseColor.rgb = vec3( 0, 0, 0 );
+		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
 	
 	//green
-	if( !hasPowerGravReverse && DiffuseColor.rgb == vec3( 0, 0xcc / 255.0, 0x44 / 255.0 ) )
+	if( !hasPowerGravReverse && DiffuseColor.rgb == vec3( 0.0, 0xcc / 255.0, 0x44 / 255.0 ) )
 	{
-		DiffuseColor.rgb = vec3( 0, 0, 0 );
+		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
 	
 	//yellow
-	if( !hasPowerBounce && DiffuseColor.rgb == vec3( 0xff / 255.0, 0xf0 / 255.0, 0 ) )
+	if( !hasPowerBounce && DiffuseColor.rgb == vec3( 0xff / 255.0, 0xf0 / 255.0, 0.0 ) )
 	{
-		DiffuseColor.rgb = vec3( 0, 0, 0 );
+		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
 	
 	//orange
-	if( !hasPowerGrindBall && DiffuseColor.rgb == vec3( 0xff / 255.0, 0xbb / 255.0, 0 ) )
+	if( !hasPowerGrindBall && DiffuseColor.rgb == vec3( 0xff / 255.0, 0xbb / 255.0, 0.0 ) )
 	{
-		DiffuseColor.rgb = vec3( 0, 0, 0 );
+		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
 	
 	//red
-	if( !hasPowerTimeSlow && DiffuseColor.rgb == vec3( 0xff / 255.0, 0x22 / 255.0, 0 ) )
+	if( !hasPowerTimeSlow && DiffuseColor.rgb == vec3( 0xff / 255.0, 0x22 / 255.0, 0.0 ) )
 	{
-		DiffuseColor.rgb = vec3( 0, 0, 0 );
+		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
 	
 	//magenta
-	if( (!hasPowerRightWire && !hasPowerLeftWire) && DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xff / 255.0 ) )
+	if( (!hasPowerRightWire && !hasPowerLeftWire) && DiffuseColor.rgb == vec3( 0xff / 255.0, 0.0, 0xff / 255.0 ) )
 	{
-		DiffuseColor.rgb = vec3( 0, 0, 0 );
+		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
 	return DiffuseColor;
 }
@@ -195,7 +195,7 @@ void main() {
 	InitLights();
 	
     //RGBA of our diffuse color
-	vec4 finalfinal = vec4( 0, 0, 0, 0 );//vec4( 1, 1, 1, 1 );  ////
+	vec4 finalfinal = vec4( 0.0, 0.0, 0.0, 0.0 );//vec4( 1, 1, 1, 1 );  ////
 	
 	int numLightsOn = 0;
 	for( int i = 0; i < numLights; ++i )
@@ -213,14 +213,14 @@ void main() {
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
 		
 		//magenta
-		if( DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xff / 255.0 ) )
+		if( DiffuseColor.rgb == vec3( 0xff / 255.0, 0.0, 0xff / 255.0 ) )
 		{
-			DiffuseColor.rgb = vec3( 0, 0, 0 );
+			DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 		}
 		//orange
-		if( DiffuseColor.rgb == vec3( 0xff / 255.0, 0, 0xbb / 255.0 ) )
+		if( DiffuseColor.rgb == vec3( 0xff / 255.0, 0.0, 0xbb / 255.0 ) )
 		{
-			DiffuseColor.rgb = vec3( 0, 0, 0 );
+			DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 		}
 		
 		//RGB of our normal map
@@ -228,7 +228,7 @@ void main() {
 		
 		if( !right )
 		{
-			NormalMap.r = 1-NormalMap.r;
+			NormalMap.r = 1.0-NormalMap.r;
 		}
 		
 		vec2 fragC = gl_FragCoord.xy;
@@ -247,8 +247,8 @@ void main() {
 		
 		
 		
-		float radius = lights[i].radius * 2;
-		float brightness = lights[i].brightness / 4;
+		float radius = lights[i].radius * 2.0;
+		float brightness = lights[i].brightness / 4.0;
 		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * brightness;		
 		
 		//Pre-multiply light color with intensity
@@ -287,7 +287,7 @@ void main() {
 	}
 	if( despFrame >= 0 )
 	{
-		vec4 desperation = vec4( 1, 0, 0, doneColor.a );//vec4( doneColor.g, doneColor.b, doneColor.r, doneColor.a );
+		vec4 desperation = vec4( 1.0, 0.0, 0.0, doneColor.a );//vec4( doneColor.g, doneColor.b, doneColor.r, doneColor.a );
 		gl_FragColor =  gl_Color * desperation;
 		//gl_FragColor =  gl_Color * desperation;
 	}

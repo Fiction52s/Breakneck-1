@@ -70,6 +70,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	postProcessTex1->setSmooth( false );
 	postProcessTex2->setSmooth( false );
 
+	shockTestFrame = 0;
 
 	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -4445,8 +4446,10 @@ int GameSession::Run( string fileN )
 		//for post processing
 		preScreenTex->display();
 
-		if( true )
+		if( false )
 		{
+
+			
 			//sf::RectangleShape blah( Vector2f( 1920, 1080 ) );
 			Sprite blah;
 			blah.setTexture( preScreenTex->getTexture() );
@@ -4475,8 +4478,16 @@ int GameSession::Run( string fileN )
 				rectPost.getPosition().y - rectPost.getSize().y / 2 + rectPost.getSize().y - botLeft.y ) );
 			shockwaveShader.setParameter( "zoom", cam.GetZoom() );
 			//preScreenTex->draw( shockSprite );
+
+			shockSprite.setScale( (1. / 60.) * shockTestFrame, (1. / 60.) * shockTestFrame );
 			preScreenTex->draw( shockSprite, &shockwaveShader );
 
+
+			shockTestFrame++;
+			if( shockTestFrame == 60 )
+			{
+				shockTestFrame = 0;
+			}
 			//postProcessTex2->draw( rectPost, &shockwaveShader );
 			//postProcessTex2->display();
 

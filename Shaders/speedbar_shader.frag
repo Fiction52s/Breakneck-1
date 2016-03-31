@@ -13,31 +13,31 @@ uniform float quant;
 
 void main()
 {	
-	vec2 point2 = vec2( 463, 209 );
-	vec2 point3 = vec2( 512, 111 );
+	vec2 point2 = vec2( 463.0, 209.0 );
+	vec2 point3 = vec2( 512.0, 111.0 );
 	//vec2 fragC = gl_FragCoord.xy;
 	//fragC.y = 1 - fragC.y;
 	
 	vec2 texturePos = vec2( gl_TexCoord[0].x, gl_TexCoord[0].y );
-	vec2 pos = vec2( texturePos.x * 560, texturePos.y * 210 );
+	vec2 pos = vec2( texturePos.x * 560.0, texturePos.y * 210.0 );
 	
 	vec4 DiffuseColor = texture2D(u_texture, texturePos );
 	if( DiffuseColor.a > 0 )
 	{
-		if( level == 0 )
+		if( level == 0.0 )
 		{
 			if( DiffuseColor.rgb == vec3( 117/ 255.0, 193/ 255.0, 255/ 255.0 ) )
 			{
-				DiffuseColor.a = float(pos.x <= quant * 463);
+				DiffuseColor.a = float(pos.x <= quant * 463.0);
 			}
 			else
 			{
-				DiffuseColor.a = 0;
+				DiffuseColor.a = 0.0;
 			}
 			
 			
 		}
-		else if( level == 1 )
+		else if( level == 1.0 )
 		{
 			//if( color mid )
 			vec2 along = normalize( point3 - point2 );
@@ -53,9 +53,9 @@ void main()
 				DiffuseColor.a = 0;
 			}
 		}
-		else if( level == 2 )
+		else if( level == 2.0 )
 		{
-			float height = 111;
+			float height = 111.0;
 			if( DiffuseColor.rgb == vec3( 113 / 255.0, 66/ 255.0, 255/ 255.0 ) )
 			{
 				DiffuseColor.a = float((height - pos.y) < quant * height);
