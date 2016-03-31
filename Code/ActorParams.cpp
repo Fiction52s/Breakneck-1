@@ -1071,3 +1071,338 @@ void PlayerParams::Activate( EditSession *edit, boost::shared_ptr<ISelectable> &
 {
 	//nothing
 }
+
+//BAT
+
+BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+	:ActorParams( PosType::AIR_ONLY)
+{	
+	lines = NULL;
+	position = pos;	
+	type = edit->types["bat"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	//list<Vector2i> localPath;
+	SetPath( globalPath );
+
+	loop = p_loop;
+	speed = p_speed;
+
+	SetBoundingQuad();
+	//ss << localPath.size();
+	//params.push_back( ss.str() );
+	//ss.str( "" );
+
+	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		ss << (*it).x  << " " << (*it).y;
+		params.push_back( ss.str() );
+		ss.str( "" );
+	}
+
+	if( loop )
+		params.push_back( "+loop" );
+	else
+		params.push_back( "-loop" );
+	
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );*/
+}
+
+BatParams::BatParams( EditSession *edit )
+	:ActorParams( PosType::AIR_ONLY )
+{	
+	lines = NULL;
+	//position = pos;	
+	type = edit->types["patroller"];
+
+	//image.setTexture( type->imageTexture );
+	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	//image.setPosition( pos.x, pos.y );
+
+	//list<Vector2i> localPath;
+	//SetPath( globalPath );
+
+	//loop = p_loop;
+	//speed = p_speed;
+
+	//SetBoundingQuad();
+
+	//ss << localPath.size();
+	//params.push_back( ss.str() );
+	//ss.str( "" );
+
+	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		ss << (*it).x  << " " << (*it).y;
+		params.push_back( ss.str() );
+		ss.str( "" );
+	}
+
+	if( loop )
+		params.push_back( "+loop" );
+	else
+		params.push_back( "-loop" );
+	
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );*/
+}
+
+bool BatParams::CanApply()
+{
+	return true;
+	//see note for keyparams
+}
+
+void BatParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if( lines != NULL )
+	{
+		delete lines;
+		lines = NULL;
+	}
+	
+	
+	
+
+	localPath.clear();
+	if( globalPath.size() > 1 )
+	{
+
+		int numLines = globalPath.size();
+	
+		lines = new VertexArray( sf::LinesStrip, numLines );
+		VertexArray &li = *lines;
+		li[0].position = Vector2f( 0, 0 );
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for( ; it != globalPath.end(); ++it )
+		{
+			
+			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
+			localPath.push_back( temp );
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f( temp.x, temp.y );
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+
+	
+	
+}
+
+void BatParams::Draw( sf::RenderTarget *target )
+{
+	int localPathSize = localPath.size();
+
+	if( localPathSize > 0 )
+	{
+		VertexArray &li = *lines;
+	
+	
+			for( int i = 0; i < localPathSize+1; ++i )
+			{
+				li[i].position += Vector2f( position.x, position.y );
+			}
+	
+	
+		target->draw( li );
+
+	
+
+		if( loop )
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White )
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+	
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position -= Vector2f( position.x, position.y );
+		}
+	}
+
+	target->draw( image );
+
+	if( selected )
+	{
+		sf::RectangleShape rs;
+		rs.setFillColor( Color::Transparent );
+		rs.setOutlineColor( Color::Green );
+		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
+		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
+		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
+		target->draw( rs );
+		//cout << "selected draw" << endl;
+	}
+}
+
+std::list<sf::Vector2i> BatParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back( position );
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		globalPath.push_back( position + (*it) );
+	}
+	return globalPath;
+}
+
+void BatParams::WriteParamFile( ofstream &of )
+{
+	of << (int)monitorType << endl;
+
+	of << localPath.size() << endl;
+
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		of << (*it).x  << " " << (*it).y << endl;
+	}
+
+	if( loop )
+	{
+		of << "+loop" << endl;
+	}
+	else
+	{
+		of << "-loop" << endl;
+	}
+
+	of.precision( 5 );
+	of << fixed << speed << endl;
+}
+
+
+//STAG BEETLE
+
+StagBeetleParams::StagBeetleParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	clockwise = p_clockwise;
+	speed = p_speed;
+
+	type = edit->types["stagbeetle"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+StagBeetleParams::StagBeetleParams( EditSession *edit )
+	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
+{
+	
+	type = edit->types["stagbeetle"];
+}
+
+bool StagBeetleParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void StagBeetleParams::WriteParamFile( ofstream &of )
+{
+	of << (int)monitorType << endl;
+	if( clockwise )
+		of << "+clockwise" << endl;
+	else
+		of << "-clockwise" << endl;
+	
+	of.precision( 5 );
+	of << fixed << speed << endl;
+}
+
+//STAG BEETLE
+
+PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	//clockwise = p_clockwise;
+	//speed = p_speed;
+
+	type = edit->types["poisonfrog"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+PoisonFrogParams::PoisonFrogParams( EditSession *edit )
+	:ActorParams( PosType::GROUND_ONLY )//, clockwise( true ), speed( 0 )
+{
+	
+	type = edit->types["poisonfrog"];
+}
+
+bool PoisonFrogParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void PoisonFrogParams::WriteParamFile( ofstream &of )
+{
+	of << (int)monitorType << endl;
+	/*if( clockwise )
+		of << "+clockwise" << endl;
+	else
+		of << "-clockwise" << endl;
+	
+	of.precision( 5 );
+	of << fixed << speed << endl;*/
+}
+
+CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	bulletSpeed = p_bulletSpeed;
+	framesWait = p_framesWait;
+
+	type = edit->types["curveturret"];
+	
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+bool CurveTurretParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void CurveTurretParams::WriteParamFile( ofstream &of )
+{
+	of << (int)monitorType << endl;
+	of << bulletSpeed << endl;
+	of << framesWait << endl;
+}

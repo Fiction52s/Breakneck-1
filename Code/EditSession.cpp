@@ -3278,6 +3278,51 @@ bool EditSession::OpenFile( string fileName )
 					a->monitorType = (ActorParams::MonitorType)mType;
 					
 				}
+				else if( typeName == "bat" )
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int mType;
+					is >> mType;
+
+					int pathLength;
+					is >> pathLength;
+					
+					list<Vector2i> globalPath;
+					globalPath.push_back( Vector2i( pos.x, pos.y ) );
+
+					for( int i = 0; i < pathLength; ++i )
+					{
+						int localX,localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
+					}
+
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+					if( loopStr == "+loop" )
+						loop = true;
+					else if( loopStr == "-loop" )
+						loop = false;
+					else
+						assert( false && "should be a boolean" );
+
+
+					float speed;
+					is >> speed;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new BatParams( this, pos, globalPath, speed, loop ) );
+					a->monitorType = (ActorParams::MonitorType)mType;
+					
+				}
 				else if( typeName == "healthfly" )
 				{
 					Vector2i pos;
@@ -3415,6 +3460,124 @@ bool EditSession::OpenFile( string fileName )
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if( typeName == "stagbeetle" )
+				{
+
+					//always grounded
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int mType;
+					is >> mType;
+
+					bool clockwise;
+					string cwStr;
+					is >> cwStr;
+
+					if( cwStr == "+clockwise" )
+						clockwise = true;
+					else if( cwStr == "-clockwise" )
+						clockwise = false;
+					else
+					{
+						assert( false && "boolean problem" );
+					}
+
+					float speed;
+					is >> speed;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing crawler" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
+					a.reset( new StagBeetleParams( this, terrain.get(), edgeIndex, edgeQuantity, clockwise, speed ) ); 
+					a->monitorType = (ActorParams::MonitorType)mType;
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
+				else if( typeName == "poisonfrog" )
+				{
+
+					//always grounded
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int mType;
+					is >> mType;
+
+					/*bool clockwise;
+					string cwStr;
+					is >> cwStr;
+
+					if( cwStr == "+clockwise" )
+						clockwise = true;
+					else if( cwStr == "-clockwise" )
+						clockwise = false;
+					else
+					{
+						assert( false && "boolean problem" );
+					}
+
+					float speed;
+					is >> speed;*/
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing poison frog" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
+					a.reset( new PoisonFrogParams( this, terrain.get(), edgeIndex, edgeQuantity) );//, clockwise, speed ) ); 
+					a->monitorType = (ActorParams::MonitorType)mType;
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
 				else if( typeName == "crawlerreverser" )
 				{
 					//always grounded
@@ -3533,6 +3696,54 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 					a.reset( new BasicTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
+					a->monitorType = (ActorParams::MonitorType)mType;
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
+				else if( typeName == "curveturret" )
+				{
+					//always grounded
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+					
+					int mType;
+					is >> mType;
+
+					double bulletSpeed;
+					is >> bulletSpeed;
+
+					int framesWait;
+					is >> framesWait;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing curveturret" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
+					a.reset( new CurveTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
 					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
@@ -4720,6 +4931,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
+	Panel *batPanel = CreateOptionsPanel( "bat" );
+	ActorType *batType = new ActorType( "bat", batPanel );
+
+	Panel *curveTurretPanel = CreateOptionsPanel( "curveturret" );
+	ActorType *curveTurretType = new ActorType( "curveturret", curveTurretPanel );
+
+	Panel *stagBeetlePanel = CreateOptionsPanel( "stagbeetle" );
+	ActorType *stagBeetleType = new ActorType( "stagbeetle", stagBeetlePanel );
+
+	Panel *poisonFrogPanel = CreateOptionsPanel( "poisonfrog" );
+	ActorType *poisonFrogType = new ActorType( "poisonfrog", poisonFrogPanel );
+
 	Panel *healthflyPanel = CreateOptionsPanel( "healthfly" );
 	ActorType *healthflyType = new ActorType( "healthfly", healthflyPanel );
 
@@ -4748,7 +4971,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	errorPopup = CreatePopupPanel( "error" );
 
 	types["patroller"] = patrollerType;
-	types["healthfly"] = healthflyType;
+	types["bat"] = batType;
+	types["curveturret"] = curveTurretType;
+	types["poisonfrog"] = poisonFrogType;
+	types["stagbeetle"] = stagBeetleType;
 	types["crawler"] = crawlerType;
 	types["crawlerreverser"] = crawlerReverserType;
 	types["basicturret"] = basicTurretType;
@@ -4784,6 +5010,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite s7( healthflyType->iconTexture );
 	sf::Sprite s8( bossCrawlerType->iconTexture );
 
+	sf::Sprite sBat( batType->iconTexture );
+	sf::Sprite sCurveTurret( curveTurretType->iconTexture );
+	sf::Sprite sPoisonFrog( poisonFrogType->iconTexture );
+	sf::Sprite sStagBeetle( stagBeetleType->iconTexture );
+
 	sf::Sprite ss0( greenKeyType->iconTexture );
 	sf::Sprite ss1( blueKeyType->iconTexture );
 	sf::Sprite ss2( blueKeyType->iconTexture );
@@ -4798,6 +5029,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 1, s6, "crawlerreverser" );
 	gs->Set( 2, 1, s7, "healthfly" );
 	gs->Set( 3, 1, s8, "bosscrawler" );
+
+	gs->Set( 0, 2, sBat, "bat" );
+	gs->Set( 1, 2, sCurveTurret, "curveturret" );
+	gs->Set( 2, 2, sPoisonFrog, "poisonfrog" );
+	gs->Set( 3, 2, sStagBeetle, "stagbeetle" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -7166,6 +7402,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//patrolPath.clear();
 										//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
+									else if( trackingEnemy->name == "bat" )
+									{
+										showPanel = trackingEnemy->panel;
+
+										showPanel->textBoxes["name"]->text.setString( "test" );
+										showPanel->textBoxes["group"]->text.setString( "not test" );
+										showPanel->textBoxes["speed"]->text.setString( "10" );
+										showPanel->checkBoxes["loop"]->checked = false;
+
+
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+									}
 									else if( trackingEnemy->name == "healthfly" )
 									{
 										showPanel = trackingEnemy->panel;
@@ -7204,6 +7453,32 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//trackingEnemy = NULL;
 										}
 									}
+									else if( trackingEnemy->name == "poisonfrog" )
+									{
+										//groups["--"]->name
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
+											showPanel->checkBoxes["clockwise"]->checked = false;
+											showPanel->textBoxes["speed"]->text.setString( "1.5" );
+											//trackingEnemy = NULL;
+										}
+									}
+									else if( trackingEnemy->name == "stagbeetle" )
+									{
+										//groups["--"]->name
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
+											showPanel->checkBoxes["clockwise"]->checked = false;
+											showPanel->textBoxes["speed"]->text.setString( "1.5" );
+											//trackingEnemy = NULL;
+										}
+									}
 									else if( trackingEnemy->name == "crawlerreverser" )
 									{
 										if( enemyEdgePolygon != NULL )
@@ -7220,6 +7495,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 									else if( trackingEnemy->name == "basicturret" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = trackingEnemy->panel;
+											showPanel->textBoxes["name"]->text.setString( "test" );
+											showPanel->textBoxes["group"]->text.setString( "not test" );
+											showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
+											showPanel->textBoxes["waitframes"]->text.setString( "10" );
+										}
+									}
+									else if( trackingEnemy->name == "curveturret" )
 									{
 										if( enemyEdgePolygon != NULL )
 										{
@@ -9109,6 +9395,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					|| trackingEnemy->name == "basicturret"
 					|| trackingEnemy->name == "foottrap" 
 					|| trackingEnemy->name == "bosscrawler"
+					|| trackingEnemy->name == "poisonfrog"
+					|| trackingEnemy->name == "stagbeetle"
+					|| trackingEnemy->name == "curveturret"
 					|| trackingEnemy->name == "goal" ) )
 				{
 					enemyEdgePolygon = NULL;
@@ -10517,6 +10806,86 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
+	else if( p->name == "bat_options" )
+	{
+		if( b->name == "ok" )
+		{
+			bool loop = p->checkBoxes["loop"]->checked;
+			float speed = 1; 
+
+			try
+			{
+				speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+			}
+			catch(boost::bad_lexical_cast &)
+			{
+				//error
+			}
+
+			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				BatParams *bat = (BatParams*)select;
+				bat->monitorType = GetMonitorType( p );
+				bat->speed = speed;
+				bat->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr bat( new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				bat->monitorType = GetMonitorType( p );
+				//cout << "set patroller monitor type to: " << patroller->monitorType << endl;
+				//groups["--"]->actors.push_back( patroller);
+				bat->group = groups["--"];
+
+				CreateActor( bat );
+				//trackingEnemy = NULL;
+
+				//trackingEnemy = types[name];
+				//enemySprite.setTexture( trackingEnemy->imageTexture );
+
+				//enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
+				//	trackingEnemy->imageTexture.getSize().y ) );
+
+				//enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
+		
+				//enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
+
+			
+				
+			}
+			showPanel = NULL;
+			
+
+			//ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
+			
+			//patrolPath.clear();
+			//actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
+			
+			//mode = CREATE_ENEMY;
+			//patroller path should get set only from hitting the button within it to start the path check
+
+			//showPanel = enemySelectPanel;
+		}
+		else if( b->name == "createpath" )
+		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back( front );
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		}
+	}
 	else if( p->name == "key_options" )
 	{
 		if( b->name == "ok" )
@@ -10659,6 +11028,117 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//showPanel = enemySelectPanel;
 		}
 	}
+	else if( p->name == "poisonfrog_options" )
+	{
+		if( b->name == "ok" );
+		{
+			bool clockwise = p->checkBoxes["clockwise"]->checked;
+			double speed;
+
+			stringstream ss;
+			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
+			ss << s;
+
+			ss >> speed;
+
+			if( ss.fail() )
+			{
+				cout << "stringstream to integer parsing error" << endl;
+				ss.clear();
+				assert( false );
+			}
+
+			//not sure if this is what i need
+			//if( mode == EDIT && selectedActor != NULL )
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				PoisonFrogParams *poisonFrog = (PoisonFrogParams*)select;
+				poisonFrog->monitorType = GetMonitorType( p );
+				//poisonFrog->speed = speed;
+				//poisonFrog->clockwise = clockwise;
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				
+
+				//eventually can convert this between indexes or something to simplify when i have more types
+				
+
+				ActorPtr poisonFrog( new PoisonFrogParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity));//, clockwise, speed ) );
+				poisonFrog->group = groups["--"];
+				poisonFrog->monitorType = GetMonitorType( p );
+				//groups["--"]->actors.push_back( crawler );
+				enemyEdgePolygon->enemies[poisonFrog->groundInfo->edgeStart].push_back( poisonFrog );
+				enemyEdgePolygon->UpdateBounds();
+
+
+				CreateActor( poisonFrog );
+				/*Brush b;
+				SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(crawler);
+				b.AddObject( select );
+				Action * action = new ApplyBrushAction( &b );
+				action->Perform();
+				doneActionStack.push_back( action );*/
+				//action->p
+				//trackingEnemy = NULL;
+				
+			}
+			showPanel = NULL;
+			//showPanel = enemySelectPanel;
+		}
+	}
+	else if( p->name == "stagbeetle_options" )
+	{
+		if( b->name == "ok" );
+		{
+			bool clockwise = p->checkBoxes["clockwise"]->checked;
+			double speed;
+
+			stringstream ss;
+			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
+			ss << s;
+
+			ss >> speed;
+
+			if( ss.fail() )
+			{
+				cout << "stringstream to integer parsing error" << endl;
+				ss.clear();
+				assert( false );
+			}
+
+			//not sure if this is what i need
+			//if( mode == EDIT && selectedActor != NULL )
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				StagBeetleParams *stagBeetle = (StagBeetleParams*)select;
+				stagBeetle->monitorType = GetMonitorType( p );
+				stagBeetle->speed = speed;
+				stagBeetle->clockwise = clockwise;
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				
+
+				//eventually can convert this between indexes or something to simplify when i have more types
+				
+
+				ActorPtr stagBeetle( new StagBeetleParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
+				stagBeetle->group = groups["--"];
+				stagBeetle->monitorType = GetMonitorType( p );
+				//groups["--"]->actors.push_back( crawler );
+				enemyEdgePolygon->enemies[stagBeetle->groundInfo->edgeStart].push_back( stagBeetle );
+				enemyEdgePolygon->UpdateBounds();
+
+
+				CreateActor( stagBeetle );
+			}
+			showPanel = NULL;
+			//showPanel = enemySelectPanel;
+		}
+	}
 	else if( p->name == "basicturret_options" )
 	{	
 		if( b->name == "ok" )
@@ -10711,6 +11191,65 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				basicTurret->monitorType = GetMonitorType( p );
 
 				CreateActor( basicTurret );
+				//trackingEnemy = NULL;
+				
+			}
+			showPanel = NULL;
+			//showPanel = enemySelectPanel;
+		}	
+	}
+	else if( p->name == "curveturret_options" )
+	{	
+		if( b->name == "ok" )
+		{
+			stringstream ss;
+			string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+			string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
+			ss << bulletSpeedString;
+			
+
+			double bulletSpeed;
+			ss >> bulletSpeed;
+
+			if( ss.fail() )
+			{
+				assert( false );
+			}
+
+			ss.clear();
+
+			ss << framesWaitString;
+
+			int framesWait;
+			ss >> framesWait;
+
+			if( ss.fail() )
+			{
+				assert( false );
+			}
+
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
+				curveTurret->monitorType = GetMonitorType( p );
+				curveTurret->bulletSpeed = bulletSpeed;
+				curveTurret->framesWait = framesWait;
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				ActorPtr curveTurret( new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+				enemyEdgeQuantity, bulletSpeed, framesWait ) );
+
+				enemyEdgePolygon->enemies[curveTurret->groundInfo->edgeStart].push_back( curveTurret );
+				enemyEdgePolygon->UpdateBounds();
+
+				//groups["--"]->actors.push_back( basicTurret );
+				curveTurret->group = groups["--"];
+				curveTurret->monitorType = GetMonitorType( p );
+
+				CreateActor( curveTurret );
 				//trackingEnemy = NULL;
 				
 			}
@@ -12530,7 +13069,27 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
-	if( name == "healthfly" )
+	else if( name == "bat" )
+	{
+		Panel *p = new Panel( "bat_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
+	else if( name == "healthfly" )
 	{
 		Panel *p = new Panel( "healthfly_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
@@ -12546,7 +13105,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
-	if( name == "key" )
+	else if( name == "key" )
 	{
 		Panel *p = new Panel( "key_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
@@ -12590,9 +13149,72 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	else if( name == "poisonfrog" )
+	{
+		Panel *p = new Panel( "poisonfrog_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+
+		//sf::Sprite ss;
+		//ss.setColor( Color::White );
+		//ss.setTextureRect( IntRect
+
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "stagbeetle" )
+	{
+		Panel *p = new Panel( "stagbeetle_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+
+		//sf::Sprite ss;
+		//ss.setColor( Color::White );
+		//ss.setTextureRect( IntRect
+
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
 	else if( name == "basicturret" )
 	{
 		Panel *p = new Panel( "basicturret_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
+		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "curveturret" )
+	{
+		Panel *p = new Panel( "curveturret_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -12700,19 +13322,6 @@ void EditSession::SetEnemyEditPanel()
 	{
 		PatrollerParams *patroller = (PatrollerParams*)ap;
 		
-		/*Panel *p = new Panel( "patroller_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );*/
-		
-		//cout << "blah: " << p->textBoxes.size() << endl;
-		//cout << "f: " << patroller->group << endl;
-		//p->textBoxes["group"]->text.setString( "hahah" );
-		//cout << "blah2: " << p->textBoxes["group"]->text.getString().toAnsiString() << endl;
 		p->textBoxes["group"]->text.setString( patroller->group->name );
 
 		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( patroller->speed ) );
@@ -12723,6 +13332,35 @@ void EditSession::SetEnemyEditPanel()
 		GridSelector &gs = *p->gridSelectors["monitortype"];
 		gs.selectedY = 0;
 		switch( patroller->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 3;
+			break;
+		}
+	}
+	else if( name == "bat" )
+	{
+		BatParams *bat = (BatParams*)ap;
+		
+		p->textBoxes["group"]->text.setString( bat->group->name );
+
+		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( bat->speed ) );
+		p->checkBoxes["loop"]->checked = bat->loop;
+		patrolPath = bat->GetGlobalPath();
+		showPanel = p;
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( bat->monitorType )
 		{
 		case ActorParams::NONE:
 			gs.selectedX = 0;
@@ -13283,6 +13921,34 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+	}
+	else if( name == "bat" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if( name == "curveturret" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+	else if( name == "stagbeetle" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+	else if( name == "poisonfrog" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
 	else if( name == "healthfly" )
 	{

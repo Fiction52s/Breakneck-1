@@ -1032,6 +1032,70 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
+			else if( typeName == "bat" )
+			{
+					
+				int xPos,yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+				
+				int mType;
+				is >> mType;
+				
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for( int i = 0; i < pathLength; ++i )
+				{
+					int localX,localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back( Vector2i( localX, localY ) );
+				}
+
+
+				bool loop;
+				string loopStr;
+				is >> loopStr;
+
+				if( loopStr == "+loop" )
+				{
+					loop = true;
+				}
+				else if( loopStr == "-loop" )
+				{
+					loop = false;
+				}
+				else
+				{
+					assert( false && "should be a boolean" );
+				}
+
+
+				float speed;
+				is >> speed;
+				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				//enemy->Monitor::MonitorType
+				
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+				if( monitorType != Monitor::NONE )
+				{
+					cout << "new monitor of type-----------------------------: " << monitorType << endl;
+					enemy->monitor = new Monitor( this, monitorType, enemy );
+				}
+				
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
 			else if( typeName == "key" )
 			{
 				Vector2i pos;
@@ -1150,6 +1214,100 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if( typeName == "poisonfrog" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int mType;
+				is >> mType;
+
+				/*bool clockwise;
+				string cwStr;
+				is >> cwStr;
+
+				if( cwStr == "+clockwise" )
+					clockwise = true;
+				else if( cwStr == "-clockwise" )
+					clockwise = false;
+				else
+				{
+					assert( false && "boolean problem" );
+				}*/
+
+				//float speed;
+				//is >> speed;
+
+				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				PoisonFrog *enemy = new PoisonFrog( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity);//, clockwise );//, speed );
+
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+				if( monitorType != Monitor::NONE )
+				{
+					enemy->monitor = new Monitor( this, monitorType, enemy );
+				}
+
+				//enemyTree = Insert( enemyTree, enemy );
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "stagbeetle" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int mType;
+				is >> mType;
+
+				bool clockwise;
+				string cwStr;
+				is >> cwStr;
+
+				if( cwStr == "+clockwise" )
+					clockwise = true;
+				else if( cwStr == "-clockwise" )
+					clockwise = false;
+				else
+				{
+					assert( false && "boolean problem" );
+				}
+
+				float speed;
+				is >> speed;
+
+				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed );
+
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+				if( monitorType != Monitor::NONE )
+				{
+					enemy->monitor = new Monitor( this, monitorType, enemy );
+				}
+
+				//enemyTree = Insert( enemyTree, enemy );
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
 			else if( typeName == "crawlerreverser" )
 			{
 				//always grounded
@@ -1217,6 +1375,41 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesWait;
 
 				BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
+				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
+				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+				if( monitorType != Monitor::NONE )
+				{
+					enemy->monitor = new Monitor( this, monitorType, enemy );
+				}
+				//enemyTree = Insert( enemyTree, enemy );
+				fullEnemyList.push_back( enemy );
+
+				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "curveturret" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int mType;
+				is >> mType;
+
+				double bulletSpeed;
+				is >> bulletSpeed;
+
+				int framesWait;
+				is >> framesWait;
+
+				CurveTurret *enemy = new CurveTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
 				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;

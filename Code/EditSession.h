@@ -439,6 +439,29 @@ struct PatrollerParams : public ActorParams
 	float speed;
 };
 
+struct BatParams : public ActorParams
+{
+	BatParams( EditSession *edit,
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath, 
+		float speed,
+		bool loop ); 
+	BatParams( EditSession *edit );
+	void WriteParamFile( std::ofstream &of );
+	void SetPath( 
+		std::list<sf::Vector2i> &globalPath );
+	std::list<sf::Vector2i> GetGlobalPath();
+	void Draw( sf::RenderTarget *target );
+
+	bool CanApply();
+
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	bool loop;
+	float speed;
+};
+
 struct HealthFlyParams : public ActorParams
 {
 	HealthFlyParams( EditSession *edit,
@@ -493,6 +516,24 @@ struct CrawlerParams : public ActorParams
 	float speed;
 };
 
+struct StagBeetleParams : public ActorParams
+{ 
+	StagBeetleParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		bool clockwise, float speed );
+	//StagBeetleParams( EditSession *edit,
+	//	sf::Vector2i &pos, bool facingRight,
+	//	float speed );
+	StagBeetleParams( EditSession *edit );
+
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	//void Draw( sf::RenderTarget *target );
+	bool clockwise;
+	float speed;
+};
+
 struct CrawlerReverserParams : public ActorParams
 {
 	CrawlerReverserParams( 
@@ -517,10 +558,37 @@ struct BossCrawlerParams : public ActorParams
 	bool CanApply();
 };
 
+struct PoisonFrogParams : public ActorParams
+{
+	PoisonFrogParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity );
+	PoisonFrogParams( EditSession *edit );
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
 struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
 	BasicTurretParams( EditSession *edit,  
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity, 
+		double bulletSpeed, 
+		int framesWait );
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	//void Draw( sf::RenderTarget *target );
+	float bulletSpeed;
+	int framesWait;
+};
+
+struct CurveTurretParams : public ActorParams
+{
+	//std::string SetAsBasicTurret( ActorType *t, ); 
+	CurveTurretParams( EditSession *edit,  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity, 

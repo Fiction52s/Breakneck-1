@@ -17,6 +17,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		CRAWLER,
 		BASICTURRET,
 		FOOTTRAP,
+		BAT,
+		STAGBEETLE,
+		POISONFROG,
+		CURVETURRET,
 		GOAL,
 		KEY,
 		BOSS_CRAWLER,
@@ -194,6 +198,84 @@ struct Patroller : Enemy
 	Stored stored;
 };
 
+struct Bat : Enemy
+{
+	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	void AdvanceTargetNode();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	//Tileset * ts_death;
+	//std::list<sf::Vector2i> path;
+	sf::Vector2i *path; //global
+	int pathLength;
+	bool loop;
+
+	int targetNode;
+	bool forward;
+	//sf::Vector2<double>
+	int frame;
+
+	double acceleration;
+	double speed;
+	int nodeWaitFrames;
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
 struct CrawlerReverser : QuadTreeEntrant
 {
 	CrawlerReverser( GameSession* owner,
@@ -233,8 +315,6 @@ struct Crawler : Enemy
 	
 	void SaveEnemyState();
 	void LoadEnemyState();
-	void UpdatePhysics2();
-	void UpdatePhysics3();
 	sf::Sprite sprite;
 	Tileset *ts;
 	//Tileset *ts_walk;
@@ -282,10 +362,182 @@ struct Crawler : Enemy
 	int bloodFrame;
 };
 
+struct StagBeetle : Enemy
+{
+	StagBeetle( GameSession *owner, Edge *ground, 
+		double quantity, 
+		bool clockwise, double speed );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+	sf::Sprite sprite;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
+
+	bool clockwise;
+	double groundSpeed;
+	Edge *ground;
+	//sf::Vector2<double> offset;
+	double edgeQuantity;
+
+	CrawlerReverser *lastReverser;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	
+	int attackFrame;
+	int attackMult;
+
+	double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	sf::Vector2<double> offset;
+	int frame;
+	bool roll;
+
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
 
 struct BasicTurret : Enemy
 {
 	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
+		double bulletSpeed,
+		int framesWait );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool IHitPlayerWithBullets();
+	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool, bool> PlayerHitMyBullets();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void UpdateBulletHitboxes();
+
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	
+	const static int maxBullets = 16;
+	sf::Vector2<double> bulletPositions[maxBullets];
+	sf::Vector2<double> tempVel;
+	
+
+
+
+	sf::VertexArray bulletVA;
+	CollisionBox bulletHurtBody[maxBullets];
+	CollisionBox bulletHitBody[maxBullets];
+	struct Bullet
+	{
+		Bullet();
+		Bullet *prev;
+		Bullet *next;
+		sf::Vector2<double> position;
+		CollisionBox hurtBody;
+		CollisionBox hitBody;
+		CollisionBox physBody;
+		int frame;
+		int slowCounter;
+		int slowMultiple;
+		int maxFramesToLive;
+		int framesToLive;
+	};
+	Bullet *queryBullet;
+	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
+
+	void AddBullet();
+	void DeactivateBullet( Bullet *bullet );
+	Bullet * ActivateBullet();
+	Tileset * ts_bullet;
+
+	Bullet *activeBullets;
+	Bullet *inactiveBullets;
+	HitboxInfo *bulletHitboxInfo;
+
+	
+
+	int framesWait;
+	int firingCounter;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+struct CurveTurret : Enemy
+{
+	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
 		double bulletSpeed,
 		int framesWait );
 //	void HandleEdge( Edge *e );
@@ -576,6 +828,128 @@ struct Key : Enemy
 		int hitstunFrames;
 	};
 	Stored stored;
+};
+
+struct PoisonFrog : Enemy
+{
+	enum Action
+	{
+
+		STAND,
+		JUMPSQUAT,
+		JUMP,
+		LAND,
+		//STUNNED,
+		Count
+	};
+	
+	//struct Bullet
+	//{
+	//	Bullet();
+	//	//Bullet *prev;
+	//	//Bullet *next;
+	//	sf::Vector2<double> position;
+	//	sf::Vector2<double> velocity;
+	//	CollisionBox hurtBody;
+	//	CollisionBox hitBody;
+	//	CollisionBox physBody;
+	//	bool active;
+	//	int frame;
+	//	int slowCounter;
+	//	int slowMultiple;
+	//	
+	//	//int maxFramesToLive;
+	//	//int framesToLive;
+	//};
+	
+	PoisonFrog( GameSession *owner, 
+		Edge *ground, double quantity );
+
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
+
+	Tileset *ts_test;
+	//int queryIndex;
+
+	//sf::VertexArray bulletVA;
+	Action action;
+	int frame;
+	double gravity;
+	bool facingRight;
+	sf::Vector2<double> velocity;
+	double angle;
+
+	int hitsBeforeHurt;
+	int hitsCounter;
+	int invincibleFrames;
+	//sf::Vector2<double> position;
+
+	
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void ActionEnded();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void UpdatePhysics2();
+	void UpdatePhysics3();
+
+	//void FireBullets();
+	//void UpdateBulletSprites();
+	//void UpdateBulletHitboxes();
+
+
+	sf::Sprite sprite;
+	Tileset *ts_walk;
+	Tileset *ts_roll;
+	
+
+	double groundSpeed;
+	Edge *ground;
+	
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	sf::Vector2<double> offset;
+	
+	
+
+
+	bool dead;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
 };
 
 struct BossCrawler : Enemy
