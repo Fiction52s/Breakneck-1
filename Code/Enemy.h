@@ -882,6 +882,10 @@ struct PoisonFrog : Enemy
 	int hitsBeforeHurt;
 	int hitsCounter;
 	int invincibleFrames;
+
+	double jumpStrength;
+	double xSpeed;
+
 	//sf::Vector2<double> position;
 
 	

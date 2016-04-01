@@ -3186,6 +3186,7 @@ bool EditSession::OpenFile( string fileName )
 				//cout << "typename: " << typeName << endl;
 				if( types.count( typeName ) == 0 )
 				{
+					cout << "TYPENAME: " << typeName << endl;
 					assert( false && "bad typename" );
 				//	at = new ActorType( typeName, CreateOptionsPanel( typeName ) );
 				//	types[typeName] = at;
@@ -4973,6 +4974,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["patroller"] = patrollerType;
 	types["bat"] = batType;
 	types["curveturret"] = curveTurretType;
+	types["healthfly"] = healthflyType;
 	types["poisonfrog"] = poisonFrogType;
 	types["stagbeetle"] = stagBeetleType;
 	types["crawler"] = crawlerType;

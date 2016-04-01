@@ -185,6 +185,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEnemiesPostPhysics();
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
+	double GetTriangleArea( p2t::Triangle * t );
 	void RespawnPlayer();
 	void ResetEnemies();
 	void ResetPlants();
@@ -373,6 +374,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Edge *start,
 		Tileset *ts );
 
+	sf::VertexArray *SetupDecor0(
+		std::vector<p2t::Triangle*> &tris,
+		Tileset *ts );
+
 	struct TestVA : QuadTreeEntrant
 	{
 		//sf::VertexArray *va;
@@ -384,6 +389,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *triva;
 		sf::VertexArray *flowva;
 		sf::VertexArray *plantva;
+		sf::VertexArray *decorLayer0va;
 		Tileset *ts_plant;
 		
 		

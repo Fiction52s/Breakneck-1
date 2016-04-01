@@ -11365,8 +11365,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "check" )
 	{
-		//if( ground == e )
-		//	return;
+		if( ground == e )
+			return;
+
+		
 
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
@@ -11375,6 +11377,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( ground != NULL )
 			{
+
+				
 
 				V2d en = e->Normal();
 				if( reversed )
@@ -11386,8 +11390,30 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
+					if( e == ground->edge1 )
+					{
+						double c = cross( normalize(e->v1 - ground->v0),
+							normalize( ground->v1 - ground->v0 ) );
+						if( en.y >= 0 && c < 0 )
+						{
+							return;
+						}
+					}
+					else if( e == ground->edge0 )
+					{
+						double c = cross( normalize(e->v0 - ground->v1),
+							normalize( ground->v0 - ground->v1 ) );
+						if( en.y >= 0 && c > 0 )
+						{
+							return;
+						}
+					}
+
 					if( en.y <= 0 )
 					{
+						
+
+
 						return;
 					}
 				}

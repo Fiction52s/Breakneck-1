@@ -1686,6 +1686,9 @@ bool GameSession::OpenFile( string fileName )
 			cdt->Triangulate();
 			vector<p2t::Triangle*> tris;
 			tris = cdt->GetTriangles();
+			
+			
+			
 
 			
 			va = new VertexArray( sf::Triangles , tris.size() * 3 );
@@ -1810,6 +1813,20 @@ bool GameSession::OpenFile( string fileName )
 			Tileset *ts_plant = GetTileset( "testgrass.png", 32, 32 );
 
 			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
+
+			double polygonArea = 0;
+			for( vector<p2t::Triangle*>::iterator it = tris.begin();
+				it != tris.end(); ++it )
+			{
+				polygonArea += GetTriangleArea( (*it) );
+			}
+
+			//now that I have the area, get a number of random points
+			//around the polygon based on how much area there is. 
+			//then put plants in those areas
+
+			//VertexArray *decorLayer0VA = SetupDecor0( tris, ts_decor0 );
+
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
 			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
@@ -4468,7 +4485,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 		
 
@@ -5472,6 +5489,29 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
 	polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
 	//polyShader.setParameter( "OnD0", true );
+}
+
+double GameSession::GetTriangleArea( p2t::Triangle * t )
+{
+	p2t::Point *p_0 = t->GetPoint( 0 );
+	p2t::Point *p_1 = t->GetPoint( 0 );
+	p2t::Point *p_2 = t->GetPoint( 0 );
+
+	V2d p0( p_0->x, p_0->y );
+	V2d p1( p_1->x, p_1->y );
+	V2d p2( p_2->x, p_2->y );
+
+	double len0 = length( p1 - p0 );
+	double len1 = length( p2 - p1 );
+	double len2 = length( p0 - p2 );
+
+	//s = .5 * (a + b + c)
+	//A = sqrt( s(s - a)(s - b)(s - c) )
+
+	double s = .5 * ( len0 + len1 + len2 );
+	double A = sqrt( s * ( s - len0 ) * ( s - len1 ) * ( s - len2 ) );
+
+	return A;
 }
 
 struct PlantInfo
@@ -6483,6 +6523,14 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 	while( te != startEdge );
 
 	return currVA;
+}
+
+sf::VertexArray * GameSession::SetupDecor0( std::vector<p2t::Triangle*> &tris, Tileset *ts )
+{
+	for( vector<p2t::Triangle*>::iterator it = tris.begin(); it != tris.end(); ++it )
+	{
+		//random point stuff. do this after you get the enemies working
+	}
 }
 
 int GameSession::IsFlatGround( sf::Vector2<double> &normal )

@@ -30,13 +30,16 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q )
 	double height = 64;
 	ts_test = owner->GetTileset( "poisonfrog_64x64.png", width, height );
 
+	jumpStrength = 10;
+	xSpeed = 8;
+
 
 	initHealth = 60;
 	health = initHealth;
 	
 	//cout << "creating the boss crawler" << endl;
 	action = STAND;
-	gravity = 1;
+	gravity = .6;
 	facingRight = false;
 	receivedHit = NULL;
 
@@ -467,6 +470,8 @@ void PoisonFrog::ActionEnded()
 			break;
 		case JUMPSQUAT:
 			{
+				action = JUMP;
+				frame = 0;
 			}
 			break;
 		case JUMP:
@@ -508,7 +513,6 @@ void PoisonFrog::UpdatePrePhysics()
 		{
 			AttemptSpawnMonitor();
 			dead = true;
-			owner->quit = true;
 		}
 
 		receivedHit = NULL;
@@ -518,6 +522,7 @@ void PoisonFrog::UpdatePrePhysics()
 	{
 	case STAND:
 		{
+			//cout << "frame: " << frame << endl;
 			if( player.position.x < position.x )
 			{
 				facingRight = false;
@@ -536,8 +541,18 @@ void PoisonFrog::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
+				//cout << "frog jumping" << endl;
 				ground = NULL;
-				velocity = V2d( 0, -20 );
+
+				if( facingRight )
+				{
+					velocity = V2d( xSpeed, -jumpStrength );
+				}
+				else
+				{
+					velocity = V2d( -xSpeed, -jumpStrength );
+				}
+				
 			}
 		}
 		break;
@@ -546,6 +561,11 @@ void PoisonFrog::UpdatePrePhysics()
 
 		}
 		break;
+	}
+
+	if( ground == NULL )
+	{
+		velocity += V2d( 0, gravity );
 	}
 }
 
@@ -563,13 +583,25 @@ void PoisonFrog::UpdatePhysics()
 		movementVec /= slowMultiple * NUM_STEPS;
 
 		bool hit = ResolvePhysics( movementVec );
-		if( hit && minContact.edge->Normal().y < 0 )
+		if( hit )//&&  )
 		{
-			ground = minContact.edge;
-			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
-			action = LAND;
-			frame = 0;
-		}	
+			if( minContact.edge->Normal().y < 0 )
+			{
+				cout << "landing" << endl;
+				ground = minContact.edge;
+				edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
+				action = LAND;
+				frame = 0;
+			}
+			else
+			{
+				position += minContact.resolution;
+				velocity = V2d( 0, 0 );
+			}
+			
+		}
+		
+		
 	}
 
 	PhysicsResponse();
@@ -691,7 +723,6 @@ void PoisonFrog::UpdatePostPhysics()
 
 	sprite.setTexture( *ts_test->texture );
 	sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
-	sprite.setScale( 1.3, 1.3 );
 	switch( action )
 	{
 	case STAND:
@@ -712,16 +743,16 @@ void PoisonFrog::UpdatePostPhysics()
 		break;
 	case JUMP:
 		{
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			sprite.setPosition( position.x, position.y );
 		}
 		break;
 	case LAND:
 		{
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			sprite.setPosition( position.x, position.y );
+			V2d pp = ground->GetPoint( edgeQuantity );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation( angle / PI * 180 );
+			sprite.setPosition( pp.x, pp.y );
 		}
 		break;
 	}
