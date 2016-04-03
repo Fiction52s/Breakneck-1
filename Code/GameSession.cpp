@@ -4337,10 +4337,10 @@ int GameSession::Run( string fileN )
 			//preScreenTex->draw( *listVAIter->va );
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
-			preScreenTex->draw( *listVAIter->wallva, rs );
-			preScreenTex->draw( *listVAIter->steepva, rs );
-			preScreenTex->draw( *listVAIter->slopeva, rs );
-			preScreenTex->draw( *listVAIter->groundva, rs );
+			//preScreenTex->draw( *listVAIter->wallva, rs );
+			//preScreenTex->draw( *listVAIter->steepva, rs );
+			//preScreenTex->draw( *listVAIter->slopeva, rs );
+			//preScreenTex->draw( *listVAIter->groundva, rs );
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );

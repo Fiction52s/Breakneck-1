@@ -647,7 +647,21 @@ void Crawler::UpdatePhysics()
 				bool hit = ResolvePhysics( newPos - position );
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
-					V2d eNorm = minContact.edge->Normal();
+					//hitting while in a roll already. do the normal one first
+					V2d eNorm = minContact.normal;//
+					Edge *e = minContact.edge;
+					if( eNorm.x == 0 && eNorm.y == 0 )
+					{
+						if( minContact.position == e->v0 )
+						{
+
+						}
+						else if( minContact.position == e->v1 )
+						{
+
+						}
+
+					}
 					ground = minContact.edge;
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
@@ -725,7 +739,20 @@ void Crawler::UpdatePhysics()
 				bool hit = ResolvePhysics( newPos - position );
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
-					V2d eNorm = minContact.edge->Normal();
+					V2d eNorm = minContact.normal;//edge->Normal();
+					Edge *e = minContact.edge;
+
+					if( eNorm.x == 0 && eNorm.y == 0 )
+					{
+						if( minContact.position == e->v0 )
+						{
+							//q = ;
+
+						}
+						else //v1
+						{
+						}
+					}
 					ground = minContact.edge;
 					q = ground->GetQuantity( minContact.position + minContact.resolution );
 					edgeQuantity = q;
@@ -785,12 +812,24 @@ void Crawler::UpdatePhysics()
 					//cout << "m: " << m << ", ground: " << ground << ", edge0: " << ground->edge0 << ", " 
 					//	<< "minedge: " << minContact.edge << endl;
 					V2d eNorm = minContact.edge->Normal();
+					V2d movetest =  (normalize( ground->v1 - ground->v0 ) * m);
 					ground = minContact.edge;
 					if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 					{
+						//cout << "hitting thing: " << q << endl;
+
+						//if( minContact.position == ground->v1 )
+						//{
+							roll = true;
+							
+						//}
 						//point
 					//	cout << "point!" << endl;
+						
+						cout << "movement: " << movetest.x << ", " << movetest.y <<
+							", res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 						q = ground->GetQuantity( minContact.position );
+						position += minContact.resolution;
 					}
 					else
 					{

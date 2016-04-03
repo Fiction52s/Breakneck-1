@@ -646,7 +646,7 @@ Actor::Actor( GameSession *gs )
 		bool noPowers = true;
 		if( noPowers )
 		{
-			hasPowerAirDash = false;
+			hasPowerAirDash = true;
 			hasPowerGravReverse = false;
 			hasPowerBounce = false;
 			hasPowerGrindBall = false;
@@ -10039,8 +10039,21 @@ void Actor::UpdatePostPhysics()
 	}*/
 
 	
+
 	UpdateSprite();
-	
+
+	switch( action )
+	{
+	case AIRDASH:
+		{
+			if( frame % 1 == 0 )
+			{
+				//cout << "airdash fx" << endl;
+				owner->ActivateEffect( ts_fx_airdash, V2d( position.x, position.y + 25 ), false, 0, 10, 4, facingRight );
+			}
+		}
+		break;
+	}
 	
 
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -13365,10 +13378,7 @@ void Actor::UpdateSprite()
 		}
 	case AIRDASH:
 		{
-			if( frame % 1 == 0 )
-			{
-				owner->ActivateEffect( ts_fx_airdash, V2d( position.x, position.y + 25 ), false, 0, 10, 4, facingRight );
-			}
+			
 
 
 			sprite->setTexture( *(tileset[AIRDASH]->texture));

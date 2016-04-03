@@ -570,35 +570,53 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else //special side/hit case for colliding with points
 			{
-				if( lineQuantity < 0 && lineQuantity > -radius ) //v0
+
+				V2d coll = e->v1 - position;
+				//cout << "coll: " << coll.x << ", " << coll.y << endl;
+				V2d nVel = normalize( vel );
+				double yy = cross( coll, nVel );
+				double xx = sqrt( radius * radius - yy * yy );
+				double pr = dot( coll, nVel );
+
+				if( lineQuantity < 0 && lineQuantity > -radius && xx >= pr ) //v0
 				{
+					V2d coll = e->v0 - position;
 					//cout << "bb" << endl;
 					//dist is dot
 					double extra = -lineQuantity;
 					double y = sqrt( radius * radius - extra * extra );
-
+					//cout << "A" << endl;
 					V2d nVel = normalize( vel );
 					double lenVel = length( vel );
+					
+					V2d proj = (xx-pr) * nVel;
+					proj = -proj;
+
 					//V2d negvNorm = normalize( -vel );
-					currentContact->resolution = (lenVel - y ) * -nVel;
+					currentContact->resolution = proj;//(lenVel - y ) * -nVel;
 					currentContact->edge = e;
 					currentContact->normal = V2d( 0, 0 );
 					currentContact->position = e->v0;
 					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
 					return currentContact;
 				}
-				else if( lineQuantity <= edgeLength + radius )//v1
+				else if( lineQuantity <= edgeLength + radius && xx >= pr )//v1
 				{
 					
+					
+					//cout << "xx: " << xx << ", pr: " << pr << endl;
+					V2d proj = (xx-pr) * nVel;
+					proj = -proj;
 					//dist is dot
 					double extra = lineQuantity - edgeLength;
 					double y = sqrt( radius * radius - extra * extra );
-					//cout << "a extra: " << extra << ", normal: " << e->Normal().x << ", " << e->Normal().y << endl;
-					//cout << "TestD: " << testD << ", vel: " << vel.x << ", " << vel.y << endl;
-					V2d nVel = normalize( vel );
+					
 					double lenVel = length( vel );
+
+					//cout << "ressss: " << proj.x << ", " << proj.y << endl;
+					//cout << "B extra: " << extra << ", " << lenVel << ", y: " << y << endl;
 					//V2d negvNorm = normalize( -vel );
-					currentContact->resolution = (lenVel - y ) * -nVel;
+					currentContact->resolution = proj;//(lenVel - y ) * -nVel;
 					currentContact->edge = e;
 					currentContact->normal = V2d( 0, 0 );
 					currentContact->position = e->v1;
