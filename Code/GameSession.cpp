@@ -58,6 +58,163 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
+MotionAlg::MotionAlg( MotionAlg::Algorithms p_alg )
+	:alg( p_alg )
+{
+}
+
+double MotionAlg::GetValue( double t )
+{
+	switch( alg )
+	{
+	case STANDARD_LINEAR:
+		return t;
+		break;
+	};
+}
+
+Movement::Movement( MotionAlg::Algorithms algType, int dur )
+	:alg( algType ), next( NULL ), duration( dur * NUM_STEPS ) 
+{
+}
+
+LineMovement::LineMovement( sf::Vector2<double> &a, sf::Vector2<double> &b, 
+	MotionAlg::Algorithms algType, int duration )
+	:Movement( algType, duration ), A( a ), B( b )
+{
+}
+
+WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
+	:Movement( MotionAlg::STANDARD_LINEAR, duration ), pos( p_pos )
+{
+}
+
+sf::Vector2<double> WaitMovement::GetPosition( int t )
+{
+	return pos;
+}
+
+MovementSequence::MovementSequence()
+	:movementList( NULL ), currMovement( NULL ), rotationList( NULL), 
+	currRotation( NULL ), currProjectile( NULL )
+{
+	Reset();
+}
+
+V2d LineMovement::GetPosition( int t )
+{
+	double x = A.x + (B.x - A.x) * alg.GetValue( t / (double)duration );
+	double y = A.y + (B.y - A.y) * alg.GetValue( t / (double)duration );
+
+	return V2d( x, y );
+}
+
+void MovementSequence::Reset()
+{
+	currTime = 0;
+	currMovementStartTime = 0;
+	currRotationStartTime = 0;
+
+	currMovement = movementList;
+	currRotation = rotationList;
+}
+
+void MovementSequence::Update()
+{
+	if( currMovement != NULL )
+	{
+		
+		position = currMovement->GetPosition( currTime - currMovementStartTime  );
+		//cout << "updating pos: " << position.x << ", " << position.y << endl;
+	}
+	if( currRotation != NULL )
+	{
+		rotation = currRotation->GetRotation( currTime );
+	}
+	if( currProjectile != NULL )
+	{
+		//do later
+	}
+
+
+
+	currTime++;
+	if( currMovement != NULL && currTime == currMovement->duration + currMovementStartTime )
+	{
+		currMovement = currMovement->next;
+
+		if( currMovement != NULL )
+		{
+			currMovementStartTime = currTime;
+
+		}
+	}
+	if( currRotation != NULL && currTime == currRotation->duration + currRotationStartTime )
+	{
+		currRotation = currRotation->next;
+
+		if( currRotation != NULL )
+		{
+			currRotationStartTime = currTime;
+		}
+	}
+	if( currProjectile != NULL && currTime == currProjectile->duration + currProjectileStartTime )
+	{
+		currProjectile = currProjectile->next;
+
+		if( currProjectile != NULL )
+		{
+			currProjectileStartTime = currTime;
+		}
+	}
+}
+
+void MovementSequence::AddMovement( Movement *movement )
+{
+	if( movementList == NULL )
+	{
+		movementList = movement;
+		movement->next = NULL;
+	}
+	else
+	{
+		Movement *curr = movementList;
+		while( curr->next != NULL )
+		{
+			curr = curr->next;
+		}
+		//curr is final now
+		curr->next = movement;
+		movement->next = NULL;
+	}
+
+	Reset();
+}
+
+void MovementSequence::AddRotation( Rotation *rotation )
+{
+	if( rotationList == NULL )
+	{
+		rotationList = rotation;
+		rotation->next = NULL;
+	}
+	else
+	{
+		Rotation *curr = rotationList;
+		while( curr->next != NULL )
+		{
+			curr = curr->next;
+		}
+		//curr is final now
+		curr->next = rotation;
+		rotation->next = NULL;
+	}
+
+	Reset();
+}
+
+
+
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
 	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )

@@ -7,6 +7,102 @@
 
 struct Zone;
 struct Monitor;
+//projectile shotting process
+
+//a step is the amount of time in a substep
+//which is a tenth of a step right now i think
+
+
+struct MotionAlg
+{
+	enum Algorithms
+	{
+		STANDARD_LINEAR,
+		Count
+	};
+
+	MotionAlg( Algorithms alg );
+	Algorithms alg;
+	double GetValue( double t ); //0.0 to 1.0 both
+};
+
+
+struct Projectile
+{
+	Projectile();
+	int duration;
+	Projectile *next;
+};
+
+struct Rotation
+{
+	Rotation();
+	virtual double GetRotation(int t ) = 0;
+	int duration;
+	Rotation *next;
+};
+
+struct Movement
+{
+	Movement( MotionAlg::Algorithms algType,
+		int duration);
+	virtual sf::Vector2<double> GetPosition( int t ) = 0;
+	int duration;
+	MotionAlg alg;
+	Movement *next;
+};
+
+struct WaitMovement : Movement
+{
+	WaitMovement( sf::Vector2<double> &pos,
+		int duration );
+	sf::Vector2<double> GetPosition( int t );
+	sf::Vector2<double> pos;
+};
+
+struct LineMovement : Movement 
+{
+	LineMovement( sf::Vector2<double> &a,
+		sf::Vector2<double> &b, 
+		MotionAlg::Algorithms algType,
+		int duration );
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> GetPosition( int t );
+};
+
+
+
+struct MovementSequence
+{
+	MovementSequence();
+	sf::Vector2<double> position;
+	double rotation;
+	int currTime;
+	void AddMovement( Movement *movement );
+	void AddRotation( Rotation *rotation );
+	Movement *movementList;
+	Movement *currMovement;
+	
+	//^is almost always null
+	//but when its fed a projectile it
+	//tells u to shoot?
+	int currMovementStartTime;
+	Rotation *rotationList;
+	Rotation *currRotation;
+	
+	int currRotationStartTime;
+	sf::Vector2<double> &GetPosition();
+	double GetRotation();
+	void Update();
+	void Reset();
+	Projectile *projectileList;
+	Projectile *currProjectile;
+	int currProjectileStartTime;
+};
+
+
+
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {
@@ -200,6 +296,7 @@ struct Patroller : Enemy
 
 struct Bat : Enemy
 {
+	MovementSequence testSeq;
 	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );
 	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );

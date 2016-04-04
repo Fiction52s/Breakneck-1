@@ -16,9 +16,21 @@ using namespace sf;
 Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
+	
+
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
+
+	V2d pos2Test = position + V2d( 100, 0 );
+	V2d pos3Test = position - V2d( 100, 0 );
+
+	testSeq.AddMovement( new LineMovement( position, pos2Test, 
+		MotionAlg::STANDARD_LINEAR, 60 ) );
+	testSeq.AddMovement( new WaitMovement( pos2Test, 30 ) ); 
+	testSeq.AddMovement( new LineMovement( pos2Test, position, 
+		MotionAlg::STANDARD_LINEAR, 60 ) );
+
 
 	initHealth = 40;
 	health = initHealth;
@@ -110,6 +122,7 @@ void Bat::HandleEntrant( QuadTreeEntrant *qte )
 
 void Bat::ResetEnemy()
 {
+	testSeq.Reset();
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
 	targetNode = 1;
@@ -152,6 +165,12 @@ void Bat::UpdatePrePhysics()
 
 void Bat::UpdatePhysics()
 {
+	testSeq.Update();
+
+	position = testSeq.position;
+
+	return;
+
 	double movement = speed / NUM_STEPS;
 	
 	if( PlayerSlowingMe() )

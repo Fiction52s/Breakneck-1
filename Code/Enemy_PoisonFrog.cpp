@@ -554,6 +554,17 @@ void PoisonFrog::UpdatePrePhysics()
 				}
 				
 			}
+			else
+			{
+				if( facingRight )
+				{
+					velocity.x = xSpeed;
+				}
+				else
+				{
+					velocity.x = -xSpeed;
+				}
+			}
 		}
 		break;
 	case LAND:
@@ -567,6 +578,8 @@ void PoisonFrog::UpdatePrePhysics()
 	{
 		velocity += V2d( 0, gravity );
 	}
+
+	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 }
 
 void PoisonFrog::UpdatePhysics()
@@ -590,13 +603,15 @@ void PoisonFrog::UpdatePhysics()
 				cout << "landing" << endl;
 				ground = minContact.edge;
 				edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
+				position += minContact.resolution;
 				action = LAND;
 				frame = 0;
 			}
 			else
 			{
+				cout << "reso: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				position += minContact.resolution;
-				velocity = V2d( 0, 0 );
+				//velocity = V2d( 0, 0 );
 			}
 			
 		}
