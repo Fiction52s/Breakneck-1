@@ -78,22 +78,169 @@ V2d GetLinearValue( V2d &p0,V2d &p1,V2d &p2,V2d &p3,double time )
 	return ( 1- time ) * p0 + time * p1;
 }
 
-Movement::Movement( V2d (*alg)(V2d&,V2d&,V2d&,V2d&,double), int dur )
-	:next( NULL ), duration( dur * NUM_STEPS ), func( alg ) 
+CubicBezier::CubicBezier( double p1x, double p1y, double p2x, double p2y )
+	:p1( p1x, p1y), p2( p2x, p2y )
+{
+	p0 = V2d( 0, 0 );
+	p3 = V2d( 1, 1 );
+}
+
+
+//h(t) : return (1 - t)^3 * x0 + 3(1 - t)^2t * x1 + 3(1 - t)t^2 * x2 + t^3 * x3;
+//
+////Util
+//sign(z) : (z >= 0)? 1 : -1;
+//abs(z) : z * sign(z);
+//
+////binary search :
+//lookup(a) : 
+//  t = 0.5;
+//  step = 0.5;
+//  precision = 0.0001;
+//  While(abs(h(t) - a) > precision) :
+//    step /= 2.0;
+//    t += sign(a - h(t)) * step;
+int Sign( double x )
+{
+	if (x > 0) return 1;
+	if (x < 0) return -1;
+	return 0;
+}
+
+double CubicBezier::GetValue( double a )
+{
+	//cout << "getting value" << endl;
+	double t = .5;
+	double step = .5;
+	double precision = .0001;
+
+	double x = GetX( t );
+	while( abs( x - a ) > precision )
+	{
+		//cout << "BLAH VALUE: " << x << ", a: " << a << endl;
+		step /= 2.0;
+		t += Sign( a - x ) * step;
+		x = GetX( t );
+	}
+
+	return GetY( t );
+}
+
+double CubicBezier::GetX( double t )
+{
+	double rt = ( 1 - t);
+	return pow( rt, 3 ) * p0.x 
+		+ 3 * rt * rt * t * p1.x
+		+ 3 * rt * t * t * p2.x
+		+ pow( t, 3 ) * p3.x;
+}
+
+double CubicBezier::GetY( double t )
+{
+	double rt = ( 1 - t);
+	return pow( rt, 3 ) * p0.y 
+		+ 3 * rt * rt * t * p1.y
+		+ 3 * rt * t * t * p2.y
+		+ pow( t, 3 ) * p3.y;
+}
+////time is between 0.0 and 1.0 and return value is between 0.0 and 1.0
+//double CubicBezier::GetValue( double time )
+//{
+//	double rtime = ( 1 - time );
+//	double d = pow( time, 3 );
+//	
+//	double x = GetX( time );
+//	//ignore some calcs cuz A is 0,0 and D is 1,1
+//	//return 3.0 * rtime * time * time * p1 + 3.0 * rtime * time * time * p2 + V2d( d, d );
+//	/*return pow( rtime, 3 ) * A 
+//		+ 3 * rtime * rtime * time * B 
+//		+ 3 * rtime * time * time * C 
+//		+ pow( time, 3 ) * D;*/
+//}
+
+Movement::Movement( CubicBezier &p_bez, int dur )
+	:next( NULL ), duration( dur * NUM_STEPS ), vertices( NULL ), bez( p_bez )
 {
 }
 
-BezierMovement::BezierMovement( V2d (*alg)(V2d&,V2d&,V2d&,V2d&,double), 
-	int duration,
-	V2d &a, V2d &b, 
-	V2d &c,
-	V2d &d)
-	:Movement( alg, duration ), A( a ), B( b ), C( c ), D( d )
+Movement::~Movement()
+{
+	if( vertices != NULL )
+	{
+		delete [] vertices;
+	}
+}
+
+void Movement::InitDebugDraw()
+{
+
+	//for debugdraw
+	vertices = new Vertex[20 * 4];
+	Color col = COLOR_BLUE;
+	
+	double x = 0;
+
+	int hSize = 4;
+
+	for(int i = 0; i < 20; ++i )
+	{
+		vertices[i*4+0].color = col;
+		vertices[i*4+1].color = col;
+		vertices[i*4+2].color = col;
+		vertices[i*4+3].color = col;
+
+		V2d pos = GetPosition( (int)(x * duration) );
+		vertices[i*4+0].position = Vector2f( pos.x - hSize, pos.y - hSize );
+		vertices[i*4+1].position = Vector2f( pos.x + hSize, pos.y - hSize );
+		vertices[i*4+2].position = Vector2f( pos.x + hSize, pos.y + hSize );
+		vertices[i*4+3].position = Vector2f( pos.x - hSize, pos.y + hSize );
+		x += 1 / 20.0;
+	}
+}
+
+void Movement::DebugDraw( sf::RenderTarget *target )
+{
+	target->draw( vertices, 80, sf::Quads );	
+}
+
+SplineMovement::SplineMovement( list<sf::Vector2<double>> &p_points,
+	CubicBezier &bez, int duration)
+	:Movement( bez, duration ), points( p_points )
+{
+
+}
+
+V2d SplineMovement::GetPosition( int t )
+{
+
+	//double x = A.x + (B.x - A.x) * func( t / (double)duration );
+	//double y = A.y + (B.y - A.y) * alg.GetValue( t / (double)duration );
+	//
+	return V2d( 0, 0 );
+	//return V2d( 
+	//return func( A, B, C, D, t / (double)duration );  //V2d( x, y );
+}
+
+LineMovement::LineMovement( sf::Vector2<double> &a,
+		sf::Vector2<double> &b,
+		CubicBezier &bez,
+		int duration )
+		:Movement( bez, duration ), A( a ), B( b )
 {
 }
+
+V2d LineMovement::GetPosition( int t )
+{
+	
+	//cout << "Start get position" << endl;
+	double v = bez.GetValue( t / (double)duration );
+	cout << "v: " << v << endl;
+	return A + ( B - A ) * v;
+}
+		
 
 WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
-	:Movement( &GetLinearValue, duration ), pos( p_pos )
+	:Movement( CubicBezier(), duration ), pos( p_pos )
 {
 }
 
@@ -109,14 +256,33 @@ MovementSequence::MovementSequence()
 	Reset();
 }
 
-V2d BezierMovement::GetPosition( int t )
+void MovementSequence::AddLineMovement( sf::Vector2<double> &A,
+		sf::Vector2<double> &B, CubicBezier& bez, int duration )
 {
-
-	//double x = A.x + (B.x - A.x) * func( t / (double)duration );
-	//double y = A.y + (B.y - A.y) * alg.GetValue( t / (double)duration );
-
-	return func( A, B, C, D, t / (double)duration );  //V2d( x, y );
+	//cout << "tryingggg movement" << endl;
+	AddMovement( new LineMovement( A, B, bez, duration ) );
+	//cout << "done adding movement" << endl;
 }
+
+void MovementSequence::InitMovementDebug()
+{
+	Movement *curr = movementList;
+	while( curr != NULL )
+	{
+		curr->InitDebugDraw();
+		curr = curr->next;
+	}
+}
+
+void MovementSequence::MovementDebugDraw( sf::RenderTarget *target )
+{
+	if( currMovement != NULL )
+	{
+		currMovement->DebugDraw( target );
+	}
+}
+
+
 
 void MovementSequence::Reset()
 {
@@ -132,8 +298,9 @@ void MovementSequence::Update()
 {
 	if( currMovement != NULL )
 	{
-		
+		//cout << "before" << endl;
 		position = currMovement->GetPosition( currTime - currMovementStartTime  );
+		//cout << "after" << endl;
 		//cout << "updating pos: " << position.x << ", " << position.y << endl;
 	}
 	if( currRotation != NULL )

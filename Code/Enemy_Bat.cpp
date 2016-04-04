@@ -22,23 +22,7 @@ Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loop
 	position.x = pos.x;
 	position.y = pos.y;
 
-	V2d pos2Test = position + V2d( 100, 0 );
-	V2d pos3Test = position - V2d( 100, 0 );
-
-	V2d filler( 0, 0 );
-
-	V2d p1 = position * .1 + pos2Test * .9;
-	V2d p2 = position * .5 + pos2Test * .5;
-
-	V2d p_p1 = pos2Test * .1 + position * .9;
-	V2d p_p2 = pos2Test * .5 + position * .5;
-	testSeq.AddMovement( new BezierMovement( 
-		&GetCubicValue, 60 ,
-		position, p1,p2 , pos2Test ) );
-	testSeq.AddMovement( new WaitMovement( pos2Test, 30 ) ); 
-	testSeq.AddMovement( new BezierMovement( 
-		&GetCubicValue, 60 ,
-		pos2Test, p_p1, p_p2, position ) );
+	
 
 
 	initHealth = 40;
@@ -59,6 +43,59 @@ Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loop
 		//path.push_back( (*it) );
 
 	}
+
+	//make composite beziers
+	if( pathLength == 1 )
+	{
+
+	}
+	else
+	{
+		//for( int i = 0; i < pathLength; ++i )
+		//{
+
+		//}
+	}
+
+	V2d sqTest0 = position;
+	V2d sqTest1 = position + V2d( 300, 0 );
+	V2d sqTest2 = position + V2d( 300, 300 );
+	V2d sqTest3 = position + V2d( 0, 200 );
+
+	testSeq.AddLineMovement( sqTest0, sqTest1, 
+		CubicBezier(1,.03,.91,.25 ), 60 );
+	//	CubicBezier( 0, .03, .1, 1), 60 );
+
+	/*testSeq.AddMovement( new BezierMovement( 
+		&GetCubicValue, 60 ,
+		sqTest0, sqTest1,sqTest2 , sqTest3 ) );
+	testSeq.AddMovement( new BezierMovement( 
+		&GetCubicValue, 60 ,
+		sqTest3, sqTest0,sqTest1 , sqTest2 ) );*/
+
+	//testSeq.InitMovementDebug();
+
+	V2d pos2Test = position + V2d( 200, 0 );
+	V2d pos3Test = position - V2d( 200, 0 );
+	
+
+	V2d filler( 0, 0 );
+
+	V2d p1 = position * .1 + pos2Test * .9;
+	V2d p2 = position * .5 + pos2Test * .5;
+
+	V2d blah = p1 + V2d( 0, 100 );
+	V2d blah1 = p2 - V2d( 0, 100 );
+
+	V2d p_p1 = pos2Test * .1 + pos3Test * .9;
+	V2d p_p2 = pos2Test * .5 + pos3Test * .5;
+	/*testSeq.AddMovement( new BezierMovement( 
+		&GetCubicValue, 60 ,
+		position, blah,blah1 , pos2Test ) );
+	testSeq.AddMovement( new WaitMovement( pos2Test, 30 ) ); 
+	testSeq.AddMovement( new BezierMovement( 
+		&GetCubicValue, 60 ,
+		pos2Test, p_p1, p_p2, pos3Test ) );*/
 
 	loop = loopP;
 	
@@ -529,6 +566,13 @@ void Bat::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
+		if( testSeq.currMovement != NULL )
+		{
+			if( testSeq.currMovement->vertices != NULL )
+			{
+				testSeq.currMovement->DebugDraw( target );
+			}
+		}
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
 	}

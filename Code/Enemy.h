@@ -33,6 +33,26 @@ sf::Vector2<double> GetLinearValue(
 	sf::Vector2<double> &p3,
 	double time );
 
+struct CubicBezier
+{
+	CubicBezier(){}
+	CubicBezier( double p1x,
+		double p1y,
+		double p2x,
+		double p2y );
+
+
+	sf::Vector2<double> p0;
+	sf::Vector2<double> p1;
+	sf::Vector2<double> p2;
+	sf::Vector2<double> p3;
+
+	double GetValue( double a );
+	double GetX( double t );
+	double GetY( double t );
+	//double GetValue( double time );
+};
+
 
 //void *(*foo)(int *);
 typedef sf::Vector2<double> (*motionAlgFunc)(
@@ -59,12 +79,15 @@ struct Rotation
 
 struct Movement
 {
-	Movement( motionAlgFunc,
-		int duration);
-	motionAlgFunc func;
+	Movement( CubicBezier &bez, int duration);
+	~Movement();
+	void InitDebugDraw();
+	CubicBezier bez;
 	virtual sf::Vector2<double> GetPosition( int t ) = 0;
 	int duration;
+	void DebugDraw( sf::RenderTarget *target );
 	Movement *next;
+	sf::Vertex *vertices;//debugdraw
 };
 
 struct WaitMovement : Movement
@@ -75,21 +98,27 @@ struct WaitMovement : Movement
 	sf::Vector2<double> pos;
 };
 
-struct BezierMovement : Movement 
+struct SplineMovement : Movement 
 {
-	BezierMovement( motionAlgFunc,
-		int duration ,
-		sf::Vector2<double> &a,
-		sf::Vector2<double> &b, 
-		sf::Vector2<double> &c,
-		sf::Vector2<double> &d  );
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D;
+	SplineMovement( std::list<sf::Vector2<double>> &points,
+		CubicBezier &bez,
+		int duration );
+	 std::list<sf::Vector2<double>> points;
 	sf::Vector2<double> GetPosition( int t );
 };
 
+struct LineMovement: Movement
+{
+	LineMovement( sf::Vector2<double> &A,
+		sf::Vector2<double> &B,
+		CubicBezier &bez,
+		int duration );
+		
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+
+	sf::Vector2<double> GetPosition( int t );
+};
 
 
 struct MovementSequence
@@ -100,6 +129,11 @@ struct MovementSequence
 	int currTime;
 	void AddMovement( Movement *movement );
 	void AddRotation( Rotation *rotation );
+	void InitMovementDebug();
+	void MovementDebugDraw( sf::RenderTarget *target );
+	void AddLineMovement( sf::Vector2<double> &A,
+		sf::Vector2<double> &B, CubicBezier&, int duration );
+
 	Movement *movementList;
 	Movement *currMovement;
 	
