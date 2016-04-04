@@ -58,34 +58,42 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
-MotionAlg::MotionAlg( MotionAlg::Algorithms p_alg )
-	:alg( p_alg )
+V2d GetCubicValue( V2d &p0,V2d &p1,V2d &p2,V2d &p3,double time )
+{
+	double rtime = ( 1 - time );
+	return pow( rtime, 3 ) * p0 
+		+ 3 * rtime * rtime * time * p1 
+		+ 3 * rtime * time * time * p2 
+		+ pow( time, 3 ) * p3;
+}
+
+V2d GetQuadraticValue( V2d &p0,V2d &p1,V2d &p2,V2d &p3,double time )
+{
+	double rtime = ( 1 - time );
+	return rtime * rtime * p0 + 2 * rtime * time * p1 + time * time * p2;
+}
+
+V2d GetLinearValue( V2d &p0,V2d &p1,V2d &p2,V2d &p3,double time )
+{
+	return ( 1- time ) * p0 + time * p1;
+}
+
+Movement::Movement( V2d (*alg)(V2d&,V2d&,V2d&,V2d&,double), int dur )
+	:next( NULL ), duration( dur * NUM_STEPS ), func( alg ) 
 {
 }
 
-double MotionAlg::GetValue( double t )
-{
-	switch( alg )
-	{
-	case STANDARD_LINEAR:
-		return t;
-		break;
-	};
-}
-
-Movement::Movement( MotionAlg::Algorithms algType, int dur )
-	:alg( algType ), next( NULL ), duration( dur * NUM_STEPS ) 
-{
-}
-
-LineMovement::LineMovement( sf::Vector2<double> &a, sf::Vector2<double> &b, 
-	MotionAlg::Algorithms algType, int duration )
-	:Movement( algType, duration ), A( a ), B( b )
+BezierMovement::BezierMovement( V2d (*alg)(V2d&,V2d&,V2d&,V2d&,double), 
+	int duration,
+	V2d &a, V2d &b, 
+	V2d &c,
+	V2d &d)
+	:Movement( alg, duration ), A( a ), B( b ), C( c ), D( d )
 {
 }
 
 WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
-	:Movement( MotionAlg::STANDARD_LINEAR, duration ), pos( p_pos )
+	:Movement( &GetLinearValue, duration ), pos( p_pos )
 {
 }
 
@@ -101,12 +109,13 @@ MovementSequence::MovementSequence()
 	Reset();
 }
 
-V2d LineMovement::GetPosition( int t )
+V2d BezierMovement::GetPosition( int t )
 {
-	double x = A.x + (B.x - A.x) * alg.GetValue( t / (double)duration );
-	double y = A.y + (B.y - A.y) * alg.GetValue( t / (double)duration );
 
-	return V2d( x, y );
+	//double x = A.x + (B.x - A.x) * func( t / (double)duration );
+	//double y = A.y + (B.y - A.y) * alg.GetValue( t / (double)duration );
+
+	return func( A, B, C, D, t / (double)duration );  //V2d( x, y );
 }
 
 void MovementSequence::Reset()

@@ -25,11 +25,20 @@ Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loop
 	V2d pos2Test = position + V2d( 100, 0 );
 	V2d pos3Test = position - V2d( 100, 0 );
 
-	testSeq.AddMovement( new LineMovement( position, pos2Test, 
-		MotionAlg::STANDARD_LINEAR, 60 ) );
+	V2d filler( 0, 0 );
+
+	V2d p1 = position * .1 + pos2Test * .9;
+	V2d p2 = position * .5 + pos2Test * .5;
+
+	V2d p_p1 = pos2Test * .1 + position * .9;
+	V2d p_p2 = pos2Test * .5 + position * .5;
+	testSeq.AddMovement( new BezierMovement( 
+		&GetCubicValue, 60 ,
+		position, p1,p2 , pos2Test ) );
 	testSeq.AddMovement( new WaitMovement( pos2Test, 30 ) ); 
-	testSeq.AddMovement( new LineMovement( pos2Test, position, 
-		MotionAlg::STANDARD_LINEAR, 60 ) );
+	testSeq.AddMovement( new BezierMovement( 
+		&GetCubicValue, 60 ,
+		pos2Test, p_p1, p_p2, position ) );
 
 
 	initHealth = 40;

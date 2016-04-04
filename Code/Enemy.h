@@ -12,20 +12,35 @@ struct Monitor;
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
 
+sf::Vector2<double> GetQuadraticValue( 
+	sf::Vector2<double> &p0,
+	sf::Vector2<double> &p1,
+	sf::Vector2<double> &p2,
+	sf::Vector2<double> &p3,
+	double time );
 
-struct MotionAlg
-{
-	enum Algorithms
-	{
-		STANDARD_LINEAR,
-		Count
-	};
+sf::Vector2<double> GetCubicValue( 
+	sf::Vector2<double> &p0,
+	sf::Vector2<double> &p1,
+	sf::Vector2<double> &p2,
+	sf::Vector2<double> &p3,
+	double time );
 
-	MotionAlg( Algorithms alg );
-	Algorithms alg;
-	double GetValue( double t ); //0.0 to 1.0 both
-};
+sf::Vector2<double> GetLinearValue( 
+	sf::Vector2<double> &p0,
+	sf::Vector2<double> &p1,
+	sf::Vector2<double> &p2,
+	sf::Vector2<double> &p3,
+	double time );
 
+
+//void *(*foo)(int *);
+typedef sf::Vector2<double> (*motionAlgFunc)(
+	sf::Vector2<double>&,
+	sf::Vector2<double>&,
+	sf::Vector2<double>&,
+	sf::Vector2<double>&,
+	double);
 
 struct Projectile
 {
@@ -44,11 +59,11 @@ struct Rotation
 
 struct Movement
 {
-	Movement( MotionAlg::Algorithms algType,
+	Movement( motionAlgFunc,
 		int duration);
+	motionAlgFunc func;
 	virtual sf::Vector2<double> GetPosition( int t ) = 0;
 	int duration;
-	MotionAlg alg;
 	Movement *next;
 };
 
@@ -60,14 +75,18 @@ struct WaitMovement : Movement
 	sf::Vector2<double> pos;
 };
 
-struct LineMovement : Movement 
+struct BezierMovement : Movement 
 {
-	LineMovement( sf::Vector2<double> &a,
+	BezierMovement( motionAlgFunc,
+		int duration ,
+		sf::Vector2<double> &a,
 		sf::Vector2<double> &b, 
-		MotionAlg::Algorithms algType,
-		int duration );
+		sf::Vector2<double> &c,
+		sf::Vector2<double> &d  );
 	sf::Vector2<double> A;
 	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D;
 	sf::Vector2<double> GetPosition( int t );
 };
 
