@@ -537,6 +537,10 @@ void StagBeetle::UpdatePhysics()
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	testMover->groundSpeed = 5 * f;
+	if( !clockwise )
+	{
+		testMover->groundSpeed = -5 * f;
+	}
 	bezFrame++;
 
 	if( bezFrame == bezLength )

@@ -553,7 +553,7 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	{
 		//cout << "cmon" << endl;
 		ground = ground->edge0;
-		q = length( ground->edge0->v1 - ground->edge0->v0 );
+		q = length( ground->v1 - ground->v0 );
 		roll = false;
 	}
 
