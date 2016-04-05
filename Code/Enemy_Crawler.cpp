@@ -809,37 +809,20 @@ void Crawler::UpdatePhysics()
 				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
-					//cout << "m: " << m << ", ground: " << ground << ", edge0: " << ground->edge0 << ", " 
-					//	<< "minedge: " << minContact.edge << endl;
 					V2d eNorm = minContact.edge->Normal();
 					V2d movetest =  (normalize( ground->v1 - ground->v0 ) * m);
 					ground = minContact.edge;
 					if( minContact.normal.x == 0 && minContact.normal.y == 0 )
 					{
-						//cout << "hitting thing: " << q << endl;
-
-						//if( minContact.position == ground->v1 )
-						//{
-							roll = true;
-							
-						//}
-						//point
-					//	cout << "point!" << endl;
-						
-						cout << "movement: " << movetest.x << ", " << movetest.y <<
-							", res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
-						q = ground->GetQuantity( minContact.position );
+						roll = true;
+						edgeQuantity = ground->GetQuantity( minContact.position );
 						position += minContact.resolution;
 					}
 					else
 					{
 						//cout << "point!" << endl;
-						q = ground->GetQuantity( minContact.position + minContact.resolution );
+						edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
 					}
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
-					//cout << "hit 1: " << gn.x << ", " << gn.y << ", ground is now: " << ground << endl;
-					
 					break;
 				}			
 			}

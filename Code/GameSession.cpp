@@ -146,7 +146,7 @@ bool SurfaceMover::ResolvePhysics( V2d &vel )
 //return true if you should break out of the loop
 bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double &q, double &m )
 {
-	cout << "moving along edge" << endl;
+	//cout << "moving along edge" << endl;
 	double extra = 0;
 	if( movement > 0 )
 	{	
@@ -182,31 +182,7 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 		bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 		{
-			//callback that you hit something while just doing normal movement
-
-			//pass: velocity sent to resolvephysics
-			//		mincontact?
-			cout << "transfer A" << endl;
-			V2d eNorm = minContact.edge->Normal();
-
-			ground = minContact.edge;
-			q = ground->GetQuantity( minContact.position + minContact.resolution );
-			edgeQuantity = q;
-			roll = false;
-
-			//if( eNorm.y < 0 )
-			//{
-			//	ground = minContact.edge;
-			//	q = ground->GetQuantity( minContact.position + minContact.resolution );
-			//	edgeQuantity = q;
-			//	V2d gn = ground->Normal();
-			//	roll = false;
-			//}
-			//else
-			//{
-			//	
-			//	//cout << "stopped!" << endl;
-			//}		
+			HitTerrain( q );	
 			return true;
 		}			
 	}
@@ -471,7 +447,7 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	V2d gNormal = ground->Normal();
 	V2d e1n = ground->edge1->Normal();
 
-	double angle = m / 3.0 /  physBody.rw;
+	double angle = m /  physBody.rw;
 	V2d currVec = physBody.globalPosition - ground->v1;
 	V2d newPos;
 	newPos.x = currVec.x * cos( angle ) - 
@@ -509,26 +485,7 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	bool hit = ResolvePhysics( newPos - physBody.globalPosition );
 	if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 	{
-		V2d eNorm = minContact.edge->Normal();
-
-		ground = minContact.edge;
-		q = ground->GetQuantity( minContact.position + minContact.resolution );
-		edgeQuantity = q;
-		roll = false;
-		
-		////need to check for points eventually too
-		//if( eNorm.y < 0 )
-		//{
-		//	ground = minContact.edge;
-		//	q = ground->GetQuantity( minContact.position + minContact.resolution );
-		//	edgeQuantity = q;
-		//	V2d gn = ground->Normal();
-		//	
-		//}
-		//else
-		//{
-		//	
-		//}
+		HitTerrain(q);
 		return true;
 	}
 
@@ -547,7 +504,7 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	V2d gNormal = ground->Normal();
 	V2d e0n = ground->edge0->Normal();
 
-	double angle = m / 3.0 / physBody.rw;
+	double angle = m / physBody.rw;
 	V2d currVec = physBody.globalPosition - ground->v0;
 	V2d newPos;
 	newPos.x = currVec.x * cos( angle ) - 
@@ -588,13 +545,7 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	bool hit = ResolvePhysics( newPos - physBody.globalPosition );
 	if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 	{
-		V2d eNorm = minContact.edge->Normal();
-		ground = minContact.edge;
-		q = ground->GetQuantity( minContact.position + minContact.resolution );
-		edgeQuantity = q;
-		V2d gn = ground->Normal();
-		roll = false;
-		//cout << "hitting" << endl;
+		HitTerrain(q);
 		return true;
 	}	
 
@@ -675,7 +626,7 @@ void SurfaceMover::Move( int slowMultiple )
 			else if( !roll )
 			{
 				roll = true;
-				//StartRoll();
+				StartRoll();
 				//callback for starting to roll
 			}
 			else
@@ -700,6 +651,7 @@ void SurfaceMover::Move( int slowMultiple )
 			else if( !roll )
 			{
 				roll = true;
+				StartRoll();
 			}
 			else
 			{
@@ -735,6 +687,50 @@ void SurfaceMover::Move( int slowMultiple )
 	UpdateGroundPos();
 
 	//PhysicsResponse();
+}
+
+void SurfaceMover::HitTerrain( double &q )
+{
+	//V2d eNorm = minContact.edge->Normal();
+	if( roll )
+	{
+		ground = minContact.edge;
+		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+		{
+			q = ground->GetQuantity( minContact.position );
+			physBody.globalPosition += minContact.resolution;
+		}
+		else
+		{
+			roll = false;
+			q = ground->GetQuantity( minContact.position + minContact.resolution );
+		}
+		
+	}
+	else
+	{
+		ground = minContact.edge;
+		if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+		{
+			roll = true;
+			q = ground->GetQuantity( minContact.position );
+			physBody.globalPosition += minContact.resolution;
+		}
+		else
+		{
+			q = ground->GetQuantity( minContact.position + minContact.resolution );
+		}
+	}
+}
+
+void SurfaceMover::StartRoll()
+{
+	//nothing in the default
+}
+
+void SurfaceMover::StopRoll()
+{
+	//nothing in the default
 }
 
 V2d GetCubicValue( V2d &p0,V2d &p1,V2d &p2,V2d &p3,double time )

@@ -562,6 +562,10 @@ struct StagBeetle : Enemy
 	//sf::Vector2<double> offset;
 	double edgeQuantity;
 
+	CubicBezier moveBezTest;
+	int bezFrame;
+	int bezLength;
+
 	CrawlerReverser *lastReverser;
 
 	CollisionBox hurtBody;

@@ -47,7 +47,9 @@ struct SurfaceMover : QuadTreeCollider
 		double &m
 		);
 
-	void StartRoll();
+	virtual void HitTerrain( double &q );
+	virtual void StartRoll();
+	virtual void StopRoll();
 	
 	double groundSpeed;
 
@@ -60,7 +62,7 @@ struct SurfaceMover : QuadTreeCollider
 	//
 };
 
-struct GroundMover
+struct GroundMover : SurfaceMover
 {
 };
 

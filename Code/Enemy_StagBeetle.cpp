@@ -19,7 +19,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::STAGBEETLE ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )	
+	:Enemy( owner, EnemyType::STAGBEETLE ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s ),
+	moveBezTest( .22,.85,.3,.91 )
 {
 	
 
@@ -97,7 +98,12 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 	testMover = new SurfaceMover( owner, g, q, 32 );
 
+
+
 	testMover->groundSpeed = 5;
+
+	bezFrame = 0;
+	bezLength = 60 * NUM_STEPS;
 	//testMover->Move( slowMultiple );
 
 	//ground = testMover->ground;
@@ -107,7 +113,6 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 void StagBeetle::ResetEnemy()
 {
-	
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
 	testMover->UpdateGroundPos();
@@ -529,347 +534,27 @@ void StagBeetle::UpdatePhysics()
 		return;
 	}
 
+
+	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
+	testMover->groundSpeed = 5 * f;
+	bezFrame++;
+
+	if( bezFrame == bezLength )
+	{
+		bezFrame = 0;
+	}
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
 
 	ground = testMover->ground;
 	edgeQuantity = testMover->edgeQuantity;
 	position = testMover->physBody.globalPosition;
-	PhysicsResponse();
 
-	return;
-
-	double movement = 0;
-	double maxMovement = min( physBody.rw, physBody.rh );
-	movement = groundSpeed;
-
-	movement /= slowMultiple * NUM_STEPS;
-	while( movement != 0 )
+	if( roll != testMover->roll )
 	{
-		//ground is always some value
-
-		double steal = 0;
-		if( movement > 0 )
-		{
-			if( movement > maxMovement )
-			{
-				steal = movement - maxMovement;
-				movement = maxMovement;
-			}
-		}
-		else 
-		{
-			if( movement < -maxMovement )
-			{
-				steal = movement + maxMovement;
-				movement = -maxMovement;
-			}
-		}
-
-		double extra = 0;
-		bool leaveGround = false;
-		double q = edgeQuantity;
-
-		V2d gNormal = ground->Normal();
-
-
-		double m = movement;
-		double groundLength = length( ground->v1 - ground->v0 ); 
-
-		if( approxEquals( q, 0 ) )
-			q = 0;
-		else if( approxEquals( q, groundLength ) )
-			q = groundLength;
-
-		Edge *e0 = ground->edge0;
-		Edge *e1 = ground->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
-
-		bool transferLeft = false;
-		bool transferRight = false;
-
-		if( movement > 0 && q == groundLength )
-		{
-			double c = cross( e1n, gNormal );
-			double d = dot( e1n, gNormal );
-			
-			if( gNormal == e1n )
-			{
-				//cout << "t1" << endl;
-				q = 0;
-				ground = e1;
-			}
-			else if( !roll )
-			{
-				//cout << "roll is true" << endl;
-				roll = true;
-				rollFactor = 0;
-				frame = 0;
-			}
-			else
-			{
-				
-				double angle = m / 3.0 /  physBody.rw;
-				V2d currVec = position - ground->v1;
-				V2d newPos;
-				newPos.x = currVec.x * cos( angle ) - 
-					currVec.y * sin( angle ) + ground->v1.x;
-				newPos.y = currVec.x * sin( angle ) + 
-					currVec.y * cos( angle ) + ground->v1.y;
-				V2d newVec = newPos - ground->v1;
-				double rollNew = atan2( newVec.y, newVec.x );
-				if( rollNew < 0 )
-				{
-					rollNew += 2 * PI;
-				}
-
-				double oldRollFactor = rollFactor;
-				double rollStart = atan2( gNormal.y, gNormal.x );
-				V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-				double rollEnd = atan2( e1n.y, e1n.x );
-
-				if( rollStart < 0 )
-					rollStart += 2 * PI;
-				if( rollEnd < 0 )
-					rollEnd += 2 * PI;
-
-				//cout << "totalAngleDist: " << totalAngleDist << endl;
-				//cout << "angleDist: " << angleDist << endl;
-				//cout << "rollEnd: " << rollEnd << endl;
-				//cout << "rollNew: " << rollNew << endl;
-
-				bool changed = false;
-				if( rollEnd > rollStart && ( rollNew > rollEnd || rollNew < rollStart ) )
-				{
-					changed = true;
-					newPos = ground->v1 + e1n * physBody.rw;
-				}
-				//else if( rollEnd < rollStart && rollNew < rollEnd )
-				else if( rollEnd < rollStart && ( rollNew > rollEnd && rollNew < rollStart ) )
-				{
-					changed = true;
-					newPos = ground->v1 + e1n * physBody.rw;
-				}
-
-				//V2d newVec = newPos - ground->v1;
-
-
-				bool hit = ResolvePhysics( newPos - position );
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					V2d eNorm = minContact.edge->Normal();
-					//need to check for points eventually too
-					if( eNorm.y < 0 )
-					{
-						ground = minContact.edge;
-						q = ground->GetQuantity( minContact.position + minContact.resolution );
-						edgeQuantity = q;
-						V2d gn = ground->Normal();
-						roll = false;
-					}
-					else
-					{
-						q = ground->GetQuantity( position + minContact.resolution );
-						edgeQuantity = q;
-						groundSpeed = 0;
-						//cout << "stopped!" << endl;
-					}
-					
-					
-					//cout << "hitting" << endl;
-					break;
-				}
-
-				if( changed )
-				{
-				//	cout << "t2" << endl;
-					ground = e1;
-					q = 0;
-					roll = false;
-				}
-			}
-		}
-		else if( movement < 0 && q == 0 )
-		{
-			double d = dot( e1n, gNormal );
-
-			if( gNormal == e0n )
-			{
-				q = length( e0->v1 - e0->v0 );
-				ground = e0;
-			}
-			else if( !roll )
-			{
-				roll = true;
-				rollFactor = 0;
-				frame = 0;
-			}
-			else
-			{
-				//cout << "roll left" << endl;
-				double angle = m / 3.0 / physBody.rw;
-				V2d currVec = position - ground->v0;
-				V2d newPos;
-				newPos.x = currVec.x * cos( angle ) - 
-					currVec.y * sin( angle ) + ground->v0.x;
-				newPos.y = currVec.x * sin( angle ) + 
-					currVec.y * cos( angle ) + ground->v0.y;
-				V2d newVec = newPos - ground->v0;
-				double rollNew = atan2( newVec.y, newVec.x );
-				if( rollNew < 0 )
-				{
-					rollNew += 2 * PI;
-				}
-
-				double oldRollFactor = rollFactor;
-				double rollStart = atan2( gNormal.y, gNormal.x );
-				V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-				double rollEnd = atan2( e0n.y, e0n.x );
-
-				if( rollStart < 0 )
-					rollStart += 2 * PI;
-				if( rollEnd < 0 )
-					rollEnd += 2 * PI;
-
-				bool changed = false;
-				if( rollEnd < rollStart && ( rollNew < rollEnd || rollNew > rollStart ) )
-				{
-					//cout << "first" << endl;
-					changed = true;
-					newPos = ground->v0 + e0n * physBody.rw;
-				}
-				else if( rollEnd > rollStart && ( rollNew < rollEnd && rollNew > rollStart ) )
-				{
-					//cout << "second: " << rollStart << ", end: " << rollEnd << ", new: " << rollNew << endl;
-					changed = true;
-					newPos = ground->v0 + e0n * physBody.rw;
-				}
-
-				bool hit = ResolvePhysics( newPos - position );
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					V2d eNorm = minContact.edge->Normal();
-					ground = minContact.edge;
-					q = ground->GetQuantity( minContact.position + minContact.resolution );
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
-					roll = false;
-					//cout << "hitting" << endl;
-					break;
-				}	
-
-				if( changed )
-				{
-					//cout << "cmon" << endl;
-					ground = e0;
-					q = length( e0->v1 - e0->v0 );
-					roll = false;
-				}
-			}
-		}
-		else
-		{
-			if( movement > 0 )
-			{	
-				extra = (q + movement) - groundLength;
-			}
-			else 
-			{
-				extra = (q + movement);
-			}
-					
-			if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
-			{
-				if( movement > 0 )
-				{
-					q = groundLength;
-				}
-				else
-				{
-					q = 0;
-				}
-				movement = extra;
-				m -= extra;
-				//cout << "adjusting m to: " << m << endl;
-						
-			}
-			else
-			{
-				movement = 0;
-				q += m;
-			}
-				
-			if( !approxEquals( m, 0 ) )//	if(m != 0 )
-			{	
-				bool down = true;
-				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					V2d eNorm = minContact.edge->Normal();
-
-					if( eNorm.y < 0 )
-					{
-						ground = minContact.edge;
-						q = ground->GetQuantity( minContact.position + minContact.resolution );
-						edgeQuantity = q;
-						V2d gn = ground->Normal();
-						roll = false;
-					}
-					else
-					{
-						q = ground->GetQuantity( position + minContact.resolution );
-						edgeQuantity = q;
-						groundSpeed = 0;
-						//cout << "stopped!" << endl;
-					}
-
-
-					//ground = minContact.edge;
-					//if( minContact.normal.x == 0 && minContact.normal.y == 0 )
-					//{
-					//	//point
-					////	cout << "point!" << endl;
-					//	q = ground->GetQuantity( minContact.position );
-					//}
-					//else
-					//{
-					//	//cout << "point!" << endl;
-					//	q = ground->GetQuantity( minContact.position + minContact.resolution );
-					//}
-					//edgeQuantity = q;
-					//V2d gn = ground->Normal();
-					//cout << "hit 1: " << gn.x << ", " << gn.y << ", ground is now: " << ground << endl;
-					
-					break;
-				}			
-			}
-			else
-			{
-				if( clockwise )
-				{
-					//cout << "t33" << endl;
-					ground = e1;
-					q = 0;
-				}
-				else
-				{
-					//cout << "here>? " << endl;
-					ground = e0;
-					q = length( e0->v1 - e0->v0 );
-				}
-				
-			}
-		}
-
-		if( movement == extra )
-			movement += steal;
-		else
-			movement = steal;
-
-		edgeQuantity = q;
+		frame = 0;
 	}
-
+	roll = testMover->roll;
 	PhysicsResponse();
 }
 
