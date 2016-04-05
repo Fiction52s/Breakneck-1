@@ -244,6 +244,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Stored stored;
 };
 
+//set up the movers first
+
 struct BasicEffect : Enemy
 {
 	BasicEffect ( GameSession *owner );

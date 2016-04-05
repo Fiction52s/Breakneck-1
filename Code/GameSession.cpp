@@ -268,9 +268,7 @@ MovementSequence::MovementSequence()
 void MovementSequence::AddLineMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, CubicBezier& bez, int duration )
 {
-	//cout << "tryingggg movement" << endl;
 	AddMovement( new LineMovement( A, B, bez, duration ) );
-	//cout << "done adding movement" << endl;
 }
 
 void MovementSequence::AddCubicMovement( sf::Vector2<double> &A,

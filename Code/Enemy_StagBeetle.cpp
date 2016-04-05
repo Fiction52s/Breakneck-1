@@ -565,9 +565,7 @@ void StagBeetle::UpdatePhysics()
 		{
 			double c = cross( e1n, gNormal );
 			double d = dot( e1n, gNormal );
-			//cout << "c: " << c << ", d: " << d << endl;
-			//if( c >= -.5 && d > 0 )
-			//if( d > . )
+			
 			if( gNormal == e1n )
 			{
 				//cout << "t1" << endl;
@@ -583,7 +581,7 @@ void StagBeetle::UpdatePhysics()
 			}
 			else
 			{
-				//cout << "rollin" << endl;
+				
 				double angle = m / 3.0 /  physBody.rw;
 				V2d currVec = position - ground->v1;
 				V2d newPos;
@@ -633,11 +631,24 @@ void StagBeetle::UpdatePhysics()
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
 					V2d eNorm = minContact.edge->Normal();
-					ground = minContact.edge;
-					q = ground->GetQuantity( minContact.position + minContact.resolution );
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
-					roll = false;
+					//need to check for points eventually too
+					if( eNorm.y < 0 )
+					{
+						ground = minContact.edge;
+						q = ground->GetQuantity( minContact.position + minContact.resolution );
+						edgeQuantity = q;
+						V2d gn = ground->Normal();
+						roll = false;
+					}
+					else
+					{
+						q = ground->GetQuantity( position + minContact.resolution );
+						edgeQuantity = q;
+						groundSpeed = 0;
+						//cout << "stopped!" << endl;
+					}
+					
+					
 					//cout << "hitting" << endl;
 					break;
 				}
@@ -770,20 +781,38 @@ void StagBeetle::UpdatePhysics()
 					//cout << "m: " << m << ", ground: " << ground << ", edge0: " << ground->edge0 << ", " 
 					//	<< "minedge: " << minContact.edge << endl;
 					V2d eNorm = minContact.edge->Normal();
-					ground = minContact.edge;
-					if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+
+					if( eNorm.y < 0 )
 					{
-						//point
-					//	cout << "point!" << endl;
-						q = ground->GetQuantity( minContact.position );
+						ground = minContact.edge;
+						q = ground->GetQuantity( minContact.position + minContact.resolution );
+						edgeQuantity = q;
+						V2d gn = ground->Normal();
+						roll = false;
 					}
 					else
 					{
-						//cout << "point!" << endl;
-						q = ground->GetQuantity( minContact.position + minContact.resolution );
+						q = ground->GetQuantity( position + minContact.resolution );
+						edgeQuantity = q;
+						groundSpeed = 0;
+						//cout << "stopped!" << endl;
 					}
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
+
+
+					//ground = minContact.edge;
+					//if( minContact.normal.x == 0 && minContact.normal.y == 0 )
+					//{
+					//	//point
+					////	cout << "point!" << endl;
+					//	q = ground->GetQuantity( minContact.position );
+					//}
+					//else
+					//{
+					//	//cout << "point!" << endl;
+					//	q = ground->GetQuantity( minContact.position + minContact.resolution );
+					//}
+					//edgeQuantity = q;
+					//V2d gn = ground->Normal();
 					//cout << "hit 1: " << gn.x << ", " << gn.y << ", ground is now: " << ground << endl;
 					
 					break;

@@ -75,7 +75,7 @@ Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loop
 		&GetCubicValue, 60 ,
 		sqTest3, sqTest0,sqTest1 , sqTest2 ) );*/
 
-	//testSeq.InitMovementDebug();
+	testSeq.InitMovementDebug();
 
 	V2d pos2Test = position + V2d( 200, 0 );
 	V2d pos3Test = position - V2d( 200, 0 );

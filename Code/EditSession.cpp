@@ -13412,6 +13412,74 @@ void EditSession::SetEnemyEditPanel()
 		showPanel = p;
 		
 	}
+	else if( name == "stagbeetle" )
+	{
+		StagBeetleParams *stagBeetle = (StagBeetleParams*)ap;
+		
+		//cout << "hmm: " << name << endl;
+		p->textBoxes["group"]->text.setString( stagBeetle->group->name );
+
+		p->checkBoxes["clockwise"]->checked = stagBeetle->clockwise;
+		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( stagBeetle->speed ) );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( stagBeetle->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 3;
+			break;
+		
+		}
+		
+		showPanel = p;
+		
+	}
+	else if( name == "poisonfrog" )
+	{
+		PoisonFrogParams *poisonFrog = (PoisonFrogParams*)ap;
+		
+		//cout << "hmm: " << name << endl;
+		p->textBoxes["group"]->text.setString( poisonFrog->group->name );
+
+		//p->checkBoxes["clockwise"]->checked = poisonFrog->clockwise;
+		//p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( poisonFrog->speed ) );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
+
+		GridSelector &gs = *p->gridSelectors["monitortype"];
+		gs.selectedY = 0;
+		switch( poisonFrog->monitorType )
+		{
+		case ActorParams::NONE:
+			gs.selectedX = 0;
+			break;
+		case ActorParams::RED:
+			gs.selectedX = 1;
+			break;
+		case ActorParams::GREEN:
+			gs.selectedX = 2;
+			break;
+		case ActorParams::BLUE:
+			gs.selectedX = 3;
+			break;
+		
+		}
+		
+		showPanel = p;
+		
+	}
 	else if( name == "basicturret" )
 	{
 		BasicTurretParams *basicTurret = (BasicTurretParams*)ap;
