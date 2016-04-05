@@ -112,16 +112,24 @@ double CubicBezier::GetValue( double a )
 	//cout << "getting value" << endl;
 	double t = .5;
 	double step = .5;
-	double precision = .0001;
+	double precision = .0001; //precision to 1/10000th 
+
+	//can reduce the precision later to save time if I want. This is fine for now
+	//.001 ~ 10 iterations, .0001 ~ 13 iterations
 
 	double x = GetX( t );
+	
+	//int testSteps = 0;
 	while( abs( x - a ) > precision )
 	{
 		//cout << "BLAH VALUE: " << x << ", a: " << a << endl;
 		step /= 2.0;
 		t += Sign( a - x ) * step;
 		x = GetX( t );
+
+		//testSteps++;
 	}
+	//cout << "steps: " << testSteps << endl;
 
 	return GetY( t );
 }
@@ -203,24 +211,6 @@ void Movement::DebugDraw( sf::RenderTarget *target )
 	target->draw( vertices, 80, sf::Quads );	
 }
 
-SplineMovement::SplineMovement( list<sf::Vector2<double>> &p_points,
-	CubicBezier &bez, int duration)
-	:Movement( bez, duration ), points( p_points )
-{
-
-}
-
-V2d SplineMovement::GetPosition( int t )
-{
-
-	//double x = A.x + (B.x - A.x) * func( t / (double)duration );
-	//double y = A.y + (B.y - A.y) * alg.GetValue( t / (double)duration );
-	//
-	return V2d( 0, 0 );
-	//return V2d( 
-	//return func( A, B, C, D, t / (double)duration );  //V2d( x, y );
-}
-
 LineMovement::LineMovement( sf::Vector2<double> &a,
 		sf::Vector2<double> &b,
 		CubicBezier &bez,
@@ -234,8 +224,27 @@ V2d LineMovement::GetPosition( int t )
 	
 	//cout << "Start get position" << endl;
 	double v = bez.GetValue( t / (double)duration );
-	cout << "v: " << v << endl;
 	return A + ( B - A ) * v;
+}
+
+CubicMovement::CubicMovement( sf::Vector2<double> &a,
+		sf::Vector2<double> &b,
+		sf::Vector2<double> &c,
+		sf::Vector2<double> &d,
+		CubicBezier &bez,
+		int duration )
+		:Movement( bez, duration ), A( a ), B( b ), C( c), D(d)
+{
+}
+
+V2d CubicMovement::GetPosition( int t )
+{
+	double v = bez.GetValue( t / (double)duration );
+	double rv = ( 1 - v);
+	return pow( rv, 3 ) * A
+		+ 3 * rv * rv * v * B
+		+ 3 * rv * v * v * C
+		+ pow( v, 3 ) * D;
 }
 		
 
@@ -262,6 +271,13 @@ void MovementSequence::AddLineMovement( sf::Vector2<double> &A,
 	//cout << "tryingggg movement" << endl;
 	AddMovement( new LineMovement( A, B, bez, duration ) );
 	//cout << "done adding movement" << endl;
+}
+
+void MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
+		sf::Vector2<double> &B, sf::Vector2<double> &C,
+		sf::Vector2<double> &D, CubicBezier& bez, int duration )
+{
+ 	AddMovement( new CubicMovement( A,B,C,D,bez,duration ) );
 }
 
 void MovementSequence::InitMovementDebug()

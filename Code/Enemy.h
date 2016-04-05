@@ -98,12 +98,20 @@ struct WaitMovement : Movement
 	sf::Vector2<double> pos;
 };
 
-struct SplineMovement : Movement 
+struct CubicMovement : Movement
 {
-	SplineMovement( std::list<sf::Vector2<double>> &points,
+	CubicMovement( sf::Vector2<double> &A,
+		sf::Vector2<double> &B,
+		sf::Vector2<double> &C,
+		sf::Vector2<double> &D,
 		CubicBezier &bez,
 		int duration );
-	 std::list<sf::Vector2<double>> points;
+	 
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D;
+
 	sf::Vector2<double> GetPosition( int t );
 };
 
@@ -133,6 +141,9 @@ struct MovementSequence
 	void MovementDebugDraw( sf::RenderTarget *target );
 	void AddLineMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, CubicBezier&, int duration );
+	void AddCubicMovement( sf::Vector2<double> &A,
+		sf::Vector2<double> &B, sf::Vector2<double> &C,
+		sf::Vector2<double> &D, CubicBezier&, int duration );
 
 	Movement *movementList;
 	Movement *currMovement;

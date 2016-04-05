@@ -63,7 +63,9 @@ Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loop
 	V2d sqTest3 = position + V2d( 0, 200 );
 
 	testSeq.AddLineMovement( sqTest0, sqTest1, 
-		CubicBezier(1,.03,.91,.25 ), 60 );
+		CubicBezier(1,.03,.07,.72 ), 60 );
+	testSeq.AddCubicMovement( sqTest1, sqTest2, sqTest3, sqTest0,
+		CubicBezier(1,.03,.07,.72 ), 60 );
 	//	CubicBezier( 0, .03, .1, 1), 60 );
 
 	/*testSeq.AddMovement( new BezierMovement( 
