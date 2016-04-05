@@ -494,6 +494,7 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 		ground = ground->edge1;
 		q = 0;
 		roll = false;
+		FinishedRoll();
 	}
 
 	return false;
@@ -551,10 +552,11 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 
 	if( changed )
 	{
-		//cout << "cmon" << endl;
 		ground = ground->edge0;
 		q = length( ground->v1 - ground->v0 );
 		roll = false;
+
+		FinishedRoll();
 	}
 
 	return false;
@@ -625,8 +627,9 @@ void SurfaceMover::Move( int slowMultiple )
 			}
 			else if( !roll )
 			{
-				roll = true;
-				StartRoll();
+				bool br = StartRoll();
+				if( br )
+					break;
 				//callback for starting to roll
 			}
 			else
@@ -650,8 +653,9 @@ void SurfaceMover::Move( int slowMultiple )
 			}
 			else if( !roll )
 			{
-				roll = true;
-				StartRoll();
+				bool br = StartRoll();
+				if( br )
+					break;
 			}
 			else
 			{
@@ -723,12 +727,82 @@ void SurfaceMover::HitTerrain( double &q )
 	}
 }
 
-void SurfaceMover::StartRoll()
+GroundMover::GroundMover( GameSession *owner, Edge *startGround, double startQuantity, double radius, bool p_steeps )
+	:SurfaceMover( owner, startGround, startQuantity, radius ), steeps( p_steeps )
 {
-	//nothing in the default
+
 }
 
-void SurfaceMover::StopRoll()
+void GroundMover::HitTerrain( double &q )
+{
+	V2d en = minContact.normal;
+	bool corner = false;
+	if( en.x == 0 && en.y == 0 )
+	{
+		corner = true;
+		en = normalize( physBody.globalPosition - minContact.position );
+	}
+
+
+	if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
+		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	{
+		ground = minContact.edge;
+		if( corner )
+		{
+			roll = true;
+			q = ground->GetQuantity( minContact.position );
+			physBody.globalPosition += minContact.resolution;
+		}
+		else
+		{
+			roll = false;
+			q = ground->GetQuantity( minContact.position + minContact.resolution );
+		}
+	}
+	else
+	{
+		physBody.globalPosition += minContact.resolution;
+		q = ground->GetQuantity( physBody.globalPosition );
+	}
+}
+
+bool GroundMover::StartRoll()
+{
+	V2d en;
+	if( groundSpeed > 0 )
+	{
+		en = ground->edge1->Normal();
+	}
+	else
+	{
+		en = ground->edge0->Normal();
+	}
+
+	if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
+		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	{
+		roll = true;
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+void GroundMover::FinishedRoll()
+{
+}
+
+
+bool SurfaceMover::StartRoll()
+{
+	roll = true;
+	return false;
+}
+
+void SurfaceMover::FinishedRoll()
 {
 	//nothing in the default
 }

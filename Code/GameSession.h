@@ -48,8 +48,8 @@ struct SurfaceMover : QuadTreeCollider
 		);
 
 	virtual void HitTerrain( double &q );
-	virtual void StartRoll();
-	virtual void StopRoll();
+	virtual bool StartRoll();
+	virtual void FinishedRoll();
 	
 	double groundSpeed;
 
@@ -64,6 +64,15 @@ struct SurfaceMover : QuadTreeCollider
 
 struct GroundMover : SurfaceMover
 {
+	GroundMover( GameSession *owner,
+		Edge *startGround,
+		double startQuantity,
+		double radius,
+		bool steeps );
+	bool steeps;
+	virtual void HitTerrain( double &q );
+	virtual bool StartRoll();
+	virtual void FinishedRoll();
 };
 
 struct PowerBar

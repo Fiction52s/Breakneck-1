@@ -526,12 +526,13 @@ struct Crawler : Enemy
 };
 
 struct SurfaceMover;
+struct GroundMover;
 struct StagBeetle : Enemy
 {
 	StagBeetle( GameSession *owner, Edge *ground, 
 		double quantity, 
 		bool clockwise, double speed );
-	SurfaceMover *testMover;
+	GroundMover *testMover;
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

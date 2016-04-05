@@ -96,7 +96,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	testMover = new SurfaceMover( owner, g, q, 32 );
+	testMover = new GroundMover( owner, g, q, 32, false );
 
 
 
