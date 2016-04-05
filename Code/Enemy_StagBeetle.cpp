@@ -19,8 +19,10 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::STAGBEETLE ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+	:Enemy( owner, EnemyType::STAGBEETLE ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )	
 {
+	
+
 	initHealth = 60;
 	health = initHealth;
 	lastReverser = false;
@@ -92,10 +94,26 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
+
+	testMover = new SurfaceMover( owner, g, q, 32 );
+
+	testMover->groundSpeed = 5;
+	//testMover->Move( slowMultiple );
+
+	//ground = testMover->ground;
+	//edgeQuantity = testMover->edgeQuantity;
+	//position = testMover->physBody.globalPosition;
 }
 
 void StagBeetle::ResetEnemy()
 {
+	
+	testMover->ground = startGround;
+	testMover->edgeQuantity = startQuant;
+	testMover->UpdateGroundPos();
+	testMover->roll = false;
+
+
 	health = initHealth;
 	attackFrame = -1;
 	lastReverser = false;
@@ -511,6 +529,16 @@ void StagBeetle::UpdatePhysics()
 		return;
 	}
 
+	//testMover->groundSpeed = 5;
+	testMover->Move( slowMultiple );
+
+	ground = testMover->ground;
+	edgeQuantity = testMover->edgeQuantity;
+	position = testMover->physBody.globalPosition;
+	PhysicsResponse();
+
+	return;
+
 	double movement = 0;
 	double maxMovement = min( physBody.rw, physBody.rh );
 	movement = groundSpeed;
@@ -778,8 +806,6 @@ void StagBeetle::UpdatePhysics()
 				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 				{
-					//cout << "m: " << m << ", ground: " << ground << ", edge0: " << ground->edge0 << ", " 
-					//	<< "minedge: " << minContact.edge << endl;
 					V2d eNorm = minContact.edge->Normal();
 
 					if( eNorm.y < 0 )
@@ -1360,7 +1386,8 @@ void StagBeetle::DebugDraw( RenderTarget *target )
 
 		//owner->window->draw( cs );
 		//UpdateHitboxes();
-		physBody.DebugDraw( target );
+		//physBody.DebugDraw( target );
+		testMover->physBody.DebugDraw( target );
 	}
 //	hurtBody.DebugDraw( target );
 //	hitBody.DebugDraw( target );
