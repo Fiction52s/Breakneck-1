@@ -400,6 +400,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	bool StartRoll();
 	void FinishedRoll();
 
+	sf::Vector2<double> velocity;
 	sf::Sprite sprite;
 	Tileset *ts;
 	//Tileset *ts_walk;

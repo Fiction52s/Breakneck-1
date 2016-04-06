@@ -505,6 +505,12 @@ void StagBeetle::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
+
+	if( ground == NULL )
+	{
+		cout << "adding gravity" << endl;
+		velocity += V2d( 0, .5 );
+	}
 	if( attackFrame == 2 * attackMult )
 	{
 		attackFrame = -1;
@@ -534,6 +540,8 @@ void StagBeetle::UpdatePhysics()
 		return;
 	}
 
+	if( ground != NULL )
+	{
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	testMover->groundSpeed = 5 * f;
@@ -550,15 +558,80 @@ void StagBeetle::UpdatePhysics()
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
 
-	ground = testMover->ground;
-	edgeQuantity = testMover->edgeQuantity;
-	position = testMover->physBody.globalPosition;
+	if( ground != NULL )
+	{
+		ground = testMover->ground;
+		edgeQuantity = testMover->edgeQuantity;
+		position = testMover->physBody.globalPosition;
+	}
+	else
+	{
+		testMover->physBody.globalPosition = position;
+	}
+	
 
 	if( roll != testMover->roll )
 	{
 		frame = 0;
 	}
 	roll = testMover->roll;
+
+	}
+	else
+	{
+		cout << "move through the air" << endl;
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * NUM_STEPS;
+
+		bool hit = ResolvePhysics( movementVec );
+		if( hit )
+		{
+			bool corner = false;
+			V2d en = minContact.normal;
+			if( en.x == 0 && en.y == 0 )
+			{
+				corner = true;
+				en = normalize( physBody.globalPosition - minContact.position );
+			}
+
+
+			if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 ) )
+				//|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+			{
+				cout << "LANDING" << endl;
+				ground = minContact.edge;
+				edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
+				
+
+				if( corner )
+				{
+					roll = true;
+				}
+				else
+				{
+					roll = false;
+				}
+				frame = 0;
+				testMover->ground = ground;
+				testMover->edgeQuantity = edgeQuantity;
+			}
+			else
+			{
+				position += minContact.resolution;
+				testMover->physBody.globalPosition = position;
+				velocity = dot( normalize(velocity), V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
+			}
+			
+			
+			//= q;
+			//V2d gn = ground->Normal();
+			//break;
+		}
+		else
+		{
+			testMover->physBody.globalPosition = position;
+		}
+	}
 	PhysicsResponse();
 }
 
@@ -608,13 +681,16 @@ void StagBeetle::PhysicsResponse()
 {
 	if( !dead  )
 	{
+		double angle = 0;
+		if( ground != NULL )
+		{
 		//cout << "response" << endl;
 		double spaceNeeded = 0;
 		V2d gn = ground->Normal();
 		V2d gPoint = ground->GetPoint( edgeQuantity );
 	
 
-		double angle = 0;
+		
 	
 		if( !roll )
 		{
@@ -763,7 +839,11 @@ void StagBeetle::PhysicsResponse()
 
 			
 		}
-	
+		}
+		else
+		{
+			
+		}
 
 		UpdateHitboxes();
 
@@ -1065,14 +1145,15 @@ void StagBeetle::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-
+		if( ground != NULL )
+		{
 		CircleShape cs;
 		cs.setFillColor( Color::Cyan );
 		cs.setRadius( 10 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		V2d g = ground->GetPoint( edgeQuantity );
 		cs.setPosition( g.x, g.y );
-
+		}
 		//owner->window->draw( cs );
 		//UpdateHitboxes();
 		//physBody.DebugDraw( target );
@@ -1107,10 +1188,23 @@ void StagBeetle::FinishedRoll()
 
 void StagBeetle::HitOther()
 {
+	//cout << "hit other!" << endl;
 	testMover->groundSpeed = -testMover->groundSpeed;
+	clockwise = !clockwise;
 }
 
 void StagBeetle::ReachCliff()
 {
-	testMover->groundSpeed = -testMover->groundSpeed;
+	cout << "reach cliff!" << endl;
+	ground = NULL;
+	if( clockwise )
+	{
+		velocity = V2d( 10, -10 );
+	}
+	else
+	{
+		velocity = V2d( -10, -10 );
+	}
+	//testMover->groundSpeed = -testMover->groundSpeed;
+	//clockwise = !clockwise;
 }

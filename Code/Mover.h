@@ -2,7 +2,7 @@
 #define __MOVER_H__
 
 #include "Physics.h"
-#include "GameSession.h"
+//#include "GameSession.h"
 
 //struct SurfaceMoverHandler
 struct GroundMoverHandler
@@ -10,8 +10,10 @@ struct GroundMoverHandler
 	//virtual void HitGround() = 0;
 	virtual void HitOther() = 0;
 	virtual void ReachCliff() = 0;
+//	virtual void Land(){};
 };
 
+struct GameSession;
 //circle for now
 struct SurfaceMover : QuadTreeCollider
 {

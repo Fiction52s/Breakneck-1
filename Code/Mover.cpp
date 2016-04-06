@@ -1,4 +1,5 @@
 #include "Mover.h"
+#include "GameSession.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -92,7 +93,7 @@ bool SurfaceMover::ResolvePhysics( V2d &vel )
 	col = false;
 	minContact.edge = NULL;
 
-	queryMode = "resolve";
+	//queryMode = "resolve";
 	owner->terrainTree->Query( this, r );
 	//Query( this, owner->testTree, r );
 
