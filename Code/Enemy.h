@@ -4,7 +4,6 @@
 #include "Actor.h"
 #include <list>
 #include "Mover.h"
-#include "Movement.h"
 
 
 struct Zone;
@@ -13,6 +12,10 @@ struct Monitor;
 
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
+
+
+
+
 
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
@@ -372,11 +375,13 @@ struct Crawler : Enemy
 	int bloodFrame;
 };
 
-struct StagBeetle : Enemy, GroundMoverHandler
+struct StagBeetle : Enemy, GroundMover
 {
 	StagBeetle( GameSession *owner, Edge *ground, 
 		double quantity, 
 		bool clockwise, double speed );
+	//GroundMover *testMover;
+//	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -395,33 +400,26 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	
 	void SaveEnemyState();
 	void LoadEnemyState();
-
-	void HitTerrain( double &q );
-	bool StartRoll();
-	void FinishedRoll();
-
 	sf::Sprite sprite;
 	Tileset *ts;
 	//Tileset *ts_walk;
 	//Tileset *ts_roll;
 
 	bool clockwise;
+	//double groundSpeed;
+	//Edge *ground;
+	//sf::Vector2<double> offset;
+	//double edgeQuantity;
 
 	CubicBezier moveBezTest;
 	int bezFrame;
 	int bezLength;
 
 	CrawlerReverser *lastReverser;
-	double groundSpeed;
-	Edge *ground;
-	double edgeQuantity;
-	GroundMover *testMover;
-	void HitOther();
-	void ReachCliff();
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
-	CollisionBox physBody;
+	//CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
 	

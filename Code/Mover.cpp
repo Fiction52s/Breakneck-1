@@ -694,10 +694,8 @@ void SurfaceMover::FinishedRoll()
 	//nothing in the default
 }
 
-GroundMover::GroundMover( GameSession *owner, Edge *startGround, double startQuantity, 
-	double radius, bool p_steeps, GroundMoverHandler *p_handler )
+GroundMover::GroundMover( GameSession *owner, Edge *startGround, double startQuantity, double radius, bool p_steeps )
 	:SurfaceMover( owner, startGround, startQuantity, radius ), steeps( p_steeps )
-	,handler( p_handler )
 {
 
 }
@@ -733,8 +731,6 @@ void GroundMover::HitTerrain( double &q )
 	{
 		physBody.globalPosition += minContact.resolution;
 		q = ground->GetQuantity( physBody.globalPosition );
-		if( handler != NULL )
-			handler->HitOther();
 	}
 }
 
@@ -758,10 +754,6 @@ bool GroundMover::StartRoll()
 	}
 	else
 	{
-		if( handler != NULL )
-		{
-			handler->ReachCliff();
-		}
 		return true;
 	}
 }

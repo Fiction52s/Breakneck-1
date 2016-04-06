@@ -96,7 +96,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	testMover = new GroundMover( owner, g, q, 32, false, this );
+	testMover = new GroundMover( owner, g, q, 32, false );
 
 
 
@@ -1088,29 +1088,4 @@ void StagBeetle::SaveEnemyState()
 
 void StagBeetle::LoadEnemyState()
 {
-}
-
-void StagBeetle::HitTerrain( double &q )
-{
-	
-}
-
-bool StagBeetle::StartRoll()
-{
-
-}
-
-void StagBeetle::FinishedRoll()
-{
-
-}
-
-void StagBeetle::HitOther()
-{
-	testMover->groundSpeed = -testMover->groundSpeed;
-}
-
-void StagBeetle::ReachCliff()
-{
-	testMover->groundSpeed = -testMover->groundSpeed;
 }
