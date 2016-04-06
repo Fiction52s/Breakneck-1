@@ -400,7 +400,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	bool StartRoll();
 	void FinishedRoll();
 
-	sf::Vector2<double> velocity;
+	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
 	Tileset *ts;
 	//Tileset *ts_walk;
@@ -412,10 +412,10 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	int bezFrame;
 	int bezLength;
 
-	CrawlerReverser *lastReverser;
-	double groundSpeed;
-	Edge *ground;
-	double edgeQuantity;
+	//CrawlerReverser *lastReverser;
+	//double groundSpeed;
+	//Edge *ground;
+	//double edgeQuantity;
 	GroundMover *testMover;
 	void HitOther();
 	void ReachCliff();
@@ -424,24 +424,25 @@ struct StagBeetle : Enemy, GroundMoverHandler
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
-	CollisionBox physBody;
+	//CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
 	
 	int attackFrame;
 	int attackMult;
 
-	double rollFactor;
+	//double rollFactor;
 	Contact minContact;
 	bool col;
 	std::string queryMode;
+
 	int possibleEdgeCount;
 
 	Edge *startGround;
 	double startQuant;
-	sf::Vector2<double> offset;
+	//sf::Vector2<double> offset;
 	int frame;
-	bool roll;
+	//bool roll;
 
 	int deathFrame;
 	int crawlAnimationFactor;

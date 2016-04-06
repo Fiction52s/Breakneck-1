@@ -19,40 +19,50 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::STAGBEETLE ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s ),
+	:Enemy( owner, EnemyType::STAGBEETLE ), clockwise( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
-	
-
 	initHealth = 60;
 	health = initHealth;
-	lastReverser = false;
 	dead = false;
 	deathFrame = 0;
+
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
+
 	attackFrame = -1;
 	attackMult = 10;
 
 	double height = 128;
 	double width = 128;
+
+	startGround = g;
+	startQuant = q;
+	frame = 0;
+
+	testMover = new GroundMover( owner, g, q, 32, false, this );
+	testMover->gravity = V2d( 0, .5 );
+	testMover->groundSpeed = s;
+	if( !clockwise )
+	{
+		testMover->groundSpeed = -testMover->groundSpeed;
+	}
+
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	roll = false;
-	position = gPoint + ground->Normal() * height / 2.0;
-	if( !clockwise )
-	{
-		groundSpeed = -groundSpeed;
-	}
+	V2d gPoint = g->GetPoint( q );
+	sprite.setPosition( testMover->physBody.globalPosition.x,
+		testMover->physBody.globalPosition.y );
+	//roll = false;
+	//position = gPoint + ground->Normal() * height / 2.0;
+	
 
 	receivedHit = NULL;
 
 	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
+	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -80,27 +90,22 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
-	physBody.isCircle = true;
+
+	/*physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
 	physBody.rw = 32;
 	physBody.rh = 32;
-	physBody.type = CollisionBox::BoxType::Physics;
+	physBody.type = CollisionBox::BoxType::Physics;*/
 
-	startGround = ground;
-	startQuant = edgeQuantity;
-	frame = 0;
+	
 
 	deathPartingSpeed = .4;
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	testMover = new GroundMover( owner, g, q, 32, false, this );
-	testMover->gravity = V2d( 0, .5 );
-
-
-	testMover->groundSpeed = 5;
+	
 
 	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
@@ -117,20 +122,24 @@ void StagBeetle::ResetEnemy()
 	testMover->edgeQuantity = startQuant;
 	testMover->UpdateGroundPos();
 	testMover->roll = false;
+	testMover->UpdateGroundPos();
 
-
+	bezFrame = 0;
 	health = initHealth;
 	attackFrame = -1;
-	lastReverser = false;
-	roll = false;
-	ground = startGround;
-	edgeQuantity = startQuant;
-	V2d gPoint = ground->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
+	//lastReverser = false;
+	//roll = false;
+	//ground = startGround;
+	//edgeQuantity = startQuant;
+	V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
+	//sprite.setPosition( testMover->physBody.globalPosition.x,
+	//	testMover->physBody.globalPosition.y );
 	frame = 0;
-	position = gPoint + ground->Normal() * 64.0 / 2.0;
 
-	V2d gn = ground->Normal();
+	V2d gn = testMover->ground->Normal();
+	//testMover->physBody.globalPosition = gPoint + testMover->ground->Normal() * 64.0 / 2.0;
+
+	/*V2d gn = ground->Normal();
 	if( gn.x > 0 )
 		offset.x = physBody.rw;
 	else if( gn.x < 0 )
@@ -138,7 +147,7 @@ void StagBeetle::ResetEnemy()
 	if( gn.y > 0 )
 		offset.y = physBody.rh;
 	else if( gn.y < 0 )
-		offset.y = -physBody.rh;
+		offset.y = -physBody.rh;*/
 
 	//position = gPoint + offset;
 
@@ -147,15 +156,17 @@ void StagBeetle::ResetEnemy()
 
 	//----update the sprite
 	double angle = 0;
-	//position = gPoint + gn * 32.0;
+	////position = gPoint + gn * 32.0;
 	angle = atan2( gn.x, -gn.y );
-		
+	//	
 	//sprite.setTexture( *ts_walk->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	V2d pp = ground->GetPoint( edgeQuantity );
+	//sprite.setRotation( angle );
+	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
+	//sprite.setPosition( 
+	//V2d pp = ground->GetPoint( edgeQuantity );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( pp.x, pp.y );
+	sprite.setPosition( gPoint.x, gPoint.y );
 	//----
 
 	UpdateHitboxes();
@@ -166,299 +177,26 @@ void StagBeetle::HandleEntrant( QuadTreeEntrant *qte )
 {
 	assert( queryMode != "" );
 
-	if( queryMode == "resolve" )
-	{
-		Edge *e = (Edge*)qte;
-
-
-		if( ground == e )
-			return;
-
-		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
-		{
-			Gate *g = (Gate*)ground->info;
-			Edge *edgeA = g->edgeA;
-			Edge *edgeB = g->edgeB;
-			if( ground == g->edgeA )
-			{
-				if( e == edgeB->edge0 
-					|| e == edgeB->edge1
-					|| e == edgeB )
-				{
-					return;
-				}
-
-				
-			}
-			else if( ground == g->edgeB )
-			{
-				if( e == edgeA->edge0 
-					|| e == edgeA->edge1
-					|| e == edgeA )
-				{
-					return;
-				}
-			}
-		}
-		if( ground != NULL )
-		{
-			if( ground->edge0->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *g = (Gate*)ground->edge0->info;
-				Edge *e0 = ground->edge0;
-				if( e0 == g->edgeA )
-				{
-					Edge *edgeB = g->edgeB;
-					if( e == edgeB->edge0 
-						|| e == edgeB->edge1
-						|| e == edgeB )
-					{
-						return;
-					}
-				}
-				else if( e0 == g->edgeB )
-				{
-					Edge *edgeA = g->edgeA;
-					if( e == edgeA->edge0 
-						|| e == edgeA->edge1
-						|| e == edgeA )
-					{
-						return;
-					}
-				}
-			}
-			
-			
-			if( ground->edge1->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *g = (Gate*)ground->edge1->info;
-				Edge *e1 = ground->edge1;
-				if( e1 == g->edgeA )
-				{
-					Edge *edgeB = g->edgeB;
-					if( e == edgeB->edge0 
-						|| e == edgeB->edge1
-						|| e == edgeB )
-					{
-						return;
-					}
-				}
-				else if( e1 == g->edgeB )
-				{
-					Edge *edgeA = g->edgeA;
-					if( e == edgeA->edge0 
-						|| e == edgeA->edge1
-						|| e == edgeA )
-					{
-						return;
-					}
-				}
-			}
-		}
-
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
-
-
-
-
-		if( c != NULL )
-		{
-
-			//cout << "testing" << endl;
-			double len0 = length( c->position - e->v0 );
-			double len1 = length( c->position - e->v1 );
-
-			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
-			{
-				V2d pVec = normalize( position - e->v0 );
-				double pAngle = atan2( -pVec.y, pVec.x );
-
-				if( pAngle < 0 )
-				{
-					pAngle += 2 * PI;
-				}
-
-				Edge *e0 = e->edge0;
-				Gate *g = (Gate*)e0->info;
-
-				V2d startVec = normalize( e0->v0 - e->v0 );
-				V2d endVec = normalize( e->v1 - e->v0 );
-
-				double startAngle = atan2( -startVec.y, startVec.x );
-				if( startAngle < 0 )
-				{
-					startAngle += 2 * PI;
-				}
-				double endAngle = atan2( -endVec.y, endVec.x );
-				if( endAngle < 0 )
-				{
-					endAngle += 2 * PI;
-				}
-
-				double temp = startAngle;
-				startAngle = endAngle;
-				endAngle = temp;
-
-				if( endAngle < startAngle )
-				{
-					if( pAngle >= endAngle || pAngle <= startAngle )
-					{
-					
-					}
-					else
-					{
-						return;
-					}
-				}
-				else
-				{
-					if( pAngle >= startAngle && pAngle <= endAngle )
-					{
-					}
-					else
-					{
-						return;
-					}
-				}
-			
-
-			}
-			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
-			{
-				V2d pVec = normalize( position - e->v1 );
-				double pAngle = atan2( -pVec.y, pVec.x );
-
-				if( pAngle < 0 )
-				{
-					pAngle += 2 * PI;
-				}
-
-				Edge *e1 = e->edge1;
-				Gate *g = (Gate*)e1->info;
-
-				V2d startVec = normalize( e->v0 - e->v1 );
-				V2d endVec = normalize( e1->v1 - e->v1 );
-
-				double startAngle = atan2( -startVec.y, startVec.x );
-				if( startAngle < 0 )
-				{
-					startAngle += 2 * PI;
-				}
-				double endAngle = atan2( -endVec.y, endVec.x );
-				if( endAngle < 0 )
-				{
-					endAngle += 2 * PI;
-				}
-			
-				double temp = startAngle;
-				startAngle = endAngle;
-				endAngle = temp;
-
-				//double temp = startAngle;
-				//startAngle = endAngle;
-				//endAngle = temp;
-
-				if( endAngle < startAngle )
-				{
-					/*if( pAngle > startAngle && pAngle < endAngle )
-					{
-						return;
-					}*/
-
-
-					if( pAngle >= endAngle || pAngle <= startAngle )
-					{
-					}
-					else
-					{
-						return;
-					}
-				}
-				else
-				{
-					/*if( pAngle < startAngle || pAngle > endAngle )
-					{
-						cout << "StagBeetle edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;
-					}*/
-				
-					if( pAngle >= startAngle && pAngle <= endAngle )
-					{
-					}
-					else
-					{	
-						return;
-					}
-				}
-			}
-
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
-
-				if( groundSpeed > 0 && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
-				{
-
-					//WHY DO I HAVE THIS WTF
-
-					//cout << "blah" << endl;
-					//return;
-				}
-				//else if( groundSpeed < 0 && e == ground->edge0 && ( c->normal.x == 0 && c->normal.y == 0 ) )
-				//{
-				//	//cout << "blah" << endl;
-				//	return;
-				//}
-
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if(( c->normal.x == 0 && c->normal.y == 0 ) )
-					{
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = e;
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						minContact.normal = c->normal;
-						minContact.movingPlat = NULL;
-						col = true;
-					}
-				}
-				else
-				{
-					minContact.collisionPriority = c->collisionPriority;
-					minContact.edge = e;
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					minContact.normal = c->normal;
-					minContact.movingPlat = NULL;
-					col = true;
-					
-				}
-			}
-		}
-	}
-	++possibleEdgeCount;
+	//might need for other queries but def not for physics
 }
 
 void StagBeetle::UpdateHitboxes()
 {
+	Edge *ground = testMover->ground;
 	if( ground != NULL )
 	{
 		V2d gn = ground->Normal();
 		double angle = 0;
-		if( !approxEquals( abs(offset.x), physBody.rw ) )
-		{
-			//this should never happen
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
+		
+		
+		angle = atan2( gn.x, -gn.y );
+		
 		hitBody.globalAngle = angle;
 		hurtBody.globalAngle = angle;
 
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
-		if( groundSpeed > 0 )
+		if( testMover->groundSpeed > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -477,15 +215,17 @@ void StagBeetle::UpdateHitboxes()
 
 	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	hitBody.globalPosition = position;
-	hurtBody.globalPosition = position;
-	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	hitBody.globalPosition = testMover->physBody.globalPosition;
+	hurtBody.globalPosition = testMover->physBody.globalPosition;
+	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
 void StagBeetle::UpdatePrePhysics()
 {
 	if( dead )
 		return;
+
+	bool roll = testMover->roll;
 
 	if( !dead && receivedHit != NULL )
 	{	
@@ -506,11 +246,7 @@ void StagBeetle::UpdatePrePhysics()
 	}
 
 
-	if( ground == NULL )
-	{
-		//cout << "adding gravity" << endl;
-		//velocity += V2d( 0, .5 );
-	}
+	
 	if( attackFrame == 2 * attackMult )
 	{
 		attackFrame = -1;
@@ -540,9 +276,6 @@ void StagBeetle::UpdatePhysics()
 		return;
 	}
 
-	//if( ground != NULL )
-	//{
-
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	testMover->groundSpeed = 5 * f;
 	if( !clockwise )
@@ -558,104 +291,14 @@ void StagBeetle::UpdatePhysics()
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
 
-	ground = testMover->ground;
-	edgeQuantity = testMover->edgeQuantity;
 	position = testMover->physBody.globalPosition;
-	if( ground != NULL )
-	{
-		
-		
-		
-	}
-	else
-	{
-		//testMover->physBody.globalPosition = position;
-	}
-	
 
-	if( roll != testMover->roll )
+	/*if( roll != testMover->roll )
 	{
 		frame = 0;
-	}
-	roll = testMover->roll;
+	}*/
+	//roll = testMover->roll;
 
-	////}
-	////else
-	//{
-	//	//cout << "move through the air" << endl;
-	//	V2d movementVec = velocity;
-	//	movementVec /= slowMultiple * NUM_STEPS;
-
-	//	bool hit = ResolvePhysics( movementVec );
-	//	if( hit )
-	//	{
-	//		bool corner = false;
-	//		V2d en = minContact.normal;
-	//		if( en.x == 0 && en.y == 0 )
-	//		{
-	//			corner = true;
-	//			en = normalize( physBody.globalPosition - minContact.position );
-	//		}
-	//		bool steeps = true;
-	//		//cout << "HIT--------------------" << endl;
-
-	//		if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 
-	//			|| owner->IsSlopedGround( en ) >= 0 
-	//			|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
-	//		{
-	//			
-	//			cout << "LANDINGINGINGING" << endl;
-	//			
-
-	//			if( corner )
-	//			{
-	//				cout << "LANDING corner" << endl;
-	//				roll = true;
-	//				position += minContact.resolution;	
-	//				ground = minContact.edge;
-	//				if( minContact.position == ground->v0 )
-	//				{
-	//					edgeQuantity = 0;
-	//				}
-	//				else
-	//				{
-	//					edgeQuantity = length( ground->v1 - ground->v0 );
-	//				}
-	//			}
-	//			else
-	//			{
-	//				cout << "LANDING NORMAL" << endl;
-	//				ground = minContact.edge;
-	//				edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
-	//				position = ground->GetPoint( edgeQuantity ) + testMover->physBody.rw * ground->Normal();
-	//				roll = false;
-	//			}
-
-	//			frame = 0;
-	//			testMover->roll = roll;
-	//			testMover->ground = ground;
-	//			testMover->edgeQuantity = edgeQuantity;
-	//			testMover->physBody.globalPosition = position;
-	//		}
-	//		else
-	//		{
-	//			//cout << "not the normal ground what" << endl;
-	//			position += minContact.resolution;
-	//			testMover->physBody.globalPosition = position;
-	//			velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
-	//			//cout << "new velocity: " << velocity.x << ", " << velocity.y << endl;
-	//		}
-	//		
-	//		
-	//		//= q;
-	//		//V2d gn = ground->Normal();
-	//		//break;
-	//	}
-	//	else
-	//	{
-	//		testMover->physBody.globalPosition = position;
-	//	}
-	//}
 	PhysicsResponse();
 }
 
@@ -663,12 +306,15 @@ bool StagBeetle::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
 
-	Rect<double> oldR( position.x + physBody.offset.x - physBody.rw, 
-		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	double rw = testMover->physBody.rw;
+	double rh = testMover->physBody.rh;
+
+	Rect<double> oldR( position.x - rw, 
+		position.y - rh, 2 * rw, 2 * rh );
 	position += vel;
 	
-	Rect<double> newR( position.x + physBody.offset.x - physBody.rw, 
-		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	Rect<double> newR( position.x - rw, 
+		position.y - rh, 2 * rw, 2 * rh );
 	//minContact.collisionPriority = 1000000;
 	
 	double oldRight = oldR.left + oldR.width;
@@ -705,7 +351,11 @@ void StagBeetle::PhysicsResponse()
 {
 	if( !dead  )
 	{
+		bool roll = testMover->roll;
 		double angle = 0;
+		Edge *ground = testMover->ground;
+		double edgeQuantity = testMover->edgeQuantity;
+
 		if( ground != NULL )
 		{
 		//cout << "response" << endl;
@@ -718,7 +368,7 @@ void StagBeetle::PhysicsResponse()
 	
 		if( !roll )
 		{
-			position = gPoint + gn * 32.0;
+			//position = gPoint + gn * 32.0;
 			angle = atan2( gn.x, -gn.y );
 		
 //			sprite.setTexture( *ts_walk->texture );
@@ -732,54 +382,16 @@ void StagBeetle::PhysicsResponse()
 				sprite.setTextureRect( r );
 			}
 			
-			V2d pp = ground->GetPoint( edgeQuantity );
+			//V2d pp = ground->GetPoint( testMover->edgeQuantity );
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
+			sprite.setPosition( gPoint.x, gPoint.y );
 		}
 		else
 		{
 			
 			if( clockwise )
 			{
-				/*V2d e1n = ground->edge1->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e1n.y, e1n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;
-
-		
-
-				V2d angleVec = V2d( cos( angle ), sin( angle ) );
-				angleVec = normalize( angleVec );
-
-				position = gPoint + angleVec * 16.0;
-
-				angle += PI / 2.0;*/
-
 				V2d vec = normalize( position - ground->v1 );
 				angle = atan2( vec.y, vec.x );
 				angle += PI / 2.0;
@@ -798,8 +410,7 @@ void StagBeetle::PhysicsResponse()
 			
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
-				V2d pp = ground->GetPoint( edgeQuantity );
-				sprite.setPosition( pp.x, pp.y );
+				sprite.setPosition( gPoint.x, gPoint.y );
 			}
 			else
 			{
@@ -857,20 +468,20 @@ void StagBeetle::PhysicsResponse()
 			
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
-				V2d pp = ground->GetPoint( edgeQuantity );
-				sprite.setPosition( pp.x, pp.y );
-			}
-
-			
+				sprite.setPosition( gPoint.x, gPoint.y );
+			}	
 		}
 		}
 		else
 		{
 			V2d p = testMover->physBody.globalPosition;
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
 			sprite.setPosition( p.x, p.y );
-			sprite.setRotation( angle );
+			sprite.setRotation( 0 );
 		}
+
+		//sprite.setPosition( position.x, position.y );
 
 		UpdateHitboxes();
 
@@ -1172,14 +783,14 @@ void StagBeetle::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( ground != NULL )
+		//if( ground != NULL )
 		{
-		CircleShape cs;
+		/*CircleShape cs;
 		cs.setFillColor( Color::Cyan );
 		cs.setRadius( 10 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		V2d g = ground->GetPoint( edgeQuantity );
-		cs.setPosition( g.x, g.y );
+		cs.setPosition( g.x, g.y );*/
 		}
 		//owner->window->draw( cs );
 		//UpdateHitboxes();
