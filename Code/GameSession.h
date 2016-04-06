@@ -13,7 +13,7 @@
 #include "Gate.h"
 #include "Zone.h"
 #include "AirParticles.h"
-
+#include "Movement.h"
 
 
 struct PowerBar

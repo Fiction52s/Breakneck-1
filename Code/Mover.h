@@ -4,6 +4,14 @@
 #include "Physics.h"
 #include "GameSession.h"
 
+//struct SurfaceMoverHandler
+struct GroundMoverHandler
+{
+	//virtual void HitGround() = 0;
+	virtual void HitOther() = 0;
+	virtual void ReachCliff() = 0;
+};
+
 //circle for now
 struct SurfaceMover : QuadTreeCollider
 {
@@ -13,22 +21,14 @@ struct SurfaceMover : QuadTreeCollider
 		Edge *startGround,
 		double startQuantity,
 		double radius );
-
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Update();
 	void SetSpeed( double speed );
 	void Move( int slowMultiple );
-
 	bool RollClockwise( double &q,
 		double &m );
 	bool RollCounterClockwise( double &q,
 		double &m );
-
-	Edge *ground;
-	GameSession *owner;
-	double edgeQuantity;
-	bool roll;
-	CollisionBox physBody;
 	void UpdateGroundPos();
 	bool ResolvePhysics( 
 		sf::Vector2<double> &vel );
@@ -40,12 +40,16 @@ struct SurfaceMover : QuadTreeCollider
 	virtual void HitTerrain( double &q );
 	virtual bool StartRoll();
 	virtual void FinishedRoll();
-	
-	double groundSpeed;
 
+	Edge *ground;
+	GameSession *owner;
+	double edgeQuantity;
+	bool roll;
+	CollisionBox physBody;
+	double groundSpeed;
 	Contact minContact;
 	bool col;
-	std::string queryMode;
+	//std::string queryMode;
 	sf::Vector2<double> tempVel;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
@@ -58,11 +62,19 @@ struct GroundMover : SurfaceMover
 		Edge *startGround,
 		double startQuantity,
 		double radius,
-		bool steeps );
+		bool steeps,
+		GroundMoverHandler *handler);
 	bool steeps;
-	virtual void HitTerrain( double &q );
-	virtual bool StartRoll();
-	virtual void FinishedRoll();
+	void HitTerrain( double &q );
+	
+	GroundMoverHandler *handler;
+	//bool startRoll;
+	//bool finishedRoll;
+
+	bool StartRoll();
+	void FinishedRoll();
+
+
 };
 
 #endif
