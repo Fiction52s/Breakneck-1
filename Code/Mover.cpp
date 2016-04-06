@@ -833,13 +833,17 @@ void GroundMover::HitTerrainAerial()
 			roll = false;
 			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
 		}
+		if( handler != NULL )
+			handler->Land();
 	}
 	else
 	{
-		cout << "collision vel: " << velocity.x << ", " << velocity.y << endl;
+		//cout << "collision vel: " << velocity.x << ", " << velocity.y << endl;
 		physBody.globalPosition += minContact.resolution;
 		velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
-		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+		if( handler != NULL )
+			handler->HitOtherAerial();
+		//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 		//q = ground->GetQuantity( physBody.globalPosition );
 		//if( handler != NULL )
 		//	handler->HitOther();

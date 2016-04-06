@@ -419,6 +419,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	GroundMover *testMover;
 	void HitOther();
 	void ReachCliff();
+	void HitOtherAerial();
+	void Land();
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;

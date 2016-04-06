@@ -866,7 +866,10 @@ void StagBeetle::PhysicsResponse()
 		}
 		else
 		{
-			
+			V2d p = testMover->physBody.globalPosition;
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			sprite.setPosition( p.x, p.y );
+			sprite.setRotation( angle );
 		}
 
 		UpdateHitboxes();
@@ -1234,4 +1237,15 @@ void StagBeetle::ReachCliff()
 	testMover->Jump( v );
 	//testMover->groundSpeed = -testMover->groundSpeed;
 	//clockwise = !clockwise;
+}
+
+void StagBeetle::HitOtherAerial()
+{
+	//cout << "hit edge" << endl;
+}
+
+void StagBeetle::Land()
+{
+	frame = 0;
+	//cout << "land" << endl;
 }
