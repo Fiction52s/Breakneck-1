@@ -579,7 +579,7 @@ void StagBeetle::UpdatePhysics()
 	}
 	else
 	{
-		cout << "move through the air" << endl;
+		//cout << "move through the air" << endl;
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * NUM_STEPS;
 
@@ -593,30 +593,50 @@ void StagBeetle::UpdatePhysics()
 				corner = true;
 				en = normalize( physBody.globalPosition - minContact.position );
 			}
+			bool steeps = true;
+			//cout << "HIT--------------------" << endl;
 
-
-			if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 ) )
-				//|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+			if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 
+				|| owner->IsSlopedGround( en ) >= 0 
+				|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
 			{
-				cout << "LANDING" << endl;
-				ground = minContact.edge;
-				edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
+				
+				cout << "LANDINGINGINGING" << endl;
 				
 
 				if( corner )
 				{
+					cout << "LANDING corner" << endl;
 					roll = true;
+					position += minContact.resolution;	
+					ground = minContact.edge;
+					if( minContact.position == ground->v0 )
+					{
+						edgeQuantity = 0;
+					}
+					else
+					{
+						edgeQuantity = length( ground->v1 - ground->v0 );
+					}
 				}
 				else
 				{
+					cout << "LANDING NORMAL" << endl;
+					ground = minContact.edge;
+					edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
+					position = ground->GetPoint( edgeQuantity ) + testMover->physBody.rw * ground->Normal();
 					roll = false;
 				}
+
 				frame = 0;
+				testMover->roll = roll;
 				testMover->ground = ground;
 				testMover->edgeQuantity = edgeQuantity;
+				testMover->physBody.globalPosition = position;
 			}
 			else
 			{
+				//cout << "not the normal ground what" << endl;
 				position += minContact.resolution;
 				testMover->physBody.globalPosition = position;
 				velocity = dot( normalize(velocity), V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
