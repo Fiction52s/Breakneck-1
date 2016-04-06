@@ -639,7 +639,8 @@ void StagBeetle::UpdatePhysics()
 				//cout << "not the normal ground what" << endl;
 				position += minContact.resolution;
 				testMover->physBody.globalPosition = position;
-				velocity = dot( normalize(velocity), V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
+				velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
+				cout << "new velocity: " << velocity.x << ", " << velocity.y << endl;
 			}
 			
 			
