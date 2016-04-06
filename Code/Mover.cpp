@@ -1,5 +1,6 @@
 #include "Mover.h"
 #include "GameSession.h"
+#include <iostream>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -20,6 +21,7 @@ SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround, double star
 	:ground( startGround ), edgeQuantity( startQuantity ), owner( p_owner ),
 	groundSpeed( 0 ), roll( false )
 {
+	gravity = V2d( 0, 0 );
 	physBody.isCircle = true;
 	physBody.rw = radius;
 	physBody.rh = radius;
@@ -521,133 +523,194 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 
 void SurfaceMover::Move( int slowMultiple )
 {
-	double movement = 0;
-	double maxMovement = min( physBody.rw, physBody.rh ); //circle so this might be unnecessary
-	movement = groundSpeed;
-
-	movement /= slowMultiple * NUM_STEPS;
-
-	while( movement != 0 )
+	if( ground != NULL )
 	{
-		//ground is always some value
-		double steal = 0;
-		if( movement > 0 )
+		double movement = 0;
+		double maxMovement = min( physBody.rw, physBody.rh ); //circle so this might be unnecessary
+		movement = groundSpeed;
+
+		movement /= slowMultiple * NUM_STEPS;
+
+		while( movement != 0 )
 		{
-			if( movement > maxMovement )
+			//ground is always some value
+			double steal = 0;
+			if( movement > 0 )
 			{
-				steal = movement - maxMovement;
-				movement = maxMovement;
+				if( movement > maxMovement )
+				{
+					steal = movement - maxMovement;
+					movement = maxMovement;
+				}
 			}
-		}
-		else 
-		{
-			if( movement < -maxMovement )
+			else 
 			{
-				steal = movement + maxMovement;
-				movement = -maxMovement;
+				if( movement < -maxMovement )
+				{
+					steal = movement + maxMovement;
+					movement = -maxMovement;
+				}
 			}
-		}
 
-		double extra = 0;
-		bool leaveGround = false;
-		double q = edgeQuantity;
+			double extra = 0;
+			bool leaveGround = false;
+			double q = edgeQuantity;
 
-		V2d gNormal = ground->Normal();
+			V2d gNormal = ground->Normal();
 
 
-		double m = movement;
-		double groundLength = length( ground->v1 - ground->v0 ); 
+			double m = movement;
+			double groundLength = length( ground->v1 - ground->v0 ); 
 
-		if( approxEquals( q, 0 ) )
-			q = 0;
-		else if( approxEquals( q, groundLength ) )
-			q = groundLength;
-
-		Edge *e0 = ground->edge0;
-		Edge *e1 = ground->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
-
-		bool transferLeft = false;
-		bool transferRight = false;
-
-		if( movement > 0 && q == groundLength )
-		{
-			double c = cross( e1n, gNormal );
-			double d = dot( e1n, gNormal );
-			
-			if( gNormal == e1n )
-			{
-				//cout << "t1" << endl;
+			if( approxEquals( q, 0 ) )
 				q = 0;
-				ground = e1;
-			}
-			else if( !roll )
+			else if( approxEquals( q, groundLength ) )
+				q = groundLength;
+
+			Edge *e0 = ground->edge0;
+			Edge *e1 = ground->edge1;
+			V2d e0n = e0->Normal();
+			V2d e1n = e1->Normal();
+
+			bool transferLeft = false;
+			bool transferRight = false;
+
+			if( movement > 0 && q == groundLength )
 			{
-				bool br = StartRoll();
-				if( br )
-					break;
-				//callback for starting to roll
+				double c = cross( e1n, gNormal );
+				double d = dot( e1n, gNormal );
+			
+				if( gNormal == e1n )
+				{
+					//cout << "t1" << endl;
+					q = 0;
+					ground = e1;
+				}
+				else if( !roll )
+				{
+					bool br = StartRoll();
+					if( br )
+						break;
+					//callback for starting to roll
+				}
+				else
+				{
+					bool br = RollClockwise( q, m );
+					if( br )
+					{
+						edgeQuantity = q;
+						break;
+					}
+				}
+			}
+			else if( movement < 0 && q == 0 )
+			{
+				double d = dot( e1n, gNormal );
+
+				if( gNormal == e0n )
+				{
+					q = length( e0->v1 - e0->v0 );
+					ground = e0;
+				}
+				else if( !roll )
+				{
+					bool br = StartRoll();
+					if( br )
+						break;
+				}
+				else
+				{
+					bool br = RollCounterClockwise( q, m );
+					if( br )
+					{
+						edgeQuantity = q;
+						break;
+					}
+				}
 			}
 			else
 			{
-				bool br = RollClockwise( q, m );
+				bool br = MoveAlongEdge( movement, groundLength, q, m );
 				if( br )
 				{
 					edgeQuantity = q;
 					break;
 				}
 			}
-		}
-		else if( movement < 0 && q == 0 )
-		{
-			double d = dot( e1n, gNormal );
 
-			if( gNormal == e0n )
-			{
-				q = length( e0->v1 - e0->v0 );
-				ground = e0;
-			}
-			else if( !roll )
-			{
-				bool br = StartRoll();
-				if( br )
-					break;
-			}
+			if( movement == extra )
+				movement += steal;
 			else
-			{
-				bool br = RollCounterClockwise( q, m );
-				if( br )
-				{
-					edgeQuantity = q;
-					break;
-				}
-			}
+				movement = steal;
+
+			edgeQuantity = q;
 		}
-		else
+
+		if( ground != NULL )
 		{
-			bool br = MoveAlongEdge( movement, groundLength, q, m );
-			if( br )
-			{
-				edgeQuantity = q;
-				break;
-			}
+			UpdateGroundPos();
 		}
-
-		if( movement == extra )
-			movement += steal;
-		else
-			movement = steal;
-
-		edgeQuantity = q;
 	}
+	else 
+	{
+		velocity += gravity / NUM_STEPS / (double)slowMultiple;
+		//cout << "move through the air" << endl;
 
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * NUM_STEPS;
+
+		bool hit = ResolvePhysics( movementVec );
+		if( hit )
+		{
+			//cout << "landing aerial" << endl;
+			HitTerrainAerial();
+
+			
+		}
+		//else
+		//{
+		//	testMover->physBody.globalPosition = position;
+		//}
+	}
 	
 
 
-	UpdateGroundPos();
+	
 
 	//PhysicsResponse();
+}
+
+void SurfaceMover::HitTerrainAerial()
+{
+	bool corner = false;
+	V2d en = minContact.normal;
+	if( en.x == 0 && en.y == 0 )
+	{
+		corner = true;
+		en = normalize( physBody.globalPosition - minContact.position );
+	}
+
+	if( corner )
+	{
+		roll = true;
+		physBody.globalPosition += minContact.resolution;	
+		ground = minContact.edge;
+
+		if( minContact.position == ground->v0 )
+		{
+			edgeQuantity = 0;
+		}
+		else
+		{
+			edgeQuantity = length( ground->v1 - ground->v0 );
+		}
+	}
+	else
+	{
+		ground = minContact.edge;
+		edgeQuantity = ground->GetQuantity( minContact.position );
+		UpdateGroundPos();
+	}
 }
 
 void SurfaceMover::HitTerrain( double &q )
@@ -682,6 +745,12 @@ void SurfaceMover::HitTerrain( double &q )
 			q = ground->GetQuantity( minContact.position + minContact.resolution );
 		}
 	}
+}
+
+void SurfaceMover::Jump( V2d &vel )
+{
+	velocity = vel;
+	ground = NULL;
 }
 
 bool SurfaceMover::StartRoll()
@@ -739,6 +808,44 @@ void GroundMover::HitTerrain( double &q )
 	}
 }
 
+void GroundMover::HitTerrainAerial()
+{
+	bool corner = false;
+	V2d en = minContact.normal;
+	if( en.x == 0 && en.y == 0 )
+	{
+		corner = true;
+		en = normalize( physBody.globalPosition - minContact.position );
+	}
+
+	if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
+		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	{
+		ground = minContact.edge;
+		if( corner )
+		{
+			roll = true;
+			edgeQuantity = ground->GetQuantity( minContact.position );
+			physBody.globalPosition += minContact.resolution;
+		}
+		else
+		{
+			roll = false;
+			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
+		}
+	}
+	else
+	{
+		cout << "collision vel: " << velocity.x << ", " << velocity.y << endl;
+		physBody.globalPosition += minContact.resolution;
+		velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
+		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+		//q = ground->GetQuantity( physBody.globalPosition );
+		//if( handler != NULL )
+		//	handler->HitOther();
+	}
+}
+
 bool GroundMover::StartRoll()
 {
 	V2d en;
@@ -770,3 +877,4 @@ bool GroundMover::StartRoll()
 void GroundMover::FinishedRoll()
 {
 }
+

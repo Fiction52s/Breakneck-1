@@ -10,6 +10,7 @@ struct GroundMoverHandler
 	//virtual void HitGround() = 0;
 	virtual void HitOther() = 0;
 	virtual void ReachCliff() = 0;
+
 //	virtual void Land(){};
 };
 
@@ -40,8 +41,10 @@ struct SurfaceMover : QuadTreeCollider
 		);
 
 	virtual void HitTerrain( double &q );
+	virtual void HitTerrainAerial();
 	virtual bool StartRoll();
 	virtual void FinishedRoll();
+	void Jump( sf::Vector2<double> &vel );
 
 	Edge *ground;
 	GameSession *owner;
@@ -53,6 +56,9 @@ struct SurfaceMover : QuadTreeCollider
 	bool col;
 	//std::string queryMode;
 	sf::Vector2<double> tempVel;
+
+	sf::Vector2<double> gravity;
+	sf::Vector2<double> velocity;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
 	//
@@ -73,8 +79,14 @@ struct GroundMover : SurfaceMover
 	//bool startRoll;
 	//bool finishedRoll;
 
+	
 	bool StartRoll();
 	void FinishedRoll();
+	void HitTerrainAerial();
+
+
+
+	//sf::Vector2<double> velocity;
 
 
 };

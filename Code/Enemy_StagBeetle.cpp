@@ -97,7 +97,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	testMover = new GroundMover( owner, g, q, 32, false, this );
-
+	testMover->gravity = V2d( 0, .5 );
 
 
 	testMover->groundSpeed = 5;
@@ -508,8 +508,8 @@ void StagBeetle::UpdatePrePhysics()
 
 	if( ground == NULL )
 	{
-		cout << "adding gravity" << endl;
-		velocity += V2d( 0, .5 );
+		//cout << "adding gravity" << endl;
+		//velocity += V2d( 0, .5 );
 	}
 	if( attackFrame == 2 * attackMult )
 	{
@@ -540,8 +540,8 @@ void StagBeetle::UpdatePhysics()
 		return;
 	}
 
-	if( ground != NULL )
-	{
+	//if( ground != NULL )
+	//{
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	testMover->groundSpeed = 5 * f;
@@ -558,15 +558,18 @@ void StagBeetle::UpdatePhysics()
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
 
+	ground = testMover->ground;
+	edgeQuantity = testMover->edgeQuantity;
+	position = testMover->physBody.globalPosition;
 	if( ground != NULL )
 	{
-		ground = testMover->ground;
-		edgeQuantity = testMover->edgeQuantity;
-		position = testMover->physBody.globalPosition;
+		
+		
+		
 	}
 	else
 	{
-		testMover->physBody.globalPosition = position;
+		//testMover->physBody.globalPosition = position;
 	}
 	
 
@@ -576,83 +579,83 @@ void StagBeetle::UpdatePhysics()
 	}
 	roll = testMover->roll;
 
-	}
-	else
-	{
-		//cout << "move through the air" << endl;
-		V2d movementVec = velocity;
-		movementVec /= slowMultiple * NUM_STEPS;
+	////}
+	////else
+	//{
+	//	//cout << "move through the air" << endl;
+	//	V2d movementVec = velocity;
+	//	movementVec /= slowMultiple * NUM_STEPS;
 
-		bool hit = ResolvePhysics( movementVec );
-		if( hit )
-		{
-			bool corner = false;
-			V2d en = minContact.normal;
-			if( en.x == 0 && en.y == 0 )
-			{
-				corner = true;
-				en = normalize( physBody.globalPosition - minContact.position );
-			}
-			bool steeps = true;
-			//cout << "HIT--------------------" << endl;
+	//	bool hit = ResolvePhysics( movementVec );
+	//	if( hit )
+	//	{
+	//		bool corner = false;
+	//		V2d en = minContact.normal;
+	//		if( en.x == 0 && en.y == 0 )
+	//		{
+	//			corner = true;
+	//			en = normalize( physBody.globalPosition - minContact.position );
+	//		}
+	//		bool steeps = true;
+	//		//cout << "HIT--------------------" << endl;
 
-			if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 
-				|| owner->IsSlopedGround( en ) >= 0 
-				|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
-			{
-				
-				cout << "LANDINGINGINGING" << endl;
-				
+	//		if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 
+	//			|| owner->IsSlopedGround( en ) >= 0 
+	//			|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	//		{
+	//			
+	//			cout << "LANDINGINGINGING" << endl;
+	//			
 
-				if( corner )
-				{
-					cout << "LANDING corner" << endl;
-					roll = true;
-					position += minContact.resolution;	
-					ground = minContact.edge;
-					if( minContact.position == ground->v0 )
-					{
-						edgeQuantity = 0;
-					}
-					else
-					{
-						edgeQuantity = length( ground->v1 - ground->v0 );
-					}
-				}
-				else
-				{
-					cout << "LANDING NORMAL" << endl;
-					ground = minContact.edge;
-					edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
-					position = ground->GetPoint( edgeQuantity ) + testMover->physBody.rw * ground->Normal();
-					roll = false;
-				}
+	//			if( corner )
+	//			{
+	//				cout << "LANDING corner" << endl;
+	//				roll = true;
+	//				position += minContact.resolution;	
+	//				ground = minContact.edge;
+	//				if( minContact.position == ground->v0 )
+	//				{
+	//					edgeQuantity = 0;
+	//				}
+	//				else
+	//				{
+	//					edgeQuantity = length( ground->v1 - ground->v0 );
+	//				}
+	//			}
+	//			else
+	//			{
+	//				cout << "LANDING NORMAL" << endl;
+	//				ground = minContact.edge;
+	//				edgeQuantity  = ground->GetQuantity( minContact.position + minContact.resolution );
+	//				position = ground->GetPoint( edgeQuantity ) + testMover->physBody.rw * ground->Normal();
+	//				roll = false;
+	//			}
 
-				frame = 0;
-				testMover->roll = roll;
-				testMover->ground = ground;
-				testMover->edgeQuantity = edgeQuantity;
-				testMover->physBody.globalPosition = position;
-			}
-			else
-			{
-				//cout << "not the normal ground what" << endl;
-				position += minContact.resolution;
-				testMover->physBody.globalPosition = position;
-				velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
-				cout << "new velocity: " << velocity.x << ", " << velocity.y << endl;
-			}
-			
-			
-			//= q;
-			//V2d gn = ground->Normal();
-			//break;
-		}
-		else
-		{
-			testMover->physBody.globalPosition = position;
-		}
-	}
+	//			frame = 0;
+	//			testMover->roll = roll;
+	//			testMover->ground = ground;
+	//			testMover->edgeQuantity = edgeQuantity;
+	//			testMover->physBody.globalPosition = position;
+	//		}
+	//		else
+	//		{
+	//			//cout << "not the normal ground what" << endl;
+	//			position += minContact.resolution;
+	//			testMover->physBody.globalPosition = position;
+	//			velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
+	//			//cout << "new velocity: " << velocity.x << ", " << velocity.y << endl;
+	//		}
+	//		
+	//		
+	//		//= q;
+	//		//V2d gn = ground->Normal();
+	//		//break;
+	//	}
+	//	else
+	//	{
+	//		testMover->physBody.globalPosition = position;
+	//	}
+	//}
 	PhysicsResponse();
 }
 
@@ -1210,22 +1213,25 @@ void StagBeetle::FinishedRoll()
 void StagBeetle::HitOther()
 {
 	//cout << "hit other!" << endl;
-	testMover->groundSpeed = -testMover->groundSpeed;
-	clockwise = !clockwise;
+	//testMover->groundSpeed = -testMover->groundSpeed;
+	//clockwise = !clockwise;
 }
 
 void StagBeetle::ReachCliff()
 {
-	cout << "reach cliff!" << endl;
-	ground = NULL;
+	//cout << "reach cliff!" << endl;
+	//ground = NULL;
+	V2d v;
 	if( clockwise )
 	{
-		velocity = V2d( 10, -10 );
+		v = V2d( 10, -10 );
 	}
 	else
 	{
-		velocity = V2d( -10, -10 );
+		v = V2d( -10, -10 );
 	}
+
+	testMover->Jump( v );
 	//testMover->groundSpeed = -testMover->groundSpeed;
 	//clockwise = !clockwise;
 }
