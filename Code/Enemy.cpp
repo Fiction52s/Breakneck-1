@@ -10,28 +10,98 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Launcher::Launcher( GameSession *owner, int numBullets )
+Launcher::Launcher( GameSession *p_owner,
+		int numTotalBullets,
+		int bulletsPerShot,
+		sf::Vector2<double> p_position,
+		sf::Vector2<double> direction,
+		double p_angleSpread )
+		:totalBullets( numTotalBullets ), perShot( bulletsPerShot ),
+		facingDir( direction ), angleSpread( p_angleSpread ), 
+		position( p_position ), owner( p_owner )
+
 {
-	inactiveBullets = new BasicBullet;
-	for( int i = 1; i < numBullets; ++i )
+	//increment the global counter
+	 //+= numTotalBullets;
+	int startIndex = owner->totalNumberBullets;
+
+	activeBullets = NULL;
+	inactiveBullets = new BasicBullet( startIndex++, this );
+
+	for( int i = 1; i < numTotalBullets; ++i )
 	{
-		BasicBullet * temp = new BasicBullet;
+		BasicBullet * temp = new BasicBullet( startIndex++, this );
 		temp->next = inactiveBullets;
 		inactiveBullets->prev = temp;
 		inactiveBullets = temp;
 	}
 
+	owner->totalNumberBullets = startIndex;
+}
+
+void Launcher::UpdatePrePhysics()
+{
+	BasicBullet *curr = activeBullets;
+	while( curr != NULL )
+	{
+	//	cout << "updating bullet pre" << endl;
+		curr->UpdatePrePhysics();
+		curr = curr->next;
+	}
+}
+
+void Launcher::UpdatePhysics()
+{
+	BasicBullet *curr = activeBullets;
+	while( curr != NULL )
+	{
+	//	cout << "updating bullet physics" << endl;
+		curr->UpdatePhysics();
+		curr = curr->next;
+	}
+}
+
+void Launcher::UpdateSprites()
+{
+	BasicBullet *curr = activeBullets;
+	while( curr != NULL )
+	{
+		//cout << "updating bullet sprite" << endl;
+		curr->UpdateSprite();
+		curr = curr->next;
+	}
+}
+
+void Launcher::Fire()
+{
+	
+	for( int i = 0; i < perShot; ++i )
+	{
+		//cout << "trying to activate bullet" << endl;
+		BasicBullet * b = ActivateBullet();
+		//cout << "bullet done activating" << endl;
+		if( b != NULL )
+		{
+			cout << "FIRE" << endl;
+			b->Reset( position, facingDir * 1.0 );
+		}
+	}
 }
 
 void Launcher::Reset()
 {
+	int x = 0;
+	//cout << "resetting" << endl;
 	while( activeBullets != NULL )
 	{
+		++x;
+		//cout << "deact" << endl;
 		DeactivateBullet( activeBullets );
 	}
+	cout << "reset " << x << " bullets" << endl;
 }
 
-void Launcher::AddToList( BasicBullet *b, BasicBullet *list )
+void Launcher::AddToList( BasicBullet *b, BasicBullet *&list )
 {
 	b->prev = NULL;
 	b->next = list;
@@ -39,27 +109,51 @@ void Launcher::AddToList( BasicBullet *b, BasicBullet *list )
 	{
 		list->prev = b;
 	}
+	//cout << "list is: " << b << endl;
 	list = b;
 }
 
-void Launcher::RanOutOfBullets()
+//might deactivate the oldest one or something. for now just return null
+BasicBullet * Launcher::RanOutOfBullets()
 {
 	cout << "ran out of bullets!" << endl;
+	return NULL;
 }
 
-void Launcher::ActivateBullet( )
+void BasicBullet::Reset( V2d &pos, V2d &vel )
+{
+	position = pos;
+	velocity = vel;
+	framesToLive = maxFramesToLive;
+	slowMultiple = 1;
+	slowCounter = 1;
+
+	VertexArray &bva = *(launcher->owner->bigBulletVA);
+	bva[index*4+0].position = Vector2f( 0, 0 );
+	bva[index*4+1].position = Vector2f( 0, 0 );
+	bva[index*4+2].position = Vector2f( 0, 0 );
+	bva[index*4+3].position = Vector2f( 0, 0 );
+	//transform.
+}
+
+BasicBullet * Launcher::ActivateBullet( )
 {
 	if( inactiveBullets == NULL )
 	{
-		RanOutOfBullets();
-		return;
+
+		return RanOutOfBullets();
 	}
 	else
 	{
+		//cout << "b" << endl;
 		BasicBullet *temp = inactiveBullets->next;
 		AddToList( inactiveBullets, activeBullets );
+		//cout << "activeBullets: " << activeBullets << endl;
 		inactiveBullets = temp;
-		inactiveBullets->prev = NULL;
+		if( inactiveBullets != NULL )
+			inactiveBullets->prev = NULL;
+		//cout << "c" << endl;
+		return activeBullets;
 	}
 }
 
@@ -85,8 +179,10 @@ void Launcher::DeactivateBullet( BasicBullet *b )
 		//start
 		else if( b->prev == NULL )
 		{
+			BasicBullet *temp = b->next;
 			b->next->prev = NULL;
 			AddToList( b, inactiveBullets );
+			activeBullets = temp;
 		}
 		//middle
 		else
@@ -96,11 +192,47 @@ void Launcher::DeactivateBullet( BasicBullet *b )
 			AddToList( b, inactiveBullets );
 		}
 	}
+
+	b->ResetSprite();
 }
 
-BasicBullet::BasicBullet()
+BasicBullet::BasicBullet( int indexVA, Launcher *launch )
+	:index( indexVA ), launcher( launch ), next( NULL ), prev( NULL )
 {
+	double rad = 12;
+	/*hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = rad;
+	hurtBody.rh = rad;*/
 
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = rad;
+	hitBody.rh = rad;
+
+	physBody.type = CollisionBox::Physics;
+	physBody.isCircle = true;
+	physBody.globalAngle = 0;
+	physBody.offset.x = 0;
+	physBody.offset.y = 0;
+	physBody.rw = rad;
+	physBody.rh = rad;
+
+	//ResetSprite();
+}
+
+void BasicBullet::ResetSprite()
+{
+	VertexArray &bva = *(launcher->owner->bigBulletVA);
+	bva[index*4+0].position = Vector2f( 0, 0 );
+	bva[index*4+1].position = Vector2f( 0, 0 );
+	bva[index*4+2].position = Vector2f( 0, 0 );
+	bva[index*4+3].position = Vector2f( 0, 0 );
 }
 
 void BasicBullet::UpdatePrePhysics()
@@ -117,10 +249,11 @@ void BasicBullet::UpdatePhysics()
 	double move = 0;
 	while( movementLen > 0 )
 	{
-		if( movementLen > hitBody.rw )
+		//cout << "loop: " << movementLen << endl;
+		if( movementLen > physBody.rw )
 		{
-			movementLen -= hitBody.rw;
-			move = hitBody.rw;
+			movementLen -= physBody.rw;
+			move = physBody.rw;
 		}
 		else
 		{
@@ -139,7 +272,7 @@ void BasicBullet::UpdatePhysics()
 
 bool BasicBullet::HitTerrain()
 {
-
+	return true;
 }
 
 bool BasicBullet::ResolvePhysics( V2d vel )
@@ -189,7 +322,7 @@ void BasicBullet::HandleEntrant( QuadTreeEntrant *qte )
 {
 	Edge *e = (Edge*)qte;
 
-	Contact *c = owner->coll.collideEdge( position + tempVel, physBody, e, tempVel, V2d( 0, 0 ) );
+	Contact *c = launcher->owner->coll.collideEdge( position + tempVel, physBody, e, tempVel, V2d( 0, 0 ) );
 
 	if( c != NULL )
 	{
@@ -207,9 +340,11 @@ void BasicBullet::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicBullet::UpdateSprite()
 {
-	VertexArray &VA = *va;
-	IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
-	Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
+	
+	VertexArray &VA = *(launcher->owner->bigBulletVA);
+	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
+	Vector2f dims( 12, 12 );
+	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 
 	Vector2f center( position.x, position.y );
 	Vector2f topLeft = center - dims;
@@ -223,10 +358,14 @@ void BasicBullet::UpdateSprite()
 	VA[index*4+2].position = transform.transformPoint( botRight );
 	VA[index*4+3].position = transform.transformPoint( botLeft );
 
-	VA[index*4+0].texCoords = Vector2f( ir.left, ir.top );
+	/*VA[index*4+0].texCoords = Vector2f( ir.left, ir.top );
 	VA[index*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
 	VA[index*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
-	VA[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+	VA[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
+	VA[index*4+0].color = Color::Red;
+	VA[index*4+1].color = Color::Red;
+	VA[index*4+2].color = Color::Red;
+	VA[index*4+3].color = Color::Red;
 }
 
 Enemy::Enemy( GameSession *own, EnemyType t )
@@ -234,6 +373,11 @@ Enemy::Enemy( GameSession *own, EnemyType t )
 	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL ), dead( false )
 {
 
+}
+
+int Enemy::NumTotalBullets()
+{
+	return 0;
 }
 
 void Enemy::AttemptSpawnMonitor()

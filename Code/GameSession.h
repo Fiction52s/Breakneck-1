@@ -206,6 +206,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void CreateZones();
 	void SetupZones();
 	
+	int totalNumberBullets;
+	sf::VertexArray *bigBulletVA;
 
 	sf::VertexArray *debugBorders;
 

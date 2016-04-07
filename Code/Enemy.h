@@ -1,6 +1,7 @@
 #ifndef __ENEMY_H__
 #define __ENEMY_H__
 
+
 #include "Actor.h"
 #include <list>
 #include "Mover.h"
@@ -13,27 +14,10 @@ struct Monitor;
 
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
-struct BasicBullet;
-struct Launcher
-{
-	Launcher( GameSession *owner,
-		int numBullets );
-	
-	BasicBullet *inactiveBullets;
-	BasicBullet *activeBullets;
-	void DeactivateBullet( BasicBullet *b );
-	void ActivateBullet();
-	virtual void RanOutOfBullets();
-	void AddToList( BasicBullet *b,
-		BasicBullet *list );
-	
-	void Reset();
-	GameSession *owner;
-};
-
+struct Launcher;
 struct BasicBullet : QuadTreeCollider
 {
-	BasicBullet();
+	BasicBullet( int indexVA, Launcher *launcher );
 	BasicBullet *prev;
 	BasicBullet *next;
 	sf::Vector2<double> position;
@@ -42,8 +26,12 @@ struct BasicBullet : QuadTreeCollider
 	CollisionBox hitBody;
 	virtual void HandleEntrant( QuadTreeEntrant *qte );
 	virtual void UpdatePrePhysics();
+	void Reset(
+		sf::Vector2<double> &pos,
+		sf::Vector2<double> &vel );
 	virtual void UpdatePhysics();
 	virtual void UpdateSprite();
+	virtual void ResetSprite();
 	bool ResolvePhysics( 
 		sf::Vector2<double> vel );
 	virtual bool HitTerrain();
@@ -53,7 +41,7 @@ struct BasicBullet : QuadTreeCollider
 	int slowMultiple;
 	int maxFramesToLive;
 	int framesToLive;
-	sf::VertexArray *va;
+	//sf::VertexArray *va;
 	sf::Transform transform;
 	Tileset *ts;
 	int index;
@@ -63,6 +51,40 @@ struct BasicBullet : QuadTreeCollider
 	sf::Vector2<double> tempVel;
 	Launcher *launcher;
 };
+
+struct Launcher
+{
+	
+	Launcher( GameSession *owner,
+		int numTotalBullets,
+		int bulletsPerShot,
+		sf::Vector2<double> position,
+		sf::Vector2<double> direction,
+		double angleSpread );
+	
+	void Reset();
+	BasicBullet *inactiveBullets;
+	BasicBullet *activeBullets;
+	void DeactivateBullet( BasicBullet *b );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdateSprites();
+	BasicBullet * ActivateBullet();
+	void Fire();
+	virtual BasicBullet * RanOutOfBullets();
+	void AddToList( BasicBullet *b,
+		BasicBullet *&list );
+	
+	
+	GameSession *owner;
+	int totalBullets;
+	int perShot;
+	sf::Vector2<double> position;
+	double angleSpread;
+	sf::Vector2<double> facingDir;
+};
+
+
 
 
 
@@ -88,7 +110,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	};
 
 	
-
+	
 	Enemy( GameSession *owner, EnemyType t );
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
@@ -102,6 +124,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual std::pair<bool,bool> PlayerHitMe() = 0;
 	virtual bool PlayerSlowingMe() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target) = 0;
+	virtual int NumTotalBullets();
 	void SaveState();
 	void LoadState();
 	void AttemptSpawnMonitor();
@@ -428,6 +451,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	StagBeetle( GameSession *owner, Edge *ground, 
 		double quantity, 
 		bool clockwise, double speed );
+	int NumTotalBullets();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -451,6 +475,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	bool StartRoll();
 	void FinishedRoll();
 
+	Launcher *testLaunch;
 	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
 	Tileset *ts;

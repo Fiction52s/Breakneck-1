@@ -72,6 +72,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 )
 {
+	bigBulletVA = NULL;
 	preScreenTex->setSmooth( false );
 	postProcessTex->setSmooth( false );
 	postProcessTex1->setSmooth( false );
@@ -939,6 +940,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 
 bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 {
+	totalNumberBullets = 0;
+
 	int numGroups;
 	is >> numGroups;
 	for( int i = 0; i < numGroups; ++i )
@@ -952,6 +955,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		{
 			string typeName;
 			is >> typeName;
+
+			Enemy *enem = NULL;
 
 			if( typeName == "goal" )
 			{
@@ -969,6 +974,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 
@@ -1036,6 +1042,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
@@ -1100,6 +1107,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
@@ -1218,6 +1226,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1265,6 +1274,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1312,6 +1322,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1356,6 +1367,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1391,6 +1403,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1426,6 +1439,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1456,6 +1470,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );
 			}
@@ -1489,6 +1504,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
@@ -1497,7 +1513,21 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				assert( false && "not a valid type name" );
 			}
 
+			//if( enem != NULL )
+			//{
+			//	totalNumberBullets += enem->NumTotalBullets();
+			//}
+
 		}
+	}
+
+	//create VA
+
+	bigBulletVA = new VertexArray( sf::Quads, totalNumberBullets * 4 );
+	VertexArray &bva = *bigBulletVA;
+	for( int i = 0; i < totalNumberBullets * 4; ++i )
+	{
+		bva[i].position = Vector2f( 0, 0 );
 	}
 	return true;
 }
@@ -4426,6 +4456,9 @@ int GameSession::Run( string fileN )
 
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
+
+		preScreenTex->draw( *bigBulletVA );
+		//bigBulletVA->draw( preScreenTex );
 
 		if( player.action != Actor::GRINDBALL )
 		{

@@ -22,6 +22,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	:Enemy( owner, EnemyType::STAGBEETLE ), clockwise( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
+	
+
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
@@ -91,6 +93,9 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
 
+
+	testLaunch = new Launcher( owner, 10, 1,
+		testMover->physBody.globalPosition, g->Normal(), 0 );
 	/*physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
@@ -122,7 +127,13 @@ void StagBeetle::ResetEnemy()
 	testMover->edgeQuantity = startQuant;
 	testMover->UpdateGroundPos();
 	testMover->roll = false;
-	testMover->UpdateGroundPos();
+
+	position = testMover->physBody.globalPosition;
+	//testMover->UpdateGroundPos();
+
+	testLaunch->Reset();
+	testLaunch->position = testMover->physBody.globalPosition;
+	testLaunch->facingDir = startGround->Normal();
 
 	bezFrame = 0;
 	health = initHealth;
@@ -171,6 +182,11 @@ void StagBeetle::ResetEnemy()
 
 	UpdateHitboxes();
 
+}
+
+int StagBeetle::NumTotalBullets()
+{
+	return 10;
 }
 
 void StagBeetle::HandleEntrant( QuadTreeEntrant *qte )
@@ -222,6 +238,8 @@ void StagBeetle::UpdateHitboxes()
 
 void StagBeetle::UpdatePrePhysics()
 {
+	testLaunch->UpdatePrePhysics();
+
 	if( dead )
 		return;
 
@@ -267,14 +285,34 @@ void StagBeetle::UpdatePrePhysics()
 			frame = rollAnimationFactor * 2; 
 		}
 	//}
+
+	if( bezFrame == 0 )
+	{
+		testLaunch->position = position;
+		if( testMover->ground != NULL )
+		{
+			testLaunch->facingDir = testMover->ground->Normal();
+		}
+		else
+		{
+			testLaunch->facingDir = V2d( 0, -1 );
+		}
+		
+		testLaunch->Fire();
+	}
 }
 
 void StagBeetle::UpdatePhysics()
 {
+	testLaunch->UpdatePhysics();
+
+
 	if( dead )
 	{
 		return;
 	}
+
+
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	testMover->groundSpeed = 5 * f;
@@ -287,6 +325,8 @@ void StagBeetle::UpdatePhysics()
 	if( bezFrame == bezLength )
 	{
 		bezFrame = 0;
+		
+
 	}
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
@@ -563,7 +603,7 @@ void StagBeetle::UpdatePostPhysics()
 	}
 
 	UpdateSprite();
-
+	testLaunch->UpdateSprites();
 
 	if( slowCounter == slowMultiple )
 	{
