@@ -293,12 +293,6 @@ void StagBeetle::UpdatePhysics()
 
 	position = testMover->physBody.globalPosition;
 
-	/*if( roll != testMover->roll )
-	{
-		frame = 0;
-	}*/
-	//roll = testMover->roll;
-
 	PhysicsResponse();
 }
 
@@ -359,9 +353,9 @@ void StagBeetle::PhysicsResponse()
 		if( ground != NULL )
 		{
 		//cout << "response" << endl;
-		double spaceNeeded = 0;
-		V2d gn = ground->Normal();
-		V2d gPoint = ground->GetPoint( edgeQuantity );
+			double spaceNeeded = 0;
+			V2d gn = ground->Normal();
+			V2d gPoint = ground->GetPoint( edgeQuantity );
 	
 
 		

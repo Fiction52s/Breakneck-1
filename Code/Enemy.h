@@ -13,6 +13,57 @@ struct Monitor;
 
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
+struct BasicBullet;
+struct Launcher
+{
+	Launcher( GameSession *owner,
+		int numBullets );
+	
+	BasicBullet *inactiveBullets;
+	BasicBullet *activeBullets;
+	void DeactivateBullet( BasicBullet *b );
+	void ActivateBullet();
+	virtual void RanOutOfBullets();
+	void AddToList( BasicBullet *b,
+		BasicBullet *list );
+	
+	void Reset();
+	GameSession *owner;
+};
+
+struct BasicBullet : QuadTreeCollider
+{
+	BasicBullet();
+	BasicBullet *prev;
+	BasicBullet *next;
+	sf::Vector2<double> position;
+	//CollisionBox hurtBody;
+	CollisionBox physBody;
+	CollisionBox hitBody;
+	virtual void HandleEntrant( QuadTreeEntrant *qte );
+	virtual void UpdatePrePhysics();
+	virtual void UpdatePhysics();
+	virtual void UpdateSprite();
+	bool ResolvePhysics( 
+		sf::Vector2<double> vel );
+	virtual bool HitTerrain();
+	//CollisionBox physBody;
+	sf::Vector2<double> velocity;
+	int slowCounter;
+	int slowMultiple;
+	int maxFramesToLive;
+	int framesToLive;
+	sf::VertexArray *va;
+	sf::Transform transform;
+	Tileset *ts;
+	int index;
+
+	bool col;
+	Contact minContact;
+	sf::Vector2<double> tempVel;
+	Launcher *launcher;
+};
+
 
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
