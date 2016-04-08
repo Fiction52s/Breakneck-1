@@ -1,4 +1,6 @@
 #include "Movement.h"
+#include "Enemy.h"
+#include <iostream>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -96,6 +98,7 @@ double CubicBezier::GetY( double t )
 
 Movement::Movement( CubicBezier &p_bez, int dur )
 	:next( NULL ), duration( dur * NUM_STEPS ), vertices( NULL ), bez( p_bez )
+
 {
 }
 
@@ -192,6 +195,28 @@ MovementSequence::MovementSequence()
 	Reset();
 }
 
+//void MovementSequence::PushMovementLauncher( int numTotalBullets, 
+//	int bulletsPerShot, sf::Vector2<double> &position,
+//	sf::Vector2<double> &direction, double angleSpread )
+//{
+//	Movement *curr = movementList;
+//	while( curr->next != NULL )
+//	{
+//		curr = curr->next;
+//	}
+//	//curr is final now
+//	if( curr->launcher != NULL )
+//	{
+//		delete curr->launcher;
+//		cout << "WRITING OVER LAUNCHER!!!" << endl;
+//	}
+//	else
+//	{
+//		curr->launcher = new Launcher( owner, numTotalBullets,
+//			bulletsPerShot, position, direction, angleSpread );
+//	}
+//}
+
 void MovementSequence::AddLineMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, CubicBezier& bez, int duration )
 {
@@ -257,6 +282,17 @@ void MovementSequence::Update()
 	if( currMovement != NULL && currTime == currMovement->duration + currMovementStartTime )
 	{
 		currMovement = currMovement->next;
+		//currLauncherList = currMovement->launcher;
+
+
+
+		//Launcher *currLaunch = currLauncherList;
+
+		//justChanged = true;
+		//while( currLaunch!= NULL )
+		//{
+		//	currLaunch = currLaunch->next;
+		//}
 
 		if( currMovement != NULL )
 		{

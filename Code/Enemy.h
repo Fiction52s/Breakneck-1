@@ -82,6 +82,7 @@ struct Launcher
 	sf::Vector2<double> position;
 	double angleSpread;
 	sf::Vector2<double> facingDir;
+	//Launcher *next;
 };
 
 

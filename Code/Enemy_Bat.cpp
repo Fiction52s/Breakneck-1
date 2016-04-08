@@ -13,7 +13,8 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Bat::Bat( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
+Bat::Bat( GameSession *owner, Vector2i pos, 
+	list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
 	

@@ -70,6 +70,7 @@ struct Movement
 	void DebugDraw( sf::RenderTarget *target );
 	Movement *next;
 	sf::Vertex *vertices;//debugdraw
+	//Launcher *launcher;
 };
 
 struct WaitMovement : Movement
@@ -113,6 +114,7 @@ struct LineMovement: Movement
 struct MovementSequence
 {
 	MovementSequence();
+	GameSession *owner;
 	sf::Vector2<double> position;
 	double rotation;
 	int currTime;
@@ -126,8 +128,11 @@ struct MovementSequence
 		sf::Vector2<double> &B, sf::Vector2<double> &C,
 		sf::Vector2<double> &D, CubicBezier&, int duration );
 
+		
+
 	Movement *movementList;
 	Movement *currMovement;
+	//bool justChanged;
 	
 	//^is almost always null
 	//but when its fed a projectile it
