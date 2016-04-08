@@ -58,15 +58,33 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 		//}
 	}
 
+	basePos = position;
 	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 300, 0 );
-	V2d sqTest2 = position + V2d( 300, 300 );
-	V2d sqTest3 = position + V2d( 0, 200 );
+	V2d sqTest1 = position + V2d( 0, -150 );
+	V2d sqTest2 = position + V2d( 150, -150 );
+	V2d sqTest3 = position + V2d( 300, -150 );
+	V2d sqTest4 = position + V2d( 300, 0 );
 
-	testSeq.AddLineMovement( sqTest0, sqTest1, 
-		CubicBezier(1,.03,.07,.72 ), 60 );
-	testSeq.AddCubicMovement( sqTest1, sqTest2, sqTest3, sqTest0,
-		CubicBezier(1,.03,.07,.72 ), 60 );
+	//Transform trans;
+	///trans.scale( Vector2f( 3, 1 ) );
+	
+	//trans.rotate( 
+
+	testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 0, CubicBezier( 0, 0, 1, 1), 60 );
+	//trans.rotate( 90 );
+	//trans.
+	testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 90, CubicBezier( 0, 0, 1, 1), 60 );
+
+	//testSeq.AddLineMovement( sqTest0, sqTest1, 
+	//	CubicBezier(1,.03,.07,.72 ), 60 );
+	//testSeq.AddCubicMovement( sqTest0, sqTest1, sqTest1, sqTest2,
+	//	CubicBezier( 0, 0, 1, 1 ), 60 );
+		//CubicBezier(1,.03,.07,.72 ), 60 );
+	//testSeq.AddCubicMovement( sqTest2, sqTest3, sqTest3, sqTest4,
+		//CubicBezier(1,.03,.07,.72 ), 60 );
+	//	CubicBezier( 0, 0, 1, 1 ), 60 );
+	//testSeq.add
+	
 	//	CubicBezier( 0, .03, .1, 1), 60 );
 
 	/*testSeq.AddMovement( new BezierMovement( 
@@ -216,7 +234,7 @@ void Bat::UpdatePhysics()
 {
 	testSeq.Update();
 
-	position = testSeq.position;
+	position = basePos + testSeq.position;
 
 	return;
 

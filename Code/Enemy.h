@@ -317,7 +317,7 @@ struct Bat : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
-	
+	sf::Vector2<double> basePos;
 	int deathFrame;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;

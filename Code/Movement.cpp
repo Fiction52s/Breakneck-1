@@ -178,6 +178,54 @@ V2d CubicMovement::GetPosition( int t )
 		+ pow( v, 3 ) * D;
 }
 		
+RadialMovement::RadialMovement( double p_radius, 
+		double p_startAngle, 
+		double p_endAngle, 
+		bool p_clockwise,
+		sf::Vector2<double> p_scale,
+		double p_ellipseAngle,
+		CubicBezier &bez,
+		int duration )
+		:Movement( bez, duration ), startAngle( p_startAngle ),
+		endAngle( p_endAngle ), clockwise( p_clockwise ), radius( p_radius ),
+		ellipseAngle( p_ellipseAngle ), scale( p_scale )
+{
+	if( clockwise )
+	{
+		if( startAngle > endAngle )
+		{
+			endAngle += PI * 2;
+		}
+	}
+	else
+	{
+		if( startAngle < endAngle )
+		{
+			startAngle += PI * 2;
+		}
+	}
+}
+
+sf::Vector2<double> RadialMovement::GetPosition( int t )
+{
+
+	double v = bez.GetValue( t / (double)duration );
+
+	
+	double angle = startAngle + ( endAngle - startAngle ) * v;
+	Vector2f p( radius * cos( angle ) * scale.x, radius * sin( angle ) * scale.y);
+	sf::Transform tra;
+	tra.rotate( ellipseAngle );
+	
+	
+	Vector2f p0 = tra.transformPoint( p );
+	
+	
+	//cout << "pos : " << pos.x << ", " << pos.y << endl;
+
+	return V2d( p0.x, p0.y );
+}
+
 WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
 	:Movement( CubicBezier(), duration ), pos( p_pos )
 {
@@ -228,6 +276,16 @@ void MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &D, CubicBezier& bez, int duration )
 {
  	AddMovement( new CubicMovement( A,B,C,D,bez,duration ) );
+}
+
+void MovementSequence::AddRadialMovement( double radius, double startAngle,
+		double endAngle, bool clockwise, sf::Vector2<double> scale,
+		double ellipseAngle,
+		CubicBezier &bez, int duration )
+{
+	AddMovement( new RadialMovement( radius, startAngle, endAngle, clockwise,
+		scale, ellipseAngle, bez,
+		duration ) );
 }
 
 void MovementSequence::InitMovementDebug()
