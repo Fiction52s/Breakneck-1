@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
-		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
-		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
+		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
+		edgeQuantity( q )
 {
 	initHealth = 60;
 	health = initHealth;
@@ -50,7 +50,6 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	sprite.setRotation( angle / PI * 180 );
 
 	
-	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
 
 
 	hurtBody.type = CollisionBox::Hurt;
@@ -77,24 +76,6 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	activeBullets = NULL;
-	inactiveBullets = NULL;
-
-
-	for( int i = 0; i < maxBullets; ++i )
-	{
-		AddBullet();
-	}
-
-	
-	bulletHitboxInfo = new HitboxInfo;
-	bulletHitboxInfo->damage = 40;
-	bulletHitboxInfo->drainX = 0;
-	bulletHitboxInfo->drainY = 0;
-	bulletHitboxInfo->hitlagFrames = 0;
-	bulletHitboxInfo->hitstunFrames = 10;
-	bulletHitboxInfo->knockback = 0;
-
 	frame = 0;
 	deathFrame = 0;
 	animationFactor = 3;
@@ -117,9 +98,15 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-
+	testLauncher = new Launcher( owner, 16, 1, position, gn, 0 );
+	testLauncher->SetBulletSpeed( 10 );
+	testLauncher->SetGravity( V2d( 0, .1 ) );
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
+}
+
+void CurveTurret::HandleEntrant( QuadTreeEntrant *qte )
+{
 }
 
 void CurveTurret::ResetEnemy()
@@ -127,42 +114,13 @@ void CurveTurret::ResetEnemy()
 	dead = false;
 	frame = 0;
 	deathFrame = 0;
-	while( activeBullets != NULL )
-	{
-		DeactivateBullet( activeBullets );
-	}
-}
-
-void CurveTurret::HandleEntrant( QuadTreeEntrant *qte )
-{
-	//cout << "handling entrant" << endl;
-	Edge *e = (Edge*)qte;
-
-	if( e == ground )
-		return;
-
-	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel, V2d( 0, 0 ) );
-	
-
-	if( c != NULL )
-	{
-		//cout << "touched something at all" << endl;
-		if( !col )
-		{
-			minContact = *c;
-			col = true;
-		}
-		else if( c->collisionPriority < minContact.collisionPriority )
-		{
-			minContact = *c;
-		}
-	}
-	//Contact *c = owner->coll.collideEdge( queryBullet->position, queryBullet->physBody, e, tempVel, owner->window );
-
 }
 
 void CurveTurret::UpdatePrePhysics()
 {
+	testLauncher->UpdatePrePhysics();
+	
+
 	if( frame == 26 * animationFactor )
 	{
 		frame = 0;
@@ -183,88 +141,20 @@ void CurveTurret::UpdatePrePhysics()
 
 		receivedHit = NULL;
 	}
-
-
-//	DeactivateBullet( currBullet );
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		Bullet *next = currBullet->next;
-		if( currBullet->framesToLive == 0 )
-		{
-			//put this in post physics too?
-			DeactivateBullet( currBullet );
-		}
-		else
-		{
-			//if( currBullet->frame == 12 )
-			//	currBullet->frame = 0;
-		}
-		currBullet = next;
-	}
 	
-
+	
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
 	if( frame == 0 && slowCounter == 1 )
 	{
-		//cout << "firing" << endl;
-		Bullet *b = ActivateBullet();
-		if( b != NULL )
-		{
-		//	cout << "firing bullet" << endl;
-			b->position = position ;//+ ground->Normal() * 16.0;
-			b->slowCounter = 1;
-			b->slowMultiple = 1;
-			b->framesToLive = b->maxFramesToLive;
-			b->frame = 0;
-		}
-		else
-		{
-			//cout << "unable to make bullet" << endl;
-		}
+		testLauncher->Fire();
 	}
 
-
+	
 }
 
 void CurveTurret::UpdatePhysics()
 {
-	Bullet *currBullet = activeBullets;
-	int i = 0;
-	while( currBullet != NULL )
-	{
-
-		Bullet *next = currBullet->next;
-		//cout << "moving bullet" << endl;
-
-		double movement = bulletSpeed / (double)currBullet->slowMultiple / NUM_STEPS;
-		//cout << "movement at bullet " << i << ": "  << movement << endl;
-		double speed;
-		while( movement > 0 )
-		{
-			if( movement > 8 )
-			{
-				movement -= 8;
-				speed = 8;
-			}
-			else
-			{
-				speed = movement;
-				movement = 0;
-			}
-
-			if( ResolvePhysics( currBullet, gn * speed ) )
-			{
-				DeactivateBullet( currBullet );
-				break;
-			}
-		}
-
-		//currBullet->position += gn * bulletSpeed;
-
-		currBullet = next;
-		++i;
-	}
+	testLauncher->UpdatePhysics();
 
 	PhysicsResponse();
 }
@@ -273,7 +163,7 @@ void CurveTurret::PhysicsResponse()
 {
 	PlayerSlowingMe();
 
-	UpdateBulletHitboxes();
+	//UpdateBulletHitboxes();
 	
 
 	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
@@ -338,30 +228,30 @@ void CurveTurret::UpdatePostPhysics()
 	}
 
 
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		if( currBullet->slowCounter == currBullet->slowMultiple )
-		{
-			currBullet->frame++;
-			if( currBullet->frame == 12 )
-			{
-				currBullet->frame = 0;
-			}
-			currBullet->framesToLive--;
-			currBullet->slowCounter = 1;
-		}
-		else
-		{
-			currBullet->slowCounter++;
-		}
+	//Bullet *currBullet = activeBullets;
+	//while( currBullet != NULL )
+	//{
+	//	if( currBullet->slowCounter == currBullet->slowMultiple )
+	//	{
+	//		currBullet->frame++;
+	//		if( currBullet->frame == 12 )
+	//		{
+	//			currBullet->frame = 0;
+	//		}
+	//		currBullet->framesToLive--;
+	//		currBullet->slowCounter = 1;
+	//	}
+	//	else
+	//	{
+	//		currBullet->slowCounter++;
+	//	}
 
-			
-		//++frame;
-		
+	//		
+	//	//++frame;
+	//	
 
-		currBullet = currBullet->next;
-	}
+	//	currBullet = currBullet->next;
+	//}
 	
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
@@ -390,6 +280,7 @@ void CurveTurret::UpdatePostPhysics()
 	}
 
 	UpdateSprite();
+	testLauncher->UpdateSprites();
 }
 
 void CurveTurret::Draw(sf::RenderTarget *target )
@@ -425,10 +316,10 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 	}
 	
 
-	if( activeBullets != NULL )
+	/*if( activeBullets != NULL )
 	{
 		target->draw( bulletVA, ts_bullet->texture );
-	}
+	}*/
 	
 }
 
@@ -450,7 +341,7 @@ void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 
 bool CurveTurret::IHitPlayerWithBullets()
 {
-	Actor &player = owner->player;
+	/*Actor &player = owner->player;
 	
 	Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
@@ -461,7 +352,7 @@ bool CurveTurret::IHitPlayerWithBullets()
 			return true;
 		}
 		currBullet = currBullet->next;
-	}
+	}*/
 
 	
 	return false;
@@ -557,7 +448,7 @@ bool CurveTurret::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 
-	Bullet *currBullet = activeBullets;
+	/*Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
 	{
 		bool slowed = false;
@@ -585,7 +476,7 @@ bool CurveTurret::PlayerSlowingMe()
 			currBullet->slowMultiple = 1;
 		}
 		currBullet = currBullet->next;
-	}
+	}*/
 
 	//Actor &player = owner->player;
 	bool found = false;
@@ -629,44 +520,44 @@ void CurveTurret::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
 
-	int i = 0;
-	Bullet *currBullet = activeBullets;
-	int rad = 16;
-	while( currBullet != NULL )
-	{	
-		bulletVA[i*4].position = Vector2f( currBullet->position.x - rad, currBullet->position.y - rad );
-		bulletVA[i*4+1].position = Vector2f( currBullet->position.x + rad, currBullet->position.y - rad );
-		bulletVA[i*4+2].position = Vector2f( currBullet->position.x + rad, currBullet->position.y + rad );
-		bulletVA[i*4+3].position = Vector2f( currBullet->position.x - rad, currBullet->position.y + rad );
+	//int i = 0;
+	//Bullet *currBullet = activeBullets;
+	//int rad = 16;
+	//while( currBullet != NULL )
+	//{	
+	//	bulletVA[i*4].position = Vector2f( currBullet->position.x - rad, currBullet->position.y - rad );
+	//	bulletVA[i*4+1].position = Vector2f( currBullet->position.x + rad, currBullet->position.y - rad );
+	//	bulletVA[i*4+2].position = Vector2f( currBullet->position.x + rad, currBullet->position.y + rad );
+	//	bulletVA[i*4+3].position = Vector2f( currBullet->position.x - rad, currBullet->position.y + rad );
 
-		sf::IntRect rect = ts_bullet->GetSubRect( currBullet->frame );
+	//	sf::IntRect rect = ts_bullet->GetSubRect( currBullet->frame );
 
-		bulletVA[i*4].texCoords = Vector2f( rect.left, rect.top );
-		bulletVA[i*4+1].texCoords = Vector2f( rect.left + rect.width, rect.top );
-		bulletVA[i*4+2].texCoords = Vector2f( rect.left + rect.width, rect.top + rect.height );
-		bulletVA[i*4+3].texCoords = Vector2f( rect.left, rect.top + rect.height );
-		
-		currBullet = currBullet->next;
-		++i;
-	}
+	//	bulletVA[i*4].texCoords = Vector2f( rect.left, rect.top );
+	//	bulletVA[i*4+1].texCoords = Vector2f( rect.left + rect.width, rect.top );
+	//	bulletVA[i*4+2].texCoords = Vector2f( rect.left + rect.width, rect.top + rect.height );
+	//	bulletVA[i*4+3].texCoords = Vector2f( rect.left, rect.top + rect.height );
+	//	
+	//	currBullet = currBullet->next;
+	//	++i;
+	//}
 
-	Bullet *notBullet = inactiveBullets;
-	//i = 0;
-	while( notBullet != NULL )
-	{
-		bulletVA[i*4].position = Vector2f( 0,0 );
-		bulletVA[i*4+1].position = Vector2f( 0,0 );
-		bulletVA[i*4+2].position = Vector2f( 0,0 );
-		bulletVA[i*4+3].position = Vector2f( 0,0 );
+	//Bullet *notBullet = inactiveBullets;
+	////i = 0;
+	//while( notBullet != NULL )
+	//{
+	//	bulletVA[i*4].position = Vector2f( 0,0 );
+	//	bulletVA[i*4+1].position = Vector2f( 0,0 );
+	//	bulletVA[i*4+2].position = Vector2f( 0,0 );
+	//	bulletVA[i*4+3].position = Vector2f( 0,0 );
 
-		bulletVA[i*4].texCoords = Vector2f( 0,0 );
-		bulletVA[i*4+1].texCoords = Vector2f( 0,0 );
-		bulletVA[i*4+2].texCoords = Vector2f( 0,0 );
-		bulletVA[i*4+3].texCoords = Vector2f( 0,0 );
+	//	bulletVA[i*4].texCoords = Vector2f( 0,0 );
+	//	bulletVA[i*4+1].texCoords = Vector2f( 0,0 );
+	//	bulletVA[i*4+2].texCoords = Vector2f( 0,0 );
+	//	bulletVA[i*4+3].texCoords = Vector2f( 0,0 );
 
-		++i;
-		notBullet = notBullet->next;
-	}
+	//	++i;
+	//	notBullet = notBullet->next;
+	//}
 
 	if( dead )
 	{
@@ -690,14 +581,14 @@ void CurveTurret::UpdateSprite()
 
 void CurveTurret::DebugDraw(sf::RenderTarget *target)
 {
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		currBullet->hitBody.DebugDraw( target );
-		//currBullet->hurtBody.DebugDraw( target );
+	//Bullet *currBullet = activeBullets;
+	//while( currBullet != NULL )
+	//{
+	//	currBullet->hitBody.DebugDraw( target );
+	//	//currBullet->hurtBody.DebugDraw( target );
 
-		currBullet = currBullet->next;
-	}
+	//	currBullet = currBullet->next;
+	//}
 
 	/*sf::CircleShape cs;
 	cs.setFillColor( Color( 0, 255, 0, 100 ) );
@@ -719,41 +610,6 @@ void CurveTurret::UpdateHitboxes()
 	hitBody.globalAngle = 0;
 }
 
-void CurveTurret::UpdateBulletHitboxes()
-{
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		currBullet->hurtBody.globalPosition = currBullet->position;
-		currBullet->hurtBody.globalAngle = 0;
-		currBullet->hitBody.globalPosition = currBullet->position;
-		currBullet->hitBody.globalAngle = 0;
-
-		currBullet = currBullet->next;
-	}
-}
-
-bool CurveTurret::ResolvePhysics( CurveTurret::Bullet * bullet, sf::Vector2<double> vel )
-{
-	possibleEdgeCount = 0;
-	bullet->position += vel;
-	
-	Rect<double> r( bullet->position.x - 16, bullet->position.y - 16, 
-		2 * 16, 2 * 16 );
-	minContact.collisionPriority = 1000000;
-
-	col = false;
-
-	tempVel = vel;
-	minContact.edge = NULL;
-
-	//queryMode = "resolve";
-//	Query( this, owner->testTree, r );
-	queryBullet = bullet;
-	owner->terrainTree->Query( this, r );
-
-	return col;
-}
 
 void CurveTurret::SaveEnemyState()
 {
@@ -761,142 +617,4 @@ void CurveTurret::SaveEnemyState()
 
 void CurveTurret::LoadEnemyState()
 {
-}
-
-void CurveTurret::AddBullet()
-{
-	if( inactiveBullets == NULL )
-	{
-		inactiveBullets = new Bullet;
-		inactiveBullets->prev = NULL;
-		inactiveBullets->next = NULL;
-	}
-	else
-	{
-		Bullet *b = new Bullet;
-		b->next = inactiveBullets;
-		inactiveBullets->prev = b;
-		//b = inactiveBullets;
-		inactiveBullets = b;
-	}
-
-	double rad = 12;
-	inactiveBullets->hurtBody.isCircle = true;
-	inactiveBullets->hurtBody.globalAngle = 0;
-	inactiveBullets->hurtBody.offset.x = 0;
-	inactiveBullets->hurtBody.offset.y = 0;
-	inactiveBullets->hurtBody.rw = rad;
-	inactiveBullets->hurtBody.rh = rad;
-
-	inactiveBullets->hitBody.type = CollisionBox::Hit;
-	inactiveBullets->hitBody.isCircle = true;
-	inactiveBullets->hitBody.globalAngle = 0;
-	inactiveBullets->hitBody.offset.x = 0;
-	inactiveBullets->hitBody.offset.y = 0;
-	inactiveBullets->hitBody.rw = rad;
-	inactiveBullets->hitBody.rh = rad;
-
-	inactiveBullets->physBody.type = CollisionBox::Physics;
-	inactiveBullets->physBody.isCircle = true;
-	inactiveBullets->physBody.globalAngle = 0;
-	inactiveBullets->physBody.offset.x = 0;
-	inactiveBullets->physBody.offset.y = 0;
-	inactiveBullets->physBody.rw = rad;
-	inactiveBullets->physBody.rh = rad;
-}
-
-void CurveTurret::DeactivateBullet( Bullet *b )
-{
-	//cout << "deactivating" << endl;
-	Bullet *prev = b->prev;
-	Bullet *next = b->next;
-
-	if( prev == NULL && next == NULL )
-	{
-		activeBullets = NULL;
-	}
-	else
-	{
-		if( b == activeBullets )
-		{
-			if( next != NULL )
-			{
-				next->prev = NULL;
-			}
-			
-			activeBullets = next;
-		}
-		else
-		{
-			if( prev != NULL )
-			{
-				prev->next = next;
-			}
-
-			if( next != NULL )
-			{
-				next->prev = prev;
-			}
-		}
-		
-	}
-
-
-	if( inactiveBullets == NULL )
-	{
-		b->next = NULL;
-		b->prev = NULL;
-		inactiveBullets = b;
-	}
-	else
-	{
-		b->prev = NULL;
-		b->next = inactiveBullets;
-		inactiveBullets->prev = b;
-		inactiveBullets = b;
-	}
-}
-
-CurveTurret::Bullet * CurveTurret::ActivateBullet()
-{
-	if( inactiveBullets == NULL )
-	{
-		return NULL;
-	}
-	else
-	{
-		Bullet *oldStart = inactiveBullets;
-		Bullet *newStart = inactiveBullets->next;
-
-		if( newStart != NULL )
-		{
-			newStart->prev = NULL;	
-		}
-		inactiveBullets = newStart;
-
-		
-
-		if( activeBullets == NULL )
-		{
-			activeBullets = oldStart;
-			//oldStart->prev = NULL;
-			oldStart->next = NULL;
-		}
-		else
-		{
-			//oldStart->prev = NULL;
-			oldStart->next = activeBullets;
-			activeBullets->prev = oldStart;
-			activeBullets = oldStart;
-		}
-
-		
-		return oldStart;
-	}
-}
-
-CurveTurret::Bullet::Bullet()
-	:prev( NULL ), next( NULL ), frame( 0 ), slowCounter( 1 ), slowMultiple( 1 ), maxFramesToLive( 120 )
-{
-	//framesToLive = maxFramesToLive;
 }

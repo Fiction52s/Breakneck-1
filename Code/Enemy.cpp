@@ -21,6 +21,7 @@ Launcher::Launcher( GameSession *p_owner,
 		position( p_position ), owner( p_owner )
 
 {
+
 	//increment the global counter
 	 //+= numTotalBullets;
 	int startIndex = owner->totalNumberBullets;
@@ -72,6 +73,11 @@ void Launcher::UpdateSprites()
 	}
 }
 
+void Launcher::SetBulletSpeed( double speed )
+{
+	bulletSpeed = speed;
+}
+
 void Launcher::Fire()
 {
 	
@@ -83,7 +89,7 @@ void Launcher::Fire()
 		if( b != NULL )
 		{
 			cout << "FIRE" << endl;
-			b->Reset( position, facingDir * 1.0 );
+			b->Reset( position, facingDir * bulletSpeed );
 		}
 	}
 }
@@ -196,6 +202,22 @@ void Launcher::DeactivateBullet( BasicBullet *b )
 	b->ResetSprite();
 }
 
+void Launcher::SetGravity( sf::Vector2<double> &grav )
+{
+	BasicBullet *curr = activeBullets;
+	while( curr != NULL )
+	{
+		curr->gravity = grav;
+		curr = curr->next;
+	}
+	curr = inactiveBullets;
+	while( curr != NULL )
+	{
+		curr->gravity = grav;
+		curr = curr->next;
+	}
+}
+
 BasicBullet::BasicBullet( int indexVA, Launcher *launch )
 	:index( indexVA ), launcher( launch ), next( NULL ), prev( NULL )
 {
@@ -237,7 +259,7 @@ void BasicBullet::ResetSprite()
 
 void BasicBullet::UpdatePrePhysics()
 {
-
+	velocity += gravity / (double)slowMultiple;
 }
 
 void BasicBullet::UpdatePhysics()

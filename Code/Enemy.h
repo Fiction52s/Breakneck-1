@@ -48,13 +48,17 @@ struct BasicBullet : QuadTreeCollider
 
 	bool col;
 	Contact minContact;
+	sf::Vector2<double> gravity;
 	sf::Vector2<double> tempVel;
 	Launcher *launcher;
 };
 
+//struct CurveBullet : BasicBullet
+//{
+//};
+
 struct Launcher
 {
-	
 	Launcher( GameSession *owner,
 		int numTotalBullets,
 		int bulletsPerShot,
@@ -74,11 +78,15 @@ struct Launcher
 	virtual BasicBullet * RanOutOfBullets();
 	void AddToList( BasicBullet *b,
 		BasicBullet *&list );
+	void SetGravity( sf::Vector2<double> &grav );
+	void SetBulletSpeed( double speed );
 	
 	
 	GameSession *owner;
 	int totalBullets;
 	int perShot;
+	
+	double bulletSpeed;
 	sf::Vector2<double> position;
 	double angleSpread;
 	sf::Vector2<double> facingDir;
@@ -657,54 +665,20 @@ struct CurveTurret : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	void UpdateBulletHitboxes();
+	//void UpdateBulletHitboxes();
 
 
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
 
+	Launcher *testLauncher;
+
 	sf::Sprite sprite;
 	Tileset *ts;
 	
 	const static int maxBullets = 16;
-	sf::Vector2<double> bulletPositions[maxBullets];
 	sf::Vector2<double> tempVel;
-	
-
-
-
-	sf::VertexArray bulletVA;
-	CollisionBox bulletHurtBody[maxBullets];
-	CollisionBox bulletHitBody[maxBullets];
-	struct Bullet
-	{
-		Bullet();
-		Bullet *prev;
-		Bullet *next;
-		sf::Vector2<double> position;
-		CollisionBox hurtBody;
-		CollisionBox hitBody;
-		CollisionBox physBody;
-		int frame;
-		int slowCounter;
-		int slowMultiple;
-		int maxFramesToLive;
-		int framesToLive;
-	};
-	Bullet *queryBullet;
-	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
-
-	void AddBullet();
-	void DeactivateBullet( Bullet *bullet );
-	Bullet * ActivateBullet();
-	Tileset * ts_bullet;
-
-	Bullet *activeBullets;
-	Bullet *inactiveBullets;
-	HitboxInfo *bulletHitboxInfo;
-
-	
 
 	int framesWait;
 	int firingCounter;
