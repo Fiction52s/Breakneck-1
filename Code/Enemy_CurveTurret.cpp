@@ -100,7 +100,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	testLauncher = new Launcher( owner, 16, 1, position, gn, 0 );
 	testLauncher->SetBulletSpeed( 10 );
-	testLauncher->SetGravity( V2d( 0, .1 ) );
+	testLauncher->SetGravity( V2d( 0, .4 ) );
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 }

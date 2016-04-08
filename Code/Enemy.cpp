@@ -88,7 +88,7 @@ void Launcher::Fire()
 		//cout << "bullet done activating" << endl;
 		if( b != NULL )
 		{
-			cout << "FIRE" << endl;
+			//cout << "FIRE" << endl;
 			b->Reset( position, facingDir * bulletSpeed );
 		}
 	}
@@ -104,7 +104,7 @@ void Launcher::Reset()
 		//cout << "deact" << endl;
 		DeactivateBullet( activeBullets );
 	}
-	cout << "reset " << x << " bullets" << endl;
+	//cout << "reset " << x << " bullets" << endl;
 }
 
 void Launcher::AddToList( BasicBullet *b, BasicBullet *&list )
@@ -294,6 +294,7 @@ void BasicBullet::UpdatePhysics()
 
 bool BasicBullet::HitTerrain()
 {
+	launcher->DeactivateBullet( this );
 	return true;
 }
 
