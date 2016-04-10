@@ -11805,7 +11805,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( *re->particles );
 		target->draw( *re1->particles );
 	}*/
-	target->draw( *pTrail->particles );
+	//target->draw( *pTrail->particles );
 
 	if( bounceFlameOn && action != DEATH )
 	{

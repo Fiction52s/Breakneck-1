@@ -13,9 +13,8 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Bat::Bat( GameSession *owner, Vector2i pos, 
-	list<Vector2i> &pathParam, bool loopP, float pspeed )
-	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
+Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
+	:Enemy( owner, EnemyType::GHOST ), deathFrame( 0 )
 {
 	latchedOn = false;
 	//offsetPlayer 
@@ -23,115 +22,37 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	position.x = pos.x;
 	position.y = pos.y;
 
-	latchedOn = true; 
-	
+	origPosition = position;
 
+	approachFrames = 180 * 3;
+	totalFrame = 0;
+
+	//latchedOn = true; 
+	V2d dirFromPlayer = normalize( owner->player.position - position );
+	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
+	cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
+	cout << "from player angle: " << fromPlayerAngle << endl;
+	testSeq.AddRadialMovement( 1,fromPlayerAngle, fromPlayerAngle + 2 * PI * 3 , 
+		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
+	
+	testSeq.InitMovementDebug();
 
 	initHealth = 40;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-	
-	pathLength = pathParam.size() + 1;
-	//cout << "pathLength: " << pathLength << endl;
-	path = new Vector2i[pathLength];
-	path[0] = pos;
-
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it) + pos;
-		++index;
-		//path.push_back( (*it) );
-
-	}
-
-	//make composite beziers
-	if( pathLength == 1 )
-	{
-
-	}
-	else
-	{
-		//for( int i = 0; i < pathLength; ++i )
-		//{
-
-		//}
-	}
 
 	basePos = position;
-	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 0, -150 );
-	V2d sqTest2 = position + V2d( 150, -150 );
-	V2d sqTest3 = position + V2d( 300, -150 );
-	V2d sqTest4 = position + V2d( 300, 0 );
-
-	//Transform trans;
-	///trans.scale( Vector2f( 3, 1 ) );
-	
-	//trans.rotate( 
-
-	testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 0, CubicBezier( 0, 0, 1, 1), 60 );
-	//trans.rotate( 90 );
-	//trans.
-	testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 90, CubicBezier( 0, 0, 1, 1), 60 );
-
-	//testSeq.AddLineMovement( sqTest0, sqTest1, 
-	//	CubicBezier(1,.03,.07,.72 ), 60 );
-	//testSeq.AddCubicMovement( sqTest0, sqTest1, sqTest1, sqTest2,
-	//	CubicBezier( 0, 0, 1, 1 ), 60 );
-		//CubicBezier(1,.03,.07,.72 ), 60 );
-	//testSeq.AddCubicMovement( sqTest2, sqTest3, sqTest3, sqTest4,
-		//CubicBezier(1,.03,.07,.72 ), 60 );
-	//	CubicBezier( 0, 0, 1, 1 ), 60 );
-	//testSeq.add
-	
-	//	CubicBezier( 0, .03, .1, 1), 60 );
-
-	/*testSeq.AddMovement( new BezierMovement( 
-		&GetCubicValue, 60 ,
-		sqTest0, sqTest1,sqTest2 , sqTest3 ) );
-	testSeq.AddMovement( new BezierMovement( 
-		&GetCubicValue, 60 ,
-		sqTest3, sqTest0,sqTest1 , sqTest2 ) );*/
-
-	testSeq.InitMovementDebug();
-
-	V2d pos2Test = position + V2d( 200, 0 );
-	V2d pos3Test = position - V2d( 200, 0 );
-	
-
-	V2d filler( 0, 0 );
-
-	V2d p1 = position * .1 + pos2Test * .9;
-	V2d p2 = position * .5 + pos2Test * .5;
-
-	V2d blah = p1 + V2d( 0, 100 );
-	V2d blah1 = p2 - V2d( 0, 100 );
-
-	V2d p_p1 = pos2Test * .1 + pos3Test * .9;
-	V2d p_p2 = pos2Test * .5 + pos3Test * .5;
-	/*testSeq.AddMovement( new BezierMovement( 
-		&GetCubicValue, 60 ,
-		position, blah,blah1 , pos2Test ) );
-	testSeq.AddMovement( new WaitMovement( pos2Test, 30 ) ); 
-	testSeq.AddMovement( new BezierMovement( 
-		&GetCubicValue, 60 ,
-		pos2Test, p_p1, p_p2, pos3Test ) );*/
-
-	loop = loopP;
 	
 	speed = pspeed;
-
-
 
 	//speed = 2;
 	frame = 0;
 
 	animationFactor = 5;
 
-	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_48x48.png", 48, 48 );
+	//ts = owner->GetTileset( "Ghost.png", 80, 80 );
+	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -163,8 +84,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	hitboxInfo->knockback = 4;
 	//hitboxInfo->kbDir;
 
-	targetNode = 1;
-	forward = true;
+	
 
 	dead = false;
 
@@ -183,23 +103,21 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	UpdateHitboxes();
 }
 
-void Bat::HandleEntrant( QuadTreeEntrant *qte )
+void Ghost::HandleEntrant( QuadTreeEntrant *qte )
 {
 
 }
 
-void Bat::ResetEnemy()
+void Ghost::ResetEnemy()
 {
+	latchedOn = false;
+	totalFrame = 0;
 	testSeq.Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	targetNode = 1;
-	forward = true;
 	dead = false;
 	deathFrame = 0;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	basePos = origPosition;
+
 	receivedHit = NULL;
 	
 
@@ -210,7 +128,7 @@ void Bat::ResetEnemy()
 	
 }
 
-void Bat::UpdatePrePhysics()
+void Ghost::UpdatePrePhysics()
 {
 	if( !dead && receivedHit != NULL )
 	{
@@ -232,17 +150,28 @@ void Bat::UpdatePrePhysics()
 
 	if( latchedOn )
 	{
-		basePos = owner->player.position + offsetPlayer;
+		basePos = owner->player.position;// + offsetPlayer;
+	}
+	else
+	{
+		latchedOn = true;
+		offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
+		origOffset = offsetPlayer;//length( offsetPlayer );
 	}
 }
 
-void Bat::UpdatePhysics()
+void Ghost::UpdatePhysics()
 {
 	testSeq.Update();
 
-	position = basePos + testSeq.position;
 
-	return;
+	position = basePos + testSeq.position * length( offsetPlayer );// * 2.0;
+	if( latchedOn )
+	{
+		offsetPlayer =  origOffset * (1.0 - (double)totalFrame / approachFrames);
+	}
+
+	//return;
 
 	double movement = speed / NUM_STEPS;
 	
@@ -263,34 +192,10 @@ void Bat::UpdatePhysics()
 	if( dead )
 		return;
 
-	if( pathLength > 1 )
-	{
-		movement /= (double)slowMultiple;
-
-		while( movement != 0 )
-		{
-			//cout << "movement loop? "<< endl;
-			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-			V2d diff = targetPoint - position;
-			double len = length( diff );
-			if( len >= abs( movement ) )
-			{
-				position += normalize( diff ) * movement;
-				movement = 0;
-			}
-			else
-			{
-				position += diff;
-				movement -= length( diff );
-				AdvanceTargetNode();	
-			}
-		}
-	}
-
 	PhysicsResponse();
 }
 
-void Bat::PhysicsResponse()
+void Ghost::PhysicsResponse()
 {
 	if( !dead && receivedHit == NULL )
 	{
@@ -321,7 +226,7 @@ void Bat::PhysicsResponse()
 			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
-		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
+		//	cout << "Ghost received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -339,43 +244,12 @@ void Bat::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Bat just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Ghost just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
-void Bat::AdvanceTargetNode()
-{
-	if( loop )
-	{
-		++targetNode;
-		if( targetNode == pathLength )
-			targetNode = 0;
-	}
-	else
-	{
-		if( forward )
-		{
-			++targetNode;
-			if( targetNode == pathLength )
-			{
-				targetNode -= 2;
-				forward = false;
-			}
-		}
-		else
-		{
-			--targetNode;
-			if( targetNode < 0 )
-			{
-				targetNode = 1;
-				forward = true;
-			}
-		}
-	}
-}
-
-void Bat::UpdatePostPhysics()
+void Ghost::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
@@ -387,6 +261,10 @@ void Bat::UpdatePostPhysics()
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
+		if( totalFrame < approachFrames )
+		{
+			++totalFrame;
+		}
 		slowCounter = 1;
 	
 		if( dead )
@@ -415,7 +293,7 @@ void Bat::UpdatePostPhysics()
 	UpdateSprite();
 }
 
-void Bat::UpdateSprite()
+void Ghost::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
@@ -433,7 +311,7 @@ void Bat::UpdateSprite()
 		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 }
 
-void Bat::Draw( sf::RenderTarget *target )
+void Ghost::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead )
@@ -471,7 +349,7 @@ void Bat::Draw( sf::RenderTarget *target )
 
 }
 
-void Bat::DrawMinimap( sf::RenderTarget *target )
+void Ghost::DrawMinimap( sf::RenderTarget *target )
 {
 	CircleShape enemyCircle;
 	enemyCircle.setFillColor( COLOR_BLUE );
@@ -487,7 +365,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Bat::IHitPlayer()
+bool Ghost::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
@@ -499,7 +377,7 @@ bool Bat::IHitPlayer()
 	return false;
 }
 
-void Bat::UpdateHitboxes()
+void Ghost::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -517,7 +395,7 @@ void Bat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Bat::PlayerHitMe()
+pair<bool,bool> Ghost::PlayerHitMe()
 {
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
@@ -573,7 +451,7 @@ pair<bool,bool> Bat::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Bat::PlayerSlowingMe()
+bool Ghost::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -589,7 +467,7 @@ bool Bat::PlayerSlowingMe()
 	return false;
 }
 
-void Bat::DebugDraw( RenderTarget *target )
+void Ghost::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -605,26 +483,22 @@ void Bat::DebugDraw( RenderTarget *target )
 	}
 }
 
-void Bat::SaveEnemyState()
+void Ghost::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
-	stored.forward = forward;
 	stored.frame = frame;
 	stored.hitlagFrames = hitlagFrames;
 	stored.hitstunFrames = hitstunFrames;
 	stored.position = position;
-	stored.targetNode = targetNode;
 }
 
-void Bat::LoadEnemyState()
+void Ghost::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;
-	forward = stored.forward;
 	frame = stored.frame;
 	hitlagFrames = stored.hitlagFrames;
 	hitstunFrames = stored.hitstunFrames;
 	position = stored.position;
-	targetNode = stored.targetNode;
 }

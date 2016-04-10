@@ -115,6 +115,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		BOSS_CRAWLER,
 		GATEMONITOR,
 		HEALTHFLY,
+		GHOST,
 		Count
 	};
 
@@ -157,6 +158,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Zone *zone;
 	Monitor *monitor;
 	bool dead;
+
+
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
@@ -351,6 +354,88 @@ struct Bat : Enemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 	bool facingRight;
+
+	sf::Vector2<double> offsetPlayer;
+	bool latchedOn;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct Ghost : Enemy
+{
+	MovementSequence testSeq;
+	Ghost( GameSession *owner, sf::Vector2i pos, 
+		float speed );
+
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	//bool physicsOver;
+
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	sf::Vector2<double> basePos;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	
+	int frame;
+
+	double acceleration;
+	double speed;
+
+	int approachFrames;
+	int totalFrame;
+	sf::Vector2<double> origOffset;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	bool facingRight;
+
+	sf::Vector2<double> offsetPlayer;
+	sf::Vector2<double> origPosition;
+	//double offsetRadius;
+	bool latchedOn;
 
 	struct Stored
 	{

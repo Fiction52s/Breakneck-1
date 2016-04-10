@@ -1094,7 +1094,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				float speed;
 				is >> speed;
-				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//enemy->Monitor::MonitorType
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
@@ -4374,10 +4375,10 @@ int GameSession::Run( string fileN )
 			//preScreenTex->draw( *listVAIter->va );
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
-			//preScreenTex->draw( *listVAIter->wallva, rs );
-			//preScreenTex->draw( *listVAIter->steepva, rs );
-			//preScreenTex->draw( *listVAIter->slopeva, rs );
-			//preScreenTex->draw( *listVAIter->groundva, rs );
+			preScreenTex->draw( *listVAIter->wallva, rs );
+			preScreenTex->draw( *listVAIter->steepva, rs );
+			preScreenTex->draw( *listVAIter->slopeva, rs );
+			preScreenTex->draw( *listVAIter->groundva, rs );
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
