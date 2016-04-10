@@ -32,7 +32,7 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	cout << "from player angle: " << fromPlayerAngle << endl;
-	testSeq.AddRadialMovement( 1,fromPlayerAngle, fromPlayerAngle + 2 * PI * 3 , 
+	testSeq.AddRadialMovement( 1, 0, 2 * PI * 3, 
 		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
 	
 	testSeq.InitMovementDebug();
@@ -82,10 +82,12 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+
+	
 	//hitboxInfo->kbDir;
 
 	
-
+	latchStartAngle = 0;
 	dead = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
@@ -110,6 +112,7 @@ void Ghost::HandleEntrant( QuadTreeEntrant *qte )
 
 void Ghost::ResetEnemy()
 {
+	latchStartAngle = 0;
 	latchedOn = false;
 	totalFrame = 0;
 	testSeq.Reset();
@@ -117,6 +120,7 @@ void Ghost::ResetEnemy()
 	deathFrame = 0;
 	frame = 0;
 	basePos = origPosition;
+	position = basePos;
 
 	receivedHit = NULL;
 	
@@ -154,26 +158,60 @@ void Ghost::UpdatePrePhysics()
 	}
 	else
 	{
-		latchedOn = true;
-		offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
-		origOffset = offsetPlayer;//length( offsetPlayer );
+		if( length( basePos - owner->player.position ) < 200 )
+		{
+			latchedOn = true;
+			offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
+			origOffset = offsetPlayer;//length( offsetPlayer );
+			V2d offsetDir = normalize( offsetPlayer );
+			latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+			cout << "latchStart: " << latchStartAngle << endl;
+			basePos = owner->player.position;
+			//launchStartAngle / PI * 180;
+		}
+		
 	}
 }
 
 void Ghost::UpdatePhysics()
 {
-	testSeq.Update();
+	
 
+	//V2d offsetDir = normalize( offsetPlayer );
+	//double newAngle = atan2( offsetDir.y, offsetDir.x ) + PI;
+	//", new: " <<
+		//newAngle << endl;
+	double cs = cos( latchStartAngle );
+	double sn = sin( latchStartAngle );
 
-	position = basePos + testSeq.position * length( offsetPlayer );// * 2.0;
+	V2d truePosOffset( testSeq.position.x * cs - 
+		testSeq.position.y * sn, 
+		testSeq.position.x * sn + testSeq.position.y * cs );
+
+		 
+	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
 	if( latchedOn )
 	{
-		offsetPlayer =  origOffset * (1.0 - (double)totalFrame / approachFrames);
+		testSeq.Update();
+		cout << "testseq: " << testSeq.position.x << ", " 
+			<< testSeq.position.y << endl;// ",  new: " <<
+			//truePosOffset.x << ", " << truePosOffset.y << endl;
+		position = basePos + truePosOffset * length( offsetPlayer );
+	/*	theta = deg2rad(angle);
+
+		cs = cos(theta);
+		sn = sin(theta);
+
+		x = x * cs - y * sn;
+		y = x * sn + y * cs;*/
+
+
+		//offsetPlayer =  origOffset * (1.0 - (double)totalFrame / approachFrames);
 	}
 
 	//return;
 
-	double movement = speed / NUM_STEPS;
+	//double movement = speed / NUM_STEPS;
 	
 	if( PlayerSlowingMe() )
 	{

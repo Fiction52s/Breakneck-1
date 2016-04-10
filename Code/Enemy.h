@@ -377,6 +377,7 @@ struct Bat : Enemy
 
 struct Ghost : Enemy
 {
+	double latchStartAngle;
 	MovementSequence testSeq;
 	Ghost( GameSession *owner, sf::Vector2i pos, 
 		float speed );
@@ -432,6 +433,7 @@ struct Ghost : Enemy
 	int bloodFrame;
 	bool facingRight;
 
+	
 	sf::Vector2<double> offsetPlayer;
 	sf::Vector2<double> origPosition;
 	//double offsetRadius;
