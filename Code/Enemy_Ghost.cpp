@@ -166,6 +166,7 @@ void Ghost::UpdatePrePhysics()
 			V2d offsetDir = normalize( offsetPlayer );
 			latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 			cout << "latchStart: " << latchStartAngle << endl;
+			testSeq.Update();
 			basePos = owner->player.position;
 			//launchStartAngle / PI * 180;
 		}
@@ -192,9 +193,9 @@ void Ghost::UpdatePhysics()
 	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
 	if( latchedOn )
 	{
-		testSeq.Update();
-		cout << "testseq: " << testSeq.position.x << ", " 
-			<< testSeq.position.y << endl;// ",  new: " <<
+		
+		//cout << "testseq: " << testSeq.position.x << ", " 
+		//	<< testSeq.position.y << endl;// ",  new: " <<
 			//truePosOffset.x << ", " << truePosOffset.y << endl;
 		position = basePos + truePosOffset * length( offsetPlayer );
 	/*	theta = deg2rad(angle);
@@ -205,8 +206,8 @@ void Ghost::UpdatePhysics()
 		x = x * cs - y * sn;
 		y = x * sn + y * cs;*/
 
-
-		//offsetPlayer =  origOffset * (1.0 - (double)totalFrame / approachFrames);
+		testSeq.Update();
+		offsetPlayer =  origOffset * (1.0 - (double)totalFrame / approachFrames);
 	}
 
 	//return;
@@ -282,6 +283,9 @@ void Ghost::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
+			cout << "ghost hit player ghost pos: " <<
+				position.x << ", " << position.y << ", playerpos: "
+				<< owner->player.position.x << ", " << owner->player.position.y << endl;
 		//	cout << "Ghost just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}

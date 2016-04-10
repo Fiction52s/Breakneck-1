@@ -36,7 +36,9 @@ Actor::Actor( GameSession *gs )
 		ts_kinFace = owner->GetTileset( "visor_512x128.png", 512, 128 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
-		kinFace.setPosition( 2, 48 );
+		//kinFace.setPosition( 2, 48 );
+		//kinFace.setPosition( 1920 / 2 - 512, 0 );
+		kinFace.setPosition( 0, 0 );
 
 		SetExpr( Expr::Expr_NEUTRAL );
 
