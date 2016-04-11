@@ -507,7 +507,7 @@ CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double spee
 	blockSizeX = width;
 	blockSizeY = height;
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = owner->GetTileset( "curveturret_64x64.png", width, height );
+	ts = owner->GetTileset( "coralnanobots_64x64.png", width, height );
 	InitBlocks();
 	
 

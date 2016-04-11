@@ -1095,7 +1095,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float speed;
 				is >> speed;
 				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, loop, speed );
-				Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
+				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
+				CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//enemy->Monitor::MonitorType
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
