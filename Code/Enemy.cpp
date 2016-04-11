@@ -10,7 +10,8 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Launcher::Launcher( GameSession *p_owner,
+Launcher::Launcher( LauncherEnemy *p_handler,
+	GameSession *p_owner,
 		int numTotalBullets,
 		int bulletsPerShot,
 		sf::Vector2<double> p_position,
@@ -18,7 +19,7 @@ Launcher::Launcher( GameSession *p_owner,
 		double p_angleSpread )
 		:totalBullets( numTotalBullets ), perShot( bulletsPerShot ),
 		facingDir( direction ), angleSpread( p_angleSpread ), 
-		position( p_position ), owner( p_owner )
+		position( p_position ), owner( p_owner ),handler(p_handler)
 
 {
 
@@ -294,6 +295,8 @@ void BasicBullet::UpdatePhysics()
 
 bool BasicBullet::HitTerrain()
 {
+	launcher->handler->BulletHitTerrain( this,
+		minContact.edge, minContact.position );
 	launcher->DeactivateBullet( this );
 	return true;
 }

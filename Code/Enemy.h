@@ -12,6 +12,12 @@ struct Zone;
 struct Monitor;
 //projectile shotting process
 
+struct BasicBullet;
+struct LauncherEnemy
+{
+	virtual void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos ) = 0;
+};
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
 struct Launcher;
@@ -59,7 +65,8 @@ struct BasicBullet : QuadTreeCollider
 
 struct Launcher
 {
-	Launcher( GameSession *owner,
+	Launcher( LauncherEnemy *handler, 
+		GameSession *owner,
 		int numTotalBullets,
 		int bulletsPerShot,
 		sf::Vector2<double> position,
@@ -80,7 +87,7 @@ struct Launcher
 		BasicBullet *&list );
 	void SetGravity( sf::Vector2<double> &grav );
 	void SetBulletSpeed( double speed );
-	
+	LauncherEnemy *handler;
 	
 	GameSession *owner;
 	int totalBullets;
@@ -116,6 +123,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		GATEMONITOR,
 		HEALTHFLY,
 		GHOST,
+		OVERGROWTH,
+		OVERGROWTH_TREE,
 		Count
 	};
 
@@ -433,6 +442,8 @@ struct Ghost : Enemy
 	int bloodFrame;
 	bool facingRight;
 
+	CubicBezier approachAccelBez;
+
 	
 	sf::Vector2<double> offsetPlayer;
 	sf::Vector2<double> origPosition;
@@ -731,7 +742,7 @@ struct BasicTurret : Enemy
 	int bloodFrame;
 };
 
-struct CurveTurret : Enemy
+struct CurveTurret : Enemy, LauncherEnemy
 {
 	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
 		double bulletSpeed,
@@ -753,7 +764,9 @@ struct CurveTurret : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	//void UpdateBulletHitboxes();
-
+	void BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
 
 	void SaveEnemyState();
 	void LoadEnemyState();
@@ -797,6 +810,134 @@ struct CurveTurret : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
+};
+
+struct Overgrowth;
+struct Tree : Enemy, LauncherEnemy
+{
+	Tree(Overgrowth *parent, sf::VertexArray &va,
+		Tileset *ts, int index );
+	void SetParams( Edge *ground, 
+		double edgeQuantity );
+	void ClearSprite();
+	void UpdatePostPhysics();
+	void UpdateSprite();
+
+
+	void BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+
+
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//void UpdateBulletHitboxes();
+	//int NumTotalBullets();
+	Overgrowth *parent;
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	int vaIndex;
+	int frame;
+	int animFactor;
+	Edge *ground;
+	
+	bool active;
+	sf::VertexArray &va;
+	double edgeQuantity;
+	Launcher *launcher;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	//Contact minContact;
+	//bool col;
+	//std::string queryMode;
+	//int possibleEdgeCount;
+	Tileset *ts;
+	//int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	
+	sf::VertexArray treeVA;
+		
+	//sf::Transform trans;
+};
+
+struct Overgrowth : Enemy
+{
+	
+
+	Overgrowth( GameSession *owner, Edge *ground, double quantity, 
+		double bulletSpeed, int lifeCycleFrames );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	//bool IHitPlayer();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void InitTrees();
+	void AddTree( Tree *tree );
+	int NumTotalBullets();
+	void DeactivateTree( Tree *tree );
+	Tree * ActivateTree( Edge *g, double q );
+
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+
+	int animationFactor;
+	void AddToList( Tree *tree,
+		Tree *&list );
+
+	Edge *origGround;
+	double origQuantity;
+
+	Tileset *ts;
+	Tree *activeTrees;
+	Tree *inactiveTrees;
+	//void UpdateBulletHitboxes();
+	
+
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	const static int MAX_TREES = 16;
+	//const static int MAX_TREES = 16;
+	sf::VertexArray treeVA;
 };
 
 struct FootTrap : Enemy

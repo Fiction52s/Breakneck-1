@@ -94,8 +94,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	rollAnimationFactor = 5;
 
 
-	testLaunch = new Launcher( owner, 10, 1,
-		testMover->physBody.globalPosition, g->Normal(), 0 );
+	/*testLaunch = new Launcher( this, owner, 10, 1,
+		testMover->physBody.globalPosition, g->Normal(), 0 );*/
 	/*physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
@@ -131,9 +131,9 @@ void StagBeetle::ResetEnemy()
 	position = testMover->physBody.globalPosition;
 	//testMover->UpdateGroundPos();
 
-	testLaunch->Reset();
-	testLaunch->position = testMover->physBody.globalPosition;
-	testLaunch->facingDir = startGround->Normal();
+	//testLaunch->Reset();
+	//testLaunch->position = testMover->physBody.globalPosition;
+	//testLaunch->facingDir = startGround->Normal();
 
 	bezFrame = 0;
 	health = initHealth;
@@ -238,7 +238,7 @@ void StagBeetle::UpdateHitboxes()
 
 void StagBeetle::UpdatePrePhysics()
 {
-	testLaunch->UpdatePrePhysics();
+	//testLaunch->UpdatePrePhysics();
 
 	if( dead )
 		return;
@@ -286,7 +286,7 @@ void StagBeetle::UpdatePrePhysics()
 		}
 	//}
 
-	if( bezFrame == 0 )
+	/*if( bezFrame == 0 )
 	{
 		testLaunch->position = position;
 		if( testMover->ground != NULL )
@@ -299,12 +299,12 @@ void StagBeetle::UpdatePrePhysics()
 		}
 		
 		testLaunch->Fire();
-	}
+	}*/
 }
 
 void StagBeetle::UpdatePhysics()
 {
-	testLaunch->UpdatePhysics();
+	//testLaunch->UpdatePhysics();
 
 
 	if( dead )
@@ -603,7 +603,7 @@ void StagBeetle::UpdatePostPhysics()
 	}
 
 	UpdateSprite();
-	testLaunch->UpdateSprites();
+	//testLaunch->UpdateSprites();
 
 	if( slowCounter == slowMultiple )
 	{

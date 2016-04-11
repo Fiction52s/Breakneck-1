@@ -14,7 +14,7 @@ using namespace sf;
 
 
 Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
-	:Enemy( owner, EnemyType::GHOST ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::GHOST ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
 	latchedOn = false;
 	//offsetPlayer 
@@ -116,6 +116,7 @@ void Ghost::ResetEnemy()
 	latchedOn = false;
 	totalFrame = 0;
 	testSeq.Reset();
+	//testSeq.Update();
 	dead = false;
 	deathFrame = 0;
 	frame = 0;
@@ -152,6 +153,11 @@ void Ghost::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
+	
+}
+
+void Ghost::UpdatePhysics()
+{
 	if( latchedOn )
 	{
 		basePos = owner->player.position;// + offsetPlayer;
@@ -160,40 +166,36 @@ void Ghost::UpdatePrePhysics()
 	{
 		if( length( basePos - owner->player.position ) < 200 )
 		{
+			cout << "JUST LATCHING NOW" << endl;
 			latchedOn = true;
 			offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
 			origOffset = offsetPlayer;//length( offsetPlayer );
 			V2d offsetDir = normalize( offsetPlayer );
 			latchStartAngle = atan2( offsetDir.y, offsetDir.x );
-			cout << "latchStart: " << latchStartAngle << endl;
+			//cout << "latchStart: " << latchStartAngle << endl;
 			testSeq.Update();
 			basePos = owner->player.position;
 			//launchStartAngle / PI * 180;
 		}
 		
 	}
-}
-
-void Ghost::UpdatePhysics()
-{
-	
 
 	//V2d offsetDir = normalize( offsetPlayer );
 	//double newAngle = atan2( offsetDir.y, offsetDir.x ) + PI;
 	//", new: " <<
 		//newAngle << endl;
-	double cs = cos( latchStartAngle );
-	double sn = sin( latchStartAngle );
-
-	V2d truePosOffset( testSeq.position.x * cs - 
-		testSeq.position.y * sn, 
-		testSeq.position.x * sn + testSeq.position.y * cs );
+	
 
 		 
 	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
 	if( latchedOn )
 	{
-		
+		double cs = cos( latchStartAngle );
+		double sn = sin( latchStartAngle );
+
+		V2d truePosOffset( testSeq.position.x * cs - 
+			testSeq.position.y * sn, 
+			testSeq.position.x * sn + testSeq.position.y * cs );
 		//cout << "testseq: " << testSeq.position.x << ", " 
 		//	<< testSeq.position.y << endl;// ",  new: " <<
 			//truePosOffset.x << ", " << truePosOffset.y << endl;
@@ -207,7 +209,7 @@ void Ghost::UpdatePhysics()
 		y = x * sn + y * cs;*/
 
 		testSeq.Update();
-		offsetPlayer =  origOffset * (1.0 - (double)totalFrame / approachFrames);
+		offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
 	}
 
 	//return;
@@ -303,7 +305,7 @@ void Ghost::UpdatePostPhysics()
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
-		if( totalFrame < approachFrames )
+		if( latchedOn && totalFrame < approachFrames )
 		{
 			++totalFrame;
 		}

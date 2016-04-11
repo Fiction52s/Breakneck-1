@@ -98,7 +98,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	testLauncher = new Launcher( owner, 16, 1, position, gn, 0 );
+	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0 );
 	testLauncher->SetBulletSpeed( 10 );
 	testLauncher->SetGravity( V2d( 0, .4 ) );
 	//UpdateSprite();
@@ -107,6 +107,13 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 void CurveTurret::HandleEntrant( QuadTreeEntrant *qte )
 {
+}
+
+void CurveTurret::BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos)
+{
+
 }
 
 void CurveTurret::ResetEnemy()
