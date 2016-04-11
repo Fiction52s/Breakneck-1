@@ -890,7 +890,7 @@ struct Tree : Enemy, LauncherEnemy
 	int framesToLive;
 	int maxFramesToLive;
 	
-	sf::VertexArray treeVA;
+	//sf::VertexArray &treeVA;
 		
 	//sf::Transform trans;
 };
@@ -949,7 +949,8 @@ struct Overgrowth : Enemy
 struct CoralNanobots;
 struct CoralBlock : Enemy
 {
-	CoralBlock(CoralNanobots *parent, sf::VertexArray &va,
+	CoralBlock(CoralNanobots *parent, 
+		sf::VertexArray &va,
 		Tileset *ts, int index );
 	void SetParams( sf::Vector2<double> &pos,
 		sf::Vector2<double> &dir );
@@ -957,6 +958,8 @@ struct CoralBlock : Enemy
 	void UpdatePostPhysics();
 	void UpdateSprite();
 
+
+	bool ResolvePhysics( sf::Vector2<double> &vel );
 
 	void BlockHitTerrain(BasicBullet *b, 
 		Edge *edge, 
@@ -993,9 +996,11 @@ struct CoralBlock : Enemy
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
+	CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
 	
 	double angle;
+	sf::Vector2<double> tempVel;
 
 	//Contact minContact;
 	//bool col;
@@ -1017,11 +1022,15 @@ struct CoralBlock : Enemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 
+	bool lockedIn;
+
 	//int framesToLive;
 	//int maxFramesToLive;
 	
-	sf::VertexArray blockVA;
-		
+	//sf::VertexArray &blockVA;
+
+	Contact minContact;
+	bool col;
 	//sf::Transform trans;
 };
 
@@ -1062,10 +1071,14 @@ struct CoralNanobots : Enemy
 	//Edge *origGround;
 	sf::Vector2<double> origPosition;
 	//double origQuantity;
+	
+
 
 	Tileset *ts;
 	CoralBlock *activeBlocks;
 	CoralBlock *inactiveBlocks;
+
+	
 	//void UpdateBulletHitboxes();
 	
 

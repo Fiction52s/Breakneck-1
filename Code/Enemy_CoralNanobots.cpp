@@ -27,12 +27,12 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	//maxFramesToLive = 60 * 4;
 	//framesToLive = maxFramesToLive;
 
-
+	lockedIn = false;
 	initHealth = 60;
 	health = initHealth;
 
 	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
+	hurtBody.isCircle = false;
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
@@ -40,12 +40,20 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	hurtBody.rh = 32;
 
 	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
+	hitBody.isCircle = false;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
 	hitBody.rw = 32;
 	hitBody.rh = 32;
+
+	physBody.type = CollisionBox::Physics;
+	physBody.isCircle = false;
+	physBody.globalAngle = 0;
+	physBody.offset.x = 0;
+	physBody.offset.y = 0;
+	physBody.rw = 32;
+	physBody.rh = 32;
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
@@ -85,6 +93,48 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	animFactor = 3;
 
 	
+}
+
+bool CoralBlock::ResolvePhysics( V2d &vel )
+{
+	//Rect<double> oldR( physBody.globalPosition.x + physBody.offset.x - physBody.rw, 
+	//	physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	Rect<double> oldR( position.x - physBody.rw, 
+		position.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	//physBody.globalPosition += vel;
+	position += vel;
+	
+	Rect<double> newR(position.x - physBody.rw, 
+		position.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+
+	//minContact.collisionPriority = 1000000;
+	
+	double oldRight = oldR.left + oldR.width;
+	double right = newR.left + newR.width;
+
+	double oldBottom = oldR.top + oldR.height;
+	double bottom = newR.top + newR.height;
+
+	double maxRight = max( right, oldRight );
+	double maxBottom = max( oldBottom, bottom );
+	double minLeft = min( oldR.left, newR.left );
+	double minTop = min( oldR.top, newR.top );
+	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
+	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
+
+	
+	minContact.collisionPriority = 1000000;
+
+	tempVel = vel;
+
+	col = false;
+	minContact.edge = NULL;
+
+	//queryMode = "resolve";
+	owner->terrainTree->Query( this, r );
+	//Query( this, owner->testTree, r );
+
+	return col;
 }
 
 void CoralBlock::UpdatePrePhysics()
@@ -127,6 +177,8 @@ void CoralBlock::UpdatePrePhysics()
 void CoralBlock::UpdatePhysics()
 {
 	//launcher->UpdatePhysics();
+
+
 
 	PhysicsResponse();
 }
@@ -416,6 +468,8 @@ void CoralBlock::UpdateHitboxes()
 	hurtBody.globalAngle = 0;
 	hitBody.globalPosition = position;// + gn * 8.0;
 	hitBody.globalAngle = 0;
+	physBody.globalPosition = position;// + gn * 8.0;
+	physBody.globalAngle = 0;
 }
 
 
@@ -490,7 +544,7 @@ void CoralNanobots::AddToList( CoralBlock *block,
 }
 
 CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double speed )
-		:Enemy( owner, EnemyType::OVERGROWTH ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
+		:Enemy( owner, EnemyType::CORALNANOBOTS ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
 {
 	origPosition = V2d( pos.x, pos.y );
 
