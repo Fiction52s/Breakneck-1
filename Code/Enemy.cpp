@@ -44,24 +44,30 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 void Launcher::UpdatePrePhysics()
 {
 	BasicBullet *curr = activeBullets;
+	BasicBullet *temp;
 	while( curr != NULL )
 	{
+		temp = curr->next;
 	//	cout << "updating bullet pre" << endl;
 		curr->UpdatePrePhysics();
-		curr = curr->next;
+		curr = temp;
 	}
 }
 
 void Launcher::UpdatePhysics()
 {
 	BasicBullet *curr = activeBullets;
+	BasicBullet *temp;
 	while( curr != NULL )
 	{
+		temp = curr->next;
 	//	cout << "updating bullet physics" << endl;
 		curr->UpdatePhysics();
-		curr = curr->next;
+		curr = temp;
 	}
 }
+
+
 
 void Launcher::UpdateSprites()
 {
@@ -106,6 +112,18 @@ void Launcher::Reset()
 		DeactivateBullet( activeBullets );
 	}
 	//cout << "reset " << x << " bullets" << endl;
+}
+
+void Launcher::UpdatePostPhysics()
+{
+	BasicBullet *curr = activeBullets;
+	BasicBullet *temp;
+	while( curr != NULL )
+	{
+		temp = curr->next;
+		curr->UpdatePostPhysics();
+		curr = temp;
+	}
 }
 
 void Launcher::AddToList( BasicBullet *b, BasicBullet *&list )
@@ -261,6 +279,39 @@ void BasicBullet::ResetSprite()
 void BasicBullet::UpdatePrePhysics()
 {
 	velocity += gravity / (double)slowMultiple;
+}
+
+void BasicBullet::UpdatePostPhysics()
+{
+	if( slowCounter == slowMultiple )
+	{
+		
+		framesToLive--;
+		//++frame;		
+	
+		slowCounter = 1;
+	
+		//if( dead )
+		//{
+		//	//cout << "DEAD" << endl;
+		//	deathFrame++;
+		//}
+
+	}
+	else
+	{
+		slowCounter++;
+	}
+	
+
+	if( framesToLive == 0 )
+	{
+		//explode
+		//launcher->DeactivateBullet( this );
+		//parent->DeactivateTree( this );
+		//owner->RemoveEnemy( this );
+		//return;
+	}
 }
 
 void BasicBullet::UpdatePhysics()

@@ -37,6 +37,7 @@ struct BasicBullet : QuadTreeCollider
 		sf::Vector2<double> &vel );
 	virtual void UpdatePhysics();
 	virtual void UpdateSprite();
+	virtual void UpdatePostPhysics();
 	virtual void ResetSprite();
 	bool ResolvePhysics( 
 		sf::Vector2<double> vel );
@@ -79,6 +80,7 @@ struct Launcher
 	void DeactivateBullet( BasicBullet *b );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void UpdatePostPhysics();
 	void UpdateSprites();
 	BasicBullet * ActivateBullet();
 	void Fire();
@@ -883,6 +885,8 @@ struct Tree : Enemy, LauncherEnemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 
+	int framesToLive;
+	int maxFramesToLive;
 	
 	sf::VertexArray treeVA;
 		

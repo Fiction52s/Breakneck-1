@@ -25,6 +25,10 @@ Tree::Tree( Overgrowth *par,
 	launcher( NULL ), ground( NULL ), edgeQuantity( 0 ),
 	va( p_va ), ts( p_ts ), parent( par )
 {
+	maxFramesToLive = 60 * 4;
+	framesToLive = maxFramesToLive;
+
+
 	initHealth = 60;
 	health = initHealth;
 
@@ -73,12 +77,13 @@ Tree::Tree( Overgrowth *par,
 
 	//spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 
+	receivedHit = NULL;
 
-
-	launcher = new Launcher( this, owner, 1, 1, V2d( 0, 0 ),
+	launcher = new Launcher( this, owner, 2, 1, V2d( 0, 0 ),
 		normalize( V2d( 1, -1 ) ), 90 );
+	
 	launcher->SetBulletSpeed( 10 );
-	launcher->SetGravity( V2d( 0, .5 ) );
+	//launcher->SetGravity( V2d( 0, .5 ) );
 	animFactor = 3;
 }
 
@@ -94,7 +99,7 @@ void Tree::UpdatePrePhysics()
 	launcher->UpdatePrePhysics();
 	
 
-	if( frame == 26 * parent->animationFactor )
+	if( frame == 60 )//26 * parent->animationFactor )
 	{
 		frame = 0;
 	}
@@ -117,9 +122,12 @@ void Tree::UpdatePrePhysics()
 	
 	
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
-	if( frame == 26 * parent->animationFactor - 1 && slowCounter == 1 )
+	//if( frame == 59 * parent->animationFactor - 1 && slowCounter == 1 )
+	if( frame == 60 - 1 && slowCounter == 1 )
 	{
-		cout << "FIRING" << endl;
+		//cout << "FIRING" << endl;
+		launcher->facingDir = normalize( owner->player.position
+			- position );
 		launcher->Fire();
 	}
 }
@@ -179,6 +187,8 @@ void Tree::ClearSprite()
 	va[vaIndex*4+1].position = Vector2f( 0, 0 );
 	va[vaIndex*4+2].position = Vector2f( 0, 0 );
 	va[vaIndex*4+3].position = Vector2f( 0, 0 );
+
+	
 }
 
 void Tree::UpdateSprite()
@@ -198,6 +208,7 @@ void Tree::UpdateSprite()
 
 void Tree::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
@@ -206,13 +217,13 @@ void Tree::UpdatePostPhysics()
 	if( slowCounter == slowMultiple )
 	{
 		
-		++frame;		
-	//	cout << "frame" << endl;
+		++frame;	
+		--framesToLive;
+
 		slowCounter = 1;
 	
 		if( dead )
 		{
-			//cout << "DEAD" << endl;
 			deathFrame++;
 		}
 
@@ -223,8 +234,9 @@ void Tree::UpdatePostPhysics()
 	}
 	
 
-	if( deathFrame == 30 )
+	if( deathFrame == 30 || framesToLive == 0 )
 	{
+		launcher->Reset();//might just delete bullets
 		parent->DeactivateTree( this );
 		//owner->RemoveEnemy( this );
 		return;
@@ -425,6 +437,7 @@ void Tree::LoadEnemyState()
 
 void Tree::ResetEnemy()
 {
+
 	/*dead = false;
 	frame = 0;
 	deathFrame = 0;*/
@@ -437,9 +450,13 @@ void Tree::HandleEntrant( QuadTreeEntrant *qte )
 void Tree::SetParams( Edge *p_ground, 
 			double p_edgeQuantity )
 {
+	receivedHit = NULL;
 	ground = p_ground;
+	launcher->facingDir = ground->Normal();
 	edgeQuantity = p_edgeQuantity;
 	frame = 0;
+
+	framesToLive = maxFramesToLive;
 
 	V2d gn = ground->Normal();
 
@@ -534,6 +551,7 @@ Overgrowth::Overgrowth( GameSession *owner, Edge *g, double q, double speed,int 
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 
 	Tree *t = ActivateTree( g, q );
+	t->launcher->facingDir = g->Normal();
 }
 
 void Overgrowth::HandleEntrant( QuadTreeEntrant *qte )
@@ -551,6 +569,13 @@ void Overgrowth::ResetEnemy()
 	while( activeTrees != NULL )
 	{
 		DeactivateTree( activeTrees );
+	}
+
+	Tree *curr = inactiveTrees;
+	while( curr != NULL )
+	{
+		curr->launcher->Reset();
+		curr = (Tree*)curr->next;
 	}
 	ActivateTree( origGround, origQuantity );
 }
@@ -573,12 +598,14 @@ bool Overgrowth::PlayerSlowingMe()
 void Overgrowth::UpdatePrePhysics()
 {
 	Tree *curr = activeTrees;
-	int count = 0;
+	Tree *temp;
+	//int count = 0;
 	while( curr != NULL )
 	{
-		++count;
+		temp = (Tree*)curr->next;
+		//++count;
 		curr->UpdatePrePhysics();
-		curr = (Tree*)curr->next;
+		curr = temp;
 	}
 	//cout << "count: " << count << endl;
 }
@@ -586,10 +613,12 @@ void Overgrowth::UpdatePrePhysics()
 void Overgrowth::UpdatePhysics()
 {
 	Tree *curr = activeTrees;
+	Tree *temp;
 	while( curr != NULL )
 	{
+		temp = (Tree*)curr->next;
 		curr->UpdatePhysics();
-		curr = (Tree*)curr->next;
+		curr = temp;
 	}
 }
 
@@ -631,6 +660,7 @@ void Overgrowth::DeactivateTree( Tree *tree )
 	}
 
 	tree->ClearSprite();
+	//tree->launcher->
 
 	tree->active = false;
 }
@@ -665,15 +695,19 @@ void Overgrowth::PhysicsResponse()
 void Overgrowth::UpdatePostPhysics()
 {
 	Tree *curr = activeTrees;
+	Tree *temp;
 	while( curr != NULL )
 	{
+		temp = (Tree*)curr->next;
 		curr->UpdatePostPhysics();
-		curr = (Tree*)curr->next;
+		curr = temp;
 	}
 }
 
+//incorrect currently
 int Overgrowth::NumTotalBullets()
 {
+	
 	return MAX_TREES * 5;
 }
 
