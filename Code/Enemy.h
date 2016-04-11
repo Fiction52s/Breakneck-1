@@ -127,6 +127,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		GHOST,
 		OVERGROWTH,
 		OVERGROWTH_TREE,
+		CORALNANOBOTS,
+		CORAL_BLOCK,
 		Count
 	};
 
@@ -942,6 +944,140 @@ struct Overgrowth : Enemy
 	const static int MAX_TREES = 16;
 	//const static int MAX_TREES = 16;
 	sf::VertexArray treeVA;
+};
+
+struct CoralNanobots;
+struct CoralBlock : Enemy
+{
+	CoralBlock(CoralNanobots *parent, sf::VertexArray &va,
+		Tileset *ts, int index );
+	void SetParams( sf::Vector2<double> &pos,
+		sf::Vector2<double> &dir );
+	void ClearSprite();
+	void UpdatePostPhysics();
+	void UpdateSprite();
+
+
+	void BlockHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+
+
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//void UpdateBulletHitboxes();
+	//int NumTotalBullets();
+	CoralNanobots *parent;
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	int vaIndex;
+	int frame;
+	int animFactor;
+	//Edge *ground;
+	
+	bool active;
+	sf::VertexArray &va;
+	//double edgeQuantity;
+	//Launcher *launcher;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	//Contact minContact;
+	//bool col;
+	//std::string queryMode;
+	//int possibleEdgeCount;
+	Tileset *ts;
+	//int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	//int framesToLive;
+	//int maxFramesToLive;
+	
+	sf::VertexArray blockVA;
+		
+	//sf::Transform trans;
+};
+
+struct CoralNanobots : Enemy
+{
+	
+
+	CoralNanobots( GameSession *owner, 
+		sf::Vector2i &pos, double speed );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	//bool IHitPlayer();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void InitBlocks();
+	void AddBlock( CoralBlock *block );
+	//int NumTotalBullets();
+	void DeactivateBlock( CoralBlock *block );
+	CoralBlock * ActivateBlock( 
+		sf::Vector2<double> &pos,
+		sf::Vector2<double> &dir );
+
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+
+	int animationFactor;
+	void AddToList( CoralBlock *block,
+		CoralBlock *&list );
+
+	//Edge *origGround;
+	sf::Vector2<double> origPosition;
+	//double origQuantity;
+
+	Tileset *ts;
+	CoralBlock *activeBlocks;
+	CoralBlock *inactiveBlocks;
+	//void UpdateBulletHitboxes();
+	
+
+	int blockSizeX;
+	int blockSizeY;
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	const static int MAX_BLOCKS = 16;
+	//const static int MAX_TREES = 16;
+	sf::VertexArray blockVA;
 };
 
 struct FootTrap : Enemy
