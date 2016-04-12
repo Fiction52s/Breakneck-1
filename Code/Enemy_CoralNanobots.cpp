@@ -37,7 +37,7 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	//framesToLive = maxFramesToLive;
 
 	lockedIn = false;
-	initHealth = 60;
+	initHealth = 20;
 	health = initHealth;
 
 	hurtBody.type = CollisionBox::Hurt;
@@ -231,7 +231,7 @@ void CoralBlock::UpdatePhysics()
 				rightOpen = false;
 			}
 			
-
+			PhysicsResponse();
 			return;
 		}
 
@@ -622,6 +622,7 @@ void CoralBlock::HandleEntrant( QuadTreeEntrant *qte )
 void CoralBlock::SetParams( sf::Vector2<double> &pos,
 		sf::Vector2<double> &p_dir )
 {
+	dead = false;
 	direction = dir;
 	position = pos;
 	startPos = position;
@@ -718,8 +719,9 @@ CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double spee
 	spawnRect = sf::Rect<double>( pos.x - size / 2, pos.y - size / 2, size, size );
 
 	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, -1 ) );
-	c->lockedIn = true;
-	c->botOpen = true;
+	//c->lockedIn = true;
+	//c->botOpen = true;
+	//c->move.currMovement = NULL;
 	//t->launcher->facingDir = g->Normal();
 }
 
@@ -747,8 +749,9 @@ void CoralNanobots::ResetEnemy()
 		curr = (Tree*)curr->next;
 	}*/
 	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, -1 ) );
-	c->lockedIn = true;
-	c->botOpen = true;
+	//c->lockedIn = true;
+	//c->move.currMovement = NULL;
+	//c->botOpen = true;
 }
 
 bool CoralNanobots::IHitPlayer()

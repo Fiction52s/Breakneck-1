@@ -1100,7 +1100,7 @@ struct CoralNanobots : Enemy
 	void LoadEnemyState();
 	void ResetEnemy();
 
-	const static int MAX_BLOCKS = 256;
+	const static int MAX_BLOCKS = 16;
 	//const static int MAX_TREES = 16;
 	sf::VertexArray blockVA;
 };
