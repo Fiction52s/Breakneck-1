@@ -148,6 +148,8 @@ LineMovement::LineMovement( sf::Vector2<double> &a,
 		int duration )
 		:Movement( bez, duration ), A( a ), B( b )
 {
+	start = a;
+	end = b;
 }
 
 V2d LineMovement::GetPosition( int t )
@@ -166,6 +168,8 @@ CubicMovement::CubicMovement( sf::Vector2<double> &a,
 		int duration )
 		:Movement( bez, duration ), A( a ), B( b ), C( c), D(d)
 {
+	start = a;
+	end = d;
 }
 
 V2d CubicMovement::GetPosition( int t )
@@ -204,6 +208,21 @@ RadialMovement::RadialMovement( double p_radius,
 			startAngle += PI * 2;
 		}
 	}
+
+	double angle = startAngle;
+	Vector2f p( radius * cos( angle ) * scale.x, radius * sin( angle ) * scale.y);
+	sf::Transform tra;
+	tra.rotate( ellipseAngle );
+
+	Vector2f p0 = tra.transformPoint( p );
+
+	angle = endAngle;
+	p = Vector2f( radius * cos( angle ) * scale.x, radius * sin( angle ) * scale.y );
+	
+	Vector2f p1 = tra.transformPoint( p );
+
+	start =  V2d( p0.x, p0.y );
+	end = V2d( p1.x, p1.y );
 }
 
 sf::Vector2<double> RadialMovement::GetPosition( int t )
@@ -229,6 +248,8 @@ sf::Vector2<double> RadialMovement::GetPosition( int t )
 WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
 	:Movement( CubicBezier(), duration ), pos( p_pos )
 {
+	start = pos;
+	end = pos;
 }
 
 sf::Vector2<double> WaitMovement::GetPosition( int t )
@@ -321,7 +342,22 @@ void MovementSequence::Update()
 	if( currMovement != NULL )
 	{
 		//cout << "before" << endl;
-		position = currMovement->GetPosition( currTime - currMovementStartTime  );
+
+		//first one
+		if( currTime - currMovementStartTime == 0 )
+		{
+			position = currMovement->start;
+		}
+		//last one
+		else if( currTime - currMovementStartTime == currMovement->duration )
+		{
+			position = currMovement->end;
+		}
+		else
+		{
+			position = currMovement->GetPosition( currTime - currMovementStartTime  );
+		}
+		
 		//cout << "after" << endl;
 		//cout << "updating pos: " << position.x << ", " << position.y << endl;
 	}
@@ -337,7 +373,7 @@ void MovementSequence::Update()
 
 
 	currTime++;
-	if( currMovement != NULL && currTime == currMovement->duration + currMovementStartTime )
+	if( currMovement != NULL && currTime == currMovement->duration + currMovementStartTime + 1 )
 	{
 		currMovement = currMovement->next;
 		//currLauncherList = currMovement->launcher;
@@ -358,7 +394,7 @@ void MovementSequence::Update()
 
 		}
 	}
-	if( currRotation != NULL && currTime == currRotation->duration + currRotationStartTime )
+	if( currRotation != NULL && currTime == currRotation->duration + currRotationStartTime + 1 )
 	{
 		currRotation = currRotation->next;
 

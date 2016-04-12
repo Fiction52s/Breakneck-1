@@ -22,8 +22,17 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	VertexArray &p_va, Tileset *p_ts, int index )
 	:Enemy( par->owner, Enemy::CORAL_BLOCK ), 
 	vaIndex( index ), frame( 0 ),
-	va( p_va ), ts( p_ts ), parent( par )
+	va( p_va ), ts( p_ts ), parent( par ),bez( 0, 0,1,1 )
 {
+	direction = V2d( 0,-1);
+	move.AddLineMovement( V2d( 0, 0 ), V2d( 64, 0 ), bez, 60 );
+	move.Update();
+	topOpen = true;
+	leftOpen = true;
+	rightOpen = true;
+	botOpen = true;
+
+
 	//maxFramesToLive = 60 * 4;
 	//framesToLive = maxFramesToLive;
 
@@ -32,7 +41,7 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	health = initHealth;
 
 	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = false;
+	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
@@ -40,7 +49,7 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	hurtBody.rh = 32;
 
 	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = false;
+	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
@@ -48,7 +57,7 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	hitBody.rh = 32;
 
 	physBody.type = CollisionBox::Physics;
-	physBody.isCircle = false;
+	physBody.isCircle = true;
 	physBody.globalAngle = 0;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
@@ -85,9 +94,10 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	//spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 
 	receivedHit = NULL;
-
 	
 	
+	slowMultiple = 1;
+	slowCounter = 1;
 	
 	//launcher->SetGravity( V2d( 0, .5 ) );
 	animFactor = 3;
@@ -177,7 +187,59 @@ void CoralBlock::UpdatePrePhysics()
 void CoralBlock::UpdatePhysics()
 {
 	//launcher->UpdatePhysics();
+	//velocity += gravity / NUM_STEPS / (double)slowMultiple;
+	//cout << "move through the air" << endl;
+	if( !lockedIn )
+	{
+		move.Update();
+		V2d newPos = (startPos + move.position);// * 64.0 );
+		V2d vel = newPos - oldPos;
+		oldPos = newPos;
+		//cout << "move pos: " << move.position.x << ", " << move.position.y << endl;
+		//cout << "vel: " << vel.x << ", " << vel.y << endl;
+		V2d movementVec = vel;//direction * 1.0;//velocity;
+		movementVec /= (double)slowMultiple;// * NUM_STEPS;
+		
+		bool hit = ResolvePhysics( movementVec );
+		if( hit )
+		{
+			lockedIn = true;
+			V2d n = minContact.normal;
+			if( n.x == 0 && n.y == 0 )
+			{
+				n = normalize( position - minContact.position );
+			}
 
+			if( n.x > 0 )
+			{
+				leftOpen = false;
+			}
+			else if( n.x < 0 )
+			{
+				rightOpen = false;
+			}
+
+			if( n.y > 0 )
+			{
+				topOpen = false;
+			}
+			else if( n.y < 0 )
+			{
+				botOpen = false;
+			}
+
+			position += minContact.resolution;
+			
+			//cout << "landing aerial" << endl;
+			//HitTerrainAerial();
+		}
+	}
+	else
+	{
+
+	}
+
+	
 
 
 	PhysicsResponse();
@@ -248,6 +310,14 @@ void CoralBlock::UpdateSprite()
 		subRect.top + subRect.height );
 	va[vaIndex*4+3].texCoords = Vector2f( subRect.left, 
 		subRect.top + subRect.height );
+
+	
+	Vector2f p( position.x, position.y );
+
+	va[vaIndex*4+0].position = p + Vector2f( -parent->blockSizeX/2, -parent->blockSizeY/2 );
+	va[vaIndex*4+1].position = p + Vector2f( parent->blockSizeX/2, -parent->blockSizeY/2 );
+	va[vaIndex*4+2].position = p + Vector2f( parent->blockSizeX/2, parent->blockSizeY/2 );
+	va[vaIndex*4+3].position = p + Vector2f( -parent->blockSizeX/2, parent->blockSizeY/2 );
 }
 
 void CoralBlock::UpdatePostPhysics()
@@ -491,6 +561,10 @@ void CoralBlock::ResetEnemy()
 
 void CoralBlock::HandleEntrant( QuadTreeEntrant *qte )
 {
+	Edge *e = (Edge*)qte;
+
+	col = true;
+
 	//actually use this for telling when to stop 
 	//expanding in a certain direction
 }
@@ -498,23 +572,27 @@ void CoralBlock::HandleEntrant( QuadTreeEntrant *qte )
 void CoralBlock::SetParams( sf::Vector2<double> &pos,
 		sf::Vector2<double> &dir )
 {
+	direction = dir;
 	position = pos;
+	startPos = position;
+	lockedIn = false;
 
+	oldPos = position;
 
 	receivedHit = NULL;
 
-	
+	topOpen = true;
+	leftOpen = true;
+	rightOpen = true;
+	botOpen = true;
+
+	move.Reset();
 	
 	frame = 0;
 
 	//framesToLive = maxFramesToLive;
 
-	Vector2f p( position.x, position.y );
-
-	va[vaIndex*4+0].position = p + Vector2f( -parent->blockSizeX/2, -parent->blockSizeY/2 );
-	va[vaIndex*4+1].position = p + Vector2f( parent->blockSizeX/2, -parent->blockSizeY/2 );
-	va[vaIndex*4+2].position = p + Vector2f( parent->blockSizeX/2, parent->blockSizeY/2 );
-	va[vaIndex*4+3].position = p + Vector2f( -parent->blockSizeX/2, parent->blockSizeY/2 );
+	
 
 	UpdateSprite();
 

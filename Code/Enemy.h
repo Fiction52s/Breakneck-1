@@ -990,6 +990,17 @@ struct CoralBlock : Enemy
 	//Edge *ground;
 	
 	bool active;
+
+	bool topOpen;
+	bool leftOpen;
+	bool rightOpen;
+	bool botOpen;
+
+	CubicBezier bez;
+	sf::Vector2<double> startPos;
+	sf::Vector2<double> direction;
+	sf::Vector2<double> oldPos;
+	MovementSequence move;
 	sf::VertexArray &va;
 	//double edgeQuantity;
 	//Launcher *launcher;

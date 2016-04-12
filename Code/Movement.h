@@ -61,7 +61,7 @@ struct Rotation
 
 struct Movement
 {
-	Movement( CubicBezier &bez, int duration);
+	Movement( CubicBezier &bez, int duration );
 	~Movement();
 	void InitDebugDraw();
 	CubicBezier bez;
@@ -70,6 +70,10 @@ struct Movement
 	void DebugDraw( sf::RenderTarget *target );
 	Movement *next;
 	sf::Vertex *vertices;//debugdraw
+	sf::Vector2<double> start;
+	sf::Vector2<double> end;
+	
+
 	//Launcher *launcher;
 };
 
