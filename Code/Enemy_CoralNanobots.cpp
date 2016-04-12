@@ -189,10 +189,61 @@ void CoralBlock::UpdatePhysics()
 	//launcher->UpdatePhysics();
 	//velocity += gravity / NUM_STEPS / (double)slowMultiple;
 	//cout << "move through the air" << endl;
+
 	if( !lockedIn )
 	{
+		
+
 		move.Update();
-		V2d newPos = (startPos + move.position);// * 64.0 );
+
+		if( move.currMovement == NULL )
+		{
+			//cout << "locked in true" << endl;
+			lockedIn = true;
+			V2d left( -1, 0 );
+			V2d right( 1, 0 );
+			V2d top( 0, -1 );
+			V2d bot( 0, 1 );
+
+			if( topOpen )
+			{
+				//cout << "new up" << endl;
+				parent->ActivateBlock( position, top );
+				topOpen = false;
+			}
+			if( leftOpen )
+			{
+				//cout << "new left" << endl;
+				parent->ActivateBlock( position, left );
+				leftOpen = false;
+			}
+			if( botOpen )
+			{
+				//cout << "new bot" << endl;
+				parent->ActivateBlock( position, bot );
+				botOpen = false;
+			}
+			if( rightOpen )
+			{
+				//cout << "new right" << endl;
+				//cout << "right open!" << endl;
+				parent->ActivateBlock( position, right );
+				rightOpen = false;
+			}
+			
+
+			return;
+		}
+
+		V2d rotatedPos = move.position;
+		double angle = atan2( dir.y, dir.x );
+		//cout << "angle: " << angle << endl;
+		double cs = cos( angle );
+		double sn = sin( angle );
+
+		rotatedPos = V2d( rotatedPos.x * cs - rotatedPos.y * sn,
+			rotatedPos.x * sn + rotatedPos.y * cs );
+		V2d newPos = (startPos + rotatedPos);// * 64.0 );
 		V2d vel = newPos - oldPos;
 		oldPos = newPos;
 		//cout << "move pos: " << move.position.x << ", " << move.position.y << endl;
@@ -229,14 +280,13 @@ void CoralBlock::UpdatePhysics()
 			}
 
 			position += minContact.resolution;
-			
 			//cout << "landing aerial" << endl;
 			//HitTerrainAerial();
 		}
 	}
 	else
 	{
-
+		
 	}
 
 	
@@ -570,12 +620,14 @@ void CoralBlock::HandleEntrant( QuadTreeEntrant *qte )
 }
 
 void CoralBlock::SetParams( sf::Vector2<double> &pos,
-		sf::Vector2<double> &dir )
+		sf::Vector2<double> &p_dir )
 {
 	direction = dir;
 	position = pos;
 	startPos = position;
 	lockedIn = false;
+
+	dir = p_dir;
 
 	oldPos = position;
 
@@ -585,6 +637,17 @@ void CoralBlock::SetParams( sf::Vector2<double> &pos,
 	leftOpen = true;
 	rightOpen = true;
 	botOpen = true;
+
+	//need a link system of NULL and CoralBlock pointers
+
+	if( dir.y == -1 )
+		botOpen = false;
+	if( dir.y == 1 )
+		topOpen = false;
+	if( dir.x == 1 )
+		leftOpen = false;
+	if( dir.x == -1 )
+		rightOpen = false;
 
 	move.Reset();
 	
@@ -655,6 +718,8 @@ CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double spee
 	spawnRect = sf::Rect<double>( pos.x - size / 2, pos.y - size / 2, size, size );
 
 	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, -1 ) );
+	c->lockedIn = true;
+	c->botOpen = true;
 	//t->launcher->facingDir = g->Normal();
 }
 
@@ -681,7 +746,9 @@ void CoralNanobots::ResetEnemy()
 		curr->launcher->Reset();
 		curr = (Tree*)curr->next;
 	}*/
-	ActivateBlock( origPosition, V2d( 0, -1 ) );
+	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, -1 ) );
+	c->lockedIn = true;
+	c->botOpen = true;
 }
 
 bool CoralNanobots::IHitPlayer()
