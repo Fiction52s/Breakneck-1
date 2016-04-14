@@ -5272,217 +5272,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								break;
 							}
 
-
 							if( ev.key.code == Keyboard::Space )
 							{
-							//	ConfirmationPop();
-								//MessagePop( "hello" );
-								if( showPoints && extendingPolygon )
+								if( !(showPoints && extendingPolygon) )
 								{
-								}
-								else
-								{
-								if( polygonInProgress->numPoints > 2 )
-								{
-									//test final line
-									bool valid = true;
-
-
-									//test for the last line segment intersecting with the polygon
-									TerrainPoint * test = polygonInProgress->pointStart;
-									TerrainPoint * prev = test;
-									test = test->next;
-
-									for( ; test != NULL; test = test->next )
-									{
-										Vector2i a = prev->pos;
-										Vector2i b = test->pos;
-										Vector2i c = polygonInProgress->pointEnd->pos;
-										Vector2i d = polygonInProgress->pointStart->pos;
-										LineIntersection li = LimitSegmentIntersect( a,b,c,d );
-										Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-										//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-										if( !li.parallel )//(abs( lii.x - currPoint.x ) > 1 || abs( lii.y - currPoint.y ) > 1 ) )//&& lii != a && lii != b && lii != c && lii != d )
-										{
-											valid = false;
-										}
-										prev = test;
-									}
-
-
-									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-									{
-										//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
-										if( !IsPointValid( polygonInProgress->pointEnd->pos, polygonInProgress->pointStart->pos, (*it).get() ) )
-										{
-											valid = false;
-											break;
-										}
-									}
-
-									if( PolyIntersectGate( *polygonInProgress ) )
-									{
-										valid = false;
-									}
-
-									if( !valid )
-									{
-										MessagePop( "unable to complete polygon" );
-										//popupPanel = messagePopup;
-										break;
-									}
-
-									
-									list<PolyPtr>::iterator it = polygons.begin();
-									bool added = false;
-									
-									bool recursionDone = false;
-									PolyPtr currentBrush = polygonInProgress;
-
-									list<PolyPtr> intersectingPolys;
-
-									polygonInProgress->UpdateBounds();
-
-									bool applyOkay = true;
-									for(; it != polygons.end(); ++it )
-									{
-										if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
-										{
-											applyOkay = false;
-											break;
-										}
-										else if( polygonInProgress->LinesIntersect( (*it).get() ) )
-										{
-											//not too close and I intersect, so I can add
-											intersectingPolys.push_back( (*it) );
-										}
-										//polygoninprogress is already not in the polygons list
-										//if( (*it).get() == this )
-										//{
-										//	continue;
-										//}
-									}
-
-									if( !applyOkay )
-									{
-										MessagePop( "polygon is invalid!!! new message" );
-									}
-									else
-									{
-										if( intersectingPolys.empty() )
-										{
-											polygonInProgress->Finalize();
-
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
-
-											progressBrush->Clear();
-											
-
-											progressBrush->AddObject( sp );
-									
-											Action *action = new ApplyBrushAction( progressBrush );
-											action->Perform();
-											doneActionStack.push_back( action );
-
-											ClearUndoneActions();
-
-											PolyPtr newPoly( new TerrainPolygon(&grassTex) );
-											polygonInProgress = newPoly;
-										}
-										else
-										{
-											//add each of the intersecting polygons onto the polygonInProgress,
-											//then do a replacebrushaction
-
-											//polygonInProgress->Finalize();
-											polygonInProgress->FixWinding();
-
-											//hold shift ATM to activate subtraction
-											if( !( Keyboard::isKeyPressed( Keyboard::LShift ) ||
-												Keyboard::isKeyPressed( Keyboard::RShift ) ) )
-											{
-												Brush orig;
-												for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-												{
-													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-													orig.AddObject( sp );
-
-													Add( (*it), polygonInProgress );
-												
-												}
-
-
-
-												SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
-
-												progressBrush->Clear();
-												progressBrush->AddObject( sp );
-												cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
-												Action * action = new ReplaceBrushAction( &orig, progressBrush );
-												action->Perform();
-												doneActionStack.push_back( action );
-
-												ClearUndoneActions();
-
-												PolyPtr newPoly( new TerrainPolygon(&grassTex) );
-												polygonInProgress = newPoly;
-											}
-											else
-											{
-												cout << "subtracting!" << endl;
-												//SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
-
-												//progressBrush->Clear();
-												//progressBrush->AddObject( sp );
-												Brush orig;
-												for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-												{
-													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-													orig.AddObject( sp );
-
-													//Add( (*it), polygonInProgress );
-												}
-
-
-												list<PolyPtr> results;
-												Sub( polygonInProgress.get(), intersectingPolys, results );
-
-												Brush resultBrush;
-												for( list<PolyPtr>::iterator it = results.begin(); 
-													it != results.end(); ++it )
-												{
-													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-													resultBrush.AddObject( sp );
-												}
-
-												cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
-												Action * action = new ReplaceBrushAction( &orig, &resultBrush );
-												action->Perform();
-												doneActionStack.push_back( action );
-
-												ClearUndoneActions();
-
-												polygonInProgress->ClearPoints();
-
-												//Brush orig;
-												//for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-												//{
-												//	SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-												//	orig.AddObject( sp );
-
-												//	Add( (*it), polygonInProgress );
-												
-												//}
-											}
-
-										}
-									}
-								}
-								else if( polygonInProgress->numPoints <= 2 && polygonInProgress->numPoints > 0  )
-								{
-									cout << "cant finalize. cant make polygon" << endl;
-									polygonInProgress->ClearPoints();
-								}
+									ExecuteTerrainCompletion();
 								}
 							}
 							else if( ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete )
@@ -5639,94 +5433,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									//concerning selecting a point
 									if( alt )
 									{
-										double rad = 8 * zoomMultiple;
-										for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-										{
-											//if its not even close dont check
-											if( !(*it)->TempAABB().intersects( Rect<int>( worldPos.x - rad, worldPos.y - rad, rad * 2,
-												rad * 2 ) ) )
-											{
-												continue;
-											}
-
-											TerrainPoint *tp = (*it)->pointStart;
-											while( tp != NULL )
-											{
-												V2d tpPos( tp->pos.x, tp->pos.y );
-												double dist = length( tpPos - worldPos );
-												if( dist <= rad )
-												{
-													bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
-													//cout << "close enough" << endl;
-													if( !tp->selected )
-													{
-														if( !shift )
-														{
-															//ClearSelectedPoints();
-														}
-														
-														//cout << "selecting a point!" << endl;
-														//select a point
-														selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
-														
-
-														/*bool hasPoly = false;
-														for( PointMap::iterator pit = selectedPoints.begin();
-															pit != selectedPoints.end(); ++pit )
-														{
-															if( (*pit).first == (*it).get() )
-															{
-																hasPoly = true;
-																break;
-															}
-														}
-														if( !hasPoly )
-														{
-															pointPolyList.push_back( (*it).get() );
-														}*/
-														tp->selected = true;
-														emptysp = false;
-													}
-													else
-													{
-														//point is selected
-
-														//deselect a point
-														//TerrainPolygon *removedPoly;
-														//PointMap::iterator tempIt;
-														//bool found = false;
-														//for( PointMap::iterator it = selectedPoints.begin();
-														//	it != selectedPoints.end() && !found; ++it )
-														//{
-														//	list<PointMoveInfo> &pList = (*it).second;
-														//	for( list<PointMoveInfo>::iterator pit = pList.begin();
-														//		pit != pList.end() && !found; ++pit )
-														//	{
-														//		if( (*pit).point == tp )
-														//		{
-														//			pList.erase( pit );
-														//			if( (*it).second.empty() )
-														//			{
-														//				selectedPoints.erase( it );
-														//			}
-														//			found = true;
-														//			
-														//			//removedPoly = (*it).poly;
-														//			
-														//		}
-														//	}
-														//}
-
-														//tp->selected = false;
-														emptysp = false;
-													}
-													
-													//selectedPoints.push_back( tp );
-													
-												}
-												tp = tp->next;
-											}
-										}
+										PointSelectPoint( worldPos, emptysp );
 									}
 
 									else
@@ -13971,6 +13678,302 @@ sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 	adjY = ((int)realPos.y) * 32;
 
 	return V2d( adjX, adjY );
+}
+
+void EditSession::ExecuteTerrainCompletion()
+{
+	if( polygonInProgress->numPoints > 2 )
+	{
+		//test final line
+		bool valid = true;
+
+
+		//test for the last line segment intersecting with the polygon
+		TerrainPoint * test = polygonInProgress->pointStart;
+		TerrainPoint * prev = test;
+		test = test->next;
+
+		for( ; test != NULL; test = test->next )
+		{
+			Vector2i a = prev->pos;
+			Vector2i b = test->pos;
+			Vector2i c = polygonInProgress->pointEnd->pos;
+			Vector2i d = polygonInProgress->pointStart->pos;
+			LineIntersection li = LimitSegmentIntersect( a,b,c,d );
+			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
+			//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
+			if( !li.parallel )//(abs( lii.x - currPoint.x ) > 1 || abs( lii.y - currPoint.y ) > 1 ) )//&& lii != a && lii != b && lii != c && lii != d )
+			{
+				valid = false;
+			}
+			prev = test;
+		}
+
+
+		for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+		{
+			//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
+			if( !IsPointValid( polygonInProgress->pointEnd->pos, polygonInProgress->pointStart->pos, (*it).get() ) )
+			{
+				valid = false;
+				break;
+			}
+		}
+
+		if( PolyIntersectGate( *polygonInProgress ) )
+		{
+			valid = false;
+		}
+
+		if( !valid )
+		{
+			MessagePop( "unable to complete polygon" );
+			//popupPanel = messagePopup;
+			return;
+		}
+
+									
+		list<PolyPtr>::iterator it = polygons.begin();
+		bool added = false;
+									
+		bool recursionDone = false;
+		PolyPtr currentBrush = polygonInProgress;
+
+		list<PolyPtr> intersectingPolys;
+
+		polygonInProgress->UpdateBounds();
+
+		bool applyOkay = true;
+		for(; it != polygons.end(); ++it )
+		{
+			if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
+			{
+				applyOkay = false;
+				break;
+			}
+			else if( polygonInProgress->LinesIntersect( (*it).get() ) )
+			{
+				//not too close and I intersect, so I can add
+				intersectingPolys.push_back( (*it) );
+			}
+			//polygoninprogress is already not in the polygons list
+			//if( (*it).get() == this )
+			//{
+			//	continue;
+			//}
+		}
+
+		if( !applyOkay )
+		{
+			MessagePop( "polygon is invalid!!! new message" );
+		}
+		else
+		{
+			if( intersectingPolys.empty() )
+			{
+				polygonInProgress->Finalize();
+
+				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
+
+				progressBrush->Clear();
+											
+
+				progressBrush->AddObject( sp );
+									
+				Action *action = new ApplyBrushAction( progressBrush );
+				action->Perform();
+				doneActionStack.push_back( action );
+
+				ClearUndoneActions();
+
+				PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+				polygonInProgress = newPoly;
+			}
+			else
+			{
+				//add each of the intersecting polygons onto the polygonInProgress,
+				//then do a replacebrushaction
+
+				//polygonInProgress->Finalize();
+				polygonInProgress->FixWinding();
+
+				//hold shift ATM to activate subtraction
+				if( !( Keyboard::isKeyPressed( Keyboard::LShift ) ||
+					Keyboard::isKeyPressed( Keyboard::RShift ) ) )
+				{
+					ExecuteTerrainAdd( intersectingPolys );
+				}
+				else
+				{
+					ExecuteTerrainSubtract( intersectingPolys );
+				}
+
+			}
+		}
+	}
+	else if( polygonInProgress->numPoints <= 2 && polygonInProgress->numPoints > 0  )
+	{
+		cout << "cant finalize. cant make polygon" << endl;
+		polygonInProgress->ClearPoints();
+	}
+}
+
+void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
+{
+	Brush orig;
+	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+		orig.AddObject( sp );
+
+		Add( (*it), polygonInProgress );
+												
+	}
+
+	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
+
+	progressBrush->Clear();
+	progressBrush->AddObject( sp );
+	cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
+	Action * action = new ReplaceBrushAction( &orig, progressBrush );
+	action->Perform();
+	doneActionStack.push_back( action );
+
+	ClearUndoneActions();
+
+	PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+	polygonInProgress = newPoly;
+}
+
+void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
+{
+	cout << "subtracting!" << endl;
+	//SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
+
+	//progressBrush->Clear();
+	//progressBrush->AddObject( sp );
+	Brush orig;
+	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+		orig.AddObject( sp );
+
+		//Add( (*it), polygonInProgress );
+	}
+
+
+	list<PolyPtr> results;
+	Sub( polygonInProgress.get(), intersectingPolys, results );
+
+	Brush resultBrush;
+	for( list<PolyPtr>::iterator it = results.begin(); 
+		it != results.end(); ++it )
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+		resultBrush.AddObject( sp );
+	}
+
+	cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
+	Action * action = new ReplaceBrushAction( &orig, &resultBrush );
+	action->Perform();
+	doneActionStack.push_back( action );
+
+	ClearUndoneActions();
+
+	polygonInProgress->ClearPoints();
+}
+
+void EditSession::PointSelectPoint( V2d &worldPos,
+	bool &emptysp )
+{
+	double rad = 8 * zoomMultiple;
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		//if its not even close dont check
+		if( !(*it)->TempAABB().intersects( Rect<int>( worldPos.x - rad, worldPos.y - rad, rad * 2,
+			rad * 2 ) ) )
+		{
+			continue;
+		}
+
+		TerrainPoint *tp = (*it)->pointStart;
+		while( tp != NULL )
+		{
+			V2d tpPos( tp->pos.x, tp->pos.y );
+			double dist = length( tpPos - worldPos );
+			if( dist <= rad )
+			{
+				bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
+				//cout << "close enough" << endl;
+				if( !tp->selected )
+				{
+					if( !shift )
+					{
+						//ClearSelectedPoints();
+					}
+														
+					//cout << "selecting a point!" << endl;
+					//select a point
+					selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
+														
+
+					/*bool hasPoly = false;
+					for( PointMap::iterator pit = selectedPoints.begin();
+						pit != selectedPoints.end(); ++pit )
+					{
+						if( (*pit).first == (*it).get() )
+						{
+							hasPoly = true;
+							break;
+						}
+					}
+					if( !hasPoly )
+					{
+						pointPolyList.push_back( (*it).get() );
+					}*/
+					tp->selected = true;
+					emptysp = false;
+				}
+				else
+				{
+					//point is selected
+
+					//deselect a point
+					//TerrainPolygon *removedPoly;
+					//PointMap::iterator tempIt;
+					//bool found = false;
+					//for( PointMap::iterator it = selectedPoints.begin();
+					//	it != selectedPoints.end() && !found; ++it )
+					//{
+					//	list<PointMoveInfo> &pList = (*it).second;
+					//	for( list<PointMoveInfo>::iterator pit = pList.begin();
+					//		pit != pList.end() && !found; ++pit )
+					//	{
+					//		if( (*pit).point == tp )
+					//		{
+					//			pList.erase( pit );
+					//			if( (*it).second.empty() )
+					//			{
+					//				selectedPoints.erase( it );
+					//			}
+					//			found = true;
+					//			
+					//			//removedPoly = (*it).poly;
+					//			
+					//		}
+					//	}
+					//}
+
+					//tp->selected = false;
+					emptysp = false;
+				}
+													
+				//selectedPoints.push_back( tp );
+													
+			}
+			tp = tp->next;
+		}
+	}
 }
 
 ActorType::ActorType( const std::string & n, Panel *p )

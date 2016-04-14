@@ -928,6 +928,15 @@ struct EditSession : GUIHandler
 	sf::Vector2i gatePoint1;
 	GateInfoPtr modifyGate;
 	
+	void PointSelectPoint(sf::Vector2<double> &worldPos,
+		bool &emptysp );
+	void PointSelectPolygon();
+	void ExecuteTerrainCompletion();
+	void ExecuteTerrainAdd(
+		std::list<PolyPtr> &intersectingPolys);
+	void ExecuteTerrainSubtract(
+		std::list<PolyPtr> &intersectingPolys);
+
 
 	enum Emode
 	{
