@@ -201,7 +201,6 @@ void ActorParams::UpdateGroundedSprite()
 									(groundInfo->groundQuantity / length( cu - pr ) ) );
 
 	double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
-
 	image.setPosition( newPoint.x, newPoint.y );
 	image.setRotation( angle );
 }
