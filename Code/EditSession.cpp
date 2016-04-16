@@ -4345,7 +4345,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 
 	//z.points.push_back( startPoint );
 
-	//2. run a loobclockwise until you arrive back at the original state
+	//2. run a loop clockwise until you arrive back at the original state
 
 
 
@@ -4515,8 +4515,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 
 	poly->Reset();
 
-	//PolyPtr newPolygon( new TerrainPolygon( &grassTex ) );
-	//cout << "poly size: " << z.points.size() << endl;
+	
 	for( TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next )
 	{
 		TerrainPoint *tp = new TerrainPoint(*zit);
@@ -4562,6 +4561,14 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 	poly->Finalize();
 }
 
+struct SubInfo
+{
+	SubInfo( TerrainPolygon *p, TerrainPoint *po )
+		:poly(p),point(po){}
+	TerrainPolygon *poly;
+	TerrainPoint *point;
+};
+
 void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::list<PolyPtr> &results )
 {
 	//list<PolyPtr> orig = polys;
@@ -4587,7 +4594,7 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 		{
 			//cout << "untouched is not empty!:" << untouched.size() << endl;
 			//PolyPtr newPoly( new TerrainPolygon( &grassTex ) );
-			list<Vector2i> newPoints;
+			list<pair<Vector2i,SubInfo>> newPoints;
 
 			
 			TerrainPoint *start = untouched.front();
@@ -4597,9 +4604,9 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 			TerrainPoint *next = NULL;
 
 			Vector2i currPoint = curr->pos;
+			bool truePoint = true;
 			
-			
-			do//while( next != start )
+			do
 			{
 				if( currentPoly == poly )
 				{
@@ -4627,7 +4634,16 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 				}
 
 				//untouched.remove( curr );
-				newPoints.push_back( currPoint );
+				//newPoints.push_back( TerrainPoint( *curr ) );
+				if( truePoint )
+				{
+					newPoints.push_back( pair<Vector2i,SubInfo>( currPoint, SubInfo( currentPoly, curr ) ) );
+				}
+				else
+				{
+					newPoints.push_back( pair<Vector2i,SubInfo>( currPoint, SubInfo( NULL, NULL ) ) );
+				}
+
 				if( currentPoly == poly && currPoint == curr->pos )
 				{
 					untouched.remove( curr );
@@ -4693,13 +4709,14 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 					currPoint = minIntersection;
 
 					curr = min;
-
+					truePoint = false;
 
 				}
 				else
 				{
 					curr = next;
 					currPoint = next->pos;
+					truePoint = true;
 				}
 				
 			}
@@ -4707,9 +4724,28 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 
 
 			PolyPtr newPoly( new TerrainPolygon( &grassTex ) );
-			for( list<Vector2i>::iterator it = newPoints.begin(); it != newPoints.end(); ++it )
+			for( list<pair<Vector2i,SubInfo>>::iterator it = newPoints.begin(); it != newPoints.end(); ++it )
 			{
-				TerrainPoint *p = new TerrainPoint( (*it), false );
+				TerrainPoint *p = new TerrainPoint( (*it).first, false );
+				if( (*it).second.poly != NULL )
+				{
+					p->gate = (*it).second.point->gate;
+					if( p->gate != NULL )
+					{
+						if( p->gate->poly0.get() == (*it).second.poly )
+						{
+							p->gate->poly0 = newPoly;
+							p->gate->point0 = p;
+						}
+						else
+						{
+							p->gate->poly1 = newPoly;
+							p->gate->point1 = p;
+						}
+						//cout << "preserving gate!" << endl;
+					}
+				}
+				//if( (*it)
 				newPoly->AddPoint( p );
 				//cout << "point: " << p->pos.x << ", " << p->pos.y << endl;
 			}
