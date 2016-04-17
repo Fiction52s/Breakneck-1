@@ -1889,19 +1889,19 @@ bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
 
 void AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
 {
-	cout << "attemping to attach actors" << endl;
+	//cout << "attemping to attach actors" << endl;
 	bool res;
 	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
 		res = AttachActorToPolygon( (*it), poly );
-		if( res )
+		/*if( res )
 		{
 			cout << "saved an actor!" << endl;
 		}
 		else
 		{
 			cout << "totally didn't save an actor! QQ" << endl;
-		}
+		}*/
 	}
 }
 
@@ -2241,7 +2241,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 	}
 
 	
-	cout << "about to check for enemy stuff" << endl;
+	//cout << "about to check for enemy stuff" << endl;
 	for( TerrainPoint *bit = brush->pointStart; bit != NULL; bit = bit->next )
 	{
 		//cout << "z enems: " << z.enemies.count( zit ) << endl;
@@ -2254,30 +2254,6 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 			list<ActorPtr> &en = brush->enemies[bit];//z.enemies[zit];
 
 			AttachActorsToPolygon( en, poly.get() );
-			//cout << "zsize: " << en.size() << endl;
-			//for( list<ActorPtr>::iterator it = en.begin(); it != en.end(); ++it )
-			//{
-			//	TerrainPoint *next;// = poly->pointEnd;
-			//	for( TerrainPoint *pit = poly->pointStart; pit != NULL; pit = pit->next )
-			//	{
-			//		if( pit == poly->pointEnd )
-			//		{
-			//			next = poly->pointStart;
-			//		}
-			//		else
-			//		{
-			//			next = pit->next;
-			//		}
-
-			//		(*it)->IsPlacementOkay();
-
-
-			//	}
-			//	//cout << "setting new ground on actor params" << endl;
-			//	//(*it)->groundInfo->ground = poly.get();
-			//	//(*it)->groundInfo->edgeStart = tp;
-			//	//(*it)->AnchorToGround( *(*it)->groundInfo );
-			//}
 		}
 	}
 
@@ -2295,9 +2271,6 @@ struct SubInfo
 
 void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::list<PolyPtr> &results )
 {
-	//list<PolyPtr> orig = polys;
-	//polys.clear(); //new polys;
-	
 	for( list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt )
 	{
 		TerrainPolygon *poly = (*polyIt).get();
@@ -2308,6 +2281,15 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 			{
 				untouched.push_back( curr );
 			}
+		}
+
+		if( untouched.empty() )
+		{
+			//list<TerrainPoint*> 
+			//put a new point in between the intersection points in the old polygon?
+			//dont make it part of the object its just a temporary
+
+			//cout << "EMPTY BLARG HERE" << endl;
 		}
 
 		bool onBrush = false;
@@ -11609,26 +11591,135 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	polygonInProgress = newPoly;
 }
 
+void InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
+{
+	TerrainPoint *tp;
+	//TerrainPoint *prev;
+	TerrainPoint *next;
+
+	map<TerrainPoint*, list<V2d>> interMap;
+	for( list<Inter>::iterator it = inters.begin(); it != inters.end(); ++it )
+	{
+		interMap[(*it).first].push_back( (*it).second );
+	}
+
+	for( map<TerrainPoint*, list<V2d>>::iterator it = interMap.begin(); it != interMap.end(); ++it )
+	{
+		tp = (*it).first;
+		next = tp->next;
+
+	//	//if( prev == NULL )
+	//	//	prev = poly->pointEnd;
+		//if( next == NULL )
+		//	next = poly->pointStart;
+		list<V2d> &points = (*it).second;
+
+		int size = (*it).second.size();
+		if( size >= 2 ) //has enough intersections on one line
+		{
+			
+			list<V2d>::iterator vit = points.begin();
+			V2d prev = (*vit);
+			++vit;
+			for( ; vit != points.end(); ++vit )
+			{
+				V2d midPoint = ( (*vit) + prev ) / 2.0;
+				if( midPoint.x > 0 )
+					midPoint.x += .5;
+				else if( midPoint.x < 0 )
+					midPoint.x -= .5;
+
+				if( midPoint.y > 0 )
+					midPoint.y += .5;
+				else if( midPoint.y < 0 )
+					midPoint.y -= .5;
+				
+
+				TerrainPoint *newPoint = new TerrainPoint( Vector2i( midPoint.x, midPoint.y ), false );
+				
+
+				cout << "inserting new point between: 1: " << prev.x << ", " << prev.y <<
+					" and: " << (*vit).x << ", " << (*vit).y << endl;
+				cout << "midPoint: " << midPoint.x << ", "
+					 << midPoint.y << endl;
+				poly->InsertPoint( newPoint, tp );
+
+				prev = (*vit);
+			}
+		}
+
+	}
+
+	//for( list<Inter>::iterator it = inters.begin(); it != inters.end(); ++it )
+	//{
+	//	tp = (*it).first;
+	//	//prev = tp->prev;
+	//	next = tp->next;
+
+	//	//if( prev == NULL )
+	//	//	prev = poly->pointEnd;
+	//	if( next == NULL )
+	//		next = poly->pointStart;
+
+	//	TerrainPoint *newPoint = new TerrainPoint( Vector2i( (*it).second.x + .5,
+	//		(*it).second.y + .5 ), false );
+	//	cout << "inserting new point!" << endl;
+	//	newPoint->prev = tp;
+	//	newPoint->next = next;
+	//	tp->next = newPoint;
+	//	next->prev = newPoint;
+	//}
+}
+
+void RemoveTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
+{
+	TerrainPoint *tp;
+	TerrainPoint *prev;
+	TerrainPoint *next;
+	TerrainPoint *nextnext;
+
+	for( list<Inter>::iterator it = inters.begin(); it != inters.end(); ++it )
+	{
+		tp = (*it).first;
+		next = tp->next;
+
+		if( next == NULL )
+		{
+			assert( false );
+			//next = poly->pointStart;
+		}
+		nextnext = next->next;
+		if( nextnext == NULL )
+			nextnext = poly->pointStart;
+
+		tp->next = nextnext;
+		nextnext->prev = tp;
+		delete next;
+	}
+}
+
 void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 {
 	cout << "subtracting!" << endl;
-	//SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
-
-	//progressBrush->Clear();
-	//progressBrush->AddObject( sp );
 	Brush orig;
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
+		list<Inter> inters = (*it)->GetIntersections( polygonInProgress.get() );
+		cout << "inters size: " << inters.size() << endl;
+		InsertTemporaryPoints( (*it).get(), inters );
+
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
 
 		//Add( (*it), polygonInProgress );
 	}
-
+	//return;
+	
 
 	list<PolyPtr> results;
+	cout << "calling sub!" << endl;
 	Sub( polygonInProgress.get(), intersectingPolys, results );
-
+	//cout << "results size: " << results.size() << endl;
 	Brush resultBrush;
 	for( list<PolyPtr>::iterator it = results.begin(); 
 		it != results.end(); ++it )
@@ -11636,6 +11727,19 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		resultBrush.AddObject( sp );
 	}
+
+	/*for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	{
+		for( map<TerrainPoint*,std::list<ActorPtr>>::iterator 
+			mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
+		{
+			for( list<PolyPtr>::iterator rit = results.begin(); 
+				rit != results.end(); ++rit )
+			{
+				AttachActorsToPolygon( (*mit).second, (*rit).get()  );
+			}
+		}
+	}*/
 
 	cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, &resultBrush );

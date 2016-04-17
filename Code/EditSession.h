@@ -126,6 +126,7 @@ struct TerrainBrush
 	TerrainBrush( TerrainBrush &brush );
 	~TerrainBrush();
 	void AddPoint( TerrainPoint* tp);
+	
 	void UpdateLines();
 	void Move( sf::Vector2i delta );
 	void Draw( sf::RenderTarget *target );
@@ -140,6 +141,7 @@ struct TerrainBrush
 	
 };
 
+typedef std::pair<TerrainPoint*,sf::Vector2<double>> Inter;
 struct TerrainPolygon : ISelectable
 {
 	TerrainPolygon( sf::Texture *grassTex );
@@ -155,11 +157,13 @@ struct TerrainPolygon : ISelectable
 	TerrainPoint *pointEnd;
 	int numPoints;
 	void AddPoint( TerrainPoint* tp);
+	void InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint );
 	void RemovePoint( TerrainPoint *tp );
 	void DestroyEnemies();
 	void ClearPoints();
 	std::string material;
 	void RemoveSelectedPoints();
+	std::list<Inter> GetIntersections( TerrainPolygon *poly );
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();

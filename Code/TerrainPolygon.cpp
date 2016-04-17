@@ -1536,6 +1536,23 @@ void TerrainPolygon::AddPoint( TerrainPoint* tp)
 	++numPoints;
 }
 
+void TerrainPolygon::InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint )
+{
+	tp->next = prevPoint->next;
+	if( tp->next != NULL )
+	{
+		tp->next->prev = tp;
+	}
+	else
+	{
+		pointEnd = tp;
+	}
+
+	prevPoint->next = tp;
+	tp->prev = prevPoint;
+	++numPoints;
+}
+
 void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 {
 	assert( pointStart != NULL );
@@ -2434,6 +2451,49 @@ void TerrainPolygon::Draw( sf::RenderTarget *target )
 {
 }
 
+//returns the intersections w/ the terrain point values of THIS polygon, NOT poly
+list<Inter> TerrainPolygon::GetIntersections( TerrainPolygon *poly )
+{
+	list<Inter> inters;
+	//my lines vs his lines
+	for( TerrainPoint *my = pointStart; my != NULL; my = my->next )
+	{
+		TerrainPoint *myPrev;
+		if( my == pointStart )
+		{
+			myPrev = pointEnd;
+		}
+		else
+		{
+			myPrev = my->prev;
+		}
+
+		for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
+		{
+			TerrainPoint *prev;
+			if( pcurr == poly->pointStart )
+			{
+				prev = poly->pointEnd;
+			}
+			else
+			{
+				prev = pcurr->prev;
+			}
+
+			LineIntersection li = EditSession::SegmentIntersect( (*myPrev).pos, my->pos, (*prev).pos, pcurr->pos );
+			if( !li.parallel )
+			{
+				
+				//Vector2i pos( li.position.x + .5, li.position.y + .5 ); //rounding
+				inters.push_back( Inter( myPrev, li.position ) );
+				//return true;
+			}
+		}
+	}
+
+	return inters;
+}
+
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s ), gate( NULL ), prev( NULL ), next( NULL )
 {
@@ -2449,3 +2509,4 @@ bool TerrainPoint::Intersects( IntRect rect )
 {
 
 }
+
