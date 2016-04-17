@@ -1591,6 +1591,21 @@ void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 	--numPoints;
 }
 
+TerrainPoint * TerrainPolygon::HasPointPos( Vector2i &pos )
+{
+	TerrainPoint *curr = pointStart;
+	while( curr != NULL )
+	{
+		if( curr->pos == pos )
+		{
+			return curr;
+		}
+		curr = curr->next;
+	}
+
+	return NULL;
+}
+
 void TerrainPolygon::Reset()
 {
 	ClearPoints();

@@ -11709,6 +11709,35 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	//cout << "calling sub!" << endl;
 	Sub( polygonInProgress.get(), intersectingPolys, results );
 
+	//before deleting the points, need to remove and delete the points of the new polygons
+	//that have the same values
+
+	for( list<PolyPtr>::iterator rit = results.begin(); 
+		rit != results.end(); ++rit )
+	{
+		TerrainPolygon *resPoly = (*rit).get();
+
+		for( map<TerrainPolygon*,list<TerrainPoint*>>::iterator it = addedPointsMap.begin(); it != addedPointsMap.end(); ++it )
+		{
+			list<TerrainPoint*> &points = (*it).second;
+			for( list<TerrainPoint*>::iterator tit = points.begin(); tit != points.end(); ++tit )
+			{
+				Vector2i pos = (*tit)->pos;
+
+				TerrainPoint *has = resPoly->HasPointPos( pos );
+				if( has != NULL )
+				{
+					//delete the unneeded temp point
+					resPoly->RemovePoint( has );
+					delete has;
+				}
+			}
+
+		}
+	}
+
+
+	//remove and delete points from the intersecting polys
 	for( map<TerrainPolygon*,list<TerrainPoint*>>::iterator it = addedPointsMap.begin(); it != addedPointsMap.end(); ++it )
 	{
 		RemoveTemporaryPoints( (*it).first, (*it).second );

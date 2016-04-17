@@ -161,6 +161,7 @@ struct TerrainPolygon : ISelectable
 	void RemovePoint( TerrainPoint *tp );
 	void DestroyEnemies();
 	void ClearPoints();
+	TerrainPoint * HasPointPos( sf::Vector2i &pos );
 	std::string material;
 	void RemoveSelectedPoints();
 	std::list<Inter> GetIntersections( TerrainPolygon *poly );
