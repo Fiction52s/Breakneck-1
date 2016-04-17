@@ -11643,6 +11643,7 @@ void InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
 				cout << "midPoint: " << midPoint.x << ", "
 					 << midPoint.y << endl;
 				poly->InsertPoint( newPoint, tp );
+				tp = newPoint;
 
 				prev = (*vit);
 			}
@@ -11713,7 +11714,7 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 
 		//Add( (*it), polygonInProgress );
 	}
-	//return;
+//	return;
 	
 
 	list<PolyPtr> results;
