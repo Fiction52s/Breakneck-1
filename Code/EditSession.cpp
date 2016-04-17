@@ -11639,10 +11639,10 @@ list<TerrainPoint*> InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &in
 				TerrainPoint *newPoint = new TerrainPoint( Vector2i( midPoint.x, midPoint.y ), false );
 				addedPoints.push_back( newPoint );
 
-				cout << "inserting new point between: 1: " << prev.x << ", " << prev.y <<
-					" and: " << (*vit).x << ", " << (*vit).y << endl;
-				cout << "midPoint: " << midPoint.x << ", "
-					 << midPoint.y << endl;
+				//cout << "inserting new point between: 1: " << prev.x << ", " << prev.y <<
+				//	" and: " << (*vit).x << ", " << (*vit).y << endl;
+				//cout << "midPoint: " << midPoint.x << ", "
+				//	 << midPoint.y << endl;
 				poly->InsertPoint( newPoint, tp );
 				tp = newPoint;
 
@@ -11688,7 +11688,7 @@ void RemoveTemporaryPoints( TerrainPolygon *poly, list<TerrainPoint*> &addedPoin
 
 void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 {
-	cout << "subtracting!" << endl;
+	//cout << "subtracting!" << endl;
 	Brush orig;
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
@@ -11706,7 +11706,7 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	
 
 	list<PolyPtr> results;
-	cout << "calling sub!" << endl;
+	//cout << "calling sub!" << endl;
 	Sub( polygonInProgress.get(), intersectingPolys, results );
 
 	for( map<TerrainPolygon*,list<TerrainPoint*>>::iterator it = addedPointsMap.begin(); it != addedPointsMap.end(); ++it )
@@ -11728,7 +11728,7 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		resultBrush.AddObject( sp );
 	}
 
-	/*for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
 		for( map<TerrainPoint*,std::list<ActorPtr>>::iterator 
 			mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
@@ -11739,9 +11739,9 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 				AttachActorsToPolygon( (*mit).second, (*rit).get()  );
 			}
 		}
-	}*/
+	}
 
-	cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
+	//cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, &resultBrush );
 	action->Perform();
 	doneActionStack.push_back( action );
