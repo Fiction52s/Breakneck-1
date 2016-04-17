@@ -11591,8 +11591,9 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	polygonInProgress = newPoly;
 }
 
-void InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
+list<TerrainPoint*> InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
 {
+	list<TerrainPoint*> addedPoints;
 	TerrainPoint *tp;
 	//TerrainPoint *prev;
 	TerrainPoint *next;
@@ -11636,7 +11637,7 @@ void InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
 				
 
 				TerrainPoint *newPoint = new TerrainPoint( Vector2i( midPoint.x, midPoint.y ), false );
-				
+				addedPoints.push_back( newPoint );
 
 				cout << "inserting new point between: 1: " << prev.x << ", " << prev.y <<
 					" and: " << (*vit).x << ", " << (*vit).y << endl;
@@ -11650,7 +11651,7 @@ void InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
 		}
 
 	}
-
+	return addedPoints;
 	//for( list<Inter>::iterator it = inters.begin(); it != inters.end(); ++it )
 	//{
 	//	tp = (*it).first;
@@ -11672,30 +11673,16 @@ void InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
 	//}
 }
 
-void RemoveTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
+void RemoveTemporaryPoints( TerrainPolygon *poly, list<TerrainPoint*> &addedPoints )
 {
 	TerrainPoint *tp;
 	TerrainPoint *prev;
 	TerrainPoint *next;
 	TerrainPoint *nextnext;
 
-	for( list<Inter>::iterator it = inters.begin(); it != inters.end(); ++it )
+	for( list<TerrainPoint*>::iterator it = addedPoints.begin(); it != addedPoints.end(); ++it )
 	{
-		tp = (*it).first;
-		next = tp->next;
-
-		if( next == NULL )
-		{
-			assert( false );
-			//next = poly->pointStart;
-		}
-		nextnext = next->next;
-		if( nextnext == NULL )
-			nextnext = poly->pointStart;
-
-		tp->next = nextnext;
-		nextnext->prev = tp;
-		delete next;
+		poly->RemovePoint( (*it) );
 	}
 }
 
@@ -11703,11 +11690,12 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 {
 	cout << "subtracting!" << endl;
 	Brush orig;
+	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
 		list<Inter> inters = (*it)->GetIntersections( polygonInProgress.get() );
 		cout << "inters size: " << inters.size() << endl;
-		InsertTemporaryPoints( (*it).get(), inters );
+		addedPointsMap[(*it).get()] = InsertTemporaryPoints( (*it).get(), inters );
 
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
@@ -11720,6 +11708,17 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	list<PolyPtr> results;
 	cout << "calling sub!" << endl;
 	Sub( polygonInProgress.get(), intersectingPolys, results );
+
+	for( map<TerrainPolygon*,list<TerrainPoint*>>::iterator it = addedPointsMap.begin(); it != addedPointsMap.end(); ++it )
+	{
+		RemoveTemporaryPoints( (*it).first, (*it).second );
+	}
+
+	/*for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	{
+
+	}*/
+
 	//cout << "results size: " << results.size() << endl;
 	Brush resultBrush;
 	for( list<PolyPtr>::iterator it = results.begin(); 
