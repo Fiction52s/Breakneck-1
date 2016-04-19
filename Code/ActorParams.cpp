@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include "Physics.h"
+#include <sstream>
 
 using namespace std;
 using namespace sf;
@@ -12,6 +13,40 @@ using namespace sf;
 
 
 EditSession * ActorParams::session = NULL;
+
+
+////helper function to assign monitor types
+//ActorParams::MonitorType GetMonitorType( Panel *p )
+//{
+//	GridSelector *gs = p->gridSelectors["monitortype"];
+//	string name = gs->names[gs->selectedX][gs->selectedY];
+//
+//	ActorParams::MonitorType monitorType;
+//	if( name == "none" )
+//	{
+//		monitorType = ActorParams::NONE;
+//	}
+//	else if( name == "red" )
+//	{
+//		monitorType = ActorParams::RED;
+//	}
+//	else if( name == "green" )
+//	{
+//		monitorType = ActorParams::GREEN;
+//	}
+//	else if( name == "blue" )
+//	{
+//		monitorType = ActorParams::BLUE;
+//	}
+//	else
+//	{
+//		cout << "panel: " << p->name << ", name: " << name << endl;
+//		assert( false );
+//	}
+//	
+//
+//	return monitorType;
+//}
 
 ActorParams::ActorParams( ActorParams::PosType p_posType )
 	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
@@ -1377,17 +1412,35 @@ void PoisonFrogParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;*/
 }
 
-CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
+	sf::Vector2i p_gravFactor )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
+	gravFactor = p_gravFactor;
 
 	type = edit->types["curveturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
+}
+
+CurveTurretParams::CurveTurretParams( EditSession *edit,
+		TerrainPolygon *p_edgePolygon,
+		int p_edgeIndex, double p_edgeQuantity )
+		:ActorParams( PosType::GROUND_ONLY )
+{
+	type = edit->types["curveturret"];
+	
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+
+	gravFactor = Vector2i( 0, 0 );
+	framesWait = 60;
+	bulletSpeed = 1;
 }
 
 bool CurveTurretParams::CanApply()
@@ -1404,4 +1457,62 @@ void CurveTurretParams::WriteParamFile( ofstream &of )
 	of << (int)monitorType << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
+}
+
+void CurveTurretParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+	string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+	string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
+	string xGravString = p->textBoxes["xgravfactor"]->text.getString().toAnsiString();
+	string yGravString = p->textBoxes["ygravfactor"]->text.getString().toAnsiString();
+
+	ss << bulletSpeedString;
+
+	double t_bulletSpeed;
+	ss >> t_bulletSpeed;
+
+	if( ss.fail() )
+	{
+		assert( false );
+	}
+
+	ss.clear();
+
+	ss << framesWaitString;
+
+	int t_framesWait;
+	ss >> t_framesWait;
+
+	if( ss.fail() )
+	{
+		assert( false );
+	}
+
+	ss.clear();
+			
+	int t_xGravFactor;
+	ss << xGravString;
+
+	ss >> t_xGravFactor;
+
+	if( ss.fail() )
+	{
+		assert( false );
+	}
+
+	ss.clear();
+
+	int t_yGravFactor;
+	ss << yGravString;
+
+	ss >> t_yGravFactor;
+
+	//monitorType = GetMonitorType( p );
+
+	bulletSpeed = t_bulletSpeed;
+	framesWait = t_framesWait;
+	gravFactor = Vector2i( t_xGravFactor, t_yGravFactor );
 }

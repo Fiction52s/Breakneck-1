@@ -598,12 +598,18 @@ struct CurveTurretParams : public ActorParams
 		int edgeIndex, 
 		double edgeQuantity, 
 		double bulletSpeed, 
-		int framesWait );
+		int framesWait,
+		sf::Vector2i gravFactor );
+	CurveTurretParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	void SetParams();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;
+	sf::Vector2i gravFactor;
 };
 
 struct FootTrapParams : public ActorParams
@@ -717,7 +723,7 @@ struct EditSession : GUIHandler
 		sf::Vector2<double> worldPos );
 
 	GroundInfo worldPosGround;
-
+	ActorPtr tempActor;
 	sf::Vector2i airPos;
 
 	const static double PRIMARY_LIMIT;

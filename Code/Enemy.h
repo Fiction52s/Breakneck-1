@@ -750,7 +750,8 @@ struct CurveTurret : Enemy, LauncherEnemy
 {
 	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
 		double bulletSpeed,
-		int framesWait );
+		int framesWait,
+		sf::Vector2i &gravFactor );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -794,6 +795,8 @@ struct CurveTurret : Enemy, LauncherEnemy
 	HitboxInfo *hitboxInfo;
 	
 	double angle;
+
+	sf::Vector2<double> gravity;
 
 	Contact minContact;
 	bool col;

@@ -1317,6 +1317,12 @@ bool EditSession::OpenFile( string fileName )
 					int framesWait;
 					is >> framesWait;
 
+					int xGravFactor;
+					is >> xGravFactor;
+
+					int yGravFactor;
+					is >> yGravFactor;
+
 					int testIndex = 0;
 					PolyPtr terrain( NULL );
 					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -1338,7 +1344,8 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
-					a.reset( new CurveTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
+					a.reset( new CurveTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait,
+						Vector2i( xGravFactor, yGravFactor ) ) );
 					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
@@ -1508,8 +1515,6 @@ bool EditSession::OpenFile( string fileName )
 	grassTex.loadFromFile( "newgrass2.png" );
 	
 }
-
-
 
 void EditSession::WriteFile(string fileName)
 {
@@ -1706,9 +1711,6 @@ void EditSession::WriteFile(string fileName)
 
 
 }
-
-
-
 
 void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 {
@@ -5235,6 +5237,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( menuSelection == "upperleft" )
 							{
+								showPoints = false;
 								mode = CREATE_ENEMY;
 								trackingEnemy = NULL;
 								showPanel = enemySelectPanel;
@@ -5242,7 +5245,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							else if( menuSelection == "upperright" )
 							{
 								
-
+								showPoints = false;
 								mode = CREATE_TERRAIN;
 								showPanel = NULL;
 							}
@@ -5260,6 +5263,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( menuSelection == "lowerright" )
 							{
+								//showPoints = true;
 								showPanel = mapOptionsPanel;
 								mode = menuDownStored;
 							}
@@ -6091,7 +6095,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 							if( validNearPolys )
 							{
-								if( polygonInProgress->numPoints > 0 && length( V2d( testPoint.x, testPoint.y ) - Vector2<double>(polygonInProgress->pointEnd->pos.x, 
+								if( polygonInProgress->numPoints > 0 && length( V2d( testPoint.x, testPoint.y ) 
+									- Vector2<double>(polygonInProgress->pointEnd->pos.x, 
 									polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 								{
 								//	cout << "check1" << endl;
@@ -8144,6 +8149,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 	return true;
 }
 
+//THIS IS ALSO DEFINED IN ACTORPARAMS NEED TO GET RID OF THE DUPLICATE
 //helper function to assign monitor types
 ActorParams::MonitorType GetMonitorType( Panel *p )
 {
@@ -8656,9 +8662,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{	
 		if( b->name == "ok" )
 		{
-			stringstream ss;
+			/*stringstream ss;
 			string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
 			string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
+			string xGravString = p->textBoxes["xgravfactor"]->text.getString().toAnsiString();
+			string yGravString = p->textBoxes["ygravfactor"]->text.getString().toAnsiString();
+
 			ss << bulletSpeedString;
 			
 
@@ -8682,19 +8691,44 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				assert( false );
 			}
 
+			ss.clear();
+			
+			int xGravFactor;
+			ss << xGravString;
+
+			ss >> xGravFactor;
+
+			if( ss.fail() )
+			{
+				assert( false );
+			}
+
+			ss.clear();
+
+			int yGravFactor;
+			ss << yGravString;
+
+			ss >> yGravFactor;*/
+
 			if( mode == EDIT )
 			//if( mode == EDIT && selectedActor != NULL )
 			{
+
 				ISelectable *select = selectedBrush->objects.front().get();				
 				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
+				curveTurret->SetParams();
 				curveTurret->monitorType = GetMonitorType( p );
-				curveTurret->bulletSpeed = bulletSpeed;
-				curveTurret->framesWait = framesWait;
+				//curveTurret->bulletSpeed = bulletSpeed;
+				//curveTurret->framesWait = framesWait;
+				//curveTurret->gravFactor = Vector2( xGravFactor, yGravFactor );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
 				ActorPtr curveTurret( new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity, bulletSpeed, framesWait ) );
+				enemyEdgeQuantity ) );//, bulletSpeed, framesWait, Vector2i( xGravFactor, yGravFactor ) ) );
+
+				CurveTurretParams *ct = (CurveTurretParams*)curveTurret.get();
+				ct->SetParams();
 
 				enemyEdgePolygon->enemies[curveTurret->groundInfo->edgeStart].push_back( curveTurret );
 				enemyEdgePolygon->UpdateBounds();
@@ -8953,6 +8987,17 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 {
+	Panel *p = tb->owner;
+	if( p->name == "curveturret_options" )
+	{
+		if( tb->name == "xgravfactor" || tb->name == "ygravfactor" )
+		{
+
+		}
+		
+		
+	}
+
 }
 
 void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_name )
@@ -10674,6 +10719,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddTextBox( "xgravfactor", Vector2i( 20, 250 ), 200, 20, "0" );
+		p->AddTextBox( "ygravfactor", Vector2i( 20, 300 ), 200, 20, "0" );
 
 		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
 		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
@@ -10756,6 +10803,27 @@ void EditSession::SetPanelDefault( ActorType *type )
 	}
 }
 
+void SetMonitorGrid( ActorParams::MonitorType mType, GridSelector *gs )
+{
+	//GridSelector &gs = *p->gridSelectors["monitortype"];
+	gs->selectedY = 0;
+	switch( mType )
+	{
+	case ActorParams::NONE:
+		gs->selectedX = 0;
+		break;
+	case ActorParams::RED:
+		gs->selectedX = 1;
+		break;
+	case ActorParams::GREEN:
+		gs->selectedX = 2;
+		break;
+	case ActorParams::BLUE:
+		gs->selectedX = 3;
+		break;
+	}
+}
+
 void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
@@ -10783,23 +10851,7 @@ void EditSession::SetEnemyEditPanel()
 		patrolPath = patroller->GetGlobalPath();
 		showPanel = p;
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( patroller->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		}
+		SetMonitorGrid( patroller->monitorType, p->gridSelectors["monitortype"] );
 	}
 	else if( name == "bat" )
 	{
@@ -10812,23 +10864,7 @@ void EditSession::SetEnemyEditPanel()
 		patrolPath = bat->GetGlobalPath();
 		showPanel = p;
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( bat->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		}
+		SetMonitorGrid( bat->monitorType, p->gridSelectors["monitortype"] );
 	}
 	else if( name == "crawler" )
 	{
@@ -10842,24 +10878,7 @@ void EditSession::SetEnemyEditPanel()
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( crawler->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		
-		}
+		SetMonitorGrid( crawler->monitorType, p->gridSelectors["monitortype"] );
 		
 		showPanel = p;
 		
@@ -10876,24 +10895,7 @@ void EditSession::SetEnemyEditPanel()
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( stagBeetle->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		
-		}
+		SetMonitorGrid( stagBeetle->monitorType, p->gridSelectors["monitortype"] );
 		
 		showPanel = p;
 		
@@ -10910,24 +10912,7 @@ void EditSession::SetEnemyEditPanel()
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( poisonFrog->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		
-		}
+		SetMonitorGrid( poisonFrog->monitorType, p->gridSelectors["monitortype"] );
 		
 		showPanel = p;
 		
@@ -10942,23 +10927,25 @@ void EditSession::SetEnemyEditPanel()
 		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( basicTurret->bulletSpeed ) );
 		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( basicTurret->framesWait ) );
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( basicTurret->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		}
+		SetMonitorGrid( basicTurret->monitorType, p->gridSelectors["monitortype"] );
+
+		showPanel = p;
+	}
+	else if( name == "curveturret" )
+	{
+		CurveTurretParams *curveTurret = (CurveTurretParams*)ap;
+
+		//p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
+		//p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->textBoxes["group"]->text.setString( curveTurret->group->name );
+		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( curveTurret->bulletSpeed ) );
+		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( curveTurret->framesWait ) );
+		p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( curveTurret->gravFactor.x) );
+		p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( curveTurret->gravFactor.y) );
+
+
+		SetMonitorGrid( curveTurret->monitorType, p->gridSelectors["monitortype"] );
+		
 
 		showPanel = p;
 	}
@@ -10968,25 +10955,7 @@ void EditSession::SetEnemyEditPanel()
 
 		p->textBoxes["group"]->text.setString( footTrap->group->name );
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( footTrap->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		default:
-			assert( 0 && "blah" );
-		}
+		SetMonitorGrid( footTrap->monitorType, p->gridSelectors["monitortype"] );
 
 		showPanel = p;
 	}
@@ -10996,23 +10965,7 @@ void EditSession::SetEnemyEditPanel()
 
 		p->textBoxes["group"]->text.setString( fly->group->name );
 
-		GridSelector &gs = *p->gridSelectors["monitortype"];
-		gs.selectedY = 0;
-		switch( fly->monitorType )
-		{
-		case ActorParams::NONE:
-			gs.selectedX = 0;
-			break;
-		case ActorParams::RED:
-			gs.selectedX = 1;
-			break;
-		case ActorParams::GREEN:
-			gs.selectedX = 2;
-			break;
-		case ActorParams::BLUE:
-			gs.selectedX = 3;
-			break;
-		}
+		SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
 	}
 	else if( name == "key" )
 	{
@@ -11493,6 +11446,7 @@ void EditSession::ExecuteTerrainCompletion()
 		{
 			if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
 			{
+				//cout << "LINES TOO CLOSE" << endl;
 				applyOkay = false;
 				break;
 			}

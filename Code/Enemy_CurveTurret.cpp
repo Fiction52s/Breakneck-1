@@ -18,10 +18,13 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
+CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,int wait,
+	Vector2i &gravFactor )
 		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
+	gravity = V2d( gravFactor.x, gravFactor.y );
+
 	initHealth = 60;
 	health = initHealth;
 
@@ -100,7 +103,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0 );
 	testLauncher->SetBulletSpeed( 10 );
-	testLauncher->SetGravity( V2d( 0, .4 ) );
+	testLauncher->SetGravity( V2d( gravFactor.x / 16.0, gravFactor.y / 16.0 ) );
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 }
