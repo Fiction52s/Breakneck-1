@@ -4,6 +4,7 @@
 #include <string>
 #include "Physics.h"
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace sf;
@@ -48,6 +49,8 @@ EditSession * ActorParams::session = NULL;
 //	return monitorType;
 //}
 
+
+
 ActorParams::ActorParams( ActorParams::PosType p_posType )
 	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
 		monitorType( MonitorType::NONE )
@@ -56,6 +59,18 @@ ActorParams::ActorParams( ActorParams::PosType p_posType )
 
 	for( int i = 0; i < 4; ++i )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
+}
+
+void ActorParams::SetParams()
+{
+}
+
+void ActorParams::SetPanelInfo()
+{
+}
+
+void ActorParams::SetDefaultPanelInfo()
+{
 }
 
 void ActorParams::SetSelected( bool select )
@@ -1412,6 +1427,15 @@ void PoisonFrogParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;*/
 }
 
+void PoisonFrogParams::SetDefaultPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	p->textBoxes["group"]->text.setString( "not test" );
+	p->textBoxes["bulletspeed"]->text.setString( "10" );
+	p->textBoxes["waitframes"]->text.setString( "10" );
+}
+
 CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor )
 	:ActorParams( PosType::GROUND_ONLY )
@@ -1454,9 +1478,12 @@ bool CurveTurretParams::CanApply()
 
 void CurveTurretParams::WriteParamFile( ofstream &of )
 {
+	cout << "write curve turret params. this: " << (int)this << endl;
 	of << (int)monitorType << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
+	of << gravFactor.x << endl;
+	of << gravFactor.y << endl;
 }
 
 void CurveTurretParams::SetParams()
@@ -1515,4 +1542,24 @@ void CurveTurretParams::SetParams()
 	bulletSpeed = t_bulletSpeed;
 	framesWait = t_framesWait;
 	gravFactor = Vector2i( t_xGravFactor, t_yGravFactor );
+}
+
+void CurveTurretParams::SetDefaultPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	p->textBoxes["group"]->text.setString( "not test" );
+	p->textBoxes["bulletspeed"]->text.setString( "10" );
+	p->textBoxes["waitframes"]->text.setString( "10" );
+}
+
+void CurveTurretParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["group"]->text.setString( group->name );
+	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
+	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );
+	p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.y ) );
+	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }

@@ -777,7 +777,7 @@ bool EditSession::OpenFile( string fileName )
 
 
 				ActorType *at;
-				//cout << "typename: " << typeName << endl;
+				cout << "typename: " << typeName << endl;
 				if( types.count( typeName ) == 0 )
 				{
 					cout << "TYPENAME: " << typeName << endl;
@@ -2607,6 +2607,7 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
+	tempActor = NULL;
 	int width = 1920;//1920 - w->getSize().x;
 	int height = 1080; //1080 - w->getSize().y;
 	uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
@@ -4963,13 +4964,47 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( trackingEnemy->name == "curveturret" )
 									{
+										cout << "here" << endl;
+										////ActorPtr curveTurret( new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+										////enemyEdgeQuantity ) );//, bulletSpeed, framesWait, Vector2i( xGravFactor, yGravFactor ) ) );
+
+										//CurveTurretParams *ct = (CurveTurretParams*)tempActor.get();
+										//ct->SetParams();
+
+										////enemyEdgePolygon->enemies[curveTurret->groundInfo->edgeStart].push_back( curveTurret );
+										////enemyEdgePolygon->UpdateBounds();
+
+										////groups["--"]->actors.push_back( basicTurret );
+										////curveTurret->group = groups["--"];
+										//curveTurret->monitorType = GetMonitorType( p );
+
+										////CreateActor( curveTurret );
+										////trackingEnemy = NULL;
+
+
 										if( enemyEdgePolygon != NULL )
 										{
+											//cout << "group sneakyyyy: " << groups["--"]->actors.size() << endl;
+											//cout << "CREATE SINGLE CURVE WUT" << endl;
+											//doesn't account for cancelling
+											
+											tempActor = new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity );
+											
+											//enemyEdgePolygon->enemies[tempActor->groundInfo->edgeStart].push_back(  );
+											//enemyEdgePolygon->UpdateBounds();
+
 											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
-											showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
-											showPanel->textBoxes["waitframes"]->text.setString( "10" );
+											tempActor->SetDefaultPanelInfo();
+											//CurveTurretParams *ct = (CurveTurretParams*)tempActor.get();
+											//ct->SetPanelInfo();
+
+											
+
+											//showPanel->textBoxes["name"]->text.setString( "test" );
+											//showPanel->textBoxes["group"]->text.setString( "not test" );
+											//showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
+											//showPanel->textBoxes["waitframes"]->text.setString( "10" );
 										}
 									}
 									else if( trackingEnemy->name == "foottrap" )
@@ -5052,6 +5087,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							if( showPanel != NULL )
 							{
 								showPanel->SendKey( ev.key.code, ev.key.shift );
+								break;
 							}
 
 							if( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete )
@@ -7209,8 +7245,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				if( trackingEnemy != NULL )
 				{
-					preScreenTex->draw( enemySprite );
-					preScreenTex->draw( enemyQuad );
+					if( tempActor != NULL )
+						tempActor->Draw( preScreenTex );
+					else
+					{
+						preScreenTex->draw( enemySprite );
+					}
+					//tempActor->Draw( preScreenTex );
+					//
+					//preScreenTex->draw( enemyQuad );
 				}
 				break;
 			}
@@ -8185,6 +8228,7 @@ ActorParams::MonitorType GetMonitorType( Panel *p )
 
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
+	cout << "start of callback!: " << groups["--"]->actors.size() << endl;
 	Panel *p = b->owner;
 	if( p->name == "patroller_options" )
 	{
@@ -8724,22 +8768,18 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				ActorPtr curveTurret( new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity ) );//, bulletSpeed, framesWait, Vector2i( xGravFactor, yGravFactor ) ) );
+				ActorPtr curveTurret( tempActor );
+				curveTurret->SetParams();
 
-				CurveTurretParams *ct = (CurveTurretParams*)curveTurret.get();
-				ct->SetParams();
-
-				enemyEdgePolygon->enemies[curveTurret->groundInfo->edgeStart].push_back( curveTurret );
+				enemyEdgePolygon->enemies[tempActor->groundInfo->edgeStart].push_back( curveTurret );
 				enemyEdgePolygon->UpdateBounds();
 
-				//groups["--"]->actors.push_back( basicTurret );
 				curveTurret->group = groups["--"];
 				curveTurret->monitorType = GetMonitorType( p );
-
-				CreateActor( curveTurret );
-				//trackingEnemy = NULL;
 				
+				CreateActor( curveTurret );
+				
+				tempActor = NULL;
 			}
 			showPanel = NULL;
 			//showPanel = enemySelectPanel;
@@ -9028,6 +9068,8 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			
 
 			cout << "set your cursor as the image" << endl;
+
+			
 		}
 		else
 		{
@@ -10803,7 +10845,7 @@ void EditSession::SetPanelDefault( ActorType *type )
 	}
 }
 
-void SetMonitorGrid( ActorParams::MonitorType mType, GridSelector *gs )
+void EditSession::SetMonitorGrid( ActorParams::MonitorType mType, GridSelector *gs )
 {
 	//GridSelector &gs = *p->gridSelectors["monitortype"];
 	gs->selectedY = 0;
@@ -10934,17 +10976,10 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "curveturret" )
 	{
 		CurveTurretParams *curveTurret = (CurveTurretParams*)ap;
-
+		curveTurret->SetPanelInfo();
 		//p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		//p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->textBoxes["group"]->text.setString( curveTurret->group->name );
-		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( curveTurret->bulletSpeed ) );
-		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( curveTurret->framesWait ) );
-		p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( curveTurret->gravFactor.x) );
-		p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( curveTurret->gravFactor.y) );
-
-
-		SetMonitorGrid( curveTurret->monitorType, p->gridSelectors["monitortype"] );
+		
 		
 
 		showPanel = p;
@@ -11961,6 +11996,7 @@ void ActorGroup::WriteFile( std::ofstream &of )
 	if( name == "player" )
 		return;
 
+	cout << "group size: " << actors.size() << endl;
 	of << name << " " << actors.size() << endl;
 	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{

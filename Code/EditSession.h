@@ -380,6 +380,11 @@ struct ActorParams : ISelectable
 	void AnchorToGround( GroundInfo &gi );
 	void UnAnchor(boost::shared_ptr<ActorParams> &me );
 	void UpdateGroundedSprite();
+
+	virtual void SetParams();
+	virtual void SetPanelInfo();
+	virtual void SetDefaultPanelInfo();
+
 	virtual void SetBoundingQuad();
 
 	//ISelectable( ISelectableType type );
@@ -571,7 +576,11 @@ struct PoisonFrogParams : public ActorParams
 		double edgeQuantity );
 	PoisonFrogParams( EditSession *edit );
 	void WriteParamFile( std::ofstream &of );
+	//void SetParams();
+	//void SetPanelInfo();
+	void SetDefaultPanelInfo();
 	bool CanApply();
+	
 };
 
 struct BasicTurretParams : public ActorParams
@@ -604,6 +613,8 @@ struct CurveTurretParams : public ActorParams
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	void SetParams();
+	void SetPanelInfo();
+	void SetDefaultPanelInfo();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	//void Draw( sf::RenderTarget *target );
@@ -687,6 +698,9 @@ struct EditSession : GUIHandler
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
+	static void SetMonitorGrid( 
+		ActorParams::MonitorType mType, 
+		GridSelector *gs );
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);
@@ -723,7 +737,7 @@ struct EditSession : GUIHandler
 		sf::Vector2<double> worldPos );
 
 	GroundInfo worldPosGround;
-	ActorPtr tempActor;
+	ActorParams* tempActor;
 	sf::Vector2i airPos;
 
 	const static double PRIMARY_LIMIT;
