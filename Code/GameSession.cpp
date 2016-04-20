@@ -1248,6 +1248,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int mType;
 				is >> mType;
 
+				int gravFactor;
+				is >> gravFactor;
+
+				int xSpeed;
+				is >> xSpeed;
+
+				int jumpFramesWait;
+				is >> jumpFramesWait;
+
 				/*bool clockwise;
 				string cwStr;
 				is >> cwStr;

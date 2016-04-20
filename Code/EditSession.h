@@ -573,14 +573,31 @@ struct PoisonFrogParams : public ActorParams
 	PoisonFrogParams( EditSession *edit,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
+		double edgeQuantity,
+		int gravFactor,
+		sf::Vector2i &jumpStrength,
+		int jumpWaitFrames );
+	PoisonFrogParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
 		double edgeQuantity );
 	PoisonFrogParams( EditSession *edit );
 	void WriteParamFile( std::ofstream &of );
+	void UpdatePath();
+	void Draw( sf::RenderTarget *target );
 	//void SetParams();
 	//void SetPanelInfo();
-	void SetDefaultPanelInfo();
-	bool CanApply();
 	
+	bool CanApply();
+	void SetParams(); 
+	void SetPanelInfo();
+	void SetDefaultPanelInfo();
+	int gravFactor;
+	sf::Vector2i jumpStrength;
+	//int jumpStrengthX;
+	//int jumpStrengthY;
+	int jumpWaitFrames;
+	sf::VertexArray pathQuads;
 };
 
 struct BasicTurretParams : public ActorParams
@@ -617,10 +634,13 @@ struct CurveTurretParams : public ActorParams
 	void SetDefaultPanelInfo();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	void UpdateBulletCurve();
+	void Draw( sf::RenderTarget *target );
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;
 	sf::Vector2i gravFactor;
+	sf::VertexArray bulletPathQuads;
 };
 
 struct FootTrapParams : public ActorParams

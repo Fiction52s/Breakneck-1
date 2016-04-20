@@ -322,8 +322,8 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 		if( (*it).second->focused )
 		{
 			//(*it).second->owner->SendEvent( 
-			(*it).second->owner->SendEvent( (*it).second, "modified" );
 			(*it).second->SendKey( k, shift );
+			(*it).second->owner->SendEvent( (*it).second, "modified" );
 		}
 	}
 }

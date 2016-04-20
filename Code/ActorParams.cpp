@@ -210,6 +210,9 @@ void ActorParams::SetBoundingQuad()
 		boundingQuad[1].position = Vector2f( leftAir.x, leftAir.y );
 		boundingQuad[2].position = Vector2f( rightAir.x, rightAir.y );
 		boundingQuad[3].position = Vector2f( rightGround.x, rightGround.y );
+
+		V2d pos = (leftGround + leftAir + rightAir + rightGround ) / 4.0;
+		position = Vector2i( pos.x, pos.y );
 	}
 	else
 	{
@@ -1387,16 +1390,36 @@ void StagBeetleParams::WriteParamFile( ofstream &of )
 
 PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
 {
-	//clockwise = p_clockwise;
-	//speed = p_speed;
+	gravFactor = 10;
+	jumpWaitFrames = 60;
+	jumpStrength = Vector2i( 10, 20 );
 
 	type = edit->types["poisonfrog"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
+
+	UpdatePath();
+}
+
+PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+	int p_edgeIndex, double p_edgeQuantity, int p_gravFactor, sf::Vector2i &p_jumpStrength,
+	int p_jumpWaitFrames )
+	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
+{
+	gravFactor = p_gravFactor;
+	jumpStrength = p_jumpStrength;
+	jumpWaitFrames = p_jumpWaitFrames;
+	type = edit->types["poisonfrog"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+
+	UpdatePath();
 }
 
 PoisonFrogParams::PoisonFrogParams( EditSession *edit )
@@ -1418,6 +1441,9 @@ bool PoisonFrogParams::CanApply()
 void PoisonFrogParams::WriteParamFile( ofstream &of )
 {
 	of << (int)monitorType << endl;
+	of << gravFactor << endl;
+	of << jumpStrength.x << " " << jumpStrength.y << endl;
+	of << jumpWaitFrames << endl;
 	/*if( clockwise )
 		of << "+clockwise" << endl;
 	else
@@ -1427,18 +1453,164 @@ void PoisonFrogParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;*/
 }
 
+void PoisonFrogParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	//bool clockwise = p->checkBoxes["clockwise"]->checked;
+	//double speed;
+
+	stringstream ss;
+	string xStrengthStr = p->textBoxes["xstrength"]->text.getString().toAnsiString();
+	string yStrengthStr = p->textBoxes["ystrength"]->text.getString().toAnsiString();
+	string jumpWaitFramesStr = p->textBoxes["jumpwaitframes"]->text.getString().toAnsiString();
+	string gravityFactorStr = p->textBoxes["gravfactor"]->text.getString().toAnsiString();
+	
+	ss << xStrengthStr;
+
+	int t_xStrength;
+	ss >> t_xStrength;
+
+	if( ss.fail() )
+	{
+		t_xStrength = 5;
+	}
+
+	ss.clear();
+
+	ss << yStrengthStr;
+
+	int t_yStrength;
+	ss >> t_yStrength;
+
+	if( ss.fail() )
+	{
+		t_yStrength = 5;
+	}
+
+	ss.clear();
+
+	ss << jumpWaitFramesStr;
+
+	int t_jumpWaitFrames;
+	ss >> t_jumpWaitFrames;
+
+	if( ss.fail() )
+	{
+		t_jumpWaitFrames = 5;
+	}
+
+	ss.clear();
+
+	ss << gravityFactorStr;
+
+	int t_gravFactor;
+	ss >> t_gravFactor;
+
+	if( ss.fail() )
+	{
+		t_gravFactor = 5;
+	}
+
+	gravFactor = t_gravFactor;
+	jumpStrength.x = t_xStrength;
+	jumpStrength.y = t_yStrength;
+	jumpWaitFrames = t_jumpWaitFrames;
+	
+	UpdatePath();
+}
+
+void PoisonFrogParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["group"]->text.setString( group->name );
+	p->textBoxes["name"]->text.setString( "test" );
+	p->textBoxes["group"]->text.setString( "not test" );
+	p->textBoxes["jumpwaitframes"]->text.setString( boost::lexical_cast<string>( jumpWaitFrames ) ); 
+	p->textBoxes["xstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.x ) ); 
+	p->textBoxes["ystrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.y ) ); 
+	p->textBoxes["gravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor ) ); 
+	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+}
+
 void PoisonFrogParams::SetDefaultPanelInfo()
 {
 	Panel *p = type->panel;
 	p->textBoxes["name"]->text.setString( "test" );
 	p->textBoxes["group"]->text.setString( "not test" );
-	p->textBoxes["bulletspeed"]->text.setString( "10" );
-	p->textBoxes["waitframes"]->text.setString( "10" );
+	p->textBoxes["gravfactor"]->text.setString( "5" );
+	p->textBoxes["xstrength"]->text.setString( "10" );
+	p->textBoxes["ystrength"]->text.setString( "10" );
+	p->textBoxes["jumpwaitframes"]->text.setString( "10" );
+}
+
+void PoisonFrogParams::UpdatePath()
+{
+	Color pathColor( 0, 255, 0 );
+	int totalQuads = 50;
+	int squareRad = 4;// * EditSession::zoomMultiple;
+	Vector2f pos( position.x, position.y );
+
+	Vector2f gravity( 0, gravFactor / 64.f );
+
+	V2d fireDir;
+	TerrainPoint *curr = groundInfo->edgeStart;
+	TerrainPoint *next;
+
+	if( curr->next == NULL )
+		next = groundInfo->ground->pointStart;
+	else
+	{
+		next = curr->next;
+	}
+
+	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
+	e = normalize( e );
+	e = V2d( e.y, -e.x );
+
+	
+
+	//negative x jumpstrength means you face left
+	Vector2f vel = Vector2f( jumpStrength.x, -jumpStrength.y );
+	
+	if( e.y > 0 )
+	{
+		gravity.y = -gravity.y;
+		vel.y = -vel.y;
+	}
+	
+	for( int i = 0; i < totalQuads; ++i )
+	{
+		//cout << "i: " << i << endl;
+		pathQuads[i*4+0].position = Vector2f( pos.x - squareRad,
+			pos.y - squareRad );
+		pathQuads[i*4+1].position = Vector2f( pos.x + squareRad,
+			pos.y - squareRad );
+		pathQuads[i*4+2].position = Vector2f( pos.x + squareRad,
+			pos.y + squareRad );
+		pathQuads[i*4+3].position = Vector2f( pos.x - squareRad,
+			pos.y + squareRad );
+
+		pathQuads[i*4+0].color = pathColor;
+		pathQuads[i*4+1].color = pathColor;
+		pathQuads[i*4+2].color = pathColor;
+		pathQuads[i*4+3].color = pathColor;
+
+		pos += vel;
+		vel += gravity;
+	}
+}
+
+void PoisonFrogParams::Draw( sf::RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	target->draw( pathQuads );
 }
 
 CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
@@ -1449,12 +1621,14 @@ CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
+
+	UpdateBulletCurve();
 }
 
 CurveTurretParams::CurveTurretParams( EditSession *edit,
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
-		:ActorParams( PosType::GROUND_ONLY )
+		:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
 	type = edit->types["curveturret"];
 	
@@ -1478,12 +1652,56 @@ bool CurveTurretParams::CanApply()
 
 void CurveTurretParams::WriteParamFile( ofstream &of )
 {
-	cout << "write curve turret params. this: " << (int)this << endl;
+	//cout << "write curve turret params. this: " << (int)this << endl;
 	of << (int)monitorType << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
 	of << gravFactor.x << endl;
 	of << gravFactor.y << endl;
+}
+
+void CurveTurretParams::UpdateBulletCurve()
+{
+	Color pathColor( 255, 0, 0 );
+	int totalQuads = 100;
+	int squareRad = 4;// * EditSession::zoomMultiple;
+	Vector2f pos( position.x, position.y );
+	V2d fireDir;
+	TerrainPoint *curr = groundInfo->edgeStart;
+	TerrainPoint *next;
+	if( curr->next == NULL )
+		next = groundInfo->ground->pointStart;
+	else
+	{
+		next = curr->next;
+	}
+
+	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
+	e = normalize( e );
+	e = V2d( e.y, -e.x );
+
+	Vector2f bulletVel = Vector2f( e.x, e.y ) * bulletSpeed;
+	
+	for( int i = 0; i < totalQuads; ++i )
+	{
+		//cout << "i: " << i << endl;
+		bulletPathQuads[i*4+0].position = Vector2f( pos.x - squareRad,
+			pos.y - squareRad );
+		bulletPathQuads[i*4+1].position = Vector2f( pos.x + squareRad,
+			pos.y - squareRad );
+		bulletPathQuads[i*4+2].position = Vector2f( pos.x + squareRad,
+			pos.y + squareRad );
+		bulletPathQuads[i*4+3].position = Vector2f( pos.x - squareRad,
+			pos.y + squareRad );
+
+		bulletPathQuads[i*4+0].color = pathColor;
+		bulletPathQuads[i*4+1].color = pathColor;
+		bulletPathQuads[i*4+2].color = pathColor;
+		bulletPathQuads[i*4+3].color = pathColor;
+
+		pos += bulletVel;
+		bulletVel += Vector2f( gravFactor.x, gravFactor.y ) / 64.f;
+	}
 }
 
 void CurveTurretParams::SetParams()
@@ -1503,7 +1721,8 @@ void CurveTurretParams::SetParams()
 
 	if( ss.fail() )
 	{
-		assert( false );
+		bulletSpeed = 10;
+		//assert( false );
 	}
 
 	ss.clear();
@@ -1515,7 +1734,8 @@ void CurveTurretParams::SetParams()
 
 	if( ss.fail() )
 	{
-		assert( false );
+		framesWait = 60;
+		//assert( false );
 	}
 
 	ss.clear();
@@ -1527,7 +1747,8 @@ void CurveTurretParams::SetParams()
 
 	if( ss.fail() )
 	{
-		assert( false );
+		t_xGravFactor = 0;
+		//assert( false );
 	}
 
 	ss.clear();
@@ -1537,11 +1758,20 @@ void CurveTurretParams::SetParams()
 
 	ss >> t_yGravFactor;
 
+	if( ss.fail() )
+	{
+		t_yGravFactor = 0;
+	}
+
 	//monitorType = GetMonitorType( p );
 
 	bulletSpeed = t_bulletSpeed;
 	framesWait = t_framesWait;
 	gravFactor = Vector2i( t_xGravFactor, t_yGravFactor );
+
+	UpdateBulletCurve();
+	//also set up visuals
+
 }
 
 void CurveTurretParams::SetDefaultPanelInfo()
@@ -1562,4 +1792,11 @@ void CurveTurretParams::SetPanelInfo()
 	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );
 	p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.y ) );
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+}
+
+void CurveTurretParams::Draw( RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	target->draw( bulletPathQuads );
 }

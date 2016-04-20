@@ -1131,21 +1131,17 @@ bool EditSession::OpenFile( string fileName )
 					int mType;
 					is >> mType;
 
-					/*bool clockwise;
-					string cwStr;
-					is >> cwStr;
+					int gravFactor;
+					is >> gravFactor;
 
-					if( cwStr == "+clockwise" )
-						clockwise = true;
-					else if( cwStr == "-clockwise" )
-						clockwise = false;
-					else
-					{
-						assert( false && "boolean problem" );
-					}
+					int xStrength;
+					is >> xStrength;
 
-					float speed;
-					is >> speed;*/
+					int yStrength;
+					is >> yStrength;
+
+					int jumpWaitFrames;
+					is >> jumpWaitFrames;
 
 					int testIndex = 0;
 					PolyPtr terrain( NULL );
@@ -1168,7 +1164,8 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
-					a.reset( new PoisonFrogParams( this, terrain.get(), edgeIndex, edgeQuantity) );//, clockwise, speed ) ); 
+					a.reset( new PoisonFrogParams( this, terrain.get(), edgeIndex, edgeQuantity, gravFactor,
+						Vector2i( xStrength, yStrength ), jumpWaitFrames ) );//, clockwise, speed ) ); 
 					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
@@ -4915,11 +4912,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//groups["--"]->name
 										if( enemyEdgePolygon != NULL )
 										{
+											tempActor = new PoisonFrogParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
-											showPanel->checkBoxes["clockwise"]->checked = false;
-											showPanel->textBoxes["speed"]->text.setString( "1.5" );
+											tempActor->SetDefaultPanelInfo();
 											//trackingEnemy = NULL;
 										}
 									}
@@ -4964,36 +4960,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( trackingEnemy->name == "curveturret" )
 									{
-										cout << "here" << endl;
-										////ActorPtr curveTurret( new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-										////enemyEdgeQuantity ) );//, bulletSpeed, framesWait, Vector2i( xGravFactor, yGravFactor ) ) );
-
-										//CurveTurretParams *ct = (CurveTurretParams*)tempActor.get();
-										//ct->SetParams();
-
-										////enemyEdgePolygon->enemies[curveTurret->groundInfo->edgeStart].push_back( curveTurret );
-										////enemyEdgePolygon->UpdateBounds();
-
-										////groups["--"]->actors.push_back( basicTurret );
-										////curveTurret->group = groups["--"];
-										//curveTurret->monitorType = GetMonitorType( p );
-
-										////CreateActor( curveTurret );
-										////trackingEnemy = NULL;
-
-
 										if( enemyEdgePolygon != NULL )
 										{
-											//cout << "group sneakyyyy: " << groups["--"]->actors.size() << endl;
-											//cout << "CREATE SINGLE CURVE WUT" << endl;
 											//doesn't account for cancelling
 											
 											tempActor = new CurveTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity );
 											
-											//enemyEdgePolygon->enemies[tempActor->groundInfo->edgeStart].push_back(  );
-											//enemyEdgePolygon->UpdateBounds();
-
 											showPanel = trackingEnemy->panel;
 											tempActor->SetDefaultPanelInfo();
 											//CurveTurretParams *ct = (CurveTurretParams*)tempActor.get();
@@ -5773,6 +5746,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						//}
 						else if( ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash )
 						{
+							if( showPanel != NULL )
+									break;
+
 							if( ev.key.code == sf::Keyboard::Equal )
 							{
 								zoomMultiple /= 2;
@@ -5780,8 +5756,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == sf::Keyboard::Dash )
 							{
+								//might be too general
+								
+								
 								zoomMultiple *= 2;
 								UpdateFullBounds();
+								
+								
 							}
 
 							if( zoomMultiple < .25 )
@@ -8228,7 +8209,7 @@ ActorParams::MonitorType GetMonitorType( Panel *p )
 
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
-	cout << "start of callback!: " << groups["--"]->actors.size() << endl;
+	//cout << "start of callback!: " << groups["--"]->actors.size() << endl;
 	Panel *p = b->owner;
 	if( p->name == "patroller_options" )
 	{
@@ -8536,57 +8517,26 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" );
 		{
-			bool clockwise = p->checkBoxes["clockwise"]->checked;
-			double speed;
-
-			stringstream ss;
-			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
-			ss << s;
-
-			ss >> speed;
-
-			if( ss.fail() )
-			{
-				cout << "stringstream to integer parsing error" << endl;
-				ss.clear();
-				assert( false );
-			}
-
 			//not sure if this is what i need
 			//if( mode == EDIT && selectedActor != NULL )
 			if( mode == EDIT )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				PoisonFrogParams *poisonFrog = (PoisonFrogParams*)select;
+				poisonFrog->SetParams();
 				poisonFrog->monitorType = GetMonitorType( p );
-				//poisonFrog->speed = speed;
-				//poisonFrog->clockwise = clockwise;
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				
+				ActorPtr poisonFrog( tempActor );
+				poisonFrog->SetParams();
 
-				//eventually can convert this between indexes or something to simplify when i have more types
-				
-
-				ActorPtr poisonFrog( new PoisonFrogParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity));//, clockwise, speed ) );
 				poisonFrog->group = groups["--"];
 				poisonFrog->monitorType = GetMonitorType( p );
-				//groups["--"]->actors.push_back( crawler );
-				enemyEdgePolygon->enemies[poisonFrog->groundInfo->edgeStart].push_back( poisonFrog );
-				enemyEdgePolygon->UpdateBounds();
 
 
 				CreateActor( poisonFrog );
-				/*Brush b;
-				SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(crawler);
-				b.AddObject( select );
-				Action * action = new ApplyBrushAction( &b );
-				action->Perform();
-				doneActionStack.push_back( action );*/
-				//action->p
-				//trackingEnemy = NULL;
-				
+				tempActor = NULL;
 			}
 			showPanel = NULL;
 			//showPanel = enemySelectPanel;
@@ -8706,65 +8656,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{	
 		if( b->name == "ok" )
 		{
-			/*stringstream ss;
-			string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
-			string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
-			string xGravString = p->textBoxes["xgravfactor"]->text.getString().toAnsiString();
-			string yGravString = p->textBoxes["ygravfactor"]->text.getString().toAnsiString();
-
-			ss << bulletSpeedString;
-			
-
-			double bulletSpeed;
-			ss >> bulletSpeed;
-
-			if( ss.fail() )
-			{
-				assert( false );
-			}
-
-			ss.clear();
-
-			ss << framesWaitString;
-
-			int framesWait;
-			ss >> framesWait;
-
-			if( ss.fail() )
-			{
-				assert( false );
-			}
-
-			ss.clear();
-			
-			int xGravFactor;
-			ss << xGravString;
-
-			ss >> xGravFactor;
-
-			if( ss.fail() )
-			{
-				assert( false );
-			}
-
-			ss.clear();
-
-			int yGravFactor;
-			ss << yGravString;
-
-			ss >> yGravFactor;*/
-
 			if( mode == EDIT )
 			//if( mode == EDIT && selectedActor != NULL )
 			{
-
 				ISelectable *select = selectedBrush->objects.front().get();				
 				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
 				curveTurret->SetParams();
 				curveTurret->monitorType = GetMonitorType( p );
-				//curveTurret->bulletSpeed = bulletSpeed;
-				//curveTurret->framesWait = framesWait;
-				//curveTurret->gravFactor = Vector2( xGravFactor, yGravFactor );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8782,7 +8680,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				tempActor = NULL;
 			}
 			showPanel = NULL;
-			//showPanel = enemySelectPanel;
 		}	
 	}
 	else if( p->name == "foottrap_options" )
@@ -9030,14 +8927,42 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 	Panel *p = tb->owner;
 	if( p->name == "curveturret_options" )
 	{
-		if( tb->name == "xgravfactor" || tb->name == "ygravfactor" )
+		if( tb->name == "xgravfactor" || tb->name == "ygravfactor"
+			|| tb->name == "bulletspeed" )
 		{
-
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
+				curveTurret->SetParams();
+				//curveTurret->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				CurveTurretParams *curveTurret = (CurveTurretParams*)tempActor;
+				curveTurret->SetParams();
+			}
 		}
-		
-		
 	}
-
+	else if( p->name == "poisonfrog_options" )
+	{
+		if( tb->name == "xstrength" || tb->name == "ystrength" 
+			|| tb->name == "gravfactor" )
+		{
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				PoisonFrogParams *poisonFrog = (PoisonFrogParams*)select;
+				poisonFrog->SetParams();
+				//curveTurret->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				PoisonFrogParams *poisonFrog = (PoisonFrogParams*)tempActor;
+				poisonFrog->SetParams();
+			}
+		}
+	}
 }
 
 void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_name )
@@ -10696,9 +10621,13 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
+		p->AddTextBox( "xstrength", Vector2i( 20, 150 ), 200, 20, "10" );
+		p->AddTextBox( "ystrength", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddTextBox( "gravfactor", Vector2i( 20, 250 ), 200, 20, "5" );
+		p->AddTextBox( "jumpwaitframes", Vector2i( 20, 300 ), 200, 20, "10" );
+		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+		
 
 		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
 
@@ -10945,16 +10874,11 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "poisonfrog" )
 	{
 		PoisonFrogParams *poisonFrog = (PoisonFrogParams*)ap;
-		
+		poisonFrog->SetPanelInfo();
 		//cout << "hmm: " << name << endl;
-		p->textBoxes["group"]->text.setString( poisonFrog->group->name );
+		
 
-		//p->checkBoxes["clockwise"]->checked = poisonFrog->clockwise;
-		//p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( poisonFrog->speed ) );
-		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-
-		SetMonitorGrid( poisonFrog->monitorType, p->gridSelectors["monitortype"] );
+		//SetMonitorGrid( poisonFrog->monitorType, p->gridSelectors["monitortype"] );
 		
 		showPanel = p;
 		
