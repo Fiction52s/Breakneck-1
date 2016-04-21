@@ -159,6 +159,7 @@ Actor::Actor( GameSession *gs )
 		climbBoostLimit = 5;
 
 		holdJump = false;
+		steepJump = false;
 
 		bounceBoostSpeed = 4.7;
 
@@ -859,6 +860,37 @@ void Actor::ActionEnded()
 		
 			frame = 0;
 			break;
+		}
+	}
+}
+
+void Actor::CheckHoldJump()
+{
+	if( hasDoubleJump )
+	{
+		if( holdJump && velocity.y >= -8 )
+			holdJump = false;
+
+		
+		if( holdJump && ((!steepJump && !currInput.A) || (steepJump && !currInput.LUp() ) ) && framesInAir > 2 )
+		{
+			if( velocity.y < -8 )
+			{
+				velocity.y = -8;
+			}
+		}
+	}
+	else
+	{
+		if( holdDouble && velocity.y >= -8 )
+			holdDouble = false;
+
+		if( holdDouble && !currInput.A && framesInAir > 2 )
+		{
+			if( velocity.y < -8 )
+			{
+				velocity.y = -8;
+			}
 		}
 	}
 }
@@ -3114,6 +3146,36 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			bool fallAway = false;
+			if( reversed )
+			{
+			}
+			else
+			{
+				if( facingRight )
+				{
+					if( currInput.LLeft() )
+					{
+						fallAway = true;
+					}
+				}
+				else
+				{
+					if( currInput.LRight() )
+					{
+						fallAway = true;
+					}
+				}
+			}
+			
+			if( fallAway )
+			{
+				SetActionExpr( JUMP );
+				frame = 0;
+				steepJump = true;
+				break;
+			}
+
 			if( currInput.B && !prevInput.B && framesSinceClimbBoost > climbBoostLimit )
 			{
 				//cout << "climb" << endl;
@@ -3637,10 +3699,19 @@ void Actor::UpdatePrePhysics()
 
 						velocity.y = 0;
 					}
-					velocity.y -= jumpStrength;
+
+					if( steepJump )
+					{
+						velocity.y -= jumpStrength * .75;
+					}
+					else
+					{
+						velocity.y -= jumpStrength;
+					}
 					ground = NULL;
 					movingGround = NULL;
 					holdJump = true;
+					//steepJump = false;
 				}
 				
 			}
@@ -3654,32 +3725,7 @@ void Actor::UpdatePrePhysics()
 			//	bufferedAttack = false;
 			//}
 			//cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
-			if( hasDoubleJump )
-			{
-				if( holdJump && velocity.y >= -8 )
-					holdJump = false;
-
-				if( holdJump && !currInput.A && framesInAir > 2 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
-			else
-			{
-				if( holdDouble && velocity.y >= -8 )
-					holdDouble = false;
-
-				if( holdDouble && !currInput.A && framesInAir > 2 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
+			CheckHoldJump();
 
 			if( framesInAir > 1 || velocity.y < 0 )
 				AirMovement();
@@ -3845,32 +3891,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
-			if( hasDoubleJump )
-			{
-				if( holdJump && velocity.y >= -8 )
-					holdJump = false;
-
-				if( holdJump && !currInput.A && framesInAir > 2 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
-			else
-			{
-				if( holdDouble && velocity.y >= -8 )
-					holdDouble = false;
-
-				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
+			CheckHoldJump();
 
 			//currHitboxes = fairHitboxes;
 			if( fairHitboxes.count( frame ) > 0 )
@@ -3894,32 +3915,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DAIR:
 		{
-			if( hasDoubleJump )
-			{
-				if( holdJump && velocity.y >= -8 )
-					holdJump = false;
-
-				if( holdJump && !currInput.A && framesInAir > 2 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
-			else
-			{
-				if( holdDouble && velocity.y >= -8 )
-					holdDouble = false;
-
-				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
+			CheckHoldJump();
 
 			if( dairHitboxes.count( frame ) > 0 )
 			{
@@ -3940,32 +3936,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case UAIR:
 		{
-			if( hasDoubleJump )
-			{
-				if( holdJump && velocity.y >= -8 )
-					holdJump = false;
-
-				if( holdJump && !currInput.A && framesInAir > 2 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
-			else
-			{
-				if( holdDouble && velocity.y >= -8 )
-					holdDouble = false;
-
-				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
-			}
+			CheckHoldJump();
 
 			if( uairHitboxes.count( frame ) > 0 )
 			{
@@ -4106,16 +4077,7 @@ void Actor::UpdatePrePhysics()
 			else
 			{
 				
-				if( holdDouble && velocity.y >= -8 )
-					holdDouble = false;
-
-				if( holdDouble && !currInput.A && framesSinceDouble > 4 )
-				{
-					if( velocity.y < -8 )
-					{
-						velocity.y = -8;
-					}
-				}
+				CheckHoldJump();
 				
 						
 				AirMovement();
@@ -14593,8 +14555,9 @@ void Actor::SetActionExpr( Action a )
 
 	switch( a )
 	{
-	case WALLJUMP:
 	case JUMP:
+		steepJump = false;
+	case WALLJUMP:
 	case DASH:
 	case LAND:
 	case LAND2:

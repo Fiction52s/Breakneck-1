@@ -107,6 +107,8 @@ struct Actor : QuadTreeCollider,
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();
 	bool CanUnlockGate( Gate *g );
+
+	void CheckHoldJump();
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
@@ -131,7 +133,7 @@ struct Actor : QuadTreeCollider,
 	//double speedBarVel;
 
 
-
+	
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
@@ -200,6 +202,8 @@ struct Actor : QuadTreeCollider,
 	int runBounceFlameFrames;
 	int runBounceFrame;
 	Tileset *ts_runBounceFlame;
+
+	bool steepJump;
 	
 	int airBounceFlameFrames;
 	int airBounceFrame;
