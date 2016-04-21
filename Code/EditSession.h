@@ -628,7 +628,8 @@ struct CurveTurretParams : public ActorParams
 		double edgeQuantity, 
 		double bulletSpeed, 
 		int framesWait,
-		sf::Vector2i gravFactor );
+		sf::Vector2i gravFactor,
+		bool relativeGrav );
 	CurveTurretParams( EditSession *edit,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
@@ -642,6 +643,7 @@ struct CurveTurretParams : public ActorParams
 	void UpdateExtraVisuals();
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
+	bool relativeGrav;
 	int framesWait;
 	sf::Vector2i gravFactor;
 	sf::VertexArray bulletPathQuads;

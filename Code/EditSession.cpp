@@ -1320,6 +1320,14 @@ bool EditSession::OpenFile( string fileName )
 					int yGravFactor;
 					is >> yGravFactor;
 
+					bool relative = false;
+					string relativeGravStr;
+					is >> relativeGravStr;
+					if( relativeGravStr == "+relative" )
+					{
+						relative = true;
+					}
+
 					int testIndex = 0;
 					PolyPtr terrain( NULL );
 					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -1342,7 +1350,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 					a.reset( new CurveTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait,
-						Vector2i( xGravFactor, yGravFactor ) ) );
+						Vector2i( xGravFactor, yGravFactor ), relative ) );
 					a->monitorType = (ActorParams::MonitorType)mType;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
@@ -9019,7 +9027,27 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 
 void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
-	cout << cb->name << " was " << e << endl;
+	//cout << cb->name << " was " << e << endl;
+	Panel *p = cb->owner;
+	if( p->name == "curveturret_options" )
+	{
+		if( cb->name == "relativegrav" )
+		{
+			cout << "BLAHBADIOHFWEIHEGHWEAOHGEAWHGEWAHG" << endl;
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
+				curveTurret->SetParams();
+				//curveTurret->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				CurveTurretParams *curveTurret = (CurveTurretParams*)tempActor;
+				curveTurret->SetParams();
+			}
+		}
+	}
 }
 
 void EditSession::ClearUndoneActions()
@@ -10684,20 +10712,22 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if( name == "curveturret" )
 	{
-		Panel *p = new Panel( "curveturret_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "curveturret_options", 200, 550, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddTextBox( "xgravfactor", Vector2i( 20, 250 ), 200, 20, "0" );
 		p->AddTextBox( "ygravfactor", Vector2i( 20, 300 ), 200, 20, "0" );
+		p->AddCheckBox( "relativegrav", Vector2i( 20, 350 ) );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 400 ), 4, 1, 32, 32, true, true);
 		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
 		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
 		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
 		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}

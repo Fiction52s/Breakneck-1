@@ -1630,12 +1630,13 @@ void PoisonFrogParams::UpdateExtraVisuals()
 }
 
 CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
-	sf::Vector2i p_gravFactor )
+	sf::Vector2i p_gravFactor, bool relative )
 	:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
 	gravFactor = p_gravFactor;
+	relativeGrav = relative;
 
 	type = edit->types["curveturret"];
 	
@@ -1657,6 +1658,7 @@ CurveTurretParams::CurveTurretParams( EditSession *edit,
 
 	gravFactor = Vector2i( 0, 0 );
 	framesWait = 60;
+	relativeGrav = true;
 	bulletSpeed = 1;
 
 	SetBoundingQuad();
@@ -1686,11 +1688,23 @@ void CurveTurretParams::WriteParamFile( ofstream &of )
 	of << framesWait << endl;
 	of << gravFactor.x << endl;
 	of << gravFactor.y << endl;
+
+	if( relativeGrav )
+	{
+		of << "+relative" << endl;
+	}
+	else
+	{
+		of << "-relative" << endl;
+	}
+	
 }
 
 void CurveTurretParams::UpdateBulletCurve()
 {
 	int totalQuads = 100;
+
+	double factorGrav = 256;
 
 	if( groundInfo == NULL )
 	{
@@ -1718,8 +1732,8 @@ void CurveTurretParams::UpdateBulletCurve()
 	}
 
 	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
-	e = normalize( e );
-	e = V2d( e.y, -e.x );
+	V2d groundDir = normalize( e );
+	e = V2d( groundDir.y, -groundDir.x );
 
 	Vector2f bulletVel = Vector2f( e.x, e.y ) * bulletSpeed;
 	
@@ -1741,7 +1755,24 @@ void CurveTurretParams::UpdateBulletCurve()
 		bulletPathQuads[i*4+3].color = pathColor;
 
 		pos += bulletVel;
-		bulletVel += Vector2f( gravFactor.x, gravFactor.y ) / 64.f;
+
+		V2d trueGrav( 0, 0 );//( gravFactor.x, gravFactor.y );
+
+		if( relativeGrav )
+		{
+			trueGrav += groundDir * ( gravFactor.x / factorGrav );
+			trueGrav += e * (-gravFactor.y / factorGrav );
+		}
+		else
+		{
+			trueGrav = V2d( gravFactor.x / factorGrav, 
+				gravFactor.y / factorGrav );
+		}
+		
+		//trueGrav.x = e.y * gravFactor.x;
+		//trueGrav.y = e.x * gravFactor.y;
+
+		bulletVel += Vector2f( trueGrav.x, trueGrav.y );
 	}
 }
 
@@ -1754,6 +1785,8 @@ void CurveTurretParams::SetParams()
 	string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
 	string xGravString = p->textBoxes["xgravfactor"]->text.getString().toAnsiString();
 	string yGravString = p->textBoxes["ygravfactor"]->text.getString().toAnsiString();
+	
+	relativeGrav = p->checkBoxes["relativegrav"]->checked;
 
 	ss << bulletSpeedString;
 
@@ -1822,6 +1855,7 @@ void CurveTurretParams::SetDefaultPanelInfo()
 	p->textBoxes["group"]->text.setString( "not test" );
 	p->textBoxes["bulletspeed"]->text.setString( "10" );
 	p->textBoxes["waitframes"]->text.setString( "10" );
+	p->checkBoxes["relativegrav"]->checked = true;
 }
 
 void CurveTurretParams::SetPanelInfo()
@@ -1832,6 +1866,7 @@ void CurveTurretParams::SetPanelInfo()
 	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
 	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );
 	p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.y ) );
+	p->checkBoxes["relativegrav"]->checked = relativeGrav;
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 

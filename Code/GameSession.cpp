@@ -1446,8 +1446,16 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int yGravFactor;
 				is >> yGravFactor;
 
+				bool relative = false;
+				string relativeGravStr;
+				is >> relativeGravStr;
+				if( relativeGravStr == "+relative" )
+				{
+					relative = true;
+				}
+
 				CurveTurret *enemy = new CurveTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
-					Vector2i( xGravFactor, yGravFactor ) );
+					Vector2i( xGravFactor, yGravFactor ), relative );
 				//Overgrowth *enemy = new Overgrowth( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 10, 60 );
 
 

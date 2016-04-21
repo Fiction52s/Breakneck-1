@@ -19,11 +19,12 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,int wait,
-	Vector2i &gravFactor )
+	Vector2i &gravFactor, bool relative )
 		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
-	gravity = V2d( gravFactor.x / 64.0, gravFactor.y / 64.0 );
+	
+	
 
 	initHealth = 60;
 	health = initHealth;
@@ -41,6 +42,22 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	
 
 	gn = g->Normal();
+
+	V2d gAlong = normalize( g->v1 - g->v0 );
+
+
+	gravity = V2d( 0,0 );
+
+	if( relative )
+	{
+		gravity += gAlong * ( gravFactor.x / 256.0);
+		gravity += gn * ( -gravFactor.y / 256.0 );
+	}
+	else
+	{
+		gravity = V2d( gravFactor.x / 256.0, gravFactor.y / 256.0 );
+	}
+	
 
 	position = gPoint + gn * height / 2.0;
 
@@ -124,6 +141,7 @@ void CurveTurret::ResetEnemy()
 	dead = false;
 	frame = 0;
 	deathFrame = 0;
+	testLauncher->Reset();
 }
 
 void CurveTurret::UpdatePrePhysics()

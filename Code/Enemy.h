@@ -751,7 +751,8 @@ struct CurveTurret : Enemy, LauncherEnemy
 	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
 		double bulletSpeed,
 		int framesWait,
-		sf::Vector2i &gravFactor );
+		sf::Vector2i &gravFactor,
+		bool relativeGrav );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
