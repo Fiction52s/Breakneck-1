@@ -222,6 +222,8 @@ void ActorParams::SetBoundingQuad()
 		boundingQuad[2].position = Vector2f( position.x + type->width / 2, position.y + type->height / 2);
 		boundingQuad[3].position = Vector2f( position.x - type->width / 2, position.y + type->height / 2);
 	}
+
+	UpdateExtraVisuals();
 }
 
 void ActorParams::UpdateGroundedSprite()
@@ -1546,8 +1548,22 @@ void PoisonFrogParams::SetDefaultPanelInfo()
 
 void PoisonFrogParams::UpdatePath()
 {
-	Color pathColor( 0, 255, 0 );
 	int totalQuads = 50;
+
+	if( groundInfo == NULL )
+	{
+		for( int i = 0; i < totalQuads; ++i )
+		{
+			pathQuads[i*4+0].position = Vector2f( 0,0 );
+			pathQuads[i*4+1].position = Vector2f( 0,0 );
+			pathQuads[i*4+2].position = Vector2f( 0,0 );
+			pathQuads[i*4+3].position = Vector2f( 0,0 );
+		}
+		return;
+	}
+
+	Color pathColor( 0, 255, 0 );
+	
 	int squareRad = 4;// * EditSession::zoomMultiple;
 	Vector2f pos( position.x, position.y );
 
@@ -1608,6 +1624,11 @@ void PoisonFrogParams::Draw( sf::RenderTarget *target )
 	target->draw( pathQuads );
 }
 
+void PoisonFrogParams::UpdateExtraVisuals()
+{
+	UpdatePath();
+}
+
 CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor )
 	:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
@@ -1622,7 +1643,7 @@ CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 
 	SetBoundingQuad();
 
-	UpdateBulletCurve();
+	//UpdateBulletCurve();
 }
 
 CurveTurretParams::CurveTurretParams( EditSession *edit,
@@ -1634,11 +1655,18 @@ CurveTurretParams::CurveTurretParams( EditSession *edit,
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
-	SetBoundingQuad();
-
 	gravFactor = Vector2i( 0, 0 );
 	framesWait = 60;
 	bulletSpeed = 1;
+
+	SetBoundingQuad();
+
+	
+}
+
+void CurveTurretParams::UpdateExtraVisuals()
+{
+	UpdateBulletCurve();
 }
 
 bool CurveTurretParams::CanApply()
@@ -1662,8 +1690,21 @@ void CurveTurretParams::WriteParamFile( ofstream &of )
 
 void CurveTurretParams::UpdateBulletCurve()
 {
-	Color pathColor( 255, 0, 0 );
 	int totalQuads = 100;
+
+	if( groundInfo == NULL )
+	{
+		for( int i = 0; i < totalQuads; ++i )
+		{
+			bulletPathQuads[i*4+0].position = Vector2f( 0,0 );
+			bulletPathQuads[i*4+1].position = Vector2f( 0,0 );
+			bulletPathQuads[i*4+2].position = Vector2f( 0,0 );
+			bulletPathQuads[i*4+3].position = Vector2f( 0,0 );
+		}
+		return;
+	}
+
+	Color pathColor( 255, 0, 0 );
 	int squareRad = 4;// * EditSession::zoomMultiple;
 	Vector2f pos( position.x, position.y );
 	V2d fireDir;

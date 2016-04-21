@@ -1816,7 +1816,7 @@ bool PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width = 0 )
 	{
 		double c = cross( pos - p0, dir );	
 		//cout << "c: " << c << endl;
-		if( abs( c ) < .0001 )
+		if( abs( c ) < 1.0 )
 		{
 			//cout << "return true?>?? " << endl;
 			return true;

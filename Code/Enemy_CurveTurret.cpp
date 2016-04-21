@@ -23,7 +23,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
-	gravity = V2d( gravFactor.x, gravFactor.y );
+	gravity = V2d( gravFactor.x / 64.0, gravFactor.y / 64.0 );
 
 	initHealth = 60;
 	health = initHealth;
@@ -103,7 +103,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0 );
 	testLauncher->SetBulletSpeed( 10 );
-	testLauncher->SetGravity( V2d( gravFactor.x / 16.0, gravFactor.y / 16.0 ) );
+	testLauncher->SetGravity( gravity );
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 }

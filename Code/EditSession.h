@@ -386,6 +386,8 @@ struct ActorParams : ISelectable
 	virtual void SetDefaultPanelInfo();
 
 	virtual void SetBoundingQuad();
+	virtual void UpdateExtraVisuals()
+	{}
 
 	//ISelectable( ISelectableType type );
 	virtual bool ContainsPoint( sf::Vector2f test );
@@ -585,6 +587,7 @@ struct PoisonFrogParams : public ActorParams
 	void WriteParamFile( std::ofstream &of );
 	void UpdatePath();
 	void Draw( sf::RenderTarget *target );
+	void UpdateExtraVisuals();
 	//void SetParams();
 	//void SetPanelInfo();
 	
@@ -636,6 +639,7 @@ struct CurveTurretParams : public ActorParams
 	bool CanApply();
 	void UpdateBulletCurve();
 	void Draw( sf::RenderTarget *target );
+	void UpdateExtraVisuals();
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;
