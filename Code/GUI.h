@@ -44,6 +44,8 @@ struct TextBox
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void Draw( sf::RenderTarget *rt );
 	bool Update( bool mouseDown, int posx, int posy );
+	void SetCursorIndex( int index );
+	void SetCursorIndex( sf::Vector2i &mousePos );
 	sf::Vector2i pos;
 	int width;
 	std::string name;

@@ -1473,9 +1473,9 @@ void PoisonFrogParams::SetParams()
 	int t_xStrength;
 	ss >> t_xStrength;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		t_xStrength = 5;
+		jumpStrength.x = t_xStrength;
 	}
 
 	ss.clear();
@@ -1485,9 +1485,9 @@ void PoisonFrogParams::SetParams()
 	int t_yStrength;
 	ss >> t_yStrength;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		t_yStrength = 5;
+		jumpStrength.y = t_yStrength;
 	}
 
 	ss.clear();
@@ -1497,9 +1497,9 @@ void PoisonFrogParams::SetParams()
 	int t_jumpWaitFrames;
 	ss >> t_jumpWaitFrames;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		t_jumpWaitFrames = 5;
+		jumpWaitFrames = t_jumpWaitFrames;
 	}
 
 	ss.clear();
@@ -1509,16 +1509,11 @@ void PoisonFrogParams::SetParams()
 	int t_gravFactor;
 	ss >> t_gravFactor;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		t_gravFactor = 5;
+		gravFactor = t_gravFactor;
 	}
 
-	gravFactor = t_gravFactor;
-	jumpStrength.x = t_xStrength;
-	jumpStrength.y = t_yStrength;
-	jumpWaitFrames = t_jumpWaitFrames;
-	
 	UpdatePath();
 }
 
@@ -1793,9 +1788,9 @@ void CurveTurretParams::SetParams()
 	double t_bulletSpeed;
 	ss >> t_bulletSpeed;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		bulletSpeed = 10;
+		bulletSpeed = t_bulletSpeed;
 		//assert( false );
 	}
 
@@ -1806,10 +1801,9 @@ void CurveTurretParams::SetParams()
 	int t_framesWait;
 	ss >> t_framesWait;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		framesWait = 60;
-		//assert( false );
+		framesWait = t_framesWait;
 	}
 
 	ss.clear();
@@ -1819,10 +1813,9 @@ void CurveTurretParams::SetParams()
 
 	ss >> t_xGravFactor;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		t_xGravFactor = 0;
-		//assert( false );
+		gravFactor.x = t_xGravFactor;
 	}
 
 	ss.clear();
@@ -1832,20 +1825,13 @@ void CurveTurretParams::SetParams()
 
 	ss >> t_yGravFactor;
 
-	if( ss.fail() )
+	if( !ss.fail() )
 	{
-		t_yGravFactor = 0;
+		gravFactor.y = t_yGravFactor;
 	}
-
-	//monitorType = GetMonitorType( p );
-
-	bulletSpeed = t_bulletSpeed;
-	framesWait = t_framesWait;
-	gravFactor = Vector2i( t_xGravFactor, t_yGravFactor );
 
 	UpdateBulletCurve();
 	//also set up visuals
-
 }
 
 void CurveTurretParams::SetDefaultPanelInfo()

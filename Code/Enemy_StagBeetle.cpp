@@ -19,11 +19,11 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::STAGBEETLE ), clockwise( cw ),
+	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
 	
-
+	action = RUN;
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
@@ -45,7 +45,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	testMover = new GroundMover( owner, g, q, 32, false, this );
 	testMover->gravity = V2d( 0, .5 );
 	testMover->groundSpeed = s;
-	if( !clockwise )
+	if( !facingRight )
 	{
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}
@@ -236,12 +236,95 @@ void StagBeetle::UpdateHitboxes()
 	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
+void StagBeetle::ActionEnded()
+{
+	switch( action )
+	{
+	case RUN:
+		frame = 0;
+		break;
+	case TURNAROUND:
+		action = RUN;
+		frame = 0;
+		break;
+	case JUMP:
+		frame = 0;
+		break;
+	case LAND:
+		action = RUN;
+		frame = 0;
+		break;
+	case ATTACK:
+		action = RUN;
+		frame = 0;
+		break;
+	}
+}
+
 void StagBeetle::UpdatePrePhysics()
 {
 	//testLaunch->UpdatePrePhysics();
+	Actor &player = owner->player;
 
 	if( dead )
 		return;
+
+	ActionEnded();
+
+	switch( action )
+	{
+	case RUN:
+		if( facingRight )
+		{
+			if( player.position.x < position.x )
+			{
+				facingRight = false;
+				action = TURNAROUND;
+				frame = 0;
+			}
+		}
+		else
+		{
+			if( player.position.x > position.x )
+			{
+				facingRight = true;
+				action = TURNAROUND;
+				frame = 0;
+			}
+		}
+		break;
+	case TURNAROUND:
+		break;
+	case JUMP:
+		break;
+	case ATTACK:
+		break;
+	case LAND:
+		break;
+	}
+
+	switch( action )
+	{
+	case RUN:
+		if( facingRight )
+		{
+			groundSpeed = 5;
+		}
+		else
+		{
+			groundSpeed = -5;
+		}
+		break;
+	case TURNAROUND:
+		break;
+	case JUMP:
+		break;
+	case ATTACK:
+		break;
+	case LAND:
+		break;
+	}
+
 
 	bool roll = testMover->roll;
 
@@ -316,7 +399,7 @@ void StagBeetle::UpdatePhysics()
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	testMover->groundSpeed = 5 * f;
-	if( !clockwise )
+	if( !facingRight )
 	{
 		testMover->groundSpeed = -5 * f;
 	}
@@ -407,7 +490,7 @@ void StagBeetle::PhysicsResponse()
 		
 //			sprite.setTexture( *ts_walk->texture );
 			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !clockwise )
+			if( !facingRight )
 			{
 				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
 			}
@@ -424,7 +507,7 @@ void StagBeetle::PhysicsResponse()
 		else
 		{
 			
-			if( clockwise )
+			if( facingRight )
 			{
 				V2d vec = normalize( position - ground->v1 );
 				angle = atan2( vec.y, vec.x );
@@ -433,7 +516,7 @@ void StagBeetle::PhysicsResponse()
 
 				//sprite.setTexture( *ts->texture );
 				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( clockwise )
+				if( facingRight )
 				{
 					sprite.setTextureRect( r );
 				}
@@ -491,7 +574,7 @@ void StagBeetle::PhysicsResponse()
 
 				//sprite.setTexture( *ts->texture );
 				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( clockwise )
+				if( facingRight )
 				{
 					sprite.setTextureRect( r );
 				}
@@ -804,7 +887,7 @@ void StagBeetle::UpdateSprite()
 		if( attackFrame >= 0 )
 		{
 			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
-			if( !clockwise )
+			if( !facingRight )
 			{
 				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
 			}
@@ -862,7 +945,7 @@ void StagBeetle::HitOther()
 {
 	//cout << "hit other!" << endl;
 	//testMover->groundSpeed = -testMover->groundSpeed;
-	//clockwise = !clockwise;
+	//facingRight = !facingRight;
 }
 
 void StagBeetle::ReachCliff()
@@ -870,7 +953,7 @@ void StagBeetle::ReachCliff()
 	//cout << "reach cliff!" << endl;
 	//ground = NULL;
 	V2d v;
-	if( clockwise )
+	if( facingRight )
 	{
 		v = V2d( 10, -10 );
 	}
@@ -881,7 +964,7 @@ void StagBeetle::ReachCliff()
 
 	testMover->Jump( v );
 	//testMover->groundSpeed = -testMover->groundSpeed;
-	//clockwise = !clockwise;
+	//facingRight = !facingRight;
 }
 
 void StagBeetle::HitOtherAerial()

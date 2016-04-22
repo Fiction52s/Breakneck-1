@@ -352,6 +352,29 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	//text.setPosition( owner->pos.x + pos.x + width / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + (characterHeight + verticalBorder) / 2 - text.getLocalBounds().height / 2);
 }
 
+void TextBox::SetCursorIndex( int index )
+{
+	cursorIndex = index;
+
+
+
+	cursor.setPosition( owner->pos.x + text.getLocalBounds().width + leftBorder, owner->pos.y + pos.y );
+}
+
+void TextBox::SetCursorIndex( Vector2i &mousePos )
+{
+	//do this later
+
+	/*int stringLength = text.getString().getSize();
+	Text textCopy( text );
+	Text temp( text );
+	for( int i = 0; i < stringLength; ++i )
+	{
+		temp.setString( text.getString().substring( 
+		
+	}*/
+}
+
 void TextBox::SendKey( Keyboard::Key k, bool shift )
 {
 	char c = 0;
@@ -568,26 +591,26 @@ bool TextBox::Update( bool mouseDown, int posx, int posy )
 			{
 				cursorIndex = 0;
 				cursor.setPosition( pos.x, pos.y);
-			}
-			
-			if( textLength > 1 )
-			{
-				int startX = 0;
-				for( int i = 1; i <= textLength; ++i )
-				{
-					tempText.setString( text.getString().substring( 0, i );
-					 //= tempText.getLocalBounds().left + tempText.getLocalBounds().width;
-
-					//tempText.setString( text.getString().substring( i-1, 2 ) );
-					sf::Rect<int> temp( pos.x + startX, pos.y, tempText.getLocalBounds().width / 2 , characterHeight + verticalBorder );
-					if( temp.contains( sf::Vector2i( posx, posy ) ) )
-					{
-
-					}
-				}
 			}*/
+			
+			//if( textLength > 1 )
+			//{
+			//	int startX = 0;
+			//	for( int i = 1; i <= textLength; ++i )
+			//	{
+			//		tempText.setString( text.getString().substring( 0, i );
+			//		 //= tempText.getLocalBounds().left + tempText.getLocalBounds().width;
 
-			//cursor.setPosition( pos.x + text.getLocalBounds().width + leftBorder, pos.y );
+			//		//tempText.setString( text.getString().substring( i-1, 2 ) );
+			//		sf::Rect<int> temp( pos.x + startX, pos.y, tempText.getLocalBounds().width / 2 , characterHeight + verticalBorder );
+			//		if( temp.contains( sf::Vector2i( posx, posy ) ) )
+			//		{
+
+			//		}
+			//	}
+			//}
+
+			cursor.setPosition( pos.x + text.getLocalBounds().width + leftBorder, pos.y );
 			return true;
 		}
 		else

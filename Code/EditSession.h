@@ -384,6 +384,7 @@ struct ActorParams : ISelectable
 	virtual void SetParams();
 	virtual void SetPanelInfo();
 	virtual void SetDefaultPanelInfo();
+	static  Panel * CreateOptionsPanel();
 
 	virtual void SetBoundingQuad();
 	virtual void UpdateExtraVisuals()
@@ -539,6 +540,7 @@ struct StagBeetleParams : public ActorParams
 	//	float speed );
 	StagBeetleParams( EditSession *edit );
 
+	
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	//void Draw( sf::RenderTarget *target );

@@ -10678,7 +10678,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
 		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "3" );
 
 		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
 

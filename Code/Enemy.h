@@ -559,9 +559,19 @@ struct Crawler : Enemy
 
 struct StagBeetle : Enemy, GroundMoverHandler
 {
+	enum Action
+	{
+		RUN,
+		TURNAROUND,
+		JUMP,
+		ATTACK,
+		LAND
+	};
+
 	StagBeetle( GameSession *owner, Edge *ground, 
 		double quantity, 
 		bool clockwise, double speed );
+	void ActionEnded();
 	int NumTotalBullets();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -593,7 +603,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	//Tileset *ts_walk;
 	//Tileset *ts_roll;
 
-	bool clockwise;
+	Action action;
+	bool facingRight;
 
 	CubicBezier moveBezTest;
 	int bezFrame;
