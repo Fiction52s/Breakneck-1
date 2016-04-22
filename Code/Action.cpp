@@ -268,6 +268,8 @@ void ReplaceBrushAction::Perform()
 
 	original.Deactivate();
 	replacement.Activate();
+	
+	
 	//all checks are done before this is performed so it doesnt have to care
 	
 	//combine old polygon and new polygon into a new one, and store the 2 old ones.
@@ -281,6 +283,7 @@ void ReplaceBrushAction::Undo()
 
 	performed = false;
 	//original.Activate()
+	
 	replacement.Deactivate();
 	original.Activate();
 }

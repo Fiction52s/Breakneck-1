@@ -260,6 +260,8 @@ void ActorParams::UpdateGroundedSprite()
 	image.setRotation( angle );
 }
 
+
+
 void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
 {
 	assert( groundInfo == NULL );
@@ -468,35 +470,26 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 {
-	//if( session->player.get() == this )
-	//{
-	//	return;
-	//}
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.remove( actor );
 
-	if( actor->groundInfo != NULL )
+	/*if( actor->groundInfo != NULL )
 	{
 		actor->groundInfo->ground
 			->enemies[actor->groundInfo->edgeStart].remove( actor );
-	}
+	}*/
 }
 
 void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 {
-	//if( session->player.get() == this )
-	//{
-	//	return;
-	//}
-
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
 
-	if( actor->groundInfo != NULL )
+	/*if( actor->groundInfo != NULL )
 	{
 		actor->groundInfo->ground
 			->enemies[actor->groundInfo->edgeStart].push_back( actor );
-	}
+	}*/
 }
 
 HealthFlyParams::HealthFlyParams( EditSession *edit,
@@ -535,6 +528,12 @@ void HealthFlyParams::Draw( sf::RenderTarget *target )
 bool HealthFlyParams::CanApply()
 {
 	return true;
+}
+
+ActorParams *HealthFlyParams::Copy()
+{
+	HealthFlyParams *copy = new HealthFlyParams( *this );
+	return copy;
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop,
@@ -666,6 +665,11 @@ void KeyParams::Draw( sf::RenderTarget *target )
 		target->draw( rs );
 		//cout << "selected draw" << endl;
 	}
+}
+
+ActorParams *KeyParams::Copy()
+{
+	return NULL;
 }
 
 std::list<sf::Vector2i> KeyParams::GetGlobalPath()
@@ -930,6 +934,26 @@ void PatrollerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
+ActorParams *PatrollerParams::Copy()
+{
+	PatrollerParams *copy = new PatrollerParams( *this );
+	if( copy->lines != NULL )
+	{
+		int numVertices = copy->lines->getVertexCount();
+
+		VertexArray &oldli = *copy->lines;
+		copy->lines = new VertexArray( sf::LinesStrip, numVertices );
+		VertexArray &li = *copy->lines;
+		
+
+		for( int i = 0; i < numVertices; ++i )
+		{
+			li[i] = oldli[i];
+		}
+	}
+	return copy;
+}
+
 CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY )
 {
@@ -971,6 +995,12 @@ void CrawlerParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
+ActorParams *CrawlerParams::Copy()
+{
+	CrawlerParams *copy = new CrawlerParams( *this );
+	return copy;
+}
+
 CrawlerReverserParams::CrawlerReverserParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
@@ -993,6 +1023,12 @@ bool CrawlerReverserParams::CanApply()
 
 void CrawlerReverserParams::WriteParamFile( ofstream &of )
 {
+}
+
+ActorParams *CrawlerReverserParams::Copy()
+{
+	CrawlerReverserParams *copy = new CrawlerReverserParams( *this );
+	return copy;
 }
 
 BossCrawlerParams::BossCrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
@@ -1018,6 +1054,12 @@ bool BossCrawlerParams::CanApply()
 void BossCrawlerParams::WriteParamFile( ofstream &of )
 {
 	//no params its a boss!
+}
+
+ActorParams *BossCrawlerParams::Copy()
+{
+	BossCrawlerParams *copy = new BossCrawlerParams( *this );
+	return copy;
 }
 
 
@@ -1050,6 +1092,12 @@ void BasicTurretParams::WriteParamFile( ofstream &of )
 	of << framesWait << endl;
 }
 
+ActorParams *BasicTurretParams::Copy()
+{
+	BasicTurretParams *copy = new BasicTurretParams( *this );
+	return copy;
+}
+
 FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )	
 {
@@ -1073,6 +1121,12 @@ void FootTrapParams::WriteParamFile( ofstream &of )
 	of << (int)monitorType << endl;
 }
 
+ActorParams *FootTrapParams::Copy()
+{
+	FootTrapParams *copy = new FootTrapParams( *this );
+	return copy;
+}
+
 GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {
@@ -1093,6 +1147,12 @@ bool GoalParams::CanApply()
 
 void GoalParams::WriteParamFile( ofstream &of )
 {
+}
+
+ActorParams *GoalParams::Copy()
+{
+	GoalParams *copy = new GoalParams( *this );
+	return copy;
 }
 
 //remnove the postype thing. we have 2 bools for that already
@@ -1136,6 +1196,12 @@ void PlayerParams::Deactivate( EditSession *edit, boost::shared_ptr<ISelectable>
 void PlayerParams::Activate( EditSession *edit, boost::shared_ptr<ISelectable> & select )
 {
 	//nothing
+}
+
+ActorParams *PlayerParams::Copy()
+{
+	assert( false );
+	return NULL;
 }
 
 //BAT
@@ -1356,6 +1422,26 @@ void BatParams::WriteParamFile( ofstream &of )
 	of << fixed << speed << endl;
 }
 
+ActorParams *BatParams::Copy()
+{
+	BatParams *copy = new BatParams( *this );
+	if( copy->lines != NULL )
+	{
+		int numVertices = copy->lines->getVertexCount();
+
+		VertexArray &oldli = *copy->lines;
+		copy->lines = new VertexArray( sf::LinesStrip, numVertices );
+		VertexArray &li = *copy->lines;
+		
+
+		for( int i = 0; i < numVertices; ++i )
+		{
+			li[i] = oldli[i];
+		}
+	}
+	return copy;
+}
+
 
 //STAG BEETLE
 
@@ -1398,6 +1484,12 @@ void StagBeetleParams::WriteParamFile( ofstream &of )
 	
 	of.precision( 5 );
 	of << fixed << speed << endl;
+}
+
+ActorParams *StagBeetleParams::Copy()
+{
+	StagBeetleParams *copy = new StagBeetleParams( *this );
+	return copy;
 }
 
 //STAG BEETLE
@@ -1634,6 +1726,12 @@ void PoisonFrogParams::Draw( sf::RenderTarget *target )
 void PoisonFrogParams::UpdateExtraVisuals()
 {
 	UpdatePath();
+}
+
+ActorParams *PoisonFrogParams::Copy()
+{
+	PoisonFrogParams *copy = new PoisonFrogParams( *this );
+	return copy;
 }
 
 CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
@@ -1873,4 +1971,10 @@ void CurveTurretParams::Draw( RenderTarget *target )
 	ActorParams::Draw( target );
 
 	target->draw( bulletPathQuads );
+}
+
+ActorParams *CurveTurretParams::Copy()
+{
+	CurveTurretParams *copy = new CurveTurretParams( *this );
+	return copy;
 }

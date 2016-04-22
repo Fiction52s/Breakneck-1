@@ -1834,7 +1834,7 @@ bool PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width = 0 )
 }
 
 //returns true if attach is successful
-bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
+bool EditSession::AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
 {
 	TerrainPoint *next;
 	V2d currPos, nextPos;
@@ -1875,6 +1875,7 @@ bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
 
 		double finalQuant = dot( actorPos - currPos, normalize( nextPos - currPos ) );
 		
+		
 		if( onLine )
 		{
 			cout << "actorPos: " << actorPos.x << ", " << actorPos.y << ", currPos: "
@@ -1884,8 +1885,32 @@ bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
 			gi.ground = poly;
 			cout << "finalQuant: " << finalQuant << endl;
 			gi.groundQuantity = finalQuant;
-			actor->AnchorToGround( gi );
-			poly->enemies[p].push_back( actor );
+
+			//might need to make sure it CAN be grounded
+			assert( actor->groundInfo != NULL ); 
+
+			ActorPtr newActor( actor->Copy() );
+			//GroundInfo *oldGI = actor->groundInfo;
+
+			//GroundInfo old = *actor->groundInfo;
+
+			assert( newActor.get() != NULL );
+
+			//newActor->UnAnchor( newActor );
+			newActor->groundInfo->edgeStart = gi.edgeStart;
+			newActor->groundInfo->ground = gi.ground;
+			newActor->groundInfo->groundQuantity= gi.groundQuantity;
+
+			poly->enemies[p].push_back( newActor );
+
+			tempActors.push_back( newActor );
+			//b.AddObject( newActor );
+			//actor->UnAnchor( actor );
+			//actor->groundInfo->ground->enemies[actor->groundInfo->edgeStart].remove( actor );
+			//actor->AnchorToGround( gi );
+
+			//old.ground->enemies[old.edgeStart].remove( actor );
+			
 			return true;
 			//break;
 		}
@@ -1894,7 +1919,7 @@ bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
 	return false;
 }
 
-void AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
+void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
 {
 	//cout << "attemping to attach actors" << endl;
 	bool res;
@@ -11509,6 +11534,8 @@ void EditSession::ExecuteTerrainCompletion()
 
 void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
+	tempActors.clear();
+
 	Brush orig;
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
@@ -11523,6 +11550,11 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	progressBrush->Clear();
 	progressBrush->AddObject( sp );
+	for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
+	{
+		SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+		progressBrush->AddObject( tempsp );
+	}
 	cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, progressBrush );
 	action->Perform();
@@ -11631,6 +11663,8 @@ void RemoveTemporaryPoints( TerrainPolygon *poly, list<TerrainPoint*> &addedPoin
 
 void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 {
+	tempActors.clear();
+
 	//cout << "subtracting!" << endl;
 	Brush orig;
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
@@ -11711,6 +11745,12 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 				AttachActorsToPolygon( (*mit).second, (*rit).get()  );
 			}
 		}
+	}
+
+	for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
+	{
+		SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+		resultBrush.AddObject( tempsp );
 	}
 
 	//cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;

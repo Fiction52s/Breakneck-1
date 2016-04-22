@@ -371,6 +371,7 @@ struct ActorParams : ISelectable
 		Count
 	};
 
+	virtual ActorParams *Copy() = 0;
 	static EditSession *session;
 	ActorParams( PosType posType );
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
@@ -444,6 +445,7 @@ struct PatrollerParams : public ActorParams
 	void Draw( sf::RenderTarget *target );
 
 	bool CanApply();
+	ActorParams *Copy();
 
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
@@ -467,7 +469,7 @@ struct BatParams : public ActorParams
 	void Draw( sf::RenderTarget *target );
 
 	bool CanApply();
-
+	ActorParams *Copy();
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
 
@@ -482,7 +484,7 @@ struct HealthFlyParams : public ActorParams
 	//HealthFlyParams( EditSession *edit );
 	void WriteParamFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
-
+	ActorParams *Copy();
 	bool CanApply();
 	int color;
 };
@@ -499,6 +501,7 @@ struct KeyParams : public ActorParams
 		bool teleport,
 		GateInfo::GateTypes gType );
 	KeyParams( EditSession *edit );
+	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
@@ -524,6 +527,7 @@ struct CrawlerParams : public ActorParams
 
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	ActorParams *Copy();
 	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
 	float speed;
@@ -543,6 +547,8 @@ struct StagBeetleParams : public ActorParams
 	
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	ActorParams *Copy();
+
 	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
 	float speed;
@@ -555,7 +561,7 @@ struct CrawlerReverserParams : public ActorParams
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	//CrawlerParams( EditSession *edit );
-
+	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 };
@@ -567,7 +573,7 @@ struct BossCrawlerParams : public ActorParams
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	//CrawlerParams( EditSession *edit );
-
+	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 };
@@ -592,7 +598,7 @@ struct PoisonFrogParams : public ActorParams
 	void UpdateExtraVisuals();
 	//void SetParams();
 	//void SetPanelInfo();
-	
+	ActorParams *Copy();
 	bool CanApply();
 	void SetParams(); 
 	void SetPanelInfo();
@@ -616,6 +622,7 @@ struct BasicTurretParams : public ActorParams
 		int framesWait );
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	ActorParams *Copy();
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;
@@ -632,6 +639,7 @@ struct CurveTurretParams : public ActorParams
 		int framesWait,
 		sf::Vector2i gravFactor,
 		bool relativeGrav );
+	ActorParams *Copy();
 	CurveTurretParams( EditSession *edit,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
@@ -659,6 +667,7 @@ struct FootTrapParams : public ActorParams
 		double edgeQuantity );
 	FootTrapParams( EditSession *edit );
 	bool CanApply();
+	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	//void Draw( sf::RenderTarget *target );
 };
@@ -671,6 +680,7 @@ struct GoalParams : public ActorParams
 		double edgeQuantity );
 	GoalParams ( EditSession *edit );
 	bool CanApply();
+	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	//void Draw( sf::RenderTarget *target );
 };
@@ -684,6 +694,7 @@ struct PlayerParams : public ActorParams
 	void WriteParamFile( std::ofstream &of );
 	void Deactivate( EditSession *edit,
 		boost::shared_ptr<ISelectable> & select);
+	ActorParams *Copy();
 	void Activate( EditSession *edit,
 		boost::shared_ptr<ISelectable> & select );
 };
@@ -722,7 +733,9 @@ struct EditSession : GUIHandler
 	EditSession( sf::RenderWindow *w,
 		sf::RenderTexture *preScreenTex );
 	~EditSession();
-		
+	
+	bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly );
+	void AttachActorsToPolygon( std::list<ActorPtr> &actors, TerrainPolygon *poly );
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
@@ -764,6 +777,7 @@ struct EditSession : GUIHandler
 		//sf::Vector2i delta );
 		sf::Vector2<double> worldPos );
 
+	std::list<ActorPtr> tempActors;
 	GroundInfo worldPosGround;
 	ActorParams* tempActor;
 	sf::Vector2i airPos;
