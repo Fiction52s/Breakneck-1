@@ -474,6 +474,12 @@ void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 	//}
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.remove( actor );
+
+	if( actor->groundInfo != NULL )
+	{
+		actor->groundInfo->ground
+			->enemies[actor->groundInfo->edgeStart].remove( actor );
+	}
 }
 
 void ActorParams::Activate( EditSession *edit, SelectPtr &select )
@@ -485,6 +491,12 @@ void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
+
+	if( actor->groundInfo != NULL )
+	{
+		actor->groundInfo->ground
+			->enemies[actor->groundInfo->edgeStart].push_back( actor );
+	}
 }
 
 HealthFlyParams::HealthFlyParams( EditSession *edit,

@@ -562,7 +562,6 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	enum Action
 	{
 		RUN,
-		TURNAROUND,
 		JUMP,
 		ATTACK,
 		LAND

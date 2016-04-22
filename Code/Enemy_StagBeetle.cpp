@@ -243,10 +243,6 @@ void StagBeetle::ActionEnded()
 	case RUN:
 		frame = 0;
 		break;
-	case TURNAROUND:
-		action = RUN;
-		frame = 0;
-		break;
 	case JUMP:
 		frame = 0;
 		break;
@@ -274,26 +270,6 @@ void StagBeetle::UpdatePrePhysics()
 	switch( action )
 	{
 	case RUN:
-		if( facingRight )
-		{
-			if( player.position.x < position.x )
-			{
-				facingRight = false;
-				action = TURNAROUND;
-				frame = 0;
-			}
-		}
-		else
-		{
-			if( player.position.x > position.x )
-			{
-				facingRight = true;
-				action = TURNAROUND;
-				frame = 0;
-			}
-		}
-		break;
-	case TURNAROUND:
 		break;
 	case JUMP:
 		break;
@@ -308,20 +284,39 @@ void StagBeetle::UpdatePrePhysics()
 	case RUN:
 		if( facingRight )
 		{
-			groundSpeed = 5;
+			if( player.position.x < position.x )
+			{
+				facingRight = false;
+			}
 		}
 		else
 		{
-			groundSpeed = -5;
+			if( player.position.x > position.x )
+			{
+				facingRight = true;
+			}
 		}
-		break;
-	case TURNAROUND:
+
+		if( facingRight )
+		{
+			testMover->groundSpeed += .1;
+		}
+		else
+		{
+			testMover->groundSpeed -= .1;
+		}
 		break;
 	case JUMP:
 		break;
 	case ATTACK:
+		{
+			testMover->groundSpeed = 0;
+		}
 		break;
 	case LAND:
+		{
+			testMover->groundSpeed = 0;
+		}
 		break;
 	}
 
@@ -398,10 +393,10 @@ void StagBeetle::UpdatePhysics()
 
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
-	testMover->groundSpeed = 5 * f;
+	//testMover->groundSpeed = groundSpeed;// * f;
 	if( !facingRight )
 	{
-		testMover->groundSpeed = -5 * f;
+	//	testMover->groundSpeed = groundSpeed;// * f;
 	}
 	bezFrame++;
 
