@@ -58,6 +58,24 @@ void SurfaceMover::UpdateGroundPos()
 
 void SurfaceMover::SetSpeed( double speed )
 {
+	if( roll )
+	{
+		if( groundSpeed > 0 && speed < 0 )
+		{
+			Edge *next = ground->edge1;
+			ground = next;
+
+			edgeQuantity = 0;
+		}
+		else if( groundSpeed < 0 && speed > 0 )
+		{
+			Edge *prev = ground->edge0;
+			ground = prev;
+
+			edgeQuantity = length( ground->v1 - ground->v0 );
+		}
+	}
+
 	groundSpeed = speed;
 }
 
@@ -531,6 +549,12 @@ void SurfaceMover::Move( int slowMultiple )
 
 		movement /= slowMultiple * NUM_STEPS;
 
+		if( abs( movement ) < .0001 )
+		{
+			movement = 0;
+			return;
+		}
+
 		while( movement != 0 )
 		{
 			//ground is always some value
@@ -644,6 +668,11 @@ void SurfaceMover::Move( int slowMultiple )
 				movement = steal;
 
 			edgeQuantity = q;
+
+			if( abs( movement ) < .0001 )
+			{
+				movement = 0;
+			}
 		}
 
 		if( ground != NULL )

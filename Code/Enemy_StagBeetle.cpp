@@ -44,7 +44,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 	testMover = new GroundMover( owner, g, q, 32, true, this );
 	testMover->gravity = V2d( 0, .5 );
-	testMover->groundSpeed = s;
+	testMover->SetSpeed( s );
+	//testMover->groundSpeed = s;
 	if( !facingRight )
 	{
 		testMover->groundSpeed = -testMover->groundSpeed;
@@ -116,7 +117,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
 
-	testMover->groundSpeed = 0;
+	testMover->SetSpeed( 0 );
 	//testMover->Move( slowMultiple );
 
 	//ground = testMover->ground;
@@ -186,7 +187,7 @@ void StagBeetle::ResetEnemy()
 
 	UpdateHitboxes();
 
-	testMover->groundSpeed = 0;
+	testMover->SetSpeed( 0 );
 
 }
 
@@ -305,28 +306,28 @@ void StagBeetle::UpdatePrePhysics()
 
 		if( facingRight )
 		{
-			testMover->groundSpeed = 5;//+= .1;
+			testMover->SetSpeed( testMover->groundSpeed + .3 );
 		}
 		else
 		{
-			testMover->groundSpeed = -5;//-= .1;
+			testMover->SetSpeed( testMover->groundSpeed - .3 );
 		}
 
 		if( testMover->groundSpeed > 10 )
-			testMover->groundSpeed = 10;
+			testMover->SetSpeed( 10 );
 		else if( testMover->groundSpeed < -10 )
-			testMover->groundSpeed = -10;
+			testMover->SetSpeed( -10 );
 		break;
 	case JUMP:
 		break;
 	case ATTACK:
 		{
-			testMover->groundSpeed = 0;
+			testMover->SetSpeed( 0 );
 		}
 		break;
 	case LAND:
 		{
-			testMover->groundSpeed = 0;
+			testMover->SetSpeed( 0 );
 		}
 		break;
 	}
@@ -373,6 +374,8 @@ void StagBeetle::UpdatePrePhysics()
 		{
 			frame = rollAnimationFactor * 2; 
 		}
+
+		cout << "groundspeed: " << testMover->groundSpeed << endl;
 	//}
 
 	/*if( bezFrame == 0 )
@@ -421,7 +424,7 @@ void StagBeetle::UpdatePhysics()
 	testMover->Move( slowMultiple );
 
 	position = testMover->physBody.globalPosition;
-
+	
 	PhysicsResponse();
 }
 
@@ -713,6 +716,8 @@ void StagBeetle::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
+
+	cout << "position: " << position.x << ", " << position.y << endl;
 	//need to calculate frames in here!!!!
 
 	//sprite.setPosition( position );
@@ -949,13 +954,31 @@ void StagBeetle::FinishedRoll()
 
 void StagBeetle::HitOther()
 {
-	cout << "hit other!" << endl;
-	testMover->groundSpeed = 0;
+	V2d v;
+	if( facingRight && testMover->groundSpeed > 0 )
+	{
+		v = V2d( 10, -10 );
+		testMover->Jump( v );
+	}
+	else if( !facingRight && testMover->groundSpeed < 0 )
+	{
+		v = V2d( -10, -10 );
+		testMover->Jump( v );
+	}
+	//cout << "hit other!" << endl;
+	//testMover->SetSpeed( 0 );
 	//facingRight = !facingRight;
 }
 
 void StagBeetle::ReachCliff()
 {
+	if( facingRight && testMover->groundSpeed < 0 
+		|| !facingRight && testMover->groundSpeed > 0 )
+	{
+		testMover->SetSpeed( 0 );
+		return;
+	}
+
 	//cout << "reach cliff!" << endl;
 	//ground = NULL;
 	V2d v;
