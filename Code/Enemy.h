@@ -333,7 +333,7 @@ struct Bat : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
-	sf::Vector2<double> basePos;
+	//sf::Vector2<double> basePos;
 	int deathFrame;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
@@ -368,8 +368,8 @@ struct Bat : Enemy
 	int bloodFrame;
 	bool facingRight;
 
-	sf::Vector2<double> offsetPlayer;
-	bool latchedOn;
+	//sf::Vector2<double> offsetPlayer;
+	//bool latchedOn;
 
 	struct Stored
 	{
@@ -624,6 +624,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	//CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
+	sf::Vector2<double> gravity;
 	
 	int attackFrame;
 	int attackMult;
@@ -652,6 +653,9 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
+
+	double maxGroundSpeed;
+	double maxFallSpeed;
 };
 
 struct BasicTurret : Enemy

@@ -17,16 +17,15 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	list<Vector2i> &pathParam, bool loopP, float pspeed )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
-	latchedOn = false;
+	//latchedOn = false;
 	//offsetPlayer 
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	latchedOn = true; 
+	//latchedOn = true; 
+
 	
-
-
 	initHealth = 40;
 	health = initHealth;
 
@@ -59,7 +58,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 		//}
 	}
 
-	basePos = position;
+	//basePos = position;
 	V2d sqTest0 = position;
 	V2d sqTest1 = position + V2d( 0, -150 );
 	V2d sqTest2 = position + V2d( 150, -150 );
@@ -70,11 +69,17 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	///trans.scale( Vector2f( 3, 1 ) );
 	
 	//trans.rotate( 
-
-	testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 0, CubicBezier( 0, 0, 1, 1), 60 );
+	for( int i = 0; i < pathLength - 1; ++i )
+	{
+		V2d A( path[i].x, path[i].y );
+		V2d B( path[i+1].x, path[i+1].y );
+		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), 60 );
+	}
+	
+	//testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 0, CubicBezier( 0, 0, 1, 1), 60 );
 	//trans.rotate( 90 );
 	//trans.
-	testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 90, CubicBezier( 0, 0, 1, 1), 60 );
+	//testSeq.AddRadialMovement( 50, 0, 2 * PI, true, V2d( 3, 1 ), 90, CubicBezier( 0, 0, 1, 1), 60 );
 
 	//testSeq.AddLineMovement( sqTest0, sqTest1, 
 	//	CubicBezier(1,.03,.07,.72 ), 60 );
@@ -230,17 +235,17 @@ void Bat::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( latchedOn )
+	/*if( latchedOn )
 	{
 		basePos = owner->player.position + offsetPlayer;
-	}
+	}*/
 }
 
 void Bat::UpdatePhysics()
 {
 	testSeq.Update();
 
-	position = basePos + testSeq.position;
+	position = testSeq.position;
 
 	return;
 

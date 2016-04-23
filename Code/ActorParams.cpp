@@ -61,6 +61,10 @@ ActorParams::ActorParams( ActorParams::PosType p_posType )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
 
+void ActorParams::SetPath( std::list<sf::Vector2i> &globalPath )
+{
+}
+
 void ActorParams::SetParams()
 {
 }
@@ -88,17 +92,7 @@ bool ActorParams::CanAdd()
 void ActorParams::Draw( sf::RenderTarget *target )
 {
 	//cout << "Selected: " << selected << endl;
-	if( selected )
-	{
-		sf::RectangleShape rs;
-		rs.setFillColor( Color::Transparent );
-		rs.setOutlineColor( Color::Green );
-		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
-		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
-		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
-		//target->draw( rs );
-		//cout << "selected draw" << endl;
-	}
+	
 
 	//temporary checks might make it lag less?
 
@@ -109,9 +103,8 @@ void ActorParams::Draw( sf::RenderTarget *target )
 	{
 		target->draw( image );
 	}
-	
 
-
+	DrawBoundary( target );
 }
 
 void ActorParams::WriteFile( ofstream &of )
@@ -373,6 +366,21 @@ void ActorParams::UnAnchor( ActorPtr &actor )
 	}
 }
 
+void ActorParams::DrawBoundary( sf::RenderTarget *target )
+{
+	if( selected )
+	{
+		sf::RectangleShape rs;
+		rs.setFillColor( Color::Transparent );
+		rs.setOutlineColor( Color::Green );
+		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
+		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
+		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
+		target->draw( rs );
+		//cout << "selected draw" << endl;
+	}
+}
+
 bool ActorParams::ContainsPoint( sf::Vector2f test )
 { 
 	sf::Transform trans = image.getTransform();
@@ -530,7 +538,8 @@ void HealthFlyParams::WriteParamFile( std::ofstream &of )
 
 void HealthFlyParams::Draw( sf::RenderTarget *target )
 {
-	target->draw( image );
+	ActorParams::Draw( target );
+	//target->draw( image );
 }
 
 
@@ -893,19 +902,10 @@ void PatrollerParams::Draw( sf::RenderTarget *target )
 		}
 	}
 
-	target->draw( image );
+	ActorParams::Draw( target );
+	//target->draw( image );
 
-	if( selected )
-	{
-		sf::RectangleShape rs;
-		rs.setFillColor( Color::Transparent );
-		rs.setOutlineColor( Color::Green );
-		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
-		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
-		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
-		target->draw( rs );
-		//cout << "selected draw" << endl;
-	}
+	//DrawBoundar
 }
 
 std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()
@@ -1254,12 +1254,21 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 	params.push_back( ss.str() );*/
 }
 
-BatParams::BatParams( EditSession *edit )
+BatParams::BatParams( EditSession *edit, sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {	
 	lines = NULL;
-	//position = pos;	
-	type = edit->types["patroller"];
+	position = pos;	
+	type = edit->types["bat"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	loop = false;
+	speed = 5;
+
+	SetBoundingQuad();
 
 	//image.setTexture( type->imageTexture );
 	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
@@ -1304,6 +1313,7 @@ void BatParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
 	if( lines != NULL )
 	{
+		//cout << "SET PATH REMOVCE LINES-------------------------------------------" << endl;
 		delete lines;
 		lines = NULL;
 	}
@@ -1348,13 +1358,14 @@ void BatParams::Draw( sf::RenderTarget *target )
 
 	if( localPathSize > 0 )
 	{
+		
 		VertexArray &li = *lines;
 	
 	
-			for( int i = 0; i < localPathSize+1; ++i )
-			{
-				li[i].position += Vector2f( position.x, position.y );
-			}
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position += Vector2f( position.x, position.y );
+		}
 	
 	
 		target->draw( li );
@@ -1381,19 +1392,7 @@ void BatParams::Draw( sf::RenderTarget *target )
 		}
 	}
 
-	target->draw( image );
-
-	if( selected )
-	{
-		sf::RectangleShape rs;
-		rs.setFillColor( Color::Transparent );
-		rs.setOutlineColor( Color::Green );
-		rs.setOutlineThickness( 3 * EditSession::zoomMultiple );
-		rs.setPosition( image.getGlobalBounds().left, image.getGlobalBounds().top );
-		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
-		target->draw( rs );
-		//cout << "selected draw" << endl;
-	}
+	ActorParams::Draw( target );
 }
 
 std::list<sf::Vector2i> BatParams::GetGlobalPath()
@@ -1429,6 +1428,52 @@ void BatParams::WriteParamFile( ofstream &of )
 
 	of.precision( 5 );
 	of << fixed << speed << endl;
+}
+
+void BatParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+	bool t_loop = p->checkBoxes["loop"]->checked;
+	//string yStrengthStr = p->textBoxes["ystrength"]->text.getString().toAnsiString();
+	//string jumpWaitFramesStr = p->textBoxes["jumpwaitframes"]->text.getString().toAnsiString();
+	//string gravityFactorStr = p->textBoxes["gravfactor"]->text.getString().toAnsiString();
+	
+	ss << speedStr;
+
+	int t_speed;
+	ss >> t_speed;
+
+	if( !ss.fail() )
+	{
+		speed = t_speed;
+	}
+
+	loop = t_loop;
+
+	ss.clear();
+}
+
+void BatParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+
+	p->textBoxes["group"]->text.setString( group->name );
+	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->checkBoxes["loop"]->checked = loop;
+	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+}
+
+void BatParams::SetDefaultPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	p->textBoxes["group"]->text.setString( "not test" );
+	p->textBoxes["speed"]->text.setString( "10" );
+	p->checkBoxes["loop"]->checked = false;
 }
 
 ActorParams *BatParams::Copy()
@@ -1467,11 +1512,18 @@ StagBeetleParams::StagBeetleParams( EditSession *edit, TerrainPolygon *p_edgePol
 	SetBoundingQuad();	
 }
 
-StagBeetleParams::StagBeetleParams( EditSession *edit )
+StagBeetleParams::StagBeetleParams( EditSession *edit,
+	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
 {
 	
+	speed = 10;
+	clockwise = true;
 	type = edit->types["stagbeetle"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
 }
 
 bool StagBeetleParams::CanApply()
@@ -1493,6 +1545,47 @@ void StagBeetleParams::WriteParamFile( ofstream &of )
 	
 	of.precision( 5 );
 	of << fixed << speed << endl;
+}
+
+void StagBeetleParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	bool clockwise = p->checkBoxes["clockwise"]->checked;
+	double t_speed;
+
+	stringstream ss;
+	string s = p->textBoxes["speed"]->text.getString().toAnsiString();
+	ss << s;
+
+	ss >> t_speed;
+
+	if( !ss.fail() )
+	{
+		speed = t_speed;
+	}
+
+	ss.clear();
+}
+
+void StagBeetleParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["group"]->text.setString( group->name );
+	p->checkBoxes["clockwise"]->checked = clockwise;
+	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+
+	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+}
+
+void StagBeetleParams::SetDefaultPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	p->textBoxes["group"]->text.setString( "not test" );
+	p->checkBoxes["clockwise"]->checked = true;
+	p->textBoxes["speed"]->text.setString( "10" );
 }
 
 ActorParams *StagBeetleParams::Copy()

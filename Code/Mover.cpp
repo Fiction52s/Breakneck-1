@@ -17,11 +17,13 @@
 using namespace std;
 using namespace sf;
 
-SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround, double startQuantity, double radius )
+SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround, 
+	double startQuantity, double radius )// double mSpeed )
 	:ground( startGround ), edgeQuantity( startQuantity ), owner( p_owner ),
 	groundSpeed( 0 ), roll( false )
 {
-	gravity = V2d( 0, 0 );
+	//maxSpeed = mSpeed;
+	//gravity = V2d( 0, 0 );
 	physBody.isCircle = true;
 	physBody.rw = radius;
 	physBody.rh = radius;
@@ -682,7 +684,7 @@ void SurfaceMover::Move( int slowMultiple )
 	}
 	else 
 	{
-		velocity += gravity / NUM_STEPS / (double)slowMultiple;
+		//velocity += gravity / NUM_STEPS / (double)slowMultiple;
 		//cout << "move through the air" << endl;
 
 		V2d movementVec = velocity;

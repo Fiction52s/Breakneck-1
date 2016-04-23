@@ -22,12 +22,14 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
-	
+	maxGroundSpeed = s;
 	action = RUN;
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
 	deathFrame = 0;
+
+	maxFallSpeed = 25;
 
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
@@ -43,13 +45,13 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	frame = 0;
 
 	testMover = new GroundMover( owner, g, q, 32, true, this );
-	testMover->gravity = V2d( 0, .5 );
-	testMover->SetSpeed( s );
+	//testMover->gravity = V2d( 0, .5 );
+	testMover->SetSpeed( 0 );
 	//testMover->groundSpeed = s;
-	if( !facingRight )
+	/*if( !facingRight )
 	{
 		testMover->groundSpeed = -testMover->groundSpeed;
-	}
+	}*/
 
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
@@ -131,7 +133,7 @@ void StagBeetle::ResetEnemy()
 	testMover->edgeQuantity = startQuant;
 	testMover->roll = false;
 	testMover->UpdateGroundPos();
-	
+	testMover->SetSpeed( 0 );
 
 	position = testMover->physBody.globalPosition;
 	//testMover->UpdateGroundPos();
@@ -187,7 +189,7 @@ void StagBeetle::ResetEnemy()
 
 	UpdateHitboxes();
 
-	testMover->SetSpeed( 0 );
+	
 
 }
 
@@ -313,10 +315,10 @@ void StagBeetle::UpdatePrePhysics()
 			testMover->SetSpeed( testMover->groundSpeed - .3 );
 		}
 
-		if( testMover->groundSpeed > 10 )
-			testMover->SetSpeed( 10 );
-		else if( testMover->groundSpeed < -10 )
-			testMover->SetSpeed( -10 );
+		if( testMover->groundSpeed > maxGroundSpeed )
+			testMover->SetSpeed( maxGroundSpeed );
+		else if( testMover->groundSpeed < -maxGroundSpeed )
+			testMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case JUMP:
 		break;
@@ -420,6 +422,21 @@ void StagBeetle::UpdatePhysics()
 		
 
 	}
+
+	if( testMover->ground != NULL )
+	{
+	}
+	else
+	{
+		testMover->velocity += gravity / (NUM_STEPS / slowMultiple);
+
+		if( testMover->velocity.y >= maxFallSpeed )
+		{
+			testMover->velocity.y = maxFallSpeed;
+		}
+	}
+
+	
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
 

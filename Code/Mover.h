@@ -25,7 +25,7 @@ struct SurfaceMover : QuadTreeCollider
 	SurfaceMover( GameSession *owner,
 		Edge *startGround,
 		double startQuantity,
-		double radius );
+		double radius);
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Update();
 	void SetSpeed( double speed );
@@ -59,7 +59,8 @@ struct SurfaceMover : QuadTreeCollider
 	//std::string queryMode;
 	sf::Vector2<double> tempVel;
 
-	sf::Vector2<double> gravity;
+	//sf::Vector2<double> gravity;
+	//double maxSpeed;
 	sf::Vector2<double> velocity;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening

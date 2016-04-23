@@ -4891,13 +4891,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( trackingEnemy->name == "bat" )
 									{
+										tempActor = new BatParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetDefaultPanelInfo();
+
 										showPanel = trackingEnemy->panel;
-
-										showPanel->textBoxes["name"]->text.setString( "test" );
-										showPanel->textBoxes["group"]->text.setString( "not test" );
-										showPanel->textBoxes["speed"]->text.setString( "10" );
-										showPanel->checkBoxes["loop"]->checked = false;
-
 
 										patrolPath.clear();
 										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
@@ -4957,11 +4955,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//groups["--"]->name
 										if( enemyEdgePolygon != NULL )
 										{
+											tempActor = new StagBeetleParams( this, enemyEdgePolygon, 
+												enemyEdgeIndex, enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
-											showPanel->checkBoxes["clockwise"]->checked = false;
-											showPanel->textBoxes["speed"]->text.setString( "1.5" );
+											tempActor->SetDefaultPanelInfo();
 											//trackingEnemy = NULL;
 										}
 									}
@@ -5365,18 +5362,44 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == Keyboard::Space )
 							{
-								if( selectedActor != NULL )
+								if( selectedBrush->objects.size() == 1 ) //EDIT
 								{
-									showPanel = selectedActor->type->panel;
-									((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+									//showPanel = trackingEnemy->panel;
+									ISelectable *select = selectedBrush->objects.front().get();
+									ActorParams *actor = (ActorParams*)select;
+									showPanel = actor->type->panel;
+									actor->SetPath( patrolPath );
+									//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 									mode = EDIT;
 								}
 								else
 								{
 									showPanel = trackingEnemy->panel;
-									
+									//ISelectable *select = selectedBrush->objects.front().get();
+									//ActorParams *actor = (ActorParams*)select;
+									tempActor->SetPath( patrolPath );
+									//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 									mode = CREATE_ENEMY;
 								}
+								//if( selectedActor != NULL )
+								//{
+								//	showPanel = selectedActor->type->panel;
+								//	((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+								//	mode = EDIT;
+								//}
+								//else
+								//{
+								//	showPanel = trackingEnemy->panel;
+								//	
+								//	assert( selectedBrush->objects.size() == 1 );
+
+								//	ISelectable *select = selectedBrush->objects.front().get();
+								//	ActorParams *actor = (ActorParams*)select;
+								//	actor->SetPath( patrolPath );
+								//	//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+								//	mode = EDIT;
+								//	//mode = CREATE_ENEMY;
+								//}
 								
 								/*showPanel = trackingEnemy->panel;
 								trackingEnemy = NULL;
@@ -7252,7 +7275,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						preScreenTex->draw( rs );
 					}
 				}
-
 				break;
 			}
 		case CREATE_ENEMY:
@@ -7260,22 +7282,28 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				if( trackingEnemy != NULL )
 				{
 					if( tempActor != NULL )
+					{
 						tempActor->Draw( preScreenTex );
+					}
 					else
 					{
 						preScreenTex->draw( enemySprite );
 					}
-					//tempActor->Draw( preScreenTex );
-					//
-					//preScreenTex->draw( enemyQuad );
+					preScreenTex->draw( enemyQuad );
 				}
 				break;
 			}
 		case CREATE_PATROL_PATH:
 			{
+
 				if( trackingEnemy != NULL )
 				{
-					preScreenTex->draw( enemySprite );
+					if( tempActor != NULL )
+						tempActor->Draw( preScreenTex );
+					else
+					{
+						preScreenTex->draw( enemySprite );
+					}					
 					preScreenTex->draw( enemyQuad );
 				}
 				int pathSize = patrolPath.size();
@@ -8347,9 +8375,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				BatParams *bat = (BatParams*)select;
+				bat->SetParams();
 				bat->monitorType = GetMonitorType( p );
-				bat->speed = speed;
-				bat->loop = loop;
+				//bat->speed = speed;
+				//bat->loop = loop;
 				//patroller->SetPath( patrolPath );
 			}
 			else if( mode == CREATE_ENEMY )
@@ -8357,11 +8386,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				//eventually can convert this between indexes or something to simplify when i have more types
 
 
-				ActorPtr bat( new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				ActorPtr bat( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				bat->SetParams();
+				bat->group = groups["--"];
 				bat->monitorType = GetMonitorType( p );
 				//cout << "set patroller monitor type to: " << patroller->monitorType << endl;
 				//groups["--"]->actors.push_back( patroller);
-				bat->group = groups["--"];
+				
 
 				CreateActor( bat );
 				//trackingEnemy = NULL;
@@ -8376,6 +8407,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		
 				//enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
 
+				tempActor = NULL;
 			
 				
 			}
@@ -8401,6 +8433,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			Vector2i front = patrolPath.front();
 			patrolPath.clear();
 			patrolPath.push_back( front );
+			//cout << "CREATE PATH MODE--------------------" << endl;
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
@@ -8579,21 +8612,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" );
 		{
-			bool clockwise = p->checkBoxes["clockwise"]->checked;
-			double speed;
-
-			stringstream ss;
-			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
-			ss << s;
-
-			ss >> speed;
-
-			if( ss.fail() )
-			{
-				cout << "stringstream to integer parsing error" << endl;
-				ss.clear();
-				assert( false );
-			}
+			
 
 			//not sure if this is what i need
 			//if( mode == EDIT && selectedActor != NULL )
@@ -8601,26 +8620,28 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				StagBeetleParams *stagBeetle = (StagBeetleParams*)select;
+				stagBeetle->SetParams();
 				stagBeetle->monitorType = GetMonitorType( p );
-				stagBeetle->speed = speed;
-				stagBeetle->clockwise = clockwise;
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				
-
 				//eventually can convert this between indexes or something to simplify when i have more types
-				
 
-				ActorPtr stagBeetle( new StagBeetleParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
-				stagBeetle->group = groups["--"];
-				stagBeetle->monitorType = GetMonitorType( p );
-				//groups["--"]->actors.push_back( crawler );
+				ActorPtr stagBeetle( tempActor );//new StagBeetleParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
+				stagBeetle->SetParams();
+
 				enemyEdgePolygon->enemies[stagBeetle->groundInfo->edgeStart].push_back( stagBeetle );
 				enemyEdgePolygon->UpdateBounds();
 
+				stagBeetle->group = groups["--"];
+				stagBeetle->monitorType = GetMonitorType( p );
 
 				CreateActor( stagBeetle );
+				//groups["--"]->actors.push_back( crawler );
+				
+				tempActor = NULL;
+
+				
 			}
 			showPanel = NULL;
 			//showPanel = enemySelectPanel;
@@ -10882,15 +10903,11 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "bat" )
 	{
 		BatParams *bat = (BatParams*)ap;
-		
-		p->textBoxes["group"]->text.setString( bat->group->name );
-
-		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( bat->speed ) );
-		p->checkBoxes["loop"]->checked = bat->loop;
+		bat->SetPanelInfo();
 		patrolPath = bat->GetGlobalPath();
 		showPanel = p;
 
-		SetMonitorGrid( bat->monitorType, p->gridSelectors["monitortype"] );
+		
 	}
 	else if( name == "crawler" )
 	{
@@ -10912,17 +10929,7 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "stagbeetle" )
 	{
 		StagBeetleParams *stagBeetle = (StagBeetleParams*)ap;
-		
-		//cout << "hmm: " << name << endl;
-		p->textBoxes["group"]->text.setString( stagBeetle->group->name );
-
-		p->checkBoxes["clockwise"]->checked = stagBeetle->clockwise;
-		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( stagBeetle->speed ) );
-		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-
-		SetMonitorGrid( stagBeetle->monitorType, p->gridSelectors["monitortype"] );
-		
+		stagBeetle->SetPanelInfo();
 		showPanel = p;
 		
 	}

@@ -381,7 +381,8 @@ struct ActorParams : ISelectable
 	void AnchorToGround( GroundInfo &gi );
 	void UnAnchor(boost::shared_ptr<ActorParams> &me );
 	void UpdateGroundedSprite();
-
+	virtual void SetPath( std::list<sf::Vector2i> &globalPath );
+	void DrawBoundary( sf::RenderTarget *target );
 	virtual void SetParams();
 	virtual void SetPanelInfo();
 	virtual void SetDefaultPanelInfo();
@@ -461,12 +462,17 @@ struct BatParams : public ActorParams
 		std::list<sf::Vector2i> &globalPath, 
 		float speed,
 		bool loop ); 
-	BatParams( EditSession *edit );
+	BatParams( EditSession *edit,
+		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
 	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+	void SetDefaultPanelInfo();
 
 	bool CanApply();
 	ActorParams *Copy();
@@ -542,11 +548,16 @@ struct StagBeetleParams : public ActorParams
 	//StagBeetleParams( EditSession *edit,
 	//	sf::Vector2i &pos, bool facingRight,
 	//	float speed );
-	StagBeetleParams( EditSession *edit );
+	StagBeetleParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
 
 	
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+	void SetDefaultPanelInfo();
 	ActorParams *Copy();
 
 	//void Draw( sf::RenderTarget *target );
