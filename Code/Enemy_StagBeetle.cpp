@@ -114,6 +114,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
+
+	testMover->groundSpeed = 0;
 	//testMover->Move( slowMultiple );
 
 	//ground = testMover->ground;
@@ -125,8 +127,9 @@ void StagBeetle::ResetEnemy()
 {
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
-	testMover->UpdateGroundPos();
 	testMover->roll = false;
+	testMover->UpdateGroundPos();
+	
 
 	position = testMover->physBody.globalPosition;
 	//testMover->UpdateGroundPos();
@@ -181,6 +184,8 @@ void StagBeetle::ResetEnemy()
 	//----
 
 	UpdateHitboxes();
+
+	testMover->groundSpeed = 0;
 
 }
 
@@ -299,12 +304,17 @@ void StagBeetle::UpdatePrePhysics()
 
 		if( facingRight )
 		{
-			testMover->groundSpeed += .1;
+			testMover->groundSpeed = 5;//+= .1;
 		}
 		else
 		{
-			testMover->groundSpeed -= .1;
+			testMover->groundSpeed = -5;//-= .1;
 		}
+
+		if( testMover->groundSpeed > 10 )
+			testMover->groundSpeed = 10;
+		else if( testMover->groundSpeed < -10 )
+			testMover->groundSpeed = -10;
 		break;
 	case JUMP:
 		break;

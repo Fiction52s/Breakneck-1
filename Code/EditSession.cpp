@@ -11541,9 +11541,10 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	{
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
-
+		bool oldSelected = (*it)->selected;
+		(*it)->SetSelected( true );
 		Add( (*it), polygonInProgress );
-												
+		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
 	}
 
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
