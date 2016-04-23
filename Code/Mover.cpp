@@ -795,12 +795,15 @@ void GroundMover::HitTerrain( double &q )
 		}
 		else
 		{
+			//cout << "this transition" << endl;
 			roll = false;
 			q = ground->GetQuantity( minContact.position + minContact.resolution );
 		}
 	}
 	else
 	{
+		//might need some extra code for nonsteeps that run into steeps
+		//cout << "this OTHER transition" << endl;
 		physBody.globalPosition += minContact.resolution;
 		q = ground->GetQuantity( physBody.globalPosition );
 		if( handler != NULL )

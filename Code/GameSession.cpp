@@ -5331,9 +5331,13 @@ void GameSession::RespawnPlayer()
 	player.receivedHit = NULL;
 
 	if( player.hasPowerLeftWire )
+	{
 		player.leftWire->Reset();
-	else if( player.hasPowerRightWire )
+	}
+	if( player.hasPowerRightWire )
+	{
 		player.rightWire->Reset();
+	}
 	
 	powerBar.Reset();
 	player.lastWire = 0;

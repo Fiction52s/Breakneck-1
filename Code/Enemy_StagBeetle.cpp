@@ -42,7 +42,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	startQuant = q;
 	frame = 0;
 
-	testMover = new GroundMover( owner, g, q, 32, false, this );
+	testMover = new GroundMover( owner, g, q, 32, true, this );
 	testMover->gravity = V2d( 0, .5 );
 	testMover->groundSpeed = s;
 	if( !facingRight )
@@ -57,6 +57,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	V2d gPoint = g->GetPoint( q );
 	sprite.setPosition( testMover->physBody.globalPosition.x,
 		testMover->physBody.globalPosition.y );
+	position = testMover->physBody.globalPosition;
 	//roll = false;
 	//position = gPoint + ground->Normal() * height / 2.0;
 	
@@ -191,7 +192,7 @@ void StagBeetle::ResetEnemy()
 
 int StagBeetle::NumTotalBullets()
 {
-	return 10;
+	return 0;
 }
 
 void StagBeetle::HandleEntrant( QuadTreeEntrant *qte )
@@ -948,8 +949,8 @@ void StagBeetle::FinishedRoll()
 
 void StagBeetle::HitOther()
 {
-	//cout << "hit other!" << endl;
-	//testMover->groundSpeed = -testMover->groundSpeed;
+	cout << "hit other!" << endl;
+	testMover->groundSpeed = 0;
 	//facingRight = !facingRight;
 }
 
