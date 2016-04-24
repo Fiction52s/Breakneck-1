@@ -383,10 +383,12 @@ struct ActorParams : ISelectable
 	void UpdateGroundedSprite();
 	virtual void SetPath( std::list<sf::Vector2i> &globalPath );
 	void DrawBoundary( sf::RenderTarget *target );
+	void DrawMonitor( sf::RenderTarget *target );
 	virtual void SetParams();
 	virtual void SetPanelInfo();
 	virtual void SetDefaultPanelInfo();
 	static  Panel * CreateOptionsPanel();
+
 
 	virtual void SetBoundingQuad();
 	virtual void UpdateExtraVisuals()

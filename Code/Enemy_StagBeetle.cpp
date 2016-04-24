@@ -22,6 +22,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
+	gravity = V2d( 0, .6 );
 	maxGroundSpeed = s;
 	action = RUN;
 	initHealth = 60;
@@ -377,7 +378,7 @@ void StagBeetle::UpdatePrePhysics()
 			frame = rollAnimationFactor * 2; 
 		}
 
-		cout << "groundspeed: " << testMover->groundSpeed << endl;
+		//cout << "groundspeed: " << testMover->groundSpeed << endl;
 	//}
 
 	/*if( bezFrame == 0 )
@@ -734,7 +735,7 @@ void StagBeetle::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	cout << "position: " << position.x << ", " << position.y << endl;
+	//cout << "position: " << position.x << ", " << position.y << endl;
 	//need to calculate frames in here!!!!
 
 	//sprite.setPosition( position );
@@ -766,7 +767,31 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
 			cs.setRadius( 55 );
-			cs.setFillColor( COLOR_BLUE );
+			switch( monitor->monitorType )
+			{
+			case Monitor::BLUE:
+				cs.setFillColor( COLOR_BLUE );
+				break;
+			case Monitor::GREEN:
+				cs.setFillColor( COLOR_GREEN );
+				break;
+			case Monitor::YELLOW:
+				cs.setFillColor( COLOR_YELLOW );
+				break;
+			case Monitor::ORANGE:
+				cs.setFillColor( COLOR_ORANGE );
+				break;
+			case Monitor::RED:
+				cs.setFillColor( COLOR_RED );
+				break;
+			case Monitor::MAGENTA:
+				cs.setFillColor( COLOR_MAGENTA );
+				break;
+			case Monitor::WHITE:
+				cs.setFillColor( COLOR_WHITE );
+				break;
+			}
+			
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );

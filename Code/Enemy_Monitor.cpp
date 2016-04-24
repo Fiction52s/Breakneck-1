@@ -75,7 +75,9 @@ void Monitor::UpdatePhysics()
 {
 	UpdateHitboxes();
 
-	if( monitorType == BLUE && owner->player.hasBlueKey )
+	int gateType = (int)monitorType + 1;
+
+	if( owner->player.hasKey[ gateType])
 	{
 		return;
 	}
@@ -85,7 +87,8 @@ void Monitor::UpdatePhysics()
 	if( ihit || hitMe.first )
 	{
 		//cout << "got the monitor!" << endl;
-		switch( monitorType )
+		owner->player.hasKey[gateType] = true;
+		/*switch( monitorType )
 		{
 		case BLUE:
 			owner->player.hasBlueKey = true;
@@ -104,7 +107,7 @@ void Monitor::UpdatePhysics()
 			break;
 		default:
 			assert( false );
-		}
+		}*/
 		owner->RemoveEnemy( this );
 		//get rid of me
 	}

@@ -11558,12 +11558,16 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	progressBrush->Clear();
 	progressBrush->AddObject( sp );
-	for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
-	{
-		SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-		progressBrush->AddObject( tempsp );
-	}
-	cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
+	//cout << "tempActors size: " << tempActors.size() << endl;
+	//for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
+	//{
+
+	//	SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+	//	//progressBrush->AddObject( tempsp );
+	//}
+
+	
+	//cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, progressBrush );
 	action->Perform();
 	doneActionStack.push_back( action );
@@ -11755,11 +11759,11 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		}
 	}
 
-	for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
+	/*for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
 	{
 		SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		resultBrush.AddObject( tempsp );
-	}
+	}*/
 
 	//cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, &resultBrush );

@@ -12,6 +12,8 @@
 #include "Light.h"
 #include "AirParticles.h"
 
+#include "Gate.h"
+
 struct Gate;
 struct Critical;
 struct GameSession;
@@ -441,14 +443,14 @@ struct Actor : QuadTreeCollider,
 	//unstored while working on
 	bool dead;	
 
-
-	
-	bool hasBlueKey;
+	//dummy key at 0 for GREY
+	bool hasKey[Gate::GateType::Count];
+	/*bool hasBlueKey;
 	bool hasGreenKey;
 	bool hasYellowKey;
 	bool hasOrangeKey;
 	bool hasRedKey;
-	bool hasMagentaKey;
+	bool hasMagentaKey;*/
 
 	int framesSinceClimbBoost;
 	int climbBoostLimit;

@@ -12,6 +12,13 @@ using namespace sf;
 #define cout std::cout
 #define V2d sf::Vector2<double>
 
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 EditSession * ActorParams::session = NULL;
 
@@ -96,6 +103,8 @@ void ActorParams::Draw( sf::RenderTarget *target )
 
 	//temporary checks might make it lag less?
 
+	DrawMonitor( target );
+
 	Vector2f viewCenter = target->getView().getCenter();
 	Vector2f viewSize = target->getView().getSize();
 	if( image.getGlobalBounds().intersects( FloatRect( viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
@@ -105,6 +114,54 @@ void ActorParams::Draw( sf::RenderTarget *target )
 	}
 
 	DrawBoundary( target );
+}
+
+void ActorParams::DrawMonitor( sf::RenderTarget *target )
+{
+	
+
+	if( monitorType != ActorParams::MonitorType::NONE )
+	{
+		double w = image.getLocalBounds().width;
+		double h = image.getLocalBounds().height;
+
+		sf::CircleShape cs;
+		cs.setRadius( max( w, h ) );
+
+		switch( monitorType )
+		{
+		case BLUE:
+			cs.setFillColor( COLOR_BLUE );
+			break;
+		case GREEN:
+			cs.setFillColor( COLOR_GREEN );
+			break;
+		case YELLOW:
+			cs.setFillColor( COLOR_YELLOW );
+			break;
+		case ORANGE:
+			cs.setFillColor( COLOR_ORANGE );
+			break;
+		case RED:
+			cs.setFillColor( COLOR_RED );
+			break;
+		case MAGENTA:
+			cs.setFillColor( COLOR_MAGENTA );
+			break;
+		case WHITE:
+			cs.setFillColor( COLOR_WHITE );
+			break;
+		}
+
+		cs.setOrigin( cs.getLocalBounds().width / 2, 
+			cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+
+		target->draw( cs );
+	}
+
+	
+	
 }
 
 void ActorParams::WriteFile( ofstream &of )
@@ -478,6 +535,7 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 {
+	cout << "DEACTIVATING ACTOR PARAMS size from: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.remove( actor );
 
@@ -499,6 +557,7 @@ void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 
 void ActorParams::Activate( EditSession *edit, SelectPtr &select )
 {
+	cout << "addding to group of size: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
 
@@ -1551,7 +1610,7 @@ void StagBeetleParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	bool clockwise = p->checkBoxes["clockwise"]->checked;
+	bool t_clockwise = p->checkBoxes["clockwise"]->checked;
 	double t_speed;
 
 	stringstream ss;
@@ -1565,7 +1624,11 @@ void StagBeetleParams::SetParams()
 		speed = t_speed;
 	}
 
-	ss.clear();
+	//ss.clear();
+
+	clockwise = t_clockwise;
+
+	
 }
 
 void StagBeetleParams::SetPanelInfo()

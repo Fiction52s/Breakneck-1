@@ -54,9 +54,11 @@ Actor::Actor( GameSession *gs )
 		lastWire = 0;
 		inBubble = false;
 		oldInBubble = false;
-		hasRedKey = false;
-		hasGreenKey = false;
-		hasBlueKey = false;
+
+		for( int i = 0; i < Gate::GateType::Count; ++i )
+		{
+			hasKey[i] = false;
+		}
 		
 
 		gateTouched = NULL;
@@ -3352,6 +3354,16 @@ void Actor::UpdatePrePhysics()
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 			//	V2d bounceNorm;
+				
+				
+				//double lenVel = length( storedBounceVel );
+				//double reflX = cross( normalize( -storedBounceVel ), bn );
+				//double reflY = dot( normalize( -storedBounceVel ), bn );
+				//V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
+				////velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
+				////cout << "reflx: " << reflX <<", refly: " << reflY << endl;
+				//velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
+				
 				if( bn.y < 0 )
 				{
 					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
@@ -9689,11 +9701,13 @@ void Actor::PhysicsResponse()
 				
 			}
 
-			if( g->type == Gate::BLUE )
+			if( g->keyGate )//g->type == Gate::BLUE )
 			{
-				assert( hasBlueKey );
-				cout << "getting rid of blue key and setting it to dissolve!!" << endl;
-				hasBlueKey = false;
+				assert( hasKey[g->type] );
+				hasKey[g->type] = false;
+				//assert( hasBlueKey );
+				//cout << "getting rid of blue key and setting it to dissolve!!" << endl;
+				//hasBlueKey = false;
 			}
 			g->gState = Gate::DISSOLVE;
 			//g->type = Gate::BLUE;
@@ -11625,20 +11639,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( g->locked && ( g->edgeA->v0 == grindEdge->v0 || g->edgeA->v1 == grindEdge->v0 ) )
 			{
-				if( g->type == Gate::RED && hasRedKey )
+				if( g->keyGate && hasKey[g->type] )
 				{
 					g->locked = false;
-					hasRedKey = false;
-				}
-				else if( g->type == Gate::GREEN && hasGreenKey )
-				{
-					g->locked = false;
-					hasGreenKey = false;
-				}
-				else if( g->type == Gate::BLUE && hasBlueKey )
-				{
-					g->locked = false;
-					hasBlueKey = false;
+					hasKey[g->type] = false;
 				}
 				else
 				{
@@ -11652,20 +11656,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			cout << "this better not be happening lol" << endl;
 			if( g->locked && g->edgeA->IsTouchingBox( r ) )
 			{
-				if( g->type == Gate::RED && hasRedKey )
+				if( g->keyGate && hasKey[g->type] )
 				{
 					g->locked = false;
-					hasRedKey = false;
-				}
-				else if( g->type == Gate::GREEN && hasGreenKey )
-				{
-					g->locked = false;
-					hasGreenKey = false;
-				}
-				else if( g->type == Gate::BLUE && hasBlueKey )
-				{
-					g->locked = false;
-					hasBlueKey = false;
+					hasKey[g->type] = false;
 				}
 				else
 				{
@@ -11687,7 +11681,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( (*it).Intersects( c->box ) )
 					{
 						currentCheckPoint = c;
-						c->hadBlueKey = hasBlueKey;
+						for( int i = 2; i < Gate::GateType::Count; ++i )
+						{
+							c->hadKey[i] = hasKey[i];
+						}
 						owner->activatedZoneList = NULL;
 						owner->inactiveEnemyList = NULL;
 						owner->unlockedGateList = NULL;
@@ -11702,7 +11699,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			if( hurtBody.Intersects( c->box ) )
 			{
 				currentCheckPoint = c;
-				c->hadBlueKey = hasBlueKey;
+				for( int i = 2; i < Gate::GateType::Count; ++i )
+				{
+					c->hadKey[i] = hasKey[i];
+				}
 				owner->inactiveEnemyList = NULL;
 				owner->unlockedGateList = NULL;
 				owner->activatedZoneList = NULL;
@@ -14468,35 +14468,19 @@ bool Actor::CanUnlockGate( Gate *g )
 	bool canUnlock = false;
 	//cout << "this gate is still locked" << endl;
 
-	switch( g->type )
+	if( g->type == Gate::GREY )
 	{
-	case Gate::GREY:
 		canUnlock = true;
-		break;
-	case Gate::BLACK:
-		return false;
-		break;
-	case Gate::BLUE:
-		//cout << "has blue key: " << hasBlueKey << endl;
-		if( hasBlueKey )
-		{
-			
-			//hasBlueKey = false;
-			canUnlock = true;
-		}
-		break;
-	case Gate::GREEN:
-		if( hasGreenKey )
-		{
-			//hasGreenKey = false;
-			canUnlock = true;
-		}
-		break;
-	case Gate::RED:
-		{
-		}
-		break;
 	}
+	else if( g->type == Gate::BLACK )
+	{
+		canUnlock = false;
+	}
+	else if( g->keyGate && hasKey[g->type] )
+	{
+		canUnlock = true;
+	}
+
 	return canUnlock;
 }
 
@@ -14504,32 +14488,17 @@ bool Actor::CaptureMonitor( Monitor * m )
 {
 	assert( m != NULL );
 
-	switch( m->monitorType )
+	int gType = (int)m->monitorType + 1;
+	if( hasKey[gType] )
 	{
-	case Monitor::BLUE:
-		if( hasBlueKey )
-		{
-			return false;
-		}
-		else
-		{
-			hasBlueKey = true;
-			return true;
-		}
-		break;
-	case Monitor::GREEN:
-		if( hasGreenKey )
-		{
-			return false;
-		}
-		else
-		{
-			hasGreenKey = true;
-			return true;
-		}
-		break;
-	default:
-		assert( 0 && "didnt finish these" );
+		//cout << "ALREADY HAS KEY: " << gType << endl;
+		return false;
+	}
+	else
+	{
+		//cout << "GIVING ME A KEY: " << (int)gType << endl;
+		hasKey[gType] = true;
+		return true;
 	}
 }
 

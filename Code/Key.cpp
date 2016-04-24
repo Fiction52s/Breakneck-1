@@ -203,53 +203,53 @@ void Key::AdvanceTargetNode()
 
 void Key::PhysicsResponse()
 {
-	Actor &player = owner->player;
+	//Actor &player = owner->player;
 
-	bool checkHit = true;
+	//bool checkHit = true;
 
 
-	//the player already has this key
-	if( keyType == Key::RED && player.hasRedKey 
-		|| keyType == Key::GREEN && player.hasGreenKey 
-		|| keyType == Key::BLUE && player.hasBlueKey )
-	{
-		checkHit = false;
-	}
+	////the player already has this key
+	//if( keyType == Key::RED && player.hasRedKey 
+	//	|| keyType == Key::GREEN && player.hasGreenKey 
+	//	|| keyType == Key::BLUE && player.hasBlueKey )
+	//{
+	//	checkHit = false;
+	//}
 
-	if( !dead && checkHit )
-	{
-		UpdateHitboxes();
+	//if( !dead && checkHit )
+	//{
+	//	UpdateHitboxes();
 
-		pair<bool,bool> result = PlayerHitMe();
-		if( result.first )
-		{
-		 //no hitlag ever
-			if( result.second )
-			{
-				dead = true;
-				receivedHit = NULL;
-				if( keyType == Key::RED )
-					player.hasRedKey = true;
-				else if( keyType == Key::GREEN )
-					player.hasGreenKey = true;
-				else if( keyType == Key::BLUE )
-					player.hasBlueKey = true;
-			}	
-		}
+	//	pair<bool,bool> result = PlayerHitMe();
+	//	if( result.first )
+	//	{
+	//	 //no hitlag ever
+	//		if( result.second )
+	//		{
+	//			dead = true;
+	//			receivedHit = NULL;
+	//			if( keyType == Key::RED )
+	//				player.hasRedKey = true;
+	//			else if( keyType == Key::GREEN )
+	//				player.hasGreenKey = true;
+	//			else if( keyType == Key::BLUE )
+	//				player.hasBlueKey = true;
+	//		}	
+	//	}
 
-		if( IHitPlayer() )
-		{
-			dead = true;
-			receivedHit = NULL;
-			if( keyType == Key::RED )
-				player.hasRedKey = true;
-			else if( keyType == Key::GREEN )
-				player.hasGreenKey = true;
-			else if( keyType == Key::BLUE )
-				player.hasBlueKey = true;
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-	}
+	//	if( IHitPlayer() )
+	//	{
+	//		dead = true;
+	//		receivedHit = NULL;
+	//		if( keyType == Key::RED )
+	//			player.hasRedKey = true;
+	//		else if( keyType == Key::GREEN )
+	//			player.hasGreenKey = true;
+	//		else if( keyType == Key::BLUE )
+	//			player.hasBlueKey = true;
+	//	//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+	//	}
+	//}
 }
 
 void Key::UpdatePostPhysics()

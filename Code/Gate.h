@@ -37,6 +37,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		OPEN,
 		State_Count
 	};
+	
+	bool keyGate;
 	bool reformBehindYou;
 	Gate( GameSession *owner, GateType type,
 		bool reformBehindYou );

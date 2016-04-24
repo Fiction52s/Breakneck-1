@@ -67,7 +67,7 @@ struct Critical : QuadTreeEntrant
 	CollisionBox box;
 	bool active;
 
-	bool hadBlueKey;
+	bool hadKey[Gate::GateType::Count];
 
 	Critical *next;
 	Critical *prev;

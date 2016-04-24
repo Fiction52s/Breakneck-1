@@ -12,6 +12,8 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
+	
+
 	edgeA = NULL;
 	edgeB = NULL;
 
@@ -31,6 +33,10 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	gQuads = NULL;
 	frame = 0;
+
+	keyGate = type == BLUE || type == GREEN || type == YELLOW
+		|| type == ORANGE || type == RED || type == MAGENTA ||
+		type == WHITE;
 }
 
 void Gate::Draw( sf::RenderTarget *target )
@@ -97,6 +103,8 @@ void Gate::UpdateLine()
 		break;
 	case GREEN:
 		c = Color::Green;
+		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
+		tileHeight = 64;
 		break;
 	case RED:
 		c = Color::Red;
@@ -136,7 +144,7 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
-	if( type == Gate::GREY || type == Gate::BLACK || type == BLUE )
+	if( type == Gate::GREY || type == Gate::BLACK || keyGate )
 	{
 		if( gQuads == NULL )
 		{
@@ -148,10 +156,10 @@ void Gate::UpdateLine()
 
 void Gate::Update()
 {
-
+	
 
 	//gates can be timeslowed? don't worry about it just yet. 
-	if( type == GREY || type == BLUE )
+	if( type == GREY || keyGate )
 	{
 		switch( gState )
 		{
@@ -246,10 +254,12 @@ void Gate::Update()
 	}
 	double radius = 300;
 	//double dist = length( owner->player.position
-	if( type == BLUE )
+	if( keyGate )
 	{
-		if( !owner->player.hasBlueKey && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+
+		if( !owner->player.hasKey[type] && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
 		{
+			//cout << "HARDENING: " << type << endl;
 			if( gState == SOFTEN )
 			{
 				gState = HARDEN;
@@ -264,6 +274,7 @@ void Gate::Update()
 		}
 		else
 		{
+			//cout << "SOFTENING: " << type << endl;
 			if( gState == HARDEN )
 			{
 				gState = SOFTEN;
@@ -310,11 +321,11 @@ void Gate::Update()
 	int f = frame / 3;
 	//cout << "gq: " << gq.getVertexCount() << endl;
 
-	if( type == GREY || type == BLACK || type == BLUE )
+	if( type == GREY || type == BLACK || keyGate )
 	{
 		int realFrame = -1;
 
-		if( type == GREY || type == BLUE )
+		if( type == GREY || keyGate )
 		{
 			switch( gState )
 			{

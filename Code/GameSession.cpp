@@ -4893,7 +4893,7 @@ int GameSession::Run( string fileN )
 
 		sf::RectangleShape keyR( Vector2f( 33, 33 ) );
 		keyR.setPosition( keyHolderSprite.getPosition().x + 4, keyHolderSprite.getPosition().y + 4 );
-		if( player.hasRedKey )
+		if( player.hasKey[Gate::RED] )
 		{
 			//keyR.setPosition( keyHolderSprite.getPosition().x + 3, keyHolderSprite.getPosition().y + 4 );
 			keyR.setFillColor( Color::Red );
@@ -4902,7 +4902,7 @@ int GameSession::Run( string fileN )
 		}
 
 		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
-		if( player.hasGreenKey )
+		if( player.hasKey[Gate::GREEN] )
 		{
 			keyR.setFillColor( Color::Green );
 			preScreenTex->draw( keyR );
@@ -4910,7 +4910,7 @@ int GameSession::Run( string fileN )
 		}
 
 		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
-		if( player.hasBlueKey )
+		if( player.hasKey[Gate::BLUE] )
 		{
 			
 			keyR.setFillColor( Color::Blue );
@@ -5290,18 +5290,19 @@ void GameSession::RespawnPlayer()
 		player.position = originalPos;
 		
 		//actually keys should be set based on which ones you had at the last checkpoint
-		player.hasRedKey = false;
-		player.hasGreenKey = false;
-		player.hasBlueKey = false;
+		for( int i = 2; i < Gate::GateType::Count; ++i )
+		{
+			player.hasKey[i] = false;
+		}
 	}
 	else
 	{
 		player.position = player.currentCheckPoint->pos;
 
-
-		player.hasRedKey = false;
-		player.hasGreenKey = false;
-		player.hasBlueKey = player.currentCheckPoint->hadBlueKey;
+		for( int i = 2; i < Gate::GateType::Count; ++i )
+		{
+			player.hasKey[i] = player.currentCheckPoint->hadKey[i];
+		}
 	}
 
 	player.followerPos = player.position;
@@ -8322,7 +8323,11 @@ void GameSession::LockGate( Gate *g )
 Critical::Critical( V2d &pointA, V2d &pointB )
 	:bar( sf::Quads, 4 )
 {
-	hadBlueKey = false;
+	for( int i = 0; i < Gate::GateType::Count; ++i )
+	{
+		hadKey[i] = false;
+	}
+	//hadBlueKey = false;
 
 	anchorA = pointA;
 	anchorB = pointB;
