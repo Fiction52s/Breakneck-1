@@ -83,6 +83,7 @@ struct Launcher
 	void UpdatePostPhysics();
 	void UpdateSprites();
 	BasicBullet * ActivateBullet();
+	int GetActiveCount();
 	void Fire();
 	virtual BasicBullet * RanOutOfBullets();
 	void AddToList( BasicBullet *b,
@@ -230,7 +231,7 @@ struct BasicEffect : Enemy
 
 struct Patroller : Enemy
 {
-	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );
+	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed );
 	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -309,7 +310,8 @@ struct Patroller : Enemy
 struct Bat : Enemy
 {
 	MovementSequence testSeq;
-	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed );
+	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, 
+		bool loop, int speed );
 	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -823,6 +825,8 @@ struct CurveTurret : Enemy, LauncherEnemy
 	int animationFactor;
 	sf::Vector2<double> gn;
 	double bulletSpeed;
+
+	bool dying;
 
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;

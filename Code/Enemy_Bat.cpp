@@ -14,7 +14,7 @@ using namespace sf;
 
 
 Bat::Bat( GameSession *owner, Vector2i pos, 
-	list<Vector2i> &pathParam, bool loopP, float pspeed )
+	list<Vector2i> &pathParam, bool loopP, int pspeed )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
 	//latchedOn = false;

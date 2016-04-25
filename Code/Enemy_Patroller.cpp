@@ -13,7 +13,7 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, float pspeed )
+Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
 	:Enemy( owner, EnemyType::PATROLLER ), deathFrame( 0 )
 {
 	receivedHit = NULL;
@@ -41,6 +41,8 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 	loop = loopP;
 	
+	//eventually maybe put this on a multiplier for more variation?
+	//doubt ill need it though
 	speed = pspeed;
 
 

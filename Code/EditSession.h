@@ -440,7 +440,8 @@ struct PatrollerParams : public ActorParams
 		std::list<sf::Vector2i> &globalPath, 
 		float speed,
 		bool loop ); 
-	PatrollerParams( EditSession *edit );
+	PatrollerParams( EditSession *edit,
+		sf::Vector2i &pos);
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
 		std::list<sf::Vector2i> &globalPath );
@@ -450,11 +451,15 @@ struct PatrollerParams : public ActorParams
 	bool CanApply();
 	ActorParams *Copy();
 
+	void SetParams();
+	void SetPanelInfo();
+	void SetDefaultPanelInfo();
+
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
 
 	bool loop;
-	float speed;
+	int speed;
 };
 
 struct BatParams : public ActorParams
@@ -462,7 +467,7 @@ struct BatParams : public ActorParams
 	BatParams( EditSession *edit,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath, 
-		float speed,
+		int speed,
 		bool loop ); 
 	BatParams( EditSession *edit,
 		sf::Vector2i &pos );
@@ -482,7 +487,7 @@ struct BatParams : public ActorParams
 	sf::VertexArray *lines; //local pos
 
 	bool loop;
-	float speed;
+	int speed;
 };
 
 struct HealthFlyParams : public ActorParams

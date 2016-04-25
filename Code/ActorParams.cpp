@@ -834,12 +834,22 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 	params.push_back( ss.str() );*/
 }
 
-PatrollerParams::PatrollerParams( EditSession *edit )
+PatrollerParams::PatrollerParams( EditSession *edit,
+	sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {	
 	lines = NULL;
-	//position = pos;	
+	position = pos;	
 	type = edit->types["patroller"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	loop = false;
+	speed = 10;
+
+	SetBoundingQuad();
 
 	//image.setTexture( type->imageTexture );
 	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
@@ -872,6 +882,54 @@ PatrollerParams::PatrollerParams( EditSession *edit )
 	ss.precision( 5 );
 	ss << fixed << speed;
 	params.push_back( ss.str() );*/
+}
+
+void PatrollerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	bool loop = p->checkBoxes["loop"]->checked;
+	
+
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << speedStr;
+
+	int t_speed; 
+	ss >> t_speed;
+
+	if( !ss.fail() )
+	{
+		speed = t_speed;
+	}
+	//try
+	//{
+	//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+	//}
+	//catch(boost::bad_lexical_cast &)
+	//{
+	//	//error
+	//}
+}
+
+void PatrollerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["group"]->text.setString( group->name );
+	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->checkBoxes["loop"]->checked = loop;
+	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+}
+
+void PatrollerParams::SetDefaultPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	p->textBoxes["group"]->text.setString( "not test" );
+	p->textBoxes["speed"]->text.setString( "10" );
+	p->checkBoxes["loop"]->checked = false;
 }
 
 bool PatrollerParams::CanApply()
@@ -998,8 +1056,9 @@ void PatrollerParams::WriteParamFile( ofstream &of )
 		of << "-loop" << endl;
 	}
 
-	of.precision( 5 );
-	of << fixed << speed << endl;
+	//of.precision( 5 );
+	of << speed << endl;
+	//of << fixed << speed << endl;
 }
 
 ActorParams *PatrollerParams::Copy()
@@ -1274,7 +1333,7 @@ ActorParams *PlayerParams::Copy()
 
 //BAT
 
-BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_speed, bool p_loop )
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
@@ -1485,8 +1544,8 @@ void BatParams::WriteParamFile( ofstream &of )
 		of << "-loop" << endl;
 	}
 
-	of.precision( 5 );
-	of << fixed << speed << endl;
+	//of.precision( 5 );
+	of << speed << endl;//fixed << speed << endl;
 }
 
 void BatParams::SetParams()

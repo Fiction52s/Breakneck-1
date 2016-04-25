@@ -425,13 +425,13 @@ patroller -13157 -23408
 1
 0
 -loop
-10.00000
+10
 patroller -12716 -23565
 1
 1
 -200 214
 -loop
-3.00000
+3
 healthfly -12290 -25308
 1
 0
@@ -447,17 +447,17 @@ patroller -10686 -24475
 0
 0
 -loop
-10.00000
+10
 patroller -10452 -24504
 0
 0
 -loop
-10.00000
+10
 patroller -10234 -24523
 0
 0
 -loop
-10.00000
+10
 crawler 8 43 515.26953
 0
 -clockwise

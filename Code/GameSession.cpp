@@ -1027,7 +1027,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 
 
-				float speed;
+				int speed;
 				is >> speed;
 				Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
 				//enemy->Monitor::MonitorType
@@ -1092,7 +1092,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 
 
-				float speed;
+				int speed;
 				is >> speed;
 				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, loop, speed );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );

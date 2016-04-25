@@ -119,10 +119,11 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0 );
-	testLauncher->SetBulletSpeed( 10 );
+	testLauncher->SetBulletSpeed( bulletSpeed );
 	testLauncher->SetGravity( gravity );
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
+	dying = false;
 }
 
 void CurveTurret::HandleEntrant( QuadTreeEntrant *qte )
@@ -139,9 +140,11 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 void CurveTurret::ResetEnemy()
 {
 	dead = false;
+	dying = false;
 	frame = 0;
 	deathFrame = 0;
 	testLauncher->Reset();
+	health = initHealth;
 }
 
 void CurveTurret::UpdatePrePhysics()
@@ -164,7 +167,7 @@ void CurveTurret::UpdatePrePhysics()
 		if( health <= 0 )
 		{
 			AttemptSpawnMonitor();
-			dead = true;
+			dying = true;
 		}
 
 		receivedHit = NULL;
@@ -196,7 +199,7 @@ void CurveTurret::PhysicsResponse()
 
 	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
 
-	if( !dead )
+	if( !( dead || dying ) )
 	{
 		UpdateHitboxes();
 
@@ -289,7 +292,7 @@ void CurveTurret::UpdatePostPhysics()
 	//	cout << "frame" << endl;
 		slowCounter = 1;
 	
-		if( dead )
+		if( dying )
 		{
 			deathFrame++;
 		}
@@ -301,10 +304,18 @@ void CurveTurret::UpdatePostPhysics()
 	}
 	
 
-	if( deathFrame == 30 )
+	if( deathFrame == 30 && dying )
+	{
+		dying = false;
+		dead = true;
+		//testLauncher->Reset();
+		//owner->RemoveEnemy( this );
+		//return;
+	}
+
+	if( dead && testLauncher->GetActiveCount() == 0 )
 	{
 		owner->RemoveEnemy( this );
-		return;
 	}
 
 	UpdateSprite();
@@ -313,7 +324,7 @@ void CurveTurret::UpdatePostPhysics()
 
 void CurveTurret::Draw(sf::RenderTarget *target )
 {
-	if( !dead )
+	if( !(dead || dying ) )
 	{
 		if( monitor != NULL )
 		{
@@ -327,7 +338,7 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 		}
 		target->draw( sprite );
 	}
-	else
+	else if( dying )
 	{
 		target->draw( botDeathSprite );
 
@@ -353,17 +364,20 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 
 void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
-
-	if( monitor != NULL )
+	if( !(dead || dying) )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( COLOR_BLUE );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+
+		if( monitor != NULL )
+		{
+			monitor->miniSprite.setPosition( position.x, position.y );
+			target->draw( monitor->miniSprite );
+		}
 	}
 }
 

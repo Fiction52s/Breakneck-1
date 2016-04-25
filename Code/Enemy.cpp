@@ -145,6 +145,19 @@ BasicBullet * Launcher::RanOutOfBullets()
 	return NULL;
 }
 
+int Launcher::GetActiveCount()
+{
+	int count = 0;
+	BasicBullet *curr = activeBullets;
+	while( curr != NULL )
+	{
+		++count;
+		curr = curr->next;
+	}
+
+	return count;
+}
+
 void BasicBullet::Reset( V2d &pos, V2d &vel )
 {
 	position = pos;

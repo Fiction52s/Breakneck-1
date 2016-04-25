@@ -272,10 +272,11 @@ void Camera::Update( Actor *player )
 	}
 	
 
-	if( offset.x < -150 * zoomFactor )
-		offset.x = -150 * zoomFactor;
-	else if( offset.x > 150 * zoomFactor )
-		offset.x = 150 * zoomFactor;
+	int xLimit = 250;
+	if( offset.x < -xLimit * zoomFactor )
+		offset.x = -xLimit * zoomFactor;
+	else if( offset.x > xLimit * zoomFactor )
+		offset.x = xLimit * zoomFactor;
 
 	if( offset.y < -100 * zoomFactor )
 		offset.y = -100 * zoomFactor;

@@ -1199,18 +1199,18 @@ patroller 1486 80
 1
 0
 -loop
-10.00000
+10
 goal 1 2 90.89790
 patroller 1322 -74
 1
 0
 -loop
-10.00000
+10
 patroller 1154 -78
 0
 0
 -loop
-10.00000
+10
 crawler 36 20 51.05753
 -clockwise
 10.00000

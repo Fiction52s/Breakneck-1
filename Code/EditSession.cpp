@@ -4874,12 +4874,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( trackingEnemy->name == "patroller" )
 									{
-										showPanel = trackingEnemy->panel;
 
-										showPanel->textBoxes["name"]->text.setString( "test" );
-										showPanel->textBoxes["group"]->text.setString( "not test" );
-										showPanel->textBoxes["speed"]->text.setString( "10" );
-										showPanel->checkBoxes["loop"]->checked = false;
+										tempActor = new PatrollerParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetDefaultPanelInfo();
+
+										showPanel = trackingEnemy->panel;
 
 
 										patrolPath.clear();
@@ -8276,17 +8276,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" )
 		{
-			bool loop = p->checkBoxes["loop"]->checked;
-			float speed = 1; 
-
-			try
-			{
-				speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
-			}
-			catch(boost::bad_lexical_cast &)
-			{
-				//error
-			}
+			
 
 			//showPanel = trackingEnemy->panel;
 			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
@@ -8295,50 +8285,27 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				PatrollerParams *patroller = (PatrollerParams*)select;
+				patroller->SetParams();
 				patroller->monitorType = GetMonitorType( p );
-				patroller->speed = speed;
-				patroller->loop = loop;
+				//patroller->speed = speed;
+				//patroller->loop = loop;
 				//patroller->SetPath( patrolPath );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				//eventually can convert this between indexes or something to simplify when i have more types
+				//eventually can convert this between indexes or 
+				//something to simplify when i have more types
 
-
-				ActorPtr patroller( new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
-				patroller->monitorType = GetMonitorType( p );
-				//cout << "set patroller monitor type to: " << patroller->monitorType << endl;
-				//groups["--"]->actors.push_back( patroller);
+				ActorPtr patroller( tempActor );//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				patroller->SetParams();
 				patroller->group = groups["--"];
+				patroller->monitorType = GetMonitorType( p );
 
 				CreateActor( patroller );
-				//trackingEnemy = NULL;
 
-				//trackingEnemy = types[name];
-				//enemySprite.setTexture( trackingEnemy->imageTexture );
-
-				//enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
-				//	trackingEnemy->imageTexture.getSize().y ) );
-
-				//enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
-		
-				//enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
-
-			
-				
+				tempActor = NULL;
 			}
 			showPanel = NULL;
-			
-
-			//ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
-			
-			//patrolPath.clear();
-			//actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
-			
-			//mode = CREATE_ENEMY;
-			//patroller path should get set only from hitting the button within it to start the path check
-
-			//showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
 		{
@@ -8356,17 +8323,17 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" )
 		{
-			bool loop = p->checkBoxes["loop"]->checked;
-			float speed = 1; 
+			//bool loop = p->checkBoxes["loop"]->checked;
+			//float speed = 1; 
 
-			try
-			{
-				speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
-			}
-			catch(boost::bad_lexical_cast &)
-			{
-				//error
-			}
+			//try
+			//{
+			//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+			//}
+			//catch(boost::bad_lexical_cast &)
+			//{
+			//	//error
+			//}
 
 			//showPanel = trackingEnemy->panel;
 			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
@@ -10890,15 +10857,9 @@ void EditSession::SetEnemyEditPanel()
 	if( name == "patroller" )
 	{
 		PatrollerParams *patroller = (PatrollerParams*)ap;
-		
-		p->textBoxes["group"]->text.setString( patroller->group->name );
-
-		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( patroller->speed ) );
-		p->checkBoxes["loop"]->checked = patroller->loop;
+		patroller->SetPanelInfo();
 		patrolPath = patroller->GetGlobalPath();
 		showPanel = p;
-
-		SetMonitorGrid( patroller->monitorType, p->gridSelectors["monitortype"] );
 	}
 	else if( name == "bat" )
 	{
@@ -10987,6 +10948,8 @@ void EditSession::SetEnemyEditPanel()
 		p->textBoxes["group"]->text.setString( fly->group->name );
 
 		SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
+
+		showPanel = p;
 	}
 	else if( name == "key" )
 	{
