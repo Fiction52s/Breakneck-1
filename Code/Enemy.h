@@ -1353,7 +1353,10 @@ struct PoisonFrog : Enemy
 	//};
 	
 	PoisonFrog( GameSession *owner, 
-		Edge *ground, double quantity );
+		Edge *ground, double quantity,
+		int gravFactor,
+		sf::Vector2i &jumpStrength,
+		int jumpFramesWait );
 
 	int actionLength[Action::Count];
 	int animFactor[Action::Count];
@@ -1373,8 +1376,12 @@ struct PoisonFrog : Enemy
 	int hitsCounter;
 	int invincibleFrames;
 
-	double jumpStrength;
+	//double jumpStrength;
 	double xSpeed;
+	int jumpFramesWait;
+	double gravityFactor;
+	bool steepJump;
+	sf::Vector2<double> jumpStrength;
 
 	//sf::Vector2<double> position;
 

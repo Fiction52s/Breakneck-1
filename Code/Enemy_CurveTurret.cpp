@@ -157,7 +157,7 @@ void CurveTurret::UpdatePrePhysics()
 		frame = 0;
 	}
 
-	if( !dead && receivedHit != NULL )
+	if( !dead && !dying && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
 		health -= 20;
@@ -175,7 +175,7 @@ void CurveTurret::UpdatePrePhysics()
 	
 	
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
-	if( frame == 0 && slowCounter == 1 )
+	if( !dying && !dead && frame == 0 && slowCounter == 1 )
 	{
 		testLauncher->Fire();
 	}
@@ -318,6 +318,7 @@ void CurveTurret::UpdatePostPhysics()
 		owner->RemoveEnemy( this );
 	}
 
+	
 	UpdateSprite();
 	testLauncher->UpdateSprites();
 }

@@ -12,8 +12,11 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::POISONFROG ), ground( g ), edgeQuantity( q )
+PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q, int gFactor,
+	sf::Vector2i &jStrength, int framesWait )
+	:Enemy( owner, EnemyType::POISONFROG ), ground( g ), edgeQuantity( q ),
+	gravityFactor( gFactor ), jumpStrength( jStrength.x, jStrength.y ), 
+	jumpFramesWait( framesWait )
 {
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 10;
@@ -30,7 +33,7 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q )
 	double height = 64;
 	ts_test = owner->GetTileset( "poisonfrog_64x64.png", width, height );
 
-	jumpStrength = 10;
+	//jumpStrength = 10;
 	xSpeed = 8;
 
 
@@ -39,7 +42,7 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q )
 	
 	//cout << "creating the boss crawler" << endl;
 	action = STAND;
-	gravity = .6;
+	gravity = gravityFactor / 64.0;
 	facingRight = false;
 	receivedHit = NULL;
 
@@ -67,16 +70,16 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q )
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 64;
-	hurtBody.rh = 64;
+	hurtBody.rw = 45;
+	hurtBody.rh = 45;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 64;
-	hitBody.rh = 64;
+	hitBody.rw = 45;
+	hitBody.rh = 45;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
@@ -89,8 +92,8 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q )
 	physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
-	physBody.rw = 64;
-	physBody.rh = 64;
+	physBody.rw = 45;
+	physBody.rh = 45;
 	physBody.type = CollisionBox::BoxType::Physics;
 
 	startGround = ground;
@@ -541,29 +544,59 @@ void PoisonFrog::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
-				//cout << "frog jumping" << endl;
-				ground = NULL;
-
-				if( facingRight )
+				if( owner->IsSteepGround( ground->Normal() ) >= 0 )
 				{
-					velocity = V2d( xSpeed, -jumpStrength );
+					steepJump = true;
 				}
 				else
 				{
-					velocity = V2d( -xSpeed, -jumpStrength );
+					steepJump = false;
+				}
+				//cout << "frog jumping " << (int)steepJump << endl;
+				ground = NULL;
+
+				
+				if( facingRight )
+				{
+					velocity = V2d( jumpStrength.x * (int)(!steepJump), -jumpStrength.y );
+				}
+				else
+				{
+					velocity = V2d( -jumpStrength.x * (int)(!steepJump), -jumpStrength.y );
 				}
 				
 			}
 			else
 			{
-				if( facingRight )
+				if( steepJump && velocity.y >= 0 )
 				{
-					velocity.x = xSpeed;
+					if( facingRight )
+					{
+						velocity.x += .3; //some number
+						if( velocity.x > jumpStrength.x )
+							velocity.x = jumpStrength.x;
+					}
+					else
+					{
+						velocity.x -= .3;
+						if( velocity.x < -jumpStrength.x )
+							velocity.x = -jumpStrength.x;
+					}
 				}
-				else
+				else if( !steepJump )
 				{
-					velocity.x = -xSpeed;
+					if( facingRight )
+					{
+						velocity.x = jumpStrength.x;
+					}
+					else
+					{
+						velocity.x = -jumpStrength.x;
+					}
 				}
+
+
+				
 			}
 		}
 		break;

@@ -1236,6 +1236,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 			{
 				//always grounded
 
+			/*	of << (int)monitorType << endl;
+	of << gravFactor << endl;
+	of << jumpStrength.x << " " << jumpStrength.y << endl;
+	of << jumpWaitFrames << endl;*/
+
 				int terrainIndex;
 				is >> terrainIndex;
 
@@ -1251,8 +1256,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int gravFactor;
 				is >> gravFactor;
 
-				int xSpeed;
-				is >> xSpeed;
+				int jumpStrengthX;
+				is >> jumpStrengthX;
+
+				int jumpStrengthY;
+				is >> jumpStrengthY;
 
 				int jumpFramesWait;
 				is >> jumpFramesWait;
@@ -1275,7 +1283,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 				PoisonFrog *enemy = new PoisonFrog( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity);//, clockwise );//, speed );
+					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );//, clockwise );//, speed );
 
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
@@ -4554,7 +4562,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 		
 
@@ -5731,8 +5739,6 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		int valid = ValidEdge( eNorm );
 		if( valid != -1 )
 		{
-			
-
 			double len = length( te->v1 - te->v0 ) + test * 2;
 			int numQuads = len / tw;
 			double quadWidth = len / numQuads;
