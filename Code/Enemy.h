@@ -1361,6 +1361,8 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	int actionLength[Action::Count];
 	int animFactor[Action::Count];
 
+	
+
 	Tileset *ts_test;
 	//int queryIndex;
 

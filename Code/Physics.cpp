@@ -581,7 +581,9 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					double xx = sqrt( radius * radius - yy * yy );
 					double pr = dot( coll, nVel );
 
-					if( xx >= pr )
+					//changed this so pr >= 0 but I'm not entirely sure why. I
+					//don't understand why my code isn't working T_T
+					if( xx >= pr && pr >= 0 )
 					{
 					//V2d coll = e->v0 - position;
 					//cout << "bb" << endl;
@@ -601,7 +603,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					currentContact->normal = V2d( 0, 0 );
 					currentContact->position = e->v0;
 					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
-					//cout << "third one" << endl;
+					//cout << "third one: " << proj.x << ", " << proj.y << endl;
 					return currentContact;
 					}
 				}
@@ -614,9 +616,10 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					double xx = sqrt( radius * radius - yy * yy );
 					double pr = dot( coll, nVel );
 
-					if( xx >= pr )
+					//pr >= 0 is new. check above comments
+					if( xx >= pr && pr >= 0 )
 					{
-					//cout << "xx: " << xx << ", pr: " << pr << endl;
+				//	cout << "xx: " << xx << ", pr: " << pr << endl;
 					V2d proj = (xx-pr) * nVel;
 					proj = -proj;
 					//dist is dot
@@ -633,7 +636,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					currentContact->normal = V2d( 0, 0 );
 					currentContact->position = e->v1;
 					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
-					//cout << "fourth one" << endl;
+					//cout << "fourth one: " << proj.x << ", " << proj.y << endl;
 					return currentContact;
 					}
 				}

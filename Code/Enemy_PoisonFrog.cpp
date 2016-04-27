@@ -576,7 +576,7 @@ void PoisonFrog::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
-				cout << "jumping" << endl;
+				//cout << "jumping" << endl;
 				if( facingRight )
 				{
 					mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
@@ -679,6 +679,7 @@ void PoisonFrog::UpdatePhysics()
 	mover->Move( slowMultiple );
 
 	position = mover->physBody.globalPosition;
+	//cout << "setting position to: " << position.x << ", " << position.y << endl;
 	//double maxMovement = min( physBody.rw, physBody.rh );
 
 	//if( ground != NULL )
@@ -778,7 +779,7 @@ void PoisonFrog::PhysicsResponse()
 	{
 		V2d gPoint = ground->GetPoint( edgeQuantity );
 		V2d gn = normalize( mover->physBody.globalPosition - gPoint );//ground->Normal();
-		position = gPoint + gn * mover->physBody.rh;
+		//position = gPoint + gn * mover->physBody.rh;
 		angle = atan2( gn.x, -gn.y );
 	}
 	else
@@ -843,7 +844,7 @@ void PoisonFrog::PhysicsResponse()
 
 void PoisonFrog::UpdatePostPhysics()
 {
-	
+	//cout << "position: " << position.x << ", " << position.y << endl;
 
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
@@ -1174,6 +1175,7 @@ void PoisonFrog::HitOtherAerial()
 }
 void PoisonFrog::Land()
 {
+	//cout << "LANDING" << endl;
 	action = LAND;
 	frame = 0;
 }

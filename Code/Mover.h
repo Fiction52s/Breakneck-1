@@ -62,6 +62,8 @@ struct SurfaceMover : QuadTreeCollider
 	//sf::Vector2<double> gravity;
 	//double maxSpeed;
 	sf::Vector2<double> velocity;
+
+	int framesInAir;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
 	//

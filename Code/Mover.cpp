@@ -54,6 +54,8 @@ void SurfaceMover::UpdateGroundPos()
 		physBody.globalPosition = ground->GetPoint( edgeQuantity )
 			+ gn * physBody.rw;
 		physBody.globalAngle = atan2( gn.x, -gn.y );
+		cout << "setting grounded position to: " << physBody.globalPosition.x 
+			<< ", " << physBody.globalPosition.y << endl;
 	}
 	
 }
@@ -704,6 +706,10 @@ void SurfaceMover::Move( int slowMultiple )
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * NUM_STEPS;
 
+		//cout << "before moving air position: " << physBody.globalPosition.x 
+		//	<< ", " << physBody.globalPosition.y << endl;
+
+
 		bool hit = ResolvePhysics( movementVec );
 		if( hit )
 		{
@@ -712,6 +718,9 @@ void SurfaceMover::Move( int slowMultiple )
 
 			
 		}
+
+		//cout << "final air position to: " << physBody.globalPosition.x 
+		//	<< ", " << physBody.globalPosition.y << endl;
 		//else
 		//{
 		//	testMover->physBody.globalPosition = position;
@@ -721,7 +730,7 @@ void SurfaceMover::Move( int slowMultiple )
 
 
 	
-
+	framesInAir++;
 	//PhysicsResponse();
 }
 
@@ -794,6 +803,10 @@ void SurfaceMover::HitTerrain( double &q )
 
 void SurfaceMover::Jump( V2d &vel )
 {
+	//cout << "jumping pos is: " << physBody.globalPosition.x << ", " <<
+		//physBody.globalPosition.y << endl;
+	framesInAir = 0;
+	//cout << "jumping surface mover: " << vel.x << ", " << vel.y << endl;
 	velocity = vel;
 	ground = NULL;
 }
@@ -876,18 +889,23 @@ void GroundMover::HitTerrainAerial()
 			roll = true;
 			edgeQuantity = ground->GetQuantity( minContact.position );
 			physBody.globalPosition += minContact.resolution;
+			//cout << "corner: " << minContact.resolution.x << ", " <<
+			//	", " << minContact.resolution.y << endl;
+			//cout << "land corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 		}
 		else
 		{
 			roll = false;
 			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
+			//cout << "land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 		}
 		if( handler != NULL )
 			handler->Land();
 	}
 	else
 	{
-		//cout << "collision vel: " << velocity.x << ", " << velocity.y << ", corner: " << (int)corner << endl;
+		//cout << "collision vel: " << velocity.x << ", " << velocity.y << ", res: " 
+		//	<< minContact.resolution.x << ", " << minContact.resolution.y << endl;
 		physBody.globalPosition += minContact.resolution;
 		if( corner )
 		{
