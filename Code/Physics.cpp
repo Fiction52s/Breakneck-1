@@ -572,6 +572,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else //special side/hit case for colliding with points
 			{
+				Edge *next = e->edge1;
+				V2d along = normalize( e->v1 - e->v0 );
+				V2d nextAlong = normalize( next->v1 - next->v0 );
+				double c = cross( nextAlong, along );
+
+				//probably correct but idk if i even need it
+				if( c < 0 )
 				if( lineQuantity < 0 && lineQuantity > -radius )// && xx >= pr ) //v0
 				{
 					V2d coll = e->v0 - position;// - e->v0;// - position;

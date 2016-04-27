@@ -773,14 +773,25 @@ void PoisonFrog::PhysicsResponse()
 	//double angle = 0;
 	Edge *ground = mover->ground;
 	double edgeQuantity = mover->edgeQuantity;
-
+	
 	
 	if( ground != NULL )
 	{
-		V2d gPoint = ground->GetPoint( edgeQuantity );
-		V2d gn = normalize( mover->physBody.globalPosition - gPoint );//ground->Normal();
+		if( roll )
+		{
+			V2d gPoint = ground->GetPoint( edgeQuantity );
+			V2d gn = normalize( mover->physBody.globalPosition - gPoint );
+			angle = atan2( gn.x, -gn.y );
+			
+		}
+		else
+		{
+			V2d gn = ground->Normal();
+			angle = atan2( gn.x, -gn.y );
+		}
+		//ground->Normal();
 		//position = gPoint + gn * mover->physBody.rh;
-		angle = atan2( gn.x, -gn.y );
+		
 	}
 	else
 	{
@@ -1055,6 +1066,19 @@ void PoisonFrog::UpdateSprite()
 {
 	Edge *ground = mover->ground;
 	double edgeQuantity = mover->edgeQuantity;
+	V2d pp;
+
+	cout << "edgeQuantity: " << edgeQuantity << endl;
+	
+	if( ground != NULL )
+	{
+		cout << "grounded" << endl;
+		pp = ground->GetPoint( edgeQuantity );
+	}
+	else
+	{
+		cout << "not grounded" << endl;
+	}
 
 	if( dead )
 	{
@@ -1081,7 +1105,7 @@ void PoisonFrog::UpdateSprite()
 		{
 		case STAND:
 			{
-				V2d pp = ground->GetPoint( edgeQuantity );
+				
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( pp.x, pp.y );
@@ -1089,7 +1113,6 @@ void PoisonFrog::UpdateSprite()
 			break;
 		case JUMPSQUAT:
 			{
-				V2d pp = ground->GetPoint( edgeQuantity );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( pp.x, pp.y );
@@ -1103,7 +1126,6 @@ void PoisonFrog::UpdateSprite()
 			break;
 		case LAND:
 			{
-				V2d pp = ground->GetPoint( edgeQuantity );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( pp.x, pp.y );

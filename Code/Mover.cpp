@@ -886,18 +886,20 @@ void GroundMover::HitTerrainAerial()
 		ground = minContact.edge;
 		if( corner )
 		{
+
 			roll = true;
 			edgeQuantity = ground->GetQuantity( minContact.position );
 			physBody.globalPosition += minContact.resolution;
 			//cout << "corner: " << minContact.resolution.x << ", " <<
 			//	", " << minContact.resolution.y << endl;
-			//cout << "land corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+			cout << "land corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 		}
 		else
 		{
 			roll = false;
 			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
-			//cout << "land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+			cout << "land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+			UpdateGroundPos();
 		}
 		if( handler != NULL )
 			handler->Land();
