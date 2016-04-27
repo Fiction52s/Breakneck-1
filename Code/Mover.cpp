@@ -191,6 +191,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Edge *e = (Edge*)qte;
 
+		//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
 
 		if( ground == e )
 			return;
@@ -281,6 +282,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( c != NULL )
 		{
+			//cout << "c is not null!: " << e->Normal().x << ", " << e->Normal().y << endl;
 			double len0 = length( c->position - e->v0 );
 			double len1 = length( c->position - e->v1 );
 
@@ -394,19 +396,31 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			{	
 				if( c->collisionPriority == minContact.collisionPriority )
 				{
+
 					if(( c->normal.x == 0 && c->normal.y == 0 ) )
 					{
+						/*cout << "replacing collision: " << c->collisionPriority <<
+						", " << c->edge->Normal().x << ", " << c->edge->Normal().y
+						<< ", " << endl;*/
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;
 						minContact.resolution = c->resolution;
 						minContact.position = c->position;
 						minContact.normal = c->normal;
 						minContact.movingPlat = NULL;
+						//cout << "replacing res: " << c->resolution.x << ", " << c->resolution.y << endl;
 						col = true;
 					}
 				}
 				else
 				{
+					/*cout << "setting collision: " << c->collisionPriority <<
+						", " << c->edge->Normal().x << ", " << c->edge->Normal().y
+						<< ", " << c->position.x << ", " << c->position.y << endl;*/
+						
+					//why is res negative???
+
+					//cout << "res: " << c->resolution.x << ", " << c->resolution.y << endl;
 					minContact.collisionPriority = c->collisionPriority;
 					minContact.edge = e;
 					minContact.resolution = c->resolution;
@@ -848,6 +862,7 @@ void GroundMover::HitTerrainAerial()
 	V2d en = minContact.normal;
 	if( en.x == 0 && en.y == 0 )
 	{
+		//cout << "whaaat " << endl;
 		corner = true;
 		en = normalize( physBody.globalPosition - minContact.position );
 	}
@@ -872,9 +887,21 @@ void GroundMover::HitTerrainAerial()
 	}
 	else
 	{
-		//cout << "collision vel: " << velocity.x << ", " << velocity.y << endl;
+		//cout << "collision vel: " << velocity.x << ", " << velocity.y << ", corner: " << (int)corner << endl;
 		physBody.globalPosition += minContact.resolution;
-		velocity = dot( velocity, V2d( -en.y, en.x ) ) * V2d( -en.y, en.x );
+		cout << "old vel: " << velocity.x << ", " << velocity.y << endl;
+		
+		V2d along = V2d( -en.y, en.x );
+		if( corner )
+		{
+			velocity = dot( velocity, along ) * along;
+			//velocity = V2d( 0, 0 );
+		}
+		else
+		{
+			velocity = dot( velocity, along ) * along;
+		}
+		cout << "new vel: " << velocity.x << ", " << velocity.y << endl;
 		if( handler != NULL )
 			handler->HitOtherAerial();
 		//cout << "vel: " << velocity.x << ", " << velocity.y << endl;

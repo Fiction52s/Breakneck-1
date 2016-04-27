@@ -189,9 +189,6 @@ void StagBeetle::ResetEnemy()
 	//----
 
 	UpdateHitboxes();
-
-	
-
 }
 
 int StagBeetle::NumTotalBullets()
@@ -211,14 +208,14 @@ void StagBeetle::UpdateHitboxes()
 	Edge *ground = testMover->ground;
 	if( ground != NULL )
 	{
-		V2d gn = ground->Normal();
-		double angle = 0;
+		//V2d gn = ground->Normal();
+		//double angle = 0;
 		
 		
-		angle = atan2( gn.x, -gn.y );
+		//angle = atan2( gn.x, -gn.y );
 		
-		hitBody.globalAngle = angle;
-		hurtBody.globalAngle = angle;
+		//hitBody.globalAngle = angle;
+		//hurtBody.globalAngle = angle;
 
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
@@ -235,8 +232,8 @@ void StagBeetle::UpdateHitboxes()
 	}
 	else
 	{
-		hitBody.globalAngle = 0;
-		hurtBody.globalAngle = 0;
+		//hitBody.globalAngle = 0;
+		//hurtBody.globalAngle = 0;
 	}
 
 	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
@@ -429,7 +426,7 @@ void StagBeetle::UpdatePhysics()
 	}
 	else
 	{
-		testMover->velocity += gravity / (NUM_STEPS / slowMultiple);
+		testMover->velocity += gravity / (NUM_STEPS * slowMultiple);
 
 		if( testMover->velocity.y >= maxFallSpeed )
 		{

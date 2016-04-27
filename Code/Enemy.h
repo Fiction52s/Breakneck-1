@@ -1320,7 +1320,7 @@ struct Key : Enemy
 	Stored stored;
 };
 
-struct PoisonFrog : Enemy
+struct PoisonFrog : Enemy, GroundMoverHandler
 {
 	enum Action
 	{
@@ -1383,6 +1383,8 @@ struct PoisonFrog : Enemy
 	bool steepJump;
 	sf::Vector2<double> jumpStrength;
 
+	GroundMover *mover;
+
 	//sf::Vector2<double> position;
 
 	
@@ -1408,6 +1410,17 @@ struct PoisonFrog : Enemy
 	void UpdatePhysics2();
 	void UpdatePhysics3();
 
+
+
+	void HitTerrain( double &q );
+	bool StartRoll();
+	void FinishedRoll();
+
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial();
+	void Land();
+
 	//void FireBullets();
 	//void UpdateBulletSprites();
 	//void UpdateBulletHitboxes();
@@ -1418,16 +1431,18 @@ struct PoisonFrog : Enemy
 	Tileset *ts_roll;
 	
 
-	double groundSpeed;
-	Edge *ground;
+	//double groundSpeed;
+	//Edge *ground;
 	
-	double edgeQuantity;
+	//double edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
-	CollisionBox physBody;
+	//CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
+
+	double maxFallSpeed;
 	
 	Contact minContact;
 	bool col;

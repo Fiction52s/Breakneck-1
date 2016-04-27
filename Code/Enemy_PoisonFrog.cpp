@@ -9,15 +9,25 @@ using namespace std;
 using namespace sf;
 
 #define V2d sf::Vector2<double>
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q, int gFactor,
+
+PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 	sf::Vector2i &jStrength, int framesWait )
-	:Enemy( owner, EnemyType::POISONFROG ), ground( g ), edgeQuantity( q ),
+	:Enemy( p_owner, EnemyType::POISONFROG ), 
 	gravityFactor( gFactor ), jumpStrength( jStrength.x, jStrength.y ), 
 	jumpFramesWait( framesWait )
 {
+
+	maxFallSpeed = 25;
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 10;
 	actionLength[JUMP] = 2;
@@ -36,6 +46,8 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q, int gFactor,
 	//jumpStrength = 10;
 	xSpeed = 8;
 
+	mover = new GroundMover( p_owner, g, q, 45, true, this );
+	mover->SetSpeed( 0 );
 
 	initHealth = 60;
 	health = initHealth;
@@ -51,7 +63,7 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q, int gFactor,
 	//sprite.setTexture( *ts_walk->texture );
 	//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	V2d gPoint = g->GetPoint( q );
 
 	sprite.setTexture( *ts_test->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
@@ -89,33 +101,49 @@ PoisonFrog::PoisonFrog( GameSession *owner, Edge *g, double q, int gFactor,
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	physBody.isCircle = true;
+	deathPartingSpeed = .4;
+
+	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	bloodSprite.setTexture( *ts_testBlood->texture );
+
+	/*physBody.isCircle = true;
 	physBody.offset.x = 0;
 	physBody.offset.y = 0;
 	physBody.rw = 45;
 	physBody.rh = 45;
-	physBody.type = CollisionBox::BoxType::Physics;
+	physBody.type = CollisionBox::BoxType::Physics;*/
 
-	startGround = ground;
-	startQuant = edgeQuantity;
+	startGround = g;
+	startQuant = q;
 	frame = 0;
-	position = gPoint + ground->Normal() * physBody.rh; //16.0;
+	position = mover->physBody.globalPosition;//gPoint + ground->Normal() * physBody.rh; //16.0;
 }
 
 void PoisonFrog::ResetEnemy()
 {
 	invincibleFrames = 0;
 	health = initHealth;
-	ground = startGround;
-	edgeQuantity = startQuant;
-	V2d gPoint = ground->GetPoint( edgeQuantity );
+	//ground = startGround;
+	//edgeQuantity = startQuant;
+	
+
+	mover->ground = startGround;
+	mover->edgeQuantity = startQuant;
+	mover->roll = false;
+	mover->UpdateGroundPos();
+	mover->SetSpeed( 0 );
+
+	position = mover->physBody.globalPosition;
+
+
+	V2d gPoint = mover->ground->GetPoint( mover->edgeQuantity );
 
 	sprite.setTexture( *ts_test->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 
 	sprite.setPosition( gPoint.x, gPoint.y );
 
-	V2d gn = ground->Normal();
+	V2d gn = mover->ground->Normal();
 	dead = false;
 
 	//----update the sprite
@@ -123,15 +151,15 @@ void PoisonFrog::ResetEnemy()
 
 
 
-	position = gPoint + gn * physBody.rh;//16.0;
+	//position = gPoint + gn * physBody.rh;//16.0;
 	angle = atan2( gn.x, -gn.y );
 		
 	//sprite.setTexture( *ts_walk->texture );
 	//sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
-	V2d pp = ground->GetPoint( edgeQuantity );
+	//V2d pp = ground->GetPoint( edgeQuantity );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( pp.x, pp.y );
+	sprite.setPosition( gPoint.x, gPoint.y );
 	//----
 
 	UpdateHitboxes();
@@ -140,323 +168,327 @@ void PoisonFrog::ResetEnemy()
 	frame = 0;
 
 	facingRight = false;
-	groundSpeed = 0;
+	//groundSpeed = 0;
 }
 
 void PoisonFrog::HandleEntrant( QuadTreeEntrant *qte )
 {
 	assert( queryMode != "" );
 
-	Edge *e = (Edge*)qte;
+	//Edge *e = (Edge*)qte;
 
 
-	
+	//
 
-	if( e->edgeType == Edge::OPEN_GATE )
-	{
-		return;
-	}
+	//if( e->edgeType == Edge::OPEN_GATE )
+	//{
+	//	return;
+	//}
 
-	if( queryMode == "resolve" )
-	{
+	//if( queryMode == "resolve" )
+	//{
 
-		if( ground == e )
-			return;
+	//	if( ground == e )
+	//		return;
 
-			//so you can run on gates without transfer issues hopefully
-		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
-		{
-			Gate *g = (Gate*)ground->info;
-			Edge *edgeA = g->edgeA;
-			Edge *edgeB = g->edgeB;
-			if( ground == g->edgeA )
-			{
-				if( e == edgeB->edge0 
-					|| e == edgeB->edge1
-					|| e == edgeB )
-				{
-				//	cout << "RETURN A" << endl;
-					return;
-				}
+	//		//so you can run on gates without transfer issues hopefully
+	//	if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+	//	{
+	//		Gate *g = (Gate*)ground->info;
+	//		Edge *edgeA = g->edgeA;
+	//		Edge *edgeB = g->edgeB;
+	//		if( ground == g->edgeA )
+	//		{
+	//			if( e == edgeB->edge0 
+	//				|| e == edgeB->edge1
+	//				|| e == edgeB )
+	//			{
+	//			//	cout << "RETURN A" << endl;
+	//				return;
+	//			}
 
-				
-			}
-			else if( ground == g->edgeB )
-			{
-				if( e == edgeA->edge0 
-					|| e == edgeA->edge1
-					|| e == edgeA )
-				{
-					//cout << "RETURN B" << endl;
-					return;
-				}
-			}
-		}
-		if( ground != NULL )
-		{
-			if( ground->edge0->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *g = (Gate*)ground->edge0->info;
-				Edge *e0 = ground->edge0;
-				if( e0 == g->edgeA )
-				{
-					Edge *edgeB = g->edgeB;
-					if( e == edgeB->edge0 
-						|| e == edgeB->edge1
-						|| e == edgeB )
-					{
-						return;
-					}
-				}
-				else if( e0 == g->edgeB )
-				{
-					Edge *edgeA = g->edgeA;
-					if( e == edgeA->edge0 
-						|| e == edgeA->edge1
-						|| e == edgeA )
-					{
-						return;
-					}
-				}
-			}
-			
-			
-			if( ground->edge1->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *g = (Gate*)ground->edge1->info;
-				Edge *e1 = ground->edge1;
-				if( e1 == g->edgeA )
-				{
-					Edge *edgeB = g->edgeB;
-					if( e == edgeB->edge0 
-						|| e == edgeB->edge1
-						|| e == edgeB )
-					{
-						return;
-					}
-				}
-				else if( e1 == g->edgeB )
-				{
-					Edge *edgeA = g->edgeA;
-					if( e == edgeA->edge0 
-						|| e == edgeA->edge1
-						|| e == edgeA )
-					{
-						return;
-					}
-				}
-			}
-		}
-
-
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
-
-		if( c != NULL )
-		{
-		double len0 = length( c->position - e->v0 );
-		double len1 = length( c->position - e->v1 );
-
-		if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
-		{
-			V2d pVec = normalize( position - e->v0 );
-			double pAngle = atan2( -pVec.y, pVec.x );
-
-			if( pAngle < 0 )
-			{
-				pAngle += 2 * PI;
-			}
-
-			Edge *e0 = e->edge0;
-			Gate *g = (Gate*)e0->info;
-
-			V2d startVec = normalize( e0->v0 - e->v0 );
-			V2d endVec = normalize( e->v1 - e->v0 );
-
-			double startAngle = atan2( -startVec.y, startVec.x );
-			if( startAngle < 0 )
-			{
-				startAngle += 2 * PI;
-			}
-			double endAngle = atan2( -endVec.y, endVec.x );
-			if( endAngle < 0 )
-			{
-				endAngle += 2 * PI;
-			}
-
-			double temp = startAngle;
-			startAngle = endAngle;
-			endAngle = temp;
-
-			if( endAngle < startAngle )
-			{
-				if( pAngle >= endAngle || pAngle <= startAngle )
-				{
-					
-				}
-				else
-				{
-					return;
-				}
-			}
-			else
-			{
-				if( pAngle >= startAngle && pAngle <= endAngle )
-				{
-				}
-				else
-				{
-					return;
-				}
-			}
-			
-
-		}
-		else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
-		{
-			V2d pVec = normalize( position - e->v1 );
-			double pAngle = atan2( -pVec.y, pVec.x );
-
-			if( pAngle < 0 )
-			{
-				pAngle += 2 * PI;
-			}
-
-			Edge *e1 = e->edge1;
-			Gate *g = (Gate*)e1->info;
-
-			V2d startVec = normalize( e->v0 - e->v1 );
-			V2d endVec = normalize( e1->v1 - e->v1 );
-
-			double startAngle = atan2( -startVec.y, startVec.x );
-			if( startAngle < 0 )
-			{
-				startAngle += 2 * PI;
-			}
-			double endAngle = atan2( -endVec.y, endVec.x );
-			if( endAngle < 0 )
-			{
-				endAngle += 2 * PI;
-			}
-			
-			double temp = startAngle;
-			startAngle = endAngle;
-			endAngle = temp;
-
-			//double temp = startAngle;
-			//startAngle = endAngle;
-			//endAngle = temp;
-
-			if( endAngle < startAngle )
-			{
-				/*if( pAngle > startAngle && pAngle < endAngle )
-				{
-					return;
-				}*/
+	//			
+	//		}
+	//		else if( ground == g->edgeB )
+	//		{
+	//			if( e == edgeA->edge0 
+	//				|| e == edgeA->edge1
+	//				|| e == edgeA )
+	//			{
+	//				//cout << "RETURN B" << endl;
+	//				return;
+	//			}
+	//		}
+	//	}
+	//	if( ground != NULL )
+	//	{
+	//		if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+	//		{
+	//			Gate *g = (Gate*)ground->edge0->info;
+	//			Edge *e0 = ground->edge0;
+	//			if( e0 == g->edgeA )
+	//			{
+	//				Edge *edgeB = g->edgeB;
+	//				if( e == edgeB->edge0 
+	//					|| e == edgeB->edge1
+	//					|| e == edgeB )
+	//				{
+	//					return;
+	//				}
+	//			}
+	//			else if( e0 == g->edgeB )
+	//			{
+	//				Edge *edgeA = g->edgeA;
+	//				if( e == edgeA->edge0 
+	//					|| e == edgeA->edge1
+	//					|| e == edgeA )
+	//				{
+	//					return;
+	//				}
+	//			}
+	//		}
+	//		
+	//		
+	//		if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+	//		{
+	//			Gate *g = (Gate*)ground->edge1->info;
+	//			Edge *e1 = ground->edge1;
+	//			if( e1 == g->edgeA )
+	//			{
+	//				Edge *edgeB = g->edgeB;
+	//				if( e == edgeB->edge0 
+	//					|| e == edgeB->edge1
+	//					|| e == edgeB )
+	//				{
+	//					return;
+	//				}
+	//			}
+	//			else if( e1 == g->edgeB )
+	//			{
+	//				Edge *edgeA = g->edgeA;
+	//				if( e == edgeA->edge0 
+	//					|| e == edgeA->edge1
+	//					|| e == edgeA )
+	//				{
+	//					return;
+	//				}
+	//			}
+	//		}
+	//	}
 
 
-				if( pAngle >= endAngle || pAngle <= startAngle )
-				{
-				}
-				else
-				{
-					return;
-				}
-			}
-			else
-			{
-				/*if( pAngle < startAngle || pAngle > endAngle )
-				{
-					cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;
-				}*/
-				
-				if( pAngle >= startAngle && pAngle <= endAngle )
-				{
-				}
-				else
-				{	
-					return;
-				}
-			}
-		}
+	//	Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+
+	//	if( c != NULL )
+	//	{
+	//	double len0 = length( c->position - e->v0 );
+	//	double len1 = length( c->position - e->v1 );
+
+	//	if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
+	//	{
+	//		V2d pVec = normalize( position - e->v0 );
+	//		double pAngle = atan2( -pVec.y, pVec.x );
+
+	//		if( pAngle < 0 )
+	//		{
+	//			pAngle += 2 * PI;
+	//		}
+
+	//		Edge *e0 = e->edge0;
+	//		Gate *g = (Gate*)e0->info;
+
+	//		V2d startVec = normalize( e0->v0 - e->v0 );
+	//		V2d endVec = normalize( e->v1 - e->v0 );
+
+	//		double startAngle = atan2( -startVec.y, startVec.x );
+	//		if( startAngle < 0 )
+	//		{
+	//			startAngle += 2 * PI;
+	//		}
+	//		double endAngle = atan2( -endVec.y, endVec.x );
+	//		if( endAngle < 0 )
+	//		{
+	//			endAngle += 2 * PI;
+	//		}
+
+	//		double temp = startAngle;
+	//		startAngle = endAngle;
+	//		endAngle = temp;
+
+	//		if( endAngle < startAngle )
+	//		{
+	//			if( pAngle >= endAngle || pAngle <= startAngle )
+	//			{
+	//				
+	//			}
+	//			else
+	//			{
+	//				return;
+	//			}
+	//		}
+	//		else
+	//		{
+	//			if( pAngle >= startAngle && pAngle <= endAngle )
+	//			{
+	//			}
+	//			else
+	//			{
+	//				return;
+	//			}
+	//		}
+	//		
+
+	//	}
+	//	else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
+	//	{
+	//		V2d pVec = normalize( position - e->v1 );
+	//		double pAngle = atan2( -pVec.y, pVec.x );
+
+	//		if( pAngle < 0 )
+	//		{
+	//			pAngle += 2 * PI;
+	//		}
+
+	//		Edge *e1 = e->edge1;
+	//		Gate *g = (Gate*)e1->info;
+
+	//		V2d startVec = normalize( e->v0 - e->v1 );
+	//		V2d endVec = normalize( e1->v1 - e->v1 );
+
+	//		double startAngle = atan2( -startVec.y, startVec.x );
+	//		if( startAngle < 0 )
+	//		{
+	//			startAngle += 2 * PI;
+	//		}
+	//		double endAngle = atan2( -endVec.y, endVec.x );
+	//		if( endAngle < 0 )
+	//		{
+	//			endAngle += 2 * PI;
+	//		}
+	//		
+	//		double temp = startAngle;
+	//		startAngle = endAngle;
+	//		endAngle = temp;
+
+	//		//double temp = startAngle;
+	//		//startAngle = endAngle;
+	//		//endAngle = temp;
+
+	//		if( endAngle < startAngle )
+	//		{
+	//			/*if( pAngle > startAngle && pAngle < endAngle )
+	//			{
+	//				return;
+	//			}*/
 
 
-		
+	//			if( pAngle >= endAngle || pAngle <= startAngle )
+	//			{
+	//			}
+	//			else
+	//			{
+	//				return;
+	//			}
+	//		}
+	//		else
+	//		{
+	//			/*if( pAngle < startAngle || pAngle > endAngle )
+	//			{
+	//				cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+	//				return;
+	//			}*/
+	//			
+	//			if( pAngle >= startAngle && pAngle <= endAngle )
+	//			{
+	//			}
+	//			else
+	//			{	
+	//				return;
+	//			}
+	//		}
+	//	}
 
-		
-			if( !col || (minContact.collisionPriority < 0 ) 
-				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
 
-				/*if( ground != NULL && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
-				{
-					return;
-				}*/
+	//	
 
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if(( c->normal.x == 0 && c->normal.y == 0 ) )
-					{
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = e;
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						minContact.normal = c->normal;
-						minContact.movingPlat = NULL;
-						col = true;
-					}
-				}
-				else
-				{
-					minContact.collisionPriority = c->collisionPriority;
-					minContact.edge = e;
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					minContact.normal = c->normal;
-					minContact.movingPlat = NULL;
-					col = true;
-					
-				}
-			}
-		}
-	}
-	++possibleEdgeCount;
+	//	
+	//		if( !col || (minContact.collisionPriority < 0 ) 
+	//			|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
+	//		{	
+
+	//			/*if( ground != NULL && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
+	//			{
+	//				return;
+	//			}*/
+
+	//			if( c->collisionPriority == minContact.collisionPriority )
+	//			{
+	//				if(( c->normal.x == 0 && c->normal.y == 0 ) )
+	//				{
+	//					minContact.collisionPriority = c->collisionPriority;
+	//					minContact.edge = e;
+	//					minContact.resolution = c->resolution;
+	//					minContact.position = c->position;
+	//					minContact.normal = c->normal;
+	//					minContact.movingPlat = NULL;
+	//					col = true;
+	//				}
+	//			}
+	//			else
+	//			{
+	//				minContact.collisionPriority = c->collisionPriority;
+	//				minContact.edge = e;
+	//				minContact.resolution = c->resolution;
+	//				minContact.position = c->position;
+	//				minContact.normal = c->normal;
+	//				minContact.movingPlat = NULL;
+	//				col = true;
+	//				
+	//			}
+	//		}
+	//	}
+	//}
+	//++possibleEdgeCount;
 }
 
 void PoisonFrog::UpdateHitboxes()
 {
+	Edge *ground = mover->ground;
 	if( ground != NULL )
 	{
 		V2d gn = ground->Normal();
-		//angle = 0;
-		//double angle = 0;
-		if( !approxEquals( abs(offset.x), physBody.rw ) )
+		
+		V2d knockbackDir( 1, -1 );
+		knockbackDir = normalize( knockbackDir );
+		if( mover->groundSpeed > 0 )
 		{
-			//this should never happen
+			hitboxInfo->kbDir = knockbackDir;
+			hitboxInfo->knockback = 15;
 		}
 		else
 		{
-			//angle = atan2( gn.x, -gn.y );
+			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
+			hitboxInfo->knockback = 15;
 		}
-		hitBody.globalAngle = angle;
-		hurtBody.globalAngle = angle;
+		//hitBody.globalAngle = angle;
+		//hurtBody.globalAngle = angle;
 	}
 	else
 	{
-		hitBody.globalAngle = 0;
-		hurtBody.globalAngle = 0;
+		//hitBody.globalAngle = 0;
+		//hurtBody.globalAngle = 0;
 	}
 
 	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 	hitBody.globalPosition = position;
 	hurtBody.globalPosition = position;
-	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 	
 	//test knockback
-	V2d knockbackDir( 1, -1 );
-	knockbackDir = normalize( knockbackDir );
-	hitboxInfo->knockback = 8;
+	//V2d knockbackDir( 1, -1 );
+	//knockbackDir = normalize( knockbackDir );
+	//hitboxInfo->knockback = 8;
 }
 
 void PoisonFrog::ActionEnded()
@@ -544,56 +576,66 @@ void PoisonFrog::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
-				if( owner->IsSteepGround( ground->Normal() ) >= 0 )
+				cout << "jumping" << endl;
+				if( facingRight )
+				{
+					mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
+				}
+				else
+				{
+					mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
+				}
+				
+				/*if( owner->IsSteepGround( ground->Normal() ) >= 0 )
 				{
 					steepJump = true;
 				}
 				else
 				{
 					steepJump = false;
-				}
+				}*/
 				//cout << "frog jumping " << (int)steepJump << endl;
-				ground = NULL;
+				//ground = NULL;
 
 				
-				if( facingRight )
+				/*if( facingRight )
 				{
 					velocity = V2d( jumpStrength.x * (int)(!steepJump), -jumpStrength.y );
 				}
 				else
 				{
 					velocity = V2d( -jumpStrength.x * (int)(!steepJump), -jumpStrength.y );
-				}
+				}*/
 				
 			}
 			else
 			{
-				if( steepJump && velocity.y >= 0 )
-				{
-					if( facingRight )
-					{
-						velocity.x += .3; //some number
-						if( velocity.x > jumpStrength.x )
-							velocity.x = jumpStrength.x;
-					}
-					else
-					{
-						velocity.x -= .3;
-						if( velocity.x < -jumpStrength.x )
-							velocity.x = -jumpStrength.x;
-					}
-				}
-				else if( !steepJump )
-				{
-					if( facingRight )
-					{
-						velocity.x = jumpStrength.x;
-					}
-					else
-					{
-						velocity.x = -jumpStrength.x;
-					}
-				}
+				//if( steepJump && velocity.y >= 0 )
+				//{
+				//	if( facingRight )
+				//	{
+				//		velocity.x += .3; //some number
+				//		if( velocity.x > jumpStrength.x )
+				//			velocity.x = jumpStrength.x;
+				//	}
+				//	else
+				//	{
+				//		velocity.x -= .3;
+				//		if( velocity.x < -jumpStrength.x )
+				//			velocity.x = -jumpStrength.x;
+				//	}
+				//}
+				//else if( !steepJump )
+				//{
+				//	if( facingRight )
+				//	{
+				//		velocity.x = jumpStrength.x;
+				//	}
+				//	else
+				//	{
+				//		velocity.x = -jumpStrength.x;
+				//	}
+				//}
 
 
 				
@@ -607,50 +649,70 @@ void PoisonFrog::UpdatePrePhysics()
 		break;
 	}
 
-	if( ground == NULL )
-	{
-		velocity += V2d( 0, gravity );
-	}
+	//if( ground == NULL )
+	//{
+	//	velocity += V2d( 0, gravity );
+	//}
 
-	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+	//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 }
 
 void PoisonFrog::UpdatePhysics()
 {
-	double maxMovement = min( physBody.rw, physBody.rh );
+	if( dead )
+		return;
 
-	if( ground != NULL )
+	if( mover->ground != NULL )
 	{
-		//never moves on the ground
 	}
 	else
 	{
-		V2d movementVec = velocity;
-		movementVec /= slowMultiple * NUM_STEPS;
+		mover->velocity.y += gravity / (NUM_STEPS * slowMultiple);
 
-		bool hit = ResolvePhysics( movementVec );
-		if( hit )//&&  )
+		if( mover->velocity.y >= maxFallSpeed )
 		{
-			if( minContact.edge->Normal().y < 0 )
-			{
-				cout << "landing" << endl;
-				ground = minContact.edge;
-				edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
-				position += minContact.resolution;
-				action = LAND;
-				frame = 0;
-			}
-			else
-			{
-				cout << "reso: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
-				position += minContact.resolution;
-				//velocity = V2d( 0, 0 );
-			}
-			
+			mover->velocity.y = maxFallSpeed;
 		}
-		
-		
 	}
+
+
+	mover->Move( slowMultiple );
+
+	position = mover->physBody.globalPosition;
+	//double maxMovement = min( physBody.rw, physBody.rh );
+
+	//if( ground != NULL )
+	//{
+	//	//never moves on the ground
+	//}
+	//else
+	//{
+	//	V2d movementVec = velocity;
+	//	movementVec /= slowMultiple * NUM_STEPS;
+
+	//	bool hit = ResolvePhysics( movementVec );
+	//	if( hit )//&&  )
+	//	{
+	//		if( minContact.edge->Normal().y < 0 )
+	//		{
+	//			cout << "landing" << endl;
+	//			ground = minContact.edge;
+	//			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
+	//			position += minContact.resolution;
+	//			action = LAND;
+	//			frame = 0;
+	//		}
+	//		else
+	//		{
+	//			cout << "reso: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+	//			position += minContact.resolution;
+	//			//velocity = V2d( 0, 0 );
+	//		}
+	//		
+	//	}
+	//	
+	//	
+	//}
 
 	PhysicsResponse();
 }
@@ -659,13 +721,16 @@ bool PoisonFrog::ResolvePhysics( V2d vel )
 {
 	possibleEdgeCount = 0;
 
-	Rect<double> oldR( position.x + physBody.offset.x - physBody.rw, 
-		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	double rw = mover->physBody.rw;
+	double rh = mover->physBody.rh;
+
+	Rect<double> oldR( position.x - rw, 
+		position.y - rh, 2 * rw, 2 * rh );
 	
 	position += vel;
 	
-	Rect<double> newR( position.x + physBody.offset.x - physBody.rw, 
-		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
+	Rect<double> newR( position.x - rw, 
+		position.y - rh, 2 * rw, 2 * rh );
 	//minContact.collisionPriority = 1000000;
 	
 	double oldRight = oldR.left + oldR.width;
@@ -699,22 +764,44 @@ bool PoisonFrog::ResolvePhysics( V2d vel )
 
 void PoisonFrog::PhysicsResponse()
 {
-	if( !dead && receivedHit == NULL )
+	//doesn't get called if dead.
+	assert( !dead );
+
+
+	bool roll = mover->roll;
+	//double angle = 0;
+	Edge *ground = mover->ground;
+	double edgeQuantity = mover->edgeQuantity;
+
+	
+	if( ground != NULL )
 	{
-		if( ground != NULL )
-		{
-			V2d gn = ground->Normal();
-			V2d gPoint = ground->GetPoint( edgeQuantity );
-			position = gPoint + gn * physBody.rh;
-			angle = atan2( gn.x, -gn.y );
-		}
-		else
-		{
-			angle = 0;
-		}
+		V2d gPoint = ground->GetPoint( edgeQuantity );
+		V2d gn = normalize( mover->physBody.globalPosition - gPoint );//ground->Normal();
+		position = gPoint + gn * mover->physBody.rh;
+		angle = atan2( gn.x, -gn.y );
+	}
+	else
+	{
+		angle = 0;
+	}
 
-		UpdateHitboxes();
-
+	if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowCounter = 1;
+		slowMultiple = 1;
+	}
+		
+	if( receivedHit == NULL )
+	{
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
@@ -737,79 +824,37 @@ void PoisonFrog::PhysicsResponse()
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 
 		}
-
-		
 	}
 
-	if( !dead )
-	{
+	UpdateHitboxes();
+
+	
 		//can hit back on the same frame because im a boss? maybe everyone should be able to hit back on the same frame
-		if( IHitPlayer() )
-		{
-		}
-
-		if( PlayerSlowingMe() )
-		{
-			if( slowMultiple == 1 )
-			{
-				slowCounter = 1;
-				slowMultiple = 5;
-			}
-		}
-		else
-		{
-			slowCounter = 1;
-			slowMultiple = 1;
-		}
+	if( IHitPlayer() )
+	{
 	}
+
+	Transform t;
+	t.rotate( angle / PI * 180 );
+	Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
+	deathVector = V2d( newPoint.x, newPoint.y );
+
 }
 
 void PoisonFrog::UpdatePostPhysics()
 {
+	
+
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
-	sprite.setTexture( *ts_test->texture );
-	sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
-	switch( action )
+	if( deathFrame == 30 )
 	{
-	case STAND:
-		{
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
-		}
-		break;
-	case JUMPSQUAT:
-		{
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
-		}
-		break;
-	case JUMP:
-		{
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			sprite.setPosition( position.x, position.y );
-		}
-		break;
-	case LAND:
-		{
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
-		}
-		break;
+		owner->RemoveEnemy( this );
+		return;
 	}
 
-	if( !facingRight)
-	{
-		sf::IntRect r = sprite.getTextureRect();
-		sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-	}
+	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
 	{
@@ -849,8 +894,64 @@ void PoisonFrog::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
+		if( monitor != NULL )
+		{
+			//owner->AddEnemy( monitor );
+			CircleShape cs;
+			cs.setRadius( 55 );
+			switch( monitor->monitorType )
+			{
+			case Monitor::BLUE:
+				cs.setFillColor( COLOR_BLUE );
+				break;
+			case Monitor::GREEN:
+				cs.setFillColor( COLOR_GREEN );
+				break;
+			case Monitor::YELLOW:
+				cs.setFillColor( COLOR_YELLOW );
+				break;
+			case Monitor::ORANGE:
+				cs.setFillColor( COLOR_ORANGE );
+				break;
+			case Monitor::RED:
+				cs.setFillColor( COLOR_RED );
+				break;
+			case Monitor::MAGENTA:
+				cs.setFillColor( COLOR_MAGENTA );
+				break;
+			case Monitor::WHITE:
+				cs.setFillColor( COLOR_WHITE );
+				break;
+			}
+			
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 		target->draw( sprite );
 	}
+	else
+	{
+		/*target->draw( botDeathSprite );
+
+		if( deathFrame / 3 < 6 )
+		{
+			
+			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
+			bloodSprite.setPosition( position.x, position.y );
+			bloodSprite.setScale( 2, 2 );
+			target->draw( bloodSprite );
+		}
+		
+		target->draw( topDeathSprite );*/
+	}
+
+
+	/*if( !dead )
+	{
+		target->draw( sprite );
+	}*/
 }
 
 void PoisonFrog::DrawMinimap( sf::RenderTarget *target )
@@ -951,6 +1052,79 @@ bool PoisonFrog::IHitPlayer()
 
 void PoisonFrog::UpdateSprite()
 {
+	Edge *ground = mover->ground;
+	double edgeQuantity = mover->edgeQuantity;
+
+	if( dead )
+	{
+		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
+		/*botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 31 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
+		botDeathSprite.setRotation( sprite.getRotation() );
+
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 30 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setRotation( sprite.getRotation() );*/
+	}
+	else
+	{
+		sprite.setTexture( *ts_test->texture );
+		sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
+		switch( action )
+		{
+		case STAND:
+			{
+				V2d pp = ground->GetPoint( edgeQuantity );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+				sprite.setRotation( angle / PI * 180 );
+				sprite.setPosition( pp.x, pp.y );
+			}
+			break;
+		case JUMPSQUAT:
+			{
+				V2d pp = ground->GetPoint( edgeQuantity );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+				sprite.setRotation( angle / PI * 180 );
+				sprite.setPosition( pp.x, pp.y );
+			}
+			break;
+		case JUMP:
+			{
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+				sprite.setPosition( position.x, position.y );
+			}
+			break;
+		case LAND:
+			{
+				V2d pp = ground->GetPoint( edgeQuantity );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+				sprite.setRotation( angle / PI * 180 );
+				sprite.setPosition( pp.x, pp.y );
+			}
+			break;
+		}
+
+		if( !facingRight)
+		{
+			sf::IntRect r = sprite.getTextureRect();
+			sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+		}
+		/*if( attackFrame >= 0 )
+		{
+			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
+			if( !facingRight )
+			{
+				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
+			}
+			sprite.setTextureRect( r );
+		}*/
+	}
 }
 
 void PoisonFrog::DebugDraw( RenderTarget *target )
@@ -964,7 +1138,8 @@ void PoisonFrog::DebugDraw( RenderTarget *target )
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( position.x, position.y );
 
-		physBody.DebugDraw( target );
+		mover->physBody.DebugDraw( target );
+//		physBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
 	}
 }
@@ -975,4 +1150,30 @@ void PoisonFrog::SaveEnemyState()
 
 void PoisonFrog::LoadEnemyState()
 {
+}
+
+void PoisonFrog::HitTerrain( double &q )
+{
+}
+bool PoisonFrog::StartRoll()
+{
+}
+void PoisonFrog::FinishedRoll()
+{
+}
+
+void PoisonFrog::HitOther()
+{
+}
+
+void PoisonFrog::ReachCliff()
+{
+}
+void PoisonFrog::HitOtherAerial()
+{
+}
+void PoisonFrog::Land()
+{
+	action = LAND;
+	frame = 0;
 }

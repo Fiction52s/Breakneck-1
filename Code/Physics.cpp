@@ -505,29 +505,30 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		double testD = dot( -vel, edgeNormal );
 		bool d = testD > 0;
 
-		if( d && length( v0 - position ) <= radius )
-		{
-			V2d pointDir = normalize( v0 - position );
-			V2d velDir = normalize( vel );
-			bool hit = dot( vel, pointDir ) <= length( v0 - position );
-			if( hit )
-			{
-				currentContact->position = v0;
-				currentContact->edge = e;
-				currentContact->normal = V2d( 0, 0 );
-				currentContact->collisionPriority = 0;
+		//if( d && length( v0 - position ) <= radius )
+		//{
+		//	V2d pointDir = normalize( v0 - position );
+		//	V2d velDir = normalize( vel );
+		//	bool hit = dot( vel, pointDir ) <= length( v0 - position );
+		//	if( hit )
+		//	{
+		//		currentContact->position = v0;
+		//		currentContact->edge = e;
+		//		currentContact->normal = V2d( 0, 0 );
+		//		currentContact->collisionPriority = 0;
+		//		currentContact->resolution = 
+		//		/*CircleShape *cs = new CircleShape;
+		//		cs->setFillColor( Color::Cyan );
+		//		cs->setRadius( 10 );
+		//		cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
+		//		cs->setPosition( v0.x, v0.y );
 
-				CircleShape *cs = new CircleShape;
-				cs->setFillColor( Color::Cyan );
-				cs->setRadius( 10 );
-				cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
-				cs->setPosition( v0.x, v0.y );
-
-				progressDraw.push_back( cs );
-
-				return currentContact;
-			}
-		}
+		//		progressDraw.push_back( cs );*/
+		//		cout << "first one:" << endl;
+		//		return currentContact;
+		//	}
+		//}
+		//else?
 		if( d && dist >= 0 && dist <= radius )
 		{
 			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
@@ -558,29 +559,31 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				currentContact->position = e->GetPoint( lineQuantity );
 				currentContact->collisionPriority = length( intersect - ( oldPosition + radius * -edgeNormal ) );
 
-				CircleShape *cs = new CircleShape;
+				/*CircleShape *cs = new CircleShape;
 				cs->setFillColor( Color::Cyan );
 				cs->setRadius( 10 );
 				cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
 				cs->setPosition( intersect.x, intersect.y );
 
-				progressDraw.push_back( cs );
+				progressDraw.push_back( cs );*/
 				//cout << "success dot: " << ( dot( -vel, edgeNormal ) > 0 ) << ", dist: " << dist << ", radius: " << radius << endl;
+				//cout << "second one" << endl;
 				return currentContact;
 			}
 			else //special side/hit case for colliding with points
 			{
-
-				V2d coll = e->v1 - position;
-				//cout << "coll: " << coll.x << ", " << coll.y << endl;
-				V2d nVel = normalize( vel );
-				double yy = cross( coll, nVel );
-				double xx = sqrt( radius * radius - yy * yy );
-				double pr = dot( coll, nVel );
-
-				if( lineQuantity < 0 && lineQuantity > -radius && xx >= pr ) //v0
+				if( lineQuantity < 0 && lineQuantity > -radius )// && xx >= pr ) //v0
 				{
-					V2d coll = e->v0 - position;
+					V2d coll = e->v0 - position;// - e->v0;// - position;
+					//cout << "coll: " << coll.x << ", " << coll.y << endl;
+					V2d nVel = normalize( vel );
+					double yy = cross( coll, nVel );
+					double xx = sqrt( radius * radius - yy * yy );
+					double pr = dot( coll, nVel );
+
+					if( xx >= pr )
+					{
+					//V2d coll = e->v0 - position;
 					//cout << "bb" << endl;
 					//dist is dot
 					double extra = -lineQuantity;
@@ -598,12 +601,21 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					currentContact->normal = V2d( 0, 0 );
 					currentContact->position = e->v0;
 					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
+					//cout << "third one" << endl;
 					return currentContact;
+					}
 				}
-				else if( lineQuantity <= edgeLength + radius && xx >= pr )//v1
+				else if( lineQuantity <= edgeLength + radius )// && xx >= pr )//v1
 				{
-					
-					
+					V2d coll = e->v1 - position;
+					//cout << "coll: " << coll.x << ", " << coll.y << endl;
+					V2d nVel = normalize( vel );
+					double yy = cross( coll, nVel );
+					double xx = sqrt( radius * radius - yy * yy );
+					double pr = dot( coll, nVel );
+
+					if( xx >= pr )
+					{
 					//cout << "xx: " << xx << ", pr: " << pr << endl;
 					V2d proj = (xx-pr) * nVel;
 					proj = -proj;
@@ -621,7 +633,9 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					currentContact->normal = V2d( 0, 0 );
 					currentContact->position = e->v1;
 					currentContact->collisionPriority = length( currentContact->resolution ) / length( vel );
+					//cout << "fourth one" << endl;
 					return currentContact;
+					}
 				}
 				//cout << "UNDONE CASE" << endl;
 				//use right triangeles from the vertex to the circle point and cross product to figure out the y. then use
