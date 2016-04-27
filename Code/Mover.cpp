@@ -889,9 +889,21 @@ void GroundMover::HitTerrainAerial()
 	{
 		//cout << "collision vel: " << velocity.x << ", " << velocity.y << ", corner: " << (int)corner << endl;
 		physBody.globalPosition += minContact.resolution;
-		cout << "old vel: " << velocity.x << ", " << velocity.y << endl;
+		if( corner )
+		{
+			if( corner )
+			{
+			//otherwise it swipes by the corner when it moves again
+				physBody.globalPosition += normalize( minContact.resolution ) * .1;
+			}
+			en = normalize( physBody.globalPosition - minContact.position );
+		}
+
+		
+		//cout << "old vel: " << velocity.x << ", " << velocity.y << endl;
 		
 		V2d along = V2d( -en.y, en.x );
+		//cout << "along: " << along.x << ", " << along.y << endl;
 		if( corner )
 		{
 			velocity = dot( velocity, along ) * along;
@@ -901,7 +913,9 @@ void GroundMover::HitTerrainAerial()
 		{
 			velocity = dot( velocity, along ) * along;
 		}
-		cout << "new vel: " << velocity.x << ", " << velocity.y << endl;
+
+		
+		//cout << "new vel: " << velocity.x << ", " << velocity.y << endl;
 		if( handler != NULL )
 			handler->HitOtherAerial();
 		//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
