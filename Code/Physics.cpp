@@ -989,10 +989,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				{
 					bool hit = true;
 
-					bool a = left >= edgeLeft && left <= edgeRight;
-					bool b = right >= edgeLeft && right <= edgeRight;
+					//bool a = left >= edgeLeft && left <= edgeRight;
+					//bool b = right >= edgeLeft && right <= edgeRight;
 					//cout << "edge l/r: " << edgeLeft << ", " << edgeRight << ", l/r: " << left << ", " << right << endl;
-					
+					bool a = left >= edgeLeft - .00001 && left <= edgeRight + .00001;
+					bool b = right >= edgeLeft - .00001 && right <= edgeRight + .00001;
 
 					if( a && b )
 					{
@@ -1000,11 +1001,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					}
 					else if(a  )
 					{
-						intersect.x = left;
+						intersect.x = edgeRight;
+						//intersect.x = left;
 					}
 					else if( b )
 					{
-						intersect.x = right;
+						intersect.x = edgeLeft;
+						//intersect.x = right;
 					}
 					else if( left <= edgeLeft && right >= edgeRight )
 					{
@@ -1020,6 +1023,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					if( hit )
 					{
 						time = ( oldTop - edgeYPos ) / abs( vel.y );
+
 
 						intersect.y = edgeYPos;
 					}
@@ -1053,12 +1057,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					}
 					else if(a  )
 					{
-						intersect.x = left;
+						intersect.x = edgeRight;
+						//intersect.x = left;
 					}
 					else if( b )
 					{
 						
-						intersect.x = right;
+						intersect.x = edgeLeft;
+						//intersect.x = right;
 						//cout << "only this!!: " << intersect.x << ", pos: " << position.x << endl;
 					}
 					else if( left <= edgeLeft && right >= edgeRight )
@@ -1075,6 +1081,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 					{
 						
 						time = ( edgeYPos - oldBottom ) / abs( vel.y );
+						//currentContact->resolution = -vel * ( 1 - time );
 
 						intersect.y = edgeYPos;
 					}
@@ -1361,13 +1368,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			if( time == 100 )
 			return NULL;
 
-			CircleShape *cs = new CircleShape;
+			/*CircleShape *cs = new CircleShape;
 			cs->setFillColor( Color::Yellow );
 			cs->setRadius( 5 );
 			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
 			cs->setPosition( point.x, point.y );
 
-			progressDraw.push_back( cs );	
+			progressDraw.push_back( cs );	*/
 
 
 		}
@@ -1376,13 +1383,13 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			currentContact->position = intersect;
 			currentContact->normal = V2d( 0, 0 );
 
-			CircleShape *cs = new CircleShape;
+			/*CircleShape *cs = new CircleShape;
 			cs->setFillColor( Color::Yellow );
 			cs->setRadius( 5 );
 			cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
 			cs->setPosition( intersect.x, intersect.y );
 
-			progressDraw.push_back( cs );
+			progressDraw.push_back( cs );*/
 		}
 
 		if( time == 100 )

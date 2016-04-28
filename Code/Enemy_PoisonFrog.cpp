@@ -32,11 +32,13 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 	actionLength[JUMPSQUAT] = 10;
 	actionLength[JUMP] = 2;
 	actionLength[LAND] = 5;
+	actionLength[STEEPJUMP] = 2;
 
 	animFactor[STAND] = 1;
 	animFactor[JUMPSQUAT] = 1;
 	animFactor[JUMP] = 1;
 	animFactor[LAND] = 1;
+	animFactor[STEEPJUMP] = 1;
 
 	invincibleFrames = 0;
 	double width = 64;
@@ -530,6 +532,17 @@ void PoisonFrog::UpdatePrePhysics()
 
 	Actor &player = owner->player;
 
+
+	V2d jumpVel;
+	V2d gAlong;
+	V2d gn;
+	if( mover->ground != NULL )
+	{
+		gAlong = normalize( mover->ground->v1 - mover->ground->v0 );
+		gn = mover->ground->Normal();
+	}
+	
+
 	if( !dead && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
@@ -576,14 +589,34 @@ void PoisonFrog::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
+				//jumpVel = 
 				//cout << "jumping" << endl;
 				if( facingRight )
 				{
-					mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
+					//if( gn.x < 0 )
+					if( cross( normalize( V2d( jumpStrength.x, -jumpStrength.y )), gAlong ) < 0 )
+					{
+						gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
+						mover->Jump( gAlong * jumpStrength.y );
+					}
+					else
+					{
+						mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
+					}
+					
 				}
 				else
 				{
-					mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
+					if( cross( normalize( V2d( -jumpStrength.x, -jumpStrength.y )), gAlong ) < 0 )
+					//if( gn.x > 0 )
+					{
+						gAlong = (-gAlong + V2d( 0, -1 )) / 2.0;
+						mover->Jump( gAlong * jumpStrength.y );
+					}
+					else
+					{
+						mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
+					}
 				}
 				
 				/*if( owner->IsSteepGround( ground->Normal() ) >= 0 )
@@ -639,6 +672,27 @@ void PoisonFrog::UpdatePrePhysics()
 
 
 				
+			}
+		}
+		break;
+	case STEEPJUMP:
+		{
+			if( player.position.x < position.x )
+			{
+				facingRight = false;
+			}
+			else if( player.position.x > position.x )
+			{
+				facingRight = true;
+			}
+
+			if( facingRight )
+			{
+				mover->SetSpeed( 5 );
+			}
+			else
+			{
+				mover->SetSpeed( -5 );
 			}
 		}
 		break;
@@ -1068,16 +1122,16 @@ void PoisonFrog::UpdateSprite()
 	double edgeQuantity = mover->edgeQuantity;
 	V2d pp;
 
-	cout << "edgeQuantity: " << edgeQuantity << endl;
+	//cout << "edgeQuantity: " << edgeQuantity << endl;
 	
 	if( ground != NULL )
 	{
-		cout << "grounded" << endl;
+	//	cout << "grounded" << endl;
 		pp = ground->GetPoint( edgeQuantity );
 	}
 	else
 	{
-		cout << "not grounded" << endl;
+	//	cout << "not grounded" << endl;
 	}
 
 	if( dead )
@@ -1177,12 +1231,21 @@ void PoisonFrog::LoadEnemyState()
 
 void PoisonFrog::HitTerrain( double &q )
 {
+
 }
+
 bool PoisonFrog::StartRoll()
 {
+	
 }
 void PoisonFrog::FinishedRoll()
 {
+	if( owner->IsSteepGround( mover->ground->Normal() ) == -1 )
+	{
+		action = JUMPSQUAT;
+		mover->SetSpeed( 0 );
+		frame = 0;
+	}
 }
 
 void PoisonFrog::HitOther()
@@ -1191,6 +1254,12 @@ void PoisonFrog::HitOther()
 
 void PoisonFrog::ReachCliff()
 {
+	//if( owner->IsSteepGround( mover->ground->Normal() ) == -1 )
+	{
+		action = JUMPSQUAT;
+		mover->SetSpeed( 0 );
+		frame = 0;
+	}
 }
 void PoisonFrog::HitOtherAerial()
 {

@@ -6576,7 +6576,8 @@ V2d Actor::UpdateReversePhysics()
 					//cout << "moving: " << (normalize( ground->v1 - ground->v0 ) * m).x << ", " << 
 					//	( normalize( ground->v1 - ground->v0 ) * m).y << endl;
 
-					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
+					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
+					bool hit = ResolvePhysics( resMove );
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
@@ -6626,10 +6627,40 @@ V2d Actor::UpdateReversePhysics()
 							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
 							{
 								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
-									
+								double sum = position.x + minContact.resolution.x;
+								double diff = sum - minContact.position.x;
+								//double test = position.x + minContact.resolution.x - minContact.position.x;
+								/*cout << "pos: " << position.x << ", res: " << minContact.resolution.x
+									<< ", minContact: " << minContact.position.x << endl;
+								cout << "sum: " << sum << ", diff: " << diff << endl;
+								cout << "test: " << test << endl;
+								cout << "oldpos: " << oldPos.x << ", vel: " << resMove.x << endl;*/
 								if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
 								{
-									cout << "BROKEN OFFSET: " << test << endl;
+									//this is for corner border cases
+									cout << "REVERSED CORNER BORDER CASE: " << test << endl;
+									V2d oldv0 = ground->v0;
+									V2d oldv1 = ground->v1;
+
+									if( movingGround != NULL )
+									{
+										ground->v0 += movingGround->position;
+										ground->v1 += movingGround->position;
+									}
+
+									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+
+									if( movingGround != NULL )
+									{
+										ground->v0 = oldv0;
+										ground->v1 = oldv1;
+									}
+
+								
+									groundSpeed = 0;
+									edgeQuantity = q;
+									offsetX = -offsetX;
+									break;
 								}
 								else
 								{	
@@ -8250,9 +8281,13 @@ void Actor::UpdatePhysics()
 				{	
 					bool down = true;
 					V2d oldPos = position;
-					bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
+					
+					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
+					bool hit = ResolvePhysics( resMove );
+
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
+						//cout << "totally hit" << endl;
 							//cout << "change hit" << endl;
 						if( down)
 						{
@@ -8308,16 +8343,42 @@ void Actor::UpdatePhysics()
 
 								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5  && !speedTransfer)
 								{
-									double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
-									
+									//double test = position.x + b.offset.x - minContact.resolution.x - minContact.position.x;
+									//double test = position.x + minContact.resolution.x - minContact.position.x;
+									double test = position.x + minContact.resolution.x - minContact.position.x;
+									/*cout << "pos: " << position.x << ", res: " << minContact.resolution.x
+										<< ", minContact: " << minContact.position.x << endl;;
+									cout << "test: " << test << endl;
+									cout << "oldpos: " << oldPos.x << ", vel: " << resMove.x << endl;*/
 									if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
 									{
-										cout << "BROKEN OFFSET: " << test << endl;
+										//corner border case. hope it doesn't cause problems
+										cout << "CORNER BORDER CASE: " << test << endl;
+										V2d oldv0 = ground->v0;
+										V2d oldv1 = ground->v1;
+
+										if( movingGround != NULL )
+										{
+											ground->v0 += movingGround->position;
+											ground->v1 += movingGround->position;
+										}
+
+										q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+
+										if( movingGround != NULL )
+										{
+											ground->v0 = oldv0;
+											ground->v1 = oldv1;
+										}
+									
+										groundSpeed = 0;
+										edgeQuantity = q;
+										break;
 									}
 									else
 									{	
 										
-										//cout << "cxxxx" << endl;
+										///cout << "cxxxx" << endl;
 										ground = minContact.edge;
 										movingGround = minContact.movingPlat;
 
@@ -8337,8 +8398,15 @@ void Actor::UpdatePhysics()
 											ground->v0 = oldv0;
 											ground->v1 = oldv1;
 										}
-										V2d eNorm = minContact.normal;//minContact.edge->Normal();			
+										V2d eNorm = minContact.normal;//minContact.edge->Normal();		
+
+										//hopefully this doesn't cause any bugs. if it does i know exactly where to find it
+
+										//CHANGED OFFSET
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
+										//offsetX = position.x - minContact.position.x;
+										//cout << "offsetX is now: " << offsetX << endl;
+
 									}
 
 									/*if( offsetX < -b.rw || offsetX > b.rw )
@@ -8349,7 +8417,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-//									cout << "xx" << endl;
+									//cout << "xx" << endl;
 
 									V2d oldv0 = ground->v0;
 									V2d oldv1 = ground->v1;
@@ -11002,6 +11070,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		if( c != NULL )
 		{
+			//cout << "c isnt null: " << e->Normal().x << ", " << e->Normal().y << endl;
 		bool surface = ( c->normal.x == 0 && c->normal.y == 0 );
 
 		//these make sure its a point of conention and not the other edge end point

@@ -1327,6 +1327,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 		STAND,
 		JUMPSQUAT,
+		STEEPJUMP,
 		JUMP,
 		LAND,
 		//STUNNED,

@@ -54,8 +54,8 @@ void SurfaceMover::UpdateGroundPos()
 		physBody.globalPosition = ground->GetPoint( edgeQuantity )
 			+ gn * physBody.rw;
 		physBody.globalAngle = atan2( gn.x, -gn.y );
-		cout << "setting grounded position to: " << physBody.globalPosition.x 
-			<< ", " << physBody.globalPosition.y << endl;
+		//cout << "setting grounded position to: " << physBody.globalPosition.x 
+		//	<< ", " << physBody.globalPosition.y << endl;
 	}
 	
 }
@@ -803,8 +803,8 @@ void SurfaceMover::HitTerrain( double &q )
 
 void SurfaceMover::Jump( V2d &vel )
 {
-	//cout << "jumping pos is: " << physBody.globalPosition.x << ", " <<
-		//physBody.globalPosition.y << endl;
+	//cout << "jumping vel is: " << vel.x << ", " <<
+		//vel.y << endl;
 	framesInAir = 0;
 	//cout << "jumping surface mover: " << vel.x << ", " << vel.y << endl;
 	velocity = vel;
@@ -880,7 +880,7 @@ void GroundMover::HitTerrainAerial()
 		en = normalize( physBody.globalPosition - minContact.position );
 	}
 
-	if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
+	if( framesInAir > 100 && en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
 		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
 	{
 		ground = minContact.edge;
@@ -892,13 +892,13 @@ void GroundMover::HitTerrainAerial()
 			physBody.globalPosition += minContact.resolution;
 			//cout << "corner: " << minContact.resolution.x << ", " <<
 			//	", " << minContact.resolution.y << endl;
-			cout << "land corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+			//cout << framesInAir << " land corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 		}
 		else
 		{
 			roll = false;
 			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
-			cout << "land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
+			//cout << framesInAir << " land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 			UpdateGroundPos();
 		}
 		if( handler != NULL )
