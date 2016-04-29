@@ -1222,8 +1222,15 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			//cout << "res: " << res << endl;
 			//oldRes >= -.001
 			
+			//OlD RES WAS .001 BUT I CHANGED IT to .1
+			//its so if theres _|\_  and you're coming from below
+			//and you airdash into it, you don't pop through
+
+			//and I still need old res so that I don't 
+			//mess up some case, although i haven't figured out what
+			//case that is yet. good luck collision T_T
 			//if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
-			if( res < -.001 && oldRes >= -.001 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
+			if( res < -.001 && oldRes >= -.1 && resOpp > 0 && measureNormal > -.001 && ( vel.x != 0 || vel.y != 0 )  )	
 			
 			{
 				
@@ -1404,6 +1411,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		currentContact->movingPlat = NULL;
 		
 		currentContact->resolution = -vel * ( 1 - time );
+		//currentContact->resolution += normalize( currentContact->resolution ) * .0001;
 
 	//	cout << "pri: " << currentContact->collisionPriority << " normal: " << en.x << ", " << en.y << 
 	//		" res: " << currentContact->resolution.x << ", " << currentContact->resolution.y <<

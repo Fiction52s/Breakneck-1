@@ -1320,7 +1320,7 @@ ActorParams *PlayerParams::Copy()
 
 //BAT
 
-BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_framesBetweenNodes, int p_nodeDistance, int p_bulletSpeed, bool p_loop )
+BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;

@@ -21,7 +21,7 @@ Camera::Camera()
 	zoomOutRate = 1;
 	zoomInRate = .1;
 	offsetRate = 3;
-	maxZoom = 3.5;
+	maxZoom = 2.5;//3.5;
 
 	zoomLevel1 = 0;
 	zoomLevel2 = .5;
@@ -184,7 +184,7 @@ void Camera::Update( Actor *player )
 
 	float temp;
 	V2d f;
-	double kk = 18.0;
+	double kk = 9.0;//18.0;
 	if( player->ground != NULL )
 	{
 		temp = abs(player->groundSpeed) / kk;
@@ -205,12 +205,12 @@ void Camera::Update( Actor *player )
 	double zDiff = temp - zoomFactor;
 	if( zDiff > 0 )
 	{
-		zoomFactor += zDiff / 20.0/*35.0*/ / player->slowMultiple;
+		zoomFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
 	}
 	else if( zDiff < 0 )
 	{
 	//	zoomFactor += zDiff / 350.0 / player->slowMultiple;
-		zoomFactor += zDiff / 250.0 / player->slowMultiple;
+		zoomFactor += zDiff / 350.0 / player->slowMultiple;
 	}
 
 
@@ -223,7 +223,7 @@ void Camera::Update( Actor *player )
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
 	
-	double offX = pVel.x;
+	double offX = pVel.x * .7;
 	double offXMax = 5;
 	if( offX > offXMax  )
 	{

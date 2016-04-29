@@ -2314,7 +2314,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				cout << "cant stand up" << endl;
+				//cout << "cant stand up" << endl;
 				if( frame == actionLength[DASH] - 2 )
 					frame = 10;
 			}

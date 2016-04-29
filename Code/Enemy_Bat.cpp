@@ -306,7 +306,7 @@ void Bat::UpdatePrePhysics()
 		{
 			AttemptSpawnMonitor();
 			dying = true;
-			cout << "dying" << endl;
+			//cout << "dying" << endl;
 		}
 
 		receivedHit = NULL;
@@ -316,8 +316,8 @@ void Bat::UpdatePrePhysics()
 	{
 		launcher->position = position;
 		launcher->facingDir = normalize( owner->player.position - position );
-		cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-			launcher->facingDir.y << endl;
+		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
+		//	launcher->facingDir.y << endl;
 		launcher->Fire();
 		fireCounter = 0;
 		//testLauncher->Fire();
