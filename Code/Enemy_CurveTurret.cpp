@@ -137,6 +137,11 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 
 }
 
+void CurveTurret::BulletHitPlayer(BasicBullet *b )
+{
+	owner->player.ApplyHit( b->launcher->hitboxInfo );
+}
+
 void CurveTurret::ResetEnemy()
 {
 	dead = false;

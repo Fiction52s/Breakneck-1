@@ -80,10 +80,6 @@ void ActorParams::SetPanelInfo()
 {
 }
 
-void ActorParams::SetDefaultPanelInfo()
-{
-}
-
 void ActorParams::SetSelected( bool select )
 {
 	cout << "------selected: " << select << endl;
@@ -916,20 +912,11 @@ void PatrollerParams::SetParams()
 void PatrollerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
 	p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 	p->checkBoxes["loop"]->checked = loop;
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
-}
-
-void PatrollerParams::SetDefaultPanelInfo()
-{
-	Panel *p = type->panel;
-
-	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( "not test" );
-	p->textBoxes["speed"]->text.setString( "10" );
-	p->checkBoxes["loop"]->checked = false;
 }
 
 bool PatrollerParams::CanApply()
@@ -1333,7 +1320,7 @@ ActorParams *PlayerParams::Copy()
 
 //BAT
 
-BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_speed, bool p_loop )
+BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_framesBetweenNodes, int p_nodeDistance, int p_bulletSpeed, bool p_loop )
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
@@ -1347,8 +1334,12 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 	//list<Vector2i> localPath;
 	SetPath( globalPath );
 
+	framesBetweenNodes = p_framesBetweenNodes; 
+	nodeDistance = p_nodeDistance;
+	bulletSpeed = p_bulletSpeed;
+
 	loop = p_loop;
-	speed = p_speed;
+	//speed = p_speed;
 
 	SetBoundingQuad();
 	//ss << localPath.size();
@@ -1384,7 +1375,10 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i &pos )
 	image.setPosition( pos.x, pos.y );
 
 	loop = false;
-	speed = 5;
+	//speed = 5;
+	framesBetweenNodes = 60;
+	nodeDistance = 100;
+	bulletSpeed = 10;
 
 	SetBoundingQuad();
 
@@ -1545,7 +1539,10 @@ void BatParams::WriteParamFile( ofstream &of )
 	}
 
 	//of.precision( 5 );
-	of << speed << endl;//fixed << speed << endl;
+	//of << speed << endl;//fixed << speed << endl;
+	of << bulletSpeed << endl;
+	of << nodeDistance << endl;
+	of << framesBetweenNodes << endl;
 }
 
 void BatParams::SetParams()
@@ -1553,45 +1550,61 @@ void BatParams::SetParams()
 	Panel *p = type->panel;
 
 	stringstream ss;
-	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+	string bulletSpeedStr = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+	string nodeDistanceStr = p->textBoxes["nodedistance"]->text.getString().toAnsiString();
+	string betweenStr = p->textBoxes["framesbetweennodes"]->text.getString().toAnsiString();
 	bool t_loop = p->checkBoxes["loop"]->checked;
-	//string yStrengthStr = p->textBoxes["ystrength"]->text.getString().toAnsiString();
-	//string jumpWaitFramesStr = p->textBoxes["jumpwaitframes"]->text.getString().toAnsiString();
-	//string gravityFactorStr = p->textBoxes["gravfactor"]->text.getString().toAnsiString();
 	
-	ss << speedStr;
+	ss << bulletSpeedStr;
 
-	int t_speed;
-	ss >> t_speed;
+	int t_bulletSpeed;
+	ss >> t_bulletSpeed;
 
 	if( !ss.fail() )
 	{
-		speed = t_speed;
+		bulletSpeed = t_bulletSpeed;
 	}
 
-	loop = t_loop;
+	ss.clear();
+
+	ss << nodeDistanceStr;
+
+	int t_nodeDistance;
+	ss >> t_nodeDistance;
+
+	if( !ss.fail() )
+	{
+		nodeDistance = t_nodeDistance;
+	}
 
 	ss.clear();
+
+	ss << betweenStr;
+
+	int t_framesBetweenNodes;
+	ss >> t_framesBetweenNodes;
+
+	if( !ss.fail() )
+	{
+		framesBetweenNodes = t_framesBetweenNodes;
+	}
+
+	ss.clear();
+
+	loop = t_loop;
 }
 
 void BatParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-
-	p->textBoxes["group"]->text.setString( group->name );
-	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["group"]->text.setString( group->name );
+	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
+	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
-}
-
-void BatParams::SetDefaultPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( "not test" );
-	p->textBoxes["speed"]->text.setString( "10" );
-	p->checkBoxes["loop"]->checked = false;
 }
 
 ActorParams *BatParams::Copy()
@@ -1694,20 +1707,12 @@ void StagBeetleParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
+	p->textBoxes["name"]->text.setString( "test" );
 	p->textBoxes["group"]->text.setString( group->name );
 	p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
-}
-
-void StagBeetleParams::SetDefaultPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( "not test" );
-	p->checkBoxes["clockwise"]->checked = true;
-	p->textBoxes["speed"]->text.setString( "10" );
 }
 
 ActorParams *StagBeetleParams::Copy()
@@ -1856,17 +1861,6 @@ void PoisonFrogParams::SetPanelInfo()
 	p->textBoxes["ystrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.y ) ); 
 	p->textBoxes["gravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor ) ); 
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
-}
-
-void PoisonFrogParams::SetDefaultPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( "not test" );
-	p->textBoxes["gravfactor"]->text.setString( "5" );
-	p->textBoxes["xstrength"]->text.setString( "10" );
-	p->textBoxes["ystrength"]->text.setString( "10" );
-	p->textBoxes["jumpwaitframes"]->text.setString( "10" );
 }
 
 void PoisonFrogParams::UpdatePath()
@@ -2109,6 +2103,8 @@ void CurveTurretParams::SetParams()
 {
 	Panel *p = type->panel;
 
+	
+
 	stringstream ss;
 	string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
 	string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
@@ -2168,19 +2164,10 @@ void CurveTurretParams::SetParams()
 	//also set up visuals
 }
 
-void CurveTurretParams::SetDefaultPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( "not test" );
-	p->textBoxes["bulletspeed"]->text.setString( "10" );
-	p->textBoxes["waitframes"]->text.setString( "10" );
-	p->checkBoxes["relativegrav"]->checked = true;
-}
-
 void CurveTurretParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
 	p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );

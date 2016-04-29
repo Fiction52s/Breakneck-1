@@ -386,7 +386,6 @@ struct ActorParams : ISelectable
 	void DrawMonitor( sf::RenderTarget *target );
 	virtual void SetParams();
 	virtual void SetPanelInfo();
-	virtual void SetDefaultPanelInfo();
 	static  Panel * CreateOptionsPanel();
 
 
@@ -453,7 +452,6 @@ struct PatrollerParams : public ActorParams
 
 	void SetParams();
 	void SetPanelInfo();
-	void SetDefaultPanelInfo();
 
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
@@ -467,7 +465,9 @@ struct BatParams : public ActorParams
 	BatParams( EditSession *edit,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath, 
-		int speed,
+		int framesBetween,
+		int nodeDistance,
+		int bulletSpeed,
 		bool loop ); 
 	BatParams( EditSession *edit,
 		sf::Vector2i &pos );
@@ -479,15 +479,17 @@ struct BatParams : public ActorParams
 
 	void SetParams();
 	void SetPanelInfo();
-	void SetDefaultPanelInfo();
 
 	bool CanApply();
 	ActorParams *Copy();
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
 
+	int bulletSpeed;
+	int nodeDistance;
+	int framesBetweenNodes;
 	bool loop;
-	int speed;
+	//int speed;
 };
 
 struct HealthFlyParams : public ActorParams
@@ -564,7 +566,6 @@ struct StagBeetleParams : public ActorParams
 	bool CanApply();
 	void SetParams();
 	void SetPanelInfo();
-	void SetDefaultPanelInfo();
 	ActorParams *Copy();
 
 	//void Draw( sf::RenderTarget *target );
@@ -620,7 +621,6 @@ struct PoisonFrogParams : public ActorParams
 	bool CanApply();
 	void SetParams(); 
 	void SetPanelInfo();
-	void SetDefaultPanelInfo();
 	int gravFactor;
 	sf::Vector2i jumpStrength;
 	//int jumpStrengthX;
@@ -663,7 +663,6 @@ struct CurveTurretParams : public ActorParams
 		int edgeIndex, double edgeQuantity );
 	void SetParams();
 	void SetPanelInfo();
-	void SetDefaultPanelInfo();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	void UpdateBulletCurve();
@@ -896,6 +895,7 @@ struct EditSession : GUIHandler
 	double lightRadius;
 	int lightBrightness;
 	
+	int patrolPathLengthSize;
 
 	sf::Sprite enemySprite;
 	sf::RectangleShape enemyQuad;

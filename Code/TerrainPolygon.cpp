@@ -1348,20 +1348,20 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw( *va );
 
 
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		CircleShape cs;
-		cs.setRadius( 8 * zoomMultiple );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	//for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	//{
+	//	CircleShape cs;
+	//	cs.setRadius( 8 * zoomMultiple );
+	//	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
-		if( curr->selected )
-			cs.setFillColor( Color::Red );
-		else
-			cs.setFillColor( Color::Green );
+	//	if( curr->selected )
+	//		cs.setFillColor( Color::Red );
+	//	else
+	//		cs.setFillColor( Color::Green );
 
-		cs.setPosition( curr->pos.x, curr->pos.y );
-	//	rt->draw( cs );
-	}
+	//	cs.setPosition( curr->pos.x, curr->pos.y );
+	////	rt->draw( cs );
+	//}
 
 	//always do this now for awhile
 	if( false )
@@ -1388,17 +1388,18 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 	if( showPoints )
 	{
+		CircleShape cs;
+		cs.setRadius( 8 * zoomMultiple );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setFillColor( Color::Magenta );
+
 		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 		{
 			if( curr == dontShow )
 			{
 				continue;
 			}
-			CircleShape cs;
-			cs.setRadius( 8 * zoomMultiple );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-
-			cs.setFillColor( Color::Magenta );
+			
 
 			cs.setPosition( curr->pos.x, curr->pos.y );
 			rt->draw( cs );

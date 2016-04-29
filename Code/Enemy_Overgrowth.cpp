@@ -94,6 +94,11 @@ void Tree::BulletHitTerrain( BasicBullet *b,
 	parent->ActivateTree( edge, q );
 }
 
+void Tree::BulletHitPlayer(BasicBullet *b )
+{
+
+}
+
 void Tree::UpdatePrePhysics()
 {
 	launcher->UpdatePrePhysics();
@@ -506,6 +511,8 @@ void Overgrowth::InitTrees()
 		AddToList( tree, inactiveTrees );
 	}
 }
+
+
 
 void Overgrowth::AddToList( Tree *tree, Tree *&list )
 {

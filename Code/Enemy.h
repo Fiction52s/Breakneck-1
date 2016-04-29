@@ -17,6 +17,7 @@ struct LauncherEnemy
 {
 	virtual void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos ) = 0;
+	virtual void BulletHitPlayer( BasicBullet *b ) = 0;
 };
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
@@ -42,6 +43,7 @@ struct BasicBullet : QuadTreeCollider
 	bool ResolvePhysics( 
 		sf::Vector2<double> vel );
 	virtual bool HitTerrain();
+	void HitPlayer();
 	//CollisionBox physBody;
 	sf::Vector2<double> velocity;
 	int slowCounter;
@@ -82,6 +84,7 @@ struct Launcher
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	void UpdateSprites();
+	
 	BasicBullet * ActivateBullet();
 	int GetActiveCount();
 	void Fire();
@@ -95,7 +98,7 @@ struct Launcher
 	GameSession *owner;
 	int totalBullets;
 	int perShot;
-	
+	HitboxInfo *hitboxInfo;
 	double bulletSpeed;
 	sf::Vector2<double> position;
 	double angleSpread;
@@ -307,11 +310,17 @@ struct Patroller : Enemy
 	Stored stored;
 };
 
-struct Bat : Enemy
+struct Bat : Enemy, LauncherEnemy
 {
 	MovementSequence testSeq;
-	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, 
-		bool loop, int speed );
+	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path,
+		int bulletSpeed,
+		int nodeDistance,
+		int framesBetween,
+		bool loop );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
 	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -335,6 +344,10 @@ struct Bat : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
+	int bulletSpeed;
+	int nodeDistance;
+	int framesBetween;
+
 	//sf::Vector2<double> basePos;
 	int deathFrame;
 	sf::Vector2<double> deathVector;
@@ -351,6 +364,12 @@ struct Bat : Enemy
 	bool forward;
 	//sf::Vector2<double>
 	int frame;
+
+	Launcher *launcher;
+
+	int fireCounter;
+
+	bool dying;
 
 	double acceleration;
 	double speed;
@@ -789,6 +808,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 	void BulletHitTerrain(BasicBullet *b, 
 		Edge *edge, 
 		sf::Vector2<double> &pos);
+	void BulletHitPlayer( BasicBullet *b );
 
 	void SaveEnemyState();
 	void LoadEnemyState();
@@ -853,7 +873,7 @@ struct Tree : Enemy, LauncherEnemy
 	void BulletHitTerrain(BasicBullet *b, 
 		Edge *edge, 
 		sf::Vector2<double> &pos);
-
+	void BulletHitPlayer(BasicBullet *b );
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

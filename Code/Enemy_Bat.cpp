@@ -14,27 +14,60 @@ using namespace sf;
 
 
 Bat::Bat( GameSession *owner, Vector2i pos, 
-	list<Vector2i> &pathParam, bool loopP, int pspeed )
+	list<Vector2i> &pathParam, int p_bulletSpeed,
+	int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
+	loop = p_loop;
+	//loop = false; //no looping on bat for now
+
+	fireCounter = 0;
 	//latchedOn = false;
 	//offsetPlayer 
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	//latchedOn = true; 
+	bulletSpeed = p_bulletSpeed;
+	nodeDistance = p_nodeDistance;
+	framesBetween = p_framesBetweenNodes;
 
+	//latchedOn = true; 
+	deathFrame = 0;
 	
+	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0 );
+	launcher->SetBulletSpeed( bulletSpeed );	
+
+	//launcher->setdi
+
 	initHealth = 40;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	pathLength = pathParam.size() + 1;
+	if( loop )
+	{
+		
+		cout << "looping bat" << endl;
+		assert( false );
+		//tough cuz of set node distance from each other. for now don't use it.
+	}
+	else
+	{
+		//the road back
+		//cout << "old: " << pathLength << endl;
+		if( pathParam.size() > 0 )
+		{
+			pathLength += pathParam.size();
+		}
+		//cout << "new: " << pathLength << endl;
+	}
+	//++pathLength;
 	//cout << "pathLength: " << pathLength << endl;
 	path = new Vector2i[pathLength];
 	path[0] = pos;
+	path[pathLength-1] = pos;
 
 	int index = 1;
 	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
@@ -45,6 +78,8 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 
 	}
 
+
+
 	//make composite beziers
 	if( pathLength == 1 )
 	{
@@ -52,11 +87,24 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	}
 	else
 	{
+		//cout << "starting second thing" << endl;
+		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
+		++rit; //start at second item
+		
+		for(  ;rit != pathParam.rend(); ++rit )
+		{
+			path[index] = (*rit) + pos;
+			++index;
+		}
+		//path[index] = pos;
+
+		//cout << "ending second thing" << endl;
 		//for( int i = 0; i < pathLength; ++i )
 		//{
 
 		//}
 	}
+	//cout << "path length: " << pathLength << ", " << index << endl;
 
 	//basePos = position;
 	V2d sqTest0 = position;
@@ -124,9 +172,9 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 		&GetCubicValue, 60 ,
 		pos2Test, p_p1, p_p2, pos3Test ) );*/
 
-	loop = loopP;
+	//loop = loopP;
 	
-	speed = pspeed;
+	//speed = pspeed;
 
 
 
@@ -172,6 +220,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	forward = true;
 
 	dead = false;
+	dying = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -186,6 +235,8 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
+
+	//cout << "finish init" << endl;
 }
 
 void Bat::HandleEntrant( QuadTreeEntrant *qte )
@@ -193,14 +244,30 @@ void Bat::HandleEntrant( QuadTreeEntrant *qte )
 
 }
 
+
+
+void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
+{
+
+}
+
+void Bat::BulletHitPlayer(BasicBullet *b )
+{
+	owner->player.ApplyHit( b->launcher->hitboxInfo );
+}
+
+
 void Bat::ResetEnemy()
 {
+	fireCounter = 0;
 	testSeq.Reset();
+	launcher->Reset();
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
 	targetNode = 1;
 	forward = true;
 	dead = false;
+	dying = false;
 	deathFrame = 0;
 	frame = 0;
 	position.x = path[0].x;
@@ -217,7 +284,16 @@ void Bat::ResetEnemy()
 
 void Bat::UpdatePrePhysics()
 {
-	if( !dead && receivedHit != NULL )
+	if( testSeq.currMovement == NULL )
+	{
+		testSeq.Reset();
+		//testSeq.currMovement = testSeq.movementList;
+		//testSeq.currMovementStartTime = 0;
+	}
+
+	launcher->UpdatePrePhysics();
+
+	if( !dead && !dying && receivedHit != NULL )
 	{
 		//owner->Pause( 5 );
 		
@@ -229,10 +305,22 @@ void Bat::UpdatePrePhysics()
 		if( health <= 0 )
 		{
 			AttemptSpawnMonitor();
-			dead = true;
+			dying = true;
+			cout << "dying" << endl;
 		}
 
 		receivedHit = NULL;
+	}
+
+	if( !dying && !dead && fireCounter == framesBetween - 1 )// frame == 0 && slowCounter == 1 )
+	{
+		launcher->position = position;
+		launcher->facingDir = normalize( owner->player.position - position );
+		cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
+			launcher->facingDir.y << endl;
+		launcher->Fire();
+		fireCounter = 0;
+		//testLauncher->Fire();
 	}
 
 	/*if( latchedOn )
@@ -242,10 +330,29 @@ void Bat::UpdatePrePhysics()
 }
 
 void Bat::UpdatePhysics()
-{
-	testSeq.Update();
+{	
+	if( !dead && !dying )
+	{
+		testSeq.Update();
+		position = testSeq.position;
+		PhysicsResponse();
+	}
 
-	position = testSeq.position;
+	launcher->UpdatePhysics();
+
+	if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}
 
 	return;
 
@@ -264,6 +371,8 @@ void Bat::UpdatePhysics()
 		slowMultiple = 1;
 		slowCounter = 1;
 	}
+
+	
 
 	if( dead )
 		return;
@@ -297,7 +406,7 @@ void Bat::UpdatePhysics()
 
 void Bat::PhysicsResponse()
 {
-	if( !dead && receivedHit == NULL )
+	if( !dead && !dying && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
@@ -391,11 +500,14 @@ void Bat::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
+		++fireCounter;
 	
-		if( dead )
+		if( dying )
 		{
+			//cout << "deathFrame: " << deathFrame << endl;
 			deathFrame++;
 		}
 
@@ -410,38 +522,55 @@ void Bat::UpdatePostPhysics()
 		frame = 0;
 	}
 
-
-
-	if( deathFrame == 60 )
+	if( deathFrame == 60 && dying )
 	{
+		//cout << "switching dead" << endl;
+		dying = false;
+		dead = true;
+		//cout << "REMOVING" << endl;
+		//testLauncher->Reset();
+		//owner->RemoveEnemy( this );
+		//return;
+	}
+
+	if( dead && launcher->GetActiveCount() == 0 )
+	{
+		//cout << "REMOVING" << endl;
 		owner->RemoveEnemy( this );
 	}
 
 	UpdateSprite();
+	launcher->UpdateSprites();
 }
 
 void Bat::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
+	if( !dying && !dead )
+	{
+		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+		sprite.setPosition( position.x, position.y );
+	}
+	if( dying )
+	{
 
-	botDeathSprite.setTexture( *ts->texture );
-	botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
-	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
-	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + deathVector.y * deathPartingSpeed * deathFrame );
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
-	topDeathSprite.setTexture( *ts->texture );
-	topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
-	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+	}
 }
 
 void Bat::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
-	if( !dead )
+	if( !dead && !dying )
 	{
 		if( monitor != NULL )
 		{
@@ -455,7 +584,7 @@ void Bat::Draw( sf::RenderTarget *target )
 		}
 		target->draw( sprite );
 	}
-	else
+	else if( !dead )
 	{
 		target->draw( botDeathSprite );
 
@@ -478,17 +607,20 @@ void Bat::Draw( sf::RenderTarget *target )
 
 void Bat::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape enemyCircle;
-	enemyCircle.setFillColor( COLOR_BLUE );
-	enemyCircle.setRadius( 50 );
-	enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-	enemyCircle.setPosition( position.x, position.y );
-	target->draw( enemyCircle );
-
-	if( monitor != NULL )
+	if( !dead && !dying )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
+		CircleShape enemyCircle;
+		enemyCircle.setFillColor( COLOR_BLUE );
+		enemyCircle.setRadius( 50 );
+		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
+		enemyCircle.setPosition( position.x, position.y );
+		target->draw( enemyCircle );
+
+		if( monitor != NULL )
+		{
+			monitor->miniSprite.setPosition( position.x, position.y );
+			target->draw( monitor->miniSprite );
+		}
 	}
 }
 

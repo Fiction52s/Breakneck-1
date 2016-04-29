@@ -909,12 +909,18 @@ bool EditSession::OpenFile( string fileName )
 					else
 						assert( false && "should be a boolean" );
 
+					int bulletSpeed;
+					is >> bulletSpeed;
 
-					float speed;
-					is >> speed;
+					int nodeDistance;
+					is >> nodeDistance;
+
+					int framesBetweenNodes;
+					is >> framesBetweenNodes;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset( new BatParams( this, pos, globalPath, speed, loop ) );
+					a.reset( new BatParams( this, pos, globalPath, bulletSpeed, 
+						nodeDistance, framesBetweenNodes, loop ) );
 					a->monitorType = (ActorParams::MonitorType)mType;
 					
 				}
@@ -4877,7 +4883,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 										tempActor = new PatrollerParams( this, Vector2i( worldPos.x,
 											worldPos.y ) );
-										tempActor->SetDefaultPanelInfo();
+										tempActor->SetPanelInfo();
+										//tempActor->SetDefaultPanelInfo();
 
 										showPanel = trackingEnemy->panel;
 
@@ -4893,7 +4900,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										tempActor = new BatParams( this, Vector2i( worldPos.x,
 											worldPos.y ) );
-										tempActor->SetDefaultPanelInfo();
+										tempActor->SetPanelInfo();
+										//tempActor->SetDefaultPanelInfo();
 
 										showPanel = trackingEnemy->panel;
 
@@ -4946,7 +4954,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											tempActor = new PoisonFrogParams( this, enemyEdgePolygon, enemyEdgeIndex, 
 												enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											tempActor->SetDefaultPanelInfo();
+											tempActor->SetPanelInfo();
+											//tempActor->SetDefaultPanelInfo();
 											//trackingEnemy = NULL;
 										}
 									}
@@ -4958,7 +4967,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											tempActor = new StagBeetleParams( this, enemyEdgePolygon, 
 												enemyEdgeIndex, enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											tempActor->SetDefaultPanelInfo();
+											tempActor->SetPanelInfo();
+											//tempActor->SetDefaultPanelInfo();
 											//trackingEnemy = NULL;
 										}
 									}
@@ -4998,7 +5008,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												enemyEdgeQuantity );
 											
 											showPanel = trackingEnemy->panel;
-											tempActor->SetDefaultPanelInfo();
+											//tempActor->SetDefaultPanelInfo();
+											tempActor->SetPanelInfo();
 											//CurveTurretParams *ct = (CurveTurretParams*)tempActor.get();
 											//ct->SetPanelInfo();
 
@@ -5885,6 +5896,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		showTerrainPath = true;
 
+		// temp;
+		//V2d temp1;
+		//double tempQuant;
 		switch( mode )
 		{
 		case CREATE_TERRAIN:
@@ -7066,12 +7080,31 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
-					if( length( worldPos - Vector2<double>(patrolPath.back().x, 
-						patrolPath.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
+					//double test = 100;
+					//worldPos before testPoint
+					V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
+						patrolPath.back().y );
+					double tempQuant = length( temp );
+					if( tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) 
+						&& tempQuant > patrolPathLengthSize / 2 )
 					{
-						Vector2i worldi( testPoint.x, testPoint.y );
 
-						patrolPath.push_back( worldi );
+						if( patrolPathLengthSize > 0 )
+						{
+							V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y );
+							temp = normalize( V2d( testPoint.x, testPoint.y ) -  temp1 ) 
+								* (double)patrolPathLengthSize + temp1;
+							Vector2i worldi( temp.x, temp.y );
+							patrolPath.push_back( worldi );
+						}
+						else
+						{
+							Vector2i worldi( testPoint.x, testPoint.y );
+							patrolPath.push_back( worldi );
+						}
+						
+
+						
 					}					
 				}
 				break;
@@ -8316,6 +8349,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			Vector2i front = patrolPath.front();
 			patrolPath.clear();
 			patrolPath.push_back( front );
+			patrolPathLengthSize = 0;
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
@@ -8400,6 +8434,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			Vector2i front = patrolPath.front();
 			patrolPath.clear();
 			patrolPath.push_back( front );
+			patrolPathLengthSize = 100; //do it by distance and #of frames
 			//cout << "CREATE PATH MODE--------------------" << endl;
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
@@ -10578,16 +10613,18 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if( name == "bat" )
 	{
-		Panel *p = new Panel( "bat_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		Panel *p = new Panel( "bat_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
+		p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddTextBox( "nodedistance", Vector2i( 20, 250 ), 200, 20, "10" );
+		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 400 ), 4, 1, 32, 32, true, true);
 		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
 		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
 		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );

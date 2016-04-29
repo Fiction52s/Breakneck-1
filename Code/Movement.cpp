@@ -412,6 +412,13 @@ void MovementSequence::Update()
 			currProjectileStartTime = currTime;
 		}
 	}
+
+	/*if( currMovement == NULL && currRotation == NULL )
+	{
+		return false;
+	}
+
+	return true;*/
 }
 
 void MovementSequence::AddMovement( Movement *movement )

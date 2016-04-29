@@ -648,10 +648,10 @@ Actor::Actor( GameSession *gs )
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
 
-		bool noPowers = false;
+		bool noPowers = true;
 		if( noPowers )
 		{
-			hasPowerAirDash = false;
+			hasPowerAirDash = true;
 			hasPowerGravReverse = false;
 			hasPowerBounce = false;
 			hasPowerGrindBall = false;
@@ -922,6 +922,7 @@ void Actor::UpdatePrePhysics()
 	
 
 	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
+
 	
 
 	
@@ -1062,8 +1063,8 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					velocity.x *= receivedHit->drainX;
-					velocity.y *= receivedHit->drainY;
+					velocity.x *= (1 - receivedHit->drainX);
+					velocity.y *= (1 - receivedHit->drainY);
 				}
 				
 			}
@@ -1078,7 +1079,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					groundSpeed *= receivedHit->drainX * abs(gNorm.y) + receivedHit->drainY * abs(gNorm.x);
+					groundSpeed *= (1-receivedHit->drainX) * abs(gNorm.y) + (1-receivedHit->drainY) * abs(gNorm.x);
 				}
 				
 				//dot( receivedHit->kbDir, normalize( ground->v1 - ground->v0 ) ) * receivedHit->knockback;

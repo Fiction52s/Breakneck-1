@@ -39,6 +39,14 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 	}
 
 	owner->totalNumberBullets = startIndex;
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 100;
+	hitboxInfo->drainX = .3;
+	hitboxInfo->drainY = .3;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 0;
 }
 
 void Launcher::UpdatePrePhysics()
@@ -354,6 +362,15 @@ void BasicBullet::UpdatePhysics()
 			HitTerrain();
 			break;
 		}
+
+		hitBody.globalPosition = position;
+
+		Actor &player = launcher->owner->player;
+		if( player.hurtBody.Intersects( hitBody ) )
+		{
+			HitPlayer();
+			break;
+		}
 	}
 }
 
@@ -363,6 +380,12 @@ bool BasicBullet::HitTerrain()
 		minContact.edge, minContact.position );
 	launcher->DeactivateBullet( this );
 	return true;
+}
+
+void BasicBullet::HitPlayer()
+{
+	launcher->handler->BulletHitPlayer( this );
+	launcher->DeactivateBullet( this );
 }
 
 bool BasicBullet::ResolvePhysics( V2d vel )

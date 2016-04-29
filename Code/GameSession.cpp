@@ -1091,10 +1091,18 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					assert( false && "should be a boolean" );
 				}
 
+				int bulletSpeed;
+				is >> bulletSpeed;
 
-				int speed;
-				is >> speed;
-				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				int nodeDistance;
+				is >> nodeDistance;
+
+				int framesBetweenNodes;
+				is >> framesBetweenNodes;
+				//int speed;
+				//is >> speed;
+				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+					bulletSpeed, nodeDistance, framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//enemy->Monitor::MonitorType
@@ -4562,7 +4570,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+	//	DebugDrawActors();
 
 		
 
