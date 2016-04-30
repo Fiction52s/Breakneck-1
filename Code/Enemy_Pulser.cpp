@@ -13,7 +13,7 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Bat::Bat( GameSession *owner, Vector2i pos, 
+Pulser::Pulser( GameSession *owner, Vector2i &pos, 
 	list<Vector2i> &pathParam, int p_bulletSpeed,
 	int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
@@ -21,19 +21,21 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	loop = p_loop;
 	//loop = false; //no looping on bat for now
 
-	fireCounter = 0;
+
+	//latchedOn = false;
+	//offsetPlayer 
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
-
-	bulletSpeed = p_bulletSpeed;
-	nodeDistance = p_nodeDistance;
+	
 	framesBetween = p_framesBetweenNodes;
 
+	//latchedOn = true; 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0 );
-	launcher->SetBulletSpeed( bulletSpeed );	
+	
+
+	//launcher->setdi
 
 	initHealth = 40;
 	health = initHealth;
@@ -51,12 +53,15 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	else
 	{
 		//the road back
+		//cout << "old: " << pathLength << endl;
 		if( pathParam.size() > 0 )
 		{
 			pathLength += pathParam.size();
 		}
+		//cout << "new: " << pathLength << endl;
 	}
-	
+	//++pathLength;
+	//cout << "pathLength: " << pathLength << endl;
 	path = new Vector2i[pathLength];
 	path[0] = pos;
 	path[pathLength-1] = pos;
@@ -66,14 +71,20 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	{
 		path[index] = (*it) + pos;
 		++index;
+		//path.push_back( (*it) );
+
 	}
 
+
+
+	//make composite beziers
 	if( pathLength == 1 )
 	{
 
 	}
 	else
 	{
+		//cout << "starting second thing" << endl;
 		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
 		++rit; //start at second item
 		
@@ -82,22 +93,37 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 			path[index] = (*rit) + pos;
 			++index;
 		}
-	}
+		//path[index] = pos;
 
+		//cout << "ending second thing" << endl;
+		//for( int i = 0; i < pathLength; ++i )
+		//{
+
+		//}
+	}
+	//cout << "path length: " << pathLength << ", " << index << endl;
+
+	//basePos = position;
 	V2d sqTest0 = position;
 	V2d sqTest1 = position + V2d( 0, -150 );
 	V2d sqTest2 = position + V2d( 150, -150 );
 	V2d sqTest3 = position + V2d( 300, -150 );
 	V2d sqTest4 = position + V2d( 300, 0 );
 
+	//Transform trans;
+	///trans.scale( Vector2f( 3, 1 ) );
+	
+	//trans.rotate( 
 	for( int i = 0; i < pathLength - 1; ++i )
 	{
 		V2d A( path[i].x, path[i].y );
 		V2d B( path[i+1].x, path[i+1].y );
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), 60 );
+		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), framesBetween );
+		testSeq.AddMovement( new WaitMovement( B, framesBetween ) );
 	}
+
 	testSeq.InitMovementDebug();
-	
+
 	frame = 0;
 
 	animationFactor = 5;
@@ -135,11 +161,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	hitboxInfo->knockback = 4;
 	//hitboxInfo->kbDir;
 
-	targetNode = 1;
-	forward = true;
-
 	dead = false;
-	dying = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -158,35 +180,15 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	//cout << "finish init" << endl;
 }
 
-void Bat::HandleEntrant( QuadTreeEntrant *qte )
+void Pulser::HandleEntrant( QuadTreeEntrant *qte )
 {
 
 }
 
-
-
-void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
+void Pulser::ResetEnemy()
 {
-
-}
-
-void Bat::BulletHitPlayer(BasicBullet *b )
-{
-	owner->player.ApplyHit( b->launcher->hitboxInfo );
-}
-
-
-void Bat::ResetEnemy()
-{
-	fireCounter = 0;
 	testSeq.Reset();
-	launcher->Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	//targetNode = 1;
-	//forward = true;
 	dead = false;
-	dying = false;
 	deathFrame = 0;
 	frame = 0;
 	position.x = path[0].x;
@@ -201,7 +203,7 @@ void Bat::ResetEnemy()
 	
 }
 
-void Bat::UpdatePrePhysics()
+void Pulser::UpdatePrePhysics()
 {
 	if( testSeq.currMovement == NULL )
 	{
@@ -210,9 +212,7 @@ void Bat::UpdatePrePhysics()
 		//testSeq.currMovementStartTime = 0;
 	}
 
-	launcher->UpdatePrePhysics();
-
-	if( !dead && !dying && receivedHit != NULL )
+	if( !dead && receivedHit != NULL )
 	{
 		//owner->Pause( 5 );
 		
@@ -224,31 +224,15 @@ void Bat::UpdatePrePhysics()
 		if( health <= 0 )
 		{
 			AttemptSpawnMonitor();
-			dying = true;
+			dead = true;
 			//cout << "dying" << endl;
 		}
 
 		receivedHit = NULL;
 	}
-
-	if( !dying && !dead && fireCounter == framesBetween - 1 )// frame == 0 && slowCounter == 1 )
-	{
-		launcher->position = position;
-		launcher->facingDir = normalize( owner->player.position - position );
-		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-		//	launcher->facingDir.y << endl;
-		launcher->Fire();
-		fireCounter = 0;
-		//testLauncher->Fire();
-	}
-
-	/*if( latchedOn )
-	{
-		basePos = owner->player.position + offsetPlayer;
-	}*/
 }
 
-void Bat::UpdatePhysics()
+void Pulser::UpdatePhysics()
 {	
 	if( !dead && !dying )
 	{
@@ -323,7 +307,7 @@ void Bat::UpdatePhysics()
 	PhysicsResponse();
 }
 
-void Bat::PhysicsResponse()
+void Pulser::PhysicsResponse()
 {
 	if( !dead && !dying && receivedHit == NULL )
 	{
@@ -377,23 +361,20 @@ void Bat::PhysicsResponse()
 	}
 }
 
-void Bat::UpdatePostPhysics()
+void Pulser::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
 	}
 
-	
-
 	if( slowCounter == slowMultiple )
 	{
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
-		++fireCounter;
 	
-		if( dying )
+		if( dead )
 		{
 			//cout << "deathFrame: " << deathFrame << endl;
 			deathFrame++;
@@ -410,35 +391,27 @@ void Bat::UpdatePostPhysics()
 		frame = 0;
 	}
 
-	if( deathFrame == 60 && dying )
+	if( deathFrame == 60 && dead )
 	{
 		//cout << "switching dead" << endl;
-		dying = false;
-		dead = true;
+		
 		//cout << "REMOVING" << endl;
 		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
-	}
-
-	if( dead && launcher->GetActiveCount() == 0 )
-	{
-		//cout << "REMOVING" << endl;
 		owner->RemoveEnemy( this );
+		return;
 	}
 
 	UpdateSprite();
-	launcher->UpdateSprites();
 }
 
-void Bat::UpdateSprite()
+void Pulser::UpdateSprite()
 {
-	if( !dying && !dead )
+	if( !dead )
 	{
 		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 		sprite.setPosition( position.x, position.y );
 	}
-	if( dying )
+	else
 	{
 
 		botDeathSprite.setTexture( *ts->texture );
@@ -455,10 +428,10 @@ void Bat::UpdateSprite()
 	}
 }
 
-void Bat::Draw( sf::RenderTarget *target )
+void Pulser::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
-	if( !dead && !dying )
+	if( !dead )
 	{
 		if( monitor != NULL )
 		{
@@ -472,7 +445,7 @@ void Bat::Draw( sf::RenderTarget *target )
 		}
 		target->draw( sprite );
 	}
-	else if( !dead )
+	else
 	{
 		target->draw( botDeathSprite );
 
@@ -488,14 +461,11 @@ void Bat::Draw( sf::RenderTarget *target )
 		
 		target->draw( topDeathSprite );
 	}
-
-
-
 }
 
-void Bat::DrawMinimap( sf::RenderTarget *target )
+void Pulser::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying )
+	if( !dead )
 	{
 		CircleShape enemyCircle;
 		enemyCircle.setFillColor( COLOR_BLUE );
@@ -512,7 +482,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Bat::IHitPlayer()
+bool Pulser::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
@@ -524,7 +494,7 @@ bool Bat::IHitPlayer()
 	return false;
 }
 
-void Bat::UpdateHitboxes()
+void Pulser::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -542,7 +512,7 @@ void Bat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Bat::PlayerHitMe()
+pair<bool,bool> Pulser::PlayerHitMe()
 {
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
@@ -598,7 +568,7 @@ pair<bool,bool> Bat::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Bat::PlayerSlowingMe()
+bool Pulser::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -614,7 +584,7 @@ bool Bat::PlayerSlowingMe()
 	return false;
 }
 
-void Bat::DebugDraw( RenderTarget *target )
+void Pulser::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -630,7 +600,7 @@ void Bat::DebugDraw( RenderTarget *target )
 	}
 }
 
-void Bat::SaveEnemyState()
+void Pulser::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -642,7 +612,7 @@ void Bat::SaveEnemyState()
 	stored.targetNode = targetNode;
 }
 
-void Bat::LoadEnemyState()
+void Pulser::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;
