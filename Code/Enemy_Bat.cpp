@@ -11,6 +11,12 @@ using namespace sf;
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
 Bat::Bat( GameSession *owner, Vector2i pos, 
@@ -135,8 +141,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	hitboxInfo->knockback = 4;
 	//hitboxInfo->kbDir;
 
-	targetNode = 1;
-	forward = true;
+	
 
 	dead = false;
 	dying = false;
@@ -274,53 +279,6 @@ void Bat::UpdatePhysics()
 	}
 
 	return;
-
-	double movement = speed / NUM_STEPS;
-	
-	if( PlayerSlowingMe() )
-	{
-		if( slowMultiple == 1 )
-		{
-			slowCounter = 1;
-			slowMultiple = 5;
-		}
-	}
-	else
-	{
-		slowMultiple = 1;
-		slowCounter = 1;
-	}
-
-	
-
-	if( dead )
-		return;
-
-	if( pathLength > 1 )
-	{
-		movement /= (double)slowMultiple;
-
-		while( movement != 0 )
-		{
-			//cout << "movement loop? "<< endl;
-			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-			V2d diff = targetPoint - position;
-			double len = length( diff );
-			if( len >= abs( movement ) )
-			{
-				position += normalize( diff ) * movement;
-				movement = 0;
-			}
-			else
-			{
-				position += diff;
-				movement -= length( diff );
-				AdvanceTargetNode();	
-			}
-		}
-	}
-
-	PhysicsResponse();
 }
 
 void Bat::PhysicsResponse()
@@ -465,7 +423,33 @@ void Bat::Draw( sf::RenderTarget *target )
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
 			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
+
+			switch( monitor->monitorType )
+			{
+			case Monitor::BLUE:
+				cs.setFillColor( COLOR_BLUE );
+				break;
+			case Monitor::GREEN:
+				cs.setFillColor( COLOR_GREEN );
+				break;
+			case Monitor::YELLOW:
+				cs.setFillColor( COLOR_YELLOW );
+				break;
+			case Monitor::ORANGE:
+				cs.setFillColor( COLOR_ORANGE );
+				break;
+			case Monitor::RED:
+				cs.setFillColor( COLOR_RED );
+				break;
+			case Monitor::MAGENTA:
+				cs.setFillColor( COLOR_MAGENTA );
+				break;
+			case Monitor::WHITE:
+				cs.setFillColor( COLOR_WHITE );
+				break;
+			}
+
+			//cs.setFillColor( monitor-> );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
@@ -634,22 +618,18 @@ void Bat::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
-	stored.forward = forward;
 	stored.frame = frame;
 	stored.hitlagFrames = hitlagFrames;
 	stored.hitstunFrames = hitstunFrames;
 	stored.position = position;
-	stored.targetNode = targetNode;
 }
 
 void Bat::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;
-	forward = stored.forward;
 	frame = stored.frame;
 	hitlagFrames = stored.hitlagFrames;
 	hitstunFrames = stored.hitstunFrames;
 	position = stored.position;
-	targetNode = stored.targetNode;
 }

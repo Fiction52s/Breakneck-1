@@ -1101,8 +1101,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesBetweenNodes;
 				//int speed;
 				//is >> speed;
-				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
-					bulletSpeed, nodeDistance, framesBetweenNodes, loop );
+				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
+
+				Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
+					framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//enemy->Monitor::MonitorType
@@ -1110,7 +1113,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
 				{
-					cout << "new monitor of type-----------------------------: " << monitorType << endl;
+					//cout << "new monitor of type-----------------------------: " << monitorType << endl;
 					enemy->monitor = new Monitor( this, monitorType, enemy );
 				}
 				

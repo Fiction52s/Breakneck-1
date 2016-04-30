@@ -411,8 +411,6 @@ struct Pulser : Enemy
 	Pulser( GameSession *owner, 
 		sf::Vector2i &pos, 
 		std::list<sf::Vector2i> &path,
-		int bulletSpeed,
-		int nodeDistance,
 		int framesBetween,
 		bool loop );
 	
@@ -438,7 +436,6 @@ struct Pulser : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
-	int framesBetween;
 	int framesBetween;
 	MovementSequence testSeq;
 	//sf::Vector2<double> basePos;

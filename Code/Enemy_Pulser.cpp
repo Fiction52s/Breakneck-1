@@ -11,19 +11,20 @@ using namespace sf;
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
 Pulser::Pulser( GameSession *owner, Vector2i &pos, 
-	list<Vector2i> &pathParam, int p_bulletSpeed,
-	int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
+	list<Vector2i> &pathParam, int p_framesBetweenNodes, bool p_loop )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
 	loop = p_loop;
-	//loop = false; //no looping on bat for now
 
-
-	//latchedOn = false;
-	//offsetPlayer 
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
@@ -32,10 +33,6 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 
 	//latchedOn = true; 
 	deathFrame = 0;
-	
-	
-
-	//launcher->setdi
 
 	initHealth = 40;
 	health = initHealth;
@@ -45,9 +42,9 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 	pathLength = pathParam.size() + 1;
 	if( loop )
 	{
-		
-		cout << "looping bat" << endl;
-		assert( false );
+		pathLength += 1;
+		//cout << "looping bat" << endl;
+		//assert( false );
 		//tough cuz of set node distance from each other. for now don't use it.
 	}
 	else
@@ -60,8 +57,7 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 		}
 		//cout << "new: " << pathLength << endl;
 	}
-	//++pathLength;
-	//cout << "pathLength: " << pathLength << endl;
+
 	path = new Vector2i[pathLength];
 	path[0] = pos;
 	path[pathLength-1] = pos;
@@ -71,20 +67,15 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 	{
 		path[index] = (*it) + pos;
 		++index;
-		//path.push_back( (*it) );
-
 	}
-
-
 
 	//make composite beziers
 	if( pathLength == 1 )
 	{
 
 	}
-	else
+	else if( !loop )
 	{
-		//cout << "starting second thing" << endl;
 		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
 		++rit; //start at second item
 		
@@ -93,13 +84,6 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 			path[index] = (*rit) + pos;
 			++index;
 		}
-		//path[index] = pos;
-
-		//cout << "ending second thing" << endl;
-		//for( int i = 0; i < pathLength; ++i )
-		//{
-
-		//}
 	}
 	//cout << "path length: " << pathLength << ", " << index << endl;
 
@@ -110,15 +94,11 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 	V2d sqTest3 = position + V2d( 300, -150 );
 	V2d sqTest4 = position + V2d( 300, 0 );
 
-	//Transform trans;
-	///trans.scale( Vector2f( 3, 1 ) );
-	
-	//trans.rotate( 
 	for( int i = 0; i < pathLength - 1; ++i )
 	{
 		V2d A( path[i].x, path[i].y );
 		V2d B( path[i+1].x, path[i+1].y );
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), framesBetween );
+		testSeq.AddLineMovement( A, B, CubicBezier( 0,0,1,1 ), framesBetween );
 		testSeq.AddMovement( new WaitMovement( B, framesBetween ) );
 	}
 
@@ -149,8 +129,8 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 16;
-	hitBody.rh = 16;
+	hitBody.rw = 128;
+	hitBody.rh = 128;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
@@ -205,12 +185,7 @@ void Pulser::ResetEnemy()
 
 void Pulser::UpdatePrePhysics()
 {
-	if( testSeq.currMovement == NULL )
-	{
-		testSeq.Reset();
-		//testSeq.currMovement = testSeq.movementList;
-		//testSeq.currMovementStartTime = 0;
-	}
+	
 
 	if( !dead && receivedHit != NULL )
 	{
@@ -234,14 +209,18 @@ void Pulser::UpdatePrePhysics()
 
 void Pulser::UpdatePhysics()
 {	
-	if( !dead && !dying )
+	if( !dead )
 	{
 		testSeq.Update();
 		position = testSeq.position;
+
+		if( testSeq.currMovement == NULL )
+		{
+			testSeq.Reset();
+		}
+
 		PhysicsResponse();
 	}
-
-	launcher->UpdatePhysics();
 
 	if( PlayerSlowingMe() )
 	{
@@ -258,58 +237,11 @@ void Pulser::UpdatePhysics()
 	}
 
 	return;
-
-	double movement = speed / NUM_STEPS;
-	
-	if( PlayerSlowingMe() )
-	{
-		if( slowMultiple == 1 )
-		{
-			slowCounter = 1;
-			slowMultiple = 5;
-		}
-	}
-	else
-	{
-		slowMultiple = 1;
-		slowCounter = 1;
-	}
-
-	
-
-	if( dead )
-		return;
-
-	if( pathLength > 1 )
-	{
-		movement /= (double)slowMultiple;
-
-		while( movement != 0 )
-		{
-			//cout << "movement loop? "<< endl;
-			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-			V2d diff = targetPoint - position;
-			double len = length( diff );
-			if( len >= abs( movement ) )
-			{
-				position += normalize( diff ) * movement;
-				movement = 0;
-			}
-			else
-			{
-				position += diff;
-				movement -= length( diff );
-				AdvanceTargetNode();	
-			}
-		}
-	}
-
-	PhysicsResponse();
 }
 
 void Pulser::PhysicsResponse()
 {
-	if( !dead && !dying && receivedHit == NULL )
+	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
@@ -438,7 +370,40 @@ void Pulser::Draw( sf::RenderTarget *target )
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
 			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
+			switch( monitor->monitorType )
+			{
+			case Monitor::BLUE:
+				cs.setFillColor( COLOR_BLUE );
+				break;
+			case Monitor::GREEN:
+				cs.setFillColor( COLOR_GREEN );
+				break;
+			case Monitor::YELLOW:
+				cs.setFillColor( COLOR_YELLOW );
+				break;
+			case Monitor::ORANGE:
+				cs.setFillColor( COLOR_ORANGE );
+				break;
+			case Monitor::RED:
+				cs.setFillColor( COLOR_RED );
+				break;
+			case Monitor::MAGENTA:
+				cs.setFillColor( COLOR_MAGENTA );
+				break;
+			case Monitor::WHITE:
+				cs.setFillColor( COLOR_WHITE );
+				break;
+			}
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+
+		if( testSeq.currMovement->moveType == Movement::WAIT )
+		{
+			CircleShape cs;
+			cs.setRadius( 128 );
+			cs.setFillColor( COLOR_YELLOW );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
@@ -484,12 +449,15 @@ void Pulser::DrawMinimap( sf::RenderTarget *target )
 
 bool Pulser::IHitPlayer()
 {
-	Actor &player = owner->player;
-	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( testSeq.currMovement->moveType == Movement::WAIT )
 	{
-		player.ApplyHit( hitboxInfo );
-		return true;
+		Actor &player = owner->player;
+	
+		if( hitBody.Intersects( player.hurtBody ) )
+		{
+			player.ApplyHit( hitboxInfo );
+			return true;
+		}
 	}
 	return false;
 }
@@ -514,6 +482,10 @@ void Pulser::UpdateHitboxes()
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Pulser::PlayerHitMe()
 {
+	if( testSeq.currMovement->moveType == Movement::WAIT )
+		return pair<bool,bool>(false,false);
+
+
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
 	{
@@ -604,22 +576,18 @@ void Pulser::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
-	stored.forward = forward;
 	stored.frame = frame;
 	stored.hitlagFrames = hitlagFrames;
 	stored.hitstunFrames = hitstunFrames;
 	stored.position = position;
-	stored.targetNode = targetNode;
 }
 
 void Pulser::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;
-	forward = stored.forward;
 	frame = stored.frame;
 	hitlagFrames = stored.hitlagFrames;
 	hitstunFrames = stored.hitstunFrames;
 	position = stored.position;
-	targetNode = stored.targetNode;
 }

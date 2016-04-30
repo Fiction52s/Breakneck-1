@@ -96,8 +96,8 @@ double CubicBezier::GetY( double t )
 		+ pow( t, 3 ) * p3.y;
 }
 
-Movement::Movement( CubicBezier &p_bez, int dur )
-	:next( NULL ), duration( dur * NUM_STEPS ), vertices( NULL ), bez( p_bez )
+Movement::Movement( CubicBezier &p_bez, int dur, Types type )
+	:next( NULL ), duration( dur * NUM_STEPS ), vertices( NULL ), bez( p_bez ), moveType( type )
 
 {
 }
@@ -146,7 +146,7 @@ LineMovement::LineMovement( sf::Vector2<double> &a,
 		sf::Vector2<double> &b,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration ), A( a ), B( b )
+		:Movement( bez, duration, Types::LINE ), A( a ), B( b )
 {
 	start = a;
 	end = b;
@@ -166,7 +166,7 @@ CubicMovement::CubicMovement( sf::Vector2<double> &a,
 		sf::Vector2<double> &d,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration ), A( a ), B( b ), C( c), D(d)
+		:Movement( bez, duration, Types::CUBIC ), A( a ), B( b ), C( c), D(d)
 {
 	start = a;
 	end = d;
@@ -190,7 +190,7 @@ RadialMovement::RadialMovement( double p_radius,
 		double p_ellipseAngle,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration ), startAngle( p_startAngle ),
+		:Movement( bez, duration, Types::RADIAL ), startAngle( p_startAngle ),
 		endAngle( p_endAngle ), clockwise( p_clockwise ), radius( p_radius ),
 		ellipseAngle( p_ellipseAngle ), scale( p_scale )
 {
@@ -246,7 +246,7 @@ sf::Vector2<double> RadialMovement::GetPosition( int t )
 }
 
 WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
-	:Movement( CubicBezier(), duration ), pos( p_pos )
+	:Movement( CubicBezier(), duration, Types::WAIT ), pos( p_pos )
 {
 	start = pos;
 	end = pos;
