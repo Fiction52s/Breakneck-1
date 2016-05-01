@@ -60,7 +60,7 @@ EditSession * ActorParams::session = NULL;
 
 ActorParams::ActorParams( ActorParams::PosType p_posType )
 	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
-		monitorType( MonitorType::NONE )
+		monitorType( MonitorType::NONE ), group( NULL )
 {
 	groundInfo = NULL;
 
@@ -1627,6 +1627,223 @@ ActorParams *BatParams::Copy()
 	return copy;
 }
 
+PulserParams::PulserParams( EditSession *edit,
+	sf::Vector2i &pos,
+	std::list<sf::Vector2i> &globalPath, 
+	int p_framesBetweenNodes,
+	bool p_loop )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	lines = NULL;
+	position = pos;	
+	type = edit->types["pulser"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	//list<Vector2i> localPath;
+	SetPath( globalPath );
+
+	framesBetweenNodes = p_framesBetweenNodes; 
+
+	loop = p_loop;
+
+	SetBoundingQuad();
+}
+
+PulserParams::PulserParams( EditSession *edit,
+	sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	lines = NULL;
+	position = pos;	
+	type = edit->types["pulser"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	loop = false;
+	//speed = 5;
+	framesBetweenNodes = 60;
+
+	SetBoundingQuad();
+}
+
+void PulserParams::WriteParamFile( std::ofstream &of )
+{
+	of << (int)monitorType << endl;
+
+	of << localPath.size() << endl;
+
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		of << (*it).x  << " " << (*it).y << endl;
+	}
+
+	if( loop )
+	{
+		of << "+loop" << endl;
+	}
+	else
+	{
+		of << "-loop" << endl;
+	}
+
+	of << framesBetweenNodes << endl;
+}
+
+void PulserParams::SetPath( std::list<sf::Vector2i> &globalPath )
+{
+	if( lines != NULL )
+	{
+		delete lines;
+		lines = NULL;
+	}
+	
+	localPath.clear();
+	if( globalPath.size() > 1 )
+	{
+
+		int numLines = globalPath.size();
+	
+		lines = new VertexArray( sf::LinesStrip, numLines );
+		VertexArray &li = *lines;
+		li[0].position = Vector2f( 0, 0 );
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for( ; it != globalPath.end(); ++it )
+		{
+			
+			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
+			localPath.push_back( temp );
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f( temp.x, temp.y );
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+}
+
+std::list<sf::Vector2i> PulserParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back( position );
+	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+		globalPath.push_back( position + (*it) );
+	}
+	return globalPath;
+}
+
+void PulserParams::Draw( sf::RenderTarget *target )
+{
+	int localPathSize = localPath.size();
+
+	if( localPathSize > 0 )
+	{
+		
+		VertexArray &li = *lines;
+	
+	
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position += Vector2f( position.x, position.y );
+		}
+	
+	
+		target->draw( li );
+
+	
+
+		if( loop )
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White )
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+	
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position -= Vector2f( position.x, position.y );
+		}
+	}
+
+	ActorParams::Draw( target );
+}
+
+void PulserParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+	string betweenStr = p->textBoxes["framesbetweennodes"]->text.getString().toAnsiString();
+	bool t_loop = p->checkBoxes["loop"]->checked;
+
+	ss << betweenStr;
+
+	int t_framesBetweenNodes;
+	ss >> t_framesBetweenNodes;
+
+	if( !ss.fail() )
+	{
+		framesBetweenNodes = t_framesBetweenNodes;
+	}
+
+	ss.clear();
+
+	loop = t_loop;
+}
+void PulserParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+	{
+		p->textBoxes["group"]->text.setString( group->name );
+	}
+	
+	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
+	p->checkBoxes["loop"]->checked = loop;
+	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+}
+
+bool PulserParams::CanApply()
+{
+	return true;
+}
+ActorParams *PulserParams::Copy()
+{
+	PulserParams *copy = new PulserParams( *this );
+	if( copy->lines != NULL )
+	{
+		int numVertices = copy->lines->getVertexCount();
+
+		VertexArray &oldli = *copy->lines;
+		copy->lines = new VertexArray( sf::LinesStrip, numVertices );
+		VertexArray &li = *copy->lines;
+		
+
+		for( int i = 0; i < numVertices; ++i )
+		{
+			li[i] = oldli[i];
+		}
+	}
+	return copy;
+}
 
 //STAG BEETLE
 
@@ -1708,7 +1925,9 @@ void StagBeetleParams::SetPanelInfo()
 	Panel *p = type->panel;
 
 	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( group->name );
+	
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
 	p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 

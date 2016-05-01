@@ -924,6 +924,50 @@ bool EditSession::OpenFile( string fileName )
 					a->monitorType = (ActorParams::MonitorType)mType;
 					
 				}
+				else if( typeName == "pulser" )
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int mType;
+					is >> mType;
+
+					int pathLength;
+					is >> pathLength;
+					
+					list<Vector2i> globalPath;
+					globalPath.push_back( Vector2i( pos.x, pos.y ) );
+
+					for( int i = 0; i < pathLength; ++i )
+					{
+						int localX,localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
+					}
+
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+					if( loopStr == "+loop" )
+						loop = true;
+					else if( loopStr == "-loop" )
+						loop = false;
+					else
+						assert( false && "should be a boolean" );
+
+					int framesBetweenNodes;
+					is >> framesBetweenNodes;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new PulserParams( this, pos, globalPath, framesBetweenNodes, loop ) );
+					a->monitorType = (ActorParams::MonitorType)mType;
+					
+				}
 				else if( typeName == "healthfly" )
 				{
 					Vector2i pos;
@@ -2719,6 +2763,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *batPanel = CreateOptionsPanel( "bat" );
 	ActorType *batType = new ActorType( "bat", batPanel );
 
+	Panel *pulserPanel = CreateOptionsPanel( "pulser" );
+	ActorType *pulserType = new ActorType( "pulser", pulserPanel );
+
 	Panel *curveTurretPanel = CreateOptionsPanel( "curveturret" );
 	ActorType *curveTurretType = new ActorType( "curveturret", curveTurretPanel );
 
@@ -2757,6 +2804,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	types["patroller"] = patrollerType;
 	types["bat"] = batType;
+	types["pulser"] = pulserType;
 	types["curveturret"] = curveTurretType;
 	types["healthfly"] = healthflyType;
 	types["poisonfrog"] = poisonFrogType;
@@ -2780,7 +2828,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	blueKeyType->panel = keyPanel;
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 4, 4, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 4, 6, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
@@ -2801,6 +2849,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	sf::Sprite sPoisonFrog( poisonFrogType->iconTexture );
 	sf::Sprite sStagBeetle( stagBeetleType->iconTexture );
 
+	sf::Sprite sPulser( pulserType->iconTexture );
+	/*sf::Sprite sCurveTurret( curveTurretType->iconTexture );
+	sf::Sprite sPoisonFrog( poisonFrogType->iconTexture );
+	sf::Sprite sStagBeetle( stagBeetleType->iconTexture );*/
+
+
+
 	sf::Sprite ss0( greenKeyType->iconTexture );
 	sf::Sprite ss1( blueKeyType->iconTexture );
 	sf::Sprite ss2( blueKeyType->iconTexture );
@@ -2820,6 +2875,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 2, sCurveTurret, "curveturret" );
 	gs->Set( 2, 2, sPoisonFrog, "poisonfrog" );
 	gs->Set( 3, 2, sStagBeetle, "stagbeetle" );
+
+	gs->Set( 0, 3, sPulser, "pulser" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -4899,6 +4956,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									else if( trackingEnemy->name == "bat" )
 									{
 										tempActor = new BatParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetPanelInfo();
+										//tempActor->SetDefaultPanelInfo();
+
+										showPanel = trackingEnemy->panel;
+
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+									}
+									else if( trackingEnemy->name == "pulser" )
+									{
+										tempActor = new PulserParams( this, Vector2i( worldPos.x,
 											worldPos.y ) );
 										tempActor->SetPanelInfo();
 										//tempActor->SetDefaultPanelInfo();
@@ -8357,20 +8426,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" )
 		{
-			//bool loop = p->checkBoxes["loop"]->checked;
-			//float speed = 1; 
-
-			//try
-			//{
-			//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
-			//}
-			//catch(boost::bad_lexical_cast &)
-			//{
-			//	//error
-			//}
-
-			//showPanel = trackingEnemy->panel;
-			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
 			if( mode == EDIT )
 			//if( mode == EDIT && selectedActor != NULL )
 			{
@@ -8378,9 +8433,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				BatParams *bat = (BatParams*)select;
 				bat->SetParams();
 				bat->monitorType = GetMonitorType( p );
-				//bat->speed = speed;
-				//bat->loop = loop;
-				//patroller->SetPath( patrolPath );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8396,47 +8448,61 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				
 
 				CreateActor( bat );
-				//trackingEnemy = NULL;
-
-				//trackingEnemy = types[name];
-				//enemySprite.setTexture( trackingEnemy->imageTexture );
-
-				//enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
-				//	trackingEnemy->imageTexture.getSize().y ) );
-
-				//enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
-		
-				//enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
 
 				tempActor = NULL;
 			
 				
 			}
 			showPanel = NULL;
-			
-
-			//ActorParams *actor = new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop );
-			
-			//patrolPath.clear();
-			//actor->SetAsPatroller( types["patroller"], patrolPath.front(), patrolPath, speed, loop );
-			
-			//mode = CREATE_ENEMY;
-			//patroller path should get set only from hitting the button within it to start the path check
-
-			//showPanel = enemySelectPanel;
 		}
 		else if( b->name == "createpath" )
 		{
-			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
-
 			showPanel = NULL;
 			mode = CREATE_PATROL_PATH;
 			Vector2i front = patrolPath.front();
 			patrolPath.clear();
 			patrolPath.push_back( front );
 			patrolPathLengthSize = 100; //do it by distance and #of frames
-			//cout << "CREATE PATH MODE--------------------" << endl;
-			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		}
+	}
+	else if( p->name == "pulser_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				PulserParams *pulser = (PulserParams*)select;
+				pulser->SetParams();
+				pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr pulser( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				pulser->SetParams();
+				pulser->group = groups["--"];
+				pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( pulser );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+		else if( b->name == "createpath" )
+		{
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back( front );
+			patrolPathLengthSize = 0; //do it by distance and #of frames
 		}
 	}
 	else if( p->name == "key_options" )
@@ -10633,6 +10699,26 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
+	else if( name == "pulser" )
+	{
+		Panel *p = new Panel( "pulser_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
+		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
+		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
+
+		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 400 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
 	else if( name == "healthfly" )
 	{
 		Panel *p = new Panel( "healthfly_options", 200, 500, this );
@@ -10904,8 +10990,13 @@ void EditSession::SetEnemyEditPanel()
 		bat->SetPanelInfo();
 		patrolPath = bat->GetGlobalPath();
 		showPanel = p;
-
-		
+	}
+	else if( name == "pulser" )
+	{
+		PulserParams *pulser = (PulserParams*)ap;
+		pulser->SetPanelInfo();
+		patrolPath = pulser->GetGlobalPath();
+		showPanel = p;
 	}
 	else if( name == "crawler" )
 	{
@@ -11888,6 +11979,13 @@ void ActorType::Init()
 		canBeAerial = true;
 	}
 	else if( name == "bat" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if( name == "pulser" )
 	{
 		width = 32;
 		height = 32;

@@ -492,6 +492,34 @@ struct BatParams : public ActorParams
 	//int speed;
 };
 
+struct PulserParams : public ActorParams
+{
+	PulserParams( EditSession *edit,
+		sf::Vector2i &pos,
+		std::list<sf::Vector2i> &globalPath, 
+		int framesBetween,
+		bool loop ); 
+	PulserParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+	void SetPath( 
+		std::list<sf::Vector2i> &globalPath );
+	std::list<sf::Vector2i> GetGlobalPath();
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	int framesBetweenNodes;
+	bool loop;
+	//int speed;
+};
+
 struct HealthFlyParams : public ActorParams
 {
 	HealthFlyParams( EditSession *edit,

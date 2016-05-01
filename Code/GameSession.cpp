@@ -1101,14 +1101,80 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesBetweenNodes;
 				//int speed;
 				//is >> speed;
-				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
-				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
+				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+					bulletSpeed, nodeDistance, framesBetweenNodes, loop );
 
-				Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
-					framesBetweenNodes, loop );
+
+				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
+				//	framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//enemy->Monitor::MonitorType
+				
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+				if( monitorType != Monitor::NONE )
+				{
+					//cout << "new monitor of type-----------------------------: " << monitorType << endl;
+					enemy->monitor = new Monitor( this, monitorType, enemy );
+				}
+				
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
+			else if( typeName == "pulser" )
+			{
+					
+				int xPos,yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+				
+				int mType;
+				is >> mType;
+				
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for( int i = 0; i < pathLength; ++i )
+				{
+					int localX,localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back( Vector2i( localX, localY ) );
+				}
+
+
+				bool loop;
+				string loopStr;
+				is >> loopStr;
+
+				if( loopStr == "+loop" )
+				{
+					loop = true;
+				}
+				else if( loopStr == "-loop" )
+				{
+					loop = false;
+				}
+				else
+				{
+					assert( false && "should be a boolean" );
+				}
+
+				int framesBetweenNodes;
+				is >> framesBetweenNodes;
+
+				Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
+					framesBetweenNodes, loop );
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
@@ -1341,8 +1407,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> speed;
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, clockwise, speed );
+				//StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity, clockwise, speed );
+
+				Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed, 10 );
 
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )

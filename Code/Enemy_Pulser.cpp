@@ -21,7 +21,7 @@ using namespace sf;
 
 Pulser::Pulser( GameSession *owner, Vector2i &pos, 
 	list<Vector2i> &pathParam, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::PULSER ), deathFrame( 0 )
 {
 	loop = p_loop;
 
