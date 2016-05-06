@@ -18,9 +18,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,int wait,
+Cactus::Cactus( GameSession *owner, Edge *g, double q, double speed,int wait,
 	Vector2i &gravFactor, bool relative )
-		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
+		:Enemy( owner, EnemyType::CACTUS ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
 	
@@ -44,20 +44,6 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	gn = g->Normal();
 
 	V2d gAlong = normalize( g->v1 - g->v0 );
-
-
-	gravity = V2d( 0,0 );
-
-	if( relative )
-	{
-		gravity += gAlong * ( gravFactor.x / 256.0);
-		gravity += gn * ( -gravFactor.y / 256.0 );
-	}
-	else
-	{
-		gravity = V2d( gravFactor.x / 256.0, gravFactor.y / 256.0 );
-	}
-	
 
 	position = gPoint + gn * height / 2.0;
 
@@ -118,31 +104,33 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0, 300 );
+	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0, 60, 20, 60 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
-	testLauncher->SetGravity( gravity );
+	//testLauncher->wavelength = 60;
+	//testLauncher->amplitude = 20;
+	//testLauncher->SetGravity( gravity );
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 	dying = false;
 }
 
-void CurveTurret::HandleEntrant( QuadTreeEntrant *qte )
+void Cactus::HandleEntrant( QuadTreeEntrant *qte )
 {
 }
 
-void CurveTurret::BulletHitTerrain(BasicBullet *b, 
+void Cactus::BulletHitTerrain(BasicBullet *b, 
 		Edge *edge, 
 		sf::Vector2<double> &pos)
 {
 
 }
 
-void CurveTurret::BulletHitPlayer(BasicBullet *b )
+void Cactus::BulletHitPlayer(BasicBullet *b )
 {
 	owner->player.ApplyHit( b->launcher->hitboxInfo );
 }
 
-void CurveTurret::ResetEnemy()
+void Cactus::ResetEnemy()
 {
 	dead = false;
 	dying = false;
@@ -152,7 +140,7 @@ void CurveTurret::ResetEnemy()
 	health = initHealth;
 }
 
-void CurveTurret::UpdatePrePhysics()
+void Cactus::UpdatePrePhysics()
 {
 	testLauncher->UpdatePrePhysics();
 	
@@ -188,14 +176,14 @@ void CurveTurret::UpdatePrePhysics()
 	
 }
 
-void CurveTurret::UpdatePhysics()
+void Cactus::UpdatePhysics()
 {
 	testLauncher->UpdatePhysics();
 
 	PhysicsResponse();
 }
 
-void CurveTurret::PhysicsResponse()
+void Cactus::PhysicsResponse()
 {
 	PlayerSlowingMe();
 
@@ -256,7 +244,7 @@ void CurveTurret::PhysicsResponse()
 	}
 }
 
-void CurveTurret::UpdatePostPhysics()
+void Cactus::UpdatePostPhysics()
 {
 	testLauncher->UpdatePostPhysics();
 
@@ -265,9 +253,6 @@ void CurveTurret::UpdatePostPhysics()
 		owner->Pause( 5 );
 	}
 
-	
-
-	
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
@@ -307,7 +292,7 @@ void CurveTurret::UpdatePostPhysics()
 	testLauncher->UpdateSprites();
 }
 
-void CurveTurret::Draw(sf::RenderTarget *target )
+void Cactus::Draw(sf::RenderTarget *target )
 {
 	if( !(dead || dying ) )
 	{
@@ -338,16 +323,9 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 		
 		target->draw( topDeathSprite );
 	}
-	
-
-	/*if( activeBullets != NULL )
-	{
-		target->draw( bulletVA, ts_bullet->texture );
-	}*/
-	
 }
 
-void CurveTurret::DrawMinimap( sf::RenderTarget *target )
+void Cactus::DrawMinimap( sf::RenderTarget *target )
 {
 	if( !(dead || dying) )
 	{
@@ -366,26 +344,12 @@ void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool CurveTurret::IHitPlayerWithBullets()
+bool Cactus::IHitPlayerWithBullets()
 {
-	/*Actor &player = owner->player;
-	
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		if( currBullet->hitBody.Intersects( player.hurtBody ) )
-		{
-			player.ApplyHit( bulletHitboxInfo );
-			return true;
-		}
-		currBullet = currBullet->next;
-	}*/
-
-	
 	return false;
 }
 
-bool CurveTurret::IHitPlayer()
+bool Cactus::IHitPlayer()
 {
 	Actor &player = owner->player;
 	if( hitBody.Intersects( player.hurtBody ) )
@@ -410,7 +374,7 @@ bool CurveTurret::IHitPlayer()
 	}
 }
 
- pair<bool, bool> CurveTurret::PlayerHitMe()
+ pair<bool, bool> Cactus::PlayerHitMe()
 {
 	Actor &player = owner->player;
 
@@ -466,12 +430,12 @@ bool CurveTurret::IHitPlayer()
 	return pair<bool, bool>(false,false);
 }
 
- pair<bool, bool> CurveTurret::PlayerHitMyBullets()
+ pair<bool, bool> Cactus::PlayerHitMyBullets()
  {
 	 	return pair<bool, bool>(false,false);
  }
 
-bool CurveTurret::PlayerSlowingMe()
+bool Cactus::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 
@@ -543,7 +507,7 @@ bool CurveTurret::PlayerSlowingMe()
 	return false;
 }
 
-void CurveTurret::UpdateSprite()
+void Cactus::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
 
@@ -606,30 +570,13 @@ void CurveTurret::UpdateSprite()
 	}
 }
 
-void CurveTurret::DebugDraw(sf::RenderTarget *target)
+void Cactus::DebugDraw(sf::RenderTarget *target)
 {
-	//Bullet *currBullet = activeBullets;
-	//while( currBullet != NULL )
-	//{
-	//	currBullet->hitBody.DebugDraw( target );
-	//	//currBullet->hurtBody.DebugDraw( target );
-
-	//	currBullet = currBullet->next;
-	//}
-
-	/*sf::CircleShape cs;
-	cs.setFillColor( Color( 0, 255, 0, 100 ) );
-	cs.setRadius( 15 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );*/
-	
-	//target->draw( cs );
-
 	hitBody.DebugDraw( target );
 	hurtBody.DebugDraw( target );
 }
 
-void CurveTurret::UpdateHitboxes()
+void Cactus::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;// + gn * 8.0;
 	hurtBody.globalAngle = 0;
@@ -638,10 +585,10 @@ void CurveTurret::UpdateHitboxes()
 }
 
 
-void CurveTurret::SaveEnemyState()
+void Cactus::SaveEnemyState()
 {
 }
 
-void CurveTurret::LoadEnemyState()
+void Cactus::LoadEnemyState()
 {
 }

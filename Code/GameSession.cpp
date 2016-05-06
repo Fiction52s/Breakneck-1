@@ -1101,9 +1101,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesBetweenNodes;
 				//int speed;
 				//is >> speed;
-				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
-					bulletSpeed, nodeDistance, framesBetweenNodes, loop );
-
+				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
+				Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
 				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
 				//	framesBetweenNodes, loop );
@@ -1507,6 +1507,60 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "curveturret" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int mType;
+				is >> mType;
+
+				double bulletSpeed;
+				is >> bulletSpeed;
+
+				int framesWait;
+				is >> framesWait;
+
+				int xGravFactor;
+				is >> xGravFactor;
+
+				int yGravFactor;
+				is >> yGravFactor;
+
+				bool relative = false;
+				string relativeGravStr;
+				is >> relativeGravStr;
+				if( relativeGravStr == "+relative" )
+				{
+					relative = true;
+				}
+
+				Cactus *enemy = new Cactus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+					Vector2i( xGravFactor, yGravFactor ), relative );
+				//Overgrowth *enemy = new Overgrowth( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 10, 60 );
+
+
+				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
+				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
+				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
+				if( monitorType != Monitor::NONE )
+				{
+					enemy->monitor = new Monitor( this, monitorType, enemy );
+				}
+				//enemyTree = Insert( enemyTree, enemy );
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "cactus" )
 			{
 				//always grounded
 

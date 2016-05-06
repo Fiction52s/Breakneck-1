@@ -913,7 +913,8 @@ void PatrollerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( group->name );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 	p->checkBoxes["loop"]->checked = loop;
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
@@ -1599,7 +1600,8 @@ void BatParams::SetPanelInfo()
 	Panel *p = type->panel;
 
 	p->textBoxes["name"]->text.setString( "test" );
-	//p->textBoxes["group"]->text.setString( group->name );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
@@ -2072,9 +2074,10 @@ void PoisonFrogParams::SetParams()
 void PoisonFrogParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["group"]->text.setString( group->name );
+	
 	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( "not test" );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["jumpwaitframes"]->text.setString( boost::lexical_cast<string>( jumpWaitFrames ) ); 
 	p->textBoxes["xstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.x ) ); 
 	p->textBoxes["ystrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.y ) ); 
@@ -2387,7 +2390,8 @@ void CurveTurretParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	p->textBoxes["name"]->text.setString( "test" );
-	p->textBoxes["group"]->text.setString( group->name );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
 	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );

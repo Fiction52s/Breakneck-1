@@ -48,12 +48,15 @@ struct BasicBullet : QuadTreeCollider
 	sf::Vector2<double> velocity;
 	int slowCounter;
 	int slowMultiple;
-	int maxFramesToLive;
+	//int maxFramesToLive;
 	int framesToLive;
 	//sf::VertexArray *va;
 	sf::Transform transform;
 	Tileset *ts;
 	int index;
+
+	
+	//sf::Vector2<double> tempadd;
 
 	bool col;
 	Contact minContact;
@@ -61,6 +64,20 @@ struct BasicBullet : QuadTreeCollider
 	sf::Vector2<double> tempVel;
 	Launcher *launcher;
 };
+
+struct SinBullet : BasicBullet
+{
+	SinBullet( int indexVA, Launcher *launcher );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+
+	SinBullet *prev;
+	SinBullet *next;
+	int slowCounter;
+	CollisionBox hurtBody;
+	sf::Vector2<double> tempadd;
+};
+
 
 //struct CurveBullet : BasicBullet
 //{
@@ -74,7 +91,10 @@ struct Launcher
 		int bulletsPerShot,
 		sf::Vector2<double> position,
 		sf::Vector2<double> direction,
-		double angleSpread );
+		double angleSpread,
+		int maxFramesToLive,
+		int wavelength =0,
+		double amplitude =0.0 );
 	
 	void Reset();
 	BasicBullet *inactiveBullets;
@@ -103,6 +123,9 @@ struct Launcher
 	sf::Vector2<double> position;
 	double angleSpread;
 	sf::Vector2<double> facingDir;
+	double amplitude;
+	int wavelength;
+	int maxFramesToLive;
 	//Launcher *next;
 };
 
@@ -137,6 +160,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		OVERGROWTH_TREE,
 		CORALNANOBOTS,
 		CORAL_BLOCK,
+		TURTLE,
 		Count
 	};
 
@@ -469,6 +493,93 @@ struct Pulser : Enemy
 	int hitlagFrames;
 	int hitstunFrames;
 	int animationFactor;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct Turtle : Enemy, LauncherEnemy
+{
+	enum Action
+	{
+		NEUTRAL,
+		FIRE,
+		INVISIBLE,
+		FADEIN,
+		FADEOUT
+	};
+
+	Turtle( GameSession *owner, sf::Vector2i pos );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void ActionEnded();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	std::map<Action,int> actionLength;
+	std::map<Action,int> animFactor;
+
+	int bulletSpeed;
+
+	Action action;
+	//sf::Vector2<double> basePos;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	
+	sf::Vector2i originalPos;
+	int frame;
+
+	Launcher *launcher;
+
+	int fireCounter;
+
+	bool dying;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	//int animationFactor;
 
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
@@ -969,6 +1080,83 @@ struct BasicTurret : Enemy
 	int animationFactor;
 	sf::Vector2<double> gn;
 	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+struct Cactus : Enemy, LauncherEnemy
+{
+	Cactus( GameSession *owner, Edge *ground, double quantity, 
+		double bulletSpeed,
+		int framesWait,
+		sf::Vector2i &gravFactor,
+		bool relativeGrav );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool IHitPlayerWithBullets();
+	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool, bool> PlayerHitMyBullets();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//void UpdateBulletHitboxes();
+	void BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+	void BulletHitPlayer( BasicBullet *b );
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	Launcher *testLauncher;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	
+	const static int maxBullets = 16;
+	sf::Vector2<double> tempVel;
+
+	int framesWait;
+	int firingCounter;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	sf::Vector2<double> gravity;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	bool dying;
 
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;

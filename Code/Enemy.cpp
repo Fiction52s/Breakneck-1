@@ -16,23 +16,46 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 		int bulletsPerShot,
 		sf::Vector2<double> p_position,
 		sf::Vector2<double> direction,
-		double p_angleSpread )
+		double p_angleSpread,
+		int p_maxFramesToLive,
+		int p_wavelength,
+		double p_amplitude )
 		:totalBullets( numTotalBullets ), perShot( bulletsPerShot ),
 		facingDir( direction ), angleSpread( p_angleSpread ), 
 		position( p_position ), owner( p_owner ),handler(p_handler)
 
 {
-
+	maxFramesToLive = p_maxFramesToLive;
+	wavelength = p_wavelength;
+	amplitude = p_amplitude;
 	//increment the global counter
 	 //+= numTotalBullets;
 	int startIndex = owner->totalNumberBullets;
 
 	activeBullets = NULL;
-	inactiveBullets = new BasicBullet( startIndex++, this );
+
+
+	if( wavelength > 0 )
+	{
+		inactiveBullets = new SinBullet( startIndex++, this );
+	}
+	else
+	{
+		inactiveBullets = new BasicBullet( startIndex++, this );
+	}
+		
 
 	for( int i = 1; i < numTotalBullets; ++i )
 	{
-		BasicBullet * temp = new BasicBullet( startIndex++, this );
+		BasicBullet * temp;
+		if( wavelength > 0 )
+		{
+			temp = new SinBullet( startIndex++, this );
+		}
+		else
+		{
+			temp = new BasicBullet( startIndex++, this );
+		}
 		temp->next = inactiveBullets;
 		inactiveBullets->prev = temp;
 		inactiveBullets = temp;
@@ -166,22 +189,6 @@ int Launcher::GetActiveCount()
 	return count;
 }
 
-void BasicBullet::Reset( V2d &pos, V2d &vel )
-{
-	position = pos;
-	velocity = vel;
-	framesToLive = maxFramesToLive;
-	slowMultiple = 1;
-	slowCounter = 1;
-
-	VertexArray &bva = *(launcher->owner->bigBulletVA);
-	bva[index*4+0].position = Vector2f( 0, 0 );
-	bva[index*4+1].position = Vector2f( 0, 0 );
-	bva[index*4+2].position = Vector2f( 0, 0 );
-	bva[index*4+3].position = Vector2f( 0, 0 );
-	//transform.
-}
-
 BasicBullet * Launcher::ActivateBullet( )
 {
 	if( inactiveBullets == NULL )
@@ -258,9 +265,26 @@ void Launcher::SetGravity( sf::Vector2<double> &grav )
 	}
 }
 
+void BasicBullet::Reset( V2d &pos, V2d &vel )
+{
+	position = pos;
+	velocity = vel;
+	framesToLive = launcher->maxFramesToLive;
+	slowMultiple = 1;
+	slowCounter = 1;
+
+	VertexArray &bva = *(launcher->owner->bigBulletVA);
+	bva[index*4+0].position = Vector2f( 0, 0 );
+	bva[index*4+1].position = Vector2f( 0, 0 );
+	bva[index*4+2].position = Vector2f( 0, 0 );
+	bva[index*4+3].position = Vector2f( 0, 0 );
+	//transform.
+}
+
 BasicBullet::BasicBullet( int indexVA, Launcher *launch )
 	:index( indexVA ), launcher( launch ), next( NULL ), prev( NULL )
 {
+	//framesToLive = maxFram
 	double rad = 12;
 	/*hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -296,6 +320,9 @@ void BasicBullet::ResetSprite()
 	bva[index*4+2].position = Vector2f( 0, 0 );
 	bva[index*4+3].position = Vector2f( 0, 0 );
 }
+
+
+
 
 void BasicBullet::UpdatePrePhysics()
 {
@@ -479,6 +506,75 @@ void BasicBullet::UpdateSprite()
 	VA[index*4+1].color = Color::Red;
 	VA[index*4+2].color = Color::Red;
 	VA[index*4+3].color = Color::Red;
+}
+
+SinBullet::SinBullet( int indexVA, Launcher *launcher )
+	:BasicBullet( indexVA, launcher )
+{
+}
+
+void SinBullet::UpdatePrePhysics()
+{
+	position -= tempadd;
+	int tempFrame = (launcher->maxFramesToLive - framesToLive) % launcher->wavelength;
+	double test = tempFrame / (double)launcher->wavelength;
+	//cout << "test: " << test << endl;
+	//cout << "tempframe: " << tempFrame << ", framestolive: "
+	//	<< framesToLive <<", wv: " << launcher->wavelength << endl;
+	double t = test * 2.0 * PI;
+	double c = cos( t );
+	V2d dir( cos( t ) - sin( t ), sin( t ) + cos( t ) );
+
+	V2d other = normalize( velocity );
+	other = V2d( other.y, -other.x );
+
+	double d = dot( dir, other );
+	tempadd = d * other * launcher->amplitude;
+	//cout << "tempadd: " << tempadd.x << ", " << tempadd.y << endl;
+	position += tempadd;
+
+	//tempadd = dir * 100.0;
+}
+
+void SinBullet::UpdatePhysics()
+{
+	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
+
+	double movementLen = length( movement );
+	V2d moveDir = normalize( movement );
+	double move = 0;
+	while( movementLen > 0 )
+	{
+		//cout << "loop: " << movementLen << endl;
+		if( movementLen > physBody.rw )
+		{
+			movementLen -= physBody.rw;
+			move = physBody.rw;
+		}
+		else
+		{
+			move = movementLen;
+			movementLen = 0;
+		}
+
+		position += move * moveDir;
+		/*bool hit = ResolvePhysics( moveDir * move );
+		if( hit )
+		{
+			HitTerrain();
+			break;
+		}*/
+
+		hitBody.globalPosition = position;
+		hurtBody.globalPosition = position;
+
+		Actor &player = launcher->owner->player;
+		if( player.hurtBody.Intersects( hitBody ) )
+		{
+			HitPlayer();
+			break;
+		}
+	}
 }
 
 Enemy::Enemy( GameSession *own, EnemyType t )

@@ -19,22 +19,33 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Bat::Bat( GameSession *owner, Vector2i pos, 
-	list<Vector2i> &pathParam, int p_bulletSpeed,
-	int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
+Turtle::Turtle( GameSession *owner, Vector2i pos )
+	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 )
 {
-	loop = p_loop;
-	//loop = false; //no looping on bat for now
+	//loop = false; //no looping on Turtle for now
+
+	bulletSpeed = 5;
+
+	action = NEUTRAL;
+
+	animFactor[NEUTRAL] = 1;
+	animFactor[FIRE] = 1;
+	animFactor[FADEIN] = 1;
+	animFactor[FADEOUT] = 1;
+	animFactor[INVISIBLE] = 1;
+
+	actionLength[NEUTRAL] = 3;
+	actionLength[FIRE] = 20;
+	actionLength[FADEIN] = 60;
+	actionLength[FADEOUT] = 60;
+	actionLength[INVISIBLE] = 30;
 
 	fireCounter = 0;
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	bulletSpeed = p_bulletSpeed;
-	nodeDistance = p_nodeDistance;
-	framesBetween = p_framesBetweenNodes;
+	originalPos = pos;
 
 	deathFrame = 0;
 	
@@ -46,74 +57,18 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
-	pathLength = pathParam.size() + 1;
-	if( loop )
-	{
-		
-		cout << "looping bat" << endl;
-		assert( false );
-		//tough cuz of set node distance from each other. for now don't use it.
-	}
-	else
-	{
-		//the road back
-		if( pathParam.size() > 0 )
-		{
-			pathLength += pathParam.size();
-		}
-	}
-	
-	path = new Vector2i[pathLength];
-	path[0] = pos;
-	path[pathLength-1] = pos;
-
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it) + pos;
-		++index;
-	}
-
-	if( pathLength == 1 )
-	{
-
-	}
-	else
-	{
-		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
-		++rit; //start at second item
-		
-		for(  ;rit != pathParam.rend(); ++rit )
-		{
-			path[index] = (*rit) + pos;
-			++index;
-		}
-	}
-
-	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 0, -150 );
-	V2d sqTest2 = position + V2d( 150, -150 );
-	V2d sqTest3 = position + V2d( 300, -150 );
-	V2d sqTest4 = position + V2d( 300, 0 );
-
-	for( int i = 0; i < pathLength - 1; ++i )
-	{
-		V2d A( path[i].x, path[i].y );
-		V2d B( path[i+1].x, path[i+1].y );
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), 60 );
-	}
-	testSeq.InitMovementDebug();
-	
 	frame = 0;
 
-	animationFactor = 5;
+	//animationFactor = 5;
 
-	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_48x48.png", 48, 48 );
+	//ts = owner->GetTileset( "Turtle.png", 80, 80 );
+	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
+
+
 	//position.x = 0;
 	//position.y = 0;
 	hurtBody.type = CollisionBox::Hurt;
@@ -163,28 +118,25 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	//cout << "finish init" << endl;
 }
 
-void Bat::HandleEntrant( QuadTreeEntrant *qte )
+void Turtle::HandleEntrant( QuadTreeEntrant *qte )
 {
 
 }
 
-
-
-void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
+void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
 
 }
 
-void Bat::BulletHitPlayer(BasicBullet *b )
+void Turtle::BulletHitPlayer(BasicBullet *b )
 {
 	owner->player.ApplyHit( b->launcher->hitboxInfo );
 }
 
 
-void Bat::ResetEnemy()
+void Turtle::ResetEnemy()
 {
 	fireCounter = 0;
-	testSeq.Reset();
 	launcher->Reset();
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
@@ -194,10 +146,9 @@ void Bat::ResetEnemy()
 	dying = false;
 	deathFrame = 0;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	position.x = originalPos.x;
+	position.y = originalPos.y;
 	receivedHit = NULL;
-	
 
 	UpdateHitboxes();
 
@@ -206,16 +157,78 @@ void Bat::ResetEnemy()
 	
 }
 
-void Bat::UpdatePrePhysics()
+void Turtle::ActionEnded()
 {
-	if( testSeq.currMovement == NULL )
+	if( frame == actionLength[action] )
 	{
-		testSeq.Reset();
-		//testSeq.currMovement = testSeq.movementList;
-		//testSeq.currMovementStartTime = 0;
+	switch( action )
+	{
+	case NEUTRAL:
+		frame = 0;
+		break;
+	case FIRE:
+		action = FADEOUT;
+		frame = 0;
+		break;
+	case INVISIBLE:
+		position = owner->player.position;
+		action = FADEIN;
+		frame = 0;
+		break;
+	case FADEIN:
+		action = FIRE;
+		frame = 0;
+		break;
+	case FADEOUT:
+		action = INVISIBLE;
+		frame = 0;
+		break;
 	}
+	}
+}
+
+void Turtle::UpdatePrePhysics()
+{
+	ActionEnded();
 
 	launcher->UpdatePrePhysics();
+
+	switch( action )
+	{
+	case NEUTRAL:
+		cout << "NEUTRAL";
+		break;
+	case FIRE:
+		cout << "FIRE";
+		break;
+	case INVISIBLE:
+		cout << "INVISIBLE";
+		break;
+	case FADEIN:
+		cout << "FADEIN";
+		break;
+	case FADEOUT: 
+		cout << "FADEOUT";
+		break;
+	}
+
+	cout << " " << frame << endl;
+
+	switch( action )
+	{
+	case NEUTRAL:
+		break;
+	case FIRE:
+		break;
+	case INVISIBLE:
+		break;
+	case FADEIN:
+		break;
+	case FADEOUT: 
+		break;
+	}
+
+
 
 	if( !dead && !dying && receivedHit != NULL )
 	{
@@ -236,8 +249,9 @@ void Bat::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( !dying && !dead && fireCounter == framesBetween - 1 )// frame == 0 && slowCounter == 1 )
+	if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
 	{
+		//cout << "firing" << endl;
 		launcher->position = position;
 		launcher->facingDir = normalize( owner->player.position - position );
 		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
@@ -253,35 +267,44 @@ void Bat::UpdatePrePhysics()
 	}*/
 }
 
-void Bat::UpdatePhysics()
+void Turtle::UpdatePhysics()
 {	
-	if( !dead && !dying )
+	if( !dead )
 	{
-		testSeq.Update();
-		position = testSeq.position;
-		PhysicsResponse();
+		if( PlayerSlowingMe() )
+		{
+			if( slowMultiple == 1 )
+			{
+				slowCounter = 1;
+				slowMultiple = 5;
+			}
+		}
+		else
+		{
+			slowMultiple = 1;
+			slowCounter = 1;
+		}
 	}
 
 	launcher->UpdatePhysics();
 
-	if( PlayerSlowingMe() )
+	if( !dead && !dying )
 	{
-		if( slowMultiple == 1 )
+		if( action == NEUTRAL )
 		{
-			slowCounter = 1;
-			slowMultiple = 5;
+			Actor &player = owner->player;
+			if( length( player.position - position ) < 300 )
+			{
+				action = FADEOUT;
+				frame = 0;
+			}
 		}
+		PhysicsResponse();
 	}
-	else
-	{
-		slowMultiple = 1;
-		slowCounter = 1;
-	}
-
 	return;
 }
 
-void Bat::PhysicsResponse()
+void Turtle::PhysicsResponse()
 {
 	if( !dead && !dying && receivedHit == NULL )
 	{
@@ -312,7 +335,7 @@ void Bat::PhysicsResponse()
 			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
-		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
+		//	cout << "Turtle received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -330,12 +353,12 @@ void Bat::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Bat just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Turtle just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
-void Bat::UpdatePostPhysics()
+void Turtle::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
@@ -363,11 +386,6 @@ void Bat::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 10 * animationFactor )
-	{
-		frame = 0;
-	}
-
 	if( deathFrame == 60 && dying )
 	{
 		//cout << "switching dead" << endl;
@@ -389,11 +407,11 @@ void Bat::UpdatePostPhysics()
 	launcher->UpdateSprites();
 }
 
-void Bat::UpdateSprite()
+void Turtle::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 	}
 	if( dying )
@@ -413,7 +431,7 @@ void Bat::UpdateSprite()
 	}
 }
 
-void Bat::Draw( sf::RenderTarget *target )
+void Turtle::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead && !dying )
@@ -477,7 +495,7 @@ void Bat::Draw( sf::RenderTarget *target )
 
 }
 
-void Bat::DrawMinimap( sf::RenderTarget *target )
+void Turtle::DrawMinimap( sf::RenderTarget *target )
 {
 	if( !dead && !dying )
 	{
@@ -496,8 +514,11 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Bat::IHitPlayer()
+bool Turtle::IHitPlayer()
 {
+	if( action == FADEIN || action == INVISIBLE )
+		return false;
+
 	Actor &player = owner->player;
 	
 	if( hitBody.Intersects( player.hurtBody ) )
@@ -508,7 +529,7 @@ bool Bat::IHitPlayer()
 	return false;
 }
 
-void Bat::UpdateHitboxes()
+void Turtle::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -526,8 +547,11 @@ void Bat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Bat::PlayerHitMe()
+pair<bool,bool> Turtle::PlayerHitMe()
 {
+	if( action == INVISIBLE )
+		return pair<bool,bool>(false,false);
+
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
 	{
@@ -582,7 +606,7 @@ pair<bool,bool> Bat::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Bat::PlayerSlowingMe()
+bool Turtle::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -598,23 +622,16 @@ bool Bat::PlayerSlowingMe()
 	return false;
 }
 
-void Bat::DebugDraw( RenderTarget *target )
+void Turtle::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( testSeq.currMovement != NULL )
-		{
-			if( testSeq.currMovement->vertices != NULL )
-			{
-				testSeq.currMovement->DebugDraw( target );
-			}
-		}
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
 	}
 }
 
-void Bat::SaveEnemyState()
+void Turtle::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -624,7 +641,7 @@ void Bat::SaveEnemyState()
 	stored.position = position;
 }
 
-void Bat::LoadEnemyState()
+void Turtle::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

@@ -80,7 +80,7 @@ Tree::Tree( Overgrowth *par,
 	receivedHit = NULL;
 
 	launcher = new Launcher( this, owner, 5, 5, V2d( 0, 0 ),
-		normalize( V2d( 1, -1 ) ), 90 );
+		normalize( V2d( 1, -1 ) ), 90, 300 );
 	
 	launcher->SetBulletSpeed( 10 );
 	//launcher->SetGravity( V2d( 0, .5 ) );
