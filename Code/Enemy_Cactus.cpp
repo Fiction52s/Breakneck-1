@@ -122,7 +122,7 @@ void Cactus::BulletHitTerrain(BasicBullet *b,
 		Edge *edge, 
 		sf::Vector2<double> &pos)
 {
-
+	//never hits terrain
 }
 
 void Cactus::BulletHitPlayer(BasicBullet *b )

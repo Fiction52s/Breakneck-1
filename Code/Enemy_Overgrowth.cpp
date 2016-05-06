@@ -90,6 +90,7 @@ Tree::Tree( Overgrowth *par,
 void Tree::BulletHitTerrain( BasicBullet *b, 
 	Edge *edge, sf::Vector2<double> &pos )
 {
+	b->launcher->DeactivateBullet( b );
 	double q = edge->GetQuantity( pos );
 	parent->ActivateTree( edge, q );
 }

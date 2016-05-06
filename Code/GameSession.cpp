@@ -1103,7 +1103,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//is >> speed;
 				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
 				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
-				Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
+				Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 5, 60, true );
+				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
 				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
 				//	framesBetweenNodes, loop );

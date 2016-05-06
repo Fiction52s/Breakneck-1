@@ -134,7 +134,7 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 		Edge *edge, 
 		sf::Vector2<double> &pos)
 {
-
+	b->launcher->DeactivateBullet( b );
 }
 
 void CurveTurret::BulletHitPlayer(BasicBullet *b )

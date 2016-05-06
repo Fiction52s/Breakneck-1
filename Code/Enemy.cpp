@@ -272,6 +272,7 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	framesToLive = launcher->maxFramesToLive;
 	slowMultiple = 1;
 	slowCounter = 1;
+	bounceCount = 0;
 
 	VertexArray &bva = *(launcher->owner->bigBulletVA);
 	bva[index*4+0].position = Vector2f( 0, 0 );
@@ -286,6 +287,7 @@ BasicBullet::BasicBullet( int indexVA, Launcher *launch )
 {
 	//framesToLive = maxFram
 	double rad = 12;
+	bounceCount = 0;
 	/*hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
@@ -405,7 +407,6 @@ bool BasicBullet::HitTerrain()
 {
 	launcher->handler->BulletHitTerrain( this,
 		minContact.edge, minContact.position );
-	launcher->DeactivateBullet( this );
 	return true;
 }
 
