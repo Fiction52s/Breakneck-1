@@ -311,7 +311,7 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 {
 	if( !(dead || dying ) )
 	{
-		if( monitor != NULL )
+		if( monitor != NULL && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -358,7 +358,7 @@ void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 		cs.setPosition( position.x, position.y );
 		target->draw( cs );
 
-		if( monitor != NULL )
+		if( monitor != NULL && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );

@@ -960,7 +960,7 @@ void PoisonFrog::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL )
+		if( monitor != NULL && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;

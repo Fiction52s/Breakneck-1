@@ -8,9 +8,9 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
+Gate::Gate( GameSession *p_owner, GateType p_type, int keysRequired, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
-	reformBehindYou( p_reformBehindYou )
+	requiredKeys( keysRequired ), reformBehindYou( p_reformBehindYou )
 {
 	
 
@@ -257,7 +257,7 @@ void Gate::Update()
 	if( keyGate )
 	{
 
-		if( !owner->player.hasKey[type] && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+		if( owner->player.hasKey[type] < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
 		{
 			//cout << "HARDENING: " << type << endl;
 			if( gState == SOFTEN )

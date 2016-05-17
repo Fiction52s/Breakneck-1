@@ -444,7 +444,7 @@ struct Actor : QuadTreeCollider,
 	bool dead;	
 
 	//dummy key at 0 for GREY
-	bool hasKey[Gate::GateType::Count];
+	int hasKey[Gate::GateType::Count];
 	/*bool hasBlueKey;
 	bool hasGreenKey;
 	bool hasYellowKey;

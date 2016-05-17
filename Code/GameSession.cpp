@@ -842,9 +842,11 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 	{
 		int gType;
 		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+		int numKeysRequired;
 		string behindyouStr;
 
 		is >> gType;
+		is >> numKeysRequired; 
 		is >> poly0Index;
 		is >> vertexIndex0;
 		is >> poly1Index;
@@ -889,7 +891,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 			continue;
 		}
 
-		Gate * gate = new Gate( this, gateType, reformBehindYou );
+		Gate * gate = new Gate( this, gateType, numKeysRequired, reformBehindYou );
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
@@ -1103,12 +1105,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//is >> speed;
 				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
 				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
-				Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
+				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
 				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
 				//	framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
+				Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
 				//enemy->Monitor::MonitorType
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
@@ -1410,8 +1413,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed );
 
-				Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, clockwise, speed, 10 );
+				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity, clockwise, speed, 10 );
+
+				Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise );
 
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
@@ -5033,6 +5039,7 @@ int GameSession::Run( string fileN )
 		//preScreenTex->draw( keyHolderSprite );
 
 
+		//note: gotta fix these later for number of keys
 		sf::RectangleShape keyR( Vector2f( 33, 33 ) );
 		keyR.setPosition( keyHolderSprite.getPosition().x + 4, keyHolderSprite.getPosition().y + 4 );
 		if( player.hasKey[Gate::RED] )
@@ -5415,6 +5422,30 @@ void GameSession::DebugDrawActors()
 	}
 }
 
+void GameSession::SuppressEnemyKeys( Gate::GateType gType )
+{
+	Enemy *currEnemy = activeEnemyList;
+	int mType;
+	while( currEnemy != NULL )
+	{
+		
+		if( currEnemy->monitor != NULL )
+		{
+			mType = currEnemy->monitor->monitorType + 1;
+			//cout << "mtype: " << mType << ", gtype: " << (int)gType << endl;
+			if( mType == (int)gType )
+			{
+				//cout << "suppressing monitor!" << endl;
+				currEnemy->suppressMonitor = true;
+			}
+			
+		}
+		//currEnemy->moni
+		currEnemy = currEnemy->next;
+	}
+}
+
+
 void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 {
 	qtc->HandleEntrant( this );
@@ -5434,7 +5465,7 @@ void GameSession::RespawnPlayer()
 		//actually keys should be set based on which ones you had at the last checkpoint
 		for( int i = 2; i < Gate::GateType::Count; ++i )
 		{
-			player.hasKey[i] = false;
+			player.hasKey[i] = 0;
 		}
 	}
 	else

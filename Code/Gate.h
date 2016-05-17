@@ -39,8 +39,10 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	};
 	
 	bool keyGate;
+	int requiredKeys;
 	bool reformBehindYou;
 	Gate( GameSession *owner, GateType type,
+		int keysRequired,
 		bool reformBehindYou );
 	GateType type;
 	GameSession *owner;

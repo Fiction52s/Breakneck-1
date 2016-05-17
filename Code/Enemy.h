@@ -61,6 +61,7 @@ struct BasicBullet : QuadTreeCollider
 	bool col;
 	Contact minContact;
 	sf::Vector2<double> gravity;
+	//bool gravTowardsPlayer;
 	sf::Vector2<double> tempVel;
 	Launcher *launcher;
 };
@@ -78,6 +79,19 @@ struct SinBullet : BasicBullet
 	sf::Vector2<double> tempadd;
 };
 
+//struct SwarmBullet : BasicBullet
+//{
+//	SwarmBullet( int indexVA,
+//		Launcher *launcher );
+//	void UpdatePrePhysics();
+//	void UpdatePhysics();
+//
+//	double gravStrength;
+//
+//	//SwarmBullet *prev;
+//	//SwarmBullet *next;
+//};
+
 
 //struct CurveBullet : BasicBullet
 //{
@@ -93,8 +107,16 @@ struct Launcher
 		sf::Vector2<double> direction,
 		double angleSpread,
 		int maxFramesToLive,
+		bool hitTerrain = true,
 		int wavelength =0,
 		double amplitude =0.0 );
+	Launcher( LauncherEnemy *handler,
+		GameSession *owner,
+		int maxFramesToLive );
+
+	//Launcher( LauncherEnemy *handler,
+	bool interactWithTerrain;
+	void CapBulletVel( double speed );
 	
 	void Reset();
 	BasicBullet *inactiveBullets;
@@ -108,6 +130,7 @@ struct Launcher
 	BasicBullet * ActivateBullet();
 	int GetActiveCount();
 	void Fire();
+	void Fire( double gravStrength );
 	virtual BasicBullet * RanOutOfBullets();
 	void AddToList( BasicBullet *b,
 		BasicBullet *&list );
@@ -149,18 +172,32 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		PULSER,
 		BADGER,
 		CACTUS,
-		VULTURE,
-		GOAL,
-		KEY,
-		BOSS_CRAWLER,
-		GATEMONITOR,
-		HEALTHFLY,
+		OWL,
+		TURTLE,
+		CHEETAH,
+		CORALNANOBOTS,
+		CORAL_BLOCK,
+		SPIDER,
 		GHOST,
 		OVERGROWTH,
 		OVERGROWTH_TREE,
-		CORALNANOBOTS,
-		CORAL_BLOCK,
-		TURTLE,
+		SHARK,
+		SWARM,
+		COPYCAT,
+		GORILLA,
+		FLYINGHEAD,
+		SPECTRE,
+		GOAL,
+		KEY,
+		BOSS_CRAWLER,
+		BOSS_BIRD,
+		BOSS_COYOTE,
+		BOSS_TIGER,
+		BOSS_ALLIGATOR,
+		BOSS_SKELETON,
+		BOSS_BEAR,
+		GATEMONITOR,
+		HEALTHFLY,
 		Count
 	};
 
@@ -203,6 +240,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Zone *zone;
 	Monitor *monitor;
 	bool dead;
+	bool suppressMonitor;
 
 
 
@@ -999,12 +1037,13 @@ struct Cheetah : Enemy, GroundMoverHandler
 		TURNAROUND,
 		JUMP,
 		ATTACK,
-		LAND
+		LAND,
+		Count
 	};
 
-	StagBeetle( GameSession *owner, Edge *ground, 
+	Cheetah( GameSession *owner, Edge *ground, 
 		double quantity, 
-		bool clockwise, double speed );
+		bool clockwise );
 	void ActionEnded();
 	int NumTotalBullets();
 	void HandleEntrant( QuadTreeEntrant *qte );
@@ -1020,7 +1059,7 @@ struct Cheetah : Enemy, GroundMoverHandler
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	//bool ResolvePhysics( sf::Vector2<double> vel );
 	void ResetEnemy();
 	
 	void SaveEnemyState();
@@ -1039,6 +1078,7 @@ struct Cheetah : Enemy, GroundMoverHandler
 
 	Action action;
 	bool facingRight;
+	bool origFacingRight;
 
 	CubicBezier moveBezTest;
 	int bezFrame;
@@ -1053,6 +1093,9 @@ struct Cheetah : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial();
 	void Land();
+
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
@@ -1486,7 +1529,8 @@ struct CoralBlock : Enemy
 		sf::VertexArray &va,
 		Tileset *ts, int index );
 	void SetParams( sf::Vector2<double> &pos,
-		sf::Vector2<double> &dir );
+		sf::Vector2<double> &dir,
+		int iteration );
 	void ClearSprite();
 	void UpdatePostPhysics();
 	void UpdateSprite();
@@ -1528,6 +1572,8 @@ struct CoralBlock : Enemy
 	bool leftOpen;
 	bool rightOpen;
 	bool botOpen;
+
+	int iteration;
 
 	CubicBezier bez;
 	sf::Vector2<double> startPos;
@@ -1579,12 +1625,13 @@ struct CoralBlock : Enemy
 	//sf::Transform trans;
 };
 
-struct CoralNanobots : Enemy
+struct CoralNanobots : Enemy//, LauncherEnemy
 {
-	
-
 	CoralNanobots( GameSession *owner, 
 		sf::Vector2i &pos, double speed );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -1603,7 +1650,8 @@ struct CoralNanobots : Enemy
 	void DeactivateBlock( CoralBlock *block );
 	CoralBlock * ActivateBlock( 
 		sf::Vector2<double> &pos,
-		sf::Vector2<double> &dir );
+		sf::Vector2<double> &dir,
+		int iteration );
 
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
@@ -1633,9 +1681,129 @@ struct CoralNanobots : Enemy
 	void LoadEnemyState();
 	void ResetEnemy();
 
-	const static int MAX_BLOCKS = 16;
+	const static int MAX_BLOCKS = 25;
+	Launcher *launcher;
 	//const static int MAX_TREES = 16;
 	sf::VertexArray blockVA;
+};
+
+struct Swarm;
+struct SwarmMember : Enemy
+{
+	SwarmMember(Swarm *parent, 
+		sf::VertexArray &va, int index,
+		sf::Vector2<double> &targetOffset );
+	void ClearSprite();
+	void UpdatePostPhysics();
+	void UpdateSprite();
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void PhysicsResponse();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	Swarm *parent;
+
+	int vaIndex;
+	int frame;
+	int animFactor;
+	sf::Vector2<double> targetOffset;
+
+	sf::Vector2<double> velocity;
+	
+	
+	bool active;
+	//Edge *ground;
+	
+	//bool active;
+
+
+	
+	sf::VertexArray &va;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	//CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	
+	//double angle;
+	//sf::Vector2<double> tempVel;
+	//sf::Vector2<double> dir;
+
+	//Tileset *ts;
+	//int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+struct Swarm : Enemy
+{
+	Swarm( GameSession *owner, 
+		sf::Vector2i &pos );	
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	//bool IHitPlayer();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+
+	int animationFactor;
+	int frame;
+
+	sf::Vector2<double> origPosition;
+
+	Tileset *ts;
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	const static int NUM_SWARM = 5;
+	sf::VertexArray swarmVA;
+	sf::Sprite nestSprite;
+	SwarmMember *members[NUM_SWARM];
+
+	sf::Vector2f spriteSize;
+	double maxSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	int deathFrame;
 };
 
 struct FootTrap : Enemy

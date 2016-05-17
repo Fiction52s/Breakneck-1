@@ -18,27 +18,27 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
-	int p_jumpStrength )
-	:Enemy( owner, EnemyType::BADGER ), facingRight( cw ),
+Cheetah::Cheetah( GameSession *owner, Edge *g, double q, bool cw )
+	:Enemy( owner, EnemyType::CHEETAH ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
-	actionLength[RUN] = 60;
-	actionLength[LEDGEJUMP] = 2;
-	actionLength[SHORTJUMP] = 2;
-	actionLength[TALLJUMP] = 2;
-	actionLength[LAND] = 1;
-
-
-	jumpStrength = p_jumpStrength;
+	facingRight = cw;
+	origFacingRight = cw;
 	gravity = V2d( 0, .6 );
-	maxGroundSpeed = speed;
-	action = RUN;
+	action = NEUTRAL;
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
-	nextAction = SHORTJUMP;
 	deathFrame = 0;
+	
+
+	actionLength[NEUTRAL] = 3;
+	actionLength[CHARGE] = 60;
+	actionLength[ARRIVE] = 10;
+	actionLength[TURNAROUND] = 3;
+	actionLength[JUMP] = 2;
+	actionLength[ATTACK] = 0;
+	actionLength[LAND] = 1;
 
 	maxFallSpeed = 25;
 
@@ -56,13 +56,7 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 	frame = 0;
 
 	testMover = new GroundMover( owner, g, q, 32, true, this );
-	//testMover->gravity = V2d( 0, .5 );
 	testMover->SetSpeed( 0 );
-	//testMover->groundSpeed = s;
-	/*if( !facingRight )
-	{
-		testMover->groundSpeed = -testMover->groundSpeed;
-	}*/
 
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
@@ -72,8 +66,6 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 	sprite.setPosition( testMover->physBody.globalPosition.x,
 		testMover->physBody.globalPosition.y );
 	position = testMover->physBody.globalPosition;
-	//roll = false;
-	//position = gPoint + ground->Normal() * height / 2.0;
 	
 
 	receivedHit = NULL;
@@ -108,38 +100,20 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
 
-
-	/*testLaunch = new Launcher( this, owner, 10, 1,
-		testMover->physBody.globalPosition, g->Normal(), 0 );*/
-	/*physBody.isCircle = true;
-	physBody.offset.x = 0;
-	physBody.offset.y = 0;
-	physBody.rw = 32;
-	physBody.rh = 32;
-	physBody.type = CollisionBox::BoxType::Physics;*/
-
-	
-
 	deathPartingSpeed = .4;
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	
-
 	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
 
 	testMover->SetSpeed( 0 );
-	//testMover->Move( slowMultiple );
-
-	//ground = testMover->ground;
-	//edgeQuantity = testMover->edgeQuantity;
-	//position = testMover->physBody.globalPosition;
 }
 
-void Badger::ResetEnemy()
+void Cheetah::ResetEnemy()
 {
+	facingRight = origFacingRight;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
 	testMover->roll = false;
@@ -148,11 +122,7 @@ void Badger::ResetEnemy()
 
 	position = testMover->physBody.globalPosition;
 	//testMover->UpdateGroundPos();
-
-	//testLaunch->Reset();
-	//testLaunch->position = testMover->physBody.globalPosition;
-	//testLaunch->facingDir = startGround->Normal();
-
+	
 	bezFrame = 0;
 	health = initHealth;
 	attackFrame = -1;
@@ -163,22 +133,10 @@ void Badger::ResetEnemy()
 	V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
 	//sprite.setPosition( testMover->physBody.globalPosition.x,
 	//	testMover->physBody.globalPosition.y );
+	action = NEUTRAL;
 	frame = 0;
 
 	V2d gn = testMover->ground->Normal();
-	//testMover->physBody.globalPosition = gPoint + testMover->ground->Normal() * 64.0 / 2.0;
-
-	/*V2d gn = ground->Normal();
-	if( gn.x > 0 )
-		offset.x = physBody.rw;
-	else if( gn.x < 0 )
-		offset.x = -physBody.rw;
-	if( gn.y > 0 )
-		offset.y = physBody.rh;
-	else if( gn.y < 0 )
-		offset.y = -physBody.rh;*/
-
-	//position = gPoint + offset;
 
 	deathFrame = 0;
 	dead = false;
@@ -193,27 +151,27 @@ void Badger::ResetEnemy()
 	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
 	//sprite.setPosition( 
 	//V2d pp = ground->GetPoint( edgeQuantity );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( gPoint.x, gPoint.y );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//sprite.setRotation( angle / PI * 180 );
+	//sprite.setPosition( gPoint.x, gPoint.y );
 	//----
-
+	//UpdateSprite()
 	UpdateHitboxes();
 }
 
-int Badger::NumTotalBullets()
+int Cheetah::NumTotalBullets()
 {
 	return 0;
 }
 
-void Badger::HandleEntrant( QuadTreeEntrant *qte )
+void Cheetah::HandleEntrant( QuadTreeEntrant *qte )
 {
 	assert( queryMode != "" );
 
 	//might need for other queries but def not for physics
 }
 
-void Badger::UpdateHitboxes()
+void Cheetah::UpdateHitboxes()
 {
 	Edge *ground = testMover->ground;
 	if( ground != NULL )
@@ -248,94 +206,49 @@ void Badger::UpdateHitboxes()
 
 	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	hitBody.globalPosition = testMover->physBody.globalPosition;
-	hurtBody.globalPosition = testMover->physBody.globalPosition;
+	if( action != CHARGE )
+	{
+		hitBody.globalPosition = testMover->physBody.globalPosition;
+		hurtBody.globalPosition = testMover->physBody.globalPosition;
+	}
 	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
-void Badger::UpdateNextAction()
-{
-	switch( nextAction )
-	{
-	case RUN:
-		nextAction = SHORTJUMP;
-		break;
-	case SHORTJUMP:
-		nextAction = TALLJUMP;
-		break;
-	case TALLJUMP:
-		nextAction = RUN;
-		break;
-	}
-
-	if( owner->player.position.x > position.x )
-	{
-		cout << "facing right" << endl;
-		facingRight = true;
-	}
-	else
-	{
-		cout << "facing left" << endl;
-		facingRight = false;
-	}
-}
-
-void Badger::ActionEnded()
+void Cheetah::ActionEnded()
 {
 	if( frame == actionLength[action] )
+	switch( action )
 	{
-		switch( action )
-		{
-		case RUN:
-			action = nextAction;
-			UpdateNextAction();
-			frame = 0;
-			break;
-		case LEDGEJUMP:
-			frame = 1;
-			break;
-		case SHORTJUMP:
-			frame = 1;
-			break;
-		case TALLJUMP:
-			frame = 1;
-			break;
-		case LAND:
-			action = nextAction;
-			UpdateNextAction();
-			frame = 0;
-			break;
-		case ATTACK:
-			action = RUN;
-			frame = 0;
-			break;
-		}
+	case NEUTRAL:
+		frame = 0;
+		break;
+	case CHARGE:
+		action = NEUTRAL;
+		frame = 0;
+		break;
+	case ARRIVE:
+		action = NEUTRAL;
+		frame = 0;
+		break;
+	case TURNAROUND:
+		action = CHARGE;
+		frame = 0;
+		break;
+	case JUMP:
+		frame = 1;
+		break;
+	case ATTACK:
+		//not gonna use this for a bit
+		break;
+	case LAND:
+		action = NEUTRAL;
+		frame = 0;
+		break;
 	}
 }
 
-void Badger::Jump( double strengthx, double strengthy )
+void Cheetah::UpdatePrePhysics()
 {
-	assert( testMover->ground != NULL );
-
-	V2d gAlong = normalize( testMover->ground->v1 - testMover->ground->v0 );
-	if( !facingRight )
-		gAlong = -gAlong;
-
-
-	if( cross( normalize( V2d( strengthx, -strengthy )), gAlong ) < 0 )
-	{
-		gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
-		testMover->Jump( gAlong * strengthy );
-	}
-	else
-	{
-		testMover->Jump( V2d( strengthx, -strengthy ) );
-	}
-}
-
-void Badger::UpdatePrePhysics()
-{
-	cout << "action: " << (int)action << endl;
 	//testLaunch->UpdatePrePhysics();
 	Actor &player = owner->player;
 
@@ -346,81 +259,75 @@ void Badger::UpdatePrePhysics()
 
 	switch( action )
 	{
-	case RUN:
+	case NEUTRAL:
+		cout << "neutral" << endl;
+		if( length( player.position - position ) < 400 )
+		{
+			if( player.position.x < position.x && facingRight
+				|| player.position.x > position.x && !facingRight )
+			{
+				facingRight = !facingRight;
+				action = TURNAROUND;
+				frame = 0;
+			}
+			else
+			{
+				action = CHARGE;
+				frame = 0;
+			}
+			//action = CH
+		}
 		break;
-	case LEDGEJUMP:
+	case CHARGE:
+		cout << "charge" << endl;
 		break;
-	case SHORTJUMP:
+	case ARRIVE:
+		cout << "arrive" << endl;
 		break;
-	case TALLJUMP:
+	case TURNAROUND:
+		cout << "turnaround" << endl;
+		break;
+	case JUMP:
+		cout << "jump" << endl;
 		break;
 	case ATTACK:
+		//not gonna use this for a bit
 		break;
 	case LAND:
+		cout << "land" << endl;
 		break;
 	}
 
 	switch( action )
 	{
-	case RUN:
-		/*if( facingRight )
-		{
-			if( player.position.x < position.x )
-			{
-				facingRight = false;
-			}
-		}
-		else
-		{
-			if( player.position.x > position.x )
-			{
-				facingRight = true;
-			}
-		}*/
-
+	case NEUTRAL:
+		testMover->SetSpeed( 0 );
+		break;
+	case CHARGE:
 		if( facingRight )
 		{
-			testMover->SetSpeed( 2 );//testMover->groundSpeed + .3 );
+			testMover->SetSpeed( 10 );
 		}
 		else
 		{
-			testMover->SetSpeed( -2 );//testMover->groundSpeed - .3 );
+			testMover->SetSpeed( -10 );
 		}
 
-		if( testMover->groundSpeed > maxGroundSpeed )
-			testMover->SetSpeed( maxGroundSpeed );
-		else if( testMover->groundSpeed < -maxGroundSpeed )
-			testMover->SetSpeed( -maxGroundSpeed );
+		
 		break;
-	case LEDGEJUMP:
+	case ARRIVE:
+		testMover->SetSpeed( 0 );
 		break;
-	case SHORTJUMP:
-		if( frame == 0 )
-		{
-			if( facingRight )
-				Jump( 10, 10 );
-			else
-				Jump( -10, 10 );
-		}
+	case TURNAROUND:
+		testMover->SetSpeed( 0 );
 		break;
-	case TALLJUMP:
-		if( frame == 0 )
-		{
-			if( facingRight )
-				Jump( 10, 20 );
-			else
-				Jump( -10, 20 );
-		}
+	case JUMP:
 		break;
 	case ATTACK:
-		{
-			testMover->SetSpeed( 0 );
-		}
+		//not gonna use this for a bit
 		break;
 	case LAND:
-		{
-			testMover->SetSpeed( 0 );
-		}
+		testMover->SetSpeed( 0 );
 		break;
 	}
 
@@ -451,42 +358,9 @@ void Badger::UpdatePrePhysics()
 	{
 		attackFrame = -1;
 	}
-	//if( attacking )
-	//{
-	//}
-	//else
-	//{
-
-		if( !roll && frame == 16 * crawlAnimationFactor )
-		{
-			frame = 0;
-		}
-
-		if ( roll && frame == 10 * rollAnimationFactor )
-		{
-			frame = rollAnimationFactor * 2; 
-		}
-
-		//cout << "groundspeed: " << testMover->groundSpeed << endl;
-	//}
-
-	/*if( bezFrame == 0 )
-	{
-		testLaunch->position = position;
-		if( testMover->ground != NULL )
-		{
-			testLaunch->facingDir = testMover->ground->Normal();
-		}
-		else
-		{
-			testLaunch->facingDir = V2d( 0, -1 );
-		}
-		
-		testLaunch->Fire();
-	}*/
 }
 
-void Badger::UpdatePhysics()
+void Cheetah::UpdatePhysics()
 {
 	//testLaunch->UpdatePhysics();
 
@@ -530,12 +404,16 @@ void Badger::UpdatePhysics()
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
 
-	position = testMover->physBody.globalPosition;
+	if( action != CHARGE )
+	{
+		cout << "moving" << endl;
+		position = testMover->physBody.globalPosition;
+	}
 	
 	PhysicsResponse();
 }
 
-void Badger::PhysicsResponse()
+void Cheetah::PhysicsResponse()
 {
 	if( !dead  )
 	{
@@ -546,6 +424,8 @@ void Badger::PhysicsResponse()
 
 		if( ground != NULL )
 		{
+			if( action != CHARGE )
+			{
 		//cout << "response" << endl;
 			double spaceNeeded = 0;
 			V2d gn = ground->Normal();
@@ -657,7 +537,9 @@ void Badger::PhysicsResponse()
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( gPoint.x, gPoint.y );
-			}	
+			}
+			
+		}
 		}
 		}
 		else
@@ -737,7 +619,7 @@ void Badger::PhysicsResponse()
 		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 		deathVector = V2d( newPoint.x, newPoint.y );
 
-		queryMode = "reverse";
+		//queryMode = "reverse";
 
 		//physbody is a circle
 		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
@@ -745,7 +627,7 @@ void Badger::PhysicsResponse()
 	}
 }
 
-void Badger::UpdatePostPhysics()
+void Cheetah::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
@@ -786,7 +668,7 @@ void Badger::UpdatePostPhysics()
 	//UpdateHitboxes();
 }
 
-bool Badger::PlayerSlowingMe()
+bool Cheetah::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -802,7 +684,7 @@ bool Badger::PlayerSlowingMe()
 	return false;
 }
 
-void Badger::Draw(sf::RenderTarget *target )
+void Cheetah::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -841,6 +723,17 @@ void Badger::Draw(sf::RenderTarget *target )
 			target->draw( cs );
 		}
 		target->draw( sprite );
+
+		if( action == CHARGE )
+		{
+			CircleShape c;
+			c.setRadius( 20 );
+			c.setFillColor( Color::Red );
+			c.setOrigin( c.getLocalBounds().width/2, c.getLocalBounds().height/2 );
+			c.setPosition( testMover->physBody.globalPosition.x,
+				testMover->physBody.globalPosition.y );
+			target->draw( c );
+		}
 	}
 	else
 	{
@@ -860,7 +753,7 @@ void Badger::Draw(sf::RenderTarget *target )
 	}
 }
 
-void Badger::DrawMinimap( sf::RenderTarget *target )
+void Cheetah::DrawMinimap( sf::RenderTarget *target )
 {
 	CircleShape cs;
 	cs.setRadius( 50 );
@@ -876,7 +769,7 @@ void Badger::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Badger::IHitPlayer()
+bool Cheetah::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
@@ -904,7 +797,7 @@ bool Badger::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Badger::PlayerHitMe()
+ pair<bool, bool> Cheetah::PlayerHitMe()
 {
 	Actor &player = owner->player;
 
@@ -960,7 +853,7 @@ bool Badger::IHitPlayer()
 	return pair<bool, bool>(false,false);
 }
 
-void Badger::UpdateSprite()
+void Cheetah::UpdateSprite()
 {
 	if( dead )
 	{
@@ -993,7 +886,7 @@ void Badger::UpdateSprite()
 	}
 }
 
-void Badger::DebugDraw( RenderTarget *target )
+void Cheetah::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -1015,31 +908,32 @@ void Badger::DebugDraw( RenderTarget *target )
 //	hitBody.DebugDraw( target );
 }
 
-void Badger::SaveEnemyState()
+void Cheetah::SaveEnemyState()
 {
 }
 
-void Badger::LoadEnemyState()
+void Cheetah::LoadEnemyState()
 {
 }
 
-void Badger::HitTerrain( double &q )
+void Cheetah::HitTerrain( double &q )
 {
 	
 }
 
-bool Badger::StartRoll()
+bool Cheetah::StartRoll()
 {
 
 }
 
-void Badger::FinishedRoll()
+void Cheetah::FinishedRoll()
 {
 
 }
 
-void Badger::HitOther()
+void Cheetah::HitOther()
 {
+	return;
 	V2d v;
 	if( facingRight && testMover->groundSpeed > 0 )
 	{
@@ -1056,8 +950,13 @@ void Badger::HitOther()
 	//facingRight = !facingRight;
 }
 
-void Badger::ReachCliff()
+void Cheetah::ReachCliff()
 {
+
+	testMover->SetSpeed( 0 );
+	return;
+
+
 	if( facingRight && testMover->groundSpeed < 0 
 		|| !facingRight && testMover->groundSpeed > 0 )
 	{
@@ -1082,15 +981,14 @@ void Badger::ReachCliff()
 	//facingRight = !facingRight;
 }
 
-void Badger::HitOtherAerial()
+void Cheetah::HitOtherAerial()
 {
 	//cout << "hit edge" << endl;
 }
 
-void Badger::Land()
+void Cheetah::Land()
 {
 	action = LAND;
 	frame = 0;
-	
 	//cout << "land" << endl;
 }

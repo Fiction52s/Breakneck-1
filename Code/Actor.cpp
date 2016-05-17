@@ -57,7 +57,7 @@ Actor::Actor( GameSession *gs )
 
 		for( int i = 0; i < Gate::GateType::Count; ++i )
 		{
-			hasKey[i] = false;
+			hasKey[i] = 0;
 		}
 		
 
@@ -653,7 +653,7 @@ Actor::Actor( GameSession *gs )
 		{
 			hasPowerAirDash = true;
 			hasPowerGravReverse = false;
-			hasPowerBounce = false;
+			hasPowerBounce = true;
 			hasPowerGrindBall = false;
 			hasPowerTimeSlow = false;
 			hasPowerLeftWire = false;
@@ -3354,17 +3354,36 @@ void Actor::UpdatePrePhysics()
 				
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
-			//	V2d bounceNorm;
+
 				
-				
+
 				//double lenVel = length( storedBounceVel );
 				//double reflX = cross( normalize( -storedBounceVel ), bn );
 				//double reflY = dot( normalize( -storedBounceVel ), bn );
 				//V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
-				////velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
-				////cout << "reflx: " << reflX <<", refly: " << reflY << endl;
-				//velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
+				//V2d ref = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
+
+				//double c = cos( -currInput.leftStickRadians );
+				//double s = sin( -currInput.leftStickRadians );
+				//V2d left( c, s );
+
+				//double dd = dot( ref, left );
+				//double cc = cross( ref, left );
+
+				////V2d ne( ref.x * c + ref.y * -s, ref.x * s + ref.y * c );
+				//V2d eft = left + V2d( 0, -1 );
+				//eft /= 2.0;
+				//velocity = left * lenVel;
 				
+				
+				
+				
+				
+				//dot( ref, eft );//dd * edgeDir + cc * bn;
+				//cout << "setting vel: " << velocity.x << ", " << velocity.y << endl;
+				//double dd = dot( 
+				//velocity = normalize( 
+
 				if( bn.y < 0 )
 				{
 					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
@@ -5269,12 +5288,12 @@ bool Actor::CheckWall( bool right )
 
 	owner->terrainTree->Query( this, r );
 	
-	queryMode = "moving_checkwall";
+	/*queryMode = "moving_checkwall";
 	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
 	{
 		currMovingTerrain = (*it);
 		(*it)->Query( this, r );
-	}
+	}*/
 	
 
 
@@ -5352,15 +5371,15 @@ bool Actor::CheckWall( bool right )
 			return true;
 		}
 
-		if( (zero && en.x < 0 && en.y < 0 ) )
-		{
-			//cout << "?>>>>>" << endl;
-			V2d te = e0->v0 - e0->v1;
-			if( te.x > 0 )
-			{
-				return true;
-			}
-		}
+		//if( (zero && en.x < 0 && en.y < 0 ) )
+		//{
+		//	//cout << "?>>>>>" << endl;
+		//	V2d te = e0->v0 - e0->v1;
+		//	if( te.x > 0 )
+		//	{
+		//		return true;
+		//	}
+		//}
 		
 		if( (one && en.x < 0 && en.y > 0 ) )
 		{
@@ -5372,32 +5391,32 @@ bool Actor::CheckWall( bool right )
 			}
 		}
 
-		if( (one && en.x < 0 && en.y < 0 ) )
+		/*if( (one && en.x < 0 && en.y < 0 ) )
 		{
 			V2d te = e1->v1 - e1->v0;
 			if( te.x < 0 )
 			{
 				return true;
 			}
-		}
+		}*/
 		
-		if( (zero && en.x > 0 && en.y < 0 ) )
+		/*if( (zero && en.x > 0 && en.y < 0 ) )
 		{
 			V2d te = e0->v0 - e0->v1;
 			if( te.x > 0 )
 			{	
 				return true;
 			}
-		}
+		}*/
 	
-		if( ( one && en.x > 0 && en.y < 0 ) )
+		/*if( ( one && en.x > 0 && en.y < 0 ) )
 		{
 			V2d te = e1->v1 - e1->v0;
 			if( te.x < 0 )
 			{
 				return true;
 			}
-		}
+		}*/
 		if( (zero && en.x > 0 && en.y > 0 ) )
 		{
 			V2d te = e0->v0 - e0->v1;
@@ -9749,6 +9768,8 @@ void Actor::PhysicsResponse()
 
 		if( activate )
 		{
+			owner->SuppressEnemyKeys( g->type );			
+
 			if( edge == g->edgeA )
 			{
 				owner->ActivateZone( g->zoneA );
@@ -9772,8 +9793,13 @@ void Actor::PhysicsResponse()
 
 			if( g->keyGate )//g->type == Gate::BLUE )
 			{
-				assert( hasKey[g->type] );
-				hasKey[g->type] = false;
+				assert( hasKey[g->type] > 0 );
+				//hasKey[g->type] = 0;
+				int gateTypeCount = Gate::GateType::Count;
+				for( int i = 2; i < gateTypeCount; ++i )
+				{
+					hasKey[i] = 0;
+				}
 				//assert( hasBlueKey );
 				//cout << "getting rid of blue key and setting it to dissolve!!" << endl;
 				//hasBlueKey = false;
@@ -11701,7 +11727,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			++testGrassCount;
 		}
 	}
-	else if( queryMode == "gate" )
+	/*else if( queryMode == "gate" )
 	{
 		Gate *g = (Gate*)qte;
 		
@@ -11737,7 +11763,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 			}
 		}
-	}
+	}*/
 	else if( queryMode == "item" )
 	{
 		Critical *c = (Critical*)qte;
@@ -11833,6 +11859,14 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
+	/*double c = cos( -currInput.leftStickRadians);
+	double s = sin( -currInput.leftStickRadians);
+	V2d left( c, s );
+	CircleShape ccs;
+	ccs.setRadius( 10 );
+	ccs.setOrigin( ccs.getLocalBounds().width/2, ccs.getLocalBounds().height / 2 );
+	ccs.setPosition( position.x + left.x * 100, position.y + left.y * 100 );
+	target->draw( ccs );*/
 	//target->draw( speedCircle );
 	/*if( action == DASH )
 	{
@@ -14546,8 +14580,10 @@ bool Actor::CanUnlockGate( Gate *g )
 	{
 		canUnlock = false;
 	}
-	else if( g->keyGate && hasKey[g->type] )
+	else if( g->keyGate && hasKey[g->type] >= g->requiredKeys )
 	{
+		cout << "have keys: " << hasKey[g->type] <<
+			"need keys: " << g->requiredKeys << endl;
 		canUnlock = true;
 	}
 
@@ -14559,15 +14595,17 @@ bool Actor::CaptureMonitor( Monitor * m )
 	assert( m != NULL );
 
 	int gType = (int)m->monitorType + 1;
-	if( hasKey[gType] )
+	if( hasKey[gType] == 6 )
 	{
-		//cout << "ALREADY HAS KEY: " << gType << endl;
+		cout << "ALREADY HAS SIX KEYS: " << gType << endl;
+
 		return false;
+		//return false;
 	}
 	else
 	{
 		//cout << "GIVING ME A KEY: " << (int)gType << endl;
-		hasKey[gType] = true;
+		hasKey[gType]++;
 		return true;
 	}
 }

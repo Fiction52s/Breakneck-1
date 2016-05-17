@@ -104,7 +104,8 @@ Cactus::Cactus( GameSession *owner, Edge *g, double q, double speed,int wait,
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0, 60, 20, 60 );
+	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 
+		0, 60, false, 20, 60 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
 	//testLauncher->wavelength = 60;
 	//testLauncher->amplitude = 20;
@@ -296,7 +297,7 @@ void Cactus::Draw(sf::RenderTarget *target )
 {
 	if( !(dead || dying ) )
 	{
-		if( monitor != NULL )
+		if( monitor != NULL && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -336,7 +337,7 @@ void Cactus::DrawMinimap( sf::RenderTarget *target )
 		cs.setPosition( position.x, position.y );
 		target->draw( cs );
 
-		if( monitor != NULL )
+		if( monitor != NULL && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );

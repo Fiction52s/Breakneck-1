@@ -77,7 +77,7 @@ void Monitor::UpdatePhysics()
 
 	int gateType = (int)monitorType + 1;
 
-	if( owner->player.hasKey[ gateType])
+	if( owner->player.hasKey[gateType] == 6 )
 	{
 		return;
 	}
@@ -87,7 +87,7 @@ void Monitor::UpdatePhysics()
 	if( ihit || hitMe.first )
 	{
 		//cout << "got the monitor!" << endl;
-		owner->player.hasKey[gateType] = true;
+		owner->player.hasKey[gateType]++;
 		/*switch( monitorType )
 		{
 		case BLUE:

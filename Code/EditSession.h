@@ -303,6 +303,7 @@ struct GateInfo
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
 	bool reformBehindYou;
+	int numKeysRequired;
 	GateTypes type;
 	
 };

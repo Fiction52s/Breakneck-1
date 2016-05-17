@@ -31,7 +31,7 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	leftOpen = true;
 	rightOpen = true;
 	botOpen = true;
-
+	iteration = -1;
 
 	//maxFramesToLive = 60 * 4;
 	//framesToLive = maxFramesToLive;
@@ -149,12 +149,83 @@ bool CoralBlock::ResolvePhysics( V2d &vel )
 
 void CoralBlock::UpdatePrePhysics()
 {
-	
-
-	if( frame == 60 )//26 * parent->animationFactor )
+	if( !lockedIn && !dead )
 	{
-		frame = 0;
+	V2d left( -1, 0 );
+	V2d right( 1, 0 );
+	V2d up( 0, -1 );
+	V2d down( 0, 1 );
+
+
+	V2d straight = dir;
+	V2d relLeft( straight.y, -straight.x );
+	V2d relRight = -relLeft;
+	if( frame == 0 )
+	{
+		if( iteration == 0 )
+		{
+			lockedIn = true;
+			parent->ActivateBlock( position, up, 1 );
+			parent->ActivateBlock( position, left, 1 );
+			parent->ActivateBlock( position, right, 1 );
+			parent->ActivateBlock( position, down, 1 );
+		}
 	}
+	else if( frame == 60 )//move.currMovement == NULL )
+	{
+		//cout << "locked in true" << endl;
+		if( iteration != 2 )
+		{
+			lockedIn = true;
+		}
+
+		switch( iteration )
+		{
+		case 0:
+			break;
+		case 1:
+			//cout << "creating case 2" << endl;
+			parent->ActivateBlock( position, relRight, 2 );
+			break;
+		case 2:
+			//cout << "creating case 3" << endl;
+			parent->ActivateBlock( position, relLeft, 3 );
+			break;
+		case 3:
+			//cout << "creating case 5" << endl;
+			parent->ActivateBlock( position, relLeft, -1 );
+			break;
+		case 4:
+			//cout << "creating case 5" << endl;
+			parent->ActivateBlock( position, relLeft, -1 );
+			break;
+		case 5:
+			//cout << "should be activating future? " << endl;
+			parent->ActivateBlock( position, straight, 6 );
+			break;
+		case 6:
+			parent->ActivateBlock( position, relLeft, 7 );
+			break;
+		case 7:
+			parent->ActivateBlock( position, relRight, 8 );
+			break;
+		case 8:
+			parent->ActivateBlock( position, relRight, -1 );
+			break;
+		}
+	}
+	else if( frame == 120 && iteration == 2 )
+	{
+		//cout << "creating case 4" << endl;
+		parent->ActivateBlock( position, straight, 4 );
+		lockedIn = true;
+	}
+
+	}
+	//if( frame == 60 )//26 * parent->animationFactor )
+	//{
+	//	frame = 0;
+	//}
 
 	if( !dead && receivedHit != NULL )
 	{	
@@ -175,13 +246,18 @@ void CoralBlock::UpdatePrePhysics()
 	
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
 	//if( frame == 59 * parent->animationFactor - 1 && slowCounter == 1 )
-	if( frame == 60 - 1 && slowCounter == 1 )
-	{
-		//cout << "FIRING" << endl;
-		//launcher->facingDir = normalize( owner->player.position
-		//	- position );
-		//launcher->Fire();
-	}
+	//if( iteration == -1 && frame == 60 )//frame == 60 - 1 && slowCounter == 1 )
+	//{
+	//	//cout << "SHOOTING" << endl;
+	//	parent->launcher->position = position;
+	//	parent->launcher->facingDir = normalize( owner->player.position
+	//		- position );
+	//	parent->launcher->Fire( 1 );
+	//	//cout << "FIRING" << endl;
+	//	//launcher->facingDir = normalize( owner->player.position
+	//	//	- position );
+	//	//launcher->Fire();
+	//}
 }
 
 void CoralBlock::UpdatePhysics()
@@ -196,44 +272,10 @@ void CoralBlock::UpdatePhysics()
 
 		move.Update();
 
-		if( move.currMovement == NULL )
-		{
-			//cout << "locked in true" << endl;
-			lockedIn = true;
-			V2d left( -1, 0 );
-			V2d right( 1, 0 );
-			V2d top( 0, -1 );
-			V2d bot( 0, 1 );
+		
 
-			if( topOpen )
-			{
-				//cout << "new up" << endl;
-				parent->ActivateBlock( position, top );
-				topOpen = false;
-			}
-			if( leftOpen )
-			{
-				//cout << "new left" << endl;
-				parent->ActivateBlock( position, left );
-				leftOpen = false;
-			}
-			if( botOpen )
-			{
-				//cout << "new bot" << endl;
-				parent->ActivateBlock( position, bot );
-				botOpen = false;
-			}
-			if( rightOpen )
-			{
-				//cout << "new right" << endl;
-				//cout << "right open!" << endl;
-				parent->ActivateBlock( position, right );
-				rightOpen = false;
-			}
-			
-			PhysicsResponse();
-			return;
-		}
+		if( move.currMovement != NULL )
+		{
 
 		V2d rotatedPos = move.position;
 		double angle = atan2( dir.y, dir.x );
@@ -282,6 +324,8 @@ void CoralBlock::UpdatePhysics()
 			position += minContact.resolution;
 			//cout << "landing aerial" << endl;
 			//HitTerrainAerial();
+		}
+
 		}
 	}
 	else
@@ -361,13 +405,59 @@ void CoralBlock::UpdateSprite()
 	va[vaIndex*4+3].texCoords = Vector2f( subRect.left, 
 		subRect.top + subRect.height );
 
-	
+	Color c;
+	switch( iteration )
+	{
+	case -1:
+		c = Color::Black;
+		break;
+	case 0:
+		c = Color::Green;
+		break;
+	case 1:
+		c = Color::Red;
+		break;
+	case 2:
+		c = Color::Blue;
+		break;
+	case 3:
+		c = Color::Magenta;
+		break;
+	case 4:
+		c = Color::Yellow;
+		break;
+	case 5:
+		c = Color::Cyan;
+		break;
+	case 6:
+		c = Color( 100, 100, 50 );
+		break;
+	case 7:
+		c = Color( 200, 0, 100 );
+		break;
+	case 8:
+		c = Color( 20, 100, 255 );
+		break;
+	}
+	c.a = 100;
+	va[vaIndex*4+0].color = c;
+	va[vaIndex*4+1].color = c;
+	va[vaIndex*4+2].color = c;
+	va[vaIndex*4+3].color = c;
+
 	Vector2f p( position.x, position.y );
 
-	va[vaIndex*4+0].position = p + Vector2f( -parent->blockSizeX/2, -parent->blockSizeY/2 );
-	va[vaIndex*4+1].position = p + Vector2f( parent->blockSizeX/2, -parent->blockSizeY/2 );
-	va[vaIndex*4+2].position = p + Vector2f( parent->blockSizeX/2, parent->blockSizeY/2 );
-	va[vaIndex*4+3].position = p + Vector2f( -parent->blockSizeX/2, parent->blockSizeY/2 );
+	if( dead )
+	{
+		ClearSprite();
+	}
+	else
+	{
+		va[vaIndex*4+0].position = p + Vector2f( -parent->blockSizeX/2, -parent->blockSizeY/2 );
+		va[vaIndex*4+1].position = p + Vector2f( parent->blockSizeX/2, -parent->blockSizeY/2 );
+		va[vaIndex*4+2].position = p + Vector2f( parent->blockSizeX/2, parent->blockSizeY/2 );
+		va[vaIndex*4+3].position = p + Vector2f( -parent->blockSizeX/2, parent->blockSizeY/2 );
+	}
 }
 
 void CoralBlock::UpdatePostPhysics()
@@ -405,6 +495,9 @@ void CoralBlock::UpdatePostPhysics()
 		//owner->RemoveEnemy( this );
 		return;
 	}
+
+
+
 
 	UpdateSprite();
 	//launcher->UpdateSprites();
@@ -620,13 +713,21 @@ void CoralBlock::HandleEntrant( QuadTreeEntrant *qte )
 }
 
 void CoralBlock::SetParams( sf::Vector2<double> &pos,
-		sf::Vector2<double> &p_dir )
+		sf::Vector2<double> &p_dir,
+		int p_iteration )
 {
+	iteration = p_iteration;
+
+	
+
 	dead = false;
 	direction = dir;
 	position = pos;
 	startPos = position;
 	lockedIn = false;
+
+
+	
 
 	dir = p_dir;
 
@@ -655,7 +756,7 @@ void CoralBlock::SetParams( sf::Vector2<double> &pos,
 	frame = 0;
 
 	//framesToLive = maxFramesToLive;
-
+	deathFrame = 0;
 	
 
 	UpdateSprite();
@@ -688,6 +789,10 @@ void CoralNanobots::AddToList( CoralBlock *block,
 CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double speed )
 		:Enemy( owner, EnemyType::CORALNANOBOTS ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
 {
+	//launcher = new Launcher( this, owner, MAX_BLOCKS, 1, V2d( 0, 0 ), V2d( 0, 0 ),
+	//	0, 300, false );
+	//launcher->SetBulletSpeed( 0 );
+
 	origPosition = V2d( pos.x, pos.y );
 
 	animationFactor = 3;
@@ -718,7 +823,10 @@ CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double spee
 	//spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 	spawnRect = sf::Rect<double>( pos.x - size / 2, pos.y - size / 2, size, size );
 
-	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, -1 ) );
+	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, 0 ), 0 );
+
+	
+
 	//c->lockedIn = true;
 	//c->botOpen = true;
 	//c->move.currMovement = NULL;
@@ -732,7 +840,7 @@ void CoralNanobots::HandleEntrant( QuadTreeEntrant *qte )
 void CoralNanobots::ResetEnemy()
 {
 	dead = false;
-
+	//launcher->Reset();
 	
 	//frame = 0;
 //	deathFrame = 0;
@@ -748,7 +856,7 @@ void CoralNanobots::ResetEnemy()
 		curr->launcher->Reset();
 		curr = (Tree*)curr->next;
 	}*/
-	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, -1 ) );
+	CoralBlock *c = ActivateBlock( origPosition, V2d( 0, 0 ), 0 );
 	//c->lockedIn = true;
 	//c->move.currMovement = NULL;
 	//c->botOpen = true;
@@ -771,6 +879,10 @@ bool CoralNanobots::PlayerSlowingMe()
 
 void CoralNanobots::UpdatePrePhysics()
 {
+
+	//launcher->UpdatePrePhysics();
+
+	bool lockedIn = true;
 	CoralBlock *curr = activeBlocks;
 	CoralBlock *temp;
 	//int count = 0;
@@ -786,6 +898,8 @@ void CoralNanobots::UpdatePrePhysics()
 
 void CoralNanobots::UpdatePhysics()
 {
+	//launcher->UpdatePhysics();
+	//launcher->CapBulletVel( 12 );
 	CoralBlock *curr = activeBlocks;
 	CoralBlock *temp;
 	while( curr != NULL )
@@ -839,9 +953,20 @@ void CoralNanobots::DeactivateBlock( CoralBlock *block )
 	block->active = false;
 }
 
-CoralBlock * CoralNanobots:: ActivateBlock( 
+void CoralNanobots::BulletHitTerrain( BasicBullet *b,
+	Edge *edge, sf::Vector2<double> &pos )
+{
+
+}
+
+void CoralNanobots::BulletHitPlayer( BasicBullet *b )
+{
+}
+
+CoralBlock * CoralNanobots::ActivateBlock( 
 		sf::Vector2<double> &pos,
-		sf::Vector2<double> &dir )
+		sf::Vector2<double> &dir,
+		int iteration )
 {
 	if( inactiveBlocks == NULL )
 	{
@@ -857,7 +982,7 @@ CoralBlock * CoralNanobots:: ActivateBlock(
 		if( inactiveBlocks != NULL )
 			inactiveBlocks->prev = NULL;
 
-		activeBlocks->SetParams( pos, dir );
+		activeBlocks->SetParams( pos, dir, iteration );
 
 		return activeBlocks;
 	}
@@ -870,6 +995,8 @@ void CoralNanobots::PhysicsResponse()
 
 void CoralNanobots::UpdatePostPhysics()
 {
+	
+	//launcher->UpdatePostPhysics();
 	CoralBlock *curr = activeBlocks;
 	CoralBlock *temp;
 	while( curr != NULL )
@@ -878,6 +1005,8 @@ void CoralNanobots::UpdatePostPhysics()
 		curr->UpdatePostPhysics();
 		curr = temp;
 	}
+
+	//launcher->UpdateSprites();
 }
 
 void CoralNanobots::Draw(sf::RenderTarget *target )

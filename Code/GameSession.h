@@ -164,6 +164,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool LoadEnemies( std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	std::list<Enemy*> fullEnemyList;
+	void SuppressEnemyKeys( Gate::GateType gType );
 
 	sf::RenderWindow *window;
 	std::string currentFile;

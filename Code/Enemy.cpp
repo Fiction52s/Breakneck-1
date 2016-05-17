@@ -18,6 +18,7 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 		sf::Vector2<double> direction,
 		double p_angleSpread,
 		int p_maxFramesToLive,
+		bool hitTerrain,
 		int p_wavelength,
 		double p_amplitude )
 		:totalBullets( numTotalBullets ), perShot( bulletsPerShot ),
@@ -25,6 +26,7 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 		position( p_position ), owner( p_owner ),handler(p_handler)
 
 {
+	interactWithTerrain = hitTerrain;
 	maxFramesToLive = p_maxFramesToLive;
 	wavelength = p_wavelength;
 	amplitude = p_amplitude;
@@ -34,7 +36,7 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 
 	activeBullets = NULL;
 
-
+	
 	if( wavelength > 0 )
 	{
 		inactiveBullets = new SinBullet( startIndex++, this );
@@ -72,6 +74,30 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 	hitboxInfo->knockback = 0;
 }
 
+Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
+	int p_maxFramesToLive )
+{
+
+}
+
+void Launcher::CapBulletVel( double speed )
+{
+	BasicBullet *curr = activeBullets;
+	BasicBullet *temp;
+	while( curr != NULL )
+	{
+		temp = curr->next;
+		V2d norm = normalize( curr->velocity );
+		if( length( curr->velocity ) > speed )
+		{
+			curr->velocity = norm * speed;
+		}
+		
+		//curr->UpdatePrePhysics();
+		curr = temp;
+	}
+}
+
 void Launcher::UpdatePrePhysics()
 {
 	BasicBullet *curr = activeBullets;
@@ -97,8 +123,6 @@ void Launcher::UpdatePhysics()
 		curr = temp;
 	}
 }
-
-
 
 void Launcher::UpdateSprites()
 {
@@ -130,6 +154,23 @@ void Launcher::Fire()
 			b->Reset( position, facingDir * bulletSpeed );
 		}
 	}
+}
+
+void Launcher::Fire( double gravStrength )
+{
+	//for( int i = 0; i < perShot; ++i )
+	//{
+	//	//cout << "trying to activate bullet" << endl;
+	//	BasicBullet * b = ActivateBullet();
+	//	//cout << "bullet done activating" << endl;
+	//	if( b != NULL )
+	//	{
+	//		//cout << "FIRE" << endl;
+	//		b->Reset( position, facingDir * bulletSpeed );
+	//		b->gravTowardsPlayer = true;
+	//		b->gravity = V2d( 0, 1 );
+	//	}
+	//}
 }
 
 void Launcher::Reset()
@@ -267,6 +308,7 @@ void Launcher::SetGravity( sf::Vector2<double> &grav )
 
 void BasicBullet::Reset( V2d &pos, V2d &vel )
 {
+	//gravTowardsPlayer = false;
 	position = pos;
 	velocity = vel;
 	framesToLive = launcher->maxFramesToLive;
@@ -321,12 +363,32 @@ void BasicBullet::ResetSprite()
 	bva[index*4+3].position = Vector2f( 0, 0 );
 }
 
-
-
-
 void BasicBullet::UpdatePrePhysics()
 {
 	velocity += gravity / (double)slowMultiple;
+	//if( gravTowardsPlayer )
+	//{
+	//	double len = gravity.y;//length( gravity );
+	//	V2d diff = launcher->owner->player.position - position;
+	//	int t = 100;
+	//	diff += V2d( (rand() % t) - t / 2, (rand() % t) - t / 2);
+	//	V2d towards = normalize( diff );
+	//	V2d other( towards.y, -towards.x );
+
+	//	double off = dot( velocity, other );
+	//	double on = dot( velocity, towards );
+	//	//off *= .99;//1.0/2.0;//7.0 / 8.0;
+
+	//	velocity = on * towards + off * other;
+	//	
+	//	//double to = 
+
+	//	velocity += (towards * len ) / (double) slowMultiple;
+	//}
+	//else
+	//{
+	//	
+	//}
 }
 
 void BasicBullet::UpdatePostPhysics()
@@ -453,7 +515,10 @@ bool BasicBullet::ResolvePhysics( V2d vel )
 	//queryMode = "resolve";
 //	Query( this, owner->testTree, r );
 	//queryBullet = bullet;
-	launcher->owner->terrainTree->Query( this, r );
+
+
+	if( launcher->interactWithTerrain )
+		launcher->owner->terrainTree->Query( this, r );
 
 	return col;
 }
@@ -579,7 +644,8 @@ void SinBullet::UpdatePhysics()
 
 Enemy::Enemy( GameSession *own, EnemyType t )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
-	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL ), dead( false )
+	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL ), dead( false ),
+	suppressMonitor( false )
 {
 
 }
@@ -591,7 +657,7 @@ int Enemy::NumTotalBullets()
 
 void Enemy::AttemptSpawnMonitor()
 {
-	if( monitor != NULL )
+	if( monitor != NULL && !suppressMonitor )
 	{
 		if( !owner->player.CaptureMonitor( monitor ) )
 		{
@@ -604,6 +670,7 @@ void Enemy::AttemptSpawnMonitor()
 
 void Enemy::Reset()
 {
+	suppressMonitor = false;
 	slowMultiple = 1;
 	slowCounter = 1;
 	spawned = false;

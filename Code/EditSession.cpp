@@ -219,6 +219,7 @@ GateInfo::GateInfo()
 	:thickLine( sf::Quads, 4 )
 {
 	reformBehindYou = false;
+	numKeysRequired = -1;
 	thickLine[0].color = Color( 255, 0, 0, 255 );
 	thickLine[1].color = Color( 255, 0, 0, 255 );
 	thickLine[2].color = Color( 255, 0, 0, 255 );
@@ -284,7 +285,9 @@ void GateInfo::WriteFile( ofstream &of )
 		curr = curr->next;
 	}
 
-	of << (int)type << " " << poly0->writeIndex << " " 
+	//will eventually spit out the gate value
+	//but for now its just a constant to resave all the files
+	of << (int)type << " " << numKeysRequired << " " << poly0->writeIndex << " " 
 		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
 
 	if( reformBehindYou )
@@ -1463,10 +1466,12 @@ bool EditSession::OpenFile( string fileName )
 		{
 			int gType;
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+			int numKeysRequired;
 
 			string reformBehindYouStr;
 
 			is >> gType;
+			is >> numKeysRequired;
 			is >> poly0Index;
 			is >> vertexIndex0;
 			is >> poly1Index;
@@ -1517,6 +1522,7 @@ bool EditSession::OpenFile( string fileName )
 			GateInfoPtr gi( new GateInfo );
 			//GateInfo *gi = new GateInfo;
 			gi->reformBehindYou = reformBehindYou;
+			gi->numKeysRequired = numKeysRequired;
 			gi->poly0 = terrain0;
 			gi->poly1 = terrain1;
 			gi->vertexIndex0 = vertexIndex0;
