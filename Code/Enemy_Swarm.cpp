@@ -338,8 +338,13 @@ void SwarmMember::ResetEnemy()
 {
 	frame = 0;
 	dead = false;
+	active = true;
 	deathFrame = 0;
 	velocity = V2d( 0, 0 );
+	slowMultiple = 1;
+	slowCounter = 1;
+	receivedHit = NULL;
+	ClearSprite();
 }
 
 //spriteSize = Vector2f( 16, 16 );
@@ -355,9 +360,10 @@ Swarm::Swarm( GameSession *owner,
 	int blah = 200;
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
+		V2d offset( ( rand() % blah ) - blah, (rand() %blah) - blah );
 		members[i] = new SwarmMember( this, swarmVA, i, 
-			V2d( ( rand() % blah ) - blah, (rand() %blah) - blah ) );
-		members[i]->position = position;
+			 offset );
+		members[i]->position = position + offset;
 	}
 
 	spawnRect = Rect<double>( pos.x - 50, pos.y - 50, 100, 100 );
@@ -470,4 +476,11 @@ void Swarm::LoadEnemyState()
 
 void Swarm::ResetEnemy()
 {
+	dead = false;
+
+	for( int i = 0; i < NUM_SWARM; ++i )
+	{
+		members[i]->Reset();
+		members[i]->position = position + members[i]->targetOffset;
+	}
 }
