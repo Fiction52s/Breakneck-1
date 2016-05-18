@@ -55,7 +55,7 @@ struct BasicBullet : QuadTreeCollider
 	Tileset *ts;
 	int index;
 
-	
+	int bounceCount;
 	//sf::Vector2<double> tempadd;
 
 	bool col;
@@ -1134,6 +1134,102 @@ struct Cheetah : Enemy, GroundMoverHandler
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
+};
+
+struct Owl : Enemy, LauncherEnemy
+{
+	enum Action
+	{
+		NEUTRAL,
+		FIRE,
+		RETREAT
+	};
+
+	Owl( GameSession *owner, sf::Vector2i &pos,
+		int bulletSpeed,
+		int framesBetween,
+		bool facingRight );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+	void ActionEnded();
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	Action action;
+	std::map<Action,int> actionLength;
+	std::map<Action,int> animFactor;
+
+	int bulletSpeed;
+	int movementRadius;
+	int framesBetween;
+
+	CubicBezier flyingBez;
+
+	sf::Vector2i originalPos;
+
+
+	double flySpeed;
+	//sf::Vector2<double> basePos;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+
+	//int targetNode;
+	//bool forward;
+	//sf::Vector2<double>
+	int frame;
+
+	Launcher *launcher;
+
+	bool dying;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
 };
 
 struct BasicTurret : Enemy
