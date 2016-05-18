@@ -19,22 +19,28 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Bat::Bat( GameSession *owner, Vector2i pos, 
-	list<Vector2i> &pathParam, int p_bulletSpeed,
-	int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
+Owl::Owl( GameSession *owner, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
+	:Enemy( owner, EnemyType::OWL ), deathFrame( 0 ),flyingBez( 0, 0, 1, 1 )
 {
-	loop = p_loop;
-	//loop = false; //no looping on bat for now
+	movementRadius = 200;
+	flySpeed = 5.0;
 
-	fireCounter = 0;
+	action = NEUTRAL;
+	frame = 0;
+	actionLength[NEUTRAL] = 3;
+	actionLength[FIRE] = 60;
+	actionLength[RETREAT] = 3;
+
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
+	originalPos = pos;
+
+	facingRight = p_facingRight;
+
 	bulletSpeed = p_bulletSpeed;
-	nodeDistance = p_nodeDistance;
-	framesBetween = p_framesBetweenNodes;
+	framesBetween = p_framesBetweenFiring;
 
 	deathFrame = 0;
 	
@@ -45,77 +51,14 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-	
-	pathLength = pathParam.size() + 1;
-	if( loop )
-	{
-		
-		cout << "looping bat" << endl;
-		assert( false );
-		//tough cuz of set node distance from each other. for now don't use it.
-	}
-	else
-	{
-		//the road back
-		if( pathParam.size() > 0 )
-		{
-			pathLength += pathParam.size();
-		}
-	}
-	
-	path = new Vector2i[pathLength];
-	path[0] = pos;
-	path[pathLength-1] = pos;
 
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it) + pos;
-		++index;
-	}
-
-	if( pathLength == 1 )
-	{
-
-	}
-	else
-	{
-		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
-		++rit; //start at second item
-		
-		for(  ;rit != pathParam.rend(); ++rit )
-		{
-			path[index] = (*rit) + pos;
-			++index;
-		}
-	}
-
-	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 0, -150 );
-	V2d sqTest2 = position + V2d( 150, -150 );
-	V2d sqTest3 = position + V2d( 300, -150 );
-	V2d sqTest4 = position + V2d( 300, 0 );
-
-	for( int i = 0; i < pathLength - 1; ++i )
-	{
-		V2d A( path[i].x, path[i].y );
-		V2d B( path[i+1].x, path[i+1].y );
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), 60 );
-	}
-	testSeq.InitMovementDebug();
-	
-	frame = 0;
-
-	animationFactor = 5;
-
-	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_48x48.png", 48, 48 );
+	//ts = owner->GetTileset( "Owl.png", 80, 80 );
+	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
-	//position.x = 0;
-	//position.y = 0;
+
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -163,28 +106,46 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	//cout << "finish init" << endl;
 }
 
-void Bat::HandleEntrant( QuadTreeEntrant *qte )
+void Owl::HandleEntrant( QuadTreeEntrant *qte )
 {
 
 }
 
-
-
-void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
+void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
-	b->launcher->DeactivateBullet( b );
+	if( b->bounceCount == 2 )
+	{
+		b->launcher->DeactivateBullet( b );
+	}
+	else
+	{
+		V2d en = edge->Normal();
+		if( pos == edge->v0 )
+		{
+			en = normalize( b->position - pos );
+		}
+		else if( pos == edge->v1 )
+		{
+			en = normalize( b->position - pos );
+		}
+		double d = dot( b->velocity, en );
+		V2d ref = b->velocity - (2.0 * d * en);
+		b->velocity = ref;
+		cout << "ref: " << ref.x << ", " << ref.y << endl;
+		//b->velocity = -b->velocity;
+		b->bounceCount++;
+	}
 }
 
-void Bat::BulletHitPlayer(BasicBullet *b )
+void Owl::BulletHitPlayer(BasicBullet *b )
 {
 	owner->player.ApplyHit( b->launcher->hitboxInfo );
 }
 
-
-void Bat::ResetEnemy()
+void Owl::ResetEnemy()
 {
-	fireCounter = 0;
-	testSeq.Reset();
+	action = NEUTRAL;
+	//testSeq.Reset();
 	launcher->Reset();
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
@@ -194,8 +155,8 @@ void Bat::ResetEnemy()
 	dying = false;
 	deathFrame = 0;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	position.x = originalPos.x;
+	position.y = originalPos.y;
 	receivedHit = NULL;
 	
 
@@ -206,13 +167,51 @@ void Bat::ResetEnemy()
 	
 }
 
-void Bat::UpdatePrePhysics()
+void Owl::ActionEnded()
 {
-	if( testSeq.currMovement == NULL )
+	if( frame == actionLength[action] )
 	{
-		testSeq.Reset();
-		//testSeq.currMovement = testSeq.movementList;
-		//testSeq.currMovementStartTime = 0;
+		switch( action )
+		{
+		case NEUTRAL:
+			frame = 0;
+			break;
+		case RETREAT:
+			action = FIRE;
+			frame = 0;
+			break;
+		case FIRE:
+			frame = 0;
+			break;
+		}
+	}
+}
+
+
+void Owl::UpdatePrePhysics()
+{
+	ActionEnded();
+
+	Actor &player = owner->player;
+
+	switch( action )
+	{
+	case NEUTRAL:
+		cout << "neutral: " << frame << endl;
+		if( length( player.position - position ) < movementRadius )
+		{
+			action = RETREAT;
+			frame = 0;
+		}
+		break;
+	case FIRE:
+		cout << "fire: " << frame << endl;
+		break;
+	case RETREAT:
+		cout << "retreat: " << frame << endl;
+		break;
+	default:
+		cout << "what" << endl;
 	}
 
 	launcher->UpdatePrePhysics();
@@ -236,34 +235,19 @@ void Bat::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( !dying && !dead && fireCounter == framesBetween - 1 )// frame == 0 && slowCounter == 1 )
+	if( !dying && !dead && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
 	{
+		
 		launcher->position = position;
 		launcher->facingDir = normalize( owner->player.position - position );
-		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-		//	launcher->facingDir.y << endl;
 		launcher->Fire();
-		fireCounter = 0;
-		//testLauncher->Fire();
 	}
-
-	/*if( latchedOn )
-	{
-		basePos = owner->player.position + offsetPlayer;
-	}*/
 }
 
-void Bat::UpdatePhysics()
+void Owl::UpdatePhysics()
 {	
-	if( !dead && !dying )
+	if( !dead )
 	{
-		testSeq.Update();
-		position = testSeq.position;
-		PhysicsResponse();
-	}
-
-	launcher->UpdatePhysics();
-
 	if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
@@ -277,11 +261,21 @@ void Bat::UpdatePhysics()
 		slowMultiple = 1;
 		slowCounter = 1;
 	}
+	}
+
+	launcher->UpdatePhysics();
+
+	if( !dead && !dying )
+	{
+		//testSeq.Update();
+		//position = testSeq.position;
+		PhysicsResponse();
+	}
 
 	return;
 }
 
-void Bat::PhysicsResponse()
+void Owl::PhysicsResponse()
 {
 	if( !dead && !dying && receivedHit == NULL )
 	{
@@ -312,7 +306,7 @@ void Bat::PhysicsResponse()
 			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
-		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
+		//	cout << "Owl received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -330,12 +324,12 @@ void Bat::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Bat just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Owl just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
-void Bat::UpdatePostPhysics()
+void Owl::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
@@ -349,7 +343,6 @@ void Bat::UpdatePostPhysics()
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
-		++fireCounter;
 	
 		if( dying )
 		{
@@ -361,11 +354,6 @@ void Bat::UpdatePostPhysics()
 	else
 	{
 		slowCounter++;
-	}
-
-	if( frame == 10 * animationFactor )
-	{
-		frame = 0;
 	}
 
 	if( deathFrame == 60 && dying )
@@ -389,11 +377,11 @@ void Bat::UpdatePostPhysics()
 	launcher->UpdateSprites();
 }
 
-void Bat::UpdateSprite()
+void Owl::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 	}
 	if( dying )
@@ -413,12 +401,12 @@ void Bat::UpdateSprite()
 	}
 }
 
-void Bat::Draw( sf::RenderTarget *target )
+void Owl::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( monitor != NULL )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -477,7 +465,7 @@ void Bat::Draw( sf::RenderTarget *target )
 
 }
 
-void Bat::DrawMinimap( sf::RenderTarget *target )
+void Owl::DrawMinimap( sf::RenderTarget *target )
 {
 	if( !dead && !dying )
 	{
@@ -488,7 +476,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL && !suppressMonitor )
+		if( monitor != NULL )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
@@ -496,7 +484,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Bat::IHitPlayer()
+bool Owl::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
@@ -508,7 +496,7 @@ bool Bat::IHitPlayer()
 	return false;
 }
 
-void Bat::UpdateHitboxes()
+void Owl::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -526,7 +514,7 @@ void Bat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Bat::PlayerHitMe()
+pair<bool,bool> Owl::PlayerHitMe()
 {
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
@@ -582,7 +570,7 @@ pair<bool,bool> Bat::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Bat::PlayerSlowingMe()
+bool Owl::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -598,23 +586,16 @@ bool Bat::PlayerSlowingMe()
 	return false;
 }
 
-void Bat::DebugDraw( RenderTarget *target )
+void Owl::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( testSeq.currMovement != NULL )
-		{
-			if( testSeq.currMovement->vertices != NULL )
-			{
-				testSeq.currMovement->DebugDraw( target );
-			}
-		}
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
 	}
 }
 
-void Bat::SaveEnemyState()
+void Owl::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -624,7 +605,7 @@ void Bat::SaveEnemyState()
 	stored.position = position;
 }
 
-void Bat::LoadEnemyState()
+void Owl::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

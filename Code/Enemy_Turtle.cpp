@@ -125,7 +125,7 @@ void Turtle::HandleEntrant( QuadTreeEntrant *qte )
 
 void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
-
+	b->launcher->DeactivateBullet( b );
 }
 
 void Turtle::BulletHitPlayer(BasicBullet *b )
