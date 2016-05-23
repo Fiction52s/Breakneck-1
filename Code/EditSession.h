@@ -846,7 +846,18 @@ struct EditSession : GUIHandler
 	bool makingRect;
 	sf::Vector2i rectStart;
 
-
+	enum EnvType
+	{
+		MOUNTAIN,
+		GLADE,
+		DESERT,
+		COVE,
+		JUNGLE,
+		FORTRESS,
+		CORE
+	};
+	EnvType environmentType;
+	int envLevel;
 
 	void ExtendPolygon();
 	bool showPoints;

@@ -149,6 +149,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Edge *rayIgnoreEdge;
 	Edge *rayIgnoreEdge1;
 	bool quit;
+	int envType;
+	int envLevel;
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,
@@ -285,7 +287,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Transform groundTrans;
 	Camera cam;
 	Actor player;
-	sf::Shader polyShader;
+	int numPolyTypes;
+	sf::Shader *polyShaders;
 	sf::Shader cloneShader;
 	Edge **edges;
 	sf::Vector2<double> *points;
@@ -397,6 +400,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *decorLayer0va;
 		Tileset *ts_plant;
 		
+		enum TerrainType
+		{
+			MOUNTAIN,
+			GLADE,
+			DESERT,
+			COVE,
+			JUNGLE,
+			FORTRESS,
+			CORE,
+			Count
+		};
+		TerrainType terrainType;
 		
 		sf::VertexArray *terrainVA;
 		sf::VertexArray *grassVA;

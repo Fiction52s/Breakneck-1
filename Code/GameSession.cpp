@@ -1111,7 +1111,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//	framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
-				Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
+				//Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
+				Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );
 				//enemy->Monitor::MonitorType
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
@@ -1416,8 +1417,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed, 10 );
 
-				Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, clockwise );
+				//Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity, clockwise );
+
+				Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity );
 
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )
@@ -1717,6 +1721,12 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
+		int env;
+		is >> env;
+		envType = (EditSession::EnvType)env;
+
+		is >> envLevel;
+
 		is >> leftBounds;
 		is >> topBounds;
 		is >> boundsWidth;
@@ -1746,8 +1756,8 @@ bool GameSession::OpenFile( string fileName )
 
 		while( pointCounter < numPoints )
 		{
-			string matStr;
-			is >> matStr;
+			int matType;
+			is >> matType;
 
 			int polyPoints;
 			is >> polyPoints;
@@ -2014,6 +2024,7 @@ bool GameSession::OpenFile( string fileName )
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 			Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
 
+			
 
 			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
@@ -3347,7 +3358,11 @@ int GameSession::Run( string fileN )
 
 	fileName = fileN;
 	sf::Texture backTex;
-	backTex.loadFromFile( "bg01.png" );
+
+	stringstream ss;
+	ss << "bg_" << envType << "_" << envLevel << ".png";
+
+	backTex.loadFromFile( ss.str() );
 	background = Sprite( backTex );
 	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
 	background.setPosition( 0, 0 );
@@ -3467,7 +3482,12 @@ int GameSession::Run( string fileN )
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
 	//polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 512, 512 )->texture );
-	polyShader.setParameter( "u_texture", *GetTileset( "w1_terrain_1024x1024.png", 1024, 1024 )->texture );
+
+
+	Tileset *ts_poly = GetTileset( "w1_terrain_1024x1024.png", 1024, 1024 );
+	polyShader.setParameter( "u_texture", *(ts_poly->texture) );
+	polyShader.setParameter( "Resolution", 1920, 1080 );
+	polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
 	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
@@ -4428,7 +4448,7 @@ int GameSession::Run( string fileN )
 
 		//polyShader.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
 		//polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
-		polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
+		
 		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
 		//cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
 
@@ -4438,8 +4458,9 @@ int GameSession::Run( string fileN )
 
 		Vector2f playertest = ( botLeft - oldCamBotLeft ) / 5.f;
 		//cout << "test: " << playertest.x << ", " << playertest.y << endl;
-		polyShader.setParameter( "Resolution", 1920, 1080 );// window->getSize().x, window->getSize().y);
+		// window->getSize().x, window->getSize().y);
 		polyShader.setParameter( "zoom", cam.GetZoom() );
+		
 		polyShader.setParameter( "topLeft", botLeft ); //just need to change the name topleft eventually
 		polyShader.setParameter( "playertest", playertest );
 		//polyShader.setParameter( "zoom", cam.GetZoom() );
@@ -4541,7 +4562,32 @@ int GameSession::Run( string fileN )
 				rs.setFillColor( Color::Transparent );
 				preScreenTex->draw( rs );*/
 
-				preScreenTex->draw( *listVAIter->terrainVA, &polyShader );
+				Shader *pShader = NULL;
+				switch( listVAIter->terrainType )
+				{
+				case TestVA::TerrainType::MOUNTAIN:
+					pShader = &polyShader;
+					break;
+				case TestVA::TerrainType::GLADE:
+					pShader = &polyShader;
+					break;
+				case TestVA::TerrainType::DESERT:
+					pShader = &polyShader;
+					break;
+				case TestVA::TerrainType::COVE:
+					pShader = &polyShader;
+					break;
+				case TestVA::TerrainType::JUNGLE:
+					pShader = &polyShader;
+					break;
+				case TestVA::TerrainType::FORTRESS:
+					pShader = &polyShader;
+					break;
+				case TestVA::TerrainType::CORE:
+					pShader = &polyShader;
+					break;
+				}
+				preScreenTex->draw( *listVAIter->terrainVA, pShader );
 			}
 			else
 			{
@@ -5849,6 +5895,17 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 VertexArray * GameSession::SetupBorderQuads( int bgLayer, 
 	Edge *startEdge, Tileset *ts, int (*ValidEdge)(sf::Vector2<double> & ) )
 {
+	/*int worldNum = 0;
+	if( envType < 1 )
+	{
+		worldNum = 0;
+	}
+	else if( envType < 2 )
+	{
+
+	}*/
+	//int worldNum = (int)envType; //temporary
+
 	rayMode = "border_quads";
 	QuadTree *qt = NULL;
 	if( bgLayer == 0 )
@@ -5929,6 +5986,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 			for( int i = 0; i < numQuads; ++i )
 			{
+				//worldNum * 5
+				//add (worldNum * 5) to realIndex to get the correct borders
 				int realIndex = valid * 16 + varietyCounter;
 				IntRect sub = ts->GetSubRect( realIndex );
 

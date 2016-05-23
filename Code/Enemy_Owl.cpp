@@ -22,14 +22,19 @@ using namespace sf;
 Owl::Owl( GameSession *owner, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
 	:Enemy( owner, EnemyType::OWL ), deathFrame( 0 ),flyingBez( 0, 0, 1, 1 )
 {
-	movementRadius = 200;
+	//movementRadius = 300;
+	retreatRadius = 400;
+	chaseRadius = 600;
+	shotRadius = 800;
 	flySpeed = 5.0;
-
+	velocity = V2d( 0, 0 );
 	action = NEUTRAL;
 	frame = 0;
-	actionLength[NEUTRAL] = 3;
+	actionLength[NEUTRAL] = 30;
 	actionLength[FIRE] = 60;
-	actionLength[RETREAT] = 3;
+	actionLength[RETREAT] = 30;
+	actionLength[CHASE] = 30;
+	actionLength[REST] = 60;
 
 	receivedHit = NULL;
 	position.x = pos.x;
@@ -144,6 +149,7 @@ void Owl::BulletHitPlayer(BasicBullet *b )
 
 void Owl::ResetEnemy()
 {
+	velocity = V2d( 0, 0 );
 	action = NEUTRAL;
 	//testSeq.Reset();
 	launcher->Reset();
@@ -169,21 +175,59 @@ void Owl::ResetEnemy()
 
 void Owl::ActionEnded()
 {
+	Actor &player = owner->player;
+	double len = length( player.position - position );
 	if( frame == actionLength[action] )
 	{
-		switch( action )
+		if( action == FIRE )
 		{
-		case NEUTRAL:
-			frame = 0;
-			break;
-		case RETREAT:
-			action = FIRE;
-			frame = 0;
-			break;
-		case FIRE:
-			frame = 0;
-			break;
+			if( len > shotRadius )
+			{
+				action = REST;
+			}
+			else if( len > chaseRadius )
+			{
+				action = CHASE;
+				velocity = normalize( player.position - position ) * 2.5;
+			}
+			else if( len < retreatRadius )
+			{
+				action = RETREAT;
+				velocity = normalize( player.position - position ) * -2.5;
+			}
+			else
+			{
+				action = NEUTRAL;
+			}	
 		}
+		else if( action == REST )
+		{
+			if( len > shotRadius )
+			{
+				//stay the same
+			}
+			else if( len > chaseRadius )
+			{
+				action = CHASE;
+				velocity = normalize( player.position - position ) * 2.5;
+			}
+			else if( len < retreatRadius )
+			{
+				action = RETREAT;
+				velocity = normalize( player.position - position ) * -2.5;
+			}
+			else
+			{
+				action = NEUTRAL;
+				velocity = V2d( 0, 0 );
+			}	
+		}
+		else
+		{
+			action = FIRE;
+			velocity = V2d( 0, 0 );
+		}
+		frame = 0;
 	}
 }
 
@@ -198,21 +242,33 @@ void Owl::UpdatePrePhysics()
 	{
 	case NEUTRAL:
 		cout << "neutral: " << frame << endl;
-		if( length( player.position - position ) < movementRadius )
-		{
-			action = RETREAT;
-			frame = 0;
-		}
 		break;
 	case FIRE:
 		cout << "fire: " << frame << endl;
 		break;
 	case RETREAT:
 		cout << "retreat: " << frame << endl;
+		
+		break;
+	case CHASE:
+		cout << "chase" << endl;
+		break;
+	case REST:
+		cout << "rest" << endl;
 		break;
 	default:
 		cout << "what" << endl;
 	}
+
+
+	/*if( action == RETREAT )
+	{
+		velocity = normalize( player.position - position ) * -2.5;
+	}
+	else if( action == NEUTRAL )
+	{
+		velocity = normalize( player.position - position ) * 2.5;
+	}*/
 
 	launcher->UpdatePrePhysics();
 
@@ -235,9 +291,8 @@ void Owl::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( !dying && !dead && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
+	if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
 	{
-		
 		launcher->position = position;
 		launcher->facingDir = normalize( owner->player.position - position );
 		launcher->Fire();
@@ -262,6 +317,8 @@ void Owl::UpdatePhysics()
 		slowCounter = 1;
 	}
 	}
+
+	position += velocity / NUM_STEPS / (double)slowMultiple;
 
 	launcher->UpdatePhysics();
 

@@ -403,6 +403,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 		fullBounds[i].position = Vector2f( 0, 0 );
 	}
 
+	environmentType = MOUNTAIN;
 	grabbedObject = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
@@ -540,6 +541,12 @@ bool EditSession::OpenFile( string fileName )
 
 	if( is.is_open() )
 	{
+		int env;
+		is >> env;
+		environmentType = (EnvType)env;
+
+		is >> envLevel;
+
 		is >> leftBound;
 		is >> topBound;
 		is >> boundWidth;
@@ -1605,6 +1612,8 @@ void EditSession::WriteFile(string fileName)
 
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
+
+	of << (int)environmentType << " " << envLevel << endl;
 
 	of << leftBound << " " << topBound << " " << boundWidth << " " << boundHeight << endl;
 

@@ -1,3 +1,4 @@
+0 0
 -100000 -100000 200000 200000
 292
 -17551 483
@@ -372,27 +373,27 @@ patroller -12594 -856
 565 1
 -loop
 10
-basicturret 6 28 985.15223
+basicturret 6 28 985.152
 0
-10.00000
 10
-basicturret 6 28 718.15776
-0
-10.00000
 10
-basicturret 6 28 336.90568
+basicturret 6 28 718.158
 0
-10.00000
 10
-basicturret 6 28 142.68490
-0
-10.00000
 10
-foottrap 7 18 134.66779
+basicturret 6 28 336.906
 0
-foottrap 7 20 158.53906
+10
+10
+basicturret 6 28 142.685
 0
-foottrap 7 20 328.53906
+10
+10
+foottrap 7 18 134.668
+0
+foottrap 7 20 158.539
+0
+foottrap 7 20 328.539
 0
 patroller -13972 -3314
 0
@@ -440,9 +441,9 @@ healthfly -8625 -2666
 healthfly -10920 -4434
 0
 0
-basicturret 8 5 41.30097
+basicturret 8 5 41.301
 0
-10.00000
+10
 10
 healthfly -8437 -4256
 1
@@ -453,24 +454,24 @@ healthfly -7506 -4429
 healthfly -8022 -4402
 0
 0
-foottrap 10 6 222.29218
+foottrap 10 6 222.292
 0
-foottrap 10 6 533.10877
+foottrap 10 6 533.109
 0
-foottrap 10 6 830.48996
+foottrap 10 6 830.49
 0
-foottrap 10 5 256.67815
+foottrap 10 5 256.678
 0
-foottrap 10 5 576.20351
+foottrap 10 5 576.204
 0
-foottrap 10 5 920.38193
+foottrap 10 5 920.382
 0
-foottrap 10 15 44.99707
+foottrap 10 15 44.9971
 0
-foottrap 10 15 122.99707
+foottrap 10 15 122.997
 0
-goal 10 27 134.68400
-crawler 12 3 461.00098
+goal 10 27 134.684
+crawler 12 3 461.001
 0
 -clockwise
 3.00000
@@ -487,11 +488,11 @@ basicturret 12 7 163.73691
 10.00000
 10
 8
-2 2 11 4 10 -reform
-9 5 6 6 13 -reform
-2 7 26 2 5 -reform
-2 8 13 10 11 -reform
-2 10 18 11 15 -reform
-2 10 16 11 16 -reform
-1 10 36 11 8 -reform
-1 11 0 12 37 -reform
+2 3 2 11 4 10 -reform
+9 3 5 6 6 13 -reform
+2 3 7 26 2 5 -reform
+2 3 8 13 10 11 -reform
+2 3 10 18 11 15 -reform
+2 3 10 16 11 16 -reform
+1 3 10 36 11 8 -reform
+1 3 11 0 12 37 -reform
