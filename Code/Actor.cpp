@@ -5254,7 +5254,7 @@ void Actor::UpdatePrePhysics()
 	
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
-	cout << "before position: " << position.x << ", " << position.y << endl;
+	//cout << "before position: " << position.x << ", " << position.y << endl;
 	
 }
 
@@ -7287,7 +7287,7 @@ void Actor::UpdatePhysics()
 	{
 
 		movement = temp_groundSpeed / NUM_STEPS;
-		if( abs( movement ) < .00001 )
+		if( movement != 0 && abs( movement ) < .00001 )
 		{
 			//maybe here I should reduce the groundspeed to 0? 
 			//i seemed to solve the weird teleportation/super fast movement

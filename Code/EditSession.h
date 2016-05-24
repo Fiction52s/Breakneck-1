@@ -176,6 +176,8 @@ struct TerrainPolygon : ISelectable
 	void RemovePoint( TerrainPoint *tp );
 	void DestroyEnemies();
 	void ClearPoints();
+	void SetMaterialType(
+		int world, int variation );
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
 	//std::string material;
 	
@@ -246,7 +248,8 @@ struct TerrainPolygon : ISelectable
 		bool intersectAllowed,
 		int minDistance );
 
-
+	sf::Color selectCol;
+	sf::Color fillCol;
 
 
 	bool CanApply();
@@ -964,6 +967,7 @@ struct EditSession : GUIHandler
 	Panel *errorPopup;
 
 	Panel *gateSelectorPopup;
+	Panel *terrainSelectorPopup;
 
 	Panel *enemySelectPanel;
 
@@ -981,6 +985,8 @@ struct EditSession : GUIHandler
 	bool ConfirmationPop( const std::string &question );
 	void GridSelectPop( const std::string &type );
 	std::string tempGridResult;
+	int tempGridX;
+	int tempGridY;
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 

@@ -2942,6 +2942,32 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 80 ), Vector2f( 80, 40 ), "delete" );
 
+	terrainSelectorPopup = CreatePopupPanel( "terrainselector" );
+	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
+		"terraintypes", Vector2i( 20, 20 ), 7, 1, 64, 64, false, true );
+
+	
+	int numWorlds = 7;
+	sf::Texture terrainTile[7];
+	for( int worldI = 1; worldI <= numWorlds; ++worldI )
+	{
+		for( int i = 1; i <= 1; ++i )
+		{
+			stringstream ss;
+			ss << "terrain_" << worldI << "_0" << i << ".png";
+			terrainTile[worldI-1].loadFromFile( ss.str() );
+		}
+
+		terrainSel->Set( 
+			worldI-1, 
+			0, 
+			Sprite( terrainTile[worldI-1], sf::IntRect( 0,0, 64, 64 ) ),
+			"xx" );
+	}
+
+	
+
+
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
 	Color testColor( 0x75, 0x70, 0x90 );
@@ -4618,6 +4644,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 								}
+							}
+							else if( ev.key.code == Keyboard::E )
+							{
+								GridSelectPop( "terraintypeselect" );
+
+								Action * action = new ModifyTerrainTypeAction(
+									selectedBrush, tempGridX, tempGridY );
+								action->Perform();
+								doneActionStack.push_back( action );
 							}
 							break;
 						}
@@ -9163,13 +9198,15 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			cout << "not set" << endl;
 		}
 	}
-	else if( panel == gateSelectorPopup )
+	else if( panel == gateSelectorPopup || panel == terrainSelectorPopup )
 	{
 		cout << "callback!" << endl;
 		if( name != "not set" )
 		{
 			cout << "real result: " << name << endl;
 			tempGridResult = name;
+			tempGridX = gs->selectedX;
+			tempGridY = gs->selectedY;
 			//showPanel = NULL;
 		}
 		else
@@ -10502,6 +10539,17 @@ void EditSession::ErrorPop( const std::string &error )
 
 void EditSession::GridSelectPop( const std::string &type )
 {
+	Panel *panel = NULL;
+	if( type == "gateselect" )
+	{
+		panel = gateSelectorPopup;
+	}
+	else if( type == "terraintypeselect" )
+	{
+		panel = terrainSelectorPopup;
+	}
+
+	assert( panel != NULL );
 	//cout << "grid select popupppp" << endl;
 	int selectedIndex = -1;
 	tempGridResult = "nothing";
@@ -10528,8 +10576,8 @@ void EditSession::GridSelectPop( const std::string &type )
 
 
 
-	gateSelectorPopup->pos.x = uiMouse.x;
-	gateSelectorPopup->pos.y = uiMouse.y;
+	panel->pos.x = uiMouse.x;
+	panel->pos.y = uiMouse.y;
 
 	sf::Event ev;
 	while( !closePopup )
@@ -10554,7 +10602,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						cout << "are we here: " << uiMouse.x << ", " << uiMouse.y << endl;
-						gateSelectorPopup->Update( true, uiMouse.x, uiMouse.y );
+						panel->Update( true, uiMouse.x, uiMouse.y );
 						//if you click outside of the box, delete the gate
 						
 						//if( uiMouse.x < messagePopup->pos.x 
@@ -10568,7 +10616,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						cout << "are we real: " << uiMouse.x << ", " << uiMouse.y << endl;
-						gateSelectorPopup->Update( false, uiMouse.x, uiMouse.y );
+						panel->Update( false, uiMouse.x, uiMouse.y );
 					}
 					break;
 				}
@@ -10605,7 +10653,7 @@ void EditSession::GridSelectPop( const std::string &type )
 		w->setView( uiView );
 
 		//messagePopup->Draw( w );
-		gateSelectorPopup->Draw( w );
+		panel->Draw( w );
 
 		w->setView( v );
 
@@ -10653,7 +10701,11 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 		Panel *p = new Panel( "gate_popup", 200, 150, this );
 		return p;
 	}
-
+	else if( type == "terrainselector" )
+	{
+		Panel *p = new Panel( "terrain_popup", 400, 150, this );
+		return p;
+	}
 	return NULL;
 }
 

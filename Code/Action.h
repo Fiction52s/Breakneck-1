@@ -248,6 +248,26 @@ struct ModifyGateAction : Action
 	std::string newType;
 };
 
+struct ModifyTerrainTypeAction : Action
+{
+	ModifyTerrainTypeAction( Brush *brush,
+		int newTerrainWorld,
+		int newVariation );
+	void Perform();
+	void Undo();
+
+	int newTerrainWorld;
+	int newVariation;
+
+	std::map<TerrainPolygon*, 
+		std::pair<int,int>> 
+		terrainTypeMap;
+	Brush terrainBrush; 
+	//also has other stuff
+	//in it possibly
+	
+};
+
 
 
 #endif

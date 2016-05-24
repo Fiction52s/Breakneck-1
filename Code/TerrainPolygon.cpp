@@ -41,6 +41,8 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	pointStart = NULL;
 	pointEnd = NULL;
 	movingPointMode = false;
+	terrainWorldType = MOUNTAIN;
+	terrainVariation = 0;
 }
 
 bool TerrainPolygon::CanApply()
@@ -674,7 +676,7 @@ void TerrainPolygon::Move( SelectPtr &me, Vector2i move )
 
 void TerrainPolygon::SetLayer( int newLayer )
 {
-	Color testColor( 0x75, 0x70, 0x90 );
+	//Color testColor( 0x75, 0x70, 0x90 );
 	if( newLayer != layer )
 	{
 		layer = newLayer;
@@ -683,7 +685,7 @@ void TerrainPolygon::SetLayer( int newLayer )
 			VertexArray &v = *va;
 			for( int i = 0; i < vaSize; ++i )
 			{
-				v[i].color = testColor;
+				v[i].color = fillCol;
 			}
 		}
 		else if( newLayer == 1 )
@@ -691,6 +693,7 @@ void TerrainPolygon::SetLayer( int newLayer )
 			VertexArray &v = *va;
 			for( int i = 0; i < vaSize; ++i )
 			{
+				//gotta alter this soon
 				v[i].color = COLOR_BLUE;
 			}
 		}
@@ -750,13 +753,57 @@ void TerrainPolygon::UpdateBounds()
 	}
 }
 
+void TerrainPolygon::SetMaterialType( int world, int variation )
+{
+	terrainWorldType = (TerrainPolygon::TerrainWorldType)world;
+	terrainVariation = variation;
+	Color sCol( 0x77, 0xBB, 0xDD );
+	//factor in variation later
+	//Color newColor;
+	switch( world )
+	{
+	case 0:
+		fillCol = Color::Blue;
+		break;
+	case 1:
+		fillCol = Color::Green;
+		break;
+	case 2:
+		fillCol = Color::Yellow;
+		break;
+	case 3:
+		fillCol = Color( 100, 200, 200 );
+		break;
+	case 4:
+		fillCol = Color::Red;
+		break;
+	case 5:
+		fillCol = Color::Magenta;
+		break;
+	case 6:
+		fillCol = Color::White;
+		break;
+	}
+
+	selectCol = sCol;
+	//selectCol = 
+
+	int vCount = va->getVertexCount();
+	VertexArray &v = *va;
+	for( int i = 0; i < vCount; ++i )
+	{	
+		v[i].color = fillCol;
+	}
+}
+
 void TerrainPolygon::Finalize()
 {
 	finalized = true;
 	isGrassShowing = false;
 	//material = "mat";
-	terrainWorldType = MOUNTAIN;
-	terrainVariation = 0;
+
+	
+
 	lines = new sf::Vertex[numPoints*2+1];
 	
 	FixWinding();
@@ -797,6 +844,8 @@ void TerrainPolygon::Finalize()
 		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
 		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
 	}
+
+	SetMaterialType( terrainWorldType, terrainVariation );
 
 	//assert( tris.size() * 3 == points.size() );
 	delete cdt;
@@ -1450,7 +1499,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 void TerrainPolygon::SetSelected( bool select )
 {
 	selected = select;
-	Color selectCol( 0x77, 0xBB, 0xDD );
+	
 	if( selected )
 	{
 		for( int i = 0; i < vaSize; ++i )
@@ -1461,11 +1510,11 @@ void TerrainPolygon::SetSelected( bool select )
 	}
 	else
 	{
-		Color testColor( 0x75, 0x70, 0x90 );
+		//Color testColor( 0x75, 0x70, 0x90 );
 		for( int i = 0; i < vaSize; ++i )
 		{
 			VertexArray & v = *va;
-			v[i].color = testColor;
+			v[i].color = fillCol;
 		}
 
 		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )

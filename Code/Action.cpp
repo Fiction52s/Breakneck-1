@@ -619,5 +619,62 @@ void CompoundAction::Undo()
 	}
 }
 
+ModifyTerrainTypeAction::ModifyTerrainTypeAction( Brush *brush,
+	int p_newTerrainWorld, int p_newVariation )
+	:newTerrainWorld( p_newTerrainWorld ), newVariation( p_newVariation )
+{
+	terrainBrush = *brush;
 
+	for( SelectList::iterator it = terrainBrush.objects.begin(); 
+		it != terrainBrush.objects.end(); ++it )
+	{
+		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
+
+		if( (*it)->selectableType == ISelectable::TERRAIN )
+		{
+			terrainTypeMap[poly.get()] = pair<int,int>( (int)poly->terrainWorldType,
+				poly->terrainVariation );
+		}
+	}
+}
+
+void ModifyTerrainTypeAction::Perform()
+{
+	assert( session != NULL );
+	assert( !performed );
+
+
+	for( map<TerrainPolygon*, pair<int,int>>::iterator it = terrainTypeMap.begin();
+		it != terrainTypeMap.end(); ++it )
+	{
+		(*it).first->SetMaterialType( newTerrainWorld, newVariation );
+	}
+	//for( SelectList::iterator it = terrainBrush.objects.begin(); 
+	//	it != terrainBrush.objects.end(); ++it )
+	//{
+	//	if( (*it)->selectableType == ISelectable::TERRAIN )
+	//	{
+	//		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
+
+	//		poly->SetMaterialType( newTerrainWorld, newVariation );
+	//		//poly->
+	//	}
+	//}
+
+	performed = true;
+}
+
+void ModifyTerrainTypeAction::Undo()
+{
+	assert( session != NULL );
+	assert( performed );
+
+	for( map<TerrainPolygon*, pair<int,int>>::iterator it = terrainTypeMap.begin();
+		it != terrainTypeMap.end(); ++it )
+	{
+		(*it).first->SetMaterialType( (*it).second.first, (*it).second.second );
+	}
+
+	performed = false;
+}
 

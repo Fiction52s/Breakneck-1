@@ -1782,7 +1782,8 @@ bool GameSession::OpenFile( string fileName )
 			int matVariation;
 			is >> matVariation;
 
-			matWorld = 6;
+			
+			//matWorld = 6;
 			//matWorld = 2;
 			matSet.insert( pair<int,int>( matWorld, matVariation ) );
 
@@ -2134,7 +2135,7 @@ bool GameSession::OpenFile( string fileName )
 			
 			//cout << "before insert border: " << insertCount << endl;
 			borderTree->Insert( testva );
-
+			allVA.push_back( testva );
 
 			//cout << "after insert border: " << insertCount << endl;
 			insertCount++;
@@ -3556,7 +3557,7 @@ int GameSession::Run( string fileN )
 	polyShaders = new Shader[numPolyTypes];
 	map<pair<int,int>, int> indexConvert;
 
-	
+	//cout << "NUM POLY TYPES: " << numPolyTypes << endl;
 	int index = 0;
 	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
 	{
@@ -3569,6 +3570,8 @@ int GameSession::Run( string fileN )
 
 		int matWorld = (*it).first;
 		int matVariation = (*it).second;
+
+		cout << "matWorld: " << matWorld << ", matvar: " << matVariation << endl;
 
 		indexConvert[pair<int,int>(matWorld,matVariation)] = index;
 
@@ -3626,6 +3629,7 @@ int GameSession::Run( string fileN )
 
 		ss1 << ".png";
 
+		cout << "loading: " << ss1.str() << endl;
 		polyShaders[index].setParameter( "u_texture", 
 			*GetTileset( ss1.str(), 1024, 1024 )->texture );
 		//polyShaders[tType]->setParameter( "u_texture", *(ts_poly->texture) );
@@ -4728,7 +4732,7 @@ int GameSession::Run( string fileN )
 				rs.setFillColor( Color::Transparent );
 				preScreenTex->draw( rs );*/
 				assert( listVAIter->pShader != NULL );
-				preScreenTex->draw( *listVAIter->terrainVA, &polyShaders[0] );//listVAIter->pShader );
+				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->pShader );//listVAIter->pShader );
 			}
 			else
 			{
@@ -4738,10 +4742,10 @@ int GameSession::Run( string fileN )
 			//preScreenTex->draw( *listVAIter->va );
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
-			/*preScreenTex->draw( *listVAIter->wallva, rs );
+			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
-			preScreenTex->draw( *listVAIter->groundva, rs );*/
+			preScreenTex->draw( *listVAIter->groundva, rs );
 
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
