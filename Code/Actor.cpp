@@ -899,6 +899,7 @@ void Actor::CheckHoldJump()
 
 void Actor::UpdatePrePhysics()
 {
+	
 	if( !desperationMode )
 	{
 		if( drainCounter == drainCounterMax)
@@ -5253,6 +5254,7 @@ void Actor::UpdatePrePhysics()
 	
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
+	cout << "before position: " << position.x << ", " << position.y << endl;
 	
 }
 
@@ -5493,6 +5495,7 @@ bool Actor::CheckStandUp()
 
 bool Actor::ResolvePhysics( V2d vel )
 {
+//	cout << "vel: " << vel.x << ", " << vel.y << endl;
 	possibleEdgeCount = 0;
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	
@@ -7224,8 +7227,22 @@ void Actor::UpdateFullPhysics()
 
 }
 
+//int blah = 0;
 void Actor::UpdatePhysics()
 {
+	/*if( blah == 0 )
+	{
+		blah = 1;
+		cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+	}
+	else
+	{
+		blah = 0;
+	}
+	*/
+	//cout << "before position: " << position.x << ", " << position.y << endl;
+	
+	//cout << "position: " << position.x << ", " << position.y << endl;
 	if( movingGround != NULL )
 	{
 		position += movingGround->vel;// + normalize( movingGround->vel ) * .01;
@@ -7242,6 +7259,7 @@ void Actor::UpdatePhysics()
 
 	if( test )
 		return;
+	
 	
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
@@ -7267,11 +7285,28 @@ void Actor::UpdatePhysics()
 	}
 	else if( ground != NULL )
 	{
+
 		movement = temp_groundSpeed / NUM_STEPS;
+		if( abs( movement ) < .00001 )
+		{
+			//maybe here I should reduce the groundspeed to 0? 
+			//i seemed to solve the weird teleportation/super fast movement
+			//glitch from before but I'm still not quite sure how it works
+			//you just get a huge movement value somehow from having a really
+			//low groundspeed in a weird circumstance. hopefully it 
+			//doesn't cause any more problems
+			//happens mashing jump into a steep slope w/ an acute in-cut ceiling
+
+			//cout << "what movement: " << movement << ", " << temp_groundSpeed << endl;
+			return;
+		}
+		
 	}
 	else
 	{
 		movementVec = temp_velocity / NUM_STEPS;
+		//cout << "movelength: " << moveLength << endl;
+		//cout << "movevec: " << movementVec.x << ", " << movementVec.y << endl;
 	}
 
 	if( physicsOver )
@@ -8605,12 +8640,16 @@ void Actor::UpdatePhysics()
 		}
 		else
 		{
+			
 			V2d stealVec(0,0);
 			double moveLength = length( movementVec );
+			
 			V2d velDir = normalize( movementVec );
 			if( moveLength > maxMovement )
 			{
 				stealVec = velDir * ( moveLength - maxMovement);
+				//cout << "stealVecset: " << stealVec.x << ", " << stealVec.y << ", movelength: "
+				//	<< moveLength << endl;
 				movementVec = velDir * maxMovement;
 			}
 
@@ -8630,7 +8669,7 @@ void Actor::UpdatePhysics()
 				//	//velocity += minContact.movingPlat->vel * NUM_STEPS;
 				//}
 
-				//cout << "resolving: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+				
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;
@@ -8757,6 +8796,19 @@ void Actor::UpdatePhysics()
 				
 				//extraVel = V2d( 0, 0 );
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
+				//if( length( newVel ) < .0001 )
+				//{
+				//	//velocity = V2d( 0, 0 );
+				//	break;
+				//}
+				//if( length( extraVel ) < .0001 )
+				//{
+				//	extraVel = V2d( 0, 0 ); //weird bug fix?
+				//}
+				//cout << "newVel: " << newVel.x << ", " << newVel.y << ", extraVel: "
+				//	<< extraVel.x << ", " << extraVel.y << endl;
+				
+				
 				//if( minContact.movingPlat != NULL )
 				//{
 				//	if( dot( newVel, normalize( minContact.movingPlat->vel ) ) < minContact.movingPlat->speed )
@@ -9262,11 +9314,13 @@ void Actor::UpdatePhysics()
 				}
 				//else
 				{
+					
 					velocity = newVel;
+					
 				}
 				
 				
-				//cout << "setting newvel: " << velocity.x << ", " << velocity.y << endl;
+				
 
 			}
 			else
@@ -9277,6 +9331,10 @@ void Actor::UpdatePhysics()
 			if( length( extraVel ) > 0 )
 			{
 				movementVec = stealVec + extraVel;
+				//cout << "steal: " << stealVec.x << ", " << stealVec.y << endl;
+				//cout << "movement: " << movementVec.x << ", " << movementVec.y 
+				//	<< ", steal: " << stealVec.x << ", " << stealVec.y << ", extra: "
+				//	<< extraVel.x << ", " << extraVel.y << endl;
 			//	cout << "x1: " << movementVec.x << ", " << movementVec.y << endl;
 			}
 
@@ -9296,6 +9354,8 @@ void Actor::UpdatePhysics()
 	{
 		cout << "not grounded now" << endl;
 	}*/
+
+	
 	PhysicsResponse();
 }
 
@@ -10035,6 +10095,7 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
+	
 	//cout << "action: " << action << endl;
 	test = false;
 

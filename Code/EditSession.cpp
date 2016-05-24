@@ -574,7 +574,15 @@ bool EditSession::OpenFile( string fileName )
 		{
 			PolyPtr poly(  new TerrainPolygon( &grassTex ) );
 			polygons.push_back( poly );
-			is >> poly->material;
+
+			int matWorld;
+			int matVariation;
+			is >> matWorld;
+			is >> matVariation;
+			
+			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
+			poly->terrainVariation = matVariation;
+			
 
 			int polyPoints;
 			is >> polyPoints;
@@ -681,7 +689,14 @@ bool EditSession::OpenFile( string fileName )
 		{
 			PolyPtr poly( new TerrainPolygon( &grassTex ) );
 			polygons.push_back( poly );
-			is >> poly->material;
+
+			int matWorld;
+			int matVariation;
+			is >> matWorld;
+			is >> matVariation;
+
+			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
+			poly->terrainVariation = matVariation;
 
 			int polyPoints;
 			is >> polyPoints;
@@ -721,7 +736,14 @@ bool EditSession::OpenFile( string fileName )
 			PolyPtr poly( new TerrainPolygon( &grassTex ) );
 			//poly->layer = 1;
 			polygons.push_back( poly );
-			is >> poly->material;
+
+			int matWorld;
+			int matVariation;
+			is >> matWorld;
+			is >> matVariation;
+			
+			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
+			poly->terrainVariation = matVariation;
 
 			int polyPoints;
 			is >> polyPoints;
@@ -1685,7 +1707,8 @@ void EditSession::WriteFile(string fileName)
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->material << endl;
+			of << (*it)->terrainWorldType << " " 
+				<< (*it)->terrainVariation << endl;
 
 			of <<  (*it)->numPoints << endl;
 
@@ -1708,7 +1731,8 @@ void EditSession::WriteFile(string fileName)
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->material << endl;
+			of << (*it)->terrainWorldType << " " 
+				<< (*it)->terrainVariation << endl;
 			
 			of <<  (*it)->numPoints << endl;
 
@@ -1740,7 +1764,8 @@ void EditSession::WriteFile(string fileName)
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->material << endl;
+			of << (*it)->terrainWorldType << " " 
+				<< (*it)->terrainVariation << endl;
 
 			of <<  (*it)->numPoints << endl;
 

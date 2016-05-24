@@ -151,6 +151,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool quit;
 	int envType;
 	int envLevel;
+
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,
@@ -289,6 +290,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Actor player;
 	int numPolyTypes;
 	sf::Shader *polyShaders;
+	//std::map<int,sf::Shader> *polyShaderMap[
+	//	TerrainPolygon::TerrainType::Count];
 	sf::Shader cloneShader;
 	Edge **edges;
 	sf::Vector2<double> *points;
@@ -342,6 +345,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	const static int NUM_CLOUDS = 5;
 	sf::Sprite clouds[NUM_CLOUDS];
 	Tileset *cloudTileset;
+
+	std::set<std::pair<int,int>> matSet;
 
 	Critical *drawCritical;
 	static int IsFlatGround( sf::Vector2<double> &normal );
@@ -400,18 +405,13 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *decorLayer0va;
 		Tileset *ts_plant;
 		
-		enum TerrainType
-		{
-			MOUNTAIN,
-			GLADE,
-			DESERT,
-			COVE,
-			JUNGLE,
-			FORTRESS,
-			CORE,
-			Count
-		};
-		TerrainType terrainType;
+		sf::Shader *pShader;
+		//TerrainPolygon::TerrainType terrainType;
+		int terrainWorldType;
+		int terrainVariation;
+		//int terrainType;
+		//EditSession
+		//TerrainPolygon::material
 		
 		sf::VertexArray *terrainVA;
 		sf::VertexArray *grassVA;
@@ -425,6 +425,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	TestVA *listVA;
 	std::string queryMode;
 	QuadTree *borderTree;
+	std::list<TestVA*> allVA;
 	int numBorders;
 
 	sf::Vector2f lastViewSize;

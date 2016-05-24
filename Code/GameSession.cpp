@@ -179,13 +179,6 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
-	if (!polyShader.loadFromFile("mat_shader2.frag", sf::Shader::Fragment ) )
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
-		usePolyShader = false;
-	}
 
 	if( !underShader.loadFromFile( "under_shader.frag", sf::Shader::Fragment ) )
 	{
@@ -569,8 +562,13 @@ bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
 	is >> numMovingPlats;
 	for( int i = 0; i < numMovingPlats; ++i )
 	{
-		string matStr;
-		is >> matStr;
+		//dont forget this!
+		//int matType;
+		//is >> matType;
+
+		//matSet.insert( matType );
+		//string matStr;
+		//is >> matStr;
 
 
 		int polyPoints;
@@ -643,14 +641,20 @@ bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
 
 bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 {
+	
 	int bgPlatformNum0;
 	is >> bgPlatformNum0;
 	for( int i = 0; i < bgPlatformNum0; ++i )
 	{
 		//layer is 1
 
-		string material;
-		is >> material;
+		int matWorld;
+		int matVariation;
+		
+		is >> matWorld;
+		is >> matVariation;
+
+		matSet.insert( pair<int,int>(matWorld,matVariation) );
 
 		int polyPoints;
 		is >> polyPoints;
@@ -780,8 +784,24 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 
 		//ground
 
+		stringstream ss;
+
+		ss << "Borders/bor_" << matWorld + 1 << "_";
+
+		if( envLevel < 10 )
+		{
+			ss << "0" << matVariation + 1;
+		}
+		else
+		{
+			ss << matVariation + 1;
+		}
+
+		ss << ".png";
+		
 		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-		Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
+		Tileset *ts_border = GetTileset( ss.str(), 8, 128 );
+
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
 		VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
@@ -817,7 +837,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 			
 		//cout << "before insert border: " << insertCount << endl;
 		borderTree->Insert( testva );
-
+		allVA.push_back( testva );
 
 		//cout << "after insert border: " << insertCount << endl;
 		//insertCount++;
@@ -1721,11 +1741,11 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
-		int env;
-		is >> env;
-		envType = (EditSession::EnvType)env;
+		is >> envType;
 
 		is >> envLevel;
+
+		//cout << "just read it: " << envType << ", " << envLevel << endl;
 
 		is >> leftBounds;
 		is >> topBounds;
@@ -1756,8 +1776,15 @@ bool GameSession::OpenFile( string fileName )
 
 		while( pointCounter < numPoints )
 		{
-			int matType;
-			is >> matType;
+			int matWorld;
+			is >> matWorld;
+
+			int matVariation;
+			is >> matVariation;
+
+			matWorld = 6;
+			//matWorld = 2;
+			matSet.insert( pair<int,int>( matWorld, matVariation ) );
 
 			int polyPoints;
 			is >> polyPoints;
@@ -2022,7 +2049,24 @@ bool GameSession::OpenFile( string fileName )
 			//ground
 
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
+			//Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
+			stringstream ss;
+
+			ss << "Borders/bor_" << matWorld + 1 << "_";
+
+			if( envLevel < 10 )
+			{
+				ss << "0" << matVariation + 1;
+			}
+			else
+			{
+				ss << matVariation + 1;
+			}
+
+			ss << ".png";
+		
+			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
+			Tileset *ts_border = GetTileset( ss.str(), 8, 128 );
 
 			
 
@@ -2083,6 +2127,9 @@ bool GameSession::OpenFile( string fileName )
 			testva->triva = triVA;
 			testva->plantva = plantVA;
 			testva->ts_plant = ts_plant;
+			testva->terrainWorldType = matWorld;
+			testva->terrainVariation = matVariation;
+
 			//testva->flowva = energyFlowVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
@@ -3357,16 +3404,7 @@ int GameSession::Run( string fileN )
 	activeSequence = NULL;
 
 	fileName = fileN;
-	sf::Texture backTex;
-
-	stringstream ss;
-	ss << "bg_" << envType << "_" << envLevel << ".png";
-
-	backTex.loadFromFile( ss.str() );
-	background = Sprite( backTex );
-	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
-	background.setPosition( 0, 0 );
-	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 960, 540 ) );
+	
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
@@ -3400,6 +3438,37 @@ int GameSession::Run( string fileN )
 	bool bdrawdraw = false;
 
 	OpenFile( fileName );
+
+	sf::Texture backTex;
+
+	stringstream ss;
+
+
+	int eType = envLevel + 1; //adjust for alex naming -_-
+	ss << "Backgrounds/bg_" << envType + 1 << "_";
+	if( envLevel < 10 )
+	{
+		ss << "0" << eType;
+	}
+	else
+	{
+		ss << eType;
+	}
+
+	ss << ".png";
+	 
+	cout << "back tex: " << ss.str() << endl;
+	cout << "envtype: " << envType << ", envLevel: " << envLevel << endl;
+	if( !backTex.loadFromFile( ss.str() ) )
+	{
+		assert( 0 && "error loading background texture" );
+	}
+	background = Sprite( backTex );
+	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
+	background.setPosition( 0, 0 );
+	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 1920, 1080 ) );
+
+
 	
 	flowShader.setParameter( "goalPos", goalPos.x, goalPos.y );
 	
@@ -3483,15 +3552,107 @@ int GameSession::Run( string fileN )
 	//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
 	//polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 512, 512 )->texture );
 
+	numPolyTypes = matSet.size();
+	polyShaders = new Shader[numPolyTypes];
+	map<pair<int,int>, int> indexConvert;
 
-	Tileset *ts_poly = GetTileset( "w1_terrain_1024x1024.png", 1024, 1024 );
-	polyShader.setParameter( "u_texture", *(ts_poly->texture) );
+	
+	int index = 0;
+	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
+	{
+		if (!polyShaders[index].loadFromFile("mat_shader2.frag", sf::Shader::Fragment ) )
+		{
+			cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "polygon shader not loaded" );
+			usePolyShader = false;
+		}
+
+		int matWorld = (*it).first;
+		int matVariation = (*it).second;
+
+		indexConvert[pair<int,int>(matWorld,matVariation)] = index;
+
+		//TerrainPolygon::TerrainType tType = (TerrainPolygon::TerrainType)(*it);
+
+		//tType = //TerrainPolygon::TerrainType::DESERT0;
+
+		stringstream ss1;
+		ss1 << "terrain_";
+		
+		ss1 << matWorld + 1 << "_";
+		if( matVariation < 10 )
+		{
+			ss1 << "0" << matVariation + 1;
+		}
+		else
+		{
+			ss1 << matVariation + 1;
+		}
+		/*switch( tType )
+		{
+		case TerrainPolygon::TerrainType::MOUNTAIN0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_1_01.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::GLADE0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_2_01.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::GLADE1:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_2_02.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::DESERT0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_3_01.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::COVE0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_4_01.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::JUNGLE0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_5_01.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::FORTRESS0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_6_01.png", 1024, 1024 )->texture );
+			break;
+		case TerrainPolygon::TerrainType::CORE0:
+			polyShaders[index].setParameter( "u_texture", 
+				*GetTileset( "terrain_7_01.png", 1024, 1024 )->texture );
+			break;
+		}*/
+
+		ss1 << ".png";
+
+		polyShaders[index].setParameter( "u_texture", 
+			*GetTileset( ss1.str(), 1024, 1024 )->texture );
+		//polyShaders[tType]->setParameter( "u_texture", *(ts_poly->texture) );
+		polyShaders[index].setParameter( "Resolution", 1920, 1080 );
+		polyShaders[index].setParameter( "AmbientColor", 1, 1, 1, 1 );
+		polyShaders[index].setParameter( "u_normals", *undergroundTilesetNormal->texture );
+
+		
+		++index;
+	}
+
+	for( list<TestVA*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
+	{
+		int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
+		(*it)->terrainVariation)];
+		cout << "real index: " << realIndex << endl;
+		(*it)->pShader = &polyShaders[realIndex];
+	}
+
+	/*polyShader.setParameter( "u_texture", *(ts_poly->texture) );
 	polyShader.setParameter( "Resolution", 1920, 1080 );
 	polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
+	polyShader.setParameter( "u_normals", *undergroundTilesetNormal->texture );*///*GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
 	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
 	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
-	polyShader.setParameter( "u_normals", *undergroundTilesetNormal->texture );//*GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
+	
 	//polyShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
@@ -3522,7 +3683,8 @@ int GameSession::Run( string fileN )
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );
 
-	stringstream ss;
+	//stringstream ss;
+	ss.clear(); //needed?
 
 	int frameCounterWait = 20;
 	int frameCounter = 0;
@@ -4459,10 +4621,14 @@ int GameSession::Run( string fileN )
 		Vector2f playertest = ( botLeft - oldCamBotLeft ) / 5.f;
 		//cout << "test: " << playertest.x << ", " << playertest.y << endl;
 		// window->getSize().x, window->getSize().y);
-		polyShader.setParameter( "zoom", cam.GetZoom() );
 		
-		polyShader.setParameter( "topLeft", botLeft ); //just need to change the name topleft eventually
-		polyShader.setParameter( "playertest", playertest );
+		for( int i = 0; i < numPolyTypes; ++i )
+		{
+			polyShaders[i].setParameter( "zoom", cam.GetZoom() );
+			polyShaders[i].setParameter( "topLeft", botLeft ); //just need to change the name topleft eventually
+			polyShaders[i].setParameter( "playertest", playertest );
+		}
+		
 		//polyShader.setParameter( "zoom", cam.GetZoom() );
 		//polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 		//	view.getCenter().y + view.getSize().y / 2 );
@@ -4561,33 +4727,8 @@ int GameSession::Run( string fileN )
 				rs.setOutlineThickness( 3 );
 				rs.setFillColor( Color::Transparent );
 				preScreenTex->draw( rs );*/
-
-				Shader *pShader = NULL;
-				switch( listVAIter->terrainType )
-				{
-				case TestVA::TerrainType::MOUNTAIN:
-					pShader = &polyShader;
-					break;
-				case TestVA::TerrainType::GLADE:
-					pShader = &polyShader;
-					break;
-				case TestVA::TerrainType::DESERT:
-					pShader = &polyShader;
-					break;
-				case TestVA::TerrainType::COVE:
-					pShader = &polyShader;
-					break;
-				case TestVA::TerrainType::JUNGLE:
-					pShader = &polyShader;
-					break;
-				case TestVA::TerrainType::FORTRESS:
-					pShader = &polyShader;
-					break;
-				case TestVA::TerrainType::CORE:
-					pShader = &polyShader;
-					break;
-				}
-				preScreenTex->draw( *listVAIter->terrainVA, pShader );
+				assert( listVAIter->pShader != NULL );
+				preScreenTex->draw( *listVAIter->terrainVA, &polyShaders[0] );//listVAIter->pShader );
 			}
 			else
 			{
@@ -5628,159 +5769,159 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	float windowy = 1080;//window->getSize().y;
 	//cout << "windowx: " << windowx << ", " << windowy << endl;
 
-	if( lightsAtOnce > 0 )
-	{
-		float depth0 = touchedLights[0]->depth;
-		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-		
+	//if( lightsAtOnce > 0 )
+	//{
+	//	float depth0 = touchedLights[0]->depth;
+	//	Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
+	//	
 
-		Vector3f pos0( vi0.x / windowx, -1 + vi0.y / windowy, depth0 ); 
-		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
-		Color c0 = touchedLights[0]->color;
-		
-		//underShader.setParameter( "On0", true );
-		on[0] = true;
-		polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		polyShader.setParameter( "Radius0", touchedLights[0]->radius );
-		polyShader.setParameter( "Brightness0", touchedLights[0]->brightness);
-		
-	}
-	if( lightsAtOnce > 1 )
-	{
-		float depth1 = touchedLights[1]->depth;
-		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / windowx, -1 + vi1.y / windowy, depth1 ); 
-		//Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, depth1 ); 
-		Color c1 = touchedLights[1]->color;
-		
-		on[1] = true;
-		//underShader.setParameter( "On1", true );
-		polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		polyShader.setParameter( "Radius1", touchedLights[1]->radius );
-		polyShader.setParameter( "Brightness1", touchedLights[1]->brightness);
-	}
-	if( lightsAtOnce > 2 )
-	{
-		float depth2 = touchedLights[2]->depth;
-		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / windowx, -1 + vi2.y / windowy, depth2 ); 
-		//Vector3f pos2( vi2.x / (float)window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, depth2 ); 
-		Color c2 = touchedLights[2]->color;
-		
-		on[2] = true;
-		//underShader.setParameter( "On2", true );
-		polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		polyShader.setParameter( "Radius2", touchedLights[2]->radius );
-		polyShader.setParameter( "Brightness2", touchedLights[2]->brightness);
-	}
-	if( lightsAtOnce > 3 )
-	{
-		float depth3 = touchedLights[3]->depth;
-		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
-		Vector3f pos3( vi3.x / windowx, -1 + vi3.y / windowy, depth3 ); 
-		//Vector3f pos3( vi3.x / (float)window->getSize().x, ((float)window->getSize().y - vi3.y) / (float)window->getSize().y, depth3 ); 
-		Color c3 = touchedLights[3]->color;
-		
-		on[3] = true;
-		//underShader.setParameter( "On3", true );
-		polyShader.setParameter( "LightPos3", pos3 );
-		polyShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
-		polyShader.setParameter( "Radius3", touchedLights[3]->radius );
-		polyShader.setParameter( "Brightness3", touchedLights[3]->brightness);
-	}
-	if( lightsAtOnce > 4 )
-	{
-		float depth4 = touchedLights[4]->depth;
-		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
-		Vector3f pos4( vi4.x / windowx, -1 + vi4.y / windowy, depth4 ); 
-		//Vector3f pos4( vi4.x / (float)window->getSize().x, ((float)window->getSize().y - vi4.y) / (float)window->getSize().y, depth4 ); 
-		Color c4 = touchedLights[4]->color;
-		
-		
-		on[4] = true;
-		polyShader.setParameter( "LightPos4", pos4 );
-		polyShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
-		polyShader.setParameter( "Radius4", touchedLights[4]->radius );
-		polyShader.setParameter( "Brightness4", touchedLights[4]->brightness);
-	}
-	if( lightsAtOnce > 5 )
-	{
-		float depth5 = touchedLights[5]->depth;
-		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
-		Vector3f pos5( vi5.x / windowx, -1 + vi5.y / windowy, depth5 ); 
-		//Vector3f pos5( vi5.x / (float)window->getSize().x, ((float)window->getSize().y - vi5.y) / (float)window->getSize().y, depth5 ); 
-		Color c5 = touchedLights[5]->color;
-		
-		
-		on[5] = true;
-		polyShader.setParameter( "LightPos5", pos5 );
-		polyShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
-		polyShader.setParameter( "Radius5", touchedLights[5]->radius );
-		polyShader.setParameter( "Brightness5", touchedLights[5]->brightness);
-	}
-	if( lightsAtOnce > 6 )
-	{
-		float depth6 = touchedLights[6]->depth;
-		Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
-		Vector3f pos6( vi6.x / windowx, -1 + vi6.y / windowy, depth6 ); 
-		//Vector3f pos6( vi6.x / (float)window->getSize().x, ((float)window->getSize().y - vi6.y) / (float)window->getSize().y, depth6 ); 
-		Color c6 = touchedLights[6]->color;
-		
-		on[6] = true;
-		polyShader.setParameter( "LightPos6", pos6 );
-		polyShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
-		polyShader.setParameter( "Radius6", touchedLights[0]->radius );
-		polyShader.setParameter( "Brightness6", touchedLights[0]->brightness);
-	}
-	if( lightsAtOnce > 7 )
-	{
-		float depth7 = touchedLights[7]->depth;
-		Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
-		Vector3f pos7( vi7.x / windowx, -1 + vi7.y / windowy, depth7 ); 
-		//Vector3f pos7( vi7.x / (float)window->getSize().x, ((float)window->getSize().y - vi7.y) / (float)window->getSize().y, depth7 ); 
-		Color c7 = touchedLights[7]->color;
-		
-		on[7] = true;
-		polyShader.setParameter( "LightPos7", pos7 );
-		polyShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
-		polyShader.setParameter( "Radius7", touchedLights[7]->radius );
-		polyShader.setParameter( "Brightness7", touchedLights[7]->brightness);
-	}
-	if( lightsAtOnce > 8 )
-	{
-		float depth8 = touchedLights[8]->depth;
-		Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
-		Vector3f pos8( vi8.x / windowx, -1 + vi8.y / windowy, depth8 ); 
-		//Vector3f pos8( vi8.x / (float)window->getSize().x, ((float)window->getSize().y - vi8.y) / (float)window->getSize().y, depth8 ); 
-		Color c8 = touchedLights[8]->color;
-		
-		on[8] = true;
-		polyShader.setParameter( "LightPos8", pos8 );
-		polyShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
-		polyShader.setParameter( "Radius8", touchedLights[8]->radius );
-		polyShader.setParameter( "Brightness8", touchedLights[8]->brightness);
-	}
+	//	Vector3f pos0( vi0.x / windowx, -1 + vi0.y / windowy, depth0 ); 
+	//	//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
+	//	Color c0 = touchedLights[0]->color;
+	//	
+	//	//underShader.setParameter( "On0", true );
+	//	on[0] = true;
+	//	polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
+	//	polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius0", touchedLights[0]->radius );
+	//	polyShader.setParameter( "Brightness0", touchedLights[0]->brightness);
+	//	
+	//}
+	//if( lightsAtOnce > 1 )
+	//{
+	//	float depth1 = touchedLights[1]->depth;
+	//	Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) ); 
+	//	Vector3f pos1( vi1.x / windowx, -1 + vi1.y / windowy, depth1 ); 
+	//	//Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, depth1 ); 
+	//	Color c1 = touchedLights[1]->color;
+	//	
+	//	on[1] = true;
+	//	//underShader.setParameter( "On1", true );
+	//	polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
+	//	polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius1", touchedLights[1]->radius );
+	//	polyShader.setParameter( "Brightness1", touchedLights[1]->brightness);
+	//}
+	//if( lightsAtOnce > 2 )
+	//{
+	//	float depth2 = touchedLights[2]->depth;
+	//	Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
+	//	Vector3f pos2( vi2.x / windowx, -1 + vi2.y / windowy, depth2 ); 
+	//	//Vector3f pos2( vi2.x / (float)window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, depth2 ); 
+	//	Color c2 = touchedLights[2]->color;
+	//	
+	//	on[2] = true;
+	//	//underShader.setParameter( "On2", true );
+	//	polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
+	//	polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius2", touchedLights[2]->radius );
+	//	polyShader.setParameter( "Brightness2", touchedLights[2]->brightness);
+	//}
+	//if( lightsAtOnce > 3 )
+	//{
+	//	float depth3 = touchedLights[3]->depth;
+	//	Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
+	//	Vector3f pos3( vi3.x / windowx, -1 + vi3.y / windowy, depth3 ); 
+	//	//Vector3f pos3( vi3.x / (float)window->getSize().x, ((float)window->getSize().y - vi3.y) / (float)window->getSize().y, depth3 ); 
+	//	Color c3 = touchedLights[3]->color;
+	//	
+	//	on[3] = true;
+	//	//underShader.setParameter( "On3", true );
+	//	polyShader.setParameter( "LightPos3", pos3 );
+	//	polyShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius3", touchedLights[3]->radius );
+	//	polyShader.setParameter( "Brightness3", touchedLights[3]->brightness);
+	//}
+	//if( lightsAtOnce > 4 )
+	//{
+	//	float depth4 = touchedLights[4]->depth;
+	//	Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
+	//	Vector3f pos4( vi4.x / windowx, -1 + vi4.y / windowy, depth4 ); 
+	//	//Vector3f pos4( vi4.x / (float)window->getSize().x, ((float)window->getSize().y - vi4.y) / (float)window->getSize().y, depth4 ); 
+	//	Color c4 = touchedLights[4]->color;
+	//	
+	//	
+	//	on[4] = true;
+	//	polyShader.setParameter( "LightPos4", pos4 );
+	//	polyShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius4", touchedLights[4]->radius );
+	//	polyShader.setParameter( "Brightness4", touchedLights[4]->brightness);
+	//}
+	//if( lightsAtOnce > 5 )
+	//{
+	//	float depth5 = touchedLights[5]->depth;
+	//	Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
+	//	Vector3f pos5( vi5.x / windowx, -1 + vi5.y / windowy, depth5 ); 
+	//	//Vector3f pos5( vi5.x / (float)window->getSize().x, ((float)window->getSize().y - vi5.y) / (float)window->getSize().y, depth5 ); 
+	//	Color c5 = touchedLights[5]->color;
+	//	
+	//	
+	//	on[5] = true;
+	//	polyShader.setParameter( "LightPos5", pos5 );
+	//	polyShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius5", touchedLights[5]->radius );
+	//	polyShader.setParameter( "Brightness5", touchedLights[5]->brightness);
+	//}
+	//if( lightsAtOnce > 6 )
+	//{
+	//	float depth6 = touchedLights[6]->depth;
+	//	Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
+	//	Vector3f pos6( vi6.x / windowx, -1 + vi6.y / windowy, depth6 ); 
+	//	//Vector3f pos6( vi6.x / (float)window->getSize().x, ((float)window->getSize().y - vi6.y) / (float)window->getSize().y, depth6 ); 
+	//	Color c6 = touchedLights[6]->color;
+	//	
+	//	on[6] = true;
+	//	polyShader.setParameter( "LightPos6", pos6 );
+	//	polyShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius6", touchedLights[0]->radius );
+	//	polyShader.setParameter( "Brightness6", touchedLights[0]->brightness);
+	//}
+	//if( lightsAtOnce > 7 )
+	//{
+	//	float depth7 = touchedLights[7]->depth;
+	//	Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
+	//	Vector3f pos7( vi7.x / windowx, -1 + vi7.y / windowy, depth7 ); 
+	//	//Vector3f pos7( vi7.x / (float)window->getSize().x, ((float)window->getSize().y - vi7.y) / (float)window->getSize().y, depth7 ); 
+	//	Color c7 = touchedLights[7]->color;
+	//	
+	//	on[7] = true;
+	//	polyShader.setParameter( "LightPos7", pos7 );
+	//	polyShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius7", touchedLights[7]->radius );
+	//	polyShader.setParameter( "Brightness7", touchedLights[7]->brightness);
+	//}
+	//if( lightsAtOnce > 8 )
+	//{
+	//	float depth8 = touchedLights[8]->depth;
+	//	Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
+	//	Vector3f pos8( vi8.x / windowx, -1 + vi8.y / windowy, depth8 ); 
+	//	//Vector3f pos8( vi8.x / (float)window->getSize().x, ((float)window->getSize().y - vi8.y) / (float)window->getSize().y, depth8 ); 
+	//	Color c8 = touchedLights[8]->color;
+	//	
+	//	on[8] = true;
+	//	polyShader.setParameter( "LightPos8", pos8 );
+	//	polyShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+	//	polyShader.setParameter( "Radius8", touchedLights[8]->radius );
+	//	polyShader.setParameter( "Brightness8", touchedLights[8]->brightness);
+	//}
 
-	polyShader.setParameter( "On0", on[0] );
-	polyShader.setParameter( "On1", on[1] );
-	polyShader.setParameter( "On2", on[2] );
-	polyShader.setParameter( "On3", on[3] );
-	polyShader.setParameter( "On4", on[4] );
-	polyShader.setParameter( "On5", on[5] );
-	polyShader.setParameter( "On6", on[6] );
-	polyShader.setParameter( "On7", on[7] );
-	polyShader.setParameter( "On8", on[8] );
+	//polyShader.setParameter( "On0", on[0] );
+	//polyShader.setParameter( "On1", on[1] );
+	//polyShader.setParameter( "On2", on[2] );
+	//polyShader.setParameter( "On3", on[3] );
+	//polyShader.setParameter( "On4", on[4] );
+	//polyShader.setParameter( "On5", on[5] );
+	//polyShader.setParameter( "On6", on[6] );
+	//polyShader.setParameter( "On7", on[7] );
+	//polyShader.setParameter( "On8", on[8] );
 
-	Color c = player.testLight->color;
-	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
-	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
-	polyShader.setParameter( "LightPosPlayer", posp );
-	polyShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
-	polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
-	polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
+	//Color c = player.testLight->color;
+	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
+	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
+	//polyShader.setParameter( "LightPosPlayer", posp );
+	//polyShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
+	//polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
+	//polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
 	//polyShader.setParameter( "OnD0", true );
 }
 

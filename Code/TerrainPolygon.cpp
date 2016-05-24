@@ -754,7 +754,9 @@ void TerrainPolygon::Finalize()
 {
 	finalized = true;
 	isGrassShowing = false;
-	material = "mat";
+	//material = "mat";
+	terrainWorldType = MOUNTAIN;
+	terrainVariation = 0;
 	lines = new sf::Vertex[numPoints*2+1];
 	
 	FixWinding();

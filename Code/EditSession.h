@@ -144,6 +144,21 @@ struct TerrainBrush
 typedef std::pair<TerrainPoint*,sf::Vector2<double>> Inter;
 struct TerrainPolygon : ISelectable
 {
+	enum TerrainWorldType
+	{
+		MOUNTAIN,
+		GLADE,
+		DESERT,
+		COVE,
+		JUNGLE,
+		FORTRESS,
+		CORE,
+		Count
+	};
+
+	int terrainVariation;
+	TerrainWorldType terrainWorldType;
+
 	TerrainPolygon( sf::Texture *grassTex );
 	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
 	~TerrainPolygon();
@@ -162,7 +177,8 @@ struct TerrainPolygon : ISelectable
 	void DestroyEnemies();
 	void ClearPoints();
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
-	std::string material;
+	//std::string material;
+	
 	void RemoveSelectedPoints();
 	std::list<Inter> GetIntersections( TerrainPolygon *poly );
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
