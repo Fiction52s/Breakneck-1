@@ -1127,12 +1127,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
 				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
-				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
-				//	framesBetweenNodes, loop );
+				Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
+					framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
-				Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );
+				//Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );
 				//enemy->Monitor::MonitorType
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
@@ -1434,14 +1434,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed );
 
-				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity, clockwise, speed, 10 );
+				Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed, 10 );
 
 				//Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise );
 
-				Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity );
+				//Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity );
 
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )

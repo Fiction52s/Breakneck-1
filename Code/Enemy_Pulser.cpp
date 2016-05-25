@@ -104,6 +104,8 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 
 	testSeq.InitMovementDebug();
 
+	testSeq.Reset();
+
 	frame = 0;
 
 	animationFactor = 5;
@@ -214,9 +216,12 @@ void Pulser::UpdatePhysics()
 		testSeq.Update();
 		position = testSeq.position;
 
+		//assert( testSeq.currMovement != NULL );
 		if( testSeq.currMovement == NULL )
 		{
+			cout << "RESETTING-----------------------" << endl;
 			testSeq.Reset();
+			
 		}
 
 		PhysicsResponse();
@@ -241,6 +246,8 @@ void Pulser::UpdatePhysics()
 
 void Pulser::PhysicsResponse()
 {
+	//the dumb bug happens when it doesn't have a path. fix that tomorrow
+	assert( testSeq.currMovement != NULL );
 	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
@@ -399,6 +406,7 @@ void Pulser::Draw( sf::RenderTarget *target )
 			target->draw( cs );
 		}
 
+		assert( testSeq.currMovement != NULL );
 		if( testSeq.currMovement->moveType == Movement::WAIT )
 		{
 			CircleShape cs;
@@ -449,6 +457,7 @@ void Pulser::DrawMinimap( sf::RenderTarget *target )
 
 bool Pulser::IHitPlayer()
 {
+	assert( testSeq.currMovement != NULL );
 	if( testSeq.currMovement->moveType == Movement::WAIT )
 	{
 		Actor &player = owner->player;
@@ -482,6 +491,7 @@ void Pulser::UpdateHitboxes()
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Pulser::PlayerHitMe()
 {
+	assert( testSeq.currMovement != NULL );
 	if( testSeq.currMovement->moveType == Movement::WAIT )
 		return pair<bool,bool>(false,false);
 
@@ -560,6 +570,7 @@ void Pulser::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
+		assert( testSeq.currMovement != NULL );
 		if( testSeq.currMovement != NULL )
 		{
 			if( testSeq.currMovement->vertices != NULL )
