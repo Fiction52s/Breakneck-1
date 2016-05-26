@@ -23,17 +23,19 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
-	
-	
+	animationFactor = 3;
+	assert( framesWait > 13 * animationFactor );
+
+	realWait = framesWait - 13 * animationFactor;
 
 	initHealth = 60;
 	health = initHealth;
 
-	double width = 64; //112;
-	double height = 64;
+	double width = 144; //112;
+	double height = 96;
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = owner->GetTileset( "curveturret_64x64.png", width, height );
+	ts = owner->GetTileset( "curveturret_144x96.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -98,7 +100,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 
 	frame = 0;
 	deathFrame = 0;
-	animationFactor = 3;
+	
 	//slowCounter = 1;
 	//slowMultiple = 1;
 
@@ -157,7 +159,7 @@ void CurveTurret::UpdatePrePhysics()
 	testLauncher->UpdatePrePhysics();
 	
 
-	if( frame == 26 * animationFactor )
+	if( frame == framesWait )
 	{
 		frame = 0;
 	}
@@ -180,7 +182,7 @@ void CurveTurret::UpdatePrePhysics()
 	
 	
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
-	if( !dying && !dead && frame == 0 && slowCounter == 1 )
+	if( !dying && !dead && frame == 4 * animationFactor && slowCounter == 1 )
 	{
 		testLauncher->Fire();
 	}
@@ -266,7 +268,8 @@ void CurveTurret::UpdatePostPhysics()
 	}
 
 	
-
+	UpdateSprite();
+	testLauncher->UpdateSprites();
 	
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
@@ -303,8 +306,7 @@ void CurveTurret::UpdatePostPhysics()
 	}
 
 	
-	UpdateSprite();
-	testLauncher->UpdateSprites();
+	
 }
 
 void CurveTurret::Draw(sf::RenderTarget *target )
@@ -545,7 +547,15 @@ bool CurveTurret::PlayerSlowingMe()
 
 void CurveTurret::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
+	if( frame / animationFactor > 12 )
+	{
+		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	}
+	else
+	{
+		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor  ) );//frame / animationFactor ) );
+	}
+	
 
 	//int i = 0;
 	//Bullet *currBullet = activeBullets;

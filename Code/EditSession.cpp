@@ -944,15 +944,15 @@ bool EditSession::OpenFile( string fileName )
 					int bulletSpeed;
 					is >> bulletSpeed;
 
-					int nodeDistance;
-					is >> nodeDistance;
+					//int nodeDistance;
+					//is >> nodeDistance;
 
 					int framesBetweenNodes;
 					is >> framesBetweenNodes;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new BatParams( this, pos, globalPath, bulletSpeed, 
-						nodeDistance, framesBetweenNodes, loop ) );
+						 framesBetweenNodes, loop ) );
 					a->monitorType = (ActorParams::MonitorType)mType;
 					
 				}
@@ -8537,7 +8537,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			Vector2i front = patrolPath.front();
 			patrolPath.clear();
 			patrolPath.push_back( front );
-			patrolPathLengthSize = 100; //do it by distance and #of frames
+			patrolPathLengthSize = 0;
+			//patrolPathLengthSize = 100; //do it by distance and #of frames
 		}
 	}
 	else if( p->name == "pulser_options" )
@@ -10778,7 +10779,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
 		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddTextBox( "nodedistance", Vector2i( 20, 250 ), 200, 20, "10" );
+		//p->AddTextBox( "nodedistance", Vector2i( 20, 250 ), 200, 20, "10" );
 		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
 

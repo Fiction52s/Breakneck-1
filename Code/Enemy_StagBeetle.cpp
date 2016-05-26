@@ -1035,7 +1035,7 @@ void StagBeetle::ReachCliff()
 	//facingRight = !facingRight;
 }
 
-void StagBeetle::HitOtherAerial()
+void StagBeetle::HitOtherAerial( Edge *e )
 {
 	//cout << "hit edge" << endl;
 }

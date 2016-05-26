@@ -453,10 +453,11 @@ void CoralBlock::UpdateSprite()
 	}
 	else
 	{
-		va[vaIndex*4+0].position = p + Vector2f( -parent->blockSizeX/2, -parent->blockSizeY/2 );
-		va[vaIndex*4+1].position = p + Vector2f( parent->blockSizeX/2, -parent->blockSizeY/2 );
-		va[vaIndex*4+2].position = p + Vector2f( parent->blockSizeX/2, parent->blockSizeY/2 );
-		va[vaIndex*4+3].position = p + Vector2f( -parent->blockSizeX/2, parent->blockSizeY/2 );
+		int fullSize = parent->blockSizeX;
+		va[vaIndex*4+0].position = p + Vector2f( -fullSize, -fullSize );
+		va[vaIndex*4+1].position = p + Vector2f( fullSize, -fullSize );
+		va[vaIndex*4+2].position = p + Vector2f( fullSize, fullSize );
+		va[vaIndex*4+3].position = p + Vector2f( -fullSize, fullSize );
 	}
 }
 
@@ -1011,7 +1012,7 @@ void CoralNanobots::UpdatePostPhysics()
 
 void CoralNanobots::Draw(sf::RenderTarget *target )
 {
-	target->draw( blockVA, ts->texture );
+	target->draw( blockVA );//, ts->texture );
 }
 
 void CoralNanobots::DrawMinimap( sf::RenderTarget *target )

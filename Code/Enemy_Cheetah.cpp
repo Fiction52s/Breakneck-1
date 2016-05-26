@@ -981,7 +981,7 @@ void Cheetah::ReachCliff()
 	//facingRight = !facingRight;
 }
 
-void Cheetah::HitOtherAerial()
+void Cheetah::HitOtherAerial( Edge *e )
 {
 	//cout << "hit edge" << endl;
 }

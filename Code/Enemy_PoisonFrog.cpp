@@ -29,21 +29,23 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 
 	maxFallSpeed = 25;
 	actionLength[STAND] = 10;
-	actionLength[JUMPSQUAT] = 10;
+	actionLength[JUMPSQUAT] = 2;
 	actionLength[JUMP] = 2;
-	actionLength[LAND] = 5;
+	actionLength[LAND] = 2;
 	actionLength[STEEPJUMP] = 2;
+	actionLength[WALLCLING] = 30;
 
 	animFactor[STAND] = 1;
-	animFactor[JUMPSQUAT] = 1;
+	animFactor[JUMPSQUAT] = 4;
 	animFactor[JUMP] = 1;
-	animFactor[LAND] = 1;
+	animFactor[LAND] = 3;
 	animFactor[STEEPJUMP] = 1;
+	animFactor[WALLCLING] = 1;
 
 	invincibleFrames = 0;
-	double width = 64;
-	double height = 64;
-	ts_test = owner->GetTileset( "poisonfrog_64x64.png", width, height );
+	double width = 80;
+	double height = 80;
+	ts_test = owner->GetTileset( "frog_80x80.png", width, height );
 
 	//jumpStrength = 10;
 	xSpeed = 8;
@@ -522,6 +524,24 @@ void PoisonFrog::ActionEnded()
 				frame = 0;
 			}
 			break;
+		case WALLCLING:
+			{
+				action = JUMP;
+				frame = 1;
+
+				if( facingRight )
+				{
+					mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
+				}
+				else
+				{
+					mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
+				}
+				
+
+				//frame = 0;
+			}
+			break;
 		}
 	}
 }
@@ -701,6 +721,10 @@ void PoisonFrog::UpdatePrePhysics()
 
 		}
 		break;
+	case WALLCLING:
+		{
+		}
+		break;
 	}
 
 	//if( ground == NULL )
@@ -721,7 +745,12 @@ void PoisonFrog::UpdatePhysics()
 	}
 	else
 	{
-		mover->velocity.y += gravity / (NUM_STEPS * slowMultiple);
+		double grav = gravity;
+		if( action == WALLCLING )
+		{
+			grav = 0;//.1 * grav;
+		}
+		mover->velocity.y += grav / (NUM_STEPS * slowMultiple);
 
 		if( mover->velocity.y >= maxFallSpeed )
 		{
@@ -1153,13 +1182,14 @@ void PoisonFrog::UpdateSprite()
 	}
 	else
 	{
+		
 		sprite.setTexture( *ts_test->texture );
-		sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
+		
 		switch( action )
 		{
 		case STAND:
 			{
-				
+				sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( pp.x, pp.y );
@@ -1167,6 +1197,7 @@ void PoisonFrog::UpdateSprite()
 			break;
 		case JUMPSQUAT:
 			{
+				sprite.setTextureRect( ts_test->GetSubRect( ( frame / animFactor[JUMPSQUAT] ) + 1 ) );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( pp.x, pp.y );
@@ -1174,15 +1205,40 @@ void PoisonFrog::UpdateSprite()
 			break;
 		case JUMP:
 			{
+				int window = 6;
+				if( mover->velocity.y < -window )
+				{
+					sprite.setTextureRect( ts_test->GetSubRect( 3 ) );
+				}
+				else if( mover->velocity.y > window )
+				{
+					sprite.setTextureRect( ts_test->GetSubRect( 5 ) );
+				}
+				else
+				{
+					sprite.setTextureRect( ts_test->GetSubRect( 4 ) );
+				}
+				//sprite.setTextureRect( ts_test->GetSubRect( frame ) );
+				
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 				sprite.setPosition( position.x, position.y );
+				sprite.setRotation( 0 );
 			}
 			break;
 		case LAND:
 			{
+				sprite.setTextureRect( ts_test->GetSubRect( (frame / animFactor[LAND]) + 6 ) );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation( angle / PI * 180 );
 				sprite.setPosition( pp.x, pp.y );
+			}
+			break;
+		case WALLCLING:
+			{
+				sprite.setTextureRect( ts_test->GetSubRect( 8 ) );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+				sprite.setRotation( 0 );//angle / PI * 180 );
+				sprite.setPosition( position.x, position.y );
 			}
 			break;
 		}
@@ -1261,9 +1317,41 @@ void PoisonFrog::ReachCliff()
 		frame = 0;
 	}
 }
-void PoisonFrog::HitOtherAerial()
+
+void PoisonFrog::HitOtherAerial( Edge *e )
 {
+	V2d norm = e->Normal();
+	if( owner->IsWall( norm ) > 0 )
+	{
+		//if( action != WALLCLING )
+		//{
+			action = WALLCLING;
+			frame = 0;
+			//wallTouchCounter = 1;
+		
+			//if( norm.x > 0 ) //left wall, facing right
+			//{
+			//	mover->velocity = V2d( -.1, 0 );
+			//}
+			//else //right wall, facing left
+			//{
+			//	mover->velocity = V2d( .1, 0 );
+			//}
+			mover->velocity = V2d( 0, 0 );
+
+		
+			facingRight = !facingRight;
+		//}
+		//else
+	//	{
+		//	wallTouchCounter++;
+	//	}
+	}
 }
+
+
+	//}
+	//if( 
 void PoisonFrog::Land()
 {
 	//cout << "LANDING" << endl;

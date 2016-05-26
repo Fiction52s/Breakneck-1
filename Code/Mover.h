@@ -10,7 +10,7 @@ struct GroundMoverHandler
 	//virtual void HitGround() = 0;
 	virtual void HitOther() = 0;
 	virtual void ReachCliff() = 0;
-	virtual void HitOtherAerial() = 0;
+	virtual void HitOtherAerial( Edge *e ) = 0;
 	virtual void Land() = 0;
 
 //	virtual void Land(){};

@@ -937,7 +937,7 @@ void GroundMover::HitTerrainAerial()
 		
 		//cout << "new vel: " << velocity.x << ", " << velocity.y << endl;
 		if( handler != NULL )
-			handler->HitOtherAerial();
+			handler->HitOtherAerial( minContact.edge );
 		//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 		//q = ground->GetQuantity( physBody.globalPosition );
 		//if( handler != NULL )

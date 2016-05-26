@@ -102,6 +102,13 @@ Pulser::Pulser( GameSession *owner, Vector2i &pos,
 		testSeq.AddMovement( new WaitMovement( B, framesBetween ) );
 	}
 
+	if( pathLength == 1 )
+	{
+		V2d A( path[0].x, path[0].y );
+		testSeq.AddLineMovement( A, A, CubicBezier( 0, 0, 1, 1 ), framesBetween );
+		testSeq.AddMovement( new WaitMovement( A, framesBetween ) );
+	}
+
 	testSeq.InitMovementDebug();
 
 	testSeq.Reset();

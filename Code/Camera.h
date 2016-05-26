@@ -22,6 +22,9 @@ struct Camera
 	float zoomLevel2;
 	float zoomLevel3;
 	
+	sf::Vector2f testOffset;
+	float testZoom;
+
 	//new
 	double left;
 	double top;
@@ -31,6 +34,7 @@ struct Camera
 	bool bossCrawler;
 
 	void Update2( Actor *a );
+	void UpdateReal( Actor *a );
 	void Update( Actor *a );
 };
 

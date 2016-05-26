@@ -1321,7 +1321,7 @@ ActorParams *PlayerParams::Copy()
 
 //BAT
 
-BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
+BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
@@ -1336,7 +1336,7 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 	SetPath( globalPath );
 
 	framesBetweenNodes = p_framesBetweenNodes; 
-	nodeDistance = p_nodeDistance;
+	//nodeDistance = p_nodeDistance;
 	bulletSpeed = p_bulletSpeed;
 
 	loop = p_loop;
@@ -1378,7 +1378,7 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i &pos )
 	loop = false;
 	//speed = 5;
 	framesBetweenNodes = 60;
-	nodeDistance = 100;
+	//nodeDistance = 100;
 	bulletSpeed = 10;
 
 	SetBoundingQuad();
@@ -1542,7 +1542,7 @@ void BatParams::WriteParamFile( ofstream &of )
 	//of.precision( 5 );
 	//of << speed << endl;//fixed << speed << endl;
 	of << bulletSpeed << endl;
-	of << nodeDistance << endl;
+	//of << nodeDistance << endl;
 	of << framesBetweenNodes << endl;
 }
 
@@ -1552,7 +1552,7 @@ void BatParams::SetParams()
 
 	stringstream ss;
 	string bulletSpeedStr = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
-	string nodeDistanceStr = p->textBoxes["nodedistance"]->text.getString().toAnsiString();
+	//string nodeDistanceStr = p->textBoxes["nodedistance"]->text.getString().toAnsiString();
 	string betweenStr = p->textBoxes["framesbetweennodes"]->text.getString().toAnsiString();
 	bool t_loop = p->checkBoxes["loop"]->checked;
 	
@@ -1566,7 +1566,7 @@ void BatParams::SetParams()
 		bulletSpeed = t_bulletSpeed;
 	}
 
-	ss.clear();
+	/*ss.clear();
 
 	ss << nodeDistanceStr;
 
@@ -1576,7 +1576,7 @@ void BatParams::SetParams()
 	if( !ss.fail() )
 	{
 		nodeDistance = t_nodeDistance;
-	}
+	}*/
 
 	ss.clear();
 
@@ -1603,7 +1603,7 @@ void BatParams::SetPanelInfo()
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
-	p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
+	//p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
 	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );

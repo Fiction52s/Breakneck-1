@@ -40,8 +40,107 @@ Camera::Camera()
 	
 }
 
+void Camera::UpdateReal( Actor *player )
+{
+	GameSession *owner = player->owner;
+	V2d playerPos = player->position;
+
+	double numActive = 0;
+	V2d diffSum( 0, 0 );
+	double distanceFactor = .8;
+	V2d vPos = V2d( pos.x, pos.y );
+
+	double minX = playerPos.x;
+	double maxX = playerPos.x;
+	double minY = playerPos.y;
+	double maxY = playerPos.y;
+
+//	double numActive = 0;
+	//double xLimit = 
+	Enemy *curr = owner->activeEnemyList;
+	while( curr != NULL )
+	{
+		if( curr->type == Enemy::BASICEFFECT || length( playerPos - curr->position ) > 1500 )
+		{
+			curr = curr->next;
+			continue;
+		}
+
+		
+
+		++numActive;
+		double len = length( curr->position - vPos );
+		V2d dir = normalize( curr->position - vPos );
+		
+		if( curr->position.x < minX )
+			minX = curr->position.x;
+		else if( curr->position.x > maxX )
+			maxX = curr->position.x;
+
+		if( curr->position.y < minY )
+			minY = curr->position.y;
+		else if( curr->position.y > maxY )
+			maxY = curr->position.y;
+		
+		//diffSum += dir * len;
+	
+		curr = curr->next;
+	}
+
+	maxX += 100;
+	minX -= 100;
+	maxY += 100;
+	minY -= 100;
+
+	cout << "num enemies: " << numActive << endl;
+
+	sf::Vector2f center( (minX + maxX) / 2, (minY + maxY) / 2 );
+	double width = maxX - minX;
+	double height = maxY - minY;
+
+	double wRatio = width / 960.0;
+	double hRatio = height / 540.0;
+
+	double ratio = max( wRatio, hRatio );
+	ratio = max( ratio, 1.0 );
+
+	offset.x = center.x - playerPos.x;
+	offset.y = center.y - playerPos.y;
+
+	cout << "wRatio: " << wRatio << ", ratio: " << ratio << endl;
+
+	//zoomLevel = 0;
+	//zoomFactor = ratio;
+
+	testOffset.x = offset.x;//center.x;
+	testOffset.y = offset.y;//center.y;
+	testZoom = ratio;
+	//pos.x = center.x;
+	//pos.y = center.y;
+	//pos.x = playerPos.x + offset
+
+	if( numActive > 0 )
+	{
+		diffSum = diffSum / numActive;
+	}
+
+	if( numActive > 0 )
+	{
+	//	offX = diffSum.x;
+	}
+	if( numActive > 0 )
+	{
+	//	offY = diffSum.y;
+	}
+
+	//pos.x = playerPos.x;
+	//pos.y = playerPos.y;
+	//zoomFactor = 1;
+}
+
 void Camera::Update( Actor *player )
 {
+	UpdateReal( player );
 	if( bossCrawler )
 	{
 		return;
@@ -213,6 +312,9 @@ void Camera::Update( Actor *player )
 		zoomFactor += zDiff / 350.0 / player->slowMultiple;
 	}
 
+	//zoomFactor = ( zoomFactor + testZoom ) / 2.0;
+	//zoomFactor = testZoom;
+
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;
@@ -223,8 +325,12 @@ void Camera::Update( Actor *player )
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
 	
+
 	double offX = pVel.x * .7;
 	double offXMax = 5;
+
+	//offX = (offX + testOffset.x) / 2.0;
+
 	if( offX > offXMax  )
 	{
 		offX = offXMax ;
@@ -234,10 +340,15 @@ void Camera::Update( Actor *player )
 		offX = -offXMax;
 	}
 	offset.x += offX;//pVel.x * 1.001;
+	//offset.x = ( offset.x + testOffset.x ) / 2.0;
+	//offset.x = testOffset.x;
 	//offset.y += pVel.y * .3;
 
 	double offY = pVel.y;
 	double offYMax = 3;
+	
+	//offY = (offY + testOffset.y) / 2.0;
+
 	if( offY > offYMax  )
 	{
 		offY = offYMax ;
@@ -247,20 +358,24 @@ void Camera::Update( Actor *player )
 		offY = -offYMax;
 	}
 
-	if( pVel.y > 0 )
-		offset.y += offY;
-		//offset.y += pVel.y;
-	
-	else if( pVel.y < 0 && player->ground != NULL )
-	{
-		offset.y += offY;//pVel.y;
-	}
-	else if( pVel.y < 0 )
-	{
-		if( offY < -1 )
-			offY = -1;
-		offset.y += offY; 
-	}
+	//if( pVel.y > 0 )
+	//	offset.y += offY;
+	//	//offset.y += pVel.y;
+	//
+	//else if( pVel.y < 0 && player->ground != NULL )
+	//{
+	//	offset.y += offY;//pVel.y;
+	//}
+	//else if( pVel.y < 0 )
+	//{
+	//	if( offY < -1 )
+	//		offY = -1;
+	//	offset.y += offY; 
+	//}
+
+	offset.y += offY;
+	//offset.y = ( offset.y + testOffset.y ) / 2.0;
+	//offset.y = testOffset.y;
 
 	if( pVel.x == 0 )
 	{
@@ -333,6 +448,15 @@ void Camera::Update( Actor *player )
 		//cout << "moving down" << endl;
 		//pos.y += topExtra;
 	}	
+
+	/*double numActive = 0;
+	Enemy *curr = owner->activeEnemyList;
+	while( curr != NULL )
+	{
+		++numActive;
+		curr = curr->next;
+	}
+	cout << "num active: " << numActive << endl;*/
 }
 
 void Camera::Update2( Actor *player )

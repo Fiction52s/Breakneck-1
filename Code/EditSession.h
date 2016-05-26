@@ -486,7 +486,7 @@ struct BatParams : public ActorParams
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath, 
 		int framesBetween,
-		int nodeDistance,
+		//int nodeDistance,
 		int bulletSpeed,
 		bool loop ); 
 	BatParams( EditSession *edit,
@@ -506,7 +506,7 @@ struct BatParams : public ActorParams
 	sf::VertexArray *lines; //local pos
 
 	int bulletSpeed;
-	int nodeDistance;
+	//int nodeDistance;
 	int framesBetweenNodes;
 	bool loop;
 	//int speed;

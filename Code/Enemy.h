@@ -381,7 +381,7 @@ struct Bat : Enemy, LauncherEnemy
 	MovementSequence testSeq;
 	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path,
 		int bulletSpeed,
-		int nodeDistance,
+		//int nodeDistance,
 		int framesBetween,
 		bool loop );
 	void BulletHitTerrain( BasicBullet *b,
@@ -411,7 +411,7 @@ struct Bat : Enemy, LauncherEnemy
 	void LoadEnemyState();
 
 	int bulletSpeed;
-	int nodeDistance;
+	//int nodeDistance;
 	int framesBetween;
 
 	//sf::Vector2<double> basePos;
@@ -869,7 +869,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	GroundMover *testMover;
 	void HitOther();
 	void ReachCliff();
-	void HitOtherAerial();
+	void HitOtherAerial( Edge *e );
 	void Land();
 
 	CollisionBox hurtBody;
@@ -983,7 +983,7 @@ struct Badger : Enemy, GroundMoverHandler
 	GroundMover *testMover;
 	void HitOther();
 	void ReachCliff();
-	void HitOtherAerial();
+	void HitOtherAerial( Edge *e );
 	void Land();
 
 	CollisionBox hurtBody;
@@ -1091,7 +1091,7 @@ struct Cheetah : Enemy, GroundMoverHandler
 	GroundMover *testMover;
 	void HitOther();
 	void ReachCliff();
-	void HitOtherAerial();
+	void HitOtherAerial( Edge *e );
 	void Land();
 
 	int actionLength[Action::Count];
@@ -1459,6 +1459,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 
 	int framesWait;
 	int firingCounter;
+	int realWait;
 	Edge *ground;
 	double edgeQuantity;
 
@@ -2110,6 +2111,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 		STEEPJUMP,
 		JUMP,
 		LAND,
+		WALLCLING,
 		//STUNNED,
 		Count
 	};
@@ -2168,6 +2170,8 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 	GroundMover *mover;
 
+
+	//int wallTouchCounter;
 	//sf::Vector2<double> position;
 
 	
@@ -2201,7 +2205,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 	void HitOther();
 	void ReachCliff();
-	void HitOtherAerial();
+	void HitOtherAerial( Edge *e );
 	void Land();
 
 	//void FireBullets();
@@ -2549,7 +2553,7 @@ struct Spider : Enemy
 	SurfaceMover *mover;
 	void HitOther();
 	void ReachCliff();
-	void HitOtherAerial();
+	void HitOtherAerial( Edge *e );
 	void Land();
 
 	CollisionBox hurtBody;

@@ -21,7 +21,8 @@ using namespace sf;
 
 Bat::Bat( GameSession *owner, Vector2i pos, 
 	list<Vector2i> &pathParam, int p_bulletSpeed,
-	int p_nodeDistance, int p_framesBetweenNodes, bool p_loop )
+	//int p_nodeDistance, 
+	int p_framesBetweenNodes, bool p_loop )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
 	loop = p_loop;
@@ -33,7 +34,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	position.y = pos.y;
 
 	bulletSpeed = p_bulletSpeed;
-	nodeDistance = p_nodeDistance;
+	//nodeDistance = p_nodeDistance;
 	framesBetween = p_framesBetweenNodes;
 
 	deathFrame = 0;
@@ -109,7 +110,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_48x48.png", 48, 48 );
+	ts = owner->GetTileset( "Bat_144x176.png", 144, 176 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -159,6 +160,9 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
+
+	spawnRect = sf::Rect<double>( position.x - 200, position.y - 200,
+		400, 400 );
 
 	//cout << "finish init" << endl;
 }
@@ -363,7 +367,7 @@ void Bat::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 10 * animationFactor )
+	if( frame == 5 * animationFactor )
 	{
 		frame = 0;
 	}

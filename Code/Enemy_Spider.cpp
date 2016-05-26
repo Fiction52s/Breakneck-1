@@ -1155,7 +1155,7 @@ void Spider::ReachCliff()
 	//facingRight = !facingRight;
 }
 
-void Spider::HitOtherAerial()
+void Spider::HitOtherAerial( Edge *e )
 {
 	//cout << "hit edge" << endl;
 }

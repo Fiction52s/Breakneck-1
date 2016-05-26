@@ -9258,7 +9258,11 @@ void Actor::UpdatePhysics()
 
 
 				double angle = atan2( gno.x, -gno.y );
-				owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 36, 1, facingRight );
+
+
+				
+
+				
 				//cout << "gno: " << gno.x << ", " << gno.y << endl;
 				if( -gno.y > -steepThresh )
 				{
@@ -9888,7 +9892,7 @@ void Actor::PhysicsResponse()
 	}
 
 	//only for motion ghosts
-	UpdateSprite();
+	//UpdateSprite();
 
 	if( ghostSpacingCounter == motionGhostSpacing )
 	{
@@ -12708,7 +12712,13 @@ void Actor::UpdateSprite()
 
 			fxPos += gn * 8.0;
 
+			//cout << "activating" << endl;
 			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 14, 1, facingRight );
+		}
+
+		if( reversed )
+		{
+			owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 36, 1, facingRight );
 		}
 
 

@@ -394,11 +394,12 @@ void GameSession::Test( Edge *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
+	
 	//if( e->type == Enemy::BASICTURRET )
 	//{
 	//	cout << "ADDING BASIC TURRET NOW: " << endl;
 //	}
-//	cout << "adding enemy: " << e << endl;
+	cout << "adding enemy: " << e->type << endl;
 	if( activeEnemyList != NULL )
 	{
 		activeEnemyList->prev = e;
@@ -1116,19 +1117,19 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int bulletSpeed;
 				is >> bulletSpeed;
 
-				int nodeDistance;
-				is >> nodeDistance;
+				//int nodeDistance;
+				//is >> nodeDistance;
 
 				int framesBetweenNodes;
 				is >> framesBetweenNodes;
 				//int speed;
 				//is >> speed;
-				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
-				//	bulletSpeed, nodeDistance, framesBetweenNodes, loop );
+				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+					bulletSpeed, framesBetweenNodes, loop );
 				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
-				Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
-					framesBetweenNodes, loop );
+				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
+				//	framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), speed );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
@@ -1572,10 +1573,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					relative = true;
 				}
 
-				Cactus *enemy = new Cactus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
-					Vector2i( xGravFactor, yGravFactor ), relative );
+				//Cactus *enemy = new Cactus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+				//	Vector2i( xGravFactor, yGravFactor ), relative );
 				//Overgrowth *enemy = new Overgrowth( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 10, 60 );
-
+				CurveTurret *enemy = new CurveTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+					Vector2i( xGravFactor, yGravFactor ), relative );
 
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
 				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
@@ -1626,10 +1628,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					relative = true;
 				}
 
-				CurveTurret *enemy = new CurveTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
-					Vector2i( xGravFactor, yGravFactor ), relative );
+				//CurveTurret *enemy = new CurveTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+				//	Vector2i( xGravFactor, yGravFactor ), relative );
 				//Overgrowth *enemy = new Overgrowth( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 10, 60 );
-
+				Cactus *enemy = new Cactus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+					Vector2i( xGravFactor, yGravFactor ), relative );
 
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
 				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
@@ -4893,7 +4896,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+	//	DebugDrawActors();
 
 		
 
@@ -5413,7 +5416,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( a && b )
 		{
-			//cout << "spawning enemy! of type: " << e->type << endl;
+			cout << "spawning enemy! of type: " << e->type << endl;
 			assert( e->spawned == false );
 			e->spawned = true;
 

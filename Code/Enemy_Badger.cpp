@@ -1082,7 +1082,7 @@ void Badger::ReachCliff()
 	//facingRight = !facingRight;
 }
 
-void Badger::HitOtherAerial()
+void Badger::HitOtherAerial( Edge *e )
 {
 	//cout << "hit edge" << endl;
 }
