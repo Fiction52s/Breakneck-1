@@ -1073,8 +1073,8 @@ void Badger::UpdateSprite()
 				ir = ts->GetSubRect( ( frame / animFactor[RUN] ) % 7 );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 				sprite.setPosition( gPoint.x, gPoint.y );
-				sprite.setRotation( angle );
-				cout << "setting angle: " << angle << endl;
+				sp
+					`out << "setting angle: " << angle << endl;
 			}
 			break;
 		case LEDGEJUMP:

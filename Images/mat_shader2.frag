@@ -112,48 +112,7 @@ void main()
 	vec4 finalfinal = vec4( 0.0, 0.0, 0.0, 0.0 );
 	
 	
-	
-	int numLightsOn = 0;
-	for( int i = 0; i < numLights; ++i )
-	{
-		if( lights[i].on )
-			numLightsOn = numLightsOn + 1;
-	}
-	
-	
-	for( int i = 0; i < numLights; ++i )
-	{
-		if( !lights[i].on )
-		{
-			continue;
-		}
-		//noLights = false;
-		vec4 DiffuseColor = texture2D(u_texture, pos);
-		vec3 NormalMap = texture2D(u_normals, pos).rgb;
-		vec2 fragC = gl_FragCoord.xy;
-		fragC.y = 1 - fragC.y;
-		
-		float z = lights[i].pos.z;
-		vec3 LightDir = vec3(lights[i].pos.xy * Resolution.xy - vec2( fragC.x, fragC.y), z );
-		LightDir *= zoom;
-		float D = length(LightDir);
-		
-		float radius = lights[i].radius*2.0;
-		float brightness = lights[i].brightness/4;
-		float Attenuation = clamp( 1.0 - (D*D) / (radius*radius), 0.0, 1.0 ); Attenuation *= Attenuation * brightness;	
-	
-		vec3 N = normalize(NormalMap * 2.0 - 1.0);
-		vec3 L = normalize(LightDir);
-		vec3 Diffuse = (lights[i].color.rgb * lights[i].color.a) * max(dot(N, L), 0.0);
-		vec3 Ambient = AmbientColor.rgb * AmbientColor.a / numLightsOn;
-		
-		vec3 Intensity = Ambient + Diffuse * Attenuation;
-		vec3 FinalColor = DiffuseColor.rgb * Intensity;
-		
-		finalfinal += vec4( FinalColor, DiffuseColor.a );
-	}
-	
-	if( numLightsOn == 0 )
+	//if( numLightsOn == 0 )
 	{
 		//vec2 diff = topLeft - oldBotLeft;
 		//diff = normalize( diff );
