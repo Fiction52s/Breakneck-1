@@ -140,7 +140,7 @@ void Camera::UpdateReal( Actor *player )
 
 void Camera::Update( Actor *player )
 {
-	UpdateReal( player );
+	//UpdateReal( player );
 	if( bossCrawler )
 	{
 		return;

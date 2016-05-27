@@ -918,12 +918,13 @@ struct Badger : Enemy, GroundMoverHandler
 		RUN,
 		LEDGEJUMP,
 		SHORTJUMP,
+		SHORTJUMPSQUAT,
 		TALLJUMP,
+		TALLJUMPSQUAT,
 		ATTACK,
 		LAND,
 		Count
 	};
-
 
 	Badger( GameSession *owner, Edge *ground, 
 		double quantity, 
@@ -958,6 +959,7 @@ struct Badger : Enemy, GroundMoverHandler
 	void FinishedRoll();
 
 	Launcher *testLaunch;
+	Action landedAction;
 	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -966,6 +968,7 @@ struct Badger : Enemy, GroundMoverHandler
 
 	Action action;
 	bool facingRight;
+	double angle;
 
 	Action nextAction;
 
@@ -1007,6 +1010,7 @@ struct Badger : Enemy, GroundMoverHandler
 	double startQuant;
 	//sf::Vector2<double> offset;
 	int frame;
+	bool originalFacingRight;
 	//bool roll;
 
 	int deathFrame;

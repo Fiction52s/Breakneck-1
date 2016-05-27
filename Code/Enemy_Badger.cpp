@@ -23,17 +23,30 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 	:Enemy( owner, EnemyType::BADGER ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
-	actionLength[RUN] = 60;
+
+	originalFacingRight = facingRight;
+	actionLength[RUN] = 7 * 2;
 	actionLength[LEDGEJUMP] = 2;
 	actionLength[SHORTJUMP] = 2;
+	actionLength[SHORTJUMPSQUAT] = 3;
 	actionLength[TALLJUMP] = 2;
-	actionLength[LAND] = 1;
-
+	actionLength[TALLJUMPSQUAT] = 3;
+	actionLength[LAND] = 3;
+	
+	//runReps = 10;
+	animFactor[RUN] = 5;
+	animFactor[LEDGEJUMP] = 1;
+	animFactor[SHORTJUMP] = 1;
+	animFactor[SHORTJUMPSQUAT] = 1;
+	animFactor[TALLJUMP] = 1;
+	animFactor[TALLJUMPSQUAT] = 1;
+	animFactor[LAND] = 1;
 
 	jumpStrength = p_jumpStrength;
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = speed;
 	action = RUN;
+
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
@@ -48,8 +61,9 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 	attackFrame = -1;
 	attackMult = 10;
 
+	double width = 192;
 	double height = 128;
-	double width = 128;
+	
 
 	startGround = g;
 	startQuant = q;
@@ -64,13 +78,15 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
-	ts = owner->GetTileset( "crawler_128x128.png", width, height );
+	ts = owner->GetTileset( "badger_192x128.png", width, height );
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( q );
-	sprite.setPosition( testMover->physBody.globalPosition.x,
-		testMover->physBody.globalPosition.y );
+	//sprite.setPosition( testMover->physBody.globalPosition.x,
+	//	testMover->physBody.globalPosition.y );
+
+
 	position = testMover->physBody.globalPosition;
 	//roll = false;
 	//position = gPoint + ground->Normal() * height / 2.0;
@@ -131,6 +147,9 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 	bezLength = 60 * NUM_STEPS;
 
 	testMover->SetSpeed( 0 );
+
+	PhysicsResponse();
+	UpdateSprite();
 	//testMover->Move( slowMultiple );
 
 	//ground = testMover->ground;
@@ -140,6 +159,7 @@ Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
 
 void Badger::ResetEnemy()
 {
+	facingRight = originalFacingRight;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
 	testMover->roll = false;
@@ -184,7 +204,8 @@ void Badger::ResetEnemy()
 	dead = false;
 
 	//----update the sprite
-	double angle = 0;
+	//double angle = 0;
+	//angle = 0;
 	////position = gPoint + gn * 32.0;
 	angle = atan2( gn.x, -gn.y );
 	//	
@@ -266,6 +287,14 @@ void Badger::UpdateNextAction()
 	case TALLJUMP:
 		nextAction = RUN;
 		break;
+	case TALLJUMPSQUAT:
+		{
+		}
+		break;
+	case SHORTJUMPSQUAT:
+		{
+		}
+		break;
 	}
 
 	if( owner->player.position.x > position.x )
@@ -282,7 +311,7 @@ void Badger::UpdateNextAction()
 
 void Badger::ActionEnded()
 {
-	if( frame == actionLength[action] )
+	if( ( frame / animFactor[action] ) == actionLength[action] )
 	{
 		switch( action )
 		{
@@ -297,9 +326,22 @@ void Badger::ActionEnded()
 		case SHORTJUMP:
 			frame = 1;
 			break;
+		case SHORTJUMPSQUAT:
+			{
+				action = SHORTJUMP;
+				frame = 0;
+			}
+			break;
 		case TALLJUMP:
 			frame = 1;
 			break;
+		case TALLJUMPSQUAT:
+			{
+				action = TALLJUMP;
+				frame = 0;
+			}
+			break;
+		
 		case LAND:
 			action = nextAction;
 			UpdateNextAction();
@@ -317,25 +359,31 @@ void Badger::Jump( double strengthx, double strengthy )
 {
 	assert( testMover->ground != NULL );
 
+	landedAction = action;
+
 	V2d gAlong = normalize( testMover->ground->v1 - testMover->ground->v0 );
 	if( !facingRight )
 		gAlong = -gAlong;
 
 
-	if( cross( normalize( V2d( strengthx, -strengthy )), gAlong ) < 0 )
+	if( false )//cross( normalize( V2d( strengthx, -strengthy )), gAlong ) < 0 )
 	{
 		gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
-		testMover->Jump( gAlong * strengthy );
+		V2d jumpVec = gAlong * strengthy;
+		testMover->Jump( jumpVec );
+		cout << "jump blend: " << jumpVec.x << ", " << jumpVec.y << endl;
 	}
 	else
 	{
-		testMover->Jump( V2d( strengthx, -strengthy ) );
+		V2d jumpVec = V2d( strengthx, -strengthy );
+		testMover->Jump( jumpVec );
+		cout << "jump: " << jumpVec.x << ", " << jumpVec.y << endl;
 	}
 }
 
 void Badger::UpdatePrePhysics()
 {
-	cout << "action: " << (int)action << endl;
+	//cout << "action: " << (int)action << endl;
 	//testLaunch->UpdatePrePhysics();
 	Actor &player = owner->player;
 
@@ -347,19 +395,36 @@ void Badger::UpdatePrePhysics()
 	switch( action )
 	{
 	case RUN:
+	//	cout << "RUN: " << frame << endl;
 		break;
 	case LEDGEJUMP:
+	//	cout << "LEDGEJUMP: " << frame << endl;
 		break;
 	case SHORTJUMP:
+	//	cout << "SHORTJUMP: " << frame << endl;
+		break;
+	case SHORTJUMPSQUAT:
+		{
+	//		cout << "SHORTJUMPSQUAT: " << frame << endl;
+		}
 		break;
 	case TALLJUMP:
+	//	cout << "TALLJUMP: " << frame << endl;
+		break;
+	case TALLJUMPSQUAT:
+		{
+	//		cout << "TALLJUMPSQUAT: " << frame << endl;
+		}
 		break;
 	case ATTACK:
+
 		break;
 	case LAND:
+	//	cout << "LAND: " << frame << endl;
 		break;
 	}
 
+	int runSpeed = 10;
 	switch( action )
 	{
 	case RUN:
@@ -380,11 +445,11 @@ void Badger::UpdatePrePhysics()
 
 		if( facingRight )
 		{
-			testMover->SetSpeed( 2 );//testMover->groundSpeed + .3 );
+			testMover->SetSpeed( 10 );//testMover->groundSpeed + .3 );
 		}
 		else
 		{
-			testMover->SetSpeed( -2 );//testMover->groundSpeed - .3 );
+			testMover->SetSpeed( -10 );//testMover->groundSpeed - .3 );
 		}
 
 		if( testMover->groundSpeed > maxGroundSpeed )
@@ -403,6 +468,10 @@ void Badger::UpdatePrePhysics()
 				Jump( -10, 10 );
 		}
 		break;
+	case SHORTJUMPSQUAT:
+		{
+		}
+		break;
 	case TALLJUMP:
 		if( frame == 0 )
 		{
@@ -410,6 +479,10 @@ void Badger::UpdatePrePhysics()
 				Jump( 10, 20 );
 			else
 				Jump( -10, 20 );
+		}
+		break;
+	case TALLJUMPSQUAT:
+		{
 		}
 		break;
 	case ATTACK:
@@ -457,15 +530,15 @@ void Badger::UpdatePrePhysics()
 	//else
 	//{
 
-		if( !roll && frame == 16 * crawlAnimationFactor )
+		/*if( !roll && frame == 16 * crawlAnimationFactor )
 		{
 			frame = 0;
-		}
+		}*/
 
-		if ( roll && frame == 10 * rollAnimationFactor )
+		/*if ( roll && frame == 10 * rollAnimationFactor )
 		{
 			frame = rollAnimationFactor * 2; 
-		}
+		}*/
 
 		//cout << "groundspeed: " << testMover->groundSpeed << endl;
 	//}
@@ -539,135 +612,135 @@ void Badger::PhysicsResponse()
 {
 	if( !dead  )
 	{
+		angle = 0;
 		bool roll = testMover->roll;
-		double angle = 0;
+		//double angle = 0;
 		Edge *ground = testMover->ground;
 		double edgeQuantity = testMover->edgeQuantity;
 
 		if( ground != NULL )
 		{
-		//cout << "response" << endl;
-			double spaceNeeded = 0;
 			V2d gn = ground->Normal();
-			V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
-		
-	
-		if( !roll )
-		{
-			//position = gPoint + gn * 32.0;
-			angle = atan2( gn.x, -gn.y );
-		
-//			sprite.setTexture( *ts_walk->texture );
-			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !facingRight )
+			//double angle;
+			if( roll )
 			{
-				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+				if( facingRight )
+				{
+					V2d vec = normalize( position - ground->v1 );
+					angle = atan2( vec.y, vec.x );
+					angle += PI / 2.0;
+				}
+				else
+				{
+					V2d vec = normalize( position - ground->v0 );
+					angle = atan2( vec.y, vec.x );
+					angle += PI / 2.0;
+				}	
 			}
 			else
 			{
-				sprite.setTextureRect( r );
+				//cout << "ground angle" << endl;
+				angle = atan2( gn.x, -gn.y );
 			}
-			
-			//V2d pp = ground->GetPoint( testMover->edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( gPoint.x, gPoint.y );
 		}
 		else
 		{
-			
-			if( facingRight )
-			{
-				V2d vec = normalize( position - ground->v1 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
+			angle = 0;
+			//V2d p = testMover->physBody.globalPosition;
 
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}
-			else
-			{
-				//angle = 
-				/*V2d e0n = ground->edge0->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e0n.y, e0n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;*/
-
-			
-
-			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			//	angleVec = normalize( angleVec );
-
-			//	position = gPoint + angleVec * 16.0;
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}	
-		}
-		}
-		else
-		{
-			V2d p = testMover->physBody.globalPosition;
-
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
+			/*sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
 			sprite.setPosition( p.x, p.y );
-			sprite.setRotation( 0 );
+			sprite.setRotation( 0 );*/
 		}
+
+		angle = angle * 180 / PI;
+
+	//	if( ground != NULL )
+	//	{
+	//	//cout << "response" << endl;
+	//		double spaceNeeded = 0;
+	//		V2d gn = ground->Normal();
+	//		V2d gPoint = ground->GetPoint( edgeQuantity );
+	//
+
+	//	
+	//
+	//		if( !roll )
+	//		{
+	//			//position = gPoint + gn * 32.0;
+	//			angle = atan2( gn.x, -gn.y );
+	//	
+	////			sprite.setTexture( *ts_walk->texture );
+	//			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
+	//			if( !facingRight )
+	//			{
+	//				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+	//			}
+	//			else
+	//			{
+	//				sprite.setTextureRect( r );
+	//			}
+	//		
+	//			//V2d pp = ground->GetPoint( testMover->edgeQuantity );
+	//			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//			sprite.setRotation( angle / PI * 180 );
+	//			sprite.setPosition( gPoint.x, gPoint.y );
+	//		}
+	//		else
+	//		{
+	//		
+	//			if( facingRight )
+	//			{
+	//				V2d vec = normalize( position - ground->v1 );
+	//				angle = atan2( vec.y, vec.x );
+	//				angle += PI / 2.0;
+	//
+
+	//				//sprite.setTexture( *ts->texture );
+	//				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
+	//				if( facingRight )
+	//				{
+	//					sprite.setTextureRect( r );
+	//				}
+	//				else
+	//				{
+	//					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+	//				}
+	//		
+	//				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//				sprite.setRotation( angle / PI * 180 );
+	//				sprite.setPosition( gPoint.x, gPoint.y );
+	//			}
+	//			else
+	//			{
+	//				V2d vec = normalize( position - ground->v0 );
+	//				angle = atan2( vec.y, vec.x );
+	//				angle += PI / 2.0;
+	//
+	//				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
+	//				if( facingRight )
+	//				{
+	//					sprite.setTextureRect( r );
+	//				}
+	//				else
+	//				{
+	//					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+	//				}
+	//		
+	//				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//				sprite.setRotation( angle / PI * 180 );
+	//				sprite.setPosition( gPoint.x, gPoint.y );
+	//			}	
+	//		}
+	//	}
+	//	else
+	//	{
+	//		V2d p = testMover->physBody.globalPosition;
+
+	//		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
+	//		sprite.setPosition( p.x, p.y );
+	//		sprite.setRotation( 0 );
+	//	}
 
 		//sprite.setPosition( position.x, position.y );
 
@@ -737,7 +810,7 @@ void Badger::PhysicsResponse()
 		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 		deathVector = V2d( newPoint.x, newPoint.y );
 
-		queryMode = "reverse";
+		//queryMode = "reverse";
 
 		//physbody is a circle
 		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
@@ -981,15 +1054,163 @@ void Badger::UpdateSprite()
 	}
 	else
 	{
+		V2d p = testMover->physBody.globalPosition;
+		V2d vel = testMover->velocity;
+		double groundSpeed = testMover->groundSpeed;
+		
+		V2d gPoint;
+		if( testMover->ground != NULL )
+		{
+			gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
+		}
+		int airRange = 3;
+		int fallRange = 15;
+		sf::IntRect ir;
+		switch( action )
+		{
+		case RUN:
+			{
+				ir = ts->GetSubRect( ( frame / animFactor[RUN] ) % 7 );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+				sprite.setPosition( gPoint.x, gPoint.y );
+				sprite.setRotation( angle );
+				cout << "setting angle: " << angle << endl;
+			}
+			break;
+		case LEDGEJUMP:
+		case SHORTJUMP:
+			{
+				if( vel.y > fallRange )
+				{
+					ir = ts->GetSubRect( 14 ); //fall 2
+				}
+				else if( vel.y > airRange ) 
+				{
+					ir = ts->GetSubRect( 13 ); //fall 1
+				}
+				else if( vel.y < -airRange )
+				{
+					ir = ts->GetSubRect( 10 ); //rising
+				}
+				else
+				{
+					ir = ts->GetSubRect( 11 ); //neutral
+				}
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+				sprite.setPosition( p.x, p.y );
+				sprite.setRotation( 0 );
+			}
+			break;
+		case SHORTJUMPSQUAT:
+			{
+				ir = ts->GetSubRect( 8 );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+				sprite.setPosition( gPoint.x, gPoint.y );
+				sprite.setRotation( angle );
+			}
+			break;
+		/*case SHORTJUMP:
+			{
+				if( vel.y > airRange )
+				{
+					sprite.setTextureRect( ts->GetSubRect( 10 ) );
+				}
+				else if( vel.y < -airRange )
+				{
+					sprite.setTextureRect( ts->GetSubRect( 
+				}
+				else
+				{
+
+				}
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+				sprite.setPosition( p.x, p.y );
+				sprite.setRotation( 0 );
+			}
+			break;*/
+		case TALLJUMP:
+			{
+				int div = 2;
+				int orig = 16;
+				if( vel.y > orig - div ) 
+				{
+					ir = ts->GetSubRect( 29 );
+				}
+				else if( vel.y > orig - div * 2 )
+				{
+					ir = ts->GetSubRect( 28 );
+				}
+				else if( vel.y > orig - div * 3 )
+				{
+					ir = ts->GetSubRect( 27 );
+				}
+				else if( vel.y > orig - div * 4 )
+				{
+					ir = ts->GetSubRect( 26 );
+				}
+				else if( vel.y > orig - div * 5 )
+				{
+					ir = ts->GetSubRect( 25 );
+				}
+				else if( vel.y > orig - div * 6 )
+				{
+					ir = ts->GetSubRect( 24 );
+				}
+				else if( vel.y > orig - div * 7 )
+				{
+					ir = ts->GetSubRect( 23 );
+				}
+				else if( vel.y < -4 )
+				{
+					ir = ts->GetSubRect( 21 );
+				}
+				else
+				{
+					ir = ts->GetSubRect( 22 );
+				}
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+				sprite.setPosition( p.x, p.y );
+				sprite.setRotation( 0 );
+			}
+			break;
+		case TALLJUMPSQUAT:
+			{
+				ir = ts->GetSubRect( (frame / animFactor[TALLJUMPSQUAT] ) + 16 );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+				sprite.setPosition( gPoint.x, gPoint.y );
+				sprite.setRotation( angle );
+			}
+			break;
+		//case ATTACK:
+		//	break;
+		case LAND:
+			if( landedAction == LEDGEJUMP || landedAction == SHORTJUMP )
+			{
+				ir = ts->GetSubRect( frame / animFactor[LAND] + 15 );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+				sprite.setPosition( gPoint.x, gPoint.y );
+				sprite.setRotation( angle );
+			}
+			else if( landedAction == TALLJUMP )
+			{
+				ir = ts->GetSubRect( frame / animFactor[LAND] + 30 );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+				sprite.setPosition( gPoint.x, gPoint.y );
+				sprite.setRotation( angle );
+			}
+			break;
+		}
+
 		if( attackFrame >= 0 )
 		{
-			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
-			if( !facingRight )
-			{
-				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
-			}
-			sprite.setTextureRect( r );
+			ir = ts->GetSubRect( 28 + attackFrame / attackMult );
 		}
+
+		if( !facingRight )
+		{
+			ir = sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
+		}
+		sprite.setTextureRect( ir );
 	}
 }
 
