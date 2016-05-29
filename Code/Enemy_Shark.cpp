@@ -13,22 +13,9 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
-	:Enemy( owner, EnemyType::GHOST ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
+Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
+	:Enemy( owner, EnemyType::SHARK ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
-	
-	actionLength[WAKEUP] = 60;
-	actionLength[APPROACH] = 2;
-	actionLength[BITE] = 2;
-	actionLength[EXPLODE] = 60;
-
-	animFactor[WAKEUP] = 1;
-	animFactor[APPROACH] = 20;
-	animFactor[BITE] = 20;
-	animFactor[EXPLODE] = 1;
-
-	action = WAKEUP;
-
 	latchedOn = false;
 	//offsetPlayer 
 	receivedHit = NULL;
@@ -43,8 +30,8 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 	//latchedOn = true; 
 	V2d dirFromPlayer = normalize( owner->player.position - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
-	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
-	//cout << "from player angle: " << fromPlayerAngle << endl;
+	cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
+	cout << "from player angle: " << fromPlayerAngle << endl;
 	testSeq.AddRadialMovement( 1, 0, 2 * PI * 3, 
 		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
 	
@@ -53,7 +40,7 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 	initHealth = 40;
 	health = initHealth;
 
-	spawnRect = sf::Rect<double>( pos.x - 64, pos.y - 64, 64 * 2, 64 * 2 );
+	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 
 	basePos = position;
 	
@@ -64,8 +51,8 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 
 	animationFactor = 5;
 
-	//ts = owner->GetTileset( "Ghost.png", 80, 80 );
-	ts = owner->GetTileset( "plasmid_128x128.png", 128, 128 );
+	//ts = owner->GetTileset( "Shark.png", 80, 80 );
+	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -98,13 +85,10 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 
 	
 	//hitboxInfo->kbDir;
-	awakeFrames = 0;
-	awakeCap = 60;
+
 	
 	latchStartAngle = 0;
 	dead = false;
-
-	awake = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -119,25 +103,15 @@ Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
-
-	origFacingRight = facingRight;
-
-	int detectionSize = 64; //need to make resting sprite larger, ending sprite smaller
-	detectionRect = sf::Rect<double>( position.x - detectionSize, position.y - detectionSize,
-		detectionSize * 2, detectionSize * 2 );
 }
 
-void Ghost::HandleEntrant( QuadTreeEntrant *qte )
+void Shark::HandleEntrant( QuadTreeEntrant *qte )
 {
 
 }
 
-void Ghost::ResetEnemy()
+void Shark::ResetEnemy()
 {
-	action = WAKEUP;
-	facingRight = origFacingRight;
-	awake = false;
-	awakeFrames = 0;
 	latchStartAngle = 0;
 	latchedOn = false;
 	totalFrame = 0;
@@ -148,7 +122,7 @@ void Ghost::ResetEnemy()
 	frame = 0;
 	basePos = origPosition;
 	position = basePos;
-	
+
 	receivedHit = NULL;
 	
 
@@ -159,28 +133,8 @@ void Ghost::ResetEnemy()
 	
 }
 
-void Ghost::UpdatePrePhysics()
+void Shark::UpdatePrePhysics()
 {
-	if( frame == actionLength[action] * animFactor[action] )
-	{
-		if( action == BITE )
-			action = EXPLODE;
-		else if( action == EXPLODE )
-		{
-			deathFrame = 60;
-			AttemptSpawnMonitor();
-		}
-		frame = 0;
-	}
-
-	
-
-	if( action == APPROACH && offsetPlayer.x == 0 && offsetPlayer.y == 0 )
-	{
-		action = BITE;
-		frame = 0;
-	}
-
 	if( !dead && receivedHit != NULL )
 	{
 		//owner->Pause( 5 );
@@ -199,62 +153,10 @@ void Ghost::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	V2d playerPos = owner->player.position;
-	if( !dead )
-	{
-		if( !awake )
-		{
-			Camera &cam = owner->cam;
-			double camWidth = 960 * cam.GetZoom();
-			double camHeight = 540 * cam.GetZoom();
-			sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-
-			if( screenRect.intersects( detectionRect ) )
-			{
-				awakeFrames++;
-
-				if( awakeFrames == awakeCap )
-				{
-					awake = true;
-					action = APPROACH;
-					frame = 0;
-					if( playerPos.x < position.x )
-					{
-						facingRight = false;
-					}
-					else
-					{
-						facingRight = true;
-					}
-
-					
-					//cout << "JUST LATCHING NOW" << endl;
-					latchedOn = true;
-					offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
-					origOffset = offsetPlayer;//length( offsetPlayer );
-					V2d offsetDir = normalize( offsetPlayer );
-					//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
-					//cout << "latchStart: " << latchStartAngle << endl;
-					//testSeq.Update();
-					basePos = owner->player.position;
-					//launchStartAngle / PI * 180;
-					
-				}
-			}
-			else
-			{
-				awakeFrames--;
-				if( awakeFrames < 0 )
-					awakeFrames = 0;
-			}
-		}
-		
-	}
-
 	
 }
 
-void Ghost::UpdatePhysics()
+void Shark::UpdatePhysics()
 {
 	if( latchedOn )
 	{
@@ -262,7 +164,19 @@ void Ghost::UpdatePhysics()
 	}
 	else
 	{
-		
+		if( length( basePos - owner->player.position ) < 200 )
+		{
+			cout << "JUST LATCHING NOW" << endl;
+			latchedOn = true;
+			offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
+			origOffset = offsetPlayer;//length( offsetPlayer );
+			V2d offsetDir = normalize( offsetPlayer );
+			latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+			//cout << "latchStart: " << latchStartAngle << endl;
+			testSeq.Update();
+			basePos = owner->player.position;
+			//launchStartAngle / PI * 180;
+		}
 		
 	}
 
@@ -274,38 +188,28 @@ void Ghost::UpdatePhysics()
 
 		 
 	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
-	if( action == APPROACH && latchedOn )
+	if( latchedOn )
 	{
-		//double cs = cos( latchStartAngle );
-		//double sn = sin( latchStartAngle );
+		double cs = cos( latchStartAngle );
+		double sn = sin( latchStartAngle );
 
-		/*V2d truePosOffset( testSeq.position.x * cs - 
+		V2d truePosOffset( testSeq.position.x * cs - 
 			testSeq.position.y * sn, 
-			testSeq.position.x * sn + testSeq.position.y * cs );*/
+			testSeq.position.x * sn + testSeq.position.y * cs );
 		//cout << "testseq: " << testSeq.position.x << ", " 
 		//	<< testSeq.position.y << endl;// ",  new: " <<
 			//truePosOffset.x << ", " << truePosOffset.y << endl;
-		position = basePos + offsetPlayer;
-
-		offsetPlayer += -normalize( offsetPlayer ) * 1.0 / NUM_STEPS;
-
-		if( length( offsetPlayer ) < 1.0 )
-		{
-			offsetPlayer = V2d( 0, 0 );
-			action = BITE;
-			frame = 0;
-		}
+		position = basePos + truePosOffset * length( offsetPlayer );
 	/*	theta = deg2rad(angle);
 
-		
 		cs = cos(theta);
 		sn = sin(theta);
 
 		x = x * cs - y * sn;
 		y = x * sn + y * cs;*/
 
-		//testSeq.Update();
-		//offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
+		testSeq.Update();
+		offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
 	}
 
 	//return;
@@ -332,7 +236,7 @@ void Ghost::UpdatePhysics()
 	PhysicsResponse();
 }
 
-void Ghost::PhysicsResponse()
+void Shark::PhysicsResponse()
 {
 	if( !dead && receivedHit == NULL )
 	{
@@ -363,7 +267,7 @@ void Ghost::PhysicsResponse()
 			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
-		//	cout << "Ghost received damage of: " << receivedHit->damage << endl;
+		//	cout << "Shark received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -381,22 +285,22 @@ void Ghost::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-			cout << "ghost hit player ghost pos: " <<
+			cout << "Shark hit player Shark pos: " <<
 				position.x << ", " << position.y << ", playerpos: "
 				<< owner->player.position.x << ", " << owner->player.position.y << endl;
-		//	cout << "Ghost just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Shark just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
-void Ghost::UpdatePostPhysics()
+void Shark::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
 	}
 
-
+	
 
 	if( slowCounter == slowMultiple )
 	{
@@ -418,12 +322,12 @@ void Ghost::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	/*if( frame == 10 * animationFactor )
+	if( frame == 10 * animationFactor )
 	{
 		frame = 0;
-	}*/
+	}
 
-	cout << "action: " << action << endl; 
+
 
 	if( deathFrame == 60 )
 	{
@@ -433,43 +337,11 @@ void Ghost::UpdatePostPhysics()
 	UpdateSprite();
 }
 
-void Ghost::UpdateSprite()
+void Shark::UpdateSprite()
 {
-	//close is 2
-	//3 is biting
-	if( !dead )
-	{
-		V2d diff = owner->player.position - position;
-		double lenDiff = length( diff );
-		IntRect ir;
-		switch( action )
-		{
-		case WAKEUP:
-			ir = ts->GetSubRect( 0 );
-			break;
-		case APPROACH:
-			ir = ts->GetSubRect( (frame / animFactor[APPROACH]) + 1 );
-			break;
-		case BITE:
-			ir = ts->GetSubRect( (frame / animFactor[APPROACH]) + 3 );
-			break;
-		case EXPLODE:
-			ir = ts->GetSubRect( 5 );
-			break;
-		}
-		
-		if( !facingRight )
-		{
-			ir = sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
-		}
+	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	sprite.setPosition( position.x, position.y );
 
-		sprite.setTextureRect( ir  );
-
-	
-		sprite.setPosition( position.x, position.y );
-	}
-	else
-	{
 	botDeathSprite.setTexture( *ts->texture );
 	botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
 	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
@@ -481,10 +353,9 @@ void Ghost::UpdateSprite()
 	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-	}
 }
 
-void Ghost::Draw( sf::RenderTarget *target )
+void Shark::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead )
@@ -522,7 +393,7 @@ void Ghost::Draw( sf::RenderTarget *target )
 
 }
 
-void Ghost::DrawMinimap( sf::RenderTarget *target )
+void Shark::DrawMinimap( sf::RenderTarget *target )
 {
 	CircleShape enemyCircle;
 	enemyCircle.setFillColor( COLOR_BLUE );
@@ -538,22 +409,19 @@ void Ghost::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Ghost::IHitPlayer()
+bool Shark::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
-	if( action == EXPLODE )
+	if( hitBody.Intersects( player.hurtBody ) )
 	{
-		if( hitBody.Intersects( player.hurtBody ) )
-		{
-			player.ApplyHit( hitboxInfo );
-			return true;
-		}
+		player.ApplyHit( hitboxInfo );
+		return true;
 	}
 	return false;
 }
 
-void Ghost::UpdateHitboxes()
+void Shark::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -571,7 +439,7 @@ void Ghost::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Ghost::PlayerHitMe()
+pair<bool,bool> Shark::PlayerHitMe()
 {
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
@@ -604,7 +472,8 @@ pair<bool,bool> Ghost::PlayerHitMe()
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); 
+					it != player.ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -620,14 +489,14 @@ pair<bool,bool> Ghost::PlayerHitMe()
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player.Sharks[i]->curhi
 		}
 	}
 
 	return pair<bool, bool>(false,false);
 }
 
-bool Ghost::PlayerSlowingMe()
+bool Shark::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -643,7 +512,7 @@ bool Ghost::PlayerSlowingMe()
 	return false;
 }
 
-void Ghost::DebugDraw( RenderTarget *target )
+void Shark::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -659,7 +528,7 @@ void Ghost::DebugDraw( RenderTarget *target )
 	}
 }
 
-void Ghost::SaveEnemyState()
+void Shark::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -669,7 +538,7 @@ void Ghost::SaveEnemyState()
 	stored.position = position;
 }
 
-void Ghost::LoadEnemyState()
+void Shark::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

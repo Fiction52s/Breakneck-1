@@ -22,6 +22,8 @@ Spider::Spider( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::SPIDER ), facingRight( true )
 	//moveBezTest( .22,.85,.3,.91 )
 {
+	framesLaseringPlayer = 0;
+	rcEdge = NULL;
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = 10;
 	action = MOVE;
@@ -130,6 +132,10 @@ Spider::Spider( GameSession *owner, Edge *g, double q )
 
 void Spider::ResetEnemy()
 {
+	rcEdge = NULL;
+	framesLaseringPlayer = 0;
+	laserLevel = 0;
+
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
 	mover->roll = false;
@@ -403,14 +409,60 @@ void Spider::UpdatePrePhysics()
 	SetClosestLeft();
 	SetClosestRight();
 	CheckClosest( mover->ground, player.position, true, mover->edgeQuantity );
+
+	//V2d playerDir = normalize( player.position - mover->physBody.globalPosition );
+	//double playerAngle = atan2( playerDir.y, playerDir.x );
+
+	//if( playerAngle < 0 )
+	//{
+	//	playerAngle += PI * 2;
+	//}
+	//
+	//double rate = PI / 360.0;
+	//double window = PI / 60.0;
+	//if( playerAngle - laserAngle > window )
+	//{
+	//	if( playerAngle - laserAngle > PI )
+	//	{
+	//		laserAngle -= rate;
+	//	}
+	//	else
+	//	{
+	//		laserAngle += rate;
+	//	}
+	//}
+	//else if( playerAngle - laserAngle < -window) //some diff range
+	//{
+	//	if( laserAngle - playerAngle > PI )
+	//	{
+	//		laserAngle += rate;
+	//	}
+	//	else
+	//	{
+	//		laserAngle -= rate;
+	//	}
+	//}
+
+	//if( laserAngle < 0 )
+	//{
+	//	laserAngle += PI * 2;
+	//}
+	//else if( laserAngle > PI * 2 )
+	//{
+	//	laserAngle -= PI * 2;
+	//}
+
+	
 	//CheckClosest( mover->ground, player.position, false, mover->edgeQuantity );
 
 	//cout << "closest pos is: " << closestPos.position.x << ", "
 	//	<< closestPos.position.y << endl;
 
+
 	switch( action )
 	{
 	case MOVE:
+		//closestPos.
 		break;
 	case JUMP:
 		break;
@@ -811,10 +863,70 @@ void Spider::UpdatePostPhysics()
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
+
+
 	if( deathFrame == 30 )
 	{
 		owner->RemoveEnemy( this );
 		return;
+	}
+
+	if( length( owner->player.position - mover->physBody.globalPosition ) < 1000 )
+	{
+		rayStart = mover->physBody.globalPosition;
+		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
+
+		//rayEnd = rayStart + laserDir * 1000.0;//owner->player.position;
+		rayEnd = owner->player.position;
+		rcEdge = NULL;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		if( rcEdge != NULL )
+		{
+			V2d rcPoint = rcEdge->GetPoint( rcQuantity );
+			if( length( rcPoint - position ) < length( owner->player.position - position ) )
+			{
+				canSeePlayer = false;
+			}
+			else
+			{
+				canSeePlayer = true;
+			}
+		}
+		else
+		{
+			canSeePlayer = true;
+		}
+	}
+	else
+	{
+		canSeePlayer = false;
+	}
+
+	if( canSeePlayer )
+	{
+		framesLaseringPlayer += 1;
+	}
+	else
+	{
+		framesLaseringPlayer = 0;
+	}
+
+	if( framesLaseringPlayer > 240 )
+	{
+		laserLevel = 3;
+	}
+	else if( framesLaseringPlayer > 180 )
+	{
+		laserLevel = 2;
+	}
+	else if( framesLaseringPlayer > 120 )
+	{
+		laserLevel = 1;
+	}
+	else
+	{
+		laserLevel = 0;
 	}
 
 	UpdateSprite();
@@ -913,6 +1025,52 @@ void Spider::Draw(sf::RenderTarget *target )
 			cs.setPosition( closestPos.position.x, 
 				closestPos.position.y );
 			target->draw( cs );
+
+			Color laserColor;
+			switch( laserLevel )
+			{
+			case 0:
+				laserColor = Color::White;
+				break;
+			case 1:
+				laserColor = Color::Green;
+				break;
+			case 2:
+				laserColor = Color::Red;
+				break;
+			case 3:
+				laserColor = Color::Magenta;
+				break;
+			}
+
+			if( canSeePlayer )
+			{
+				V2d rcPoint;
+				if( rcEdge != NULL )
+				{
+					rcPoint = rcEdge->GetPoint( rcQuantity );
+				}
+				else
+				{
+					rcPoint = rayEnd;
+				}
+				sf::Vertex line[]= { 
+					Vertex( Vector2f( position.x, position.y ), laserColor ),
+					Vertex( Vector2f( rcPoint.x, rcPoint.y )
+					, laserColor )
+				};
+				target->draw( line, 2, sf::Lines );
+			}
+			else
+			{
+				/*V2d rcPoint = rcEdge->GetPoint( rcQuantity );
+				sf::Vertex line[]= { 
+					Vertex( Vector2f( position.x, position.y )
+					, Color::Red )
+					, Vertex( Vector2f( rcPoint.x, rcPoint.y ), Color::Red )
+				};
+				target->draw( line, 2, sf::Lines );*/
+			}
 		}
 	}
 	else
@@ -1164,4 +1322,19 @@ void Spider::Land()
 {
 	frame = 0;
 	//cout << "land" << endl;
+}
+
+void Spider::HandleRayCollision( Edge *edge, double equant, double rayPortion )
+{
+	if( edge->edgeType == Edge::OPEN_GATE )
+	{
+		return;
+	}
+
+	if( rcEdge == NULL || length( edge->GetPoint( equant ) - rayStart ) < 
+		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) )
+	{
+		rcEdge = edge;
+		rcQuantity = equant;
+	}
 }
