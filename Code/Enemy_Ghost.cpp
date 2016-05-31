@@ -381,9 +381,9 @@ void Ghost::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-			cout << "ghost hit player ghost pos: " <<
-				position.x << ", " << position.y << ", playerpos: "
-				<< owner->player.position.x << ", " << owner->player.position.y << endl;
+			//cout << "ghost hit player ghost pos: " <<
+			//	position.x << ", " << position.y << ", playerpos: "
+			//	<< owner->player.position.x << ", " << owner->player.position.y << endl;
 		//	cout << "Ghost just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -573,6 +573,9 @@ void Ghost::UpdateHitboxes()
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Ghost::PlayerHitMe()
 {
+	if( action == WAKEUP )
+		return pair<bool,bool>(false,false);
+
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
 	{

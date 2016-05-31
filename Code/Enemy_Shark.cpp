@@ -16,6 +16,18 @@ using namespace sf;
 Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
 	:Enemy( owner, EnemyType::SHARK ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
+	//attackCounter = 0;
+	actionLength[WAKEUP] = 30;
+	actionLength[APPROACH] = 2;
+	actionLength[CIRCLE] = 2;
+	actionLength[RUSH] = 30;
+	actionLength[FINALCIRCLE] = 2;
+
+	animFactor[WAKEUP] = 1;
+	animFactor[FINALCIRCLE] = 1;
+	animFactor[APPROACH] = 1;
+	animFactor[CIRCLE] = 1;
+	animFactor[RUSH] = 1;
 	latchedOn = false;
 	//offsetPlayer 
 	receivedHit = NULL;
@@ -24,18 +36,25 @@ Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
 
 	origPosition = position;
 
-	approachFrames = 180 * 3;
-	totalFrame = 0;
+	//approachFrames = 180 * 3;
+	//totalFrame = 0;
 
 	//latchedOn = true; 
+
+	circleFrames = 60;
 	V2d dirFromPlayer = normalize( owner->player.position - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
-	cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
-	cout << "from player angle: " << fromPlayerAngle << endl;
-	testSeq.AddRadialMovement( 1, 0, 2 * PI * 3, 
-		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
+	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
+	//cout << "from player angle: " << fromPlayerAngle << endl;
+	circleSeq.AddRadialMovement( 1, 0, 2 * PI, 
+		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), circleFrames );
 	
-	testSeq.InitMovementDebug();
+	circleSeq.InitMovementDebug();
+
+
+	rushSeq.AddLineMovement( V2d( 0, 0 ), 
+		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), actionLength[RUSH] );
+
 
 	initHealth = 40;
 	health = initHealth;
@@ -47,6 +66,7 @@ Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
 	speed = pspeed;
 
 	//speed = 2;
+	action = WAKEUP;
 	frame = 0;
 
 	animationFactor = 5;
@@ -103,6 +123,11 @@ Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
+
+	wakeCounter = 0;
+	wakeCap = 20;
+
+	
 }
 
 void Shark::HandleEntrant( QuadTreeEntrant *qte )
@@ -112,11 +137,14 @@ void Shark::HandleEntrant( QuadTreeEntrant *qte )
 
 void Shark::ResetEnemy()
 {
+	//attackCounter = 0;
+	wakeCounter = 0;
+	action = WAKEUP;
 	latchStartAngle = 0;
 	latchedOn = false;
-	totalFrame = 0;
-	testSeq.Reset();
-	//testSeq.Update();
+//	totalFrame = 0;
+	circleSeq.Reset();
+	//circleSeq.Update();
 	dead = false;
 	deathFrame = 0;
 	frame = 0;
@@ -153,32 +181,102 @@ void Shark::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
+
+
+	if( !dead )
+	{
+
+		double cs = cos( latchStartAngle );
+		double sn = sin( latchStartAngle );
+
+		V2d truePosOffset( circleSeq.position.x * cs - 
+			circleSeq.position.y * sn, 
+			circleSeq.position.x * sn + circleSeq.position.y * cs );
+		truePosOffset *= length( offsetPlayer );
+
+		if( latchedOn )
+		{
+			basePos = owner->player.position;// + offsetPlayer;
+		}
+		
+		if( action == WAKEUP )
+		{
+			if( length( basePos - owner->player.position ) < 200 )
+			{
+				wakeCounter++;
+				if( wakeCounter == wakeCap )
+				{
+					action = CIRCLE;
+					frame = 0;
+					latchedOn = true;
+					offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
+					origOffset = offsetPlayer;//length( offsetPlayer );
+					V2d offsetDir = normalize( offsetPlayer );
+					latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+					//cout << "latchStart: " << latchStartAngle << endl;
+					circleSeq.Update();
+					basePos = owner->player.position;
+				}
+			}
+			else
+			{
+				wakeCounter--;
+				if( wakeCounter < 0 )
+					wakeCounter = 0;
+			}	
+		}
+		else if( action == CIRCLE )
+		{
+			
+			if( owner->player.hitstunFrames > 0 )
+			{
+				cout << "final circle" << endl;
+				//got hit!
+				action = FINALCIRCLE;
+
+			}
+			frame = 0;
+		}
+		else if( action == FINALCIRCLE && frame == circleFrames )
+		{
+			cout << "RUSHING: " << frame << endl;
+			//offsetPlayer = 
+			action = RUSH;
+			frame = 0;
+			rushSeq.Reset();
+			rushSeq.currMovement->start = truePosOffset;
+			rushSeq.currMovement->end = -truePosOffset;//V2d( 0, 0 );//position + 2.0 * ( basePos - position );
+			rushSeq.Update();
+
+			cout << "true pos offset: " << truePosOffset.x << ", " << truePosOffset.y << endl;
+
+			cout << "up: " << rushSeq.position.x << ", " << rushSeq.position.y << endl;
+			//rushSeq.currMovement-=
+		}
+		else if( action == RUSH )
+		{
+			if( rushSeq.currMovement == NULL )
+			{
+				cout << "back to normal: " << offsetPlayer.x << ", " << offsetPlayer.y << endl;
+				action = CIRCLE;
+				truePosOffset = -truePosOffset;
+				//offsetPlayer = -offsetPlayer;
+				offsetPlayer = truePosOffset;
+				V2d offsetDir = normalize( truePosOffset );
+				latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+				circleSeq.Reset();
+				circleSeq.Update();
+					//basePos = owner->player.position;
+			}
+		}
+		
+	}
 	
 }
 
 void Shark::UpdatePhysics()
 {
-	if( latchedOn )
-	{
-		basePos = owner->player.position;// + offsetPlayer;
-	}
-	else
-	{
-		if( length( basePos - owner->player.position ) < 200 )
-		{
-			cout << "JUST LATCHING NOW" << endl;
-			latchedOn = true;
-			offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
-			origOffset = offsetPlayer;//length( offsetPlayer );
-			V2d offsetDir = normalize( offsetPlayer );
-			latchStartAngle = atan2( offsetDir.y, offsetDir.x );
-			//cout << "latchStart: " << latchStartAngle << endl;
-			testSeq.Update();
-			basePos = owner->player.position;
-			//launchStartAngle / PI * 180;
-		}
-		
-	}
+	
 
 	//V2d offsetDir = normalize( offsetPlayer );
 	//double newAngle = atan2( offsetDir.y, offsetDir.x ) + PI;
@@ -186,18 +284,18 @@ void Shark::UpdatePhysics()
 		//newAngle << endl;
 	
 
-		 
-	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
-	if( latchedOn )
-	{
-		double cs = cos( latchStartAngle );
-		double sn = sin( latchStartAngle );
+	double cs = cos( latchStartAngle );
+	double sn = sin( latchStartAngle );
 
-		V2d truePosOffset( testSeq.position.x * cs - 
-			testSeq.position.y * sn, 
-			testSeq.position.x * sn + testSeq.position.y * cs );
-		//cout << "testseq: " << testSeq.position.x << ", " 
-		//	<< testSeq.position.y << endl;// ",  new: " <<
+	V2d truePosOffset( circleSeq.position.x * cs - 
+		circleSeq.position.y * sn, 
+		circleSeq.position.x * sn + circleSeq.position.y * cs );
+	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
+	if( (action == CIRCLE || action == FINALCIRCLE) && latchedOn )
+	{
+		
+		//cout << "circleSeq: " << circleSeq.position.x << ", " 
+		//	<< circleSeq.position.y << endl;// ",  new: " <<
 			//truePosOffset.x << ", " << truePosOffset.y << endl;
 		position = basePos + truePosOffset * length( offsetPlayer );
 	/*	theta = deg2rad(angle);
@@ -208,8 +306,27 @@ void Shark::UpdatePhysics()
 		x = x * cs - y * sn;
 		y = x * sn + y * cs;*/
 
-		testSeq.Update();
-		offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
+		circleSeq.Update();
+		if( circleSeq.currMovement == NULL )
+		{
+			circleSeq.Reset();
+			circleSeq.Update();
+			//cout << "resetting sequence" << endl;
+		}
+		//offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
+	}
+	else if( action == RUSH )
+	{
+		//double acs = cos( attackAngle );
+		//double asn = sin( attackAngle );
+		//2.0 * offsetPlayer;
+		position = basePos + rushSeq.position;// - truePosOffset * length( offsetPlayer );
+		//cout << "rushSeq: " << rushSeq.position.x << ", " << rushSeq.position.y << endl;
+		rushSeq.Update();
+
+		
+		//rushSeq.currMovement->start = 
+		//position = 
 	}
 
 	//return;
@@ -285,9 +402,9 @@ void Shark::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-			cout << "Shark hit player Shark pos: " <<
-				position.x << ", " << position.y << ", playerpos: "
-				<< owner->player.position.x << ", " << owner->player.position.y << endl;
+			//cout << "Shark hit player Shark pos: " <<
+			//	position.x << ", " << position.y << ", playerpos: "
+			//	<< owner->player.position.x << ", " << owner->player.position.y << endl;
 		//	cout << "Shark just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -305,10 +422,6 @@ void Shark::UpdatePostPhysics()
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
-		if( latchedOn && totalFrame < approachFrames )
-		{
-			++totalFrame;
-		}
 		slowCounter = 1;
 	
 		if( dead )
@@ -322,13 +435,6 @@ void Shark::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 10 * animationFactor )
-	{
-		frame = 0;
-	}
-
-
-
 	if( deathFrame == 60 )
 	{
 		owner->RemoveEnemy( this );
@@ -339,20 +445,41 @@ void Shark::UpdatePostPhysics()
 
 void Shark::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
 
-	botDeathSprite.setTexture( *ts->texture );
-	botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
-	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
-	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + deathVector.y * deathPartingSpeed * deathFrame );
+	if( !dead )
+	{
+		switch( action )
+		{
+		case WAKEUP:
+			testColor = Color::White;
+			break;
+		case APPROACH:
+			testColor = Color::Green;
+			break;
+		case CIRCLE:
+			testColor = Color::Blue;
+			break;
+		case RUSH:
+			testColor = Color::Red;
+			break;
+		}
+		//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+		//sprite.setPosition( position.x, position.y );
+	}
+	else
+	{
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
-	topDeathSprite.setTexture( *ts->texture );
-	topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
-	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+	}
 }
 
 void Shark::Draw( sf::RenderTarget *target )
@@ -370,7 +497,13 @@ void Shark::Draw( sf::RenderTarget *target )
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
 		}
-		target->draw( sprite );
+		CircleShape cs;
+		cs.setFillColor( testColor );
+		cs.setRadius( 30 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+		//target->draw( sprite );
 	}
 	else
 	{
@@ -516,11 +649,11 @@ void Shark::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( testSeq.currMovement != NULL )
+		if( circleSeq.currMovement != NULL )
 		{
-			if( testSeq.currMovement->vertices != NULL )
+			if( circleSeq.currMovement->vertices != NULL )
 			{
-				testSeq.currMovement->DebugDraw( target );
+				circleSeq.currMovement->DebugDraw( target );
 			}
 		}
 		hurtBody.DebugDraw( target );

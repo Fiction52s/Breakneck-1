@@ -9454,15 +9454,23 @@ void Actor::PhysicsResponse()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
+				hasGravReverse = true;
+				hasDoubleJump = true;
+				hasAirDash = true;
+				lastWire = 0;
+				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight 
+					|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
 				{
 					facingRight = !facingRight;
 				}
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight || storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
+				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight 
+					|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
+				{
 					facingRight = !facingRight;
+				}
 			}
 			else if( bn.y == 0  )
 			{

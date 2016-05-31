@@ -139,8 +139,8 @@ struct LineMovement: Movement
 		CubicBezier &bez,
 		int duration );
 		
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
+	//sf::Vector2<double> A;
+	//sf::Vector2<double> B;
 
 	sf::Vector2<double> GetPosition( int t );
 };

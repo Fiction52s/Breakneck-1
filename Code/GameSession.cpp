@@ -1130,7 +1130,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
 				//	framesBetweenNodes, loop );
-				Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), 10 );//framesBetweenNodes );
+				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), 10 );//framesBetweenNodes );
+				Shark * enemy = new Shark( this, Vector2i( xPos, yPos ), 10 );
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
 				//Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );

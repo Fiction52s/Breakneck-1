@@ -745,8 +745,30 @@ struct Ghost : Enemy
 
 struct Shark : Enemy
 {
+	enum Action
+	{
+		WAKEUP,
+		APPROACH,
+		CIRCLE,
+		FINALCIRCLE,
+		RUSH,
+	};
+	Action action;
+
+	int wakeCounter;
+	//int wakeCap;
+	int wakeCap;
+
+	int circleFrames;
+	double attackAngle;
+	//int attackCounter;
+
+	std::map<Action,int> actionLength;
+	std::map<Action,int> animFactor;
+
 	double latchStartAngle;
-	MovementSequence testSeq;
+	MovementSequence circleSeq;
+	MovementSequence rushSeq;
 	Shark( GameSession *owner, sf::Vector2i pos, 
 		float speed );
 
@@ -777,13 +799,15 @@ struct Shark : Enemy
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	
+	sf::Color testColor; //for temp anim
+
 	int frame;
 
 	double acceleration;
 	double speed;
 
-	int approachFrames;
-	int totalFrame;
+	//int approachFrames;
+	//int totalFrame;
 	sf::Vector2<double> origOffset;
 
 	sf::Sprite sprite;

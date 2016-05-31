@@ -146,7 +146,7 @@ LineMovement::LineMovement( sf::Vector2<double> &a,
 		sf::Vector2<double> &b,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration, Types::LINE ), A( a ), B( b )
+		:Movement( bez, duration, Types::LINE )//, A( a ), B( b )
 {
 	start = a;
 	end = b;
@@ -157,7 +157,7 @@ V2d LineMovement::GetPosition( int t )
 	
 	//cout << "Start get position" << endl;
 	double v = bez.GetValue( t / (double)duration );
-	return A + ( B - A ) * v;
+	return start + ( end - start ) * v;
 }
 
 CubicMovement::CubicMovement( sf::Vector2<double> &a,
