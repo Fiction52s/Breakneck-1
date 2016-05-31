@@ -18,106 +18,60 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
-Bat::Bat( GameSession *owner, Vector2i pos, 
-	list<Vector2i> &pathParam, int p_bulletSpeed,
-	//int p_nodeDistance, 
-	int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
+SpecterArea::SpecterArea( sf::Vector2i &pos, int rad )
+	:radius( rad )
 {
-	loop = p_loop;
-	//loop = false; //no looping on bat for now
+	testRect.left = pos.x - rad;
+	testRect.top = pos.y - rad;
+	testRect.width = rad * 2;
+	testRect.height = rad * 2;
+	barrier.globalPosition = V2d( pos.x, pos.y );
+	barrier.isCircle = true;
+	barrier.rw = rad;
+	//barrier.type 
+}
 
-	fireCounter = 0;
+void SpecterArea::HandleQuery( QuadTreeCollider * qtc )
+{
+	qtc->HandleEntrant( this );
+}
+
+bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
+{
+	/*CollisionBox b;
+	b.isCircle = false;
+	b.rw = r.width / 2;
+	b.rh = r.height / 2;
+	b.globalPosition = V2d( r.left + b.rw, r.top + b.rh );*/
+
+	return r.intersects( testRect );//barrier.Intersects( b );//
+}
+
+
+Specter::Specter( GameSession *owner, Vector2i pos )
+	:Enemy( owner, EnemyType::SPECTER ), deathFrame( 0 ), myArea( pos, 400 )
+{
+	//hopefully this doesnt cause deletion bugs
+	owner->specterTree->Insert( &myArea );
+	radius = 400;
+
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	bulletSpeed = p_bulletSpeed;
-	//nodeDistance = p_nodeDistance;
-	framesBetween = p_framesBetweenNodes;
-
 	deathFrame = 0;
-	
-	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
-	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
-	pathLength = pathParam.size() + 1;
-	if( loop )
-	{
-		
-		cout << "looping bat" << endl;
-		assert( false );
-		//tough cuz of set node distance from each other. for now don't use it.
-	}
-	else
-	{
-		//the road back
-		if( pathParam.size() > 0 )
-		{
-			pathLength += pathParam.size();
-		}
-	}
-	
-	path = new Vector2i[pathLength];
-	path[0] = pos;
-	path[pathLength-1] = pos;
-
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it) + pos;
-		++index;
-	}
-
-	if( pathLength == 1 )
-	{
-
-	}
-	else
-	{
-		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
-		++rit; //start at second item
-		
-		for(  ;rit != pathParam.rend(); ++rit )
-		{
-			path[index] = (*rit) + pos;
-			++index;
-		}
-	}
-
-	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 0, -150 );
-	V2d sqTest2 = position + V2d( 150, -150 );
-	V2d sqTest3 = position + V2d( 300, -150 );
-	V2d sqTest4 = position + V2d( 300, 0 );
-
-	for( int i = 0; i < pathLength - 1; ++i )
-	{
-		V2d A( path[i].x, path[i].y );
-		V2d B( path[i+1].x, path[i+1].y );
-		//A += position;
-		//B += position;
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), 60 );
-	}
-	if( pathLength == 1 )
-	{
-		testSeq.AddMovement( new WaitMovement( position, 60 ) );
-	}
-	testSeq.InitMovementDebug();
-	testSeq.Reset();
-	
 	frame = 0;
 
 	animationFactor = 5;
 
-	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_144x176.png", 144, 176 );
+	//ts = owner->GetTileset( "Specter.png", 80, 80 );
+	ts = owner->GetTileset( "bat_144x176.png", 144, 176 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -152,7 +106,6 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	
 
 	dead = false;
-	dying = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -161,7 +114,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
-	facingRight = true;
+	//facingRight = true;
 	 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
@@ -174,45 +127,27 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	//cout << "finish init" << endl;
 }
 
-void Bat::HandleEntrant( QuadTreeEntrant *qte )
+void Specter::HandleEntrant( QuadTreeEntrant *qte )
 {
-	cout << "testing specter" << endl;
-	SpecterArea *sa = (SpecterArea*)qte;
-	if( sa->barrier.Intersects( hurtBody ) )
-	{
-		cout << "specter protection" << endl;
-		specterProtected = true;
-	}
+	//Specter 
 }
 
 
-
-void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
+void Specter::ResetEnemy()
 {
-	b->launcher->DeactivateBullet( b );
-}
-
-void Bat::BulletHitPlayer(BasicBullet *b )
-{
-	owner->player.ApplyHit( b->launcher->hitboxInfo );
-}
-
-
-void Bat::ResetEnemy()
-{
-	fireCounter = 0;
-	testSeq.Reset();
-	launcher->Reset();
+//	fireCounter = 0;
+//	testSeq.Reset();
+//	launcher->Reset();
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
 	//targetNode = 1;
 	//forward = true;
 	dead = false;
-	dying = false;
+//	dying = false;
 	deathFrame = 0;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+//	position.x = path[0].x;
+//	position.y = path[0].y;
 	receivedHit = NULL;
 	
 
@@ -223,69 +158,12 @@ void Bat::ResetEnemy()
 	
 }
 
-void Bat::UpdatePrePhysics()
+void Specter::UpdatePrePhysics()
 {
-	if( testSeq.currMovement == NULL )
-	{
-		//cout << "resetting" << endl;
-		testSeq.Reset();
-		//testSeq.currMovement = testSeq.movementList;
-		//testSeq.currMovementStartTime = 0;
-	}
-
-	launcher->UpdatePrePhysics();
-
-	if( !dead && !dying && receivedHit != NULL )
-	{
-		//owner->Pause( 5 );
-		
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			AttemptSpawnMonitor();
-			dying = true;
-			//cout << "dying" << endl;
-		}
-
-		receivedHit = NULL;
-	}
-
-	if( !dying && !dead && fireCounter == framesBetween - 1 )// frame == 0 && slowCounter == 1 )
-	{
-		launcher->position = position;
-		launcher->facingDir = normalize( owner->player.position - position );
-		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-		//	launcher->facingDir.y << endl;
-		launcher->Fire();
-		fireCounter = 0;
-		//testLauncher->Fire();
-	}
-
-	/*if( latchedOn )
-	{
-		basePos = owner->player.position + offsetPlayer;
-	}*/
 }
 
-void Bat::UpdatePhysics()
+void Specter::UpdatePhysics()
 {	
-	specterProtected = false;
-	if( !dead && !dying )
-	{
-		testSeq.Update();
-		//cout << "position: " << position.x << ", " << position.y << 
-		//	", newpos: " << testSeq.position.x 
-		//	<< ", " << testSeq.position.y << endl;
-		position = testSeq.position;
-		PhysicsResponse();
-	}
-
-	launcher->UpdatePhysics();
-
 	if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
@@ -303,18 +181,15 @@ void Bat::UpdatePhysics()
 	return;
 }
 
-void Bat::PhysicsResponse()
+void Specter::PhysicsResponse()
 {
-	if( !dead && !dying && receivedHit == NULL )
+	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
 		pair<bool,bool> result = PlayerHitMe();
-		
-
-		if( result.first && !specterProtected )
+		if( result.first )
 		{
-
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
 			owner->player.test = true;
@@ -335,9 +210,9 @@ void Bat::PhysicsResponse()
 		//	cout << "frame: " << owner->player.frame << endl;
 
 			//owner->player.frame--;
-			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, true );
 			
-		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
+		//	cout << "Specter received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -355,12 +230,12 @@ void Bat::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Bat just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Specter just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
-void Bat::UpdatePostPhysics()
+void Specter::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
@@ -368,15 +243,16 @@ void Bat::UpdatePostPhysics()
 	}
 
 	
+	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
 	{
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
-		++fireCounter;
 	
-		if( dying )
+	
+		if( dead )
 		{
 			//cout << "deathFrame: " << deathFrame << endl;
 			deathFrame++;
@@ -393,35 +269,28 @@ void Bat::UpdatePostPhysics()
 		frame = 0;
 	}
 
-	if( deathFrame == 60 && dying )
+	if( deathFrame == 60 )
 	{
 		//cout << "switching dead" << endl;
-		dying = false;
-		dead = true;
+		//dying = false;
+		//dead = true;
 		//cout << "REMOVING" << endl;
 		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
+		owner->RemoveEnemy( this );
 		//return;
 	}
 
-	if( dead && launcher->GetActiveCount() == 0 )
-	{
-		//cout << "REMOVING" << endl;
-		owner->RemoveEnemy( this );
-	}
-
-	UpdateSprite();
-	launcher->UpdateSprites();
+	
 }
 
-void Bat::UpdateSprite()
+void Specter::UpdateSprite()
 {
-	if( !dying && !dead )
+	if( !dead )
 	{
 		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 		sprite.setPosition( position.x, position.y );
 	}
-	if( dying )
+	else
 	{
 
 		botDeathSprite.setTexture( *ts->texture );
@@ -438,10 +307,10 @@ void Bat::UpdateSprite()
 	}
 }
 
-void Bat::Draw( sf::RenderTarget *target )
+void Specter::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
-	if( !dead && !dying )
+	if( !dead )
 	{
 		if( monitor != NULL && !suppressMonitor )
 		{
@@ -479,11 +348,17 @@ void Bat::Draw( sf::RenderTarget *target )
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
 		}
+		CircleShape cs;
+		cs.setFillColor( Color( 255, 0, 0, 100 ) );
+		cs.setRadius( 400 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, 
+			cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
 		target->draw( sprite );
-		//cout << "drawing bat: " << sprite.getPosition().x
-		//	<< ", " << sprite.getPosition().y << endl;
+		
 	}
-	else if( !dead )
+	else
 	{
 		target->draw( botDeathSprite );
 
@@ -504,9 +379,9 @@ void Bat::Draw( sf::RenderTarget *target )
 
 }
 
-void Bat::DrawMinimap( sf::RenderTarget *target )
+void Specter::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying )
+	if( !dead )
 	{
 		CircleShape enemyCircle;
 		enemyCircle.setFillColor( COLOR_BLUE );
@@ -523,7 +398,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Bat::IHitPlayer()
+bool Specter::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
@@ -535,7 +410,7 @@ bool Bat::IHitPlayer()
 	return false;
 }
 
-void Bat::UpdateHitboxes()
+void Specter::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -553,7 +428,7 @@ void Bat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Bat::PlayerHitMe()
+pair<bool,bool> Specter::PlayerHitMe()
 {
 	Actor &player = owner->player;
 	if( player.currHitboxes != NULL )
@@ -572,21 +447,8 @@ pair<bool,bool> Bat::PlayerHitMe()
 
 		if( hit )
 		{
-			sf::Rect<double> qRect( position.x - hurtBody.rw,
-			position.y - hurtBody.rw, hurtBody.rw * 2, 
-			hurtBody.rw * 2 );
-			owner->specterTree->Query( this, qRect );
-
-			if( !specterProtected )
-			{
-				receivedHit = player.currHitboxInfo;
-				return pair<bool, bool>(true,false);
-			}
-			else
-			{
-				return pair<bool, bool>(false,false);
-			}
-			
+			receivedHit = player.currHitboxInfo;
+			return pair<bool, bool>(true,false);
 		}
 		
 	}
@@ -622,7 +484,7 @@ pair<bool,bool> Bat::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Bat::PlayerSlowingMe()
+bool Specter::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
 	for( int i = 0; i < player.maxBubbles; ++i )
@@ -638,23 +500,16 @@ bool Bat::PlayerSlowingMe()
 	return false;
 }
 
-void Bat::DebugDraw( RenderTarget *target )
+void Specter::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( testSeq.currMovement != NULL )
-		{
-			if( testSeq.currMovement->vertices != NULL )
-			{
-				testSeq.currMovement->DebugDraw( target );
-			}
-		}
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
 	}
 }
 
-void Bat::SaveEnemyState()
+void Specter::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -664,7 +519,7 @@ void Bat::SaveEnemyState()
 	stored.position = position;
 }
 
-void Bat::LoadEnemyState()
+void Specter::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

@@ -11914,6 +11914,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			ev->frame = 0;
 		}
 	}
+	/*else if( queryMode == "specter" )
+	{
+		SpecterArea *sp = (SpecterArea*)qte;
+		V2d center( sp->testRect.left + radius,
+			sp->testRect.top + radius );
+		CollisionBox b;
+		b.isCircle = true;
+	}*/
 	
 	++possibleEdgeCount;
 }

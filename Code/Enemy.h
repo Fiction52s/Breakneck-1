@@ -186,7 +186,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		COPYCAT,
 		GORILLA,
 		FLYINGHEAD,
-		SPECTRE,
+		SPECTER,
 		GOAL,
 		KEY,
 		BOSS_CRAWLER,
@@ -241,7 +241,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Monitor *monitor;
 	bool dead;
 	bool suppressMonitor;
-
+	bool specterProtected;
 
 
 	void HandleQuery( QuadTreeCollider * qtc );
@@ -454,6 +454,91 @@ struct Bat : Enemy, LauncherEnemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct SpecterArea : QuadTreeEntrant
+{
+	SpecterArea( sf::Vector2i &pos, int rad );
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+	int radius;
+	sf::Rect<double> testRect;
+	CollisionBox barrier;
+};
+
+struct Specter : Enemy
+{
+	
+	//MovementSequence testSeq;
+	Specter( GameSession *owner, sf::Vector2i pos );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	int deathFrame;
+
+	int radius;
+	
+	
+	SpecterArea myArea;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	//Tileset * ts_death;
+	//std::list<sf::Vector2i> path;
+	
+	//int targetNode;
+	//bool forward;
+	//sf::Vector2<double>
+	int frame;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	//bool facingRight;
 
 	struct Stored
 	{

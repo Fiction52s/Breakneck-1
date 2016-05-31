@@ -41,13 +41,13 @@ Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
 
 	//latchedOn = true; 
 
-	circleFrames = 60;
+	circleFrames = 120;
 	V2d dirFromPlayer = normalize( owner->player.position - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
 	circleSeq.AddRadialMovement( 1, 0, 2 * PI, 
-		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), circleFrames );
+		true, V2d( 1, 1 ), 0, CubicBezier( .44,.79,.77,.1), circleFrames );
 	
 	circleSeq.InitMovementDebug();
 
@@ -201,7 +201,7 @@ void Shark::UpdatePrePhysics()
 		
 		if( action == WAKEUP )
 		{
-			if( length( basePos - owner->player.position ) < 200 )
+			if( length( basePos - owner->player.position ) < 400 )
 			{
 				wakeCounter++;
 				if( wakeCounter == wakeCap )
@@ -228,7 +228,7 @@ void Shark::UpdatePrePhysics()
 		else if( action == CIRCLE )
 		{
 			
-			if( owner->player.hitstunFrames > 0 )
+			if( owner->player.hitstunFrames > 0  )
 			{
 				cout << "final circle" << endl;
 				//got hit!

@@ -464,6 +464,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree * itemTree;
 	QuadTree * crawlerReverserTree;
 	QuadTree *envPlantTree;
+	QuadTree *specterTree;
 	CrawlerReverser *drawCrawlerReversers;
 	
 	//std::map<Edge*, Gate*> gateMap;

@@ -231,6 +231,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	envPlantTree = new QuadTree( 1000000, 1000000 );
 
+	specterTree = new QuadTree( 1000000, 1000000 );
+
 	listVA = NULL;
 	lightList = NULL;
 
@@ -279,6 +281,9 @@ GameSession::~GameSession()
 	delete grassTree;
 	delete gateTree;
 	delete itemTree;
+	delete crawlerReverserTree;
+	delete envPlantTree;
+	delete specterTree;
 }
 
 //should only be used to assign a variable. don't use at runtime
@@ -1052,7 +1057,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int speed;
 				is >> speed;
-				Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				//Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
 				//enemy->Monitor::MonitorType
 				
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
@@ -1124,14 +1130,16 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesBetweenNodes;
 				//int speed;
 				//is >> speed;
-				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
-				//	bulletSpeed, framesBetweenNodes, loop );
+				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+					bulletSpeed, framesBetweenNodes, loop );
 				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
 				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
 				//	framesBetweenNodes, loop );
 				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), 10 );//framesBetweenNodes );
-				Shark * enemy = new Shark( this, Vector2i( xPos, yPos ), 10 );
+				//Shark * enemy = new Shark( this, Vector2i( xPos, yPos ), 10 );
+				
+				//specterTree->in
 				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
 				//Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
 				//Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );
@@ -4897,7 +4905,7 @@ int GameSession::Run( string fileN )
 
 		
 
-	//	DebugDrawActors();
+		DebugDrawActors();
 
 		
 
