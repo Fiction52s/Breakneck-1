@@ -82,6 +82,11 @@ void Goal::ResetEnemy()
 
 void Goal::HandleEntrant( QuadTreeEntrant *qte )
 {
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 }
 
 void Goal::UpdatePrePhysics()
@@ -94,6 +99,7 @@ void Goal::UpdatePrePhysics()
 
 void Goal::UpdatePhysics()
 {
+	specterProtected = false;
 	if( !dead )
 	{
 		UpdateHitboxes();

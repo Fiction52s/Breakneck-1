@@ -176,11 +176,9 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 
 void Bat::HandleEntrant( QuadTreeEntrant *qte )
 {
-	cout << "testing specter" << endl;
 	SpecterArea *sa = (SpecterArea*)qte;
 	if( sa->barrier.Intersects( hurtBody ) )
 	{
-		cout << "specter protection" << endl;
 		specterProtected = true;
 	}
 }

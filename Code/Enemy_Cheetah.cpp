@@ -31,9 +31,10 @@ Cheetah::Cheetah( GameSession *owner, Edge *g, double q, bool cw )
 	dead = false;
 	deathFrame = 0;
 	
-
+	actionLength[BURST] = 6;
 	actionLength[NEUTRAL] = 3;
-	actionLength[CHARGE] = 60;
+	actionLength[CHARGEUP] = actionLength[BURST] * 10;
+	
 	actionLength[ARRIVE] = 10;
 	actionLength[TURNAROUND] = 3;
 	actionLength[JUMP] = 2;
@@ -58,14 +59,17 @@ Cheetah::Cheetah( GameSession *owner, Edge *g, double q, bool cw )
 	testMover = new GroundMover( owner, g, q, 32, true, this );
 	testMover->SetSpeed( 0 );
 
+	trueMover = new GroundMover( owner, g, q, 32, true, this );
+	trueMover->SetSpeed( 0 );	
+
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( q );
-	sprite.setPosition( testMover->physBody.globalPosition.x,
-		testMover->physBody.globalPosition.y );
-	position = testMover->physBody.globalPosition;
+	sprite.setPosition( trueMover->physBody.globalPosition.x,
+		trueMover->physBody.globalPosition.y );
+	position = trueMover->physBody.globalPosition;
 	
 
 	receivedHit = NULL;
@@ -108,7 +112,7 @@ Cheetah::Cheetah( GameSession *owner, Edge *g, double q, bool cw )
 	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
 
-	testMover->SetSpeed( 0 );
+	//testMover->SetSpeed( 0 );
 }
 
 void Cheetah::ResetEnemy()
@@ -120,7 +124,13 @@ void Cheetah::ResetEnemy()
 	testMover->UpdateGroundPos();
 	testMover->SetSpeed( 0 );
 
-	position = testMover->physBody.globalPosition;
+	trueMover->ground = startGround;
+	trueMover->edgeQuantity = startQuant;
+	trueMover->roll = false;
+	trueMover->UpdateGroundPos();
+	trueMover->SetSpeed( 0 );
+
+	position = trueMover->physBody.globalPosition;
 	//testMover->UpdateGroundPos();
 	
 	bezFrame = 0;
@@ -130,13 +140,13 @@ void Cheetah::ResetEnemy()
 	//roll = false;
 	//ground = startGround;
 	//edgeQuantity = startQuant;
-	V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
+	V2d gPoint = trueMover->ground->GetPoint( testMover->edgeQuantity );
 	//sprite.setPosition( testMover->physBody.globalPosition.x,
 	//	testMover->physBody.globalPosition.y );
 	action = NEUTRAL;
 	frame = 0;
 
-	V2d gn = testMover->ground->Normal();
+	V2d gn = trueMover->ground->Normal();
 
 	deathFrame = 0;
 	dead = false;
@@ -173,7 +183,7 @@ void Cheetah::HandleEntrant( QuadTreeEntrant *qte )
 
 void Cheetah::UpdateHitboxes()
 {
-	Edge *ground = testMover->ground;
+	Edge *ground = trueMover->ground;
 	if( ground != NULL )
 	{
 		//V2d gn = ground->Normal();
@@ -206,10 +216,10 @@ void Cheetah::UpdateHitboxes()
 
 	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	if( action != CHARGE )
+	//if( action != CHARGE )
 	{
-		hitBody.globalPosition = testMover->physBody.globalPosition;
-		hurtBody.globalPosition = testMover->physBody.globalPosition;
+		hitBody.globalPosition = trueMover->physBody.globalPosition;
+		hurtBody.globalPosition = trueMover->physBody.globalPosition;
 	}
 	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
@@ -222,8 +232,12 @@ void Cheetah::ActionEnded()
 	case NEUTRAL:
 		frame = 0;
 		break;
-	case CHARGE:
-		action = NEUTRAL;
+	case CHARGEUP:
+		action = BURST;
+		frame = 0;
+		break;
+	case BURST:
+		action = ARRIVE;
 		frame = 0;
 		break;
 	case ARRIVE:
@@ -231,7 +245,7 @@ void Cheetah::ActionEnded()
 		frame = 0;
 		break;
 	case TURNAROUND:
-		action = CHARGE;
+		action = CHARGEUP;
 		frame = 0;
 		break;
 	case JUMP:
@@ -272,16 +286,23 @@ void Cheetah::UpdatePrePhysics()
 			}
 			else
 			{
-				action = CHARGE;
+				action = CHARGEUP;
 				frame = 0;
 			}
 			//action = CH
 		}
+		cout << "Test: " << testMover->ground << ", " << testMover->edgeQuantity << endl;
 		break;
-	case CHARGE:
-		cout << "charge" << endl;
+	case CHARGEUP:
+		cout << "charge" << frame << endl;
+		break;
+	case BURST:
+		cout << "burst" << frame << endl;
+		
+		cout << "true: " << trueMover->ground << ", " << trueMover->edgeQuantity << endl;
 		break;
 	case ARRIVE:
+	
 		cout << "arrive" << endl;
 		break;
 	case TURNAROUND:
@@ -303,7 +324,7 @@ void Cheetah::UpdatePrePhysics()
 	case NEUTRAL:
 		testMover->SetSpeed( 0 );
 		break;
-	case CHARGE:
+	case CHARGEUP:
 		if( facingRight )
 		{
 			testMover->SetSpeed( 10 );
@@ -315,8 +336,20 @@ void Cheetah::UpdatePrePhysics()
 
 		
 		break;
+	case BURST:
+		if( facingRight )
+		{
+			trueMover->SetSpeed( 10 );
+		}
+		else
+		{
+			trueMover->SetSpeed( -10 );
+		}
+		testMover->SetSpeed( 0 );
+		break;
 	case ARRIVE:
 		testMover->SetSpeed( 0 );
+		trueMover->SetSpeed( 0 );
 		break;
 	case TURNAROUND:
 		testMover->SetSpeed( 0 );
@@ -370,7 +403,7 @@ void Cheetah::UpdatePhysics()
 		return;
 	}
 
-
+	specterProtected = false;
 
 	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
 	//testMover->groundSpeed = groundSpeed;// * f;
@@ -387,27 +420,36 @@ void Cheetah::UpdatePhysics()
 
 	}
 
-	if( testMover->ground != NULL )
+	if( trueMover->ground != NULL )
 	{
 	}
 	else
 	{
-		testMover->velocity += gravity / (NUM_STEPS * slowMultiple);
+		trueMover->velocity += gravity / (NUM_STEPS * slowMultiple);
 
-		if( testMover->velocity.y >= maxFallSpeed )
+		if( trueMover->velocity.y >= maxFallSpeed )
 		{
-			testMover->velocity.y = maxFallSpeed;
+			trueMover->velocity.y = maxFallSpeed;
 		}
+	}
+
+	if( testMover->ground == NULL )
+	{
+		testMover->velocity = V2d( 0, 0 );
 	}
 
 	
 	//testMover->groundSpeed = 5;
 	testMover->Move( slowMultiple );
-
-	if( action != CHARGE )
+	for( int i = 0; i < 10; ++i )
 	{
-		cout << "moving" << endl;
-		position = testMover->physBody.globalPosition;
+		trueMover->Move( slowMultiple );
+	}
+
+	//if( action != CHARGE )
+	{
+	//	cout << "moving" << endl;
+		position = trueMover->physBody.globalPosition;
 	}
 	
 	PhysicsResponse();
@@ -417,15 +459,15 @@ void Cheetah::PhysicsResponse()
 {
 	if( !dead  )
 	{
-		bool roll = testMover->roll;
+		bool roll = trueMover->roll;
 		double angle = 0;
-		Edge *ground = testMover->ground;
-		double edgeQuantity = testMover->edgeQuantity;
+		Edge *ground = trueMover->ground;
+		double edgeQuantity = trueMover->edgeQuantity;
 
 		if( ground != NULL )
 		{
-			if( action != CHARGE )
-			{
+			//if( action != CHARGE )
+			//{
 		//cout << "response" << endl;
 			double spaceNeeded = 0;
 			V2d gn = ground->Normal();
@@ -539,7 +581,6 @@ void Cheetah::PhysicsResponse()
 				sprite.setPosition( gPoint.x, gPoint.y );
 			}
 			
-		}
 		}
 		}
 		else
@@ -724,7 +765,7 @@ void Cheetah::Draw(sf::RenderTarget *target )
 		}
 		target->draw( sprite );
 
-		if( action == CHARGE )
+		if( action == CHARGEUP )
 		{
 			CircleShape c;
 			c.setRadius( 20 );
@@ -817,8 +858,21 @@ bool Cheetah::IHitPlayer()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
-			return pair<bool, bool>(true,false);
+			sf::Rect<double> qRect( position.x - hurtBody.rw,
+			position.y - hurtBody.rw, hurtBody.rw * 2, 
+			hurtBody.rw * 2 );
+			owner->specterTree->Query( this, qRect );
+
+			if( !specterProtected )
+			{
+				receivedHit = player.currHitboxInfo;
+				return pair<bool, bool>(true,false);
+			}
+			else
+			{
+				return pair<bool, bool>(false,false);
+			}
+			
 		}
 		
 	}

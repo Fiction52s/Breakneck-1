@@ -141,6 +141,7 @@ void Crawler::ResetEnemy()
 
 void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 {
+	//needs to be redone
 	assert( queryMode != "" );
 
 	if( queryMode == "resolve" )
@@ -521,6 +522,7 @@ void Crawler::UpdatePrePhysics()
 
 void Crawler::UpdatePhysics()
 {
+	specterProtected = false;
 	if( dead )
 	{
 		return;

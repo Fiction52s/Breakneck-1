@@ -134,6 +134,7 @@ void BasicTurret::ResetEnemy()
 
 void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 {
+	//basic turret needs to be redone so add in the specter stuff then
 	//cout << "handling entrant" << endl;
 	Edge *e = (Edge*)qte;
 
@@ -228,6 +229,7 @@ void BasicTurret::UpdatePrePhysics()
 
 void BasicTurret::UpdatePhysics()
 {
+	specterProtected = false;
 	Bullet *currBullet = activeBullets;
 	int i = 0;
 	while( currBullet != NULL )

@@ -51,6 +51,9 @@ bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
 Specter::Specter( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::SPECTER ), deathFrame( 0 ), myArea( pos, 400 )
 {
+	initHealth = 60;
+	health = initHealth;
+
 	//hopefully this doesnt cause deletion bugs
 	owner->specterTree->Insert( &myArea );
 	radius = 400;
@@ -83,8 +86,8 @@ Specter::Specter( GameSession *owner, Vector2i pos )
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 16;
-	hurtBody.rh = 16;
+	hurtBody.rw = 32;
+	hurtBody.rh = 32;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
@@ -160,6 +163,21 @@ void Specter::ResetEnemy()
 
 void Specter::UpdatePrePhysics()
 {
+	if( !dead && receivedHit != NULL )
+	{	
+		//gotta factor in getting hit by a clone
+		health -= 20;
+
+		//cout << "health now: " << health << endl;
+
+		if( health <= 0 )
+		{
+			AttemptSpawnMonitor();
+			dead = true;
+		}
+
+		receivedHit = NULL;
+	}
 }
 
 void Specter::UpdatePhysics()
@@ -177,6 +195,8 @@ void Specter::UpdatePhysics()
 		slowMultiple = 1;
 		slowCounter = 1;
 	}
+
+	PhysicsResponse();
 
 	return;
 }
@@ -443,6 +463,7 @@ pair<bool,bool> Specter::PlayerHitMe()
 				break;
 			}
 		}
+		
 		
 
 		if( hit )

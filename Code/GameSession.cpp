@@ -1447,11 +1447,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed, 10 );
 
-				//Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity, clockwise );
+				Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise );
 
-				Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity );
+				//Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity );
 
 				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
 				if( monitorType != Monitor::NONE )

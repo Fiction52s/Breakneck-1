@@ -132,6 +132,7 @@ void SwarmMember::UpdatePrePhysics()
 
 void SwarmMember::UpdatePhysics()
 {
+	specterProtected = false;
 	if( !dead )
 	{
 		
@@ -244,8 +245,21 @@ std::pair<bool,bool> SwarmMember::PlayerHitMe()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
-			return pair<bool, bool>(true,false);
+			sf::Rect<double> qRect( position.x - hurtBody.rw,
+			position.y - hurtBody.rw, hurtBody.rw * 2, 
+			hurtBody.rw * 2 );
+			owner->specterTree->Query( this, qRect );
+
+			if( !specterProtected )
+			{
+				receivedHit = player.currHitboxInfo;
+				return pair<bool, bool>(true,false);
+			}
+			else
+			{
+				return pair<bool, bool>(false,false);
+			}
+			
 		}
 		
 	}
@@ -331,7 +345,11 @@ void SwarmMember::LoadEnemyState()
 	
 void SwarmMember::HandleEntrant( QuadTreeEntrant *qte )
 {
-
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 }
 
 void SwarmMember::ResetEnemy()
@@ -388,6 +406,12 @@ Swarm::Swarm( GameSession *owner,
 
 void Swarm::HandleEntrant( QuadTreeEntrant *qte )
 {
+	//fix when correcting
+	/*SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}*/
 }
 
 void Swarm::UpdatePrePhysics()
@@ -402,6 +426,7 @@ void Swarm::UpdatePrePhysics()
 
 void Swarm::UpdatePhysics()
 {
+	specterProtected = false;
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
 		if( members[i]->active )

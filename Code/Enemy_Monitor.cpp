@@ -59,6 +59,11 @@ Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
 
 void Monitor::HandleEntrant( QuadTreeEntrant *qte )
 {
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 	//empty
 }
 
@@ -73,6 +78,7 @@ void Monitor::UpdatePrePhysics()
 
 void Monitor::UpdatePhysics()
 {
+	specterProtected = false;
 	UpdateHitboxes();
 
 	int gateType = (int)monitorType + 1;

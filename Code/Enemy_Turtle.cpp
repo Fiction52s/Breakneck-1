@@ -120,7 +120,11 @@ Turtle::Turtle( GameSession *owner, Vector2i pos )
 
 void Turtle::HandleEntrant( QuadTreeEntrant *qte )
 {
-
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 }
 
 void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
@@ -269,6 +273,7 @@ void Turtle::UpdatePrePhysics()
 
 void Turtle::UpdatePhysics()
 {	
+	specterProtected = false;
 	if( !dead )
 	{
 		if( PlayerSlowingMe() )
@@ -569,8 +574,21 @@ pair<bool,bool> Turtle::PlayerHitMe()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
-			return pair<bool, bool>(true,false);
+			sf::Rect<double> qRect( position.x - hurtBody.rw,
+			position.y - hurtBody.rw, hurtBody.rw * 2, 
+			hurtBody.rw * 2 );
+			owner->specterTree->Query( this, qRect );
+
+			if( !specterProtected )
+			{
+				receivedHit = player.currHitboxInfo;
+				return pair<bool, bool>(true,false);
+			}
+			else
+			{
+				return pair<bool, bool>(false,false);
+			}
+			
 		}
 		
 	}

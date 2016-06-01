@@ -103,6 +103,11 @@ void FootTrap::ResetEnemy()
 
 void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 {
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 }
 
 void FootTrap::UpdatePrePhysics()
@@ -132,6 +137,7 @@ void FootTrap::UpdatePrePhysics()
 
 void FootTrap::UpdatePhysics()
 {
+	specterProtected = false;
 	if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )

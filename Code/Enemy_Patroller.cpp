@@ -107,7 +107,11 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 
 void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 {
-
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 }
 
 void Patroller::ResetEnemy()
@@ -156,7 +160,7 @@ void Patroller::UpdatePhysics()
 {
 	//cout << "setting to targetnode: " << targetNode << endl;
 	//position = V2d( path[targetNode].x, path[targetNode].y );
-
+	specterProtected = false;
 
 	double movement = speed / NUM_STEPS;
 	

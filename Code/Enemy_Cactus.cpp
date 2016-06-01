@@ -395,8 +395,21 @@ bool Cactus::IHitPlayer()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
-			return pair<bool, bool>(true,false);
+			sf::Rect<double> qRect( position.x - hurtBody.rw,
+			position.y - hurtBody.rw, hurtBody.rw * 2, 
+			hurtBody.rw * 2 );
+			owner->specterTree->Query( this, qRect );
+
+			if( !specterProtected )
+			{
+				receivedHit = player.currHitboxInfo;
+				return pair<bool, bool>(true,false);
+			}
+			else
+			{
+				return pair<bool, bool>(false,false);
+			}
+			
 		}
 		
 	}

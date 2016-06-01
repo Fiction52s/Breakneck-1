@@ -164,7 +164,8 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 		{
 			HitTerrain( q );	
-			return true;
+			//return true;
+			return false;
 		}			
 	}
 	else

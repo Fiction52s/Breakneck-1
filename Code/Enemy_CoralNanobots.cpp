@@ -141,6 +141,7 @@ bool CoralBlock::ResolvePhysics( V2d &vel )
 	minContact.edge = NULL;
 
 	//queryMode = "resolve";
+	queryMode = "resolve";
 	owner->terrainTree->Query( this, r );
 	//Query( this, owner->testTree, r );
 
@@ -605,8 +606,22 @@ bool CoralBlock::IHitPlayer()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
-			return pair<bool, bool>(true,false);
+			sf::Rect<double> qRect( position.x - hurtBody.rw,
+			position.y - hurtBody.rw, hurtBody.rw * 2, 
+			hurtBody.rw * 2 );
+			queryMode = "specter";
+			owner->specterTree->Query( this, qRect );
+
+			if( !specterProtected )
+			{
+				receivedHit = player.currHitboxInfo;
+				return pair<bool, bool>(true,false);
+			}
+			else
+			{
+				return pair<bool, bool>(false,false);
+			}
+			
 		}
 		
 	}
@@ -705,9 +720,21 @@ void CoralBlock::ResetEnemy()
 
 void CoralBlock::HandleEntrant( QuadTreeEntrant *qte )
 {
-	Edge *e = (Edge*)qte;
+	if( queryMode == "collision" )
+	{
+		Edge *e = (Edge*)qte;
 
-	col = true;
+		col = true;
+	}
+	else if( queryMode == "specter" )
+	{
+		SpecterArea *sa = (SpecterArea*)qte;
+		if( sa->barrier.Intersects( hurtBody ) )
+		{
+			specterProtected = true;
+		}
+	}
+	
 
 	//actually use this for telling when to stop 
 	//expanding in a certain direction
@@ -836,6 +863,11 @@ CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double spee
 
 void CoralNanobots::HandleEntrant( QuadTreeEntrant *qte )
 {
+	/*SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}*/
 }
 
 void CoralNanobots::ResetEnemy()
@@ -899,6 +931,7 @@ void CoralNanobots::UpdatePrePhysics()
 
 void CoralNanobots::UpdatePhysics()
 {
+	specterProtected = false;
 	//launcher->UpdatePhysics();
 	//launcher->CapBulletVel( 12 );
 	CoralBlock *curr = activeBlocks;

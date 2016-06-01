@@ -1247,7 +1247,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 	enum Action
 	{
 		NEUTRAL,
-		CHARGE,
+		CHARGEUP,
+		BURST,
 		ARRIVE,
 		TURNAROUND,
 		JUMP,
@@ -1304,6 +1305,7 @@ struct Cheetah : Enemy, GroundMoverHandler
 	//Edge *ground;
 	//double edgeQuantity;
 	GroundMover *testMover;
+	GroundMover *trueMover;
 	void HitOther();
 	void ReachCliff();
 	void HitOtherAerial( Edge *e );
@@ -1884,7 +1886,7 @@ struct CoralBlock : Enemy
 	//Edge *ground;
 	
 	bool active;
-
+	std::string queryMode;
 	bool topOpen;
 	bool leftOpen;
 	bool rightOpen;
