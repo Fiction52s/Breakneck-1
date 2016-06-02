@@ -45,22 +45,26 @@ void Camera::UpdateReal( Actor *player )
 	GameSession *owner = player->owner;
 	V2d playerPos = player->position;
 
-	double numActive = 0;
+	numActive = 0;
+	//double numActive = 0;
 	V2d diffSum( 0, 0 );
 	double distanceFactor = .8;
 	V2d vPos = V2d( pos.x, pos.y );
 
-	double minX = playerPos.x;
-	double maxX = playerPos.x;
-	double minY = playerPos.y;
-	double maxY = playerPos.y;
+	double minX = pos.x - 480;// * zoomFactor;//playerPos.x - 480;
+	double maxX = pos.x + 480;// * zoomFactor;//playerPos.x + 480;
+	double minY = pos.y - 270;// * zoomFactor;//playerPos.y - 270;
+	double maxY = pos.y + 270;// * zoomFactor;//playerPos.y + 270;
 
 //	double numActive = 0;
 	//double xLimit = 
+
+	//double maxDistance = 0;
 	Enemy *curr = owner->activeEnemyList;
 	while( curr != NULL )
 	{
-		if( curr->type == Enemy::BASICEFFECT || length( playerPos - curr->position ) > 1500 )
+		if( curr->type == Enemy::BASICEFFECT || length( playerPos - curr->position ) > 900
+			|| curr->dead )
 		{
 			curr = curr->next;
 			continue;
@@ -70,6 +74,9 @@ void Camera::UpdateReal( Actor *player )
 
 		++numActive;
 		double len = length( curr->position - vPos );
+
+	//	if( len > maxDistance )
+	//		maxDistance = len;
 		V2d dir = normalize( curr->position - vPos );
 		
 		if( curr->position.x < minX )
@@ -87,12 +94,27 @@ void Camera::UpdateReal( Actor *player )
 		curr = curr->next;
 	}
 
-	maxX += 100;
-	minX -= 100;
-	maxY += 100;
-	minY -= 100;
 
-	cout << "num enemies: " << numActive << endl;
+	if( numActive > 0 )
+	{
+		if( framesActive < 60 )
+			framesActive++;
+		
+	}
+	else
+	{
+		framesActive--;
+		if( framesActive < 0 )
+			framesActive = 0;
+	}
+
+	double add = (double)framesActive / 60 * 100;
+	maxX += add;
+	minX -= add;
+	maxY += add;
+	minY -= add;
+
+	//cout << "num enemies: " << numActive << endl;
 
 	sf::Vector2f center( (minX + maxX) / 2, (minY + maxY) / 2 );
 	double width = maxX - minX;
@@ -104,16 +126,16 @@ void Camera::UpdateReal( Actor *player )
 	double ratio = max( wRatio, hRatio );
 	ratio = max( ratio, 1.0 );
 
-	offset.x = center.x - playerPos.x;
-	offset.y = center.y - playerPos.y;
+	//offset.x = center.x - playerPos.x;
+	//offset.y = center.y - playerPos.y;
 
-	cout << "wRatio: " << wRatio << ", ratio: " << ratio << endl;
+	//cout << "wRatio: " << wRatio << ", ratio: " << ratio << endl;
 
 	//zoomLevel = 0;
 	//zoomFactor = ratio;
 
-	testOffset.x = offset.x;//center.x;
-	testOffset.y = offset.y;//center.y;
+	testOffset.x = center.x - playerPos.x;//center.x;
+	testOffset.y = center.y - playerPos.y;//center.y;
 	testZoom = ratio;
 	//pos.x = center.x;
 	//pos.y = center.y;
@@ -121,7 +143,7 @@ void Camera::UpdateReal( Actor *player )
 
 	if( numActive > 0 )
 	{
-		diffSum = diffSum / numActive;
+		diffSum = diffSum / (double)numActive;
 	}
 
 	if( numActive > 0 )
@@ -140,7 +162,7 @@ void Camera::UpdateReal( Actor *player )
 
 void Camera::Update( Actor *player )
 {
-	//UpdateReal( player );
+	
 	if( bossCrawler )
 	{
 		return;
@@ -283,7 +305,7 @@ void Camera::Update( Actor *player )
 
 	float temp;
 	V2d f;
-	double kk = 9.0;//18.0;
+	double kk = 18.0;
 	if( player->ground != NULL )
 	{
 		temp = abs(player->groundSpeed) / kk;
@@ -302,6 +324,7 @@ void Camera::Update( Actor *player )
 	}
 
 	double zDiff = temp - zoomFactor;
+	//double zDiff = testZoom - zoomFactor;
 	if( zDiff > 0 )
 	{
 		zoomFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
@@ -312,6 +335,8 @@ void Camera::Update( Actor *player )
 		zoomFactor += zDiff / 350.0 / player->slowMultiple;
 	}
 
+	
+	//cout << "zdiff: " << zDiff << ", zoomfactor: " << zoomFactor << ", test: " << testZoom << endl;
 	//zoomFactor = ( zoomFactor + testZoom ) / 2.0;
 	//zoomFactor = testZoom;
 
@@ -326,8 +351,11 @@ void Camera::Update( Actor *player )
 	pos.y = playerPos.y;
 	
 
-	double offX = pVel.x * .7;
-	double offXMax = 5;
+	//double offX = pVel.x * .7;
+	//double offXMax = 2;
+
+	double offX = pVel.x * 1.0;
+	double offXMax = 10;
 
 	//offX = (offX + testOffset.x) / 2.0;
 
@@ -344,8 +372,8 @@ void Camera::Update( Actor *player )
 	//offset.x = testOffset.x;
 	//offset.y += pVel.y * .3;
 
-	double offY = pVel.y;
-	double offYMax = 3;
+	double offY = pVel.y * 1.0;
+	double offYMax = 10;
 	
 	//offY = (offY + testOffset.y) / 2.0;
 
@@ -393,14 +421,47 @@ void Camera::Update( Actor *player )
 	else if( offset.x > xLimit * zoomFactor )
 		offset.x = xLimit * zoomFactor;
 
-	if( offset.y < -100 * zoomFactor )
-		offset.y = -100 * zoomFactor;
+	if( offset.y < -25 * zoomFactor )
+		offset.y = -25 * zoomFactor;
 	else if( offset.y > 125 * zoomFactor )
 		offset.y = 125 * zoomFactor;
 
 	pos.x += offset.x;
 	pos.y += offset.y;
 
+
+	UpdateReal( player );
+
+
+	double blah = .01;
+	
+	if( numActive > 0 )
+	{
+		if( testZoom > zoomFactor )
+		{
+			//cout << "old zoomfactor : " << zoomFactor << " new: ";
+			zoomFactor += blah;
+			if( zoomFactor > testZoom )
+				zoomFactor = testZoom;
+			cout << zoomFactor << endl;
+		}
+		/*else if( testZoom < zoomFactor )
+		{
+			zoomFactor -= blah;
+			if( zoomFactor < testZoom )
+				zoomFactor = testZoom;
+		}*/
+
+		//zoomFactor = zoomFactor * .5 + testZoom * .5;
+	}
+
+	if( zoomFactor < 1 )
+		zoomFactor = 1;
+	else if( zoomFactor > maxZoom )
+		zoomFactor = maxZoom;
+
+	//cout << "zoomfactor: " << zoomFactor << endl;
+	//zoomFactor = testZoom;
 	if( pVel.y > 0 )
 	{
 		ideal.y += top * zoomFactor;
@@ -449,6 +510,8 @@ void Camera::Update( Actor *player )
 		//pos.y += topExtra;
 	}	
 
+	offset.y -= 100;
+	//cout << "offset: " << offset.x << ", " << offset.y << endl;
 	/*double numActive = 0;
 	Enemy *curr = owner->activeEnemyList;
 	while( curr != NULL )

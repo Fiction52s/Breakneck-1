@@ -21,6 +21,9 @@ struct Camera
 	float zoomLevel1;
 	float zoomLevel2;
 	float zoomLevel3;
+
+	int numActive;
+	int framesActive;
 	
 	sf::Vector2f testOffset;
 	float testZoom;

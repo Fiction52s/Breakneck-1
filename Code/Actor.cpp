@@ -3345,7 +3345,7 @@ void Actor::UpdatePrePhysics()
 
 			framesSinceBounce = 0;
 			V2d bn = bounceNorm;//bounceEdge->Normal();
-			if( frame == actionLength[BOUNCEGROUND] - 1 || boostBounce )
+			if( boostBounce )
 			{
 				framesInAir = 0;
 				action = BOUNCEAIR;
@@ -3483,7 +3483,91 @@ void Actor::UpdatePrePhysics()
 				//if( ground != NULL )
 				//	ground = NULL;
 			}
+			else if( frame == actionLength[BOUNCEGROUND] - 1 )
+			{
+				if( bn.y < 0 )
+				{
+					V2d alongVel = V2d( -bn.y, bn.x );
+					ground = bounceEdge;
+					edgeQuantity = bounceQuant;
+					bounceEdge = NULL;
+					bounceMovingTerrain = NULL;
 
+					if( bn.y > -steepThresh )
+					{
+						
+					}
+					else
+					{
+					}
+					action = LAND;
+					frame = 0;
+
+
+					V2d testVel = storedBounceVel;
+
+				
+					if( testVel.y > 20 )
+					{
+						testVel.y *= .7;
+					}
+					else if( testVel.y < -30 )
+					{
+				
+						testVel.y *= .5;
+					}
+
+					if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
+					{
+						groundSpeed = dot( testVel, alongVel );
+					}
+					else
+					{
+						if( gNorm.y > -steepThresh )
+						{
+							groundSpeed = dot( testVel, alongVel );
+						}
+						else
+						{
+							groundSpeed = 0;
+						}
+					}
+
+					//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+					//cout << "setting groundSpeed: " << groundSpeed << endl;
+					//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
+					gNorm = ground->Normal();
+
+					//if( gNorm.y <= -steepThresh )
+					{
+						hasGravReverse = true;
+						hasAirDash = true;
+						hasDoubleJump = true;
+						lastWire = 0;
+					}
+
+					if( velocity.x < 0 && gNorm.y <= -steepThresh )
+					{
+						groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7);
+						//cout << "left boost: " << groundSpeed << endl;
+					}
+					else if( velocity.x > 0 && gNorm.y <= -steepThresh )
+					{
+						groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7 );
+						//cout << "right boost: " << groundSpeed << endl;
+					}
+
+					
+				}
+				else
+				{
+					action = JUMP;
+					frame = 1;
+					velocity = storedBounceVel;
+					bounceEdge = NULL;
+					bounceMovingTerrain = NULL;
+				}
+			}
 			//V2d( storedBounceVel.x, storedBounceVel.x ) ;
 			
 			
@@ -9084,30 +9168,11 @@ void Actor::UpdatePhysics()
 
 				V2d testVel = velocity;
 
-				//might use those steep slope things again to make sure he doesnt climb too fast
-				//maybe adjust these for frames in the air. don't let you touch the edge the second you jump
-				//so that you let your velocity die down a little
+				//testVel.y *= .7;
 				if( testVel.y > 20 )
 				{
 					testVel.y *= .7;
-					//alongVel.y *= .5;
-				//	cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
-				//	cout << "alongVel: " << alongVel.x << ", " << alongVel.y << endl;
-					//testVel.y *= .5;
 				}
-				/*else if( gNorm.y < 0 && gNorm.y > -steepThresh )
-				{
-					if( testVel.y < -30 )
-					{
-						cout << "severely reducing " << endl;
-						testVel.y = -5;
-						
-					}
-				}
-				else if( gNorm.y > 0 && gNorm.y < steepThresh )
-				{
-					cout << "reversed steep case" << endl;
-				}*/
 				else if( testVel.y < -30 )
 				{
 					//testVel.y = -30;
