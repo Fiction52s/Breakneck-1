@@ -303,6 +303,17 @@ void Camera::Update( Actor *player )
 	pVel.y /= player->slowMultiple;
 		
 
+	if( pVel.y > 0 )
+	{
+		if( framesFalling < 60 )
+			framesFalling++;
+	}
+	else 
+	{
+		if( framesFalling > 0 )
+			framesFalling--;
+	}
+
 	float temp;
 	V2d f;
 	double kk = 18.0;
@@ -433,7 +444,7 @@ void Camera::Update( Actor *player )
 	UpdateReal( player );
 
 
-	double blah = .01;
+	double blah = .005;
 	
 	if( numActive > 0 )
 	{
@@ -510,7 +521,10 @@ void Camera::Update( Actor *player )
 		//pos.y += topExtra;
 	}	
 
-	offset.y -= 100;
+
+	offset.y += (double)framesFalling / 60 * 100.0;
+
+
 	//cout << "offset: " << offset.x << ", " << offset.y << endl;
 	/*double numActive = 0;
 	Enemy *curr = owner->activeEnemyList;

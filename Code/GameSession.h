@@ -353,8 +353,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	static int IsSlopedGround( sf::Vector2<double> &normal );
 	static int IsSteepGround(  sf::Vector2<double> &normal );
 	static int IsWall( sf::Vector2<double> &normal );
-
-	
 	sf::VertexArray * SetupBorderQuads(
 		int bgLayer,
 		Edge *start,
@@ -503,6 +501,19 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite wipeSprite;
 
 	sf::View uiView;
+
+	//sf::CircleShape minimapCircle;
+	sf::Texture miniMaskTex;
+	sf::Shader minimapShader;
+	sf::RectangleShape miniRect;
+	sf::VertexArray miniVA;
+
+	sf::Texture lifeBarTex;
+	sf::Sprite lifeBarSprite;
+
+	sf::Texture miniGoalPtrTex;
+	sf::Sprite miniGoalPtrSprite;
+	//temp only^^
 
 	struct Sequence
 	{

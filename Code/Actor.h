@@ -77,6 +77,7 @@ struct Actor : QuadTreeCollider,
 
 	Tileset *ts_kinFace;
 	sf::Sprite kinFace;
+	
 
 	Actor( GameSession *owner );
 	void UpdateSprite();

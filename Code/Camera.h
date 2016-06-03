@@ -24,6 +24,7 @@ struct Camera
 
 	int numActive;
 	int framesActive;
+	int framesFalling;
 	
 	sf::Vector2f testOffset;
 	float testZoom;

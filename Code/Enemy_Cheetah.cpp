@@ -274,7 +274,7 @@ void Cheetah::UpdatePrePhysics()
 	switch( action )
 	{
 	case NEUTRAL:
-		cout << "neutral" << endl;
+		//cout << "neutral" << endl;
 		if( length( player.position - position ) < 400 )
 		{
 			if( player.position.x < position.x && facingRight
@@ -291,31 +291,31 @@ void Cheetah::UpdatePrePhysics()
 			}
 			//action = CH
 		}
-		cout << "Test: " << testMover->ground << ", " << testMover->edgeQuantity << endl;
+		//cout << "Test: " << testMover->ground << ", " << testMover->edgeQuantity << endl;
 		break;
 	case CHARGEUP:
-		cout << "charge" << frame << endl;
+		//cout << "charge" << frame << endl;
 		break;
 	case BURST:
-		cout << "burst" << frame << endl;
+		//cout << "burst" << frame << endl;
 		
-		cout << "true: " << trueMover->ground << ", " << trueMover->edgeQuantity << endl;
+		//cout << "true: " << trueMover->ground << ", " << trueMover->edgeQuantity << endl;
 		break;
 	case ARRIVE:
 	
-		cout << "arrive" << endl;
+		//cout << "arrive" << endl;
 		break;
 	case TURNAROUND:
-		cout << "turnaround" << endl;
+		//cout << "turnaround" << endl;
 		break;
 	case JUMP:
-		cout << "jump" << endl;
+		//cout << "jump" << endl;
 		break;
 	case ATTACK:
 		//not gonna use this for a bit
 		break;
 	case LAND:
-		cout << "land" << endl;
+		//cout << "land" << endl;
 		break;
 	}
 

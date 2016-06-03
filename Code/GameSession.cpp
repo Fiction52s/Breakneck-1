@@ -70,8 +70,40 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
-	postProcessTex2( ppt2 )
+	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
+	Vector2f miniPos = Vector2f( 30, 750 );
+	miniVA[0].position = miniPos + Vector2f( 0, 0 );
+	miniVA[1].position = miniPos + Vector2f( 300, 0 );
+	miniVA[2].position = miniPos + Vector2f( 300, 300 );
+	miniVA[3].position = miniPos + Vector2f( 0, 300 );
+
+	miniVA[0].texCoords = Vector2f( 0, 0 );
+	miniVA[1].texCoords = Vector2f( 300, 0 );
+	miniVA[2].texCoords = Vector2f( 300, 300 );
+	miniVA[3].texCoords = Vector2f( 0, 300 );
+
+	miniVA[0].color = Color::Red;
+	miniVA[1].color = Color::Blue;
+	miniVA[2].color = Color::Green;
+	miniVA[3].color = Color::Magenta;
+
+	//miniGoalPtrTex.loadFromFile( 
+
+	//minimapCircle.setRadius( 500 );
+	//minimapCircle.setFillColor( Color::Red );
+	//minimapCircle.setPosition( 100, 100
+	//	);
+	miniRect.setSize( Vector2f( 300, 300 ) );
+	miniRect.setPosition( 500, 500 );
+	//miniRect.
+	//miniMaskTex = new Texture;
+	miniMaskTex.loadFromFile( "minimapmask.png" );
+
+	lifeBarTex.loadFromFile( "lifebar_768x768.png" );
+	lifeBarSprite.setTexture( lifeBarTex );
+	lifeBarSprite.setPosition( 30, 200 );
+
 	bigBulletVA = NULL;
 	preScreenTex->setSmooth( false );
 	postProcessTex->setSmooth( false );
@@ -79,6 +111,14 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	postProcessTex2->setSmooth( false );
 
 	shockTestFrame = 0;
+
+	if (!minimapShader.loadFromFile("minimap_shader.frag", sf::Shader::Fragment ) )
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "minimap shader not loaded" );
+	}
+	minimapShader.setParameter( "u_mask", miniMaskTex );
 
 	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -128,6 +168,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 	usePolyShader = true;
 	minimapTex = miniTex;
+
+	minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
 
 	ts_keyHolder = GetTileset( "keyholder.png", 115, 40 );
 	keyHolderSprite.setTexture( *ts_keyHolder->texture );
@@ -404,7 +446,7 @@ void GameSession::AddEnemy( Enemy *e )
 	//{
 	//	cout << "ADDING BASIC TURRET NOW: " << endl;
 //	}
-	cout << "adding enemy: " << e->type << endl;
+	//cout << "adding enemy: " << e->type << endl;
 	if( activeEnemyList != NULL )
 	{
 		activeEnemyList->prev = e;
@@ -4917,7 +4959,7 @@ int GameSession::Run( string fileN )
 		//coll.DebugDraw( preScreenTex );
 
 		//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
-		double minimapZoom = 12;// * cam.GetZoom();// + cam.GetZoom();
+		double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
 		View vv;
 		vv.setCenter( player.position.x, player.position.y );
@@ -5036,7 +5078,7 @@ int GameSession::Run( string fileN )
 
 		CircleShape playerCircle;
 		playerCircle.setFillColor( COLOR_TEAL );
-		playerCircle.setRadius( 60 );
+		playerCircle.setRadius( 60 );//60 );
 		playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
 		playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
 		minimapTex->draw( playerCircle );
@@ -5065,8 +5107,11 @@ int GameSession::Run( string fileN )
 
 		minimapTex->display();
 		const Texture &miniTex = minimapTex->getTexture();
+		//minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
 
 		Sprite minimapSprite( miniTex );
+		//minimapSprite.setTexture( miniTex );
+		//minimapSprite.set
 		//minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
 		minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
 		//minimapSprite.setScale( .5, .5 );
@@ -5221,14 +5266,29 @@ int GameSession::Run( string fileN )
 
 
 
-		preScreenTex->draw( minimapSprite );
+		//preScreenTex->draw( minimapSprite );
 
 		
-		preScreenTex->draw( leftHUDBlankSprite );
-		preScreenTex->draw( speedBarSprite, &speedBarShader );
-		preScreenTex->draw( player.kinFace );
+		//preScreenTex->draw( leftHUDBlankSprite );
+		//preScreenTex->draw( speedBarSprite, &speedBarShader );
+		//preScreenTex->draw( player.kinFace );
+
+		/*sf::Vertex blah[] = 
+		{ 
+			Vertex(  ),
+			Vertex( Vector2f( 300, 0 )),
+			Vertex( Vector2f( 300, 300 )),
+			Vertex( Vector2f( 0, 300 ) )
+		};*/
+		//VertexArray va( sf::Quads, 4 );
+	
+
+		preScreenTex->draw( lifeBarSprite );
+		preScreenTex->draw( miniVA, &minimapShader );
+	//minimapSprite.draw( preScreenTex );
+		//preScreenTex->draw( minimapSprite, &minimapShader );
 		powerBar.Draw( preScreenTex );
-		preScreenTex->draw( leftHUDSprite );
+		//preScreenTex->draw( leftHUDSprite );
 
 		//window->setView( uiView );
 	//	window->draw( healthSprite );
