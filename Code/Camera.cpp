@@ -522,7 +522,7 @@ void Camera::Update( Actor *player )
 	}	
 
 
-	offset.y += (double)framesFalling / 60 * 100.0;
+	//offset.y += (double)framesFalling / 60 * 100.0;
 
 
 	//cout << "offset: " << offset.x << ", " << offset.y << endl;
