@@ -378,19 +378,6 @@ struct ActorParams : ISelectable
 		GROUND_AND_AIR
 	};
 
-	enum MonitorType
-	{
-		NONE,
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		WHITE,
-		Count
-	};
-
 	virtual ActorParams *Copy() = 0;
 	static EditSession *session;
 	ActorParams( PosType posType );
@@ -445,7 +432,7 @@ struct ActorParams : ISelectable
 	
 	
 	GroundInfo *groundInfo;
-	MonitorType monitorType;
+	bool hasMonitor;
 	sf::VertexArray boundingQuad;
 };
 
@@ -586,8 +573,13 @@ struct CrawlerParams : public ActorParams
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
+	CrawlerParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
 	CrawlerParams( EditSession *edit );
 
+	void SetParams();
+	void SetPanelInfo();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	ActorParams *Copy();
@@ -804,9 +796,6 @@ struct EditSession : GUIHandler
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
-	static void SetMonitorGrid( 
-		ActorParams::MonitorType mType, 
-		GridSelector *gs );
 	void Draw();
 	bool OpenFile( std::string fileName );
 	void WriteFile(std::string fileName);

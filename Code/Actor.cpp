@@ -55,10 +55,7 @@ Actor::Actor( GameSession *gs )
 		inBubble = false;
 		oldInBubble = false;
 
-		for( int i = 0; i < Gate::GateType::Count; ++i )
-		{
-			hasKey[i] = 0;
-		}
+		numKeys = 0;
 		
 
 		gateTouched = NULL;
@@ -323,7 +320,7 @@ Actor::Actor( GameSession *gs )
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
 		actionLength[JUMP] = 2;
-		tileset[JUMP] = owner->GetTileset( "jump.png", 64, 64 );
+		tileset[JUMP] = owner->GetTileset( "jump_64x64.png", 64, 64 );
 		normal[JUMP] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 
 		actionLength[LAND] = 1;
@@ -335,7 +332,7 @@ Actor::Actor( GameSession *gs )
 		normal[LAND2] = owner->GetTileset( "land2_NORMALS.png", 64, 64 );
 
 		actionLength[RUN] = 10 * 4;
-		tileset[RUN] = owner->GetTileset( "run2.png", 80, 48 );
+		tileset[RUN] = owner->GetTileset( "run_64x64.png", 64, 64 );
 		normal[RUN] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
 
 		actionLength[SLIDE] = 1;
@@ -348,7 +345,7 @@ Actor::Actor( GameSession *gs )
 		normal[SPRINT] = owner->GetTileset( "sprint_NORMALS.png", 128, 64 );		
 
 		actionLength[STAND] = 20 * 8;
-		tileset[STAND] = owner->GetTileset( "stand.png", 64, 64 );
+		tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
 		normal[STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
 
 		actionLength[STANDD] = 8 * 2;
@@ -420,7 +417,7 @@ Actor::Actor( GameSession *gs )
 		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
 		actionLength[JUMPSQUAT] = 3;
-		tileset[JUMPSQUAT] = owner->GetTileset( "jump.png", 64, 64 );
+		tileset[JUMPSQUAT] = owner->GetTileset( "jump_64x64.png", 64, 64 );
 		normal[JUMPSQUAT] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 		
 
@@ -9919,6 +9916,7 @@ void Actor::PhysicsResponse()
 			
 			if( g->reformBehindYou )
 			{
+				//Gate::GateState::
 				owner->LockGate( g );
 				//g->gState = Gate::REFORM;
 				cout << "LOCKING BEHIND YOU" << endl;
@@ -9928,20 +9926,52 @@ void Actor::PhysicsResponse()
 				
 			}
 
+			
 			if( g->keyGate )//g->type == Gate::BLUE )
 			{
-				assert( hasKey[g->type] > 0 );
+				assert( numKeys > 0 );
 				//hasKey[g->type] = 0;
-				int gateTypeCount = Gate::GateType::Count;
-				for( int i = 2; i < gateTypeCount; ++i )
-				{
-					hasKey[i] = 0;
-				}
+				numKeys = 0;
+
+
+				
 				//assert( hasBlueKey );
 				//cout << "getting rid of blue key and setting it to dissolve!!" << endl;
 				//hasBlueKey = false;
 			}
+
+			for( int i = 0; i < owner->numGates; ++i )
+			{
+				Gate *og = owner->gates[i];
+				if( g == og )
+					continue;
+				else
+				{
+					if( og->keyGate && (og->gState == Gate::HARD
+						|| og->gState == Gate::SOFT
+						|| og->gState == Gate::HARDEN
+						|| og->gState == Gate::SOFTEN )
+						&& (og->zoneA != NULL && og->zoneA->active)
+							|| (og->zoneB != NULL && og->zoneB->active ) )
+					{
+						og->gState = Gate::LOCKFOREVER;
+						//frame = 0;
+						//frame = 0;
+					}
+
+				}
+			}
+
 			g->gState = Gate::DISSOLVE;
+			g->frame = 0;
+
+			
+
+			/*while( owner->unlockedGateList != NULL )
+			{
+				owner->LockGate( gList );
+
+			}*/
 			//g->type = Gate::BLUE;
 			//
 
@@ -11915,10 +11945,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					if( (*it).Intersects( c->box ) )
 					{
 						currentCheckPoint = c;
-						for( int i = 2; i < Gate::GateType::Count; ++i )
-						{
-							c->hadKey[i] = hasKey[i];
-						}
+						//for( int i = 2; i < Gate::GateType::Count; ++i )
+						//{
+						//	c->hadKey[i] = hasKey[i];
+						//}
 						owner->activatedZoneList = NULL;
 						owner->inactiveEnemyList = NULL;
 						owner->unlockedGateList = NULL;
@@ -11933,10 +11963,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			if( hurtBody.Intersects( c->box ) )
 			{
 				currentCheckPoint = c;
-				for( int i = 2; i < Gate::GateType::Count; ++i )
+				/*for( int i = 2; i < Gate::GateType::Count; ++i )
 				{
 					c->hadKey[i] = hasKey[i];
-				}
+				}*/
 				owner->inactiveEnemyList = NULL;
 				owner->unlockedGateList = NULL;
 				owner->activatedZoneList = NULL;
@@ -14732,9 +14762,10 @@ bool Actor::CanUnlockGate( Gate *g )
 	{
 		canUnlock = false;
 	}
-	else if( g->keyGate && hasKey[g->type] >= g->requiredKeys )
+	else if( g->keyGate && numKeys >= g->requiredKeys && g->gState != Gate::LOCKFOREVER
+		&& g->gState != Gate::REFORM )
 	{
-		cout << "have keys: " << hasKey[g->type] <<
+		cout << "have keys: " << numKeys <<
 			"need keys: " << g->requiredKeys << endl;
 		canUnlock = true;
 	}
@@ -14746,10 +14777,10 @@ bool Actor::CaptureMonitor( Monitor * m )
 {
 	assert( m != NULL );
 
-	int gType = (int)m->monitorType + 1;
-	if( hasKey[gType] == 6 )
+	//int gType = (int)m->monitorType + 1;
+	if( numKeys == 6 )
 	{
-		cout << "ALREADY HAS SIX KEYS: " << gType << endl;
+		cout << "ALREADY HAS SIX KEYS" << endl;
 
 		return false;
 		//return false;
@@ -14757,7 +14788,8 @@ bool Actor::CaptureMonitor( Monitor * m )
 	else
 	{
 		//cout << "GIVING ME A KEY: " << (int)gType << endl;
-		hasKey[gType]++;
+		//hasKey[gType]++;
+		numKeys++;
 		return true;
 	}
 }

@@ -287,7 +287,7 @@ void GateInfo::WriteFile( ofstream &of )
 
 	//will eventually spit out the gate value
 	//but for now its just a constant to resave all the files
-	of << (int)type << " " << numKeysRequired << " " << poly0->writeIndex << " " 
+	of << (int)type << " " << poly0->writeIndex << " " 
 		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
 
 	if( reformBehindYou )
@@ -868,8 +868,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					int pathLength;
 					is >> pathLength;
@@ -902,7 +902,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new PatrollerParams( this, pos, globalPath, speed, loop ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					
 				}
 				else if( typeName == "bat" )
@@ -913,8 +913,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					int pathLength;
 					is >> pathLength;
@@ -953,7 +953,7 @@ bool EditSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new BatParams( this, pos, globalPath, bulletSpeed, 
 						 framesBetweenNodes, loop ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					
 				}
 				else if( typeName == "pulser" )
@@ -964,8 +964,8 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					int pathLength;
 					is >> pathLength;
@@ -997,7 +997,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new PulserParams( this, pos, globalPath, framesBetweenNodes, loop ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					
 				}
 				else if( typeName == "healthfly" )
@@ -1008,15 +1008,15 @@ bool EditSession::OpenFile( string fileName )
 					is >> pos.x;
 					is >> pos.y;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					int color;
 					is >> color;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new HealthFlyParams( this, pos, color ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 				}
 				else if( typeName == "key" )
 				{
@@ -1092,8 +1092,8 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					bool clockwise;
 					string cwStr;
@@ -1133,7 +1133,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
 					a.reset( new CrawlerParams( this, terrain.get(), edgeIndex, edgeQuantity, clockwise, speed ) ); 
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -1151,8 +1151,8 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					bool clockwise;
 					string cwStr;
@@ -1192,7 +1192,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
 					a.reset( new StagBeetleParams( this, terrain.get(), edgeIndex, edgeQuantity, clockwise, speed ) ); 
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -1210,8 +1210,8 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					int gravFactor;
 					is >> gravFactor;
@@ -1248,7 +1248,7 @@ bool EditSession::OpenFile( string fileName )
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
 					a.reset( new PoisonFrogParams( this, terrain.get(), edgeIndex, edgeQuantity, gravFactor,
 						Vector2i( xStrength, yStrength ), jumpWaitFrames ) );//, clockwise, speed ) ); 
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -1339,8 +1339,8 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 					
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					double bulletSpeed;
 					is >> bulletSpeed;
@@ -1370,7 +1370,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 					a.reset( new BasicTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -1387,8 +1387,8 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 					
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					double bulletSpeed;
 					is >> bulletSpeed;
@@ -1433,7 +1433,7 @@ bool EditSession::OpenFile( string fileName )
 					//a->SetAsBasicTurret( at, terrain, edgeIndex, edgeQuantity, bulletSpeed, framesWait );
 					a.reset( new CurveTurretParams( this, terrain.get(), edgeIndex, edgeQuantity, bulletSpeed, framesWait,
 						Vector2i( xGravFactor, yGravFactor ), relative ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -1449,8 +1449,8 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int mType;
-					is >> mType;
+					int hasMonitor;
+					is >> hasMonitor;
 
 					int testIndex = 0;
 					PolyPtr terrain( NULL );
@@ -1474,7 +1474,7 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
 					a.reset( new FootTrapParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
-					a->monitorType = (ActorParams::MonitorType)mType;
+					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
@@ -1500,7 +1500,7 @@ bool EditSession::OpenFile( string fileName )
 			string reformBehindYouStr;
 
 			is >> gType;
-			is >> numKeysRequired;
+			//is >> numKeysRequired;
 			is >> poly0Index;
 			is >> vertexIndex0;
 			is >> poly1Index;
@@ -5082,11 +5082,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										//groups["--"]->name
 										if( enemyEdgePolygon != NULL )
 										{
+											tempActor = new CrawlerParams( this,
+												enemyEdgePolygon, enemyEdgeIndex,
+												enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
+											tempActor->SetPanelInfo();
+											/*showPanel->textBoxes["name"]->text.setString( "test" );
 											showPanel->textBoxes["group"]->text.setString( "not test" );
 											showPanel->checkBoxes["clockwise"]->checked = false;
-											showPanel->textBoxes["speed"]->text.setString( "1.5" );
+											showPanel->textBoxes["speed"]->text.setString( "1.5" );*/
 											//trackingEnemy = NULL;
 										}
 									}
@@ -7631,7 +7635,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 			{
 				if( modifyGate != NULL )
 				{
-					GridSelectPop( "gatetype" );
+					GridSelectPop( "gateselect" );
 
 					if( tempGridResult == "delete" )
 					{
@@ -7709,7 +7713,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					{
 						
 
-						GridSelectPop( "gatetype" );
+						GridSelectPop( "gateselect" );
 
 						if( tempGridResult == "delete" )
 						{
@@ -8413,37 +8417,6 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 
 //THIS IS ALSO DEFINED IN ACTORPARAMS NEED TO GET RID OF THE DUPLICATE
 //helper function to assign monitor types
-ActorParams::MonitorType GetMonitorType( Panel *p )
-{
-	GridSelector *gs = p->gridSelectors["monitortype"];
-	string name = gs->names[gs->selectedX][gs->selectedY];
-
-	ActorParams::MonitorType monitorType;
-	if( name == "none" )
-	{
-		monitorType = ActorParams::NONE;
-	}
-	else if( name == "red" )
-	{
-		monitorType = ActorParams::RED;
-	}
-	else if( name == "green" )
-	{
-		monitorType = ActorParams::GREEN;
-	}
-	else if( name == "blue" )
-	{
-		monitorType = ActorParams::BLUE;
-	}
-	else
-	{
-		cout << "panel: " << p->name << ", name: " << name << endl;
-		assert( false );
-	}
-	
-
-	return monitorType;
-}
 
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
@@ -8463,7 +8436,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				PatrollerParams *patroller = (PatrollerParams*)select;
 				patroller->SetParams();
-				patroller->monitorType = GetMonitorType( p );
+				
+				//patroller->monitorType = GetMonitorType( p );
 				//patroller->speed = speed;
 				//patroller->loop = loop;
 				//patroller->SetPath( patrolPath );
@@ -8476,7 +8450,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ActorPtr patroller( tempActor );//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
 				patroller->SetParams();
 				patroller->group = groups["--"];
-				patroller->monitorType = GetMonitorType( p );
+				//patroller->monitorType = GetMonitorType( p );
 
 				CreateActor( patroller );
 
@@ -8507,7 +8481,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				BatParams *bat = (BatParams*)select;
 				bat->SetParams();
-				bat->monitorType = GetMonitorType( p );
+				//bat->hasMonitor = p->chec
+				//bat->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8517,7 +8492,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ActorPtr bat( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
 				bat->SetParams();
 				bat->group = groups["--"];
-				bat->monitorType = GetMonitorType( p );
+				//bat->monitorType = GetMonitorType( p );
 				//cout << "set patroller monitor type to: " << patroller->monitorType << endl;
 				//groups["--"]->actors.push_back( patroller);
 				
@@ -8551,7 +8526,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				PulserParams *pulser = (PulserParams*)select;
 				pulser->SetParams();
-				pulser->monitorType = GetMonitorType( p );
+				//pulser->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8561,7 +8536,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ActorPtr pulser( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
 				pulser->SetParams();
 				pulser->group = groups["--"];
-				pulser->monitorType = GetMonitorType( p );
+				//pulser->monitorType = GetMonitorType( p );
 
 				CreateActor( pulser );
 
@@ -8667,21 +8642,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "ok" );
 		{
-			bool clockwise = p->checkBoxes["clockwise"]->checked;
-			double speed;
-
-			stringstream ss;
-			string s = p->textBoxes["speed"]->text.getString().toAnsiString();
-			ss << s;
-
-			ss >> speed;
-
-			if( ss.fail() )
-			{
-				cout << "stringstream to integer parsing error" << endl;
-				ss.clear();
-				assert( false );
-			}
+			
 
 			//not sure if this is what i need
 			//if( mode == EDIT && selectedActor != NULL )
@@ -8689,9 +8650,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				CrawlerParams *crawler = (CrawlerParams*)select;
-				crawler->monitorType = GetMonitorType( p );
-				crawler->speed = speed;
-				crawler->clockwise = clockwise;
+				crawler->SetParams();
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8699,16 +8658,19 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				//eventually can convert this between indexes or something to simplify when i have more types
 				
-
-				ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
+				ActorPtr crawler( tempActor );
+				//ActorPtr crawler( new CrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
+				crawler->SetParams();
 				crawler->group = groups["--"];
-				crawler->monitorType = GetMonitorType( p );
+				
+				//crawler->monitorType = GetMonitorType( p );
 				//groups["--"]->actors.push_back( crawler );
-				enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
-				enemyEdgePolygon->UpdateBounds();
+				//enemyEdgePolygon->enemies[crawler->groundInfo->edgeStart].push_back( crawler );
+				//enemyEdgePolygon->UpdateBounds();
 
 
 				CreateActor( crawler );
+				tempActor = NULL;
 				/*Brush b;
 				SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(crawler);
 				b.AddObject( select );
@@ -8734,7 +8696,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				PoisonFrogParams *poisonFrog = (PoisonFrogParams*)select;
 				poisonFrog->SetParams();
-				poisonFrog->monitorType = GetMonitorType( p );
+				//poisonFrog->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8742,7 +8704,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				poisonFrog->SetParams();
 
 				poisonFrog->group = groups["--"];
-				poisonFrog->monitorType = GetMonitorType( p );
+				//poisonFrog->monitorType = GetMonitorType( p );
 
 
 				CreateActor( poisonFrog );
@@ -8765,7 +8727,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				StagBeetleParams *stagBeetle = (StagBeetleParams*)select;
 				stagBeetle->SetParams();
-				stagBeetle->monitorType = GetMonitorType( p );
+				//stagBeetle->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8778,7 +8740,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				enemyEdgePolygon->UpdateBounds();
 
 				stagBeetle->group = groups["--"];
-				stagBeetle->monitorType = GetMonitorType( p );
+				//stagBeetle->monitorType = GetMonitorType( p );
 
 				CreateActor( stagBeetle );
 				//groups["--"]->actors.push_back( crawler );
@@ -8826,7 +8788,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				BasicTurretParams *basicTurret = (BasicTurretParams*)select;
-				basicTurret->monitorType = GetMonitorType( p );
+				//basicTurret->monitorType = GetMonitorType( p );
 				basicTurret->bulletSpeed = bulletSpeed;
 				basicTurret->framesWait = framesWait;
 			}
@@ -8840,7 +8802,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				//groups["--"]->actors.push_back( basicTurret );
 				basicTurret->group = groups["--"];
-				basicTurret->monitorType = GetMonitorType( p );
+				//basicTurret->monitorType = GetMonitorType( p );
 
 				CreateActor( basicTurret );
 				//trackingEnemy = NULL;
@@ -8860,7 +8822,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
 				curveTurret->SetParams();
-				curveTurret->monitorType = GetMonitorType( p );
+				//curveTurret->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8871,7 +8833,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				enemyEdgePolygon->UpdateBounds();
 
 				curveTurret->group = groups["--"];
-				curveTurret->monitorType = GetMonitorType( p );
+				//curveTurret->monitorType = GetMonitorType( p );
 				
 				CreateActor( curveTurret );
 				
@@ -8889,7 +8851,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ISelectable *select = selectedBrush->objects.front().get();				
 				FootTrapParams *footTrap = (FootTrapParams*)select;
 				//FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
-				footTrap->monitorType = GetMonitorType( p );
+				//footTrap->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
@@ -8901,7 +8863,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				//groups["--"]->actors.push_back( footTrap );
 				footTrap->group = groups["--"];
-				footTrap->monitorType = GetMonitorType( p );
+				//footTrap->monitorType = GetMonitorType( p );
 				//trackingEnemy = NULL;
 				showPanel = NULL;
 
@@ -8920,7 +8882,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				HealthFlyParams *fly = (HealthFlyParams*)select;
-				fly->monitorType = GetMonitorType( p );
+
+				fly->hasMonitor = p->checkBoxes["monitor"]->checked;
+				//fly->monitorType = GetMonitorType( p );
 				fly->color = 0;
 				//patroller->speed = speed;
 				//patroller->loop = loop;
@@ -8932,7 +8896,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 
 				ActorPtr fly( new HealthFlyParams( this, airPos, 0 ) );
-				fly->monitorType = GetMonitorType( p ); //monitorType;
+				//fly->monitorType = GetMonitorType( p ); //monitorType;
 				//groups["--"]->actors.push_back( patroller);
 				fly->group = groups["--"];
 				
@@ -10761,11 +10725,12 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
+		/*GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
 		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
 		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
 		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );*/
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -10783,11 +10748,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 400 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -10803,11 +10764,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
 		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 400 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -10819,11 +10776,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -10841,10 +10794,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
 		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 330 ), 3, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 1, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 2, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
@@ -10859,16 +10810,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-
-		//sf::Sprite ss;
-		//ss.setColor( Color::White );
-		//ss.setTextureRect( IntRect
-
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -10886,16 +10828,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-
-		//sf::Sprite ss;
-		//ss.setColor( Color::White );
-		//ss.setTextureRect( IntRect
-
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -10909,16 +10842,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "3" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-
-		//sf::Sprite ss;
-		//ss.setColor( Color::White );
-		//ss.setTextureRect( IntRect
-
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -10931,11 +10855,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -10951,11 +10871,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "ygravfactor", Vector2i( 20, 300 ), 200, 20, "0" );
 		p->AddCheckBox( "relativegrav", Vector2i( 20, 350 ) );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 400 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
@@ -10967,11 +10883,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 
-		GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );
+		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
@@ -11033,27 +10945,6 @@ void EditSession::SetPanelDefault( ActorType *type )
 	}
 }
 
-void EditSession::SetMonitorGrid( ActorParams::MonitorType mType, GridSelector *gs )
-{
-	//GridSelector &gs = *p->gridSelectors["monitortype"];
-	gs->selectedY = 0;
-	switch( mType )
-	{
-	case ActorParams::NONE:
-		gs->selectedX = 0;
-		break;
-	case ActorParams::RED:
-		gs->selectedX = 1;
-		break;
-	case ActorParams::GREEN:
-		gs->selectedX = 2;
-		break;
-	case ActorParams::BLUE:
-		gs->selectedX = 3;
-		break;
-	}
-}
-
 void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
@@ -11094,16 +10985,13 @@ void EditSession::SetEnemyEditPanel()
 	else if( name == "crawler" )
 	{
 		CrawlerParams *crawler = (CrawlerParams*)ap;
-		
-		cout << "hmm: " << name << endl;
-		p->textBoxes["group"]->text.setString( crawler->group->name );
+		crawler->SetPanelInfo();
 
-		p->checkBoxes["clockwise"]->checked = crawler->clockwise;
-		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( crawler->speed ) );
+		
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 
-		SetMonitorGrid( crawler->monitorType, p->gridSelectors["monitortype"] );
+		//SetMonitorGrid( crawler->monitorType, p->gridSelectors["monitortype"] );
 		
 		showPanel = p;
 		
@@ -11137,7 +11025,8 @@ void EditSession::SetEnemyEditPanel()
 		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( basicTurret->bulletSpeed ) );
 		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( basicTurret->framesWait ) );
 
-		SetMonitorGrid( basicTurret->monitorType, p->gridSelectors["monitortype"] );
+		p->checkBoxes["monitor"]->checked = false;
+		//SetMonitorGrid( basicTurret->monitorType, p->gridSelectors["monitortype"] );
 
 		showPanel = p;
 	}
@@ -11158,7 +11047,7 @@ void EditSession::SetEnemyEditPanel()
 
 		p->textBoxes["group"]->text.setString( footTrap->group->name );
 
-		SetMonitorGrid( footTrap->monitorType, p->gridSelectors["monitortype"] );
+		p->checkBoxes["monitor"]->checked = false;
 
 		showPanel = p;
 	}
@@ -11168,7 +11057,8 @@ void EditSession::SetEnemyEditPanel()
 
 		p->textBoxes["group"]->text.setString( fly->group->name );
 
-		SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
+		p->checkBoxes["monitor"]->checked = false;
+		//SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
 
 		showPanel = p;
 	}

@@ -8,18 +8,28 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
-Gate::Gate( GameSession *p_owner, GateType p_type, int keysRequired, bool p_reformBehindYou )
+Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
-	requiredKeys( keysRequired ), reformBehindYou( p_reformBehindYou )
+	reformBehindYou( p_reformBehindYou )
 {
-	
+	//this could just be temporary
+	int t = (int)p_type;
+	if( t < 2 )
+	{
+		requiredKeys = 0;
+	}
+	else
+	{
+		requiredKeys = t - 1;
+		//cout << "requiredkeys: " << requiredKeys << endl;
+	}
 
 	edgeA = NULL;
 	edgeB = NULL;
 
 	activeNext = NULL;
 	ts = NULL;
-
+	
 	if( type != BLACK )
 	{
 		gState = SOFT;
@@ -217,6 +227,7 @@ void Gate::Update()
 			break;
 		case REFORM:
 			{
+				cout << "reforming " << endl;
 				//whatever length
 				if( frame == 10 )
 				{
@@ -226,6 +237,7 @@ void Gate::Update()
 			break;
 		case LOCKFOREVER:
 			{
+				cout << "locked foreverrrr" << endl;
 				//whatever the last frame of lockforever is
 				frame = 10;
 			}
@@ -257,7 +269,7 @@ void Gate::Update()
 	if( keyGate )
 	{
 
-		if( owner->player.hasKey[type] < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+		if( owner->player.numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
 		{
 			//cout << "HARDENING: " << type << endl;
 			if( gState == SOFTEN )
@@ -323,7 +335,7 @@ void Gate::Update()
 
 	if( type == GREY || type == BLACK || keyGate )
 	{
-		int realFrame = -1;
+		int realFrame = 0;
 
 		if( type == GREY || keyGate )
 		{
@@ -361,7 +373,7 @@ void Gate::Update()
 				break;
 			case LOCKFOREVER:
 				{
-					realFrame  = 1;
+					realFrame  = 0;
 				}
 				break;
 			case OPEN:

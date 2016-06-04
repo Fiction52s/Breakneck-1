@@ -60,7 +60,7 @@ EditSession * ActorParams::session = NULL;
 
 ActorParams::ActorParams( ActorParams::PosType p_posType )
 	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
-		monitorType( MonitorType::NONE ), group( NULL )
+		hasMonitor( false ), group( NULL )
 {
 	groundInfo = NULL;
 
@@ -116,7 +116,7 @@ void ActorParams::DrawMonitor( sf::RenderTarget *target )
 {
 	
 
-	if( monitorType != ActorParams::MonitorType::NONE )
+	if( hasMonitor )
 	{
 		double w = image.getLocalBounds().width;
 		double h = image.getLocalBounds().height;
@@ -124,30 +124,7 @@ void ActorParams::DrawMonitor( sf::RenderTarget *target )
 		sf::CircleShape cs;
 		cs.setRadius( max( w, h ) );
 
-		switch( monitorType )
-		{
-		case BLUE:
-			cs.setFillColor( COLOR_BLUE );
-			break;
-		case GREEN:
-			cs.setFillColor( COLOR_GREEN );
-			break;
-		case YELLOW:
-			cs.setFillColor( COLOR_YELLOW );
-			break;
-		case ORANGE:
-			cs.setFillColor( COLOR_ORANGE );
-			break;
-		case RED:
-			cs.setFillColor( COLOR_RED );
-			break;
-		case MAGENTA:
-			cs.setFillColor( COLOR_MAGENTA );
-			break;
-		case WHITE:
-			cs.setFillColor( COLOR_WHITE );
-			break;
-		}
+		cs.setFillColor( Color::White );
 
 		cs.setOrigin( cs.getLocalBounds().width / 2, 
 			cs.getLocalBounds().height / 2 );
@@ -587,7 +564,12 @@ HealthFlyParams::HealthFlyParams( EditSession *edit,
 
 void HealthFlyParams::WriteParamFile( std::ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 	of << color << endl;
 }
 
@@ -899,6 +881,8 @@ void PatrollerParams::SetParams()
 	{
 		speed = t_speed;
 	}
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 	//try
 	//{
 	//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
@@ -917,7 +901,7 @@ void PatrollerParams::SetPanelInfo()
 		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 	p->checkBoxes["loop"]->checked = loop;
-	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 bool PatrollerParams::CanApply()
@@ -1026,7 +1010,12 @@ std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()
 
 void PatrollerParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 
 	of << localPath.size() << endl;
 
@@ -1082,11 +1071,57 @@ CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
 	SetBoundingQuad();	
 }
 
+CrawlerParams::CrawlerParams( EditSession *edit, 
+		TerrainPolygon *p_edgePolygon,
+		int p_edgeIndex, double p_edgeQuantity )
+		:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 5 )
+{
+	type = edit->types["crawler"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
 CrawlerParams::CrawlerParams( EditSession *edit )
 	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
 {
 	
 	type = edit->types["crawler"];
+}
+
+void CrawlerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+	p->checkBoxes["clockwise"]->checked = clockwise;
+	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	
+	p->checkBoxes["monitor"]->checked = false;
+}
+
+void CrawlerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	bool clockwise = p->checkBoxes["clockwise"]->checked;
+	double sp;
+
+	stringstream ss;
+	string s = p->textBoxes["speed"]->text.getString().toAnsiString();
+	ss << s;
+
+
+	ss >> sp;
+
+	if( !ss.fail() )
+	{
+		speed = sp;
+	}
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 }
 
 bool CrawlerParams::CanApply()
@@ -1100,7 +1135,12 @@ bool CrawlerParams::CanApply()
 
 void CrawlerParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 	if( clockwise )
 		of << "+clockwise" << endl;
 	else
@@ -1202,7 +1242,12 @@ bool BasicTurretParams::CanApply()
 
 void BasicTurretParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
 }
@@ -1233,7 +1278,12 @@ bool FootTrapParams::CanApply()
 
 void FootTrapParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 }
 
 ActorParams *FootTrapParams::Copy()
@@ -1521,7 +1571,12 @@ std::list<sf::Vector2i> BatParams::GetGlobalPath()
 
 void BatParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 
 	of << localPath.size() << endl;
 
@@ -1555,6 +1610,8 @@ void BatParams::SetParams()
 	//string nodeDistanceStr = p->textBoxes["nodedistance"]->text.getString().toAnsiString();
 	string betweenStr = p->textBoxes["framesbetweennodes"]->text.getString().toAnsiString();
 	bool t_loop = p->checkBoxes["loop"]->checked;
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 	
 	ss << bulletSpeedStr;
 
@@ -1606,7 +1663,8 @@ void BatParams::SetPanelInfo()
 	//p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
-	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+	p->checkBoxes["monitor"]->checked = false;
+	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 
 ActorParams *BatParams::Copy()
@@ -1675,7 +1733,12 @@ PulserParams::PulserParams( EditSession *edit,
 
 void PulserParams::WriteParamFile( std::ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 
 	of << localPath.size() << endl;
 
@@ -1794,6 +1857,7 @@ void PulserParams::SetParams()
 	string betweenStr = p->textBoxes["framesbetweennodes"]->text.getString().toAnsiString();
 	bool t_loop = p->checkBoxes["loop"]->checked;
 
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 	ss << betweenStr;
 
 	int t_framesBetweenNodes;
@@ -1820,7 +1884,9 @@ void PulserParams::SetPanelInfo()
 	
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
-	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+	//p->checkBoxes["monitor"]->checked = false;
+	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 
 bool PulserParams::CanApply()
@@ -1848,6 +1914,10 @@ ActorParams *PulserParams::Copy()
 }
 
 //STAG BEETLE
+
+
+
+
 
 StagBeetleParams::StagBeetleParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY )
@@ -1887,7 +1957,12 @@ bool StagBeetleParams::CanApply()
 
 void StagBeetleParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 	if( clockwise )
 		of << "+clockwise" << endl;
 	else
@@ -1900,6 +1975,8 @@ void StagBeetleParams::WriteParamFile( ofstream &of )
 void StagBeetleParams::SetParams()
 {
 	Panel *p = type->panel;
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 
 	bool t_clockwise = p->checkBoxes["clockwise"]->checked;
 	double t_speed;
@@ -1933,7 +2010,7 @@ void StagBeetleParams::SetPanelInfo()
 	p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 
-	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 ActorParams *StagBeetleParams::Copy()
@@ -1996,7 +2073,12 @@ bool PoisonFrogParams::CanApply()
 
 void PoisonFrogParams::WriteParamFile( ofstream &of )
 {
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 	of << gravFactor << endl;
 	of << jumpStrength.x << " " << jumpStrength.y << endl;
 	of << jumpWaitFrames << endl;
@@ -2015,6 +2097,7 @@ void PoisonFrogParams::SetParams()
 
 	//bool clockwise = p->checkBoxes["clockwise"]->checked;
 	//double speed;
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 
 	stringstream ss;
 	string xStrengthStr = p->textBoxes["xstrength"]->text.getString().toAnsiString();
@@ -2082,7 +2165,7 @@ void PoisonFrogParams::SetPanelInfo()
 	p->textBoxes["xstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.x ) ); 
 	p->textBoxes["ystrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.y ) ); 
 	p->textBoxes["gravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor ) ); 
-	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 void PoisonFrogParams::UpdatePath()
@@ -2228,7 +2311,12 @@ bool CurveTurretParams::CanApply()
 void CurveTurretParams::WriteParamFile( ofstream &of )
 {
 	//cout << "write curve turret params. this: " << (int)this << endl;
-	of << (int)monitorType << endl;
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
 	of << gravFactor.x << endl;
@@ -2325,7 +2413,7 @@ void CurveTurretParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	
+	hasMonitor = p->checkBoxes["monitor"]->checked;
 
 	stringstream ss;
 	string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
@@ -2397,7 +2485,7 @@ void CurveTurretParams::SetPanelInfo()
 	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );
 	p->textBoxes["ygravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.y ) );
 	p->checkBoxes["relativegrav"]->checked = relativeGrav;
-	EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 void CurveTurretParams::Draw( RenderTarget *target )

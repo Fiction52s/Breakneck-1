@@ -447,30 +447,7 @@ void Turtle::Draw( sf::RenderTarget *target )
 			CircleShape cs;
 			cs.setRadius( 40 );
 
-			switch( monitor->monitorType )
-			{
-			case Monitor::BLUE:
-				cs.setFillColor( COLOR_BLUE );
-				break;
-			case Monitor::GREEN:
-				cs.setFillColor( COLOR_GREEN );
-				break;
-			case Monitor::YELLOW:
-				cs.setFillColor( COLOR_YELLOW );
-				break;
-			case Monitor::ORANGE:
-				cs.setFillColor( COLOR_ORANGE );
-				break;
-			case Monitor::RED:
-				cs.setFillColor( COLOR_RED );
-				break;
-			case Monitor::MAGENTA:
-				cs.setFillColor( COLOR_MAGENTA );
-				break;
-			case Monitor::WHITE:
-				cs.setFillColor( COLOR_WHITE );
-				break;
-			}
+			cs.setFillColor( Color::Black );
 
 			//cs.setFillColor( monitor-> );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );

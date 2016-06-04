@@ -984,30 +984,7 @@ void Spider::Draw(sf::RenderTarget *target )
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
 			cs.setRadius( 55 );
-			switch( monitor->monitorType )
-			{
-			case Monitor::BLUE:
-				cs.setFillColor( COLOR_BLUE );
-				break;
-			case Monitor::GREEN:
-				cs.setFillColor( COLOR_GREEN );
-				break;
-			case Monitor::YELLOW:
-				cs.setFillColor( COLOR_YELLOW );
-				break;
-			case Monitor::ORANGE:
-				cs.setFillColor( COLOR_ORANGE );
-				break;
-			case Monitor::RED:
-				cs.setFillColor( COLOR_RED );
-				break;
-			case Monitor::MAGENTA:
-				cs.setFillColor( COLOR_MAGENTA );
-				break;
-			case Monitor::WHITE:
-				cs.setFillColor( COLOR_WHITE );
-				break;
-			}
+			cs.setFillColor( Color::Black );
 			
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );

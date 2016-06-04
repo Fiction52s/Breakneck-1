@@ -472,14 +472,16 @@ struct Bat : Enemy, LauncherEnemy
 	Stored stored;
 };
 
+struct Specter;
 struct SpecterArea : QuadTreeEntrant
 {
-	SpecterArea( sf::Vector2i &pos, int rad );
+	SpecterArea( Specter *sp, sf::Vector2i &pos, int rad );
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
 	int radius;
 	sf::Rect<double> testRect;
 	CollisionBox barrier;
+	Specter *specter;
 };
 
 struct Specter : Enemy
@@ -2607,21 +2609,7 @@ struct BossCrawler : Enemy
 
 struct Monitor : Enemy
 {
-	enum MonitorType
-	{
-		NONE,
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		WHITE,
-		Count
-	};
-
 	Monitor( GameSession *owner,
-		MonitorType mType,
 		Enemy *e_host );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -2647,7 +2635,6 @@ struct Monitor : Enemy
 	Tileset *ts;
 	int frame;
 	Enemy *host;
-	MonitorType monitorType;
 	bool respawnSpecial;
 };
 

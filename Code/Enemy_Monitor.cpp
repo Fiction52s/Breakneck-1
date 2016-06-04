@@ -15,8 +15,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Monitor::Monitor( GameSession *owner, MonitorType mType, Enemy *e_host )
-	:Enemy( owner, Enemy::GATEMONITOR ), monitorType( mType )
+Monitor::Monitor( GameSession *owner, Enemy *e_host )
+	:Enemy( owner, Enemy::GATEMONITOR )
 {
 	ts = owner->GetTileset( "monitor.png", 64, 64 );
 	ts_mini = owner->GetTileset( "monitor_minimap_64x64.png", 64, 64 );
@@ -81,9 +81,9 @@ void Monitor::UpdatePhysics()
 	specterProtected = false;
 	UpdateHitboxes();
 
-	int gateType = (int)monitorType + 1;
+	//int gateType = (int)monitorType + 1;
 
-	if( owner->player.hasKey[gateType] == 6 )
+	if( owner->player.numKeys == 6 )
 	{
 		return;
 	}
@@ -93,7 +93,8 @@ void Monitor::UpdatePhysics()
 	if( ihit || hitMe.first )
 	{
 		//cout << "got the monitor!" << endl;
-		owner->player.hasKey[gateType]++;
+		//owner->player.hasKey[gateType]++;
+		owner->player.numKeys++;
 		/*switch( monitorType )
 		{
 		case BLUE:

@@ -914,7 +914,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		string behindyouStr;
 
 		is >> gType;
-		is >> numKeysRequired; 
+		//is >> numKeysRequired; 
 		is >> poly0Index;
 		is >> vertexIndex0;
 		is >> poly1Index;
@@ -959,7 +959,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 			continue;
 		}
 
-		Gate * gate = new Gate( this, gateType, numKeysRequired, reformBehindYou );
+		Gate * gate = new Gate( this, gateType, reformBehindYou );
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
@@ -1062,8 +1062,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 				
 
 				int pathLength;
@@ -1103,11 +1103,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
 				//enemy->Monitor::MonitorType
 				
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					cout << "new monitor of type-----------------------------: " << monitorType << endl;
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
@@ -1128,8 +1127,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 				
 
 				int pathLength;
@@ -1187,11 +1186,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );
 				//enemy->Monitor::MonitorType
 				
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					//cout << "new monitor of type-----------------------------: " << monitorType << endl;
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
@@ -1212,8 +1210,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 				
 
 				int pathLength;
@@ -1252,11 +1250,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
 					framesBetweenNodes, loop );
 				
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					//cout << "new monitor of type-----------------------------: " << monitorType << endl;
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
@@ -1350,8 +1347,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				bool clockwise;
 				string cwStr;
@@ -1373,10 +1370,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity, clockwise, speed );
 
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 
 				//enemyTree = Insert( enemyTree, enemy );
@@ -1403,8 +1400,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				int gravFactor;
 				is >> gravFactor;
@@ -1438,10 +1435,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				PoisonFrog *enemy = new PoisonFrog( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );//, clockwise );//, speed );
 
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 
 				//enemyTree = Insert( enemyTree, enemy );
@@ -1463,8 +1460,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				bool clockwise;
 				string cwStr;
@@ -1495,10 +1492,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity );
 
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 
 				//enemyTree = Insert( enemyTree, enemy );
@@ -1565,8 +1562,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				double bulletSpeed;
 				is >> bulletSpeed;
@@ -1577,10 +1574,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
 				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
@@ -1601,8 +1598,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				double bulletSpeed;
 				is >> bulletSpeed;
@@ -1632,10 +1629,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
 				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
@@ -1656,8 +1653,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				double bulletSpeed;
 				is >> bulletSpeed;
@@ -1687,10 +1684,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
 				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
@@ -1713,15 +1710,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				FootTrap *enemy = new FootTrap( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 
 				fullEnemyList.push_back( enemy );
@@ -1739,8 +1736,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				int mType;
-				is >> mType;
+				int hasMonitor;
+				is >> hasMonitor;
 
 				int color;
 				is >> color;
@@ -1751,10 +1748,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				
 				HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
 				
-				Monitor::MonitorType monitorType = (Monitor::MonitorType)mType;
-				if( monitorType != Monitor::NONE )
+				if( hasMonitor )
 				{
-					enemy->monitor = new Monitor( this, monitorType, enemy );
+					cout << "new monitor" << endl;
+					enemy->monitor = new Monitor( this, enemy );
 				}
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
@@ -3899,6 +3896,7 @@ int GameSession::Run( string fileN )
 			Enemy *monitorList = NULL;
 			if( k || levelReset || player.dead || ( currInput.back && !prevInput.back ) )
 			{
+				levelReset = true;
 				totalGameFrames = 0;
 				inGameClock.restart();
 
@@ -4947,7 +4945,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		
 
@@ -5303,32 +5301,8 @@ int GameSession::Run( string fileN )
 
 
 		//note: gotta fix these later for number of keys
-		sf::RectangleShape keyR( Vector2f( 33, 33 ) );
-		keyR.setPosition( keyHolderSprite.getPosition().x + 4, keyHolderSprite.getPosition().y + 4 );
-		if( player.hasKey[Gate::RED] )
-		{
-			//keyR.setPosition( keyHolderSprite.getPosition().x + 3, keyHolderSprite.getPosition().y + 4 );
-			keyR.setFillColor( Color::Red );
-			preScreenTex->draw( keyR );
-		//	cout << "drawing red key" << endl; 
-		}
+	
 
-		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
-		if( player.hasKey[Gate::GREEN] )
-		{
-			keyR.setFillColor( Color::Green );
-			preScreenTex->draw( keyR );
-			//cout << "drawing blue key" << endl; 
-		}
-
-		keyR.setPosition( keyR.getPosition().x + 33 + 4, keyR.getPosition().y );
-		if( player.hasKey[Gate::BLUE] )
-		{
-			
-			keyR.setFillColor( Color::Blue );
-			preScreenTex->draw( keyR );
-		//	cout << "drawing green key" << endl; 
-		}
 
 		if( showFrameRate )
 		{
@@ -5694,14 +5668,7 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 		
 		if( currEnemy->monitor != NULL )
 		{
-			mType = currEnemy->monitor->monitorType + 1;
-			//cout << "mtype: " << mType << ", gtype: " << (int)gType << endl;
-			if( mType == (int)gType )
-			{
-				//cout << "suppressing monitor!" << endl;
-				currEnemy->suppressMonitor = true;
-			}
-			
+			currEnemy->suppressMonitor = true;
 		}
 		//currEnemy->moni
 		currEnemy = currEnemy->next;
@@ -5728,17 +5695,19 @@ void GameSession::RespawnPlayer()
 		//actually keys should be set based on which ones you had at the last checkpoint
 		for( int i = 2; i < Gate::GateType::Count; ++i )
 		{
-			player.hasKey[i] = 0;
+			player.numKeys = 0;
+			//player.hasKey[i] = 0;
 		}
 	}
 	else
 	{
 		player.position = player.currentCheckPoint->pos;
 
-		for( int i = 2; i < Gate::GateType::Count; ++i )
-		{
-			player.hasKey[i] = player.currentCheckPoint->hadKey[i];
-		}
+		//might take out checkpoints so idk how this would work
+		//for( int i = 2; i < Gate::GateType::Count; ++i )
+		//{
+			//player.hasKey[i] = player.currentCheckPoint->hadKey[i];
+		//}
 	}
 
 	player.followerPos = player.position;

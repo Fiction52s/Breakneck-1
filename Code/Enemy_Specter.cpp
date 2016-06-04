@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-SpecterArea::SpecterArea( sf::Vector2i &pos, int rad )
-	:radius( rad )
+SpecterArea::SpecterArea( Specter *sp, sf::Vector2i &pos, int rad )
+	:radius( rad ), specter( sp )
 {
 	testRect.left = pos.x - rad;
 	testRect.top = pos.y - rad;
@@ -33,7 +33,8 @@ SpecterArea::SpecterArea( sf::Vector2i &pos, int rad )
 
 void SpecterArea::HandleQuery( QuadTreeCollider * qtc )
 {
-	qtc->HandleEntrant( this );
+	if( !specter->dead )
+		qtc->HandleEntrant( this );
 }
 
 bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
@@ -49,7 +50,7 @@ bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
 
 
 Specter::Specter( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::SPECTER ), deathFrame( 0 ), myArea( pos, 400 )
+	:Enemy( owner, EnemyType::SPECTER ), deathFrame( 0 ), myArea( this, pos, 400 )
 {
 	initHealth = 60;
 	health = initHealth;
@@ -338,30 +339,7 @@ void Specter::Draw( sf::RenderTarget *target )
 			CircleShape cs;
 			cs.setRadius( 40 );
 
-			switch( monitor->monitorType )
-			{
-			case Monitor::BLUE:
-				cs.setFillColor( COLOR_BLUE );
-				break;
-			case Monitor::GREEN:
-				cs.setFillColor( COLOR_GREEN );
-				break;
-			case Monitor::YELLOW:
-				cs.setFillColor( COLOR_YELLOW );
-				break;
-			case Monitor::ORANGE:
-				cs.setFillColor( COLOR_ORANGE );
-				break;
-			case Monitor::RED:
-				cs.setFillColor( COLOR_RED );
-				break;
-			case Monitor::MAGENTA:
-				cs.setFillColor( COLOR_MAGENTA );
-				break;
-			case Monitor::WHITE:
-				cs.setFillColor( COLOR_WHITE );
-				break;
-			}
+			cs.setFillColor( Color::Black );
 
 			//cs.setFillColor( monitor-> );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );

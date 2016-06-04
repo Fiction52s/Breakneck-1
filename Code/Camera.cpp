@@ -108,7 +108,7 @@ void Camera::UpdateReal( Actor *player )
 			framesActive = 0;
 	}
 
-	double add = (double)framesActive / 60 * 100;
+	double add = (double)framesActive / 60 * 125;
 	maxX += add;
 	minX -= add;
 	maxY += add;
@@ -454,7 +454,7 @@ void Camera::Update( Actor *player )
 			zoomFactor += blah;
 			if( zoomFactor > testZoom )
 				zoomFactor = testZoom;
-			cout << zoomFactor << endl;
+			//cout << zoomFactor << endl;
 		}
 		/*else if( testZoom < zoomFactor )
 		{
