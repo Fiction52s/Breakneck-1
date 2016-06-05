@@ -467,6 +467,7 @@ void GameSession::AddEnemy( Enemy *e )
 
 void GameSession::RemoveEnemy( Enemy *e )
 {
+	assert( activeEnemyList != NULL );
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;
 
@@ -1795,8 +1796,9 @@ bool GameSession::OpenFile( string fileName )
 		is >> envType;
 
 		is >> envLevel;
+		
 
-		//cout << "just read it: " << envType << ", " << envLevel << endl;
+		cout << "just read it: " << envType << ", " << envLevel << endl;
 
 		is >> leftBounds;
 		is >> topBounds;
@@ -3510,7 +3512,8 @@ int GameSession::Run( string fileN )
 	ss << ".png";
 	 
 	cout << "back tex: " << ss.str() << endl;
-	cout << "envtype: " << envType << ", envLevel: " << envLevel << endl;
+	cout << "envtype: " << envType << ", eType: " << eType << endl;
+	//cout << "loading bg: " << ss.str() << endl;
 	if( !backTex.loadFromFile( ss.str() ) )
 	{
 		assert( 0 && "error loading background texture" );

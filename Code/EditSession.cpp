@@ -5173,9 +5173,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( enemyEdgePolygon != NULL )
 										{
+
+											tempActor = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
+											tempActor->SetPanelInfo();
+
+											
 											/*showPanel = trackingEnemy->panel;
 											trackingEnemy = NULL;
 											ActorParams *actor = new ActorParams;
@@ -8850,13 +8854,16 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				FootTrapParams *footTrap = (FootTrapParams*)select;
+				footTrap->SetParams();
 				//FootTrapParams *footTrap = (FootTrapParams*)selectedActor;
 				//footTrap->monitorType = GetMonitorType( p );
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				ActorPtr footTrap( new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity ) );
+				ActorPtr footTrap( tempActor );
+				footTrap->SetParams();
+				//ActorPtr footTrap( new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+				//enemyEdgeQuantity ) );
 
 				enemyEdgePolygon->enemies[footTrap->groundInfo->edgeStart].push_back( footTrap );
 				enemyEdgePolygon->UpdateBounds();
@@ -8865,9 +8872,11 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				footTrap->group = groups["--"];
 				//footTrap->monitorType = GetMonitorType( p );
 				//trackingEnemy = NULL;
-				showPanel = NULL;
+				//showPanel = NULL;
 
 				CreateActor( footTrap );
+
+				tempActor = NULL;
 			}
 			showPanel = NULL;
 			//showPanel = enemySelectPanel;

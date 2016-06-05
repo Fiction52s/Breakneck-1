@@ -723,9 +723,12 @@ struct FootTrapParams : public ActorParams
 		int edgeIndex, 
 		double edgeQuantity );
 	FootTrapParams( EditSession *edit );
+
 	bool CanApply();
 	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
+	void SetParams();
+	void SetPanelInfo();
 	//void Draw( sf::RenderTarget *target );
 };
 

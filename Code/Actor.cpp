@@ -3342,7 +3342,8 @@ void Actor::UpdatePrePhysics()
 
 			framesSinceBounce = 0;
 			V2d bn = bounceNorm;//bounceEdge->Normal();
-			if( boostBounce )
+			bool framesDone = frame == actionLength[BOUNCEGROUND] - 1;
+			if( boostBounce || (framesDone && bn.y >= 0 ) )
 			{
 				framesInAir = 0;
 				action = BOUNCEAIR;
@@ -3480,7 +3481,7 @@ void Actor::UpdatePrePhysics()
 				//if( ground != NULL )
 				//	ground = NULL;
 			}
-			else if( frame == actionLength[BOUNCEGROUND] - 1 )
+			else if( framesDone )
 			{
 				if( bn.y < 0 )
 				{
@@ -3543,14 +3544,14 @@ void Actor::UpdatePrePhysics()
 						lastWire = 0;
 					}
 
-					if( velocity.x < 0 && gNorm.y <= -steepThresh )
+					if( testVel.x < 0 && gNorm.y <= -steepThresh )
 					{
-						groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7);
+						groundSpeed = min( testVel.x, dot( testVel, normalize( ground->v1 - ground->v0 ) ) * .7);
 						//cout << "left boost: " << groundSpeed << endl;
 					}
-					else if( velocity.x > 0 && gNorm.y <= -steepThresh )
+					else if( testVel.x > 0 && gNorm.y <= -steepThresh )
 					{
-						groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ) * .7 );
+						groundSpeed = max( testVel.x, dot( testVel, normalize( ground->v1 - ground->v0 ) ) * .7 );
 						//cout << "right boost: " << groundSpeed << endl;
 					}
 
@@ -9902,6 +9903,46 @@ void Actor::PhysicsResponse()
 
 		if( activate )
 		{
+			//lock all the gates from this zone now that I chose one
+			if( g->zoneA != NULL && g->zoneA->active )
+			{
+				list<Edge*> &zGates = g->zoneA->gates;
+				for( list<Edge*>::iterator it = zGates.begin(); it != 
+					zGates.end(); ++it )
+				{
+					Gate *og = (Gate*)(*it)->info;
+					if( g == og )
+						continue;
+					if( og->keyGate && (og->gState == Gate::HARD
+						|| og->gState == Gate::SOFT
+						|| og->gState == Gate::HARDEN
+						|| og->gState == Gate::SOFTEN ) )
+					{
+						og->gState = Gate::LOCKFOREVER;
+					}
+				}
+			}
+			if( g->zoneB != NULL && g->zoneB->active )
+			{
+				list<Edge*> &zGates = g->zoneB->gates;
+				for( list<Edge*>::iterator it = zGates.begin(); it != 
+					zGates.end(); ++it )
+				{
+					Gate *og = (Gate*)(*it)->info;
+					if( g == og )
+						continue;
+					if( og->keyGate && (og->gState == Gate::HARD
+						|| og->gState == Gate::SOFT
+						|| og->gState == Gate::HARDEN
+						|| og->gState == Gate::SOFTEN ) )
+					{
+						og->gState = Gate::LOCKFOREVER;
+					}
+				}
+			}
+
+
+
 			owner->SuppressEnemyKeys( g->type );			
 
 			if( edge == g->edgeA )
@@ -9940,27 +9981,29 @@ void Actor::PhysicsResponse()
 				//hasBlueKey = false;
 			}
 
-			for( int i = 0; i < owner->numGates; ++i )
-			{
-				Gate *og = owner->gates[i];
-				if( g == og )
-					continue;
-				else
-				{
-					if( og->keyGate && (og->gState == Gate::HARD
-						|| og->gState == Gate::SOFT
-						|| og->gState == Gate::HARDEN
-						|| og->gState == Gate::SOFTEN )
-						&& (og->zoneA != NULL && og->zoneA->active)
-							|| (og->zoneB != NULL && og->zoneB->active ) )
-					{
-						og->gState = Gate::LOCKFOREVER;
-						//frame = 0;
-						//frame = 0;
-					}
+			
+			
+			//for( int i = 0; i < owner->numGates; ++i )
+			//{
+			//	Gate *og = owner->gates[i];
+			//	if( g == og )
+			//		continue;
+			//	else
+			//	{
+			//		if( og->keyGate && (og->gState == Gate::HARD
+			//			|| og->gState == Gate::SOFT
+			//			|| og->gState == Gate::HARDEN
+			//			|| og->gState == Gate::SOFTEN )
+			//			&& (og->zoneA != NULL && og->zoneA->active)
+			//				|| (og->zoneB != NULL && og->zoneB->active ) )
+			//		{
+			//			og->gState = Gate::LOCKFOREVER;
+			//			//frame = 0;
+			//			//frame = 0;
+			//		}
 
-				}
-			}
+			//	}
+			//}
 
 			g->gState = Gate::DISSOLVE;
 			g->frame = 0;

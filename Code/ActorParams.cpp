@@ -1099,14 +1099,14 @@ void CrawlerParams::SetPanelInfo()
 	p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 	
-	p->checkBoxes["monitor"]->checked = false;
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 void CrawlerParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	bool clockwise = p->checkBoxes["clockwise"]->checked;
+	clockwise = p->checkBoxes["clockwise"]->checked;
 	double sp;
 
 	stringstream ss;
@@ -1274,6 +1274,24 @@ bool FootTrapParams::CanApply()
 	//hmm not sure about this now
 
 	return false;
+}
+
+
+
+void FootTrapParams::SetParams()
+{
+	Panel *p = type->panel;
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void FootTrapParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 void FootTrapParams::WriteParamFile( ofstream &of )
