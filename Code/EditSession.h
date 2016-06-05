@@ -678,9 +678,14 @@ struct BasicTurretParams : public ActorParams
 		double edgeQuantity, 
 		double bulletSpeed, 
 		int framesWait );
+	BasicTurretParams( EditSession *edit,  
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
 	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
 	//void Draw( sf::RenderTarget *target );
 	float bulletSpeed;
 	int framesWait;

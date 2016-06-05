@@ -5139,11 +5139,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( enemyEdgePolygon != NULL )
 										{
+											tempActor = new BasicTurretParams( this, 
+												enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
-											showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
-											showPanel->textBoxes["waitframes"]->text.setString( "10" );
+											tempActor->SetPanelInfo();
 										}
 									}
 									else if( trackingEnemy->name == "curveturret" )
@@ -8761,45 +8760,24 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{	
 		if( b->name == "ok" )
 		{
-			stringstream ss;
-			string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
-			string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
-			ss << bulletSpeedString;
 			
-
-			double bulletSpeed;
-			ss >> bulletSpeed;
-
-			if( ss.fail() )
-			{
-				assert( false );
-			}
-
-			ss.clear();
-
-			ss << framesWaitString;
-
-			int framesWait;
-			ss >> framesWait;
-
-			if( ss.fail() )
-			{
-				assert( false );
-			}
 
 			if( mode == EDIT )
 			//if( mode == EDIT && selectedActor != NULL )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
 				BasicTurretParams *basicTurret = (BasicTurretParams*)select;
+				basicTurret->SetParams();
 				//basicTurret->monitorType = GetMonitorType( p );
-				basicTurret->bulletSpeed = bulletSpeed;
-				basicTurret->framesWait = framesWait;
+				//basicTurret->bulletSpeed = bulletSpeed;
+				//basicTurret->framesWait = framesWait;
 			}
 			else if( mode == CREATE_ENEMY )
 			{
-				ActorPtr basicTurret( new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-				enemyEdgeQuantity, bulletSpeed, framesWait ) );
+				//ActorPtr basicTurret( new BasicTurretParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+				//enemyEdgeQuantity, bulletSpeed, framesWait ) );
+				ActorPtr basicTurret( tempActor );//new StagBeetleParams( this, enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity, clockwise, speed ) );
+				basicTurret->SetParams();
 
 				enemyEdgePolygon->enemies[basicTurret->groundInfo->edgeStart].push_back( basicTurret );
 				enemyEdgePolygon->UpdateBounds();
@@ -8809,6 +8787,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				//basicTurret->monitorType = GetMonitorType( p );
 
 				CreateActor( basicTurret );
+
+				tempActor = NULL;
 				//trackingEnemy = NULL;
 				
 			}
@@ -11028,13 +11008,10 @@ void EditSession::SetEnemyEditPanel()
 	{
 		BasicTurretParams *basicTurret = (BasicTurretParams*)ap;
 
+		basicTurret->SetPanelInfo();
 		//p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
 		//p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->textBoxes["group"]->text.setString( basicTurret->group->name );
-		p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( basicTurret->bulletSpeed ) );
-		p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( basicTurret->framesWait ) );
-
-		p->checkBoxes["monitor"]->checked = false;
+		
 		//SetMonitorGrid( basicTurret->monitorType, p->gridSelectors["monitortype"] );
 
 		showPanel = p;

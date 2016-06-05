@@ -1231,6 +1231,19 @@ BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 	SetBoundingQuad();
 }
 
+BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	bulletSpeed = 10;
+	framesWait = 60;
+
+	type = edit->types["basicturret"];
+	
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
 bool BasicTurretParams::CanApply()
 {
 	if( groundInfo != NULL )
@@ -1250,6 +1263,51 @@ void BasicTurretParams::WriteParamFile( ofstream &of )
 	of << hMon << endl;
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
+}
+
+void BasicTurretParams::SetParams()
+{
+	Panel *p = type->panel;
+	stringstream ss;
+	string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+	string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
+	ss << bulletSpeedString;
+			
+	
+	double bSpeed;
+	ss >> bSpeed;
+
+	if( !ss.fail() )
+	{
+		bulletSpeed = bSpeed;
+		//assert( false );
+	}
+
+	ss.clear();
+
+	ss << framesWaitString;
+
+	int fWait;
+	ss >> fWait;
+
+	if( !ss.fail() )
+	{
+		framesWait = fWait;
+	}
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void BasicTurretParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 ActorParams *BasicTurretParams::Copy()
