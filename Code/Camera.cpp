@@ -72,6 +72,7 @@ void Camera::UpdateReal( Actor *player )
 
 		
 
+
 		++numActive;
 		double len = length( curr->position - vPos );
 
@@ -90,6 +91,21 @@ void Camera::UpdateReal( Actor *player )
 			maxY = curr->position.y;
 		
 		//diffSum += dir * len;
+		cout << "len: " << len << endl;
+		//cout << "pos: " << curr->position.x << ", " << curr->position.y << ", " << endl;
+
+		//double tw = maxX - minX;
+		//double th = maxY - minY;
+		double tw = max( abs( maxX - playerPos.x ), abs( minX - playerPos.x ) ) * 2.0;
+		double th = max( abs( maxY - playerPos.y ), abs( minY - playerPos.y ) ) * 2.0;
+
+		double w= tw/ 960.0;
+		double h= th/ 540.0;
+
+		//cout << "ydiff: " << curr->position.y - player->position.y << endl;
+		//cout << "distance seen: " << (th / 2.0) << endl;
+
+		//cout << "test ratio: " << max( w, h ) << endl;
 	
 		curr = curr->next;
 	}
@@ -97,6 +113,7 @@ void Camera::UpdateReal( Actor *player )
 
 	if( numActive > 0 )
 	{
+		//cout << "num active: " << numActive << endl;
 		if( framesActive < 60 )
 			framesActive++;
 		
@@ -108,11 +125,11 @@ void Camera::UpdateReal( Actor *player )
 			framesActive = 0;
 	}
 
-	double add = (double)framesActive / 60 * 125;
+	/*double add = (double)framesActive / 60 * 125;
 	maxX += add;
 	minX -= add;
 	maxY += add;
-	minY -= add;
+	minY -= add;*/
 
 	//cout << "num enemies: " << numActive << endl;
 
@@ -123,7 +140,21 @@ void Camera::UpdateReal( Actor *player )
 	double wRatio = width / 960.0;
 	double hRatio = height / 540.0;
 
-	double ratio = max( wRatio, hRatio );
+	double tw = max( abs( maxX - playerPos.x ), abs( minX - playerPos.x ) ) * 2;
+	double th = max( abs( maxY - playerPos.y ), abs( minY - playerPos.y ) ) * 2;
+
+	double w= tw/ 960.0;
+	double h= th/ 540.0;
+
+	//cout << "ydiff: " << curr->position.y - player->position.y << endl;
+	//cout << "distance seen: " << (th / 2.0) << endl;
+
+	
+	//cout << "test ratio: " << max( w, h ) << endl;
+
+	//double ratio = max( wRatio, hRatio );
+	double ratio = max( w, h );
+	
 	ratio = max( ratio, 1.0 );
 
 	//offset.x = center.x - playerPos.x;
@@ -342,10 +373,27 @@ void Camera::Update( Actor *player )
 	}
 	else if( zDiff < 0 )
 	{
+		//if( numActive == 0 )
 	//	zoomFactor += zDiff / 350.0 / player->slowMultiple;
-		zoomFactor += zDiff / 350.0 / player->slowMultiple;
+		double oldZoom = zoomFactor;
+		bool more = oldZoom > testZoom;
+		if( numActive == 0 || more )
+		{
+			zoomFactor += zDiff / 350.0 / player->slowMultiple;
+			if( more )
+			{
+				if( zoomFactor < testZoom )
+					zoomFactor = testZoom;
+			}
+		}
+		//cout << "zooming in!" << endl;
+		/*if( numActive > 0 && oldZoom > testZoom && zoomFactor < testZoom )
+		{
+			cout << "stopping zoom in: " << zoomFactor << endl;
+			zoomFactor = testZoom;		
+		}*/
 	}
-
+	
 	
 	//cout << "zdiff: " << zDiff << ", zoomfactor: " << zoomFactor << ", test: " << testZoom << endl;
 	//zoomFactor = ( zoomFactor + testZoom ) / 2.0;
@@ -448,6 +496,7 @@ void Camera::Update( Actor *player )
 	
 	if( numActive > 0 )
 	{
+		cout << "testZoom: " << testZoom << endl;
 		if( testZoom > zoomFactor )
 		{
 			//cout << "old zoomfactor : " << zoomFactor << " new: ";
@@ -470,7 +519,7 @@ void Camera::Update( Actor *player )
 		zoomFactor = 1;
 	else if( zoomFactor > maxZoom )
 		zoomFactor = maxZoom;
-
+	//cout << "zf: " << zoomFactor << endl;
 	//cout << "zoomfactor: " << zoomFactor << endl;
 	//zoomFactor = testZoom;
 	if( pVel.y > 0 )

@@ -517,8 +517,11 @@ void TextBox::SendKey( Keyboard::Key k, bool shift )
 			else
 			{
 				sf::String s = text.getString();
-				s.erase( cursorIndex );
-				text.setString( s );
+				if( s.getSize() > 0 )
+				{
+					s.erase( cursorIndex );
+					text.setString( s );
+				}
 			}
 
 			break;

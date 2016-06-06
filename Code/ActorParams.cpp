@@ -2101,9 +2101,9 @@ PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePol
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
 {
-	gravFactor = 10;
+	gravFactor = 30;
 	jumpWaitFrames = 60;
-	jumpStrength = Vector2i( 10, 20 );
+	jumpStrength = Vector2i( 5, 12 );
 
 	type = edit->types["poisonfrog"];
 
