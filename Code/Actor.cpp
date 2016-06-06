@@ -336,7 +336,7 @@ Actor::Actor( GameSession *gs )
 		normal[RUN] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
 
 		actionLength[SLIDE] = 1;
-		tileset[SLIDE] = owner->GetTileset( "slide_64x64.png", 64, 64 );
+		tileset[SLIDE] = owner->GetTileset( "slide_80x48.png", 80, 48 );
 		normal[SLIDE] = owner->GetTileset( "slide_NORMALS.png", 64, 64 );
 
 		actionLength[SPRINT] = 8 * 4;
@@ -377,7 +377,7 @@ Actor::Actor( GameSession *gs )
 		normal[GRINDBALL] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
 		actionLength[STEEPSLIDE] = 1;
-		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide.png", 64, 32 );
+		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide_80x48.png", 80, 48 );
 		normal[STEEPSLIDE] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
 		actionLength[AIRDASH] = 27;
@@ -9904,42 +9904,8 @@ void Actor::PhysicsResponse()
 		if( activate )
 		{
 			//lock all the gates from this zone now that I chose one
-			if( g->zoneA != NULL && g->zoneA->active )
-			{
-				list<Edge*> &zGates = g->zoneA->gates;
-				for( list<Edge*>::iterator it = zGates.begin(); it != 
-					zGates.end(); ++it )
-				{
-					Gate *og = (Gate*)(*it)->info;
-					if( g == og )
-						continue;
-					if( og->keyGate && (og->gState == Gate::HARD
-						|| og->gState == Gate::SOFT
-						|| og->gState == Gate::HARDEN
-						|| og->gState == Gate::SOFTEN ) )
-					{
-						og->gState = Gate::LOCKFOREVER;
-					}
-				}
-			}
-			if( g->zoneB != NULL && g->zoneB->active )
-			{
-				list<Edge*> &zGates = g->zoneB->gates;
-				for( list<Edge*>::iterator it = zGates.begin(); it != 
-					zGates.end(); ++it )
-				{
-					Gate *og = (Gate*)(*it)->info;
-					if( g == og )
-						continue;
-					if( og->keyGate && (og->gState == Gate::HARD
-						|| og->gState == Gate::SOFT
-						|| og->gState == Gate::HARDEN
-						|| og->gState == Gate::SOFTEN ) )
-					{
-						og->gState = Gate::LOCKFOREVER;
-					}
-				}
-			}
+			
+			
 
 
 
@@ -9947,10 +9913,46 @@ void Actor::PhysicsResponse()
 
 			if( edge == g->edgeA )
 			{
+				if( g->zoneB != NULL && g->zoneB->active )
+				{
+					list<Edge*> &zGates = g->zoneB->gates;
+					for( list<Edge*>::iterator it = zGates.begin(); it != 
+						zGates.end(); ++it )
+					{
+						Gate *og = (Gate*)(*it)->info;
+						if( g == og )
+							continue;
+						if( og->keyGate && (og->gState == Gate::HARD
+							|| og->gState == Gate::SOFT
+							|| og->gState == Gate::HARDEN
+							|| og->gState == Gate::SOFTEN ) )
+						{
+							og->gState = Gate::LOCKFOREVER;
+						}
+					}
+				}
 				owner->ActivateZone( g->zoneA );
 			}
 			else
 			{
+				if( g->zoneA != NULL && g->zoneA->active )
+				{
+					list<Edge*> &zGates = g->zoneA->gates;
+					for( list<Edge*>::iterator it = zGates.begin(); it != 
+						zGates.end(); ++it )
+					{
+						Gate *og = (Gate*)(*it)->info;
+						if( g == og )
+							continue;
+						if( og->keyGate && (og->gState == Gate::HARD
+							|| og->gState == Gate::SOFT
+							|| og->gState == Gate::HARDEN
+							|| og->gState == Gate::SOFTEN ) )
+						{
+							og->gState = Gate::LOCKFOREVER;
+						}
+					}
+				}
 				owner->ActivateZone( g->zoneB );
 			}
 			//cout << "clear!---------------------------------" << endl;

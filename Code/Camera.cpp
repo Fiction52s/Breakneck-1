@@ -91,7 +91,7 @@ void Camera::UpdateReal( Actor *player )
 			maxY = curr->position.y;
 		
 		//diffSum += dir * len;
-		cout << "len: " << len << endl;
+		//cout << "len: " << len << endl;
 		//cout << "pos: " << curr->position.x << ", " << curr->position.y << ", " << endl;
 
 		//double tw = maxX - minX;
@@ -492,11 +492,11 @@ void Camera::Update( Actor *player )
 	UpdateReal( player );
 
 
-	double blah = .005;
+	double blah = .01;
 	
 	if( numActive > 0 )
 	{
-		cout << "testZoom: " << testZoom << endl;
+		//cout << "testZoom: " << testZoom << endl;
 		if( testZoom > zoomFactor )
 		{
 			//cout << "old zoomfactor : " << zoomFactor << " new: ";
