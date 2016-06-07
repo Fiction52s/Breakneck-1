@@ -439,6 +439,47 @@ struct ActorParams : ISelectable
 typedef boost::shared_ptr<ActorParams> ActorPtr;
 typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
 
+//all
+struct HealthFlyParams : public ActorParams
+{
+	HealthFlyParams( EditSession *edit,
+		sf::Vector2i pos, int type ); 
+	//HealthFlyParams( EditSession *edit );
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+	ActorParams *Copy();
+	bool CanApply();
+	int color;
+};
+
+struct GoalParams : public ActorParams
+{
+	GoalParams ( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	GoalParams ( EditSession *edit );
+	bool CanApply();
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	//void Draw( sf::RenderTarget *target );
+};
+
+struct PlayerParams : public ActorParams
+{
+	PlayerParams( EditSession *edit, 
+		sf::Vector2i pos );
+
+	bool CanApply();
+	void WriteParamFile( std::ofstream &of );
+	void Deactivate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select);
+	ActorParams *Copy();
+	void Activate( EditSession *edit,
+		boost::shared_ptr<ISelectable> & select );
+};
+
+//w1
 struct PatrollerParams : public ActorParams
 {
 	PatrollerParams( EditSession *edit,
@@ -467,6 +508,90 @@ struct PatrollerParams : public ActorParams
 	int speed;
 };
 
+struct CrawlerParams : public ActorParams
+{ 
+	CrawlerParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		bool clockwise, float speed );
+	CrawlerParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	CrawlerParams( EditSession *edit );
+
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	ActorParams *Copy();
+	//void Draw( sf::RenderTarget *target );
+	bool clockwise;
+	float speed;
+};
+
+struct CrawlerReverserParams : public ActorParams
+{
+	CrawlerReverserParams( 
+		EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
+struct BasicTurretParams : public ActorParams
+{
+	//std::string SetAsBasicTurret( ActorType *t, ); 
+	BasicTurretParams( EditSession *edit,  
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity, 
+		double bulletSpeed, 
+		int framesWait );
+	BasicTurretParams( EditSession *edit,  
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	//void Draw( sf::RenderTarget *target );
+	float bulletSpeed;
+	int framesWait;
+};
+
+struct FootTrapParams : public ActorParams
+{
+	FootTrapParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	FootTrapParams( EditSession *edit );
+
+	bool CanApply();
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	void SetParams();
+	void SetPanelInfo();
+	//void Draw( sf::RenderTarget *target );
+};
+
+struct BossCrawlerParams : public ActorParams
+{
+	BossCrawlerParams( 
+		EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
+//w2
 struct BatParams : public ActorParams
 {
 	BatParams( EditSession *edit,
@@ -499,95 +624,6 @@ struct BatParams : public ActorParams
 	//int speed;
 };
 
-struct PulserParams : public ActorParams
-{
-	PulserParams( EditSession *edit,
-		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &globalPath, 
-		int framesBetween,
-		bool loop ); 
-	PulserParams( EditSession *edit,
-		sf::Vector2i &pos );
-	void WriteParamFile( std::ofstream &of );
-	void SetPath( 
-		std::list<sf::Vector2i> &globalPath );
-	std::list<sf::Vector2i> GetGlobalPath();
-	void Draw( sf::RenderTarget *target );
-
-	void SetParams();
-	void SetPanelInfo();
-
-	bool CanApply();
-	ActorParams *Copy();
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
-
-	int framesBetweenNodes;
-	bool loop;
-	//int speed;
-};
-
-struct HealthFlyParams : public ActorParams
-{
-	HealthFlyParams( EditSession *edit,
-		sf::Vector2i pos, int type ); 
-	//HealthFlyParams( EditSession *edit );
-	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
-	ActorParams *Copy();
-	bool CanApply();
-	int color;
-};
-
-
-struct KeyParams : public ActorParams
-{
-	KeyParams( EditSession *edit,
-		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath, 
-		float speed,
-		bool loop,
-		int stayFrames,
-		bool teleport,
-		GateInfo::GateTypes gType );
-	KeyParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile( std::ofstream &of );
-	void SetPath( 
-		std::list<sf::Vector2i> &globalPath );
-	std::list<sf::Vector2i> GetGlobalPath();
-	void Draw( sf::RenderTarget *target );
-	bool CanApply();
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
-	bool loop;
-	float speed;
-	int stayFrames;
-	bool teleport;
-	GateInfo::GateTypes gateType;
-};
-
-struct CrawlerParams : public ActorParams
-{ 
-	CrawlerParams( EditSession *edit, 
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity, 
-		bool clockwise, float speed );
-	CrawlerParams( EditSession *edit, 
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity );
-	CrawlerParams( EditSession *edit );
-
-	void SetParams();
-	void SetPanelInfo();
-	void WriteParamFile( std::ofstream &of );
-	bool CanApply();
-	ActorParams *Copy();
-	//void Draw( sf::RenderTarget *target );
-	bool clockwise;
-	float speed;
-};
-
 struct StagBeetleParams : public ActorParams
 { 
 	StagBeetleParams( EditSession *edit, 
@@ -611,30 +647,6 @@ struct StagBeetleParams : public ActorParams
 	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
 	float speed;
-};
-
-struct CrawlerReverserParams : public ActorParams
-{
-	CrawlerReverserParams( 
-		EditSession *edit, 
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity );
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile( std::ofstream &of );
-	bool CanApply();
-};
-
-struct BossCrawlerParams : public ActorParams
-{
-	BossCrawlerParams( 
-		EditSession *edit, 
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity );
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile( std::ofstream &of );
-	bool CanApply();
 };
 
 struct PoisonFrogParams : public ActorParams
@@ -669,28 +681,6 @@ struct PoisonFrogParams : public ActorParams
 	sf::VertexArray pathQuads;
 };
 
-struct BasicTurretParams : public ActorParams
-{
-	//std::string SetAsBasicTurret( ActorType *t, ); 
-	BasicTurretParams( EditSession *edit,  
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, 
-		double edgeQuantity, 
-		double bulletSpeed, 
-		int framesWait );
-	BasicTurretParams( EditSession *edit,  
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity );
-	void WriteParamFile( std::ofstream &of );
-	bool CanApply();
-	ActorParams *Copy();
-	void SetParams();
-	void SetPanelInfo();
-	//void Draw( sf::RenderTarget *target );
-	float bulletSpeed;
-	int framesWait;
-};
-
 struct CurveTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
@@ -721,48 +711,61 @@ struct CurveTurretParams : public ActorParams
 	sf::VertexArray bulletPathQuads;
 };
 
-struct FootTrapParams : public ActorParams
+//w3
+struct PulserParams : public ActorParams
 {
-	FootTrapParams( EditSession *edit,
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, 
-		double edgeQuantity );
-	FootTrapParams( EditSession *edit );
-
-	bool CanApply();
-	ActorParams *Copy();
+	PulserParams( EditSession *edit,
+		sf::Vector2i &pos,
+		std::list<sf::Vector2i> &globalPath, 
+		int framesBetween,
+		bool loop ); 
+	PulserParams( EditSession *edit,
+		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
+	void SetPath( 
+		std::list<sf::Vector2i> &globalPath );
+	std::list<sf::Vector2i> GetGlobalPath();
+	void Draw( sf::RenderTarget *target );
+
 	void SetParams();
 	void SetPanelInfo();
-	//void Draw( sf::RenderTarget *target );
-};
-
-struct GoalParams : public ActorParams
-{
-	GoalParams ( EditSession *edit,
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, 
-		double edgeQuantity );
-	GoalParams ( EditSession *edit );
-	bool CanApply();
-	ActorParams *Copy();
-	void WriteParamFile( std::ofstream &of );
-	//void Draw( sf::RenderTarget *target );
-};
-
-struct PlayerParams : public ActorParams
-{
-	PlayerParams( EditSession *edit, 
-		sf::Vector2i pos );
 
 	bool CanApply();
-	void WriteParamFile( std::ofstream &of );
-	void Deactivate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select);
 	ActorParams *Copy();
-	void Activate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select );
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	int framesBetweenNodes;
+	bool loop;
+	//int speed;
 };
+
+//struct CactusParams : public ActorParams
+//{
+//	//std::string SetAsBasicTurret( ActorType *t, ); 
+//	CactusParams( EditSession *edit,  
+//		TerrainPolygon *edgePolygon,
+//		int edgeIndex, 
+//		double edgeQuantity, 
+//		double bulletSpeed, 
+//		int framesWait,
+//		sf::Vector2i gravFactor,
+//		bool relativeGrav );
+//	ActorParams *Copy();
+//	CactusParams( EditSession *edit,
+//		TerrainPolygon *edgePolygon,
+//		int edgeIndex, double edgeQuantity );
+//	void SetParams();
+//	void SetPanelInfo();
+//	void WriteParamFile( std::ofstream &of );
+//	bool CanApply();
+//	void Draw( sf::RenderTarget *target );
+//	void UpdateExtraVisuals();
+//	int bulletSpeed;
+//	int amplitude;
+//	int framesWait;
+//};
+
 
 //no params for goal and foottrap atm
 struct ActorGroup

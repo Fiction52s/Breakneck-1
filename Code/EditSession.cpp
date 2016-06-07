@@ -1018,66 +1018,6 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new HealthFlyParams( this, pos, color ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
-				else if( typeName == "key" )
-				{
-					Vector2i pos;
-
-					//always in air
-					is >> pos.x;
-					is >> pos.y;
-
-
-
-					int pathLength;
-					is >> pathLength;
-					
-					list<Vector2i> globalPath;
-					globalPath.push_back( Vector2i( pos.x, pos.y ) );
-
-					for( int i = 0; i < pathLength; ++i )
-					{
-						int localX,localY;
-						is >> localX;
-						is >> localY;
-						globalPath.push_back( Vector2i( pos.x + localX, pos.y + localY ) );
-					}
-
-					int gateType;
-					is >> gateType;
-
-					bool loop;
-					string loopStr;
-					is >> loopStr;
-					if( loopStr == "+loop" )
-						loop = true;
-					else if( loopStr == "-loop" )
-						loop = false;
-					else
-						assert( false && "should be a boolean" );
-
-
-					float speed;
-					is >> speed;
-
-					int stayFrames;
-					is >> stayFrames;
-
-					bool teleport;
-					string teleStr;
-					is >> teleStr;
-					if( teleStr == "+tele" )
-					{
-						teleport = true;
-					}
-					else if( teleStr == "-tele" )
-					{
-						teleport = false;
-					}
-
-					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					//a = new PatrollerParams( this, pos, globalPath, speed, loop );
-					a.reset( new KeyParams( this, pos, globalPath, speed, loop, stayFrames, teleport, (GateInfo::GateTypes)gateType ) );
-				}
 				else if( typeName == "crawler" )
 				{
 
@@ -2785,44 +2725,25 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
 	Panel *terrainOptionsPanel = CreateOptionsPanel( "terrain" );
 
-	
+	//all
+	Panel *healthflyPanel = CreateOptionsPanel( "healthfly" );
+	ActorType *healthflyType = new ActorType( "healthfly", healthflyPanel );
 
-	
-	ActorType *keyType = new ActorType( "key", NULL );
+	Panel *goalPanel = CreateOptionsPanel( "goal" );
+	ActorType *goalType = new ActorType( "goal", goalPanel );
 
-	ActorType *greenKeyType = new ActorType( "greenkey", NULL );
-	ActorType *blueKeyType = new ActorType( "bluekey", NULL );
-
-	types["key"] = keyType;
-	types["greenkey"] = greenKeyType;
-	types["bluekey"] = blueKeyType;
+	types["healthfly"] = healthflyType;
+	types["goal"] = goalType;
+	//w1
 
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
-	Panel *batPanel = CreateOptionsPanel( "bat" );
-	ActorType *batType = new ActorType( "bat", batPanel );
-
-	Panel *pulserPanel = CreateOptionsPanel( "pulser" );
-	ActorType *pulserType = new ActorType( "pulser", pulserPanel );
-
-	Panel *curveTurretPanel = CreateOptionsPanel( "curveturret" );
-	ActorType *curveTurretType = new ActorType( "curveturret", curveTurretPanel );
-
-	Panel *stagBeetlePanel = CreateOptionsPanel( "stagbeetle" );
-	ActorType *stagBeetleType = new ActorType( "stagbeetle", stagBeetlePanel );
-
-	Panel *poisonFrogPanel = CreateOptionsPanel( "poisonfrog" );
-	ActorType *poisonFrogType = new ActorType( "poisonfrog", poisonFrogPanel );
-
-	Panel *healthflyPanel = CreateOptionsPanel( "healthfly" );
-	ActorType *healthflyType = new ActorType( "healthfly", healthflyPanel );
-
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
-	Panel *crawlerReverserPanel = NULL;
-	ActorType *crawlerReverserType = new ActorType( "crawlerreverser", crawlerReverserPanel );
+	//Panel *crawlerReverserPanel = NULL;
+	//ActorType *crawlerReverserType = new ActorType( "crawlerreverser", crawlerReverserPanel );
 
 	Panel *basicTurretPanel = CreateOptionsPanel( "basicturret" );
 	ActorType *basicTurretType = new ActorType( "basicturret", basicTurretPanel );
@@ -2833,8 +2754,95 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *bossCrawlerPanel = NULL;//CreateOptionsPanel( "bosscrawler" );
 	ActorType *bossCrawlerType = new ActorType( "bosscrawler", bossCrawlerPanel );
 
-	Panel *goalPanel = CreateOptionsPanel( "goal" );
-	ActorType *goalType = new ActorType( "goal", goalPanel );
+	types["patroller"] = patrollerType;
+	types["foottrap"] = footTrapType;
+	types["bosscrawler"] = bossCrawlerType;
+	types["basicturret"] = basicTurretType;
+	types["crawler"] = crawlerType;
+	//types["crawlerreverser"] = crawlerReverserType;
+
+	//w2
+	
+	Panel *batPanel = CreateOptionsPanel( "bat" );
+	ActorType *batType = new ActorType( "bat", batPanel );
+
+	Panel *curveTurretPanel = CreateOptionsPanel( "curveturret" );
+	ActorType *curveTurretType = new ActorType( "curveturret", curveTurretPanel );
+
+	Panel *stagBeetlePanel = CreateOptionsPanel( "stagbeetle" );
+	ActorType *stagBeetleType = new ActorType( "stagbeetle", stagBeetlePanel );
+
+	Panel *poisonFrogPanel = CreateOptionsPanel( "poisonfrog" );
+	ActorType *poisonFrogType = new ActorType( "poisonfrog", poisonFrogPanel );
+
+	types["bat"] = batType;
+	types["curveturret"] = curveTurretType;
+	types["poisonfrog"] = poisonFrogType;
+	types["stagbeetle"] = stagBeetleType;
+
+	//w3
+	Panel *pulserPanel = CreateOptionsPanel( "pulser" );
+	ActorType *pulserType = new ActorType( "pulser", pulserPanel );
+
+	Panel *badgerPanel = CreateOptionsPanel( "badger" );
+	ActorType *badgerType = new ActorType( "badger", badgerPanel );
+
+	Panel *cactusPanel = CreateOptionsPanel( "cactus" );
+	ActorType *cactusType = new ActorType( "cactus", cactusPanel );
+
+	Panel *owlPanel = CreateOptionsPanel( "owl" );
+	ActorType *owlType = new ActorType( "owl", owlPanel );
+
+	types["pulser"] = pulserType;
+	types["badger"] = badgerType;
+	types["cactus"] = cactusType;
+	types["owl"] = owlType;
+
+
+	//w4
+	Panel *turtlePanel = CreateOptionsPanel( "turtle" );
+	ActorType *turtleType = new ActorType( "turtle", turtlePanel );
+
+	Panel *cheetahPanel = CreateOptionsPanel( "cheetah" );
+	ActorType *cheetahType = new ActorType( "cheetah", cheetahPanel );
+
+	Panel *coralPanel = CreateOptionsPanel( "coral" );
+	ActorType *coralType = new ActorType( "coral", coralPanel );
+
+	Panel *spiderPanel = CreateOptionsPanel( "spider" );
+	ActorType *spiderType = new ActorType( "spider", spiderPanel );
+
+	types["turtle"] = turtleType;
+	types["cheetah"] = cheetahType;
+	types["coral"] = coralType;
+	types["spider"] = spiderType;
+
+	//w5
+	Panel *swarmPanel = CreateOptionsPanel( "swarm" );
+	ActorType *swarmType = new ActorType( "swarm", swarmPanel );
+
+	Panel *overgrowthPanel = CreateOptionsPanel( "overgrowth" );
+	ActorType *overgrowthType = new ActorType( "overgrowth", overgrowthPanel );
+
+	Panel *sharkPanel = CreateOptionsPanel( "shark" );
+	ActorType *sharkType = new ActorType( "shark", sharkPanel );
+
+	Panel *ghostPanel = CreateOptionsPanel( "ghost" );
+	ActorType *ghostType = new ActorType( "ghost", ghostPanel );
+
+	types["swarm"] = swarmType;
+	types["overgrowth"] = overgrowthType;
+	types["shark"] = sharkType;
+	types["ghost"] = ghostType;
+
+	//w6
+	//Panel *specterPanel = CreateOptionsPanel( "specter" );
+	//ActorType *specterType = new ActorType( "specter", specterPanel );
+	//3 more in w6 later
+
+	//types["specter"] = specterType;
+
+	
 
 	
 	Panel *lightPanel = CreateOptionsPanel( "light" );
@@ -2842,81 +2850,49 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	messagePopup = CreatePopupPanel( "message" );
 	errorPopup = CreatePopupPanel( "error" );
 
-	types["patroller"] = patrollerType;
-	types["bat"] = batType;
-	types["pulser"] = pulserType;
-	types["curveturret"] = curveTurretType;
-	types["healthfly"] = healthflyType;
-	types["poisonfrog"] = poisonFrogType;
-	types["stagbeetle"] = stagBeetleType;
-	types["crawler"] = crawlerType;
-	types["crawlerreverser"] = crawlerReverserType;
-	types["basicturret"] = basicTurretType;
-	types["foottrap"] = footTrapType;
-	types["bosscrawler"] = bossCrawlerType;
-	types["goal"] = goalType;
-	
-
-	
-	
-	
-
-	Panel *keyPanel = CreateOptionsPanel( "key" );
-
-	keyType->panel = keyPanel;
-	greenKeyType->panel = keyPanel;
-	blueKeyType->panel = keyPanel;
-
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 4, 6, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 7, 7, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
 	gs->active = false;
 
-	sf::Sprite s0( patrollerType->iconTexture );
-	sf::Sprite s1( crawlerType->iconTexture );
-	sf::Sprite s2( basicTurretType->iconTexture );
-	sf::Sprite s3( footTrapType->iconTexture );
-	sf::Sprite s4( goalType->iconTexture );
-	sf::Sprite s5( keyType->iconTexture );
-	sf::Sprite s6( crawlerReverserType->iconTexture );
-	sf::Sprite s7( healthflyType->iconTexture );
-	sf::Sprite s8( bossCrawlerType->iconTexture );
+	gs->Set( 0, 0, Sprite( goalType->iconTexture ), "goal" );
+	gs->Set( 1, 0, Sprite( healthflyType->iconTexture ), "healthfly" );
 
-	sf::Sprite sBat( batType->iconTexture );
-	sf::Sprite sCurveTurret( curveTurretType->iconTexture );
-	sf::Sprite sPoisonFrog( poisonFrogType->iconTexture );
-	sf::Sprite sStagBeetle( stagBeetleType->iconTexture );
+	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
+	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
+	gs->Set( 2, 1, Sprite( basicTurretType->iconTexture ), "basicturret" );
+	gs->Set( 3, 1, Sprite( footTrapType->iconTexture ), "foottrap" );
+	gs->Set( 4, 1, Sprite( bossCrawlerType->iconTexture ), "bosscrawler" );
+	//gs->Set( 1, 1, Sprite( patrollerType->iconTexture ), "crawlerreverser" );
 
-	sf::Sprite sPulser( pulserType->iconTexture );
-	/*sf::Sprite sCurveTurret( curveTurretType->iconTexture );
-	sf::Sprite sPoisonFrog( poisonFrogType->iconTexture );
-	sf::Sprite sStagBeetle( stagBeetleType->iconTexture );*/
+	gs->Set( 0, 2, Sprite( batType->iconTexture ), "bat" );
+	gs->Set( 1, 2, Sprite( curveTurretType->iconTexture ), "curveturret" );
+	gs->Set( 2, 2, Sprite( poisonFrogType->iconTexture ), "poisonfrog" );
+	gs->Set( 3, 2, Sprite( stagBeetleType->iconTexture ), "stagbeetle" );
+
+	gs->Set( 0, 3, Sprite( pulserType->iconTexture ), "pulser" );
+	gs->Set( 1, 3, Sprite( badgerType->iconTexture ), "badger" );
+	gs->Set( 2, 3, Sprite( owlType->iconTexture ), "owl" );
+	gs->Set( 3, 3, Sprite( cactusType->iconTexture ), "cactus" );
+
+	gs->Set( 0, 4, Sprite( spiderType->iconTexture ), "spider" );
+	gs->Set( 1, 4, Sprite( turtleType->iconTexture ), "turtle" );
+	gs->Set( 2, 4, Sprite( cheetahType->iconTexture ), "cheetah" );
+	gs->Set( 3, 4, Sprite( coralType->iconTexture ), "coral" );
+
+	gs->Set( 0, 5, Sprite( swarmType->iconTexture ), "swarm" );
+	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
+	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "overgrowth" );
+	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
+
+	//gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
+	//gs->Set( 1, 6, sPulser, "turtle" );
+	//gs->Set( 2, 6, sPulser, "cheetah" );
+	//gs->Set( 3, 6, sPulser, "coral" );
 
 
-
-	sf::Sprite ss0( greenKeyType->iconTexture );
-	sf::Sprite ss1( blueKeyType->iconTexture );
-	sf::Sprite ss2( blueKeyType->iconTexture );
-	ss2.setColor( Color::Magenta );
-
-
-	gs->Set( 0, 0, s0, "patroller" );
-	gs->Set( 1, 0, s1, "crawler" );
-	gs->Set( 2, 0, s2, "basicturret" );
-	gs->Set( 3, 0, s3, "foottrap" );
-	gs->Set( 0, 1, s4, "goal" );
-	gs->Set( 1, 1, s6, "crawlerreverser" );
-	gs->Set( 2, 1, s7, "healthfly" );
-	gs->Set( 3, 1, s8, "bosscrawler" );
-
-	gs->Set( 0, 2, sBat, "bat" );
-	gs->Set( 1, 2, sCurveTurret, "curveturret" );
-	gs->Set( 2, 2, sPoisonFrog, "poisonfrog" );
-	gs->Set( 3, 2, sStagBeetle, "stagbeetle" );
-
-	gs->Set( 0, 3, sPulser, "pulser" );
 	//gs->Set( 1, 2, ss0, "greenkey" );
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
@@ -5010,6 +4986,28 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										MessagePop( "can't place on top of another actor" );
 									}
+									else if( trackingEnemy->name == "healthfly" )
+									{
+										showPanel = trackingEnemy->panel;
+
+										showPanel->textBoxes["name"]->text.setString( "test" );
+										showPanel->textBoxes["group"]->text.setString( "not test" );	
+
+										airPos = Vector2i( worldPos.x, worldPos.y );
+									}
+									else if( trackingEnemy->name == "goal" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = enemySelectPanel;
+											trackingEnemy = NULL;
+											ActorPtr goal( new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity ) );
+											goal->group = groups["--"];
+
+											CreateActor( goal );
+										}
+									}
 									else if( trackingEnemy->name == "patroller" )
 									{
 
@@ -5023,63 +5021,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 										patrolPath.clear();
 										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
-
-										//mode = CREATE_PATROL_PATH;
-										//patrolPath.clear();
-										//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
-									}
-									else if( trackingEnemy->name == "bat" )
-									{
-										tempActor = new BatParams( this, Vector2i( worldPos.x,
-											worldPos.y ) );
-										tempActor->SetPanelInfo();
-										//tempActor->SetDefaultPanelInfo();
-
-										showPanel = trackingEnemy->panel;
-
-										patrolPath.clear();
-										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
-									}
-									else if( trackingEnemy->name == "pulser" )
-									{
-										tempActor = new PulserParams( this, Vector2i( worldPos.x,
-											worldPos.y ) );
-										tempActor->SetPanelInfo();
-										//tempActor->SetDefaultPanelInfo();
-
-										showPanel = trackingEnemy->panel;
-
-										patrolPath.clear();
-										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
-									}
-									else if( trackingEnemy->name == "healthfly" )
-									{
-										showPanel = trackingEnemy->panel;
-
-										showPanel->textBoxes["name"]->text.setString( "test" );
-										showPanel->textBoxes["group"]->text.setString( "not test" );	
-
-										airPos = Vector2i( worldPos.x, worldPos.y );
-									}
-									else if( trackingEnemy->name == "key" )
-									{
-										showPanel = trackingEnemy->panel;
-
-										showPanel->textBoxes["name"]->text.setString( "test" );
-										showPanel->textBoxes["group"]->text.setString( "not test" );
-										showPanel->textBoxes["speed"]->text.setString( "10" );
-										showPanel->checkBoxes["loop"]->checked = false;
-										showPanel->checkBoxes["teleport"]->checked = false;
-
-										showPanel->gridSelectors["keytype"]->selectedX = 0;
-										
-										//SetPanelDefault( trackingEnemy );
-										patrolPath.clear();
-										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
 									else if( trackingEnemy->name == "crawler" )
 									{
-										//groups["--"]->name
 										if( enemyEdgePolygon != NULL )
 										{
 											tempActor = new CrawlerParams( this,
@@ -5087,37 +5031,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												enemyEdgeQuantity );
 											showPanel = trackingEnemy->panel;
 											tempActor->SetPanelInfo();
-											/*showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
-											showPanel->checkBoxes["clockwise"]->checked = false;
-											showPanel->textBoxes["speed"]->text.setString( "1.5" );*/
-											//trackingEnemy = NULL;
-										}
-									}
-									else if( trackingEnemy->name == "poisonfrog" )
-									{
-										//groups["--"]->name
-										if( enemyEdgePolygon != NULL )
-										{
-											tempActor = new PoisonFrogParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity );
-											showPanel = trackingEnemy->panel;
-											tempActor->SetPanelInfo();
-											//tempActor->SetDefaultPanelInfo();
-											//trackingEnemy = NULL;
-										}
-									}
-									else if( trackingEnemy->name == "stagbeetle" )
-									{
-										//groups["--"]->name
-										if( enemyEdgePolygon != NULL )
-										{
-											tempActor = new StagBeetleParams( this, enemyEdgePolygon, 
-												enemyEdgeIndex, enemyEdgeQuantity );
-											showPanel = trackingEnemy->panel;
-											tempActor->SetPanelInfo();
-											//tempActor->SetDefaultPanelInfo();
-											//trackingEnemy = NULL;
 										}
 									}
 									else if( trackingEnemy->name == "crawlerreverser" )
@@ -5145,6 +5058,65 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											tempActor->SetPanelInfo();
 										}
 									}
+									else if( trackingEnemy->name == "foottrap" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+
+											tempActor = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity );
+											showPanel = trackingEnemy->panel;
+											tempActor->SetPanelInfo();
+										}
+									}
+									else if( trackingEnemy->name == "bosscrawler" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossCrawler( new BossCrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex,
+											enemyEdgeQuantity ) );
+										bossCrawler->group = groups["--"];
+
+										CreateActor( bossCrawler );
+									}
+									else if( trackingEnemy->name == "bat" )
+									{
+										tempActor = new BatParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetPanelInfo();
+										//tempActor->SetDefaultPanelInfo();
+
+										showPanel = trackingEnemy->panel;
+
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+									}
+									else if( trackingEnemy->name == "poisonfrog" )
+									{
+										//groups["--"]->name
+										if( enemyEdgePolygon != NULL )
+										{
+											tempActor = new PoisonFrogParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity );
+											showPanel = trackingEnemy->panel;
+											tempActor->SetPanelInfo();
+											//tempActor->SetDefaultPanelInfo();
+											//trackingEnemy = NULL;
+										}
+									}
+									else if( trackingEnemy->name == "stagbeetle" )
+									{
+										//groups["--"]->name
+										if( enemyEdgePolygon != NULL )
+										{
+											tempActor = new StagBeetleParams( this, enemyEdgePolygon, 
+												enemyEdgeIndex, enemyEdgeQuantity );
+											showPanel = trackingEnemy->panel;
+											tempActor->SetPanelInfo();
+											//tempActor->SetDefaultPanelInfo();
+											//trackingEnemy = NULL;
+										}
+									}
 									else if( trackingEnemy->name == "curveturret" )
 									{
 										if( enemyEdgePolygon != NULL )
@@ -5168,62 +5140,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//showPanel->textBoxes["waitframes"]->text.setString( "10" );
 										}
 									}
-									else if( trackingEnemy->name == "foottrap" )
+									else if( trackingEnemy->name == "pulser" )
 									{
-										if( enemyEdgePolygon != NULL )
-										{
+										tempActor = new PulserParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetPanelInfo();
+										//tempActor->SetDefaultPanelInfo();
 
-											tempActor = new FootTrapParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity );
-											showPanel = trackingEnemy->panel;
-											tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
 
-											
-											/*showPanel = trackingEnemy->panel;
-											trackingEnemy = NULL;
-											ActorParams *actor = new ActorParams;
-											actor->group = groups["--"];
-											actor->SetAsFootTrap( footTrapType, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity );
-											groups["--"]->actors.push_back( actor );*/
-										}
-									}
-									else if( trackingEnemy->name == "bosscrawler" )
-									{
-										showPanel = enemySelectPanel;
-										trackingEnemy = NULL;
-										ActorPtr bossCrawler( new BossCrawlerParams( this, enemyEdgePolygon, enemyEdgeIndex,
-											enemyEdgeQuantity ) );
-										bossCrawler->group = groups["--"];
-
-										CreateActor( bossCrawler );
-										//groups["--"]->name
-										/*if( enemyEdgePolygon != NULL )
-										{
-											showPanel = trackingEnemy->panel;
-											showPanel->textBoxes["name"]->text.setString( "test" );
-											showPanel->textBoxes["group"]->text.setString( "not test" );
-											showPanel->checkBoxes["clockwise"]->checked = false;
-											showPanel->textBoxes["speed"]->text.setString( "1.5" );
-											//trackingEnemy = NULL;
-										}*/
-									}
-									else if( trackingEnemy->name == "goal" )
-									{
-										if( enemyEdgePolygon != NULL )
-										{
-											//showPanel = trackingEnemy->panel;
-											showPanel = enemySelectPanel;
-											trackingEnemy = NULL;
-											ActorPtr goal( new GoalParams( this, enemyEdgePolygon, enemyEdgeIndex, 
-												enemyEdgeQuantity ) );
-											goal->group = groups["--"];
-											//actor->SetAsGoal( goalType, enemyEdgePolygon, enemyEdgeIndex, 
-											//	enemyEdgeQuantity );
-											//groups["--"]->actors.push_back( actor );
-
-											CreateActor( goal );
-										}
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
 								}
 
@@ -7891,7 +7818,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 				}
 				else*/
 				{
-					if( selectedActor->type->name == "patroller" || selectedActor->type->name == "key" )
+					if( selectedActor->type->name == "patroller" )
 					{
 						selectedActor->position = Vector2i( worldPos.x, worldPos.y );
 						selectedActor->image.setPosition( worldPos.x, worldPos.y );
@@ -8557,88 +8484,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			patrolPath.clear();
 			patrolPath.push_back( front );
 			patrolPathLengthSize = 0; //do it by distance and #of frames
-		}
-	}
-	else if( p->name == "key_options" )
-	{
-		if( b->name == "ok" )
-		{
-			bool loop = p->checkBoxes["loop"]->checked;
-			float speed = 1; 
-			int stayFrames = 0;
-			bool teleport = p->checkBoxes["teleport"]->checked;
-
-			try
-			{
-				speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
-			}
-			catch(boost::bad_lexical_cast &)
-			{
-				//error
-			}
-
-			try
-			{
-				stayFrames = boost::lexical_cast<int>( p->textBoxes["stayframes"]->text.getString().toAnsiString() );
-			}
-			catch(boost::bad_lexical_cast &)
-			{
-				//error
-			}
-
-			//showPanel = trackingEnemy->panel;
-			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
-			if( mode == EDIT && selectedActor != NULL )
-			{
-				KeyParams *key = (KeyParams*)selectedActor;
-				key->speed = speed;
-				key->loop = loop;
-				key->stayFrames = stayFrames;
-				key->teleport = teleport;
-				key->SetPath( patrolPath );
-				
-			}
-			else if( mode == CREATE_ENEMY )
-			{
-				GridSelector * gs = p->gridSelectors["keytype"];
-
-				//eventually can convert this between indexes or something to simplify when i have more types
-				string name = gs->names[gs->selectedX][gs->selectedY];
-
-				GateInfo::GateTypes gType;
-				if( name == "red" )
-				{
-					gType = GateInfo::RED;
-				}
-				else if( name == "green" )
-				{
-					gType = GateInfo::GREEN;
-				}
-				else if( name == "blue" )
-				{
-					gType = GateInfo::BLUE;
-				}
-
-				
-				ActorPtr key( new KeyParams( this, patrolPath.front(), patrolPath, speed, loop, stayFrames, teleport, gType ) );
-				
-				//groups["--"]->actors.push_back( key );
-				key->group = groups["--"];
-
-				CreateActor( key );
-				//trackingEnemy = NULL;
-				
-			}
-			showPanel = NULL;
-			//showPanel = enemySelectPanel;
-		}
-		else if( b->name == "createpath" )
-		{
-			showPanel = NULL;
-			mode = CREATE_PATROL_PATH;
-			Vector2i front = patrolPath.front();
-			patrolPath.clear();
-			patrolPath.push_back( front );
 		}
 	}
 	else if( p->name == "crawler_options" )
@@ -10770,25 +10615,6 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
-	else if( name == "key" )
-	{
-		Panel *p = new Panel( "key_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddLabel( "teleport_label", Vector2i( 100, 150 ), 20, "teleport" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddCheckBox( "teleport", Vector2i( 180, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
-		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-		
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-		//p->
-	}
 	else if( name == "crawler" )
 	{
 		Panel *p = new Panel( "crawler_options", 200, 500, this );
@@ -10928,10 +10754,6 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 void EditSession::SetPanelDefault( ActorType *type )
 {
-	if( type->name == "key" )
-	{
-
-	}
 }
 
 void EditSession::SetEnemyEditPanel()
@@ -11045,48 +10867,6 @@ void EditSession::SetEnemyEditPanel()
 
 		p->checkBoxes["monitor"]->checked = false;
 		//SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
-
-		showPanel = p;
-	}
-	else if( name == "key" )
-	{
-		KeyParams *key = (KeyParams*)ap;
-		Panel *p = type->panel;
-
-		/*p->AddButton( "ok", Vector2i( 100, 400 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddLabel( "teleport_label", Vector2i( 100, 150 ), 20, "teleport" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddCheckBox( "teleport", Vector2i( 180, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 100, 20, "10" );
-		p->AddTextBox( "stayframes", Vector2i(130, 200 ), 100, 20, "0" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-		GridSelector *gs = p->AddGridSelector( "keytype", Vector2i( 20, 330 ), 3, 1, 32, 32 );
-*/
-		patrolPath = key->GetGlobalPath();
-		
-		p->textBoxes["group"]->text.setString( key->group->name );
-		p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>(key->speed) );
-		p->textBoxes["stayframes"]->text.setString( boost::lexical_cast<string>(key->stayFrames) );
-		p->checkBoxes["loop"]->checked = key->loop;
-		p->checkBoxes["teleport"]->checked = key->loop;
-		
-		GridSelector &gs = *p->gridSelectors["keytype"];
-		gs.selectedY = 0;
-		switch( key->gateType )
-		{
-		case GateInfo::RED:
-			gs.selectedX = 0;
-			break;
-		case GateInfo::GREEN:
-			gs.selectedX = 1;
-			break;
-		case GateInfo::BLUE:
-			gs.selectedX = 2;
-			break;
-		}
 
 		showPanel = p;
 	}
@@ -12030,13 +11810,6 @@ void ActorType::Init()
 		height = 144;
 		canBeGrounded = true;
 		canBeAerial = false;
-	}
-	else if( name == "key" )
-	{
-		width = 50;
-		height = 50;
-		canBeGrounded = false;
-		canBeAerial = true;
 	}
 	else if( name == "player" )
 	{
