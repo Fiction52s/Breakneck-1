@@ -740,32 +740,244 @@ struct PulserParams : public ActorParams
 	//int speed;
 };
 
-//struct CactusParams : public ActorParams
-//{
-//	//std::string SetAsBasicTurret( ActorType *t, ); 
-//	CactusParams( EditSession *edit,  
-//		TerrainPolygon *edgePolygon,
-//		int edgeIndex, 
-//		double edgeQuantity, 
-//		double bulletSpeed, 
-//		int framesWait,
-//		sf::Vector2i gravFactor,
-//		bool relativeGrav );
-//	ActorParams *Copy();
-//	CactusParams( EditSession *edit,
-//		TerrainPolygon *edgePolygon,
-//		int edgeIndex, double edgeQuantity );
-//	void SetParams();
-//	void SetPanelInfo();
-//	void WriteParamFile( std::ofstream &of );
-//	bool CanApply();
-//	void Draw( sf::RenderTarget *target );
-//	void UpdateExtraVisuals();
-//	int bulletSpeed;
-//	int amplitude;
-//	int framesWait;
-//};
+struct OwlParams : public ActorParams
+{
+	OwlParams( EditSession *edit,
+		sf::Vector2i &pos,
+		int moveSpeed,
+		int bulletSpeed,
+		int rhythmFrames ); 
+	OwlParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
 
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+	
+	int moveSpeed;
+	int bulletSpeed;
+	int rhythmFrames;
+};
+
+struct BadgerParams : public ActorParams
+{ 
+	BadgerParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		int speed, int jumpStrength );
+
+	BadgerParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+
+	
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+	ActorParams *Copy();
+
+	int speed;
+	int jumpStrength;
+};
+
+struct CactusParams : public ActorParams
+{ 
+	CactusParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		int bulletSpeed, int rhythm, 
+		int amplitude );
+
+	CactusParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+
+	
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+	ActorParams *Copy();
+
+	int bulletSpeed;
+	int rhythm;
+	int amplitude;
+};
+
+//w4
+struct TurtleParams : public ActorParams
+{
+	TurtleParams( EditSession *edit,
+		sf::Vector2i &pos );
+		/*int moveSpeed,
+		int bulletSpeed,
+		int rhythmFrames ); 
+	TurtleParams( EditSession *edit,
+		sf::Vector2i &pos );*/
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
+struct CoralParams : public ActorParams
+{
+	CoralParams( EditSession *edit,
+		sf::Vector2i &pos );
+		/*int moveSpeed,
+		int bulletSpeed,
+		int rhythmFrames ); 
+	TurtleParams( EditSession *edit,
+		sf::Vector2i &pos );*/
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
+struct CheetahParams : public ActorParams
+{ 
+	/*CactusParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		int bulletSpeed, int rhythm, 
+		int amplitude );*/
+
+	CheetahParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+
+	
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+	ActorParams *Copy();
+};
+
+struct SpiderParams : public ActorParams
+{ 
+	/*CactusParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity, 
+		int speed );*/
+
+	SpiderParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+
+	
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+	ActorParams *Copy();
+
+	//int speed;
+};
+
+//w5
+struct SharkParams : public ActorParams
+{
+	SharkParams( EditSession *edit,
+		sf::Vector2i &pos,
+		int circleFrames );
+	SharkParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
+struct SwarmParams: public ActorParams
+{
+	SwarmParams( EditSession *edit,
+		sf::Vector2i &pos,
+		int liveFrames );
+	SwarmParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
+struct GhostParams : public ActorParams
+{
+	GhostParams( EditSession *edit,
+		sf::Vector2i &pos,
+		int speed );
+	GhostParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
+struct OvergrowthParams : public ActorParams
+{ 
+	OvergrowthParams( EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+
+	/*OvergrowthParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );*/
+
+	
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+	ActorParams *Copy();
+};
+
+//w6
+struct SpecterParams : public ActorParams
+{
+	SpecterParams( EditSession *edit,
+		sf::Vector2i &pos );
+		/*int moveSpeed,
+		int bulletSpeed,
+		int rhythmFrames ); 
+	TurtleParams( EditSession *edit,
+		sf::Vector2i &pos );*/
+	void WriteParamFile( std::ofstream &of );
+	void Draw( sf::RenderTarget *target );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
 
 //no params for goal and foottrap atm
 struct ActorGroup

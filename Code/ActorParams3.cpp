@@ -248,3 +248,171 @@ ActorParams *PulserParams::Copy()
 	}
 	return copy;
 }
+
+
+
+OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
+	int moveSpeed, int bulletSpeed, int rhythmFrames )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	position = pos;	
+	type = edit->types["owl"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	framesBetweenNodes = p_framesBetweenNodes; 
+
+	loop = p_loop;
+
+	SetBoundingQuad();
+}
+
+OwlParams::OwlParams( EditSession *edit,
+	sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	lines = NULL;
+	position = pos;	
+	type = edit->types["pulser"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	loop = false;
+	//speed = 5;
+	framesBetweenNodes = 60;
+
+	SetBoundingQuad();
+}
+
+void OwlParams::WriteParamFile( std::ofstream &of )
+{
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+
+	of << moveSpeed << " " << bulletSpeed << " " << rhythm << endl;
+}
+
+void OwlParams::Draw( sf::RenderTarget *target )
+{
+	int localPathSize = localPath.size();
+
+	if( localPathSize > 0 )
+	{
+		
+		VertexArray &li = *lines;
+	
+	
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position += Vector2f( position.x, position.y );
+		}
+	
+	
+		target->draw( li );
+
+	
+
+		if( loop )
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White )
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+	
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position -= Vector2f( position.x, position.y );
+		}
+	}
+
+	ActorParams::Draw( target );
+}
+
+void OwlParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+	string moveStr = p->textBoxes["movespeed"]->text.getString().toAnsiString();
+	string bulletSpeedStr = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+	string rhythmStr = p->textBoxes["rhythmframes"]->text.getString().toAnsiString();
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+	
+	ss << moveStr;
+
+	int t_moveSpeed;
+	ss >> t_moveSpeed;
+
+	if( !ss.fail() )
+	{
+		moveSpeed = t_moveSpeed;
+	}
+
+	ss.clear();
+
+	ss << bulletSpeedStr;
+
+	int t_bulletSpeed;
+	ss >> t_bulletSpeed;
+
+	if( !ss.fail() )
+	{
+		bulletSpeed = t_bulletSpeed;
+	}
+
+	ss.clear();
+
+	ss << rhythmStr;
+
+	int t_rhythm;
+	ss >> t_rhythm;
+
+	if( !ss.fail() )
+	{
+		rhythm = t_rhythm;
+	}
+}
+
+void OwlParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+	{
+		p->textBoxes["group"]->text.setString( group->name );
+	}
+	
+	p->textBoxes["movespeed"]->text.setString( boost::lexical_cast<string>( moveSpeed ) );
+	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["rhythmframes"]->text.setString( boost::lexical_cast<string>( rhythm ) );
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+bool OwlParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *OwlParams::Copy()
+{
+	OwlParams *copy = new OwlParams( *this );
+	return copy;
+}
