@@ -368,7 +368,7 @@ void SwarmMember::ResetEnemy()
 //spriteSize = Vector2f( 16, 16 );
 
 Swarm::Swarm( GameSession *owner, 
-	sf::Vector2i &pos )
+	sf::Vector2i &pos, int liveFrames )
 	:Enemy( owner, Enemy::SWARM ), swarmVA( sf::Quads, 5 * 4 )
 {
 	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );

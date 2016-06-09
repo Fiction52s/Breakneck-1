@@ -253,7 +253,7 @@ ActorParams *PulserParams::Copy()
 
 
 OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
-	int moveSpeed, int bulletSpeed, int rhythmFrames )
+	int p_moveSpeed, int p_bulletSpeed, int p_rhythmFrames )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
@@ -263,9 +263,9 @@ OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
-	framesBetweenNodes = p_framesBetweenNodes; 
-
-	loop = p_loop;
+	moveSpeed = p_moveSpeed;
+	bulletSpeed = p_bulletSpeed;
+	rhythmFrames = p_rhythmFrames;
 
 	SetBoundingQuad();
 }
@@ -274,17 +274,16 @@ OwlParams::OwlParams( EditSession *edit,
 	sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
-	lines = NULL;
 	position = pos;	
-	type = edit->types["pulser"];
+	type = edit->types["owl"];
 
 	image.setTexture( type->imageTexture );
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
-	loop = false;
-	//speed = 5;
-	framesBetweenNodes = 60;
+	moveSpeed = 8;
+	bulletSpeed = 10;
+	rhythmFrames = 60;
 
 	SetBoundingQuad();
 }
@@ -298,7 +297,7 @@ void OwlParams::WriteParamFile( std::ofstream &of )
 		hMon = 0;
 	of << hMon << endl;
 
-	of << moveSpeed << " " << bulletSpeed << " " << rhythm << endl;
+	of << moveSpeed << " " << bulletSpeed << " " << rhythmFrames << endl;
 }
 
 void OwlParams::SetParams()
@@ -343,7 +342,7 @@ void OwlParams::SetParams()
 
 	if( !ss.fail() )
 	{
-		rhythm = t_rhythm;
+		rhythmFrames = t_rhythm;
 	}
 }
 
@@ -359,7 +358,7 @@ void OwlParams::SetPanelInfo()
 	
 	p->textBoxes["movespeed"]->text.setString( boost::lexical_cast<string>( moveSpeed ) );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
-	p->textBoxes["rhythmframes"]->text.setString( boost::lexical_cast<string>( rhythm ) );
+	p->textBoxes["rhythmframes"]->text.setString( boost::lexical_cast<string>( rhythmFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }

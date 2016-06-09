@@ -20,9 +20,12 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CoralParams::CoralParams( EditSession *edit, sf::Vector2i &pos )
+
+CoralParams::CoralParams( EditSession *edit, sf::Vector2i &pos, 
+	int p_moveFrames )
 	:ActorParams( PosType::AIR_ONLY )
 {
+	moveFrames = p_moveFrames;
 	position = pos;	
 	type = edit->types["coral"];
 
@@ -33,6 +36,23 @@ CoralParams::CoralParams( EditSession *edit, sf::Vector2i &pos )
 	SetBoundingQuad();
 }
 
+CoralParams::CoralParams( EditSession *edit, sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	moveFrames = 60;
+
+	position = pos;	
+	type = edit->types["coral"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+}
+
+
+
 void CoralParams::WriteParamFile( std::ofstream &of )
 {
 	int hMon;
@@ -41,11 +61,27 @@ void CoralParams::WriteParamFile( std::ofstream &of )
 	else
 		hMon = 0;
 	of << hMon << endl;
+
+	of << moveFrames << endl;
 }
 
 void CoralParams::SetParams()
 {
 	Panel *p = type->panel;
+
+	stringstream ss;
+	string moveFramesStr = p->textBoxes["moveframes"]->text.getString().toAnsiString();
+	
+	ss << moveFramesStr;
+
+	int t_moveFrames;
+	ss >> t_moveFrames;
+
+	if( !ss.fail() )
+	{
+		moveFrames = t_moveFrames;
+	}
+
 	hasMonitor = p->checkBoxes["monitor"]->checked;
 }
 
@@ -58,7 +94,11 @@ void CoralParams::SetPanelInfo()
 	{
 		p->textBoxes["group"]->text.setString( group->name );
 	}
+
 	p->checkBoxes["monitor"]->checked = hasMonitor;
+
+	p->textBoxes["moveframes"]->text.setString( 
+		boost::lexical_cast<string>( moveFrames ) );
 }
 
 bool CoralParams::CanApply()

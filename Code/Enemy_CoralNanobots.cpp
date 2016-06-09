@@ -814,7 +814,7 @@ void CoralNanobots::AddToList( CoralBlock *block,
 	list = block;
 }
 
-CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, double speed )
+CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, int moveFrames )
 		:Enemy( owner, EnemyType::CORALNANOBOTS ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
 {
 	//launcher = new Launcher( this, owner, MAX_BLOCKS, 1, V2d( 0, 0 ), V2d( 0, 0 ),

@@ -18,14 +18,14 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Spider::Spider( GameSession *owner, Edge *g, double q )
+Spider::Spider( GameSession *owner, Edge *g, double q, int speed )
 	:Enemy( owner, EnemyType::SPIDER ), facingRight( true )
 	//moveBezTest( .22,.85,.3,.91 )
 {
 	framesLaseringPlayer = 0;
 	rcEdge = NULL;
 	gravity = V2d( 0, .6 );
-	maxGroundSpeed = 10;
+	maxGroundSpeed = speed;
 	action = MOVE;
 	initHealth = 60;
 	health = initHealth;

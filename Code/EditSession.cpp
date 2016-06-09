@@ -7531,134 +7531,136 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemyQuad.setPosition( enemySprite.getPosition() );
 				}
 
-				string name = trackingEnemy->name;
-				bool w1Grounded = 
-					name == "crawler"
-					|| name == "foottrap"
-					|| name == "crawler";
-					|| name == "bosscrawler"
-					|| name == "crawlerreverser";
 
-				bool w2Grounded = 
-					name == "stagbeetle"
-					|| name == "curveturret"
-					|| name == "poisonfrog";
-
-				bool w3Grounded =
-					name == "badger"
-					|| name == "cactus";
-
-				bool w4Grounded =
-					name == "cheetah"
-					|| name == "spider";
-
-				bool w5Grounded = 
-					name == "overgrowth";
-
-				bool w6Grounded = false;
-
-				bool groundType = w1Grounded || w2Grounded
-					|| w3Grounded || w4Grounded || w5Grounded
-					|| w6Grounded || name == "goal";
-
-
-
-				if( showPanel == NULL && trackingEnemy != NULL 
-					&& groundType )
+				if( showPanel == NULL && trackingEnemy != NULL  )
 				{
-					enemyEdgePolygon = NULL;
+					string name = trackingEnemy->name;
+					bool w1Grounded = 
+						name == "crawler"
+						|| name == "foottrap"
+						|| name == "crawler"
+						|| name == "bosscrawler"
+						|| name == "crawlerreverser";
+
+					bool w2Grounded = 
+						name == "stagbeetle"
+						|| name == "curveturret"
+						|| name == "poisonfrog";
+
+					bool w3Grounded =
+						name == "badger"
+						|| name == "cactus";
+
+					bool w4Grounded =
+						name == "cheetah"
+						|| name == "spider";
+
+					bool w5Grounded = 
+						name == "overgrowth";
+
+					bool w6Grounded = false;
+
+					bool groundType = w1Grounded || w2Grounded
+						|| w3Grounded || w4Grounded || w5Grounded
+						|| w6Grounded || name == "goal";
+
+
+
 				
-					double testRadius = 200;
-					
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( groundType )
 					{
-						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
-							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
+						enemyEdgePolygon = NULL;
+				
+						double testRadius = 200;
+					
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							TerrainPoint *prev = (*it)->pointEnd;
-							TerrainPoint *curr = (*it)->pointStart;
-
-							if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+							if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+								&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
 							{
-								//prev is starting at 0. start normally at 1
-								int edgeIndex = 0;
-								double minDistance = 10000000;
-								int storedIndex;
-								double storedQuantity;
-							
-								V2d closestPoint;
+								TerrainPoint *prev = (*it)->pointEnd;
+								TerrainPoint *curr = (*it)->pointStart;
 
-								for( ; curr != NULL; curr = curr->next )
+								if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
 								{
-									double dist = abs(
-										cross( 
-										V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
-										normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) ) );
-									double testQuantity =  dot( 
+									//prev is starting at 0. start normally at 1
+									int edgeIndex = 0;
+									double minDistance = 10000000;
+									int storedIndex;
+									double storedQuantity;
+							
+									V2d closestPoint;
+
+									for( ; curr != NULL; curr = curr->next )
+									{
+										double dist = abs(
+											cross( 
 											V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
-											normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) );
+											normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) ) );
+										double testQuantity =  dot( 
+												V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
+												normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) );
 
-									V2d pr( prev->pos.x, prev->pos.y );
-									V2d cu( curr->pos.x, curr->pos.y );
-									V2d te( testPoint.x, testPoint.y );
+										V2d pr( prev->pos.x, prev->pos.y );
+										V2d cu( curr->pos.x, curr->pos.y );
+										V2d te( testPoint.x, testPoint.y );
 									
-									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(testQuantity / length( cu - pr ) ) );
+										V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+												(testQuantity / length( cu - pr ) ) );
 
-									//int testA = dist < 100;
-									//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
-									//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
-									//int testD = length( newPoint - te ) < length( closestPoint - te );
+										//int testA = dist < 100;
+										//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
+										//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
+										//int testD = length( newPoint - te ) < length( closestPoint - te );
 									
-									//cout << testA << " " << testB << " " << testC << " " << testD << endl;
+										//cout << testA << " " << testB << " " << testC << " " << testD << endl;
 
-									int hw = trackingEnemy->width / 2;
-									int hh = trackingEnemy->height / 2;
-									if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
-										&& length( newPoint - te ) < length( closestPoint - te ) )
-									{
-										minDistance = dist;
-										storedIndex = edgeIndex;
-										double l = length( cu - pr );
+										int hw = trackingEnemy->width / 2;
+										int hh = trackingEnemy->height / 2;
+										if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
+											&& length( newPoint - te ) < length( closestPoint - te ) )
+										{
+											minDistance = dist;
+											storedIndex = edgeIndex;
+											double l = length( cu - pr );
 										
-										storedQuantity = testQuantity;
-										closestPoint = newPoint ;
-										//minDistance = length( closestPoint - te )  
+											storedQuantity = testQuantity;
+											closestPoint = newPoint ;
+											//minDistance = length( closestPoint - te )  
 										
-										enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
-										enemySprite.setPosition( closestPoint.x, closestPoint.y );
-										enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+											enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
+											enemySprite.setPosition( closestPoint.x, closestPoint.y );
+											enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
 
-										enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
-										enemyQuad.setRotation( enemySprite.getRotation() );
-										enemyQuad.setPosition( enemySprite.getPosition() );
+											enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
+											enemyQuad.setRotation( enemySprite.getRotation() );
+											enemyQuad.setPosition( enemySprite.getPosition() );
+										}
+										else
+										{
+										
+											//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
+										}
+
+										prev = curr;
+										++edgeIndex;
 									}
-									else
-									{
-										
-										//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
-									}
 
-									prev = curr;
-									++edgeIndex;
+									enemyEdgeIndex = storedIndex;
+
+									enemyEdgeQuantity = storedQuantity;
+								
+									enemyEdgePolygon = (*it).get();
+								
+
+									//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
+									//cout << "minDist: " << minDistance << endl;
+
+									break;
 								}
-
-								enemyEdgeIndex = storedIndex;
-
-								enemyEdgeQuantity = storedQuantity;
-								
-								enemyEdgePolygon = (*it).get();
-								
-
-								//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
-								//cout << "minDist: " << minDistance << endl;
-
-								break;
 							}
 						}
 					}
-
-
 				}
 
 				

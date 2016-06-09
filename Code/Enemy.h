@@ -298,6 +298,129 @@ struct BasicEffect : Enemy
 	//sf::Vector2<double> position;
 };
 
+struct Goal : Enemy
+{
+	Goal( GameSession *owner, Edge *ground, double quantity );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+	
+
+	sf::Sprite sprite;
+	sf::Sprite miniSprite;
+	Tileset *ts;
+	Tileset *ts_mini;
+
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	//Contact minContact;
+	//bool col;
+	//std::string queryMode;
+	//int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	bool dead;
+	sf::Vector2<double> gn;
+};
+
+struct Monitor : Enemy
+{
+	Monitor( GameSession *owner,
+		Enemy *e_host );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw( sf::RenderTarget *target);
+	void DrawMinimap( sf::RenderTarget *target );
+	bool IHitPlayer();
+	void UpdateHitboxes();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	int animationFactor;
+	sf::Sprite sprite;
+	sf::Sprite miniSprite;
+	Tileset *ts_mini;
+	Tileset *ts;
+	int frame;
+	Enemy *host;
+	bool respawnSpecial;
+};
+
+struct HealthFly : Enemy
+{
+	enum FlyType
+	{
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		WHITE,
+		Count
+	};
+
+	HealthFly( GameSession *owner,
+		sf::Vector2i &pos,
+		FlyType fType );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw( sf::RenderTarget *target);
+	void DrawMinimap( sf::RenderTarget *target );
+	bool IHitPlayer();
+	void UpdateHitboxes();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	Enemy *host;
+	FlyType flyType;
+	sf::Sprite sprite;
+	Tileset *ts;
+	int frame;
+	int animationFactor;
+	bool caught;
+};
+
+
+//w1
 struct Patroller : Enemy
 {
 	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed );
@@ -376,6 +499,391 @@ struct Patroller : Enemy
 	Stored stored;
 };
 
+struct CrawlerReverser : QuadTreeEntrant
+{
+	CrawlerReverser( GameSession* owner,
+		Edge *edge, double quantity );
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+	void Draw( sf::RenderTarget *target );
+	sf::Vector2<double> position;
+	Edge *ground;
+	double quantity;
+	Tileset *ts;
+	sf::Sprite sprite;
+	CollisionBox hurtBody;
+	CrawlerReverser *drawNext;
+	
+};
+
+struct Crawler : Enemy
+{
+	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+	sf::Sprite sprite;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
+
+	bool clockwise;
+	double groundSpeed;
+	Edge *ground;
+	//sf::Vector2<double> offset;
+	double edgeQuantity;
+
+	CrawlerReverser *lastReverser;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	
+	int attackFrame;
+	int attackMult;
+
+	double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	sf::Vector2<double> offset;
+	int frame;
+	bool roll;
+
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+struct BasicTurret : Enemy
+{
+	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
+		double bulletSpeed,
+		int framesWait );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool IHitPlayerWithBullets();
+	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool, bool> PlayerHitMyBullets();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void UpdateBulletHitboxes();
+
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	
+	const static int maxBullets = 16;
+	sf::Vector2<double> bulletPositions[maxBullets];
+	sf::Vector2<double> tempVel;
+	
+
+
+
+	sf::VertexArray bulletVA;
+	CollisionBox bulletHurtBody[maxBullets];
+	CollisionBox bulletHitBody[maxBullets];
+	struct Bullet
+	{
+		Bullet();
+		Bullet *prev;
+		Bullet *next;
+		sf::Vector2<double> position;
+		CollisionBox hurtBody;
+		CollisionBox hitBody;
+		CollisionBox physBody;
+		int frame;
+		int slowCounter;
+		int slowMultiple;
+		int maxFramesToLive;
+		int framesToLive;
+	};
+	Bullet *queryBullet;
+	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
+
+	void AddBullet();
+	void DeactivateBullet( Bullet *bullet );
+	Bullet * ActivateBullet();
+	Tileset * ts_bullet;
+
+	Bullet *activeBullets;
+	Bullet *inactiveBullets;
+	HitboxInfo *bulletHitboxInfo;
+
+	
+
+	int framesWait;
+	int firingCounter;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+struct FootTrap : Enemy
+{
+	FootTrap( GameSession *owner, Edge *ground, double quantity );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+	
+
+	sf::Sprite sprite;
+	Tileset *ts;
+
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		int frame;
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct BossCrawler : Enemy
+{
+	enum Action
+	{
+		STAND,
+		SHOOT,
+		LUNGE,
+		LUNGELAND,
+		LUNGEAIR,
+		RUN,
+		ROLL,
+		STUNNED,
+		Count
+	};
+	
+	struct Bullet
+	{
+		Bullet();
+		//Bullet *prev;
+		//Bullet *next;
+		sf::Vector2<double> position;
+		sf::Vector2<double> velocity;
+		CollisionBox hurtBody;
+		CollisionBox hitBody;
+		CollisionBox physBody;
+		bool active;
+		int frame;
+		int slowCounter;
+		int slowMultiple;
+		
+		//int maxFramesToLive;
+		//int framesToLive;
+	};
+	
+	Tileset *ts_test;
+	Tileset *ts_bullet;
+
+	double bulletGrav;
+	int bulletRadius;
+	int numBullets;
+	Bullet *bullets;
+	int queryIndex;
+
+	sf::VertexArray bulletVA;
+	Action action;
+	int frame;
+	double gravity;
+	bool facingRight;
+	sf::Vector2<double> velocity;
+	double angle;
+
+	int hitsBeforeHurt;
+	int hitsCounter;
+	int invincibleFrames;
+	//sf::Vector2<double> position;
+
+	BossCrawler( GameSession *owner, Edge *ground, double quantity );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	bool IHitPlayerWithBullets();
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolveBulletPhysics( int i,
+		sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void UpdatePhysics2();
+	void UpdatePhysics3();
+
+	void FireBullets();
+	void UpdateBulletSprites();
+	void UpdateBulletHitboxes();
+
+
+	sf::Sprite sprite;
+	Tileset *ts_walk;
+	Tileset *ts_roll;
+	
+
+	double groundSpeed;
+	Edge *ground;
+	
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	HitboxInfo *bulletHitboxInfo;
+	sf::Vector2<double> tempVel;
+	
+
+	double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	sf::Vector2<double> offset;
+	
+	bool roll;
+	bool dead;
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	
+	int maxHitsPerFrame;
+	int hitsThisFrame;
+	
+};
+
+//w2
 struct Bat : Enemy, LauncherEnemy
 {
 	MovementSequence testSeq;
@@ -472,93 +980,341 @@ struct Bat : Enemy, LauncherEnemy
 	Stored stored;
 };
 
-struct Specter;
-struct SpecterArea : QuadTreeEntrant
+struct StagBeetle : Enemy, GroundMoverHandler
 {
-	SpecterArea( Specter *sp, sf::Vector2i &pos, int rad );
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
-	int radius;
-	sf::Rect<double> testRect;
-	CollisionBox barrier;
-	Specter *specter;
-};
+	enum Action
+	{
+		RUN,
+		JUMP,
+		ATTACK,
+		LAND
+	};
 
-struct Specter : Enemy
-{
-	
-	//MovementSequence testSeq;
-	Specter( GameSession *owner, sf::Vector2i pos );
+	StagBeetle( GameSession *owner, Edge *ground, 
+		double quantity, 
+		bool clockwise, double speed );
+	void ActionEnded();
+	int NumTotalBullets();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void PhysicsResponse();
-	bool physicsOver;
-
 	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	void DebugDraw(sf::RenderTarget *target);
+	void Draw(sf::RenderTarget *target );
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
-	void UpdateSprite();
-	void UpdateHitboxes();
 	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
 	void ResetEnemy();
-
+	
 	void SaveEnemyState();
 	void LoadEnemyState();
 
-	int deathFrame;
+	void HitTerrain( double &q );
+	bool StartRoll();
+	void FinishedRoll();
 
-	int radius;
+	Launcher *testLaunch;
+	//sf::Vector2<double> velocity;
+	sf::Sprite sprite;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
+
+	Action action;
+	bool facingRight;
+
+	CubicBezier moveBezTest;
+	int bezFrame;
+	int bezLength;
+
+	//CrawlerReverser *lastReverser;
+	//double groundSpeed;
+	//Edge *ground;
+	//double edgeQuantity;
+	GroundMover *testMover;
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial( Edge *e );
+	void Land();
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	//CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	sf::Vector2<double> gravity;
 	
-	
-	SpecterArea myArea;
+	int attackFrame;
+	int attackMult;
+
+	//double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	//sf::Vector2<double> offset;
+	int frame;
+	//bool roll;
+
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
-	//Tileset * ts_death;
-	//std::list<sf::Vector2i> path;
-	
-	//int targetNode;
-	//bool forward;
-	//sf::Vector2<double>
-	int frame;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-
-	int hitlagFrames;
-	int hitstunFrames;
-	int animationFactor;
-
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
-	//bool facingRight;
 
-	struct Stored
-	{
-		bool dead;
-		int deathFrame;
-		//sf::Vector2<double> deathVector;
-		//double deathPartingSpeed;
-		int targetNode;
-		bool forward;
-		int frame;
-		sf::Vector2<double> position;
-
-		int hitlagFrames;
-		int hitstunFrames;
-	};
-	Stored stored;
+	double maxGroundSpeed;
+	double maxFallSpeed;
 };
 
+struct CurveTurret : Enemy, LauncherEnemy
+{
+	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
+		double bulletSpeed,
+		int framesWait,
+		sf::Vector2i &gravFactor,
+		bool relativeGrav );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool IHitPlayerWithBullets();
+	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool, bool> PlayerHitMyBullets();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//void UpdateBulletHitboxes();
+	void BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+	void BulletHitPlayer( BasicBullet *b );
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	Launcher *testLauncher;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	
+	const static int maxBullets = 16;
+	sf::Vector2<double> tempVel;
+
+	int framesWait;
+	int firingCounter;
+	int realWait;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	sf::Vector2<double> gravity;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	bool dying;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+struct PoisonFrog : Enemy, GroundMoverHandler
+{
+	enum Action
+	{
+
+		STAND,
+		JUMPSQUAT,
+		STEEPJUMP,
+		JUMP,
+		LAND,
+		WALLCLING,
+		//STUNNED,
+		Count
+	};
+	
+	//struct Bullet
+	//{
+	//	Bullet();
+	//	//Bullet *prev;
+	//	//Bullet *next;
+	//	sf::Vector2<double> position;
+	//	sf::Vector2<double> velocity;
+	//	CollisionBox hurtBody;
+	//	CollisionBox hitBody;
+	//	CollisionBox physBody;
+	//	bool active;
+	//	int frame;
+	//	int slowCounter;
+	//	int slowMultiple;
+	//	
+	//	//int maxFramesToLive;
+	//	//int framesToLive;
+	//};
+	
+	PoisonFrog( GameSession *owner, 
+		Edge *ground, double quantity,
+		int gravFactor,
+		sf::Vector2i &jumpStrength,
+		int jumpFramesWait );
+
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
+
+	
+
+	Tileset *ts_test;
+	//int queryIndex;
+
+	//sf::VertexArray bulletVA;
+	Action action;
+	int frame;
+	double gravity;
+	bool facingRight;
+	sf::Vector2<double> velocity;
+	double angle;
+
+	int hitsBeforeHurt;
+	int hitsCounter;
+	int invincibleFrames;
+
+	//double jumpStrength;
+	double xSpeed;
+	int jumpFramesWait;
+	double gravityFactor;
+	bool steepJump;
+	sf::Vector2<double> jumpStrength;
+
+	GroundMover *mover;
+
+
+	//int wallTouchCounter;
+	//sf::Vector2<double> position;
+
+	
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void ActionEnded();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void UpdatePhysics2();
+	void UpdatePhysics3();
+
+
+
+	void HitTerrain( double &q );
+	bool StartRoll();
+	void FinishedRoll();
+
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial( Edge *e );
+	void Land();
+
+	//void FireBullets();
+	//void UpdateBulletSprites();
+	//void UpdateBulletHitboxes();
+
+
+	sf::Sprite sprite;
+	Tileset *ts_walk;
+	Tileset *ts_roll;
+	
+
+	//double groundSpeed;
+	//Edge *ground;
+	
+	//double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	//CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+
+	double maxFallSpeed;
+	
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	sf::Vector2<double> offset;
+	
+	
+
+
+	bool dead;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+
+//w3
 struct Pulser : Enemy
 {
 	Pulser( GameSession *owner, 
@@ -639,6 +1395,468 @@ struct Pulser : Enemy
 		int hitstunFrames;
 	};
 	Stored stored;
+};
+
+struct Badger : Enemy, GroundMoverHandler
+{
+	enum Action
+	{
+		RUN,
+		LEDGEJUMP,
+		SHORTJUMP,
+		SHORTJUMPSQUAT,
+		TALLJUMP,
+		TALLJUMPSQUAT,
+		ATTACK,
+		LAND,
+		Count
+	};
+
+	Badger( GameSession *owner, Edge *ground, 
+		double quantity, 
+		bool clockwise, int speed,
+		int jumpStrength );
+	void ActionEnded();
+	int NumTotalBullets();
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	void Jump( double strengthx, 
+		double strengthy );
+	void UpdateNextAction();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	void HitTerrain( double &q );
+	bool StartRoll();
+	void FinishedRoll();
+
+	Launcher *testLaunch;
+	Action landedAction;
+	//sf::Vector2<double> velocity;
+	sf::Sprite sprite;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
+
+	Action action;
+	bool facingRight;
+	double angle;
+
+	Action nextAction;
+
+	CubicBezier moveBezTest;
+	int bezFrame;
+	int bezLength;
+
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
+
+	//CrawlerReverser *lastReverser;
+	//double groundSpeed;
+	//Edge *ground;
+	//double edgeQuantity;
+	GroundMover *testMover;
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial( Edge *e );
+	void Land();
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	//CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	sf::Vector2<double> gravity;
+	
+	int attackFrame;
+	int attackMult;
+
+	//double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	//sf::Vector2<double> offset;
+	int frame;
+	bool originalFacingRight;
+	//bool roll;
+
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	double maxGroundSpeed;
+	double maxFallSpeed;
+
+	double jumpStrength;
+};
+
+struct Owl : Enemy, LauncherEnemy
+{
+	enum Action
+	{
+		NEUTRAL,
+		CHASE,
+		RETREAT,
+		REST,
+		FIRE
+	};
+
+	Owl( GameSession *owner, sf::Vector2i &pos,
+		int bulletSpeed,
+		int framesBetween,
+		bool facingRight );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+	void ActionEnded();
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	Action action;
+	std::map<Action,int> actionLength;
+	std::map<Action,int> animFactor;
+
+	int bulletSpeed;
+	int movementRadius;
+	int retreatRadius;
+	int shotRadius;
+	int chaseRadius;
+	int framesBetween;
+
+	CubicBezier flyingBez;
+
+	sf::Vector2i originalPos;
+
+	sf::Vector2<double> velocity;
+	double flySpeed;
+	//sf::Vector2<double> basePos;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+
+	//int targetNode;
+	//bool forward;
+	//sf::Vector2<double>
+	int frame;
+
+	Launcher *launcher;
+
+	bool dying;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct Cactus : Enemy, LauncherEnemy
+{
+	Cactus( GameSession *owner, Edge *ground, double quantity, 
+		 int p_bulletSpeed, int p_rhythm, 
+		 int p_amplitude );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	bool IHitPlayerWithBullets();
+	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool, bool> PlayerHitMyBullets();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//void UpdateBulletHitboxes();
+	void BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+	void BulletHitPlayer( BasicBullet *b );
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	Launcher *testLauncher;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	
+	const static int maxBullets = 16;
+	sf::Vector2<double> tempVel;
+
+	int framesWait;
+	int firingCounter;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	sf::Vector2<double> gravity;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	bool dying;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+};
+
+//w4
+struct CoralNanobots;
+struct CoralBlock : Enemy
+{
+	CoralBlock(CoralNanobots *parent, 
+		sf::VertexArray &va,
+		Tileset *ts, int index );
+	void SetParams( sf::Vector2<double> &pos,
+		sf::Vector2<double> &dir,
+		int iteration );
+	void ClearSprite();
+	void UpdatePostPhysics();
+	void UpdateSprite();
+
+
+	bool ResolvePhysics( sf::Vector2<double> &vel );
+
+	void BlockHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+
+
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//void UpdateBulletHitboxes();
+	//int NumTotalBullets();
+	CoralNanobots *parent;
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	int vaIndex;
+	int frame;
+	int animFactor;
+	//Edge *ground;
+	
+	bool active;
+	std::string queryMode;
+	bool topOpen;
+	bool leftOpen;
+	bool rightOpen;
+	bool botOpen;
+
+	int iteration;
+
+	CubicBezier bez;
+	sf::Vector2<double> startPos;
+	sf::Vector2<double> direction;
+	sf::Vector2<double> oldPos;
+	MovementSequence move;
+	sf::VertexArray &va;
+	//double edgeQuantity;
+	//Launcher *launcher;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+	sf::Vector2<double> tempVel;
+	sf::Vector2<double> dir;
+
+	//Contact minContact;
+	//bool col;
+	//std::string queryMode;
+	//int possibleEdgeCount;
+	Tileset *ts;
+	//int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+	double bulletSpeed;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	bool lockedIn;
+
+	//int framesToLive;
+	//int maxFramesToLive;
+	
+	//sf::VertexArray &blockVA;
+
+	Contact minContact;
+	bool col;
+	//sf::Transform trans;
+};
+
+struct CoralNanobots : Enemy//, LauncherEnemy
+{
+	CoralNanobots( GameSession *owner, 
+		sf::Vector2i &pos, int moveFrames );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+//	void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	//bool IHitPlayer();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void InitBlocks();
+	void AddBlock( CoralBlock *block );
+	//int NumTotalBullets();
+	void DeactivateBlock( CoralBlock *block );
+	CoralBlock * ActivateBlock( 
+		sf::Vector2<double> &pos,
+		sf::Vector2<double> &dir,
+		int iteration );
+
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+
+	int animationFactor;
+	void AddToList( CoralBlock *block,
+		CoralBlock *&list );
+
+	//Edge *origGround;
+	sf::Vector2<double> origPosition;
+	//double origQuantity;
+	
+
+
+	Tileset *ts;
+	CoralBlock *activeBlocks;
+	CoralBlock *inactiveBlocks;
+
+	
+	//void UpdateBulletHitboxes();
+	
+
+	int blockSizeX;
+	int blockSizeY;
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+
+	const static int MAX_BLOCKS = 25;
+	Launcher *launcher;
+	//const static int MAX_TREES = 16;
+	sf::VertexArray blockVA;
 };
 
 struct Turtle : Enemy, LauncherEnemy
@@ -728,6 +1946,249 @@ struct Turtle : Enemy, LauncherEnemy
 	Stored stored;
 };
 
+struct Cheetah : Enemy, GroundMoverHandler
+{
+	enum Action
+	{
+		NEUTRAL,
+		CHARGEUP,
+		BURST,
+		ARRIVE,
+		TURNAROUND,
+		JUMP,
+		ATTACK,
+		LAND,
+		Count
+	};
+
+	Cheetah( GameSession *owner, Edge *ground, 
+		double quantity );
+	void ActionEnded();
+	int NumTotalBullets();
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	//bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	void HitTerrain( double &q );
+	bool StartRoll();
+	void FinishedRoll();
+
+	Launcher *testLaunch;
+	//sf::Vector2<double> velocity;
+	sf::Sprite sprite;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
+
+	Action action;
+	bool facingRight;
+	bool origFacingRight;
+
+	CubicBezier moveBezTest;
+	int bezFrame;
+	int bezLength;
+
+	//CrawlerReverser *lastReverser;
+	//double groundSpeed;
+	//Edge *ground;
+	//double edgeQuantity;
+	GroundMover *testMover;
+	GroundMover *trueMover;
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial( Edge *e );
+	void Land();
+
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	//CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	sf::Vector2<double> gravity;
+	
+	int attackFrame;
+	int attackMult;
+
+	//double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	//sf::Vector2<double> offset;
+	int frame;
+	//bool roll;
+
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	double maxGroundSpeed;
+	double maxFallSpeed;
+};
+
+struct Spider : Enemy, RayCastHandler
+{
+	enum Action
+	{
+		MOVE,
+		JUMP,
+		ATTACK,
+		LAND
+	};
+	struct SurfaceInfo
+	{
+		SurfaceInfo(){}
+		SurfaceInfo( Edge *p_e, double p_q, 
+			sf::Vector2<double> &pos )
+			:e( p_e ), q( p_q ), position( pos )
+		{}
+		Edge *e;
+		double q;
+		sf::Vector2<double> position;
+	};
+
+	Spider( GameSession *owner, Edge *ground, 
+		double quantity, int speed );
+	void ActionEnded();
+	int NumTotalBullets();
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void DrawMinimap( sf::RenderTarget *target );
+	void Draw(sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void ResetEnemy();
+	
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	void HitTerrain( double &q );
+	bool StartRoll();
+	void FinishedRoll();
+	void CheckClosest( Edge * e,
+		sf::Vector2<double> &playerPos,
+		bool right,
+		double cutoffQuant );
+	void SetClosestLeft();
+	void SetClosestRight();
+
+	SurfaceInfo closestPos;
+	Launcher *testLaunch;
+	//sf::Vector2<double> velocity;
+	sf::Sprite sprite;
+	Tileset *ts;
+	//Tileset *ts_walk;
+	//Tileset *ts_roll;
+
+	Action action;
+	bool facingRight;
+
+	Edge *rcEdge;
+	double rcQuantity;
+	sf::Vector2<double> rayStart;
+	sf::Vector2<double> rayEnd;
+
+	bool canSeePlayer;
+
+	int framesLaseringPlayer;
+	int laserLevel;
+
+	double laserAngle;
+
+
+	CubicBezier moveBezTest;
+	int bezFrame;
+	int bezLength;
+
+	//CrawlerReverser *lastReverser;
+	//double groundSpeed;
+	//Edge *ground;
+	//double edgeQuantity;
+	SurfaceMover *mover;
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial( Edge *e );
+	void Land();
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	//CollisionBox physBody;
+	HitboxInfo *hitboxInfo;
+	sf::Vector2<double> tempVel;
+	sf::Vector2<double> gravity;
+	
+	int attackFrame;
+	int attackMult;
+
+	//double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+
+	int possibleEdgeCount;
+
+	Edge *startGround;
+	double startQuant;
+	//sf::Vector2<double> offset;
+	int frame;
+	//bool roll;
+
+	int deathFrame;
+	int crawlAnimationFactor;
+	int rollAnimationFactor;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	double maxGroundSpeed;
+	double maxFallSpeed;
+};
+
+//w5
 struct Ghost : Enemy
 {
 	enum Action
@@ -937,782 +2398,6 @@ struct Shark : Enemy
 	Stored stored;
 };
 
-struct CrawlerReverser : QuadTreeEntrant
-{
-	CrawlerReverser( GameSession* owner,
-		Edge *edge, double quantity );
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
-	void Draw( sf::RenderTarget *target );
-	sf::Vector2<double> position;
-	Edge *ground;
-	double quantity;
-	Tileset *ts;
-	sf::Sprite sprite;
-	CollisionBox hurtBody;
-	CrawlerReverser *drawNext;
-	
-};
-
-struct Crawler : Enemy
-{
-	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
-//	void HandleEdge( Edge *e );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void ResetEnemy();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-	sf::Sprite sprite;
-	Tileset *ts;
-	//Tileset *ts_walk;
-	//Tileset *ts_roll;
-
-	bool clockwise;
-	double groundSpeed;
-	Edge *ground;
-	//sf::Vector2<double> offset;
-	double edgeQuantity;
-
-	CrawlerReverser *lastReverser;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
-	
-	int attackFrame;
-	int attackMult;
-
-	double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	sf::Vector2<double> offset;
-	int frame;
-	bool roll;
-
-	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-};
-
-struct StagBeetle : Enemy, GroundMoverHandler
-{
-	enum Action
-	{
-		RUN,
-		JUMP,
-		ATTACK,
-		LAND
-	};
-
-	StagBeetle( GameSession *owner, Edge *ground, 
-		double quantity, 
-		bool clockwise, double speed );
-	void ActionEnded();
-	int NumTotalBullets();
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void ResetEnemy();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	void HitTerrain( double &q );
-	bool StartRoll();
-	void FinishedRoll();
-
-	Launcher *testLaunch;
-	//sf::Vector2<double> velocity;
-	sf::Sprite sprite;
-	Tileset *ts;
-	//Tileset *ts_walk;
-	//Tileset *ts_roll;
-
-	Action action;
-	bool facingRight;
-
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	//CrawlerReverser *lastReverser;
-	//double groundSpeed;
-	//Edge *ground;
-	//double edgeQuantity;
-	GroundMover *testMover;
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial( Edge *e );
-	void Land();
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
-	
-	int attackFrame;
-	int attackMult;
-
-	//double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	//sf::Vector2<double> offset;
-	int frame;
-	//bool roll;
-
-	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-
-	double maxGroundSpeed;
-	double maxFallSpeed;
-};
-
-struct Badger : Enemy, GroundMoverHandler
-{
-	enum Action
-	{
-		RUN,
-		LEDGEJUMP,
-		SHORTJUMP,
-		SHORTJUMPSQUAT,
-		TALLJUMP,
-		TALLJUMPSQUAT,
-		ATTACK,
-		LAND,
-		Count
-	};
-
-	Badger( GameSession *owner, Edge *ground, 
-		double quantity, 
-		bool clockwise, int speed,
-		int jumpStrength );
-	void ActionEnded();
-	int NumTotalBullets();
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	//bool ResolvePhysics( sf::Vector2<double> vel );
-	void ResetEnemy();
-	void Jump( double strengthx, 
-		double strengthy );
-	void UpdateNextAction();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	void HitTerrain( double &q );
-	bool StartRoll();
-	void FinishedRoll();
-
-	Launcher *testLaunch;
-	Action landedAction;
-	//sf::Vector2<double> velocity;
-	sf::Sprite sprite;
-	Tileset *ts;
-	//Tileset *ts_walk;
-	//Tileset *ts_roll;
-
-	Action action;
-	bool facingRight;
-	double angle;
-
-	Action nextAction;
-
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	int actionLength[Action::Count];
-	int animFactor[Action::Count];
-
-	//CrawlerReverser *lastReverser;
-	//double groundSpeed;
-	//Edge *ground;
-	//double edgeQuantity;
-	GroundMover *testMover;
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial( Edge *e );
-	void Land();
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
-	
-	int attackFrame;
-	int attackMult;
-
-	//double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	//sf::Vector2<double> offset;
-	int frame;
-	bool originalFacingRight;
-	//bool roll;
-
-	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-
-	double maxGroundSpeed;
-	double maxFallSpeed;
-
-	double jumpStrength;
-};
-
-struct Cheetah : Enemy, GroundMoverHandler
-{
-	enum Action
-	{
-		NEUTRAL,
-		CHARGEUP,
-		BURST,
-		ARRIVE,
-		TURNAROUND,
-		JUMP,
-		ATTACK,
-		LAND,
-		Count
-	};
-
-	Cheetah( GameSession *owner, Edge *ground, 
-		double quantity, 
-		bool clockwise );
-	void ActionEnded();
-	int NumTotalBullets();
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	//bool ResolvePhysics( sf::Vector2<double> vel );
-	void ResetEnemy();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	void HitTerrain( double &q );
-	bool StartRoll();
-	void FinishedRoll();
-
-	Launcher *testLaunch;
-	//sf::Vector2<double> velocity;
-	sf::Sprite sprite;
-	Tileset *ts;
-	//Tileset *ts_walk;
-	//Tileset *ts_roll;
-
-	Action action;
-	bool facingRight;
-	bool origFacingRight;
-
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	//CrawlerReverser *lastReverser;
-	//double groundSpeed;
-	//Edge *ground;
-	//double edgeQuantity;
-	GroundMover *testMover;
-	GroundMover *trueMover;
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial( Edge *e );
-	void Land();
-
-	int actionLength[Action::Count];
-	int animFactor[Action::Count];
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
-	
-	int attackFrame;
-	int attackMult;
-
-	//double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	//sf::Vector2<double> offset;
-	int frame;
-	//bool roll;
-
-	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-
-	double maxGroundSpeed;
-	double maxFallSpeed;
-};
-
-struct Owl : Enemy, LauncherEnemy
-{
-	enum Action
-	{
-		NEUTRAL,
-		CHASE,
-		RETREAT,
-		REST,
-		FIRE
-	};
-
-	Owl( GameSession *owner, sf::Vector2i &pos,
-		int bulletSpeed,
-		int framesBetween,
-		bool facingRight );
-	void BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos );
-	void BulletHitPlayer( BasicBullet *b );
-	void ActionEnded();
-	//void HandleEdge( Edge *e );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target );
-	void DrawMinimap( sf::RenderTarget *target );
-	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	void UpdateSprite();
-	void UpdateHitboxes();
-	bool PlayerSlowingMe();
-	void ResetEnemy();
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	Action action;
-	std::map<Action,int> actionLength;
-	std::map<Action,int> animFactor;
-
-	int bulletSpeed;
-	int movementRadius;
-	int retreatRadius;
-	int shotRadius;
-	int chaseRadius;
-	int framesBetween;
-
-	CubicBezier flyingBez;
-
-	sf::Vector2i originalPos;
-
-	sf::Vector2<double> velocity;
-	double flySpeed;
-	//sf::Vector2<double> basePos;
-	int deathFrame;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-
-	//int targetNode;
-	//bool forward;
-	//sf::Vector2<double>
-	int frame;
-
-	Launcher *launcher;
-
-	bool dying;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-
-	int hitlagFrames;
-	int hitstunFrames;
-
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-	bool facingRight;
-
-	struct Stored
-	{
-		bool dead;
-		int deathFrame;
-		//sf::Vector2<double> deathVector;
-		//double deathPartingSpeed;
-		int targetNode;
-		bool forward;
-		int frame;
-		sf::Vector2<double> position;
-
-		int hitlagFrames;
-		int hitstunFrames;
-	};
-	Stored stored;
-};
-
-struct BasicTurret : Enemy
-{
-	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
-		double bulletSpeed,
-		int framesWait );
-//	void HandleEdge( Edge *e );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	bool IHitPlayerWithBullets();
-	std::pair<bool,bool> PlayerHitMe();
-	std::pair<bool, bool> PlayerHitMyBullets();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	void UpdateBulletHitboxes();
-
-
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	
-	const static int maxBullets = 16;
-	sf::Vector2<double> bulletPositions[maxBullets];
-	sf::Vector2<double> tempVel;
-	
-
-
-
-	sf::VertexArray bulletVA;
-	CollisionBox bulletHurtBody[maxBullets];
-	CollisionBox bulletHitBody[maxBullets];
-	struct Bullet
-	{
-		Bullet();
-		Bullet *prev;
-		Bullet *next;
-		sf::Vector2<double> position;
-		CollisionBox hurtBody;
-		CollisionBox hitBody;
-		CollisionBox physBody;
-		int frame;
-		int slowCounter;
-		int slowMultiple;
-		int maxFramesToLive;
-		int framesToLive;
-	};
-	Bullet *queryBullet;
-	bool ResolvePhysics( Bullet *b, sf::Vector2<double> vel );
-
-	void AddBullet();
-	void DeactivateBullet( Bullet *bullet );
-	Bullet * ActivateBullet();
-	Tileset * ts_bullet;
-
-	Bullet *activeBullets;
-	Bullet *inactiveBullets;
-	HitboxInfo *bulletHitboxInfo;
-
-	
-
-	int framesWait;
-	int firingCounter;
-	Edge *ground;
-	double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-	
-	double angle;
-
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	int frame;
-	int deathFrame;
-	int animationFactor;
-	sf::Vector2<double> gn;
-	double bulletSpeed;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-};
-
-struct Cactus : Enemy, LauncherEnemy
-{
-	Cactus( GameSession *owner, Edge *ground, double quantity, 
-		double bulletSpeed,
-		int framesWait,
-		sf::Vector2i &gravFactor,
-		bool relativeGrav );
-//	void HandleEdge( Edge *e );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	bool IHitPlayerWithBullets();
-	std::pair<bool,bool> PlayerHitMe();
-	std::pair<bool, bool> PlayerHitMyBullets();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	//void UpdateBulletHitboxes();
-	void BulletHitTerrain(BasicBullet *b, 
-		Edge *edge, 
-		sf::Vector2<double> &pos);
-	void BulletHitPlayer( BasicBullet *b );
-
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	Launcher *testLauncher;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	
-	const static int maxBullets = 16;
-	sf::Vector2<double> tempVel;
-
-	int framesWait;
-	int firingCounter;
-	Edge *ground;
-	double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-	
-	double angle;
-
-	sf::Vector2<double> gravity;
-
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	int frame;
-	int deathFrame;
-	int animationFactor;
-	sf::Vector2<double> gn;
-	double bulletSpeed;
-
-	bool dying;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-};
-
-struct CurveTurret : Enemy, LauncherEnemy
-{
-	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
-		double bulletSpeed,
-		int framesWait,
-		sf::Vector2i &gravFactor,
-		bool relativeGrav );
-//	void HandleEdge( Edge *e );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	bool IHitPlayerWithBullets();
-	std::pair<bool,bool> PlayerHitMe();
-	std::pair<bool, bool> PlayerHitMyBullets();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	//void UpdateBulletHitboxes();
-	void BulletHitTerrain(BasicBullet *b, 
-		Edge *edge, 
-		sf::Vector2<double> &pos);
-	void BulletHitPlayer( BasicBullet *b );
-
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	Launcher *testLauncher;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	
-	const static int maxBullets = 16;
-	sf::Vector2<double> tempVel;
-
-	int framesWait;
-	int firingCounter;
-	int realWait;
-	Edge *ground;
-	double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-	
-	double angle;
-
-	sf::Vector2<double> gravity;
-
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	int frame;
-	int deathFrame;
-	int animationFactor;
-	sf::Vector2<double> gn;
-	double bulletSpeed;
-
-	bool dying;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-};
-
 struct Overgrowth;
 struct Tree : Enemy, LauncherEnemy
 {
@@ -1843,171 +2528,6 @@ struct Overgrowth : Enemy
 	sf::VertexArray treeVA;
 };
 
-struct CoralNanobots;
-struct CoralBlock : Enemy
-{
-	CoralBlock(CoralNanobots *parent, 
-		sf::VertexArray &va,
-		Tileset *ts, int index );
-	void SetParams( sf::Vector2<double> &pos,
-		sf::Vector2<double> &dir,
-		int iteration );
-	void ClearSprite();
-	void UpdatePostPhysics();
-	void UpdateSprite();
-
-
-	bool ResolvePhysics( sf::Vector2<double> &vel );
-
-	void BlockHitTerrain(BasicBullet *b, 
-		Edge *edge, 
-		sf::Vector2<double> &pos);
-
-
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	//void UpdateBulletHitboxes();
-	//int NumTotalBullets();
-	CoralNanobots *parent;
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	int vaIndex;
-	int frame;
-	int animFactor;
-	//Edge *ground;
-	
-	bool active;
-	std::string queryMode;
-	bool topOpen;
-	bool leftOpen;
-	bool rightOpen;
-	bool botOpen;
-
-	int iteration;
-
-	CubicBezier bez;
-	sf::Vector2<double> startPos;
-	sf::Vector2<double> direction;
-	sf::Vector2<double> oldPos;
-	MovementSequence move;
-	sf::VertexArray &va;
-	//double edgeQuantity;
-	//Launcher *launcher;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	
-	double angle;
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> dir;
-
-	//Contact minContact;
-	//bool col;
-	//std::string queryMode;
-	//int possibleEdgeCount;
-	Tileset *ts;
-	//int frame;
-	int deathFrame;
-	int animationFactor;
-	sf::Vector2<double> gn;
-	double bulletSpeed;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-
-	bool lockedIn;
-
-	//int framesToLive;
-	//int maxFramesToLive;
-	
-	//sf::VertexArray &blockVA;
-
-	Contact minContact;
-	bool col;
-	//sf::Transform trans;
-};
-
-struct CoralNanobots : Enemy//, LauncherEnemy
-{
-	CoralNanobots( GameSession *owner, 
-		sf::Vector2i &pos, double speed );
-	void BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos );
-	void BulletHitPlayer( BasicBullet *b );
-//	void HandleEdge( Edge *e );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	//bool IHitPlayer();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	void InitBlocks();
-	void AddBlock( CoralBlock *block );
-	//int NumTotalBullets();
-	void DeactivateBlock( CoralBlock *block );
-	CoralBlock * ActivateBlock( 
-		sf::Vector2<double> &pos,
-		sf::Vector2<double> &dir,
-		int iteration );
-
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-
-	int animationFactor;
-	void AddToList( CoralBlock *block,
-		CoralBlock *&list );
-
-	//Edge *origGround;
-	sf::Vector2<double> origPosition;
-	//double origQuantity;
-	
-
-
-	Tileset *ts;
-	CoralBlock *activeBlocks;
-	CoralBlock *inactiveBlocks;
-
-	
-	//void UpdateBulletHitboxes();
-	
-
-	int blockSizeX;
-	int blockSizeY;
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	const static int MAX_BLOCKS = 25;
-	Launcher *launcher;
-	//const static int MAX_TREES = 16;
-	sf::VertexArray blockVA;
-};
-
 struct Swarm;
 struct SwarmMember : Enemy
 {
@@ -2080,7 +2600,8 @@ struct SwarmMember : Enemy
 struct Swarm : Enemy
 {
 	Swarm( GameSession *owner, 
-		sf::Vector2i &pos );	
+		sf::Vector2i &pos,
+		int liveFrames );	
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -2127,133 +2648,33 @@ struct Swarm : Enemy
 	int deathFrame;
 };
 
-struct FootTrap : Enemy
+//w6
+struct Specter;
+struct SpecterArea : QuadTreeEntrant
 {
-	FootTrap( GameSession *owner, Edge *ground, double quantity );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target );
-	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-	
-
-	sf::Sprite sprite;
-	Tileset *ts;
-
-	Edge *ground;
-	double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-	
-	double angle;
-
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	int frame;
-	int deathFrame;
-	int animationFactor;
-	sf::Vector2<double> gn;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-
-	struct Stored
-	{
-		bool dead;
-		int deathFrame;
-		int frame;
-		int hitlagFrames;
-		int hitstunFrames;
-	};
-	Stored stored;
+	SpecterArea( Specter *sp, sf::Vector2i &pos, int rad );
+	void HandleQuery( QuadTreeCollider * qtc );
+	bool IsTouchingBox( const sf::Rect<double> &r );
+	int radius;
+	sf::Rect<double> testRect;
+	CollisionBox barrier;
+	Specter *specter;
 };
 
-struct Goal : Enemy
+struct Specter : Enemy
 {
-	Goal( GameSession *owner, Edge *ground, double quantity );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
 	
-
-	sf::Sprite sprite;
-	sf::Sprite miniSprite;
-	Tileset *ts;
-	Tileset *ts_mini;
-
-	Edge *ground;
-	double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-	
-	double angle;
-
-	//Contact minContact;
-	//bool col;
-	//std::string queryMode;
-	//int possibleEdgeCount;
-
-	int frame;
-	int deathFrame;
-	int animationFactor;
-	bool dead;
-	sf::Vector2<double> gn;
-};
-
-struct Key : Enemy
-{
-	enum KeyType
-	{
-		RED,
-		GREEN,
-		BLUE
-	};
-
-	Key( GameSession *owner, KeyType keyType, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, float speed, int stayFrames, bool teleport );
-	//void HandleEdge( Edge *e );
+	//MovementSequence testSeq;
+	Specter( GameSession *owner, sf::Vector2i pos );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void PhysicsResponse();
+	bool physicsOver;
+
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
@@ -2262,34 +2683,27 @@ struct Key : Enemy
 	bool PlayerSlowingMe();
 	void ResetEnemy();
 
-	void AdvanceTargetNode();
-
 	void SaveEnemyState();
 	void LoadEnemyState();
 
-	bool teleport;
-	int stayFrames;
-
-	bool dead;
 	int deathFrame;
+
+	int radius;
+	
+	
+	SpecterArea myArea;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
+	//Tileset * ts_death;
 	//std::list<sf::Vector2i> path;
-	sf::Vector2i *path; //global
-	int pathLength;
-	bool loop;
-
-	int targetNode;
-	bool forward;
+	
+	//int targetNode;
+	//bool forward;
 	//sf::Vector2<double>
 	int frame;
 
-	double acceleration;
-	double speed;
-	int nodeWaitFrames;
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
@@ -2303,12 +2717,14 @@ struct Key : Enemy
 	Tileset *ts_testBlood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
-	KeyType keyType;
+	//bool facingRight;
 
 	struct Stored
 	{
 		bool dead;
 		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
 		int targetNode;
 		bool forward;
 		int frame;
@@ -2320,498 +2736,16 @@ struct Key : Enemy
 	Stored stored;
 };
 
-struct PoisonFrog : Enemy, GroundMoverHandler
-{
-	enum Action
-	{
-
-		STAND,
-		JUMPSQUAT,
-		STEEPJUMP,
-		JUMP,
-		LAND,
-		WALLCLING,
-		//STUNNED,
-		Count
-	};
-	
-	//struct Bullet
-	//{
-	//	Bullet();
-	//	//Bullet *prev;
-	//	//Bullet *next;
-	//	sf::Vector2<double> position;
-	//	sf::Vector2<double> velocity;
-	//	CollisionBox hurtBody;
-	//	CollisionBox hitBody;
-	//	CollisionBox physBody;
-	//	bool active;
-	//	int frame;
-	//	int slowCounter;
-	//	int slowMultiple;
-	//	
-	//	//int maxFramesToLive;
-	//	//int framesToLive;
-	//};
-	
-	PoisonFrog( GameSession *owner, 
-		Edge *ground, double quantity,
-		int gravFactor,
-		sf::Vector2i &jumpStrength,
-		int jumpFramesWait );
-
-	int actionLength[Action::Count];
-	int animFactor[Action::Count];
-
-	
-
-	Tileset *ts_test;
-	//int queryIndex;
-
-	//sf::VertexArray bulletVA;
-	Action action;
-	int frame;
-	double gravity;
-	bool facingRight;
-	sf::Vector2<double> velocity;
-	double angle;
-
-	int hitsBeforeHurt;
-	int hitsCounter;
-	int invincibleFrames;
-
-	//double jumpStrength;
-	double xSpeed;
-	int jumpFramesWait;
-	double gravityFactor;
-	bool steepJump;
-	sf::Vector2<double> jumpStrength;
-
-	GroundMover *mover;
-
-
-	//int wallTouchCounter;
-	//sf::Vector2<double> position;
-
-	
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void ActionEnded();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void ResetEnemy();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void UpdatePhysics2();
-	void UpdatePhysics3();
 
 
 
-	void HitTerrain( double &q );
-	bool StartRoll();
-	void FinishedRoll();
-
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial( Edge *e );
-	void Land();
-
-	//void FireBullets();
-	//void UpdateBulletSprites();
-	//void UpdateBulletHitboxes();
 
 
-	sf::Sprite sprite;
-	Tileset *ts_walk;
-	Tileset *ts_roll;
-	
-
-	//double groundSpeed;
-	//Edge *ground;
-	
-	//double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
-
-	double maxFallSpeed;
-	
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	sf::Vector2<double> offset;
-	
-	
 
 
-	bool dead;
-	int deathFrame;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-};
-
-struct BossCrawler : Enemy
-{
-	enum Action
-	{
-		STAND,
-		SHOOT,
-		LUNGE,
-		LUNGELAND,
-		LUNGEAIR,
-		RUN,
-		ROLL,
-		STUNNED,
-		Count
-	};
-	
-	struct Bullet
-	{
-		Bullet();
-		//Bullet *prev;
-		//Bullet *next;
-		sf::Vector2<double> position;
-		sf::Vector2<double> velocity;
-		CollisionBox hurtBody;
-		CollisionBox hitBody;
-		CollisionBox physBody;
-		bool active;
-		int frame;
-		int slowCounter;
-		int slowMultiple;
-		
-		//int maxFramesToLive;
-		//int framesToLive;
-	};
-	
-	Tileset *ts_test;
-	Tileset *ts_bullet;
-
-	double bulletGrav;
-	int bulletRadius;
-	int numBullets;
-	Bullet *bullets;
-	int queryIndex;
-
-	sf::VertexArray bulletVA;
-	Action action;
-	int frame;
-	double gravity;
-	bool facingRight;
-	sf::Vector2<double> velocity;
-	double angle;
-
-	int hitsBeforeHurt;
-	int hitsCounter;
-	int invincibleFrames;
-	//sf::Vector2<double> position;
-
-	BossCrawler( GameSession *owner, Edge *ground, double quantity );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	bool IHitPlayerWithBullets();
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	bool ResolveBulletPhysics( int i,
-		sf::Vector2<double> vel );
-	void ResetEnemy();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void UpdatePhysics2();
-	void UpdatePhysics3();
-
-	void FireBullets();
-	void UpdateBulletSprites();
-	void UpdateBulletHitboxes();
 
 
-	sf::Sprite sprite;
-	Tileset *ts_walk;
-	Tileset *ts_roll;
-	
 
-	double groundSpeed;
-	Edge *ground;
-	
-	double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	HitboxInfo *bulletHitboxInfo;
-	sf::Vector2<double> tempVel;
-	
-
-	double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	sf::Vector2<double> offset;
-	
-	bool roll;
-	bool dead;
-	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-	
-	int maxHitsPerFrame;
-	int hitsThisFrame;
-	
-};
-
-struct Monitor : Enemy
-{
-	Monitor( GameSession *owner,
-		Enemy *e_host );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void Draw( sf::RenderTarget *target);
-	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	void UpdateHitboxes();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void DebugDraw(sf::RenderTarget *target);
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	int animationFactor;
-	sf::Sprite sprite;
-	sf::Sprite miniSprite;
-	Tileset *ts_mini;
-	Tileset *ts;
-	int frame;
-	Enemy *host;
-	bool respawnSpecial;
-};
-
-struct HealthFly : Enemy
-{
-	enum FlyType
-	{
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		WHITE,
-		Count
-	};
-
-	HealthFly( GameSession *owner,
-		sf::Vector2i &pos,
-		FlyType fType );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void Draw( sf::RenderTarget *target);
-	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	void UpdateHitboxes();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void DebugDraw(sf::RenderTarget *target);
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	Enemy *host;
-	FlyType flyType;
-	sf::Sprite sprite;
-	Tileset *ts;
-	int frame;
-	int animationFactor;
-	bool caught;
-};
-
-struct Spider : Enemy, RayCastHandler
-{
-	enum Action
-	{
-		MOVE,
-		JUMP,
-		ATTACK,
-		LAND
-	};
-	struct SurfaceInfo
-	{
-		SurfaceInfo(){}
-		SurfaceInfo( Edge *p_e, double p_q, 
-			sf::Vector2<double> &pos )
-			:e( p_e ), q( p_q ), position( pos )
-		{}
-		Edge *e;
-		double q;
-		sf::Vector2<double> position;
-	};
-
-	Spider( GameSession *owner, Edge *ground, 
-		double quantity );
-	void ActionEnded();
-	int NumTotalBullets();
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap( sf::RenderTarget *target );
-	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void ResetEnemy();
-	
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	void HitTerrain( double &q );
-	bool StartRoll();
-	void FinishedRoll();
-	void CheckClosest( Edge * e,
-		sf::Vector2<double> &playerPos,
-		bool right,
-		double cutoffQuant );
-	void SetClosestLeft();
-	void SetClosestRight();
-
-	SurfaceInfo closestPos;
-	Launcher *testLaunch;
-	//sf::Vector2<double> velocity;
-	sf::Sprite sprite;
-	Tileset *ts;
-	//Tileset *ts_walk;
-	//Tileset *ts_roll;
-
-	Action action;
-	bool facingRight;
-
-	Edge *rcEdge;
-	double rcQuantity;
-	sf::Vector2<double> rayStart;
-	sf::Vector2<double> rayEnd;
-
-	bool canSeePlayer;
-
-	int framesLaseringPlayer;
-	int laserLevel;
-
-	double laserAngle;
-
-
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	//CrawlerReverser *lastReverser;
-	//double groundSpeed;
-	//Edge *ground;
-	//double edgeQuantity;
-	SurfaceMover *mover;
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial( Edge *e );
-	void Land();
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
-	
-	int attackFrame;
-	int attackMult;
-
-	//double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-
-	int possibleEdgeCount;
-
-	Edge *startGround;
-	double startQuant;
-	//sf::Vector2<double> offset;
-	int frame;
-	//bool roll;
-
-	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
-
-	double maxGroundSpeed;
-	double maxFallSpeed;
-};
 
 struct EnemyParentNode;
 

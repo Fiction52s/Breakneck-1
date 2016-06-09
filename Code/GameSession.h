@@ -469,7 +469,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	//int numKeys;
 	//Key *keys;
-	std::list<Key*> keyList;
+	//std::list<Key*> keyList;
 
 	Edge *borderEdge; 
 	//for creating the outside zone

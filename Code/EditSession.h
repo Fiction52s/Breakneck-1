@@ -819,7 +819,6 @@ struct TurtleParams : public ActorParams
 	TurtleParams( EditSession *edit,
 		sf::Vector2i &pos );*/
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
@@ -831,20 +830,19 @@ struct TurtleParams : public ActorParams
 struct CoralParams : public ActorParams
 {
 	CoralParams( EditSession *edit,
+		sf::Vector2i &pos,
+		int moveFrames );
+	CoralParams( EditSession *edit,
 		sf::Vector2i &pos );
-		/*int moveSpeed,
-		int bulletSpeed,
-		int rhythmFrames ); 
-	TurtleParams( EditSession *edit,
-		sf::Vector2i &pos );*/
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
 
 	bool CanApply();
 	ActorParams *Copy();
+
+	int moveFrames;
 };
 
 struct CheetahParams : public ActorParams
@@ -897,7 +895,6 @@ struct SharkParams : public ActorParams
 	SharkParams( EditSession *edit,
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
@@ -916,7 +913,6 @@ struct SwarmParams: public ActorParams
 	SwarmParams( EditSession *edit,
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
@@ -935,7 +931,6 @@ struct GhostParams : public ActorParams
 	GhostParams( EditSession *edit,
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
@@ -975,7 +970,6 @@ struct SpecterParams : public ActorParams
 	TurtleParams( EditSession *edit,
 		sf::Vector2i &pos );*/
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
