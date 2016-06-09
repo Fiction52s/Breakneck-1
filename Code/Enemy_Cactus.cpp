@@ -107,7 +107,7 @@ Cactus::Cactus( GameSession *owner, Edge *g, double q, int p_bulletSpeed,
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 
-		0, 60, false, 20, 60 );
+		0, 90, false, 60, 60 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
 	//testLauncher->wavelength = 60;
 	//testLauncher->amplitude = 20;

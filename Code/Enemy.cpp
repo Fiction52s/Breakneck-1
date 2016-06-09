@@ -419,7 +419,7 @@ void BasicBullet::UpdatePostPhysics()
 	if( framesToLive == 0 )
 	{
 		//explode
-		//launcher->DeactivateBullet( this );
+		launcher->DeactivateBullet( this );
 		//parent->DeactivateTree( this );
 		//owner->RemoveEnemy( this );
 		//return;
