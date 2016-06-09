@@ -643,6 +643,13 @@ void SinBullet::UpdatePhysics()
 	}
 }
 
+void SinBullet::Reset( sf::Vector2<double> &pos,
+	sf::Vector2<double> &vel )
+{
+	BasicBullet::Reset( pos, vel );
+	tempadd = V2d( 0, 0 );
+}
+
 Enemy::Enemy( GameSession *own, EnemyType t )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
 	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL ), dead( false ),

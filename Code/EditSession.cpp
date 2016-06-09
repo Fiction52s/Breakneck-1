@@ -11624,7 +11624,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 
 		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
-		p->AddTextBox( "rhythmframes", Vector2i( 20, 200 ), 200, 20, "10" );
+		p->AddTextBox( "rhythm", Vector2i( 20, 200 ), 200, 20, "60" );
 		p->AddTextBox( "amplitude", Vector2i( 20, 250 ), 200, 20, "10" );
 
 

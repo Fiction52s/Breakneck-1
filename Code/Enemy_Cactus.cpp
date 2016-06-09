@@ -173,6 +173,54 @@ void Cactus::UpdatePrePhysics()
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
 	if( !dying && !dead && frame == 0 && slowCounter == 1 )
 	{
+		double pi8 = PI / 8.0;
+		double pi4 = PI / 4.0;
+		V2d playerPos = owner->player.position;
+		V2d playerDir = normalize( playerPos - position );
+		double angle = atan2( playerDir.x, -playerDir.y );
+		if( angle < 0 )
+			angle += 2.0 * PI;
+
+		if( angle > 15.0 * pi8 || angle < pi8 )
+		{
+			angle = 0;
+		}
+		else if( angle < 3.0 * pi8 ) 
+		{
+			angle = pi4;
+		}
+		else if( angle < 5.0 * pi8 )
+		{
+			angle = 2.0 * pi4;
+		}
+		else if( angle < 7.0 * pi8 )
+		{
+			angle = 3.0 * pi4;
+		}
+		else if(  angle < 9.0 * pi8 )
+		{
+			angle = PI;
+		}
+		else if( angle < 11.0 * pi8 )
+		{
+			angle = 5.0 * pi4;
+		}
+		else if( angle < 13.0 * pi8 )
+		{
+			angle = 6.0 * pi4;
+		}
+		else if( angle < 15.0 * pi8 )
+		{
+			angle = 7.0 * pi4;
+		}
+		
+		angle -= PI / 2.0;
+		V2d newDir( cos( angle ), sin( angle ) );
+
+		cout << "angle: " << angle << endl;
+		//cout << "launchDir: " << newDir.x << ", " << newDir.y << endl;
+
+		testLauncher->facingDir = newDir;
 		testLauncher->Fire();
 	}
 

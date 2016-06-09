@@ -33,7 +33,7 @@ struct BasicBullet : QuadTreeCollider
 	CollisionBox hitBody;
 	virtual void HandleEntrant( QuadTreeEntrant *qte );
 	virtual void UpdatePrePhysics();
-	void Reset(
+	virtual void Reset(
 		sf::Vector2<double> &pos,
 		sf::Vector2<double> &vel );
 	virtual void UpdatePhysics();
@@ -71,6 +71,9 @@ struct SinBullet : BasicBullet
 	SinBullet( int indexVA, Launcher *launcher );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void Reset(
+		sf::Vector2<double> &pos,
+		sf::Vector2<double> &vel );
 
 	SinBullet *prev;
 	SinBullet *next;
