@@ -19,3 +19,57 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
+SpecterParams::SpecterParams( EditSession *edit, sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	position = pos;	
+	type = edit->types["specter"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+}
+
+void SpecterParams::WriteParamFile( std::ofstream &of )
+{
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+}
+
+void SpecterParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void SpecterParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+	{
+		p->textBoxes["group"]->text.setString( group->name );
+	}
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+bool SpecterParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *SpecterParams::Copy()
+{
+	SpecterParams *copy = new SpecterParams( *this );
+	return copy;
+}

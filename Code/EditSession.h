@@ -750,7 +750,6 @@ struct OwlParams : public ActorParams
 	OwlParams( EditSession *edit,
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
 
 	void SetParams();
 	void SetPanelInfo();
@@ -870,10 +869,10 @@ struct CheetahParams : public ActorParams
 
 struct SpiderParams : public ActorParams
 { 
-	/*CactusParams( EditSession *edit, 
+	SpiderParams( EditSession *edit, 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
-		int speed );*/
+		int speed );
 
 	SpiderParams( EditSession *edit,
 		TerrainPolygon *edgePolygon,
@@ -886,7 +885,7 @@ struct SpiderParams : public ActorParams
 	void SetPanelInfo();
 	ActorParams *Copy();
 
-	//int speed;
+	int speed;
 };
 
 //w5
@@ -905,6 +904,8 @@ struct SharkParams : public ActorParams
 
 	bool CanApply();
 	ActorParams *Copy();
+
+	int circleFrames;
 };
 
 struct SwarmParams: public ActorParams
@@ -922,6 +923,8 @@ struct SwarmParams: public ActorParams
 
 	bool CanApply();
 	ActorParams *Copy();
+
+	int liveFrames;
 };
 
 struct GhostParams : public ActorParams
@@ -939,6 +942,8 @@ struct GhostParams : public ActorParams
 
 	bool CanApply();
 	ActorParams *Copy();
+
+	int speed;
 };
 
 struct OvergrowthParams : public ActorParams

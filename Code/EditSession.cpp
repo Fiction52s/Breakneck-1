@@ -1611,6 +1611,9 @@ bool EditSession::OpenFile( string fileName )
 					int hasMonitor;
 					is >> hasMonitor;
 
+					int speed;
+					is >> speed;
+
 					int testIndex = 0;
 					PolyPtr terrain( NULL );
 					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -1632,7 +1635,8 @@ bool EditSession::OpenFile( string fileName )
 						edgeIndex++;
 
 					//a->SetAsCrawler( at, terrain, edgeIndex, edgeQuantity, clockwise, speed ); 
-					a.reset( new SpiderParams( this, terrain.get(), edgeIndex, edgeQuantity ) ); 
+					a.reset( new SpiderParams( this, terrain.get(), edgeIndex, edgeQuantity,
+						speed ) ); 
 					a->hasMonitor = (bool)hasMonitor;
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
@@ -3100,8 +3104,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
-	//w1
 
+	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
@@ -5390,6 +5394,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											CreateActor( goal );
 										}
 									}
+
+									//w1
 									else if( trackingEnemy->name == "patroller" )
 									{
 
@@ -5461,6 +5467,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 										CreateActor( bossCrawler );
 									}
+
+									//w2
 									else if( trackingEnemy->name == "bat" )
 									{
 										tempActor = new BatParams( this, Vector2i( worldPos.x,
@@ -5522,6 +5530,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//showPanel->textBoxes["waitframes"]->text.setString( "10" );
 										}
 									}
+
+									//w3
 									else if( trackingEnemy->name == "pulser" )
 									{
 										tempActor = new PulserParams( this, Vector2i( worldPos.x,
@@ -5565,6 +5575,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										tempActor->SetPanelInfo();
 										showPanel = trackingEnemy->panel;
 									}
+
+									//w4
 									else if( trackingEnemy->name == "coral" )
 									{
 										tempActor = new CoralParams( this, Vector2i( worldPos.x,
@@ -5599,6 +5611,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											tempActor->SetPanelInfo();
 										}
 									}
+
+									//w5
 									else if( trackingEnemy->name == "overgrowth" )
 									{
 										if( enemyEdgePolygon != NULL )
@@ -5630,6 +5644,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										tempActor->SetPanelInfo();
 										showPanel = trackingEnemy->panel;
 									}
+
+									//w6
 									else if( trackingEnemy->name == "specter" )
 									{
 										tempActor = new SpecterParams( this, Vector2i( worldPos.x,
@@ -7515,16 +7531,40 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemyQuad.setPosition( enemySprite.getPosition() );
 				}
 
-				if( showPanel == NULL && trackingEnemy != NULL && ( 
-					   trackingEnemy->name == "crawler" 
-					|| trackingEnemy->name == "crawlerreverser"
-					|| trackingEnemy->name == "basicturret"
-					|| trackingEnemy->name == "foottrap" 
-					|| trackingEnemy->name == "bosscrawler"
-					|| trackingEnemy->name == "poisonfrog"
-					|| trackingEnemy->name == "stagbeetle"
-					|| trackingEnemy->name == "curveturret"
-					|| trackingEnemy->name == "goal" ) )
+				string name = trackingEnemy->name;
+				bool w1Grounded = 
+					name == "crawler"
+					|| name == "foottrap"
+					|| name == "crawler";
+					|| name == "bosscrawler"
+					|| name == "crawlerreverser";
+
+				bool w2Grounded = 
+					name == "stagbeetle"
+					|| name == "curveturret"
+					|| name == "poisonfrog";
+
+				bool w3Grounded =
+					name == "badger"
+					|| name == "cactus";
+
+				bool w4Grounded =
+					name == "cheetah"
+					|| name == "spider";
+
+				bool w5Grounded = 
+					name == "overgrowth";
+
+				bool w6Grounded = false;
+
+				bool groundType = w1Grounded || w2Grounded
+					|| w3Grounded || w4Grounded || w5Grounded
+					|| w6Grounded || name == "goal";
+
+
+
+				if( showPanel == NULL && trackingEnemy != NULL 
+					&& groundType )
 				{
 					enemyEdgePolygon = NULL;
 				
@@ -11741,6 +11781,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
+		p->AddTextBox( "liveframes", Vector2i( 20, 150 ), 200, 3, "120" );
 		//maybe frames swarm is alive once launched?
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );

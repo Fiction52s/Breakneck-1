@@ -251,6 +251,7 @@ ActorParams *PulserParams::Copy()
 
 
 
+
 OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
 	int moveSpeed, int bulletSpeed, int rhythmFrames )
 	:ActorParams( PosType::AIR_ONLY )
@@ -298,49 +299,6 @@ void OwlParams::WriteParamFile( std::ofstream &of )
 	of << hMon << endl;
 
 	of << moveSpeed << " " << bulletSpeed << " " << rhythm << endl;
-}
-
-void OwlParams::Draw( sf::RenderTarget *target )
-{
-	int localPathSize = localPath.size();
-
-	if( localPathSize > 0 )
-	{
-		
-		VertexArray &li = *lines;
-	
-	
-		for( int i = 0; i < localPathSize+1; ++i )
-		{
-			li[i].position += Vector2f( position.x, position.y );
-		}
-	
-	
-		target->draw( li );
-
-	
-
-		if( loop )
-		{
-
-			//draw the line between the first and last
-			sf::Vertex vertices[2] =
-			{
-				sf::Vertex(li[localPathSize].position, Color::Magenta),
-				sf::Vertex(li[0].position, Color::White )
-			};
-
-			target->draw(vertices, 2, sf::Lines);
-		}
-
-	
-		for( int i = 0; i < localPathSize+1; ++i )
-		{
-			li[i].position -= Vector2f( position.x, position.y );
-		}
-	}
-
-	ActorParams::Draw( target );
 }
 
 void OwlParams::SetParams()
@@ -414,5 +372,229 @@ bool OwlParams::CanApply()
 ActorParams *OwlParams::Copy()
 {
 	OwlParams *copy = new OwlParams( *this );
+	return copy;
+}
+
+
+
+BadgerParams::BadgerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
+	int p_jumpStrength )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	speed = p_speed;
+	jumpStrength = p_jumpStrength;
+
+	type = edit->types["badger"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+BadgerParams::BadgerParams( EditSession *edit,
+	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	
+	speed = 10;
+	jumpStrength = 5;
+	type = edit->types["badger"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+bool BadgerParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void BadgerParams::WriteParamFile( ofstream &of )
+{
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+	
+	of << speed << " " << jumpStrength << endl;
+}
+
+void BadgerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+
+	stringstream ss;
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+	string jumpStrengthStr = p->textBoxes["jumpstrength"]->text.getString().toAnsiString();
+	
+	ss << speedStr;
+
+	int t_speed;
+	ss >> t_speed;
+
+	if( !ss.fail() )
+	{
+		speed = t_speed;
+	}
+
+	ss.clear();
+
+	int t_jumpStrength;
+	ss >> t_jumpStrength;
+
+	if( !ss.fail() )
+	{
+		jumpStrength = t_jumpStrength;
+	}
+}
+
+void BadgerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+	
+	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["jumpstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength ) );
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+ActorParams *BadgerParams::Copy()
+{
+	BadgerParams *copy = new BadgerParams( *this );
+	return copy;
+}
+
+
+
+CactusParams::CactusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+	int p_bulletSpeed, int p_rhythm, int p_amplitude )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	bulletSpeed = p_bulletSpeed;
+	rhythm = p_rhythm;
+	amplitude = p_amplitude;
+
+	type = edit->types["cactus"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+CactusParams::CactusParams( EditSession *edit,
+	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	bulletSpeed = 5;
+	rhythm = 60;
+	amplitude = 10;
+	
+	type = edit->types["cactus"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+bool CactusParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void CactusParams::WriteParamFile( ofstream &of )
+{
+	int hMon;
+	if( hasMonitor )
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+	
+	of << bulletSpeed << " " << rhythm << " " << amplitude << endl;
+}
+
+void CactusParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+
+	stringstream ss;
+	string bulletSpeedStr = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
+	string rhythmStr = p->textBoxes["rhythm"]->text.getString().toAnsiString();
+	string amplitudeStr = p->textBoxes["amplitude"]->text.getString().toAnsiString();
+	
+	ss << bulletSpeedStr;
+
+	int t_bulletSpeed;
+	ss >> t_bulletSpeed;
+
+	if( !ss.fail() )
+	{
+		bulletSpeed = t_bulletSpeed;
+	}
+
+	ss.clear();
+
+	ss << rhythmStr;
+
+	int t_rhythm;
+	ss >> t_rhythm;
+
+	if( !ss.fail() )
+	{
+		rhythm = t_rhythm;
+	}
+
+	ss.clear();
+
+	ss << amplitudeStr;
+
+	int t_amplitude;
+	ss >> t_amplitude;
+
+	if( !ss.fail() )
+	{
+		amplitude = t_amplitude;
+	}
+}
+
+void CactusParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+	
+	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
+	p->textBoxes["rhythm"]->text.setString( boost::lexical_cast<string>( rhythm ) );
+	p->textBoxes["amplitude"]->text.setString( boost::lexical_cast<string>( amplitude ) );
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+ActorParams *CactusParams::Copy()
+{
+	CactusParams *copy = new CactusParams( *this );
 	return copy;
 }
