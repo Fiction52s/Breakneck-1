@@ -279,7 +279,7 @@ void Cheetah::UpdatePrePhysics()
 	{
 	case NEUTRAL:
 		//cout << "neutral" << endl;
-		if( length( player.position - position ) < 400 )
+		if( length( player.position - position ) < 600 )
 		{
 			if( player.position.x < position.x && facingRight
 				|| player.position.x > position.x && !facingRight )
@@ -331,11 +331,11 @@ void Cheetah::UpdatePrePhysics()
 	case CHARGEUP:
 		if( facingRight )
 		{
-			testMover->SetSpeed( 10 );
+			testMover->SetSpeed( 15 );
 		}
 		else
 		{
-			testMover->SetSpeed( -10 );
+			testMover->SetSpeed( -15 );
 		}
 
 		
@@ -343,11 +343,11 @@ void Cheetah::UpdatePrePhysics()
 	case BURST:
 		if( facingRight )
 		{
-			trueMover->SetSpeed( 10 );
+			trueMover->SetSpeed( 15 );
 		}
 		else
 		{
-			trueMover->SetSpeed( -10 );
+			trueMover->SetSpeed( -15 );
 		}
 		testMover->SetSpeed( 0 );
 		break;

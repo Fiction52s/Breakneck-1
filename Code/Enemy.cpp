@@ -143,16 +143,27 @@ void Launcher::SetBulletSpeed( double speed )
 void Launcher::Fire()
 {
 	
+	V2d dir = facingDir;
+	double dirAngle = atan2( facingDir.x, -facingDir.y );
+	if( dirAngle < 0 )
+	{
+		dirAngle += PI * 2.0;
+	}
+
 	for( int i = 0; i < perShot; ++i )
 	{
+
 		//cout << "trying to activate bullet" << endl;
 		BasicBullet * b = ActivateBullet();
 		//cout << "bullet done activating" << endl;
 		if( b != NULL )
 		{
 			//cout << "FIRE" << endl;
-			b->Reset( position, facingDir * bulletSpeed );
+			b->Reset( position, dir * bulletSpeed );
 		}
+
+		dirAngle += angleSpread / perShot;
+		dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
 }
 
@@ -418,6 +429,7 @@ void BasicBullet::UpdatePostPhysics()
 
 	if( framesToLive == 0 )
 	{
+		//cout << "time out!" << endl;
 		//explode
 		launcher->DeactivateBullet( this );
 		//parent->DeactivateTree( this );

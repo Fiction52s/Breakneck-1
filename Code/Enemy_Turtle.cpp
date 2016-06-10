@@ -37,7 +37,7 @@ Turtle::Turtle( GameSession *owner, Vector2i pos )
 	actionLength[NEUTRAL] = 3;
 	actionLength[FIRE] = 20;
 	actionLength[FADEIN] = 60;
-	actionLength[FADEOUT] = 60;
+	actionLength[FADEOUT] = 90;
 	actionLength[INVISIBLE] = 30;
 
 	fireCounter = 0;
@@ -49,7 +49,7 @@ Turtle::Turtle( GameSession *owner, Vector2i pos )
 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
+	launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
 	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
@@ -200,23 +200,23 @@ void Turtle::UpdatePrePhysics()
 	switch( action )
 	{
 	case NEUTRAL:
-		cout << "NEUTRAL";
+		//cout << "NEUTRAL";
 		break;
 	case FIRE:
-		cout << "FIRE";
+		//cout << "FIRE";
 		break;
 	case INVISIBLE:
-		cout << "INVISIBLE";
+		//cout << "INVISIBLE";
 		break;
 	case FADEIN:
-		cout << "FADEIN";
+		//cout << "FADEIN";
 		break;
 	case FADEOUT: 
-		cout << "FADEOUT";
+		//cout << "FADEOUT";
 		break;
 	}
 
-	cout << " " << frame << endl;
+	//cout << " " << frame << endl;
 
 	switch( action )
 	{
@@ -365,6 +365,7 @@ void Turtle::PhysicsResponse()
 
 void Turtle::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
@@ -454,7 +455,8 @@ void Turtle::Draw( sf::RenderTarget *target )
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
 		}
-		target->draw( sprite );
+		if( action != INVISIBLE )
+			target->draw( sprite );
 	}
 	else if( !dead )
 	{
