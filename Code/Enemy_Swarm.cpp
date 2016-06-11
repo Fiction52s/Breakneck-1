@@ -19,10 +19,17 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 SwarmMember::SwarmMember(Swarm *p_parent, 
-		sf::VertexArray &p_va, int index, V2d &p_targetOffset  )
+		sf::VertexArray &p_va, int index, V2d &p_targetOffset, 
+		double p_maxSpeed )
 		:Enemy( p_parent->owner, Enemy::SWARM ), va( p_va ), 
-		vaIndex( index ), parent( p_parent )
+		vaIndex( index ), parent( p_parent ), maxSpeed( p_maxSpeed )
 {
+	/*va[vaIndex*4+0].color = Vector2f( 0, 0 );
+	va[vaIndex*4+1].color = Vector2f( 0, 0 );
+	va[vaIndex*4+2].color = Vector2f( 0, 0 );
+	va[vaIndex*4+3].color = Vector2f( 0, 0 );*/
+
+
 	framesToLive = parent->liveFrames;
 	targetOffset = p_targetOffset;
 	active = true;
@@ -136,11 +143,11 @@ void SwarmMember::UpdateSprite()
 
 		Vector2f p( position.x, position.y );
 
-		Color c = Color::Red;
+		/*Color c = Color::Red;
 		va[vaIndex*4+0].color = c;
 		va[vaIndex*4+1].color = c;
 		va[vaIndex*4+2].color = c;
-		va[vaIndex*4+3].color = c;
+		va[vaIndex*4+3].color = c;*/
 
 
 		Vector2f spriteSize = parent->spriteSize;
@@ -170,9 +177,9 @@ void SwarmMember::UpdatePhysics()
 		double gFactor = .5;
 		velocity += gFactor * dir / (double)slowMultiple / NUM_STEPS;
 
-		if( length( velocity ) > parent->maxSpeed)
+		if( length( velocity ) > maxSpeed)
 		{
-			velocity = normalize( velocity ) * parent->maxSpeed;
+			velocity = normalize( velocity ) * maxSpeed;
 		}
 	}
 
@@ -410,12 +417,20 @@ Swarm::Swarm( GameSession *owner,
 	origPosition = position;
 	//SwarmMember *mem = new SwarmMember()
 	int blah = 200;
+	double angle = PI;
+	V2d offset; 
+	double radius = 90;
+	double speed = 12;
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
-		V2d offset( ( rand() % blah ) - blah, (rand() %blah) - blah );
-		members[i] = new SwarmMember( this, swarmVA, i, 
-			 offset );
+		offset = V2d( cos( angle - PI / 2 ), sin( angle - PI / 2 ) ) * radius;
+		//V2d offset( ( rand() % blah ) - blah, (rand() %blah) - blah );
+		members[i] = new SwarmMember( this, swarmVA, i, offset, speed );
 		members[i]->position = position + offset;
+
+
+		angle += 2 * PI / NUM_SWARM;
+		speed++;
 	}
 
 	spawnRect = Rect<double>( pos.x - 50, pos.y - 50, 100, 100 );
@@ -432,7 +447,7 @@ Swarm::Swarm( GameSession *owner,
 	deathVector = V2d( 1, -1 );
 
 	//facingRight = true;
-	maxSpeed = 12; 
+	//maxSpeed = 12; 
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );

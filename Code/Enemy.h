@@ -2536,7 +2536,8 @@ struct SwarmMember : Enemy
 {
 	SwarmMember(Swarm *parent, 
 		sf::VertexArray &va, int index,
-		sf::Vector2<double> &targetOffset );
+		sf::Vector2<double> &targetOffset,
+		double p_maxSpeed );
 	void ClearSprite();
 	void UpdatePostPhysics();
 	void UpdateSprite();
@@ -2558,7 +2559,7 @@ struct SwarmMember : Enemy
 	int framesToLive;
 
 	Swarm *parent;
-
+	double maxSpeed;
 	int vaIndex;
 	int frame;
 	int animFactor;
