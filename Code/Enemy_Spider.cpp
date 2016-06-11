@@ -94,8 +94,42 @@ Spider::Spider( GameSession *owner, Edge *g, double q, int speed )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->hitstunFrames = 0;
 	hitboxInfo->knockback = 0;
+
+	laserInfo0 = new HitboxInfo;
+	laserInfo0->damage = 100;
+	laserInfo0->drainX = 0;
+	laserInfo0->drainY = 0;
+	laserInfo0->hitlagFrames = 0;
+	laserInfo0->hitstunFrames = 0;
+	laserInfo0->knockback = 0;
+
+	laserInfo1 = new HitboxInfo;
+	laserInfo1->damage = 10;
+	laserInfo1->drainX = 0;
+	laserInfo1->drainY = 0;
+	laserInfo1->hitlagFrames = 0;
+	laserInfo1->hitstunFrames = 0;
+	laserInfo1->knockback = 0;
+
+	laserInfo2 = new HitboxInfo;
+	laserInfo2->damage = 20;
+	laserInfo2->drainX = 0;
+	laserInfo2->drainY = 0;
+	laserInfo2->hitlagFrames = 0;
+	laserInfo2->hitstunFrames = 0;
+	laserInfo2->knockback = 0;
+
+	laserInfo3 = new HitboxInfo;
+	laserInfo3->damage = 50;
+	laserInfo3->drainX = 0;
+	laserInfo3->drainY = 0;
+	laserInfo3->hitlagFrames = 0;
+	laserInfo3->hitstunFrames = 0;
+	laserInfo3->knockback = 0;
+
+	laserCounter = 0;
 
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
@@ -134,6 +168,7 @@ void Spider::ResetEnemy()
 {
 	rcEdge = NULL;
 	framesLaseringPlayer = 0;
+	laserCounter = 0;
 	laserLevel = 0;
 
 	mover->ground = startGround;
@@ -316,6 +351,7 @@ void Spider::CheckClosest( Edge * e, V2d &playerPos,
 		closestPos.position = possiblePos;
 		closestPos.e = e;
 		closestPos.q = d;
+		closestPos.clockwiseFromCurrent = right;
 	}
 }
 
@@ -402,6 +438,7 @@ void Spider::UpdatePrePhysics()
 
 	ActionEnded();
 
+
 	closestPos.e = mover->ground;
 	closestPos.q = mover->edgeQuantity;
 	closestPos.position = mover->physBody.globalPosition;
@@ -458,6 +495,24 @@ void Spider::UpdatePrePhysics()
 	//cout << "closest pos is: " << closestPos.position.x << ", "
 	//	<< closestPos.position.y << endl;
 
+	double len = length( player.position - position );
+	bool outsideRange = len >= 500 && len < 1200; //bounds
+	if( outsideRange && length( position - closestPos.position ) > 20
+		&& !canSeePlayer )
+	{
+		if( closestPos.clockwiseFromCurrent )
+		{
+			mover->SetSpeed( 4 );
+		}
+		else
+		{
+			mover->SetSpeed( -4 );
+		}
+	}
+	else
+	{
+		mover->SetSpeed( 0 );
+	}
 
 	switch( action )
 	{
@@ -863,7 +918,32 @@ void Spider::UpdatePostPhysics()
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
-
+	if( laserCounter == 0 )
+	{
+		switch( laserLevel )
+		{
+		case 0:
+			break;
+		case 1:
+			owner->player.ApplyHit( laserInfo1 );
+			//owner->player.app
+			break;
+		case 2:
+			owner->player.ApplyHit( laserInfo2 );
+			break;
+		case 3:
+			owner->player.ApplyHit( laserInfo3 );
+			break;
+		};
+	}
+	else
+	{
+		++laserCounter;
+		if( laserCounter == 20 )
+		{
+			laserCounter = 0;
+		}
+	}
 
 	if( deathFrame == 30 )
 	{
@@ -910,23 +990,38 @@ void Spider::UpdatePostPhysics()
 	else
 	{
 		framesLaseringPlayer = 0;
+		//laserCounter = 0;
 	}
 
 	if( framesLaseringPlayer > 240 )
 	{
-		laserLevel = 3;
+		if( laserLevel != 3 )
+		{
+			laserLevel = 3;
+			laserCounter = 0;
+		}
+		
 	}
 	else if( framesLaseringPlayer > 180 )
 	{
-		laserLevel = 2;
+		if( laserLevel != 2 )
+		{
+			laserLevel = 2;
+			laserCounter = 0;
+		}
 	}
 	else if( framesLaseringPlayer > 120 )
 	{
-		laserLevel = 1;
+		if( laserLevel != 1 )
+		{
+			laserLevel = 1;
+			laserCounter = 0;
+		}
 	}
 	else
 	{
 		laserLevel = 0;
+		laserCounter = 0;
 	}
 
 	UpdateSprite();

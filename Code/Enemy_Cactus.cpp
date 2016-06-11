@@ -145,6 +145,7 @@ void Cactus::ResetEnemy()
 
 void Cactus::UpdatePrePhysics()
 {
+	specterProtected = false;
 	testLauncher->UpdatePrePhysics();
 	
 
@@ -241,7 +242,7 @@ void Cactus::PhysicsResponse()
 	//UpdateBulletHitboxes();
 	
 
-	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
+	//pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
 
 	if( !( dead || dying ) )
 	{
@@ -290,9 +291,9 @@ void Cactus::PhysicsResponse()
 		
 	}
 
-	if( IHitPlayerWithBullets() )
-	{
-	}
+	//if( IHitPlayerWithBullets() )
+	//{
+	//}
 }
 
 void Cactus::UpdatePostPhysics()

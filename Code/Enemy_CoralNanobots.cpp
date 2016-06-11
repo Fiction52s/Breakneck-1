@@ -150,6 +150,8 @@ bool CoralBlock::ResolvePhysics( V2d &vel )
 
 void CoralBlock::UpdatePrePhysics()
 {
+	specterProtected = false;
+	int moveFrames = parent->moveFrames;
 	if( !lockedIn && !dead )
 	{
 	V2d left( -1, 0 );
@@ -172,7 +174,7 @@ void CoralBlock::UpdatePrePhysics()
 			parent->ActivateBlock( position, down, 1 );
 		}
 	}
-	else if( frame == 60 )//move.currMovement == NULL )
+	else if( frame == moveFrames )//move.currMovement == NULL )
 	{
 		//cout << "locked in true" << endl;
 		if( iteration != 2 )
@@ -215,7 +217,7 @@ void CoralBlock::UpdatePrePhysics()
 			break;
 		}
 	}
-	else if( frame == 120 && iteration == 2 )
+	else if( frame == moveFrames * 2 && iteration == 2 )
 	{
 		//cout << "creating case 4" << endl;
 		parent->ActivateBlock( position, straight, 4 );
@@ -354,6 +356,7 @@ void CoralBlock::PhysicsResponse()
 			pair<bool, bool> result = PlayerHitMe();
 			if( result.first )
 			{
+				//cout << "HITTT" << endl;
 				owner->player.test = true;
 				owner->player.currAttackHit = true;
 				owner->player.flashColor = COLOR_BLUE;
@@ -588,6 +591,7 @@ bool CoralBlock::IHitPlayer()
 
  pair<bool, bool> CoralBlock::PlayerHitMe()
 {
+	//cout << "check if hit me" << endl;
 	Actor &player = owner->player;
 
 	if( player.currHitboxes != NULL )

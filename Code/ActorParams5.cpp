@@ -131,7 +131,7 @@ SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos,
 SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
-	liveFrames = 300;
+	liveFrames = 420;
 
 	position = pos;	
 	type = edit->types["swarm"];

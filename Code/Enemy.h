@@ -2078,6 +2078,7 @@ struct Spider : Enemy, RayCastHandler
 		Edge *e;
 		double q;
 		sf::Vector2<double> position;
+		bool clockwiseFromCurrent;
 	};
 
 	Spider( GameSession *owner, Edge *ground, 
@@ -2156,6 +2157,13 @@ struct Spider : Enemy, RayCastHandler
 	CollisionBox hitBody;
 	//CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
+	HitboxInfo *laserInfo0;
+	HitboxInfo *laserInfo1;
+	HitboxInfo *laserInfo2;
+	HitboxInfo *laserInfo3;
+	int laserCounter;
+
+
 	sf::Vector2<double> tempVel;
 	sf::Vector2<double> gravity;
 	

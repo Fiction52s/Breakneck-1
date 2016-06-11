@@ -1652,8 +1652,13 @@ bool EditSession::OpenFile( string fileName )
 					int hasMonitor;
 					is >> hasMonitor;
 
+					int moveFrames;
+					is >> moveFrames;
+
+					
+
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset( new OwlParams( this, pos ) );
+					a.reset( new CoralParams( this, pos, moveFrames ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
 				else if( typeName == "turtle" )
@@ -11726,6 +11731,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
+		p->AddTextBox( "moveframes", Vector2i( 20, 150 ), 200, 20, "60" );
+
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
@@ -12984,7 +12991,7 @@ void ActorType::Init()
 		width = 32;
 		height = 32;
 		canBeGrounded = false;
-		canBeAerial = false;
+		canBeAerial = true;
 	}
 	else if( name == "spider" )
 	{
