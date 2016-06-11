@@ -1840,7 +1840,7 @@ struct CoralNanobots : Enemy//, LauncherEnemy
 	sf::Vector2<double> origPosition;
 	//double origQuantity;
 	
-
+	int moveFrames;
 
 	Tileset *ts;
 	CoralBlock *activeBlocks;
@@ -2555,12 +2555,18 @@ struct SwarmMember : Enemy
 	void LoadEnemyState();
 	void ResetEnemy();
 
+	int framesToLive;
+
 	Swarm *parent;
 
 	int vaIndex;
 	int frame;
 	int animFactor;
 	sf::Vector2<double> targetOffset;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
 
 	sf::Vector2<double> velocity;
 	
@@ -2574,10 +2580,10 @@ struct SwarmMember : Enemy
 	
 	sf::VertexArray &va;
 
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
+	//CollisionBox hurtBody;
+	//CollisionBox hitBody;
 	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
+	//HitboxInfo *hitboxInfo;
 	
 	//double angle;
 	//sf::Vector2<double> tempVel;
@@ -2619,9 +2625,12 @@ struct Swarm : Enemy
 	bool IHitPlayer();
 	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
+	void Launch();
 
 	int animationFactor;
 	int frame;
+
+	int liveFrames;
 
 	sf::Vector2<double> origPosition;
 
@@ -2635,6 +2644,11 @@ struct Swarm : Enemy
 	sf::VertexArray swarmVA;
 	sf::Sprite nestSprite;
 	SwarmMember *members[NUM_SWARM];
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
 
 	sf::Vector2f spriteSize;
 	double maxSpeed;

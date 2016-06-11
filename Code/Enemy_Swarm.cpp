@@ -23,6 +23,7 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 		:Enemy( p_parent->owner, Enemy::SWARM ), va( p_va ), 
 		vaIndex( index ), parent( p_parent )
 {
+	framesToLive = parent->liveFrames;
 	targetOffset = p_targetOffset;
 	active = true;
 	dead = false;
@@ -32,6 +33,30 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	slowMultiple = 1;
 	slowCounter = 1;
 	receivedHit = NULL;
+
+	hurtBody.type = CollisionBox::Hurt;
+	hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = 32;
+	hurtBody.rh = 32;
+
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = 32;
+	hitBody.rh = 32;
+	
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 100;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 10;
 }
 
 void SwarmMember::ClearSprite()
@@ -54,6 +79,7 @@ void SwarmMember::UpdatePostPhysics()
 	if( slowCounter == slowMultiple )
 	{
 		
+		--framesToLive;
 		++frame;	
 		//--framesToLive;
 
@@ -71,9 +97,10 @@ void SwarmMember::UpdatePostPhysics()
 	}
 	
 
-	if( deathFrame == 30 )//|| framesToLive == 0 )
+	if( deathFrame == 30 || framesToLive == 0 )//|| framesToLive == 0 )
 	{
 		active = false;
+		ClearSprite();
 		//launcher->Reset();//might just delete bullets
 		//parent->DeactivateBlock( this );
 		//owner->RemoveEnemy( this );
@@ -148,6 +175,8 @@ void SwarmMember::UpdatePhysics()
 			velocity = normalize( velocity ) * parent->maxSpeed;
 		}
 	}
+
+	PhysicsResponse();
 }
 
 void SwarmMember::PhysicsResponse()
@@ -185,6 +214,9 @@ void SwarmMember::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
+			ClearSprite();
+			//maybe call something in the swarm overall to create an effect?
+			active = false;
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 
@@ -354,6 +386,7 @@ void SwarmMember::HandleEntrant( QuadTreeEntrant *qte )
 
 void SwarmMember::ResetEnemy()
 {
+	framesToLive = parent->liveFrames;
 	frame = 0;
 	dead = false;
 	active = true;
@@ -368,9 +401,10 @@ void SwarmMember::ResetEnemy()
 //spriteSize = Vector2f( 16, 16 );
 
 Swarm::Swarm( GameSession *owner, 
-	sf::Vector2i &pos, int liveFrames )
+	sf::Vector2i &pos, int p_liveFrames )
 	:Enemy( owner, Enemy::SWARM ), swarmVA( sf::Quads, 5 * 4 )
 {
+	liveFrames = p_liveFrames;
 	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
 	position = V2d( pos.x, pos.y );
 	origPosition = position;
@@ -402,7 +436,41 @@ Swarm::Swarm( GameSession *owner,
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
+
+	hurtBody.type = CollisionBox::Hurt;
+	hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = 32;
+	hurtBody.rh = 32;
+
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = 32;
+	hitBody.rh = 32;
+	
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 100;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 10;
 }
+
+void Swarm::Launch()
+{
+	for( int i = 0; i < NUM_SWARM; ++i )
+	{
+		members[i]->Reset();
+		members[i]->position = position + members[i]->targetOffset;
+	}
+}
+
 
 void Swarm::HandleEntrant( QuadTreeEntrant *qte )
 {
@@ -416,11 +484,44 @@ void Swarm::HandleEntrant( QuadTreeEntrant *qte )
 
 void Swarm::UpdatePrePhysics()
 {
+	int activeMembers = 0;
+
+	/*if( framesSinceLaunch == liveFrames - 1 )
+	{
+		for( int i = 0; i < NUM_SWARM; ++i )
+		{
+			if( members[i]->active )
+				members[i]->active = false;
+		}
+	}*/
+
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
 		if( members[i]->active )
-			members[i]->UpdatePrePhysics();
+		{
+			activeMembers++;
+		}
 	}
+
+	if( activeMembers > 0 )
+	{
+		for( int i = 0; i < NUM_SWARM; ++i )
+		{
+			if( members[i]->active )
+				members[i]->UpdatePrePhysics();
+		}
+	}
+	else
+	{
+		double dist = length( owner->player.position - position );
+		if( dist < 900 )
+		{
+			Launch();
+		}
+		
+	}
+
+	
 	//for( int i = 0; i < NUM_
 }
 

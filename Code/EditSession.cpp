@@ -11712,7 +11712,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		//ground speed will probably be the param. not figured out fully yet
 
-		//p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "3" );
+		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
 		//p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );

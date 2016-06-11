@@ -131,7 +131,7 @@ SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos,
 SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
-	liveFrames = 120;
+	liveFrames = 300;
 
 	position = pos;	
 	type = edit->types["swarm"];
@@ -200,9 +200,6 @@ ActorParams *SwarmParams::Copy()
 	SwarmParams *copy = new SwarmParams( *this );
 	return copy;
 }
-
-
-
 
 GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos,
 	int p_speed )

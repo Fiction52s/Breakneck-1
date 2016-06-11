@@ -25,7 +25,7 @@ CoralBlock::CoralBlock( CoralNanobots *par,
 	va( p_va ), ts( p_ts ), parent( par ),bez( 0, 0,1,1 )
 {
 	direction = V2d( 0,-1);
-	move.AddLineMovement( V2d( 0, 0 ), V2d( 64, 0 ), bez, 60 );
+	move.AddLineMovement( V2d( 0, 0 ), V2d( 64, 0 ), bez, par->moveFrames );
 	move.Update();
 	topOpen = true;
 	leftOpen = true;
@@ -814,12 +814,13 @@ void CoralNanobots::AddToList( CoralBlock *block,
 	list = block;
 }
 
-CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, int moveFrames )
+CoralNanobots::CoralNanobots( GameSession *owner, sf::Vector2i &pos, int p_moveFrames )
 		:Enemy( owner, EnemyType::CORALNANOBOTS ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
 {
 	//launcher = new Launcher( this, owner, MAX_BLOCKS, 1, V2d( 0, 0 ), V2d( 0, 0 ),
 	//	0, 300, false );
 	//launcher->SetBulletSpeed( 0 );
+	moveFrames = p_moveFrames;
 
 	origPosition = V2d( pos.x, pos.y );
 
