@@ -12,6 +12,7 @@ struct Zone;
 struct Monitor;
 //projectile shotting process
 
+//struct Bullet;
 struct BasicBullet;
 struct LauncherEnemy
 {

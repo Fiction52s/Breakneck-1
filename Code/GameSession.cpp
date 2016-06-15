@@ -14,6 +14,7 @@
 #include "EditSession.h"
 #include "Zone.h"
 #include "Flow.h"
+#include "Boss.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -1190,7 +1191,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
+				Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
