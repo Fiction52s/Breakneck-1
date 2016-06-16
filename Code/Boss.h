@@ -55,12 +55,20 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	double GetDistanceClockwise( int index );
 	double GetDistanceCCW( int index );
 
+	void SetDirs();
+
 	double totalDistanceAround;
+	bool leftFirstEdge;
+	Edge *firstEdge;
 
 	Launcher *launcher;
 	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
 	Tileset *ts;
+
+	sf::VertexArray markerVA;
+
+	//std::list<sf::Drawable*> progressDraw;
 
 	bool onTargetEdge;
 	//Tileset *ts_walk;
@@ -74,9 +82,12 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 		//for the boss cuz of the special room
 	};
 	
+	int shootIndex;
+	int bulletDirIndex[5];
 	EdgeInfo bulletHits[5];
 	int bulletIndex;
 	int travelIndex;
+	int numBullets;
 
 	Action action;
 	bool facingRight;

@@ -19,15 +19,31 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( true )
+	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( true ),
+	markerVA( sf::Quads, 5 * 4 )
 	//moveBezTest( .22,.85,.3,.91 )
 {
+	shootIndex = 0;
+	numBullets = 5;
+	//5 is max bullets
+	for( int i = 0; i < 5 * 4; ++i )
+	{
+		markerVA[i].position = Vector2f( 0, 0 );
+		markerVA[i].color = Color::Red;
+	}
 	
-
+	//22.59
 	bulletIndex = 0;
 	frameTest = 0;	
 	action = SHOOT;
 	travelIndex = 0;
+
+	SetDirs();
+
+
+
+
+
 
 	initHealth = 60;
 	health = initHealth;
@@ -115,7 +131,9 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	Edge *curr = mover->ground;
 	do
 	{
+		
 		totalDistanceAround += length( curr->v1 - curr->v0 );
+		cout << "total add: " << totalDistanceAround << ", " << curr << endl;
 		curr = curr->edge1;
 	}
 	while( curr != mover->ground );
@@ -133,13 +151,46 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	//position = mover->physBody.globalPosition;
 }
 
+void Boss_Crawler::SetDirs()
+{
+	int possibles[16];
+	for( int i = 0; i < 16; ++i )
+	{
+		possibles[i] = i;
+	}
+
+	//swap
+	for (int i = 0; i < 16; ++i)
+	{
+		int j = rand() % 16;
+		int temp = possibles[i];
+		possibles[i] = possibles[j];
+		possibles[j] = temp;
+	}
+
+	for( int i =0; i < 5; ++i )
+	{
+		bulletDirIndex[i] = possibles[i];
+	}
+}
+
 void Boss_Crawler::ResetEnemy()
 {
+	
+	SetDirs();
+
+	shootIndex = 0;
+	launcher->Reset();
 	bulletIndex = 0;
 	frameTest = 0;	
 	action = SHOOT;
 	travelIndex = 0;
 
+	for( int i = 0; i < 5 * 4; ++i )
+	{
+		markerVA[i].position = Vector2f( 0, 0 );
+		markerVA[i].color = Color::Red;
+	}
 
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
@@ -277,7 +328,7 @@ double Boss_Crawler::GetDistanceCCW( int index )
 		curr = curr->edge0;
 	}
 
-	sum += q;
+	sum += length( curr->v1 - curr->v0 ) - q;
 
 	return sum;
 }
@@ -298,10 +349,12 @@ double Boss_Crawler::GetDistanceClockwise( int index )
 	while( curr != e )
 	{
 		sum += length( curr->v1 - curr->v0 );	
+		//cout << "sum clockwise: " << sum << ", " << curr << endl;
 		curr = curr->edge1;
 	}
 
 	sum += q;
+
 
 	return sum;
 }
@@ -320,25 +373,42 @@ bool Boss_Crawler::GetClockwise( int index )
 	{
 		if( q > currQ )
 		{
+			cout << "false same edge" << endl;
 			return false;
 		}
 		else
 		{
+			cout << "true same edge" << endl;
 			return true;
 		}
 	}
 	else
 	{
 		double distanceClockwise = GetDistanceClockwise( index );
-		if( distanceClockwise > totalDistanceAround / 2 )
+		double ccw = GetDistanceCCW( index );
+		if( distanceClockwise >= ccw )
 		{
+			cout << "clockwise is greater: " << distanceClockwise << ", " << ccw << endl;
+			cout << "sum: " << distanceClockwise + ccw << endl;
+			//cout << "distance clock: " << distanceClockwise << ", " <<
+			//	totalDistanceAround / 2 << endl;
 			return true;
 		}
 		else
 		{
+			//cout << "distance clock false: " << distanceClockwise << ", blah: " << blah << ", "
+			//	<< totalDistanceAround / 2 << endl;
+			cout << "ccw is greater: " << distanceClockwise << ", " << ccw <<endl;
+			cout << "sum: " << distanceClockwise + ccw << endl;
 			return false;
 		}
 	}
+}
+
+double fRand(double fMin, double fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
 }
 
 void Boss_Crawler::UpdatePrePhysics()
@@ -353,28 +423,30 @@ void Boss_Crawler::UpdatePrePhysics()
 
 	if( action == BOOST )
 	{
-		frameTest++;
+		/*frameTest++;
 		if( frameTest == 60 )
 		{
 			action = SHOOT;
 			frameTest = 0;
-		}
+		}*/
 	}
 	else if( action == SHOOT )
 	{
-		frameTest++;
-		if( frameTest== 180 )
+		if( frameTest == 250 )
 		{
 			action = BOOST;
+			travelIndex = 0;
 			frameTest = 0;
+			leftFirstEdge = false;
+			firstEdge = mover->ground;
 
-			if( GetClockwise( 0 ) )
+			if( GetClockwise( travelIndex ) )
 			{
-				mover->SetSpeed( -10 );
+				mover->SetSpeed( 20 + travelIndex * 8 );
 			}
 			else
 			{
-				mover->SetSpeed( 10 );
+				mover->SetSpeed( -20 - travelIndex * 8 );
 			}
 		}
 	}
@@ -389,14 +461,28 @@ void Boss_Crawler::UpdatePrePhysics()
 	}
 	else if( action == SHOOT )
 	{
-		if( frameTest == 60  )
+		if( frameTest % 30 == 0 && frameTest < 30 * 5 )
 		{
-			bulletIndex = 0;
+			
 			launcher->position = position;
-			launcher->facingDir = V2d( -1,0 );
+			//V2d test = normalize( V2d(  fRand( -1, 1 ),  fRand( -1, 1 ) ) );
+			//can shoot in 1 of 32 (or w.e.) directions. can't shoot
+			//the same direction twice
+			V2d gAlong = normalize( mover->ground->v1 - mover->ground->v0 );
+			double angle = atan2( gAlong.y, gAlong.x );
+			angle -= PI / 16.0 * bulletDirIndex[shootIndex];
+			//angle = 0;
+			//angle -= PI / 2;
+			
+			V2d dir( cos( angle ), sin( angle ) );
+			cout << "shooting: " << shootIndex 
+				<< ", dir: " << bulletDirIndex[shootIndex] << endl;
+			launcher->facingDir = dir;
 			launcher->Fire();
+			++shootIndex;
 		}
 		mover->SetSpeed( 0 );
+		frameTest++;
 	}
 
 
@@ -463,25 +549,121 @@ void Boss_Crawler::UpdatePhysics()
 
 	
 	//mover->groundSpeed = 5;
-	mover->Move( slowMultiple );
 
+	
+	/*double beforeDistance;
 	if( mover->groundSpeed > 0 )
 	{
-		double d = GetDistanceCCW( travelIndex );
-		if( d > totalDistanceAround / 2 )
-		{
-			mover->ground = bulletHits[travelIndex].edge;
-			mover->edgeQuantity = bulletHits[travelIndex].quantity;
-			mover->roll = false;
-			mover->UpdateGroundPos();
-			action = SHOOT;
-			frameTest = 0;
-		}	
+		beforeDistance = GetDistanceClockwise( travelIndex );
 	}
 	else if( mover->groundSpeed < 0 )
 	{
-		double d = GetDistanceClockwise( travelIndex );
-		if( d > totalDistanceAround / 2 )
+		beforeDistance = GetDistanceCCW( travelIndex );
+	}*/
+
+	mover->Move( slowMultiple );
+
+	
+	
+
+	Edge *bEdge = bulletHits[travelIndex].edge;
+	double bq = bulletHits[travelIndex].quantity;
+	bool align = false;
+
+	if( !leftFirstEdge )
+	{	
+		if( firstEdge != bEdge )
+		{
+			if( mover->ground != firstEdge )
+				leftFirstEdge = true;
+		}
+		else
+		{
+			
+			if( mover->groundSpeed > 0 && mover->ground->edge1 == bEdge )
+			{
+				leftFirstEdge = true;
+			}
+			else if( mover->groundSpeed < 0 && mover->ground->edge0 == bEdge )
+			{
+				leftFirstEdge = true;
+			}
+		}
+	}
+
+
+	if( leftFirstEdge )
+	{
+		if( mover->groundSpeed > 0 )
+		{
+			if( ( mover->ground == bEdge && mover->edgeQuantity > bq )
+				|| ( mover->ground->edge0 == bEdge ) )
+			{
+				align = true;
+			}
+		}
+		else if( mover->groundSpeed < 0 )
+		{
+			if( ( mover->ground == bEdge && mover->edgeQuantity < bq )
+				|| ( mover->ground->edge1 == bEdge ) )
+			{
+				align = true;
+			}
+		}
+	}
+
+	if( align )
+	{
+		/*mover->ground = bEdge;
+		mover->edgeQuantity = bq;
+		mover->roll = false;
+		mover->UpdateGroundPos();*/
+
+		if( travelIndex == numBullets - 1 )
+		{
+			cout << "setting to shoot!. travelindex: " << travelIndex << endl;
+			for( int i = 0; i < 5 * 4; ++i )
+			{
+				markerVA[i].position = Vector2f( 0, 0 );
+			}
+
+			//init
+			// 1-14
+			SetDirs();
+
+			action = SHOOT;
+
+			shootIndex = 0;
+
+			bulletIndex = 0;
+			frameTest = 0;
+			mover->SetSpeed( 0 );
+		}
+		else
+		{
+			
+			travelIndex++;
+			cout << "new travelindex: " << travelIndex << endl;
+
+			//action = BOOST;
+			//frameTest = 0;
+			leftFirstEdge = false;
+			firstEdge = mover->ground;
+
+			if( GetClockwise( travelIndex ) )
+			{
+				mover->SetSpeed( 20 + travelIndex * 8 );
+			}
+			else
+			{
+				mover->SetSpeed( -20 - travelIndex * 8 );
+			}
+		}
+		
+	}
+	/*if( mover->groundSpeed > 0 )
+	{
+		if( GetDistanceClockwise( travelIndex ) > beforeDistance )
 		{
 			mover->ground = bulletHits[travelIndex].edge;
 			mover->edgeQuantity = bulletHits[travelIndex].quantity;
@@ -489,8 +671,23 @@ void Boss_Crawler::UpdatePhysics()
 			mover->UpdateGroundPos();
 			action = SHOOT;
 			frameTest = 0;
-		}	
+			mover->SetSpeed( 0 );
+		}
 	}
+	else if( mover->groundSpeed < 0 )
+	{
+		if( GetDistanceCCW( travelIndex ) > beforeDistance )
+		{
+			mover->ground = bulletHits[travelIndex].edge;
+			mover->edgeQuantity = bulletHits[travelIndex].quantity;
+			mover->roll = false;
+			mover->UpdateGroundPos();
+			action = SHOOT;
+			frameTest = 0;
+			mover->SetSpeed( 0 );
+			
+		}
+	}*/
 
 	position = mover->physBody.globalPosition;
 	
@@ -817,6 +1014,7 @@ void Boss_Crawler::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
+		target->draw( markerVA );
 		target->draw( sprite );
 	}
 	else
@@ -1031,6 +1229,13 @@ void Boss_Crawler::FinishedRoll()
 void Boss_Crawler::BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos )
 {	
+	cout << "bullet index: " << bulletIndex << endl;
+	int size = 25;
+	markerVA[bulletIndex*4+0].position = Vector2f( pos.x - size, pos.y - size );
+	markerVA[bulletIndex*4+1].position = Vector2f( pos.x + size, pos.y - size );
+	markerVA[bulletIndex*4+2].position = Vector2f( pos.x + size, pos.y + size );
+	markerVA[bulletIndex*4+3].position = Vector2f( pos.x - size, pos.y + size );
+
 	bulletHits[bulletIndex].edge = edge;
 	bulletHits[bulletIndex].quantity = edge->GetQuantity( pos );
 	b->launcher->DeactivateBullet( b );
