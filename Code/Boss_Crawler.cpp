@@ -22,8 +22,13 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( true )
 	//moveBezTest( .22,.85,.3,.91 )
 {
+	
+
+	bulletIndex = 0;
 	frameTest = 0;	
-	action = BOOST;
+	action = SHOOT;
+	travelIndex = 0;
+
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
@@ -37,6 +42,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	frame = 0;
 
 	mover = new SurfaceMover( owner, g, q, 64 );
+	mover->surfaceHandler = this;
 	mover->SetSpeed( 0 );
 	
 
@@ -97,12 +103,22 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	physBody.rh = 32;
 	physBody.type = CollisionBox::BoxType::Physics;*/
 
-	
+	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
+	launcher->SetBulletSpeed( 10 );	
 
 	deathPartingSpeed = .4;
 
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
+
+	totalDistanceAround = 0;
+	Edge *curr = mover->ground;
+	do
+	{
+		totalDistanceAround += length( curr->v1 - curr->v0 );
+		curr = curr->edge1;
+	}
+	while( curr != mover->ground );
 
 	
 
@@ -119,7 +135,12 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 void Boss_Crawler::ResetEnemy()
 {
-	frameTest = 0;
+	bulletIndex = 0;
+	frameTest = 0;	
+	action = SHOOT;
+	travelIndex = 0;
+
+
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
 	mover->roll = false;
@@ -237,6 +258,89 @@ void Boss_Crawler::ActionEnded()
 {
 }
 
+double Boss_Crawler::GetDistanceCCW( int index )
+{
+	Edge *e = bulletHits[index].edge;
+	double q = bulletHits[index].quantity;
+
+	
+	double sum = 0;
+	Edge *curr = mover->ground;
+	double currQ = mover->edgeQuantity;
+
+	sum += currQ;
+	curr = curr->edge0;
+
+	while( curr != e )
+	{
+		sum += length( curr->v1 - curr->v0 );	
+		curr = curr->edge0;
+	}
+
+	sum += q;
+
+	return sum;
+}
+
+double Boss_Crawler::GetDistanceClockwise( int index )
+{
+	Edge *e = bulletHits[index].edge;
+	double q = bulletHits[index].quantity;
+
+	
+	double sum = 0;
+	Edge *curr = mover->ground;
+	double currQ = mover->edgeQuantity;
+
+	sum += length( curr->v1 - curr->v0 ) - currQ;
+	curr = curr->edge1;
+
+	while( curr != e )
+	{
+		sum += length( curr->v1 - curr->v0 );	
+		curr = curr->edge1;
+	}
+
+	sum += q;
+
+	return sum;
+}
+
+bool Boss_Crawler::GetClockwise( int index )
+{
+	Edge *e = bulletHits[index].edge;
+	double q = bulletHits[index].quantity;
+
+	
+	double sum = 0;
+	Edge *curr = mover->ground;
+	double currQ = mover->edgeQuantity;
+
+	if( curr == e )
+	{
+		if( q > currQ )
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
+	{
+		double distanceClockwise = GetDistanceClockwise( index );
+		if( distanceClockwise > totalDistanceAround / 2 )
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
+
 void Boss_Crawler::UpdatePrePhysics()
 {
 	launcher->UpdatePrePhysics();
@@ -259,10 +363,19 @@ void Boss_Crawler::UpdatePrePhysics()
 	else if( action == SHOOT )
 	{
 		frameTest++;
-		if( frameTest== 60 )
+		if( frameTest== 180 )
 		{
 			action = BOOST;
 			frameTest = 0;
+
+			if( GetClockwise( 0 ) )
+			{
+				mover->SetSpeed( -10 );
+			}
+			else
+			{
+				mover->SetSpeed( 10 );
+			}
 		}
 	}
 
@@ -272,14 +385,15 @@ void Boss_Crawler::UpdatePrePhysics()
 	if( action == BOOST )
 	{
 		
-		mover->SetSpeed( 10 );
+		
 	}
 	else if( action == SHOOT )
 	{
-		if( frameTest == 0 )
+		if( frameTest == 60  )
 		{
+			bulletIndex = 0;
 			launcher->position = position;
-			launcher->facingDir = V2d( -1, 0 );
+			launcher->facingDir = V2d( -1,0 );
 			launcher->Fire();
 		}
 		mover->SetSpeed( 0 );
@@ -350,6 +464,33 @@ void Boss_Crawler::UpdatePhysics()
 	
 	//mover->groundSpeed = 5;
 	mover->Move( slowMultiple );
+
+	if( mover->groundSpeed > 0 )
+	{
+		double d = GetDistanceCCW( travelIndex );
+		if( d > totalDistanceAround / 2 )
+		{
+			mover->ground = bulletHits[travelIndex].edge;
+			mover->edgeQuantity = bulletHits[travelIndex].quantity;
+			mover->roll = false;
+			mover->UpdateGroundPos();
+			action = SHOOT;
+			frameTest = 0;
+		}	
+	}
+	else if( mover->groundSpeed < 0 )
+	{
+		double d = GetDistanceClockwise( travelIndex );
+		if( d > totalDistanceAround / 2 )
+		{
+			mover->ground = bulletHits[travelIndex].edge;
+			mover->edgeQuantity = bulletHits[travelIndex].quantity;
+			mover->roll = false;
+			mover->UpdateGroundPos();
+			action = SHOOT;
+			frameTest = 0;
+		}	
+	}
 
 	position = mover->physBody.globalPosition;
 	
@@ -874,7 +1015,7 @@ void Boss_Crawler::LoadEnemyState()
 
 void Boss_Crawler::HitTerrain( double &q )
 {
-	
+	//useless
 }
 
 bool Boss_Crawler::StartRoll()
@@ -885,4 +1026,30 @@ bool Boss_Crawler::StartRoll()
 void Boss_Crawler::FinishedRoll()
 {
 
+}
+
+void Boss_Crawler::BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos )
+{	
+	bulletHits[bulletIndex].edge = edge;
+	bulletHits[bulletIndex].quantity = edge->GetQuantity( pos );
+	b->launcher->DeactivateBullet( b );
+	bulletIndex++;
+}
+
+void Boss_Crawler::BulletHitPlayer( BasicBullet *b )
+{
+}
+
+void Boss_Crawler::HitTerrainAerial(Edge *edge, double q)
+{
+}
+
+void Boss_Crawler::TransferEdge( Edge *edge )
+{
+	/*if( edge == bulletHits[travelIndex].edge )
+	{
+		onTargetEdge = true;
+		
+	}*/
 }

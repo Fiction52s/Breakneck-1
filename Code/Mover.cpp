@@ -22,6 +22,7 @@ SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround,
 	:ground( startGround ), edgeQuantity( startQuantity ), owner( p_owner ),
 	groundSpeed( 0 ), roll( false )
 {
+	surfaceHandler = NULL;
 	//maxSpeed = mSpeed;
 	//gravity = V2d( 0, 0 );
 	physBody.isCircle = true;
@@ -163,7 +164,7 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 		bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 		{
-			HitTerrain( q );	
+			//HitTerrain( q );	
 			//return true;
 			return false;
 		}			
@@ -175,6 +176,7 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 			//cout << "t33" << endl;
 			ground = ground->edge1;
 			q = 0;
+			
 		}
 		else
 		{
@@ -182,6 +184,9 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 			ground = ground->edge0;
 			q = length( ground->edge0->v1 - ground->edge0->v0 );
 		}
+
+		if( surfaceHandler != NULL )
+			surfaceHandler->TransferEdge( ground );
 				
 	}
 
@@ -491,6 +496,8 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 		q = 0;
 		roll = false;
 		FinishedRoll();
+		if( surfaceHandler != NULL )
+				surfaceHandler->TransferEdge( ground );
 	}
 
 	return false;
@@ -553,6 +560,8 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 		roll = false;
 
 		FinishedRoll();
+		if( surfaceHandler != NULL )
+				surfaceHandler->TransferEdge( ground );
 	}
 
 	return false;
@@ -625,9 +634,13 @@ void SurfaceMover::Move( int slowMultiple )
 			
 				if( gNormal == e1n )
 				{
+					
 					//cout << "t1" << endl;
 					q = 0;
 					ground = e1;
+
+					if( surfaceHandler != NULL )
+						surfaceHandler->TransferEdge( ground );
 				}
 				else if( !roll )
 				{
@@ -654,6 +667,9 @@ void SurfaceMover::Move( int slowMultiple )
 				{
 					q = length( e0->v1 - e0->v0 );
 					ground = e0;
+
+					if( surfaceHandler != NULL )
+						surfaceHandler->TransferEdge( ground );
 				}
 				else if( !roll )
 				{
@@ -766,6 +782,9 @@ void SurfaceMover::HitTerrainAerial()
 		edgeQuantity = ground->GetQuantity( minContact.position );
 		UpdateGroundPos();
 	}
+
+	if( surfaceHandler != NULL )
+		surfaceHandler->TransferEdge( ground );
 }
 
 void SurfaceMover::HitTerrain( double &q )
@@ -800,6 +819,9 @@ void SurfaceMover::HitTerrain( double &q )
 			q = ground->GetQuantity( minContact.position + minContact.resolution );
 		}
 	}
+
+	if( surfaceHandler != NULL )
+		surfaceHandler->TransferEdge( ground );
 }
 
 void SurfaceMover::Jump( V2d &vel )

@@ -7,7 +7,8 @@
 #include "Movement.h"
 #include "Enemy.h"
 
-struct Boss_Crawler : Enemy
+struct Boss_Crawler : Enemy, LauncherEnemy,
+	SurfaceMoverHandler
 {
 	enum Action
 	{
@@ -39,16 +40,43 @@ struct Boss_Crawler : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+
+	void HitTerrainAerial(Edge *, double);
+	void TransferEdge( Edge * );
+
 	void HitTerrain( double &q );
 	bool StartRoll();
 	void FinishedRoll();
+
+	bool GetClockwise( int index );
+	double GetDistanceClockwise( int index );
+	double GetDistanceCCW( int index );
+
+	double totalDistanceAround;
 
 	Launcher *launcher;
 	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
 	Tileset *ts;
+
+	bool onTargetEdge;
 	//Tileset *ts_walk;
 	//Tileset *ts_roll;
+	struct EdgeInfo
+	{
+
+		Edge *edge;
+		double quantity;
+		//dont worry about rolling etc
+		//for the boss cuz of the special room
+	};
+	
+	EdgeInfo bulletHits[5];
+	int bulletIndex;
+	int travelIndex;
 
 	Action action;
 	bool facingRight;

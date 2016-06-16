@@ -16,6 +16,12 @@ struct GroundMoverHandler
 //	virtual void Land(){};
 };
 
+struct SurfaceMoverHandler
+{
+	virtual void HitTerrainAerial(Edge *, double) = 0;
+	virtual void TransferEdge( Edge * ) = 0;
+};
+
 struct GameSession;
 //circle for now
 struct SurfaceMover : QuadTreeCollider
@@ -64,6 +70,8 @@ struct SurfaceMover : QuadTreeCollider
 	sf::Vector2<double> velocity;
 
 	int framesInAir;
+
+	SurfaceMoverHandler *surfaceHandler;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
 	//
