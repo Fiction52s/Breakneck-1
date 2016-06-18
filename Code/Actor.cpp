@@ -304,15 +304,15 @@ Actor::Actor( GameSession *gs )
 		runBounceFlameFrames = 21 * 3;
 
 		actionLength[DAIR] = 10 * 2 - 8;
-		tileset[DAIR] = owner->GetTileset( "dair.png", 96, 64 );
+		tileset[DAIR] = owner->GetTileset( "dair_80x80.png", 80, 80 );
 		normal[DAIR] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
 		actionLength[DASH] = 45;
-		tileset[DASH] = owner->GetTileset( "dash.png", 128, 64 );
+		tileset[DASH] = owner->GetTileset( "dash_96x48.png", 96, 48 );
 		normal[DASH] = owner->GetTileset( "dash_NORMALS.png", 64, 64 );
 
 		actionLength[DOUBLE] = 28 + 10;
-		tileset[DOUBLE] = owner->GetTileset( "double.png", 64, 64 );
+		tileset[DOUBLE] = owner->GetTileset( "double_64x64.png", 64, 64 );
 		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
 		actionLength[FAIR] = 8 * 2;
@@ -328,7 +328,7 @@ Actor::Actor( GameSession *gs )
 		normal[LAND] = owner->GetTileset( "land_NORMALS.png", 64, 64 );
 
 		actionLength[LAND2] = 1;
-		tileset[LAND2] = owner->GetTileset( "land2.png", 64, 64 );
+		tileset[LAND2] =  owner->GetTileset( "land_64x64.png", 64, 64 );
 		normal[LAND2] = owner->GetTileset( "land2_NORMALS.png", 64, 64 );
 
 		actionLength[RUN] = 10 * 4;
@@ -336,11 +336,11 @@ Actor::Actor( GameSession *gs )
 		normal[RUN] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
 
 		actionLength[SLIDE] = 1;
-		tileset[SLIDE] = owner->GetTileset( "slide_80x48.png", 80, 48 );
+		tileset[SLIDE] = owner->GetTileset( "slide_64x64.png", 64, 64 );
 		normal[SLIDE] = owner->GetTileset( "slide_NORMALS.png", 64, 64 );
 
 		actionLength[SPRINT] = 8 * 4;
-		tileset[SPRINT] = owner->GetTileset( "sprint_128x64.png", 128, 64 );		
+		tileset[SPRINT] = owner->GetTileset( "sprint_128x48.png", 128, 48 );		
 		//tileset[SPRINT] = owner->GetTileset( "sprint_96x48.png", 96, 48 );		
 		normal[SPRINT] = owner->GetTileset( "sprint_NORMALS.png", 128, 64 );		
 
@@ -353,7 +353,7 @@ Actor::Actor( GameSession *gs )
 		normal[STANDD] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
 		actionLength[STANDN] = 4 * 3;
-		tileset[STANDN] = owner->GetTileset( "standn_80x64.png", 80, 64 );
+		tileset[STANDN] = owner->GetTileset( "standn_96x64.png", 96, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
 		actionLength[STANDU] = 20;
@@ -361,7 +361,7 @@ Actor::Actor( GameSession *gs )
 		normal[STANDU] = owner->GetTileset( "standu_NORMALS.png", 64, 80 );
 
 		actionLength[UAIR] = 6 * 3 - 3;
-		tileset[UAIR] = owner->GetTileset( "uair.png", 80, 80 );
+		tileset[UAIR] = owner->GetTileset( "uair_80x80.png", 80, 80 );
 		normal[UAIR] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
 
 		actionLength[WALLCLING] = 1;
@@ -369,7 +369,7 @@ Actor::Actor( GameSession *gs )
 		normal[WALLCLING] = owner->GetTileset( "wallcling_NORMALS.png", 64, 64 );
 
 		actionLength[WALLJUMP] = 9 * 2;
-		tileset[WALLJUMP] = owner->GetTileset( "walljump.png", 64, 64 );
+		tileset[WALLJUMP] = owner->GetTileset( "walljump_64x64.png", 64, 64 );
 		normal[WALLJUMP] = owner->GetTileset( "walljump_NORMALS.png", 64, 64 );
 
 		actionLength[GRINDBALL] = 1;
@@ -381,19 +381,19 @@ Actor::Actor( GameSession *gs )
 		normal[STEEPSLIDE] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
 		actionLength[AIRDASH] = 27;
-		tileset[AIRDASH] = owner->GetTileset( "airdash.png", 64, 64 );
+		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
-		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb.png", 128, 64 );
+		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb_128x64.png", 128, 64 );
 		normal[STEEPCLIMB] = owner->GetTileset( "steepclimb_NORMALS.png", 128, 64 );
 
 		actionLength[AIRHITSTUN] = 1;
-		tileset[AIRHITSTUN] = owner->GetTileset( "hurt_air.png", 64, 64 );
+		tileset[AIRHITSTUN] = owner->GetTileset( "hurt_64x64.png", 64, 64 );
 		normal[AIRHITSTUN] = owner->GetTileset( "hurt_air_NORMALS.png", 64, 64 );
 
 		actionLength[GROUNDHITSTUN] = 1;
-		tileset[GROUNDHITSTUN] = owner->GetTileset( "hurt_stand.png", 64, 64 );
+		tileset[GROUNDHITSTUN] = owner->GetTileset( "hurt_64x64.png", 64, 64 );
 		normal[GROUNDHITSTUN] = owner->GetTileset( "hurt_stand_NORMALS.png", 64, 64 );
 
 		actionLength[WIREHOLD] = 1;
@@ -413,7 +413,7 @@ Actor::Actor( GameSession *gs )
 		normal[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall_NORMALS.png", 80, 48 );
 
 		actionLength[DEATH] = 44 * 2;
-		tileset[DEATH] = owner->GetTileset( "death.png", 64, 64 );
+		tileset[DEATH] = owner->GetTileset( "death_128x96.png", 128, 96 );
 		//normal[DEATH] = owner->GetTileset( "death_NORMALS.png", 64, 64 );
 
 		actionLength[JUMPSQUAT] = 3;
@@ -12885,11 +12885,11 @@ void Actor::UpdateSprite()
 		sprite->setTexture( *(tileset[LAND2]->texture));
 		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
-			sprite->setTextureRect( tileset[LAND2]->GetSubRect( 0 ) );
+			sprite->setTextureRect( tileset[LAND2]->GetSubRect( 1 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tileset[LAND2]->GetSubRect( 0 );
+			sf::IntRect ir = tileset[LAND2]->GetSubRect( 1 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -13450,19 +13450,19 @@ void Actor::UpdateSprite()
 			//3-8 is the cycle
 			sf::IntRect ir;
 			int checkFrame;
-			if( frame / 2 < 3 )
+			if( frame / 2 < 1 )
 			{
 				checkFrame = frame / 2;
 				ir = tileset[DASH]->GetSubRect( checkFrame );
 			}
-			else if( frame < actionLength[DASH] - 6 )
+			else if( frame < actionLength[DASH] - 1 )
 			{
-				checkFrame = 3 + ( (frame/2 - 3) % 6 );
+				checkFrame = 1 + ( (frame/2 - 1) % 5 );
 				ir = tileset[DASH]->GetSubRect( checkFrame );
 			}
 			else
 			{
-				checkFrame = 9 + (6 - ( actionLength[DASH] - frame )) / 2;
+				checkFrame = 6; //9 + (6 - ( actionLength[DASH] - frame )) / 2;
 				ir = tileset[DASH]->GetSubRect( checkFrame );
 			}
 		//	cout << "checkframe: " << checkFrame << endl;
@@ -13810,11 +13810,11 @@ void Actor::UpdateSprite()
 			sprite->setTexture( *(tileset[GROUNDHITSTUN]->texture));
 			if( facingRight )
 			{
-				sprite->setTextureRect( tileset[GROUNDHITSTUN]->GetSubRect( 0 ) );
+				sprite->setTextureRect( tileset[GROUNDHITSTUN]->GetSubRect( 1 ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[GROUNDHITSTUN]->GetSubRect( 0 );
+				sf::IntRect ir = tileset[GROUNDHITSTUN]->GetSubRect( 1 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 			}
 			
