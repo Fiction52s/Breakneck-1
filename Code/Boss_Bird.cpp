@@ -18,22 +18,29 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 )
 {
-	for( int i = 0; i < MAX_PATH_SIZE * 4; ++i )
-	{
-		pathVA[i].position = Vector2f( 0, 0 );
-		pathVA[i].color = COLOR_GREEN;
-	}
+	testCircle.setRadius( 30 );
+	testCircle.setFillColor( Color::Red );
+	testCircle.setOrigin( testCircle.getLocalBounds().width / 2, 
+		testCircle.getLocalBounds().height / 2 );
 
+	testFinalCircle.setRadius( 30 );
+	testFinalCircle.setFillColor( Color::Black );
+	testFinalCircle.setOrigin( testFinalCircle.getLocalBounds().width / 2, 
+		testFinalCircle.getLocalBounds().height / 2 );
+	ClearPathVA();
+
+	nodeTravelFrames = 20;
+	travelFrame = 0;
+	travelIndex = 0;
 	testFrame = 0;
 	gridRatio = 1;
 	gridSizeRatio = 64;
 	gridOriginPos = V2d( pos.x, pos.y );
-	pathSize = 10;
+	pathSize = MAX_PATH_SIZE;
 	moveX = false;
 	//xIndexMove = 0;
 	///yIndexMove = 0;
@@ -135,12 +142,10 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 void Boss_Bird::ResetEnemy()
 {
+	travelFrame = 0;
+	travelIndex = 0;
 	action = PLANMOVE;
-	for( int i = 0; i < MAX_PATH_SIZE * 4; ++i )
-	{
-		pathVA[i].position = Vector2f( 0, 0 );
-		pathVA[i].color = COLOR_GREEN;
-	}
+	ClearPathVA();
 	testFrame = 0;
 	moveX = false;
 	moveIndex = Vector2i( 0, 0 );
@@ -212,12 +217,25 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	}
 
+	++travelFrame;
+	if( travelFrame == nodeTravelFrames )
+	{
+		travelFrame = 0;
+		travelIndex++;
+		if( travelIndex == pathSize )
+		{
+			frame = 0;
+			moveIndex = finalIndex;
+		}
+	}
 	switch( action )
 	{
 	case PLANMOVE:
 		if( frame == 0 )
 		{
 			CreatePath();
+			travelFrame = 0;
+			travelIndex = 0;			
 		}
 		break;
 	case MOVE:
@@ -226,10 +244,8 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	}
 
-	++testFrame;
+	UpdatePathVA();
 	
-
-
 
 	if( !dead && !dying && receivedHit != NULL )
 	{
@@ -360,6 +376,15 @@ void Boss_Bird::PhysicsResponse()
 	}
 }
 
+void Boss_Bird::ClearPathVA()
+{
+	for( int i = 0; i < MAX_PATH_SIZE * 4; ++i )
+	{
+		pathVA[i].position = Vector2f( 0, 0 );
+		pathVA[i].color = COLOR_GREEN;
+	}
+}
+
 void Boss_Bird::UpdatePostPhysics()
 {
 	launcher->UpdatePostPhysics();
@@ -453,8 +478,16 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 			target->draw( cs );
 		}
 		
+		
 		target->draw( sprite );
 		target->draw( pathVA );
+
+		if( action == PLANMOVE )
+		{
+			target->draw( testFinalCircle );
+			target->draw( testCircle );
+			
+		}
 	}
 	else if( !dead )
 	{
@@ -657,6 +690,7 @@ bool Boss_Bird::DirIsValid( sf::Vector2i &testIndex,
 
 void Boss_Bird::CreatePath()
 {
+	ClearPathVA();
 	sf::Vector2i testIndex = moveIndex;
 
 	if( testIndex.x == 0 && testIndex.y == 0 )	
@@ -671,7 +705,7 @@ void Boss_Bird::CreatePath()
 			path[0] = RIGHT;
 		}
 	}
-	else if( testIndex.x == 5 && testIndex.y == 5 )
+	else if( testIndex.x == GRID_SIZE-1 && testIndex.y == GRID_SIZE-1 )
 	{
 		int r = rand() % 2;
 		if( r == 0 )
@@ -715,7 +749,7 @@ void Boss_Bird::CreatePath()
 			path[0] = RIGHT;
 		}
 	}
-	else if( testIndex.x == 5 )
+	else if( testIndex.x == GRID_SIZE-1 )
 	{
 		int r = rand() % 3;
 		if( r == 0 )
@@ -731,7 +765,7 @@ void Boss_Bird::CreatePath()
 			path[0] = UP;
 		}
 	}
-	else if( testIndex.y == 5 )
+	else if( testIndex.y == GRID_SIZE-1 )
 	{
 		int r = rand() % 3;
 		if( r == 0 )
@@ -768,19 +802,21 @@ void Boss_Bird::CreatePath()
 		}
 	}
 
+	testIndex += path[0];
 	for( int i = 1; i < pathSize; ++i )
 	{
 		int numOptions = 0;
 		
 		sf::Vector2i leftTurn( path[i-1].y, -path[i-1].x );
 		bool validLeftTurn = DirIsValid( testIndex, leftTurn );
-		sf::Vector2i rightTurn( path[i-1].y, path[i-1].x );
+		sf::Vector2i rightTurn( -path[i-1].y, path[i-1].x );
 		bool validRightTurn = DirIsValid( testIndex, rightTurn );
 		sf::Vector2i forward = path[i-1];
 		bool validForward = DirIsValid( testIndex, forward );
 		
 		if( validLeftTurn && validRightTurn && validForward )
 		{
+			cout << "a" << endl;
 			int r = rand() % 3;
 			if( r == 0 )
 			{
@@ -797,6 +833,7 @@ void Boss_Bird::CreatePath()
 		}
 		else if( validLeftTurn && validRightTurn )
 		{
+			cout << "b" << endl;
 			int r = rand() % 2;
 			if( r == 0 )
 			{
@@ -809,6 +846,7 @@ void Boss_Bird::CreatePath()
 		}
 		else if( validForward && validRightTurn )
 		{
+			cout << "c" << endl;
 			int r = rand() % 2;
 			if( r == 0 )
 			{
@@ -821,6 +859,7 @@ void Boss_Bird::CreatePath()
 		}
 		else if( validLeftTurn && validForward )
 		{
+			cout << "d" << endl;
 			int r = rand() % 2;
 			if( r == 0 )
 			{
@@ -831,19 +870,63 @@ void Boss_Bird::CreatePath()
 				path[i] = forward;
 			}
 		}
+		else if( validLeftTurn )
+		{
+			path[i] = leftTurn;
+		}
+		else if( validForward )
+		{
+			path[i] = forward;
+		}
+		else if( validRightTurn )
+		{
+			path[i] = rightTurn;
+		}
+		else
+		{
+			Vector2i blahLeft = testIndex + leftTurn;
+			Vector2i blahRight = testIndex + rightTurn;
+			Vector2i blahForward = testIndex + forward;
+			cout << (int)validLeftTurn << ", " << (int)validRightTurn << ", " << (int)validForward << endl;
+			cout << "left: " << blahLeft.x << ", " << blahLeft.y << 
+				", right: " << blahRight.x << ", " << blahRight.y << 
+				", forward: " << blahForward.x << ", " << blahForward.y << endl;
+			assert( 0 && "what options is this" );
+		}
+
+		
+		cout << "testindex: " << testIndex.x 
+			<< ", " << testIndex.y << ", path[ " << i << "]: " << path[i].x << ", "<< path[i].y << endl;
+		testIndex += path[i];
 	}
-	
-	
-	
-	V2d trueLeft( -gridRatio, 1.0 / gridRatio );
+
+	finalIndex = testIndex;
+	cout << "finalIndex: " << finalIndex.x << ", " << finalIndex.y << endl;
+
+	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
+	V2d trueRight( gridRatio, 1.0 / gridRatio );
+	V2d trueDown( -gridRatio, 1.0 / gridRatio );
+	V2d trueUp( gridRatio, -1.0 / gridRatio );
+
+	V2d gridIndexPos = trueRight * (double)finalIndex.x + trueDown * (double)finalIndex.y;
+	gridIndexPos *= gridSizeRatio;
+	V2d curr = gridIndexPos + gridOriginPos;
+
+	testFinalCircle.setPosition( curr.x, curr.y );
+}
+
+void Boss_Bird::UpdatePathVA()
+{
+	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
 	V2d trueRight( gridRatio, 1.0 / gridRatio );
 	V2d trueDown( -gridRatio, 1.0 / gridRatio );
 	V2d trueUp( gridRatio, -1.0 / gridRatio );
 	 
-	testIndex = moveIndex;
-	for( int i = 0; i < pathSize; ++i )
+	Vector2i testIndex = moveIndex;
+	for( int i = 0; i <= travelIndex; ++i )
 	{
-		cout << "path[ " << i << "]: " << path[i].x << ", "<< path[i].y << endl;
+		
+		
 		Vector2i dir( path[i].x, path[i].y );
 		V2d along;
 		if( dir == LEFT )
@@ -869,10 +952,26 @@ void Boss_Bird::CreatePath()
 
 		V2d gridIndexPos = trueRight * (double)testIndex.x + trueDown * (double)testIndex.y;
 		gridIndexPos *= gridSizeRatio;
-		V2d c0 = gridIndexPos + gridOriginPos + norm * height;
-		V2d c1 = gridIndexPos + gridOriginPos + along * gridSizeRatio + norm * height;
-		V2d c2 = gridIndexPos + gridOriginPos + along * gridSizeRatio - norm * height;
-		V2d c3 = gridIndexPos + gridOriginPos - norm * height;
+
+
+		double val = moveBez.GetValue( (double)travelFrame / nodeTravelFrames );
+		V2d curr = gridIndexPos + gridOriginPos;
+		V2d next = curr;
+		if( i == travelIndex )
+		{
+			
+			next += along * gridSizeRatio * val;
+			testCircle.setPosition( next.x, next.y );
+		}
+		else
+		{
+			next += along * gridSizeRatio;
+		}
+
+		V2d c0 = curr + norm * height;
+		V2d c1 = next + norm * height;
+		V2d c2 = next - norm * height;
+		V2d c3 = curr - norm * height;
 
 
 		pathVA[i*4 + 0].position = Vector2f( c0.x, c0.y );

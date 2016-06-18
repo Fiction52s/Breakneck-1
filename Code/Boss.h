@@ -173,6 +173,11 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	void CreatePath();
 	bool DirIsValid( sf::Vector2i &testIndex,
 		sf::Vector2i &testDir );
+	void UpdatePathVA();
+	void ClearPathVA();
+
+	sf::CircleShape testCircle;
+	sf::CircleShape testFinalCircle;
 
 	sf::Vector2i moveIndex;
 	const sf::Vector2i DOWN;
@@ -182,6 +187,7 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	//sf::Vector2i moveDir;
 	bool moveX;
 	
+	sf::Vector2i finalIndex;
 	const static int MAX_PATH_SIZE = 10;
 	sf::Vector2i path[MAX_PATH_SIZE];
 	int pathSize;
@@ -189,6 +195,10 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	const static int GRID_SIZE = 6;
 	double gridRatio;
 	double gridSizeRatio;
+
+	int travelIndex;
+	int travelFrame;
+	int nodeTravelFrames;
 
 	sf::Vector2<double> gridOriginPos;
 
