@@ -33,7 +33,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		testFinalCircle.getLocalBounds().height / 2 );
 	ClearPathVA();
 
-	nodeTravelFrames = 20;
+	nodeTravelFrames = 5;
 	travelFrame = 0;
 	travelIndex = 0;
 	testFrame = 0;
