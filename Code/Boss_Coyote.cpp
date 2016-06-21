@@ -26,7 +26,7 @@ void Boss_Coyote::CreateNodes()
 	V2d testPos = position;
 	testPos += V2d( -200, -200 );
 
-	double radius = 300;
+	double radius = 900;
 	double angle = 0;
 	V2d curr,next;
 	V2d dir;
@@ -206,7 +206,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE ),//, facingRight( cw ),
 	moveBezTest( 0,0,1,1 ), testPaths( sf::Lines, 12 * 5 * 2 )
 {
-	
+	speed = 25;
 	testCircle.setRadius( 30 );
 	testCircle.setFillColor( Color::Magenta );
 	testCircle.setOrigin( testCircle.getLocalBounds().width / 2, 
@@ -318,6 +318,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 
 	currNode = points[0];
 
+	RandomizeDirections();
 	
 
 	//testMover->Move( slowMultiple );
@@ -328,9 +329,11 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 }
 
 
-
 void Boss_Coyote::ResetEnemy()
 {
+	RandomizeDirections();
+	currNode = points[0];
+	//ResetDirections();
 	travelFrame = 0;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
@@ -391,14 +394,6 @@ void Boss_Coyote::ResetEnemy()
 	//----
 
 	UpdateHitboxes();
-}
-
-void Boss_Coyote::ResetDirections()
-{
-	for( int i = 0; i < 6; ++i )
-	{
-
-	}
 }
 
 void Boss_Coyote::HandleEntrant( QuadTreeEntrant *qte )
@@ -471,8 +466,14 @@ void Boss_Coyote::ActionEnded()
 
 void Boss_Coyote::UpdatePrePhysics()
 {
-	int cap = 60;
+
+	
+	
 	ScorpionNode *nextNode = currNode->neighbors[currNode->facingIndex];
+	double diff = length( nextNode->position - currNode->position );
+
+	int cap = diff / speed + .5;
+
 	double r = moveBezTest.GetValue( travelFrame / (double)cap );
 	position = currNode->position * (1 - r) + nextNode->position * r;
 	travelFrame++;

@@ -277,13 +277,14 @@ struct Boss_Coyote : Enemy, GroundMoverHandler
 	{
 		ScorpionNode( sf::Vector2<double> &pos );
 		ScorpionNode *neighbors[5];
-		void ResetDirection();
+		//void ResetDirection();
 		void SetNewDirection();
 		sf::Vector2<double> position;
 		int facingIndex;
 	};
 
-	void ResetDirections();
+	double speed;
+	//void ResetDirections();
 	void RandomizeDirections();
 	void CreateNodes();
 	ScorpionNode *points[6];
