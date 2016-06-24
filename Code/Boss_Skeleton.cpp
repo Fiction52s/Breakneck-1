@@ -90,6 +90,10 @@ void Boss_Skeleton::CreateMirrorNode( sf::Vector2i &basePos,
 	{
 		CreateAxisNode( basePos, nodes, xIndex, yIndex );
 	}
+	else if( yIndex == 0 )
+	{
+		CreateAxisNode( basePos, nodes, xIndex, yIndex );
+	}
 	else
 	{
 		CreateAxisNode( basePos, nodes, xIndex, yIndex );
@@ -138,6 +142,185 @@ void Boss_Skeleton::CreateMirrorNode( sf::Vector2i &basePos,
 	
 }
 
+void Boss_Skeleton::CreateLink( FlowerNode *nodes[17][17], int xIndex0,
+		int yIndex0, int xIndex1, int yIndex1 )
+{
+	FlowerNode *fn0 = nodes[xIndex0][yIndex0];
+	FlowerNode *fn1 = nodes[xIndex1][yIndex1];
+
+	if( fn0->numConnects == 3 )
+	{
+		cout << "fn0: " << fn0->numConnects << endl;
+		cout << "numlinks: " << testNumLinks << endl;
+	}
+	else if( fn1->numConnects == 3 )
+	{
+		cout << "fn1: " << fn1->numConnects << endl;
+		cout << "numlinks: " << testNumLinks << endl;
+	}
+	assert( fn0->numConnects < 3 );
+	assert( fn1->numConnects < 3 );
+
+	fn0->connects[fn0->numConnects] = fn1;
+	fn1->connects[fn1->numConnects] = fn0;
+
+	//setup visuals
+
+	Vector2i sub = fn1->position - fn0->position;
+	V2d along = V2d( sub.x, sub.y );
+	double len = length( along );
+	double w = 5;
+	along = normalize( along );
+
+	V2d other = V2d( along.y, -along.x );
+	V2d start( fn0->position.x, fn0->position.y );
+	V2d end( fn1->position.x, fn1->position.y );
+
+	V2d sl = start + other * w;
+	V2d sr = start - other * w;
+	V2d el = end + other * w;
+	V2d er = end - other * w;
+
+	linkVA[testNumLinks*4+0].position = Vector2f( sl.x, sl.y );
+	linkVA[testNumLinks*4+1].position = Vector2f( el.x, el.y );
+	linkVA[testNumLinks*4+2].position = Vector2f( er.x, er.y );
+	linkVA[testNumLinks*4+3].position = Vector2f( sr.x, sr.y );
+
+
+	fn0->numConnects++;
+	fn1->numConnects++;
+
+	++testNumLinks;
+}
+
+void Boss_Skeleton::CreateMirrorLink( FlowerNode *nodes[17][17], 
+	int xIndex0, int yIndex0, 
+	int xIndex1, int yIndex1 )
+{
+	bool a = xIndex0 == yIndex0;
+	bool b = xIndex1 == yIndex1;
+	if( a && b )
+	{
+		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
+	}
+	else if( a )
+	{
+		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
+		CreateAxisLink( nodes, xIndex0, yIndex0, yIndex1, xIndex1 );
+	}
+	else if( b )
+	{
+		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
+		CreateAxisLink( nodes, yIndex0, xIndex0, xIndex1, yIndex1 );
+	}
+	else if( yIndex0 == 0 || yIndex1 == 0 )
+	{
+		cout << "creating single link" << endl;
+		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
+		//CreateAxisLink( nodes, yIndex0, xIndex0, yIndex1, xIndex1 );
+	}
+	else
+	{
+		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
+		CreateAxisLink( nodes, yIndex0, xIndex0, yIndex1, xIndex1 );
+	}
+
+}
+
+void Boss_Skeleton::Blah1( FlowerNode *nodes[17][17],
+		int realX0, int realY0, int xIndex1, int yIndex1 )
+{
+	int realX1 = xIndex1 + 8;
+	int realY1 = yIndex1 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	realX1 = -xIndex1 + 8;
+	realY1 = yIndex1 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	realX1 = -xIndex1 + 8;
+	realY1 = -yIndex1 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	realX1 = xIndex1 + 8;
+	realY1 = -yIndex1 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+}
+
+void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
+		int xIndex0, int yIndex0, int xIndex1, int yIndex1 )
+{
+	int realX0 = xIndex0 + 8;
+	int realY0 = yIndex0 + 8;
+	int realX1 = xIndex1 + 8;
+	int realY1 = yIndex1 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+
+	//if( xIndex0 != 0 && xIndex1 != 0 )
+	//{
+	//	realX0 = -xIndex0 + 8;
+	//	realY0 = yIndex0 + 8;
+	//	realX1 = -xIndex1 + 8;
+	//	realY1 = yIndex1 + 8;
+	//	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	//}
+	//else if( xIndex0 == 0 )
+	//{
+	//	
+	//}
+	if( xIndex0 != 0 || xIndex1 != 0 )
+	{
+		realX0 = -xIndex0 + 8;
+		realY0 = yIndex0 + 8;
+		realX1 = -xIndex1 + 8;
+		realY1 = yIndex1 + 8;
+		CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	}
+	
+	if( xIndex0 != 0 || xIndex1 != 0 || yIndex0 != 0 || yIndex1 != 0 )
+	{
+		realX0 = -xIndex0 + 8;
+		realY0 = -yIndex0 + 8;
+		realX1 = -xIndex1 + 8;
+		realY1 = -yIndex1 + 8;
+		CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	}
+	
+	if( yIndex0 != 0 || yIndex1 != 0 )
+	{
+		realX0 = xIndex0 + 8;
+		realY0 = -yIndex0 + 8;
+		realX1 = xIndex1 + 8;
+		realY1 = -yIndex1 + 8;
+		CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	}
+
+	/*int realX0 = xIndex0 + 8;
+	int realY0 = yIndex0 + 8;
+	int realX1 = xIndex1 + 8;
+	int realY1 = yIndex1 + 8;
+
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	Blah1( nodes, realX0, realY0, xIndex1, yIndex1 );
+
+	realX0 = -xIndex0 + 8;
+	realY0 = yIndex0 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	Blah1( nodes, realX0, realY0, xIndex1, yIndex1 );
+
+	realX0 = -xIndex0 + 8;
+	realY0 = -yIndex0 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	Blah1( nodes, realX0, realY0, xIndex1, yIndex1 );
+
+	realX0 = xIndex0 + 8;
+	realY0 = -yIndex0 + 8;
+	CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	Blah1( nodes, realX0, realY0, xIndex1, yIndex1 );*/
+}
+
+void Boss_Skeleton::CreateZeroLink( FlowerNode *nodes[17][17],
+		int xIndex0, int yIndex0, int xIndex1, int yIndex1, int dir )
+{
+	
+}
 
 void Boss_Skeleton::CreateQuadrant()
 {
@@ -146,12 +329,13 @@ void Boss_Skeleton::CreateQuadrant()
 	int UP = 2;
 	int DOWN = 2;
 	
-	int length = 64;
+	int length = 128;
 	Vector2i basePos( position.x, position.y );
 	//8x8
 	//make multiple center nodes
 	
 	FlowerNode *nodes[17][17];
+	{
 	CreateMirrorNode( basePos, nodes, 1, 0 );
 	CreateMirrorNode( basePos, nodes, 4, 0 );
 	CreateMirrorNode( basePos, nodes, 5, 0 );
@@ -178,8 +362,48 @@ void Boss_Skeleton::CreateQuadrant()
 	CreateMirrorNode( basePos, nodes, 5, 5 );
 	CreateMirrorNode( basePos, nodes, 6, 6 );
 	CreateMirrorNode( basePos, nodes, 8, 8 );
+	}
 
 
+	//CreateMirrorLink( nodes, 6, 6, 7, 6 );
+
+	CreateMirrorLink( nodes, 2, 2, 2, 1 );
+	CreateMirrorLink( nodes, 2, 2, 3, 3 );
+
+	CreateMirrorLink( nodes, 3, 3, 4, 3 );
+
+	CreateMirrorLink( nodes, 5, 5, 5, 4 );
+	CreateMirrorLink( nodes, 5, 5, 6, 6 );
+
+	CreateMirrorLink( nodes, 6, 6, 7, 6 );
+
+	
+	CreateMirrorLink( nodes, 2, 1, 3, 1 );
+	CreateMirrorLink( nodes, 3, 1, 4, 2 );
+	
+	CreateMirrorLink( nodes, 6, 1, 7, 1 );
+	CreateMirrorLink( nodes, 6, 1, 5, 2 );
+	CreateMirrorLink( nodes, 6, 3, 5, 2 );
+	CreateMirrorLink( nodes, 6, 3, 6, 4 );
+	CreateMirrorLink( nodes, 6, 4, 5, 4 );
+	CreateMirrorLink( nodes, 6, 4, 7, 5 );
+	
+
+	CreateMirrorLink( nodes, 5, 4, 4, 3 );
+	CreateMirrorLink( nodes, 4, 3, 4, 2 );
+
+	CreateMirrorLink( nodes, 5, 2, 4, 2 );
+	
+
+	CreateMirrorLink( nodes, 1, 0, 2, 1 );
+	CreateMirrorLink( nodes, 3, 1, 4, 0 );
+	CreateMirrorLink( nodes, 5, 0, 4, 0 );
+	CreateMirrorLink( nodes, 7, 1, 8, 0 );
+	CreateMirrorLink( nodes, 5, 0, 6, 1 );
+
+
+
+	//cout << "testNumLInks: " << testNumLinks << endl;
 	//nodes[][0] = new FlowerNode( basePos + Vector2i( length, 0 ) );
 	//int blah = 0;
 	//bool mode = false;
@@ -210,14 +434,18 @@ void Boss_Skeleton::CreateQuadrant()
 Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
-	flowerVA( sf::Quads, 200 * 4 )
+	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 200 * 4 )
 {
+	testNumLinks = 0;
 	position.x = pos.x;
 	position.y = pos.y;
 	for( int i = 0; i < 200 * 4; ++i )
 	{
 		flowerVA[i].position = Vector2f( 0, 0 );
 		flowerVA[i].color = Color::Red;
+
+		linkVA[i].position = Vector2f( 0, 0 );
+		linkVA[i].color = Color::Green;
 	}
 
 	testIndex = 0;
@@ -691,6 +919,7 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 		
 		target->draw( sprite );
 		target->draw( flowerVA );
+		target->draw( linkVA );
 		//target->draw( pathVA );
 
 		/*if( action == PLANMOVE )

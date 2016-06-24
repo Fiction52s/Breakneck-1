@@ -620,29 +620,47 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	struct FlowerNode
 	{
 		FlowerNode( sf::Vector2i &pos )
-			:position( pos )
+			:position( pos ), numConnects( 0 )
 		{
 			for( int i = 0; i < 3; ++i )
 				connects[i] = NULL;
+			
 		}
 
 		sf::Vector2i position;
 		FlowerNode *connects[3];
+		int numConnects;
 	};
+	int testIndex;
+	int testLength;
+	int testFrame;
 	FlowerNode * CreateFlowerNode( sf::Vector2i &basePos,
 		int xIndex, int yIndex );
 	void CreateAxisNode( sf::Vector2i &basePos,
 	FlowerNode *nodes[17][17], 
 	int xIndex, int yIndex );
-	int testIndex;
-	int testLength;
-	int testFrame;
+	
 	void CreateNode( sf::Vector2i &basePos,
 		FlowerNode *nodes[17][17], int xIndex,
 		int yIndex);
+
 	void CreateMirrorNode( sf::Vector2i &basePos,
 		FlowerNode *nodes[17][17], int xIndex,
 		int yIndex);
+
+	void CreateMirrorLink( FlowerNode *nodes[17][17],
+		int xIndex0,
+		int yIndex0, int xIndex1, int yIndex1 );
+
+	void CreateAxisLink( FlowerNode *nodes[17][17],
+		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
+
+	void Blah1( FlowerNode *nodes[17][17],
+		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
+
+	void CreateLink( FlowerNode *nodes[17][17], int xIndex0,
+		int yIndex0, int xIndex1, int yIndex1 );
+
 	Boss_Skeleton( GameSession *owner, sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
@@ -690,7 +708,12 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	double gridRatio;
 	double gridSizeRatio;
 
+	void CreateZeroLink( FlowerNode *nodes[17][17],
+		int xIndex0, int yIndex0, int xIndex1, int yIndex1,
+		int dir );
+
 	sf::VertexArray flowerVA;
+	sf::VertexArray linkVA;
 
 	int travelIndex;
 	int travelFrame;
@@ -702,7 +725,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	sf::VertexArray pathVA;
 
 	CubicBezier moveBez;
-
+	int testNumLinks;
 
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
