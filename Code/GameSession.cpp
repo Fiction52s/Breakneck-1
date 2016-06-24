@@ -5244,7 +5244,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		
 
@@ -5542,7 +5542,7 @@ int GameSession::Run( string fileN )
 		
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
-		//preScreenTex->draw( player.kinFace );
+		preScreenTex->draw( player.kinFace );
 
 		/*sf::Vertex blah[] = 
 		{ 

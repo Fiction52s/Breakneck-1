@@ -24,10 +24,12 @@ void Boss_Skeleton::CreateNode( sf::Vector2i &basePos,
 {
 	FlowerNode *fn = new FlowerNode( basePos + Vector2i( testLength * xIndex, 
 		testLength * yIndex ) );
+	assert( nodes[xIndex][yIndex] == NULL );
 	nodes[xIndex][yIndex] = fn;
 	
 	int blah = 10;
-	cout << "position: " << fn->position.x << ", " << fn->position.y << endl;
+	cout << "node " << testIndex << ": " << xIndex << ", " << yIndex << endl;
+	//cout << "position: " << fn->position.x << ", " << fn->position.y << endl;
 	flowerVA[testIndex*4+0].position = Vector2f( fn->position.x - blah, fn->position.y - blah );
 	flowerVA[testIndex*4+1].position = Vector2f( fn->position.x + blah, fn->position.y - blah );
 	flowerVA[testIndex*4+2].position = Vector2f( fn->position.x + blah, fn->position.y + blah );
@@ -46,6 +48,7 @@ Boss_Skeleton::FlowerNode * Boss_Skeleton::CreateFlowerNode( Vector2i &basePos, 
 
 	FlowerNode *fn = new FlowerNode( basePos + Vector2i( testLength * xIndex, 
 		testLength * yIndex ) );
+	cout << "node " << testIndex << ": " << xIndex << ", " << yIndex << endl;
 
 	flowerVA[testIndex*4+0].position = Vector2f( fn->position.x - blah, fn->position.y - blah );
 	flowerVA[testIndex*4+1].position = Vector2f( fn->position.x + blah, fn->position.y - blah );
@@ -65,20 +68,29 @@ void Boss_Skeleton::CreateAxisNode( sf::Vector2i &basePos,
 	fn = CreateFlowerNode( basePos, xIndex, yIndex );
 	nodes[realX][realY] = fn;
 
-	realX = -xIndex + 8;
-	realY = yIndex + 8;
-	fn = CreateFlowerNode( basePos, -xIndex, yIndex );
-	nodes[realX][realY] = fn;
+	if( xIndex != 0 )
+	{
+		realX = -xIndex + 8;
+		realY = yIndex + 8;
+		fn = CreateFlowerNode( basePos, -xIndex, yIndex );
+		nodes[realX][realY] = fn;
 
-	realX = -xIndex + 8;
-	realY = -yIndex + 8;
-	fn = CreateFlowerNode( basePos, -xIndex, -yIndex );
-	nodes[realX][realY] = fn;
+		if( yIndex != 0 )
+		{
+			realX = -xIndex + 8;
+			realY = -yIndex + 8;
+			fn = CreateFlowerNode( basePos, -xIndex, -yIndex );
+			nodes[realX][realY] = fn;
+		}
+	}
 
-	realX = xIndex + 8;
-	realY = -yIndex + 8;
-	fn = CreateFlowerNode( basePos, xIndex, -yIndex );
-	nodes[realX][realY] = fn;
+	if( yIndex != 0 )
+	{
+		realX = xIndex + 8;
+		realY = -yIndex + 8;
+		fn = CreateFlowerNode( basePos, xIndex, -yIndex );
+		nodes[realX][realY] = fn;
+	}
 }
 
 void Boss_Skeleton::CreateMirrorNode( sf::Vector2i &basePos,
@@ -87,10 +99,6 @@ void Boss_Skeleton::CreateMirrorNode( sf::Vector2i &basePos,
 {
 	int blah = 10;
 	if( xIndex == yIndex )
-	{
-		CreateAxisNode( basePos, nodes, xIndex, yIndex );
-	}
-	else if( yIndex == 0 )
 	{
 		CreateAxisNode( basePos, nodes, xIndex, yIndex );
 	}
@@ -148,18 +156,26 @@ void Boss_Skeleton::CreateLink( FlowerNode *nodes[17][17], int xIndex0,
 	FlowerNode *fn0 = nodes[xIndex0][yIndex0];
 	FlowerNode *fn1 = nodes[xIndex1][yIndex1];
 
-	if( fn0->numConnects == 3 )
+	if( fn0->numConnects >= 3 )
 	{
 		cout << "fn0: " << fn0->numConnects << endl;
 		cout << "numlinks: " << testNumLinks << endl;
+		cout << "xindex0: " << xIndex0-8 << ", yindex0: " << yIndex0-8 << endl;
+		cout << "xindex1: " << xIndex1-8 << ", yindex1: " << yIndex1-8 << endl;
+		cout << "fn0pos: " << fn0->position.x << ", " << fn0->position.y << endl;
+		assert( fn0->numConnects < 3 );
 	}
-	else if( fn1->numConnects == 3 )
+	else if( fn1->numConnects >= 3 )
 	{
 		cout << "fn1: " << fn1->numConnects << endl;
 		cout << "numlinks: " << testNumLinks << endl;
+		cout << "xindex0: " << xIndex0-8 << ", yindex0: " << yIndex0-8 << endl;
+		cout << "xindex1: " << xIndex1-8 << ", yindex1: " << yIndex1-8 << endl;
+		cout << "fn1pos: " << fn1->position.x << ", " << fn1->position.y << endl;
+		assert( fn1->numConnects < 3 );
 	}
-	assert( fn0->numConnects < 3 );
-	assert( fn1->numConnects < 3 );
+	
+	
 
 	fn0->connects[fn0->numConnects] = fn1;
 	fn1->connects[fn1->numConnects] = fn0;
@@ -213,35 +229,18 @@ void Boss_Skeleton::CreateMirrorLink( FlowerNode *nodes[17][17],
 		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
 		CreateAxisLink( nodes, yIndex0, xIndex0, xIndex1, yIndex1 );
 	}
-	else if( yIndex0 == 0 || yIndex1 == 0 )
-	{
-		cout << "creating single link" << endl;
-		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
-		//CreateAxisLink( nodes, yIndex0, xIndex0, yIndex1, xIndex1 );
-	}
+	//else if( yIndex0 == 0 || yIndex1 == 0 )
+	//{
+	//	cout << "creating single link" << endl;
+	//	CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
+	//	//CreateAxisLink( nodes, yIndex0, xIndex0, yIndex1, xIndex1 );
+	//}
 	else
 	{
 		CreateAxisLink( nodes, xIndex0, yIndex0, xIndex1, yIndex1 );
 		CreateAxisLink( nodes, yIndex0, xIndex0, yIndex1, xIndex1 );
 	}
 
-}
-
-void Boss_Skeleton::Blah1( FlowerNode *nodes[17][17],
-		int realX0, int realY0, int xIndex1, int yIndex1 )
-{
-	int realX1 = xIndex1 + 8;
-	int realY1 = yIndex1 + 8;
-	CreateLink( nodes, realX0, realY0, realX1, realY1 );
-	realX1 = -xIndex1 + 8;
-	realY1 = yIndex1 + 8;
-	CreateLink( nodes, realX0, realY0, realX1, realY1 );
-	realX1 = -xIndex1 + 8;
-	realY1 = -yIndex1 + 8;
-	CreateLink( nodes, realX0, realY0, realX1, realY1 );
-	realX1 = xIndex1 + 8;
-	realY1 = -yIndex1 + 8;
-	CreateLink( nodes, realX0, realY0, realX1, realY1 );
 }
 
 void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
@@ -253,6 +252,33 @@ void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
 	int realY1 = yIndex1 + 8;
 	CreateLink( nodes, realX0, realY0, realX1, realY1 );
 
+	if( xIndex0 != 0 || xIndex1 != 0 )
+	{
+		realX0 = -xIndex0 + 8;
+		realY0 = yIndex0 + 8;
+		realX1 = -xIndex1 + 8;
+		realY1 = yIndex1 + 8;
+		CreateLink( nodes, realX0, realY0, realX1, realY1 );
+
+		if( yIndex0 != 0 || yIndex1 != 0 )
+		{
+			realX0 = -xIndex0 + 8;
+			realY0 = -yIndex0 + 8;
+			realX1 = -xIndex1 + 8;
+			realY1 = -yIndex1 + 8;
+			CreateLink( nodes, realX0, realY0, realX1, realY1 );
+		}
+
+	}
+
+	if( yIndex0 != 0 || yIndex1 != 0 )
+	{
+		realX0 = xIndex0 + 8;
+		realY0 = -yIndex0 + 8;
+		realX1 = xIndex1 + 8;
+		realY1 = -yIndex1 + 8;
+		CreateLink( nodes, realX0, realY0, realX1, realY1 );
+	}
 	//if( xIndex0 != 0 && xIndex1 != 0 )
 	//{
 	//	realX0 = -xIndex0 + 8;
@@ -265,32 +291,20 @@ void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
 	//{
 	//	
 	//}
-	if( xIndex0 != 0 || xIndex1 != 0 )
-	{
-		realX0 = -xIndex0 + 8;
-		realY0 = yIndex0 + 8;
-		realX1 = -xIndex1 + 8;
-		realY1 = yIndex1 + 8;
-		CreateLink( nodes, realX0, realY0, realX1, realY1 );
-	}
+	/*if( xIndex0 != 0 || xIndex1 != 0 )
+	{*/
+		
+	//}
 	
-	if( xIndex0 != 0 || xIndex1 != 0 || yIndex0 != 0 || yIndex1 != 0 )
-	{
-		realX0 = -xIndex0 + 8;
-		realY0 = -yIndex0 + 8;
-		realX1 = -xIndex1 + 8;
-		realY1 = -yIndex1 + 8;
-		CreateLink( nodes, realX0, realY0, realX1, realY1 );
-	}
+	/*if( xIndex0 != 0 || xIndex1 != 0 || yIndex0 != 0 || yIndex1 != 0 )
+	{*/
+		
+	//}
 	
-	if( yIndex0 != 0 || yIndex1 != 0 )
-	{
-		realX0 = xIndex0 + 8;
-		realY0 = -yIndex0 + 8;
-		realX1 = xIndex1 + 8;
-		realY1 = -yIndex1 + 8;
-		CreateLink( nodes, realX0, realY0, realX1, realY1 );
-	}
+	/*if( yIndex0 != 0 || yIndex1 != 0 )
+	{*/
+		
+	//}
 
 	/*int realX0 = xIndex0 + 8;
 	int realY0 = yIndex0 + 8;
@@ -380,6 +394,7 @@ void Boss_Skeleton::CreateQuadrant()
 	
 	CreateMirrorLink( nodes, 2, 1, 3, 1 );
 	CreateMirrorLink( nodes, 3, 1, 4, 2 );
+	CreateMirrorLink( nodes, 3, 1, 4, 0 );
 	
 	CreateMirrorLink( nodes, 6, 1, 7, 1 );
 	CreateMirrorLink( nodes, 6, 1, 5, 2 );
@@ -396,10 +411,17 @@ void Boss_Skeleton::CreateQuadrant()
 	
 
 	CreateMirrorLink( nodes, 1, 0, 2, 1 );
-	CreateMirrorLink( nodes, 3, 1, 4, 0 );
+	//CreateAxisLink( nodes, 1, 0, 0, 1 );
+	//CreateMirrorLink( nodes, 1, 1, 1, 1 );
+
+	
 	CreateMirrorLink( nodes, 5, 0, 4, 0 );
 	CreateMirrorLink( nodes, 7, 1, 8, 0 );
 	CreateMirrorLink( nodes, 5, 0, 6, 1 );
+
+	CreateMirrorLink( nodes, 7, 5, 7, 6 );
+	CreateMirrorLink( nodes, 8, 7, 8, 8 );
+	CreateMirrorLink( nodes, 8, 7, 7, 6 );
 
 
 
@@ -572,13 +594,13 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 
 void Boss_Skeleton::ResetEnemy()
 {
-	for( int i = 0; i < 200 * 4; ++i )
+	/*for( int i = 0; i < 200 * 4; ++i )
 	{
 		flowerVA[i].position = Vector2f( 0, 0 );
 		flowerVA[i].color = Color::Red;
-	}
+	}*/
 	testIndex = 0;
-	CreateQuadrant();
+	//CreateQuadrant();
 
 	travelFrame = 0;
 	travelIndex = 0;

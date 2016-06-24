@@ -655,9 +655,6 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	void CreateAxisLink( FlowerNode *nodes[17][17],
 		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
 
-	void Blah1( FlowerNode *nodes[17][17],
-		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
-
 	void CreateLink( FlowerNode *nodes[17][17], int xIndex0,
 		int yIndex0, int xIndex1, int yIndex1 );
 
