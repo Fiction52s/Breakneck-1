@@ -1374,8 +1374,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
 				//	bulletSpeed, framesBetweenNodes, loop );
 
-				Boss_Bird *enemy 
-					= new Boss_Bird( this, Vector2i( xPos, yPos ) );
+				//Boss_Bird *enemy 
+				//	= new Boss_Bird( this, Vector2i( xPos, yPos ) );
+				Boss_Skeleton *enemy 
+					= new Boss_Skeleton( this, Vector2i( xPos, yPos ) );
 
 				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
 
@@ -1503,7 +1505,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 				//StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed );
-				Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity );
+				Boss_Tiger *enemy = new Boss_Tiger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity );
 
 				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
@@ -5240,7 +5244,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 		
 
