@@ -629,34 +629,16 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 
 		sf::Vector2i position;
 		FlowerNode *connects[3];
+		
+		bool connectsOpen[3];
 		int numConnects;
+		bool dest;
+		bool partOfPath;
 	};
 	int testIndex;
 	int testLength;
 	int testFrame;
-	FlowerNode * CreateFlowerNode( sf::Vector2i &basePos,
-		int xIndex, int yIndex );
-	void CreateAxisNode( sf::Vector2i &basePos,
-	FlowerNode *nodes[17][17], 
-	int xIndex, int yIndex );
-	
-	void CreateNode( sf::Vector2i &basePos,
-		FlowerNode *nodes[17][17], int xIndex,
-		int yIndex);
-
-	void CreateMirrorNode( sf::Vector2i &basePos,
-		FlowerNode *nodes[17][17], int xIndex,
-		int yIndex);
-
-	void CreateMirrorLink( FlowerNode *nodes[17][17],
-		int xIndex0,
-		int yIndex0, int xIndex1, int yIndex1 );
-
-	void CreateAxisLink( FlowerNode *nodes[17][17],
-		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
-
-	void CreateLink( FlowerNode *nodes[17][17], int xIndex0,
-		int yIndex0, int xIndex1, int yIndex1 );
+	FlowerNode *nodes[17][17];
 
 	Boss_Skeleton( GameSession *owner, sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
@@ -684,6 +666,29 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 		sf::Vector2i &testDir );
 	void UpdatePathVA();
 	void ClearPathVA();
+	FlowerNode * CreateFlowerNode( sf::Vector2i &basePos,
+		int xIndex, int yIndex );
+	void CreateAxisNode( sf::Vector2i &basePos,
+	FlowerNode *nodes[17][17], 
+	int xIndex, int yIndex );
+	
+	void CreateNode( sf::Vector2i &basePos,
+		FlowerNode *nodes[17][17], int xIndex,
+		int yIndex);
+
+	void CreateMirrorNode( sf::Vector2i &basePos,
+		FlowerNode *nodes[17][17], int xIndex,
+		int yIndex);
+
+	void CreateMirrorLink( FlowerNode *nodes[17][17],
+		int xIndex0,
+		int yIndex0, int xIndex1, int yIndex1 );
+
+	void CreateAxisLink( FlowerNode *nodes[17][17],
+		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
+
+	void CreateLink( FlowerNode *nodes[17][17], int xIndex0,
+		int yIndex0, int xIndex1, int yIndex1 );
 
 	sf::CircleShape testCircle;
 	sf::CircleShape testFinalCircle;
@@ -711,6 +716,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 
 	sf::VertexArray flowerVA;
 	sf::VertexArray linkVA;
+	
 
 	int travelIndex;
 	int travelFrame;

@@ -96,45 +96,45 @@ Actor::Actor( GameSession *gs )
 
 		
 
-		if( !fairBuffer.loadFromFile( "fair.ogg" ) )
+		/*if( !fairBuffer.loadFromFile( "fair.ogg" ) )
 		{
 			assert( 0 && "failed to load test fair noise" );
 		}
 		fairSound.setBuffer( fairBuffer);
-		fairSound.setVolume( 0 );
+		fairSound.setVolume( 0 );*/
 
-		if( !runTappingBuffer.loadFromFile( "runtapping.ogg" ) )
+		/*if( !runTappingBuffer.loadFromFile( "runtapping.ogg" ) )
 		{
 			assert( 0 && "failed to load test runtapping noise" );
 		}
 		runTappingSound.setBuffer( runTappingBuffer);
-		runTappingSound.setVolume( 0 );
+		runTappingSound.setVolume( 0 );*/
 
-		if( !playerHitBuffer.loadFromFile( "playerhit.ogg" ) )
+		/*if( !playerHitBuffer.loadFromFile( "playerhit.ogg" ) )
 		{
 			assert( 0 && "failed to load test runtapping noise" );
 		}
 		playerHitSound.setBuffer( playerHitBuffer );
 		playerHitSound.setVolume( 0 );
-
+*/
 		//if( !dashStartBuffer.loadFromFile( "dashstart.ogg" ) )
 		//if( !dashStartBuffer.loadFromFile( "a_dash.wav" ) )
-		if( !dashStartBuffer.loadFromFile( "a_dash.ogg" ) )
+		/*if( !dashStartBuffer.loadFromFile( "a_dash.ogg" ) )
 		{
 			assert( 0 && "failed to load test dashstart noise" );
 		}
 		dashStartSound.setBuffer( dashStartBuffer);
-		dashStartSound.setVolume( 0 );
+		dashStartSound.setVolume( 0 );*/
 		//dashStartSound.setVolume( 10 );
 		//dashStartSound.setLoop( true );
 
-		if( !jumpBuffer.loadFromFile( "a_jump.ogg" ) )
-		{
-			assert( 0 && "failed to load test jump noise" );
-		}
-		jumpSound.setBuffer( jumpBuffer);
-		//jumpSound.setVolume( 20 );
-		jumpSound.setVolume( 0 );
+		//if( !jumpBuffer.loadFromFile( "a_jump.ogg" ) )
+		//{
+		//	assert( 0 && "failed to load test jump noise" );
+		//}
+		//jumpSound.setBuffer( jumpBuffer);
+		////jumpSound.setVolume( 20 );
+		//jumpSound.setVolume( 0 );
 
 		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
 		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
