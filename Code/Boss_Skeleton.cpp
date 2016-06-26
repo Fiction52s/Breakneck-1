@@ -23,14 +23,9 @@ using namespace sf;
 Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
-	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 200 * 4 )
+	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 248 * 4 )
 {
-	for( int i = 0; i < MAX_PATH_SIZE * 4; ++i )
-	{
-		pathVA[i].color = Color::Blue;
-		pathVA[i].position = Vector2f( 0, 0 );
-	}
-	testNumLinks = 0;
+	//current num links is 248	
 	position.x = pos.x;
 	position.y = pos.y;
 	for( int i = 0; i < 200 * 4; ++i )
@@ -38,14 +33,34 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 		flowerVA[i].position = Vector2f( 0, 0 );
 		flowerVA[i].color = Color::Red;
 
+		
+	}
+
+	for( int i = 0; i < 248 * 4; ++i )
+	{
 		linkVA[i].position = Vector2f( 0, 0 );
 		linkVA[i].color = Color::Green;
 	}
 
+	testNumLinks = 0;
 	testIndex = 0;
 	testLength = 32;
 	CreateQuadrant();
-	CreatePath();
+
+	do
+	{
+	//	cout << "START ITERATION----- " << i << endl;
+		ClearPathVA();
+		FlowerNode *fn = CreatePath();
+	//	cout << "FINISHED ITERATION----- " << i << endl;
+		if( fn != NULL )
+			break;
+	}
+	while( true );
+
+	//for( int i = 0; i < 10; ++i )
+	
+	//while( true );
 	
 	testCircle.setRadius( 30 );
 	testCircle.setFillColor( Color::Red );
@@ -166,6 +181,16 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 
 void Boss_Skeleton::ResetEnemy()
 {
+	do
+	{
+	//	cout << "START ITERATION----- " << i << endl;
+		ClearPathVA();
+		FlowerNode *fn = CreatePath();
+	//	cout << "FINISHED ITERATION----- " << i << endl;
+		if( fn != NULL )
+			break;
+	}
+	while( true );
 	/*for( int i = 0; i < 200 * 4; ++i )
 	{
 		flowerVA[i].position = Vector2f( 0, 0 );
@@ -413,8 +438,8 @@ void Boss_Skeleton::ClearPathVA()
 {
 	for( int i = 0; i < MAX_PATH_SIZE * 4; ++i )
 	{
+		pathVA[i].color = Color::Blue;
 		pathVA[i].position = Vector2f( 0, 0 );
-		pathVA[i].color = COLOR_MAGENTA;
 	}
 }
 
@@ -724,16 +749,17 @@ bool Boss_Skeleton::DirIsValid( sf::Vector2i &testIndex,
 	}
 }
 
-void Boss_Skeleton::CreatePath()
+Boss_Skeleton::FlowerNode * Boss_Skeleton::CreatePath()
 {
 	int numNodes = 0;
-	for( int i = 0; i < 17; ++i )
+	for( int i = 0; i < GRID_SIZE; ++i )
 	{
-		for( int j = 0; j < 17; ++ j )
+		for( int j = 0; j < GRID_SIZE; ++ j )
 		{
 			
 			//cout << "testing : " << i << ", " << j << endl;
 			FlowerNode *fn = nodes[i][j];
+
 			if( fn == NULL )
 				continue; 
 
@@ -742,8 +768,9 @@ void Boss_Skeleton::CreatePath()
 				fn->connectsOpen[k] = true;
 			}
 
+			//cout << "making not part of path: " << fn->position.x << ", " << fn->position.y << endl;
 			fn->partOfPath = false;
-			fn->dest = false;
+			
 
 			if( fn->numConnects == 3 )
 			{
@@ -753,27 +780,32 @@ void Boss_Skeleton::CreatePath()
 			else if( fn->numConnects == 2 )
 			{
 				//entrance or exit node
-				int r = rand() % 2;
-				fn->connectsOpen[r] = false;
+				//int r = rand() % 2;
+				//fn->connectsOpen[r] = false;
 			}
 			else
 			{
-				assert( 0 );
+				continue;
+				//assert( 0 );
 			}
 		}
 	}
 
 	FlowerNode *prev = NULL;
-	FlowerNode *curr = nodes[1 + 8][0 + 8];
+	FlowerNode *curr = nodes[1 + HALF_GRID][0 + HALF_GRID];
 
 	for( int i = 0; i < MAX_PATH_SIZE; ++i )
 	{
-		cout << "start wat--------------------------------" << endl;
+		//cout << "start wat--------------------------------" << endl;
 		
 		if( curr->partOfPath )
+		{
+			cout << i << " part of path already?: curr: " << curr->position.x << ", " << curr->position.y << endl;
+			//return NULL;
 			break;
+		}
 
-		cout << "adding to path: " << curr->position.x << ", " << curr->position.y << endl;
+		//cout << "adding to path: " << curr->position.x << ", " << curr->position.y << endl;
 		path[numNodes] = curr;
 		curr->partOfPath = true;
 
@@ -783,7 +815,7 @@ void Boss_Skeleton::CreatePath()
 		}
 		else
 		{
-			cout << "thing: " << i << endl;
+			//cout << "thing: " << i << endl;
 			Vector2i blah = curr->position - prev->position;
 			V2d along = normalize( V2d( blah.x, blah.y ) );
 			V2d other( along.y, -along.x );
@@ -803,7 +835,11 @@ void Boss_Skeleton::CreatePath()
 		
 		if( curr->dest )
 		{
-			break;
+			//cout << "dest reached: " << i << endl;
+			if( i < 15 )
+				return NULL;
+			else
+				return curr;
 		}
 		else
 		{
@@ -811,7 +847,8 @@ void Boss_Skeleton::CreatePath()
 			{
 				//assert( numConnects == 2 );
 				//start
-				
+
+				//itll always take the first option for now. gotta fix later
 				prev = curr;
 				if( curr->connectsOpen[0] )
 				{
@@ -824,18 +861,48 @@ void Boss_Skeleton::CreatePath()
 			}
 			else
 			{
-				for( int n = 0; n < 3; ++n )
+				prev->partOfPath = true;
+				if( curr->numConnects == 2 )
 				{
-					if( n == 2 && curr->numConnects == 2 )
+					bool p0 = curr->connects[0]->partOfPath;
+					bool p1 = curr->connects[1]->partOfPath;
+					//cout << "0: " << curr->connects[0] << ", 1: " << curr->connects[1] << ", prev: " << prev << endl;
+					//cout << "prevstuff: " << (int)prev->partOfPath << endl;
+					if( p0 && p1 )
 					{
-						//cout << "this thing" << endl;
-						return;
+						cout << "this thing" << endl;
+						//return NULL;
+						break;
+						//return;
 					}
-					if( curr->connectsOpen[n] && !curr->connects[n]->partOfPath )
+					else if( p0 )
 					{
 						prev = curr;
-						curr = curr->connects[n];
-						break;
+						curr = curr->connects[1];
+					}
+					else if( p1 )
+					{
+						prev = curr;
+						curr = curr->connects[0];
+					}
+					else
+					{
+						assert( false );
+					}
+
+					//cout << "this thing" << endl;
+					//return;
+				}
+				else
+				{
+					for( int n = 0; n < 3; ++n )
+					{	
+						if( curr->connectsOpen[n] && !curr->connects[n]->partOfPath )
+						{
+							prev = curr;
+							curr = curr->connects[n];
+							break;
+						}
 					}
 				}
 			}
@@ -843,7 +910,7 @@ void Boss_Skeleton::CreatePath()
 		}
 	}
 
-
+	return NULL;
 }
 
 void Boss_Skeleton::UpdatePathVA()
@@ -915,7 +982,7 @@ void Boss_Skeleton::UpdatePathVA()
 }
 
 void Boss_Skeleton::CreateNode( sf::Vector2i &basePos,
-	FlowerNode *nodes[17][17], int xIndex,
+	FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex,
 		int yIndex)
 {
 	FlowerNode *fn = new FlowerNode( basePos + Vector2i( testLength * xIndex, 
@@ -944,7 +1011,7 @@ Boss_Skeleton::FlowerNode * Boss_Skeleton::CreateFlowerNode( Vector2i &basePos, 
 
 	FlowerNode *fn = new FlowerNode( basePos + Vector2i( testLength * xIndex, 
 		testLength * yIndex ) );
-	cout << "node " << testIndex << ": " << xIndex << ", " << yIndex << endl;
+	//cout << "node " << testIndex << ": " << xIndex << ", " << yIndex << endl;
 
 	flowerVA[testIndex*4+0].position = Vector2f( fn->position.x - blah, fn->position.y - blah );
 	flowerVA[testIndex*4+1].position = Vector2f( fn->position.x + blah, fn->position.y - blah );
@@ -956,25 +1023,25 @@ Boss_Skeleton::FlowerNode * Boss_Skeleton::CreateFlowerNode( Vector2i &basePos, 
 }
 
 void Boss_Skeleton::CreateAxisNode( sf::Vector2i &basePos,
-	FlowerNode *nodes[17][17], int xIndex, int yIndex )
+	FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex, int yIndex )
 {
 	FlowerNode *fn;
-	int realX = xIndex + 8;
-	int realY = yIndex + 8;
+	int realX = xIndex + HALF_GRID;
+	int realY = yIndex + HALF_GRID;
 	fn = CreateFlowerNode( basePos, xIndex, yIndex );
 	nodes[realX][realY] = fn;
 
 	if( xIndex != 0 )
 	{
-		realX = -xIndex + 8;
-		realY = yIndex + 8;
+		realX = -xIndex + HALF_GRID;
+		realY = yIndex + HALF_GRID;
 		fn = CreateFlowerNode( basePos, -xIndex, yIndex );
 		nodes[realX][realY] = fn;
 
 		if( yIndex != 0 )
 		{
-			realX = -xIndex + 8;
-			realY = -yIndex + 8;
+			realX = -xIndex + HALF_GRID;
+			realY = -yIndex + HALF_GRID;
 			fn = CreateFlowerNode( basePos, -xIndex, -yIndex );
 			nodes[realX][realY] = fn;
 		}
@@ -982,15 +1049,15 @@ void Boss_Skeleton::CreateAxisNode( sf::Vector2i &basePos,
 
 	if( yIndex != 0 )
 	{
-		realX = xIndex + 8;
-		realY = -yIndex + 8;
+		realX = xIndex + HALF_GRID;
+		realY = -yIndex + HALF_GRID;
 		fn = CreateFlowerNode( basePos, xIndex, -yIndex );
 		nodes[realX][realY] = fn;
 	}
 }
 
 void Boss_Skeleton::CreateMirrorNode( sf::Vector2i &basePos,
-	FlowerNode *nodes[17][17], int xIndex,
+	FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex,
 		int yIndex)
 {
 	int blah = 10;
@@ -1046,18 +1113,22 @@ void Boss_Skeleton::CreateMirrorNode( sf::Vector2i &basePos,
 	
 }
 
-void Boss_Skeleton::CreateLink( FlowerNode *nodes[17][17], int xIndex0,
+void Boss_Skeleton::CreateLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex0,
 		int yIndex0, int xIndex1, int yIndex1 )
 {
+	//cout << "create link. fn0: " << xIndex0 << ", " << yIndex0 << ", fn1: " << xIndex1 << ", " << yIndex1 << endl;
 	FlowerNode *fn0 = nodes[xIndex0][yIndex0];
 	FlowerNode *fn1 = nodes[xIndex1][yIndex1];
+
+	assert( fn0 != NULL );
+	assert( fn1 != NULL );
 
 	if( fn0->numConnects >= 3 )
 	{
 		cout << "fn0: " << fn0->numConnects << endl;
 		cout << "numlinks: " << testNumLinks << endl;
-		cout << "xindex0: " << xIndex0-8 << ", yindex0: " << yIndex0-8 << endl;
-		cout << "xindex1: " << xIndex1-8 << ", yindex1: " << yIndex1-8 << endl;
+		cout << "xindex0: " << xIndex0-HALF_GRID << ", yindex0: " << yIndex0-HALF_GRID << endl;
+		cout << "xindex1: " << xIndex1-HALF_GRID << ", yindex1: " << yIndex1-HALF_GRID << endl;
 		cout << "fn0pos: " << fn0->position.x << ", " << fn0->position.y << endl;
 		assert( fn0->numConnects < 3 );
 	}
@@ -1065,8 +1136,8 @@ void Boss_Skeleton::CreateLink( FlowerNode *nodes[17][17], int xIndex0,
 	{
 		cout << "fn1: " << fn1->numConnects << endl;
 		cout << "numlinks: " << testNumLinks << endl;
-		cout << "xindex0: " << xIndex0-8 << ", yindex0: " << yIndex0-8 << endl;
-		cout << "xindex1: " << xIndex1-8 << ", yindex1: " << yIndex1-8 << endl;
+		cout << "xindex0: " << xIndex0-HALF_GRID << ", yindex0: " << yIndex0-HALF_GRID << endl;
+		cout << "xindex1: " << xIndex1-HALF_GRID << ", yindex1: " << yIndex1-HALF_GRID << endl;
 		cout << "fn1pos: " << fn1->position.x << ", " << fn1->position.y << endl;
 		assert( fn1->numConnects < 3 );
 	}
@@ -1103,9 +1174,11 @@ void Boss_Skeleton::CreateLink( FlowerNode *nodes[17][17], int xIndex0,
 	fn1->numConnects++;
 
 	++testNumLinks;
+
+	//cout << "end of link creation" << endl;
 }
 
-void Boss_Skeleton::CreateMirrorLink( FlowerNode *nodes[17][17], 
+void Boss_Skeleton::CreateMirrorLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE], 
 	int xIndex0, int yIndex0, 
 	int xIndex1, int yIndex1 )
 {
@@ -1139,29 +1212,29 @@ void Boss_Skeleton::CreateMirrorLink( FlowerNode *nodes[17][17],
 
 }
 
-void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
+void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE],
 		int xIndex0, int yIndex0, int xIndex1, int yIndex1 )
 {
-	int realX0 = xIndex0 + 8;
-	int realY0 = yIndex0 + 8;
-	int realX1 = xIndex1 + 8;
-	int realY1 = yIndex1 + 8;
+	int realX0 = xIndex0 + HALF_GRID;
+	int realY0 = yIndex0 + HALF_GRID;
+	int realX1 = xIndex1 + HALF_GRID;
+	int realY1 = yIndex1 + HALF_GRID;
 	CreateLink( nodes, realX0, realY0, realX1, realY1 );
 
 	if( xIndex0 != 0 || xIndex1 != 0 )
 	{
-		realX0 = -xIndex0 + 8;
-		realY0 = yIndex0 + 8;
-		realX1 = -xIndex1 + 8;
-		realY1 = yIndex1 + 8;
+		realX0 = -xIndex0 + HALF_GRID;
+		realY0 = yIndex0 + HALF_GRID;
+		realX1 = -xIndex1 + HALF_GRID;
+		realY1 = yIndex1 + HALF_GRID;
 		CreateLink( nodes, realX0, realY0, realX1, realY1 );
 
 		if( yIndex0 != 0 || yIndex1 != 0 )
 		{
-			realX0 = -xIndex0 + 8;
-			realY0 = -yIndex0 + 8;
-			realX1 = -xIndex1 + 8;
-			realY1 = -yIndex1 + 8;
+			realX0 = -xIndex0 + HALF_GRID;
+			realY0 = -yIndex0 + HALF_GRID;
+			realX1 = -xIndex1 + HALF_GRID;
+			realY1 = -yIndex1 + HALF_GRID;
 			CreateLink( nodes, realX0, realY0, realX1, realY1 );
 		}
 
@@ -1169,10 +1242,10 @@ void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
 
 	if( yIndex0 != 0 || yIndex1 != 0 )
 	{
-		realX0 = xIndex0 + 8;
-		realY0 = -yIndex0 + 8;
-		realX1 = xIndex1 + 8;
-		realY1 = -yIndex1 + 8;
+		realX0 = xIndex0 + HALF_GRID;
+		realY0 = -yIndex0 + HALF_GRID;
+		realX1 = xIndex1 + HALF_GRID;
+		realY1 = -yIndex1 + HALF_GRID;
 		CreateLink( nodes, realX0, realY0, realX1, realY1 );
 	}
 	//if( xIndex0 != 0 && xIndex1 != 0 )
@@ -1226,7 +1299,7 @@ void Boss_Skeleton::CreateAxisLink( FlowerNode *nodes[17][17],
 	Blah1( nodes, realX0, realY0, xIndex1, yIndex1 );*/
 }
 
-void Boss_Skeleton::CreateZeroLink( FlowerNode *nodes[17][17],
+void Boss_Skeleton::CreateZeroLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE],
 		int xIndex0, int yIndex0, int xIndex1, int yIndex1, int dir )
 {
 	
@@ -1234,11 +1307,12 @@ void Boss_Skeleton::CreateZeroLink( FlowerNode *nodes[17][17],
 
 void Boss_Skeleton::CreateQuadrant()
 {
-	for( int i = 0; i < 17; ++i )
+	for( int i = 0; i < GRID_SIZE; ++i )
 	{
-		for( int j = 0; j < 17; ++j )
+		for( int j = 0; j < GRID_SIZE; ++j )
 		{
 			nodes[i][j] = NULL;
+			
 		}
 	}
 
@@ -1279,6 +1353,16 @@ void Boss_Skeleton::CreateQuadrant()
 	CreateMirrorNode( basePos, nodes, 5, 5 );
 	CreateMirrorNode( basePos, nodes, 6, 6 );
 	CreateMirrorNode( basePos, nodes, 8, 8 );
+
+	//new
+	CreateMirrorNode( basePos, nodes, 7, 3 );
+	CreateMirrorNode( basePos, nodes, 8, 2 );
+	CreateMirrorNode( basePos, nodes, 9, 2 );
+	CreateMirrorNode( basePos, nodes, 10, 1 );
+	CreateMirrorNode( basePos, nodes, 9, 0 );
+	CreateMirrorNode( basePos, nodes, 11, 0 );
+
+
 	}
 
 
@@ -1326,6 +1410,36 @@ void Boss_Skeleton::CreateQuadrant()
 	CreateMirrorLink( nodes, 8, 7, 8, 8 );
 	CreateMirrorLink( nodes, 8, 7, 7, 6 );
 
+	//new
+	CreateMirrorLink( nodes, 6, 3, 7, 3 );
+	CreateMirrorLink( nodes, 7, 3, 8, 2 );
+	CreateMirrorLink( nodes, 7, 1, 8, 2 );
+	CreateMirrorLink( nodes, 8, 2, 9, 2 );
+	CreateMirrorLink( nodes, 9, 2, 10, 1 );
+	CreateMirrorLink( nodes, 9, 0, 10, 1 );
+	CreateMirrorLink( nodes, 11, 0, 10, 1 );
+	CreateMirrorLink( nodes, 8, 0, 9, 0 );
+
+	
+	
+	for( int i = 0; i < GRID_SIZE; ++i )
+	{
+		for( int j = 0; j < GRID_SIZE; ++j )
+		{
+			if( nodes[i][j] != NULL )
+				nodes[i][j]->dest = false;
+			
+		}
+	}
+
+	nodes[11+HALF_GRID][0+HALF_GRID]->dest = true;
+	nodes[-11+HALF_GRID][0+HALF_GRID]->dest = true;
+	nodes[0+HALF_GRID][11+HALF_GRID]->dest = true;
+	nodes[0+HALF_GRID][-11+HALF_GRID]->dest = true;
+	nodes[8+HALF_GRID][8+HALF_GRID]->dest = true;
+	nodes[-8+HALF_GRID][8+HALF_GRID]->dest = true;
+	nodes[-8+HALF_GRID][-8+HALF_GRID]->dest = true;
+	nodes[8+HALF_GRID][-8+HALF_GRID]->dest = true;
 
 
 	//cout << "testNumLInks: " << testNumLinks << endl;

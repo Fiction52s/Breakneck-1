@@ -638,7 +638,10 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int testIndex;
 	int testLength;
 	int testFrame;
-	FlowerNode *nodes[17][17];
+	const static int GRID_SIZE = 23;
+	const static int HALF_GRID = 11;
+
+	FlowerNode *nodes[GRID_SIZE][GRID_SIZE];
 
 	Boss_Skeleton( GameSession *owner, sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
@@ -661,7 +664,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void SaveEnemyState();
 	void LoadEnemyState();
-	void CreatePath();
+	FlowerNode * CreatePath();
 	bool DirIsValid( sf::Vector2i &testIndex,
 		sf::Vector2i &testDir );
 	void UpdatePathVA();
@@ -669,25 +672,25 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	FlowerNode * CreateFlowerNode( sf::Vector2i &basePos,
 		int xIndex, int yIndex );
 	void CreateAxisNode( sf::Vector2i &basePos,
-	FlowerNode *nodes[17][17], 
+	FlowerNode *nodes[GRID_SIZE][GRID_SIZE], 
 	int xIndex, int yIndex );
 	
 	void CreateNode( sf::Vector2i &basePos,
-		FlowerNode *nodes[17][17], int xIndex,
+		FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex,
 		int yIndex);
 
 	void CreateMirrorNode( sf::Vector2i &basePos,
-		FlowerNode *nodes[17][17], int xIndex,
+		FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex,
 		int yIndex);
 
-	void CreateMirrorLink( FlowerNode *nodes[17][17],
+	void CreateMirrorLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE],
 		int xIndex0,
 		int yIndex0, int xIndex1, int yIndex1 );
 
-	void CreateAxisLink( FlowerNode *nodes[17][17],
+	void CreateAxisLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE],
 		int xIndex0, int yIndex0, int xIndex1, int yIndex1 );
 
-	void CreateLink( FlowerNode *nodes[17][17], int xIndex0,
+	void CreateLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex0,
 		int yIndex0, int xIndex1, int yIndex1 );
 
 	sf::CircleShape testCircle;
@@ -706,11 +709,11 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	FlowerNode *path[MAX_PATH_SIZE];
 	int pathSize;
 
-	const static int GRID_SIZE = 6;
+	
 	double gridRatio;
 	double gridSizeRatio;
 
-	void CreateZeroLink( FlowerNode *nodes[17][17],
+	void CreateZeroLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE],
 		int xIndex0, int yIndex0, int xIndex1, int yIndex1,
 		int dir );
 
