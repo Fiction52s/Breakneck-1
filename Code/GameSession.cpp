@@ -15,6 +15,7 @@
 #include "Zone.h"
 #include "Flow.h"
 #include "Boss.h"
+#include "PowerOrbs.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -62,36 +63,7 @@ using namespace sf;
 
 
 
-PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
-		bool hasGravReverse,
-		bool hasBounce,
-		bool hasGrind,
-		bool hasTimeSlow,
-		bool hasWires ): smallOrbVA( sf::Quads, 6 * 4 ), basePos( 0, 0 )
-{
 
-	numStars[TEAL] = 16;
-	numStars[BLUE] = 16;
-	numStars[GREEN] = 16;
-	numStars[YELLOW] = 16;
-	numStars[ORANGE] = 16;
-	numStars[RED] = 16;
-	numStars[MAGENTA] = 16;
-	
-	ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
-	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );
-
-	for( int i = 0; i < OrbColor::Count; ++i )
-	{
-		stringstream ss;
-		ss << "charge" << i << "a_64x64.png";
-		ts_charges[i] = owner->GetTileset( ss.str(), 64, 64 );
-	}
-	
-	
-
-
-}
 
 
 
@@ -106,6 +78,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
+
+	powerOrbs = new PowerOrbs( this, true, true, true, false, false, false );
 	Vector2f miniPos = Vector2f( 30, 750 );
 	miniVA[0].position = miniPos + Vector2f( 0, 0 );
 	miniVA[1].position = miniPos + Vector2f( 300, 0 );
@@ -5587,11 +5561,12 @@ int GameSession::Run( string fileN )
 		//VertexArray va( sf::Quads, 4 );
 	
 
-		preScreenTex->draw( lifeBarSprite );
+		//preScreenTex->draw( lifeBarSprite );
 		preScreenTex->draw( miniVA, &minimapShader );
 	//minimapSprite.draw( preScreenTex );
 		//preScreenTex->draw( minimapSprite, &minimapShader );
-		powerBar.Draw( preScreenTex );
+		//powerBar.Draw( preScreenTex );
+		powerOrbs->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
 
 		//window->setView( uiView );

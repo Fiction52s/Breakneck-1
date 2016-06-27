@@ -50,41 +50,7 @@ struct PowerBar
 	void Charge( int power );
 };
 
-struct GameSession;
-struct PowerOrbs
-{
-	
-	enum OrbColor
-	{
-		TEAL,
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		Count
-	};
-	PowerOrbs( GameSession *owner, bool hasAirDash,
-		bool hasGravReverse,
-		bool hasBounce,
-		bool hasGrind,
-		bool hasTimeSlow,
-		bool hasWires );
-
-	Tileset *ts_largeOrbs;
-	Tileset *ts_smallOrbs;
-	//sf::Texture largeOrbTex;
-	//sf::Texture smallOrbTex;
-	sf::Sprite largeOrb;
-
-	std::map<OrbColor, int> numStars;
-	int activeOrb;
-	int numOrbStars[OrbColor::Count];
-	Tileset * ts_charges[OrbColor::Count];
-	sf::VertexArray smallOrbVA;
-	sf::Vector2i basePos;
-};
+struct PowerOrbs;
 
 struct Critical : QuadTreeEntrant
 {
@@ -515,6 +481,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool usePolyShader;
 
 	PowerBar powerBar;
+	PowerOrbs *powerOrbs;
 
 	int pauseFrames;
 
