@@ -67,8 +67,9 @@ PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
 		bool hasBounce,
 		bool hasGrind,
 		bool hasTimeSlow,
-		bool hasWires )
+		bool hasWires ): smallOrbVA( sf::Quads, 6 * 4 ), basePos( 0, 0 )
 {
+
 	numStars[TEAL] = 16;
 	numStars[BLUE] = 16;
 	numStars[GREEN] = 16;
@@ -86,6 +87,7 @@ PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
 		ss << "charge" << i << "a_64x64.png";
 		ts_charges[i] = owner->GetTileset( ss.str(), 64, 64 );
 	}
+	
 	
 
 

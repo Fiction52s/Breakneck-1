@@ -82,6 +82,8 @@ struct PowerOrbs
 	int activeOrb;
 	int numOrbStars[OrbColor::Count];
 	Tileset * ts_charges[OrbColor::Count];
+	sf::VertexArray smallOrbVA;
+	sf::Vector2i basePos;
 };
 
 struct Critical : QuadTreeEntrant
