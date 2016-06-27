@@ -62,6 +62,37 @@ using namespace sf;
 
 
 
+PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
+		bool hasGravReverse,
+		bool hasBounce,
+		bool hasGrind,
+		bool hasTimeSlow,
+		bool hasWires )
+{
+	numStars[TEAL] = 16;
+	numStars[BLUE] = 16;
+	numStars[GREEN] = 16;
+	numStars[YELLOW] = 16;
+	numStars[ORANGE] = 16;
+	numStars[RED] = 16;
+	numStars[MAGENTA] = 16;
+	
+	ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
+	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );
+
+	for( int i = 0; i < OrbColor::Count; ++i )
+	{
+		stringstream ss;
+		ss << "charge" << i << "a_64x64.png";
+		ts_charges[i] = owner->GetTileset( ss.str(), 64, 64 );
+	}
+	
+
+
+}
+
+
+
 
 
 
