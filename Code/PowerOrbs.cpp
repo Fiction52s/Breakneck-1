@@ -13,6 +13,7 @@ PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
 		bool hasTimeSlow,
 		bool hasWires ): smallOrbVA( sf::Quads, 6 * 4 ), basePos( 96, 64 * 6 + 270 )
 {
+	testBlah = 0;
 	for( int i = 0; i < 7; ++i )
 	{
 		starVA[i] = new Vertex[12 * 4];
@@ -66,6 +67,7 @@ PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
 		smallOrbVA[i*4+3].position = basePos + Vector2f( 0, 64 ) - Vector2f( 0, 64 * i );
 	}
 
+	bool end = false;
 	for( int i = 5; i >= 0; --i )
 	{
 		//start at bottom
@@ -73,30 +75,41 @@ PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
 		{
 			if( hasPower[powerIndex] )
 			{
+
 				int f = 12 + powerIndex;
 				//12 - 17
 				sf::IntRect ir = ts_smallOrbs->GetSubRect( f );
 
 				orbColors[i] = (OrbColor)(powerIndex + 6);
+
 				smallOrbVA[i*4+0].texCoords = Vector2f( ir.left, ir.top );
 				smallOrbVA[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
 				smallOrbVA[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
 				smallOrbVA[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
 
 				--powerIndex;
+
+				if( i == 0 )
+				{
+					end = true;
+				}
 				break;
 
 			}
 			--powerIndex;
 		}
 
+		if( end )
+			break;
+
 		if( powerIndex < 0 )
 		{
-				int f = tealCounter;//5 - tealCounter;
+			cout << "teal coloring!!" << tealCounter << endl;
+				int f = 5 - tealCounter;//5 - tealCounter;
 				//12 - 17
 				sf::IntRect ir = ts_smallOrbs->GetSubRect( f );
 
-				orbColors[i] = (OrbColor)tealCounter;
+				orbColors[i] = (OrbColor)(5-tealCounter);
 				smallOrbVA[i*4+0].texCoords = Vector2f( ir.left, ir.top );
 				smallOrbVA[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
 				smallOrbVA[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
@@ -109,6 +122,7 @@ PowerOrbs::PowerOrbs( GameSession *owner, bool hasAirDash,
 	for( int i = 0; i < 6; ++i )
 	{
 		OrbColor col = orbColors[i];
+		cout << "i: " << i << ", col: " << (int)col << endl;
 	}
 
 	OrbColor c = orbColors[activeOrb];
@@ -249,7 +263,7 @@ void PowerOrbs::SetStarPositions( int index, OrbColor oc )
 		break;
 	}
 
-	Vector2f b = basePos - Vector2f( 96, 64 * activeOrb + 96 );
+	Vector2f b = basePos - Vector2f( 96, 64 * index + 96 );
 	Vertex * va = starVA[index];
 	for( int i = 0; i < 12; ++i )
 	{
@@ -258,6 +272,10 @@ void PowerOrbs::SetStarPositions( int index, OrbColor oc )
 		va[i*4+2].position = b + s[i] + Vector2f( 64, 64 );
 		va[i*4+3].position = b + s[i] + Vector2f( 0, 64 );
 	}
+}
+
+void PowerOrbs::Reset()
+{
 }
 
 void PowerOrbs::Draw( sf::RenderTarget *target )
@@ -273,6 +291,7 @@ void PowerOrbs::UpdateStarVA()
 {
 	Vertex *va = starVA[activeOrb];
 
+	int animFactor = 3;
 	int colorType;
 	if( orbColors[activeOrb] <= TEAL5 )
 	{
@@ -282,7 +301,7 @@ void PowerOrbs::UpdateStarVA()
 	{
 		colorType = (int)orbColors[activeOrb] - 5;
 	}
-	IntRect ir = ts_charge->GetSubRect( colorType * 9 + starFrame );
+	IntRect ir = ts_charge->GetSubRect( colorType * 9 + starFrame / animFactor );
 	for( int i = 0; i < activeStars; ++i )
 	{
 		va[i*4+0].texCoords = Vector2f( ir.left, ir.top );
@@ -296,6 +315,27 @@ void PowerOrbs::UpdateStarVA()
 		/*va[i*4+1].position = b + s[i] + Vector2f( 64, 0 );
 		va[i*4+2].position = b + s[i] + Vector2f( 64, 64 );
 		va[i*4+3].position = b + s[i] + Vector2f( 0, 64 );*/
+	}
+
+	++starFrame;
+	if( starFrame == animFactor * 8 )
+	{
+		starFrame = 0;
+	}
+
+	++testBlah;
+	if( testBlah == 180 )
+	{
+		testBlah = 0;
+		--activeOrb;
+		if( activeOrb < 0 )
+			activeOrb = 5;
+
+		OrbColor c = orbColors[activeOrb];
+		int cc = (int)c;
+		largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( cc ) );
+	
+		largeOrb.setPosition( basePos + Vector2f( 32, 32 ) - Vector2f( 0, 64 * activeOrb) );
 	}
 	/*for( int i = activeStars; i < 12; ++i )
 	{

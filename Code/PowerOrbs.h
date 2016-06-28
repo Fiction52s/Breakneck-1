@@ -31,12 +31,15 @@ struct PowerOrbs
 		bool hasWires );
 	void Draw( sf::RenderTarget *target );
 	void UpdateStarVA();
+	void Reset();
 
 	Tileset *ts_largeOrbs;
 	Tileset *ts_smallOrbs;
 	//sf::Texture largeOrbTex;
 	//sf::Texture smallOrbTex;
 	sf::Sprite largeOrb;
+
+	int testBlah;
 	
 
 	void SetStarPositions( int index, OrbColor oc );

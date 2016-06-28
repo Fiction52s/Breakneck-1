@@ -33,7 +33,7 @@ Actor::Actor( GameSession *gs )
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
-		ts_kinFace = owner->GetTileset( "kinportrait_256x256.png", 256, 256 );
+		ts_kinFace = owner->GetTileset( "kinportrait_288x288.png", 288, 288 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 		//kinFace.setPosition( 2, 48 );

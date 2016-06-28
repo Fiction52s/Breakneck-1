@@ -79,7 +79,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
 
-	powerOrbs = new PowerOrbs( this, true, true, true, false, false, false );
+	//powerOrbs = new PowerOrbs( true, true, true, true, true, true);
+	powerOrbs = new PowerOrbs( this, true, true, true, false, false, false);
 	Vector2f miniPos = Vector2f( 30, 750 );
 	miniVA[0].position = miniPos + Vector2f( 0, 0 );
 	miniVA[1].position = miniPos + Vector2f( 300, 0 );
@@ -4576,6 +4577,7 @@ int GameSession::Run( string fileN )
 			}
 			else
 			{
+
 				totalGameFrames++;
 				player.UpdatePrePhysics();
 
@@ -4613,6 +4615,7 @@ int GameSession::Run( string fileN )
 
 				//f->Update();
 
+				powerOrbs->UpdateStarVA();
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
