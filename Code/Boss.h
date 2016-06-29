@@ -155,6 +155,8 @@ struct Boss_Bird : Enemy, LauncherEnemy
 		SPINATTACK
 	};
 
+	AttackType currentAttack;
+
 	Tileset *ts_glide;
 	Tileset *ts_wing;
 
@@ -187,9 +189,12 @@ struct Boss_Bird : Enemy, LauncherEnemy
 		sf::Vector2i &testDir );
 	void UpdatePathVA();
 	void ClearPathVA();
+	void SetupAttackMarkers();
 
 	sf::CircleShape testCircle;
 	sf::CircleShape testFinalCircle;
+
+	sf::VertexArray attackMarkerVA;
 
 	sf::Vector2i moveIndex;
 	const sf::Vector2i DOWN;
@@ -652,6 +657,8 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int testIndex;
 	int testLength;
 	int testFrame;
+
+	
 	const static int GRID_SIZE = 23;
 	const static int HALF_GRID = 11;
 

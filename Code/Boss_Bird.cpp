@@ -20,8 +20,14 @@ using namespace sf;
 
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
-	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 )
+	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
+	attackMarkerVA( sf::Quads, 4 * 4 )
 {
+	currentAttack = NONE;
+
+	gridRatio = 1;
+	gridSizeRatio = 64;
+	gridOriginPos = V2d( pos.x, pos.y );
 
 	ts_glide = owner->GetTileset( "Bosses/Bird/glide_128x128.png", 256, 256 );
 	ts_wing = owner->GetTileset( "Bosses/Bird/wing_128x128.png", 256, 256 );
@@ -40,6 +46,14 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	attackNodes[4][0] = KICKATTACK;
 	attackNodes[0][4] = LUNGEATTACK;
 	attackNodes[4][4] = SPINATTACK;
+
+	SetupAttackMarkers();
+	/*for( int i = 0; i < 4 * 4; ++i )
+	{
+		attackMarkerVA[i].position = Vector2f( 0, 0 );
+	}*/
+	
+	
 
 	//attackNodes[Vector2i(0, 0)] = WINGATTACK;
 	//attackNodes[Vector2i(4, 0)] = KICKATTACK;
@@ -62,9 +76,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	travelFrame = 0;
 	travelIndex = 0;
 	testFrame = 0;
-	gridRatio = 1;
-	gridSizeRatio = 64;
-	gridOriginPos = V2d( pos.x, pos.y );
+	
 	pathSize = 16;//MAX_PATH_SIZE;
 	moveX = false;
 	//xIndexMove = 0;
@@ -213,6 +225,47 @@ void Boss_Bird::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	b->launcher->DeactivateBullet( b );
 }
 
+void Boss_Bird::SetupAttackMarkers()
+{
+	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
+	V2d trueRight( gridRatio, 1.0 / gridRatio );
+	V2d trueDown( -gridRatio, 1.0 / gridRatio );
+	V2d trueUp( gridRatio, -1.0 / gridRatio );
+
+	int size = 16;
+	int index = 0;
+	for( int i = 0; i < GRID_SIZE; ++i )
+	{
+		for( int j = 0; j < GRID_SIZE; ++j )
+		{
+			if( attackNodes[i][j] == NONE )
+			{
+				continue;
+			}
+
+			V2d gridIndexPos = trueRight * (double)i + trueDown * (double)j;
+			gridIndexPos *= gridSizeRatio;
+
+			//cout << "filling attack markers : " << index << endl;
+			Vector2f gip( gridIndexPos.x + gridOriginPos.x, gridIndexPos.y + gridOriginPos.y );
+			//cout << "grid index pos: " << gridIndexPos.x << ", " << gridIndexPos.y << endl;
+			//cout << "i: " << i << ", j: " << j << ", pos: " << gip.x << ", " << gip.y << endl;
+			attackMarkerVA[index * 4 + 0].position = gip + Vector2f( -size, -size );
+			attackMarkerVA[index * 4 + 1].position = gip + Vector2f( size, -size );
+			attackMarkerVA[index * 4 + 2].position = gip + Vector2f( size, size );
+			attackMarkerVA[index * 4 + 3].position = gip + Vector2f( -size, size );
+
+			attackMarkerVA[index * 4 + 0].color = Color::Red;
+			attackMarkerVA[index * 4 + 1].color = Color::Red;
+			attackMarkerVA[index * 4 + 2].color = Color::Red;
+			attackMarkerVA[index * 4 + 3].color = Color::Red;
+
+			++index;
+		}
+	}
+	
+}
+
 void Boss_Bird::BulletHitPlayer(BasicBullet *b )
 {
 	owner->player.ApplyHit( b->launcher->hitboxInfo );
@@ -293,7 +346,7 @@ void Boss_Bird::UpdatePrePhysics()
 	{
 		if( action == MOVE )
 		{
-			cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
+			//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
 			moveIndex += path[travelIndex];
 		}
 		
@@ -320,7 +373,7 @@ void Boss_Bird::UpdatePrePhysics()
 	if( action == MOVE )
 	{
 	AttackType at = attackNodes[moveIndex.x][moveIndex.y];
-	if( at != NONE )
+	if( at != NONE && travelFrame == 0 )
 	{
 		cout << "at: " << (int)at << " x: " << moveIndex.x << ", " << moveIndex.y << endl;
 	}
@@ -593,7 +646,7 @@ void Boss_Bird::UpdateSprite()
 	}
 	else if( false )
 	{
-		cout << "dying" << endl;
+		//cout << "dying" << endl;
 		botDeathSprite.setTexture( *ts->texture );
 		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
@@ -630,6 +683,7 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 		
 		
 		target->draw( pathVA );
+		target->draw( attackMarkerVA );
 		target->draw( sprite );
 
 		if( action == PLANMOVE )
@@ -996,7 +1050,7 @@ void Boss_Bird::CreatePath()
 		
 		if( validLeftTurn && validRightTurn && validForward )
 		{
-			cout << "a" << endl;
+			//cout << "a" << endl;
 			int r = rand() % 3;
 			if( r == 0 )
 			{
@@ -1013,7 +1067,7 @@ void Boss_Bird::CreatePath()
 		}
 		else if( validLeftTurn && validRightTurn )
 		{
-			cout << "b" << endl;
+			//cout << "b" << endl;
 			int r = rand() % 2;
 			if( r == 0 )
 			{
@@ -1026,7 +1080,7 @@ void Boss_Bird::CreatePath()
 		}
 		else if( validForward && validRightTurn )
 		{
-			cout << "c" << endl;
+			//cout << "c" << endl;
 			int r = rand() % 2;
 			if( r == 0 )
 			{
@@ -1039,7 +1093,7 @@ void Boss_Bird::CreatePath()
 		}
 		else if( validLeftTurn && validForward )
 		{
-			cout << "d" << endl;
+			//cout << "d" << endl;
 			int r = rand() % 2;
 			if( r == 0 )
 			{
@@ -1075,13 +1129,13 @@ void Boss_Bird::CreatePath()
 		}
 
 		
-		cout << "testindex: " << testIndex.x 
-			<< ", " << testIndex.y << ", path[ " << i << "]: " << path[i].x << ", "<< path[i].y << endl;
+		//cout << "testindex: " << testIndex.x 
+		//	<< ", " << testIndex.y << ", path[ " << i << "]: " << path[i].x << ", "<< path[i].y << endl;
 		testIndex += path[i];
 	}
 
 	finalIndex = testIndex;
-	cout << "finalIndex: " << finalIndex.x << ", " << finalIndex.y << endl;
+	//cout << "finalIndex: " << finalIndex.x << ", " << finalIndex.y << endl;
 
 	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
 	V2d trueRight( gridRatio, 1.0 / gridRatio );
@@ -1092,7 +1146,7 @@ void Boss_Bird::CreatePath()
 	gridIndexPos *= gridSizeRatio;
 	V2d curr = gridIndexPos + gridOriginPos;
 
-	testFinalCircle.setPosition( curr.x, curr.y );
+	//testFinalCircle.setPosition( curr.x, curr.y );
 }
 
 void Boss_Bird::UpdatePathVA()
