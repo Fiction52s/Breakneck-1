@@ -23,8 +23,9 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	attackMarkerVA( sf::Quads, 4 * 4 )
 {
+	throwHoldFrames = 20;
 	currentAttack = NONE;
-
+	//attackFrame = 0;
 	gridRatio = 1;
 	gridSizeRatio = 64;
 	gridOriginPos = V2d( pos.x, pos.y );
@@ -42,10 +43,13 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		}
 	}
 
-	attackNodes[0][0] = WINGATTACK;
-	attackNodes[4][0] = KICKATTACK;
-	attackNodes[0][4] = LUNGEATTACK;
-	attackNodes[4][4] = SPINATTACK;
+	attackNodes[1][1] = WING;
+	attackNodes[4][1] = WING;
+	attackNodes[1][4] = WING;
+	attackNodes[4][4] = WING;
+	/*attackNodes[4][0] = KICK;
+	attackNodes[0][4] = LUNGE;
+	attackNodes[4][4] = SPIN;*/
 
 	SetupAttackMarkers();
 	/*for( int i = 0; i < 4 * 4; ++i )
@@ -338,13 +342,26 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	case MOVE:
 		break;
+	case ATTACK_WING:
+		if( frame == (2 * 2 + throwHoldFrames) * 2 )
+		{
+			action = MOVE;
+		}
+		break;
+	case ATTACK_KICK:
+		break;
+	case ATTACK_LUNGE:
+		break;
+	case ATTACK_SPIN:
+		break;
+
 	}
 
 	
 	++travelFrame;
 	if( travelFrame == nodeTravelFrames )
 	{
-		if( action == MOVE )
+		if( action == MOVE || action == ATTACK_WING )
 		{
 			//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
 			moveIndex += path[travelIndex];
@@ -375,6 +392,24 @@ void Boss_Bird::UpdatePrePhysics()
 	AttackType at = attackNodes[moveIndex.x][moveIndex.y];
 	if( at != NONE && travelFrame == 0 )
 	{
+		switch( at )
+		{
+		case WING:
+			action = ATTACK_WING;
+			break;
+		case KICK:
+			action = ATTACK_KICK;
+			break;
+		case LUNGE:
+			action = ATTACK_LUNGE;
+			break;
+		case SPIN:
+			action = ATTACK_SPIN;
+			break;
+		}
+		//currentAttack = at;
+		frame = 0;
+		//attackFrame = 0;
 		cout << "at: " << (int)at << " x: " << moveIndex.x << ", " << moveIndex.y << endl;
 	}
 	}
@@ -403,6 +438,9 @@ void Boss_Bird::UpdatePrePhysics()
 			travelFrame = 0;
 			travelIndex = 0;
 		}
+		UpdateMovement();
+		break;
+	case ATTACK_WING:
 		UpdateMovement();
 		break;
 	}
@@ -558,24 +596,7 @@ void Boss_Bird::UpdatePostPhysics()
 
 	
 
-	if( slowCounter == slowMultiple )
-	{
-		//cout << "fireCounter: " << fireCounter << endl;
-		++frame;
-		slowCounter = 1;
-		++fireCounter;
 	
-		if( dying )
-		{
-			//cout << "deathFrame: " << deathFrame << endl;
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
-	}
 
 	if( deathFrame == 60 && dying )
 	{
@@ -596,6 +617,26 @@ void Boss_Bird::UpdatePostPhysics()
 
 	UpdateSprite();
 	launcher->UpdateSprites();
+
+	if( slowCounter == slowMultiple )
+	{
+		//cout << "fireCounter: " << fireCounter << endl;
+		++frame;
+		//++attackFrame;
+		slowCounter = 1;
+		++fireCounter;
+	
+		if( dying )
+		{
+			//cout << "deathFrame: " << deathFrame << endl;
+			deathFrame++;
+		}
+
+	}
+	else
+	{
+		slowCounter++;
+	}
 }
 
 void Boss_Bird::UpdateSprite()
@@ -637,6 +678,37 @@ void Boss_Bird::UpdateSprite()
 		case PLANMOVE:
 			sprite.setTexture( *ts_wing->texture );
 			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
+		case ATTACK_WING:
+			sprite.setTexture( *ts_wing->texture );
+			if( frame < 2 * 2 )
+			{
+				cout << "first throw: " << frame << endl;
+				sprite.setTextureRect( ts_wing->GetSubRect( frame / 2 ) );
+			}
+			else if( frame < 2 * 2 + throwHoldFrames )
+			{
+				cout << "first hold: " << frame << endl;
+				sprite.setTextureRect(  ts_wing->GetSubRect( 2 ) );
+			}
+			else if( frame < 2 * 2 + throwHoldFrames + 2 * 2 )
+			{
+				
+				int temp = frame - (2 * 2 + throwHoldFrames);
+				sprite.setTextureRect( ts_wing->GetSubRect( temp / 2 + 3 ) );
+				cout << "second throw: temp: " << temp << ", blah: " << temp/ 2 + 3 << ", frame: " << frame << endl;
+			}
+			else
+			{
+				cout << "second hold" << endl;
+				sprite.setTextureRect( ts_wing->GetSubRect( 5 ) );
+			}
+			break;
+		case ATTACK_KICK:
+			break;
+		case ATTACK_LUNGE:
+			break;
+		case ATTACK_SPIN:
 			break;
 		}
 		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );

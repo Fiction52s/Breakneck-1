@@ -143,17 +143,23 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	enum Action
 	{
 		PLANMOVE,
-		MOVE
+		MOVE,
+		ATTACK_WING,
+		ATTACK_KICK,
+		ATTACK_LUNGE,
+		ATTACK_SPIN
 	};
 
 	enum AttackType
 	{
 		NONE,
-		WINGATTACK,
-		KICKATTACK,
-		LUNGEATTACK,
-		SPINATTACK
+		WING,
+		KICK,
+		LUNGE,
+		SPIN
 	};
+
+	int throwHoldFrames;
 
 	AttackType currentAttack;
 
