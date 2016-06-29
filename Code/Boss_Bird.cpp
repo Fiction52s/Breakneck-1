@@ -22,6 +22,31 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 )
 {
+
+	ts_glide = owner->GetTileset( "Bosses/Bird/glide_128x128.png", 256, 256 );
+	ts_wing = owner->GetTileset( "Bosses/Bird/wing_128x128.png", 256, 256 );
+
+	Vector2i blah( 0, 0 );
+
+	for( int i = 0; i < GRID_SIZE; ++i )
+	{
+		for( int j = 0; j < GRID_SIZE; ++j )
+		{
+			attackNodes[i][j] = NONE;
+		}
+	}
+
+	attackNodes[0][0] = WINGATTACK;
+	attackNodes[4][0] = KICKATTACK;
+	attackNodes[0][4] = LUNGEATTACK;
+	attackNodes[4][4] = SPINATTACK;
+
+	//attackNodes[Vector2i(0, 0)] = WINGATTACK;
+	//attackNodes[Vector2i(4, 0)] = KICKATTACK;
+	//attackNodes[Vector2i(4, 4)] = LUNGEATTACK;
+	//attackNodes[Vector2i(0, 4)] = SPINATTACK;
+
+
 	testCircle.setRadius( 30 );
 	testCircle.setFillColor( Color::Red );
 	testCircle.setOrigin( testCircle.getLocalBounds().width / 2, 
@@ -33,14 +58,14 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		testFinalCircle.getLocalBounds().height / 2 );
 	ClearPathVA();
 
-	nodeTravelFrames = 5;
+	nodeTravelFrames = 30;
 	travelFrame = 0;
 	travelIndex = 0;
 	testFrame = 0;
 	gridRatio = 1;
 	gridSizeRatio = 64;
 	gridOriginPos = V2d( pos.x, pos.y );
-	pathSize = MAX_PATH_SIZE;
+	pathSize = 16;//MAX_PATH_SIZE;
 	moveX = false;
 	//xIndexMove = 0;
 	///yIndexMove = 0;
@@ -64,6 +89,8 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	fireCounter = 0;
 	receivedHit = NULL;
+
+	
 	position.x = pos.x;
 	position.y = pos.y;
 
@@ -84,11 +111,12 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	//animationFactor = 5;
 
 	//ts = owner->GetTileset( "Boss_Bird.png", 80, 80 );
-	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	//ts = //owner->GetTileset( "bat_48x48.png", 48, 48 );
+	//sprite.setTexture( *ts->texture );
+	//sprite.setTextureRect( ts->GetSubRect( frame ) );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	UpdateSprite();
+	//sprite.setPosition( pos.x, pos.y );
 
 
 	//position.x = 0;
@@ -201,6 +229,50 @@ void Boss_Bird::ActionEnded()
 	}
 }
 
+void Boss_Bird::UpdateMovement()
+{
+	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
+	V2d trueRight( gridRatio, 1.0 / gridRatio );
+	V2d trueDown( -gridRatio, 1.0 / gridRatio );
+	V2d trueUp( gridRatio, -1.0 / gridRatio );
+
+	Vector2i currIndex = moveIndex;
+	Vector2i nextIndex = moveIndex + path[travelIndex];
+
+	V2d along;
+	Vector2i dir( path[travelIndex].x, path[travelIndex].y );
+	if( dir == LEFT )
+	{
+		along = trueLeft;
+	}
+	else if( dir == DOWN ) 
+	{
+		along  = trueDown;
+	}
+	else if( dir == UP )
+	{
+		along  = trueUp;
+	}
+	else if( dir == RIGHT )
+	{
+		along  = trueRight;
+	}
+
+	//cout << "moveindex: " << moveIndex.x << ", " << moveIndex.y << endl;
+	V2d gridIndexPos = trueRight * (double)moveIndex.x + trueDown * (double)moveIndex.y;
+	gridIndexPos *= gridSizeRatio;
+
+	double val = moveBez.GetValue( (double)travelFrame / nodeTravelFrames );
+	V2d curr = gridIndexPos + gridOriginPos;
+
+	curr += along * gridSizeRatio * val;
+	
+	position = curr;
+
+
+	//++travelFrame;
+}
+
 void Boss_Bird::UpdatePrePhysics()
 {
 	ActionEnded();
@@ -213,21 +285,53 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	case MOVE:
 		break;
-	case SHOOT:
-		break;
 	}
 
+	
 	++travelFrame;
 	if( travelFrame == nodeTravelFrames )
 	{
+		if( action == MOVE )
+		{
+			cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
+			moveIndex += path[travelIndex];
+		}
+		
 		travelFrame = 0;
 		travelIndex++;
 		if( travelIndex == pathSize )
 		{
 			frame = 0;
-			moveIndex = finalIndex;
+			if( action == PLANMOVE )
+			{
+				action = MOVE;
+			}
+			else if( action == MOVE )
+			{
+				action = PLANMOVE;
+			}
+			
+				//frame = 0;
+		//moveIndex = finalIndex;
 		}
 	}
+	
+
+	if( action == MOVE )
+	{
+	AttackType at = attackNodes[moveIndex.x][moveIndex.y];
+	if( at != NONE )
+	{
+		cout << "at: " << (int)at << " x: " << moveIndex.x << ", " << moveIndex.y << endl;
+	}
+	}
+		/*if( attackNodes.count( moveIndex ) > 0 )
+		{
+			AttackType at = attackNodes[moveIndex];
+			cout << "attacking!: " << (int)at << endl;
+		}*/
+		
+	
 	switch( action )
 	{
 	case PLANMOVE:
@@ -237,14 +341,20 @@ void Boss_Bird::UpdatePrePhysics()
 			travelFrame = 0;
 			travelIndex = 0;			
 		}
+
+		UpdatePathVA();
 		break;
 	case MOVE:
-		break;
-	case SHOOT:
+		if( frame == 0 )
+		{
+			travelFrame = 0;
+			travelIndex = 0;
+		}
+		UpdateMovement();
 		break;
 	}
 
-	UpdatePathVA();
+	
 	
 
 	if( !dead && !dying && receivedHit != NULL )
@@ -260,7 +370,7 @@ void Boss_Bird::UpdatePrePhysics()
 		{
 			AttemptSpawnMonitor();
 			dying = true;
-			//cout << "dying" << endl;
+			cout << "dying true what" << endl;
 		}
 
 		receivedHit = NULL;
@@ -319,7 +429,7 @@ void Boss_Bird::UpdatePhysics()
 		}*/
 		PhysicsResponse();
 	}
-	return;
+	//return;
 }
 
 void Boss_Bird::PhysicsResponse()
@@ -439,12 +549,51 @@ void Boss_Bird::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+
+		Vector2i dir( path[travelIndex].x, path[travelIndex].y );
+		switch( action )
+		{
+		case MOVE:
+			sprite.setTexture( *ts_glide->texture );
+
+			if( dir.x > 0 )
+			{
+				//down right
+				sprite.setTextureRect( ts_glide->GetSubRect( 2) );
+			}
+			else if( dir.y > 0 )
+			{
+				//down left
+				sprite.setTextureRect( ts_glide->GetSubRect( 0 ) );
+			}
+			else if( dir.x < 0 )
+			{
+				//up left
+				sprite.setTextureRect( ts_glide->GetSubRect( 1 ) );
+			}
+			else if( dir.y < 0 )
+			{
+				//up right
+				sprite.setTextureRect( ts_glide->GetSubRect( 3 ) );
+			}
+			else
+			{
+				assert( false );
+			}
+			break;
+		case PLANMOVE:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
+		}
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+		//cout << "sprite pos: " << position.x << ", " << position.y << endl;
+		//sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 	}
-	if( dying )
+	else if( false )
 	{
-
+		cout << "dying" << endl;
 		botDeathSprite.setTexture( *ts->texture );
 		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
@@ -479,15 +628,21 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 		}
 		
 		
-		target->draw( sprite );
+		
 		target->draw( pathVA );
+		target->draw( sprite );
 
 		if( action == PLANMOVE )
 		{
-			target->draw( testFinalCircle );
+			
 			target->draw( testCircle );
 			
 		}
+		/*else
+		{
+			testFinalCircle.setPosition( position.x, position.y );
+			target->draw( testFinalCircle );
+		}*/
 	}
 	else if( !dead )
 	{
@@ -690,6 +845,7 @@ bool Boss_Bird::DirIsValid( sf::Vector2i &testIndex,
 
 void Boss_Bird::CreatePath()
 {
+	//cout << "CREATE PATH START" << endl;
 	ClearPathVA();
 	sf::Vector2i testIndex = moveIndex;
 
@@ -715,6 +871,30 @@ void Boss_Bird::CreatePath()
 		else
 		{
 			path[0] = LEFT;
+		}
+	}
+	else if( testIndex.x == 0 && testIndex.y == GRID_SIZE - 1 )
+	{
+		int r = rand() % 2;
+		if( r == 0 )
+		{
+			path[0] = UP;
+		}
+		else
+		{
+			path[0] = RIGHT;
+		}
+	}
+	else if( testIndex.x == GRID_SIZE - 1 && testIndex.y == 0 )
+	{
+		int r = rand() % 2;
+		if( r == 0 )
+		{
+			path[0] = LEFT;
+		}
+		else
+		{
+			path[0] = DOWN;
 		}
 	}
 	else if( testIndex.x == 0 )
@@ -959,12 +1139,13 @@ void Boss_Bird::UpdatePathVA()
 		V2d next = curr;
 		if( i == travelIndex )
 		{
-			
+			//in progress
 			next += along * gridSizeRatio * val;
 			testCircle.setPosition( next.x, next.y );
 		}
 		else
 		{
+			//non-in progresss
 			next += along * gridSizeRatio;
 		}
 

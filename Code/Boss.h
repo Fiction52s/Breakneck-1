@@ -143,9 +143,20 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	enum Action
 	{
 		PLANMOVE,
-		MOVE,
-		SHOOT
+		MOVE
 	};
+
+	enum AttackType
+	{
+		NONE,
+		WINGATTACK,
+		KICKATTACK,
+		LUNGEATTACK,
+		SPINATTACK
+	};
+
+	Tileset *ts_glide;
+	Tileset *ts_wing;
 
 	int testFrame;
 
@@ -156,6 +167,7 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
+	void UpdateMovement();
 	void PhysicsResponse();
 	void UpdatePostPhysics();
 	void ActionEnded();
@@ -209,6 +221,8 @@ struct Boss_Bird : Enemy, LauncherEnemy
 
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
+
+	AttackType attackNodes[GRID_SIZE][GRID_SIZE];
 
 	int bulletSpeed;
 
