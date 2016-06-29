@@ -76,7 +76,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		testFinalCircle.getLocalBounds().height / 2 );
 	ClearPathVA();
 
-	nodeTravelFrames = 30;
+	nodeTravelFrames = 1;
 	travelFrame = 0;
 	travelIndex = 0;
 	testFrame = 0;
@@ -363,6 +363,7 @@ void Boss_Bird::UpdatePrePhysics()
 	{
 		if( action == MOVE || action == ATTACK_WING )
 		{
+			cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
 			//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
 			moveIndex += path[travelIndex];
 		}
@@ -380,6 +381,10 @@ void Boss_Bird::UpdatePrePhysics()
 			{
 				action = PLANMOVE;
 			}
+			else if( action == ATTACK_WING )
+			{
+				action = PLANMOVE;
+			}
 			
 				//frame = 0;
 		//moveIndex = finalIndex;
@@ -389,6 +394,7 @@ void Boss_Bird::UpdatePrePhysics()
 
 	if( action == MOVE )
 	{
+		cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
 	AttackType at = attackNodes[moveIndex.x][moveIndex.y];
 	if( at != NONE && travelFrame == 0 )
 	{
@@ -407,6 +413,9 @@ void Boss_Bird::UpdatePrePhysics()
 			action = ATTACK_SPIN;
 			break;
 		}
+
+		V2d dir = GetLungeDir();
+
 		//currentAttack = at;
 		frame = 0;
 		//attackFrame = 0;
@@ -586,6 +595,23 @@ void Boss_Bird::ClearPathVA()
 	}
 }
 
+sf::Vector2<double> Boss_Bird::GetLungeDir()
+{
+	V2d playerPos = owner->player.position;
+	V2d playerDir = normalize( playerPos - position );
+	
+
+	double angle = atan2( playerDir.y, playerDir.x );
+	angle += (((rand() % 90) - 45 ) / 180.0 * PI);
+	V2d newDir( cos( angle ), sin( angle ) );
+
+	V2d spot = position + newDir * 300.0;
+	testFinalCircle.setPosition( spot.x, spot.y );
+
+	cout << "angle: " << angle << endl;
+	return newDir;
+}
+
 void Boss_Bird::UpdatePostPhysics()
 {
 	launcher->UpdatePostPhysics();
@@ -672,6 +698,8 @@ void Boss_Bird::UpdateSprite()
 			}
 			else
 			{
+				cout << "travelIndex: " << travelIndex << endl;
+				cout << "dir: " << dir.x << ", " << dir.y << endl;
 				assert( false );
 			}
 			break;
@@ -764,11 +792,11 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 			target->draw( testCircle );
 			
 		}
-		/*else
+		else
 		{
-			testFinalCircle.setPosition( position.x, position.y );
+			//testFinalCircle.setPosition( position.x, position.y );
 			target->draw( testFinalCircle );
-		}*/
+		}
 	}
 	else if( !dead )
 	{

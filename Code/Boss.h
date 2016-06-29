@@ -159,6 +159,10 @@ struct Boss_Bird : Enemy, LauncherEnemy
 		SPIN
 	};
 
+
+	sf::Vector2<double> GetLungeDir();
+	//double lungeAngle;
+
 	int throwHoldFrames;
 
 	AttackType currentAttack;
