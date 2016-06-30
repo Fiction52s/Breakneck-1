@@ -43,9 +43,9 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		}
 	}
 
-	attackNodes[1][1] = LUNGE;
+	attackNodes[1][1] = WING;
 	attackNodes[4][1] = LUNGE;
-	attackNodes[1][4] = LUNGE;
+	attackNodes[1][4] = WING;
 	attackNodes[4][4] = LUNGE;
 	/*attackNodes[4][0] = KICK;
 	attackNodes[0][4] = LUNGE;
