@@ -348,8 +348,6 @@ void Boss_Bird::UpdatePrePhysics()
 			action = MOVE;
 		}
 		break;
-	case ATTACK_KICK:
-		break;
 	case ATTACK_LUNGESTART:
 		//why is it like this?
 		if( frame == nodeTravelFrames * 2 + 1 )
@@ -822,8 +820,6 @@ void Boss_Bird::UpdateSprite()
 				cout << "second hold" << endl;
 				sprite.setTextureRect( ts_wing->GetSubRect( 5 ) );
 			}
-			break;
-		case ATTACK_KICK:
 			break;
 		case ATTACK_LUNGE:
 			sprite.setTexture( *ts_wing->texture );
