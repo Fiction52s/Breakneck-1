@@ -71,7 +71,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		testCircle.getLocalBounds().height / 2 );
 
 	testFinalCircle.setRadius( 30 );
-	testFinalCircle.setFillColor( Color::Black );
+	testFinalCircle.setFillColor( Color::Magenta );
 	testFinalCircle.setOrigin( testFinalCircle.getLocalBounds().width / 2, 
 		testFinalCircle.getLocalBounds().height / 2 );
 	ClearPathVA();
@@ -351,7 +351,8 @@ void Boss_Bird::UpdatePrePhysics()
 	case ATTACK_KICK:
 		break;
 	case ATTACK_LUNGESTART:
-		if( frame == nodeTravelFrames * 2 )
+		//why is it like this?
+		if( frame == nodeTravelFrames * 2 + 1 )
 		{
 			action = ATTACK_LUNGE;
 			frame = 0;
@@ -364,7 +365,7 @@ void Boss_Bird::UpdatePrePhysics()
 		}
 		break;
 	case ATTACK_LUNGERETREAT:
-		if( frame == 30 )
+		if( frame == 30 + 30 )
 		{
 			action = MOVE;
 		}
@@ -414,11 +415,12 @@ void Boss_Bird::UpdatePrePhysics()
 	}
 	
 
-	if( action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART )
+	if( (action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART)
+		&& ( travelIndex > 0 && travelFrame == 0 ) )
 	{
 		cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
 		AttackType at = attackNodes[moveIndex.x][moveIndex.y];
-		if( at != NONE && travelFrame == 0 )
+		if( at != NONE )
 		{
 			switch( at )
 			{
@@ -482,6 +484,7 @@ void Boss_Bird::UpdatePrePhysics()
 
 			
 			lungeEnd = rcEdge->GetPoint( rcQuantity );
+			testFinalCircle.setPosition( lungeEnd.x, lungeEnd.y );
 		}
 
 		UpdateMovement();
@@ -497,18 +500,31 @@ void Boss_Bird::UpdatePrePhysics()
 		//--travelFrame;
 		//int lungeFrames = 10;
 		
-		double lungeLength = 10;
+		double lungeLength = 9;
 				
 
 		position = lungeStart * (1.0 - frame / lungeLength ) + lungeEnd *( frame / lungeLength );
+
 		break;
 		}
 	case ATTACK_LUNGERETREAT:
 		{
-			double retreatLength = 30;
+			
+			if( frame < 30 )
+			{
+				//pause for dramatic effect
+			}
+			else
+			{
+				double retreatLength = 29;
+				int f = frame - 30;
+				cout << "f: " << f << endl;
+				position = lungeStart * ((f) / retreatLength ) 
+				+ lungeEnd *(1.0 - (f) / retreatLength );
+			}
+			
 			//--travelFrame;
-			position = lungeStart * ((frame) / retreatLength ) 
-				+ lungeEnd *(1.0 - (frame) / retreatLength );
+			
 			break;
 		}
 	}
@@ -661,13 +677,14 @@ sf::Vector2<double> Boss_Bird::GetLungeDir()
 	
 
 	double angle = atan2( playerDir.y, playerDir.x );
-	angle += (((rand() % 90) - 45 ) / 180.0 * PI);
+	int rot = 60;
+	angle += (((rand() % rot) - rot / 2 ) / 180.0 * PI);
 	V2d newDir( cos( angle ), sin( angle ) );
 
 	V2d spot = position + newDir * 300.0;
-	testFinalCircle.setPosition( spot.x, spot.y );
+	//testFinalCircle.setPosition( spot.x, spot.y );
 
-	cout << "angle: " << angle << endl;
+	//cout << "angle: " << angle << endl;
 	return newDir;
 }
 
@@ -851,7 +868,7 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 			target->draw( testCircle );
 			
 		}
-		else
+		else if( action == ATTACK_LUNGESTART )
 		{
 			//testFinalCircle.setPosition( position.x, position.y );
 			target->draw( testFinalCircle );
