@@ -371,6 +371,17 @@ void Boss_Bird::UpdatePrePhysics()
 		}
 		break;
 	case ATTACK_SPIN:
+		if( frame == 40 ) //not sure if variable or gets harder as you speed up
+		{
+			action = MOVE;
+		}
+		break;
+	case ATTACK_KICK:
+		if( frame == 30 )
+		{
+			action = MOVE;
+		}
+		break;
 		break;
 
 	}
@@ -382,7 +393,8 @@ void Boss_Bird::UpdatePrePhysics()
 		if( travelFrame == nodeTravelFrames )	
 		{
 			if( action == MOVE || action == ATTACK_WING 
-				|| action == ATTACK_LUNGESTART )
+				|| action == ATTACK_LUNGESTART || action == ATTACK_SPIN
+				|| action == ATTACK_KICK )
 			{
 				cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
 				//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
@@ -398,15 +410,11 @@ void Boss_Bird::UpdatePrePhysics()
 				{
 					action = MOVE;
 				}
-				else if( action == MOVE )
-				{
-					action = PLANMOVE;
-				}
-				else if( action == ATTACK_WING )
-				{
-					action = PLANMOVE;
-				}
-				else if( action == ATTACK_LUNGESTART )
+				else if( action == MOVE 
+					|| action == ATTACK_WING
+					|| action == ATTACK_LUNGESTART
+					|| action == ATTACK_SPIN 
+					|| action == KICK )
 				{
 					action = PLANMOVE;
 				}
@@ -415,7 +423,8 @@ void Boss_Bird::UpdatePrePhysics()
 	}
 	
 
-	if( (action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART)
+	if( (action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART
+		|| action == ATTACK_SPIN )
 		&& ( travelIndex > 0 && travelFrame == 0 ) )
 	{
 		cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
@@ -527,6 +536,12 @@ void Boss_Bird::UpdatePrePhysics()
 			
 			break;
 		}
+	case ATTACK_SPIN:
+		UpdateMovement();
+		break;
+	case ATTACK_KICK:
+		UpdateMovement();
+		break;
 	}
 
 	
@@ -811,8 +826,16 @@ void Boss_Bird::UpdateSprite()
 		case ATTACK_KICK:
 			break;
 		case ATTACK_LUNGE:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 1 ) );
 			break;
 		case ATTACK_SPIN:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
+		case ATTACK_KICK:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
 			break;
 		}
 		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
