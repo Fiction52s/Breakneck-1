@@ -138,7 +138,8 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	int bloodFrame;
 };
 
-struct Boss_Bird : Enemy, LauncherEnemy
+struct Boss_Bird : Enemy, LauncherEnemy,
+	RayCastHandler
 {
 	enum Action
 	{
@@ -146,7 +147,9 @@ struct Boss_Bird : Enemy, LauncherEnemy
 		MOVE,
 		ATTACK_WING,
 		ATTACK_KICK,
+		ATTACK_LUNGESTART,		
 		ATTACK_LUNGE,
+		ATTACK_LUNGERETREAT,
 		ATTACK_SPIN
 	};
 
@@ -201,8 +204,13 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	void ClearPathVA();
 	void SetupAttackMarkers();
 
+	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
+
 	sf::CircleShape testCircle;
 	sf::CircleShape testFinalCircle;
+
+	sf::Vector2<double> lungeStart;
+	sf::Vector2<double> lungeEnd;
 
 	sf::VertexArray attackMarkerVA;
 
@@ -272,6 +280,11 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 	bool facingRight;
+
+	Edge *rcEdge;
+	double rcQuantity;
+	sf::Vector2<double> rayStart;
+	sf::Vector2<double> rayEnd;
 
 	struct Stored
 	{

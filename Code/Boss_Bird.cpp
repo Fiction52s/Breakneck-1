@@ -43,10 +43,10 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		}
 	}
 
-	attackNodes[1][1] = WING;
-	attackNodes[4][1] = WING;
-	attackNodes[1][4] = WING;
-	attackNodes[4][4] = WING;
+	attackNodes[1][1] = LUNGE;
+	attackNodes[4][1] = LUNGE;
+	attackNodes[1][4] = LUNGE;
+	attackNodes[4][4] = LUNGE;
 	/*attackNodes[4][0] = KICK;
 	attackNodes[0][4] = LUNGE;
 	attackNodes[4][4] = SPIN;*/
@@ -76,7 +76,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		testFinalCircle.getLocalBounds().height / 2 );
 	ClearPathVA();
 
-	nodeTravelFrames = 1;
+	nodeTravelFrames = 30;
 	travelFrame = 0;
 	travelIndex = 0;
 	testFrame = 0;
@@ -350,7 +350,24 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	case ATTACK_KICK:
 		break;
+	case ATTACK_LUNGESTART:
+		if( frame == nodeTravelFrames * 2 )
+		{
+			action = ATTACK_LUNGE;
+			frame = 0;
+		}
+		break;
 	case ATTACK_LUNGE:
+		if( frame == 10 ) //back on the grid
+		{
+			action = ATTACK_LUNGERETREAT;
+		}
+		break;
+	case ATTACK_LUNGERETREAT:
+		if( frame == 30 )
+		{
+			action = MOVE;
+		}
 		break;
 	case ATTACK_SPIN:
 		break;
@@ -358,75 +375,76 @@ void Boss_Bird::UpdatePrePhysics()
 	}
 
 	
-	++travelFrame;
-	if( travelFrame == nodeTravelFrames )
+	if ( action != ATTACK_LUNGE && action != ATTACK_LUNGERETREAT )
 	{
-		if( action == MOVE || action == ATTACK_WING )
+		++travelFrame;
+		if( travelFrame == nodeTravelFrames )	
 		{
-			cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
-			//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
-			moveIndex += path[travelIndex];
-		}
+			if( action == MOVE || action == ATTACK_WING 
+				|| action == ATTACK_LUNGESTART )
+			{
+				cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
+				//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
+				moveIndex += path[travelIndex];
+			}
 		
-		travelFrame = 0;
-		travelIndex++;
-		if( travelIndex == pathSize )
-		{
-			frame = 0;
-			if( action == PLANMOVE )
+			travelFrame = 0;
+			travelIndex++;
+			if( travelIndex == pathSize )
 			{
-				action = MOVE;
+				frame = 0;
+				if( action == PLANMOVE )
+				{
+					action = MOVE;
+				}
+				else if( action == MOVE )
+				{
+					action = PLANMOVE;
+				}
+				else if( action == ATTACK_WING )
+				{
+					action = PLANMOVE;
+				}
+				else if( action == ATTACK_LUNGESTART )
+				{
+					action = PLANMOVE;
+				}
 			}
-			else if( action == MOVE )
-			{
-				action = PLANMOVE;
-			}
-			else if( action == ATTACK_WING )
-			{
-				action = PLANMOVE;
-			}
-			
-				//frame = 0;
-		//moveIndex = finalIndex;
 		}
 	}
 	
 
-	if( action == MOVE )
+	if( action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART )
 	{
 		cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
-	AttackType at = attackNodes[moveIndex.x][moveIndex.y];
-	if( at != NONE && travelFrame == 0 )
-	{
-		switch( at )
+		AttackType at = attackNodes[moveIndex.x][moveIndex.y];
+		if( at != NONE && travelFrame == 0 )
 		{
-		case WING:
-			action = ATTACK_WING;
-			break;
-		case KICK:
-			action = ATTACK_KICK;
-			break;
-		case LUNGE:
-			action = ATTACK_LUNGE;
-			break;
-		case SPIN:
-			action = ATTACK_SPIN;
-			break;
+			switch( at )
+			{
+			case WING:
+				action = ATTACK_WING;
+				break;
+			case KICK:
+				action = ATTACK_KICK;
+				break;
+			case LUNGE:
+				action = ATTACK_LUNGESTART;
+				//frame = 0;
+				break;
+			case SPIN:
+				action = ATTACK_SPIN;
+				break;
+			}
+
+			//V2d dir = GetLungeDir();
+
+			//currentAttack = at;
+			frame = 0;
+			//attackFrame = 0;
+			cout << "at: " << (int)at << " x: " << moveIndex.x << ", " << moveIndex.y << endl;
 		}
-
-		V2d dir = GetLungeDir();
-
-		//currentAttack = at;
-		frame = 0;
-		//attackFrame = 0;
-		cout << "at: " << (int)at << " x: " << moveIndex.x << ", " << moveIndex.y << endl;
 	}
-	}
-		/*if( attackNodes.count( moveIndex ) > 0 )
-		{
-			AttackType at = attackNodes[moveIndex];
-			cout << "attacking!: " << (int)at << endl;
-		}*/
 		
 	
 	switch( action )
@@ -452,6 +470,47 @@ void Boss_Bird::UpdatePrePhysics()
 	case ATTACK_WING:
 		UpdateMovement();
 		break;
+	case ATTACK_LUNGESTART:
+		if( frame == 0 )
+		{
+			V2d lungeDir = GetLungeDir();
+			rayStart = position;
+			rayEnd = position + lungeDir * 2000.0; //lol cant wait for this to break
+			rcEdge = NULL;
+			RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+			assert( rcEdge != NULL );
+
+			
+			lungeEnd = rcEdge->GetPoint( rcQuantity );
+		}
+
+		UpdateMovement();
+		break;
+	case ATTACK_LUNGE:
+
+		if( frame == 0 )
+		{
+			lungeStart = position;
+		}
+
+		{
+		//--travelFrame;
+		//int lungeFrames = 10;
+		
+		double lungeLength = 10;
+				
+
+		position = lungeStart * (1.0 - frame / lungeLength ) + lungeEnd *( frame / lungeLength );
+		break;
+		}
+	case ATTACK_LUNGERETREAT:
+		{
+			double retreatLength = 30;
+			//--travelFrame;
+			position = lungeStart * ((frame) / retreatLength ) 
+				+ lungeEnd *(1.0 - (frame) / retreatLength );
+			break;
+		}
 	}
 
 	
@@ -1317,3 +1376,15 @@ void Boss_Bird::UpdatePathVA()
 		testIndex += path[i];
 	}
 }
+
+void Boss_Bird::HandleRayCollision( Edge *edge, double edgeQuantity, 
+	double rayPortion )
+{
+	if( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
+		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) )
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
+}
+
