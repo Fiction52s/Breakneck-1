@@ -172,6 +172,8 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 
 	Tileset *ts_glide;
 	Tileset *ts_wing;
+	Tileset *ts_kick;
+
 
 	int testFrame;
 

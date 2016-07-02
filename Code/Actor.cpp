@@ -14876,11 +14876,11 @@ void Actor::SetActionExpr( Action a )
 		SetExpr( Expr_NEUTRAL );
 		break;
 	case RUN:
-		SetExpr( Expr_RUN );
+		//SetExpr( Expr_RUN );
 		//SetExpr( Expr_NEUTRAL );
 		break;
 	case SPRINT:
-		SetExpr( Expr_SPRINT );
+		//SetExpr( Expr_SPRINT );
 		break;
 	}
 

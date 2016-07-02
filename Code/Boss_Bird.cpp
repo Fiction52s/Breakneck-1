@@ -30,8 +30,9 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	gridSizeRatio = 64;
 	gridOriginPos = V2d( pos.x, pos.y );
 
-	ts_glide = owner->GetTileset( "Bosses/Bird/glide_128x128.png", 256, 256 );
-	ts_wing = owner->GetTileset( "Bosses/Bird/wing_128x128.png", 256, 256 );
+	ts_glide = owner->GetTileset( "Bosses/Bird/glide_256x256.png", 256, 256 );
+	ts_wing = owner->GetTileset( "Bosses/Bird/wing_256x256.png", 256, 256 );
+	ts_kick = owner->GetTileset( "Bosses/Bird/kick_256x256.png", 256, 256 );
 
 	Vector2i blah( 0, 0 );
 
@@ -43,10 +44,19 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		}
 	}
 
-	attackNodes[1][1] = WING;
+	/*attackNodes[1][1] = WING;
 	attackNodes[4][1] = LUNGE;
 	attackNodes[1][4] = WING;
-	attackNodes[4][4] = LUNGE;
+	attackNodes[4][4] = LUNGE;*/
+
+	attackNodes[1][1] = KICK;
+	attackNodes[4][1] = KICK;
+	attackNodes[1][4] = KICK;
+	attackNodes[4][4] = KICK;
+
+
+
+
 	/*attackNodes[4][0] = KICK;
 	attackNodes[0][4] = LUNGE;
 	attackNodes[4][4] = SPIN;*/
@@ -375,7 +385,7 @@ void Boss_Bird::UpdatePrePhysics()
 		}
 		break;
 	case ATTACK_KICK:
-		if( frame == 30 )
+		if( frame == 9 * 4 )
 		{
 			action = MOVE;
 		}
@@ -412,9 +422,17 @@ void Boss_Bird::UpdatePrePhysics()
 					|| action == ATTACK_WING
 					|| action == ATTACK_LUNGESTART
 					|| action == ATTACK_SPIN 
-					|| action == KICK )
+					|| action == ATTACK_KICK )
 				{
+					if( action == ATTACK_KICK )
+					{
+						sprite.setRotation( 0 );
+					}
 					action = PLANMOVE;
+				}
+				else
+				{
+					assert( 0 );
 				}
 			}
 		}
@@ -423,9 +441,9 @@ void Boss_Bird::UpdatePrePhysics()
 
 	if( (action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART
 		|| action == ATTACK_SPIN )
-		&& ( travelIndex > 0 && travelFrame == 0 ) )
+		&& ( travelIndex > 0 && travelFrame == 0 && travelIndex != pathSize ) )
 	{
-		cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
+		//cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
 		AttackType at = attackNodes[moveIndex.x][moveIndex.y];
 		if( at != NONE )
 		{
@@ -436,6 +454,7 @@ void Boss_Bird::UpdatePrePhysics()
 				break;
 			case KICK:
 				action = ATTACK_KICK;
+				cout << "kick: " << travelIndex << endl;
 				break;
 			case LUNGE:
 				action = ATTACK_LUNGESTART;
@@ -758,7 +777,7 @@ void Boss_Bird::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 		Vector2i dir( path[travelIndex].x, path[travelIndex].y );
 		switch( action )
 		{
@@ -830,14 +849,56 @@ void Boss_Bird::UpdateSprite()
 			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
 			break;
 		case ATTACK_KICK:
-			sprite.setTexture( *ts_wing->texture );
-			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
-			break;
+			{
+
+				sprite.setTexture( *ts_kick->texture );
+				IntRect ir = ts_kick->GetSubRect( frame / 4 );
+				sprite.setTextureRect( ir );
+
+				
+				
+				
+
+				
+
+
+				sf::Vector2i p = path[travelIndex-1];
+
+				//cout << "Start once" << endl;
+				if( p.x > 0 )
+				{
+					//cout << "270" << endl;
+					sprite.setRotation( -270 );
+				}
+				else if( p.x < 0 )
+				{
+					//cout << "90" << endl;
+					sprite.setRotation( -90 );
+				}
+				else if( p.y > 0 )
+				{
+					//cout << "180" << endl;
+					sprite.setRotation( -180 );
+				}
+				else if( p.y < 0 )
+				{
+					//cout << "dont rotate" << endl;
+					sprite.setRotation( 0 );
+					//leave it
+				}
+				//cout << "end" << endl;
+			
+				
+
+				break;
+			}
+
+			
+			
 		}
-		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-		//cout << "sprite pos: " << position.x << ", " << position.y << endl;
-		//sprite.setTextureRect( ts->GetSubRect( 0 ) );
+
 		sprite.setPosition( position.x, position.y );
+		
 	}
 	else if( false )
 	{

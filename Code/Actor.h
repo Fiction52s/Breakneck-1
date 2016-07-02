@@ -61,10 +61,6 @@ struct Actor : QuadTreeCollider,
 	enum Expr
 	{
 		Expr_NEUTRAL,
-		Expr_EYES_CLOSED,
-		Expr_LOOK_LEFT,
-		Expr_RUN,
-		Expr_SPRINT,
 		Expr_HURT,
 		Expr_NONE
 	};
