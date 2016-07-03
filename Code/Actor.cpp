@@ -3,6 +3,7 @@
 #include "VectorMath.h"
 #include <iostream>
 #include <assert.h>
+#include "PowerOrbs.h"
 
 using namespace sf;
 using namespace std;
@@ -45,7 +46,7 @@ Actor::Actor( GameSession *gs )
 		motionGhostSpacing = 6;
 		ghostSpacingCounter = 0;
 
-		drainCounterMax = 4;
+		drainCounterMax = 20;
 		drainCounter = 0;
 		currentCheckPoint = NULL;
 		flashFrames = 0;
@@ -901,7 +902,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if( drainCounter == drainCounterMax)
 		{
-			bool stillHasHealth = owner->powerBar.Use( 1 );	
+			bool stillHasHealth = owner->powerWheel->Use( 1 );	
 
 			if( !stillHasHealth )
 			{
@@ -960,7 +961,7 @@ void Actor::UpdatePrePhysics()
 			recordedGhosts = 1;
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
-			owner->powerBar.Use( 20 );
+			owner->powerWheel->Use( 20 );
 			record++;
 			changingClone = true;
 			percentCloneChanged = 0;
@@ -1042,13 +1043,13 @@ void Actor::UpdatePrePhysics()
 		//expr = Expr::Expr_HURT;
 		
 		//cout << "damaging player with: " << receivedHit->damage << endl;
-		bool dmgSuccess = owner->powerBar.Damage( receivedHit->damage );
+		bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
 		if( true )
 		{
 			if( grindEdge != NULL )
 			{
 				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
-				owner->powerBar.Damage( receivedHit->damage ); //double damage for now bleh
+				owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
 				grindSpeed *= .8;
 			}
 			else if( ground == NULL )
@@ -5681,7 +5682,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		frame = 0;
 		owner->deathWipe = true;
 
-		owner->powerBar.Damage( 1000000 );
+		owner->powerWheel->Damage( 1000000 );
 	}
 
 	queryMode = "item";

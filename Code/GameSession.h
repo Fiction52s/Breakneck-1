@@ -51,6 +51,7 @@ struct PowerBar
 };
 
 struct PowerOrbs;
+struct PowerWheel;
 
 struct Critical : QuadTreeEntrant
 {
@@ -481,7 +482,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool usePolyShader;
 
 	PowerBar powerBar;
-	PowerOrbs *powerOrbs;
+	//PowerOrbs *powerOrbs;
+	PowerWheel *powerWheel;
 
 	int pauseFrames;
 

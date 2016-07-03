@@ -60,3 +60,80 @@ struct PowerOrbs
 	sf::VertexArray smallOrbVA;
 	sf::Vector2f basePos;
 };
+
+struct PowerWheel
+{
+	enum OrbColor
+	{
+		TEAL0,
+		TEAL1,
+		TEAL2,
+		TEAL3,
+		TEAL4,
+		TEAL5,
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		Count
+	};
+
+	PowerWheel( GameSession *owner, bool hasAirDash,
+		bool hasGravReverse,
+		bool hasBounce,
+		bool hasGrind,
+		bool hasTimeSlow,
+		bool hasWires );
+	void Draw( sf::RenderTarget *target );
+	void UpdateStarVA();
+	void Reset();
+	sf::VertexArray *CreateSectionVA( OrbColor col,
+		float radius );
+	
+	bool Damage( int power );
+    bool Use( int power );
+	void Recover( int power );
+	void Charge( int power );
+	void UpdateSections();
+
+
+	Tileset *ts_largeOrbs;
+	Tileset *ts_smallOrbs;
+	//sf::Texture largeOrbTex;
+	//sf::Texture smallOrbTex;
+	sf::Sprite largeOrb;
+
+	int testBlah;
+
+	void SetVisibleSections( int orbIndex, int visSections,
+		int currentLevel );
+	void SetVisibleCurrentSection( int orbIndex, int currentSection, float radius );
+	
+
+	sf::VertexArray *orbSectionVA[6];
+	sf::VertexArray partialSectionVA;
+
+
+	void SetStarPositions( int index, OrbColor oc );
+	OrbColor orbColors[6];
+
+	//sf::Vector2f * starPositions[7];
+	//sf::Vertex *starVA[7];
+
+	//int activeStars;
+	//int starState;
+	//int starFrame;
+	//int activeStars[];
+	std::map<OrbColor, int> numSections;
+	int activeOrb;
+	int activeSection;
+	int activeLevel;
+	//int numOrbStars[OrbColor::Count];
+	//int currStars;
+	//Tileset * ts_charge;
+	sf::VertexArray smallOrbVA;
+	sf::Vector2f basePos;
+
+};
