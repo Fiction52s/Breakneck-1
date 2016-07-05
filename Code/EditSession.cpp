@@ -397,6 +397,13 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), fullBounds( sf::Quads, 16 )
 {
+	arialFont.loadFromFile( "arial.ttf" );
+	cursorLocationText.setFont( arialFont );
+	cursorLocationText.setCharacterSize( 16 );
+	cursorLocationText.setColor( Color::White );
+	cursorLocationText.setPosition( 0, 0 );
+	
+
 	for( int i = 0; i < 16; ++i )
 	{
 		fullBounds[i].color = COLOR_ORANGE;
@@ -8538,6 +8545,21 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 		preScreenTex->setView( uiView );
 
+		stringstream cursorPosSS;
+		if( mode == CREATE_PATROL_PATH )
+		{
+			V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
+				patrolPath.back().y );
+			cursorPosSS << (int)temp.x << ", " << (int)temp.y;
+		}
+		else
+		{
+			cursorPosSS << (int)worldPos.x << ", " << (int)worldPos.y;
+		}
+		
+
+		cursorLocationText.setString( cursorPosSS.str() );
+		preScreenTex->draw( cursorLocationText );
 
 		switch( mode )
 		{

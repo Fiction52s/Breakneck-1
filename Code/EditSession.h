@@ -1147,6 +1147,8 @@ struct EditSession : GUIHandler
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
 	std::list<sf::VertexArray*> progressDrawList;
 	
+	sf::Font arialFont;
+	sf::Text cursorLocationText;
 	//sf::Text polygonTimeoutText;
 	//int polygonTimeoutTextTimer;
 	//int polygonTimeoutTextLength;

@@ -8,6 +8,19 @@ struct Camera
 {
 	Camera();
 	float GetZoom();
+	void Set( sf::Vector2f &pos, float zFactor,
+		int zLevel );
+	void SetRumble( int xFactor, int yFactor, int duration );
+	void UpdateRumble();
+
+	int rumbleFrame;
+	int rumbleLength;
+	int rumbleX;
+	int rumbleY;
+	bool rumbling;
+	int rX;
+	int rY;
+
 	sf::Vector2f offset;
 	sf::Vector2f maxOffset;
 	sf::Vector2f pos;
@@ -28,6 +41,8 @@ struct Camera
 	
 	sf::Vector2f testOffset;
 	float testZoom;
+
+	bool manual;
 
 	//new
 	double left;

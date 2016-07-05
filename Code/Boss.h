@@ -155,16 +155,50 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 
 	enum AttackType
 	{
-		NONE,
+		NOATTACK,
 		WING,
 		KICK,
 		LUNGE,
 		SPIN
 	};
 
+	Tileset * ts_birdFace;
+	sf::Sprite faceSprite;
 
+	void SetRelFacePos( sf::Vector2f &pos );
+	bool showFace;
+
+	enum Cinematic
+	{
+		NOCINEM,
+		FIGHT_INTRO
+	};
+
+	enum FightIntroAction
+	{
+		FIGHT_INTRO_WALK,
+		FIGHT_INTRO_DROP,
+		FIGHT_INTRO_GROUNDWAIT,
+		FIGHT_INTRO_FLY
+	};
+
+	FightIntroAction fightIntroAction;
+
+	std::map<Cinematic, int> cinemFrames;
+	Cinematic cinem;
+	int cinemFrame;
 	sf::Vector2<double> GetLungeDir();
+	bool UpdateCinematic();
 	//double lungeAngle;
+
+
+	//fight_intro stuff
+
+	sf::Vector2f startPos;
+	sf::Vector2f dropSpot;
+	sf::Vector2f landSpot;
+	sf::Vector2f diamondCenter;
+
 
 	int throwHoldFrames;
 
@@ -173,11 +207,12 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 	Tileset *ts_glide;
 	Tileset *ts_wing;
 	Tileset *ts_kick;
-
+	Tileset *ts_intro;
 
 	int testFrame;
 
-	Boss_Bird( GameSession *owner, sf::Vector2i pos );
+	Boss_Bird( GameSession *owner, sf::Vector2i pos,
+		std::list<sf::Vector2i> &pathParam );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );

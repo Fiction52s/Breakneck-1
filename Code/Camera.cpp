@@ -9,7 +9,9 @@ using namespace std;
 
 Camera::Camera()
 {
+	manual = false;
 	bossCrawler = false;
+	rumbling = false;
 
 	offset.x = 0;
 	offset.y = 0;
@@ -191,9 +193,65 @@ void Camera::UpdateReal( Actor *player )
 	//zoomFactor = 1;
 }
 
+void Camera::SetRumble( int xFactor, int yFactor, int duration )
+{
+	assert( duration > 0 );
+
+	rumbleLength = duration;
+	rumbleX = xFactor;
+	rumbleY = yFactor;
+	rumbling = true;
+}
+
+void Camera::UpdateRumble()
+{
+	if( !rumbling )
+		return;
+
+	if( rumbleFrame > 0 )
+	{
+		pos.x -= rX;
+		pos.y -= rY;
+	}
+	
+	if( rumbleFrame == rumbleLength )
+	{
+		rumbling = false;
+		return;
+	}
+
+	int f = ( rumbleFrame % 3 ) - 1;
+	
+	rX = f * rumbleX;
+	rY = f * rumbleY;
+
+	pos += sf::Vector2f( rX, rY );
+
+	++rumbleFrame;
+	
+}
+
+void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
+{
+	assert( manual );
+	pos.x = p.x;
+	pos.y = p.y;
+
+	UpdateRumble();
+
+	zoomFactor = zFactor;
+	zoomLevel = zLevel;
+	
+}
+
 void Camera::Update( Actor *player )
 {
-	
+	if( manual )
+	{
+	//	UpdateRumble();
+		return;
+	}
+
 	if( bossCrawler )
 	{
 		return;
@@ -570,6 +628,7 @@ void Camera::Update( Actor *player )
 		//pos.y += topExtra;
 	}	
 
+	UpdateRumble();
 
 	//offset.y += (double)framesFalling / 60 * 100.0;
 

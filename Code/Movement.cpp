@@ -1,6 +1,7 @@
 #include "Movement.h"
 #include "Enemy.h"
 #include <iostream>
+#include <assert.h>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -53,6 +54,7 @@ int Sign( double x )
 
 double CubicBezier::GetValue( double a )
 {
+	assert( a <= 1.0 );
 	//cout << "getting value" << endl;
 	double t = .5;
 	double step = .5;

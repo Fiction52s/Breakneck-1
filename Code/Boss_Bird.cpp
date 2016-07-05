@@ -18,21 +18,55 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
+Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
+	list<Vector2i> &pathParam )
 	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	attackMarkerVA( sf::Quads, 4 * 4 )
 {
+	spawned = true;
+	owner->AddEnemy( this );
+
+	assert( pathParam.size() == 3 );
+
+	startPos = Vector2f( pos.x, pos.y );
+	list<Vector2i>::iterator pit = pathParam.begin();
+	dropSpot = startPos + Vector2f( (*pit).x, (*pit).y );
+	pit++;
+	landSpot = startPos + Vector2f( (*pit).x, (*pit).y );
+	pit++;
+	diamondCenter = startPos + Vector2f( (*pit).x, (*pit).y );
+
+
+	position.x = diamondCenter.x;//pos.x;
+	position.y = diamondCenter.y;
+
+	cinemFrames[FIGHT_INTRO] = 5;
+	showFace = true;
+	cinemFrame = 0;
+	cinem = FIGHT_INTRO;
+	fightIntroAction = FIGHT_INTRO_WALK;
+	owner->cam.manual = true;
+
 	throwHoldFrames = 20;
-	currentAttack = NONE;
+	currentAttack = NOATTACK;
 	//attackFrame = 0;
 	gridRatio = 1;
 	gridSizeRatio = 64;
-	gridOriginPos = V2d( pos.x, pos.y );
+	gridOriginPos = position;//V2d( pos.x, pos.y );
 
 	ts_glide = owner->GetTileset( "Bosses/Bird/glide_256x256.png", 256, 256 );
 	ts_wing = owner->GetTileset( "Bosses/Bird/wing_256x256.png", 256, 256 );
 	ts_kick = owner->GetTileset( "Bosses/Bird/kick_256x256.png", 256, 256 );
+	ts_intro = owner->GetTileset( "Bosses/Bird/intro_256x256.png", 256, 256 );
+	ts_birdFace = owner->GetTileset( "Bosses/Bird/bird_face_384x384.png", 384, 384 );
+
+	faceSprite.setTexture( *ts_birdFace->texture );
+	faceSprite.setTextureRect( ts_birdFace->GetSubRect( 0 ) );
+	faceSprite.setOrigin( faceSprite.getLocalBounds().width / 2, 
+		faceSprite.getLocalBounds().height / 2 );
+	faceSprite.setScale( .5, .5 );
+	SetRelFacePos( Vector2f( 0, 500 ) );
 
 	Vector2i blah( 0, 0 );
 
@@ -40,7 +74,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	{
 		for( int j = 0; j < GRID_SIZE; ++j )
 		{
-			attackNodes[i][j] = NONE;
+			attackNodes[i][j] = NOATTACK;
 		}
 	}
 
@@ -117,8 +151,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	receivedHit = NULL;
 
 	
-	position.x = pos.x;
-	position.y = pos.y;
+	
 
 	originalPos = pos;
 
@@ -196,6 +229,9 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 void Boss_Bird::ResetEnemy()
 {
+	showFace = true;
+	cinemFrame = 0;
+
 	travelFrame = 0;
 	travelIndex = 0;
 	action = PLANMOVE;
@@ -252,7 +288,7 @@ void Boss_Bird::SetupAttackMarkers()
 	{
 		for( int j = 0; j < GRID_SIZE; ++j )
 		{
-			if( attackNodes[i][j] == NONE )
+			if( attackNodes[i][j] == NOATTACK )
 			{
 				continue;
 			}
@@ -340,8 +376,139 @@ void Boss_Bird::UpdateMovement()
 	//++travelFrame;
 }
 
+bool Boss_Bird::UpdateCinematic()
+{
+	//if( cinem != NOCINEM )
+	//{
+	//	switch( cinem )
+	//	{
+	//	case FIGHT_INTRO:
+	//		
+	//		sprite.setTexture( *ts_intro->texture );
+	//		sprite.setTextureRect( ts_intro->GetSubRect( 0 ) );
+
+	//		//faceSprite.setTexture( *ts_birdFace->texture );
+	//		
+	//		break;
+	//	}
+
+	//	return;
+	//}
+
+
+
+	assert( cinem != NOCINEM );
+	switch( cinem )
+	{
+	case FIGHT_INTRO:
+		{
+		switch( fightIntroAction )
+		{
+		case FIGHT_INTRO_WALK:
+			if( cinemFrame == 60 )
+			{
+				cinemFrame = 0;
+				fightIntroAction = FIGHT_INTRO_DROP;
+			}
+			break;
+		case FIGHT_INTRO_DROP:
+			if( cinemFrame == 61 )
+			{
+				cinemFrame = 0;
+				fightIntroAction = FIGHT_INTRO_GROUNDWAIT;
+			}
+			break;
+		case FIGHT_INTRO_GROUNDWAIT:
+			if( cinemFrame == 60 )
+			{
+				cinemFrame = 0;
+				fightIntroAction = FIGHT_INTRO_FLY;
+			}
+			break;
+		case FIGHT_INTRO_FLY:
+			if( cinemFrame == 60 )
+			{
+				cinem = NOCINEM;
+				owner->cam.manual = false;
+				return false;
+			}
+			break;
+		}
+
+		switch( fightIntroAction )
+		{
+		case FIGHT_INTRO_WALK:
+			{
+				CubicBezier bez( 0, 0, 1, 1 );
+				//cout << "returning pre:" << cinemFrame << endl;
+				float z = bez.GetValue( (double)cinemFrame / 60 );
+				owner->cam.Set( startPos * ( 1 - z ) + dropSpot * z,
+					1, 0 );
+
+				sprite.setTexture( *ts_intro->texture );
+				sprite.setTextureRect( ts_intro->GetSubRect( 0 ) );			
+				sprite.setPosition( owner->cam.pos.x, owner->cam.pos.y );
+			}
+			break;
+		case FIGHT_INTRO_DROP:
+			{
+				CubicBezier bez( 0, 0, 1, 1 );
+				float z = bez.GetValue( (double)cinemFrame / 60 );
+			
+				owner->cam.Set( dropSpot * ( 1 - z ) + landSpot * z,
+					1, 0 );
+
+				sprite.setTexture( *ts_intro->texture );
+				sprite.setTextureRect( ts_intro->GetSubRect( 1 ) );
+				sprite.setPosition( owner->cam.pos.x, owner->cam.pos.y );
+			}
+			break;
+		case FIGHT_INTRO_GROUNDWAIT:
+			{
+				//CubicBezier bez( 0, 0, 1, 1 );
+				//float z = bez.GetValue( (double)cinemFrame / 60 );
+			
+				//owner->cam.Set( dropSpot * ( 1 - z ) + landSpot * z,
+				//	1, 0 );
+
+				sprite.setTexture( *ts_intro->texture );
+				sprite.setTextureRect( ts_intro->GetSubRect( 2 ) );
+				sprite.setPosition( owner->cam.pos.x, owner->cam.pos.y );
+			}
+			break;
+		case FIGHT_INTRO_FLY:
+			{
+				CubicBezier bez( 0, 0, 1, 1 );
+				float z = bez.GetValue( (double)cinemFrame / 60 );
+			
+				owner->cam.Set( landSpot * ( 1 - z ) + diamondCenter * z,
+					1, 0 );
+
+				sprite.setTexture( *ts_intro->texture );
+				sprite.setTextureRect( ts_intro->GetSubRect( 2 ) );
+				sprite.setPosition( owner->cam.pos.x, owner->cam.pos.y );
+			}
+			break;
+		}
+	}
+	}
+
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	++cinemFrame;
+
+	return true;
+}
+
 void Boss_Bird::UpdatePrePhysics()
 {
+	if( cinem != NOCINEM )
+	{
+		bool stillCinematic = UpdateCinematic();
+		if( stillCinematic )
+			return;
+	}
+
+
 	ActionEnded();
 
 	launcher->UpdatePrePhysics();
@@ -445,7 +612,7 @@ void Boss_Bird::UpdatePrePhysics()
 	{
 		//cout << "moveIndex: " << moveIndex.x << ", " << moveIndex.y << endl;
 		AttackType at = attackNodes[moveIndex.x][moveIndex.y];
-		if( at != NONE )
+		if( at != NOATTACK )
 		{
 			switch( at )
 			{
@@ -602,7 +769,10 @@ void Boss_Bird::UpdatePrePhysics()
 }
 
 void Boss_Bird::UpdatePhysics()
-{	
+{
+	if( cinem != NOCINEM )
+		return;
+
 	specterProtected = false;
 	if( !dead )
 	{
@@ -720,8 +890,22 @@ sf::Vector2<double> Boss_Bird::GetLungeDir()
 	return newDir;
 }
 
+void Boss_Bird::SetRelFacePos( sf::Vector2f &pos )
+{
+	faceSprite.setPosition( pos + Vector2f( position.x, position.y ) );
+}
+
 void Boss_Bird::UpdatePostPhysics()
 {
+	if( cinem != NOCINEM )
+	{
+		//UpdateSprite();
+		//++cinemFrame;
+		
+		return;
+	}
+		
+
 	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
@@ -919,6 +1103,11 @@ void Boss_Bird::UpdateSprite()
 
 void Boss_Bird::Draw( sf::RenderTarget *target )
 {
+	if( showFace )
+	{
+		cout << "drawing faceSprite " << endl;
+		target->draw( faceSprite );
+	}
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
@@ -1023,6 +1212,8 @@ void Boss_Bird::UpdateHitboxes()
 		hitboxInfo->kbDir = normalize( -owner->player.velocity );
 	}
 }
+
+
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Boss_Bird::PlayerHitMe()
