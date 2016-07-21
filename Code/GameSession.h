@@ -155,6 +155,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int envType;
 	int envLevel;
 
+	bool cutPlayerInput;
+
+
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,

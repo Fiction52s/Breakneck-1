@@ -79,7 +79,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
-
+	cutPlayerInput = false;
 	//powerOrbs = new PowerOrbs( true, true, true, true, true, true);
 	//powerOrbs = new PowerOrbs( this, true, true, true, false, false, false);
 	powerWheel = new PowerWheel( this, true, true, true, true, true, true);
@@ -452,7 +452,12 @@ void GameSession::Test( Edge *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
-	
+	if( e->type == Enemy::BOSS_BIRD )
+	{
+		//probably will not actually use this and will use a separate spacial trigger or a gate
+
+		cutPlayerInput = true;
+	}
 	//if( e->type == Enemy::BASICTURRET )
 	//{
 	//	cout << "ADDING BASIC TURRET NOW: " << endl;
@@ -3702,7 +3707,7 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
-
+	cutPlayerInput = false;
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
 	originalZone = NULL;
@@ -4060,9 +4065,9 @@ int GameSession::Run( string fileN )
 	//Flow *f = new Flow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize );
 	//f->player = &player;
 
-	Cutscene cut( this, Vector2i( player.position.x, player.position.y ) );
-	cut.LoadFromFile( "gametest" );
-	int cutFrame = 0;
+	//Cutscene cut( this, Vector2i( player.position.x, player.position.y ) );
+	//cut.LoadFromFile( "gametest" );
+	//int cutFrame = 0;
 
 	while( !quit )
 	{
@@ -4390,7 +4395,9 @@ int GameSession::Run( string fileN )
 			{
 
 			prevInput = currInput;
-			player.prevInput = currInput;
+
+			if( !cutPlayerInput )
+				player.prevInput = currInput;
 
 			if( !controller.UpdateState() )
 			{
@@ -4501,8 +4508,8 @@ int GameSession::Run( string fileN )
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
-
-			player.currInput = currInput;
+			if( !cutPlayerInput )
+				player.currInput = currInput;
 
 			}
 			else if( pauseFrames > 0 )
@@ -4840,12 +4847,17 @@ int GameSession::Run( string fileN )
 
 
 		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
-		view.setSize( cut.cameras[cutFrame].getSize() );
+		//view.setSize( cut.cameras[cutFrame].getSize() );
 		lastViewSize = view.getSize();
 
 		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );
 		view.setCenter( cam.pos.x, cam.pos.y );
-		view.setCenter( cut.cameras[cutFrame].getCenter() );
+		
+		
+		//view.setCenter( cut.cameras[cutFrame].getCenter() );
+
+
+
 		//cout << "center: " << view.getCenter().x << ", " << view.getCenter().y << endl;
 		//view = //cut.cameras[cutFrame];
 		
@@ -5236,12 +5248,12 @@ int GameSession::Run( string fileN )
 
 		//view.set
 		
-		cut.Draw( preScreenTex, cutFrame );
-		cutFrame++;
-		if( cutFrame == cut.totalFrames )
-		{
-			cutFrame = 0;
-		}
+		//cut.Draw( preScreenTex, cutFrame );
+		//cutFrame++;
+		//if( cutFrame == cut.totalFrames )
+		//{
+		//	cutFrame = 0;
+		//}
 		preScreenTex->setView( view );
 		//f->Draw( preScreenTex );
 		

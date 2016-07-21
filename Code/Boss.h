@@ -176,10 +176,15 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 
 	enum FightIntroAction
 	{
-		FIGHT_INTRO_WALK,
-		FIGHT_INTRO_DROP,
-		FIGHT_INTRO_GROUNDWAIT,
-		FIGHT_INTRO_FLY
+		FI_WALK,
+		FI_LAUGH,
+		FI_EXPLAIN0,
+		FI_EXPLAIN1,
+		FI_EXPLAIN2,
+		FI_EXPLAIN3,
+		FI_DROP,
+		FI_GROUNDWAIT,
+		FI_FLY
 	};
 
 	FightIntroAction fightIntroAction;
@@ -208,6 +213,14 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 	Tileset *ts_wing;
 	Tileset *ts_kick;
 	Tileset *ts_intro;
+
+	Tileset *ts_talk;
+	Tileset *ts_symbols0;
+	Tileset *ts_dialogueBox;
+
+	int dialogueFrame;
+	bool showDialogue;
+	sf::Sprite dialogueSprite;
 
 	int testFrame;
 
