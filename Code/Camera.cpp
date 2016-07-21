@@ -4,8 +4,10 @@
 #include "GameSession.h"
 
 using namespace std;
+using namespace sf;
 
 #define V2d sf::Vector2<double>
+
 
 Camera::Camera()
 {
@@ -40,6 +42,16 @@ Camera::Camera()
 
 	zoomLevel = 0;
 	
+}
+
+void Camera::EaseOutOfManual( int frames )
+{
+	SetManual( false );
+	//manual = false;
+	easingOut = true;
+	easeOutCount = frames;
+	easeOutFrame = 0;
+	manualPos = pos;
 }
 
 void Camera::UpdateReal( Actor *player )
@@ -249,6 +261,24 @@ void Camera::Update( Actor *player )
 	if( manual )
 	{
 	//	UpdateRumble();
+		return;
+	}
+	else if( easingOut )
+	{
+		startManualPos.x = player->position.x;
+		startManualPos.y = player->position.y;
+		cout << "easing frame: " << easeOutFrame << endl;
+		double r = (double)easeOutFrame / easeOutCount;
+		sf::Vector2<double> p;
+		p = r * sf::Vector2<double>(startManualPos.x, startManualPos.y) + (1.0-r) * sf::Vector2<double>( manualPos.x, manualPos.y );
+		pos = Vector2f( p.x, p.y );
+		zoomFactor = r * startManualZoom + (1-r) * manualZoom;
+		++easeOutFrame;
+		if( easeOutFrame == easeOutCount )
+		{
+			easingOut = false;
+			
+		}
 		return;
 	}
 
@@ -808,6 +838,21 @@ void Camera::Update2( Actor *player )
 	pos.y += offset.y;
 //	cout << "offset: " << offset.x << ", " << offset.y << endl;
 //	zoomFactor = 1;
+}
+
+void Camera::SetManual( bool man )
+{
+	manual = man;
+	if( man )
+	{ 
+		startManualPos = pos;
+		startManualZoom = zoomFactor;
+	}
+	else
+	{
+		manualPos = pos;
+		manualZoom = zoomFactor;
+	}
 }
 
 float Camera::GetZoom()

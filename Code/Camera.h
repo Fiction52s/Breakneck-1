@@ -12,6 +12,16 @@ struct Camera
 		int zLevel );
 	void SetRumble( int xFactor, int yFactor, int duration );
 	void UpdateRumble();
+	void EaseOutOfManual( int frames );
+	void SetManual( bool man );
+	sf::Vector2f manualPos;
+	sf::Vector2f startManualPos;
+	float startManualZoom;
+	float manualZoom;
+
+	int easeOutCount;
+	int easeOutFrame;
+	bool easingOut;
 
 	int rumbleFrame;
 	int rumbleLength;

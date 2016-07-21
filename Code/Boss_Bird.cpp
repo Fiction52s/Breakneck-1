@@ -24,8 +24,10 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	attackMarkerVA( sf::Quads, 4 * 4 )
 {
+	owner->cam.Update( &owner->player );
 	spawned = true;
 	owner->AddEnemy( this );
+	owner->cam.SetManual( true );
 
 	assert( pathParam.size() == 3 );
 
@@ -46,7 +48,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 	cinemFrame = 0;
 	cinem = FIGHT_INTRO;
 	fightIntroAction = FI_WALK;
-	owner->cam.manual = true;
+	
 
 	throwHoldFrames = 20;
 	currentAttack = NOATTACK;
@@ -491,7 +493,8 @@ bool Boss_Bird::UpdateCinematic()
 			if( cinemFrame == 60 )
 			{
 				cinem = NOCINEM;
-				owner->cam.manual = false;
+				owner->cam.EaseOutOfManual( 120 );
+				//owner->cam.SetManual( false );
 				owner->cutPlayerInput = false;
 				return false;
 			}
