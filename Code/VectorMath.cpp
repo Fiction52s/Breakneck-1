@@ -4,15 +4,7 @@
 using namespace std;
 using namespace sf;
 
-double cross( sf::Vector2<double> a, sf::Vector2<double> b )
-{
-	double ax = a.x;
-	double ay = a.y;
-	double bx = b.x;
-	double by = b.y;
-	return ax * by - ay * bx;
-	//return a.x * b.y - a.y * b.x;
-}
+
 
 
 double length( sf::Vector2<double> v)
@@ -45,6 +37,16 @@ double dot( sf::Vector2<double> a, sf::Vector2<double> b )
 	double bx = b.x;
 	double by = b.y;
 	return ax * bx + ay * by;
+}
+
+double cross( sf::Vector2<double> a, sf::Vector2<double> b )
+{
+	double ax = a.x;
+	double ay = a.y;
+	double bx = b.x;
+	double by = b.y;
+	return ax * by - ay * bx;
+	//return a.x * b.y - a.y * b.x;
 }
 
 bool approxEquals( double a, double b )

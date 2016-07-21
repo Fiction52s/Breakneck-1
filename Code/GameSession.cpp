@@ -16,6 +16,7 @@
 #include "Flow.h"
 #include "Boss.h"
 #include "PowerOrbs.h"
+#include "Cutscene.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -3701,7 +3702,6 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
-	
 
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
@@ -4059,6 +4059,10 @@ int GameSession::Run( string fileN )
 	//GPUFlow *f = new GPUFlow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize ); 
 	//Flow *f = new Flow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize );
 	//f->player = &player;
+
+	Cutscene cut( this, Vector2i( player.position.x, player.position.y ) );
+	cut.LoadFromFile( "gametest" );
+	int cutFrame = 0;
 
 	while( !quit )
 	{
@@ -4836,10 +4840,20 @@ int GameSession::Run( string fileN )
 
 
 		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
+		view.setSize( cut.cameras[cutFrame].getSize() );
 		lastViewSize = view.getSize();
 
 		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );
 		view.setCenter( cam.pos.x, cam.pos.y );
+		view.setCenter( cut.cameras[cutFrame].getCenter() );
+		//cout << "center: " << view.getCenter().x << ", " << view.getCenter().y << endl;
+		//view = //cut.cameras[cutFrame];
+		
+		//
+		//view.setCenter( cut.cameras[cutFrame].getCenter() );
+		//cout << "view zoom: " << view.getSize().x << ", " << view.getSize().y << endl;
+
+		//preScreenTex->setView( cut.GetView( cutFrame ) );
 		lastViewCenter = view.getCenter();
 
 		flowShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
@@ -4861,6 +4875,7 @@ int GameSession::Run( string fileN )
 		//cloudView.setSize( 1920, 1080 );
 		cloudView.setCenter( 960, 540 );
 		
+		//preScreenTex->setView( cut.cameras[cutFrame] );
 		preScreenTex->setView( view );
 
 	//	SetParMountains( preScreenTex );
@@ -5219,8 +5234,15 @@ int GameSession::Run( string fileN )
 			gateList = next;
 		}
 
+		//view.set
 		
-
+		cut.Draw( preScreenTex, cutFrame );
+		cutFrame++;
+		if( cutFrame == cut.totalFrames )
+		{
+			cutFrame = 0;
+		}
+		preScreenTex->setView( view );
 		//f->Draw( preScreenTex );
 		
 
