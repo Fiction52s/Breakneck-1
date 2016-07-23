@@ -7,6 +7,93 @@
 #include "Movement.h"
 #include "Enemy.h"
 
+struct PortraitBox
+{
+	enum State
+	{
+		OPENING,
+		OPEN,
+		CLOSING,
+		CLOSED
+	};
+
+	PortraitBox();
+	void Reset();
+	void SetSprite( Tileset *ts, int frame );
+	void SetPosition( float x, float y );
+	void SetPosition( sf::Vector2f &p );
+	State state;
+	int frame;
+	int openLength;
+	int closeLength;
+	sf::Sprite sprite;
+	float scaleMultiple;
+	void Open();
+	void Update();
+	void Close();
+	void Draw( sf::RenderTarget *target );
+};
+
+struct SymbolInfo
+{
+	Tileset *ts;
+	int frame;
+	int framesHold;
+};
+
+struct DialogueBox
+{
+	enum Type
+	{
+		CRAWLER,
+		BIRD,
+		COYOTE,
+		TIGER,
+		GATOR,
+		SKELETON
+	};
+
+	enum State
+	{
+		OPENING,
+		OPEN,
+		CLOSING,
+		CLOSED
+	};
+	
+	DialogueBox( GameSession *owner,
+		Type t );
+	void SetPosition( float x, float y );
+	void SetPosition( sf::Vector2f &p );
+	void Draw( sf::RenderTarget *target );
+	void Open();
+	void Update();
+	void Close();
+
+	//void SetSymbol( Tileset *ts, int frame );
+	void SetSymbols( std::list<SymbolInfo> *symbols );
+	void UpdateSymbol();
+	int numSymbols;
+	int symbolFrame;
+	int currSymbol;
+	//SymbolInfo *symbols;
+	std::list<SymbolInfo> *symbols;
+	std::list<SymbolInfo>::iterator sit;
+	sf::Sprite symbolSprite;
+
+	int openingLength;
+	int closingLength;
+	int openLength;
+	int openingFactor;
+	int closingFactor;
+	int openFactor;
+	State state;
+	Type type;
+	Tileset *ts_dialog;
+	sf::Sprite sprite;
+	int frame;
+};
+
 struct Boss_Crawler : Enemy, LauncherEnemy,
 	SurfaceMoverHandler
 {
@@ -164,6 +251,18 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 
 	Tileset * ts_birdFace;
 	sf::Sprite faceSprite;
+	PortraitBox portrait;
+
+	Tileset *ts_symbols0;
+	Tileset *ts_dialogueBox;
+	DialogueBox dialogue;
+
+	std::list<SymbolInfo> fi0;
+	std::list<SymbolInfo> fi1;
+	std::list<SymbolInfo> fi2;
+	std::list<SymbolInfo> fi3;
+
+	void Init();
 
 	void SetRelFacePos( sf::Vector2f &pos );
 	bool showFace;
@@ -177,12 +276,14 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 	enum FightIntroAction
 	{
 		FI_WALK,
+		FI_FOOTTAP,
+		FI_CROSS,
 		FI_LAUGH,
 		FI_EXPLAIN0,
 		FI_EXPLAIN1,
 		FI_EXPLAIN2,
 		FI_EXPLAIN3,
-		FI_DROP,
+		FI_FALL,
 		FI_GROUNDWAIT,
 		FI_FLY
 	};
@@ -194,6 +295,8 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 	int cinemFrame;
 	sf::Vector2<double> GetLungeDir();
 	bool UpdateCinematic();
+
+	void SetupCinemTiming();
 	//double lungeAngle;
 
 
@@ -215,8 +318,14 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 	Tileset *ts_intro;
 
 	Tileset *ts_talk;
-	Tileset *ts_symbols0;
-	Tileset *ts_dialogueBox;
+	
+
+	Tileset *ts_c01_walk;
+	Tileset *ts_c02_foottap;
+	Tileset *ts_c03_cross;
+	Tileset *ts_c04_laugh;
+	Tileset *ts_c05_fall;
+	int fallTiming[20];
 
 	int dialogueFrame;
 	bool showDialogue;

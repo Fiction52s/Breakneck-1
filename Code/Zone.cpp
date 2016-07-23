@@ -1,6 +1,7 @@
 #include "Zone.h"
 #include "poly2tri/poly2tri.h"
 #include <iostream>
+#include "Enemy.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -20,6 +21,7 @@ using namespace std;
 Zone::Zone( TerrainPolygon &tp )
 	:active( false )
 {
+	showShadow = true;
 	tp.FixWinding();
 
 	TerrainPoint * curr = tp.pointStart;
@@ -452,7 +454,10 @@ void Zone::Draw( RenderTarget *target )
 {
 	if( !active )
 	{
-		target->draw( *definedArea );
+		if( showShadow )
+		{
+			target->draw( *definedArea );
+		}
 	}
 }
 

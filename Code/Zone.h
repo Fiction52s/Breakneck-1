@@ -8,7 +8,7 @@
 #include "poly2tri\poly2tri.h"
 
 //typedef std::pair <Gate*,bool> GateBool;
-
+struct Enemy;
 struct Zone
 {
 	Zone( TerrainPolygon & tp );
@@ -28,7 +28,10 @@ struct Zone
 	std::list<Edge*> gates;
 	std::list<sf::Vector2i> points;
 	std::list<Zone*> subZones;
+	std::list<Enemy*> spawnEnemies;
 	bool active;
+
+	bool showShadow;
 
 	Zone *activeNext;
 };

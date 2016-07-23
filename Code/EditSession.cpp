@@ -253,6 +253,10 @@ void GateInfo::SetType( const std::string &gType )
 		cout << "set type critical" << endl;
 		type = GateTypes::CRITICAL;
 	}
+	else if( gType == "birdfight" )
+	{
+		type = GateTypes::BIRDFIGHT;
+	}
 	else
 	{
 		assert( false );
@@ -289,6 +293,12 @@ void GateInfo::WriteFile( ofstream &of )
 	//but for now its just a constant to resave all the files
 	of << (int)type << " " << poly0->writeIndex << " " 
 		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
+
+
+	if( type == GateTypes::BIRDFIGHT )
+	{
+		reformBehindYou = true;
+	}
 
 	if( reformBehindYou )
 	{
@@ -341,6 +351,10 @@ void GateInfo::UpdateLine()
 	else if( type == GateTypes::CRITICAL )
 	{
 		c = Color( 255, 255, 0 );
+	}
+	else if( type == GateTypes::BIRDFIGHT )
+	{
+		c = Color( 0, 255, 40 );
 	}
 	thickLine[0].color = c;
 	thickLine[1].color = c;
@@ -3279,7 +3293,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//gs->Set( 2, 2, ss1, "bluekey" );
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
-	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 6, 2, 32, 32, false, true );
+	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 6, 4, 32, 32, false, true );
 	
 	sf::Texture greyTex;
 	greyTex.loadFromFile( "greygatecolor.png" );
@@ -3311,10 +3325,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gateSel->Set( 4, 1, tempSq, "red" );
 	tempSq.setColor( Color::Magenta );
 	gateSel->Set( 5, 1, tempSq, "magenta" );
+
+	tempSq.setColor( Color( 0, 255, 40 ) );
+	gateSel->Set( 0, 3, tempSq, "birdfight" );
 	//tempSq.setColor( Color::Black );
 	//gateSel->Set( 1, 1, tempSq, "critical" );
 
-	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 80 ), Vector2f( 80, 40 ), "delete" );
+	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 300 ), Vector2f( 80, 40 ), "delete" );
 
 	terrainSelectorPopup = CreatePopupPanel( "terrainselector" );
 	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
@@ -11432,7 +11449,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	}
 	else if( type == "gateselector" )
 	{
-		Panel *p = new Panel( "gate_popup", 200, 150, this );
+		Panel *p = new Panel( "gate_popup", 200, 500, this );
 		return p;
 	}
 	else if( type == "terrainselector" )

@@ -14,6 +14,7 @@
 #include "Zone.h"
 #include "AirParticles.h"
 #include "Movement.h"
+#include "SoundManager.h"
 
 
 struct PowerBar
@@ -156,7 +157,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int envLevel;
 
 	bool cutPlayerInput;
-
+	SoundManager soundManager;
+	sf::Music *currMusic;
 
 	int Run( std::string fileName );
 	bool OpenFile( std::string fileName );

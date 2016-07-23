@@ -14,7 +14,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 {
 	//this could just be temporary
 	int t = (int)p_type;
-	if( t < 2 )
+	if( t < 2 || p_type == BIRDFIGHT )
 	{
 		requiredKeys = 0;
 	}
@@ -46,7 +46,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	keyGate = type == BLUE || type == GREEN || type == YELLOW
 		|| type == ORANGE || type == RED || type == MAGENTA ||
-		type == WHITE;
+		type == WHITE || type == BIRDFIGHT;
 }
 
 void Gate::Draw( sf::RenderTarget *target )
@@ -108,6 +108,11 @@ void Gate::UpdateLine()
 		break;
 	case BLUE:
 		c =  Color( 77, 150, 249);
+		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
+		tileHeight = 64;
+		break;
+	case BIRDFIGHT:
+		c = Color::Green;
 		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
 		tileHeight = 64;
 		break;
@@ -237,7 +242,7 @@ void Gate::Update()
 			break;
 		case LOCKFOREVER:
 			{
-				cout << "locked foreverrrr" << endl;
+				//cout << "locked foreverrrr" << endl;
 				//whatever the last frame of lockforever is
 				frame = 10;
 			}

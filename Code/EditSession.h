@@ -305,6 +305,7 @@ struct GateInfo
 		MAGENTA,
 		WHITE,
 		CRITICAL,
+		BIRDFIGHT,
 		Count
 	};
 

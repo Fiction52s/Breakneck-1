@@ -208,6 +208,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	
 	
 	Enemy( GameSession *owner, EnemyType t );
+	virtual void Init(){};
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
 	virtual void UpdatePrePhysics() = 0;

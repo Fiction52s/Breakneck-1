@@ -22,6 +22,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		MAGENTA,
 		WHITE,
 		CRITICAL,
+		BIRDFIGHT,
 		Count
 	};
 

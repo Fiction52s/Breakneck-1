@@ -9962,18 +9962,21 @@ void Actor::PhysicsResponse()
 			{
 				//Gate::GateState::
 				owner->LockGate( g );
-				//g->gState = Gate::REFORM;
-				cout << "LOCKING BEHIND YOU" << endl;
+				
+				g->gState = Gate::REFORM;
+				g->frame = 0;
+				//cout << "LOCKING BEHIND YOU" << endl;
 			}
 			else
 			{
-				
+				g->gState = Gate::DISSOLVE;
+				g->frame = 0;
 			}
 
 			
 			if( g->keyGate )//g->type == Gate::BLUE )
 			{
-				assert( numKeys > 0 );
+				//assert( numKeys > 0 );
 				//hasKey[g->type] = 0;
 				numKeys = 0;
 
@@ -10008,8 +10011,7 @@ void Actor::PhysicsResponse()
 			//	}
 			//}
 
-			g->gState = Gate::DISSOLVE;
-			g->frame = 0;
+			
 
 			
 
@@ -14800,8 +14802,10 @@ bool Actor::CanUnlockGate( Gate *g )
 	bool canUnlock = false;
 	//cout << "this gate is still locked" << endl;
 
-	if( g->type == Gate::GREY )
+	if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER
+		&& g->gState != Gate::REFORM )
 	{
+		cout << "gstate: " << (int)g->gState << endl;
 		canUnlock = true;
 	}
 	else if( g->type == Gate::BLACK )

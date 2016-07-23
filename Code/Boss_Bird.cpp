@@ -22,12 +22,15 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 	list<Vector2i> &pathParam )
 	:Enemy( owner, EnemyType::BOSS_BIRD ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
-	attackMarkerVA( sf::Quads, 4 * 4 )
+	attackMarkerVA( sf::Quads, 4 * 4 ), dialogue( owner, DialogueBox::BIRD )
 {
-	owner->cam.Update( &owner->player );
-	spawned = true;
-	owner->AddEnemy( this );
-	owner->cam.SetManual( true );
+	
+	//owner->cam.Update( &owner->player );
+
+	SetupCinemTiming();
+	//spawned = true;
+	//owner->AddEnemy( this );
+	
 
 	assert( pathParam.size() == 3 );
 
@@ -39,9 +42,10 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 	pit++;
 	diamondCenter = startPos + Vector2f( (*pit).x, (*pit).y );
 
-
-	position.x = diamondCenter.x;//pos.x;
-	position.y = diamondCenter.y;
+	position.x = dropSpot.x;
+	position.y = dropSpot.y;
+	//position.x = diamondCenter.x;//pos.x;
+	//position.y = diamondCenter.y;
 
 	cinemFrames[FIGHT_INTRO] = 5;
 	showFace = true;
@@ -64,22 +68,26 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 	ts_birdFace = owner->GetTileset( "Bosses/Bird/bird_face_384x384.png", 384, 384 );
 
 	ts_talk = owner->GetTileset( "Bosses/Bird/talk_256x256.png", 256, 256 );
-	ts_symbols0 = owner->GetTileset( "Bosses/Bird/symbols_192x192.png", 192, 192 );
+	ts_symbols0 = owner->GetTileset( "Bosses/Dialogue/Symbols/symbols_192x192.png", 192, 192 );
 
-	ts_dialogueBox = owner->GetTileset( "Bosses/Bird/dialoguebox_192x192.png", 192, 192 );
+	//ts_dialogueBox = owner->GetTileset( "Bosses/Bird/dialoguebox_192x192.png", 192, 192 );
 
-	dialogueSprite.setTexture( *ts_dialogueBox->texture );
-	dialogueSprite.setTextureRect( ts_dialogueBox->GetSubRect( 0 ) );
+	ts_c01_walk = owner->GetTileset( "Bosses/Bird/c01_walk_256x256.png", 256, 256 );
+	ts_c02_foottap = owner->GetTileset( "Bosses/Bird/c02_foottap_256x256.png", 256, 256 );
+	ts_c03_cross = owner->GetTileset( "Bosses/Bird/c03_cross_256x256.png", 256, 256 );
+	ts_c04_laugh = owner->GetTileset( "Bosses/Bird/c04_laugh_256x256.png", 256, 256 );
+	ts_c05_fall = owner->GetTileset( "Bosses/Bird/c05_fall_256x256.png", 256, 256 );
+
+	//dialogueSprite.setTexture( *ts_dialogueBox->texture );
+	//dialogueSprite.setTextureRect( ts_dialogueBox->GetSubRect( 0 ) );
 	showDialogue = false;
 	dialogueFrame = 0;
 
-	faceSprite.setTexture( *ts_birdFace->texture );
-	faceSprite.setTextureRect( ts_birdFace->GetSubRect( 0 ) );
-	faceSprite.setScale( .5, .5 );
-	faceSprite.setOrigin( faceSprite.getLocalBounds().width / 2, 
-		faceSprite.getLocalBounds().height / 2 );
+	portrait.SetSprite( ts_birdFace, 0 );
+	portrait.scaleMultiple = .5;
 	
-	SetRelFacePos( Vector2f( 0, 0 ) );
+	
+	//SetRelFacePos( Vector2f( 0, 0 ) );
 
 	Vector2i blah( 0, 0 );
 
@@ -237,8 +245,68 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 
 	UpdateHitboxes();
 
+	fi0.push_back( SymbolInfo() );
+	SymbolInfo *si = &fi0.back();
+	si->ts = ts_symbols0;
+	si->frame = 0;
+	si->framesHold = 20;
+	fi0.push_back( SymbolInfo() );
+	si = &fi0.back();
+	si->ts = ts_symbols0;
+	si->frame = 1;
+	si->framesHold = 20;
+
+	fi1.push_back( SymbolInfo() );
+	si = &fi1.back();
+	si->ts = ts_symbols0;
+	si->frame = 3;
+	si->framesHold = 20;
+	fi1.push_back( SymbolInfo() );
+	si = &fi1.back();
+	si->ts = ts_symbols0;
+	si->frame = 4;
+	si->framesHold = 20;
+
+	fi2.push_back( SymbolInfo() );
+	si = &fi2.back();
+	si->ts = ts_symbols0;
+	si->frame = 2;
+	si->framesHold = 20;
+	
+	fi3.push_back( SymbolInfo() );
+	si = &fi3.back();
+	si->ts = ts_symbols0;
+	si->frame = 5;
+	si->framesHold = 20;
+
+	fi3.push_back( SymbolInfo() );
+	si = &fi3.back();
+	si->ts = ts_symbols0;
+	si->frame = 5;
+	si->framesHold = 20;
+
+	fi3.push_back( SymbolInfo() );
+	si = &fi3.back();
+	si->ts = ts_symbols0;
+	si->frame = 6;
+	si->framesHold = 20;
+
+	fi3.push_back( SymbolInfo() );
+	si = &fi3.back();
+	si->ts = ts_symbols0;
+	si->frame = 7;
+	si->framesHold = 20;
+	
+	fi3.push_back( SymbolInfo() );
+	si = &fi3.back();
+	si->ts = ts_symbols0;
+	si->frame = 8;
+	si->framesHold = 20;
+
 	//cout << "finish init" << endl;
 }
+
+
 
 void Boss_Bird::ResetEnemy()
 {
@@ -390,8 +458,57 @@ void Boss_Bird::UpdateMovement()
 	//++travelFrame;
 }
 
+void Boss_Bird::SetupCinemTiming()
+{
+	fallTiming[0] = 4;
+	fallTiming[1] = 2;
+	fallTiming[2] = 8;
+	fallTiming[3] = 4;
+	fallTiming[4] = 2;
+	fallTiming[5] = 2;
+	fallTiming[6] = 2;
+	fallTiming[7] = 1;
+	fallTiming[8] = 3;
+	fallTiming[9] = 2;
+	fallTiming[10] = 8;
+	fallTiming[11] = 3;
+	fallTiming[12] = 1;
+	fallTiming[13] = 1;
+	fallTiming[14] = 2;
+	fallTiming[15] = 3;
+	fallTiming[16] = 2;
+	fallTiming[17] = 1;
+	fallTiming[18] = 3;
+	fallTiming[19] = 8;
+
+	int total = 0;
+	for( int i = 0; i < 20; ++i )
+	{
+		fallTiming[i] *= 4;
+		total += fallTiming[i];
+		fallTiming[i] = total;
+	}
+
+	//cout << "TOTAL: " << total << endl;
+	//124
+}
+
+void Boss_Bird::Init()
+{
+	
+}
+
 bool Boss_Bird::UpdateCinematic()
 {
+
+	 Vector2f extra0( -250, 100 );
+	 Vector2f extra1( -250, -100 );
+
+	 Vector2f pextra0( 0, 200 );
+	 Vector2f pextra1( 0, -200 );
+
+	 Vector2f dextra0( -200, 0 );
+	 
 	//if( cinem != NOCINEM )
 	//{
 	//	switch( cinem )
@@ -420,7 +537,28 @@ bool Boss_Bird::UpdateCinematic()
 		{
 		case FI_WALK:
 			showFace = false;
+			if( cinemFrame == 240 + 30 )
+			{
+				portrait.Open();
+				cinemFrame = 0;
+				fightIntroAction = FI_FOOTTAP;
+				portrait.SetPosition( dropSpot + pextra0 );
+				dialogue.SetPosition( dropSpot + pextra0 + dextra0 );
+				
+			}
+			break;
+		case FI_FOOTTAP:
+			showFace = false;
 			if( cinemFrame == 60 )
+			{
+				
+				cinemFrame = 0;
+				fightIntroAction = FI_CROSS;
+			}
+			break;
+		case FI_CROSS:
+			showFace = false;
+			if(  (cinemFrame / 8) == 3 )
 			{
 				
 				cinemFrame = 0;
@@ -434,50 +572,62 @@ bool Boss_Bird::UpdateCinematic()
 				
 				cinemFrame = 0;
 				fightIntroAction = FI_EXPLAIN0;
+				dialogue.SetSymbols( &fi0 );
+				dialogue.Open();
 			}
 			break;
 		case FI_EXPLAIN0:
-			cout << "0 " << endl;
+			//cout << "0 " << endl;
 			showFace = true;
-			if( cinemFrame > 60 && owner->currInput.A && !owner->prevInput.A )
+			if( cinemFrame > 60 && owner->currInput.start && !owner->prevInput.start )
 			{
 				cinemFrame = 0;
 				fightIntroAction = FI_EXPLAIN1;
+				dialogue.SetSymbols( &fi1 );
 			}
 			break;
 		case FI_EXPLAIN1:
-			cout << "1 " << endl;
+			//cout << "1 " << endl;
 			showFace = true;
-			if( cinemFrame > 60 && owner->currInput.A && !owner->prevInput.A )
+			if( cinemFrame > 60 && owner->currInput.start && !owner->prevInput.start )
 			{
 				cinemFrame = 0;
 				fightIntroAction = FI_EXPLAIN2;
+				dialogue.SetSymbols( &fi2 );
 			}
 			break;
 		case FI_EXPLAIN2:
-			cout << "2 " << endl;
+		//	cout << "2 " << endl;
 			showFace = true;
-			if( cinemFrame > 60 && owner->currInput.A && !owner->prevInput.A )
+			if( cinemFrame > 60 && owner->currInput.start && !owner->prevInput.start )
 			{
 				cinemFrame = 0;
 				fightIntroAction = FI_EXPLAIN3;
+				dialogue.SetSymbols( &fi3 );
 			}
 			break;
 		case FI_EXPLAIN3:
-			cout << "3 " << endl;
+		//	cout << "3 " << endl;
 			showFace = true;
-			if( cinemFrame > 60 && owner->currInput.A && !owner->prevInput.A )
+			if( cinemFrame > 60 && owner->currInput.start && !owner->prevInput.start )
 			{
 				cinemFrame = 0;
-				fightIntroAction = FI_DROP;
+				fightIntroAction = FI_FALL;
+				position.x = landSpot.x;
+				position.y = landSpot.y;
+				portrait.Close();
+				dialogue.Close();
 			}
 			break;
-		case FI_DROP:
+		case FI_FALL:
 			showFace = false;
-			if( cinemFrame == 61 )
+			if( cinemFrame == 249 )//125 ) //125?
 			{
+				portrait.SetPosition( landSpot + pextra1 );
+				
 				cinemFrame = 0;
 				fightIntroAction = FI_GROUNDWAIT;
+				portrait.Open();
 			}
 			break;
 		case FI_GROUNDWAIT:
@@ -486,6 +636,8 @@ bool Boss_Bird::UpdateCinematic()
 			{
 				cinemFrame = 0;
 				fightIntroAction = FI_FLY;
+				position.x = diamondCenter.x;
+				position.y = diamondCenter.y;
 			}
 			break;
 		case FI_FLY:
@@ -494,8 +646,14 @@ bool Boss_Bird::UpdateCinematic()
 			{
 				cinem = NOCINEM;
 				owner->cam.EaseOutOfManual( 120 );
+
+				owner->currMusic->stop();
+				owner->currMusic = owner->soundManager.GetMusic( "Audio/Music/02_bird_fight.ogg" );
+				owner->currMusic->setLoop( true );
+				owner->currMusic->play();
+				
 				//owner->cam.SetManual( false );
-				owner->cutPlayerInput = false;
+				//owner->cutPlayerInput = false;
 				return false;
 			}
 			break;
@@ -506,23 +664,79 @@ bool Boss_Bird::UpdateCinematic()
 		case FI_WALK:
 			{
 				CubicBezier bez( 0, 0, 1, 1 );
+
+				if( cinemFrame >= 30 )
+				{
+					if( cinemFrame == 30 )
+					{
+						owner->cam.SetManual( true );
+					}
+				int c = cinemFrame - 30;
 				//cout << "returning pre:" << cinemFrame << endl;
-				float z = bez.GetValue( (double)cinemFrame / 60 );
+				float z = bez.GetValue( (double)c / 240 );
 
 				Vector2f po = startPos * ( 1 - z ) + dropSpot * z;
-
-				owner->cam.Set( po,
+				Vector2f trueSpot = dropSpot + extra0;
+				owner->cam.Set( ( trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
 					1, 0 );
 
-				sprite.setTexture( *ts_intro->texture );
-				sprite.setTextureRect( ts_intro->GetSubRect( 0 ) );			
 				sprite.setPosition( po.x, po.y );
+
+				sprite.setTexture( *ts_c01_walk->texture );
+				int f = (c / 8) % 4;
+				//cout << "f: " << f << endl;
+				sprite.setTextureRect( ts_c01_walk->GetSubRect( f ) );
+				}
+
+				
+				
+			}
+			break;
+		case FI_FOOTTAP:
+			{
+				sprite.setTexture( *ts_c02_foottap->texture );
+
+				//10 frames then 6 frames
+				int c = cinemFrame % 16;
+				if( c >= 8 )
+				{
+					c = 1;
+				}
+				else
+				{
+					c = 0;
+				}
+				int f = c;//(cinemFrame / 8) % 2;
+				sprite.setTextureRect( ts_c02_foottap->GetSubRect( f ) );			
+			}
+			break;
+		case FI_CROSS:
+			{
+				//4, 4, 8
+				int c = cinemFrame;
+				if( c < 4 )
+				{
+					c = 0;
+				}
+				else if( c < 8 )
+				{
+					c = 1;
+				}
+				else
+				{
+					c = 2;
+				}
+
+				sprite.setTexture( *ts_c03_cross->texture );
+				int f = c;//(cinemFrame / 8);
+				sprite.setTextureRect( ts_c03_cross->GetSubRect( f ) );			
 			}
 			break;
 		case FI_LAUGH:
 			{
-				sprite.setTexture( *ts_talk->texture );
-				sprite.setTextureRect( ts_intro->GetSubRect( 0 ) );			
+				sprite.setTexture( *ts_c04_laugh->texture );
+				int f = (cinemFrame / 6) % 2;
+				sprite.setTextureRect( ts_c04_laugh->GetSubRect( f ) );			
 				//sprite.setPosition( owner->cam.pos.x, owner->cam.pos.y );
 			}
 			break;
@@ -554,19 +768,39 @@ bool Boss_Bird::UpdateCinematic()
 				//sprite.setPosition( owner->cam.pos.x, owner->cam.pos.y );
 			}
 			break;
-		case FI_DROP:
+		case FI_FALL:
 			{
+				int ind = 0;
+				for( int i = 0; i < 20; ++i )
+				{
+					if( cinemFrame < fallTiming[i] )
+					{
+						ind = i;
+						break;
+					}
+				}
+
+				int len = fallTiming[6] - fallTiming[2];
+				int c = cinemFrame - fallTiming[2];
+				if( ind > 2 && c <= len && c >= 0 )
+				{
 				CubicBezier bez( 0, 0, 1, 1 );
-				float z = bez.GetValue( (double)cinemFrame / 60 );
+				float z = bez.GetValue( (double)c / len );
 			
 				Vector2f po =  dropSpot * ( 1 - z ) + landSpot * z;
+			
 				//owner->cam.manual = false;
-				owner->cam.Set( po,
+				Vector2f camPo = ( dropSpot + extra0 ) * ( 1 - z ) + ( landSpot + extra1 ) * z;
+				owner->cam.Set( camPo,
 					1, 0 );
 
-				sprite.setTexture( *ts_intro->texture );
-				sprite.setTextureRect( ts_intro->GetSubRect( 1 ) );
 				sprite.setPosition( po.x, po.y );
+				}
+
+				
+				sprite.setTexture( *ts_c05_fall->texture );
+				sprite.setTextureRect( ts_c05_fall->GetSubRect( ind ) );
+				//sprite.setPosition( po.x, po.y );
 			}
 			break;
 		case FI_GROUNDWAIT:
@@ -589,6 +823,7 @@ bool Boss_Bird::UpdateCinematic()
 			
 //
 				Vector2f po = landSpot * ( 1 - z ) + diamondCenter * z;
+				Vector2f camPo = (landSpot + extra1 ) * (1 -z) + diamondCenter * z;
 				owner->cam.Set( po,
 					1, 0 );
 
@@ -602,6 +837,10 @@ bool Boss_Bird::UpdateCinematic()
 	}
 
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+
+	portrait.Update();
+	dialogue.Update();
+
 	++cinemFrame;
 
 	return true;
@@ -1000,7 +1239,7 @@ sf::Vector2<double> Boss_Bird::GetLungeDir()
 
 void Boss_Bird::SetRelFacePos( sf::Vector2f &pos )
 {
-	faceSprite.setPosition( pos + Vector2f( position.x, position.y ) );
+	portrait.sprite.setPosition( pos + Vector2f( position.x, position.y ) );
 }
 
 void Boss_Bird::UpdatePostPhysics()
@@ -1211,15 +1450,17 @@ void Boss_Bird::UpdateSprite()
 
 void Boss_Bird::Draw( sf::RenderTarget *target )
 {
-	if( showFace )
+	//if( showFace )
 	{
-		cout << "drawing faceSprite " << endl;
-		target->draw( faceSprite );
+		//cout << "drawing faceSprite " << endl;
+		portrait.Draw( target );
+		//target->draw( faceSprite );
 	}
 	
+	dialogue.Draw( target );
 	if( showDialogue )
 	{
-		target->draw( dialogueSprite );
+		//target->draw( dialogueSprite );
 	}
 	//cout << "draw" << endl;
 	if( !dead && !dying )

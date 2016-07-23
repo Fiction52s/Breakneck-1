@@ -17,6 +17,7 @@
 #include "Boss.h"
 #include "PowerOrbs.h"
 #include "Cutscene.h"
+#include "SoundManager.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -79,6 +80,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
+	
+
 	cutPlayerInput = false;
 	//powerOrbs = new PowerOrbs( true, true, true, true, true, true);
 	//powerOrbs = new PowerOrbs( this, true, true, true, false, false, false);
@@ -456,7 +459,7 @@ void GameSession::AddEnemy( Enemy *e )
 	{
 		//probably will not actually use this and will use a separate spacial trigger or a gate
 
-		cutPlayerInput = true;
+		//cutPlayerInput = true;
 	}
 	//if( e->type == Enemy::BASICTURRET )
 	//{
@@ -977,6 +980,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		}
 
 		Gate * gate = new Gate( this, gateType, reformBehindYou );
+
+		
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
@@ -2533,6 +2538,22 @@ bool GameSession::OpenFile( string fileName )
 		SetGlobalBorders();
 		CreateZones();
 		SetupZones();
+
+		for( int i = 0; i < numGates; ++i )
+		{
+			Gate *g = gates[i];
+			if( g->type == Gate::BIRDFIGHT )
+			{
+				if( g->zoneA != NULL )
+					g->zoneA->showShadow = false;
+					//ActivateZone( zone
+					//g->zoneA->ac
+				//g->SetLocked( false );
+				//g->SetLocked( true );
+			}
+		}
+		
+
 	}
 	else
 	{
@@ -3618,6 +3639,17 @@ void GameSession::SetupZones()
 				}
 			}
 		}
+
+		if( (*it)->type == Enemy::BOSS_BIRD )
+		{
+			if( (*it)->zone != NULL )
+			{
+				(*it)->zone->spawnEnemies.push_back( (*it) );
+			}
+			
+		}
+
+
 	}
 
 	cout << "2" << endl;
@@ -3707,6 +3739,11 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	soundManager.GetMusic( "Audio/Music/02_bird_fight.ogg" );
+	currMusic = soundManager.GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
+	currMusic->setLoop( true );
+	//testMusic->
+	currMusic->play();
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
@@ -4371,7 +4408,7 @@ int GameSession::Run( string fileN )
 				cloneInactiveEnemyList = NULL;
 			}
 
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) || currInput.start )
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
 			{
 				quit = true;
 				break;
@@ -5769,6 +5806,12 @@ int GameSession::Run( string fileN )
 	//window->setView( window->getDefaultView() );
 	//window->clear( Color::Red );
 	//window->display();
+	if( currMusic != NULL )
+	{
+		currMusic->stop();
+		currMusic = NULL;
+	}
+	
 	return returnVal;
 }
 
@@ -8985,6 +9028,13 @@ void GameSession::ActivateZone( Zone *z )
 	//cout << "ACTIVATE ZONE!!!" << endl;
 	if( !z->active )
 	{
+		for( list<Enemy*>::iterator it = z->spawnEnemies.begin(); it != z->spawnEnemies.end(); ++it )
+		{
+			(*it)->Init();
+			(*it)->spawned = true;
+			AddEnemy( (*it) );
+		}
+
 		z->active = true;
 		if( activatedZoneList == NULL )
 		{
@@ -8997,6 +9047,8 @@ void GameSession::ActivateZone( Zone *z )
 			activatedZoneList = z;
 		}
 	}
+
+	
 }
 
 void GameSession::UnlockGate( Gate *g )
