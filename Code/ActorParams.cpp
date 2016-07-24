@@ -24,6 +24,9 @@ EditSession * ActorParams::session = NULL;
 
 
 
+
+sf::Font *PoiParams::font = NULL;
+
 ActorParams::ActorParams( ActorParams::PosType p_posType )
 	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
 		hasMonitor( false ), group( NULL )
@@ -195,6 +198,14 @@ void ActorParams::SetBoundingQuad()
 		V2d leftAir = leftGround + other * (double)(type->height - 1) ;
 		V2d rightAir = rightGround + other * (double)(type->height - 1 );
 
+		/*if( type->name == "poi" )
+		{
+			leftGround = startGround - along * ( type->width / 2.0 ) - other * ( type->height / 2.0 );
+			rightGround = startGround + along * ( type->width / 2.0 ) - other * ( type->height / 2.0 );
+			leftAir = leftGround + other * ( type->height / 2.0 );
+			rightAir = rightGround + other * ( type->height / 2.0 );
+		}*/
+
 		boundingQuad[0].position = Vector2f( leftGround.x, leftGround.y );
 		boundingQuad[1].position = Vector2f( leftAir.x, leftAir.y );
 		boundingQuad[2].position = Vector2f( rightAir.x, rightAir.y );
@@ -274,7 +285,13 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 	int testIndex = 0;
 
 	image.setTexture( type->imageTexture );	
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+
+	if( type->name != "poi" )
+		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+	else
+	{
+		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	}
 
 	Vector2i point;
 
@@ -314,7 +331,9 @@ void ActorParams::AnchorToGround( GroundInfo &gi )
 	*groundInfo = gi;
 
 	image.setTexture( type->imageTexture );	
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+
+	if( type->name != "poi" )
+		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
@@ -635,4 +654,174 @@ ActorParams *PlayerParams::Copy()
 {
 	assert( false );
 	return NULL;
+}
+
+
+PoiParams::PoiParams( EditSession *edit,
+	TerrainPolygon *p_edgePolygon,
+	int p_edgeIndex, 
+	double p_edgeQuantity )
+	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ),
+	barrier( NONE )
+{
+	nameText.setFont( *font );
+	nameText.setCharacterSize( 18 );
+	nameText.setColor( Color::White );
+	
+	name = "-";
+	type = edit->types["poi"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+PoiParams::PoiParams( EditSession *edit,
+	TerrainPolygon *p_edgePolygon,
+	int p_edgeIndex, 
+	double p_edgeQuantity, PoiParams::Barrier bType, const std::string &p_name )
+	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ),
+	barrier( bType ), name( p_name )
+{
+	nameText.setFont( *font );
+	nameText.setCharacterSize( 18 );
+	nameText.setColor( Color::White );
+
+	type = edit->types["poi"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+PoiParams::PoiParams( EditSession *edit,
+	sf::Vector2i &pos )
+	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), barrier( NONE )
+{
+	nameText.setFont( *font );
+	nameText.setCharacterSize( 18 );
+	nameText.setColor( Color::White );
+
+	name = "-";
+	position = pos;	
+	type = edit->types["poi"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+}
+
+PoiParams::PoiParams( EditSession *edit,
+	sf::Vector2i &pos, PoiParams::Barrier bType, const std::string &p_name  )
+	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), 
+	barrier( bType ), name( p_name )
+{
+	nameText.setFont( *font );
+	nameText.setCharacterSize( 18 );
+	nameText.setColor( Color::White );
+
+	//name = "-";
+	position = pos;	
+	type = edit->types["poi"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+}
+
+bool PoiParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *PoiParams::Copy()
+{
+	PoiParams *copy = new PoiParams( *this );
+	return copy;
+}
+
+void PoiParams::WriteParamFile( std::ofstream &of )
+{
+	of << name << " ";
+
+	switch( barrier )
+	{
+	case NONE:
+		of << "-" << endl;
+		break;
+	case X:
+		of << "x" << endl;
+		break;
+	case Y:
+		of << "y" << endl;
+		break;
+	}
+}
+
+void PoiParams::SetParams()
+{
+	Panel *p = type->panel;
+	
+	name = p->textBoxes["name"]->text.getString();
+
+	nameText.setString( name );
+
+	string barStr = p->textBoxes["barrier"]->text.getString().toAnsiString();
+	
+	if( barStr == "-" )
+	{
+		barrier = Barrier::NONE;
+	}
+	else if( barStr == "x" )
+	{
+		barrier = Barrier::X;
+	}
+	else if( barStr == "y" )
+	{
+		barrier = Barrier::Y;
+	}
+	else
+	{
+		//do nothing
+	}
+}
+
+void PoiParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	string s;
+	switch( barrier )
+	{
+	case NONE:
+		s = "-";
+		break;
+	case X:
+		s = "x";
+		break;
+	case Y:
+		s = "y";
+		break;
+	}
+
+	p->textBoxes["name"]->text.setString( name );
+	if( group != NULL )
+	{
+		p->textBoxes["group"]->text.setString( group->name );
+	}
+
+	p->textBoxes["barrier"]->text.setString( s );
+}
+
+void PoiParams::Draw( sf::RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	nameText.setString( name );
+	nameText.setOrigin( nameText.getLocalBounds().width / 2, nameText.getLocalBounds().height / 2 );
+	nameText.setPosition( position.x, position.y - 40 );
+
+	target->draw( nameText );
 }
