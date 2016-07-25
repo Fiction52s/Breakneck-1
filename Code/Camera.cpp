@@ -42,6 +42,8 @@ Camera::Camera()
 
 	zoomLevel = 0;
 	
+	easeOutFrame = 0;
+	easingOut = false;
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -575,6 +577,66 @@ void Camera::Update( Actor *player )
 
 	pos.x += offset.x;
 	pos.y += offset.y;
+
+	for(list<Barrier*>::iterator it = owner->barriers.begin(); it != owner->barriers.end(); ++it )
+	{
+		if( (*it)->triggered )
+		{
+			continue;
+		}
+		float halfw = 960 / 2;
+		float halfh = 540 / 2;
+		if( (*it)->x )
+		{
+			if( (*it)->positiveOpen )
+			{
+				float left = pos.x - halfw * zoomFactor;
+				float diff = (*it)->pos - left;
+				if( diff > 0 )
+				{
+					pos.x += diff;
+					//cout << "moving right" << endl;
+					//offset.x += (*it)->pos - left;
+				}
+			}
+			else
+			{
+				float right = pos.x + halfw * zoomFactor;
+				float diff =  right - (*it)->pos;
+				if( diff > 0 )
+				{
+					//cout << "moving left: " << diff << endl;
+					//pos.x -= right - (*it)->pos;
+					//offset.x -= diff;
+					pos.x -= diff;
+				}
+			}
+		}
+		else
+		{
+			if( (*it)->positiveOpen )
+			{
+				float top = pos.y - halfh * zoomFactor;
+				float diff = (*it)->pos - top;
+				if( diff > 0 )
+				{
+					//offset.y += (*it)->pos - top;
+					pos.y += diff;
+				}
+			}
+			else
+			{
+				float bot = pos.y + halfh * zoomFactor;
+				float diff = bot - (*it)->pos;
+				if( diff > 0 )
+				{
+					pos.y -= diff;
+					//offset.y -= bot - (*it)->pos;
+				}
+			}
+		}
+	}
+
 
 
 	UpdateReal( player );

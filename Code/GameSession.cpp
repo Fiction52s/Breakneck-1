@@ -18,6 +18,7 @@
 #include "PowerOrbs.h"
 #include "Cutscene.h"
 #include "SoundManager.h"
+#include "BarrierReactions.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -63,14 +64,77 @@ using namespace sf;
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
 
+PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
+{
+	name = pname;
+	pos.x = p.x;
+	pos.y = p.y;
+	edge = NULL;
+}
 
+PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
+{
+	name = pname;
+	edge = e;
+	edgeQuantity = q;
+	pos = edge->GetPoint( edgeQuantity );
+}
 
+Barrier::Barrier( GameSession *p_owner, PoiInfo *p_poi, bool p_x, int p_pos, bool posOp,
+	BarrierCallback *cb ): poi( p_poi )
+{
+	owner = p_owner;
+	callback = cb;
+	x = p_x;
+	pos = p_pos;
+	triggered = false;
+	positiveOpen = posOp;
+}
 
+bool Barrier::Update( Actor *player )
+{
+	if( triggered )
+		return false;
 
+	V2d playerPos = player->position;
 
+	if( x )
+	{
+		if( positiveOpen ) //player starts right
+		{
+			if( playerPos.x < pos )
+			{
+				triggered = true;
+			}
+		}
+		else //starts left
+		{
+			if( playerPos.x > pos )
+			{
+				triggered = true;
+			}
+		}
+	}
+	else
+	{
+		if( positiveOpen ) // player starts below
+		{
+			if( playerPos.y < pos )
+			{
+				triggered = true;
+			}
+		}
+		else //player starts above
+		{
+			if( playerPos.y > pos )
+			{
+				triggered = true;
+			}
+		}
+	}
 
-
-
+	return triggered;
+}
 
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
@@ -80,7 +144,12 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
-	
+	b_crawler = NULL;
+	b_bird = NULL;
+	b_coyote = NULL;
+	b_tiger = NULL;
+	b_gator = NULL;
+	b_skeleton = NULL;
 
 	cutPlayerInput = false;
 	//powerOrbs = new PowerOrbs( true, true, true, true, true, true);
@@ -1107,6 +1176,109 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
+			else if( typeName == "poi" )
+			{
+				string air;
+				string pname;
+				PoiInfo *pi = NULL;
+
+				is >> air;
+
+				if( air == "+air" )
+				{
+					Vector2i pos;
+					is >> pos.x;
+					is >> pos.y;
+					
+					
+					is >> pname;
+
+					string barStr;
+					is >> barStr;
+
+					pi = new PoiInfo( pname, pos );
+
+					
+
+					if( barStr == "-" )
+					{
+					}
+					else if( barStr == "x" )
+					{
+						barriers.push_back( new Barrier( this, pi, true, pos.x, ( player.position.x > pos.x ),  NULL ) );
+					}
+					else if( barStr == "y" )
+					{
+						barriers.push_back( new Barrier( this, pi, false, pos.y, ( player.position.y > pos.y ), NULL ) );
+					}
+					else
+					{
+						assert( 0 );
+					}
+
+					if( barStr != "-" )
+					{
+						if( fileName == "Maps/poitest.brknk" )
+						{
+							if( pname == "birdfighttrigger" )
+							{
+								/*BirdMeetingCallback *bmc = new BirdMeetingCallback( this );
+								barriers.back()->callback = bmc;*/
+							}
+						}
+					}
+				}
+				else if( air == "-air" )
+				{
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					is >> pname;
+
+					string barStr;
+					is >> barStr;
+
+					Edge *e = edges[polyIndex[terrainIndex] + edgeIndex];
+
+					V2d p = e->GetPoint( edgeQuantity );
+
+					pi = new PoiInfo( pname, e,
+						edgeQuantity );
+
+					if( barStr == "-" )
+					{
+					}
+					else if( barStr == "x" )
+					{
+						barriers.push_back( new Barrier( this, pi, true, floor( p.x + .5 ), ( player.position.x > p.x ), NULL  ) );
+					}
+					else if( barStr == "y" )
+					{
+						barriers.push_back( new Barrier( this, pi, false, floor( p.y + .5 ), ( player.position.y > p.y ), NULL ) );
+					}
+					else
+					{
+						assert( 0 );
+					}
+
+					
+					//edges[polyIndex[terrainIndex] + edgeIndex]					
+				}
+				else
+				{
+					cout << "air failure: " << air << endl;
+					assert( 0 );
+				}
+
+				poiMap[pname] = pi;
+				//poiMap
+			}
 
 			//w1
 			else if( typeName == "patroller" )
@@ -1418,12 +1590,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					enemy->monitor = new Monitor( this, enemy );
 				}
 				
+				b_bird = enemy;
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
+				//fullEnemyList.push_back( enemy );
+				//enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				//enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
 			else if( typeName == "poisonfrog" )
 			{
@@ -3739,8 +3912,9 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
-	soundManager.GetMusic( "Audio/Music/02_bird_fight.ogg" );
-	currMusic = soundManager.GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
+	soundManager = new SoundManager;
+	soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
+	currMusic = soundManager->GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
 	currMusic->setLoop( true );
 	//testMusic->
 	currMusic->play();
@@ -4657,6 +4831,16 @@ int GameSession::Run( string fileN )
 					gates[i]->Update();
 				}
 
+				for( list<Barrier*>::iterator it = barriers.begin();
+					it != barriers.end(); ++it )
+				{
+					bool trig = (*it)->Update( &player );
+					if( trig )
+					{
+						TriggerBarrier( (*it) );
+					}
+				}
+
 				//cout << "updating loop" << endl;
 
 				//Vector2f oldCam = cam.pos;
@@ -5263,6 +5447,10 @@ int GameSession::Run( string fileN )
 			player.rightWire->Draw( preScreenTex );
 		}
 
+		//cout << "view: " << view.getSize().x << ", " << view.getSize().y << endl;
+		//preScreenTex->setView( view );
+		//cout << "size what: " << preScreenTex->getView().getSize().x
+		//	<< ", " << preScreenTex->getView().getSize().y << endl;
 		if( player.action != Actor::DEATH )
 			player.Draw( preScreenTex );
 
@@ -9105,6 +9293,20 @@ void GameSession::LockGate( Gate *g )
 		}
 	}
 	
+}
+
+void GameSession::TriggerBarrier( Barrier *b )
+{
+	PoiInfo *poi = b->poi;
+	string name = poi->name;
+
+	if( name == "birdfighttrigger" )
+	{
+		assert( b_bird != NULL );
+		
+		b_bird->spawned = true;
+		AddEnemy( b_bird );
+	}
 }
 
 Critical::Critical( V2d &pointA, V2d &pointB )

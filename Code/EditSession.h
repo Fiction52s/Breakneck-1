@@ -427,6 +427,7 @@ struct ActorParams : ISelectable
 	ActorType *type;
 	sf::Vector2i position;
 	PosType posType;
+	
 	//if groundInfo is not null
 	//then you can handle ground, even 
 	//if you arent on it
@@ -478,6 +479,47 @@ struct PlayerParams : public ActorParams
 	ActorParams *Copy();
 	void Activate( EditSession *edit,
 		boost::shared_ptr<ISelectable> & select );
+};
+
+struct PoiParams : public ActorParams
+{
+	enum Barrier
+	{
+		NONE,
+		X,
+		Y
+	};
+
+	Barrier barrier;
+	PoiParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity, Barrier bType,
+		const std::string &name );
+	PoiParams( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	PoiParams( EditSession *edit,
+		sf::Vector2i &pos,
+		Barrier bType,
+		const std::string &name );
+	PoiParams( EditSession *edit,
+		sf::Vector2i &pos );
+
+	void Draw( sf::RenderTarget *target );
+	//PoiParams( EditSession *edit );
+
+	bool CanApply();
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	void SetParams();
+	void SetPanelInfo();
+
+	std::string name;
+	static sf::Font *font;
+	sf::Text nameText;
+	//void Draw( sf::RenderTarget *target );
 };
 
 //w1

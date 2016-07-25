@@ -5620,6 +5620,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	owner->terrainTree->Query( this, r );
 
 
+	//cout << "owner: " << owner << ", tree: " << owner->terrainTree << endl;
 	testr = false;
 	queryMode = "moving_resolve";
 	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )

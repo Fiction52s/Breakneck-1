@@ -15,7 +15,35 @@
 #include "AirParticles.h"
 #include "Movement.h"
 #include "SoundManager.h"
+#include <map>
+#include "BarrierReactions.h"
 
+struct PoiInfo
+{
+	PoiInfo( const std::string &name, sf::Vector2i &p );
+	PoiInfo( const std::string &name, Edge *e, double q );
+	sf::Vector2<double> pos;	
+	Edge *edge;
+	double edgeQuantity;
+	std::string name;
+};
+
+struct Barrier
+{
+	Barrier( GameSession *owner, PoiInfo *poi, 
+		bool p_x, int pos, bool posOp, 
+		BarrierCallback *cb );
+
+	bool Update( Actor *player );
+
+	BarrierCallback *callback;
+	GameSession *owner;
+	PoiInfo *poi;
+	int pos;
+	bool x; //false means y
+	bool triggered;
+	bool positiveOpen;
+};
 
 struct PowerBar
 {
@@ -133,8 +161,21 @@ struct EnvPlant : QuadTreeEntrant
 	//EnvPlant *prev;
 };
 
+
+struct Boss_Crawler;
+struct Boss_Bird;
+struct Boss_Coyote;
+struct Boss_Tiger;
+struct Boss_Gator;
+struct Boss_Skeleton;
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
+	//int f;
+	std::map<std::string,PoiInfo*> poiMap;
+	std::list<Barrier*> barriers;
+	//Barrier *bar2;
+	//Barrier *bar;
+	//int f;
 	GameSession(GameController &c, 
 		sf::RenderWindow *rw, 
 		sf::RenderTexture *preTex,
@@ -142,6 +183,15 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::RenderTexture *postProc1,
 		sf::RenderTexture *postProc2,
 		sf::RenderTexture *miniTex);
+	void TriggerBarrier( Barrier *b );
+
+	//Boss_Crawler *b_crawler;
+	Boss_Crawler *b_crawler;
+	Boss_Bird *b_bird;
+	Boss_Coyote *b_coyote;
+	Boss_Tiger *b_tiger;
+	Boss_Gator *b_gator;
+	Boss_Skeleton *b_skeleton;
 
 	~GameSession();
 	void HandleRayCollision( Edge *edge, 
@@ -155,9 +205,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool quit;
 	int envType;
 	int envLevel;
+	
 
 	bool cutPlayerInput;
-	SoundManager soundManager;
+	SoundManager *soundManager;
 	sf::Music *currMusic;
 
 	int Run( std::string fileName );
@@ -355,6 +406,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Tileset *cloudTileset;
 
 	std::set<std::pair<int,int>> matSet;
+
+	int xxx;
 
 	Critical *drawCritical;
 	static int IsFlatGround( sf::Vector2<double> &normal );

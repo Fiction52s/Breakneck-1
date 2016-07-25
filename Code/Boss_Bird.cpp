@@ -18,13 +18,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
-	list<Vector2i> &pathParam )
+Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::BOSS_BIRD ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	attackMarkerVA( sf::Quads, 4 * 4 ), dialogue( owner, DialogueBox::BIRD )
 {
-	
 	//owner->cam.Update( &owner->player );
 
 	SetupCinemTiming();
@@ -32,15 +30,20 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos,
 	//owner->AddEnemy( this );
 	
 
-	assert( pathParam.size() == 3 );
+	//assert( pathParam.size() == 3 );
 
-	startPos = Vector2f( pos.x, pos.y );
-	list<Vector2i>::iterator pit = pathParam.begin();
-	dropSpot = startPos + Vector2f( (*pit).x, (*pit).y );
-	pit++;
-	landSpot = startPos + Vector2f( (*pit).x, (*pit).y );
-	pit++;
-	diamondCenter = startPos + Vector2f( (*pit).x, (*pit).y );
+	//startPos = Vector2f( pos.x, pos.y );
+	V2d bStart = owner->poiMap["birdstart"]->pos;
+	V2d dSpot = owner->poiMap["dropspot"]->pos;
+	V2d lSpot = owner->poiMap["landspot"]->pos; 
+	V2d aSpot = owner->poiMap["airspot"]->pos;
+	startPos = Vector2f( bStart.x, bStart.y );
+	//list<Vector2i>::iterator pit = pathParam.begin();
+	dropSpot = Vector2f( dSpot.x, dSpot.y );//startPos + Vector2f( (*pit).x, (*pit).y );
+	//pit++;
+	landSpot = Vector2f( lSpot.x, lSpot.y );//startPos + Vector2f( (*pit).x, (*pit).y );
+	//pit++;
+	diamondCenter = Vector2f( aSpot.x, aSpot.y );//startPos + Vector2f( (*pit).x, (*pit).y );
 
 	position.x = dropSpot.x;
 	position.y = dropSpot.y;
@@ -648,7 +651,7 @@ bool Boss_Bird::UpdateCinematic()
 				owner->cam.EaseOutOfManual( 120 );
 
 				owner->currMusic->stop();
-				owner->currMusic = owner->soundManager.GetMusic( "Audio/Music/02_bird_fight.ogg" );
+				owner->currMusic = owner->soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
 				owner->currMusic->setLoop( true );
 				owner->currMusic->play();
 				
@@ -2029,4 +2032,3 @@ void Boss_Bird::HandleRayCollision( Edge *edge, double edgeQuantity,
 		rcQuantity = edgeQuantity;
 	}
 }
-

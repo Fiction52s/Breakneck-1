@@ -6,6 +6,7 @@
 #include "Mover.h"
 #include "Movement.h"
 #include "Enemy.h"
+#include "BarrierReactions.h"
 
 struct PortraitBox
 {
@@ -225,8 +226,8 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	int bloodFrame;
 };
 
-struct Boss_Bird : Enemy, LauncherEnemy,
-	RayCastHandler
+struct PoiInfo;
+struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 {
 	enum Action
 	{
@@ -333,8 +334,7 @@ struct Boss_Bird : Enemy, LauncherEnemy,
 
 	int testFrame;
 
-	Boss_Bird( GameSession *owner, sf::Vector2i pos,
-		std::list<sf::Vector2i> &pathParam );
+	Boss_Bird( GameSession *owner, sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );

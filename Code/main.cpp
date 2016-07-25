@@ -86,18 +86,21 @@ void GameEditLoop( std::string filename)
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
-		EditSession es(window, preScreenTexture );
-		result = es.Run( filename, lastViewCenter, lastViewSize );
+		EditSession *es = new EditSession(window, preScreenTexture );
+		result = es->Run( filename, lastViewCenter, lastViewSize );
+		delete es;
 		if( result > 0 )
 			break;
 
+		//v.setSize( 1920, 1080 );
 		window->setView( v );
-		GameSession gs( controller, window, preScreenTexture, 
+		GameSession *gs = new GameSession( controller, window, preScreenTexture, 
 			postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture );
 		
-		result = gs.Run( filename );
-		lastViewCenter = gs.lastViewCenter;
-		lastViewSize = gs.lastViewSize;
+		result = gs->Run( filename );
+		lastViewCenter = gs->lastViewCenter;
+		lastViewSize = gs->lastViewSize;
+		delete gs;
 	}
 }
 
@@ -110,15 +113,17 @@ void GameEditLoop2( std::string filename)
 	while( result == 0 )
 	{
 		window->setView( v );
-		GameSession gs( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture );
-		result = gs.Run( filename );
-		lastViewCenter = gs.lastViewCenter;
-		lastViewSize = gs.lastViewSize;
+		GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture );
+		result = gs->Run( filename );
+		lastViewCenter = gs->lastViewCenter;
+		lastViewSize = gs->lastViewSize;
+		delete gs;
 		if( result > 0 )
 			break;
 
-		EditSession es(window, preScreenTexture );
-		result = es.Run( filename, lastViewCenter, lastViewSize );
+		EditSession *es = new EditSession(window, preScreenTexture );
+		result = es->Run( filename, lastViewCenter, lastViewSize );
+		delete es;
 	}
 }
 
@@ -170,9 +175,10 @@ struct CustomMapsHandler : GUIHandler
 			if( b->name == "Play" )
 			{
 				optionChosen = true;
-				GameSession gs( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture );
-				gs.Run( ls.localPaths[ls.selectedIndex] );
+				GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture );
+				gs->Run( ls.localPaths[ls.selectedIndex] );
 				window->setView( uiView );
+				delete gs;
 			}
 			else if( b->name == "Edit" )
 			{
