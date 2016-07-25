@@ -258,6 +258,8 @@ void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 
 void Camera::Update( Actor *player )
 {
+	//GameSession *owner = player->owner;
+	
 	if( manual )
 	{
 	//	UpdateRumble();
@@ -576,6 +578,50 @@ void Camera::Update( Actor *player )
 	pos.x += offset.x;
 	pos.y += offset.y;
 
+
+	/*for(list<Barrier>::iterator it = owner->barriers.begin(); it != owner->barriers.end(); ++it )
+	{
+		float halfw = 960;
+		float halfh = 540;
+		if( (*it).x )
+		{
+			if( (*it).positiveOpen )
+			{
+				float left = pos.x - halfw * zoomFactor;
+				if( left <= (*it).pos )
+				{
+					offset.x += (*it).pos - left;
+				}
+			}
+			else
+			{
+				float right = pos.x + 960 * zoomFactor;
+				if( right >= (*it).pos )
+				{
+					offset.x -= right - (*it).pos;
+				}
+			}
+		}
+		else
+		{
+			if( (*it).positiveOpen )
+			{
+				float top = pos.y - halfh * zoomFactor;
+				if( top <= (*it).pos )
+				{
+					offset.y += (*it).pos - top;
+				}
+			}
+			else
+			{
+				float bot = pos.y + halfh * zoomFactor;
+				if( bot >= (*it).pos )
+				{
+					offset.y -= bot - (*it).pos;
+				}
+			}
+		}
+	}*/
 
 	UpdateReal( player );
 
