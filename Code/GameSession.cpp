@@ -62,25 +62,11 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
-PoiInfo::PoiInfo( Vector2i &p )
-{
-	pos.x = p.x;
-	pos.y = p.y;
-	edge = NULL;
-}
-
-PoiInfo::PoiInfo( Edge *e, double q )
-{
-	edge = e;
-	edgeQuantity = q;
-}
-
-Barrier::Barrier( bool p_x, int p_pos, bool posOp )
+Barrier::Barrier( bool p_x, int p_pos )
 {
 	x = p_x;
 	pos = p_pos;
 	triggered = false;
-	positiveOpen = posOp;
 }
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
@@ -1117,93 +1103,82 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
-			//else if( typeName == "poi" )
-			//{
-			//	string air;
-			//	string pname;
-			//	PoiInfo *pi = NULL;
+			else if( typeName == "poi" )
+			{
+				string air;
 
-			//	is >> air;
+				PoiInfo *pi = NULL;
+				if( air == "+air" )
+				{
+					Vector2i pos;
+					is >> pos.x;
+					is >> pos.y;
+					
+					string pname;
+					is >> pname;
 
-			//	if( air == "+air" )
-			//	{
-			//		Vector2i pos;
-			//		is >> pos.x;
-			//		is >> pos.y;
-			//		
-			//		
-			//		is >> pname;
+					string barStr;
+					is >> barStr;
 
-			//		string barStr;
-			//		is >> barStr;
+					if( barStr == "-" )
+					{
+					}
+					else if( barStr == "x" )
+					{
+						barriers.push_back( Barrier( true, pos.y ) );
+					}
+					else if( barStr == "y" )
+					{
+						barriers.push_back( Barrier( false, pos.x ) );
+					}
+					else
+					{
+						assert( 0 );
+					}
 
-			//		/*if( barStr == "-" )
-			//		{
-			//		}
-			//		else if( barStr == "x" )
-			//		{
-			//			barriers.push_back( Barrier( true, pos.x, ( player.position.x > pos.x ) ) );
-			//		}
-			//		else if( barStr == "y" )
-			//		{
-			//			barriers.push_back( Barrier( false, pos.y, ( player.position.y > pos.y ) ) );
-			//		}
-			//		else
-			//		{
-			//			assert( 0 );
-			//		}*/
+					pi = new PoiInfo( pos );
+				}
+				else if( air == "-air" )
+				{
+					int terrainIndex;
+					is >> terrainIndex;
 
-			//		pi = new PoiInfo( pos );
-			//	}
-			//	else if( air == "-air" )
-			//	{
-			//		int terrainIndex;
-			//		is >> terrainIndex;
+					int edgeIndex;
+					is >> edgeIndex;
 
-			//		int edgeIndex;
-			//		is >> edgeIndex;
+					double edgeQuantity;
+					is >> edgeQuantity;
 
-			//		double edgeQuantity;
-			//		is >> edgeQuantity;
+					string barStr;
+					is >> barStr;
 
-			//		is >> pname;
+					if( barStr == "-" )
+					{
+					}
+					else if( barStr == "x" )
+					{
+						barriers.push_back( Barrier( true, pos.y ) );
+					}
+					else if( barStr == "y" )
+					{
+						barriers.push_back( Barrier( false, pos.x ) );
+					}
+					else
+					{
+						assert( 0 );
+					}
 
-			//		string barStr;
-			//		is >> barStr;
+					pi = new PoiInfo( edges[polyIndex[terrainIndex] + edgeIndex],
+						edgeQuantity );
+					//edges[polyIndex[terrainIndex] + edgeIndex]					
+				}
+				else
+				{
+					assert( 0 );
+				}
 
-			//		Edge *e = edges[polyIndex[terrainIndex] + edgeIndex];
-
-			//		V2d p = e->GetPoint( edgeQuantity );
-
-			//		if( barStr == "-" )
-			//		{
-			//		}
-			//		else if( barStr == "x" )
-			//		{
-			//			barriers.push_back( Barrier( true, floor( p.x + .5 ), ( player.position.x > p.x )  ) );
-			//		}
-			//		else if( barStr == "y" )
-			//		{
-			//			barriers.push_back( Barrier( false, floor( p.y + .5 ), ( player.position.y > p.y ) ) );
-			//		}
-			//		else
-			//		{
-			//			assert( 0 );
-			//		}
-
-			//		pi = new PoiInfo( e,
-			//			edgeQuantity );
-			//		//edges[polyIndex[terrainIndex] + edgeIndex]					
-			//	}
-			//	else
-			//	{
-			//		cout << "air failure: " << air << endl;
-			//		assert( 0 );
-			//	}
-
-			//	poiMap[pname] = pi;
-			//	//poiMap
-			//}
+				poiMap
+			}
 
 			//w1
 			else if( typeName == "patroller" )

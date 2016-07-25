@@ -27,12 +27,10 @@ struct PoiInfo
 
 struct Barrier
 {
-	Barrier( bool p_x, int pos,
-		bool rightOpen );
+	Barrier( bool p_x, int pos );
 	int pos;
 	bool x; //false means y
 	bool triggered;
-	bool positiveOpen; //right or down
 };
 
 struct PowerBar

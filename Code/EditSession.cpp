@@ -957,7 +957,7 @@ bool EditSession::OpenFile( string fileName )
 						}
 
 						if( terrain == NULL )
-							assert( 0 && "failure terrain indexing poi" );
+							assert( 0 && "failure terrain indexing basicturret" );
 
 						if( edgeIndex == terrain->numPoints - 1 )
 							edgeIndex = 0;
