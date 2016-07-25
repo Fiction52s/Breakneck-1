@@ -16,22 +16,6 @@
 #include "Movement.h"
 #include "SoundManager.h"
 
-struct PoiInfo
-{
-	PoiInfo( sf::Vector2i &p );
-	PoiInfo( Edge *e, double q );
-	sf::Vector2<double> pos;
-	Edge *edge;
-	double edgeQuantity;
-};
-
-struct Barrier
-{
-	Barrier( bool p_x, int pos );
-	int pos;
-	bool x; //false means y
-	bool triggered;
-};
 
 struct PowerBar
 {
@@ -171,8 +155,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool quit;
 	int envType;
 	int envLevel;
-	std::map<std::string,PoiInfo*> poiMap;
-	std::list<Barrier> barriers;
 
 	bool cutPlayerInput;
 	SoundManager soundManager;

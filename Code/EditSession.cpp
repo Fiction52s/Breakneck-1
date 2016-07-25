@@ -416,8 +416,6 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	cursorLocationText.setCharacterSize( 16 );
 	cursorLocationText.setColor( Color::White );
 	cursorLocationText.setPosition( 0, 0 );
-
-	PoiParams::font = &arialFont;
 	
 
 	for( int i = 0; i < 16; ++i )
@@ -900,102 +898,6 @@ bool EditSession::OpenFile( string fileName )
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
 					a.reset( new HealthFlyParams( this, pos, color ) );
 					a->hasMonitor = (bool)hasMonitor;
-				}
-				else if( typeName == "poi" )
-				{
-					string air;
-					is >> air;
-					if( air == "+air" )
-					{
-						Vector2i pos;
-						is >> pos.x;
-						is >> pos.y;
-
-						string pname;
-						is >> pname;
-
-						string marker;
-						is >> marker;
-
-						PoiParams::Barrier b;
-						if( marker == "-" )
-						{
-							b = PoiParams::NONE;
-						}
-						else if( marker == "x" )
-						{
-							b = PoiParams::X;
-						}
-						else if( marker == "y" )
-						{
-							b = PoiParams::Y;
-						}
-
-						a.reset( new PoiParams( this, pos, b, pname ) );
-					}
-					else if( air == "-air" )
-					{
-						int terrainIndex;
-						is >> terrainIndex;
-
-						int edgeIndex;
-						is >> edgeIndex;
-
-						double edgeQuantity;
-						is >> edgeQuantity;
-
-						int testIndex = 0;
-						PolyPtr terrain( NULL );
-						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						{
-							if( testIndex == terrainIndex )
-							{
-								terrain = (*it);
-								break;
-							}
-							testIndex++;
-						}
-
-						if( terrain == NULL )
-							assert( 0 && "failure terrain indexing basicturret" );
-
-						if( edgeIndex == terrain->numPoints - 1 )
-							edgeIndex = 0;
-						else
-							edgeIndex++;
-
-
-						string pname;
-						is >> pname;
-
-						string marker;
-						is >> marker;
-						
-						PoiParams::Barrier b;
-						if( marker == "-" )
-						{
-							b = PoiParams::NONE;
-						}
-						else if( marker == "x" )
-						{
-							b = PoiParams::X;
-						}
-						else if( marker == "y" )
-						{
-							b = PoiParams::Y;
-						}
-
-						a.reset( new PoiParams( 
-							this, terrain.get(), edgeIndex, edgeQuantity, b, pname ) );
-
-						terrain->enemies[a->groundInfo->edgeStart].push_back( a );
-						terrain->UpdateBounds();
-					}
-					else
-					{
-						assert( 0 );
-					}
-
 				}
 
 				//w1
@@ -3226,12 +3128,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *goalPanel = CreateOptionsPanel( "goal" );
 	ActorType *goalType = new ActorType( "goal", goalPanel );
 
-	Panel *poiPanel = CreateOptionsPanel( "poi" );
-	ActorType *poiType = new ActorType( "poi", poiPanel );
-
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
-	types["poi"] = poiType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -3357,7 +3255,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	gs->Set( 0, 0, Sprite( goalType->iconTexture ), "goal" );
 	gs->Set( 1, 0, Sprite( healthflyType->iconTexture ), "healthfly" );
-	gs->Set( 2, 0, Sprite( poiType->iconTexture ), "poi" );
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -3385,8 +3282,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
 	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "overgrowth" );
 	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
-
-	
 
 	//gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
 	//gs->Set( 1, 6, sPulser, "turtle" );
@@ -5528,24 +5423,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											CreateActor( goal );
 										}
 									}
-									else if( trackingEnemy->name == "poi" )
-									{
-										if( enemyEdgePolygon != NULL )
-										{
-											tempActor = new PoiParams( this,
-												enemyEdgePolygon, enemyEdgeIndex,
-												enemyEdgeQuantity );
-											showPanel = trackingEnemy->panel;
-											tempActor->SetPanelInfo();
-										}
-										else
-										{
-											tempActor = new PoiParams( this, Vector2i( worldPos.x,
-											worldPos.y ) );
-											showPanel = trackingEnemy->panel;
-											tempActor->SetPanelInfo();
-										}
-									}
 
 									//w1
 									else if( trackingEnemy->name == "patroller" )
@@ -6536,19 +6413,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					}
 				case Event::KeyPressed:
 					{
-						if( ev.key.code == Keyboard::S && ev.key.control  )
+						if( ev.key.code == Keyboard::S && ev.key.control )
 						{
 							polygonInProgress->ClearPoints();
 							cout << "writing to file: " << currentFile << ".brknk" << endl;
 							WriteFile(currentFile);
 						}
-						else if( ev.key.code == Keyboard::T && showPanel == NULL  )
+						else if( ev.key.code == Keyboard::T )
 						{
 							quit = true;
 						}
 						else if( ev.key.code == Keyboard::Escape )
 						{
-							//if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+							if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
 							{
 								quit = true;
 								returnVal = 1;
@@ -7714,7 +7591,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					bool groundType = w1Grounded || w2Grounded
 						|| w3Grounded || w4Grounded || w5Grounded
-						|| w6Grounded || name == "goal" || name == "poi";
+						|| w6Grounded || name == "goal";
 
 
 
@@ -7780,20 +7657,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											closestPoint = newPoint ;
 											//minDistance = length( closestPoint - te )  
 										
-											if( name != "poi" )
-											{
-												enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
-												enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
-											}
-											/*else
-											{
-												enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2 );
-											}*/
-											
+											enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
 											enemySprite.setPosition( closestPoint.x, closestPoint.y );
 											enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
 
-											
+											enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
 											enemyQuad.setRotation( enemySprite.getRotation() );
 											enemyQuad.setPosition( enemySprite.getPosition() );
 										}
@@ -9101,32 +8969,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				
 
 				CreateActor( fly );
-			}
-			showPanel = NULL;
-		}
-	}
-	else if( p->name == "poi_options" )
-	{
-		if( b->name == "ok" )
-		{
-			if( mode == EDIT )
-			{
-				ISelectable *select = selectedBrush->objects.front().get();				
-				PoiParams *poi = (PoiParams*)select;
-				poi->SetParams();
-			}
-			else if( mode == CREATE_ENEMY )
-			{
-				//eventually can convert this between indexes or 
-				//something to simplify when i have more types
-
-				ActorPtr poi( tempActor );//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
-				poi->SetParams();
-				poi->group = groups["--"];
-
-				CreateActor( poi );
-
-				tempActor = NULL;
 			}
 			showPanel = NULL;
 		}
@@ -11670,17 +11512,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
-	else if( name == "poi" )
-	{
-		Panel *p = new Panel( "poi_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
-		p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-	}
 	//w1
 	else if( name == "patroller" )
 	{
@@ -12083,11 +11915,6 @@ void EditSession::SetEnemyEditPanel()
 		//SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
 
 		
-	}
-	else if( name == "poi" )
-	{
-		PoiParams *poi = (PoiParams*)ap;
-		poi->SetPanelInfo();
 	}
 	
 	//w1
@@ -13083,13 +12910,6 @@ void ActorType::Init()
 		width = 40;
 		height = 64;
 		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "poi" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
 		canBeAerial = true;
 	}
 	

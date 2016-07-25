@@ -516,7 +516,6 @@ void TextBox::SendKey( Keyboard::Key k, bool shift )
 				cursorIndex = 0;
 			else
 			{
-				
 				sf::String s = text.getString();
 				if( s.getSize() > 0 )
 				{
@@ -614,9 +613,7 @@ bool TextBox::Update( bool mouseDown, int posx, int posy )
 			//	}
 			//}
 
-			//SetCursorIndex( pos );
 			cursor.setPosition( pos.x + text.getLocalBounds().width + leftBorder, pos.y );
-			cursorIndex = text.getString().getSize();
 			return true;
 		}
 		else

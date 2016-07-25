@@ -25,7 +25,7 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
-	position = pos;
+	position = pos;	
 	type = edit->types["patroller"];
 
 	image.setTexture( type->imageTexture );
