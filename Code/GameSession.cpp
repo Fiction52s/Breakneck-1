@@ -62,12 +62,16 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
-Barrier::Barrier( bool p_x, int p_pos )
-{
-	x = p_x;
-	pos = p_pos;
-	triggered = false;
-}
+
+
+
+
+
+
+
+
+
+
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
 	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex )
@@ -1102,82 +1106,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enem = enemy;
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
-			}
-			else if( typeName == "poi" )
-			{
-				string air;
-
-				PoiInfo *pi = NULL;
-				if( air == "+air" )
-				{
-					Vector2i pos;
-					is >> pos.x;
-					is >> pos.y;
-					
-					string pname;
-					is >> pname;
-
-					string barStr;
-					is >> barStr;
-
-					if( barStr == "-" )
-					{
-					}
-					else if( barStr == "x" )
-					{
-						barriers.push_back( Barrier( true, pos.y ) );
-					}
-					else if( barStr == "y" )
-					{
-						barriers.push_back( Barrier( false, pos.x ) );
-					}
-					else
-					{
-						assert( 0 );
-					}
-
-					pi = new PoiInfo( pos );
-				}
-				else if( air == "-air" )
-				{
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					string barStr;
-					is >> barStr;
-
-					if( barStr == "-" )
-					{
-					}
-					else if( barStr == "x" )
-					{
-						barriers.push_back( Barrier( true, pos.y ) );
-					}
-					else if( barStr == "y" )
-					{
-						barriers.push_back( Barrier( false, pos.x ) );
-					}
-					else
-					{
-						assert( 0 );
-					}
-
-					pi = new PoiInfo( edges[polyIndex[terrainIndex] + edgeIndex],
-						edgeQuantity );
-					//edges[polyIndex[terrainIndex] + edgeIndex]					
-				}
-				else
-				{
-					assert( 0 );
-				}
-
-				poiMap
 			}
 
 			//w1
