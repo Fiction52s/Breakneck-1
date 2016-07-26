@@ -1567,7 +1567,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//	bulletSpeed, framesBetweenNodes, loop );
 
 				Boss_Bird *enemy 
-					= new Boss_Bird( this, Vector2i( xPos, yPos ), localPath );
+					= new Boss_Bird( this, Vector2i( xPos, yPos ) );
 				//Boss_Skeleton *enemy 
 				//	= new Boss_Skeleton( this, Vector2i( xPos, yPos ) );
 
