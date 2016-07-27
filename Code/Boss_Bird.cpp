@@ -55,15 +55,17 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	cinemFrames[FIGHT_INTRO] = 5;
 	showFace = true;
 	cinemFrame = 0;
-	cinem = FIGHT_INTRO;
+	cinem = NOCINEM;//FIGHT_INTRO;
 	fightIntroAction = FI_WALK;
 	
+	position.x = diamondCenter.x;
+	position.y = diamondCenter.y;
 
 	throwHoldFrames = 20;
 	currentAttack = NOATTACK;
 	//attackFrame = 0;
 	gridRatio = 1;
-	gridSizeRatio = 64;
+	gridSizeRatio = 128;
 	gridOriginPos = position;//V2d( pos.x, pos.y );
 
 	ts_glide = owner->GetTileset( "Bosses/Bird/glide_256x256.png", 256, 256 );
@@ -147,6 +149,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	ClearPathVA();
 
 	nodeTravelFrames = 30;
+	action = PLANMOVE;
 	travelFrame = 0;
 	travelIndex = 0;
 	testFrame = 0;
@@ -159,7 +162,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	bulletSpeed = 5;
 
-	action = PLANMOVE;
+	
 
 	/*animFactor[NEUTRAL] = 1;
 	animFactor[FIRE] = 1;
@@ -179,11 +182,11 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	
 	
 
-	originalPos = pos;
+	originalPos = Vector2i(position.x, position.y );
 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
+	launcher = new Launcher( this, owner, 32, 1, position, V2d( 1, 0 ), 0, 900, true );
 	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
@@ -312,7 +315,6 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 }
 
 
-
 void Boss_Bird::ResetEnemy()
 {
 	dialogueFrame = 0;
@@ -345,7 +347,6 @@ void Boss_Bird::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
-	
 }
 
 void Boss_Bird::HandleEntrant( QuadTreeEntrant *qte )
@@ -405,7 +406,15 @@ void Boss_Bird::SetupAttackMarkers()
 
 void Boss_Bird::BulletHitPlayer(BasicBullet *b )
 {
+	b->launcher->hitboxInfo->kbDir = normalize( owner->player.position - b->position );
+	b->launcher->hitboxInfo->knockback = 20;
+	b->launcher->hitboxInfo->hitstunFrames = 1;
+	b->launcher->hitboxInfo->damage = 0;
+	b->launcher->hitboxInfo->hitlagFrames = 0;
+	//cout << "hit player" << endl;
 	owner->player.ApplyHit( b->launcher->hitboxInfo );
+
+	//launcher->DeactivateBullet( this );
 }
 
 void Boss_Bird::ActionEnded()
@@ -1010,7 +1019,12 @@ void Boss_Bird::UpdatePrePhysics()
 		{
 			CreatePath();
 			travelFrame = 0;
-			travelIndex = 0;			
+			travelIndex = 0;		
+
+
+			launcher->position = owner->poiMap["bullettest"]->pos;
+			launcher->bulletSpeed = 0;
+			launcher->Fire();
 		}
 
 		UpdatePathVA();
@@ -1020,6 +1034,7 @@ void Boss_Bird::UpdatePrePhysics()
 		{
 			travelFrame = 0;
 			travelIndex = 0;
+			
 		}
 		UpdateMovement();
 		break;
@@ -1118,7 +1133,7 @@ void Boss_Bird::UpdatePrePhysics()
 	//	launcher->facingDir = normalize( owner->player.position - position );
 	//	//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 	//	//	launcher->facingDir.y << endl;
-	//	launcher->Fire();
+	
 	//	fireCounter = 0;
 	//	//testLauncher->Fire();
 	//}

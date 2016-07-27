@@ -10,6 +10,20 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
+{
+	using namespace BulletType;
+	switch( type )
+	{
+	case NORMAL:
+		break;
+	case SIN:
+		break;
+	case BIRDBOSS:
+		break;
+	};
+}
+
 Launcher::Launcher( LauncherEnemy *p_handler,
 	GameSession *p_owner,
 		int numTotalBullets,
@@ -445,7 +459,8 @@ void BasicBullet::UpdatePhysics()
 	double movementLen = length( movement );
 	V2d moveDir = normalize( movement );
 	double move = 0;
-	while( movementLen > 0 )
+
+	do
 	{
 		//cout << "loop: " << movementLen << endl;
 		if( movementLen > physBody.rw )
@@ -459,22 +474,27 @@ void BasicBullet::UpdatePhysics()
 			movementLen = 0;
 		}
 
-		bool hit = ResolvePhysics( moveDir * move );
-		if( hit )
+		if( move != 0 )
 		{
-			HitTerrain();
-			break;
+			bool hit = ResolvePhysics( moveDir * move );
+			if( hit )
+			{
+				HitTerrain();
+				break;
+			}
 		}
 
 		hitBody.globalPosition = position;
 
 		Actor &player = launcher->owner->player;
 		if( player.hurtBody.Intersects( hitBody ) )
-		{
+		{	
+			//cout << "hit??" << endl;
 			HitPlayer();
 			break;
 		}
 	}
+	while( movementLen > 0 );
 }
 
 bool BasicBullet::HitTerrain()
@@ -487,7 +507,7 @@ bool BasicBullet::HitTerrain()
 void BasicBullet::HitPlayer()
 {
 	launcher->handler->BulletHitPlayer( this );
-	launcher->DeactivateBullet( this );
+	//launcher->DeactivateBullet( this );
 }
 
 bool BasicBullet::ResolvePhysics( V2d vel )

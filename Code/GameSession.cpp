@@ -4571,7 +4571,10 @@ int GameSession::Run( string fileN )
 					}*/
 				}
 
-				
+				for( list<Barrier*>::iterator it = barriers.begin(); it != barriers.end(); ++it )
+				{
+					(*it)->triggered = false;
+				}
 				
 
 				
@@ -7861,6 +7864,8 @@ void GameSession::ResetEnemies()
 {
 	rResetEnemies( enemyTree->startNode );
 	activeEnemyList = NULL;
+
+	if( b_bird != NULL ) b_bird->Reset();
 }
 
 void GameSession::ResetPlants()

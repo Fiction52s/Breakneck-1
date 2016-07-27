@@ -156,8 +156,55 @@ struct Launcher
 	//Launcher *next;
 };
 
+struct Bullet : QuadTreeCollider
+{
+	Bullet( int indexVA, Launcher *launcher,
+		double radius );
+	
+	virtual void HandleEntrant( QuadTreeEntrant *qte );
+	virtual void UpdatePrePhysics();
+	virtual void Reset(
+		sf::Vector2<double> &pos,
+		sf::Vector2<double> &vel );
+	virtual void UpdatePhysics();
+	virtual void UpdateSprite();
+	virtual void UpdatePostPhysics();
+	virtual void ResetSprite();
+	bool ResolvePhysics( 
+		sf::Vector2<double> vel );
+	virtual bool HitTerrain();
+	void HitPlayer();
+	
+	CollisionBox physBody;
+	CollisionBox hitBody;
+	CollisionBox hurtBody;
+	Bullet *prev;
+	Bullet *next;
+	sf::Vector2<double> position;
+	sf::Vector2<double> velocity;
+	int slowCounter;
+	int slowMultiple;
+	int framesToLive;
+	sf::Transform transform;
+	Tileset *ts;
+	int index;
+	bool col;
+	Contact minContact;
+	sf::Vector2<double> tempVel;
+	Launcher *launcher;
+};
 
-
+namespace BulletType
+{
+	enum Type
+	{
+		NORMAL,
+		SIN,
+		BIRDBOSS,
+		Count
+	};
+}
+Bullet* CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher );
 
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
