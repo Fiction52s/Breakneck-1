@@ -18,7 +18,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Boss_Bird::Projectile::Projectile( Boss_Bird *b, bool large )
+Boss_Bird::Projectile::Projectile( Boss_Bird *b, bool p_large )
 {
 	slowMultiple = 1;
 	slowCounter = 1;
@@ -36,8 +36,9 @@ Boss_Bird::Projectile::Projectile( Boss_Bird *b, bool large )
 	actionLength[STILL] = 1;
 	actionLength[HOME] = 1;
 	actionLength[FALL_AT_PLAYER] = 1;
-	actionLength[RETRACT] = 60;
+	actionLength[RETRACT] = 1;
 
+	large = p_large;
 	double rad = 32;
 	if( large )
 	{
@@ -193,7 +194,7 @@ void Boss_Bird::Projectile::UpdatePrePhysics()
 			frame = 0;
 			break;
 		case RETRACT:
-			state = NO_EXIST;
+			//state = NO_EXIST;
 			frame = 0;
 			break;
 		}
@@ -243,24 +244,40 @@ void Boss_Bird::Projectile::UpdatePrePhysics()
 		break;
 	case FALL_AT_PLAYER:
 		{
+			double fac = .7;
+			double max = 15;
+			if( large )
+			{
+				max = 5;
+				fac = .25;
+			}
 			V2d playerDir = normalize( player.position - position );
-			velocity += playerDir * 1.0;
-			if( length( velocity ) > 15 )
+			velocity += playerDir * fac;
+			if( length( velocity ) > max )
 			{
 				V2d dir = normalize( velocity );
-				velocity = dir * 15.0;
+				velocity = dir * max;
 			}
 			//position = player.position;
 			//cout << "adjust: " << position.x << ", " << position.y << endl;
 		}
 	case FALL_AT_SELF:
 		{
+			double fac = .4;	
+			double max = 20;
+
+			if( large )
+			{
+				fac = .1;
+				max = 5;
+			}
+			
 			V2d bDir = normalize( boss->position - position );
-			velocity += bDir * .4;
-			if( length( velocity ) > 20 )
+			velocity += bDir * fac;
+			if( length( velocity ) > max )
 			{
 				V2d dir = normalize( velocity );
-				velocity = dir * 20.0;
+				velocity = dir * max;
 			}
 		}
 		break;
@@ -270,7 +287,7 @@ void Boss_Bird::Projectile::UpdatePrePhysics()
 			V2d bDir = normalize( diff );
 			velocity = bDir * ( frame * .4 );
 
-			if( length( velocity ) > 20 )
+			if( length( velocity ) > 40 )
 			{
 				V2d dir = normalize( velocity );
 				velocity = dir * 20.0;
@@ -353,6 +370,11 @@ void Boss_Bird::Projectile::UpdatePostPhysics()
 	sprite.setTextureRect( boss->ts_projectile->GetSubRect( f ) );
 	sprite.setPosition( position.x, position.y );
 
+	if( large )
+	{
+		sprite.setScale( 2, 2 );
+	}
+
 	if( slowCounter == slowMultiple )
 	{
 		++frame;		
@@ -380,10 +402,13 @@ void Boss_Bird::Projectile::HitTerrain()
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::BOSS_BIRD ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
-	attackMarkerVA( sf::Quads, 4 * 4 ), dialogue( owner, DialogueBox::BIRD )
+	attackMarkerVA( sf::Quads, 16 * 4 ), dialogue( owner, DialogueBox::BIRD ),
+	gridbgVA( sf::Quads, GRID_SIZE * (GRID_SIZE - 1) * 2 * 4 )
 {
 	
 	
+
+
 	//owner->cam.Update( &owner->player );
 	
 	SetupCinemTiming();
@@ -419,15 +444,44 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	cinem = NOCINEM;//FIGHT_INTRO;
 	fightIntroAction = FI_WALK;
 	
-	position.x = diamondCenter.x;
-	position.y = diamondCenter.y;
+	
 
 	throwHoldFrames = 20;
 	currentAttack = NOATTACK;
 	//attackFrame = 0;
 	gridRatio = 1;
 	gridSizeRatio = 128;
-	gridOriginPos = position;//V2d( pos.x, pos.y );
+
+	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
+	V2d trueRight( gridRatio, 1.0 / gridRatio );
+	V2d trueDown( -gridRatio, 1.0 / gridRatio );
+	V2d trueUp( gridRatio, -1.0 / gridRatio );
+
+	position.x = diamondCenter.x;
+	position.y = diamondCenter.y;
+
+	moveIndex.x = GRID_SIZE / 2;
+	moveIndex.y = GRID_SIZE / 2;
+
+	V2d gridIndexPos = trueRight * (double)moveIndex.x + trueDown * (double)moveIndex.y;
+	gridIndexPos *= gridSizeRatio;
+
+	//cout << "grid index pos: " << gridIndexPos.x << ", " << gridIndexPos.y << endl;
+	gridOriginPos = position - gridIndexPos;//V2d( pos.x, pos.y );
+
+	int gridNumVertices = gridbgVA.getVertexCount();
+	int numGridQuads = gridNumVertices / 4;
+
+	
+
+	
+
+
+	//diamondCenter = diamondCenter + gridIndexPos;
+
+	
+
+	
 
 	ts_projectile = owner->GetTileset( "Bosses/Bird/projectile_64x64.png", 64, 64 );
 
@@ -475,10 +529,15 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	attackNodes[4][4] = LUNGE;*/
 
 	attackNodes[1][1] = KICK;
-	attackNodes[4][1] = KICK;
-	attackNodes[1][4] = KICK;
-	attackNodes[4][4] = KICK;
-
+	attackNodes[5][1] = WING;
+	attackNodes[1][5] = WING;
+	attackNodes[5][5] = SPIN;
+	attackNodes[3][3] = KICK;
+	attackNodes[4][4] = WING;
+	attackNodes[2][2] = WING;
+	attackNodes[6][6] = KICK;
+	attackNodes[3][5] = SPIN;
+	attackNodes[5][3] = SPIN;
 
 
 
@@ -712,7 +771,9 @@ void Boss_Bird::ResetEnemy()
 	ClearPathVA();
 	testFrame = 0;
 	moveX = false;
-	moveIndex = Vector2i( 0, 0 );
+	//moveIndex = Vector2i( 0, 0 );
+	moveIndex.x = GRID_SIZE / 2;
+	moveIndex.y = GRID_SIZE / 2;
 
 	fireCounter = 0;
 	launcher->Reset();
@@ -1406,6 +1467,9 @@ void Boss_Bird::UpdatePrePhysics()
 			travelFrame = 0;
 			travelIndex = 0;		
 
+			
+
+			
 			//projectiles[0]->position = owner->poiMap["bullettest"]->pos;
 			//projectiles[0]->state = Projectile::State::FALL_AT_PLAYER;
 			//launcher->position = owner->poiMap["bullettest"]->pos;
@@ -1425,6 +1489,16 @@ void Boss_Bird::UpdatePrePhysics()
 		UpdateMovement();
 		break;
 	case ATTACK_WING:
+		if( frame == 0 )
+		{
+			if( smallRings[0]->state != Projectile::State::NO_EXIST )
+			{
+			}
+
+			smallRings[0]->position = position;//owner->poiMap["bullettest"]->pos;
+			smallRings[0]->state = Projectile::State::FALL_AT_PLAYER;
+			smallRings[0]->frame = 0;
+		}
 		UpdateMovement();
 		break;
 	case ATTACK_LUNGESTART:
@@ -1483,9 +1557,28 @@ void Boss_Bird::UpdatePrePhysics()
 			break;
 		}
 	case ATTACK_SPIN:
+		if( frame == 0 )
+		{
+			if( bigRings[0]->state != Projectile::State::NO_EXIST )
+			{
+				bigRings[0]->state = Projectile::State::FALL_AT_SELF;
+				bigRings[0]->frame = 0;
+			}
+			if( smallRings[0]->state != Projectile::State::NO_EXIST )
+			{
+				smallRings[0]->state = Projectile::State::FALL_AT_SELF;
+				smallRings[0]->frame = 0;
+			}
+		}
 		UpdateMovement();
 		break;
 	case ATTACK_KICK:
+		if( frame == 0 )
+		{
+			bigRings[0]->position = position;//owner->poiMap["bullettestlarge"]->pos;
+			bigRings[0]->state = Projectile::State::FALL_AT_PLAYER;
+			bigRings[0]->frame = 0;
+		}
 		UpdateMovement();
 		break;
 	}

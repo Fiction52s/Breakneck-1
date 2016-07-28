@@ -264,6 +264,7 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 			HOME,
 			Count
 		};
+		bool large;
 		void Reset();
 		void HandleEntrant( QuadTreeEntrant *qte );
 		bool ResolvePhysics( 
@@ -436,9 +437,11 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	sf::Vector2i path[MAX_PATH_SIZE];
 	int pathSize;
 
-	const static int GRID_SIZE = 6;
+	const static int GRID_SIZE = 7;
 	double gridRatio;
 	double gridSizeRatio;
+
+	sf::VertexArray gridbgVA;
 
 	int travelIndex;
 	int travelFrame;
