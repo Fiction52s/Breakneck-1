@@ -250,6 +250,56 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 		SPIN
 	};
 
+	const static int MAX_PROJECTILES = 3;
+	struct Projectile : QuadTreeCollider
+	{
+		Projectile( Boss_Bird *boss, bool large );
+		enum State
+		{
+			NO_EXIST,
+			FALL_AT_PLAYER,
+			FALL_AT_SELF,
+			STILL,
+			RETRACT,
+			HOME,
+			Count
+		};
+		void Reset();
+		void HandleEntrant( QuadTreeEntrant *qte );
+		bool ResolvePhysics( 
+		sf::Vector2<double> vel );
+		void Draw( sf::RenderTarget *target );
+		State state;
+		sf::Vector2<double> position;
+		sf::Vector2<double> velocity;
+		int frame;
+		void UpdatePrePhysics();
+		void UpdatePostPhysics();
+		void UpdatePhysics();
+		void HitPlayer();
+		void HitTerrain();
+		Boss_Bird *boss;
+		sf::Sprite sprite;
+		HitboxInfo *hitboxInfo;
+		CollisionBox hurtBody;
+		CollisionBox hitBody;
+		CollisionBox physBody;
+		std::map<State,int> actionLength;
+		bool col;
+		Contact minContact;
+		sf::Vector2<double> tempVel;
+		int slowMultiple;
+		int slowCounter;
+	};
+
+	Projectile **smallRings;
+	Projectile **bigRings;
+	int numSmallRings;
+	int numBigRings;
+
+	Tileset *ts_projectile;
+	int numCurrentProjectiles;
+
 	Tileset * ts_birdFace;
 	sf::Sprite faceSprite;
 	PortraitBox portrait;

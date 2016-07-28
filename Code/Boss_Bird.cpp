@@ -18,13 +18,374 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+Boss_Bird::Projectile::Projectile( Boss_Bird *b, bool large )
+{
+	slowMultiple = 1;
+	slowCounter = 1;
+	velocity = V2d( 0, 0 );
+
+	boss = b;
+
+	sprite.setTexture( *b->ts_projectile->texture );
+	sprite.setTextureRect( b->ts_projectile->GetSubRect( 0 ) );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+
+	state = NO_EXIST;
+	frame = 0;
+	actionLength[NO_EXIST] = 1;
+	actionLength[STILL] = 1;
+	actionLength[HOME] = 1;
+	actionLength[FALL_AT_PLAYER] = 1;
+	actionLength[RETRACT] = 60;
+
+	double rad = 32;
+	if( large )
+	{
+		rad = 64;
+	}
+
+
+	hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = rad;
+	hurtBody.rh = rad;
+
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = rad;
+	hitBody.rh = rad;
+
+	physBody.type = CollisionBox::Physics;
+	physBody.isCircle = true;
+	physBody.globalAngle = 0;
+	physBody.offset.x = 0;
+	physBody.offset.y = 0;
+	physBody.rw = rad;
+	physBody.rh = rad;
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 100;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+
+	
+	hitboxInfo->knockback = 20;
+	hitboxInfo->hitstunFrames = 1;
+	hitboxInfo->damage = 0;
+	hitboxInfo->hitlagFrames = 0;
+}
+
+void Boss_Bird::Projectile::Reset()
+{
+	slowMultiple = 1;
+	slowCounter = 1;
+	velocity = V2d( 0, 0 );
+
+	//sprite.setTexture( *b->ts_projectile->texture );
+	//sprite.setTextureRect( b->ts_projectile->GetSubRect( 0 ) );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	frame = 0;
+	state = NO_EXIST;
+}
+
+void Boss_Bird::Projectile::Draw( RenderTarget *target )
+{
+	if( state != NO_EXIST )
+	{
+		target->draw( sprite );
+	}
+}
+
+void Boss_Bird::Projectile::HandleEntrant( QuadTreeEntrant *qte )
+{
+	Edge *e = (Edge*)qte;
+
+	Contact *c = boss->owner->coll.collideEdge( position + tempVel, physBody, e, tempVel, V2d( 0, 0 ) );
+
+	if( c != NULL )
+	{
+		if( !col )
+		{
+			minContact = *c;
+			col = true;
+		}
+		else if( c->collisionPriority < minContact.collisionPriority )
+		{
+			minContact = *c;
+		}
+	}
+}
+
+bool Boss_Bird::Projectile::ResolvePhysics( 
+		sf::Vector2<double> vel )
+{
+	Rect<double> oldR( position.x - physBody.rw, position.y - physBody.rw, 
+		2 * physBody.rw, 2 * physBody.rw );
+
+	//cout << "Resolving: " << vel.x << ", " << vel.y << endl;
+	position += vel;
+
+	Rect<double> newR( position.x - physBody.rw, position.y - physBody.rw, 
+		2 * physBody.rw, 2 * physBody.rw );
+
+	double oldRight = oldR.left + oldR.width;
+	double right = newR.left + newR.width;
+
+	double oldBottom = oldR.top + oldR.height;
+	double bottom = newR.top + newR.height;
+
+	double maxRight = max( right, oldRight );
+	double maxBottom = max( oldBottom, bottom );
+	double minLeft = min( oldR.left, newR.left );
+	double minTop = min( oldR.top, newR.top );
+
+
+	double ex = 1;
+	Rect<double> r( minLeft - ex, minTop - ex, 
+		(maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2 );
+	//Rect<double> realRect( min( oldR.left, r.left ),
+	//	min( oldR.top, r.top ));
+
+	minContact.collisionPriority = 1000000;
+
+	col = false;
+
+	tempVel = vel;
+	minContact.edge = NULL;
+
+	//queryMode = "resolve";
+//	Query( this, owner->testTree, r );
+	//queryBullet = bullet;
+
+
+	
+	boss->owner->terrainTree->Query( this, r );
+
+	return col;
+}
+
+void Boss_Bird::Projectile::UpdatePrePhysics()
+{
+	Actor &player = boss->owner->player;
+
+	if( frame == actionLength[state] )
+	{
+		switch( state )
+		{
+		case NO_EXIST:
+			frame = 0;
+			break;
+		case STILL:
+			frame = 0;
+			break;
+		case HOME:
+			frame = 0;
+			break;
+		case FALL_AT_PLAYER:
+			frame = 0;
+			break;
+		case RETRACT:
+			state = NO_EXIST;
+			frame = 0;
+			break;
+		}
+	}
+	
+	switch( state )
+	{
+	case NO_EXIST:
+		
+		break;
+	case STILL:
+		
+		break;
+	case HOME:
+		
+		break;
+	case FALL_AT_PLAYER:
+		break;
+	case RETRACT:
+		V2d diff = boss->position - position;
+		V2d bDir = normalize( diff );
+		V2d newVel = bDir * ( frame * .4 );
+
+		if( length( newVel ) > 20 )
+		{
+			V2d dir = normalize( newVel );
+			newVel = dir * 20.0;
+		}
+		if( length( diff ) < length( newVel ) )
+		{
+			state = NO_EXIST;
+			frame = 0;
+		}
+		break;
+	}
+		
+	switch( state )
+	{
+	case NO_EXIST:
+		
+		break;
+	case STILL:
+		
+		break;
+	case HOME:
+		
+		break;
+	case FALL_AT_PLAYER:
+		{
+			V2d playerDir = normalize( player.position - position );
+			velocity += playerDir * 1.0;
+			if( length( velocity ) > 15 )
+			{
+				V2d dir = normalize( velocity );
+				velocity = dir * 15.0;
+			}
+			//position = player.position;
+			//cout << "adjust: " << position.x << ", " << position.y << endl;
+		}
+	case FALL_AT_SELF:
+		{
+			V2d bDir = normalize( boss->position - position );
+			velocity += bDir * .4;
+			if( length( velocity ) > 20 )
+			{
+				V2d dir = normalize( velocity );
+				velocity = dir * 20.0;
+			}
+		}
+		break;
+	case RETRACT:
+		{
+			V2d diff = boss->position - position;
+			V2d bDir = normalize( diff );
+			velocity = bDir * ( frame * .4 );
+
+			if( length( velocity ) > 20 )
+			{
+				V2d dir = normalize( velocity );
+				velocity = dir * 20.0;
+			}
+		}
+		break;
+	}
+	
+}
+
+void Boss_Bird::Projectile::UpdatePhysics()
+{
+	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
+
+	double movementLen = length( movement );
+	V2d moveDir = normalize( movement );
+	double move = 0;
+
+	do
+	{
+		//cout << "loop: " << movementLen << endl;
+		if( movementLen > physBody.rw )
+		{
+			movementLen -= physBody.rw;
+			move = physBody.rw;
+		}
+		else
+		{
+			move = movementLen;
+			movementLen = 0;
+		}
+
+		if( move != 0 )
+		{
+			bool hit = ResolvePhysics( moveDir * move );
+			if( hit )
+			{
+				HitTerrain();
+				break;
+			}
+		}
+
+		hitBody.globalPosition = position;
+
+		Actor &player = boss->owner->player;
+		if( player.hurtBody.Intersects( hitBody ) )
+		{	
+			
+			//cout << "hit??" << endl;
+			HitPlayer();
+			break;
+		}
+	}
+	while( movementLen > 0 );
+
+	//IHitPlayer();
+}
+
+void Boss_Bird::Projectile::UpdatePostPhysics()
+{	
+	int f = 0;
+	switch( state )
+	{
+	case NO_EXIST:
+		f = 0;
+		break;
+	case STILL:
+		f = 1;
+		break;
+	case HOME:
+		f = 2;
+		break;
+	case FALL_AT_PLAYER:
+		f = 2;
+		break;
+	case FALL_AT_SELF:
+		break;
+	}
+
+	sprite.setTextureRect( boss->ts_projectile->GetSubRect( f ) );
+	sprite.setPosition( position.x, position.y );
+
+	if( slowCounter == slowMultiple )
+	{
+		++frame;		
+	
+		slowCounter = 1;
+	}
+	else
+	{
+		slowCounter++;
+	}
+}
+
+void Boss_Bird::Projectile::HitPlayer()
+{
+	hitboxInfo->kbDir = normalize( boss->owner->player.position - position );
+	boss->owner->player.ApplyHit( hitboxInfo );
+}
+
+void Boss_Bird::Projectile::HitTerrain()
+{
+	//hitboxInfo->kbDir = normalize( boss->owner->player.position - position );
+	//owner->player.ApplyHit( hitboxInfo );
+}
+
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::BOSS_BIRD ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	attackMarkerVA( sf::Quads, 4 * 4 ), dialogue( owner, DialogueBox::BIRD )
 {
+	
+	
 	//owner->cam.Update( &owner->player );
-
+	
 	SetupCinemTiming();
 	//spawned = true;
 	//owner->AddEnemy( this );
@@ -67,6 +428,8 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	gridRatio = 1;
 	gridSizeRatio = 128;
 	gridOriginPos = position;//V2d( pos.x, pos.y );
+
+	ts_projectile = owner->GetTileset( "Bosses/Bird/projectile_64x64.png", 64, 64 );
 
 	ts_glide = owner->GetTileset( "Bosses/Bird/glide_256x256.png", 256, 256 );
 	ts_wing = owner->GetTileset( "Bosses/Bird/wing_256x256.png", 256, 256 );
@@ -251,6 +614,19 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
+	numSmallRings = 6;
+	numBigRings = 2;
+	smallRings = new Projectile*[numSmallRings];
+	bigRings = new Projectile*[numBigRings];
+	for( int i = 0; i < numSmallRings; ++i )
+	{
+		smallRings[i] = new Projectile( this, false );
+	}
+	for( int i = 0; i < numBigRings; ++i )
+	{
+		bigRings[i] = new Projectile( this, true );
+	}
+
 	UpdateHitboxes();
 
 	fi0.push_back( SymbolInfo() );
@@ -317,6 +693,15 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 void Boss_Bird::ResetEnemy()
 {
+	for( int i = 0; i < numSmallRings; ++i )
+	{
+		smallRings[i]->Reset();
+	}
+
+	for( int i = 0; i < numBigRings; ++i )
+	{
+		bigRings[i]->Reset();
+	}
 	dialogueFrame = 0;
 	showFace = true;
 	cinemFrame = 0;
@@ -1021,10 +1406,11 @@ void Boss_Bird::UpdatePrePhysics()
 			travelFrame = 0;
 			travelIndex = 0;		
 
-
-			launcher->position = owner->poiMap["bullettest"]->pos;
-			launcher->bulletSpeed = 0;
-			launcher->Fire();
+			//projectiles[0]->position = owner->poiMap["bullettest"]->pos;
+			//projectiles[0]->state = Projectile::State::FALL_AT_PLAYER;
+			//launcher->position = owner->poiMap["bullettest"]->pos;
+			//launcher->bulletSpeed = 0;
+			//launcher->Fire();
 		}
 
 		UpdatePathVA();
@@ -1034,7 +1420,7 @@ void Boss_Bird::UpdatePrePhysics()
 		{
 			travelFrame = 0;
 			travelIndex = 0;
-			
+			//projectiles[0]->state = Projectile::State::RETRACT;
 		}
 		UpdateMovement();
 		break;
@@ -1126,6 +1512,16 @@ void Boss_Bird::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
+
+	for( int i = 0; i < numSmallRings; ++i )
+	{
+		smallRings[i]->UpdatePrePhysics();
+	}
+
+	for( int i = 0; i < numBigRings; ++i )
+	{
+		bigRings[i]->UpdatePrePhysics();
+	}
 	//if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
 	//{
 	//	//cout << "firing" << endl;
@@ -1183,6 +1579,16 @@ void Boss_Bird::UpdatePhysics()
 		PhysicsResponse();
 	}
 	//return;
+
+	for( int i = 0; i < numSmallRings; ++i )
+	{
+		smallRings[i]->UpdatePhysics();
+	}
+
+	for( int i = 0; i < numBigRings; ++i )
+	{
+		bigRings[i]->UpdatePhysics();
+	}
 }
 
 void Boss_Bird::PhysicsResponse()
@@ -1330,6 +1736,17 @@ void Boss_Bird::UpdatePostPhysics()
 	else
 	{
 		slowCounter++;
+	}
+
+
+	for( int i = 0; i < numSmallRings; ++i )
+	{
+		smallRings[i]->UpdatePostPhysics();
+	}
+
+	for( int i = 0; i < numBigRings; ++i )
+	{
+		bigRings[i]->UpdatePostPhysics();
 	}
 }
 
@@ -1543,8 +1960,15 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 		target->draw( topDeathSprite );
 	}
 
+	for( int i = 0; i < numSmallRings; ++i )
+	{
+		smallRings[i]->Draw( target );
+	}
 
-
+	for( int i = 0; i < numBigRings; ++i )
+	{
+		bigRings[i]->Draw( target );
+	}
 }
 
 void Boss_Bird::DrawMinimap( sf::RenderTarget *target )
