@@ -233,20 +233,23 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	{
 		PLANMOVE,
 		MOVE,
-		ATTACK_WING,
+		ATTACK_SMALL_BULLET,
+		ATTACK_BIG_BULLET,
 		ATTACK_KICK,
-		ATTACK_LUNGESTART,		
-		ATTACK_LUNGE,
-		ATTACK_LUNGERETREAT,
-		ATTACK_SPIN
+		ATTACK_KICKRETREAT,
+		ATTACK_SPIN,
+		ATTACK_PUNCHPLAN,
+		ATTACK_PUNCH,
+		ATTACK_PUNCHRETREAT
 	};
 
 	enum AttackType
 	{
 		NOATTACK,
-		WING,
+		PUNCH,
 		KICK,
-		LUNGE,
+		BIG_BULLET,
+		SMALL_BULLET,
 		SPIN
 	};
 
@@ -305,6 +308,7 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	sf::Sprite faceSprite;
 	PortraitBox portrait;
 
+	Tileset *ts_attackIcons;
 	Tileset *ts_symbols0;
 	Tileset *ts_dialogueBox;
 	DialogueBox dialogue;
@@ -437,7 +441,7 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	sf::Vector2i path[MAX_PATH_SIZE];
 	int pathSize;
 
-	const static int GRID_SIZE = 7;
+	const static int GRID_SIZE = 5;
 	double gridRatio;
 	double gridSizeRatio;
 

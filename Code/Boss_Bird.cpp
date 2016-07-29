@@ -244,8 +244,8 @@ void Boss_Bird::Projectile::UpdatePrePhysics()
 		break;
 	case FALL_AT_PLAYER:
 		{
-			double fac = .7;
-			double max = 15;
+			double fac = .25;
+			double max = 7;
 			if( large )
 			{
 				max = 5;
@@ -260,7 +260,9 @@ void Boss_Bird::Projectile::UpdatePrePhysics()
 			}
 			//position = player.position;
 			//cout << "adjust: " << position.x << ", " << position.y << endl;
+		
 		}
+		break;
 	case FALL_AT_SELF:
 		{
 			double fac = .4;	
@@ -402,8 +404,8 @@ void Boss_Bird::Projectile::HitTerrain()
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::BOSS_BIRD ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
-	attackMarkerVA( sf::Quads, 16 * 4 ), dialogue( owner, DialogueBox::BIRD ),
-	gridbgVA( sf::Quads, GRID_SIZE * (GRID_SIZE - 1) * 2 * 4 )
+	attackMarkerVA( sf::Quads, 17 * 4 ), dialogue( owner, DialogueBox::BIRD ),
+	gridbgVA( sf::Quads, (GRID_SIZE) * 2 * 4 )
 {
 	
 	
@@ -450,7 +452,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	currentAttack = NOATTACK;
 	//attackFrame = 0;
 	gridRatio = 1;
-	gridSizeRatio = 128;
+	gridSizeRatio = 64 * 2.5;
 
 	V2d trueLeft( -gridRatio, -1.0 / gridRatio );
 	V2d trueRight( gridRatio, 1.0 / gridRatio );
@@ -471,7 +473,64 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	int gridNumVertices = gridbgVA.getVertexCount();
 	int numGridQuads = gridNumVertices / 4;
+	
+	V2d start = gridOriginPos;
+	V2d end = gridOriginPos + trueRight * (double)(GRID_SIZE-1) * gridSizeRatio;
+	V2d other = normalize( end - start );
+	other = V2d( other.y, -other.x );
+	double gridbgWidth = 10;
+	Color gridCol = Color::Black;
 
+
+
+	for( int i = 0; i < GRID_SIZE; ++i )
+	{
+		//cout << "row" << endl;
+		Vector2f startLeft( (start + other * gridbgWidth ).x, (start + other * gridbgWidth ).y );
+		Vector2f startRight( (start - other * gridbgWidth ).x, (start - other * gridbgWidth ).y );
+		Vector2f endLeft( (end + other * gridbgWidth ).x, (end + other * gridbgWidth ).y );
+		Vector2f endRight( (end - other * gridbgWidth ).x, (end - other * gridbgWidth ).y );
+
+		gridbgVA[i * 4 + 0].position = startLeft;
+		gridbgVA[i * 4 + 1].position = startRight;
+		gridbgVA[i * 4 + 2].position = endRight;
+		gridbgVA[i * 4 + 3].position = endLeft;
+
+
+		gridbgVA[i * 4 + 0].color = gridCol;
+		gridbgVA[i * 4 + 1].color = gridCol;
+		gridbgVA[i * 4 + 2].color = gridCol;
+		gridbgVA[i * 4 + 3].color = gridCol;
+
+		start += trueDown * (double)gridSizeRatio;
+		end += trueDown * (double)gridSizeRatio;
+	}
+
+	start = gridOriginPos;
+	end = gridOriginPos + trueDown * (double)(GRID_SIZE-1) * gridSizeRatio;
+	other = normalize( end - start );
+	other = V2d( other.y, -other.x );
+	for( int i = 0; i < GRID_SIZE; ++i )
+	{
+		Vector2f startLeft( (start + other * gridbgWidth ).x, (start + other * gridbgWidth ).y );
+		Vector2f startRight( (start - other * gridbgWidth ).x, (start - other * gridbgWidth ).y );
+		Vector2f endLeft( (end + other * gridbgWidth ).x, (end + other * gridbgWidth ).y );
+		Vector2f endRight( (end - other * gridbgWidth ).x, (end - other * gridbgWidth ).y );
+
+		gridbgVA[i * 4 + 0 + (GRID_SIZE) * 4].position = startLeft;
+		gridbgVA[i * 4 + 1 + (GRID_SIZE) * 4].position = startRight;
+		gridbgVA[i * 4 + 2 + (GRID_SIZE) * 4].position = endRight;
+		gridbgVA[i * 4 + 3 + (GRID_SIZE) * 4].position = endLeft;
+
+
+		gridbgVA[i * 4 + 0 + (GRID_SIZE) * 4].color = gridCol;
+		gridbgVA[i * 4 + 1 + (GRID_SIZE) * 4].color = gridCol;
+		gridbgVA[i * 4 + 2 + (GRID_SIZE) * 4].color = gridCol;
+		gridbgVA[i * 4 + 3 + (GRID_SIZE) * 4].color = gridCol;
+
+		start += trueRight * (double)gridSizeRatio;
+		end += trueRight * (double)gridSizeRatio;
+	}
 	
 
 	
@@ -481,7 +540,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	
 
-	
+	ts_attackIcons = owner->GetTileset( "Bosses/Bird/attackicons_32x32.png", 32, 32 );
 
 	ts_projectile = owner->GetTileset( "Bosses/Bird/projectile_64x64.png", 64, 64 );
 
@@ -523,12 +582,9 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		}
 	}
 
-	/*attackNodes[1][1] = WING;
-	attackNodes[4][1] = LUNGE;
-	attackNodes[1][4] = WING;
-	attackNodes[4][4] = LUNGE;*/
+	
 
-	attackNodes[1][1] = KICK;
+	/*attackNodes[1][1] = KICK;
 	attackNodes[5][1] = WING;
 	attackNodes[1][5] = WING;
 	attackNodes[5][5] = SPIN;
@@ -537,13 +593,41 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	attackNodes[2][2] = WING;
 	attackNodes[6][6] = KICK;
 	attackNodes[3][5] = SPIN;
-	attackNodes[5][3] = SPIN;
+	attackNodes[5][3] = SPIN;*/
 
+	/*attackNodes[1][1] = SPIN;
+	attackNodes[0][4] = BIG_BULLET;
+	attackNodes[4][0] = SMALL_BULLET;
+	attackNodes[2][3] = PUNCH;
+	attackNodes[3][2] = BIG_BULLET;
+	attackNodes[4][4] = SPIN;
+	attackNodes[2][5] = SMALL_BULLET;
+	attackNodes[5][2] = KICK;
+	attackNodes[3][6] = KICK;
+	attackNodes[6][3] = SMALL_BULLET;
+	attackNodes[7][1] = PUNCH;
+	attackNodes[1][7] = PUNCH;
+	attackNodes[8][4] = BIG_BULLET;
+	attackNodes[4][8] = SMALL_BULLET;
+	attackNodes[7][7] = SPIN;
+	attackNodes[5][6] = BIG_BULLET;
+	attackNodes[6][5] = PUNCH;*/
 
+	attackNodes[1][1] = KICK;
 
-	/*attackNodes[4][0] = KICK;
-	attackNodes[0][4] = LUNGE;
-	attackNodes[4][4] = SPIN;*/
+	attackNodes[0][2] = BIG_BULLET;
+	attackNodes[2][0] = SMALL_BULLET;
+
+	attackNodes[1][3] = PUNCH;
+	attackNodes[3][1] = PUNCH;
+
+	attackNodes[2][2] = SPIN;
+
+	attackNodes[4][2] = BIG_BULLET;
+	attackNodes[2][4] = SMALL_BULLET;
+
+	attackNodes[3][3] = KICK;
+	
 
 	SetupAttackMarkers();
 	/*for( int i = 0; i < 4 * 4; ++i )
@@ -611,7 +695,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	launcher = new Launcher( this, owner, 32, 1, position, V2d( 1, 0 ), 0, 900, true );
 	launcher->SetBulletSpeed( bulletSpeed );	
 
-	initHealth = 40;
+	initHealth = 1000;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
@@ -816,7 +900,7 @@ void Boss_Bird::SetupAttackMarkers()
 	V2d trueDown( -gridRatio, 1.0 / gridRatio );
 	V2d trueUp( gridRatio, -1.0 / gridRatio );
 
-	int size = 16;
+	int size = 32;
 	int index = 0;
 	for( int i = 0; i < GRID_SIZE; ++i )
 	{
@@ -839,10 +923,37 @@ void Boss_Bird::SetupAttackMarkers()
 			attackMarkerVA[index * 4 + 2].position = gip + Vector2f( size, size );
 			attackMarkerVA[index * 4 + 3].position = gip + Vector2f( -size, size );
 
-			attackMarkerVA[index * 4 + 0].color = Color::Red;
+			int realFrame = 0;
+			switch( attackNodes[i][j] )
+			{
+			case PUNCH:
+				realFrame = 0;
+				break;
+			case KICK:
+				realFrame = 1;
+				break;
+			case BIG_BULLET:
+				realFrame = 2;
+				break;
+			case SMALL_BULLET:
+				realFrame = 3;
+				break;
+			case SPIN:
+				realFrame = 4;
+				break;
+			}
+
+			IntRect ir = ts_attackIcons->GetSubRect( realFrame );
+
+			attackMarkerVA[index * 4 + 0].texCoords = Vector2f( ir.left, ir.top );
+			attackMarkerVA[index * 4 + 1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+			attackMarkerVA[index * 4 + 2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+			attackMarkerVA[index * 4 + 3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+
+			/*attackMarkerVA[index * 4 + 0].color = Color::Red;
 			attackMarkerVA[index * 4 + 1].color = Color::Red;
 			attackMarkerVA[index * 4 + 2].color = Color::Red;
-			attackMarkerVA[index * 4 + 3].color = Color::Red;
+			attackMarkerVA[index * 4 + 3].color = Color::Red;*/
 
 			++index;
 		}
@@ -1335,27 +1446,19 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	case MOVE:
 		break;
-	case ATTACK_WING:
+	case ATTACK_SMALL_BULLET:
 		if( frame == (2 * 2 + throwHoldFrames) * 2 )
 		{
 			action = MOVE;
 		}
 		break;
-	case ATTACK_LUNGESTART:
-		//why is it like this?
-		if( frame == nodeTravelFrames * 2 + 1 )
-		{
-			action = ATTACK_LUNGE;
-			frame = 0;
-		}
-		break;
-	case ATTACK_LUNGE:
+	case ATTACK_KICK:
 		if( frame == 10 ) //back on the grid
 		{
-			action = ATTACK_LUNGERETREAT;
+			action = ATTACK_KICKRETREAT;
 		}
 		break;
-	case ATTACK_LUNGERETREAT:
+	case ATTACK_KICKRETREAT:
 		if( frame == 30 + 30 )
 		{
 			action = MOVE;
@@ -1367,25 +1470,43 @@ void Boss_Bird::UpdatePrePhysics()
 			action = MOVE;
 		}
 		break;
-	case ATTACK_KICK:
+	case ATTACK_BIG_BULLET:
 		if( frame == 9 * 4 )
 		{
 			action = MOVE;
 		}
 		break;
+	case ATTACK_PUNCH:
+		if( frame == 20 )
+		{
+			action = ATTACK_PUNCHRETREAT;
+		}
+		break;
+	case ATTACK_PUNCHPLAN:
+		if( frame == 60 )
+		{
+			action = MOVE;
+		}
+		break;
+	case ATTACK_PUNCHRETREAT:
+		if( frame == 30 + 30 )
+		{
+			action = MOVE;
+		}
 		break;
 
 	}
 
 	
-	if ( action != ATTACK_LUNGE && action != ATTACK_LUNGERETREAT )
+	if ( action != ATTACK_KICK && action != ATTACK_KICKRETREAT && action != ATTACK_PUNCH &&
+		action != ATTACK_PUNCHRETREAT && action != ATTACK_PUNCHPLAN )
 	{
 		++travelFrame;
 		if( travelFrame == nodeTravelFrames )	
 		{
-			if( action == MOVE || action == ATTACK_WING 
-				|| action == ATTACK_LUNGESTART || action == ATTACK_SPIN
-				|| action == ATTACK_KICK )
+			if( action == MOVE || action == ATTACK_SMALL_BULLET 
+				|| action == ATTACK_SPIN
+				|| action == ATTACK_BIG_BULLET )
 			{
 				cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
 				//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
@@ -1402,12 +1523,12 @@ void Boss_Bird::UpdatePrePhysics()
 					action = MOVE;
 				}
 				else if( action == MOVE 
-					|| action == ATTACK_WING
-					|| action == ATTACK_LUNGESTART
+					|| action == ATTACK_SMALL_BULLET
+					|| action == ATTACK_BIG_BULLET
 					|| action == ATTACK_SPIN 
 					|| action == ATTACK_KICK )
 				{
-					if( action == ATTACK_KICK )
+					if( action == ATTACK_BIG_BULLET )
 					{
 						sprite.setRotation( 0 );
 					}
@@ -1422,7 +1543,7 @@ void Boss_Bird::UpdatePrePhysics()
 	}
 	
 
-	if( (action == MOVE || action == ATTACK_WING || action == ATTACK_LUNGESTART
+	if( (action == MOVE || action == ATTACK_SMALL_BULLET || action == ATTACK_BIG_BULLET
 		|| action == ATTACK_SPIN )
 		&& ( travelIndex > 0 && travelFrame == 0 && travelIndex != pathSize ) )
 	{
@@ -1432,19 +1553,22 @@ void Boss_Bird::UpdatePrePhysics()
 		{
 			switch( at )
 			{
-			case WING:
-				action = ATTACK_WING;
+			case SMALL_BULLET:
+				action = ATTACK_SMALL_BULLET;
+				break;
+			case BIG_BULLET:
+				action = ATTACK_BIG_BULLET;
+				//cout << "kick: " << travelIndex << endl;
 				break;
 			case KICK:
 				action = ATTACK_KICK;
-				cout << "kick: " << travelIndex << endl;
-				break;
-			case LUNGE:
-				action = ATTACK_LUNGESTART;
 				//frame = 0;
 				break;
 			case SPIN:
 				action = ATTACK_SPIN;
+				break;
+			case PUNCH:
+				action = ATTACK_PUNCHPLAN;
 				break;
 			}
 
@@ -1488,7 +1612,7 @@ void Boss_Bird::UpdatePrePhysics()
 		}
 		UpdateMovement();
 		break;
-	case ATTACK_WING:
+	case ATTACK_SMALL_BULLET:
 		if( frame == 0 )
 		{
 			if( smallRings[0]->state != Projectile::State::NO_EXIST )
@@ -1498,12 +1622,18 @@ void Boss_Bird::UpdatePrePhysics()
 			smallRings[0]->position = position;//owner->poiMap["bullettest"]->pos;
 			smallRings[0]->state = Projectile::State::FALL_AT_PLAYER;
 			smallRings[0]->frame = 0;
+			smallRings[0]->velocity = V2d( 0, 0 );
 		}
 		UpdateMovement();
 		break;
-	case ATTACK_LUNGESTART:
+	case ATTACK_KICK:
+		{
+		//cout << "kicking" << endl;
 		if( frame == 0 )
 		{
+			lungeStart = position;
+
+			
 			V2d lungeDir = GetLungeDir();
 			rayStart = position;
 			rayEnd = position + lungeDir * 2000.0; //lol cant wait for this to break
@@ -1515,19 +1645,6 @@ void Boss_Bird::UpdatePrePhysics()
 			lungeEnd = rcEdge->GetPoint( rcQuantity );
 			testFinalCircle.setPosition( lungeEnd.x, lungeEnd.y );
 		}
-
-		UpdateMovement();
-		break;
-	case ATTACK_LUNGE:
-
-		if( frame == 0 )
-		{
-			lungeStart = position;
-		}
-
-		{
-		//--travelFrame;
-		//int lungeFrames = 10;
 		
 		double lungeLength = 9;
 				
@@ -1536,7 +1653,7 @@ void Boss_Bird::UpdatePrePhysics()
 
 		break;
 		}
-	case ATTACK_LUNGERETREAT:
+	case ATTACK_KICKRETREAT:
 		{
 			
 			if( frame < 30 )
@@ -1572,14 +1689,38 @@ void Boss_Bird::UpdatePrePhysics()
 		}
 		UpdateMovement();
 		break;
-	case ATTACK_KICK:
+	case ATTACK_BIG_BULLET:
 		if( frame == 0 )
 		{
 			bigRings[0]->position = position;//owner->poiMap["bullettestlarge"]->pos;
 			bigRings[0]->state = Projectile::State::FALL_AT_PLAYER;
 			bigRings[0]->frame = 0;
+			bigRings[0]->velocity = V2d( 0, 0 );
 		}
 		UpdateMovement();
+		break;
+	case ATTACK_PUNCH:
+		break;
+	case ATTACK_PUNCHRETREAT:
+		break;
+	case ATTACK_PUNCHPLAN:
+		//if( frame == 0 )
+		//{
+		//	lungeStart = position;
+		//}
+
+		//if( frame < 30 )
+		//{
+		//	//pause for dramatic effect
+		//}
+		//else
+		//{
+		//	double retreatLength = 29;
+		//	int f = frame - 30;
+		//	cout << "f: " << f << endl;
+		//	position = lungeStart * ((f) / retreatLength ) 
+		//	+ lungeEnd *(1.0 - (f) / retreatLength );
+		//}
 		break;
 	}
 
@@ -1753,16 +1894,20 @@ sf::Vector2<double> Boss_Bird::GetLungeDir()
 	V2d playerDir = normalize( playerPos - position );
 	
 
-	double angle = atan2( playerDir.y, playerDir.x );
+	/*double angle = atan2( playerDir.y, playerDir.x );
 	int rot = 60;
 	angle += (((rand() % rot) - rot / 2 ) / 180.0 * PI);
 	V2d newDir( cos( angle ), sin( angle ) );
 
-	V2d spot = position + newDir * 300.0;
+	V2d spot = position + newDir * 300.0;*/
+
+
+
 	//testFinalCircle.setPosition( spot.x, spot.y );
 
 	//cout << "angle: " << angle << endl;
-	return newDir;
+	//return newDir;
+	return playerDir;
 }
 
 void Boss_Bird::SetRelFacePos( sf::Vector2f &pos )
@@ -1885,7 +2030,7 @@ void Boss_Bird::UpdateSprite()
 			sprite.setTexture( *ts_wing->texture );
 			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
 			break;
-		case ATTACK_WING:
+		case ATTACK_SMALL_BULLET:
 			sprite.setTexture( *ts_wing->texture );
 			if( frame < 2 * 2 )
 			{
@@ -1910,7 +2055,7 @@ void Boss_Bird::UpdateSprite()
 				sprite.setTextureRect( ts_wing->GetSubRect( 5 ) );
 			}
 			break;
-		case ATTACK_LUNGE:
+		case ATTACK_KICK:
 			sprite.setTexture( *ts_wing->texture );
 			sprite.setTextureRect( ts_wing->GetSubRect( 1 ) );
 			break;
@@ -1918,19 +2063,12 @@ void Boss_Bird::UpdateSprite()
 			sprite.setTexture( *ts_wing->texture );
 			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
 			break;
-		case ATTACK_KICK:
+		case ATTACK_BIG_BULLET:
 			{
 
 				sprite.setTexture( *ts_kick->texture );
 				IntRect ir = ts_kick->GetSubRect( frame / 4 );
 				sprite.setTextureRect( ir );
-
-				
-				
-				
-
-				
-
 
 				sf::Vector2i p = path[travelIndex-1];
 
@@ -1957,12 +2095,25 @@ void Boss_Bird::UpdateSprite()
 					//leave it
 				}
 				//cout << "end" << endl;
-			
-				
 
 				break;
 			}
-
+		case ATTACK_PUNCHPLAN:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
+		case ATTACK_PUNCH:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
+		case ATTACK_PUNCHRETREAT:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
+		case ATTACK_KICKRETREAT:
+			sprite.setTexture( *ts_wing->texture );
+			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			break;
 			
 			
 		}
@@ -2018,10 +2169,10 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 			target->draw( cs );
 		}
 		
-		
+		target->draw( gridbgVA );
 		
 		target->draw( pathVA );
-		target->draw( attackMarkerVA );
+		target->draw( attackMarkerVA, ts_attackIcons->texture );
 		target->draw( sprite );
 
 		if( action == PLANMOVE )
@@ -2030,11 +2181,11 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 			target->draw( testCircle );
 			
 		}
-		else if( action == ATTACK_LUNGESTART )
-		{
-			//testFinalCircle.setPosition( position.x, position.y );
-			target->draw( testFinalCircle );
-		}
+		//else if( action == ATTACK_LUNGESTART )
+		//{
+		//	//testFinalCircle.setPosition( position.x, position.y );
+		//	target->draw( testFinalCircle );
+		//}
 	}
 	else if( !dead )
 	{
@@ -2529,7 +2680,7 @@ void Boss_Bird::UpdatePathVA()
 		
 		V2d norm( along.y, -along.x );
 
-		double height = 10;
+		double height = 4;
 
 		V2d gridIndexPos = trueRight * (double)testIndex.x + trueDown * (double)testIndex.y;
 		gridIndexPos *= gridSizeRatio;
@@ -2568,6 +2719,9 @@ void Boss_Bird::UpdatePathVA()
 void Boss_Bird::HandleRayCollision( Edge *edge, double edgeQuantity, 
 	double rayPortion )
 {
+	double edgeLength = length( edge->v1 - edge->v0 );
+	if( edgeLength < 300 )
+		return;
 	if( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
 		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) )
 	{
