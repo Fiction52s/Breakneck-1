@@ -285,7 +285,11 @@ Actor::Actor( GameSession *gs )
 		airBounceFlameFrames = 20 * 3;
 		runBounceFlameFrames = 21 * 3;
 
-		actionLength[DAIR] = 10 * 2 - 8;
+		actionLength[WALLATTACK] = 8 * 2;
+		tileset[WALLATTACK] = owner->GetTileset( "wallattack_64x128.png", 64, 128 );
+		normal[WALLATTACK] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
+
+		actionLength[DAIR] = 10 * 2;
 		tileset[DAIR] = owner->GetTileset( "dair_80x80.png", 80, 80 );
 		normal[DAIR] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
@@ -338,7 +342,7 @@ Actor::Actor( GameSession *gs )
 		tileset[STANDN] = owner->GetTileset( "standn_96x64.png", 96, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
-		actionLength[UAIR] = 6 * 3 - 3;
+		actionLength[UAIR] = 6 * 3;
 		tileset[UAIR] = owner->GetTileset( "uair_80x80.png", 80, 80 );
 		normal[UAIR] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
 
@@ -751,9 +755,14 @@ void Actor::ActionEnded()
 			}
 			frame = 0;
 			break;
+
 		case FAIR:
 			SetActionExpr( JUMP );
 			frame = 1;
+			break;
+		case WALLATTACK:
+			SetActionExpr( WALLCLING );
+			frame = 0;
 			break;
 		case DAIR:
 			SetActionExpr( JUMP );
@@ -1864,6 +1873,12 @@ void Actor::UpdatePrePhysics()
 				SetActionExpr( JUMP );
 				frame = 1;
 			}
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				SetActionExpr( WALLATTACK );
+				frame = 0;
+			}
+
 
 			break;
 		}
@@ -1964,6 +1979,111 @@ void Actor::UpdatePrePhysics()
 					action = FAIR;
 					frame = 0;
 				}
+			}
+			break;
+		}
+	case WALLATTACK:
+		{
+			//cout << "WALL ATTACK" << endl;
+			if( frame > 6 )
+			{
+			if( currInput.LDown() )
+			{
+				action = JUMP;
+				frame = 1;
+				break;
+			}
+			else
+			{
+				if( !facingRight )
+				{
+					if( currInput.LLeft() )
+					{
+						action = WALLJUMP;
+						frame = 0;
+						break;
+					}
+				}
+				else
+				{
+					if( currInput.LRight() )
+					{
+						action = WALLJUMP;
+						frame = 0;
+						break;
+					}
+				}
+			}
+			}
+
+			
+
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
+
+			if( hasPowerAirDash )
+			{
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
+				{
+					bounceFlameOn = false;
+					action = AIRDASH;
+					airDashStall = false;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				frame = 0;
+				holdDouble = true;
+				break;
+			}
+
+			/*if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				if( currInput.LUp() )
+				{
+					action = UAIR;
+					frame = 0;
+				}
+				else if( currInput.LDown() )
+				{
+					action = DAIR;
+					frame = 0;
+				}
+				else
+				{
+					action = FAIR;
+					frame = 0;
+				}
+			}*/
+
 			}
 			break;
 		}
@@ -2731,6 +2851,7 @@ void Actor::UpdatePrePhysics()
 		{
 			break;
 		}
+
 	case GRINDBALL:
 		{
 		
@@ -3960,6 +4081,38 @@ void Actor::UpdatePrePhysics()
 			{
 				AirMovement();
 			}
+			break;
+		}
+	case WALLATTACK:
+		{
+			//CheckHoldJump();
+
+			//currHitboxes = fairHitboxes;
+			if( fairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = fairHitboxes[frame];
+			}
+
+			if( frame == 0 )
+			{
+				currAttackHit = false;
+			//	fairSound.play();
+			}
+
+			if( velocity.y > clingSpeed )
+			{
+				//cout << "running wallcling" << endl;
+				velocity.y = clingSpeed;
+			}
+			AirMovement();
+
+			//if( wallJumpFrameCounter >= wallJumpMovementLimit )
+			//{
+			//	//cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << endl;
+
+			//	AirMovement();
+			//}
+
 			break;
 		}
 	case FAIR:
@@ -7073,7 +7226,7 @@ void Actor::UpdateFullPhysics()
 		}*/
 		int maxJumpHeightFrame = 10;
 
-		if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING ) && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+		if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING || action == WALLATTACK ) && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 		{
 			//if( minContact.movingPlat != NULL )
 			//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
@@ -9016,7 +9169,7 @@ void Actor::UpdatePhysics()
 			//	cout << "bouncing" << endl;
 			}
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
-			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING || action == WALLATTACK ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
 				if( minContact.movingPlat != NULL )
 				{
@@ -9694,7 +9847,7 @@ void Actor::PhysicsResponse()
 			frame = 0;
 		}
 
-		if( action != AIRHITSTUN )
+		if( action != AIRHITSTUN && action != WALLATTACK )
 		{
 			//oldAction = action;
 			if( collision )
@@ -9725,7 +9878,7 @@ void Actor::PhysicsResponse()
 				}
 			}
 			
-			else if( oldAction == WALLCLING )
+			else if( oldAction == WALLCLING || oldAction == WALLATTACK )
 			{
 				bool stopWallClinging = false;
 				if( collision && length( wallNormal ) > 0 )
@@ -12223,6 +12376,13 @@ void Actor::Draw( sf::RenderTarget *target )
 						target->draw( dashAttackSword );
 					break;
 				}
+			case WALLATTACK:
+				if( flashFrames > 0 )
+						target->draw( wallAttackSword, &swordShader );
+					else
+						target->draw( wallAttackSword );
+					break;
+				break;
 			}
 		}
 	}
@@ -12922,7 +13082,8 @@ void Actor::UpdateSprite()
 			}
 			//Vector2i offset( 24, -16 );
 			//Vector2i offset( 24, 0 );
-			Vector2i offset( 32, 0 );
+			//Vector2i offset( 32, 0 );
+			Vector2i offset( 0, 0 );
 
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
@@ -13097,6 +13258,70 @@ void Actor::UpdateSprite()
 
 			break;
 		}
+	case WALLATTACK:
+		{
+			Tileset *curr_ts = ts_wallAttackSword[speedLevel];
+			//cout << "fair frame : " << frame / 2 << endl;
+			int startFrame = 0;
+			showSword = true;//frame >= startFrame && frame / 2 <= 9;
+
+			if( showSword )
+			{
+				wallAttackSword.setTexture( *curr_ts->texture );
+			}
+
+			sprite->setTexture( *(tileset[WALLATTACK]->texture));
+
+			//Vector2i offset( 32, -16 );
+			Vector2i offset( 0, 0 );
+
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[WALLATTACK]->GetSubRect( frame / 2 ) );
+				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
+				if( showSword )
+					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
+					wallAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[WALLATTACK]->GetSubRect( frame / 2 );
+				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				
+				if( showSword  )
+				{
+					offset.x = -offset.x;
+
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
+					wallAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+					
+			}
+
+			if( showSword )
+			{
+				wallAttackSword.setOrigin( wallAttackSword.getLocalBounds().width / 2, wallAttackSword.getLocalBounds().height / 2 );
+				wallAttackSword.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword = showSword;
+				p.swordSprite1 = wallAttackSword;
+			}
+			
+			break;
+		}
 	case FAIR:
 		{
 			Tileset *curr_ts = ts_fairSword[speedLevel];
@@ -13111,7 +13336,8 @@ void Actor::UpdateSprite()
 
 			sprite->setTexture( *(tileset[FAIR]->texture));
 
-			Vector2i offset( 32, -16 );
+			//Vector2i offset( 32, -16 );
+			Vector2i offset( 0, 0 );
 
 			if( facingRight )
 			{
@@ -13164,14 +13390,15 @@ void Actor::UpdateSprite()
 		{
 			Tileset *curr_ts = ts_dairSword[speedLevel];
 			int startFrame = 0;
-			showSword = frame / 2 >= startFrame && frame / 2 <= 9;
+			//showSword = frame / 2 >= startFrame && frame / 2 <= 9;
+			showSword = true;
 
 			if( showSword )
 			{
 				dairSword.setTexture( *curr_ts->texture );
 			}
 
-			Vector2i offset( 0, 40 );
+			Vector2i offset( 0, 0 );
 
 			sprite->setTexture( *(tileset[DAIR]->texture));
 			if( facingRight )
@@ -13213,7 +13440,8 @@ void Actor::UpdateSprite()
 		{
 			Tileset *curr_ts = ts_uairSword[speedLevel];
 			int startFrame = 0;
-			showSword = frame / 3 >= startFrame && frame / 3 <= 5;
+			showSword = true;
+			//showSword = frame / 3 >= startFrame && frame / 3 <= 5;
 
 			if( showSword )
 			{
@@ -13222,7 +13450,8 @@ void Actor::UpdateSprite()
 
 			sprite->setTexture( *(tileset[UAIR]->texture));
 
-			Vector2i offset( 8, -24 );
+			Vector2i offset( 0, 0 );
+			//Vector2i offset( 8, -24 );
 
 			if( facingRight )
 			{
@@ -14812,6 +15041,14 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 			if( dashHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = dashHitboxes[frame];
+			}
+			break;
+		}
+	case WALLATTACK:
+		{
+			if( wallHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = wallHitboxes[frame];
 			}
 			break;
 		}

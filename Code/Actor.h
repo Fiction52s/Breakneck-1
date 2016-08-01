@@ -37,6 +37,7 @@ struct Actor : QuadTreeCollider,
 		SPRINT,
 		STAND,
 		DASHATTACK,
+		WALLATTACK,
 		STANDN,
 		UAIR,
 		WALLCLING,
@@ -247,7 +248,7 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> dairHitboxes;
 	std::map<int, std::list<CollisionBox>*> standHitboxes;
 	std::map<int, std::list<CollisionBox>*> dashHitboxes;
-
+	std::map<int, std::list<CollisionBox>*> wallHitboxes;
 
 	double steepThresh;
 
@@ -605,6 +606,7 @@ struct PlayerGhost
 		SPRINT,
 		STAND,
 		DASHATTACK,
+		WALLATTACK,
 		STANDN,		
 		UAIR,
 		WALLCLING,
@@ -654,6 +656,7 @@ struct PlayerGhost
 	std::map<int, std::list<CollisionBox>*> dairHitboxes;
 	std::map<int, std::list<CollisionBox>*> standHitboxes;
 	std::map<int, std::list<CollisionBox>*> dashHitboxes;
+	std::map<int, std::list<CollisionBox>*> wallHitboxes;
 	
 
 
