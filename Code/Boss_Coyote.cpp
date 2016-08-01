@@ -20,11 +20,13 @@ using namespace sf;
 
 void Boss_Coyote::CreateNodes()
 {
+	partying = true;
 	//V2d testPos = ground->GetPoint( quantity );
 
 	//V2d truePos = position;
-	V2d testPos = position;
-	testPos += V2d( -200, -200 );
+	V2d testPos = owner->poiMap["coyotecenter"]->pos;
+	//V2d testPos = 
+	//testPos += V2d( -200, -200 );
 
 	double radius = 900;
 	double angle = 0;
@@ -56,7 +58,7 @@ void Boss_Coyote::CreateNodes()
 		edges[i] = new ScorpionNode( ( curr + next ) / 2.0 );
 	}
 
-	for( int i = 0; i < 120; ++i )
+	for( int i = 0; i < pathSize; ++i )
 	{
 		testPaths[i].color = Color::Red;
 		testPaths[i].position = Vector2f( 0, 0 );
@@ -66,7 +68,7 @@ void Boss_Coyote::CreateNodes()
 	for( int i = 0; i < 6; ++i )
 	{
 		int prevI = i - 1;
-		if( prev < 0 ) prevI = 4;
+		if( prevI < 0 ) prevI = 5;
 
 		int nextI = i + 1;
 		if( nextI == 6 ) nextI = 0;
@@ -80,7 +82,10 @@ void Boss_Coyote::CreateNodes()
 				++index;
 			}
 		}
+		//points[i]->neighbors[3] = edges[prevI];
+		//points[i]->neighbors[4] = edges[nextI];
 
+		//connect points to edges
 		//cout << "index: " << index << endl;
 
 		for( int blah = 0; blah < 3; ++blah )
@@ -99,8 +104,33 @@ void Boss_Coyote::CreateNodes()
 		}
 	}
 
+	//cout << "line Index: " << lineIndex << " -----------------" << endl;
+	
 
-	//connect edges to edges
+	//connect points to edges
+	for( int i = 0; i < 6; ++i )
+	{
+		int prevI = i - 1;
+		if( prevI < 0 ) prevI = 5;
+
+		int nextI = i;
+
+		points[i]->neighbors[3] = edges[prevI];
+		points[i]->neighbors[4] = edges[nextI];
+
+		for( int blah = 3; blah < 5; ++blah )
+		{
+			Vector2f startPos( points[i]->position.x, points[i]->position.y );
+			Vector2f endPos( points[i]->neighbors[blah]->position.x, points[i]->neighbors[blah]->position.y );
+			testPaths[lineIndex * 2 + 0].position = startPos;
+			testPaths[lineIndex * 2 + 1].position = endPos;
+			++lineIndex;
+		}
+	}
+
+	noPartyCutoff = lineIndex * 2;//12 * 5 * 2;
+
+	//////connect edges to edges
 	for( int i = 0; i < 6; ++i )
 	{
 		int prevI = i - 2;
@@ -131,26 +161,7 @@ void Boss_Coyote::CreateNodes()
 		}
 	}
 
-	//connect points to edges
-	for( int i = 0; i < 6; ++i )
-	{
-		int prevI = i - 1;
-		if( prevI < 0 ) prevI = 5;
-
-		int nextI = i;
-
-		points[i]->neighbors[3] = edges[prevI];
-		points[i]->neighbors[4] = edges[nextI];
-
-		for( int blah = 3; blah < 5; ++blah )
-		{
-			Vector2f startPos( points[i]->position.x, points[i]->position.y );
-			Vector2f endPos( points[i]->neighbors[blah]->position.x, points[i]->neighbors[blah]->position.y );
-			testPaths[lineIndex * 2 + 0].position = startPos;
-			testPaths[lineIndex * 2 + 1].position = endPos;
-			++lineIndex;
-		}
-	}
+	
 
 	//connect edges to points
 	for( int i = 0; i < 6; ++i )
@@ -163,12 +174,51 @@ void Boss_Coyote::CreateNodes()
 		edges[i]->neighbors[3] = points[prevI];
 		edges[i]->neighbors[4] = points[nextI];
 	}
+}
 
-	
+void Boss_Coyote::SetPartyMode( bool party )
+{
+	if( !partying && party )
+	{
+		pathCutoff = pathSize;
+
+		for( int i = 0; i < 6; ++i )
+		{
+			int prevI = i - 1;
+			if( prevI < 0 ) prevI = 5;
+
+			int nextI = i;
+
+			points[i]->neighbors[3] = edges[prevI];
+			points[i]->neighbors[4] = edges[nextI];
+		}
+
+		partying = party;
+
+	}
+	else if( partying && !party )
+	{
+		
+		for( int i = 0; i < 6; ++i )
+		{
+			int prevI = i - 1;
+			if( prevI < 0 ) prevI = 5;
+
+			int nextI = i + 1;
+			if( nextI == 6 ) nextI = 0;
+
+			points[i]->neighbors[3] = points[prevI];
+			points[i]->neighbors[4] = points[nextI];
+		}
+
+		pathCutoff = noPartyCutoff;
+
+		partying = party;
+	}
 }
 
 Boss_Coyote::ScorpionNode::ScorpionNode( sf::Vector2<double> &pos )
-	:position( pos ), facingIndex( -1 )
+	:position( pos ), facingIndex( -1 ), nType( DIRECTION )
 {
 	//index as -1 means you stop
 	for( int i = 0; i < 5; ++i )
@@ -204,8 +254,11 @@ void Boss_Coyote::RandomizeDirections()
 
 Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE ),//, facingRight( cw ),
-	moveBezTest( 0,0,1,1 ), testPaths( sf::Lines, 12 * 5 * 2 )
+	moveBezTest( 0,0,1,1 )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
+	pathSize = 120;
+	pathCutoff = pathSize;// 12 * 5 * 2
+	testPaths = new Vertex[pathSize];
 	speed = 25;
 	testCircle.setRadius( 30 );
 	testCircle.setFillColor( Color::Magenta );
@@ -319,7 +372,12 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	currNode = points[0];
 
 	RandomizeDirections();
+
+	launcher = new Launcher( this, owner, 32, 1, position, V2d( 1, 0 ), 120, 900, true );
+	launcher->SetBulletSpeed( 10 );	
 	
+	//SetPartyMode( false );
+	//SetPartyMode( true );
 
 	//testMover->Move( slowMultiple );
 
@@ -328,6 +386,20 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	//position = testMover->physBody.globalPosition;
 }
 
+Boss_Coyote::~Boss_Coyote()
+{
+	delete [] testPaths;
+}
+
+void Boss_Coyote::BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos )
+{
+	
+}
+
+void Boss_Coyote::BulletHitPlayer( BasicBullet *b )
+{
+}
 
 void Boss_Coyote::ResetEnemy()
 {
@@ -466,9 +538,6 @@ void Boss_Coyote::ActionEnded()
 
 void Boss_Coyote::UpdatePrePhysics()
 {
-
-	
-	
 	ScorpionNode *nextNode = currNode->neighbors[currNode->facingIndex];
 	double diff = length( nextNode->position - currNode->position );
 
@@ -483,6 +552,10 @@ void Boss_Coyote::UpdatePrePhysics()
 		currNode->SetNewDirection();
 		currNode = nextNode;
 	}
+
+
+	launcher->UpdatePrePhysics();
+
 	return;
 	//testLaunch->UpdatePrePhysics();
 	Actor &player = owner->player;
@@ -592,7 +665,7 @@ void Boss_Coyote::UpdatePrePhysics()
 		{
 			frame = rollAnimationFactor * 2; 
 		}
-
+	
 		//cout << "groundspeed: " << testMover->groundSpeed << endl;
 	//}
 
@@ -614,6 +687,7 @@ void Boss_Coyote::UpdatePrePhysics()
 
 void Boss_Coyote::UpdatePhysics()
 {
+	launcher->UpdatePhysics();
 	return;
 	//testLaunch->UpdatePhysics();
 	specterProtected = false;
@@ -919,6 +993,8 @@ void Boss_Coyote::PhysicsResponse()
 
 void Boss_Coyote::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
+	launcher->UpdateSprites();
 	return;
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
@@ -991,7 +1067,7 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 			target->draw( cs );
 		}
 		target->draw( sprite );
-		target->draw( testPaths );
+		target->draw( testPaths, pathCutoff, sf::Lines );
 		testCircle.setPosition( position.x, position.y );
 		target->draw( testCircle );
 	}

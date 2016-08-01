@@ -519,7 +519,8 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	Stored stored;
 };
 
-struct Boss_Coyote : Enemy, GroundMoverHandler
+struct Boss_Coyote : Enemy, GroundMoverHandler,
+	LauncherEnemy
 {
 	enum Action
 	{
@@ -533,14 +534,25 @@ struct Boss_Coyote : Enemy, GroundMoverHandler
 	int travelFrame;
 	struct ScorpionNode
 	{
+		enum NodeType
+		{
+			DIRECTION,
+			SHOTGUN,
+			REVERSE_SHOTGUN
+			//MIDDLE_PULSE
+		};
+		
 		ScorpionNode( sf::Vector2<double> &pos );
 		ScorpionNode *neighbors[5];
 		//void ResetDirection();
 		void SetNewDirection();
 		sf::Vector2<double> position;
 		int facingIndex;
+		NodeType nType;
 	};
 
+
+	Launcher *launcher;
 	double speed;
 	//void ResetDirections();
 	void RandomizeDirections();
@@ -548,12 +560,23 @@ struct Boss_Coyote : Enemy, GroundMoverHandler
 	ScorpionNode *points[6];
 	ScorpionNode *edges[6];
 
-	sf::VertexArray testPaths;
+	sf::Vertex *testPaths;
+	int pathSize;
+	int noPartyCutoff;
+	//sf::VertexArray testPaths;
+	int pathCutoff;
+
+	void SetPartyMode( bool party );
+	bool partying;
 
 	ScorpionNode *currNode;
 	Boss_Coyote( GameSession *owner, Edge *ground, 
 		double quantity );
+	~Boss_Coyote();
 	void ActionEnded();
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();

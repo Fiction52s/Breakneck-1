@@ -240,58 +240,39 @@ Actor::Actor( GameSession *gs )
 		//for( int j = 1; j <= 4; ++j )
 		for( int j = 0; j < 8; ++j )
 		{
-			standNHitboxes[j] = new list<CollisionBox>;
-			standNHitboxes[j]->push_back( cb );
+			standHitboxes[j] = new list<CollisionBox>;
+			standHitboxes[j]->push_back( cb );
 
 			for( int i = 0; i < MAX_GHOSTS; ++i )
 			{
 				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->standNHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->standNHitboxes[j]->push_back( cb );			
+				ghosts[i]->standHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->standHitboxes[j]->push_back( cb );			
 			}
 		}
 
-		cb.isCircle = false;
-		cb.rw = 80;
-		cb.rh = 20;
-		cb.offset.x = 32;
-		cb.offset.y = 0;
-		for( int j = 2; j <= 15; ++j )
+		cb.rw = 64;
+		cb.rh = 64;
+		cb.offset.x = 36;
+		cb.offset.y = -6;
+		//for( int j = 1; j <= 4; ++j )
+		for( int j = 0; j < 8; ++j )
 		{
-			standDHitboxes[j] = new list<CollisionBox>;
-			standDHitboxes[j]->push_back( cb );
+			dashHitboxes[j] = new list<CollisionBox>;
+			dashHitboxes[j]->push_back( cb );
 
 			for( int i = 0; i < MAX_GHOSTS; ++i )
 			{
 				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->standDHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->standDHitboxes[j]->push_back( cb );			
+				ghosts[i]->dashHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->dashHitboxes[j]->push_back( cb );			
 			}
-		}
-
-		cb.isCircle = true;
-		cb.rw = 48;
-		cb.rh = 48;
-		cb.offset.x = 0;
-		cb.offset.y = -70;
-		for( int j = 2; j <= 7; ++j )
-		{
-			standUHitboxes[j] = new list<CollisionBox>;
-			standUHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->standUHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->standUHitboxes[j]->push_back( cb );			
-			}
-		}
 		}
 
 		queryMode = "";
 		wallThresh = .9999;
 		//tileset setup
-		{
+		
 
 		bounceFlameOn = false;
 		
@@ -349,17 +330,13 @@ Actor::Actor( GameSession *gs )
 		tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
 		normal[STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
 
-		actionLength[STANDD] = 8 * 2;
-		tileset[STANDD] = owner->GetTileset( "standd.png", 96, 48 );
-		normal[STANDD] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
+		actionLength[DASHATTACK] = 8 * 2;
+		tileset[DASHATTACK] = owner->GetTileset( "dash_attack_128x96.png", 128, 96 );
+		normal[DASHATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
 		actionLength[STANDN] = 4 * 3;
 		tileset[STANDN] = owner->GetTileset( "standn_96x64.png", 96, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
-
-		actionLength[STANDU] = 20;
-		tileset[STANDU] = owner->GetTileset( "standu.png", 64, 80 );
-		normal[STANDU] = owner->GetTileset( "standu_NORMALS.png", 64, 80 );
 
 		actionLength[UAIR] = 6 * 3 - 3;
 		tileset[UAIR] = owner->GetTileset( "uair_80x80.png", 80, 80 );
@@ -439,24 +416,29 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
-		ts_fairSword1 = owner->GetTileset( "fairsword1_144x128.png", 144, 128 );
-		fairSword1.setTexture( *ts_fairSword1->texture );
+		ts_fairSword[0] = owner->GetTileset( "fair_sworda_144x128.png", 144, 128 );
+		ts_fairSword[1] = owner->GetTileset( "fair_swordb_256x256.png", 256, 256 );
+		ts_fairSword[2] = owner->GetTileset( "fair_swordc_384x384.png", 384, 384 );
 
-		ts_dairSword1 = owner->GetTileset( "dairsword1.png", 128, 144 );
-		dairSword1.setTexture( *ts_dairSword1->texture );
+		ts_dairSword[0] = owner->GetTileset( "dair_sworda_128x144.png", 128, 144 );
+		ts_dairSword[1] = owner->GetTileset( "dair_swordb_256x256.png", 256, 256 );
+		ts_dairSword[2] = owner->GetTileset( "dair_swordc_384x384.png", 384, 384 );
 
-		ts_uairSword1 = owner->GetTileset( "uairsword1.png", 160, 128 );
-		uairSword1.setTexture( *ts_uairSword1->texture );
+		ts_uairSword[0] = owner->GetTileset( "uair_sworda_160x128.png", 160, 128 );
+		ts_uairSword[1] = owner->GetTileset( "uair_swordb_256x256.png", 256, 256 );
+		ts_uairSword[2] = owner->GetTileset( "uair_swordc_384x384.png", 384, 384 );
 
-		ts_standingNSword1 = owner->GetTileset( "standnsword1_144x96.png", 144, 96 );
-		standingNSword1.setTexture( *ts_standingNSword1->texture );
+		ts_standingNSword[0] = owner->GetTileset( "stand_sworda_144x96.png", 144, 96 );
+		ts_standingNSword[1] = owner->GetTileset( "stand_swordb_256x256.png", 256, 256 );
+		ts_standingNSword[2] = owner->GetTileset( "stand_swordc_384x384.png", 384, 384 );
 
-		ts_standingDSword1 = owner->GetTileset( "standdsword1.png", 160, 48 );
-		standingDSword1.setTexture( *ts_standingDSword1->texture );
+		ts_dashAttackSword[0] = owner->GetTileset( "dash_sworda_256x256.png", 256, 256 );
+		ts_dashAttackSword[1] = owner->GetTileset( "dash_swordb_256x256.png", 256, 256 );
+		ts_dashAttackSword[2] = owner->GetTileset( "dash_swordc_384x384.png", 384, 384 );
 
-		ts_standingUSword1 = owner->GetTileset( "standusword1.png", 64, 128 );
-		standingUSword1.setTexture( *ts_standingUSword1->texture );
-
+		ts_wallAttackSword[0] = owner->GetTileset( "wall_sworda_96x256.png", 96, 256 );
+		ts_wallAttackSword[1] = owner->GetTileset( "wall_swordb_256x256.png", 256, 256 );
+		ts_wallAttackSword[2] = owner->GetTileset( "wall_swordc_384x384.png", 384, 384 );
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
 
@@ -748,28 +730,7 @@ void Actor::ActionEnded()
 			}
 			frame = 0;
 			break;
-		case STANDD:
-			if( currInput.LLeft() || currInput.LRight() )
-			{
-				if( currInput.B )
-				{
-					action = DASH;
-					//re->Reset();
-					//re1->Reset();
-				}
-				else
-				{
-					SetActionExpr( RUN );
-				}
-				facingRight = currInput.LRight();
-			}
-			else
-			{
-				SetActionExpr( STAND );
-			}
-			frame = 0;
-			break;
-		case STANDU:
+		case DASHATTACK:
 			if( currInput.LLeft() || currInput.LRight() )
 			{
 				if( currInput.B )
@@ -2350,7 +2311,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				action = STANDD;
+				action = STANDN;
 				frame = 0;
 				break;
 			}
@@ -2766,11 +2727,7 @@ void Actor::UpdatePrePhysics()
 		{
 			break;
 		}
-	case STANDD:
-		{
-			break;
-		}
-	case STANDU:
+	case DASHATTACK:
 		{
 			break;
 		}
@@ -4334,32 +4291,20 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			if( standNHitboxes.count( frame ) > 0 )
+			if( standHitboxes.count( frame ) > 0 )
 			{
-				currHitboxes = standNHitboxes[frame];
+				currHitboxes = standHitboxes[frame];
 			}
 
 			AttackMovement();
 			break;
 
 		}
-	case STANDU:
+	case DASHATTACK:
 		{
-			if( standUHitboxes.count( frame ) > 0 )
+			if( dashHitboxes.count( frame ) > 0 )
 			{
-				currHitboxes = standUHitboxes[frame];
-			}
-
-			AttackMovement();
-
-			break;
-		}
-	case STANDD:
-		{
-
-			if( standDHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = standDHitboxes[frame];
+				currHitboxes = dashHitboxes[frame];
 			}
 
 			AttackMovement();
@@ -9430,34 +9375,9 @@ void Actor::UpdatePhysics()
 
 void Actor::GroundAttack()
 {
-	//assert( ground != NULL );
-	V2d gNorm = ground->Normal();
-
-	if( currInput.LDown() )
+	if( action == DASH )
 	{
-		if( gNorm.x > 0 && groundSpeed > 0 || gNorm.x < 0 && groundSpeed < 0 )
-		{
-			//going down
-			action = STANDN;
-		}
-		else
-		{
-			action = STANDD;
-		}
-
-		frame = 0;
-	}
-	else if( currInput.LUp() )
-	{
-		if( gNorm.x > 0 && groundSpeed < 0 || gNorm.x < 0 && groundSpeed > 0 )
-		{
-			//going up
-			action = STANDN;	
-		}
-		else
-		{
-			action = STANDU;
-		}
+		action = DASHATTACK;
 		frame = 0;
 	}
 	else
@@ -10310,7 +10230,7 @@ void Actor::UpdatePostPhysics()
 	{
 
 		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-		p.showSword1 = false;
+		p.showSword = false;
 	}
 
 	if( action != DASH && dashStartSound.getStatus() == Sound::Playing )
@@ -10361,7 +10281,7 @@ void Actor::UpdatePostPhysics()
 	
 	testLight->pos.x = position.x;
 	testLight->pos.y = position.y;
-	if( action == FAIR || action == UAIR || action == DAIR || action == STANDN || action == STANDU || action == STANDD )
+	if( action == FAIR || action == UAIR || action == DAIR || action == STANDN || action == DASHATTACK )
 	{
 		testLight->brightness = 40;
 		testLight->radius = 150;
@@ -12253,7 +12173,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 		
 
-		if( showSword1 )
+		if( showSword )
 		{
 			swordShader.setParameter( "isTealAlready", 1 );
 			switch( action )
@@ -12262,61 +12182,45 @@ void Actor::Draw( sf::RenderTarget *target )
 				{
 					if( flashFrames > 0 )
 					{
-						target->draw( fairSword1, &swordShader );
+						target->draw( fairSword, &swordShader );
 						//cout << "shader!" << endl;
 					}
 					else
 					{
-						target->draw( fairSword1 );
+						target->draw( fairSword );
 					}
 					break;
 				}
 			case DAIR:
 				{
 					if( flashFrames > 0 )
-						target->draw( dairSword1, &swordShader );
+						target->draw( dairSword, &swordShader );
 					else
-						target->draw( dairSword1 );
+						target->draw( dairSword );
 					break;
 				}
 			case UAIR:
 				{
 					if( flashFrames > 0 )
-						target->draw( uairSword1, &swordShader );
+						target->draw( uairSword, &swordShader );
 					else
-						target->draw( uairSword1 );
+						target->draw( uairSword );
 					break;
 				}
 			case STANDN:
 				{
-				/*	sf::RectangleShape rs;
-					rs.setSize( Vector2f( abs(standingNSword1.getTextureRect().width), 
-						abs(standingNSword1.getTextureRect().height )) );
-					rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
-					//rs.setRotation( standingNSword1.getRotation() );
-					rs.setPosition( standingNSword1.getPosition() );
-					rs.setFillColor( Color::Red );
-					target->draw( rs );*/
 					if( flashFrames > 0 )
-						target->draw( standingNSword1, &swordShader );
+						target->draw( standingNSword, &swordShader );
 					else
-						target->draw( standingNSword1 );
+						target->draw( standingNSword );
 					break;
 				}
-			case STANDD:
+			case DASHATTACK:
 				{
 					if( flashFrames > 0 )
-						target->draw( standingDSword1, &swordShader );
+						target->draw( dashAttackSword, &swordShader );
 					else
-						target->draw( standingDSword1 );
-					break;
-				}
-			case STANDU:
-				{
-					if( flashFrames > 0 )
-						target->draw( standingUSword1, &swordShader );
-					else
-						target->draw( standingUSword1 );
+						target->draw( dashAttackSword );
 					break;
 				}
 			}
@@ -12346,7 +12250,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			if( ghostFrame-1 < g->totalRecorded )
 			{
 				target->draw( g->states[ghostFrame-1].s );
-				if( g->states[ghostFrame-1].showSword1 )
+				if( g->states[ghostFrame-1].showSword )
 					target->draw( g->states[ghostFrame-1].swordSprite1 );
 			}
 			
@@ -13006,10 +12910,16 @@ void Actor::UpdateSprite()
 	case STANDN:
 		{
 			int startFrame = 0;
-			showSword1 = true;
+			showSword = true;
 
 			sprite->setTexture( *(tileset[STANDN]->texture));
 
+			Tileset *curr_ts = ts_standingNSword[speedLevel];
+
+			if( showSword )
+			{
+				standingNSword.setTexture( *curr_ts->texture );
+			}
 			//Vector2i offset( 24, -16 );
 			//Vector2i offset( 24, 0 );
 			Vector2i offset( 32, 0 );
@@ -13019,8 +12929,8 @@ void Actor::UpdateSprite()
 			{
 				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 3 ) );
 
-				if( showSword1 )
-					standingNSword1.setTextureRect( ts_standingNSword1->GetSubRect( frame / 3 - startFrame ) );
+				if( showSword )
+					standingNSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
 			}
 			else
 			{
@@ -13028,10 +12938,10 @@ void Actor::UpdateSprite()
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 				
-				if( showSword1  )
+				if( showSword  )
 				{
-					sf::IntRect irSword = ts_standingNSword1->GetSubRect( frame / 3 - startFrame );
-					standingNSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
+					standingNSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 
 					offset.x = -offset.x;
@@ -13044,10 +12954,10 @@ void Actor::UpdateSprite()
 			V2d trueNormal;
 			double angle = GroundedAngleAttack( trueNormal );
 
-			if( showSword1 )
+			if( showSword )
 			{
-				standingNSword1.setOrigin( standingNSword1.getLocalBounds().width / 2, standingNSword1.getLocalBounds().height);
-				standingNSword1.setRotation( angle / PI * 180 );
+				standingNSword.setOrigin( standingNSword.getLocalBounds().width / 2, standingNSword.getLocalBounds().height);
+				standingNSword.setRotation( angle / PI * 180 );
 
 			
 				//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
@@ -13086,44 +12996,49 @@ void Actor::UpdateSprite()
 			pos += trueNormal * (double)offset.y;
 			pos += truDir * (double)offset.x;
 
-			standingNSword1.setPosition( pos.x, pos.y );
+			standingNSword.setPosition( pos.x, pos.y );
 
 			if( record > 0 )
 			{
 				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingNSword1;
+				p.showSword = showSword;
+				p.swordSprite1 = standingNSword;
 			}
 
 			break;
 		}
-	case STANDD:
+	case DASHATTACK:
 		{
-			int startFrame = 2;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 7;
+			int startFrame = 0;
+			showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
+			Tileset *curr_ts = ts_dashAttackSword[speedLevel];
 
+			if( showSword )
+			{
+				dashAttackSword.setTexture( *curr_ts->texture );
+			}
 
-			sprite->setTexture( *(tileset[STANDD]->texture));
+			sprite->setTexture( *(tileset[DASHATTACK]->texture));
 
-			Vector2i offset( 24, 0 );
+			Vector2i offset( 0, 0 );
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
-				sprite->setTextureRect( tileset[STANDD]->GetSubRect( frame / 2 ) );
+				sprite->setTextureRect( tileset[DASHATTACK]->GetSubRect( frame / 2 ) );
 
-				if( showSword1 )
-					standingDSword1.setTextureRect( ts_standingDSword1->GetSubRect( frame / 2 - startFrame ) );
+				if( showSword )
+					dashAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[STANDD]->GetSubRect( frame / 2 );
+				sf::IntRect ir = tileset[DASHATTACK]->GetSubRect( frame / 2 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
-				if( showSword1  )
+				if( showSword  )
 				{
-					sf::IntRect irSword = ts_standingDSword1->GetSubRect( frame / 2 - startFrame );
-					standingDSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					dashAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 
 					offset.x = -offset.x;
@@ -13133,10 +13048,11 @@ void Actor::UpdateSprite()
 			V2d trueNormal;
 			double angle = GroundedAngleAttack( trueNormal );
 
-			if( showSword1 )
+			if( showSword )
 			{
-				standingDSword1.setOrigin( standingDSword1.getLocalBounds().width / 2, standingDSword1.getLocalBounds().height);
-				standingDSword1.setRotation( angle / PI * 180 );
+				dashAttackSword.setTexture( *curr_ts->texture );
+				dashAttackSword.setOrigin( dashAttackSword.getLocalBounds().width / 2, dashAttackSword.getLocalBounds().height);
+				dashAttackSword.setRotation( angle / PI * 180 );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -13170,105 +13086,29 @@ void Actor::UpdateSprite()
 			pos += trueNormal * (double)offset.y;
 			pos += truDir * (double)offset.x;
 
-			standingDSword1.setPosition( pos.x, pos.y );
+			dashAttackSword.setPosition( pos.x, pos.y );
 
 			if( record > 0 )
 			{
 				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingDSword1;
+				p.showSword = showSword;
+				p.swordSprite1 = dashAttackSword;
 			}
 
-			break;
-		}
-	case STANDU:
-		{
-			int startFrame = 1;
-			showSword1 = frame >= startFrame && frame <= 18;
-
-
-			sprite->setTexture( *(tileset[STANDU]->texture));
-
-			Vector2i offset( 0, 32 );
-
-			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
-			{
-				sprite->setTextureRect( tileset[STANDU]->GetSubRect( frame ) );
-
-				if( showSword1 )
-					standingUSword1.setTextureRect( ts_standingUSword1->GetSubRect( frame - startFrame ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[STANDU]->GetSubRect( frame );
-				
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-
-				if( showSword1  )
-				{
-					sf::IntRect irSword = ts_standingUSword1->GetSubRect( frame - startFrame );
-					standingUSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
-						irSword.top, -irSword.width, irSword.height ) );
-
-					offset.x = -offset.x;
-				}
-			}
-			
-			V2d trueNormal;
-			double angle = GroundedAngleAttack( trueNormal );
-
-			if( showSword1 )
-			{
-				standingUSword1.setOrigin( standingUSword1.getLocalBounds().width / 2, standingUSword1.getLocalBounds().height);
-				standingUSword1.setRotation( angle / PI * 180 );
-			}
-
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
-			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
-
-			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
-			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
-
-			pos += trueNormal * (double)offset.y;
-			pos += truDir * (double)offset.x;
-
-			standingUSword1.setPosition( pos.x, pos.y );
-
-			if( record > 0 )
-			{
-				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = standingUSword1;
-			}
 			break;
 		}
 	case FAIR:
 		{
+			Tileset *curr_ts = ts_fairSword[speedLevel];
 			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
-			showSword1 = true;//frame >= startFrame && frame / 2 <= 9;
+			showSword = true;//frame >= startFrame && frame / 2 <= 9;
+
+			if( showSword )
+			{
+				fairSword.setTexture( *curr_ts->texture );
+			}
+
 			sprite->setTexture( *(tileset[FAIR]->texture));
 
 			Vector2i offset( 32, -16 );
@@ -13278,9 +13118,9 @@ void Actor::UpdateSprite()
 				
 				sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame / 2 ) );
 				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
-				if( showSword1 )
+				if( showSword )
 					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
-					fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame / 2 - startFrame ) );
+					fairSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
@@ -13289,22 +13129,22 @@ void Actor::UpdateSprite()
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
 				
-				if( showSword1  )
+				if( showSword  )
 				{
 					offset.x = -offset.x;
 
-					sf::IntRect irSword = ts_fairSword1->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
 					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
-					fairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+					fairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
 					
 			}
 
-			if( showSword1 )
+			if( showSword )
 			{
-				fairSword1.setOrigin( fairSword1.getLocalBounds().width / 2, fairSword1.getLocalBounds().height / 2 );
-				fairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+				fairSword.setOrigin( fairSword.getLocalBounds().width / 2, fairSword.getLocalBounds().height / 2 );
+				fairSword.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -13314,16 +13154,22 @@ void Actor::UpdateSprite()
 			if( record > 0 )
 			{
 				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-				p.showSword1 = showSword1;
-				p.swordSprite1 = fairSword1;
+				p.showSword = showSword;
+				p.swordSprite1 = fairSword;
 			}
 			
 			break;
 		}
 	case DAIR:
 		{
+			Tileset *curr_ts = ts_dairSword[speedLevel];
 			int startFrame = 0;
-			showSword1 = frame / 2 >= startFrame && frame / 2 <= 9;
+			showSword = frame / 2 >= startFrame && frame / 2 <= 9;
+
+			if( showSword )
+			{
+				dairSword.setTexture( *curr_ts->texture );
+			}
 
 			Vector2i offset( 0, 40 );
 
@@ -13332,8 +13178,8 @@ void Actor::UpdateSprite()
 			{
 				sprite->setTextureRect( tileset[DAIR]->GetSubRect( frame / 2 ) );
 
-				if( showSword1 )
-					dairSword1.setTextureRect( ts_dairSword1->GetSubRect( frame / 2 - startFrame ) );
+				if( showSword )
+					dairSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
 			}
 			else
 			{
@@ -13342,20 +13188,20 @@ void Actor::UpdateSprite()
 				sf::IntRect ir = tileset[DAIR]->GetSubRect( frame / 2 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
-				if( showSword1  )
+				if( showSword  )
 				{
 					//offset.x = -offset.x;
 
-					sf::IntRect irSword = ts_dairSword1->GetSubRect( frame / 2 - startFrame );
-					dairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					dairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
 			}
 
-			if( showSword1 )
+			if( showSword )
 			{
-				dairSword1.setOrigin( dairSword1.getLocalBounds().width / 2, dairSword1.getLocalBounds().height / 2 );
-				dairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+				dairSword.setOrigin( dairSword.getLocalBounds().width / 2, dairSword.getLocalBounds().height / 2 );
+				dairSword.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -13365,8 +13211,15 @@ void Actor::UpdateSprite()
 		}
 	case UAIR:
 		{
+			Tileset *curr_ts = ts_uairSword[speedLevel];
 			int startFrame = 0;
-			showSword1 = frame / 3 >= startFrame && frame / 3 <= 5;
+			showSword = frame / 3 >= startFrame && frame / 3 <= 5;
+
+			if( showSword )
+			{
+				uairSword.setTexture( *curr_ts->texture );
+			}
+
 			sprite->setTexture( *(tileset[UAIR]->texture));
 
 			Vector2i offset( 8, -24 );
@@ -13375,30 +13228,30 @@ void Actor::UpdateSprite()
 			{
 				sprite->setTextureRect( tileset[UAIR]->GetSubRect( frame / 3 ) );
 
-				if( showSword1 )
-					uairSword1.setTextureRect( ts_uairSword1->GetSubRect( frame / 3 - startFrame ) );
+				if( showSword )
+					uairSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
 			}
 			else
 			{
 				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
-				if( showSword1 )
+				if( showSword )
 				{
 					//offset.x = -offset.x;
 
-					sf::IntRect irSword = ts_uairSword1->GetSubRect( frame / 3 - startFrame );
-					uairSword1.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
+					uairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 				}
 
 				offset.x = -offset.x;
 			}
 
-			if( showSword1 )
+			if( showSword )
 			{
-				uairSword1.setOrigin( uairSword1.getLocalBounds().width / 2, uairSword1.getLocalBounds().height / 2 );
-				uairSword1.setPosition( position.x + offset.x, position.y + offset.y );
+				uairSword.setOrigin( uairSword.getLocalBounds().width / 2, uairSword.getLocalBounds().height / 2 );
+				uairSword.setPosition( position.x + offset.x, position.y + offset.y );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -14948,25 +14801,17 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 		}
 	case STANDN:
 		{
-			if( standNHitboxes.count( frame ) > 0 )
+			if( standHitboxes.count( frame ) > 0 )
 			{
-				currHitboxes = standNHitboxes[frame];
+				currHitboxes = standHitboxes[frame];
 			}
 			break;
 		}
-	case STANDU:
+	case DASHATTACK:
 		{
-			if( standUHitboxes.count( frame ) > 0 )
+			if( dashHitboxes.count( frame ) > 0 )
 			{
-				currHitboxes = standUHitboxes[frame];
-			}
-			break;
-		}
-	case STANDD:
-		{
-			if( standDHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = standDHitboxes[frame];
+				currHitboxes = dashHitboxes[frame];
 			}
 			break;
 		}

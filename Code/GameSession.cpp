@@ -1698,10 +1698,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 				//StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed );
-				//Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity );
-				Boss_Tiger *enemy = new Boss_Tiger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity );
+				//Boss_Tiger *enemy = new Boss_Tiger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity );
 
 				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity, clockwise, speed, 10 );

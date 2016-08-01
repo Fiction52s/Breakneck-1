@@ -36,9 +36,8 @@ struct Actor : QuadTreeCollider,
 		SLIDE,
 		SPRINT,
 		STAND,
-		STANDD,
+		DASHATTACK,
 		STANDN,
-		STANDU,
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
@@ -166,24 +165,24 @@ struct Actor : QuadTreeCollider,
 	Tileset * tsgstripurp;
 	Tileset * tsgstrirgb;
 
-	sf::Sprite fairSword1;
-	Tileset *ts_fairSword1;
-	bool showSword1;
+	sf::Sprite fairSword;
+	Tileset *ts_fairSword[3];
+	bool showSword;
 
-	sf::Sprite dairSword1;
-	Tileset *ts_dairSword1;
+	sf::Sprite dairSword;
+	Tileset *ts_dairSword[3];
 
-	sf::Sprite uairSword1;
-	Tileset *ts_uairSword1;
+	sf::Sprite uairSword;
+	Tileset *ts_uairSword[3];
 
-	sf::Sprite standingNSword1;
-	Tileset *ts_standingNSword1;
+	sf::Sprite standingNSword;
+	Tileset *ts_standingNSword[3];
 
-	sf::Sprite standingDSword1;
-	Tileset *ts_standingDSword1;
+	sf::Sprite dashAttackSword;
+	Tileset *ts_dashAttackSword[3];
 
-	sf::Sprite standingUSword1;
-	Tileset *ts_standingUSword1;
+	sf::Sprite wallAttackSword;
+	Tileset *ts_wallAttackSword[3];
 
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
@@ -246,9 +245,8 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> fairHitboxes;
 	std::map<int, std::list<CollisionBox>*> uairHitboxes;
 	std::map<int, std::list<CollisionBox>*> dairHitboxes;
-	std::map<int, std::list<CollisionBox>*> standNHitboxes;
-	std::map<int, std::list<CollisionBox>*> standDHitboxes;
-	std::map<int, std::list<CollisionBox>*> standUHitboxes;
+	std::map<int, std::list<CollisionBox>*> standHitboxes;
+	std::map<int, std::list<CollisionBox>*> dashHitboxes;
 
 
 	double steepThresh;
@@ -606,9 +604,8 @@ struct PlayerGhost
 		SLIDE,
 		SPRINT,
 		STAND,
-		STANDD,
-		STANDN,
-		STANDU,
+		DASHATTACK,
+		STANDN,		
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
@@ -634,7 +631,7 @@ struct PlayerGhost
 		Action action;
 		int frame;
 		sf::Sprite s;
-		bool showSword1;
+		bool showSword;
 		sf::Sprite swordSprite1;
 		double angle;
 		bool createBubble;
@@ -655,9 +652,9 @@ struct PlayerGhost
 	std::map<int, std::list<CollisionBox>*> fairHitboxes;
 	std::map<int, std::list<CollisionBox>*> uairHitboxes;
 	std::map<int, std::list<CollisionBox>*> dairHitboxes;
-	std::map<int, std::list<CollisionBox>*> standNHitboxes;
-	std::map<int, std::list<CollisionBox>*> standDHitboxes;
-	std::map<int, std::list<CollisionBox>*> standUHitboxes;
+	std::map<int, std::list<CollisionBox>*> standHitboxes;
+	std::map<int, std::list<CollisionBox>*> dashHitboxes;
+	
 
 
 
