@@ -5701,6 +5701,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	double ex = 1;
 	Rect<double> r( minLeft - ex, minTop - ex, (maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2 );
 
+	//collision = false;
 	col = false;
 
 	tempVel = vel;
@@ -5729,6 +5730,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( col )
 	{
+		storedContact = minContact;
 		/*if( minContact.movingPlat != NULL )
 		{
 			velocity += minContact.movingPlat->vel;
@@ -9472,6 +9474,37 @@ void Actor::UpdatePhysics()
 				//	offsetX = -b.rw;
 				}
 			}
+			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 )
+			{
+				Edge *e = minContact.edge;
+				V2d mp = minContact.position;
+				double q = e->GetQuantity( mp );
+				ground = e;
+				edgeQuantity = q;
+
+				if( e->Normal().x > 0 )
+				{
+					groundSpeed = velocity.y;
+				}
+				else
+				{
+					groundSpeed = -velocity.y;
+				}
+				
+				SetActionGrind();
+				//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
+				//	&& action == AIRDASH && length( wallNormal ) > 0 )
+				//{
+				//	//assert( minContact.edge != NULL );
+				//	Edge *e = storedContact.edge;
+				//	V2d mp = storedContact.position;
+				//	double q = e->GetQuantity( mp );
+
+				//	
+
+				//	//cout << "grinding" << endl;
+				//}
+			}
 			else if( tempCollision )
 			{
 				if( minContact.movingPlat != NULL )
@@ -9847,11 +9880,25 @@ void Actor::PhysicsResponse()
 			frame = 0;
 		}
 
-		if( action != AIRHITSTUN && action != WALLATTACK )
+		if( action != AIRHITSTUN && action != WALLATTACK && action != AIRDASH )
 		{
 			//oldAction = action;
 			if( collision )
 			{
+				//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
+				//	&& action == AIRDASH && length( wallNormal ) > 0 )
+				//{
+				//	//assert( minContact.edge != NULL );
+				//	Edge *e = storedContact.edge;
+				//	V2d mp = storedContact.position;
+				//	double q = e->GetQuantity( mp );
+
+				//	ground = e;
+				//	groundSpeed = velocity.y;
+				//	SetActionGrind();
+
+				//	//cout << "grinding" << endl;
+				//}
 				if( length( wallNormal ) > 0 && oldVelocity.y >= 0 )
 				{
 					if( wallNormal.x > 0)
@@ -12851,11 +12898,11 @@ void Actor::UpdateSprite()
 					angle = 0;
 				}
 			}
-
+			cout << "angle: " << angle << endl;
 			
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-			sprite->setRotation( 0 );//angle / PI * 180 );
+			sprite->setRotation( angle / PI * 180 );
 		
 			V2d oldv0 = ground->v0;
 			V2d oldv1 = ground->v1;
@@ -12875,9 +12922,12 @@ void Actor::UpdateSprite()
 			}
 
 			//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-			sprite->setPosition( pp.x + offsetX, pp.y );
-			//else
-			//	sprite->setPosition( pp.x, pp.y );	
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+			//sprite->setPosition( pp.x + offsetX, pp.y );
+			
 		break;
 		}
 	case LAND: 
