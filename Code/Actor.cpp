@@ -12889,6 +12889,10 @@ void Actor::UpdateSprite()
 			double angle = GroundedAngle();
 			if( reversed )
 			{
+				if( -gn.y > -steepThresh )
+				{
+					angle = PI;
+				}
 				//need to fill this in for reversed!
 			}
 			else
@@ -12898,7 +12902,7 @@ void Actor::UpdateSprite()
 					angle = 0;
 				}
 			}
-			cout << "angle: " << angle << endl;
+			//cout << "angle: " << angle << endl;
 			
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
