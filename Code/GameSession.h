@@ -349,6 +349,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Actor player;
 	int numPolyTypes;
 	sf::Shader *polyShaders;
+	Tileset **ts_polyShaders;
 	//std::map<int,sf::Shader> *polyShaderMap[
 	//	TerrainPolygon::TerrainType::Count];
 	sf::Shader cloneShader;
@@ -463,6 +464,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *plantva;
 		sf::VertexArray *decorLayer0va;
 		Tileset *ts_plant;
+		Tileset *ts_terrain;
 		
 		sf::Shader *pShader;
 		//TerrainPolygon::TerrainType terrainType;
@@ -502,6 +504,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void LockGate( Gate *g );
 	Gate *unlockedGateList;
 
+	sf::Sprite kinMinimapIcon;
+	Tileset *ts_miniIcons;
 
 
 	Enemy *activeEnemyList;

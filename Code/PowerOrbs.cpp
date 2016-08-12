@@ -731,8 +731,8 @@ void PowerWheel::UpdateStarVA()
 void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 	int currentLevel )
 {
-	cout << "set visible: " << orbIndex << ", " 
-		<< visSections << ", " << currentLevel << endl;
+	//cout << "set visible: " << orbIndex << ", " 
+	//	<< visSections << ", " << currentLevel << endl;
 	assert( currentLevel > 0 );
 	VertexArray &va = *orbSectionVA[orbIndex];
 

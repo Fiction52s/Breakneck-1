@@ -28,22 +28,28 @@ Actor::Actor( GameSession *gs )
 		level1SpeedThresh = 32;
 		level2SpeedThresh = 45;
 		speedChangeUp = .5;//03;//.5;
-		speedChangeDown = .07;//.005;//.07;
+		speedChangeDown = .03;//.005;//.07;
 
 		speedLevel = 0;
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
-		ts_kinFace = owner->GetTileset( "kinportrait_320x320.png", 320, 320 );
+		ts_kinFace = owner->GetTileset( "kinportrait_320x288.png", 320, 288 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 
+		
+		kinTealOutline.setTexture( *ts_kinFace->texture );
+		kinTealOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
+		kinTealOutline.setPosition( 0, 0 );
+
 		kinBlueOutline.setTexture( *ts_kinFace->texture );
-		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
+		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
+		kinBlueOutline.setPosition( 0, 0 );
+
 		kinPurpleOutline.setTexture( *ts_kinFace->texture );
 		kinPurpleOutline.setPosition( 0, 0 );
-		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
-		kinBlueOutline.setPosition( 0, 0 );
+		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 4 ) );
 		//kinFace.setPosition( 2, 48 );
 		//kinFace.setPosition( 1920 / 2 - 512, 0 );
 		kinFace.setPosition( 0, 0 );

@@ -378,7 +378,11 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		AllocateLight();
 	}
 	
-
+	ts_miniIcons = GetTileset( "minimap_icons_64x64.png", 64, 64 );
+	kinMinimapIcon.setTexture( *ts_miniIcons->texture );
+	kinMinimapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
+	kinMinimapIcon.setOrigin( kinMinimapIcon.getLocalBounds().width / 2,
+		kinMinimapIcon.getLocalBounds().height / 2 );
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -899,12 +903,13 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		cdt->Triangulate();
 		vector<p2t::Triangle*> tris;
 		tris = cdt->GetTriangles();
-
 			
 		va = new VertexArray( sf::Triangles , tris.size() * 3 );
 		VertexArray & v = *va;
 		Color testColor( 0x75, 0x70, 0x90 );
 		testColor = Color::White;
+		Vector2f topLeft( left, top );
+		cout << "topLeft: " << topLeft.x << ", " << topLeft.y << endl;
 		for( int i = 0; i < tris.size(); ++i )
 		{	
 			p2t::Point *p = tris[i]->GetPoint( 0 );	
@@ -913,6 +918,19 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 			v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
 			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
 			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+
+			Vector2f pp0 = (v[i*3].position - topLeft);
+			Vector2f pp1 = (v[i*3+1].position - topLeft);
+			Vector2f pp2 = (v[i*3+2].position - topLeft);
+			if( i == 0 )
+			{
+				cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
+				cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
+				cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
+			}
+			v[i*3].texCoords = pp0;
+			v[i*3+1].texCoords = pp1;
+			v[i*3+2].texCoords = pp2;
 		}
 
 		polygons.push_back( va );
@@ -939,7 +957,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		ss << ".png";
 		
 		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-		Tileset *ts_border = GetTileset( ss.str(), 8, 128 );
+		Tileset *ts_border = GetTileset( ss.str(), 8, 256 );//128 );
 
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
@@ -2477,20 +2495,65 @@ bool GameSession::OpenFile( string fileName )
 
 			}
 
+			
+			
 			p2t::CDT * cdt = new p2t::CDT( polyline );
-	
-			cdt->Triangulate();
-			vector<p2t::Triangle*> tris;
-			tris = cdt->GetTriangles();
-			
-			
-			
 
+
+			//cdt->add
 			
+			vector<p2t::Triangle*> tris;
+
+			cdt->Triangulate();
+				
+			tris = cdt->GetTriangles();
+			//int adjustedCount = 0;
+			////do
+			//for( int j = 0; j < 1; ++j )
+			//{
+			//	adjustedCount = 0;
+			//	cdt->Triangulate();
+			//	
+			//	tris = cdt->GetTriangles();
+
+			//	for( int i = 0; i < tris.size(); ++i )
+			//	{
+			//		p2t::Point *p = tris[i]->GetPoint( 0 );	
+			//		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+			//		p2t::Point *p2 = tris[i]->GetPoint( 2 );
+
+			//		V2d pp0( p->x, p->y );
+			//		V2d pp1( p1->x, p1->y );
+			//		V2d pp2( p2->x, p2->y );
+
+			//		int f = 200;
+			//		if( length( pp0 - pp1 ) > f || length( pp0 - pp2 ) > f
+			//			|| length( pp1 - pp2 ) > f )
+			//		{
+			//			adjustedCount++;
+			//			p2t::Point *pNew = new p2t::Point;
+			//			V2d mid = ( pp0 + pp1 + pp2 ) / 3.0;
+			//			pNew->x = mid.x;
+			//			pNew->y = mid.y;
+			//			cdt->AddPoint( pNew );
+			//		}
+			//	}
+			//}
+
+			//if( adjustedCount > 0 )
+			//{
+			//	cdt->Triangulate();
+			//	
+			//	tris = cdt->GetTriangles();
+			//}
+			//while( adjustedCount > 0 );
+
 			va = new VertexArray( sf::Triangles , tris.size() * 3 );
 			VertexArray & v = *va;
 			Color testColor( 0x75, 0x70, 0x90 );
 			testColor = Color::White;
+			Vector2f topLeft( left, top );
+			cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
 			for( int i = 0; i < tris.size(); ++i )
 			{	
 				p2t::Point *p = tris[i]->GetPoint( 0 );	
@@ -2499,6 +2562,22 @@ bool GameSession::OpenFile( string fileName )
 				v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
 				v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
 				v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+				Vector2f pp0 = (v[i*3].position - topLeft);
+				Vector2f pp1 = (v[i*3+1].position - topLeft);
+				Vector2f pp2 = (v[i*3+2].position - topLeft);
+				pp0 = Vector2f( (int)pp0.x % 1024, (int)pp0.y % 1024 );
+				pp1 = Vector2f( (int)pp1.x % 1024, (int)pp1.y % 1024 );
+				pp2 = Vector2f( (int)pp2.x % 1024, (int)pp2.y % 1024 );
+
+				if( i == 0 )
+				{
+					cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
+					cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
+					cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
+				}
+				v[i*3].texCoords = pp0;
+				v[i*3+1].texCoords = pp1;
+				v[i*3+2].texCoords = pp2;
 			}
 
 			polygons.push_back( va );
@@ -2611,7 +2690,7 @@ bool GameSession::OpenFile( string fileName )
 			ss << ".png";
 		
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 8, 128 );
+			Tileset *ts_border = GetTileset( ss.str(), 8, 256 );
 
 			
 
@@ -4132,6 +4211,8 @@ int GameSession::Run( string fileN )
 
 	numPolyTypes = matSet.size();
 	polyShaders = new Shader[numPolyTypes];
+
+	ts_polyShaders = new Tileset*[numPolyTypes];
 	map<pair<int,int>, int> indexConvert;
 
 	//cout << "NUM POLY TYPES: " << numPolyTypes << endl;
@@ -4205,7 +4286,7 @@ int GameSession::Run( string fileN )
 		}*/
 
 		ss1 << ".png";
-
+		ts_polyShaders[index] = GetTileset( ss1.str(), 1024, 1024 );
 		cout << "loading: " << ss1.str() << endl;
 		polyShaders[index].setParameter( "u_texture", 
 			*GetTileset( ss1.str(), 1024, 1024 )->texture );
@@ -4224,6 +4305,7 @@ int GameSession::Run( string fileN )
 		(*it)->terrainVariation)];
 		cout << "real index: " << realIndex << endl;
 		(*it)->pShader = &polyShaders[realIndex];
+		(*it)->ts_terrain = ts_polyShaders[realIndex];
 	}
 
 	/*polyShader.setParameter( "u_texture", *(ts_poly->texture) );
@@ -5349,7 +5431,7 @@ int GameSession::Run( string fileN )
 				rs.setFillColor( Color::Transparent );
 				preScreenTex->draw( rs );*/
 				assert( listVAIter->pShader != NULL );
-				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->pShader );//listVAIter->pShader );
+				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
 			}
 			else
 			{
@@ -5624,14 +5706,13 @@ int GameSession::Run( string fileN )
 		}
 		
 
-		CircleShape playerCircle;
-		playerCircle.setFillColor( COLOR_TEAL );
-		playerCircle.setRadius( 60 );//60 );
-		playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
-		playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
-		minimapTex->draw( playerCircle );
-
-
+		//CircleShape playerCircle;
+		//playerCircle.setFillColor( COLOR_TEAL );
+		//playerCircle.setRadius( 60 );//60 );
+		//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
+		//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
+		
+		
 
 		queryMode = "enemyminimap";
 		enemyTree->Query( this, minimapRect );
@@ -5666,6 +5747,8 @@ int GameSession::Run( string fileN )
 		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 		minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
 
+
+		
 		//for post processing
 		preScreenTex->display();
 
@@ -5812,29 +5895,31 @@ int GameSession::Run( string fileN )
 
 		//postProcessTex->display();
 
-
+		
 
 		//preScreenTex->draw( minimapSprite );
 
 		
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
-		preScreenTex->draw( player.kinFace );
+		
 		
 		if( player.speedLevel == 0 )
 		{
-			preScreenTex->draw( player.kinBlueOutline, &speedBarShader );
+			preScreenTex->draw( player.kinTealOutline, &speedBarShader );
 		}
 		else if( player.speedLevel == 1 )
 		{
-			preScreenTex->draw( player.kinBlueOutline );
-			preScreenTex->draw( player.kinPurpleOutline, &speedBarShader );
+			preScreenTex->draw( player.kinTealOutline );
+			preScreenTex->draw( player.kinBlueOutline, &speedBarShader );
 		}
 		else if( player.speedLevel == 2 )
 		{
 			preScreenTex->draw( player.kinBlueOutline );
 			preScreenTex->draw( player.kinPurpleOutline, &speedBarShader );
 		}
+
+		preScreenTex->draw( player.kinFace );
 		//else 
 
 		/*sf::Vertex blah[] = 
@@ -5849,6 +5934,10 @@ int GameSession::Run( string fileN )
 
 		//preScreenTex->draw( lifeBarSprite );
 		preScreenTex->draw( miniVA, &minimapShader );
+
+		kinMinimapIcon.setPosition( 150 + 30,//minimapSprite.getPosition().x ,
+			minimapSprite.getPosition().y - 30 + 150 );
+		preScreenTex->draw( kinMinimapIcon );
 	//minimapSprite.draw( preScreenTex );
 		//preScreenTex->draw( minimapSprite, &minimapShader );
 		//powerBar.Draw( preScreenTex );
@@ -6683,7 +6772,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	assert( qt != NULL );
 
 	int tw = 8;//64;
-	int th = 128;
+	int th = 256;
 	int numTotalQuads = 0;
 	double test = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
@@ -6740,8 +6829,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
 
-			double out = 16;
-			double in = 128 - out;
+			double out = 48;//16;
+			double in = 256 - out;
 			
 
 			V2d startInner = te->v0 - along * test - other * in;
