@@ -553,6 +553,11 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	ts_talk = owner->GetTileset( "Bosses/Bird/talk_256x256.png", 256, 256 );
 	ts_symbols0 = owner->GetTileset( "Bosses/Dialogue/Symbols/02_Symbols_256x256.png", 256, 256 );
 
+	ts_smallRingThrow = owner->GetTileset( "Bosses/Bird/smallringthrow_256x256.png", 256, 256 );
+	ts_bigRingThrow = owner->GetTileset( "Bosses/Bird/bigringthrow_256x256.png", 256, 256 );
+	ts_spinStart = owner->GetTileset( "Bosses/Bird/spinstart_256x256.png", 256, 256 );
+	ts_spin = owner->GetTileset( "Bosses/Bird/spin_256x256.png", 256, 256 );
+	ts_escape = owner->GetTileset( "Bosses/Bird/escape_256x256.png", 256, 256 );
 	//ts_dialogueBox = owner->GetTileset( "Bosses/Bird/dialoguebox_192x192.png", 192, 192 );
 
 	ts_c01_walk = owner->GetTileset( "Bosses/Bird/c01_walk_256x256.png", 256, 256 );
@@ -613,7 +618,22 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	attackNodes[5][6] = BIG_BULLET;
 	attackNodes[6][5] = PUNCH;*/
 
-	attackNodes[1][1] = KICK;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*attackNodes[1][1] = KICK;
 
 	attackNodes[0][2] = BIG_BULLET;
 	attackNodes[2][0] = SMALL_BULLET;
@@ -626,7 +646,22 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	attackNodes[4][2] = BIG_BULLET;
 	attackNodes[2][4] = SMALL_BULLET;
 
-	attackNodes[3][3] = KICK;
+	attackNodes[3][3] = KICK;*/
+
+	attackNodes[1][1] = SPIN;
+
+	attackNodes[0][2] = SPIN;
+	attackNodes[2][0] = SPIN;
+
+	attackNodes[1][3] = SPIN;
+	attackNodes[3][1] = SPIN;
+
+	attackNodes[2][2] = SPIN;
+
+	attackNodes[4][2] = SPIN;
+	attackNodes[2][4] = SPIN;
+
+	attackNodes[3][3] = SPIN;
 	
 
 	SetupAttackMarkers();
@@ -1435,6 +1470,7 @@ void Boss_Bird::UpdatePrePhysics()
 			return;
 	}
 
+	V2d playerPos = owner->player.position;
 
 	ActionEnded();
 
@@ -1447,7 +1483,7 @@ void Boss_Bird::UpdatePrePhysics()
 	case MOVE:
 		break;
 	case ATTACK_SMALL_BULLET:
-		if( frame == (2 * 2 + throwHoldFrames) * 2 )
+		if( frame == 18 * 2 )
 		{
 			action = MOVE;
 		}
@@ -1465,13 +1501,13 @@ void Boss_Bird::UpdatePrePhysics()
 		}
 		break;
 	case ATTACK_SPIN:
-		if( frame == 40 ) //not sure if variable or gets harder as you speed up
+		if( frame == 60 ) //not sure if variable or gets harder as you speed up
 		{
 			action = MOVE;
 		}
 		break;
 	case ATTACK_BIG_BULLET:
-		if( frame == 9 * 4 )
+		if( frame == 20 * 2 )
 		{
 			action = MOVE;
 		}
@@ -1508,7 +1544,7 @@ void Boss_Bird::UpdatePrePhysics()
 				|| action == ATTACK_SPIN
 				|| action == ATTACK_BIG_BULLET )
 			{
-				cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
+				//cout << "moving moveIndex w/ travelIndex : " << travelIndex << endl;
 				//cout << "move index was: " << moveIndex.x << ", " << moveIndex.y << endl;
 				moveIndex += path[travelIndex];
 			}
@@ -1615,6 +1651,11 @@ void Boss_Bird::UpdatePrePhysics()
 	case ATTACK_SMALL_BULLET:
 		if( frame == 0 )
 		{
+			ringThrowRight = (playerPos.x >= position.x);
+			ringThrowDown = (playerPos.y >= position.y);
+		}
+		else if( frame == 9 * 2 )
+		{
 			if( smallRings[0]->state != Projectile::State::NO_EXIST )
 			{
 			}
@@ -1691,6 +1732,11 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	case ATTACK_BIG_BULLET:
 		if( frame == 0 )
+		{
+			ringThrowRight = (playerPos.x >= position.x);
+			ringThrowDown = (playerPos.y >= position.y);
+		}
+		else if( frame == 9 * 2 )
 		{
 			bigRings[0]->position = position;//owner->poiMap["bullettestlarge"]->pos;
 			bigRings[0]->state = Projectile::State::FALL_AT_PLAYER;
@@ -2031,28 +2077,23 @@ void Boss_Bird::UpdateSprite()
 			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
 			break;
 		case ATTACK_SMALL_BULLET:
-			sprite.setTexture( *ts_wing->texture );
-			if( frame < 2 * 2 )
 			{
-				cout << "first throw: " << frame << endl;
-				sprite.setTextureRect( ts_wing->GetSubRect( frame / 2 ) );
+			sprite.setTexture( *ts_smallRingThrow->texture );
+			IntRect ir = ts_smallRingThrow->GetSubRect( frame / 2 );
+
+			if( !ringThrowRight )
+			{
+				ir.left += ir.width;
+				ir.width = -ir.width;
 			}
-			else if( frame < 2 * 2 + throwHoldFrames )
+			if( !ringThrowDown )
 			{
-				cout << "first hold: " << frame << endl;
-				sprite.setTextureRect(  ts_wing->GetSubRect( 2 ) );
+				ir.top += ir.height;
+				ir.height = -ir.height;
 			}
-			else if( frame < 2 * 2 + throwHoldFrames + 2 * 2 )
-			{
-				
-				int temp = frame - (2 * 2 + throwHoldFrames);
-				sprite.setTextureRect( ts_wing->GetSubRect( temp / 2 + 3 ) );
-				cout << "second throw: temp: " << temp << ", blah: " << temp/ 2 + 3 << ", frame: " << frame << endl;
-			}
-			else
-			{
-				cout << "second hold" << endl;
-				sprite.setTextureRect( ts_wing->GetSubRect( 5 ) );
+
+			sprite.setTextureRect( ir );
+			
 			}
 			break;
 		case ATTACK_KICK:
@@ -2060,40 +2101,52 @@ void Boss_Bird::UpdateSprite()
 			sprite.setTextureRect( ts_wing->GetSubRect( 1 ) );
 			break;
 		case ATTACK_SPIN:
-			sprite.setTexture( *ts_wing->texture );
-			sprite.setTextureRect( ts_wing->GetSubRect( 0 ) );
+			sprite.setTexture( *ts_spin->texture );
+			sprite.setTextureRect( ts_spin->GetSubRect( (frame / 2) % 5 ) );
 			break;
 		case ATTACK_BIG_BULLET:
 			{
+				sprite.setTexture( *ts_bigRingThrow->texture );
+				IntRect ir = ts_bigRingThrow->GetSubRect( frame / 2 );
 
-				sprite.setTexture( *ts_kick->texture );
-				IntRect ir = ts_kick->GetSubRect( frame / 4 );
+				if( !ringThrowRight )
+				{
+					ir.left += ir.width;
+					ir.width = -ir.width;
+				}
+				if( !ringThrowDown )
+				{
+					ir.top += ir.height;
+					ir.height = -ir.height;
+				}
+
 				sprite.setTextureRect( ir );
+				
 
-				sf::Vector2i p = path[travelIndex-1];
+				//sf::Vector2i p = path[travelIndex-1];
 
-				//cout << "Start once" << endl;
-				if( p.x > 0 )
-				{
-					//cout << "270" << endl;
-					sprite.setRotation( -270 );
-				}
-				else if( p.x < 0 )
-				{
-					//cout << "90" << endl;
-					sprite.setRotation( -90 );
-				}
-				else if( p.y > 0 )
-				{
-					//cout << "180" << endl;
-					sprite.setRotation( -180 );
-				}
-				else if( p.y < 0 )
-				{
-					//cout << "dont rotate" << endl;
-					sprite.setRotation( 0 );
-					//leave it
-				}
+				////cout << "Start once" << endl;
+				//if( p.x > 0 )
+				//{
+				//	//cout << "270" << endl;
+				//	sprite.setRotation( -270 );
+				//}
+				//else if( p.x < 0 )
+				//{
+				//	//cout << "90" << endl;
+				//	sprite.setRotation( -90 );
+				//}
+				//else if( p.y > 0 )
+				//{
+				//	//cout << "180" << endl;
+				//	sprite.setRotation( -180 );
+				//}
+				//else if( p.y < 0 )
+				//{
+				//	//cout << "dont rotate" << endl;
+				//	sprite.setRotation( 0 );
+				//	//leave it
+				//}
 				//cout << "end" << endl;
 
 				break;

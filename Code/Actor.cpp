@@ -27,16 +27,23 @@ Actor::Actor( GameSession *gs )
 
 		level1SpeedThresh = 32;
 		level2SpeedThresh = 45;
-		speedChangeUp = .5;
-		speedChangeDown = .07;
+		speedChangeUp = .5;//03;//.5;
+		speedChangeDown = .07;//.005;//.07;
 
 		speedLevel = 0;
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
-		ts_kinFace = owner->GetTileset( "kinportrait_288x288.png", 288, 288 );
+		ts_kinFace = owner->GetTileset( "kinportrait_320x320.png", 320, 320 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
+
+		kinBlueOutline.setTexture( *ts_kinFace->texture );
+		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
+		kinPurpleOutline.setTexture( *ts_kinFace->texture );
+		kinPurpleOutline.setPosition( 0, 0 );
+		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
+		kinBlueOutline.setPosition( 0, 0 );
 		//kinFace.setPosition( 2, 48 );
 		//kinFace.setPosition( 1920 / 2 - 512, 0 );
 		kinFace.setPosition( 0, 0 );
@@ -46,7 +53,7 @@ Actor::Actor( GameSession *gs )
 		motionGhostSpacing = 6;
 		ghostSpacingCounter = 0;
 
-		drainCounterMax = 20;
+		drainCounterMax = 10;
 		drainCounter = 0;
 		currentCheckPoint = NULL;
 		flashFrames = 0;
@@ -420,29 +427,29 @@ Actor::Actor( GameSession *gs )
 		gstripurp.setTexture( *tsgstripurp->texture);
 		gstrirgb.setTexture( *tsgstrirgb->texture);
 
-		ts_fairSword[0] = owner->GetTileset( "fair_sworda_144x128.png", 144, 128 );
+		ts_fairSword[0] = owner->GetTileset( "fair_sworda_192x192.png", 192, 192 );
 		ts_fairSword[1] = owner->GetTileset( "fair_swordb_256x256.png", 256, 256 );
 		ts_fairSword[2] = owner->GetTileset( "fair_swordc_384x384.png", 384, 384 );
 
-		ts_dairSword[0] = owner->GetTileset( "dair_sworda_128x144.png", 128, 144 );
-		ts_dairSword[1] = owner->GetTileset( "dair_swordb_256x256.png", 256, 256 );
-		ts_dairSword[2] = owner->GetTileset( "dair_swordc_384x384.png", 384, 384 );
+		ts_dairSword[0] = owner->GetTileset( "dair_sworda_144x192.png", 144, 192 );
+		ts_dairSword[1] = owner->GetTileset( "dair_swordb_192x208.png", 192, 208 );
+		ts_dairSword[2] = owner->GetTileset( "dair_swordc_256x256.png", 256, 256 );
 
-		ts_uairSword[0] = owner->GetTileset( "uair_sworda_160x128.png", 160, 128 );
-		ts_uairSword[1] = owner->GetTileset( "uair_swordb_256x256.png", 256, 256 );
+		ts_uairSword[0] = owner->GetTileset( "uair_sworda_160x160.png", 160, 160 );
+		ts_uairSword[1] = owner->GetTileset( "uair_swordb_224x224.png", 224, 224 );
 		ts_uairSword[2] = owner->GetTileset( "uair_swordc_384x384.png", 384, 384 );
 
-		ts_standingNSword[0] = owner->GetTileset( "stand_sworda_144x96.png", 144, 96 );
-		ts_standingNSword[1] = owner->GetTileset( "stand_swordb_256x256.png", 256, 256 );
-		ts_standingNSword[2] = owner->GetTileset( "stand_swordc_384x384.png", 384, 384 );
+		ts_standingNSword[0] = owner->GetTileset( "stand_sworda_272x160.png", 272, 160 );
+		ts_standingNSword[1] = owner->GetTileset( "stand_swordb_304x160.png", 304, 160 );
+		ts_standingNSword[2] = owner->GetTileset( "stand_swordc_336x160.png", 336, 160 );
 
 		ts_dashAttackSword[0] = owner->GetTileset( "dash_sworda_256x256.png", 256, 256 );
 		ts_dashAttackSword[1] = owner->GetTileset( "dash_swordb_256x256.png", 256, 256 );
-		ts_dashAttackSword[2] = owner->GetTileset( "dash_swordc_384x384.png", 384, 384 );
+		ts_dashAttackSword[2] = owner->GetTileset( "dash_swordc_256x304.png", 256, 304 );
 
-		ts_wallAttackSword[0] = owner->GetTileset( "wall_sworda_96x256.png", 96, 256 );
-		ts_wallAttackSword[1] = owner->GetTileset( "wall_swordb_256x256.png", 256, 256 );
-		ts_wallAttackSword[2] = owner->GetTileset( "wall_swordc_384x384.png", 384, 384 );
+		ts_wallAttackSword[0] = owner->GetTileset( "wall_sworda_128x256.png", 128, 256 );
+		ts_wallAttackSword[1] = owner->GetTileset( "wall_swordb_128x288.png", 128, 288 );
+		ts_wallAttackSword[2] = owner->GetTileset( "wall_swordc_160x384.png", 160, 384 );
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
 
@@ -9561,14 +9568,14 @@ void Actor::UpdatePhysics()
 
 void Actor::GroundAttack()
 {
-	if( action == DASH )
+	if( currInput.B )//action == DASH )
 	{
-		action = DASHATTACK;
+		action = STANDN;
 		frame = 0;
 	}
 	else
 	{
-		action = STANDN;
+		action = DASHATTACK;
 		frame = 0;
 	}
 }
@@ -13137,7 +13144,7 @@ void Actor::UpdateSprite()
 			//Vector2i offset( 24, -16 );
 			//Vector2i offset( 24, 0 );
 			//Vector2i offset( 32, 0 );
-			Vector2i offset( 0, 0 );
+			Vector2i offset( 0, -16 );
 
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
@@ -13327,7 +13334,7 @@ void Actor::UpdateSprite()
 			sprite->setTexture( *(tileset[WALLATTACK]->texture));
 
 			//Vector2i offset( 32, -16 );
-			Vector2i offset( 0, 0 );
+			Vector2i offset( -8, -8 );
 
 			if( facingRight )
 			{
@@ -13452,7 +13459,12 @@ void Actor::UpdateSprite()
 				dairSword.setTexture( *curr_ts->texture );
 			}
 
-			Vector2i offset( 0, 0 );
+			Vector2i offsetArr[3];
+			offsetArr[0] = Vector2i( 0, 24 );
+			offsetArr[1] = Vector2i( 0, 48 );
+			offsetArr[2] = Vector2i( 0, 72 );
+
+			Vector2i offset = offsetArr[speedLevel];
 
 			sprite->setTexture( *(tileset[DAIR]->texture));
 			if( facingRight )

@@ -296,6 +296,8 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 		int slowCounter;
 	};
 
+	int hitBySwordCount;
+
 	Projectile **smallRings;
 	Projectile **bigRings;
 	int numSmallRings;
@@ -372,6 +374,15 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	Tileset *ts_wing;
 	Tileset *ts_kick;
 	Tileset *ts_intro;
+
+	Tileset *ts_spinStart;
+	Tileset *ts_spin;
+	Tileset *ts_smallRingThrow;
+	Tileset *ts_punch;
+	Tileset *ts_bigRingThrow;
+	bool ringThrowRight;
+	bool ringThrowDown;
+	Tileset *ts_escape;
 
 	Tileset *ts_talk;
 	
@@ -524,10 +535,14 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 {
 	enum Action
 	{
-		RUN,
-		JUMP,
-		ATTACK,
-		LAND
+		MOVE,
+		SHOTGUN,
+		REVERSE_SHOTGUN,
+		Count
+		//RUN,
+		//JUMP,
+		//ATTACK,
+		//LAND
 	};
 
 	sf::CircleShape testCircle;
@@ -545,13 +560,36 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 		ScorpionNode( sf::Vector2<double> &pos );
 		ScorpionNode *neighbors[5];
 		//void ResetDirection();
-		void SetNewDirection();
+		void SetNewDirection( bool onlyMovement );
 		sf::Vector2<double> position;
 		int facingIndex;
 		NodeType nType;
 	};
 
+	struct BigBounceBullet : Movable
+	{
+		BigBounceBullet( Boss_Coyote *parent );
 
+		void Reset(
+			sf::Vector2<double> &pos );
+		void UpdatePrePhysics();
+		void UpdatePostPhysics();
+		void HitPlayer();
+		void IncrementFrame();
+		void Fire( sf::Vector2<double> vel );
+		void Draw( sf::RenderTarget *target );
+		Tileset *ts;
+		int frame;
+		int framesToLive;
+		sf::Sprite sprite;
+		bool active;
+		ScorpionNode *revNode;
+		Boss_Coyote *parent;
+	};
+
+	BigBounceBullet bigBounceBullet;
+
+	sf::Vector2<double> arenaCenter;
 	Launcher *launcher;
 	double speed;
 	//void ResetDirections();
@@ -559,6 +597,9 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	void CreateNodes();
 	ScorpionNode *points[6];
 	ScorpionNode *edges[6];
+	
+	
+	
 
 	sf::Vertex *testPaths;
 	int pathSize;

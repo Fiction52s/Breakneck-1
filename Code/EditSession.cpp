@@ -12609,8 +12609,8 @@ sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
 	else if( realPos.y < 0 )
 		realPos.y -= .5f;
 
-	adjX = ((int)realPos.x) * 32;
-	adjY = ((int)realPos.y) * 32;
+	adjX = ((int)realPos.x) * 16;
+	adjY = ((int)realPos.y) * 16;
 
 	return V2d( adjX, adjY );
 }

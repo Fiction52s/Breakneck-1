@@ -163,7 +163,7 @@ void Launcher::Fire()
 	{
 		dirAngle += PI * 2.0;
 	}
-
+	dirAngle -= angleSpread / 2;
 	for( int i = 0; i < perShot; ++i )
 	{
 

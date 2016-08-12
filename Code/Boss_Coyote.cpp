@@ -24,7 +24,7 @@ void Boss_Coyote::CreateNodes()
 	//V2d testPos = ground->GetPoint( quantity );
 
 	//V2d truePos = position;
-	V2d testPos = owner->poiMap["coyotecenter"]->pos;
+	arenaCenter = owner->poiMap["coyotecenter"]->pos;
 	//V2d testPos = 
 	//testPos += V2d( -200, -200 );
 
@@ -38,7 +38,7 @@ void Boss_Coyote::CreateNodes()
 	for( int i = 0; i < 6; ++i )
 	{
 		dir = V2d( cos( angle - PI / 2 ), sin( angle - PI / 2 ) );
-		points[i] = new ScorpionNode( testPos + dir * radius );
+		points[i] = new ScorpionNode( arenaCenter + dir * radius );
 		//edges[i] = new ScorpionNode;
 		angle += 2 * PI / 6;
 	}
@@ -227,20 +227,38 @@ Boss_Coyote::ScorpionNode::ScorpionNode( sf::Vector2<double> &pos )
 	}
 }
 
-void Boss_Coyote::ScorpionNode::SetNewDirection()
+void Boss_Coyote::ScorpionNode::SetNewDirection( bool onlyMovement )
 {
-	int index = 0;
-	int possibles[4];
-	for( int i = 0; i < 5; ++i )
+
+	int r = rand() % 4;
+	if( r < 2 || onlyMovement )
 	{
-		if( i != facingIndex )
+		nType = DIRECTION;
+		int index = 0;
+		int possibles[4];
+		for( int i = 0; i < 5; ++i )
 		{
-			possibles[index] = i;
-			++index;
+			if( i != facingIndex )
+			{
+				possibles[index] = i;
+				++index;
+			}
 		}
+		int test = rand() % 4;
+		facingIndex = possibles[test];
 	}
-	int test = rand() % 4;
-	facingIndex = possibles[test];
+	else
+	{
+		if( r == 2 )
+		{
+			nType = SHOTGUN;
+		}
+		else
+		{
+			nType = REVERSE_SHOTGUN;
+		}
+		
+	}
 }
 
 void Boss_Coyote::RandomizeDirections()
@@ -254,8 +272,10 @@ void Boss_Coyote::RandomizeDirections()
 
 Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE ),//, facingRight( cw ),
-	moveBezTest( 0,0,1,1 )//, testPaths( sf::Lines, 12 * 5 * 2 )
+	moveBezTest( 0,0,1,1 ), bigBounceBullet( this )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
+	action = MOVE;
+	frame = 0;
 	pathSize = 120;
 	pathCutoff = pathSize;// 12 * 5 * 2
 	testPaths = new Vertex[pathSize];
@@ -269,7 +289,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	facingRight = true;
 	gravity = V2d( 0, .6 );
 	//maxGroundSpeed = s;
-	action = RUN;
+	//action = RUN;
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
@@ -300,6 +320,8 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	}*/
 
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
+	
+
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
@@ -373,8 +395,9 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 
 	RandomizeDirections();
 
-	launcher = new Launcher( this, owner, 32, 1, position, V2d( 1, 0 ), 120, 900, true );
-	launcher->SetBulletSpeed( 10 );	
+	int bulletTTL = 500;
+	launcher = new Launcher( this, owner, 144, 12, position, V2d( 1, 0 ), PI * 2.0 / 3.0, bulletTTL, true );
+	launcher->SetBulletSpeed( 3 );	
 	
 	//SetPartyMode( false );
 	//SetPartyMode( true );
@@ -403,6 +426,10 @@ void Boss_Coyote::BulletHitPlayer( BasicBullet *b )
 
 void Boss_Coyote::ResetEnemy()
 {
+	bigBounceBullet.Reset( position );
+	launcher->Reset();
+	
+	action = MOVE;
 	RandomizeDirections();
 	currNode = points[0];
 	//ResetDirections();
@@ -414,6 +441,7 @@ void Boss_Coyote::ResetEnemy()
 	testMover->SetSpeed( 0 );
 
 	position = testMover->physBody.globalPosition;
+	
 	//testMover->UpdateGroundPos();
 
 	//testLaunch->Reset();
@@ -519,42 +547,119 @@ void Boss_Coyote::ActionEnded()
 {
 	switch( action )
 	{
-	case RUN:
+	case MOVE:
 		frame = 0;
 		break;
-	case JUMP:
-		frame = 0;
+	case SHOTGUN:
+		if( frame == 60 )
+		{
+			action = MOVE;
+			frame = 0;
+			travelFrame = 0;
+
+			//travelIndex = 0;
+		}
 		break;
-	case LAND:
-		action = RUN;
-		frame = 0;
+	case REVERSE_SHOTGUN:
+		{
+			if( frame == 80 )
+			{
+				action = MOVE;
+				frame = 0;
+				travelFrame = 0;
+			}
+		}
 		break;
-	case ATTACK:
-		action = RUN;
-		frame = 0;
-		break;
-	}
+	}	
 }
 
 void Boss_Coyote::UpdatePrePhysics()
 {
-	ScorpionNode *nextNode = currNode->neighbors[currNode->facingIndex];
-	double diff = length( nextNode->position - currNode->position );
+	ActionEnded();
 
-	int cap = diff / speed + .5;
-
-	double r = moveBezTest.GetValue( travelFrame / (double)cap );
-	position = currNode->position * (1 - r) + nextNode->position * r;
-	travelFrame++;
-	if( travelFrame == cap )
+	switch( action )
 	{
-		travelFrame = 0;
-		currNode->SetNewDirection();
-		currNode = nextNode;
+	case MOVE:
+		{
+			ScorpionNode *nextNode = currNode->neighbors[currNode->facingIndex];
+			double diff = length( nextNode->position - currNode->position );
+
+			int cap = diff / speed + .5;
+
+			if( travelFrame == cap )
+			{
+				travelFrame = 0;
+				currNode->SetNewDirection( false );
+				currNode = nextNode;
+
+				switch( currNode->nType )
+				{
+				case ScorpionNode::DIRECTION:
+					break;
+				case ScorpionNode::SHOTGUN:
+					action = SHOTGUN;
+					frame = 0;
+					break;
+				case ScorpionNode::REVERSE_SHOTGUN:
+					action = REVERSE_SHOTGUN;
+					frame = 0;
+					bigBounceBullet.revNode = currNode;
+					break;
+				}
+			}
+
+			
+		}
+		break;
+	case SHOTGUN:
+		break;
+	case REVERSE_SHOTGUN:
+		break;
 	}
+
+	switch( action )
+	{
+	case MOVE:
+		{
+			ScorpionNode *nextNode = currNode->neighbors[currNode->facingIndex];
+			double diff = length( nextNode->position - currNode->position );
+
+			int cap = diff / speed + .5;
+
+			double r = moveBezTest.GetValue( travelFrame / (double)cap );
+			position = currNode->position * (1 - r) + nextNode->position * r;
+			travelFrame++;
+		}
+		break;
+	case SHOTGUN:
+		if( frame == 0 )
+		{
+			currNode->SetNewDirection( true );
+			launcher->facingDir = normalize( arenaCenter - currNode->position );
+			launcher->position = currNode->position;
+			launcher->Fire();
+			cout << "fire" << endl;
+		}
+		break;
+	case REVERSE_SHOTGUN:
+		if( frame == 0 )
+		{
+			currNode->SetNewDirection( true );
+			V2d shootDir = normalize( arenaCenter - currNode->position );
+			double bSpeed = 25;
+			bigBounceBullet.position = currNode->position;
+			bigBounceBullet.Fire( shootDir * bSpeed );
+		}
+		break;
+	}
+
+	
+
+
 
 
 	launcher->UpdatePrePhysics();
+	bigBounceBullet.UpdatePrePhysics();
 
 	return;
 	//testLaunch->UpdatePrePhysics();
@@ -563,68 +668,11 @@ void Boss_Coyote::UpdatePrePhysics()
 	if( dead )
 		return;
 
-	ActionEnded();
-
-	switch( action )
-	{
-	case RUN:
-		break;
-	case JUMP:
-		break;
-	case ATTACK:
-		break;
-	case LAND:
-		break;
-	}
-
-	switch( action )
-	{
-	case RUN:
-		if( facingRight )
-		{
-			if( player.position.x < position.x )
-			{
-				facingRight = false;
-			}
-		}
-		else
-		{
-			if( player.position.x > position.x )
-			{
-				facingRight = true;
-			}
-		}
-
-		if( facingRight )
-		{
-			testMover->SetSpeed( testMover->groundSpeed + .3 );
-		}
-		else
-		{
-			testMover->SetSpeed( testMover->groundSpeed - .3 );
-		}
-
-		if( testMover->groundSpeed > maxGroundSpeed )
-			testMover->SetSpeed( maxGroundSpeed );
-		else if( testMover->groundSpeed < -maxGroundSpeed )
-			testMover->SetSpeed( -maxGroundSpeed );
-		break;
-	case JUMP:
-		break;
-	case ATTACK:
-		{
-			testMover->SetSpeed( 0 );
-		}
-		break;
-	case LAND:
-		{
-			testMover->SetSpeed( 0 );
-		}
-		break;
-	}
+	
 
 
-	bool roll = testMover->roll;
+
+	//bool roll = testMover->roll;
 
 	if( !dead && receivedHit != NULL )
 	{	
@@ -656,15 +704,7 @@ void Boss_Coyote::UpdatePrePhysics()
 	//else
 	//{
 
-		if( !roll && frame == 16 * crawlAnimationFactor )
-		{
-			frame = 0;
-		}
-
-		if ( roll && frame == 10 * rollAnimationFactor )
-		{
-			frame = rollAnimationFactor * 2; 
-		}
+		
 	
 		//cout << "groundspeed: " << testMover->groundSpeed << endl;
 	//}
@@ -688,6 +728,7 @@ void Boss_Coyote::UpdatePrePhysics()
 void Boss_Coyote::UpdatePhysics()
 {
 	launcher->UpdatePhysics();
+	bigBounceBullet.UpdatePhysics();
 	return;
 	//testLaunch->UpdatePhysics();
 	specterProtected = false;
@@ -993,8 +1034,11 @@ void Boss_Coyote::PhysicsResponse()
 
 void Boss_Coyote::UpdatePostPhysics()
 {
+	bigBounceBullet.UpdatePostPhysics();
 	launcher->UpdatePostPhysics();
 	launcher->UpdateSprites();
+	
+	++frame;
 	return;
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
@@ -1010,6 +1054,7 @@ void Boss_Coyote::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		
 		++frame;
 		slowCounter = 1;
 		
@@ -1070,6 +1115,7 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 		target->draw( testPaths, pathCutoff, sf::Lines );
 		testCircle.setPosition( position.x, position.y );
 		target->draw( testCircle );
+		bigBounceBullet.Draw( target );
 	}
 	else
 	{
@@ -1333,4 +1379,101 @@ void Boss_Coyote::Land()
 {
 	frame = 0;
 	//cout << "land" << endl;
+}
+
+Boss_Coyote::BigBounceBullet::BigBounceBullet( Boss_Coyote *p_parent )
+	:parent( p_parent )
+{
+	int rad = 32;
+	ts = owner->GetTileset( "Bosses/Coyote/bigbouncebullet_64x64.png", 64, 64 );
+	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2,
+		sprite.getLocalBounds().height / 2 );	
+	frame = 0;
+
+	hurtBody.isCircle = true;
+	hurtBody.globalAngle = 0;
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.rw = rad;
+	hurtBody.rh = rad;
+
+	hitBody.type = CollisionBox::Hit;
+	hitBody.isCircle = true;
+	hitBody.globalAngle = 0;
+	hitBody.offset.x = 0;
+	hitBody.offset.y = 0;
+	hitBody.rw = rad;
+	hitBody.rh = rad;
+
+	physBody.type = CollisionBox::Physics;
+	physBody.isCircle = true;
+	physBody.globalAngle = 0;
+	physBody.offset.x = 0;
+	physBody.offset.y = 0;
+	physBody.rw = rad;
+	physBody.rh = rad;
+
+	//collideWithTerrain = true;
+	collideWithPlayer = true;
+
+	active = false;
+}
+
+void Boss_Coyote::BigBounceBullet::UpdatePrePhysics()
+{
+	Movable::UpdatePrePhysics();
+	if( framesToLive == 0 )
+	{
+		active = false;
+
+		V2d diff = parent->arenaCenter - revNode->position;
+		parent->launcher->facingDir = normalize( -diff );
+		parent->launcher->position = parent->arenaCenter + diff;
+		parent->launcher->Fire();
+	}
+}
+
+void Boss_Coyote::BigBounceBullet::Fire( sf::Vector2<double> vel )
+{
+	int dist = length( parent->arenaCenter - position ) * 2;
+	cout << "BIG bounce fire: " << vel.x << ", " << vel.y << endl;
+	velocity = vel;
+	active = true;
+	frame = 0;
+	framesToLive = dist / (int)length( vel );
+}
+
+void Boss_Coyote::BigBounceBullet::Reset(
+	sf::Vector2<double> &pos )
+{
+	active = false;
+	frame = 0;
+	Movable::Reset( pos );
+}
+
+void Boss_Coyote::BigBounceBullet::UpdatePostPhysics()
+{
+	Movable::UpdatePostPhysics();
+	sprite.setTextureRect( ts->GetSubRect( frame % 4 ) );
+	sprite.setPosition( position.x, position.y );
+}
+
+
+void Boss_Coyote::BigBounceBullet::HitPlayer()
+{
+}
+void Boss_Coyote::BigBounceBullet::IncrementFrame()
+{
+	++frame;
+	--framesToLive;
+}
+
+void Boss_Coyote::BigBounceBullet::Draw( sf::RenderTarget *target )
+{
+	if( active )
+	{
+		target->draw( sprite );
+	}
 }

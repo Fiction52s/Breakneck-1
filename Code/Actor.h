@@ -73,6 +73,9 @@ struct Actor : QuadTreeCollider,
 
 	Tileset *ts_kinFace;
 	sf::Sprite kinFace;
+	sf::Sprite kinBlueOutline;
+	sf::Sprite kinPurpleOutline;
+	//sf::Shader speedBarShader;
 	
 
 	Actor( GameSession *owner );
@@ -173,6 +176,7 @@ struct Actor : QuadTreeCollider,
 
 	sf::Sprite dairSword;
 	Tileset *ts_dairSword[3];
+	//sf::Vector2i dairOffset[3];
 
 	sf::Sprite uairSword;
 	Tileset *ts_uairSword[3];

@@ -206,6 +206,40 @@ namespace BulletType
 }
 Bullet* CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher );
 
+struct Movable : QuadTreeCollider
+{
+	Movable();
+	virtual void HandleEntrant( QuadTreeEntrant *qte );
+	virtual void UpdatePrePhysics();
+	virtual void Reset(
+		sf::Vector2<double> &pos );
+	virtual void UpdatePhysics();
+	virtual void UpdatePostPhysics();
+	bool ResolvePhysics( 
+		sf::Vector2<double> vel );
+	virtual void HitTerrain();
+	virtual void HitPlayer();
+	virtual void IncrementFrame();
+	
+	CollisionBox physBody;
+	CollisionBox hitBody;
+	CollisionBox hurtBody;
+
+	bool collideWithTerrain;
+	bool collideWithPlayer;
+
+	sf::Vector2<double> position;
+	sf::Vector2<double> velocity;
+	int slowCounter;
+	int slowMultiple;
+
+	bool col;
+	Contact minContact;
+	sf::Vector2<double> tempVel;
+	static GameSession *owner;
+	//Launcher *launcher;
+};
+
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {

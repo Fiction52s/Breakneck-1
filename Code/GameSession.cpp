@@ -144,6 +144,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
+	Movable::owner = this;
 	b_crawler = NULL;
 	b_bird = NULL;
 	b_coyote = NULL;
@@ -209,6 +210,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
+	speedBarShader.setParameter( "u_texture", sf::Shader::CurrentTexture );
 
 	if( !glowShader.loadFromFile( "glow_shader.frag", sf::Shader::Fragment ) )
 	{
@@ -3934,7 +3936,7 @@ int GameSession::Run( string fileN )
 	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
 	speedBarSprite.setTexture( *ts_speedBar->texture );
 
-	speedBarShader.setParameter( "u_texture", *ts_speedBar->texture );
+	//speedBarShader.setParameter( "u_texture", *ts_kinFace->texture );
 
 	//speedBarSprite.setPosition( 0, 176 );
 	leftHUDSprite.setTexture( *ts_leftHUD->texture );
@@ -4890,7 +4892,6 @@ int GameSession::Run( string fileN )
 				flowShader.setParameter( "playerPos", player.position.x, player.position.y );
 
 
-
 				++flowFrame;
 				if( flowFrame == flowFrameCount )
 				{
@@ -4898,7 +4899,7 @@ int GameSession::Run( string fileN )
 				}
 				
 				int speedLevel = player.speedLevel;
-				speedBarShader.setParameter( "level", (float)speedLevel );
+				//speedBarShader.setParameter( "onPortion", (float)speedLevel );
 				//speedBarShader.setParameter( "quant", (float)currentSpeedBar );
 				float quant = 0;
 				if( speedLevel == 0 )
@@ -4916,7 +4917,7 @@ int GameSession::Run( string fileN )
 				}
 
 				//cout << "quant: " << quant << endl;
-				speedBarShader.setParameter( "quant", quant );
+				speedBarShader.setParameter( "onPortion", quant );
 
 				queryMode = "enemy";
 
@@ -5819,6 +5820,22 @@ int GameSession::Run( string fileN )
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		preScreenTex->draw( player.kinFace );
+		
+		if( player.speedLevel == 0 )
+		{
+			preScreenTex->draw( player.kinBlueOutline, &speedBarShader );
+		}
+		else if( player.speedLevel == 1 )
+		{
+			preScreenTex->draw( player.kinBlueOutline );
+			preScreenTex->draw( player.kinPurpleOutline, &speedBarShader );
+		}
+		else if( player.speedLevel == 2 )
+		{
+			preScreenTex->draw( player.kinBlueOutline );
+			preScreenTex->draw( player.kinPurpleOutline, &speedBarShader );
+		}
+		//else 
 
 		/*sf::Vertex blah[] = 
 		{ 

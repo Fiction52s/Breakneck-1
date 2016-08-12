@@ -489,7 +489,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
 
 	activeSection = numSections[orbColors[activeOrb]];
-	activeLevel = 3;
+	activeLevel = 6;
 
 	SetVisibleSections( activeOrb, numSections[orbColors[activeOrb]], 2 );
 	/*for( int i = 0; i < 6; ++i )
@@ -645,15 +645,22 @@ void PowerWheel::Reset()
 {
 	activeOrb = 5;
 	activeSection = numSections[orbColors[activeOrb]];
-	activeLevel = 3;
+	activeLevel = 6;
 }
 
 void PowerWheel::Draw( sf::RenderTarget *target )
 {
+	sf::CircleShape test;
+	test.setRadius( 16 );
+	test.setOrigin( test.getLocalBounds().width / 2, test.getLocalBounds().height / 2 );
+	test.setPosition( largeOrb.getPosition() );
+	test.setFillColor( Color::Black );
+	
 	target->draw( smallOrbVA, ts_smallOrbs->texture );
 	target->draw( largeOrb );
 	target->draw( *orbSectionVA[activeOrb] );
 	target->draw( partialSectionVA );
+	target->draw( test );
 //	target->draw( *orbMidSectionVA[activeOrb] );
 //	target->draw( *orbSmallSectionVA[activeOrb] );
 	//sf::RenderStates rs;
@@ -724,14 +731,14 @@ void PowerWheel::UpdateStarVA()
 void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 	int currentLevel )
 {
-	//cout << "set visible: " << orbIndex << ", " 
-	//	<< visSections << ", " << currentLevel << endl;
+	cout << "set visible: " << orbIndex << ", " 
+		<< visSections << ", " << currentLevel << endl;
 	assert( currentLevel > 0 );
 	VertexArray &va = *orbSectionVA[orbIndex];
 
 	int vSections = visSections;
 
-	if( currentLevel != 3 )
+	if( currentLevel != 6 )
 		vSections--;
 	for( int i = 0; i < vSections; ++i )
 	{
@@ -750,14 +757,18 @@ void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 		//va[i].color = Color::Blue;
 	}
 
-	if( currentLevel == 1 )
+	if( currentLevel > 0 )
+	{
+		SetVisibleCurrentSection( orbIndex, visSections - 1, 32 + (currentLevel-1) * ( (96-32) / 5)  );
+	}
+	/*if( currentLevel == 1 )
 	{
 		SetVisibleCurrentSection( orbIndex, visSections - 1, 48 );
 	}
 	else if( currentLevel == 2 )
 	{
 		SetVisibleCurrentSection( orbIndex, visSections - 1, 72 );
-	}
+	}*/
 	else
 	{
 		for( int i = 0; i < 3; ++i )
@@ -793,7 +804,7 @@ VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
 {
 	Vector2f trueBase = basePos + Vector2f( 32, 32 );
 	int sectionCount = numSections[col];
-	int numVertices = sectionCount * 3;//+ 1 + 1;
+	int numVertices = sectionCount * 6;//+ 1 + 1;
 	VertexArray *sVA = new VertexArray( sf::PrimitiveType::Triangles, numVertices );
 	VertexArray &sva = *sVA;
 
@@ -822,8 +833,8 @@ VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
 bool PowerWheel::Damage( int power )
 {
 	//3 is one section
-	int remainder = power % 3;
-	int mult = power / 3;
+	int remainder = power % 6;
+	int mult = power / 6;
 
 	//while( mult >= activeSection )
 	//{
@@ -860,7 +871,7 @@ bool PowerWheel::Damage( int power )
 			}
 			activeSection = numSections[orbColors[activeOrb]];
 		}
-		activeLevel = 3 + activeLevel;
+		activeLevel = 6 + activeLevel;
 	}
 
 	return true;
