@@ -384,8 +384,11 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
 	//ts_smallOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );//owner->GetTileset( "lifeS_64x64.png", 64, 64 );
 
-	ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
-	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );
+	/*ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
+	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );*/
+
+	ts_largeOrbs = owner->GetTileset( "bluekey.png", 50, 50 );
+	ts_smallOrbs = owner->GetTileset( "bluekey.png", 50, 50 );
 
 	largeOrb.setTexture( *ts_largeOrbs->texture );
 	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( activeOrb ) );

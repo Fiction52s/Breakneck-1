@@ -144,6 +144,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
+	currentZone = NULL;
 	Movable::owner = this;
 	b_crawler = NULL;
 	b_bird = NULL;
@@ -397,7 +398,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		Sprite &gds = gateDirections[i];
 		gds.setTexture( *ts_minimapGateDirection->texture );
 		gds.setTextureRect( ts_minimapGateDirection->GetSubRect( 0 ) );
-		gds.setOrigin( gds.getLocalBounds().width / 2, 300 + gds.getLocalBounds().height );
+		gds.setOrigin( gds.getLocalBounds().width / 2, 120 + gds.getLocalBounds().height );
 		gds.setPosition( miniCircle.getPosition() );
 	}
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
@@ -433,8 +434,8 @@ GameSession::~GameSession()
 	
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	{
-	//	cout << "About to delete: " << (*it)->sourceName << ", "
-	//		<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
+		cout << "About to delete: " << (*it)->sourceName << ", "
+			<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
 		delete (*it);
 	}
 
@@ -6001,7 +6002,39 @@ int GameSession::Run( string fileN )
 		preScreenTex->draw( miniVA, &minimapShader );
 		preScreenTex->draw( miniCircle );
 
+		if( currentZone != NULL )
+		{
+			int index = 0;
+			list<Edge*> gList = currentZone->gates;
+			for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
+			{
+				Gate *tGate = (Gate*)(*it)->info;
+				if( tGate->gState == Gate::OPEN || tGate->gState == Gate::DISSOLVE
+					|| tGate->gState == Gate::REFORM
+					|| tGate->gState == Gate::LOCKFOREVER ||
+					tGate->type == Gate::BLACK )
+				{
+					continue;
+				}
+				
+				V2d dir = normalize( ( tGate->edgeA->v1 + tGate->edgeA->v0 ) / 2.0 - player.position );
+				double angle = atan2( dir.y, -dir.x );
+				gateDirections[index].setRotation( -angle / PI * 180 - 90 );
+				preScreenTex->draw( gateDirections[index] );
+				index++;
+
+			}
+			
+		}
 		
+		/*for( int i = 0; i < 6; ++i )
+		{
+			Sprite &gds = gateDirections[i];
+			gds.setTexture( *ts_minimapGateDirection->texture );
+			gds.setTextureRect( ts_minimapGateDirection->GetSubRect( 0 ) );
+			gds.setOrigin( gds.getLocalBounds().width / 2, 300 + gds.getLocalBounds().height );
+			gds.setPosition( miniCircle.getPosition() );
+		}*/
 		
 		preScreenTex->draw( kinMinimapIcon );
 	//minimapSprite.draw( preScreenTex );
@@ -6486,7 +6519,7 @@ void GameSession::RespawnPlayer()
 	player.flashFrames = 0;
 	
 	
-	
+	currentZone = NULL;
 	
 
 	player.hasDoubleJump = true;
@@ -9415,7 +9448,7 @@ void GameSession::ActivateZone( Zone *z )
 		}
 	}
 
-	
+	currentZone = z;
 }
 
 void GameSession::UnlockGate( Gate *g )
@@ -9432,6 +9465,19 @@ void GameSession::UnlockGate( Gate *g )
 	{
 		g->activeNext = unlockedGateList;
 		unlockedGateList = g;
+	}
+
+	if( currentZone != NULL )
+	{
+		list<Edge*> &gList = currentZone->gates;
+		for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
+		{
+			Gate *gg = (Gate*)(*it)->info;
+			if( gg == g )
+				continue;
+			gg->gState = Gate::REFORM;
+			//g->SetLocked();
+		}
 	}
 }
 

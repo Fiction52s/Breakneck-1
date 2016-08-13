@@ -343,6 +343,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Shader underShader;
 
 	std::list<Zone*> zones;
+	Zone *currentZone;
 
 	sf::Transform groundTrans;
 	Camera cam;
