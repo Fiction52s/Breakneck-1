@@ -156,7 +156,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	cutPlayerInput = false;
 	//powerOrbs = new PowerOrbs( true, true, true, true, true, true);
 	//powerOrbs = new PowerOrbs( this, true, true, true, false, false, false);
-	powerWheel = new PowerWheel( this, true, true, true, true, true, true);
+	
 	Vector2f miniPos = Vector2f( 30, 750 );
 	miniVA[0].position = miniPos + Vector2f( 0, 0 );
 	miniVA[1].position = miniPos + Vector2f( 300, 0 );
@@ -401,6 +401,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		gds.setOrigin( gds.getLocalBounds().width / 2, 120 + gds.getLocalBounds().height );
 		gds.setPosition( miniCircle.getPosition() );
 	}
+
+	powerWheel = new PowerWheel( this, true, true, true, true, true, true);
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -3985,6 +3987,7 @@ void GameSession::SetupZones()
 	{
 		cout << "setting original zone to active: " << originalZone << endl;
 		originalZone->active = true;
+		currentZone = originalZone;
 	}
 	
 	cout << "3: numgates: " << numGates << endl;
@@ -5732,6 +5735,7 @@ int GameSession::Run( string fileN )
 		queryMode = "gate";
 		gateList = NULL;
 		gateTree->Query( this, minimapRect );
+		Gate *mGateList = gateList;
 		while( gateList != NULL )
 		{
 			//gateList->Draw( preScreenTex );
@@ -6016,8 +6020,16 @@ int GameSession::Run( string fileN )
 				{
 					continue;
 				}
+
+				V2d avg = ( tGate->edgeA->v1 + tGate->edgeA->v0 ) / 2.0;
+
+				double rad = minimapRect.width / 2 - 100;
+				if( length( player.position - avg ) < rad )
+				{
+					continue;
+				}
 				
-				V2d dir = normalize( ( tGate->edgeA->v1 + tGate->edgeA->v0 ) / 2.0 - player.position );
+				V2d dir = normalize( avg - player.position );
 				double angle = atan2( dir.y, -dir.x );
 				gateDirections[index].setRotation( -angle / PI * 180 - 90 );
 				preScreenTex->draw( gateDirections[index] );
@@ -6455,6 +6467,7 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 
 void GameSession::RespawnPlayer()
 {
+	currentZone = originalZone;
 	if( player.currentCheckPoint == NULL )
 	{
 		player.position = originalPos;
@@ -6519,7 +6532,7 @@ void GameSession::RespawnPlayer()
 	player.flashFrames = 0;
 	
 	
-	currentZone = NULL;
+	//currentZone = NULL;
 	
 
 	player.hasDoubleJump = true;
