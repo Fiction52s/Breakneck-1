@@ -4,6 +4,9 @@
 varying vec4 vColor;
 varying vec2 vTexCoord;
 
+uniform vec4 despColor;
+uniform vec4 auraColor;
+
 //our texture samplers
 uniform sampler2D u_texture;   //diffuse map
 uniform sampler2D u_normals;   //normal map
@@ -287,9 +290,17 @@ void main() {
 	}
 	if( despFrame >= 0 )
 	{
-		vec4 desperation = vec4( 1.0, 0.0, 0.0, doneColor.a );//vec4( doneColor.g, doneColor.b, doneColor.r, doneColor.a );
-		gl_FragColor =  gl_Color * desperation;
-		//gl_FragColor =  gl_Color * desperation;
+		if( doneColor.rgb == vec3( 0x66 / 255.0, 0xdd / 255.0, 0xff / 255.0 ) )
+		{
+	
+			//vec4 trueCol = 
+			gl_FragColor = gl_Color * auraColor;//gl_Color * vec4( mix( doneColor.rgb, vec3( 1.0, 1.0, 1.0 )), doneColor.a );
+		}
+		else
+		{
+			vec4 desperation = vec4( despColor.rgb, doneColor.a );
+			gl_FragColor =  gl_Color * desperation;
+		}
 	}
 	else if( despFrame == -1 )
 	{

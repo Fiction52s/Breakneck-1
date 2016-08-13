@@ -44,6 +44,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	bool reformBehindYou;
 	Gate( GameSession *owner, GateType type,
 		bool reformBehindYou );
+	~Gate();
 	GateType type;
 	GameSession *owner;
 	GateState gState;

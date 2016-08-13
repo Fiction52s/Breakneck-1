@@ -383,6 +383,23 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	kinMinimapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
 	kinMinimapIcon.setOrigin( kinMinimapIcon.getLocalBounds().width / 2,
 		kinMinimapIcon.getLocalBounds().height / 2 );
+	kinMinimapIcon.setPosition( 180, preScreenTex->getSize().y - 180 );
+
+	ts_miniCircle = GetTileset( "minimap_circle_300x300.png", 300, 300 );
+	miniCircle.setTexture( *ts_miniCircle->texture );
+	miniCircle.setOrigin( miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2 );
+	
+	miniCircle.setPosition( kinMinimapIcon.getPosition() );
+
+	ts_minimapGateDirection = GetTileset( "minimap_gate_w02_192x64.png", 192, 64 );
+	for( int i = 0; i < 6; ++i )
+	{
+		Sprite &gds = gateDirections[i];
+		gds.setTexture( *ts_minimapGateDirection->texture );
+		gds.setTextureRect( ts_minimapGateDirection->GetSubRect( 0 ) );
+		gds.setOrigin( gds.getLocalBounds().width / 2, 300 + gds.getLocalBounds().height );
+		gds.setPosition( miniCircle.getPosition() );
+	}
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -390,6 +407,18 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 GameSession::~GameSession()
 {
+	//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+	//{
+	//	cout << "about: " << (*it)->sourceName << ", "
+	//		<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
+	//	//delete (*it);
+	//}
+	for( int i = 0; i < numGates; ++i )
+	{
+		delete gates[i];
+	}
+	delete [] gates;
+
 	for( int i = 0; i < numPoints; ++i )
 	{
 		delete edges[i];
@@ -401,10 +430,15 @@ GameSession::~GameSession()
 		delete (*it);
 	}
 
+	
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	{
+	//	cout << "About to delete: " << (*it)->sourceName << ", "
+	//		<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
 		delete (*it);
 	}
+
+	
 
 	delete terrainTree;
 	delete enemyTree;
@@ -434,11 +468,26 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 
 	Tileset *t = new Tileset();
 	t->texture = new Texture();
-	t->texture->loadFromFile( s );
+	if( !t->texture->loadFromFile( s ) )
+	{
+		cout << "failed to load: " << s << endl;
+		assert( false );
+	}
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;
 	t->sourceName = s;
 	tilesetList.push_back( t );
+
+	cout << "pushing back texture: " << s << endl;
+
+
+
+	/*for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+	{
+		cout << "testing: " << (*it)->sourceName << ", "
+			<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
+		
+	}*/
 
 	return t;
 	//make sure to set up tileset here
@@ -957,7 +1006,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		ss << ".png";
 		
 		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-		Tileset *ts_border = GetTileset( ss.str(), 8, 256 );//128 );
+		Tileset *ts_border = GetTileset( ss.str(), 8, 512 );//128 );
 
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
@@ -2690,7 +2739,7 @@ bool GameSession::OpenFile( string fileName )
 			ss << ".png";
 		
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 8, 256 );
+			Tileset *ts_border = GetTileset( ss.str(), 8, 128 );
 
 			
 
@@ -4061,6 +4110,8 @@ int GameSession::Run( string fileN )
 
 	fileName = fileN;
 	
+	
+
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
@@ -4388,6 +4439,8 @@ int GameSession::Run( string fileN )
 				ss.str( "" );
 				frameCounter = 0;
 				total = 0;
+
+				
 			}
 			else
 			{
@@ -4401,7 +4454,14 @@ int GameSession::Run( string fileN )
 			ss.clear();
 			ss.str("");*/
 		}
-		
+
+		//cout << "frameCounter: " << frameCounter << endl;
+		//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+		//{
+			//cout << "testt: " << (*it)->sourceName << ", "
+			//	<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
+			//delete (*it);
+		//}
 
 		accumulator += frameTime;
 
@@ -4671,14 +4731,18 @@ int GameSession::Run( string fileN )
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
 			{
+				
 				quit = true;
 				break;
 			}
 	
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
 			{
+
+
 				quit = true;
 				returnVal = 1;
+
 				break;
 			}
 
@@ -5743,6 +5807,7 @@ int GameSession::Run( string fileN )
 		//minimapSprite.set
 		//minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
 		minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
+		
 		//minimapSprite.setScale( .5, .5 );
 		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
 		minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
@@ -5934,9 +5999,10 @@ int GameSession::Run( string fileN )
 
 		//preScreenTex->draw( lifeBarSprite );
 		preScreenTex->draw( miniVA, &minimapShader );
+		preScreenTex->draw( miniCircle );
 
-		kinMinimapIcon.setPosition( 150 + 30,//minimapSprite.getPosition().x ,
-			minimapSprite.getPosition().y - 30 + 150 );
+		
+		
 		preScreenTex->draw( kinMinimapIcon );
 	//minimapSprite.draw( preScreenTex );
 		//preScreenTex->draw( minimapSprite, &minimapShader );
@@ -6108,6 +6174,8 @@ int GameSession::Run( string fileN )
 		currMusic->stop();
 		currMusic = NULL;
 	}
+	
+
 	
 	return returnVal;
 }
@@ -6772,7 +6840,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	assert( qt != NULL );
 
 	int tw = 8;//64;
-	int th = 256;
+	//int th = 512;
 	int numTotalQuads = 0;
 	double test = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
@@ -6829,8 +6897,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
 
-			double out = 48;//16;
-			double in = 256 - out;
+			double out = 40;//16;
+			double in = 256 - out;//; - out;
 			
 
 			V2d startInner = te->v0 - along * test - other * in;
@@ -6851,8 +6919,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				V2d currEndInner = startInner + endAlong * along;
 				V2d currEndOuter = startOuter + endAlong * along;
 						
-				double realHeight0 = in;//sub.height;
-				double realHeight1 = in;//sub.height;
+				double realHeight0 = 256;//in;//sub.height;
+				double realHeight1 = 256;//in;//sub.height;
 				
 				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
 				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );

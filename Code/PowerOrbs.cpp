@@ -363,7 +363,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//activeStars = 12;
 	//starState = 0;
 	//starFrame = 0;
-	activeOrb = 5;
+	activeOrb = 0;
 	
 
 	numSections[TEAL0] = 15;
@@ -381,6 +381,9 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 
 	
 	
+	//ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
+	//ts_smallOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );//owner->GetTileset( "lifeS_64x64.png", 64, 64 );
+
 	ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
 	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );
 
@@ -488,7 +491,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	
 	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
 
-	activeSection = numSections[orbColors[activeOrb]];
+	activeSection = 0;//numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 
 	SetVisibleSections( activeOrb, numSections[orbColors[activeOrb]], 2 );

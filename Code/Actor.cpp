@@ -392,7 +392,7 @@ Actor::Actor( GameSession *gs )
 		normal[GROUNDHITSTUN] = owner->GetTileset( "hurt_stand_NORMALS.png", 64, 64 );
 
 		actionLength[WIREHOLD] = 1;
-		tileset[WIREHOLD] = owner->GetTileset( "steepslide.png", 64, 32 );
+		tileset[WIREHOLD] = owner->GetTileset( "steepslide_80x48.png", 80, 48 );
 		normal[WIREHOLD] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
 		actionLength[BOUNCEAIR] = 1;
@@ -921,6 +921,79 @@ void Actor::UpdatePrePhysics()
 
 	if( desperationMode )
 	{
+		
+
+		int transFrames = 8;
+		
+		
+
+		Color blah[8];// = { Color( 0x00, 0xff, 0xff ), Color(0x00, 0xbb, 0xff ) };
+		blah[0] = Color( 0x00, 0xff, 0xff );
+		blah[1] = Color( 0x00, 0xbb, 0xff );
+		int cIndex = 2;
+		if( hasPowerAirDash )
+		{
+			blah[cIndex] = Color( 0x00, 0x55, 0xff );
+			cIndex++;
+		}
+		if( hasPowerGravReverse )
+		{
+			blah[cIndex] = Color( 0x00, 0xff, 0x88 );
+			cIndex++;
+		}
+		if( hasPowerBounce )
+		{
+			blah[cIndex] = Color( 0xff, 0xff, 0x33 );
+			cIndex++;
+		}
+
+		if( hasPowerGrindBall )
+		{
+			blah[cIndex] = Color( 0xff, 0x88, 0x00 );
+			cIndex++;
+		}
+
+		if( hasPowerTimeSlow )
+		{
+			blah[cIndex] = Color( 0xff, 0x00, 0x00 );
+			cIndex++;
+		}
+
+		if( hasPowerRightWire || hasPowerLeftWire )
+		{
+			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
+			cIndex++;
+		}
+		int numColors = cIndex;
+
+		int tFrame = despCounter % transFrames;
+		int ind = (despCounter / transFrames) % numColors;
+		Color currCol = blah[ind];
+		Color nextCol;
+		if( ind == numColors - 1 )
+		{
+			nextCol = blah[0];
+		}
+		else
+		{
+			nextCol = blah[ind+1];
+		}
+		float fac = (float)tFrame / transFrames;
+		currentDespColor.r = floor(currCol.r * ( 1.f - fac ) + nextCol.r * fac + .5);
+		currentDespColor.g = floor(currCol.g * ( 1.f - fac ) + nextCol.g * fac + .5);
+		currentDespColor.b = floor(currCol.b * ( 1.f - fac ) + nextCol.b * fac + .5);
+
+		float overallFac = (float)despCounter / 60;
+		overallFac = std::min( overallFac, 1.f );
+		Color auraColor( 0x66, 0xdd, 0xff );
+		auraColor.r = floor( auraColor.r * ( 1.f - overallFac ) + Color::Black.r * fac + .5 );
+		auraColor.g = floor( auraColor.g * ( 1.f - overallFac ) + Color::Black.g * fac + .5 );
+		auraColor.b = floor( auraColor.b * ( 1.f - overallFac ) + Color::Black.b * fac + .5 );
+		sh.setParameter( "despColor", currentDespColor );
+		sh.setParameter( "auraColor", auraColor );
+		//currentDespColor
+
+
 		//cout << "desperation: " << despCounter << endl;
 		despCounter++;
 		if( despCounter == maxDespFrames )
@@ -12372,13 +12445,11 @@ void Actor::Draw( sf::RenderTarget *target )
 
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
-
+			
 			sh.setParameter( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			sh.setParameter( "u_normals", *normal[action]->texture );
-			//sprite->setScale( 2, 2 );
 
 			target->draw( *sprite, &sh );
-			//target->draw( cs );
 		}
 		else
 		{

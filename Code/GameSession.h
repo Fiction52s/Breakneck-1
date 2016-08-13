@@ -399,6 +399,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderTexture *postProcessTex1;
 	sf::RenderTexture *postProcessTex2;
 	sf::RenderTexture *minimapTex;
+	Tileset *ts_miniCircle;
+	sf::Sprite miniCircle;
+	Tileset *ts_minimapGateDirection;
+	sf::Sprite gateDirections[6];
 	sf::Sprite background;
 	sf::View bgView;
 

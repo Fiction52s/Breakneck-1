@@ -49,6 +49,11 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 		type == WHITE || type == BIRDFIGHT;
 }
 
+Gate::~Gate()
+{
+	delete gQuads;
+}
+
 void Gate::Draw( sf::RenderTarget *target )
 {
 	//draw quads
@@ -103,7 +108,8 @@ void Gate::UpdateLine()
 		break;
 	case BLACK:
 		c = Color( 0, 0, 0 );
-		ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
+		//ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
+		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
 		tileHeight = 64;
 		break;
 	case BLUE:

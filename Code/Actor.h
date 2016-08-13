@@ -76,7 +76,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite kinTealOutline;
 	sf::Sprite kinBlueOutline;
 	sf::Sprite kinPurpleOutline;
-	
+	sf::Color currentDespColor;
 
 	//sf::Shader speedBarShader;
 	
