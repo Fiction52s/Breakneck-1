@@ -215,8 +215,8 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 
 void KeyMarker::Update()
 {
-	int growMult = 3;
-	int shrinkMult = 3;
+	int growMult = 8;
+	int shrinkMult = 8;
 	switch( state )
 	{
 		case TOZERO:
