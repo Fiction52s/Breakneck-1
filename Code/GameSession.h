@@ -168,8 +168,50 @@ struct Boss_Coyote;
 struct Boss_Tiger;
 struct Boss_Gator;
 struct Boss_Skeleton;
+struct GameSession;
+struct KeyMarker
+{
+	enum State
+	{
+		ZERO,
+		NONZERO,
+		TOZERO,
+		FROMZERO
+	};
+
+	int frame;
+	State state;
+	int keysRequired;
+	int startKeys;
+	KeyMarker( GameSession *owner );
+	void SetStartKeys( int sKeys );
+	void Update();
+	void CollectKey();
+	void SetEnergySprite();
+	void Draw( sf::RenderTarget *target );
+	Tileset *ts_keys;
+	Tileset *ts_keyEnergy;
+	sf::Sprite backSprite;
+	sf::Sprite energySprite;
+	//GameSession *owner;
+};
+
+struct KeyNumberObj
+{
+	KeyNumberObj( sf::Vector2i &p_pos, 
+		int nKeys )
+		:pos( p_pos ), numKeys( nKeys )
+	{
+	}
+	sf::Vector2i pos;
+	int numKeys;
+};
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
+	KeyMarker *keyMarker;
+	std::list<KeyNumberObj*> keyNumberObjects;
+	
 	//int f;
 	std::map<std::string,PoiInfo*> poiMap;
 	std::list<Barrier*> barriers;

@@ -137,6 +137,120 @@ bool Barrier::Update( Actor *player )
 }
 
 
+KeyMarker::KeyMarker( GameSession *owner )
+{
+	ts_keys = owner->GetTileset( "keys_256x256.png", 256, 256 );
+	ts_keyEnergy = owner->GetTileset( "keys_energy_256x256.png", 256, 256 );
+
+	backSprite.setTexture( *ts_keys->texture );
+	energySprite.setTexture( *ts_keyEnergy->texture );
+
+	backSprite.setPosition( 1920 - 256 - 40, 1080 - 256 - 40 );
+	energySprite.setPosition( backSprite.getPosition() );
+
+	state = ZERO;
+	startKeys = 0;
+	keysRequired = 0;
+	frame = 0;
+}
+
+void KeyMarker::CollectKey()
+{
+	assert( keysRequired > 0 );
+	
+	
+	//int f = ((maxKeys-1) * 4) + (frame / growMult);
+
+	--keysRequired;
+
+	if( keysRequired == 0 )
+	{
+		state = TOZERO;
+		frame = 0;
+	}
+	else
+	{
+		SetEnergySprite();
+	}
+}
+
+void KeyMarker::SetEnergySprite()
+{
+	int starts[] = { 0, 1, 3, 6, 10, 15 };
+	int trueStart = starts[startKeys-1];
+
+	int f = trueStart + (startKeys - keysRequired);
+	energySprite.setTextureRect( ts_keyEnergy->GetSubRect( f ) );
+}
+
+void KeyMarker::SetStartKeys( int sKeys )
+{
+	//assert( state == ZERO || state == TOZERO );
+	startKeys = sKeys;
+	keysRequired = startKeys;
+	SetEnergySprite();
+
+	//set bg sprite
+	
+	if( sKeys > 0 )
+	{
+		state = FROMZERO;
+		frame = 0;
+	}
+	else
+	{
+		state = ZERO;
+		backSprite.setTextureRect( ts_keys->GetSubRect( 24 ) );
+	}
+}
+
+void KeyMarker::Draw( sf::RenderTarget *target )
+{
+	target->draw( backSprite );
+	if( state == NONZERO )
+	{
+		target->draw( energySprite );
+	}
+}
+
+void KeyMarker::Update()
+{
+	int growMult = 3;
+	int shrinkMult = 3;
+	switch( state )
+	{
+		case TOZERO:
+		{
+			if( frame == 4 * shrinkMult )
+			{
+				state = ZERO;
+				frame = 0;
+				backSprite.setTextureRect( ts_keys->GetSubRect( 24 ) );
+				break;
+			}
+
+			int f = ((startKeys-1) * 4) + (3 - (frame / shrinkMult));
+			backSprite.setTextureRect( ts_keys->GetSubRect( f ) );
+			++frame;
+
+			break;
+		}
+		case FROMZERO:
+		{
+			if( frame == 4 * growMult )
+			{
+				state = NONZERO;
+				frame = 0;
+				break;
+			}
+			int f = ((startKeys-1) * 4) + (frame / growMult);
+			backSprite.setTextureRect( ts_keys->GetSubRect( f ) );
+			++frame;
+			break;
+		}
+	}
+}
+
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
 	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex )
 	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
@@ -403,6 +517,8 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	}
 
 	powerWheel = new PowerWheel( this, true, true, true, true, true, true);
+
+	keyMarker = new KeyMarker( this );
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -1350,6 +1466,18 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				poiMap[pname] = pi;
 				//poiMap
+			}
+			else if( typeName == "key" )
+			{
+				Vector2i pos;
+				
+				is >> pos.x;
+				is >> pos.y;
+
+				int numKeys;
+				is >> numKeys;
+
+				keyNumberObjects.push_back( new KeyNumberObj( pos, numKeys ) );
 			}
 
 			//w1
@@ -3958,6 +4086,41 @@ void GameSession::SetupZones()
 
 	}
 
+	//set key number objects correctly
+	for( list<KeyNumberObj*>::iterator it = keyNumberObjects.begin(); it != keyNumberObjects.end(); ++it )
+	{
+		Zone *assignZone;
+		V2d cPos( (*it)->pos.x, (*it)->pos.y );
+		for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
+		{
+			bool hasPoint = (*zit)->ContainsPoint( cPos );
+			if( hasPoint )
+			{
+				bool mostSpecific = true;
+				for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
+				{
+					if( (*zit2)->ContainsPoint( cPos ) )
+					{
+						mostSpecific = false;
+						break;
+					}
+				}
+
+				if( mostSpecific )
+				{
+					assignZone = (*zit);
+				}
+			}
+		}
+
+		assignZone->requiredKeys = (*it)->numKeys;
+
+		delete (*it);
+	}
+	keyNumberObjects.clear();
+
+	 
+
 	cout << "2" << endl;
 	//which zone is the player in?
 	for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
@@ -3988,6 +4151,7 @@ void GameSession::SetupZones()
 		cout << "setting original zone to active: " << originalZone << endl;
 		originalZone->active = true;
 		currentZone = originalZone;
+		keyMarker->SetStartKeys( currentZone->requiredKeys );
 	}
 	
 	cout << "3: numgates: " << numGates << endl;
@@ -5007,6 +5171,7 @@ int GameSession::Run( string fileN )
 				//powerWheel->UpdateStarVA();
 				powerWheel->UpdateSections();
 
+				keyMarker->Update();
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -5976,6 +6141,7 @@ int GameSession::Run( string fileN )
 		
 		if( player.speedLevel == 0 )
 		{
+			preScreenTex->draw( player.kinUnderOutline );
 			preScreenTex->draw( player.kinTealOutline, &speedBarShader );
 		}
 		else if( player.speedLevel == 1 )
@@ -6057,6 +6223,7 @@ int GameSession::Run( string fileN )
 		//powerOrbs->Draw( preScreenTex );
 		
 		powerWheel->Draw( preScreenTex );
+		keyMarker->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
 
 		//window->setView( uiView );
@@ -6468,6 +6635,8 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 void GameSession::RespawnPlayer()
 {
 	currentZone = originalZone;
+	if( currentZone != NULL )
+		keyMarker->SetStartKeys( currentZone->requiredKeys );
 	if( player.currentCheckPoint == NULL )
 	{
 		player.position = originalPos;
@@ -9462,6 +9631,7 @@ void GameSession::ActivateZone( Zone *z )
 	}
 
 	currentZone = z;
+	keyMarker->SetStartKeys( currentZone->requiredKeys );
 }
 
 void GameSession::UnlockGate( Gate *g )

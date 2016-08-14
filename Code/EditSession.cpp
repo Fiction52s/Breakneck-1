@@ -999,6 +999,25 @@ bool EditSession::OpenFile( string fileName )
 					}
 
 				}
+				else if( typeName == "key" )
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int numKeys;
+					is >> numKeys;
+					//int hasMonitor;
+					//is >> hasMonitor;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new KeyParams( this, pos, numKeys ) );
+					
+
+					//a->hasMonitor = false;//(bool)hasMonitor;
+				}
 
 				//w1
 				else if( typeName == "crawlerreverser" )
@@ -3261,9 +3280,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *poiPanel = CreateOptionsPanel( "poi" );
 	ActorType *poiType = new ActorType( "poi", poiPanel );
 
+	Panel *keyPanel = CreateOptionsPanel( "key" );
+	ActorType *keyType = new ActorType( "key", keyPanel );
+
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
 	types["poi"] = poiType;
+	types["key"] = keyType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -3390,6 +3413,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 0, 0, Sprite( goalType->iconTexture ), "goal" );
 	gs->Set( 1, 0, Sprite( healthflyType->iconTexture ), "healthfly" );
 	gs->Set( 2, 0, Sprite( poiType->iconTexture ), "poi" );
+	gs->Set( 3, 0, Sprite( keyType->iconTexture ), "key" );
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -5577,6 +5601,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											showPanel = trackingEnemy->panel;
 											tempActor->SetPanelInfo();
 										}
+									}
+									else if( trackingEnemy->name == "key" )
+									{
+										tempActor = new KeyParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										showPanel = trackingEnemy->panel;
+										tempActor->SetPanelInfo();
 									}
 
 									//w1
@@ -9163,6 +9194,29 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "key_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				KeyParams *key = (KeyParams*)select;
+				key->SetParams();
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				ActorPtr key( tempActor );
+				key->SetParams();
+				key->group = groups["--"];
+
+				CreateActor( key );
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+	}
 
 	else if( p->name == "patroller_options" )
 	{
@@ -11713,6 +11767,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	else if( name == "key" )
+	{
+		Panel *p = new Panel( "key_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+		p->AddTextBox( "numkeys", Vector2i( 20, 150 ), 200, 20, "3" );
+
+		return p;
+	}
 	//w1
 	else if( name == "patroller" )
 	{
@@ -12121,7 +12185,11 @@ void EditSession::SetEnemyEditPanel()
 		PoiParams *poi = (PoiParams*)ap;
 		poi->SetPanelInfo();
 	}
-	
+	else if( name == "key" )
+	{
+		KeyParams *key = (KeyParams*)ap;
+		key->SetPanelInfo();
+	}
 	//w1
 	else if( name == "patroller" )
 	{
@@ -13124,7 +13192,13 @@ void ActorType::Init()
 		canBeGrounded = true;
 		canBeAerial = true;
 	}
-	
+	else if( name == "key" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
 	//w1
 	else if( name == "patroller" )
 	{

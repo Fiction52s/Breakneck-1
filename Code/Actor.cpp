@@ -38,18 +38,21 @@ Actor::Actor( GameSession *gs )
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 
-		
+		kinUnderOutline.setTexture( *ts_kinFace->texture );
+		kinUnderOutline.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
+		kinUnderOutline.setPosition( 0, 0 );
+
 		kinTealOutline.setTexture( *ts_kinFace->texture );
-		kinTealOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
+		kinTealOutline.setTextureRect( ts_kinFace->GetSubRect( 1 ) );
 		kinTealOutline.setPosition( 0, 0 );
 
 		kinBlueOutline.setTexture( *ts_kinFace->texture );
-		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
+		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
 		kinBlueOutline.setPosition( 0, 0 );
 
 		kinPurpleOutline.setTexture( *ts_kinFace->texture );
 		kinPurpleOutline.setPosition( 0, 0 );
-		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 4 ) );
+		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
 		//kinFace.setPosition( 2, 48 );
 		//kinFace.setPosition( 1920 / 2 - 512, 0 );
 		kinFace.setPosition( 0, 0 );
@@ -10923,7 +10926,7 @@ void Actor::UpdatePostPhysics()
 	speedCircle = cs;
 
 
-	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr ) );
+	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 4 ) );
 
 
 	followerPos += followerVel;
@@ -15066,6 +15069,7 @@ bool Actor::CaptureMonitor( Monitor * m )
 		//cout << "GIVING ME A KEY: " << (int)gType << endl;
 		//hasKey[gType]++;
 		numKeys++;
+		owner->keyMarker->CollectKey();
 		return true;
 	}
 }

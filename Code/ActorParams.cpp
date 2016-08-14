@@ -825,3 +825,85 @@ void PoiParams::Draw( sf::RenderTarget *target )
 
 	target->draw( nameText );
 }
+
+KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	position = pos;	
+	type = edit->types["key"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+
+	
+	numKeys = 3;
+}
+
+KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos,
+	int p_numKeys)
+	:ActorParams( PosType::AIR_ONLY )
+{
+	position = pos;	
+	type = edit->types["key"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+
+	
+	numKeys = p_numKeys;
+}
+
+void KeyParams::WriteParamFile( std::ofstream &of )
+{
+	of << numKeys << endl;
+}
+
+void KeyParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	hasMonitor = false;//p->checkBoxes["monitor"]->checked;
+
+	stringstream ss;
+	string numkeysString = p->textBoxes["numkeys"]->text.getString().toAnsiString();
+	
+	ss << numkeysString;
+
+	int numK;
+	ss >> numK;
+
+	if( !ss.fail() )
+	{
+		numKeys = numK;
+	}
+}
+
+void KeyParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+	{
+		p->textBoxes["group"]->text.setString( group->name );
+	}
+
+	p->textBoxes["numkeys"]->text.setString( boost::lexical_cast<string>( numKeys ) );
+}
+
+bool KeyParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *KeyParams::Copy()
+{
+	KeyParams *copy = new KeyParams( *this );
+	return copy;
+}

@@ -21,6 +21,7 @@ using namespace std;
 Zone::Zone( TerrainPolygon &tp )
 	:active( false )
 {
+	requiredKeys = 3;
 	showShadow = true;
 	tp.FixWinding();
 

@@ -522,6 +522,22 @@ struct PoiParams : public ActorParams
 	//void Draw( sf::RenderTarget *target );
 };
 
+struct KeyParams : public ActorParams
+{
+	KeyParams( EditSession *edit,
+		sf::Vector2i &pos, int numKeys );
+	KeyParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+	int numKeys;
+};
+
 //w1
 struct PatrollerParams : public ActorParams
 {

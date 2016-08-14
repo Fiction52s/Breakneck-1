@@ -30,6 +30,7 @@ struct Zone
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
 	bool active;
+	int requiredKeys;
 
 	bool showShadow;
 
