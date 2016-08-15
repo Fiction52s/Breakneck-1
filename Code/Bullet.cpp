@@ -193,7 +193,7 @@ void Bullet::HitPlayer()
 //	//if( gravTowardsPlayer )
 //	//{
 //	//	double len = gravity.y;//length( gravity );
-//	//	V2d diff = launcher->owner->player->position - position;
+//	//	V2d diff = launcher->owner->player.position - position;
 //	//	int t = 100;
 //	//	diff += V2d( (rand() % t) - t / 2, (rand() % t) - t / 2);
 //	//	V2d towards = normalize( diff );
@@ -284,7 +284,7 @@ void Bullet::HitPlayer()
 //		hitBody.globalPosition = position;
 //
 //		Actor &player = launcher->owner->player;
-//		if( player->hurtBody.Intersects( hitBody ) )
+//		if( player.hurtBody.Intersects( hitBody ) )
 //		{	
 //			//cout << "hit??" << endl;
 //			HitPlayer();

@@ -245,7 +245,7 @@ void Boss_Skeleton::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Boss_Skeleton::BulletHitPlayer(BasicBullet *b )
 {
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->player.ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Boss_Skeleton::ActionEnded()
@@ -328,7 +328,7 @@ void Boss_Skeleton::UpdatePrePhysics()
 	//{
 	//	//cout << "firing" << endl;
 	//	launcher->position = position;
-	//	launcher->facingDir = normalize( owner->player->position - position );
+	//	launcher->facingDir = normalize( owner->player.position - position );
 	//	//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 	//	//	launcher->facingDir.y << endl;
 	//	launcher->Fire();
@@ -338,7 +338,7 @@ void Boss_Skeleton::UpdatePrePhysics()
 
 	/*if( latchedOn )
 	{
-		basePos = owner->player->position + offsetPlayer;
+		basePos = owner->player.position + offsetPlayer;
 	}*/
 }
 
@@ -369,7 +369,7 @@ void Boss_Skeleton::UpdatePhysics()
 		/*if( action == NEUTRAL )
 		{
 			Actor &player = owner->player;
-			if( length( player->position - position ) < 300 )
+			if( length( player.position - position ) < 300 )
 			{
 				action = FADEOUT;
 				frame = 0;
@@ -391,17 +391,17 @@ void Boss_Skeleton::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_MAGENTA, 5, .8, 2 * 6 * 3 );
+			owner->player.ConfirmHit( COLOR_MAGENTA, 5, .8, 2 * 6 * 3 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->player.velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->player.frame << endl;
 
-			//owner->player->frame--;
+			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Boss_Skeleton received damage of: " << receivedHit->damage << endl;
@@ -588,9 +588,9 @@ bool Boss_Skeleton::IHitPlayer()
 
 	Actor &player = owner->player;
 	
-	if( hitBody.Intersects( player->hurtBody ) )
+	if( hitBody.Intersects( player.hurtBody ) )
 	{
-		player->ApplyHit( hitboxInfo );
+		player.ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
@@ -603,13 +603,13 @@ void Boss_Skeleton::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->player.ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->player.velocity );
 	}
 }
 
@@ -617,11 +617,11 @@ void Boss_Skeleton::UpdateHitboxes()
 pair<bool,bool> Boss_Skeleton::PlayerHitMe()
 {
 	Actor &player = owner->player;
-	if( player->currHitboxes != NULL )
+	if( player.currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -640,7 +640,7 @@ pair<bool,bool> Boss_Skeleton::PlayerHitMe()
 
 			if( !specterProtected )
 			{
-				receivedHit = player->currHitboxInfo;
+				receivedHit = player.currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -652,15 +652,15 @@ pair<bool,bool> Boss_Skeleton::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player->recordedGhosts; ++i )
+	for( int i = 0; i < player.recordedGhosts; ++i )
 	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
 		{
-			if( player->ghosts[i]->currHitboxes != NULL )
+			if( player.ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -672,11 +672,11 @@ pair<bool,bool> Boss_Skeleton::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player->currHitboxInfo;
+					receivedHit = player.currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player->ghosts[i]->curhi
+			//player.ghosts[i]->curhi
 		}
 	}
 
@@ -686,11 +686,11 @@ pair<bool,bool> Boss_Skeleton::PlayerHitMe()
 bool Boss_Skeleton::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
-	for( int i = 0; i < player->maxBubbles; ++i )
+	for( int i = 0; i < player.maxBubbles; ++i )
 	{
-		if( player->bubbleFramesToLive[i] > 0 )
+		if( player.bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
 			{
 				return true;
 			}

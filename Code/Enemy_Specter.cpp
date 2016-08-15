@@ -213,17 +213,17 @@ void Specter::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_MAGENTA, 5, .8, 2 * 6 * 3 );
+			owner->player.ConfirmHit( COLOR_MAGENTA, 5, .8, 2 * 6 * 3 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->player.velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->player.frame << endl;
 
-			//owner->player->frame--;
+			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, true );
 			
 		//	cout << "Specter received damage of: " << receivedHit->damage << endl;
@@ -393,9 +393,9 @@ bool Specter::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
-	if( hitBody.Intersects( player->hurtBody ) )
+	if( hitBody.Intersects( player.hurtBody ) )
 	{
-		player->ApplyHit( hitboxInfo );
+		player.ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
@@ -408,13 +408,13 @@ void Specter::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->player.ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->player.velocity );
 	}
 }
 
@@ -422,11 +422,11 @@ void Specter::UpdateHitboxes()
 pair<bool,bool> Specter::PlayerHitMe()
 {
 	Actor &player = owner->player;
-	if( player->currHitboxes != NULL )
+	if( player.currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -439,21 +439,21 @@ pair<bool,bool> Specter::PlayerHitMe()
 
 		if( hit )
 		{
-			receivedHit = player->currHitboxInfo;
+			receivedHit = player.currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
 	}
 
-	for( int i = 0; i < player->recordedGhosts; ++i )
+	for( int i = 0; i < player.recordedGhosts; ++i )
 	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
 		{
-			if( player->ghosts[i]->currHitboxes != NULL )
+			if( player.ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -465,11 +465,11 @@ pair<bool,bool> Specter::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player->currHitboxInfo;
+					receivedHit = player.currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player->ghosts[i]->curhi
+			//player.ghosts[i]->curhi
 		}
 	}
 
@@ -479,11 +479,11 @@ pair<bool,bool> Specter::PlayerHitMe()
 bool Specter::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
-	for( int i = 0; i < player->maxBubbles; ++i )
+	for( int i = 0; i < player.maxBubbles; ++i )
 	{
-		if( player->bubbleFramesToLive[i] > 0 )
+		if( player.bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
 			{
 				return true;
 			}

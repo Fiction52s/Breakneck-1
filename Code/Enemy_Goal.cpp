@@ -153,7 +153,7 @@ void Goal::UpdatePostPhysics()
 
 	if( deathFrame == 60 )
 	{
-		if( owner->player->record == 0 )
+		if( owner->player.record == 0 )
 		{
 			cout << "GAME OVER" << endl;
 			owner->goalDestroyed = true;
@@ -184,9 +184,9 @@ bool Goal::IHitPlayer()
 	Actor &player = owner->player;
 	
 
-	/*if( currBullet->hitBody.Intersects( player->hurtBody ) )
+	/*if( currBullet->hitBody.Intersects( player.hurtBody ) )
 		{
-			player->ApplyHit( bulletHitboxInfo );
+			player.ApplyHit( bulletHitboxInfo );
 			return true;
 		}
 	*/
@@ -197,11 +197,11 @@ bool Goal::IHitPlayer()
 pair<bool, bool> Goal::PlayerHitMe()
 {
 	Actor &player = owner->player;
-	if( player->currHitboxes != NULL )
+	if( player.currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -213,21 +213,21 @@ pair<bool, bool> Goal::PlayerHitMe()
 
 		if( hit )
 		{
-			receivedHit = player->currHitboxInfo;
+			receivedHit = player.currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
 	}
 
-	for( int i = 0; i < player->recordedGhosts; ++i )
+	for( int i = 0; i < player.recordedGhosts; ++i )
 	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
 		{
-			if( player->ghosts[i]->currHitboxes != NULL )
+			if( player.ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -239,11 +239,11 @@ pair<bool, bool> Goal::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player->currHitboxInfo;
+					receivedHit = player.currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player->ghosts[i]->curhi
+			//player.ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);

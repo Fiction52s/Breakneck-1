@@ -148,7 +148,7 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Owl::BulletHitPlayer(BasicBullet *b )
 {
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->player.ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Owl::ResetEnemy()
@@ -180,7 +180,7 @@ void Owl::ResetEnemy()
 void Owl::ActionEnded()
 {
 	Actor &player = owner->player;
-	double len = length( player->position - position );
+	double len = length( player.position - position );
 	if( frame == actionLength[action] )
 	{
 		if( action == FIRE )
@@ -192,12 +192,12 @@ void Owl::ActionEnded()
 			else if( len > chaseRadius )
 			{
 				action = CHASE;
-				velocity = normalize( player->position - position ) * 2.5;
+				velocity = normalize( player.position - position ) * 2.5;
 			}
 			else if( len < retreatRadius )
 			{
 				action = RETREAT;
-				velocity = normalize( player->position - position ) * -2.5;
+				velocity = normalize( player.position - position ) * -2.5;
 			}
 			else
 			{
@@ -213,12 +213,12 @@ void Owl::ActionEnded()
 			else if( len > chaseRadius )
 			{
 				action = CHASE;
-				velocity = normalize( player->position - position ) * 2.5;
+				velocity = normalize( player.position - position ) * 2.5;
 			}
 			else if( len < retreatRadius )
 			{
 				action = RETREAT;
-				velocity = normalize( player->position - position ) * -2.5;
+				velocity = normalize( player.position - position ) * -2.5;
 			}
 			else
 			{
@@ -267,11 +267,11 @@ void Owl::UpdatePrePhysics()
 
 	/*if( action == RETREAT )
 	{
-		velocity = normalize( player->position - position ) * -2.5;
+		velocity = normalize( player.position - position ) * -2.5;
 	}
 	else if( action == NEUTRAL )
 	{
-		velocity = normalize( player->position - position ) * 2.5;
+		velocity = normalize( player.position - position ) * 2.5;
 	}*/
 
 	launcher->UpdatePrePhysics();
@@ -298,7 +298,7 @@ void Owl::UpdatePrePhysics()
 	if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
 	{
 		launcher->position = position;
-		launcher->facingDir = normalize( owner->player->position - position );
+		launcher->facingDir = normalize( owner->player.position - position );
 		launcher->Fire();
 	}
 }
@@ -348,17 +348,17 @@ void Owl::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
+			owner->player.ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->player.velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->player.frame << endl;
 
-			//owner->player->frame--;
+			//owner->player.frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Owl received damage of: " << receivedHit->damage << endl;
@@ -520,9 +520,9 @@ bool Owl::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
-	if( hitBody.Intersects( player->hurtBody ) )
+	if( hitBody.Intersects( player.hurtBody ) )
 	{
-		player->ApplyHit( hitboxInfo );
+		player.ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
@@ -535,13 +535,13 @@ void Owl::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->player.ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->player.velocity );
 	}
 }
 
@@ -549,11 +549,11 @@ void Owl::UpdateHitboxes()
 pair<bool,bool> Owl::PlayerHitMe()
 {
 	Actor &player = owner->player;
-	if( player->currHitboxes != NULL )
+	if( player.currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -572,7 +572,7 @@ pair<bool,bool> Owl::PlayerHitMe()
 
 			if( !specterProtected )
 			{
-				receivedHit = player->currHitboxInfo;
+				receivedHit = player.currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -584,15 +584,15 @@ pair<bool,bool> Owl::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player->recordedGhosts; ++i )
+	for( int i = 0; i < player.recordedGhosts; ++i )
 	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
+		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
 		{
-			if( player->ghosts[i]->currHitboxes != NULL )
+			if( player.ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -604,11 +604,11 @@ pair<bool,bool> Owl::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player->currHitboxInfo;
+					receivedHit = player.currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player->ghosts[i]->curhi
+			//player.ghosts[i]->curhi
 		}
 	}
 
@@ -618,11 +618,11 @@ pair<bool,bool> Owl::PlayerHitMe()
 bool Owl::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
-	for( int i = 0; i < player->maxBubbles; ++i )
+	for( int i = 0; i < player.maxBubbles; ++i )
 	{
-		if( player->bubbleFramesToLive[i] > 0 )
+		if( player.bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
 			{
 				return true;
 			}
