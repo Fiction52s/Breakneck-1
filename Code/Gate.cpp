@@ -23,7 +23,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	
 	if( type != BLACK )
 	{
-		gState = SOFT;
+		gState = HARD;
 	}
 	else
 	{
@@ -95,8 +95,8 @@ void Gate::UpdateLine()
 		tileHeight = 64;
 		break;
 	case KEYGATE:
-		c =  Color( 77, 150, 249);
-		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
+		c =  Color( 77, 150, 249 );
+		ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 		tileHeight = 64;
 		break;
 	case BIRDFIGHT:
@@ -160,7 +160,7 @@ void Gate::Update()
 		{
 		case HARDEN:
 			{
-				if( frame == 9 )
+				if( frame == 0 )
 				{
 					gState = LOCKFOREVER;
 					frame = 0;
@@ -169,7 +169,7 @@ void Gate::Update()
 			break;
 		case HARD:
 			{
-				if( frame == 3 * 3 )
+				if( frame == 1 )
 				{
 					frame = 0;
 				}
@@ -177,7 +177,7 @@ void Gate::Update()
 			break;
 		case SOFTEN:
 			{
-				if( frame == 10 )
+				if( frame == 0 )
 				{
 					gState = SOFT;
 					frame = 0;
@@ -186,7 +186,7 @@ void Gate::Update()
 			break;
 		case SOFT:
 			{
-				if( frame == 12 * 3 )
+				if( frame == 6 * 3 )
 				{
 					frame = 0;
 				}
@@ -195,7 +195,7 @@ void Gate::Update()
 		case DISSOLVE:
 			{
 				//whatever length
-				if( frame == 9 * 4 )
+				if( frame == 12 * 4 )
 				{
 					if( reformBehindYou )
 					{
@@ -277,10 +277,13 @@ void Gate::Update()
 
 	if( type != BLACK )
 	{
+		Zone *currZone = owner->currentZone;
 		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
-		if( gState == HARD )
+
+		if( gState == HARD && enoughKeys && 
+			( currZone == NULL || ( currZone == zoneA || currZone == zoneB ) ) )
 		{
-			gState = SOFTEN;
+			gState = SOFT; //SOFTEN
 			frame = 0;
 		}
 	}
@@ -331,7 +334,7 @@ void Gate::Update()
 			break;
 		case HARD:
 			{
-				realFrame = 9;
+				realFrame = 0;
 			}
 			break;
 		case SOFTEN:
@@ -341,22 +344,22 @@ void Gate::Update()
 			break;
 		case SOFT:
 			{
-				realFrame = 21 + frame / 3;
+				realFrame = 2 + frame / 3;
 			}
 			break;
 		case DISSOLVE:
 			{
-				realFrame = 34 + frame / 4;
+				realFrame = 9 + frame / 4;
 			}
 			break;
 		case REFORM:
 			{
-				realFrame = 0;
+				realFrame = 1;
 			}
 			break;
 		case LOCKFOREVER:
 			{
-				realFrame  = 0;
+				realFrame  = 1;
 			}
 			break;
 		case OPEN:

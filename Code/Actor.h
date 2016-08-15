@@ -89,6 +89,8 @@ struct Actor : QuadTreeCollider,
 
 	Actor( GameSession *owner );
 	void UpdateSprite();
+	void ConfirmHit( sf::Color flashColor, 
+		int flashFrames, double speedBar, int charge );
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -475,7 +477,8 @@ struct Actor : QuadTreeCollider,
 	bool holdDouble;
 	int framesSinceDouble;
 	
-	sf::Shader swordShader;
+	sf::Shader swordShaders[3];
+
 	//bool hitlagFlash;
 	sf::Color flashColor;
 	int flashFrames;

@@ -903,12 +903,7 @@ void PoisonFrog::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
-			//owner->player.desperationMode = false;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->player.ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
 			//owner->powerBar.Charge( 2 * 6 * 2 );
 			//owner->powerBar.Charge( 6 );
 

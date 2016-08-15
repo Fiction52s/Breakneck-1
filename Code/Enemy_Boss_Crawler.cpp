@@ -1230,12 +1230,12 @@ void BossCrawler::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
+			//owner->player.test = true;
+			//owner->player.currAttackHit = true;
+			//owner->player.flashColor = COLOR_BLUE;
+			//owner->player.flashFrames = 5;
 			//owner->player.desperationMode = false;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			//owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
 			//owner->powerBar.Charge( 2 * 6 * 2 );
 			//owner->powerBar.Charge( 6 );
 

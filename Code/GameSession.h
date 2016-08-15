@@ -400,7 +400,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::Transform groundTrans;
 	Camera cam;
-	Actor player;
+	Actor *player;
 	int numPolyTypes;
 	sf::Shader *polyShaders;
 	Tileset **ts_polyShaders;

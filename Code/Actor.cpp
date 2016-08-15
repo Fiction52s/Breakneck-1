@@ -93,13 +93,8 @@ Actor::Actor( GameSession *gs )
 		}
 
 
-		if (!swordShader.loadFromFile("sword_shader.frag", sf::Shader::Fragment))
-		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-		{
-			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "sword shader not loaded" );
-		}
-		swordShader.setParameter( "energyColor", COLOR_TEAL );
+		
+		
 		//swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
@@ -475,7 +470,26 @@ Actor::Actor( GameSession *gs )
 		ts_fx_land = owner->GetTileset( "fx_land.png", 80, 32 );
 		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
 
-		
+		if (!swordShaders[0].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		{
+			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "sword shader not loaded" );
+		}
+		swordShaders[0].setParameter( "fromColor", COLOR_TEAL );
+		//swordShaders[1] = swordShaders[0];
+		if (!swordShaders[1].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		{
+			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "sword shader not loaded" );
+		}
+		swordShaders[1].setParameter( "fromColor", Color( 43, 167, 255 ) );
+		//swordShaders[2] = swordShaders[0];
+		if (!swordShaders[2].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		{
+			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "sword shader not loaded" );
+		}
+		swordShaders[2].setParameter( "fromColor", Color( 140, 145, 255 ) );
 
 
 		//ts_bounceRun = owner->GetTileset( "bouncerun.png", 128, 64 );
@@ -12387,18 +12401,18 @@ void Actor::Draw( sf::RenderTarget *target )
 	showMotionGhosts = 4;
 	if( showMotionGhosts && !desperationMode )
 	{
-		swordShader.setParameter( "isTealAlready", 0 );
-		
-		for( int i = 0; i < showMotionGhosts; ++i )
-		{
-			float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
-			swordShader.setParameter( "opacity", opac );
-			//cout << "setting : " << i << endl;
-			//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
-			//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
-			//target->draw( fairSword1, &swordShader );
-			target->draw( motionGhosts[i], &swordShader );
-		}
+		//swordShader.setParameter( "isTealAlready", 0 );
+		//
+		//for( int i = 0; i < showMotionGhosts; ++i )
+		//{
+		//	float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
+		//	swordShader.setParameter( "opacity", opac );
+		//	//cout << "setting : " << i << endl;
+		//	//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
+		//	//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
+		//	//target->draw( fairSword1, &swordShader );
+		//	target->draw( motionGhosts[i], &swordShader );
+		//}
 	}
 
 	if( action != GRINDBALL )
@@ -12481,14 +12495,15 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		if( showSword )
 		{
-			swordShader.setParameter( "isTealAlready", 1 );
+			sf::Shader &swordSh = swordShaders[speedLevel];
+			//swordShader.setParameter( "isTealAlready", 1 );
 			switch( action )
 			{
 			case FAIR:
 				{
 					if( flashFrames > 0 )
 					{
-						target->draw( fairSword, &swordShader );
+						target->draw( fairSword, &swordSh );
 						//cout << "shader!" << endl;
 					}
 					else
@@ -12500,7 +12515,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			case DAIR:
 				{
 					if( flashFrames > 0 )
-						target->draw( dairSword, &swordShader );
+						target->draw( dairSword, &swordSh );
 					else
 						target->draw( dairSword );
 					break;
@@ -12508,7 +12523,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			case UAIR:
 				{
 					if( flashFrames > 0 )
-						target->draw( uairSword, &swordShader );
+						target->draw( uairSword, &swordSh );
 					else
 						target->draw( uairSword );
 					break;
@@ -12516,7 +12531,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			case STANDN:
 				{
 					if( flashFrames > 0 )
-						target->draw( standingNSword, &swordShader );
+						target->draw( standingNSword, &swordSh );
 					else
 						target->draw( standingNSword );
 					break;
@@ -12524,14 +12539,14 @@ void Actor::Draw( sf::RenderTarget *target )
 			case DASHATTACK:
 				{
 					if( flashFrames > 0 )
-						target->draw( dashAttackSword, &swordShader );
+						target->draw( dashAttackSword, &swordSh );
 					else
 						target->draw( dashAttackSword );
 					break;
 				}
 			case WALLATTACK:
 				if( flashFrames > 0 )
-						target->draw( wallAttackSword, &swordShader );
+						target->draw( wallAttackSword, &swordSh );
 					else
 						target->draw( wallAttackSword );
 					break;
@@ -14495,6 +14510,19 @@ void Actor::UpdateSprite()
 			
 		}
 	}
+}
+
+void Actor::ConfirmHit( Color p_flashColor, 
+		int p_flashFrames, double speedBar, int charge )
+{
+	currentSpeedBar += speedBar;
+	test = true;
+	currAttackHit = true;
+	flashColor = p_flashColor;
+	swordShaders[speedLevel].setParameter( "toColor", p_flashColor );
+	owner->powerWheel->Charge( charge );
+	owner->player.test = true;
+	desperationMode = false;
 }
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

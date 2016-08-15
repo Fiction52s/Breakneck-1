@@ -88,8 +88,9 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	deathVector = V2d( newPoint.x, newPoint.y );
 	//deathVector = V2d( 1, -1 );
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
+	bloodSprite.setTextureRect( ts_testBlood->GetSubRect( 0 ) );
 }
 
 void FootTrap::ResetEnemy()
@@ -161,14 +162,15 @@ void FootTrap::UpdatePhysics()
 		{
 			//cout << "hit here!" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.test = true;
+			owner->player.ConfirmHit( COLOR_BLUE, 5, .8, 2 * 6 * 3 );
+			/*owner->player.test = true;
 			owner->player.currAttackHit = true;
 			owner->player.flashColor = COLOR_BLUE;
 			owner->player.flashFrames = 5;
 			owner->player.currentSpeedBar += .8;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
+			owner->player.swordShaders[owner->player.speedLevel]setParameter( "energyColor", COLOR_BLUE );
 			owner->player.desperationMode = false;
-			owner->powerBar.Charge( 2 * 6 * 3 );
+			owner->powerBar.Charge( 2 * 6 * 3 );*/
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
 			{
@@ -246,13 +248,13 @@ void FootTrap::Draw(sf::RenderTarget *target )
 	{
 		target->draw( botDeathSprite );
 
-		if( deathFrame / 3 < 6 )
+		if( deathFrame / 3 < 15 )
 		{
 			
 			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
+			//bloodSprite.setScale( 2, 2 );
 			target->draw( bloodSprite );
 		}
 		

@@ -11,6 +11,7 @@ using namespace sf;
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
 
 
 Ghost::Ghost( GameSession *owner, Vector2i pos, float pspeed )
@@ -344,14 +345,7 @@ void Ghost::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
-			owner->player.currentSpeedBar += .8;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->powerBar.Charge( 2 * 6 * 3 );
-			owner->player.desperationMode = false;
+			owner->player.ConfirmHit( COLOR_RED, 5, .8, 2 * 6 * 3 );
 
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )

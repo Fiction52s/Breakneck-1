@@ -253,11 +253,12 @@ void KeyMarker::Update()
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
 	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex )
-	:controller(c),va(NULL),edges(NULL), window(rw), player( this ), activeEnemyList( NULL ), pauseFrames( 0 )
+	:controller(c),va(NULL),edges(NULL), window(rw), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
 {
+	player = new Actor( this );
 	currentZone = NULL;
 	Movable::owner = this;
 	b_crawler = NULL;
@@ -4781,7 +4782,7 @@ int GameSession::Run( string fileN )
 					{
 						gates[i]->SetLocked( true );
 						if( gates[i]->type != Gate::BLACK )
-							gates[i]->gState = Gate::SOFT;
+							gates[i]->gState = Gate::HARD;
 					}
 
 					//cout << "finished resetting level" << endl;

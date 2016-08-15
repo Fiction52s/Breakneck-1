@@ -219,14 +219,7 @@ void Patroller::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
-			owner->player.currentSpeedBar += .8;
-			owner->player.swordShader.setParameter( "energyColor", COLOR_BLUE );
-			owner->powerBar.Charge( 2 * 6 * 3 );
-			owner->player.desperationMode = false;
+			owner->player.ConfirmHit( COLOR_BLUE, 5, .8, 2 * 6 * 3 );
 
 
 			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
