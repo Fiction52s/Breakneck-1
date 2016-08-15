@@ -251,14 +251,14 @@ void Boss_Bird::Projectile::UpdatePrePhysics()
 				max = 5;
 				fac = .25;
 			}
-			V2d playerDir = normalize( player.position - position );
+			V2d playerDir = normalize( player->position - position );
 			velocity += playerDir * fac;
 			if( length( velocity ) > max )
 			{
 				V2d dir = normalize( velocity );
 				velocity = dir * max;
 			}
-			//position = player.position;
+			//position = player->position;
 			//cout << "adjust: " << position.x << ", " << position.y << endl;
 		
 		}
@@ -335,7 +335,7 @@ void Boss_Bird::Projectile::UpdatePhysics()
 		hitBody.globalPosition = position;
 
 		Actor &player = boss->owner->player;
-		if( player.hurtBody.Intersects( hitBody ) )
+		if( player->hurtBody.Intersects( hitBody ) )
 		{	
 			
 			//cout << "hit??" << endl;
@@ -391,14 +391,14 @@ void Boss_Bird::Projectile::UpdatePostPhysics()
 
 void Boss_Bird::Projectile::HitPlayer()
 {
-	hitboxInfo->kbDir = normalize( boss->owner->player.position - position );
-	boss->owner->player.ApplyHit( hitboxInfo );
+	hitboxInfo->kbDir = normalize( boss->owner->player->position - position );
+	boss->owner->player->ApplyHit( hitboxInfo );
 }
 
 void Boss_Bird::Projectile::HitTerrain()
 {
-	//hitboxInfo->kbDir = normalize( boss->owner->player.position - position );
-	//owner->player.ApplyHit( hitboxInfo );
+	//hitboxInfo->kbDir = normalize( boss->owner->player->position - position );
+	//owner->player->ApplyHit( hitboxInfo );
 }
 
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
@@ -998,13 +998,13 @@ void Boss_Bird::SetupAttackMarkers()
 
 void Boss_Bird::BulletHitPlayer(BasicBullet *b )
 {
-	b->launcher->hitboxInfo->kbDir = normalize( owner->player.position - b->position );
+	b->launcher->hitboxInfo->kbDir = normalize( owner->player->position - b->position );
 	b->launcher->hitboxInfo->knockback = 20;
 	b->launcher->hitboxInfo->hitstunFrames = 1;
 	b->launcher->hitboxInfo->damage = 0;
 	b->launcher->hitboxInfo->hitlagFrames = 0;
 	//cout << "hit player" << endl;
-	owner->player.ApplyHit( b->launcher->hitboxInfo );
+	owner->player->ApplyHit( b->launcher->hitboxInfo );
 
 	//launcher->DeactivateBullet( this );
 }
@@ -1470,7 +1470,7 @@ void Boss_Bird::UpdatePrePhysics()
 			return;
 	}
 
-	V2d playerPos = owner->player.position;
+	V2d playerPos = owner->player->position;
 
 	ActionEnded();
 
@@ -1806,7 +1806,7 @@ void Boss_Bird::UpdatePrePhysics()
 	//{
 	//	//cout << "firing" << endl;
 	//	launcher->position = position;
-	//	launcher->facingDir = normalize( owner->player.position - position );
+	//	launcher->facingDir = normalize( owner->player->position - position );
 	//	//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 	//	//	launcher->facingDir.y << endl;
 	
@@ -1816,7 +1816,7 @@ void Boss_Bird::UpdatePrePhysics()
 
 	/*if( latchedOn )
 	{
-		basePos = owner->player.position + offsetPlayer;
+		basePos = owner->player->position + offsetPlayer;
 	}*/
 }
 
@@ -1850,7 +1850,7 @@ void Boss_Bird::UpdatePhysics()
 		/*if( action == NEUTRAL )
 		{
 			Actor &player = owner->player;
-			if( length( player.position - position ) < 300 )
+			if( length( player->position - position ) < 300 )
 			{
 				action = FADEOUT;
 				frame = 0;
@@ -1882,17 +1882,17 @@ void Boss_Bird::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
+			owner->player->ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
 
 
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
-				owner->player.velocity.y = 4;//.5;
+				owner->player->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player.frame << endl;
+		//	cout << "frame: " << owner->player->frame << endl;
 
-			//owner->player.frame--;
+			//owner->player->frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Boss_Bird received damage of: " << receivedHit->damage << endl;
@@ -1929,7 +1929,7 @@ void Boss_Bird::ClearPathVA()
 
 sf::Vector2<double> Boss_Bird::GetLungeDir()
 {
-	V2d playerPos = owner->player.position;
+	V2d playerPos = owner->player->position;
 	V2d playerDir = normalize( playerPos - position );
 	
 
@@ -2285,9 +2285,9 @@ bool Boss_Bird::IHitPlayer()
 
 	Actor &player = owner->player;
 	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
@@ -2300,13 +2300,13 @@ void Boss_Bird::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player.ground != NULL )
+	if( owner->player->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player.velocity );
+		hitboxInfo->kbDir = normalize( -owner->player->velocity );
 	}
 }
 
@@ -2316,11 +2316,11 @@ void Boss_Bird::UpdateHitboxes()
 pair<bool,bool> Boss_Bird::PlayerHitMe()
 {
 	Actor &player = owner->player;
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -2339,7 +2339,7 @@ pair<bool,bool> Boss_Bird::PlayerHitMe()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -2351,15 +2351,15 @@ pair<bool,bool> Boss_Bird::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -2371,11 +2371,11 @@ pair<bool,bool> Boss_Bird::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 
@@ -2385,11 +2385,11 @@ pair<bool,bool> Boss_Bird::PlayerHitMe()
 bool Boss_Bird::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}

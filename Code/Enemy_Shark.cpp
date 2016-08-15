@@ -42,9 +42,9 @@ Shark::Shark( GameSession *owner, Vector2i pos, float pspeed )
 	//latchedOn = true; 
 
 	circleFrames = 120;
-	V2d dirFromPlayer = normalize( owner->player.position - position );
-	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
-	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
+	V2d dirFromPlayer = normalize( owner->player->position - position );
+	double fromPlayerAngle =  atan2( dirFromplayer->y, dirFromplayer->x ) + PI;
+	//cout << "dirfrom: " << dirFromplayer->x << ", " << dirFromplayer->y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
 	circleSeq.AddRadialMovement( 1, 0, 2 * PI, 
 		true, V2d( 1, 1 ), 0, CubicBezier( .44,.79,.77,.1), circleFrames );
@@ -196,12 +196,12 @@ void Shark::UpdatePrePhysics()
 
 		if( latchedOn )
 		{
-			basePos = owner->player.position;// + offsetPlayer;
+			basePos = owner->player->position;// + offsetPlayer;
 		}
 		
 		if( action == WAKEUP )
 		{
-			if( length( basePos - owner->player.position ) < 400 )
+			if( length( basePos - owner->player->position ) < 400 )
 			{
 				wakeCounter++;
 				if( wakeCounter == wakeCap )
@@ -209,13 +209,13 @@ void Shark::UpdatePrePhysics()
 					action = CIRCLE;
 					frame = 0;
 					latchedOn = true;
-					offsetPlayer = basePos - owner->player.position;//owner->player.position - basePos;
+					offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
 					origOffset = offsetPlayer;//length( offsetPlayer );
 					V2d offsetDir = normalize( offsetPlayer );
 					latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 					//cout << "latchStart: " << latchStartAngle << endl;
 					circleSeq.Update();
-					basePos = owner->player.position;
+					basePos = owner->player->position;
 				}
 			}
 			else
@@ -228,7 +228,7 @@ void Shark::UpdatePrePhysics()
 		else if( action == CIRCLE )
 		{
 			
-			if( owner->player.hitstunFrames > 0  )
+			if( owner->player->hitstunFrames > 0  )
 			{
 				cout << "final circle" << endl;
 				//got hit!
@@ -257,7 +257,7 @@ void Shark::UpdatePrePhysics()
 		{
 			if( rushSeq.currMovement == NULL )
 			{
-				cout << "back to normal: " << offsetPlayer.x << ", " << offsetPlayer.y << endl;
+				cout << "back to normal: " << offsetplayer->x << ", " << offsetplayer->y << endl;
 				action = CIRCLE;
 				truePosOffset = -truePosOffset;
 				//offsetPlayer = -offsetPlayer;
@@ -266,7 +266,7 @@ void Shark::UpdatePrePhysics()
 				latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 				circleSeq.Reset();
 				circleSeq.Update();
-					//basePos = owner->player.position;
+					//basePos = owner->player->position;
 			}
 		}
 		
@@ -364,17 +364,17 @@ void Shark::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.ConfirmHit( COLOR_RED, 5, .8, 2 * 6 * 3 );
+			owner->player->ConfirmHit( COLOR_RED, 5, .8, 2 * 6 * 3 );
 
 
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
-				owner->player.velocity.y = 4;//.5;
+				owner->player->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player.frame << endl;
+		//	cout << "frame: " << owner->player->frame << endl;
 
-			//owner->player.frame--;
+			//owner->player->frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Shark received damage of: " << receivedHit->damage << endl;
@@ -397,7 +397,7 @@ void Shark::PhysicsResponse()
 		{
 			//cout << "Shark hit player Shark pos: " <<
 			//	position.x << ", " << position.y << ", playerpos: "
-			//	<< owner->player.position.x << ", " << owner->player.position.y << endl;
+			//	<< owner->player->position.x << ", " << owner->player->position.y << endl;
 		//	cout << "Shark just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -539,9 +539,9 @@ bool Shark::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
@@ -554,13 +554,13 @@ void Shark::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player.ground != NULL )
+	if( owner->player->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player.velocity );
+		hitboxInfo->kbDir = normalize( -owner->player->velocity );
 	}
 }
 
@@ -568,11 +568,11 @@ void Shark::UpdateHitboxes()
 pair<bool,bool> Shark::PlayerHitMe()
 {
 	Actor &player = owner->player;
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -591,7 +591,7 @@ pair<bool,bool> Shark::PlayerHitMe()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -603,16 +603,16 @@ pair<bool,bool> Shark::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); 
-					it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); 
+					it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -624,11 +624,11 @@ pair<bool,bool> Shark::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.Sharks[i]->curhi
+			//player->Sharks[i]->curhi
 		}
 	}
 
@@ -638,11 +638,11 @@ pair<bool,bool> Shark::PlayerHitMe()
 bool Shark::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}

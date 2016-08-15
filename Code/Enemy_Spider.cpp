@@ -239,7 +239,7 @@ void Spider::SetClosestLeft()
 	V2d testPos;
 	Edge *testEdge = mover->ground;
 
-	V2d playerPos = owner->player.position;
+	V2d playerPos = owner->player->position;
 
 	while( movementPossible > 0 )
 	{
@@ -272,7 +272,7 @@ void Spider::SetClosestRight()
 	V2d testPos;
 	Edge *testEdge = mover->ground;
 
-	V2d playerPos = owner->player.position;
+	V2d playerPos = owner->player->position;
 
 	while( movementPossible > 0 )
 	{
@@ -445,9 +445,9 @@ void Spider::UpdatePrePhysics()
 
 	SetClosestLeft();
 	SetClosestRight();
-	CheckClosest( mover->ground, player.position, true, mover->edgeQuantity );
+	CheckClosest( mover->ground, player->position, true, mover->edgeQuantity );
 
-	//V2d playerDir = normalize( player.position - mover->physBody.globalPosition );
+	//V2d playerDir = normalize( player->position - mover->physBody.globalPosition );
 	//double playerAngle = atan2( playerDir.y, playerDir.x );
 
 	//if( playerAngle < 0 )
@@ -490,12 +490,12 @@ void Spider::UpdatePrePhysics()
 	//}
 
 	
-	//CheckClosest( mover->ground, player.position, false, mover->edgeQuantity );
+	//CheckClosest( mover->ground, player->position, false, mover->edgeQuantity );
 
 	//cout << "closest pos is: " << closestPos.position.x << ", "
 	//	<< closestPos.position.y << endl;
 
-	double len = length( player.position - position );
+	double len = length( player->position - position );
 	bool outsideRange = len >= 500 && len < 1200; //bounds
 	if( outsideRange && length( position - closestPos.position ) > 20
 		&& !canSeePlayer )
@@ -864,16 +864,16 @@ void Spider::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player.ConfirmHit( COLOR_ORANGE, 5, .8, 2 * 6 * 3 );
+				owner->player->ConfirmHit( COLOR_ORANGE, 5, .8, 2 * 6 * 3 );
 
-				if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 				{
-					owner->player.velocity.y = 4;//.5;
+					owner->player->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player.frame << endl;
+															//cout << "frame: " << owner->player->frame << endl;
 
-			//owner->player.frame--;
+			//owner->player->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -918,14 +918,14 @@ void Spider::UpdatePostPhysics()
 		case 0:
 			break;
 		case 1:
-			owner->player.ApplyHit( laserInfo1 );
-			//owner->player.app
+			owner->player->ApplyHit( laserInfo1 );
+			//owner->player->app
 			break;
 		case 2:
-			owner->player.ApplyHit( laserInfo2 );
+			owner->player->ApplyHit( laserInfo2 );
 			break;
 		case 3:
-			owner->player.ApplyHit( laserInfo3 );
+			owner->player->ApplyHit( laserInfo3 );
 			break;
 		};
 	}
@@ -944,20 +944,20 @@ void Spider::UpdatePostPhysics()
 		return;
 	}
 
-	if( length( owner->player.position - mover->physBody.globalPosition ) < 1000 )
+	if( length( owner->player->position - mover->physBody.globalPosition ) < 1000 )
 	{
 		rayStart = mover->physBody.globalPosition;
 		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
 
-		//rayEnd = rayStart + laserDir * 1000.0;//owner->player.position;
-		rayEnd = owner->player.position;
+		//rayEnd = rayStart + laserDir * 1000.0;//owner->player->position;
+		rayEnd = owner->player->position;
 		rcEdge = NULL;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
 		if( rcEdge != NULL )
 		{
 			V2d rcPoint = rcEdge->GetPoint( rcQuantity );
-			if( length( rcPoint - position ) < length( owner->player.position - position ) )
+			if( length( rcPoint - position ) < length( owner->player->position - position ) )
 			{
 				canSeePlayer = false;
 			}
@@ -1050,11 +1050,11 @@ void Spider::UpdatePostPhysics()
 bool Spider::PlayerSlowingMe()
 {
 	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}
@@ -1176,14 +1176,14 @@ bool Spider::IHitPlayer()
 {
 	Actor &player = owner->player;
 	
-	if( player.invincibleFrames == 0 && hitBody.Intersects( player.hurtBody ) )
+	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
-		if( player.position.x < position.x )
+		if( player->position.x < position.x )
 		{
 			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
 			//cout << "left" << endl;
 		}
-		else if( player.position.x > position.x )
+		else if( player->position.x > position.x )
 		{
 			//cout << "right" << endl;
 			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
@@ -1193,7 +1193,7 @@ bool Spider::IHitPlayer()
 			//dont change it
 		}
 		attackFrame = 0;
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	
@@ -1204,11 +1204,11 @@ bool Spider::IHitPlayer()
 {
 	Actor &player = owner->player;
 
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -1227,7 +1227,7 @@ bool Spider::IHitPlayer()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -1239,15 +1239,15 @@ bool Spider::IHitPlayer()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -1259,11 +1259,11 @@ bool Spider::IHitPlayer()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);

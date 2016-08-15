@@ -625,9 +625,9 @@ void GameSession::UpdateEnemiesPrePhysics()
 
 void GameSession::UpdateEnemiesPhysics()
 {
-	player.physicsOver = false;
+	player->physicsOver = false;
 	///for( int i = 0; i < NUM_STEPS; ++i )
-	//	player.UpdatePhysics( );
+	//	player->UpdatePhysics( );
 
 
 	for( int i = 0; i < NUM_STEPS; ++i )
@@ -637,7 +637,7 @@ void GameSession::UpdateEnemiesPhysics()
 			(*it)->UpdatePhysics();
 		}
 
-		player.UpdatePhysics();
+		player->UpdatePhysics();
 
 		Enemy *current = activeEnemyList;
 		while( current != NULL )
@@ -721,7 +721,7 @@ void GameSession::AddEnemy( Enemy *e )
 		activeEnemyList = e;
 	}
 
-	if( player.record > 0 )
+	if( player->record > 0 )
 	{
 		e->spawnedByClone = true;
 	}
@@ -787,7 +787,7 @@ void GameSession::RemoveEnemy( Enemy *e )
 
 	//might need to give enemies a second next/prev pair for clone power?
 	//totally does >.> CLONE POWER
-	if( player.record > 0 )
+	if( player->record > 0 )
 	{
 		if( cloneInactiveEnemyList == NULL )
 		{
@@ -1399,11 +1399,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					}
 					else if( barStr == "x" )
 					{
-						barriers.push_back( new Barrier( this, pi, true, pos.x, ( player.position.x > pos.x ),  NULL ) );
+						barriers.push_back( new Barrier( this, pi, true, pos.x, ( player->position.x > pos.x ),  NULL ) );
 					}
 					else if( barStr == "y" )
 					{
-						barriers.push_back( new Barrier( this, pi, false, pos.y, ( player.position.y > pos.y ), NULL ) );
+						barriers.push_back( new Barrier( this, pi, false, pos.y, ( player->position.y > pos.y ), NULL ) );
 					}
 					else
 					{
@@ -1450,11 +1450,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					}
 					else if( barStr == "x" )
 					{
-						barriers.push_back( new Barrier( this, pi, true, floor( p.x + .5 ), ( player.position.x > p.x ), NULL  ) );
+						barriers.push_back( new Barrier( this, pi, true, floor( p.x + .5 ), ( player->position.x > p.x ), NULL  ) );
 					}
 					else if( barStr == "y" )
 					{
-						barriers.push_back( new Barrier( this, pi, false, floor( p.y + .5 ), ( player.position.y > p.y ), NULL ) );
+						barriers.push_back( new Barrier( this, pi, false, floor( p.y + .5 ), ( player->position.y > p.y ), NULL ) );
 					}
 					else
 					{
@@ -1621,7 +1621,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				BasicTurret *enemy = new BasicTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
-				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
+				//cout << "player pos: " << player->position.x << ", " << player->position.y << endl;
 				if( hasMonitor )
 				{
 					cout << "new monitor" << endl;
@@ -1973,7 +1973,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					Vector2i( xGravFactor, yGravFactor ), relative );
 
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
-				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
+				//cout << "player pos: " << player->position.x << ", " << player->position.y << endl;
 				if( hasMonitor )
 				{
 					cout << "new monitor" << endl;
@@ -2083,7 +2083,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					amplitude );
 
 				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
-				//cout << "player pos: " << player.position.x << ", " << player.position.y << endl;
+				//cout << "player pos: " << player->position.x << ", " << player->position.y << endl;
 				if( hasMonitor )
 				{
 					cout << "new monitor" << endl;
@@ -2504,10 +2504,10 @@ bool GameSession::OpenFile( string fileName )
 		points = new Vector2<double>[numPoints];
 		
 
-		is >> player.position.x;
-		is >> player.position.y;
-		originalPos.x = player.position.x;
-		originalPos.y = player.position.y;
+		is >> player->position.x;
+		is >> player->position.y;
+		originalPos.x = player->position.x;
+		originalPos.y = player->position.y;
 
 		is >> goalPos.x;
 		is >> goalPos.y;
@@ -4136,14 +4136,14 @@ void GameSession::SetupZones()
 	//which zone is the player in?
 	for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
 	{
-		//Vector2i truePos = Vector2i( player.position.x, player.position.y );
-		bool hasPoint = (*zit)->ContainsPoint( player.position );
+		//Vector2i truePos = Vector2i( player->position.x, player->position.y );
+		bool hasPoint = (*zit)->ContainsPoint( player->position );
 		if( hasPoint )
 		{
 			bool mostSpecific = true;
 			for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
 			{
-				if( (*zit2)->ContainsPoint( player.position ) )
+				if( (*zit2)->ContainsPoint( player->position ) )
 				{
 					mostSpecific = false;
 					break;
@@ -4375,8 +4375,8 @@ int GameSession::Run( string fileN )
 	groundTrans.translate( 0, 0 );
 	
 
-	cam.pos.x = player.position.x;
-	cam.pos.y = player.position.y;
+	cam.pos.x = player->position.x;
+	cam.pos.y = player->position.y;
 	
 	sf::Vertex *line = new sf::Vertex[numPoints*2];
 	for( int i = 0; i < numPoints; ++i )
@@ -4586,11 +4586,11 @@ int GameSession::Run( string fileN )
 	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 
 	int flowSize = 64;
-	//GPUFlow *f = new GPUFlow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize ); 
-	//Flow *f = new Flow( Vector2i( player.position.x + 100, player.position.y ), flowSize, flowSize );
+	//GPUFlow *f = new GPUFlow( Vector2i( player->position.x + 100, player->position.y ), flowSize, flowSize ); 
+	//Flow *f = new Flow( Vector2i( player->position.x + 100, player->position.y ), flowSize, flowSize );
 	//f->player = &player;
 
-	//Cutscene cut( this, Vector2i( player.position.x, player.position.y ) );
+	//Cutscene cut( this, Vector2i( player->position.x, player->position.y ) );
 	//cut.LoadFromFile( "gametest" );
 	//int cutFrame = 0;
 
@@ -4673,10 +4673,10 @@ int GameSession::Run( string fileN )
 				while( true )
 				{
 					//prevInput = currInput;
-					//player.prevInput = currInput;
+					//player->prevInput = currInput;
 					controller.UpdateState();
 					con = controller.GetState();
-					//player.currInput = currInput;
+					//player->currInput = currInput;
 					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 					
 					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
@@ -4745,15 +4745,15 @@ int GameSession::Run( string fileN )
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			if( k || levelReset || player.dead || ( currInput.back && !prevInput.back ) )
+			if( k || levelReset || player->dead || ( currInput.back && !prevInput.back ) )
 			{
 				levelReset = true;
 				totalGameFrames = 0;
 				inGameClock.restart();
 
-				if( player.record > 1 )
+				if( player->record > 1 )
 				{
-					player.LoadState();
+					player->LoadState();
 					LoadState();
 				}
 
@@ -4884,7 +4884,7 @@ int GameSession::Run( string fileN )
 						unlockedGateList = unlockedGateList->activeNext;
 					}
 					
-					/*if( player.currentCheckPoint == NULL )
+					/*if( player->currentCheckPoint == NULL )
 					{
 						ResetEnemies();
 					}
@@ -4938,7 +4938,7 @@ int GameSession::Run( string fileN )
 			prevInput = currInput;
 
 			if( !cutPlayerInput )
-				player.prevInput = currInput;
+				player->prevInput = currInput;
 
 			if( !controller.UpdateState() )
 			{
@@ -5050,19 +5050,19 @@ int GameSession::Run( string fileN )
 			}
 
 			if( !cutPlayerInput )
-				player.currInput = currInput;
+				player->currInput = currInput;
 
 			}
 			else if( pauseFrames > 0 )
 			{
-				if( player.changingClone )
+				if( player->changingClone )
 				{
-					player.percentCloneChanged += player.percentCloneRate;
-					//if( player.percentCloneChanged >= 1 )
+					player->percentCloneChanged += player->percentCloneRate;
+					//if( player->percentCloneChanged >= 1 )
 					{
-						player.percentCloneChanged = 0;
-					//	player.percentCloneChanged = 1;
-						player.changingClone = false;
+						player->percentCloneChanged = 0;
+					//	player->percentCloneChanged = 1;
+						player->changingClone = false;
 						pauseFrames = 0;
 					}
 
@@ -5072,7 +5072,7 @@ int GameSession::Run( string fileN )
 					continue;
 				}
 
-				player.flashFrames--;
+				player->flashFrames--;
 				//cam.offset.y += 10;
 				
 				
@@ -5132,7 +5132,7 @@ int GameSession::Run( string fileN )
 			{
 
 				totalGameFrames++;
-				player.UpdatePrePhysics();
+				player->UpdatePrePhysics();
 
 			
 
@@ -5146,13 +5146,13 @@ int GameSession::Run( string fileN )
 				UpdateEnemiesPhysics();
 
 
-				player.UpdatePostPhysics();
+				player->UpdatePostPhysics();
 
-				if( player.hasPowerLeftWire )
-					player.leftWire->UpdateQuads();
+				if( player->hasPowerLeftWire )
+					player->leftWire->UpdateQuads();
 
-				if( player.hasPowerRightWire )
-					player.rightWire->UpdateQuads();
+				if( player->hasPowerRightWire )
+					player->rightWire->UpdateQuads();
 
 				UpdateEnemiesPostPhysics();
 				
@@ -5215,7 +5215,7 @@ int GameSession::Run( string fileN )
 				flowShader.setParameter( "radius", flowRadius / maxFlowRings );
 				//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
 				flowShader.setParameter( "zoom", cam.GetZoom() );
-				flowShader.setParameter( "playerPos", player.position.x, player.position.y );
+				flowShader.setParameter( "playerPos", player->position.x, player->position.y );
 
 
 				++flowFrame;
@@ -5224,21 +5224,21 @@ int GameSession::Run( string fileN )
 					flowFrame = 0;
 				}
 				
-				int speedLevel = player.speedLevel;
+				int speedLevel = player->speedLevel;
 				//speedBarShader.setParameter( "onPortion", (float)speedLevel );
 				//speedBarShader.setParameter( "quant", (float)currentSpeedBar );
 				float quant = 0;
 				if( speedLevel == 0 )
 				{
-					quant = (float)(player.currentSpeedBar / player.level1SpeedThresh);
+					quant = (float)(player->currentSpeedBar / player->level1SpeedThresh);
 				}
 				else if( speedLevel == 1 )
 				{
-					quant = (float)((player.currentSpeedBar-player.level1SpeedThresh) / ( player.level2SpeedThresh - player.level1SpeedThresh) );
+					quant = (float)((player->currentSpeedBar-player->level1SpeedThresh) / ( player->level2SpeedThresh - player->level1SpeedThresh) );
 				}
 				else 
 				{
-					quant = (float)((player.currentSpeedBar-player.level2SpeedThresh) / ( player.maxGroundSpeed - player.level2SpeedThresh) );
+					quant = (float)((player->currentSpeedBar-player->level2SpeedThresh) / ( player->maxGroundSpeed - player->level2SpeedThresh) );
 					
 				}
 
@@ -5250,20 +5250,20 @@ int GameSession::Run( string fileN )
 				tempSpawnRect = screenRect;
 				enemyTree->Query( this, screenRect );
 
-				if( player.blah || player.record > 1 )
+				if( player->blah || player->record > 1 )
 				{
-					int playback = player.recordedGhosts;
-					if( player.record > 1 )
+					int playback = player->recordedGhosts;
+					if( player->record > 1 )
 						playback--;
 
 					for( int i = 0; i < playback; ++i )
 					{
-						PlayerGhost *g = player.ghosts[i];
-						if( player.ghostFrame < g->totalRecorded )
+						PlayerGhost *g = player->ghosts[i];
+						if( player->ghostFrame < g->totalRecorded )
 						{
-							//cout << "querying! " << player.ghostFrame << endl;
-							tempSpawnRect = g->states[player.ghostFrame].screenRect;
-							enemyTree->Query( this, g->states[player.ghostFrame].screenRect );
+							//cout << "querying! " << player->ghostFrame << endl;
+							tempSpawnRect = g->states[player->ghostFrame].screenRect;
+							enemyTree->Query( this, g->states[player->ghostFrame].screenRect );
 						}
 					}
 				}
@@ -5277,7 +5277,7 @@ int GameSession::Run( string fileN )
 				while( ev != NULL )
 				{
 					EnvPlant *tempNext = ev->next;
-					ev->particle->Update( player.position );
+					ev->particle->Update( player->position );
 
 					ev->frame++;
 					if( ev->frame == ev->disperseLength * ev->disperseFactor )
@@ -5311,9 +5311,9 @@ int GameSession::Run( string fileN )
 
 
 
-				if( player.record > 0 )
+				if( player->record > 0 )
 				{
-					player.ghosts[player.record-1]->states[player.ghosts[player.record-1]->currFrame].screenRect =
+					player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
 						screenRect;
 				}
 			}
@@ -5338,13 +5338,13 @@ int GameSession::Run( string fileN )
 
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
-			//player.maxFallSpeedSlo += maxFallSpeedFactor;
-			//cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
+			//player->maxFallSpeedSlo += maxFallSpeedFactor;
+			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
 		if( Keyboard::isKeyPressed( Keyboard::F ) )
 		{
-		//	player.maxFallSpeed -= maxFallSpeedFactor;
-		//	cout << "maxFallSpeed : " << player.maxFallSpeed << endl;
+		//	player->maxFallSpeed -= maxFallSpeedFactor;
+		//	cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
 
 
@@ -5401,7 +5401,7 @@ int GameSession::Run( string fileN )
 		//view.setSize( cut.cameras[cutFrame].getSize() );
 		lastViewSize = view.getSize();
 
-		//view.setCenter( player.position.x + camOffset.x, player.position.y + camOffset.y );
+		//view.setCenter( player->position.x + camOffset.x, player->position.y + camOffset.y );
 		view.setCenter( cam.pos.x, cam.pos.y );
 		
 		
@@ -5478,10 +5478,10 @@ int GameSession::Run( string fileN )
 		
 		preScreenTex->setView( view );
 		
-		bDraw.setSize( sf::Vector2f(player.b.rw * 2, player.b.rh * 2) );
+		bDraw.setSize( sf::Vector2f(player->b.rw * 2, player->b.rh * 2) );
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-		bDraw.setPosition( player.position.x + player.b.offset.x , player.position.y + player.b.offset.y );
-	//	bDraw.setRotation( player.sprite->getRotation() );
+		bDraw.setPosition( player->position.x + player->b.offset.x , player->position.y + player->b.offset.y );
+	//	bDraw.setRotation( player->sprite->getRotation() );
 		if( bdrawdraw)
 		{
 			preScreenTex->draw( bDraw );
@@ -5492,12 +5492,12 @@ int GameSession::Run( string fileN )
 		cs.setFillColor( Color::Cyan );
 		cs.setRadius( 10 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( player.position.x, player.position.y );
+		cs.setPosition( player->position.x, player->position.y );
 		window->draw( cs );*/
 
 	
-		//player.sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
-		//player.sh.setParameter( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
+		//player->sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
+		//player->sh.setParameter( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
 		
 		
 		
@@ -5506,7 +5506,7 @@ int GameSession::Run( string fileN )
 		
 
 
-		//player.sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
+		//player->sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
 		//if( false )
 		
 		while( lightList != NULL )
@@ -5548,7 +5548,7 @@ int GameSession::Run( string fileN )
 
 
 		Vector2i vi = Mouse::getPosition();
-		//Vector2i vi = window->mapCoordsToPixel( Vector2f( player.position.x, player.position.y ) );
+		//Vector2i vi = window->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
 		//Vector2i vi = window->mapCoordsToPixel( sf::Vector2f( 0, -300 ) );
 		//vi -= Vector2i( view.getSize().x / 2, view.getSize().y / 2 );
 		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
@@ -5735,13 +5735,13 @@ int GameSession::Run( string fileN )
 			motionBlurShader.setParameter( "zoom", cam.GetZoom() );*/
 			//negative player y because of bottom left origin
 
-			V2d t = player.velocity;
+			V2d t = player->velocity;
 			double maxBlur = 8;
-			t.x = t.x / player.maxGroundSpeed * maxBlur;
-			t.y = t.y / player.maxGroundSpeed * maxBlur;
+			t.x = t.x / player->maxGroundSpeed * maxBlur;
+			t.y = t.y / player->maxGroundSpeed * maxBlur;
 
 			
-			Vector2f testVel = Vector2f( player.velocity.x, -player.velocity.y );
+			Vector2f testVel = Vector2f( player->velocity.x, -player->velocity.y );
 
 			motionBlurShader.setParameter( "testVel", Vector2f( t.x, t.y ) );
 
@@ -5771,18 +5771,18 @@ int GameSession::Run( string fileN )
 		preScreenTex->draw( *bigBulletVA );
 		//bigBulletVA->draw( preScreenTex );
 
-		if( player.action != Actor::GRINDBALL )
+		if( player->action != Actor::GRINDBALL )
 		{
-			player.leftWire->Draw( preScreenTex );
-			player.rightWire->Draw( preScreenTex );
+			player->leftWire->Draw( preScreenTex );
+			player->rightWire->Draw( preScreenTex );
 		}
 
 		//cout << "view: " << view.getSize().x << ", " << view.getSize().y << endl;
 		//preScreenTex->setView( view );
 		//cout << "size what: " << preScreenTex->getView().getSize().x
 		//	<< ", " << preScreenTex->getView().getSize().y << endl;
-		if( player.action != Actor::DEATH )
-			player.Draw( preScreenTex );
+		if( player->action != Actor::DEATH )
+			player->Draw( preScreenTex );
 
 		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 		{
@@ -5862,7 +5862,7 @@ int GameSession::Run( string fileN )
 		double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
 		View vv;
-		vv.setCenter( player.position.x, player.position.y );
+		vv.setCenter( player->position.x, player->position.y );
 		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
 
 		minimapTex->setView( vv );
@@ -6014,12 +6014,12 @@ int GameSession::Run( string fileN )
 			Vector2f shockSize( 580/2, 580/2 );
 			sf::RectangleShape rectPost( shockSize );
 			rectPost.setOrigin( rectPost.getLocalBounds().width / 2, rectPost.getLocalBounds().height / 2 );
-			rectPost.setPosition( player.position.x, player.position.y ); //testing for now
+			rectPost.setPosition( player->position.x, player->position.y ); //testing for now
 
 			Sprite shockSprite;
 			shockSprite.setTexture( shockwaveTex );
 			shockSprite.setOrigin( shockSprite.getLocalBounds().width / 2, shockSprite.getLocalBounds().height / 2 );
-			shockSprite.setPosition( player.position.x, player.position.y );
+			shockSprite.setPosition( player->position.x, player->position.y );
 			//rectPost.setPosition( 0, 0 );
 
 			Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y );
@@ -6150,23 +6150,23 @@ int GameSession::Run( string fileN )
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
 		
-		if( player.speedLevel == 0 )
+		if( player->speedLevel == 0 )
 		{
-			preScreenTex->draw( player.kinUnderOutline );
-			preScreenTex->draw( player.kinTealOutline, &speedBarShader );
+			preScreenTex->draw( player->kinUnderOutline );
+			preScreenTex->draw( player->kinTealOutline, &speedBarShader );
 		}
-		else if( player.speedLevel == 1 )
+		else if( player->speedLevel == 1 )
 		{
-			preScreenTex->draw( player.kinTealOutline );
-			preScreenTex->draw( player.kinBlueOutline, &speedBarShader );
+			preScreenTex->draw( player->kinTealOutline );
+			preScreenTex->draw( player->kinBlueOutline, &speedBarShader );
 		}
-		else if( player.speedLevel == 2 )
+		else if( player->speedLevel == 2 )
 		{
-			preScreenTex->draw( player.kinBlueOutline );
-			preScreenTex->draw( player.kinPurpleOutline, &speedBarShader );
+			preScreenTex->draw( player->kinBlueOutline );
+			preScreenTex->draw( player->kinPurpleOutline, &speedBarShader );
 		}
 
-		preScreenTex->draw( player.kinFace );
+		preScreenTex->draw( player->kinFace );
 		//else 
 
 		/*sf::Vertex blah[] = 
@@ -6201,12 +6201,12 @@ int GameSession::Run( string fileN )
 				V2d avg = ( tGate->edgeA->v1 + tGate->edgeA->v0 ) / 2.0;
 
 				double rad = minimapRect.width / 2 - 100;
-				if( length( player.position - avg ) < rad )
+				if( length( player->position - avg ) < rad )
 				{
 					continue;
 				}
 				
-				V2d dir = normalize( avg - player.position );
+				V2d dir = normalize( avg - player->position );
 				double angle = atan2( dir.y, -dir.x );
 				gateDirections[index].setRotation( -angle / PI * 180 - 90 );
 				preScreenTex->draw( gateDirections[index] );
@@ -6243,7 +6243,7 @@ int GameSession::Run( string fileN )
 
 		//preScreenTex->draw( topbarSprite );
 
-		//preScreenTex->draw( player.kinFace );
+		//preScreenTex->draw( player->kinFace );
 		//topbarSprite.draw( preScreenTex );
 
 		//preScreenTex->draw( keyHolderSprite );
@@ -6281,65 +6281,65 @@ int GameSession::Run( string fileN )
 			wipeSprite.setTextureRect( IntRect( 0, 0, wipeSprite.getTexture()->getSize().x, 
 				wipeSprite.getTexture()->getSize().y) );
 			wipeSprite.setOrigin( wipeSprite.getLocalBounds().width / 2, wipeSprite.getLocalBounds().height / 2 );
-			wipeSprite.setPosition( player.position.x, player.position.y );//view.getCenter().x, view.getCenter().y );
+			wipeSprite.setPosition( player->position.x, player->position.y );//view.getCenter().x, view.getCenter().y );
 			preScreenTex->draw( wipeSprite );
 		}
 
-		if( player.action == Actor::DEATH )
+		if( player->action == Actor::DEATH )
 		{
-			player.Draw( preScreenTex );
+			player->Draw( preScreenTex );
 		}
 	//	preScreenTex->setSmooth( true );
 		
 		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
 		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
-		cloneShader.setParameter( "newscreen", player.percentCloneChanged );
+		cloneShader.setParameter( "newscreen", player->percentCloneChanged );
 		cloneShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
 		cloneShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y + view.getSize().y / 2 );
 
-		cloneShader.setParameter( "bubbleRadius", player.bubbleRadius );
+		cloneShader.setParameter( "bubbleRadius", player->bubbleRadius );
 		
 		float windowx = 1920;//window->getSize().x;
 		float windowy = 1080;//window->getSize().y;
 
-		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[0].x, player.bubblePos[0].y ) );
+		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[0].x, player->bubblePos[0].y ) );
 		Vector2f pos0( vi0.x / windowx, -1 + vi0.y / windowy ); 
 
-		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[1].x, player.bubblePos[1].y ) );
+		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[1].x, player->bubblePos[1].y ) );
 		Vector2f pos1( vi1.x / windowx, -1 + vi1.y / windowy ); 
 
-		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[2].x, player.bubblePos[2].y ) );
+		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[2].x, player->bubblePos[2].y ) );
 		Vector2f pos2( vi2.x / windowx, -1 + vi2.y / windowy ); 
 
-		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[3].x, player.bubblePos[3].y ) );
+		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[3].x, player->bubblePos[3].y ) );
 		Vector2f pos3( vi3.x / windowx, -1 + vi3.y / windowy ); 
 
-		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[4].x, player.bubblePos[4].y ) );
+		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[4].x, player->bubblePos[4].y ) );
 		Vector2f pos4( vi4.x / windowx, -1 + vi4.y / windowy ); 
 
-		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( player.bubblePos[5].x, player.bubblePos[5].y ) );
+		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[5].x, player->bubblePos[5].y ) );
 		Vector2f pos5( vi5.x / windowx, -1 + vi5.y / windowy ); 
 
 		//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
-		//cout << "b0frame: " << player.bubbleFramesToLive[0] << endl;
-		//cout << "b1frame: " << player.bubbleFramesToLive[1] << endl;
-		//cout << "b2frame: " << player.bubbleFramesToLive[2] << endl;
+		//cout << "b0frame: " << player->bubbleFramesToLive[0] << endl;
+		//cout << "b1frame: " << player->bubbleFramesToLive[1] << endl;
+		//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
 
 		cloneShader.setParameter( "bubble0", pos0 );
-		cloneShader.setParameter( "b0Frame", player.bubbleFramesToLive[0] );
+		cloneShader.setParameter( "b0Frame", player->bubbleFramesToLive[0] );
 		cloneShader.setParameter( "bubble1", pos1 );
-		cloneShader.setParameter( "b1Frame", player.bubbleFramesToLive[1] );
+		cloneShader.setParameter( "b1Frame", player->bubbleFramesToLive[1] );
 		cloneShader.setParameter( "bubble2", pos2 );
-		cloneShader.setParameter( "b2Frame", player.bubbleFramesToLive[2] );
+		cloneShader.setParameter( "b2Frame", player->bubbleFramesToLive[2] );
 		cloneShader.setParameter( "bubble3", pos3 );
-		cloneShader.setParameter( "b3Frame", player.bubbleFramesToLive[3] );
+		cloneShader.setParameter( "b3Frame", player->bubbleFramesToLive[3] );
 		cloneShader.setParameter( "bubble4", pos4 );
-		cloneShader.setParameter( "b4Frame", player.bubbleFramesToLive[4] );
+		cloneShader.setParameter( "b4Frame", player->bubbleFramesToLive[4] );
 		cloneShader.setParameter( "bubble5", pos5 );
-		cloneShader.setParameter( "b5Frame", player.bubbleFramesToLive[5] );
+		cloneShader.setParameter( "b5Frame", player->bubbleFramesToLive[5] );
 		
 
 		
@@ -6358,10 +6358,10 @@ int GameSession::Run( string fileN )
 		preScreenTex->setView( view );
 
 		//draws the player again on top of everything
-		/*if( player.action != Actor::DEATH )
-			player.Draw( preScreenTex );*/
+		/*if( player->action != Actor::DEATH )
+			player->Draw( preScreenTex );*/
 
-		player.DodecaLateDraw( preScreenTex );
+		player->DodecaLateDraw( preScreenTex );
 
 		
 
@@ -6606,7 +6606,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 
 void GameSession::DebugDrawActors()
 {
-	player.DebugDraw( preScreenTex );
+	player->DebugDraw( preScreenTex );
 	
 	Enemy *currEnemy = activeEnemyList;
 	while( currEnemy != NULL )
@@ -6648,79 +6648,79 @@ void GameSession::RespawnPlayer()
 	currentZone = originalZone;
 	if( currentZone != NULL )
 		keyMarker->SetStartKeys( currentZone->requiredKeys );
-	if( player.currentCheckPoint == NULL )
+	if( player->currentCheckPoint == NULL )
 	{
-		player.position = originalPos;
+		player->position = originalPos;
 		
 		//actually keys should be set based on which ones you had at the last checkpoint
 		for( int i = 2; i < Gate::GateType::Count; ++i )
 		{
-			player.numKeys = 0;
-			//player.hasKey[i] = 0;
+			player->numKeys = 0;
+			//player->hasKey[i] = 0;
 		}
 	}
 	else
 	{
-		player.position = player.currentCheckPoint->pos;
+		player->position = player->currentCheckPoint->pos;
 
 		//might take out checkpoints so idk how this would work
 		//for( int i = 2; i < Gate::GateType::Count; ++i )
 		//{
-			//player.hasKey[i] = player.currentCheckPoint->hadKey[i];
+			//player->hasKey[i] = player->currentCheckPoint->hadKey[i];
 		//}
 	}
 
-	player.followerPos = player.position;
-	player.followerVel = V2d( 0, 0 );
+	player->followerPos = player->position;
+	player->followerVel = V2d( 0, 0 );
 
-	player.gateTouched = NULL;
-	player.action = player.INTRO;
-	player.frame = 0;
-	player.velocity.x = 0;
-	player.velocity.y = 0;
-	player.reversed = false;
-	player.b.offset.y = 0;
-	player.b.rh = player.normalHeight;
-	player.facingRight = true;
-	player.offsetX = 0;
-	player.prevInput = ControllerState();
-	player.currInput = ControllerState();
-	player.ground = NULL;
-	player.grindEdge = NULL;
-	player.bounceEdge = NULL;
-	player.dead = false;
+	player->gateTouched = NULL;
+	player->action = player->INTRO;
+	player->frame = 0;
+	player->velocity.x = 0;
+	player->velocity.y = 0;
+	player->reversed = false;
+	player->b.offset.y = 0;
+	player->b.rh = player->normalHeight;
+	player->facingRight = true;
+	player->offsetX = 0;
+	player->prevInput = ControllerState();
+	player->currInput = ControllerState();
+	player->ground = NULL;
+	player->grindEdge = NULL;
+	player->bounceEdge = NULL;
+	player->dead = false;
 	powerBar.points = 100;
 	powerBar.layer = 0;
-	player.record = 0;
-	player.recordedGhosts = 0;
-	player.blah = false;
-	player.receivedHit = NULL;
+	player->record = 0;
+	player->recordedGhosts = 0;
+	player->blah = false;
+	player->receivedHit = NULL;
 
-	if( player.hasPowerLeftWire )
+	if( player->hasPowerLeftWire )
 	{
-		player.leftWire->Reset();
+		player->leftWire->Reset();
 	}
-	if( player.hasPowerRightWire )
+	if( player->hasPowerRightWire )
 	{
-		player.rightWire->Reset();
+		player->rightWire->Reset();
 	}
 	
 	//powerBar.Reset();
-	player.lastWire = 0;
-	player.desperationMode = false;
+	player->lastWire = 0;
+	player->desperationMode = false;
 
-	player.flashFrames = 0;
+	player->flashFrames = 0;
 	
 	powerWheel->Reset();
 	//currentZone = NULL;
 	cam.zoomFactor = 1;
-	cam.pos.x = player.position.x;
-	cam.pos.y = player.position.y;
+	cam.pos.x = player->position.x;
+	cam.pos.y = player->position.y;
 	cam.offset = Vector2f( 0, 0 );
 
-	player.hasDoubleJump = true;
-	player.hasAirDash = true;
-	player.hasGravReverse = true;
+	player->hasDoubleJump = true;
+	player->hasAirDash = true;
+	player->hasGravReverse = true;
 
 	if( !cam.bossCrawler )
 	{
@@ -6730,21 +6730,21 @@ void GameSession::RespawnPlayer()
 	}
 	
 
-	for( int i = 0; i < player.maxBubbles; ++i )
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		player.bubbleFramesToLive[i] = 0;
-		//if( player.bubbleFramesToLive[i] > 0 )
+		player->bubbleFramesToLive[i] = 0;
+		//if( player->bubbleFramesToLive[i] > 0 )
 		//{
 			
 		//}
 	}
 
-	for( int i = 0; i < player.MAX_MOTION_GHOSTS; ++i )
+	for( int i = 0; i < player->MAX_MOTION_GHOSTS; ++i )
 	{
-		player.motionGhosts[i].setPosition( player.position.x, player.position.y );
+		player->motionGhosts[i].setPosition( player->position.x, player->position.y );
 	}
 
-	player.SetExpr( Actor::Expr::Expr_NEUTRAL );
+	player->SetExpr( Actor::Expr::Expr_NEUTRAL );
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
@@ -6923,13 +6923,13 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//polyShader.setParameter( "On7", on[7] );
 	//polyShader.setParameter( "On8", on[8] );
 
-	//Color c = player.testLight->color;
-	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
-	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
+	//Color c = player->testLight->color;
+	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
+	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
 	//polyShader.setParameter( "LightPosPlayer", posp );
 	//polyShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
-	//polyShader.setParameter( "RadiusPlayer", player.testLight->radius );
-	//polyShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
+	//polyShader.setParameter( "RadiusPlayer", player->testLight->radius );
+	//polyShader.setParameter( "BrightnessPlayer", player->testLight->brightness );
 	//polyShader.setParameter( "OnD0", true );
 }
 
@@ -8246,7 +8246,7 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 	//cout << "deactivate " << b << endl;
 	RemoveEnemy( b );
 
-	if( player.record == 0 )
+	if( player->record == 0 )
 	{
 		if( inactiveEffects == NULL )
 		{
@@ -8427,7 +8427,7 @@ void GameSession::LevelSpecifics()
 	}
 	else
 	{
-	//	player.velocity.x = 60;
+	//	player->velocity.x = 60;
 	}
 }
 
@@ -8883,7 +8883,7 @@ GameSession::GameStartSeq::GameStartSeq( GameSession *own )
 	stormSprite.setTexture( stormTex );
 	
 	//shipSprite.setPosition( 250, 250 );
-	startPos = Vector2f( owner->player.position.x, owner->player.position.y );
+	startPos = Vector2f( owner->player->position.x, owner->player->position.y );
 	frameCount = 1;//180;
 	frame = 0;
 
@@ -9546,13 +9546,13 @@ void GameSession::SetUndergroundParAndDraw()
 	underShader.setParameter( "On7", on[7] );
 	underShader.setParameter( "On8", on[8] );
 
-	Color c = player.testLight->color;
-	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player.testLight->pos.x, player.testLight->pos.y ) );
-	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player.testLight->depth ); 
+	Color c = player->testLight->color;
+	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
+	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
 	underShader.setParameter( "LightPosPlayer", posp );
 	underShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
-	underShader.setParameter( "RadiusPlayer", player.testLight->radius );
-	underShader.setParameter( "BrightnessPlayer", player.testLight->brightness );
+	underShader.setParameter( "RadiusPlayer", player->testLight->radius );
+	underShader.setParameter( "BrightnessPlayer", player->testLight->brightness );
 
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;

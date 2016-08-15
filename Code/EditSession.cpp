@@ -475,7 +475,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	playerType = new ActorType( "player", NULL );
 	types["player"] = playerType;
 
-	player.reset( new PlayerParams( this, Vector2i( 0, 0 ) ) );
+	player->reset( new PlayerParams( this, Vector2i( 0, 0 ) ) );
 	groups["player"]->actors.push_back( player );
 	
 }

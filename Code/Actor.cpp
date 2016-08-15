@@ -14521,7 +14521,7 @@ void Actor::ConfirmHit( Color p_flashColor,
 	flashColor = p_flashColor;
 	swordShaders[speedLevel].setParameter( "toColor", p_flashColor );
 	owner->powerWheel->Charge( charge );
-	owner->player.test = true;
+	owner->player->test = true;
 	desperationMode = false;
 }
 

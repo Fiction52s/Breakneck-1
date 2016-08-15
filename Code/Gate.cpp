@@ -243,7 +243,7 @@ void Gate::Update()
 	//if( keyGate )
 	//{
 
-	//	if( owner->player.numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+	//	if( owner->player->numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player->position, radius ) )
 	//	{
 	//		//cout << "HARDENING: " << type << endl;
 	//		if( gState == SOFTEN )
