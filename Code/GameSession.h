@@ -207,6 +207,17 @@ struct KeyNumberObj
 	int numKeys;
 };
 
+struct ScoreStats
+{
+	ScoreStats( GameSession *owner );
+	sf::Sprite score;
+	void Draw( sf::RenderTarget *target );
+	int numEnemiesTotal;
+	int numEnemiesKilled;
+	double numSeconds;
+	void Reset();
+};
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	KeyMarker *keyMarker;
@@ -476,6 +487,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		//int (*ValidEdge)(sf::Vector2<double> &));
 
 	sf::Vector2<double> goalPos;
+	sf::Vector2<double> goalNodePos;
 	std::string rayMode;
 	sf::VertexArray * SetupEnergyFlow1(
 		int bgLayer,

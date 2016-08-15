@@ -228,19 +228,30 @@ GateInfo::GateInfo()
 
 void GateInfo::SetType( const std::string &gType )
 {
-	if( gType == "grey" )
-	{
-		type = GateTypes::GREY;
-	}
-	else if( gType == "black" )
+	if( gType == "black" )
 	{
 		type = GateTypes::BLACK;
 	}
-	else if( gType == "blue" )
+	else if( gType == "keygate" )
 	{
-		type = GateTypes::BLUE;
+		type = GateTypes::KEYGATE;
 	}
-	else if( gType == "green" )
+	else if( gType == "birdfight" )
+	{
+		type = GateTypes::BIRDFIGHT;
+	}
+	else
+	{
+		assert( false );
+	}
+
+
+	/*if( gType == "grey" )
+	{
+		type = GateTypes::GREY;
+	}
+	else */
+	/*else if( gType == "green" )
 	{
 		type = GateTypes::GREEN;
 	}
@@ -252,16 +263,7 @@ void GateInfo::SetType( const std::string &gType )
 	{
 		cout << "set type critical" << endl;
 		type = GateTypes::CRITICAL;
-	}
-	else if( gType == "birdfight" )
-	{
-		type = GateTypes::BIRDFIGHT;
-	}
-	else
-	{
-		assert( false );
-	}
-
+	}*/
 }
 
 void GateInfo::WriteFile( ofstream &of )
@@ -328,19 +330,19 @@ void GateInfo::UpdateLine()
 	cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
 	Color c;
-	if( type == GateTypes::GREY )
+	if( type == GateTypes::BLACK )
 	{
-		c = Color( 150, 150, 150 );
+		c = Color( 200, 200, 200 );
 	}
-	else if( type == GateTypes::BLACK )
+	else if( type == GateTypes::KEYGATE )
 	{
-		c = Color( 50, 50, 50 );
+		c = Color( 100, 100, 100 );
 	}
-	if( type == GateTypes::RED )
+	else if( type == GateTypes::BIRDFIGHT )
 	{
-		c = Color( 255, 0, 0 );
+		c = Color( 0, 255, 40 );
 	}
-	else if( type == GateTypes::GREEN )
+	/*else if( type == GateTypes::GREEN )
 	{
 		c = Color( 0, 255, 0 );
 	}
@@ -355,7 +357,7 @@ void GateInfo::UpdateLine()
 	else if( type == GateTypes::BIRDFIGHT )
 	{
 		c = Color( 0, 255, 40 );
-	}
+	}*/
 	thickLine[0].color = c;
 	thickLine[1].color = c;
 	thickLine[2].color = c;
@@ -369,7 +371,7 @@ void GateInfo::UpdateLine()
 
 void GateInfo::Draw( sf::RenderTarget *target )
 {
-	Color c;
+	/*Color c;
 	if( type == GateTypes::GREY )
 	{
 		c = Color( 150, 150, 150 );
@@ -393,6 +395,20 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	else if( type == GateTypes::CRITICAL )
 	{
 		c = Color( 255, 255, 0 );
+	}*/
+
+	Color c;
+	if( type == GateTypes::BLACK )
+	{
+		c = Color::Black;
+	}
+	else if( type == GateTypes::KEYGATE )
+	{
+		c = Color( 150, 150, 150 );
+	}
+	else if( type == GateTypes::BIRDFIGHT )
+	{
+		c = Color( 0, 255, 40 );
 	}
 
 	CircleShape cs( 5 );
@@ -3470,11 +3486,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Sprite tempSq;
 	tempSq.setTexture( whiteTex );
 	
-	tempSq.setColor( Color( 100, 100, 100 ) );
-	gateSel->Set( 0, 0, tempSq, "grey" );
+	
+	
 	tempSq.setColor( Color::Black );
-	gateSel->Set( 1, 0, tempSq, "black" );
-	tempSq.setColor( Color::Blue );
+	gateSel->Set( 0, 0, tempSq, "black" );
+
+	tempSq.setColor( Color( 100, 100, 100 ) );
+	gateSel->Set( 1, 0, tempSq, "keygate" );
+
+	tempSq.setColor( Color( 0, 255, 40 ) );
+	gateSel->Set( 2, 0, tempSq, "birdfight" );
+	
+	/*tempSq.setColor( Color::Blue );
 	gateSel->Set( 0, 1, tempSq, "blue" );
 	tempSq.setColor( Color::Green );
 	gateSel->Set( 1, 1, tempSq, "green" );
@@ -3486,9 +3509,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gateSel->Set( 4, 1, tempSq, "red" );
 	tempSq.setColor( Color::Magenta );
 	gateSel->Set( 5, 1, tempSq, "magenta" );
-
-	tempSq.setColor( Color( 0, 255, 40 ) );
-	gateSel->Set( 0, 3, tempSq, "birdfight" );
+*/
+	
 	//tempSq.setColor( Color::Black );
 	//gateSel->Set( 1, 1, tempSq, "critical" );
 

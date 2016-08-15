@@ -12,16 +12,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	
 	enum GateType
 	{
-		GREY,
 		BLACK,
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		WHITE,
-		CRITICAL,
+		KEYGATE,
 		BIRDFIGHT,
 		Count
 	};
@@ -39,8 +31,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		State_Count
 	};
 	
-	bool keyGate;
-	int requiredKeys;
+	//bool keyGate;
+	//int requiredKeys;
 	bool reformBehindYou;
 	Gate( GameSession *owner, GateType type,
 		bool reformBehindYou );

@@ -1220,21 +1220,21 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		V2d point1 = edge1->v0;
 
 		Gate::GateType gateType = (Gate::GateType)gType;
-		if( gateType == Gate::CRITICAL )
-		{
-			cout << "MAKING NEW CRITICAL" << endl;
-			Critical *crit = new Critical( point0, point1 );
-			//wastes space for the gates already made but idk what to change. make it a new system?
-			//lets try it for now lol
+		//if( gateType == Gate::CRITICAL )
+		//{
+		//	cout << "MAKING NEW CRITICAL" << endl;
+		//	Critical *crit = new Critical( point0, point1 );
+		//	//wastes space for the gates already made but idk what to change. make it a new system?
+		//	//lets try it for now lol
 
-			//the extra pointers just get stuffed at the end
-			--numGates;
-			--i;
-			//will have to differentiate later for more items. but not for now!
-			itemTree->Insert( crit );
-			
-			continue;
-		}
+		//	//the extra pointers just get stuffed at the end
+		//	--numGates;
+		//	--i;
+		//	//will have to differentiate later for more items. but not for now!
+		//	itemTree->Insert( crit );
+		//	
+		//	continue;
+		//}
 
 		Gate * gate = new Gate( this, gateType, reformBehindYou );
 
@@ -1328,6 +1328,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enemyTree->Insert( enemy );
 
 				goalPos = enemy->position;
+
+				V2d gPos = enemy->ground->GetPoint( enemy->edgeQuantity );
+				V2d norm = enemy->ground->Normal();
+				double nodeHeight = 128;
+				goalNodePos = goalPos + norm * nodeHeight;
 				cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
 			}
 			else if( typeName == "healthfly" )
@@ -4089,7 +4094,7 @@ void GameSession::SetupZones()
 	//set key number objects correctly
 	for( list<KeyNumberObj*>::iterator it = keyNumberObjects.begin(); it != keyNumberObjects.end(); ++it )
 	{
-		Zone *assignZone;
+		Zone *assignZone = NULL;
 		V2d cPos( (*it)->pos.x, (*it)->pos.y );
 		for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
 		{
@@ -4113,10 +4118,15 @@ void GameSession::SetupZones()
 			}
 		}
 
-		assignZone->requiredKeys = (*it)->numKeys;
+		if( assignZone != NULL )
+		{
+			assignZone->requiredKeys = (*it)->numKeys;
+		}
 
 		delete (*it);
 	}
+
+
 	keyNumberObjects.clear();
 
 	 
@@ -6663,8 +6673,8 @@ void GameSession::RespawnPlayer()
 	player.followerVel = V2d( 0, 0 );
 
 	player.gateTouched = NULL;
-	player.action = player.JUMP;
-	player.frame = 1;
+	player.action = player.INTRO;
+	player.frame = 0;
 	player.velocity.x = 0;
 	player.velocity.y = 0;
 	player.reversed = false;
@@ -6694,15 +6704,18 @@ void GameSession::RespawnPlayer()
 		player.rightWire->Reset();
 	}
 	
-	powerBar.Reset();
+	//powerBar.Reset();
 	player.lastWire = 0;
 	player.desperationMode = false;
 
 	player.flashFrames = 0;
 	
-	
+	powerWheel->Reset();
 	//currentZone = NULL;
-	
+	cam.zoomFactor = 1;
+	cam.pos.x = player.position.x;
+	cam.pos.y = player.position.y;
+	cam.offset = Vector2f( 0, 0 );
 
 	player.hasDoubleJump = true;
 	player.hasAirDash = true;

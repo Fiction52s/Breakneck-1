@@ -418,7 +418,15 @@ Actor::Actor( GameSession *gs )
 		tileset[JUMPSQUAT] = owner->GetTileset( "jump_64x64.png", 64, 64 );
 		normal[JUMPSQUAT] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 		
+		actionLength[INTRO] = 10 * 4;
+		tileset[INTRO] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
+		normal[INTRO] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
 
+		actionLength[EXIT] = 27 * 2;
+		tileset[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
+		normal[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
+
+		actionLength[SPAWNWAIT] = 60;
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
 		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	
@@ -474,8 +482,8 @@ Actor::Actor( GameSession *gs )
 		//ts_bounceSprint = owner->GetTileset( "bouncesprint.png", 128, 64 );
 
 		grindActionLength = 32;
-		SetActionExpr( JUMP );
-		frame = 1;
+		SetActionExpr( SPAWNWAIT );
+		frame = 0;
 		
 		timeSlowStrength = 5;
 		slowMultiple = 1;
@@ -697,8 +705,10 @@ Actor::Actor( GameSession *gs )
 
 void Actor::ActionEnded()
 {
+	//cout << "length: " << actionLength[action] << endl;
 	if( frame >= actionLength[action] )
 	{
+		
 		switch( action )
 		{
 		case STAND:
@@ -842,6 +852,19 @@ void Actor::ActionEnded()
 		case BOUNCEGROUNDEDWALL:
 			action = STAND;
 			frame = 0;
+			break;
+		case INTRO:
+			//cout << "intro over" << endl;
+			action = JUMP;
+			frame = 1;
+			break;
+		case EXIT:
+			frame = 0;
+			break;
+		case SPAWNWAIT:
+			action = INTRO;
+			frame = 0;
+			break;
 		case DEATH:
 		
 			frame = 0;
@@ -884,7 +907,7 @@ void Actor::CheckHoldJump()
 void Actor::UpdatePrePhysics()
 {
 	
-	if( !desperationMode )
+	if( !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT )
 	{
 		if( drainCounter == drainCounterMax)
 		{
@@ -1085,6 +1108,12 @@ void Actor::UpdatePrePhysics()
 	}
 
 	ActionEnded();
+
+	if( action == INTRO || action == SPAWNWAIT )
+	{
+		return;
+	}
+
 	V2d gNorm;
 	if( ground != NULL )
 		gNorm = ground->Normal();
@@ -7503,6 +7532,8 @@ void Actor::UpdateFullPhysics()
 //int blah = 0;
 void Actor::UpdatePhysics()
 {
+	if( action == INTRO || action == SPAWNWAIT )
+		return;
 	/*if( blah == 0 )
 	{
 		blah = 1;
@@ -10133,7 +10164,7 @@ void Actor::PhysicsResponse()
 						Gate *og = (Gate*)(*it)->info;
 						if( g == og )
 							continue;
-						if( og->keyGate && (og->gState == Gate::HARD
+						if( (og->gState == Gate::HARD
 							|| og->gState == Gate::SOFT
 							|| og->gState == Gate::HARDEN
 							|| og->gState == Gate::SOFTEN ) )
@@ -10155,7 +10186,7 @@ void Actor::PhysicsResponse()
 						Gate *og = (Gate*)(*it)->info;
 						if( g == og )
 							continue;
-						if( og->keyGate && (og->gState == Gate::HARD
+						if( (og->gState == Gate::HARD
 							|| og->gState == Gate::SOFT
 							|| og->gState == Gate::HARDEN
 							|| og->gState == Gate::SOFTEN ) )
@@ -10183,19 +10214,6 @@ void Actor::PhysicsResponse()
 				g->frame = 0;
 			}
 
-			
-			if( g->keyGate )//g->type == Gate::BLUE )
-			{
-				//assert( numKeys > 0 );
-				//hasKey[g->type] = 0;
-				numKeys = 0;
-
-
-				
-				//assert( hasBlueKey );
-				//cout << "getting rid of blue key and setting it to dissolve!!" << endl;
-				//hasBlueKey = false;
-			}
 
 			
 			
@@ -10807,6 +10825,7 @@ void Actor::UpdatePostPhysics()
 		}
 
 		++frame;
+		cout << "frame: " << frame << endl;
 
 		++framesSinceClimbBoost;
 
@@ -12398,7 +12417,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		
 		
-		if( action != DEATH )
+		if( action != DEATH && action != SPAWNWAIT )
 		//if( action == RUN )
 		{
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
@@ -14399,9 +14418,43 @@ void Actor::UpdateSprite()
 
 			break;
 		}
+	case INTRO:
+		{
+			sprite->setTexture( *(tileset[INTRO]->texture));
+			sprite->setTextureRect( tileset[INTRO]->GetSubRect( frame / 4 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2,
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case EXIT:
+		{
+			sprite->setTexture( *(tileset[EXIT]->texture));
+			sprite->setTextureRect( tileset[EXIT]->GetSubRect( frame / 2 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2,
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case GOALKILL:
+		{
+			sprite->setTexture( *(tileset[GOALKILL]->texture));
+			sprite->setTextureRect( tileset[GOALKILL]->GetSubRect( frame / 2 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2,
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y );
+			sprite->setRotation( 0 );
+			break;
+		}
+	case SPAWNWAIT:
+		{
+			break;
+		}
 	case DEATH:
 		{
-		
+			break;
 		}
 	}
 	
@@ -15029,23 +15082,26 @@ bool Actor::CanUnlockGate( Gate *g )
 	}
 
 	bool canUnlock = false;
+
+	bool enoughKeys = (owner->keyMarker->keysRequired == 0);
 	//cout << "this gate is still locked" << endl;
 
-	if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER
+	/*if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER
 		&& g->gState != Gate::REFORM )
 	{
 		cout << "gstate: " << (int)g->gState << endl;
 		canUnlock = true;
 	}
-	else if( g->type == Gate::BLACK )
+	else */
+	if( g->type == Gate::BLACK )
 	{
 		canUnlock = false;
 	}
-	else if( g->keyGate && numKeys >= g->requiredKeys && g->gState != Gate::LOCKFOREVER
+	else if( enoughKeys && g->gState != Gate::LOCKFOREVER
 		&& g->gState != Gate::REFORM )
 	{
-		cout << "have keys: " << numKeys <<
-			"need keys: " << g->requiredKeys << endl;
+		//cout << "have keys: " << numKeys <<
+		//	"need keys: " << g->requiredKeys << endl;
 		canUnlock = true;
 	}
 

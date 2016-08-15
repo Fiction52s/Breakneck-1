@@ -14,15 +14,6 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 {
 	//this could just be temporary
 	int t = (int)p_type;
-	if( t < 2 || p_type == BIRDFIGHT )
-	{
-		requiredKeys = 0;
-	}
-	else
-	{
-		requiredKeys = t - 1;
-		//cout << "requiredkeys: " << requiredKeys << endl;
-	}
 
 	edgeA = NULL;
 	edgeB = NULL;
@@ -43,10 +34,6 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	gQuads = NULL;
 	frame = 0;
-
-	keyGate = type == BLUE || type == GREEN || type == YELLOW
-		|| type == ORANGE || type == RED || type == MAGENTA ||
-		type == WHITE || type == BIRDFIGHT;
 }
 
 Gate::~Gate()
@@ -101,18 +88,13 @@ void Gate::UpdateLine()
 
 	switch( type )
 	{
-	case GREY:
-		c = Color( 100, 100, 100 );
-		ts = owner->GetTileset( "greygate.png", 32, 32 );
-		tileHeight = 32;
-		break;
 	case BLACK:
 		c = Color( 0, 0, 0 );
 		//ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
 		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
 		tileHeight = 64;
 		break;
-	case BLUE:
+	case KEYGATE:
 		c =  Color( 77, 150, 249);
 		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
 		tileHeight = 64;
@@ -121,14 +103,6 @@ void Gate::UpdateLine()
 		c = Color::Green;
 		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
 		tileHeight = 64;
-		break;
-	case GREEN:
-		c = Color::Green;
-		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
-		tileHeight = 64;
-		break;
-	case RED:
-		c = Color::Red;
 		break;
 	}
 	thickLine[0].color = c;
@@ -165,13 +139,13 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
-	if( type == Gate::GREY || type == Gate::BLACK || keyGate )
-	{
+	//if( type == Gate::GREY || type == Gate::BLACK || keyGate )
+	//{
 		if( gQuads == NULL )
 		{
 			gQuads = new VertexArray( sf::Quads, numVertices );
 		}
-	}
+	//}
 	//cout << "giving gquads value!" << endl;
 }
 
@@ -180,7 +154,7 @@ void Gate::Update()
 	
 
 	//gates can be timeslowed? don't worry about it just yet. 
-	if( type == GREY || keyGate )
+	if( type != BLACK )
 	{
 		switch( gState )
 		{
@@ -188,7 +162,7 @@ void Gate::Update()
 			{
 				if( frame == 9 )
 				{
-					gState = HARD;
+					gState = LOCKFOREVER;
 					frame = 0;
 				}
 			}
@@ -260,55 +234,54 @@ void Gate::Update()
 			break;
 		}
 	}
-	else if( type == BLACK )
+	else
 	{
-		if( gState == REFORM )
-		{
-			if( frame == 11 * 3 )
-			{
-				gState = HARD;
-				frame = 0;
-			}
-		}
-		else
-		{
-			frame = 0;
-		}
+		frame = 0;
 	}
 	double radius = 300;
-	//double dist = length( owner->player.position
-	if( keyGate )
-	{
+	
+	//if( keyGate )
+	//{
 
-		if( owner->player.numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+	//	if( owner->player.numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player.position, radius ) )
+	//	{
+	//		//cout << "HARDENING: " << type << endl;
+	//		if( gState == SOFTEN )
+	//		{
+	//			gState = HARDEN;
+	//			frame = 0;
+	//			//frame should be the inverse so that it can get harder while from its partially softened state.
+	//		}
+	//		else if( gState == SOFT )
+	//		{
+	//			gState = HARDEN;
+	//			frame = 0;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		//cout << "SOFTENING: " << type << endl;
+	//		if( gState == HARDEN )
+	//		{
+	//			gState = SOFTEN;
+	//			frame = 0;
+	//			//inverse frame;
+	//		}
+	//		else if( gState == HARD )
+	//		{
+	//			gState = SOFTEN;
+	//			frame = 0;
+	//		}
+	//	}
+	//}
+
+	if( type != BLACK )
+	{
+		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+		if( gState == HARD )
 		{
-			//cout << "HARDENING: " << type << endl;
-			if( gState == SOFTEN )
-			{
-				gState = HARDEN;
-				frame = 0;
-				//frame should be the inverse so that it can get harder while from its partially softened state.
-			}
-			else if( gState == SOFT )
-			{
-				gState = HARDEN;
-				frame = 0;
-			}
-		}
-		else
-		{
-			//cout << "SOFTENING: " << type << endl;
-			if( gState == HARDEN )
-			{
-				gState = SOFTEN;
-				frame = 0;
-				//inverse frame;
-			}
-			else if( gState == HARD )
-			{
-				gState = SOFTEN;
-				frame = 0;
-			}
+			gState = SOFTEN;
+			frame = 0;
 		}
 	}
 
@@ -344,134 +317,124 @@ void Gate::Update()
 	int f = frame / 3;
 	//cout << "gq: " << gq.getVertexCount() << endl;
 
-	if( type == GREY || type == BLACK || keyGate )
-	{
-		int realFrame = 0;
+	
+	int realFrame = 0;
 
-		if( type == GREY || keyGate )
+	if( type != BLACK )
+	{
+		switch( gState )
 		{
-			switch( gState )
+		case HARDEN:
 			{
-			case HARDEN:
-				{
-					realFrame = frame;
-				}
-				break;
+				realFrame = frame;
+			}
+			break;
+		case HARD:
+			{
+				realFrame = 9;
+			}
+			break;
+		case SOFTEN:
+			{
+				realFrame = 10 + frame;
+			}
+			break;
+		case SOFT:
+			{
+				realFrame = 21 + frame / 3;
+			}
+			break;
+		case DISSOLVE:
+			{
+				realFrame = 34 + frame / 4;
+			}
+			break;
+		case REFORM:
+			{
+				realFrame = 0;
+			}
+			break;
+		case LOCKFOREVER:
+			{
+				realFrame  = 0;
+			}
+			break;
+		case OPEN:
+			{
+				realFrame = 0;
+			}
+			break;
+		}
+	}
+	else if( type == BLACK )
+	{
+		switch( gState )
+		{
 			case HARD:
-				{
-					realFrame = 9;
-				}
-				break;
-			case SOFTEN:
-				{
-					realFrame = 10 + frame;
-				}
-				break;
-			case SOFT:
-				{
-					realFrame = 21 + frame / 3;
-				}
-				break;
-			case DISSOLVE:
-				{
-					realFrame = 34 + frame / 4;
-				}
+				realFrame = 11;
 				break;
 			case REFORM:
-				{
-					realFrame = 0;
-				}
+				realFrame = frame / 3;
 				break;
-			case LOCKFOREVER:
-				{
-					realFrame  = 0;
-				}
+			default:
+				cout << "state : " << gState << endl;
 				break;
-			case OPEN:
-				{
-					realFrame = 0;
-				}
-				break;
-			}
 		}
-		else if( type == BLACK )
-		{
-			switch( gState )
-			{
-				case HARD:
-					realFrame = 11;
-					break;
-				case REFORM:
-					realFrame = frame / 3;
-					break;
-				default:
-					cout << "state : " << gState << endl;
-					break;
-			}
-		}
+	}
 
 		
-		//IntRect subRect = ts->GetSubRect( realFrame );
+	//IntRect subRect = ts->GetSubRect( realFrame );
 		
 
-		if( realFrame < 0 )
-		{
-			cout << "type: " << type << endl;
-			cout << "gState: " << gState << endl;
-		}
+	if( realFrame < 0 )
+	{
+		cout << "type: " << type << endl;
+		cout << "gState: " << gState << endl;
+	}
 
-		assert( realFrame >= 0 );
+	assert( realFrame >= 0 );
 
-		IntRect subRect = ts->GetSubRect( realFrame );
-		for( int i = 0; i < numTiles - 1; ++i )
-		{
+	IntRect subRect = ts->GetSubRect( realFrame );
+	for( int i = 0; i < numTiles - 1; ++i )
+	{
 			
-			gq[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );//Vector2f( 0, frame * tileHeight + 0 );
-			gq[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );//Vector2f( tileWidth, frame * tileHeight + 0 );
-			gq[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );//Vector2f( tileWidth, frame * tileHeight + tileHeight );
-			gq[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );//Vector2f( 0, frame * tileHeight + tileHeight );
+		gq[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );//Vector2f( 0, frame * tileHeight + 0 );
+		gq[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );//Vector2f( tileWidth, frame * tileHeight + 0 );
+		gq[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );//Vector2f( tileWidth, frame * tileHeight + tileHeight );
+		gq[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );//Vector2f( 0, frame * tileHeight + tileHeight );
 
-			V2d lv0 = leftv0 + along * (double)(tileHeight * i);
-			V2d lv1 = leftv0 + along * (double)(tileHeight * (i+1));
-			V2d rv1 = rightv0 + along * (double)(tileHeight * (i+1));
-			V2d rv0 = rightv0 + along * (double)(tileHeight * i);
-			gq[i*4+3].position = Vector2f( lv0.x, lv0.y );
-			gq[i*4+0].position = Vector2f( lv1.x, lv1.y );
-			gq[i*4+1].position = Vector2f( rv1.x, rv1.y );
-			gq[i*4+2].position = Vector2f( rv0.x, rv0.y );
-		}
+		V2d lv0 = leftv0 + along * (double)(tileHeight * i);
+		V2d lv1 = leftv0 + along * (double)(tileHeight * (i+1));
+		V2d rv1 = rightv0 + along * (double)(tileHeight * (i+1));
+		V2d rv0 = rightv0 + along * (double)(tileHeight * i);
+		gq[i*4+3].position = Vector2f( lv0.x, lv0.y );
+		gq[i*4+0].position = Vector2f( lv1.x, lv1.y );
+		gq[i*4+1].position = Vector2f( rv1.x, rv1.y );
+		gq[i*4+2].position = Vector2f( rv0.x, rv0.y );
+	}
 
-		V2d lv0 = leftv0 + along * (double)(tileHeight * (numTiles-1));
-		V2d lv1 = leftv1;
-		V2d rv1 = rightv1;
-		V2d rv0 = rightv0 + along * (double)(tileHeight * (numTiles-1));
-		//remainder
+	V2d lv0 = leftv0 + along * (double)(tileHeight * (numTiles-1));
+	V2d lv1 = leftv1;
+	V2d rv1 = rightv1;
+	V2d rv0 = rightv0 + along * (double)(tileHeight * (numTiles-1));
+	//remainder
 
 	
-		gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, subRect.top );
-		gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-		gq[(numTiles-1) * 4 + 2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-		gq[(numTiles-1) * 4 + 3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, subRect.top );
+	gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	gq[(numTiles-1) * 4 + 2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	gq[(numTiles-1) * 4 + 3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 
-		gq[(numTiles-1) * 4 + 3].position = Vector2f( lv0.x, lv0.y );
-		gq[(numTiles-1) * 4 + 0].position = Vector2f( lv1.x, lv1.y );
-		gq[(numTiles-1) * 4 + 1].position = Vector2f( rv1.x, rv1.y );
-		gq[(numTiles-1) * 4 + 2].position = Vector2f( rv0.x, rv0.y );
-	}
+	gq[(numTiles-1) * 4 + 3].position = Vector2f( lv0.x, lv0.y );
+	gq[(numTiles-1) * 4 + 0].position = Vector2f( lv1.x, lv1.y );
+	gq[(numTiles-1) * 4 + 1].position = Vector2f( rv1.x, rv1.y );
+	gq[(numTiles-1) * 4 + 2].position = Vector2f( rv0.x, rv0.y );
+	
 	switch( type )
 	{
-	case GREY:
-		{
-			
-		}
-		break;
 	case BLACK:
 		break;
-	case BLUE:
-		break;
-	case GREEN:
-		break;
-	case RED:
+	case KEYGATE:
 		break;
 	}
 

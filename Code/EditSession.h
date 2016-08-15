@@ -295,16 +295,8 @@ struct GateInfo
 {
 	enum GateTypes
 	{
-		GREY,
 		BLACK,
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		WHITE,
-		CRITICAL,
+		KEYGATE,
 		BIRDFIGHT,
 		Count
 	};

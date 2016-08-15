@@ -260,7 +260,8 @@ void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 
 void Camera::Update( Actor *player )
 {
-	if( manual )
+	if( manual || player->action == Actor::SPAWNWAIT || player->action == Actor::INTRO
+		|| player->action == Actor::EXIT )
 	{
 	//	UpdateRumble();
 		return;

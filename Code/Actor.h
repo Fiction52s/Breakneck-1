@@ -53,6 +53,10 @@ struct Actor : QuadTreeCollider,
 		BOUNCEGROUND,
 		BOUNCEGROUNDEDWALL,
 		JUMPSQUAT,
+		INTRO,
+		EXIT,
+		GOALKILL,
+		SPAWNWAIT,
 		DEATH,
 		Count
 	};
@@ -70,6 +74,7 @@ struct Actor : QuadTreeCollider,
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;
+	
 
 	Tileset *ts_kinFace;
 	sf::Sprite kinFace;
