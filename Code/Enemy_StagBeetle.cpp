@@ -267,7 +267,7 @@ void StagBeetle::ActionEnded()
 void StagBeetle::UpdatePrePhysics()
 {
 	//testLaunch->UpdatePrePhysics();
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
 	if( dead )
 		return;
@@ -291,14 +291,14 @@ void StagBeetle::UpdatePrePhysics()
 	case RUN:
 		if( facingRight )
 		{
-			if( player.position.x < position.x )
+			if( player->position.x < position.x )
 			{
 				facingRight = false;
 			}
 		}
 		else
 		{
-			if( player.position.x > position.x )
+			if( player->position.x > position.x )
 			{
 				facingRight = true;
 			}
@@ -649,16 +649,16 @@ void StagBeetle::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player.ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
+				owner->player->ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
 
-				if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 				{
-					owner->player.velocity.y = 4;//.5;
+					owner->player->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player.frame << endl;
+															//cout << "frame: " << owner->player->frame << endl;
 
-			//owner->player.frame--;
+			//owner->player->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -734,12 +734,12 @@ void StagBeetle::UpdatePostPhysics()
 
 bool StagBeetle::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}
@@ -801,16 +801,16 @@ void StagBeetle::DrawMinimap( sf::RenderTarget *target )
 
 bool StagBeetle::IHitPlayer()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 	
-	if( player.invincibleFrames == 0 && hitBody.Intersects( player.hurtBody ) )
+	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
-		if( player.position.x < position.x )
+		if( player->position.x < position.x )
 		{
 			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
 			//cout << "left" << endl;
 		}
-		else if( player.position.x > position.x )
+		else if( player->position.x > position.x )
 		{
 			//cout << "right" << endl;
 			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
@@ -820,7 +820,7 @@ bool StagBeetle::IHitPlayer()
 			//dont change it
 		}
 		attackFrame = 0;
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	
@@ -829,13 +829,13 @@ bool StagBeetle::IHitPlayer()
 
  pair<bool, bool> StagBeetle::PlayerHitMe()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -854,7 +854,7 @@ bool StagBeetle::IHitPlayer()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -866,15 +866,15 @@ bool StagBeetle::IHitPlayer()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -886,11 +886,11 @@ bool StagBeetle::IHitPlayer()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);

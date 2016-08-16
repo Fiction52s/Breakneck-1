@@ -396,7 +396,7 @@ void BasicBullet::UpdatePrePhysics()
 	//if( gravTowardsPlayer )
 	//{
 	//	double len = gravity.y;//length( gravity );
-	//	V2d diff = launcher->owner->player.position - position;
+	//	V2d diff = launcher->owner->player->position - position;
 	//	int t = 100;
 	//	diff += V2d( (rand() % t) - t / 2, (rand() % t) - t / 2);
 	//	V2d towards = normalize( diff );
@@ -486,8 +486,8 @@ void BasicBullet::UpdatePhysics()
 
 		hitBody.globalPosition = position;
 
-		Actor &player = launcher->owner->player;
-		if( player.hurtBody.Intersects( hitBody ) )
+		Actor *player = launcher->owner->player;
+		if( player->hurtBody.Intersects( hitBody ) )
 		{	
 			//cout << "hit??" << endl;
 			HitPlayer();
@@ -666,8 +666,8 @@ void SinBullet::UpdatePhysics()
 		hitBody.globalPosition = position;
 		hurtBody.globalPosition = position;
 
-		Actor &player = launcher->owner->player;
-		if( player.hurtBody.Intersects( hitBody ) )
+		Actor *player = launcher->owner->player;
+		if( player->hurtBody.Intersects( hitBody ) )
 		{
 			HitPlayer();
 			break;
@@ -699,7 +699,7 @@ void Enemy::AttemptSpawnMonitor()
 {
 	if( monitor != NULL && !suppressMonitor )
 	{
-		if( !owner->player.CaptureMonitor( monitor ) )
+		if( !owner->player->CaptureMonitor( monitor ) )
 		{
 			cout << "adding monitor!" << endl;
 			monitor->position = position;

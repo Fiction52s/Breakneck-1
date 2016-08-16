@@ -111,8 +111,8 @@ void Movable::UpdatePhysics()
 
 		hitBody.globalPosition = position;
 
-		Actor &player = owner->player;
-		if( player.hurtBody.Intersects( hitBody ) )
+		Actor *player = owner->player;
+		if( player->hurtBody.Intersects( hitBody ) )
 		{	
 			HitPlayer();
 			break;

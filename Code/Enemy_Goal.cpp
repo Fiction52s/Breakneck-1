@@ -12,10 +12,12 @@ using namespace sf;
 Goal::Goal( GameSession *owner, Edge *g, double q )
 		:Enemy( owner, EnemyType::GOAL ), ground( g ), edgeQuantity( q ), dead( false )
 {
-	double height = 160;
-	double width = 128;
-	ts = owner->GetTileset( "goal_128x160.png", width, height );
+	
+	double width = 288;
+	double height = 256;
+	ts = owner->GetTileset( "goal_w02_a_288x256.png", width, height );
 	ts_mini = owner->GetTileset( "goal_minimap_32x40.png", 32, 40 );
+	ts_explosion = owner->GetTileset( "goal_w02_b_288x320.png", 288, 320 );
 	sprite.setTexture( *ts->texture );
 	
 	miniSprite.setTexture( *ts_mini->texture );
@@ -72,11 +74,18 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	slowMultiple = 1;
 
 	spawnRect = sf::Rect<double>( gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160 );
+
+	exploding = false;
+	kinKilling = false;
+	//kinKillFrame = 0;
 }
 
 void Goal::ResetEnemy()
 {
 	frame = 0;
+	exploding = false;
+	kinKilling = false;
+	//kinKillFrame = 0;
 	deathFrame = 0;
 }
 
@@ -91,16 +100,28 @@ void Goal::HandleEntrant( QuadTreeEntrant *qte )
 
 void Goal::UpdatePrePhysics()
 {
-	if( frame == 0 )
+	if( kinKilling )
 	{
-		
+		if( frame == 72 * 2 )
+		{
+			exploding = true;
+			kinKilling = false;
+			frame = 0;
+		}
+	}
+	else if( exploding )
+	{
+		if( frame == 15 * 2 )
+		{
+			dead = true;
+		}
 	}
 }
 
 void Goal::UpdatePhysics()
 {
 	specterProtected = false;
-	if( !dead )
+	if( !dead && !kinKilling && !exploding )
 	{
 		UpdateHitboxes();
 
@@ -111,7 +132,13 @@ void Goal::UpdatePhysics()
 			{
 				owner->Pause( 6 );
 			}
-			dead = true;
+
+			kinKilling = true;
+			//kinKillFrame = 0;
+			frame = 0;
+			owner->player->hitGoal = true;
+
+			//dead = true;
 			receivedHit = NULL;
 
 			
@@ -128,7 +155,7 @@ void Goal::UpdatePhysics()
 void Goal::UpdatePostPhysics()
 {
 	
-	
+	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
 	{
@@ -148,20 +175,20 @@ void Goal::UpdatePostPhysics()
 
 	//if( frame == 4 * animationFactor )
 	//{
-	frame = 0;
+	//frame = 0;
 	//}
 
-	if( deathFrame == 60 )
+	if( dead )
 	{
-		if( owner->player.record == 0 )
+		/*if( owner->player->record == 0 )
 		{
 			cout << "GAME OVER" << endl;
 			owner->goalDestroyed = true;
-		}
+		}*/
 		owner->RemoveEnemy( this );
 	}
 
-	UpdateSprite();
+	
 }
 
 void Goal::Draw(sf::RenderTarget *target )
@@ -181,12 +208,12 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 
 bool Goal::IHitPlayer()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 	
 
-	/*if( currBullet->hitBody.Intersects( player.hurtBody ) )
+	/*if( currBullet->hitBody.Intersects( player->hurtBody ) )
 		{
-			player.ApplyHit( bulletHitboxInfo );
+			player->ApplyHit( bulletHitboxInfo );
 			return true;
 		}
 	*/
@@ -196,12 +223,12 @@ bool Goal::IHitPlayer()
 
 pair<bool, bool> Goal::PlayerHitMe()
 {
-	Actor &player = owner->player;
-	if( player.currHitboxes != NULL )
+	Actor *player = owner->player;
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -213,21 +240,21 @@ pair<bool, bool> Goal::PlayerHitMe()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
+			receivedHit = player->currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -239,11 +266,11 @@ pair<bool, bool> Goal::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);
@@ -256,7 +283,41 @@ bool Goal::PlayerSlowingMe()
 
 void Goal::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	int trueFrame = 0;
+	if( kinKilling )
+	{
+		if( frame / 2 < 12 )
+		{
+			trueFrame = 1;
+		}
+		else if( frame / 2 < 18 )
+		{
+			trueFrame = 2;
+		}
+		else if( frame / 2 < 30 )
+		{
+			trueFrame = 3;
+		}
+		else
+		{
+			trueFrame = 4;
+		}
+		//else if( frame == 3 )
+		//{
+			
+		//}
+		sprite.setTexture( *ts->texture );
+		sprite.setTextureRect( ts->GetSubRect( trueFrame ) );
+	}
+	else if( exploding )
+	{
+		trueFrame = frame / 2;
+		sprite.setTexture( *ts_explosion->texture );
+		sprite.setTextureRect( ts_explosion->GetSubRect( trueFrame ) );
+	}
+	
+	
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 }
 
 void Goal::DebugDraw(sf::RenderTarget *target)

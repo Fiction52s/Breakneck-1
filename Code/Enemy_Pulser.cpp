@@ -269,17 +269,17 @@ void Pulser::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
+			owner->player->ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
 
 
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
-				owner->player.velocity.y = 4;//.5;
+				owner->player->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player.frame << endl;
+		//	cout << "frame: " << owner->player->frame << endl;
 
-			//owner->player.frame--;
+			//owner->player->frame--;
 			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
@@ -442,11 +442,11 @@ bool Pulser::IHitPlayer()
 	assert( testSeq.currMovement != NULL );
 	if( testSeq.currMovement->moveType == Movement::WAIT )
 	{
-		Actor &player = owner->player;
+		Actor *player = owner->player;
 	
-		if( hitBody.Intersects( player.hurtBody ) )
+		if( hitBody.Intersects( player->hurtBody ) )
 		{
-			player.ApplyHit( hitboxInfo );
+			player->ApplyHit( hitboxInfo );
 			return true;
 		}
 	}
@@ -460,13 +460,13 @@ void Pulser::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player.ground != NULL )
+	if( owner->player->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player.groundSpeed * ( owner->player.ground->v1 - owner->player.ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player.velocity );
+		hitboxInfo->kbDir = normalize( -owner->player->velocity );
 	}
 }
 
@@ -478,12 +478,12 @@ pair<bool,bool> Pulser::PlayerHitMe()
 		return pair<bool,bool>(false,false);
 
 
-	Actor &player = owner->player;
-	if( player.currHitboxes != NULL )
+	Actor *player = owner->player;
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -502,7 +502,7 @@ pair<bool,bool> Pulser::PlayerHitMe()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -514,15 +514,15 @@ pair<bool,bool> Pulser::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -534,11 +534,11 @@ pair<bool,bool> Pulser::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 
@@ -547,12 +547,12 @@ pair<bool,bool> Pulser::PlayerHitMe()
 
 bool Pulser::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}

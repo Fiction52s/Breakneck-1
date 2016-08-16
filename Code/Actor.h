@@ -56,6 +56,7 @@ struct Actor : QuadTreeCollider,
 		INTRO,
 		EXIT,
 		GOALKILL,
+		GOALKILLWAIT,
 		SPAWNWAIT,
 		DEATH,
 		Count
@@ -74,6 +75,8 @@ struct Actor : QuadTreeCollider,
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;
+
+	Tileset **ts_goalKillArray;
 	
 
 	Tileset *ts_kinFace;
@@ -85,7 +88,7 @@ struct Actor : QuadTreeCollider,
 	sf::Color currentDespColor;
 
 	//sf::Shader speedBarShader;
-	
+	bool hitGoal;
 
 	Actor( GameSession *owner );
 	void UpdateSprite();

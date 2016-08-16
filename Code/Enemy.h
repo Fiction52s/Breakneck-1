@@ -404,11 +404,14 @@ struct Goal : Enemy
 	void LoadEnemyState();
 	void ResetEnemy();
 	
-
+	bool exploding;
+	bool kinKilling;
+	//int kinKillFrame;
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;
 	Tileset *ts;
 	Tileset *ts_mini;
+	Tileset *ts_explosion;
 
 	Edge *ground;
 	double edgeQuantity;

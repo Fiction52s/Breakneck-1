@@ -130,7 +130,7 @@ void Cactus::BulletHitTerrain(BasicBullet *b,
 
 void Cactus::BulletHitPlayer(BasicBullet *b )
 {
-	owner->player.ApplyHit( b->launcher->hitboxInfo );
+	owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Cactus::ResetEnemy()
@@ -176,7 +176,7 @@ void Cactus::UpdatePrePhysics()
 	{
 		double pi8 = PI / 8.0;
 		double pi4 = PI / 4.0;
-		V2d playerPos = owner->player.position;
+		V2d playerPos = owner->player->position;
 		V2d playerDir = normalize( playerPos - position );
 		double angle = atan2( playerDir.x, -playerDir.y );
 		if( angle < 0 )
@@ -262,12 +262,12 @@ void Cactus::PhysicsResponse()
 				receivedHit = NULL;
 			}*/
 
-				owner->player.ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
+				owner->player->ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
 
 
-				if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 				{
-					owner->player.velocity.y = 4;//.5;
+					owner->player->velocity.y = 4;//.5;
 				}
 				//	dead = true;
 		//	receivedHit = NULL;
@@ -396,15 +396,15 @@ bool Cactus::IHitPlayerWithBullets()
 
 bool Cactus::IHitPlayer()
 {
-	Actor &player = owner->player;
-	if( hitBody.Intersects( player.hurtBody ) )
+	Actor *player = owner->player;
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		if( player.position.x < position.x )
+		if( player->position.x < position.x )
 		{
 			hitboxInfo->kbDir = V2d( -1, -1 );
 			//cout << "left" << endl;
 		}
-		else if( player.position.x > position.x )
+		else if( player->position.x > position.x )
 		{
 			//cout << "right" << endl;
 			hitboxInfo->kbDir = V2d( 1, -1 );
@@ -414,20 +414,20 @@ bool Cactus::IHitPlayer()
 			//dont change it
 		}
 
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 }
 
  pair<bool, bool> Cactus::PlayerHitMe()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -446,7 +446,7 @@ bool Cactus::IHitPlayer()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -458,15 +458,15 @@ bool Cactus::IHitPlayer()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -478,11 +478,11 @@ bool Cactus::IHitPlayer()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);
@@ -495,18 +495,18 @@ bool Cactus::IHitPlayer()
 
 bool Cactus::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
 	/*Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
 	{
 		bool slowed = false;
-		for( int i = 0; i < player.maxBubbles; ++i )
+		for( int i = 0; i < player->maxBubbles; ++i )
 		{
-			if( player.bubbleFramesToLive[i] > 0 )
+			if( player->bubbleFramesToLive[i] > 0 )
 			{
-				if( length( currBullet->position - player.bubblePos[i] ) 
-					<= player.bubbleRadius + currBullet->hurtBody.rw )
+				if( length( currBullet->position - player->bubblePos[i] ) 
+					<= player->bubbleRadius + currBullet->hurtBody.rw )
 				{
 					if( currBullet->slowMultiple == 1 )
 					{
@@ -527,13 +527,13 @@ bool Cactus::PlayerSlowingMe()
 		currBullet = currBullet->next;
 	}*/
 
-	//Actor &player = owner->player;
+	//Actor *player = owner->player;
 	bool found = false;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				found = true;
 				if( slowMultiple == 1 )
@@ -552,12 +552,12 @@ bool Cactus::PlayerSlowingMe()
 		slowMultiple = 1;
 	}
 
-	/*for( int i = 0; i < player.maxBubbles; ++i )
+	/*for( int i = 0; i < player->maxBubbles; ++i )
 		{
-			if( player.bubbleFramesToLive[i] > 0 )
+			if( player->bubbleFramesToLive[i] > 0 )
 			{
-				if( length( currBullet->position - player.bubblePos[i] ) 
-					<= player.bubbleRadius + currBullet->hurtBody.rw )
+				if( length( currBullet->position - player->bubblePos[i] ) 
+					<= player->bubbleRadius + currBullet->hurtBody.rw )
 				{*/
 
 	

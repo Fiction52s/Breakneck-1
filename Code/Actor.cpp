@@ -17,7 +17,7 @@ Actor::Actor( GameSession *gs )
 		followerPos = V2d( 0, 0 );
 		followerVel = V2d( 0, 0 );
 		followerFac = 1.0 / 60.0;
-
+		hitGoal = false;
 		ground = NULL;
 		//re = new RotaryParticleEffect( this );
 		//re1 = new RotaryParticleEffect( this );
@@ -420,6 +420,16 @@ Actor::Actor( GameSession *gs )
 		actionLength[EXIT] = 27 * 2;
 		tileset[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
 		normal[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
+
+		actionLength[GOALKILL] = 72 * 2;
+		ts_goalKillArray = new Tileset*[5];
+		ts_goalKillArray[0] = owner->GetTileset( "goal_w02_killa_384x256.png", 384, 256 );
+		ts_goalKillArray[1] = owner->GetTileset( "goal_w02_killb_384x256.png", 384, 256 );
+		ts_goalKillArray[2] = owner->GetTileset( "goal_w02_killc_384x256.png", 384, 256 );
+		ts_goalKillArray[3] = owner->GetTileset( "goal_w02_killd_384x256.png", 384, 256 );
+		ts_goalKillArray[4] = owner->GetTileset( "goal_w02_kille_384x256.png", 384, 256 );
+
+		
 
 		actionLength[SPAWNWAIT] = 60;
 		}
@@ -873,10 +883,15 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case EXIT:
+			owner->goalDestroyed = true;
 			frame = 0;
 			break;
 		case SPAWNWAIT:
 			action = INTRO;
+			frame = 0;
+			break;
+		case GOALKILL:
+			action = EXIT;
 			frame = 0;
 			break;
 		case DEATH:
@@ -1123,7 +1138,7 @@ void Actor::UpdatePrePhysics()
 
 	ActionEnded();
 
-	if( action == INTRO || action == SPAWNWAIT )
+	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT )
 	{
 		return;
 	}
@@ -7546,7 +7561,7 @@ void Actor::UpdateFullPhysics()
 //int blah = 0;
 void Actor::UpdatePhysics()
 {
-	if( action == INTRO || action == SPAWNWAIT )
+	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT )
 		return;
 	/*if( blah == 0 )
 	{
@@ -10569,7 +10584,12 @@ void Actor::UpdatePostPhysics()
 		}
 	}*/
 
-	
+	if( hitGoal && action != GOALKILL && action != EXIT )
+	{
+		action = GOALKILL;
+		frame = 0;
+		position = owner->goalNodePos;
+	}
 
 	UpdateSprite();
 
@@ -12431,7 +12451,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		
 		
-		if( action != DEATH && action != SPAWNWAIT )
+		if( action != DEATH && action != SPAWNWAIT && action != GOALKILL )
 		//if( action == RUN )
 		{
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
@@ -14455,11 +14475,29 @@ void Actor::UpdateSprite()
 		}
 	case GOALKILL:
 		{
-			sprite->setTexture( *(tileset[GOALKILL]->texture));
-			sprite->setTextureRect( tileset[GOALKILL]->GetSubRect( frame / 2 ) );
+			
+
+			int tsIndex = (frame / 2) / 16;
+			int realFrame = (frame / 2 ) % 16;
+			cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << endl;
+			Tileset *tsT = ts_goalKillArray[tsIndex];
+			sprite->setTexture( *(tsT->texture));
+			sprite->setTextureRect( tsT->GetSubRect( realFrame ) );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
 				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y + 64.f );
+			sprite->setRotation( 0 );
+
+			break;
+		}
+	case GOALKILLWAIT:
+		{
+			Tileset *tsT = ts_goalKillArray[4];
+			sprite->setTexture( *(tsT->texture));
+			sprite->setTextureRect( tsT->GetSubRect( 7 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2,
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y + 64.f );
 			sprite->setRotation( 0 );
 			break;
 		}
@@ -14521,7 +14559,7 @@ void Actor::ConfirmHit( Color p_flashColor,
 	flashColor = p_flashColor;
 	swordShaders[speedLevel].setParameter( "toColor", p_flashColor );
 	owner->powerWheel->Charge( charge );
-	owner->player.test = true;
+	owner->player->test = true;
 	desperationMode = false;
 }
 

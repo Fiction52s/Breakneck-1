@@ -220,6 +220,7 @@ struct ScoreStats
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
+	std::list<Tileset*> tilesetList;
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
 	
@@ -283,7 +284,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::RenderWindow *window;
 	std::string currentFile;
-	std::list<Tileset*> tilesetList;
+	
 	Tileset * GetTileset( const std::string & s,
 		int tileWidth, int tileHeight );
 	void Test( Edge *e );

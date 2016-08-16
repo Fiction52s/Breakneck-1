@@ -132,7 +132,7 @@ void Tree::UpdatePrePhysics()
 	if( frame == 60 - 1 && slowCounter == 1 )
 	{
 		//cout << "FIRING" << endl;
-		launcher->facingDir = normalize( owner->player.position
+		launcher->facingDir = normalize( owner->player->position
 			- position );
 		launcher->Fire();
 	}
@@ -159,12 +159,12 @@ void Tree::PhysicsResponse()
 			pair<bool, bool> result = PlayerHitMe();
 			if( result.first )
 			{
-				owner->player.ConfirmHit( COLOR_RED, 5, .8, 2 * 6 * 3 );
+				owner->player->ConfirmHit( COLOR_RED, 5, .8, 2 * 6 * 3 );
 
 
-				if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 				{
-					owner->player.velocity.y = 4;//.5;
+					owner->player->velocity.y = 4;//.5;
 				}
 			}
 		}
@@ -303,15 +303,15 @@ void Tree::DrawMinimap( sf::RenderTarget *target )
 
 bool Tree::IHitPlayer()
 {
-	Actor &player = owner->player;
-	if( hitBody.Intersects( player.hurtBody ) )
+	Actor *player = owner->player;
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		if( player.position.x < position.x )
+		if( player->position.x < position.x )
 		{
 			hitboxInfo->kbDir = V2d( -1, -1 );
 			//cout << "left" << endl;
 		}
-		else if( player.position.x > position.x )
+		else if( player->position.x > position.x )
 		{
 			//cout << "right" << endl;
 			hitboxInfo->kbDir = V2d( 1, -1 );
@@ -321,20 +321,20 @@ bool Tree::IHitPlayer()
 			//dont change it
 		}
 
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 }
 
  pair<bool, bool> Tree::PlayerHitMe()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -353,7 +353,7 @@ bool Tree::IHitPlayer()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -365,15 +365,15 @@ bool Tree::IHitPlayer()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -385,11 +385,11 @@ bool Tree::IHitPlayer()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);
@@ -397,13 +397,13 @@ bool Tree::IHitPlayer()
 
 bool Tree::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 	bool found = false;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				found = true;
 				if( slowMultiple == 1 )

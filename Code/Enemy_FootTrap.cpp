@@ -29,7 +29,7 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
-	//cout << "player " << owner->player.position.x << ", " << owner->player.position.y << endl;
+	//cout << "player " << owner->player->position.x << ", " << owner->player->position.y << endl;
 	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
 	
 
@@ -122,7 +122,7 @@ void FootTrap::UpdatePrePhysics()
 		//cout << "damaging: " << health << endl;
 		if( health <= 0 )
 		{
-			//cout << "attempting. blue key is: " << owner->player.hasBlueKey << endl;
+			//cout << "attempting. blue key is: " << owner->player->hasBlueKey << endl;
 			AttemptSpawnMonitor();
 			dead = true;
 		}
@@ -162,19 +162,19 @@ void FootTrap::UpdatePhysics()
 		{
 			//cout << "hit here!" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.ConfirmHit( COLOR_BLUE, 5, .8, 2 * 6 * 3 );
-			/*owner->player.test = true;
-			owner->player.currAttackHit = true;
-			owner->player.flashColor = COLOR_BLUE;
-			owner->player.flashFrames = 5;
-			owner->player.currentSpeedBar += .8;
-			owner->player.swordShaders[owner->player.speedLevel]setParameter( "energyColor", COLOR_BLUE );
-			owner->player.desperationMode = false;
+			owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 2 * 6 * 3 );
+			/*owner->player->test = true;
+			owner->player->currAttackHit = true;
+			owner->player->flashColor = COLOR_BLUE;
+			owner->player->flashFrames = 5;
+			owner->player->currentSpeedBar += .8;
+			owner->player->swordShaders[owner->player->speedLevel]setParameter( "energyColor", COLOR_BLUE );
+			owner->player->desperationMode = false;
 			owner->powerBar.Charge( 2 * 6 * 3 );*/
 
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
-				owner->player.velocity.y = 4;//.5;
+				owner->player->velocity.y = 4;//.5;
 			}
 		}
 
@@ -280,11 +280,11 @@ void FootTrap::DrawMinimap( sf::RenderTarget *target )
 
 bool FootTrap::IHitPlayer()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	
@@ -293,13 +293,13 @@ bool FootTrap::IHitPlayer()
 
 pair<bool, bool> FootTrap::PlayerHitMe()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -311,21 +311,21 @@ pair<bool, bool> FootTrap::PlayerHitMe()
 
 		if( hit )
 		{
-			receivedHit = player.currHitboxInfo;
+			receivedHit = player->currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -337,11 +337,11 @@ pair<bool, bool> FootTrap::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);
@@ -349,12 +349,12 @@ pair<bool, bool> FootTrap::PlayerHitMe()
 
 bool FootTrap::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}

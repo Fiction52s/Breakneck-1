@@ -98,7 +98,7 @@ void HealthFly::UpdatePhysics()
 			int rows = 10;
 			int rowCap = 2 * 5;
 			owner->powerBar.Charge( rowCap * rows ); 
-			owner->player.desperationMode = false;
+			owner->player->desperationMode = false;
 		}
 		//owner->RemoveEnemy( this );
 		//get rid of me
@@ -181,11 +181,11 @@ void HealthFly::DrawMinimap( sf::RenderTarget *target )
 
 bool HealthFly::IHitPlayer()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		//player.ApplyHit( hitboxInfo );
+		//player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
@@ -199,12 +199,12 @@ void HealthFly::UpdateHitboxes()
 
 std::pair<bool,bool> HealthFly::PlayerHitMe()
 {
-	Actor &player = owner->player;
-	if( player.currHitboxes != NULL )
+	Actor *player = owner->player;
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -223,7 +223,7 @@ std::pair<bool,bool> HealthFly::PlayerHitMe()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -235,15 +235,15 @@ std::pair<bool,bool> HealthFly::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -255,11 +255,11 @@ std::pair<bool,bool> HealthFly::PlayerHitMe()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 
@@ -268,12 +268,12 @@ std::pair<bool,bool> HealthFly::PlayerHitMe()
 
 bool HealthFly::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}

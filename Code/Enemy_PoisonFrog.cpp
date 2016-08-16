@@ -550,7 +550,7 @@ void PoisonFrog::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
 
 	V2d jumpVel;
@@ -591,11 +591,11 @@ void PoisonFrog::UpdatePrePhysics()
 	case STAND:
 		{
 			//cout << "frame: " << frame << endl;
-			if( player.position.x < position.x )
+			if( player->position.x < position.x )
 			{
 				facingRight = false;
 			}
-			else if( player.position.x > position.x )
+			else if( player->position.x > position.x )
 			{
 				facingRight = true;
 			}
@@ -697,11 +697,11 @@ void PoisonFrog::UpdatePrePhysics()
 		break;
 	case STEEPJUMP:
 		{
-			if( player.position.x < position.x )
+			if( player->position.x < position.x )
 			{
 				facingRight = false;
 			}
-			else if( player.position.x > position.x )
+			else if( player->position.x > position.x )
 			{
 				facingRight = true;
 			}
@@ -903,13 +903,13 @@ void PoisonFrog::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player.ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
+			owner->player->ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
 			//owner->powerBar.Charge( 2 * 6 * 2 );
 			//owner->powerBar.Charge( 6 );
 
-			if( owner->player.ground == NULL && owner->player.velocity.y > 0 )
+			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
-				owner->player.velocity.y = 4;//.5;
+				owner->player->velocity.y = 4;//.5;
 			}
 		
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
@@ -967,12 +967,12 @@ void PoisonFrog::UpdatePostPhysics()
 
 bool PoisonFrog::PlayerSlowingMe()
 {
-	Actor &player = owner->player;
-	for( int i = 0; i < player.maxBubbles; ++i )
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		if( player.bubbleFramesToLive[i] > 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			if( length( position - player.bubblePos[i] ) <= player.bubbleRadius )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
 				return true;
 			}
@@ -1034,23 +1034,23 @@ void PoisonFrog::DrawMinimap( sf::RenderTarget *target )
 
 bool PoisonFrog::IHitPlayer()
 {
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 	
-	if( hitBody.Intersects( player.hurtBody ) )
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		hitboxInfo->kbDir = normalize( player.position - position );
+		hitboxInfo->kbDir = normalize( player->position - position );
 		//knockback stuff?
-		if( player.position.x < position.x )
+		if( player->position.x < position.x )
 		{
 			//hitboxInfo->kbDir = V2d( -1, -1 ); //-abs( hitboxInfo->kbDir.x );
 		}
-		else if( player.position.x > position.x )
+		else if( player->position.x > position.x )
 		{
 			//hitboxInfo->kbDir = V2d( 1, -1 );//abs( hitboxInfo->kbDir.x );
 		}
 
 
-		player.ApplyHit( hitboxInfo );
+		player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	
@@ -1064,13 +1064,13 @@ bool PoisonFrog::IHitPlayer()
 		return pair<bool,bool>(false,false);
 	}
 
-	Actor &player = owner->player;
+	Actor *player = owner->player;
 
-	if( player.currHitboxes != NULL )
+	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player.currHitboxes->begin(); it != player.currHitboxes->end(); ++it )
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
@@ -1089,7 +1089,7 @@ bool PoisonFrog::IHitPlayer()
 
 			if( !specterProtected )
 			{
-				receivedHit = player.currHitboxInfo;
+				receivedHit = player->currHitboxInfo;
 				return pair<bool, bool>(true,false);
 			}
 			else
@@ -1101,15 +1101,15 @@ bool PoisonFrog::IHitPlayer()
 		
 	}
 
-	for( int i = 0; i < player.recordedGhosts; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player.ghostFrame < player.ghosts[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player.ghosts[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player.ghosts[i]->currHitboxes->begin(); it != player.ghosts[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -1121,11 +1121,11 @@ bool PoisonFrog::IHitPlayer()
 
 				if( hit )
 				{
-					receivedHit = player.currHitboxInfo;
+					receivedHit = player->currHitboxInfo;
 					return pair<bool, bool>(true,true);
 				}
 			}
-			//player.ghosts[i]->curhi
+			//player->ghosts[i]->curhi
 		}
 	}
 	return pair<bool, bool>(false,false);
