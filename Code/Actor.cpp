@@ -883,8 +883,9 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case EXIT:
-			owner->goalDestroyed = true;
-			frame = 0;
+			//owner->goalDestroyed = true;
+			
+			//frame = 0;
 			break;
 		case SPAWNWAIT:
 			action = INTRO;
@@ -3859,12 +3860,13 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
-
+	
 	case DEATH:
 		{
 
 			break;
 		}
+	
 	}
 	
 	currHitboxes = NULL;
@@ -10996,6 +10998,8 @@ void Actor::UpdatePostPhysics()
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
 
+	if( action == EXIT && frame == actionLength[EXIT] )
+		owner->goalDestroyed = true;
 	/*switch( expr )
 	{
 	case Expr::NEUTRAL:
@@ -14468,15 +14472,15 @@ void Actor::UpdateSprite()
 			sprite->setTexture( *(tileset[EXIT]->texture));
 			sprite->setTextureRect( tileset[EXIT]->GetSubRect( frame / 2 ) );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
+				sprite->getLocalBounds().height );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//position.x, position.y );
 			sprite->setRotation( 0 );
 			break;
 		}
 	case GOALKILL:
 		{
 			
-
+			//radius is 24. 100 pixel offset
 			int tsIndex = (frame / 2) / 16;
 			int realFrame = (frame / 2 ) % 16;
 			cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << endl;
@@ -14485,9 +14489,8 @@ void Actor::UpdateSprite()
 			sprite->setTextureRect( tsT->GetSubRect( realFrame ) );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
 				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y + 64.f );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//- 24.f );
 			sprite->setRotation( 0 );
-
 			break;
 		}
 	case GOALKILLWAIT:
@@ -14496,8 +14499,8 @@ void Actor::UpdateSprite()
 			sprite->setTexture( *(tsT->texture));
 			sprite->setTextureRect( tsT->GetSubRect( 7 ) );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y + 64.f );
+				sprite->getLocalBounds().height );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y + 96.f );
 			sprite->setRotation( 0 );
 			break;
 		}

@@ -412,6 +412,8 @@ struct Goal : Enemy
 	Tileset *ts;
 	Tileset *ts_mini;
 	Tileset *ts_explosion;
+	float goalKillStartZoom;
+	sf::Vector2f goalKillStartPos;
 
 	Edge *ground;
 	double edgeQuantity;

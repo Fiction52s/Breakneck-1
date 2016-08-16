@@ -1335,8 +1335,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				V2d gPos = enemy->ground->GetPoint( enemy->edgeQuantity );
 				V2d norm = enemy->ground->Normal();
-				double nodeHeight = 128;
-				goalNodePos = goalPos + norm * nodeHeight;
+				double nodeHeight = 104;
+				goalNodePos = gPos + norm * nodeHeight;
 				cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
 			}
 			else if( typeName == "healthfly" )
@@ -5150,6 +5150,13 @@ int GameSession::Run( string fileN )
 
 
 				player->UpdatePostPhysics();
+
+				if( goalDestroyed )
+				{
+					quit = true;
+					returnVal = 1;
+					break;
+				}
 
 				if( player->hasPowerLeftWire )
 					player->leftWire->UpdateQuads();

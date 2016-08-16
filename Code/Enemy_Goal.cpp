@@ -102,6 +102,30 @@ void Goal::UpdatePrePhysics()
 {
 	if( kinKilling )
 	{
+		if( frame == 1 )
+		{
+			owner->cam.manual = true;
+			goalKillStartZoom = owner->cam.zoomFactor;
+			goalKillStartPos = owner->cam.pos;
+		}
+		if( frame <= 31 )
+		{
+			CubicBezier bez( 0, 0, 1, 1 );
+			float z = bez.GetValue( (double)(frame-1) / 30 );
+
+			Vector2f po = goalKillStartPos * ( 1.f - z ) + Vector2f( owner->goalNodePos.x,
+				owner->goalNodePos.y ) * z;
+
+			CubicBezier bez1( 0, 0, 1, 1 );
+			float z1 = bez1.GetValue( (double)(frame-1) / 30 );
+
+			float zoom = goalKillStartZoom * ( 1.f - z ) + 1.f * z;
+			owner->cam.Set( po, zoom, 0 );
+			///Vector2f trueSpot = dropSpot + extra0;
+			//owner->cam.Set( ( //trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
+			//	1, 0 );
+
+		}
 		if( frame == 72 * 2 )
 		{
 			exploding = true;
