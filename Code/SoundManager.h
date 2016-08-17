@@ -17,10 +17,11 @@ struct MusicInfo
 
 struct SoundManager
 {
+	~SoundManager();
 	sf::Music *GetMusic( const std::string &name );
 	sf::SoundBuffer *GetSound( const std::string &name );
-	std::list<SoundInfo> sounds;
-	std::list<MusicInfo> songs;
+	std::list<SoundInfo*> sounds;
+	std::list<MusicInfo*> songs;
 };
 
 #endif

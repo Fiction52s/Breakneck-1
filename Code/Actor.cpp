@@ -1283,7 +1283,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionGrind();
 				bounceFlameOn = false;
-				runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 			}
 
@@ -1398,7 +1398,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionGrind();
 				bounceFlameOn = false;
-				runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 			}
 
@@ -1408,7 +1408,7 @@ void Actor::UpdatePrePhysics()
 				SetActionExpr( JUMPSQUAT );
 				bufferedAttack = false;
 				frame = 0;
-				runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 			}
 
@@ -1422,14 +1422,14 @@ void Actor::UpdatePrePhysics()
 					{
 						action = STEEPCLIMB;
 						frame = 0;
-						runTappingSound.stop();
+						////runTappingSound.stop();
 						break;
 					}
 					else
 					{
 						action = STEEPSLIDE;
 						frame = 0;
-						runTappingSound.stop();
+						////runTappingSound.stop();
 						break;
 					}
 				}
@@ -1442,14 +1442,14 @@ void Actor::UpdatePrePhysics()
 					{
 						action = STEEPCLIMB;
 						frame = 0;
-						runTappingSound.stop();
+						////runTappingSound.stop();
 						break;
 					}
 					else
 					{
 						action = STEEPSLIDE;
 						frame = 0;
-						runTappingSound.stop();
+						////runTappingSound.stop();
 						break;
 					}
 				}
@@ -1461,7 +1461,7 @@ void Actor::UpdatePrePhysics()
 			{
 				GroundAttack();
 
-				runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 			}
 
@@ -1471,7 +1471,7 @@ void Actor::UpdatePrePhysics()
 				/*re->Reset();
 				re1->Reset();*/
 				frame = 0;
-				runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 			}
 
@@ -1496,7 +1496,7 @@ void Actor::UpdatePrePhysics()
 					SetActionExpr( STAND );
 					frame = 0;
 				}
-				runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 				
 			}
@@ -1514,7 +1514,7 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = 0;
 					facingRight = false;
 					frame = 0;
-					runTappingSound.stop();
+					//runTappingSound.stop();
 					break;
 				}
 				else if( !facingRight && currInput.LRight() )
@@ -1527,7 +1527,7 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = 0;
 					facingRight = true;
 					frame = 0;
-					runTappingSound.stop();
+					//runTappingSound.stop();
 					break;
 				}
 				else if( (currInput.LDown() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ))
@@ -1552,7 +1552,7 @@ void Actor::UpdatePrePhysics()
 					}
 					frame = frame * 4;
 
-					runTappingSound.stop();
+					//runTappingSound.stop();
 					break;
 				}
 
@@ -1925,7 +1925,7 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( JUMPSQUAT );
 						bufferedAttack = false;
 						frame = 0;
-						//runTappingSound.stop();
+						////runTappingSound.stop();
 						break;
 					}
 
@@ -2468,7 +2468,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 				SetActionGrind();
 				//dashStartSound.setLoop( false );
-				//runTappingSound.stop();
+				////runTappingSound.stop();
 				break;
 			}
 
@@ -3838,7 +3838,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionGrind();
 				bounceFlameOn = false;
-				runTappingSound.stop();
+				//runTappingSound.stop();
 				break;
 			}
 
@@ -3847,7 +3847,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionExpr( JUMP );
 				frame = 0;
-				runTappingSound.stop();
+				//runTappingSound.stop();
 				break;
 			}
 
@@ -3855,7 +3855,7 @@ void Actor::UpdatePrePhysics()
 			{
 				GroundAttack();
 
-				runTappingSound.stop();
+				//runTappingSound.stop();
 				break;
 			}
 			break;
@@ -3895,7 +3895,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
 			{
-				jumpSound.play();
+				//jumpSound.play();
 
 				if( reversed )
 				{
@@ -4277,7 +4277,7 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 )
 			{
 				currAttackHit = false;
-				fairSound.play();
+				//fairSound.play();
 			}
 			if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			{
@@ -10571,10 +10571,10 @@ void Actor::UpdatePostPhysics()
 		p.showSword = false;
 	}
 
-	if( action != DASH && dashStartSound.getStatus() == Sound::Playing )
+	/*if( action != DASH && dashStartSound.getStatus() == Sound::Playing )
 	{
 		dashStartSound.stop();
-	}
+	}*/
 	/*switch( oldAction )
 	{
 	case DASH:
@@ -12794,8 +12794,8 @@ void Actor::UpdateSprite()
 			
 		if( frame == 0 )
 			{
-				runTappingSound.stop();
-				runTappingSound.play();
+				//runTappingSound.stop();
+				//runTappingSound.play();
 			}
 
 		
@@ -13720,13 +13720,13 @@ void Actor::UpdateSprite()
 			
 			if( frame == 0 )//&& currInput.B && !prevInput.B )
 			{
-				dashStartSound.stop();
+				//dashStartSound.stop();
 				//if( slowMultiple != 1)
 				//	dashStartSound.setPitch( .2 );
 				//else
 				//	dashStartSound.setPitch( 1 );
 				//cout << "playing dash sound" << endl;
-				dashStartSound.play();
+				//dashStartSound.play();
 				//dashStartSound.setLoop( true );
 			}
 
@@ -14076,8 +14076,8 @@ void Actor::UpdateSprite()
 		{
 			if( frame == 0 )
 			{
-				playerHitSound.stop();
-				playerHitSound.play();
+				//playerHitSound.stop();
+				//playerHitSound.play();
 			}
 
 			sprite->setTexture( *(tileset[AIRHITSTUN]->texture));

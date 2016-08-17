@@ -64,6 +64,52 @@ using namespace sf;
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
 
+
+ScoreDisplay::ScoreDisplay( GameSession *p_owner, Vector2f &position )
+	:scoreBarVA( sf::Quads, 4 * 1 ), scoreSymbolsVA( sf::Quads, 4 * 1 ), scoreSheetVA( sf::Quads, 4 * 1 )
+{
+	basePos = position;
+	owner = p_owner;
+	ts_scoreBar = owner->GetTileset( "score_bar_384x80.png", 384, 80 );
+	ts_scoreContinue = owner->GetTileset( "score_continue_384x80.png", 384, 80 );
+	ts_scoreSheet = owner->GetTileset( "score_sheet_384x80.png", 384, 80 );
+	ts_scoreSymbols = owner->GetTileset( "score_symbol_384x80.png", 384, 80 );
+
+	scoreContinue.setTexture( *ts_scoreContinue->texture );
+	scoreContinue.setTextureRect( ts_scoreContinue->GetSubRect( 0 ) );
+	scoreContinue.setOrigin( scoreContinue.getLocalBounds().width, 0 );
+	scoreContinue.setPosition( 1920, 400 );
+
+	IntRect ir = ts_scoreBar->GetSubRect( 0 );
+	for( int i = 0; i < 1; ++i )
+	{
+		scoreBarVA[i*4+0].texCoords = Vector2f( ir.left, ir.top );
+		scoreBarVA[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		scoreBarVA[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		scoreBarVA[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+	}
+	SetScoreBarPos( 0, 0 );
+}
+
+void ScoreDisplay::SetScoreBarPos( int row, float xDiff )
+{
+	IntRect ir = ts_scoreBar->GetSubRect( 0 );
+	int rowHeight = 100;
+
+	scoreBarVA[ row * 4 + 0 ].position = Vector2f( basePos.x + xDiff, basePos.y + row * rowHeight );
+	scoreBarVA[ row * 4 + 1 ].position = Vector2f( basePos.x + xDiff + ir.width, basePos.y + row * rowHeight );
+	scoreBarVA[ row * 4 + 2 ].position = Vector2f( basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height );
+	scoreBarVA[ row * 4 + 3 ].position = Vector2f( basePos.x + xDiff, basePos.y + row * rowHeight + ir.height );
+}
+
+void ScoreDisplay::Draw( RenderTarget *target )
+{
+	target->draw( scoreBarVA );
+	target->draw( scoreSheetVA );
+	target->draw( scoreSymbolsVA );
+	target->draw( scoreContinue );
+}
+
 PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
 {
 	name = pname;
@@ -252,11 +298,12 @@ void KeyMarker::Update()
 }
 
 GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
-	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex )
+	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex,
+	RenderTexture *p_mapTex)
 	:controller(c),va(NULL),edges(NULL), window(rw), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
-	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 )
+	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
 {
 	player = new Actor( this );
 	currentZone = NULL;
@@ -527,6 +574,9 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 
 GameSession::~GameSession()
 {
+	delete player;
+	delete soundManager;
+
 	//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	//{
 	//	cout << "about: " << (*it)->sourceName << ", "
@@ -553,6 +603,14 @@ GameSession::~GameSession()
 	
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	{
+		if( (*it) == NULL )
+		{
+			cout <<"WHAT FAIL" << endl;
+			//assert( false );
+			continue;
+
+		}
+
 		cout << "About to delete: " << (*it)->sourceName << ", "
 			<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
 		delete (*it);
@@ -597,7 +655,6 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 	t->tileHeight = tileHeight;
 	t->sourceName = s;
 	tilesetList.push_back( t );
-
 	cout << "pushing back texture: " << s << endl;
 
 
@@ -4225,11 +4282,13 @@ void GameSession::SetupZones()
 int GameSession::Run( string fileN )
 {
 	soundManager = new SoundManager;
-	soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
-	currMusic = soundManager->GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
-	currMusic->setLoop( true );
+	//soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
+	//currMusic = soundManager->GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
+	//currMusic->setLoop( true );
 	//testMusic->
-	currMusic->play();
+	//currMusic->play();
+	//currMusic->
+	currMusic = NULL;
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
@@ -4432,7 +4491,7 @@ int GameSession::Run( string fileN )
 	//ControllerState con = controller.GetState();
 
 	
-
+	
 	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
@@ -4597,6 +4656,8 @@ int GameSession::Run( string fileN )
 	//cut.LoadFromFile( "gametest" );
 	//int cutFrame = 0;
 
+	state = RUN;
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -4645,6 +4706,10 @@ int GameSession::Run( string fileN )
 			//delete (*it);
 		//}
 
+		if( state == RUN )
+		{
+			
+		
 		accumulator += frameTime;
 
 		window->clear();
@@ -4748,7 +4813,7 @@ int GameSession::Run( string fileN )
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			if( k || levelReset || player->dead || ( currInput.back && !prevInput.back ) )
+			if( k || levelReset || player->dead /*|| ( currInput.back && !prevInput.back )*/ )
 			{
 				levelReset = true;
 				totalGameFrames = 0;
@@ -5351,11 +5416,7 @@ int GameSession::Run( string fileN )
 			//player->maxFallSpeedSlo += maxFallSpeedFactor;
 			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
-		if( Keyboard::isKeyPressed( Keyboard::F ) )
-		{
-		//	player->maxFallSpeed -= maxFallSpeedFactor;
-		//	cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
-		}
+		
 
 
 		sf::Event ev;
@@ -6390,11 +6451,273 @@ int GameSession::Run( string fileN )
 
 		window->draw( preTexSprite );//, &cloneShader );
 		}
+		}
+		else if( state == PAUSE )
+		{
+			window->clear();
+			Sprite preTexSprite;
+			preTexSprite.setTexture( preScreenTex->getTexture() );
+			preTexSprite.setPosition( -960 / 2, -540 / 2 );
+			preTexSprite.setScale( .5, .5 );
+			window->draw( preTexSprite );
+		}
+		else if( state == MAP )
+		{
+			window->clear();
+			Sprite preTexSprite;
+			preTexSprite.setTexture( preScreenTex->getTexture() );
+			preTexSprite.setPosition( -960 / 2, -540 / 2 );
+			preTexSprite.setScale( .5, .5 );
+			window->draw( preTexSprite );
 
+			
+			prevInput = currInput;
+
+			//if( !cutPlayerInput )
+			//	player->prevInput = currInput;
+
+			if( !controller.UpdateState() )
+			{
+				bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+				bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+				bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+				bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
+
+			//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
+			//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
+			//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
+			//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
+
+				ControllerState keyboardInput;    
+				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
+				keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
+				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
+				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
+				//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
+				keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
+				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
+				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
+				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
+				keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
+				keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
+			
+				keyboardInput.rightStickPad = 0;
+				if( Keyboard::isKeyPressed( Keyboard::A ) )
+				{
+					keyboardInput.rightStickPad += 1 << 1;
+				}
+				else if( Keyboard::isKeyPressed( Keyboard::S ) )
+				{
+					keyboardInput.rightStickPad += 1;
+				}
+				
+				if( up && down )
+				{
+					if( prevInput.LUp() )
+						keyboardInput.leftStickPad += 1;
+					else if( prevInput.LDown() )
+						keyboardInput.leftStickPad += ( 1 && down ) << 1;
+				}
+				else
+				{
+					keyboardInput.leftStickPad += 1 && up;
+					keyboardInput.leftStickPad += ( 1 && down ) << 1;
+				}
+
+				if( left && right )
+				{
+					if( prevInput.LLeft() )
+					{
+						keyboardInput.leftStickPad += ( 1 && left ) << 2;
+					}
+					else if( prevInput.LRight() )
+					{
+						keyboardInput.leftStickPad += ( 1 && right ) << 3;
+					}
+				}
+				else
+				{
+					keyboardInput.leftStickPad += ( 1 && left ) << 2;
+					keyboardInput.leftStickPad += ( 1 && right ) << 3;
+				}
+
+				currInput = keyboardInput;
+			}
+			else
+			{
+				controller.UpdateState();
+				currInput = controller.GetState();
+			}
+
+			float fac = .05;
+			if( currInput.A )
+			{
+				mapZoomFactor -= fac * mapZoomFactor;
+			}
+			else if( currInput.B )
+			{
+				mapZoomFactor += fac * mapZoomFactor;
+			}
+
+			if( mapZoomFactor < 10.f )
+			{
+				mapZoomFactor = 10.f;
+			}
+			else if( mapZoomFactor > 32.f )
+			{
+				mapZoomFactor = 32.f;
+			}
+
+			float move = 20.0 * mapZoomFactor / 2.0;
+			if( currInput.LLeft() )
+			{
+				mapCenter.x -= move;
+			}
+			else if( currInput.LRight() )
+			{
+				mapCenter.x += move;
+			}
+			if( currInput.LUp() )
+			{
+				mapCenter.y -= move;
+			}
+			else if( currInput.LDown() )
+			{
+				mapCenter.y += move;
+			}
+
+			if( mapCenter.x < leftBounds )
+				mapCenter.x = leftBounds;
+			else if( mapCenter.x > leftBounds + boundsWidth )
+			{
+				mapCenter.x = leftBounds + boundsWidth;
+			}
+
+			if( mapCenter.y < topBounds )
+			{
+				mapCenter.y = topBounds;
+			}
+			else if( mapCenter.y > topBounds + boundsHeight )
+			{
+				mapCenter.y = topBounds + boundsHeight;
+			}
+
+			
+
+			//if( !cutPlayerInput )
+			//	player->currInput = currInput;
+
+
+			//double mapZoom = 16;
+
+			View vv;
+			vv.setCenter( mapCenter );
+			vv.setSize(  mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor );
+
+			mapTex->clear();
+			mapTex->setView( vv );
+			mapTex->clear( Color( 0, 0, 0, 255 ) );
+			
+		
+			queryMode = "border";
+			numBorders = 0;
+			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
+
+			borderTree->Query( this, mapRect );
+
+			Color testColor( 0x75, 0x70, 0x90, 191 );
+			testColor = Color::Green;
+			TestVA * listVAIter = listVA;
+			while( listVAIter != NULL )
+			{
+				int vertexCount = listVAIter->terrainVA->getVertexCount();
+				for( int i = 0; i < vertexCount; ++i )
+				{
+					(*listVAIter->terrainVA)[i].color = testColor;
+				}
+				mapTex->draw( *listVAIter->terrainVA );
+				for( int i = 0; i < vertexCount; ++i )
+				{
+					(*listVAIter->terrainVA)[i].color = Color::White;
+				}
+
+				listVAIter = listVAIter->next;
+			}
+
+			testGateCount = 0;
+			queryMode = "gate";
+			gateList = NULL;
+			gateTree->Query( this, mapRect );
+			Gate *mGateList = gateList;
+			while( gateList != NULL )
+			{
+				//gateList->Draw( preScreenTex );
+				if( gateList->locked )
+				{
+
+					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
+					V2d other( along.y, -along.x );
+					double width = 25;
+				
+				
+
+					V2d leftGround = gateList->edgeA->v0 + other * -width;
+					V2d rightGround = gateList->edgeA->v0 + other * width;
+					V2d leftAir = gateList->edgeA->v1 + other * -width;
+					V2d rightAir = gateList->edgeA->v1 + other * width;
+					//cout << "drawing color: " << gateList->c.b << endl;
+					sf::Vertex activePreview[4] =
+					{
+						//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
+						//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
+
+						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
+						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
+
+
+						sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->c ),
+
+					
+						sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->c )
+					};
+					mapTex->draw( activePreview, 4, sf::Quads );
+				}
+
+				Gate *next = gateList->next;//edgeA->edge1;
+				gateList = next;
+			}
+
+
+			//mapTex->clear();
+			Sprite mapTexSprite;
+			mapTexSprite.setTexture( mapTex->getTexture() );
+			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
+			mapTexSprite.setPosition( 0, 0 );
+			
+			mapTexSprite.setScale( .5, -.5 );
+			//mapTexSprite.setColor( Color::Red );
+			window->draw( mapTexSprite );
+
+		}
 
 		window->display();
 
-		
+		if( Keyboard::isKeyPressed( Keyboard::F ) )
+		{
+			state = PAUSE;
+		}
+		else if( state == RUN && ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
+		{
+			state = MAP;
+			mapCenter.x = player->position.x;
+			mapCenter.y = player->position.y;
+			mapZoomFactor = 16;	
+		}
+		else if( ( currInput.back && !prevInput.back ) && state == MAP )
+		{
+			state = RUN;
+		}
 	}
 
 	delete [] line;
@@ -9681,9 +10004,10 @@ void GameSession::UnlockGate( Gate *g )
 		for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
 		{
 			Gate *gg = (Gate*)(*it)->info;
-			if( gg == g )
+			if( gg == g || gg->gState == Gate::OPEN || gg->gState == Gate::DISSOLVE )
 				continue;
-			gg->gState = Gate::REFORM;
+
+			gg->gState = Gate::LOCKFOREVER;
 			//g->SetLocked();
 		}
 	}

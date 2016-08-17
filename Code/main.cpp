@@ -38,6 +38,7 @@ RenderTexture *postProcessTexture;
 RenderTexture *postProcessTexture1;
 RenderTexture *postProcessTexture2;
 RenderTexture *minimapTexture;
+RenderTexture *mapTexture;
 
 sf::Texture worldMapTex;
 sf::Sprite worldMapSpr;
@@ -95,7 +96,7 @@ void GameEditLoop( std::string filename)
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
 		GameSession *gs = new GameSession( controller, window, preScreenTexture, 
-			postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture );
+			postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 		
 		result = gs->Run( filename );
 		lastViewCenter = gs->lastViewCenter;
@@ -113,7 +114,8 @@ void GameEditLoop2( std::string filename)
 	while( result == 0 )
 	{
 		window->setView( v );
-		GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture );
+		GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture,
+			 mapTexture);
 		result = gs->Run( filename );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
@@ -175,7 +177,7 @@ struct CustomMapsHandler : GUIHandler
 			if( b->name == "Play" )
 			{
 				optionChosen = true;
-				GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture );
+				GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 				gs->Run( ls.localPaths[ls.selectedIndex] );
 				window->setView( uiView );
 				delete gs;
@@ -452,7 +454,7 @@ void CustomMapsOption( LevelSelector &ls )
 
 void NewCampaignOption()
 {
-	GameSession gs( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture );
+	GameSession gs( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture, mapTexture );
 	gs.Run( "Maps/aba.brknk" );
 
 }
@@ -494,6 +496,10 @@ int main()
 	minimapTexture = new RenderTexture;
 	minimapTexture->create( 300, 300 );
 	minimapTexture->clear();
+
+	mapTexture = new RenderTexture;
+	mapTexture->create( 800, 500 );
+	mapTexture->clear();
 
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
@@ -762,22 +768,22 @@ int main()
 						switch( currentMenuSelect )
 						{
 						case 0:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 							gs->Run( "Maps/1-1.brknk" );
 							//NewCampaignOption();
 							break;
 						case 1:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 							gs->Run( "Maps/1-2.brknk" );
 							//LoadCampaignOption();
 							break;
 						case 2:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 							gs->Run( "Maps/1-3.brknk" );
 							//CustomMapsOption( ls );
 							break;
 						case 3:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 							gs->Run( "Maps/1-4.brknk" );
 							//OptionsOption();
 							break;
@@ -850,29 +856,29 @@ int main()
 				switch( currentMenuSelect )
 				{
 				case 0:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 					gs->Run( "Maps/1-1.brknk" );
 					//NewCampaignOption();
 					break;
 				case 1:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 					gs->Run( "Maps/1-2.brknk" );
 					//LoadCampaignOption();
 					break;
 				case 2:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 					gs->Run( "Maps/1-3.brknk" );
 					//CustomMapsOption( ls );
 					break;
 				case 3:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 					gs->Run( "Maps/1-4.brknk" );
 					//OptionsOption();
 					break;
 				case 4:
 					//replace this before releasing
 					//CustomMapsOption( ls );
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture );
+					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 					gs->Run( "Maps/1-5.brknk" );
 					//ExitOption();
 					break;

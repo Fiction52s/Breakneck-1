@@ -275,21 +275,21 @@ struct Actor : QuadTreeCollider,
 
 	int wallJumpMovementLimit;
 
-	sf::SoundBuffer fairBuffer;
-	sf::Sound fairSound;
+	//sf::SoundBuffer fairBuffer;
+	//sf::Sound fairSound;
 
-	sf::SoundBuffer runTappingBuffer;
-	sf::Sound runTappingSound;
+	//sf::SoundBuffer runTappingBuffer;
+	//sf::Sound runTappingSound;
 
-	sf::SoundBuffer dashStartBuffer;
-	sf::Sound dashStartSound;
+	//sf::SoundBuffer dashStartBuffer;
+	//sf::Sound dashStartSound;
 
-	sf::SoundBuffer jumpBuffer;
-	sf::Sound jumpSound;
+	//sf::SoundBuffer jumpBuffer;
+	//sf::Sound jumpSound;
 
 
-	sf::SoundBuffer playerHitBuffer;
-	sf::Sound playerHitSound;
+	//sf::SoundBuffer playerHitBuffer;
+	//sf::Sound playerHitSound;
 
 	double dashHeight;
 	double normalHeight;

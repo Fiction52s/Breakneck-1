@@ -207,19 +207,51 @@ struct KeyNumberObj
 	int numKeys;
 };
 
-struct ScoreStats
+struct ScoreDisplay
 {
-	ScoreStats( GameSession *owner );
+	ScoreDisplay( GameSession *owner,
+		sf::Vector2f &position );
 	sf::Sprite score;
 	void Draw( sf::RenderTarget *target );
 	int numEnemiesTotal;
 	int numEnemiesKilled;
 	double numSeconds;
 	void Reset();
+	void SetScoreBarPos( int row, float xDiff );
+	//void Set
+
+	GameSession *owner;
+	Tileset *ts_scoreBar;
+	Tileset *ts_scoreContinue;
+	Tileset *ts_scoreSheet;
+	Tileset *ts_scoreSymbols;
+
+	sf::VertexArray scoreBarVA;
+	sf::Sprite scoreContinue;
+	sf::VertexArray scoreSymbolsVA;
+	sf::VertexArray scoreSheetVA;
+
+	sf::Vector2f basePos;
+	sf::Shader colorSwapShader;
+	//sf::Sprite scoreBar;
+};
+
+struct PauseMap
+{
+	PauseMap();
+	
 };
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
+	enum State
+	{
+		RUN,
+		PAUSE,
+		MAP
+	};
+
+	State state;
 	std::list<Tileset*> tilesetList;
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
@@ -236,7 +268,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::RenderTexture *postProc,
 		sf::RenderTexture *postProc1,
 		sf::RenderTexture *postProc2,
-		sf::RenderTexture *miniTex);
+		sf::RenderTexture *miniTex,
+		sf::RenderTexture *mapTex );
 	void TriggerBarrier( Barrier *b );
 
 	//Boss_Crawler *b_crawler;
@@ -454,12 +487,19 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderTexture *postProcessTex1;
 	sf::RenderTexture *postProcessTex2;
 	sf::RenderTexture *minimapTex;
+	sf::RenderTexture *mapTex;
+
+	sf::Vector2f mapCenter;
+	float mapZoomFactor;
+	
 	Tileset *ts_miniCircle;
 	sf::Sprite miniCircle;
 	Tileset *ts_minimapGateDirection;
 	sf::Sprite gateDirections[6];
 	sf::Sprite background;
 	sf::View bgView;
+
+
 
 	const static int NUM_CLOUDS = 5;
 	sf::Sprite clouds[NUM_CLOUDS];
