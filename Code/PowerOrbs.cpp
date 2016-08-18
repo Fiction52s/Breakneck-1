@@ -363,7 +363,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//activeStars = 12;
 	//starState = 0;
 	//starFrame = 0;
-	activeOrb = 0;
+	activeOrb = 5;
 	
 
 	numSections[TEAL0] = 15;
@@ -494,7 +494,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	
 	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
 
-	activeSection = 0;//numSections[orbColors[activeOrb]];
+	activeSection = numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 
 	SetVisibleSections( activeOrb, numSections[orbColors[activeOrb]], 2 );

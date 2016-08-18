@@ -429,7 +429,7 @@ Actor::Actor( GameSession *gs )
 		ts_goalKillArray[3] = owner->GetTileset( "goal_w02_killd_384x256.png", 384, 256 );
 		ts_goalKillArray[4] = owner->GetTileset( "goal_w02_kille_384x256.png", 384, 256 );
 
-		
+		actionLength[GOALKILLWAIT] = 2;
 
 		actionLength[SPAWNWAIT] = 60;
 		}
@@ -892,7 +892,12 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case GOALKILL:
-			action = EXIT;
+			action = GOALKILLWAIT;
+			frame = 0;
+			owner->scoreDisplay->Activate();
+			break;
+		case GOALKILLWAIT:
+			//action = EXIT;
 			frame = 0;
 			break;
 		case DEATH:
@@ -937,7 +942,7 @@ void Actor::CheckHoldJump()
 void Actor::UpdatePrePhysics()
 {
 	
-	if( !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT )
+	if( !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
 		if( drainCounter == drainCounterMax)
 		{
@@ -1141,6 +1146,22 @@ void Actor::UpdatePrePhysics()
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT )
 	{
+		return;
+	}
+	else if( action == GOALKILLWAIT )
+	{
+		if( currInput.A && !prevInput.A && owner->scoreDisplay->waiting )
+		{
+			//owner->scoreDisplay->Reset();
+			owner->scoreDisplay->Deactivate();
+			//owner->scoreDisplay->Activate();
+		}
+		
+		if( !owner->scoreDisplay->active )
+		{
+			action = EXIT;
+			frame = 0;
+		}
 		return;
 	}
 
@@ -7563,7 +7584,7 @@ void Actor::UpdateFullPhysics()
 //int blah = 0;
 void Actor::UpdatePhysics()
 {
-	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT )
+	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT )
 		return;
 	/*if( blah == 0 )
 	{
@@ -10586,7 +10607,7 @@ void Actor::UpdatePostPhysics()
 		}
 	}*/
 
-	if( hitGoal && action != GOALKILL && action != EXIT )
+	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
 		action = GOALKILL;
 		frame = 0;
@@ -12455,7 +12476,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 		
 		
-		if( action != DEATH && action != SPAWNWAIT && action != GOALKILL )
+		if( action != DEATH && action != SPAWNWAIT && action != GOALKILL && action != GOALKILLWAIT )
 		//if( action == RUN )
 		{
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
@@ -14499,8 +14520,8 @@ void Actor::UpdateSprite()
 			sprite->setTexture( *(tsT->texture));
 			sprite->setTextureRect( tsT->GetSubRect( 7 ) );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y + 96.f );
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );
 			sprite->setRotation( 0 );
 			break;
 		}

@@ -77,6 +77,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 
 	exploding = false;
 	kinKilling = false;
+	destroyed = false;
 	//kinKillFrame = 0;
 }
 
@@ -85,6 +86,7 @@ void Goal::ResetEnemy()
 	frame = 0;
 	exploding = false;
 	kinKilling = false;
+	destroyed = false;
 	//kinKillFrame = 0;
 	deathFrame = 0;
 }
@@ -126,7 +128,7 @@ void Goal::UpdatePrePhysics()
 			//	1, 0 );
 
 		}
-		if( frame == 72 * 2 )
+		if( frame == 46 * 2 )
 		{
 			exploding = true;
 			kinKilling = false;
@@ -137,7 +139,9 @@ void Goal::UpdatePrePhysics()
 	{
 		if( frame == 15 * 2 )
 		{
-			dead = true;
+			destroyed = true;
+			exploding = false;
+			//dead = true;
 		}
 	}
 }
@@ -145,7 +149,7 @@ void Goal::UpdatePrePhysics()
 void Goal::UpdatePhysics()
 {
 	specterProtected = false;
-	if( !dead && !kinKilling && !exploding )
+	if( !dead && !kinKilling && !exploding && !destroyed )
 	{
 		UpdateHitboxes();
 
@@ -336,6 +340,12 @@ void Goal::UpdateSprite()
 	else if( exploding )
 	{
 		trueFrame = frame / 2;
+		sprite.setTexture( *ts_explosion->texture );
+		sprite.setTextureRect( ts_explosion->GetSubRect( trueFrame ) );
+	}
+	else if( destroyed )
+	{
+		trueFrame = 14;
 		sprite.setTexture( *ts_explosion->texture );
 		sprite.setTextureRect( ts_explosion->GetSubRect( trueFrame ) );
 	}

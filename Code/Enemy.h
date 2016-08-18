@@ -406,6 +406,7 @@ struct Goal : Enemy
 	
 	bool exploding;
 	bool kinKilling;
+	bool destroyed;
 	//int kinKillFrame;
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;

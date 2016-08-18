@@ -217,9 +217,43 @@ struct ScoreDisplay
 	int numEnemiesKilled;
 	double numSeconds;
 	void Reset();
-	void SetScoreBarPos( int row, float xDiff );
+	void Activate();
+	void Deactivate();
+	bool active;
+	bool waiting;
 	//void Set
 
+	struct ScoreBar
+	{
+		enum State
+		{
+			NONE,
+			POP_OUT,
+			SHEET_APPEAR,
+			SYMBOL_DISPLAY,
+			SHEET_DISPLAY,
+			RETRACT
+		};
+
+		ScoreBar( int row, ScoreDisplay *parent );
+		void SetBarPos( float xDiff );
+		void SetSheetFrame( int frame );
+		void SetSymbolTransparency( float f );
+		void ClearSheet();
+		void Update();
+		int row;
+		State state;
+		int frame;
+		float xDiffPos;
+		ScoreDisplay *parent;
+		
+	};
+
+	void Update();
+
+	static const int NUM_BARS = 3;
+	ScoreBar *bars[NUM_BARS];
+	
 	GameSession *owner;
 	Tileset *ts_scoreBar;
 	Tileset *ts_scoreContinue;
@@ -251,6 +285,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		MAP
 	};
 
+	ScoreDisplay *scoreDisplay;
 	State state;
 	std::list<Tileset*> tilesetList;
 	KeyMarker *keyMarker;
