@@ -258,3 +258,18 @@ DWORD GameController::GetIndex()
 {
 	return m_index;
 }
+
+KeyboardFilter::KeyboardFilter()
+{
+	for( int i = 0; i < sf::Keyboard::KeyCount; ++i )
+	{
+		keyFilter[i] = (sf::Keyboard::Key)i;
+	}
+}
+
+sf::Keyboard::Key KeyboardFilter::Filter( sf::Keyboard::Key key )
+{
+	int i = (int)key;
+
+	return keyFilter[i];
+}

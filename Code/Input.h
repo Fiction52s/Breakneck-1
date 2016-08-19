@@ -2,6 +2,8 @@
 #define __INPUT_H__
 #include <Windows.h>
 #include <Xinput.h>
+#include <map>
+#include <SFML/Graphics.hpp>
 
 //true if down, false if up
 //^^make this more efficient if I'm using it for networking
@@ -57,7 +59,19 @@ struct ControllerState
 				 //0x8 = right
 };
 
+enum InputOptions
+{
 
+};
+
+struct KeyboardFilter
+{
+	KeyboardFilter();
+	bool LoadReplacements( const std::string &file );
+	sf::Keyboard::Key Filter( sf::Keyboard::Key key );
+	//std::map<sf::Keyboard::Key, sf::Keyboard::Key> filter;
+	sf::Keyboard::Key keyFilter[sf::Keyboard::KeyCount];
+};
 /** Remarks:
 Wrapper for XINPUT controller. Used to access the actual
 controllers and generate state information for use in the 

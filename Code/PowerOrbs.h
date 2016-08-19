@@ -99,6 +99,7 @@ struct PowerWheel
 	void UpdateSections();
 
 	int lifeTextureFrame;
+	int lifeTextureMultiple;
 
 
 	Tileset *ts_largeOrbs;

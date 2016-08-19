@@ -392,7 +392,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 
 	ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
 	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );
-	ts_lifeTexture = owner->GetTileset( "lifetexture_32x32.png", 32, 32 );
+	ts_lifeTexture = owner->GetTileset( "lifetexture_40x96.png", 40, 96 );
 
 	/*ts_largeOrbs = owner->GetTileset( "bluekey.png", 50, 50 );
 	ts_smallOrbs = owner->GetTileset( "bluekey.png", 50, 50 );*/
@@ -416,7 +416,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//Vector2f bPos( basePos.x, basePos.y );
 	//cout << "setting position small orb" << endl;
 
-	
+	lifeTextureMultiple = 7;
 	lifeTextureFrame = 0;
 	
 
@@ -650,7 +650,7 @@ void PowerWheel::SetStarPositions( int index, OrbColor oc )
 
 void PowerWheel::UpdateSections()
 {
-	if( lifeTextureFrame == 16 )
+	if( lifeTextureFrame == 4 * lifeTextureMultiple )
 	{
 		lifeTextureFrame = 0;
 	}
@@ -767,7 +767,7 @@ void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 
 	
 
-	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame );
+	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame / lifeTextureMultiple );
 	for( int i = 0; i < vSections; ++i )
 	{
 		va[i*3+0].color = Color::Red;
@@ -787,9 +787,9 @@ void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 		va[i*3+1].color = Color::Blue;
 		va[i*3+2].color = Color::Blue;
 
-		va[i*3+0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
-		va[i*3+1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
-		va[i*3+2].texCoords = Vector2f( ir.left, ir.top );//Vector2f( 32, 32 );
+		//va[i*3+0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
+		//va[i*3+1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
+		//va[i*3+2].texCoords = Vector2f( ir.left, ir.top );//Vector2f( 32, 32 );
 
 		//va[i].color = Color::Blue;
 	}
@@ -836,7 +836,7 @@ void PowerWheel::SetVisibleCurrentSection( int orbIndex, int currentSection, flo
 	va[1].color = Color::Red;
 	va[2].color = Color::Red;
 
-	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame );
+	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame / lifeTextureMultiple );
 	va[0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
 	va[1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
 	va[2].texCoords = Vector2f( ir.left, ir.top );
