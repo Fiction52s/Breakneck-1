@@ -169,6 +169,9 @@ struct Boss_Tiger;
 struct Boss_Gator;
 struct Boss_Skeleton;
 struct GameSession;
+
+
+
 struct KeyMarker
 {
 	enum State
@@ -284,7 +287,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		PAUSE,
 		MAP
 	};
-
 	ScoreDisplay *scoreDisplay;
 	State state;
 	std::list<Tileset*> tilesetList;

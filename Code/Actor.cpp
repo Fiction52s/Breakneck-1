@@ -10882,7 +10882,7 @@ void Actor::UpdatePostPhysics()
 		}
 
 		++frame;
-		cout << "frame: " << frame << endl;
+		//cout << "frame: " << frame << endl;
 
 		++framesSinceClimbBoost;
 

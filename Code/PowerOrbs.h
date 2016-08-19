@@ -98,12 +98,16 @@ struct PowerWheel
 	void Charge( int power );
 	void UpdateSections();
 
+	int lifeTextureFrame;
+
 
 	Tileset *ts_largeOrbs;
 	Tileset *ts_smallOrbs;
+	Tileset *ts_lifeTexture;
 	//sf::Texture largeOrbTex;
 	//sf::Texture smallOrbTex;
 	sf::Sprite largeOrb;
+	sf::Shader lifeTextureShader;
 
 	int testBlah;
 

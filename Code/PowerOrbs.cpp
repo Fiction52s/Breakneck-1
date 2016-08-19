@@ -366,26 +366,33 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	activeOrb = 5;
 	
 
-	numSections[TEAL0] = 15;
-	numSections[TEAL1] = 15;
-	numSections[TEAL2] = 15;
-	numSections[TEAL3] = 15;
-	numSections[TEAL4] = 15;
-	numSections[TEAL5] = 15;
-	numSections[BLUE] = 16;
-	numSections[GREEN] = 18;
-	numSections[YELLOW] = 20;
-	numSections[ORANGE] = 21;
-	numSections[RED] = 24;
-	numSections[MAGENTA] = 25;
+	numSections[TEAL0] =   15;
+	numSections[TEAL1] =   15;
+	numSections[TEAL2] =   15;
+	numSections[TEAL3] =   15;
+	numSections[TEAL4] =   15;
+	numSections[TEAL5] =   15;
+	numSections[BLUE] =    15;//16;
+	numSections[GREEN] =   15;//18;
+	numSections[YELLOW] =  15;//20;
+	numSections[ORANGE] =  15;//21;
+	numSections[RED] =     15;//24;
+	numSections[MAGENTA] = 15;//25;
 
 	
+	//if (!lifeTextureShader.loadFromFile("lifetexture_shader.frag", sf::Shader::Fragment))
+	////if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	//{
+	//	cout << "life texture SHADER NOT LOADING CORRECTLY" << endl;
+	//	assert( 0 && "life texture shader not loaded" );
+	//}
 	
 	//ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
 	//ts_smallOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );//owner->GetTileset( "lifeS_64x64.png", 64, 64 );
 
 	ts_largeOrbs = owner->GetTileset( "lifeL_192x192.png", 192, 192 );
 	ts_smallOrbs = owner->GetTileset( "lifeS_64x64.png", 64, 64 );
+	ts_lifeTexture = owner->GetTileset( "lifetexture_32x32.png", 32, 32 );
 
 	/*ts_largeOrbs = owner->GetTileset( "bluekey.png", 50, 50 );
 	ts_smallOrbs = owner->GetTileset( "bluekey.png", 50, 50 );*/
@@ -410,7 +417,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//cout << "setting position small orb" << endl;
 
 	
-
+	lifeTextureFrame = 0;
 	
 
 	bool end = false;
@@ -643,12 +650,23 @@ void PowerWheel::SetStarPositions( int index, OrbColor oc )
 
 void PowerWheel::UpdateSections()
 {
+	if( lifeTextureFrame == 16 )
+	{
+		lifeTextureFrame = 0;
+	}
 	//cout << "update start: " << activeOrb << ", " << activeSection << ", " << activeLevel << endl;
 	SetVisibleSections( activeOrb, activeSection, activeLevel );
+
+
+
+
+	++lifeTextureFrame;
+
 }
 
 void PowerWheel::Reset()
 {
+	lifeTextureFrame = 0;
 	activeOrb = 5;
 	activeSection = numSections[orbColors[activeOrb]];
 	activeLevel = 6;
@@ -664,8 +682,8 @@ void PowerWheel::Draw( sf::RenderTarget *target )
 	
 	target->draw( smallOrbVA, ts_smallOrbs->texture );
 	target->draw( largeOrb );
-	target->draw( *orbSectionVA[activeOrb] );
-	target->draw( partialSectionVA );
+	target->draw( *orbSectionVA[activeOrb], ts_lifeTexture->texture );
+	target->draw( partialSectionVA, ts_lifeTexture->texture );
 	target->draw( test );
 //	target->draw( *orbMidSectionVA[activeOrb] );
 //	target->draw( *orbSmallSectionVA[activeOrb] );
@@ -746,20 +764,33 @@ void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 
 	if( currentLevel != 6 )
 		vSections--;
+
+	
+
+	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame );
 	for( int i = 0; i < vSections; ++i )
 	{
 		va[i*3+0].color = Color::Red;
 		va[i*3+1].color = Color::Red;
 		va[i*3+2].color = Color::Red;
+		va[i*3+0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
+		va[i*3+1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
+		va[i*3+2].texCoords = Vector2f( ir.left, ir.top );
 	}
 	
 	int vertexCount = va.getVertexCount();
 	int totalSections = vertexCount / 3;
+	
 	for( int i = vSections; i < totalSections; ++i )
 	{
 		va[i*3+0].color = Color::Blue;
 		va[i*3+1].color = Color::Blue;
 		va[i*3+2].color = Color::Blue;
+
+		va[i*3+0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
+		va[i*3+1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
+		va[i*3+2].texCoords = Vector2f( ir.left, ir.top );//Vector2f( 32, 32 );
+
 		//va[i].color = Color::Blue;
 	}
 
@@ -804,6 +835,11 @@ void PowerWheel::SetVisibleCurrentSection( int orbIndex, int currentSection, flo
 	va[0].color = Color::Red;
 	va[1].color = Color::Red;
 	va[2].color = Color::Red;
+
+	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame );
+	va[0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
+	va[1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
+	va[2].texCoords = Vector2f( ir.left, ir.top );
 }
 
 VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
@@ -823,6 +859,7 @@ VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
 		sva[i].color = Color::Red;
 	}
 
+	
 	//sva[0].position = trueBase;
 	for( int i = 0; i < sectionCount; ++i )
 	{
@@ -832,6 +869,9 @@ VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
 		sva[i*3+2].position = trueBase + tr.transformPoint( offset );
 		//sva[i].position = trueBase + 
 	}
+
+	//Vector2f diff0 = sva[2].position - sva[1].position;
+	//cout << "diff0: " << sqrt(( diff0.x * diff0.x ) + (diff0.y * diff0.y )) << endl;//diff0.x << ", " << diff0.y << endl;
 
 	return sVA;
 }

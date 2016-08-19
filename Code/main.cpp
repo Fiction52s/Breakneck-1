@@ -19,6 +19,7 @@
 #include <boost/filesystem.hpp>
 #include "Primitive3D.h"
 #include <SFML/OpenGL.hpp>
+#include "WorldMap.h"
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -39,6 +40,9 @@ RenderTexture *postProcessTexture1;
 RenderTexture *postProcessTexture2;
 RenderTexture *minimapTexture;
 RenderTexture *mapTexture;
+
+WorldMap *worldMap;
+
 
 sf::Texture worldMapTex;
 sf::Sprite worldMapSpr;
@@ -476,6 +480,8 @@ void ExitOption()
 
 int main()
 {
+	worldMap = new WorldMap();
+
 	preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 1920, 1080 );
 	preScreenTexture->clear();
@@ -768,9 +774,10 @@ int main()
 						switch( currentMenuSelect )
 						{
 						case 0:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-							gs->Run( "Maps/1-1.brknk" );
-							//NewCampaignOption();
+							//gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+							//gs->Run( "Maps/1-1.brknk" );
+							worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+							worldMap->frame = 0;
 							break;
 						case 1:
 							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
@@ -934,10 +941,14 @@ int main()
 			}
 		}
 
+		worldMap->Update();
+
 		//window->pushGLStates();
 		window->setView( v );
 		window->draw( titleSprite );
 		window->draw( menu );	
+
+		worldMap->Draw( window );
 		//window->popGLStates();
 		
 		//window->setView( window->getDefaultView() );

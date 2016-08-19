@@ -20,6 +20,7 @@
 #include "SoundManager.h"
 #include "BarrierReactions.h"
 
+
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
 
@@ -560,6 +561,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
 {
+	
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ) );
 	player = new Actor( this );
 	currentZone = NULL;
