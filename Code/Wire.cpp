@@ -19,6 +19,7 @@ Wire::Wire( Actor *p, bool r)
 	minSideEdge = NULL;
 	minSideOther = -1;
 	minSideAlong = -1;
+	//lockEdge = NULL;
 }
 
 void Wire::UpdateState( bool touchEdgeWithWire )
@@ -708,7 +709,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	else if( edge->edgeType == Edge::CLOSED_GATE )
 	{
 		Gate *g = (Gate*)edge->info;
-		if( g->type != Gate::BLACK && g->gState != Gate::LOCKFOREVER )
+		if( g->type != Gate::BLACK && g->gState != Gate::LOCKFOREVER && g->gState != Gate::HARD )
 		{
 			rayCancel = true;
 			return;

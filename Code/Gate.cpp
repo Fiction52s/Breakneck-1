@@ -285,6 +285,17 @@ void Gate::Update()
 		{
 			gState = SOFT; //SOFTEN
 			frame = 0;
+
+			Wire *rw = owner->player->rightWire;
+			Wire *lw = owner->player->leftWire;
+			if( rw != NULL && rw->anchor.e == edgeA || rw->anchor.e == edgeB )
+			{
+				rw->Reset();
+			}
+			if( lw != NULL && lw->anchor.e == edgeA || lw->anchor.e == edgeB )
+			{
+				lw->Reset();
+			}
 		}
 	}
 

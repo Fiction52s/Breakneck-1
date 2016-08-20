@@ -5071,7 +5071,7 @@ int GameSession::Run( string fileN )
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			if( k || levelReset || player->dead /*|| ( currInput.back && !prevInput.back )*/ )
+			if( k || levelReset || player->dead || (currInput.start && !prevInput.start )/*|| ( currInput.back && !prevInput.back )*/ )
 			{
 				levelReset = true;
 				totalGameFrames = 0;
@@ -6556,6 +6556,7 @@ int GameSession::Run( string fileN )
 			gds.setPosition( miniCircle.getPosition() );
 		}*/
 		
+		kinMinimapIcon.setPosition( 180, preScreenTex->getSize().y - 180 );
 		preScreenTex->draw( kinMinimapIcon );
 	//minimapSprite.draw( preScreenTex );
 		//preScreenTex->draw( minimapSprite, &minimapShader );
@@ -6732,6 +6733,7 @@ int GameSession::Run( string fileN )
 			window->draw( preTexSprite );
 
 			
+			
 			prevInput = currInput;
 
 			//if( !cutPlayerInput )
@@ -6879,7 +6881,11 @@ int GameSession::Run( string fileN )
 			mapTex->setView( vv );
 			mapTex->clear( Color( 0, 0, 0, 255 ) );
 			
-		
+			View vuiView;
+			vuiView.setSize( Vector2f( mapTex->getSize().x, mapTex->getSize().y ) );
+			vuiView.setCenter( 0, 0 );
+			
+
 			queryMode = "border";
 			numBorders = 0;
 			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
@@ -6950,6 +6956,14 @@ int GameSession::Run( string fileN )
 			}
 
 
+			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( originalPos.x, originalPos.y ) );
+
+			mapTex->setView( vuiView );
+
+			Vector2f realPos = mapTex->mapPixelToCoords( b );
+
+			kinMinimapIcon.setPosition( realPos );
+			mapTex->draw( kinMinimapIcon );
 			//mapTex->clear();
 			Sprite mapTexSprite;
 			mapTexSprite.setTexture( mapTex->getTexture() );
@@ -10259,6 +10273,8 @@ void GameSession::UnlockGate( Gate *g )
 		g->activeNext = unlockedGateList;
 		unlockedGateList = g;
 	}
+
+	//if( player->rightWire != NULL && player->rightWire->a
 
 	if( currentZone != NULL )
 	{

@@ -7690,27 +7690,80 @@ void Actor::UpdatePhysics()
 				if( extra > 0 )
 				{
 					movement -= gLen - q;
+					
+					
+					V2d v0 = grindEdge->v0;
+					V2d v1 = grindEdge->v1;
+					
+
+					if( e1->edgeType == Edge::CLOSED_GATE )
+					{
+						Gate *gg = (Gate*)e1->info;
+						if( gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN )
+						{
+							if( CanUnlockGate( gg ) )
+							{
+								//cout << "unlock gate" << endl;
+								owner->UnlockGate( gg );
+
+								if( e1 == gg->edgeA )
+								{
+									gateTouched = gg->edgeB;
+
+									//owner->ActivateZone( g->zoneB );
+								}
+								else
+								{
+									gateTouched = gg->edgeA;
+									//owner->ActivateZone( g->zoneA );
+								}
+								
+								e1 = grindEdge->edge1;
+							}
+						}
+					}
 					grindEdge = e1;
 					q = 0;
-					V2d v0 = grindEdge->v0;
+					//sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
+					//sf::Rect<double> r( ( v0.x + v1.x ) / 2 - 1, ( v0.y + v1.y ) / 2 - 1, 2, 2 );
+					//queryMode = "gate";
+					//owner->testGateCount = 0;
+					//owner->gateTree->Query( this, r );
 
-					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
-					/*queryMode = "gate";
-					owner->testGateCount = 0;
-					owner->gateTree->Query( this, r );
+					//Gate *currg = owner->gateList;
+					//while( currg != NULL )
+					//{
+					//	if( CanUnlockGate( currg ) )
+					//	{
+					//		cout << "unlock gate" << endl;
+					//		owner->UnlockGate( currg );
 
-					if( owner->testGateCount > 0 )
-					{
-						action = DEATH;
+					//		if( e0 == currg->edgeA )
+					//		{
+					//			gateTouched = currg->edgeB;
+
+					//			//owner->ActivateZone( g->zoneB );
+					//		}
+					//		else
+					//		{
+					//			gateTouched = currg->edgeA;
+					//			//owner->ActivateZone( g->zoneA );
+					//		}
+					//		//break;
+					//	}
+					//	currg = currg->next;
+					//}
+					
+						/*action = DEATH;
 						rightWire->Reset();
 						leftWire->Reset();
 						slowCounter = 1;
 						frame = 0;
 						owner->deathWipe = true;
 
-						owner->powerBar.Damage( 1000000 );
-						return;
-					}*/
+						owner->powerBar.Damage( 1000000 );*/
+						//return;
+					
 					
 				}
 				else
@@ -7745,8 +7798,38 @@ void Actor::UpdatePhysics()
 						return;
 					}*/
 
+					
+					//q = length( e0->v1 - e0->v0 );
+
+
+					if( e0->edgeType == Edge::CLOSED_GATE )
+					{
+						Gate *gg = (Gate*)e0->info;
+						if( gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN )
+						{
+							if( CanUnlockGate( gg ) )
+							{
+								//cout << "unlock gate" << endl;
+								owner->UnlockGate( gg );
+
+								if( e0 == gg->edgeA )
+								{
+									gateTouched = gg->edgeB;
+
+									//owner->ActivateZone( g->zoneB );
+								}
+								else
+								{
+									gateTouched = gg->edgeA;
+									//owner->ActivateZone( g->zoneA );
+								}
+								
+								e0 = grindEdge->edge0;
+							}
+						}
+					}
 					grindEdge = e0;
-					q = length( e0->v1 - e0->v0 );
+					q = length( grindEdge->v1 - grindEdge->v0 );
 				}
 				else
 				{
@@ -12231,43 +12314,55 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			++testGrassCount;
 		}
 	}
-	/*else if( queryMode == "gate" )
-	{
-		Gate *g = (Gate*)qte;
-		
-		if( action == GRINDBALL )
-		{
-			if( g->locked && ( g->edgeA->v0 == grindEdge->v0 || g->edgeA->v1 == grindEdge->v0 ) )
-			{
-				if( g->keyGate && hasKey[g->type] )
-				{
-					g->locked = false;
-					hasKey[g->type] = false;
-				}
-				else
-				{
-					++owner->testGateCount;
-				}
-			}
-		}
-		else
-		{
-			Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-			cout << "this better not be happening lol" << endl;
-			if( g->locked && g->edgeA->IsTouchingBox( r ) )
-			{
-				if( g->keyGate && hasKey[g->type] )
-				{
-					g->locked = false;
-					hasKey[g->type] = false;
-				}
-				else
-				{
-					++owner->testGateCount;
-				}
-			}
-		}
-	}*/
+	//else if( queryMode == "gate" )
+	//{
+	//	Gate *g = (Gate*)qte;
+	//	
+	//	if( action == GRINDBALL )
+	//	{
+	//		if( g->locked && ( g->edgeA->v0 == grindEdge->v0 || g->edgeA->v1 == grindEdge->v0 ) )
+	//		{
+	//			if( CanUnlockGate( g )
+	//			{
+	//				owner->UnlockGate( g );
+
+	//				if( e0 == g->edgeA )
+	//				{
+	//					gateTouched = g->edgeB;
+	//				//	owner->ActivateZone( g->zoneB );
+	//				}
+	//				else
+	//				{
+	//					gateTouched = g->edgeA;
+	//				//	owner->ActivateZone( g->zoneA );
+	//				}
+	//				//g->locked = false;
+	//				//hasKey[g->type] = false;
+	//			}
+	//			else
+	//			{
+	//				++owner->testGateCount;
+	//			}
+	//		}
+	//	}
+	//	else
+	//	{
+	//		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	//		cout << "this better not be happening lol" << endl;
+	//		if( g->locked && g->edgeA->IsTouchingBox( r ) )
+	//		{
+	//			if( g->keyGate && hasKey[g->type] )
+	//			{
+	//				g->locked = false;
+	//				hasKey[g->type] = false;
+	//			}
+	//			else
+	//			{
+	//				++owner->testGateCount;
+	//			}
+	//		}
+	//	}
+	//}
 	else if( queryMode == "item" )
 	{
 		Critical *c = (Critical*)qte;

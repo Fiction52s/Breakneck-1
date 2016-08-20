@@ -54,6 +54,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	bool clockwise;
 	sf::Vector2<double> storedPlayerPos;
 
+
 	sf::Vector2i offset;
 	int addedPoints;
 	bool right;
