@@ -14,6 +14,8 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		speedParticleRate = 20;
+		speedParticleCounter = 1;
 		followerPos = V2d( 0, 0 );
 		followerVel = V2d( 0, 0 );
 		followerFac = 1.0 / 60.0;
@@ -249,7 +251,7 @@ Actor::Actor( GameSession *gs )
 		cb.offset.x = 36;
 		cb.offset.y = -6;
 		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j < 8; ++j )
+		for( int j = 0; j < 6 * 4; ++j )
 		{
 			standHitboxes[j] = new list<CollisionBox>;
 			standHitboxes[j]->push_back( cb );
@@ -349,7 +351,7 @@ Actor::Actor( GameSession *gs )
 		tileset[DASHATTACK] = owner->GetTileset( "dash_attack_128x96.png", 128, 96 );
 		normal[DASHATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[STANDN] = 4 * 3;
+		actionLength[STANDN] = 4 * 4;
 		tileset[STANDN] = owner->GetTileset( "standn_96x64.png", 96, 64 );
 		normal[STANDN] = owner->GetTileset( "standn_NORMALS.png", 128, 64 );
 
@@ -372,6 +374,14 @@ Actor::Actor( GameSession *gs )
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide_80x48.png", 80, 48 );
 		normal[STEEPSLIDE] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
+
+		actionLength[STEEPCLIMBATTACK] = 4 * 3;
+		tileset[STEEPCLIMBATTACK] = owner->GetTileset( "climb_att_128x48.png", 128, 48 );
+		normal[STEEPCLIMBATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
+
+		actionLength[STEEPSLIDEATTACK] = 6 * 2;
+		tileset[STEEPSLIDEATTACK] = owner->GetTileset( "steep_att_80x64.png", 80, 64 );
+		normal[STEEPSLIDEATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
 		actionLength[AIRDASH] = 27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
@@ -472,6 +482,14 @@ Actor::Actor( GameSession *gs )
 		ts_wallAttackSword[0] = owner->GetTileset( "wall_sworda_128x256.png", 128, 256 );
 		ts_wallAttackSword[1] = owner->GetTileset( "wall_swordb_128x288.png", 128, 288 );
 		ts_wallAttackSword[2] = owner->GetTileset( "wall_swordc_160x384.png", 160, 384 );
+
+		ts_steepSlideAttackSword[0] = owner->GetTileset( "steep_att_sworda_288x128.png", 288, 128 );
+		ts_steepSlideAttackSword[1] = owner->GetTileset( "steep_att_swordb_320x144.png", 320, 144 );
+		ts_steepSlideAttackSword[2] = owner->GetTileset( "steep_att_swordc_352x156.png", 352, 156 );
+
+		ts_steepClimbAttackSword[0] = owner->GetTileset( "climb_att_sworda_256x80.png", 256, 80 );
+		ts_steepClimbAttackSword[1] = owner->GetTileset( "climb_att_swordb_320x96.png", 320, 96 );
+		ts_steepClimbAttackSword[2] = owner->GetTileset( "climb_att_swordc_352x112.png", 352, 112 );
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
 
@@ -679,6 +697,8 @@ Actor::Actor( GameSession *gs )
 		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
+		ts_fx_chargeBlue = owner->GetTileset( "speed_charge_blue_96x16.png", 96, 16 );
+		ts_fx_chargePurple = owner->GetTileset( "speed_charge_purp_96x16.png", 96, 16 );
 
 		bool noPowers = false;
 		if( noPowers )
@@ -812,6 +832,14 @@ void Actor::ActionEnded()
 			break;
 		case WALLATTACK:
 			SetActionExpr( WALLCLING );
+			frame = 0;
+			break;
+		case STEEPCLIMBATTACK:
+			SetActionExpr( STEEPCLIMB );
+			frame = 0;
+			break;
+		case STEEPSLIDEATTACK:
+			SetActionExpr( STEEPSLIDE );
 			frame = 0;
 			break;
 		case DAIR:
@@ -1127,7 +1155,6 @@ void Actor::UpdatePrePhysics()
 		//cout << "recordedGhosts: " << recordedGhosts << endl;
 		owner->powerBar.Charge( 20 );
 	}
-
 
 
 	if( reversed )
@@ -3014,13 +3041,259 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
+			if( currAttackHit && frame > 0 )
+			{
+				if( hasPowerBounce && currInput.X && !bounceFlameOn )
+				{
+
+					//bounceGrounded = true;
+					bounceFlameOn = true;
+					runBounceFrame = 0;
+				}
+				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+				{
+					//bounceGrounded = false;
+					bounceFlameOn = false;
+				}
+
+				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
+				{
+					bounceFlameOn = false;
+					SetActionGrind();
+					//dashStartSound.setLoop( false );
+					////runTappingSound.stop();
+					break;
+				}
+
+				if( reversed )
+				{
+					if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+					{
+						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+						{
+							action = STEEPCLIMB;
+							frame = 0;
+							break;
+						}
+						else
+						{
+							action = STEEPSLIDE;
+							frame = 0;
+							break;
+						}
+					}
+				}
+				else
+				{
+					if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+					{
+						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+						{
+							//cout << "steep clzzzimb" << endl;
+							action = STEEPCLIMB;
+							frame = 0;
+							break;
+						}
+						else
+						{
+							action = STEEPSLIDE;
+							frame = 0;
+							break;
+						}
+					}
+				}
+
+				if( currInput.A && !prevInput.A )
+				{
+					SetActionExpr( JUMPSQUAT );
+					bufferedAttack = false;
+					frame = 0;
+					break;
+				}
+
+				if( currInput.rightShoulder && !prevInput.rightShoulder )
+				{
+					GroundAttack();
+					break;
+				}
+			}
 			break;
 		}
 	case DASHATTACK:
 		{
+			if( currAttackHit && frame > 0 )
+			{
+				if( hasPowerBounce && currInput.X && !bounceFlameOn )
+				{
+
+					//bounceGrounded = true;
+					bounceFlameOn = true;
+					runBounceFrame = 0;
+				}
+				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+				{
+					//bounceGrounded = false;
+					bounceFlameOn = false;
+				}
+
+				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
+				{
+					bounceFlameOn = false;
+					SetActionGrind();
+					//dashStartSound.setLoop( false );
+					////runTappingSound.stop();
+					break;
+				}
+
+				if( reversed )
+				{
+					if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+					{
+						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+						{
+							action = STEEPCLIMB;
+							frame = 0;
+							break;
+						}
+						else
+						{
+							action = STEEPSLIDE;
+							frame = 0;
+							break;
+						}
+					}
+				}
+				else
+				{
+					if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+					{
+						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+						{
+							//cout << "steep clzzzimb" << endl;
+							action = STEEPCLIMB;
+							frame = 0;
+							break;
+						}
+						else
+						{
+							action = STEEPSLIDE;
+							frame = 0;
+							break;
+						}
+					}
+				}
+
+				if( currInput.A && !prevInput.A )
+				{
+					SetActionExpr( JUMPSQUAT );
+					bufferedAttack = false;
+					frame = 0;
+					break;
+				}
+
+				if( currInput.rightShoulder && !prevInput.rightShoulder )
+				{
+					GroundAttack();
+					break;
+				}
+			}
 			break;
 		}
+	case STEEPSLIDEATTACK:
+		{
+			if( currAttackHit && frame > 0 )
+			{
+				if( hasPowerBounce && currInput.X && !bounceFlameOn )
+				{
+					//bounceGrounded = true;
+					bounceFlameOn = true;
+					runBounceFrame = 0;
+				}
+				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+				{
+					//bounceGrounded = false;
+					bounceFlameOn = false;
+				}
 
+				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
+				{
+					SetActionGrind();
+					break;
+				}
+
+				if( currInput.A && !prevInput.A )
+				{
+					SetActionExpr( JUMPSQUAT );
+					bufferedAttack = false;
+					frame = 0;
+					break;
+				}
+
+				if( currInput.rightShoulder && !prevInput.rightShoulder )
+				{
+					action = STEEPSLIDEATTACK;
+					frame = 0;
+					break;
+				}
+
+				if( currInput.B && !prevInput.B )
+				//if( currInput.A && !prevInput.A )
+				{
+					if( gNorm.x < 0 && currInput.LRight() )
+					{
+						action = STEEPCLIMB;
+						facingRight = true;
+						groundSpeed = 10;
+						frame = 0;
+					}
+					else if( gNorm.x > 0 && currInput.LLeft() )
+					{
+						action = STEEPCLIMB;
+						facingRight = false;
+						groundSpeed = -10;
+						frame = 0;
+					}
+					break;
+				}
+
+				if( reversed )
+				{
+					if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+					{
+						action = LAND2;
+						frame = 0;
+					}
+				}
+				else
+				{
+					if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+					{
+						cout << "is it really this wtf" << endl;
+						action = LAND2;
+						frame = 0;
+						//not steep
+					}
+					else
+					{
+						//is steep
+						if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
+						{
+							action = STEEPCLIMB;
+							frame = 1;
+						}
+					}
+				}
+			}
+			break;
+		}
+	case STEEPCLIMBATTACK:
+		{
+			if( currAttackHit && frame > 0 )
+			{
+				
+			}
+			break;
+		}
 	case GRINDBALL:
 		{
 		
@@ -3228,6 +3501,13 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				action = STEEPSLIDEATTACK;
+				frame = 0;
+				break;
+			}
+
 			if( currInput.B && !prevInput.B )
 			//if( currInput.A && !prevInput.A )
 			{
@@ -3270,43 +3550,6 @@ void Actor::UpdatePrePhysics()
 					action = LAND2;
 					frame = 0;
 					//not steep
-				/*if( currInput.LLeft() || currInput.RRight() )
-				{
-					if( currInput.LLeft() && currInput.LDown() && gNorm.x < 0 )
-					{
-						action = SPRINT;
-						frame = 0;
-					}
-					else if( currInput.LLeft() && currInput.LUp() && gNorm.x > 0 )
-					{
-						action = SPRINT;
-						frame = 0;
-					}
-					else if( currInput.LRight() && currInput.LDown() && gNorm.x > 0 )
-					{
-						action = SPRINT;
-						frame = 0;
-					}
-					else if( currInput.LRight() && currInput.LUp() && gNorm.x < 0 )
-					{
-						action = SPRINT;
-						frame = 0;
-					}
-					else
-					{
-						action = RUN;
-						frame = 0;
-					}
-				}
-				else
-				{
-					if( currInput.LDown() )
-					{
-						action = SLIDE;
-						frame = 0;
-					}
-					else
-				}*/
 				}
 				else
 				{
@@ -3581,6 +3824,7 @@ void Actor::UpdatePrePhysics()
 
 
 				SetActionExpr( JUMP );
+				velocity = storedBounceVel;
 				frame = 1;
 				bounceFlameOn = false;
 				bounceEdge = NULL;
@@ -4619,6 +4863,11 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = standHitboxes[frame];
 			}
 
+			if( frame == 0 )
+			{
+				currAttackHit = false;
+			}
+
 			AttackMovement();
 			break;
 
@@ -4628,6 +4877,11 @@ void Actor::UpdatePrePhysics()
 			if( dashHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = dashHitboxes[frame];
+			}
+
+			if( frame == 0 )
+			{
+				currAttackHit = false;
 			}
 
 			AttackMovement();
@@ -8248,7 +8502,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-					
+					//cout << "air because wall" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -8539,7 +8793,7 @@ void Actor::UpdatePhysics()
 								{
 									movementVec.x = .01;
 								}
-							//	cout << "real slope jump C" << endl;
+								cout << "real slope jump C" << endl;
 								leftGround = true;
 								SetActionExpr( JUMP );
 								frame = 1;
@@ -8629,6 +8883,7 @@ void Actor::UpdatePhysics()
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
+							//cout << "right wall" << endl;
 							if( e1->edgeType == Edge::CLOSED_GATE )
 							{
 							//	cout << "similar secret but not reversed A" << endl;
@@ -8666,6 +8921,7 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
+							//cout << "LEFT GROUND" << endl;
 							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						
 							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
@@ -8942,7 +9198,7 @@ void Actor::UpdatePhysics()
 								//if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
 
 								//might cause some weird stuff w/ bounce but i can figure it out later
-								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
+								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 && !bounceFlameOn )
 								{
 									assert( abs(eNorm.x ) > wallThresh );
 							//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
@@ -9909,6 +10165,7 @@ void Actor::PhysicsResponse()
 				hasAirDash = true;
 				lastWire = 0;
 
+
 				if( abs( storedBounceVel.y ) < 10 )
 				{
 					//cout << "land: " << abs(storedBounceVel.y) << endl;
@@ -10711,6 +10968,80 @@ void Actor::UpdatePostPhysics()
 		}
 		break;
 	}
+
+	double speed;
+	if( ground != NULL ) //ground
+	{
+		speed = abs(groundSpeed);
+	}
+	else //air
+	{
+		speed = length( velocity );
+	}
+
+	if( speed > currentSpeedBar )
+	{
+		currentSpeedBar += speedChangeUp;
+		if( currentSpeedBar > speed )
+			currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
+	}
+	else if( speed < currentSpeedBar )
+	{
+		currentSpeedBar -= speedChangeDown;
+		if( currentSpeedBar < speed )
+		{
+			currentSpeedBar = speed;
+		}
+		//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
+	}
+
+	if( currentSpeedBar >= level2SpeedThresh )
+	{
+		speedLevel = 2;
+	}
+	else if( currentSpeedBar >= level1SpeedThresh )
+	{
+		speedLevel = 1;
+	}
+	else
+	{
+		speedLevel = 0;
+	}
+
+	if( speedParticleCounter == speedParticleRate )
+	{
+		if( speedLevel == 1 )
+		{
+			if( ground != NULL )
+			{
+				double angle = GroundedAngle();
+				V2d groundPos = ground->GetPoint( edgeQuantity );
+				owner->ActivateEffect( ts_fx_chargeBlue, groundPos + gn * 56.0, false, angle, 6, 3, facingRight );
+			}
+			else
+			{
+				double angle = atan2( gn.x, gn.y );
+				owner->ActivateEffect( ts_fx_chargeBlue, position, false, angle, 6, 3, facingRight );
+			}
+		
+		}
+		else if( speedLevel == 2 )
+		{
+			if( ground != NULL )
+			{
+				double angle = GroundedAngle();
+				V2d groundPos = ground->GetPoint( edgeQuantity );
+				owner->ActivateEffect( ts_fx_chargePurple, groundPos + gn * 56.0, false, angle, 6, 3, facingRight );
+			}
+			else
+			{
+				double angle = atan2( gn.x, gn.y );
+				owner->ActivateEffect( ts_fx_chargePurple, position, false, angle, 6, 3, facingRight );
+			}
+		}
+
+		speedParticleCounter = 0;
+	}
 	
 
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -10968,7 +11299,7 @@ void Actor::UpdatePostPhysics()
 		//cout << "frame: " << frame << endl;
 
 		++framesSinceClimbBoost;
-
+		++speedParticleCounter;
 		
 
 		slowCounter = 1;
@@ -10976,8 +11307,8 @@ void Actor::UpdatePostPhysics()
 		if( invincibleFrames > 0 )
 			--invincibleFrames;
 
-		//if( flashFrames > 0 )
-		//	--flashFrames;
+		if( flashFrames > 0 )
+			--flashFrames;
 	}
 	else
 		slowCounter++;
@@ -11005,15 +11336,7 @@ void Actor::UpdatePostPhysics()
 	UpdateHitboxes();
 
 
-	double speed;
-	if( ground != NULL ) //ground
-	{
-		speed = abs(groundSpeed);
-	}
-	else //air
-	{
-		speed = length( velocity );
-	}
+	
 
 	
 	
@@ -11022,22 +11345,7 @@ void Actor::UpdatePostPhysics()
 	//double fUp = 1.0 / transitionFramesUp;
 	//double fDown = 1.0 / transitionFramesDown;
 
-	if( speed > currentSpeedBar )
-	{
-		currentSpeedBar += speedChangeUp;
-		if( currentSpeedBar > speed )
-			currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
-	}
-	else if( speed < currentSpeedBar )
-	{
-		currentSpeedBar -= speedChangeDown;
-		if( currentSpeedBar < speed )
-		{
-			currentSpeedBar = speed;
-		}
-		//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
-	}
-
+	
 
 	if( action == DASH )
 	{
@@ -11047,18 +11355,9 @@ void Actor::UpdatePostPhysics()
 
 	pTrail->Update( position );
 
-	if( currentSpeedBar >= level2SpeedThresh )
-	{
-		speedLevel = 2;
-	}
-	else if( currentSpeedBar >= level1SpeedThresh )
-	{
-		speedLevel = 1;
-	}
-	else
-	{
-		speedLevel = 0;
-	}
+	
+
+	
 
 	CircleShape cs;
 	cs.setFillColor( Color::Transparent );
@@ -12670,8 +12969,12 @@ void Actor::Draw( sf::RenderTarget *target )
 				}
 			case STANDN:
 				{
+					
 					if( flashFrames > 0 )
+					{
 						target->draw( standingNSword, &swordSh );
+						//cout << "Standn" << endl;
+					}
 					else
 						target->draw( standingNSword );
 					break;
@@ -12689,6 +12992,20 @@ void Actor::Draw( sf::RenderTarget *target )
 						target->draw( wallAttackSword, &swordSh );
 					else
 						target->draw( wallAttackSword );
+					break;
+				break;
+			case STEEPCLIMBATTACK:
+				if( flashFrames > 0 )
+						target->draw( steepClimbAttackSword, &swordSh );
+					else
+						target->draw( steepClimbAttackSword );
+					break;
+				break;
+			case STEEPSLIDEATTACK:
+				if( flashFrames > 0 )
+						target->draw( steepSlideAttackSword, &swordSh );
+					else
+						target->draw( steepSlideAttackSword);
 					break;
 				break;
 			}
@@ -13403,20 +13720,20 @@ void Actor::UpdateSprite()
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
-				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 3 ) );
+				sprite->setTextureRect( tileset[STANDN]->GetSubRect( frame / 4 ) );
 
 				if( showSword )
-					standingNSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
+					standingNSword.setTextureRect( curr_ts->GetSubRect( frame / 4 - startFrame ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 3 );
+				sf::IntRect ir = tileset[STANDN]->GetSubRect( frame / 4 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 				
 				if( showSword  )
 				{
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 4 - startFrame );
 					standingNSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 
@@ -13571,6 +13888,177 @@ void Actor::UpdateSprite()
 				p.swordSprite1 = dashAttackSword;
 			}
 
+			break;
+		}
+	case STEEPCLIMBATTACK:
+		{
+			int startFrame = 0;
+			showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
+			Tileset *curr_ts = ts_steepClimbAttackSword[speedLevel];
+
+			if( showSword )
+			{
+				steepClimbAttackSword.setTexture( *curr_ts->texture );
+			}
+
+			sprite->setTexture( *(tileset[STEEPCLIMBATTACK]->texture));
+
+			Vector2i offset( 0, 0 );
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STEEPCLIMBATTACK]->GetSubRect( frame / 2 ) );
+
+				if( showSword )
+					steepClimbAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STEEPCLIMBATTACK]->GetSubRect( frame / 2 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword  )
+				{
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					steepClimbAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
+			}
+			
+			V2d trueNormal;
+			double angle = GroundedAngleAttack( trueNormal );
+
+			if( showSword )
+			{
+				steepClimbAttackSword.setTexture( *curr_ts->texture );
+				steepClimbAttackSword.setOrigin( steepClimbAttackSword.getLocalBounds().width / 2, steepClimbAttackSword.getLocalBounds().height);
+				steepClimbAttackSword.setRotation( angle / PI * 180 );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			steepClimbAttackSword.setPosition( pos.x, pos.y );
+
+			/*if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword = showSword;
+				p.swordSprite1 = dashAttackSword;
+			}*/
+			break;
+		}
+	case STEEPSLIDEATTACK:
+		{
+			int startFrame = 0;
+			showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
+			Tileset *curr_ts = ts_steepSlideAttackSword[speedLevel];
+
+			if( showSword )
+			{
+				steepSlideAttackSword.setTexture( *curr_ts->texture );
+			}
+
+			sprite->setTexture( *(tileset[STEEPSLIDEATTACK]->texture));
+
+			Vector2i offset( 0, 0 );
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[STEEPSLIDEATTACK]->GetSubRect( frame / 2 ) );
+
+				if( showSword )
+					steepSlideAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[STEEPSLIDEATTACK]->GetSubRect( frame / 2 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword  )
+				{
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					steepSlideAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+
+					offset.x = -offset.x;
+				}
+			}
+			
+			V2d trueNormal;
+			double angle = GroundedAngleAttack( trueNormal );
+
+			if( showSword )
+			{
+				steepSlideAttackSword.setTexture( *curr_ts->texture );
+				steepSlideAttackSword.setOrigin( steepSlideAttackSword.getLocalBounds().width / 2, steepSlideAttackSword.getLocalBounds().height);
+				steepSlideAttackSword.setRotation( angle / PI * 180 );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setRotation( angle / PI * 180 );
+			
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if( movingGround != NULL )
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint( edgeQuantity );
+
+			if( movingGround != NULL )
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				sprite->setPosition( pp.x + offsetX, pp.y );
+			else
+				sprite->setPosition( pp.x, pp.y );
+
+			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
+
+			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+
+			steepSlideAttackSword.setPosition( pos.x, pos.y );
 			break;
 		}
 	case WALLATTACK:
@@ -14667,6 +15155,8 @@ void Actor::UpdateSprite()
 			
 		}
 	}
+
+	
 }
 
 void Actor::ConfirmHit( Color p_flashColor, 
@@ -14676,6 +15166,7 @@ void Actor::ConfirmHit( Color p_flashColor,
 	test = true;
 	currAttackHit = true;
 	flashColor = p_flashColor;
+	flashFrames = p_flashFrames;
 	swordShaders[speedLevel].setParameter( "toColor", p_flashColor );
 	owner->powerWheel->Charge( charge );
 	owner->player->test = true;
@@ -15437,6 +15928,22 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 			if( wallHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = wallHitboxes[frame];
+			}
+			break;
+		}
+	case STEEPCLIMBATTACK:
+		{
+			if( steepClimbHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = steepClimbHitboxes[frame];
+			}
+			break;
+		}
+	case STEEPSLIDEATTACK:
+		{
+			if( steepSlideHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = steepSlideHitboxes[frame];
 			}
 			break;
 		}

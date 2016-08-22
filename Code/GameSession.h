@@ -643,6 +643,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::Sprite kinMinimapIcon;
 	Tileset *ts_miniIcons;
+	sf::Sprite kinMapSpawnIcon;
+	Tileset *ts_mapIcons;
+	sf::Sprite goalMapIcon;
 
 
 	Enemy *activeEnemyList;

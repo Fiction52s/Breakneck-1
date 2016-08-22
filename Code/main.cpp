@@ -47,6 +47,13 @@ WorldMap *worldMap;
 sf::Texture worldMapTex;
 sf::Sprite worldMapSpr;
 
+enum Mode
+{
+	MAINMENU,
+	WORLDMAP
+};
+Mode menuMode;
+
 //sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
 sf::View uiView( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
@@ -480,7 +487,7 @@ void ExitOption()
 
 int main()
 {
-	worldMap = new WorldMap();
+	menuMode = MAINMENU;
 
 	preScreenTexture = new RenderTexture;
 	preScreenTexture->create( 1920, 1080 );
@@ -504,7 +511,7 @@ int main()
 	minimapTexture->clear();
 
 	mapTexture = new RenderTexture;
-	mapTexture->create( 800, 500 );
+	mapTexture->create( 1720, 880 );
 	mapTexture->clear();
 
 	sf::Font arial;
@@ -519,6 +526,8 @@ int main()
 	LevelSelector ls( arial );
 	//ls.windowStretch = Vector2f( windowWidth / 1920, windowHeight / 1080 );
 	LoadMenus();
+
+	worldMap = new WorldMap( arial );
 
 	int currentMenuSelect = 0;
 
@@ -727,10 +736,13 @@ int main()
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
 
-		while( window->pollEvent( ev ) )
+		switch( menuMode )
 		{
-		//	cout << "some input" << endl;
-			switch( ev.type )
+		case MAINMENU:
+			{
+				while( window->pollEvent( ev ) )
+				{
+					switch( ev.type )
 			{
 			case sf::Event::KeyPressed:
 				{
@@ -778,6 +790,8 @@ int main()
 							//gs->Run( "Maps/1-1.brknk" );
 							worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
 							worldMap->frame = 0;
+							worldMap->UpdateMapList();
+							menuMode = WORLDMAP;							
 							break;
 						case 1:
 							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
@@ -850,12 +864,12 @@ int main()
 				}
 				
 			}
-			
-		}
+				}
 
-		if( controller.UpdateState() )
+				if( controller.UpdateState() )
 		{
 			ControllerState cs = controller.GetState();
+			
 			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
 			{
 				GameSession *gs = NULL;
@@ -939,16 +953,60 @@ int main()
 			{
 				moveUp = false;
 			}
+			
+			
 		}
 
-		worldMap->Update();
+				window->setView( v );
+				window->draw( titleSprite );
+				window->draw( menu );	
+
+				window->setView( uiView );
+
+
+				for( int i = 0; i < 5; ++i )
+				{
+					if( i == currentMenuSelect )
+					{
+						mainMenu[i].setColor( Color::White );
+					}
+					else
+					{
+						mainMenu[i].setColor( Color::Red );
+					}
+					//cout << "drawing i: " << i <<  endl;
+					window->draw( mainMenu[i] );
+				}
+
+				break;
+			}
+		case WORLDMAP:
+			{
+				if( controller.UpdateState() )
+				{
+					worldMap->prevInput = worldMap->currInput;
+					worldMap->currInput = controller.GetState();
+					//ControllerState &cs = worldMap->currInput;
+				}
+				
+
+				cout << "worldmap" << endl;
+				worldMap->Update();
+				window->setView( v );
+				worldMap->Draw( window );
+				break;
+			}
+		}
+
+		
+
+		
 
 		//window->pushGLStates();
-		window->setView( v );
-		window->draw( titleSprite );
-		window->draw( menu );	
+		
+		
 
-		worldMap->Draw( window );
+		
 		//window->popGLStates();
 		
 		//window->setView( window->getDefaultView() );
@@ -965,22 +1023,7 @@ int main()
 
 		//window->pushGLStates();
 		
-		window->setView( uiView );
-
-
-		for( int i = 0; i < 5; ++i )
-		{
-			if( i == currentMenuSelect )
-			{
-				mainMenu[i].setColor( Color::White );
-			}
-			else
-			{
-				mainMenu[i].setColor( Color::Red );
-			}
-			//cout << "drawing i: " << i <<  endl;
-			window->draw( mainMenu[i] );
-		}
+		
 
 		//window->popGLStates();
 

@@ -2,6 +2,9 @@
 #define __WORLD_MAP_H__
 
 #include <SFML/Graphics.hpp>
+#include <boost/filesystem.hpp>
+#include "LevelSelector.h"
+#include "Input.h"
 
 struct WorldMap
 {
@@ -17,12 +20,15 @@ struct WorldMap
 		COLONY
 	};
 
-	WorldMap( );
+	WorldMap( sf::Font &p_font );
 	void Reset();
 	~WorldMap();
 	void Update();
 	void Draw( sf::RenderTarget *target );
-
+	void UpdateMapList();
+	void UpdateMapList( TreeNode *parentNode, const std::string &relativePath );
+	void ClearEntries();
+	int Tex( int index, int level, TreeNode *entry );
 	State state;
 	int frame;
 	sf::Texture *planetAndSpaceTex;
@@ -33,9 +39,24 @@ struct WorldMap
 	sf::Texture *colonyTex[6];
 	sf::Sprite back;
 	sf::Sprite front;
-	
 
+	TreeNode **dirNode;
+	TreeNode *entries;
+	int selectedLevel;
+	int numTotalEntries;
+	sf::Text * text;
+	sf::Font font;
+	std::string * localPaths;
+	int fontHeight;
+	int leftBorder;
+	//int xspacing;
+	int yspacing;
+	sf::Vector2f menuPos;
+	sf::RectangleShape bgRect;
+	sf::RectangleShape selectedRect;
 
+	ControllerState currInput;
+	ControllerState prevInput;
 };
 
 #endif

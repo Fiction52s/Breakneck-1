@@ -231,7 +231,7 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 	cs.setFillColor(  );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );*/
-	target->draw( miniSprite );
+	//target->draw( miniSprite );
 }
 
 bool Goal::IHitPlayer()

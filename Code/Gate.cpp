@@ -89,7 +89,7 @@ void Gate::UpdateLine()
 	switch( type )
 	{
 	case BLACK:
-		c = Color( 0, 0, 0 );
+		c = Color( 150, 150, 150 );
 		//ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
 		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
 		tileHeight = 64;
@@ -391,7 +391,7 @@ void Gate::Update()
 				realFrame = frame / 3;
 				break;
 			default:
-				cout << "state : " << gState << endl;
+				//cout << "state : " << gState << endl;
 				break;
 		}
 	}

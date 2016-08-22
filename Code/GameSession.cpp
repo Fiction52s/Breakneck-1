@@ -806,7 +806,18 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		kinMinimapIcon.getLocalBounds().height / 2 );
 	kinMinimapIcon.setPosition( 180, preScreenTex->getSize().y - 180 );
 
-	ts_miniCircle = GetTileset( "minimap_circle_300x300.png", 300, 300 );
+	kinMapSpawnIcon.setTexture( *ts_miniIcons->texture );
+	kinMapSpawnIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
+	kinMapSpawnIcon.setOrigin( kinMapSpawnIcon.getLocalBounds().width / 2,
+		kinMapSpawnIcon.getLocalBounds().height / 2 );
+	//kinMapSpawnIcon.setPosition( goalPos.x, goalPos.y );
+
+	goalMapIcon.setTexture( *ts_miniIcons->texture );
+	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
+	goalMapIcon.setOrigin( goalMapIcon.getLocalBounds().width / 2,
+		goalMapIcon.getLocalBounds().height / 2 );
+
+	ts_miniCircle = GetTileset( "minimap_circle_320x320.png", 320, 320 );
 	miniCircle.setTexture( *ts_miniCircle->texture );
 	miniCircle.setOrigin( miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2 );
 	
@@ -1014,6 +1025,7 @@ void GameSession::Test( Edge *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
+	//cout << "ADD ENEMY" << endl;
 	if( e->type == Enemy::BOSS_BIRD )
 	{
 		//probably will not actually use this and will use a separate spacial trigger or a gate
@@ -1088,6 +1100,7 @@ void GameSession::RemoveEnemy( Enemy *e )
 		}*/
 
 		cout << "adding an inactive enemy!" << endl;
+		//cout << "secret count: " << CountActiveEnemies() << endl;
 		if( inactiveEnemyList == NULL )
 		{
 			inactiveEnemyList = e;
@@ -1155,7 +1168,10 @@ int GameSession::CountActiveEnemies()
 	int counter = 0;
 	while( currEnemy != NULL )
 	{
-		counter++;	
+		if( currEnemy->type != currEnemy->BASICEFFECT )
+		{
+			counter++;	
+		}
 		currEnemy = currEnemy->next;
 	}
 
@@ -4406,6 +4422,11 @@ void GameSession::SetupZones()
 			}
 			
 		}
+		//else
+		//{
+		if( (*it)->zone != NULL )
+			(*it)->zone->allEnemies.push_back( (*it) );
+		//}
 
 
 	}
@@ -5111,6 +5132,8 @@ int GameSession::Run( string fileN )
 							gates[i]->gState = Gate::HARD;
 					}
 
+					inactiveEnemyList = NULL;
+					//activeEnemiesList = NULL;
 					//cout << "finished resetting level" << endl;
 				}
 				else
@@ -5432,7 +5455,7 @@ int GameSession::Run( string fileN )
 				//break;
 				continue;
 			}
-
+ 
 			if( deathWipe )
 			{
 				deathWipeFrame++;
@@ -5457,6 +5480,7 @@ int GameSession::Run( string fileN )
 			else
 			{
 
+				//cout << "before count: " << CountActiveEnemies() << endl;
 				totalGameFrames++;
 				player->UpdatePrePhysics();
 
@@ -5503,6 +5527,8 @@ int GameSession::Run( string fileN )
 						TriggerBarrier( (*it) );
 					}
 				}
+
+				//cout << "after count: " << CountActiveEnemies() << endl;
 
 				//cout << "updating loop" << endl;
 
@@ -5644,7 +5670,17 @@ int GameSession::Run( string fileN )
 				envPlantTree->Query( this, screenRect );
 
 
-
+				if( Keyboard::isKeyPressed( Keyboard::F ) )
+				{
+					state = PAUSE;
+				}
+				else if( ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
+				{
+					state = MAP;
+					mapCenter.x = player->position.x;
+					mapCenter.y = player->position.y;
+					mapZoomFactor = 16;	
+				}
 
 				if( player->record > 0 )
 				{
@@ -6201,7 +6237,10 @@ int GameSession::Run( string fileN )
 		//minimapTex->clear( Color( 0, 0, 0, 255 ) );
 		
 
-		
+		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+		{
+			(*it)->Draw( minimapTex );
+		}
 		
 		queryMode = "border";
 		numBorders = 0;
@@ -6227,6 +6266,8 @@ int GameSession::Run( string fileN )
 
 			listVAIter = listVAIter->next;
 		}
+
+		
 
 		queryMode = "item";
 		drawCritical = NULL;
@@ -6290,24 +6331,25 @@ int GameSession::Run( string fileN )
 		
 		
 
-		queryMode = "enemyminimap";
+		/*queryMode = "enemyminimap";
 		enemyTree->Query( this, minimapRect );
 
 		Enemy *currEnemy = activeEnemyList;
 		int counter = 0;
-		//CircleShape enemyCircle;
-
-		//enemyCircle.setFillColor( COLOR_BLUE );
-		//enemyCircle.setRadius( 60 );
-		//enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
 		
 		
 		while( currEnemy != NULL )
 		{
-			//enemyCircle.setPosition( vv.getCenter().x, vv.getCenter().y );	
-			//enemyCircle.setPosition( currEnemy->
 			currEnemy->DrawMinimap( minimapTex );
 			currEnemy = currEnemy->next;
+		}*/
+
+		if( currentZone != NULL )
+		{
+			for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
+			{
+				(*it)->DrawMinimap( minimapTex );
+			}
 		}
 
 		minimapTex->display();
@@ -6733,139 +6775,157 @@ int GameSession::Run( string fileN )
 			window->draw( preTexSprite );
 
 			
-			
-			prevInput = currInput;
+			accumulator += frameTime;
 
-			//if( !cutPlayerInput )
-			//	player->prevInput = currInput;
-
-			if( !controller.UpdateState() )
+			while ( accumulator >= TIMESTEP  )
 			{
-				bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-				bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-				bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-				bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
+				prevInput = currInput;
 
-			//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
-			//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
+				
+				if( !controller.UpdateState() )
+				{
+					bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+					bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+					bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+					bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
+
+				//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
+						//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
 			//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
 			//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
 
-				ControllerState keyboardInput;    
-				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
-				keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
-				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
-				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
+					ControllerState keyboardInput;    
+					keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
+					keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
+					keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
+						keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
 				//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
-				keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
-				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
-				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
-				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
-				keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
-				keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
+					keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
+					keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
+					keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
+					keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
+					keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
+					keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
 			
-				keyboardInput.rightStickPad = 0;
-				if( Keyboard::isKeyPressed( Keyboard::A ) )
+					keyboardInput.rightStickPad = 0;
+								if( Keyboard::isKeyPressed( Keyboard::A ) )
 				{
 					keyboardInput.rightStickPad += 1 << 1;
 				}
-				else if( Keyboard::isKeyPressed( Keyboard::S ) )
+								else if( Keyboard::isKeyPressed( Keyboard::S ) )
 				{
 					keyboardInput.rightStickPad += 1;
 				}
 				
-				if( up && down )
-				{
-					if( prevInput.LUp() )
-						keyboardInput.leftStickPad += 1;
-					else if( prevInput.LDown() )
+					if( up && down )
+					{
+						if( prevInput.LUp() )
+							keyboardInput.leftStickPad += 1;
+						else if( prevInput.LDown() )
+							keyboardInput.leftStickPad += ( 1 && down ) << 1;
+					}
+					else
+					{
+						keyboardInput.leftStickPad += 1 && up;
 						keyboardInput.leftStickPad += ( 1 && down ) << 1;
-				}
-				else
-				{
-					keyboardInput.leftStickPad += 1 && up;
-					keyboardInput.leftStickPad += ( 1 && down ) << 1;
-				}
+					}
 
-				if( left && right )
-				{
-					if( prevInput.LLeft() )
+					if( left && right )
+					{
+						if( prevInput.LLeft() )
+						{
+							keyboardInput.leftStickPad += ( 1 && left ) << 2;
+						}
+						else if( prevInput.LRight() )
+						{
+							keyboardInput.leftStickPad += ( 1 && right ) << 3;
+						}
+					}
+					else
 					{
 						keyboardInput.leftStickPad += ( 1 && left ) << 2;
-					}
-					else if( prevInput.LRight() )
-					{
 						keyboardInput.leftStickPad += ( 1 && right ) << 3;
 					}
+
+					currInput = keyboardInput;
 				}
 				else
 				{
-					keyboardInput.leftStickPad += ( 1 && left ) << 2;
-					keyboardInput.leftStickPad += ( 1 && right ) << 3;
+					controller.UpdateState();
+					currInput = controller.GetState();
 				}
 
-				currInput = keyboardInput;
-			}
-			else
-			{
-				controller.UpdateState();
-				currInput = controller.GetState();
-			}
-
-			float fac = .05;
-			if( currInput.A )
-			{
-				mapZoomFactor -= fac * mapZoomFactor;
-			}
-			else if( currInput.B )
-			{
-				mapZoomFactor += fac * mapZoomFactor;
-			}
-
-			if( mapZoomFactor < 10.f )
-			{
-				mapZoomFactor = 10.f;
-			}
-			else if( mapZoomFactor > 32.f )
-			{
-				mapZoomFactor = 32.f;
-			}
-
-			float move = 20.0 * mapZoomFactor / 2.0;
-			if( currInput.LLeft() )
-			{
-				mapCenter.x -= move;
-			}
-			else if( currInput.LRight() )
-			{
-				mapCenter.x += move;
-			}
-			if( currInput.LUp() )
-			{
-				mapCenter.y -= move;
-			}
-			else if( currInput.LDown() )
-			{
-				mapCenter.y += move;
-			}
-
-			if( mapCenter.x < leftBounds )
-				mapCenter.x = leftBounds;
-			else if( mapCenter.x > leftBounds + boundsWidth )
-			{
-				mapCenter.x = leftBounds + boundsWidth;
-			}
-
-			if( mapCenter.y < topBounds )
-			{
-				mapCenter.y = topBounds;
-			}
-			else if( mapCenter.y > topBounds + boundsHeight )
-			{
-				mapCenter.y = topBounds + boundsHeight;
-			}
-
 			
+
+				float fac = .05;
+				if( currInput.A )
+				{
+					mapZoomFactor -= fac * mapZoomFactor;
+				}
+				else if( currInput.B )
+				{
+					mapZoomFactor += fac * mapZoomFactor;
+				}
+
+				if( mapZoomFactor < 4.f )
+				{
+					mapZoomFactor = 4.f;
+				}
+				else if( mapZoomFactor > 64.f )
+				{
+					mapZoomFactor = 64.f;
+				}
+
+				float move = 20.0 * mapZoomFactor / 2.0;
+				if( currInput.LLeft() )
+				{
+					mapCenter.x -= move;
+				}
+				else if( currInput.LRight() )
+				{
+					mapCenter.x += move;
+				}
+
+				if( currInput.LUp() )
+				{
+					mapCenter.y -= move;
+				}
+				else if( currInput.LDown() )
+				{
+					mapCenter.y += move;
+				}
+
+				if( mapCenter.x < leftBounds )
+				{
+					mapCenter.x = leftBounds;
+				}
+				else if( mapCenter.x > leftBounds + boundsWidth )
+				{
+					mapCenter.x = leftBounds + boundsWidth;
+				}
+
+				if( mapCenter.y < topBounds )
+				{
+					mapCenter.y = topBounds;
+				}
+				else if( mapCenter.y > topBounds + boundsHeight )
+				{
+					mapCenter.y = topBounds + boundsHeight;
+				}
+
+				if( ( currInput.back && !prevInput.back ) && state == MAP )
+				{
+					state = RUN;
+				}
+
+				accumulator -= TIMESTEP;
+			}
+
+			if( state == RUN )
+			{
+			//	continue;
+			}
+
 
 			//if( !cutPlayerInput )
 			//	player->currInput = currInput;
@@ -6882,9 +6942,13 @@ int GameSession::Run( string fileN )
 			mapTex->clear( Color( 0, 0, 0, 255 ) );
 			
 			View vuiView;
-			vuiView.setSize( Vector2f( mapTex->getSize().x, mapTex->getSize().y ) );
+			vuiView.setSize( Vector2f( mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f ) );
 			vuiView.setCenter( 0, 0 );
 			
+			for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+			{
+				(*it)->Draw( mapTex );
+			}
 
 			queryMode = "border";
 			numBorders = 0;
@@ -6955,15 +7019,74 @@ int GameSession::Run( string fileN )
 				gateList = next;
 			}
 
+			//queryMode = "enemyminimap";
+			//enemyTree->Query( this, mapRect );
 
-			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( originalPos.x, originalPos.y ) );
+			//Enemy *currEnemy = activeEnemyList;
+			//int counter = 0;
+		
+			/*while( currEnemy != NULL )
+			{
+				if( currEnemy->monitor != NULL )
+				{
+					currEnemy->DrawMinimap( mapTex );
+					
+				}
+				currEnemy = currEnemy->next;
+			}*/
+
+			if( currentZone != NULL )
+			{
+				for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
+				{
+					//cout << "drawing map" << endl;
+					(*it)->DrawMinimap( mapTex );
+					/*if( (*it)->spawned && !(*it)->dead )
+					{
+
+					}*/
+				}
+			}
+
+			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
 
 			mapTex->setView( vuiView );
 
 			Vector2f realPos = mapTex->mapPixelToCoords( b );
+			realPos.x = floor( realPos.x + .5f );
+			realPos.y = floor( realPos.y + .5f );
 
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
 			kinMinimapIcon.setPosition( realPos );
 			mapTex->draw( kinMinimapIcon );
+
+			mapTex->setView( vv );			
+
+			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f( originalPos.x, originalPos.y ) );
+
+			mapTex->setView( vuiView );
+
+			Vector2f realPos1 = mapTex->mapPixelToCoords( b1 );
+			realPos1.x = floor( realPos1.x + .5f );
+			realPos1.y = floor( realPos1.y + .5f );
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+			kinMapSpawnIcon.setPosition( realPos1 );
+			mapTex->draw( kinMapSpawnIcon );
+
+			mapTex->setView( vv );			
+
+			Vector2i bGoal = mapTex->mapCoordsToPixel( Vector2f( goalPos.x, goalPos.y ) );
+
+			mapTex->setView( vuiView );
+
+			Vector2f realPosGoal = mapTex->mapPixelToCoords( bGoal );
+			realPosGoal.x = floor( realPosGoal.x + .5f );
+			realPosGoal.y = floor( realPosGoal.y + .5f );
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+			goalMapIcon.setPosition( realPosGoal );
+			mapTex->draw( goalMapIcon );
 			//mapTex->clear();
 			Sprite mapTexSprite;
 			mapTexSprite.setTexture( mapTex->getTexture() );
@@ -6978,21 +7101,8 @@ int GameSession::Run( string fileN )
 
 		window->display();
 
-		if( Keyboard::isKeyPressed( Keyboard::F ) )
-		{
-			state = PAUSE;
-		}
-		else if( state == RUN && ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
-		{
-			state = MAP;
-			mapCenter.x = player->position.x;
-			mapCenter.y = player->position.y;
-			mapZoomFactor = 16;	
-		}
-		else if( ( currInput.back && !prevInput.back ) && state == MAP )
-		{
-			state = RUN;
-		}
+		
+		
 	}
 
 	delete [] line;
@@ -7305,6 +7415,10 @@ void GameSession::RespawnPlayer()
 	player->recordedGhosts = 0;
 	player->blah = false;
 	player->receivedHit = NULL;
+	player->speedParticleCounter = 1;
+	player->speedLevel = 0;
+	player->speedBarTarget = 0;
+	player->currentSpeedBar = 0;
 
 	if( player->hasPowerLeftWire )
 	{

@@ -100,6 +100,9 @@ void FootTrap::ResetEnemy()
 	frame = 0;
 	deathFrame = 0;
 	dead = false;
+	receivedHit = NULL;
+	slowCounter = 1;
+	slowMultiple = 1;
 }
 
 void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
@@ -113,6 +116,8 @@ void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 
 void FootTrap::UpdatePrePhysics()
 {
+	
+
 	//cout << "dead: " << dead << endl;
 	if( !dead && receivedHit != NULL )
 	{	
@@ -189,6 +194,17 @@ void FootTrap::UpdatePhysics()
 
 void FootTrap::UpdatePostPhysics()
 {
+	if( deathFrame == 30 )
+	{
+		
+		owner->RemoveEnemy( this );
+		return;
+	}
+	else if( deathFrame > 30 )
+	{
+		cout << "what: " << deathFrame << endl;
+	}
+
 
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
@@ -215,13 +231,6 @@ void FootTrap::UpdatePostPhysics()
 	{
 		frame = 0;
 	}
-
-	if( deathFrame == 30 )
-	{
-		owner->RemoveEnemy( this );
-		return;
-	}
-
 
 	//cout << "dead post: " << dead << endl;
 	UpdateSprite();
@@ -264,17 +273,18 @@ void FootTrap::Draw(sf::RenderTarget *target )
 
 void FootTrap::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
+	
 
-	if( monitor != NULL && !suppressMonitor )
+	if( !dead && monitor != NULL && !suppressMonitor )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+		//monitor->miniSprite.setPosition( position.x, position.y );
+		//target->draw( monitor->miniSprite );
 	}
 }
 

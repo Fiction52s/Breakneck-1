@@ -29,6 +29,7 @@ struct Zone
 	std::list<sf::Vector2i> points;
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
+	std::list<Enemy*> allEnemies;
 	bool active;
 	int requiredKeys;
 

@@ -38,6 +38,8 @@ struct Actor : QuadTreeCollider,
 		STAND,
 		DASHATTACK,
 		WALLATTACK,
+		STEEPCLIMBATTACK,
+		STEEPSLIDEATTACK,
 		STANDN,
 		UAIR,
 		WALLCLING,
@@ -204,6 +206,12 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite wallAttackSword;
 	Tileset *ts_wallAttackSword[3];
 
+	sf::Sprite steepSlideAttackSword;
+	Tileset *ts_steepSlideAttackSword[3];
+
+	sf::Sprite steepClimbAttackSword;
+	Tileset *ts_steepClimbAttackSword[3];
+
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
 
@@ -211,10 +219,15 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
+	Tileset * ts_fx_chargeBlue;
+	Tileset * ts_fx_chargePurple;
 
 	sf::Vector2<double> followerPos;
 	sf::Vector2<double> followerVel;
 	double followerFac;
+
+	int speedParticleCounter;
+	int speedParticleRate;
 
 	//new variables in here that need to work with clone power later
 	int runBounceFlameFrames;
@@ -268,6 +281,8 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> standHitboxes;
 	std::map<int, std::list<CollisionBox>*> dashHitboxes;
 	std::map<int, std::list<CollisionBox>*> wallHitboxes;
+	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
+	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
 
 	double steepThresh;
 
@@ -627,6 +642,8 @@ struct PlayerGhost
 		STAND,
 		DASHATTACK,
 		WALLATTACK,
+		STEEPCLIMBATTACK,
+		STEEPSLIDEATTACK,
 		STANDN,		
 		UAIR,
 		WALLCLING,
@@ -677,7 +694,8 @@ struct PlayerGhost
 	std::map<int, std::list<CollisionBox>*> standHitboxes;
 	std::map<int, std::list<CollisionBox>*> dashHitboxes;
 	std::map<int, std::list<CollisionBox>*> wallHitboxes;
-	
+	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
+	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
 
 
 
