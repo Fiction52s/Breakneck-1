@@ -250,7 +250,7 @@ void WorldMap::Update()
 	{
 	case PLANET_AND_SPACE:
 		{
-			cout << "currInput.A: " << currInput.A << ", prevInput.A: " << prevInput.A << endl;
+			//cout << "currInput.A: " << currInput.A << ", prevInput.A: " << prevInput.A << endl;
 			if( currInput.A && !prevInput.A )
 			{
 				state = PLANET_TRANSITION;
@@ -398,6 +398,7 @@ void WorldMap::Update()
 				back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
+			cout << "currInput.ldown: " << currInput.LDown() << ", prevldown: " << prevInput.LDown() << endl;
 			if( currInput.LDown() && !prevInput.LDown() )
 			{
 				++selectedLevel;

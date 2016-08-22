@@ -982,15 +982,61 @@ int main()
 			}
 		case WORLDMAP:
 			{
+				worldMap->prevInput = worldMap->currInput;
 				if( controller.UpdateState() )
 				{
-					worldMap->prevInput = worldMap->currInput;
 					worldMap->currInput = controller.GetState();
+					//cout << "tjhingff" << endl;
+					//cout << "thing" << endl;
 					//ControllerState &cs = worldMap->currInput;
+				}
+				else
+				{
+					//cout << "tjhingff" << endl;
+					worldMap->currInput.A = Keyboard::isKeyPressed( Keyboard::A );
+					worldMap->currInput.B = Keyboard::isKeyPressed( Keyboard::S );
+
+					bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+					bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+					bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+					bool right = Keyboard::isKeyPressed( Keyboard::Right );
+
+					worldMap->currInput.leftStickPad = 0;
+
+					if( up && down )
+					{
+						if( worldMap->prevInput.LUp() )
+							worldMap->currInput.leftStickPad += 1;
+						else if( worldMap->prevInput.LDown() )
+							worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
+					}
+					else
+					{
+						worldMap->currInput.leftStickPad += 1 && up;
+						worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
+					}
+
+					if( left && right )
+					{
+						if( worldMap->prevInput.LLeft() )
+						{
+							worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
+						}
+						else if( worldMap->prevInput.LRight() )
+						{
+							worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
+						}
+					}
+					else
+					{
+						worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
+						worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
+					}
+					//worldMap->currInput.ld
 				}
 				
 
-				cout << "worldmap" << endl;
+				//cout << "worldmap" << endl;
 				worldMap->Update();
 				window->setView( v );
 				worldMap->Draw( window );
