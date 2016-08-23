@@ -123,6 +123,7 @@ struct PowerWheel
 
 	void SetStarPositions( int index, OrbColor oc );
 	OrbColor orbColors[6];
+	sf::Color orbHues[OrbColor::Count];
 
 	//sf::Vector2f * starPositions[7];
 	//sf::Vertex *starVA[7];

@@ -10197,16 +10197,17 @@ void Actor::UpdatePhysics()
 
 void Actor::GroundAttack()
 {
-	if( currInput.B )//action == DASH )
-	{
-		action = STANDN;
-		frame = 0;
-	}
-	else
-	{
-		action = DASHATTACK;
-		frame = 0;
-	}
+	action = STANDN;
+	frame = 0;
+	//if( currInput.B )//action == DASH )
+	//{
+	//	
+	//}
+	//else
+	//{
+	//	action = DASHATTACK;
+	//	frame = 0;
+	//}
 }
 
 void Actor::PhysicsResponse()
