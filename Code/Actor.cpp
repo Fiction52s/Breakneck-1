@@ -14,7 +14,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
-		speedParticleRate = 20;
+		speedParticleRate = 10; //20
 		speedParticleCounter = 1;
 		followerPos = V2d( 0, 0 );
 		followerVel = V2d( 0, 0 );
@@ -733,8 +733,10 @@ Actor::Actor( GameSession *gs )
 		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
-		ts_fx_chargeBlue = owner->GetTileset( "speed_charge_blue_96x16.png", 96, 16 );
-		ts_fx_chargePurple = owner->GetTileset( "speed_charge_purp_96x16.png", 96, 16 );
+		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
+		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
+		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
+		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
 
 		bool noPowers = false;
 		if( noPowers )
@@ -11135,31 +11137,75 @@ void Actor::UpdatePostPhysics()
 	{
 		if( speedLevel == 1 )
 		{
+			Tileset *tset = NULL;
+			int randTex = rand() % 3;
+			if( randTex == 0 )
+				tset = ts_fx_chargeBlue0;
+			else if( randTex == 1 )
+				tset = ts_fx_chargeBlue1;
+			else
+				tset = ts_fx_chargeBlue2;
+
+			int rx = 30;
+			int ry = 30;
+
 			if( ground != NULL )
 			{
+				
 				double angle = GroundedAngle();
 				V2d groundPos = ground->GetPoint( edgeQuantity );
-				owner->ActivateEffect( ts_fx_chargeBlue, groundPos + gn * 56.0, false, angle, 6, 3, facingRight );
+				
+				V2d truePos =  groundPos + gn * normalHeight;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d( randx, randy );
+
+				
+
+				owner->ActivateEffect( tset, truePos, false, angle, 6, 3, facingRight );
 			}
 			else
 			{
+				V2d truePos = position;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d( randx, randy );
 				double angle = atan2( gn.x, gn.y );
-				owner->ActivateEffect( ts_fx_chargeBlue, position, false, angle, 6, 3, facingRight );
+				owner->ActivateEffect( tset, truePos, false, angle, 6, 3, facingRight );
 			}
 		
 		}
 		else if( speedLevel == 2 )
 		{
+			int rx = 30;
+			int ry = 30;
 			if( ground != NULL )
 			{
-				double angle = GroundedAngle();
 				V2d groundPos = ground->GetPoint( edgeQuantity );
-				owner->ActivateEffect( ts_fx_chargePurple, groundPos + gn * 56.0, false, angle, 6, 3, facingRight );
+				V2d truePos =  groundPos + gn * normalHeight;//.0;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d( randx, randy );
+				double angle = GroundedAngle();
+				
+				owner->ActivateEffect( ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
 			}
 			else
 			{
+				V2d truePos = position;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d( randx, randy );
 				double angle = atan2( gn.x, gn.y );
-				owner->ActivateEffect( ts_fx_chargePurple, position, false, angle, 6, 3, facingRight );
+				owner->ActivateEffect( ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
 			}
 		}
 

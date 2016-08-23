@@ -7432,9 +7432,9 @@ void GameSession::RespawnPlayer()
 	player->blah = false;
 	player->receivedHit = NULL;
 	player->speedParticleCounter = 1;
-	player->speedLevel = 0;
-	player->speedBarTarget = 0;
-	player->currentSpeedBar = 0;
+	player->speedLevel = 2;
+	player->speedBarTarget = 60;
+	player->currentSpeedBar = 60;
 
 	if( player->hasPowerLeftWire )
 	{

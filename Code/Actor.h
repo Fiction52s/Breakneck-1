@@ -219,7 +219,9 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
-	Tileset * ts_fx_chargeBlue;
+	Tileset * ts_fx_chargeBlue0;
+	Tileset * ts_fx_chargeBlue1;
+	Tileset * ts_fx_chargeBlue2;
 	Tileset * ts_fx_chargePurple;
 
 	sf::Vector2<double> followerPos;
