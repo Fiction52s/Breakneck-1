@@ -282,6 +282,42 @@ Actor::Actor( GameSession *gs )
 			}
 		}
 
+		cb.rw = 64;
+		cb.rh = 64;
+		cb.offset.x = 36;
+		cb.offset.y = -6;
+		//for( int j = 1; j <= 4; ++j )
+		for( int j = 0; j < 4 * 4; ++j )
+		{
+			steepClimbHitboxes[j] = new list<CollisionBox>;
+			steepClimbHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->steepClimbHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->steepClimbHitboxes[j]->push_back( cb );			
+			}
+		}
+
+		cb.rw = 64;
+		cb.rh = 64;
+		cb.offset.x = 36;
+		cb.offset.y = -6;
+		//for( int j = 1; j <= 4; ++j )
+		for( int j = 0; j < 6 * 3; ++j )
+		{
+			steepSlideHitboxes[j] = new list<CollisionBox>;
+			steepSlideHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				ghosts[i]->steepSlideHitboxes[j] = new list<CollisionBox>;
+				ghosts[i]->steepSlideHitboxes[j]->push_back( cb );			
+			}
+		}
+
 		queryMode = "";
 		wallThresh = .9999;
 		//tileset setup
@@ -375,11 +411,11 @@ Actor::Actor( GameSession *gs )
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide_80x48.png", 80, 48 );
 		normal[STEEPSLIDE] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
-		actionLength[STEEPCLIMBATTACK] = 4 * 3;
+		actionLength[STEEPCLIMBATTACK] = 4 * 4;
 		tileset[STEEPCLIMBATTACK] = owner->GetTileset( "climb_att_128x48.png", 128, 48 );
 		normal[STEEPCLIMBATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[STEEPSLIDEATTACK] = 6 * 2;
+		actionLength[STEEPSLIDEATTACK] = 6 * 3;
 		tileset[STEEPSLIDEATTACK] = owner->GetTileset( "steep_att_80x64.png", 80, 64 );
 		normal[STEEPSLIDEATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
@@ -3638,6 +3674,13 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				action = STEEPCLIMBATTACK;
+				frame = 0;
+				break;
+			}
+
 			bool fallAway = false;
 			if( reversed )
 			{
@@ -4502,9 +4545,9 @@ void Actor::UpdatePrePhysics()
 			//CheckHoldJump();
 
 			//currHitboxes = fairHitboxes;
-			if( fairHitboxes.count( frame ) > 0 )
+			if( wallHitboxes.count( frame ) > 0 )
 			{
-				currHitboxes = fairHitboxes[frame];
+				currHitboxes = wallHitboxes[frame];
 			}
 
 			if( frame == 0 )
@@ -4869,6 +4912,73 @@ void Actor::UpdatePrePhysics()
 			}
 
 			AttackMovement();
+			break;
+
+		}
+	case STEEPCLIMBATTACK:
+		{
+			if( steepClimbHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = steepClimbHitboxes[frame];
+			}
+
+			if( frame == 0 )
+			{
+				currAttackHit = false;
+			}
+
+			float factor = steepClimbGravFactor;//.7 ;
+			if( currInput.LUp() )
+			{
+				//cout << "speeding up climb!" << endl;
+				factor = steepClimbFastFactor;//.5;
+			}
+
+			if( reversed )
+			{
+				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+			else
+			{
+				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+
+			//AttackMovement();
+			break;
+
+		}
+	case STEEPSLIDEATTACK:
+		{
+			if( steepSlideHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = steepSlideHitboxes[frame];
+			}
+
+			if( frame == 0 )
+			{
+				currAttackHit = false;
+			}
+
+			double fac = gravity * steepSlideGravFactor;//gravity * 2.0 / 3.0;
+
+			if( currInput.LDown() )
+			{
+				//cout << "fast slide" << endl;
+				fac = gravity * steepSlideFastGravFactor;
+			}
+
+			if( reversed )
+			{
+
+				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+			else
+			{
+				
+
+				groundSpeed += dot( V2d( 0, fac), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+			}
+			//AttackMovement();
 			break;
 
 		}
@@ -13895,6 +14005,7 @@ void Actor::UpdateSprite()
 			int startFrame = 0;
 			showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
 			Tileset *curr_ts = ts_steepClimbAttackSword[speedLevel];
+			int animFactor = 4;
 
 			if( showSword )
 			{
@@ -13907,20 +14018,20 @@ void Actor::UpdateSprite()
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
-				sprite->setTextureRect( tileset[STEEPCLIMBATTACK]->GetSubRect( frame / 2 ) );
+				sprite->setTextureRect( tileset[STEEPCLIMBATTACK]->GetSubRect( frame / animFactor ) );
 
 				if( showSword )
-					steepClimbAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+					steepClimbAttackSword.setTextureRect( curr_ts->GetSubRect( frame / animFactor - startFrame ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[STEEPCLIMBATTACK]->GetSubRect( frame / 2 );
+				sf::IntRect ir = tileset[STEEPCLIMBATTACK]->GetSubRect( frame / animFactor );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
 				if( showSword  )
 				{
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / animFactor - startFrame );
 					steepClimbAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 
@@ -13996,20 +14107,20 @@ void Actor::UpdateSprite()
 
 			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 			{
-				sprite->setTextureRect( tileset[STEEPSLIDEATTACK]->GetSubRect( frame / 2 ) );
+				sprite->setTextureRect( tileset[STEEPSLIDEATTACK]->GetSubRect( frame / 3 ) );
 
 				if( showSword )
-					steepSlideAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+					steepSlideAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
 			}
 			else
 			{
-				sf::IntRect ir = tileset[STEEPSLIDEATTACK]->GetSubRect( frame / 2 );
+				sf::IntRect ir = tileset[STEEPSLIDEATTACK]->GetSubRect( frame / 3 );
 				
 				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 
 				if( showSword  )
 				{
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
 					steepSlideAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 

@@ -982,6 +982,20 @@ int main()
 			}
 		case WORLDMAP:
 			{
+				while( window->pollEvent( ev ) )
+				{
+					switch( ev.type )
+					{
+						case sf::Event::KeyPressed:
+						{
+							if( ev.key.code == Keyboard::Escape )
+							{
+								quit = true;
+							}
+						}
+					}
+				}
+
 				worldMap->prevInput = worldMap->currInput;
 				if( controller.UpdateState() )
 				{
