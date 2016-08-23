@@ -328,7 +328,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool dead;
 	bool suppressMonitor;
 	bool specterProtected;
-
+	Tileset *ts_hitSpack;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );

@@ -39,6 +39,8 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 
 	deathFrame = 0;
 	
+	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
+
 	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );	
 

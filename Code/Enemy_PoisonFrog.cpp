@@ -47,6 +47,8 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 	double height = 80;
 	ts_test = owner->GetTileset( "frog_80x80.png", width, height );
 
+	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
+
 	//jumpStrength = 10;
 	xSpeed = 8;
 

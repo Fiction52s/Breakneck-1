@@ -41,6 +41,7 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	
+	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 	
 
 	gn = g->Normal();

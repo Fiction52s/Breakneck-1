@@ -1003,7 +1003,11 @@ void GameSession::UpdateEnemiesDraw()
 	while( current != NULL )
 	{
 	//	cout << "draw" << endl;
-		current->Draw( preScreenTex );
+		if( current->type != Enemy::BASICEFFECT )
+		{
+			current->Draw( preScreenTex );
+			
+		}
 		current = current->next;
 	}
 }
@@ -2103,11 +2107,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> framesBetweenNodes;
 				//int speed;
 				//is >> speed;
-				//Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
-				//	bulletSpeed, framesBetweenNodes, loop );
+				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
+					bulletSpeed, framesBetweenNodes, loop );
 
-				Boss_Bird *enemy 
-					= new Boss_Bird( this, Vector2i( xPos, yPos ) );
+				
 				//Boss_Skeleton *enemy 
 				//	= new Boss_Skeleton( this, Vector2i( xPos, yPos ) );
 
@@ -2129,8 +2132,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					cout << "new monitor" << endl;
 					enemy->monitor = new Monitor( this, enemy );
 				}
-				
-				b_bird = enemy;
+				//b_bird
+				/*Boss_Bird *enemy 
+					= new Boss_Bird( this, Vector2i( xPos, yPos ) );
+				b_bird = enemy;*/
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				//fullEnemyList.push_back( enemy );
@@ -2236,10 +2241,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> speed;
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				//StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity, clockwise, speed );
-				Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity );
+				StagBeetle *enemy = new StagBeetle( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed );
+				//Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity );
 				//Boss_Tiger *enemy = new Boss_Tiger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
 				//	edgeQuantity );
 
@@ -6150,6 +6155,16 @@ int GameSession::Run( string fileN )
 		//	<< ", " << preScreenTex->getView().getSize().y << endl;
 		if( player->action != Actor::DEATH )
 			player->Draw( preScreenTex );
+
+		Enemy *currentEnem = activeEnemyList;
+		while( currentEnem != NULL )
+		{
+			if( currentEnem->type == Enemy::BASICEFFECT )
+			{
+				currentEnem->Draw( preScreenTex );
+			}
+			currentEnem = currentEnem->next;
+		}
 
 		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 		{

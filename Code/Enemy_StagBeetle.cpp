@@ -54,6 +54,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
+	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
+
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
@@ -112,7 +114,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 	deathPartingSpeed = .4;
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	
@@ -694,12 +697,20 @@ void StagBeetle::PhysicsResponse()
 void StagBeetle::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
+	{
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
+	}
 
 	if( deathFrame == 30 )
 	{
 		owner->RemoveEnemy( this );
 		return;
+	}
+
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 	}
 
 	UpdateSprite();
@@ -772,11 +783,11 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
