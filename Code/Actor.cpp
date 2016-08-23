@@ -6169,28 +6169,34 @@ bool Actor::CheckStandUp()
 	//	Rect<double> r( position.x + offsetX + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 
 		//hope this doesnt make weird issues sometimes ;_;
-		double ex = .001;
+
+		
+		double ex = .1;
 		Rect<double> r;
+
+		/*if( action != GRINDBALL )
+		{*/
 		if( reversed )
 		{
-			r = Rect<double>( position.x + b.offset.x - b.rw, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight + 2 * ex);
+			r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
 		}
 		else
 		{
-			r = Rect<double>( position.x + b.offset.x - b.rw, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight + 2* ex);
+			r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
 		}
-		sf::RectangleShape rs;
-		rs.setSize( Vector2f(r.width, r.height ));
-		rs.setFillColor( Color::Yellow );
-		rs.setPosition( r.left, r.top );
-		/*r.left -= 1;
-		r.width += 1;
-		r.top -= 1;
-		r.height += 1;*/
-		
-//		owner->preScreenTex->draw( rs );
-
-		//owner->window->draw( rs );
+		//}
+		//else
+		//{
+		//	V2d p = grindEdge->GetPoint( grindQuantity );
+		//	if( reversed )
+		//	{
+		//		r = Rect<double>( p - b.rw - ex, position.y - ex/*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
+		//	}
+		//	else
+		//	{
+		//		r = Rect<double>( position.x + b.offset.x - b.rw - ex, position.y - ex /*+ b.offset.y*/ - normalHeight, 2 * b.rw + 2 * ex, 2 * normalHeight + 2 * ex);
+		//	}
+		//}
 
 		queryMode = "check";
 		checkValid = true;
@@ -6201,9 +6207,16 @@ bool Actor::CheckStandUp()
 		{
 			(*it)->Query( this, r );
 		}
-		//cout << "col number: " << possibleEdgeCount << endl;
 		possibleEdgeCount = 0;
+
+		if( checkValid )
+			cout << "check valid" << endl;
+		else
+		{
+			cout << "cant stand up" << endl;
+		}
 		return checkValid;
+
 	}
 	
 }
@@ -12448,9 +12461,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "check" )
 	{
-		if( ground == e )
+		//cout << "checking: " << e << endl;
+		if( (grindEdge == NULL && ground == e) || grindEdge == e )
 			return;
 
+		//Edge *testEdge = ground;
+		
+			
 		
 
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
@@ -12458,6 +12475,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		if ( action != GRINDBALL )
 		{
+			//cout << "here" << endl;
 			if( ground != NULL )
 			{
 
@@ -12552,10 +12570,57 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				
 			}
 		}
-		//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
-		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
-		//if( IsEdgeTouchingBox( e, r ) )
-		//{
+		else
+		{
+			if( grindEdge->edgeType == Edge::CLOSED_GATE )
+				{
+					Gate *g = (Gate*)grindEdge->info;
+					if( grindEdge == g->edgeA )
+					{
+						if( e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1 )
+						{
+							return;
+						}
+					}
+					else
+					{
+						if( e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1 )
+						{
+							return;
+						}
+					}
+					
+					if( e == g->edgeA && grindEdge == g->edgeB
+						|| e == g->edgeB && grindEdge == g->edgeA )//|| e == g->edgeB )
+					{
+						
+						//cout << "returnning early" << endl;
+						return;
+					}
+				}
+				else if( grindSpeed > 0 && grindEdge->edge1->edgeType == Edge::CLOSED_GATE )
+				{
+					Edge *e1 = grindEdge->edge1;
+					Gate *g = (Gate*)e1->info;
+					if( e == g->edgeA && e1 == g->edgeB 
+						|| e == g->edgeB && e1 == g->edgeA )
+					{
+						return;
+					}
+				}
+				else if( grindSpeed < 0 && grindEdge->edge0->edgeType == Edge::CLOSED_GATE )
+				{
+					Edge *e0 = grindEdge->edge0;
+					Gate *g = (Gate*)e0->info;
+					if( e == g->edgeA && e0 == g->edgeB 
+						|| e == g->edgeB && e0 == g->edgeA )
+					{
+						return;
+					}
+				}
+		}
+
+		cout << "valid is false" << endl;
 		checkValid = false;
 
 		//}

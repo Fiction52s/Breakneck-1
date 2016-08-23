@@ -205,6 +205,10 @@ void FootTrap::UpdatePostPhysics()
 		cout << "what: " << deathFrame << endl;
 	}
 
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+	}
 
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
@@ -260,11 +264,11 @@ void FootTrap::Draw(sf::RenderTarget *target )
 		if( deathFrame / 3 < 15 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			//bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			//bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			//bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
+			//bloodSprite.setPosition( position.x, position.y );
+			////bloodSprite.setScale( 2, 2 );
+			//target->draw( bloodSprite );
 		}
 		
 		target->draw( topDeathSprite );

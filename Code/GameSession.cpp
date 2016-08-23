@@ -262,13 +262,14 @@ void ScoreDisplay::ScoreBar::Update()
 		}
 	case POP_OUT:
 		{
-			if( frame == 61 )
+			int popoutFrames = 30;
+			if( frame == popoutFrames + 1 )
 			{
 				state = SHEET_APPEAR;
 				frame = 0;
 				break;
 			}
-			else if( frame == 30 )
+			else if( frame == popoutFrames )
 			{
 				if( row < NUM_BARS - 1 )
 				{
@@ -309,7 +310,7 @@ void ScoreDisplay::ScoreBar::Update()
 		}
 	case RETRACT:
 		{
-			if( frame == 60 )
+			if( frame == 30 )
 			{
 				state = NONE;
 				frame = 0;
@@ -329,7 +330,7 @@ void ScoreDisplay::ScoreBar::Update()
 		}
 	case POP_OUT:
 		{
-			int popoutFrames = 60;
+			int popoutFrames = 30;
 			CubicBezier bez( 0, 0, 1, 1 );
 			float z = bez.GetValue( (double)frame / popoutFrames );
 
@@ -356,9 +357,9 @@ void ScoreDisplay::ScoreBar::Update()
 		}
 	case RETRACT:
 		{
-			int popoutFrames = 60;
+			int retractFrames = 30;
 			CubicBezier bez( 0, 0, 1, 1 );
-			float z = bez.GetValue( (double)frame / popoutFrames );
+			float z = bez.GetValue( (double)frame / retractFrames );
 
 			SetBarPos( -384 * ( 1 - z ) );
 			break;
