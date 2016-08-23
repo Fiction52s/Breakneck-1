@@ -1037,9 +1037,29 @@ int main()
 				
 
 				//cout << "worldmap" << endl;
-				worldMap->Update();
-				window->setView( v );
-				worldMap->Draw( window );
+				if( worldMap->Update() )
+				{
+					window->setView( v );
+					worldMap->Draw( window );
+				}
+				else
+				{
+					string file = worldMap->GetSelected();
+					stringstream ss; 
+					ss << "Maps/" << file;
+					//cout << "-----------------------------" << endl;
+					//cout << "file: " << file << endl;
+					GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+					gs->Run( ss.str() );
+					delete gs;
+
+
+					worldMap->state = WorldMap::PLANET_AND_SPACE;
+					worldMap->frame = 0;
+					worldMap->UpdateMapList();
+					continue;
+				}
+				
 				break;
 			}
 		}

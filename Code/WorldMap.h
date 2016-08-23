@@ -23,9 +23,10 @@ struct WorldMap
 	WorldMap( sf::Font &p_font );
 	void Reset();
 	~WorldMap();
-	void Update();
+	bool Update();
 	void Draw( sf::RenderTarget *target );
 	void UpdateMapList();
+	const std::string & GetSelected();
 	void UpdateMapList( TreeNode *parentNode, const std::string &relativePath );
 	void ClearEntries();
 	int Tex( int index, int level, TreeNode *entry );

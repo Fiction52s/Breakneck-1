@@ -60,6 +60,11 @@ void WorldMap::Reset()
 	ClearEntries();
 }
 
+const std::string & WorldMap::GetSelected()
+{
+	return localPaths[selectedLevel];
+}
+
 WorldMap::~WorldMap()
 {
 	delete planetAndSpaceTex;
@@ -141,7 +146,7 @@ int WorldMap::Tex( int index, int level, TreeNode *entry )
 		t.setString( name );
 		t.setColor( Color::White );
 		t.setPosition( menuPos.x + leftBorder, menuPos.y + index * yspacing );
-		localPaths[index] = (entry->GetLocalPath() / (*it).filename()).string();
+		localPaths[index] = ( entry->GetLocalPath() / (*it).filename()).string();
 		dirNode[index] = entry;
 
 		++index; //1 for each file
@@ -238,11 +243,11 @@ void WorldMap::UpdateMapList()
 	Tex( 0, 0, entries );
 }
 
-void WorldMap::Update()
+bool WorldMap::Update()
 {
 	
 	if( state == OFF )
-		return;
+		return false;
 
 
 	int trans = 40;
@@ -311,6 +316,13 @@ void WorldMap::Update()
 		}
 		break;
 	case COLONY:
+		if( currInput.A && !prevInput.A )
+		{
+			state = OFF;
+			frame = 0;
+			return false;
+		}
+
 		frame = 0;
 		break;
 	}
@@ -429,6 +441,8 @@ void WorldMap::Update()
 		//cout << "frame: " << frame << ", state: " << (int)state << endl;
 	}
 	++frame;
+
+	return true;
 }
 
 void WorldMap::Draw( RenderTarget *target )
