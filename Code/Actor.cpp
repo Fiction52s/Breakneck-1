@@ -404,7 +404,7 @@ Actor::Actor( GameSession *gs )
 		normal[WALLJUMP] = owner->GetTileset( "walljump_NORMALS.png", 64, 64 );
 
 		actionLength[GRINDBALL] = 1;
-		tileset[GRINDBALL] = owner->GetTileset( "grindball.png", 32, 32 );
+		tileset[GRINDBALL] = owner->GetTileset( "grindball_64x64.png", 64, 64 );
 		normal[GRINDBALL] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
 		actionLength[STEEPSLIDE] = 1;

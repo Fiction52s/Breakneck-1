@@ -6137,6 +6137,22 @@ int GameSession::Run( string fileN )
 			preScreenTex->setView( view );
 		}
 
+		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+		{
+			(*it)->Draw( preScreenTex );
+		}
+
+		testGateCount = 0;
+		queryMode = "gate";
+		gateList = NULL;
+		gateTree->Query( this, screenRect );
+
+		while( gateList != NULL )
+		{
+			gateList->Draw( preScreenTex );
+			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
+			gateList = next;
+		}
 
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
@@ -6167,22 +6183,6 @@ int GameSession::Run( string fileN )
 			currentEnem = currentEnem->next;
 		}
 
-		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-		{
-			(*it)->Draw( preScreenTex );
-		}
-
-		testGateCount = 0;
-		queryMode = "gate";
-		gateList = NULL;
-		gateTree->Query( this, screenRect );
-
-		while( gateList != NULL )
-		{
-			gateList->Draw( preScreenTex );
-			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
-			gateList = next;
-		}
 
 		//view.set
 		
