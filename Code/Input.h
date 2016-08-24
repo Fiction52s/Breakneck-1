@@ -59,19 +59,52 @@ struct ControllerState
 				 //0x8 = right
 };
 
-enum InputOptions
-{
 
-};
 
 struct KeyboardFilter
 {
 	KeyboardFilter();
+	void SetKey( sf::Keyboard::Key old, 
+		sf::Keyboard::Key newKey );
 	bool LoadReplacements( const std::string &file );
 	sf::Keyboard::Key Filter( sf::Keyboard::Key key );
 	//std::map<sf::Keyboard::Key, sf::Keyboard::Key> filter;
 	sf::Keyboard::Key keyFilter[sf::Keyboard::KeyCount];
 };
+
+struct KeyboardSettings
+{
+	enum ButtonType
+	{
+		UP,
+		LEFT,
+		DOWN,
+		RIGHT,
+		JUMP,
+		SLASH,
+		DASH,
+		BOUNCE,
+		GRIND,
+		TIMESLOW,
+		LEFTWIRE,
+		RIGHTWIRE,
+		MAP,
+		PAUSE,
+		Count
+	};
+
+	KeyboardSettings();
+	sf::Keyboard::Key buttonMap[ButtonType::Count];
+	void SetFilter( const std::string &fileName );
+	void SaveToFile( const std::string &fileName );
+	void Poll();
+};
+
+
+void LoadInputMapKeyboard( ControllerState &cs, 
+	const std::string &fileName,
+	KeyboardFilter &filter );
+
 /** Remarks:
 Wrapper for XINPUT controller. Used to access the actual
 controllers and generate state information for use in the 
@@ -94,6 +127,7 @@ public:
 	///Gets the state most recently queried from the
 	///controller. Used to update external ControllerStates
 	ControllerState & GetState();
+	ControllerState & GetKeyboardState(); //also updates
 private:
 	DWORD m_index;
 	float stickThresh;

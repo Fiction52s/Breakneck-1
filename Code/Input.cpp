@@ -1,6 +1,10 @@
 #include "Input.h"
 #include <math.h>
+#include <fstream>
+#include <assert.h>
+#include <iostream>
 
+using namespace std;
 
 #define PI 3.14159265359
 const DWORD GameController::LEFT_STICK_DEADZONE = 7849;
@@ -259,6 +263,72 @@ DWORD GameController::GetIndex()
 	return m_index;
 }
 
+ControllerState &GameController::GetKeyboardState()
+{
+
+	//need to address these
+	//m_state.leftStickMagnitude = normalizedMagnitude;
+	//m_state.leftStickRadians = atan( normalizedLY / normalizedLX );
+
+	//if( normalizedLX < 0.0f )
+	//	m_state.leftStickRadians += PI;
+
+	//m_state.rightStickMagnitude = normalizedMagnitude;
+	//m_state.rightStickRadians = atan( normalizedRY / normalizedRX );
+	//if( normalizedRX < 0.0f )
+	//	m_state.rightStickRadians += PI;
+
+	//m_state.leftTrigger = state.Gamepad.bLeftTrigger; //0 or 255
+	//m_state.rightTrigger = state.Gamepad.bRightTrigger;
+
+	//WORD b = state.Gamepad.wButtons;
+	//m_state.start = (b & 0x10) > 0;
+	//m_state.back = (b & 0x20) > 0;
+	//m_state.leftShoulder = (b & 0x100) > 0;
+	//m_state.rightShoulder = (b & 0x200) > 0;
+	//m_state.A = (b & 0x1000) > 0;
+	//m_state.B = (b & 0x2000) > 0;
+	//m_state.X = (b & 0x4000) > 0;
+	//m_state.Y = (b & 0x8000) > 0;
+	//m_state.leftPress = b & XINPUT_GAMEPAD_LEFT_THUMB;
+	//m_state.rightPress = b & XINPUT_GAMEPAD_RIGHT_THUMB;
+	//m_state.pad = ( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 ); 
+
+	//m_state.leftStickPad = 0;
+	//m_state.rightStickPad = 0;
+	//if( m_state.leftStickMagnitude > stickThresh )
+	//{
+	//	//cout << "left stick radians: " << currInput.leftStickRadians << endl;
+	//	float x = cos( m_state.leftStickRadians );
+	//	float y = sin( m_state.leftStickRadians );
+
+	//	if( x > stickThresh )
+	//		m_state.leftStickPad += 1 << 3;
+	//	if( x < -stickThresh )
+	//		m_state.leftStickPad += 1 << 2;
+	//	if( y > stickThresh )
+	//		m_state.leftStickPad += 1;
+	//	if( y < -stickThresh )
+	//		m_state.leftStickPad += 1 << 1;
+	//}
+
+	//if( m_state.rightStickMagnitude > stickThresh )
+	//{
+	//	//cout << "left stick radians: " << m_state.leftStickRadians << endl;
+	//	float x = cos( m_state.rightStickRadians );
+	//	float y = sin( m_state.rightStickRadians );
+
+	//	if( x > stickThresh )
+	//		m_state.rightStickPad += 1 << 3;
+	//	if( x < -stickThresh )
+	//		m_state.rightStickPad += 1 << 2;
+	//	if( y > stickThresh )
+	//		m_state.rightStickPad += 1;
+	//	if( y < -stickThresh )
+	//		m_state.rightStickPad += 1 << 1;
+	//}
+}
+
 KeyboardFilter::KeyboardFilter()
 {
 	for( int i = 0; i < sf::Keyboard::KeyCount; ++i )
@@ -272,4 +342,91 @@ sf::Keyboard::Key KeyboardFilter::Filter( sf::Keyboard::Key key )
 	int i = (int)key;
 
 	return keyFilter[i];
+}
+
+void SetKey( sf::Keyboard::Key old, 
+		sf::Keyboard::Key newKey )
+{
+	//keyFilter[
+}
+
+void LoadInputMapKeyboard( ControllerState &cs, const std::string &fileName, KeyboardFilter &filter )
+{
+	ifstream is;
+	is.open( fileName );
+
+	if( is.is_open() )
+	{
+		/*sf::Keyboard::Key up;
+		sf::Keyboard::Key left;
+		sf::Keyboard::Key down;
+		sf::Keyboard::Key right;
+
+		is >> up;
+		is >> left;
+		is >> down;
+		is >> right;
+
+		if( x > stickThresh )
+			m_state.leftStickPad += 1 << 3;
+		if( x < -stickThresh )
+			m_state.leftStickPad += 1 << 2;
+		if( y > stickThresh )
+			m_state.leftStickPad += 1;
+		if( y < -stickThresh )
+			m_state.leftStickPad += 1 << 1;*/
+	}
+	else
+	{
+		cout << "file: " << fileName << endl;
+		assert( "failed to load keyboard inputs" );
+	}
+}
+
+KeyboardSettings::KeyboardSettings()
+{
+	using namespace sf;
+	buttonMap[UP] = Keyboard::Up;
+	buttonMap[LEFT] = Keyboard::Left;
+	buttonMap[DOWN] = Keyboard::Down;
+	buttonMap[RIGHT] = Keyboard::Right;
+
+	buttonMap[JUMP] = Keyboard::Z;
+	buttonMap[SLASH] = Keyboard::C;
+	buttonMap[DASH] = Keyboard::X;
+
+	buttonMap[BOUNCE] = Keyboard::F;
+	buttonMap[GRIND] = Keyboard::D;
+	buttonMap[TIMESLOW] = Keyboard::LShift;
+	buttonMap[LEFTWIRE] = Keyboard::LControl;
+	buttonMap[RIGHTWIRE] = Keyboard::RControl;
+	buttonMap[MAP] = Keyboard::Tilde;
+	buttonMap[PAUSE] = Keyboard::Delete;
+}
+
+void KeyboardSettings::SetFilter( const std::string &fileName )
+{
+	ifstream is;
+	is.open( fileName );
+
+	if( is.is_open() )
+	{
+		for( int i = 0; i < ButtonType::Count; ++i )
+		{
+			int temp;
+			is >> temp;
+
+			buttonMap[i] = (sf::Keyboard::Key)temp;
+		}
+	}
+	else
+	{
+		cout << "file: " << fileName << endl;
+		assert( "failed to load keyboard inputs" );
+	}
+}
+
+void SaveToFile( const std::string &fileName )
+{
+
 }
