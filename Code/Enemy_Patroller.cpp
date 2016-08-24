@@ -151,7 +151,9 @@ void Patroller::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( monitor != NULL )
+				owner->player->CaptureMonitor( monitor );
+			//AttemptSpawnMonitor();
 			dead = true;
 		}
 

@@ -182,7 +182,9 @@ void CurveTurret::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( monitor != NULL )
+				owner->player->CaptureMonitor( monitor );
+			//AttemptSpawnMonitor();
 			dying = true;
 		}
 

@@ -347,7 +347,7 @@ void StagBeetle::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			//AttemptSpawnMonitor();
 			dead = true;
 
 			

@@ -459,7 +459,12 @@ KeyMarker::KeyMarker( GameSession *owner )
 
 void KeyMarker::CollectKey()
 {
-	assert( keysRequired > 0 );
+
+	if( keysRequired == 0 )
+	{
+		return;
+	}
+	//assert( keysRequired > 0 );
 	
 	
 	//int f = ((maxKeys-1) * 4) + (frame / growMult);
@@ -3091,7 +3096,7 @@ bool GameSession::OpenFile( string fileName )
 				v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
 				v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
 				v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
-				Vector2f pp0 = (v[i*3].position - topLeft);
+				/*Vector2f pp0 = (v[i*3].position - topLeft);
 				Vector2f pp1 = (v[i*3+1].position - topLeft);
 				Vector2f pp2 = (v[i*3+2].position - topLeft);
 				pp0 = Vector2f( (int)pp0.x % 1024, (int)pp0.y % 1024 );
@@ -3106,7 +3111,7 @@ bool GameSession::OpenFile( string fileName )
 				}
 				v[i*3].texCoords = pp0;
 				v[i*3+1].texCoords = pp1;
-				v[i*3+2].texCoords = pp2;
+				v[i*3+2].texCoords = pp2;*/
 			}
 
 			polygons.push_back( va );
@@ -6051,7 +6056,7 @@ int GameSession::Run( string fileN )
 				rs.setFillColor( Color::Transparent );
 				preScreenTex->draw( rs );*/
 				assert( listVAIter->pShader != NULL );
-				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
+				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->pShader );// listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
 			}
 			else
 			{

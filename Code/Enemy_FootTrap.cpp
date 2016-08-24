@@ -130,7 +130,9 @@ void FootTrap::UpdatePrePhysics()
 		if( health <= 0 )
 		{
 			//cout << "attempting. blue key is: " << owner->player->hasBlueKey << endl;
-			AttemptSpawnMonitor();
+			//AttemptSpawnMonitor();
+			if( monitor != NULL )
+				owner->player->CaptureMonitor( monitor );
 			dead = true;
 		}
 
