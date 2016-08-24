@@ -16,6 +16,8 @@
 For each button, its bool its true if the it is down 
 (pressed) and false if it is up (not pressed).
 */
+
+struct KeyboardState;
 struct ControllerState
 {
 	ControllerState();
@@ -57,6 +59,8 @@ struct ControllerState
 	bool PRight();
 	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right
+
+	//KeyboardSettings keyboardSettings;
 };
 
 
@@ -95,9 +99,9 @@ struct KeyboardSettings
 
 	KeyboardSettings();
 	sf::Keyboard::Key buttonMap[ButtonType::Count];
-	void SetFilter( const std::string &fileName );
+	void LoadFromFile( const std::string &fileName );
 	void SaveToFile( const std::string &fileName );
-	void Poll();
+	void Update( ControllerState &cs );
 };
 
 
@@ -128,10 +132,11 @@ public:
 	///controller. Used to update external ControllerStates
 	ControllerState & GetState();
 	ControllerState & GetKeyboardState(); //also updates
+	ControllerState m_state;
 private:
 	DWORD m_index;
 	float stickThresh;
-	ControllerState m_state;
+	
 	const static DWORD LEFT_STICK_DEADZONE;
 	const static DWORD RIGHT_STICK_DEADZONE;
 	const static DWORD TRIGGER_THRESHOLD;

@@ -231,7 +231,10 @@ bool GameController::UpdateState()
 				m_state.rightStickPad += 1 << 1;
 		}
 	}
+	else
+	{
 
+	}
 
 	
 
@@ -404,7 +407,7 @@ KeyboardSettings::KeyboardSettings()
 	buttonMap[PAUSE] = Keyboard::Delete;
 }
 
-void KeyboardSettings::SetFilter( const std::string &fileName )
+void KeyboardSettings::LoadFromFile( const std::string &fileName )
 {
 	ifstream is;
 	is.open( fileName );
@@ -426,7 +429,53 @@ void KeyboardSettings::SetFilter( const std::string &fileName )
 	}
 }
 
-void SaveToFile( const std::string &fileName )
+void KeyboardSettings::SaveToFile( const std::string &fileName )
 {
+	ofstream of;
+	of.open( fileName );
 
+	if( of.is_open() )
+	{
+		for( int i = 0; i < ButtonType::Count; ++i )
+		{
+			of << buttonMap[i] << endl;
+		}
+	}
+	else
+	{
+		cout << "FAILED TO SAVE KEYBOARD FILTER" << endl;
+	}
+}
+
+void KeyboardSettings::Update( ControllerState &cs )
+{
+	/*if( x > stickThresh )
+			m_state.leftStickPad += 1 << 3;
+		if( x < -stickThresh )
+			m_state.leftStickPad += 1 << 2;
+		if( y > stickThresh )
+			m_state.leftStickPad += 1;
+		if( y < -stickThresh )
+			m_state.leftStickPad += 1 << 1;*/
+
+	bool up = sf::Keyboard::isKeyPressed( buttonMap[UP] );
+	bool left = sf::Keyboard::isKeyPressed( buttonMap[LEFT] );
+	bool down = sf::Keyboard::isKeyPressed( buttonMap[DOWN] );
+	bool right = sf::Keyboard::isKeyPressed( buttonMap[RIGHT] );
+
+	bool jump = sf::Keyboard::isKeyPressed( buttonMap[JUMP] );
+	bool slash = sf::Keyboard::isKeyPressed( buttonMap[SLASH] );
+	bool dash = sf::Keyboard::isKeyPressed( buttonMap[DASH] );
+
+	bool bounce = sf::Keyboard::isKeyPressed( buttonMap[BOUNCE] );
+	bool grind = sf::Keyboard::isKeyPressed( buttonMap[GRIND] );
+	bool timeSlow = sf::Keyboard::isKeyPressed( buttonMap[TIMESLOW] );
+	bool leftWire = sf::Keyboard::isKeyPressed( buttonMap[LEFTWIRE] );
+	bool rightWire = sf::Keyboard::isKeyPressed( buttonMap[RIGHTWIRE] );
+
+	bool map = sf::Keyboard::isKeyPressed( buttonMap[MAP] );
+	bool pause = sf::Keyboard::isKeyPressed( buttonMap[PAUSE] );
+
+	
+	
 }

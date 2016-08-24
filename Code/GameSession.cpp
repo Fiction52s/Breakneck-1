@@ -5033,7 +5033,7 @@ int GameSession::Run( string fileN )
 					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 					
 					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
-					screenShot = Keyboard::isKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
+					screenShot = false;//Keyboard::isKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
 					
 					if( screenShot )
 					{
@@ -5676,7 +5676,7 @@ int GameSession::Run( string fileN )
 				envPlantTree->Query( this, screenRect );
 
 
-				if( Keyboard::isKeyPressed( Keyboard::F ) )
+				if( Keyboard::isKeyPressed( Keyboard::P ) )
 				{
 					state = PAUSE;
 				}

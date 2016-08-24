@@ -91,6 +91,8 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 	bloodSprite.setTextureRect( ts_testBlood->GetSubRect( 0 ) );
+
+	ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
 }
 
 void FootTrap::ResetEnemy()
@@ -211,7 +213,10 @@ void FootTrap::UpdatePostPhysics()
 	}
 
 	if( receivedHit != NULL )
+	{
 		owner->Pause( 5 );
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+	}
 
 	
 
