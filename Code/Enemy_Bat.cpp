@@ -328,7 +328,7 @@ void Bat::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -357,10 +357,25 @@ void Bat::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
-	
+	if( deathFrame == 0 && dying )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+	}
+
+	if( deathFrame == 60 && dying )
+	{
+		//cout << "switching dead" << endl;
+		dying = false;
+		dead = true;
+		//cout << "REMOVING" << endl;
+		//testLauncher->Reset();
+		//owner->RemoveEnemy( this );
+		//return;
+	}
 
 	if( slowCounter == slowMultiple )
 	{
@@ -386,16 +401,9 @@ void Bat::UpdatePostPhysics()
 		frame = 0;
 	}
 
-	if( deathFrame == 60 && dying )
-	{
-		//cout << "switching dead" << endl;
-		dying = false;
-		dead = true;
-		//cout << "REMOVING" << endl;
-		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
-	}
+
+
+	
 
 	if( dead && launcher->GetActiveCount() == 0 )
 	{
@@ -460,11 +468,11 @@ void Bat::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
@@ -476,20 +484,14 @@ void Bat::Draw( sf::RenderTarget *target )
 
 void Bat::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying )
+	if( !dead && !dying && monitor != NULL && !suppressMonitor )
 	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor( COLOR_BLUE );
-		enemyCircle.setRadius( 50 );
-		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-		enemyCircle.setPosition( position.x, position.y );
-		target->draw( enemyCircle );
-
-		if( monitor != NULL && !suppressMonitor )
-		{
-			monitor->miniSprite.setPosition( position.x, position.y );
-			target->draw( monitor->miniSprite );
-		}
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
 	}
 }
 

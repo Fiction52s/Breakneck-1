@@ -90,8 +90,11 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 
 	deathPartingSpeed = .4;
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
+
+	ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
 }
 
 void Crawler::ResetEnemy()
@@ -1130,10 +1133,14 @@ void Crawler::PhysicsResponse()
 void Crawler::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
+	{
 		owner->Pause( 5 );
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+	}
 
 	if( deathFrame == 30 )
 	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 		owner->RemoveEnemy( this );
 		return;
 	}
@@ -1191,7 +1198,7 @@ void Crawler::Draw(sf::RenderTarget *target )
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
 			cs.setRadius( 55 );
-			cs.setFillColor( COLOR_BLUE );
+			cs.setFillColor( Color::Black );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
@@ -1205,11 +1212,11 @@ void Crawler::Draw(sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			//bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			//bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
+			//bloodSprite.setPosition( position.x, position.y );
+			//bloodSprite.setScale( 2, 2 );
+			//target->draw( bloodSprite );
 		}
 		
 		target->draw( topDeathSprite );
@@ -1218,7 +1225,7 @@ void Crawler::Draw(sf::RenderTarget *target )
 
 void Crawler::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
+	/*CircleShape cs;
 	cs.setRadius( 50 );
 	cs.setFillColor( COLOR_BLUE );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
@@ -1229,6 +1236,16 @@ void Crawler::DrawMinimap( sf::RenderTarget *target )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
+	}*/
+
+	if( !dead && monitor != NULL && !suppressMonitor )
+	{
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
 	}
 }
 

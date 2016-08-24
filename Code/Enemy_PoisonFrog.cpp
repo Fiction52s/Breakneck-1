@@ -109,7 +109,8 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 
 	deathPartingSpeed = .4;
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
 	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	/*physBody.isCircle = true;
@@ -950,6 +951,11 @@ void PoisonFrog::UpdatePostPhysics()
 		return;
 	}
 
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+	}
+
 	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
@@ -1005,9 +1011,9 @@ void PoisonFrog::Draw(sf::RenderTarget *target )
 	}
 	else
 	{
-		/*target->draw( botDeathSprite );
+		target->draw( botDeathSprite );
 
-		if( deathFrame / 3 < 6 )
+	/*	if( deathFrame / 3 < 6 )
 		{
 			
 			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
@@ -1015,9 +1021,9 @@ void PoisonFrog::Draw(sf::RenderTarget *target )
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
 			target->draw( bloodSprite );
-		}
+		}*/
 		
-		target->draw( topDeathSprite );*/
+		target->draw( topDeathSprite );
 	}
 
 

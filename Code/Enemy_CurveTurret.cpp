@@ -118,8 +118,11 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
+
+	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 
 	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0, 300 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
@@ -265,9 +268,23 @@ void CurveTurret::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
+	if( deathFrame == 0 && dying )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+	}
+
+	if( deathFrame == 30 && dying )
+	{
+		dying = false;
+		dead = true;
+		//testLauncher->Reset();
+		//owner->RemoveEnemy( this );
+		//return;
+	}
 	
 	UpdateSprite();
 	testLauncher->UpdateSprites();
@@ -291,15 +308,7 @@ void CurveTurret::UpdatePostPhysics()
 		slowCounter++;
 	}
 	
-
-	if( deathFrame == 30 && dying )
-	{
-		dying = false;
-		dead = true;
-		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
-	}
+	
 
 	if( dead && testLauncher->GetActiveCount() == 0 )
 	{
@@ -319,7 +328,7 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
 			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
+			cs.setFillColor( Color::Black );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
@@ -332,11 +341,11 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 
 		if( deathFrame / 3 < 6 )
 		{
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
@@ -352,7 +361,16 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 
 void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !(dead || dying) )
+	if( !dead && !dying && monitor != NULL && !suppressMonitor )
+	{
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+	}
+	/*if( !(dead || dying) )
 	{
 		CircleShape cs;
 		cs.setRadius( 50 );
@@ -366,7 +384,7 @@ void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
 		}
-	}
+	}*/
 }
 
 bool CurveTurret::IHitPlayerWithBullets()
