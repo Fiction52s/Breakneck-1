@@ -1874,8 +1874,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int speed;
 				is >> speed;
-				//Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
-				Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
+				Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
+				//Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
 				//enemy->Monitor::MonitorType
 				
 				if( hasMonitor )
@@ -2111,7 +2111,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Bat *enemy = new Bat( this, Vector2i( xPos, yPos ), localPath, 
 					bulletSpeed, framesBetweenNodes, loop );
 
-				
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );
 				//Boss_Skeleton *enemy 
 				//	= new Boss_Skeleton( this, Vector2i( xPos, yPos ) );
 
@@ -7432,9 +7435,9 @@ void GameSession::RespawnPlayer()
 	player->blah = false;
 	player->receivedHit = NULL;
 	player->speedParticleCounter = 1;
-	player->speedLevel = 2;
-	player->speedBarTarget = 60;
-	player->currentSpeedBar = 60;
+	player->speedLevel = 0;
+	player->speedBarTarget = 0;//60;
+	player->currentSpeedBar = 0;//60;
 
 	if( player->hasPowerLeftWire )
 	{

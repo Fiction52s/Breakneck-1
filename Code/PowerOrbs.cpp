@@ -787,7 +787,7 @@ void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 	
 	Color bc = orbHues[orbColors[activeOrb]];
 	//bc = Color::Red;
-	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame / lifeTextureMultiple );
+	IntRect ir = ts_lifeTexture->GetSubRect( 1 + lifeTextureFrame / lifeTextureMultiple );
 	for( int i = 0; i < vSections - 1; ++i )
 	{
 		va[i*3+0].color = bc;//Color::Red;
@@ -870,7 +870,7 @@ void PowerWheel::SetVisibleCurrentSection( int orbIndex, int currentSection, flo
 	va[1].color = c;
 	va[2].color = c;
 
-	IntRect ir = ts_lifeTexture->GetSubRect( lifeTextureFrame / lifeTextureMultiple );
+	IntRect ir = ts_lifeTexture->GetSubRect( 1 + lifeTextureFrame / lifeTextureMultiple );
 	va[0].texCoords = Vector2f( ir.left + ir.width / 2, ir.top + ir.height ); //Vector2f( 0, 32 );
 	va[1].texCoords = Vector2f( ir.left + ir.width, ir.top );//Vector2f( 16, 0 );
 	va[2].texCoords = Vector2f( ir.left, ir.top );

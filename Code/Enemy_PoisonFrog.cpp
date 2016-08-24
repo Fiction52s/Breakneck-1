@@ -939,7 +939,10 @@ void PoisonFrog::UpdatePostPhysics()
 	//cout << "position: " << position.x << ", " << position.y << endl;
 
 	if( receivedHit != NULL )
+	{
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
+	}
 
 	if( deathFrame == 30 )
 	{

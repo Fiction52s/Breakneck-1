@@ -1315,7 +1315,7 @@ void Actor::UpdatePrePhysics()
 		if( canStandUp )
 		{
 			b.rh = normalHeight;
-			//cout << "setting to normal height" << endl;
+			cout << "setting to normal height" << endl;
 			b.offset.y = 0;
 		}
 	}
