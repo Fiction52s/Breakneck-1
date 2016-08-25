@@ -97,6 +97,12 @@ struct PowerWheel
 	void Recover( int power );
 	void Charge( int power );
 	void UpdateSections();
+	void UpdateSwivel();
+	int swivelFrame;
+	int swivelLength;
+	bool swivelingUp;
+	bool swivelingDown;
+	float swivelStartAngle;
 
 	int lifeTextureFrame;
 	int lifeTextureMultiple;
@@ -116,9 +122,14 @@ struct PowerWheel
 		int currentLevel );
 	void SetVisibleCurrentSection( int orbIndex, int currentSection, float radius );
 	
+	sf::Sprite orbPointer;
+	Tileset *ts_orbPointer;
 
 	sf::VertexArray *orbSectionVA[6];
 	sf::VertexArray partialSectionVA;
+	
+	Tileset *ts_lifeStop;
+	sf::Sprite lifeStop;
 
 
 	void SetStarPositions( int index, OrbColor oc );

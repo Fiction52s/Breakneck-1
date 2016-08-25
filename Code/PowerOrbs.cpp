@@ -366,6 +366,13 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//starState = 0;
 	//starFrame = 0;
 	activeOrb = 5;
+
+	swivelFrame = 0;
+	swivelLength = 20;
+
+	swivelingUp = false;
+	swivelingDown = false;
+	swivelStartAngle = 0;
 	
 	orbHues[TEAL0] = Color( 0x00, 0xff, 0xff );
 	orbHues[TEAL1] = Color( 0x00, 0xea, 0xff );
@@ -395,6 +402,15 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	numSections[RED] =     15;//24;
 	numSections[MAGENTA] = 15;//25;
 
+
+	ts_orbPointer = owner->GetTileset( "orbpointer_64x64.png", 64, 64 );
+	orbPointer.setTexture( *ts_orbPointer->texture );
+	orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 0 ) );
+	orbPointer.setOrigin( orbPointer.getLocalBounds().width / 2,
+		orbPointer.getLocalBounds().height + 96 );
+	
+	ts_lifeStop = owner->GetTileset( "life_stop_64x64.png", 64, 64 );
+	lifeStop.setTexture( *ts_lifeStop->texture );
 	
 	//if (!lifeTextureShader.loadFromFile("lifetexture_shader.frag", sf::Shader::Fragment))
 	////if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -517,6 +533,11 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	
 	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
 
+	orbPointer.setPosition( largeOrb.getPosition() );
+	lifeStop.setPosition( largeOrb.getPosition().x + 20,
+		largeOrb.getPosition().y - 80 );
+
+
 	activeSection = numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 
@@ -557,9 +578,9 @@ void PowerWheel::UpdateSmallOrbs()
 		if( activeOrb < i )
 		{
 			irIndex += 6;
-			cout << "changed" << endl;
+			//cout << "changed" << endl;
 		}
-		cout << "activeOrb: " << activeOrb << ", i: " << i << ", irIndex: " << irIndex << endl;
+		//cout << "activeOrb: " << activeOrb << ", i: " << i << ", irIndex: " << irIndex << endl;
 		IntRect ir = ts_smallOrbs->GetSubRect( irIndex );
 		
 		
@@ -705,13 +726,56 @@ void PowerWheel::UpdateSections()
 
 	UpdateSmallOrbs();
 
+	UpdateSwivel();
 
 	++lifeTextureFrame;
 
 }
 
+void PowerWheel::UpdateSwivel()
+{
+	if( swivelingUp )
+	{
+		float goalAngle = swivelStartAngle + 360.f / 6.f;
+
+		if( swivelFrame == swivelLength + 1 )
+		{
+			swivelingUp = false;
+			swivelStartAngle = goalAngle;
+			return;
+		}
+		
+		CubicBezier bez( 0, 0, 1, 1 );
+
+		float r = bez.GetValue( swivelFrame / (double)swivelLength );
+		orbPointer.setRotation( swivelStartAngle * ( 1.f - r ) + goalAngle * r );
+		++swivelFrame;
+	}
+	else if( swivelingDown )
+	{
+		float goalAngle = swivelStartAngle - 360.f / 6.f;
+
+		if( swivelFrame == swivelLength + 1 )
+		{
+			swivelingDown = false;
+			swivelStartAngle = goalAngle;
+			return;
+		}
+		
+		CubicBezier bez( 0, 0, 1, 1 );
+
+		float r = bez.GetValue( swivelFrame / (double)swivelLength );
+		orbPointer.setRotation( swivelStartAngle * ( 1.f - r ) + goalAngle * r );
+		++swivelFrame;
+	}
+}
+
 void PowerWheel::Reset()
 {
+	swivelingUp = false;
+	swivelingDown = false;
+	swivelStartAngle = 0;
+	swivelFrame = 0;
 	lifeTextureFrame = 0;
 	activeOrb = 5;
 	activeSection = numSections[orbColors[activeOrb]];
@@ -732,6 +796,7 @@ void PowerWheel::Draw( sf::RenderTarget *target )
 	target->draw( *orbSectionVA[activeOrb], ts_lifeTexture->texture );
 	target->draw( partialSectionVA, ts_lifeTexture->texture );
 	target->draw( test );
+	target->draw( orbPointer );
 //	target->draw( *orbMidSectionVA[activeOrb] );
 //	target->draw( *orbSmallSectionVA[activeOrb] );
 	//sf::RenderStates rs;
@@ -983,6 +1048,11 @@ bool PowerWheel::Damage( int power )
 			OrbColor oc = orbColors[activeOrb];
 			activeSection = numSections[oc];
 			largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( oc ) );
+			swivelingDown = true;
+			swivelFrame = 0;
+			//swivelStartAngle = -360.f / 6.f * ( 5 - ( activeOrb + 1 ) ); 
+			//swiveling = true;
+			//swivelFrame = 0;
 		}
 		activeLevel = 6 + activeLevel;
 	}
