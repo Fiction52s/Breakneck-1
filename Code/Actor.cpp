@@ -9768,7 +9768,24 @@ void Actor::UpdatePhysics()
 						bounceEdge->v1 = oldv1;
 					}
 
-					offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+					offsetX = ( position.x + b.offset.x ) - minContact.position.x;
+					
+					/*if( b.rh == doubleJumpHeight )
+					{
+						b.offset.y = (normalHeight - doubleJumpHeight);
+					}*/
+
+					if( b.rh < normalHeight )
+					{
+						if( minContact.normal.y > 0 )
+							b.offset.y = -(normalHeight - b.rh);
+						else if( minContact.normal.y < 0 )
+							b.offset.y = (normalHeight - b.rh);
+					}
+					else
+					{
+						b.offset.y = 0;
+					}
 
 					movement = 0;
 					break;
@@ -9851,9 +9868,21 @@ void Actor::UpdatePhysics()
 						}
 					}
 
-				if( b.rh == doubleJumpHeight )
+				/*if( b.rh == doubleJumpHeight )
 				{
 					b.offset.y = (normalHeight - doubleJumpHeight);
+				}*/
+
+				if( b.rh < normalHeight )
+				{
+					if( minContact.normal.y > 0 )
+						b.offset.y = -(normalHeight - b.rh);	
+					else if( minContact.normal.y < 0 )
+						b.offset.y = (normalHeight - b.rh);
+				}
+				else
+				{
+					b.offset.y = 0;
 				}
 
 				//if( reversed )
@@ -9989,10 +10018,21 @@ void Actor::UpdatePhysics()
 			}
 			else if( hasPowerGravReverse && hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
-				if( b.rh == doubleJumpHeight )
+				/*if( b.rh == doubleJumpHeight )
 				{
 					b.offset.y = (normalHeight - doubleJumpHeight);
+				}*/
+
+				if( b.rh < normalHeight )
+				{
+					b.offset.y = -(normalHeight - b.rh);
+					/*if( minContact.normal.y > 0 )
+						
+					else if( minContact.normal.y < 0 )
+						b.offset.y = (normalHeight - b.rh);*/
 				}
+
+
 				//b.rh = dashHeight;
 				
 				//if( reversed )
@@ -10030,7 +10070,7 @@ void Actor::UpdatePhysics()
 				reversed = true;
 				lastWire = 0;
 
-				b.offset.y = -b.offset.y;
+				//b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				movingGround = minContact.movingPlat;
@@ -10812,13 +10852,14 @@ void Actor::UpdateHitboxes()
 	V2d gn;
 	V2d gd; 
 	if( ground != NULL )
-	{
+	{	
 		if( !approxEquals( abs(offsetX), b.rw ) )
 		{
 			gn = V2d( 0, -1 );
 			gd = V2d( 1, 0 );
 			if( reversed )
 			{
+				cout << "BLAH BLAH" << endl;
 				angle = PI;
 				gn = V2d( 0, 1 );
 				gd = V2d( -1, 0 );
@@ -10890,11 +10931,11 @@ void Actor::UpdateHitboxes()
 	{
 		if( action == DASH )
 		{
-			hurtBody.rh = 10;
+			hurtBody.rh = dashHeight;
 		}
 		else if( action == SPRINT )
 		{
-			hurtBody.rh = 12;
+			hurtBody.rh = sprintHeight;
 		}
 		else if( action == STEEPCLIMB )
 		{
@@ -10902,11 +10943,11 @@ void Actor::UpdateHitboxes()
 		}
 		else if( action == DOUBLE )
 		{
-			hurtBody.rh = 10;
+			hurtBody.rh = doubleJumpHeight;
 		}
 		else
 		{
-			hurtBody.rh = 15;
+			hurtBody.rh = normalHeight;//15;
 		}
 
 		hurtBody.isCircle = false;
@@ -10925,7 +10966,7 @@ void Actor::UpdateHitboxes()
 			hurtBody.globalPosition = position + hurtBody.offset ;//+ V2d( 0, -hurtBody.rh );
 			hurtBody.globalAngle = angle;
 		}
-		else if( gn.y > -steepThresh )
+		else if( gn.y > -steepThresh && !reversed )
 		{
 			double xoff = 0;
 			if( gn.x > 0 )
@@ -10950,6 +10991,31 @@ void Actor::UpdateHitboxes()
 			}
 			hurtBody.globalAngle = 0;
 			//hurtBody.offset = V2d( 0, 0 );
+		}
+		else if( -gn.y > -steepThresh && reversed )
+		{
+			double xoff = 0;
+			if( gn.x > 0 )
+			{
+				xoff = 10;
+			}
+			else if( gn.x < 0 )
+			{
+				xoff = -10;
+			}
+
+			
+			//might not work reversed
+			hurtBody.globalPosition = ground->GetPoint( edgeQuantity ) + V2d( 0, 1 ) * (double)(b.rh) + V2d( xoff, 0 );// + hurtBody.rh );
+
+			if( action == STEEPCLIMB )
+			{
+			}
+			else if( action == STEEPSLIDE )
+			{
+				hurtBody.globalPosition -= V2d( 0, 15 );
+			}
+			hurtBody.globalAngle = PI;
 		}
 		else
 		{
