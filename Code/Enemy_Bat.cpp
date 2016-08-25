@@ -264,7 +264,7 @@ void Bat::UpdatePrePhysics()
 		if( health <= 0 )
 		{
 			if( monitor != NULL )
-				owner->player->CaptureMonitor( monitor );
+				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dying = true;
 			//cout << "dying" << endl;

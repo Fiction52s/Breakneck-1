@@ -583,7 +583,7 @@ void PoisonFrog::UpdatePrePhysics()
 		if( health <= 0 )
 		{
 			if( monitor != NULL )
-				owner->player->CaptureMonitor( monitor );
+				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;
 		}

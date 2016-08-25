@@ -403,14 +403,14 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	numSections[MAGENTA] = 15;//25;
 
 
-	ts_orbPointer = owner->GetTileset( "orbpointer_64x64.png", 64, 64 );
+	ts_orbPointer = owner->GetTileset( "life_ring_192x128.png", 192, 128 );
 	orbPointer.setTexture( *ts_orbPointer->texture );
-	orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 0 ) );
+	orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 1 ) );
 	orbPointer.setOrigin( orbPointer.getLocalBounds().width / 2,
-		orbPointer.getLocalBounds().height + 96 );
+		orbPointer.getLocalBounds().height + 48 );
 	
-	ts_lifeStop = owner->GetTileset( "life_stop_64x64.png", 64, 64 );
-	lifeStop.setTexture( *ts_lifeStop->texture );
+	//ts_lifeStop = owner->GetTileset( "life_stop_64x64.png", 64, 64 );
+	//lifeStop.setTexture( *ts_lifeStop->texture );
 	
 	//if (!lifeTextureShader.loadFromFile("lifetexture_shader.frag", sf::Shader::Fragment))
 	////if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -534,8 +534,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
 
 	orbPointer.setPosition( largeOrb.getPosition() );
-	lifeStop.setPosition( largeOrb.getPosition().x + 20,
-		largeOrb.getPosition().y - 80 );
+	
 
 
 	activeSection = numSections[orbColors[activeOrb]];
@@ -742,6 +741,7 @@ void PowerWheel::UpdateSwivel()
 		{
 			swivelingUp = false;
 			swivelStartAngle = goalAngle;
+			orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 1 ) );
 			return;
 		}
 		
@@ -749,6 +749,7 @@ void PowerWheel::UpdateSwivel()
 
 		float r = bez.GetValue( swivelFrame / (double)swivelLength );
 		orbPointer.setRotation( swivelStartAngle * ( 1.f - r ) + goalAngle * r );
+		orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 0 ) );
 		++swivelFrame;
 	}
 	else if( swivelingDown )
@@ -759,6 +760,7 @@ void PowerWheel::UpdateSwivel()
 		{
 			swivelingDown = false;
 			swivelStartAngle = goalAngle;
+			orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 1 ) );
 			return;
 		}
 		
@@ -766,6 +768,7 @@ void PowerWheel::UpdateSwivel()
 
 		float r = bez.GetValue( swivelFrame / (double)swivelLength );
 		orbPointer.setRotation( swivelStartAngle * ( 1.f - r ) + goalAngle * r );
+		orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 0 ) );
 		++swivelFrame;
 	}
 }
@@ -781,6 +784,8 @@ void PowerWheel::Reset()
 	activeSection = numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( orbColors[activeOrb] ) );
+	orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 1 ) );
+	orbPointer.setRotation( 0 );
 }
 
 void PowerWheel::Draw( sf::RenderTarget *target )

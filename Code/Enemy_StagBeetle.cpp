@@ -347,6 +347,8 @@ void StagBeetle::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
+			if( monitor != NULL )
+				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;
 

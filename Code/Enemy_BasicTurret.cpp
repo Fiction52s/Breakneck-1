@@ -163,6 +163,7 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicTurret::UpdatePrePhysics()
 {
+
 	if( frame == 26 * animationFactor )
 	{
 		frame = 0;
@@ -177,7 +178,9 @@ void BasicTurret::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( monitor != NULL )
+				owner->keyMarker->CollectKey();
+			//AttemptSpawnMonitor();
 			dead = true;
 		}
 

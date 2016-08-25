@@ -128,8 +128,8 @@ struct PowerWheel
 	sf::VertexArray *orbSectionVA[6];
 	sf::VertexArray partialSectionVA;
 	
-	Tileset *ts_lifeStop;
-	sf::Sprite lifeStop;
+	//Tileset *ts_lifeStop;
+	//sf::Sprite lifeStop;
 
 
 	void SetStarPositions( int index, OrbColor oc );
