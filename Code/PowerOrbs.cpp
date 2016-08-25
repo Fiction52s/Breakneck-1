@@ -949,11 +949,14 @@ bool PowerWheel::Damage( int power )
 				Reset(); //tempoary. goes to survival mode
 				return false;
 			}
-			activeSection = numSections[orbColors[activeOrb]];
+			OrbColor oc = orbColors[activeOrb];
+			activeSection = numSections[oc];
+			largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( oc ) );
 		}
 		activeLevel = 6 + activeLevel;
 	}
 
+	
 	return true;
 }
 
