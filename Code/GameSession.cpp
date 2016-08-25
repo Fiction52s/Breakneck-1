@@ -569,7 +569,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 {
 	
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ) );
-	player = new Actor( this );
+	
 	currentZone = NULL;
 	Movable::owner = this;
 	b_crawler = NULL;
@@ -839,7 +839,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 		gds.setPosition( miniCircle.getPosition() );
 	}
 
-	powerWheel = new PowerWheel( this, true, true, true, true, true, true);
+	
 
 	keyMarker = new KeyMarker( this );
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
@@ -4592,6 +4592,8 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	
+
 	soundManager = new SoundManager;
 	//soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
 	//currMusic = soundManager->GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
@@ -4696,7 +4698,16 @@ int GameSession::Run( string fileN )
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 	bool bdrawdraw = false;
 
+	player = new Actor( this );
+
 	OpenFile( fileName );
+	
+	//use player->setactivepowers to set it up from the level. need to add it
+	//to the editor
+
+	powerWheel = new PowerWheel( this, player->hasPowerAirDash, 
+		player->hasPowerGravReverse, player->hasPowerBounce, 
+		player->hasPowerGrindBall, player->hasPowerTimeSlow, player->hasPowerRightWire);
 
 	sf::Texture backTex;
 

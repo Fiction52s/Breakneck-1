@@ -738,12 +738,12 @@ Actor::Actor( GameSession *gs )
 		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
 		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
 
-		bool noPowers = false;
+		bool noPowers = true;
 		if( noPowers )
 		{
-			hasPowerAirDash = true;
+			hasPowerAirDash = false;
 			hasPowerGravReverse = false;
-			hasPowerBounce = true;
+			hasPowerBounce = false;
 			hasPowerGrindBall = false;
 			hasPowerTimeSlow = false;
 			hasPowerLeftWire = false;
@@ -11655,6 +11655,23 @@ void Actor::UpdatePostPhysics()
 
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
+}
+
+void Actor::SetActivePowers(
+		bool p_canAirDash,
+		bool p_canGravReverse,
+		bool p_canBounce,
+		bool p_canGrind,
+		bool p_canTimeSlow,
+		bool p_canWire )
+{
+	hasPowerAirDash = p_canAirDash;
+	hasPowerGravReverse = p_canGravReverse;
+	hasPowerBounce = p_canBounce;
+	hasPowerGrindBall = p_canGrind;
+	hasPowerTimeSlow = p_canTimeSlow;
+	hasPowerRightWire = p_canWire;
+	hasPowerLeftWire = p_canWire;
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )

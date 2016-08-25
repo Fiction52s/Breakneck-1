@@ -395,12 +395,12 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	numSections[TEAL3] =   15;
 	numSections[TEAL4] =   15;
 	numSections[TEAL5] =   15;
-	numSections[BLUE] =    15;//16;
-	numSections[GREEN] =   15;//18;
-	numSections[YELLOW] =  15;//20;
-	numSections[ORANGE] =  15;//21;
-	numSections[RED] =     15;//24;
-	numSections[MAGENTA] = 15;//25;
+	numSections[BLUE] =    16;
+	numSections[GREEN] =   18;
+	numSections[YELLOW] =  20;
+	numSections[ORANGE] =  21;
+	numSections[RED] =     24;
+	numSections[MAGENTA] = 25;
 
 
 	ts_orbPointer = owner->GetTileset( "life_ring_192x128.png", 192, 128 );

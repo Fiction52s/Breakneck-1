@@ -127,6 +127,14 @@ struct Actor : QuadTreeCollider,
 	bool CanUnlockGate( Gate *g );
 
 	void CheckHoldJump();
+
+	void SetActivePowers(
+		bool canAirDash,
+		bool canGravReverse,
+		bool canBounce,
+		bool canGrind,
+		bool canTimeSlow,
+		bool canWire );
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
