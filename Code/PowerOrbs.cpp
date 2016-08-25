@@ -540,6 +540,36 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 
 }
 
+void PowerWheel::UpdateSmallOrbs()
+{
+	for( int i = 5; i >= 0; --i )
+	{
+		OrbColor oc = orbColors[i];
+
+
+		int irIndex = oc;
+
+		if( oc > TEAL5 )
+		{
+			irIndex += 6;
+		}
+
+		if( activeOrb < i )
+		{
+			irIndex += 6;
+			cout << "changed" << endl;
+		}
+		cout << "activeOrb: " << activeOrb << ", i: " << i << ", irIndex: " << irIndex << endl;
+		IntRect ir = ts_smallOrbs->GetSubRect( irIndex );
+		
+		
+		smallOrbVA[i*4+0].texCoords = Vector2f( ir.left, ir.top );
+		smallOrbVA[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		smallOrbVA[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		smallOrbVA[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+	}
+}
+
 typedef Vector2f V2f;
 void PowerWheel::SetStarPositions( int index, OrbColor oc )
 {
@@ -673,7 +703,7 @@ void PowerWheel::UpdateSections()
 	//cout << "update start: " << activeOrb << ", " << activeSection << ", " << activeLevel << endl;
 	SetVisibleSections( activeOrb, activeSection, activeLevel );
 
-
+	UpdateSmallOrbs();
 
 
 	++lifeTextureFrame;

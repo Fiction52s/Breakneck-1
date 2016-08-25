@@ -1017,7 +1017,7 @@ struct Bat : Enemy, LauncherEnemy
 
 	sf::Sprite testKeySprite;
 	Tileset *ts_testKey;
-	//int keyFrame;
+	int keyFrame;
 
 	//sf::Vector2<double> basePos;
 	int deathFrame;

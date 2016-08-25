@@ -111,7 +111,7 @@ struct PowerWheel
 	sf::Shader lifeTextureShader;
 
 	int testBlah;
-
+	void UpdateSmallOrbs();
 	void SetVisibleSections( int orbIndex, int visSections,
 		int currentLevel );
 	void SetVisibleCurrentSection( int orbIndex, int currentSection, float radius );

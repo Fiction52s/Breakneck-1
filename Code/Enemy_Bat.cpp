@@ -25,6 +25,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 	int p_framesBetweenNodes, bool p_loop )
 	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
 {
+	keyFrame = 0;
 	ts_testKey = owner->GetTileset( "key_w01_1_128x128.png", 128, 128 );
 
 
@@ -210,6 +211,7 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 
 void Bat::ResetEnemy()
 {
+	keyFrame = 0;
 	fireCounter = 0;
 	testSeq.Reset();
 	launcher->Reset();
@@ -235,6 +237,11 @@ void Bat::ResetEnemy()
 
 void Bat::UpdatePrePhysics()
 {
+	if( keyFrame == 16 * 2 )
+	{
+		keyFrame = 0;
+	}
+
 	if( testSeq.currMovement == NULL )
 	{
 		//cout << "resetting" << endl;
@@ -391,6 +398,7 @@ void Bat::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		++keyFrame;
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
@@ -414,10 +422,10 @@ void Bat::UpdatePostPhysics()
 	}
 
 
-	if( owner->totalGameFrames % 60 == 0 )
+	/*if( owner->totalGameFrames % 60 == 0 )
 	{
 		owner->ActivateEffect( ts_testKey, position, false, 0, 16, 2, true );
-	}
+	}*/
 	
 
 	if( dead && launcher->GetActiveCount() == 0 )
@@ -437,6 +445,15 @@ void Bat::UpdateSprite()
 		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 		sprite.setPosition( position.x, position.y );
 
+		if( monitor != NULL && !suppressMonitor )
+		{
+			testKeySprite.setTexture( *ts_testKey->texture );
+			testKeySprite.setTextureRect( ts_testKey->GetSubRect( keyFrame / 2 ) );
+			testKeySprite.setOrigin( testKeySprite.getLocalBounds().width / 2, 
+				testKeySprite.getLocalBounds().height / 2 );
+			testKeySprite.setPosition( position.x, position.y );
+
+		}
 		//testKeySprite.setTextureRect( ts_testKey->GetSubRect( 
 	}
 	if( dying )
