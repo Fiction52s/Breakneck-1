@@ -686,6 +686,7 @@ void PowerWheel::Reset()
 	activeOrb = 5;
 	activeSection = numSections[orbColors[activeOrb]];
 	activeLevel = 6;
+	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( orbColors[activeOrb] ) );
 }
 
 void PowerWheel::Draw( sf::RenderTarget *target )
@@ -827,7 +828,7 @@ void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
 
 	if( currentLevel > 0 )
 	{
-		SetVisibleCurrentSection( orbIndex, visSections - 1, 32 + (currentLevel-1) * ( (96-32) / 5)  );
+		SetVisibleCurrentSection( orbIndex, visSections - 1, 32 + (currentLevel - 1) * (96-32) / 5 );
 	}
 	/*if( currentLevel == 1 )
 	{

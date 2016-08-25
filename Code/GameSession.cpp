@@ -991,6 +991,24 @@ void GameSession::UpdateEnemiesPostPhysics()
 
 		current->UpdatePostPhysics();
 		
+		if( current->shader != NULL )
+		{
+			int f = ( totalGameFrames % 60 );
+			float fac;
+			if( f < 30 )
+			{
+				fac = f / 29.f;
+			}
+			else
+			{
+				fac = 1.f - ( f - 30.f ) / 29.f;
+			}
+			
+
+			current->shader->setParameter( "prop", fac );
+			current->shader->setParameter( "toColor", Color::Green );
+		}
+
 		current = temp;
 	}
 }

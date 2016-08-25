@@ -329,6 +329,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool suppressMonitor;
 	bool specterProtected;
 	Tileset *ts_hitSpack;
+	sf::Shader *shader;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
@@ -1013,6 +1014,10 @@ struct Bat : Enemy, LauncherEnemy
 	int bulletSpeed;
 	//int nodeDistance;
 	int framesBetween;
+
+	sf::Sprite testKeySprite;
+	Tileset *ts_testKey;
+	//int keyFrame;
 
 	//sf::Vector2<double> basePos;
 	int deathFrame;
