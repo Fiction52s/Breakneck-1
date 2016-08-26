@@ -99,7 +99,7 @@ LightSource lights[numLights];
 vec4 BallColors( vec4 DiffuseColor )
 {		
 	//blue
-	if( !hasPowerAirDash && DiffuseColor.rgb == vec3( 0.0, 0x66/ 255.0, 0xcc / 255.0 ) )
+	if( DiffuseColor.rgb == vec3( 0.0, 0x66/ 255.0, 0xcc / 255.0 ) )
 	{
 		DiffuseColor.rgb = vec3( 0.0, 0.0, 0.0 );
 	}
@@ -197,6 +197,8 @@ void main() {
 
 	InitLights();
 	
+	
+	
     //RGBA of our diffuse color
 	vec4 finalfinal = vec4( 0.0, 0.0, 0.0, 0.0 );//vec4( 1, 1, 1, 1 );  ////
 	
@@ -277,7 +279,7 @@ void main() {
 		//gl_FragColor =  gl_Color * vec4(FinalColor, DiffuseColor.a);
 	}
 	vec4 doneColor = finalfinal;//vec4(finalfinal, DiffuseColor.a);
-	
+	doneColor = BallColors(doneColor);
 	if( numLightsOn == 0 )
 	{
 		vec4 DiffuseColor = texture2D(u_texture, gl_TexCoord[0].xy);
