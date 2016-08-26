@@ -4593,7 +4593,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
-				owner->soundNodeList->ActivateSound( owner->gameSoundBuffers[S_SLASH] );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_SLASH] );
 				currAttackHit = false;
 				//fairSound.play();
 			}
@@ -15473,8 +15473,13 @@ void Actor::UpdateSprite()
 	
 }
 
+void Actor::ConfirmEnemyKill( Enemy *e )
+{
+	//wrong
+}
+
 void Actor::ConfirmHit( Color p_flashColor, 
-		int p_flashFrames, double speedBar, int charge )
+		int p_flashFrames, double speedBar, int charge)
 {
 	currentSpeedBar += speedBar;
 	test = true;
@@ -15483,7 +15488,7 @@ void Actor::ConfirmHit( Color p_flashColor,
 	flashFrames = p_flashFrames;
 	swordShaders[speedLevel].setParameter( "toColor", p_flashColor );
 	owner->powerWheel->Charge( charge );
-	owner->player->test = true;
+	//owner->player->test = true;
 	desperationMode = false;
 }
 

@@ -19,6 +19,7 @@ struct Critical;
 struct GameSession;
 struct PlayerGhost;
 struct Monitor;
+struct Enemy;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -116,6 +117,8 @@ struct Actor : QuadTreeCollider,
 	void PhysicsResponse();
 	bool physicsOver;
 	void GroundAttack();
+	void ConfirmEnemyKill( Enemy *e );
+
 
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
