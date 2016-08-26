@@ -1146,9 +1146,14 @@ void Crawler::UpdatePostPhysics()
 
 	if( deathFrame == 30 )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 		owner->RemoveEnemy( this );
 		return;
+	}
+
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 	}
 
 	UpdateSprite();

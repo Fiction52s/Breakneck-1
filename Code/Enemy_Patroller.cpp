@@ -299,6 +299,17 @@ void Patroller::UpdatePostPhysics()
 		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
+	if( deathFrame == 30 )
+	{
+		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->RemoveEnemy( this );
+		//return;
+	}
+
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+	}
 	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
@@ -322,11 +333,7 @@ void Patroller::UpdatePostPhysics()
 		frame = 0;
 	}
 
-	if( deathFrame == 30 )
-	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
-		owner->RemoveEnemy( this );
-	}
+	
 }
 
 void Patroller::UpdateSprite()

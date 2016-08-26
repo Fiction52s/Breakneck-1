@@ -353,7 +353,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 		bool hasBounce,
 		bool hasGrind,
 		bool hasTimeSlow,
-		bool hasWires ): smallOrbVA( sf::Quads, 6 * 4 ), //basePos( 96, 64 * 6 + 270 )
+		bool hasWires ): smallOrbVA( sf::Quads, 6 * 2 * 4 ), //basePos( 96, 64 * 6 + 270 )
 		basePos( 150, 450 ), partialSectionVA( sf::Triangles, 3 )
 {
 
@@ -510,13 +510,39 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	sf::Transform tr;
 	//tr.rotate( -360 / 6.0 );
 
+	/*for( int i = 5; i >= 0; --i )
+	{
+		smallOrbVA[(i+6) * 4+0].position = basePos + Vector2f( 0, 0 ) + tr.transformPoint( offset );  
+		smallOrbVA[(i+6) * 2 * 4+1].position = basePos + Vector2f( 64, 0 ) + tr.transformPoint( offset ); 
+		smallOrbVA[(i+6) * 2 * 4+2].position = basePos + Vector2f( 64, 64 ) + tr.transformPoint( offset ); 
+		smallOrbVA[(i+6) * 2 * 4+3].position = basePos + Vector2f( 0, 64 ) + tr.transformPoint( offset );
+		tr.rotate( -360 / 6.0 );
+	}*/
+
+	Vector2f bPos = basePos + Vector2f( 32, 32 );
+	Vector2f offsetArrows( 0, -radiusOffset + 10 );
 	for( int i = 5; i >= 0; --i )
 	{
-		smallOrbVA[i*4+0].position = basePos + Vector2f( 0, 0 ) + tr.transformPoint( offset );  //- //Vector2f( 0, 64 * i );
-		smallOrbVA[i*4+1].position = basePos + Vector2f( 64, 0 ) + tr.transformPoint( offset ); //- //Vector2f( 0, 64 * i );
-		smallOrbVA[i*4+2].position = basePos + Vector2f( 64, 64 ) + tr.transformPoint( offset ); //- //Vector2f( 0, 64 * i );
-		smallOrbVA[i*4+3].position = basePos + Vector2f( 0, 64 ) + tr.transformPoint( offset ); //- //Vector2f( 0, 64 * i );
+		/*Vector2f( 0, 0   )
+		Vector2f( 64, 0  )
+		Vector2f( 64, 64 )
+		Vector2f( 0, 64  )*/
+		smallOrbVA[(i+6) * 4+0].position = bPos + Vector2f(-32,-32  ) + tr.transformPoint( offset );  
+		smallOrbVA[(i+6) * 4+1].position = bPos + Vector2f( 32, -32 ) + tr.transformPoint( offset ); 
+		smallOrbVA[(i+6) * 4+2].position = bPos + Vector2f( 32, 32  ) + tr.transformPoint( offset ); 
+		smallOrbVA[(i+6) * 4+3].position = bPos + Vector2f( -32, 32 ) + tr.transformPoint( offset );
 		tr.rotate( -360 / 6.0 );
+	}
+
+	sf::Transform tr1;
+	tr1.rotate( 360 / 12.0 );
+	for( int i = 0; i < 6; ++i )
+	{
+		smallOrbVA[i * 4+0].position = bPos + Vector2f(-32,-32  ) + tr1.transformPoint( offsetArrows );  
+		smallOrbVA[i * 4+1].position = bPos + Vector2f( 32, -32 ) + tr1.transformPoint( offsetArrows ); 
+		smallOrbVA[i * 4+2].position = bPos + Vector2f( 32, 32  ) + tr1.transformPoint( offsetArrows ); 
+		smallOrbVA[i * 4+3].position = bPos + Vector2f( -32, 32 ) + tr1.transformPoint( offsetArrows );
+		tr1.rotate( 360 / 6.0 );
 	}
 
 	for( int i = 0; i < 6; ++i )
@@ -557,7 +583,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	smallOrbVA[1].texCoords = Vector2f( 64, 0 );
 	smallOrbVA[2].texCoords = Vector2f( 64, 64 );
 	smallOrbVA[3].texCoords = Vector2f( 0, 64 );*/
-
+	cout << "end of constructor" << endl;
 }
 
 void PowerWheel::UpdateSmallOrbs()
@@ -583,6 +609,20 @@ void PowerWheel::UpdateSmallOrbs()
 		IntRect ir = ts_smallOrbs->GetSubRect( irIndex );
 		
 		
+		smallOrbVA[(i+6)*4+0].texCoords = Vector2f( ir.left, ir.top );
+		smallOrbVA[(i+6)*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		smallOrbVA[(i+6)*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		smallOrbVA[(i+6)*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+
+		/*smallOrbVA[i*4+0].texCoords = Vector2f( ir.left, ir.top );
+		smallOrbVA[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		smallOrbVA[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		smallOrbVA[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
+	}
+
+	for( int i = 0; i < 6; ++i )
+	{
+		IntRect ir = ts_smallOrbs->GetSubRect( 24 + i );
 		smallOrbVA[i*4+0].texCoords = Vector2f( ir.left, ir.top );
 		smallOrbVA[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
 		smallOrbVA[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );

@@ -907,6 +907,7 @@ GameSession::~GameSession()
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
+	cout << "checking for string: " << s << endl;
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	{
 		if( (*it)->sourceName == s )

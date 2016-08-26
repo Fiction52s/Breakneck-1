@@ -738,7 +738,7 @@ Actor::Actor( GameSession *gs )
 		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
 		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
 
-		bool noPowers = true;
+		bool noPowers = false;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
