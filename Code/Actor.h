@@ -64,7 +64,16 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
-	
+	enum SoundType
+	{
+		S_HIT,
+		S_HIT_AND_KILL,
+		S_SLASH,
+		S_TIMESLOW,
+		S_Count
+	};
+	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
+
 	enum Expr
 	{
 		Expr_NEUTRAL,

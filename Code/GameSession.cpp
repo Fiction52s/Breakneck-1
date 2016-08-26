@@ -567,7 +567,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
 {
-	
+	soundNodeList = new SoundNodeList( 10 );
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ) );
 	
 	currentZone = NULL;
@@ -4593,9 +4593,23 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
-	
-
 	soundManager = new SoundManager;
+
+	gameSoundBuffers[KEY_COMPLETE_W1] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
+	gameSoundBuffers[KEY_COMPLETE_W2] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[KEY_COMPLETE_W3] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[KEY_COMPLETE_W4] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[KEY_COMPLETE_W5] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[KEY_COMPLETE_W6] = soundManager->GetSound( "Audio/Sounds/key_complete_w6.ogg" );
+	gameSoundBuffers[KEY_ENTER_0] = soundManager->GetSound( "Audio/Sounds/key_enter_1.ogg" );
+	gameSoundBuffers[KEY_ENTER_1] = soundManager->GetSound( "Audio/Sounds/key_enter_1.ogg" );
+	gameSoundBuffers[KEY_ENTER_2] = soundManager->GetSound( "Audio/Sounds/key_enter_2.ogg" );
+	gameSoundBuffers[KEY_ENTER_3] = soundManager->GetSound( "Audio/Sounds/key_enter_3.ogg" );
+	gameSoundBuffers[KEY_ENTER_4] = soundManager->GetSound( "Audio/Sounds/key_enter_4.ogg" );
+	gameSoundBuffers[KEY_ENTER_5] = soundManager->GetSound( "Audio/Sounds/key_enter_5.ogg" );
+	gameSoundBuffers[KEY_ENTER_6] = soundManager->GetSound( "Audio/Sounds/key_enter_6.ogg" );
+	//gameSoundBuffers[KEY_ENTER_0] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
+
 	//soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
 	//currMusic = soundManager->GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
 	//currMusic->setLoop( true );
@@ -5588,6 +5602,8 @@ int GameSession::Run( string fileN )
 				keyMarker->Update();
 
 				scoreDisplay->Update();
+
+				soundNodeList->Update();
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();

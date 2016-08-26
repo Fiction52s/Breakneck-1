@@ -24,6 +24,33 @@ struct SoundManager
 	std::list<MusicInfo*> songs;
 };
 
+
+struct SoundNode
+{
+	SoundNode()
+		:next( NULL ),
+		prev( NULL )
+	{
+	}
+	SoundNode *next;
+	SoundNode *prev;
+	sf::Sound sound;
+};
+
+struct SoundNodeList
+{
+	SoundNodeList( int maxSounds );
+	//void AddActive( SoundNode *sn );
+	//void AddInactive( SoundNode *sn );
+	void DeactivateSound( SoundNode *sn );
+	void Update();
+	void Reset();
+	SoundNode *activeList;
+	SoundNode *inactiveList;
+	void ActivateSound( sf::SoundBuffer *buffer );
+
+};
+
 #endif
 
 //sf::Music music;

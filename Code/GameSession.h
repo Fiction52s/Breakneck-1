@@ -287,6 +287,26 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		PAUSE,
 		MAP
 	};
+
+	enum SoundType
+	{
+		KEY_COMPLETE_W1,
+		KEY_COMPLETE_W2,
+		KEY_COMPLETE_W3,
+		KEY_COMPLETE_W4,
+		KEY_COMPLETE_W5,
+		KEY_COMPLETE_W6,
+		KEY_ENTER_0,
+		KEY_ENTER_1,
+		KEY_ENTER_2,
+		KEY_ENTER_3,
+		KEY_ENTER_4,
+		KEY_ENTER_5,
+		KEY_ENTER_6,
+		Count
+	};
+	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
+	SoundNodeList * soundNodeList;
 	ScoreDisplay *scoreDisplay;
 	State state;
 	std::list<Tileset*> tilesetList;

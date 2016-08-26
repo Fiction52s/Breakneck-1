@@ -108,6 +108,10 @@ Actor::Actor( GameSession *gs )
 		ts_dodecaSmall = owner->GetTileset( "dodecasmall.png", 180, 180 );
 		ts_dodecaBig = owner->GetTileset( "dodecabig.png", 360, 360 );
 
+		soundBuffers[S_HIT] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack_short.ogg" );
+		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack.ogg" );
+		soundBuffers[S_SLASH] = owner->soundManager->GetSound( "Audio/Sounds/kin_sword.ogg" );
+		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Audio/Sounds/timeslow.ogg" );
 		
 
 		/*if( !fairBuffer.loadFromFile( "fair.ogg" ) )
@@ -4576,6 +4580,9 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
+			
+
+
 			CheckHoldJump();
 
 			//currHitboxes = fairHitboxes;
@@ -4586,6 +4593,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
+				owner->soundNodeList->ActivateSound( owner->gameSoundBuffers[S_SLASH] );
 				currAttackHit = false;
 				//fairSound.play();
 			}
