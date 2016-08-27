@@ -13,7 +13,7 @@ using namespace sf;
 
 
 BossCrawler::BossCrawler( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), numBullets( 6 ), 
+	:Enemy( owner, EnemyType::CRAWLER, false, 1 ), ground( g ), edgeQuantity( q ), numBullets( 6 ), 
 		bulletVA( sf::Quads, numBullets * 4 )
 {
 	invincibleFrames = 0;

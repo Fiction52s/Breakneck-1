@@ -20,13 +20,12 @@ using namespace sf;
 
 
 
-PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
+PoisonFrog::PoisonFrog( GameSession *p_owner, bool hasMonitor, Edge *g, double q, int gFactor,
 	sf::Vector2i &jStrength, int framesWait )
-	:Enemy( p_owner, EnemyType::POISONFROG ), 
+	:Enemy( p_owner, EnemyType::POISONFROG, hasMonitor, 2 ), 
 	gravityFactor( gFactor ), jumpStrength( jStrength.x, jStrength.y ), 
 	jumpFramesWait( framesWait )
 {
-
 	maxFallSpeed = 25;
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 2;
@@ -46,8 +45,6 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 	double width = 80;
 	double height = 80;
 	ts_test = owner->GetTileset( "frog_80x80.png", width, height );
-
-	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 
 	//jumpStrength = 10;
 	xSpeed = 8;
@@ -108,10 +105,6 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, Edge *g, double q, int gFactor,
 	hitboxInfo->knockback = 0;
 
 	deathPartingSpeed = .4;
-
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	/*physBody.isCircle = true;
 	physBody.offset.x = 0;
@@ -960,7 +953,7 @@ void PoisonFrog::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dead )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	UpdateSprite();
@@ -1187,6 +1180,15 @@ void PoisonFrog::UpdateSprite()
 	else
 	{
 		
+		if( monitor != NULL && !suppressMonitor && !dead )
+		{
+			keySprite.setTexture( *ts_key->texture );
+			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
+		}
+
 		sprite.setTexture( *ts_test->texture );
 		
 		switch( action )

@@ -18,11 +18,12 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,int wait,
+CurveTurret::CurveTurret( GameSession *owner, bool hasMonitor, Edge *g, double q, double speed,int wait,
 	Vector2i &gravFactor, bool relative )
-		:Enemy( owner, EnemyType::CURVETURRET ), framesWait( wait), bulletSpeed( speed ), ground( g ),
+		:Enemy( owner, EnemyType::CURVETURRET, hasMonitor, 2 ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
+
 	animationFactor = 3;
 	assert( framesWait > 13 * animationFactor );
 
@@ -41,7 +42,6 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	
-	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 	
 
 	gn = g->Normal();
@@ -118,11 +118,8 @@ CurveTurret::CurveTurret( GameSession *owner, Edge *g, double q, double speed,in
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
-	//bloodSprite.setTexture( *ts_testBlood->texture );
 
-	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
+	
 
 	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0, 300 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
@@ -281,7 +278,7 @@ void CurveTurret::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dying )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 30 && dying )
@@ -634,6 +631,16 @@ void CurveTurret::UpdateSprite()
 	//	++i;
 	//	notBullet = notBullet->next;
 	//}
+
+	if( monitor != NULL && !suppressMonitor && !dead )
+	{
+		keySprite.setTexture( *ts_key->texture );
+		keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+		keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+			keySprite.getLocalBounds().height / 2 );
+		keySprite.setPosition( position.x, position.y );
+	}
+
 
 	if( dead )
 	{

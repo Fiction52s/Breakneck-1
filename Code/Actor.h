@@ -238,6 +238,8 @@ struct Actor : QuadTreeCollider,
 
 	Tileset * ts_fx_airdashUp;
 	Tileset * ts_fx_airdashDiagonal;
+	Tileset * ts_fx_airdashSmall;
+
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;

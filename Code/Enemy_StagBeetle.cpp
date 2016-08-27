@@ -18,10 +18,13 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( cw ),
+StagBeetle::StagBeetle( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw, double s )
+	:Enemy( owner, EnemyType::STAGBEETLE, hasMonitor, 2 ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
+
+	
+
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = s;
 	action = RUN;
@@ -54,7 +57,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
-	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
+	
 
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
@@ -115,8 +118,8 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 	deathPartingSpeed = .4;
 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "fx_blood_2_256x256.png", 256, 256 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	
 
@@ -133,6 +136,7 @@ StagBeetle::StagBeetle( GameSession *owner, Edge *g, double q, bool cw, double s
 
 void StagBeetle::ResetEnemy()
 {
+	keyFrame = 0;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
 	testMover->roll = false;
@@ -715,7 +719,7 @@ void StagBeetle::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dead )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	UpdateSprite();

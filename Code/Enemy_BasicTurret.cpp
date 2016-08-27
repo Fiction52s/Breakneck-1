@@ -18,10 +18,16 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,int wait )
-		:Enemy( owner, EnemyType::BASICTURRET ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
+BasicTurret::BasicTurret( GameSession *owner, bool hasMonitor, Edge *g, double q, double speed,int wait )
+		:Enemy( owner, EnemyType::BASICTURRET, hasMonitor, 1 ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
 {
+
+	//keyFrame = 0;
+	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
+
+
+
 	initHealth = 60;
 	health = initHealth;
 
@@ -113,8 +119,6 @@ BasicTurret::BasicTurret( GameSession *owner, Edge *g, double q, double speed,in
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
 
 
 	//UpdateSprite();
@@ -687,6 +691,17 @@ void BasicTurret::UpdateSprite()
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 		topDeathSprite.setRotation( sprite.getRotation() );
+	}
+	else
+	{
+		if( monitor != NULL && !suppressMonitor && !dead )
+		{
+			keySprite.setTexture( *ts_key->texture );
+			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
+		}
 	}
 }
 

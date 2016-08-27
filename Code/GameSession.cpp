@@ -1722,13 +1722,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
 				//enemy->Monitor::MonitorType
 				
-				HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
+				HealthFly *enemy = new HealthFly( this, hasMonitor, Vector2i( xPos, yPos ), fType );
 				
-				if( hasMonitor )
-				{
-					cout << "new monitor" << endl;
-					enemy->monitor = new Monitor( this, enemy );
-				}
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );

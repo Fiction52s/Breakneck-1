@@ -10,7 +10,7 @@ using namespace sf;
 #define V2d sf::Vector2<double>
 
 Goal::Goal( GameSession *owner, Edge *g, double q )
-		:Enemy( owner, EnemyType::GOAL ), ground( g ), edgeQuantity( q ), dead( false )
+		:Enemy( owner, EnemyType::GOAL, false, 0 ), ground( g ), edgeQuantity( q ), dead( false )
 {
 	
 	double width = 288;

@@ -18,9 +18,10 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
-		:Enemy( owner, EnemyType::FOOTTRAP ), ground( g ), edgeQuantity( q )
+FootTrap::FootTrap( GameSession *owner, bool hasMonitor, Edge *g, double q )
+		:Enemy( owner, EnemyType::FOOTTRAP, hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 {
+
 	initHealth = 40;
 	health = initHealth;
 
@@ -87,12 +88,6 @@ FootTrap::FootTrap( GameSession *owner, Edge *g, double q )
 	Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 	//deathVector = V2d( 1, -1 );
-
-	ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
-	bloodSprite.setTextureRect( ts_testBlood->GetSubRect( 0 ) );
-
-	ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
 }
 
 void FootTrap::ResetEnemy()
@@ -214,7 +209,7 @@ void FootTrap::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dead )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( receivedHit != NULL )
@@ -392,19 +387,33 @@ void FootTrap::UpdateSprite()
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 
-	botDeathSprite.setTexture( *ts->texture );
-	botDeathSprite.setTextureRect( ts->GetSubRect( 9 ) );
-	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2  );
-	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + deathVector.y * deathPartingSpeed * deathFrame );
-	botDeathSprite.setRotation( sprite.getRotation() );
+	if( dead )
+	{
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 9 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2  );
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
+		botDeathSprite.setRotation( sprite.getRotation() );
 
-	topDeathSprite.setTexture( *ts->texture );
-	topDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
-	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-	topDeathSprite.setRotation( sprite.getRotation() );
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setRotation( sprite.getRotation() );
+	}
+	else
+	{
+		if( monitor != NULL && !suppressMonitor && !dead )
+		{
+			keySprite.setTexture( *ts_key->texture );
+			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
+		}
+	}
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 }
 

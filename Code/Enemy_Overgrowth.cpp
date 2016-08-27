@@ -532,9 +532,10 @@ void Overgrowth::AddToList( Tree *tree, Tree *&list )
 	list = tree;
 }
 
-Overgrowth::Overgrowth( GameSession *owner, Edge *g, double q, double speed,int wait )
-		:Enemy( owner, EnemyType::OVERGROWTH ), treeVA( sf::Quads, MAX_TREES * 4 )
+Overgrowth::Overgrowth( GameSession *owner, bool hasMonitor, Edge *g, double q, double speed,int wait )
+		:Enemy( owner, EnemyType::OVERGROWTH, hasMonitor, 5 ), treeVA( sf::Quads, MAX_TREES * 4 )
 {
+
 	origGround = g;
 	origQuantity = q;
 

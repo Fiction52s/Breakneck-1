@@ -17,8 +17,9 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 HealthFly::HealthFly( GameSession *owner, Vector2i &pos, FlyType fType )
-	:Enemy( owner, Enemy::HEALTHFLY ), flyType( fType )
+	:Enemy( owner, Enemy::HEALTHFLY, false, 0 ), flyType( fType )
 {
+
 	frame = 0;
 	animationFactor = 4;
 	ts = owner->GetTileset( "healthfly_64x64.png", 64, 64 );

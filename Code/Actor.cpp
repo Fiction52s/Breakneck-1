@@ -745,6 +745,7 @@ Actor::Actor( GameSession *gs )
 
 		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
 		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
+		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );
 
 		bool noPowers = false;
 		if( noPowers )
@@ -10162,6 +10163,11 @@ void Actor::UpdatePhysics()
 				//	cout << "super secret fix offsetx222: " << offsetX << endl;
 				//	offsetX = -b.rw;
 				}
+
+				//if( reversed )
+				//{
+				owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+				//}
 			}
 			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 )
 			{
@@ -11185,7 +11191,8 @@ void Actor::UpdatePostPhysics()
 				}
 				else if( velocity.x > 0 && velocity.y > 0 )
 				{
-					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x - 40, position.y - 60 ), false, PI, 15, 3, true );//facingRight );
+					V2d pos = V2d( position.x - 40, position.y - 60 );
+					owner->ActivateEffect( ts_fx_airdashDiagonal, pos, false, PI, 15, 3, true );//facingRight );
 				}
 				else if( velocity.x < 0 && velocity.y > 0 )
 				{
@@ -11201,6 +11208,11 @@ void Actor::UpdatePostPhysics()
 				}
 				//cout << "airdash fx" << endl;
 				
+			}
+
+			if( frame % 1 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 64 ), false, 0, 12, 4, facingRight );
 			}
 		}
 		break;
@@ -13922,10 +13934,7 @@ void Actor::UpdateSprite()
 			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 14, 1, facingRight );
 		}
 
-		if( reversed )
-		{
-			owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-		}
+		
 
 
 		break;

@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::CRAWLER ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+Crawler::Crawler( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw, double s )
+	:Enemy( owner, EnemyType::CRAWLER, hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
 	initHealth = 60;
 	health = initHealth;
@@ -91,10 +91,10 @@ Crawler::Crawler( GameSession *owner, Edge *g, double q, bool cw, double s )
 	deathPartingSpeed = .4;
 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
+	//ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
-	ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
+	//ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
 }
 
 void Crawler::ResetEnemy()
@@ -492,7 +492,7 @@ void Crawler::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( monitor != NULL )
+			if( hasMonitor )
 			{
 				owner->keyMarker->CollectKey();
 				///
@@ -1158,7 +1158,7 @@ void Crawler::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dead )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	UpdateSprite();
@@ -1209,7 +1209,7 @@ void Crawler::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -1254,7 +1254,7 @@ void Crawler::DrawMinimap( sf::RenderTarget *target )
 		target->draw( monitor->miniSprite );
 	}*/
 
-	if( !dead && monitor != NULL && !suppressMonitor )
+	if( !dead && hasMonitor && !suppressMonitor )
 	{
 		CircleShape cs;
 		cs.setRadius( 50 );
@@ -1378,6 +1378,15 @@ void Crawler::UpdateSprite()
 				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
 			}
 			sprite.setTextureRect( r );
+		}
+
+		if( monitor != NULL && !suppressMonitor && !dead )
+		{
+			keySprite.setTexture( *ts_key->texture );
+			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
 		}
 	}
 }

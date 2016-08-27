@@ -19,10 +19,11 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Pulser::Pulser( GameSession *owner, Vector2i &pos, 
+Pulser::Pulser( GameSession *owner, bool hasMonitor, Vector2i &pos, 
 	list<Vector2i> &pathParam, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::PULSER ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::PULSER, hasMonitor, 3 ), deathFrame( 0 )
 {
+
 	loop = p_loop;
 
 	receivedHit = NULL;
@@ -280,7 +281,7 @@ void Pulser::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+			owner->ActivateEffect( ts_blood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )

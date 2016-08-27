@@ -288,7 +288,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 
 	
 	
-	Enemy( GameSession *owner, EnemyType t );
+	Enemy( GameSession *owner, EnemyType t,
+		bool hasMonitor, int world );
 	virtual void Init(){};
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
@@ -305,6 +306,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual int NumTotalBullets();
 	void SaveState();
 	void LoadState();
+
 	void AttemptSpawnMonitor();
 	virtual void SaveEnemyState() = 0;
 	virtual void LoadEnemyState() = 0;
@@ -324,12 +326,21 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	int health;
 	sf::Vector2<double> position;
 	Zone *zone;
-	Monitor *monitor;
+	bool hasMonitor;
+	//Monitor *monitor;
 	bool dead;
 	bool suppressMonitor;
 	bool specterProtected;
 	Tileset *ts_hitSpack;
-	sf::Shader *shader;
+	sf::Shader *keyShader;
+
+	Tileset *ts_blood;
+
+	sf::Sprite *keySprite;
+	//sf::Sprite bloodSprite;
+	Tileset *ts_key;
+	int keyFrame;
+	int world;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
@@ -438,37 +449,6 @@ struct Goal : Enemy
 	sf::Vector2<double> gn;
 };
 
-struct Monitor : Enemy
-{
-	Monitor( GameSession *owner,
-		Enemy *e_host );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void Draw( sf::RenderTarget *target);
-	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	void UpdateHitboxes();
-	std::pair<bool,bool> PlayerHitMe();
-	bool PlayerSlowingMe();
-	void DebugDraw(sf::RenderTarget *target);
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	int animationFactor;
-	sf::Sprite sprite;
-	sf::Sprite miniSprite;
-	Tileset *ts_mini;
-	Tileset *ts;
-	int frame;
-	Enemy *host;
-	bool respawnSpecial;
-};
-
 struct HealthFly : Enemy
 {
 	enum FlyType
@@ -516,7 +496,8 @@ struct HealthFly : Enemy
 //w1
 struct Patroller : Enemy
 {
-	Patroller( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed );
+	Patroller( GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed );
 	//void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -611,7 +592,7 @@ struct CrawlerReverser : QuadTreeEntrant
 
 struct Crawler : Enemy
 {
-	Crawler( GameSession *owner, Edge *ground, double quantity, bool clockwise, double speed );
+	Crawler( GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, double speed );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -680,7 +661,7 @@ struct Crawler : Enemy
 
 struct BasicTurret : Enemy
 {
-	BasicTurret( GameSession *owner, Edge *ground, double quantity, 
+	BasicTurret( GameSession *owner, bool hasMonitor, Edge *ground, double quantity, 
 		double bulletSpeed,
 		int framesWait );
 //	void HandleEdge( Edge *e );
@@ -782,7 +763,8 @@ struct BasicTurret : Enemy
 
 struct FootTrap : Enemy
 {
-	FootTrap( GameSession *owner, Edge *ground, double quantity );
+	FootTrap( GameSession *owner, bool hasMonitor,
+		Edge *ground, double quantity );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -980,7 +962,8 @@ struct BossCrawler : Enemy
 struct Bat : Enemy, LauncherEnemy
 {
 	MovementSequence testSeq;
-	Bat( GameSession *owner, sf::Vector2i pos, std::list<sf::Vector2i> &path,
+	Bat( GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos, std::list<sf::Vector2i> &path,
 		int bulletSpeed,
 		//int nodeDistance,
 		int framesBetween,
@@ -1015,9 +998,7 @@ struct Bat : Enemy, LauncherEnemy
 	//int nodeDistance;
 	int framesBetween;
 
-	sf::Sprite testKeySprite;
-	Tileset *ts_testKey;
-	int keyFrame;
+	
 
 	//sf::Vector2<double> basePos;
 	int deathFrame;
@@ -1087,7 +1068,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 		LAND
 	};
 
-	StagBeetle( GameSession *owner, Edge *ground, 
+	StagBeetle( GameSession *owner, bool hasMonitor,
+		Edge *ground, 
 		double quantity, 
 		bool clockwise, double speed );
 	void ActionEnded();
@@ -1180,7 +1162,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 
 struct CurveTurret : Enemy, LauncherEnemy
 {
-	CurveTurret( GameSession *owner, Edge *ground, double quantity, 
+	CurveTurret( GameSession *owner, bool hasMonitor,
+		Edge *ground, double quantity, 
 		double bulletSpeed,
 		int framesWait,
 		sf::Vector2i &gravFactor,
@@ -1291,6 +1274,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	//};
 	
 	PoisonFrog( GameSession *owner, 
+		bool hasMonitor,
 		Edge *ground, double quantity,
 		int gravFactor,
 		sf::Vector2i &jumpStrength,
@@ -1415,6 +1399,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 struct Pulser : Enemy
 {
 	Pulser( GameSession *owner, 
+		bool hasMonitor,
 		sf::Vector2i &pos, 
 		std::list<sf::Vector2i> &path,
 		int framesBetween,
@@ -1509,7 +1494,9 @@ struct Badger : Enemy, GroundMoverHandler
 		Count
 	};
 
-	Badger( GameSession *owner, Edge *ground, 
+	Badger( GameSession *owner, 
+		bool hasMonitor,
+		Edge *ground, 
 		double quantity, 
 		bool clockwise, int speed,
 		int jumpStrength );
@@ -1625,7 +1612,9 @@ struct Owl : Enemy, LauncherEnemy
 		FIRE
 	};
 
-	Owl( GameSession *owner, sf::Vector2i &pos,
+	Owl( GameSession *owner,
+		bool hasMonitor,
+		sf::Vector2i &pos,
 		int bulletSpeed,
 		int framesBetween,
 		bool facingRight );
@@ -1717,7 +1706,8 @@ struct Owl : Enemy, LauncherEnemy
 
 struct Cactus : Enemy, LauncherEnemy
 {
-	Cactus( GameSession *owner, Edge *ground, double quantity, 
+	Cactus( GameSession *owner, bool hasMonitor,
+		 Edge *ground, double quantity, 
 		 int p_bulletSpeed, int p_rhythm, 
 		 int p_amplitude );
 //	void HandleEdge( Edge *e );
@@ -1896,7 +1886,8 @@ struct CoralBlock : Enemy
 
 struct CoralNanobots : Enemy//, LauncherEnemy
 {
-	CoralNanobots( GameSession *owner, 
+	CoralNanobots( GameSession *owner,
+		 bool hasMonitor,
 		sf::Vector2i &pos, int moveFrames );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
@@ -1967,7 +1958,8 @@ struct Turtle : Enemy, LauncherEnemy
 		FADEOUT
 	};
 
-	Turtle( GameSession *owner, sf::Vector2i pos );
+	Turtle( GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );
@@ -2058,7 +2050,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 		Count
 	};
 
-	Cheetah( GameSession *owner, Edge *ground, 
+	Cheetah( GameSession *owner, bool hasMonitor,
+		Edge *ground, 
 		double quantity );
 	void ActionEnded();
 	int NumTotalBullets();
@@ -2175,7 +2168,8 @@ struct Spider : Enemy, RayCastHandler
 		bool clockwiseFromCurrent;
 	};
 
-	Spider( GameSession *owner, Edge *ground, 
+	Spider( GameSession *owner, bool hasMonitor,
+		Edge *ground, 
 		double quantity, int speed );
 	void ActionEnded();
 	int NumTotalBullets();
@@ -2312,7 +2306,8 @@ struct Ghost : Enemy
 
 	double latchStartAngle;
 	MovementSequence testSeq;
-	Ghost( GameSession *owner, sf::Vector2i pos, 
+	Ghost( GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos, 
 		float speed );
 
 	void HandleEntrant( QuadTreeEntrant *qte );
@@ -2422,7 +2417,8 @@ struct Shark : Enemy
 	double latchStartAngle;
 	MovementSequence circleSeq;
 	MovementSequence rushSeq;
-	Shark( GameSession *owner, sf::Vector2i pos, 
+	Shark( GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos, 
 		float speed );
 
 	void HandleEntrant( QuadTreeEntrant *qte );
@@ -2586,7 +2582,9 @@ struct Overgrowth : Enemy
 {
 	
 
-	Overgrowth( GameSession *owner, Edge *ground, double quantity, 
+	Overgrowth( GameSession *owner,
+		 bool hasMonitor,
+		 Edge *ground, double quantity, 
 		double bulletSpeed, int lifeCycleFrames );
 //	void HandleEdge( Edge *e );
 	void HandleEntrant( QuadTreeEntrant *qte );
@@ -2785,7 +2783,9 @@ struct Specter : Enemy
 {
 	
 	//MovementSequence testSeq;
-	Specter( GameSession *owner, sf::Vector2i pos );
+	Specter( GameSession *owner,
+		 bool hasMonitor,
+		 sf::Vector2i pos );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();

@@ -18,9 +18,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Badger::Badger( GameSession *owner, Edge *g, double q, bool cw, int speed,
+Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw, int speed,
 	int p_jumpStrength )
-	:Enemy( owner, EnemyType::BADGER ), facingRight( cw ),
+	:Enemy( owner, EnemyType::BADGER, hasMonitor, 3 ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
 

@@ -18,10 +18,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Cheetah::Cheetah( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::CHEETAH ), facingRight( true ),
+Cheetah::Cheetah( GameSession *owner, bool hasMonitor, Edge *g, double q )
+	:Enemy( owner, EnemyType::CHEETAH, hasMonitor, 4 ), facingRight( true ),
 	moveBezTest( .22,.85,.3,.91 )
 {
+
 	//facingRight = true;
 	origFacingRight = facingRight;
 	gravity = V2d( 0, .6 );

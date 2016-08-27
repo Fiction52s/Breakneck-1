@@ -13,9 +13,10 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
-	:Enemy( owner, EnemyType::PATROLLER ), deathFrame( 0 )
+Patroller::Patroller( GameSession *owner, bool hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
+	:Enemy( owner, EnemyType::PATROLLER, hasMonitor, 1 ), deathFrame( 0 )
 {
+
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
@@ -102,9 +103,7 @@ Patroller::Patroller( GameSession *owner, Vector2i pos, list<Vector2i> &pathPara
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
 	//bloodSprite.setTexture( *ts_testBlood->texture );
-	
-	ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
-	ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
+
 	UpdateHitboxes();
 }
 
@@ -240,7 +239,7 @@ void Patroller::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+			owner->ActivateEffect( ts_blood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -313,7 +312,7 @@ void Patroller::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dead )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 	UpdateSprite();
 
@@ -346,17 +345,31 @@ void Patroller::UpdateSprite()
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 
-	botDeathSprite.setTexture( *ts->texture );
-	botDeathSprite.setTextureRect( ts->GetSubRect( 15 ) );
-	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
-	botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + deathVector.y * deathPartingSpeed * deathFrame );
+	if( dead )
+	{
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 15 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
-	topDeathSprite.setTexture( *ts->texture );
-	topDeathSprite.setTextureRect( ts->GetSubRect( 16 ) );
-	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-	topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-		position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 16 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+	}
+	else
+	{
+		if( monitor != NULL && !suppressMonitor && !dead )
+		{
+			keySprite.setTexture( *ts_key->texture );
+			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
+		}
+	}
 }
 
 void Patroller::Draw( sf::RenderTarget *target )

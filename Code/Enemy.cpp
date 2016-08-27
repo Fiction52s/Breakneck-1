@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Zone.h"
+#include <sstream>
 
 using namespace std;
 using namespace sf;
@@ -682,12 +683,39 @@ void SinBullet::Reset( sf::Vector2<double> &pos,
 	tempadd = V2d( 0, 0 );
 }
 
-Enemy::Enemy( GameSession *own, EnemyType t )
+Enemy::Enemy( GameSession *own, EnemyType t, bool hasMonitor,
+	int world )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
-	spawnedByClone( false ), type( t ),zone( NULL ), monitor( NULL ), dead( false ),
-	suppressMonitor( false ), ts_hitSpack( NULL ), shader( NULL )
+	spawnedByClone( false ), type( t ),zone( NULL ), dead( false ),
+	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL )
 {
+	if( hasMonitor )
+	{
+		keyShader = new Shader();
+		if( !keyShader->loadFromFile( "key_shader.frag", sf::Shader::Fragment ) )
+		{
+			cout << "couldnt load enemy key shader" << endl;
+			assert( false );
+		}
 
+		keyFrame = 0;
+	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
+		stringstream ss;
+		ss << "key_w0" << world << "_1_128x128.png";
+		ts_key = owner->GetTileset( ss.str(), 128, 128 );
+	}
+
+	stringstream ss;
+	ss << "hit_spack_" << world << "_128x128.png";
+
+	ts_hitSpack = owner->GetTileset( ss.str(), 128, 128 );
+
+	ss.clear();
+	ss.str("");
+
+	ss << "fx_blood_" << world << "_256x256.png";
+
+	ts_blood = owner->GetTileset( ss.str(), 256, 256 );
 }
 
 int Enemy::NumTotalBullets()
@@ -697,7 +725,7 @@ int Enemy::NumTotalBullets()
 
 void Enemy::AttemptSpawnMonitor()
 {
-	if( monitor != NULL && !suppressMonitor )
+	if( hasMonitor && !suppressMonitor )
 	{
 		if( !owner->player->CaptureMonitor( monitor ) )
 		{
@@ -710,6 +738,7 @@ void Enemy::AttemptSpawnMonitor()
 
 void Enemy::Reset()
 {
+	keyFrame = 0;
 	suppressMonitor = false;
 	slowMultiple = 1;
 	slowCounter = 1;

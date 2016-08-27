@@ -19,23 +19,12 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Bat::Bat( GameSession *owner, Vector2i pos, 
+Bat::Bat( GameSession *owner, bool hasMonitor, Vector2i pos, 
 	list<Vector2i> &pathParam, int p_bulletSpeed,
 	//int p_nodeDistance, 
 	int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::BAT ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::BAT, hasMonitor, 2 ), deathFrame( 0 )
 {
-	keyFrame = 0;
-	ts_testKey = owner->GetTileset( "key_w01_1_128x128.png", 128, 128 );
-
-
-	shader = new Shader();
-	if( !shader->loadFromFile( "key_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "couldnt load enemy key shader" << endl;
-		assert( false );
-	}
-
 	loop = p_loop;
 	//loop = false; //no looping on bat for now
 
@@ -50,7 +39,7 @@ Bat::Bat( GameSession *owner, Vector2i pos,
 
 	deathFrame = 0;
 	
-	ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
+	//ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 
 	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );	
@@ -387,7 +376,7 @@ void Bat::UpdatePostPhysics()
 
 	if( deathFrame == 0 && dying )
 	{
-		owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 60 && dying )
@@ -452,11 +441,11 @@ void Bat::UpdateSprite()
 
 		if( monitor != NULL && !suppressMonitor )
 		{
-			testKeySprite.setTexture( *ts_testKey->texture );
-			testKeySprite.setTextureRect( ts_testKey->GetSubRect( keyFrame / 2 ) );
-			testKeySprite.setOrigin( testKeySprite.getLocalBounds().width / 2, 
-				testKeySprite.getLocalBounds().height / 2 );
-			testKeySprite.setPosition( position.x, position.y );
+			keySprite.setTexture( *ts_key->texture );
+			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
 
 		}
 		//testKeySprite.setTextureRect( ts_testKey->GetSubRect( 
@@ -500,7 +489,7 @@ void Bat::Draw( sf::RenderTarget *target )
 		if( shader != NULL && monitor != NULL && !suppressMonitor )
 		{
 			target->draw( sprite, shader );
-			target->draw( testKeySprite );
+			target->draw( keySprite );
 		}
 		else
 		{

@@ -11,8 +11,9 @@ using namespace sf;
 
 
 BasicEffect::BasicEffect ( GameSession *owner )
-	:Enemy( owner, EnemyType::BASICEFFECT )
+	:Enemy( owner, EnemyType::BASICEFFECT, 0, false )
 {
+
 	spawned = true;
 	pauseImmune = false;
 	frame = 0;

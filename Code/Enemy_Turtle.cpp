@@ -19,9 +19,10 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Turtle::Turtle( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 )
+Turtle::Turtle( GameSession *owner, bool hasMonitor, Vector2i pos )
+	:Enemy( owner, EnemyType::TURTLE, hasMonitor, 4 ), deathFrame( 0 )
 {
+
 	//loop = false; //no looping on Turtle for now
 
 	bulletSpeed = 5;
@@ -110,8 +111,8 @@ Turtle::Turtle( GameSession *owner, Vector2i pos )
 
 	facingRight = true;
 	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
@@ -328,10 +329,12 @@ void Turtle::PhysicsResponse()
 				owner->player->velocity.y = 4;//.5;
 			}
 
+
+			owner->ActivateEffect( ts_blood, position, true, 0, 6, 3, facingRight );
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
+			
 			
 		//	cout << "Turtle received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -361,6 +364,7 @@ void Turtle::UpdatePostPhysics()
 	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
+		
 		owner->Pause( 5 );
 	}
 
