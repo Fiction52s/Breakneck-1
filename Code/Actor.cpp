@@ -36,28 +36,29 @@ Actor::Actor( GameSession *gs )
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
+		Vector2f facePos( 24, 0 );
 		ts_kinFace = owner->GetTileset( "kinportrait_320x288.png", 320, 288 );
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 
 		kinUnderOutline.setTexture( *ts_kinFace->texture );
 		kinUnderOutline.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
-		kinUnderOutline.setPosition( 0, 0 );
+		kinUnderOutline.setPosition( facePos );
 
 		kinTealOutline.setTexture( *ts_kinFace->texture );
 		kinTealOutline.setTextureRect( ts_kinFace->GetSubRect( 1 ) );
-		kinTealOutline.setPosition( 0, 0 );
+		kinTealOutline.setPosition( facePos );
 
 		kinBlueOutline.setTexture( *ts_kinFace->texture );
 		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
-		kinBlueOutline.setPosition( 0, 0 );
+		kinBlueOutline.setPosition( facePos );
 
 		kinPurpleOutline.setTexture( *ts_kinFace->texture );
-		kinPurpleOutline.setPosition( 0, 0 );
+		kinPurpleOutline.setPosition( facePos );
 		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
 		//kinFace.setPosition( 2, 48 );
 		//kinFace.setPosition( 1920 / 2 - 512, 0 );
-		kinFace.setPosition( 0, 0 );
+		kinFace.setPosition( facePos );
 
 		SetExpr( Expr::Expr_NEUTRAL );
 

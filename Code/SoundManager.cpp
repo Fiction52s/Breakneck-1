@@ -25,7 +25,7 @@ SoundNodeList::SoundNodeList( int maxSounds )
 
 void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 {
-	cout << "Activate sound!" << endl;
+	//cout << "Activate sound!" << endl;
 	//SoundNode *node;
 	if( inactiveList == NULL )
 	{
@@ -80,7 +80,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 
 	if( sn->next == NULL && sn->prev == NULL )
 	{
-		cout << "a" << endl;
+		//cout << "a" << endl;
 		sn->sound.stop();
 		sn->next = inactiveList;
 		inactiveList->prev = sn;
@@ -93,10 +93,10 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 		if( sn->next == NULL )
 		{
 			assert( sn != activeList );
-			int a = GetActiveCount();
-			int n = GetInactiveCount();
-			cout << "before b count: " << a << ", inactive: " << n << endl;
-			cout << "b" << endl;
+			//int a = GetActiveCount();
+			//int n = GetInactiveCount();
+			//cout << "before b count: " << a << ", inactive: " << n << endl;
+			//cout << "b" << endl;
 			//assert( sn != activeList );
 			sn->sound.stop();
 
@@ -106,25 +106,25 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			sn->next = inactiveList;
 			inactiveList = sn;
 
-			a = GetActiveCount();
-			n = GetInactiveCount();
-			cout << "b count: " << a << ", inactive: " << n << endl;
+			//a = GetActiveCount();
+			//n = GetInactiveCount();
+			//cout << "b count: " << a << ", inactive: " << n << endl;
 			
 		}
 		else if( sn->prev == NULL )
 		{
-			cout << "c" << endl;
+			//cout << "c" << endl;
 			sn->sound.stop();
 			sn->next->prev = NULL;
 			activeList = sn->next;
 
-			int a = GetActiveCount();
-			int n = GetInactiveCount();
-			cout << "c count: " << a << ", inactive: " << n << endl;
+			//int a = GetActiveCount();
+			//int n = GetInactiveCount();
+			//cout << "c count: " << a << ", inactive: " << n << endl;
 		}
 		else
 		{
-			cout << "d" << endl;
+			//cout << "d" << endl;
 			sn->sound.stop();
 			SoundNode * next = sn->next;
 			SoundNode * prev = sn->prev;
@@ -140,9 +140,9 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			sn->next = inactiveList;
 			inactiveList = sn;
 
-			int a = GetActiveCount();
-			int n = GetInactiveCount();
-			cout << "d count: " << a << ", inactive: " << n << endl;
+			//int a = GetActiveCount();
+			//int n = GetInactiveCount();
+			//cout << "d count: " << a << ", inactive: " << n << endl;
 		}
 	}
 	
@@ -152,15 +152,15 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 
 void SoundNodeList::Update()
 {
-	int a = GetActiveCount();
-	int n = GetInactiveCount();
-	cout << "count: " << a << ", inactive: " << n << endl;
+	//int a = GetActiveCount();
+	//int n = GetInactiveCount();
+	//cout << "count: " << a << ", inactive: " << n << endl;
 	SoundNode *curr = activeList;
 	while( curr != NULL )
 	{
 		SoundNode *next = curr->next;
 		//assert( next != curr );
-		cout << curr->sound.getStatus() << endl;
+		//cout << curr->sound.getStatus() << endl;
 		if( curr->sound.getStatus() == Sound::Status::Stopped )
 		{
 			DeactivateSound( curr );
@@ -168,7 +168,7 @@ void SoundNodeList::Update()
 
 		curr = next;
 	}
-	cout << "end update" << endl;
+	//cout << "end update" << endl;
 }
 
 int SoundNodeList::GetActiveCount()
