@@ -186,6 +186,7 @@ struct KeyMarker
 	State state;
 	int keysRequired;
 	int startKeys;
+	GameSession *owner;
 	KeyMarker( GameSession *owner );
 	void SetStartKeys( int sKeys );
 	void Update();
@@ -290,19 +291,19 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	enum SoundType
 	{
-		KEY_COMPLETE_W1,
-		KEY_COMPLETE_W2,
-		KEY_COMPLETE_W3,
-		KEY_COMPLETE_W4,
-		KEY_COMPLETE_W5,
-		KEY_COMPLETE_W6,
-		KEY_ENTER_0,
-		KEY_ENTER_1,
-		KEY_ENTER_2,
-		KEY_ENTER_3,
-		KEY_ENTER_4,
-		KEY_ENTER_5,
-		KEY_ENTER_6,
+		S_KEY_COMPLETE_W1,
+		S_KEY_COMPLETE_W2,
+		S_KEY_COMPLETE_W3,
+		S_KEY_COMPLETE_W4,
+		S_KEY_COMPLETE_W5,
+		S_KEY_COMPLETE_W6,
+		S_KEY_ENTER_0,
+		S_KEY_ENTER_1,
+		S_KEY_ENTER_2,
+		S_KEY_ENTER_3,
+		S_KEY_ENTER_4,
+		S_KEY_ENTER_5,
+		S_KEY_ENTER_6,
 		Count
 	};
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];

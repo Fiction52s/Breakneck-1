@@ -268,6 +268,11 @@ void Bat::UpdatePrePhysics()
 			//AttemptSpawnMonitor();
 			dying = true;
 			//cout << "dying" << endl;
+			owner->player->ConfirmEnemyKill( this );
+		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;

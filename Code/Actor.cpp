@@ -5920,6 +5920,7 @@ void Actor::UpdatePrePhysics()
 				}
 
 				bubbleCreated = true;
+				owner->soundNodeList->ActivateSound( soundBuffers[S_TIMESLOW] );
 			}			
 		}
 
@@ -15475,7 +15476,13 @@ void Actor::UpdateSprite()
 
 void Actor::ConfirmEnemyKill( Enemy *e )
 {
+	owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
 	//wrong
+}
+
+void Actor::ConfirmEnemyNoKill( Enemy *e )
+{
+	owner->soundNodeList->ActivateSound( soundBuffers[S_HIT] );
 }
 
 void Actor::ConfirmHit( Color p_flashColor, 

@@ -186,6 +186,11 @@ void CurveTurret::UpdatePrePhysics()
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dying = true;
+			owner->player->ConfirmEnemyKill( this );
+		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;

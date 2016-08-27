@@ -500,9 +500,14 @@ void Crawler::UpdatePrePhysics()
 			}
 			//AttemptSpawnMonitor();
 			dead = true;
-
-			
+			owner->player->ConfirmEnemyKill( this );
 		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
+		}
+			
+		
 
 		receivedHit = NULL;
 	}

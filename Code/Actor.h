@@ -104,6 +104,7 @@ struct Actor : QuadTreeCollider,
 
 	Actor( GameSession *owner );
 	void UpdateSprite();
+	void ConfirmEnemyNoKill( Enemy *e );
 	void ConfirmHit( sf::Color flashColor, 
 		int flashFrames, double speedBar, int charge );
 	void ActionEnded();

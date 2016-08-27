@@ -440,8 +440,9 @@ bool Barrier::Update( Actor *player )
 }
 
 
-KeyMarker::KeyMarker( GameSession *owner )
+KeyMarker::KeyMarker( GameSession *p_owner )
 {
+	owner = p_owner;
 	ts_keys = owner->GetTileset( "keys_256x256.png", 256, 256 );
 	ts_keyEnergy = owner->GetTileset( "keys_energy_256x256.png", 256, 256 );
 
@@ -473,6 +474,8 @@ void KeyMarker::CollectKey()
 
 	if( keysRequired == 0 )
 	{
+		int soundIndex = GameSession::SoundType::S_KEY_COMPLETE_W1 + ( startKeys - 1 );
+		owner->soundNodeList->ActivateSound( owner->gameSoundBuffers[soundIndex] );
 		state = TOZERO;
 		frame = 0;
 	}
@@ -4595,19 +4598,19 @@ int GameSession::Run( string fileN )
 {
 	soundManager = new SoundManager;
 
-	gameSoundBuffers[KEY_COMPLETE_W1] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
-	gameSoundBuffers[KEY_COMPLETE_W2] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
-	gameSoundBuffers[KEY_COMPLETE_W3] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
-	gameSoundBuffers[KEY_COMPLETE_W4] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
-	gameSoundBuffers[KEY_COMPLETE_W5] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
-	gameSoundBuffers[KEY_COMPLETE_W6] = soundManager->GetSound( "Audio/Sounds/key_complete_w6.ogg" );
-	gameSoundBuffers[KEY_ENTER_0] = soundManager->GetSound( "Audio/Sounds/key_enter_1.ogg" );
-	gameSoundBuffers[KEY_ENTER_1] = soundManager->GetSound( "Audio/Sounds/key_enter_1.ogg" );
-	gameSoundBuffers[KEY_ENTER_2] = soundManager->GetSound( "Audio/Sounds/key_enter_2.ogg" );
-	gameSoundBuffers[KEY_ENTER_3] = soundManager->GetSound( "Audio/Sounds/key_enter_3.ogg" );
-	gameSoundBuffers[KEY_ENTER_4] = soundManager->GetSound( "Audio/Sounds/key_enter_4.ogg" );
-	gameSoundBuffers[KEY_ENTER_5] = soundManager->GetSound( "Audio/Sounds/key_enter_5.ogg" );
-	gameSoundBuffers[KEY_ENTER_6] = soundManager->GetSound( "Audio/Sounds/key_enter_6.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W1] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W2] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W3] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W4] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W5] = soundManager->GetSound( "Audio/Sounds/key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W6] = soundManager->GetSound( "Audio/Sounds/key_complete_w6.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_0] = soundManager->GetSound( "Audio/Sounds/key_enter_1.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_1] = soundManager->GetSound( "Audio/Sounds/key_enter_1.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_2] = soundManager->GetSound( "Audio/Sounds/key_enter_2.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_3] = soundManager->GetSound( "Audio/Sounds/key_enter_3.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_4] = soundManager->GetSound( "Audio/Sounds/key_enter_4.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_5] = soundManager->GetSound( "Audio/Sounds/key_enter_5.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_6] = soundManager->GetSound( "Audio/Sounds/key_enter_6.ogg" );
 	//gameSoundBuffers[KEY_ENTER_0] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
 
 	//soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
@@ -10440,6 +10443,8 @@ void GameSession::ActivateZone( Zone *z )
 
 	currentZone = z;
 	keyMarker->SetStartKeys( currentZone->requiredKeys );
+	int soundIndex = SoundType::S_KEY_ENTER_0 + ( currentZone->requiredKeys );
+	soundNodeList->ActivateSound( gameSoundBuffers[soundIndex] );
 }
 
 void GameSession::UnlockGate( Gate *g )

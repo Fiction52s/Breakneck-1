@@ -586,6 +586,11 @@ void PoisonFrog::UpdatePrePhysics()
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;
+			owner->player->ConfirmEnemyKill( this );
+		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;

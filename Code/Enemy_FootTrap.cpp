@@ -134,7 +134,14 @@ void FootTrap::UpdatePrePhysics()
 			if( monitor != NULL )
 				owner->keyMarker->CollectKey();
 			dead = true;
+			owner->player->ConfirmEnemyKill( this );
 		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
+		}
+
+		
 
 		receivedHit = NULL;
 	}
@@ -203,10 +210,6 @@ void FootTrap::UpdatePostPhysics()
 		
 		owner->RemoveEnemy( this );
 		return;
-	}
-	else if( deathFrame > 30 )
-	{
-		cout << "what: " << deathFrame << endl;
 	}
 
 	if( deathFrame == 0 && dead )

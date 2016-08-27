@@ -45,6 +45,8 @@ struct SoundNodeList
 	void DeactivateSound( SoundNode *sn );
 	void Update();
 	void Reset();
+	int GetActiveCount();
+	int GetInactiveCount();
 	SoundNode *activeList;
 	SoundNode *inactiveList;
 	void ActivateSound( sf::SoundBuffer *buffer );
