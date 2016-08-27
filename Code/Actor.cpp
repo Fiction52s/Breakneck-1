@@ -735,13 +735,16 @@ Actor::Actor( GameSession *gs )
 			bubbleFramesToLive[i] = 0;
 			//bubblePos[i]
 		}
-		ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
+		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
-		ts_fx_gravReverse = owner->GetTileset( "fx_gravreverse.png", 64 , 32 );
+		ts_fx_gravReverse = owner->GetTileset( "fx_grav_reverse_128x128.png", 128 , 128 );
 		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
 		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
 		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
 		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
+
+		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
+		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
 
 		bool noPowers = false;
 		if( noPowers )
@@ -11162,10 +11165,42 @@ void Actor::UpdatePostPhysics()
 	{
 	case AIRDASH:
 		{
-			if( frame % 1 == 0 )
+			if( frame % 4 == 0 )
 			{
+				if( velocity.x == 0 && velocity.y < 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x, position.y + 64 ), false, 0, 15, 3, facingRight );
+				}
+				else if( abs( velocity.y ) < .21 )
+				{
+					//cout << "STUFF???" << endl;
+					if( velocity.x > 0 )
+					{
+						owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x - 64, position.y - 18 ), false, PI / 2.0, 15, 3, true );
+					}
+					else
+					{
+						owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x + 64, position.y - 18 ), false, -PI / 2.0, 15, 3, true );
+					}
+				}
+				else if( velocity.x > 0 && velocity.y > 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x - 40, position.y - 60 ), false, PI, 15, 3, true );//facingRight );
+				}
+				else if( velocity.x < 0 && velocity.y > 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x + 40, position.y - 60 ), false, PI, 15, 3, false );//facingRight );
+				}
+				else if( velocity.x < 0 && velocity.y < 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x + 54, position.y + 60 ), false, 0, 15, 3, true );
+				}
+				else if( velocity.x > 0 && velocity.y < 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x - 54, position.y + 60 ), false, 0, 15, 3, false );
+				}
 				//cout << "airdash fx" << endl;
-				owner->ActivateEffect( ts_fx_airdash, V2d( position.x, position.y + 25 ), false, 0, 10, 4, facingRight );
+				
 			}
 		}
 		break;
@@ -13889,7 +13924,7 @@ void Actor::UpdateSprite()
 
 		if( reversed )
 		{
-			owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 36, 1, facingRight );
+			owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 		}
 
 

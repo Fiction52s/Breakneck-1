@@ -236,7 +236,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
 
-	Tileset * ts_fx_airdash;
+	Tileset * ts_fx_airdashUp;
+	Tileset * ts_fx_airdashDiagonal;
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
