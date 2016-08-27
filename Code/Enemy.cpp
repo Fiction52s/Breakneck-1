@@ -703,6 +703,9 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool hasMonitor,
 		stringstream ss;
 		ss << "key_w0" << world << "_1_128x128.png";
 		ts_key = owner->GetTileset( ss.str(), 128, 128 );
+
+		keySprite = new Sprite;
+		keySprite->setTexture( *ts_key->texture );
 	}
 
 	stringstream ss;
@@ -716,24 +719,13 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool hasMonitor,
 	ss << "fx_blood_" << world << "_256x256.png";
 
 	ts_blood = owner->GetTileset( ss.str(), 256, 256 );
+
+	
 }
 
 int Enemy::NumTotalBullets()
 {
 	return 0;
-}
-
-void Enemy::AttemptSpawnMonitor()
-{
-	if( hasMonitor && !suppressMonitor )
-	{
-		if( !owner->player->CaptureMonitor( monitor ) )
-		{
-			cout << "adding monitor!" << endl;
-			monitor->position = position;
-			owner->AddEnemy( monitor );
-		}
-	}
 }
 
 void Enemy::Reset()

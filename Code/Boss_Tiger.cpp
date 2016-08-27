@@ -25,7 +25,7 @@ using namespace sf;
 //}
 
 Boss_Tiger::Boss_Tiger( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( true )
+	:Enemy( owner, EnemyType::STAGBEETLE, false, 4 ), facingRight( true )
 	//markerVA( sf::Quads, 5 * 4 )
 	//moveBezTest( .22,.85,.3,.91 )
 {
@@ -526,7 +526,8 @@ void Boss_Tiger::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 
 			
@@ -921,11 +922,11 @@ void Boss_Tiger::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool Boss_Tiger::IHitPlayer()

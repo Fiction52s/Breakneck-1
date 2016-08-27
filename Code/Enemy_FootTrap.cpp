@@ -126,7 +126,7 @@ void FootTrap::UpdatePrePhysics()
 		{
 			//cout << "attempting. blue key is: " << owner->player->hasBlueKey << endl;
 			//AttemptSpawnMonitor();
-			if( monitor != NULL )
+			if( hasMonitor )
 				owner->keyMarker->CollectKey();
 			dead = true;
 			owner->player->ConfirmEnemyKill( this );
@@ -249,18 +249,15 @@ void FootTrap::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
-
-		target->draw( sprite );
+		else
+		{
+			target->draw( sprite );
+		}
 	}
 	else
 	{
@@ -284,7 +281,7 @@ void FootTrap::DrawMinimap( sf::RenderTarget *target )
 {
 	
 
-	if( !dead && monitor != NULL && !suppressMonitor )
+	if( !dead && hasMonitor && !suppressMonitor )
 	{
 		CircleShape cs;
 		cs.setRadius( 50 );
@@ -405,13 +402,14 @@ void FootTrap::UpdateSprite()
 	}
 	else
 	{
-		if( monitor != NULL && !suppressMonitor && !dead )
+		if( hasMonitor && !suppressMonitor )
 		{
-			keySprite.setTexture( *ts_key->texture );
-			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
-			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
-				keySprite.getLocalBounds().height / 2 );
-			keySprite.setPosition( position.x, position.y );
+			//keySprite.setTexture( *ts_key->texture );
+			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+				keySprite->getLocalBounds().height / 2 );
+			keySprite->setPosition( position.x, position.y );
+
 		}
 	}
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );

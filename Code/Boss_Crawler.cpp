@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE ), facingRight( true ),
+	:Enemy( owner, EnemyType::STAGBEETLE, false, 1 ), facingRight( true ),
 	markerVA( sf::Quads, 5 * 4 )
 	//moveBezTest( .22,.85,.3,.91 )
 {
@@ -493,7 +493,8 @@ void Boss_Crawler::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 
 			
@@ -1033,11 +1034,11 @@ void Boss_Crawler::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool Boss_Crawler::IHitPlayer()

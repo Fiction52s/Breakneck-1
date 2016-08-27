@@ -560,7 +560,8 @@ void Spider::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 
 			
@@ -1069,7 +1070,7 @@ void Spider::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -1167,11 +1168,11 @@ void Spider::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool Spider::IHitPlayer()

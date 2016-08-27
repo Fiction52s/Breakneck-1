@@ -246,7 +246,8 @@ void Turtle::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dying = true;
 			//cout << "dying" << endl;
 		}
@@ -439,7 +440,7 @@ void Turtle::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -487,11 +488,11 @@ void Turtle::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL && !suppressMonitor )
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 

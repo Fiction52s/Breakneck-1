@@ -212,7 +212,8 @@ void Pulser::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 			//cout << "dying" << endl;
 		}
@@ -378,7 +379,7 @@ void Pulser::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -430,11 +431,11 @@ void Pulser::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL && !suppressMonitor )
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 

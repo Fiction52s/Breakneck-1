@@ -402,7 +402,7 @@ void Boss_Bird::Projectile::HitTerrain()
 }
 
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::BOSS_BIRD ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
+	:Enemy( owner, EnemyType::BOSS_BIRD, false, 2 ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	attackMarkerVA( sf::Quads, 17 * 4 ), dialogue( owner, DialogueBox::BIRD ),
 	gridbgVA( sf::Quads, (GRID_SIZE) * 2 * 4 )
@@ -1784,7 +1784,7 @@ void Boss_Bird::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			//AttemptSpawnMonitor();
 			dying = true;
 			cout << "dying true what" << endl;
 		}
@@ -2201,7 +2201,7 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -2272,11 +2272,11 @@ void Boss_Bird::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL && !suppressMonitor )
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 

@@ -21,7 +21,7 @@ using namespace sf;
 
 
 Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
+	:Enemy( owner, EnemyType::TURTLE, false, 6 ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 248 * 4 )
 {
@@ -316,7 +316,8 @@ void Boss_Skeleton::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dying = true;
 			//cout << "dying" << endl;
 		}
@@ -515,7 +516,7 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -575,11 +576,11 @@ void Boss_Skeleton::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL && !suppressMonitor )
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 

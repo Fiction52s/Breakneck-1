@@ -306,8 +306,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual int NumTotalBullets();
 	void SaveState();
 	void LoadState();
-
-	void AttemptSpawnMonitor();
 	virtual void SaveEnemyState() = 0;
 	virtual void LoadEnemyState() = 0;
 	void Reset();

@@ -164,7 +164,8 @@ void Cactus::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dying = true;
 		}
 
@@ -342,7 +343,7 @@ void Cactus::Draw(sf::RenderTarget *target )
 {
 	if( !(dead || dying ) )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -382,11 +383,11 @@ void Cactus::DrawMinimap( sf::RenderTarget *target )
 		cs.setPosition( position.x, position.y );
 		target->draw( cs );
 
-		if( monitor != NULL && !suppressMonitor )
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 

@@ -351,7 +351,7 @@ void StagBeetle::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( monitor != NULL )
+			if( hasMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;
@@ -772,18 +772,15 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 55 );
-			cs.setFillColor( Color::Black );
-			
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			target->draw( sprite );
+		}
 	}
 	else
 	{
@@ -812,11 +809,11 @@ void StagBeetle::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool StagBeetle::IHitPlayer()

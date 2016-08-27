@@ -288,7 +288,8 @@ void Owl::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dying = true;
 			//cout << "dying" << endl;
 		}
@@ -462,7 +463,7 @@ void Owl::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL )
+		if( hasMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -509,11 +510,11 @@ void Owl::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL )
+		/*if( hasMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 

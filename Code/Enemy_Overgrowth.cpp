@@ -20,7 +20,7 @@ using namespace sf;
 
 Tree::Tree( Overgrowth *par,
 	VertexArray &p_va, Tileset *p_ts, int index )
-	:Enemy( par->owner, Enemy::OVERGROWTH_TREE ), 
+	:Enemy( par->owner, Enemy::OVERGROWTH_TREE, false, 5 ), 
 	vaIndex( index ), frame( 0 ), 
 	launcher( NULL ), ground( NULL ), edgeQuantity( 0 ),
 	va( p_va ), ts( p_ts ), parent( par )
@@ -119,7 +119,8 @@ void Tree::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 		}
 
@@ -249,7 +250,7 @@ void Tree::Draw(sf::RenderTarget *target )
 {
 	//if( !dead )
 	//{
-	//	if( monitor != NULL )
+	//	if( hasMonitor )
 	//	{
 	//		//owner->AddEnemy( monitor );
 	//		CircleShape cs;
@@ -294,7 +295,7 @@ void Tree::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL )
+	if( hasMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );

@@ -1248,7 +1248,7 @@ void Crawler::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
@@ -1380,13 +1380,12 @@ void Crawler::UpdateSprite()
 			sprite.setTextureRect( r );
 		}
 
-		if( monitor != NULL && !suppressMonitor && !dead )
+		if( hasMonitor && !suppressMonitor )
 		{
-			keySprite.setTexture( *ts_key->texture );
-			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
-			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
-				keySprite.getLocalBounds().height / 2 );
-			keySprite.setPosition( position.x, position.y );
+			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+				keySprite->getLocalBounds().height / 2 );
+			keySprite->setPosition( position.x, position.y );
 		}
 	}
 }

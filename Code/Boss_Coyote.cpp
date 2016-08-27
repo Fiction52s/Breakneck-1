@@ -271,7 +271,7 @@ void Boss_Coyote::RandomizeDirections()
 }
 
 Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE ),//, facingRight( cw ),
+	:Enemy( owner, EnemyType::STAGBEETLE, false, 3 ),//, facingRight( cw ),
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
 	action = MOVE;
@@ -683,7 +683,8 @@ void Boss_Coyote::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 
 			
@@ -1093,7 +1094,7 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -1137,11 +1138,11 @@ void Boss_Coyote::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool Boss_Coyote::IHitPlayer()

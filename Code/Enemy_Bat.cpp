@@ -252,7 +252,7 @@ void Bat::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( monitor != NULL )
+			if( hasMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dying = true;
@@ -439,13 +439,13 @@ void Bat::UpdateSprite()
 		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 		sprite.setPosition( position.x, position.y );
 
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			keySprite.setTexture( *ts_key->texture );
-			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
-			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
-				keySprite.getLocalBounds().height / 2 );
-			keySprite.setPosition( position.x, position.y );
+			//keySprite.setTexture( *ts_key->texture );
+			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+				keySprite->getLocalBounds().height / 2 );
+			keySprite->setPosition( position.x, position.y );
 
 		}
 		//testKeySprite.setTextureRect( ts_testKey->GetSubRect( 
@@ -472,7 +472,7 @@ void Bat::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -486,10 +486,10 @@ void Bat::Draw( sf::RenderTarget *target )
 			//target->draw( cs );
 		}
 
-		if( shader != NULL && monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, shader );
-			target->draw( keySprite );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
 		else
 		{
@@ -522,7 +522,7 @@ void Bat::Draw( sf::RenderTarget *target )
 
 void Bat::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying && monitor != NULL && !suppressMonitor )
+	if( !dead && !dying && hasMonitor && !suppressMonitor )
 	{
 		CircleShape cs;
 		cs.setRadius( 50 );

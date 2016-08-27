@@ -182,7 +182,7 @@ void BasicTurret::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( monitor != NULL )
+			if( hasMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;
@@ -402,17 +402,15 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			target->draw( sprite );
+		}
 	}
 	else
 	{
@@ -447,11 +445,11 @@ void BasicTurret::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool BasicTurret::IHitPlayerWithBullets()
@@ -694,13 +692,14 @@ void BasicTurret::UpdateSprite()
 	}
 	else
 	{
-		if( monitor != NULL && !suppressMonitor && !dead )
+		if( hasMonitor && !suppressMonitor )
 		{
-			keySprite.setTexture( *ts_key->texture );
-			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
-			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
-				keySprite.getLocalBounds().height / 2 );
-			keySprite.setPosition( position.x, position.y );
+			//keySprite.setTexture( *ts_key->texture );
+			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+				keySprite->getLocalBounds().height / 2 );
+			keySprite->setPosition( position.x, position.y );
+
 		}
 	}
 }

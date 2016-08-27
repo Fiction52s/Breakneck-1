@@ -114,7 +114,8 @@ void HealthFly::UpdatePostPhysics()
 	if( caught )
 	{
 		//should the one in patroller be in post or pre physics?
-		AttemptSpawnMonitor();
+		if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 		owner->RemoveEnemy( this );
 	}
 
@@ -144,7 +145,7 @@ void HealthFly::UpdatePostPhysics()
 
 void HealthFly::Draw( sf::RenderTarget *target)
 {
-	if( monitor != NULL && !suppressMonitor )
+	if( hasMonitor && !suppressMonitor )
 	{
 		//owner->AddEnemy( monitor );
 		CircleShape cs;
@@ -173,11 +174,11 @@ void HealthFly::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL && !suppressMonitor )
+	/*if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
-	}
+	}*/
 }
 
 bool HealthFly::IHitPlayer()

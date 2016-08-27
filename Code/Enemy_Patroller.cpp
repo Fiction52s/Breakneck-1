@@ -150,7 +150,7 @@ void Patroller::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( monitor != NULL )
+			if( hasMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;
@@ -361,13 +361,14 @@ void Patroller::UpdateSprite()
 	}
 	else
 	{
-		if( monitor != NULL && !suppressMonitor && !dead )
+		if( hasMonitor && !suppressMonitor )
 		{
-			keySprite.setTexture( *ts_key->texture );
-			keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
-			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
-				keySprite.getLocalBounds().height / 2 );
-			keySprite.setPosition( position.x, position.y );
+			//keySprite.setTexture( *ts_key->texture );
+			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+				keySprite->getLocalBounds().height / 2 );
+			keySprite->setPosition( position.x, position.y );
+
 		}
 	}
 }
@@ -377,17 +378,15 @@ void Patroller::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			target->draw( sprite );
+		}
 	}
 	else
 	{
@@ -419,13 +418,13 @@ void Patroller::DrawMinimap( sf::RenderTarget *target )
 	enemyCircle.setPosition( position.x, position.y );
 	target->draw( enemyCircle );
 
-	if( monitor != NULL && !suppressMonitor )
+	if( hasMonitor && !suppressMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );
 	}*/
 
-	if( !dead && monitor != NULL && !suppressMonitor )
+	if( !dead && hasMonitor && !suppressMonitor )
 	{
 		CircleShape cs;
 		cs.setRadius( 50 );

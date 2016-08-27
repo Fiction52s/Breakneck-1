@@ -179,7 +179,7 @@ void CurveTurret::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( monitor != NULL )
+			if( hasMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dying = true;
@@ -327,17 +327,15 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 {
 	if( !(dead || dying ) )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( Color::Black );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			target->draw( sprite );
+		}
 	}
 	else if( dying )
 	{
@@ -365,7 +363,7 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 
 void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying && monitor != NULL && !suppressMonitor )
+	if( !dead && !dying && hasMonitor && !suppressMonitor )
 	{
 		CircleShape cs;
 		cs.setRadius( 50 );
@@ -383,7 +381,7 @@ void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 		cs.setPosition( position.x, position.y );
 		target->draw( cs );
 
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
@@ -632,13 +630,14 @@ void CurveTurret::UpdateSprite()
 	//	notBullet = notBullet->next;
 	//}
 
-	if( monitor != NULL && !suppressMonitor && !dead )
+	if( !dead && hasMonitor && !suppressMonitor )
 	{
-		keySprite.setTexture( *ts_key->texture );
-		keySprite.setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
-		keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
-			keySprite.getLocalBounds().height / 2 );
-		keySprite.setPosition( position.x, position.y );
+		//keySprite.setTexture( *ts_key->texture );
+		keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+		keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+			keySprite->getLocalBounds().height / 2 );
+		keySprite->setPosition( position.x, position.y );
+
 	}
 
 

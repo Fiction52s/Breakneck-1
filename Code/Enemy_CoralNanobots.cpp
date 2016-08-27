@@ -20,7 +20,7 @@ using namespace sf;
 
 CoralBlock::CoralBlock( CoralNanobots *par,
 	VertexArray &p_va, Tileset *p_ts, int index )
-	:Enemy( par->owner, Enemy::CORAL_BLOCK ), 
+	:Enemy( par->owner, Enemy::CORAL_BLOCK, false, 4 ), 
 	vaIndex( index ), frame( 0 ),
 	va( p_va ), ts( p_ts ), parent( par ),bez( 0, 0,1,1 )
 {
@@ -239,7 +239,8 @@ void CoralBlock::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dead = true;
 		}
 
@@ -505,7 +506,7 @@ void CoralBlock::Draw(sf::RenderTarget *target )
 {
 	//if( !dead )
 	//{
-	//	if( monitor != NULL )
+	//	if( hasMonitor )
 	//	{
 	//		//owner->AddEnemy( monitor );
 	//		CircleShape cs;
@@ -550,7 +551,7 @@ void CoralBlock::DrawMinimap( sf::RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	target->draw( cs );
 
-	if( monitor != NULL )
+	if( hasMonitor )
 	{
 		monitor->miniSprite.setPosition( position.x, position.y );
 		target->draw( monitor->miniSprite );

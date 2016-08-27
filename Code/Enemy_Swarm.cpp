@@ -21,7 +21,7 @@ using namespace sf;
 SwarmMember::SwarmMember(Swarm *p_parent, 
 		sf::VertexArray &p_va, int index, V2d &p_targetOffset, 
 		double p_maxSpeed )
-		:Enemy( p_parent->owner, Enemy::SWARM ), va( p_va ), 
+		:Enemy( p_parent->owner, Enemy::SWARM, false, 5 ), va( p_va ), 
 		vaIndex( index ), parent( p_parent ), maxSpeed( p_maxSpeed )
 {
 	/*va[vaIndex*4+0].color = Vector2f( 0, 0 );

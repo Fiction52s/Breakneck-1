@@ -20,7 +20,7 @@ using namespace sf;
 
 
 Boss_Gator::Boss_Gator( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::TURTLE, false, 4 ), deathFrame( 0 )
 {
 	//loop = false; //no looping on Boss_Gator for now
 
@@ -231,7 +231,8 @@ void Boss_Gator::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			AttemptSpawnMonitor();
+			if( hasMonitor && !suppressMonitor )
+				owner->keyMarker->CollectKey();
 			dying = true;
 			//cout << "dying" << endl;
 		}
@@ -421,7 +422,7 @@ void Boss_Gator::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( monitor != NULL && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;
@@ -467,11 +468,11 @@ void Boss_Gator::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setPosition( position.x, position.y );
 		target->draw( enemyCircle );
 
-		if( monitor != NULL && !suppressMonitor )
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			monitor->miniSprite.setPosition( position.x, position.y );
 			target->draw( monitor->miniSprite );
-		}
+		}*/
 	}
 }
 
