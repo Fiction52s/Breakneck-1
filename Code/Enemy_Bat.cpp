@@ -19,11 +19,11 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Bat::Bat( GameSession *owner, bool hasMonitor, Vector2i pos, 
+Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos, 
 	list<Vector2i> &pathParam, int p_bulletSpeed,
 	//int p_nodeDistance, 
 	int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::BAT, hasMonitor, 2 ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::BAT, p_hasMonitor, 2 ), deathFrame( 0 )
 {
 	loop = p_loop;
 	//loop = false; //no looping on bat for now
@@ -472,20 +472,6 @@ void Bat::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-
-			cs.setFillColor( Color::Black );
-
-			//cs.setFillColor( monitor-> );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			//target->draw( cs );
-		}
-
 		if( hasMonitor && !suppressMonitor )
 		{
 			target->draw( sprite, keyShader );

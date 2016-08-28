@@ -13,8 +13,8 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Patroller::Patroller( GameSession *owner, bool hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
-	:Enemy( owner, EnemyType::PATROLLER, hasMonitor, 1 ), deathFrame( 0 )
+Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
+	:Enemy( owner, EnemyType::PATROLLER, p_hasMonitor, 1 ), deathFrame( 0 )
 {
 
 	receivedHit = NULL;

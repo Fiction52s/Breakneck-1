@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Turtle::Turtle( GameSession *owner, bool hasMonitor, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE, hasMonitor, 4 ), deathFrame( 0 )
+Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
+	:Enemy( owner, EnemyType::TURTLE, p_hasMonitor, 4 ), deathFrame( 0 )
 {
 
 	//loop = false; //no looping on Turtle for now

@@ -18,9 +18,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Cactus::Cactus( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_bulletSpeed,
+Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_bulletSpeed,
 	int p_rhythm, int p_amplitude )
-		:Enemy( owner, EnemyType::CACTUS, hasMonitor, 3 ), ground( g ),
+		:Enemy( owner, EnemyType::CACTUS, p_hasMonitor, 3 ), ground( g ),
 		edgeQuantity( q )
 {
 

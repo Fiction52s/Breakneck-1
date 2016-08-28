@@ -812,8 +812,8 @@ void CoralNanobots::AddToList( CoralBlock *block,
 	list = block;
 }
 
-CoralNanobots::CoralNanobots( GameSession *owner, bool hasMonitor, sf::Vector2i &pos, int p_moveFrames )
-		:Enemy( owner, EnemyType::CORALNANOBOTS, hasMonitor, 4 ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
+CoralNanobots::CoralNanobots( GameSession *owner, bool p_hasMonitor, sf::Vector2i &pos, int p_moveFrames )
+		:Enemy( owner, EnemyType::CORALNANOBOTS, p_hasMonitor, 4 ), blockVA( sf::Quads, MAX_BLOCKS * 4 )
 {
 	//launcher = new Launcher( this, owner, MAX_BLOCKS, 1, V2d( 0, 0 ), V2d( 0, 0 ),
 	//	0, 300, false );

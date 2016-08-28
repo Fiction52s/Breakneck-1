@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-StagBeetle::StagBeetle( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::STAGBEETLE, hasMonitor, 2 ), facingRight( cw ),
+StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, double s )
+	:Enemy( owner, EnemyType::STAGBEETLE, p_hasMonitor, 2 ), facingRight( cw ),
 	moveBezTest( .22,.85,.3,.91 )
 {
 

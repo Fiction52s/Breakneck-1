@@ -683,14 +683,27 @@ void SinBullet::Reset( sf::Vector2<double> &pos,
 	tempadd = V2d( 0, 0 );
 }
 
-Enemy::Enemy( GameSession *own, EnemyType t, bool hasMonitor,
+Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	int world )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
 	spawnedByClone( false ), type( t ),zone( NULL ), dead( false ),
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL )
 {
+	hasMonitor = p_hasMonitor;
+	if( world == 0 )
+	{
+		keyFrame = 0;
+		ts_hitSpack = NULL;
+		ts_blood = NULL;
+		keySprite = NULL;
+		return;
+	}
+
+	
 	if( hasMonitor )
 	{
+
+		cout << "doing the add monitor thing" << endl;
 		keyShader = new Shader();
 		if( !keyShader->loadFromFile( "key_shader.frag", sf::Shader::Fragment ) )
 		{
@@ -698,7 +711,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool hasMonitor,
 			assert( false );
 		}
 
-		keyFrame = 0;
+	//	keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
 		stringstream ss;
 		ss << "key_w0" << world << "_1_128x128.png";
@@ -707,6 +720,16 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool hasMonitor,
 		keySprite = new Sprite;
 		keySprite->setTexture( *ts_key->texture );
 	}
+	else
+	{
+		cout << "doing the no monitor thing" << endl;
+		ts_key = NULL;
+		keyShader = NULL;
+		keySprite = NULL;
+	}
+
+
+	keyFrame = 0;
 
 	stringstream ss;
 	ss << "hit_spack_" << world << "_128x128.png";

@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Owl::Owl( GameSession *owner, bool hasMonitor, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
-	:Enemy( owner, EnemyType::OWL, hasMonitor, 3 ), deathFrame( 0 ),flyingBez( 0, 0, 1, 1 )
+Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
+	:Enemy( owner, EnemyType::OWL, p_hasMonitor, 3 ), deathFrame( 0 ),flyingBez( 0, 0, 1, 1 )
 {
 
 	//movementRadius = 300;

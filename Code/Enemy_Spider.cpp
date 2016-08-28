@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Spider::Spider( GameSession *owner, bool hasMonitor, Edge *g, double q, int speed )
-	:Enemy( owner, EnemyType::SPIDER, hasMonitor, 4 ), facingRight( true )
+Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int speed )
+	:Enemy( owner, EnemyType::SPIDER, p_hasMonitor, 4 ), facingRight( true )
 	//moveBezTest( .22,.85,.3,.91 )
 {
 

@@ -49,8 +49,8 @@ bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
 }
 
 
-Specter::Specter( GameSession *owner, bool hasMonitor, Vector2i pos )
-	:Enemy( owner, EnemyType::SPECTER, hasMonitor, 6 ), deathFrame( 0 ), myArea( this, pos, 400 )
+Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i pos )
+	:Enemy( owner, EnemyType::SPECTER, p_hasMonitor, 6 ), deathFrame( 0 ), myArea( this, pos, 400 )
 {
 
 	initHealth = 60;

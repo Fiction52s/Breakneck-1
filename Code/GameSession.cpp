@@ -2014,11 +2014,24 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float speed;
 				is >> speed;
 
+				if( hasMonitor )
+				{
+					cout << "preview has monitor" << endl;
+				}
+				else
+				{
+					cout << "preview NO MONITOR" << endl;
+				}
+
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+				Crawler *enemy = new Crawler( this, false, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity, clockwise, speed );
 
-				
+
+				if( enemy->hasMonitor )
+					cout << "crawler with monitor!" << endl;
+				else
+					cout << "no monitor here" << endl;
 
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );

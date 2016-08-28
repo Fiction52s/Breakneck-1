@@ -18,9 +18,18 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Crawler::Crawler( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::CRAWLER, hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, double s )
+	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	cout << "inside crawler" << endl;
+	if( hasMonitor )
+	{
+		cout << "HAS MONMITOR NOW" << endl;
+	}
+	else
+	{
+		cout << "no monitor" << endl;
+	}
 	initHealth = 60;
 	health = initHealth;
 	lastReverser = false;
@@ -90,6 +99,16 @@ Crawler::Crawler( GameSession *owner, bool hasMonitor, Edge *g, double q, bool c
 
 	deathPartingSpeed = .4;
 
+	if( hasMonitor )
+	{
+		cout << "HAS MONMITOR NOW END" << endl;
+	}
+	else
+	{
+		cout << "no monitor END" << endl;
+	}
+	//
+	//hasMonitor = false;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
@@ -1211,15 +1230,13 @@ void Crawler::Draw(sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 55 );
-			cs.setFillColor( Color::Black );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( sprite, keyShader );
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			target->draw( sprite );
+		}
 	}
 	else
 	{
@@ -1380,8 +1397,9 @@ void Crawler::UpdateSprite()
 			sprite.setTextureRect( r );
 		}
 
-		if( hasMonitor && !suppressMonitor )
+		if( keySprite != NULL && hasMonitor && !suppressMonitor )
 		{
+			cout << "frame: " << keyFrame / 2 << endl;
 			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );

@@ -11,7 +11,7 @@ using namespace sf;
 
 
 BasicEffect::BasicEffect ( GameSession *owner )
-	:Enemy( owner, EnemyType::BASICEFFECT, 0, false )
+	:Enemy( owner, EnemyType::BASICEFFECT, false, 0 )
 {
 
 	spawned = true;

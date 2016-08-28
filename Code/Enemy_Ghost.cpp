@@ -14,8 +14,8 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 
 
-Ghost::Ghost( GameSession *owner, bool hasMonitor, Vector2i pos, float pspeed )
-	:Enemy( owner, EnemyType::GHOST, hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
+Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed )
+	:Enemy( owner, EnemyType::GHOST, p_hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
 	
 	actionLength[WAKEUP] = 60;

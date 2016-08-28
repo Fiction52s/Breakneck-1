@@ -20,9 +20,9 @@ using namespace sf;
 
 
 
-PoisonFrog::PoisonFrog( GameSession *p_owner, bool hasMonitor, Edge *g, double q, int gFactor,
+PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int gFactor,
 	sf::Vector2i &jStrength, int framesWait )
-	:Enemy( p_owner, EnemyType::POISONFROG, hasMonitor, 2 ), 
+	:Enemy( p_owner, EnemyType::POISONFROG, p_hasMonitor, 2 ), 
 	gravityFactor( gFactor ), jumpStrength( jStrength.x, jStrength.y ), 
 	jumpFramesWait( framesWait )
 {

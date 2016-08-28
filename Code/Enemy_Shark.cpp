@@ -13,8 +13,8 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 
-Shark::Shark( GameSession *owner, bool hasMonitor, Vector2i pos, float pspeed )
-	:Enemy( owner, EnemyType::SHARK, hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
+Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed )
+	:Enemy( owner, EnemyType::SHARK, p_hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
 
 	//attackCounter = 0;

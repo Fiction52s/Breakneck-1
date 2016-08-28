@@ -18,9 +18,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CurveTurret::CurveTurret( GameSession *owner, bool hasMonitor, Edge *g, double q, double speed,int wait,
+CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, double speed,int wait,
 	Vector2i &gravFactor, bool relative )
-		:Enemy( owner, EnemyType::CURVETURRET, hasMonitor, 2 ), framesWait( wait), bulletSpeed( speed ), ground( g ),
+		:Enemy( owner, EnemyType::CURVETURRET, p_hasMonitor, 2 ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
 {
 

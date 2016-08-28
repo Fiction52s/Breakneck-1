@@ -19,9 +19,9 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Pulser::Pulser( GameSession *owner, bool hasMonitor, Vector2i &pos, 
+Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos, 
 	list<Vector2i> &pathParam, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::PULSER, hasMonitor, 3 ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::PULSER, p_hasMonitor, 3 ), deathFrame( 0 )
 {
 
 	loop = p_loop;

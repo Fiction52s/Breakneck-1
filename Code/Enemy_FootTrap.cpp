@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FootTrap::FootTrap( GameSession *owner, bool hasMonitor, Edge *g, double q )
-		:Enemy( owner, EnemyType::FOOTTRAP, hasMonitor, 1 ), ground( g ), edgeQuantity( q )
+FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
+		:Enemy( owner, EnemyType::FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 {
 
 	initHealth = 40;
