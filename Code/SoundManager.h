@@ -46,6 +46,7 @@ struct SoundNodeList
 	void Update();
 	void Reset();
 	int GetActiveCount();
+	int maxSounds;
 	int GetInactiveCount();
 	SoundNode *activeList;
 	SoundNode *inactiveList;

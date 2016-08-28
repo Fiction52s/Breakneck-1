@@ -7356,6 +7356,7 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 
 void GameSession::RespawnPlayer()
 {
+	soundNodeList->Reset();
 	scoreDisplay->Reset();
 	player->hitGoal = false;
 	currentZone = originalZone;

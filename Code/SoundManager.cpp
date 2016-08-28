@@ -6,8 +6,9 @@ using namespace std;
 using namespace sf;
 
 
-SoundNodeList::SoundNodeList( int maxSounds )
+SoundNodeList::SoundNodeList( int p_maxSounds )
 {
+	maxSounds = p_maxSounds;
 	activeList = NULL;
 	inactiveList = NULL;
 
@@ -96,7 +97,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			//int a = GetActiveCount();
 			//int n = GetInactiveCount();
 			//cout << "before b count: " << a << ", inactive: " << n << endl;
-			//cout << "b" << endl;
+		//	cout << "b" << endl;
 			//assert( sn != activeList );
 			sn->sound.stop();
 
@@ -118,6 +119,9 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			sn->next->prev = NULL;
 			activeList = sn->next;
 
+			sn->next = inactiveList;
+			inactiveList->prev = sn;
+			inactiveList = sn;
 			//int a = GetActiveCount();
 			//int n = GetInactiveCount();
 			//cout << "c count: " << a << ", inactive: " << n << endl;
@@ -135,8 +139,10 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 
 			sn->prev = NULL;
 
-
-			inactiveList->prev = sn;
+			if( inactiveList != NULL )
+			{
+				inactiveList->prev = sn;
+			}
 			sn->next = inactiveList;
 			inactiveList = sn;
 
@@ -155,6 +161,8 @@ void SoundNodeList::Update()
 	//int a = GetActiveCount();
 	//int n = GetInactiveCount();
 	//cout << "count: " << a << ", inactive: " << n << endl;
+	//assert( a + n == maxSounds );
+	
 	SoundNode *curr = activeList;
 	while( curr != NULL )
 	{
