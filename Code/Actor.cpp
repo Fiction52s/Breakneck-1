@@ -4788,7 +4788,7 @@ void Actor::UpdatePrePhysics()
 			
 			
 				owner->ActivateEffect( ts_fx_double, 
-					V2d( position.x, position.y - 60), false, 0, 12, 2, facingRight );
+					V2d( position.x, position.y - 20), false, 0, 12, 2, facingRight );
 			
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 				if( velocity.y > 0 )
@@ -11258,7 +11258,7 @@ void Actor::UpdatePostPhysics()
 
 			if( frame % 1 == 0 )
 			{
-				owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 64 ), false, 0, 12, 4, facingRight );
+				owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
 			}
 		}
 		break;

@@ -6135,7 +6135,7 @@ int GameSession::Run( string fileN )
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
 
-		preScreenTex->draw( *bigBulletVA );
+		
 		//bigBulletVA->draw( preScreenTex );
 
 		if( player->action != Actor::GRINDBALL )
@@ -6174,7 +6174,7 @@ int GameSession::Run( string fileN )
 			currentEnem = currentEnem->next;
 		}
 
-		
+		preScreenTex->draw( *bigBulletVA );
 
 
 		//view.set
