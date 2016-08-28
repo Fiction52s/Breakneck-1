@@ -226,7 +226,7 @@ void Bat::ResetEnemy()
 
 void Bat::UpdatePrePhysics()
 {
-	if( keyFrame == 16 * 2 )
+	if( keyFrame == 16 * 5 )
 	{
 		keyFrame = 0;
 	}
@@ -442,7 +442,7 @@ void Bat::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );
@@ -474,12 +474,27 @@ void Bat::Draw( sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, keyShader );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			target->draw( sprite );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
 		}
 		
 		//cout << "drawing bat: " << sprite.getPosition().x

@@ -314,6 +314,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Enemy *next;
 	GameSession *owner;
 	bool spawned;
+	
 	sf::Rect<double> spawnRect;
 	HitboxInfo *receivedHit;
 	int slowMultiple;
@@ -331,6 +332,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool specterProtected;
 	Tileset *ts_hitSpack;
 	sf::Shader *keyShader;
+	sf::Shader *hurtShader;
 
 	Tileset *ts_blood;
 
@@ -338,6 +340,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	//sf::Sprite bloodSprite;
 	Tileset *ts_key;
 	int keyFrame;
+	sf::Color keyColor;
 	int world;
 
 	void HandleQuery( QuadTreeCollider * qtc );

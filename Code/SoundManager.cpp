@@ -179,6 +179,30 @@ void SoundNodeList::Update()
 	//cout << "end update" << endl;
 }
 
+void SoundNodeList::SetGlobalVolume( float vol )
+{
+	SoundNode *curr = activeList;
+	while( curr != NULL )
+	{
+		SoundNode *next = curr->next;
+		
+		curr->sound.setVolume( vol );
+
+		curr = next;
+	}
+
+	curr = inactiveList;
+
+	while( curr != NULL )
+	{
+		SoundNode *next = curr->next;
+		
+		curr->sound.setVolume( vol );
+
+		curr = next;
+	}
+}
+
 int SoundNodeList::GetActiveCount()
 {
 	int count = 0;

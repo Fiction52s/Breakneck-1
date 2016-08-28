@@ -68,9 +68,19 @@ struct Actor : QuadTreeCollider,
 	enum SoundType
 	{
 		S_HIT,
+		S_HURT,
 		S_HIT_AND_KILL,
-		S_SLASH,
+		S_HIT_AND_KILL_KEY,
+		S_FAIR,
+		S_DAIR,
+		S_UAIR,
+		S_STANDATTACK,
+		S_WALLATTACK,
+		S_GRAVREVERSE,
+		S_BOUNCEJUMP,
 		S_TIMESLOW,
+		S_ENTER,
+		S_EXIT,
 		S_Count
 	};
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
@@ -241,12 +251,19 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_airdashSmall;
 
 	Tileset * ts_fx_double;
+	Tileset * ts_fx_wallJump;
+	
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
 	Tileset * ts_fx_chargeBlue0;
 	Tileset * ts_fx_chargeBlue1;
 	Tileset * ts_fx_chargeBlue2;
 	Tileset * ts_fx_chargePurple;
+	Tileset *ts_fx_hurtSpack;
+	Tileset *ts_fx_dashStart;
+	Tileset *ts_fx_dashRepeat;
+	Tileset *ts_fx_land;
+	Tileset *ts_fx_jump;
 
 	sf::Vector2<double> followerPos;
 	sf::Vector2<double> followerVel;
@@ -474,10 +491,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	//--
-	Tileset *ts_fx_hurtSpack;
-	Tileset *ts_fx_dashStart;
-	Tileset *ts_fx_dashRepeat;
-	Tileset *ts_fx_land;
+	
 	
 	sf::Vector2<double> bubblePos[maxBubbles];
 	int bubbleFramesToLive[maxBubbles];

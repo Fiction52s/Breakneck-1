@@ -11,6 +11,15 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
 {
 	using namespace BulletType;
@@ -702,6 +711,29 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	
 	if( hasMonitor )
 	{
+		switch( world )
+		{
+		case 1:
+			keyColor = COLOR_BLUE;
+			break;
+		case 2:
+			keyColor = COLOR_GREEN;
+			break;
+		case 3:
+			keyColor = COLOR_YELLOW;
+			break;
+		case 4:
+			keyColor = COLOR_ORANGE;
+			break;
+		case 5:
+			keyColor = COLOR_RED;
+			break;
+		case 6:
+			keyColor = COLOR_MAGENTA;
+			break;
+		}
+
+		
 
 		cout << "doing the add monitor thing" << endl;
 		keyShader = new Shader();
@@ -710,6 +742,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 			cout << "couldnt load enemy key shader" << endl;
 			assert( false );
 		}
+
+		keyShader->setParameter( "toColor", keyColor );
 
 	//	keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
@@ -743,6 +777,16 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 	ts_blood = owner->GetTileset( ss.str(), 256, 256 );
 
+
+	hurtShader = new Shader();
+	if( !hurtShader->loadFromFile( "enemyhurt_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "couldnt load enemy enemyhurt shader" << endl;
+		assert( false );
+	}
+	hurtShader->setParameter( "toColor", Color::White );
+
+		//hurtShader->setParameter( "toColor", keyColor );
 	
 }
 

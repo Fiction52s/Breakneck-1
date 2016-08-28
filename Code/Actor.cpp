@@ -110,9 +110,20 @@ Actor::Actor( GameSession *gs )
 		ts_dodecaBig = owner->GetTileset( "dodecabig.png", 360, 360 );
 
 		soundBuffers[S_HIT] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack_short.ogg" );
+		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hurt_spack.ogg" );
 		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack.ogg" );
-		soundBuffers[S_SLASH] = owner->soundManager->GetSound( "Audio/Sounds/kin_sword.ogg" );
+		soundBuffers[S_HIT_AND_KILL_KEY] = owner->soundManager->GetSound( "Audio/Sounds/key_kill.ogg" );
+		soundBuffers[S_FAIR] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
+		soundBuffers[S_DAIR] = owner->soundManager->GetSound( "Audio/Sounds/dair.ogg" );
+		soundBuffers[S_UAIR] = owner->soundManager->GetSound( "Audio/Sounds/uair.ogg" );
+		soundBuffers[S_WALLATTACK] = owner->soundManager->GetSound( "Audio/Sounds/wallattack.ogg" );
+		soundBuffers[S_GRAVREVERSE] = owner->soundManager->GetSound( "Audio/Sounds/gravreverse.ogg" );
+		soundBuffers[S_BOUNCEJUMP] = owner->soundManager->GetSound( "Audio/Sounds/bounce.ogg" );
+		soundBuffers[S_STANDATTACK] = owner->soundManager->GetSound( "Audio/Sounds/standattack.ogg" );
 		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Audio/Sounds/timeslow.ogg" );
+		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Audio/Sounds/enter.ogg" );
+		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Audio/Sounds/exit.ogg" );
+
 		
 
 		/*if( !fairBuffer.loadFromFile( "fair.ogg" ) )
@@ -534,10 +545,21 @@ Actor::Actor( GameSession *gs )
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
 
-		ts_fx_dashStart = owner->GetTileset( "fx_dashstart.png", 96, 32 );
-		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat.png", 96, 16 );
-		ts_fx_land = owner->GetTileset( "fx_land.png", 80, 32 );
+		ts_fx_dashStart = owner->GetTileset( "fx_dashstart_192x160.png", 192, 160 );
+		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat_192x128.png", 192, 128 );
+		ts_fx_land = owner->GetTileset( "fx_land_128x128.png", 128, 128 );
 		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
+		ts_fx_jump = owner->GetTileset( "fx_jump_160x64.png", 160, 64 );
+		ts_fx_wallJump = owner->GetTileset( "fx_jump_160x64.png", 160, 64 );
+		ts_fx_double = owner->GetTileset( "fx_double_256x256.png", 256 , 256 );
+		ts_fx_gravReverse = owner->GetTileset( "fx_grav_reverse_128x128.png", 128 , 128 );
+		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
+		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
+		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
+		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
+		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
+		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
+		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );
 
 		if (!swordShaders[0].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
 		{
@@ -736,16 +758,8 @@ Actor::Actor( GameSession *gs )
 			//bubblePos[i]
 		}
 		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
-		ts_fx_double = owner->GetTileset( "fx_double.png", 80 , 60 );
-		ts_fx_gravReverse = owner->GetTileset( "fx_grav_reverse_128x128.png", 128 , 128 );
-		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
-		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
-		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
-		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
+		
 
-		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
-		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
-		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );
 
 		bool noPowers = false;
 		if( noPowers )
@@ -1220,6 +1234,14 @@ void Actor::UpdatePrePhysics()
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT )
 	{
+		if( action == INTRO && frame == 0 )
+		{
+			owner->soundNodeList->ActivateSound( soundBuffers[S_ENTER] );
+		}
+		else if( action == EXIT && frame == 30 )
+		{
+			owner->soundNodeList->ActivateSound( soundBuffers[S_EXIT] );
+		}
 		return;
 	}
 	else if( action == GOALKILLWAIT )
@@ -1251,6 +1273,8 @@ void Actor::UpdatePrePhysics()
 		
 		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
+
+		owner->soundNodeList->ActivateSound( soundBuffers[S_HURT] );
 
 		SetExpr( Expr::Expr_HURT );
 		//expr = Expr::Expr_HURT;
@@ -1324,7 +1348,7 @@ void Actor::UpdatePrePhysics()
 		if( canStandUp )
 		{
 			b.rh = normalHeight;
-			cout << "setting to normal height" << endl;
+			//cout << "setting to normal height" << endl;
 			b.offset.y = 0;
 		}
 	}
@@ -3891,6 +3915,7 @@ void Actor::UpdatePrePhysics()
 			bool framesDone = frame == actionLength[BOUNCEGROUND] - 1;
 			if( boostBounce || (framesDone && bn.y >= 0 ) )
 			{
+				owner->soundNodeList->ActivateSound( soundBuffers[S_BOUNCEJUMP] );
 				framesInAir = 0;
 				action = BOUNCEAIR;
 				oldBounceEdge = bounceEdge;
@@ -4370,9 +4395,24 @@ void Actor::UpdatePrePhysics()
 					{
 						velocity.y -= jumpStrength;
 					}
+
+					V2d pp = ground->GetPoint( edgeQuantity );
+					double ang = GroundedAngle();
+					V2d fxPos;
+					if( (approxEquals( ang, 0 ) && !reversed ) || (approxEquals(ang, PI) && reversed ))
+						fxPos = V2d( pp.x + offsetX, pp.y );
+					else
+						fxPos = pp;
+
+					fxPos += gNorm * 16.0;
+					
+					owner->ActivateEffect( ts_fx_jump, fxPos , false, ang, 12, 2, facingRight );
+
 					ground = NULL;
 					movingGround = NULL;
 					holdJump = true;
+
+					
 					//steepJump = false;
 				}
 				
@@ -4564,6 +4604,7 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 )
 			{
 				currAttackHit = false;
+				owner->soundNodeList->ActivateSound( soundBuffers[S_WALLATTACK] );
 			//	fairSound.play();
 			}
 
@@ -4598,7 +4639,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_SLASH] );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_FAIR] );
 				currAttackHit = false;
 				//fairSound.play();
 			}
@@ -4622,6 +4663,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
+				owner->soundNodeList->ActivateSound( soundBuffers[S_DAIR] );
 				currAttackHit = false;
 			}
 
@@ -4643,6 +4685,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
+				owner->soundNodeList->ActivateSound( soundBuffers[S_UAIR] );
 				currAttackHit = false;
 			}
 
@@ -4923,6 +4966,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 )
 			{
+				owner->soundNodeList->ActivateSound( soundBuffers[S_STANDATTACK] );
 				currAttackHit = false;
 			}
 
@@ -5330,7 +5374,7 @@ void Actor::UpdatePrePhysics()
 
 			if( !boostBounce && currInput.A && !prevInput.A )
 			{
-				
+				//owner->soundNodeList->ActivateSound( soundBuffers[S_BOUNCEJUMP] );
 				boostBounce = true;
 
 				
@@ -5363,6 +5407,7 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+	
 	case DEATH:
 		{
 			velocity.x = 0;
@@ -6225,12 +6270,12 @@ bool Actor::CheckStandUp()
 		}
 		possibleEdgeCount = 0;
 
-		if( checkValid )
+		/*if( checkValid )
 			cout << "check valid" << endl;
 		else
 		{
 			cout << "cant stand up" << endl;
-		}
+		}*/
 		return checkValid;
 
 	}
@@ -10167,6 +10212,7 @@ void Actor::UpdatePhysics()
 				//if( reversed )
 				//{
 				owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 				//}
 			}
 			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 )
@@ -12807,7 +12853,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 		}
 
-		cout << "valid is false" << endl;
+		//cout << "valid is false" << endl;
 		checkValid = false;
 
 		//}
@@ -13928,10 +13974,10 @@ void Actor::UpdateSprite()
 			else
 				fxPos = pp;
 
-			fxPos += gn * 8.0;
+			fxPos += gn * 48.0;
 
 			//cout << "activating" << endl;
-			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 14, 1, facingRight );
+			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 8, 2, facingRight );
 		}
 
 		
@@ -14749,6 +14795,17 @@ void Actor::UpdateSprite()
 
 			V2d pp = ground->GetPoint( edgeQuantity );
 
+			V2d along = normalize( ground->v1 - ground->v0 );
+			double xExtraRepeat = 64;
+			double xExtraStart = 80;
+
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				xExtraRepeat = -xExtraRepeat;
+				xExtraStart = -xExtraStart;
+			}
+			
+
 			if( movingGround != NULL )
 			{
 				ground->v0 = oldv0;
@@ -14756,19 +14813,19 @@ void Actor::UpdateSprite()
 			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				sprite->setPosition( pp.x + offsetX, pp.y );
-			else
-				sprite->setPosition( pp.x, pp.y );
+				pp.x += offsetX;
 
-			if( frame == 0 )
+			sprite->setPosition( pp.x, pp.y );
+
+			if( frame == 0 && currInput.B && !prevInput.B )
 			{
 				owner->ActivateEffect( ts_fx_dashStart, 
-					pp + gn * 16.0, false, angle, 7, 3, facingRight );
+					pp + gn * 64.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
 			}
 			else if( frame % 5 == 0 )
 			{
 				owner->ActivateEffect( ts_fx_dashRepeat, 
-					pp + gn * 8.0, false, angle, 12, 3, facingRight );
+					pp + gn * 32.0 + along * xExtraRepeat, false, angle, 12, 3, facingRight );
 			}
 
 			break;
@@ -15521,7 +15578,15 @@ void Actor::UpdateSprite()
 
 void Actor::ConfirmEnemyKill( Enemy *e )
 {
-	owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
+	if( e->hasMonitor && !e->suppressMonitor )
+	{
+		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL_KEY] );
+	}
+	else
+	{
+		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
+	}
+	
 	//wrong
 }
 

@@ -139,6 +139,11 @@ void Patroller::ResetEnemy()
 
 void Patroller::UpdatePrePhysics()
 {
+	if( keyFrame == 16 * 5 )
+	{
+		keyFrame = 0;
+	}
+
 	if( !dead && receivedHit != NULL )
 	{
 		//owner->Pause( 5 );
@@ -318,6 +323,7 @@ void Patroller::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		++keyFrame;
 		++frame;
 		slowCounter = 1;
 	
@@ -380,12 +386,27 @@ void Patroller::Draw( sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, keyShader );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			target->draw( sprite );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
 		}
 	}
 	else

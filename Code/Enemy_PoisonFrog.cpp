@@ -544,6 +544,11 @@ void PoisonFrog::ActionEnded()
 
 void PoisonFrog::UpdatePrePhysics()
 {
+	if( keyFrame == 16 * 5 )
+	{
+		keyFrame = 0;
+	}
+
 	ActionEnded();
 
 	Actor *player = owner->player;
@@ -960,6 +965,7 @@ void PoisonFrog::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		++keyFrame;
 		++frame;
 		if( invincibleFrames > 0 )
 			--invincibleFrames;
@@ -998,12 +1004,27 @@ void PoisonFrog::Draw(sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, keyShader );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			target->draw( sprite );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
 		}
 	}
 	else

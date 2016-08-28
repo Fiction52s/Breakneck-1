@@ -502,6 +502,11 @@ void Crawler::UpdatePrePhysics()
 	if( dead )
 		return;
 
+	if( keyFrame == 16 * 5 )
+	{
+		keyFrame = 0;
+	}
+
 	if( !dead && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
@@ -1185,6 +1190,7 @@ void Crawler::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		++keyFrame;
 		++frame;
 		slowCounter = 1;
 		
@@ -1230,12 +1236,27 @@ void Crawler::Draw(sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, keyShader );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			target->draw( sprite );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
 		}
 	}
 	else
@@ -1399,7 +1420,7 @@ void Crawler::UpdateSprite()
 
 		if( keySprite != NULL && hasMonitor && !suppressMonitor )
 		{
-			cout << "frame: " << keyFrame / 2 << endl;
+			//cout << "frame: " << keyFrame / 2 << endl;
 			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );

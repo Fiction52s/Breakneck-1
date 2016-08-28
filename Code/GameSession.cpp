@@ -571,6 +571,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
 {
 	soundNodeList = new SoundNodeList( 10 );
+	soundNodeList->SetGlobalVolume( 0 );
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ) );
 	
 	currentZone = NULL;
@@ -997,20 +998,21 @@ void GameSession::UpdateEnemiesPostPhysics()
 		
 		if( current->keyShader != NULL )
 		{
-			int f = ( totalGameFrames % 60 );
+			int tot = 16 * 5;
+			float halftot = tot / 2;
+			int f = ( totalGameFrames % tot );
 			float fac;
-			if( f < 30 )
+			if( f < tot / 2 )
 			{
-				fac = f / 29.f;
+				fac = f / (halftot-1);
 			}
 			else
 			{
-				fac = 1.f - ( f - 30.f ) / 29.f;
+				fac = 1.f - ( f - halftot ) / (halftot-1);
 			}
 			
-
 			current->keyShader->setParameter( "prop", fac );
-			current->keyShader->setParameter( "toColor", Color::Green );
+			
 		}
 
 		current = temp;
@@ -1031,10 +1033,9 @@ void GameSession::UpdateEnemiesDraw()
 	while( current != NULL )
 	{
 	//	cout << "draw" << endl;
-		if( current->type != Enemy::BASICEFFECT )
+		if( current->type != Enemy::BASICEFFECT && ( pauseFrames < 2 || current->receivedHit == NULL ) )
 		{
 			current->Draw( preScreenTex );
-			
 		}
 		current = current->next;
 	}
@@ -2024,7 +2025,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				Crawler *enemy = new Crawler( this, false, edges[polyIndex[terrainIndex] + edgeIndex], 
+				Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity, clockwise, speed );
 
 
@@ -6150,6 +6151,19 @@ int GameSession::Run( string fileN )
 		if( player->action != Actor::DEATH )
 			player->Draw( preScreenTex );
 
+
+		//whited out hit enemies
+		Enemy *current = activeEnemyList;
+		while( current != NULL )
+		{
+		//	cout << "draw" << endl;
+			if( current->type != Enemy::BASICEFFECT && ( pauseFrames >= 2 && current->receivedHit != NULL ) )
+			{
+				current->Draw( preScreenTex );
+			}
+			current = current->next;
+		}
+
 		Enemy *currentEnem = activeEnemyList;
 		while( currentEnem != NULL )
 		{
@@ -6159,6 +6173,8 @@ int GameSession::Run( string fileN )
 			}
 			currentEnem = currentEnem->next;
 		}
+
+		
 
 
 		//view.set
@@ -7109,7 +7125,7 @@ int GameSession::Run( string fileN )
 		currMusic = NULL;
 	}
 	
-
+	soundNodeList->Reset();
 	
 	return returnVal;
 }

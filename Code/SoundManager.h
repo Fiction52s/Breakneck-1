@@ -44,6 +44,7 @@ struct SoundNodeList
 	//void AddInactive( SoundNode *sn );
 	void DeactivateSound( SoundNode *sn );
 	void Update();
+	void SetGlobalVolume( float vol );
 	void Reset();
 	int GetActiveCount();
 	int maxSounds;

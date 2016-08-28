@@ -279,6 +279,11 @@ void StagBeetle::UpdatePrePhysics()
 	if( dead )
 		return;
 
+	if( keyFrame == 16 * 5 )
+	{
+		keyFrame = 0;
+	}
+
 	ActionEnded();
 
 	switch( action )
@@ -727,6 +732,7 @@ void StagBeetle::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
+		++keyFrame;
 		++frame;
 		slowCounter = 1;
 		
@@ -774,12 +780,27 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, keyShader );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				//target->draw( sprite, hurtShader );
+			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			target->draw( sprite );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
 		}
 	}
 	else

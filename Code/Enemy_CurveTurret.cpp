@@ -162,6 +162,11 @@ void CurveTurret::ResetEnemy()
 
 void CurveTurret::UpdatePrePhysics()
 {
+	if( keyFrame == 16 * 5 )
+	{
+		keyFrame = 0;
+	}
+
 	testLauncher->UpdatePrePhysics();
 	
 
@@ -296,7 +301,7 @@ void CurveTurret::UpdatePostPhysics()
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
-		
+		++keyFrame;	
 		++frame;		
 	//	cout << "frame" << endl;
 		slowCounter = 1;
@@ -329,12 +334,27 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			target->draw( sprite, keyShader );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			target->draw( sprite );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
 		}
 	}
 	else if( dying )
