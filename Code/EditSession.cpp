@@ -7776,6 +7776,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						name == "crawler"
 						|| name == "foottrap"
 						|| name == "crawler"
+						|| name == "basicturret"
 						|| name == "bosscrawler"
 						|| name == "crawlerreverser";
 

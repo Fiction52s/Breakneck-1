@@ -109,6 +109,12 @@ Actor::Actor( GameSession *gs )
 		ts_dodecaSmall = owner->GetTileset( "dodecasmall.png", 180, 180 );
 		ts_dodecaBig = owner->GetTileset( "dodecabig.png", 360, 360 );
 
+		soundBuffers[S_RUN_STEP1] = owner->soundManager->GetSound( "Audio/Sounds/run1.ogg" );
+		soundBuffers[S_RUN_STEP2] = owner->soundManager->GetSound( "Audio/Sounds/run2.ogg" );
+		soundBuffers[S_SPRINT_STEP1] = owner->soundManager->GetSound( "Audio/Sounds/sprint1.ogg" );
+		soundBuffers[S_SPRINT_STEP2] = owner->soundManager->GetSound( "Audio/Sounds/sprint2.ogg" );
+		soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Audio/Sounds/dash.ogg" );
+
 		soundBuffers[S_HIT] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack_short.ogg" );
 		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hurt_spack.ogg" );
 		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack.ogg" );
@@ -116,6 +122,7 @@ Actor::Actor( GameSession *gs )
 		soundBuffers[S_FAIR] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
 		soundBuffers[S_DAIR] = owner->soundManager->GetSound( "Audio/Sounds/dair.ogg" );
 		soundBuffers[S_UAIR] = owner->soundManager->GetSound( "Audio/Sounds/uair.ogg" );
+		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound( "Audio/Sounds/walljump.ogg" );
 		soundBuffers[S_WALLATTACK] = owner->soundManager->GetSound( "Audio/Sounds/wallattack.ogg" );
 		soundBuffers[S_GRAVREVERSE] = owner->soundManager->GetSound( "Audio/Sounds/gravreverse.ogg" );
 		soundBuffers[S_BOUNCEJUMP] = owner->soundManager->GetSound( "Audio/Sounds/bounce.ogg" );
@@ -543,14 +550,14 @@ Actor::Actor( GameSession *gs )
 		ts_steepClimbAttackSword[1] = owner->GetTileset( "climb_att_swordb_320x96.png", 320, 96 );
 		ts_steepClimbAttackSword[2] = owner->GetTileset( "climb_att_swordc_352x112.png", 352, 112 );
 
-		ts_fx_hurtSpack = owner->GetTileset( "hurtspack.png", 64, 64 );
+		ts_fx_hurtSpack = owner->GetTileset( "hurt_spack_128x160.png", 128, 160 );
 
 		ts_fx_dashStart = owner->GetTileset( "fx_dashstart_192x160.png", 192, 160 );
 		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat_192x128.png", 192, 128 );
 		ts_fx_land = owner->GetTileset( "fx_land_128x128.png", 128, 128 );
 		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
 		ts_fx_jump = owner->GetTileset( "fx_jump_160x64.png", 160, 64 );
-		ts_fx_wallJump = owner->GetTileset( "fx_jump_160x64.png", 160, 64 );
+		ts_fx_wallJump = owner->GetTileset( "fx_walljump_80x128.png", 80, 128 );
 		ts_fx_double = owner->GetTileset( "fx_double_256x256.png", 256 , 256 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_grav_reverse_128x128.png", 128 , 128 );
 		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
@@ -3517,6 +3524,7 @@ void Actor::UpdatePrePhysics()
 							grindEdge = NULL;
 							reversed = true;
 							hasGravReverse = false;
+
 								
 							if( currInput.LRight() )
 							{
@@ -3542,6 +3550,11 @@ void Actor::UpdatePrePhysics()
 							action = LAND2;
 							frame = 0;
 							framesNotGrinding = 0;
+
+							double angle = GroundedAngle();
+
+							owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 						}
 					}
 				}		
@@ -4566,10 +4579,10 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
-				double xDiff = 20;
-				if( facingRight )
-					xDiff = -xDiff;
-				owner->ActivateEffect( ts_fx_wallJump, V2d( position.x + xDiff, position.y ), false, 0, 12, 4, facingRight );
+				//double xDiff = 20;
+				//if( facingRight )
+				//	xDiff = -xDiff;
+				//owner->ActivateEffect( ts_fx_wallJump, V2d( position.x + xDiff, position.y ), false, 0, 12, 4, facingRight );
 				wallJumpFrameCounter = 0;
 				double strengthX = wallJumpStrength.x;
 				double strengthY = wallJumpStrength.y;
@@ -4594,6 +4607,8 @@ void Actor::UpdatePrePhysics()
 				}
 
 				velocity.y = -strengthY;
+
+				owner->soundNodeList->ActivateSound( soundBuffers[S_WALLJUMP] );
 			}
 			else if( frame >= wallJumpMovementLimit )
 			{
@@ -5367,7 +5382,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case BOUNCEAIR:
 		{
-			if( framesInAir > 10 ) //to prevent you from clinging to walls awkwardly
+			if( framesInAir > 1 ) //to prevent you from clinging to walls awkwardly
 			{
 			//	cout << "movement" << endl;
 				AirMovement();
@@ -11183,7 +11198,7 @@ void Actor::UpdatePostPhysics()
 
 		if( frame % 1 == 0 )
 		{
-			double startRadius = 100;
+			double startRadius = 64;
 			double endRadius = 500;
 
 			double part = frame / 88.f;
@@ -11248,6 +11263,11 @@ void Actor::UpdatePostPhysics()
 	{
 	case AIRDASH:
 		{
+			if( frame % 1 == 0 )
+			{
+				owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
+			}
+
 			if( frame % 4 == 0 )
 			{
 				if( velocity.x == 0 && velocity.y < 0 )
@@ -11287,10 +11307,7 @@ void Actor::UpdatePostPhysics()
 				
 			}
 
-			if( frame % 1 == 0 )
-			{
-				owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
-			}
+			
 		}
 		break;
 	}
@@ -13669,7 +13686,15 @@ void Actor::UpdateSprite()
 				//runTappingSound.stop();
 				//runTappingSound.play();
 			}
-
+		
+		if( frame == 3 * 4 )
+		{
+			owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP1] );
+		}
+		else if( frame == 8 * 4 )
+		{
+			owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
+		}
 		
 
 		//if( bounceGrounded )
@@ -13756,7 +13781,14 @@ void Actor::UpdateSprite()
 		}
 	case SPRINT:
 		{	
-		
+		if( frame == 2 * 4 )
+		{
+			owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP1] );
+		}
+		else if( frame == 6 * 4 )
+		{
+			owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP2] );
+		}
 		/*if( bounceGrounded )
 		{
 			sprite->setTexture( *(ts_bounceSprint->texture));
@@ -14078,6 +14110,22 @@ void Actor::UpdateSprite()
 		}
 	case WALLJUMP:
 		{
+			if( frame == 0 )
+			{
+				V2d fxPos = position;
+				if( facingRight )
+				{
+					fxPos += V2d( 0, 0 );
+				}
+				else
+				{
+					fxPos += V2d( 0, 0 );
+				}
+				owner->ActivateEffect( ts_fx_wallJump, fxPos, false, 0, 8, 2, facingRight );
+				
+				//cout << "ACTIVATING WALLJUMP" << endl;
+			}
+
 			sprite->setTexture( *(tileset[WALLJUMP]->texture));
 			if( facingRight )
 			{
@@ -14852,6 +14900,7 @@ void Actor::UpdateSprite()
 			{
 				owner->ActivateEffect( ts_fx_dashStart, 
 					pp + gn * 64.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_DASH_START] );
 			}
 			else if( frame % 5 == 0 )
 			{

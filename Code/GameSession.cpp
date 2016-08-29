@@ -185,6 +185,8 @@ void ScoreDisplay::Deactivate()
 		bars[i]->frame = 0;
 		//bars[i]->xDiffPos = 0;
 	}
+	waiting = false;
+
 	//active = false;
 	//waiting = false;
 	//Reset();
