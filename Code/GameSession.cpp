@@ -571,7 +571,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
 {
 	soundNodeList = new SoundNodeList( 10 );
-	soundNodeList->SetGlobalVolume( 0 );
+	soundNodeList->SetGlobalVolume( 100 );
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ) );
 	
 	currentZone = NULL;
@@ -6658,16 +6658,16 @@ int GameSession::Run( string fileN )
 	//	enemyTree->DebugDraw( window );
 		
 
-		if( deathWipe )
-		{
-			//cout << "showing death wipe frame: " << deathWipeFrame << " panel: " << deathWipeFrame / 5 << endl;
-			wipeSprite.setTexture( wipeTextures[deathWipeFrame / 5] );
-			wipeSprite.setTextureRect( IntRect( 0, 0, wipeSprite.getTexture()->getSize().x, 
-				wipeSprite.getTexture()->getSize().y) );
-			wipeSprite.setOrigin( wipeSprite.getLocalBounds().width / 2, wipeSprite.getLocalBounds().height / 2 );
-			wipeSprite.setPosition( player->position.x, player->position.y );//view.getCenter().x, view.getCenter().y );
-			preScreenTex->draw( wipeSprite );
-		}
+		//if( deathWipe )
+		//{
+		//	//cout << "showing death wipe frame: " << deathWipeFrame << " panel: " << deathWipeFrame / 5 << endl;
+		//	wipeSprite.setTexture( wipeTextures[deathWipeFrame / 5] );
+		//	wipeSprite.setTextureRect( IntRect( 0, 0, wipeSprite.getTexture()->getSize().x, 
+		//		wipeSprite.getTexture()->getSize().y) );
+		//	wipeSprite.setOrigin( wipeSprite.getLocalBounds().width / 2, wipeSprite.getLocalBounds().height / 2 );
+		//	wipeSprite.setPosition( player->position.x, player->position.y );//view.getCenter().x, view.getCenter().y );
+		//	preScreenTex->draw( wipeSprite );
+		//}
 
 		if( player->action == Actor::DEATH )
 		{

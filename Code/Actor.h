@@ -265,6 +265,14 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_land;
 	Tileset *ts_fx_jump;
 
+	Tileset *ts_fx_death_1a;
+	Tileset *ts_fx_death_1b;
+	Tileset *ts_fx_death_1c;
+	Tileset *ts_fx_death_1d;
+	Tileset *ts_fx_death_1e;
+	Tileset *ts_fx_death_1f;
+
+
 	sf::Vector2<double> followerPos;
 	sf::Vector2<double> followerVel;
 	double followerFac;

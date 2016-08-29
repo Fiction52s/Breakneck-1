@@ -559,7 +559,13 @@ Actor::Actor( GameSession *gs )
 		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
 		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
 		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
-		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );
+		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );		
+		ts_fx_death_1a = owner->GetTileset( "death_fx_1a_256x256.png", 256, 256 );
+		ts_fx_death_1b = owner->GetTileset( "death_fx_1b_128x80.png", 128, 80 );
+		ts_fx_death_1c = owner->GetTileset( "death_fx_1c_128x128.png", 128, 128 );
+		ts_fx_death_1d = owner->GetTileset( "death_fx_1d_48x48.png", 48, 48 );
+		ts_fx_death_1e = owner->GetTileset( "death_fx_1e_160x160.png", 160, 160 );
+		ts_fx_death_1f = owner->GetTileset( "death_fx_1f_160x160.png", 160, 160 );
 
 		if (!swordShaders[0].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
 		{
@@ -4560,6 +4566,10 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
+				double xDiff = 20;
+				if( facingRight )
+					xDiff = -xDiff;
+				owner->ActivateEffect( ts_fx_wallJump, V2d( position.x + xDiff, position.y ), false, 0, 12, 4, facingRight );
 				wallJumpFrameCounter = 0;
 				double strengthX = wallJumpStrength.x;
 				double strengthY = wallJumpStrength.y;
@@ -11171,6 +11181,27 @@ void Actor::UpdatePostPhysics()
 		sprite->setPosition( position.x, position.y );
 		sprite->setRotation( 0 );
 
+		if( frame % 1 == 0 )
+		{
+			double startRadius = 100;
+			double endRadius = 500;
+
+			double part = frame / 88.f;
+
+			double currRadius = startRadius * ( 1.f - part ) + endRadius * ( part );
+
+			int randAng = (rand() % 360);
+			double randAngle = randAng / 180.0 * PI;
+			//randAngle += PI / 2.0;
+			V2d pos( sin( randAngle ) * currRadius, -cos( randAngle ) * currRadius );
+
+			pos += position;
+			double fxAngle = randAngle - PI / 3.5;
+			//cout << "randAngle: " << randAngle << endl;
+
+			//cout << "randang: " << randAng << endl;
+			owner->ActivateEffect( ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
+		}
 		//if( slowCounter == slowMultiple )
 		//{
 		
@@ -15531,6 +15562,8 @@ void Actor::UpdateSprite()
 		}
 	case DEATH:
 		{
+			
+
 			break;
 		}
 	}
