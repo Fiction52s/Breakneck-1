@@ -819,13 +819,15 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	kinMinimapIcon.setPosition( 180, preScreenTex->getSize().y - 180 );
 
 	kinMapSpawnIcon.setTexture( *ts_miniIcons->texture );
-	kinMapSpawnIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
+	kinMapSpawnIcon.setTextureRect( ts_miniIcons->GetSubRect( 1 ) );
 	kinMapSpawnIcon.setOrigin( kinMapSpawnIcon.getLocalBounds().width / 2,
 		kinMapSpawnIcon.getLocalBounds().height / 2 );
 	//kinMapSpawnIcon.setPosition( goalPos.x, goalPos.y );
 
+	
+
 	goalMapIcon.setTexture( *ts_miniIcons->texture );
-	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
+	
 	goalMapIcon.setOrigin( goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2 );
 
@@ -4643,6 +4645,34 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	int goalTile = -1;
+	switch( envType )
+	{
+	case 0:
+		goalTile = 5;
+		break;
+	case 1:
+		goalTile = 4;
+		break;
+	case 2:
+		goalTile = 4;
+		break;
+	case 3:
+		goalTile = 4;
+		break;
+	case 4:
+		goalTile = 4;
+		break;
+	case 5:
+		goalTile = 4;
+		break;
+	case 6:
+		goalTile = 4;
+		break;
+	}
+	assert( goalTile >= 0 );
+	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( goalTile ) );
+
 	//use player->setactivepowers to set it up from the level. need to add it
 	//to the editor
 
