@@ -567,6 +567,7 @@ Actor::Actor( GameSession *gs )
 		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
 		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
 		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );		
+		ts_fx_airdashHover = owner->GetTileset( "fx_airdash_hold_1_96x80.png", 96, 80 ); 
 		ts_fx_death_1a = owner->GetTileset( "death_fx_1a_256x256.png", 256, 256 );
 		ts_fx_death_1b = owner->GetTileset( "death_fx_1b_128x80.png", 128, 80 );
 		ts_fx_death_1c = owner->GetTileset( "death_fx_1c_128x128.png", 128, 128 );
@@ -11263,18 +11264,21 @@ void Actor::UpdatePostPhysics()
 	{
 	case AIRDASH:
 		{
-			if( frame % 1 == 0 )
+			bool horizontal = abs( velocity.y ) < .21;
+			bool stopped = horizontal && velocity.x == 0;
+			if( frame % 1 == 0 && !stopped )
 			{
-				owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
+				//owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
 			}
 
 			if( frame % 4 == 0 )
 			{
-				if( velocity.x == 0 && velocity.y < 0 )
+				if( stopped )
 				{
-					owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x, position.y + 64 ), false, 0, 15, 3, facingRight );
+					if( frame % 4 == 0 )
+						owner->ActivateEffect( ts_fx_airdashHover, V2d( position.x, position.y + 70 ), false, 0, 12, 4, facingRight );
 				}
-				else if( abs( velocity.y ) < .21 )
+				else if( horizontal )
 				{
 					//cout << "STUFF???" << endl;
 					if( velocity.x > 0 )
@@ -11285,6 +11289,14 @@ void Actor::UpdatePostPhysics()
 					{
 						owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x + 64, position.y - 18 ), false, -PI / 2.0, 15, 3, true );
 					}
+				}
+				else if( velocity.x == 0 && velocity.y < 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x, position.y + 64 ), false, 0, 15, 3, facingRight );
+				}
+				else if( velocity.x == 0 && velocity.y > 0 )
+				{
+					owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x, position.y + 0 ), false, PI, 15, 3, facingRight );
 				}
 				else if( velocity.x > 0 && velocity.y > 0 )
 				{
@@ -11303,6 +11315,7 @@ void Actor::UpdatePostPhysics()
 				{
 					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x - 54, position.y + 60 ), false, 0, 15, 3, false );
 				}
+				
 				//cout << "airdash fx" << endl;
 				
 			}

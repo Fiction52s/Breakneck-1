@@ -89,20 +89,48 @@ void Gate::UpdateLine()
 	switch( type )
 	{
 	case BLACK:
+		{
 		c = Color( 150, 150, 150 );
+
+		
 		//ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
-		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
-		tileHeight = 64;
+		ts = owner->GetTileset( "gate_black_128x128.png", 128, 128 );
+		tileHeight = 128;
+		}
 		break;
 	case KEYGATE:
+		{
 		c =  Color( 77, 150, 249 );
-		ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
-		tileHeight = 64;
+
+		switch( owner->envType )
+		{
+		case 0:
+			ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
+			break;
+		case 1:
+			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			break;
+		case 2:
+			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			break;
+		case 3:
+			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			break;
+		case 4:
+			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			break;
+		case 5:
+			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			break;
+		}
+		
+		tileHeight = 128;
+		}
 		break;
 	case BIRDFIGHT:
 		c = Color::Green;
-		ts = owner->GetTileset( "gateblue_64x64.png", 64, 64 );
-		tileHeight = 64;
+		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
+		tileHeight = 128;
 		break;
 	}
 	thickLine[0].color = c;
@@ -186,7 +214,7 @@ void Gate::Update()
 			break;
 		case SOFT:
 			{
-				if( frame == 6 * 3 )
+				if( frame == 1 )
 				{
 					frame = 0;
 				}
@@ -195,7 +223,7 @@ void Gate::Update()
 		case DISSOLVE:
 			{
 				//whatever length
-				if( frame == 12 * 4 )
+				if( frame == 3 * 4 )
 				{
 					if( reformBehindYou )
 					{
@@ -212,7 +240,7 @@ void Gate::Update()
 			break;
 		case REFORM:
 			{
-				cout << "reforming " << endl;
+				//cout << "reforming " << endl;
 				//whatever length
 				if( frame == 10 )
 				{
@@ -345,7 +373,7 @@ void Gate::Update()
 			break;
 		case HARD:
 			{
-				realFrame = 0;
+				realFrame = 1;
 			}
 			break;
 		case SOFTEN:
@@ -355,22 +383,22 @@ void Gate::Update()
 			break;
 		case SOFT:
 			{
-				realFrame = 2 + frame / 3;
+				realFrame = 2;// + frame / 3;
 			}
 			break;
 		case DISSOLVE:
 			{
-				realFrame = 9 + frame / 4;
+				realFrame = 3 + frame / 4;
 			}
 			break;
 		case REFORM:
 			{
-				realFrame = 1;
+				realFrame = 0;
 			}
 			break;
 		case LOCKFOREVER:
 			{
-				realFrame  = 1;
+				realFrame  = 0;
 			}
 			break;
 		case OPEN:
@@ -382,18 +410,6 @@ void Gate::Update()
 	}
 	else if( type == BLACK )
 	{
-		switch( gState )
-		{
-			case HARD:
-				realFrame = 11;
-				break;
-			case REFORM:
-				realFrame = frame / 3;
-				break;
-			default:
-				//cout << "state : " << gState << endl;
-				break;
-		}
 	}
 
 		
@@ -427,15 +443,21 @@ void Gate::Update()
 		gq[i*4+2].position = Vector2f( rv0.x, rv0.y );
 	}
 
-	V2d lv0 = leftv0 + along * (double)(tileHeight * (numTiles-1));
+	double fullHeight =  (double)(tileHeight * (numTiles-1));
+	
+	V2d lv0 = leftv0 + along * fullHeight;
 	V2d lv1 = leftv1;
 	V2d rv1 = rightv1;
-	V2d rv0 = rightv0 + along * (double)(tileHeight * (numTiles-1));
-	//remainder
-
+	V2d rv0 = rightv0 + along * fullHeight;
 	
-	gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, subRect.top );
-	gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	double thisHeight = length( lv1 - lv0 );
+
+	//remainder
+	
+	double h = subRect.height - thisHeight;
+	
+	gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, h );
+	gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, h  );
 	gq[(numTiles-1) * 4 + 2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
 	gq[(numTiles-1) * 4 + 3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 
