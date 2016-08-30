@@ -3169,7 +3169,7 @@ bool GameSession::OpenFile( string fileName )
 			ss << ".png";
 		
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 8, 128 );
+			Tileset *ts_border = GetTileset( ss.str(), 8, 256 );
 
 			
 
@@ -3201,7 +3201,7 @@ bool GameSession::OpenFile( string fileName )
 
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
-			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
+			VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
 			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
@@ -7872,6 +7872,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			for( int i = 0; i < numQuads; ++i )
 			{
 				//worldNum * 5
+				//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
 				int realIndex = valid * 16 + varietyCounter;
 				IntRect sub = ts->GetSubRect( realIndex );
@@ -8585,13 +8586,15 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		qt = terrainBGTree;
 	}
 
-	int tw = 128;//64;//8;
-	int th = 128;
+	double tw = 128;//64;//8;
+	double th = 256;
 
+	int out = 40;
+	int in = th - out;
 	assert( qt != NULL );
 
 
-	int numTotalQuads = 0;
+	int numtotalTris = 0;
 	Edge *te = startEdge;
 	do
 	{
@@ -8602,7 +8605,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		double c = cross( nextAlong, along );
 		if( c > 0 )
 		{
-			numTotalQuads++;
+			numtotalTris++;
 			//V2d endVec = normalize( te->v0 - te->v1 );
 			//V2d startVec = normalize( e1->v1 - te->v1 );
 
@@ -8648,15 +8651,15 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 	}
 	while( te != startEdge );
 
-	if( numTotalQuads == 0 )
+	if( numtotalTris == 0 )
 	{
 		return NULL;
 	}
 
-	VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
+	VertexArray *currVA = new VertexArray( sf::Triangles, numtotalTris * 3 );
 	VertexArray &va = *currVA;
 
-	IntRect sub = ts->GetSubRect( 0 );
+	//..IntRect sub = ts->GetSubRect( 0 );
 
 	te = startEdge;
 	int extra = 0;
@@ -8667,45 +8670,104 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		V2d along = normalize( te->v1 - te->v0 );
 		V2d nextAlong = normalize( e1->v1 - e1->v0 );
 		double c = cross( nextAlong, along );
+		V2d point = e1->v0;
 		int i = 0;
 		if( c > 0 )
 		{
-			V2d currNorm = te->Normal();
-			V2d nextNorm = e1->Normal();
+			/*GameSession::IsFlatGround( sf::Vector2<double> &normal )
+			GameSession::IsSlopedGround( sf::Vector2<double> &normal )
+			GameSession::IsWall( sf::Vector2<double> &normal )*/
 
-			V2d half = normalize( ( currNorm + nextNorm ) / 2.0 );
-			V2d oppHalf = -half;
+			
+			int valid = -1;
+			valid = IsFlatGround( eNorm );
+			if( valid == -1 )
+			{
+				valid = IsSlopedGround( eNorm );
+				if( valid == -1 )
+				{
+					valid = IsWall( eNorm );
 
-			double outDist = 16.0;
-			double inDist = 128.0 - outDist;//48.0;
+					if( valid == -1 )
+					{
+						valid = IsSteepGround( eNorm );
+					}
+				}
 
-			V2d out = te->v1 + half * outDist;
-			V2d in = te->v1 + oppHalf * inDist;
+			}
 
-			V2d otherHalf( half.y, -half.x );
+			if( valid == -1 )
+			{
+				cout << "wat: " << eNorm.x << ", " << eNorm.y << endl;
+			}
+			assert( valid != -1 );
+			
+			//int valid = ValidEdge( eNorm );
+				//add (worldNum * 5) to realIndex to get the correct borders
+			int realIndex = valid * 16;
+			IntRect sub = ts->GetSubRect( realIndex );
 
-			double hw = tw / 2.0;
-			V2d outLeft = out - otherHalf * hw;
-			V2d outRight = out + otherHalf * hw;
-			V2d inLeft = in - otherHalf * hw;
-			V2d inRight = in + otherHalf * hw;
+			V2d currNormOpp = -te->Normal();
+			V2d nextNormOpp = -e1->Normal();
 
-			va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
-			va[extra + i*4 + 1].position = Vector2f( outRight.x, outRight.y );
-			va[extra + i*4 + 2].position = Vector2f( inRight.x, inRight.y );
-			va[extra + i*4 + 3].position = Vector2f( inLeft.x, inLeft.y );
+			V2d currInPoint = point + currNormOpp * (th - out);
+			V2d nextInPoint = point + nextNormOpp * (th - out);
 
-			//int blah = 20;
-			//va[extra + i*3 + 0].color = Color( i * 20, i * 20, i * 20 );//Color::Red;
-			//va[extra + i*3 + 1].color = Color( i * 20, i * 20, i * 20 );
-			//va[extra + i*3 + 2].color = Color( i * 20, i * 20, i * 20 );
+			double baseLength = length( nextInPoint - currInPoint );
+			int mid = floor( baseLength + .5 );
+			//cout << "mid: " << mid << endl;
+			mid = min( mid, 128 );
+			//assert( mid <= 128 );
+				
 
-			va[extra + i*4 + 0].texCoords = Vector2f( sub.left, sub.top );
-			va[extra + i*4 + 1].texCoords = Vector2f( sub.left + tw, sub.top );
-			va[extra + i*4 + 2].texCoords = Vector2f( sub.left + tw, sub.top + sub.height );
-			va[extra + i*4 + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+			va[extra + 0].position = Vector2f( point.x, point.y );
+			va[extra + 1].position = Vector2f( currInPoint.x, currInPoint.y );
+			va[extra + 2].position = Vector2f( nextInPoint.x, nextInPoint.y );
 
-			extra += 4;
+			/*va[extra + i*3 + 0].color = Color::Red;
+			va[extra + i*3 + 1].color = Color::Red;
+			va[extra + i*3 + 2].color = Color::Red;*/
+
+			va[extra + 0].texCoords = Vector2f( sub.left + mid / 2, out );
+			va[extra + 1].texCoords = Vector2f( sub.left, th );
+			va[extra + 2].texCoords = Vector2f( sub.left + mid, th );
+
+
+			//va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
+
+			//V2d half = normalize( ( currNorm + nextNorm ) / 2.0 );
+			//V2d oppHalf = -half;
+
+			//double outDist = 16.0;
+			//double inDist = 128.0 - outDist;//48.0;
+
+			//V2d out = te->v1 + half * outDist;
+			//V2d in = te->v1 + oppHalf * inDist;
+
+			//V2d otherHalf( half.y, -half.x );
+
+			//double hw = tw / 2.0;
+			//V2d outLeft = out - otherHalf * hw;
+			//V2d outRight = out + otherHalf * hw;
+			//V2d inLeft = in - otherHalf * hw;
+			//V2d inRight = in + otherHalf * hw;
+
+			//va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
+			//va[extra + i*4 + 1].position = Vector2f( outRight.x, outRight.y );
+			//va[extra + i*4 + 2].position = Vector2f( inRight.x, inRight.y );
+			//va[extra + i*4 + 3].position = Vector2f( inLeft.x, inLeft.y );
+
+			////int blah = 20;
+			////va[extra + i*3 + 0].color = Color( i * 20, i * 20, i * 20 );//Color::Red;
+			////va[extra + i*3 + 1].color = Color( i * 20, i * 20, i * 20 );
+			////va[extra + i*3 + 2].color = Color( i * 20, i * 20, i * 20 );
+
+			//va[extra + i*4 + 0].texCoords = Vector2f( sub.left, sub.top );
+			//va[extra + i*4 + 1].texCoords = Vector2f( sub.left + tw, sub.top );
+			//va[extra + i*4 + 2].texCoords = Vector2f( sub.left + tw, sub.top + sub.height );
+			//va[extra + i*4 + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+
+			extra += 3;
 		}
 		te = te->edge1;
 	}
@@ -8721,6 +8783,7 @@ sf::VertexArray * GameSession::SetupDecor0( std::vector<p2t::Triangle*> &tris, T
 		//random point stuff. do this after you get the enemies working
 	}
 }
+
 
 int GameSession::IsFlatGround( sf::Vector2<double> &normal )
 {
