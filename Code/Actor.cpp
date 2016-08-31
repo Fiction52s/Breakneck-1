@@ -11369,7 +11369,9 @@ void Actor::UpdatePostPhysics()
 		speedLevel = 0;
 	}
 
-	if( speedParticleCounter == speedParticleRate )
+	if( speedParticleCounter == speedParticleRate
+		&& action != DEATH && action != EXIT && action != GOALKILL
+		&& action != GOALKILLWAIT )
 	{
 		if( speedLevel == 1 )
 		{
@@ -13255,7 +13257,8 @@ void Actor::Draw( sf::RenderTarget *target )
 	}*/
 	//target->draw( *pTrail->particles );
 
-	if( bounceFlameOn && action != DEATH )
+	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
+		&& action != GOALKILLWAIT )
 	{
 		target->draw( bounceFlameSprite );
 	}
