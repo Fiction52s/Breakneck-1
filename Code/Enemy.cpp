@@ -368,12 +368,16 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	{
 	case BAT:
 		transform.rotate( angle );
+		break;
 	case CURVE_TURRET:
 		{
 			double gangle = atan2( gravity.y, gravity.x );
 			gangle = gangle * 180 / PI;
 			transform.rotate( gangle );
+			break;
 		}
+	case BASIC_TURRET:
+		transform.rotate( angle );
 		break;
 	}
 
@@ -769,23 +773,30 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	switch( t )
 	{
 		case PATROLLER:
+			auraColor = Color( 0x55, 0xbb, 0xff );
 			break;
 		case CRAWLER:
+			auraColor = Color( 0x77, 0xcc, 0xff );
 			break;
 		case BASICTURRET:
+			auraColor = Color( 0x66, 0x99, 0xff );
 			break;
 		case FOOTTRAP:
+			auraColor = Color( 0xaa, 0xcc, 0xff );
 			break;
 		case BAT:
+			auraColor = Color( 0x99, 0xff, 0xcc );
 			break;
 		case STAGBEETLE:
+			auraColor = Color( 0xaa, 0xff, 0x99 );
 			break;
 		case POISONFROG:
+			auraColor = Color( 0x66, 0xff, 0xee );
 			break;
 		case CURVETURRET:
+			auraColor = Color( 0x99, 0xff, 0x99 );
 			break;
 		default:
-			
 			break;
 	}
 

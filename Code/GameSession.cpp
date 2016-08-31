@@ -7397,6 +7397,20 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 	}
 }
 
+void GameSession::KillAllEnemies()
+{
+	Enemy *curr = activeEnemyList;
+	while( curr != NULL )
+	{
+		Enemy *next = curr->next;
+
+		if( curr->type != Enemy::GOAL && curr->type != Enemy::BASICEFFECT )
+		{
+			curr->health = 0;
+		}
+		
+	}
+}
 
 void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
 {
@@ -7410,6 +7424,7 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 
 void GameSession::RespawnPlayer()
 {
+	
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
 	player->hitGoal = false;
@@ -7489,6 +7504,7 @@ void GameSession::RespawnPlayer()
 	cam.pos.x = player->position.x;
 	cam.pos.y = player->position.y;
 	cam.offset = Vector2f( 0, 0 );
+	cam.manual = false;
 
 	player->hasDoubleJump = true;
 	player->hasAirDash = true;

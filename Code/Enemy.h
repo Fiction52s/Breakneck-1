@@ -311,6 +311,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world );
 	virtual void Init(){};
+
+	virtual void DirectKill(){}
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
 	virtual void UpdatePrePhysics() = 0;
@@ -995,6 +997,7 @@ struct Bat : Enemy, LauncherEnemy
 		//int nodeDistance,
 		int framesBetween,
 		bool loop );
+	void DirectKill();
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );

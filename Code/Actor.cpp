@@ -3930,7 +3930,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			framesSinceBounce = 0;
+			
+			
 			V2d bn = bounceNorm;//bounceEdge->Normal();
 			bool framesDone = frame == actionLength[BOUNCEGROUND] - 1;
 			if( boostBounce || (framesDone && bn.y >= 0 ) )
@@ -4057,12 +4058,16 @@ void Actor::UpdatePrePhysics()
 				V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
 				velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;*/
 
-				if( boostBounce )
+				if( boostBounce && framesSinceBounce > 10 )
 				{
 					velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
 					boostBounce = false;
 				}
-
+				else if( boostBounce )
+				{
+					boostBounce = false;
+				}
+				framesSinceBounce = 0;
 
 				//velocity = length( storedBounceVel ) * bounceEdge->Normal();
 				//ground = NULL;

@@ -194,7 +194,7 @@ void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	//V2d vel = b->velocity;
 	//double angle = atan2( vel.y, vel.x );
 	V2d norm = edge->Normal();
-	double angle = atan2( norm.y, norm.x );
+	double angle = atan2( norm.y, -norm.x );
 
 	owner->ActivateEffect( ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
@@ -202,9 +202,10 @@ void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Bat::BulletHitPlayer(BasicBullet *b )
 {
+	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
-	owner->ActivateEffect( ts_bulletExplode, b->position, true, -angle, 6, 2, true );
+	owner->ActivateEffect( ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
@@ -233,6 +234,11 @@ void Bat::ResetEnemy()
 	UpdateSprite();
 	health = initHealth;
 	
+}
+
+void Bat::DirectKill()
+{
+	//launcher->
 }
 
 void Bat::UpdatePrePhysics()

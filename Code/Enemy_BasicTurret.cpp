@@ -22,7 +22,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 		:Enemy( owner, EnemyType::BASICTURRET, p_hasMonitor, 1 ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
 {
-
+	receivedHit = NULL;
 	//keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
 
@@ -109,6 +109,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	//bulletSpeed = 5;
 
 	dead = false;
+	dying = false;
 
 	double size = max( width, height );
 
@@ -119,7 +120,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-
+	launcher = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, gn, 0, 300 );
+	launcher->SetBulletSpeed( bulletSpeed );
 
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
@@ -127,6 +129,9 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 void BasicTurret::ResetEnemy()
 {
+
+	launcher->Reset();
+	dying = false;
 	dead = false;
 	frame = 0;
 	deathFrame = 0;
@@ -177,13 +182,17 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 
 void BasicTurret::UpdatePrePhysics()
 {
+	launcher->UpdatePrePhysics();
+
+	if( !dead && !dying )
+	{
 
 	if( frame == 26 * animationFactor )
 	{
 		frame = 0;
 	}
 
-	if( !dead && !dying && receivedHit != NULL )
+	if( receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
 		health -= 20;
@@ -229,28 +238,15 @@ void BasicTurret::UpdatePrePhysics()
 	//if( frame == 12 * animationFactor && slowCounter == 1 )
 	if( frame == 0 && slowCounter == 1 )
 	{
-		//cout << "firing" << endl;
-		Bullet *b = ActivateBullet();
-		if( b != NULL )
-		{
-		//	cout << "firing bullet" << endl;
-			b->position = position ;//+ ground->Normal() * 16.0;
-			b->slowCounter = 1;
-			b->slowMultiple = 1;
-			b->framesToLive = b->maxFramesToLive;
-			b->frame = 0;
-		}
-		else
-		{
-			//cout << "unable to make bullet" << endl;
-		}
+		launcher->Fire();
 	}
 
-
+	}
 }
 
 void BasicTurret::UpdatePhysics()
 {
+	launcher->UpdatePhysics();
 	specterProtected = false;
 	Bullet *currBullet = activeBullets;
 	int i = 0;
@@ -348,11 +344,23 @@ void BasicTurret::PhysicsResponse()
 
 void BasicTurret::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
+		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
+	if( deathFrame == 0 && dying )
+	{
+		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
+	}
+
+	if( deathFrame == 30 && dying )
+	{
+		dying = false;
+		dead = true;
+	}
 
 	Bullet *currBullet = activeBullets;
 	while( currBullet != NULL )
@@ -379,15 +387,18 @@ void BasicTurret::UpdatePostPhysics()
 		currBullet = currBullet->next;
 	}
 	
+	UpdateSprite();
+	launcher->UpdateSprites();
+
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
-		
+		++keyFrame;
 		++frame;		
 	//	cout << "frame" << endl;
 		slowCounter = 1;
 	
-		if( dead )
+		if( dying )
 		{
 			deathFrame++;
 		}
@@ -397,15 +408,11 @@ void BasicTurret::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
-	
 
-	if( deathFrame == 30 )
+	if( dead && launcher->GetActiveCount() == 0 )
 	{
 		owner->RemoveEnemy( this );
-		return;
 	}
-
-	UpdateSprite();
 }
 
 void BasicTurret::Draw(sf::RenderTarget *target )
@@ -697,7 +704,7 @@ void BasicTurret::UpdateSprite()
 		notBullet = notBullet->next;
 	}
 
-	if( dead )
+	if( dying && !dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
 		botDeathSprite.setTextureRect( ts->GetSubRect( 2 ) );
@@ -708,7 +715,7 @@ void BasicTurret::UpdateSprite()
 		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 4 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 3 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, 
 			topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 

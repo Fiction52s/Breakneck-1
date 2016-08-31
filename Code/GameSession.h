@@ -388,6 +388,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int boundsWidth;
 	int boundsHeight;
 	
+	void KillAllEnemies();
 	void SetParOnTop(sf::RenderTarget *target );
 
 	void UpdateEnemiesPrePhysics();
