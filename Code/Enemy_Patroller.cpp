@@ -54,7 +54,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
-	ts = owner->GetTileset( "patroller_96x96.png", 96, 96 );
+	ts = owner->GetTileset( "patroller_192x192.png", 192, 192 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );

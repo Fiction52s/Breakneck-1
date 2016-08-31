@@ -25,7 +25,23 @@ struct LauncherEnemy
 struct Launcher;
 struct BasicBullet : QuadTreeCollider
 {
-	BasicBullet( int indexVA, Launcher *launcher );
+	enum BType
+	{
+		BASIC_TURRET,
+		BAT,
+		CURVE_TURRET,
+		BOSS_CRAWLER,
+		CACTUS_TURRET,
+		OWL,
+		BOSS_COYOTE,
+		TURTLE,
+		BOSS_TIGER,
+		OVERGROWTH,
+		Count
+	};
+
+	BasicBullet( int indexVA, BType bType, Launcher *launcher );
+	BType bulletType;
 	BasicBullet *prev;
 	BasicBullet *next;
 	sf::Vector2<double> position;
@@ -55,7 +71,7 @@ struct BasicBullet : QuadTreeCollider
 	sf::Transform transform;
 	Tileset *ts;
 	int index;
-
+	int frame;
 	int bounceCount;
 	//sf::Vector2<double> tempadd;
 
@@ -103,7 +119,11 @@ struct SinBullet : BasicBullet
 
 struct Launcher
 {
+	
+	int bulletTilesetIndex;
+	BasicBullet::BType bulletType;
 	Launcher( LauncherEnemy *handler, 
+		BasicBullet::BType bulletType,
 		GameSession *owner,
 		int numTotalBullets,
 		int bulletsPerShot,
@@ -314,7 +334,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Enemy *next;
 	GameSession *owner;
 	bool spawned;
-	
+	sf::Color auraColor;
 	sf::Rect<double> spawnRect;
 	HitboxInfo *receivedHit;
 	int slowMultiple;
@@ -660,7 +680,7 @@ struct Crawler : Enemy
 	int bloodFrame;
 };
 
-struct BasicTurret : Enemy
+struct BasicTurret : Enemy, LauncherEnemy
 {
 	BasicTurret( GameSession *owner, bool hasMonitor, Edge *ground, double quantity, 
 		double bulletSpeed,
@@ -684,6 +704,10 @@ struct BasicTurret : Enemy
 	void UpdateBulletHitboxes();
 
 
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
@@ -695,6 +719,7 @@ struct BasicTurret : Enemy
 	sf::Vector2<double> bulletPositions[maxBullets];
 	sf::Vector2<double> tempVel;
 	
+	Launcher *launcher;
 
 
 
@@ -728,6 +753,7 @@ struct BasicTurret : Enemy
 	Bullet *inactiveBullets;
 	HitboxInfo *bulletHitboxInfo;
 
+	bool dying;
 	
 
 	int framesWait;
@@ -999,7 +1025,7 @@ struct Bat : Enemy, LauncherEnemy
 	//int nodeDistance;
 	int framesBetween;
 
-	
+	Tileset *ts_bulletExplode;
 
 	//sf::Vector2<double> basePos;
 	int deathFrame;

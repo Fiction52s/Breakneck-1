@@ -827,7 +827,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	
 
 	goalMapIcon.setTexture( *ts_miniIcons->texture );
-	
+	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
 	goalMapIcon.setOrigin( goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2 );
 
@@ -2766,12 +2766,17 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 	//create VA
 
-	bigBulletVA = new VertexArray( sf::Quads, totalNumberBullets * 4 );
-	VertexArray &bva = *bigBulletVA;
-	for( int i = 0; i < totalNumberBullets * 4; ++i )
+	if( totalNumberBullets > 0 )
 	{
-		bva[i].position = Vector2f( 0, 0 );
+		bigBulletVA = new VertexArray( sf::Quads, totalNumberBullets * 4 );
+		VertexArray &bva = *bigBulletVA;
+		for( int i = 0; i < totalNumberBullets * 4; ++i )
+		{
+			bva[i].position = Vector2f( 0, 0 );
+		}
+		ts_basicBullets = GetTileset( "bullet_48x48.png", 48, 48 );
 	}
+
 	return true;
 }
 
@@ -5553,7 +5558,8 @@ int GameSession::Run( string fileN )
 
 				//powerOrbs->UpdateStarVA();
 				//powerWheel->UpdateStarVA();
-				powerWheel->UpdateSections();
+				if( player->action != Actor::Action::SPAWNWAIT || player->frame > 20 )
+					powerWheel->UpdateSections();
 
 				keyMarker->Update();
 
@@ -6206,7 +6212,7 @@ int GameSession::Run( string fileN )
 			currentEnem = currentEnem->next;
 		}
 
-		preScreenTex->draw( *bigBulletVA );
+		preScreenTex->draw( *bigBulletVA, ts_basicBullets->texture );
 
 
 		//view.set

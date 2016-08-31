@@ -356,7 +356,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 		bool hasWires ): smallOrbVA( sf::Quads, 6 * 2 * 4 ), //basePos( 96, 64 * 6 + 270 )
 		basePos( 150, 450 ), partialSectionVA( sf::Triangles, 3 )
 {
-
+	mode = FILL;
 	testBlah = 0;
 	/*for( int i = 0; i < 7; ++i )
 	{
@@ -365,14 +365,15 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	//activeStars = 12;
 	//starState = 0;
 	//starFrame = 0;
-	activeOrb = 5;
+	
 
 	swivelFrame = 0;
 	swivelLength = 20;
+	swivelLengthFill = 10;
 
 	swivelingUp = false;
 	swivelingDown = false;
-	swivelStartAngle = 0;
+	swivelStartAngle = 360.0 / 6.0;//0;
 	
 	orbHues[TEAL0] = Color( 0x00, 0xff, 0xff );
 	orbHues[TEAL1] = Color( 0x00, 0xea, 0xff );
@@ -387,7 +388,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	orbHues[RED] = Color( 0xff, 0x22, 0x00 );
 	orbHues[MAGENTA] = Color( 0xff, 0x00, 0xff );
 
-	
+	activeOrb = 0;
 
 	numSections[TEAL0] =   15;
 	numSections[TEAL1] =   15;
@@ -563,10 +564,12 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	
 
 
-	activeSection = numSections[orbColors[activeOrb]];
+	activeSection = 0;//numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 
-	SetVisibleSections( activeOrb, numSections[orbColors[activeOrb]], 2 );
+	orbPointer.setRotation( swivelStartAngle );
+
+	//SetVisibleSections( activeOrb, numSections[orbColors[activeOrb]], 2 );
 	/*for( int i = 0; i < 6; ++i )
 	{
 		SetStarPositions( i, orbColors[i] );
@@ -583,7 +586,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	smallOrbVA[1].texCoords = Vector2f( 64, 0 );
 	smallOrbVA[2].texCoords = Vector2f( 64, 64 );
 	smallOrbVA[3].texCoords = Vector2f( 0, 64 );*/
-	cout << "end of constructor" << endl;
+	//cout << "end of constructor" << endl;
 }
 
 void PowerWheel::UpdateSmallOrbs()
@@ -631,131 +634,15 @@ void PowerWheel::UpdateSmallOrbs()
 }
 
 typedef Vector2f V2f;
-void PowerWheel::SetStarPositions( int index, OrbColor oc )
-{
-	//int nStars = numStars[oc];
-	/*cout<< "index: " << index << endl;
-	Vector2f *s = starPositions[index];
-	switch( oc )
-	{
-	case TEAL0:
-	case TEAL1:
-	case TEAL2:
-	case TEAL3:
-	case TEAL4:
-	case TEAL5:
-		s[0] = V2f( 48, 59 );
-		s[1] = V2f( 79, 59 );
-		s[2] = V2f( 112, 59 );
-		s[3] = V2f( 143, 59 );
-		s[4] = V2f( 48, 96 );
-		s[5] = V2f( 79,  96 );
-		s[6] = V2f( 112, 96 );
-		s[7] = V2f( 143, 96 );
-		s[8] = V2f( 48, 133 );
-		s[9] = V2f( 79, 133 );
-		s[10] = V2f( 112, 133 );
-		s[11] = V2f( 143, 133 );
-		break;
-	case BLUE:
-		s[0] = V2f( 95, 35 );
-		s[1] = V2f( 112, 61 );
-		s[2] = V2f( 127, 84 );
-		s[3] = V2f( 141, 106 );
-		s[4] = V2f( 154, 127 );
-		s[5] = V2f( 126,  127 );
-		s[6] = V2f( 95, 127 );
-		s[7] = V2f( 65, 127 );
-		s[8] = V2f( 37, 127 );
-		s[9] = V2f( 50, 106 );
-		s[10] = V2f( 64, 84 );
-		s[11] = V2f( 79, 61 );
-		break;
-	case GREEN:
-		s[0] =  V2f( 95 , 32 );
-		s[1] =  V2f( 118 , 53 );
-		s[2] =  V2f( 139 , 75 );
-		s[3] =  V2f( 159 , 96 );
-		s[4] =  V2f( 139 , 116 );
-		s[5] =  V2f( 118, 138 );
-		s[6] =  V2f( 95, 159 );
-		s[7] =  V2f( 74, 138 );
-		s[8] =  V2f( 52, 116 );
-		s[9] =  V2f( 32, 96 );
-		s[10] = V2f( 52 , 75 );
-		s[11] = V2f( 74 , 53 );
-		break;
-	case YELLOW:
-		s[0] =  V2f( 95 , 34 );
-		s[1] =  V2f( 125 , 54 );
-		s[2] =  V2f( 146 , 68 );
-		s[3] =  V2f( 146 , 95 );
-		s[4] =  V2f( 146 , 128 );
-		s[5] =  V2f( 125 , 142 );
-		s[6] =  V2f( 95 , 162 );
-		s[7] =  V2f( 66 , 142 );
-		s[8] =  V2f( 45 , 128 );
-		s[9] =  V2f( 45 , 95 );
-		s[10] = V2f( 45 , 68 );
-		s[11] = V2f( 66 , 54 );
-		break;
-	case ORANGE:
-		s[0] =  V2f( 95 , 34 );
-		s[1] =  V2f( 146 , 68 );
-		s[2] =  V2f( 146 , 128 );
-		s[3] =  V2f( 95 , 162 );
-		s[4] =  V2f( 45 , 128 );
-		s[5] =  V2f( 45 , 68 );
-		s[6] =  V2f( 95 , 67 );
-		s[7] =  V2f( 120 , 83 );
-		s[8] =  V2f( 120, 113 );
-		s[9] =  V2f( 95 , 129 );
-		s[10] = V2f( 71 , 113 );
-		s[11] = V2f( 71 , 83 );
-		break;
-	case RED:
-		s[0] =  V2f( 95 , 34 );
-		s[1] =  V2f( 125 , 58 );
-		s[2] =  V2f( 153 , 81 );
-		s[3] =  V2f( 141 , 115 );
-		s[4] =  V2f( 128 , 150 );
-		s[5] =  V2f( 95 , 150 );
-		s[6] =  V2f( 63 , 150 );
-		s[7] =  V2f( 50 , 115 );
-		s[8] =  V2f( 38, 81 );
-		s[9] =  V2f( 66 , 58 );
-		s[10] = V2f( 95 , 74 );
-		s[11] = V2f( 95 , 126 );
-		break;
-	case MAGENTA:
-		s[0] =  V2f( 95  , 34 );
-		s[1] =  V2f( 155, 60 );
-		s[2] =  V2f( 96 , 86 );
-		s[3] =  V2f( 36 , 60 );
-		s[4] =  V2f( 155 , 78 );
-		s[5] =  V2f( 155 , 141 );
-		s[6] =  V2f( 106 , 164 );
-		s[7] =  V2f( 106 , 102 );
-		s[8] =  V2f( 36 , 78 );
-		s[9] =  V2f( 85 , 102 );
-		s[10] = V2f( 85 , 64 );
-		s[11] = V2f( 36 , 141 );
-		break;
-	}
-
-	Vector2f b = basePos - Vector2f( 96, 64 * index + 96 );
-	Vertex * va = starVA[index];
-	for( int i = 0; i < 12; ++i )
-	{
-		va[i*4+0].position = b + s[i] + Vector2f( 0, 0 );
-		va[i*4+1].position = b + s[i] + Vector2f( 64, 0 );
-		va[i*4+2].position = b + s[i] + Vector2f( 64, 64 );
-		va[i*4+3].position = b + s[i] + Vector2f( 0, 64 );
-	}*/
-}
 
 void PowerWheel::UpdateSections()
 {
+	if( mode == FILL )
+	{
+		Charge( 6 );
+	}
+
+	//cout << "orb: " << activeOrb << ", section: " << activeSection << ", level: " << activeLevel << endl;
 	if( lifeTextureFrame == 4 * lifeTextureMultiple )
 	{
 		lifeTextureFrame = 0;
@@ -769,15 +656,22 @@ void PowerWheel::UpdateSections()
 
 	++lifeTextureFrame;
 
+	
 }
 
 void PowerWheel::UpdateSwivel()
 {
+	int sLength = swivelLength;
+	if( mode == FILL )
+	{
+		sLength = swivelLengthFill;
+	}
+
 	if( swivelingUp )
 	{
 		float goalAngle = swivelStartAngle + 360.f / 6.f;
 
-		if( swivelFrame == swivelLength + 1 )
+		if( swivelFrame == sLength + 1 )
 		{
 			swivelingUp = false;
 			swivelStartAngle = goalAngle;
@@ -785,9 +679,9 @@ void PowerWheel::UpdateSwivel()
 			return;
 		}
 		
-		CubicBezier bez( 0, 0, 1, 1 );
+		CubicBezier bez(.45,.03,.36,.86 );
 
-		float r = bez.GetValue( swivelFrame / (double)swivelLength );
+		float r = bez.GetValue( swivelFrame / (double)sLength );
 		orbPointer.setRotation( swivelStartAngle * ( 1.f - r ) + goalAngle * r );
 		orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 0 ) );
 		++swivelFrame;
@@ -796,7 +690,7 @@ void PowerWheel::UpdateSwivel()
 	{
 		float goalAngle = swivelStartAngle - 360.f / 6.f;
 
-		if( swivelFrame == swivelLength + 1 )
+		if( swivelFrame == sLength + 1 )
 		{
 			swivelingDown = false;
 			swivelStartAngle = goalAngle;
@@ -804,9 +698,9 @@ void PowerWheel::UpdateSwivel()
 			return;
 		}
 		
-		CubicBezier bez( 0, 0, 1, 1 );
+		CubicBezier bez( .45,.03,.36,.86 );
 
-		float r = bez.GetValue( swivelFrame / (double)swivelLength );
+		float r = bez.GetValue( swivelFrame / (double)sLength );
 		orbPointer.setRotation( swivelStartAngle * ( 1.f - r ) + goalAngle * r );
 		orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 0 ) );
 		++swivelFrame;
@@ -815,6 +709,7 @@ void PowerWheel::UpdateSwivel()
 
 void PowerWheel::Reset()
 {
+	mode = NORMAL;
 	swivelingUp = false;
 	swivelingDown = false;
 	swivelStartAngle = 0;
@@ -849,64 +744,7 @@ void PowerWheel::Draw( sf::RenderTarget *target )
 	//target->draw( starVA[activeOrb], activeStars *4, sf::Quads, rs );
 }
 
-void PowerWheel::UpdateStarVA()
-{
-	//Vertex *va = starVA[activeOrb];
 
-	//int animFactor = 3;
-	//int colorType;
-	//if( orbColors[activeOrb] <= TEAL5 )
-	//{
-	//	colorType = 0;
-	//}
-	//else
-	//{
-	//	colorType = (int)orbColors[activeOrb] - 5;
-	//}
-	//IntRect ir = ts_charge->GetSubRect( colorType * 9 + starFrame / animFactor );
-	//for( int i = 0; i < activeStars; ++i )
-	//{
-	//	va[i*4+0].texCoords = Vector2f( ir.left, ir.top );
-	//	va[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
-	//	va[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
-	//	va[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
-	//	/*va[i*4+0].color = Color::Red;
-	//	va[i*4+1].color = Color::Red;
-	//	va[i*4+2].color = Color::Red;
-	//	va[i*4+3].color = Color::Red;*/
-	//	/*va[i*4+1].position = b + s[i] + Vector2f( 64, 0 );
-	//	va[i*4+2].position = b + s[i] + Vector2f( 64, 64 );
-	//	va[i*4+3].position = b + s[i] + Vector2f( 0, 64 );*/
-	//}
-
-	//++starFrame;
-	//if( starFrame == animFactor * 8 )
-	//{
-	//	starFrame = 0;
-	//}
-
-	//++testBlah;
-	//if( testBlah == 180 )
-	//{
-	//	testBlah = 0;
-	//	--activeOrb;
-	//	if( activeOrb < 0 )
-	//		activeOrb = 5;
-
-	//	OrbColor c = orbColors[activeOrb];
-	//	int cc = (int)c;
-	//	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( cc ) );
-	//
-	//	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) - Vector2f( 0, 64 * activeOrb) );
-	//}
-	///*for( int i = activeStars; i < 12; ++i )
-	//{
-	//	va[i*4+3].position = Vector2f( 0, 0 );
-	//}*/
-
-	////instead of 12, use numstars for the color
-	
-}
 
 //level can be 1 2 3
 void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
@@ -1115,6 +953,52 @@ void PowerWheel::Recover( int power )
 {
 }
 
+void PowerWheel::OrbUp()
+{
+	activeOrb++;
+	if( activeOrb == 6 )
+	{
+		activeOrb = 5;
+		activeSection = numSections[orbColors[activeOrb]];
+		activeLevel = 6;
+		mode = NORMAL;
+		return;
+	}
+	OrbColor oc = orbColors[activeOrb];
+	activeSection = 1;
+	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( oc ) );
+	swivelingUp = true;
+	swivelFrame = 0;
+}
+
 void PowerWheel::Charge( int power )
 {
+	//3 is one section
+	int remainder = power % 6;
+	int mult = power / 6;
+
+	while( mult > 0 )
+	{
+		mult--;
+		++activeSection;
+
+		if( activeSection > numSections[orbColors[activeOrb]] )
+		{
+			OrbUp();
+		}
+	}
+
+	activeLevel += remainder;
+	if( activeLevel > 6 )
+	{
+		activeSection++;
+		if( activeSection > numSections[orbColors[activeOrb]] )
+		{
+			OrbUp();
+		}
+		activeLevel = -6 + activeLevel;
+	}
+
+	
+//	return true;
 }

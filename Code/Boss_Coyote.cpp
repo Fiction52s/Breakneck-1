@@ -396,7 +396,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	RandomizeDirections();
 
 	int bulletTTL = 500;
-	launcher = new Launcher( this, owner, 144, 12, position, V2d( 1, 0 ), PI * 2.0 / 3.0, bulletTTL, true );
+	launcher = new Launcher( this, BasicBullet::BOSS_COYOTE, owner, 144, 12, position, V2d( 1, 0 ), PI * 2.0 / 3.0, bulletTTL, true );
 	launcher->SetBulletSpeed( 3 );	
 	
 	//SetPartyMode( false );

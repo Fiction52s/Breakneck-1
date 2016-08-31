@@ -63,6 +63,13 @@ struct PowerOrbs
 
 struct PowerWheel
 {
+	enum Mode
+	{
+		FILL,
+		NORMAL,
+		DESPERATION
+	};
+
 	enum OrbColor
 	{
 		TEAL0,
@@ -87,7 +94,7 @@ struct PowerWheel
 		bool hasTimeSlow,
 		bool hasWires );
 	void Draw( sf::RenderTarget *target );
-	void UpdateStarVA();
+	//void UpdateStarVA();
 	void Reset();
 	sf::VertexArray *CreateSectionVA( OrbColor col,
 		float radius );
@@ -98,8 +105,10 @@ struct PowerWheel
 	void Charge( int power );
 	void UpdateSections();
 	void UpdateSwivel();
+	void OrbUp();
 	int swivelFrame;
 	int swivelLength;
+	int swivelLengthFill;
 	bool swivelingUp;
 	bool swivelingDown;
 	float swivelStartAngle;
@@ -107,6 +116,7 @@ struct PowerWheel
 	int lifeTextureFrame;
 	int lifeTextureMultiple;
 
+	Mode mode;
 
 	Tileset *ts_largeOrbs;
 	Tileset *ts_smallOrbs;
@@ -132,7 +142,7 @@ struct PowerWheel
 	//sf::Sprite lifeStop;
 
 
-	void SetStarPositions( int index, OrbColor oc );
+	//void SetStarPositions( int index, OrbColor oc );
 	OrbColor orbColors[6];
 	sf::Color orbHues[OrbColor::Count];
 

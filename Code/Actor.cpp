@@ -500,7 +500,7 @@ Actor::Actor( GameSession *gs )
 
 		actionLength[GOALKILLWAIT] = 2;
 
-		actionLength[SPAWNWAIT] = 60;
+		actionLength[SPAWNWAIT] = 120;
 		}
 		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
 		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	

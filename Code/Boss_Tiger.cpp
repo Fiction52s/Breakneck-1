@@ -124,7 +124,7 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, Edge *g, double q )
 	physBody.rh = 32;
 	physBody.type = CollisionBox::BoxType::Physics;*/
 
-	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
+	launcher = new Launcher( this, BasicBullet::BOSS_TIGER, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( 10 );	
 
 	deathPartingSpeed = .4;

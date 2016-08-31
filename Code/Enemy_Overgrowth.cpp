@@ -79,7 +79,7 @@ Tree::Tree( Overgrowth *par,
 
 	receivedHit = NULL;
 
-	launcher = new Launcher( this, owner, 5, 5, V2d( 0, 0 ),
+	launcher = new Launcher( this, BasicBullet::OVERGROWTH, owner, 5, 5, V2d( 0, 0 ),
 		normalize( V2d( 1, -1 ) ), 90, 300 );
 	
 	launcher->SetBulletSpeed( 10 );

@@ -121,7 +121,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	
 
-	testLauncher = new Launcher( this, owner, 16, 1, position, gn, 0, 300 );
+	testLauncher = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 300 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
 	testLauncher->SetGravity( gravity );
 	//UpdateSprite();
@@ -664,7 +664,7 @@ void CurveTurret::UpdateSprite()
 	if( dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 13 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, 
 			botDeathSprite.getLocalBounds().height / 2  );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
@@ -672,7 +672,7 @@ void CurveTurret::UpdateSprite()
 		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 14 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, 
 			topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 

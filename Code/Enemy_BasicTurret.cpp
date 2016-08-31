@@ -26,7 +26,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	//keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
 
-
+	//launcher = new Launcher( this, 
 
 	initHealth = 60;
 	health = initHealth;
@@ -165,6 +165,16 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 
 }
 
+void BasicTurret::BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos )
+{
+}
+
+void BasicTurret::BulletHitPlayer( BasicBullet *b )
+{
+	
+}
+
 void BasicTurret::UpdatePrePhysics()
 {
 
@@ -173,7 +183,7 @@ void BasicTurret::UpdatePrePhysics()
 		frame = 0;
 	}
 
-	if( !dead && receivedHit != NULL )
+	if( !dead && !dying && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
 		health -= 20;

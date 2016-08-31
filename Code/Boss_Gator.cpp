@@ -46,7 +46,7 @@ Boss_Gator::Boss_Gator( GameSession *owner, Vector2i pos )
 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
+	///launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
 	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;

@@ -727,8 +727,8 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, owner, 32, 1, position, V2d( 1, 0 ), 0, 900, true );
-	launcher->SetBulletSpeed( bulletSpeed );	
+	//launcher = new Launcher( this, owner, 32, 1, position, V2d( 1, 0 ), 0, 900, true );
+	//launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 1000;
 	health = initHealth;

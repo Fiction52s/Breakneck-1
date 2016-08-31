@@ -34,7 +34,7 @@ Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
 	};
 }
 
-Launcher::Launcher( LauncherEnemy *p_handler,
+Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	GameSession *p_owner,
 		int numTotalBullets,
 		int bulletsPerShot,
@@ -50,6 +50,7 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 		position( p_position ), owner( p_owner ),handler(p_handler)
 
 {
+	//launchType = p_launchType;
 	interactWithTerrain = hitTerrain;
 	maxFramesToLive = p_maxFramesToLive;
 	wavelength = p_wavelength;
@@ -60,6 +61,18 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 
 	activeBullets = NULL;
 
+	switch( bulletType )
+	{
+	case BasicBullet::BASIC_TURRET:
+		bulletTilesetIndex = 0;
+		break;
+	case BasicBullet::BAT:
+		bulletTilesetIndex = 2;
+		break;
+	case BasicBullet::CURVE_TURRET:
+		bulletTilesetIndex = 1;
+		break;
+	}
 	
 	if( wavelength > 0 )
 	{
@@ -67,7 +80,7 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 	}
 	else
 	{
-		inactiveBullets = new BasicBullet( startIndex++, this );
+		inactiveBullets = new BasicBullet( startIndex++, bulletType, this );
 	}
 		
 
@@ -80,7 +93,7 @@ Launcher::Launcher( LauncherEnemy *p_handler,
 		}
 		else
 		{
-			temp = new BasicBullet( startIndex++, this );
+			temp = new BasicBullet( startIndex++, bulletType, this );
 		}
 		temp->next = inactiveBullets;
 		inactiveBullets->prev = temp;
@@ -189,6 +202,8 @@ void Launcher::Fire()
 		dirAngle += angleSpread / perShot;
 		dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
+
+	
 }
 
 void Launcher::Fire( double gravStrength )
@@ -343,6 +358,26 @@ void Launcher::SetGravity( sf::Vector2<double> &grav )
 
 void BasicBullet::Reset( V2d &pos, V2d &vel )
 {
+	double angle = atan2( vel.y, vel.x );
+	angle = angle * 180 / PI;
+
+	//cout << "angle: " << angle << endl;
+	
+	transform = transform.Identity;
+	switch( bulletType )
+	{
+	case BAT:
+		transform.rotate( angle );
+	case CURVE_TURRET:
+		{
+			double gangle = atan2( gravity.y, gravity.x );
+			gangle = gangle * 180 / PI;
+			transform.rotate( gangle );
+		}
+		break;
+	}
+
+	frame = 0;
 	//gravTowardsPlayer = false;
 	position = pos;
 	velocity = vel;
@@ -359,9 +394,20 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	//transform.
 }
 
-BasicBullet::BasicBullet( int indexVA, Launcher *launch )
-	:index( indexVA ), launcher( launch ), next( NULL ), prev( NULL )
+BasicBullet::BasicBullet( int indexVA, BType bType, Launcher *launch )
+	:index( indexVA ), launcher( launch ), next( NULL ), prev( NULL ),
+	bulletType( bType )
 {
+	frame = 0;
+	switch( bType )
+	{
+	case BASIC_TURRET:
+		break;
+	case BAT:
+		break;
+	case CURVE_TURRET:
+		break;
+	}
 	//framesToLive = maxFram
 	double rad = 12;
 	bounceCount = 0;
@@ -393,6 +439,7 @@ BasicBullet::BasicBullet( int indexVA, Launcher *launch )
 
 void BasicBullet::ResetSprite()
 {
+	frame = 0;
 	VertexArray &bva = *(launcher->owner->bigBulletVA);
 	bva[index*4+0].position = Vector2f( 0, 0 );
 	bva[index*4+1].position = Vector2f( 0, 0 );
@@ -432,7 +479,7 @@ void BasicBullet::UpdatePostPhysics()
 {
 	if( slowCounter == slowMultiple )
 	{
-		
+		frame++;
 		framesToLive--;
 		//++frame;		
 	
@@ -588,36 +635,45 @@ void BasicBullet::HandleEntrant( QuadTreeEntrant *qte )
 
 void BasicBullet::UpdateSprite()
 {
-	
 	VertexArray &VA = *(launcher->owner->bigBulletVA);
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
-	Vector2f dims( 12, 12 );
+	Vector2f dims( 24, 24 );
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 
 	Vector2f center( position.x, position.y );
-	Vector2f topLeft = center - dims;
-	Vector2f topRight = center + Vector2f( dims.x, -dims.y );
-	Vector2f botRight = center + dims;
-	Vector2f botLeft = center + Vector2f( -dims.x, dims.y );
+
+	Vector2f topLeft = -dims;
+	Vector2f topRight = Vector2f( dims.x, -dims.y );
+	Vector2f botRight = dims;
+	Vector2f botLeft = Vector2f( -dims.x, dims.y );
 
 
-	VA[index*4+0].position = transform.transformPoint( topLeft );
-	VA[index*4+1].position = transform.transformPoint( topRight );
-	VA[index*4+2].position = transform.transformPoint( botRight );
-	VA[index*4+3].position = transform.transformPoint( botLeft );
+	VA[index*4+0].position = center + transform.transformPoint( topLeft );
+	VA[index*4+1].position = center + transform.transformPoint( topRight );
+	VA[index*4+2].position = center + transform.transformPoint( botRight );
+	VA[index*4+3].position = center + transform.transformPoint( botLeft );
 
 	/*VA[index*4+0].texCoords = Vector2f( ir.left, ir.top );
 	VA[index*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
 	VA[index*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
 	VA[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
-	VA[index*4+0].color = Color::Red;
+
+	int ind = 6 * launcher->bulletTilesetIndex + ((frame/2) % 6);
+	//cout << "index: " << ind << ", frame: " << frame << endl;
+	IntRect sub = launcher->owner->ts_basicBullets->GetSubRect( ind );
+	/*VA[index*4+0].color = Color::Red;
 	VA[index*4+1].color = Color::Red;
 	VA[index*4+2].color = Color::Red;
-	VA[index*4+3].color = Color::Red;
+	VA[index*4+3].color = Color::Red;*/
+
+	VA[index*4+0].texCoords = Vector2f( sub.left, sub.top );
+	VA[index*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+	VA[index*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+	VA[index*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
 }
 
 SinBullet::SinBullet( int indexVA, Launcher *launcher )
-	:BasicBullet( indexVA, launcher )
+	:BasicBullet( indexVA, BasicBullet::CACTUS_TURRET, launcher )
 {
 }
 
@@ -708,7 +764,32 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		return;
 	}
 
-	
+
+	auraColor = Color( 0, 0, 0, 0 );
+	switch( t )
+	{
+		case PATROLLER:
+			break;
+		case CRAWLER:
+			break;
+		case BASICTURRET:
+			break;
+		case FOOTTRAP:
+			break;
+		case BAT:
+			break;
+		case STAGBEETLE:
+			break;
+		case POISONFROG:
+			break;
+		case CURVETURRET:
+			break;
+		default:
+			
+			break;
+	}
+
+
 	if( hasMonitor )
 	{
 		switch( world )
@@ -735,7 +816,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 		
 
-		cout << "doing the add monitor thing" << endl;
+		//cout << "doing the add monitor thing" << endl;
 		keyShader = new Shader();
 		if( !keyShader->loadFromFile( "key_shader.frag", sf::Shader::Fragment ) )
 		{
@@ -744,6 +825,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		}
 
 		keyShader->setParameter( "toColor", keyColor );
+		keyShader->setParameter( "auraColor", auraColor );
 
 	//	keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
@@ -785,6 +867,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		assert( false );
 	}
 	hurtShader->setParameter( "toColor", Color::White );
+	hurtShader->setParameter( "auraColor", auraColor );
 
 		//hurtShader->setParameter( "toColor", keyColor );
 	

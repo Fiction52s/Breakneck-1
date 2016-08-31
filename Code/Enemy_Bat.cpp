@@ -41,7 +41,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	
 	//ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 
-	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
+	launcher = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
@@ -164,9 +164,11 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	deathVector = V2d( 1, -1 );
 
 	facingRight = true;
-	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	
+	ts_bulletExplode = owner->GetTileset( "bullet_explode_bat_48x48.png", 48, 48 );
+
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
@@ -189,11 +191,20 @@ void Bat::HandleEntrant( QuadTreeEntrant *qte )
 
 void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
+	//V2d vel = b->velocity;
+	//double angle = atan2( vel.y, vel.x );
+	V2d norm = edge->Normal();
+	double angle = atan2( norm.y, norm.x );
+
+	owner->ActivateEffect( ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 }
 
 void Bat::BulletHitPlayer(BasicBullet *b )
 {
+	V2d vel = b->velocity;
+	double angle = atan2( vel.y, vel.x );
+	owner->ActivateEffect( ts_bulletExplode, b->position, true, -angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
@@ -368,6 +379,8 @@ void Bat::PhysicsResponse()
 
 void Bat::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
+
 	if( receivedHit != NULL )
 	{
 		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
@@ -454,13 +467,13 @@ void Bat::UpdateSprite()
 	{
 
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 6 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 7 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );

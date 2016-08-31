@@ -416,6 +416,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	int totalNumberBullets;
 	sf::VertexArray *bigBulletVA;
+	Tileset *ts_basicBullets;
 
 	sf::VertexArray *debugBorders;
 

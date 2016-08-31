@@ -50,7 +50,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
+	launcher = new Launcher( this, BasicBullet::OWL, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
