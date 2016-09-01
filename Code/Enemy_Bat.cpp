@@ -385,7 +385,7 @@ void Bat::PhysicsResponse()
 
 void Bat::UpdatePostPhysics()
 {
-	cout << "suppress: " << (int)suppressMonitor << endl;
+	//cout << "suppress: " << (int)suppressMonitor << endl;
 	launcher->UpdatePostPhysics();
 
 	if( receivedHit != NULL )

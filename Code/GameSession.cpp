@@ -1497,7 +1497,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		ss << ".png";
 		
 		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-		Tileset *ts_border = GetTileset( ss.str(), 8, 512 );//128 );
+		Tileset *ts_border = GetTileset( ss.str(), 8, 256 );//128 );
 
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
@@ -2775,6 +2775,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 			bva[i].position = Vector2f( 0, 0 );
 		}
 		ts_basicBullets = GetTileset( "bullet_64x64.png", 64, 64 );
+	}
+	else
+	{
+		ts_basicBullets = NULL;
 	}
 
 	return true;
@@ -6072,15 +6076,21 @@ int GameSession::Run( string fileN )
 			}
 			//cout << "drawing border" << endl;
 			//preScreenTex->draw( *listVAIter->va );
+
+
+
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
+
+			if( listVAIter->triva != NULL )
+				preScreenTex->draw( *listVAIter->triva, rs );
+
 			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
 
-			if( listVAIter->triva != NULL )
-				preScreenTex->draw( *listVAIter->triva, rs );
+			
 
 			if( listVAIter->plantva != NULL )
 			{
@@ -6212,7 +6222,10 @@ int GameSession::Run( string fileN )
 			currentEnem = currentEnem->next;
 		}
 
-		preScreenTex->draw( *bigBulletVA, ts_basicBullets->texture );
+		if( ts_basicBullets != NULL )
+		{
+			preScreenTex->draw( *bigBulletVA, ts_basicBullets->texture );
+		}
 
 
 		//view.set
@@ -7932,8 +7945,11 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				//worldNum * 5
 				//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
-				int realIndex = valid * 16 + varietyCounter;
+				int realIndex = valid * 32 + varietyCounter;
+				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
 				IntRect sub = ts->GetSubRect( realIndex );
+				//cout << "left: " << sub.left << ", top: " << sub.top << 
+				//	", w: " << sub.width << ", h: " << sub.height << endl;
 
 				double startAlong = (double)i * quadWidth;
 				double endAlong = (double)(i+1) * quadWidth;
@@ -8028,8 +8044,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				
 				va[extra + i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
 				va[extra + i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				va[extra + i * 4 + 2].texCoords = Vector2f( sub.left + sub.width, realHeight1);
-				va[extra + i * 4 + 3].texCoords = Vector2f( sub.left, realHeight0);
+				va[extra + i * 4 + 2].texCoords = Vector2f( sub.left + sub.width, sub.top + realHeight1);
+				va[extra + i * 4 + 3].texCoords = Vector2f( sub.left, sub.top + realHeight0);
 
 				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
 				va[extra + i * 4 + 1].color = COLOR_YELLOW;
@@ -8037,7 +8053,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				va[extra + i * 4 + 3].color = COLOR_TEAL;
 */
 				++varietyCounter;
-				if( varietyCounter == 16 )
+				if( varietyCounter == 32 )
 				{
 					varietyCounter = 0;
 				}
@@ -8644,7 +8660,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		qt = terrainBGTree;
 	}
 
-	double tw = 128;//64;//8;
+	double tw = 256;//64;//8;
 	double th = 256;
 
 	int out = 40;
@@ -8660,10 +8676,66 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		V2d eNorm = te->Normal();
 		V2d along = normalize( te->v1 - te->v0 );
 		V2d nextAlong = normalize( e1->v1 - e1->v0 );
+		V2d nextNorm = e1->Normal();
 		double c = cross( nextAlong, along );
-		if( c > 0 )
+		bool viable = true;
+
+		V2d jutDir = ( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0;
+		V2d jutPoint = te->v1 + jutDir * (th - out );
+
+		//double rayTest = (th - out);
+
+		rcEdge = NULL;
+		rayIgnoreEdge = NULL;
+		rayStart = te->v1 + jutDir * 1.0;
+		rayEnd = jutPoint;//te->v0 + (double)i * quadWidth * along - other * in;
+		RayCast( this, qt->startNode, rayStart, rayEnd );
+
+		//start ray
+		if( rcEdge != NULL )
 		{
-			numtotalTris++;
+			//cout << "viable is now false" << endl;
+			viable = false;
+		}
+		else
+		{
+			//rcEdge = NULL;
+			//rayIgnoreEdge = te;
+			//rayIgnoreEdge = NULL;
+			rayStart = te->v1 - eNorm * .01;
+			rayEnd = te->v1 - eNorm * (th-out);//te->v0 + (double)i * quadWidth * along - other * in;
+			RayCast( this, qt->startNode, rayStart, rayEnd );
+
+
+			//start ray
+			if( rcEdge != NULL )
+			{
+				viable = false;
+				//currStartInner = rcEdge->GetPoint( rcQuantity );
+				//realHeight0 = length( currStartInner - currStartOuter );
+			}
+			else
+			{
+				//rayIgnoreEdge = te;
+				//rayIgnoreEdge = NULL;
+				rayStart = te->v1 - nextNorm * .01;
+				rayEnd = te->v1 - nextNorm * (th-out);
+				RayCast( this, qt->startNode, rayStart, rayEnd );
+
+				//end ray
+				if( rcEdge != NULL )
+				{
+					viable = false;
+					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
+					//realHeight1 = length( currEndInner - currStartOuter );
+				}
+			}
+		}
+
+
+		if( c > 0 && viable )
+		{
+			numtotalTris+=2;
 			//V2d endVec = normalize( te->v0 - te->v1 );
 			//V2d startVec = normalize( e1->v1 - te->v1 );
 
@@ -8728,9 +8800,60 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		V2d along = normalize( te->v1 - te->v0 );
 		V2d nextAlong = normalize( e1->v1 - e1->v0 );
 		double c = cross( nextAlong, along );
+		V2d nextNorm = e1->Normal();
 		V2d point = e1->v0;
 		int i = 0;
-		if( c > 0 )
+		V2d jutDir = ( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0;
+		V2d jutPoint = te->v1 + jutDir * (th - out );
+		bool viable = true;
+
+		rcEdge = NULL;
+		rayIgnoreEdge = NULL;
+		rayStart = te->v1 + jutDir * 1.0;
+		rayEnd = jutPoint;//te->v0 + (double)i * quadWidth * along - other * in;
+		RayCast( this, qt->startNode, rayStart, rayEnd );
+
+		//start ray
+		if( rcEdge != NULL )
+		{
+			//cout << "viable is now false" << endl;
+			viable = false;
+		}
+		else
+		{
+			rcEdge = NULL;
+			rayIgnoreEdge = te;
+			rayStart = te->v1 - eNorm * .01;
+			rayEnd = te->v1 - eNorm * (th-out);//te->v0 + (double)i * quadWidth * along - other * in;
+			RayCast( this, qt->startNode, rayStart, rayEnd );
+
+
+			//start ray
+			if( rcEdge != NULL )
+			{
+				viable = false;
+				//currStartInner = rcEdge->GetPoint( rcQuantity );
+				//realHeight0 = length( currStartInner - currStartOuter );
+			}
+			else
+			{
+				rayIgnoreEdge = te;
+				rayStart = te->v1 - nextNorm * .01;
+				rayEnd = te->v1 - nextNorm * (th-out);
+				RayCast( this, qt->startNode, rayStart, rayEnd );
+
+				//end ray
+				if( rcEdge != NULL )
+				{
+					viable = false;
+					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
+					//realHeight1 = length( currEndInner - currStartOuter );
+				}
+			}
+		}
+
+
+		if( c > 0 && viable )
 		{
 			/*GameSession::IsFlatGround( sf::Vector2<double> &normal )
 			GameSession::IsSlopedGround( sf::Vector2<double> &normal )
@@ -8759,11 +8882,39 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 				cout << "wat: " << eNorm.x << ", " << eNorm.y << endl;
 			}
 			assert( valid != -1 );
+
+			int otherValid = -1;
+			otherValid = IsFlatGround( nextNorm );
+			if( otherValid == -1 )
+			{
+				otherValid = IsSlopedGround( nextNorm );
+				if( otherValid == -1 )
+				{
+					otherValid = IsWall( nextNorm );
+
+					if( otherValid == -1 )
+					{
+						otherValid = IsSteepGround( nextNorm );
+					}
+				}
+			}
+
+			if( otherValid == -1 )
+			{
+				cout << "watother: " << eNorm.x << ", " << eNorm.y << endl;
+			}
+			assert( otherValid != -1 );
+			
 			
 			//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
-			int realIndex = valid * 16;
+			int realIndex = valid * 32;
+			int realOther = otherValid * 32;
+
 			IntRect sub = ts->GetSubRect( realIndex );
+			IntRect subOther = ts->GetSubRect( realOther );
+
+			
 
 			V2d currNormOpp = -te->Normal();
 			V2d nextNormOpp = -e1->Normal();
@@ -8771,16 +8922,16 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			V2d currInPoint = point + currNormOpp * (th - out);
 			V2d nextInPoint = point + nextNormOpp * (th - out);
 
-			double baseLength = length( nextInPoint - currInPoint );
+			double baseLength = length( jutPoint - currInPoint );
 			int mid = floor( baseLength + .5 );
 			//cout << "mid: " << mid << endl;
-			mid = min( mid, 128 );
+			mid = min( mid, (int)tw );
 			//assert( mid <= 128 );
 				
 
 			va[extra + 0].position = Vector2f( point.x, point.y );
 			va[extra + 1].position = Vector2f( currInPoint.x, currInPoint.y );
-			va[extra + 2].position = Vector2f( nextInPoint.x, nextInPoint.y );
+			va[extra + 2].position = Vector2f( jutPoint.x, jutPoint.y );
 
 			/*va[extra + i*3 + 0].color = Color::Red;
 			va[extra + i*3 + 1].color = Color::Red;
@@ -8790,6 +8941,19 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			va[extra + 1].texCoords = Vector2f( sub.left, th );
 			va[extra + 2].texCoords = Vector2f( sub.left + mid, th );
 
+			extra += 3;
+
+			va[extra + 0].position = Vector2f( point.x, point.y );
+			va[extra + 1].position = Vector2f( jutPoint.x, jutPoint.y );
+			va[extra + 2].position = Vector2f( nextInPoint.x, nextInPoint.y );
+
+			/*va[extra + i*3 + 0].color = Color::Red;
+			va[extra + i*3 + 1].color = Color::Red;
+			va[extra + i*3 + 2].color = Color::Red;*/
+
+			va[extra + 0].texCoords = Vector2f( subOther.left + mid / 2, out );
+			va[extra + 1].texCoords = Vector2f( subOther.left, th );
+			va[extra + 2].texCoords = Vector2f( subOther.left + mid, th );
 
 			//va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
 
@@ -8984,6 +9148,8 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 {
 	if( rayMode == "border_quads" )
 	{
+		if( rayIgnoreEdge != NULL )
+		{
 		double d0 = dot(normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
 			normalize( rayIgnoreEdge->edge0->v1 - rayIgnoreEdge->edge0->v0 ));
 		double c0 = cross( normalize( rayIgnoreEdge->v1 - rayIgnoreEdge->v0 ),
@@ -9003,6 +9169,12 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 
 		if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
 			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+		{
+			rcEdge = edge;
+			rcQuantity = edgeQuantity;
+		}
+		}
+		else
 		{
 			rcEdge = edge;
 			rcQuantity = edgeQuantity;

@@ -873,15 +873,15 @@ void StagBeetle::UpdateSprite()
 	if( dead )
 	{
 		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 31 ) );
+		botDeathSprite.setTexture( *ts_death->texture );
+		botDeathSprite.setTextureRect( ts_death->GetSubRect( 0 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 		botDeathSprite.setRotation( sprite.getRotation() );
 
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 30 ) );
+		topDeathSprite.setTexture( *ts_death->texture );
+		topDeathSprite.setTextureRect( ts_death->GetSubRect( 1 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
@@ -1032,6 +1032,8 @@ void StagBeetle::ReachCliff()
 	}
 
 	testMover->Jump( v );
+
+	cout << "Reach cliff" << endl;
 	//testMover->groundSpeed = -testMover->groundSpeed;
 	//facingRight = !facingRight;
 }
