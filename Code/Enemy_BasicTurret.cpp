@@ -129,7 +129,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 void BasicTurret::ResetEnemy()
 {
-
+	health = initHealth;
 	launcher->Reset();
 	dying = false;
 	dead = false;
@@ -204,7 +204,7 @@ void BasicTurret::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
-			dead = true;
+			dying = true;
 			owner->player->ConfirmEnemyKill( this );
 		}
 		else
@@ -297,7 +297,7 @@ void BasicTurret::PhysicsResponse()
 
 	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
 
-	if( !dead )
+	if( !dead && !dying )
 	{
 		UpdateHitboxes();
 
@@ -417,7 +417,7 @@ void BasicTurret::UpdatePostPhysics()
 
 void BasicTurret::Draw(sf::RenderTarget *target )
 {
-	if( !dead )
+	if( !dead && !dying )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
@@ -444,7 +444,7 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 			
 		}
 	}
-	else
+	else if( !dead )
 	{
 		target->draw( botDeathSprite );
 
