@@ -7383,18 +7383,24 @@ void GameSession::DebugDrawActors()
 
 void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 {
-	Enemy *currEnemy = activeEnemyList;
-	int mType;
-	while( currEnemy != NULL )
+	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin();
+		it != currentZone->allEnemies.end(); ++it )
 	{
-		
-		if( currEnemy->hasMonitor )
-		{
-			currEnemy->suppressMonitor = true;
-		}
-		//currEnemy->moni
-		currEnemy = currEnemy->next;
+		(*it)->suppressMonitor = true;
 	}
+	//cout << "suppress keys???" << endl;
+	//Enemy *currEnemy = activeEnemyList;
+	//int mType;
+	//while( currEnemy != NULL )
+	//{
+	//	
+	//	if( currEnemy->hasMonitor )
+	//	{
+	//		currEnemy->suppressMonitor = true;
+	//	}
+	//	//currEnemy->moni
+	//	currEnemy = currEnemy->next;
+	//}
 }
 
 void GameSession::KillAllEnemies()
@@ -10425,6 +10431,8 @@ void GameSession::ActivateZone( Zone *z )
 	{
 		for( list<Enemy*>::iterator it = z->spawnEnemies.begin(); it != z->spawnEnemies.end(); ++it )
 		{
+			assert( (*it)->spawned == false );
+
 			(*it)->Init();
 			(*it)->spawned = true;
 			AddEnemy( (*it) );

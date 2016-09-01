@@ -57,7 +57,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
-	
+	//ts_death = owner->GetTileset( "stag_death_192x15
 
 	ts = owner->GetTileset( "crawler_128x128.png", width, height );
 	sprite.setTexture( *ts->texture );
@@ -356,7 +356,7 @@ void StagBeetle::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( hasMonitor )
+			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dead = true;

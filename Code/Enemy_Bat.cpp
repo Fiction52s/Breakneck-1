@@ -269,7 +269,7 @@ void Bat::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( hasMonitor )
+			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			//AttemptSpawnMonitor();
 			dying = true;
@@ -385,6 +385,7 @@ void Bat::PhysicsResponse()
 
 void Bat::UpdatePostPhysics()
 {
+	cout << "suppress: " << (int)suppressMonitor << endl;
 	launcher->UpdatePostPhysics();
 
 	if( receivedHit != NULL )

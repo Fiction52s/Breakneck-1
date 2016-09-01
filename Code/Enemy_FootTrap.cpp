@@ -129,7 +129,7 @@ void FootTrap::UpdatePrePhysics()
 		{
 			//cout << "attempting. blue key is: " << owner->player->hasBlueKey << endl;
 			//AttemptSpawnMonitor();
-			if( hasMonitor )
+			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dead = true;
 			owner->player->ConfirmEnemyKill( this );

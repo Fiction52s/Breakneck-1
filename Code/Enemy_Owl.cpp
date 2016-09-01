@@ -463,7 +463,7 @@ void Owl::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		if( hasMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
 			CircleShape cs;

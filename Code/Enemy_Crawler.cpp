@@ -21,15 +21,15 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, double s )
 	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
-	cout << "inside crawler" << endl;
-	if( hasMonitor )
-	{
-		cout << "HAS MONMITOR NOW" << endl;
-	}
-	else
-	{
-		cout << "no monitor" << endl;
-	}
+	//cout << "inside crawler" << endl;
+	//if( hasMonitor )
+	//{
+	//	cout << "HAS MONMITOR NOW" << endl;
+	//}
+	//else
+	//{
+	//	cout << "no monitor" << endl;
+	//}
 	initHealth = 60;
 	health = initHealth;
 	lastReverser = false;
@@ -99,14 +99,14 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 	deathPartingSpeed = .4;
 
-	if( hasMonitor )
+	/*if( hasMonitor )
 	{
 		cout << "HAS MONMITOR NOW END" << endl;
 	}
 	else
 	{
 		cout << "no monitor END" << endl;
-	}
+	}*/
 	//
 	//hasMonitor = false;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
@@ -516,7 +516,7 @@ void Crawler::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( hasMonitor )
+			if( hasMonitor && !suppressMonitor )
 			{
 				owner->keyMarker->CollectKey();
 				///

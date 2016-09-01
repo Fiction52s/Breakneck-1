@@ -10354,9 +10354,10 @@ void Actor::PhysicsResponse()
 
 
 	V2d gn;
-
+	//Edge *e;
 	if( grindEdge != NULL )
 	{
+		//e = grindEdge;
 		framesInAir = 0;
 
 		V2d oldv0 = grindEdge->v0;
@@ -10382,6 +10383,7 @@ void Actor::PhysicsResponse()
 	}
 	else if( bounceEdge != NULL )
 	{
+		//e = bounceEdge;
 		V2d bn = bounceNorm;
 
 		if( action == BOUNCEAIR || bounceFlameOn )
@@ -10505,6 +10507,7 @@ void Actor::PhysicsResponse()
 	}
 	else if( ground != NULL )
 	{
+		//e = ground;
 		bool leaveGround = false;
 		if( ground->edgeType == Edge::CLOSED_GATE )
 		{
@@ -10765,6 +10768,10 @@ void Actor::PhysicsResponse()
 
 	UpdateHitboxes();
 
+	if( grindEdge != NULL )
+	{
+		//cout << "blah grind: " << grindEdge << endl;
+	}
 	if( gateTouched != NULL )
 	{
 		Edge *edge = gateTouched;
@@ -10783,9 +10790,34 @@ void Actor::PhysicsResponse()
 		double crossD = cross( D - edge->v0, nEdge );
 
 		bool activate = crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0;
+		 
 
 		g->SetLocked( true );
-		if( ground != NULL && ground != gateTouched && ( ( groundSpeed > 0 && ground->edge0 == gateTouched )
+
+		if( grindEdge != NULL )
+		{
+			Edge *otherEdge;
+			if( edge == g->edgeA )
+				otherEdge = g->edgeB;
+			else
+				otherEdge = g->edgeA;
+
+			/*cout << "grindEdge: " << grindEdge << ", e1: " << grindEdge->edge1
+				<<", e0: : " << grindEdge->edge0 << endl;
+			cout << "edge: " << edge << ", edge1: " << edge->edge1 << ", edge0: "
+				<< edge->edge0 << endl;
+			cout << "other: " << otherEdge << ", oth1: :" << otherEdge->edge1 << ", oth0: " << otherEdge->edge0 << endl;*/
+			if( grindEdge == edge->edge0 || grindEdge == edge->edge1 )
+			{
+				//this could be flawed. needs more testing
+
+				activate = true;
+			}
+		}
+
+		if( ground != NULL 
+			&& ground != gateTouched 
+			&& ( ( groundSpeed > 0 && ground->edge0 == gateTouched )
 			|| ( groundSpeed < 0 && ground->edge1 == gateTouched ) ) )
 		{
 			//glitch here because you are actually grounded ON the gate, so this doesnt work out.

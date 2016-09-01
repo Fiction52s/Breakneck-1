@@ -1130,7 +1130,15 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	Launcher *testLaunch;
 	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
+
 	Tileset *ts;
+	Tileset *ts_death;
+	Tileset *ts_hop;
+	Tileset *ts_idle;
+	Tileset *ts_run;
+	Tileset *ts_sweep;
+	Tileset *ts_walk;
+
 	//Tileset *ts_walk;
 	//Tileset *ts_roll;
 
