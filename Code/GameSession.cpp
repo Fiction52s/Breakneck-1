@@ -9123,6 +9123,17 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 void GameSession::ResetEnemies()
 {
 	rResetEnemies( enemyTree->startNode );
+
+	Enemy *curr = activeEnemyList;
+	while( curr != NULL )
+	{
+		Enemy *next = curr->next;
+		if( curr->type == Enemy::BASICEFFECT )
+		{
+			DeactivateEffect( (BasicEffect*)curr );
+		}
+		curr = next;
+	}
 	activeEnemyList = NULL;
 
 	if( b_bird != NULL ) b_bird->Reset();

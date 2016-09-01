@@ -51,7 +51,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	testMover = new GroundMover( owner, g, q, 32, true, this );
 	//testMover->gravity = V2d( 0, .5 );
 	testMover->SetSpeed( 0 );
-	//testMover->groundSpeed = s;
+	//testMover->groundSpeed =   b s;
 	/*if( !facingRight )
 	{
 		testMover->groundSpeed = -testMover->groundSpeed;
