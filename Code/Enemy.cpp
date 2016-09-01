@@ -641,7 +641,7 @@ void BasicBullet::UpdateSprite()
 {
 	VertexArray &VA = *(launcher->owner->bigBulletVA);
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
-	Vector2f dims( 24, 24 );
+	Vector2f dims( 32, 32 );
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 
 	Vector2f center( position.x, position.y );

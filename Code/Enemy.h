@@ -1092,10 +1092,12 @@ struct StagBeetle : Enemy, GroundMoverHandler
 {
 	enum Action
 	{
+		IDLE,
 		RUN,
 		JUMP,
-		ATTACK,
-		LAND
+		//ATTACK,
+		LAND,
+		Count
 	};
 
 	StagBeetle( GameSession *owner, bool hasMonitor,
@@ -1166,6 +1168,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	sf::Vector2<double> tempVel;
 	sf::Vector2<double> gravity;
 	
+
+	int actionLength[Action::Count];
 	int attackFrame;
 	int attackMult;
 
@@ -1181,7 +1185,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	//sf::Vector2<double> offset;
 	int frame;
 	//bool roll;
-
+	double angle;
 	int deathFrame;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;

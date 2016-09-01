@@ -27,7 +27,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = s;
-	action = RUN;
+	action = IDLE;
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
@@ -39,7 +39,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 
 	attackFrame = -1;
-	attackMult = 10;
+	attackMult = 3;
 
 	double height = 128;
 	double width = 128;
@@ -57,11 +57,26 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
-	//ts_death = owner->GetTileset( "stag_death_192x15
+	ts_death = owner->GetTileset( "stag_death_192x144.png", 192, 144 );
+	//actionLength[DEATH] = 1;
 
-	ts = owner->GetTileset( "crawler_128x128.png", width, height );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	ts_hop = owner->GetTileset( "stag_hop_192x144.png", 192, 144 );
+	ts_idle = owner->GetTileset( "stag_idle_192x144.png", 192, 144 );
+	actionLength[IDLE] = 11;
+
+	ts_run = owner->GetTileset( "stag_run_192x144.png", 192, 144 );
+	actionLength[RUN] = 9 * 4;
+	ts_sweep = owner->GetTileset( "stag_sweep_192x208.png", 192, 208 );
+
+	actionLength[LAND] = 1;
+
+	ts_walk = owner->GetTileset( "stag_walk_192x144.png", 192, 144 );
+
+	
+
+	//ts = owner->GetTileset( "crawler_128x128.png", width, height );
+	sprite.setTexture( *ts_idle->texture );
+	sprite.setTextureRect( ts_idle->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( q );
 	sprite.setPosition( testMover->physBody.globalPosition.x,
@@ -136,6 +151,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 
 void StagBeetle::ResetEnemy()
 {
+	action = IDLE;
 	keyFrame = 0;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
@@ -176,12 +192,15 @@ void StagBeetle::ResetEnemy()
 		offset.y = -physBody.rh;*/
 
 	//position = gPoint + offset;
-
+	//angle = atan2( gn.x, -gn.y );
 	deathFrame = 0;
 	dead = false;
 
+
+	sprite.setTexture( *ts_idle->texture );
+	sprite.setTextureRect( ts_idle->GetSubRect( 0 ) );
 	//----update the sprite
-	double angle = 0;
+	//double angle = 0;
 	////position = gPoint + gn * 32.0;
 	angle = atan2( gn.x, -gn.y );
 	//	
@@ -252,8 +271,13 @@ void StagBeetle::UpdateHitboxes()
 
 void StagBeetle::ActionEnded()
 {
+	if( frame == actionLength[action] )
+	{
 	switch( action )
 	{
+	case IDLE:
+		frame = 0;
+		break;
 	case RUN:
 		frame = 0;
 		break;
@@ -261,13 +285,11 @@ void StagBeetle::ActionEnded()
 		frame = 0;
 		break;
 	case LAND:
+		sprite.setTexture( *ts_run->texture );
 		action = RUN;
 		frame = 0;
 		break;
-	case ATTACK:
-		action = RUN;
-		frame = 0;
-		break;
+	}
 	}
 }
 
@@ -286,21 +308,65 @@ void StagBeetle::UpdatePrePhysics()
 
 	ActionEnded();
 
+	if( attackFrame == 11 * attackMult )
+	{
+		attackFrame = -1;
+		switch( action )
+		{
+		case IDLE:
+			sprite.setTexture( *ts_idle->texture );
+			break;
+		case RUN:
+			sprite.setTexture( *ts_run->texture );
+			break;
+		case JUMP:
+			sprite.setTexture( *ts_hop->texture );
+			break;
+		case LAND:
+			sprite.setTexture( *ts_hop->texture );
+			break;
+		}
+	}
+
 	switch( action )
 	{
+	case IDLE:
+		{
+			double dist = length( owner->player->position - position );
+			if( dist < 800 )
+			{
+				action = RUN;
+				frame = 0;
+				sprite.setTexture( *ts_run->texture );
+			}
+		}
+		break;
 	case RUN:
+		{
+			double dist = length( owner->player->position - position );
+			if( dist >= 800 )
+			{
+				action = IDLE;
+				frame = 0;
+				sprite.setTexture( *ts_idle->texture );
+			}
+		}
 		break;
 	case JUMP:
 		break;
-	case ATTACK:
-		break;
+	//case ATTACK:
+	//	break;
 	case LAND:
 		break;
 	}
 
 	switch( action )
 	{
+	case IDLE:
+		cout << "idle: " << frame << endl;
+		break;
 	case RUN:
+		cout << "run: " << frame << endl;
 		if( facingRight )
 		{
 			if( player->position.x < position.x )
@@ -331,15 +397,17 @@ void StagBeetle::UpdatePrePhysics()
 			testMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case JUMP:
+		cout << "jump: " << frame << endl;
 		break;
-	case ATTACK:
-		{
-			testMover->SetSpeed( 0 );
-		}
-		break;
+//	case ATTACK:
+	//	{
+	//		testMover->SetSpeed( 0 );
+	//	}
+	//	break;
 	case LAND:
 		{
-			testMover->SetSpeed( 0 );
+			cout << "land: " << frame << endl;
+			//testMover->SetSpeed( 0 );
 		}
 		break;
 	}
@@ -370,45 +438,7 @@ void StagBeetle::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-
 	
-	if( attackFrame == 2 * attackMult )
-	{
-		attackFrame = -1;
-	}
-	//if( attacking )
-	//{
-	//}
-	//else
-	//{
-
-		if( !roll && frame == 16 * crawlAnimationFactor )
-		{
-			frame = 0;
-		}
-
-		if ( roll && frame == 10 * rollAnimationFactor )
-		{
-			frame = rollAnimationFactor * 2; 
-		}
-
-		//cout << "groundspeed: " << testMover->groundSpeed << endl;
-	//}
-
-	/*if( bezFrame == 0 )
-	{
-		testLaunch->position = position;
-		if( testMover->ground != NULL )
-		{
-			testLaunch->facingDir = testMover->ground->Normal();
-		}
-		else
-		{
-			testLaunch->facingDir = V2d( 0, -1 );
-		}
-		
-		testLaunch->Fire();
-	}*/
 }
 
 void StagBeetle::UpdatePhysics()
@@ -509,137 +539,42 @@ void StagBeetle::PhysicsResponse()
 {
 	if( !dead  )
 	{
+		angle = 0;
 		bool roll = testMover->roll;
-		double angle = 0;
+		//double angle = 0;
 		Edge *ground = testMover->ground;
 		double edgeQuantity = testMover->edgeQuantity;
 
 		if( ground != NULL )
 		{
-		//cout << "response" << endl;
-			double spaceNeeded = 0;
 			V2d gn = ground->Normal();
-			V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
-		
-	
-		if( !roll )
-		{
-			//position = gPoint + gn * 32.0;
-			angle = atan2( gn.x, -gn.y );
-		
-//			sprite.setTexture( *ts_walk->texture );
-			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !facingRight )
+			//double angle;
+			if( roll )
 			{
-				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+				if( facingRight )
+				{
+					V2d vec = normalize( position - ground->v1 );
+					angle = atan2( vec.y, vec.x );
+					angle += PI / 2.0;
+				}
+				else
+				{
+					V2d vec = normalize( position - ground->v0 );
+					angle = atan2( vec.y, vec.x );
+					angle += PI / 2.0;
+				}	
 			}
 			else
 			{
-				sprite.setTextureRect( r );
+				angle = atan2( gn.x, -gn.y );
 			}
-			
-			//V2d pp = ground->GetPoint( testMover->edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( gPoint.x, gPoint.y );
 		}
 		else
 		{
-			
-			if( facingRight )
-			{
-				V2d vec = normalize( position - ground->v1 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}
-			else
-			{
-				//angle = 
-				/*V2d e0n = ground->edge0->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e0n.y, e0n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;*/
-
-			
-
-			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			//	angleVec = normalize( angleVec );
-
-			//	position = gPoint + angleVec * 16.0;
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}	
-		}
-		}
-		else
-		{
-			V2d p = testMover->physBody.globalPosition;
-
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
-			sprite.setPosition( p.x, p.y );
-			sprite.setRotation( 0 );
+			angle = 0;
 		}
 
-		//sprite.setPosition( position.x, position.y );
+		angle = angle * 180 / PI;
 
 		UpdateHitboxes();
 
@@ -666,7 +601,8 @@ void StagBeetle::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 3 );
+
+				owner->player->ConfirmHit( COLOR_GREEN, 5, .8, 2 * 6 * 2 );
 
 				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 				{
@@ -696,11 +632,11 @@ void StagBeetle::PhysicsResponse()
 
 		//gotta get the correct angle upon death
 		Transform t;
-		t.rotate( angle / PI * 180 );
+		t.rotate( angle );
 		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 		deathVector = V2d( newPoint.x, newPoint.y );
 
-		queryMode = "reverse";
+		//queryMode = "reverse";
 
 		//physbody is a circle
 		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
@@ -778,6 +714,7 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
+		//cout << "Drawing" << endl;
 		if( hasMonitor && !suppressMonitor )
 		{
 			if( owner->pauseFrames < 2 || receivedHit == NULL )
@@ -786,7 +723,7 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 			}
 			else
 			{
-				//target->draw( sprite, hurtShader );
+				target->draw( sprite, hurtShader );
 			}
 			target->draw( *keySprite );
 		}
@@ -823,18 +760,15 @@ void StagBeetle::Draw(sf::RenderTarget *target )
 
 void StagBeetle::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
-
-	/*if( hasMonitor && !suppressMonitor )
+	if( !dead && hasMonitor && !suppressMonitor )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
-	}*/
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+	}
 }
 
 bool StagBeetle::IHitPlayer()
@@ -955,15 +889,61 @@ void StagBeetle::UpdateSprite()
 	}
 	else
 	{
+		Edge *ground = testMover->ground;
+		double edgeQuantity = testMover->edgeQuantity;
+
+		V2d gPoint;
+		if( ground != NULL )
+		{
+			gPoint = ground->GetPoint( edgeQuantity );
+		}
+		else
+		{
+			gPoint = position;
+		}
+
+		IntRect r;
+
 		if( attackFrame >= 0 )
 		{
-			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
-			if( !facingRight )
-			{
-				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
-			}
-			sprite.setTextureRect( r );
+			sprite.setTexture( *ts_sweep->texture );
+			r = ts_sweep->GetSubRect( attackFrame / attackMult );
+			//cout << "attacking angle " << angle << endl;
 		}
+		else
+		{
+			switch( action )
+			{
+			case IDLE:
+			//	cout << "idle angle: " << angle << endl;
+				//sprite.setTextureRect( *ts_idle->texture );
+				r = ts_idle->GetSubRect( frame );
+				break;
+			case RUN:
+				//cout << "run angle: " << angle << endl;
+				//sprite.setTexture( *ts_run->texture );
+				r = ts_run->GetSubRect( frame / 4 );
+				break;
+			case JUMP:
+				//cout << "jump angle: " << angle << endl;
+				r = ts_hop->GetSubRect( 1 );
+				break;
+			case LAND:
+			//	cout << "land angle: " << angle << endl;
+				r = ts_idle->GetSubRect( 4 );
+				break;
+			}
+		}
+
+		if( facingRight )
+		{
+			r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
+		}
+		sprite.setTextureRect( r );
+
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+		sprite.setRotation( angle );
+		sprite.setPosition( gPoint.x, gPoint.y );
 	}
 }
 
@@ -1063,6 +1043,8 @@ void StagBeetle::HitOtherAerial( Edge *e )
 
 void StagBeetle::Land()
 {
+	action = LAND;
+	sprite.setTexture( *ts_hop->texture );
 	frame = 0;
 	//cout << "land" << endl;
 }

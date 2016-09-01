@@ -2774,7 +2774,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		{
 			bva[i].position = Vector2f( 0, 0 );
 		}
-		ts_basicBullets = GetTileset( "bullet_48x48.png", 48, 48 );
+		ts_basicBullets = GetTileset( "bullet_64x64.png", 64, 64 );
 	}
 
 	return true;

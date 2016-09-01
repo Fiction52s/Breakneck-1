@@ -470,18 +470,15 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 
 void BasicTurret::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
-
-	/*if( hasMonitor && !suppressMonitor )
+	if( !dead && !dying && hasMonitor && !suppressMonitor )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
-	}*/
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+	}
 }
 
 bool BasicTurret::IHitPlayerWithBullets()
