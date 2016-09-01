@@ -40,7 +40,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	
-	
+	ts_bulletExplode = owner->GetTileset( "bullet_explode1_64x64.png", 64, 64 );
 
 	gn = g->Normal();
 
@@ -173,11 +173,23 @@ void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
 void BasicTurret::BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos )
 {
+	V2d norm = edge->Normal();
+	double angle = atan2( norm.y, -norm.x );
+
+	owner->ActivateEffect( ts_bulletExplode, pos, true, -angle, 6, 2, true );
+	b->launcher->DeactivateBullet( b );
 }
 
 void BasicTurret::BulletHitPlayer( BasicBullet *b )
 {
-	
+	//if you dont deactivate the bullet it will hit constantly and make weird fx
+
+	//cout << "hit player??" << endl;
+	V2d vel = b->velocity;
+	double angle = atan2( vel.y, vel.x );
+	owner->ActivateEffect( ts_bulletExplode, b->position, true, angle, 6, 2, true );
+	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	b->launcher->DeactivateBullet( b );
 }
 
 void BasicTurret::UpdatePrePhysics()

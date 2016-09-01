@@ -451,9 +451,41 @@ void BasicBullet::ResetSprite()
 	bva[index*4+3].position = Vector2f( 0, 0 );
 }
 
+bool BasicBullet::PlayerSlowingMe()
+{
+	Actor *player = launcher->owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
+	{
+		if( player->bubbleFramesToLive[i] > 0 )
+		{
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void BasicBullet::UpdatePrePhysics()
 {
+	if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}
+
 	velocity += gravity / (double)slowMultiple;
+
+	
 	//if( gravTowardsPlayer )
 	//{
 	//	double len = gravity.y;//length( gravity );
@@ -502,7 +534,7 @@ void BasicBullet::UpdatePostPhysics()
 	}
 	
 
-	if( framesToLive == 0 )
+	if( framesToLive == 0 && slowCounter == 1 )
 	{
 		//cout << "time out!" << endl;
 		//explode
@@ -548,7 +580,7 @@ void BasicBullet::UpdatePhysics()
 		hitBody.globalPosition = position;
 
 		Actor *player = launcher->owner->player;
-		if( player->hurtBody.Intersects( hitBody ) )
+		if( player->hurtBody.Intersects( hitBody ) && player->invincibleFrames == 0 )
 		{	
 			//cout << "hit??" << endl;
 			HitPlayer();
@@ -556,6 +588,10 @@ void BasicBullet::UpdatePhysics()
 		}
 	}
 	while( movementLen > 0 );
+
+	//bool slowed = PlayerSlowingMe();
+
+
 }
 
 bool BasicBullet::HitTerrain()

@@ -4058,7 +4058,7 @@ void Actor::UpdatePrePhysics()
 				V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
 				velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;*/
 
-				if( boostBounce && framesSinceBounce > 10 )
+				if( boostBounce && framesSinceBounce > 8 )
 				{
 					velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
 					boostBounce = false;

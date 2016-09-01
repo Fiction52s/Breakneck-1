@@ -165,7 +165,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 
 	facingRight = true;
 	
-	ts_bulletExplode = owner->GetTileset( "bullet_explode_bat_48x48.png", 48, 48 );
+	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
@@ -202,11 +202,14 @@ void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Bat::BulletHitPlayer(BasicBullet *b )
 {
+	//if you dont deactivate the bullet it will hit constantly and make weird fx
+
 	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	b->launcher->DeactivateBullet( b );
 }
 
 
