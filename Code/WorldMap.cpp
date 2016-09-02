@@ -32,13 +32,13 @@ WorldMap::WorldMap( sf::Font &p_font )
 	}
 
 	back.setPosition( 0, 0 );
-	back.setOrigin( 1920 / 2, 1080 / 2 );
+	//back.setOrigin( 0, 0 );
 	front.setPosition( 0, 0 );
-	front.setOrigin( 1920 / 2, 1080 / 2 );
+	//front.setOrigin( 1920 / 2, 1080 / 2 );
 	//selectedColony = 1;
 
 	fontHeight = 24;
-	menuPos = Vector2f( -1920 / 2, -1080 / 2 );
+	menuPos = Vector2f( 300, 300 );
 	yspacing = 40;
 	entries = NULL;
 	text = NULL;
@@ -410,7 +410,7 @@ bool WorldMap::Update()
 				back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
-			cout << "currInput.ldown: " << currInput.LDown() << ", prevldown: " << prevInput.LDown() << endl;
+			//cout << "currInput.ldown: " << currInput.LDown() << ", prevldown: " << prevInput.LDown() << endl;
 			if( currInput.LDown() && !prevInput.LDown() )
 			{
 				++selectedLevel;

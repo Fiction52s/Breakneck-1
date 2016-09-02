@@ -997,12 +997,12 @@ void StagBeetle::HitOther()
 	V2d v;
 	if( facingRight && testMover->groundSpeed > 0 )
 	{
-		v = V2d( 10, -10 );
+		v = V2d( maxGroundSpeed, -10 );
 		testMover->Jump( v );
 	}
 	else if( !facingRight && testMover->groundSpeed < 0 )
 	{
-		v = V2d( -10, -10 );
+		v = V2d( -maxGroundSpeed, -10 );
 		testMover->Jump( v );
 	}
 	//cout << "hit other!" << endl;
@@ -1024,11 +1024,11 @@ void StagBeetle::ReachCliff()
 	V2d v;
 	if( facingRight )
 	{
-		v = V2d( 10, -10 );
+		v = V2d( maxGroundSpeed, -10 );
 	}
 	else
 	{
-		v = V2d( -10, -10 );
+		v = V2d( -maxGroundSpeed, -10 );
 	}
 
 	testMover->Jump( v );

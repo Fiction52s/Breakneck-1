@@ -610,7 +610,39 @@ int main()
 	std::cout << "opened window" << endl;
 	sf::Texture t;
 	t.loadFromFile( "title_1920x1080.png" );
+
+	//should just put in tilesets here like cmon
+	sf::Texture kinTitleTextures[7];
+	sf::Texture breakneckTitleTexture;
+	sf::Texture backgroundTitleTexture;
+
+
+	kinTitleTextures[0].loadFromFile( "Title/kin_title_1_1216x1080.png" );// 1184, 1080 );
+	kinTitleTextures[1].loadFromFile( "Title/kin_title_2_1216x1080.png");//, 1184, 1080 );
+	kinTitleTextures[2].loadFromFile( "Title/kin_title_3_1216x1080.png");//, 1184, 1080 );
+	kinTitleTextures[3].loadFromFile( "Title/kin_title_4_1216x1080.png");//, 1184, 1080 );
+	kinTitleTextures[4].loadFromFile( "Title/kin_title_5_1216x1080.png");//, 1184, 1080 );
+	kinTitleTextures[5].loadFromFile( "Title/kin_title_6_1216x1080.png");//, 1184, 1080 );
+	kinTitleTextures[6].loadFromFile( "Title/kin_title_7_1216x1080.png");//, 1184, 1080 );
 	
+	
+	breakneckTitleTexture.loadFromFile( "Title/kin_title_1920x416.png");//, 1920, 416 );
+
+	backgroundTitleTexture.loadFromFile( "Title/title_bg_1920x1080.png");//, 1920, 1080 );
+
+	sf::Sprite backgroundTitleSprite;
+	backgroundTitleSprite.setTexture( backgroundTitleTexture );
+
+
+	sf::Sprite breakneckTitleSprite;
+	breakneckTitleSprite.setTexture( breakneckTitleTexture );
+
+	sf::Sprite kinTitleSprite;
+	kinTitleSprite.setPosition( 512, 1080 );
+	
+	int kinTitleSpriteFrame = 0;
+	int kinTotalFrames = 76 * 2 + 50;
+
 	Sprite titleSprite;
 	titleSprite.setTexture( t );
 	titleSprite.setOrigin( titleSprite.getLocalBounds().width / 2, titleSprite.getLocalBounds().height / 2 );
@@ -618,7 +650,7 @@ int main()
 	//titleSprite.setScale( 2, 2 );
 	
 	
-	v.setCenter( 0, 0 );
+	v.setCenter( 1920/2, 1080/2 );
 	v.setSize( 1920, 1080 );
 	window->setView( v );
 
@@ -639,10 +671,10 @@ int main()
 	//window->setVerticalSyncEnabled( true );
 
 	window->setView( v );
-	window->draw( titleSprite );
-	window->draw( menu );		
+	//window->draw( titleSprite );
+	//window->draw( menu );		
 
-	window->display();
+	//window->display();
 
 	Text mainMenu[5];
 	int fontSize = 32;
@@ -700,6 +732,7 @@ int main()
 	exitText.setCharacterSize( fontSize );
 	exitText.setPosition( xoffset, yoffset + h * index );
 
+	ControllerState currInput;
 	
 	
 	//ls.UpdateMapList();
@@ -728,15 +761,44 @@ int main()
 
 	//cout << "beginning input loop" << endl;
 
+	sf::Clock gameClock;
+	double currentTime = 0;
+	double accumulator = TIMESTEP + .1;
+
 	bool moveDown = false;
 	bool moveUp = false;
+
+	bool worldMapUpdate = false;
+
 	while( !quit )
 	{
+		double newTime = gameClock.getElapsedTime().asSeconds();
+		double frameTime = newTime - currentTime;
+
+		if ( frameTime > 0.25 )
+		{
+			frameTime = 0.25;	
+		}
+        currentTime = newTime;
+
+		accumulator += frameTime;
+
+		preScreenTexture->clear();
 		window->clear();
+		
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
 
-		switch( menuMode )
+		while ( accumulator >= TIMESTEP  )
+        {
+			worldMapUpdate = false;
+
+			
+
+
+
+
+			switch( menuMode )
 		{
 		case MAINMENU:
 			{
@@ -957,27 +1019,46 @@ int main()
 			
 		}
 
-				window->setView( v );
-				window->draw( titleSprite );
-				window->draw( menu );	
-
-				window->setView( uiView );
-
-
-				for( int i = 0; i < 5; ++i )
+				if( kinTitleSpriteFrame == kinTotalFrames )
 				{
-					if( i == currentMenuSelect )
-					{
-						mainMenu[i].setColor( Color::White );
-					}
-					else
-					{
-						mainMenu[i].setColor( Color::Red );
-					}
-					//cout << "drawing i: " << i <<  endl;
-					window->draw( mainMenu[i] );
+					kinTitleSpriteFrame = 0;
 				}
 
+				int trueKinFrame = 0;
+				if( kinTitleSpriteFrame < 8 * 2 )
+				{
+					trueKinFrame = 0;
+				}
+				else if( kinTitleSpriteFrame < 16 * 2 )
+				{
+					trueKinFrame = 1;
+				}
+				else if( kinTitleSpriteFrame < 24 * 2 )
+				{
+					trueKinFrame = 2;
+				}
+				else if( kinTitleSpriteFrame < 48 * 2 )
+				{
+					trueKinFrame = 3;
+				}
+				else if( kinTitleSpriteFrame < 56 * 2 )
+				{
+					trueKinFrame = 4;
+				}
+				else if( kinTitleSpriteFrame < 60 * 2 )
+				{
+					trueKinFrame = 5;
+				}
+				else
+				{
+					trueKinFrame = 6;
+				}
+
+				cout << "kinsprite: " << trueKinFrame << endl;
+				kinTitleSprite.setTexture( kinTitleTextures[ trueKinFrame ] );
+				kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
+
+				kinTitleSpriteFrame++;	
 				break;
 			}
 		case WORLDMAP:
@@ -1053,8 +1134,7 @@ int main()
 				//cout << "worldmap" << endl;
 				if( worldMap->Update() )
 				{
-					window->setView( v );
-					worldMap->Draw( window );
+					worldMapUpdate = true;
 				}
 				else
 				{
@@ -1077,11 +1157,52 @@ int main()
 				break;
 			}
 		}
+			
+			
 
+
+			accumulator -= TIMESTEP;
+		}
 		
+		switch( menuMode )
+		{
+		case MAINMENU:
+			{
+				preScreenTexture->setView( v );
+				preScreenTexture->draw( backgroundTitleSprite );
+				preScreenTexture->draw( kinTitleSprite );
+				preScreenTexture->draw( breakneckTitleSprite );
+				//window->draw( titleSprite );
+				//preScreenTexture->draw( menu );	
 
-		
+				preScreenTexture->setView( uiView );
 
+
+				for( int i = 0; i < 5; ++i )
+				{
+					if( i == currentMenuSelect )
+					{
+						mainMenu[i].setColor( Color::White );
+					}
+					else
+					{
+						mainMenu[i].setColor( Color::Red );
+					}
+					//cout << "drawing i: " << i <<  endl;
+					preScreenTexture->draw( mainMenu[i] );
+				}
+				break;
+			}
+		case WORLDMAP:
+			{
+				if( worldMapUpdate )
+				{
+					preScreenTexture->setView( v );
+					worldMap->Draw( preScreenTexture );
+				}
+			}
+			break;
+		}
 		//window->pushGLStates();
 		
 		
@@ -1106,6 +1227,11 @@ int main()
 		
 
 		//window->popGLStates();
+
+		preScreenTexture->display();
+		sf::Sprite pspr;
+		pspr.setTexture( preScreenTexture->getTexture() );
+		window->draw( pspr );
 
 		window->display();
 	}

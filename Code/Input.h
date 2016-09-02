@@ -60,7 +60,7 @@ struct ControllerState
 	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right
 
-	//KeyboardSettings keyboardSettings;
+	
 };
 
 
@@ -131,12 +131,13 @@ public:
 	///Gets the state most recently queried from the
 	///controller. Used to update external ControllerStates
 	ControllerState & GetState();
-	ControllerState & GetKeyboardState(); //also updates
+	//ControllerState & GetKeyboardState(); //also updates
 	ControllerState m_state;
 private:
 	DWORD m_index;
 	float stickThresh;
-	
+	KeyboardSettings keySettings;
+
 	const static DWORD LEFT_STICK_DEADZONE;
 	const static DWORD RIGHT_STICK_DEADZONE;
 	const static DWORD TRIGGER_THRESHOLD;

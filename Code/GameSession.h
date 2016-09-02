@@ -214,7 +214,8 @@ struct KeyNumberObj
 struct ScoreDisplay
 {
 	ScoreDisplay( GameSession *owner,
-		sf::Vector2f &position );
+		sf::Vector2f &position, 
+		sf::Font & testFont );
 	sf::Sprite score;
 	void Draw( sf::RenderTarget *target );
 	int numEnemiesTotal;
@@ -271,6 +272,9 @@ struct ScoreDisplay
 
 	sf::Vector2f basePos;
 	sf::Shader colorSwapShader;
+	
+	sf::Text time;
+	sf::Font &font;
 	//sf::Sprite scoreBar;
 };
 
@@ -314,6 +318,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
 	
+	sf::Font font;
 	//int f;
 	std::map<std::string,PoiInfo*> poiMap;
 	std::list<Barrier*> barriers;
@@ -351,6 +356,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int envType;
 	int envLevel;
 	
+	sf::Font arial;
 
 	bool cutPlayerInput;
 	SoundManager *soundManager;

@@ -66,8 +66,9 @@ using namespace sf;
 
 
 
-ScoreDisplay::ScoreDisplay( GameSession *p_owner, Vector2f &position )
-	:scoreBarVA( sf::Quads, 4 * NUM_BARS ), scoreSymbolsVA( sf::Quads, 4 * NUM_BARS ), scoreSheetVA( sf::Quads, 4 * NUM_BARS )
+ScoreDisplay::ScoreDisplay( GameSession *p_owner, Vector2f &position,
+	sf::Font &testFont )
+	:scoreBarVA( sf::Quads, 4 * NUM_BARS ), scoreSymbolsVA( sf::Quads, 4 * NUM_BARS ), scoreSheetVA( sf::Quads, 4 * NUM_BARS ),font( testFont )
 {
 	basePos = position;
 	owner = p_owner;
@@ -114,6 +115,11 @@ void ScoreDisplay::Draw( RenderTarget *target )
 		target->draw( scoreSheetVA, ts_scoreSheet->texture );
 		target->draw( scoreSymbolsVA, ts_scoreSymbols->texture );
 		target->draw( scoreContinue );
+
+		if( bars[0]->state == ScoreBar::SHEET_DISPLAY )
+		{
+			target->draw( time );
+		}
 	}
 }
 
@@ -167,6 +173,23 @@ void ScoreDisplay::Activate()
 	waiting = false;
 	bars[0]->state = ScoreBar::POP_OUT;
 	bars[0]->frame = 0;
+	
+	time.setFont( font );
+	time.setCharacterSize( 14 );
+	time.setColor( Color::Black );
+
+	stringstream ss;
+
+	int seconds = owner->totalGameFrames / 60;
+	int remain = owner->totalGameFrames % 60;
+	int centiSecond = floor( (double)remain * (1.0/60.0 * 100.0 ) + .5 );
+	
+	ss << seconds << " : " << centiSecond << endl;
+	time.setString( ss.str() );
+	
+	//time.setString
+
+
 	//for( int i = 0; i < NUM_BARS; ++i )
 	//{
 	//	bars[i]->state = ScoreBar::POP_OUT;
@@ -252,6 +275,7 @@ void ScoreDisplay::ScoreBar::SetSymbolTransparency( float f )
 	scoreSymbolsVA[ row * 4 + 1 ].color = Color( 255, 255, 255, n );
 	scoreSymbolsVA[ row * 4 + 2 ].color = Color( 255, 255, 255, n );
 	scoreSymbolsVA[ row * 4 + 3 ].color = Color( 255, 255, 255, n );
+
 }
 
 void ScoreDisplay::ScoreBar::Update()
@@ -301,6 +325,16 @@ void ScoreDisplay::ScoreBar::Update()
 			{
 				state = SHEET_DISPLAY;
 				frame = 0;
+
+				if( row == 0 )
+				{
+					int rowHeight = 100;
+					Vector2f &basePos = parent->basePos + Vector2f( 0, rowHeight * row ) 
+						+Vector2f( 32, 32 );
+					parent->time.setPosition( basePos );
+				}
+				
+
 				break;
 			}
 			++frame;
@@ -351,6 +385,11 @@ void ScoreDisplay::ScoreBar::Update()
 			CubicBezier bez( 0, 0, 1, 1 );
 			float z = bez.GetValue( (double)frame / dispFrames );
 			SetSymbolTransparency( z );
+
+			if( row == 0 )
+			{
+
+			}
 			break;
 		}
 	case SHEET_DISPLAY:
@@ -572,9 +611,10 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *pr
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
 	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
 {
+	arial.loadFromFile( "arial.ttf" );
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( 100 );
-	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ) );
+	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ), arial );
 	
 	currentZone = NULL;
 	Movable::owner = this;
@@ -4606,8 +4646,8 @@ int GameSession::Run( string fileN )
 
 
 	bool showFrameRate = true;
-	sf::Font arial;
-	arial.loadFromFile( "arial.ttf" );
+
+	
 
 	sf::Text frameRate( "00", arial, 30 );
 	frameRate.setColor( Color::Red );
@@ -6274,7 +6314,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		//DebugDrawActors();
+		DebugDrawActors();
 
 		
 
