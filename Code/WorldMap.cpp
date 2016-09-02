@@ -255,8 +255,13 @@ bool WorldMap::Update()
 	{
 	case PLANET_AND_SPACE:
 		{
+			if( frame == trans )
+			{
+				state = PLANET_TRANSITION;
+				frame = 0;
+			}
 			//cout << "currInput.A: " << currInput.A << ", prevInput.A: " << prevInput.A << endl;
-			if( currInput.A && !prevInput.A )
+			/*if( currInput.A && !prevInput.A )
 			{
 				state = PLANET_TRANSITION;
 				frame = 0;
@@ -267,10 +272,10 @@ bool WorldMap::Update()
 				state = OFF;
 				frame = 0;
 				break;
-			}
+			}*/
 			
 		}
-		frame = 0;
+		//frame = 0;
 		/*if( frame == trans )
 		{
 			state = PLANET_TRANSITION;

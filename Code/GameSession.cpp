@@ -6123,7 +6123,7 @@ int GameSession::Run( string fileN )
 			rs.texture = listVAIter->ts_border->texture;
 
 			if( listVAIter->triva != NULL )
-				preScreenTex->draw( *listVAIter->triva, rs );
+				preScreenTex->draw( *listVAIter->triva );//, rs );
 
 			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
@@ -8735,7 +8735,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		if( rcEdge != NULL )
 		{
 			//cout << "viable is now false" << endl;
-			viable = false;
+			//viable = false;
 		}
 		else
 		{
@@ -8750,7 +8750,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			//start ray
 			if( rcEdge != NULL )
 			{
-				viable = false;
+				//viable = false;
 				//currStartInner = rcEdge->GetPoint( rcQuantity );
 				//realHeight0 = length( currStartInner - currStartOuter );
 			}
@@ -8765,7 +8765,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 				//end ray
 				if( rcEdge != NULL )
 				{
-					viable = false;
+					//viable = false;
 					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
 					//realHeight1 = length( currEndInner - currStartOuter );
 				}
@@ -8844,7 +8844,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		V2d point = e1->v0;
 		int i = 0;
 		V2d jutDir = ( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0;
-		V2d jutPoint = te->v1 + jutDir * (th - out );
+		V2d jutPoint = te->v1 + jutDir * (512.0 + 128.0);//(th - out );
 		bool viable = true;
 
 		rcEdge = NULL;
@@ -8973,9 +8973,9 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			va[extra + 1].position = Vector2f( currInPoint.x, currInPoint.y );
 			va[extra + 2].position = Vector2f( jutPoint.x, jutPoint.y );
 
-			/*va[extra + i*3 + 0].color = Color::Red;
-			va[extra + i*3 + 1].color = Color::Red;
-			va[extra + i*3 + 2].color = Color::Red;*/
+			va[extra + i*3 + 0].color = Color::Red;
+			va[extra + i*3 + 1].color = Color::Green;
+			va[extra + i*3 + 2].color = Color::Blue;
 
 			va[extra + 0].texCoords = Vector2f( sub.left + mid / 2, out );
 			va[extra + 1].texCoords = Vector2f( sub.left, th );
@@ -8986,6 +8986,11 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			va[extra + 0].position = Vector2f( point.x, point.y );
 			va[extra + 1].position = Vector2f( jutPoint.x, jutPoint.y );
 			va[extra + 2].position = Vector2f( nextInPoint.x, nextInPoint.y );
+
+			va[extra + i*3 + 0].color = Color::Red;
+			va[extra + i*3 + 1].color = Color::Blue;
+			va[extra + i*3 + 2].color = Color::Green;
+
 
 			/*va[extra + i*3 + 0].color = Color::Red;
 			va[extra + i*3 + 1].color = Color::Red;

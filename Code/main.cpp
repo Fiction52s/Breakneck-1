@@ -655,13 +655,13 @@ int main()
 	window->setView( v );
 
 	sf::Text menu;
-	menu.setString( "\t\tPress any button to start \nFor help and information check CONTROLS AND INFO.txt\n\t\tBreakneck Beta. Updated 3-11-2015");
+	menu.setString( " Press any button to start \n For help and info check \n - beta_info.txt\n Breakneck Beta\n Updated 9/2/2016");
 	menu.setCharacterSize( 20 );
 	menu.setColor( Color::Red );
 	
 	menu.setFont( arial );
-	menu.setOrigin( menu.getLocalBounds().width / 2, menu.getLocalBounds().height / 2 );
-	menu.setPosition( -600, 200 );
+	//menu.setOrigin( menu.getLocalBounds().width / 2, menu.getLocalBounds().height / 2 );
+	menu.setPosition( 0, 200 );
 
 	sf::Event ev;
 	bool quit = false;
@@ -843,42 +843,45 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
 					{
-						GameSession *gs = NULL;
+						menuMode = WORLDMAP;
+						worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+						worldMap->frame = 0;
+						worldMap->UpdateMapList();
+						
+						//GameSession *gs = NULL;
 						//select from option menu
-						switch( currentMenuSelect )
-						{
-						case 0:
-							//gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-							//gs->Run( "Maps/1-1.brknk" );
-							worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
-							worldMap->frame = 0;
-							worldMap->UpdateMapList();
-							menuMode = WORLDMAP;							
-							break;
-						case 1:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-							gs->Run( "Maps/1-2.brknk" );
-							//LoadCampaignOption();
-							break;
-						case 2:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-							gs->Run( "Maps/1-3.brknk" );
-							//CustomMapsOption( ls );
-							break;
-						case 3:
-							gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-							gs->Run( "Maps/1-4.brknk" );
-							//OptionsOption();
-							break;
-						case 4:
-							CustomMapsOption( ls );
-							//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
-							//gs->Run( "Maps/1-5.brknk" );
-							//ExitOption();
-							break;
-						}
+						//switch( currentMenuSelect )
+						//{
+						//case 0:
+						//	//gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+						//	//gs->Run( "Maps/1-1.brknk" );
+						
+												
+						//	break;
+						//case 1:
+						//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+						//	gs->Run( "Maps/1-2.brknk" );
+						//	//LoadCampaignOption();
+						//	break;
+						//case 2:
+						//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+						//	gs->Run( "Maps/1-3.brknk" );
+						//	//CustomMapsOption( ls );
+						//	break;
+						//case 3:
+						//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+						//	gs->Run( "Maps/1-4.brknk" );
+						//	//OptionsOption();
+						//	break;
+						//case 4:
+						//	CustomMapsOption( ls );
+						//	//gs = new GameSession( controller, window, preScreenTexture, minimapTexture );
+						//	//gs->Run( "Maps/1-5.brknk" );
+						//	//ExitOption();
+						//	break;
+						//}
 
-						delete gs;
+						//delete gs;
 					}
 					else if( ev.key.code == Keyboard::Up )
 					{
@@ -934,40 +937,45 @@ int main()
 			
 			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
 			{
-				GameSession *gs = NULL;
-				//select from option menu
-				switch( currentMenuSelect )
-				{
-				case 0:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-					gs->Run( "Maps/1-1.brknk" );
-					//NewCampaignOption();
-					break;
-				case 1:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-					gs->Run( "Maps/1-2.brknk" );
-					//LoadCampaignOption();
-					break;
-				case 2:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-					gs->Run( "Maps/1-3.brknk" );
-					//CustomMapsOption( ls );
-					break;
-				case 3:
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-					gs->Run( "Maps/1-4.brknk" );
-					//OptionsOption();
-					break;
-				case 4:
-					//replace this before releasing
-					//CustomMapsOption( ls );
-					gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-					gs->Run( "Maps/1-5.brknk" );
-					//ExitOption();
-					break;
-				}
+				menuMode = WORLDMAP;
+				worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+				worldMap->frame = 0;
+				worldMap->UpdateMapList();
+						
+				//GameSession *gs = NULL;
+				////select from option menu
+				//switch( currentMenuSelect )
+				//{
+				//case 0:
+				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+				//	gs->Run( "Maps/1-1.brknk" );
+				//	//NewCampaignOption();
+				//	break;
+				//case 1:
+				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+				//	gs->Run( "Maps/1-2.brknk" );
+				//	//LoadCampaignOption();
+				//	break;
+				//case 2:
+				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+				//	gs->Run( "Maps/1-3.brknk" );
+				//	//CustomMapsOption( ls );
+				//	break;
+				//case 3:
+				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+				//	gs->Run( "Maps/1-4.brknk" );
+				//	//OptionsOption();
+				//	break;
+				//case 4:
+				//	//replace this before releasing
+				//	//CustomMapsOption( ls );
+				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+				//	gs->Run( "Maps/1-5.brknk" );
+				//	//ExitOption();
+				//	break;
+				//}
 
-				delete gs;
+				//delete gs;
 				/*switch( currentMenuSelect )
 				{
 				case 0:
@@ -1054,7 +1062,7 @@ int main()
 					trueKinFrame = 6;
 				}
 
-				cout << "kinsprite: " << trueKinFrame << endl;
+				//cout << "kinsprite: " << trueKinFrame << endl;
 				kinTitleSprite.setTexture( kinTitleTextures[ trueKinFrame ] );
 				kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
 
@@ -1172,25 +1180,27 @@ int main()
 				preScreenTexture->draw( backgroundTitleSprite );
 				preScreenTexture->draw( kinTitleSprite );
 				preScreenTexture->draw( breakneckTitleSprite );
+				
 				//window->draw( titleSprite );
 				//preScreenTexture->draw( menu );	
 
 				preScreenTexture->setView( uiView );
 
+				preScreenTexture->draw( menu );
 
-				for( int i = 0; i < 5; ++i )
-				{
-					if( i == currentMenuSelect )
-					{
-						mainMenu[i].setColor( Color::White );
-					}
-					else
-					{
-						mainMenu[i].setColor( Color::Red );
-					}
-					//cout << "drawing i: " << i <<  endl;
-					preScreenTexture->draw( mainMenu[i] );
-				}
+				//for( int i = 0; i < 5; ++i )
+				//{
+				//	if( i == currentMenuSelect )
+				//	{
+				//		mainMenu[i].setColor( Color::White );
+				//	}
+				//	else
+				//	{
+				//		mainMenu[i].setColor( Color::Red );
+				//	}
+				//	//cout << "drawing i: " << i <<  endl;
+				//	preScreenTexture->draw( mainMenu[i] );
+				//}
 				break;
 			}
 		case WORLDMAP:
