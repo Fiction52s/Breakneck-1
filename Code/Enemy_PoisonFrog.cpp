@@ -1053,12 +1053,23 @@ void PoisonFrog::Draw(sf::RenderTarget *target )
 
 void PoisonFrog::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
+	if( !dead && hasMonitor && !suppressMonitor )
+	{
+		CircleShape cs;
+		cs.setRadius( 50 );
+		cs.setFillColor( Color::White );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		cs.setPosition( position.x, position.y );
+		target->draw( cs );
+		//monitor->miniSprite.setPosition( position.x, position.y );
+		//target->draw( monitor->miniSprite );
+	}
+	/*CircleShape cs;
 	cs.setRadius( 80 );
 	cs.setFillColor( COLOR_BLUE );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );
-	target->draw( cs );
+	target->draw( cs );*/
 }
 
 bool PoisonFrog::IHitPlayer()

@@ -3252,7 +3252,7 @@ bool GameSession::OpenFile( string fileName )
 
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
-			VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
+			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
 			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
@@ -5320,12 +5320,12 @@ int GameSession::Run( string fileN )
 				cloneInactiveEnemyList = NULL;
 			}
 
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
-			{
-				
-				quit = true;
-				break;
-			}
+			//if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
+			//{
+			//	
+			//	quit = true;
+			//	break;
+			//}
 	
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
 			{
@@ -6314,7 +6314,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		
 

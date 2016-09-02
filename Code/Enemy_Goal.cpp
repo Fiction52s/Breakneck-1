@@ -109,7 +109,7 @@ void Goal::UpdatePrePhysics()
 			owner->cam.manual = true;
 			goalKillStartZoom = owner->cam.zoomFactor;
 			goalKillStartPos = owner->cam.pos;
-			owner->KillAllEnemies();
+			//owner->KillAllEnemies();
 		}
 		if( frame <= 31 )
 		{

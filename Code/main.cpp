@@ -839,6 +839,7 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::M )
 					{
+						//CustomMapsOption( ls );
 						//WorldSelectMenu();
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
@@ -1155,7 +1156,9 @@ int main()
 					gs->Run( ss.str() );
 					delete gs;
 
-
+					v.setSize( 1920, 1080 );
+					v.setCenter( 1920/2, 1080/ 2);
+					window->setView( v );
 					worldMap->state = WorldMap::PLANET_AND_SPACE;
 					worldMap->frame = 0;
 					worldMap->UpdateMapList();
