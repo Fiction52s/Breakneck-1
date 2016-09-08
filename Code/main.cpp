@@ -839,7 +839,7 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::M )
 					{
-						//CustomMapsOption( ls );
+						CustomMapsOption( ls );
 						//WorldSelectMenu();
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )

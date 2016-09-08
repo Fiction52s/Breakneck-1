@@ -19,6 +19,7 @@
 #include "Cutscene.h"
 #include "SoundManager.h"
 #include "BarrierReactions.h"
+#include "EnvEffects.h"
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -955,7 +956,7 @@ GameSession::~GameSession()
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
-	cout << "checking for string: " << s << endl;
+	//cout << "checking for string: " << s << endl;
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 	{
 		if( (*it)->sourceName == s )
@@ -979,7 +980,7 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 	t->tileHeight = tileHeight;
 	t->sourceName = s;
 	tilesetList.push_back( t );
-	cout << "pushing back texture: " << s << endl;
+	//cout << "pushing back texture: " << s << endl;
 
 
 
@@ -3252,7 +3253,7 @@ bool GameSession::OpenFile( string fileName )
 
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
-			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
+			VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
 			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
@@ -5000,6 +5001,10 @@ int GameSession::Run( string fileN )
 
 	state = RUN;
 
+	Rain rain( this );
+	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
+	
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -5320,12 +5325,12 @@ int GameSession::Run( string fileN )
 				cloneInactiveEnemyList = NULL;
 			}
 
-			//if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
-			//{
-			//	
-			//	quit = true;
-			//	break;
-			//}
+			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
+			{
+				
+				quit = true;
+				break;
+			}
 	
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
 			{
@@ -5610,6 +5615,10 @@ int GameSession::Run( string fileN )
 				scoreDisplay->Update();
 
 				soundNodeList->Update();
+
+				//rainView.setCenter(
+
+				rain.Update();
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -6123,7 +6132,7 @@ int GameSession::Run( string fileN )
 			rs.texture = listVAIter->ts_border->texture;
 
 			if( listVAIter->triva != NULL )
-				preScreenTex->draw( *listVAIter->triva );//, rs );
+				preScreenTex->draw( *listVAIter->triva, rs );
 
 			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
@@ -6267,6 +6276,11 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( *bigBulletVA, ts_basicBullets->texture );
 		}
 
+		rainView.setCenter( (int)view.getCenter().x % 64, (int)view.getCenter().y % 64 );
+		rainView.setSize( view.getSize() );
+		preScreenTex->setView( rainView );
+		//rain.Draw( preScreenTex );
+		preScreenTex->setView( view );
 
 		//view.set
 		
@@ -8720,7 +8734,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		double c = cross( nextAlong, along );
 		bool viable = true;
 
-		V2d jutDir = ( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0;
+		V2d jutDir = normalize( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0;
 		V2d jutPoint = te->v1 + jutDir * (th - out );
 
 		//double rayTest = (th - out);
@@ -8735,7 +8749,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		if( rcEdge != NULL )
 		{
 			//cout << "viable is now false" << endl;
-			//viable = false;
+			viable = false;
 		}
 		else
 		{
@@ -8750,7 +8764,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			//start ray
 			if( rcEdge != NULL )
 			{
-				//viable = false;
+				viable = false;
 				//currStartInner = rcEdge->GetPoint( rcQuantity );
 				//realHeight0 = length( currStartInner - currStartOuter );
 			}
@@ -8765,7 +8779,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 				//end ray
 				if( rcEdge != NULL )
 				{
-					//viable = false;
+					viable = false;
 					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
 					//realHeight1 = length( currEndInner - currStartOuter );
 				}
@@ -8843,8 +8857,9 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		V2d nextNorm = e1->Normal();
 		V2d point = e1->v0;
 		int i = 0;
-		V2d jutDir = ( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0;
-		V2d jutPoint = te->v1 + jutDir * (512.0 + 128.0);//(th - out );
+		V2d jutDir = normalize( ( normalize( te->v1 - te->v0 ) + normalize( te->v1 - e1->v1 ) ) / 2.0 );
+		//cout << "length jut dir: " << length( jutDir ) << endl;
+		V2d jutPoint = te->v1 + jutDir * (th - out );
 		bool viable = true;
 
 		rcEdge = NULL;
@@ -8948,9 +8963,14 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			
 			//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
+			
+
 			int realIndex = valid * 32;
 			int realOther = otherValid * 32;
 
+			cout << "valid: " << valid << ", otherValid: " << otherValid << endl;
+			cout << "norm: " << eNorm.x << ", " << eNorm.y << endl;
+			cout << "nextNorm: " << nextNorm.x << ", " << nextNorm.y << endl;
 			IntRect sub = ts->GetSubRect( realIndex );
 			IntRect subOther = ts->GetSubRect( realOther );
 
@@ -8967,19 +8987,20 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			//cout << "mid: " << mid << endl;
 			mid = min( mid, (int)tw );
 			//assert( mid <= 128 );
-				
+			cout << "mid: " << mid << endl;
+			//cout << "jut length: " << length( jutPoint - point ) << endl;
 
 			va[extra + 0].position = Vector2f( point.x, point.y );
 			va[extra + 1].position = Vector2f( currInPoint.x, currInPoint.y );
 			va[extra + 2].position = Vector2f( jutPoint.x, jutPoint.y );
 
-			va[extra + i*3 + 0].color = Color::Red;
+			/*va[extra + i*3 + 0].color = Color::Red;
 			va[extra + i*3 + 1].color = Color::Green;
-			va[extra + i*3 + 2].color = Color::Blue;
+			va[extra + i*3 + 2].color = Color::Blue;*/
 
-			va[extra + 0].texCoords = Vector2f( sub.left + mid / 2, out );
-			va[extra + 1].texCoords = Vector2f( sub.left, th );
-			va[extra + 2].texCoords = Vector2f( sub.left + mid, th );
+			va[extra + 0].texCoords = Vector2f( sub.left + mid / 2, sub.top + out);
+			va[extra + 1].texCoords = Vector2f( sub.left, th + sub.top );
+			va[extra + 2].texCoords = Vector2f( sub.left + mid, sub.top + th );
 
 			extra += 3;
 
@@ -8987,18 +9008,18 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			va[extra + 1].position = Vector2f( jutPoint.x, jutPoint.y );
 			va[extra + 2].position = Vector2f( nextInPoint.x, nextInPoint.y );
 
-			va[extra + i*3 + 0].color = Color::Red;
+			/*va[extra + i*3 + 0].color = Color::Red;
 			va[extra + i*3 + 1].color = Color::Blue;
-			va[extra + i*3 + 2].color = Color::Green;
+			va[extra + i*3 + 2].color = Color::Green;*/
 
 
 			/*va[extra + i*3 + 0].color = Color::Red;
 			va[extra + i*3 + 1].color = Color::Red;
 			va[extra + i*3 + 2].color = Color::Red;*/
 
-			va[extra + 0].texCoords = Vector2f( subOther.left + mid / 2, out );
-			va[extra + 1].texCoords = Vector2f( subOther.left, th );
-			va[extra + 2].texCoords = Vector2f( subOther.left + mid, th );
+			va[extra + 0].texCoords = Vector2f( subOther.left + mid / 2, subOther.top + out );
+			va[extra + 1].texCoords = Vector2f( subOther.left, th + subOther.top );
+			va[extra + 2].texCoords = Vector2f( subOther.left + mid, th + subOther.top );
 
 			//va[extra + i*4 + 0].position = Vector2f( outLeft.x, outLeft.y );
 

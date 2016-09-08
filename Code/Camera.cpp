@@ -25,7 +25,7 @@ Camera::Camera()
 	zoomOutRate = 1;
 	zoomInRate = .1;
 	offsetRate = 3;
-	maxZoom = 2.5;//3.5;
+	maxZoom = 2.25;//3.5;
 
 	zoomLevel1 = 0;
 	zoomLevel2 = .5;

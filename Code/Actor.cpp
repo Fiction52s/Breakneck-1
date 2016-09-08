@@ -628,7 +628,7 @@ Actor::Actor( GameSession *gs )
 		slopeTooSteepLaunchLimitX = .1;
 		
 		
-		steepClimbGravFactor = .3;//.7;
+		steepClimbGravFactor = .4;//.7;
 		steepClimbFastFactor = .1;
 		
 		
@@ -4007,7 +4007,19 @@ void Actor::UpdatePrePhysics()
 					else
 					{
 						//cout << "DD" << endl;
+						
+						
+						if( storedBounceVel.x > 0 && currInput.LLeft() )
+						{
+							storedBounceVel.x = -dashSpeed;
+						}
+						else if( storedBounceVel.x < 0 && currInput.LRight() )
+						{
+							storedBounceVel.x = dashSpeed;
+						}
+						
 						velocity = V2d( storedBounceVel.x, -abs(storedBounceVel.y) );//length( storedBounceVel ) * bounceEdge->Normal();
+						
 					}
 				}
 				else if( bn.y > 0 )
@@ -5388,7 +5400,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case BOUNCEAIR:
 		{
-			if( framesInAir > 1 ) //to prevent you from clinging to walls awkwardly
+			if( framesInAir > 8 ) //to prevent you from clinging to walls awkwardly
 			{
 			//	cout << "movement" << endl;
 				AirMovement();
@@ -15471,15 +15483,31 @@ void Actor::UpdateSprite()
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				if( facingRight )//bounceFrame == 4 )
+				if( bounceFrame == 2 )
 				{
-					//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
-					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+					if( facingRight )//bounceFrame == 4 )
+					{
+						//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+					}
+					else
+					{
+						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+					}	
 				}
 				else
 				{
-					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-				}	
+					//if( facingRight )//bounceFrame == 4 )
+					//{
+					//	//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+					//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+					//}
+					//else
+					//{
+					//	sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+					//}	
+					sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
+				}
 			}
 			else if( bn.y < 0 )
 			{
