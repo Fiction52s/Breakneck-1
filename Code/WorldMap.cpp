@@ -47,17 +47,30 @@ WorldMap::WorldMap( sf::Font &p_font )
 	leftBorder = 20;
 	//numTotalEntries = 0;
 
+
 	Reset();
 }
 
-void WorldMap::Reset()
+void WorldMap::Reset( SaveFile *sf )
 {
 	fontHeight = 24;
 	state = OFF;
 	frame = 0;
-	selectedColony = 1;
-	selectedLevel = 0;
+
+	if( sf != NULL )
+	{
+		selectedColony = 1;
+		selectedLevel = 0;
+	}
+	else
+	{
+		selectedColony = 1;
+		selectedLevel = 0;
+	}
+	
 	ClearEntries();
+	moveDown = false;
+	moveUp = false;
 }
 
 const std::string & WorldMap::GetSelected()
@@ -243,25 +256,25 @@ void WorldMap::UpdateMapList()
 	Tex( 0, 0, entries );
 }
 
-bool WorldMap::Update()
+bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 {
 	
 	if( state == OFF )
 		return false;
 
 
-	int trans = 40;
+	int trans = 20;
 	switch( state )
 	{
 	case PLANET_AND_SPACE:
 		{
-			if( frame == trans )
+			/*if( frame == trans )
 			{
 				state = PLANET_TRANSITION;
 				frame = 0;
-			}
+			}*/
 			//cout << "currInput.A: " << currInput.A << ", prevInput.A: " << prevInput.A << endl;
-			/*if( currInput.A && !prevInput.A )
+			if( currInput.A && !prevInput.A )
 			{
 				state = PLANET_TRANSITION;
 				frame = 0;
@@ -272,8 +285,32 @@ bool WorldMap::Update()
 				state = OFF;
 				frame = 0;
 				break;
-			}*/
+			}
 			
+			if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+			{
+				selectedColony++;
+				//currentMenuSelect++;
+				if( selectedColony > 5 )
+					selectedColony = 0;
+				moveDown = true;
+			}
+			else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+			{
+				selectedColony--;
+				if( selectedColony < 0 )
+					selectedColony = 5;
+				moveUp = true;
+			}
+
+			if( !(currInput.LDown() || currInput.PDown()) )
+			{
+				moveDown = false;
+			}
+			if( ! ( currInput.LUp() || currInput.PUp() ) )
+			{
+				moveUp = false;
+			}
 		}
 		//frame = 0;
 		/*if( frame == trans )

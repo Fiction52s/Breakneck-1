@@ -258,25 +258,28 @@ bool GameController::UpdateState()
 		sf::Vector2<double> thing( 0, 0 );
 		if( left )
 		{
-			m_state.leftStickMagnitude = 1;
+			//m_state.leftStickMagnitude = 1;
 			thing.x -= 1.0;
 		}
-		else if( right )
+		if( right )
 		{
-			m_state.leftStickMagnitude = 1;
+			//m_state.leftStickMagnitude = 1;
 			thing.x += 1.0;
 		}
 
 		if( up )
 		{
-			m_state.leftStickMagnitude = 1;
+			//m_state.leftStickMagnitude = 1;
 			thing.y -= 1.0;
 		}
-		else if( down )
+		if( down )
 		{
-			m_state.leftStickMagnitude = 1;
+			//m_state.leftStickMagnitude = 1;
 			thing.y += 1.0;
 		}
+
+		if( thing.x != 0 || thing.y != 0 )
+			m_state.leftStickMagnitude = 1;
 
 		double mag = sqrt( thing.x * thing.x + thing.y * thing.y );
 		thing = sf::Vector2<double>( thing.x / mag, thing.y / mag );
@@ -526,6 +529,9 @@ KeyboardSettings::KeyboardSettings()
 	buttonMap[MAP] = Keyboard::Tilde;
 	buttonMap[PAUSE] = Keyboard::Delete;
 
+	toggleBounce = false;
+	toggleGrind = false;
+	toggleTimeSlow = false;
 	//SaveToFile( "defaultkeys" );
 }
 
@@ -550,6 +556,15 @@ void KeyboardSettings::LoadFromFile( const std::string &fileName )
 		assert( "failed to load keyboard inputs" );
 	}
 
+	int tBounce, tGrind, tSlow;
+	is >> tBounce;
+	is >> tGrind;
+	is >> tSlow;
+
+	toggleBounce = (bool)tBounce;
+	toggleGrind = (bool)tGrind;
+	toggleTimeSlow = (bool)tSlow;
+
 	is.close();
 }
 
@@ -569,6 +584,34 @@ void KeyboardSettings::SaveToFile( const std::string &fileName )
 	{
 		cout << "FAILED TO SAVE KEYBOARD FILTER" << endl;
 		assert( "failed to save keyboard inputs" );
+	}
+
+	
+	if( toggleBounce )
+	{
+		of << 1 << endl;
+	}
+	else
+	{
+		of << 0 << endl;
+	}
+
+	if( toggleGrind )
+	{
+		of << 1 << endl;
+	}
+	else
+	{
+		of << 0 << endl;
+	}
+
+	if( toggleTimeSlow )
+	{
+		of << 1 << endl;
+	}
+	else
+	{
+		of << 0 << endl;
 	}
 
 	of.close();
@@ -604,5 +647,27 @@ void KeyboardSettings::Update( ControllerState &cs )
 	bool pause = sf::Keyboard::isKeyPressed( buttonMap[PAUSE] );
 
 	
+	//if( up || left || down || right )
+	//{
+	//	cs.leftStickMagnitude = 1.0;
+	//}
+	//else
+	//{
+	//	cs.leftStickMagnitude = 0.0;
+	//}
+	//
+	//if( up 
+	//cs.leftStickRadians = atan( normalizedLY / normalizedLX );
+
+	//if( normalizedLX < 0.0f )
+	//	cs.leftStickRadians += PI;
+
+	//cs.rightStickMagnitude = normalizedMagnitude;
+	//cs.rightStickRadians = atan( normalizedRY / normalizedRX );
+	//if( normalizedRX < 0.0f )
+	//	cs.rightStickRadians += PI;
+
+	//cs.leftTrigger = state.Gamepad.bLeftTrigger; //0 or 255
+	//cs.rightTrigger = state.Gamepad.bRightTrigger;
 	
 }

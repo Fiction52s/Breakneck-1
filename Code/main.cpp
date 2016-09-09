@@ -20,6 +20,7 @@
 #include "Primitive3D.h"
 #include <SFML/OpenGL.hpp>
 #include "WorldMap.h"
+#include "SaveFile.h"
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -47,11 +48,36 @@ WorldMap *worldMap;
 sf::Texture worldMapTex;
 sf::Sprite worldMapSpr;
 
+
+sf::Texture saveMenuBGTex;
+sf::Texture *saveMenuSelectTex;
+
+SaveFile *files[6];
+
+enum MainMenuOptions
+{
+	M_NEW_GAME,
+	M_CONTINUE,
+	M_CUSTOM_MAPS,
+	M_LEVEL_EDITOR,
+	M_OPTIONS,
+	M_CREDITS,
+	M_EXIT,
+	M_Count
+};
+
 enum Mode
 {
 	MAINMENU,
-	WORLDMAP
+	WORLDMAP,
+	SAVEMENU,
+	TRANS_MAIN_TO_SAVE,
+	TRANS_SAVE_TO_MAIN
 };
+
+ControllerState currInput;
+ControllerState prevInput;
+
 Mode menuMode;
 
 //sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
@@ -106,7 +132,7 @@ void GameEditLoop( std::string filename)
 
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
-		GameSession *gs = new GameSession( controller, window, preScreenTexture, 
+		GameSession *gs = new GameSession( controller, window, NULL, preScreenTexture, 
 			postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 		
 		result = gs->Run( filename );
@@ -125,7 +151,7 @@ void GameEditLoop2( std::string filename)
 	while( result == 0 )
 	{
 		window->setView( v );
-		GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture,
+		GameSession *gs = new GameSession( controller, window, NULL, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture,
 			 mapTexture);
 		result = gs->Run( filename );
 		lastViewCenter = gs->lastViewCenter;
@@ -188,7 +214,7 @@ struct CustomMapsHandler : GUIHandler
 			if( b->name == "Play" )
 			{
 				optionChosen = true;
-				GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+				GameSession *gs = new GameSession( controller, window, NULL, preScreenTexture, postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 				gs->Run( ls.localPaths[ls.selectedIndex] );
 				window->setView( uiView );
 				delete gs;
@@ -239,6 +265,12 @@ struct CustomMapsHandler : GUIHandler
 	{
 	}
 };
+
+
+void LoadSaveFiles()
+{
+
+}
 
 void CustomMapsOption( LevelSelector &ls )
 {
@@ -465,7 +497,7 @@ void CustomMapsOption( LevelSelector &ls )
 
 void NewCampaignOption()
 {
-	GameSession gs( controller, window, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture, mapTexture );
+	GameSession gs( controller, window, NULL, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture, mapTexture );
 	gs.Run( "Maps/aba.brknk" );
 
 }
@@ -473,6 +505,11 @@ void NewCampaignOption()
 void LoadCampaignOption()
 {
 	cout << "loading!" << endl;
+}
+
+void SaveLoadScreen( bool newGame )
+{
+	
 }
 
 void OptionsOption()
@@ -487,6 +524,14 @@ void ExitOption()
 
 int main()
 {
+	files[0] = new SaveFile( "blue" );
+	files[1] = new SaveFile( "green" );
+	files[2] = new SaveFile( "yellow" );
+	files[3] = new SaveFile( "orange" );
+	files[4] = new SaveFile( "red" );
+	files[5] = new SaveFile( "magenta" );
+
+
 	menuMode = MAINMENU;
 
 	preScreenTexture = new RenderTexture;
@@ -513,6 +558,27 @@ int main()
 	mapTexture = new RenderTexture;
 	mapTexture->create( 1720, 880 );
 	mapTexture->clear();
+
+	saveMenuSelectTex = new Texture;
+	saveMenuBGTex.loadFromFile( "Menu/save_bg_1920x1080.png" );
+	saveMenuSelectTex->loadFromFile( "Menu/save_select_710x270.png" );
+
+	Sprite saveBG;
+	saveBG.setTexture( saveMenuBGTex );
+	Sprite saveSelect;
+	
+
+	
+
+	Tileset ts_saveSelected;
+	ts_saveSelected.texture = saveMenuSelectTex;
+	ts_saveSelected.tileWidth = 710;
+	ts_saveSelected.tileHeight = 270;
+
+	saveSelect.setTexture( *saveMenuSelectTex );
+
+
+	bool selectCreateNew = false;
 
 	sf::Font arial;
 	arial.loadFromFile( "arial.ttf" );
@@ -610,6 +676,10 @@ int main()
 	std::cout << "opened window" << endl;
 	sf::Texture t;
 	t.loadFromFile( "title_1920x1080.png" );
+
+	
+
+	int selectedSaveIndex = 0;
 
 	//should just put in tilesets here like cmon
 	sf::Texture kinTitleTextures[7];
@@ -767,6 +837,8 @@ int main()
 
 	bool moveDown = false;
 	bool moveUp = false;
+	bool moveLeft = false;
+	bool moveRight = false;
 
 	bool worldMapUpdate = false;
 
@@ -795,8 +867,9 @@ int main()
 
 			
 
-
-
+			prevInput = currInput;
+			controller.UpdateState();
+			currInput = controller.GetState();
 
 			switch( menuMode )
 		{
@@ -835,19 +908,21 @@ int main()
 					}*/
 					if( ev.key.code == Keyboard::Escape )
 					{
-						quit = true;
+						//quit = true;
 					}
 					else if( ev.key.code == Keyboard::M )
 					{
-						CustomMapsOption( ls );
+						//CustomMapsOption( ls );
 						//WorldSelectMenu();
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
 					{
-						menuMode = WORLDMAP;
-						worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
-						worldMap->frame = 0;
-						worldMap->UpdateMapList();
+						//menuMode = WORLDMAP;
+						//worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+						//worldMap->frame = 0;
+						//worldMap->UpdateMapList();
+						
+						
 						
 						//GameSession *gs = NULL;
 						//select from option menu
@@ -886,15 +961,15 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::Up )
 					{
-						currentMenuSelect--;
+						/*currentMenuSelect--;
 						if( currentMenuSelect < 0 )
-							currentMenuSelect = 4;
+							currentMenuSelect = 4;*/
 					}
 					else if( ev.key.code == Keyboard::Down )
 					{
-						currentMenuSelect++;
+						/*currentMenuSelect++;
 						if( currentMenuSelect > 4 )
-							currentMenuSelect = 0;
+							currentMenuSelect = 0;*/
 					}
 					else
 					{
@@ -932,101 +1007,80 @@ int main()
 			}
 				}
 
-				if( controller.UpdateState() )
-		{
-			ControllerState cs = controller.GetState();
-			
-			if( cs.A || cs.back || cs.Y || cs.X || cs.rightShoulder || cs.leftShoulder )
-			{
-				menuMode = WORLDMAP;
-				worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
-				worldMap->frame = 0;
-				worldMap->UpdateMapList();
-						
-				//GameSession *gs = NULL;
-				////select from option menu
-				//switch( currentMenuSelect )
-				//{
-				//case 0:
-				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-				//	gs->Run( "Maps/1-1.brknk" );
-				//	//NewCampaignOption();
-				//	break;
-				//case 1:
-				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-				//	gs->Run( "Maps/1-2.brknk" );
-				//	//LoadCampaignOption();
-				//	break;
-				//case 2:
-				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-				//	gs->Run( "Maps/1-3.brknk" );
-				//	//CustomMapsOption( ls );
-				//	break;
-				//case 3:
-				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-				//	gs->Run( "Maps/1-4.brknk" );
-				//	//OptionsOption();
-				//	break;
-				//case 4:
-				//	//replace this before releasing
-				//	//CustomMapsOption( ls );
-				//	gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-				//	gs->Run( "Maps/1-5.brknk" );
-				//	//ExitOption();
-				//	break;
-				//}
-
-				//delete gs;
-				/*switch( currentMenuSelect )
+				if( currInput.B && !prevInput.B )
 				{
-				case 0:
-					NewCampaignOption();
+					quit = true;
 					break;
-				case 1:
-					LoadCampaignOption();
-					break;
-				case 2:
-					CustomMapsOption( ls );
-					break;
-				case 3:
-					OptionsOption();
-					break;
-				case 4:
-					ExitOption();
-					break;
-				}*/
-				//GameEditLoop2( "test3.brknk" );
-				//window->setView( v );
-			}
-			if( (cs.LDown() || cs.PDown()) && !moveDown )
-			{
-				currentMenuSelect++;
-				if( currentMenuSelect > 4 )
-					currentMenuSelect = 0;
-				moveDown = true;
-			}
-			else if( ( cs.LUp() || cs.PUp() ) && !moveUp )
-			{
-				currentMenuSelect--;
-				if( currentMenuSelect < 0 )
-					currentMenuSelect = 4;
-				moveUp = true;
-			}
-			else
-			{
-			}
+				}
 
-			if( !(cs.LDown() || cs.PDown()) )
-			{
-				moveDown = false;
+				if( currInput.A || currInput.back || currInput.Y || currInput.X || 
+					currInput.rightShoulder || currInput.leftShoulder )
+				{
+					switch( currentMenuSelect )
+					{
+					case M_NEW_GAME:
+						{
+							menuMode = SAVEMENU;
+							selectedSaveIndex = 0;
+							selectCreateNew = true;
+							for( int i = 0; i < 6; ++i )
+							{
+								files[i]->LoadFromFile();
+							}
+							break;
+						}
+					case M_CONTINUE:
+						{
+							menuMode = SAVEMENU;
+							selectedSaveIndex = 0;
+							selectCreateNew = false;
+							for( int i = 0; i < 6; ++i )
+							{
+								files[i]->LoadFromFile();
+							}
+							break;
+						}
+					case M_CUSTOM_MAPS:
+						break;
+					case M_LEVEL_EDITOR:
+						break;
+					case M_OPTIONS:
+						break;
+					case M_CREDITS:
+						break;
+					case M_EXIT:
+						break;
+					}
+				
+						
+				
 			}
-			if( ! ( cs.LUp() || cs.PUp() ) )
-			{
-				moveUp = false;
-			}
-			
-			
-		}
+				if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+				{
+					currentMenuSelect++;
+					if( currentMenuSelect == M_Count )
+						currentMenuSelect = 0;
+					moveDown = true;
+				}
+				else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+				{
+					currentMenuSelect--;
+					if( currentMenuSelect < 0 )
+						currentMenuSelect = M_Count - 1;
+					moveUp = true;
+				}
+				else
+				{
+				}
+
+				if( !(currInput.LDown() || currInput.PDown()) )
+				{
+					moveDown = false;
+				}
+				if( ! ( currInput.LUp() || currInput.PUp() ) )
+				{
+					moveUp = false;
+				}
 
 				if( kinTitleSpriteFrame == kinTotalFrames )
 				{
@@ -1080,68 +1134,80 @@ int main()
 						{
 							if( ev.key.code == Keyboard::Escape )
 							{
-								quit = true;
+								//quit = true;
 							}
 						}
 					}
 				}
 
-				worldMap->prevInput = worldMap->currInput;
-				if( controller.UpdateState() )
+				//worldMap->prevInput = worldMap->currInput;
+
+				//worldMap->currInput = currInput;
+
+				if( currInput.B && !prevInput.B )
 				{
-					worldMap->currInput = controller.GetState();
-					//cout << "tjhingff" << endl;
-					//cout << "thing" << endl;
-					//ControllerState &cs = worldMap->currInput;
+					menuMode = MAINMENU;
+					//quit = true;
+					break;
 				}
-				else
-				{
-					//cout << "tjhingff" << endl;
-					worldMap->currInput.A = Keyboard::isKeyPressed( Keyboard::A );
-					worldMap->currInput.B = Keyboard::isKeyPressed( Keyboard::S );
 
-					bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-					bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-					bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-					bool right = Keyboard::isKeyPressed( Keyboard::Right );
 
-					worldMap->currInput.leftStickPad = 0;
 
-					if( up && down )
-					{
-						if( worldMap->prevInput.LUp() )
-							worldMap->currInput.leftStickPad += 1;
-						else if( worldMap->prevInput.LDown() )
-							worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
-					}
-					else
-					{
-						worldMap->currInput.leftStickPad += 1 && up;
-						worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
-					}
+				//if( controller.UpdateState() )
+				//{
+				//	worldMap->currInput = controller.GetState();
+				//	//cout << "tjhingff" << endl;
+				//	//cout << "thing" << endl;
+				//	//ControllerState &cs = worldMap->currInput;
+				//}
+				//else
+				//{
+				//	//cout << "tjhingff" << endl;
+				//	worldMap->currInput.A = Keyboard::isKeyPressed( Keyboard::A );
+				//	worldMap->currInput.B = Keyboard::isKeyPressed( Keyboard::S );
 
-					if( left && right )
-					{
-						if( worldMap->prevInput.LLeft() )
-						{
-							worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
-						}
-						else if( worldMap->prevInput.LRight() )
-						{
-							worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
-						}
-					}
-					else
-					{
-						worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
-						worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
-					}
-					//worldMap->currInput.ld
-				}
+				//	bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+				//	bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+				//	bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+				//	bool right = Keyboard::isKeyPressed( Keyboard::Right );
+
+				//	worldMap->currInput.leftStickPad = 0;
+
+				//	if( up && down )
+				//	{
+				//		if( worldMap->prevInput.LUp() )
+				//			worldMap->currInput.leftStickPad += 1;
+				//		else if( worldMap->prevInput.LDown() )
+				//			worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
+				//	}
+				//	else
+				//	{
+				//		worldMap->currInput.leftStickPad += 1 && up;
+				//		worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
+				//	}
+
+				//	if( left && right )
+				//	{
+				//		if( worldMap->prevInput.LLeft() )
+				//		{
+				//			worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
+				//		}
+				//		else if( worldMap->prevInput.LRight() )
+				//		{
+				//			worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
+				//		}
+				//	}
+				//	else
+				//	{
+				//		worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
+				//		worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
+				//	}
+				//	//worldMap->currInput.ld
+				//}
 				
 
 				//cout << "worldmap" << endl;
-				if( worldMap->Update() )
+				if( worldMap->Update( prevInput, currInput ) )
 				{
 					worldMapUpdate = true;
 				}
@@ -1152,7 +1218,7 @@ int main()
 					ss << "Maps/" << file;
 					//cout << "-----------------------------" << endl;
 					//cout << "file: " << file << endl;
-					GameSession *gs = new GameSession( controller, window, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+					GameSession *gs = new GameSession( controller, window, NULL, preScreenTexture, postProcessTexture, postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
 					gs->Run( ss.str() );
 					delete gs;
 
@@ -1167,14 +1233,108 @@ int main()
 				
 				break;
 			}
+		case SAVEMENU:
+			{
+				if( currInput.B && !prevInput.B )
+				{
+					menuMode = MAINMENU;
+					break;
+				}
+				else if( currInput.A && !prevInput.A )
+				{
+					/*GameSession * gs = new GameSession( controller, window, 
+						files[selectedSaveIndex], preScreenTexture, postProcessTexture,
+						postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
+					gs->Run(  );
+
+					delete gs;*/
+
+					menuMode = WORLDMAP;
+					worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+					worldMap->frame = 0;
+					worldMap->UpdateMapList();
+					break;
+				}
+
+				if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+				{
+					selectedSaveIndex+=2;
+					//currentMenuSelect++;
+					if( selectedSaveIndex > 5 )
+						selectedSaveIndex -= 6;
+					moveDown = true;
+				}
+				else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+				{
+					selectedSaveIndex-=2;
+					if( selectedSaveIndex < 0 )
+						selectedSaveIndex += 6;
+					moveUp = true;
+				}
+
+				if( (currInput.LRight() || currInput.PRight()) && !moveRight )
+				{
+					selectedSaveIndex++;
+					//currentMenuSelect++;
+					if( selectedSaveIndex % 2 == 0 )
+						selectedSaveIndex-= 2;
+					moveRight = true;
+				}
+				else if( ( currInput.LLeft() || currInput.PLeft() ) && !moveLeft )
+				{
+					selectedSaveIndex--;
+					if( selectedSaveIndex % 2 == 1 )
+						selectedSaveIndex += 2;
+					else if( selectedSaveIndex < 0 )
+					{
+						selectedSaveIndex += 2;
+					}
+					moveLeft = true;
+				}
+				
+
+				if( !(currInput.LDown() || currInput.PDown()) )
+				{
+					moveDown = false;
+				}
+				if( ! ( currInput.LUp() || currInput.PUp() ) )
+				{
+					moveUp = false;
+				}
+
+				if( !(currInput.LRight() || currInput.PRight()) )
+				{
+					moveRight = false;
+				}
+				if( !(currInput.LLeft() || currInput.PLeft() ) )
+				{
+					moveLeft = false;
+				}
+
+				saveSelect.setTextureRect( ts_saveSelected.GetSubRect( selectedSaveIndex ) );
+
+				Vector2f topLeftPos;
+				topLeftPos.x += ts_saveSelected.tileWidth * ( selectedSaveIndex % 2 );
+				topLeftPos.y += ts_saveSelected.tileHeight *( selectedSaveIndex / 2 );
+
+				saveSelect.setPosition( topLeftPos );
+
+				break;
+			}
+		case TRANS_MAIN_TO_SAVE:
+			break;
+		case TRANS_SAVE_TO_MAIN:
+			break;
 		}
 			
-			
-
-
 			accumulator -= TIMESTEP;
 		}
 		
+		if( quit )
+		{
+			break;
+		}
+
 		switch( menuMode )
 		{
 		case MAINMENU:
@@ -1213,6 +1373,13 @@ int main()
 					preScreenTexture->setView( v );
 					worldMap->Draw( preScreenTexture );
 				}
+			}
+			break;
+		case SAVEMENU:
+			{
+				preScreenTexture->setView( v );
+				preScreenTexture->draw( saveBG );
+				preScreenTexture->draw( saveSelect );
 			}
 			break;
 		}
@@ -1260,6 +1427,15 @@ int main()
 	
 
 	window->close();
+
 	delete window;
+	/*delete saveMenuSelectTex;*/
+	
+	delete preScreenTexture;
+	delete postProcessTexture;
+	delete postProcessTexture1;
+	delete postProcessTexture2;
+	delete minimapTexture;
+	delete mapTexture;
 }
 

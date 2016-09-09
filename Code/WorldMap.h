@@ -6,6 +6,7 @@
 #include "LevelSelector.h"
 #include "Input.h"
 
+struct SaveFile;
 struct WorldMap
 {
 	enum State
@@ -21,9 +22,11 @@ struct WorldMap
 	};
 
 	WorldMap( sf::Font &p_font );
-	void Reset();
+	void Reset( SaveFile *sf );
 	~WorldMap();
-	bool Update();
+	bool Update(
+		ControllerState &prevInput,
+		ControllerState &currInput );
 	void Draw( sf::RenderTarget *target );
 	void UpdateMapList();
 	const std::string & GetSelected();
@@ -56,8 +59,11 @@ struct WorldMap
 	sf::RectangleShape bgRect;
 	sf::RectangleShape selectedRect;
 
-	ControllerState currInput;
-	ControllerState prevInput;
+	bool moveDown;
+	bool moveUp;
+
+	//ControllerState currInput;
+	//ControllerState prevInput;
 };
 
 #endif

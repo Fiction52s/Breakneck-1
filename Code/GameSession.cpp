@@ -20,6 +20,7 @@
 #include "SoundManager.h"
 #include "BarrierReactions.h"
 #include "EnvEffects.h"
+#include "SaveFile.h"
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -604,13 +605,13 @@ void KeyMarker::Update()
 	}
 }
 
-GameSession::GameSession( GameController &c, RenderWindow *rw, RenderTexture *preTex, 
+GameSession::GameSession( GameController &c, RenderWindow *rw, SaveFile *sf, RenderTexture *preTex, 
 	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex,
 	RenderTexture *p_mapTex)
 	:controller(c),va(NULL),edges(NULL), window(rw), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
-	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex )
+	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex ), saveFile( sf )
 {
 	arial.loadFromFile( "arial.ttf" );
 	soundNodeList = new SoundNodeList( 10 );

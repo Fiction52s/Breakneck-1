@@ -102,8 +102,33 @@ struct KeyboardSettings
 	void LoadFromFile( const std::string &fileName );
 	void SaveToFile( const std::string &fileName );
 	void Update( ControllerState &cs );
+
+	bool toggleBounce;
+	bool toggleGrind;
+	bool toggleTimeSlow;
 };
 
+struct ControllerSettings
+{
+	enum ButtonType
+	{
+		UP,
+		LEFT,
+		DOWN,
+		RIGHT,
+		JUMP,
+		SLASH,
+		DASH,
+		BOUNCE,
+		GRIND,
+		TIMESLOW,
+		LEFTWIRE,
+		RIGHTWIRE,
+		MAP,
+		PAUSE,
+		Count
+	};
+};
 
 void LoadInputMapKeyboard( ControllerState &cs, 
 	const std::string &fileName,
