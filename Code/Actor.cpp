@@ -188,7 +188,7 @@ Actor::Actor( GameSession *gs )
 		changingClone = false;
 
 		desperationMode = false;
-		maxDespFrames = 120;
+		maxDespFrames = 60 * 5;
 		despCounter = 0;
 
 		framesSinceClimbBoost = 0;
@@ -4017,6 +4017,18 @@ void Actor::UpdatePrePhysics()
 						{
 							storedBounceVel.x = dashSpeed;
 						}
+						else if( storedBounceVel.x == 0 ) 
+						{
+							if( currInput.LLeft() )
+							{
+								storedBounceVel.x = -maxAirXControl;
+							}
+							else if( currInput.LRight() )
+							{
+								storedBounceVel.x = maxAirXControl;
+							}
+						}
+
 						
 						velocity = V2d( storedBounceVel.x, -abs(storedBounceVel.y) );//length( storedBounceVel ) * bounceEdge->Normal();
 						
@@ -4050,6 +4062,28 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						/*if( storedBounceVel.x > 0 && currInput.LLeft() )
+						{
+							storedBounceVel.x = -dashSpeed;
+						}
+						else if( storedBounceVel.x < 0 && currInput.LRight() )
+						{
+							storedBounceVel.x = dashSpeed;
+						}
+						else */
+						if( storedBounceVel.x == 0 ) 
+						{
+							if( currInput.LLeft() )
+							{
+								storedBounceVel.x = -maxAirXControl;
+							}
+							else if( currInput.LRight() )
+							{
+								storedBounceVel.x = maxAirXControl;
+							}
+						}
+
+
 						velocity = V2d( storedBounceVel.x, abs(storedBounceVel.y) );//length( storedBounceVel ) * bounceEdge->Normal();
 					//	cout << "E: " << velocity.x << ", " << velocity.y << endl;
 						
@@ -10258,7 +10292,7 @@ void Actor::UpdatePhysics()
 				owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 				//}
 			}
-			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 )
+			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh  )
 			{
 				Edge *e = minContact.edge;
 				V2d mp = minContact.position;

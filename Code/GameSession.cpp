@@ -7557,6 +7557,8 @@ void GameSession::RespawnPlayer()
 	player->speedBarTarget = 0;//60;
 	player->currentSpeedBar = 0;//60;
 
+	player->bounceFlameOn = false;
+
 	if( player->hasPowerLeftWire )
 	{
 		player->leftWire->Reset();

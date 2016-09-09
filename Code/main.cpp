@@ -51,6 +51,7 @@ sf::Sprite worldMapSpr;
 
 sf::Texture saveMenuBGTex;
 sf::Texture *saveMenuSelectTex;
+sf::Texture *saveMenuKinFaceTex;
 
 SaveFile *files[6];
 
@@ -72,7 +73,8 @@ enum Mode
 	WORLDMAP,
 	SAVEMENU,
 	TRANS_MAIN_TO_SAVE,
-	TRANS_SAVE_TO_MAIN
+	TRANS_SAVE_TO_MAIN,
+	TRANS_SAVE_TO_WORLDMAP
 };
 
 ControllerState currInput;
@@ -559,16 +561,28 @@ int main()
 	mapTexture->create( 1720, 880 );
 	mapTexture->clear();
 
-	saveMenuSelectTex = new Texture;
+	
 	saveMenuBGTex.loadFromFile( "Menu/save_bg_1920x1080.png" );
+
+	saveMenuKinFaceTex = new Texture;
+	saveMenuKinFaceTex->loadFromFile( "Menu/save_menu_kin_256x256.png" );
+
+	saveMenuSelectTex = new Texture;
 	saveMenuSelectTex->loadFromFile( "Menu/save_select_710x270.png" );
 
 	Sprite saveBG;
 	saveBG.setTexture( saveMenuBGTex );
 	Sprite saveSelect;
-	
 
-	
+	Sprite saveKinFace;
+	saveKinFace.setTexture( *saveMenuKinFaceTex );
+	int saveKinFaceFrame = 0;
+	int saveKinFaceTurnLength = 15;
+
+	Tileset ts_saveKinFace;
+	ts_saveKinFace.texture = saveMenuKinFaceTex;
+	ts_saveKinFace.tileWidth = 256;
+	ts_saveKinFace.tileHeight = 256;
 
 	Tileset ts_saveSelected;
 	ts_saveSelected.texture = saveMenuSelectTex;
@@ -576,7 +590,7 @@ int main()
 	ts_saveSelected.tileHeight = 270;
 
 	saveSelect.setTexture( *saveMenuSelectTex );
-
+	saveKinFace.setTexture( *saveMenuKinFaceTex );
 
 	bool selectCreateNew = false;
 
@@ -840,6 +854,14 @@ int main()
 	bool moveLeft = false;
 	bool moveRight = false;
 
+	/*int moveDownFrames = 0;
+	int moveUpFrames = 0;
+	int moveLeftFrames = 0;
+	int moveRightFrames = 0;*/
+	int moveDelayCounter = 0;
+	int moveDelayFrames = 15;
+	int moveDelayFramesSmall = 6;
+
 	bool worldMapUpdate = false;
 
 	while( !quit )
@@ -1022,6 +1044,8 @@ int main()
 						{
 							menuMode = SAVEMENU;
 							selectedSaveIndex = 0;
+							saveKinFaceFrame = 0;
+							moveDelayCounter = 0;
 							selectCreateNew = true;
 							for( int i = 0; i < 6; ++i )
 							{
@@ -1033,6 +1057,8 @@ int main()
 						{
 							menuMode = SAVEMENU;
 							selectedSaveIndex = 0;
+							saveKinFaceFrame = 0;
+							moveDelayCounter = 0;
 							selectCreateNew = false;
 							for( int i = 0; i < 6; ++i )
 							{
@@ -1051,36 +1077,48 @@ int main()
 					case M_EXIT:
 						break;
 					}
+				}
+
+				bool canMoveSame = (moveDelayCounter == 0);
+
 				
-						
-				
-			}
-				if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+				if( (currInput.LDown() || currInput.PDown()) && ( !moveDown || canMoveSame ) )
 				{
 					currentMenuSelect++;
 					if( currentMenuSelect == M_Count )
 						currentMenuSelect = 0;
-					moveDown = true;
+					//moveDown = true;
+					moveDelayCounter = moveDelayFrames;
 				}
-				else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+				else if( ( currInput.LUp() || currInput.PUp() ) && ( !moveUp || canMoveSame ) )
 				{
 					currentMenuSelect--;
 					if( currentMenuSelect < 0 )
 						currentMenuSelect = M_Count - 1;
-					moveUp = true;
+					//moveUp = true;
+					moveDelayCounter = moveDelayFrames;
 				}
 				else
 				{
 				}
+				
 
+				if( moveDelayCounter > 0 )
+				{
+					moveDelayCounter--;
+				}
+				
 				if( !(currInput.LDown() || currInput.PDown()) )
-				{
-					moveDown = false;
-				}
-				if( ! ( currInput.LUp() || currInput.PUp() ) )
-				{
-					moveUp = false;
-				}
+					{
+						moveDelayCounter = 0;
+						moveDown = false;
+					}
+					else if( ! ( currInput.LUp() || currInput.PUp() ) )
+					{
+						moveDelayCounter = 0;
+						moveUp = false;
+					}
+				
 
 				if( kinTitleSpriteFrame == kinTotalFrames )
 				{
@@ -1249,47 +1287,63 @@ int main()
 
 					delete gs;*/
 
-					menuMode = WORLDMAP;
+					menuMode = Mode::TRANS_SAVE_TO_WORLDMAP;
 					worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
 					worldMap->frame = 0;
 					worldMap->UpdateMapList();
 					break;
 				}
 
-				if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+				bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
+				bool canMoveSame = (moveDelayCounter == 0);
+				if( (currInput.LDown() || currInput.PDown()) && ( 
+					(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
 				{
 					selectedSaveIndex+=2;
 					//currentMenuSelect++;
 					if( selectedSaveIndex > 5 )
 						selectedSaveIndex -= 6;
 					moveDown = true;
+					moveDelayCounter = moveDelayFrames;
 				}
-				else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+				else if( ( currInput.LUp() || currInput.PUp() ) && ( 
+					(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
 				{
 					selectedSaveIndex-=2;
 					if( selectedSaveIndex < 0 )
 						selectedSaveIndex += 6;
 					moveUp = true;
+					moveDelayCounter = moveDelayFrames;
 				}
 
-				if( (currInput.LRight() || currInput.PRight()) && !moveRight )
+				if( (currInput.LRight() || currInput.PRight()) && ( 
+					(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
 				{
 					selectedSaveIndex++;
 					//currentMenuSelect++;
 					if( selectedSaveIndex % 2 == 0 )
 						selectedSaveIndex-= 2;
 					moveRight = true;
+					moveDelayCounter = moveDelayFrames;
 				}
-				else if( ( currInput.LLeft() || currInput.PLeft() ) && !moveLeft )
+				else if( ( currInput.LLeft() || currInput.PLeft() ) && ( 
+					(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
 				{
 					selectedSaveIndex--;
 					if( selectedSaveIndex % 2 == 1 )
 						selectedSaveIndex += 2;
-					else if( selectedSaveIndex < 0 )
-					{
-						selectedSaveIndex += 2;
-					}
+								else if( selectedSaveIndex < 0 )
+				{
+					selectedSaveIndex += 2;
+				}
 					moveLeft = true;
+
+					moveDelayCounter = moveDelayFrames;
+				}
+				
+				if( moveDelayCounter > 0 )
+				{
+					moveDelayCounter--;
 				}
 				
 
@@ -1312,12 +1366,14 @@ int main()
 				}
 
 				saveSelect.setTextureRect( ts_saveSelected.GetSubRect( selectedSaveIndex ) );
+				saveKinFace.setTextureRect( ts_saveKinFace.GetSubRect( 0 ) );
 
 				Vector2f topLeftPos;
 				topLeftPos.x += ts_saveSelected.tileWidth * ( selectedSaveIndex % 2 );
 				topLeftPos.y += ts_saveSelected.tileHeight *( selectedSaveIndex / 2 );
 
 				saveSelect.setPosition( topLeftPos );
+				saveKinFace.setPosition( topLeftPos );
 
 				break;
 			}
@@ -1325,6 +1381,28 @@ int main()
 			break;
 		case TRANS_SAVE_TO_MAIN:
 			break;
+		case TRANS_SAVE_TO_WORLDMAP:
+			{
+				if( saveKinFaceFrame == saveKinFaceTurnLength * 3 + 20 )
+				{
+					menuMode = WORLDMAP;
+					break;
+					//saveKinFaceFrame = 0;
+				}
+
+				if( saveKinFaceFrame < saveKinFaceTurnLength * 3 )
+				{
+					saveKinFace.setTextureRect( ts_saveKinFace.GetSubRect( saveKinFaceFrame / 3 ) );
+				}
+				else
+				{
+					saveKinFace.setTextureRect( ts_saveKinFace.GetSubRect( saveKinFaceTurnLength - 1 ) );
+				}
+				
+
+				saveKinFaceFrame++;
+				break;
+			}
 		}
 			
 			accumulator -= TIMESTEP;
@@ -1375,13 +1453,15 @@ int main()
 				}
 			}
 			break;
+		case TRANS_SAVE_TO_WORLDMAP:
 		case SAVEMENU:
 			{
 				preScreenTexture->setView( v );
 				preScreenTexture->draw( saveBG );
 				preScreenTexture->draw( saveSelect );
+				preScreenTexture->draw( saveKinFace );
+				break;
 			}
-			break;
 		}
 		//window->pushGLStates();
 		

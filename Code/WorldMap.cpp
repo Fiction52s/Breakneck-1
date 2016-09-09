@@ -48,7 +48,7 @@ WorldMap::WorldMap( sf::Font &p_font )
 	//numTotalEntries = 0;
 
 
-	Reset();
+	Reset( NULL );
 }
 
 void WorldMap::Reset( SaveFile *sf )

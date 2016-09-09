@@ -11,11 +11,9 @@ SaveFile::SaveFile( const std::string &name )
 	stringstream ss;
 	ss << "Data/" << name << ".kin";
 
-	stringstream ss1;
-	ss1 << "Data/" << "default" << name << ".kin";
+	
 
 	fileName = ss.str();
-	defaultFileName = ss1.str();
 }
 
 void SaveFile::LoadFromFile()
