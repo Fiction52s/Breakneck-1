@@ -1300,8 +1300,226 @@ void Actor::UpdatePrePhysics()
 			if( grindEdge != NULL )
 			{
 				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
-				owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
-				grindSpeed *= .8;
+				//owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
+				//grindSpeed *= .8;
+				
+				V2d op = position;
+
+				V2d grindNorm = grindEdge->Normal();
+
+				if( grindNorm.y < 0 )
+				{
+					double extra = 0;
+					if( grindNorm.x > 0 )
+					{
+						offsetX = b.rw;
+						extra = .1;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						offsetX = -b.rw;
+						extra = -.1;
+					}
+					else
+					{
+						offsetX = 0;
+					}
+				
+					position.x += offsetX + extra;
+
+					position.y -= normalHeight + .1;
+
+					if( !CheckStandUp() )
+					{
+						position = op;
+						owner->powerWheel->Damage( receivedHit->damage );
+						
+						//apply extra damage since you cant stand up
+					}
+					else
+					{
+						framesNotGrinding = 0;
+						hasAirDash = true;
+						hasGravReverse = true;
+						hasDoubleJump = true;
+						lastWire = 0;
+						ground = grindEdge;
+						movingGround = grindMovingTerrain;
+						edgeQuantity = grindQuantity;
+						groundSpeed = grindSpeed;
+						/*action = LAND;
+						frame = 0;
+						
+
+						if( currInput.LRight() )
+						{
+							facingRight = true;
+							if( groundSpeed < 0 )
+							{
+								groundSpeed = 0;
+							}
+						}
+						else if( currInput.LLeft() )
+						{
+							facingRight = false;
+							if( groundSpeed > 0 )
+							{
+								groundSpeed = 0;
+							}
+						}*/
+
+						action = GROUNDHITSTUN;
+						frame = 0;
+
+						if( receivedHit->knockback > 0 )
+						{
+							groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+						}
+						else
+						{
+							groundSpeed *= (1-receivedHit->drainX) * abs(grindNorm.y) + (1-receivedHit->drainY) * abs(grindNorm.x);
+						}
+
+
+						grindEdge = NULL;
+						reversed = false;
+					}
+
+				}
+				else
+				{
+					
+					if( grindNorm.x > 0 )
+					{
+						position.x += b.rw + .1;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						position.x += -b.rw - .1;
+					}
+
+					if( grindNorm.y > 0 )
+						position.y += normalHeight + .1;
+
+					if( !CheckStandUp() )
+					{
+						position = op;
+					}
+					else
+					{
+						//abs( e0n.x ) < wallThresh )
+
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
+						{
+							framesNotGrinding = 0;
+							if( reversed )
+							{
+								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * -grindSpeed;
+							}
+							else
+							{
+								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							}
+							
+
+							//SetActionExpr( JUMP );
+							action = AIRHITSTUN;
+							frame = 0;
+							if( receivedHit->knockback > 0 )
+							{
+								velocity = receivedHit->knockback * receivedHit->kbDir;
+							}
+							else
+							{
+								velocity.x *= (1 - receivedHit->drainX);
+								velocity.y *= (1 - receivedHit->drainY);
+							}
+
+						//	frame = 0;
+							ground = NULL;
+							movingGround = NULL;
+							grindEdge = NULL;
+							grindMovingTerrain = NULL;
+							reversed = false;
+						}
+						else
+						{
+						//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							if( grindNorm.x > 0 )
+							{
+								offsetX = b.rw;
+							}
+							else if( grindNorm.x < 0 )
+							{
+								offsetX = -b.rw;
+							}
+							else
+							{
+								offsetX = 0;
+							}
+
+							hasAirDash = true;
+							hasGravReverse = true;
+							hasDoubleJump = true;
+							lastWire = 0;
+
+
+							ground = grindEdge;
+							movingGround = grindMovingTerrain;
+							groundSpeed = -grindSpeed;
+							edgeQuantity = grindQuantity;
+							grindEdge = NULL;
+							reversed = true;
+							hasGravReverse = false;
+
+								
+							//if( currInput.LRight() )
+							//{
+							//	if( groundSpeed < 0 )
+							//	{
+							//		//cout << "bleh2" << endl;
+							//		groundSpeed = 0;
+							//	}
+							//	facingRight = true;
+							////	groundSpeed = abs( groundSpeed );
+							//}
+							//else if( currInput.LLeft() )
+							//{
+							//	facingRight = false;
+							//	if( groundSpeed > 0 )
+							//	{
+							//		//cout << "bleh1" << endl;
+							//		groundSpeed = 0;
+							//	}
+							////	groundSpeed = -abs( groundSpeed );
+							//}
+
+							//action = LAND2;
+
+
+							action = GROUNDHITSTUN;
+							frame = 0;
+
+							if( receivedHit->knockback > 0 )
+							{
+								groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+							}
+							else
+							{
+								groundSpeed *= (1-receivedHit->drainX) * abs(grindNorm.y) + (1-receivedHit->drainY) * abs(grindNorm.x);
+							}
+
+							frame = 0;
+							framesNotGrinding = 0;
+
+							double angle = GroundedAngle();
+
+							owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
+						}
+					}
+				}		
+
 			}
 			else if( ground == NULL )
 			{
@@ -11025,7 +11243,14 @@ void Actor::UpdateHitboxes()
 	double angle = 0;
 	V2d gn;
 	V2d gd; 
-	if( ground != NULL )
+
+	if( grindEdge != NULL )
+	{
+		gn = grindEdge->Normal();
+		gd = normalize( grindEdge->v1 - grindEdge->v0 );
+		angle = atan2( gn.x, -gn.y );
+	}
+	else if( ground != NULL )
 	{	
 		if( !approxEquals( abs(offsetX), b.rw ) )
 		{
@@ -11132,8 +11357,12 @@ void Actor::UpdateHitboxes()
 	}
 
 	
-
-	if( ground != NULL )
+	if( grindEdge != NULL )
+	{
+		hurtBody.globalPosition = grindEdge->GetPoint( grindQuantity );// + gn * (double)(b.rh);// + hurtBody.rh );
+		hurtBody.globalAngle = angle;
+	}
+	else if( ground != NULL )
 	{
 		if( gn.x == 0 )
 		{
