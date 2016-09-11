@@ -158,10 +158,11 @@ public:
 	ControllerState & GetState();
 	//ControllerState & GetKeyboardState(); //also updates
 	ControllerState m_state;
+	KeyboardSettings keySettings;
 private:
 	DWORD m_index;
 	float stickThresh;
-	KeyboardSettings keySettings;
+	
 
 	const static DWORD LEFT_STICK_DEADZONE;
 	const static DWORD RIGHT_STICK_DEADZONE;

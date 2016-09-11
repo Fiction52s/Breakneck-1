@@ -284,6 +284,8 @@ struct PauseMap
 	
 };
 
+
+
 struct SaveFile;
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -317,7 +319,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	SoundNodeList * soundNodeList;
 	ScoreDisplay *scoreDisplay;
 	State state;
-	std::list<Tileset*> tilesetList;
+	
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
 	
@@ -388,6 +390,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	Tileset * GetTileset( const std::string & s,
 		int tileWidth, int tileHeight );
+	TilesetManager tm;
+	
 	void Test( Edge *e );
 	void AddEnemy( Enemy * e );
 	void RemoveEnemy( Enemy * e );

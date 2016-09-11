@@ -14,6 +14,9 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		toggleBounceInput = gs->controller.keySettings.toggleBounce;
+		toggleTimeSlowInput = gs->controller.keySettings.toggleTimeSlow;
+		toggleGrindInput = gs->controller.keySettings.toggleGrind;
 		speedParticleRate = 10; //20
 		speedParticleCounter = 1;
 		followerPos = V2d( 0, 0 );
@@ -1380,6 +1383,10 @@ void Actor::UpdatePrePhysics()
 							groundSpeed *= (1-receivedHit->drainX) * abs(grindNorm.y) + (1-receivedHit->drainY) * abs(grindNorm.x);
 						}
 
+						if( toggleGrindInput )
+						{
+							currInput.Y = false;
+						}
 
 						grindEdge = NULL;
 						reversed = false;
@@ -1404,6 +1411,10 @@ void Actor::UpdatePrePhysics()
 					if( !CheckStandUp() )
 					{
 						position = op;
+
+						owner->powerWheel->Damage( receivedHit->damage );
+						
+						//apply extra damage since you cant stand up
 					}
 					else
 					{
@@ -1433,6 +1444,11 @@ void Actor::UpdatePrePhysics()
 							{
 								velocity.x *= (1 - receivedHit->drainX);
 								velocity.y *= (1 - receivedHit->drainY);
+							}
+
+							if( toggleGrindInput )
+							{
+								currInput.Y = false;
 							}
 
 						//	frame = 0;
@@ -1500,6 +1516,11 @@ void Actor::UpdatePrePhysics()
 							action = GROUNDHITSTUN;
 							frame = 0;
 
+							if( toggleGrindInput )
+							{
+								currInput.Y = false;
+							}
+
 							if( receivedHit->knockback > 0 )
 							{
 								groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
@@ -1513,6 +1534,8 @@ void Actor::UpdatePrePhysics()
 							framesNotGrinding = 0;
 
 							double angle = GroundedAngle();
+
+
 
 							owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
@@ -1586,11 +1609,30 @@ void Actor::UpdatePrePhysics()
 	}
 
 	//cout << "can stand up: " << canStandUp << endl;
-
-	if( bounceFlameOn && !currInput.X )
+	//cout << cout << "toggle bounce: " << (int)toggleBounceInput << endl;
+	bool justToggledBounce = false;
+	if( bounceFlameOn )
 	{
-		bounceFlameOn = false;
+		if( toggleBounceInput )
+		{
+			if( currInput.X && !prevInput.X )
+			{
+				bounceFlameOn = false;
+				bounceGrounded = false;
+				justToggledBounce = true;
+			}
+		}
+		else
+		{
+			//assert( !toggleBounceInput );
+			if( !currInput.X )
+			{
+				bounceFlameOn = false;
+				bounceGrounded = false;
+			}
+		}
 	}
+	
 	
 	if( action == AIRHITSTUN )
 	{
@@ -1617,7 +1659,7 @@ void Actor::UpdatePrePhysics()
 	{
 	case STAND:
 		{
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if( hasPowerBounce && currInput.X && !bounceFlameOn && !justToggledBounce )
 			{
 			//	bounceGrounded = true;
 				bounceFlameOn = true;
@@ -6228,13 +6270,25 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+	if( toggleTimeSlowInput && !inBubble && oldInBubble )
+	{
+		currInput.leftShoulder = false;
+
+		/*if( currInput.leftShoulder )
+		{
+			
+		}*/
+	}
+
+	
+
 	if( !inBubble && action == AIRDASH && airDashStall )
 	{
 	SetActionExpr( JUMP );
 		frame = 1;
 	}
 
-	if( hasPowerTimeSlow && currInput.leftShoulder|| cloneBubbleCreated )
+	if( ( hasPowerTimeSlow && currInput.leftShoulder ) || cloneBubbleCreated )
 	{
 		
 		
@@ -6288,6 +6342,9 @@ void Actor::UpdatePrePhysics()
 		slowCounter = 1;
 		slowMultiple = 1;
 	}
+
+	
+
 
 	if( record > 0 )
 	{

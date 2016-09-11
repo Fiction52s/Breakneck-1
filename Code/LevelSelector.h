@@ -19,9 +19,10 @@ struct TreeNode
 	std::string GetLocalPath();
 };
 
+struct MainMenu;
 struct LevelSelector
 {
-	LevelSelector( sf::Font & p_font );
+	LevelSelector( MainMenu *mainMenu );
 	void UpdateMapList(TreeNode *parentNode, const std::string &relativePath);
 	void UpdateMapList();
 	void PrintDir( TreeNode * dir );

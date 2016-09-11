@@ -28,62 +28,10 @@
 using namespace std;
 using namespace sf;
 
-RenderWindow *window;
-View v;
 using namespace boost::filesystem;
 
 #define V2d sf::Vector2<double>
-GameController controller(0);
 
-RenderTexture *preScreenTexture;
-RenderTexture *postProcessTexture;
-RenderTexture *postProcessTexture1;
-RenderTexture *postProcessTexture2;
-RenderTexture *minimapTexture;
-RenderTexture *mapTexture;
-
-WorldMap *worldMap;
-
-
-sf::Texture worldMapTex;
-sf::Sprite worldMapSpr;
-
-
-sf::Texture saveMenuBGTex;
-sf::Texture *saveMenuSelectTex;
-sf::Texture *saveMenuKinFaceTex;
-
-SaveFile *files[6];
-
-enum MainMenuOptions
-{
-	M_NEW_GAME,
-	M_CONTINUE,
-	M_CUSTOM_MAPS,
-	M_LEVEL_EDITOR,
-	M_OPTIONS,
-	M_CREDITS,
-	M_EXIT,
-	M_Count
-};
-
-enum Mode
-{
-	MAINMENU,
-	WORLDMAP,
-	SAVEMENU,
-	TRANS_MAIN_TO_SAVE,
-	TRANS_SAVE_TO_MAIN,
-	TRANS_SAVE_TO_WORLDMAP
-};
-
-ControllerState currInput;
-ControllerState prevInput;
-
-Mode menuMode;
-
-//sf::View uiView( sf::Vector2f( 480, 270 ), sf::Vector2f( 960, 540 ) );
-sf::View uiView( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
 void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar )
 {
@@ -118,86 +66,40 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 	}
 }
 
-void GameEditLoop( std::string filename)
-{
-	int result = 0;
 
-	Vector2f lastViewSize( 0, 0 );
-	Vector2f lastViewCenter( 0, 0 );
-	while( result == 0 )
-	{
-		EditSession *es = new EditSession(window, preScreenTexture );
-		result = es->Run( filename, lastViewCenter, lastViewSize );
-		delete es;
-		if( result > 0 )
-			break;
 
-		//v.setSize( 1920, 1080 );
-		window->setView( v );
-		GameSession *gs = new GameSession( controller, window, NULL, preScreenTexture, 
-			postProcessTexture,postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-		
-		result = gs->Run( filename );
-		lastViewCenter = gs->lastViewCenter;
-		lastViewSize = gs->lastViewSize;
-		delete gs;
-	}
-}
+//void WorldSelectMenu()
+//{
+//	window->setView( uiView );
+//	bool quit = false;
+//	int worldSel = 0;
+//	while( !quit )
+//	{
+//		window->clear();
+//		if( controller.UpdateState() )
+//		{
+//			ControllerState cs = controller.GetState();
+//			if( cs.LDown() )
+//			{
+//				worldSel++;
+//				//cout << "worldSel: " << worldSel << endl;
+//			}
+//		}
+//		window->draw( worldMapSpr );
+//		window->display();
+//	}
+//	window->setView( v );
+//}
 
-void GameEditLoop2( std::string filename)
-{
-	int result = 0;
+//void LoadMenus()
+//{
+//	worldMapTex.loadFromFile( "worldmap.png" );
+//	worldMapSpr.setTexture( worldMapTex );
+//}
 
-	Vector2f lastViewSize( 0, 0 );
-	Vector2f lastViewCenter( 0, 0 );
-	while( result == 0 )
-	{
-		window->setView( v );
-		GameSession *gs = new GameSession( controller, window, NULL, preScreenTexture, postProcessTexture,postProcessTexture1,postProcessTexture2, minimapTexture,
-			 mapTexture);
-		result = gs->Run( filename );
-		lastViewCenter = gs->lastViewCenter;
-		lastViewSize = gs->lastViewSize;
-		delete gs;
-		if( result > 0 )
-			break;
 
-		EditSession *es = new EditSession(window, preScreenTexture );
-		result = es->Run( filename, lastViewCenter, lastViewSize );
-		delete es;
-	}
-}
 
-void WorldSelectMenu()
-{
-	window->setView( uiView );
-	bool quit = false;
-	int worldSel = 0;
-	while( !quit )
-	{
-		window->clear();
-		if( controller.UpdateState() )
-		{
-			ControllerState cs = controller.GetState();
-			if( cs.LDown() )
-			{
-				worldSel++;
-				//cout << "worldSel: " << worldSel << endl;
-			}
-		}
-		window->draw( worldMapSpr );
-		window->display();
-	}
-	window->setView( v );
-}
-
-void LoadMenus()
-{
-	worldMapTex.loadFromFile( "worldmap.png" );
-	worldMapSpr.setTexture( worldMapTex );
-}
-
-struct CustomMapsHandler : GUIHandler 
+struct CustomMapsHandler : GUIHandler
 {
 	LevelSelector &ls;
 	bool optionChosen;
@@ -504,98 +406,30 @@ void NewCampaignOption()
 
 }
 
-void LoadCampaignOption()
-{
-	cout << "loading!" << endl;
-}
+//void LoadCampaignOption()
+//{
+//	cout << "loading!" << endl;
+//}
 
-void SaveLoadScreen( bool newGame )
-{
-	
-}
+//void SaveLoadScreen( bool newGame )
+//{
+//	
+//}
 
-void OptionsOption()
-{
-	cout << "options!" << endl;
-}
+//void OptionsOption()
+//{
+//	cout << "options!" << endl;
+//}
 
-void ExitOption()
-{
-	cout << "exit!" << endl;
-}
+//void ExitOption()
+//{
+//	cout << "exit!" << endl;
+//}
+
 
 int main()
 {
-	files[0] = new SaveFile( "blue" );
-	files[1] = new SaveFile( "green" );
-	files[2] = new SaveFile( "yellow" );
-	files[3] = new SaveFile( "orange" );
-	files[4] = new SaveFile( "red" );
-	files[5] = new SaveFile( "magenta" );
-
-
-	menuMode = MAINMENU;
-
-	preScreenTexture = new RenderTexture;
-	preScreenTexture->create( 1920, 1080 );
-	preScreenTexture->clear();
-
-	postProcessTexture = new RenderTexture;
-	postProcessTexture->create( 1920/2, 1080/2 );
-	postProcessTexture->clear();
-
-	postProcessTexture1 = new RenderTexture;
-	postProcessTexture1->create( 1920/2, 1080/2 );
-	postProcessTexture1->clear();
-
-	postProcessTexture2 = new RenderTexture;
-	postProcessTexture2->create( 1920, 1080 );
-	postProcessTexture2->clear();
-
-
-	minimapTexture = new RenderTexture;
-	minimapTexture->create( 300, 300 );
-	minimapTexture->clear();
-
-	mapTexture = new RenderTexture;
-	mapTexture->create( 1720, 880 );
-	mapTexture->clear();
-
-	
-	saveMenuBGTex.loadFromFile( "Menu/save_bg_1920x1080.png" );
-
-	saveMenuKinFaceTex = new Texture;
-	saveMenuKinFaceTex->loadFromFile( "Menu/save_menu_kin_256x256.png" );
-
-	saveMenuSelectTex = new Texture;
-	saveMenuSelectTex->loadFromFile( "Menu/save_select_710x270.png" );
-
-	Sprite saveBG;
-	saveBG.setTexture( saveMenuBGTex );
-	Sprite saveSelect;
-
-	Sprite saveKinFace;
-	saveKinFace.setTexture( *saveMenuKinFaceTex );
-	int saveKinFaceFrame = 0;
-	int saveKinFaceTurnLength = 15;
-
-	Tileset ts_saveKinFace;
-	ts_saveKinFace.texture = saveMenuKinFaceTex;
-	ts_saveKinFace.tileWidth = 256;
-	ts_saveKinFace.tileHeight = 256;
-
-	Tileset ts_saveSelected;
-	ts_saveSelected.texture = saveMenuSelectTex;
-	ts_saveSelected.tileWidth = 710;
-	ts_saveSelected.tileHeight = 270;
-
-	saveSelect.setTexture( *saveMenuSelectTex );
-	saveKinFace.setTexture( *saveMenuKinFaceTex );
-
 	bool selectCreateNew = false;
-
-	sf::Font arial;
-	arial.loadFromFile( "arial.ttf" );
 
 	std::cout << "starting program" << endl;
 	bool fullWindow = true;
@@ -934,7 +768,7 @@ int main()
 					}
 					else if( ev.key.code == Keyboard::M )
 					{
-						//CustomMapsOption( ls );
+						CustomMapsOption( ls );
 						//WorldSelectMenu();
 					}
 					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )

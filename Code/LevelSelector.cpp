@@ -1,6 +1,7 @@
 #include "LevelSelector.h"
 #include <iostream>
 #include <SFML/Network.hpp>
+#include "MainMenu.h"
 
 using namespace boost::filesystem;
 using namespace std;
@@ -31,15 +32,15 @@ string TreeNode::GetLocalPath()
 	return full;
 }
 
-LevelSelector::LevelSelector( Font & p_font )
-{		
+LevelSelector::LevelSelector( MainMenu *mainMenu )
+{
 	width = 400;
 	height = 1080;
 	drawPanel.create( width, height );
 	drawPanel.clear();
 	entries = NULL;
 	numTotalEntries = 0;
-	font = p_font;
+	font = mainMenu->arial;
 	text = NULL;
 	mouseOverIndex = -1;
 	position = Vector2f( 0, 0 );

@@ -14,4 +14,11 @@ struct Tileset
 	std::string sourceName;
 };
 
+struct TilesetManager
+{
+	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight );
+	void ClearTilesets();
+	std::list<Tileset*> tilesetList;
+};
+
 #endif

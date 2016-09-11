@@ -605,6 +605,37 @@ void KeyMarker::Update()
 	}
 }
 
+Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight )
+{
+	//cout << "checking for string: " << s << endl;
+	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+	{
+		if( (*it)->sourceName == s )
+		{
+			return (*it);
+		}
+	}
+
+
+	//not found
+
+
+	Tileset *t = new Tileset();
+	t->texture = new Texture();
+	if( !t->texture->loadFromFile( s ) )
+	{
+		cout << "failed to load: " << s << endl;
+		assert( false );
+	}
+	t->tileWidth = tileWidth;
+	t->tileHeight = tileHeight;
+	t->sourceName = s;
+	tilesetList.push_back( t );
+	
+
+	return t;
+}
+
 GameSession::GameSession( GameController &c, RenderWindow *rw, SaveFile *sf, RenderTexture *preTex, 
 	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex,
 	RenderTexture *p_mapTex)
@@ -957,42 +988,7 @@ GameSession::~GameSession()
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
-	//cout << "checking for string: " << s << endl;
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	{
-		if( (*it)->sourceName == s )
-		{
-			return (*it);
-		}
-	}
-
-
-	//not found
-
-
-	Tileset *t = new Tileset();
-	t->texture = new Texture();
-	if( !t->texture->loadFromFile( s ) )
-	{
-		cout << "failed to load: " << s << endl;
-		assert( false );
-	}
-	t->tileWidth = tileWidth;
-	t->tileHeight = tileHeight;
-	t->sourceName = s;
-	tilesetList.push_back( t );
-	//cout << "pushing back texture: " << s << endl;
-
-
-
-	/*for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	{
-		cout << "testing: " << (*it)->sourceName << ", "
-			<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
-		
-	}*/
-
-	return t;
+	tm.GetTileset( s, tileWidth, tileHeight );
 	//make sure to set up tileset here
 }
 
@@ -5468,7 +5464,56 @@ int GameSession::Run( string fileN )
 			}
 
 			if( !cutPlayerInput )
+			{
+				ControllerState &pCurr = player->currInput;
+				//ControllerState &pPrev = player->prevInput;
+
+				
+				bool alreadyBounce = pCurr.X;
+				bool alreadyGrind = pCurr.Y;
+				bool alreadyTimeSlow = pCurr.leftShoulder;
 				player->currInput = currInput;
+				if( controller.keySettings.toggleBounce )
+				{
+					if( currInput.X && !prevInput.X )
+					{
+						pCurr.X = !alreadyBounce;
+					}
+					else
+					{
+						pCurr.X = alreadyBounce;
+					}
+				}
+				if( controller.keySettings.toggleGrind )
+				{
+					if( currInput.Y && !prevInput.Y )
+					{
+						pCurr.Y = !alreadyGrind;
+						//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
+					}
+					else
+					{
+						pCurr.Y = alreadyGrind;
+					}
+				}
+				if( controller.keySettings.toggleTimeSlow )
+				{
+					if( currInput.leftShoulder && !prevInput.leftShoulder )
+					{
+						
+						pCurr.leftShoulder = !alreadyTimeSlow;
+						
+					}
+					else
+					{
+						pCurr.leftShoulder = alreadyTimeSlow;
+					}
+				}
+
+
+
+				//else
+			}
 
 			}
 			else if( pauseFrames > 0 )

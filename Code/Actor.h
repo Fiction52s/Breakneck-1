@@ -106,6 +106,9 @@ struct Actor : QuadTreeCollider,
 
 	Tileset **ts_goalKillArray;
 	
+	bool toggleBounceInput;
+	bool toggleTimeSlowInput;
+	bool toggleGrindInput;
 
 	Tileset *ts_kinFace;
 	sf::Sprite kinFace;
