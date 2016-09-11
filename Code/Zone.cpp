@@ -61,7 +61,7 @@ void Zone::Init()
 
 	list<Edge*> relGates;
 	
-	cout << "subZones: " << subZones.size() << endl;
+	//cout << "subZones: " << subZones.size() << endl;
 	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
 	{
 		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
@@ -93,7 +93,7 @@ void Zone::Init()
 			}
 		}
 	}
-	cout << "relgates: " << relGates.size() << endl;
+	//cout << "relgates: " << relGates.size() << endl;
 
 
 	int emergency = 200;

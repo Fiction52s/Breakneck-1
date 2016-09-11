@@ -241,16 +241,9 @@ void SoundNodeList::Reset()
 
 SoundManager::~SoundManager()
 {
-	for( list<SoundInfo*>::iterator it = sounds.begin(); it != sounds.end(); ++it )
-	{
-		delete (*it);
-	}
-
-	for( list<MusicInfo*>::iterator it = songs.begin(); it != songs.end(); ++it )
-	{
-		delete (*it);
-	}
+	ClearAll();
 }
+
 sf::Music * SoundManager::GetMusic( const std::string &name )
 {
 	for( list<MusicInfo*>::iterator it = songs.begin(); it != songs.end(); ++it )
@@ -309,4 +302,17 @@ sf::SoundBuffer * SoundManager::GetSound( const std::string &name )
 
 	return si->buffer;
 	//make sure to set up tileset here
+}
+
+void SoundManager::ClearAll()
+{
+	for( list<SoundInfo*>::iterator it = sounds.begin(); it != sounds.end(); ++it )
+	{
+		delete (*it);
+	}
+
+	for( list<MusicInfo*>::iterator it = songs.begin(); it != songs.end(); ++it )
+	{
+		delete (*it);
+	}
 }

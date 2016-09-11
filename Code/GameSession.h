@@ -287,6 +287,7 @@ struct PauseMap
 
 
 struct SaveFile;
+struct MainMenu;
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -331,14 +332,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//Barrier *bar;
 	//int f;
 	GameSession(GameController &c, 
-		sf::RenderWindow *rw, 
 		SaveFile *sf,
-		sf::RenderTexture *preTex,
-		sf::RenderTexture *postProc,
-		sf::RenderTexture *postProc1,
-		sf::RenderTexture *postProc2,
-		sf::RenderTexture *miniTex,
-		sf::RenderTexture *mapTex );
+		MainMenu *mainMenu
+		);
 	void TriggerBarrier( Barrier *b );
 
 	//Boss_Crawler *b_crawler;

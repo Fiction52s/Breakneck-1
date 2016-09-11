@@ -20,6 +20,7 @@ struct SoundManager
 	~SoundManager();
 	sf::Music *GetMusic( const std::string &name );
 	sf::SoundBuffer *GetSound( const std::string &name );
+	void ClearAll();
 	std::list<SoundInfo*> sounds;
 	std::list<MusicInfo*> songs;
 };

@@ -21,7 +21,7 @@
 #include "BarrierReactions.h"
 #include "EnvEffects.h"
 #include "SaveFile.h"
-
+#include "MainMenu.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -605,45 +605,21 @@ void KeyMarker::Update()
 	}
 }
 
-Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight )
-{
-	//cout << "checking for string: " << s << endl;
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	{
-		if( (*it)->sourceName == s )
-		{
-			return (*it);
-		}
-	}
 
 
-	//not found
-
-
-	Tileset *t = new Tileset();
-	t->texture = new Texture();
-	if( !t->texture->loadFromFile( s ) )
-	{
-		cout << "failed to load: " << s << endl;
-		assert( false );
-	}
-	t->tileWidth = tileWidth;
-	t->tileHeight = tileHeight;
-	t->sourceName = s;
-	tilesetList.push_back( t );
-	
-
-	return t;
-}
-
-GameSession::GameSession( GameController &c, RenderWindow *rw, SaveFile *sf, RenderTexture *preTex, 
-	RenderTexture *ppt, RenderTexture *ppt1, RenderTexture *ppt2, RenderTexture *miniTex,
-	RenderTexture *p_mapTex)
-	:controller(c),va(NULL),edges(NULL), window(rw), activeEnemyList( NULL ), pauseFrames( 0 )
+GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
+	:controller(c),va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 ), preScreenTex( preTex ), postProcessTex(  ppt ), postProcessTex1(ppt1),
-	postProcessTex2( ppt2 ), miniVA( sf::Quads, 4 ), mapTex( p_mapTex ), saveFile( sf )
+	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf )
 {
+	window = mainMenu->window;
+	preScreenTex = mainMenu->preScreenTexture;
+	postProcessTex = mainMenu->postProcessTexture;
+	postProcessTex1 = mainMenu->postProcessTexture1;
+	postProcessTex2 = mainMenu->postProcessTexture2;
+	mapTex = mainMenu->postProcessTexture;
+	minimapTex = mainMenu->minimapTexture;
+
 	arial.loadFromFile( "arial.ttf" );
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( 100 );
@@ -758,7 +734,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, SaveFile *sf, Ren
 
 
 	usePolyShader = true;
-	minimapTex = miniTex;
+	//minimapTex = miniTex;
 
 	minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
 
@@ -839,7 +815,7 @@ GameSession::GameSession( GameController &c, RenderWindow *rw, SaveFile *sf, Ren
 	deathWipeFrame = 0;
 	deathWipeLength = 17 * 5;
 
-	preScreenTex = preTex;
+	//preScreenTex = preTex;
 
 	terrainBGTree = new QuadTree( 1000000, 1000000 );
 	//soon make these the actual size of the bordered level
@@ -956,21 +932,7 @@ GameSession::~GameSession()
 		delete (*it);
 	}
 
-	
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	{
-		if( (*it) == NULL )
-		{
-			cout <<"WHAT FAIL" << endl;
-			//assert( false );
-			continue;
-
-		}
-
-		cout << "About to delete: " << (*it)->sourceName << ", "
-			<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
-		delete (*it);
-	}
+	//tm.ClearTilesets();
 
 	
 
@@ -988,7 +950,7 @@ GameSession::~GameSession()
 //should only be used to assign a variable. don't use at runtime
 Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
 {
-	tm.GetTileset( s, tileWidth, tileHeight );
+	return tm.GetTileset( s, tileWidth, tileHeight );
 	//make sure to set up tileset here
 }
 
@@ -2071,10 +2033,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					edgeQuantity, clockwise, speed );
 
 
-				if( enemy->hasMonitor )
+				/*if( enemy->hasMonitor )
 					cout << "crawler with monitor!" << endl;
 				else
-					cout << "no monitor here" << endl;
+					cout << "no monitor here" << endl;*/
 
 				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
@@ -3081,7 +3043,7 @@ bool GameSession::OpenFile( string fileName )
 			Color testColor( 0x75, 0x70, 0x90 );
 			testColor = Color::White;
 			Vector2f topLeft( left, top );
-			cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
+			//cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
 			for( int i = 0; i < tris.size(); ++i )
 			{	
 				p2t::Point *p = tris[i]->GetPoint( 0 );	
@@ -4935,7 +4897,7 @@ int GameSession::Run( string fileN )
 	{
 		int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
 		(*it)->terrainVariation)];
-		cout << "real index: " << realIndex << endl;
+		//cout << "real index: " << realIndex << endl;
 		(*it)->pShader = &polyShaders[realIndex];
 		(*it)->ts_terrain = ts_polyShaders[realIndex];
 	}
@@ -9016,9 +8978,9 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			int realIndex = valid * 32;
 			int realOther = otherValid * 32;
 
-			cout << "valid: " << valid << ", otherValid: " << otherValid << endl;
-			cout << "norm: " << eNorm.x << ", " << eNorm.y << endl;
-			cout << "nextNorm: " << nextNorm.x << ", " << nextNorm.y << endl;
+			//cout << "valid: " << valid << ", otherValid: " << otherValid << endl;
+			//cout << "norm: " << eNorm.x << ", " << eNorm.y << endl;
+			//cout << "nextNorm: " << nextNorm.x << ", " << nextNorm.y << endl;
 			IntRect sub = ts->GetSubRect( realIndex );
 			IntRect subOther = ts->GetSubRect( realOther );
 
@@ -9035,7 +8997,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			//cout << "mid: " << mid << endl;
 			mid = min( mid, (int)tw );
 			//assert( mid <= 128 );
-			cout << "mid: " << mid << endl;
+			//cout << "mid: " << mid << endl;
 			//cout << "jut length: " << length( jutPoint - point ) << endl;
 
 			va[extra + 0].position = Vector2f( point.x, point.y );

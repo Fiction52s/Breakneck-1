@@ -2,6 +2,7 @@
 #define __TILESET_H__
 
 #include <SFML/Graphics.hpp>
+#include <list>
 
 struct Tileset
 {
@@ -16,6 +17,7 @@ struct Tileset
 
 struct TilesetManager
 {
+	~TilesetManager();
 	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight );
 	void ClearTilesets();
 	std::list<Tileset*> tilesetList;
