@@ -194,8 +194,7 @@ Actor::Actor( GameSession *gs )
 		maxDespFrames = 60 * 5;
 		despCounter = 0;
 
-		framesSinceClimbBoost = 0;
-		climbBoostLimit = 5;
+		
 
 		holdJump = false;
 		steepJump = false;
@@ -633,7 +632,8 @@ Actor::Actor( GameSession *gs )
 		
 		steepClimbGravFactor = .4;//.7;
 		steepClimbFastFactor = .1;
-		
+		framesSinceClimbBoost = 0;
+		climbBoostLimit = 15;
 		
 
 		
