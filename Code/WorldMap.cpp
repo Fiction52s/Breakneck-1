@@ -3,13 +3,14 @@
 #include "GameSession.h"
 #include <sstream>
 #include <iostream>
+#include "MainMenu.h"
 
 using namespace boost::filesystem;
 using namespace sf;
 using namespace std;
 
-WorldMap::WorldMap( sf::Font &p_font )
-	:font( p_font )
+WorldMap::WorldMap( MainMenu *mainMenu )
+	:font( mainMenu->arial )
 {
 	planetAndSpaceTex = new Texture;
 	planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );

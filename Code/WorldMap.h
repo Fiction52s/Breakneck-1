@@ -6,6 +6,7 @@
 #include "LevelSelector.h"
 #include "Input.h"
 
+struct MainMenu;
 struct SaveFile;
 struct WorldMap
 {
@@ -21,7 +22,7 @@ struct WorldMap
 		COLONY
 	};
 
-	WorldMap( sf::Font &p_font );
+	WorldMap( MainMenu *mainMenu );
 	void Reset( SaveFile *sf );
 	~WorldMap();
 	bool Update(

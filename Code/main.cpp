@@ -437,13 +437,13 @@ int main()
 	int windowWidth = 1920;
 	int windowHeight = 1080;
 
-	LevelSelector ls( arial );
+	//LevelSelector ls( arial );
 	//ls.windowStretch = Vector2f( windowWidth / 1920, windowHeight / 1080 );
-	LoadMenus();
+	//LoadMenus();
 
-	worldMap = new WorldMap( arial );
+	
 
-	int currentMenuSelect = 0;
+	
 
 	
 	if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
@@ -527,49 +527,10 @@ int main()
 
 	
 
-	int selectedSaveIndex = 0;
+	
 
 	//should just put in tilesets here like cmon
-	sf::Texture kinTitleTextures[7];
-	sf::Texture breakneckTitleTexture;
-	sf::Texture backgroundTitleTexture;
-
-
-	kinTitleTextures[0].loadFromFile( "Title/kin_title_1_1216x1080.png" );// 1184, 1080 );
-	kinTitleTextures[1].loadFromFile( "Title/kin_title_2_1216x1080.png");//, 1184, 1080 );
-	kinTitleTextures[2].loadFromFile( "Title/kin_title_3_1216x1080.png");//, 1184, 1080 );
-	kinTitleTextures[3].loadFromFile( "Title/kin_title_4_1216x1080.png");//, 1184, 1080 );
-	kinTitleTextures[4].loadFromFile( "Title/kin_title_5_1216x1080.png");//, 1184, 1080 );
-	kinTitleTextures[5].loadFromFile( "Title/kin_title_6_1216x1080.png");//, 1184, 1080 );
-	kinTitleTextures[6].loadFromFile( "Title/kin_title_7_1216x1080.png");//, 1184, 1080 );
 	
-	
-	breakneckTitleTexture.loadFromFile( "Title/kin_title_1920x416.png");//, 1920, 416 );
-
-	backgroundTitleTexture.loadFromFile( "Title/title_bg_1920x1080.png");//, 1920, 1080 );
-
-	sf::Sprite backgroundTitleSprite;
-	backgroundTitleSprite.setTexture( backgroundTitleTexture );
-
-
-	sf::Sprite breakneckTitleSprite;
-	breakneckTitleSprite.setTexture( breakneckTitleTexture );
-
-	sf::Sprite kinTitleSprite;
-	kinTitleSprite.setPosition( 512, 1080 );
-	
-	int kinTitleSpriteFrame = 0;
-	int kinTotalFrames = 76 * 2 + 50;
-
-	Sprite titleSprite;
-	titleSprite.setTexture( t );
-	titleSprite.setOrigin( titleSprite.getLocalBounds().width / 2, titleSprite.getLocalBounds().height / 2 );
-	titleSprite.setPosition( 0, 0 );
-	//titleSprite.setScale( 2, 2 );
-	
-	
-	v.setCenter( 1920/2, 1080/2 );
-	v.setSize( 1920, 1080 );
 	window->setView( v );
 
 	sf::Text menu;

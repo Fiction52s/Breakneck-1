@@ -19,7 +19,10 @@ sf::RenderTexture *MainMenu::mapTexture = NULL;
 MainMenu::MainMenu()
 	:controller( 0 )
 {
+	arial.loadFromFile( "arial.ttf" );
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
+	v = View( Vector2f( 1920/2, 1080/2 ), Vector2f( 1920, 1080 ) );
+
 
 	files[0] = new SaveFile( "blue" );
 	files[1] = new SaveFile( "green" );
@@ -85,7 +88,35 @@ MainMenu::MainMenu()
 	saveKinFaceFrame = 0;
 	saveKinFaceTurnLength = 15;
 
-	arial.loadFromFile( "arial.ttf" );
+	
+
+	worldMap = new WorldMap( this );
+	levelSelector = new LevelSelector( this );
+
+	selectedSaveIndex = 0;
+
+	ts_kinTitle[0] = tilesetManager.GetTileset( "Title/kin_title_1_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[1] = tilesetManager.GetTileset( "Title/kin_title_2_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[2] = tilesetManager.GetTileset( "Title/kin_title_3_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[3] = tilesetManager.GetTileset( "Title/kin_title_4_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[4] = tilesetManager.GetTileset( "Title/kin_title_5_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[5] = tilesetManager.GetTileset( "Title/kin_title_6_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );
+	
+	ts_breakneckTitle = tilesetManager.GetTileset( "Title/kin_title_1920x416.png", 1920, 416 );
+	
+	ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
+
+	sf::Sprite backgroundTitleSprite;
+	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
+	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
+
+	kinTitleSprite.setPosition( 512, 1080 );
+	
+	kinTitleSpriteFrame = 0;
+	kinTotalFrames = 76 * 2 + 50;
+
+	currentMenuSelect = 0;
 }
 
 void MainMenu::GameEditLoop( const std::string &filename)

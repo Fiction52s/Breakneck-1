@@ -49,13 +49,19 @@ struct MainMenu
 	static sf::RenderTexture *postProcessTexture2;
 	static sf::RenderTexture *minimapTexture;
 	static sf::RenderTexture *mapTexture;
-	WorldMap *worldMap;
+	
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;
 	Tileset *ts_worldMap;
 	Tileset *ts_saveMenuBG;
 	Tileset *ts_saveMenuSelect;
 	Tileset *ts_saveMenuKinFace;
+	Tileset *ts_kinTitle[7];
+	Tileset *ts_breakneckTitle;
+	Tileset *ts_backgroundTitle;
+
+
+	
 	Mode menuMode;
 
 	SaveFile *files[6];
@@ -66,11 +72,21 @@ struct MainMenu
 	sf::Sprite saveBG;
 	sf::Sprite saveSelect;
 	sf::Sprite saveKinFace;
+	sf::Sprite backgroundTitleSprite;
+	sf::Sprite breakneckTitleSprite;
+	sf::Sprite kinTitleSprite;
 	int saveKinFaceFrame;
 	int saveKinFaceTurnLength;
 	sf::Font arial;
 
-	LevelSelector * levelSelector;
+	LevelSelector *levelSelector;
+	WorldMap *worldMap;
+
+	int selectedSaveIndex;
+
+	int kinTitleSpriteFrame;
+	int kinTotalFrames;
+	int currentMenuSelect = 0;
 };
 
 #endif
