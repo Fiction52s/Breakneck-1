@@ -12,10 +12,21 @@ using namespace std;
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 5000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
-	, extraBuffer( 8 ), quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 ))//eventually you can split this up into smaller sections so that they don't all need to draw
-	, quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
+	, extraBuffer( 8 ), 
+	quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )), 
+	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )),
+	//eventually you can split this up into smaller sections so that they don't all need to draw
+  quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
+	if( r )
+	{
+		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
+	}
+	else
+	{
+		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
+	}
 	minSideEdge = NULL;
 	minSideOther = -1;
 	minSideAlong = -1;
@@ -1127,6 +1138,24 @@ void Wire::UpdateQuads()
 	//cout << "ending update quads" << endl;
 }
 
+void Wire::UpdateMinimapQuads( sf::View &uiView )
+{
+	if( state == FIRING || (state == HIT || state == PULLING )
+	{
+		int firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
+		for( int j = 0; j < firingTakingUp; ++j )
+		{
+			for( int i = 0; i < 4; ++i )
+			{
+				Vector2f qPos = quads[j*4+i].position;
+				Vector2i pixelPos = uiView.
+			}
+		}
+		
+	}
+	
+}
+
 void Wire::Draw( RenderTarget *target )
 {
 	if( state == FIRING || state == HIT || state == PULLING )
@@ -1211,6 +1240,14 @@ void Wire::Draw( RenderTarget *target )
 
 			target->draw( cs );
 		}
+	}
+}
+
+void DrawMinimap( sf::RenderTarget *target )
+{
+	if( state == FIRING || state == HIT || state == PULLING )
+	{
+		target->draw( minimapQuads );
 	}
 }
 

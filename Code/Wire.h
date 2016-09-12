@@ -26,9 +26,11 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void UpdateAnchors2();
 	void SetFireDirection( sf::Vector2<double> dir );
 	void Check();
+	void UpdateMinimapQuads( sf::View &uiView );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateState( bool touchEdgeWithWire );
 	void Draw( sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
 	void HandleEntrant( QuadTreeEntrant *qte );
@@ -46,6 +48,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
 	Tileset *ts_wire;
+	Tileset *ts_miniHit;
 	//Tileset *ts_redWire;
 	//double closestInfo;
 	double closestDiff;
@@ -82,6 +85,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];
 	sf::VertexArray quads;
+	sf::VertexArray minimapQuads;
 	int framesFiring;
 	double fireRate;
 	Edge *minSideEdge;
