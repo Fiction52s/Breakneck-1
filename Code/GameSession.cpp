@@ -614,6 +614,10 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf )
 {
+	for( int i = 0; i < EffectLayer::Count; ++i )
+	{
+		effectLists[i] = NULL;
+	}
 	TestVA::bushFrame = 0;
 
 	window = mainMenu->window;
@@ -1027,6 +1031,25 @@ void GameSession::UpdateEnemiesPostPhysics()
 	}
 }
 
+void GameSession::UpdateEffects()
+{
+	Enemy *curr;
+	Enemy *next;
+	for( int i = 0; i < EffectLayer::Count; ++i )
+	{
+		curr = effectLists[i];
+
+		while( curr != NULL )
+		{
+			next = curr->next;
+
+			curr->UpdatePostPhysics();
+		
+			curr = next;
+		}
+	}
+}
+
 void GameSession::UpdateEnemiesDraw()
 {
 	CrawlerReverser *cr = drawCrawlerReversers;
@@ -1059,14 +1082,45 @@ void GameSession::UpdateEnemiesSprites()
 	}
 }
 
+void GameSession::DrawEffects( EffectLayer layer )
+{
+	Enemy *currentEnem = effectLists[layer];
+	while( currentEnem != NULL )
+	{
+		currentEnem->Draw( preScreenTex );	
+		currentEnem = currentEnem->next;
+	}
+}
+
 void GameSession::Test( Edge *e )
 {
 	cout << "testing" << endl;
 }
 
+void GameSession::AddEffect( EffectLayer layer, Enemy *e )
+{
+	Enemy *& fxList = effectLists[layer];
+	if( fxList != NULL )
+	{
+		fxList->prev = e;
+		e->next = fxList;
+		fxList = e;
+	}
+	else
+	{
+		fxList = e;
+	}
+
+	if( player->record > 0 )
+	{
+		e->spawnedByClone = true;
+	}
+}
+
 void GameSession::AddEnemy( Enemy *e )
 {
-	//cout << "ADD ENEMY" << endl;
+	//assert( e->spawned );
+//	cout << "ADD ENEMY:" << (int)e << ", type: " << (int)e->type << endl;
 	if( e->type == Enemy::BOSS_BIRD )
 	{
 		//probably will not actually use this and will use a separate spacial trigger or a gate
@@ -1094,6 +1148,18 @@ void GameSession::AddEnemy( Enemy *e )
 		e->spawnedByClone = true;
 	}
 	
+
+	/*int counter = 0;
+	Enemy *curr = activeEnemyList;
+	while( curr != NULL )
+	{
+		if( counter > 100 && counter < 150 )
+		{
+			cout << "e: " << (int)e << ", type: " << (int)e->type << endl;
+		}
+		curr = curr->next;
+		++counter;
+	}*/
 }
 
 void GameSession::RemoveEnemy( Enemy *e )
@@ -1131,31 +1197,31 @@ void GameSession::RemoveEnemy( Enemy *e )
 		
 	}
 
-	if( e->type != e->BASICEFFECT )
-	{
-		/*if( e->hasMonitor )
-		{
-			cout << "adding monitor!" << endl;
-			e->monitor->position = e->position;
-			AddEnemy( e->monitor );
-		}*/
+	//if( e->type != e->BASICEFFECT )
+	//{
+	//	/*if( e->hasMonitor )
+	//	{
+	//		cout << "adding monitor!" << endl;
+	//		e->monitor->position = e->position;
+	//		AddEnemy( e->monitor );
+	//	}*/
 
-		cout << "adding an inactive enemy!" << endl;
-		//cout << "secret count: " << CountActiveEnemies() << endl;
-		if( inactiveEnemyList == NULL )
-		{
-			inactiveEnemyList = e;
-			e->next = NULL;
-			e->prev = NULL;
-		}
-		else
-		{
-			//cout << "creating more dead clone enemies" << endl;
-			e->next = inactiveEnemyList;
-			inactiveEnemyList->prev = e;
-			inactiveEnemyList = e;
-		}
-	}
+	//	cout << "adding an inactive enemy!" << endl;
+	//	//cout << "secret count: " << CountActiveEnemies() << endl;
+	//	if( inactiveEnemyList == NULL )
+	//	{
+	//		inactiveEnemyList = e;
+	//		e->next = NULL;
+	//		e->prev = NULL;
+	//	}
+	//	else
+	//	{
+	//		//cout << "creating more dead clone enemies" << endl;
+	//		e->next = inactiveEnemyList;
+	//		inactiveEnemyList->prev = e;
+	//		inactiveEnemyList = e;
+	//	}
+	//}
 
 	//might need to give enemies a second next/prev pair for clone power?
 	//totally does >.> CLONE POWER
@@ -5638,6 +5704,8 @@ int GameSession::Run( string fileN )
 				if( player->action != Actor::Action::SPAWNWAIT || player->frame > 20 )
 					powerWheel->UpdateSections();
 
+				UpdateEffects();
+
 				keyMarker->Update();
 
 				scoreDisplay->Update();
@@ -6107,7 +6175,7 @@ int GameSession::Run( string fileN )
 		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		
 	
-
+		DrawEffects( EffectLayer::BEHIND_TERRAIN );
 		
 		int timesDraw = 0;
 		TestVA * listVAIter = listVA;
@@ -6273,10 +6341,13 @@ int GameSession::Run( string fileN )
 			gateList = next;
 		}
 
+		DrawEffects( EffectLayer::BEHIND_ENEMIES );
+
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
 
 		
+		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
 
 		if( player->action != Actor::GRINDBALL )
@@ -6298,22 +6369,14 @@ int GameSession::Run( string fileN )
 		while( current != NULL )
 		{
 		//	cout << "draw" << endl;
-			if( current->type != Enemy::BASICEFFECT && ( pauseFrames >= 2 && current->receivedHit != NULL ) )
+			if( ( pauseFrames >= 2 && current->receivedHit != NULL ) )
 			{
 				current->Draw( preScreenTex );
 			}
 			current = current->next;
 		}
 
-		Enemy *currentEnem = activeEnemyList;
-		while( currentEnem != NULL )
-		{
-			if( currentEnem->type == Enemy::BASICEFFECT )
-			{
-				currentEnem->Draw( preScreenTex );
-			}
-			currentEnem = currentEnem->next;
-		}
+		DrawEffects( EffectLayer::IN_FRONT );
 
 		if( ts_basicBullets != NULL )
 		{
@@ -9424,7 +9487,7 @@ void GameSession::AllocateLight()
 	}
 }
 
-BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
+BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
 	int animationFactor, bool right )
 {
 	if( inactiveEffects == NULL )
@@ -9433,6 +9496,8 @@ BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, bool pauseImmun
 	}
 	else
 	{
+		//return NULL;
+
 		BasicEffect *b = inactiveEffects;
 
 		if( inactiveEffects->next == NULL )
@@ -9450,18 +9515,114 @@ BasicEffect * GameSession::ActivateEffect( Tileset *ts, V2d pos, bool pauseImmun
 		b->prev = NULL;
 		b->next = NULL;
 		b->pauseImmune = pauseImmune;
+		b->layer = layer;
 
-		AddEnemy( b );
+		AddEffect( layer, b );
+		//AddEnemy( b );
 		
 		//cout << "activating: " << b << " blah: " << b->prev << endl;
 		return b;
 	}
 }
 
+void GameSession::RemoveEffect( EffectLayer layer, Enemy *e )
+{
+	Enemy *& fxList = effectLists[layer];
+	assert( fxList != NULL );
+	Enemy *prev = e->prev;
+	Enemy *next = e->next;
+
+	if( prev == NULL && next == NULL )
+	{
+		fxList = NULL;
+	}
+	else
+	{
+		if( e == fxList )
+		{
+			assert( next != NULL );
+			
+			next->prev = NULL;
+			
+			fxList = next;
+		}
+		else
+		{
+			if( prev != NULL )
+			{
+				prev->next = next;
+			}
+
+			if( next != NULL )
+			{
+				next->prev = prev;
+			}
+		}
+		
+	}
+
+	//if( e->type != e->BASICEFFECT )
+	//{
+	//	/*if( e->hasMonitor )
+	//	{
+	//		cout << "adding monitor!" << endl;
+	//		e->monitor->position = e->position;
+	//		AddEnemy( e->monitor );
+	//	}*/
+
+	//	cout << "adding an inactive enemy!" << endl;
+	//	//cout << "secret count: " << CountActiveEnemies() << endl;
+	//	if( inactiveEnemyList == NULL )
+	//	{
+	//		inactiveEnemyList = e;
+	//		e->next = NULL;
+	//		e->prev = NULL;
+	//	}
+	//	else
+	//	{
+	//		//cout << "creating more dead clone enemies" << endl;
+	//		e->next = inactiveEnemyList;
+	//		inactiveEnemyList->prev = e;
+	//		inactiveEnemyList = e;
+	//	}
+	//}
+
+	//might need to give enemies a second next/prev pair for clone power?
+	//totally does >.> CLONE POWER
+	if( player->record > 0 )
+	{
+		if( cloneInactiveEnemyList == NULL )
+		{
+			cloneInactiveEnemyList = e;
+			e->next = NULL;
+			e->prev = NULL;
+			//cout << "creating first dead clone enemy" << endl;
+
+			/*int listSize = 0;
+			Enemy *ba = cloneInactiveEnemyList;
+			while( ba != NULL )
+			{
+				listSize++;
+				ba = ba->next;
+			}
+
+			cout << "size of dead list after first add: " << listSize << endl;*/
+		}
+		else
+		{
+			//cout << "creating more dead clone enemies" << endl;
+			e->next = cloneInactiveEnemyList;
+			cloneInactiveEnemyList->prev = e;
+			cloneInactiveEnemyList = e;
+		}
+	}
+}
+
 void GameSession::DeactivateEffect( BasicEffect *b )
 {
 	//cout << "deactivate " << b << endl;
-	RemoveEnemy( b );
+	RemoveEffect( b->layer, b );
+	//RemoveEnemy( b );
 
 	if( player->record == 0 )
 	{
@@ -9484,7 +9645,7 @@ void GameSession::ResetEnemies()
 {
 	rResetEnemies( enemyTree->startNode );
 
-	Enemy *curr = activeEnemyList;
+	/*Enemy *curr = activeEnemyList;
 	while( curr != NULL )
 	{
 		Enemy *next = curr->next;
@@ -9494,7 +9655,23 @@ void GameSession::ResetEnemies()
 		}
 		curr = next;
 	}
+	activeEnemyList = NULL;*/
 	activeEnemyList = NULL;
+	for( int i = 0; i < EffectLayer::Count; ++i )
+	{
+		Enemy *curr = effectLists[i];
+		while( curr != NULL )
+		{
+			Enemy *next = curr->next;
+			assert( curr->type == Enemy::BASICEFFECT );
+			DeactivateEffect( (BasicEffect*)curr );
+
+			curr = next;
+		}
+		effectLists[i] = NULL;
+		
+	}
+
 
 	if( b_bird != NULL ) b_bird->Reset();
 }

@@ -24,6 +24,29 @@ SoundNodeList::SoundNodeList( int p_maxSounds )
 	}
 }
 
+SoundNodeList::~SoundNodeList()
+{
+	SoundNode *curr = activeList;
+	while( curr != NULL )
+	{
+		SoundNode *next = curr->next;
+
+		delete curr;
+
+		curr = next;
+	}
+
+	curr = inactiveList;
+	while( curr != NULL )
+	{
+		SoundNode *next = curr->next;
+
+		delete curr;
+
+		curr = next;
+	}
+}
+
 void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 {
 	//cout << "Activate sound!" << endl;

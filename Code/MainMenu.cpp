@@ -36,6 +36,9 @@ MainMenu::MainMenu()
 	files[4] = new SaveFile( "red" );
 	files[5] = new SaveFile( "magenta" );
 
+	soundNodeList = new SoundNodeList( 10 );
+	soundNodeList->SetGlobalVolume( 100 );
+
 	menuMode = MAINMENU;
 
 	if( preScreenTexture == NULL )
@@ -156,6 +159,8 @@ MainMenu::~MainMenu()
 	delete postProcessTexture2;
 	delete minimapTexture;
 	delete mapTexture;
+
+	delete soundNodeList;
 }
 
 void MainMenu::Init()
@@ -180,6 +185,10 @@ void MainMenu::Init()
 	saveSelect.setTexture( *ts_saveMenuSelect->texture );
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
 	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
+
+	soundBuffers[S_DOWN] = soundManager.GetSound( "Audio/Sounds/menu_down.ogg" );
+	soundBuffers[S_UP] = soundManager.GetSound( "Audio/Sounds/menu_up.ogg" );
+	soundBuffers[S_SELECT] = soundManager.GetSound( "Audio/Sounds/menu_select.ogg" );
 }
 
 void MainMenu::GameEditLoop( const std::string &filename)
@@ -871,6 +880,7 @@ void MainMenu::Run()
 					worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
 					worldMap->frame = 0;
 					worldMap->UpdateMapList();
+					soundNodeList->ActivateSound( soundBuffers[S_SELECT] );
 					break;
 				}
 
@@ -885,6 +895,7 @@ void MainMenu::Run()
 						selectedSaveIndex -= 6;
 					moveDown = true;
 					moveDelayCounter = moveDelayFrames;
+					soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
 				}
 				else if( ( currInput.LUp() || currInput.PUp() ) && ( 
 					(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
@@ -894,6 +905,7 @@ void MainMenu::Run()
 						selectedSaveIndex += 6;
 					moveUp = true;
 					moveDelayCounter = moveDelayFrames;
+					soundNodeList->ActivateSound( soundBuffers[S_UP] );
 				}
 
 				if( (currInput.LRight() || currInput.PRight()) && ( 
@@ -985,6 +997,9 @@ void MainMenu::Run()
 			}
 		}
 			
+
+			soundNodeList->Update();
+
 			accumulator -= TIMESTEP;
 		}
 		

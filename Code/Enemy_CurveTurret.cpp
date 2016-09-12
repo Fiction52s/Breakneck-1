@@ -277,13 +277,13 @@ void CurveTurret::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
 	if( deathFrame == 0 && dying )
 	{
-		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 30 && dying )
@@ -383,14 +383,26 @@ void CurveTurret::Draw(sf::RenderTarget *target )
 
 void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying && hasMonitor && !suppressMonitor )
+	if( !dead && !dying )
 	{
-		CircleShape cs;
-		cs.setRadius( 50 );
-		cs.setFillColor( Color::White );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
+		if( hasMonitor && !suppressMonitor )
+		{
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 30 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 	}
 	/*if( !(dead || dying) )
 	{

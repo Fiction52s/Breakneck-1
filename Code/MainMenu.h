@@ -49,6 +49,15 @@ struct MainMenu
 		TRANS_SAVE_TO_WORLDMAP
 	};
 
+	enum SoundType
+	{
+		S_DOWN,
+		S_UP,
+		S_SELECT,
+		S_Count
+	};
+	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
+
 	MainMenu();
 	~MainMenu();
 	void Init();
@@ -62,6 +71,7 @@ struct MainMenu
 	sf::View uiView;
 	GameController controller;
 	SoundManager soundManager;
+	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
 
 	sf::Text betaText;

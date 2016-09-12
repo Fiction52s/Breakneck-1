@@ -385,6 +385,17 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 
 //set up the movers first
 
+enum EffectLayer
+{
+	BEHIND_TERRAIN,
+	BEHIND_ENEMIES,
+	BETWEEN_PLAYER_AND_ENEMIES,
+	IN_FRONT,
+	IN_FRONT_1,
+	IN_FRONT_OF_UI,
+	Count
+};
+
 struct BasicEffect : Enemy
 {
 	BasicEffect ( GameSession *owner );
@@ -416,7 +427,7 @@ struct BasicEffect : Enemy
 	bool activated;
 	int animationFactor;
 	bool facingRight;
-
+	EffectLayer layer;
 	int stored_frame;
 	//sf::Vector2<double> position;
 };

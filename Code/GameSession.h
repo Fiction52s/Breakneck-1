@@ -288,6 +288,9 @@ struct PauseMap
 
 struct SaveFile;
 struct MainMenu;
+
+
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -390,6 +393,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	void Test( Edge *e );
 	void AddEnemy( Enemy * e );
+	void AddEffect(  EffectLayer layer, Enemy *e );
+	void RemoveEffect( EffectLayer layer, Enemy *e );
 	void RemoveEnemy( Enemy * e );
 
 	void SetGlobalBorders();
@@ -404,6 +409,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEnemiesPrePhysics();
 	void UpdateEnemiesPhysics();
 	void UpdateEnemiesPostPhysics();
+	void UpdateEffects();
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
 	double GetTriangleArea( p2t::Triangle * t );
@@ -440,6 +446,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	void AllocateEffect();
 	BasicEffect * ActivateEffect( 
+		EffectLayer layer,
 		Tileset *ts, 
 		sf::Vector2<double> pos, 
 		bool pauseImmune,
@@ -697,6 +704,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Enemy *inactiveEnemyList;
 	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;
+	Enemy *effectLists[EffectLayer::Count];
+	void DrawEffects( EffectLayer layer );
 
 	sf::Vector2<double> originalPos;
 	Zone *originalZone;

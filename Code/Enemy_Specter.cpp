@@ -226,7 +226,7 @@ void Specter::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, true );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, true );
 			
 		//	cout << "Specter received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )

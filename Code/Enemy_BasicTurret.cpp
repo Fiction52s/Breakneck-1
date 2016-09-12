@@ -176,7 +176,7 @@ void BasicTurret::BulletHitTerrain( BasicBullet *b,
 	V2d norm = edge->Normal();
 	double angle = atan2( norm.y, -norm.x );
 
-	owner->ActivateEffect( ts_bulletExplode, pos, true, -angle, 6, 2, true );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -187,7 +187,7 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
-	owner->ActivateEffect( ts_bulletExplode, b->position, true, angle, 6, 2, true );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
@@ -359,13 +359,13 @@ void BasicTurret::UpdatePostPhysics()
 	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
 	if( deathFrame == 0 && dying )
 	{
-		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 30 && dying )

@@ -196,7 +196,7 @@ void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	V2d norm = edge->Normal();
 	double angle = atan2( norm.y, -norm.x );
 
-	owner->ActivateEffect( ts_bulletExplode, pos, true, -angle, 6, 2, true );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -207,7 +207,7 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
-	owner->ActivateEffect( ts_bulletExplode, b->position, true, angle, 6, 2, true );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
@@ -393,13 +393,13 @@ void Bat::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
 	if( deathFrame == 0 && dying )
 	{
-		owner->ActivateEffect( ts_blood, position, true, 0, 15, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 60 && dying )
@@ -546,14 +546,26 @@ void Bat::Draw( sf::RenderTarget *target )
 
 void Bat::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying && hasMonitor && !suppressMonitor )
+	if( !dead && !dying )
 	{
-		CircleShape cs;
-		cs.setRadius( 50 );
-		cs.setFillColor( Color::White );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
+		if( hasMonitor && !suppressMonitor )
+		{
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 30 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 	}
 }
 

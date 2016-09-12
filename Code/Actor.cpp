@@ -1288,7 +1288,7 @@ void Actor::UpdatePrePhysics()
 		hitstunFrames = receivedHit->hitstunFrames;
 		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
-		owner->ActivateEffect( ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( 6 );
 
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HURT] );
@@ -1537,7 +1537,7 @@ void Actor::UpdatePrePhysics()
 
 
 
-							owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+							owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 						}
 					}
@@ -3814,7 +3814,7 @@ void Actor::UpdatePrePhysics()
 
 							double angle = GroundedAngle();
 
-							owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+							owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 						}
 					}
@@ -4737,7 +4737,7 @@ void Actor::UpdatePrePhysics()
 
 					fxPos += gNorm * 16.0;
 					
-					owner->ActivateEffect( ts_fx_jump, fxPos , false, ang, 12, 2, facingRight );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 12, 2, facingRight );
 
 					ground = NULL;
 					movingGround = NULL;
@@ -5124,7 +5124,7 @@ void Actor::UpdatePrePhysics()
 				framesSinceDouble = 0;
 			
 			
-				owner->ActivateEffect( ts_fx_double, 
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_double, 
 					V2d( position.x, position.y - 20), false, 0, 12, 2, facingRight );
 			
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
@@ -5719,7 +5719,7 @@ void Actor::UpdatePrePhysics()
 				V2d bn = bounceEdge->Normal();
 				double angle = atan2( bn.x, -bn.y );
 				bouncePos += bn * 80.0;
-				owner->ActivateEffect( ts_bounceBoost, bouncePos, false, angle, 30, 1, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bounceBoost, bouncePos, false, angle, 30, 1, facingRight );
 			}
 
 			velocity.x = 0;
@@ -10578,7 +10578,7 @@ void Actor::UpdatePhysics()
 
 				//if( reversed )
 				//{
-				owner->ActivateEffect( ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 				//}
 			}
@@ -11600,7 +11600,7 @@ void Actor::UpdatePostPhysics()
 			//cout << "randAngle: " << randAngle << endl;
 
 			//cout << "randang: " << randAng << endl;
-			owner->ActivateEffect( ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
 		}
 		//if( slowCounter == slowMultiple )
 		//{
@@ -11660,44 +11660,44 @@ void Actor::UpdatePostPhysics()
 				if( stopped )
 				{
 					if( frame % 4 == 0 )
-						owner->ActivateEffect( ts_fx_airdashHover, V2d( position.x, position.y + 70 ), false, 0, 12, 4, facingRight );
+						owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashHover, V2d( position.x, position.y + 70 ), false, 0, 12, 4, facingRight );
 				}
 				else if( horizontal )
 				{
 					//cout << "STUFF???" << endl;
 					if( velocity.x > 0 )
 					{
-						owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x - 64, position.y - 18 ), false, PI / 2.0, 15, 3, true );
+						owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d( position.x - 64, position.y - 18 ), false, PI / 2.0, 15, 3, true );
 					}
 					else
 					{
-						owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x + 64, position.y - 18 ), false, -PI / 2.0, 15, 3, true );
+						owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d( position.x + 64, position.y - 18 ), false, -PI / 2.0, 15, 3, true );
 					}
 				}
 				else if( velocity.x == 0 && velocity.y < 0 )
 				{
-					owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x, position.y + 64 ), false, 0, 15, 3, facingRight );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d( position.x, position.y + 64 ), false, 0, 15, 3, facingRight );
 				}
 				else if( velocity.x == 0 && velocity.y > 0 )
 				{
-					owner->ActivateEffect( ts_fx_airdashUp, V2d( position.x, position.y + 0 ), false, PI, 15, 3, facingRight );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d( position.x, position.y + 0 ), false, PI, 15, 3, facingRight );
 				}
 				else if( velocity.x > 0 && velocity.y > 0 )
 				{
 					V2d pos = V2d( position.x - 40, position.y - 60 );
-					owner->ActivateEffect( ts_fx_airdashDiagonal, pos, false, PI, 15, 3, true );//facingRight );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, pos, false, PI, 15, 3, true );//facingRight );
 				}
 				else if( velocity.x < 0 && velocity.y > 0 )
 				{
-					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x + 40, position.y - 60 ), false, PI, 15, 3, false );//facingRight );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, V2d( position.x + 40, position.y - 60 ), false, PI, 15, 3, false );//facingRight );
 				}
 				else if( velocity.x < 0 && velocity.y < 0 )
 				{
-					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x + 54, position.y + 60 ), false, 0, 15, 3, true );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, V2d( position.x + 54, position.y + 60 ), false, 0, 15, 3, true );
 				}
 				else if( velocity.x > 0 && velocity.y < 0 )
 				{
-					owner->ActivateEffect( ts_fx_airdashDiagonal, V2d( position.x - 54, position.y + 60 ), false, 0, 15, 3, false );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, V2d( position.x - 54, position.y + 60 ), false, 0, 15, 3, false );
 				}
 				
 				//cout << "airdash fx" << endl;
@@ -11781,7 +11781,7 @@ void Actor::UpdatePostPhysics()
 
 				
 
-				owner->ActivateEffect( tset, truePos, false, angle, 6, 3, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight );
 			}
 			else
 			{
@@ -11792,7 +11792,7 @@ void Actor::UpdatePostPhysics()
 				randy -= ry / 2;
 				truePos += V2d( randx, randy );
 				double angle = atan2( gn.x, gn.y );
-				owner->ActivateEffect( tset, truePos, false, angle, 6, 3, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight );
 			}
 		
 		}
@@ -11811,7 +11811,7 @@ void Actor::UpdatePostPhysics()
 				truePos += V2d( randx, randy );
 				double angle = GroundedAngle();
 				
-				owner->ActivateEffect( ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
 			}
 			else
 			{
@@ -11822,7 +11822,7 @@ void Actor::UpdatePostPhysics()
 				randy -= ry / 2;
 				truePos += V2d( randx, randy );
 				double angle = atan2( gn.x, gn.y );
-				owner->ActivateEffect( ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
 			}
 		}
 
@@ -14440,7 +14440,7 @@ void Actor::UpdateSprite()
 			fxPos += gn * 48.0;
 
 			//cout << "activating" << endl;
-			owner->ActivateEffect( ts_fx_land, fxPos, false, angle, 8, 2, facingRight );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_land, fxPos, false, angle, 8, 2, facingRight );
 		}
 
 		
@@ -14521,7 +14521,7 @@ void Actor::UpdateSprite()
 				{
 					fxPos += V2d( 0, 0 );
 				}
-				owner->ActivateEffect( ts_fx_wallJump, fxPos, false, 0, 8, 2, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_wallJump, fxPos, false, 0, 8, 2, facingRight );
 				
 				//cout << "ACTIVATING WALLJUMP" << endl;
 			}
@@ -15298,13 +15298,13 @@ void Actor::UpdateSprite()
 
 			if( frame == 0 && currInput.B && !prevInput.B )
 			{
-				owner->ActivateEffect( ts_fx_dashStart, 
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart, 
 					pp + gn * 64.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
 				owner->soundNodeList->ActivateSound( soundBuffers[S_DASH_START] );
 			}
 			else if( frame % 5 == 0 )
 			{
-				owner->ActivateEffect( ts_fx_dashRepeat, 
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashRepeat, 
 					pp + gn * 32.0 + along * xExtraRepeat, false, angle, 12, 3, facingRight );
 			}
 

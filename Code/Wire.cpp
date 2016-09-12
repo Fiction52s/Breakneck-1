@@ -278,6 +278,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				
 				anchor.e = rcEdge;
 				anchor.quantity = rcQuant;
+
+				//player->owner->ActivateEffect( ts_miniHit, rcEdge->GetPoint( rcQuant ), true, 0, , 3, facingRight );
+
 				numPoints = 0;
 			}
 			break;
@@ -695,6 +698,7 @@ void Wire::UpdateAnchors( V2d vel )
 				anchor.quantity = 0;
 				anchor.e = minSideEdge;
 				UpdateAnchors( V2d( 0, 0 ) );
+				//owner->ActivateEffect( ts_miniHit, anchor.po, true, 0, 6, 3, facingRight );
 			}
 		}
 	}

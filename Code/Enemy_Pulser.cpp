@@ -282,7 +282,7 @@ void Pulser::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( ts_blood, position, true, 0, 6, 3, facingRight );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )

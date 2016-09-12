@@ -41,6 +41,7 @@ struct SoundNode
 struct SoundNodeList
 {
 	SoundNodeList( int maxSounds );
+	~SoundNodeList();
 	//void AddActive( SoundNode *sn );
 	//void AddInactive( SoundNode *sn );
 	void DeactivateSound( SoundNode *sn );
