@@ -10,7 +10,7 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 120 ), maxTotalLength( 5000 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 5000 ), minSegmentLength( 50 )
 	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, extraBuffer( 8 ), 
 	quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )), 
@@ -1035,7 +1035,7 @@ void Wire::UpdateQuads()
 		}
 		
 		
-		int firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
+		firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
 
 		V2d endBack = currWirePos - otherDir * quadHalfWidth;
@@ -1094,6 +1094,32 @@ void Wire::UpdateQuads()
 			quads[index*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
 			quads[index*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
 
+			double miniExtraWidth = 20;
+			startPartialBack -= otherDir * miniExtraWidth;
+			startPartialFront += otherDir * miniExtraWidth;
+			endPartialBack -= otherDir * miniExtraWidth;
+			endPartialFront += otherDir * miniExtraWidth;
+			minimapQuads[index*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
+			minimapQuads[index*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
+			minimapQuads[index*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
+			minimapQuads[index*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
+
+			Color miniColor;
+			if( right )
+			{
+				miniColor = Color::Red;
+				
+			}
+			else
+			{
+				miniColor = Color( 0, 100, 255 );
+			}
+
+			minimapQuads[index*4].color = miniColor;
+			minimapQuads[index*4+1].color = miniColor;
+			minimapQuads[index*4+2].color = miniColor;
+			minimapQuads[index*4+3].color = miniColor;
+
 			int trueFrame = frame / animFactor;
 
 			Vector2f realTopLeft = topLeft;
@@ -1129,6 +1155,11 @@ void Wire::UpdateQuads()
 			quads[startIndex*4+1].position = Vector2f( 0, 0 );
 			quads[startIndex*4+2].position = Vector2f( 0, 0 );
 			quads[startIndex*4+3].position = Vector2f( 0, 0 );
+
+			minimapQuads[startIndex*4].position = Vector2f( 0, 0 );
+			minimapQuads[startIndex*4+1].position = Vector2f( 0, 0 );
+			minimapQuads[startIndex*4+2].position = Vector2f( 0, 0 );
+			minimapQuads[startIndex*4+3].position = Vector2f( 0, 0 );
 		}
 	}
 
@@ -1136,24 +1167,6 @@ void Wire::UpdateQuads()
 		++framesFiring;
 
 	//cout << "ending update quads" << endl;
-}
-
-void Wire::UpdateMinimapQuads( sf::View &uiView )
-{
-	if( state == FIRING || (state == HIT || state == PULLING )
-	{
-		int firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
-		for( int j = 0; j < firingTakingUp; ++j )
-		{
-			for( int i = 0; i < 4; ++i )
-			{
-				Vector2f qPos = quads[j*4+i].position;
-				Vector2i pixelPos = uiView.
-			}
-		}
-		
-	}
-	
 }
 
 void Wire::Draw( RenderTarget *target )
@@ -1243,7 +1256,7 @@ void Wire::Draw( RenderTarget *target )
 	}
 }
 
-void DrawMinimap( sf::RenderTarget *target )
+void Wire::DrawMinimap( sf::RenderTarget *target )
 {
 	if( state == FIRING || state == HIT || state == PULLING )
 	{

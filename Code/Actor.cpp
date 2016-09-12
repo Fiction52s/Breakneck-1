@@ -5871,7 +5871,7 @@ void Actor::UpdatePrePhysics()
 	
 	double accel = .15;
 	double triggerSpeed = 17;
-	double doubleWirePull = .8;//2.0;
+	double doubleWirePull = 2.0;
 	if( framesInAir > 1 )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
@@ -5946,25 +5946,36 @@ void Actor::UpdatePrePhysics()
 		//correction for momentum
 		if( dotvel > 0 )
 		{
-			velocity += -otherDir * .5/*1.0*/ / (double)slowMultiple;
+			velocity += -otherDir * 1.0 / (double)slowMultiple;
 		}
 		else if( dotvel < 0 )
 		{
-			velocity += otherDir * .5 / (double)slowMultiple;
+			velocity += otherDir * 1.0 / (double)slowMultiple;
 		}
 		else
 		{
 		}
 
-		V2d totalVel;
-		totalVel.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
+		V2d totalAcc;
+		totalAcc.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
 		if( totalVelDir.y < 0 )
-			totalVel.y = totalVelDir.y * ( doubleWirePull + 1.25 )/ (double)slowMultiple;
+			totalAcc.y = totalVelDir.y * ( doubleWirePull + 1 )/ (double)slowMultiple;
 		else
-			totalVel.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
+			totalAcc.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
 		
+		//if( length( velocity ) > 20.0 )
+		//{
+		//	totalAcc *= .5;
+		//}
 		//totalVel *= dot( totalVelDir, rightWire->
-		velocity += totalVel;
+		velocity += totalAcc;
+
+		double alongAmount = dot( velocity, totalVelDir );
+		double maxAlong = 45.0;
+		if( alongAmount > maxAlong )
+		{
+			velocity -= ( alongAmount - maxAlong ) * totalVelDir;
+		}
 		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
 		///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
 	}

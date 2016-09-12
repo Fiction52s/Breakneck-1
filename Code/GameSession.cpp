@@ -6487,7 +6487,11 @@ int GameSession::Run( string fileN )
 		//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
 		//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
 		
-		
+		if( player->action != Actor::GRINDBALL )
+		{
+			player->rightWire->DrawMinimap( minimapTex );
+			player->leftWire->DrawMinimap( minimapTex );
+		}
 
 		/*queryMode = "enemyminimap";
 		enemyTree->Query( this, minimapRect );
@@ -6502,6 +6506,8 @@ int GameSession::Run( string fileN )
 			currEnemy = currEnemy->next;
 		}*/
 
+		//shouldn't this draw all enemies that are active not just the ones from the current
+		//zone?
 		if( currentZone != NULL )
 		{
 			for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )

@@ -49,6 +49,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::Vector2<double> closestPoint;
 	Tileset *ts_wire;
 	Tileset *ts_miniHit;
+	int firingTakingUp;
 	//Tileset *ts_redWire;
 	//double closestInfo;
 	double closestDiff;
