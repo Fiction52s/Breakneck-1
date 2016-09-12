@@ -621,8 +621,15 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		std::vector<p2t::Triangle*> &tris,
 		Tileset *ts );
 
+	sf::VertexArray *SetupBushes( int bgLayer,
+		std::vector<p2t::Triangle*> &tris, Tileset *ts );
+
+	
 	struct TestVA : QuadTreeEntrant
 	{
+		static int bushFrame;
+		static int bushAnimLength;
+		static int bushAnimFactor;
 		//sf::VertexArray *va;
 		sf::VertexArray *groundva;
 		Tileset *ts_border;
@@ -633,8 +640,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *flowva;
 		sf::VertexArray *plantva;
 		sf::VertexArray *decorLayer0va;
+		sf::VertexArray *bushVA;
 		Tileset *ts_plant;
 		Tileset *ts_terrain;
+		Tileset *ts_bush; //plant = surface
+		//bush = middle area
 		
 		sf::Shader *pShader;
 		//TerrainPolygon::TerrainType terrainType;
@@ -643,13 +653,15 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		//int terrainType;
 		//EditSession
 		//TerrainPolygon::material
-		
+		static void UpdateBushFrame();
 		sf::VertexArray *terrainVA;
 		sf::VertexArray *grassVA;
 		bool show;
 		//TestVA *prev;
 		TestVA *next;
 		sf::Rect<double> aabb;
+		double polyArea;
+		void UpdateBushes();
 		void HandleQuery( QuadTreeCollider * qtc );
 		bool IsTouchingBox( const sf::Rect<double> &r );
 	};

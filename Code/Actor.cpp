@@ -630,10 +630,10 @@ Actor::Actor( GameSession *gs )
 		slopeTooSteepLaunchLimitX = .1;
 		
 		
-		steepClimbGravFactor = .4;//.7;
-		steepClimbFastFactor = .1;
+		steepClimbGravFactor = .31;//.7;
+		steepClimbFastFactor = .2;
 		framesSinceClimbBoost = 0;
-		climbBoostLimit = 15;
+		climbBoostLimit = 5;
 		
 
 		
@@ -5871,7 +5871,7 @@ void Actor::UpdatePrePhysics()
 	
 	double accel = .15;
 	double triggerSpeed = 17;
-	double doubleWirePull = 2.0;
+	double doubleWirePull = .8;//2.0;
 	if( framesInAir > 1 )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
@@ -5943,24 +5943,28 @@ void Actor::UpdatePrePhysics()
 
 		V2d otherDir( totalVelDir.y, -totalVelDir.x );
 		double dotvel =dot( velocity, otherDir );
+		//correction for momentum
 		if( dotvel > 0 )
 		{
-			velocity += -otherDir * 1.0 / (double)slowMultiple;
+			velocity += -otherDir * .5/*1.0*/ / (double)slowMultiple;
 		}
 		else if( dotvel < 0 )
 		{
-			velocity += otherDir * 1.0 / (double)slowMultiple;
+			velocity += otherDir * .5 / (double)slowMultiple;
 		}
 		else
 		{
 		}
 
-		totalVelDir.x *= doubleWirePull / (double)slowMultiple;
+		V2d totalVel;
+		totalVel.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
 		if( totalVelDir.y < 0 )
-			totalVelDir.y *= ( doubleWirePull + 1 )/ (double)slowMultiple;
+			totalVel.y = totalVelDir.y * ( doubleWirePull + 1.4 )/ (double)slowMultiple;
 		else
-			totalVelDir.y *= ( doubleWirePull )/ (double)slowMultiple;
-		velocity += totalVelDir;
+			totalVel.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
+		
+		//totalVel *= dot( totalVelDir, rightWire->
+		velocity += totalVel;
 		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
 		///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
 	}

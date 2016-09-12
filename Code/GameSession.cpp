@@ -605,13 +605,17 @@ void KeyMarker::Update()
 	}
 }
 
-
+int GameSession::TestVA::bushFrame = 0;
+int GameSession::TestVA::bushAnimLength = 20;
+int GameSession::TestVA::bushAnimFactor = 8;
 
 GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	:controller(c),va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf )
 {
+	TestVA::bushFrame = 0;
+
 	window = mainMenu->window;
 	preScreenTex = mainMenu->preScreenTexture;
 	postProcessTex = mainMenu->postProcessTexture;
@@ -3158,6 +3162,8 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 
+			
+
 			//ground, slope, steep, wall
 
 			//ground
@@ -3194,8 +3200,13 @@ bool GameSession::OpenFile( string fileName )
 				&GameSession::IsWall );
 
 			Tileset *ts_plant = GetTileset( "testgrass.png", 32, 32 );
+			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
 
 			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
+
+
+			
+			
 
 			double polygonArea = 0;
 			for( vector<p2t::Triangle*>::iterator it = tris.begin();
@@ -3203,6 +3214,12 @@ bool GameSession::OpenFile( string fileName )
 			{
 				polygonArea += GetTriangleArea( (*it) );
 			}
+
+
+			TestVA * testva = new TestVA;
+			testva->polyArea = polygonArea;
+
+			VertexArray *bushVA = SetupBushes( 0,  tris, ts_bush );
 
 			//now that I have the area, get a number of random points
 			//around the polygon based on how much area there is. 
@@ -3222,7 +3239,7 @@ bool GameSession::OpenFile( string fileName )
 			
 		
 
-			TestVA * testva = new TestVA;
+			
 			testva->plantva = NULL; //temporary
 			testva->next = NULL;
 			//testva->va = va;
@@ -3232,6 +3249,9 @@ bool GameSession::OpenFile( string fileName )
 			testva->aabb.height = bottom - top;
 			testva->terrainVA = polygonVA;
 			testva->grassVA = grassVA;
+			testva->ts_bush = ts_bush;
+			testva->bushVA = bushVA;
+			
 
 			testva->ts_border = ts_border;
 			testva->groundva = groundVA;
@@ -5752,6 +5772,26 @@ int GameSession::Run( string fileN )
 				queryMode = "envplant";
 				envPlantTree->Query( this, screenRect );
 
+				while( listVA != NULL )
+				{
+					TestVA *t = listVA->next;
+					listVA->next = NULL;
+					listVA = t;
+				}
+
+				//listVA is null here
+				queryMode = "border";
+				numBorders = 0;
+				borderTree->Query( this, screenRect );
+
+
+				TestVA *te = listVA;
+				while( te != NULL )
+				{
+					te->UpdateBushes();
+					te = te->next;
+				}
+				TestVA::UpdateBushFrame();
 
 				if( Keyboard::isKeyPressed( Keyboard::P ) )
 				{
@@ -6058,17 +6098,7 @@ int GameSession::Run( string fileN )
 		sf::Rect<double> testRect( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2,
 			view.getSize().x, view.getSize().y );
 
-		while( listVA != NULL )
-		{
-			TestVA *t = listVA->next;
-			listVA->next = NULL;
-			listVA = t;
-		}
-
-		//listVA is null here
-		queryMode = "border";
-		numBorders = 0;
-		borderTree->Query( this, screenRect );
+		
 
 		
 		
@@ -6147,7 +6177,13 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
 
-			
+			if( listVAIter->bushVA != NULL )
+			{
+				RenderStates bushRS;
+				bushRS.texture = listVAIter->ts_bush->texture;
+
+				preScreenTex->draw( *listVAIter->bushVA, bushRS );
+			}
 
 			if( listVAIter->plantva != NULL )
 			{
@@ -7491,6 +7527,32 @@ void GameSession::KillAllEnemies()
 		}
 		
 	}
+}
+
+void GameSession::TestVA::UpdateBushFrame()
+{
+	bushFrame++;
+	if( bushFrame == bushAnimLength * bushAnimFactor )
+	{
+		bushFrame = 0;
+	}
+}
+
+void GameSession::TestVA::UpdateBushes()
+{
+	int numBushes = bushVA->getVertexCount() / 4;
+
+	VertexArray &bVA = *bushVA;
+	IntRect subRect = ts_bush->GetSubRect( bushFrame / bushAnimFactor );
+
+	for( int i = 0; i < numBushes; ++i )
+	{
+		bVA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+		bVA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+		bVA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+		bVA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	}
+	//++bushFrame;
 }
 
 void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
@@ -9080,6 +9142,50 @@ sf::VertexArray * GameSession::SetupDecor0( std::vector<p2t::Triangle*> &tris, T
 	{
 		//random point stuff. do this after you get the enemies working
 	}
+}
+
+sf::VertexArray *GameSession::SetupBushes( int bgLayer, std::vector<p2t::Triangle*> &tris, Tileset *ts )
+{
+	int numBushes = 0;
+	
+	int trisSize = tris.size();
+	for( int i = 0; i < trisSize; ++i )
+	{
+		numBushes++;
+	}
+
+	VertexArray *va = new VertexArray( sf::Quads, numBushes * 4 );
+	VertexArray &VA = *va;
+
+	Vector2f testPos;
+	Vector2f p0, p1, p2;
+	Vector2f avg;
+
+	IntRect subRect = ts->GetSubRect( 0 );
+	for( int i = 0; i < numBushes; ++i )
+	{
+		p0.x = tris[i]->GetPoint( 0 )->x;
+		p0.y = tris[i]->GetPoint( 0 )->y;
+
+		p1.x = tris[i]->GetPoint( 1 )->x;
+		p1.y = tris[i]->GetPoint( 1 )->y;
+
+		p2.x = tris[i]->GetPoint( 2 )->x;
+		p2.y = tris[i]->GetPoint( 2 )->y;
+
+		avg = ( p0 + p1 + p2 ) / 3.f;
+
+		VA[i*4+0].position = Vector2f( avg.x - subRect.width / 2, avg.y - subRect.height / 2 );
+		VA[i*4+1].position = Vector2f( avg.x + subRect.width / 2, avg.y - subRect.height / 2 );
+		VA[i*4+2].position = Vector2f( avg.x + subRect.width / 2, avg.y + subRect.height / 2 );
+		VA[i*4+3].position = Vector2f( avg.x - subRect.width / 2, avg.y + subRect.height / 2 );
+
+		VA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+		VA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+		VA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+		VA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	}
+	return va;
 }
 
 
