@@ -5959,7 +5959,7 @@ void Actor::UpdatePrePhysics()
 		V2d totalVel;
 		totalVel.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
 		if( totalVelDir.y < 0 )
-			totalVel.y = totalVelDir.y * ( doubleWirePull + 1.4 )/ (double)slowMultiple;
+			totalVel.y = totalVelDir.y * ( doubleWirePull + 1.25 )/ (double)slowMultiple;
 		else
 			totalVel.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
 		
