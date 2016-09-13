@@ -7143,11 +7143,11 @@ int GameSession::Run( string fileN )
 					mapZoomFactor += fac * mapZoomFactor;
 				}
 
-				if( mapZoomFactor < 4.f )
+				if( mapZoomFactor < 1.f )
 				{
 					mapZoomFactor = 4.f;
 				}
-				else if( mapZoomFactor > 64.f )
+				else if( mapZoomFactor > 128.f )
 				{
 					mapZoomFactor = 64.f;
 				}

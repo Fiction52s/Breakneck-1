@@ -8,6 +8,15 @@ using namespace sf;
 
 #define V2d sf::Vector2<double>
 
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
@@ -100,26 +109,32 @@ void Gate::UpdateLine()
 		break;
 	case KEYGATE:
 		{
-		c =  Color( 77, 150, 249 );
+		
 
 		switch( owner->envType )
 		{
 		case 0:
+			c = COLOR_BLUE;
 			ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
 			break;
 		case 1:
+			c = COLOR_GREEN;
 			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 			break;
 		case 2:
+			c = COLOR_YELLOW;
 			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 			break;
 		case 3:
+			c = COLOR_ORANGE;
 			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 			break;
 		case 4:
+			c = COLOR_RED;
 			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 			break;
 		case 5:
+			c = COLOR_MAGENTA;
 			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 			break;
 		}
