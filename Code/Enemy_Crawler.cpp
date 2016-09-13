@@ -506,10 +506,10 @@ void Crawler::UpdatePrePhysics()
 	if( dead )
 		return;
 
-	if( keyFrame == 16 * 5 )
+	/*if( keyFrame == 16 * 5 )
 	{
 		keyFrame = 0;
-	}
+	}*/
 
 	if( !dead && receivedHit != NULL )
 	{	
@@ -1171,18 +1171,20 @@ void Crawler::PhysicsResponse()
 
 void Crawler::UpdatePostPhysics()
 {
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
-	}
-
 	if( deathFrame == 30 )
 	{
 		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 		owner->RemoveEnemy( this );
 		return;
 	}
+
+	if( receivedHit != NULL )
+	{
+		owner->Pause( 5 );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+	}
+
+	
 
 	if( deathFrame == 0 && dead )
 	{
@@ -1194,7 +1196,7 @@ void Crawler::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
+		//++keyFrame;
 		++frame;
 		slowCounter = 1;
 		
@@ -1409,18 +1411,31 @@ void Crawler::UpdateSprite()
 	{
 		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 31 ) );
+		IntRect ir = ts->GetSubRect( 31 );
+		if( !clockwise )
+		{
+			ir = IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
+		}
+
+		botDeathSprite.setTextureRect( ir );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 30 ) );
+		ir = ts->GetSubRect( 30 );
+		if( !clockwise )
+		{
+			ir = IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
+		}
+		topDeathSprite.setTextureRect( ir );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 		topDeathSprite.setRotation( sprite.getRotation() );
+
+		
 	}
 	else
 	{
@@ -1437,7 +1452,7 @@ void Crawler::UpdateSprite()
 		if( keySprite != NULL && hasMonitor && !suppressMonitor )
 		{
 			//cout << "frame: " << keyFrame / 2 << endl;
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );

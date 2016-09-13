@@ -262,6 +262,31 @@ void SoundNodeList::Reset()
 	//activeList = NULL;
 }
 
+void SoundNodeList::Pause( bool p )
+{
+	 if( paused != p )
+	 {
+		 if( p )
+		 {
+			 SoundNode *curr = activeList;
+			 while( curr != NULL )
+			 {
+				 curr->sound.pause();
+				 curr = curr->next;
+			 }
+		 }
+		 else
+		 {
+			 SoundNode *curr = activeList;
+			 while( curr != NULL )
+			 {
+				 curr->sound.play();
+				 curr = curr->next;
+			 }
+		 }
+	 }
+}
+
 SoundManager::~SoundManager()
 {
 	ClearAll();

@@ -797,7 +797,6 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	hasMonitor = p_hasMonitor;
 	if( world == 0 )
 	{
-		keyFrame = 0;
 		ts_hitSpack = NULL;
 		ts_blood = NULL;
 		keySprite = NULL;
@@ -860,7 +859,10 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 			keyColor = COLOR_MAGENTA;
 			break;
 		}
-
+		keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .1f ));
+		keyColor.g = (sf::Uint8)(floor( (float)(keyColor.r) * .1f ));
+		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.r) * .1f ));
+		//keyColor = Color::Black;
 		
 
 		//cout << "doing the add monitor thing" << endl;
@@ -892,7 +894,6 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	}
 
 
-	keyFrame = 0;
 
 	stringstream ss;
 	ss << "hit_spack_" << world << "_128x128.png";
@@ -927,7 +928,6 @@ int Enemy::NumTotalBullets()
 
 void Enemy::Reset()
 {
-	keyFrame = 0;
 	suppressMonitor = false;
 	slowMultiple = 1;
 	slowCounter = 1;

@@ -113,11 +113,6 @@ void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 
 void FootTrap::UpdatePrePhysics()
 {
-	if( keyFrame == 16 * 5 )
-	{
-		keyFrame = 0;
-	}
-
 	//cout << "dead: " << dead << endl;
 	if( !dead && receivedHit != NULL )
 	{	
@@ -225,7 +220,6 @@ void FootTrap::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
 		++frame;
 		slowCounter = 1;
 	
@@ -434,7 +428,7 @@ void FootTrap::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );

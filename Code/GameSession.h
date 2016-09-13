@@ -361,6 +361,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int envType;
 	int envLevel;
 	
+	int keyFrame;
 	sf::Font arial;
 
 	bool cutPlayerInput;

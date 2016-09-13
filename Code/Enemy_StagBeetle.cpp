@@ -152,7 +152,6 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 void StagBeetle::ResetEnemy()
 {
 	action = IDLE;
-	keyFrame = 0;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
 	testMover->roll = false;
@@ -300,11 +299,6 @@ void StagBeetle::UpdatePrePhysics()
 
 	if( dead )
 		return;
-
-	if( keyFrame == 16 * 5 )
-	{
-		keyFrame = 0;
-	}
 
 	ActionEnded();
 
@@ -668,7 +662,6 @@ void StagBeetle::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
 		++frame;
 		slowCounter = 1;
 		

@@ -54,7 +54,8 @@ struct SoundNodeList
 	SoundNode *activeList;
 	SoundNode *inactiveList;
 	void ActivateSound( sf::SoundBuffer *buffer );
-
+	void Pause( bool p );
+	bool paused;
 };
 
 #endif

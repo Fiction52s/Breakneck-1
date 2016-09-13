@@ -615,6 +615,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf )
 {
+	keyFrame = 0;
 	for( int i = 0; i < EffectLayer::Count; ++i )
 	{
 		effectLists[i] = NULL;
@@ -808,6 +809,16 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
+
+	/*if (!enemyKeyShader.loadFromFile("key_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "KEY SHADER NOT LOADING CORRECTLY" << endl;
+	}
+
+	if (!enemyHurtShader.loadFromFile("enemyhurt_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "HURT SHADER NOT LOADING CORRECTLY" << endl;
+	}*/
 
 	stringstream ss;
 
@@ -1019,6 +1030,10 @@ void GameSession::UpdateEnemiesPostPhysics()
 		return;
 	}
 
+	int keyLength = 16 * 5;
+	keyFrame = totalGameFrames % keyLength;
+	
+
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
@@ -1028,21 +1043,17 @@ void GameSession::UpdateEnemiesPostPhysics()
 		
 		if( current->keyShader != NULL )
 		{
-			int tot = 16 * 5;
-			float halftot = tot / 2;
-			int f = ( totalGameFrames % tot );
+			float halftot = keyLength / 2;
 			float fac;
-			if( f < tot / 2 )
+			if( keyFrame < keyLength / 2 )
 			{
-				fac = f / (halftot-1);
+				fac = keyFrame / (halftot-1);
 			}
 			else
 			{
-				fac = 1.f - ( f - halftot ) / (halftot-1);
+				fac = 1.f - ( keyFrame - halftot ) / (halftot-1);
 			}
-			
 			current->keyShader->setParameter( "prop", fac );
-			
 		}
 
 		current = temp;
@@ -5891,6 +5902,7 @@ int GameSession::Run( string fileN )
 				if( Keyboard::isKeyPressed( Keyboard::P ) )
 				{
 					state = PAUSE;
+					soundNodeList->Pause( true );
 				}
 				else if( ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
 				{
@@ -5898,6 +5910,7 @@ int GameSession::Run( string fileN )
 					mapCenter.x = player->position.x;
 					mapCenter.y = player->position.y;
 					mapZoomFactor = 16;	
+					soundNodeList->Pause( true );
 				}
 
 				if( player->record > 0 )
@@ -6465,7 +6478,7 @@ int GameSession::Run( string fileN )
 
 		
 
-		DebugDrawActors();
+		//DebugDrawActors();
 
 		
 
@@ -7015,6 +7028,12 @@ int GameSession::Run( string fileN )
 		}
 		else if( state == PAUSE )
 		{
+			if( Keyboard::isKeyPressed( Keyboard::O ) )
+			{
+				state = RUN;
+				soundNodeList->Pause( false );
+			}
+
 			window->clear();
 			Sprite preTexSprite;
 			preTexSprite.setTexture( preScreenTex->getTexture() );
@@ -7173,6 +7192,7 @@ int GameSession::Run( string fileN )
 				if( ( currInput.back && !prevInput.back ) && state == MAP )
 				{
 					state = RUN;
+					soundNodeList->Pause( false );
 				}
 
 				accumulator -= TIMESTEP;

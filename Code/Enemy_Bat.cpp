@@ -215,7 +215,7 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 
 void Bat::ResetEnemy()
 {
-	keyFrame = 0;
+	//keyFrame = 0;
 	fireCounter = 0;
 	testSeq.Reset();
 	launcher->Reset();
@@ -259,9 +259,14 @@ void Bat::DirectKill()
 
 void Bat::UpdatePrePhysics()
 {
-	if( keyFrame == 16 * 5 )
+	/*if( keyFrame == 16 * 5 )
 	{
 		keyFrame = 0;
+	}*/
+
+	if( frame == 5 * animationFactor )
+	{
+		frame = 0;
 	}
 
 	if( testSeq.currMovement == NULL )
@@ -426,9 +431,18 @@ void Bat::UpdatePostPhysics()
 		//return;
 	}
 
+	if( dead && launcher->GetActiveCount() == 0 )
+	{
+		//cout << "REMOVING" << endl;
+		owner->RemoveEnemy( this );
+	}
+
+	UpdateSprite();
+	launcher->UpdateSprites();
+
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
+		//++keyFrame;
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
@@ -446,26 +460,6 @@ void Bat::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 5 * animationFactor )
-	{
-		frame = 0;
-	}
-
-
-	/*if( owner->totalGameFrames % 60 == 0 )
-	{
-		owner->ActivateEffect( ts_testKey, position, false, 0, 16, 2, true );
-	}*/
-	
-
-	if( dead && launcher->GetActiveCount() == 0 )
-	{
-		//cout << "REMOVING" << endl;
-		owner->RemoveEnemy( this );
-	}
-
-	UpdateSprite();
-	launcher->UpdateSprites();
 }
 
 void Bat::UpdateSprite()
@@ -478,7 +472,7 @@ void Bat::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 5 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );

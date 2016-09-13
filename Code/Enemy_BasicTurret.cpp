@@ -405,7 +405,7 @@ void BasicTurret::UpdatePostPhysics()
 	//cout << "slowcounter: " << slowCounter << endl;
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
+		//++keyFrame;
 		++frame;		
 	//	cout << "frame" << endl;
 		slowCounter = 1;
@@ -755,7 +755,7 @@ void BasicTurret::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );

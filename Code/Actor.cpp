@@ -11640,6 +11640,8 @@ void Actor::UpdatePostPhysics()
 		action = GOALKILL;
 		frame = 0;
 		position = owner->goalNodePos;
+		rightWire->Reset();
+		leftWire->Reset();
 	}
 
 	UpdateSprite();

@@ -363,7 +363,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	sf::Sprite *keySprite;
 	//sf::Sprite bloodSprite;
 	Tileset *ts_key;
-	int keyFrame;
+	//int keyFrame;
 	sf::Color keyColor;
 	int world;
 

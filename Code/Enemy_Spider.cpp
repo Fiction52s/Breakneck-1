@@ -167,7 +167,6 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 
 void Spider::ResetEnemy()
 {
-	keyFrame = 0;
 	rcEdge = NULL;
 	framesLaseringPlayer = 0;
 	laserCounter = 0;

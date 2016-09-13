@@ -139,9 +139,10 @@ void Patroller::ResetEnemy()
 
 void Patroller::UpdatePrePhysics()
 {
-	if( keyFrame == 16 * 5 )
+
+	if( frame == 15 * animationFactor )
 	{
-		keyFrame = 0;
+		frame = 0;
 	}
 
 	if( !dead && receivedHit != NULL )
@@ -302,12 +303,6 @@ void Patroller::AdvanceTargetNode()
 
 void Patroller::UpdatePostPhysics()
 {
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
-	}
-
 	if( deathFrame == 30 )
 	{
 		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
@@ -315,15 +310,24 @@ void Patroller::UpdatePostPhysics()
 		//return;
 	}
 
+	if( receivedHit != NULL )
+	{
+		owner->Pause( 5 );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+	}
+
 	if( deathFrame == 0 && dead )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
+
 	UpdateSprite();
+
+	
+	
 
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
 		++frame;
 		slowCounter = 1;
 	
@@ -337,13 +341,6 @@ void Patroller::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
-
-	if( frame == 15 * animationFactor )
-	{
-		frame = 0;
-	}
-
-	
 }
 
 void Patroller::UpdateSprite()
@@ -370,7 +367,7 @@ void Patroller::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );

@@ -544,11 +544,6 @@ void PoisonFrog::ActionEnded()
 
 void PoisonFrog::UpdatePrePhysics()
 {
-	if( keyFrame == 16 * 5 )
-	{
-		keyFrame = 0;
-	}
-
 	ActionEnded();
 
 	Actor *player = owner->player;
@@ -965,7 +960,6 @@ void PoisonFrog::UpdatePostPhysics()
 
 	if( slowCounter == slowMultiple )
 	{
-		++keyFrame;
 		++frame;
 		if( invincibleFrames > 0 )
 			--invincibleFrames;
@@ -1221,7 +1215,7 @@ void PoisonFrog::UpdateSprite()
 		
 		if( hasMonitor && !suppressMonitor )
 		{
-			keySprite->setTextureRect( ts_key->GetSubRect( keyFrame / 2 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 2 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );
