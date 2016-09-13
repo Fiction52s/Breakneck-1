@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "GoalExplosion.h"
 
 using namespace std;
 using namespace sf;
@@ -166,6 +167,8 @@ void Goal::UpdatePhysics()
 			//kinKillFrame = 0;
 			frame = 0;
 			owner->player->hitGoal = true;
+
+			owner->goalPulse->show = true;
 
 			//dead = true;
 			receivedHit = NULL;

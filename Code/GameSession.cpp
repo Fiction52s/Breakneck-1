@@ -22,6 +22,7 @@
 #include "EnvEffects.h"
 #include "SaveFile.h"
 #include "MainMenu.h"
+#include "GoalExplosion.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -907,6 +908,8 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	
 
 	keyMarker = new KeyMarker( this );
+
+	
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
 	//enemyTree->debug = rw;
@@ -4740,6 +4743,8 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
+
 	int goalTile = -1;
 	switch( envType )
 	{
@@ -5217,7 +5222,7 @@ int GameSession::Run( string fileN )
 					LoadState();
 				}
 
-
+				goalPulse->Reset();
 				//f->Reset();
 
 				RespawnPlayer();
@@ -5711,6 +5716,8 @@ int GameSession::Run( string fileN )
 				scoreDisplay->Update();
 
 				soundNodeList->Update();
+
+				goalPulse->Update();
 
 				//rainView.setCenter(
 
@@ -6349,6 +6356,9 @@ int GameSession::Run( string fileN )
 		
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
+
+
+		goalPulse->Draw( preScreenTex );
 
 		if( player->action != Actor::GRINDBALL )
 		{

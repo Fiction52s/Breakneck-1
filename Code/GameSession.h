@@ -289,7 +289,7 @@ struct PauseMap
 struct SaveFile;
 struct MainMenu;
 
-
+struct GoalPulse;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -435,6 +435,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::VertexArray *bigBulletVA;
 	Tileset *ts_basicBullets;
 
+	GoalPulse *goalPulse;
 	sf::VertexArray *debugBorders;
 
 	void DebugDrawActors();
