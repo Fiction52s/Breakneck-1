@@ -5241,7 +5241,7 @@ int GameSession::Run( string fileN )
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			if( k || levelReset || player->dead || (currInput.start && !prevInput.start )/*|| ( currInput.back && !prevInput.back )*/ )
+			if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead || (currInput.start && !prevInput.start ) ) )
 			{
 				levelReset = true;
 				totalGameFrames = 0;

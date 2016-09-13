@@ -139,7 +139,8 @@ int WorldMap::Tex( int index, int level, TreeNode *entry )
 	//}
 
 	bgRect.setSize( Vector2f( 300, yspacing * numTotalEntries ) );
-	bgRect.setFillColor( Color::Green );
+	Color c( 0, 50, 0 );
+	bgRect.setFillColor( c );
 	bgRect.setPosition( menuPos );
 
 	
@@ -470,7 +471,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			}
 
 			selectedRect.setSize( Vector2f( 300, yspacing ) );
-			selectedRect.setFillColor( Color::Black );
+			selectedRect.setFillColor( Color::Green );
 			selectedRect.setPosition( menuPos.x, 
 				menuPos.y + yspacing * selectedLevel );
 

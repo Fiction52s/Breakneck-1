@@ -5963,6 +5963,12 @@ void Actor::UpdatePrePhysics()
 		else
 			totalAcc.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
 		
+		double beforeAlongAmount = dot( velocity, totalVelDir );
+
+		if( beforeAlongAmount >= 20 )
+		{
+			totalAcc *= .5;
+		}
 		//if( length( velocity ) > 20.0 )
 		//{
 		//	totalAcc *= .5;
@@ -5970,11 +5976,12 @@ void Actor::UpdatePrePhysics()
 		//totalVel *= dot( totalVelDir, rightWire->
 		velocity += totalAcc;
 
-		double alongAmount = dot( velocity, totalVelDir );
+		double afterAlongAmount = dot( velocity, totalVelDir );
 		double maxAlong = 45.0;
-		if( alongAmount > maxAlong )
+
+		if( afterAlongAmount > maxAlong )
 		{
-			velocity -= ( alongAmount - maxAlong ) * totalVelDir;
+			velocity -= ( afterAlongAmount - maxAlong ) * totalVelDir;
 		}
 		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
 		///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
