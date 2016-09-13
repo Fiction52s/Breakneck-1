@@ -967,6 +967,11 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 
 void GameSession::UpdateEnemiesPrePhysics()
 {
+	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
+	{
+		return;
+	}
+
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
@@ -977,6 +982,11 @@ void GameSession::UpdateEnemiesPrePhysics()
 
 void GameSession::UpdateEnemiesPhysics()
 {
+	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
+	{
+		return;
+	}
+
 	player->physicsOver = false;
 	///for( int i = 0; i < NUM_STEPS; ++i )
 	//	player->UpdatePhysics( );
@@ -1004,6 +1014,11 @@ void GameSession::UpdateEnemiesPhysics()
 
 void GameSession::UpdateEnemiesPostPhysics()
 {
+	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
+	{
+		return;
+	}
+
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
@@ -1077,6 +1092,11 @@ void GameSession::UpdateEnemiesDraw()
 
 void GameSession::UpdateEnemiesSprites()
 {
+	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
+	{
+		return;
+	}
+
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{

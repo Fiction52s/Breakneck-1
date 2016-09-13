@@ -48,8 +48,12 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
+	V2d gNorm = g->Normal();
+
+	double angle = atan2( gNorm.x, -gNorm.y );
+	sprite.setRotation( angle / PI * 180.f );
 	roll = false;
-	position = gPoint + ground->Normal() * height / 2.0;
+	position = gPoint + gNorm * height / 2.0;
 	if( !clockwise )
 	{
 		groundSpeed = -groundSpeed;
