@@ -314,7 +314,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		bool hasMonitor, int world );
 	virtual void Init(){};
 
-	virtual void DirectKill(){}
+	virtual void DirectKill();
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
 	virtual void UpdatePrePhysics() = 0;
@@ -540,7 +540,6 @@ struct Patroller : Enemy
 	void UpdatePhysics();
 	void PhysicsResponse();
 	bool physicsOver;
-
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
@@ -645,7 +644,7 @@ struct Crawler : Enemy
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void ResetEnemy();
-	
+	//void DirectKill();
 	void SaveEnemyState();
 	void LoadEnemyState();
 	sf::Sprite sprite;
@@ -735,7 +734,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	sf::Vector2<double> tempVel;
 	
 	Launcher *launcher;
-
+	void DirectKill();
 
 
 	sf::VertexArray bulletVA;
@@ -823,6 +822,7 @@ struct FootTrap : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
+	//void DirectKill();
 	
 
 	sf::Sprite sprite;
@@ -1134,7 +1134,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void ResetEnemy();
-	
+	//void DirectKill();
 	void SaveEnemyState();
 	void LoadEnemyState();
 
@@ -1239,12 +1239,13 @@ struct CurveTurret : Enemy, LauncherEnemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
+	void DirectKill();
 	//void UpdateBulletHitboxes();
 	void BulletHitTerrain(BasicBullet *b, 
 		Edge *edge, 
 		sf::Vector2<double> &pos);
 	void BulletHitPlayer( BasicBullet *b );
-
+	//void DirectKill();
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
@@ -1253,7 +1254,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
-	
+	Tileset *ts_bulletExplode;
 	const static int maxBullets = 16;
 	sf::Vector2<double> tempVel;
 
@@ -1337,7 +1338,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 	int actionLength[Action::Count];
 	int animFactor[Action::Count];
-
+	//void DirectKill();
 	
 
 	Tileset *ts_test;

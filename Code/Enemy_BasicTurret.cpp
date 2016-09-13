@@ -427,6 +427,25 @@ void BasicTurret::UpdatePostPhysics()
 	}
 }
 
+
+void BasicTurret::DirectKill()
+{
+	BasicBullet *b = launcher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
+}
+
 void BasicTurret::Draw(sf::RenderTarget *target )
 {
 	if( !dead && !dying )

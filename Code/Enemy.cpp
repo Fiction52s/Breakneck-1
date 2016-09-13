@@ -975,7 +975,13 @@ void Enemy::LoadState()
 
 	LoadEnemyState();
 }
-
+	
+void Enemy::DirectKill()
+{
+	dead = true;
+	health = 0;
+	receivedHit = NULL;
+}
 
 
 

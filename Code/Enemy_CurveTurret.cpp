@@ -119,7 +119,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	deathVector = V2d( newPoint.x, newPoint.y );
 
 
-	
+	ts_bulletExplode = owner->GetTileset( "bullet_explode2_64x64.png", 64, 64 );
 
 	testLauncher = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 300 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
@@ -142,12 +142,20 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 		Edge *edge, 
 		sf::Vector2<double> &pos)
 {
+	V2d norm = edge->Normal();
+	double angle = atan2( norm.y, -norm.x );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 }
 
 void CurveTurret::BulletHitPlayer(BasicBullet *b )
 {
+	V2d vel = b->velocity;
+	double angle = atan2( vel.y, vel.x );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	b->launcher->DeactivateBullet( b );
+	//owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void CurveTurret::ResetEnemy()
@@ -419,6 +427,24 @@ void CurveTurret::DrawMinimap( sf::RenderTarget *target )
 			target->draw( monitor->miniSprite );
 		}
 	}*/
+}
+
+void CurveTurret::DirectKill()
+{
+	BasicBullet *b = testLauncher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
 }
 
 bool CurveTurret::IHitPlayerWithBullets()

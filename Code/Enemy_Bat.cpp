@@ -241,7 +241,20 @@ void Bat::ResetEnemy()
 
 void Bat::DirectKill()
 {
-	//launcher->
+	BasicBullet *b = launcher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
 }
 
 void Bat::UpdatePrePhysics()

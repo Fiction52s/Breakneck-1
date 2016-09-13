@@ -1,10 +1,11 @@
 #include "GoalExplosion.h"
 #include "GameSession.h"
+#include <iostream>
 
 using namespace sf;
 using namespace std;
 
-const int GoalPulse::circlePoints = 6;
+const int GoalPulse::circlePoints = 32;
 
 GoalPulse::GoalPulse( GameSession *p_owner, sf::Vector2f &pos )
 	:owner( p_owner ), circleVA( sf::Quads, circlePoints * 4 ), innerRadius( 100 ), 
@@ -57,7 +58,7 @@ void GoalPulse::UpdatePoints()
 	{
 		circleVA[i*4+0].position = 
 	}*/
-
+	cout <<  circlePoints << endl;
 	Transform tr;
 	Vector2f offsetInner( 0, -innerRadius );
 	Vector2f offsetOuter( 0, -outerRadius );
@@ -66,7 +67,7 @@ void GoalPulse::UpdatePoints()
 		circleVA[i*4+0].position = position + tr.transformPoint( offsetInner );  
 		circleVA[i*4+1].position = position + tr.transformPoint( offsetOuter ); 
 		
-		tr.rotate( 360 / 6.0 );
+		tr.rotate( 360.f / circlePoints );
 
 		circleVA[i*4+2].position = position + tr.transformPoint( offsetOuter ); 
 		circleVA[i*4+3].position = position + tr.transformPoint( offsetInner );

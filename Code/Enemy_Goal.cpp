@@ -90,6 +90,9 @@ void Goal::ResetEnemy()
 	destroyed = false;
 	//kinKillFrame = 0;
 	deathFrame = 0;
+
+	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 }
 
 void Goal::HandleEntrant( QuadTreeEntrant *qte )
@@ -110,7 +113,7 @@ void Goal::UpdatePrePhysics()
 			owner->cam.manual = true;
 			goalKillStartZoom = owner->cam.zoomFactor;
 			goalKillStartPos = owner->cam.pos;
-			//owner->KillAllEnemies();
+			//
 		}
 		if( frame <= 31 )
 		{
@@ -164,6 +167,7 @@ void Goal::UpdatePhysics()
 			}
 
 			kinKilling = true;
+			owner->KillAllEnemies();
 			//kinKillFrame = 0;
 			frame = 0;
 			owner->player->hitGoal = true;

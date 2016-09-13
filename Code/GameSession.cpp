@@ -7600,11 +7600,12 @@ void GameSession::KillAllEnemies()
 	{
 		Enemy *next = curr->next;
 
-		if( curr->type != Enemy::GOAL && curr->type != Enemy::BASICEFFECT )
+		if( curr->type != Enemy::GOAL )
 		{
-			curr->health = 0;
+			curr->DirectKill();
+			//curr->health = 0;
 		}
-		
+		curr = next;	
 	}
 }
 
