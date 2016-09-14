@@ -18,6 +18,7 @@ sf::RenderTexture *MainMenu::postProcessTexture1 = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture2 = NULL;
 sf::RenderTexture *MainMenu::minimapTexture = NULL;
 sf::RenderTexture *MainMenu::mapTexture = NULL;
+sf::RenderTexture *MainMenu::pauseTexture = NULL;
 
 
 MainMenu::MainMenu()
@@ -81,6 +82,13 @@ MainMenu::MainMenu()
 		mapTexture = new RenderTexture;
 		mapTexture->create( 1720, 880 );
 		mapTexture->clear();
+	}
+
+	if( pauseTexture == NULL )
+	{
+		pauseTexture = new RenderTexture;
+		pauseTexture->create( 1820, 980 );
+		pauseTexture->clear();
 	}
 
 	saveKinFaceFrame = 0;

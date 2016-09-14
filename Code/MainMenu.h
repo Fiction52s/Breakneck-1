@@ -82,6 +82,7 @@ struct MainMenu
 	static sf::RenderTexture *postProcessTexture2;
 	static sf::RenderTexture *minimapTexture;
 	static sf::RenderTexture *mapTexture;
+	static sf::RenderTexture *pauseTexture;
 	
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;
