@@ -164,9 +164,9 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 		bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 		{
-			//HitTerrain( q );	
-			//return true;
-			return false;
+			HitTerrain( q );	
+			return true;
+			//return false;
 		}			
 	}
 	else
@@ -661,6 +661,7 @@ void SurfaceMover::Move( int slowMultiple )
 			}
 			else if( movement < 0 && q == 0 )
 			{
+				
 				double d = dot( e1n, gNormal );
 
 				if( gNormal == e0n )
@@ -673,6 +674,7 @@ void SurfaceMover::Move( int slowMultiple )
 				}
 				else if( !roll )
 				{
+					cout << "what start roll" << endl;
 					bool br = StartRoll();
 					if( br )
 						break;

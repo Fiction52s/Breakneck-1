@@ -17,13 +17,36 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	double width = 288;
 	double height = 256;
 	ts = owner->GetTileset( "goal_w02_a_288x256.png", width, height );
-	ts_mini = owner->GetTileset( "goal_minimap_32x40.png", 32, 40 );
+	ts_mini = owner->GetTileset( "minimap_icons_64x64.png", 64, 64 );
 	ts_explosion = owner->GetTileset( "goal_w02_b_288x320.png", 288, 320 );
 	sprite.setTexture( *ts->texture );
 	
 	miniSprite.setTexture( *ts_mini->texture );
-	miniSprite.setScale( 10, 10 );
-	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height / 2 );
+	miniSprite.setScale( 16, 16 );
+	
+	switch( owner->envType )
+	{
+	case 0:
+		miniSprite.setTextureRect( ts_mini->GetSubRect( 5 ) );
+		break;
+	case 1:
+		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
+		break;
+	case 2:
+		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
+		break;
+	case 3:
+		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
+		break;
+	case 4:
+		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
+		break;
+	case 5:
+		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
+		break;
+	}
+
+	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height );
 	
 
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -34,7 +57,10 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 
 	position = gPoint + gn * height / 2.0;
 
-	miniSprite.setPosition( position.x, position.y );
+	//miniSprite.setPosition( position.x, position.y );
+	miniSprite.setPosition( gPoint.x, gPoint.y );
+	miniSprite.setRotation( angle / PI * 180 );
+
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
@@ -239,7 +265,7 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 	cs.setFillColor(  );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 	cs.setPosition( position.x, position.y );*/
-	//target->draw( miniSprite );
+	target->draw( miniSprite );
 }
 
 bool Goal::IHitPlayer()

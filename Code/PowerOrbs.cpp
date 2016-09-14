@@ -895,9 +895,9 @@ bool PowerWheel::Damage( int power )
 	int remainder = power % 6;
 	int mult = power / 6;
 
-	//while( mult >= activeSection )
+	//while( mult >= activeLevel )
 	//{
-	//	mult -= activeSection;
+	//	mult -= activeLvel;
 	//	
 	//	//survival mode
 	//	if( activeOrb == 0 )
@@ -913,31 +913,52 @@ bool PowerWheel::Damage( int power )
 	//	
 	//	
 	//}
-
-	activeLevel -= remainder;
-	if( activeLevel < 1 )
+	while( true )
 	{
-		activeSection--;
-		if( activeSection < 1 )
+		int num;
+		if( remainder > 0 )
 		{
-			activeOrb--;
-			if( activeOrb < 0 )
+			num = remainder;
+			remainder = 0;
+		}
+		else
+		{
+			if( mult == 0 )
 			{
-				activeSection = 0;
-				activeLevel = 0;
-				Reset(); //tempoary. goes to survival mode
-				return false;
+				return true;
 			}
-			OrbColor oc = orbColors[activeOrb];
-			activeSection = numSections[oc];
-			largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( oc ) );
-			swivelingDown = true;
-			swivelFrame = 0;
-			//swivelStartAngle = -360.f / 6.f * ( 5 - ( activeOrb + 1 ) ); 
+			else
+			{
+				mult--;
+				num = 6;
+			}
+		}
+		activeLevel -= num;
+		if( activeLevel < 1 )
+		{
+			activeSection--;
+			if( activeSection < 1 )
+			{
+				activeOrb--;
+				if( activeOrb < 0 )
+				{
+					activeSection = 0;
+					activeLevel = 0;
+					Reset(); //tempoary. goes to survival mode
+					return false;
+				}
+				OrbColor oc = orbColors[activeOrb];
+				activeSection = numSections[oc];
+				largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( oc ) );
+				swivelingDown = true;
+				swivelFrame = 0;
+						//swivelStartAngle = -360.f / 6.f * ( 5 - ( activeOrb + 1 ) ); 
 			//swiveling = true;
 			//swivelFrame = 0;
+			}
+			activeLevel = 6 + activeLevel;
 		}
-		activeLevel = 6 + activeLevel;
+
 	}
 
 	

@@ -5969,8 +5969,16 @@ int GameSession::Run( string fileN )
 					zoomMultiple = 65536;
 				}
 			}
-
-			
+			else if( ev.type == Event::LostFocus )
+			{
+				if( state == RUN )
+					state = PAUSE;
+			}
+			else if( ev.type == sf::Event::GainedFocus )
+			{
+				if( state == PAUSE )
+					state = RUN;
+			}
 		}
 		Vector2f camOffset;
 		
@@ -7028,12 +7036,33 @@ int GameSession::Run( string fileN )
 		}
 		else if( state == PAUSE )
 		{
-			if( Keyboard::isKeyPressed( Keyboard::O ) )
+			sf::Event ev;
+			while( window->pollEvent( ev ) )
+			{
+				/*if( ev.type == sf::Event::KeyPressed )
+				{
+					if( ev.key.code = Keyboard::O )
+					{
+						state = RUN;
+						soundNodeList->Pause( false );
+						break;
+					}
+				}*/
+				if( ev.type == sf::Event::GainedFocus )
+				{
+					state = RUN;
+					soundNodeList->Pause( false );
+					break;
+				}
+			}
+
+
+			/*if( Keyboard::isKeyPressed( Keyboard::O ) )
 			{
 				state = RUN;
 				soundNodeList->Pause( false );
-			}
-
+			}*/
+							
 			window->clear();
 			Sprite preTexSprite;
 			preTexSprite.setTexture( preScreenTex->getTexture() );

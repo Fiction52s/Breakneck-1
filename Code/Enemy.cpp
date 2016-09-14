@@ -859,9 +859,9 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 			keyColor = COLOR_MAGENTA;
 			break;
 		}
-		keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .2f + .5f ));
-		keyColor.g = (sf::Uint8)(floor( (float)(keyColor.r) * .2f + .5f ));
-		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.r) * .2f + .5f ));
+		keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .3f + .5f ));
+		keyColor.g = (sf::Uint8)(floor( (float)(keyColor.r) * .3f + .5f ));
+		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.r) * .3f + .5f ));
 		//keyColor = Color::Black;
 		
 
