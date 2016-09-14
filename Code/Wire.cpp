@@ -368,11 +368,11 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			shrinkInput = false;
 
-			if( currInput.B )
+			if( currInput.A )
 			{
 				shrinkInput = true;
 			}
-			else if( currInput.Y )
+			else if( currInput.B )
 			{
 				if( triggerDown && player->ground == NULL )
 				{

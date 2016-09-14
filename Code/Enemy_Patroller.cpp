@@ -234,7 +234,7 @@ void Patroller::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 2 * 6 * 3 );
+			owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )

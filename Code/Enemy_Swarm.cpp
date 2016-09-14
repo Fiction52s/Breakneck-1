@@ -200,7 +200,7 @@ void SwarmMember::PhysicsResponse()
 			pair<bool, bool> result = PlayerHitMe();
 			if( result.first )
 			{
-				owner->player->ConfirmHit( COLOR_RED, 5, .8, 2 * 6 * 3 );
+				owner->player->ConfirmHit( COLOR_RED, 5, .8, 6 );
 
 
 				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )

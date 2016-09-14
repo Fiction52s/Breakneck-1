@@ -264,7 +264,7 @@ void Cactus::PhysicsResponse()
 				receivedHit = NULL;
 			}*/
 
-				owner->player->ConfirmHit( COLOR_YELLOW, 5, .8, 2 * 6 * 3 );
+				owner->player->ConfirmHit( COLOR_YELLOW, 5, .8, 6 );
 
 
 				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )

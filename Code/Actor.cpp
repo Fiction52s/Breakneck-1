@@ -1980,7 +1980,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 			}
 
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -2113,7 +2113,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 			}
 
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -2425,7 +2425,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -2647,7 +2647,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 			}
 
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -2718,7 +2718,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 			}
 
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -2788,7 +2788,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 			}
 
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -4122,7 +4122,7 @@ void Actor::UpdatePrePhysics()
 				frame = 1;
 			}
 
-			if( hasPowerAirDash )
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -5525,7 +5525,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( frame == 0 )
 				{
-					//hasAirDash = false;
+					hasAirDash = false;
 					startAirDashVel = velocity;//V2d( velocity.x, 0 );//velocity;//
 				}
 
@@ -5540,45 +5540,6 @@ void Actor::UpdatePrePhysics()
 				}
 
 				V2d wn( wireDir.y, -wireDir.x );
-
-				bool forwardWire = false;
-				bool backWardsWire = false;
-
-				double airDashFactor = .2;//airDashSpeed
-				V2d ad;
-
-				double r = dot( velocity, wn );
-				if( abs(r) > 15 )
-				{
-					if( dot( velocity, wn ) > 0 )
-					{
-				//		velocity += wn * airDashFactor;
-						//cout << "ccw" << endl;
-					}
-					else
-					{
-				//		velocity -= wn * airDashFactor;
-						//cout << "cw" << endl;
-					}
-
-				}
-				else
-				{
-					if( dot( velocity, wn ) > 0 )
-					{
-				//		velocity += wn * 10.0;
-						//cout << "ccw" << endl;
-					}
-					else
-					{
-				//		velocity -= wn * 10.0;
-						//cout << "cw" << endl;
-					}
-					
-				}
-				//if( velocity.y < 0 )
-				//	velocity.y -= gravity / slowMultiple;
-				//velocity = V2d( 0, 0 );
 			}
 			else
 			{
@@ -14273,11 +14234,11 @@ void Actor::UpdateSprite()
 		{
 		sf::IntRect ir;
 
-		if( frame == 0 )
+		/*if( frame == 0 )
 		{
 			ir = tileset[JUMP]->GetSubRect( 0 );
 		}
-		else if( velocity.y < -15)
+		else */if( velocity.y < -15)
 		{
 			ir = tileset[JUMP]->GetSubRect( 1 );
 		}
@@ -16110,7 +16071,11 @@ void Actor::ConfirmHit( Color p_flashColor,
 	currAttackHit = true;
 	flashColor = p_flashColor;
 	flashFrames = p_flashFrames;
-	swordShaders[speedLevel].setParameter( "toColor", p_flashColor );
+	for( int i = 0; i < 3; ++i )
+	{
+		swordShaders[i].setParameter( "toColor", p_flashColor );
+	}
+
 	owner->powerWheel->Charge( charge );
 	//owner->player->test = true;
 	desperationMode = false;
