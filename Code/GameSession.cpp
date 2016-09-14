@@ -627,7 +627,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	postProcessTex = mainMenu->postProcessTexture;
 	postProcessTex1 = mainMenu->postProcessTexture1;
 	postProcessTex2 = mainMenu->postProcessTexture2;
-	mapTex = mainMenu->postProcessTexture;
+	mapTex = mainMenu->mapTexture;
 	minimapTex = mainMenu->minimapTexture;
 
 	arial.loadFromFile( "arial.ttf" );
@@ -7073,6 +7073,13 @@ int GameSession::Run( string fileN )
 		else if( state == MAP )
 		{
 			window->clear();
+
+			window->setView( v );
+
+			View bigV;
+			bigV.setCenter( 0, 0 );
+			bigV.setSize( 1920, 1080 );
+
 			Sprite preTexSprite;
 			preTexSprite.setTexture( preScreenTex->getTexture() );
 			preTexSprite.setPosition( -960 / 2, -540 / 2 );
@@ -7174,11 +7181,11 @@ int GameSession::Run( string fileN )
 
 				if( mapZoomFactor < 1.f )
 				{
-					mapZoomFactor = 4.f;
+					mapZoomFactor = 1.f;
 				}
 				else if( mapZoomFactor > 128.f )
 				{
-					mapZoomFactor = 64.f;
+					mapZoomFactor = 128.f;
 				}
 
 				float move = 20.0 * mapZoomFactor / 2.0;
@@ -7239,6 +7246,8 @@ int GameSession::Run( string fileN )
 
 			//double mapZoom = 16;
 
+			//window->clear();
+			
 			View vv;
 			vv.setCenter( mapCenter );
 			vv.setSize(  mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor );
@@ -7379,8 +7388,8 @@ int GameSession::Run( string fileN )
 			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
 			kinMapSpawnIcon.setPosition( realPos1 );
 			mapTex->draw( kinMapSpawnIcon );
-
-			mapTex->setView( vv );			
+			
+			mapTex->setView( vv );
 
 			Vector2i bGoal = mapTex->mapCoordsToPixel( Vector2f( goalPos.x, goalPos.y ) );
 
@@ -7399,7 +7408,11 @@ int GameSession::Run( string fileN )
 			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
 			mapTexSprite.setPosition( 0, 0 );
 			
+			//window->setView( bigV );
+
+			//mapTexSprite.setScale( .5, -.5 );
 			mapTexSprite.setScale( .5, -.5 );
+			cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
 			//mapTexSprite.setColor( Color::Red );
 			window->draw( mapTexSprite );
 
