@@ -51,6 +51,7 @@ void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 {
 	//cout << "Activate sound!" << endl;
 	//SoundNode *node;
+	//assert( inactiveList == NULL );
 	if( inactiveList == NULL )
 	{
 		SoundNode *curr = activeList;

@@ -23,6 +23,7 @@
 #include "SaveFile.h"
 #include "MainMenu.h"
 #include "GoalExplosion.h"
+#include "PauseMenu.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -629,6 +630,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	postProcessTex2 = mainMenu->postProcessTexture2;
 	mapTex = mainMenu->mapTexture;
 	minimapTex = mainMenu->minimapTexture;
+	pauseTex = mainMenu->pauseTexture;
 
 	arial.loadFromFile( "arial.ttf" );
 	soundNodeList = new SoundNodeList( 10 );
@@ -920,6 +922,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 
 	keyMarker = new KeyMarker( this );
 
+	pauseMenu = new PauseMenu( this );
 	
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
@@ -5241,7 +5244,7 @@ int GameSession::Run( string fileN )
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead || (currInput.start && !prevInput.start ) ) )
+			if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead /*|| (currInput.start && !prevInput.start )*/ ) )
 			{
 				levelReset = true;
 				totalGameFrames = 0;
@@ -5899,7 +5902,8 @@ int GameSession::Run( string fileN )
 				}
 				TestVA::UpdateBushFrame();
 
-				if( Keyboard::isKeyPressed( Keyboard::P ) )
+				//if( Keyboard::isKeyPressed( Keyboard ) )
+				if( currInput.start && !prevInput.start )
 				{
 					state = PAUSE;
 					soundNodeList->Pause( true );
@@ -5976,8 +5980,8 @@ int GameSession::Run( string fileN )
 			}
 			else if( ev.type == sf::Event::GainedFocus )
 			{
-				if( state == PAUSE )
-					state = RUN;
+				//if( state == PAUSE )
+				//	state = RUN;
 			}
 		}
 		Vector2f camOffset;
@@ -7050,25 +7054,65 @@ int GameSession::Run( string fileN )
 				}*/
 				if( ev.type == sf::Event::GainedFocus )
 				{
-					state = RUN;
-					soundNodeList->Pause( false );
-					break;
+					//state = RUN;
+					//soundNodeList->Pause( false );
+					//break;
+				}
+				else if( ev.type == sf::Event::KeyPressed )
+				{
+					//if( ev.key.code == Keyboard::
 				}
 			}
 
+			//savedinput when you enter pause
+			prevInput = currInput;
+
+			controller.UpdateState();
+			currInput = controller.GetState();
+			
+
+			if( currInput.start && !prevInput.start )
+			{
+				state = RUN;
+				pauseMenu->show = false;
+			}
+			else
+			{
+				pauseMenu->show = true;
+			}
+
+			if( currInput.leftShoulder && !prevInput.leftShoulder )
+			{
+				pauseMenu->TabLeft();
+			}
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				pauseMenu->TabRight();
+			}
+			//if( currInput.
 
 			/*if( Keyboard::isKeyPressed( Keyboard::O ) )
 			{
 				state = RUN;
 				soundNodeList->Pause( false );
 			}*/
-							
+			pauseTex->clear();		
 			window->clear();
 			Sprite preTexSprite;
 			preTexSprite.setTexture( preScreenTex->getTexture() );
 			preTexSprite.setPosition( -960 / 2, -540 / 2 );
 			preTexSprite.setScale( .5, .5 );
 			window->draw( preTexSprite );
+
+			pauseMenu->show = true;
+			pauseMenu->Draw( pauseTex );
+			pauseTex->display();
+			Sprite pauseMenuSprite;
+			pauseMenuSprite.setTexture( pauseTex->getTexture() );
+			//bgSprite.setPosition( );
+			pauseMenuSprite.setPosition( (1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2 );
+			pauseMenuSprite.setScale( .5, .5 );
+			window->draw( pauseMenuSprite );
 		}
 		else if( state == MAP )
 		{

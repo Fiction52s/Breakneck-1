@@ -290,7 +290,7 @@ struct SaveFile;
 struct MainMenu;
 
 struct GoalPulse;
-
+struct PauseMenu;
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -317,6 +317,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		S_KEY_ENTER_6,
 		Count
 	};
+
+	PauseMenu *pauseMenu;
 
 	SaveFile *saveFile;
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
@@ -567,6 +569,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderTexture *postProcessTex2;
 	sf::RenderTexture *minimapTex;
 	sf::RenderTexture *mapTex;
+	sf::RenderTexture *pauseTex;
 
 	sf::Vector2f mapCenter;
 	float mapZoomFactor;
