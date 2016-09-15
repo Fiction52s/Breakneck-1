@@ -571,8 +571,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderTexture *mapTex;
 	sf::RenderTexture *pauseTex;
 
-	sf::Vector2f mapCenter;
-	float mapZoomFactor;
+	
 	
 	Tileset *ts_miniCircle;
 	sf::Sprite miniCircle;

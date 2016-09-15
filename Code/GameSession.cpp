@@ -5906,14 +5906,14 @@ int GameSession::Run( string fileN )
 				if( currInput.start && !prevInput.start )
 				{
 					state = PAUSE;
+					pauseMenu->SetTab( PauseMenu::PAUSE );
 					soundNodeList->Pause( true );
 				}
 				else if( ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
 				{
-					state = MAP;
-					mapCenter.x = player->position.x;
-					mapCenter.y = player->position.y;
-					mapZoomFactor = 16;	
+					state = PAUSE;
+					pauseMenu->SetTab( PauseMenu::MAP );
+					
 					soundNodeList->Pause( true );
 				}
 
@@ -7070,25 +7070,9 @@ int GameSession::Run( string fileN )
 			controller.UpdateState();
 			currInput = controller.GetState();
 			
+			pauseMenu->Update( currInput, prevInput );
 
-			if( currInput.start && !prevInput.start )
-			{
-				state = RUN;
-				pauseMenu->show = false;
-			}
-			else
-			{
-				pauseMenu->show = true;
-			}
-
-			if( currInput.leftShoulder && !prevInput.leftShoulder )
-			{
-				pauseMenu->TabLeft();
-			}
-			else if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				pauseMenu->TabRight();
-			}
+			
 			//if( currInput.
 
 			/*if( Keyboard::isKeyPressed( Keyboard::O ) )
@@ -7104,7 +7088,6 @@ int GameSession::Run( string fileN )
 			preTexSprite.setScale( .5, .5 );
 			window->draw( preTexSprite );
 
-			pauseMenu->show = true;
 			pauseMenu->Draw( pauseTex );
 			pauseTex->display();
 			Sprite pauseMenuSprite;
@@ -7113,6 +7096,167 @@ int GameSession::Run( string fileN )
 			pauseMenuSprite.setPosition( (1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2 );
 			pauseMenuSprite.setScale( .5, .5 );
 			window->draw( pauseMenuSprite );
+
+
+			//draw map
+
+			if( pauseMenu->currentTab == PauseMenu::MAP )
+			{
+			View vv;
+			vv.setCenter( pauseMenu->mapCenter );
+			vv.setSize(  mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor );
+
+			mapTex->clear();
+			mapTex->setView( vv );
+			mapTex->clear( Color( 0, 0, 0, 255 ) );
+			
+			View vuiView;
+			vuiView.setSize( Vector2f( mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f ) );
+			vuiView.setCenter( 0, 0 );
+			
+			for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+			{
+				(*it)->Draw( mapTex );
+			}
+
+			queryMode = "border";
+			numBorders = 0;
+			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
+
+			borderTree->Query( this, mapRect );
+
+			Color testColor( 0x75, 0x70, 0x90, 191 );
+			testColor = Color::Green;
+			TestVA * listVAIter = listVA;
+			while( listVAIter != NULL )
+			{
+				int vertexCount = listVAIter->terrainVA->getVertexCount();
+				for( int i = 0; i < vertexCount; ++i )
+				{
+					(*listVAIter->terrainVA)[i].color = testColor;
+				}
+				mapTex->draw( *listVAIter->terrainVA );
+				for( int i = 0; i < vertexCount; ++i )
+				{
+					(*listVAIter->terrainVA)[i].color = Color::White;
+				}
+
+				listVAIter = listVAIter->next;
+			}
+
+			testGateCount = 0;
+			queryMode = "gate";
+			gateList = NULL;
+			gateTree->Query( this, mapRect );
+			Gate *mGateList = gateList;
+			while( gateList != NULL )
+			{
+				//gateList->Draw( preScreenTex );
+				if( gateList->locked )
+				{
+
+					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
+					V2d other( along.y, -along.x );
+					double width = 25;
+				
+				
+
+					V2d leftGround = gateList->edgeA->v0 + other * -width;
+					V2d rightGround = gateList->edgeA->v0 + other * width;
+					V2d leftAir = gateList->edgeA->v1 + other * -width;
+					V2d rightAir = gateList->edgeA->v1 + other * width;
+					//cout << "drawing color: " << gateList->c.b << endl;
+					sf::Vertex activePreview[4] =
+					{
+						//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
+						//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
+
+						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
+						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
+
+
+						sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->c ),
+
+					
+						sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->c )
+					};
+					mapTex->draw( activePreview, 4, sf::Quads );
+				}
+
+				Gate *next = gateList->next;//edgeA->edge1;
+				gateList = next;
+			}
+
+
+			if( currentZone != NULL )
+			{
+				for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
+				{
+					//cout << "drawing map" << endl;
+					(*it)->DrawMinimap( mapTex );
+					/*if( (*it)->spawned && !(*it)->dead )
+					{
+
+					}*/
+				}
+			}
+
+			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
+
+			mapTex->setView( vuiView );
+
+			Vector2f realPos = mapTex->mapPixelToCoords( b );
+			realPos.x = floor( realPos.x + .5f );
+			realPos.y = floor( realPos.y + .5f );
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+			kinMinimapIcon.setPosition( realPos );
+			mapTex->draw( kinMinimapIcon );
+
+			mapTex->setView( vv );			
+
+			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f( originalPos.x, originalPos.y ) );
+
+			mapTex->setView( vuiView );
+
+			Vector2f realPos1 = mapTex->mapPixelToCoords( b1 );
+			realPos1.x = floor( realPos1.x + .5f );
+			realPos1.y = floor( realPos1.y + .5f );
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+			kinMapSpawnIcon.setPosition( realPos1 );
+			mapTex->draw( kinMapSpawnIcon );
+			
+			mapTex->setView( vv );
+
+			Vector2i bGoal = mapTex->mapCoordsToPixel( Vector2f( goalPos.x, goalPos.y ) );
+
+			mapTex->setView( vuiView );
+
+			Vector2f realPosGoal = mapTex->mapPixelToCoords( bGoal );
+			realPosGoal.x = floor( realPosGoal.x + .5f );
+			realPosGoal.y = floor( realPosGoal.y + .5f );
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+			goalMapIcon.setPosition( realPosGoal );
+			mapTex->draw( goalMapIcon );
+			//mapTex->clear();
+			Sprite mapTexSprite;
+			mapTexSprite.setTexture( mapTex->getTexture() );
+			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
+			mapTexSprite.setPosition( 0, 0 );
+			
+			//window->setView( bigV );
+
+			//mapTexSprite.setScale( .5, -.5 );
+			mapTexSprite.setScale( .5, -.5 );
+
+			window->draw( mapTexSprite );
+			
+
+			}
+
 		}
 		else if( state == MAP )
 		{
@@ -7213,61 +7357,7 @@ int GameSession::Run( string fileN )
 
 			
 
-				float fac = .05;
-				if( currInput.A )
-				{
-					mapZoomFactor -= fac * mapZoomFactor;
-				}
-				else if( currInput.B )
-				{
-					mapZoomFactor += fac * mapZoomFactor;
-				}
-
-				if( mapZoomFactor < 1.f )
-				{
-					mapZoomFactor = 1.f;
-				}
-				else if( mapZoomFactor > 128.f )
-				{
-					mapZoomFactor = 128.f;
-				}
-
-				float move = 20.0 * mapZoomFactor / 2.0;
-				if( currInput.LLeft() )
-				{
-					mapCenter.x -= move;
-				}
-				else if( currInput.LRight() )
-				{
-					mapCenter.x += move;
-				}
-
-				if( currInput.LUp() )
-				{
-					mapCenter.y -= move;
-				}
-				else if( currInput.LDown() )
-				{
-					mapCenter.y += move;
-				}
-
-				if( mapCenter.x < leftBounds )
-				{
-					mapCenter.x = leftBounds;
-				}
-				else if( mapCenter.x > leftBounds + boundsWidth )
-				{
-					mapCenter.x = leftBounds + boundsWidth;
-				}
-
-				if( mapCenter.y < topBounds )
-				{
-					mapCenter.y = topBounds;
-				}
-				else if( mapCenter.y > topBounds + boundsHeight )
-				{
-					mapCenter.y = topBounds + boundsHeight;
-				}
+				
 
 				if( ( currInput.back && !prevInput.back ) && state == MAP )
 				{
@@ -7293,8 +7383,8 @@ int GameSession::Run( string fileN )
 			//window->clear();
 			
 			View vv;
-			vv.setCenter( mapCenter );
-			vv.setSize(  mapTex->getSize().x * mapZoomFactor, mapTex->getSize().y * mapZoomFactor );
+			vv.setCenter( pauseMenu->mapCenter );
+			vv.setSize(  mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor );
 
 			mapTex->clear();
 			mapTex->setView( vv );
