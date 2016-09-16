@@ -95,6 +95,8 @@ struct Actor : QuadTreeCollider,
 	{
 		Expr_NEUTRAL,
 		Expr_HURT,
+		Expr_SPEED1,
+		Expr_SPEED2,
 		Expr_NONE
 	};
 	
@@ -216,6 +218,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite gstripurp;
 	sf::Sprite gstrirgb;
 
+	//int 
 	int grindActionLength;
 
 	Tileset * tsgsdodeca;
@@ -259,6 +262,10 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_airdashDiagonal;
 	Tileset * ts_fx_airdashSmall;
 	Tileset * ts_fx_airdashHover;
+
+	Tileset *ts_fx_run;
+	Tileset *ts_fx_runStart;
+	Tileset *ts_fx_sprint;
 
 	Tileset * ts_fx_double;
 	Tileset * ts_fx_wallJump;

@@ -117,8 +117,24 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				}
 				else
 				{
-					fireDir.x = cos( currInput.leftStickRadians );
-					fireDir.y = -sin( currInput.leftStickRadians );
+					double angle = currInput.leftStickRadians;
+
+					angle = angle / 64.0;
+					int mult = floor( angle );
+					double remain = angle - ( mult * PI / 32.0 );
+					if( remain >= PI / 64.0 )
+					{
+						mult++;
+					}
+
+					angle = mult * PI / 32.0;
+
+
+					/*fireDir.x = cos( currInput.leftStickRadians );
+					fireDir.y = -sin( currInput.leftStickRadians );*/
+
+					fireDir.x = cos( angle );
+					fireDir.y = -sin( angle );
 				}
 
 				if( length( fireDir ) > .1 )

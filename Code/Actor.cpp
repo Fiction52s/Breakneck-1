@@ -557,10 +557,15 @@ Actor::Actor( GameSession *gs )
 		ts_fx_dashStart = owner->GetTileset( "fx_dashstart_192x160.png", 192, 160 );
 		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat_192x128.png", 192, 128 );
 		ts_fx_land = owner->GetTileset( "fx_land_128x128.png", 128, 128 );
+
+		ts_fx_runStart = owner->GetTileset( "fx_runstart_96x96.png", 96, 96 );
+		ts_fx_sprint = owner->GetTileset( "fx_sprint_192x192.png", 192, 192 );
+		ts_fx_run = owner->GetTileset( "fx_run_160x128.png", 160, 128 );
+
 		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
 		ts_fx_jump = owner->GetTileset( "fx_jump_160x64.png", 160, 64 );
-		ts_fx_wallJump = owner->GetTileset( "fx_walljump_80x128.png", 80, 128 );
-		ts_fx_double = owner->GetTileset( "fx_double_256x256.png", 256 , 256 );
+		ts_fx_wallJump = owner->GetTileset( "fx_walljump_128x160.png", 128, 160 );
+		ts_fx_double = owner->GetTileset( "fx_doublejump_196x160.png", 196 , 160 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_grav_reverse_128x128.png", 128 , 128 );
 		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
 		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
@@ -5123,9 +5128,9 @@ void Actor::UpdatePrePhysics()
 			{
 				framesSinceDouble = 0;
 			
-			
+				//add direction later
 				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_double, 
-					V2d( position.x, position.y - 20), false, 0, 12, 2, facingRight );
+					V2d( position.x, position.y - 20), false, 0, 14, 2, facingRight );
 			
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 				if( velocity.y > 0 )
@@ -12139,6 +12144,21 @@ void Actor::UpdatePostPhysics()
 	cs.setPosition( position.x, position.y );
 	speedCircle = cs;
 
+	if( expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 )
+	{
+		switch( speedLevel )
+		{
+		case 0:
+			expr = Expr_NEUTRAL;
+			break;
+		case 1:
+			expr = Expr_SPEED1;
+			break;
+		case 2:
+			expr = Expr_SPEED2;
+			break;
+		}
+	}
 
 	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 4 ) );
 
@@ -14050,19 +14070,36 @@ void Actor::UpdateSprite()
 		}
 	case RUN:
 		{	
-			
-		if( frame == 0 )
+			V2d pp = ground->GetPoint( edgeQuantity );
+			double angle = GroundedAngle();
+			V2d along = normalize( ground->v1 - ground->v0 );
+
+			double xExtraStartRun = 0.0;//5.0
+			if( frame == 0 && ( 
+					( currInput.LLeft() && !prevInput.LLeft() ) 
+				||  ( currInput.LRight() && !prevInput.LRight() ) )  )
 			{
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart,
+				pp + gn * 32.0 + along * xExtraStartRun, false, angle, 6, 3, facingRight );
 				//runTappingSound.stop();
 				//runTappingSound.play();
 			}
 		
+		double xExtraStart = -48.0;
+		if( !facingRight )
+			xExtraStart = -xExtraStart;
 		if( frame == 3 * 4 )
 		{
+			owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
+				pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, facingRight );
 			owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP1] );
 		}
 		else if( frame == 8 * 4 )
 		{
+			owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
+				pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, facingRight );
+			//owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart, 
+			//		pp + gn * 32.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
 			owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
 		}
 		
@@ -14109,7 +14146,7 @@ void Actor::UpdateSprite()
 
 		if( ground != NULL )
 		{
-			double angle = GroundedAngle();
+			//double angle = GroundedAngle();
 			//cout << "angle: " << angle << endl;
 			//sprite->setOrigin( b.rw, 2 * b.rh );
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -14124,7 +14161,7 @@ void Actor::UpdateSprite()
 				ground->v1 += movingGround->position;
 			}
 
-			V2d pp = ground->GetPoint( edgeQuantity );
+			
 
 			if( movingGround != NULL )
 			{
