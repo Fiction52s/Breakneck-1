@@ -190,6 +190,7 @@ void MainMenu::Init()
 
 	saveBG.setTexture( *ts_saveMenuBG->texture );
 	saveKinFace.setTexture( *ts_saveMenuKinFace->texture );
+	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( 0 ) );
 	saveSelect.setTexture( *ts_saveMenuSelect->texture );
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
 	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
@@ -854,15 +855,29 @@ void MainMenu::Run()
 					//cout << "-----------------------------" << endl;
 					//cout << "file: " << file << endl;
 					GameSession *gs = new GameSession( controller, NULL, this );
-					gs->Run( ss.str() );
+					int result = gs->Run( ss.str() );
 					delete gs;
 
-					v.setSize( 1920, 1080 );
-					v.setCenter( 1920/2, 1080/ 2);
-					window->setView( v );
-					worldMap->state = WorldMap::PLANET_AND_SPACE;
-					worldMap->frame = 0;
-					worldMap->UpdateMapList();
+					if( result == 0 || result == 1 )
+					{
+						v.setSize( 1920, 1080 );
+						v.setCenter( 1920/2, 1080/ 2);
+						window->setView( v );
+						worldMap->state = WorldMap::PLANET_AND_SPACE;
+						worldMap->frame = 0;
+						worldMap->UpdateMapList();
+					}
+					else if( result == 2 )
+					{
+						menuMode = MainMenu::MAINMENU;
+					}
+					else if( result == 3 )
+					{
+						quit = true;
+						break;
+					}
+
+					
 					continue;
 				}
 				

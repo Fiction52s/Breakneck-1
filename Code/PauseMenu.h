@@ -24,10 +24,22 @@ struct PauseMenu
 	void TabLeft();
 	void TabRight();
 
-	void Update( ControllerState &currInput,
+	enum UpdateResponse
+	{
+		R_NONE,
+		R_P_RESUME,
+		R_P_RESPAWN,
+		R_P_EXITLEVEL,
+		R_P_EXITTITLE,
+		R_P_EXITGAME
+	};
+
+	UpdateResponse Update( ControllerState &currInput,
 		ControllerState &prevInput );
 	Tileset *ts_background[Count];
+	Tileset *ts_select;
 	sf::Sprite bgSprite;
+	sf::Sprite selectSprite;
 	GameSession *owner;
 	Tab currentTab;
 	//bool show;
@@ -37,6 +49,8 @@ struct PauseMenu
 	//map tab
 	sf::Vector2f mapCenter;
 	float mapZoomFactor;
+
+	int pauseSelectIndex;
 
 };
 

@@ -463,6 +463,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void DeactivateLight( Light *light );
 
 
+	void RestartLevel();
+	//sf::Clock inGameClock;
+
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;
 

@@ -4884,7 +4884,7 @@ int GameSession::Run( string fileN )
 	circle.setFillColor( Color::Blue );
 
 
-	sf::Clock inGameClock;
+	//sf::Clock inGameClock;
 
 	sf::Clock gameClock;
 	double currentTime = 0;
@@ -5246,167 +5246,8 @@ int GameSession::Run( string fileN )
 			Enemy *monitorList = NULL;
 			if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead /*|| (currInput.start && !prevInput.start )*/ ) )
 			{
-				levelReset = true;
-				totalGameFrames = 0;
-				inGameClock.restart();
-
-				if( player->record > 1 )
-				{
-					player->LoadState();
-					LoadState();
-				}
-
-				goalPulse->Reset();
-				//f->Reset();
-
-				RespawnPlayer();
-				pauseFrames = 0;
-				if( levelReset )
-				{
-					//cout << "resetting level" << endl;
-					ResetEnemies();
-					ResetPlants(); //eventually maybe treat these to reset like the rest of the stuff
-					//only w/ checkpoints. but for now its always back
-
-					for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-					{
-						(*it)->active = false;
-					}
-
-					if( originalZone != NULL )
-						originalZone->active = true;
-					//
-					//later don't relock gates in a level unless there is a "level reset"
-					for( int i = 0; i < numGates; ++i )
-					{
-						gates[i]->SetLocked( true );
-						if( gates[i]->type != Gate::BLACK )
-							gates[i]->gState = Gate::HARD;
-					}
-
-					inactiveEnemyList = NULL;
-					//activeEnemiesList = NULL;
-					//cout << "finished resetting level" << endl;
-				}
-				else
-				{
-					//cout << "reset actives" << endl;
-
-
-					
-					/*while( curr != NULL )
-					{
-						if( curr->type == Enemy::GATEMONITOR )
-						{
-							Monitor *mon = (Monitor*)curr;
-							mon->respawnSpecial = true;
-						}
-						curr = curr->next;
-
-					}
-
-
-					curr = activeEnemyList;*/
-					ResetPlants();
-
-					Enemy *curr = activeEnemyList;
-					while( curr != NULL )
-					{
-						Enemy *temp = curr->next;
-						if( curr->type == Enemy::BASICEFFECT )
-						{
-							DeactivateEffect( (BasicEffect*)curr );
-						}
-						else
-						{
-							curr->Reset();
-							/*if( curr->type == Enemy::GATEMONITOR )
-							{
-								Monitor *mon = (Monitor*)curr;
-								mon->respawnSpecial = true;
-								if( monitorList == NULL )
-								{
-									monitorList = curr;
-								}
-								else
-								{
-									curr->next = monitorList;
-									monitorList = curr;
-								}
-							}*/
-						//	cout << "restting: " << (int)curr->type << endl;
-							
-						}
-
-						curr = temp;
-					}
-
-					activeEnemyList = NULL;
-
-					
-					//cout << "dont resetting actives" << endl;
-
-					ResetInactiveEnemies();
-
-					//put the live monitors back out there
-					//while( monitorList != NULL )
-					//{
-					//	Enemy *tempNext = monitorList->next;
-					//	monitorList->next = NULL;
-					//	//cout << "ADDING ENEMY MONITORLIST" << endl;
-					//	Monitor *mon = (Monitor*)monitorList;
-					//	if( mon->respawnSpecial )
-					//	{
-					//		if( mon->host->dead )
-					//		{
-					//		//cout << "adding in this thing other: " << mon << endl;
-					//			AddEnemy( monitorList );
-					//		}
-					//	}
-					//	monitorList = tempNext;
-					//}
-					
-					//cout << "also done with inactives" << endl;
-
-					while( activatedZoneList != NULL )
-					{
-						//cout << "respawn: deactivated a zone!" << endl;
-						activatedZoneList->active = false;
-						activatedZoneList = activatedZoneList->activeNext;
-					}
-
-					while( unlockedGateList != NULL )
-					{
-						assert( unlockedGateList != unlockedGateList->activeNext );
-						cout << "respawn: locking a gate: " << unlockedGateList << endl;
-						//cout << "relocking gate " << endl;
-						unlockedGateList->SetLocked( true );
-						unlockedGateList->gState = Gate::SOFT;
-						unlockedGateList = unlockedGateList->activeNext;
-					}
-					
-					/*if( player->currentCheckPoint == NULL )
-					{
-						ResetEnemies();
-					}
-					else
-					{
-						ResetInactiveEnemies();
-					}*/
-				}
-
-				for( list<Barrier*>::iterator it = barriers.begin(); it != barriers.end(); ++it )
-				{
-					(*it)->triggered = false;
-				}
-				
-
-				
-				
-
-				
-				pauseImmuneEffects = NULL;
-				cloneInactiveEnemyList = NULL;
+				//levelReset = true;
+				//RestartLevel();
 			}
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
@@ -5902,20 +5743,30 @@ int GameSession::Run( string fileN )
 				}
 				TestVA::UpdateBushFrame();
 
-				//if( Keyboard::isKeyPressed( Keyboard ) )
-				if( currInput.start && !prevInput.start )
+				if( player->dead )
 				{
-					state = PAUSE;
-					pauseMenu->SetTab( PauseMenu::PAUSE );
-					soundNodeList->Pause( true );
+					RestartLevel();
 				}
-				else if( ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
+				else if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT )
 				{
-					state = PAUSE;
-					pauseMenu->SetTab( PauseMenu::MAP );
+					//if( Keyboard::isKeyPressed( Keyboard ) )
+					if( currInput.start && !prevInput.start )
+					{
+						state = PAUSE;
+						pauseMenu->SetTab( PauseMenu::PAUSE );
+						soundNodeList->Pause( true );
+
+
+					}
+					else if( ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
+					{
+						state = PAUSE;
+						pauseMenu->SetTab( PauseMenu::MAP );
 					
-					soundNodeList->Pause( true );
+						soundNodeList->Pause( true );
+					}
 				}
+				
 
 				if( player->record > 0 )
 				{
@@ -7070,7 +6921,52 @@ int GameSession::Run( string fileN )
 			controller.UpdateState();
 			currInput = controller.GetState();
 			
-			pauseMenu->Update( currInput, prevInput );
+			PauseMenu::UpdateResponse ur = pauseMenu->Update( currInput, prevInput );
+			switch( ur )
+			{
+			case PauseMenu::R_NONE:
+				{
+					//do nothing as usual
+					break;
+				}
+			case PauseMenu::R_P_RESUME:
+				{
+					state = GameSession::RUN;
+					soundNodeList->Pause( false );
+					break;
+				}
+			case PauseMenu::R_P_RESPAWN:
+				{
+					state = GameSession::RUN;
+					RestartLevel();
+					gameClock.restart();
+					currentTime = 0;
+					accumulator = TIMESTEP + .1;
+					frameCounter = 0;
+					//soundNodeList->Pause( false );
+					//kill sounds on respawn
+					break;
+				}
+			case PauseMenu::R_P_EXITLEVEL:
+				{
+					quit = true;
+					returnVal = 1;
+					break;
+				}
+			case PauseMenu::R_P_EXITTITLE:
+				{
+					quit = true;
+					returnVal = 2;
+					break;
+				}
+			case PauseMenu::R_P_EXITGAME:
+				{
+					quit = true;
+					returnVal = 3;
+					break;
+				}
+
+			}
 
 			
 			//if( currInput.
@@ -7089,6 +6985,7 @@ int GameSession::Run( string fileN )
 			window->draw( preTexSprite );
 
 			pauseMenu->Draw( pauseTex );
+			
 			pauseTex->display();
 			Sprite pauseMenuSprite;
 			pauseMenuSprite.setTexture( pauseTex->getTexture() );
@@ -7096,7 +6993,6 @@ int GameSession::Run( string fileN )
 			pauseMenuSprite.setPosition( (1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2 );
 			pauseMenuSprite.setScale( .5, .5 );
 			window->draw( pauseMenuSprite );
-
 
 			//draw map
 
@@ -7247,15 +7143,22 @@ int GameSession::Run( string fileN )
 			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
 			mapTexSprite.setPosition( 0, 0 );
 			
+
+			//pauseTex->setView( bigV );
 			//window->setView( bigV );
 
 			//mapTexSprite.setScale( .5, -.5 );
 			mapTexSprite.setScale( .5, -.5 );
+			//mapTexSprite.setScale( 1, -1 );
 
 			window->draw( mapTexSprite );
-			
+			//pauseTex->draw( mapTexSprite );
 
+			//pauseTex->setV
 			}
+
+
+			
 
 		}
 		else if( state == MAP )
@@ -7974,6 +7877,58 @@ void GameSession::RespawnPlayer()
 	}
 
 	player->SetExpr( Actor::Expr::Expr_NEUTRAL );
+}
+
+void GameSession::RestartLevel()
+{
+	soundNodeList->Clear();
+
+	totalGameFrames = 0;
+
+	if( player->record > 1 )
+	{
+		player->LoadState();
+		LoadState();
+	}
+
+	goalPulse->Reset();
+	//f->Reset();
+
+	RespawnPlayer();
+	pauseFrames = 0;
+
+	ResetEnemies();
+	ResetPlants(); //eventually maybe treat these to reset like the rest of the stuff
+	//only w/ checkpoints. but for now its always back
+
+	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	{
+		(*it)->active = false;
+	}
+
+	if( originalZone != NULL )
+		originalZone->active = true;
+	//
+	//later don't relock gates in a level unless there is a "level reset"
+	for( int i = 0; i < numGates; ++i )
+	{
+		gates[i]->SetLocked( true );
+		if( gates[i]->type != Gate::BLACK )
+			gates[i]->gState = Gate::HARD;
+	}
+
+	inactiveEnemyList = NULL;
+
+	for( list<Barrier*>::iterator it = barriers.begin(); it != barriers.end(); ++it )
+	{
+		(*it)->triggered = false;
+	}
+				
+	pauseImmuneEffects = NULL;
+	cloneInactiveEnemyList = NULL;
+
+
+	//inGameClock.restart();
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )

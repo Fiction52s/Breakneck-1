@@ -24,6 +24,14 @@ SoundNodeList::SoundNodeList( int p_maxSounds )
 	}
 }
 
+void SoundNodeList::Clear()
+{
+	while( activeList != NULL )
+	{
+		DeactivateSound( activeList );
+	}
+}
+
 SoundNodeList::~SoundNodeList()
 {
 	SoundNode *curr = activeList;
