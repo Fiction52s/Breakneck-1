@@ -111,7 +111,7 @@ struct MainMenu
 	sf::Sprite kinTitleSprite;
 	int saveKinFaceFrame;
 	int saveKinFaceTurnLength;
-	sf::Font arial;
+	static sf::Font *arial;
 	sf::Clock gameClock;
 
 	LevelSelector *levelSelector;

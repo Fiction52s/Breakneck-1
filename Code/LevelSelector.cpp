@@ -40,7 +40,7 @@ LevelSelector::LevelSelector( MainMenu *mainMenu )
 	drawPanel.clear();
 	entries = NULL;
 	numTotalEntries = 0;
-	font = mainMenu->arial;
+	font = *mainMenu->arial;
 	text = NULL;
 	mouseOverIndex = -1;
 	position = Vector2f( 0, 0 );
