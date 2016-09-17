@@ -91,6 +91,20 @@ struct PauseMenu
 
 	OptionSelector **currentSelectors;
 	int numCurrentSelectors;
+
+	int maxWaitFrames;
+	int currWaitFrames;
+	int minWaitFrames;
+	int framesWaiting;
+	int momentum;
+	int maxMomentum;
+	CubicBezier accelBez;
+	/*int maxWaitFrames;
+	int currWaitFrames;
+	int minWaitFrames;
+	int framesWaiting;
+	int momentum;
+	int maxMomentum;*/
 };
 
 #endif

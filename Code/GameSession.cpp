@@ -6920,7 +6920,8 @@ int GameSession::Run( string fileN )
 
 			controller.UpdateState();
 			currInput = controller.GetState();
-			
+			//cout << "up: " << (int)currInput.LUp() << "down: " << (int)currInput.LDown() <<
+			//	", left: " << (int)currInput.LLeft() << ", right: " << (int)currInput.LRight() << endl;
 			PauseMenu::UpdateResponse ur = pauseMenu->Update( currInput, prevInput );
 			switch( ur )
 			{

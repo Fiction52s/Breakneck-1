@@ -20,17 +20,14 @@ sf::RenderTexture *MainMenu::minimapTexture = NULL;
 sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
 
-sf::Font *MainMenu::arial = NULL;
-
+sf::Font MainMenu::arial;
 
 MainMenu::MainMenu()
 	:controller( 0 ), windowWidth(1920), windowHeight( 1080 )
 {
-	if( arial == NULL )
-	{
-		arial = new Font();
-		arial->loadFromFile( "arial.ttf" );
-	}
+	//could be bad cuz its static
+	arial.loadFromFile( "arial.ttf" );
+	
 		
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 	v = View( Vector2f( 1920/2, 1080/2 ), Vector2f( 1920, 1080 ) );
@@ -155,7 +152,7 @@ MainMenu::MainMenu()
 	betaText.setCharacterSize( 20 );
 	betaText.setColor( Color::Red );
 	betaText.setPosition( 50, 200 );
-	betaText.setFont( *arial );
+	betaText.setFont( arial );
 
 	Init();
 }

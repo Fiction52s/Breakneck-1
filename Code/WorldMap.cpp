@@ -10,7 +10,7 @@ using namespace sf;
 using namespace std;
 
 WorldMap::WorldMap( MainMenu *mainMenu )
-	:font( *mainMenu->arial )
+	:font( mainMenu->arial )
 {
 	planetAndSpaceTex = new Texture;
 	planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );

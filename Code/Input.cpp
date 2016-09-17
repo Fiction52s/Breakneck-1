@@ -250,6 +250,11 @@ bool GameController::UpdateState()
 		m_state.leftTrigger = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFTWIRE] );
 		m_state.rightTrigger = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHTWIRE] );
 
+		/*bool up = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
+		bool down = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
+		bool left = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
+		bool right = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHT] );*/
+
 		bool up = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
 		bool down = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
 		bool left = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
@@ -295,59 +300,63 @@ bool GameController::UpdateState()
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1 << 3;
+			//cout << "RIGHT" << endl;
 		}
 		else if( left )
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1 << 2;
+			//cout << "LEFT" << endl;
 		}
 
 		if( up )
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1 << 1;
+			//cout << "UP" << endl;
 		}
 		else if( down )
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1;
+			//cout << "DOWN" << endl;
 		}
 
 		m_state.rightStickMagnitude = 0;
 		m_state.rightStickPad = 0;
 
 
-		if( m_state.leftStickMagnitude > stickThresh )
-		{
-			//cout << "left stick radians: " << currInput.leftStickRadians << endl;
-			float x = cos( m_state.leftStickRadians );
-			float y = sin( m_state.leftStickRadians );
+		//if( m_state.leftStickMagnitude > stickThresh )
+		//{
+		//	//cout << "left stick radians: " << currInput.leftStickRadians << endl;
+		//	float x = cos( m_state.leftStickRadians );
+		//	float y = sin( m_state.leftStickRadians );
 
-			if( x > stickThresh )
-				m_state.leftStickPad += 1 << 3;
-			if( x < -stickThresh )
-				m_state.leftStickPad += 1 << 2;
-			if( y > stickThresh )
-				m_state.leftStickPad += 1;
-			if( y < -stickThresh )
-				m_state.leftStickPad += 1 << 1;
-		}
+		//	if( x > stickThresh )
+		//		m_state.leftStickPad += 1 << 3;
+		//	if( x < -stickThresh )
+		//		m_state.leftStickPad += 1 << 2;
+		//	if( y > stickThresh )
+		//		m_state.leftStickPad += 1;
+		//	if( y < -stickThresh )
+		//		m_state.leftStickPad += 1 << 1;
+		//}
 
-		if( m_state.rightStickMagnitude > stickThresh )
-		{
-			//cout << "left stick radians: " << m_state.leftStickRadians << endl;
-			float x = cos( m_state.rightStickRadians );
-			float y = sin( m_state.rightStickRadians );
+		//if( m_state.rightStickMagnitude > stickThresh )
+		//{
+		//	//cout << "left stick radians: " << m_state.leftStickRadians << endl;
+		//	float x = cos( m_state.rightStickRadians );
+		//	float y = sin( m_state.rightStickRadians );
 
-			if( x > stickThresh )
-				m_state.rightStickPad += 1 << 3;
-			if( x < -stickThresh )
-				m_state.rightStickPad += 1 << 2;
-			if( y > stickThresh )
-				m_state.rightStickPad += 1;
-			if( y < -stickThresh )
-				m_state.rightStickPad += 1 << 1;
-		}
+		//	if( x > stickThresh )
+		//		m_state.rightStickPad += 1 << 3;
+		//	if( x < -stickThresh )
+		//		m_state.rightStickPad += 1 << 2;
+		//	if( y > stickThresh )
+		//		m_state.rightStickPad += 1;
+		//	if( y < -stickThresh )
+		//		m_state.rightStickPad += 1 << 1;
+		//}
 
 		
 

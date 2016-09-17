@@ -12,7 +12,7 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 		std::string *p_options )
 		:optionCount( p_optionCount ), options( NULL ), pos( p_pos ), accelBez( 0, 0, 1, 1 )
 {
-	currentText.setFont( *MainMenu::arial );
+	currentText.setFont( MainMenu::arial );
 	currentText.setCharacterSize( 80 );
 	currentText.setColor( Color::White );
 	options = new string[optionCount];
@@ -37,7 +37,7 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 
 void OptionSelector::Right()
 {
-	if( framesWaiting >= currWaitFrames )
+	if( framesWaiting >= currWaitFrames || momentum <= 0 )
 	{
 		currentIndex++;
 		if( currentIndex == optionCount )
@@ -66,7 +66,7 @@ void OptionSelector::Right()
 
 void OptionSelector::Left()
 {
-	if( framesWaiting >= currWaitFrames )
+	if( framesWaiting >= currWaitFrames || momentum >= 0 )
 	{
 		currentIndex--;
 		if( currentIndex < 0 )
@@ -114,7 +114,7 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 }
 
 PauseMenu::PauseMenu( GameSession *p_owner )
-	:owner( p_owner ), currentTab( Tab::MAP )
+	:owner( p_owner ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 {
 	ts_background[0] = owner->GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
 	ts_background[1] = owner->GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
@@ -142,14 +142,15 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	currentSelectors = videoSelectors;
 	numCurrentSelectors = numVideoOptions;
 	optionSelectorIndex = 0;
-
+	maxWaitFrames = 30;
+	currWaitFrames = maxWaitFrames;
+	momentum = 0;
+	maxMomentum = 4;
 	/*maxWaitFrames = 30;
 	currWaitFrames = maxWaitFrames;
 	minWaitFrames = 4;
 	framesWaiting = maxWaitFrames;
-
 	momentum = 0;
-
 	maxMomentum = 4;*/
 
 	//bgSprite.setPosition( (1920 - 1820) / 2, (1080 - 980) / 2);
@@ -159,11 +160,11 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 
 PauseMenu::~PauseMenu()
 {
-	for( int i = 0; i < numVideoOptions; ++i )
+	/*for( int i = 0; i < numVideoOptions; ++i )
 	{
 		delete videoSelectors[i];
 	}
-	delete [] videoSelectors;
+	delete [] videoSelectors;*/
 }
 
 void PauseMenu::TabLeft()
@@ -321,40 +322,114 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case OPTIONS:
 		{	
-		
-			if( currInput.LDown() && !prevInput.LDown() )
+			if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
 			{
 				optionSelectorIndex++;
 				if( optionSelectorIndex == numCurrentSelectors )
 				{
 					optionSelectorIndex = 0;
 				}		
+
+
+				if( momentum <= 0 )
+				{
+					momentum = 1;
+				}
+				else if( momentum < maxMomentum )
+				{
+					momentum++;
+				}
+
+				//CubicBezier bez( 0, 0, 1, 1 );
+				currentSelectors[optionSelectorIndex]->Stop();
+				double v = accelBez.GetValue( momentum / (double)maxMomentum );
+				framesWaiting = 0;
+				currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
 			}
-			else if( currInput.LUp() && !prevInput.LUp() )
+			else if( currInput.LUp() && ( framesWaiting >= currWaitFrames || momentum >= 0 ))
 			{
 				optionSelectorIndex--;
 				if( optionSelectorIndex == -1 )
 				{
 					optionSelectorIndex = numCurrentSelectors - 1;
 				}
+
+				if( momentum >= 0 )
+				{
+					momentum = -1;
+				}
+				else if( momentum > -maxMomentum )
+				{
+					momentum--;
+				}
+
+				//CubicBezier bez( 0, 0, 1, 1 );
+				currentSelectors[optionSelectorIndex]->Stop();
+				double v = accelBez.GetValue( (-momentum) / (double)maxMomentum );
+				framesWaiting = 0;
+				currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
 			}
 			else if( currInput.LRight() )
 			{
 				//cout << "optionindex: " << optionSelectorIndex << endl;
 				//cout << "num curr selcts: " << numCurrentSelectors << endl;
+				cout << "Attempted right" << endl;
 				currentSelectors[optionSelectorIndex]->Right();
 			}
 			else if( currInput.LLeft() )
 			{
 				//cout << "optionindex: " << optionSelectorIndex << endl;
 				//cout << "num curr selcts: " << numCurrentSelectors << endl;
+				cout << "Attempted left" << endl;
 				currentSelectors[optionSelectorIndex]->Left();
 			}
-			else if( !currInput.LLeft() && !currInput.LRight() )
+			
+			if( !currInput.LUp() && !currInput.LDown() )
+			{
+				momentum = 0;
+				framesWaiting = maxWaitFrames;
+			}
+
+			if( !currInput.LLeft() && !currInput.LRight() )
 			{
 				currentSelectors[optionSelectorIndex]->Stop();
 			}
 			currentSelectors[optionSelectorIndex]->Update();
+
+
+			//if( currInput.LDown() && !prevInput.LDown() )
+			//{
+			//	optionSelectorIndex++;
+			//	if( optionSelectorIndex == numCurrentSelectors )
+			//	{
+			//		optionSelectorIndex = 0;
+			//	}		
+			//}
+			//else if( currInput.LUp() && !prevInput.LUp() )
+			//{
+			//	optionSelectorIndex--;
+			//	if( optionSelectorIndex == -1 )
+			//	{
+			//		optionSelectorIndex = numCurrentSelectors - 1;
+			//	}
+			//}
+			//else if( currInput.LRight() )
+			//{
+			//	//cout << "optionindex: " << optionSelectorIndex << endl;
+			//	//cout << "num curr selcts: " << numCurrentSelectors << endl;
+			//	currentSelectors[optionSelectorIndex]->Right();
+			//}
+			//else if( currInput.LLeft() )
+			//{
+			//	//cout << "optionindex: " << optionSelectorIndex << endl;
+			//	//cout << "num curr selcts: " << numCurrentSelectors << endl;
+			//	currentSelectors[optionSelectorIndex]->Left();
+			//}
+			//else if( !currInput.LLeft() && !currInput.LRight() )
+			//{
+			//	currentSelectors[optionSelectorIndex]->Stop();
+			//}
+			//currentSelectors[optionSelectorIndex]->Update();
 			/*for( int i = 0; i < numCurrentSelectors; ++i )
 			{
 				currentSelectors[i]->Update();
