@@ -611,11 +611,12 @@ int GameSession::TestVA::bushFrame = 0;
 int GameSession::TestVA::bushAnimLength = 20;
 int GameSession::TestVA::bushAnimFactor = 8;
 
-GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
+GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu )
 	:controller(c),va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf )
 {
+	
 	keyFrame = 0;
 	for( int i = 0; i < EffectLayer::Count; ++i )
 	{
@@ -623,6 +624,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *mainMenu )
 	}
 	TestVA::bushFrame = 0;
 
+	mainMenu = p_mainMenu;
 	window = mainMenu->window;
 	preScreenTex = mainMenu->preScreenTexture;
 	postProcessTex = mainMenu->postProcessTexture;
@@ -5850,7 +5852,7 @@ int GameSession::Run( string fileN )
 		
 			Sprite preTexSprite( preTex );
 			preTexSprite.setPosition( -960 / 2, -540 / 2 );
-			preTexSprite.setScale( .5, .5 );		
+			//preTexSprite.setScale( .5, .5 );		
 
 			window->draw( preTexSprite  );
 		}
@@ -6881,8 +6883,9 @@ int GameSession::Run( string fileN )
 
 		preTexSprite.setTexture( preScreenTex->getTexture() );
 
-		preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		preTexSprite.setScale( .5, .5 );
+		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
+		//preTexSprite.setPosition( -960, -540 );
+		//preTexSprite.setScale( .5, .5 );
 
 		
 

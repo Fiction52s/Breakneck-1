@@ -61,6 +61,8 @@ struct MainMenu
 	MainMenu();
 	~MainMenu();
 	void Init();
+	void ResizeWindow( int windowWidth, 
+		int windowHeight, int style );
 	//void Deactivate();
 	void Run();
 	void GameEditLoop( const std::string &fileName );
@@ -126,6 +128,10 @@ struct MainMenu
 
 	int windowWidth;
 	int windowHeight;
+
+	int style;
+
+	static int masterVolume;
 };
 
 #endif

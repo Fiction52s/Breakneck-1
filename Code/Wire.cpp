@@ -79,7 +79,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				fireDir = V2d( 0, 0 );
 
 
-				if( false )
+				if( true )
 				{
 					if( currInput.LLeft() )
 					{

@@ -21,10 +21,13 @@ sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
 
 sf::Font MainMenu::arial;
+int MainMenu::masterVolume = 100;
 
 MainMenu::MainMenu()
 	:controller( 0 ), windowWidth(1920), windowHeight( 1080 )
 {
+	//load a preferences file at some point for window resolution and stuff
+
 	//could be bad cuz its static
 	arial.loadFromFile( "arial.ttf" );
 	
@@ -135,9 +138,9 @@ MainMenu::MainMenu()
 		//window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 		//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 		//window = new sf::RenderWindow( VideoMode( 1920, 1080 ), "Breakneck", sf::Style::None);
+		style = sf::Style::None;
 		
-		
-		window = new sf::RenderWindow( i.front(), "Breakneck", sf::Style::None);
+		window = new sf::RenderWindow( i.front(), "Breakneck", style);
 		//window = new sf::RenderWindow( vm, "Breakneck", sf::Style::None);
 
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
@@ -196,6 +199,7 @@ void MainMenu::Init()
 	saveKinFace.setTexture( *ts_saveMenuKinFace->texture );
 	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( 0 ) );
 	saveSelect.setTexture( *ts_saveMenuSelect->texture );
+	saveSelect.setTextureRect( ts_saveMenuSelect->GetSubRect( 0 ) );
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
 	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
 
@@ -1119,6 +1123,28 @@ void MainMenu::Run()
 
 		window->display();
 	}
+}
+
+void MainMenu::ResizeWindow( int p_windowWidth, 
+		int p_windowHeight, int p_style )
+{
+	if( windowWidth == p_windowWidth && windowHeight == p_windowHeight && style == p_style )
+	{
+		return;
+	}
+
+	style = p_style;
+	windowWidth = p_windowWidth;
+	windowHeight = p_windowHeight;
+
+	//window->res
+	//window->close();
+	window->create( VideoMode( windowWidth, windowHeight ), "Breakneck", style );
+	View blahV;
+	blahV.setCenter( 0, 0 );
+	blahV.setSize( 1920/ 2, 1080 / 2 );
+	//v.setCenter( 960, 540 );
+	window->setView( blahV );
 }
 
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )

@@ -3,6 +3,7 @@
 #include "GameSession.h"
 #include "MainMenu.h"
 #include <iostream>
+#include <sstream>
 
 using namespace sf;
 using namespace std;
@@ -12,6 +13,7 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 		std::string *p_options )
 		:optionCount( p_optionCount ), options( NULL ), pos( p_pos ), accelBez( 0, 0, 1, 1 )
 {
+	selected = false;
 	currentText.setFont( MainMenu::arial );
 	currentText.setCharacterSize( 80 );
 	currentText.setColor( Color::White );
@@ -110,6 +112,10 @@ const std::string & OptionSelector::GetString()
 
 void OptionSelector::Draw( sf::RenderTarget *target )
 {
+	if( selected )
+		currentText.setColor( Color::Red );
+	else
+		currentText.setColor( Color::White );
 	target->draw( currentText );
 }
 
@@ -133,17 +139,52 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
 
+	//resolution
+	//fullscreen
+	//vsync
+
+	//video
 	string resolutions[] = { "1920 x 1080", "1600 x 900" };
 	videoSelectors[0] = new OptionSelector( Vector2f( 100, 20 ), 2, resolutions );
 
-	string test[] = { "0", "1" };
-	videoSelectors[1] = new OptionSelector( Vector2f( 100, 100 ), 2, test );
+	string windowType[] = { "Fullscreen", "Window", "Borderless Window" };
+	videoSelectors[1] = new OptionSelector( Vector2f( 100, 100 ), 3, windowType );
+	
+	string vsync[] = { "on", "off" };
+	videoSelectors[2] = new OptionSelector( Vector2f( 100, 180 ), 2, vsync );
 
-	currentSelectors = videoSelectors;
-	numCurrentSelectors = numVideoOptions;
+	string masterVolume[101];
+	string musicVolume[101];
+	string soundVolume[101];
+	for( int i = 0; i < 101; ++i )
+	{
+		stringstream ss;
+		ss << i;
+
+		masterVolume[i] = ss.str();
+		musicVolume[i] = ss.str();
+		soundVolume[i] = ss.str();
+	}
+
+	numSoundOptions = 5;
+	soundSelectors = new OptionSelector*[numSoundOptions];
+
+	string enable[] = {"on", "off"};
+
+	soundSelectors[0] = new OptionSelector( Vector2f( 100, 20 ), 101, masterVolume );
+	soundSelectors[1] = new OptionSelector( Vector2f( 100, 180 ), 2, enable );
+	soundSelectors[2] = new OptionSelector( Vector2f( 100, 260 ), 101, musicVolume );
+	soundSelectors[3] = new OptionSelector( Vector2f( 100, 340 ), 2, enable );
+	soundSelectors[4] = new OptionSelector( Vector2f( 100, 420 ), 101, soundVolume );
+
+	
+
+	currentSelectors = soundSelectors;
+	numCurrentSelectors = numSoundOptions;
 	optionSelectorIndex = 0;
 	maxWaitFrames = 30;
 	currWaitFrames = maxWaitFrames;
+	minWaitFrames = 4;
 	momentum = 0;
 	maxMomentum = 4;
 	/*maxWaitFrames = 30;
@@ -223,11 +264,131 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	}
 	else if( currentTab == OPTIONS )
 	{
-		for( int i = 0; i < numVideoOptions; ++i )
+		for( int i = 0; i < numCurrentSelectors; ++i )
 		{
-			videoSelectors[i]->Draw( target );
+			currentSelectors[i]->Draw( target );
 		}
 	}
+}
+
+void PauseMenu::ApplyVideoSettings()
+{
+	string resolution = videoSelectors[0]->GetString();
+	string windowType = videoSelectors[1]->GetString();
+	string vsync = videoSelectors[2]->GetString();
+
+	int width, height;
+	int style;
+	if( resolution == "1920 x 1080" )
+	{
+		width = 1920;
+		height = 1080;
+		//owner->mainMenu->ResizeWindow( 1920, 1080 );
+		/*sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ) );*/
+		//owner->window->create( VideoMode( 1920, 1080 ), "Breakneck",sf::Style::None, sf::ContextSettings( 0, 0, 0, 0, 0 )  );
+
+		//owner->updatewin
+		//owner->sets
+	}
+	else if( resolution == "1600 x 900" )
+	{
+		width = 1600;
+		height = 900;
+		//owner->mainMenu->ResizeWindow( 1600, 900 );
+	}
+	else
+	{
+		assert( 0 );
+	}
+	
+
+	if( windowType == "Fullscreen" )
+	{
+		style = sf::Style::Fullscreen;
+	}
+	else if( windowType == "Window" )
+	{
+		style = sf::Style::Default;
+	}
+	else if( windowType == "Borderless Window" )
+	{
+		style = sf::Style::None;
+	}
+	else
+	{
+		assert( 0 );
+	}
+	owner->mainMenu->ResizeWindow( width, height, style );
+
+
+	if( vsync == "on" )
+	{
+		owner->window->setVerticalSyncEnabled( true );
+	}
+	else if( vsync == "off" )
+	{
+		owner->window->setVerticalSyncEnabled( false );
+	}
+	else
+	{
+		assert( 0 );
+	}
+	
+}
+
+void PauseMenu::ApplySoundSettings()
+{
+	/* masterVolume 
+	enable );
+	, musicVolume 
+	enable );
+	, soundVolume */
+
+
+	string masterVolume = soundSelectors[0]->GetString();
+	string enableMusic = soundSelectors[1]->GetString();
+	string musicVolume = soundSelectors[2]->GetString();
+	string enableSounds= soundSelectors[3]->GetString();
+	string soundVolume = soundSelectors[4]->GetString();
+
+	int width, height;
+	int style;
+	int master,music,sound;
+	stringstream ss;
+
+	master = stoi( masterVolume );
+	music = stoi( musicVolume );
+	sound = stoi( soundVolume );
+
+	cout << "apply master: " << master << ", music: " << music << ", sound: " << sound << endl;
+
+	bool enSounds;
+	if( enableSounds == "on" )
+		enSounds = true;
+	else if( enableSounds == "off" )
+		enSounds = false;
+
+	bool enMusic;
+	if( enableMusic == "on" )
+		enMusic = true;
+	else if( enableMusic == "off" )
+		enMusic = false;
+
+
+	owner->soundNodeList->SetGlobalVolume( master );
+	owner->mainMenu->soundNodeList->SetGlobalVolume( master );
+
+	owner->soundNodeList->SetSoundsEnable( enSounds );
+	owner->mainMenu->soundNodeList->SetSoundsEnable( enSounds );
+
+	//owner->soundNodeList->SetMusicEnable( enMusic );
+	//owner->mainMenu->soundNodeList->SetMusicEnable( enMusic );
+
+	owner->soundNodeList->SetRelativeSoundVolume( sound );
+	owner->mainMenu->soundNodeList->SetRelativeSoundVolume( sound );
+
+	//owner->soundNodeList->SetRelativeMusicVolume( music );
+	//owner->mainMenu->soundNodeList->SetRelativeMusicVolume( music );
 }
 
 PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
@@ -322,14 +483,32 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case OPTIONS:
 		{	
+			//cout <<  framesWaiting << ", " << momentum << ", curr: " << currWaitFrames << endl;
+			if( currInput.A && !prevInput.A )
+			{
+				if( currentSelectors == videoSelectors )
+				{
+					ApplyVideoSettings();
+				}
+				else if( currentSelectors == soundSelectors )
+				{
+					ApplySoundSettings();
+				}
+				
+				break;
+			}
 			if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
 			{
+				//cout << "DOWN" << endl;
+				currentSelectors[optionSelectorIndex]->selected = false;
+
 				optionSelectorIndex++;
 				if( optionSelectorIndex == numCurrentSelectors )
 				{
 					optionSelectorIndex = 0;
 				}		
 
+				currentSelectors[optionSelectorIndex]->selected = true;
 
 				if( momentum <= 0 )
 				{
@@ -348,11 +527,16 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			}
 			else if( currInput.LUp() && ( framesWaiting >= currWaitFrames || momentum >= 0 ))
 			{
+				//cout << "up! " << framesWaiting << ", " << momentum << endl;
+				currentSelectors[optionSelectorIndex]->selected = false;
+
 				optionSelectorIndex--;
 				if( optionSelectorIndex == -1 )
 				{
 					optionSelectorIndex = numCurrentSelectors - 1;
 				}
+
+				currentSelectors[optionSelectorIndex]->selected = true;
 
 				if( momentum >= 0 )
 				{
@@ -368,19 +552,21 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				double v = accelBez.GetValue( (-momentum) / (double)maxMomentum );
 				framesWaiting = 0;
 				currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+
+				
 			}
 			else if( currInput.LRight() )
 			{
 				//cout << "optionindex: " << optionSelectorIndex << endl;
 				//cout << "num curr selcts: " << numCurrentSelectors << endl;
-				cout << "Attempted right" << endl;
+				//cout << "Attempted right" << endl;
 				currentSelectors[optionSelectorIndex]->Right();
 			}
 			else if( currInput.LLeft() )
 			{
 				//cout << "optionindex: " << optionSelectorIndex << endl;
 				//cout << "num curr selcts: " << numCurrentSelectors << endl;
-				cout << "Attempted left" << endl;
+				//cout << "Attempted left" << endl;
 				currentSelectors[optionSelectorIndex]->Left();
 			}
 			
@@ -388,6 +574,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			{
 				momentum = 0;
 				framesWaiting = maxWaitFrames;
+				//currWaitFrames = maxWaitFrames;
 			}
 
 			if( !currInput.LLeft() && !currInput.LRight() )
@@ -395,6 +582,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				currentSelectors[optionSelectorIndex]->Stop();
 			}
 			currentSelectors[optionSelectorIndex]->Update();
+			++framesWaiting;
 
 
 			//if( currInput.LDown() && !prevInput.LDown() )

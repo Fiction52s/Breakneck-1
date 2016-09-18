@@ -21,6 +21,7 @@ struct OptionSelector
 	const std::string & GetString();
 	void Update();
 	void Draw( sf::RenderTarget *target );
+	bool selected;
 
 	std::string *options;
 	int optionCount;
@@ -56,6 +57,8 @@ struct PauseMenu
 	void SetTab( Tab t );
 	void TabLeft();
 	void TabRight();
+	void ApplyVideoSettings();
+	void ApplySoundSettings();
 
 	enum UpdateResponse
 	{
@@ -80,7 +83,9 @@ struct PauseMenu
 	//if you tab away it resets
 
 	OptionSelector **videoSelectors;
+	OptionSelector **soundSelectors;
 	int numVideoOptions;
+	int numSoundOptions;
 	//map tab
 	sf::Vector2f mapCenter;
 	float mapZoomFactor;

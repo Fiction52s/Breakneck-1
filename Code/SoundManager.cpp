@@ -22,6 +22,13 @@ SoundNodeList::SoundNodeList( int p_maxSounds )
 
 		prev = curr;
 	}
+
+	//load these from a prefs file
+	globalVolume = 100;
+	soundVolume = 100;
+	musicVolume = 100;
+	enableSounds = true;
+	enableMusic = true;
 }
 
 void SoundNodeList::Clear()
@@ -211,14 +218,44 @@ void SoundNodeList::Update()
 	//cout << "end update" << endl;
 }
 
-void SoundNodeList::SetGlobalVolume( float vol )
+void SoundNodeList::SetSoundsEnable( bool e )
 {
+	//if( enableSounds != e )
+	//{
+	enableSounds = e;
+	if( e )
+	{
+		SetRelativeSoundVolume( soundVolume );
+		//SetSoundVolume( 
+	}
+	else
+	{
+		SetSoundVolume( 0 );
+	}
+	//}
+}
+
+void SoundNodeList::SetRelativeMusicVolume( int vol )
+{
+	//no complicated music system is in yet. be able to control several simultaneous tracks
+}
+
+void SoundNodeList::SetSoundVolume( int v )
+{
+
+	if( !enableSounds )
+	{
+		v = 0;
+	}
+
+	cout << "set final volume: " << v << endl;
+
 	SoundNode *curr = activeList;
 	while( curr != NULL )
 	{
 		SoundNode *next = curr->next;
 		
-		curr->sound.setVolume( vol );
+		curr->sound.setVolume( v );
 
 		curr = next;
 	}
@@ -229,10 +266,28 @@ void SoundNodeList::SetGlobalVolume( float vol )
 	{
 		SoundNode *next = curr->next;
 		
-		curr->sound.setVolume( vol );
+		curr->sound.setVolume( v );
 
 		curr = next;
 	}
+}
+
+void SoundNodeList::SetRelativeSoundVolume( int vol )
+{
+	soundVolume = vol;
+	float percent = vol / 100.f;
+	float final = globalVolume * percent;
+
+	SetSoundVolume( final );
+	
+}
+
+void SoundNodeList::SetGlobalVolume( float vol )
+{
+	globalVolume = vol;
+
+	SetRelativeSoundVolume( soundVolume );
+	//set relative music volume
 }
 
 int SoundNodeList::GetActiveCount()

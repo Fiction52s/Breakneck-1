@@ -326,6 +326,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	ScoreDisplay *scoreDisplay;
 	State state;
 	
+	MainMenu *mainMenu;
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
 	

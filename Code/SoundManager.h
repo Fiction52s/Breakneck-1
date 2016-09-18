@@ -47,6 +47,10 @@ struct SoundNodeList
 	void DeactivateSound( SoundNode *sn );
 	void Update();
 	void SetGlobalVolume( float vol );
+	void SetRelativeMusicVolume( int vol );
+	void SetRelativeSoundVolume( int vol );
+	
+	void SetSoundsEnable( bool e );
 	void Reset();
 	void Clear();
 	int GetActiveCount();
@@ -57,6 +61,13 @@ struct SoundNodeList
 	void ActivateSound( sf::SoundBuffer *buffer );
 	void Pause( bool p );
 	bool paused;
+	int globalVolume;
+	int soundVolume;
+	int musicVolume;
+	bool enableSounds;
+	bool enableMusic;
+private:
+	void SetSoundVolume( int v );
 };
 
 #endif

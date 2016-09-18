@@ -5,6 +5,7 @@
 #include <boost/filesystem.hpp>
 #include "LevelSelector.h"
 #include "Input.h"
+#include "Tileset.h"
 
 struct MainMenu;
 struct SaveFile;
@@ -33,15 +34,23 @@ struct WorldMap
 	const std::string & GetSelected();
 	void UpdateMapList( TreeNode *parentNode, const std::string &relativePath );
 	void ClearEntries();
+	void UpdateColonySelect();
 	int Tex( int index, int level, TreeNode *entry );
 	State state;
 	int frame;
-	sf::Texture *planetAndSpaceTex;
-	sf::Texture *planetTex;
+
+	Tileset *ts_planetAndSpace;
+	Tileset *ts_planet;
+	Tileset *ts_colonySelect;
+	sf::Sprite colonySelectSprite;
+	//sf::Texture *planetAndSpaceTex;
+	//sf::Texture *planetTex;
 	int selectedColony;
 	
-	sf::Texture *sectionTex[6];
-	sf::Texture *colonyTex[6];
+	//sf::Texture *sectionTex[6];
+	//sf::Texture *colonyTex[6];
+	Tileset *ts_section[6];
+	Tileset *ts_colony[6];
 	sf::Sprite back;
 	sf::Sprite front;
 

@@ -12,24 +12,34 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *mainMenu )
 	:font( mainMenu->arial )
 {
-	planetAndSpaceTex = new Texture;
-	planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );
+	ts_planetAndSpace = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z1.jpg", 1920, 1080 );
+	//planetAndSpaceTex = new Texture;
+	//planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );
 	
-	planetTex = new Texture;
-	planetTex->loadFromFile( "WorldMap/map_z2.png" );
+	ts_planet = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z2.png", 1920, 1080 );
+	//planetTex = new Texture;
+	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
+
+	ts_colonySelect = mainMenu->tilesetManager.GetTileset( "WorldMap/map_select_512x512.png"
+		, 512, 512 );
+
+	colonySelectSprite.setTexture( *ts_colonySelect->texture );
+	
 
 	for( int i = 0; i < 6; ++i )
 	{
 		stringstream ss;
 		ss << "WorldMap/map_z3_" << (i+1) << ".png";
-		sectionTex[i] = new Texture;//owner->GetTileset( ss.str(), 1920, 1080 );
-		sectionTex[i]->loadFromFile( ss.str() );
+		//sectionTex[i] = new Texture;//owner->GetTileset( ss.str(), 1920, 1080 );
+		//sectionTex[i]->loadFromFile( ss.str() );
+		ts_section[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
 
 		ss.clear();
 		ss.str( "" );
 		ss << "WorldMap/map_z4_" << (i+1) << ".png";
-		colonyTex[i] = new Texture;
-		colonyTex[i]->loadFromFile( ss.str() );
+		//colonyTex[i] = new Texture;
+		//colonyTex[i]->loadFromFile( ss.str() );
+		ts_colony[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
 	}
 
 	back.setPosition( 0, 0 );
@@ -50,6 +60,48 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 
 
 	Reset( NULL );
+
+	//UpdateColonySelect();
+}
+
+void WorldMap::UpdateColonySelect()
+{
+	colonySelectSprite.setTextureRect( ts_colonySelect->GetSubRect( selectedColony ) );
+	colonySelectSprite.setOrigin( colonySelectSprite.getLocalBounds().width / 2,
+		colonySelectSprite.getLocalBounds().height / 2 );
+	switch( selectedColony )
+	{
+	case 0:
+		{
+			colonySelectSprite.setPosition( 1260, 335 );
+			break;
+		}
+	case 1:
+		{
+			colonySelectSprite.setPosition( 1245, 720 );
+			break;
+		}
+	case 2:
+		{
+			colonySelectSprite.setPosition( 980, 890 );
+			break;
+		}
+	case 3:
+		{
+			colonySelectSprite.setPosition( 670, 690 );
+			break;
+		}
+	case 4:
+		{
+			colonySelectSprite.setPosition( 680, 350 );
+			break;
+		}
+	case 5:
+		{
+			colonySelectSprite.setPosition( 970, 170 );
+			break;
+		}
+	}
 }
 
 void WorldMap::Reset( SaveFile *sf )
@@ -72,6 +124,8 @@ void WorldMap::Reset( SaveFile *sf )
 	ClearEntries();
 	moveDown = false;
 	moveUp = false;
+
+	UpdateColonySelect();
 }
 
 const std::string & WorldMap::GetSelected()
@@ -81,16 +135,16 @@ const std::string & WorldMap::GetSelected()
 
 WorldMap::~WorldMap()
 {
-	delete planetAndSpaceTex;
-	delete planetTex;
+	//delete planetAndSpaceTex;
+	//delete planetTex;
 
 
 
-	for( int i = 0; i < 6; ++i )
-	{
-		delete sectionTex[i];
-		delete colonyTex[i];
-	}
+	//for( int i = 0; i < 6; ++i )
+	//{
+		//delete sectionTex[i];
+		//delete colonyTex[i];
+	//}
 
 	delete [] text;
 	delete [] localPaths;
@@ -270,49 +324,12 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	{
 	case PLANET_AND_SPACE:
 		{
-			/*if( frame == trans )
+			if( frame == trans )
 			{
 				state = PLANET_TRANSITION;
 				frame = 0;
-			}*/
+			}
 			//cout << "currInput.A: " << currInput.A << ", prevInput.A: " << prevInput.A << endl;
-			if( currInput.A && !prevInput.A )
-			{
-				state = PLANET_TRANSITION;
-				frame = 0;
-				break;
-			}
-			else if( currInput.B && !prevInput.B )
-			{
-				state = OFF;
-				frame = 0;
-				break;
-			}
-			
-			if( (currInput.LDown() || currInput.PDown()) && !moveDown )
-			{
-				selectedColony++;
-				//currentMenuSelect++;
-				if( selectedColony > 5 )
-					selectedColony = 0;
-				moveDown = true;
-			}
-			else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
-			{
-				selectedColony--;
-				if( selectedColony < 0 )
-					selectedColony = 5;
-				moveUp = true;
-			}
-
-			if( !(currInput.LDown() || currInput.PDown()) )
-			{
-				moveDown = false;
-			}
-			if( ! ( currInput.LUp() || currInput.PUp() ) )
-			{
-				moveUp = false;
-			}
 		}
 		//frame = 0;
 		/*if( frame == trans )
@@ -330,10 +347,49 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		break;
 	case PLANET:
-		if( frame == trans )
+		/*if( frame == trans )
 		{
 			state = SECTION_TRANSITION;
 			frame = 0;
+		}*/
+		if( currInput.A && !prevInput.A )
+		{
+			state = SECTION_TRANSITION;
+			frame = 0;
+			break;
+		}
+		else if( currInput.B && !prevInput.B )
+		{
+			state = OFF;
+			frame = 0;
+			break;
+		}
+			
+		if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+		{
+			selectedColony++;
+			//currentMenuSelect++;
+			if( selectedColony > 5 )
+				selectedColony = 0;
+			moveDown = true;
+			UpdateColonySelect();
+		}
+		else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+		{
+			selectedColony--;
+			if( selectedColony < 0 )
+				selectedColony = 5;
+			moveUp = true;
+			UpdateColonySelect();
+		}
+
+		if( !(currInput.LDown() || currInput.PDown()) )
+		{
+			moveDown = false;
+		}
+		if( ! ( currInput.LUp() || currInput.PUp() ) )
+		{
+			moveUp = false;
 		}
 		break;
 	case SECTION_TRANSITION:
@@ -378,7 +434,8 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				back.setTexture( *planetAndSpaceTex );
+				//back.setTexture( *planetAndSpaceTex );
+				back.setTexture( *ts_planetAndSpace->texture );
 				back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 			break;
@@ -387,7 +444,8 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				front.setTexture( *planetTex );
+				//front.setTexture( *planetTex );
+				front.setTexture( *ts_planet->texture );
 				front.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
@@ -402,7 +460,8 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				back.setTexture( *planetTex );
+				//back.setTexture( *planetTex );
+				back.setTexture( *ts_planet->texture );
 				back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 			break;
@@ -411,7 +470,8 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				front.setTexture( *sectionTex[selectedColony] );
+				//front.setTexture( *sectionTex[selectedColony] );
+				front.setTexture( *ts_section[selectedColony]->texture );
 				front.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
@@ -426,7 +486,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				back.setTexture( *sectionTex[selectedColony] );
+				back.setTexture( *ts_section[selectedColony]->texture );
 				back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 			break;
@@ -435,7 +495,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				front.setTexture( *colonyTex[selectedColony] );
+				front.setTexture( *ts_colony[selectedColony]->texture );
 				front.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
@@ -450,7 +510,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
-				back.setTexture( *colonyTex[selectedColony] );
+				back.setTexture( *ts_colony[selectedColony]->texture );
 				back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
@@ -519,5 +579,10 @@ void WorldMap::Draw( RenderTarget *target )
 		{
 			target->draw( text[i] );
 		}
+	}
+
+	if( state == PLANET )
+	{
+		target->draw( colonySelectSprite );
 	}
 }
