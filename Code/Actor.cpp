@@ -80,6 +80,7 @@ Actor::Actor( GameSession *gs )
 
 		numKeys = 0;
 		
+		
 
 		gateTouched = NULL;
 
@@ -98,6 +99,15 @@ Actor::Actor( GameSession *gs )
 			assert( 0 && "player shader not loaded" );
 		}
 
+		if (!despFaceShader.loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+		{
+			cout << "desp face SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "desp shader not loaded" );
+		}
+		//uniform vec4 toColor;
+		//uniform vec4 fromColor;
+		despFaceShader.setParameter( "fromColor", 0x66eeff );
 
 		
 		
@@ -1162,6 +1172,7 @@ void Actor::UpdatePrePhysics()
 		auraColor.g = floor( auraColor.g * ( 1.f - overallFac ) + Color::Black.g * fac + .5 );
 		auraColor.b = floor( auraColor.b * ( 1.f - overallFac ) + Color::Black.b * fac + .5 );
 		sh.setParameter( "despColor", currentDespColor );
+		despFaceShader.setParameter( "toColor", currentDespColor );
 		sh.setParameter( "auraColor", auraColor );
 		//currentDespColor
 
@@ -1171,12 +1182,22 @@ void Actor::UpdatePrePhysics()
 		if( despCounter == maxDespFrames )
 		{
 			desperationMode = false;
-			action = DEATH;
-			rightWire->Reset();
-			leftWire->Reset();
-			slowCounter = 1;
-			frame = 0;
-			owner->deathWipe = true;
+			if( owner->powerWheel->activeOrb > 0 || owner->powerWheel->activeLevel > 0
+				||  owner->powerWheel->activeSection > 0 )
+			{
+				owner->powerWheel->mode = PowerWheel::NORMAL;
+				//you gathered health in desp mode!
+			}
+			else
+			{
+				action = DEATH;
+				rightWire->Reset();
+				leftWire->Reset();
+				slowCounter = 1;
+				frame = 0;
+				owner->deathWipe = true;
+			}
+			
 		}
 	}
 
@@ -11577,7 +11598,20 @@ void Actor::UpdatePostPhysics()
 		}
 		//if( slowCounter == slowMultiple )
 		//{
-		
+	
+		int an = 6;
+		int extra = 24;
+		if( frame < 11 * an + extra && frame >= extra )
+		{
+			int f = (frame - extra) / an;
+			expr = (Expr)(Expr_DEATH + f);
+		}
+	
+
+
+		kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 4 ) );
+
+
 		++frame;
 			//slowCounter = 1;
 		//}
@@ -12158,7 +12192,13 @@ void Actor::UpdatePostPhysics()
 			expr = Expr_SPEED2;
 			break;
 		}
+		//despCounter == maxDespFrames )
+		if( desperationMode )
+		{
+			expr = Expr_DESP;
+		}
 	}
+
 
 	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 4 ) );
 
@@ -16115,7 +16155,7 @@ void Actor::ConfirmHit( Color p_flashColor,
 
 	owner->powerWheel->Charge( charge );
 	//owner->player->test = true;
-	desperationMode = false;
+	//desperationMode = false;
 }
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

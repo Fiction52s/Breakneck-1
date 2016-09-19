@@ -97,6 +97,8 @@ struct Actor : QuadTreeCollider,
 		Expr_HURT,
 		Expr_SPEED1,
 		Expr_SPEED2,
+		Expr_DESP,
+		Expr_DEATH,
 		Expr_NONE
 	};
 	
@@ -113,6 +115,7 @@ struct Actor : QuadTreeCollider,
 	bool toggleGrindInput;
 
 	Tileset *ts_kinFace;
+	sf::Shader despFaceShader;
 	sf::Sprite kinFace;
 	sf::Sprite kinUnderOutline;
 	sf::Sprite kinTealOutline;

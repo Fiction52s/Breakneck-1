@@ -6674,7 +6674,15 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( player->kinPurpleOutline, &speedBarShader );
 		}
 
-		preScreenTex->draw( player->kinFace );
+		if( player->desperationMode )
+		{
+			preScreenTex->draw( player->kinFace, &(player->despFaceShader) );
+		}
+		else
+		{
+			preScreenTex->draw( player->kinFace );
+		}
+		
 		//else 
 
 		/*sf::Vertex blah[] = 
