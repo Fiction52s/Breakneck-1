@@ -107,7 +107,8 @@ Actor::Actor( GameSession *gs )
 		}
 		//uniform vec4 toColor;
 		//uniform vec4 fromColor;
-		despFaceShader.setParameter( "fromColor", 0x66eeff );
+		Color c( 0x66, 0xee, 0xff );
+		despFaceShader.setParameter( "fromColor", c );
 
 		
 		

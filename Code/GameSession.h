@@ -325,6 +325,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	SoundNodeList * soundNodeList;
 	ScoreDisplay *scoreDisplay;
 	State state;
+
+	Tileset *ts_testParallax;
+	sf::Sprite testParallaxSprite;
 	
 	MainMenu *mainMenu;
 	KeyMarker *keyMarker;

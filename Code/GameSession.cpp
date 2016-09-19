@@ -920,7 +920,10 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 		gds.setPosition( miniCircle.getPosition() );
 	}
 
-	
+	ts_testParallax = GetTileset( "parallax_w2_01.png", 960, 540 ); 
+	testParallaxSprite.setTexture( *ts_testParallax->texture );
+	testParallaxSprite.setOrigin( testParallaxSprite.getLocalBounds().width / 2,
+		testParallaxSprite.getLocalBounds().height / 2 );
 
 	keyMarker = new KeyMarker( this );
 
@@ -5889,6 +5892,29 @@ int GameSession::Run( string fileN )
 		preScreenTex->setView( bgView );
 
 		preScreenTex->draw( background );
+
+		//temporary parallax
+		View pView;
+		float depth = .1;
+		int px = floor( view.getCenter().x * depth + .5 );
+		int pxx;
+		
+		if( px >= 0 )
+		{
+			pxx = (px % (1920 * 2)) - 1920;
+			cout << ">0: " << pxx << ", realx: " << px << endl;
+		}
+		else
+		{
+			pxx = -(-px % (1920 * 2)) + 1920;
+			cout << "<0: " << pxx << ", realx: " << px << endl;
+		}
+		pView.setCenter( Vector2f( pxx, 0 ) );
+		pView.setSize( 1920, 1080 );
+		preScreenTex->setView( pView );
+		preScreenTex->draw( testParallaxSprite );
+		
+
 		//window->draw( background );
 
 		
