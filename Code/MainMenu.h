@@ -111,8 +111,7 @@ struct MainMenu
 	sf::Sprite backgroundTitleSprite;
 	sf::Sprite breakneckTitleSprite;
 	sf::Sprite kinTitleSprite;
-	int saveKinFaceFrame;
-	int saveKinFaceTurnLength;
+	
 	static sf::Font arial;
 	sf::Clock gameClock;
 
@@ -132,6 +131,25 @@ struct MainMenu
 	int style;
 
 	static int masterVolume;
+
+	Tileset *ts_saveKinJump1;
+	Tileset *ts_saveKinJump2;
+	Tileset *ts_saveKinClouds;
+
+	sf::Sprite saveKinClouds;
+	sf::Sprite saveKinJump;
+
+	void UpdateClouds();
+	int cloudFrame;
+	int cloudLoopLength;
+	int cloudLoopFactor;
+
+	int saveKinFaceFrame;
+	int saveKinFaceTurnLength;
+
+	int saveJumpFactor;
+	int saveJumpLength;
+	//int saveKinFaceFactor;
 };
 
 #endif

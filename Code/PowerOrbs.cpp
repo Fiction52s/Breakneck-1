@@ -553,10 +553,10 @@ VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
 
 bool PowerWheel::Damage( int power )
 {
-	if( mode == DESPERATION )
+	/*if( mode == DESPERATION )
 	{
 		return true;
-	}
+	}*/
 	//3 is one section
 	int remainder = power % 6;
 	int mult = power / 6;

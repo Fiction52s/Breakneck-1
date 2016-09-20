@@ -927,7 +927,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 
 	keyMarker = new KeyMarker( this );
 
-	pauseMenu = new PauseMenu( this );
+	
 	
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
@@ -4782,6 +4782,7 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	pauseMenu = new PauseMenu( this );
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
 
 	int goalTile = -1;
@@ -7123,18 +7124,7 @@ int GameSession::Run( string fileN )
 			}
 
 
-			if( currentZone != NULL )
-			{
-				for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
-				{
-					//cout << "drawing map" << endl;
-					(*it)->DrawMinimap( mapTex );
-					/*if( (*it)->spawned && !(*it)->dead )
-					{
-
-					}*/
-				}
-			}
+			
 
 			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
 
@@ -7175,6 +7165,20 @@ int GameSession::Run( string fileN )
 			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
 			goalMapIcon.setPosition( realPosGoal );
 			mapTex->draw( goalMapIcon );
+
+			if( currentZone != NULL )
+			{
+				for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
+				{
+					//cout << "drawing map" << endl;
+					(*it)->DrawMinimap( mapTex );
+					/*if( (*it)->spawned && !(*it)->dead )
+					{
+
+					}*/
+				}
+			}
+
 			//mapTex->clear();
 			Sprite mapTexSprite;
 			mapTexSprite.setTexture( mapTex->getTexture() );

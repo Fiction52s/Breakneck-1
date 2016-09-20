@@ -116,6 +116,11 @@ MainMenu::MainMenu()
 	bool fullWindow = true;
 
 	
+	cloudLoopLength = 8;
+	cloudLoopFactor = 6;
+
+	saveJumpFactor = 5;
+	saveJumpLength = 6;
 	
 	/*if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
 	{
@@ -206,6 +211,20 @@ void MainMenu::Init()
 	soundBuffers[S_DOWN] = soundManager.GetSound( "Audio/Sounds/menu_down.ogg" );
 	soundBuffers[S_UP] = soundManager.GetSound( "Audio/Sounds/menu_up.ogg" );
 	soundBuffers[S_SELECT] = soundManager.GetSound( "Audio/Sounds/menu_select.ogg" );
+
+	ts_saveKinJump1 = tilesetManager.GetTileset( "Menu/save_kin_jump1_500x1080.png", 500, 1080 );
+	ts_saveKinJump2 = tilesetManager.GetTileset( "Menu/save_kin_jump2_500x1080.png", 500, 1080 );
+	ts_saveKinClouds = tilesetManager.GetTileset( "Menu/save_kin_clouds_500x384.png", 500, 384 );
+	saveKinClouds.setTexture( *ts_saveKinClouds->texture );
+	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( 0 ) );
+	saveKinClouds.setOrigin( saveKinClouds.getLocalBounds().width, saveKinClouds.getLocalBounds().height );
+	saveKinClouds.setPosition( 1920, 1080 - 200 );
+
+	
+	//saveKinJump.setTexture( ts_saveKin
+
+	cloudFrame = 0;
+	//saveKinJump.set
 }
 
 void MainMenu::GameEditLoop( const std::string &filename)
@@ -653,6 +672,12 @@ void MainMenu::Run()
 							saveKinFaceFrame = 0;
 							moveDelayCounter = 0;
 							selectCreateNew = true;
+
+							saveKinJump.setTexture( *ts_saveKinJump1->texture );
+							saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( 0 ) );
+							saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0 );
+							saveKinJump.setPosition( 1920, 0 );
+
 							for( int i = 0; i < 6; ++i )
 							{
 								files[i]->LoadFromFile();
@@ -998,6 +1023,9 @@ void MainMenu::Run()
 				saveSelect.setPosition( topLeftPos );
 				saveKinFace.setPosition( topLeftPos );
 
+				UpdateClouds();
+
+
 				break;
 			}
 		case TRANS_MAIN_TO_SAVE:
@@ -1022,8 +1050,34 @@ void MainMenu::Run()
 					saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
 				}
 				
+				if( saveKinFaceFrame < saveJumpLength * saveJumpFactor )
+				{
+					if( saveKinFaceFrame == 0 )
+					{
+						saveKinJump.setTexture( *ts_saveKinJump1->texture );
+					}
+					else if( saveKinFaceFrame == 3 * saveJumpFactor )
+					{
+						saveKinJump.setTexture( *ts_saveKinJump2->texture );
+					}
+
+					int f = saveKinFaceFrame / saveJumpFactor;
+					if( saveKinFaceFrame < 3 * saveJumpFactor )
+					{
+						saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
+					}
+					else
+					{
+						saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f ) );
+					}
+
+					saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
+				}
+				
 
 				saveKinFaceFrame++;
+
+				UpdateClouds();
 				break;
 			}
 		}
@@ -1086,6 +1140,8 @@ void MainMenu::Run()
 			{
 				preScreenTexture->setView( v );
 				preScreenTexture->draw( saveBG );
+				preScreenTexture->draw( saveKinClouds );
+				preScreenTexture->draw( saveKinJump );
 				preScreenTexture->draw( saveSelect );
 				preScreenTexture->draw( saveKinFace );
 				break;
@@ -1123,6 +1179,22 @@ void MainMenu::Run()
 
 		window->display();
 	}
+}
+
+void MainMenu::UpdateClouds()
+{
+	if( cloudFrame == cloudLoopLength * cloudLoopFactor )
+	{
+		cloudFrame = 0;
+	}
+	else
+	{
+		cloudFrame++;
+	}
+
+	int f = cloudFrame / cloudLoopFactor;
+
+	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( f ) );
 }
 
 void MainMenu::ResizeWindow( int p_windowWidth, 

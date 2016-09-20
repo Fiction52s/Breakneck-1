@@ -16,7 +16,7 @@ ControllerState::ControllerState()
 	rightStickRadians( 0 ), leftTrigger( 0 ), rightTrigger( 0 ), start( false ), 
 	back( false ), leftShoulder( false ), rightShoulder( false ), A( false ), B( false ), 
 	X( false ), Y( false ), pad( 0 ), leftStickPad( 0 ), rightStickPad( 0 ), 
-	leftPress( false ), rightPress( false )
+	leftPress( false ), rightPress( false ), triggerThresh( 200 )
 {
 
 	
@@ -114,6 +114,16 @@ bool ControllerState::RRight()
 bool ControllerState::RPress()
 {
 	return rightPress;
+}
+
+bool ControllerState::RightTriggerPressed()
+{
+	return rightTrigger >= triggerThresh;
+}
+
+bool ControllerState::LeftTriggerPressed()
+{
+	return leftTrigger >= triggerThresh;
 }
 
 bool GameController::UpdateState()

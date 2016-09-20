@@ -777,7 +777,7 @@ void StagBeetle::DrawMinimap( sf::RenderTarget *target )
 		else
 		{
 			CircleShape cs;
-			cs.setRadius( 30 );
+			cs.setRadius( 40 );
 			cs.setFillColor( Color::Red );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );

@@ -11,7 +11,7 @@ using namespace std;
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 5000 ), minSegmentLength( 50 )
-	, player( p ), triggerThresh( 200 ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
+	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, extraBuffer( 64 ), 
 	quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )), 
 	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )),
@@ -58,13 +58,13 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 	if( right )
 	{
-		triggerDown = currInput.rightTrigger >= triggerThresh;
-		prevTriggerDown = prevInput.rightTrigger >= triggerThresh;
+		triggerDown = currInput.RightTriggerPressed();//currInput.rightTrigger >= triggerThresh;
+		prevTriggerDown = prevInput.RightTriggerPressed();//prevInput.rightTrigger >= triggerThresh;
 	}
 	else
 	{
-		triggerDown = currInput.leftTrigger >= triggerThresh;
-		prevTriggerDown = prevInput.leftTrigger >= triggerThresh;
+		triggerDown = currInput.LeftTriggerPressed();//currInput.leftTrigger >= triggerThresh;
+		prevTriggerDown = prevInput.LeftTriggerPressed();//prevInput.leftTrigger >= triggerThresh;
 	}
 
 

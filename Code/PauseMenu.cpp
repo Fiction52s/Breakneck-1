@@ -4,6 +4,7 @@
 #include "MainMenu.h"
 #include <iostream>
 #include <sstream>
+#include "SaveFile.h"
 
 using namespace sf;
 using namespace std;
@@ -120,8 +121,28 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 }
 
 PauseMenu::PauseMenu( GameSession *p_owner )
-	:owner( p_owner ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
+	:owner( p_owner ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 ),
+	assocSymbols( sf::Quads, ControllerSettings::ButtonType::Count * 4 )
 {
+	int numAssocSymbols = ControllerSettings::ButtonType::Count;
+	int symbolX = 200;
+	int symbolSize = 50;
+	int spacing = 16;
+	for( int i = 0; i < numAssocSymbols; ++i )
+	{
+		assocSymbols[i*4+0].color = Color::Red;
+		assocSymbols[i*4+1].color = Color::Green;
+		assocSymbols[i*4+2].color = Color::Blue;
+		assocSymbols[i*4+3].color = Color::Magenta;
+
+		assocSymbols[i*4+0].position = Vector2f( symbolX, (symbolSize + spacing) * i );
+		assocSymbols[i*4+1].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i );
+		assocSymbols[i*4+2].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize );
+		assocSymbols[i*4+3].position = Vector2f( symbolX, (symbolSize + spacing) * i + symbolSize );
+	}
+
+
+
 	ts_background[0] = owner->GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
 	ts_background[1] = owner->GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
 	ts_background[2] = owner->GetTileset( "Menu/pause_3_shards_1820x980.png", 1820, 980 );
@@ -138,6 +159,48 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	numVideoOptions = 2;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
+	string inputTypes[] = { "Xbox", "Keyboard", "PS4", "Gamecube" };
+	inputSelectors = new OptionSelector*[3];
+
+	inputSelectors[0] = new OptionSelector( Vector2f( 100, 100 ), 4, inputTypes );
+
+	string settings[] = {"Setting 1", "Setting 2", "Setting 3" };
+
+	string thumbSticks[] = { "left analog", "right analog" };
+
+	inputSelectors[1] = new OptionSelector( Vector2f( 100, 180 ), 3, settings );
+
+	inputSelectors[2] = new OptionSelector( Vector2f( 300, 180 ), 2, thumbSticks );
+
+	string bounceSpecial = "bounce";
+	string grindSpecial = "grind";
+	string timeslowSpecial = "time slow";
+	string wireLeftSpecial = "left wire";
+	string wireRightSpecial = "right wire";
+	string toggleBounce = "toggle bounce";
+	string toggleGrind = "toggle grind";
+	string toggleTimeSlow = "toggle time slow";
+
+	if( owner->saveFile != NULL )
+	{
+		SaveFile *sf = owner->saveFile;
+
+		//if they dont have the power yet, rename them to specials 1-5 
+
+		//if 
+		//sf->
+		
+	}
+	string possibleActions[9] = { "move", "jump", "dash", "attack", bounceSpecial, grindSpecial,
+		timeslowSpecial, wireLeftSpecial, wireRightSpecial };
+	for( int i = 0; i < 9; ++i )
+	{
+		actionText[i].setFont( owner->arial );
+		actionText[i].setCharacterSize( 24 );
+		actionText[i].setPosition( 100, 50 * i );
+		actionText[i].setColor( Color::White );
+		actionText[i].setString( possibleActions[i] );
+	}
 
 	//resolution
 	//fullscreen
@@ -179,8 +242,8 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 
 	
 
-	currentSelectors = soundSelectors;
-	numCurrentSelectors = numSoundOptions;
+	currentSelectors = inputSelectors;//soundSelectors;
+	numCurrentSelectors = 3;//numSoundOptions;
 	optionSelectorIndex = 0;
 	maxWaitFrames = 30;
 	currWaitFrames = maxWaitFrames;
@@ -267,6 +330,16 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 		for( int i = 0; i < numCurrentSelectors; ++i )
 		{
 			currentSelectors[i]->Draw( target );
+		}
+
+		if( currentSelectors == inputSelectors )
+		{
+			target->draw( assocSymbols );
+		}
+
+		for( int i = 0; i < 9; ++i )
+		{
+			target->draw( actionText[i] );
 		}
 	}
 }
@@ -391,6 +464,104 @@ void PauseMenu::ApplySoundSettings()
 	//owner->mainMenu->soundNodeList->SetRelativeMusicVolume( music );
 }
 
+//run this in a loop
+XBoxButton PauseMenu::CheckXBoxInput( ControllerState &currInput )
+{
+	bool leftMovement = (inputSelectors[2]->GetString() == "left analog");
+	if( currInput.A )
+	{
+		return XBOX_A;
+	}
+	else if( currInput.B )
+	{
+		return XBOX_B;
+	}
+	else if( currInput.X )
+	{
+		return XBOX_X;
+	}
+	else if( currInput.Y )
+	{
+		return XBOX_Y;
+	}
+	else if( currInput.leftShoulder )
+	{
+		return XBOX_L1;
+	}
+	else if( currInput.rightShoulder )
+	{
+		return XBOX_R1;
+	}
+	else if( currInput.LeftTriggerPressed() )
+	{
+		return XBOX_L2;
+	}
+	else if( currInput.RightTriggerPressed() )
+	{
+		return XBOX_R2;
+	}
+	else if( currInput.PLeft() )
+	{
+		return XBOX_PLEFT;
+	}
+	else if( currInput.PUp() )
+	{
+		return XBOX_PUP;
+	}
+	else if( currInput.PRight() )
+	{
+		return XBOX_PRIGHT;
+	}
+	else if( currInput.PDown() )
+	{
+		return XBOX_PDOWN;
+	}
+	else if( leftMovement && currInput.RLeft() )
+	{
+		return XBOX_RLEFT;
+	}
+	else if( leftMovement && currInput.RUp() )
+	{
+		return XBOX_RUP;
+	}
+	else if( leftMovement && currInput.RRight() )
+	{
+		return XBOX_RRIGHT;
+	}
+	else if( leftMovement && currInput.RDown() )
+	{
+		return XBOX_RDOWN;
+	}
+	else if( !leftMovement && currInput.LLeft() )
+	{
+		return XBOX_LLEFT;
+	}
+	else if( !leftMovement && currInput.LUp() )
+	{
+		return XBOX_LUP;
+	}
+	else if( !leftMovement && currInput.LRight() )
+	{
+		return XBOX_LRIGHT;
+	}
+	else if( !leftMovement && currInput.LDown() )
+	{
+		return XBOX_LDOWN;
+	}
+	else if( currInput.back )
+	{
+		return XBOX_BACK;
+	}
+	else if( currInput.start )
+	{
+		return XBOX_START;
+	}
+	else
+	{
+		return XBOX_BLANK;
+	}
+}
+
 PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
@@ -494,8 +665,30 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				{
 					ApplySoundSettings();
 				}
+				else if( currentSelectors == inputSelectors )
+				{
+					XBoxButton b = XBoxButton::XBOX_BLANK;
+					while( b == XBoxButton::XBOX_BLANK )
+					{
+						b = CheckXBoxInput( currInput );
+					}
+				}
 				
 				break;
+			}
+			else if( currInput.B && !prevInput.B )
+			{
+				if( currentSelectors == inputSelectors )
+				{
+					if( selectingProfile )
+					{
+						//go back to selecting option type
+					}
+					else
+					{
+						selectingProfile = true;
+					}
+				}
 			}
 			if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
 			{
@@ -584,6 +777,11 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			currentSelectors[optionSelectorIndex]->Update();
 			++framesWaiting;
 
+
+			if( selectingProfile )
+			{
+
+			}
 
 			//if( currInput.LDown() && !prevInput.LDown() )
 			//{

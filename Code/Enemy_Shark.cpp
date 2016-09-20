@@ -494,7 +494,7 @@ void Shark::Draw( sf::RenderTarget *target )
 		}
 		CircleShape cs;
 		cs.setFillColor( testColor );
-		cs.setRadius( 30 );
+		cs.setRadius( 40 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( position.x, position.y );
 		target->draw( cs );

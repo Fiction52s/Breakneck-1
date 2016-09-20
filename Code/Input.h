@@ -28,6 +28,11 @@ struct ControllerState
 	double rightStickRadians;
 	BYTE leftTrigger;
 	BYTE rightTrigger;
+	bool LeftTriggerPressed();
+	bool RightTriggerPressed();
+	BYTE triggerThresh;
+	//bool leftTriggerPress;
+	//bool rightTriggerPress;
 	bool start;
 	bool back;
 	bool leftShoulder;
@@ -108,17 +113,42 @@ struct KeyboardSettings
 	bool toggleTimeSlow;
 };
 
+enum XBoxButton
+{
+	XBOX_BLANK,
+	XBOX_A,
+	XBOX_B,
+	XBOX_X,
+	XBOX_Y,
+	XBOX_L1,
+	XBOX_R1,
+	XBOX_L2,
+	XBOX_R2,
+	XBOX_LLEFT,
+	XBOX_LUP,
+	XBOX_LRIGHT,
+	XBOX_LDOWN,
+	XBOX_RLEFT,
+	XBOX_RUP,
+	XBOX_RRIGHT,
+	XBOX_RDOWN,
+	XBOX_PLEFT,
+	XBOX_PUP,
+	XBOX_PRIGHT,
+	XBOX_PDOWN,
+	XBOX_BACK,
+	XBOX_START,
+	XBOX_Count
+};	
+
+
 struct ControllerSettings
 {
 	enum ButtonType
 	{
-		UP,
-		LEFT,
-		DOWN,
-		RIGHT,
 		JUMP,
-		SLASH,
 		DASH,
+		ATTACK,
 		BOUNCE,
 		GRIND,
 		TIMESLOW,

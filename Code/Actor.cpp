@@ -30,8 +30,8 @@ Actor::Actor( GameSession *gs )
 		//re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
-		level1SpeedThresh = 32;
-		level2SpeedThresh = 45;
+		level1SpeedThresh = 22;//32;
+		level2SpeedThresh = 48;
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
@@ -11645,11 +11645,12 @@ void Actor::UpdatePostPhysics()
 
 	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
-		action = GOALKILL;
+		SetActionExpr( GOALKILL );
 		frame = 0;
 		position = owner->goalNodePos;
 		rightWire->Reset();
 		leftWire->Reset();
+		desperationMode = false;
 	}
 
 	UpdateSprite();
@@ -11729,6 +11730,9 @@ void Actor::UpdatePostPhysics()
 		speed = length( velocity );
 	}
 
+	if( action != DEATH && action != EXIT && action != GOALKILL
+		&& action != GOALKILLWAIT )
+	{
 	if( speed > currentSpeedBar )
 	{
 		currentSpeedBar += speedChangeUp;
@@ -11758,9 +11762,7 @@ void Actor::UpdatePostPhysics()
 		speedLevel = 0;
 	}
 
-	if( speedParticleCounter == speedParticleRate
-		&& action != DEATH && action != EXIT && action != GOALKILL
-		&& action != GOALKILLWAIT )
+	if( speedParticleCounter == speedParticleRate )
 	{
 		if( speedLevel == 1 )
 		{
@@ -11837,6 +11839,7 @@ void Actor::UpdatePostPhysics()
 		}
 
 		speedParticleCounter = 0;
+	}
 	}
 	
 
@@ -13789,7 +13792,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 			CircleShape cs;
 			cs.setFillColor( Color::Magenta );
-			cs.setRadius( 30 );
+			cs.setRadius( 40 );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( 0, -300 );*/
 			
@@ -16834,6 +16837,9 @@ void Actor::SetActionExpr( Action a )
 		break;
 	case SPRINT:
 		//SetExpr( Expr_SPRINT );
+		break;
+	case GOALKILL:
+		SetExpr( Expr_NEUTRAL );
 		break;
 	}
 

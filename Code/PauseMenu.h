@@ -59,6 +59,7 @@ struct PauseMenu
 	void TabRight();
 	void ApplyVideoSettings();
 	void ApplySoundSettings();
+	
 
 	enum UpdateResponse
 	{
@@ -104,6 +105,20 @@ struct PauseMenu
 	int momentum;
 	int maxMomentum;
 	CubicBezier accelBez;
+
+	
+
+	OptionSelector **inputSelectors;
+	int currInputIndex;
+	bool selectingProfile;
+	sf::Text actionText[9];
+	int actionIndex;
+
+	XBoxButton CheckXBoxInput( ControllerState &currInput );
+	//more of these for diff controller types
+	sf::VertexArray assocSymbols;
+	
+	XBoxButton inputAssoc[ControllerSettings::ButtonType::Count];
 	/*int maxWaitFrames;
 	int currWaitFrames;
 	int minWaitFrames;
