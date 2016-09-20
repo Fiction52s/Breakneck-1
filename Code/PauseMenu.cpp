@@ -846,28 +846,17 @@ PauseMenu::UpdateResponse PauseMenu::UpdateOptions( ControllerState &currInput,
 		assert( 0 );
 		return R_NONE;
 	}
-	string inputType = inputSelectors[0]->GetString();
-	bool keyboardInput = inputType == "Keyboard" && currentSelectors == inputSelectors;
-	bool xboxInput = inputType == "Xbox" && currentSelectors == inputSelectors;
-	//cout <<  framesWaiting << ", " << momentum << ", curr: " << currWaitFrames << endl;
+	
+
+	return R_NONE;
+}
+
+PauseMenu::UpdateResponse PauseMenu::UpdateVideoOptions(
+	ControllerState &currInput, ControllerState &prevInput)
+{
 	if( currInput.A && !prevInput.A )
 	{
-		if( currentSelectors == videoSelectors )
-		{
-			ApplyVideoSettings();
-		}
-		else if( currentSelectors == soundSelectors )
-		{
-			ApplySoundSettings();
-		}
-		else if( currentSelectors == inputSelectors )
-		{
-			XBoxButton b = XBoxButton::XBOX_BLANK;
-			while( b == XBoxButton::XBOX_BLANK )
-			{
-				b = CheckXBoxInput( currInput );
-			}
-		}
+		ApplyVideoSettings();
 				
 		return R_NONE;
 	}
@@ -883,6 +872,240 @@ PauseMenu::UpdateResponse PauseMenu::UpdateOptions( ControllerState &currInput,
 			{
 				selectingProfile = true;
 			}
+		}
+	}
+	if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
+	{
+		//cout << "DOWN" << endl;
+		currentSelectors[optionSelectorIndex]->selected = false;
+
+		optionSelectorIndex++;
+		if( optionSelectorIndex == numCurrentSelectors )
+		{
+			optionSelectorIndex = 0;
+		}
+
+		currentSelectors[optionSelectorIndex]->selected = true;
+
+		if( momentum <= 0 )
+		{
+			momentum = 1;
+		}
+		else if( momentum < maxMomentum )
+		{
+			momentum++;
+		}
+
+		//CubicBezier bez( 0, 0, 1, 1 );
+		currentSelectors[optionSelectorIndex]->Stop();
+		double v = accelBez.GetValue( momentum / (double)maxMomentum );
+		framesWaiting = 0;
+		currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+	}
+	else if( currInput.LUp() && ( framesWaiting >= currWaitFrames || momentum >= 0 ))
+	{
+		//cout << "up! " << framesWaiting << ", " << momentum << endl;
+		currentSelectors[optionSelectorIndex]->selected = false;
+
+		optionSelectorIndex--;
+		if( optionSelectorIndex == -1 )
+		{
+			optionSelectorIndex = numCurrentSelectors - 1;
+		}
+
+		currentSelectors[optionSelectorIndex]->selected = true;
+
+		if( momentum >= 0 )
+		{
+			momentum = -1;
+		}
+		else if( momentum > -maxMomentum )
+		{
+			momentum--;
+		}
+
+		//CubicBezier bez( 0, 0, 1, 1 );
+		currentSelectors[optionSelectorIndex]->Stop();
+		double v = accelBez.GetValue( (-momentum) / (double)maxMomentum );
+		framesWaiting = 0;
+		currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+
+				
+	}
+	else if( currInput.LRight() )
+	{
+		//cout << "optionindex: " << optionSelectorIndex << endl;
+		//cout << "num curr selcts: " << numCurrentSelectors << endl;
+		//cout << "Attempted right" << endl;
+		currentSelectors[optionSelectorIndex]->Right();
+	}
+	else if( currInput.LLeft() )
+	{
+		//cout << "optionindex: " << optionSelectorIndex << endl;
+		//cout << "num curr selcts: " << numCurrentSelectors << endl;
+		//cout << "Attempted left" << endl;
+		currentSelectors[optionSelectorIndex]->Left();
+	}
+			
+	if( !currInput.LUp() && !currInput.LDown() )
+	{
+		momentum = 0;
+		framesWaiting = maxWaitFrames;
+		//currWaitFrames = maxWaitFrames;
+	}
+
+	if( !currInput.LLeft() && !currInput.LRight() )
+	{
+		currentSelectors[optionSelectorIndex]->Stop();
+	}
+	currentSelectors[optionSelectorIndex]->Update();
+	++framesWaiting;
+
+
+	if( selectingProfile )
+	{
+
+	}
+}
+
+PauseMenu::UpdateResponse PauseMenu::UpdateAudioOptions(
+	ControllerState &currInput, ControllerState &prevInput)
+{
+	//cout <<  framesWaiting << ", " << momentum << ", curr: " << currWaitFrames << endl;
+	if( currInput.A && !prevInput.A )
+	{
+		ApplySoundSettings();
+					
+		return R_NONE;
+	}
+	else if( currInput.B && !prevInput.B )
+	{
+		
+	}
+	if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
+	{
+		//cout << "DOWN" << endl;
+		currentSelectors[optionSelectorIndex]->selected = false;
+
+		optionSelectorIndex++;
+		if( optionSelectorIndex == numCurrentSelectors )
+		{
+			optionSelectorIndex = 0;
+		}
+
+		currentSelectors[optionSelectorIndex]->selected = true;
+
+		if( momentum <= 0 )
+		{
+			momentum = 1;
+		}
+		else if( momentum < maxMomentum )
+		{
+			momentum++;
+		}
+
+		//CubicBezier bez( 0, 0, 1, 1 );
+		currentSelectors[optionSelectorIndex]->Stop();
+		double v = accelBez.GetValue( momentum / (double)maxMomentum );
+		framesWaiting = 0;
+		currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+	}
+	else if( currInput.LUp() && ( framesWaiting >= currWaitFrames || momentum >= 0 ))
+	{
+		//cout << "up! " << framesWaiting << ", " << momentum << endl;
+		currentSelectors[optionSelectorIndex]->selected = false;
+
+		optionSelectorIndex--;
+		if( optionSelectorIndex == -1 )
+		{
+			optionSelectorIndex = numCurrentSelectors - 1;
+		}
+
+		currentSelectors[optionSelectorIndex]->selected = true;
+
+		if( momentum >= 0 )
+		{
+			momentum = -1;
+		}
+		else if( momentum > -maxMomentum )
+		{
+			momentum--;
+		}
+
+		//CubicBezier bez( 0, 0, 1, 1 );
+		currentSelectors[optionSelectorIndex]->Stop();
+		double v = accelBez.GetValue( (-momentum) / (double)maxMomentum );
+		framesWaiting = 0;
+		currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+
+				
+	}
+	else if( currInput.LRight() )
+	{
+		//cout << "optionindex: " << optionSelectorIndex << endl;
+		//cout << "num curr selcts: " << numCurrentSelectors << endl;
+		//cout << "Attempted right" << endl;
+		currentSelectors[optionSelectorIndex]->Right();
+
+		
+	}
+	else if( currInput.LLeft() )
+	{
+		//cout << "optionindex: " << optionSelectorIndex << endl;
+		//cout << "num curr selcts: " << numCurrentSelectors << endl;
+		//cout << "Attempted left" << endl;
+		currentSelectors[optionSelectorIndex]->Left();
+
+		
+	}
+			
+	if( !currInput.LUp() && !currInput.LDown() )
+	{
+		momentum = 0;
+		framesWaiting = maxWaitFrames;
+		//currWaitFrames = maxWaitFrames;
+	}
+
+	if( !currInput.LLeft() && !currInput.LRight() )
+	{
+		currentSelectors[optionSelectorIndex]->Stop();
+	}
+	currentSelectors[optionSelectorIndex]->Update();
+	++framesWaiting;
+
+
+	if( selectingProfile )
+	{
+
+	}
+}
+
+PauseMenu::UpdateResponse PauseMenu::UpdateInputOptions(
+	ControllerState &currInput, ControllerState &prevInput)
+{
+	string inputType = inputSelectors[0]->GetString();
+	bool keyboardInput = inputType == "Keyboard" && currentSelectors == inputSelectors;
+	bool xboxInput = inputType == "Xbox" && currentSelectors == inputSelectors;
+	//cout <<  framesWaiting << ", " << momentum << ", curr: " << currWaitFrames << endl;
+	if( currInput.A && !prevInput.A )
+	{	
+		XBoxButton b = XBoxButton::XBOX_BLANK;
+		while( b == XBoxButton::XBOX_BLANK )
+		{
+			b = CheckXBoxInput( currInput );
+		}
+				
+		return R_NONE;
+	}
+	else if( currInput.B && !prevInput.B )
+	{
+		if( selectingProfile )
+		{
+			//go back to selecting option type
+		}
+		else
+		{
+			selectingProfile = true;
 		}
 	}
 	if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
@@ -991,22 +1214,6 @@ PauseMenu::UpdateResponse PauseMenu::UpdateOptions( ControllerState &currInput,
 	{
 
 	}
-
-	return R_NONE;
 }
-
-PauseMenu::UpdateResponse PauseMenu::UpdateVideoOptions(
-	ControllerState &currInput, ControllerState &prevInput)
-{
-
-}
-
-PauseMenu::UpdateResponse PauseMenu::UpdateAudioOptions(
-	ControllerState &currInput, ControllerState &prevInput)
-{
-
-}
-
-
 //using namespace std;
 //using namespace sf;

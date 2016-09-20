@@ -215,12 +215,15 @@ void MainMenu::Init()
 	ts_saveKinJump1 = tilesetManager.GetTileset( "Menu/save_kin_jump1_500x1080.png", 500, 1080 );
 	ts_saveKinJump2 = tilesetManager.GetTileset( "Menu/save_kin_jump2_500x1080.png", 500, 1080 );
 	ts_saveKinClouds = tilesetManager.GetTileset( "Menu/save_kin_clouds_500x384.png", 500, 384 );
+	ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
 	saveKinClouds.setTexture( *ts_saveKinClouds->texture );
 	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( 0 ) );
 	saveKinClouds.setOrigin( saveKinClouds.getLocalBounds().width, saveKinClouds.getLocalBounds().height );
-	saveKinClouds.setPosition( 1920, 1080 - 200 );
+	saveKinClouds.setPosition( 1920, 1080);
 
-	
+	saveKinWindow.setTexture( *ts_saveKinWindow->texture );
+	saveKinWindow.setOrigin( saveKinWindow.getLocalBounds().width, 0 );
+	saveKinWindow.setPosition( 1920, 0 );
 	//saveKinJump.setTexture( ts_saveKin
 
 	cloudFrame = 0;
@@ -1068,7 +1071,7 @@ void MainMenu::Run()
 					}
 					else
 					{
-						saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f ) );
+						saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
 					}
 
 					saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
@@ -1141,7 +1144,13 @@ void MainMenu::Run()
 				preScreenTexture->setView( v );
 				preScreenTexture->draw( saveBG );
 				preScreenTexture->draw( saveKinClouds );
-				preScreenTexture->draw( saveKinJump );
+				preScreenTexture->draw( saveKinWindow );
+				if( menuMode == SAVEMENU ||
+					saveKinFaceFrame < saveJumpLength * saveJumpFactor )
+				{
+					preScreenTexture->draw( saveKinJump );
+				}
+				
 				preScreenTexture->draw( saveSelect );
 				preScreenTexture->draw( saveKinFace );
 				break;
@@ -1187,14 +1196,13 @@ void MainMenu::UpdateClouds()
 	{
 		cloudFrame = 0;
 	}
-	else
-	{
-		cloudFrame++;
-	}
 
 	int f = cloudFrame / cloudLoopFactor;
 
+	//cout << "cloud frame: " << f << endl;
 	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( f ) );
+
+	cloudFrame++;
 }
 
 void MainMenu::ResizeWindow( int p_windowWidth, 

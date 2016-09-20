@@ -135,9 +135,11 @@ struct MainMenu
 	Tileset *ts_saveKinJump1;
 	Tileset *ts_saveKinJump2;
 	Tileset *ts_saveKinClouds;
+	Tileset *ts_saveKinWindow;
 
 	sf::Sprite saveKinClouds;
 	sf::Sprite saveKinJump;
+	sf::Sprite saveKinWindow;
 
 	void UpdateClouds();
 	int cloudFrame;
