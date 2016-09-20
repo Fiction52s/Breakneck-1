@@ -111,13 +111,28 @@ struct PauseMenu
 	OptionSelector **inputSelectors;
 	int currInputIndex;
 	bool selectingProfile;
-	sf::Text actionText[9];
+	sf::Text actionText[15];
 	int actionIndex;
 
 	XBoxButton CheckXBoxInput( ControllerState &currInput );
 	//more of these for diff controller types
 	sf::VertexArray assocSymbols;
 	
+	void SetAssocSymbols();
+	UpdateResponse UpdateOptions(
+		ControllerState &currInput,
+	ControllerState &prevInput );
+	UpdateResponse UpdateInputOptions(
+		ControllerState &currInput,
+		ControllerState &prevInput);
+	UpdateResponse UpdateVideoOptions(
+		ControllerState &currInput,
+		ControllerState &prevInput);
+	UpdateResponse UpdateAudioOptions(
+		ControllerState &currInput,
+		ControllerState &prevInput);
+	std::string *possibleControllerActions;
+	std::string *possibleKeyboardActions;
 	XBoxButton inputAssoc[ControllerSettings::ButtonType::Count];
 	/*int maxWaitFrames;
 	int currWaitFrames;

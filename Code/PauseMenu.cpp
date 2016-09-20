@@ -122,25 +122,9 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 
 PauseMenu::PauseMenu( GameSession *p_owner )
 	:owner( p_owner ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 ),
-	assocSymbols( sf::Quads, ControllerSettings::ButtonType::Count * 4 )
+	assocSymbols( sf::Quads, ( ControllerSettings::ButtonType::Count + 4 ) * 4 )
 {
-	int numAssocSymbols = ControllerSettings::ButtonType::Count;
-	int symbolX = 200;
-	int symbolSize = 50;
-	int spacing = 16;
-	for( int i = 0; i < numAssocSymbols; ++i )
-	{
-		assocSymbols[i*4+0].color = Color::Red;
-		assocSymbols[i*4+1].color = Color::Green;
-		assocSymbols[i*4+2].color = Color::Blue;
-		assocSymbols[i*4+3].color = Color::Magenta;
-
-		assocSymbols[i*4+0].position = Vector2f( symbolX, (symbolSize + spacing) * i );
-		assocSymbols[i*4+1].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i );
-		assocSymbols[i*4+2].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize );
-		assocSymbols[i*4+3].position = Vector2f( symbolX, (symbolSize + spacing) * i + symbolSize );
-	}
-
+	
 
 
 	ts_background[0] = owner->GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
@@ -191,16 +175,48 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 		//sf->
 		
 	}
-	string possibleActions[9] = { "move", "jump", "dash", "attack", bounceSpecial, grindSpecial,
-		timeslowSpecial, wireLeftSpecial, wireRightSpecial };
-	for( int i = 0; i < 9; ++i )
-	{
-		actionText[i].setFont( owner->arial );
-		actionText[i].setCharacterSize( 24 );
-		actionText[i].setPosition( 100, 50 * i );
-		actionText[i].setColor( Color::White );
-		actionText[i].setString( possibleActions[i] );
-	}
+	possibleControllerActions = new string[12];
+	possibleControllerActions[0] = "move";
+	possibleControllerActions[1] = "jump";
+	possibleControllerActions[2] = "dash";
+	possibleControllerActions[3] = "attack";
+	possibleControllerActions[4] = bounceSpecial;
+	possibleControllerActions[5] = grindSpecial;
+	possibleControllerActions[6] = timeslowSpecial;
+	possibleControllerActions[7] = wireLeftSpecial;
+	possibleControllerActions[8] = wireRightSpecial;
+	possibleControllerActions[9] = toggleBounce;
+	possibleControllerActions[10] = toggleGrind;
+	possibleControllerActions[11] = toggleTimeSlow;
+	/*{ 
+		"move", "jump", "dash", "attack", bounceSpecial, grindSpecial,
+		timeslowSpecial, wireLeftSpecial, wireRightSpecial, 
+		toggleBounce, toggleGrind, toggleTimeSlow };*/
+
+	possibleKeyboardActions = new string[15];
+	possibleKeyboardActions[0] = "up";
+	possibleKeyboardActions[1] = "left";
+	possibleKeyboardActions[2] = "down";
+	possibleKeyboardActions[3] = "right";
+	possibleKeyboardActions[4] = "jump";
+	possibleKeyboardActions[5] = "dash";
+	possibleKeyboardActions[6] = "attack";
+	possibleKeyboardActions[7] = bounceSpecial;
+	possibleKeyboardActions[8] = grindSpecial;
+	possibleKeyboardActions[9] = timeslowSpecial;
+	possibleKeyboardActions[10] = wireLeftSpecial;
+	possibleKeyboardActions[11] = wireRightSpecial;
+	possibleKeyboardActions[12] = toggleBounce;
+	possibleKeyboardActions[13] = toggleGrind;
+	possibleKeyboardActions[14] = toggleTimeSlow;
+
+	/*string possibleKeyboardActions[15] = { 
+	"up", "left", "down", "right", "jump", "dash", "attack", bounceSpecial, grindSpecial,
+	timeslowSpecial, wireLeftSpecial, wireRightSpecial, 
+	toggleBounce, toggleGrind, toggleTimeSlow };*/
+
+
+	
 
 	//resolution
 	//fullscreen
@@ -260,6 +276,8 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	//bgSprite.setPosition( (1920 - 1820) / 2, (1080 - 980) / 2);
 
 	//SetTab( MAP );
+	SetAssocSymbols();
+
 }
 
 PauseMenu::~PauseMenu()
@@ -269,6 +287,75 @@ PauseMenu::~PauseMenu()
 		delete videoSelectors[i];
 	}
 	delete [] videoSelectors;*/
+}
+
+void PauseMenu::SetAssocSymbols()
+{
+	int symbolX = 200;
+	int symbolSize = 50;
+	int spacing = 16;
+	string inputType = inputSelectors[0]->GetString();
+	if( inputType == "Xbox" )
+	{
+		int numAssocSymbols = ControllerSettings::ButtonType::Count + 1;
+		
+		//move comes first
+		for( int i = 0; i < numAssocSymbols; ++i )
+		{
+			assocSymbols[i*4+0].color = Color::Red;
+			assocSymbols[i*4+1].color = Color::Green;
+			assocSymbols[i*4+2].color = Color::Blue;
+			assocSymbols[i*4+3].color = Color::Magenta;
+
+			assocSymbols[i*4+0].position = Vector2f( symbolX, (symbolSize + spacing) * i );
+			assocSymbols[i*4+1].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i );
+			assocSymbols[i*4+2].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize );
+			assocSymbols[i*4+3].position = Vector2f( symbolX, (symbolSize + spacing) * i + symbolSize );
+		}
+		for( int i = numAssocSymbols; i < numAssocSymbols + 3; ++i )
+		{
+			assocSymbols[i*4+0].position = Vector2f( 0, 0 );
+			assocSymbols[i*4+1].position = Vector2f( 0, 0 );
+			assocSymbols[i*4+2].position = Vector2f( 0, 0 );
+			assocSymbols[i*4+3].position = Vector2f( 0, 0 );
+		}
+
+		for( int i = 0; i < numAssocSymbols; ++i )
+		{
+			actionText[i].setFont( owner->arial );
+			actionText[i].setCharacterSize( 24 );
+			actionText[i].setPosition( 100, 50 * i );
+			actionText[i].setColor( Color::White );
+			actionText[i].setString( possibleControllerActions[i] );
+		}
+	}
+	else if( inputType == "Keyboard" )
+	{
+		int numAssocSymbols = ControllerSettings::ButtonType::Count + 4;
+		
+		//move comes first
+		for( int i = 0; i < numAssocSymbols; ++i )
+		{
+			assocSymbols[i*4+0].color = Color::Red;
+			assocSymbols[i*4+1].color = Color::Green;
+			assocSymbols[i*4+2].color = Color::Blue;
+			assocSymbols[i*4+3].color = Color::Magenta;
+
+			assocSymbols[i*4+0].position = Vector2f( symbolX, (symbolSize + spacing) * i );
+			assocSymbols[i*4+1].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i );
+			assocSymbols[i*4+2].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize );
+			assocSymbols[i*4+3].position = Vector2f( symbolX, (symbolSize + spacing) * i + symbolSize );
+		}
+
+		for( int i = 0; i < numAssocSymbols; ++i )
+		{
+			actionText[i].setFont( owner->arial );
+			actionText[i].setCharacterSize( 24 );
+			actionText[i].setPosition( 100, 50 * i );
+			actionText[i].setColor( Color::White );
+			actionText[i].setString( possibleKeyboardActions[i] );
+		}
+	}
 }
 
 void PauseMenu::TabLeft()
@@ -327,20 +414,43 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	}
 	else if( currentTab == OPTIONS )
 	{
-		for( int i = 0; i < numCurrentSelectors; ++i )
+		string inputType = inputSelectors[0]->GetString();
+		int num = numCurrentSelectors;
+		if( inputType == "Keyboard" )
+		{
+			num = num - 1;
+		}
+		for( int i = 0; i < num; ++i )
 		{
 			currentSelectors[i]->Draw( target );
 		}
-
+		
 		if( currentSelectors == inputSelectors )
 		{
 			target->draw( assocSymbols );
+
+			
+			int cap;
+			if( inputType == "Xbox" )
+			{
+				cap = 12;
+			}
+			else if( inputType == "Keyboard" )
+			{
+				cap = 15;
+			}
+			else
+			{
+				//test
+				cap = 8;
+			}
+			for( int i = 0; i < cap; ++i )
+			{
+				target->draw( actionText[i] );
+			}
 		}
 
-		for( int i = 0; i < 9; ++i )
-		{
-			target->draw( actionText[i] );
-		}
+		
 	}
 }
 
@@ -654,172 +764,9 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case OPTIONS:
 		{	
-			//cout <<  framesWaiting << ", " << momentum << ", curr: " << currWaitFrames << endl;
-			if( currInput.A && !prevInput.A )
-			{
-				if( currentSelectors == videoSelectors )
-				{
-					ApplyVideoSettings();
-				}
-				else if( currentSelectors == soundSelectors )
-				{
-					ApplySoundSettings();
-				}
-				else if( currentSelectors == inputSelectors )
-				{
-					XBoxButton b = XBoxButton::XBOX_BLANK;
-					while( b == XBoxButton::XBOX_BLANK )
-					{
-						b = CheckXBoxInput( currInput );
-					}
-				}
-				
-				break;
-			}
-			else if( currInput.B && !prevInput.B )
-			{
-				if( currentSelectors == inputSelectors )
-				{
-					if( selectingProfile )
-					{
-						//go back to selecting option type
-					}
-					else
-					{
-						selectingProfile = true;
-					}
-				}
-			}
-			if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
-			{
-				//cout << "DOWN" << endl;
-				currentSelectors[optionSelectorIndex]->selected = false;
+			return UpdateOptions( currInput, prevInput );
 
-				optionSelectorIndex++;
-				if( optionSelectorIndex == numCurrentSelectors )
-				{
-					optionSelectorIndex = 0;
-				}		
-
-				currentSelectors[optionSelectorIndex]->selected = true;
-
-				if( momentum <= 0 )
-				{
-					momentum = 1;
-				}
-				else if( momentum < maxMomentum )
-				{
-					momentum++;
-				}
-
-				//CubicBezier bez( 0, 0, 1, 1 );
-				currentSelectors[optionSelectorIndex]->Stop();
-				double v = accelBez.GetValue( momentum / (double)maxMomentum );
-				framesWaiting = 0;
-				currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
-			}
-			else if( currInput.LUp() && ( framesWaiting >= currWaitFrames || momentum >= 0 ))
-			{
-				//cout << "up! " << framesWaiting << ", " << momentum << endl;
-				currentSelectors[optionSelectorIndex]->selected = false;
-
-				optionSelectorIndex--;
-				if( optionSelectorIndex == -1 )
-				{
-					optionSelectorIndex = numCurrentSelectors - 1;
-				}
-
-				currentSelectors[optionSelectorIndex]->selected = true;
-
-				if( momentum >= 0 )
-				{
-					momentum = -1;
-				}
-				else if( momentum > -maxMomentum )
-				{
-					momentum--;
-				}
-
-				//CubicBezier bez( 0, 0, 1, 1 );
-				currentSelectors[optionSelectorIndex]->Stop();
-				double v = accelBez.GetValue( (-momentum) / (double)maxMomentum );
-				framesWaiting = 0;
-				currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
-
-				
-			}
-			else if( currInput.LRight() )
-			{
-				//cout << "optionindex: " << optionSelectorIndex << endl;
-				//cout << "num curr selcts: " << numCurrentSelectors << endl;
-				//cout << "Attempted right" << endl;
-				currentSelectors[optionSelectorIndex]->Right();
-			}
-			else if( currInput.LLeft() )
-			{
-				//cout << "optionindex: " << optionSelectorIndex << endl;
-				//cout << "num curr selcts: " << numCurrentSelectors << endl;
-				//cout << "Attempted left" << endl;
-				currentSelectors[optionSelectorIndex]->Left();
-			}
-			
-			if( !currInput.LUp() && !currInput.LDown() )
-			{
-				momentum = 0;
-				framesWaiting = maxWaitFrames;
-				//currWaitFrames = maxWaitFrames;
-			}
-
-			if( !currInput.LLeft() && !currInput.LRight() )
-			{
-				currentSelectors[optionSelectorIndex]->Stop();
-			}
-			currentSelectors[optionSelectorIndex]->Update();
-			++framesWaiting;
-
-
-			if( selectingProfile )
-			{
-
-			}
-
-			//if( currInput.LDown() && !prevInput.LDown() )
-			//{
-			//	optionSelectorIndex++;
-			//	if( optionSelectorIndex == numCurrentSelectors )
-			//	{
-			//		optionSelectorIndex = 0;
-			//	}		
-			//}
-			//else if( currInput.LUp() && !prevInput.LUp() )
-			//{
-			//	optionSelectorIndex--;
-			//	if( optionSelectorIndex == -1 )
-			//	{
-			//		optionSelectorIndex = numCurrentSelectors - 1;
-			//	}
-			//}
-			//else if( currInput.LRight() )
-			//{
-			//	//cout << "optionindex: " << optionSelectorIndex << endl;
-			//	//cout << "num curr selcts: " << numCurrentSelectors << endl;
-			//	currentSelectors[optionSelectorIndex]->Right();
-			//}
-			//else if( currInput.LLeft() )
-			//{
-			//	//cout << "optionindex: " << optionSelectorIndex << endl;
-			//	//cout << "num curr selcts: " << numCurrentSelectors << endl;
-			//	currentSelectors[optionSelectorIndex]->Left();
-			//}
-			//else if( !currInput.LLeft() && !currInput.LRight() )
-			//{
-			//	currentSelectors[optionSelectorIndex]->Stop();
-			//}
-			//currentSelectors[optionSelectorIndex]->Update();
-			/*for( int i = 0; i < numCurrentSelectors; ++i )
-			{
-				currentSelectors[i]->Update();
-			}*/
+		
 			
 			break;
 		}
@@ -877,5 +824,189 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 	return R_NONE;
 }
+
+
+PauseMenu::UpdateResponse PauseMenu::UpdateOptions( ControllerState &currInput,
+	ControllerState &prevInput )
+{
+	if( currentSelectors == inputSelectors )
+	{
+		return UpdateInputOptions( currInput, prevInput );
+	}
+	else if( currentSelectors == videoSelectors )
+	{
+		return UpdateVideoOptions( currInput, prevInput );
+	}
+	else if( currentSelectors == soundSelectors )
+	{
+		return UpdateAudioOptions( currInput, prevInput );
+	}
+	else
+	{
+		assert( 0 );
+		return R_NONE;
+	}
+	string inputType = inputSelectors[0]->GetString();
+	bool keyboardInput = inputType == "Keyboard" && currentSelectors == inputSelectors;
+	bool xboxInput = inputType == "Xbox" && currentSelectors == inputSelectors;
+	//cout <<  framesWaiting << ", " << momentum << ", curr: " << currWaitFrames << endl;
+	if( currInput.A && !prevInput.A )
+	{
+		if( currentSelectors == videoSelectors )
+		{
+			ApplyVideoSettings();
+		}
+		else if( currentSelectors == soundSelectors )
+		{
+			ApplySoundSettings();
+		}
+		else if( currentSelectors == inputSelectors )
+		{
+			XBoxButton b = XBoxButton::XBOX_BLANK;
+			while( b == XBoxButton::XBOX_BLANK )
+			{
+				b = CheckXBoxInput( currInput );
+			}
+		}
+				
+		return R_NONE;
+	}
+	else if( currInput.B && !prevInput.B )
+	{
+		if( currentSelectors == inputSelectors )
+		{
+			if( selectingProfile )
+			{
+				//go back to selecting option type
+			}
+			else
+			{
+				selectingProfile = true;
+			}
+		}
+	}
+	if( currInput.LDown() && ( framesWaiting >= currWaitFrames || momentum <= 0 ))
+	{
+		//cout << "DOWN" << endl;
+		currentSelectors[optionSelectorIndex]->selected = false;
+
+		optionSelectorIndex++;
+		if( optionSelectorIndex == numCurrentSelectors )
+		{
+			optionSelectorIndex = 0;
+		}
+		else if( keyboardInput && optionSelectorIndex == numCurrentSelectors )
+		{
+			optionSelectorIndex = 0;
+		}
+
+		currentSelectors[optionSelectorIndex]->selected = true;
+
+		if( momentum <= 0 )
+		{
+			momentum = 1;
+		}
+		else if( momentum < maxMomentum )
+		{
+			momentum++;
+		}
+
+		//CubicBezier bez( 0, 0, 1, 1 );
+		currentSelectors[optionSelectorIndex]->Stop();
+		double v = accelBez.GetValue( momentum / (double)maxMomentum );
+		framesWaiting = 0;
+		currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+	}
+	else if( currInput.LUp() && ( framesWaiting >= currWaitFrames || momentum >= 0 ))
+	{
+		//cout << "up! " << framesWaiting << ", " << momentum << endl;
+		currentSelectors[optionSelectorIndex]->selected = false;
+
+		optionSelectorIndex--;
+		if( optionSelectorIndex == -1 )
+		{
+			optionSelectorIndex = numCurrentSelectors - 1;
+		}
+
+		currentSelectors[optionSelectorIndex]->selected = true;
+
+		if( momentum >= 0 )
+		{
+			momentum = -1;
+		}
+		else if( momentum > -maxMomentum )
+		{
+			momentum--;
+		}
+
+		//CubicBezier bez( 0, 0, 1, 1 );
+		currentSelectors[optionSelectorIndex]->Stop();
+		double v = accelBez.GetValue( (-momentum) / (double)maxMomentum );
+		framesWaiting = 0;
+		currWaitFrames = floor( (maxWaitFrames * ( 1 - v ) + minWaitFrames * v) + .5 );
+
+				
+	}
+	else if( currInput.LRight() )
+	{
+		//cout << "optionindex: " << optionSelectorIndex << endl;
+		//cout << "num curr selcts: " << numCurrentSelectors << endl;
+		//cout << "Attempted right" << endl;
+		currentSelectors[optionSelectorIndex]->Right();
+
+		if( currentSelectors == inputSelectors && optionSelectorIndex == 0 )
+		{
+			SetAssocSymbols();
+		}
+	}
+	else if( currInput.LLeft() )
+	{
+		//cout << "optionindex: " << optionSelectorIndex << endl;
+		//cout << "num curr selcts: " << numCurrentSelectors << endl;
+		//cout << "Attempted left" << endl;
+		currentSelectors[optionSelectorIndex]->Left();
+
+		if( currentSelectors == inputSelectors && optionSelectorIndex == 0 )
+		{
+			SetAssocSymbols();
+		}
+	}
+			
+	if( !currInput.LUp() && !currInput.LDown() )
+	{
+		momentum = 0;
+		framesWaiting = maxWaitFrames;
+		//currWaitFrames = maxWaitFrames;
+	}
+
+	if( !currInput.LLeft() && !currInput.LRight() )
+	{
+		currentSelectors[optionSelectorIndex]->Stop();
+	}
+	currentSelectors[optionSelectorIndex]->Update();
+	++framesWaiting;
+
+
+	if( selectingProfile )
+	{
+
+	}
+
+	return R_NONE;
+}
+
+PauseMenu::UpdateResponse PauseMenu::UpdateVideoOptions(
+	ControllerState &currInput, ControllerState &prevInput)
+{
+
+}
+
+PauseMenu::UpdateResponse PauseMenu::UpdateAudioOptions(
+	ControllerState &currInput, ControllerState &prevInput)
+{
+
+}
+
+
 //using namespace std;
 //using namespace sf;
