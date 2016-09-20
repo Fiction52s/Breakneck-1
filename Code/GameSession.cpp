@@ -24,6 +24,7 @@
 #include "MainMenu.h"
 #include "GoalExplosion.h"
 #include "PauseMenu.h"
+#include "Parallax.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -5094,6 +5095,7 @@ int GameSession::Run( string fileN )
 	Rain rain( this );
 	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 	
+	Parallax *testPar = new Parallax( this, 10, Parallax::Arrange::ABAB_2 );
 
 	while( !quit )
 	{
@@ -5602,7 +5604,7 @@ int GameSession::Run( string fileN )
 
 				//rainView.setCenter(
 
-				rain.Update();
+				
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -5619,6 +5621,9 @@ int GameSession::Run( string fileN )
 
 				cam.Update( player );
 
+				rain.Update();
+
+				testPar->Update();
 
 				//Vector2f diff = cam.pos - oldCam;
 
@@ -5896,24 +5901,27 @@ int GameSession::Run( string fileN )
 
 		//temporary parallax
 		View pView;
-		float depth = .1;
+		float depth = .3;
 		int px = floor( view.getCenter().x * depth + .5 );
 		int pxx;
 		
 		if( px >= 0 )
 		{
 			pxx = (px % (1920 * 2)) - 1920;
-			cout << ">0: " << pxx << ", realx: " << px << endl;
+			//cout << ">0: " << pxx << ", realx: " << px << endl;
 		}
 		else
 		{
 			pxx = -(-px % (1920 * 2)) + 1920;
-			cout << "<0: " << pxx << ", realx: " << px << endl;
+			//cout << "<0: " << pxx << ", realx: " << px << endl;
 		}
 		pView.setCenter( Vector2f( pxx, 0 ) );
 		pView.setSize( 1920, 1080 );
-		preScreenTex->setView( pView );
-		preScreenTex->draw( testParallaxSprite );
+		//preScreenTex->setView( pView );
+		//preScreenTex->draw( testParallaxSprite );
+		preScreenTex->setView( view );
+
+		testPar->Draw( preScreenTex );
 		
 
 		//window->draw( background );
@@ -5929,7 +5937,7 @@ int GameSession::Run( string fileN )
 		cloudView.setCenter( 960, 540 );
 		
 		//preScreenTex->setView( cut.cameras[cutFrame] );
-		preScreenTex->setView( view );
+		
 
 	//	SetParMountains( preScreenTex );
 

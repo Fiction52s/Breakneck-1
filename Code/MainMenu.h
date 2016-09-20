@@ -141,6 +141,12 @@ struct MainMenu
 	sf::Sprite saveKinJump;
 	sf::Sprite saveKinWindow;
 
+	Tileset *ts_saveStarBackground;
+	sf::Sprite saveStarBackground;
+
+	Tileset *ts_saveWorld;
+	sf::Sprite saveWorld;
+
 	void UpdateClouds();
 	int cloudFrame;
 	int cloudLoopLength;

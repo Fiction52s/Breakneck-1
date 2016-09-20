@@ -37,6 +37,8 @@ MainMenu::MainMenu()
 
 	selectCreateNew = false;
 
+	
+
 	files[0] = new SaveFile( "blue" );
 	files[1] = new SaveFile( "green" );
 	files[2] = new SaveFile( "yellow" );
@@ -117,7 +119,7 @@ MainMenu::MainMenu()
 
 	
 	cloudLoopLength = 8;
-	cloudLoopFactor = 6;
+	cloudLoopFactor = 5;
 
 	saveJumpFactor = 5;
 	saveJumpLength = 6;
@@ -227,6 +229,14 @@ void MainMenu::Init()
 	//saveKinJump.setTexture( ts_saveKin
 
 	cloudFrame = 0;
+
+	ts_saveStarBackground = tilesetManager.GetTileset( "WorldMap/map_z1_stars.png", 1920, 1080 );
+	saveStarBackground.setTexture( *ts_saveStarBackground->texture );
+
+	ts_saveWorld = tilesetManager.GetTileset( "WorldMap/map_z1_world.png", 1120, 1080 );
+	saveWorld.setTexture( *ts_saveWorld->texture );
+	saveWorld.setOrigin( saveWorld.getLocalBounds().width / 2, saveWorld.getLocalBounds().height / 2 );
+	saveWorld.setPosition( 960, 540 );
 	//saveKinJump.set
 }
 
@@ -1141,7 +1151,10 @@ void MainMenu::Run()
 		case TRANS_SAVE_TO_WORLDMAP:
 		case SAVEMENU:
 			{
+			///	preScreenTexture->draw( worldMap->
 				preScreenTexture->setView( v );
+				preScreenTexture->draw( saveStarBackground );
+				preScreenTexture->draw( saveWorld );
 				preScreenTexture->draw( saveBG );
 				preScreenTexture->draw( saveKinClouds );
 				preScreenTexture->draw( saveKinWindow );
