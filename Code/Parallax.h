@@ -12,11 +12,13 @@ struct RepeatingSprite
 {
 	RepeatingSprite( Parallax *parent, 
 		Tileset *ts, int index,
-		sf::Vector2f &offset, int repeatWidth );
+		sf::Vector2f &offset, int repeatWidth,
+		int depthLevel );
 	sf::Sprite spr;
 	void Update( sf::Vector2f &camPos );
 	sf::Vector2f relPos;
 	int repeatWidth;
+	float depth;// depthLevel;
 	Parallax *parent;
 	void Draw( sf::RenderTarget *target );
 };
@@ -32,17 +34,18 @@ struct Parallax
 	};
 
 	//how do i do animated parallax?
-	Parallax( GameSession *owner, int depthLevel,
-		Arrange arrange );
+	Parallax( GameSession *owner );
 	~Parallax();
 	//std::list<Tileset*> tilesets;
 	void SetImage( Tileset *ts, int index );
+	void AddRepeatingSprite( Tileset *ts, int index,
+		sf::Vector2f &offset, int repeatWidth,
+		int depthLevel );
 	void Update();
 	void Draw( sf::RenderTarget *target );
 	GameSession *owner;
 	sf::Sprite *vaArray;
-	RepeatingSprite *testRepeat;
-	RepeatingSprite *testRepeat1;
+	std::list<RepeatingSprite*> repeatingSprites;
 	//sf::Sprite testSprite;
 	//sf::Sprite testSprite1;
 	Tileset **tilesets;

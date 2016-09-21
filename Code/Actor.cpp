@@ -5001,7 +5001,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = fairHitboxes[frame];
 			}
 
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == slowMultiple)
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_FAIR] );
 				currAttackHit = false;
@@ -5025,7 +5025,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = dairHitboxes[frame];
 			}
 
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == slowMultiple )
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_DAIR] );
 				currAttackHit = false;
@@ -5047,7 +5047,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = uairHitboxes[frame];
 			}
 
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == slowMultiple)
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_UAIR] );
 				currAttackHit = false;
@@ -5328,7 +5328,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = standHitboxes[frame];
 			}
 
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == slowMultiple )
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_STANDATTACK] );
 				currAttackHit = false;
@@ -16158,6 +16158,7 @@ void Actor::ConfirmHit( Color p_flashColor,
 	}
 
 	owner->powerWheel->Charge( charge );
+	desperationMode = false;
 	//owner->player->test = true;
 	//desperationMode = false;
 }

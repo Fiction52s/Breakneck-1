@@ -915,6 +915,9 @@ void MainMenu::Run()
 					}
 					else if( result == 2 )
 					{
+						v.setSize( 1920, 1080 );
+						v.setCenter( 1920/2, 1080/ 2);
+						window->setView( v );
 						menuMode = MainMenu::MAINMENU;
 					}
 					else if( result == 3 )

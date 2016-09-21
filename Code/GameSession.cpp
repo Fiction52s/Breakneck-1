@@ -5095,7 +5095,54 @@ int GameSession::Run( string fileN )
 	Rain rain( this );
 	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 	
-	Parallax *testPar = new Parallax( this, 10, Parallax::Arrange::ABAB_2 );
+	Parallax *testPar = new Parallax( this );
+
+	Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
+	Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
+	Tileset *ts_cloud1 = GetTileset( "Parallax/w1_cloud_02_1920x1080.png", 1920, 1080 );
+	Tileset *ts_cloud2 = GetTileset( "Parallax/w1_cloud_03_1920x1080.png", 1920, 1080 );
+	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
+	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
+	//testPar->AddRepeatingSprite( ts_cloud0, 0, Vector2f( 0, 0 ), 1920 * 2, 50 );
+	//testPar->AddRepeatingSprite( ts_cloud1, 0, Vector2f( 500, -200 ), 1920 * 2, 30 );
+	//testPar->AddRepeatingSprite( ts_cloud2, 0, Vector2f( 1500, 300 ), 1920 * 2, 25 );
+
+	/*Tileset *ts_mountain0 = GetTileset( "Parallax/parallax_w1_mountain_01.png", 1920, 1080 );
+	Tileset *ts_mountain1 = GetTileset( "Parallax/parallax_w1_mountain_02.png", 1920, 1080 );
+	Tileset *ts_mountain2 = GetTileset( "Parallax/parallax_w1_mountain_03.png", 1920, 1080 );
+	Tileset *ts_mountain3 = GetTileset( "Parallax/parallax_w1_mountain_04.png", 1920, 1080 );
+	Tileset *ts_mountain4 = GetTileset( "Parallax/parallax_w1_mountain_05.png", 1920, 1080 );
+	Tileset *ts_mountain5 = GetTileset( "Parallax/parallax_w1_mountain_06.png", 1920, 1080 );*/
+
+
+	Tileset *ts_mountain0 = GetTileset( "Parallax/parallax_w2_tree_01.png", 1920, 1080 );
+	Tileset *ts_mountain1 = GetTileset( "Parallax/parallax_w2_tree_02.png", 1920, 1080 );
+	Tileset *ts_mountain2 = GetTileset( "Parallax/parallax_w2_tree_03.png", 1920, 1080 );
+	Tileset *ts_mountain3 = GetTileset( "Parallax/parallax_w2_tree_04.png", 1920, 1080 );
+	Tileset *ts_mountain4 = GetTileset( "Parallax/parallax_w2_tree_05.png", 1920, 1080 );
+	Tileset *ts_mountain5 = GetTileset( "Parallax/parallax_w2_tree_06.png", 1920, 1080 );
+	testPar->AddRepeatingSprite( ts_mountain5, 0, Vector2f( 0, 0 ), 1920 * 2, 5 );
+	testPar->AddRepeatingSprite( ts_mountain5, 0, Vector2f( 1920, 0 ), 1920 * 2, 5 );
+	testPar->AddRepeatingSprite( ts_mountain4, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts_mountain4, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts_mountain3, 0, Vector2f( 0, 0 ), 1920 * 2, 15 );
+	testPar->AddRepeatingSprite( ts_mountain3, 0, Vector2f( 1920, 0 ), 1920 * 2, 15 );
+	testPar->AddRepeatingSprite( ts_mountain2, 0, Vector2f( 0, 0 ), 1920 * 2, 20 );
+	testPar->AddRepeatingSprite( ts_mountain2, 0, Vector2f( 1920, 0 ), 1920 * 2, 20 );
+	testPar->AddRepeatingSprite( ts_mountain1, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
+	testPar->AddRepeatingSprite( ts_mountain1, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
+	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 0, 0 ), 1920 * 2, 30 );
+	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );
+	
+	
+	
+	
+	
+	
+
+	
+
+
 
 	while( !quit )
 	{
