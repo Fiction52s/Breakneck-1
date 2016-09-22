@@ -1257,7 +1257,8 @@ void MainMenu::Run()
 			///	preScreenTexture->draw( worldMap->
 				
 				View test;
-				if( menuMode == TRANS_SAVE_TO_WORLDMAP )
+				if( false )
+				//if( menuMode == TRANS_SAVE_TO_WORLDMAP )
 				{
 				test.setCenter( v.getCenter() );
 				CubicBezier testBez( 0, 0, 1, 1 );
@@ -1279,7 +1280,8 @@ void MainMenu::Run()
 				preScreenTexture->draw( asteroid0 );
 				preScreenTexture->draw( asteroid2 );
 				
-				if( menuMode == TRANS_SAVE_TO_WORLDMAP )
+				if( false )
+				//if( menuMode == TRANS_SAVE_TO_WORLDMAP )
 				{
 					preScreenTexture->setView( v );
 				}

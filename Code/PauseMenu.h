@@ -75,9 +75,20 @@ struct PauseMenu
 		ControllerState &prevInput );
 	Tileset *ts_background[Count];
 	Tileset *ts_select;
+	
+	ControllerTypes::Type controllerType;
+	int selectedIndex;
+
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;
 	GameSession *owner;
+
+	void LoadControlOptions();
+
+	void SaveControlOptions();
+	void UpdateXboxButtonIcons(
+		int controlSetIndex );
+	void UpdateButtonIcons();
 	Tab currentTab;
 
 	//bool show;
@@ -106,7 +117,11 @@ struct PauseMenu
 	int maxMomentum;
 	CubicBezier accelBez;
 
+	Tileset *ts_xboxButtons;
+	sf::VertexArray buttonVA;
+	Tileset *ts_currentButtons;
 	
+	Tileset *ts_actionIcons;
 
 	OptionSelector **inputSelectors;
 	int currInputIndex;
@@ -133,7 +148,7 @@ struct PauseMenu
 		ControllerState &prevInput);
 	std::string *possibleControllerActions;
 	std::string *possibleKeyboardActions;
-	XBoxButton inputAssoc[ControllerSettings::ButtonType::Count];
+	XBoxButton xboxInputAssoc[3][ControllerSettings::ButtonType::Count];
 	/*int maxWaitFrames;
 	int currWaitFrames;
 	int minWaitFrames;

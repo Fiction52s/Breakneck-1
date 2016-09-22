@@ -3,8 +3,8 @@
 #include "GameSession.h"
 #include "MainMenu.h"
 #include <iostream>
-#include <sstream>
 #include "SaveFile.h"
+#include <fstream>
 
 using namespace sf;
 using namespace std;
@@ -122,10 +122,10 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 
 PauseMenu::PauseMenu( GameSession *p_owner )
 	:owner( p_owner ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 ),
-	assocSymbols( sf::Quads, ( ControllerSettings::ButtonType::Count + 4 ) * 4 )
+	assocSymbols( sf::Quads, ( ControllerSettings::ButtonType::Count + 4 ) * 4 ),
+	buttonVA( sf::Quads, ControllerSettings::ButtonType::Count * 4 )
 {
 	
-
 
 	ts_background[0] = owner->GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
 	ts_background[1] = owner->GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
@@ -134,6 +134,11 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	ts_background[4] = owner->GetTileset( "Menu/pause_5_pause_1820x980.png", 1820, 980 );
 
 	ts_select = owner->GetTileset( "Menu/menu_select_800x140.png", 800, 140 );
+	ts_xboxButtons = owner->GetTileset( "Menu/xbox_button_icons_128x128.png", 128, 128 );
+
+	ts_actionIcons = owner->GetTileset( "Menu/power_icon_128x128.png", 128, 128 );
+
+	
 	selectSprite.setTexture( *ts_select->texture );
 
 	bgSprite.setPosition( 0, 0 );
@@ -289,28 +294,168 @@ PauseMenu::~PauseMenu()
 	delete [] videoSelectors;*/
 }
 
+void PauseMenu::LoadControlOptions()
+{
+	string filename = "controlsettings";
+	ifstream is( filename );
+	if( !is.is_open() )
+	{
+		cout << "error loading: " << filename << endl;
+		assert( 0 );
+	} 
+
+	int inputType;
+
+	is >> inputType;
+	is >> selectedIndex;
+
+	controllerType = (ControllerTypes::Type)inputType;
+
+	for( int schemeIndex = 0; schemeIndex < 3; ++schemeIndex )
+	{
+		for( int i = 0; i < ControllerSettings::ButtonType::Count; ++i )
+		{
+			int temp;
+			is >> temp;
+			xboxInputAssoc[schemeIndex][i] = (XBoxButton)temp;
+		}
+	}
+
+	is.close();
+
+	
+}
+
+void PauseMenu::UpdateButtonIcons()
+{
+	switch( controllerType )
+	{
+	case ControllerTypes::XBOX:
+		UpdateXboxButtonIcons( selectedIndex );
+		break;
+	case ControllerTypes::KEYBOARD:
+		break;
+	case ControllerTypes::GAMECUBE:
+		break;
+	case ControllerTypes::PS4:
+		break;
+	}
+}
+
+void PauseMenu::SaveControlOptions()
+{
+	string filename = "controlsettings";
+	ofstream of( filename );
+	if( !of.is_open() )
+	{
+		cout << "error save to: " << filename << endl;
+	}
+
+	for( int schemeIndex = 0; schemeIndex < 3; ++schemeIndex )
+	{
+		for( int i = 0; i < ControllerSettings::ButtonType::Count; ++i )
+		{
+			of << (int)xboxInputAssoc[schemeIndex][i] << endl;
+		}
+	}
+	of.close();
+}
+
+void PauseMenu::UpdateXboxButtonIcons( int controlSetIndex )
+{
+	ts_currentButtons = ts_xboxButtons;
+	for( int i = 0; i < ControllerSettings::ButtonType::Count; ++i )
+	{
+		int ind = (int)xboxInputAssoc[controlSetIndex][i] - 1;
+		IntRect sub = ts_xboxButtons->GetSubRect( ind );
+		buttonVA[i*4+0].texCoords = Vector2f( sub.left, sub.top );
+		buttonVA[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+		buttonVA[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+		buttonVA[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+	}
+}
+
 void PauseMenu::SetAssocSymbols()
 {
+	/*for( int i = 0; i < 15; ++i )
+	{
+		buttonVA[i*4+0].position = Vector2f( 0, 0 );
+		buttonVA[i*4+1].position = Vector2f( 0, 0 );
+		buttonVA[i*4+2].position = Vector2f( 0, 0 );
+		buttonVA[i*4+3].position = Vector2f( 0, 0 );
+	}*/
+
 	int symbolX = 200;
-	int symbolSize = 50;
+	int extraX;
+	int extraY;
+	int symbolSize = 128;
 	int spacing = 16;
+	int buttonIconSpacing = 150;
 	string inputType = inputSelectors[0]->GetString();
 	if( inputType == "Xbox" )
 	{
-		int numAssocSymbols = ControllerSettings::ButtonType::Count + 1;
+		int numAssocSymbols = ControllerSettings::ButtonType::Count; //+1
 		
+
 		//move comes first
 		for( int i = 0; i < numAssocSymbols; ++i )
 		{
-			assocSymbols[i*4+0].color = Color::Red;
+			/*assocSymbols[i*4+0].color = Color::Red;
 			assocSymbols[i*4+1].color = Color::Green;
 			assocSymbols[i*4+2].color = Color::Blue;
-			assocSymbols[i*4+3].color = Color::Magenta;
+			assocSymbols[i*4+3].color = Color::Magenta;*/
+			
+			if( i < (numAssocSymbols) / 2 )
+			{
+				extraX = 0;
+				extraY = 0;
+			}
+			else
+			{
+				extraX = 500;
+				extraY = -(symbolSize + spacing) * ((numAssocSymbols) / 2);
+			}
+			
+			assocSymbols[i*4+0].position = Vector2f( extraX + symbolX, (symbolSize + spacing) * i + extraY );
+			assocSymbols[i*4+1].position = Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + extraY );
+			assocSymbols[i*4+2].position = Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize + extraY );
+			assocSymbols[i*4+3].position = Vector2f( extraX + symbolX, (symbolSize + spacing) * i + symbolSize + extraY );
 
-			assocSymbols[i*4+0].position = Vector2f( symbolX, (symbolSize + spacing) * i );
-			assocSymbols[i*4+1].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i );
-			assocSymbols[i*4+2].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize );
-			assocSymbols[i*4+3].position = Vector2f( symbolX, (symbolSize + spacing) * i + symbolSize );
+			IntRect sub = ts_actionIcons->GetSubRect( min( i, 9 ) );
+
+			assocSymbols[i*4+0].texCoords = Vector2f( sub.left, sub.top );
+			assocSymbols[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+			assocSymbols[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+			assocSymbols[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+
+			/*if( i > 0 )
+			{
+
+				buttonVA[(i-1)*4+0].color = Color::Blue;
+				buttonVA[(i-1)*4+1].color = Color::Blue;
+				buttonVA[(i-1)*4+2].color = Color::Blue;
+				buttonVA[(i-1)*4+3].color = Color::Blue;
+				
+				buttonVA[(i-1)*4+0].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * (i-1) + extraY );
+				buttonVA[(i-1)*4+1].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * (i-1) + extraY );
+				buttonVA[(i-1)*4+2].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * (i-1) + symbolSize + extraY );
+				buttonVA[(i-1)*4+3].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * (i-1) + symbolSize + extraY );
+			}*/
+
+		
+
+			buttonVA[i*4+0].color = Color::Blue;
+			buttonVA[i*4+1].color = Color::Blue;
+			buttonVA[i*4+2].color = Color::Blue;
+			buttonVA[i*4+3].color = Color::Blue;
+				
+			buttonVA[i*4+0].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + extraY );
+			buttonVA[i*4+1].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + extraY );
+			buttonVA[i*4+2].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize + extraY );
+			buttonVA[i*4+3].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + symbolSize + extraY );
+
+
+
 		}
 		for( int i = numAssocSymbols; i < numAssocSymbols + 3; ++i )
 		{
@@ -397,6 +542,8 @@ void PauseMenu::SetTab( Tab t )
 	case SHARDS:
 		break;
 	case OPTIONS:
+		LoadControlOptions();
+		UpdateButtonIcons();
 		break;
 	case PAUSE:
 		pauseSelectIndex = 0;
@@ -427,7 +574,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 		
 		if( currentSelectors == inputSelectors )
 		{
-			target->draw( assocSymbols );
+			target->draw( assocSymbols, ts_actionIcons->texture );
 
 			
 			int cap;
@@ -448,6 +595,8 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 			{
 				target->draw( actionText[i] );
 			}
+
+			target->draw( buttonVA, ts_currentButtons->texture );
 		}
 
 		

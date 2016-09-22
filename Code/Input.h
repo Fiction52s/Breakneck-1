@@ -120,24 +120,24 @@ enum XBoxButton
 	XBOX_B,
 	XBOX_X,
 	XBOX_Y,
-	XBOX_L1,
 	XBOX_R1,
-	XBOX_L2,
 	XBOX_R2,
-	XBOX_LLEFT,
+	XBOX_L1,
+	XBOX_L2,
+	XBOX_START,
+	XBOX_BACK,
+	XBOX_PUP,
+	XBOX_PDOWN,
+	XBOX_PLEFT,
+	XBOX_PRIGHT,
 	XBOX_LUP,
+	XBOX_LLEFT,
 	XBOX_LRIGHT,
 	XBOX_LDOWN,
 	XBOX_RLEFT,
 	XBOX_RUP,
 	XBOX_RRIGHT,
 	XBOX_RDOWN,
-	XBOX_PLEFT,
-	XBOX_PUP,
-	XBOX_PRIGHT,
-	XBOX_PDOWN,
-	XBOX_BACK,
-	XBOX_START,
 	XBOX_Count
 };	
 
@@ -156,6 +156,20 @@ struct ControllerSettings
 		RIGHTWIRE,
 		MAP,
 		PAUSE,
+		Count
+	};
+
+	
+};
+
+struct ControllerTypes
+{
+	enum Type
+	{
+		XBOX,
+		KEYBOARD,
+		GAMECUBE,
+		PS4,
 		Count
 	};
 };
