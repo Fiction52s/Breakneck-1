@@ -43,8 +43,7 @@ void RepeatingSprite::Draw( RenderTarget *target )
 
 //depth level of 0 doesnt move at all
 //depth level of 100 moves at the same rate as the terrain
-Parallax::Parallax( GameSession *p_owner )
-	:owner( p_owner )
+Parallax::Parallax()
 {
 	depth = depthLevel / .01;
 
@@ -81,10 +80,8 @@ void Parallax::AddRepeatingSprite( Tileset *ts, int index,
 		ts, index, offset, repeatWidth, depthLevel ) );
 }
 
-void Parallax::Update()
+void Parallax::Update( Vector2f &camPos )
 {
-	Vector2f camPos = owner->cam.pos;
-
 	for( list<RepeatingSprite*>::iterator it = repeatingSprites.begin();
 		it != repeatingSprites.end(); ++it )
 	{
@@ -126,7 +123,7 @@ void Parallax::Draw( RenderTarget *target )
 	oldView.setSize( target->getView().getSize() );
 	//oldView = target->getView();
 	//newView.//( Vector2f( owner->cam.pos ), Vector2f( 1920, 1080 ) ); 
-	newView.setCenter( owner->cam.pos );
+	newView.setCenter( oldView.getCenter() );
 	newView.setSize( Vector2f( 1920, 1080 ) );
 	target->setView( newView );
 

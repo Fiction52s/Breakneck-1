@@ -34,14 +34,14 @@ struct Parallax
 	};
 
 	//how do i do animated parallax?
-	Parallax( GameSession *owner );
+	Parallax();
 	~Parallax();
 	//std::list<Tileset*> tilesets;
 	void SetImage( Tileset *ts, int index );
 	void AddRepeatingSprite( Tileset *ts, int index,
 		sf::Vector2f &offset, int repeatWidth,
 		int depthLevel );
-	void Update();
+	void Update( sf::Vector2f &camPos );
 	void Draw( sf::RenderTarget *target );
 	GameSession *owner;
 	sf::Sprite *vaArray;

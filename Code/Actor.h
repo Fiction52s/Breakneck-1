@@ -104,6 +104,9 @@ struct Actor : QuadTreeCollider,
 	
 	void SetActionExpr( Action a );
 	void SetExpr( Expr ex );
+	void SetAction( Action a );
+
+	bool AirAttack();
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;

@@ -5095,7 +5095,7 @@ int GameSession::Run( string fileN )
 	Rain rain( this );
 	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 	
-	Parallax *testPar = new Parallax( this );
+	Parallax *testPar = new Parallax();
 
 	Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
 	Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
@@ -5670,7 +5670,7 @@ int GameSession::Run( string fileN )
 
 				rain.Update();
 
-				testPar->Update();
+				testPar->Update( cam.pos );
 
 				//Vector2f diff = cam.pos - oldCam;
 

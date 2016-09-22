@@ -25,6 +25,8 @@ struct CustomMapsHandler : GUIHandler
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 };
 
+
+struct Parallax;
 struct MainMenu
 {
 	enum MainMenuOptions
@@ -85,6 +87,7 @@ struct MainMenu
 	static sf::RenderTexture *minimapTexture;
 	static sf::RenderTexture *mapTexture;
 	static sf::RenderTexture *pauseTexture;
+	static sf::RenderTexture *saveTexture;
 	
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;
@@ -136,16 +139,45 @@ struct MainMenu
 	Tileset *ts_saveKinJump2;
 	Tileset *ts_saveKinClouds;
 	Tileset *ts_saveKinWindow;
+	Tileset *ts_saveKinSky;
 
 	sf::Sprite saveKinClouds;
 	sf::Sprite saveKinJump;
 	sf::Sprite saveKinWindow;
+	sf::Sprite saveKinSky;
 
 	Tileset *ts_saveStarBackground;
 	sf::Sprite saveStarBackground;
 
 	Tileset *ts_saveWorld;
 	sf::Sprite saveWorld;
+
+	//Tileset *ts_asteroid0;
+	//Tileset *ts_asteroid1;
+	//sf::Sprite asteroid0;
+	//sf::Sprite asteroid1;
+	//sf::Sprite asteroid2;
+	Parallax *parBack;
+	Parallax *parFront;
+	int asteroidScrollFrames0;
+	int asteroidScrollFrames1;
+	int asteroidScrollFrames2;
+	int asteroidFrameBack;
+	int asteroidFrameFront;
+
+	sf::Sprite asteroid0;
+	sf::Sprite asteroid1;
+	sf::Sprite asteroid2;
+	sf::Vector2f a0start;
+	sf::Vector2f a0end;
+	sf::Vector2f a1start;
+	sf::Vector2f a1end;
+	sf::Vector2f a2start;
+	sf::Vector2f a2end;
+
+	int transWorldMapFrame;
+	sf::Uint8 transAlpha;
+
 
 	void UpdateClouds();
 	int cloudFrame;

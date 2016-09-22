@@ -5,6 +5,7 @@
 #include "SaveFile.h"
 #include <iostream>
 #include <sstream>
+#include "Parallax.h"
 
 using namespace std;
 using namespace sf;
@@ -19,6 +20,7 @@ sf::RenderTexture *MainMenu::postProcessTexture2 = NULL;
 sf::RenderTexture *MainMenu::minimapTexture = NULL;
 sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
+sf::RenderTexture *MainMenu::saveTexture = NULL;
 
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
@@ -100,6 +102,14 @@ MainMenu::MainMenu()
 		pauseTexture->clear();
 	}
 
+	if( saveTexture == NULL )
+	{
+		saveTexture= new RenderTexture;
+		saveTexture->create( 1920, 1080 );
+		saveTexture->clear();
+	}
+
+	transWorldMapFrame = 0;
 	saveKinFaceFrame = 0;
 	saveKinFaceTurnLength = 15;
 
@@ -164,6 +174,8 @@ MainMenu::MainMenu()
 	betaText.setPosition( 50, 200 );
 	betaText.setFont( arial );
 
+	
+
 	Init();
 }
 
@@ -218,6 +230,9 @@ void MainMenu::Init()
 	ts_saveKinJump2 = tilesetManager.GetTileset( "Menu/save_kin_jump2_500x1080.png", 500, 1080 );
 	ts_saveKinClouds = tilesetManager.GetTileset( "Menu/save_kin_clouds_500x384.png", 500, 384 );
 	ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
+	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
+	ts_saveKinSky = tilesetManager.GetTileset( "Menu/save_menu_sky_01_500x1080.png", 500, 1080 );
+	
 	saveKinClouds.setTexture( *ts_saveKinClouds->texture );
 	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( 0 ) );
 	saveKinClouds.setOrigin( saveKinClouds.getLocalBounds().width, saveKinClouds.getLocalBounds().height );
@@ -226,6 +241,10 @@ void MainMenu::Init()
 	saveKinWindow.setTexture( *ts_saveKinWindow->texture );
 	saveKinWindow.setOrigin( saveKinWindow.getLocalBounds().width, 0 );
 	saveKinWindow.setPosition( 1920, 0 );
+
+	saveKinSky.setTexture( *ts_saveKinSky->texture );
+	saveKinSky.setOrigin( saveKinSky.getLocalBounds().width, 0 );
+	saveKinSky.setPosition( 1920, 0 );
 	//saveKinJump.setTexture( ts_saveKin
 
 	cloudFrame = 0;
@@ -237,7 +256,45 @@ void MainMenu::Init()
 	saveWorld.setTexture( *ts_saveWorld->texture );
 	saveWorld.setOrigin( saveWorld.getLocalBounds().width / 2, saveWorld.getLocalBounds().height / 2 );
 	saveWorld.setPosition( 960, 540 );
-	//saveKinJump.set
+
+	Tileset *ts_asteroid0 = tilesetManager.GetTileset( "Menu/w0_asteroid_01_960x1080.png", 960, 1080 );
+	Tileset *ts_asteroid1 = tilesetManager.GetTileset( "Menu/w0_asteroid_02_1920x1080.png", 1920, 1080 );
+	Tileset *ts_asteroid2 = tilesetManager.GetTileset( "Menu/w0_asteroid_03_1920x1080.png", 1920, 1080 );
+
+	asteroid0.setTexture( *ts_asteroid0->texture );
+	asteroid1.setTexture( *ts_asteroid1->texture );
+	asteroid2.setTexture( *ts_asteroid2->texture );
+
+	asteroid0.setPosition( 0, 0 );
+	asteroid1.setPosition( 0, 0 );
+	asteroid2.setPosition( 0, 0 );
+
+	a0start = Vector2f( -1920, 0 );
+	a0end = Vector2f( 1920, 0 );
+
+	a1start = Vector2f( 1920, 0 );
+	a1end = Vector2f( -1920, 0 );
+
+	a2start = Vector2f( -1920, 0 );
+	a2end = Vector2f( 1920, 0 );
+
+	asteroidScrollFrames0 = 2000;
+	asteroidScrollFrames1 = 500;
+	asteroidScrollFrames2 = 120;
+
+	asteroidFrameBack = asteroidScrollFrames0 / 2;
+	asteroidFrameFront = asteroidScrollFrames1 / 2;
+
+
+	//parBack = new Parallax();
+	//parFront = new Parallax();
+	//parBack->AddRepeatingSprite( ts_asteroid1, 0, Vector2f( -1920, 0 ), 1920 * 3, 50 );
+	//parBack->AddRepeatingSprite( ts_asteroid1, 0, Vector2f( 1920, 0 ), 1920 * 2, 50 );
+	//parFront->AddRepeatingSprite( ts_asteroid0, 0, Vector2f( 0, 0 ), 1920, 50 );
+	//parFront->AddRepeatingSprite( ts_asteroid2, 0, Vector2f( 0, 0 ), 1920, 50 );
+
+	//asteroidFrame = 0;
+	
 }
 
 void MainMenu::GameEditLoop( const std::string &filename)
@@ -537,6 +594,8 @@ void MainMenu::Run()
 
 	gameClock.restart();
 
+	saveTexture->setView( v );
+
 
 	while( !quit )
 	{
@@ -683,6 +742,9 @@ void MainMenu::Run()
 							menuMode = SAVEMENU;
 							selectedSaveIndex = 0;
 							saveKinFaceFrame = 0;
+							transWorldMapFrame = 0;
+							asteroidFrameBack = 0;
+							asteroidFrameFront = 0;
 							moveDelayCounter = 0;
 							selectCreateNew = true;
 
@@ -701,6 +763,9 @@ void MainMenu::Run()
 						{
 							menuMode = SAVEMENU;
 							selectedSaveIndex = 0;
+							asteroidFrameBack = 0;
+							transWorldMapFrame = 0;
+							asteroidFrameFront = 0;
 							saveKinFaceFrame = 0;
 							moveDelayCounter = 0;
 							selectCreateNew = false;
@@ -934,6 +999,7 @@ void MainMenu::Run()
 			}
 		case SAVEMENU:
 			{
+				
 				if( currInput.B && !prevInput.B )
 				{
 					menuMode = MAINMENU;
@@ -949,7 +1015,8 @@ void MainMenu::Run()
 					delete gs;*/
 
 					menuMode = Mode::TRANS_SAVE_TO_WORLDMAP;
-					worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+					transAlpha = 255;
+					worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
 					worldMap->frame = 0;
 					worldMap->UpdateMapList();
 					soundNodeList->ActivateSound( soundBuffers[S_SELECT] );
@@ -1040,7 +1107,31 @@ void MainMenu::Run()
 				saveKinFace.setPosition( topLeftPos );
 
 				UpdateClouds();
+				++asteroidFrameBack;
+				++asteroidFrameFront;
 
+				int r0 = asteroidFrameBack % asteroidScrollFrames0;
+				int r1 = asteroidFrameFront % asteroidScrollFrames1;
+				//int r2 = asteroidFrame % asteroidScrollFrames2;
+
+				Vector2f offset0( 0, 0 );
+				Vector2f offset1( 0, 0 );
+				CubicBezier bez( 0, 0, 1, 1 );
+				double v = bez.GetValue( r0 / (double)asteroidScrollFrames0 );
+				double v1 = bez.GetValue( r1 / (double)asteroidScrollFrames1 );
+				offset0.x = 1920 * 3 * v;
+				offset1.x = -1920 * v1;
+
+				//cout << "asteroidframe: " << asteroidFrame << ", offset0: " << offset0.x << ", offset1: " << offset1.x << endl;
+				
+				
+				asteroid0.setPosition( a0start * (float)(1.0-v1) + a0end * (float)v1 );
+				asteroid1.setPosition( a1start * (float)(1.0-v) + a1end * (float)v );
+				asteroid2.setPosition( a2start * (float)(1.0-v1) + a2end * (float)v1 );
+				//parBack->Update( offset0 );
+				//parFront->Update( offset1 );
+
+				//backPar->Update( 
 
 				break;
 			}
@@ -1050,7 +1141,9 @@ void MainMenu::Run()
 			break;
 		case TRANS_SAVE_TO_WORLDMAP:
 			{
-				if( saveKinFaceFrame == saveKinFaceTurnLength * 3 + 20 )
+				
+				//saveTexture->clear();
+				if( saveKinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
 				{
 					menuMode = WORLDMAP;
 					break;
@@ -1090,8 +1183,15 @@ void MainMenu::Run()
 					saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
 				}
 				
+				transAlpha = (1.f - transWorldMapFrame / 40.f) * 255;
 
 				saveKinFaceFrame++;
+
+				if( saveKinFaceFrame >= saveKinFaceTurnLength * 3 )
+				{
+					transWorldMapFrame++;
+				}
+				
 
 				UpdateClouds();
 				break;
@@ -1155,20 +1255,53 @@ void MainMenu::Run()
 		case SAVEMENU:
 			{
 			///	preScreenTexture->draw( worldMap->
-				preScreenTexture->setView( v );
+				
+				View test;
+				if( menuMode == TRANS_SAVE_TO_WORLDMAP )
+				{
+				test.setCenter( v.getCenter() );
+				CubicBezier testBez( 0, 0, 1, 1 );
+				float val = testBez.GetValue( transWorldMapFrame / 40.0 );
+				test.setSize( Vector2f( 1920.f, 1080.f ) * (1.f - val)
+					+ Vector2f( 960, 540 ) * val );
+				
+				preScreenTexture->setView( test );
+				}
+				else
+				{
+					preScreenTexture->setView( v );
+				}
+				//preScreenTexture->setView( v );					
 				preScreenTexture->draw( saveStarBackground );
+				//parBack->Draw( preScreenTexture );
+				preScreenTexture->draw( asteroid1 );
 				preScreenTexture->draw( saveWorld );
-				preScreenTexture->draw( saveBG );
-				preScreenTexture->draw( saveKinClouds );
-				preScreenTexture->draw( saveKinWindow );
+				preScreenTexture->draw( asteroid0 );
+				preScreenTexture->draw( asteroid2 );
+				
+				if( menuMode == TRANS_SAVE_TO_WORLDMAP )
+				{
+					preScreenTexture->setView( v );
+				}
+				//parFront->Draw( preScreenTexture );
+
+				saveTexture->clear( Color::Transparent );
+				saveTexture->setView( v );
+				saveTexture->draw( saveBG );
+				saveTexture->draw( saveKinSky );
+				saveTexture->draw( saveKinClouds );
+				saveTexture->draw( saveKinWindow );
 				if( menuMode == SAVEMENU ||
 					saveKinFaceFrame < saveJumpLength * saveJumpFactor )
 				{
-					preScreenTexture->draw( saveKinJump );
+					saveTexture->draw( saveKinJump );
 				}
 				
-				preScreenTexture->draw( saveSelect );
-				preScreenTexture->draw( saveKinFace );
+				saveTexture->draw( saveSelect );
+				saveTexture->draw( saveKinFace );
+
+				
+				
 				break;
 			}
 		}
@@ -1196,6 +1329,19 @@ void MainMenu::Run()
 		
 
 		//window->popGLStates();
+
+		if( menuMode == SAVEMENU || menuMode == TRANS_SAVE_TO_WORLDMAP )
+		{
+			saveTexture->display();
+			sf::Sprite saveSpr;
+			saveSpr.setTexture( saveTexture->getTexture() );
+
+			if( menuMode == TRANS_SAVE_TO_WORLDMAP )
+			{
+				saveSpr.setColor( Color( 255, 255, 255, transAlpha ) );
+			}
+			preScreenTexture->draw( saveSpr );
+		}
 
 		preScreenTexture->display();
 		sf::Sprite pspr;

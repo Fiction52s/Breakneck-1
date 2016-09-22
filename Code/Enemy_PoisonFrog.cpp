@@ -49,7 +49,7 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	//jumpStrength = 10;
 	xSpeed = 8;
 
-	mover = new GroundMover( p_owner, g, q, 45, true, this );
+	mover = new GroundMover( p_owner, g, q, 30, true, this );
 	mover->SetSpeed( 0 );
 
 	initHealth = 60;
@@ -85,16 +85,16 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 45;
-	hurtBody.rh = 45;
+	hurtBody.rw = 30;
+	hurtBody.rh = 30;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 45;
-	hitBody.rh = 45;
+	hitBody.rw = 30;
+	hitBody.rh = 30;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;

@@ -1061,6 +1061,30 @@ void Actor::CheckHoldJump()
 	}
 }
 
+bool Actor::AirAttack()
+{
+	if( currInput.rightShoulder && !prevInput.rightShoulder )
+	{
+		if( currInput.LUp() )
+		{
+			SetAction( UAIR);
+			frame = 0;
+		}
+		else if( currInput.LDown() )
+		{
+			SetAction( DAIR );
+			frame = 0;
+		}
+		else
+		{
+			SetAction( FAIR );
+			frame = 0;
+		}
+		return true;
+	}
+	return false;
+}
+
 void Actor::UpdatePrePhysics()
 {
 	
@@ -2086,24 +2110,7 @@ void Actor::UpdatePrePhysics()
 
 			
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
-			}
+			AirAttack();
 
 			break;
 		}
@@ -2203,24 +2210,7 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
-			}
+			AirAttack();
 
 			break;
 		}
@@ -2525,29 +2515,9 @@ void Actor::UpdatePrePhysics()
 			}
 
 		
-			{
-				if( currInput.rightShoulder && !prevInput.rightShoulder )
-				{
-					if( !currInput.LLeft() && !currInput.LRight() )
-					{
-						if( currInput.LUp() )
-						{
-							action = UAIR;
-							frame = 0;
-							break;
-						}
-						else if( currInput.LDown() )
-						{
-							action = DAIR;
-							frame = 0;
-							break;
-						}
-					}
-
-					action = FAIR;
-					frame = 0;
-				}
-			}
+			
+			AirAttack();
+			
 			break;
 		}
 	case WALLATTACK:
@@ -2633,25 +2603,6 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			/*if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
-			}*/
-
 			}
 			break;
 		}
@@ -2704,24 +2655,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
-			}
+			AirAttack();
 
 			}
 			break;
@@ -2775,24 +2709,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
-			}
+			AirAttack();
 			}
 			break;
 		}
@@ -2845,24 +2762,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
-			}
+			AirAttack();
 			}
 			break;
 		}
@@ -3956,6 +3856,7 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity = V2d( 0, 0 );
 				}
+				break;
 			}
 			//else if( currInput.A && !prevInput.A && hasDoubleJump )
 			else if( currInput.A && !prevInput.A && hasDoubleJump && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
@@ -3963,28 +3864,10 @@ void Actor::UpdatePrePhysics()
 				action = DOUBLE;
 				holdDouble = true;
 				frame = 0;
+				break;
 			}
-			else if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				if( !currInput.LLeft() && !currInput.LRight() )
-				{
-					if( currInput.LUp() )
-					{
-						action = UAIR;
-						frame = 0;
-						break;
-					}
-					else if( currInput.LDown() )
-					{
-						action = DAIR;
-						frame = 0;
-						break;
-					}
-				}
 
-				action = FAIR;
-				frame = 0;
-			}
+			AirAttack();
 			break;
 		}
 	case STEEPCLIMB:
@@ -4179,26 +4062,10 @@ void Actor::UpdatePrePhysics()
 				break;
 			}*/
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if( AirAttack() )
 			{
 				bounceFlameOn = true;
 				airBounceFrame = 13 * 3;
-
-				if( currInput.LUp() )
-				{
-					action = UAIR;
-					frame = 0;
-				}
-				else if( currInput.LDown() )
-				{
-					action = DAIR;
-					frame = 0;
-				}
-				else
-				{
-					action = FAIR;
-					frame = 0;
-				}
 			}
 			break;
 		}
@@ -5001,7 +4868,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = fairHitboxes[frame];
 			}
 
-			if( frame == 0 && slowCounter == slowMultiple)
+			if( frame == 0 && slowCounter == 1)
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_FAIR] );
 				currAttackHit = false;
@@ -5025,7 +4892,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = dairHitboxes[frame];
 			}
 
-			if( frame == 0 && slowCounter == slowMultiple )
+			if( frame == 0 && slowCounter == 1 )
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_DAIR] );
 				currAttackHit = false;
@@ -5047,7 +4914,7 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = uairHitboxes[frame];
 			}
 
-			if( frame == 0 && slowCounter == slowMultiple)
+			if( frame == 0 && slowCounter == 1)
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_UAIR] );
 				currAttackHit = false;
@@ -6394,6 +6261,15 @@ void Actor::UpdatePrePhysics()
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	//cout << "before position: " << position.x << ", " << position.y << endl;
 	
+}
+
+void Actor::SetAction( Action a )
+{
+	action = a;
+	if( slowMultiple > 1 )
+	{
+		slowMultiple = 1;
+	}
 }
 
 bool Actor::CheckWall( bool right )
@@ -10664,7 +10540,7 @@ void Actor::UpdatePhysics()
 
 void Actor::GroundAttack()
 {
-	action = STANDN;
+	SetAction( STANDN );
 	frame = 0;
 	//if( currInput.B )//action == DASH )
 	//{
@@ -16844,7 +16720,8 @@ void Actor::SetActionExpr( Action a )
 		break;
 	}
 
-	action = a;
+	SetAction( a );
+	//action = a;
 }
 
 PlayerGhost::PlayerGhost()

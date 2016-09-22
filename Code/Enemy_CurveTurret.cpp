@@ -124,6 +124,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	testLauncher = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 300 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
 	testLauncher->SetGravity( gravity );
+	testLauncher->hitboxInfo->damage = 18;
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 	dying = false;

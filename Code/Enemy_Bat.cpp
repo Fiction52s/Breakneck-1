@@ -43,6 +43,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 
 	launcher = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );	
+	launcher->hitboxInfo->damage = 18;
 
 	initHealth = 40;
 	health = initHealth;
