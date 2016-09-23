@@ -149,6 +149,15 @@ struct OptionsMenu
 	int momentum;
 	int maxMomentum;
 	CubicBezier accelBez;
+
+	bool moveDown;
+	bool moveUp;
+	bool moveLeft;
+	bool moveRight;
+
+	int moveDelayCounter;
+	int moveDelayFrames; 
+	int moveDelayFramesSmall;
 };
 
 struct PauseMenu

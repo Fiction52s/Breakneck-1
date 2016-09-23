@@ -261,6 +261,12 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	}
 
 	InitAssocSymbols();
+
+	moveDown = false;
+	moveUp = false;
+	moveLeft = false;
+	moveRight = false;
+	
 	
 }
 
@@ -417,7 +423,7 @@ void OptionsMenu::UpdateSchemeVA( bool kb )
 bool OptionsMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
-	modifyIndex = 0;
+	
 	switch( mode )
 	{
 	case LEFTBAR:
@@ -459,10 +465,26 @@ bool OptionsMenu::Update( ControllerState &currInput,
 					break;
 				case L_KB_OPTIONS:
 					mode = MODIFY_KEYBOARD_CONTROLS;
+					moveDown = false;
+					moveUp = false;
+					moveLeft = false;
+					moveRight = false;
+					moveDelayCounter = 0;
+					moveDelayFrames = 15;
+					moveDelayFramesSmall = 6;
+					modifyIndex = 0;
 					//useKeyboardSchemeIndex = keyboardSchemeIndex;
 					break;
 				case L_CONTROLLER_OPTIONS:
 					mode = MODIFY_XBOX_CONTROLS;
+					moveDown = false;
+					moveUp = false;
+					moveLeft = false;
+					moveRight = false;
+					moveDelayCounter = 0;
+					moveDelayFrames = 15;
+					moveDelayFramesSmall = 6;
+					modifyIndex = 0;
 					//useControllerSchemeIndex = controllerSchemeIndex;
 					break;
 				}
@@ -608,20 +630,34 @@ bool OptionsMenu::Update( ControllerState &currInput,
 		}
 	case MODIFY_XBOX_CONTROLS:
 		{
+			
+
 			if( !currInput.A && prevInput.A )
 			{
 				XBoxButton b;
-
+				
 				do
 				{
 					mainMenu->controller.UpdateState();
 					
 					ControllerState &c = mainMenu->controller.GetState();
+
 					b = CheckXBoxInput( c );
 				}
 				while( b == XBoxButton::XBOX_BLANK );
-				cout << "b: " << b << endl;
-				xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
+
+				XBoxButton bb;
+				do
+				{
+					mainMenu->controller.UpdateState();
+					
+					ControllerState &c = mainMenu->controller.GetState();
+
+					bb = CheckXBoxInput( c );
+				}
+				while( bb != XBoxButton::XBOX_BLANK );
+				//cout << "b: " << b << endl;
+				xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
 
 				UpdateXboxButtonIcons( useControllerSchemeIndex );
 			}
@@ -640,6 +676,90 @@ bool OptionsMenu::Update( ControllerState &currInput,
 			else if( currInput.LDown() && !prevInput.LDown() )
 			{
 			}
+
+
+			bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
+			bool canMoveSame = (moveDelayCounter == 0);
+
+			if( (currInput.LDown() || currInput.PDown()) && ( 
+					(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
+			{
+				
+				modifyIndex++;
+				//currentMenuSelect++;
+				if( modifyIndex > ControllerSettings::Count - 1 )
+					modifyIndex -= ControllerSettings::Count;
+
+				moveDown = true;
+				moveDelayCounter = moveDelayFrames;
+				//soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
+				//cout << "down modifyIndex: " << modifyIndex << endl;
+			}
+			else if( ( currInput.LUp() || currInput.PUp() ) && ( 
+				(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
+			{
+				//cout << "up modifyIndex: " << modifyIndex << endl;
+				modifyIndex--;
+
+				
+				
+				moveUp = true;
+				moveDelayCounter = moveDelayFrames;
+				//soundNodeList->ActivateSound( soundBuffers[S_UP] );
+			}
+
+			if( (currInput.LRight() || currInput.PRight()) && ( 
+				(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
+			{
+				modifyIndex+= ControllerSettings::Count / 2;
+
+				if( modifyIndex > ControllerSettings::Count - 1 )
+					modifyIndex -= ControllerSettings::Count;
+				//currentMenuSelect++;
+				/*if( selectedSaveIndex % 2 == 0 )
+					selectedSaveIndex-= 2;*/
+				moveRight = true;
+				moveDelayCounter = moveDelayFrames;
+			}
+			else if( ( currInput.LLeft() || currInput.PLeft() ) && ( 
+				(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
+			{
+				modifyIndex -= ControllerSettings::Count / 2;
+
+				if( modifyIndex < 0 )
+					modifyIndex += ControllerSettings::Count;
+
+				
+				moveLeft = true;
+
+				moveDelayCounter = moveDelayFrames;
+			}
+				
+			if( moveDelayCounter > 0 )
+			{
+				moveDelayCounter--;
+			}
+				
+
+			if( !(currInput.LDown() || currInput.PDown()) )
+			{
+				moveDown = false;
+			}
+			if( ! ( currInput.LUp() || currInput.PUp() ) )
+			{
+				moveUp = false;
+			}
+
+			if( !(currInput.LRight() || currInput.PRight()) )
+			{
+				moveRight = false;
+			}
+			if( !(currInput.LLeft() || currInput.PLeft() ) )
+			{
+				moveLeft = false;
+			}
+
+			
 			break;
 		}
 	}
