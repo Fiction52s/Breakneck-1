@@ -29,6 +29,8 @@ struct CustomMapsHandler : GUIHandler
 struct Parallax;
 struct MainMenu
 {
+	//int [ControllerTypes::Count]
+
 	enum MainMenuOptions
 	{
 		M_NEW_GAME,

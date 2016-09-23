@@ -167,7 +167,6 @@ struct ControllerTypes
 	enum Type
 	{
 		XBOX,
-		KEYBOARD,
 		GAMECUBE,
 		PS4,
 		Count

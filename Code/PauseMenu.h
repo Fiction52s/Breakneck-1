@@ -39,8 +39,113 @@ struct OptionSelector
 	//right is 1, none is 0
 };
 
+
+struct PauseMenu;
+struct MainMenu;
+struct OptionsMenu
+{
+	MainMenu *mainMenu;
+	bool autoUseController;
+	int controllerIconsIndex;
+	int useIconsIndex;
+	int keyboardSchemeIndex;
+	int controllerSchemeIndex;
+	int useKeyboardSchemeIndex;
+	int useControllerSchemeIndex;
+	//enum checkboxtypes
+	//CheckBox cb[checkboxtypes::count];
+
+	enum LeftBarOptions
+	{
+		L_AUTOCONTROLLER,
+		L_CONTROLLER_ICONS,
+		L_KB_OPTIONS,
+		L_CONTROLLER_OPTIONS,
+		L_Count
+	};
+
+	int leftBarCurr;
+
+	enum Mode
+	{
+		LEFTBAR,
+		MODIFY_KEYBOARD_CONTROLS,
+		MODIFY_XBOX_CONTROLS,
+		Count
+	};
+
+	enum InputOptions
+	{
+		INPUT_TYPE,
+		SETTINGS
+	};
+
+	
+	sf::Vector2f basePos;
+	Mode mode;
+	OptionsMenu( MainMenu *mainMenu );
+	OptionsMenu( PauseMenu *pauseMenu );
+	void LoadControlOptions();
+	void SetAssocSymbols( bool kb );
+
+	void InitAssocSymbols();
+	
+
+	bool Update( ControllerState &currInput,
+		ControllerState &prevInput );
+
+	void SaveControlOptions();
+	void UpdateXboxButtonIcons(
+		int controlSetIndex );
+	void UpdateButtonIcons();
+
+	void Draw( sf::RenderTarget *target );
+	XBoxButton CheckXBoxInput( ControllerState &currInput );
+	Tileset *ts_xboxButtons;
+	sf::VertexArray buttonVA;
+	sf::VertexArray controlIconVA;
+	sf::VertexArray schemeKeyboardVA;
+	sf::VertexArray schemeControllerVA;
+	void UpdateControlIcons();
+	void UpdateSchemeVA( bool kb );
+	ControllerTypes::Type controllerType;
+	Tileset *ts_currentButtons;
+	
+	Tileset *ts_actionIcons;
+
+	sf::Text actionText[15];
+	XBoxButton xboxInputAssoc[3][ControllerSettings::ButtonType::Count];
+	int actionIndex;
+	bool selectingProfile;
+
+	
+	//more of these for diff controller types
+	sf::VertexArray assocSymbols;
+
+	
+	int selectedIndex;
+	
+	std::string *possibleControllerActions;
+	std::string *possibleKeyboardActions;
+
+	OptionSelector **inputSelectors;
+	OptionSelector **currentSelectors;
+	int currInputIndex;
+
+	int optionSelectorIndex;
+
+	int maxWaitFrames;
+	int currWaitFrames;
+	int minWaitFrames;
+	int framesWaiting;
+	int momentum;
+	int maxMomentum;
+	CubicBezier accelBez;
+};
+
 struct PauseMenu
 {
+	OptionsMenu *cOptions;
 	enum Tab
 	{
 		MAP,
@@ -60,6 +165,14 @@ struct PauseMenu
 	void ApplyVideoSettings();
 	void ApplySoundSettings();
 	
+	enum OptionType
+	{
+		O_VIDEO,
+		O_AUDIO,
+		O_INPUT,
+		O_Count
+	};
+	OptionType optionType;
 
 	enum UpdateResponse
 	{
@@ -76,19 +189,13 @@ struct PauseMenu
 	Tileset *ts_background[Count];
 	Tileset *ts_select;
 	
-	ControllerTypes::Type controllerType;
-	int selectedIndex;
+	
 
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;
 	GameSession *owner;
 
-	void LoadControlOptions();
-
-	void SaveControlOptions();
-	void UpdateXboxButtonIcons(
-		int controlSetIndex );
-	void UpdateButtonIcons();
+	
 	Tab currentTab;
 
 	//bool show;
@@ -117,23 +224,13 @@ struct PauseMenu
 	int maxMomentum;
 	CubicBezier accelBez;
 
-	Tileset *ts_xboxButtons;
-	sf::VertexArray buttonVA;
-	Tileset *ts_currentButtons;
 	
-	Tileset *ts_actionIcons;
 
-	OptionSelector **inputSelectors;
-	int currInputIndex;
-	bool selectingProfile;
-	sf::Text actionText[15];
-	int actionIndex;
-
-	XBoxButton CheckXBoxInput( ControllerState &currInput );
-	//more of these for diff controller types
-	sf::VertexArray assocSymbols;
 	
-	void SetAssocSymbols();
+	
+	
+
+	
 	UpdateResponse UpdateOptions(
 		ControllerState &currInput,
 	ControllerState &prevInput );
@@ -146,9 +243,8 @@ struct PauseMenu
 	UpdateResponse UpdateAudioOptions(
 		ControllerState &currInput,
 		ControllerState &prevInput);
-	std::string *possibleControllerActions;
-	std::string *possibleKeyboardActions;
-	XBoxButton xboxInputAssoc[3][ControllerSettings::ButtonType::Count];
+	
+	
 	/*int maxWaitFrames;
 	int currWaitFrames;
 	int minWaitFrames;
