@@ -123,6 +123,7 @@ struct OptionsMenu
 
 	sf::Text actionText[15];
 	XBoxButton xboxInputAssoc[3][ControllerSettings::ButtonType::Count];
+	void SetButtonAssoc( int controlIndex, XBoxButton b );
 	int actionIndex;
 	bool selectingProfile;
 

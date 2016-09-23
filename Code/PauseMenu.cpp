@@ -657,12 +657,15 @@ bool OptionsMenu::Update( ControllerState &currInput,
 				}
 				while( bb != XBoxButton::XBOX_BLANK );
 				//cout << "b: " << b << endl;
-				xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
+				SetButtonAssoc( useControllerSchemeIndex, b );
+				//xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
 
 				UpdateXboxButtonIcons( useControllerSchemeIndex );
 			}
 			else if( currInput.B )
 			{
+				mode = LEFTBAR;
+				break;
 			}
 			else if( currInput.LLeft() && !prevInput.LLeft() )
 			{
@@ -902,7 +905,23 @@ void OptionsMenu::UpdateXboxButtonIcons( int controlSetIndex )
 	}
 }
 
+void OptionsMenu::SetButtonAssoc( int controlIndex, XBoxButton b )
+{
+	XBoxButton old = xboxInputAssoc[controlIndex][modifyIndex];
+	xboxInputAssoc[controlIndex][modifyIndex] = b;
 
+	for( int i = 0; i < ControllerSettings::Count; ++i )
+	{
+		if( i == modifyIndex )
+			continue;
+
+		if( xboxInputAssoc[controlIndex][i] == b )
+		{
+			xboxInputAssoc[controlIndex][i] = old;
+			break;
+		}
+	}
+}
 
 void OptionsMenu::SetAssocSymbols( bool kb )
 {
