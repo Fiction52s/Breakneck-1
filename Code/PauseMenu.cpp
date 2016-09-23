@@ -661,6 +661,8 @@ bool OptionsMenu::Update( ControllerState &currInput,
 				//xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
 
 				UpdateXboxButtonIcons( useControllerSchemeIndex );
+
+				SaveControlOptions();
 			}
 			else if( currInput.B )
 			{
