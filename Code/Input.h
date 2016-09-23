@@ -199,6 +199,10 @@ public:
 	///Gets the state most recently queried from the
 	///controller. Used to update external ControllerStates
 	ControllerState & GetState();
+	void SetFilter( XBoxButton *buttons );
+	int Pressed( XBoxButton b );
+
+	XBoxButton filter[ControllerSettings::Count];
 	//ControllerState & GetKeyboardState(); //also updates
 	ControllerState m_state;
 	KeyboardSettings keySettings;

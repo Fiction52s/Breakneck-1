@@ -444,6 +444,7 @@ bool OptionsMenu::Update( ControllerState &currInput,
 					break;
 				case L_CONTROLLER_OPTIONS:
 					useControllerSchemeIndex = controllerSchemeIndex;
+					mainMenu->controller.SetFilter( xboxInputAssoc[useControllerSchemeIndex] );
 					break;
 				}
 				//mode = SELECT_SCHEME;
@@ -838,12 +839,9 @@ void OptionsMenu::LoadControlOptions()
 		assert( 0 );
 	} 
 
-	int inputType;
+	//int inputType;
 
-	is >> inputType;
-	is >> selectedIndex;
-
-	controllerType = (ControllerTypes::Type)inputType;
+	//controllerType = (ControllerTypes::Type)inputType;
 
 	for( int schemeIndex = 0; schemeIndex < 3; ++schemeIndex )
 	{

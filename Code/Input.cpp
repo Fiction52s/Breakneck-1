@@ -129,6 +129,7 @@ bool ControllerState::LeftTriggerPressed()
 bool GameController::UpdateState()
 {
 	XINPUT_STATE state;
+	ControllerState tempState;
 	ZeroMemory( &state, sizeof( XINPUT_STATE ) );
 	DWORD result = XInputGetState( m_index, &state );
 
@@ -240,6 +241,20 @@ bool GameController::UpdateState()
 			if( y < -stickThresh )
 				m_state.rightStickPad += 1 << 1;
 		}
+		tempState = m_state;
+
+		tempState.A = Pressed( filter[ControllerSettings::JUMP] );
+		tempState.B = Pressed( filter[ControllerSettings::DASH] );
+		tempState.rightShoulder = Pressed( filter[ControllerSettings::ATTACK] );
+		tempState.X = Pressed( filter[ControllerSettings::BOUNCE] );
+		tempState.Y = Pressed( filter[ControllerSettings::GRIND] );
+		tempState.leftShoulder = Pressed( filter[ControllerSettings::TIMESLOW] );
+		tempState.leftTrigger = Pressed( filter[ControllerSettings::LEFTWIRE] ) * 255;
+		tempState.rightTrigger = Pressed( filter[ControllerSettings::RIGHTWIRE] );
+		tempState.back = Pressed( filter[ControllerSettings::MAP] );
+		tempState.start = Pressed( filter[ControllerSettings::PAUSE] );
+
+		m_state = tempState;
 	}
 	else
 	{
@@ -378,10 +393,52 @@ bool GameController::UpdateState()
 	return ( result == ERROR_SUCCESS );
 }
 
+int GameController::Pressed( XBoxButton b )
+{
+	switch( b )
+	{
+	case XBOX_A:
+		return m_state.A;
+		break;
+	case XBOX_B:
+		return m_state.B;
+		break;
+	case XBOX_X:
+		return m_state.X;
+		break;
+	case XBOX_Y:
+		return m_state.Y;
+		break;
+	case XBOX_R1:
+		return m_state.rightShoulder;
+		break;
+	case XBOX_R2:
+		return m_state.rightTrigger;
+		break;
+	case XBOX_L1:
+		return m_state.leftShoulder;
+		break;
+	case XBOX_L2:
+		return m_state.leftTrigger;
+		break;
+	case XBOX_START:
+		return m_state.start;
+		break;
+	case XBOX_BACK:
+		return m_state.back;
+		break;
+	}
+}
+
 GameController::GameController( DWORD index )
 	:m_index( index )
 {
 	stickThresh = .4;
+
+	for( int i = 0; i < ControllerSettings::Count; ++i )
+	{
+		filter[i] = (XBoxButton)(i+1);
+	}
 }
 
 ControllerState & GameController::GetState()
@@ -401,6 +458,14 @@ bool GameController::IsConnected()
 DWORD GameController::GetIndex()
 {
 	return m_index;
+}
+
+void GameController::SetFilter( XBoxButton *buttons )
+{
+	for( int i = 0; i < ControllerSettings::Count; ++i )
+	{
+		filter[i] = buttons[i];
+	}
 }
 
 //ControllerState &GameController::GetKeyboardState()

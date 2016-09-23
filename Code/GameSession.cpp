@@ -4784,6 +4784,9 @@ int GameSession::Run( string fileN )
 	OpenFile( fileName );
 	
 	pauseMenu = new PauseMenu( this );
+	//pauseMenu->cOptions->xboxInputAssoc[0];
+	mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
 
 	int goalTile = -1;
