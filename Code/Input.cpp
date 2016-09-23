@@ -249,7 +249,7 @@ bool GameController::UpdateState()
 		tempState.X = Pressed( filter[ControllerSettings::BOUNCE] );
 		tempState.Y = Pressed( filter[ControllerSettings::GRIND] );
 		tempState.leftShoulder = Pressed( filter[ControllerSettings::TIMESLOW] );
-		tempState.leftTrigger = Pressed( filter[ControllerSettings::LEFTWIRE] ) * 255;
+		tempState.leftTrigger = Pressed( filter[ControllerSettings::LEFTWIRE] );
 		tempState.rightTrigger = Pressed( filter[ControllerSettings::RIGHTWIRE] );
 		tempState.back = Pressed( filter[ControllerSettings::MAP] );
 		tempState.start = Pressed( filter[ControllerSettings::PAUSE] );

@@ -104,12 +104,14 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
+	ts_bulletExplode = owner->GetTileset( "bullet_explode2_64x64.png", 64, 64 );
 
 	testLauncher = new Launcher( this, BasicBullet::CACTUS_TURRET, owner, 16, 1, position, gn, 
 		0, 90, false, 60, 60 );
 	testLauncher->SetBulletSpeed( bulletSpeed );
+	testLauncher->hitboxInfo->damage = 18;
 	//testLauncher->wavelength = 60;
 	//testLauncher->amplitude = 20;
 	//testLauncher->SetGravity( gravity );
@@ -120,6 +122,11 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 
 void Cactus::HandleEntrant( QuadTreeEntrant *qte )
 {
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
+	{
+		specterProtected = true;
+	}
 }
 
 void Cactus::BulletHitTerrain(BasicBullet *b, 
@@ -131,7 +138,12 @@ void Cactus::BulletHitTerrain(BasicBullet *b,
 
 void Cactus::BulletHitPlayer(BasicBullet *b )
 {
+	V2d vel = b->velocity;
+	double angle = atan2( vel.y, vel.x );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	b->launcher->DeactivateBullet( b );
+	//owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Cactus::ResetEnemy()
@@ -167,6 +179,11 @@ void Cactus::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dying = true;
+			owner->player->ConfirmEnemyKill( this );
+		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;
@@ -220,10 +237,10 @@ void Cactus::UpdatePrePhysics()
 		angle -= PI / 2.0;
 		V2d newDir( cos( angle ), sin( angle ) );
 
-		cout << "angle: " << angle << endl;
+		//cout << "angle: " << angle << endl;
 		//cout << "launchDir: " << newDir.x << ", " << newDir.y << endl;
 
-		testLauncher->facingDir = newDir;
+		testLauncher->facingDir = playerDir;
 		testLauncher->Fire();
 	}
 
@@ -254,7 +271,7 @@ void Cactus::PhysicsResponse()
 		if( receivedHit == NULL )
 		{
 			pair<bool, bool> result = PlayerHitMe();
-			if( result.first )
+			if( result.first && !specterProtected )
 			{
 									//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -297,10 +314,29 @@ void Cactus::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
+	if( deathFrame == 0 && dying )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
+	}
+
 	//cout << "slowcounter: " << slowCounter << endl;
+
+	if( deathFrame == 30 && dying )
+	{
+		dying = false;
+		dead = true;
+		//testLauncher->Reset();
+		//owner->RemoveEnemy( this );
+		//return;
+	}
+
+	UpdateSprite();
+	testLauncher->UpdateSprites();
+
 	if( slowCounter == slowMultiple )
 	{
 		
@@ -319,24 +355,10 @@ void Cactus::UpdatePostPhysics()
 		slowCounter++;
 	}
 	
-
-	if( deathFrame == 30 && dying )
-	{
-		dying = false;
-		dead = true;
-		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
-	}
-
 	if( dead && testLauncher->GetActiveCount() == 0 )
 	{
 		owner->RemoveEnemy( this );
 	}
-
-	
-	UpdateSprite();
-	testLauncher->UpdateSprites();
 }
 
 void Cactus::Draw(sf::RenderTarget *target )
@@ -345,28 +367,41 @@ void Cactus::Draw(sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
+		}
 	}
 	else if( dying )
 	{
 		target->draw( botDeathSprite );
 
-		if( deathFrame / 3 < 6 )
+		/*if( deathFrame / 3 < 6 )
 		{
 			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
 			target->draw( bloodSprite );
-		}
+		}*/
 		
 		target->draw( topDeathSprite );
 	}
@@ -374,21 +409,45 @@ void Cactus::Draw(sf::RenderTarget *target )
 
 void Cactus::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !(dead || dying) )
+	if( !dead && !dying )
 	{
-		CircleShape cs;
-		cs.setRadius( 50 );
-		cs.setFillColor( COLOR_BLUE );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
-
-		/*if( hasMonitor && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			monitor->miniSprite.setPosition( position.x, position.y );
-			target->draw( monitor->miniSprite );
-		}*/
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 	}
+}
+
+void Cactus::DirectKill()
+{
+	BasicBullet *b = testLauncher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
 }
 
 bool Cactus::IHitPlayerWithBullets()
@@ -571,6 +630,15 @@ void Cactus::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
 
+	//if( frame / animationFactor > 12 )
+	//{
+	//	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	//}
+	//else
+	//{
+	//	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor  ) );//frame / animationFactor ) );
+	//}
+
 	//int i = 0;
 	//Bullet *currBullet = activeBullets;
 	//int rad = 16;
@@ -610,7 +678,16 @@ void Cactus::UpdateSprite()
 	//	notBullet = notBullet->next;
 	//}
 
-	if( dead )
+
+	if( !dead && hasMonitor && !suppressMonitor )
+	{
+		//keySprite.setTexture( *ts_key->texture );
+		keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
+		keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+			keySprite->getLocalBounds().height / 2 );
+		keySprite->setPosition( position.x, position.y );
+	}
+	else if( dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
 		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );

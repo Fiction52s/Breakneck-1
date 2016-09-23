@@ -1787,11 +1787,12 @@ struct Cactus : Enemy, LauncherEnemy
 		Edge *edge, 
 		sf::Vector2<double> &pos);
 	void BulletHitPlayer( BasicBullet *b );
-
+	void DirectKill();
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
 
+	Tileset *ts_bulletExplode;
 	Launcher *testLauncher;
 
 	sf::Sprite sprite;

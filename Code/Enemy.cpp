@@ -72,6 +72,10 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	case BasicBullet::CURVE_TURRET:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::CACTUS_TURRET:
+		bulletTilesetIndex = 1;
+		break;
+		break;
 	}
 	
 	if( wavelength > 0 )
@@ -469,6 +473,7 @@ bool BasicBullet::PlayerSlowingMe()
 
 void BasicBullet::UpdatePrePhysics()
 {
+	
 	if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
@@ -719,6 +724,7 @@ SinBullet::SinBullet( int indexVA, Launcher *launcher )
 
 void SinBullet::UpdatePrePhysics()
 {
+	//cout << "position: " << position.x << ", " << position.y << endl;
 	position -= tempadd;
 	int tempFrame = (launcher->maxFramesToLive - framesToLive) % launcher->wavelength;
 	double test = tempFrame / (double)launcher->wavelength;

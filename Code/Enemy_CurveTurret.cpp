@@ -171,7 +171,7 @@ void CurveTurret::ResetEnemy()
 
 void CurveTurret::UpdatePrePhysics()
 {
-
+	specterProtected = false;
 	testLauncher->UpdatePrePhysics();
 	
 
@@ -215,7 +215,6 @@ void CurveTurret::UpdatePrePhysics()
 
 void CurveTurret::UpdatePhysics()
 {
-	specterProtected = false;
 
 	testLauncher->UpdatePhysics();
 
@@ -693,9 +692,7 @@ void CurveTurret::UpdateSprite()
 		keySprite->setPosition( position.x, position.y );
 
 	}
-
-
-	if( dead )
+	else if( dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
 		botDeathSprite.setTextureRect( ts->GetSubRect( 13 ) );
