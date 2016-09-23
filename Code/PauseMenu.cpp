@@ -417,6 +417,7 @@ void OptionsMenu::UpdateSchemeVA( bool kb )
 bool OptionsMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
+	modifyIndex = 0;
 	switch( mode )
 	{
 	case LEFTBAR:
@@ -573,10 +574,74 @@ bool OptionsMenu::Update( ControllerState &currInput,
 			}
 			break;
 		}
-		case MODIFY_KEYBOARD_CONTROLS:
+	case MODIFY_KEYBOARD_CONTROLS:
+		{
+			if( currInput.A )
+			{
+				XBoxButton b;
+				do
+				{
+					b = CheckXBoxInput( currInput );
+				}
+				while( b != XBoxButton::XBOX_BLANK );
+
+				xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
+
+				UpdateXboxButtonIcons( useControllerSchemeIndex );
+			}
+			else if( currInput.B )
+			{
+			}
+			else if( currInput.LLeft() && !prevInput.LLeft() )
+			{
+			}
+			else if( currInput.LRight() && !prevInput.LRight() )
+			{
+			}
+			else if( currInput.LUp() && !prevInput.LUp() )
+			{
+			}
+			else if( currInput.LDown() && !prevInput.LDown() )
+			{
+			}
 			break;
-		case MODIFY_XBOX_CONTROLS:
+		}
+	case MODIFY_XBOX_CONTROLS:
+		{
+			if( !currInput.A && prevInput.A )
+			{
+				XBoxButton b;
+
+				do
+				{
+					mainMenu->controller.UpdateState();
+					
+					ControllerState &c = mainMenu->controller.GetState();
+					b = CheckXBoxInput( c );
+				}
+				while( b == XBoxButton::XBOX_BLANK );
+				cout << "b: " << b << endl;
+				xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
+
+				UpdateXboxButtonIcons( useControllerSchemeIndex );
+			}
+			else if( currInput.B )
+			{
+			}
+			else if( currInput.LLeft() && !prevInput.LLeft() )
+			{
+			}
+			else if( currInput.LRight() && !prevInput.LRight() )
+			{
+			}
+			else if( currInput.LUp() && !prevInput.LUp() )
+			{
+			}
+			else if( currInput.LDown() && !prevInput.LDown() )
+			{
+			}
 			break;
+		}
 	}
 }
 
@@ -608,8 +673,16 @@ void OptionsMenu::Draw( sf::RenderTarget *target )
 		}
 
 		break;
-	case MODIFY_KEYBOARD_CONTROLS:
+	case MODIFY_XBOX_CONTROLS:
 		{
+			target->draw( controlIconVA );
+			target->draw( schemeKeyboardVA );
+			target->draw( schemeControllerVA );
+
+			target->draw( controlIconVA );
+			target->draw( schemeKeyboardVA );
+			target->draw( schemeControllerVA );
+
 			target->draw( assocSymbols, ts_actionIcons->texture );
 			
 			
@@ -620,7 +693,7 @@ void OptionsMenu::Draw( sf::RenderTarget *target )
 
 			target->draw( buttonVA, ts_currentButtons->texture );
 		
-			//break;
+			break;
 		}
 	
 	
@@ -844,7 +917,8 @@ void OptionsMenu::SetAssocSymbols( bool kb )
 
 XBoxButton OptionsMenu::CheckXBoxInput( ControllerState &currInput )
 {
-	bool leftMovement = (inputSelectors[2]->GetString() == "left analog");
+	bool leftMovement = true;
+	//bool leftMovement = (inputSelectors[2]->GetString() == "left analog");
 	if( currInput.A )
 	{
 		return XBOX_A;

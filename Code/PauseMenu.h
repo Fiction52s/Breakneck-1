@@ -44,7 +44,10 @@ struct PauseMenu;
 struct MainMenu;
 struct OptionsMenu
 {
+
 	MainMenu *mainMenu;
+
+	//left bar
 	bool autoUseController;
 	int controllerIconsIndex;
 	int useIconsIndex;
@@ -52,6 +55,11 @@ struct OptionsMenu
 	int controllerSchemeIndex;
 	int useKeyboardSchemeIndex;
 	int useControllerSchemeIndex;
+
+
+	//modify
+	int modifyIndex;
+
 	//enum checkboxtypes
 	//CheckBox cb[checkboxtypes::count];
 
