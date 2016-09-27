@@ -741,7 +741,7 @@ void SecurityWeb::DebugDraw( RenderTarget *target )
 		curr = curr->nextProj;
 	}
 
-	for( int i = 4; i < 5; ++i )//i < numProtrusions; ++i )
+	for( int i = 0; i < numProtrusions; ++i )//i < numProtrusions; ++i )
 	{
 		edgeHitboxes[i].DebugDraw( target );
 	}

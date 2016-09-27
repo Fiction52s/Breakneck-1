@@ -352,10 +352,10 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else if( c.isCircle && !this->isCircle )
 	{
-		V2d pA = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pB = globalPosition + V2d( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pC = globalPosition + V2d( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d pD = globalPosition + V2d( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d pA = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pB = globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pC = globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d pD = globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
 		
 		double A = cross( c.globalPosition - pA, normalize(pB - pA) );
 		double B = cross( c.globalPosition - pB, normalize(pC - pB) );
@@ -372,10 +372,10 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else if( !c.isCircle && this->isCircle )
 	{
-		V2d pA = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pB = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pC = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d pD = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pA = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pB = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pC = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pD = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 		
 		double A = cross( globalPosition - pA, normalize(pB - pA) );
 		double B = cross( globalPosition - pB, normalize(pC - pB) );
@@ -419,24 +419,27 @@ bool CollisionBox::Intersects( CollisionBox &c )
 		V2d pC1( transC.x, transC.y );
 		V2d pD1( transD.x, transD.y );*/
 		//V2d pA0 = globalPosition + test.transformPoint( 
-		V2d A0 = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * sin( globalAngle ), -rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d B0 = globalPosition + V2d( rw * cos( globalAngle ) + -rh * sin( globalAngle ), rw * -sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d C0 = globalPosition + V2d( rw * cos( globalAngle ) + rh * sin( globalAngle ), rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d D0 = globalPosition + V2d( -rw * cos( globalAngle ) + rh * sin( globalAngle ), -rw * -sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d A0 = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d B0 = globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d C0 = globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d D0 = globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
 
 		//cout << "rw: " << rw << ", rh: " << rh << ", axis: " << length( pB0 - pA0 ) << ", axis2: " << length( pD0 - pA0 ) << endl;
 		
 
-		V2d A1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d B1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d C1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d D1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * sin( c.globalAngle ), -c.rw * -sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d A1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d B1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d C1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d D1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 
 		//cout << "c.rw: " << c.rw << ", c.rh: " << c.rh << endl;
 
 		/*bool touching = isQuadTouchingQuad( pA0, pB0, pC0, pD0, pA1, pB1, pC1, pD1 );*/
 		double AB = length( B0 - A0 );
 		double AD = length( D0 - A0 );
+
+		V2d realAB = B0 - A0;
+		V2d realAD = D0 - A0;
 
 		V2d normalizeAB = normalize( B0 - A0 );
 		V2d normalizeAD = normalize( D0 - A0 );
@@ -480,7 +483,7 @@ bool CollisionBox::Intersects( CollisionBox &c )
 
 		bool a = min1AB <= AB;
 		bool b = max1AB >= 0;
-		bool c = min1AD <= AD;
+		bool cc = min1AD <= AD;
 		bool d = max1AD >= 0;
 		bool e = min0AB <= AB1;
 		bool f = max0AB >= 0;
@@ -489,15 +492,17 @@ bool CollisionBox::Intersects( CollisionBox &c )
 
 
 		bool touching;
-		if( a && b && c && d && e && f && g && h )
+		if( a && b && cc && d && e && f && g && h )
 		{
-			cout << "blaha: " << blaha << ", b: " << blahb << ", c: " << blahc << ", d: " << blahd << endl;
-			cout << "A0: " << A0.x << ", " << A0.y << ", B1: " << B1.x << ", " << B1.y << endl;
-			cout << "normad: " << normalizeAD.x << ", " << normalizeAD.y << endl;
-			cout << "AB: " << AB << ", AD: " << AD << ", AB1: " << AB1 << ", AD1: " << AD1 << endl;
-			cout << "globalPosition: " << globalPosition.x << ", " << globalPosition.y << endl;
-			cout << "min1AB: " << min1AB << ", max1AB: " << max1AB << ", min1AD: " << min1AD << ", max1AD: " << max1AD << ", min0AB: " << min0AB <<
-				", max0AB: " << max0AB << ", min0AD: " << min0AD << ", max0AD: " << max0AD << endl;
+			//cout << "blaha: " << blaha << ", b: " << blahb << ", c: " << blahc << ", d: " << blahd << endl;
+			//cout << "A0: " << A0.x << ", " << A0.y << ", B1: " << B1.x << ", " << B1.y << endl;
+			//cout << "realAD: " << realAD.x << ", " << realAD.y << endl;
+			////cout << "center dist: " << length( globalPosition - c.globalPosition ) << endl;
+			//cout << "normad: " << normalizeAD.x << ", " << normalizeAD.y << endl;
+			//cout << "AB: " << AB << ", AD: " << AD << ", AB1: " << AB1 << ", AD1: " << AD1 << endl;
+			//cout << "globalPosition: " << globalPosition.x << ", " << globalPosition.y << endl;
+			//cout << "min1AB: " << min1AB << ", max1AB: " << max1AB << ", min1AD: " << min1AD << ", max1AD: " << max1AD << ", min0AB: " << min0AB <<
+			//	", max0AB: " << max0AB << ", min0AD: " << min0AD << ", max0AD: " << max0AD << endl;
 			//return true;
 			touching = true;
 		}
