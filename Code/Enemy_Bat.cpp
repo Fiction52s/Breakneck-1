@@ -377,6 +377,8 @@ void Bat::PhysicsResponse()
 				owner->player->velocity.y = 4;//.5;
 			}
 
+
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
@@ -694,7 +696,7 @@ bool Bat::PlayerSlowingMe()
 
 void Bat::DebugDraw( RenderTarget *target )
 {
-	if( !dead )
+	if( !dying )
 	{
 		if( testSeq.currMovement != NULL )
 		{

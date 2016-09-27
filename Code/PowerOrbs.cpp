@@ -373,8 +373,8 @@ void PowerWheel::Reset()
 	swivelStartAngle = 0;
 	swivelFrame = 0;
 	lifeTextureFrame = 0;
-	activeOrb = 1;
-	activeSection = 0;//numSections[orbColors[activeOrb]];
+	activeOrb = 5;
+	activeSection = numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( orbColors[activeOrb] ) );
 	orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 1 ) );

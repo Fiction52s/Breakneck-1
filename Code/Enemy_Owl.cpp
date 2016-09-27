@@ -22,20 +22,22 @@ using namespace sf;
 Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
 	:Enemy( owner, EnemyType::OWL, p_hasMonitor, 3 ), deathFrame( 0 ),flyingBez( 0, 0, 1, 1 )
 {
-
 	//movementRadius = 300;
 	retreatRadius = 400;
 	chaseRadius = 600;
 	shotRadius = 800;
 	flySpeed = 5.0;
 	velocity = V2d( 0, 0 );
-	action = NEUTRAL;
+	action = REST;
 	frame = 0;
-	actionLength[NEUTRAL] = 30;
+	//actionLength[NEUTRAL] = 30;
 	actionLength[FIRE] = 60;
-	actionLength[RETREAT] = 30;
-	actionLength[CHASE] = 30;
+	//actionLength[RETREAT] = 30;
+	//actionLength[CHASE] = 30;
+	actionLength[GUARD] = 120;
 	actionLength[REST] = 60;
+
+	hasGuard = true;
 
 	receivedHit = NULL;
 	position.x = pos.x;
@@ -51,7 +53,8 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	deathFrame = 0;
 	
 	launcher = new Launcher( this, BasicBullet::OWL, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
-	launcher->SetBulletSpeed( bulletSpeed );	
+	launcher->SetBulletSpeed( bulletSpeed );
+	launcher->hitboxInfo->damage = 18;
 
 	initHealth = 40;
 	health = initHealth;
@@ -104,10 +107,13 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 
 	facingRight = true;
 	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//ts_blood = 
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
+
+	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
 
 	//cout << "finish init" << endl;
 }
@@ -125,6 +131,9 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
 	if( b->bounceCount == 2 )
 	{
+		V2d norm = edge->Normal();
+		double angle = atan2( norm.y, -norm.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 		b->launcher->DeactivateBullet( b );
 	}
 	else
@@ -144,18 +153,24 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 		cout << "ref: " << ref.x << ", " << ref.y << endl;
 		//b->velocity = -b->velocity;
 		b->bounceCount++;
+		b->framesToLive = b->launcher->maxFramesToLive;
 	}
 }
 
 void Owl::BulletHitPlayer(BasicBullet *b )
 {
+	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	V2d vel = b->velocity;
+	double angle = atan2( vel.y, vel.x );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	b->launcher->DeactivateBullet( b );
 }
 
 void Owl::ResetEnemy()
 {
 	velocity = V2d( 0, 0 );
-	action = NEUTRAL;
+	//action = NEUTRAL;
 	//testSeq.Reset();
 	launcher->Reset();
 	//cout << "resetting enemy" << endl;
@@ -178,60 +193,95 @@ void Owl::ResetEnemy()
 	
 }
 
+void Owl::DirectKill()
+{
+	BasicBullet *b = launcher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
+}
+
 void Owl::ActionEnded()
 {
+	double dist = 800;
 	Actor *player = owner->player;
 	double len = length( player->position - position );
 	if( frame == actionLength[action] )
 	{
-		if( action == FIRE )
+		switch( action )
 		{
-			if( len > shotRadius )
+		case REST:
+			break;
+		case GUARD:
+			action = REST;
+			break;
+		case FIRE:
+			if( length( player->position - position ) >= dist )
 			{
 				action = REST;
+				frame = 0;
 			}
-			else if( len > chaseRadius )
-			{
-				action = CHASE;
-				velocity = normalize( player->position - position ) * 2.5;
-			}
-			else if( len < retreatRadius )
-			{
-				action = RETREAT;
-				velocity = normalize( player->position - position ) * -2.5;
-			}
-			else
-			{
-				action = NEUTRAL;
-			}	
+			//action = FIRE;
+			break;
 		}
-		else if( action == REST )
-		{
-			if( len > shotRadius )
-			{
-				//stay the same
-			}
-			else if( len > chaseRadius )
-			{
-				action = CHASE;
-				velocity = normalize( player->position - position ) * 2.5;
-			}
-			else if( len < retreatRadius )
-			{
-				action = RETREAT;
-				velocity = normalize( player->position - position ) * -2.5;
-			}
-			else
-			{
-				action = NEUTRAL;
-				velocity = V2d( 0, 0 );
-			}	
-		}
-		else
-		{
-			action = FIRE;
-			velocity = V2d( 0, 0 );
-		}
+		//if( action == FIRE )
+		//{
+		//	if( len > shotRadius )
+		//	{
+		//		action = REST;
+		//	}
+		//	else if( len > chaseRadius )
+		//	{
+		//		action = CHASE;
+		//		velocity = normalize( player->position - position ) * 2.5;
+		//	}
+		//	else if( len < retreatRadius )
+		//	{
+		//		action = RETREAT;
+		//		velocity = normalize( player->position - position ) * -2.5;
+		//	}
+		//	else
+		//	{
+		//		action = NEUTRAL;
+		//	}	
+		//}
+		//else if( action == REST )
+		//{
+		//	if( len > shotRadius )
+		//	{
+		//		//stay the same
+		//	}
+		//	else if( len > chaseRadius )
+		//	{
+		//		action = CHASE;
+		//		velocity = normalize( player->position - position ) * 2.5;
+		//	}
+		//	else if( len < retreatRadius )
+		//	{
+		//		action = RETREAT;
+		//		velocity = normalize( player->position - position ) * -2.5;
+		//	}
+		//	else
+		//	{
+		//		action = NEUTRAL;
+		//		velocity = V2d( 0, 0 );
+		//	}	
+		//}
+		//else
+		//{
+		//	action = FIRE;
+		//	velocity = V2d( 0, 0 );
+		//}
 		frame = 0;
 	}
 }
@@ -242,28 +292,52 @@ void Owl::UpdatePrePhysics()
 	ActionEnded();
 
 	Actor *player = owner->player;
-
+	double dist = 800;
+	bool lessThanSize = length( player->position - position ) < dist;
+	
 	switch( action )
 	{
-	case NEUTRAL:
-		cout << "neutral: " << frame << endl;
+	case REST:
+		{
+			if( lessThanSize )
+			{
+				action = FIRE;
+				frame = 0;
+			}
+		}
+		break;
+	case GUARD:
+		action = REST;
 		break;
 	case FIRE:
-		cout << "fire: " << frame << endl;
+		{
+			
+		}
 		break;
-	case RETREAT:
-		cout << "retreat: " << frame << endl;
-		
-		break;
-	case CHASE:
-		cout << "chase" << endl;
-		break;
-	case REST:
-		cout << "rest" << endl;
-		break;
-	default:
-		cout << "what" << endl;
 	}
+
+
+	//switch( action )
+	//{
+	//case NEUTRAL:
+	//	cout << "neutral: " << frame << endl;
+	//	break;
+	//case FIRE:
+	//	cout << "fire: " << frame << endl;
+	//	break;
+	//case RETREAT:
+	//	cout << "retreat: " << frame << endl;
+	//	
+	//	break;
+	//case CHASE:
+	//	cout << "chase" << endl;
+	//	break;
+	//case REST:
+	//	cout << "rest" << endl;
+	//	break;
+	//default:
+	//	cout << "what" << endl;
+	//}
 
 
 	/*if( action == RETREAT )
@@ -291,7 +365,13 @@ void Owl::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dying = true;
+
+			owner->player->ConfirmEnemyKill( this );
 			//cout << "dying" << endl;
+		}
+		else
+		{
+			owner->player->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;
@@ -308,8 +388,15 @@ void Owl::UpdatePrePhysics()
 void Owl::UpdatePhysics()
 {	
 	specterProtected = false;
-	if( !dead )
+	if( !dead && !dying )
 	{
+		//position += velocity / NUM_STEPS / (double)slowMultiple;
+
+		PhysicsResponse();
+	}
+
+	launcher->UpdatePhysics();
+
 	if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
@@ -322,18 +409,6 @@ void Owl::UpdatePhysics()
 	{
 		slowMultiple = 1;
 		slowCounter = 1;
-	}
-	}
-
-	position += velocity / NUM_STEPS / (double)slowMultiple;
-
-	launcher->UpdatePhysics();
-
-	if( !dead && !dying )
-	{
-		//testSeq.Update();
-		//position = testSeq.position;
-		PhysicsResponse();
 	}
 
 	return;
@@ -361,7 +436,7 @@ void Owl::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Owl received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -388,29 +463,16 @@ void Owl::PhysicsResponse()
 
 void Owl::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
-	
-
-	if( slowCounter == slowMultiple )
+	if( deathFrame == 0 && dying )
 	{
-		//cout << "fireCounter: " << fireCounter << endl;
-		++frame;
-		slowCounter = 1;
-	
-		if( dying )
-		{
-			//cout << "deathFrame: " << deathFrame << endl;
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 60 && dying )
@@ -432,6 +494,24 @@ void Owl::UpdatePostPhysics()
 
 	UpdateSprite();
 	launcher->UpdateSprites();
+
+	if( slowCounter == slowMultiple )
+	{
+		//cout << "fireCounter: " << fireCounter << endl;
+		++frame;
+		slowCounter = 1;
+	
+		if( dying )
+		{
+			//cout << "deathFrame: " << deathFrame << endl;
+			deathFrame++;
+		}
+
+	}
+	else
+	{
+		slowCounter++;
+	}
 }
 
 void Owl::UpdateSprite()
@@ -440,6 +520,16 @@ void Owl::UpdateSprite()
 	{
 		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
+
+		if( hasMonitor && !suppressMonitor )
+		{
+			//keySprite.setTexture( *ts_key->texture );
+			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
+			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+				keySprite->getLocalBounds().height / 2 );
+			keySprite->setPosition( position.x, position.y );
+
+		}
 	}
 	if( dying )
 	{
@@ -465,18 +555,28 @@ void Owl::Draw( sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-
-			cs.setFillColor( Color::Black );
-
-			//cs.setFillColor( monitor-> );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
+		}
 	}
 	else if( !dead )
 	{
@@ -485,11 +585,11 @@ void Owl::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
@@ -503,18 +603,24 @@ void Owl::DrawMinimap( sf::RenderTarget *target )
 {
 	if( !dead && !dying )
 	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor( COLOR_BLUE );
-		enemyCircle.setRadius( 50 );
-		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-		enemyCircle.setPosition( position.x, position.y );
-		target->draw( enemyCircle );
-
-		/*if( hasMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			monitor->miniSprite.setPosition( position.x, position.y );
-			target->draw( monitor->miniSprite );
-		}*/
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 	}
 }
 
@@ -635,7 +741,7 @@ bool Owl::PlayerSlowingMe()
 
 void Owl::DebugDraw( RenderTarget *target )
 {
-	if( !dead )
+	if( !dying )
 	{
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );

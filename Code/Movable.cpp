@@ -118,7 +118,7 @@ void Movable::UpdatePhysics()
 			break;
 		}
 	}
-	while( movementLen > 0 );
+	while( movementLen > .00001 );
 }
 
 void Movable::IncrementFrame()

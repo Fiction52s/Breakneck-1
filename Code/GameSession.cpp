@@ -2659,8 +2659,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int moveFrames;
 				is >> moveFrames;
 
-				CoralNanobots *enemy = new CoralNanobots( this, hasMonitor, 
-					Vector2i( xPos, yPos ), moveFrames );
+				//CoralNanobots *enemy = new CoralNanobots( this, hasMonitor, 
+				//	Vector2i( xPos, yPos ), moveFrames );
+				SecurityWeb * enemy = new SecurityWeb( this,
+					hasMonitor, Vector2i( xPos, yPos ), 6, 0, 10 );
 				
 				
 				

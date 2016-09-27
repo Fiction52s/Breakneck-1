@@ -1661,19 +1661,19 @@ struct Owl : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		NEUTRAL,
-		CHASE,
-		RETREAT,
 		REST,
+		GUARD,
 		FIRE
 	};
 
+	bool hasGuard;
 	Owl( GameSession *owner,
 		bool hasMonitor,
 		sf::Vector2i &pos,
 		int bulletSpeed,
 		int framesBetween,
 		bool facingRight );
+	void DirectKill();
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );
@@ -1696,6 +1696,7 @@ struct Owl : Enemy, LauncherEnemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 
+	Tileset *ts_bulletExplode;
 	Action action;
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
@@ -1738,7 +1739,8 @@ struct Owl : Enemy, LauncherEnemy
 	int hitlagFrames;
 	int hitstunFrames;
 
-	Tileset *ts_testBlood;
+	//Tileset *ts_testBlood;
+	//Tileset *ts_blood;
 	sf::Sprite bloodSprite;
 	int bloodFrame;
 	bool facingRight;
@@ -2002,6 +2004,91 @@ struct CoralNanobots : Enemy//, LauncherEnemy
 	Launcher *launcher;
 	//const static int MAX_TREES = 16;
 	sf::VertexArray blockVA;
+};
+
+struct SecurityWeb : Enemy, RayCastHandler
+{
+	SecurityWeb( GameSession *owner,
+		 bool hasMonitor,
+		sf::Vector2i &pos, int numProtrusions,
+		float angleOffset, 
+		double bulletSpeed
+		);
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void ActionEnded();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+	void SaveEnemyState();
+	void LoadEnemyState();
+	sf::VertexArray *edges;
+	sf::VertexArray *nodes;
+	void HandleRayCollision( Edge *edge, 
+		double edgeQuantity, double rayPortion );
+	void DirectKill();
+	void ResetNodes();
+	sf::Vector2<double> *origins;
+
+	struct NodeProjectile : Movable
+	{
+		
+		NodeProjectile( SecurityWeb *parent,
+			int vaIndex );
+		void Reset(
+			sf::Vector2<double> &pos );
+		void UpdatePrePhysics();
+		void UpdatePostPhysics();
+		void HitPlayer();
+		void IncrementFrame();
+		//bool activated;
+		int vaIndex;
+		//void Fire( sf::Vector2<double> vel );
+		//void Draw( sf::RenderTarget *target );
+		//Tileset *ts;
+		int frame;
+		int framesToLive;
+		bool active;
+		NodeProjectile *nextProj;
+		//NodeProjectile *revNode;
+		SecurityWeb *parent;
+	};
+
+	NodeProjectile *activeNodes;
+	NodeProjectile **allNodes;
+	double bulletSpeed;
+	float angleOffset;
+	int numProtrusions;
+	int maxProtLength;
+
+	int deathFrame;
+
+	Edge *rcEdge;
+	double rcQuantity;
+	sf::Vector2<double> rayStart;
+	sf::Vector2<double> rayEnd;
+
+	bool dead;
+	bool dying;
+	int frame;
+
+	int slowCounter;
+	int slowMultiple;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
 };
 
 struct Turtle : Enemy, LauncherEnemy

@@ -75,6 +75,9 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	case BasicBullet::CACTUS_TURRET:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::OWL:
+		bulletTilesetIndex = 1;
+		break;
 		break;
 	}
 	
@@ -522,6 +525,7 @@ void BasicBullet::UpdatePostPhysics()
 	{
 		frame++;
 		framesToLive--;
+		//cout << "frames to live: " << framesToLive << endl;
 		//++frame;		
 	
 		slowCounter = 1;
@@ -541,6 +545,7 @@ void BasicBullet::UpdatePostPhysics()
 
 	if( framesToLive == 0 && slowCounter == 1 )
 	{
+		
 		//cout << "time out!" << endl;
 		//explode
 		launcher->DeactivateBullet( this );
