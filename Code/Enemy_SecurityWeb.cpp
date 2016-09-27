@@ -45,6 +45,7 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	edges = new VertexArray( sf::Quads, numProtrusions * 4 );
 	nodes = new VertexArray( sf::Quads, numProtrusions * 4 );
 	origins = new V2d[numProtrusions];
+	edgeHitboxes = new CollisionBox[numProtrusions];
 
 	VertexArray &eva = *edges;
 	VertexArray &pva = *edges;
@@ -54,7 +55,7 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	int nodeSize = 64;
 	int halfNode = 32;
 
-
+	double edgeWidth = 10;
 	Vector2f fPos( pos.x, pos.y );
 	for( int i = 0; i < numProtrusions; ++i )
 	{
@@ -77,10 +78,21 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 		Vector2f currPoint = rot.transformPoint( currOffset );
 		V2d currPointD( currPoint.x, currPoint.y );
 		origins[i] = currPointD + position;
-		eva[i * 4+0].position = fPos + Vector2f(-halfNode,-halfNode  ) + currPoint;  
-		eva[i * 4+1].position = fPos + Vector2f( halfNode, -halfNode ) + currPoint; 
-		eva[i * 4+2].position = fPos + Vector2f( halfNode, halfNode  ) + currPoint; 
-		eva[i * 4+3].position = fPos + Vector2f( -halfNode, halfNode ) + currPoint;
+
+		V2d along = normalize( origins[i] - position );
+		V2d other( along.y, -along.x );
+
+		
+
+		V2d p0 = position + other * edgeWidth;
+		V2d p1 = origins[i] + other * edgeWidth;
+		V2d p2 = origins[i] - other * edgeWidth;
+		V2d p3 = position - other * edgeWidth;
+
+		eva[i * 4+0].position = Vector2f( p0.x, p0.y );//Vector2f(-halfNode,-halfNode  ) + currPoint;  
+		eva[i * 4+1].position = Vector2f( p1.x, p1.y );//Vector2f( halfNode, -halfNode ) + currPoint; 
+		eva[i * 4+2].position = Vector2f( p2.x, p2.y );//Vector2f( halfNode, halfNode  ) + currPoint; 
+		eva[i * 4+3].position = Vector2f( p3.x, p3.y );//Vector2f( -halfNode, halfNode ) + currPoint;
 		//cout << "currPoint: " << currPoint.x << ", " << currPoint.y << endl;
 		eva[i*4+0].color = Color::Red;
 		eva[i*4+1].color = Color::Red;
@@ -126,6 +138,27 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 
 	spawnRect = sf::Rect<double>( pos.x - maxProtLength, pos.y - maxProtLength, 
 		maxProtLength * 2, maxProtLength * 2 );
+
+	for( int i = 0; i < numProtrusions; ++i )
+	{
+		CollisionBox &edgeBox = edgeHitboxes[i];
+		V2d &origin  = origins[i];
+		edgeBox.type = CollisionBox::Hit;
+		edgeBox.isCircle = false;
+		
+		V2d n = normalize( origin - position );
+		edgeBox.globalAngle = atan2( n.y, n.x );
+		
+		//cout << "origin start: " << origins[i].x << ", " << origins[i].y << endl;
+		V2d midPoint = ( origins[i] + position ) / 2.0;
+		//cout << "position: " << midPoint.x << ", " << midPoint.y << "angle: " << edgeBox.globalAngle << endl;
+		edgeBox.globalPosition = midPoint;
+		edgeBox.rw = length( origin - position ) / 2.0;
+		//width
+		edgeBox.rh = edgeWidth;
+	}
+
+	
 	/*dead = false;
 	dying = false;
 	deathFrame = 0;
@@ -396,6 +429,14 @@ void SecurityWeb::PhysicsResponse()
 		{
 		//	cout << "SecurityWeb just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
+
+		for( int i = 4; i < 5;++i )//numProtrusions; ++i )//numProtrusions; ++i )
+		{
+			if( edgeHitboxes[i].Intersects( owner->player->hurtBody ) )
+			{
+				cout << "gotcha: " << i << endl;
+			}
+		}
 	}
 }
 
@@ -497,6 +538,7 @@ void SecurityWeb::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
+		//target->draw( *edges );
 		target->draw( *nodes );
 		if( hasMonitor && !suppressMonitor )
 		{
@@ -699,6 +741,11 @@ void SecurityWeb::DebugDraw( RenderTarget *target )
 		curr = curr->nextProj;
 	}
 
+	for( int i = 4; i < 5; ++i )//i < numProtrusions; ++i )
+	{
+		edgeHitboxes[i].DebugDraw( target );
+	}
+
 }
 
 void SecurityWeb::SaveEnemyState()
@@ -754,6 +801,12 @@ SecurityWeb::NodeProjectile::NodeProjectile( SecurityWeb *p_parent,
 	physBody.offset.y = 0;
 	physBody.rw = halfNode;
 	physBody.rh = halfNode;
+
+	
+
+	//Reset( parent->position );
+	//V2d n = normalize( position - 
+	
 }
 
 void SecurityWeb::NodeProjectile::Reset( sf::Vector2<double> &pos )
@@ -780,6 +833,8 @@ void SecurityWeb::NodeProjectile::Reset( sf::Vector2<double> &pos )
 	hurtBody.globalPosition = pos;
 	hitBody.globalPosition = pos;
 	physBody.globalPosition = pos;
+
+	
 }
 void SecurityWeb::NodeProjectile::UpdatePrePhysics()
 {

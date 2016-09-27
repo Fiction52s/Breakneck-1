@@ -13888,9 +13888,9 @@ void Actor::DebugDraw( RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	//target->draw( cs );
 	
-
+	
 	hurtBody.DebugDraw( target );
-	b.DebugDraw( target );
+	//b.DebugDraw( target );
 
 	for( int i = 0; i < recordedGhosts; ++i )
 	{

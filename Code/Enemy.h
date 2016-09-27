@@ -2059,10 +2059,12 @@ struct SecurityWeb : Enemy, RayCastHandler
 		int framesToLive;
 		bool active;
 		NodeProjectile *nextProj;
+		
 		//NodeProjectile *revNode;
 		SecurityWeb *parent;
 	};
 
+	CollisionBox *edgeHitboxes;
 	NodeProjectile *activeNodes;
 	NodeProjectile **allNodes;
 	double bulletSpeed;
