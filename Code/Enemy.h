@@ -2038,6 +2038,7 @@ struct SecurityWeb : Enemy, RayCastHandler
 	void DirectKill();
 	void ResetNodes();
 	sf::Vector2<double> *origins;
+	
 
 	struct NodeProjectile : Movable
 	{
@@ -2064,6 +2065,8 @@ struct SecurityWeb : Enemy, RayCastHandler
 		SecurityWeb *parent;
 	};
 
+	bool dynamicMode;
+	int dynamicFrame;
 	CollisionBox *edgeHitboxes;
 	NodeProjectile *activeNodes;
 	NodeProjectile **allNodes;
@@ -2078,6 +2081,8 @@ struct SecurityWeb : Enemy, RayCastHandler
 	double rcQuantity;
 	sf::Vector2<double> rayStart;
 	sf::Vector2<double> rayEnd;
+
+	int targetFrames;
 
 	bool dead;
 	bool dying;
@@ -2531,6 +2536,73 @@ struct Ghost : Enemy
 		int frame;
 		sf::Vector2<double> position;
 
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct GrowingTree : Enemy
+{
+	
+	GrowingTree( GameSession *owner, bool hasMonitor,
+		Edge *ground, double quantity,
+		int pulseRadius );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+	//void DirectKill();
+	double pulseRadius;
+	int powerLevel;
+	sf::Sprite sprite;
+	Tileset *ts;
+
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		int frame;
 		int hitlagFrames;
 		int hitstunFrames;
 	};

@@ -23,13 +23,13 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	double p_bulletSpeed )
 	:Enemy( owner, Enemy::CORALNANOBOTS, hasMonitor, 4 ), 
 	angleOffset( p_angleOffset ), bulletSpeed( p_bulletSpeed ),
-	maxProtLength( 800 )
+	maxProtLength( 400 )
 {
 	
 	initHealth = 40;
 	health = initHealth;
 
-	
+	targetFrames = 30;
 
 	receivedHit = NULL;
 	position = V2d( pos.x, pos.y );
@@ -128,7 +128,7 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	hitBody.rh = halfNode;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -158,6 +158,9 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 		edgeBox.rh = edgeWidth;
 	}
 
+	
+	//dynamicMode = false;
+	//dynamicFrame = 0;
 	
 	/*dead = false;
 	dying = false;
@@ -214,7 +217,8 @@ void SecurityWeb::ResetEnemy()
 	deathFrame = 0;
 	frame = 0;
 	receivedHit = NULL;
-	
+	dynamicMode = false;
+	dynamicFrame = 0;
 	//NodeProjectile *currNode = allNodes;
 	ResetNodes();
 
@@ -312,14 +316,48 @@ void SecurityWeb::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	NodeProjectile *curr = activeNodes;
-	while( curr != NULL )
-	{
-		//cout << "pre: " << curr << endl;
-		curr->UpdatePrePhysics();
-		curr = curr->nextProj;
-	}
 	Actor *player = owner->player;
+
+
+	if( dynamicMode )
+	{
+		if( dynamicFrame == targetFrames )
+		{
+			NodeProjectile *curr = activeNodes;
+			while( curr != NULL )
+			{
+				
+				//cout << "pre: " << curr << endl;
+				curr->velocity = normalize( player->position - position ) * 10.0;
+				curr = curr->nextProj;
+			}
+		}
+		else if( dynamicFrame == 300 )
+		{
+			NodeProjectile *curr = activeNodes;
+			while( curr != NULL )
+			{
+				dynamicMode = false;
+				ResetNodes();
+				//cout << "pre: " << curr << endl;
+				//curr->velocity = normalize( player->position - position ) * 10.0;
+				curr = curr->nextProj;
+			}
+		}
+		
+	}
+
+	if( dynamicMode )
+	{
+		NodeProjectile *curr = activeNodes;
+		while( curr != NULL )
+		{
+			//cout << "pre: " << curr << endl;
+			curr->UpdatePrePhysics();
+			curr = curr->nextProj;
+		}
+	}
+	//Actor *player = owner->player;
 
 	if( !dead && !dying && receivedHit != NULL )
 	{
@@ -350,12 +388,15 @@ void SecurityWeb::UpdatePrePhysics()
 
 void SecurityWeb::UpdatePhysics()
 {	
-	NodeProjectile *curr = activeNodes;
-	while( curr != NULL )
+	if( dynamicMode )
 	{
-		//cout << "phys: " << curr << endl;
-		curr->UpdatePhysics();
-		curr = curr->nextProj;
+		NodeProjectile *curr = activeNodes;
+		while( curr != NULL )
+		{
+			//cout << "phys: " << curr << endl;
+			curr->UpdatePhysics();
+			curr = curr->nextProj;
+		}
 	}
 
 	specterProtected = false;
@@ -430,12 +471,22 @@ void SecurityWeb::PhysicsResponse()
 		//	cout << "SecurityWeb just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 
-		for( int i = 4; i < 5;++i )//numProtrusions; ++i )//numProtrusions; ++i )
+		if( !dynamicMode )
 		{
-			if( edgeHitboxes[i].Intersects( owner->player->hurtBody ) )
+			for( int i = 0; i < numProtrusions;++i )//numProtrusions; ++i )//numProtrusions; ++i )
 			{
-				cout << "gotcha: " << i << endl;
+				if( edgeHitboxes[i].Intersects( owner->player->hurtBody ) )
+				{
+					dynamicMode = true;
+					dynamicFrame = 0;
+					//cout << "gotcha: " << i << endl;
+					break;
+				}
 			}
+		}
+		else
+		{
+
 		}
 	}
 }
@@ -484,6 +535,8 @@ void SecurityWeb::UpdatePostPhysics()
 	{
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
+		if( dynamicMode )
+			dynamicFrame++;
 		slowCounter = 1;
 	
 		if( dying )
@@ -875,9 +928,12 @@ void SecurityWeb::NodeProjectile::UpdatePostPhysics()
 
 void SecurityWeb::NodeProjectile::HitPlayer()
 {
-	Actor *player = parent->owner->player;
+	if( parent->dynamicMode && parent->dynamicFrame >= parent->targetFrames )
+	{
+		Actor *player = parent->owner->player;
 	//probably deactivate the bullet during this also
-	player->ApplyHit( parent->hitboxInfo );
+		player->ApplyHit( parent->hitboxInfo );
+	}
 }
 
 void SecurityWeb::NodeProjectile::IncrementFrame()

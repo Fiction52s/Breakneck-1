@@ -14,6 +14,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		enemiesKilledThisFrame = 0;
 		toggleBounceInput = gs->controller.keySettings.toggleBounce;
 		toggleTimeSlowInput = gs->controller.keySettings.toggleTimeSlow;
 		toggleGrindInput = gs->controller.keySettings.toggleGrind;
@@ -1112,7 +1113,7 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
 
-	
+	enemiesKilledThisFrame = 0;
 
 	
 
@@ -16011,7 +16012,8 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 	{
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
 	}
-	
+	enemiesKilledThisFrame++;
+	//for the growing tree
 	//wrong
 }
 

@@ -2662,7 +2662,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//CoralNanobots *enemy = new CoralNanobots( this, hasMonitor, 
 				//	Vector2i( xPos, yPos ), moveFrames );
 				SecurityWeb * enemy = new SecurityWeb( this,
-					hasMonitor, Vector2i( xPos, yPos ), 6, 0, 10 );
+					hasMonitor, Vector2i( xPos, yPos ), 8, 0, 10 );
 				
 				
 				
@@ -2830,8 +2830,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;
 
-				Overgrowth *enemy = new Overgrowth( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-					10, 60 );
+//				Overgrowth *enemy = new Overgrowth( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+	//				10, 60 );
+				GrowingTree *enemy = new GrowingTree( this hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 400 );
 
 				
 				//enemyTree = Insert( enemyTree, enemy );
@@ -7899,7 +7900,7 @@ void GameSession::RespawnPlayer()
 
 	player->followerPos = player->position;
 	player->followerVel = V2d( 0, 0 );
-
+	player->enemiesKilledThisFrame = 0;
 	player->gateTouched = NULL;
 	player->action = player->INTRO;
 	player->frame = 0;

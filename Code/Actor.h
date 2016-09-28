@@ -128,6 +128,7 @@ struct Actor : QuadTreeCollider,
 
 	//sf::Shader speedBarShader;
 	bool hitGoal;
+	int enemiesKilledThisFrame;
 
 	Actor( GameSession *owner );
 	void UpdateSprite();

@@ -512,14 +512,14 @@ bool CollisionBox::Intersects( CollisionBox &c )
 			touching = false;
 		}
 		
-		if( touching )
+		/*if( touching )
 		{
 			cout << "TOUCHING" << endl;
 		}
 		else
 		{
 			cout << "not " << endl;
-		}
+		}*/
 		return touching;
 
 		//V2d axisAB = normalize( pB0 - pA0 );
