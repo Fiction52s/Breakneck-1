@@ -36,7 +36,7 @@ struct BasicBullet : QuadTreeCollider
 		BOSS_COYOTE,
 		TURTLE,
 		BOSS_TIGER,
-		OVERGROWTH,
+		GROWING_TREE,
 		Count
 	};
 
@@ -2542,11 +2542,11 @@ struct Ghost : Enemy
 	Stored stored;
 };
 
-struct GrowingTree : Enemy
+struct GrowingTree : Enemy, LauncherEnemy
 {
-	
 	GrowingTree( GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity,
+		Edge *ground, double quantity, 
+		int numBullets, int startLevel,
 		int pulseRadius );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -2558,25 +2558,38 @@ struct GrowingTree : Enemy
 	std::pair<bool,bool> PlayerHitMe();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
+	void Fire();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
+	void BulletHitTerrain(BasicBullet *b, 
+		Edge *edge, 
+		sf::Vector2<double> &pos);
+	void DirectKill();
+	void InitRangeMarkerVA();
+	void BulletHitPlayer( BasicBullet *b );
 	//void DirectKill();
 	double pulseRadius;
+	int pulseFrame;
+	Tileset *ts_bulletExplode;
 	int powerLevel;
+	int totalBullets;
+	Launcher *launcher;
 	sf::Sprite sprite;
 	Tileset *ts;
-
+	int startPowerLevel;
 	Edge *ground;
+	sf::VertexArray rangeMarkerVA;
 	double edgeQuantity;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 	
+	bool dying;
 	double angle;
 
 	Contact minContact;

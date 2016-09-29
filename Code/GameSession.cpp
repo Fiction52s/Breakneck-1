@@ -2832,7 +2832,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 //				Overgrowth *enemy = new Overgrowth( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
 	//				10, 60 );
-				GrowingTree *enemy = new GrowingTree( this hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 400 );
+				/*GrowingTree *enemy = new GrowingTree( this,
+					hasMonitor, 
+					edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, 
+					400 );*/
+
+				GrowingTree * enemy = new GrowingTree( this, hasMonitor,
+					edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, 32, 0, 1000 );
 
 				
 				//enemyTree = Insert( enemyTree, enemy );
@@ -7869,7 +7877,6 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 
 void GameSession::RespawnPlayer()
 {
-	
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
 	player->hitGoal = false;

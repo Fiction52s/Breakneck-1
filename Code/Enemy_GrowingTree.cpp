@@ -19,22 +19,30 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double q,
-	int p_pulseRadius )
-	:Enemy( owner, EnemyType::OVERGROWTH, p_hasMonitor, 5 ), ground( g ), edgeQuantity( q )
+	int numBullets, int p_startLevel, int p_pulseRadius )
+	:Enemy( owner, EnemyType::OVERGROWTH, p_hasMonitor, 5 ), ground( g ), edgeQuantity( q ),
+	totalBullets( numBullets ), rangeMarkerVA( sf::Quads, numBullets * 4 ) 
 {
+	startPowerLevel = p_startLevel;
 	pulseRadius = p_pulseRadius;
 	powerLevel = 0;
 	initHealth = 40;
 	health = initHealth;
 
 	double height = 48;
-	ts = owner->GetTileset( "GrowingTree_128x48.png", 128, height );
+	ts = owner->GetTileset( "foottrap_128x48.png", 128, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	//cout << "player " << owner->player->position.x << ", " << owner->player->position.y << endl;
 	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
-	
+	totalBullets = 32;
+
+	double bulletSpeed = 10;
+	int framesToLive = ( pulseRadius * 2 ) / bulletSpeed + .5;
+	launcher = new Launcher( this, BasicBullet::GROWING_TREE, owner, totalBullets, 1, position, V2d( 1, 0 ), 0, framesToLive );
+	launcher->SetBulletSpeed( bulletSpeed );	
+	launcher->hitboxInfo->damage = 18;
 
 	receivedHit = NULL;
 
@@ -90,17 +98,50 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 	//deathVector = V2d( 1, -1 );
+
+	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
+
+	ResetEnemy();
+
+	InitRangeMarkerVA();
+
+}
+
+void GrowingTree::InitRangeMarkerVA()
+{
+	int markerSize = 8;
+	Vector2f start( 0, -pulseRadius );
+	Transform rot;
+	for( int i = 0; i < totalBullets; ++i )
+	{
+		Vector2f trans = rot.transformPoint( start ) + Vector2f( position.x, position.y );
+
+		rangeMarkerVA[i*4+0].position = trans + Vector2f( -markerSize, -markerSize );
+		rangeMarkerVA[i*4+1].position = trans + Vector2f( markerSize, -markerSize );
+		rangeMarkerVA[i*4+2].position = trans + Vector2f( markerSize, markerSize );
+		rangeMarkerVA[i*4+3].position = trans + Vector2f( -markerSize, markerSize );
+
+		rangeMarkerVA[i*4+0].color = Color::Red;
+		rangeMarkerVA[i*4+1].color = Color::Red;
+		rangeMarkerVA[i*4+2].color = Color::Red;
+		rangeMarkerVA[i*4+3].color = Color::Red;
+
+
+		rot.rotate( 360.f / totalBullets );
+	}
 }
 
 void GrowingTree::ResetEnemy()
 {
 	//cout << "reset" << endl;
 	health = initHealth;
+	dying = false;
 	frame = 0;
 	deathFrame = 0;
 	dead = false;
 	receivedHit = NULL;
 	slowCounter = 1;
+	launcher->Reset();
 	slowMultiple = 1;
 }
 
@@ -116,7 +157,7 @@ void GrowingTree::HandleEntrant( QuadTreeEntrant *qte )
 void GrowingTree::UpdatePrePhysics()
 {
 	//cout << "dead: " << dead << endl;
-	if( !dead && receivedHit != NULL )
+	if( !dead && !dying && receivedHit != NULL )
 	{	
 		
 		//gotta factor in getting hit by a clone
@@ -141,14 +182,22 @@ void GrowingTree::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( frame == 0 )
+	if( !dead && !dying )
 	{
-		
+		if( powerLevel == 3 && pulseFrame == 0 )
+		{
+			if( pulseFrame == 0 )
+				Fire();
+
+			pulseFrame++;
+		}
 	}
+	
 }
 
 void GrowingTree::UpdatePhysics()
 {
+	launcher->UpdatePhysics();
 	specterProtected = false;
 	if( PlayerSlowingMe() )
 	{
@@ -196,21 +245,29 @@ void GrowingTree::UpdatePhysics()
 	}
 }
 
+void GrowingTree::Fire()
+{
+	powerLevel = startPowerLevel;
+	launcher->Reset();
+	Vector2f start( 0, -pulseRadius );
 
+	Transform t;
+	for( int i = 0; i < totalBullets; ++i )
+	{
+		Vector2f trans = t.transformPoint( start );
+		launcher->position = position + V2d( trans.x, trans.y );
+		launcher->facingDir = normalize( position - launcher->position );
+		launcher->Fire();
+		
+		t.rotate( 360.f / totalBullets );
+	}
+}
 
 void GrowingTree::UpdatePostPhysics()
 {
-	if( deathFrame == 30 )
-	{
-		
-		owner->RemoveEnemy( this );
-		return;
-	}
 
-	if( deathFrame == 0 && dead )
-	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
-	}
+
+	launcher->UpdatePostPhysics();
 
 	if( receivedHit != NULL )
 	{
@@ -218,6 +275,41 @@ void GrowingTree::UpdatePostPhysics()
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
+	if( owner->player->enemiesKilledThisFrame > 0 && powerLevel < 3 )
+	{
+		double lenPlayer = length( owner->player->position - position );
+		if( lenPlayer < pulseRadius )
+		{
+			powerLevel++;
+			if( powerLevel == 3 )
+			{
+				pulseFrame = 0;
+			}
+		}
+		
+	}
+
+	if( deathFrame == 0 && dying )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
+	}
+
+	if( deathFrame == 60 && dying )
+	{
+		dying = false;
+		dead = true;
+		//owner->RemoveEnemy( this );
+		//return;
+	}
+
+	if( dead && launcher->GetActiveCount() == 0 )
+	{
+		//cout << "REMOVING" << endl;
+		owner->RemoveEnemy( this );
+	}
+
+	
+	UpdateSprite();
 	
 
 	if( slowCounter == slowMultiple )
@@ -225,7 +317,7 @@ void GrowingTree::UpdatePostPhysics()
 		++frame;
 		slowCounter = 1;
 	
-		if( dead )
+		if( dying )
 		{
 			deathFrame++;
 		}
@@ -242,13 +334,14 @@ void GrowingTree::UpdatePostPhysics()
 	}
 
 	//cout << "dead post: " << dead << endl;
-	UpdateSprite();
+	
 }
 
 void GrowingTree::Draw(sf::RenderTarget *target )
 {
-	if( !dead )
+	if( !dying && !dead )
 	{
+		target->draw( rangeMarkerVA );
 		if( hasMonitor && !suppressMonitor )
 		{
 			if( owner->pauseFrames < 2 || receivedHit == NULL )
@@ -406,8 +499,25 @@ bool GrowingTree::PlayerSlowingMe()
 
 void GrowingTree::UpdateSprite()
 {
+	launcher->UpdateSprites();
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
+
+	switch( powerLevel )
+	{
+	case 0:
+		sprite.setColor( Color::White );
+		break;
+	case 1:
+		sprite.setColor( Color::Blue );
+		break;
+	case 2:
+		sprite.setColor( Color::Green );
+		break;
+	case 3:
+		sprite.setColor( Color::Red );
+		break;
+	}
 
 	if( dead )
 	{
@@ -449,7 +559,42 @@ void GrowingTree::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
+void GrowingTree::DirectKill()
+{
+	BasicBullet *b = launcher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
 
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
+}
+
+void GrowingTree::BulletHitTerrain(BasicBullet *b, 
+	Edge *edge, V2d &pos)
+{
+	/*V2d norm = edge->Normal();
+	double angle = atan2( norm.y, -norm.x );
+
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
+	b->launcher->DeactivateBullet( b );*/
+}
+
+void GrowingTree::BulletHitPlayer( BasicBullet *b )
+{
+	V2d vel = b->velocity;
+	double angle = atan2( vel.y, vel.x );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	b->launcher->DeactivateBullet( b );
+}
 
 void GrowingTree::UpdateHitboxes()
 {

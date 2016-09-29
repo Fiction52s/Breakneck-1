@@ -78,6 +78,9 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	case BasicBullet::OWL:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::GROWING_TREE:
+		bulletTilesetIndex = 1;
+		break;
 		break;
 	}
 	
