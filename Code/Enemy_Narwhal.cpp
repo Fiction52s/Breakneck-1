@@ -100,7 +100,7 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	triggerBox.rh = length( point0-point1 ) / 2;
 	
 	angle = atan2( normDiff.y, -normDiff.x ) / PI * 180.f;//triggerBox.globalAngle / PI * 180.f;
-	cout << "ANGLE: " << angle << endl;
+	//cout << "ANGLE: " << angle << endl;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
 	//bloodSprite.setTexture( *ts_testBlood->texture );

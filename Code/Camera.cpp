@@ -79,8 +79,12 @@ void Camera::UpdateReal( Actor *player )
 	Enemy *curr = owner->activeEnemyList;
 	while( curr != NULL )
 	{
-		if( curr->type == Enemy::BASICEFFECT || length( playerPos - curr->position ) > 900
-			|| curr->dead )
+		bool alwaysExclude = (curr->type == Enemy::BASICEFFECT || length( playerPos - curr->position ) > 900
+			|| curr->dead);
+		bool extra = (curr->type == Enemy::GHOST || curr->type == Enemy::GORILLA );
+		//have stuff here for relative movers so 
+		//bool sometimesExclude = curr->type == Enemy::GHOST
+		if( alwaysExclude || extra )
 		{
 			curr = curr->next;
 			continue;
