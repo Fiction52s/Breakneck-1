@@ -54,7 +54,7 @@ int Sign( double x )
 
 double CubicBezier::GetValue( double a )
 {
-	assert( a < 1.1 );
+	//assert( a < 1.1 );
 
 	if( a > 1.0 )
 		a = 1.0;
@@ -103,7 +103,7 @@ double CubicBezier::GetY( double t )
 }
 
 Movement::Movement( CubicBezier &p_bez, int dur, Types type )
-	:next( NULL ), duration( dur * NUM_STEPS ), vertices( NULL ), bez( p_bez ), moveType( type )
+	:next( NULL ), duration( dur * NUM_STEPS * 5 ), vertices( NULL ), bez( p_bez ), moveType( type )
 
 {
 }
@@ -343,7 +343,7 @@ void MovementSequence::Reset()
 	currRotation = rotationList;
 }
 
-void MovementSequence::Update()
+void MovementSequence::Update( int slowMultiple )
 {
 	if( currMovement != NULL )
 	{
@@ -377,9 +377,9 @@ void MovementSequence::Update()
 	}
 
 
-
-	currTime++;
-	if( currMovement != NULL && currTime == currMovement->duration + currMovementStartTime + 1 )
+	currTime += 5 / slowMultiple;
+	//currTime++;
+	if( currMovement != NULL && currTime >= currMovement->duration + currMovementStartTime + 1 )
 	{
 		currMovement = currMovement->next;
 		//currLauncherList = currMovement->launcher;

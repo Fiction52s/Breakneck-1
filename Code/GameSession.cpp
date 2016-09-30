@@ -2631,8 +2631,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;				
 
-				Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
-				
+				Vector2i delta( 1000, -1000 );
+				Vector2i pos( xPos, yPos );
+				//Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
+				Narwhal *enemy = new Narwhal( this, hasMonitor, pos, pos + delta, 20 ); 
+					
 				
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy

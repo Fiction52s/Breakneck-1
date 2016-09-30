@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Movement.h"
 
 using namespace std;
 using namespace sf;
@@ -10,42 +11,40 @@ using namespace sf;
 #define V2d sf::Vector2<double>
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 
 
-Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
+Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos, 
+	sf::Vector2i &endPos, int p_moveFrames )
 	:Enemy( owner, EnemyType::PATROLLER, p_hasMonitor, 1 ), deathFrame( 0 )
 {
-
+	moveFrames = p_moveFrames;
 	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position.x = startPos.x;
+	position.y = startPos.y;
+
+	point0 = position;
+	point1.x = endPos.x;
+	point1.y = endPos.y;
 
 	initHealth = 40;
 	health = initHealth;
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	double left = min( point0.x, point1.x );
+	double top = min( point0.y, point1.y );
+	double right = max( point0.x, point1.x );
+	double bot = max( point0.y, point1.y );
+
+	double width = right - left;
+	double height = bot - top;
+
+
+	spawnRect = sf::Rect<double>( left, top, width, height );
 	
-	pathLength = pathParam.size() + 1;
-	//cout << "pathLength: " << pathLength << endl;
-	path = new Vector2i[pathLength];
-	path[0] = pos;
-
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it) + pos;
-		++index;
-		//path.push_back( (*it) );
-
-	}
-
-	loop = loopP;
-	
-	//eventually maybe put this on a multiplier for more variation?
-	//doubt ill need it though
-	speed = pspeed;
-
+	actionLength[WAITING] = 10;
+	actionLength[CHARGE_START] = 10;
+	actionLength[CHARGE_REPEAT] = 10;
+	actionLength[TURNING] = 10;
 
 
 	//speed = 2;
@@ -53,12 +52,12 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	animationFactor = 5;
 
-	//ts = owner->GetTileset( "patroller.png", 80, 80 );
+	//ts = owner->GetTileset( "Narwhal.png", 80, 80 );
 	ts = owner->GetTileset( "patroller_192x192.png", 192, 192 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	sprite.setPosition( position.x, position.y );
 	//position.x = 0;
 	//position.y = 0;
 	hurtBody.type = CollisionBox::Hurt;
@@ -86,28 +85,60 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	hitboxInfo->knockback = 4;
 	//hitboxInfo->kbDir;
 
-	targetNode = 1;
-	forward = true;
-
-	dead = false;
-
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
-	facingRight = true;
-	 
+	triggerBox.type = CollisionBox::Hit;
+	triggerBox.isCircle = false;
+	V2d diff = point1 - point0;
+	V2d normDiff = normalize( diff );
+
+	triggerBox.globalAngle = atan2( normDiff.y, -normDiff.x );
+	triggerBox.globalPosition = (point0+point1) / 2.0;
+	triggerBox.rw = 20;
+	triggerBox.rh = length( point0-point1 ) / 2;
+	
+	angle = atan2( normDiff.y, -normDiff.x ) / PI * 180.f;//triggerBox.globalAngle / PI * 180.f;
+	cout << "ANGLE: " << angle << endl;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
 	//bloodSprite.setTexture( *ts_testBlood->texture );
-
+	sprite.setRotation( angle );
 	UpdateHitboxes();
+
+	seq.AddLineMovement( point0, point1, CubicBezier( 0, 0, 1, 1 ), moveFrames );
+	seq1.AddLineMovement( point1, point0, CubicBezier( 0, 0, 1, 1 ), moveFrames );
+	ResetEnemy();
+	
+	
 }
 
-void Patroller::HandleEntrant( QuadTreeEntrant *qte )
+void Narwhal::ActionEnded()
+{
+	if( frame == actionLength[action] )
+	{
+		switch( action )
+		{
+		case WAITING:
+			frame = 0;
+			break;
+		case CHARGE_START:
+			action = CHARGE_REPEAT;
+			frame = 0;
+			break;
+		case CHARGE_REPEAT:
+			frame = 0;
+			break;
+		case TURNING:
+			action = WAITING;
+			frame = 0;
+			break;
+		}
+	}
+}
+
+void Narwhal::HandleEntrant( QuadTreeEntrant *qte )
 {
 	SpecterArea *sa = (SpecterArea*)qte;
 	if( sa->barrier.Intersects( hurtBody ) )
@@ -116,19 +147,20 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Patroller::ResetEnemy()
+void Narwhal::ResetEnemy()
 {
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	targetNode = 1;
-	forward = true;
+	seq.Reset();
+	seq1.Reset();
+	start0 = false;
+	triggered = false;
 	dead = false;
 	deathFrame = 0;
-	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	position = point0;
 	receivedHit = NULL;
-	
+	action = WAITING;
+	frame = 0;
+	slowMultiple = 1;
+	slowCounter = 1;
 
 	UpdateHitboxes();
 
@@ -137,14 +169,22 @@ void Patroller::ResetEnemy()
 	
 }
 
-void Patroller::UpdatePrePhysics()
+void Narwhal::UpdatePrePhysics()
 {
-
-
-
-	if( frame == 15 * animationFactor )
+	ActionEnded();
+	switch( action )
 	{
-		frame = 0;
+	case WAITING:
+		{
+			
+		}
+		break;
+	case CHARGE_START:
+		break;
+	case CHARGE_REPEAT:
+		break;
+	case TURNING:
+		break;
 	}
 
 	if( !dead && receivedHit != NULL )
@@ -171,15 +211,60 @@ void Patroller::UpdatePrePhysics()
 
 		receivedHit = NULL;
 	}
+
+	triggered = false;
 }
 
-void Patroller::UpdatePhysics()
+void Narwhal::UpdatePhysics()
 {
 	//cout << "setting to targetnode: " << targetNode << endl;
 	//position = V2d( path[targetNode].x, path[targetNode].y );
 	specterProtected = false;
 
-	double movement = speed / NUM_STEPS;
+	if( !dead )
+	{
+		//if( 
+		if( action == CHARGE_START || action == CHARGE_REPEAT )
+		{
+
+			if( start0 )
+			{
+				if( seq.currMovement == NULL )
+				{
+					cout << "turning 0" << endl;
+					action = TURNING;
+					frame = 0;
+				}
+				else
+				{
+					seq.Update( slowMultiple );
+					position = seq.position;
+				}
+			}
+			else
+			{
+				if( seq1.currMovement == NULL )
+				{
+					cout << "turning 1" << endl;
+					action = TURNING;
+					frame = 0;
+				}
+				else
+				{
+					seq1.Update( slowMultiple );
+					position = seq1.position;
+				}
+			
+			}
+
+		}
+		
+		//cout << "position: " << position.x << ", " << position.y << 
+		//	", newpos: " << testSeq.position.x 
+		//	<< ", " << testSeq.position.y << endl;
+		
+		PhysicsResponse();
+	}
 	
 	if( PlayerSlowingMe() )
 	{
@@ -198,34 +283,11 @@ void Patroller::UpdatePhysics()
 	if( dead )
 		return;
 
-	if( pathLength > 1 )
-	{
-		movement /= (double)slowMultiple;
-
-		while( movement != 0 )
-		{
-			//cout << "movement loop? "<< endl;
-			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-			V2d diff = targetPoint - position;
-			double len = length( diff );
-			if( len >= abs( movement ) )
-			{
-				position += normalize( diff ) * movement;
-				movement = 0;
-			}
-			else
-			{
-				position += diff;
-				movement -= length( diff );
-				AdvanceTargetNode();	
-			}
-		}
-	}
 
 	PhysicsResponse();
 }
 
-void Patroller::PhysicsResponse()
+void Narwhal::PhysicsResponse()
 {
 	if( !dead && receivedHit == NULL )
 	{
@@ -236,7 +298,7 @@ void Patroller::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 6 );
+			owner->player->ConfirmHit( COLOR_MAGENTA, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
@@ -247,9 +309,10 @@ void Patroller::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, true );
 			
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
+
+		//	cout << "Narwhal received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -267,45 +330,38 @@ void Patroller::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Narwhal just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		}
+
+		if( action == WAITING && !triggered )
+		{
+			if( triggerBox.Intersects( owner->player->hurtBody ) )
+			{
+				triggered = true;
+			}
 		}
 	}
 }
 
-void Patroller::AdvanceTargetNode()
+void Narwhal::UpdatePostPhysics()
 {
-	if( loop )
+	if( triggered )
 	{
-		++targetNode;
-		if( targetNode == pathLength )
-			targetNode = 0;
-	}
-	else
-	{
-		if( forward )
+		action = CHARGE_START;
+		frame = 0;
+		currMoveFrame = 0;
+		start0 = !start0;
+		if( start0 )
 		{
-			++targetNode;
-			if( targetNode == pathLength )
-			{
-				targetNode -= 2;
-				forward = false;
-			}
+			seq.Reset();
 		}
 		else
 		{
-			--targetNode;
-			if( targetNode < 0 )
-			{
-				targetNode = 1;
-				forward = true;
-			}
+			seq1.Reset();
 		}
 	}
-}
 
-void Patroller::UpdatePostPhysics()
-{
-	if( deathFrame == 30 )
+	if( deathFrame == 60 )
 	{
 		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 		owner->RemoveEnemy( this );
@@ -325,8 +381,7 @@ void Patroller::UpdatePostPhysics()
 
 	UpdateSprite();
 
-	
-	
+
 
 	if( slowCounter == slowMultiple )
 	{
@@ -345,10 +400,23 @@ void Patroller::UpdatePostPhysics()
 	}
 }
 
-void Patroller::UpdateSprite()
+void Narwhal::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	//ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
+	IntRect ir = ts->GetSubRect( 0 );
+	if( start0 )
+	{
+		sprite.setTextureRect( ir );
+	}
+	else
+	{
+		ir.top += ir.height;
+		ir.height = -ir.height;
+		sprite.setTextureRect( ir );
+		//sprite.setRotation( -angle );
+	}
+
 
 	if( dead )
 	{
@@ -378,7 +446,7 @@ void Patroller::UpdateSprite()
 	}
 }
 
-void Patroller::Draw( sf::RenderTarget *target )
+void Narwhal::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead )
@@ -429,7 +497,7 @@ void Patroller::Draw( sf::RenderTarget *target )
 
 }
 
-void Patroller::DrawMinimap( sf::RenderTarget *target )
+void Narwhal::DrawMinimap( sf::RenderTarget *target )
 {
 	/*CircleShape enemyCircle;
 	enemyCircle.setFillColor( COLOR_BLUE );
@@ -467,7 +535,7 @@ void Patroller::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Patroller::IHitPlayer()
+bool Narwhal::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -479,7 +547,7 @@ bool Patroller::IHitPlayer()
 	return false;
 }
 
-void Patroller::UpdateHitboxes()
+void Narwhal::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -497,7 +565,7 @@ void Patroller::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Patroller::PlayerHitMe()
+pair<bool,bool> Narwhal::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )
@@ -553,7 +621,7 @@ pair<bool,bool> Patroller::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Patroller::PlayerSlowingMe()
+bool Narwhal::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -569,35 +637,36 @@ bool Patroller::PlayerSlowingMe()
 	return false;
 }
 
-void Patroller::DebugDraw( RenderTarget *target )
+void Narwhal::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
+		triggerBox.DebugDraw( target );
 	}
 }
 
-void Patroller::SaveEnemyState()
+void Narwhal::SaveEnemyState()
 {
-	stored.dead = dead;
-	stored.deathFrame = deathFrame;
-	stored.forward = forward;
-	stored.frame = frame;
-	stored.hitlagFrames = hitlagFrames;
-	stored.hitstunFrames = hitstunFrames;
-	stored.position = position;
-	stored.targetNode = targetNode;
+	//stored.dead = dead;
+	///stored.deathFrame = deathFrame;
+	//stored.forward = forward;
+//	stored.frame = frame;
+	//stored.hitlagFrames = hitlagFrames;
+	///stored.hitstunFrames = hitstunFrames;
+	//stored.position = position;
+//	stored.targetNode = targetNode;
 }
 
-void Patroller::LoadEnemyState()
+void Narwhal::LoadEnemyState()
 {
-	dead = stored.dead;
-	deathFrame = stored.deathFrame;
-	forward = stored.forward;
-	frame = stored.frame;
-	hitlagFrames = stored.hitlagFrames;
-	hitstunFrames = stored.hitstunFrames;
-	position = stored.position;
-	targetNode = stored.targetNode;
+//	dead = stored.dead;
+//	deathFrame = stored.deathFrame;
+//	forward = stored.forward;
+	//frame = stored.frame;
+	//hitlagFrames = stored.hitlagFrames;
+	//hitstunFrames = stored.hitstunFrames;
+//	position = stored.position;
+///	targetNode = stored.targetNode;
 }

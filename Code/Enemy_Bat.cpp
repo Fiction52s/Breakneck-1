@@ -328,7 +328,7 @@ void Bat::UpdatePhysics()
 	specterProtected = false;
 	if( !dead && !dying )
 	{
-		testSeq.Update();
+		testSeq.Update( slowMultiple );
 		//cout << "position: " << position.x << ", " << position.y << 
 		//	", newpos: " << testSeq.position.x 
 		//	<< ", " << testSeq.position.y << endl;
