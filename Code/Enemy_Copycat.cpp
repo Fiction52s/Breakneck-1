@@ -19,14 +19,9 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE, p_hasMonitor, 4 ), deathFrame( 0 )
+Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
+	:Enemy( owner, EnemyType::COPYCAT, p_hasMonitor, 4 ), deathFrame( 0 )
 {
-
-	//loop = false; //no looping on Turtle for now
-
-	bulletSpeed = 5;
-
 	action = NEUTRAL;
 
 	animFactor[NEUTRAL] = 1;
@@ -41,7 +36,6 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	actionLength[FADEOUT] = 90;
 	actionLength[INVISIBLE] = 30;
 
-	fireCounter = 0;
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
@@ -49,9 +43,6 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	originalPos = pos;
 
 	deathFrame = 0;
-	
-	launcher = new Launcher( this, BasicBullet::TURTLE, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
-	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
 	health = initHealth;
@@ -62,7 +53,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 
 	//animationFactor = 5;
 
-	//ts = owner->GetTileset( "Turtle.png", 80, 80 );
+	//ts = owner->GetTileset( "Copycat.png", 80, 80 );
 	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
@@ -119,7 +110,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	//cout << "finish init" << endl;
 }
 
-void Turtle::HandleEntrant( QuadTreeEntrant *qte )
+void Copycat::HandleEntrant( QuadTreeEntrant *qte )
 {
 	SpecterArea *sa = (SpecterArea*)qte;
 	if( sa->barrier.Intersects( hurtBody ) )
@@ -128,25 +119,19 @@ void Turtle::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
+void Copycat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
 	b->launcher->DeactivateBullet( b );
 }
 
-void Turtle::BulletHitPlayer(BasicBullet *b )
+void Copycat::BulletHitPlayer(BasicBullet *b )
 {
 	owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 
-void Turtle::ResetEnemy()
+void Copycat::ResetEnemy()
 {
-	fireCounter = 0;
-	launcher->Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	//targetNode = 1;
-	//forward = true;
 	dead = false;
 	dying = false;
 	deathFrame = 0;
@@ -159,10 +144,9 @@ void Turtle::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
-	
 }
 
-void Turtle::ActionEnded()
+void Copycat::ActionEnded()
 {
 	if( frame == actionLength[action] )
 	{
@@ -192,11 +176,9 @@ void Turtle::ActionEnded()
 	}
 }
 
-void Turtle::UpdatePrePhysics()
+void Copycat::UpdatePrePhysics()
 {
 	ActionEnded();
-
-	launcher->UpdatePrePhysics();
 
 	switch( action )
 	{
@@ -254,26 +236,9 @@ void Turtle::UpdatePrePhysics()
 
 		receivedHit = NULL;
 	}
-
-	if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
-	{
-		//cout << "firing" << endl;
-		launcher->position = position;
-		launcher->facingDir = normalize( owner->player->position - position );
-		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-		//	launcher->facingDir.y << endl;
-		launcher->Fire();
-		fireCounter = 0;
-		//testLauncher->Fire();
-	}
-
-	/*if( latchedOn )
-	{
-		basePos = owner->player->position + offsetPlayer;
-	}*/
 }
 
-void Turtle::UpdatePhysics()
+void Copycat::UpdatePhysics()
 {	
 	specterProtected = false;
 	if( !dead )
@@ -293,8 +258,6 @@ void Turtle::UpdatePhysics()
 		}
 	}
 
-	launcher->UpdatePhysics();
-
 	if( !dead && !dying )
 	{
 		if( action == NEUTRAL )
@@ -311,7 +274,7 @@ void Turtle::UpdatePhysics()
 	return;
 }
 
-void Turtle::PhysicsResponse()
+void Copycat::PhysicsResponse()
 {
 	if( !dead && !dying && receivedHit == NULL )
 	{
@@ -322,7 +285,7 @@ void Turtle::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_ORANGE, 5, .8, 6 );
+			owner->player->ConfirmHit( COLOR_MAGENTA, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
@@ -337,7 +300,7 @@ void Turtle::PhysicsResponse()
 			//owner->player->frame--;
 			
 			
-		//	cout << "Turtle received damage of: " << receivedHit->damage << endl;
+		//	cout << "Copycat received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -355,28 +318,35 @@ void Turtle::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Turtle just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Copycat just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
-void Turtle::UpdatePostPhysics()
+void Copycat::UpdatePostPhysics()
 {
-	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
-		
 		owner->Pause( 5 );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
+	}
 	
+	if( deathFrame == 60 && dying )
+	{
+		dying = false;
+		dead = true;
+	}
 
 	if( slowCounter == slowMultiple )
 	{
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
-		++fireCounter;
 	
 		if( dying )
 		{
@@ -390,28 +360,12 @@ void Turtle::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( deathFrame == 60 && dying )
-	{
-		//cout << "switching dead" << endl;
-		dying = false;
-		dead = true;
-		//cout << "REMOVING" << endl;
-		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
-	}
-
-	if( dead && launcher->GetActiveCount() == 0 )
-	{
-		//cout << "REMOVING" << endl;
-		owner->RemoveEnemy( this );
-	}
+	
 
 	UpdateSprite();
-	launcher->UpdateSprites();
 }
 
-void Turtle::UpdateSprite()
+void Copycat::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
@@ -435,7 +389,7 @@ void Turtle::UpdateSprite()
 	}
 }
 
-void Turtle::Draw( sf::RenderTarget *target )
+void Copycat::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead && !dying )
@@ -477,7 +431,7 @@ void Turtle::Draw( sf::RenderTarget *target )
 
 }
 
-void Turtle::DrawMinimap( sf::RenderTarget *target )
+void Copycat::DrawMinimap( sf::RenderTarget *target )
 {
 	if( !dead && !dying )
 	{
@@ -496,7 +450,7 @@ void Turtle::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Turtle::IHitPlayer()
+bool Copycat::IHitPlayer()
 {
 	if( action == FADEIN || action == INVISIBLE )
 		return false;
@@ -511,7 +465,7 @@ bool Turtle::IHitPlayer()
 	return false;
 }
 
-void Turtle::UpdateHitboxes()
+void Copycat::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -529,7 +483,7 @@ void Turtle::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Turtle::PlayerHitMe()
+pair<bool,bool> Copycat::PlayerHitMe()
 {
 	if( action == INVISIBLE )
 		return pair<bool,bool>(false,false);
@@ -601,7 +555,7 @@ pair<bool,bool> Turtle::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Turtle::PlayerSlowingMe()
+bool Copycat::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -617,7 +571,7 @@ bool Turtle::PlayerSlowingMe()
 	return false;
 }
 
-void Turtle::DebugDraw( RenderTarget *target )
+void Copycat::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -626,7 +580,7 @@ void Turtle::DebugDraw( RenderTarget *target )
 	}
 }
 
-void Turtle::SaveEnemyState()
+void Copycat::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -636,7 +590,7 @@ void Turtle::SaveEnemyState()
 	stored.position = position;
 }
 
-void Turtle::LoadEnemyState()
+void Copycat::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

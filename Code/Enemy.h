@@ -3300,6 +3300,93 @@ struct Gorilla : Enemy
 	Stored stored;
 };
 
+struct Copycat : Enemy
+{
+	enum Action
+	{
+		FAIR,
+		DAIR,
+		UAIR,
+		STANDN,
+		WALLATTACK,
+		CLIMBATTACK,
+		SLIDEATTACK,
+		TELEPORT,
+
+		NEUTRAL,
+		FIRE,
+		INVISIBLE,
+		FADEIN,
+		FADEOUT
+	};
+
+	Copycat( GameSession *owner, bool hasMonitor,
+		sf::Vector2i &pos );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void ActionEnded();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	std::map<Action,int> actionLength;
+	std::map<Action,int> animFactor;
+
+
+	Action action;
+	//sf::Vector2<double> basePos;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	
+	sf::Vector2i originalPos;
+	int frame;
+
+	bool dying;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	//int animationFactor;
+	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
 
 
 

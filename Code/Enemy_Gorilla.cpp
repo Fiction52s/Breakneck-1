@@ -314,7 +314,7 @@ void Gorilla::UpdatePrePhysics()
 		break;
 	case ALIGN:
 		{
-			cout << "align: " << alignFrames << ", move frames: " << alignMoveFrames << endl;
+			//cout << "align: " << alignFrames << ", move frames: " << alignMoveFrames << endl;
 			if( alignFrames == alignMoveFrames )
 			{
 				action = FOLLOW;
@@ -684,6 +684,7 @@ void Gorilla::Draw( sf::RenderTarget *target )
 
 void Gorilla::DrawMinimap( sf::RenderTarget *target )
 {
+	cout << "Draw minimap" << endl;
 	if( !dead )
 	{
 		if( hasMonitor && !suppressMonitor )
@@ -867,6 +868,10 @@ void Gorilla::DebugDraw( RenderTarget *target )
 	}
 }
 
+
+//camera bug
+//show rectangle
+//adjust damage
 void Gorilla::SaveEnemyState()
 {
 	stored.dead = dead;
