@@ -1012,7 +1012,7 @@ void GameSession::UpdateEnemiesPhysics()
 	//	player->UpdatePhysics( );
 
 
-	for( int i = 0; i < NUM_STEPS; ++i )
+	for( substep = 0; substep < NUM_STEPS; ++substep )
 	{
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
@@ -2806,8 +2806,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int speed;
 				is >> speed;
 
-				Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
-				
+				//Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
+				Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+					400, 50, 60, 1 );
 				
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
@@ -2869,7 +2870,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> hasMonitor;				
 
 				Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-				
+				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				//	400, 50, 60, 1 );
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );

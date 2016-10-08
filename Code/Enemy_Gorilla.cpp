@@ -15,24 +15,39 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 
 
-Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed )
+Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, 
+	int wallWidth, int wallHeight, int p_followFrames,
+	int p_recoveryLoops )
 	:Enemy( owner, EnemyType::GORILLA, p_hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
+	affectCameraZoom = false;	
+	idealRadius = 300;
+	followFrames = p_followFrames;
+	recoveryLoops = p_recoveryLoops;
+	wallHitboxWidth = wallWidth;
+	wallHitboxHeight = wallHeight;
+
+	wallHitbox.isCircle = false;
+	wallHitbox.rw = wallHitboxWidth / 2;
+	wallHitbox.rh = wallHitboxHeight / 2;
+
 	actionLength[WAKEUP] = 60;
 	actionLength[ALIGN] = 60;
-	actionLength[FOLLOW] = 2;
-	actionLength[ATTACK] = 2;
+	actionLength[FOLLOW] = followFrames;
+	actionLength[ATTACK] = 60;
 	actionLength[RECOVER] = 60;
 
 	actionLength[WAKEUP] = 1;
 	animFactor[ALIGN] = 1;
-	animFactor[FOLLOW] = 20;
-	animFactor[ATTACK] = 20;
+	animFactor[FOLLOW] = 1;
+	animFactor[ATTACK] = 1;
 	animFactor[RECOVER] = 1;
 
 	action = WAKEUP;
 
 	latchedOn = false;
+
+	awakeCap = 60;
 	//offsetPlayer 
 	receivedHit = NULL;
 	position.x = pos.x;
@@ -60,7 +75,7 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i pos, float psp
 
 	basePos = position;
 	
-	speed = pspeed;
+	//speed = pspeed;
 
 	//speed = 2;
 	frame = 0;
@@ -102,12 +117,12 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i pos, float psp
 	
 	//hitboxInfo->kbDir;
 	awakeFrames = 0;
-	awakeCap = 60;
+	
 	
 	latchStartAngle = 0;
 	dead = false;
 
-	awake = false;
+	//awake = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -118,8 +133,8 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i pos, float psp
 
 	facingRight = true;
 	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
@@ -128,6 +143,11 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i pos, float psp
 	int detectionSize = 64; //need to make resting sprite larger, ending sprite smaller
 	detectionRect = sf::Rect<double>( position.x - detectionSize, position.y - detectionSize,
 		detectionSize * 2, detectionSize * 2 );
+
+	slowMultiple = 1;
+	slowCounter = 1;
+	recoveryCounter = 0;
+	createWallFrame = 20;
 }
 
 void Gorilla::HandleEntrant( QuadTreeEntrant *qte )
@@ -139,7 +159,8 @@ void Gorilla::ResetEnemy()
 {
 	action = WAKEUP;
 	facingRight = origFacingRight;
-	awake = false;
+	affectCameraZoom = false;	
+	//awake = false;
 	awakeFrames = 0;
 	latchStartAngle = 0;
 	latchedOn = false;
@@ -153,7 +174,9 @@ void Gorilla::ResetEnemy()
 	position = basePos;
 	
 	receivedHit = NULL;
-	
+	slowMultiple = 1;
+	slowCounter = 1;
+	recoveryCounter = 0;
 
 	UpdateHitboxes();
 
@@ -162,22 +185,177 @@ void Gorilla::ResetEnemy()
 	
 }
 
-void Gorilla::UpdatePrePhysics()
+void Gorilla::ActionEnded()
 {
 	if( frame == actionLength[action] * animFactor[action] )
 	{
-		//if( action == BITE )
-		//	action = EXPLODE;
-		//else if( action == EXPLODE )
-		//{
-		//	deathFrame = 60;
-		//	if( hasMonitor && !suppressMonitor )
-		//		owner->keyMarker->CollectKey();
-		//}
-		frame = 0;
-	}
+		switch( action )
+		{
+		case WAKEUP:
+			frame = 0;
+			break;
+		case ALIGN:
+			frame = 0;
+			break;
+		case FOLLOW:
+			action = ATTACK;
+			frame = 0;
+			break;
+		case ATTACK:
+			recoveryCounter = 0;
+			action = RECOVER;
+			frame = 0;
+			break;
+		case RECOVER:
+			++recoveryCounter;
+			//if( recoveryCounter == recoveryLoops )
+			{
+				latchedOn = true;
+				offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
+				origOffset = offsetPlayer;//length( offsetPlayer );
+				V2d offsetDir = normalize( offsetPlayer );
+				//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+				//cout << "latchStart: " << latchStartAngle << endl;
+				//testSeq.Update();
+				basePos = owner->player->position;
 
-	
+
+				V2d playerPos = owner->player->position;
+				action = ALIGN;
+				double currRadius = length( offsetPlayer );
+				alignMoveFrames = 60 * 5 * NUM_STEPS;//(int)((abs(idealRadius - currRadius)) / 3.0) * NUM_STEPS * 5;
+				frame = 0;
+				alignFrames = 0;
+				recoveryCounter = 0;
+
+				if( playerPos.x < position.x )
+				{
+					facingRight = false;
+				}
+				else
+				{
+					facingRight = true;
+				}
+				
+				//affectCameraZoom = true;
+				
+				//cout << "recover move frames: " << alignMoveFrames << endl;
+
+					
+				//cout << "JUST LATCHING NOW" << endl;
+				
+
+				//double currRadius = length( offsetPlayer );
+				//alignMoveFrames = (int)((abs(idealRadius - currRadius)) / 3.0) * NUM_STEPS * 5;
+			}
+			break;
+		}
+	}
+}
+
+void Gorilla::UpdatePrePhysics()
+{
+	ActionEnded();
+
+	V2d playerPos = owner->player->position;
+
+	switch( action )
+	{
+	case WAKEUP:
+		{
+			Camera &cam = owner->cam;
+			double camWidth = 960 * cam.GetZoom();
+			double camHeight = 540 * cam.GetZoom();
+			sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+
+			if( screenRect.intersects( detectionRect ) )
+			{
+				++awakeFrames;
+				if( awakeFrames == awakeCap )
+				{
+					//awake = true;
+					action = ALIGN;
+					alignFrames = 0;
+					affectCameraZoom = true;
+					frame = 0;
+					if( playerPos.x < position.x )
+					{
+						facingRight = false;
+					}
+					else
+					{
+						facingRight = true;
+					}
+
+					
+					//cout << "JUST LATCHING NOW" << endl;
+					latchedOn = true;
+					offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
+					origOffset = offsetPlayer;//length( offsetPlayer );
+					V2d offsetDir = normalize( offsetPlayer );
+					//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+					//cout << "latchStart: " << latchStartAngle << endl;
+					//testSeq.Update();
+					basePos = owner->player->position;
+
+					double currRadius = length( offsetPlayer );
+					alignMoveFrames = 60 * 5 * NUM_STEPS;//(int)((abs(idealRadius - currRadius)) / 3.0) * NUM_STEPS * 5;
+					//launchStartAngle / PI * 180;
+					
+				}
+			}
+			else
+			{
+				awakeFrames--;
+				if( awakeFrames < 0 )
+					awakeFrames = 0;
+			}
+		}
+		break;
+	case ALIGN:
+		{
+			cout << "align: " << alignFrames << ", move frames: " << alignMoveFrames << endl;
+			if( alignFrames == alignMoveFrames )
+			{
+				action = FOLLOW;
+				frame = 0;
+			}
+		}
+		break;
+	case FOLLOW:
+		{
+			
+		}
+		break;
+	case ATTACK:
+		if( frame == createWallFrame )
+		{
+			//position = playerPos + offsetPlayer;
+			
+			
+			V2d test = position - playerPos;
+			//origOffset = test;
+			
+
+			//V2d n = normalize( origOffset );
+			//V2d n1 = normalize( test );
+
+			//cout << "origoffset: " << n.x << ", " << n.y << endl;
+			//cout << "realoffset: " << n1.x << ", " << n1.y << endl;
+
+			V2d playerDir = -normalize( origOffset );
+			wallHitbox.globalPosition = position + playerDir * 100.0;
+			wallHitbox.globalAngle = atan2( playerDir.x, -playerDir.y );// / PI * 180.0;
+			//cout << "angle: " << wallHitbox.globalAngle << endl;
+			//wallHitbox.globalAngle 
+
+			latchedOn = false;
+			basePos = position;
+		}
+		break;
+	case RECOVER:
+		break;
+	}
 
 	//if( action == APPROACH && offsetPlayer.x == 0 && offsetPlayer.y == 0 )
 	//{
@@ -202,65 +380,14 @@ void Gorilla::UpdatePrePhysics()
 		}
 
 		receivedHit = NULL;
-	}
-
-	V2d playerPos = owner->player->position;
-	if( !dead )
-	{
-		if( action == WAKEUP )
-		{
-			Camera &cam = owner->cam;
-			double camWidth = 960 * cam.GetZoom();
-			double camHeight = 540 * cam.GetZoom();
-			sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-
-			if( screenRect.intersects( detectionRect ) )
-			{
-				awakeFrames++;
-
-				if( awakeFrames == awakeCap )
-				{
-					//awake = true;
-					action = ALIGN;
-					frame = 0;
-					if( playerPos.x < position.x )
-					{
-						facingRight = false;
-					}
-					else
-					{
-						facingRight = true;
-					}
-
-					
-					//cout << "JUST LATCHING NOW" << endl;
-					latchedOn = true;
-					offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
-					origOffset = offsetPlayer;//length( offsetPlayer );
-					V2d offsetDir = normalize( offsetPlayer );
-					//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
-					//cout << "latchStart: " << latchStartAngle << endl;
-					//testSeq.Update();
-					basePos = owner->player->position;
-					//launchStartAngle / PI * 180;
-					
-				}
-			}
-			else
-			{
-				awakeFrames--;
-				if( awakeFrames < 0 )
-					awakeFrames = 0;
-			}
-		}
-		
-	}
-
-	
+	}	
 }
 
 void Gorilla::UpdatePhysics()
 {
+	if( dead )
+		return;
+
 	specterProtected = false;
 	if( latchedOn )
 	{
@@ -272,39 +399,46 @@ void Gorilla::UpdatePhysics()
 		
 	}
 
-	//V2d offsetDir = normalize( offsetPlayer );
-	//double newAngle = atan2( offsetDir.y, offsetDir.x ) + PI;
-	//", new: " <<
-		//newAngle << endl;
-	
+	V2d offsetDir = normalize( offsetPlayer );
 
-		 
-	//position = basePos + truePosOffset * length( offsetPlayer );// * 2.0;
-	//if( action == APPROACH && latchedOn )
-	//{
-	//	position = basePos + offsetPlayer;
+	switch( action )
+	{
+	case WAKEUP:
+		//frame = 0;
+		break;
+	case ALIGN:
+		{
+			V2d idealOffset = offsetDir * idealRadius;
+			CubicBezier b( 0, 0, 1, 1 );
+			double f = b.GetValue( (alignFrames + owner->substep) / (double)alignMoveFrames );
+			offsetPlayer = origOffset * (1.0 - f) + idealOffset * f;
+			alignFrames += 5 / slowMultiple;
+			//cout << "moveFrames: " << alignMoveFrames << ", alignFrames: " << alignFrames << 
+			//	"substep: " << owner->substep << endl;
+			//++alignFrames;
+		}
+		//frame = 0;
+		break;
+	case FOLLOW:
+		//cout << "follow: " << frame << endl;
+		//frame = 0;
+		break;
+	case ATTACK:
+		//cout << "ATTACK: " << frame << endl;
+		//action = RECOVER;
+		//frame = 0;
+		break;
+	case RECOVER:
+		//cout << "recovery: " << frame << endl;
+		//action = ALIGN;
+		//frame = 0;
+		break;
+	}
 
-	//	offsetPlayer += -normalize( offsetPlayer ) * 1.0 / NUM_STEPS;
-
-	//	if( length( offsetPlayer ) < 1.0 )
-	//	{
-	//		offsetPlayer = V2d( 0, 0 );
-	//		action = BITE;
-	//		frame = 0;
-	//	}
-	/*	theta = deg2rad(angle);
-
-		
-		cs = cos(theta);
-		sn = sin(theta);
-
-		x = x * cs - y * sn;
-		y = x * sn + y * cs;*/
-
-		//testSeq.Update();
-		//offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
-	//}
-
+	if( latchedOn )
+	{
+		position = basePos + offsetPlayer;
+	}
 	//return;
 
 	//double movement = speed / NUM_STEPS;
@@ -323,14 +457,15 @@ void Gorilla::UpdatePhysics()
 		slowCounter = 1;
 	}
 
-	if( dead )
-		return;
+	
 
 	PhysicsResponse();
 }
 
 void Gorilla::PhysicsResponse()
 {
+	
+
 	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
@@ -351,7 +486,7 @@ void Gorilla::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
+			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Gorilla received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -381,12 +516,31 @@ void Gorilla::PhysicsResponse()
 
 void Gorilla::UpdatePostPhysics()
 {
-	if( receivedHit != NULL )
+	/*if( latchedOn )
 	{
-		owner->Pause( 5 );
+		basePos = owner->player->position;
+		position = basePos + offsetPlayer;
+	}*/
+
+	if( deathFrame == 30 )
+	{
+		
+		owner->RemoveEnemy( this );
+		return;
 	}
 
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
+	}
 
+	if( receivedHit != NULL )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->Pause( 5 );
+	}
+	
+	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
 	{
@@ -415,12 +569,9 @@ void Gorilla::UpdatePostPhysics()
 
 	//cout << "action: " << action << endl; 
 
-	if( deathFrame == 60 )
-	{
-		owner->RemoveEnemy( this );
-	}
+	
 
-	UpdateSprite();
+	
 }
 
 void Gorilla::UpdateSprite()
@@ -438,16 +589,16 @@ void Gorilla::UpdateSprite()
 			ir = ts->GetSubRect( 0 );
 			break;
 		case ALIGN:
-			ir = ts->GetSubRect( (frame / animFactor[APPROACH]) + 1 );
+			ir = ts->GetSubRect( 0 );
 			break;
 		case FOLLOW:
-			ir = ts->GetSubRect( (frame / animFactor[APPROACH]) + 3 );
+			ir = ts->GetSubRect( 0 );
 			break;
 		case ATTACK:
-			ir = ts->GetSubRect( 5 );
+			ir = ts->GetSubRect( 0 );
 			break;
-		case ATTACK:
-			ir = ts->GetSubRect( 5 );
+		case RECOVER:
+			ir = ts->GetSubRect( 0 );
 			break;
 		}
 		
@@ -484,15 +635,31 @@ void Gorilla::Draw( sf::RenderTarget *target )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( COLOR_BLUE );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite, keyShader );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			target->draw( *keySprite );
 		}
-		target->draw( sprite );
+		else
+		{
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( sprite );
+			}
+			else
+			{
+				target->draw( sprite, hurtShader );
+			}
+			
+		}
+		
+		//cout << "drawing bat: " << sprite.getPosition().x
+		//	<< ", " << sprite.getPosition().y << endl;
 	}
 	else
 	{
@@ -501,11 +668,11 @@ void Gorilla::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
@@ -517,32 +684,53 @@ void Gorilla::Draw( sf::RenderTarget *target )
 
 void Gorilla::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape enemyCircle;
-	enemyCircle.setFillColor( COLOR_BLUE );
-	enemyCircle.setRadius( 50 );
-	enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-	enemyCircle.setPosition( position.x, position.y );
-	target->draw( enemyCircle );
-
-	/*if( hasMonitor && !suppressMonitor )
+	if( !dead )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
-	}*/
+		if( hasMonitor && !suppressMonitor )
+		{
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+	}
 }
 
 bool Gorilla::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
-	if( action == EXPLODE )
+
+	if( hitBody.Intersects( player->hurtBody ) )
+	{
+		player->ApplyHit( hitboxInfo );
+		return true;
+	}
+	else if( action == ATTACK && frame >= createWallFrame && wallHitbox.Intersects( player->hurtBody ) )
+	{
+		player->ApplyHit( hitboxInfo ); //replace later
+		return true;
+	}
+	
+	/*if( action == EXPLODE )
 	{
 		if( hitBody.Intersects( player->hurtBody ) )
 		{
 			player->ApplyHit( hitboxInfo );
 			return true;
 		}
-	}
+	}*/
 	return false;
 }
 
@@ -605,15 +793,15 @@ pair<bool,bool> Gorilla::PlayerHitMe()
 		
 	}
 
-	for( int i = 0; i < player->recordedGorillas; ++i )
+	for( int i = 0; i < player->recordedGhosts; ++i )
 	{
-		if( player->GorillaFrame < player->Gorillas[i]->totalRecorded )
+		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
 		{
-			if( player->Gorillas[i]->currHitboxes != NULL )
+			if( player->ghosts[i]->currHitboxes != NULL )
 			{
 				bool hit = false;
 				
-				for( list<CollisionBox>::iterator it = player->Gorillas[i]->currHitboxes->begin(); it != player->Gorillas[i]->currHitboxes->end(); ++it )
+				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
 				{
 					if( hurtBody.Intersects( (*it) ) )
 					{
@@ -656,12 +844,23 @@ void Gorilla::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( testSeq.currMovement != NULL )
+		/*if( testSeq.currMovement != NULL )
 		{
 			if( testSeq.currMovement->vertices != NULL )
 			{
 				testSeq.currMovement->DebugDraw( target );
 			}
+		}*/
+		if( action == ATTACK && frame > createWallFrame )
+		{
+			wallHitbox.DebugDraw( target );
+
+			/*V2d playerPos = owner->player->position;
+			sf::Vertex blah[2] = { 
+				Vertex( Vector2f( position.x, position.y ), Color::Red ),
+				Vertex( Vector2f( playerPos.x, playerPos.y ), Color::Red ) };
+*/
+			//target->draw( blah, 2, sf::Lines );
 		}
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );

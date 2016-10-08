@@ -13,7 +13,7 @@ using namespace sf;
 BasicEffect::BasicEffect ( GameSession *owner )
 	:Enemy( owner, EnemyType::BASICEFFECT, false, 0 )
 {
-
+	affectCameraZoom = false;
 	spawned = true;
 	pauseImmune = false;
 	frame = 0;

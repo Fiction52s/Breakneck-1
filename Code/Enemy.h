@@ -358,6 +358,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	sf::Shader *keyShader;
 	sf::Shader *hurtShader;
 
+	bool affectCameraZoom;
+
 	Tileset *ts_blood;
 
 	sf::Sprite *keySprite;
@@ -3194,17 +3196,21 @@ struct Gorilla : Enemy
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
 
+	
 	double latchStartAngle;
 	
 	Gorilla( GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, 
-		float speed );
+		sf::Vector2i &pos, int wallWidth,
+		int wallHeight, int followFrames,
+		int recoveryLoops );
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void PhysicsResponse();
 	//bool physicsOver;
+
+	void ActionEnded();
 
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
@@ -3231,6 +3237,13 @@ struct Gorilla : Enemy
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
+
+	int alignMoveFrames;
+	int createWallFrame;
+	int alignFrames;
+	int followFrames;
+	int recoveryLoops;
+	int recoveryCounter;
 	
 	int frame;
 
@@ -3239,7 +3252,7 @@ struct Gorilla : Enemy
 
 	int approachFrames;
 	int totalFrame;
-	sf::Vector2<double> origOffset;
+	
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -3247,13 +3260,18 @@ struct Gorilla : Enemy
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
 
+	CollisionBox wallHitbox;
+	int wallHitboxWidth;
+	int wallHitboxHeight;
+	double idealRadius;
+
 	int hitlagFrames;
 	int hitstunFrames;
 	int animationFactor;
 
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
+	//Tileset *ts_testBlood;
+	//sf::Sprite bloodSprite;
+	//int bloodFrame;
 	bool facingRight;
 
 	CubicBezier approachAccelBez;
@@ -3261,6 +3279,7 @@ struct Gorilla : Enemy
 	
 	sf::Vector2<double> offsetPlayer;
 	sf::Vector2<double> origPosition;
+	sf::Vector2<double> origOffset;
 	//double offsetRadius;
 	bool latchedOn;
 

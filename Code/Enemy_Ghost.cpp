@@ -17,7 +17,7 @@ using namespace sf;
 Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed )
 	:Enemy( owner, EnemyType::GHOST, p_hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
-	
+	affectCameraZoom = false;	
 	actionLength[WAKEUP] = 60;
 	actionLength[APPROACH] = 2;
 	actionLength[BITE] = 2;
@@ -135,6 +135,7 @@ void Ghost::HandleEntrant( QuadTreeEntrant *qte )
 
 void Ghost::ResetEnemy()
 {
+	affectCameraZoom = false;
 	action = WAKEUP;
 	facingRight = origFacingRight;
 	awake = false;
@@ -220,6 +221,7 @@ void Ghost::UpdatePrePhysics()
 				{
 					awake = true;
 					action = APPROACH;
+					affectCameraZoom = true;
 					frame = 0;
 					if( playerPos.x < position.x )
 					{

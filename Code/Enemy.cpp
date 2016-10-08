@@ -806,7 +806,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	int world )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
 	spawnedByClone( false ), type( t ),zone( NULL ), dead( false ),
-	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL )
+	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
+	affectCameraZoom( true )
 {
 	hasMonitor = p_hasMonitor;
 	if( world == 0 )

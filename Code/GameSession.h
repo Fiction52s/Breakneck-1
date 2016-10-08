@@ -366,6 +366,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool quit;
 	int envType;
 	int envLevel;
+	int substep;
 	
 	int keyFrame;
 	sf::Font arial;

@@ -216,7 +216,7 @@ void FootTrap::UpdatePostPhysics()
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
-	
+	UpdateSprite();
 
 	if( slowCounter == slowMultiple )
 	{
@@ -240,7 +240,7 @@ void FootTrap::UpdatePostPhysics()
 	}
 
 	//cout << "dead post: " << dead << endl;
-	UpdateSprite();
+	
 }
 
 void FootTrap::Draw(sf::RenderTarget *target )
