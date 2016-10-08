@@ -3304,6 +3304,9 @@ struct Copycat : Enemy
 {
 	enum Action
 	{
+		NEUTRAL,
+		MOVE,
+		RETURN,
 		FAIR,
 		DAIR,
 		UAIR,
@@ -3311,20 +3314,37 @@ struct Copycat : Enemy
 		WALLATTACK,
 		CLIMBATTACK,
 		SLIDEATTACK,
-		TELEPORT,
-
-		NEUTRAL,
-		FIRE,
-		INVISIBLE,
-		FADEIN,
-		FADEOUT
+		Count
 	};
+
+	struct PlayerAttack
+	{
+		PlayerAttack();
+		Action a;
+		bool facingRight;
+		bool reversed;
+		int speedLevel;
+		sf::Vector2<double> position;
+		int delayFrames;
+		PlayerAttack *nextAttack;
+		PlayerAttack *prevAttack;
+	};
+	PlayerAttack *GetAttack();
+	PlayerAttack *PopAttack();
+	void ResetAttacks();
+	PlayerAttack *activeAttacksFront;
+	PlayerAttack *activeAttacksBack;
+	PlayerAttack *inactiveAttacks;
+	PlayerAttack **allAttacks;
+	int attackBufferSize;
 
 	Copycat( GameSession *owner, bool hasMonitor,
 		sf::Vector2i &pos );
-	void BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos );
-	void BulletHitPlayer( BasicBullet *b );
+	void QueueAttack( Action a,
+		bool facingRight,
+		bool reversed, int speedLevel,
+		sf::Vector2<double> &pos,
+		int delayFrames );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -3358,9 +3378,14 @@ struct Copycat : Enemy
 	sf::Vector2i originalPos;
 	int frame;
 
+	sf::Vector2<double> shadowPos;
+
+
 	bool dying;
 
 	sf::Sprite sprite;
+	sf::Sprite shadowSprite;
+	sf::Sprite shadowSword;
 	Tileset *ts;
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
@@ -3370,6 +3395,8 @@ struct Copycat : Enemy
 	int hitstunFrames;
 	//int animationFactor;
 	bool facingRight;
+
+
 
 	struct Stored
 	{

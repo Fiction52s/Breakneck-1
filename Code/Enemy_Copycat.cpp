@@ -18,23 +18,167 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+Copycat::PlayerAttack::PlayerAttack()
+			:nextAttack( NULL )
+{
+	a = UAIR;
+	facingRight = true;
+	reversed = false;
+	speedLevel = 0;
+	position = V2d( 0, 0 );
+	delayFrames = 0;
+}
+
+Copycat::PlayerAttack *Copycat::GetAttack()
+{
+	if( inactiveAttacks == NULL )
+	{
+		cout << "out of possible attacks copycat" << endl;
+		return NULL;
+	}
+	else
+	{
+		PlayerAttack *p = inactiveAttacks;
+		PlayerAttack *next = inactiveAttacks->nextAttack;
+		p->nextAttack = NULL;
+		p->prevAttack = NULL;
+		inactiveAttacks = next;
+		return p;
+	}
+}
+
+Copycat::PlayerAttack * Copycat::PopAttack()
+{
+	if( activeAttacksBack == NULL )
+	{
+		cout << "popping but im out of active attacks" << endl;
+		return NULL;
+	}
+	else if( activeAttacksBack->prevAttack == NULL )
+	{
+		PlayerAttack *p = activeAttacksBack;
+		p->prevAttack = NULL;
+
+		activeAttacksFront = NULL;
+		activeAttacksBack = NULL;
+
+		return p;
+	}
+	else
+	{
+		PlayerAttack *p = activeAttacksBack;
+		p->prevAttack->nextAttack = NULL;
+		activeAttacksBack = p->prevAttack;
+		p->prevAttack = NULL;
+
+		return p;
+	}
+}
+
+void Copycat::QueueAttack( Action a,
+		bool facingRight,
+		bool reversed, int speedLevel,
+		sf::Vector2<double> &pos,
+		int delayFrames )
+{
+	PlayerAttack *p = GetAttack();
+	if( p == NULL )
+	{
+		assert( 0 );
+	}
+	else
+	{
+		p->a = a;
+		p->facingRight = facingRight;
+		p->reversed = reversed;
+		p->speedLevel = speedLevel;
+		p->delayFrames = delayFrames;
+
+		if( activeAttacksFront == NULL )
+		{
+			activeAttacksFront = p;
+			activeAttacksBack = p;
+		}
+		else
+		{
+			p->nextAttack = activeAttacksFront;
+			activeAttacksFront->prevAttack = p;
+			activeAttacksFront = p;
+		}
+	}
+}
+
+void Copycat::ResetAttacks()
+{
+	PlayerAttack *next = NULL;
+	PlayerAttack *prev = NULL;
+	
+	activeAttacksFront = NULL;
+	activeAttacksBack = NULL;
+	inactiveAttacks = NULL;
+	for( int i = 0; i < attackBufferSize; ++i )
+	{
+		PlayerAttack &curr = *allAttacks[i];
+		curr.prevAttack = NULL;
+		curr.nextAttack = NULL;
+		if( i == 0 )
+		{
+			curr.prevAttack = NULL;
+		}
+		else
+		{
+			curr.prevAttack = allAttacks[i-1];
+		}
+		
+		if( i == attackBufferSize - 1 )
+		{
+			curr.nextAttack = NULL;
+		}
+		else
+		{
+			curr.nextAttack = allAttacks[i+1];
+		}
+	}
+
+	inactiveAttacks = allAttacks[0];
+}
 
 Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	:Enemy( owner, EnemyType::COPYCAT, p_hasMonitor, 4 ), deathFrame( 0 )
 {
+	attackBufferSize = 16;
+	allAttacks = new PlayerAttack*[attackBufferSize];
+	PlayerAttack *prev = NULL;
+	for( int i = 0; i < attackBufferSize; ++i )
+	{
+		PlayerAttack *p = new PlayerAttack();
+		allAttacks[i] = p;
+	}
+
 	action = NEUTRAL;
 
 	animFactor[NEUTRAL] = 1;
-	animFactor[FIRE] = 1;
-	animFactor[FADEIN] = 1;
-	animFactor[FADEOUT] = 1;
-	animFactor[INVISIBLE] = 1;
+	animFactor[MOVE] = 1;
+	animFactor[RETURN] = 1;
+	animFactor[FAIR] = 1;
+	animFactor[DAIR] = 1;
+	animFactor[UAIR] = 1;
+	animFactor[STANDN] = 1;
+	animFactor[WALLATTACK] = 1;
+	animFactor[CLIMBATTACK] = 1;
+	animFactor[SLIDEATTACK] = 1;
 
-	actionLength[NEUTRAL] = 3;
-	actionLength[FIRE] = 20;
-	actionLength[FADEIN] = 60;
-	actionLength[FADEOUT] = 90;
-	actionLength[INVISIBLE] = 30;
+
+	actionLength[NEUTRAL] = 10;
+	actionLength[MOVE] = 60;
+	actionLength[RETURN] = 60;
+	actionLength[FAIR] = 40;
+	actionLength[DAIR] = 40;
+	actionLength[UAIR] = 40;
+	actionLength[STANDN] = 40;
+	actionLength[WALLATTACK] = 40;
+	actionLength[CLIMBATTACK] = 40;
+	actionLength[SLIDEATTACK] = 40;
 
 	receivedHit = NULL;
 	position.x = pos.x;
@@ -119,17 +263,6 @@ void Copycat::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Copycat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
-{
-	b->launcher->DeactivateBullet( b );
-}
-
-void Copycat::BulletHitPlayer(BasicBullet *b )
-{
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
-}
-
-
 void Copycat::ResetEnemy()
 {
 	dead = false;
@@ -150,29 +283,29 @@ void Copycat::ActionEnded()
 {
 	if( frame == actionLength[action] )
 	{
-	switch( action )
-	{
-	case NEUTRAL:
-		frame = 0;
-		break;
-	case FIRE:
-		action = FADEOUT;
-		frame = 0;
-		break;
-	case INVISIBLE:
-		position = owner->player->position;
-		action = FADEIN;
-		frame = 0;
-		break;
-	case FADEIN:
-		action = FIRE;
-		frame = 0;
-		break;
-	case FADEOUT:
-		action = INVISIBLE;
-		frame = 0;
-		break;
-	}
+		switch( action )
+		{
+		case NEUTRAL:
+			frame = 0;
+			break;
+		case MOVE:
+			frame = 0;
+			break;
+		case RETURN:
+			break;
+		case FAIR:
+			break;
+		case DAIR:
+			break;
+		case STANDN:
+			break;
+		case WALLATTACK:
+			break;
+		case CLIMBATTACK:
+			break;
+		case SLIDEATTACK:
+			break;
+		}
 	}
 }
 
