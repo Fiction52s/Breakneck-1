@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Copycat::PlayerAttack::PlayerAttack()
-			:nextAttack( NULL )
+Copycat::PlayerAttack::PlayerAttack( Copycat *p_parent )
+			:nextAttack( NULL ), parent( p_parent )
 {
 	t = UAIR;
 	angle = 0;
@@ -28,7 +28,116 @@ Copycat::PlayerAttack::PlayerAttack()
 	reversed = false;
 	speedLevel = 0;
 	position = Vector2f( 0, 0 );
+	attackActive = false;
 	//delayFrames = 0;
+	Actor *player = parent->owner->player;
+	CopyHitboxes( FAIR, player->fairHitboxes );
+	CopyHitboxes( DAIR, player->dairHitboxes );
+	CopyHitboxes( UAIR, player->uairHitboxes );
+	CopyHitboxes( STANDN, player->standHitboxes );
+	CopyHitboxes( CLIMBATTACK, player->steepClimbHitboxes );
+	CopyHitboxes( SLIDEATTACK, player->steepSlideHitboxes );
+	CopyHitboxes( WALLATTACK, player->wallHitboxes );
+
+	UpdateSprite();
+}
+
+void Copycat::PlayerAttack::UpdateSprite()
+{
+	Tileset *tss = parent->ts_attacks[t];
+	int factor = parent->attackFactor[t];
+	sprite.setTexture( *tss->texture );
+	IntRect ir = tss->GetSubRect( frame / factor );
+	if( !facingRight )
+	{
+		ir.left += ir.width;
+		ir.width = -ir.width;
+	}
+	sprite.setTextureRect( ir );
+	sprite.setRotation( angle );
+}
+
+
+bool Copycat::PlayerAttack::Update()
+{
+	//assert( attackActive );
+	if( attackActive )
+	{
+		if( frame == parent->attackLength[t] )
+		{
+			attackActive = false;
+			return false;
+		}
+
+		UpdateHitboxes();
+		UpdateSprite();
+		++frame;
+	}
+
+	return true;
+}
+
+void Copycat::PlayerAttack::Draw( sf::RenderTarget *target )
+{
+	if( attackActive )
+	{
+		target->draw( sprite );
+		target->draw( swordSprite );
+	}
+}
+
+void Copycat::PlayerAttack::DebugDraw( sf::RenderTarget *target )
+{
+}
+
+void Copycat::PlayerAttack::Set( PlayerAttack::Type nt,
+	bool p_facingRight,
+			bool p_reversed,
+			int p_speedLevel,
+			const sf::Vector2f &pos,
+			const sf::Vector2f &swordPos,
+			float p_angle )
+{
+	t = nt;
+	angle = p_angle;
+	
+
+	if( t == STANDN || t == CLIMBATTACK || t == SLIDEATTACK )
+	{
+		//cout << "align ground" << endl;
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+			sprite.getLocalBounds().height );
+		swordSprite.setOrigin( swordSprite.getLocalBounds().width / 2, 
+			swordSprite.getLocalBounds().height );
+	}
+	else
+	{
+		//cout << "align air" << endl;
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+			sprite.getLocalBounds().height / 2 );
+		swordSprite.setOrigin( swordSprite.getLocalBounds().width / 2, 
+			swordSprite.getLocalBounds().height / 2 );
+	}
+	swordSprite.setPosition( swordPos );
+	sprite.setPosition( pos );
+	
+	facingRight = p_facingRight;
+	reversed = p_reversed;
+	frame = 0;
+	attackActive = false;
+}
+
+void Copycat::PlayerAttack::CopyHitboxes( int index,
+		std::map<int, std::list<CollisionBox>*> &playerBoxes )
+{
+	std::map<int, std::list<CollisionBox>*> &boxes = hitboxes[index];
+	for( map<int, list<CollisionBox>*>::iterator it = playerBoxes.begin();
+		it != playerBoxes.end(); ++it )
+	{
+		list<CollisionBox>*& currList = boxes[(*it).first];
+
+		currList = new list<CollisionBox>( (*(*it).second) );
+	}
 }
 
 Copycat::PlayerAttack *Copycat::GetAttack()
@@ -100,6 +209,58 @@ Copycat::PlayerAttack * Copycat::PopAttack()
 	return p;
 }
 
+void Copycat::PlayerAttack::UpdateHitboxes()
+{
+
+}
+
+void Copycat::RemoveAttack( PlayerAttack *p )
+{
+	if( p == activeAttacksFront && p == activeAttacksBack )
+	{
+		activeAttacksFront = NULL;
+		activeAttacksBack = NULL;
+	}
+	else if( p == activeAttacksFront )
+	{
+		PlayerAttack *next = p->nextAttack;
+		activeAttacksFront = next;
+		next->prevAttack = NULL;
+		
+	}
+	else if( p == activeAttacksBack )
+	{
+		PlayerAttack *prev = p->prevAttack;
+		activeAttacksBack = prev;
+		prev->nextAttack = NULL;
+	}
+	else
+	{
+		p->prevAttack->nextAttack = p->nextAttack;
+		p->nextAttack->prevAttack = p->prevAttack;
+	}
+
+	p->nextAttack = NULL;
+	p->prevAttack = NULL;
+	
+
+	if( p != NULL )
+	{
+		if( inactiveAttacks == NULL )
+		{
+			inactiveAttacks = p;
+			//p->nextAttack = NULL;
+			//p->prevAttack = NULL;
+		}
+		else
+		{
+			p->nextAttack = inactiveAttacks;
+			inactiveAttacks->prevAttack = p;
+			inactiveAttacks = p;
+		}
+	}
+}
+
 void Copycat::QueueAttack( PlayerAttack::Type t,
 		bool facingRight,
 		bool reversed, int speedLevel,
@@ -112,17 +273,13 @@ void Copycat::QueueAttack( PlayerAttack::Type t,
 	PlayerAttack *p = GetAttack();
 	if( p == NULL )
 	{
-		//assert( 0 );
+		assert( 0 );
 	}
 	else
 	{
-		p->t = t;
-		p->facingRight = facingRight;
-		p->reversed = reversed;
-		p->speedLevel = speedLevel;
-		p->position = pos;
-		p->swordPosition = swordPos;
-		p->angle = angle;
+		p->Set( t, facingRight, reversed, speedLevel, pos, 
+			swordPos, angle );
+		
 		SetTarget( p->index, pos );
 
 		if( activeAttacksFront == NULL )
@@ -221,16 +378,9 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 {
 	attackBufferSize = 16;
 
-	allAttacks = new PlayerAttack*[attackBufferSize];
-	PlayerAttack *prev = NULL;
-	for( int i = 0; i < attackBufferSize; ++i )
-	{
-		PlayerAttack *p = new PlayerAttack();
-		p->index = i;
-		allAttacks[i] = p;
-	}
+	
 
-	ts_bulletExplode = owner->GetTileset( "bullet_explode2_64x64.png", 64, 64 );
+	
 
 	fire = false;
 	action = NEUTRAL;
@@ -293,6 +443,25 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 
+	Actor *player = owner->player;
+	ts_attacks[PlayerAttack::FAIR] = player->tileset[Actor::FAIR];
+	ts_attacks[PlayerAttack::DAIR] = player->tileset[Actor::DAIR];
+	ts_attacks[PlayerAttack::UAIR] = player->tileset[Actor::UAIR];
+	ts_attacks[PlayerAttack::STANDN] = player->tileset[Actor::STANDN];
+	ts_attacks[PlayerAttack::CLIMBATTACK] = player->tileset[Actor::STEEPCLIMBATTACK];
+	ts_attacks[PlayerAttack::SLIDEATTACK] = player->tileset[Actor::STEEPSLIDEATTACK];
+	ts_attacks[PlayerAttack::WALLATTACK] = player->tileset[Actor::WALLATTACK];
+
+	allAttacks = new PlayerAttack*[attackBufferSize];
+	PlayerAttack *prev = NULL;
+	for( int i = 0; i < attackBufferSize; ++i )
+	{
+		PlayerAttack *p = new PlayerAttack( this );
+		p->index = i;
+		allAttacks[i] = p;
+	}
+
+	ts_bulletExplode = owner->GetTileset( "bullet_explode2_64x64.png", 64, 64 );
 
 	//position.x = 0;
 	//position.y = 0;
@@ -339,23 +508,24 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
-	Actor *player = owner->player;
+	//Actor *player = owner->player;
 	//for( map<int, list<CollisionBox*>>::iterator it = owner->player->fairHitboxes.begin();
-	CopyHitboxes( fairHitboxes, player->fairHitboxes );
-	CopyHitboxes( dairHitboxes, player->dairHitboxes );
-	CopyHitboxes( uairHitboxes, player->uairHitboxes );
-	CopyHitboxes( standHitboxes, player->standHitboxes );
-	CopyHitboxes( steepClimbHitboxes, player->steepClimbHitboxes );
-	CopyHitboxes( steepSlideHitboxes, player->steepSlideHitboxes );
-	CopyHitboxes( wallHitboxes, player->wallHitboxes );
 
-	attackLength[FAIR] = player->actionLength[Actor::FAIR];
-	actionLength[DAIR] = player->actionLength[Actor::DAIR];
-	actionLength[UAIR] = player->actionLength[Actor::UAIR];
-	actionLength[STANDN] = player->actionLength[Actor::STANDN];
-	actionLength[CLIMBATTACK] = player->actionLength[Actor::STEEPCLIMBATTACK];
-	actionLength[SLIDEATTACK] = player->actionLength[Actor::STEEPSLIDEATTACK];
-	actionLength[WALLATTACK] = player->actionLength[Actor::WALLATTACK];
+	attackLength[PlayerAttack::FAIR] = player->actionLength[Actor::FAIR];
+	attackLength[PlayerAttack::DAIR] = player->actionLength[Actor::DAIR];
+	attackLength[PlayerAttack::UAIR] = player->actionLength[Actor::UAIR];
+	attackLength[PlayerAttack::STANDN] = player->actionLength[Actor::STANDN];
+	attackLength[PlayerAttack::CLIMBATTACK] = player->actionLength[Actor::STEEPCLIMBATTACK];
+	attackLength[PlayerAttack::SLIDEATTACK] = player->actionLength[Actor::STEEPSLIDEATTACK];
+	attackLength[PlayerAttack::WALLATTACK] = player->actionLength[Actor::WALLATTACK];
+
+	attackFactor[PlayerAttack::FAIR] = 2;
+	attackFactor[PlayerAttack::DAIR] = 2;
+	attackFactor[PlayerAttack::UAIR] = 3;
+	attackFactor[PlayerAttack::STANDN] = 4;
+	attackFactor[PlayerAttack::CLIMBATTACK] = 4;
+	attackFactor[PlayerAttack::SLIDEATTACK] = 3;
+	attackFactor[PlayerAttack::WALLATTACK] = 2;
 
 	UpdateHitboxes();
 
@@ -363,16 +533,7 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	//cout << "finish init" << endl;
 }
 
-void Copycat::CopyHitboxes( std::map<int, std::list<CollisionBox>*> &boxes,
-		std::map<int, std::list<CollisionBox>*> &playerBoxes )
-{
-	for( map<int, list<CollisionBox>*>::iterator it = playerBoxes.begin();
-		it != playerBoxes.end(); ++it )
-	{
-		list<CollisionBox>*& currList = boxes[(*it).first];
-		currList = new list<CollisionBox>( (*it).second );
-	}
-}
+
 
 void Copycat::HandleEntrant( QuadTreeEntrant *qte )
 {
@@ -383,14 +544,34 @@ void Copycat::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
+int Copycat::GetAttackIndex()
+{
+	if( activeAttacksFront == NULL )
+	{
+		return -1;
+	}
+	else
+	{
+		return activeAttacksFront->index;
+	}
+	//assert( activeAttacksFront != NULL );
+	
+}
+
 void Copycat::BulletHitTarget( BasicBullet *b )
 {
-	PlayerAttack *p = PopAttack();
+	//PlayerAttack *p = PopAttack();
+	CopycatBullet *cb = (CopycatBullet*)b;
+
+	int attackIndex = cb->attackIndex;//bulletMap[cb->destination];
+	PlayerAttack *p = allAttacks[attackIndex];
+	//PlayerAttack *p = //activeAttacksBack;
 	if( p != NULL )
 	{
 		ClearTarget( p->index );
-		currAttack = *p;
-		currAttackFrame = 0;
+		p->attackActive = true;
+		//currAttack = *p;
+		//currAttackFrame = 0;
 	}
 	else
 	{
@@ -459,6 +640,8 @@ void Copycat::UpdatePrePhysics()
 		//cout << "dir: " << launchDir.x << ", " << launchDir.y << endl;
 		//launcher->bulletSpeed = 10;
 		launcher->Fire();
+		//PlayerAttack *p = activeAttacksFront;
+
 		action = THROW;
 		frame = 0;
 	}
@@ -474,6 +657,16 @@ void Copycat::UpdatePrePhysics()
 
 	Actor *player = owner->player;
 
+	PlayerAttack *pa = activeAttacksFront;
+	while( pa != NULL )
+	{
+		PlayerAttack *next = pa->nextAttack;
+		if( !pa->Update() )
+		{
+			RemoveAttack( pa );
+		}
+		pa = next;
+	}
 	
 
 
@@ -777,6 +970,13 @@ void Copycat::Draw( sf::RenderTarget *target )
 		}
 
 		target->draw( *targetVA, ts_target->texture );
+
+		PlayerAttack *pa = activeAttacksFront;
+		while( pa != NULL )
+		{
+			pa->Draw( target );
+			pa = pa->nextAttack;
+		}
 	}
 	else if( dying )
 	{
@@ -846,34 +1046,36 @@ void Copycat::UpdateHitboxes()
 
 	Actor *player = owner->player;
 	int frameLimit = 0;
-	list<CollisionBox*> *hitboxes = NULL;
-	if( attackActive )
-	{
-		switch( currAttack.t )
-		{
-		case FAIR:
-			hitboxes = player->fairHitboxes[currAttackFrame];
-			break;
-		case DAIR:
-			hitboxes = player->dairHitboxes[currAttackFrame];
-			break;
-		case UAIR:
-			hitboxes = player->uairHitboxes[currAttackFrame];
-			break;
-		case STANDN:
-			hitboxes = player->standHitboxes[currAttackFrame];
-			break;
-		case CLIMBATTACK:
-			hitboxes = player->steepClimbHitboxes[currAttackFrame];
-			break;
-		case SLIDEATTACK:
-			hitboxes = player->steepSlideHitboxes[currAttackFrame];
-			break;
-		case WALLATTACK:
-			hitboxes = player->wallHitboxes[currAttackFrame];
-			break;
-		}
-	}
+	
+
+	//	
+	//	/*switch( currAttack.t )
+	//	{
+	//	case FAIR:
+	//		hitboxes = fairHitboxes[currAttackFrame];
+	//		break;
+	//	case DAIR:
+	//		hitboxes = dairHitboxes[currAttackFrame];
+	//		break;
+	//	case UAIR:
+	//		hitboxes = uairHitboxes[currAttackFrame];
+	//		break;
+	//	case STANDN:
+	//		hitboxes = standHitboxes[currAttackFrame];
+	//		break;
+	//	case CLIMBATTACK:
+	//		hitboxes = steepClimbHitboxes[currAttackFrame];
+	//		break;
+	//	case SLIDEATTACK:
+	//		hitboxes = steepSlideHitboxes[currAttackFrame];
+	//		break;
+	//	case WALLATTACK:
+	//		hitboxes = wallHitboxes[currAttackFrame];
+	//		break;
+	//	}*/
+
+
+	//}
 
 }
 

@@ -20,6 +20,7 @@ struct LauncherEnemy
 		Edge *edge, sf::Vector2<double> &pos ){};
 	virtual void BulletHitPlayer( BasicBullet *b ){};
 	virtual void BulletHitTarget( BasicBullet *b ){};
+	virtual int GetAttackIndex(){return -1;};
 };
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
@@ -118,6 +119,7 @@ struct CopycatBullet : BasicBullet
 	sf::Vector2<double> destination;
 	sf::Vector2<double> trueVel;
 	double speed;
+	int attackIndex;
 	//CollisionBox hurtBody;
 };
 
@@ -3346,8 +3348,9 @@ struct Copycat : Enemy, LauncherEnemy
 			Count
 		};
 
-
-		PlayerAttack();
+		int currAttackIndex;
+		Copycat *parent;
+		PlayerAttack( Copycat *parent );
 		//Action a;
 		Type t;
 		bool facingRight;
@@ -3356,13 +3359,41 @@ struct Copycat : Enemy, LauncherEnemy
 		sf::Vector2<float> position;
 		sf::Vector2<float> swordPosition;
 		float angle;
+		bool attackActive;
 		int index;
 		PlayerAttack *nextAttack;
 		PlayerAttack *prevAttack;
+		int frame;
+		sf::Sprite sprite;
+		sf::Sprite swordSprite;
+		bool Update();
+		void UpdateHitboxes();
+		void UpdateSprite();
+		void Set( PlayerAttack::Type nt,
+			bool facingRight,
+			bool reversed,
+			int speedLevel,
+			const sf::Vector2f &pos,
+			const sf::Vector2f &swordPos,
+			float angle );
+		//void SetType( Type nt );
+		void Draw( sf::RenderTarget *target );
+		void DebugDraw( sf::RenderTarget *target );
+
+		void CopyHitboxes( int index,
+		std::map<int, std::list<CollisionBox>*> &playerBoxes );
+
+		std::map<int, std::list<CollisionBox>*> 
+		hitboxes[PlayerAttack::Type::Count];
 	};
+
+
+	int GetAttackIndex();
+	Tileset *ts_attacks[PlayerAttack::Type::Count];
 	void BulletHitTarget( BasicBullet *b );
 	PlayerAttack *GetAttack();
 	PlayerAttack *PopAttack();
+	void RemoveAttack( PlayerAttack *pa );
 	void ClearTargets();
 	void ClearTarget( int index );
 	void SetTarget( int index, const sf::Vector2f &pos );
@@ -3372,6 +3403,8 @@ struct Copycat : Enemy, LauncherEnemy
 	PlayerAttack *inactiveAttacks;
 	PlayerAttack **allAttacks;
 	int attackBufferSize;
+
+	//std::map<sf::Vector2<double>, int> bulletMap;
 
 	sf::Vector2<float> destPos;
 	bool fire;
@@ -3408,7 +3441,7 @@ struct Copycat : Enemy, LauncherEnemy
 	std::map<Action,int> animFactor;
 
 	int currAttackFrame;
-	PlayerAttack currAttack;
+	//PlayerAttack currAttack;
 	bool activeActive;
 
 	Action action;
@@ -3425,17 +3458,19 @@ struct Copycat : Enemy, LauncherEnemy
 	std::list<CollisionBox> *currHitboxes;
 	//int numCurrHitboxes;
 	HitboxInfo *currHitboxInfo;
-	std::map<int, std::list<CollisionBox>*> fairHitboxes;
-	std::map<int, std::list<CollisionBox>*> uairHitboxes;
+	//std::list<CollisionBox> *currHitboxes;
+
+	
+	/*std::map<int, std::list<CollisionBox>*> uairHitboxes;
 	std::map<int, std::list<CollisionBox>*> dairHitboxes;
 	std::map<int, std::list<CollisionBox>*> standHitboxes;
 	std::map<int, std::list<CollisionBox>*> wallHitboxes;
 	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
-	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
-	void CopyHitboxes( std::map<int, std::list<CollisionBox>*> &boxes,
-		std::map<int, std::list<CollisionBox>*> &playerBoxes );
+	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;*/
+	
 
 	int attackLength[PlayerAttack::Type::Count];
+	int attackFactor[PlayerAttack::Type::Count];
 
 	sf::VertexArray *targetVA;
 	//sf::VertexArray bulletVA;

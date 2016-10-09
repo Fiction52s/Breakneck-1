@@ -900,6 +900,10 @@ void CopycatBullet::UpdatePhysics()
 void CopycatBullet::Reset( sf::Vector2<double> &pos0,
 	sf::Vector2<double> &pos1 )
 {
+	if( bulletType == BasicBullet::COPYCAT )
+	{
+		attackIndex = launcher->handler->GetAttackIndex();
+	}
 	destination = pos1;
 	trueVel = normalize( pos1 - pos0 ) * speed;
 	BasicBullet::Reset( pos0, trueVel );
