@@ -3408,6 +3408,8 @@ struct Copycat : Enemy, LauncherEnemy
 	std::map<Action,int> animFactor;
 
 	int currAttackFrame;
+	PlayerAttack currAttack;
+	bool activeActive;
 
 	Action action;
 	//sf::Vector2<double> basePos;
@@ -3420,7 +3422,20 @@ struct Copycat : Enemy, LauncherEnemy
 	sf::Vector2i originalPos;
 	int frame;
 
-	
+	std::list<CollisionBox> *currHitboxes;
+	//int numCurrHitboxes;
+	HitboxInfo *currHitboxInfo;
+	std::map<int, std::list<CollisionBox>*> fairHitboxes;
+	std::map<int, std::list<CollisionBox>*> uairHitboxes;
+	std::map<int, std::list<CollisionBox>*> dairHitboxes;
+	std::map<int, std::list<CollisionBox>*> standHitboxes;
+	std::map<int, std::list<CollisionBox>*> wallHitboxes;
+	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
+	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
+	void CopyHitboxes( std::map<int, std::list<CollisionBox>*> &boxes,
+		std::map<int, std::list<CollisionBox>*> &playerBoxes );
+
+	int attackLength[PlayerAttack::Type::Count];
 
 	sf::VertexArray *targetVA;
 	//sf::VertexArray bulletVA;

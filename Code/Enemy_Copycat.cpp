@@ -51,30 +51,53 @@ Copycat::PlayerAttack *Copycat::GetAttack()
 
 Copycat::PlayerAttack * Copycat::PopAttack()
 {
+	PlayerAttack *p = NULL;
 	if( activeAttacksBack == NULL )
 	{
 		cout << "popping but im out of active attacks" << endl;
-		return NULL;
 	}
 	else if( activeAttacksBack->prevAttack == NULL )
 	{
-		PlayerAttack *p = activeAttacksBack;
+		p = activeAttacksBack;
 		p->prevAttack = NULL;
 
 		activeAttacksFront = NULL;
 		activeAttacksBack = NULL;
-
-		return p;
 	}
 	else
 	{
-		PlayerAttack *p = activeAttacksBack;
+		p = activeAttacksBack;
 		p->prevAttack->nextAttack = NULL;
 		activeAttacksBack = p->prevAttack;
 		p->prevAttack = NULL;
-
-		return p;
 	}
+
+	if( p != NULL )
+	{
+		if( inactiveAttacks == NULL )
+		{
+			inactiveAttacks = p;
+			//p->nextAttack = NULL;
+			//p->prevAttack = NULL;
+		}
+		else
+		{
+			p->nextAttack = inactiveAttacks;
+			inactiveAttacks->prevAttack = p;
+			inactiveAttacks = p;
+		}
+	}
+
+	/*int num = 0;
+	PlayerAttack *pa = inactiveAttacks;
+	while( pa != NULL )
+	{
+		++num;
+		pa = pa->nextAttack;
+	}*/
+	//cout << "num inactive: " << num << endl;
+
+	return p;
 }
 
 void Copycat::QueueAttack( PlayerAttack::Type t,
@@ -89,7 +112,7 @@ void Copycat::QueueAttack( PlayerAttack::Type t,
 	PlayerAttack *p = GetAttack();
 	if( p == NULL )
 	{
-		assert( 0 );
+		//assert( 0 );
 	}
 	else
 	{
@@ -156,7 +179,7 @@ void Copycat::ClearTargets()
 	VertexArray &va = *targetVA;
 	for( int i = 0; i < attackBufferSize; ++i )
 	{
-			va[i*4+0].position = Vector2f( 0, 0 );
+		va[i*4+0].position = Vector2f( 0, 0 );
 		va[i*4+1].position = Vector2f( 0, 0 );
 		va[i*4+2].position = Vector2f( 0, 0 );
 		va[i*4+3].position = Vector2f( 0, 0 );
@@ -177,18 +200,20 @@ void Copycat::SetTarget( int index, const Vector2f &pos )
 	V2d p( pos.x, pos.y );
 	V2d dir = normalize( position - p );
 
-	double a = atan2( -dir.y, dir.x );
+	double a = atan2( dir.x, -dir.y );
 	float ra = a / PI * 180.f;
 	Transform t;
 	t.rotate( ra );
 
 	IntRect sub = ts_target->GetSubRect( 0 );
+	float hwidth = sub.width / 2;
+	float hheight = sub.height / 2;
 
 	VertexArray &va = *targetVA;
-	va[index*4+0].position = pos + t.transformPoint( Vector2f( sub.left, sub.top) );
-	va[index*4+1].position = pos +  t.transformPoint( Vector2f( sub.left + sub.width, sub.top) );
-	va[index*4+2].position = pos +  t.transformPoint( Vector2f( sub.left + sub.width, sub.top + sub.height) );
-	va[index*4+3].position = pos +  t.transformPoint( Vector2f( sub.left, sub.top + sub.height ) );
+	va[index*4+0].position = pos + t.transformPoint( Vector2f( -hwidth, -hheight ) );
+	va[index*4+1].position = pos +  t.transformPoint( Vector2f( hwidth, -hheight ) );
+	va[index*4+2].position = pos +  t.transformPoint( Vector2f( hwidth, hheight ) );
+	va[index*4+3].position = pos +  t.transformPoint( Vector2f( -hwidth, hheight ) );
 }
 
 Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
@@ -297,7 +322,7 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	//hitboxInfo->kbDir;
 
 	launcher = new Launcher( this, BasicBullet::BType::COPYCAT, owner,
-		20, 1, position, V2d( 0, 0 ), 0, 800, false );
+		20, 1, position, V2d( 0, -1 ), 0, 800, false );
 	
 
 	dead = false;
@@ -314,11 +339,39 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
+	Actor *player = owner->player;
+	//for( map<int, list<CollisionBox*>>::iterator it = owner->player->fairHitboxes.begin();
+	CopyHitboxes( fairHitboxes, player->fairHitboxes );
+	CopyHitboxes( dairHitboxes, player->dairHitboxes );
+	CopyHitboxes( uairHitboxes, player->uairHitboxes );
+	CopyHitboxes( standHitboxes, player->standHitboxes );
+	CopyHitboxes( steepClimbHitboxes, player->steepClimbHitboxes );
+	CopyHitboxes( steepSlideHitboxes, player->steepSlideHitboxes );
+	CopyHitboxes( wallHitboxes, player->wallHitboxes );
+
+	attackLength[FAIR] = player->actionLength[Actor::FAIR];
+	actionLength[DAIR] = player->actionLength[Actor::DAIR];
+	actionLength[UAIR] = player->actionLength[Actor::UAIR];
+	actionLength[STANDN] = player->actionLength[Actor::STANDN];
+	actionLength[CLIMBATTACK] = player->actionLength[Actor::STEEPCLIMBATTACK];
+	actionLength[SLIDEATTACK] = player->actionLength[Actor::STEEPSLIDEATTACK];
+	actionLength[WALLATTACK] = player->actionLength[Actor::WALLATTACK];
 
 	UpdateHitboxes();
 
-	Reset();
+	ResetEnemy();
 	//cout << "finish init" << endl;
+}
+
+void Copycat::CopyHitboxes( std::map<int, std::list<CollisionBox>*> &boxes,
+		std::map<int, std::list<CollisionBox>*> &playerBoxes )
+{
+	for( map<int, list<CollisionBox>*>::iterator it = playerBoxes.begin();
+		it != playerBoxes.end(); ++it )
+	{
+		list<CollisionBox>*& currList = boxes[(*it).first];
+		currList = new list<CollisionBox>( (*it).second );
+	}
 }
 
 void Copycat::HandleEntrant( QuadTreeEntrant *qte )
@@ -336,7 +389,8 @@ void Copycat::BulletHitTarget( BasicBullet *b )
 	if( p != NULL )
 	{
 		ClearTarget( p->index );
-
+		currAttack = *p;
+		currAttackFrame = 0;
 	}
 	else
 	{
@@ -397,8 +451,12 @@ void Copycat::UpdatePrePhysics()
 
 	if( fire )
 	{
-		V2d launchDir = normalize( V2d( destPos.x, destPos.y ) - position );
-		launcher->facingDir = launchDir;
+		//V2d launchDir = V2d( destPos.x, destPos.y ) - position;
+		launcher->bulletSpeed = 1;		
+		launcher->facingDir = V2d( destPos.x, destPos.y );
+		
+		//cout << "destpos: " << destPos.x << ", " << destPos.y << endl;
+		//cout << "dir: " << launchDir.x << ", " << launchDir.y << endl;
 		//launcher->bulletSpeed = 10;
 		launcher->Fire();
 		action = THROW;
@@ -654,7 +712,7 @@ void Copycat::UpdatePostPhysics()
 }
 
 void Copycat::UpdateSprite()
-{
+{	
 	if( !dying && !dead )
 	{
 		switch( action )
@@ -685,6 +743,8 @@ void Copycat::UpdateSprite()
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 	}
+
+	launcher->UpdateSprites();
 }
 
 void Copycat::Draw( sf::RenderTarget *target )
@@ -783,6 +843,38 @@ void Copycat::UpdateHitboxes()
 	{
 		hitboxInfo->kbDir = normalize( -owner->player->velocity );
 	}
+
+	Actor *player = owner->player;
+	int frameLimit = 0;
+	list<CollisionBox*> *hitboxes = NULL;
+	if( attackActive )
+	{
+		switch( currAttack.t )
+		{
+		case FAIR:
+			hitboxes = player->fairHitboxes[currAttackFrame];
+			break;
+		case DAIR:
+			hitboxes = player->dairHitboxes[currAttackFrame];
+			break;
+		case UAIR:
+			hitboxes = player->uairHitboxes[currAttackFrame];
+			break;
+		case STANDN:
+			hitboxes = player->standHitboxes[currAttackFrame];
+			break;
+		case CLIMBATTACK:
+			hitboxes = player->steepClimbHitboxes[currAttackFrame];
+			break;
+		case SLIDEATTACK:
+			hitboxes = player->steepSlideHitboxes[currAttackFrame];
+			break;
+		case WALLATTACK:
+			hitboxes = player->wallHitboxes[currAttackFrame];
+			break;
+		}
+	}
+
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)

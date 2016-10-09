@@ -210,6 +210,7 @@ void Launcher::Fire()
 {
 	
 	V2d dir = facingDir;
+	//cout << "shooting dir: " << dir.x << ", " << dir.y << endl;
 	double dirAngle = atan2( facingDir.x, -facingDir.y );
 	if( dirAngle < 0 )
 	{
@@ -825,7 +826,9 @@ void SinBullet::Reset( sf::Vector2<double> &pos,
 CopycatBullet::CopycatBullet( int indexVA, Launcher *launcher )
 	:BasicBullet( indexVA, BasicBullet::COPYCAT, launcher )
 {
+	//bulletSpeed =
 	speed = 10;
+	//launcher->bulletSpeed = speed;
 }
 
 void CopycatBullet::UpdatePrePhysics()
