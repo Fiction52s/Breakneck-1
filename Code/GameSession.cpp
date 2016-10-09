@@ -2634,8 +2634,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Vector2i delta( 1000, -1000 );
 				Vector2i pos( xPos, yPos );
 				//Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
-				Narwhal *enemy = new Narwhal( this, hasMonitor, pos, pos + delta, 20 ); 
-					
+				//Narwhal *enemy = new Narwhal( this, hasMonitor, pos, pos + delta, 20 ); 
+				Copycat *enemy = new Copycat( this, hasMonitor, pos );	
 				
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
@@ -2809,6 +2809,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				//Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
 				Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
 					400, 50, 60, 1 );
+
 				
 				
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy

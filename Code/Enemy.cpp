@@ -81,30 +81,49 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	case BasicBullet::GROWING_TREE:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::COPYCAT:
+		bulletTilesetIndex = 1;
 		break;
 	}
 	
-	if( wavelength > 0 )
+	if( bulletType == BasicBullet::COPYCAT )
 	{
-		inactiveBullets = new SinBullet( startIndex++, this );
+		inactiveBullets = new CopycatBullet( startIndex++, this );
 	}
 	else
 	{
-		inactiveBullets = new BasicBullet( startIndex++, bulletType, this );
+		if( wavelength > 0 )
+		{
+			inactiveBullets = new SinBullet( startIndex++, this );
+		}
+		else
+		{
+
+			inactiveBullets = new BasicBullet( startIndex++, bulletType, this );
+		}
 	}
 		
 
 	for( int i = 1; i < numTotalBullets; ++i )
 	{
 		BasicBullet * temp;
-		if( wavelength > 0 )
+		if( bulletType == BasicBullet::COPYCAT )
 		{
-			temp = new SinBullet( startIndex++, this );
+			temp = new CopycatBullet( startIndex++, this );
 		}
 		else
 		{
-			temp = new BasicBullet( startIndex++, bulletType, this );
+			if( wavelength > 0 )
+			{
+				temp = new SinBullet( startIndex++, this );
+			}
+			else
+			{
+				temp = new BasicBullet( startIndex++, bulletType, this );
+			}
 		}
+
+		
 		temp->next = inactiveBullets;
 		inactiveBullets->prev = temp;
 		inactiveBullets = temp;
@@ -800,6 +819,88 @@ void SinBullet::Reset( sf::Vector2<double> &pos,
 {
 	BasicBullet::Reset( pos, vel );
 	tempadd = V2d( 0, 0 );
+}
+
+
+CopycatBullet::CopycatBullet( int indexVA, Launcher *launcher )
+	:BasicBullet( indexVA, BasicBullet::COPYCAT, launcher )
+{
+	speed = 10;
+}
+
+void CopycatBullet::UpdatePrePhysics()
+{
+	if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}
+}
+
+void CopycatBullet::UpdatePhysics()
+{
+	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
+
+	double movementLen = length( movement );
+	V2d moveDir = normalize( movement );
+	double move = 0;
+	while( movementLen > 0 )
+	{
+		//cout << "loop: " << movementLen << endl;
+		if( movementLen > physBody.rw )
+		{
+			movementLen -= physBody.rw;
+			move = physBody.rw;
+		}
+		else
+		{
+			move = movementLen;
+			movementLen = 0;
+		}
+
+		if( length( destination - position ) <= move )
+		{
+			position = destination;
+			velocity = V2d( 0, 0 );
+			launcher->handler->BulletHitTarget( this );
+			return;
+		}
+
+		position += move * moveDir;
+		/*bool hit = ResolvePhysics( moveDir * move );
+		if( hit )
+		{
+			HitTerrain();
+			break;
+		}*/
+
+		hitBody.globalPosition = position;
+		//hurtBody.globalPosition = position;
+
+		/*Actor *player = launcher->owner->player;
+		if( player->hurtBody.Intersects( hitBody ) )
+		{
+			HitPlayer();
+			break;
+		}*/
+	}
+}
+
+void CopycatBullet::Reset( sf::Vector2<double> &pos0,
+	sf::Vector2<double> &pos1 )
+{
+	destination = pos1;
+	trueVel = normalize( pos1 - pos0 ) * speed;
+	BasicBullet::Reset( pos0, trueVel );
+	//tempadd = V2d( 0, 0 );
 }
 
 Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,

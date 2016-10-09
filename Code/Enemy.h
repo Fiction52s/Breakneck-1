@@ -17,8 +17,9 @@ struct BasicBullet;
 struct LauncherEnemy
 {
 	virtual void BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos ) = 0;
-	virtual void BulletHitPlayer( BasicBullet *b ) = 0;
+		Edge *edge, sf::Vector2<double> &pos ){};
+	virtual void BulletHitPlayer( BasicBullet *b ){};
+	virtual void BulletHitTarget( BasicBullet *b ){};
 };
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
@@ -37,6 +38,7 @@ struct BasicBullet : QuadTreeCollider
 		TURTLE,
 		BOSS_TIGER,
 		GROWING_TREE,
+		COPYCAT,
 		Count
 	};
 
@@ -95,9 +97,28 @@ struct SinBullet : BasicBullet
 
 	SinBullet *prev;
 	SinBullet *next;
-	int slowCounter;
+	//int slowCounter;
 	CollisionBox hurtBody;
 	sf::Vector2<double> tempadd;
+};
+
+struct CopycatBullet : BasicBullet
+{
+	CopycatBullet( int indexVA, Launcher *launcher );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+
+	//modified reset
+	void Reset(
+		sf::Vector2<double> &pos0,
+		sf::Vector2<double> &pos1 );
+
+	CopycatBullet *prev;
+	CopycatBullet *next;
+	sf::Vector2<double> destination;
+	sf::Vector2<double> trueVel;
+	double speed;
+	//CollisionBox hurtBody;
 };
 
 //struct SwarmBullet : BasicBullet
@@ -3300,37 +3321,51 @@ struct Gorilla : Enemy
 	Stored stored;
 };
 
-struct Copycat : Enemy
+struct Copycat : Enemy, LauncherEnemy
 {
 	enum Action
 	{
 		NEUTRAL,
-		MOVE,
-		RETURN,
-		FAIR,
-		DAIR,
-		UAIR,
-		STANDN,
-		WALLATTACK,
-		CLIMBATTACK,
-		SLIDEATTACK,
+		THROW,
 		Count
 	};
 
+	Tileset *ts_bulletExplode;
+	Launcher *launcher;
 	struct PlayerAttack
 	{
+		enum Type
+		{
+			FAIR,
+			DAIR,
+			UAIR,
+			STANDN,
+			CLIMBATTACK,
+			SLIDEATTACK,
+			WALLATTACK,
+			Count
+		};
+
+
 		PlayerAttack();
-		Action a;
+		//Action a;
+		Type t;
 		bool facingRight;
 		bool reversed;
 		int speedLevel;
-		sf::Vector2<double> position;
-		int delayFrames;
+		sf::Vector2<float> position;
+		sf::Vector2<float> swordPosition;
+		float angle;
+		int index;
 		PlayerAttack *nextAttack;
 		PlayerAttack *prevAttack;
 	};
+	void BulletHitTarget( BasicBullet *b );
 	PlayerAttack *GetAttack();
 	PlayerAttack *PopAttack();
+	void ClearTargets();
+	void ClearTarget( int index );
+	void SetTarget( int index, const sf::Vector2f &pos );
 	void ResetAttacks();
 	PlayerAttack *activeAttacksFront;
 	PlayerAttack *activeAttacksBack;
@@ -3338,13 +3373,17 @@ struct Copycat : Enemy
 	PlayerAttack **allAttacks;
 	int attackBufferSize;
 
+	sf::Vector2<float> destPos;
+	bool fire;
+
 	Copycat( GameSession *owner, bool hasMonitor,
 		sf::Vector2i &pos );
-	void QueueAttack( Action a,
+	void QueueAttack( PlayerAttack::Type t,
 		bool facingRight,
 		bool reversed, int speedLevel,
-		sf::Vector2<double> &pos,
-		int delayFrames );
+		const sf::Vector2<float> &pos,
+		const sf::Vector2<float> &swordPos,
+		float angle );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -3362,10 +3401,13 @@ struct Copycat : Enemy
 	void ResetEnemy();
 	void SaveEnemyState();
 	void LoadEnemyState();
+	void DirectKill();
+	void SetTarget();
 
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
 
+	int currAttackFrame;
 
 	Action action;
 	//sf::Vector2<double> basePos;
@@ -3378,11 +3420,17 @@ struct Copycat : Enemy
 	sf::Vector2i originalPos;
 	int frame;
 
-	sf::Vector2<double> shadowPos;
+	
 
+	sf::VertexArray *targetVA;
+	//sf::VertexArray bulletVA;
 
 	bool dying;
 
+	Tileset *ts_target;
+
+	
+	sf::Vector2<double> shadowPos;
 	sf::Sprite sprite;
 	sf::Sprite shadowSprite;
 	sf::Sprite shadowSword;
@@ -3390,6 +3438,7 @@ struct Copycat : Enemy
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
+
 
 	int hitlagFrames;
 	int hitstunFrames;
