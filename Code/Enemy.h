@@ -3390,6 +3390,7 @@ struct Copycat : Enemy, LauncherEnemy
 
 	int GetAttackIndex();
 	Tileset *ts_attacks[PlayerAttack::Type::Count];
+	Tileset *ts_swords[PlayerAttack::Type::Count * 3];
 	void BulletHitTarget( BasicBullet *b );
 	PlayerAttack *GetAttack();
 	PlayerAttack *PopAttack();

@@ -452,6 +452,9 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	ts_attacks[PlayerAttack::SLIDEATTACK] = player->tileset[Actor::STEEPSLIDEATTACK];
 	ts_attacks[PlayerAttack::WALLATTACK] = player->tileset[Actor::WALLATTACK];
 
+	/*ts_swords[PlayerAttack::FAIR+0] = player->ts_fairSword[0];
+	ts_swords[PlayerAttack::FAIR+1] = player->ts_fairSword[1];
+	ts_swords[PlayerAttack::FAIR+2] = player->ts_fairSword[2];*/
 	allAttacks = new PlayerAttack*[attackBufferSize];
 	PlayerAttack *prev = NULL;
 	for( int i = 0; i < attackBufferSize; ++i )
