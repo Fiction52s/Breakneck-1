@@ -1687,6 +1687,7 @@ struct Owl : Enemy, LauncherEnemy
 	{
 		REST,
 		GUARD,
+		SPIN,
 		FIRE
 	};
 
@@ -1719,6 +1720,9 @@ struct Owl : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void SaveEnemyState();
 	void LoadEnemyState();
+	double ang;
+	sf::Vector2<double> fireDir;
+
 
 	Tileset *ts_bulletExplode;
 	Action action;
@@ -1744,6 +1748,11 @@ struct Owl : Enemy, LauncherEnemy
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
+
+	Tileset *ts_death;
+	Tileset *ts_flap;
+	Tileset *ts_spin;
+	Tileset *ts_throw;
 
 	//int targetNode;
 	//bool forward;

@@ -22,6 +22,12 @@ using namespace sf;
 Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
 	:Enemy( owner, EnemyType::OWL, p_hasMonitor, 3 ), deathFrame( 0 ),flyingBez( 0, 0, 1, 1 )
 {
+	ts_death = owner->GetTileset( "owl_death_160x160.png", 160, 160 );
+	ts_flap = owner->GetTileset( "owl_flap_160x160.png", 160, 160 );
+	ts_spin = owner->GetTileset( "owl_spin_160x160.png", 160, 160 );
+	ts_throw = owner->GetTileset( "owl_throw_160x160.png", 160, 160 );
+
+
 	//movementRadius = 300;
 	retreatRadius = 400;
 	chaseRadius = 600;
@@ -31,11 +37,12 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	action = REST;
 	frame = 0;
 	//actionLength[NEUTRAL] = 30;
-	actionLength[FIRE] = 60;
+	actionLength[FIRE] = 10 * 6;
 	//actionLength[RETREAT] = 30;
 	//actionLength[CHASE] = 30;
 	actionLength[GUARD] = 120;
 	actionLength[REST] = 60;
+	actionLength[SPIN] = 60;
 
 	hasGuard = true;
 
@@ -222,6 +229,14 @@ void Owl::ActionEnded()
 		{
 		case REST:
 			break;
+		case SPIN:
+			{
+				action = FIRE;
+
+				fireDir = normalize( owner->player->position - position );
+				ang = atan2( -fireDir.y, fireDir.x );
+			}
+			break;
 		case GUARD:
 			action = REST;
 			break;
@@ -231,6 +246,8 @@ void Owl::ActionEnded()
 				action = REST;
 				frame = 0;
 			}
+
+			action = SPIN;
 			//action = FIRE;
 			break;
 		}
@@ -307,7 +324,18 @@ void Owl::UpdatePrePhysics()
 		}
 		break;
 	case GUARD:
-		action = REST;
+		{
+			//action = REST;
+		}
+		break;
+	case SPIN:
+		{
+			if( !lessThanSize )
+			{
+				action = REST;
+				frame = 0;
+			}
+		}
 		break;
 	case FIRE:
 		{
@@ -377,10 +405,10 @@ void Owl::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
+	if( !dying && !dead && action == FIRE && frame == 3 * 6 - 1  )// frame == 0 && slowCounter == 1 )
 	{
 		launcher->position = position;
-		launcher->facingDir = normalize( owner->player->position - position );
+		launcher->facingDir = fireDir;//normalize( owner->player->position - position );
 		launcher->Fire();
 	}
 }
@@ -518,7 +546,42 @@ void Owl::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		switch( action )
+		{
+		case REST:
+			{
+				sprite.setRotation( 0 );
+				sprite.setTexture( *ts_flap->texture );
+				sprite.setTextureRect( ts_flap->GetSubRect( (frame / 5) % 7 ) );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			}
+			break;
+		case SPIN:
+			{
+				sprite.setRotation( 0 );
+				sprite.setTexture( *ts_spin->texture );
+				sprite.setTextureRect( ts_spin->GetSubRect( (frame / 5) % 8 ) );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			}
+			break;
+		case GUARD:
+			{
+				sprite.setRotation( 0 );
+				sprite.setTexture( *ts_spin->texture );
+				sprite.setTextureRect( ts_spin->GetSubRect( 0 ) );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			}
+			break;
+		case FIRE:
+			{
+				sprite.setRotation( ang / PI * 180.f );
+				sprite.setTexture( *ts_throw->texture );
+				sprite.setTextureRect( ts_throw->GetSubRect( frame / 6 ) );
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+			}
+			break;
+		}
+		//sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 
 		if( hasMonitor && !suppressMonitor )
@@ -534,13 +597,13 @@ void Owl::UpdateSprite()
 	if( dying )
 	{
 
-		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTexture( *ts_death->texture );
 		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
-		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTexture( *ts_death->texture );
 		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
