@@ -29,16 +29,16 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 
 	action = NEUTRAL;
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[FIRE] = 1;
-	animFactor[FADEIN] = 1;
-	animFactor[FADEOUT] = 1;
+	animFactor[NEUTRAL] = 2;
+	animFactor[FIRE] = 2;
+	animFactor[FADEIN] = 15;
+	animFactor[FADEOUT] = 5;
 	animFactor[INVISIBLE] = 1;
 
-	actionLength[NEUTRAL] = 3;
-	actionLength[FIRE] = 20;
-	actionLength[FADEIN] = 60;
-	actionLength[FADEOUT] = 90;
+	actionLength[NEUTRAL] = 1;
+	actionLength[FIRE] = 15;
+	actionLength[FADEIN] = 4;//60;
+	actionLength[FADEOUT] = 17;//90;
 	actionLength[INVISIBLE] = 30;
 
 	fireCounter = 0;
@@ -52,6 +52,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	
 	launcher = new Launcher( this, BasicBullet::TURTLE, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
 	launcher->SetBulletSpeed( bulletSpeed );	
+	launcher->Reset();
 
 	initHealth = 40;
 	health = initHealth;
@@ -63,7 +64,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	//animationFactor = 5;
 
 	//ts = owner->GetTileset( "Turtle.png", 80, 80 );
-	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
+	ts = owner->GetTileset( "turtle_80x64.png", 80, 64 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -116,6 +117,8 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 
 	UpdateHitboxes();
 
+	slowCounter = 1;
+	slowMultiple = 1;
 	//cout << "finish init" << endl;
 }
 
@@ -154,7 +157,10 @@ void Turtle::ResetEnemy()
 	position.x = originalPos.x;
 	position.y = originalPos.y;
 	receivedHit = NULL;
+	action = NEUTRAL;
 
+	slowCounter = 1;
+	slowMultiple = 1;
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -164,7 +170,9 @@ void Turtle::ResetEnemy()
 
 void Turtle::ActionEnded()
 {
-	if( frame == actionLength[action] )
+	int blah = actionLength[action] * animFactor[action];
+	//cout << "frame: " << frame << ", actionlength: " << blah << endl;
+	if( frame == actionLength[action] * animFactor[action] )
 	{
 	switch( action )
 	{
@@ -194,57 +202,61 @@ void Turtle::ActionEnded()
 
 void Turtle::UpdatePrePhysics()
 {
-	ActionEnded();
-
 	launcher->UpdatePrePhysics();
 
-	switch( action )
+	if( !dead && !dying )
 	{
-	case NEUTRAL:
-		//cout << "NEUTRAL";
-		break;
-	case FIRE:
-		//cout << "FIRE";
-		break;
-	case INVISIBLE:
-		//cout << "INVISIBLE";
-		break;
-	case FADEIN:
-		//cout << "FADEIN";
-		break;
-	case FADEOUT: 
-		//cout << "FADEOUT";
-		break;
-	}
+		ActionEnded();
 
-	//cout << " " << frame << endl;
+	
 
-	switch( action )
-	{
-	case NEUTRAL:
-		break;
-	case FIRE:
-		break;
-	case INVISIBLE:
-		break;
-	case FADEIN:
-		break;
-	case FADEOUT: 
-		break;
-	}
+		switch( action )
+		{
+		case NEUTRAL:
+			//cout << "NEUTRAL";
+			break;
+		case FIRE:
+			//cout << "FIRE";
+			break;
+		case INVISIBLE:
+			//cout << "INVISIBLE";
+			break;
+		case FADEIN:
+			//cout << "FADEIN";
+			break;
+		case FADEOUT: 
+			//cout << "FADEOUT";
+			break;
+		}
+
+		//cout << " " << frame << endl;
+
+		switch( action )
+		{
+		case NEUTRAL:
+			break;
+		case FIRE:
+			break;
+		case INVISIBLE:
+			break;
+		case FADEIN:
+			break;
+		case FADEOUT: 
+			break;
+		}
 
 
 
-	if( !dead && !dying && receivedHit != NULL )
-	{
-		//owner->Pause( 5 );
+		if( receivedHit != NULL )
+		{
+					//owner->Pause( 5 );
 		
 		//gotta factor in getting hit by a clone
-		health -= 20;
+			health -= 20;
 
-		//cout << "health now: " << health << endl;
+			//cout << "health now: " << health << endl;
 
-		if( health <= 0 )
+			if( health <= 0 )
 		{
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
@@ -252,19 +264,21 @@ void Turtle::UpdatePrePhysics()
 			//cout << "dying" << endl;
 		}
 
-		receivedHit = NULL;
-	}
+			receivedHit = NULL;
+		}
 
-	if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
-	{
-		//cout << "firing" << endl;
-		launcher->position = position;
-		launcher->facingDir = normalize( owner->player->position - position );
-		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
+		if( action == FIRE && frame == 1 && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+		{
+			//cout << "firing" << endl;
+			launcher->position = position;
+			launcher->facingDir = normalize( owner->player->position - position );
+				//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 		//	launcher->facingDir.y << endl;
-		launcher->Fire();
-		fireCounter = 0;
-		//testLauncher->Fire();
+			launcher->Fire();
+			fireCounter = 0;
+			//testLauncher->Fire();
+		}
+
 	}
 
 	/*if( latchedOn )
@@ -300,9 +314,9 @@ void Turtle::UpdatePhysics()
 		if( action == NEUTRAL )
 		{
 			Actor *player = owner->player;
-			if( length( player->position - position ) < 300 )
+			if( length( player->position - position ) < 600 )
 			{
-				action = FADEOUT;
+				action = FIRE;
 				frame = 0;
 			}
 		}
@@ -365,29 +379,13 @@ void Turtle::UpdatePostPhysics()
 	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
-		
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
-	
-
-	if( slowCounter == slowMultiple )
+	if( deathFrame == 0 && dying )
 	{
-		//cout << "fireCounter: " << fireCounter << endl;
-		++frame;
-		slowCounter = 1;
-		++fireCounter;
-	
-		if( dying )
-		{
-			//cout << "deathFrame: " << deathFrame << endl;
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	if( deathFrame == 60 && dying )
@@ -409,26 +407,76 @@ void Turtle::UpdatePostPhysics()
 
 	UpdateSprite();
 	launcher->UpdateSprites();
+
+	if( slowCounter == slowMultiple )
+	{
+		//cout << "fireCounter: " << fireCounter << endl;
+		++frame;
+		slowCounter = 1;
+		++fireCounter;
+	
+		if( dying )
+		{
+			//cout << "deathFrame: " << deathFrame << endl;
+			deathFrame++;
+		}
+
+	}
+	else
+	{
+		slowCounter++;
+	}	
 }
 
 void Turtle::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		
+		int trueFrame;
+		switch( action )
+		{
+		case NEUTRAL:
+			trueFrame = 0;
+			break;
+		case FIRE:
+			trueFrame = frame / animFactor[FIRE] + 21;
+			break;
+		case INVISIBLE:
+			break;
+		case FADEIN:
+			trueFrame = frame / animFactor[FADEIN] + 17;
+			break;
+		case FADEOUT:
+			trueFrame = frame / animFactor[FADEOUT];
+			break;
+		}
+
+		//cout << "trueFrame: " << trueFrame << ", action: " << action << endl;
+		IntRect ir = ts->GetSubRect( trueFrame );
+		if( !facingRight )
+		{
+			ir.left += ir.width;
+			ir.width = -ir.width;
+		}
+
+		sprite.setScale( 2, 2 );
+		sprite.setTextureRect( ir );
+		sprite.setOrigin( sprite.getLocalBounds().width / 2,
+			sprite.getLocalBounds().height / 2 );
 		sprite.setPosition( position.x, position.y );
 	}
 	if( dying )
 	{
 
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 37 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 36 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
@@ -463,11 +511,11 @@ void Turtle::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
@@ -531,7 +579,7 @@ void Turtle::UpdateHitboxes()
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Turtle::PlayerHitMe()
 {
-	if( action == INVISIBLE )
+	if( action == INVISIBLE || action == FADEIN )
 		return pair<bool,bool>(false,false);
 
 	Actor *player = owner->player;
