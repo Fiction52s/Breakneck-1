@@ -110,7 +110,10 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
-	facingRight = true;
+	if( position.x < owner->originalPos.x )
+		facingRight = false;
+	else
+		facingRight = true;
 	 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
@@ -144,6 +147,10 @@ void Turtle::BulletHitPlayer(BasicBullet *b )
 
 void Turtle::ResetEnemy()
 {
+	if( position.x < owner->originalPos.x )
+		facingRight = false;
+	else
+		facingRight = true;
 	fireCounter = 0;
 	launcher->Reset();
 	//cout << "resetting enemy" << endl;
@@ -184,8 +191,18 @@ void Turtle::ActionEnded()
 		frame = 0;
 		break;
 	case INVISIBLE:
+
+		if( owner->player->position.x < position.x )
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
 		position = owner->player->position;
 		action = FADEIN;
+
 		frame = 0;
 		break;
 	case FADEIN:
@@ -432,7 +449,6 @@ void Turtle::UpdateSprite()
 {
 	if( !dying && !dead )
 	{
-		
 		int trueFrame;
 		switch( action )
 		{
