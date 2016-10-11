@@ -309,7 +309,7 @@ void Owl::UpdatePrePhysics()
 	ActionEnded();
 
 	Actor *player = owner->player;
-	double dist = 800;
+	double dist = 600;
 	bool lessThanSize = length( player->position - position ) < dist;
 	
 	switch( action )
@@ -318,7 +318,7 @@ void Owl::UpdatePrePhysics()
 		{
 			if( lessThanSize )
 			{
-				action = FIRE;
+				action = SPIN;
 				frame = 0;
 			}
 		}

@@ -122,7 +122,27 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 
 	slowCounter = 1;
 	slowMultiple = 1;
+
+	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
 	//cout << "finish init" << endl;
+}
+
+void Turtle::DirectKill()
+{
+	BasicBullet *b = launcher->activeBullets;
+	while( b != NULL )
+	{
+		BasicBullet *next = b->next;
+		double angle = atan2( b->velocity.y, -b->velocity.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+
+		b = next;
+	}
+
+	dying = true;
+	health = 0;
+	receivedHit = NULL;
 }
 
 void Turtle::HandleEntrant( QuadTreeEntrant *qte )

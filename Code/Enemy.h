@@ -2070,8 +2070,9 @@ struct SecurityWeb : Enemy, RayCastHandler
 		double edgeQuantity, double rayPortion );
 	void DirectKill();
 	void ResetNodes();
-	sf::Vector2<double> *origins;
 	
+	sf::Vector2<double> *origins;
+	Tileset *ts_bulletExplode;
 
 	struct NodeProjectile : Movable
 	{
@@ -2081,6 +2082,7 @@ struct SecurityWeb : Enemy, RayCastHandler
 		void Reset(
 			sf::Vector2<double> &pos );
 		void UpdatePrePhysics();
+		void SetNode( int subIndex );
 		void UpdatePostPhysics();
 		void HitPlayer();
 		void IncrementFrame();
@@ -2152,6 +2154,7 @@ struct Turtle : Enemy, LauncherEnemy
 	void UpdatePhysics();
 	void PhysicsResponse();
 	void UpdatePostPhysics();
+	void DirectKill();
 	void ActionEnded();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
@@ -2168,6 +2171,7 @@ struct Turtle : Enemy, LauncherEnemy
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
 
+	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 
 	Action action;

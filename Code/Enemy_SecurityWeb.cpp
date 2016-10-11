@@ -25,7 +25,8 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	angleOffset( p_angleOffset ), bulletSpeed( p_bulletSpeed ),
 	maxProtLength( 400 )
 {
-	
+	ts = owner->GetTileset( "coral_128x128.png", 128, 128 );
+
 	initHealth = 40;
 	health = initHealth;
 
@@ -52,8 +53,8 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 
 	rayStart = position;
 
-	int nodeSize = 64;
-	int halfNode = 32;
+	int nodeSize = 128;
+	int halfNode = 64;
 
 	double edgeWidth = 10;
 	Vector2f fPos( pos.x, pos.y );
@@ -94,10 +95,17 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 		eva[i * 4+2].position = Vector2f( p2.x, p2.y );//Vector2f( halfNode, halfNode  ) + currPoint; 
 		eva[i * 4+3].position = Vector2f( p3.x, p3.y );//Vector2f( -halfNode, halfNode ) + currPoint;
 		//cout << "currPoint: " << currPoint.x << ", " << currPoint.y << endl;
-		eva[i*4+0].color = Color::Red;
+
+		IntRect sub = ts->GetSubRect( 3 ); 
+		eva[i*4+0].texCoords = Vector2f( sub.left, sub.top );
+		eva[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+		eva[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+		eva[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+
+		/*eva[i*4+0].color = Color::Red;
 		eva[i*4+1].color = Color::Red;
 		eva[i*4+2].color = Color::Red;
-		eva[i*4+3].color = Color::Red;
+		eva[i*4+3].color = Color::Red;*/
 
 		rot.rotate( 360.f / numProtrusions );
 	}
@@ -158,6 +166,11 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 		edgeBox.rh = edgeWidth;
 	}
 
+	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+		sprite.getLocalBounds().height / 2 );
+	sprite.setPosition( pos.x, pos.y );
 	
 	//dynamicMode = false;
 	//dynamicFrame = 0;
@@ -437,7 +450,7 @@ void SecurityWeb::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_YELLOW, 5, .8, 6 );
+			owner->player->ConfirmHit( COLOR_ORANGE, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
@@ -591,29 +604,29 @@ void SecurityWeb::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		//target->draw( *edges );
-		target->draw( *nodes );
+		target->draw( *edges, ts->texture );
+		target->draw( *nodes, ts->texture );
 		if( hasMonitor && !suppressMonitor )
 		{
 			if( owner->pauseFrames < 2 || receivedHit == NULL )
 			{
-				//target->draw( sprite, keyShader );
+				target->draw( sprite, keyShader );
 			}
 			else
 			{
-			//	target->draw( sprite, hurtShader );
+				target->draw( sprite, hurtShader );
 			}
-		//	target->draw( *keySprite );
+			target->draw( *keySprite );
 		}
 		else
 		{
 			if( owner->pauseFrames < 2 || receivedHit == NULL )
 			{
-		//		target->draw( sprite );
+				target->draw( sprite );
 			}
 			else
 			{
-		//		target->draw( sprite, hurtShader );
+				target->draw( sprite, hurtShader );
 			}
 			
 		}
@@ -828,8 +841,8 @@ SecurityWeb::NodeProjectile::NodeProjectile( SecurityWeb *p_parent,
 	framesToLive = 1;
 	velocity = V2d( 0, 0 );
 
-	int nodeSize = 64;
-	int halfNode = 32;
+	int nodeSize = 128;
+	int halfNode = 64;
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -868,20 +881,9 @@ void SecurityWeb::NodeProjectile::Reset( sf::Vector2<double> &pos )
 	frame = 0;
 	Movable::Reset( pos );
 
-	int size = 64;
-	int halfSize = 32;
-
-	VertexArray &pva = *parent->nodes;
-	Vector2f fPos( pos.x, pos.y );
-	pva[vaIndex*4+0].position = fPos + Vector2f( -halfSize, -halfSize );
-	pva[vaIndex*4+1].position = fPos + Vector2f( halfSize, -halfSize );
-	pva[vaIndex*4+2].position = fPos + Vector2f( halfSize, halfSize );
-	pva[vaIndex*4+3].position = fPos + Vector2f( -halfSize, halfSize );
-
-	pva[vaIndex*4+0].color = Color::Green;
-	pva[vaIndex*4+1].color = Color::Green;
-	pva[vaIndex*4+2].color = Color::Green;
-	pva[vaIndex*4+3].color = Color::Green;
+	
+	SetNode( 6 );
+	
 
 	hurtBody.globalPosition = pos;
 	hitBody.globalPosition = pos;
@@ -902,24 +904,44 @@ void SecurityWeb::NodeProjectile::UpdatePrePhysics()
 		parent->launcher->Fire();*/
 	}
 }
+
+void SecurityWeb::NodeProjectile::SetNode( int index )
+{
+	Vector2f fPos( position.x, position.y );
+	int nodeSize = 128;
+	int halfNode = nodeSize / 2;
+
+	VertexArray &nva = *parent->nodes;
+
+	V2d dir = normalize( parent->position - position );
+	double angle = atan2( dir.x, -dir.y );
+	Transform rot;
+	rot.rotate( angle / PI * 180.0 );
+
+	int size = 64;
+	int halfSize = 32;
+
+	nva[vaIndex*4+0].position = fPos + rot.transformPoint( Vector2f( -halfSize, -halfSize ) );
+	nva[vaIndex*4+1].position = fPos + rot.transformPoint( Vector2f( halfSize, -halfSize ) );
+	nva[vaIndex*4+2].position = fPos + rot.transformPoint( Vector2f( halfSize, halfSize ) );
+	nva[vaIndex*4+3].position = fPos + rot.transformPoint( Vector2f( -halfSize, halfSize ) );
+	/*nva[vaIndex*4+0].color = Color::Green;
+	nva[vaIndex*4+1].color = Color::Green;
+	nva[vaIndex*4+2].color = Color::Green;
+	nva[vaIndex*4+3].color = Color::Green;*/
+
+	IntRect sub = parent->ts->GetSubRect( index );
+	nva[vaIndex*4+0].texCoords = Vector2f( sub.left, sub.top );
+	nva[vaIndex*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );	
+	nva[vaIndex*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+	nva[vaIndex*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
+}
+
 void SecurityWeb::NodeProjectile::UpdatePostPhysics()
 {
 	//IntRect sub = parent->ts->GetSubRect( frame % 4 );
 
-	Vector2f fPos( position.x, position.y );
-	int nodeSize = 64;
-	int halfNode = nodeSize / 2;
-
-	VertexArray &nva = *parent->nodes;
-	nva[vaIndex * 4+0].position = fPos + Vector2f(-halfNode,-halfNode  );  
-	nva[vaIndex * 4+1].position = fPos + Vector2f( halfNode, -halfNode ); 
-	nva[vaIndex * 4+2].position = fPos + Vector2f( halfNode, halfNode  ); 
-	nva[vaIndex * 4+3].position = fPos + Vector2f( -halfNode, halfNode );
-
-	nva[vaIndex*4+0].color = Color::Green;
-	nva[vaIndex*4+1].color = Color::Green;
-	nva[vaIndex*4+2].color = Color::Green;
-	nva[vaIndex*4+3].color = Color::Green;
+	SetNode( 6 );
 
 	Movable::UpdatePostPhysics();
 
