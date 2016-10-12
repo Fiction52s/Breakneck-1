@@ -129,7 +129,7 @@ void SwarmMember::UpdateSprite()
 	}
 	else
 	{
-		IntRect subRect = parent->ts->GetSubRect( 0 );//frame / animFactor );
+		IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
 		va[vaIndex*4+0].texCoords = Vector2f( subRect.left, 
 			subRect.top );
 		va[vaIndex*4+1].texCoords = Vector2f( subRect.left 
@@ -510,6 +510,10 @@ void Swarm::UpdatePrePhysics()
 		case FIRE:
 			action = NEUTRAL;
 			frame = 0;
+			break;
+		case USED:
+			break;
+		case REFILL:
 			break;
 		}
 	}

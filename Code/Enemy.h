@@ -2970,9 +2970,9 @@ struct SwarmMember : Enemy
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
+	//Tileset *ts_testBlood;
+	//sf::Sprite bloodSprite;
+	//int bloodFrame;
 };
 
 struct Swarm : Enemy
