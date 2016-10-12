@@ -2806,9 +2806,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int speed;
 				is >> speed;
 
-				//Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
-				Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-					400, 50, 60, 1 );
+				Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
+				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				//	400, 60, 1 );
 
 				
 				
@@ -2873,6 +2873,91 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
 				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
 				//	400, 50, 60, 1 );
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
+			else if( typeName == "narwhal" )
+			{
+					
+				int xPos,yPos;
+
+				//always air
+				is >> xPos;
+				is >> yPos;
+				
+				int hasMonitor;
+				is >> hasMonitor;				
+
+				Vector2i dest;
+				is >> dest.x;
+				is >> dest.y;
+
+				int moveFrames;
+				is >> moveFrames;
+
+				Narwhal *enemy = new Narwhal( this, hasMonitor, 
+					Vector2i( xPos, yPos ),	dest, moveFrames );
+				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				//	400, 50, 60, 1 );
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
+			else if( typeName == "copycat" )
+			{
+					
+				int xPos,yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+				
+				int hasMonitor;
+				is >> hasMonitor;				
+
+				Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
+				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				//	400, 50, 60, 1 );
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
+			else if( typeName == "gorilla" )
+			{
+					
+				int xPos,yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+				
+				int hasMonitor;
+				is >> hasMonitor;	
+
+				int wallWidth;
+				is >> wallWidth;
+
+				int followFrames;
+				is >> followFrames;
+
+				//Gorilla *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
+				Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+					wallWidth, followFrames );
+					//400, 60 );
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );

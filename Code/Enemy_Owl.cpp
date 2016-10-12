@@ -62,6 +62,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	launcher = new Launcher( this, BasicBullet::OWL, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );
 	launcher->hitboxInfo->damage = 18;
+	launcher->Reset();
 
 	initHealth = 40;
 	health = initHealth;
@@ -233,8 +234,12 @@ void Owl::ActionEnded()
 			{
 				action = FIRE;
 
+				//V2d dir = normalize( parent->position - position );
+				//double angle = atan2( dir.x, -dir.y );
+				launcher->position = position + fireDir * 40.0;
 				fireDir = normalize( owner->player->position - position );
-				ang = atan2( -fireDir.y, fireDir.x );
+				ang = atan2( fireDir.x, -fireDir.y );
+				//cout << "true ang: " << (ang / PI * 180.0) << endl;
 			}
 			break;
 		case GUARD:
@@ -574,7 +579,7 @@ void Owl::UpdateSprite()
 			break;
 		case FIRE:
 			{
-				sprite.setRotation( ang / PI * 180.f );
+				sprite.setRotation( ang / PI * 180.f + 90 );
 				sprite.setTexture( *ts_throw->texture );
 				sprite.setTextureRect( ts_throw->GetSubRect( frame / 6 ) );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );

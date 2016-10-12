@@ -1029,6 +1029,59 @@ struct SpecterParams : public ActorParams
 	ActorParams *Copy();
 };
 
+struct CopycatParams : public ActorParams
+{
+	CopycatParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
+struct NarwhalParams : public ActorParams
+{
+	NarwhalParams( EditSession *edit,
+		sf::Vector2i &pos,
+		sf::Vector2i &dest,
+		int moveFrames
+		);
+	NarwhalParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+
+	int moveFrames;
+	sf::Vector2i dest;
+};
+
+struct GorillaParams : public ActorParams
+{
+	GorillaParams( EditSession *edit,
+		sf::Vector2i &pos, int wallWidth,
+		int followFrames );
+	GorillaParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+
+	int wallWidth;
+	int followFrames;
+};
+
 //no params for goal and foottrap atm
 struct ActorGroup
 {

@@ -226,7 +226,6 @@ void Narwhal::UpdatePhysics()
 		//if( 
 		if( action == CHARGE_START || action == CHARGE_REPEAT )
 		{
-
 			if( start0 )
 			{
 				if( seq.currMovement == NULL )

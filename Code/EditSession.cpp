@@ -1879,6 +1879,7 @@ bool EditSession::OpenFile( string fileName )
 				}
 				else if( typeName == "swarm" )
 				{
+					cout << "loading swarm" << endl;
 					Vector2i pos;
 
 					//always air
@@ -1897,6 +1898,7 @@ bool EditSession::OpenFile( string fileName )
 				}
 				else if( typeName == "ghost" )
 				{
+					cout << "loading ghost" << endl;
 					Vector2i pos;
 
 					//always air
@@ -1948,7 +1950,67 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new SpecterParams( this, pos ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
+				else if( typeName == "gorilla" )
+				{
+					Vector2i pos;
 
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int hasMonitor;
+					is >> hasMonitor;
+
+					int wallWidth;
+					is >> wallWidth;
+
+					int followFrames;
+					is >> followFrames;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new GorillaParams( this, pos, wallWidth, followFrames ) );
+					a->hasMonitor = (bool)hasMonitor;
+				}
+				else if( typeName == "narwhal" )
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int hasMonitor;
+					is >> hasMonitor;
+
+					//int pathLength;
+					//is >> pathLength;
+					
+					Vector2i destinationPos;
+					is >> destinationPos.x;
+					is >> destinationPos.y;
+
+					int moveFrames;
+					is >> moveFrames;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new NarwhalParams( this, pos, destinationPos, moveFrames ) );
+					a->hasMonitor = (bool)hasMonitor;
+				}
+				else if( typeName == "copycat" )
+				{
+					Vector2i pos;
+
+					//always air? should have a grounded mode too
+					is >> pos.x;
+					is >> pos.y;
+
+					int hasMonitor;
+					is >> hasMonitor;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new CopycatParams( this, pos ) );
+					a->hasMonitor = (bool)hasMonitor;
+				}
 				else
 				{
 					assert( false && "unkown enemy type!" );
@@ -3405,13 +3467,23 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["ghost"] = ghostType;
 
 	//w6
-	//Panel *specterPanel = CreateOptionsPanel( "specter" );
-	//ActorType *specterType = new ActorType( "specter", specterPanel );
+	Panel *specterPanel = CreateOptionsPanel( "specter" );
+	ActorType *specterType = new ActorType( "specter", specterPanel );
+
+	Panel *gorillaPanel = CreateOptionsPanel( "gorilla" );
+	ActorType *gorillaType = new ActorType( "gorilla", gorillaPanel );
+
+	Panel *narwhalPanel = CreateOptionsPanel( "narwhal" );
+	ActorType *narwhalType = new ActorType( "narwhal", narwhalPanel );
+
+	Panel *copycatPanel = CreateOptionsPanel( "copycat" );
+	ActorType *copycatType = new ActorType( "copycat", copycatPanel );
 	//3 more in w6 later
 
-	//types["specter"] = specterType;
-
-	
+	types["specter"] = specterType;
+	types["gorilla"] = gorillaType;
+	types["narwhal"] = narwhalType;
+	types["copycat"] = copycatType;
 
 	
 	Panel *lightPanel = CreateOptionsPanel( "light" );
@@ -3457,6 +3529,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
 	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "overgrowth" );
 	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
+
+	gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
+	gs->Set( 1, 6, Sprite( narwhalType->iconTexture ), "narwhal" );
+	gs->Set( 2, 6, Sprite( copycatType->iconTexture ), "copycat" );
+	gs->Set( 3, 6, Sprite( gorillaType->iconTexture ), "gorilla" );
 
 	
 
@@ -5892,19 +5969,35 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( trackingEnemy->name == "gorilla" )
 									{
-										if( enemyEdgePolygon != NULL )
-										{
-											/*tempActor = new GorillaParams( this, enemyEdgePolygon, 
-												enemyEdgeIndex, enemyEdgeQuantity );
-											showPanel = trackingEnemy->panel;
-											tempActor->SetPanelInfo();*/
-										}
+										tempActor = new GorillaParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
+										//if( enemyEdgePolygon != NULL )
+										//{
+										//	/*tempActor = new GorillaParams( this, enemyEdgePolygon, 
+										//		enemyEdgeIndex, enemyEdgeQuantity );
+										//	showPanel = trackingEnemy->panel;
+										//	tempActor->SetPanelInfo();*/
+										//}
 									}
-									else if( trackingEnemy->name == "heads" )
+									else if( trackingEnemy->name == "narwhal" )
 									{
+										tempActor = new NarwhalParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetPanelInfo();
+
+										showPanel = trackingEnemy->panel;
+
+										patrolPath.clear();
+										patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 									}
 									else if( trackingEnemy->name == "copycat" )
 									{
+										tempActor = new CopycatParams( this, Vector2i( worldPos.x,
+											worldPos.y ) );
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
 									}
 
 								}
@@ -9958,6 +10051,108 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "narwhal_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				NarwhalParams *narwhal = (NarwhalParams*)select;
+				narwhal->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr narwhal( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				narwhal->SetParams();
+				narwhal->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( narwhal );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+		else if( b->name == "createpath" )
+		{
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back( front );
+			patrolPathLengthSize = 0; //do it by distance and #of frames
+		}
+	}
+	else if( p->name == "copycat_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				CopycatParams *copycat = (CopycatParams*)select;
+				copycat->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr copycat( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				copycat->SetParams();
+				copycat->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( copycat );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+	}
+	else if( p->name == "gorilla_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				GorillaParams *gorilla = (GorillaParams*)select;
+				gorilla->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr gorilla( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				gorilla->SetParams();
+				gorilla->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( gorilla );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+	}
 
 	else if( p->name == "map_options" )
 	{
@@ -10139,6 +10334,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 {
+	//to be able to show previews in real time
 	Panel *p = tb->owner;
 	if( p->name == "curveturret_options" )
 	{
@@ -12123,6 +12319,54 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	else if( name == "specter" )
+	{
+		Panel *p = new Panel( "specter_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
+		return p;
+	}
+	else if( name == "gorilla" )
+	{
+		Panel *p = new Panel( "gorilla_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+		p->AddTextBox( "wallwidth", Vector2i( 20, 150 ), 200, 20, "1" );
+		p->AddTextBox( "followFrames", Vector2i( 20, 200 ), 200, 20, "1" );
+
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
+	else if( name == "copycat" )
+	{
+		Panel *p = new Panel( "copycat_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
+		return p;
+	}
+	else if( name == "narwhal" )
+	{
+		Panel *p = new Panel( "narwhal_options", 200, 600, this );
+		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+		p->AddTextBox( "moveframes", Vector2i( 20, 300 ), 200, 20, "10" );
+		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
+
+		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
+		return p;
+	}
+
 	/*else if( name == "crawlerreverser" )
 	{
 		//Panel *p = new Panel( "crawlerreverser_options", 200, 400, this );
@@ -12308,18 +12552,18 @@ void EditSession::SetEnemyEditPanel()
 	//w5
 	else if( name == "swarm" )
 	{
-		CoralParams *coral = (CoralParams*)ap;
-		coral->SetPanelInfo();
+		SwarmParams *swarm = (SwarmParams*)ap;
+		swarm->SetPanelInfo();
 	}
 	else if( name == "ghost" )
 	{
-		CheetahParams *cheetah = (CheetahParams*)ap;
-		cheetah->SetPanelInfo();
+		GhostParams *ghost = (GhostParams*)ap;
+		ghost->SetPanelInfo();
 	}
 	else if( name == "shark" )
 	{
-		SpiderParams *spider= (SpiderParams*)ap;
-		spider->SetPanelInfo();
+		SharkParams *shark= (SharkParams*)ap;
+		shark->SetPanelInfo();
 	}
 	else if( name == "overgrowth" )
 	{
@@ -12328,6 +12572,27 @@ void EditSession::SetEnemyEditPanel()
 	}
 
 	//w6
+	else if( name == "specter" )
+	{
+		SpecterParams *specter= (SpecterParams*)ap;
+		specter->SetPanelInfo();
+	}
+	else if( name == "narwhal" )
+	{
+		NarwhalParams *narwhal = (NarwhalParams*)ap;
+
+		narwhal->SetPanelInfo();
+
+		patrolPath.clear();
+		patrolPath.push_back( narwhal->position );
+		patrolPath.push_back( narwhal->dest );
+		
+	}
+	else if( name == "specter" )
+	{
+		SpecterParams *specter= (SpecterParams*)ap;
+		specter->SetPanelInfo();
+	}
 	else if( name == "specter" )
 	{
 		SpecterParams *specter= (SpecterParams*)ap;
@@ -13388,6 +13653,26 @@ void ActorType::Init()
 
 	//w6
 	else if( name == "specter" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if( name == "narwhal" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if( name == "gorilla" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}else if( name == "copycat" )
 	{
 		width = 32;
 		height = 32;

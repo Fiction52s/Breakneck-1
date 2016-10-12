@@ -3236,9 +3236,8 @@ struct Gorilla : Enemy
 	double latchStartAngle;
 	
 	Gorilla( GameSession *owner, bool hasMonitor,
-		sf::Vector2i &pos, int wallWidth,
-		int wallHeight, int followFrames,
-		int recoveryLoops );
+		sf::Vector2i &pos, int wallWidth, int followFrames );
+		//,int recoveryLoops );
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

@@ -16,16 +16,15 @@ using namespace sf;
 
 
 Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, 
-	int wallWidth, int wallHeight, int p_followFrames,
-	int p_recoveryLoops )
+	int wallWidth, int p_followFrames )//, int p_recoveryLoops )
 	:Enemy( owner, EnemyType::GORILLA, p_hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
 	affectCameraZoom = false;	
 	idealRadius = 300;
 	followFrames = p_followFrames;
-	recoveryLoops = p_recoveryLoops;
+	recoveryLoops = 1;
 	wallHitboxWidth = wallWidth;
-	wallHitboxHeight = wallHeight;
+	wallHitboxHeight = 50; //wallHeight;
 
 	wallHitbox.isCircle = false;
 	wallHitbox.rw = wallHitboxWidth / 2;
