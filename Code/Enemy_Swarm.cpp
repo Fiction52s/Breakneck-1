@@ -404,9 +404,16 @@ Swarm::Swarm( GameSession *owner,
 	sf::Vector2i &pos, int p_liveFrames )
 	:Enemy( owner, Enemy::SWARM, false, 5 ), swarmVA( sf::Quads, 5 * 4 )
 {
+	actionLength[NEUTRAL] = 10;
+	actionLength[FIRE] = 10;
+
+	animFactor[NEUTRAL] = 2;
+	animFactor[FIRE] = 2;
 
 	liveFrames = p_liveFrames;
-	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
+	ts = owner->GetTileset( "swarm_pot_128x128.png", 128, 128 );
+	ts_swarm = owner->GetTileset( "swarm_64x64.png", 64, 64 );
+	nestSprite.setTexture( *ts->texture );
 	position = V2d( pos.x, pos.y );
 	origPosition = position;
 	//SwarmMember *mem = new SwarmMember()
@@ -493,6 +500,20 @@ void Swarm::HandleEntrant( QuadTreeEntrant *qte )
 
 void Swarm::UpdatePrePhysics()
 {
+	if( frame == actionLength[action] * animFActor[action] )
+	{
+		switch( action )
+		{
+		case NEUTRAL:
+			frame = 0;
+			break;
+		case FIRE:
+			action = NEUTRAL;
+			frame = 0;
+			break;
+		}
+	}
+
 	int activeMembers = 0;
 
 	/*if( framesSinceLaunch == liveFrames - 1 )
@@ -522,12 +543,16 @@ void Swarm::UpdatePrePhysics()
 	}
 	else
 	{
-		double dist = length( owner->player->position - position );
-		if( dist < 900 )
+		if( action == NEUTRAL )
 		{
-			Launch();
+			double dist = length( owner->player->position - position );
+			if( dist < 900 )
+			{
+				action = FIRE;
+				frame = 0;
+				//Launch();
+			}
 		}
-		
 	}
 
 	
@@ -563,19 +588,92 @@ void Swarm::DrawMinimap( sf::RenderTarget *target )
 
 void Swarm::Draw(sf::RenderTarget *target )
 {
-	sf::RectangleShape rs;
+	if( !(dead || dying ) )
+	{
+		if( hasMonitor && !suppressMonitor )
+		{
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( nestSprite, keyShader );
+			}
+			else
+			{
+				target->draw( nestSprite, hurtShader );
+			}
+			target->draw( *keySprite );
+		}
+		else
+		{
+			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			{
+				target->draw( nestSprite );
+			}
+			else
+			{
+				target->draw( nestSprite, hurtShader );
+			}
+			
+		}
+	}
+	else if( dying )
+	{
+		target->draw( botDeathSprite );
+		target->draw( topDeathSprite );
+	}
+
+	/*sf::RectangleShape rs;
 	rs.setFillColor( Color::Red );
 	rs.setSize( Vector2f( 100, 100 ) );
 	rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
 	rs.setPosition( position.x, position.y );
-	target->draw( rs );
-
+	target->draw( rs );*/
+	//target->draw( nestSprite );
+	target->draw( swarmVA, ts_swarm->texture );
 	
-	target->draw( swarmVA, ts->texture );
+	
 }
 
 void Swarm::UpdateSprite()
 {
+	if( !dead && !dying )
+	{
+		switch( action )
+		{
+		case NEUTRAL:
+			nestSprite.setTextureRect( ts->GetSubRect( 0 ) );
+			break;
+		case FIRE:
+			nestSprite.setTextureRect( ts->GetSubRect( frame / animFactor[FIRE] + 1) );
+			break;
+		case USED:
+			nestSprite.setTextureRect( ts->GetSubRect( 6 ) );
+			break;
+		case REFILL:
+			nestSprite.setTextureRect( ts->GetSubRect( 1 ) );
+			break;
+		}
+		nestSprite.setOrigin( nestSprite.getLocalBounds().width / 2, 
+			nestSprite.getLocalBounds().height / 2 );
+		nestSprite.setPosition( position.x, position.y );
+	}
+	else if( dying )
+	{
+		botDeathSprite.setTexture( *ts->texture );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
+		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, 
+			botDeathSprite.getLocalBounds().height / 2  );
+		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + deathVector.y * deathPartingSpeed * deathFrame );
+		botDeathSprite.setRotation( sprite.getRotation() );
+
+		topDeathSprite.setTexture( *ts->texture );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 7 ) );
+		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, 
+			topDeathSprite.getLocalBounds().height / 2 );
+		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
+			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
+		topDeathSprite.setRotation( sprite.getRotation() );
+	}
 }
 
 void Swarm::DebugDraw(sf::RenderTarget *target)

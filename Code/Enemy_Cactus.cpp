@@ -679,7 +679,7 @@ void Cactus::UpdateSprite()
 	//}
 
 
-	if( !dead && hasMonitor && !suppressMonitor )
+	if( !dead && !dying && hasMonitor && !suppressMonitor )
 	{
 		//keySprite.setTexture( *ts_key->texture );
 		keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
@@ -687,10 +687,10 @@ void Cactus::UpdateSprite()
 			keySprite->getLocalBounds().height / 2 );
 		keySprite->setPosition( position.x, position.y );
 	}
-	else if( dead )
+	else if( dying )
 	{
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 7 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, 
 			botDeathSprite.getLocalBounds().height / 2  );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 

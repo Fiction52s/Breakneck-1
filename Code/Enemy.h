@@ -2977,6 +2977,15 @@ struct SwarmMember : Enemy
 
 struct Swarm : Enemy
 {
+	enum Action
+	{
+		NEUTRAL,
+		FIRE,
+		USED,
+		REFILL,
+		Count
+	};
+	
 	Swarm( GameSession *owner, 
 		sf::Vector2i &pos,
 		int liveFrames );	
@@ -2997,13 +3006,16 @@ struct Swarm : Enemy
 	void Launch();
 
 	int animationFactor;
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
 	int frame;
-
+	Action action;
 	int liveFrames;
 
 	sf::Vector2<double> origPosition;
 
 	Tileset *ts;
+	Tileset *ts_swarm;
 
 	void SaveEnemyState();
 	void LoadEnemyState();

@@ -208,7 +208,7 @@ GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos,
 	speed = p_speed;
 
 	position = pos;	
-	type = edit->types["swarm"];
+	type = edit->types["ghost"];
 
 	image.setTexture( type->imageTexture );
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
