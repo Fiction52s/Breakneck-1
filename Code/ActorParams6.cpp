@@ -253,7 +253,7 @@ NarwhalParams::NarwhalParams( EditSession *edit,
 NarwhalParams::NarwhalParams( EditSession *edit, sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
-	dest = pos;
+	dest = pos + Vector2i( 500, 0 );
 	moveFrames = 60;
 	position = pos;	
 	type = edit->types["narwhal"];
@@ -263,6 +263,27 @@ NarwhalParams::NarwhalParams( EditSession *edit, sf::Vector2i &pos )
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
+}
+
+void NarwhalParams::SetPath( std::list<sf::Vector2i> &globalPath )
+{
+	if( globalPath.size() > 1 )
+	{
+		dest = globalPath.back();
+	}
+}
+
+void NarwhalParams::Draw( RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	//if( position != dest )
+	//{
+	sf::Vertex line[] = { 
+		sf::Vertex( Vector2f( position.x, position.y ), Color::Green ),
+		sf::Vertex( Vector2f( dest.x, dest.y ), Color::Green ) };
+	target->draw( line, 2, sf::Lines );
+	//}
 }
 
 void NarwhalParams::WriteParamFile( std::ofstream &of )

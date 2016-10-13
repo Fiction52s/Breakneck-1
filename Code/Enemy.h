@@ -3203,6 +3203,7 @@ struct Narwhal : Enemy
 
 	Action action;
 	int actionLength[Action::Count];
+	int animFactor[Action::Count];
 	int moveFrames;
 	int currMoveFrame;
 
@@ -3228,6 +3229,8 @@ struct Narwhal : Enemy
 
 	int hitlagFrames;
 	int hitstunFrames;
+
+	bool facingRight;
 	int animationFactor;
 
 	//bool facingRight;

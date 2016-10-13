@@ -6673,6 +6673,16 @@ int GameSession::Run( string fileN )
 				(*it)->DrawMinimap( minimapTex );
 			}
 		}
+		else
+		{
+			//probably inefficient. only happens when there arent any gates. do a little
+			//collision check to make sure they're relevant before drawing
+			//also dont make circles every frame. just store it in the enemy
+			for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
+			{
+				(*it)->DrawMinimap( minimapTex );
+			}
+		}
 
 		minimapTex->display();
 		const Texture &miniTex = minimapTex->getTexture();

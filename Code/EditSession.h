@@ -1058,9 +1058,12 @@ struct NarwhalParams : public ActorParams
 
 	bool CanApply();
 	ActorParams *Copy();
+	void SetPath( 
+		std::list<sf::Vector2i> &globalPath );
 
 	int moveFrames;
 	sf::Vector2i dest;
+	void Draw( sf::RenderTarget *target );
 };
 
 struct GorillaParams : public ActorParams

@@ -44,8 +44,12 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	actionLength[WAITING] = 10;
 	actionLength[CHARGE_START] = 10;
 	actionLength[CHARGE_REPEAT] = 10;
-	actionLength[TURNING] = 10;
+	actionLength[TURNING] = 4;
 
+	animFactor[WAITING] = 1;
+	animFactor[CHARGE_START] = 1;
+	animFactor[CHARGE_REPEAT] = 1;
+	animFactor[TURNING] = 5;
 
 	//speed = 2;
 	frame = 0;
@@ -94,12 +98,12 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	V2d diff = point1 - point0;
 	V2d normDiff = normalize( diff );
 
-	triggerBox.globalAngle = atan2( normDiff.y, -normDiff.x );
+	triggerBox.globalAngle = atan2( -normDiff.x, normDiff.y );
 	triggerBox.globalPosition = (point0+point1) / 2.0;
 	triggerBox.rw = 20;
 	triggerBox.rh = length( point0-point1 ) / 2;
 	
-	angle = atan2( normDiff.y, -normDiff.x ) / PI * 180.f;//triggerBox.globalAngle / PI * 180.f;
+	angle = atan2( normDiff.y, normDiff.x ) / PI * 180.f;//triggerBox.globalAngle / PI * 180.f;
 	//cout << "ANGLE: " << angle << endl;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
@@ -111,12 +115,11 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	seq1.AddLineMovement( point1, point0, CubicBezier( 0, 0, 1, 1 ), moveFrames );
 	ResetEnemy();
 	
-	
 }
 
 void Narwhal::ActionEnded()
 {
-	if( frame == actionLength[action] )
+	if( frame == actionLength[action] * animFactor[action] )
 	{
 		switch( action )
 		{
@@ -131,6 +134,7 @@ void Narwhal::ActionEnded()
 			frame = 0;
 			break;
 		case TURNING:
+			facingRight = !facingRight;
 			action = WAITING;
 			frame = 0;
 			break;
@@ -149,6 +153,13 @@ void Narwhal::HandleEntrant( QuadTreeEntrant *qte )
 
 void Narwhal::ResetEnemy()
 {
+	if( point1.x < point0.x )
+		facingRight = false;
+	else
+	{
+		facingRight = true;
+	}
+
 	seq.Reset();
 	seq1.Reset();
 	start0 = false;
@@ -403,8 +414,25 @@ void Narwhal::UpdateSprite()
 {
 	//ts->GetSubRect( frame / animationFactor ) );
 	
-	IntRect ir = ts->GetSubRect( 0 );
-	if( start0 )
+	IntRect ir;// = ts->GetSubRect( 0 );
+	switch( action )
+	{
+		case WAITING:
+			ir = ts->GetSubRect( 0 );
+			break;
+		case CHARGE_START:
+			ir = ts->GetSubRect( 1 );
+			break;
+		case CHARGE_REPEAT:
+			ir = ts->GetSubRect( 2 );
+			break;
+		case TURNING:
+			ir = ts->GetSubRect( frame / animFactor[TURNING] + 4 );
+			break;
+	}
+
+	
+	if( facingRight )
 	{
 		sprite.setTextureRect( ir );
 	}
