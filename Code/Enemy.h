@@ -3136,9 +3136,9 @@ struct Specter : Enemy
 	int hitstunFrames;
 	int animationFactor;
 
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
+	//Tileset *ts_testBlood;
+	//sf::Sprite bloodSprite;
+	//int bloodFrame;
 	//bool facingRight;
 
 	struct Stored

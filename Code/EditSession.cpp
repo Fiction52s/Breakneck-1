@@ -12337,7 +12337,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
 		p->AddTextBox( "wallwidth", Vector2i( 20, 150 ), 200, 20, "1" );
-		p->AddTextBox( "followFrames", Vector2i( 20, 200 ), 200, 20, "1" );
+		p->AddTextBox( "followframes", Vector2i( 20, 200 ), 200, 20, "1" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );

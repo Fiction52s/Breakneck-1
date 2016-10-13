@@ -73,10 +73,10 @@ Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	
 	frame = 0;
 
-	animationFactor = 5;
+	animationFactor = 10;
 
 	//ts = owner->GetTileset( "Specter.png", 80, 80 );
-	ts = owner->GetTileset( "bat_144x176.png", 144, 176 );
+	ts = owner->GetTileset( "specter_256x256.png", 256, 256 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -121,8 +121,8 @@ Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 
 	//facingRight = true;
 	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
@@ -165,6 +165,11 @@ void Specter::ResetEnemy()
 
 void Specter::UpdatePrePhysics()
 {
+	if( frame == 11 * animationFactor )
+	{
+		frame = 0;
+	}
+
 	if( !dead && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
@@ -200,8 +205,6 @@ void Specter::UpdatePhysics()
 	}
 
 	PhysicsResponse();
-
-	return;
 }
 
 void Specter::PhysicsResponse()
@@ -226,7 +229,7 @@ void Specter::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, true );
+			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, true );
 			
 		//	cout << "Specter received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -280,10 +283,7 @@ void Specter::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 5 * animationFactor )
-	{
-		frame = 0;
-	}
+	
 
 	if( deathFrame == 60 )
 	{
@@ -310,13 +310,13 @@ void Specter::UpdateSprite()
 	{
 
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 13 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 12 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
@@ -358,11 +358,11 @@ void Specter::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );

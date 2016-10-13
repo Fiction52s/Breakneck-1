@@ -33,14 +33,14 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	actionLength[WAKEUP] = 60;
 	actionLength[ALIGN] = 60;
 	actionLength[FOLLOW] = followFrames;
-	actionLength[ATTACK] = 60;
-	actionLength[RECOVER] = 60;
+	actionLength[ATTACK] = 4;//60;
+	actionLength[RECOVER] = 2;//60;
 
 	actionLength[WAKEUP] = 1;
 	animFactor[ALIGN] = 1;
 	animFactor[FOLLOW] = 1;
-	animFactor[ATTACK] = 1;
-	animFactor[RECOVER] = 1;
+	animFactor[ATTACK] = 15;
+	animFactor[RECOVER] = 30;
 
 	action = WAKEUP;
 
@@ -82,7 +82,7 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Gorilla.png", 80, 80 );
-	ts = owner->GetTileset( "plasmid_128x128.png", 128, 128 );
+	ts = owner->GetTileset( "gorilla_320x256.png", 320, 256 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -591,13 +591,13 @@ void Gorilla::UpdateSprite()
 			ir = ts->GetSubRect( 0 );
 			break;
 		case FOLLOW:
-			ir = ts->GetSubRect( 0 );
+			ir = ts->GetSubRect( 1 );
 			break;
 		case ATTACK:
-			ir = ts->GetSubRect( 0 );
+			ir = ts->GetSubRect( frame / animFactor[ATTACK] + 2 );
 			break;
 		case RECOVER:
-			ir = ts->GetSubRect( 0 );
+			ir = ts->GetSubRect( frame / animFactor[RECOVER] + 6 );
 			break;
 		}
 		
@@ -683,7 +683,7 @@ void Gorilla::Draw( sf::RenderTarget *target )
 
 void Gorilla::DrawMinimap( sf::RenderTarget *target )
 {
-	cout << "Draw minimap" << endl;
+	//cout << "Draw minimap" << endl;
 	if( !dead )
 	{
 		if( hasMonitor && !suppressMonitor )
