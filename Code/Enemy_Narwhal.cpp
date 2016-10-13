@@ -53,7 +53,7 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Narwhal.png", 80, 80 );
-	ts = owner->GetTileset( "patroller_192x192.png", 192, 192 );
+	ts = owner->GetTileset( "narwhal_256x256.png", 256, 256 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -402,7 +402,7 @@ void Narwhal::UpdatePostPhysics()
 void Narwhal::UpdateSprite()
 {
 	//ts->GetSubRect( frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
+	
 	IntRect ir = ts->GetSubRect( 0 );
 	if( start0 )
 	{
@@ -410,23 +410,27 @@ void Narwhal::UpdateSprite()
 	}
 	else
 	{
-		ir.top += ir.height;
-		ir.height = -ir.height;
+		ir.left += ir.width;
+		ir.width = -ir.width;
+		//ir.top += ir.height;
+		//ir.height = -ir.height;
 		sprite.setTextureRect( ir );
 		//sprite.setRotation( -angle );
 	}
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	sprite.setPosition( position.x, position.y );
 
 
 	if( dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 15 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 9 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 16 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
