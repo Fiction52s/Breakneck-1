@@ -21,14 +21,14 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	actionLength[WAKEUP] = 30;
 	actionLength[APPROACH] = 2;
 	actionLength[CIRCLE] = 2;
-	actionLength[RUSH] = 30;
+	actionLength[RUSH] = 7;
 	actionLength[FINALCIRCLE] = 2;
 
 	animFactor[WAKEUP] = 1;
 	animFactor[FINALCIRCLE] = 1;
 	animFactor[APPROACH] = 1;
 	animFactor[CIRCLE] = 1;
-	animFactor[RUSH] = 1;
+	animFactor[RUSH] = 5;
 	latchedOn = false;
 	//offsetPlayer 
 	receivedHit = NULL;
@@ -54,7 +54,7 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 
 
 	rushSeq.AddLineMovement( V2d( 0, 0 ), 
-		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), actionLength[RUSH] );
+		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), actionLength[RUSH] * animFactor[RUSH] );
 
 
 	initHealth = 40;
@@ -73,9 +73,12 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Shark.png", 80, 80 );
-	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
+	//ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
+	ts_circle = owner->GetTileset( "shark_circle_256x256.png", 256, 256 );
+	ts_bite = owner->GetTileset( "shark_bite_256x256.png", 256, 256 );
+	ts_death = owner->GetTileset( "shark_death_256x256.png", 256, 256 );
+	sprite.setTexture( *ts_circle->texture );
+	sprite.setTextureRect( ts_circle->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 	//position.x = 0;
@@ -120,15 +123,20 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 
 	facingRight = true;
 	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
 	wakeCounter = 0;
 	wakeCap = 20;
 
-	
+	botDeathSprite.setTexture( *ts_death->texture );
+	botDeathSprite.setTextureRect( ts_death->GetSubRect( 1 ) );
+	botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
+	topDeathSprite.setTexture( *ts_death->texture );
+	topDeathSprite.setTextureRect( ts_death->GetSubRect( 0 ) );
+	topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 }
 
 void Shark::HandleEntrant( QuadTreeEntrant *qte )
@@ -250,9 +258,9 @@ void Shark::UpdatePrePhysics()
 			rushSeq.currMovement->end = -truePosOffset;//V2d( 0, 0 );//position + 2.0 * ( basePos - position );
 			rushSeq.Update();
 
-			cout << "true pos offset: " << truePosOffset.x << ", " << truePosOffset.y << endl;
+			//cout << "true pos offset: " << truePosOffset.x << ", " << truePosOffset.y << endl;
 
-			cout << "up: " << rushSeq.position.x << ", " << rushSeq.position.y << endl;
+			//cout << "up: " << rushSeq.position.x << ", " << rushSeq.position.y << endl;
 			//rushSeq.currMovement-=
 		}
 		else if( action == RUSH )
@@ -377,7 +385,7 @@ void Shark::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
+//			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Shark received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -440,38 +448,100 @@ void Shark::UpdatePostPhysics()
 
 void Shark::UpdateSprite()
 {
-
 	if( !dead )
 	{
 		switch( action )
 		{
 		case WAKEUP:
-			testColor = Color::White;
+			{
+			sprite.setTexture( *ts_circle->texture );
+			IntRect ir = ts_circle->GetSubRect( 0 );
+			//if( 
+			sprite.setTextureRect( ir );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+					sprite.getLocalBounds().height / 2 );
+			sprite.setRotation( 0 );
+			
+				//testColor = Color::White;
+			}
 			break;
 		case APPROACH:
-			testColor = Color::Green;
+			{
+			sprite.setTexture( *ts_circle->texture );
+			IntRect ir = ts_circle->GetSubRect( 0 );
+			//if( 
+			sprite.setTextureRect( ir );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+					sprite.getLocalBounds().height / 2 );
+			sprite.setRotation( 0 );
+			//testColor = Color::Green;
+			}
 			break;
+		case FINALCIRCLE:
+			//sprite.setColor( Color::Blue );
+			//break;
 		case CIRCLE:
-			testColor = Color::Blue;
+			{
+			//sprite.setColor( Color::Blue );
+			sprite.setTexture( *ts_circle->texture );
+			int trueFrame = 0;
+			
+			
+			
+
+			double div = 2 * PI / 12.0;
+
+			
+			double cs = cos( latchStartAngle );
+			double sn = sin( latchStartAngle );
+			V2d truePosOffset( circleSeq.position.x * cs - 
+				circleSeq.position.y * sn, 
+				circleSeq.position.x * sn + circleSeq.position.y * cs );
+			V2d normOffset = normalize( truePosOffset );
+			double angle = atan2( normOffset.x, -normOffset.y );
+			//angle -= PI / 4;
+			if( angle < 0 )
+				angle += PI * 2;
+			
+			int mults = angle / div;
+			//cout << "mults: " << mults << ", angle: " << angle << endl;
+			
+			IntRect ir = ts_circle->GetSubRect( mults );
+			sprite.setTextureRect( ir );
+			sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+					sprite.getLocalBounds().height / 2 );
+			sprite.setRotation( 0 );
+			}
 			break;
 		case RUSH:
-			testColor = Color::Red;
+			{
+				sprite.setTexture( *ts_bite->texture );
+				sprite.setTextureRect( ts_bite->GetSubRect( frame / animFactor[RUSH] ) );
+				
+				V2d normOffset = normalize( offsetPlayer );
+				double angle = atan2( normOffset.y, normOffset.x );
+				if( angle < 0 )
+					angle += PI * 2;
+				sprite.setOrigin( sprite.getLocalBounds().width / 2, 
+					sprite.getLocalBounds().height / 2 );
+				sprite.setRotation( angle / PI * 180.0 );
+
+
+			}
+			//testColor = Color::Red;
 			break;
 		}
+
+		sprite.setPosition( position.x, position.y );
+		
+
 		//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 		//sprite.setPosition( position.x, position.y );
 	}
 	else
 	{
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 	}
@@ -485,20 +555,20 @@ void Shark::Draw( sf::RenderTarget *target )
 		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
-			CircleShape cs;
+			/*CircleShape cs;
 			cs.setRadius( 40 );
 			cs.setFillColor( COLOR_BLUE );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 			cs.setPosition( position.x, position.y );
-			target->draw( cs );
+			target->draw( cs );*/
 		}
-		CircleShape cs;
+		/*CircleShape cs;
 		cs.setFillColor( testColor );
 		cs.setRadius( 40 );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setPosition( position.x, position.y );
-		target->draw( cs );
-		//target->draw( sprite );
+		target->draw( cs );*/
+		target->draw( sprite );
 	}
 	else
 	{
@@ -507,11 +577,7 @@ void Shark::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			
 		}
 		
 		target->draw( topDeathSprite );

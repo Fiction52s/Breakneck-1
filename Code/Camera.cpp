@@ -84,7 +84,7 @@ void Camera::UpdateReal( Actor *player )
 		//bool extra = (curr->type == Enemy::GHOST || curr->type == Enemy::GORILLA );
 		//have stuff here for relative movers so 
 		//bool sometimesExclude = curr->type == Enemy::GHOST
-		if( !curr->affectCameraZoom )
+		if( length( playerPos - curr->position ) > 900 || !curr->affectCameraZoom )
 		{
 			curr = curr->next;
 			continue;
@@ -564,7 +564,7 @@ void Camera::Update( Actor *player )
 		offset.x += (-offset.x) / 40;
 	}
 	if( pVel.y == 0 )
-	{
+	{	
 		offset.y += (-offset.y) / 20;
 	}
 	
@@ -575,8 +575,9 @@ void Camera::Update( Actor *player )
 	else if( offset.x > xLimit * zoomFactor )
 		offset.x = xLimit * zoomFactor;
 
-	if( offset.y < -25 * zoomFactor )
-		offset.y = -25 * zoomFactor;
+	//25
+	if( offset.y < -75 * zoomFactor )
+		offset.y = -75 * zoomFactor;
 	else if( offset.y > 125 * zoomFactor )
 		offset.y = 125 * zoomFactor;
 

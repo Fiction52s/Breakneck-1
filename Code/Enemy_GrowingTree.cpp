@@ -23,6 +23,28 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	:Enemy( owner, EnemyType::OVERGROWTH, p_hasMonitor, 5 ), ground( g ), edgeQuantity( q ),
 	totalBullets( numBullets ), rangeMarkerVA( sf::Quads, numBullets * 4 ) 
 {
+	actionLength[RECOVER0] = 4;
+	actionLength[RECOVER1] = 4;
+	actionLength[RECOVER2] = 6;
+	actionLength[LEVEL0] = 10;
+	actionLength[LEVEL0TO1] = 10;
+	actionLength[LEVEL1] = 10;
+	actionLength[LEVEL1TO2] = 10;
+	actionLength[LEVEL2] = 10;
+	actionLength[EXPLODE] = 10;
+
+	animFactor[RECOVER0] = 10;
+	animFactor[RECOVER1] = 10;
+	animFactor[RECOVER2] = 10;
+	animFactor[LEVEL0] = 1;
+	animFactor[LEVEL0TO1] = 1;
+	animFactor[LEVEL1] = 1;
+	animFactor[LEVEL1TO2] = 1;
+	animFactor[LEVEL2] = 1;
+	animFactor[EXPLODE] = 12;
+
+	
+
 	startPowerLevel = p_startLevel;
 	pulseRadius = p_pulseRadius;
 	powerLevel = 0;
@@ -30,7 +52,7 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	health = initHealth;
 
 	double height = 48;
-	ts = owner->GetTileset( "foottrap_128x48.png", 128, height );
+	ts = owner->GetTileset( "sprout_160x160.png", 160, 160 );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -85,7 +107,7 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	animationFactor = 7;
 	slowCounter = 1;
 	slowMultiple = 1;
-
+	sprite.setTexture( *ts->texture );
 	spawnRect = sf::Rect<double>( gPoint.x - pulseRadius, gPoint.y - pulseRadius, pulseRadius * 2, pulseRadius * 2 );
 
 	//ts_death = owner->GetTileset( "GrowingTreedeath.png", 160, 80 );
@@ -104,8 +126,58 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	ResetEnemy();
 
 	InitRangeMarkerVA();
-
 }
+
+void GrowingTree::ActionEnded()
+{
+	if( frame == actionLength[action] * animFactor[action] )
+	{
+		switch( action )
+		{
+		case RECOVER0:
+			action = LEVEL0;
+			break;
+		case RECOVER1:
+			action = LEVEL1;
+			break;
+		case RECOVER2:
+			action = LEVEL2;
+			break;
+		case LEVEL0:
+			break;
+		case LEVEL0TO1:
+			action = LEVEL1;
+			break;
+		case LEVEL1:
+			break;
+		case LEVEL1TO2:
+			action = LEVEL2;
+			break;
+		case LEVEL2:
+			break;
+		case EXPLODE:
+			{
+				switch( startPowerLevel )
+				{
+				case 0:
+					action = RECOVER0;
+					break;
+				case 1:
+					action = RECOVER1;
+					break;
+				case 2:
+					action = RECOVER2;
+					break;
+				}
+		
+			}
+			break;
+		}
+
+		frame = 0;
+	}
+}
+
 
 void GrowingTree::InitRangeMarkerVA()
 {
@@ -133,6 +205,22 @@ void GrowingTree::InitRangeMarkerVA()
 
 void GrowingTree::ResetEnemy()
 {
+	
+	switch( startPowerLevel )
+	{
+	case 0:
+		action = RECOVER0;
+		//frame = 0;
+		break;
+	case 1:
+		action = RECOVER1;
+		//frame = 0;
+		break;
+	case 2:
+		action = RECOVER2;
+		//frame = 0;
+		break;
+	}
 	//cout << "reset" << endl;
 	health = initHealth;
 	dying = false;
@@ -143,6 +231,8 @@ void GrowingTree::ResetEnemy()
 	slowCounter = 1;
 	launcher->Reset();
 	slowMultiple = 1;
+
+	UpdateSprite();
 }
 
 void GrowingTree::HandleEntrant( QuadTreeEntrant *qte )
@@ -156,6 +246,53 @@ void GrowingTree::HandleEntrant( QuadTreeEntrant *qte )
 
 void GrowingTree::UpdatePrePhysics()
 {
+	if( !dead && !dying )
+	{
+		ActionEnded();
+
+		if( action == EXPLODE )
+		{
+			//frame 0 doesnt work cuz its set in post physics
+			if( frame == 3 && slowCounter == 1 )
+			{
+				Fire();
+			}
+		}
+
+		/*switch( action )
+		{
+		case RECOVER0:
+			cout << "recover0: " << frame << endl;
+			break;
+		case RECOVER1:
+			cout << "recover1: " << frame << endl;
+			break;
+		case RECOVER2:
+			cout << "recover2: " << frame << endl;
+			break;
+		case LEVEL0:
+			cout << "level0: " << frame << endl;
+			break;
+		case LEVEL0TO1:
+			cout << "level0to1: " << frame << endl;
+			break;
+		case LEVEL1:
+			cout << "level1: " << frame << endl;
+			break;
+		case LEVEL1TO2:
+			cout << "level1to2: " << frame << endl;
+			break;
+		case LEVEL2:
+			cout << "level2: " << frame << endl;
+			break;
+		case EXPLODE:
+			cout << "explode: " << frame << endl;
+			break;
+		}*/
+	}
+
+	
+
 	//cout << "dead: " << dead << endl;
 	if( !dead && !dying && receivedHit != NULL )
 	{	
@@ -181,18 +318,6 @@ void GrowingTree::UpdatePrePhysics()
 
 		receivedHit = NULL;
 	}
-
-	if( !dead && !dying )
-	{
-		if( powerLevel == 3 && pulseFrame == 0 )
-		{
-			if( pulseFrame == 0 )
-				Fire();
-
-			pulseFrame++;
-		}
-	}
-	
 }
 
 void GrowingTree::UpdatePhysics()
@@ -280,6 +405,21 @@ void GrowingTree::UpdatePostPhysics()
 		double lenPlayer = length( owner->player->position - position );
 		if( lenPlayer < pulseRadius )
 		{
+			switch( action )
+			{
+			case LEVEL0:
+				action = LEVEL0TO1;
+				frame = 0;
+				break;
+			case LEVEL1:
+				action = LEVEL1TO2;
+				frame = 0;
+				break;
+			case LEVEL2:
+				action = EXPLODE;
+				frame = 0;
+				break;
+			}
 			powerLevel++;
 			if( powerLevel == 3 )
 			{
@@ -328,10 +468,7 @@ void GrowingTree::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 7 * animationFactor )
-	{
-		frame = 0;
-	}
+	
 
 	//cout << "dead post: " << dead << endl;
 	
@@ -500,22 +637,57 @@ bool GrowingTree::PlayerSlowingMe()
 void GrowingTree::UpdateSprite()
 {
 	launcher->UpdateSprites();
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
+	
+	
+	switch( action )
+	{
+	case RECOVER0:
+		sprite.setTextureRect( ts->GetSubRect( frame / animFactor[action] + 4 ) );
+		break;
+	case RECOVER1:
+		sprite.setTextureRect( ts->GetSubRect( frame / animFactor[action] + 8 ) );
+		break;
+	case RECOVER2:
+		sprite.setTextureRect( ts->GetSubRect( frame / animFactor[action] + 8 ) );
+		break;
+	case LEVEL0:
+		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		break;
+	case LEVEL0TO1:
+		sprite.setTextureRect( ts->GetSubRect( 1 ) );
+		break;
+	case LEVEL1:
+		sprite.setTextureRect( ts->GetSubRect( 1 ) );
+		break;
+	case LEVEL1TO2:
+		sprite.setTextureRect( ts->GetSubRect( 2 ) );
+		break;
+	case LEVEL2:
+		sprite.setTextureRect( ts->GetSubRect( 2 ) );
+		break;
+	case EXPLODE:
+		sprite.setTextureRect( ts->GetSubRect( 3 ) );
+		break;
+	}
+	V2d gPoint = ground->GetPoint( edgeQuantity );
+
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+	sprite.setPosition( gPoint.x, gPoint.y );
+	
 
 	switch( powerLevel )
 	{
 	case 0:
-		sprite.setColor( Color::White );
+	//	sprite.setColor( Color::White );
 		break;
 	case 1:
-		sprite.setColor( Color::Blue );
+	//	sprite.setColor( Color::Blue );
 		break;
 	case 2:
-		sprite.setColor( Color::Green );
+	//	sprite.setColor( Color::Green );
 		break;
 	case 3:
-		sprite.setColor( Color::Red );
+	//	sprite.setColor( Color::Red );
 		break;
 	}
 

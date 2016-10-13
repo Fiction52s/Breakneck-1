@@ -32,7 +32,7 @@ Actor::Actor( GameSession *gs )
 		//ae = new AirParticleEffect( position );
 
 		level1SpeedThresh = 22;//32;
-		level2SpeedThresh = 48;
+		level2SpeedThresh = 45;
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 

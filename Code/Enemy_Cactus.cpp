@@ -558,37 +558,6 @@ bool Cactus::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 
-	/*Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		bool slowed = false;
-		for( int i = 0; i < player->maxBubbles; ++i )
-		{
-			if( player->bubbleFramesToLive[i] > 0 )
-			{
-				if( length( currBullet->position - player->bubblePos[i] ) 
-					<= player->bubbleRadius + currBullet->hurtBody.rw )
-				{
-					if( currBullet->slowMultiple == 1 )
-					{
-						currBullet->slowCounter = 1;
-						currBullet->slowMultiple = 5;
-					}
-
-					slowed = true;
-					break;
-				}
-			}
-		}
-		if( !slowed )
-		{
-			currBullet->slowCounter = 1;
-			currBullet->slowMultiple = 1;
-		}
-		currBullet = currBullet->next;
-	}*/
-
-	//Actor *player = owner->player;
 	bool found = false;
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{

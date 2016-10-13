@@ -20,13 +20,13 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	affectCameraZoom = false;	
 	actionLength[WAKEUP] = 60;
 	actionLength[APPROACH] = 2;
-	actionLength[BITE] = 2;
-	actionLength[EXPLODE] = 60;
+	actionLength[BITE] = 4;
+	actionLength[EXPLODE] = 9;
 
 	animFactor[WAKEUP] = 1;
 	animFactor[APPROACH] = 20;
-	animFactor[BITE] = 20;
-	animFactor[EXPLODE] = 1;
+	animFactor[BITE] = 5;
+	animFactor[EXPLODE] = 7;
 
 	action = WAKEUP;
 
@@ -66,7 +66,7 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Ghost.png", 80, 80 );
-	ts = owner->GetTileset( "plasmid_128x128.png", 128, 128 );
+	ts = owner->GetTileset( "plasmid_192x192.png", 192, 192 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -447,13 +447,36 @@ void Ghost::UpdateSprite()
 			ir = ts->GetSubRect( 0 );
 			break;
 		case APPROACH:
-			ir = ts->GetSubRect( (frame / animFactor[APPROACH]) + 1 );
+			if( lenDiff < 100 )
+			{
+				ir = ts->GetSubRect( 5 );
+			}
+			else if( lenDiff < 200 )
+			{
+				ir = ts->GetSubRect( 4 );
+			}
+			else if( lenDiff < 300 )
+			{
+				ir = ts->GetSubRect( 3 );
+			}
+			else if( lenDiff < 400 )
+			{
+				ir = ts->GetSubRect( 2 );
+			}
+			else if( lenDiff < 500 )
+			{
+				ir = ts->GetSubRect( 1 );
+			}
+			else if( lenDiff < 600 )
+			{
+				ir = ts->GetSubRect( 0 );
+			}
 			break;
 		case BITE:
-			ir = ts->GetSubRect( (frame / animFactor[APPROACH]) + 3 );
+			ir = ts->GetSubRect( (frame / animFactor[BITE]) + 6 );
 			break;
 		case EXPLODE:
-			ir = ts->GetSubRect( 5 );
+			ir = ts->GetSubRect( frame / animFactor[EXPLODE] + 10 );
 			break;
 		}
 		

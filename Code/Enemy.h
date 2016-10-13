@@ -2281,6 +2281,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 	int bezFrame;
 	int bezLength;
 
+	
+
 	//CrawlerReverser *lastReverser;
 	//double groundSpeed;
 	//Edge *ground;
@@ -2581,10 +2583,27 @@ struct Ghost : Enemy
 
 struct GrowingTree : Enemy, LauncherEnemy
 {
+	enum Action
+	{
+		RECOVER0,
+		RECOVER1,
+		RECOVER2,
+		LEVEL0,
+		LEVEL0TO1,
+		LEVEL1,
+		LEVEL1TO2,
+		LEVEL2,
+		EXPLODE,
+		Count
+	};
+	Action action;
+
 	GrowingTree( GameSession *owner, bool hasMonitor,
 		Edge *ground, double quantity, 
 		int numBullets, int startLevel,
 		int pulseRadius );
+
+	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -2621,6 +2640,9 @@ struct GrowingTree : Enemy, LauncherEnemy
 	Edge *ground;
 	sf::VertexArray rangeMarkerVA;
 	double edgeQuantity;
+
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
@@ -2669,7 +2691,7 @@ struct Shark : Enemy
 		FINALCIRCLE,
 		RUSH,
 	};
-	Action action;
+	Action action; 
 
 	int wakeCounter;
 	//int wakeCap;
@@ -2728,7 +2750,9 @@ struct Shark : Enemy
 	sf::Vector2<double> origOffset;
 
 	sf::Sprite sprite;
-	Tileset *ts;
+	Tileset *ts_circle;
+	Tileset *ts_bite;
+	Tileset *ts_death;
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
@@ -2737,9 +2761,6 @@ struct Shark : Enemy
 	int hitstunFrames;
 	int animationFactor;
 
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 	bool facingRight;
 
 	CubicBezier approachAccelBez;
@@ -2988,7 +3009,8 @@ struct Swarm : Enemy
 	
 	Swarm( GameSession *owner, 
 		sf::Vector2i &pos,
-		int liveFrames );	
+		int liveFrames );
+	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -3013,7 +3035,7 @@ struct Swarm : Enemy
 	int liveFrames;
 
 	sf::Vector2<double> origPosition;
-
+	bool dying;
 	Tileset *ts;
 	Tileset *ts_swarm;
 
@@ -3029,7 +3051,7 @@ struct Swarm : Enemy
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
-
+	Tileset *ts_swarmExplode;
 
 	sf::Vector2f spriteSize;
 	double maxSpeed;
@@ -3039,9 +3061,9 @@ struct Swarm : Enemy
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
+	//Tileset *ts_testBlood;
+	//sf::Sprite bloodSprite;
+	//int bloodFrame;
 
 	int deathFrame;
 };
