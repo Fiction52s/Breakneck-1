@@ -203,10 +203,12 @@ void Narwhal::UpdatePrePhysics()
 		//owner->Pause( 5 );
 		
 		//gotta factor in getting hit by a clone
-		health -= 20;
+		
 
 		//cout << "health now: " << health << endl;
-
+		//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		//owner->Pause( 5 );
+		health -= 20;
 		if( health <= 0 )
 		{
 			if( hasMonitor && !suppressMonitor )
@@ -219,8 +221,9 @@ void Narwhal::UpdatePrePhysics()
 		{
 			owner->player->ConfirmEnemyNoKill( this );
 		}
-
 		receivedHit = NULL;
+		
+		
 	}
 
 	triggered = false;
@@ -273,7 +276,7 @@ void Narwhal::UpdatePhysics()
 		//	", newpos: " << testSeq.position.x 
 		//	<< ", " << testSeq.position.y << endl;
 		
-		PhysicsResponse();
+		//PhysicsResponse();
 	}
 	
 	if( PlayerSlowingMe() )
@@ -319,7 +322,7 @@ void Narwhal::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, true );
+			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, true );
 			
 
 		//	cout << "Narwhal received damage of: " << receivedHit->damage << endl;
@@ -371,23 +374,30 @@ void Narwhal::UpdatePostPhysics()
 		}
 	}
 
-	if( deathFrame == 60 )
+	if( !dead && receivedHit != NULL )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->Pause( 5 );
+	}
+
+	/*if( receivedHit != NULL && !dead )
+	{
+		
+		
+	}*/
+
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
+	}
+
+	if( dead && deathFrame == 60 )
 	{
 		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 		owner->RemoveEnemy( this );
 		//return;
 	}
 
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
-	}
-
-	if( deathFrame == 0 && dead )
-	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
-	}
 
 	UpdateSprite();
 
@@ -511,15 +521,6 @@ void Narwhal::Draw( sf::RenderTarget *target )
 	{
 		target->draw( botDeathSprite );
 
-		if( deathFrame / 3 < 6 )
-		{
-			
-			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );*/
-		}
 		
 		target->draw( topDeathSprite );
 	}
