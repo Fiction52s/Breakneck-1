@@ -99,7 +99,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	hitBody.rh = 64;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

@@ -744,7 +744,7 @@ Actor::Actor( GameSession *gs )
 		currHitboxInfo = NULL;
 
 		currHitboxInfo = new HitboxInfo();
-		currHitboxInfo->damage = 100;
+		currHitboxInfo->damage = 20;
 		currHitboxInfo->drainX = 0;
 		currHitboxInfo->drainY = 0;
 		currHitboxInfo->hitlagFrames = 0;

@@ -114,7 +114,7 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 	hitBody.rh = 32;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

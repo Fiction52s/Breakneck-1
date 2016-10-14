@@ -493,8 +493,8 @@ struct Goal : Enemy
 	double edgeQuantity;
 
 	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
+	//CollisionBox hitBody;
+	//HitboxInfo *hitboxInfo;
 	
 	double angle;
 
@@ -2748,6 +2748,7 @@ struct Shark : Enemy
 	//int approachFrames;
 	//int totalFrame;
 	sf::Vector2<double> origOffset;
+	sf::Vector2<double> attackOffset;
 
 	sf::Sprite sprite;
 	Tileset *ts_circle;

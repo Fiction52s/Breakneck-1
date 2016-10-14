@@ -106,7 +106,7 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	hitBody.rh = 16;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

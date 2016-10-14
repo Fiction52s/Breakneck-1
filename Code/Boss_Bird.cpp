@@ -70,7 +70,7 @@ Boss_Bird::Projectile::Projectile( Boss_Bird *b, bool p_large )
 	physBody.rh = rad;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -767,7 +767,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	hitBody.rh = 16;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

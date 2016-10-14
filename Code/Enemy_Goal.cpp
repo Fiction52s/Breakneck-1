@@ -68,13 +68,13 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	sprite.setRotation( angle / PI * 180 );
 
 	
-	hitboxInfo = new HitboxInfo;
+	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 100;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->knockback = 0;*/
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -90,9 +90,9 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 		
 	hurtBody.globalAngle = angle;
 
-	hurtBody.globalPosition = position + 
-		V2d( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
-		hitBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
+	hurtBody.globalPosition = position;// + 
+		//V2d( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
+		//hitBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 
 	frame = 0;
 	deathFrame = 0;

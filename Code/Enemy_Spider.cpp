@@ -91,7 +91,7 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	hitBody.rh = 32;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -99,7 +99,7 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	hitboxInfo->knockback = 0;
 
 	laserInfo0 = new HitboxInfo;
-	laserInfo0->damage = 100;
+	laserInfo0->damage = 6;
 	laserInfo0->drainX = 0;
 	laserInfo0->drainY = 0;
 	laserInfo0->hitlagFrames = 0;
@@ -123,7 +123,7 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	laserInfo2->knockback = 0;
 
 	laserInfo3 = new HitboxInfo;
-	laserInfo3->damage = 50;
+	laserInfo3->damage = 40;
 	laserInfo3->drainX = 0;
 	laserInfo3->drainY = 0;
 	laserInfo3->hitlagFrames = 0;

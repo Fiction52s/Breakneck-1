@@ -135,7 +135,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	owner->totalNumberBullets = startIndex;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = .3;
 	hitboxInfo->drainY = .3;
 	hitboxInfo->hitlagFrames = 0;

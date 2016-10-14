@@ -100,7 +100,7 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	hitBody.rh = 16;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
+	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
@@ -243,13 +243,14 @@ void Shark::UpdatePrePhysics()
 				cout << "final circle" << endl;
 				//got hit!
 				action = FINALCIRCLE;
+				attackOffset = truePosOffset;
 
 			}
 			frame = 0;
 		}
 		else if( action == FINALCIRCLE && frame == circleFrames )
 		{
-			cout << "RUSHING: " << frame << endl;
+			//cout << "RUSHING: " << frame << endl;
 			//offsetPlayer = 
 			action = RUSH;
 			frame = 0;
@@ -516,10 +517,29 @@ void Shark::UpdateSprite()
 		case RUSH:
 			{
 				sprite.setTexture( *ts_bite->texture );
-				sprite.setTextureRect( ts_bite->GetSubRect( frame / animFactor[RUSH] ) );
+				IntRect ir = ts_bite->GetSubRect( frame / animFactor[RUSH] );
+
+				if( attackOffset.x <= 0 )
+				{
+				}
+				else
+				{
+					ir.top += ir.height;
+					ir.height = -ir.height;
+					//ir.left += ir.width;
+					//ir.width = -ir.width;
+					
+				}
+				sprite.setTextureRect( ir );
 				
-				V2d normOffset = normalize( offsetPlayer );
-				double angle = atan2( normOffset.y, normOffset.x );
+				
+
+				//rushSeq.currMovement->start = truePosOffset;
+				//rushSeq.currMovement->end = -truePosOffset;
+				//cout << "attackoffset: " << attackOffset.x << ", " << attackOffset.y << endl;
+				//cout << "offset: " << offsetPlayer.x << ", " << offsetPlayer.y << endl;
+				V2d normOffset = normalize( -attackOffset );
+				double angle = atan2( normOffset.y, normOffset.x );//atan2( normOffset.x, -normOffset.y );
 				if( angle < 0 )
 					angle += PI * 2;
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, 
