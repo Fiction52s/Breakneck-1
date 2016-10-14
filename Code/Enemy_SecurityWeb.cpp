@@ -36,6 +36,8 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	position = V2d( pos.x, pos.y );
 	numProtrusions = p_numProtrusions;
 
+	armLength = new int[numProtrusions];
+
 	double offset = angleOffset / PI * 180;
 	offset = floor( offset + .5 );
 
@@ -43,18 +45,21 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	rot.rotate( offset );
 	Vector2f transPoint( 0, -maxProtLength );
 
-	edges = new VertexArray( sf::Quads, numProtrusions * 4 );
+	//edges = new VertexArray( sf::Quads, numProtrusions * 4 );
 	nodes = new VertexArray( sf::Quads, numProtrusions * 4 );
 	origins = new V2d[numProtrusions];
 	edgeHitboxes = new CollisionBox[numProtrusions];
 
-	VertexArray &eva = *edges;
-	VertexArray &pva = *edges;
+
+	//VertexArray &eva = *edges;
+	//VertexArray &pva = *edges;
 
 	rayStart = position;
 
 	int nodeSize = 128;
 	int halfNode = 64;
+
+	double quadWidth = 128.0;
 
 	double edgeWidth = 10;
 	Vector2f fPos( pos.x, pos.y );
@@ -75,7 +80,29 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 				currRadius = len;
 		}
 
-		Vector2f currOffset( 0, -currRadius );
+		armLength[i] = ceil( currRadius );
+	}
+
+	int totalQuadsArms = 0;
+	for( int i = 0; i < numProtrusions; ++i )
+	{
+		int armLen = armLength[i];
+		int quads = ceil( armLen / quadWidth );
+		
+		totalQuadsArms += quads;
+		//cout << "total quad arms is: " << totalQuadsArms << endl;
+	}
+
+	armVA = new VertexArray( sf::Quads, totalQuadsArms * 4 );
+	VertexArray &ava = *armVA;
+
+	//cout << "VA TOTAL vertices: " << armVA->getVertexCount() << endl;
+
+	int currQuad = 0;
+	for( int i = 0; i < numProtrusions; ++i )
+	{
+		int armLen = armLength[i];
+		Vector2f currOffset( 0, -armLen );
 		Vector2f currPoint = rot.transformPoint( currOffset );
 		V2d currPointD( currPoint.x, currPoint.y );
 		origins[i] = currPointD + position;
@@ -83,32 +110,68 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 		V2d along = normalize( origins[i] - position );
 		V2d other( along.y, -along.x );
 
+		int quads = ceil( armLen / quadWidth );
+		int remainder = armLen % (int)quadWidth;
+		//might cause a random bug someday cuz of overflow quads? calculating ceil twice
+
+
+
+		for( int j = 0; j < quads; ++j )
+		{
+			V2d start = position + along * quadWidth * (double)j;
+			V2d end;
+			
+			if( j == quads - 1 )
+			{
+				end = origins[i];
+			}
+			else
+			{
+				end = start + along * quadWidth;
+			}
+
+			V2d p0 = start + other * quadWidth / 2.0;//edgeWidth;
+			V2d p1 = end + other * quadWidth / 2.0;//edgeWidth;
+			V2d p2 = end - other * quadWidth / 2.0;//edgeWidth;
+			V2d p3 = start - other * quadWidth / 2.0;//edgeWidth;
+
+			
+
+			int ind = currQuad + j;
+
+			//cout << "current index: i: " << i << ", ind: " << ind << endl;
+
+			ava[ind * 4+0].position = Vector2f( p0.x, p0.y );//Vector2f(-halfNode,-halfNode  ) + currPoint;  
+			ava[ind * 4+1].position = Vector2f( p1.x, p1.y );//Vector2f( halfNode, -halfNode ) + currPoint; 
+			ava[ind * 4+2].position = Vector2f( p2.x, p2.y );//Vector2f( halfNode, halfNode  ) + currPoint; 
+			ava[ind * 4+3].position = Vector2f( p3.x, p3.y );//Vector2f( -halfNode, halfNode ) + currPoint;
+			//cout << "currPoint: " << currPoint.x << ", " << currPoint.y << endl;
+
+			IntRect sub = ts->GetSubRect( 3 ); 
+
+			if( j == quads - 1 )
+			{
+				sub.width = remainder;	
+			}
+			ava[ind*4+3].texCoords = Vector2f( sub.left, sub.top );
+			ava[ind*4+0].texCoords = Vector2f( sub.left + sub.width, sub.top );
+			ava[ind*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+			ava[ind*4+2].texCoords = Vector2f( sub.left, sub.top + sub.height );
+		}
+
+		rot.rotate( 360.f / numProtrusions );
+		currQuad += quads;
+
 		
-
-		V2d p0 = position + other * edgeWidth;
-		V2d p1 = origins[i] + other * edgeWidth;
-		V2d p2 = origins[i] - other * edgeWidth;
-		V2d p3 = position - other * edgeWidth;
-
-		eva[i * 4+0].position = Vector2f( p0.x, p0.y );//Vector2f(-halfNode,-halfNode  ) + currPoint;  
-		eva[i * 4+1].position = Vector2f( p1.x, p1.y );//Vector2f( halfNode, -halfNode ) + currPoint; 
-		eva[i * 4+2].position = Vector2f( p2.x, p2.y );//Vector2f( halfNode, halfNode  ) + currPoint; 
-		eva[i * 4+3].position = Vector2f( p3.x, p3.y );//Vector2f( -halfNode, halfNode ) + currPoint;
-		//cout << "currPoint: " << currPoint.x << ", " << currPoint.y << endl;
-
-		IntRect sub = ts->GetSubRect( 3 ); 
-		eva[i*4+0].texCoords = Vector2f( sub.left, sub.top );
-		eva[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-		eva[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-		eva[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
-
 		/*eva[i*4+0].color = Color::Red;
 		eva[i*4+1].color = Color::Red;
 		eva[i*4+2].color = Color::Red;
 		eva[i*4+3].color = Color::Red;*/
 
-		rot.rotate( 360.f / numProtrusions );
+		
 	}
+
+	
 
 	allNodes = new NodeProjectile*[numProtrusions];
 	for( int i = 0; i < numProtrusions; ++i )
@@ -179,6 +242,12 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	dying = false;
 	deathFrame = 0;
 	health = initHealth;*/
+}
+
+SecurityWeb::~SecurityWeb()
+{
+	delete []armLength;
+	delete armVA;
 }
 
 void SecurityWeb::ResetNodes()
@@ -604,7 +673,8 @@ void SecurityWeb::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead && !dying )
 	{
-		target->draw( *edges, ts->texture );
+		target->draw( *armVA, ts->texture );
+		//target->draw( *edges, ts->texture );
 		target->draw( *nodes, ts->texture );
 		if( hasMonitor && !suppressMonitor )
 		{

@@ -2047,6 +2047,7 @@ struct SecurityWeb : Enemy, RayCastHandler
 		float angleOffset, 
 		double bulletSpeed
 		);
+	virtual ~SecurityWeb();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -2073,6 +2074,9 @@ struct SecurityWeb : Enemy, RayCastHandler
 	
 	sf::Vector2<double> *origins;
 	Tileset *ts_bulletExplode;
+	sf::VertexArray *armVA;
+	int *armLength;
+
 
 	struct NodeProjectile : Movable
 	{
