@@ -504,6 +504,20 @@ Actor::Actor( GameSession *gs )
 		tileset[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
 		normal[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
 
+		
+		actionLength[RIDESHIP] = 1;
+		tileset[RIDESHIP] = owner->GetTileset( "bounce.png", 96, 96 );
+		normal[RIDESHIP] = owner->GetTileset( "bounce.png", 96, 96 );
+
+		actionLength[SKYDIVE] = 9 * 2;
+		tileset[SKYDIVE] = owner->GetTileset( "walljump_64x64.png", 64, 64 );
+		normal[SKYDIVE] = owner->GetTileset( "walljump_NORMALS.png", 64, 64 );
+
+		actionLength[SKYDIVETOFALL] = 10 * 4;
+		tileset[SKYDIVETOFALL] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
+		normal[SKYDIVETOFALL] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
+
+
 		actionLength[GOALKILL] = 72 * 2;
 		ts_goalKillArray = new Tileset*[5];
 		ts_goalKillArray[0] = owner->GetTileset( "goal_w02_killa_384x256.png", 384, 256 );
@@ -1089,7 +1103,7 @@ bool Actor::AirAttack()
 void Actor::UpdatePrePhysics()
 {
 	
-	if( !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
+	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
 		if( drainCounter == drainCounterMax)
 		{
@@ -1301,7 +1315,8 @@ void Actor::UpdatePrePhysics()
 
 	ActionEnded();
 
-	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT )
+	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
+		|| action == RIDESHIP )
 	{
 		if( action == INTRO && frame == 0 )
 		{
@@ -8261,7 +8276,8 @@ void Actor::UpdateFullPhysics()
 //int blah = 0;
 void Actor::UpdatePhysics()
 {
-	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT )
+	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT
+		|| action == RIDESHIP )
 		return;
 	/*if( blah == 0 )
 	{
@@ -11608,7 +11624,7 @@ void Actor::UpdatePostPhysics()
 	}
 
 	if( action != DEATH && action != EXIT && action != GOALKILL
-		&& action != GOALKILLWAIT )
+		&& action != GOALKILLWAIT && action != RIDESHIP )
 	{
 	if( speed > currentSpeedBar )
 	{
@@ -15959,6 +15975,30 @@ void Actor::UpdateSprite()
 
 			break;
 		}
+	case RIDESHIP:
+		sprite->setTexture( *(tileset[RIDESHIP]->texture));
+		sprite->setTextureRect( tileset[RIDESHIP]->GetSubRect( 0 ) );
+		sprite->setOrigin( sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		sprite->setRotation( 0 );
+		break;
+	case SKYDIVE:
+		sprite->setTexture( *(tileset[SKYDIVE]->texture));
+		sprite->setTextureRect( tileset[SKYDIVE]->GetSubRect( 0 ) );
+		sprite->setOrigin( sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		sprite->setRotation( 0 );
+		break;
+	case SKYDIVETOFALL:
+		sprite->setTexture( *(tileset[SKYDIVETOFALL]->texture));
+		sprite->setTextureRect( tileset[SKYDIVETOFALL]->GetSubRect( 0 ) );
+		sprite->setOrigin( sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+		sprite->setRotation( 0 );
+		break;
 	}
 	
 	if( bounceFlameOn )

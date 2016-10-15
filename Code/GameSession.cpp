@@ -485,7 +485,6 @@ bool Barrier::Update( Actor *player )
 	return triggered;
 }
 
-
 KeyMarker::KeyMarker( GameSession *p_owner )
 {
 	owner = p_owner;
@@ -928,7 +927,13 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 
 	keyMarker = new KeyMarker( this );
 
-	
+	ts_w1ShipClouds0 = GetTileset( "Ship/cloud_w1_a1_960x128.png", 960, 128 );
+	ts_w1ShipClouds1 = GetTileset( "Ship/cloud_w1_b1_960x320.png", 960, 320 );
+	ts_ship = GetTileset( "Ship/ship_640x352.png", 640, 352 );
+	shipSprite.setTexture( *ts_ship->texture );
+	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
+	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, 
+		shipSprite.getLocalBounds().height / 2 );
 	
 	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//enemyTree->parent = NULL;
@@ -3528,6 +3533,24 @@ bool GameSession::OpenFile( string fileName )
 			}
 		}
 		
+		if( poiMap.count( "ship" ) > 0 )
+		{
+			drain = false;
+			player->action = Actor::RIDESHIP;
+			PoiInfo *pi = poiMap["ship"];
+			player->position = pi->pos;
+			shipSprite.setPosition( pi->pos.x, pi->pos.y );
+			//cloud0a.setpo
+			shipSequence = true;
+			
+			//player->position = poiMap.ship
+		}
+		else
+		{
+			drain = true;
+			shipSequence = false;
+			//normal map
+		}
 
 	}
 	else
@@ -6455,6 +6478,12 @@ int GameSession::Run( string fileN )
 		//preScreenTex->setView( view );
 		//cout << "size what: " << preScreenTex->getView().getSize().x
 		//	<< ", " << preScreenTex->getView().getSize().y << endl;
+
+		if( shipSequence )
+		{
+			preScreenTex->draw( shipSprite );
+		}
+
 		if( player->action != Actor::DEATH )
 			player->Draw( preScreenTex );
 
@@ -6999,6 +7028,8 @@ int GameSession::Run( string fileN )
 		//	wipeSprite.setPosition( player->position.x, player->position.y );//view.getCenter().x, view.getCenter().y );
 		//	preScreenTex->draw( wipeSprite );
 		//}
+
+		
 
 		if( player->action == Actor::DEATH )
 		{

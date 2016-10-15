@@ -62,6 +62,9 @@ struct Actor : QuadTreeCollider,
 		GOALKILLWAIT,
 		SPAWNWAIT,
 		DEATH,
+		RIDESHIP,
+		SKYDIVE,
+		SKYDIVETOFALL,
 		Count
 	};
 
