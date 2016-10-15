@@ -396,9 +396,14 @@ void SecurityWeb::ActionEnded()
 
 void SecurityWeb::UpdatePrePhysics()
 {
-	ActionEnded();
 
 	Actor *player = owner->player;
+
+	if( !dead && !dying )
+	{
+		ActionEnded();
+	}
+	
 
 
 	if( dynamicMode )
@@ -429,6 +434,7 @@ void SecurityWeb::UpdatePrePhysics()
 		
 	}
 
+	
 	if( dynamicMode )
 	{
 		NodeProjectile *curr = activeNodes;
@@ -675,7 +681,7 @@ void SecurityWeb::Draw( sf::RenderTarget *target )
 	{
 		target->draw( *armVA, ts->texture );
 		//target->draw( *edges, ts->texture );
-		target->draw( *nodes, ts->texture );
+		
 		if( hasMonitor && !suppressMonitor )
 		{
 			if( owner->pauseFrames < 2 || receivedHit == NULL )
@@ -718,6 +724,10 @@ void SecurityWeb::Draw( sf::RenderTarget *target )
 		//target->draw( topDeathSprite );
 	}
 
+	if( !dead )
+	{
+		target->draw( *nodes, ts->texture );
+	}
 
 
 }
@@ -864,23 +874,29 @@ bool SecurityWeb::PlayerSlowingMe()
 
 void SecurityWeb::DebugDraw( RenderTarget *target )
 {
-	if( !dying )
+	if( !dying && !dead )
 	{
 		hurtBody.DebugDraw( target );
 		hitBody.DebugDraw( target );
+
+
+		for( int i = 0; i < numProtrusions; ++i )//i < numProtrusions; ++i )
+		{
+			edgeHitboxes[i].DebugDraw( target );
+		}
 	}
 
-	NodeProjectile *curr = activeNodes;
-	while( curr != NULL )
+	if( dynamicMode )
 	{
-		curr->physBody.DebugDraw( target );
-		curr = curr->nextProj;
+		NodeProjectile *curr = activeNodes;
+		while( curr != NULL )
+		{
+			curr->hitBody.DebugDraw( target );
+			curr = curr->nextProj;
+		}
 	}
 
-	for( int i = 0; i < numProtrusions; ++i )//i < numProtrusions; ++i )
-	{
-		edgeHitboxes[i].DebugDraw( target );
-	}
+	
 
 }
 
