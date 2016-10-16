@@ -506,8 +506,8 @@ Actor::Actor( GameSession *gs )
 
 		
 		actionLength[RIDESHIP] = 1;
-		tileset[RIDESHIP] = owner->GetTileset( "bounce.png", 96, 96 );
-		normal[RIDESHIP] = owner->GetTileset( "bounce.png", 96, 96 );
+		tileset[RIDESHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
+		normal[RIDESHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
 
 		actionLength[SKYDIVE] = 9 * 2;
 		tileset[SKYDIVE] = owner->GetTileset( "walljump_64x64.png", 64, 64 );
@@ -876,7 +876,6 @@ void Actor::ActionEnded()
 		case JUMPSQUAT:
 			frame = 0;
 			//never happens
-			
 			break;
 		case LAND:
 			frame = 0;
@@ -1318,6 +1317,8 @@ void Actor::UpdatePrePhysics()
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
 		|| action == RIDESHIP )
 	{
+		
+
 		if( action == INTRO && frame == 0 )
 		{
 			owner->soundNodeList->ActivateSound( soundBuffers[S_ENTER] );

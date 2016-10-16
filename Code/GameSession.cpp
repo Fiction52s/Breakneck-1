@@ -930,7 +930,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 
 	ts_w1ShipClouds0 = GetTileset( "Ship/cloud_w1_a1_960x128.png", 960, 128 );
 	ts_w1ShipClouds1 = GetTileset( "Ship/cloud_w1_b1_960x320.png", 960, 320 );
-	ts_ship = GetTileset( "Ship/ship_640x352.png", 640, 352 );
+	ts_ship = GetTileset( "Ship/ship_1728x800.png", 1728, 800 );
 
 
 	
@@ -955,6 +955,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 
 	shipSprite.setTexture( *ts_ship->texture );
 	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
+	shipSprite.setScale( .5, .5 );
 	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, 
 		shipSprite.getLocalBounds().height / 2 );
 	
@@ -3562,12 +3563,12 @@ bool GameSession::OpenFile( string fileName )
 			player->action = Actor::RIDESHIP;
 			PoiInfo *pi = poiMap["ship"];
 			player->position = pi->pos;
-			shipSprite.setPosition( pi->pos.x, pi->pos.y );
+			shipSprite.setPosition( pi->pos.x - 13, pi->pos.y - 122 );
 			//cloud0a.setpo
 			shipSequence = true;
 			shipSeqFrame = 0;
 			shipStartPos = Vector2f( pi->pos.x, pi->pos.y );
-			cloudVel = Vector2f( -2, 0 );
+			cloudVel = Vector2f( -40, 0 );
 
 			IntRect sub0 = ts_w1ShipClouds0->GetSubRect( 0 );
 			IntRect sub1 = ts_w1ShipClouds1->GetSubRect( 0 );
@@ -5869,11 +5870,17 @@ int GameSession::Run( string fileN )
 				//cloud1b.move( Vector2f( -2, 0 ) );
 
 				float oldLeft = cloud0[0].position.x;
-				float newLeft = oldLeft - 10;
-				float diff = shipStartPos.x - newLeft;
+				//float oldLeft1 = cloud0[1].position.x;
+				float newLeft = oldLeft -30; //cloudVel.x;
+				float diff = ( shipStartPos.x - 480 ) - newLeft;
 				if( diff >= 480 )
 				{
+					//cout << "RESETING: " << diff << endl;
 					newLeft = shipStartPos.x - 480 - ( diff - 480 );
+				}
+				else
+				{
+					//cout << "diff: " << diff << endl;
 				}
 
 				float allDiff = newLeft - oldLeft;
@@ -6581,6 +6588,9 @@ int GameSession::Run( string fileN )
 		if( shipSequence )
 		{
 			//preScreenTex->draw( cloud0a );
+			preScreenTex->draw( cloud1, ts_w1ShipClouds1->texture );
+			preScreenTex->draw( cloud0, ts_w1ShipClouds0->texture );
+			
 			//preScreenTex->draw( cloud0b );
 			preScreenTex->draw( shipSprite );
 		}
@@ -6593,7 +6603,7 @@ int GameSession::Run( string fileN )
 		{
 			///preScreenTex->draw( cloud1a );
 			//preScreenTex->draw( cloud1b );
-			preScreenTex->draw( cloud1, ts_w1ShipClouds1->texture );
+			
 		}
 
 		//whited out hit enemies
