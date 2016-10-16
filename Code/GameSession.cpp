@@ -614,7 +614,8 @@ int GameSession::TestVA::bushAnimFactor = 8;
 GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu )
 	:controller(c),va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf )
+	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
+	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 )
 {
 	
 	keyFrame = 0;
@@ -930,6 +931,28 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	ts_w1ShipClouds0 = GetTileset( "Ship/cloud_w1_a1_960x128.png", 960, 128 );
 	ts_w1ShipClouds1 = GetTileset( "Ship/cloud_w1_b1_960x320.png", 960, 320 );
 	ts_ship = GetTileset( "Ship/ship_640x352.png", 640, 352 );
+
+
+	
+	
+	//cloud0a.setTexture( *ts_w1ShipClouds0->texture );
+	//cloud0a.setScale( .5, .5 );
+	//cloud0a.setOrigin( 0, cloud0a.getLocalBounds().height );
+
+//	cloud0b.setTexture( *ts_w1ShipClouds0->texture );
+//	cloud0b.setScale( .5, .5 );
+//	cloud0b.setOrigin( 0, cloud0b.getLocalBounds().height );
+	
+
+//	cloud1a.setTexture( *ts_w1ShipClouds1->texture );
+//	cloud1a.setScale( .5, .5 );
+//	cloud1a.setOrigin( 0, cloud1a.getLocalBounds().height );
+	
+//	cloud1b.setTexture( *ts_w1ShipClouds1->texture );
+//	cloud1b.setScale( .5, .5 );
+//	cloud1b.setOrigin( 0, cloud1b.getLocalBounds().height );
+	
+
 	shipSprite.setTexture( *ts_ship->texture );
 	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
 	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, 
@@ -3542,7 +3565,44 @@ bool GameSession::OpenFile( string fileName )
 			shipSprite.setPosition( pi->pos.x, pi->pos.y );
 			//cloud0a.setpo
 			shipSequence = true;
+			shipSeqFrame = 0;
+			shipStartPos = Vector2f( pi->pos.x, pi->pos.y );
+			cloudVel = Vector2f( -2, 0 );
+
+			IntRect sub0 = ts_w1ShipClouds0->GetSubRect( 0 );
+			IntRect sub1 = ts_w1ShipClouds1->GetSubRect( 0 );
 			
+			Vector2f bottomLeft = Vector2f( pi->pos.x, pi->pos.y ) + Vector2f( -480, 270 ); 
+			for( int i = 0; i < 3; ++i )
+			{
+				Vector2f xExtra( 480 * i, 0 );
+				cloud0[i*4+0].position = xExtra + bottomLeft;
+				cloud0[i*4+1].position = xExtra + bottomLeft + Vector2f( 0, -sub0.height / 2 );
+				cloud0[i*4+2].position = xExtra + bottomLeft + Vector2f( sub0.width / 2, -sub0.height / 2 );
+				cloud0[i*4+3].position = xExtra + bottomLeft + Vector2f( sub0.width / 2, 0 );
+
+				cloud0[i*4+0].texCoords = Vector2f( 0, sub0.height );
+				cloud0[i*4+1].texCoords = Vector2f( 0, 0 );
+				cloud0[i*4+2].texCoords = Vector2f( sub0.width, 0 );
+				cloud0[i*4+3].texCoords = Vector2f( sub0.width, sub0.height );
+
+				cloud1[i*4+0].position = xExtra + bottomLeft;
+				cloud1[i*4+1].position = xExtra + bottomLeft + Vector2f( 0, -sub1.height / 2 );
+				cloud1[i*4+2].position = xExtra + bottomLeft + Vector2f( sub1.width / 2, -sub1.height / 2 );
+				cloud1[i*4+3].position = xExtra + bottomLeft + Vector2f( sub1.width / 2, 0 );
+
+				cloud1[i*4+0].texCoords = Vector2f( 0, sub1.height );
+				cloud1[i*4+1].texCoords = Vector2f( 0, 0 );
+				cloud1[i*4+2].texCoords = Vector2f( sub1.width, 0 );
+				cloud1[i*4+3].texCoords = Vector2f( sub1.width, sub1.height );
+			}
+
+
+
+			//cloud0a.setPosition( pi->pos.x - 960, pi->pos.y + 270 );
+			//cloud0b.setPosition( pi->pos.x - 240, pi->pos.y + 270 );
+			//cloud1a.setPosition( pi->pos.x - 960, pi->pos.y + 270 );
+			//cloud1b.setPosition( pi->pos.x - 240, pi->pos.y + 270);// + 540 );
 			//player->position = poiMap.ship
 		}
 		else
@@ -5802,6 +5862,45 @@ int GameSession::Run( string fileN )
 
 				//Vector2f diff = cam.pos - oldCam;
 
+				//cloudVel = Vector2f( -40, 0 );
+				//cloud0a.move( cloudVel );
+				//cloud0b.move( cloudVel );
+				//cloud1a.move( Vector2f( -2, 0 ) );
+				//cloud1b.move( Vector2f( -2, 0 ) );
+
+				float oldLeft = cloud0[0].position.x;
+				float newLeft = oldLeft - 10;
+				float diff = shipStartPos.x - newLeft;
+				if( diff >= 480 )
+				{
+					newLeft = shipStartPos.x - 480 - ( diff - 480 );
+				}
+
+				float allDiff = newLeft - oldLeft;
+				//cout << "all diff: " << allDiff << endl;
+				//allDiff = .5;
+				for( int i = 0; i < 3 * 4; ++i)
+				{
+					cloud0[i].position = Vector2f( cloud0[i].position.x + allDiff, cloud0[i].position.y );
+					cloud1[i].position = Vector2f( cloud1[i].position.x + allDiff, cloud1[i].position.y );
+				}
+				/*if( shipStartPos.x - cloud1b.getPosition().x > 960 )
+				{
+					
+					cout << "condition CLOUD B: " << shipStartPos.x - cloud1b.getPosition().x << endl;
+					cloud1b.setPosition( shipStartPos.x + 480, cloud1b.getPosition().y );
+				}
+				else if( shipStartPos.x - cloud1a.getPosition().x > 960 )
+				{
+					cout << "condition CLOUD A: " << shipStartPos.x - cloud1a.getPosition().x << endl;
+					cloud1a.setPosition( shipStartPos.x + 480, cloud1a.getPosition().y );
+				}*/
+				//cloud0a.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
+				//cloud0b.setPosition( pi->pos.x, pi->pos.y + 270 );
+				
+				//cloud1a.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
+				//cloud1b.setPosition( pi->pos.x, pi->pos.y + 270);// + 540 );
+
 
 				double camWidth = 960 * cam.GetZoom();
 				double camHeight = 540 * cam.GetZoom();
@@ -6481,12 +6580,21 @@ int GameSession::Run( string fileN )
 
 		if( shipSequence )
 		{
+			//preScreenTex->draw( cloud0a );
+			//preScreenTex->draw( cloud0b );
 			preScreenTex->draw( shipSprite );
 		}
 
 		if( player->action != Actor::DEATH )
 			player->Draw( preScreenTex );
 
+
+		if( shipSequence )
+		{
+			///preScreenTex->draw( cloud1a );
+			//preScreenTex->draw( cloud1b );
+			preScreenTex->draw( cloud1, ts_w1ShipClouds1->texture );
+		}
 
 		//whited out hit enemies
 		Enemy *current = activeEnemyList;

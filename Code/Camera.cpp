@@ -294,6 +294,8 @@ void Camera::Update( Actor *player )
 		return;
 	}
 
+	
+
 	if( player->currInput.LDown() )
 	{
 	//	maxOffset.y = 900;
@@ -307,6 +309,15 @@ void Camera::Update( Actor *player )
 	//pos.x = player->position.x;
 	//pos.y = player->position.y;
 	V2d playerPos = player->position;
+
+
+	if( player->action == Actor::RIDESHIP || player->action == Actor::SKYDIVE )
+	{
+		zoomFactor = 1;
+		pos.x = playerPos.x;
+		pos.y = playerPos.y;
+		return;
+	}
 	//bool desp = player->desperationMode || player->action == Actor::DEATH;
 	//if( desp )
 	//{

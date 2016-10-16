@@ -322,14 +322,20 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
 	Tileset *ts_ship;
-	sf::Sprite cloud0a;
-	sf::Sprite cloud0b;
-	sf::Sprite cloud1a;
-	sf::Sprite cloud1b;
+	sf::VertexArray cloud0;
+	sf::VertexArray cloud1;
+	//sf::Sprite cloud0a;
+	//sf::Sprite cloud0b;
+	//sf::Sprite cloud1a;
+	//sf::Sprite cloud1b;
 	sf::Sprite shipSprite;
 
 	bool drain;
 	bool shipSequence;
+	sf::Vector2f cloudVel;
+	int shipSeqFrame;
+	sf::Vector2f shipStartPos;
+
 
 	PauseMenu *pauseMenu;
 
