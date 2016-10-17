@@ -15977,12 +15977,28 @@ void Actor::UpdateSprite()
 			break;
 		}
 	case RIDESHIP:
-		sprite->setTexture( *(tileset[RIDESHIP]->texture));
-		sprite->setTextureRect( tileset[RIDESHIP]->GetSubRect( 0 ) );
-		sprite->setOrigin( sprite->getLocalBounds().width / 2,
-			sprite->getLocalBounds().height / 2 );
-		sprite->setPosition( position.x, position.y );
-		sprite->setRotation( 0 );
+		{
+			sprite->setTexture( *(tileset[RIDESHIP]->texture));
+			int tFrame = ( frame - 60 ) / 5;
+			
+			if( tFrame < 0 )
+			{
+				tFrame = 0;
+			}
+			else if( tFrame >= 5 )
+			{
+				tFrame = 5;
+			}
+			else
+			{
+				tFrame++;
+			}
+			sprite->setTextureRect( tileset[RIDESHIP]->GetSubRect( tFrame ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2,
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+		}
 		break;
 	case SKYDIVE:
 		sprite->setTexture( *(tileset[SKYDIVE]->texture));

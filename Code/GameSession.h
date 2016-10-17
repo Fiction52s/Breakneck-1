@@ -318,17 +318,24 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
-
+	void ResetShipSequence();
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
 	Tileset *ts_ship;
 	sf::VertexArray cloud0;
 	sf::VertexArray cloud1;
+	sf::VertexArray cloudBot0;
+	sf::VertexArray cloudBot1;
+
+
+	sf::Vector2f relShipVel;
+	//sf::Vector2f shipKinVel;
 	//sf::Sprite cloud0a;
 	//sf::Sprite cloud0b;
 	//sf::Sprite cloud1a;
 	//sf::Sprite cloud1b;
 	sf::Sprite shipSprite;
+	sf::RectangleShape middleClouds;
 
 	bool drain;
 	bool shipSequence;

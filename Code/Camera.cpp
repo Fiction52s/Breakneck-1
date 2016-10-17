@@ -519,7 +519,7 @@ void Camera::Update( Actor *player )
 	//double offX = pVel.x * .7;
 	//double offXMax = 2;
 
-	double offX = pVel.x * 1.0;
+	double offX = pVel.x * .8;//1.0;
 	double offXMax = 10;
 
 	//offX = (offX + testOffset.x) / 2.0;
@@ -537,7 +537,7 @@ void Camera::Update( Actor *player )
 	//offset.x = testOffset.x;
 	//offset.y += pVel.y * .3;
 
-	double offY = pVel.y * 1.0;
+	double offY = pVel.y * .8;//1.0;
 	double offYMax = 10;
 	
 	//offY = (offY + testOffset.y) / 2.0;
