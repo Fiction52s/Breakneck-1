@@ -2991,7 +2991,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int nexusIndex;
 				is >> nexusIndex;
-				Nexus1 *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+				Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+					nexusIndex );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;

@@ -18,7 +18,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Nexus::Nexus( GameSession *owner, Edge *g, double q )
+Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 		:Enemy( owner, EnemyType::NEXUS, false, 1 ), ground( g ), edgeQuantity( q )
 {
 	initHealth = 40;

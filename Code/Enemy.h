@@ -412,7 +412,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 struct Nexus : Enemy
 {
 	Nexus( GameSession *owner,
-		Edge *ground, double quantity );
+		Edge *ground, double quantity,
+		int nexusIndex );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
