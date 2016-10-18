@@ -3391,20 +3391,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	
 
 	//nexus
-	ActorType *nexusType = new ActorType( "nexus", NULL );
-	/*ActorType *nexus2 = new ActorType( "nexus2", NULL );
-	ActorType *nexus3 = new ActorType( "nexus3", NULL );
-	ActorType *nexus4 = new ActorType( "nexus4", NULL );
-	ActorType *nexus5 = new ActorType( "nexus5", NULL );
-	ActorType *nexus6 = new ActorType( "nexus6", NULL );*/
-
-	types["nexus"] = nexusType;
-	/*types["nexus2"] = nexus2;
-	types["nexus3"] = nexus3;
-	types["nexus4"] = nexus4;
-	types["nexus5"] = nexus5;
-	types["nexus6"] = nexus6;*/
-	
 
 
 	//all
@@ -3544,9 +3530,24 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["narwhal"] = narwhalType;
 	types["copycat"] = copycatType;
 
-	//types["nexus1"] = 
+	Panel *nexusPanel = CreateOptionsPanel( "nexus" );
+	ActorType *nexusType = new ActorType( "nexus", nexusPanel );
+	/*ActorType *nexus2 = new ActorType( "nexus2", NULL );
+	ActorType *nexus3 = new ActorType( "nexus3", NULL );
+	ActorType *nexus4 = new ActorType( "nexus4", NULL );
+	ActorType *nexus5 = new ActorType( "nexus5", NULL );
+	ActorType *nexus6 = new ActorType( "nexus6", NULL );*/
 
+	types["nexus"] = nexusType;
+	/*types["nexus2"] = nexus2;
+	types["nexus3"] = nexus3;
+	types["nexus4"] = nexus4;
+	types["nexus5"] = nexus5;
+	types["nexus6"] = nexus6;*/
 	
+
+
+
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
 	messagePopup = CreatePopupPanel( "message" );
@@ -3596,7 +3597,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 2, 6, Sprite( copycatType->iconTexture ), "copycat" );
 	gs->Set( 3, 6, Sprite( gorillaType->iconTexture ), "gorilla" );
 
-	gs->Set( 7, 0, Sprite( nexusType->iconTexture ), "nexus" );
+	gs->Set( 0, 7, Sprite( nexusType->iconTexture ), "nexus" );
 
 	
 

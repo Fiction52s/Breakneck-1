@@ -8135,6 +8135,7 @@ void GameSession::ResetShipSequence()
 {
 	drain = false;
 	player->action = Actor::RIDESHIP;
+	player->frame = 0;
 	PoiInfo *pi = poiMap["ship"];
 	player->position = pi->pos;
 	originalPos = player->position;
