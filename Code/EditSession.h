@@ -434,6 +434,27 @@ typedef boost::shared_ptr<ActorParams> ActorPtr;
 typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
 
 //all
+struct NexusParams : public ActorParams
+{
+	NexusParams ( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity,
+		int nexusIndex );
+	NexusParams ( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	NexusParams ( EditSession *edit );
+	bool CanApply();
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile( std::ofstream &of );
+	int nexusIndex;
+	//void Draw( sf::RenderTarget *target );
+};
+
 struct HealthFlyParams : public ActorParams
 {
 	HealthFlyParams( EditSession *edit,

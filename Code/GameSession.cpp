@@ -5850,9 +5850,9 @@ int GameSession::Run( string fileN )
 
 					}
 
-					if( shipSeqFrame >= 60 && shipSeqFrame <= 120 )
+					if( shipSeqFrame >= 90 && shipSeqFrame <= 180 )
 					{
-						int tFrame = shipSeqFrame - 60;
+						int tFrame = shipSeqFrame - 90;
 						//cout << "tFrame: " << tFrame << endl;
 						//CubicBezier b( 0, 0, 1, 1 );
 						//double a = tFrame / 60.0;
@@ -5878,8 +5878,9 @@ int GameSession::Run( string fileN )
 
 
 					}
-					else if( shipSeqFrame == 180 )//121 )
+					else if( shipSeqFrame == 240 )//121 )
 					{
+						//cout << "relshipvel: " << relShipVel.x << ", " << relShipVel.y << endl;
 						player->action = Actor::JUMP;
 						player->frame = 1;
 						player->velocity = V2d( 20, 10 );

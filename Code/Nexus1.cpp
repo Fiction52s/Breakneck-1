@@ -18,21 +18,19 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
-		:Enemy( owner, EnemyType::FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
+Nexus1::Nexus1( GameSession *owner, Edge *g, double q )
+		:Enemy( owner, EnemyType::NEXUS1, false, 1 ), ground( g ), edgeQuantity( q )
 {
-
 	initHealth = 40;
 	health = initHealth;
 
-	double height = 48;
-	ts = owner->GetTileset( "foottrap_128x48.png", 128, height );
+	double height = 1024;
+	ts = owner->GetTileset( "Nexus/nexus_w1_1024x1024.png", 1024, 1024 );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	//cout << "player " << owner->player->position.x << ", " << owner->player->position.y << endl;
 	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
-	
 
 	receivedHit = NULL;
 
@@ -42,7 +40,7 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	position = gPoint + gn * height / 2.0;
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );// / 2 );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
@@ -90,7 +88,7 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	//deathVector = V2d( 1, -1 );
 }
 
-void FootTrap::ResetEnemy()
+void Nexus1::ResetEnemy()
 {
 	//cout << "reset" << endl;
 	health = initHealth;
@@ -102,7 +100,7 @@ void FootTrap::ResetEnemy()
 	slowMultiple = 1;
 }
 
-void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
+void Nexus1::HandleEntrant( QuadTreeEntrant *qte )
 {
 	SpecterArea *sa = (SpecterArea*)qte;
 	if( sa->barrier.Intersects( hurtBody ) )
@@ -111,7 +109,7 @@ void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void FootTrap::UpdatePrePhysics()
+void Nexus1::UpdatePrePhysics()
 {
 	//cout << "dead: " << dead << endl;
 	if( !dead && receivedHit != NULL )
@@ -145,7 +143,7 @@ void FootTrap::UpdatePrePhysics()
 	}
 }
 
-void FootTrap::UpdatePhysics()
+void Nexus1::UpdatePhysics()
 {
 	specterProtected = false;
 	if( PlayerSlowingMe() )
@@ -194,9 +192,7 @@ void FootTrap::UpdatePhysics()
 	}
 }
 
-
-
-void FootTrap::UpdatePostPhysics()
+void Nexus1::UpdatePostPhysics()
 {
 	if( deathFrame == 30 )
 	{
@@ -243,7 +239,7 @@ void FootTrap::UpdatePostPhysics()
 	
 }
 
-void FootTrap::Draw(sf::RenderTarget *target )
+void Nexus1::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -290,7 +286,7 @@ void FootTrap::Draw(sf::RenderTarget *target )
 	}
 }
 
-void FootTrap::DrawMinimap( sf::RenderTarget *target )
+void Nexus1::DrawMinimap( sf::RenderTarget *target )
 {
 	
 
@@ -317,7 +313,7 @@ void FootTrap::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool FootTrap::IHitPlayer()
+bool Nexus1::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -330,7 +326,7 @@ bool FootTrap::IHitPlayer()
 	return false;
 }
 
-pair<bool, bool> FootTrap::PlayerHitMe()
+pair<bool, bool> Nexus1::PlayerHitMe()
 {
 	Actor *player = owner->player;
 
@@ -386,7 +382,7 @@ pair<bool, bool> FootTrap::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool FootTrap::PlayerSlowingMe()
+bool Nexus1::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -402,7 +398,7 @@ bool FootTrap::PlayerSlowingMe()
 	return false;
 }
 
-void FootTrap::UpdateSprite()
+void Nexus1::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
@@ -432,12 +428,13 @@ void FootTrap::UpdateSprite()
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );
+
 		}
 	}
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 }
 
-void FootTrap::DebugDraw(sf::RenderTarget *target)
+void Nexus1::DebugDraw(sf::RenderTarget *target)
 {
 	if( !dead )
 	{
@@ -446,9 +443,7 @@ void FootTrap::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
-
-
-void FootTrap::UpdateHitboxes()
+void Nexus1::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position - gn * 10.0;
 	hurtBody.globalAngle = 0;
@@ -456,12 +451,12 @@ void FootTrap::UpdateHitboxes()
 	hitBody.globalAngle = 0;
 }
 
-bool FootTrap::ResolvePhysics( sf::Vector2<double> vel )
+bool Nexus1::ResolvePhysics( sf::Vector2<double> vel )
 {
 	return false;
 }
 
-void FootTrap::SaveEnemyState()
+void Nexus1::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -470,7 +465,7 @@ void FootTrap::SaveEnemyState()
 //	stored.hitstunFrames = hitstunFrames;
 }
 
-void FootTrap::LoadEnemyState()
+void Nexus1::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

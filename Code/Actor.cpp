@@ -15979,7 +15979,7 @@ void Actor::UpdateSprite()
 	case RIDESHIP:
 		{
 			sprite->setTexture( *(tileset[RIDESHIP]->texture));
-			int tFrame = ( frame - 60 ) / 5;
+			int tFrame = ( frame - 90 ) / 5;
 			
 			if( tFrame < 0 )
 			{
@@ -16001,6 +16001,7 @@ void Actor::UpdateSprite()
 		}
 		break;
 	case SKYDIVE:
+		{
 		sprite->setTexture( *(tileset[SKYDIVE]->texture));
 		sprite->setTextureRect( tileset[SKYDIVE]->GetSubRect( 0 ) );
 		sprite->setOrigin( sprite->getLocalBounds().width / 2,
@@ -16008,7 +16009,9 @@ void Actor::UpdateSprite()
 		sprite->setPosition( position.x, position.y );
 		sprite->setRotation( 0 );
 		break;
+		}
 	case SKYDIVETOFALL:
+		{
 		sprite->setTexture( *(tileset[SKYDIVETOFALL]->texture));
 		sprite->setTextureRect( tileset[SKYDIVETOFALL]->GetSubRect( 0 ) );
 		sprite->setOrigin( sprite->getLocalBounds().width / 2,
@@ -16016,6 +16019,7 @@ void Actor::UpdateSprite()
 		sprite->setPosition( position.x, position.y );
 		sprite->setRotation( 0 );
 		break;
+		}
 	}
 	
 	if( bounceFlameOn )

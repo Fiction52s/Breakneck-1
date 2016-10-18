@@ -907,3 +907,73 @@ ActorParams *KeyParams::Copy()
 	KeyParams *copy = new KeyParams( *this );
 	return copy;
 }
+
+NexusParams::NexusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+	int p_nexusIndex )
+	:ActorParams( PosType::GROUND_ONLY ), nexusIndex( p_nexusIndex )
+{
+	type = edit->types["nexus"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+NexusParams::NexusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	nexusIndex = 0;
+	type = edit->types["nexus"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+bool NexusParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void NexusParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+	//p->checkBoxes["clockwise"]->checked = clockwise;
+	p->textBoxes["nexusindex"]->text.setString( boost::lexical_cast<string>( nexusIndex ) );
+}
+
+void NexusParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	
+	int index;
+
+	stringstream ss;
+	string s = p->textBoxes["nexusindex"]->text.getString().toAnsiString();
+	ss << s;
+
+
+	ss >> index;
+
+	if( !ss.fail() )
+	{
+		nexusIndex = index;
+	}
+}
+
+void NexusParams::WriteParamFile( ofstream &of )
+{
+	of << nexusIndex << endl;
+}
+
+ActorParams *NexusParams::Copy()
+{
+	NexusParams *copy = new NexusParams( *this );
+	return copy;
+}

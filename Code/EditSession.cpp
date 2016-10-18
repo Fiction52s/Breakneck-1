@@ -2011,6 +2011,47 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new CopycatParams( this, pos ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
+				else if( typeName == "nexus" )
+				{
+					//always grounded
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int nexusIndex;
+					is >> nexusIndex;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing goal" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a.reset( new NexusParams( this, terrain.get(), edgeIndex, edgeQuantity, nexusIndex ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
+
 				else
 				{
 					assert( false && "unkown enemy type!" );
@@ -3347,6 +3388,24 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//groups["player"]->actors.push_back( player );
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
 	Panel *terrainOptionsPanel = CreateOptionsPanel( "terrain" );
+	
+
+	//nexus
+	ActorType *nexusType = new ActorType( "nexus", NULL );
+	/*ActorType *nexus2 = new ActorType( "nexus2", NULL );
+	ActorType *nexus3 = new ActorType( "nexus3", NULL );
+	ActorType *nexus4 = new ActorType( "nexus4", NULL );
+	ActorType *nexus5 = new ActorType( "nexus5", NULL );
+	ActorType *nexus6 = new ActorType( "nexus6", NULL );*/
+
+	types["nexus"] = nexusType;
+	/*types["nexus2"] = nexus2;
+	types["nexus3"] = nexus3;
+	types["nexus4"] = nexus4;
+	types["nexus5"] = nexus5;
+	types["nexus6"] = nexus6;*/
+	
+
 
 	//all
 	Panel *healthflyPanel = CreateOptionsPanel( "healthfly" );
@@ -3485,6 +3544,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["narwhal"] = narwhalType;
 	types["copycat"] = copycatType;
 
+	//types["nexus1"] = 
+
 	
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
@@ -3492,7 +3553,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	errorPopup = CreatePopupPanel( "error" );
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 7, 7, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 7, 8, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
@@ -3534,6 +3595,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 6, Sprite( narwhalType->iconTexture ), "narwhal" );
 	gs->Set( 2, 6, Sprite( copycatType->iconTexture ), "copycat" );
 	gs->Set( 3, 6, Sprite( gorillaType->iconTexture ), "gorilla" );
+
+	gs->Set( 7, 0, Sprite( nexusType->iconTexture ), "nexus" );
 
 	
 
@@ -6000,6 +6063,20 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										showPanel = trackingEnemy->panel;
 									}
 
+									//w7
+									else if( trackingEnemy->name == "nexus" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = enemySelectPanel;
+											trackingEnemy = NULL;
+											ActorPtr nexus( new NexusParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity ) );
+											nexus->group = groups["--"];
+
+											CreateActor( nexus );
+										}
+									}
 								}
 
 								if( showPanel != NULL )
@@ -7861,7 +7938,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					enemyQuad.setPosition( enemySprite.getPosition() );
 				}
 
-
 				if( showPanel == NULL && trackingEnemy != NULL  )
 				{
 					string name = trackingEnemy->name;
@@ -7893,11 +7969,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					bool groundType = w1Grounded || w2Grounded
 						|| w3Grounded || w4Grounded || w5Grounded
-						|| w6Grounded || name == "goal" || name == "poi";
+						|| w6Grounded || name == "goal" || name == "poi"
+						|| name == "nexus";
 
-
-
-				
 					if( groundType )
 					{
 						enemyEdgePolygon = NULL;
@@ -12366,6 +12440,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		return p;
 	}
+	else if( name == "nexus" )
+	{
+		Panel *p = new Panel( "nexus_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
+
+		p->AddTextBox( "nexusindex", Vector2i( 20, 150 ), 200, 20, "1" );
+		return p;
+	}
 
 	/*else if( name == "crawlerreverser" )
 	{
@@ -13672,13 +13756,22 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
-	}else if( name == "copycat" )
+	}
+	else if( name == "copycat" )
 	{
 		width = 32;
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
 	}
+	else if( name == "nexus" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+
 
 }
 
