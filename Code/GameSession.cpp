@@ -2976,6 +2976,29 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
 			
+			else if( typeName == "nexus" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int nexusIndex;
+				is >> nexusIndex;
+				Nexus1 *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );
+			}
+
 			else
 			{
 				assert( false && "not a valid type name" );

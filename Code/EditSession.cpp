@@ -10229,6 +10229,38 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		}
 	}
 
+	else if( p->name == "nexus_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				NexusParams *nexus = (NexusParams*)select;
+				nexus->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr nexus( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				nexus->SetParams();
+				nexus->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( nexus );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+	}
+
 	else if( p->name == "map_options" )
 	{
 		if( b->name == "ok" );
@@ -12684,6 +12716,11 @@ void EditSession::SetEnemyEditPanel()
 		specter->SetPanelInfo();
 	}
 
+	else if( name == "nexus" )
+	{
+		NexusParams *nexus = (NexusParams*)ap;
+		nexus->SetPanelInfo();
+	}
 	showPanel = p;
 	
 	

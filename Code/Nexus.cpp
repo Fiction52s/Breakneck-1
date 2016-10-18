@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Nexus1::Nexus1( GameSession *owner, Edge *g, double q )
-		:Enemy( owner, EnemyType::NEXUS1, false, 1 ), ground( g ), edgeQuantity( q )
+Nexus::Nexus( GameSession *owner, Edge *g, double q )
+		:Enemy( owner, EnemyType::NEXUS, false, 1 ), ground( g ), edgeQuantity( q )
 {
 	initHealth = 40;
 	health = initHealth;
@@ -88,7 +88,7 @@ Nexus1::Nexus1( GameSession *owner, Edge *g, double q )
 	//deathVector = V2d( 1, -1 );
 }
 
-void Nexus1::ResetEnemy()
+void Nexus::ResetEnemy()
 {
 	//cout << "reset" << endl;
 	health = initHealth;
@@ -100,7 +100,7 @@ void Nexus1::ResetEnemy()
 	slowMultiple = 1;
 }
 
-void Nexus1::HandleEntrant( QuadTreeEntrant *qte )
+void Nexus::HandleEntrant( QuadTreeEntrant *qte )
 {
 	SpecterArea *sa = (SpecterArea*)qte;
 	if( sa->barrier.Intersects( hurtBody ) )
@@ -109,7 +109,7 @@ void Nexus1::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Nexus1::UpdatePrePhysics()
+void Nexus::UpdatePrePhysics()
 {
 	//cout << "dead: " << dead << endl;
 	if( !dead && receivedHit != NULL )
@@ -143,7 +143,7 @@ void Nexus1::UpdatePrePhysics()
 	}
 }
 
-void Nexus1::UpdatePhysics()
+void Nexus::UpdatePhysics()
 {
 	specterProtected = false;
 	if( PlayerSlowingMe() )
@@ -192,7 +192,7 @@ void Nexus1::UpdatePhysics()
 	}
 }
 
-void Nexus1::UpdatePostPhysics()
+void Nexus::UpdatePostPhysics()
 {
 	if( deathFrame == 30 )
 	{
@@ -239,7 +239,7 @@ void Nexus1::UpdatePostPhysics()
 	
 }
 
-void Nexus1::Draw(sf::RenderTarget *target )
+void Nexus::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -286,7 +286,7 @@ void Nexus1::Draw(sf::RenderTarget *target )
 	}
 }
 
-void Nexus1::DrawMinimap( sf::RenderTarget *target )
+void Nexus::DrawMinimap( sf::RenderTarget *target )
 {
 	
 
@@ -313,7 +313,7 @@ void Nexus1::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Nexus1::IHitPlayer()
+bool Nexus::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -326,7 +326,7 @@ bool Nexus1::IHitPlayer()
 	return false;
 }
 
-pair<bool, bool> Nexus1::PlayerHitMe()
+pair<bool, bool> Nexus::PlayerHitMe()
 {
 	Actor *player = owner->player;
 
@@ -382,7 +382,7 @@ pair<bool, bool> Nexus1::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Nexus1::PlayerSlowingMe()
+bool Nexus::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -398,7 +398,7 @@ bool Nexus1::PlayerSlowingMe()
 	return false;
 }
 
-void Nexus1::UpdateSprite()
+void Nexus::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
@@ -434,7 +434,7 @@ void Nexus1::UpdateSprite()
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 }
 
-void Nexus1::DebugDraw(sf::RenderTarget *target)
+void Nexus::DebugDraw(sf::RenderTarget *target)
 {
 	if( !dead )
 	{
@@ -443,7 +443,7 @@ void Nexus1::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
-void Nexus1::UpdateHitboxes()
+void Nexus::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position - gn * 10.0;
 	hurtBody.globalAngle = 0;
@@ -451,12 +451,12 @@ void Nexus1::UpdateHitboxes()
 	hitBody.globalAngle = 0;
 }
 
-bool Nexus1::ResolvePhysics( sf::Vector2<double> vel )
+bool Nexus::ResolvePhysics( sf::Vector2<double> vel )
 {
 	return false;
 }
 
-void Nexus1::SaveEnemyState()
+void Nexus::SaveEnemyState()
 {
 	stored.dead = dead;
 	stored.deathFrame = deathFrame;
@@ -465,7 +465,7 @@ void Nexus1::SaveEnemyState()
 //	stored.hitstunFrames = hitstunFrames;
 }
 
-void Nexus1::LoadEnemyState()
+void Nexus::LoadEnemyState()
 {
 	dead = stored.dead;
 	deathFrame = stored.deathFrame;

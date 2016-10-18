@@ -328,7 +328,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		BOSS_BEAR,
 		GATEMONITOR,
 		HEALTHFLY,
-		NEXUS1,
+		NEXUS,
 		Count
 	};
 
@@ -409,9 +409,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Stored stored;
 };
 
-struct Nexus1 : Enemy
+struct Nexus : Enemy
 {
-	Nexus1( GameSession *owner,
+	Nexus( GameSession *owner,
 		Edge *ground, double quantity );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
@@ -457,9 +457,7 @@ struct Nexus1 : Enemy
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
 	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
+	
 
 	struct Stored
 	{
