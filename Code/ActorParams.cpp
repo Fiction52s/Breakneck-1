@@ -977,3 +977,66 @@ ActorParams *NexusParams::Copy()
 	NexusParams *copy = new NexusParams( *this );
 	return copy;
 }
+
+ShipPickupParams::ShipPickupParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+	bool p_facingRight )
+	:ActorParams( PosType::GROUND_ONLY ), facingRight( p_facingRight )
+{
+	type = edit->types["shippickup"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+ShipPickupParams::ShipPickupParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	facingRight = true;
+	type = edit->types["shippickup"];
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+
+	SetBoundingQuad();
+}
+
+bool ShipPickupParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void ShipPickupParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+		p->textBoxes["group"]->text.setString( group->name );
+	p->checkBoxes["facingright"]->checked = facingRight;
+	//p->textBoxes["facing"]->text.setString( boost::lexical_cast<string>( nexusIndex ) );
+}
+
+void ShipPickupParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	
+	int index;
+
+
+	bool right = p->checkBoxes["facingright"]->checked;
+
+	facingRight = right;
+}
+
+void ShipPickupParams::WriteParamFile( ofstream &of )
+{
+	of << (int)facingRight << endl;
+}
+
+ActorParams *ShipPickupParams::Copy()
+{
+	ShipPickupParams *copy = new ShipPickupParams( *this );
+	return copy;
+}

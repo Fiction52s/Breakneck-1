@@ -329,6 +329,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		GATEMONITOR,
 		HEALTHFLY,
 		NEXUS,
+		SHIPPICKUP,
 		Count
 	};
 
@@ -471,6 +472,68 @@ struct Nexus : Enemy
 	Stored stored;
 };
 
+struct ShipPickup : Enemy
+{
+	ShipPickup( GameSession *owner,
+		Edge *ground, double quantity,
+		bool facingRight );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	bool PlayerSlowingMe();
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void SaveEnemyState();
+	void LoadEnemyState();
+	void ResetEnemy();
+	//void DirectKill();
+	bool facingRight;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	
+	double angle;
+
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
+
+	int frame;
+	int deathFrame;
+	int animationFactor;
+	sf::Vector2<double> gn;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset * ts_death;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		int frame;
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
 //set up the movers first
 
 enum EffectLayer

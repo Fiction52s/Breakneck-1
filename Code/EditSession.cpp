@@ -1034,6 +1034,46 @@ bool EditSession::OpenFile( string fileName )
 
 					//a->hasMonitor = false;//(bool)hasMonitor;
 				}
+				else if( typeName == "shippickup" )
+				{
+					//always grounded
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int facingRight;
+					is >> facingRight;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing goal" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a.reset( new ShipPickupParams( this, terrain.get(), edgeIndex, edgeQuantity, facingRight ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
 
 				//w1
 				else if( typeName == "crawlerreverser" )
@@ -3532,6 +3572,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	Panel *nexusPanel = CreateOptionsPanel( "nexus" );
 	ActorType *nexusType = new ActorType( "nexus", nexusPanel );
+
 	/*ActorType *nexus2 = new ActorType( "nexus2", NULL );
 	ActorType *nexus3 = new ActorType( "nexus3", NULL );
 	ActorType *nexus4 = new ActorType( "nexus4", NULL );
@@ -3539,6 +3580,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	ActorType *nexus6 = new ActorType( "nexus6", NULL );*/
 
 	types["nexus"] = nexusType;
+
+
+	Panel *shipPickupPanel = CreateOptionsPanel( "shippickup" );
+	ActorType *shipPickupType = new ActorType( "shippickup", shipPickupPanel );
+
+	types["shippickup"] = shipPickupType;
 	/*types["nexus2"] = nexus2;
 	types["nexus3"] = nexus3;
 	types["nexus4"] = nexus4;
@@ -3564,6 +3611,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 0, Sprite( healthflyType->iconTexture ), "healthfly" );
 	gs->Set( 2, 0, Sprite( poiType->iconTexture ), "poi" );
 	gs->Set( 3, 0, Sprite( keyType->iconTexture ), "key" );
+	gs->Set( 4, 0, Sprite( shipPickupType->iconTexture ), "shippickup" );
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -5772,6 +5820,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										showPanel = trackingEnemy->panel;
 										tempActor->SetPanelInfo();
 									}
+									else if( trackingEnemy->name == "shippickup" )
+									{
+										if( enemyEdgePolygon != NULL )
+										{
+											showPanel = enemySelectPanel;
+											trackingEnemy = NULL;
+											ActorPtr shipPickup( new ShipPickupParams( this, enemyEdgePolygon, enemyEdgeIndex, 
+												enemyEdgeQuantity ) );
+											shipPickup->group = groups["--"];
+
+											CreateActor( shipPickup );
+										}
+									}
 
 									//w1
 									else if( trackingEnemy->name == "patroller" )
@@ -7971,7 +8032,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 					bool groundType = w1Grounded || w2Grounded
 						|| w3Grounded || w4Grounded || w5Grounded
 						|| w6Grounded || name == "goal" || name == "poi"
-						|| name == "nexus";
+						|| name == "nexus" || name == "shippickup";
 
 					if( groundType )
 					{
@@ -10260,6 +10321,37 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "shippickup_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				ShipPickupParams *shipPickup = (ShipPickupParams*)select;
+				shipPickup->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr shipPickup( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				shipPickup->SetParams();
+				shipPickup->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( shipPickup );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+	}
 
 	else if( p->name == "map_options" )
 	{
@@ -12093,6 +12185,19 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	else if( name == "shippickup" )
+	{
+		Panel *p = new Panel( "shippickup_options", 200, 500, this );
+		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
+		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
+		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+
+		//p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
+		p->AddCheckBox( "facingright", Vector2i( 20, 250 ) );
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
 	else if( name == "key" )
 	{
 		Panel *p = new Panel( "key_options", 200, 600, this );
@@ -12568,6 +12673,11 @@ void EditSession::SetEnemyEditPanel()
 	{
 		PoiParams *poi = (PoiParams*)ap;
 		poi->SetPanelInfo();
+	}
+	else if( name == "shippickup" )
+	{
+		ShipPickupParams *shipPickup = (ShipPickupParams*)ap;
+		shipPickup->SetPanelInfo();
 	}
 	else if( name == "key" )
 	{
@@ -13609,6 +13719,13 @@ void ActorType::Init()
 		canBeGrounded = false;
 		canBeAerial = true;
 	}
+	if( name == "shippickup" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
 	//w1
 	else if( name == "patroller" )
 	{
@@ -13802,6 +13919,8 @@ void ActorType::Init()
 		canBeGrounded = false;
 		canBeAerial = true;
 	}
+	
+	//extra
 	else if( name == "nexus" )
 	{
 		width = 32;

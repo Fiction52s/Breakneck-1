@@ -65,6 +65,7 @@ struct Actor : QuadTreeCollider,
 		RIDESHIP,
 		SKYDIVE,
 		SKYDIVETOFALL,
+		WAITFORSHIP,
 		Count
 	};
 
@@ -150,6 +151,9 @@ struct Actor : QuadTreeCollider,
 	bool physicsOver;
 	void GroundAttack();
 	void ConfirmEnemyKill( Enemy *e );
+
+	void ShipPickupPoint( double eq,
+		bool facingRight );
 
 
 	void UpdatePostPhysics();

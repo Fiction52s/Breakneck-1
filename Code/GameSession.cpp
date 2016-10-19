@@ -3000,7 +3000,28 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if( typeName == "shippickup" )
+			{
+				int terrainIndex;
+				is >> terrainIndex;
 
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int facingRight;
+				is >> facingRight;
+
+				ShipPickup *enemy = new ShipPickup( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+					facingRight );
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );
+			}
 			else
 			{
 				assert( false && "not a valid type name" );

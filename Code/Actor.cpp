@@ -517,6 +517,10 @@ Actor::Actor( GameSession *gs )
 		tileset[SKYDIVETOFALL] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
 		normal[SKYDIVETOFALL] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
 
+		actionLength[WAITFORSHIP] = 60 * 1;
+		tileset[WAITFORSHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
+		normal[WAITFORSHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
+
 
 		actionLength[GOALKILL] = 72 * 2;
 		ts_goalKillArray = new Tileset*[5];
@@ -1037,9 +1041,12 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case DEATH:
-		
 			frame = 0;
 			break;
+		case WAITFORSHIP:
+			frame = 0;
+			break;
+			
 		}
 	}
 }
@@ -1315,7 +1322,7 @@ void Actor::UpdatePrePhysics()
 	ActionEnded();
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
-		|| action == RIDESHIP )
+		|| action == RIDESHIP || action == WAITFORSHIP )
 	{
 		
 
@@ -8278,7 +8285,7 @@ void Actor::UpdateFullPhysics()
 void Actor::UpdatePhysics()
 {
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT
-		|| action == RIDESHIP )
+		|| action == RIDESHIP || action == WAITFORSHIP )
 		return;
 	/*if( blah == 0 )
 	{
@@ -13858,6 +13865,21 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 }
 
+void Actor::ShipPickupPoint( double eq, bool fr )
+{
+	action = WAITFORSHIP;
+	frame = 0;
+	assert( ground != NULL );
+	edgeQuantity = eq;
+	groundSpeed = 0;
+	facingRight = fr;
+
+	if( ground->Normal().y == -1 )
+	{
+		offsetX = 0;
+	}
+}
+
 void Actor::DodecaLateDraw(sf::RenderTarget *target)
 {
 	sf::Sprite dodecaSprite;
@@ -16020,6 +16042,57 @@ void Actor::UpdateSprite()
 		sprite->setRotation( 0 );
 		break;
 		}
+	case WAITFORSHIP:
+		{
+			sprite->setTexture( *(tileset[WAITFORSHIP]->texture));
+			
+			//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+				sprite->setTextureRect( tileset[WAITFORSHIP]->GetSubRect( 0 ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[WAITFORSHIP]->GetSubRect( 0 );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			if( ground != NULL )
+			{
+				double angle = GroundedAngle();
+
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+				V2d oldv0 = ground->v0;
+				V2d oldv1 = ground->v1;
+
+				if( movingGround != NULL )
+				{
+					ground->v0 += movingGround->position;
+					ground->v1 += movingGround->position;
+				}
+
+				V2d pp = ground->GetPoint( edgeQuantity );
+
+				if( movingGround != NULL )
+				{
+					ground->v0 = oldv0;
+					ground->v1 = oldv1;
+				}
+			
+				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+					sprite->setPosition( pp.x + offsetX, pp.y );
+				else
+					sprite->setPosition( pp.x, pp.y );
+				sprite->setRotation( angle / PI * 180 );
+
+
+				//cout << "angle: " << angle / PI * 180  << endl;
+			}
+		}
+		break;
 	}
 	
 	if( bounceFlameOn )

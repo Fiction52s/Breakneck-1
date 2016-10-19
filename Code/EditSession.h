@@ -452,7 +452,26 @@ struct NexusParams : public ActorParams
 	void SetPanelInfo();
 	void WriteParamFile( std::ofstream &of );
 	int nexusIndex;
-	//void Draw( sf::RenderTarget *target );
+};
+
+struct ShipPickupParams : public ActorParams
+{
+	ShipPickupParams ( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity,
+		bool facingRight );
+	ShipPickupParams ( EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, 
+		double edgeQuantity );
+	ShipPickupParams ( EditSession *edit );
+	bool CanApply();
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile( std::ofstream &of );
+	bool facingRight;
 };
 
 struct HealthFlyParams : public ActorParams
