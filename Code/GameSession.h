@@ -296,6 +296,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	enum State
 	{
 		RUN,
+		CUTPAUSE,
+		CUTSCENE,
 		PAUSE,
 		MAP
 	};
@@ -336,6 +338,16 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//sf::Sprite cloud1b;
 	sf::Sprite shipSprite;
 	sf::RectangleShape middleClouds;
+
+	sf::RectangleShape fadeRect;
+	int fadeFrame;
+	int fadeLength;
+	bool fadingIn;
+	bool fadingOut;
+	int fadeAlpha;
+	void Fade( bool in, int frames, sf::Color c);
+	void UpdateFade();
+	void DrawFade( sf::RenderTarget *target );
 
 	bool drain;
 	bool shipSequence;

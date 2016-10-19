@@ -434,6 +434,16 @@ void Zone::Init()
 	}
 }
 
+void Zone::SetShadowColor( sf::Color c )
+{
+	int vCount = definedArea->getVertexCount();
+	VertexArray &da = *definedArea;
+	for( int i = 0; i < vCount; ++i )
+	{
+		da[i].color = c;
+	}
+}
+
 void Zone::AddHoles( p2t::CDT *cdt )
 {
 	//vector<p2t::Point*> polyline;
@@ -453,6 +463,8 @@ void Zone::AddHoles( p2t::CDT *cdt )
 
 void Zone::Draw( RenderTarget *target )
 {
+	//target->draw( *definedArea );
+	//return;
 	if( !active )
 	{
 		if( showShadow )

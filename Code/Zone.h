@@ -20,6 +20,7 @@ struct Zone
 
 	bool ContainsPoint( sf::Vector2<double> point );
 	bool ContainsZone( Zone *z );
+	void SetShadowColor( sf::Color c );
 	//bool ContainsPlayer();
 	Zone * ContainsPointMostSpecific( 
 		sf::Vector2i test );

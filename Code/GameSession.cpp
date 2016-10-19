@@ -4814,6 +4814,10 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	fadingIn = false;
+	fadingOut = false;
+	fadeRect.setSize( Vector2f( 1920, 1080 ) );
+
 	soundManager = new SoundManager;
 
 	gameSoundBuffers[S_KEY_COMPLETE_W1] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
@@ -5698,7 +5702,7 @@ int GameSession::Run( string fileN )
 					currFX = currFX->next;
 				}
 
-
+				UpdateFade();
 				pauseFrames--;
 				//accumulator = 0;
 				
@@ -5773,15 +5777,7 @@ int GameSession::Run( string fileN )
 					gates[i]->Update();
 				}
 
-				for( list<Barrier*>::iterator it = barriers.begin();
-					it != barriers.end(); ++it )
-				{
-					bool trig = (*it)->Update( player );
-					if( trig )
-					{
-						TriggerBarrier( (*it) );
-					}
-				}
+				
 
 				//cout << "after count: " << CountActiveEnemies() << endl;
 
@@ -5825,6 +5821,18 @@ int GameSession::Run( string fileN )
 
 
 				cam.Update( player );
+
+				for( list<Barrier*>::iterator it = barriers.begin();
+					it != barriers.end(); ++it )
+				{
+					bool trig = (*it)->Update( player );
+					if( trig )
+					{
+						TriggerBarrier( (*it) );
+					}
+				}
+
+				UpdateFade();
 
 				rain.Update();
 
@@ -7239,8 +7247,9 @@ int GameSession::Run( string fileN )
 
 		
 
-
+		//this is so inefficient LOL
 		preScreenTex->display();
+		
 		const Texture &preTex = preScreenTex->getTexture();
 		
 		Sprite preTexSprite( preTex );
@@ -7264,15 +7273,17 @@ int GameSession::Run( string fileN )
 
 		preScreenTex->draw( *debugBorders );
 
+		preScreenTex->setView( uiView );
+		DrawFade( preScreenTex );
+
+
 		preScreenTex->display();
 
-		preTexSprite.setTexture( preScreenTex->getTexture() );
-
-		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		//preTexSprite.setPosition( -960, -540 );
-		//preTexSprite.setScale( .5, .5 );
-
+		const Texture &preTex0 = preScreenTex->getTexture();
 		
+		preTexSprite.setTexture( preTex0 );
+		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
+		//preTexSprite.setScale( .5, .5 );
 
 		window->draw( preTexSprite );//, &cloneShader );
 		}
@@ -8372,6 +8383,9 @@ void GameSession::RestartLevel()
 
 	goalPulse->Reset();
 	//f->Reset();
+
+	fadingIn = false;
+	fadingOut = false;
 
 	RespawnPlayer();
 	pauseFrames = 0;
@@ -10056,6 +10070,61 @@ void GameSession::Pause( int frames )
 	pauseFrames = frames;
 }
 
+void GameSession::Fade( bool in, int frames, sf::Color c)
+{
+	if( in )
+	{
+		fadeLength = frames;
+		fadingIn = true;
+		fadingOut = false;
+	}
+	else
+	{
+		fadeLength = frames;
+		fadingIn = false;
+		fadingOut = true;
+	}
+	fadeRect.setFillColor( Color( c.r, c.g, c.b, 255 ) );
+	
+	fadeFrame = 0;
+}
+
+void GameSession::UpdateFade()
+{
+	if( !fadingIn && !fadingOut )
+		return;
+	//cout << "fade frame: " << fadeFrame << endl;
+
+	++fadeFrame;
+
+	if( fadeFrame > fadeLength )
+	{
+		fadingIn = false;
+		fadingOut = false;
+		return;
+	}
+
+	if( fadingIn )
+	{
+		fadeAlpha = floor( (255.0 - 255.0 * fadeFrame / (double)fadeLength) + .5 );
+	}
+	else if( fadingOut )
+	{
+		fadeAlpha = floor( 255.0 * fadeFrame / (double)fadeLength + .5 );
+	}
+
+	Color oldColor = fadeRect.getFillColor();
+	fadeRect.setFillColor( Color( oldColor.r, oldColor.g, oldColor.b, fadeAlpha ) );
+}
+
+void GameSession::DrawFade( sf::RenderTarget *target )
+{
+	if( fadeAlpha > 0 )
+	{
+		target->draw( fadeRect );
+	}
+}
+
 void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
 	if( rayMode == "border_quads" )
@@ -11660,6 +11729,7 @@ void GameSession::ActivateZone( Zone *z )
 		}
 	}
 
+	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
 	currentZone = z;
 	keyMarker->SetStartKeys( currentZone->requiredKeys );
 	int soundIndex = SoundType::S_KEY_ENTER_0 + ( currentZone->requiredKeys );
@@ -11749,6 +11819,11 @@ void GameSession::TriggerBarrier( Barrier *b )
 		
 		b_bird->spawned = true;
 		AddEnemy( b_bird );
+	}
+	else if( name == "crawlerfighttrigger" )
+	{
+		Fade( false, 60, Color::Black );
+		Pause( 60 );
 	}
 }
 
