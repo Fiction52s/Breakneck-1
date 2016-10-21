@@ -1,4 +1,4 @@
-#include "Cutscene.h"
+#include "Sequence.h"
 #include <fstream>
 #include <assert.h>
 #include "GameSession.h"

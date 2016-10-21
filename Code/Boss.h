@@ -101,7 +101,9 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	enum Action
 	{
 		SHOOT,
-		BOOST
+		BOOST,
+		WAIT,
+		EMERGE
 	};
 	int frameTest;
 

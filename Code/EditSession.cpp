@@ -235,10 +235,16 @@ void GateInfo::SetType( const std::string &gType )
 	else if( gType == "keygate" )
 	{
 		type = GateTypes::KEYGATE;
+		reformBehindYou = false;
 	}
 	else if( gType == "birdfight" )
 	{
 		type = GateTypes::BIRDFIGHT;
+	}
+	else if( gType == "reform" )
+	{
+		type = GateTypes::KEYGATE;
+		reformBehindYou = true;
 	}
 	else
 	{
@@ -3674,6 +3680,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	whiteTex.loadFromFile( "whitesquare.png" );
 	Sprite tempSq;
 	tempSq.setTexture( whiteTex );
+
+	/*Sprite reformSq;
+	reformSq.setTexture( whiteTex );
+	reformSq.setColor( Color::Blue );*/
 	
 	
 	
@@ -3683,8 +3693,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	tempSq.setColor( Color( 100, 100, 100 ) );
 	gateSel->Set( 1, 0, tempSq, "keygate" );
 
+	tempSq.setColor( Color::Blue );
+	gateSel->Set( 2, 0, tempSq, "reform" );
+
 	tempSq.setColor( Color( 0, 255, 40 ) );
-	gateSel->Set( 2, 0, tempSq, "birdfight" );
+	gateSel->Set( 3, 0, tempSq, "birdfight" );
+
+	
+	
 	
 	/*tempSq.setColor( Color::Blue );
 	gateSel->Set( 0, 1, tempSq, "blue" );
@@ -12112,6 +12128,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	else if( type == "gateselector" )
 	{
 		Panel *p = new Panel( "gate_popup", 200, 500, this );
+		//p->AddCheckBox( "reform", Vector2i( 20, 300 ) );
 		return p;
 	}
 	else if( type == "terrainselector" )

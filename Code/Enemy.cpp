@@ -86,6 +86,8 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 		break;
 	case BasicBullet::COPYCAT:
 		bulletTilesetIndex = 1;
+	case BasicBullet::BOSS_CRAWLER:
+		bulletTilesetIndex = 2;
 		break;
 	}
 	

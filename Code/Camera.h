@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "Actor.h"
 
+struct MovementSequence;
 struct Camera
 {
 	Camera();
@@ -14,10 +15,16 @@ struct Camera
 	void UpdateRumble();
 	void EaseOutOfManual( int frames );
 	void SetManual( bool man );
+	void SetMovementSeq( MovementSequence *move,
+		bool relative );
 	sf::Vector2f manualPos;
 	sf::Vector2f startManualPos;
 	float startManualZoom;
 	float manualZoom;
+	MovementSequence *currMove;
+	bool relativeMoveSeq;
+	sf::Vector2f sequenceStartPos;
+	float sequenceStartZoom;
 
 	int easeOutCount;
 	int easeOutFrame;

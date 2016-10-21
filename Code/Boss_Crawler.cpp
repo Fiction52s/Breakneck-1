@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE, false, 1 ), facingRight( true ),
+	:Enemy( owner, EnemyType::STAGBEETLE, false, 1 ), facingRight( false ),
 	markerVA( sf::Quads, 5 * 4 )
 	//moveBezTest( .22,.85,.3,.91 )
 {
@@ -124,8 +124,8 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 	deathPartingSpeed = .4;
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	totalDistanceAround = 0;
 	Edge *curr = mover->ground;
@@ -138,7 +138,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	}
 	while( curr != mover->ground );
 
-	
+	ResetEnemy();
 
 	//bezFrame = 0;
 	//bezLength = 60 * NUM_STEPS;
@@ -183,7 +183,7 @@ void Boss_Crawler::ResetEnemy()
 	launcher->Reset();
 	bulletIndex = 0;
 	frameTest = 0;	
-	action = SHOOT;
+	action = WAIT;
 	travelIndex = 0;
 
 	for( int i = 0; i < 5 * 4; ++i )
@@ -404,8 +404,6 @@ bool Boss_Crawler::GetClockwise( int index )
 		}
 	}
 }
-
-
 
 void Boss_Crawler::UpdatePrePhysics()
 {
@@ -1002,7 +1000,7 @@ bool Boss_Crawler::PlayerSlowingMe()
 
 void Boss_Crawler::Draw(sf::RenderTarget *target )
 {
-	if( !dead )
+	if( !dead && action != WAIT )
 	{
 		target->draw( markerVA );
 		target->draw( sprite );
@@ -1014,11 +1012,11 @@ void Boss_Crawler::Draw(sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );

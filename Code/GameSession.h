@@ -291,6 +291,9 @@ struct MainMenu;
 
 struct GoalPulse;
 struct PauseMenu;
+struct Sequence;
+struct CrawlerFightSeq;
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -826,19 +829,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite miniGoalPtrSprite;
 	//temp only^^
 
-	struct Sequence
-	{
-		//Sequence *next;
-		//Sequence *prev;
-		int frameCount;
-		int frame;
-		virtual bool Update() = 0;
-		virtual void Draw( sf::RenderTarget *target ) = 0;
-	};
+	
 
 	Sequence *activeSequence;
 
-	struct GameStartSeq : Sequence
+	/*struct GameStartSeq : Sequence
 	{
 		GameStartSeq(GameSession *owner);
 		bool Update();
@@ -851,7 +846,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::Vector2f startPos;
 		GameSession *owner;
 	};
-	GameStartSeq *startSeq;
+	GameStartSeq *startSeq;*/
+
+	
+	CrawlerFightSeq *crawlerFightSeq;
 
 
 	struct Stored

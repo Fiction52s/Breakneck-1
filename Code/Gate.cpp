@@ -21,6 +21,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
+
 	//this could just be temporary
 	int t = (int)p_type;
 
@@ -43,6 +44,27 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	gQuads = NULL;
 	frame = 0;
+}
+
+void Gate::CalcAABB()
+{
+	assert( edgeA != NULL && edgeB != NULL );
+
+	double left = min( edgeA->v0.x, edgeA->v1.x );
+	double top = min( edgeA->v0.y, edgeA->v1.y );
+	double right = max( edgeA->v0.x, edgeA->v1.x );
+	double bot = max( edgeA->v0.y, edgeA->v1.y );
+
+	left -= 64;
+	top -= 64;
+	right += 64;
+	bot += 64;
+
+
+	aabb.left = left;
+	aabb.top = top;
+	aabb.width = right - left;
+	aabb.height = bot - top;
 }
 
 Gate::~Gate()
@@ -547,5 +569,6 @@ void Gate::HandleQuery( QuadTreeCollider *qtc )
 
 bool Gate::IsTouchingBox( const sf::Rect<double> &r )
 {
-	return edgeA->IsTouchingBox( r );
+	
+	return IsBoxTouchingBox( aabb, r );//edgeA->IsTouchingBox( r );//IsBoxTouchingBox( aabb, r );//r.intersects( aabb );//edgeA->IsTouchingBox( r );
 }

@@ -66,6 +66,12 @@ struct Actor : QuadTreeCollider,
 		SKYDIVE,
 		SKYDIVETOFALL,
 		WAITFORSHIP,
+		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
+		SEQ_CRAWLERFIGHT_LAND,
+		SEQ_CRAWLERFIGHT_STAND,
+		SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY,
+		SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED,
+		SEQ_CRAWLERFIGHT_DODGEBACK,
 		Count
 	};
 
@@ -105,7 +111,22 @@ struct Actor : QuadTreeCollider,
 		Expr_DEATH,
 		Expr_NONE
 	};
+
+	/*enum SeqType
+	{
+		SEQ_NOTHING,
+		SEQ_CRAWLER_FIGHT,
+		SEQ_Count
+	};
+	void StartSeq( SeqType s );
+	void UpdateSeq();
+	ControllerState seqInput;
+	bool cutInput;
+
 	
+	SeqType seq;
+	int seqFrame;*/
+
 	void SetActionExpr( Action a );
 	void SetExpr( Expr ex );
 	void SetAction( Action a );
@@ -120,6 +141,9 @@ struct Actor : QuadTreeCollider,
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;
 	bool toggleGrindInput;
+
+	void SetFakeCurrInput( 
+		ControllerState &state );
 
 	Tileset *ts_kinFace;
 	sf::Shader despFaceShader;

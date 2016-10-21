@@ -14,6 +14,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		//seq = SEQ_NOTHING;
 		enemiesKilledThisFrame = 0;
 		toggleBounceInput = gs->controller.keySettings.toggleBounce;
 		toggleTimeSlowInput = gs->controller.keySettings.toggleTimeSlow;
@@ -391,13 +392,27 @@ Actor::Actor( GameSession *gs )
 		tileset[FAIR] = owner->GetTileset( "fair_64x64.png", 64, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
+
+
 		actionLength[JUMP] = 2;
 		tileset[JUMP] = owner->GetTileset( "jump_64x64.png", 64, 64 );
 		normal[JUMP] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 
+		actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
+		tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset( "jump_64x64.png", 64, 64 );
+		normal[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
+
+		actionLength[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = 2;
+		tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = owner->GetTileset( "jump_64x64.png", 64, 64 );
+		normal[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
+
 		actionLength[LAND] = 1;
 		tileset[LAND] = owner->GetTileset( "land_64x64.png", 64, 64 );
 		normal[LAND] = owner->GetTileset( "land_NORMALS.png", 64, 64 );
+
+		actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
+		tileset[SEQ_CRAWLERFIGHT_LAND] = owner->GetTileset( "land_64x64.png", 64, 64 );
+		normal[SEQ_CRAWLERFIGHT_LAND] = owner->GetTileset( "land_NORMALS.png", 64, 64 );
 
 		actionLength[LAND2] = 1;
 		tileset[LAND2] =  owner->GetTileset( "land_64x64.png", 64, 64 );
@@ -407,9 +422,18 @@ Actor::Actor( GameSession *gs )
 		tileset[RUN] = owner->GetTileset( "run_64x64.png", 64, 64 );
 		normal[RUN] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
 
+		actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
+		tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset( "run_64x64.png", 64, 64 );
+		normal[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset( "run_NORMALS.png", 80, 48 );
+
 		actionLength[SLIDE] = 1;
 		tileset[SLIDE] = owner->GetTileset( "slide_64x64.png", 64, 64 );
 		normal[SLIDE] = owner->GetTileset( "slide_NORMALS.png", 64, 64 );
+
+		//temporary
+		actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
+		tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset( "slide_64x64.png", 64, 64 );
+		normal[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset( "slide_NORMALS.png", 64, 64 );
 
 		actionLength[SPRINT] = 8 * 4;
 		tileset[SPRINT] = owner->GetTileset( "sprint_128x48.png", 128, 48 );		
@@ -419,6 +443,10 @@ Actor::Actor( GameSession *gs )
 		actionLength[STAND] = 20 * 8;
 		tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
 		normal[STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
+
+		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
+		tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
+		normal[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
 
 		actionLength[DASHATTACK] = 8 * 2;
 		tileset[DASHATTACK] = owner->GetTileset( "dash_attack_128x96.png", 128, 96 );
@@ -1046,7 +1074,28 @@ void Actor::ActionEnded()
 		case WAITFORSHIP:
 			frame = 0;
 			break;
-			
+		case SEQ_CRAWLERFIGHT_STRAIGHTFALL:
+			frame = 1;
+			break;
+		case SEQ_CRAWLERFIGHT_LAND:
+			frame = 0;
+			action = SEQ_CRAWLERFIGHT_STAND;
+			break;
+		case SEQ_CRAWLERFIGHT_STAND:
+			//action = SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
+			frame = 0;
+			break;
+		case SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY:
+			//action = SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED;
+			//groundSpeed = 0;
+			frame = 0;
+			break;
+		case SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED:
+			frame = 0;
+			break;
+		case SEQ_CRAWLERFIGHT_DODGEBACK:
+			frame = 1;
+			break;
 		}
 	}
 }
@@ -1135,6 +1184,7 @@ void Actor::UpdatePrePhysics()
 
 	enemiesKilledThisFrame = 0;
 
+	cout << "action: " << action << endl;
 	
 
 	if( action == DEATH )
@@ -5631,6 +5681,20 @@ void Actor::UpdatePrePhysics()
 			groundSpeed = 0;
 			break;
 		}
+	case SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY:
+		{
+			//cout << "frame: " << frame << endl;
+			RunMovement();
+			break;
+		}
+	case SEQ_CRAWLERFIGHT_DODGEBACK:
+		if( frame == 0 )
+		{
+			ground = NULL;
+			velocity = V2d( -10, -100 );
+			break;
+		}
+		
 	}
 	
 	if( action != GRINDBALL )
@@ -10792,7 +10856,10 @@ void Actor::PhysicsResponse()
 				action = GROUNDHITSTUN;
 				frame = 0;
 			}
-			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND )
+			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
+				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
+				&& action != SEQ_CRAWLERFIGHT_LAND 
+				&& action != SEQ_CRAWLERFIGHT_DODGEBACK )
 			{
 				//cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
@@ -10808,11 +10875,18 @@ void Actor::PhysicsResponse()
 					//cout << "blahaaa" << endl;
 					//cout << "blahbbb" << endl;
 					//cout << "l" << endl;
+					//cout << "action = 5" << endl;
 					action = LAND;
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
 					leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
 				}
+			}
+			else if( action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK )
+			{
+				//cout << "action = 41" << endl;
+				action = SEQ_CRAWLERFIGHT_LAND;
+				frame = 0;
 			}
 		}
 
@@ -12141,6 +12215,37 @@ void Actor::UpdatePostPhysics()
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
 }
+
+//void Actor::StartSeq( SeqType s )
+//{
+//	switch( s )
+//	{
+//	case SEQ_CRAWLER_FIGHT:
+//		{
+//			PoiInfo *pi = owner->poiMap["crawlerfighttrigger"];
+//			V2d startFall = pi->pos;
+//
+//			action = JUMP;
+//			frame = 1;
+//			velocity = V2d( 0, 0 );
+//			cutInput = true;
+//			owner->cam.manual = true;
+//		}
+//		break;
+//	}
+//}
+//
+//void Actor::UpdateSeq()
+//{
+//	switch( seq )
+//	{
+//	case SEQ_CRAWLER_FIGHT:
+//		{
+//
+//		}
+//		break;
+//	}
+//}
 
 void Actor::SetActivePowers(
 		bool p_canAirDash,
@@ -13962,6 +14067,11 @@ void Actor::DebugDraw( RenderTarget *target )
 
 }
 
+void Actor::SetFakeCurrInput( ControllerState &state )
+{
+	currInput = state;
+}
+
 void Actor::UpdateSprite()
 {
 
@@ -13972,19 +14082,22 @@ void Actor::UpdateSprite()
 	}
 	switch( action )
 	{
+	case SEQ_CRAWLERFIGHT_STAND:
 	case STAND:
 		{	
 			
 		sprite->setTexture( *(tileset[STAND]->texture));
 			
 		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+
+		//the %20 is for seq
 		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
 		{
-			sprite->setTextureRect( tileset[STAND]->GetSubRect( frame / 8 ) );
+			sprite->setTextureRect( tileset[STAND]->GetSubRect( (frame / 8) % 20 ) );
 		}
 		else
 		{
-			sf::IntRect ir = tileset[STAND]->GetSubRect( frame / 8 );
+			sf::IntRect ir = tileset[STAND]->GetSubRect( (frame / 8) % 20 );
 				
 			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 		}
@@ -14028,6 +14141,7 @@ void Actor::UpdateSprite()
 		//cout << "setting to frame: " << frame / 4 << endl;
 		break;
 		}
+	case SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY:
 	case RUN:
 		{	
 			V2d pp = ground->GetPoint( edgeQuantity );
@@ -14035,6 +14149,9 @@ void Actor::UpdateSprite()
 			V2d along = normalize( ground->v1 - ground->v0 );
 
 			double xExtraStartRun = 0.0;//5.0
+
+			//this seems pretty odd. need a thing for its first repetition
+			//so i dont need to check the controller here
 			if( frame == 0 && ( 
 					( currInput.LLeft() && !prevInput.LLeft() ) 
 				||  ( currInput.LRight() && !prevInput.LRight() ) )  )
@@ -14083,7 +14200,7 @@ void Actor::UpdateSprite()
 			}
 			else*/
 			{
-				sprite->setTextureRect( tileset[RUN]->GetSubRect( frame / 4 ) );
+				sprite->setTextureRect( tileset[RUN]->GetSubRect( (frame / 4) % 10 ) );
 			}
 			
 		}
@@ -14096,7 +14213,7 @@ void Actor::UpdateSprite()
 			}
 			else*/
 			{
-				ir = tileset[RUN]->GetSubRect( frame / 4 );
+				ir = tileset[RUN]->GetSubRect( (frame / 4) % 10 );
 			}
 			 
 				
@@ -14225,6 +14342,8 @@ void Actor::UpdateSprite()
 		}
 		break;
 		}
+	case SEQ_CRAWLERFIGHT_STRAIGHTFALL:
+	case SEQ_CRAWLERFIGHT_DODGEBACK:
 	case JUMP:
 		{
 		sprite->setTexture( *(tileset[JUMP]->texture));
@@ -14350,6 +14469,7 @@ void Actor::UpdateSprite()
 			
 		break;
 		}
+	case SEQ_CRAWLERFIGHT_LAND:
 	case LAND: 
 		{
 
@@ -14508,6 +14628,7 @@ void Actor::UpdateSprite()
 			sprite->setRotation( 0 );
 			break;
 		}
+	case SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED:
 	case SLIDE:
 		{
 		sprite->setTexture( *(tileset[SLIDE]->texture));
@@ -16093,6 +16214,7 @@ void Actor::UpdateSprite()
 			}
 		}
 		break;
+
 	}
 	
 	if( bounceFlameOn )

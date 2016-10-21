@@ -16,7 +16,7 @@
 #include "Flow.h"
 #include "Boss.h"
 #include "PowerOrbs.h"
-#include "Cutscene.h"
+#include "Sequence.h"
 #include "SoundManager.h"
 #include "BarrierReactions.h"
 #include "EnvEffects.h"
@@ -619,6 +619,8 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {
 	
+	
+
 	keyFrame = 0;
 	for( int i = 0; i < EffectLayer::Count; ++i )
 	{
@@ -1750,6 +1752,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		gate->edgeB->edgeType = Edge::CLOSED_GATE;
 		gate->edgeB->info = gate;
 
+		
+
 		gate->edgeA->v0 = point0;
 		gate->edgeA->v1 = point1;
 
@@ -1758,6 +1762,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 			
 		gate->next = NULL;
 		gate->prev = NULL;
+
+		gate->CalcAABB();
 
 		//gate->v0 = point0;
 		//gate->v1 = point1;
@@ -2073,11 +2079,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
+				b_crawler = enemy;
+				//fullEnemyList.push_back( enemy );
+				//enem = enemy;
 
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );
+				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "basicturret" )
 			{
@@ -4963,6 +4969,8 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	crawlerFightSeq = new CrawlerFightSeq( this );
+
 	pauseMenu = new PauseMenu( this );
 	//pauseMenu->cOptions->xboxInputAssoc[0];
 	mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
@@ -5629,6 +5637,9 @@ int GameSession::Run( string fileN )
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
+
+
+
 			if( !cutPlayerInput )
 			{
 				ControllerState &pCurr = player->currInput;
@@ -5746,7 +5757,7 @@ int GameSession::Run( string fileN )
 				}
 			}
 
-			if( activeSequence != NULL && activeSequence == startSeq )
+			if( activeSequence != NULL )// && activeSequence == startSeq )
 			{
 				if( !activeSequence->Update() )
 				{
@@ -5757,24 +5768,16 @@ int GameSession::Run( string fileN )
 					
 				}
 			}
-			else
+			//else
 			{
-
+				
 				//cout << "before count: " << CountActiveEnemies() << endl;
 				totalGameFrames++;
 				player->UpdatePrePhysics();
 
-			
-
 				UpdateEnemiesPrePhysics();
 
-
-				
-
-				
-
 				UpdateEnemiesPhysics();
-
 
 				player->UpdatePostPhysics();
 
@@ -6190,7 +6193,7 @@ int GameSession::Run( string fileN )
 		
 		
 		
-		if( activeSequence != NULL && activeSequence == startSeq )
+		if( false )//activeSequence != NULL && activeSequence == startSeq )
 		{
 			activeSequence->Draw( preScreenTex );
 			
@@ -8292,6 +8295,7 @@ void GameSession::RespawnPlayer()
 		//}
 	}
 
+	//player->seq = Actor::SEQ_NOTHING;
 	player->followerPos = player->position;
 	player->followerVel = V2d( 0, 0 );
 	player->enemiesKilledThisFrame = 0;
@@ -8407,6 +8411,10 @@ void GameSession::RestartLevel()
 
 	fadingIn = false;
 	fadingOut = false;
+
+	crawlerFightSeq->Reset();
+
+	activeSequence = NULL;
 
 	RespawnPlayer();
 	pauseFrames = 0;
@@ -10425,6 +10433,8 @@ void GameSession::ResetEnemies()
 
 
 	if( b_bird != NULL ) b_bird->Reset();
+
+	if( b_crawler != NULL ) b_bird->Reset();
 }
 
 void GameSession::ResetPlants()
@@ -10524,10 +10534,10 @@ void GameSession::LevelSpecifics()
 {
 	if( fileName == "test3" )
 	{
-		startSeq = new GameStartSeq( this );
-		activeSequence = startSeq;
+		//startSeq = new GameStartSeq( this );
+		//activeSequence = startSeq;
 		//GameStartMovie();
-		cout << "doing stuff here" << endl;
+		//cout << "doing stuff here" << endl;
 	}
 	else
 	{
@@ -10975,114 +10985,114 @@ void EnvPlant::Reset()
 	particle->Reset();
 }
 
-GameSession::GameStartSeq::GameStartSeq( GameSession *own )
-	:stormVA( sf::Quads, 6 * 3 * 4 ) 
-{
-	owner = own;
-	shipTex.loadFromFile( "ship.png" );
-	shipSprite.setTexture( shipTex );
-	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, shipSprite.getLocalBounds().height / 2 );
-
-	stormTex.loadFromFile( "stormclouds.png" );
-	stormSprite.setTexture( stormTex );
-	
-	//shipSprite.setPosition( 250, 250 );
-	startPos = Vector2f( owner->player->position.x, owner->player->position.y );
-	frameCount = 1;//180;
-	frame = 0;
-
-	int count = 6;
-	for( int i = 0; i < count; ++i )
-	{
-		Vector2f topLeft( startPos.x - 480, startPos.y - 270 );
-		topLeft.y -= 540;
-
-		topLeft.x += i * 960;
-
-		stormVA[i*4].position = topLeft;
-		stormVA[i*4].texCoords = Vector2f( 0, 0 );
-
-		stormVA[i*4+1].position = topLeft + Vector2f( 0, 540 );
-		stormVA[i*4+1].texCoords = Vector2f( 0, 540 );
-
-		stormVA[i*4+2].position = topLeft + Vector2f( 960, 540 );
-		stormVA[i*4+2].texCoords = Vector2f( 960, 540 );
-
-		stormVA[i*4+3].position = topLeft + Vector2f( 960, 0 );
-		stormVA[i*4+3].texCoords = Vector2f( 960, 0 );
-
-		
-		
-
-
-		topLeft.y += 440 + 540;
-
-		stormVA[i*4 + 4 * count].position = topLeft;
-		stormVA[i*4 + 4 * count].texCoords = Vector2f( 0, 0 );
-
-		stormVA[i*4+1+4 * count].position = topLeft + Vector2f( 0, 540 );
-		stormVA[i*4+1+4 * count].texCoords = Vector2f( 0, 540 );
-
-		stormVA[i*4+2+4 * count].position = topLeft + Vector2f( 960, 540 );
-		stormVA[i*4+2+4 * count].texCoords = Vector2f( 960, 540 );
-
-		stormVA[i*4+3+4 * count].position = topLeft + Vector2f( 960, 0 );
-		stormVA[i*4+3+4 * count].texCoords = Vector2f( 960, 0 );
-
-		topLeft.y += 540;
-		stormVA[i*4 + 4 * count * 2].position = topLeft;
-		stormVA[i*4 + 4 * count * 2].texCoords = Vector2f( 0, 0 );
-
-		stormVA[i*4+1 + 4 * count * 2].position = topLeft + Vector2f( 0, 540 );
-		stormVA[i*4+1 + 4 * count * 2].texCoords = Vector2f( 0, 540 );
-
-		stormVA[i*4+2 + 4 * count * 2].position = topLeft + Vector2f( 960, 540 );
-		stormVA[i*4+2 + 4 * count * 2].texCoords = Vector2f( 960, 540 );
-
-		stormVA[i*4+3 + 4 * count * 2].position = topLeft + Vector2f( 960, 0 );
-		stormVA[i*4+3 + 4 * count * 2].texCoords = Vector2f( 960, 0 );
-	}
-}
-
-bool GameSession::GameStartSeq::Update()
-{
-	if( frame < frameCount )
-	{
-		
-		V2d vel( 60, 0 );
-		//if( frame > 60 )
-			//vel.y = -20;
-
-		shipSprite.setPosition( startPos.x + frame * vel.x, startPos.y + frame * vel.y );
-		++frame;
-
-		return true;
-	}
-	else 
-		return false;
-}
-
-void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
-{
-	target->setView( owner->bgView );
-	target->draw( owner->background );
-	target->setView( owner->view );
-
-	target->setView( owner->uiView );
-	owner->powerBar.Draw( target );
-
-	target->setView( owner->view );
-	/*sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
-	rs.setPosition( Vector2f( startPos.x - 480, startPos.y - 270 ) );
-	rs.setFillColor( Color::Black );
-	target->draw( rs );*/
-
-
-	//target->draw( stormVA, &stormTex );
-
-	//target->draw( shipSprite );
-
-}
+//GameSession::GameStartSeq::GameStartSeq( GameSession *own )
+//	:stormVA( sf::Quads, 6 * 3 * 4 ) 
+//{
+//	owner = own;
+//	shipTex.loadFromFile( "ship.png" );
+//	shipSprite.setTexture( shipTex );
+//	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, shipSprite.getLocalBounds().height / 2 );
+//
+//	stormTex.loadFromFile( "stormclouds.png" );
+//	stormSprite.setTexture( stormTex );
+//	
+//	//shipSprite.setPosition( 250, 250 );
+//	startPos = Vector2f( owner->player->position.x, owner->player->position.y );
+//	frameCount = 1;//180;
+//	frame = 0;
+//
+//	int count = 6;
+//	for( int i = 0; i < count; ++i )
+//	{
+//		Vector2f topLeft( startPos.x - 480, startPos.y - 270 );
+//		topLeft.y -= 540;
+//
+//		topLeft.x += i * 960;
+//
+//		stormVA[i*4].position = topLeft;
+//		stormVA[i*4].texCoords = Vector2f( 0, 0 );
+//
+//		stormVA[i*4+1].position = topLeft + Vector2f( 0, 540 );
+//		stormVA[i*4+1].texCoords = Vector2f( 0, 540 );
+//
+//		stormVA[i*4+2].position = topLeft + Vector2f( 960, 540 );
+//		stormVA[i*4+2].texCoords = Vector2f( 960, 540 );
+//
+//		stormVA[i*4+3].position = topLeft + Vector2f( 960, 0 );
+//		stormVA[i*4+3].texCoords = Vector2f( 960, 0 );
+//
+//		
+//		
+//
+//
+//		topLeft.y += 440 + 540;
+//
+//		stormVA[i*4 + 4 * count].position = topLeft;
+//		stormVA[i*4 + 4 * count].texCoords = Vector2f( 0, 0 );
+//
+//		stormVA[i*4+1+4 * count].position = topLeft + Vector2f( 0, 540 );
+//		stormVA[i*4+1+4 * count].texCoords = Vector2f( 0, 540 );
+//
+//		stormVA[i*4+2+4 * count].position = topLeft + Vector2f( 960, 540 );
+//		stormVA[i*4+2+4 * count].texCoords = Vector2f( 960, 540 );
+//
+//		stormVA[i*4+3+4 * count].position = topLeft + Vector2f( 960, 0 );
+//		stormVA[i*4+3+4 * count].texCoords = Vector2f( 960, 0 );
+//
+//		topLeft.y += 540;
+//		stormVA[i*4 + 4 * count * 2].position = topLeft;
+//		stormVA[i*4 + 4 * count * 2].texCoords = Vector2f( 0, 0 );
+//
+//		stormVA[i*4+1 + 4 * count * 2].position = topLeft + Vector2f( 0, 540 );
+//		stormVA[i*4+1 + 4 * count * 2].texCoords = Vector2f( 0, 540 );
+//
+//		stormVA[i*4+2 + 4 * count * 2].position = topLeft + Vector2f( 960, 540 );
+//		stormVA[i*4+2 + 4 * count * 2].texCoords = Vector2f( 960, 540 );
+//
+//		stormVA[i*4+3 + 4 * count * 2].position = topLeft + Vector2f( 960, 0 );
+//		stormVA[i*4+3 + 4 * count * 2].texCoords = Vector2f( 960, 0 );
+//	}
+//}
+//
+//bool GameSession::GameStartSeq::Update()
+//{
+//	if( frame < frameCount )
+//	{
+//		
+//		V2d vel( 60, 0 );
+//		//if( frame > 60 )
+//			//vel.y = -20;
+//
+//		shipSprite.setPosition( startPos.x + frame * vel.x, startPos.y + frame * vel.y );
+//		++frame;
+//
+//		return true;
+//	}
+//	else 
+//		return false;
+//}
+//
+//void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
+//{
+//	target->setView( owner->bgView );
+//	target->draw( owner->background );
+//	target->setView( owner->view );
+//
+//	target->setView( owner->uiView );
+//	owner->powerBar.Draw( target );
+//
+//	target->setView( owner->view );
+//	/*sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
+//	rs.setPosition( Vector2f( startPos.x - 480, startPos.y - 270 ) );
+//	rs.setFillColor( Color::Black );
+//	target->draw( rs );*/
+//
+//
+//	//target->draw( stormVA, &stormTex );
+//
+//	//target->draw( shipSprite );
+//
+//}
 
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {
@@ -11845,6 +11855,13 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
+		activeSequence = crawlerFightSeq;
+		activeSequence->frame = 0;
+
+		assert( b_crawler != NULL );
+		b_crawler->spawned = true;
+		AddEnemy( b_crawler );
+
 	}
 }
 

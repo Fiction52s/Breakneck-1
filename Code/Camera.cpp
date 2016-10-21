@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include <iostream>
 #include "GameSession.h"
+#include "Movement.h"
 
 using namespace std;
 using namespace sf;
@@ -44,6 +45,8 @@ Camera::Camera()
 	
 	easeOutFrame = 0;
 	easingOut = false;
+
+	currMove = NULL;
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -267,6 +270,27 @@ void Camera::Update( Actor *player )
 	if( manual || player->action == Actor::SPAWNWAIT || player->action == Actor::INTRO
 		|| player->action == Actor::EXIT )
 	{
+		if( manual && currMove != NULL )
+		{
+			for( int i = 0; i < NUM_STEPS; ++i )
+			{
+				currMove->Update();
+			}
+			
+
+			if( relativeMoveSeq )
+			{
+				pos = sequenceStartPos + Vector2f( currMove->position.x, currMove->position.y );
+				//cout << "
+			}
+			else
+			{
+				pos = Vector2f( currMove->position.x, currMove->position.y );
+			}
+
+			if( currMove->currMovement == NULL )
+				currMove = NULL;
+		}
 	//	UpdateRumble();
 		return;
 	}
@@ -922,6 +946,7 @@ void Camera::Update2( Actor *player )
 void Camera::SetManual( bool man )
 {
 	manual = man;
+	currMove = NULL;
 	if( man )
 	{ 
 		startManualPos = pos;
@@ -938,3 +963,12 @@ float Camera::GetZoom()
 {
 	return zoomLevel + zoomFactor;
 }
+
+void Camera::SetMovementSeq( MovementSequence *move, bool relative )
+{
+	currMove = move;
+	relativeMoveSeq = relative;
+	sequenceStartPos = pos;
+	sequenceStartZoom = GetZoom();
+}
+

@@ -54,6 +54,9 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	bool IsTouchingBox( const sf::Rect<double> &r );
 
 	void Draw( sf::RenderTarget *target );
+	void CalcAABB();
+
+	sf::Rect<double> aabb;
 
 	Edge *temp0prev;
 	Edge *temp0next;
