@@ -169,6 +169,11 @@ void Gate::UpdateLine()
 		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
 		tileHeight = 128;
 		break;
+	case CRAWLER_UNLOCK:
+		c = Color::Blue;
+		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
+		tileHeight = 128;
+		break;
 	}
 	thickLine[0].color = c;
 	thickLine[1].color = c;

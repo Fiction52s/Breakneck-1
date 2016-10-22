@@ -323,13 +323,16 @@ void Boss_Crawler::ActionEnded()
 	} 
 	else if( action == AFTERFIGHT1 )
 	{
+
+		cout << "after frame: " << frame << endl;
 		if( frame == 60 )
 		{
 			portrait.Close();
 		}
-		else if( frame == 120 )
+		else if( frame == 65 )
 		{
 			action = BURROW;
+			frame = 0;
 			//dead = true;
 			//death
 		}
@@ -337,10 +340,26 @@ void Boss_Crawler::ActionEnded()
 	}
 	else if( action == BURROW )
 	{
-		if( frame == 60 )
+		if( frame == 30 )
 		{
 			dead = true;
 			deathFrame = 60;
+			for( int i = 0; i < owner->numGates; ++i )
+			{
+				Gate *g = owner->gates[i];
+				if( g->type == Gate::CRAWLER_UNLOCK )
+				{
+					owner->UnlockGate( g );
+					if( g->zoneA != NULL && !g->zoneA->active )
+						owner->ActivateZone( g->zoneA );
+					else if( g->zoneB != NULL && !g->zoneB->active )
+					{
+						owner->ActivateZone( g->zoneB );
+					}
+					g->gState = Gate::OPEN;
+				}
+			}
+			
 		}
 	}
 }
@@ -565,7 +584,7 @@ void Boss_Crawler::UpdatePrePhysics()
 		//cout << "health now: " << health << endl;
 		if( health <= 0 )
 		{
-			action = AFTERFIGHT1;
+			action = AFTERFIGHT0;
 			frame = 0;
 			owner->activeSequence = owner->crawlerAfterFightSeq;
 			//action = 
@@ -1023,7 +1042,7 @@ void Boss_Crawler::UpdatePostPhysics()
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
-	if( deathFrame == 60 )
+	if( dead )//deathFrame == 60 )
 	{
 		owner->RemoveEnemy( this );
 		return;

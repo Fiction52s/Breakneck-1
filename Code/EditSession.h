@@ -298,6 +298,7 @@ struct GateInfo
 		BLACK,
 		KEYGATE,
 		BIRDFIGHT,
+		CRAWLER_UNLOCK,
 		Count
 	};
 

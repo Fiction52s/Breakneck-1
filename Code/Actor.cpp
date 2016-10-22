@@ -1111,6 +1111,10 @@ void Actor::ActionEnded()
 			hasPowerAirDash = true;
 			action = STAND;
 			frame = 0;
+			//owner->cam.manualZoom = 1;
+			//owner->cam.manualPos
+			owner->cam.SetManual( false );
+			owner->cam.EaseOutOfManual( 60 );
 			break;
 		}
 	}
@@ -17018,7 +17022,7 @@ bool Actor::CanUnlockGate( Gate *g )
 		canUnlock = true;
 	}
 	else */
-	if( g->type == Gate::BLACK )
+	if( g->type == Gate::BLACK || g->type == Gate::CRAWLER_UNLOCK )
 	{
 		canUnlock = false;
 	}

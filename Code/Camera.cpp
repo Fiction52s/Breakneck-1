@@ -304,24 +304,7 @@ void Camera::Update( Actor *player )
 	//	UpdateRumble();
 		return;
 	}
-	else if( easingOut )
-	{
-		startManualPos.x = player->position.x;
-		startManualPos.y = player->position.y;
-		cout << "easing frame: " << easeOutFrame << endl;
-		double r = (double)easeOutFrame / easeOutCount;
-		sf::Vector2<double> p;
-		p = r * sf::Vector2<double>(startManualPos.x, startManualPos.y) + (1.0-r) * sf::Vector2<double>( manualPos.x, manualPos.y );
-		pos = Vector2f( p.x, p.y );
-		zoomFactor = r * startManualZoom + (1-r) * manualZoom;
-		++easeOutFrame;
-		if( easeOutFrame == easeOutCount )
-		{
-			easingOut = false;
-			
-		}
-		return;
-	}
+	
 
 	if( bossCrawler )
 	{
@@ -771,7 +754,30 @@ void Camera::Update( Actor *player )
 		//pos.y += topExtra;
 	}	
 
+	if( easingOut )
+	{
+		//startManualPos.x = player->position.x;
+		//startManualPos.y = player->position.y;
+		cout << "easing frame: " << easeOutFrame << endl;
+		double r = (double)easeOutFrame / easeOutCount;
+		sf::Vector2<double> p;
+		p = r * sf::Vector2<double>(pos.x, pos.y) + (1.0-r) * sf::Vector2<double>( manualPos.x, manualPos.y );
+		pos = Vector2f( p.x, p.y );
+		zoomFactor = r * zoomFactor + (1-r) * manualZoom;
+		
+		++easeOutFrame;
+		if( easeOutFrame == easeOutCount )
+		{
+			easingOut = false;
+			
+		}
+		//return;
+	}
+
 	UpdateRumble();
+
+
+
 
 	//offset.y += (double)framesFalling / 60 * 100.0;
 

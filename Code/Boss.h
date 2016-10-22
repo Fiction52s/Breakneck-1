@@ -105,6 +105,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 		WAIT,
 		EMERGE,
 		MEETPLAYER1,
+		AFTERFIGHT0,
 		AFTERFIGHT1,
 		BURROW
 	};

@@ -246,6 +246,10 @@ void GateInfo::SetType( const std::string &gType )
 		type = GateTypes::KEYGATE;
 		reformBehindYou = true;
 	}
+	else if( gType == "crawlerunlock" )
+	{
+		type = GateTypes::CRAWLER_UNLOCK;
+	}
 	else
 	{
 		assert( false );
@@ -342,11 +346,20 @@ void GateInfo::UpdateLine()
 	}
 	else if( type == GateTypes::KEYGATE )
 	{
-		c = Color( 100, 100, 100 );
+		if( !reformBehindYou )
+			c = Color( 100, 100, 100 );
+		else
+		{
+			c = Color( 200, 200, 200 );
+		}
 	}
 	else if( type == GateTypes::BIRDFIGHT )
 	{
 		c = Color( 0, 255, 40 );
+	}
+	else if( type == GateTypes::CRAWLER_UNLOCK )
+	{
+		c = Color( 0, 0, 255);
 	}
 	/*else if( type == GateTypes::GREEN )
 	{
@@ -3693,13 +3706,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	tempSq.setColor( Color( 100, 100, 100 ) );
 	gateSel->Set( 1, 0, tempSq, "keygate" );
 
-	tempSq.setColor( Color::Blue );
+	tempSq.setColor( Color::White );
 	gateSel->Set( 2, 0, tempSq, "reform" );
 
 	tempSq.setColor( Color( 0, 255, 40 ) );
 	gateSel->Set( 3, 0, tempSq, "birdfight" );
 
-	
+	tempSq.setColor( Color::Blue );
+	gateSel->Set( 4, 0, tempSq, "crawlerunlock" );
 	
 	
 	/*tempSq.setColor( Color::Blue );
