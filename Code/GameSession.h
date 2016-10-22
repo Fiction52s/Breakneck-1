@@ -293,6 +293,7 @@ struct GoalPulse;
 struct PauseMenu;
 struct Sequence;
 struct CrawlerFightSeq;
+struct CrawlerAfterFightSeq;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -657,6 +658,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Tileset *ts);//,
 		//int (*ValidEdge)(sf::Vector2<double> &));
 
+	void ClearFX();
+
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
 	std::string rayMode;
@@ -850,7 +853,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	
 	CrawlerFightSeq *crawlerFightSeq;
-
+	CrawlerAfterFightSeq *crawlerAfterFightSeq;
 
 	struct Stored
 	{

@@ -17,6 +17,7 @@ struct Camera
 	void SetManual( bool man );
 	void SetMovementSeq( MovementSequence *move,
 		bool relative );
+	sf::Vector2f GetPos();
 	sf::Vector2f manualPos;
 	sf::Vector2f startManualPos;
 	float startManualZoom;

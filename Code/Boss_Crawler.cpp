@@ -3,6 +3,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Boss.h"
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -42,7 +43,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 
 
-
+	ts_face = owner->GetTileset( "Bosses/Crawler/01_crawler_face_02_384x384.png", 384, 384 );
 
 
 	initHealth = 60;
@@ -307,6 +308,41 @@ void Boss_Crawler::UpdateHitboxes()
 
 void Boss_Crawler::ActionEnded()
 {
+	if( action == MEETPLAYER1 )
+	{
+		if( frame == 60 )
+		{
+			portrait.Close();
+		}
+		else if( frame == 120 )
+		{
+			action = SHOOT;
+			frame = 0;
+			owner->crawlerFightSeq->StartFightMsg();
+		}
+	} 
+	else if( action == AFTERFIGHT1 )
+	{
+		if( frame == 60 )
+		{
+			portrait.Close();
+		}
+		else if( frame == 120 )
+		{
+			action = BURROW;
+			//dead = true;
+			//death
+		}
+
+	}
+	else if( action == BURROW )
+	{
+		if( frame == 60 )
+		{
+			dead = true;
+			deathFrame = 60;
+		}
+	}
 }
 
 double Boss_Crawler::GetDistanceCCW( int index )
@@ -405,10 +441,49 @@ bool Boss_Crawler::GetClockwise( int index )
 	}
 }
 
+void Boss_Crawler::SetRelFacePos( sf::Vector2f &pos )
+{
+	portrait.sprite.setPosition( pos + Vector2f( position.x, position.y ) );
+}
+
+void Boss_Crawler::StartMeetPlayerSeq()
+{
+	SetRelFacePos( Vector2f( 0, -200 ) );
+	portrait.Open();
+	portrait.SetSprite( owner->b_crawler->ts_face,
+		0 );
+	portrait.scaleMultiple = .5;
+	action = MEETPLAYER1;
+	frame = 0;
+}
+
+void Boss_Crawler::StartAfterFightSeq()
+{
+	Reset();
+	portrait.Open();
+	portrait.SetSprite( owner->b_crawler->ts_face,
+		0 );
+	portrait.scaleMultiple = .5;
+	action = AFTERFIGHT1;
+	frame = 0;
+	SetRelFacePos( Vector2f( 0, -200 ) );
+	//owner->b_crawler->SetRelFacePos( Vector2f( 0, -200 ) );
+	//owner->b_crawler->portrait.Open();
+	//owner->b_crawler->portrait.SetSprite( owner->b_crawler->ts_face,
+	//	0 );
+	//owner->b_crawler->portrait.scaleMultiple = .5;
+	//action = MEETPLAYER1;
+	//frame = 0;
+}
+
+
 void Boss_Crawler::UpdatePrePhysics()
 {
+	portrait.Update();
 	launcher->UpdatePrePhysics();
 	Actor *player = owner->player;
+
+	
 
 	if( dead )
 		return;
@@ -488,12 +563,16 @@ void Boss_Crawler::UpdatePrePhysics()
 		health -= 20;
 
 		//cout << "health now: " << health << endl;
-
 		if( health <= 0 )
 		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			dead = true;
+			action = AFTERFIGHT1;
+			frame = 0;
+			owner->activeSequence = owner->crawlerAfterFightSeq;
+			//action = 
+			//if( hasMonitor && !suppressMonitor )
+			//	owner->keyMarker->CollectKey();
+
+			//dead = true;
 
 			
 		}
@@ -944,7 +1023,7 @@ void Boss_Crawler::UpdatePostPhysics()
 	if( receivedHit != NULL )
 		owner->Pause( 5 );
 
-	if( deathFrame == 30 )
+	if( deathFrame == 60 )
 	{
 		owner->RemoveEnemy( this );
 		return;
@@ -1000,6 +1079,8 @@ bool Boss_Crawler::PlayerSlowingMe()
 
 void Boss_Crawler::Draw(sf::RenderTarget *target )
 {
+	portrait.Draw( target );
+	//dialogue.Draw( target );
 	if( !dead && action != WAIT )
 	{
 		target->draw( markerVA );

@@ -103,7 +103,10 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 		SHOOT,
 		BOOST,
 		WAIT,
-		EMERGE
+		EMERGE,
+		MEETPLAYER1,
+		AFTERFIGHT1,
+		BURROW
 	};
 	int frameTest;
 
@@ -126,9 +129,16 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	void UpdateHitboxes();
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void ResetEnemy();
-	
+	PortraitBox portrait;
 	void SaveEnemyState();
 	void LoadEnemyState();
+
+	void StartMeetPlayerSeq();
+	void StartAfterFightSeq();
+
+	void SetRelFacePos( sf::Vector2f &pos );
+	bool showFace;
+	Tileset *ts_face;
 
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
@@ -178,7 +188,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	int bulletIndex;
 	int travelIndex;
 	int numBullets;
-
+//	PortraitBox portrait;
 	Action action;
 	bool facingRight;
 

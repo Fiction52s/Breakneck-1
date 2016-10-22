@@ -549,6 +549,13 @@ Actor::Actor( GameSession *gs )
 		tileset[WAITFORSHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
 		normal[WAITFORSHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
 
+		actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
+		tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset( "w1_airdashget_128x128.png", 128, 128 );
+		normal[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset( "w1_airdashget_128x128.png", 128, 128 );
+
+		actionLength[GETPOWER_AIRDASH_FLIP] = 20 * 5;
+		tileset[GETPOWER_AIRDASH_FLIP] = owner->GetTileset( "w1_airdashget_128x128.png", 128, 128 );
+		normal[GETPOWER_AIRDASH_FLIP] = owner->GetTileset( "w1_airdashget_128x128.png", 128, 128 );
 
 		actionLength[GOALKILL] = 72 * 2;
 		ts_goalKillArray = new Tileset*[5];
@@ -1096,6 +1103,15 @@ void Actor::ActionEnded()
 		case SEQ_CRAWLERFIGHT_DODGEBACK:
 			frame = 1;
 			break;
+		case GETPOWER_AIRDASH_MEDITATE:
+			action = GETPOWER_AIRDASH_FLIP;
+			frame = 0;
+			break;
+		case GETPOWER_AIRDASH_FLIP:
+			hasPowerAirDash = true;
+			action = STAND;
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -1157,7 +1173,7 @@ bool Actor::AirAttack()
 
 void Actor::UpdatePrePhysics()
 {
-	
+	//cout << "JFRAME BEHI: " << frame << endl;
 	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
 		if( drainCounter == drainCounterMax)
@@ -1184,7 +1200,7 @@ void Actor::UpdatePrePhysics()
 
 	enemiesKilledThisFrame = 0;
 
-	cout << "action: " << action << endl;
+	//cout << "action: " << action << endl;
 	
 
 	if( action == DEATH )
@@ -1720,6 +1736,7 @@ void Actor::UpdatePrePhysics()
 	//cout << "hitstunFrames: " << hitstunFrames << endl;
 	//choose action
 
+	
 	
 	bool canStandUp = true;
 	if( b.rh < normalHeight )
@@ -5690,11 +5707,14 @@ void Actor::UpdatePrePhysics()
 	case SEQ_CRAWLERFIGHT_DODGEBACK:
 		if( frame == 0 )
 		{
+			//cout << "leaving ground" << endl;
 			ground = NULL;
-			velocity = V2d( -10, -100 );
-			break;
+			velocity = V2d( -10, -20);
+			
 		}
-		
+		//cout << "frame: " << frame << endl;
+		//velocity = V2d( -30, -100 );
+		break;
 	}
 	
 	if( action != GRINDBALL )
@@ -10887,6 +10907,7 @@ void Actor::PhysicsResponse()
 				//cout << "action = 41" << endl;
 				action = SEQ_CRAWLERFIGHT_LAND;
 				frame = 0;
+				groundSpeed = 0;
 			}
 		}
 
@@ -11198,7 +11219,7 @@ void Actor::PhysicsResponse()
 				
 				g->gState = Gate::REFORM;
 				g->frame = 0;
-				//cout << "LOCKING BEHIND YOU" << endl;
+				cout << "LOCKING BEHIND YOU" << endl;
 			}
 			else
 			{
@@ -16214,7 +16235,111 @@ void Actor::UpdateSprite()
 			}
 		}
 		break;
+	case GETPOWER_AIRDASH_MEDITATE:
+		{
+			sprite->setTexture( *(tileset[GETPOWER_AIRDASH_MEDITATE]->texture));
+			
+		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
 
+		//the %20 is for seq
+			int f = min( frame / 3, 2 );
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+
+				sprite->setTextureRect( tileset[GETPOWER_AIRDASH_MEDITATE]->GetSubRect( f ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[GETPOWER_AIRDASH_MEDITATE]->GetSubRect( f );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			if( ground != NULL )
+			{
+				double angle = GroundedAngle();
+
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+				V2d oldv0 = ground->v0;
+				V2d oldv1 = ground->v1;
+
+				if( movingGround != NULL )
+				{
+					ground->v0 += movingGround->position;
+					ground->v1 += movingGround->position;
+				}
+
+				V2d pp = ground->GetPoint( edgeQuantity );
+
+				if( movingGround != NULL )
+				{
+					ground->v0 = oldv0;
+					ground->v1 = oldv1;
+				}
+			
+				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+					sprite->setPosition( pp.x + offsetX, pp.y );
+				else
+					sprite->setPosition( pp.x, pp.y );
+				sprite->setRotation( angle / PI * 180 );
+			}
+			break;
+		}
+		
+	case GETPOWER_AIRDASH_FLIP:
+		{
+			sprite->setTexture( *(tileset[GETPOWER_AIRDASH_FLIP]->texture));
+			
+		//sprite->setTextureRect( tilesetStand->GetSubRect( frame / 4 ) );
+
+		//the %20 is for seq
+			int f = min( frame / 5, 11 );
+			if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+			{
+
+				sprite->setTextureRect( tileset[GETPOWER_AIRDASH_FLIP]->GetSubRect( f ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[GETPOWER_AIRDASH_FLIP]->GetSubRect( f );
+				
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+
+			if( ground != NULL )
+			{
+				double angle = GroundedAngle();
+
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+				V2d oldv0 = ground->v0;
+				V2d oldv1 = ground->v1;
+
+				if( movingGround != NULL )
+				{
+					ground->v0 += movingGround->position;
+					ground->v1 += movingGround->position;
+				}
+
+				V2d pp = ground->GetPoint( edgeQuantity );
+
+				if( movingGround != NULL )
+				{
+					ground->v0 = oldv0;
+					ground->v1 = oldv1;
+				}
+			
+				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+					sprite->setPosition( pp.x + offsetX, pp.y );
+				else
+					sprite->setPosition( pp.x, pp.y );
+				sprite->setRotation( angle / PI * 180 );
+			}
+			break;
+		}
 	}
 	
 	if( bounceFlameOn )

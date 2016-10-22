@@ -47,6 +47,9 @@ Camera::Camera()
 	easingOut = false;
 
 	currMove = NULL;
+
+	rX = 0;
+	rY = 0;
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -222,8 +225,10 @@ void Camera::SetRumble( int xFactor, int yFactor, int duration )
 	rumbleX = xFactor;
 	rumbleY = yFactor;
 	rumbling = true;
+	rumbleFrame = 0;
 }
 
+//make sure to rumble off when you reset the level
 void Camera::UpdateRumble()
 {
 	if( !rumbling )
@@ -246,7 +251,7 @@ void Camera::UpdateRumble()
 	rX = f * rumbleX;
 	rY = f * rumbleY;
 
-	pos += sf::Vector2f( rX, rY );
+	//pos += sf::Vector2f( rX, rY );
 
 	++rumbleFrame;
 	
@@ -264,6 +269,8 @@ void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 	zoomLevel = zLevel;
 	
 }
+
+
 
 void Camera::Update( Actor *player )
 {
@@ -290,7 +297,10 @@ void Camera::Update( Actor *player )
 
 			if( currMove->currMovement == NULL )
 				currMove = NULL;
+
+			
 		}
+		UpdateRumble();
 	//	UpdateRumble();
 		return;
 	}
@@ -962,6 +972,11 @@ void Camera::SetManual( bool man )
 float Camera::GetZoom()
 {
 	return zoomLevel + zoomFactor;
+}
+
+sf::Vector2f Camera::GetPos()
+{
+	return pos + Vector2f( rX, rY );
 }
 
 void Camera::SetMovementSeq( MovementSequence *move, bool relative )

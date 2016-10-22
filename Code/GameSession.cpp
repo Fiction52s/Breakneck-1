@@ -4970,6 +4970,7 @@ int GameSession::Run( string fileN )
 	OpenFile( fileName );
 	
 	crawlerFightSeq = new CrawlerFightSeq( this );
+	crawlerAfterFightSeq = new CrawlerAfterFightSeq( this );
 
 	pauseMenu = new PauseMenu( this );
 	//pauseMenu->cOptions->xboxInputAssoc[0];
@@ -5765,7 +5766,7 @@ int GameSession::Run( string fileN )
 				}
 				else
 				{
-					
+					//cout << "player frame: " << player->frame << endl;
 				}
 			}
 			//else
@@ -5846,6 +5847,8 @@ int GameSession::Run( string fileN )
 
 				cam.Update( player );
 
+				Vector2f camPos = cam.GetPos();
+
 				for( list<Barrier*>::iterator it = barriers.begin();
 					it != barriers.end(); ++it )
 				{
@@ -5860,7 +5863,7 @@ int GameSession::Run( string fileN )
 
 				rain.Update();
 
-				testPar->Update( cam.pos );
+				testPar->Update( camPos );
 
 				//Vector2f diff = cam.pos - oldCam;
 
@@ -5972,7 +5975,8 @@ int GameSession::Run( string fileN )
 
 				double camWidth = 960 * cam.GetZoom();
 				double camHeight = 540 * cam.GetZoom();
-				screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
+				
+				screenRect = sf::Rect<double>( camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight );
 			
 				//flowShader.setParameter( "radius0", flow
 				
@@ -6210,13 +6214,13 @@ int GameSession::Run( string fileN )
 		else
 		{
 
-
+		Vector2f camPos = cam.GetPos();
 		view.setSize( Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()) );
 		//view.setSize( cut.cameras[cutFrame].getSize() );
 		lastViewSize = view.getSize();
 
 		//view.setCenter( player->position.x + camOffset.x, player->position.y + camOffset.y );
-		view.setCenter( cam.pos.x, cam.pos.y );
+		view.setCenter( camPos.x, camPos.y );
 		
 		
 		//view.setCenter( cut.cameras[cutFrame].getCenter() );
@@ -8364,6 +8368,7 @@ void GameSession::RespawnPlayer()
 	cam.pos.y = player->position.y;
 	cam.offset = Vector2f( 0, 0 );
 	cam.manual = false;
+	cam.rumbling = false;
 
 	player->hasDoubleJump = true;
 	player->hasAirDash = true;
@@ -8394,6 +8399,23 @@ void GameSession::RespawnPlayer()
 	player->SetExpr( Actor::Expr::Expr_NEUTRAL );
 }
 
+void GameSession::ClearFX()
+{
+	for( int i = 0; i < EffectLayer::Count; ++i )
+	{
+		Enemy *curr = effectLists[i];
+		while( curr != NULL )
+		{
+			Enemy *next = curr->next;
+			assert( curr->type == Enemy::BASICEFFECT );
+			DeactivateEffect( (BasicEffect*)curr );
+
+			curr = next;
+		}
+		effectLists[i] = NULL;
+	}
+}
+
 void GameSession::RestartLevel()
 {
 	soundNodeList->Clear();
@@ -8413,7 +8435,7 @@ void GameSession::RestartLevel()
 	fadingOut = false;
 
 	crawlerFightSeq->Reset();
-
+	crawlerAfterFightSeq->Reset();
 	activeSequence = NULL;
 
 	RespawnPlayer();
@@ -10434,7 +10456,7 @@ void GameSession::ResetEnemies()
 
 	if( b_bird != NULL ) b_bird->Reset();
 
-	if( b_crawler != NULL ) b_bird->Reset();
+	if( b_crawler != NULL ) b_crawler->Reset();
 }
 
 void GameSession::ResetPlants()

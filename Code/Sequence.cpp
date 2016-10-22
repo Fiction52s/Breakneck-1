@@ -52,13 +52,16 @@ CrawlerFightSeq::CrawlerFightSeq( GameSession *p_owner )
 	camMove0.Reset();
 
 	//playerStartFrame = 30 + 60 + 120 + 60 + 60;
+	startFightMsgFrame = -1;
 
-	
+	state = INIT;
+	//stateLength 
 }
 
 void CrawlerFightSeq::Reset()
 {
 	camMove0.Reset();
+	startFightMsgFrame = -1;
 }
 
 bool CrawlerFightSeq::Update()
@@ -101,19 +104,28 @@ bool CrawlerFightSeq::Update()
 	{
 		player->action = Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED;
 		player->groundSpeed = 0;
-		owner->cam.SetRumble( 10, 10, 120 );
-		owner->b_crawler->action = Boss_Crawler::SHOOT;
+		owner->cam.SetRumble( 3, 3, 40 );
+		owner->b_crawler->action = Boss_Crawler::EMERGE;
 		owner->b_crawler->frame = 0;
 	}
 	else if( frame == blah + 50 )
 	{
 		player->action = Actor::SEQ_CRAWLERFIGHT_DODGEBACK;
-		frame = 0;
+		player->frame = 0;
+
+	}
+	else if( frame == blah + 80 )
+	{
+		//in reality this would be calling a function within the crawler
+		owner->b_crawler->StartMeetPlayerSeq();
+
+		//owner->b_crawler->portrait.SetSprite( ts_birdFace, 1 );
 	}
 
-	if( frame == 30 )
+	if( startFightMsgFrame >= 0 && frame == startFightMsgFrame + 30 )
 	{
-		
+		player->action = Actor::STAND;
+		player->frame = 0;
 	}
 
 	++frame;
@@ -125,6 +137,150 @@ bool CrawlerFightSeq::Update()
 }
 
 void CrawlerFightSeq::Draw( sf::RenderTarget *target )
+{
+
+}
+
+void CrawlerFightSeq::StartFightMsg()
+{
+	startFightMsgFrame = frame;
+	owner->cam.SetManual( false );
+	owner->cam.EaseOutOfManual( 30 );
+	//owner->player->action = Actor::STAND;
+	//frame = 0;
+	//owner->cam.SetManual( true );
+}
+
+CrawlerAfterFightSeq::CrawlerAfterFightSeq( GameSession *p_owner )
+	:owner( p_owner )
+{
+	frame = 0;
+	frameCount = 6000;
+
+	//nexus1Pos = owner->poiMap["nexus1"]->pos;
+	cfightCenter = owner->poiMap["cfightcenter"]->pos;
+
+	//camMove0.AddLineMovement( V2d( 0, 0 ), V2d( 1500, 0 ),
+	//	CubicBezier( 0, 0, 1, 1 ), 120 ); 
+	//camMove0.AddMovement( new WaitMovement( nexus1Pos, 60 ) );
+	/*camMove0.AddLineMovement( cfightCenter + V2d( 0, -300 ), cfightCenter, CubicBezier( 0, 0, 1, 1 ), 30 ); 
+	camMove0.AddMovement( new WaitMovement( cfightCenter, 60 ) );
+	camMove0.AddLineMovement( cfightCenter, nexus1Pos, CubicBezier( 0, 0, 1, 1 ), 120 ); 
+	camMove0.AddMovement( new WaitMovement( nexus1Pos, 60 ) );
+	camMove0.AddLineMovement( nexus1Pos, cfightCenter, CubicBezier( 0, 0, 1, 1 ), 60 ); 
+
+	camMove0.Reset();*/
+
+	//playerStartFrame = 30 + 60 + 120 + 60 + 60;
+	//startFightMsgFrame = -1;
+
+	//state = INIT;
+	//stateLength 
+}
+
+void CrawlerAfterFightSeq::Reset()
+{
+	//camMove0.Reset();
+	//startFightMsgFrame = -1;
+}
+
+bool CrawlerAfterFightSeq::Update()
+{
+	Actor *player = owner->player;
+	switch( frame )
+	{
+	case 0:
+		{
+			owner->Fade( false, 60, Color::White );
+			owner->Pause( 60 );
+			owner->cam.SetManual( true );
+			//owner->cam.SetMovementSeq( &camMove0, false );
+			//owner->cam.Set( Vector2f( cfightCenter.x, cfightCenter.y - 300), 1, 0 );
+			
+			
+			//player->velocity = V2d( 0, 10 );
+			//player->position = owner->poiMap["crawlerfighttrigger"]->pos;
+			//player->facingRight = true;
+		}
+		break;
+	case 1:
+		{
+			owner->ClearFX();
+			owner->cam.Set( Vector2f( cfightCenter.x, cfightCenter.y ), 1, 0 );
+			owner->Fade( true, 60, Color::White );
+			owner->Pause( 60 );
+			player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
+			player->frame = 0;
+			player->groundSpeed = 0;
+			PoiInfo *pi = owner->poiMap["cfightjumpback"];
+			player->ground = pi->edge;
+			player->edgeQuantity = pi->edgeQuantity;
+			player->facingRight = true;
+			owner->b_crawler->StartAfterFightSeq();
+			//player->action = Actor::Seq
+		}
+		break;
+	case 60:
+		{
+		}
+		break;
+	}
+
+	if( frame == 80 )
+	{
+		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
+		player->frame = 0;
+	}
+	else if( frame == 120 )
+	{
+		player->action = Actor::GETPOWER_AIRDASH_MEDITATE;
+		player->frame = 0;
+		player->groundSpeed = 0;
+	}
+
+
+	//int blah = 30 + 60 + 120 + 60 + 60;
+	//if( frame == blah )//if( owner->cam.currMove == NULL )
+	//{
+	//	player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
+	//}
+	//else if( frame == blah + 30 )
+	//{
+	//	player->action = Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED;
+	//	player->groundSpeed = 0;
+	//	owner->cam.SetRumble( 3, 3, 40 );
+	//	owner->b_crawler->action = Boss_Crawler::EMERGE;
+	//	owner->b_crawler->frame = 0;
+	//}
+	//else if( frame == blah + 50 )
+	//{
+	//	player->action = Actor::SEQ_CRAWLERFIGHT_DODGEBACK;
+	//	player->frame = 0;
+
+	//}
+	//else if( frame == blah + 80 )
+	//{
+	//	//in reality this would be calling a function within the crawler
+	//	owner->b_crawler->StartMeetPlayerSeq();
+
+	//	//owner->b_crawler->portrait.SetSprite( ts_birdFace, 1 );
+	//}
+
+	//if( startFightMsgFrame >= 0 && frame == startFightMsgFrame + 30 )
+	//{
+	//	player->action = Actor::STAND;
+	//	player->frame = 0;
+	//}
+
+	++frame;
+
+	if( frame == frameCount )
+		return false;
+	else
+		return true;
+}
+
+void CrawlerAfterFightSeq::Draw( sf::RenderTarget *target )
 {
 
 }
