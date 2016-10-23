@@ -758,7 +758,7 @@ void Camera::Update( Actor *player )
 	{
 		//startManualPos.x = player->position.x;
 		//startManualPos.y = player->position.y;
-		cout << "easing frame: " << easeOutFrame << endl;
+		//cout << "easing frame: " << easeOutFrame << endl;
 		double r = (double)easeOutFrame / easeOutCount;
 		sf::Vector2<double> p;
 		p = r * sf::Vector2<double>(pos.x, pos.y) + (1.0-r) * sf::Vector2<double>( manualPos.x, manualPos.y );

@@ -2192,8 +2192,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> hasMonitor;
 
 				FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-
-				
+				//int nexusIndex = 1;
+				//Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+				//	nexusIndex );				
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
@@ -7914,10 +7915,21 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Enemy *e = (Enemy*)qte;
 
+		
 
 		bool a = e->spawnRect.intersects( tempSpawnRect );
 		bool b = ( e->zone == NULL || e->zone->active ); 
 		
+		//if( e->type == Enemy::NEXUS )
+		//{
+		//	cout << "zone: " << e->zone << ", " << e->zone->active << endl;
+		//	cout << "orig: " << originalZone << ", " << originalZone->active << endl;
+		//	cout << "blah: " << e->zone->allEnemies.size() << endl;
+		//	//cout << "querying nexus: " << (int)a << ", " << (int)b << ", :: " 
+		//		//<< ( e->zone == NULL ) << endl;
+		//	
+		//}
+
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( a && b )
 		{

@@ -431,10 +431,11 @@ struct Nexus : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
+	
 
 	sf::Sprite sprite;
 	Tileset *ts;
-
+	sf::Vector2<double> entrancePos;
 	Edge *ground;
 	double edgeQuantity;
 

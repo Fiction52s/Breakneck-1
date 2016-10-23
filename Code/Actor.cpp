@@ -565,6 +565,10 @@ Actor::Actor( GameSession *gs )
 		ts_goalKillArray[3] = owner->GetTileset( "goal_w02_killd_384x256.png", 384, 256 );
 		ts_goalKillArray[4] = owner->GetTileset( "goal_w02_kille_384x256.png", 384, 256 );
 
+		actionLength[ENTERNEXUS1] = 10 * 4;
+		tileset[ENTERNEXUS1] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
+		normal[ENTERNEXUS1] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
+
 		actionLength[GOALKILLWAIT] = 2;
 
 		actionLength[SPAWNWAIT] = 120;
@@ -5760,7 +5764,8 @@ void Actor::UpdatePrePhysics()
 	}
 	
 
-	if( ground == NULL && bounceEdge == NULL && action != DEATH )
+	if( ground == NULL && bounceEdge == NULL && action != DEATH
+		&& action != ENTERNEXUS1 )
 	{
 		if( velocity.x > maxAirXSpeed )
 			velocity.x = maxAirXSpeed;
@@ -14010,6 +14015,18 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 	}
 }
 
+void Actor::EnterNexus( int nexusIndex, sf::Vector2<double> &pos )
+{
+	if( nexusIndex == 0 )
+	{
+		action = ENTERNEXUS1;
+		frame = 0;
+		position = pos;
+		velocity = V2d( 0, 0 );
+	}
+	
+}
+
 void Actor::DodecaLateDraw(sf::RenderTarget *target)
 {
 	sf::Sprite dodecaSprite;
@@ -16342,6 +16359,16 @@ void Actor::UpdateSprite()
 					sprite->setPosition( pp.x, pp.y );
 				sprite->setRotation( angle / PI * 180 );
 			}
+			break;
+		}
+	case ENTERNEXUS1:
+		{
+			sprite->setTexture( *(tileset[ENTERNEXUS1]->texture));
+			sprite->setTextureRect( tileset[ENTERNEXUS1]->GetSubRect( frame / 4 ) );
+			sprite->setOrigin( sprite->getLocalBounds().width / 2,
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
 			break;
 		}
 	}

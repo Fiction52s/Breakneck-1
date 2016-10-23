@@ -37,7 +37,9 @@ Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 	gn = g->Normal();
 	angle = atan2( gn.x, -gn.y );
 
-	position = gPoint + gn * height / 2.0;
+	position = gPoint + gn * 200.0;//height / 2.0;
+
+	entrancePos = gPoint + gn * 200.0;
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );// / 2 );
@@ -74,7 +76,7 @@ Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
+	spawnRect = sf::Rect<double>( gPoint.x - 800, gPoint.y - 800, 800 * 2, 800 * 2 );
 
 	//ts_death = owner->GetTileset( "foottrapdeath.png", 160, 80 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -86,6 +88,8 @@ Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 	Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 	//deathVector = V2d( 1, -1 );
+
+	ResetEnemy();
 }
 
 void Nexus::ResetEnemy()
@@ -160,35 +164,40 @@ void Nexus::UpdatePhysics()
 		slowCounter = 1;
 	}
 
+	if( length( owner->player->position - entrancePos ) < 5.0 )
+	{
+		owner->player->EnterNexus( 0, entrancePos );
+	}
+
 	if( !dead && receivedHit == NULL )
 	{
-		UpdateHitboxes();
+		//UpdateHitboxes();
 
-		pair<bool, bool> result = PlayerHitMe();
-		if( result.first )
-		{
-			//cout << "hit here!" << endl;
-			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 6 );
-			/*owner->player->test = true;
-			owner->player->currAttackHit = true;
-			owner->player->flashColor = COLOR_BLUE;
-			owner->player->flashFrames = 5;
-			owner->player->currentSpeedBar += .8;
-			owner->player->swordShaders[owner->player->speedLevel]setParameter( "energyColor", COLOR_BLUE );
-			owner->player->desperationMode = false;
-			owner->powerBar.Charge( 2 * 6 * 3 );*/
+		//pair<bool, bool> result = PlayerHitMe();
+		//if( result.first )
+		//{
+		//	//cout << "hit here!" << endl;
+		//	//triggers multiple times per frame? bad?
+		//	owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 6 );
+		//	/*owner->player->test = true;
+		//	owner->player->currAttackHit = true;
+		//	owner->player->flashColor = COLOR_BLUE;
+		//	owner->player->flashFrames = 5;
+		//	owner->player->currentSpeedBar += .8;
+		//	owner->player->swordShaders[owner->player->speedLevel]setParameter( "energyColor", COLOR_BLUE );
+		//	owner->player->desperationMode = false;
+		//	owner->powerBar.Charge( 2 * 6 * 3 );*/
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
-			{
-				owner->player->velocity.y = 4;//.5;
-			}
-		}
+		//	if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+		//	{
+		//		owner->player->velocity.y = 4;//.5;
+		//	}
+		//}
 
-		if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
+		//if( IHitPlayer() )
+		//{
+		////	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//}
 	}
 }
 
@@ -243,7 +252,8 @@ void Nexus::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( hasMonitor && !suppressMonitor )
+		target->draw( sprite );
+		/*if( hasMonitor && !suppressMonitor )
 		{
 			if( owner->pauseFrames < 2 || receivedHit == NULL )
 			{
@@ -266,7 +276,7 @@ void Nexus::Draw(sf::RenderTarget *target )
 				target->draw( sprite, hurtShader );
 			}
 			
-		}
+		}*/
 	}
 	else
 	{
@@ -400,8 +410,11 @@ bool Nexus::PlayerSlowingMe()
 
 void Nexus::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
+	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
+
+	
+
+	//sprite.setPosition( position.x, position.y );
 
 	if( dead )
 	{
@@ -421,15 +434,15 @@ void Nexus::UpdateSprite()
 	}
 	else
 	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-				keySprite->getLocalBounds().height / 2 );
-			keySprite->setPosition( position.x, position.y );
+		//if( hasMonitor && !suppressMonitor )
+		//{
+		//	//keySprite.setTexture( *ts_key->texture );
+		//	keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
+		//	keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+		//		keySprite->getLocalBounds().height / 2 );
+		//	keySprite->setPosition( position.x, position.y );
 
-		}
+		//}
 	}
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 }

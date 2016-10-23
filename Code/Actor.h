@@ -74,6 +74,7 @@ struct Actor : QuadTreeCollider,
 		SEQ_CRAWLERFIGHT_DODGEBACK,
 		GETPOWER_AIRDASH_MEDITATE,		
 		GETPOWER_AIRDASH_FLIP,
+		ENTERNEXUS1,
 		Count
 	};
 
@@ -143,6 +144,8 @@ struct Actor : QuadTreeCollider,
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;
 	bool toggleGrindInput;
+
+	void EnterNexus( int nexusIndex, sf::Vector2<double> &pos );
 
 	void SetFakeCurrInput( 
 		ControllerState &state );
