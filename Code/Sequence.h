@@ -200,16 +200,6 @@ struct CoyoteFightSeq : Sequence
 	GameSession *owner;
 };
 
-struct CoyoteFightSeq : Sequence
-{
-	CoyoteFightSeq( GameSession *owner );
-	bool Update();
-	void Draw( sf::RenderTarget *target );
-	void Reset();
-
-	GameSession *owner;
-};
-
 struct CoyoteTalkSeq : Sequence
 {
 	CoyoteTalkSeq( GameSession *owner );

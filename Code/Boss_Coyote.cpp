@@ -369,8 +369,6 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
-	crawlAnimationFactor = 5;
-	rollAnimationFactor = 5;
 
 
 	/*testLaunch = new Launcher( this, owner, 10, 1,
@@ -385,9 +383,6 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	
 
 	deathPartingSpeed = .4;
-
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
 
 	
 
@@ -834,135 +829,13 @@ void Boss_Coyote::PhysicsResponse()
 {
 	if( !dead  )
 	{
-		bool roll = testMover->roll;
-		double angle = 0;
-		Edge *ground = testMover->ground;
-		double edgeQuantity = testMover->edgeQuantity;
-
-		if( ground != NULL )
-		{
-		//cout << "response" << endl;
-			double spaceNeeded = 0;
-			V2d gn = ground->Normal();
-			V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
 		
-	
-		if( !roll )
-		{
-			//position = gPoint + gn * 32.0;
-			angle = atan2( gn.x, -gn.y );
+		V2d p = testMover->physBody.globalPosition;
+
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
+		sprite.setPosition( p.x, p.y );
+		sprite.setRotation( 0 );
 		
-//			sprite.setTexture( *ts_walk->texture );
-			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !facingRight )
-			{
-				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			else
-			{
-				sprite.setTextureRect( r );
-			}
-			
-			//V2d pp = ground->GetPoint( testMover->edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( gPoint.x, gPoint.y );
-		}
-		else
-		{
-			
-			if( facingRight )
-			{
-				V2d vec = normalize( position - ground->v1 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}
-			else
-			{
-				//angle = 
-				/*V2d e0n = ground->edge0->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e0n.y, e0n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;*/
-
-			
-
-			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			//	angleVec = normalize( angleVec );
-
-			//	position = gPoint + angleVec * 16.0;
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}	
-		}
-		}
-		else
-		{
-			V2d p = testMover->physBody.globalPosition;
-
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
-			sprite.setPosition( p.x, p.y );
-			sprite.setRotation( 0 );
-		}
 
 		//sprite.setPosition( position.x, position.y );
 
@@ -1021,7 +894,7 @@ void Boss_Coyote::PhysicsResponse()
 
 		//gotta get the correct angle upon death
 		Transform t;
-		t.rotate( angle / PI * 180 );
+		//t.rotate( angle / PI * 180 );
 		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 		deathVector = V2d( newPoint.x, newPoint.y );
 
@@ -1125,11 +998,6 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
 		}
 		
 		target->draw( topDeathSprite );

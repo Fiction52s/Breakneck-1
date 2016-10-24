@@ -324,7 +324,7 @@ void Boss_Crawler::ActionEnded()
 		{
 			action = SHOOT;
 			frame = 0;
-			owner->crawlerFightSeq->StartFightMsg();
+			crawlerFightSeq->StartFightMsg();
 		}
 	} 
 	else if( action == AFTERFIGHT1 )

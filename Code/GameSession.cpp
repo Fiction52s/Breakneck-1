@@ -2082,10 +2082,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 				b_crawler = enemy;
-				//fullEnemyList.push_back( enemy );
-				//enem = enemy;
-
-				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "basicturret" )
 			{
@@ -2633,6 +2629,23 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enem = enemy;
 
 				enemyTree->Insert( enemy );
+			}
+			else if( typeName == "bosscoyote" )
+			{
+				//always grounded
+
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity );
+				b_coyote = enemy;
 			}
 
 			//w4
@@ -4975,7 +4988,7 @@ int GameSession::Run( string fileN )
 	OpenFile( fileName );
 	
 	
-	enterNexus1Seq = new EnterNexus1Seq( this );
+	//enterNexus1Seq = new EnterNexus1Seq( this );
 
 	pauseMenu = new PauseMenu( this );
 	//pauseMenu->cOptions->xboxInputAssoc[0];
@@ -8450,9 +8463,9 @@ void GameSession::RestartLevel()
 	fadingIn = false;
 	fadingOut = false;
 
-	crawlerFightSeq->Reset();
-	crawlerAfterFightSeq->Reset();
-	enterNexus1Seq->Reset();
+	//crawlerFightSeq->Reset();
+	//crawlerAfterFightSeq->Reset();
+	//enterNexus1Seq->Reset();
 	activeSequence = NULL;
 
 	RespawnPlayer();
@@ -10474,6 +10487,8 @@ void GameSession::ResetEnemies()
 	if( b_bird != NULL ) b_bird->Reset();
 
 	if( b_crawler != NULL ) b_crawler->Reset();
+
+	if( b_coyote != NULL ) b_coyote->Reset();
 }
 
 void GameSession::ResetPlants()

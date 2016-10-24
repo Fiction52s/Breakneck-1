@@ -176,7 +176,7 @@ void Nexus::UpdatePhysics()
 		action = ENTERED;
 		owner->player->EnterNexus( 0, entrancePos );
 		owner->activeSequence = enterNexus1Seq;
-		owner->enterNexus1Seq->nexus = this;
+		enterNexus1Seq->nexus = this;
 	}
 
 	if( !dead && receivedHit == NULL )
