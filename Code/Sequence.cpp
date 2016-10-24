@@ -370,10 +370,10 @@ bool EnterNexus1Seq::Update()
 				if( g->type == Gate::NEXUS1_UNLOCK )
 				{
 					owner->UnlockGate( g );
-					//if( owner->currentZone == g->zoneA )
-					//	owner->ActivateZone( g->zoneB );
-					//else
-					//	owner->ActivateZone( g->zoneA );
+					if( owner->currentZone == g->zoneA )
+						owner->ActivateZone( g->zoneB );
+					else
+						owner->ActivateZone( g->zoneA );
 					//g->gState = Gate::OPEN;
 				}
 			}

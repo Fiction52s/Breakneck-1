@@ -350,19 +350,19 @@ void Boss_Crawler::ActionEnded()
 				Gate *g = owner->gates[i];
 				if( g->type == Gate::CRAWLER_UNLOCK )
 				{
-					//owner->UnlockGate( g );
+					owner->UnlockGate( g );
 
-					/*if( owner->currentZone == g->zoneA )
+					if( owner->currentZone == g->zoneA )
 						owner->ActivateZone( g->zoneB );
 					else
-						owner->ActivateZone( g->zoneA );*/
+						owner->ActivateZone( g->zoneA );
 					/*if( g->zoneA != NULL && !g->zoneA->active )
 						owner->ActivateZone( g->zoneA );
 					else if( g->zoneB != NULL && !g->zoneB->active )
 					{
 						owner->ActivateZone( g->zoneB );
 					}*/
-					//g->gState = Gate::OPEN;
+					g->gState = Gate::OPEN;
 				}
 			}
 			
@@ -484,7 +484,8 @@ void Boss_Crawler::StartMeetPlayerSeq()
 
 void Boss_Crawler::StartAfterFightSeq()
 {
-	Reset();
+	ResetEnemy();
+	//Reset();
 	portrait.Open();
 	portrait.SetSprite( owner->b_crawler->ts_face,
 		0 );

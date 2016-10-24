@@ -434,14 +434,15 @@ void Zone::Init()
 		delete (*it);
 	}
 
-	/*for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
+	for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
 	{
 		if( (*it)->type == Enemy::NEXUS )
 		{
-			owner->ActivateZone( this );
+			active = true;
+			//owner->ActivateZone( this );
 			break;
 		}
-	}*/
+	}
 }
 
 void Zone::SetShadowColor( sf::Color c )

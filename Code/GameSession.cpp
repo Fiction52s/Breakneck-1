@@ -4655,7 +4655,7 @@ void GameSession::CreateZones()
 
 void GameSession::SetupZones()
 {
-	cout << "setupzones" << endl;
+	//cout << "setupzones" << endl;
 	//setup subzones
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
@@ -4672,7 +4672,7 @@ void GameSession::SetupZones()
 		}
 	}
 
-		cout << "1" << endl;
+	//	cout << "1" << endl;
 	//add enemies to the correct zone.
 	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
 	{
