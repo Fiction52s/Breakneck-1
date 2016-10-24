@@ -174,6 +174,11 @@ void Gate::UpdateLine()
 		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
 		tileHeight = 128;
 		break;
+	case NEXUS1_UNLOCK:
+		c = Color::Cyan;
+		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
+		tileHeight = 128;
+		break;
 	}
 	thickLine[0].color = c;
 	thickLine[1].color = c;

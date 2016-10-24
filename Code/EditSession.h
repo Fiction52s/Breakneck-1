@@ -299,6 +299,7 @@ struct GateInfo
 		KEYGATE,
 		BIRDFIGHT,
 		CRAWLER_UNLOCK,
+		NEXUS1_UNLOCK,
 		Count
 	};
 
@@ -317,6 +318,7 @@ struct GateInfo
 	void Draw( sf::RenderTarget *target );
 	bool reformBehindYou;
 	int numKeysRequired;
+	sf::Color color;
 	GateTypes type;
 	
 };

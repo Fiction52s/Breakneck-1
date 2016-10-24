@@ -9,9 +9,10 @@
 
 //typedef std::pair <Gate*,bool> GateBool;
 struct Enemy;
+struct GameSession;
 struct Zone
 {
-	Zone( TerrainPolygon & tp );
+	Zone( GameSession *owner, TerrainPolygon & tp );
 	~Zone();
 	
 	void Init();
@@ -35,7 +36,7 @@ struct Zone
 	int requiredKeys;
 
 	bool showShadow;
-
+	GameSession *owner;
 	Zone *activeNext;
 };
 

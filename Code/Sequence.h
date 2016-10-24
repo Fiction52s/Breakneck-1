@@ -120,4 +120,47 @@ struct CrawlerAfterFightSeq : Sequence
 	GameSession *owner;
 };
 
+struct EnterNexus1Seq : Sequence
+{
+	/*enum State
+	{
+		INIT,
+		FIGHTSTARTMSG,
+		Count
+	};
+
+	
+	State state;
+	int stateLength[State::Count];*/
+
+	Nexus *nexus;
+	EnterNexus1Seq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+	//void StartFightMsg();
+
+	//int startFightMsgFrame;
+	//MovementSequence camMove0;
+	//Tileset *ts_fall;
+	//Tileset *ts_land;
+
+	//sf::Vector2<double> startFallPos;
+	//sf::Vector2<double> nexus1Pos;
+	//sf::Vector2<double> cfightCenter;
+	Edge *afterNexusGround;
+	double afterQuantity;
+	//int playerStartFrame;
+
+
+	
+
+	//Tileset *ts_crawlerBoss;
+
+
+	//Tileset *
+
+	GameSession *owner;
+};
+
 #endif 

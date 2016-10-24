@@ -342,21 +342,27 @@ void Boss_Crawler::ActionEnded()
 	{
 		if( frame == 30 )
 		{
+			//frame = 0;
 			dead = true;
-			deathFrame = 60;
+			//deathFrame = 60;
 			for( int i = 0; i < owner->numGates; ++i )
 			{
 				Gate *g = owner->gates[i];
 				if( g->type == Gate::CRAWLER_UNLOCK )
 				{
-					owner->UnlockGate( g );
-					if( g->zoneA != NULL && !g->zoneA->active )
+					//owner->UnlockGate( g );
+
+					/*if( owner->currentZone == g->zoneA )
+						owner->ActivateZone( g->zoneB );
+					else
+						owner->ActivateZone( g->zoneA );*/
+					/*if( g->zoneA != NULL && !g->zoneA->active )
 						owner->ActivateZone( g->zoneA );
 					else if( g->zoneB != NULL && !g->zoneB->active )
 					{
 						owner->ActivateZone( g->zoneB );
-					}
-					g->gState = Gate::OPEN;
+					}*/
+					//g->gState = Gate::OPEN;
 				}
 			}
 			
@@ -1044,7 +1050,9 @@ void Boss_Crawler::UpdatePostPhysics()
 
 	if( dead )//deathFrame == 60 )
 	{
+		cout << "blah: " << owner->CountActiveEnemies() << endl;
 		owner->RemoveEnemy( this );
+		cout << "blah1: " << owner->CountActiveEnemies() << endl;
 		return;
 	}
 

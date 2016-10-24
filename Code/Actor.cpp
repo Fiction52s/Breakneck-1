@@ -17049,7 +17049,7 @@ bool Actor::CanUnlockGate( Gate *g )
 		canUnlock = true;
 	}
 	else */
-	if( g->type == Gate::BLACK || g->type == Gate::CRAWLER_UNLOCK )
+	if( g->type == Gate::BLACK || g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
 	{
 		canUnlock = false;
 	}

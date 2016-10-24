@@ -250,6 +250,10 @@ void GateInfo::SetType( const std::string &gType )
 	{
 		type = GateTypes::CRAWLER_UNLOCK;
 	}
+	else if( gType == "nexus1unlock" )
+	{
+		type = GateTypes::NEXUS1_UNLOCK;
+	}
 	else
 	{
 		assert( false );
@@ -337,29 +341,33 @@ void GateInfo::UpdateLine()
 	V2d leftv1 = dv1 - other * width;
 	V2d rightv1 = dv1 + other * width;
 
-	cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
+	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
-	Color c;
+	//Color c;
 	if( type == GateTypes::BLACK )
 	{
-		c = Color( 200, 200, 200 );
+		color = Color( 200, 200, 200 );
 	}
 	else if( type == GateTypes::KEYGATE )
 	{
 		if( !reformBehindYou )
-			c = Color( 100, 100, 100 );
+			color = Color( 100, 100, 100 );
 		else
 		{
-			c = Color( 200, 200, 200 );
+			color = Color( 200, 200, 200 );
 		}
 	}
 	else if( type == GateTypes::BIRDFIGHT )
 	{
-		c = Color( 0, 255, 40 );
+		color = Color( 0, 255, 40 );
 	}
 	else if( type == GateTypes::CRAWLER_UNLOCK )
 	{
-		c = Color( 0, 0, 255);
+		color = Color( 0, 0, 255);
+	}
+	else if( type == GateTypes::NEXUS1_UNLOCK )
+	{
+		color = Color::Cyan;
 	}
 	/*else if( type == GateTypes::GREEN )
 	{
@@ -377,10 +385,10 @@ void GateInfo::UpdateLine()
 	{
 		c = Color( 0, 255, 40 );
 	}*/
-	thickLine[0].color = c;
-	thickLine[1].color = c;
-	thickLine[2].color = c;
-	thickLine[3].color = c;
+	thickLine[0].color = color;
+	thickLine[1].color = color;
+	thickLine[2].color = color;
+	thickLine[3].color = color;
 
 	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
 	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
@@ -417,7 +425,7 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	}*/
 
 	Color c;
-	if( type == GateTypes::BLACK )
+	/*if( type == GateTypes::BLACK )
 	{
 		c = Color::Black;
 	}
@@ -428,10 +436,10 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	else if( type == GateTypes::BIRDFIGHT )
 	{
 		c = Color( 0, 255, 40 );
-	}
+	}*/
 
 	CircleShape cs( 5 );
-	cs.setFillColor( c );
+	cs.setFillColor( color );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
 	cs.setPosition( point0->pos.x, point0->pos.y );
@@ -3714,6 +3722,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	tempSq.setColor( Color::Blue );
 	gateSel->Set( 4, 0, tempSq, "crawlerunlock" );
+
+	tempSq.setColor( Color::Cyan );
+	gateSel->Set( 5, 0 , tempSq, "nexus1unlock" );
 	
 	
 	/*tempSq.setColor( Color::Blue );

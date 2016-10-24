@@ -412,6 +412,15 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 
 struct Nexus : Enemy
 {
+	enum Action
+	{
+		NORMAL,
+		ENTERED,
+		EXPLODED,
+		Count
+	};
+
+	Action action;
 	Nexus( GameSession *owner,
 		Edge *ground, double quantity,
 		int nexusIndex );
@@ -432,7 +441,7 @@ struct Nexus : Enemy
 	void LoadEnemyState();
 	void ResetEnemy();
 	
-
+	
 	sf::Sprite sprite;
 	Tileset *ts;
 	sf::Vector2<double> entrancePos;

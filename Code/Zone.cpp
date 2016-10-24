@@ -2,6 +2,7 @@
 #include "poly2tri/poly2tri.h"
 #include <iostream>
 #include "Enemy.h"
+#include "GameSession.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -18,8 +19,8 @@
 using namespace sf;
 using namespace std;
 
-Zone::Zone( TerrainPolygon &tp )
-	:active( false )
+Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
+	:active( false ), owner( p_owner )
 {
 	requiredKeys = 0;
 	showShadow = true;
@@ -432,6 +433,15 @@ void Zone::Init()
 	{
 		delete (*it);
 	}
+
+	/*for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
+	{
+		if( (*it)->type == Enemy::NEXUS )
+		{
+			owner->ActivateZone( this );
+			break;
+		}
+	}*/
 }
 
 void Zone::SetShadowColor( sf::Color c )

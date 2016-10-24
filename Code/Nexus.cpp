@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -21,6 +22,7 @@ using namespace sf;
 Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 		:Enemy( owner, EnemyType::NEXUS, false, 1 ), ground( g ), edgeQuantity( q )
 {
+	action = NORMAL;
 	initHealth = 40;
 	health = initHealth;
 
@@ -94,6 +96,7 @@ Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 
 void Nexus::ResetEnemy()
 {
+	action = NORMAL;
 	//cout << "reset" << endl;
 	health = initHealth;
 	frame = 0;
@@ -164,9 +167,12 @@ void Nexus::UpdatePhysics()
 		slowCounter = 1;
 	}
 
-	if( length( owner->player->position - entrancePos ) < 5.0 )
+	if( action == NORMAL && length( owner->player->position - entrancePos ) < 30.0 )
 	{
+		action = ENTERED;
 		owner->player->EnterNexus( 0, entrancePos );
+		owner->activeSequence = owner->enterNexus1Seq;
+		owner->enterNexus1Seq->nexus = this;
 	}
 
 	if( !dead && receivedHit == NULL )

@@ -16,6 +16,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		KEYGATE,
 		BIRDFIGHT,
 		CRAWLER_UNLOCK,
+		NEXUS1_UNLOCK,
 		Count
 	};
 

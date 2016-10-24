@@ -294,6 +294,7 @@ struct PauseMenu;
 struct Sequence;
 struct CrawlerFightSeq;
 struct CrawlerAfterFightSeq;
+struct EnterNexus1Seq;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -854,6 +855,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	CrawlerFightSeq *crawlerFightSeq;
 	CrawlerAfterFightSeq *crawlerAfterFightSeq;
+	EnterNexus1Seq * enterNexus1Seq;
 
 	struct Stored
 	{

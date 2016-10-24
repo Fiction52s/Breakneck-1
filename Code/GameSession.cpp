@@ -1225,7 +1225,9 @@ void GameSession::RemoveEnemy( Enemy *e )
 
 	if( prev == NULL && next == NULL )
 	{
+		//cout << "etype: " << (int)e->type << ", activelist: " << (int)activeEnemyList->type << endl;
 		activeEnemyList = NULL;
+		
 	}
 	else
 	{
@@ -4212,7 +4214,7 @@ void GameSession::CreateZones()
 
 					if( okayZone )
 					{
-						Zone *z = new Zone( tp );
+						Zone *z = new Zone( this, tp );
 						z->gates = currGates;
 						zones.push_back( z );
 					//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
@@ -4396,7 +4398,7 @@ void GameSession::CreateZones()
 
 					if( okayZone )
 					{
-						Zone *z = new Zone( tpb );
+						Zone *z = new Zone( this, tpb );
 						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
 						z->gates = currGates;
 						zones.push_back( z );
@@ -4619,7 +4621,7 @@ void GameSession::CreateZones()
 
 		tp.FixWinding();
 
-		Zone *z = new Zone( tp );
+		Zone *z = new Zone( this, tp );
 		z->gates = outsideGates;
 		zones.push_back( z );
 
@@ -4831,6 +4833,8 @@ void GameSession::SetupZones()
 		(*it)->Init();
 	}
 
+
+
 	/*for( int i = 0; i < numGates; ++i )
 	{
 		if( gates[i]->zoneA == gates[i]->zoneB )
@@ -4972,6 +4976,7 @@ int GameSession::Run( string fileN )
 	
 	crawlerFightSeq = new CrawlerFightSeq( this );
 	crawlerAfterFightSeq = new CrawlerAfterFightSeq( this );
+	enterNexus1Seq = new EnterNexus1Seq( this );
 
 	pauseMenu = new PauseMenu( this );
 	//pauseMenu->cOptions->xboxInputAssoc[0];
@@ -8448,6 +8453,7 @@ void GameSession::RestartLevel()
 
 	crawlerFightSeq->Reset();
 	crawlerAfterFightSeq->Reset();
+	enterNexus1Seq->Reset();
 	activeSequence = NULL;
 
 	RespawnPlayer();
