@@ -78,6 +78,7 @@ bool CrawlerFightSeq::Update()
 			owner->Fade( true, 60, Color::Black );
 			owner->Pause( 60 );
 			player->action = Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL;
+			player->frame = 1;
 			player->velocity = V2d( 0, 10 );
 			player->position = owner->poiMap["crawlerfighttrigger"]->pos;
 			player->facingRight = true;
@@ -208,7 +209,7 @@ bool CrawlerAfterFightSeq::Update()
 	case 1:
 		{
 			owner->ClearFX();
-			owner->cam.Set( Vector2f( cfightCenter.x, cfightCenter.y ), 1, 3 );
+			owner->cam.Set( Vector2f( cfightCenter.x, cfightCenter.y ), 1, 0 );
 			owner->Fade( true, 60, Color::White );
 			owner->Pause( 60 );
 			//owner->cam.SetManual( false );
@@ -462,4 +463,211 @@ bool EnterNexus1Seq::Update()
 void EnterNexus1Seq::Draw( sf::RenderTarget *target )
 {
 
+}
+
+MeetCoyoteSeq::MeetCoyoteSeq( GameSession *p_owner )
+	:owner( p_owner )
+{
+	PoiInfo *pi0 = owner->poiMap["coyotemeetstart"];
+	startGround = pi0->edge;
+	startQuant = pi0->edgeQuantity;
+
+	PoiInfo *pi1 = owner->poiMap["coyotesleep"];
+	coyotePos = pi1->edge;
+	coyoteQuant = pi1->edgeQuantity;
+	//frameCount = -1;
+
+
+}
+
+bool MeetCoyoteSeq::Update()
+{
+	Actor *player = owner->player;
+	switch( frame )
+	{
+	case 0:
+		{
+		owner->cam.SetManual( true );
+
+		V2d center = startGround->GetPoint( startQuant ) + coyotePos->GetPoint( coyoteQuant );
+		center /= 2.0;
+		center.y -= 100;
+		//owner->cam.SetMovementSeq( &camMove0, false );
+		owner->cam.Set( Vector2f( center.x, center.y ), 1, 0 );
+		owner->Fade( true, 60, Color::Black );
+		owner->Pause( 60 );
+		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
+		player->offsetX = 0;
+		player->frame = 0;
+		player->facingRight = true;
+		
+		//player->position = owner->poiMap["crawlerfighttrigger"]->pos;
+		
+		break;
+		}
+	case 30:
+		{
+			player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
+			player->frame = 0;
+			break;
+		}
+		
+	}
+
+	if( frame == 90 )
+	{
+		return false;
+	}
+
+	++frame;
+
+	return true;
+}
+
+void MeetCoyoteSeq::Draw( RenderTarget *target )
+{
+
+}
+
+void MeetCoyoteSeq::Reset()
+{
+	frame = 0;
+}
+
+CoyoteTalkSeq::CoyoteTalkSeq( GameSession *p_owner )
+	:owner( p_owner )
+{
+	PoiInfo *pi0 = owner->poiMap["coyotemeetstart"];
+	startGround = pi0->edge;
+	startQuant = pi0->edgeQuantity;
+
+	PoiInfo *pi1 = owner->poiMap["coyotesleep"];
+	coyotePos = pi1->edge;
+	coyoteQuant = pi1->edgeQuantity;
+	//frameCount = -1;
+
+
+}
+
+bool CoyoteTalkSeq::Update()
+{
+	Actor *player = owner->player;
+	switch( frame )
+	{
+	case 0:
+		{
+		owner->cam.SetManual( true );
+
+		V2d center = startGround->GetPoint( startQuant ) + coyotePos->GetPoint( coyoteQuant );
+		center /= 2.0;
+		center.y -= 100;
+		//owner->cam.SetMovementSeq( &camMove0, false );
+		owner->cam.Set( Vector2f( center.x, center.y ), 1, 0 );
+		owner->Fade( true, 60, Color::Black );
+		owner->Pause( 60 );
+		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
+		player->offsetX = 0;
+		player->frame = 0;
+		player->facingRight = true;
+		
+		//player->position = owner->poiMap["crawlerfighttrigger"]->pos;
+		
+		break;
+		}
+	case 30:
+		{
+			player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
+			player->frame = 0;
+			break;
+		}
+		
+	}
+
+	if( frame == 90 )
+	{
+		return false;
+	}
+
+	++frame;
+
+	return true;
+}
+
+void CoyoteTalkSeq::Draw( RenderTarget *target )
+{
+
+}
+
+void CoyoteTalkSeq::Reset()
+{
+	frame = 0;
+}
+
+SkeletonAttackCoyoteSeq::SkeletonAttackCoyoteSeq( GameSession *p_owner )
+	:owner( p_owner )
+{
+	PoiInfo *pi0 = owner->poiMap["coyotemeetstart"];
+	startGround = pi0->edge;
+	startQuant = pi0->edgeQuantity;
+
+	PoiInfo *pi1 = owner->poiMap["coyotesleep"];
+	coyotePos = pi1->edge;
+	coyoteQuant = pi1->edgeQuantity;
+	//frameCount = -1;
+
+
+}
+
+bool SkeletonAttackCoyoteSeq::Update()
+{
+	Actor *player = owner->player;
+	switch( frame )
+	{
+	case 0:
+		{
+		owner->cam.SetManual( true );
+
+		V2d center = startGround->GetPoint( startQuant ) + coyotePos->GetPoint( coyoteQuant );
+		center /= 2.0;
+		center.y -= 100;
+		//owner->cam.SetMovementSeq( &camMove0, false );
+		owner->cam.Set( Vector2f( center.x, center.y ), 1, 0 );
+		owner->Fade( true, 60, Color::Black );
+		owner->Pause( 60 );
+		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
+		player->offsetX = 0;
+		player->frame = 0;
+		player->facingRight = true;
+		
+		//player->position = owner->poiMap["crawlerfighttrigger"]->pos;
+		
+		break;
+		}
+	case 30:
+		{
+			player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
+			player->frame = 0;
+			break;
+		}
+		
+	}
+
+	if( frame == 90 )
+	{
+		return false;
+	}
+
+	++frame;
+
+	return true;
+}
+
+void SkeletonAttackCoyoteSeq::Draw( RenderTarget *target )
+{
+
+}
+
+void SkeletonAttackCoyoteSeq::Reset()
+{
+	frame = 0;
 }

@@ -95,6 +95,9 @@ struct DialogueBox
 	int frame;
 };
 
+
+struct CrawlerFightSeq;
+struct CrawlerAfterFightSeq;
 struct Boss_Crawler : Enemy, LauncherEnemy,
 	SurfaceMoverHandler
 {
@@ -111,6 +114,9 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	};
 	int frameTest;
 
+	CrawlerFightSeq *crawlerFightSeq;
+	CrawlerAfterFightSeq *crawlerAfterFightSeq;
+	
 	Boss_Crawler( GameSession *owner, Edge *ground, 
 		double quantity );
 	void ActionEnded();
@@ -543,11 +549,19 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	Stored stored;
 };
 
+
+struct CoyoteFightSeq;
+struct MeetCoyoteSeq;
+struct CoyoteTalkSeq;
+struct SkeletonAttackCoyoteSeq;
 struct Boss_Coyote : Enemy, GroundMoverHandler,
 	LauncherEnemy
 {
 	enum Action
 	{
+		SEQ_SLEEP,
+		SEQ_ILL_TEST_YOU,
+		SEQ_RUN,
 		MOVE,
 		SHOTGUN,
 		REVERSE_SHOTGUN,
@@ -557,6 +571,11 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 		//ATTACK,
 		//LAND
 	};
+
+	CoyoteFightSeq *coyoteFightSeq;
+	MeetCoyoteSeq *meetCoyoteSeq;
+	CoyoteTalkSeq *coyoteTalkSeq;
+	SkeletonAttackCoyoteSeq *skeletonAttackCoyoteSeq;
 
 	sf::CircleShape testCircle;
 	int travelFrame;
@@ -702,16 +721,11 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	//bool roll;
 
 	int deathFrame;
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
 
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
 	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 
 	double maxGroundSpeed;
 	double maxFallSpeed;

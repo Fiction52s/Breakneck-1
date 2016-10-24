@@ -163,4 +163,71 @@ struct EnterNexus1Seq : Sequence
 	GameSession *owner;
 };
 
+struct MeetCoyoteSeq : Sequence
+{
+	enum State
+	{
+		//INIT,
+		//FIGHTSTARTMSG,
+		Count
+	};
+
+
+	//State state;
+	//int stateLength[State::Count];
+
+	MeetCoyoteSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	Edge *startGround;
+	double startQuant;
+
+	Edge *coyotePos;
+	double coyoteQuant;
+
+	GameSession *owner;
+};
+
+struct CoyoteFightSeq : Sequence
+{
+	CoyoteFightSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	GameSession *owner;
+};
+
+struct CoyoteFightSeq : Sequence
+{
+	CoyoteFightSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	GameSession *owner;
+};
+
+struct CoyoteTalkSeq : Sequence
+{
+	CoyoteTalkSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	GameSession *owner;
+};
+
+struct SkeletonAttackCoyoteSeq : Sequence
+{
+	SkeletonAttackCoyoteSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	GameSession *owner;
+};
+
 #endif 

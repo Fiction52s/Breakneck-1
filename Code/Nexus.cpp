@@ -22,6 +22,8 @@ using namespace sf;
 Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
 		:Enemy( owner, EnemyType::NEXUS, false, 1 ), ground( g ), edgeQuantity( q )
 {
+	enterNexus1Seq = new EnterNexus1Seq( owner );
+
 	action = NORMAL;
 	initHealth = 40;
 	health = initHealth;
@@ -105,6 +107,8 @@ void Nexus::ResetEnemy()
 	receivedHit = NULL;
 	slowCounter = 1;
 	slowMultiple = 1;
+
+	enterNexus1Seq->Reset();
 }
 
 void Nexus::HandleEntrant( QuadTreeEntrant *qte )
@@ -171,7 +175,7 @@ void Nexus::UpdatePhysics()
 	{
 		action = ENTERED;
 		owner->player->EnterNexus( 0, entrancePos );
-		owner->activeSequence = owner->enterNexus1Seq;
+		owner->activeSequence = enterNexus1Seq;
 		owner->enterNexus1Seq->nexus = this;
 	}
 

@@ -853,9 +853,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GameStartSeq *startSeq;*/
 
 	
-	CrawlerFightSeq *crawlerFightSeq;
-	CrawlerAfterFightSeq *crawlerAfterFightSeq;
-	EnterNexus1Seq * enterNexus1Seq;
+	//CrawlerFightSeq *crawlerFightSeq;
+	//CrawlerAfterFightSeq *crawlerAfterFightSeq;
+	//EnterNexus1Seq * enterNexus1Seq;
 
 	struct Stored
 	{

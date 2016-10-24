@@ -410,6 +410,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Stored stored;
 };
 
+struct EnterNexus1Seq;
 struct Nexus : Enemy
 {
 	enum Action
@@ -441,6 +442,7 @@ struct Nexus : Enemy
 	void LoadEnemyState();
 	void ResetEnemy();
 	
+	EnterNexus1Seq * enterNexus1Seq;
 	
 	sf::Sprite sprite;
 	Tileset *ts;

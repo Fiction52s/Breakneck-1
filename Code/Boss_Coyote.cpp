@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -274,7 +275,13 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE, false, 3 ),//, facingRight( cw ),
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
-	action = MOVE;
+	coyoteFightSeq = new CoyoteFightSeq( owner );
+	meetCoyoteSeq = new MeetCoyoteSeq( owner );
+	coyoteTalkSeq = new CoyoteTalkSeq( owner );
+	//skeletonAttackCoyoteSeq = new SkeletonAttackCoyoteSeq( owner );
+
+
+	action = SEQ_SLEEP;
 	frame = 0;
 	pathSize = 120;
 	pathCutoff = pathSize;// 12 * 5 * 2
@@ -429,7 +436,7 @@ void Boss_Coyote::ResetEnemy()
 	bigBounceBullet.Reset( position );
 	launcher->Reset();
 	
-	action = MOVE;
+	action = SEQ_SLEEP;//MOVE;
 	RandomizeDirections();
 	currNode = points[0];
 	//ResetDirections();

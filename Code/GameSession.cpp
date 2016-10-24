@@ -4974,8 +4974,7 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
-	crawlerFightSeq = new CrawlerFightSeq( this );
-	crawlerAfterFightSeq = new CrawlerAfterFightSeq( this );
+	
 	enterNexus1Seq = new EnterNexus1Seq( this );
 
 	pauseMenu = new PauseMenu( this );
@@ -11895,13 +11894,24 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
-		activeSequence = crawlerFightSeq;
+		activeSequence = b_crawler->crawlerFightSeq;
 		activeSequence->frame = 0;
 
 		assert( b_crawler != NULL );
 		b_crawler->spawned = true;
 		AddEnemy( b_crawler );
 
+	}
+	else if( name == "meetcoyotetrigger" )
+	{
+		Fade( false, 60, Color::Black );
+		Pause( 60 );
+		activeSequence = b_coyote->meetCoyoteSeq;
+		activeSequence->frame = 0;
+
+		assert( b_coyote != NULL );
+		b_coyote->spawned = true;
+		AddEnemy( b_coyote );
 	}
 }
 

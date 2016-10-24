@@ -24,6 +24,9 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	markerVA( sf::Quads, 5 * 4 )
 	//moveBezTest( .22,.85,.3,.91 )
 {
+	crawlerFightSeq = new CrawlerFightSeq( owner );
+	crawlerAfterFightSeq = new CrawlerAfterFightSeq( owner );
+
 	shootIndex = 0;
 	numBullets = 5;
 	//5 is max bullets
@@ -177,7 +180,10 @@ void Boss_Crawler::SetDirs()
 
 void Boss_Crawler::ResetEnemy()
 {
-	
+	crawlerFightSeq->Reset();
+	crawlerAfterFightSeq->Reset();
+
+
 	SetDirs();
 
 	shootIndex = 0;
@@ -593,7 +599,7 @@ void Boss_Crawler::UpdatePrePhysics()
 		{
 			action = AFTERFIGHT0;
 			frame = 0;
-			owner->activeSequence = owner->crawlerAfterFightSeq;
+			owner->activeSequence = crawlerAfterFightSeq;
 			//action = 
 			//if( hasMonitor && !suppressMonitor )
 			//	owner->keyMarker->CollectKey();
