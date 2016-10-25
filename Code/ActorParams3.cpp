@@ -597,3 +597,34 @@ ActorParams *CactusParams::Copy()
 	CactusParams *copy = new CactusParams( *this );
 	return copy;
 }
+
+BossCoyoteParams::BossCoyoteParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+	int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( PosType::GROUND_ONLY )
+{
+	type = edit->types["bosscoyote"];
+
+	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+				
+	SetBoundingQuad();	
+}
+
+bool BossCoyoteParams::CanApply()
+{
+	if( groundInfo != NULL )
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void BossCoyoteParams::WriteParamFile( ofstream &of )
+{
+	//no params its a boss!
+}
+
+ActorParams *BossCoyoteParams::Copy()
+{
+	BossCoyoteParams *copy = new BossCoyoteParams( *this );
+	return copy;
+}

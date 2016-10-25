@@ -5846,6 +5846,8 @@ int GameSession::Run( string fileN )
 
 				goalPulse->Update();
 
+				powerWheel->UpdateHide();
+
 				//rainView.setCenter(
 
 				

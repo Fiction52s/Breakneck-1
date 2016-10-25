@@ -14,6 +14,7 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 		bool hasWires ): smallOrbVA( sf::Quads, 6 * 2 * 4 ), //basePos( 96, 64 * 6 + 270 )
 		basePos( 150, 450 ), partialSectionVA( sf::Triangles, 3 )
 {
+	origBasePos = basePos;
 	mode = FILL;
 	testBlah = 0;
 	/*for( int i = 0; i < 7; ++i )
@@ -163,47 +164,6 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 
 	}
 
-
-	float radiusOffset = 128 + 10;
-	Vector2f offset( 0, -radiusOffset );
-	sf::Transform tr;
-	//tr.rotate( -360 / 6.0 );
-
-	/*for( int i = 5; i >= 0; --i )
-	{
-		smallOrbVA[(i+6) * 4+0].position = basePos + Vector2f( 0, 0 ) + tr.transformPoint( offset );  
-		smallOrbVA[(i+6) * 2 * 4+1].position = basePos + Vector2f( 64, 0 ) + tr.transformPoint( offset ); 
-		smallOrbVA[(i+6) * 2 * 4+2].position = basePos + Vector2f( 64, 64 ) + tr.transformPoint( offset ); 
-		smallOrbVA[(i+6) * 2 * 4+3].position = basePos + Vector2f( 0, 64 ) + tr.transformPoint( offset );
-		tr.rotate( -360 / 6.0 );
-	}*/
-
-	Vector2f bPos = basePos + Vector2f( 32, 32 );
-	Vector2f offsetArrows( 0, -radiusOffset + 10 );
-	for( int i = 5; i >= 0; --i )
-	{
-		/*Vector2f( 0, 0   )
-		Vector2f( 64, 0  )
-		Vector2f( 64, 64 )
-		Vector2f( 0, 64  )*/
-		smallOrbVA[(i+6) * 4+0].position = bPos + Vector2f(-32,-32  ) + tr.transformPoint( offset );  
-		smallOrbVA[(i+6) * 4+1].position = bPos + Vector2f( 32, -32 ) + tr.transformPoint( offset ); 
-		smallOrbVA[(i+6) * 4+2].position = bPos + Vector2f( 32, 32  ) + tr.transformPoint( offset ); 
-		smallOrbVA[(i+6) * 4+3].position = bPos + Vector2f( -32, 32 ) + tr.transformPoint( offset );
-		tr.rotate( -360 / 6.0 );
-	}
-
-	sf::Transform tr1;
-	tr1.rotate( 360 / 12.0 );
-	for( int i = 0; i < 6; ++i )
-	{
-		smallOrbVA[i * 4+0].position = bPos + Vector2f(-32,-32  ) + tr1.transformPoint( offsetArrows );  
-		smallOrbVA[i * 4+1].position = bPos + Vector2f( 32, -32 ) + tr1.transformPoint( offsetArrows ); 
-		smallOrbVA[i * 4+2].position = bPos + Vector2f( 32, 32  ) + tr1.transformPoint( offsetArrows ); 
-		smallOrbVA[i * 4+3].position = bPos + Vector2f( -32, 32 ) + tr1.transformPoint( offsetArrows );
-		tr1.rotate( 360 / 6.0 );
-	}
-
 	for( int i = 0; i < 6; ++i )
 	{
 		OrbColor col = orbColors[i];
@@ -216,17 +176,17 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	int cc = (int)c;
 	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( cc ) );
 	
-	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
+	//largeOrb.setPosition( basePos + Vector2f( 32, 32 ) ); //- Vector2f( 0, 64 * activeOrb) );
 
-	orbPointer.setPosition( largeOrb.getPosition() );
 	
+	UpdateSpritePositions();
 
 
 	activeSection = 0;//numSections[orbColors[activeOrb]];
 	activeLevel = 6;
 
 	orbPointer.setRotation( swivelStartAngle );
-
+	shifting = false;
 	//SetVisibleSections( activeOrb, numSections[orbColors[activeOrb]], 2 );
 	/*for( int i = 0; i < 6; ++i )
 	{
@@ -245,6 +205,62 @@ PowerWheel::PowerWheel( GameSession *owner, bool hasAirDash,
 	smallOrbVA[2].texCoords = Vector2f( 64, 64 );
 	smallOrbVA[3].texCoords = Vector2f( 0, 64 );*/
 	//cout << "end of constructor" << endl;
+}
+
+void PowerWheel::UpdateSpritePositions()
+{
+	largeOrb.setPosition( basePos + Vector2f( 32, 32 ) );
+
+	float radiusOffset = 128 + 10;
+	Vector2f offset( 0, -radiusOffset );
+	sf::Transform tr;
+
+	Vector2f bPos = basePos + Vector2f( 32, 32 );
+	Vector2f offsetArrows( 0, -radiusOffset + 10 );
+	for( int i = 5; i >= 0; --i )
+	{
+		smallOrbVA[(i+6) * 4+0].position = bPos + Vector2f(-32,-32  ) + tr.transformPoint( offset );  
+		smallOrbVA[(i+6) * 4+1].position = bPos + Vector2f( 32, -32 ) + tr.transformPoint( offset ); 
+		smallOrbVA[(i+6) * 4+2].position = bPos + Vector2f( 32, 32  ) + tr.transformPoint( offset ); 
+		smallOrbVA[(i+6) * 4+3].position = bPos + Vector2f( -32, 32 ) + tr.transformPoint( offset );
+		tr.rotate( -360 / 6.0 );
+	}
+
+	sf::Transform tr1;
+	tr1.rotate( 360 / 12.0 );
+	for( int i = 0; i < 6; ++i )
+	{
+		smallOrbVA[i * 4+0].position = bPos + Vector2f(-32,-32  ) + tr1.transformPoint( offsetArrows );  
+		smallOrbVA[i * 4+1].position = bPos + Vector2f( 32, -32 ) + tr1.transformPoint( offsetArrows ); 
+		smallOrbVA[i * 4+2].position = bPos + Vector2f( 32, 32  ) + tr1.transformPoint( offsetArrows ); 
+		smallOrbVA[i * 4+3].position = bPos + Vector2f( -32, 32 ) + tr1.transformPoint( offsetArrows );
+		tr1.rotate( 360 / 6.0 );
+	}
+
+	orbPointer.setPosition( largeOrb.getPosition() );
+
+
+	for( int i = 0; i < 6; ++i )
+	{
+	//	OrbColor col = orbColors[i];
+
+	
+		VertexArray &sva = *orbSectionVA[i];
+
+		Vector2f offset( 0, -radius );
+		sf::Transform tr;
+		int sectionCount = numSections[orbColors[i]];
+		//sva[0].position = trueBase;
+		for( int i = 0; i < sectionCount; ++i )
+		{
+			sva[i*3+0].position = bPos;
+			sva[i*3+1].position = bPos + tr.transformPoint( offset );
+			tr.rotate( 360.0 / sectionCount );
+			sva[i*3+2].position = bPos + tr.transformPoint( offset );
+			//sva[i].position = trueBase + 
+		}
+
+	}
 }
 
 void PowerWheel::UpdateSmallOrbs()
@@ -367,6 +383,8 @@ void PowerWheel::UpdateSwivel()
 
 void PowerWheel::Reset()
 {
+	shifting = false;
+	basePos = origBasePos;
 	mode = NORMAL;
 	swivelingUp = false;
 	swivelingDown = false;
@@ -402,7 +420,40 @@ void PowerWheel::Draw( sf::RenderTarget *target )
 	//target->draw( starVA[activeOrb], activeStars *4, sf::Quads, rs );
 }
 
+void PowerWheel::Hide( bool hide, int frames )
+{
+	shifting = true;
+	hiding = hide;
+	hideFrame = 0;
+	hideLength = frames;
+}
 
+void PowerWheel::UpdateHide()
+{
+	if( !shifting )
+		return;
+
+	++hideFrame;
+
+	CubicBezier bez( 0, 0, 1, 1 );
+	Vector2f hidePos = origBasePos + Vector2f( -500, 0 );
+	float f = bez.GetValue( (double)hideFrame / hideLength );
+	if( hiding )
+	{
+		basePos = origBasePos * (1.f - f ) + hidePos * f;
+	}
+	else
+	{
+		basePos = hidePos * (1.f - f ) + origBasePos * f;
+	}
+	
+	UpdateSpritePositions();
+	
+	if( hideFrame > hideLength )
+	{
+		shifting = false;
+	}
+}
 
 //level can be 1 2 3
 void PowerWheel::SetVisibleSections( int orbIndex, int visSections,
@@ -517,24 +568,22 @@ void PowerWheel::SetVisibleCurrentSection( int orbIndex, int currentSection, flo
 	va[2].texCoords = Vector2f( ir.left, ir.top );
 }
 
-VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float radius )
+VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float p_radius )
 {
+	radius = p_radius;
 	Vector2f trueBase = basePos + Vector2f( 32, 32 );
 	int sectionCount = numSections[col];
 	int numVertices = sectionCount * 6;//+ 1 + 1;
 	VertexArray *sVA = new VertexArray( sf::PrimitiveType::Triangles, numVertices );
 	VertexArray &sva = *sVA;
 
-	Vector2f offset( 0, -radius );
-	sf::Transform tr;
-	
-
 	for( int i = 0; i < numVertices; ++i )
 	{
 		sva[i].color = Color::Blue;
 	}
 
-	
+	Vector2f offset( 0, -radius );
+	sf::Transform tr;
 	//sva[0].position = trueBase;
 	for( int i = 0; i < sectionCount; ++i )
 	{

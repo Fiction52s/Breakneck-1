@@ -72,6 +72,7 @@ bool CrawlerFightSeq::Update()
 	{
 	case 0:
 		{
+			owner->powerWheel->Hide( true, 0 );
 			owner->cam.SetManual( true );
 			owner->cam.SetMovementSeq( &camMove0, false );
 			//owner->cam.Set( Vector2f( cfightCenter.x, cfightCenter.y - 300), 1, 0 );
@@ -95,7 +96,6 @@ bool CrawlerFightSeq::Update()
 		}
 		break;
 	}
-
 
 	int blah = 30 + 60 + 120 + 60 + 60;
 	if( frame == blah )//if( owner->cam.currMove == NULL )
@@ -123,7 +123,7 @@ bool CrawlerFightSeq::Update()
 
 		//owner->b_crawler->portrait.SetSprite( ts_birdFace, 1 );
 	}
-
+	
 	if( startFightMsgFrame >= 0 && frame == startFightMsgFrame + 30 )
 	{
 		player->action = Actor::STAND;
@@ -146,11 +146,9 @@ void CrawlerFightSeq::Draw( sf::RenderTarget *target )
 void CrawlerFightSeq::StartFightMsg()
 {
 	startFightMsgFrame = frame;
+	owner->powerWheel->Hide( false, 30 );
 	owner->cam.SetManual( false );
 	owner->cam.EaseOutOfManual( 30 );
-	//owner->player->action = Actor::STAND;
-	//frame = 0;
-	//owner->cam.SetManual( true );
 }
 
 CrawlerAfterFightSeq::CrawlerAfterFightSeq( GameSession *p_owner )
@@ -472,9 +470,9 @@ MeetCoyoteSeq::MeetCoyoteSeq( GameSession *p_owner )
 	startGround = pi0->edge;
 	startQuant = pi0->edgeQuantity;
 
-	PoiInfo *pi1 = owner->poiMap["coyotesleep"];
-	coyotePos = pi1->edge;
-	coyoteQuant = pi1->edgeQuantity;
+	//PoiInfo *pi1 = owner->poiMap["coyotesleep"];
+	//coyotePos = coyo//pi1->edge;
+	//coyoteQuant = pi1->edgeQuantity;
 	//frameCount = -1;
 
 
@@ -489,9 +487,11 @@ bool MeetCoyoteSeq::Update()
 		{
 		owner->cam.SetManual( true );
 
-		V2d center = startGround->GetPoint( startQuant ) + coyotePos->GetPoint( coyoteQuant );
+		V2d center = startGround->GetPoint( startQuant ) + owner->b_coyote->startGround->GetPoint( 
+			owner->b_coyote->startQuant );
 		center /= 2.0;
 		center.y -= 100;
+		owner->powerWheel->Hide(true, 30 );
 		//owner->cam.SetMovementSeq( &camMove0, false );
 		owner->cam.Set( Vector2f( center.x, center.y ), 1, 0 );
 		owner->Fade( true, 60, Color::Black );

@@ -1772,6 +1772,43 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new OwlParams( this, pos, moveSpeed, bulletSpeed, rhythmFrames ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
+				else if( typeName == "bosscoyote" )
+				{
+					//always grounded
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int testIndex = 0;
+					PolyPtr terrain( NULL );
+					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					{
+						if( testIndex == terrainIndex )
+						{
+							terrain = (*it);
+							break;
+						}
+						testIndex++;
+					}
+
+					if( terrain == NULL )
+						assert( 0 && "failure terrain indexing bosscrawler" );
+
+					if( edgeIndex == terrain->numPoints - 1 )
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
+					a.reset( new BossCoyoteParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
+					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
 
 				//w4
 				else if( typeName == "cheetah" )
@@ -3497,6 +3534,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *bossCrawlerPanel = NULL;//CreateOptionsPanel( "bosscrawler" );
 	ActorType *bossCrawlerType = new ActorType( "bosscrawler", bossCrawlerPanel );
 
+	Panel *bossCoyotePanel = NULL;
+	ActorType *bossCoyoteType = new ActorType( "bosscoyote", bossCoyotePanel );
+
 	types["patroller"] = patrollerType;
 	types["foottrap"] = footTrapType;
 	types["bosscrawler"] = bossCrawlerType;
@@ -3540,7 +3580,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	types["badger"] = badgerType;
 	types["cactus"] = cactusType;
 	types["owl"] = owlType;
-
+	types["bosscoyote"] = bossCoyoteType;
 
 	//w4
 	Panel *turtlePanel = CreateOptionsPanel( "turtle" );
@@ -3656,6 +3696,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 3, Sprite( badgerType->iconTexture ), "badger" );
 	gs->Set( 2, 3, Sprite( owlType->iconTexture ), "owl" );
 	gs->Set( 3, 3, Sprite( cactusType->iconTexture ), "cactus" );
+	gs->Set( 4, 3, Sprite( bossCoyoteType->iconTexture ), "bosscoyote" );
 
 	gs->Set( 0, 4, Sprite( spiderType->iconTexture ), "spider" );
 	gs->Set( 1, 4, Sprite( turtleType->iconTexture ), "turtle" );
@@ -6055,6 +6096,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										tempActor->SetPanelInfo();
 										showPanel = trackingEnemy->panel;
 									}
+									else if( trackingEnemy->name == "bosscoyote" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossCoyote( new BossCoyoteParams( this, enemyEdgePolygon, enemyEdgeIndex,
+											enemyEdgeQuantity ) );
+										bossCoyote->group = groups["--"];
+
+										CreateActor( bossCoyote );
+									}
 
 									//w4
 									else if( trackingEnemy->name == "coral" )
@@ -8059,7 +8110,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					bool w3Grounded =
 						name == "badger"
-						|| name == "cactus";
+						|| name == "cactus"
+						|| name == "bosscoyote";
 
 					bool w4Grounded =
 						name == "cheetah"
@@ -13870,6 +13922,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+	}
+	else if( name == "bosscoyote" )
+	{
+		width = 200;
+		height = 200;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
 	
 	//w4

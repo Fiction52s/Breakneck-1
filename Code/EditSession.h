@@ -902,6 +902,18 @@ struct CactusParams : public ActorParams
 	int amplitude;
 };
 
+struct BossCoyoteParams : public ActorParams
+{
+	BossCoyoteParams( 
+		EditSession *edit, 
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
 //w4
 struct TurtleParams : public ActorParams
 {

@@ -293,7 +293,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 		testCircle.getLocalBounds().height / 2 );
 
 	travelFrame = 0;
-	facingRight = true;
+	facingRight = false;
 	gravity = V2d( 0, .6 );
 	//maxGroundSpeed = s;
 	//action = RUN;

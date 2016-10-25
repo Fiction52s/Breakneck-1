@@ -42,6 +42,13 @@ struct PowerWheel
 	sf::VertexArray *CreateSectionVA( OrbColor col,
 		float radius );
 	
+	void Hide( bool hide, int frames );
+	void UpdateHide();
+	bool shifting;
+	bool hiding;
+	int hideFrame;
+	int hideLength;
+
 	bool Damage( int power );
     bool Use( int power );
 	void Recover( int power );
@@ -61,6 +68,8 @@ struct PowerWheel
 
 	Mode mode;
 
+	float radius;
+
 	Tileset *ts_largeOrbs;
 	Tileset *ts_smallOrbs;
 	Tileset *ts_lifeTexture;
@@ -68,6 +77,8 @@ struct PowerWheel
 	//sf::Texture smallOrbTex;
 	sf::Sprite largeOrb;
 	sf::Shader lifeTextureShader;
+
+	void UpdateSpritePositions();
 
 	int testBlah;
 	void UpdateSmallOrbs();
@@ -105,4 +116,5 @@ struct PowerWheel
 	//Tileset * ts_charge;
 	sf::VertexArray smallOrbVA;
 	sf::Vector2f basePos;
+	sf::Vector2f origBasePos;
 };

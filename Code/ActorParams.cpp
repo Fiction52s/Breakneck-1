@@ -764,7 +764,7 @@ void PoiParams::SetParams()
 {
 	Panel *p = type->panel;
 	
-	name = p->textBoxes["name"]->text.getString();
+	name = p->textBoxes["name"]->text.getString().toAnsiString();
 
 	nameText.setString( name );
 
