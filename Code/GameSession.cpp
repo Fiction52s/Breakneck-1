@@ -5754,6 +5754,22 @@ int GameSession::Run( string fileN )
 				}
 
 				UpdateFade();
+				powerWheel->UpdateHide();
+
+				miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+				for( int i = 0; i < 6; ++i )
+				{
+					Sprite &gds = gateDirections[i];
+					gds.setPosition( miniCircle.getPosition() );
+				}
+
+				Vector2f miniPos = Vector2f( 30, 750 );
+				miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
+				miniVA[0].position = miniPos + Vector2f( 0, 0 );
+				miniVA[1].position = miniPos + Vector2f( 300, 0 );
+				miniVA[2].position = miniPos + Vector2f( 300, 300 );
+				miniVA[3].position = miniPos + Vector2f( 0, 300 );
+
 				pauseFrames--;
 				//accumulator = 0;
 				
@@ -5847,6 +5863,24 @@ int GameSession::Run( string fileN )
 				goalPulse->Update();
 
 				powerWheel->UpdateHide();
+
+
+				miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+				for( int i = 0; i < 6; ++i )
+				{
+					Sprite &gds = gateDirections[i];
+					gds.setPosition( miniCircle.getPosition() );
+				}
+
+				Vector2f miniPos = Vector2f( 30, 750 );
+				miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
+				miniVA[0].position = miniPos + Vector2f( 0, 0 );
+				miniVA[1].position = miniPos + Vector2f( 300, 0 );
+				miniVA[2].position = miniPos + Vector2f( 300, 300 );
+				miniVA[3].position = miniPos + Vector2f( 0, 300 );
+				//kinMinimapIcon.setPosition
+
+				
 
 				//rainView.setCenter(
 
@@ -7172,7 +7206,12 @@ int GameSession::Run( string fileN )
 			gds.setPosition( miniCircle.getPosition() );
 		}*/
 		
-		kinMinimapIcon.setPosition( 180, preScreenTex->getSize().y - 180 );
+		//inefficient because its in the draw call
+		kinMinimapIcon.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+		
+
+
+
 		preScreenTex->draw( kinMinimapIcon );
 	//minimapSprite.draw( preScreenTex );
 		//preScreenTex->draw( minimapSprite, &minimapShader );
@@ -11923,6 +11962,7 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
+		powerWheel->Hide( true, 60 );
 		activeSequence = b_coyote->meetCoyoteSeq;
 		activeSequence->frame = 0;
 

@@ -466,7 +466,7 @@ void EnterNexus1Seq::Draw( sf::RenderTarget *target )
 MeetCoyoteSeq::MeetCoyoteSeq( GameSession *p_owner )
 	:owner( p_owner )
 {
-	PoiInfo *pi0 = owner->poiMap["coyotemeetstart"];
+	PoiInfo *pi0 = owner->poiMap["meetcoyotestart"];
 	startGround = pi0->edge;
 	startQuant = pi0->edgeQuantity;
 
@@ -491,11 +491,12 @@ bool MeetCoyoteSeq::Update()
 			owner->b_coyote->startQuant );
 		center /= 2.0;
 		center.y -= 100;
-		owner->powerWheel->Hide(true, 30 );
+		
 		//owner->cam.SetMovementSeq( &camMove0, false );
 		owner->cam.Set( Vector2f( center.x, center.y ), 1, 0 );
 		owner->Fade( true, 60, Color::Black );
 		owner->Pause( 60 );
+		owner->powerWheel->Hide(false, 60 );
 		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
 		player->offsetX = 0;
 		player->frame = 0;
@@ -509,6 +510,7 @@ bool MeetCoyoteSeq::Update()
 		{
 			player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
 			player->frame = 0;
+			player->groundSpeed = 0;
 			break;
 		}
 		

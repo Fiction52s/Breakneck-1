@@ -120,6 +120,7 @@ struct CrawlerAfterFightSeq : Sequence
 	GameSession *owner;
 };
 
+struct Nexus;
 struct EnterNexus1Seq : Sequence
 {
 	/*enum State
