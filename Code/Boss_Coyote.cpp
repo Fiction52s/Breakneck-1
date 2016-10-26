@@ -571,6 +571,17 @@ void Boss_Coyote::ActionEnded()
 				travelFrame = 0;
 			}
 		}
+	case SEQ_SLEEP:
+		if( frame == 60 )
+			frame = 0;
+		break;
+	case SEQ_ILL_TEST_YOU:
+		if( frame == 30 )
+			frame = 0;
+		break;
+	case SEQ_RUN:
+		if( frame == 30 )
+			frame = 0;
 		break;
 	}	
 }
@@ -652,6 +663,11 @@ void Boss_Coyote::UpdatePrePhysics()
 			bigBounceBullet.position = currNode->position;
 			bigBounceBullet.Fire( shootDir * bSpeed );
 		}
+		break;
+	case SEQ_SLEEP:
+		break;
+	case SEQ_ILL_TEST_YOU:
+		
 		break;
 	}
 
@@ -1345,4 +1361,20 @@ void Boss_Coyote::BigBounceBullet::Draw( sf::RenderTarget *target )
 	{
 		target->draw( sprite );
 	}
+}
+
+void Boss_Coyote::SetRelFacePos( Vector2f &pos )
+{
+	portrait.sprite.setPosition( pos + Vector2f( position.x, position.y ) );
+}
+
+void Boss_Coyote::Start_IllTestYou()
+{
+	coy->action = SEQ_ILL_TEST_YOU;
+	frame = 0;
+	SetRelFacePos( Vector2f( 0, -200 ) );
+	portrait.Open();
+	portrait.SetSprite( owner->b_crawler->ts_face,
+		0 );
+	portrait.scaleMultiple = .5;
 }

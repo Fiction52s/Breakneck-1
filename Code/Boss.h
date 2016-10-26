@@ -630,8 +630,12 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	ScorpionNode *points[6];
 	ScorpionNode *edges[6];
 	
+	void Start_IllTestYou();
+	void SetRelFacePos( sf::Vector2f &pos );
+	bool showFace;
+	Tileset *ts_face;
 	
-	
+	PortraitBox portrait;
 
 	sf::Vertex *testPaths;
 	int pathSize;
@@ -786,6 +790,8 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	double GetDistanceCCW( int index );
 
 	//void SetDirs();
+
+	
 
 	double totalDistanceAround;
 	bool leftFirstEdge;

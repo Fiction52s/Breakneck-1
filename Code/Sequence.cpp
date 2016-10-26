@@ -480,6 +480,7 @@ MeetCoyoteSeq::MeetCoyoteSeq( GameSession *p_owner )
 
 bool MeetCoyoteSeq::Update()
 {
+	Boss_Coyote *coy = owner->b_coyote;
 	Actor *player = owner->player;
 	switch( frame )
 	{
@@ -506,12 +507,16 @@ bool MeetCoyoteSeq::Update()
 		
 		break;
 		}
-	case 30:
+	case 40:
 		{
 			player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
 			player->frame = 0;
 			player->groundSpeed = 0;
 			break;
+		}
+	case 90:
+		{
+			coy->Start_IllTestYou();
 		}
 		
 	}
