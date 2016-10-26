@@ -239,6 +239,21 @@ void PowerWheel::UpdateSpritePositions()
 
 	orbPointer.setPosition( largeOrb.getPosition() );
 
+	Vector2f radOffset( 0, -radius );
+	sf::Transform trx;
+
+	int sectionCount = numSections[orbColors[activeOrb]];
+	//visSections - 1;
+	trx.rotate( 360.0 / sectionCount * activeSection );
+
+	VertexArray &va = partialSectionVA;
+
+	va[0].position = bPos;
+	va[1].position = bPos + trx.transformPoint( radOffset );
+
+	trx.rotate( 360.0 / sectionCount );
+
+	va[2].position = bPos + trx.transformPoint( radOffset );
 
 	for( int i = 0; i < 6; ++i )
 	{

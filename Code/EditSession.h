@@ -538,7 +538,8 @@ struct PoiParams : public ActorParams
 	PoiParams( EditSession *edit,
 		sf::Vector2i &pos,
 		Barrier bType,
-		const std::string &name );
+		const std::string &name, 
+		bool hasCameraProperties, float camZoom );
 	PoiParams( EditSession *edit,
 		sf::Vector2i &pos );
 
@@ -554,6 +555,11 @@ struct PoiParams : public ActorParams
 	std::string name;
 	static sf::Font *font;
 	sf::Text nameText;
+
+	bool hasCamProperties;
+	float camZoom;
+
+	sf::RectangleShape camRect;
 	//void Draw( sf::RenderTarget *target );
 };
 

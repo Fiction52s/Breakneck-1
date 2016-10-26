@@ -275,6 +275,8 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE, false, 3 ),//, facingRight( cw ),
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
+	ts_face = owner->GetTileset( "Bosses/Coyote/03_coyote_face_02_384x384.png", 384, 384 );
+
 	coyoteFightSeq = new CoyoteFightSeq( owner );
 	meetCoyoteSeq = new MeetCoyoteSeq( owner );
 	coyoteTalkSeq = new CoyoteTalkSeq( owner );
@@ -588,6 +590,7 @@ void Boss_Coyote::ActionEnded()
 
 void Boss_Coyote::UpdatePrePhysics()
 {
+
 	ActionEnded();
 
 	switch( action )
@@ -671,7 +674,7 @@ void Boss_Coyote::UpdatePrePhysics()
 		break;
 	}
 
-	
+	portrait.Update();
 
 
 
@@ -990,6 +993,7 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
+		portrait.Draw( target );
 		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
@@ -1370,11 +1374,11 @@ void Boss_Coyote::SetRelFacePos( Vector2f &pos )
 
 void Boss_Coyote::Start_IllTestYou()
 {
-	coy->action = SEQ_ILL_TEST_YOU;
+	action = SEQ_ILL_TEST_YOU;
 	frame = 0;
 	SetRelFacePos( Vector2f( 0, -200 ) );
 	portrait.Open();
-	portrait.SetSprite( owner->b_crawler->ts_face,
+	portrait.SetSprite( ts_face,
 		0 );
 	portrait.scaleMultiple = .5;
 }

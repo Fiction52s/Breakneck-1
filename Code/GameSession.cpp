@@ -1887,7 +1887,23 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					string barStr;
 					is >> barStr;
 
+					int hasCamProperties;
+					is >> hasCamProperties;
+
 					pi = new PoiInfo( pname, pos );
+
+					pi->hasCameraProperties = hasCamProperties;
+
+					if( pi->hasCameraProperties )
+					{
+						float camZoom;
+						is >> camZoom;
+
+						pi->cameraZoom = camZoom;
+					}
+					else
+					{
+					}
 
 					
 

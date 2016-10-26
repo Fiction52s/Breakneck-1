@@ -488,18 +488,21 @@ bool MeetCoyoteSeq::Update()
 		{
 		owner->cam.SetManual( true );
 
-		V2d center = startGround->GetPoint( startQuant ) + owner->b_coyote->startGround->GetPoint( 
-			owner->b_coyote->startQuant );
-		center /= 2.0;
-		center.y -= 100;
+		V2d center = owner->poiMap["meetcoyotecam"]->pos;//startGround->GetPoint( startQuant ) + owner->b_coyote->startGround->GetPoint( 
+			//owner->b_coyote->startQuant );
+		//center /= 2.0;
+		//center.y -= 160;
 		
 		//owner->cam.SetMovementSeq( &camMove0, false );
 		owner->cam.Set( Vector2f( center.x, center.y ), 1, 0 );
 		owner->Fade( true, 60, Color::Black );
 		owner->Pause( 60 );
-		owner->powerWheel->Hide(false, 60 );
+		//owner->powerWheel->Hide(false, 60 );
 		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
 		player->offsetX = 0;
+		player->ground = startGround;
+		player->groundSpeed = 0;
+		player->edgeQuantity = startQuant;
 		player->frame = 0;
 		player->facingRight = true;
 		

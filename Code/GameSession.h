@@ -26,6 +26,9 @@ struct PoiInfo
 	Edge *edge;
 	double edgeQuantity;
 	std::string name;
+
+	float cameraZoom;
+	bool hasCameraProperties;
 };
 
 struct Barrier

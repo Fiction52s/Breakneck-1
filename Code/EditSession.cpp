@@ -976,7 +976,19 @@ bool EditSession::OpenFile( string fileName )
 							b = PoiParams::Y;
 						}
 
-						a.reset( new PoiParams( this, pos, b, pname ) );
+						int hasCamProps;
+						is >> hasCamProps;
+
+						float camZoom = 1;
+						if( hasCamProps )
+						{
+							is >> camZoom;
+						}
+
+						
+						
+
+						a.reset( new PoiParams( this, pos, b, pname, hasCamProps, camZoom ) );
 					}
 					else if( air == "-air" )
 					{
@@ -10666,6 +10678,24 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 			}
 		}
 	}
+	else if( p->name == "poi_options" )
+	{
+		if( tb->name == "camzoom" )
+		{
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				PoiParams *poi = (PoiParams*)select;
+				poi->SetParams();
+				//curveTurret->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				PoiParams *poi = (PoiParams*)tempActor;
+				poi->SetParams();
+			}
+		}
+	}
 }
 
 void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_name )
@@ -10730,7 +10760,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 	{
 		if( cb->name == "relativegrav" )
 		{
-			cout << "BLAHBADIOHFWEIHEGHWEAOHGEAWHGEWAHG" << endl;
+			//cout << "BLAHBADIOHFWEIHEGHWEAOHGEAWHGEWAHG" << endl;
 			if( mode == EDIT )
 			{
 				ISelectable *select = selectedBrush->objects.front().get();				
@@ -10742,6 +10772,24 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 			{
 				CurveTurretParams *curveTurret = (CurveTurretParams*)tempActor;
 				curveTurret->SetParams();
+			}
+		}
+	}
+	else if( p->name == "poi_options" )
+	{
+		if( cb->name == "camprops" )
+		{
+			if( mode == EDIT )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				PoiParams *poi = (PoiParams*)select;
+				poi->SetParams();
+				//curveTurret->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				PoiParams *poi = (PoiParams*)tempActor;
+				poi->SetParams();
 			}
 		}
 	}
@@ -12274,7 +12322,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
+		p->AddTextBox( "camzoom", Vector2i( 20, 180 ), 200, 20, "not test" );
+		p->AddCheckBox( "camprops", Vector2i( 20, 240 ) );
 		p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;

@@ -664,6 +664,11 @@ PoiParams::PoiParams( EditSession *edit,
 	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ),
 	barrier( NONE )
 {
+	
+
+	hasCamProperties = false;
+	camZoom = 1;
+
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setColor( Color::White );
@@ -682,6 +687,9 @@ PoiParams::PoiParams( EditSession *edit,
 	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ),
 	barrier( bType ), name( p_name )
 {
+	hasCamProperties = false;
+	camZoom = 1;
+
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setColor( Color::White );
@@ -696,9 +704,19 @@ PoiParams::PoiParams( EditSession *edit,
 	sf::Vector2i &pos )
 	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), barrier( NONE )
 {
+	camRect.setFillColor( Color::Transparent );
+	camRect.setOutlineColor( Color::Red );
+	camRect.setOutlineThickness( 10 );
+	camRect.setSize( Vector2f( 960, 540 ) );
+	camRect.setOrigin( camRect.getLocalBounds().width / 2,
+		camRect.getLocalBounds().height / 2 );
+
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setColor( Color::White );
+
+	hasCamProperties = false;
+	camZoom = 1;
 
 	name = "-";
 	position = pos;	
@@ -712,10 +730,20 @@ PoiParams::PoiParams( EditSession *edit,
 }
 
 PoiParams::PoiParams( EditSession *edit,
-	sf::Vector2i &pos, PoiParams::Barrier bType, const std::string &p_name  )
+	sf::Vector2i &pos, PoiParams::Barrier bType, const std::string &p_name,
+	bool hasCam, float cZoom )
 	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), 
-	barrier( bType ), name( p_name )
+	barrier( bType ), name( p_name ), hasCamProperties( hasCam ),
+	camZoom( cZoom )
 {
+	camRect.setFillColor( Color::Transparent );
+	camRect.setOutlineColor( Color::Red );
+	camRect.setOutlineThickness( 10 );
+	camRect.setSize( Vector2f( 960 * cZoom, 540 * cZoom ) );
+	camRect.setOrigin( camRect.getLocalBounds().width / 2,
+		camRect.getLocalBounds().height / 2 );
+
+
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setColor( Color::White );
@@ -758,15 +786,42 @@ void PoiParams::WriteParamFile( std::ofstream &of )
 		of << "y" << endl;
 		break;
 	}
+
+	if( groundInfo == NULL )
+	{
+		of << (int)hasCamProperties << endl;
+		if( hasCamProperties )
+			of << camZoom << endl;
+	}
 }
 
 void PoiParams::SetParams()
 {
 	Panel *p = type->panel;
 	
+	bool camProps = p->checkBoxes["camprops"]->checked;
+
+	hasCamProperties = camProps;
+
 	name = p->textBoxes["name"]->text.getString().toAnsiString();
 
 	nameText.setString( name );
+
+	stringstream ss;
+	string zoomStr = p->textBoxes["camzoom"]->text.getString().toAnsiString();
+
+	ss << zoomStr;
+
+	int zoom;
+	ss >> zoom;
+
+	if( !ss.fail() )
+	{
+		camZoom = zoom;
+
+		camRect.setSize( Vector2f( 960.f * camZoom, 540.f * camZoom ) );
+		camRect.setOrigin( camRect.getLocalBounds().width / 2, camRect.getLocalBounds().height / 2 );
+	}
 
 	string barStr = p->textBoxes["barrier"]->text.getString().toAnsiString();
 	
@@ -806,6 +861,10 @@ void PoiParams::SetPanelInfo()
 		break;
 	}
 
+	p->checkBoxes["camprops"]->checked = hasCamProperties;
+	
+	p->textBoxes["camzoom"]->text.setString( boost::lexical_cast<string>( camZoom ) );
+
 	p->textBoxes["name"]->text.setString( name );
 	if( group != NULL )
 	{
@@ -824,6 +883,12 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	nameText.setPosition( position.x, position.y - 40 );
 
 	target->draw( nameText );
+
+	if( hasCamProperties )
+	{
+		camRect.setPosition( position.x, position.y );
+		target->draw( camRect );
+	}
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos )
