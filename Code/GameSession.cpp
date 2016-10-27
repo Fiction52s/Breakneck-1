@@ -8588,7 +8588,7 @@ void GameSession::RestartLevel()
 	pauseImmuneEffects = NULL;
 	cloneInactiveEnemyList = NULL;
 
-
+	cam.SetManual( false );
 	//inGameClock.restart();
 }
 
