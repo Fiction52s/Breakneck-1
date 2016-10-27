@@ -532,10 +532,6 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		end += trueRight * (double)gridSizeRatio;
 	}
 	
-
-	
-
-
 	//diamondCenter = diamondCenter + gridIndexPos;
 
 	

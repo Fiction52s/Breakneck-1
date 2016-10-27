@@ -8,6 +8,11 @@
 #include "Enemy.h"
 #include "BarrierReactions.h"
 
+struct DialogueUser
+{
+	virtual void ConfirmDialogue() = 0;
+};
+
 struct PortraitBox
 {
 	enum State
@@ -93,6 +98,8 @@ struct DialogueBox
 	Tileset *ts_dialog;
 	sf::Sprite sprite;
 	int frame;
+
+	//bool show;
 };
 
 
@@ -555,7 +562,7 @@ struct MeetCoyoteSeq;
 struct CoyoteTalkSeq;
 struct SkeletonAttackCoyoteSeq;
 struct Boss_Coyote : Enemy, GroundMoverHandler,
-	LauncherEnemy
+	LauncherEnemy, DialogueUser
 {
 	enum Action
 	{
@@ -626,9 +633,22 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	double speed;
 	//void ResetDirections();
 	void RandomizeDirections();
+	void ConfirmDialogue();
+
 	void CreateNodes();
 	ScorpionNode *points[6];
 	ScorpionNode *edges[6];
+
+	//Tileset *ts_dialogueBox;
+	DialogueBox dialogue;
+
+	Tileset *ts_symbols0;
+	sf::Vector2f dextra0;
+
+	std::list<SymbolInfo> fi0;
+	std::list<SymbolInfo> fi1;
+	std::list<SymbolInfo> fi2;
+	std::list<SymbolInfo> fi3;
 	
 	void Start_IllTestYou();
 	void SetRelFacePos( sf::Vector2f &pos );

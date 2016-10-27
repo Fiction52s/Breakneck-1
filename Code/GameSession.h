@@ -18,6 +18,7 @@
 #include <map>
 #include "BarrierReactions.h"
 
+struct Barrier;
 struct PoiInfo
 {
 	PoiInfo( const std::string &name, sf::Vector2i &p );
@@ -26,7 +27,7 @@ struct PoiInfo
 	Edge *edge;
 	double edgeQuantity;
 	std::string name;
-
+	Barrier *barrier;
 	float cameraZoom;
 	bool hasCameraProperties;
 };
@@ -292,6 +293,8 @@ struct PauseMap
 struct SaveFile;
 struct MainMenu;
 
+
+struct DialogueUser;
 struct GoalPulse;
 struct PauseMenu;
 struct Sequence;
@@ -363,6 +366,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int shipSeqFrame;
 	sf::Vector2f shipStartPos;
 
+	DialogueUser *activeDialogue;
 
 	PauseMenu *pauseMenu;
 

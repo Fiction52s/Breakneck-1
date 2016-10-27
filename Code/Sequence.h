@@ -164,6 +164,7 @@ struct EnterNexus1Seq : Sequence
 	GameSession *owner;
 };
 
+struct Barrier;
 struct MeetCoyoteSeq : Sequence
 {
 	enum State
@@ -173,6 +174,8 @@ struct MeetCoyoteSeq : Sequence
 		Count
 	};
 
+	Edge *coyGround;
+	double coyQuant;
 
 	//State state;
 	//int stateLength[State::Count];
@@ -181,12 +184,17 @@ struct MeetCoyoteSeq : Sequence
 	bool Update();
 	void Draw( sf::RenderTarget *target );
 	void Reset();
+	void CoyoteGone();
 
 	Edge *startGround;
 	double startQuant;
+	bool coyoteGone;
+	int coyoteGoneFrame;
 
 	Edge *coyotePos;
 	double coyoteQuant;
+
+	int confirmTestFrame;
 
 	GameSession *owner;
 };
@@ -197,6 +205,20 @@ struct CoyoteFightSeq : Sequence
 	bool Update();
 	void Draw( sf::RenderTarget *target );
 	void Reset();
+
+	Barrier *bleft;
+	Barrier *bright;
+	Barrier *btop;
+	Barrier *bbot;
+
+	sf::Vector2f kinCamStart;
+	sf::Vector2f coyCamStart;
+
+	Edge *startEdge;
+	double startQuant;
+
+	Edge *coyStartEdge;
+	double coyStartQuant;
 
 	GameSession *owner;
 };

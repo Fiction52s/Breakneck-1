@@ -419,6 +419,7 @@ PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
 	pos.x = p.x;
 	pos.y = p.y;
 	edge = NULL;
+	barrier = NULL;
 }
 
 PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
@@ -427,12 +428,14 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 	edge = e;
 	edgeQuantity = q;
 	pos = edge->GetPoint( edgeQuantity );
+	barrier = NULL;
 }
 
 Barrier::Barrier( GameSession *p_owner, PoiInfo *p_poi, bool p_x, int p_pos, bool posOp,
 	BarrierCallback *cb ): poi( p_poi )
 {
 	owner = p_owner;
+	p_poi->barrier = this;
 	callback = cb;
 	x = p_x;
 	pos = p_pos;
@@ -619,7 +622,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {
 	
-	
+	activeDialogue = NULL;
 
 	keyFrame = 0;
 	for( int i = 0; i < EffectLayer::Count; ++i )
@@ -1912,11 +1915,26 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					}
 					else if( barStr == "x" )
 					{
-						barriers.push_back( new Barrier( this, pi, true, pos.x, ( player->position.x > pos.x ),  NULL ) );
+	/*					bleft = owner->poiMap["coyfightleft"]->barrier;
+	bright = owner->poiMap["coyfightright"]->barrier;
+	btop = owner->poiMap["coyfighttop"]->barrier;
+	bbot = owner->poiMap["coyfightbot"]->barrier;*/
+
+						Barrier *b = new Barrier( this, pi, true, pos.x, ( player->position.x > pos.x ),  NULL );
+						string na = b->poi->name;
+						/*if( na == "coyfightleft"
+							|| na == "coyfightright"
+							|| na == "coyfighttop"
+							|| na == "coyfightbot" )
+							b->triggered = true;*/
+						barriers.push_back( b );
+						
 					}
 					else if( barStr == "y" )
 					{
-						barriers.push_back( new Barrier( this, pi, false, pos.y, ( player->position.y > pos.y ), NULL ) );
+						Barrier *b = new Barrier( this, pi, false, pos.y, ( player->position.y > pos.y ), NULL );
+						//b->triggered = true;
+						barriers.push_back( b );
 					}
 					else
 					{
@@ -5819,6 +5837,16 @@ int GameSession::Run( string fileN )
 					//cout << "player frame: " << player->frame << endl;
 				}
 			}
+
+			if( activeDialogue != NULL )
+			{
+				if( currInput.A && !prevInput.A )
+				{
+					activeDialogue->ConfirmDialogue();
+					activeDialogue = NULL;
+					//activeDialogue->
+				}
+			}
 			//else
 			{
 				
@@ -8516,6 +8544,8 @@ void GameSession::RestartLevel()
 
 	goalPulse->Reset();
 	//f->Reset();
+
+	activeDialogue = NULL;
 
 	fadingIn = false;
 	fadingOut = false;
@@ -11985,6 +12015,14 @@ void GameSession::TriggerBarrier( Barrier *b )
 		assert( b_coyote != NULL );
 		b_coyote->spawned = true;
 		AddEnemy( b_coyote );
+	}
+	else if( name == "coyotefighttrigger" )
+	{
+		Fade( false, 60, Color::Black );
+		Pause( 60 );
+		powerWheel->Hide( true, 60 );
+		activeSequence = b_coyote->coyoteFightSeq;
+		activeSequence->frame = 0;
 	}
 }
 

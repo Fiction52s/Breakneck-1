@@ -273,9 +273,29 @@ void Boss_Coyote::RandomizeDirections()
 
 Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	:Enemy( owner, EnemyType::STAGBEETLE, false, 3 ),//, facingRight( cw ),
-	moveBezTest( 0,0,1,1 ), bigBounceBullet( this )//, testPaths( sf::Lines, 12 * 5 * 2 )
+	moveBezTest( 0,0,1,1 ), bigBounceBullet( this ),
+	dialogue( owner, DialogueBox::BIRD )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
 	ts_face = owner->GetTileset( "Bosses/Coyote/03_coyote_face_02_384x384.png", 384, 384 );
+
+	ts_symbols0 = owner->GetTileset( "Bosses/Dialogue/Symbols/02_Symbols_256x256.png", 256, 256 );
+
+
+
+
+	fi0.push_back( SymbolInfo() );
+	SymbolInfo *si = &fi0.back();
+	si->ts = ts_symbols0;
+	si->frame = 0;
+	si->framesHold = 20;
+	/*fi0.push_back( SymbolInfo() );
+	si = &fi0.back();
+	si->ts = ts_symbols0;
+	si->frame = 1;
+	si->framesHold = 20;*/
+
+	dextra0 = Vector2f( -200, 0 );
+
 
 	coyoteFightSeq = new CoyoteFightSeq( owner );
 	meetCoyoteSeq = new MeetCoyoteSeq( owner );
@@ -582,15 +602,14 @@ void Boss_Coyote::ActionEnded()
 			frame = 0;
 		break;
 	case SEQ_RUN:
-		if( frame == 30 )
-			frame = 0;
+		//if( frame == 30 )
+		//	frame = 0;
 		break;
 	}	
 }
 
 void Boss_Coyote::UpdatePrePhysics()
 {
-
 	ActionEnded();
 
 	switch( action )
@@ -672,10 +691,39 @@ void Boss_Coyote::UpdatePrePhysics()
 	case SEQ_ILL_TEST_YOU:
 		
 		break;
+	case SEQ_RUN:
+		if( frame == 0 )
+		{
+			portrait.Close();
+			dialogue.Close();
+			//owner->activeDialogue = NULL;
+		}
+		else if( frame == 60 )
+		{
+			testMover->SetSpeed( 10 );
+			//testMover->groundSpeed = 10;
+		}
+		else if( frame == 120 )
+		{
+			testMover->SetSpeed( 0 );
+		}
+		//else if( frame == 40 )
+		//{
+		//	testMover->SetSpeed( 0 );
+			//testMover->groundSpeed = 0;
+		//}
+		else if( frame == 121 )
+		{
+			frame = 121;
+			meetCoyoteSeq->CoyoteGone();
+
+		}
+
+		break;
 	}
 
 	portrait.Update();
-
+	dialogue.Update();
 
 
 
@@ -749,6 +797,14 @@ void Boss_Coyote::UpdatePrePhysics()
 
 void Boss_Coyote::UpdatePhysics()
 {
+	if( action == SEQ_RUN || action == SEQ_ILL_TEST_YOU
+		|| action == SEQ_SLEEP )
+	{
+		testMover->Move( slowMultiple );
+
+		position = testMover->physBody.globalPosition;
+		//testMover->Update();
+	}
 	launcher->UpdatePhysics();
 	bigBounceBullet.UpdatePhysics();
 	return;
@@ -849,11 +905,7 @@ void Boss_Coyote::PhysicsResponse()
 	if( !dead  )
 	{
 		
-		V2d p = testMover->physBody.globalPosition;
-
-		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
-		sprite.setPosition( p.x, p.y );
-		sprite.setRotation( 0 );
+		
 		
 
 		//sprite.setPosition( position.x, position.y );
@@ -927,10 +979,14 @@ void Boss_Coyote::PhysicsResponse()
 
 void Boss_Coyote::UpdatePostPhysics()
 {
+	/*if( action == SEQ_RUN )
+	{
+		position = testMover->physBody.globalPosition;
+	}*/
 	bigBounceBullet.UpdatePostPhysics();
 	launcher->UpdatePostPhysics();
 	launcher->UpdateSprites();
-	
+	UpdateSprite();
 	++frame;
 	return;
 	if( receivedHit != NULL )
@@ -994,6 +1050,7 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 	if( !dead )
 	{
 		portrait.Draw( target );
+		dialogue.Draw( target );
 		if( hasMonitor && !suppressMonitor )
 		{
 			//owner->AddEnemy( monitor );
@@ -1158,7 +1215,16 @@ void Boss_Coyote::UpdateSprite()
 	}
 	else
 	{
-		if( attackFrame >= 0 )
+
+		V2d p = testMover->physBody.globalPosition;
+
+		sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
+		sprite.setPosition( p.x, p.y );
+		sprite.setRotation( 0 );
+
+
+		sprite.setPosition( position.x, position.y );
+		/*if( attackFrame >= 0 )
 		{
 			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
 			if( !facingRight )
@@ -1166,7 +1232,7 @@ void Boss_Coyote::UpdateSprite()
 				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
 			}
 			sprite.setTextureRect( r );
-		}
+		}*/
 	}
 }
 
@@ -1370,6 +1436,7 @@ void Boss_Coyote::BigBounceBullet::Draw( sf::RenderTarget *target )
 void Boss_Coyote::SetRelFacePos( Vector2f &pos )
 {
 	portrait.sprite.setPosition( pos + Vector2f( position.x, position.y ) );
+	dialogue.SetPosition( portrait.sprite.getPosition() + dextra0 );
 }
 
 void Boss_Coyote::Start_IllTestYou()
@@ -1381,4 +1448,19 @@ void Boss_Coyote::Start_IllTestYou()
 	portrait.SetSprite( ts_face,
 		0 );
 	portrait.scaleMultiple = .5;
+
+	dialogue.SetSymbols( &fi0 );
+	dialogue.Open();
+	owner->activeDialogue = this;
+}
+
+void Boss_Coyote::ConfirmDialogue()
+{
+	switch( action )
+	{
+	case SEQ_ILL_TEST_YOU:
+		action = SEQ_RUN;
+		frame = 0;
+		break;
+	}
 }
