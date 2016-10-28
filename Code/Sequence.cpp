@@ -539,6 +539,7 @@ bool MeetCoyoteSeq::Update()
 
 	if( coyoteGone && frame == coyoteGoneFrame + 60 )
 	{
+		
 		player->action = Actor::STAND;
 		owner->cam.SetManual( false );
 		owner->cam.EaseOutOfManual( 60 );
@@ -562,9 +563,7 @@ bool MeetCoyoteSeq::Update()
 void MeetCoyoteSeq::CoyoteGone()
 {
 	Boss_Coyote *coy = owner->b_coyote;
-	coy->testMover->ground = coy->startGround;
-	coy->testMover->edgeQuantity = coy->startQuant;
-	coy->facingRight = false;
+	
 	coyoteGone = true;
 	coyoteGoneFrame = frame;
 	
@@ -659,6 +658,9 @@ CoyoteFightSeq::CoyoteFightSeq( GameSession *p_owner )
 	V2d coyCam = owner->poiMap["coyfightcam"]->pos;
 
 	PoiInfo *start = owner->poiMap["startcoyotefight"];
+
+	startEdge = start->edge;
+	startQuant = start->edgeQuantity;
 	//PoiInfo *coyStart = owner->poiMap["coyotefight"];
 
 	bleft = owner->poiMap["coyfightleft"]->barrier;
@@ -678,7 +680,9 @@ CoyoteFightSeq::CoyoteFightSeq( GameSession *p_owner )
 	//coyStartQuant = coyStart->edgeQuantity;
 
 	kinCamStart = Vector2f( kinCam.x, kinCam.y );
-	coyCamStart = Vector2f( coyCamStart.x, coyCamStart.y );
+	coyCamStart = Vector2f( coyCam.x, coyCam.y );
+
+	camMove0.AddLineMovement( kinCam, coyCam, CubicBezier( 0, 0, 1, 1 ), 60 );
 	/*PoiInfo *pi0 = owner->poiMap["coyotemeetstart"];
 	startGround = pi0->edge;
 	startQuant = pi0->edgeQuantity;
@@ -700,14 +704,15 @@ bool CoyoteFightSeq::Update()
 	case 0:
 		{
 			owner->ActivateZone( coy->zone );
+			assert( coy->zone != NULL );
 
-			bleft->triggered = false;
-			bright->triggered = false;
-			btop->triggered = false;
-			bbot->triggered = false;
+			
 
-		owner->cam.SetManual( true );
-		owner->cam.Set( kinCamStart, 1, 0 );
+			
+
+			owner->cam.SetManual( true );
+			owner->cam.SetMovementSeq( &camMove0, false );
+			//owner->cam.Set( kinCamStart, 1, 0 );
 
 		//coy->testMover->ground = coyStartEdge;
 		//coy->testMover->edgeQuantity = coyStartQuant;
@@ -718,13 +723,27 @@ bool CoyoteFightSeq::Update()
 		owner->Fade( true, 60, Color::Black );
 		owner->Pause( 60 );
 
+		
 
 		player->ground = startEdge;
 		player->offsetX = player->b.rw;
 		player->edgeQuantity = startQuant;
 		player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
 		player->frame = 0;
+		player->groundSpeed = 0;
 		player->facingRight = true;
+		player->PhysicsResponse();
+
+		bleft->triggered = false;
+		bleft->SetPositive();
+		bright->triggered = false;
+		bright->SetPositive();
+		btop->triggered = false;
+		btop->SetPositive();
+		bbot->triggered = false;
+		bbot->SetPositive();
+
+
 		//V2d center = startGround->GetPoint( startQuant ) + coyotePos->GetPoint( coyoteQuant );
 		//center /= 2.0;
 		//center.y -= 100;
@@ -745,6 +764,14 @@ bool CoyoteFightSeq::Update()
 		{
 			/*player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
 			player->frame = 0;*/
+			break;
+		}
+	case 60:
+		{
+			owner->cam.SetManual( false );
+			owner->cam.EaseOutOfManual( 60 );
+			player->action = Actor::STAND;
+			player->frame = 0;
 			break;
 		}
 		

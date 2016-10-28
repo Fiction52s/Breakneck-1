@@ -220,6 +220,8 @@ struct CoyoteFightSeq : Sequence
 	Edge *coyStartEdge;
 	double coyStartQuant;
 
+	MovementSequence camMove0;
+
 	GameSession *owner;
 };
 

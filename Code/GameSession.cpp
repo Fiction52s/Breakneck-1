@@ -488,6 +488,30 @@ bool Barrier::Update( Actor *player )
 	return triggered;
 }
 
+void Barrier::SetPositive()
+{
+	if( x )
+	{
+		if( owner->player->position.x - pos > 0 )
+		{
+			positiveOpen = true;
+		}
+		else
+			positiveOpen = false;
+	}
+	else
+	{
+		if( owner->player->position.y - pos > 0 )
+		{
+			positiveOpen = true;
+		}
+		else
+		{
+			positiveOpen = false;
+		}
+	}
+}
+
 KeyMarker::KeyMarker( GameSession *p_owner )
 {
 	owner = p_owner;
@@ -2115,6 +2139,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
+
+				fullEnemyList.push_back( enemy );
+
 				b_crawler = enemy;
 			}
 			else if( typeName == "basicturret" )
@@ -2680,6 +2707,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 				b_coyote = enemy;
+
+				fullEnemyList.push_back( enemy );
 			}
 
 			//w4
@@ -4745,14 +4774,15 @@ void GameSession::SetupZones()
 			}
 		}
 
-		if( (*it)->type == Enemy::BOSS_BIRD )
+		/*if( (*it)->type == Enemy::BOSS_BIRD )
 		{
+			cout << "whats this" << endl;
 			if( (*it)->zone != NULL )
 			{
 				(*it)->zone->spawnEnemies.push_back( (*it) );
 			}
 			
-		}
+		}*/
 		//else
 		//{
 		if( (*it)->zone != NULL )
@@ -5842,8 +5872,8 @@ int GameSession::Run( string fileN )
 			{
 				if( currInput.A && !prevInput.A )
 				{
-					activeDialogue->ConfirmDialogue();
-					activeDialogue = NULL;
+					if( activeDialogue->ConfirmDialogue() )
+						activeDialogue = NULL;
 					//activeDialogue->
 				}
 			}
@@ -11888,7 +11918,12 @@ void GameSession::ActivateZone( Zone *z )
 			AddEnemy( (*it) );
 		}
 
+		
 		z->active = true;
+
+
+		
+
 		if( activatedZoneList == NULL )
 		{
 			activatedZoneList = z;

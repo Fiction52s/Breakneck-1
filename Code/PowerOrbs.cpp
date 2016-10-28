@@ -412,6 +412,8 @@ void PowerWheel::Reset()
 	largeOrb.setTextureRect( ts_largeOrbs->GetSubRect( orbColors[activeOrb] ) );
 	orbPointer.setTextureRect( ts_orbPointer->GetSubRect( 1 ) );
 	orbPointer.setRotation( 0 );
+
+	UpdateSpritePositions();
 }
 
 void PowerWheel::Draw( sf::RenderTarget *target )

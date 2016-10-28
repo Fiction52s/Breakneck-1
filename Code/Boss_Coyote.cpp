@@ -714,7 +714,13 @@ void Boss_Coyote::UpdatePrePhysics()
 		//}
 		else if( frame == 121 )
 		{
-			frame = 121;
+			//frame = 122;
+
+			testMover->ground = startGround;
+			testMover->edgeQuantity = startQuant;
+			testMover->UpdateGroundPos();
+			facingRight = false;
+
 			meetCoyoteSeq->CoyoteGone();
 
 		}
@@ -1454,8 +1460,14 @@ void Boss_Coyote::Start_IllTestYou()
 	owner->activeDialogue = this;
 }
 
-void Boss_Coyote::ConfirmDialogue()
+bool Boss_Coyote::ConfirmDialogue()
 {
+	if( portrait.state != PortraitBox::OPEN ||
+		dialogue.state != DialogueBox::OPEN )
+	{
+		return false;
+	}
+
 	switch( action )
 	{
 	case SEQ_ILL_TEST_YOU:
@@ -1463,4 +1475,6 @@ void Boss_Coyote::ConfirmDialogue()
 		frame = 0;
 		break;
 	}
+
+	return true;
 }

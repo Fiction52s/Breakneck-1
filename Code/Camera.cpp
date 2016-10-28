@@ -612,12 +612,15 @@ void Camera::Update( Actor *player )
 	pos.x += offset.x;
 	pos.y += offset.y;
 
+	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+	Barrier *leftb = NULL, *rightb = NULL, *topb = NULL, *botb = NULL;
 	for(list<Barrier*>::iterator it = owner->barriers.begin(); it != owner->barriers.end(); ++it )
 	{
 		if( (*it)->triggered )
 		{
 			continue;
 		}
+
 		float halfw = 960 / 2;
 		float halfh = 540 / 2;
 		if( (*it)->x )
@@ -628,7 +631,12 @@ void Camera::Update( Actor *player )
 				float diff = (*it)->pos - left;
 				if( diff > 0 )
 				{
-					pos.x += diff;
+					if( diff > xChangePos )
+					{
+						xChangePos = diff;
+						leftb = (*it);
+					}
+					//pos.x += diff;
 					//cout << "moving right" << endl;
 					//offset.x += (*it)->pos - left;
 				}
@@ -642,7 +650,12 @@ void Camera::Update( Actor *player )
 					//cout << "moving left: " << diff << endl;
 					//pos.x -= right - (*it)->pos;
 					//offset.x -= diff;
-					pos.x -= diff;
+					if( -diff < xChangeNeg )
+					{
+						xChangeNeg = -diff;
+						rightb = (*it);
+					}
+					//pos.x -= diff;
 				}
 			}
 		}
@@ -654,8 +667,13 @@ void Camera::Update( Actor *player )
 				float diff = (*it)->pos - top;
 				if( diff > 0 )
 				{
+					if( diff > yChangePos )
+					{
+						yChangePos = diff;
+						topb = (*it);
+					}
 					//offset.y += (*it)->pos - top;
-					pos.y += diff;
+					//pos.y += diff;
 				}
 			}
 			else
@@ -664,12 +682,53 @@ void Camera::Update( Actor *player )
 				float diff = bot - (*it)->pos;
 				if( diff > 0 )
 				{
-					pos.y -= diff;
+					if( -diff < yChangeNeg )
+					{
+						yChangeNeg = -diff;
+						botb = (*it);
+					}
+					//pos.y -= diff;
 					//offset.y -= bot - (*it)->pos;
 				}
 			}
 		}
 	}
+
+	Vector2f barrierOffset;
+	float barrierZoom = -1;
+	if( xChangePos != 0 && xChangeNeg != 0 )
+	{
+		float diff = rightb->pos - leftb->pos;//xChangePos - xChangeNeg;
+		barrierZoom = diff / 960.f + .5f;
+		//cout << "diff: " << diff << endl;
+		//cout << "bzoom: " << barrierZoom << endl;
+		pos.x = (rightb->pos + leftb->pos ) / 2.f;
+		//barrierOffset.x = ( xChangePos + xChangeNeg ) / 2.f;
+	}
+	else if( xChangePos != 0 )
+	{
+		barrierOffset.x = xChangePos;
+	}
+	else if( xChangeNeg != 0 )
+	{
+		barrierOffset.x = xChangeNeg;
+	}
+
+	if( yChangePos != 0 && yChangeNeg != 0 )
+	{
+		//barrierOffset.y = ( yChangePos + yChangeNeg ) / 2.f;
+	}
+	else if( yChangePos != 0 )
+	{
+		barrierOffset.y = yChangePos;
+	}
+	else if( yChangeNeg != 0 )
+	{
+		barrierOffset.y = yChangeNeg;
+	}
+
+	pos += barrierOffset;
+
 
 
 
@@ -698,6 +757,12 @@ void Camera::Update( Actor *player )
 
 		//zoomFactor = zoomFactor * .5 + testZoom * .5;
 	}
+
+	if( barrierZoom > 0)
+	{
+		zoomFactor = barrierZoom;
+	}
+
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;

@@ -10,7 +10,7 @@
 
 struct DialogueUser
 {
-	virtual void ConfirmDialogue() = 0;
+	virtual bool ConfirmDialogue() = 0;
 };
 
 struct PortraitBox
@@ -633,7 +633,7 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	double speed;
 	//void ResetDirections();
 	void RandomizeDirections();
-	void ConfirmDialogue();
+	bool ConfirmDialogue();
 
 	void CreateNodes();
 	ScorpionNode *points[6];

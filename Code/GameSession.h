@@ -39,6 +39,7 @@ struct Barrier
 		BarrierCallback *cb );
 
 	bool Update( Actor *player );
+	void SetPositive();
 
 	BarrierCallback *callback;
 	GameSession *owner;
