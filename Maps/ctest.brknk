@@ -278,6 +278,7 @@
 -- 3
 poi +air -36676 4360
 coyotefighttrigger x
+0
 poi -air 16 9 89
 coyotestart -
 goal 0 1 141.996

@@ -254,6 +254,7 @@
 -- 9
 poi +air -29260 -479
 birdfighttrigger x
+0
 poi -air 17 3 786.002
 birdstart -
 poi -air 17 7 35.002
@@ -262,10 +263,13 @@ poi -air 16 5 166.871
 landspot -
 poi +air -28221 -912
 airspot -
+0
 poi +air -28398 -385
 bullettest -
+0
 poi +air -28516 -531
 bullettestlarge -
+0
 goal 0 1 141.996
 bat -27303 -1458
 0
