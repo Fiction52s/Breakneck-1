@@ -345,7 +345,7 @@ void Shard::UpdateSprite()
 void Shard::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
-	if( !dead )
+	if( !caught )
 	{
 		target->draw( sprite );
 	}
@@ -372,7 +372,7 @@ void Shard::Draw( sf::RenderTarget *target )
 
 void Shard::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead )
+	if( !caught )
 	{
 		CircleShape enemyCircle;
 		enemyCircle.setFillColor( COLOR_TEAL );
