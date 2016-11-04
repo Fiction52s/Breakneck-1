@@ -1113,6 +1113,22 @@ bool EditSession::OpenFile( string fileName )
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if( typeName == "shard" )
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					//int hasMonitor;
+					//is >> hasMonitor;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset( new ShardParams( this, pos ) );
+					//a->hasMonitor = (bool)hasMonitor;
+				}
+
 
 				//w1
 				else if( typeName == "crawlerreverser" )
@@ -3522,10 +3538,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *keyPanel = CreateOptionsPanel( "key" );
 	ActorType *keyType = new ActorType( "key", keyPanel );
 
+	Panel *shardPanel = NULL;
+	ActorType *shardType = new ActorType( "shard", shardPanel );
+
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
 	types["poi"] = poiType;
 	types["key"] = keyType;
+
+	types["shard"] = shardType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -3691,6 +3712,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 2, 0, Sprite( poiType->iconTexture ), "poi" );
 	gs->Set( 3, 0, Sprite( keyType->iconTexture ), "key" );
 	gs->Set( 4, 0, Sprite( shipPickupType->iconTexture ), "shippickup" );
+	gs->Set( 5, 0, Sprite( shardType->iconTexture ), "shard" );
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -5927,6 +5949,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											CreateActor( shipPickup );
 										}
 									}
+									else if( trackingEnemy->name == "shard" )
+									{
+										trackingEnemy = NULL;
+										ActorPtr shard( new ShardParams( this, Vector2i( worldPos.x, 
+											worldPos.y ) ) );
+										shard->group = groups["--"];
+										CreateActor( shard );
+									}
+
 
 									//w1
 									else if( trackingEnemy->name == "patroller" )
@@ -9574,6 +9605,38 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if( p->name == "shard_options" )
+	{
+		if( b->name == "ok" )
+		{
+			if( mode == EDIT )
+			//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();				
+				ShardParams *shard = (ShardParams*)select;
+				shard->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if( mode == CREATE_ENEMY )
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr shard( tempActor );//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				shard->SetParams();
+				shard->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor( shard );
+
+				tempActor = NULL;
+			
+				
+			}
+			showPanel = NULL;
+		}
+	}
+
 
 	else if( p->name == "patroller_options" )
 	{
@@ -12351,6 +12414,27 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		return p;
 	}
+	//else if( name == "shard1" )
+	//{
+	//	Panel *p = new Panel( "turtle_options", 200, 600, this );
+	//	p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
+	//	p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
+	//	p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
+
+	//	//maybe bullet speed later but it might be too hard if it has variation
+	//	//could have params to have them teleport to offsets around your position
+	//	//instead of always DIRECTLY on it
+
+	//	//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
+	//	//p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
+	//	//p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
+	//	
+	//	
+
+	//	p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
+	//	//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	//	return p;
+	//}
 	//w1
 	else if( name == "patroller" )
 	{
@@ -12827,6 +12911,11 @@ void EditSession::SetEnemyEditPanel()
 		KeyParams *key = (KeyParams*)ap;
 		key->SetPanelInfo();
 	}
+	else if( name == "shard" )
+	{
+		ShardParams *shard= (ShardParams*)ap;
+		shard->SetPanelInfo();
+	}
 	//w1
 	else if( name == "patroller" )
 	{
@@ -12958,15 +13047,15 @@ void EditSession::SetEnemyEditPanel()
 		patrolPath.push_back( narwhal->dest );
 		
 	}
-	else if( name == "specter" )
+	else if( name == "gorilla" )
 	{
-		SpecterParams *specter= (SpecterParams*)ap;
-		specter->SetPanelInfo();
+		GorillaParams *gorilla = (GorillaParams*)ap;
+		gorilla->SetPanelInfo();
 	}
-	else if( name == "specter" )
+	else if( name == "copycat" )
 	{
-		SpecterParams *specter= (SpecterParams*)ap;
-		specter->SetPanelInfo();
+		CopycatParams *copycat = (CopycatParams*)ap;
+		copycat->SetPanelInfo();
 	}
 
 	else if( name == "nexus" )
@@ -13868,6 +13957,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+	}
+	else if( name == "shard" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 	//w1
 	else if( name == "patroller" )

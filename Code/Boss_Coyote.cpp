@@ -280,9 +280,6 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 
 	ts_symbols0 = owner->GetTileset( "Bosses/Dialogue/Symbols/02_Symbols_256x256.png", 256, 256 );
 
-
-
-
 	fi0.push_back( SymbolInfo() );
 	SymbolInfo *si = &fi0.back();
 	si->ts = ts_symbols0;

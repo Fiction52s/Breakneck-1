@@ -644,8 +644,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
-{
-	
+{	
 	activeDialogue = NULL;
 
 	keyFrame = 0;
@@ -1820,6 +1819,7 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 {
 	totalNumberBullets = 0;
+	int shardsLoadedCounter = 0;
 
 	int numGroups;
 	is >> numGroups;
@@ -2040,6 +2040,28 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				keyNumberObjects.push_back( new KeyNumberObj( pos, numKeys ) );
 			}
+			else if( typeName == "shard" )
+			{
+				int xPos,yPos;
+
+				//always air
+
+				is >> xPos;
+				is >> yPos;
+				
+				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), shardsLoadedCounter );
+				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				//	400, 50, 60, 1 );
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				shardsLoadedCounter++;
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+			}
+
 
 			//w1
 			else if( typeName == "patroller" )
@@ -3152,7 +3174,7 @@ bool GameSession::OpenFile( string fileName )
 
 		is >> envLevel;
 		
-
+		//currentLevelInfo = saveFile-
 		//cout << "just read it: " << envType << ", " << envLevel << endl;
 
 		is >> leftBounds;

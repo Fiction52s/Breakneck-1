@@ -579,6 +579,19 @@ struct KeyParams : public ActorParams
 	int numKeys;
 };
 
+struct ShardParams : public ActorParams
+{
+	ShardParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
 //w1
 struct PatrollerParams : public ActorParams
 {

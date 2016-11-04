@@ -292,6 +292,7 @@ struct PauseMap
 
 
 struct SaveFile;
+struct Level;
 struct MainMenu;
 
 
@@ -332,7 +333,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
-	void ResetShipSequence();
+	void ResetShipSequence(); 
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
 	Tileset *ts_ship;
@@ -341,6 +342,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::VertexArray cloudBot0;
 	sf::VertexArray cloudBot1;
 
+	//int shardsLoadedCounter;
+	//Level *currentLevelInfo;
 
 	sf::Vector2f relShipVel;
 	//sf::Vector2f shipKinVel;

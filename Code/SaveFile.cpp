@@ -5,15 +5,39 @@
 
 using namespace std;
 
+Level::Level()
+	:completed( false )
+{
+	for( int i = 0; i < 3; ++i )
+	{
+		shards[i] = false;
+	}
+}
+
 SaveFile::SaveFile( const std::string &name )
 	:iconVA( sf::Quads, 4 )
 {
+	worlds[0] = new Level[6];
+	for( int i = 1; i < 6; ++i )
+	{
+		worlds[i] = NULL;
+	}
+
 	stringstream ss;
 	ss << "Data/" << name << ".kin";
 
-	
-
 	fileName = ss.str();
+}
+
+SaveFile::~SaveFile()
+{
+	for( int i = 0; i < 6; ++i )
+	{
+		if( worlds[i] != NULL )
+		{
+			delete [] worlds[i];
+		}
+	}
 }
 
 void SaveFile::LoadFromFile()

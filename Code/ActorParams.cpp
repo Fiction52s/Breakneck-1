@@ -1105,3 +1105,51 @@ ActorParams *ShipPickupParams::Copy()
 	ShipPickupParams *copy = new ShipPickupParams( *this );
 	return copy;
 }
+
+ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	position = pos;	
+	type = edit->types["shard"];
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	SetBoundingQuad();
+}
+
+void ShardParams::WriteParamFile( std::ofstream &of )
+{
+}
+
+void ShardParams::SetParams()
+{
+	//Panel *p = type->panel;
+
+	//hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void ShardParams::SetPanelInfo()
+{
+	//Panel *p = type->panel;
+
+	/*p->textBoxes["name"]->text.setString( "test" );
+	if( group != NULL )
+	{
+		p->textBoxes["group"]->text.setString( group->name );
+	}
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;*/
+}
+
+bool ShardParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *ShardParams::Copy()
+{
+	ShardParams *copy = new ShardParams( *this );
+	return copy;
+}
