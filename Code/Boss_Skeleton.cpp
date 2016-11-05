@@ -392,7 +392,7 @@ void Boss_Skeleton::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_MAGENTA, 5, .8, 6 );
+			owner->player->ConfirmHit( 6, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )

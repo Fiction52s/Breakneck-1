@@ -159,6 +159,15 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite kinPurpleOutline;
 	sf::Color currentDespColor;
 
+	Tileset *ts_fx_rune0;
+	Tileset *ts_fx_rune1;
+	Tileset *ts_fx_rune2;
+	sf::Sprite runeSprite;
+	int runeStep;
+	int runeLength;
+	bool showRune;
+
+
 	//sf::Shader speedBarShader;
 	bool hitGoal;
 	int enemiesKilledThisFrame;
@@ -166,7 +175,7 @@ struct Actor : QuadTreeCollider,
 	Actor( GameSession *owner );
 	void UpdateSprite();
 	void ConfirmEnemyNoKill( Enemy *e );
-	void ConfirmHit( sf::Color flashColor, 
+	void ConfirmHit( int worldIndex, 
 		int flashFrames, double speedBar, int charge );
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );

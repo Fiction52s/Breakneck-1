@@ -349,7 +349,7 @@ void Ghost::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_RED, 5, .8, 6 );
+			owner->player->ConfirmHit( 5, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )

@@ -347,7 +347,7 @@ void GrowingTree::UpdatePhysics()
 		{
 			//cout << "hit here!" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_RED, 5, .8, 6 );
+			owner->player->ConfirmHit( 5, 5, .8, 6 );
 			/*owner->player->test = true;
 			owner->player->currAttackHit = true;
 			owner->player->flashColor = COLOR_BLUE;

@@ -11,6 +11,14 @@ using namespace std;
 #define V2d sf::Vector2<double>
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
@@ -67,8 +75,14 @@ Actor::Actor( GameSession *gs )
 
 		SetExpr( Expr::Expr_NEUTRAL );
 
+		ts_fx_rune0 = owner->GetTileset( "fx_health_rune_64x64.png", 64, 64 );
+		ts_fx_rune1 = owner->GetTileset( "fx_health_rune_128x128.png", 128, 128 );
+		ts_fx_rune2 = owner->GetTileset( "fx_health_rune_256x256.png", 256, 256 );
+
 		motionGhostSpacing = 6;
 		ghostSpacingCounter = 0;
+
+		runeStep = 0;
 
 		drainCounterMax = 10;
 		drainCounter = 0;
@@ -12083,7 +12097,14 @@ void Actor::UpdatePostPhysics()
 	}*/
 
 
-	
+	if( showRune )
+	{
+		runeStep += 5 / slowMultiple;
+		if( runeStep > runeLength )
+		{
+			showRune = false;
+		}
+	}
 
 	if( slowCounter == slowMultiple )
 	{
@@ -13997,6 +14018,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	};
 	target->draw( follower, 2, sf::Lines );*/
 	
+	if( showRune )
+	{
+		target->draw( runeSprite );
+	}
 	
 }
 
@@ -16411,7 +16436,11 @@ void Actor::UpdateSprite()
 		}
 	}
 
-	
+	if( showRune )
+	{
+		runeSprite.setPosition( position.x, position.y );
+		runeSprite.setColor( Color( 255, 255, 255, ((1.0 - ((double)runeStep / runeLength)) * 255) ) );
+	}
 }
 
 void Actor::ConfirmEnemyKill( Enemy *e )
@@ -16431,24 +16460,62 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 
 void Actor::ConfirmEnemyNoKill( Enemy *e )
 {
+	//cout << "hit sound" << endl;
 	owner->soundNodeList->ActivateSound( soundBuffers[S_HIT] );
 }
 
-void Actor::ConfirmHit( Color p_flashColor, 
+void Actor::ConfirmHit( int worldIndex, 
 		int p_flashFrames, double speedBar, int charge)
 {
+	Color c;
+	switch( worldIndex )
+	{
+	case 1:
+		c = COLOR_BLUE;
+		break;
+	case 2:
+		c = COLOR_GREEN;
+		break;
+	case 3:
+		c = COLOR_YELLOW;
+		break;
+	case 4:
+		c = COLOR_ORANGE;
+		break;
+	case 5:
+		c = COLOR_RED;
+		break;
+	case 6:
+		c = COLOR_MAGENTA;
+		break;
+	case 7:
+		c = Color::Black;
+		break;
+	}
+
 	currentSpeedBar += speedBar;
 	test = true;
 	currAttackHit = true;
-	flashColor = p_flashColor;
+	flashColor = c;	
 	flashFrames = p_flashFrames;
 	for( int i = 0; i < 3; ++i )
 	{
-		swordShaders[i].setParameter( "toColor", p_flashColor );
+		swordShaders[i].setParameter( "toColor", flashColor );
 	}
+
 
 	owner->powerWheel->Charge( charge );
 	desperationMode = false;
+
+	showRune = true;
+	runeLength = 50 * 5;
+	runeStep = 0;
+	runeSprite.setTexture( *ts_fx_rune1->texture );
+	runeSprite.setTextureRect( ts_fx_rune1->GetSubRect( (worldIndex-1) ) );
+	runeSprite.setOrigin( runeSprite.getLocalBounds().width / 2, 
+		runeSprite.getLocalBounds().height / 2 );
+	
+
 	//owner->player->test = true;
 	//desperationMode = false;
 }

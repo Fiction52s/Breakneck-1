@@ -236,7 +236,7 @@ void Patroller::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( COLOR_BLUE, 5, .8, 6 );
+			owner->player->ConfirmHit( 1, 5, .8, 6 );
 
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
@@ -247,7 +247,7 @@ void Patroller::PhysicsResponse()
 		//	cout << "frame: " << owner->player->frame << endl;
 
 			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
+			
 			
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
@@ -311,7 +311,7 @@ void Patroller::UpdatePostPhysics()
 		owner->RemoveEnemy( this );
 		//return;
 	}
-
+	//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );

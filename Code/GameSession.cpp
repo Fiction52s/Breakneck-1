@@ -8437,6 +8437,10 @@ void GameSession::ResetShipSequence()
 
 void GameSession::RespawnPlayer()
 {
+	player->runeStep = 0;
+	player->runeLength = 0;
+	player->showRune = false;
+
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
 	player->hitGoal = false;

@@ -780,7 +780,7 @@ void Boss_Tiger::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( COLOR_ORANGE, 5, .8, 6 );
+				owner->player->ConfirmHit( 4, 5, .8, 6 );
 
 				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 				{
