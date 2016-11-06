@@ -245,4 +245,14 @@ struct SkeletonAttackCoyoteSeq : Sequence
 	GameSession *owner;
 };
 
+struct BirdCrawlerAllianceSeq : Sequence
+{
+	BirdCrawlerAllianceSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	GameSession *owner;
+};
+
 #endif 

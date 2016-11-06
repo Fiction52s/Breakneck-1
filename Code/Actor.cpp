@@ -412,6 +412,10 @@ Actor::Actor( GameSession *gs )
 		tileset[JUMP] = owner->GetTileset( "jump_64x64.png", 64, 64 );
 		normal[JUMP] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
 
+		actionLength[SEQ_WAIT] = 2;
+		tileset[SEQ_WAIT] = owner->GetTileset( "jump_64x64.png", 64, 64 );
+		normal[SEQ_WAIT] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
+
 		actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
 		tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset( "jump_64x64.png", 64, 64 );
 		normal[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset( "jump_NORMALS.png", 64, 64 );
@@ -1134,6 +1138,9 @@ void Actor::ActionEnded()
 			owner->cam.SetManual( false );
 			owner->cam.EaseOutOfManual( 60 );
 			break;
+		case SEQ_WAIT:
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -1410,7 +1417,7 @@ void Actor::UpdatePrePhysics()
 	ActionEnded();
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
-		|| action == RIDESHIP || action == WAITFORSHIP )
+		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT )
 	{
 		
 
@@ -8392,7 +8399,7 @@ void Actor::UpdateFullPhysics()
 void Actor::UpdatePhysics()
 {
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT
-		|| action == RIDESHIP || action == WAITFORSHIP )
+		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT )
 		return;
 	/*if( blah == 0 )
 	{
@@ -16395,6 +16402,31 @@ void Actor::UpdateSprite()
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
 			break;
+		}
+	case SEQ_WAIT:
+		{
+		sprite->setTexture( *(tileset[JUMP]->texture));
+		{
+		sf::IntRect ir;
+
+		ir = tileset[JUMP]->GetSubRect( 3 );
+		
+
+		sprite->setRotation( 0 );
+
+		if( ( !facingRight && !reversed ) )
+		{
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		else
+		{
+			sprite->setTextureRect( ir );
+		}
+		}
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+		sprite->setPosition( position.x, position.y );
+
+		break;
 		}
 	}
 	

@@ -3710,6 +3710,20 @@ bool GameSession::OpenFile( string fileName )
 			//normal map
 		}
 
+		if( poiMap.count( "bc_alliance" ) > 0 )
+		{
+			startMapSeq = new BirdCrawlerAllianceSeq( this );
+			activeSequence = startMapSeq;
+			startMapSeq->Reset();
+			fadeAlpha = 255;
+			//owner->Fade( false, 60, Color::Black );
+			//owner->Pause( 60 );
+			//activeSequence = 
+			
+			//player->action = Actor::Action::Se;
+			//player->frame = 1;
+		}
+
 	}
 	else
 	{
@@ -4948,6 +4962,7 @@ int GameSession::Run( string fileN )
 	fadingIn = false;
 	fadingOut = false;
 	fadeRect.setSize( Vector2f( 1920, 1080 ) );
+	
 
 	soundManager = new SoundManager;
 

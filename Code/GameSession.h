@@ -333,6 +333,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
+	
+
 	void ResetShipSequence(); 
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
@@ -847,6 +849,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 
 	Sequence *activeSequence;
+	Sequence *startMapSeq;
 
 	/*struct GameStartSeq : Sequence
 	{
