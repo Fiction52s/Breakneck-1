@@ -45,6 +45,8 @@ Actor::Actor( GameSession *gs )
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
+		grindLungeSpeed = 15.0;
+
 		speedLevel = 0;
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
@@ -489,6 +491,14 @@ Actor::Actor( GameSession *gs )
 		actionLength[GRINDBALL] = 1;
 		tileset[GRINDBALL] = owner->GetTileset( "grindball_64x64.png", 64, 64 );
 		normal[GRINDBALL] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
+
+		actionLength[GRINDLUNGE] = 30;
+		tileset[GRINDLUNGE] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
+		normal[GRINDLUNGE] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
+
+		actionLength[GRINDATTACK] = 1;
+		tileset[GRINDATTACK] = owner->GetTileset( "grindball_64x64.png", 64, 64 );
+		normal[GRINDATTACK] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide_80x48.png", 80, 48 );
@@ -1035,6 +1045,14 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case GRINDBALL:
+			frame = 0;
+			break;
+		case GRINDLUNGE:
+			action = JUMP;
+			frame = 1;
+			break;
+		case GRINDATTACK:
+			action = GRINDBALL;
 			frame = 0;
 			break;
 		case AIRDASH:
@@ -3723,6 +3741,15 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
+						if( grindSpeed > 0 )
+						{
+							facingRight = true;
+						}
+						else
+						{
+							facingRight = false;
+						}
+
 						framesNotGrinding = 0;
 						hasAirDash = true;
 						hasGravReverse = true;
@@ -3751,6 +3778,8 @@ void Actor::UpdatePrePhysics()
 								groundSpeed = 0;
 							}
 						}
+
+						
 
 
 
@@ -3784,6 +3813,16 @@ void Actor::UpdatePrePhysics()
 
 						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
 						{
+							if( grindSpeed < 0 )
+							{
+								facingRight = true;
+							}
+							else
+							{
+								facingRight = false;
+							}
+
+
 							framesNotGrinding = 0;
 							if( reversed )
 							{
@@ -3817,6 +3856,15 @@ void Actor::UpdatePrePhysics()
 							else
 							{
 								offsetX = 0;
+							}
+
+							if( grindSpeed < 0 )
+							{
+								facingRight = true;
+							}
+							else
+							{
+								facingRight = false;
 							}
 
 							hasAirDash = true;
@@ -3868,6 +3916,113 @@ void Actor::UpdatePrePhysics()
 				}		
 				//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 			}
+			else if( currInput.B && !prevInput.B )
+			{
+				V2d op = position;
+				
+				//V2d op = position;
+
+				V2d grindNorm = grindEdge->Normal();
+
+				if( grindNorm.y < 0 )
+				{
+					double extra = 0;
+					if( grindNorm.x > 0 )
+					{
+						offsetX = b.rw;
+						extra = .1;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						offsetX = -b.rw;
+						extra = -.1;
+					}
+					else
+					{
+						offsetX = 0;
+					}
+				
+					position.x += offsetX + extra;
+
+					position.y -= normalHeight + .1;
+
+					if( !CheckStandUp() )
+					{
+						position = op;
+					}
+					else
+					{
+						action = GRINDLUNGE;
+						frame = 0;
+
+						V2d grindNorm = grindEdge->Normal();
+						lungeNormal = grindNorm;
+						velocity = lungeNormal * grindLungeSpeed;
+						//grindEdge = NULL;
+
+						facingRight = (grindNorm.x > 0);
+
+						grindEdge = NULL;
+						ground = NULL;
+					}
+
+				}
+				else
+				{
+					
+					if( grindNorm.x > 0 )
+					{
+						position.x += b.rw + .1;
+					}
+					else if( grindNorm.x < 0 )
+					{
+						position.x += -b.rw - .1;
+					}
+
+					if( grindNorm.y > 0 )
+						position.y += normalHeight + .1;
+
+					if( !CheckStandUp() )
+					{
+						position = op;
+					}
+					else
+					{
+						action = GRINDLUNGE;
+						frame = 0;
+
+						V2d grindNorm = grindEdge->Normal();
+						lungeNormal = grindNorm;
+						velocity = lungeNormal * grindLungeSpeed;
+						//grindEdge = NULL;
+
+						facingRight = (grindNorm.x > 0);
+
+						grindEdge = NULL;
+						ground = NULL;
+					}
+				}		
+				//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+			}
+
+				
+				
+				//movingGround = NULL;
+				
+			break;
+		}
+	case GRINDLUNGE:
+		{
+			if( !currInput.B )
+			{
+				action = JUMP;//GRINDSLASH;
+				frame = 1;
+			}	
+			break;
+		}
+	case GRINDSLASH:
+		{
+
 			break;
 		}
 	case STEEPSLIDE:
@@ -5786,7 +5941,7 @@ void Actor::UpdatePrePhysics()
 	
 
 	if( ground == NULL && bounceEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1 )
+		&& action != ENTERNEXUS1 && action != GRINDLUNGE )
 	{
 		if( velocity.x > maxAirXSpeed )
 			velocity.x = maxAirXSpeed;
@@ -6652,6 +6807,15 @@ bool Actor::CheckStandUp()
 		{
 			cout << "cant stand up" << endl;
 		}*/
+
+		if( checkValid )
+		{
+			cout << "canstand" << endl;
+		}
+		else
+		{
+			cout << "cannot stand" << endl;
+		}
 		return checkValid;
 
 	}
@@ -10452,7 +10616,7 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( hasPowerGravReverse && hasGravReverse && tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( hasPowerGravReverse /*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
 				/*if( b.rh == doubleJumpHeight )
 				{
@@ -13248,6 +13412,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			
 		
 
+
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
@@ -13398,6 +13563,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 		}
 
+		cout << "hit edge: " << e->Normal().x << ", " << e->Normal().y << endl;
+		/*if( grindEdge != NULL && (e == grindEdge->edge0 || e== grindEdge->edge1 ) )
+		{
+			
+		}*/
 		//cout << "valid is false" << endl;
 		checkValid = false;
 
@@ -13874,7 +14044,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
-			
+			//cout << "action: " << action << endl;
 			sh.setParameter( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			sh.setParameter( "u_normals", *normal[action]->texture );
 
@@ -15504,9 +15674,10 @@ void Actor::UpdateSprite()
 			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
 			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt ) );
 
-			
+			V2d grindNorm = grindEdge->Normal();
 
-			if( facingRight )
+
+			if( grindSpeed > 0 )//(facingRight && grindNorm.y < 0) || ( !facingRight && grindNorm.y > 0 ) )
 			{
 				sprite->setTextureRect( ir );
 			}
@@ -15516,18 +15687,20 @@ void Actor::UpdateSprite()
 			}
 
 			double angle = 0;
-
+			angle = atan2( grindNorm.x, -grindNorm.y );
 			if( !approxEquals( abs(offsetX), b.rw ) )
 			{
 
 			}
 			else
 			{
-				angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+				//angle = asin( dot( grindNorm, V2d( 1, 0 ) ) ); 
+				
 			}
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-		//	sprite->setRotation( angle / PI * 180 );
-			sprite->setRotation( 0 );
+			sprite->setRotation( angle / PI * 180 );
+		//	sprite->setRotation( 0 );
 			
 			V2d oldv0 = grindEdge->v0;
 			V2d oldv1 = grindEdge->v1;
@@ -15569,6 +15742,33 @@ void Actor::UpdateSprite()
 
 			break;
 		}
+	case GRINDLUNGE:
+		{
+			sprite->setTexture( *(tileset[GRINDLUNGE]->texture) );
+
+			IntRect ir = tileset[GRINDLUNGE]->GetSubRect( 1 );
+			
+
+
+			if( facingRight )
+			{
+				sprite->setTextureRect( ir );
+			}
+			else
+			{
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+
+			double angle = atan2( lungeNormal.x, -lungeNormal.y );
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+			sprite->setRotation( angle / PI * 180 );
+			sprite->setPosition( position.x, position.y );
+			//float angle = atan2( 
+
+			break;
+		}
+		
 	case STEEPSLIDE:
 		{
 			sprite->setTexture( *(tileset[STEEPSLIDE]->texture));

@@ -47,6 +47,9 @@ struct Actor : QuadTreeCollider,
 		WALLJUMP,
 		STEEPSLIDE,
 		GRINDBALL,
+		GRINDLUNGE,
+		GRINDSLASH,
+		GRINDATTACK,
 		AIRDASH,
 		STEEPCLIMB,
 		AIRHITSTUN,
@@ -483,6 +486,8 @@ struct Actor : QuadTreeCollider,
 	bool hasGravReverse;
 
 	Edge *grindEdge;
+	sf::Vector2<double> lungeNormal;
+	double grindLungeSpeed;
 	MovingTerrain *grindMovingTerrain;
 	double grindQuantity;
 	double grindSpeed;
