@@ -2307,6 +2307,7 @@ struct SecurityWeb : Enemy, RayCastHandler
 		void UpdatePostPhysics();
 		void HitPlayer();
 		void IncrementFrame();
+		bool PlayerSlowingMe();
 		//bool activated;
 		int vaIndex;
 		//void Fire( sf::Vector2<double> vel );
@@ -2316,6 +2317,8 @@ struct SecurityWeb : Enemy, RayCastHandler
 		int framesToLive;
 		bool active;
 		NodeProjectile *nextProj;
+		double startAngle;
+		double moveAngle;
 		
 		//NodeProjectile *revNode;
 		SecurityWeb *parent;
@@ -2326,6 +2329,12 @@ struct SecurityWeb : Enemy, RayCastHandler
 	CollisionBox *edgeHitboxes;
 	NodeProjectile *activeNodes;
 	NodeProjectile **allNodes;
+
+	//NodeProjectile *centerNode;
+
+	//CollisionBox *centerHitbox;
+
+
 	double bulletSpeed;
 	float angleOffset;
 	int numProtrusions;
@@ -2346,6 +2355,8 @@ struct SecurityWeb : Enemy, RayCastHandler
 
 	int slowCounter;
 	int slowMultiple;
+
+	int nodeRadius;
 
 	sf::Sprite sprite;
 	Tileset *ts;

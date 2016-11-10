@@ -46,9 +46,9 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	Vector2f transPoint( 0, -maxProtLength );
 
 	//edges = new VertexArray( sf::Quads, numProtrusions * 4 );
-	nodes = new VertexArray( sf::Quads, numProtrusions * 4 );
-	origins = new V2d[numProtrusions];
-	edgeHitboxes = new CollisionBox[numProtrusions];
+	nodes = new VertexArray( sf::Quads, ( numProtrusions + 1 )* 4 );
+	origins = new V2d[numProtrusions + 1];
+	edgeHitboxes = new CollisionBox[numProtrusions + 1];
 
 
 	//VertexArray &eva = *edges;
@@ -58,11 +58,13 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 
 	int nodeSize = 128;
 	int halfNode = 64;
+	nodeRadius = halfNode;
 
 	double quadWidth = 128.0;
 
 	double edgeWidth = 10;
 	Vector2f fPos( pos.x, pos.y );
+	//armLength[0] = 0;
 	for( int i = 0; i < numProtrusions; ++i )
 	{
 		double currRadius = maxProtLength;
@@ -99,6 +101,10 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	//cout << "VA TOTAL vertices: " << armVA->getVertexCount() << endl;
 
 	int currQuad = 0;
+
+
+	//origins[0] = V2d( 0, 0 );
+	origins[numProtrusions] = position;
 	for( int i = 0; i < numProtrusions; ++i )
 	{
 		int armLen = armLength[i];
@@ -173,11 +179,12 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 
 	
 
-	allNodes = new NodeProjectile*[numProtrusions];
-	for( int i = 0; i < numProtrusions; ++i )
+	allNodes = new NodeProjectile*[numProtrusions+1];
+	for( int i = 0; i < numProtrusions+1; ++i )
 	{
 		allNodes[i] = new NodeProjectile( this, i );
 	}
+	//centerNode = new NodeProjectile( 
 
 	ResetEnemy();
 	//ResetNodes();
@@ -210,7 +217,7 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 	spawnRect = sf::Rect<double>( pos.x - maxProtLength, pos.y - maxProtLength, 
 		maxProtLength * 2, maxProtLength * 2 );
 
-	for( int i = 0; i < numProtrusions; ++i )
+	for( int i = 0; i < numProtrusions + 1; ++i )
 	{
 		CollisionBox &edgeBox = edgeHitboxes[i];
 		V2d &origin  = origins[i];
@@ -218,7 +225,11 @@ SecurityWeb::SecurityWeb( GameSession *owner, bool hasMonitor,
 		edgeBox.isCircle = false;
 		
 		V2d n = normalize( origin - position );
-		edgeBox.globalAngle = atan2( n.y, n.x );
+
+		if( i == numProtrusions )
+			edgeBox.globalAngle = 0;
+		else
+			edgeBox.globalAngle = atan2( n.y, n.x );
 		
 		//cout << "origin start: " << origins[i].x << ", " << origins[i].y << endl;
 		V2d midPoint = ( origins[i] + position ) / 2.0;
@@ -252,17 +263,22 @@ SecurityWeb::~SecurityWeb()
 
 void SecurityWeb::ResetNodes()
 {
-	activeNodes = allNodes[numProtrusions-1];
+	Actor *player = owner->player;
 
-	activeNodes->Reset( origins[numProtrusions-1] );
+	activeNodes = allNodes[numProtrusions];
+
+	activeNodes->Reset( origins[numProtrusions] );
 	//activeNodes->
 	activeNodes->nextProj = NULL;
-	for( int i = numProtrusions-2; i >= 0; --i )
+	for( int i = numProtrusions-1; i >= 0; --i )
 	{
 		allNodes[i]->nextProj = activeNodes;
 		activeNodes = allNodes[i];
 		activeNodes->Reset( origins[i] );
+
+		//activeNodes->velocity = normalize( player->position - position ) * 10.0;
 	}
+
 }
 
 void SecurityWeb::HandleRayCollision( Edge *edge, double equant, double rayPortion )
@@ -408,7 +424,16 @@ void SecurityWeb::UpdatePrePhysics()
 
 	if( dynamicMode )
 	{
-		if( dynamicFrame == targetFrames )
+		if( dynamicFrame == 1 )
+		{
+			NodeProjectile *curr = activeNodes;
+			while( curr != NULL )
+			{
+				curr->active = true;
+				curr = curr->nextProj;
+			}
+		}
+		else if( dynamicFrame == targetFrames )
 		{
 			NodeProjectile *curr = activeNodes;
 			while( curr != NULL )
@@ -419,29 +444,69 @@ void SecurityWeb::UpdatePrePhysics()
 				curr = curr->nextProj;
 			}
 		}
-		else if( dynamicFrame == 300 )
+		else if( dynamicFrame > targetFrames && activeNodes == NULL )
 		{
-			NodeProjectile *curr = activeNodes;
-			while( curr != NULL )
-			{
-				dynamicMode = false;
-				ResetNodes();
-				//cout << "pre: " << curr << endl;
-				//curr->velocity = normalize( player->position - position ) * 10.0;
-				curr = curr->nextProj;
-			}
+			dynamicMode = false;
+			ResetNodes();
 		}
+		else
+		{
+			//NodeProjectile *curr = activeNodes;
+			//while( curr != NULL )
+			//{
+			//	
+			//	//cout << "pre: " << curr << endl;
+			//	curr->IncrementFrame();
+			//	curr = curr->nextProj;
+			//}
+		}
+
+		//else if( dynamicFrame == 300 )
+		//{
+		//	NodeProjectile *curr = activeNodes;
+		//	while( curr != NULL )
+		//	{
+		//		dynamicMode = false;
+		//		ResetNodes();
+		//		//cout << "pre: " << curr << endl;
+		//		//curr->velocity = normalize( player->position - position ) * 10.0;
+		//		curr = curr->nextProj;
+		//	}
+		//}
 		
 	}
 
 	
+	
 	if( dynamicMode )
 	{
 		NodeProjectile *curr = activeNodes;
+
+		//if( curr != NULL )
+		//	cout << "framesToLive: " << curr->framesToLive << endl;
+
+		NodeProjectile *prev = NULL;
 		while( curr != NULL )
 		{
 			//cout << "pre: " << curr << endl;
 			curr->UpdatePrePhysics();
+			if( !curr->active )
+			{
+				if( prev == NULL )
+				{
+					activeNodes = curr->nextProj;
+				}
+				else
+				{
+					prev->nextProj = curr->nextProj;
+					//prev = prev
+				}
+			}
+			else
+			{
+				prev = curr;
+			}
+
 			curr = curr->nextProj;
 		}
 	}
@@ -481,6 +546,16 @@ void SecurityWeb::UpdatePhysics()
 		NodeProjectile *curr = activeNodes;
 		while( curr != NULL )
 		{
+			if( curr->PlayerSlowingMe() )
+			{
+				curr->slowCounter = 1;
+				curr->slowMultiple = 5;
+			}
+			else
+			{
+				curr->slowCounter = 1;
+				curr->slowMultiple = 1;
+			}
 			//cout << "phys: " << curr << endl;
 			curr->UpdatePhysics();
 			curr = curr->nextProj;
@@ -561,7 +636,7 @@ void SecurityWeb::PhysicsResponse()
 
 		if( !dynamicMode )
 		{
-			for( int i = 0; i < numProtrusions;++i )//numProtrusions; ++i )//numProtrusions; ++i )
+			for( int i = 0; i < numProtrusions+1;++i )//numProtrusions; ++i )//numProtrusions; ++i )
 			{
 				if( edgeHitboxes[i].Intersects( owner->player->hurtBody ) )
 				{
@@ -724,7 +799,7 @@ void SecurityWeb::Draw( sf::RenderTarget *target )
 		//target->draw( topDeathSprite );
 	}
 
-	if( !dead )
+	//if( !dead )
 	{
 		target->draw( *nodes, ts->texture );
 	}
@@ -880,7 +955,7 @@ void SecurityWeb::DebugDraw( RenderTarget *target )
 		hitBody.DebugDraw( target );
 
 
-		for( int i = 0; i < numProtrusions; ++i )//i < numProtrusions; ++i )
+		for( int i = 0; i < numProtrusions+1; ++i )//i < numProtrusions; ++i )
 		{
 			edgeHitboxes[i].DebugDraw( target );
 		}
@@ -924,7 +999,7 @@ SecurityWeb::NodeProjectile::NodeProjectile( SecurityWeb *p_parent,
 	int p_vaIndex )
 	:Movable(), parent( p_parent ), vaIndex( p_vaIndex )
 {
-	framesToLive = 1;
+	framesToLive = 300;
 	velocity = V2d( 0, 0 );
 
 	int nodeSize = 128;
@@ -966,7 +1041,8 @@ void SecurityWeb::NodeProjectile::Reset( sf::Vector2<double> &pos )
 	active = false;
 	frame = 0;
 	Movable::Reset( pos );
-
+	
+	framesToLive = 300;
 	
 	SetNode( 6 );
 	
@@ -980,6 +1056,8 @@ void SecurityWeb::NodeProjectile::Reset( sf::Vector2<double> &pos )
 void SecurityWeb::NodeProjectile::UpdatePrePhysics()
 {
 	Movable::UpdatePrePhysics();
+	
+	//cout << "checking to live: " << framesToLive << endl;
 	if( framesToLive == 0 )
 	{
 		active = false;
@@ -1001,11 +1079,12 @@ void SecurityWeb::NodeProjectile::SetNode( int index )
 
 	V2d dir = normalize( parent->position - position );
 	double angle = atan2( dir.x, -dir.y );
+	//double angle = startAngle;
 	Transform rot;
 	rot.rotate( angle / PI * 180.0 );
 
-	int size = 64;
-	int halfSize = 32;
+	int size = 128;
+	int halfSize = 64;
 
 	nva[vaIndex*4+0].position = fPos + rot.transformPoint( Vector2f( -halfSize, -halfSize ) );
 	nva[vaIndex*4+1].position = fPos + rot.transformPoint( Vector2f( halfSize, -halfSize ) );
@@ -1029,7 +1108,14 @@ void SecurityWeb::NodeProjectile::UpdatePostPhysics()
 
 	SetNode( 6 );
 
+	/*if( slowMultiple == slowCounter )
+	{
+		
+	}
+*/
 	Movable::UpdatePostPhysics();
+
+	
 
 	//sprite.setPosition( position.x, position.y );
 }
@@ -1046,6 +1132,24 @@ void SecurityWeb::NodeProjectile::HitPlayer()
 
 void SecurityWeb::NodeProjectile::IncrementFrame()
 {
-	++frame;
+	if( parent->dynamicMode && parent->dynamicFrame >= parent->targetFrames )
+		--framesToLive;
 	//--framesToLive;
+}
+
+bool SecurityWeb::NodeProjectile::PlayerSlowingMe()
+{
+	Actor *player = parent->owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
+	{
+		if( player->bubbleFramesToLive[i] > 0 )
+		{
+
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius + parent->nodeRadius )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
