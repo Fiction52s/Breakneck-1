@@ -496,9 +496,15 @@ Actor::Actor( GameSession *gs )
 		tileset[GRINDLUNGE] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[GRINDLUNGE] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
+
+		actionLength[GRINDSLASH] = 6 * 3;
+		tileset[GRINDSLASH] = owner->GetTileset( "uair_80x80.png", 80, 80 );
+		normal[GRINDSLASH] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
+
 		actionLength[GRINDATTACK] = 1;
 		tileset[GRINDATTACK] = owner->GetTileset( "grindball_64x64.png", 64, 64 );
 		normal[GRINDATTACK] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
+
 
 		actionLength[STEEPSLIDE] = 1;
 		tileset[STEEPSLIDE] = owner->GetTileset( "steepslide_80x48.png", 80, 48 );
@@ -1048,6 +1054,10 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case GRINDLUNGE:
+			action = JUMP;
+			frame = 1;
+			break;
+		case GRINDSLASH:
 			action = JUMP;
 			frame = 1;
 			break;
@@ -4017,12 +4027,65 @@ void Actor::UpdatePrePhysics()
 			{
 				action = JUMP;//GRINDSLASH;
 				frame = 1;
-			}	
+			}
+			else if( currInput.rightShoulder && !prevInput.rightShoulder )
+			{
+				action = GRINDSLASH;
+				frame = 0;
+			}
 			break;
 		}
 	case GRINDSLASH:
 		{
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				bounceFlameOn = false;
+			}
 
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
+				{
+					bounceFlameOn = false;
+					action = AIRDASH;
+					airDashStall = false;
+					
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				holdDouble = true;
+				frame = 0;
+				break;
+			}
+
+			AirAttack();
+			}
 			break;
 		}
 	case STEEPSLIDE:
@@ -5579,6 +5642,14 @@ void Actor::UpdatePrePhysics()
 			//grindSpeed =  ;
 			break;
 		}
+	case GRINDSLASH:
+		{
+			if( uairHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = uairHitboxes[frame];
+			}
+		}
+		break;
 	case STEEPSLIDE:
 		{
 			//if( groundSpeed > 0 )
@@ -14132,6 +14203,17 @@ void Actor::Draw( sf::RenderTarget *target )
 						target->draw( steepSlideAttackSword);
 					break;
 				break;
+			case GRINDSLASH:
+				{
+				
+					if( flashFrames > 0 )
+						target->draw( uairSword, &swordSh );
+					else
+						target->draw( uairSword );
+					break;
+				
+				}
+				break;
 			}
 		}
 	}
@@ -15506,6 +15588,7 @@ void Actor::UpdateSprite()
 			{
 				uairSword.setOrigin( uairSword.getLocalBounds().width / 2, uairSword.getLocalBounds().height / 2 );
 				uairSword.setPosition( position.x + offset.x, position.y + offset.y );
+				uairSword.setRotation( 0 );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
@@ -15768,7 +15851,65 @@ void Actor::UpdateSprite()
 
 			break;
 		}
-		
+	case GRINDSLASH:
+		{
+			//sprite->setTexture( *(tileset[GRINDLUNGE]->texture) );
+
+			//IntRect ir = tileset[GRINDLUNGE]->GetSubRect( 1 );
+
+			Tileset *curr_ts = ts_uairSword[speedLevel];
+			int startFrame = 0;
+			showSword = true;
+			//showSword = frame / 3 >= startFrame && frame / 3 <= 5;
+
+			if( showSword )
+			{
+				uairSword.setTexture( *curr_ts->texture );
+			}
+
+			sprite->setTexture( *(tileset[UAIR]->texture));
+
+			Vector2i offset( 0, 0 );
+			//Vector2i offset( 8, -24 );
+
+			if( facingRight )
+			{
+				sprite->setTextureRect( tileset[UAIR]->GetSubRect( frame / 3 ) );
+
+				if( showSword )
+					uairSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[UAIR]->GetSubRect( frame / 3 );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				if( showSword )
+				{
+					//offset.x = -offset.x;
+
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
+					uairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+
+				offset.x = -offset.x;
+			}
+
+			if( showSword )
+			{
+				uairSword.setOrigin( uairSword.getLocalBounds().width / 2, uairSword.getLocalBounds().height / 2 );
+				uairSword.setPosition( position.x + offset.x, position.y + offset.y );
+				uairSword.setRotation( sprite->getRotation() );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			//sprite->setRotation( 0 );
+
+			//sprite->setPosition( position.x, position.y );
+		}
+		break;
 	case STEEPSLIDE:
 		{
 			sprite->setTexture( *(tileset[STEEPSLIDE]->texture));
