@@ -4959,6 +4959,8 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	showDebugDraw = false;
+
 	fadingIn = false;
 	fadingOut = false;
 	fadeRect.setSize( Vector2f( 1920, 1080 ) );
@@ -6908,8 +6910,18 @@ int GameSession::Run( string fileN )
 		}
 
 		
+		if( Keyboard::isKeyPressed( Keyboard::Num1 ) )
+		{
+			showDebugDraw = true;
+		}
+		else if( Keyboard::isKeyPressed( Keyboard::Num2 ) )
+		{
+			showDebugDraw = false;
+		}
+		
 
-		DebugDrawActors();
+		if( showDebugDraw )
+			DebugDrawActors();
 
 		
 

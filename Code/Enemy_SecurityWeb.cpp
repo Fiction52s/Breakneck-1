@@ -1003,7 +1003,7 @@ SecurityWeb::NodeProjectile::NodeProjectile( SecurityWeb *p_parent,
 	velocity = V2d( 0, 0 );
 
 	int nodeSize = 128;
-	int halfNode = 64;
+	int halfNode = 40;//64;
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;

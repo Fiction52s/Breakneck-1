@@ -62,7 +62,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 
 	ts_hop = owner->GetTileset( "stag_hop_192x144.png", 192, 144 );
 	ts_idle = owner->GetTileset( "stag_idle_192x144.png", 192, 144 );
-	actionLength[IDLE] = 11;
+	actionLength[IDLE] = 11 * 5;
 
 	ts_run = owner->GetTileset( "stag_run_192x144.png", 192, 144 );
 	actionLength[RUN] = 9 * 4;
@@ -343,7 +343,7 @@ void StagBeetle::UpdatePrePhysics()
 	case RUN:
 		{
 			double dist = length( owner->player->position - position );
-			if( dist >= 800 )
+			if( dist >= 900 )
 			{
 				action = IDLE;
 				frame = 0;
@@ -362,10 +362,11 @@ void StagBeetle::UpdatePrePhysics()
 	switch( action )
 	{
 	case IDLE:
-		cout << "idle: " << frame << endl;
+		testMover->SetSpeed( 0 );
+		//cout << "idle: " << frame << endl;
 		break;
 	case RUN:
-		cout << "run: " << frame << endl;
+		//cout << "run: " << frame << endl;
 		if( facingRight )
 		{
 			if( player->position.x < position.x )
@@ -396,7 +397,7 @@ void StagBeetle::UpdatePrePhysics()
 			testMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case JUMP:
-		cout << "jump: " << frame << endl;
+		//cout << "jump: " << frame << endl;
 		break;
 //	case ATTACK:
 	//	{
@@ -405,12 +406,12 @@ void StagBeetle::UpdatePrePhysics()
 	//	break;
 	case LAND:
 		{
-			cout << "land: " << frame << endl;
+		//	cout << "land: " << frame << endl;
 			//testMover->SetSpeed( 0 );
 		}
 		break;
 	default:
-		cout << "WAATATET" << endl;
+		//cout << "WAATATET" << endl;
 		break;
 	}
 
@@ -944,7 +945,7 @@ void StagBeetle::UpdateSprite()
 			//	cout << "idle angle: " << angle << endl;
 				//sprite.setTextureRect( *ts_idle->texture );
 				sprite.setTexture( *ts_idle->texture );
-				r = ts_idle->GetSubRect( frame );
+				r = ts_idle->GetSubRect( frame / 5 );
 
 				if( facingRight )
 				{
@@ -993,6 +994,10 @@ void StagBeetle::UpdateSprite()
 				}
 				
 				r = ts_hop->GetSubRect( tFrame );
+				if( facingRight )
+				{
+					r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
+				}
 				sprite.setTextureRect( r );
 				sprite.setOrigin( sprite.getLocalBounds().width / 2, originHeight );
 				/*if( tFrame > 1 )

@@ -27,6 +27,9 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	ts_spin = owner->GetTileset( "owl_spin_160x160.png", 160, 160 );
 	ts_throw = owner->GetTileset( "owl_throw_160x160.png", 160, 160 );
 
+	
+	
+	//target->draw( guardCircle );
 
 	//movementRadius = 300;
 	retreatRadius = 400;
@@ -70,11 +73,11 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 
 	//ts = owner->GetTileset( "Owl.png", 80, 80 );
-	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	//ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
+	//sprite.setTexture( *ts->texture );
+	//sprite.setTextureRect( ts->GetSubRect( frame ) );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	//sprite.setPosition( pos.x, pos.y );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -101,7 +104,10 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	hitboxInfo->knockback = 4;
 	//hitboxInfo->kbDir;
 
-	
+	guardCircle.setRadius( 50 );
+	guardCircle.setFillColor( Color::White );
+	guardCircle.setOrigin( guardCircle.getLocalBounds().width / 2, guardCircle.getLocalBounds().height / 2 );
+	guardCircle.setPosition( position.x, position.y );
 
 	dead = false;
 	dying = false;
@@ -123,6 +129,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 
 	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
 
+	ResetEnemy();
 	//cout << "finish init" << endl;
 }
 
@@ -193,6 +200,10 @@ void Owl::ResetEnemy()
 	position.y = originalPos.y;
 	receivedHit = NULL;
 	
+	action = REST;
+	frame = 0;
+
+	hasGuard = true;
 
 	UpdateHitboxes();
 
@@ -244,6 +255,7 @@ void Owl::ActionEnded()
 			break;
 		case GUARD:
 			action = REST;
+			frame = 0;
 			break;
 		case FIRE:
 			if( length( player->position - position ) >= dist )
@@ -386,29 +398,37 @@ void Owl::UpdatePrePhysics()
 
 	if( !dead && !dying && receivedHit != NULL )
 	{
-		//owner->Pause( 5 );
-		
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
+		if( !hasGuard )
 		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			dying = true;
+			health -= 20;
 
-			owner->player->ConfirmEnemyKill( this );
-			//cout << "dying" << endl;
-		}
-		else
+			//cout << "health now: " << health << endl;
+
+			if( health <= 0 )
+			{
+				if( hasMonitor && !suppressMonitor )
+					owner->keyMarker->CollectKey();
+				dying = true;
+
+				owner->player->ConfirmEnemyKill( this );
+				//cout << "dying" << endl;
+			}
+			else
 		{
 			owner->player->ConfirmEnemyNoKill( this );
 		}
 
-		receivedHit = NULL;
+			receivedHit = NULL;
+		}
+		else
+		{
+			hasGuard = false;
+			action = GUARD;
+			frame = 0;
+			receivedHit = NULL;
+		}
 	}
+	
 
 	if( !dying && !dead && action == FIRE && frame == 3 * 6 - 1  )// frame == 0 && slowCounter == 1 )
 	{
@@ -499,8 +519,15 @@ void Owl::UpdatePostPhysics()
 	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
-		owner->Pause( 5 );
+		if( action != GUARD )
+		{
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+			owner->Pause( 5 );
+		}
+		else
+		{
+			receivedHit = NULL;
+		}
 	}
 
 	if( deathFrame == 0 && dying )
@@ -661,6 +688,11 @@ void Owl::Draw( sf::RenderTarget *target )
 		}
 		
 		target->draw( topDeathSprite );
+	}
+
+	if( action == GUARD )
+	{
+		target->draw( guardCircle );
 	}
 
 

@@ -554,7 +554,7 @@ struct Actor : QuadTreeCollider,
 
 	
 	//dont need to store these
-	const static int maxBubbles = 6;
+	const static int maxBubbles = 5;
 	int bubbleLifeSpan;
 	int bubbleRadius;
 	Tileset * ts_bubble;

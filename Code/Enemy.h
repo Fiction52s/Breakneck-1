@@ -1908,6 +1908,7 @@ struct Owl : Enemy, LauncherEnemy
 		FIRE
 	};
 
+	sf::CircleShape guardCircle;
 	bool hasGuard;
 	Owl( GameSession *owner,
 		bool hasMonitor,

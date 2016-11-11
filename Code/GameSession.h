@@ -333,6 +333,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
+	bool showDebugDraw;
 	
 
 	void ResetShipSequence(); 

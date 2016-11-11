@@ -219,6 +219,9 @@ void Badger::ResetEnemy()
 	sprite.setPosition( gPoint.x, gPoint.y );
 	//----
 
+	action = SHORTJUMP;
+	frame = 0;
+
 	UpdateHitboxes();
 }
 
@@ -357,6 +360,7 @@ void Badger::ActionEnded()
 
 void Badger::Jump( double strengthx, double strengthy )
 {
+	//cout << "jump: " << strengthx << ", " << strengthy << endl;
 	assert( testMover->ground != NULL );
 
 	landedAction = action;
@@ -377,7 +381,7 @@ void Badger::Jump( double strengthx, double strengthy )
 	{
 		V2d jumpVec = V2d( strengthx, -strengthy );
 		testMover->Jump( jumpVec );
-		cout << "jump: " << jumpVec.x << ", " << jumpVec.y << endl;
+		//cout << "jump: " << jumpVec.x << ", " << jumpVec.y << endl;
 	}
 }
 
@@ -422,6 +426,27 @@ void Badger::UpdatePrePhysics()
 	case LAND:
 	//	cout << "LAND: " << frame << endl;
 		break;
+	}
+
+	if( testMover->ground == NULL )
+	{
+		double airAccel = .5;
+		if( facingRight )
+		{
+			testMover->velocity.x += airAccel;
+			if( testMover->velocity.x > 10 )
+			{
+				testMover->velocity.x = 10;
+			}
+			
+		}
+		else
+		{
+			testMover->velocity.x -= airAccel;
+			if( testMover->velocity.x < -10 )
+				testMover->velocity.x = -10;
+			
+		}
 	}
 
 	int runSpeed = 10;
@@ -1247,7 +1272,7 @@ void Badger::FinishedRoll()
 
 void Badger::HitOther()
 {
-	V2d v;
+	/*V2d v;
 	if( facingRight && testMover->groundSpeed > 0 )
 	{
 		v = V2d( 10, -10 );
@@ -1257,7 +1282,7 @@ void Badger::HitOther()
 	{
 		v = V2d( -10, -10 );
 		testMover->Jump( v );
-	}
+	}*/
 	//cout << "hit other!" << endl;
 	//testMover->SetSpeed( 0 );
 	//facingRight = !facingRight;
@@ -1284,7 +1309,12 @@ void Badger::ReachCliff()
 		v = V2d( -10, -10 );
 	}
 
-	testMover->Jump( v );
+	action = LEDGEJUMP;
+	frame = 0;
+
+	Jump( v.x, v.y );
+
+	//testMover->Jump( v );
 	//testMover->groundSpeed = -testMover->groundSpeed;
 	//facingRight = !facingRight;
 }
