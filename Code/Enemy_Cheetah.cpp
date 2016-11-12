@@ -107,8 +107,8 @@ Cheetah::Cheetah( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 
 	deathPartingSpeed = .4;
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
@@ -280,7 +280,7 @@ void Cheetah::UpdatePrePhysics()
 	{
 	case NEUTRAL:
 		//cout << "neutral" << endl;
-		if( length( player->position - position ) < 600 )
+		if( length( player->position - position ) < 800 )
 		{
 			if( player->position.x < position.x && facingRight
 				|| player->position.x > position.x && !facingRight )
@@ -669,13 +669,21 @@ void Cheetah::PhysicsResponse()
 
 void Cheetah::UpdatePostPhysics()
 {
-	if( receivedHit != NULL )
-		owner->Pause( 5 );
-
 	if( deathFrame == 30 )
 	{
 		owner->RemoveEnemy( this );
 		return;
+	}
+
+	if( receivedHit != NULL )
+	{
+		owner->Pause( 5 );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+	}
+
+	if( deathFrame == 0 && dead )
+	{
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
 
 	UpdateSprite();
@@ -756,7 +764,7 @@ void Cheetah::Draw(sf::RenderTarget *target )
 	{
 		target->draw( botDeathSprite );
 
-		if( deathFrame / 3 < 6 )
+		/*if( deathFrame / 3 < 6 )
 		{
 			
 			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
@@ -764,7 +772,7 @@ void Cheetah::Draw(sf::RenderTarget *target )
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
 			target->draw( bloodSprite );
-		}
+		}*/
 		
 		target->draw( topDeathSprite );
 	}
@@ -772,12 +780,27 @@ void Cheetah::Draw(sf::RenderTarget *target )
 
 void Cheetah::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
+	if( !dead )
+	{
+		if( hasMonitor && !suppressMonitor )
+		{
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+	}
 
 	/*if( hasMonitor && !suppressMonitor )
 	{

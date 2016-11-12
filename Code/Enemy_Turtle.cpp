@@ -311,6 +311,7 @@ void Turtle::UpdatePrePhysics()
 			launcher->facingDir = normalize( owner->player->position - position );
 				//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 		//	launcher->facingDir.y << endl;
+			launcher->Reset();
 			launcher->Fire();
 			fireCounter = 0;
 			//testLauncher->Fire();
@@ -563,20 +564,42 @@ void Turtle::Draw( sf::RenderTarget *target )
 
 void Turtle::DrawMinimap( sf::RenderTarget *target )
 {
+	//if( !dead && !dying )
+	//{
+	//	CircleShape enemyCircle;
+	//	enemyCircle.setFillColor( COLOR_BLUE );
+	//	enemyCircle.setRadius( 50 );
+	//	enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
+	//	enemyCircle.setPosition( position.x, position.y );
+	//	target->draw( enemyCircle );
+
+	//	/*if( hasMonitor && !suppressMonitor )
+	//	{
+	//		monitor->miniSprite.setPosition( position.x, position.y );
+	//		target->draw( monitor->miniSprite );
+	//	}*/
+	//}
+
 	if( !dead && !dying )
 	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor( COLOR_BLUE );
-		enemyCircle.setRadius( 50 );
-		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-		enemyCircle.setPosition( position.x, position.y );
-		target->draw( enemyCircle );
-
-		/*if( hasMonitor && !suppressMonitor )
+		if( hasMonitor && !suppressMonitor )
 		{
-			monitor->miniSprite.setPosition( position.x, position.y );
-			target->draw( monitor->miniSprite );
-		}*/
+			CircleShape cs;
+			cs.setRadius( 50 );
+			cs.setFillColor( Color::White );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius( 40 );
+			cs.setFillColor( Color::Red );
+			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+			cs.setPosition( position.x, position.y );
+			target->draw( cs );
+		}
 	}
 }
 
