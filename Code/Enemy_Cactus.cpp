@@ -201,6 +201,8 @@ void Cactus::UpdatePrePhysics()
 		if( angle < 0 )
 			angle += 2.0 * PI;
 
+		
+
 		if( angle > 15.0 * pi8 || angle < pi8 )
 		{
 			angle = 0;

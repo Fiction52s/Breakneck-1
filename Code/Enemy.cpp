@@ -757,23 +757,47 @@ SinBullet::SinBullet( int indexVA, Launcher *launcher )
 
 void SinBullet::UpdatePrePhysics()
 {
+	if( PlayerSlowingMe() )
+	{
+		if( slowMultiple == 1 )
+		{
+			slowCounter = 1;
+			slowMultiple = 5;
+		}
+	}
+	else
+	{
+		slowMultiple = 1;
+		slowCounter = 1;
+	}
+
+	//cout << "framestolive: " << framesToLive << endl;
 	//cout << "position: " << position.x << ", " << position.y << endl;
 	position -= tempadd;
-	int tempFrame = (launcher->maxFramesToLive - framesToLive) % launcher->wavelength;
-	double test = tempFrame / (double)launcher->wavelength;
-	//cout << "test: " << test << endl;
-	//cout << "tempframe: " << tempFrame << ", framestolive: "
-	//	<< framesToLive <<", wv: " << launcher->wavelength << endl;
-	double t = test * 2.0 * PI;
-	double c = cos( t );
-	V2d dir( cos( t ) - sin( t ), sin( t ) + cos( t ) );
+
+	int waveLength = launcher->wavelength * 5;
+	int ftl = framesToLive * 5;
+	int maxFrames = launcher->maxFramesToLive * 5;
+	//launcher->wavelength * slowMultiple;
+	int tempFrame = (maxFrames - ftl) % waveLength;
+	tempFrame += ( slowCounter - 1 );
+	double test = tempFrame / (double)( waveLength );
+	
+	//cout << "temp: " << tempFrame << ", wl: " << waveLength << ", test: " << test << endl;
+	
+	double t = test * 2 * PI;//2.0 * PI;
+	//double c = cos( t );
+	//V2d dir( cos( t ) - sin( t ), sin( t ) + cos( t ) );
+	V2d dir( 0, sin( t ) );
+	//cout << "test: " << test <<  ", t: " << t << ", temp: " << tempFrame << ", wl: " << waveLength << ", diry: " << dir.y << endl;
 
 	V2d other = normalize( velocity );
 	other = V2d( other.y, -other.x );
+	//dir = normalize( velocity );
 
 	double d = dot( dir, other );
-	tempadd = d * other * launcher->amplitude;
-	//cout << "tempadd: " << tempadd.x << ", " << tempadd.y << endl;
+	tempadd = d * launcher->amplitude * other;//d * other * launcher->amplitude;
+
 	position += tempadd;
 
 	//tempadd = dir * 100.0;
@@ -781,6 +805,9 @@ void SinBullet::UpdatePrePhysics()
 
 void SinBullet::UpdatePhysics()
 {
+	
+
+
 	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
 
 	double movementLen = length( movement );
