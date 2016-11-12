@@ -492,7 +492,7 @@ Actor::Actor( GameSession *gs )
 		tileset[GRINDBALL] = owner->GetTileset( "grindball_64x64.png", 64, 64 );
 		normal[GRINDBALL] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
-		actionLength[GRINDLUNGE] = 30;
+		actionLength[GRINDLUNGE] = 20;
 		tileset[GRINDLUNGE] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[GRINDLUNGE] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
@@ -518,7 +518,7 @@ Actor::Actor( GameSession *gs )
 		tileset[STEEPSLIDEATTACK] = owner->GetTileset( "steep_att_80x64.png", 80, 64 );
 		normal[STEEPSLIDEATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[AIRDASH] = 27;
+		actionLength[AIRDASH] = 35;//27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
