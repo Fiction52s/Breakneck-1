@@ -3503,6 +3503,8 @@ struct Gorilla : Enemy
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
 
+	Tileset *ts_wall;
+	sf::Sprite wallSprite;
 	
 	double latchStartAngle;
 	

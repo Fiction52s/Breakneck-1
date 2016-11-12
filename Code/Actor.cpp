@@ -228,7 +228,7 @@ Actor::Actor( GameSession *gs )
 		holdJump = false;
 		steepJump = false;
 
-		bounceBoostSpeed = 4.7;
+		bounceBoostSpeed = 6.0;//8.0;//.5;//1;//6.0;//5.0;//4.7;
 
 		offsetX = 0;
 		sprite = new Sprite;
@@ -4438,7 +4438,7 @@ void Actor::UpdatePrePhysics()
 
 				int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 
-				
+				bool boostNow = boostBounce && framesSinceBounce > 8;
 
 				//double lenVel = length( storedBounceVel );
 				//double reflX = cross( normalize( -storedBounceVel ), bn );
@@ -4493,6 +4493,17 @@ void Actor::UpdatePrePhysics()
 							velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
 							//cout << "set vel: " << velocity.x << ", " << velocity.y << endl;
 						}
+
+						if( boostNow )
+						{
+							//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
+							velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+							boostBounce = false;
+						}
+						else if( boostBounce )
+						{
+							boostBounce = false;
+						}
 						//if( 
 						//bounceNorm.y = -1;
 					}
@@ -4524,6 +4535,18 @@ void Actor::UpdatePrePhysics()
 						
 						velocity = V2d( storedBounceVel.x, -abs(storedBounceVel.y) );//length( storedBounceVel ) * bounceEdge->Normal();
 						
+						if( boostNow )
+						{
+							double fac = max( 6.0, .25 * abs(velocity.y) ); //bounceBoostSpeed;
+							cout << "fac: " << fac << ", vy: "<< velocity.y << endl;
+							velocity += normalize( velocity ) * fac / (double)slowMultiple;
+							boostBounce = false;
+						}
+						else if( boostBounce )
+						{
+							boostBounce = false;
+						}
+
 					}
 				}
 				else if( bn.y > 0 )
@@ -4580,11 +4603,33 @@ void Actor::UpdatePrePhysics()
 					//	cout << "E: " << velocity.x << ", " << velocity.y << endl;
 						
 					}
+
+					if( boostNow )
+					{
+						//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
+						velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+						boostBounce = false;
+					}
+					else if( boostBounce )
+					{
+						boostBounce = false;
+					}
 				}
 				else
 				{
 				//	cout << "F" << endl;
 					velocity = V2d( -storedBounceVel.x, storedBounceVel.y ); 
+
+					if( boostNow )
+					{
+						//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
+						velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+						boostBounce = false;
+					}
+					else if( boostBounce )
+					{
+						boostBounce = false;
+					}
 				}
 
 				//velocity += V2d( 0, -gravity * slowMultiple );
@@ -4596,15 +4641,7 @@ void Actor::UpdatePrePhysics()
 				V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
 				velocity = normalize( reflX * edgeDir + reflY * bn ) * lenVel;*/
 
-				if( boostBounce && framesSinceBounce > 8 )
-				{
-					velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
-					boostBounce = false;
-				}
-				else if( boostBounce )
-				{
-					boostBounce = false;
-				}
+				
 				framesSinceBounce = 0;
 
 				//velocity = length( storedBounceVel ) * bounceEdge->Normal();
@@ -6026,7 +6063,7 @@ void Actor::UpdatePrePhysics()
 		//}
 		if( velocity.y >= maxFallSpeedSlow )
 		{
-			velocity += V2d( 0, gravity * .5 / slowMultiple );
+			velocity += V2d( 0, gravity * .4 / slowMultiple );
 		}
 		else if( velocity.y < 0 )
 		{
