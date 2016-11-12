@@ -82,6 +82,9 @@ void SwarmMember::UpdatePostPhysics()
 		dead = true;
 		owner->ActivateEffect( EffectLayer::IN_FRONT, parent->ts_swarmExplode, position, true, 0, 6, 2, true );
 		receivedHit = NULL;
+		active = false;
+		ClearSprite();
+		return;
 	}
 
 	if( slowCounter == slowMultiple )
@@ -104,16 +107,21 @@ void SwarmMember::UpdatePostPhysics()
 		slowCounter++;
 	}
 	
-
-	if( deathFrame == 30 || framesToLive == 0 )//|| framesToLive == 0 )
+	if( framesToLive == 0 )
 	{
+		dead = true;
 		active = false;
 		ClearSprite();
-		//launcher->Reset();//might just delete bullets
-		//parent->DeactivateBlock( this );
-		//owner->RemoveEnemy( this );
 		return;
 	}
+	//if( deathFrame == 30 || framesToLive == 0 )//|| framesToLive == 0 )
+	//{
+	//	
+	//	//launcher->Reset();//might just delete bullets
+	//	//parent->DeactivateBlock( this );
+	//	//owner->RemoveEnemy( this );
+	//	return;
+	//}
 
 
 
@@ -167,6 +175,7 @@ void SwarmMember::UpdateSprite()
 
 void SwarmMember::UpdatePrePhysics()
 {
+	PlayerSlowingMe();
 	//cout << "index: " << vaIndex << ", position: " << position.x << ", " << position.y << endl;
 }
 
@@ -176,16 +185,16 @@ void SwarmMember::UpdatePhysics()
 	if( !dead )
 	{
 		
-		position += velocity / NUM_STEPS;
+		position += velocity / NUM_STEPS / (double)slowMultiple;
 		V2d pPos = owner->player->position + targetOffset;
 		V2d dir( pPos - position );
 		dir = normalize( dir );
 		double gFactor = .5;
 		velocity += gFactor * dir / (double)slowMultiple / NUM_STEPS;
 
-		if( length( velocity ) > maxSpeed)
+		if( length( velocity ) > maxSpeed / (double)slowMultiple )
 		{
-			velocity = normalize( velocity ) * maxSpeed;
+			velocity = normalize( velocity ) * maxSpeed / (double)slowMultiple;
 		}
 	}
 
@@ -194,7 +203,7 @@ void SwarmMember::UpdatePhysics()
 
 void SwarmMember::PhysicsResponse()
 {
-	PlayerSlowingMe();
+//	PlayerSlowingMe();
 
 	if( !dead )
 	{
