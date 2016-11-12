@@ -497,7 +497,7 @@ void Spider::UpdatePrePhysics()
 	//	<< closestPos.position.y << endl;
 
 	double len = length( player->position - position );
-	bool outsideRange = len >= 500 && len < 1200; //bounds
+	bool outsideRange = len >= 500 && len < 1500;//1200; //bounds
 	if( outsideRange && length( position - closestPos.position ) > 20
 		&& !canSeePlayer )
 	{

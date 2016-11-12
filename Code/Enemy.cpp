@@ -805,9 +805,6 @@ void SinBullet::UpdatePrePhysics()
 
 void SinBullet::UpdatePhysics()
 {
-	
-
-
 	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
 
 	double movementLen = length( movement );
