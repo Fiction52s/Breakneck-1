@@ -946,7 +946,7 @@ void Spider::UpdatePostPhysics()
 		return;
 	}
 
-	if( length( owner->player->position - mover->physBody.globalPosition ) < 1000 )
+	if( length( owner->player->position - mover->physBody.globalPosition ) < 1200 )
 	{
 		rayStart = mover->physBody.globalPosition;
 		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
