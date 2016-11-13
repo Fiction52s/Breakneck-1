@@ -392,7 +392,7 @@ Actor::Actor( GameSession *gs )
 		tileset[WALLATTACK] = owner->GetTileset( "wallattack_64x128.png", 64, 128 );
 		normal[WALLATTACK] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
-		actionLength[DAIR] = 10 * 2;
+		actionLength[DAIR] = 9 * 2;
 		tileset[DAIR] = owner->GetTileset( "dair_80x80.png", 80, 80 );
 		normal[DAIR] = owner->GetTileset( "dair_NORMALS.png", 96, 64 );
 
@@ -518,7 +518,7 @@ Actor::Actor( GameSession *gs )
 		tileset[STEEPSLIDEATTACK] = owner->GetTileset( "steep_att_80x64.png", 80, 64 );
 		normal[STEEPSLIDEATTACK] = owner->GetTileset( "standd_NORMALS.png", 96, 48 );
 
-		actionLength[AIRDASH] = 35;//27;
+		actionLength[AIRDASH] = 33;//27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 

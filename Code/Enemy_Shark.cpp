@@ -16,7 +16,7 @@ using namespace sf;
 Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed )
 	:Enemy( owner, EnemyType::SHARK, p_hasMonitor, 5 ), deathFrame( 0 ), approachAccelBez( 1,.01,.86,.32 ) 
 {
-
+	circleCounter = 0;
 	//attackCounter = 0;
 	actionLength[WAKEUP] = 30;
 	actionLength[APPROACH] = 2;
@@ -47,8 +47,11 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
+
+	//.44,.79,.77,.1
+	//.57,.3,.53,.97
 	circleSeq.AddRadialMovement( 1, 0, 2 * PI, 
-		true, V2d( 1, 1 ), 0, CubicBezier( .44,.79,.77,.1), circleFrames );
+		true, V2d( 1, 1 ), 0, CubicBezier( .57,.3,.53,.97 ), circleFrames );
 	
 	circleSeq.InitMovementDebug();
 
@@ -129,7 +132,7 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	UpdateHitboxes();
 
 	wakeCounter = 0;
-	wakeCap = 20;
+	wakeCap = 45;
 
 	botDeathSprite.setTexture( *ts_death->texture );
 	botDeathSprite.setTextureRect( ts_death->GetSubRect( 1 ) );
@@ -146,12 +149,12 @@ void Shark::HandleEntrant( QuadTreeEntrant *qte )
 
 void Shark::ResetEnemy()
 {
+	circleCounter = 0;
 	//attackCounter = 0;
 	wakeCounter = 0;
 	action = WAKEUP;
 	latchStartAngle = 0;
 	latchedOn = false;
-//	totalFrame = 0;
 	circleSeq.Reset();
 	//circleSeq.Update();
 	dead = false;
@@ -216,6 +219,7 @@ void Shark::UpdatePrePhysics()
 				wakeCounter++;
 				if( wakeCounter == wakeCap )
 				{
+					circleCounter = 0;
 					action = CIRCLE;
 					frame = 0;
 					latchedOn = true;
@@ -224,7 +228,7 @@ void Shark::UpdatePrePhysics()
 					V2d offsetDir = normalize( offsetPlayer );
 					latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 					//cout << "latchStart: " << latchStartAngle << endl;
-					circleSeq.Update();
+					circleSeq.Update( slowMultiple );
 					basePos = owner->player->position;
 				}
 			}
@@ -240,7 +244,7 @@ void Shark::UpdatePrePhysics()
 			
 			if( owner->player->hitstunFrames > 0  )
 			{
-				cout << "final circle" << endl;
+				//cout << "final circle" << endl;
 				//got hit!
 				action = FINALCIRCLE;
 				attackOffset = truePosOffset;
@@ -257,7 +261,7 @@ void Shark::UpdatePrePhysics()
 			rushSeq.Reset();
 			rushSeq.currMovement->start = truePosOffset;
 			rushSeq.currMovement->end = -truePosOffset;//V2d( 0, 0 );//position + 2.0 * ( basePos - position );
-			rushSeq.Update();
+			rushSeq.Update( slowMultiple );
 
 			//cout << "true pos offset: " << truePosOffset.x << ", " << truePosOffset.y << endl;
 
@@ -268,20 +272,39 @@ void Shark::UpdatePrePhysics()
 		{
 			if( rushSeq.currMovement == NULL )
 			{
-				cout << "back to normal: " << offsetPlayer.x << ", " << offsetPlayer.y << endl;
+				//cout << "back to normal: " << offsetPlayer.x << ", " << offsetPlayer.y << endl;
 				action = CIRCLE;
+				circleCounter = 0;
 				truePosOffset = -truePosOffset;
 				//offsetPlayer = -offsetPlayer;
 				offsetPlayer = truePosOffset;
 				V2d offsetDir = normalize( truePosOffset );
 				latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 				circleSeq.Reset();
-				circleSeq.Update();
+				circleSeq.Update( slowMultiple );
 					//basePos = owner->player->position;
 			}
 		}
 		
+
+		if( circleCounter == 10 )
+		{
+			wakeCounter = 0;
+			action = WAKEUP;
+			latchStartAngle = 0;
+			latchedOn = false;
+			circleSeq.Reset();
+			basePos = position;
+			circleCounter = 0;
+			frame = 0;
+
+			//deathFrame = 60;
+			//create particle fx
+		}
+
 	}
+
+
 	
 }
 
@@ -317,11 +340,12 @@ void Shark::UpdatePhysics()
 		x = x * cs - y * sn;
 		y = x * sn + y * cs;*/
 
-		circleSeq.Update();
+		circleSeq.Update( slowMultiple );
 		if( circleSeq.currMovement == NULL )
 		{
 			circleSeq.Reset();
-			circleSeq.Update();
+			circleSeq.Update( slowMultiple );
+			++circleCounter;
 			//cout << "resetting sequence" << endl;
 		}
 		//offsetPlayer =  origOffset - origOffset * approachAccelBez.GetValue( ( (double)totalFrame / approachFrames) );
@@ -333,7 +357,7 @@ void Shark::UpdatePhysics()
 		//2.0 * offsetPlayer;
 		position = basePos + rushSeq.position;// - truePosOffset * length( offsetPlayer );
 		//cout << "rushSeq: " << rushSeq.position.x << ", " << rushSeq.position.y << endl;
-		rushSeq.Update();
+		rushSeq.Update( slowMultiple );
 
 		
 		//rushSeq.currMovement->start = 
@@ -438,6 +462,8 @@ void Shark::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
+
+	
 
 	if( deathFrame == 60 )
 	{
