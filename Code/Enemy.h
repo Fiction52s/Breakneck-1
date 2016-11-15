@@ -331,6 +331,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		NEXUS,
 		SHIPPICKUP,
 		SHARD,
+		MINE,
 		Count
 	};
 
@@ -770,6 +771,72 @@ struct Shard : Enemy
 	Stored stored;
 };
 
+struct Mine : Enemy
+{
+	enum Action
+	{
+		NEUTRAL,
+		MALFUNCTION,
+		Count
+	};
+	Action action;
+	//MovementSequence testSeq;
+	Mine( GameSession *owner,
+		 bool hasMonitor,
+		 sf::Vector2i pos );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	int frame;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+
+	//Tileset *ts_testBlood;
+	//sf::Sprite bloodSprite;
+	//int bloodFrame;
+	//bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
 
 //w1
 struct Patroller : Enemy
@@ -2926,6 +2993,8 @@ struct Shark : Enemy
 	};
 	Action action; 
 
+	int circleCounter;
+
 	int wakeCounter;
 	//int wakeCap;
 	int wakeCap;
@@ -3426,8 +3495,17 @@ struct Narwhal : Enemy
 	bool start0;
 	CollisionBox triggerBox;
 	MovementSequence seq;
-	MovementSequence seq1;
+	//MovementSequence seq1;
 	float angle;
+
+	void SetupWaiting();
+
+	sf::Vector2<double> origStartPoint;
+	sf::Vector2<double> origEndPoint;
+	double moveDistance;
+	sf::Vector2<double> startCharge;
+	sf::Vector2<double> moveDir;
+	
 
 	void ActionEnded();
 	
@@ -3449,10 +3527,13 @@ struct Narwhal : Enemy
 	//Tileset * ts_death;
 	//std::list<sf::Vector2i> path;
 	
-	sf::Vector2<double> point1;
-	sf::Vector2<double> point0;
+	//sf::Vector2<double> point1;
+	//sf::Vector2<double> point0;
 	
 	int frame;
+
+	sf::VertexArray pathVA;
+	void UpdatePath();
 
 	
 	sf::Sprite sprite;
@@ -3460,6 +3541,150 @@ struct Narwhal : Enemy
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
 	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+
+	bool facingRight;
+	int animationFactor;
+
+	//bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
+struct Jay : Enemy
+{
+	enum Action
+	{
+		PROTECTED,
+		FIRE,
+		RECOVER,
+		Count
+	};
+
+	Jay( GameSession *owner, bool hasMonitor,
+		sf::Vector2i &startPos, 
+		sf::Vector2i &endPos );
+	//void HandleEdge( Edge *e );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	bool triggered;
+	
+	CollisionBox triggerBox;
+
+	MovementSequence seq;
+	//MovementSequence seq1;
+	float angle;
+
+	void SetupWaiting();
+
+	sf::Vector2<double> redPos;
+	sf::Vector2<double> bluePos;
+	sf::Vector2<double> redNodePos;
+
+	sf::Vector2<double> origStartPoint;
+	sf::Vector2<double> origEndPoint;
+	sf::Vector2<double> origDiff;
+	double moveDistance;
+	sf::Vector2<double> startCharge;
+	sf::Vector2<double> moveDir;
+	
+
+	void ActionEnded();
+	
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	Action action;
+	int actionLength[Action::Count];
+	int animFactor[Action::Count];
+	int moveFrames;
+	int currMoveFrame;
+
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	//Tileset * ts_death;
+	//std::list<sf::Vector2i> path;
+	
+	//sf::Vector2<double> point1;
+	//sf::Vector2<double> point0;
+	
+	int frame;
+	int shieldFrame;
+	int wallFrame;
+	int wallDuration;
+	int wallAnimFactor;
+
+	sf::VertexArray pathVA;
+	void UpdatePath();
+	void SetupWall();
+
+	int numWallTiles;
+	float remainder;
+	double wallTileWidth;
+	
+	
+	//sf::Sprite sprite;
+
+	sf::VertexArray jayVA;
+	sf::VertexArray shieldVA;
+	sf::VertexArray *wallVA;
+	sf::Vector2f *localWallPoints;
+
+	void UpdateJays();
+	void SetupJays();
+
+	void UpdateWall();
+
+	bool PlayerSlowingWall();
+	int slowCounterWall;
+	int slowMultipleWall;
+	
+
+	Tileset *ts;
+	Tileset *ts_shield;
+	Tileset *ts_wall;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+	HitboxInfo *wallHitboxInfo;
+	CollisionBox wallHitBody;
+	CollisionBox wallNodeHitboxRed;
+	CollisionBox wallNodeHitboxBlue;
+
 
 	int hitlagFrames;
 	int hitstunFrames;
@@ -3535,6 +3760,7 @@ struct Gorilla : Enemy
 	void LoadEnemyState();
 
 	bool origFacingRight;
+
 	int awakeFrames;
 	int awakeCap;
 	//bool awake;

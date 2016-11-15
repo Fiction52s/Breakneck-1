@@ -14,37 +14,43 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 
 
-Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos, 
-	sf::Vector2i &endPos, int p_moveFrames )
+Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos, 
+	sf::Vector2i &endPos )
 	:Enemy( owner, EnemyType::PATROLLER, p_hasMonitor, 1 ), deathFrame( 0 ),
-	pathVA( sf::Quads, 4 )
+	jayVA( sf::Quads, 2 * 4 ), shieldVA( sf::Quads, 2 * 4 )
+	//pathVA( sf::Quads, 4 )
 {
-	
-	moveFrames = p_moveFrames;
-	moveFrames = 5;
 	receivedHit = NULL;
 	position.x = startPos.x;
 	position.y = startPos.y;
 
-	//point0 = position;
-	//point1.x = endPos.x;
-	//point1.y = endPos.y;
+	redPos = position;
+	bluePos = V2d( endPos.x, endPos.y );
+	redNodePos = position;
 
-	V2d point0 = position;
-	V2d point1( endPos.x, endPos.y );
-	origStartPoint = point0;
-	origEndPoint = point1;
+	int tileHeight = 64;
+	//int mults = ceil( dist 
+	double dist = length( bluePos - redPos );
+	double numT = dist / tileHeight; //rounded down
+	int numTiles = numT;
+	double remainder = numT - numTiles;
+	if( remainder > 0 )
+	{
+		numTiles += 1;
+	}
+	numWallTiles = numTiles;
+	int numVertices = numTiles * 4;
 
-	moveDistance = length( point1 - point0 );
-	moveDir = normalize( point1 - point0 );
+	wallVA = new VertexArray( sf::Quads, numVertices );
+	localWallPoints = new Vector2f[numVertices];
 
 	initHealth = 40;
 	health = initHealth;
 
-	double left = min( point0.x, point1.x );
-	double top = min( point0.y, point1.y );
-	double right = max( point0.x, point1.x );
-	double bot = max( point0.y, point1.y );
+	double left = min( redPos.x, bluePos.x );
+	double top = min( redPos.y, bluePos.y );
+	double right = max( redPos.x, bluePos.x );
+	double bot = max( redPos.y, bluePos.y );
 
 	double width = right - left;
 	double height = bot - top;
@@ -52,23 +58,24 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 
 	spawnRect = sf::Rect<double>( left, top, width, height );
 	
-	actionLength[WAITING] = 10;
-	actionLength[CHARGE_START] = 10;
-	actionLength[CHARGE_REPEAT] = 10;
-	actionLength[TURNING] = 4;
+	actionLength[PROTECTED] = 10;
+	actionLength[FIRE] = 10;
+	actionLength[RECOVER] = 10;
 
-	animFactor[WAITING] = 1;
-	animFactor[CHARGE_START] = 4;
-	animFactor[CHARGE_REPEAT] = 1;
-	animFactor[TURNING] = 5;
+	animFactor[PROTECTED] = 1;
+	animFactor[FIRE] = 1;
+	animFactor[RECOVER] = 1;
 
 	//speed = 2;
 	frame = 0;
 
 	animationFactor = 5;
 
-	//ts = owner->GetTileset( "Narwhal.png", 80, 80 );
-	ts = owner->GetTileset( "narwhal_256x256.png", 256, 256 );
+	//ts = owner->GetTileset( "Jay.png", 80, 80 );
+	ts = owner->GetTileset( "jay_100x100.png", 100, 100 );
+	ts_shield = owner->GetTileset( "jayshield_128x128.png", 128, 128 );
+	ts_connection = owner->GetTileset( "jaywall_64x64.png", 64, 64 ); 
+
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -106,35 +113,137 @@ Narwhal::Narwhal( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 
 	triggerBox.type = CollisionBox::Hit;
 	triggerBox.isCircle = false;
-	SetupWaiting();
+	//SetupWaiting();
 
-	seq.AddLineMovement( point0, point1, CubicBezier( 0, 0, 1, 1 ), moveFrames );
+	//seq.AddLineMovement( point0, point1, CubicBezier( 0, 0, 1, 1 ), moveFrames );
 	
 	//seq1.AddLineMovement( point1, point0, CubicBezier( 0, 0, 1, 1 ), moveFrames );
 	ResetEnemy();
 	
 	UpdatePath();
 
+	wallTileWidth = 64;
+
+	wallFrame = 0;
+	wallDuration = 1;
+	wallAnimFactor = 10;
+
+	SetupJays();
+	SetupWall();
 }
 
-void Narwhal::SetupWaiting()
+void Jay::UpdateJays()
 {
-	//V2d diff = point1 - point0;
-	V2d normDiff = moveDir;//normalize( diff );
+	IntRect redRect = ts->GetSubRect( 0 );
+	IntRect blueRect = ts->GetSubRect( 1 );
+
+	jayVA[0].texCoords = Vector2f( redRect.left, redRect.top );
+	jayVA[1].texCoords = Vector2f( redRect.left + redRect.width, redRect.top );
+	jayVA[2].texCoords = Vector2f( redRect.left + redRect.width, redRect.top + redRect.height );
+	jayVA[3].texCoords = Vector2f( redRect.left, redRect.top + redRect.height );
+
+	jayVA[4].texCoords = Vector2f( blueRect.left, blueRect.top );
+	jayVA[5].texCoords = Vector2f( blueRect.left + blueRect.width, blueRect.top );
+	jayVA[6].texCoords = Vector2f( blueRect.left + blueRect.width, blueRect.top + blueRect.height );
+	jayVA[7].texCoords = Vector2f( blueRect.left, blueRect.top + blueRect.height );
+}
+
+void Jay::SetupJays()
+{
+	IntRect testRect = ts->GetSubRect( 0 );
+	//IntRect blueRect = ts->GetSubRect( 1 );
+	jayVA[0].position = Vector2f( redPos.x - testRect.width, redPos.y - testRect.height );
+	jayVA[1].position = Vector2f( redPos.x + testRect.width, redPos.y - testRect.height );
+	jayVA[2].position = Vector2f( redPos.x + testRect.width, redPos.y + testRect.height );
+	jayVA[3].position = Vector2f( redPos.x - testRect.width, redPos.y + testRect.height );
+
+	jayVA[0].position = Vector2f( bluePos.x - testRect.width, bluePos.y - testRect.height );
+	jayVA[1].position = Vector2f( bluePos.x + testRect.width, bluePos.y - testRect.height );
+	jayVA[2].position = Vector2f( bluePos.x + testRect.width, bluePos.y + testRect.height );
+	jayVA[3].position = Vector2f( bluePos.x - testRect.width, bluePos.y + testRect.height );
+}
+
+void Jay::SetupWall()
+{
+	VertexArray &wva = *wallVA;
+
+	V2d along = normalize( bluePos - redPos );
+	V2d other( along.y, -along.x );
+
+	double wallHeight = 64 / 2;
+
+	V2d start = redPos;
+	V2d end;
+	for( int i = 0; i < numWallTiles; ++i )
+	{
+		start = redPos + (i * wallTileWidth) * along;
+		if( i == numWallTiles - 1 )
+		{
+			end = bluePos;
+		}
+		else
+		{
+			end = start + wallTileWidth * along;
+		}
+
+		V2d topLeft = start + wallHeight * other;
+		V2d topRight = end + wallHeight * other;
+
+		V2d botRight = end - wallHeight * other;
+		V2d botLeft = start - wallHeight * other;
+
+		
+		localWallPoints[i*4+0] = Vector2f( topLeft.x, topLeft.y ) - Vector2f( redPos.x, redPos.y );
+		localWallPoints[i*4+1] = Vector2f( topRight.x, topRight.y ) - Vector2f( redPos.x, redPos.y );
+		localWallPoints[i*4+2] = Vector2f( botRight.x, botRight.y ) - Vector2f( redPos.x, redPos.y );
+		localWallPoints[i*4+3] = Vector2f( botLeft.x, botLeft.y ) - Vector2f( redPos.x, redPos.y );
+	}
+}
+
+void Jay::UpdateWall()
+{
+	VertexArray &wva = *wallVA;
+	if( action == FIRE )
+	{
+		for( int i = 0; i < numWallTiles * 4; ++i )
+		{
+			wva[i].position = Vector2f( redNodePos.x, redNodePos.y ) + localWallPoints[i];
+		}
+	}
+
+	//add more when you have it changing states
+	IntRect ir = ts_wall->GetSubRect( wallFrame / wallAnimFactor );
+	for( int i = 0; i < numWallTiles-1; ++i )
+	{
+		wva[i*4+0].texCoords = Vector2f( ir.left, ir.top );
+		wva[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		wva[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		wva[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+	}
+	
+	wva[(numWallTiles-1)*4+0].texCoords = Vector2f( ir.left, ir.top );
+	wva[(numWallTiles-1)*4+1].texCoords = Vector2f( ir.left + remainder, ir.top );
+	wva[(numWallTiles-1)*4+2].texCoords = Vector2f( ir.left + remainder, ir.top + ir.height );
+	wva[(numWallTiles-1)*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+}
+
+void Jay::SetupWaiting()
+{
+	V2d normDiff = moveDir;
 
 	V2d midPoint = position + moveDir * moveDistance / 2.0;
 
 	triggerBox.globalAngle = atan2( -normDiff.x, normDiff.y );
 	triggerBox.globalPosition = midPoint;
 	triggerBox.rw = 20;
-	triggerBox.rh = moveDistance / 2;//length( point0-point1 ) / 2;
+	triggerBox.rh = moveDistance / 2;
 	
 	angle = atan2( normDiff.y, normDiff.x ) / PI * 180.f;
 	sprite.setRotation( angle );
 	UpdateHitboxes();
 }
 
-void Narwhal::UpdatePath()
+void Jay::UpdatePath()
 {
 	V2d startPoint = position;
 	V2d endPoint = position + moveDir * moveDistance;
@@ -172,7 +281,7 @@ void Narwhal::UpdatePath()
 	}
 }
 
-void Narwhal::ActionEnded()
+void Jay::ActionEnded()
 {
 	if( frame == actionLength[action] * animFactor[action] )
 	{
@@ -201,7 +310,7 @@ void Narwhal::ActionEnded()
 	}
 }
 
-void Narwhal::HandleEntrant( QuadTreeEntrant *qte )
+void Jay::HandleEntrant( QuadTreeEntrant *qte )
 {
 	SpecterArea *sa = (SpecterArea*)qte;
 	if( sa->barrier.Intersects( hurtBody ) )
@@ -210,7 +319,7 @@ void Narwhal::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Narwhal::ResetEnemy()
+void Jay::ResetEnemy()
 {
 	if( origEndPoint.x < origStartPoint.x )
 		facingRight = false;
@@ -240,7 +349,7 @@ void Narwhal::ResetEnemy()
 	
 }
 
-void Narwhal::UpdatePrePhysics()
+void Jay::UpdatePrePhysics()
 {
 	ActionEnded();
 	switch( action )
@@ -289,7 +398,7 @@ void Narwhal::UpdatePrePhysics()
 	triggered = false;
 }
 
-void Narwhal::UpdatePhysics()
+void Jay::UpdatePhysics()
 {
 	//cout << "setting to targetnode: " << targetNode << endl;
 	//position = V2d( path[targetNode].x, path[targetNode].y );
@@ -340,6 +449,20 @@ void Narwhal::UpdatePhysics()
 		slowCounter = 1;
 	}
 
+	if( PlayerSlowingWall() )
+	{
+		if( slowMultipleWall == 1 )
+		{
+			slowCounterWall = 1;
+			slowMultipleWall = 5;
+		}
+	}
+	else
+	{
+		slowMultipleWall = 1;
+		slowCounterWall = 1;
+	}
+
 	if( dead )
 		return;
 
@@ -347,7 +470,7 @@ void Narwhal::UpdatePhysics()
 	PhysicsResponse();
 }
 
-void Narwhal::PhysicsResponse()
+void Jay::PhysicsResponse()
 {
 	if( !dead && receivedHit == NULL )
 	{
@@ -372,7 +495,7 @@ void Narwhal::PhysicsResponse()
 			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, true );
 			
 
-		//	cout << "Narwhal received damage of: " << receivedHit->damage << endl;
+		//	cout << "Jay received damage of: " << receivedHit->damage << endl;
 			/*if( !result.second )
 			{
 				owner->Pause( 8 );
@@ -390,7 +513,7 @@ void Narwhal::PhysicsResponse()
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Narwhal just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Jay just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 
 		if( action == WAITING && !triggered )
@@ -403,7 +526,7 @@ void Narwhal::PhysicsResponse()
 	}
 }
 
-void Narwhal::UpdatePostPhysics()
+void Jay::UpdatePostPhysics()
 {
 	if( triggered )
 	{
@@ -481,7 +604,7 @@ void Narwhal::UpdatePostPhysics()
 	}
 }
 
-void Narwhal::UpdateSprite()
+void Jay::UpdateSprite()
 {
 	//ts->GetSubRect( frame / animationFactor ) );
 	
@@ -548,7 +671,7 @@ void Narwhal::UpdateSprite()
 	}
 }
 
-void Narwhal::Draw( sf::RenderTarget *target )
+void Jay::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
 	if( !dead )
@@ -593,7 +716,7 @@ void Narwhal::Draw( sf::RenderTarget *target )
 
 }
 
-void Narwhal::DrawMinimap( sf::RenderTarget *target )
+void Jay::DrawMinimap( sf::RenderTarget *target )
 {
 	/*CircleShape enemyCircle;
 	enemyCircle.setFillColor( COLOR_BLUE );
@@ -631,7 +754,7 @@ void Narwhal::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Narwhal::IHitPlayer()
+bool Jay::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -640,10 +763,33 @@ bool Narwhal::IHitPlayer()
 		player->ApplyHit( hitboxInfo );
 		return true;
 	}
+
+	if( action == FIRE )
+	{
+		if( wallHitBody.Intersects( player->hurtBody ) )
+		{
+			player->ApplyHit( wallHitboxInfo );
+			return true;
+		}
+
+		if( wallNodeHitboxRed.Intersects( player->hurtBody ) )
+		{
+			player->ApplyHit( wallHitboxInfo );
+			return true;
+		}
+
+		if( wallNodeHitboxBlue.Intersects( player->hurtBody ) )
+		{
+			player->ApplyHit( wallHitboxInfo );
+			return true;
+		}
+	}
+
+
 	return false;
 }
 
-void Narwhal::UpdateHitboxes()
+void Jay::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
@@ -661,7 +807,7 @@ void Narwhal::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Narwhal::PlayerHitMe()
+pair<bool,bool> Jay::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )
@@ -717,7 +863,7 @@ pair<bool,bool> Narwhal::PlayerHitMe()
 	return pair<bool, bool>(false,false);
 }
 
-bool Narwhal::PlayerSlowingMe()
+bool Jay::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -733,7 +879,41 @@ bool Narwhal::PlayerSlowingMe()
 	return false;
 }
 
-void Narwhal::DebugDraw( RenderTarget *target )
+bool Jay::PlayerSlowingWall()
+{
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
+	{
+		if( player->bubbleFramesToLive[i] > 0 )
+		{
+			V2d A = wallHitBody.globalPosition + V2d( -wallHitBody.rw * cos( wallHitBody.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -wallHitBody.rh * cos( wallHitBody.globalAngle ) );
+			V2d B = wallHitBody.globalPosition + V2d( wallHitBody.rw * cos( wallHitBody.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -wallHitBody.rh * cos( wallHitBody.globalAngle ) );
+			V2d C = wallHitBody.globalPosition + V2d( wallHitBody.rw * cos( wallHitBody.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + wallHitBody.rh * cos( wallHitBody.globalAngle ) );
+			V2d D = wallHitBody.globalPosition + V2d( -wallHitBody.rw * cos( wallHitBody.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + wallHitBody.rh * cos( wallHitBody.globalAngle ) );
+			
+			V2d bPos = player->bubblePos[i];
+
+			if( IsQuadTouchingCircle( A, B, C, D, bPos, player->bubbleRadius ) )
+			{
+				return true;
+			}
+
+			if( length( redNodePos - bPos ) < player->bubbleRadius + wallNodeHitboxRed.rw )
+			{
+				return true;
+			}
+
+			V2d blueNode = redNodePos + origDiff;
+			if( length( blueNode - bPos ) < player->bubbleRadius + wallNodeHitboxBlue.rw )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void Jay::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -743,7 +923,7 @@ void Narwhal::DebugDraw( RenderTarget *target )
 	}
 }
 
-void Narwhal::SaveEnemyState()
+void Jay::SaveEnemyState()
 {
 	//stored.dead = dead;
 	///stored.deathFrame = deathFrame;
@@ -755,7 +935,7 @@ void Narwhal::SaveEnemyState()
 //	stored.targetNode = targetNode;
 }
 
-void Narwhal::LoadEnemyState()
+void Jay::LoadEnemyState()
 {
 //	dead = stored.dead;
 //	deathFrame = stored.deathFrame;

@@ -2987,7 +2987,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;				
 
-				Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
+				//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
+				Mine *enemy = new Mine( this, hasMonitor, Vector2i( xPos, yPos ) );
 				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
 				//	400, 50, 60, 1 );
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
