@@ -3017,8 +3017,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int moveFrames;
 				is >> moveFrames;
 
-				Narwhal *enemy = new Narwhal( this, hasMonitor, 
-					Vector2i( xPos, yPos ),	dest, moveFrames );
+				//Narwhal *enemy = new Narwhal( this, hasMonitor, 
+				//	Vector2i( xPos, yPos ),	dest, moveFrames );
+				Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
 				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
 				//	400, 50, 60, 1 );
 				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy

@@ -3572,10 +3572,22 @@ struct Jay : Enemy
 	enum Action
 	{
 		PROTECTED,
+		WAITTOFIRE,
 		FIRE,
 		RECOVER,
+		SOLO,
 		Count
 	};
+
+	int redHealth;
+	int blueHealth;
+
+	bool redDead;
+	bool blueDead;
+	bool dying;
+
+	HitboxInfo *receivedHitRed;
+	HitboxInfo *receivedHitBlue;
 
 	Jay( GameSession *owner, bool hasMonitor,
 		sf::Vector2i &startPos, 
@@ -3591,11 +3603,12 @@ struct Jay : Enemy
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
 	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	//std::pair<bool,bool> PlayerHitMe();
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
 	void ResetEnemy();
+	
 
 	bool triggered;
 	
@@ -3604,8 +3617,6 @@ struct Jay : Enemy
 	MovementSequence seq;
 	//MovementSequence seq1;
 	float angle;
-
-	void SetupWaiting();
 
 	sf::Vector2<double> redPos;
 	sf::Vector2<double> bluePos;
@@ -3617,8 +3628,11 @@ struct Jay : Enemy
 	double moveDistance;
 	sf::Vector2<double> startCharge;
 	sf::Vector2<double> moveDir;
+	sf::Vector2<double> wallVel;
 	
-
+	std::pair<bool,bool> PlayerHitRed();
+	std::pair<bool,bool> PlayerHitBlue();
+	std::pair<bool,bool> PlayerHitMe();
 	void ActionEnded();
 	
 
@@ -3631,7 +3645,8 @@ struct Jay : Enemy
 	int moveFrames;
 	int currMoveFrame;
 
-	int deathFrame;
+	int redDeathFrame;
+	int blueDeathFrame;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
@@ -3655,7 +3670,7 @@ struct Jay : Enemy
 	int numWallTiles;
 	float remainder;
 	double wallTileWidth;
-	
+	bool hitRed;
 	
 	//sf::Sprite sprite;
 
@@ -3677,10 +3692,13 @@ struct Jay : Enemy
 	Tileset *ts;
 	Tileset *ts_shield;
 	Tileset *ts_wall;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
+	CollisionBox redHurtBody;
+	CollisionBox redHitBody;
+	CollisionBox blueHurtBody;
+	CollisionBox blueHitBody;
 	HitboxInfo *hitboxInfo;
 	HitboxInfo *wallHitboxInfo;
+	HitboxInfo *shieldHitboxInfo;
 	CollisionBox wallHitBody;
 	CollisionBox wallNodeHitboxRed;
 	CollisionBox wallNodeHitboxBlue;
