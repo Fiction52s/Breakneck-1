@@ -3575,19 +3575,19 @@ struct Jay : Enemy
 		WAITTOFIRE,
 		FIRE,
 		RECOVER,
-		SOLO,
+		SHUTDOWN,
 		Count
 	};
 
 	int redHealth;
 	int blueHealth;
 
-	bool redDead;
-	bool blueDead;
+	//bool redDead;
+	//bool blueDead;
 	bool dying;
 
-	HitboxInfo *receivedHitRed;
-	HitboxInfo *receivedHitBlue;
+	//HitboxInfo *receivedHitRed;
+	//HitboxInfo *receivedHitBlue;
 
 	Jay( GameSession *owner, bool hasMonitor,
 		sf::Vector2i &startPos, 
@@ -3645,8 +3645,9 @@ struct Jay : Enemy
 	int moveFrames;
 	int currMoveFrame;
 
-	int redDeathFrame;
-	int blueDeathFrame;
+	//int redDeathFrame;
+	//int blueDeathFrame;
+	int deathFrame;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
 	sf::Sprite botDeathSprite;
@@ -3702,7 +3703,6 @@ struct Jay : Enemy
 	CollisionBox wallHitBody;
 	CollisionBox wallNodeHitboxRed;
 	CollisionBox wallNodeHitboxBlue;
-
 
 	int hitlagFrames;
 	int hitstunFrames;

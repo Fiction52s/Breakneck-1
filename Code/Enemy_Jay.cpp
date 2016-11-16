@@ -21,8 +21,7 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	//pathVA( sf::Quads, 4 )
 {
 	dead = false;
-	receivedHitRed = NULL;
-	receivedHitBlue = NULL;
+	receivedHit = NULL;
 	position.x = startPos.x;
 	position.y = startPos.y;
 
@@ -68,11 +67,13 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	actionLength[FIRE] = 10;
 	actionLength[RECOVER] = 10;
 	actionLength[WAITTOFIRE] = 10;
+	actionLength[SHUTDOWN] = 10;
 
 	animFactor[PROTECTED] = 1;
 	animFactor[FIRE] = 6;
 	animFactor[RECOVER] = 1;
 	animFactor[WAITTOFIRE] = 3;
+	animFactor[SHUTDOWN] = 2;
 
 	//speed = 2;
 	frame = 0;
@@ -89,17 +90,19 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	blueHitBody.globalPosition = bluePos;
 	blueHitBody.globalAngle = 0;
 
-	//ts = owner->GetTileset( "Jay.png", 80, 80 );
+	wallNodeHitboxRed.globalPosition = redPos;
+	wallNodeHitboxRed.globalAngle = 0;
+	wallNodeHitboxRed.globalPosition = redPos;
+	wallNodeHitboxRed.globalAngle = 0;
+
+	wallNodeHitboxBlue.globalPosition = bluePos;
+	wallNodeHitboxBlue.globalAngle = 0;
+	wallNodeHitboxBlue.globalPosition = bluePos;
+	wallNodeHitboxBlue.globalAngle = 0;
+
 	ts = owner->GetTileset( "jay_100x100.png", 100, 100 );
 	ts_shield = owner->GetTileset( "jayshield_128x128.png", 128, 128 );
 	ts_wall = owner->GetTileset( "jaywall_64x64.png", 64, 64 ); 
-
-	//sprite.setTexture( *ts->texture );
-	//sprite.setTextureRect( ts->GetSubRect( frame ) );
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	//sprite.setPosition( position.x, position.y );
-	//position.x = 0;
-	//position.y = 0;
 
 	V2d normDiff = normalize( origDiff );
 
@@ -137,13 +140,22 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	blueHitBody.rw = 16;
 	blueHitBody.rh = 16;
 
-	//wallHitBody.type = CollisionBox::Hit;
-	//wallHitBody.isCircle = false;
-	//wallHitBody.globalAngle = 0;
-	//wallHitBody.offset.x = 0;
-	//wallHitBody.offset.y = 0;
-	//wallHitBody.rw = 16;
-	//wallHitBody.rh = 16;
+	wallNodeHitboxRed.type = CollisionBox::Hit;
+	wallNodeHitboxRed.isCircle = true;
+	wallNodeHitboxRed.globalAngle = 0;
+	wallNodeHitboxRed.offset.x = 0;
+	wallNodeHitboxRed.offset.y = 0;
+	wallNodeHitboxRed.rw = 32;
+	wallNodeHitboxRed.rh = 32;
+
+	wallNodeHitboxBlue.type = CollisionBox::Hit;
+	wallNodeHitboxBlue.isCircle = true;
+	wallNodeHitboxBlue.globalAngle = 0;
+	wallNodeHitboxBlue.offset.x = 0;
+	wallNodeHitboxBlue.offset.y = 0;
+	wallNodeHitboxBlue.rw = 32;
+	wallNodeHitboxBlue.rh = 32;
+
 
 	triggerBox.type = CollisionBox::Hit;
 	triggerBox.isCircle = false;
@@ -183,22 +195,12 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	shieldHitboxInfo->hitstunFrames = 10;
 	shieldHitboxInfo->knockback = 4;
 
-	
-	//hitboxInfo->kbDir;
 
-
+	deathFrame = 0;
 	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
-	
-	//SetupWaiting();
-
-	//seq.AddLineMovement( point0, point1, CubicBezier( 0, 0, 1, 1 ), moveFrames );
-	
-	//seq1.AddLineMovement( point1, point0, CubicBezier( 0, 0, 1, 1 ), moveFrames );
 	ResetEnemy();
-	
-	//UpdatePath();
 
 	wallTileWidth = 64;
 
@@ -208,10 +210,6 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 
 	SetupJays();
 	SetupWall();
-
-	
-
-	
 }
 
 pair<bool,bool> Jay::PlayerHitMe()
@@ -244,10 +242,10 @@ void Jay::SetupJays()
 	jayVA[2].position = Vector2f( redPos.x + testRect.width / 2, redPos.y + testRect.height / 2 );
 	jayVA[3].position = Vector2f( redPos.x - testRect.width / 2, redPos.y + testRect.height / 2 );
 
-	jayVA[0].position = Vector2f( bluePos.x - testRect.width / 2, bluePos.y - testRect.height / 2 );
-	jayVA[1].position = Vector2f( bluePos.x + testRect.width / 2, bluePos.y - testRect.height / 2 );
-	jayVA[2].position = Vector2f( bluePos.x + testRect.width / 2, bluePos.y + testRect.height / 2 );
-	jayVA[3].position = Vector2f( bluePos.x - testRect.width / 2, bluePos.y + testRect.height / 2 );
+	jayVA[4].position = Vector2f( bluePos.x - testRect.width / 2, bluePos.y - testRect.height / 2 );
+	jayVA[5].position = Vector2f( bluePos.x + testRect.width / 2, bluePos.y - testRect.height / 2 );
+	jayVA[6].position = Vector2f( bluePos.x + testRect.width / 2, bluePos.y + testRect.height / 2 );
+	jayVA[7].position = Vector2f( bluePos.x - testRect.width / 2, bluePos.y + testRect.height / 2 );
 }
 
 void Jay::SetupWall()
@@ -290,16 +288,16 @@ void Jay::SetupWall()
 void Jay::UpdateWall()
 {
 	VertexArray &wva = *wallVA;
-	if( action == FIRE )
+	//if( action == FIRE )
+	//{
+	for( int i = 0; i < numWallTiles * 4; ++i )
 	{
-		for( int i = 0; i < numWallTiles * 4; ++i )
-		{
-			wva[i].position = Vector2f( redNodePos.x, redNodePos.y ) + localWallPoints[i];
-		}
+		wva[i].position = Vector2f( redNodePos.x, redNodePos.y ) + localWallPoints[i];
 	}
+	//}
 
 	//add more when you have it changing states
-	IntRect ir = ts_wall->GetSubRect( wallFrame / wallAnimFactor );
+	IntRect ir = ts_wall->GetSubRect( 0 );//wallFrame / wallAnimFactor );
 	for( int i = 0; i < numWallTiles-1; ++i )
 	{
 		wva[i*4+0].texCoords = Vector2f( ir.left, ir.top );
@@ -312,6 +310,32 @@ void Jay::UpdateWall()
 	wva[(numWallTiles-1)*4+1].texCoords = Vector2f( ir.left + remainder, ir.top );
 	wva[(numWallTiles-1)*4+2].texCoords = Vector2f( ir.left + remainder, ir.top + ir.height );
 	wva[(numWallTiles-1)*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+
+	IntRect shieldRect = ts_shield->GetSubRect( 0 );
+
+	for( int i = 0; i < 2; ++i )
+	{
+		V2d p;
+		if( i == 0 )
+		{
+			p = redNodePos;
+		}
+		else
+		{
+			p = redNodePos + origDiff;
+		}
+
+
+		shieldVA[i*4+0].texCoords = Vector2f( shieldRect.left, shieldRect.top );
+		shieldVA[i*4+1].texCoords = Vector2f( shieldRect.left + shieldRect.width, shieldRect.top );
+		shieldVA[i*4+2].texCoords = Vector2f( shieldRect.left + shieldRect.width, shieldRect.top + shieldRect.height );
+		shieldVA[i*4+3].texCoords = Vector2f( shieldRect.left, shieldRect.top + shieldRect.height );
+
+		shieldVA[i*4+0].position = Vector2f( p.x - shieldRect.width / 2, p.y - shieldRect.height / 2 );
+		shieldVA[i*4+1].position = Vector2f( p.x + shieldRect.width / 2, p.y - shieldRect.height / 2 );
+		shieldVA[i*4+2].position = Vector2f( p.x + shieldRect.width / 2, p.y + shieldRect.height / 2 );
+		shieldVA[i*4+3].position = Vector2f( p.x - shieldRect.width / 2, p.y + shieldRect.height / 2 );
+	}
 }
 
 void Jay::UpdatePath()
@@ -368,6 +392,15 @@ void Jay::ActionEnded()
 		case FIRE:
 			action = RECOVER;
 			frame = 0;
+			redNodePos = redPos;
+			UpdateHitboxes();
+			break;
+		case RECOVER:
+			action = PROTECTED;
+			frame = 0;
+			break;
+		case SHUTDOWN:
+			dead = true;
 			break;
 		}
 	}
@@ -393,17 +426,12 @@ void Jay::ResetEnemy()
 
 	triggered = false;
 	dead = false;
-	redDead = false;
-	blueDead = false;
+	dying = false;
 	//deathFrame = 0;
 	//position = origStartPoint;
-	receivedHitRed = NULL;
-	receivedHitBlue = NULL;
+	receivedHit = NULL;
 	action = PROTECTED;
 	frame = 0;
-
-	redDeathFrame = 0;
-	blueDeathFrame = 0;
 
 	slowMultiple = 1;
 	slowCounter = 1;
@@ -428,27 +456,30 @@ void Jay::UpdatePrePhysics()
 	
 
 
+	
+
+	ActionEnded();
+
 	if( dead )
 	{
 		owner->RemoveEnemy( this );
 		return;
 	}
 
-	ActionEnded();
+	
 
-
-	if( redDead && redDeathFrame == 60 && !blueDead )
-	{
-		action = SOLO;
-		frame = 0;
-		//dying = true;
-	}
-	else if( blueDead && blueDeathFrame == 60 && !redDead )
-	{
-		action = SOLO;
-		frame = 0;
-		//dying = true;
-	}
+	//if( redDead && redDeathFrame == 60 && !blueDead )
+	//{
+	//	action = SOLO;
+	//	frame = 0;
+	//	//dying = true;
+	//}
+	//else if( blueDead && blueDeathFrame == 60 && !redDead )
+	//{
+	//	action = SOLO;
+	//	frame = 0;
+	//	//dying = true;
+	//}
 
 	switch( action )
 	{
@@ -463,29 +494,35 @@ void Jay::UpdatePrePhysics()
 	case RECOVER:
 		cout << "recover: " << frame << endl;
 		break;
-	case SOLO:
-		cout << "solo: " << frame << endl;
+	case SHUTDOWN:
+		cout << "shutdown: " << frame << endl;
+		break;
+	case WAITTOFIRE:
+		cout << "wait: " << frame << endl;
 		break;
 	}
 
-	if( !redDead && receivedHitRed != NULL && (action == FIRE || action == RECOVER ) )
+	if( receivedHit != NULL && (action == FIRE || action == RECOVER ) )
 	{
-		redHealth -= 20;
-		if( redHealth <= 0 )
+		health -= 20;
+		if( health <= 0 )
 		{
-			if( !blueDead && hasMonitor && !suppressMonitor )
+			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
-			redDead = true;
 			owner->player->ConfirmEnemyKill( this );
+			action = SHUTDOWN;
+			frame = 0;
+			//dying = true;
+			
 		}
 		else
 		{
 			owner->player->ConfirmEnemyNoKill( this );
 		}
-		receivedHitRed = NULL;
+		receivedHit = NULL;
 	}
 
-	if( !blueDead && receivedHitBlue != NULL && (action == FIRE || action == RECOVER ) )
+	/*if( !blueDead && receivedHitBlue != NULL && (action == FIRE || action == RECOVER ) )
 	{
 		blueHealth -= 20;
 		if( blueHealth <= 0 )
@@ -500,7 +537,7 @@ void Jay::UpdatePrePhysics()
 			owner->player->ConfirmEnemyNoKill( this );
 		}
 		receivedHitBlue = NULL;
-	}
+	}*/
 
 	triggered = false;
 }
@@ -513,6 +550,7 @@ void Jay::UpdatePhysics()
 	if( action == FIRE )
 	{
 		redNodePos += wallVel / NUM_STEPS / (double)slowMultipleWall;
+		//cout << "redNodePos: " << redNodePos.x << ", " << redNodePos.y << endl;
 	}
 	
 	
@@ -556,54 +594,87 @@ void Jay::PhysicsResponse()
 	UpdateHitboxes();
 
 	Actor *player = owner->player;
-	if( !redDead && receivedHitRed == NULL )
+	if( action != PROTECTED && action != WAITTOFIRE && action != SHUTDOWN )
 	{
-		pair<bool,bool> result = PlayerHitRed();
-		if( result.first )
+		//if( !redDead && receivedHitRed == NULL )
+		//{
+		//	pair<bool,bool> result = PlayerHitRed();
+		//	if( result.first )
+		//	{
+		//		//cout << "color blue" << endl;
+		//		//triggers multiple times per frame? bad?
+		//		owner->player->ConfirmHit( 6, 5, .8, 6 );
+
+
+		//		if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+		//		{
+		//			owner->player->velocity.y = 4;//.5;
+		//		}
+		//	}
+
+		//	if( redHitBody.Intersects( player->hurtBody ) )
+		//	{
+		//		player->ApplyHit( hitboxInfo );
+		//		//return true;
+		//	}
+		//}
+
+		//if( !blueDead && receivedHitBlue == NULL )
+		//{
+		//	pair<bool,bool> result = PlayerHitBlue();
+		//	if( result.first )
+		//	{
+		//		//cout << "color blue" << endl;
+		//		//triggers multiple times per frame? bad?
+		//		owner->player->ConfirmHit( 6, 5, .8, 6 );
+
+
+		//		if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+		//		{
+		//			owner->player->velocity.y = 4;//.5;
+		//		}
+		//	}
+
+		//	if( blueHitBody.Intersects( player->hurtBody ) )
+		//	{
+		//		player->ApplyHit( hitboxInfo );
+		//		//return true;
+		//	}
+		//}
+
+		if( receivedHit == NULL )
 		{
-			//cout << "color blue" << endl;
-			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
-
-
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			pair<bool,bool> resultRed = PlayerHitRed();
+			pair<bool,bool> resultBlue = PlayerHitBlue();
+			//not perfectly efficient
+			if( resultRed.first || resultBlue.first )
 			{
-				owner->player->velocity.y = 4;//.5;
-			}
-		}
+				//cout << "color blue" << endl;
+				//triggers multiple times per frame? bad?
+				owner->player->ConfirmHit( 6, 5, .8, 6 );
 
-		if( redHitBody.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( hitboxInfo );
-			//return true;
+
+				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				{
+					owner->player->velocity.y = 4;//.5;
+				}
+			}
+
+			if( redHitBody.Intersects( player->hurtBody ) )
+			{
+				player->ApplyHit( hitboxInfo );
+				//return true;
+			}
+			else if( blueHitBody.Intersects( player->hurtBody ) )
+			{
+				player->ApplyHit( hitboxInfo );
+				//return true;
+			}
 		}
 	}
 
-	if( !blueDead && receivedHitBlue == NULL )
-	{
-		pair<bool,bool> result = PlayerHitBlue();
-		if( result.first )
-		{
-			//cout << "color blue" << endl;
-			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
 
-
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
-			{
-				owner->player->velocity.y = 4;//.5;
-			}
-		}
-
-		if( blueHitBody.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( hitboxInfo );
-			//return true;
-		}
-	}
-
-
-	if( IHitPlayer() )
+	if( action != SHUTDOWN && IHitPlayer() )
 	{
 	//	cout << "Jay just hit player for " << hitboxInfo->damage << " damage!" << endl;
 	}
@@ -638,16 +709,16 @@ void Jay::UpdatePostPhysics()
 		}
 	}
 
-	if( !redDead && receivedHitRed != NULL )
+	if( !dead && receivedHit != NULL )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + redPos ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
-	if( !blueDead && receivedHitBlue != NULL )
+	/*if( !blueDead && receivedHitBlue != NULL )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + bluePos ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
-	}
+	}*/
 
 	/*if( receivedHit != NULL && !dead )
 	{
@@ -655,14 +726,14 @@ void Jay::UpdatePostPhysics()
 		
 	}*/
 
-	if( redDeathFrame == 0 && redDead )
+	/*if(  )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, redPos, true, 0, 15, 2, true );
 	}
 	if( blueDeathFrame == 0 && blueDead )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, bluePos, true, 0, 15, 2, true );
-	}
+	}*/
 
 	
 
@@ -675,14 +746,14 @@ void Jay::UpdatePostPhysics()
 		
 		slowCounter = 1;
 	
-		if( redDead )
+		/*if( redDead )
 		{
 			redDeathFrame++;
 		}
 		if( blueDead )
 		{
 			blueDeathFrame++;
-		}
+		}*/
 
 	}
 	else
@@ -743,6 +814,7 @@ void Jay::UpdateSprite()
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	//sprite.setPosition( position.x, position.y );
 	UpdateJays();
+	UpdateWall();
 
 	if( dead )
 	{
@@ -780,26 +852,36 @@ void Jay::Draw( sf::RenderTarget *target )
 		target->draw( pathVA );
 		if( hasMonitor && !suppressMonitor )
 		{
-			if( owner->pauseFrames < 2 || ( receivedHitRed == NULL && receivedHitBlue == NULL ) )
+			if( owner->pauseFrames < 2 || receivedHit == NULL  )
 			{
 				sf::RenderStates rs;
 				rs.texture = ts->texture;
 				rs.shader = keyShader;
 				target->draw( jayVA, rs );
+
+				
+				
+				target->draw( *wallVA, ts_wall->texture );
+				target->draw( shieldVA, ts_shield->texture );
+				
 				//target->draw( sprite, keyShader );
 			}
 			else
 			{
 				target->draw( jayVA, hurtShader );
+				target->draw( *wallVA, ts_wall->texture );
+				target->draw( shieldVA, ts_shield->texture );
 				//target->draw( sprite, hurtShader );
 			}
 			target->draw( *keySprite );
 		}
 		else
 		{
-			if( owner->pauseFrames < 2 || ( receivedHitRed == NULL && receivedHitBlue == NULL ) )
+			if( owner->pauseFrames < 2 || receivedHit == NULL  )
 			{
 				target->draw( jayVA, ts->texture );
+				target->draw( *wallVA, ts_wall->texture );
+				target->draw( shieldVA, ts_shield->texture );
 			//	target->draw( sprite );
 			}
 			else
@@ -808,6 +890,8 @@ void Jay::Draw( sf::RenderTarget *target )
 				rs.shader = hurtShader;
 				rs.texture = ts->texture;
 				target->draw( jayVA, hurtShader );
+				target->draw( *wallVA, ts_wall->texture );
+				target->draw( shieldVA, ts_shield->texture );
 			}
 			
 		}
@@ -875,18 +959,18 @@ bool Jay::IHitPlayer()
 			player->ApplyHit( wallHitboxInfo );
 			return true;
 		}
+	}
 
-		if( wallNodeHitboxRed.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( wallHitboxInfo );
-			return true;
-		}
+	if( wallNodeHitboxRed.Intersects( player->hurtBody ) )
+	{
+		player->ApplyHit( shieldHitboxInfo );
+		return true;
+	}
 
-		if( wallNodeHitboxBlue.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( wallHitboxInfo );
-			return true;
-		}
+	if( wallNodeHitboxBlue.Intersects( player->hurtBody ) )
+	{
+		player->ApplyHit( shieldHitboxInfo );
+		return true;
 	}
 
 
@@ -895,14 +979,13 @@ bool Jay::IHitPlayer()
 
 void Jay::UpdateHitboxes()
 {
-	if( action == FIRE )
-	{
-		V2d midPoint = redNodePos + origDiff / 2.0;
-		//wallHitBody.globalPosition = midPoint;
-		//wallNodeHitboxRed.globalPosition = redNodePos;
-		//wallNodeHitboxBlue.globalPosition = redNodePos + origDiff;
-
-	}
+	//if( action == FIRE  )
+	//{
+	V2d midPoint = redNodePos + origDiff / 2.0;
+	wallHitBody.globalPosition = midPoint;
+	wallNodeHitboxRed.globalPosition = redNodePos;
+	wallNodeHitboxBlue.globalPosition = redNodePos + origDiff;
+	//}
 
 	if( owner->player->ground != NULL )
 	{
@@ -938,7 +1021,7 @@ pair<bool,bool> Jay::PlayerHitRed()
 
 		if( hit )
 		{
-			receivedHitRed = player->currHitboxInfo;
+			receivedHit = player->currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
@@ -987,7 +1070,7 @@ pair<bool,bool> Jay::PlayerHitBlue()
 			if( blueHurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
-				hitRed = true;
+				hitRed = false;
 				break;
 			}
 			
@@ -996,7 +1079,7 @@ pair<bool,bool> Jay::PlayerHitBlue()
 
 		if( hit )
 		{
-			receivedHitBlue = player->currHitboxInfo;
+			receivedHit = player->currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
@@ -1087,16 +1170,18 @@ void Jay::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		redHurtBody.DebugDraw( target );
-		blueHurtBody.DebugDraw( target );
+		//redHurtBody.DebugDraw( target );
+		//blueHurtBody.DebugDraw( target );
 
-		redHitBody.DebugDraw( target );
-		blueHitBody.DebugDraw( target );
+		//redHitBody.DebugDraw( target );
+		//blueHitBody.DebugDraw( target );
 		//hitBody.DebugDraw( target );
-		//triggerBox.DebugDraw( target );
+		triggerBox.DebugDraw( target );
+
+		wallHitBody.DebugDraw( target );
+
 		wallNodeHitboxRed.DebugDraw( target );
 		wallNodeHitboxBlue.DebugDraw( target );
-		wallHitBody.DebugDraw( target );
 	}
 }
 
