@@ -117,9 +117,31 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 		MEETPLAYER1,
 		AFTERFIGHT0,
 		AFTERFIGHT1,
-		BURROW
+		AFTERBURROW,
+		DIG,
+		POPOUT,
+		DIGOUT,
+		CROSS,
+		Count
 	};
 	int frameTest;
+
+	enum BulletNodeType
+	{
+		B_MOVE,
+		B_CROSS,
+		B_DIG,
+		B_LAST
+	};
+
+	
+
+	int currDigAttacks;
+	int digAttackCounter;
+	double baseSpeed;
+	double multSpeed;
+
+	int maxBullets;
 
 	CrawlerFightSeq *crawlerFightSeq;
 	CrawlerAfterFightSeq *crawlerAfterFightSeq;
@@ -199,6 +221,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	int shootIndex;
 	int bulletDirIndex[5];
 	EdgeInfo bulletHits[5];
+	BulletNodeType bulletType[5];
 	int bulletIndex;
 	int travelIndex;
 	int numBullets;

@@ -26,11 +26,12 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 {
 	crawlerFightSeq = new CrawlerFightSeq( owner );
 	crawlerAfterFightSeq = new CrawlerAfterFightSeq( owner );
-
+	maxBullets = 5;
 	shootIndex = 0;
-	numBullets = 5;
+	numBullets = 3;
+	//numBullets = 5;
 	//5 is max bullets
-	for( int i = 0; i < 5 * 4; ++i )
+	for( int i = 0; i < maxBullets * 4; ++i )
 	{
 		markerVA[i].position = Vector2f( 0, 0 );
 		markerVA[i].color = Color::Red;
@@ -110,6 +111,9 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
+	baseSpeed = 5;//20;
+	multSpeed = 1;//8;
+
 	//crawlAnimationFactor = 5;
 	//rollAnimationFactor = 5;
 
@@ -172,7 +176,7 @@ void Boss_Crawler::SetDirs()
 		possibles[j] = temp;
 	}
 
-	for( int i =0; i < 5; ++i )
+	for( int i =0; i < numBullets; ++i )
 	{
 		bulletDirIndex[i] = possibles[i];
 	}
@@ -193,7 +197,7 @@ void Boss_Crawler::ResetEnemy()
 	action = WAIT;
 	travelIndex = 0;
 
-	for( int i = 0; i < 5 * 4; ++i )
+	for( int i = 0; i < maxBullets * 4; ++i )
 	{
 		markerVA[i].position = Vector2f( 0, 0 );
 		markerVA[i].color = Color::Red;
@@ -337,14 +341,14 @@ void Boss_Crawler::ActionEnded()
 		}
 		else if( frame == 65 )
 		{
-			action = BURROW;
+			action = AFTERBURROW;
 			frame = 0;
 			//dead = true;
 			//death
 		}
 
 	}
-	else if( action == BURROW )
+	else if( action == AFTERBURROW )
 	{
 		if( frame == 30 )
 		{
@@ -373,6 +377,29 @@ void Boss_Crawler::ActionEnded()
 			}
 			
 		}
+	}
+	else if( action == DIG )
+	{
+		action = POPOUT;
+		frame = 0;
+	}
+	else if( action == action == POPOUT )
+	{
+		if( digAttackCounter == currDigAttacks )
+		{
+			action = DIGOUT;
+			frame = 0;
+		}
+		else
+		{
+			action = DIG;
+			frame = 0;
+			++digAttackCounter;
+		}
+	}
+	else if( action == CROSS )
+	{
+	//	frame = 0; //stay in cross until you hit an edge
 	}
 }
 
@@ -533,7 +560,7 @@ void Boss_Crawler::UpdatePrePhysics()
 	}
 	else if( action == SHOOT )
 	{
-		if( frameTest == 250 )
+		if( frameTest == 30 * numBullets + 100 )
 		{
 			action = BOOST;
 			travelIndex = 0;
@@ -543,15 +570,19 @@ void Boss_Crawler::UpdatePrePhysics()
 
 			if( GetClockwise( travelIndex ) )
 			{
-				mover->SetSpeed( 20 + travelIndex * 8 );
+				mover->SetSpeed( baseSpeed + travelIndex * multSpeed );
 			}
 			else
 			{
-				mover->SetSpeed( -20 - travelIndex * 8 );
+				mover->SetSpeed( -baseSpeed - travelIndex * multSpeed );
 			}
 		}
 	}
-
+	else if( action == CROSS )
+	{
+		//if( frameTest == 0 )
+		//{
+	}
 
 
 
@@ -562,7 +593,7 @@ void Boss_Crawler::UpdatePrePhysics()
 	}
 	else if( action == SHOOT )
 	{
-		if( frameTest % 30 == 0 && frameTest < 30 * 5 )
+		if( frameTest % 30 == 0 && frameTest < 30 * numBullets )
 		{
 			
 			launcher->position = position;
@@ -585,7 +616,16 @@ void Boss_Crawler::UpdatePrePhysics()
 		mover->SetSpeed( 0 );
 		frameTest++;
 	}
-
+	else if( action == CROSS )
+	{
+		if( frameTest == 0 )
+		{
+			V2d along = normalize( mover->ground->v1 - mover->ground->v0 );
+			V2d out( along.y, -along.x );
+			mover->Jump( out * 10.0 );
+		}
+		++frameTest;
+	}
 
 	bool roll = mover->roll;
 
@@ -670,7 +710,8 @@ void Boss_Crawler::UpdatePhysics()
 	mover->Move( slowMultiple );
 
 	
-	
+	if( action == BOOST )
+	{
 
 	Edge *bEdge = bulletHits[travelIndex].edge;
 	double bq = bulletHits[travelIndex].quantity;
@@ -728,7 +769,7 @@ void Boss_Crawler::UpdatePhysics()
 		if( travelIndex == numBullets - 1 )
 		{
 			cout << "setting to shoot!. travelindex: " << travelIndex << endl;
-			for( int i = 0; i < 5 * 4; ++i )
+			for( int i = 0; i < numBullets * 4; ++i )
 			{
 				markerVA[i].position = Vector2f( 0, 0 );
 			}
@@ -751,18 +792,31 @@ void Boss_Crawler::UpdatePhysics()
 			travelIndex++;
 			cout << "new travelindex: " << travelIndex << endl;
 
-			//action = BOOST;
-			//frameTest = 0;
-			leftFirstEdge = false;
-			firstEdge = mover->ground;
-
-			if( GetClockwise( travelIndex ) )
+			if( false )
 			{
-				mover->SetSpeed( 20 + travelIndex * 8 );
+				action = BOOST;
+				frameTest = 0;
+
+			
+				leftFirstEdge = false;
+				firstEdge = mover->ground;
+
+				if( GetClockwise( travelIndex ) )
+				{
+					facingRight = true;
+					mover->SetSpeed( baseSpeed + travelIndex * multSpeed );
+				}
+				else
+				{
+					facingRight = false;
+					mover->SetSpeed( -baseSpeed - travelIndex * multSpeed );
+				}
 			}
 			else
 			{
-				mover->SetSpeed( -20 - travelIndex * 8 );
+				action = CROSS;
+				frameTest = 0;
+				mover->SetSpeed( 0 );
 			}
 		}
 		
@@ -795,6 +849,7 @@ void Boss_Crawler::UpdatePhysics()
 		}
 	}*/
 
+	}
 	position = mover->physBody.globalPosition;
 	
 	PhysicsResponse();
@@ -844,7 +899,7 @@ bool Boss_Crawler::ResolvePhysics( V2d vel )
 
 	return col;
 }
-
+ 
 void Boss_Crawler::PhysicsResponse()
 {
 	if( !dead  )
@@ -1281,6 +1336,8 @@ void Boss_Crawler::UpdateSprite()
 			}
 			sprite.setTextureRect( r );
 		}
+		IntRect r = ts->GetSubRect( 0 );
+		sprite.setTextureRect( r );
 	}
 }
 
@@ -1351,6 +1408,34 @@ void Boss_Crawler::BulletHitPlayer( BasicBullet *b )
 
 void Boss_Crawler::HitTerrainAerial(Edge *edge, double q)
 {
+	//action = SHOOT;
+
+
+	//frame = 0;
+
+	action = BOOST;
+	frameTest = 0;
+	frame = 0;
+	mover->ground = edge;
+	mover->edgeQuantity = q;
+	mover->UpdateGroundPos();
+
+
+	leftFirstEdge = false;
+	firstEdge = mover->ground;
+
+	if( GetClockwise( travelIndex ) )
+	{
+		facingRight = true;
+		mover->SetSpeed( baseSpeed + travelIndex * multSpeed );
+	}
+	else
+	{
+		facingRight = false;
+		mover->SetSpeed( -baseSpeed - travelIndex * multSpeed );
+	}
+
+	
 }
 
 void Boss_Crawler::TransferEdge( Edge *edge )
