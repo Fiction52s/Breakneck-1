@@ -148,6 +148,8 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 	ResetEnemy();
 
+	SetupPopoutSpots();
+
 	//bezFrame = 0;
 	//bezLength = 60 * NUM_STEPS;
 
@@ -378,11 +380,6 @@ void Boss_Crawler::ActionEnded()
 			
 		}
 	}
-	else if( action == DIG )
-	{
-		action = POPOUT;
-		frame = 0;
-	}
 	else if( action == action == POPOUT )
 	{
 		if( digAttackCounter == currDigAttacks )
@@ -499,6 +496,32 @@ bool Boss_Crawler::GetClockwise( int index )
 	}
 }
 
+void Boss_Crawler::SetupPopoutSpots()
+{
+	Edge *e = startGround;//bulletHits[].edge;
+	//double q = startQuant;//bulletHits[index].quantity;
+
+	Edge *curr = e;
+	int numEdges = 1;
+	curr = curr->edge1;
+
+	while( curr != e )
+	{
+		++numEdges;
+		curr = curr->edge1;
+	}
+
+	numPopoutSpots = numEdges;
+	popoutSpots = new EdgeInfo[numPopoutSpots];
+	
+	for( int i = 0; i < numPopoutSpots; ++i )
+	{
+		popoutSpots[i].edge = curr;
+		popoutSpots[i].quantity = length( curr->v1 - curr->v0 ) / 2;
+		curr = curr->edge1;
+	}
+}
+
 void Boss_Crawler::SetRelFacePos( sf::Vector2f &pos )
 {
 	portrait.sprite.setPosition( pos + Vector2f( position.x, position.y ) );
@@ -583,6 +606,55 @@ void Boss_Crawler::UpdatePrePhysics()
 		//if( frameTest == 0 )
 		//{
 	}
+	else if( action == DIG )
+	{
+		if( frameTest == 30 )
+		{
+			action = RUMBLE;
+			frameTest = 0;
+			owner->cam.SetRumble( 10, 10, 30 );
+		}
+	}
+	else if( action == RUMBLE )
+	{
+		if( frameTest == 30 )
+		{	
+			if( digAttackCounter == currDigAttacks )
+			{
+				mover->ground = bulletHits[numBullets-1].edge;
+				mover->edgeQuantity = bulletHits[numBullets-1].quantity;
+				mover->UpdateGroundPos();
+				action = DIGOUT;
+				frameTest = 0;
+			}
+			else
+			{
+				action = POPOUT;
+				int r = rand() % numPopoutSpots;
+				mover->ground = popoutSpots[r].edge;
+				mover->edgeQuantity = popoutSpots[r].quantity;
+				mover->UpdateGroundPos();
+				frameTest = 0;
+				++digAttackCounter;
+			}
+		}
+	}
+	else if( action == POPOUT )
+	{
+		if( frameTest == 30 )
+		{
+			action = RUMBLE;
+			owner->cam.SetRumble( 10, 10, 30 );
+			frameTest = 0;
+		}
+	}
+	else if( action == DIGOUT )
+	{
+		if( frameTest == 30 )
+		{
+			HitBulletPoint();
+		}
+	}
 
 
 
@@ -624,6 +696,26 @@ void Boss_Crawler::UpdatePrePhysics()
 			V2d out( along.y, -along.x );
 			mover->Jump( out * 10.0 );
 		}
+		++frameTest;
+	}
+	else if( action == DIG )
+	{
+		cout << "dig: " << frameTest << endl;
+		++frameTest;	
+	}
+	else if( action == RUMBLE )
+	{
+		cout << "rumble: " << frameTest << endl;
+		++frameTest;
+	}
+	else if( action == POPOUT )
+	{
+		cout << "popout: " << frameTest << endl;
+		++frameTest;
+	}
+	else if( action == DIGOUT )
+	{
+		cout << "digout: " << frameTest << endl;
 		++frameTest;
 	}
 
@@ -765,60 +857,8 @@ void Boss_Crawler::UpdatePhysics()
 		mover->edgeQuantity = bq;
 		mover->roll = false;
 		mover->UpdateGroundPos();*/
-
-		if( travelIndex == numBullets - 1 )
-		{
-			cout << "setting to shoot!. travelindex: " << travelIndex << endl;
-			for( int i = 0; i < numBullets * 4; ++i )
-			{
-				markerVA[i].position = Vector2f( 0, 0 );
-			}
-
-			//init
-			// 1-14
-			SetDirs();
-
-			action = SHOOT;
-
-			shootIndex = 0;
-
-			bulletIndex = 0;
-			frameTest = 0;
-			mover->SetSpeed( 0 );
-		}
-		else
-		{
-			
-			travelIndex++;
-			cout << "new travelindex: " << travelIndex << endl;
-
-			if( false )
-			{
-				action = BOOST;
-				frameTest = 0;
-
-			
-				leftFirstEdge = false;
-				firstEdge = mover->ground;
-
-				if( GetClockwise( travelIndex ) )
-				{
-					facingRight = true;
-					mover->SetSpeed( baseSpeed + travelIndex * multSpeed );
-				}
-				else
-				{
-					facingRight = false;
-					mover->SetSpeed( -baseSpeed - travelIndex * multSpeed );
-				}
-			}
-			else
-			{
-				action = CROSS;
-				frameTest = 0;
-				mover->SetSpeed( 0 );
-			}
-		}
+		HitBulletPoint();
+		
 		
 	}
 	/*if( mover->groundSpeed > 0 )
@@ -853,6 +893,71 @@ void Boss_Crawler::UpdatePhysics()
 	position = mover->physBody.globalPosition;
 	
 	PhysicsResponse();
+}
+
+void Boss_Crawler::HitBulletPoint()
+{
+	if( travelIndex == numBullets - 1 )
+	{
+		cout << "setting to shoot!. travelindex: " << travelIndex << endl;
+		for( int i = 0; i < numBullets * 4; ++i )
+		{
+			markerVA[i].position = Vector2f( 0, 0 );
+		}
+
+		//init
+		// 1-14
+		SetDirs();
+
+		action = SHOOT;
+
+		shootIndex = 0;
+
+		bulletIndex = 0;
+		frameTest = 0;
+		mover->SetSpeed( 0 );
+	}
+	else
+	{
+			
+		travelIndex++;
+		cout << "new travelindex: " << travelIndex << endl;
+
+		if( false )
+		{
+			action = BOOST;
+			frameTest = 0;
+
+			
+			leftFirstEdge = false;
+			firstEdge = mover->ground;
+
+			if( GetClockwise( travelIndex ) )
+			{
+				facingRight = true;
+				mover->SetSpeed( baseSpeed + travelIndex * multSpeed );
+			}
+			else
+			{
+				facingRight = false;
+				mover->SetSpeed( -baseSpeed - travelIndex * multSpeed );
+			}
+		}
+		else if( false )
+		{
+			action = CROSS;
+			frameTest = 0;
+			mover->SetSpeed( 0 );
+		}
+		else
+		{
+			currDigAttacks = 3;
+			digAttackCounter = 0;
+			action = DIG;
+			frameTest = 0;
+			mover->SetSpeed( 0 );
+		}
+	}
 }
 
 bool Boss_Crawler::ResolvePhysics( V2d vel )
@@ -1173,7 +1278,9 @@ void Boss_Crawler::Draw(sf::RenderTarget *target )
 	if( !dead && action != WAIT )
 	{
 		target->draw( markerVA );
-		target->draw( sprite );
+
+		if( action != RUMBLE )
+			target->draw( sprite );
 	}
 	else
 	{

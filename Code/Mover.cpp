@@ -786,7 +786,10 @@ void SurfaceMover::HitTerrainAerial()
 	}
 
 	if( surfaceHandler != NULL )
-		surfaceHandler->TransferEdge( ground );
+	{
+		surfaceHandler->HitTerrainAerial( ground, edgeQuantity );
+	}
+		//surfaceHandler->TransferEdge( ground );
 }
 
 void SurfaceMover::HitTerrain( double &q )

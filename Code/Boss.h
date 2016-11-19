@@ -119,6 +119,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 		AFTERFIGHT1,
 		AFTERBURROW,
 		DIG,
+		RUMBLE,
 		POPOUT,
 		DIGOUT,
 		CROSS,
@@ -141,6 +142,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	double baseSpeed;
 	double multSpeed;
 
+	void HitBulletPoint();
 	int maxBullets;
 
 	CrawlerFightSeq *crawlerFightSeq;
@@ -222,6 +224,11 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	int bulletDirIndex[5];
 	EdgeInfo bulletHits[5];
 	BulletNodeType bulletType[5];
+
+	int numPopoutSpots;
+	EdgeInfo *popoutSpots;
+	void SetupPopoutSpots();
+
 	int bulletIndex;
 	int travelIndex;
 	int numBullets;
