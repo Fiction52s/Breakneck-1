@@ -176,6 +176,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 
 	void SetRelFacePos( sf::Vector2f &pos );
 	bool showFace;
+	void Init();
 	Tileset *ts_face;
 
 	void BulletHitTerrain( BasicBullet *b,
@@ -586,11 +587,11 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	Stored stored;
 };
 
-
 struct CoyoteFightSeq;
 struct MeetCoyoteSeq;
 struct CoyoteTalkSeq;
 struct SkeletonAttackCoyoteSeq;
+
 struct Boss_Coyote : Enemy, GroundMoverHandler,
 	LauncherEnemy, DialogueUser
 {
@@ -1013,13 +1014,15 @@ struct Boss_Gator : Enemy, LauncherEnemy
 	Stored stored;
 };
 
+
+struct SkeletonFightSeq;
 struct Boss_Skeleton : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		PLANMOVE,
-		MOVE,
-		SHOOT
+		PAT_PLANMOVE,
+		PAT_MOVE,
+		PAT_SHOOT
 	};
 
 	struct FlowerNode
@@ -1045,11 +1048,13 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int testFrame;
 
 	
+	
 	const static int GRID_SIZE = 23;
 	const static int HALF_GRID = 11;
 
 	FlowerNode *nodes[GRID_SIZE][GRID_SIZE];
 
+	SkeletonFightSeq *skeletonFightSeq;
 	Boss_Skeleton( GameSession *owner, sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
@@ -1071,6 +1076,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void SaveEnemyState();
 	void LoadEnemyState();
+
 	FlowerNode * CreatePath();
 	bool DirIsValid( sf::Vector2i &testIndex,
 		sf::Vector2i &testDir );
@@ -1100,25 +1106,15 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	void CreateLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE], int xIndex0,
 		int yIndex0, int xIndex1, int yIndex1 );
 
-	sf::CircleShape testCircle;
-	sf::CircleShape testFinalCircle;
+	
 
-	sf::Vector2i moveIndex;
 	const sf::Vector2i DOWN;
 	const sf::Vector2i LEFT;
 	const sf::Vector2i RIGHT;
 	const sf::Vector2i UP;
-	//sf::Vector2i moveDir;
-	bool moveX;
-	
-	sf::Vector2i finalIndex;
+
 	const static int MAX_PATH_SIZE = 25;
 	FlowerNode *path[MAX_PATH_SIZE];
-	int pathSize;
-
-	
-	double gridRatio;
-	double gridSizeRatio;
 
 	void CreateZeroLink( FlowerNode *nodes[GRID_SIZE][GRID_SIZE],
 		int xIndex0, int yIndex0, int xIndex1, int yIndex1,
@@ -1126,18 +1122,11 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 
 	sf::VertexArray flowerVA;
 	sf::VertexArray linkVA;
-	
-
-	int travelIndex;
-	int travelFrame;
-	int nodeTravelFrames;
 
 	void CreateQuadrant();
-	sf::Vector2<double> gridOriginPos;
 
 	sf::VertexArray pathVA;
 
-	CubicBezier moveBez;
 	int testNumLinks;
 
 	std::map<Action,int> actionLength;
@@ -1156,7 +1145,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	sf::Vector2i originalPos;
 	int frame;
 
-	Launcher *launcher;
+	//Launcher *launcher;
 
 	int fireCounter;
 
@@ -1172,9 +1161,9 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int hitstunFrames;
 	//int animationFactor;
 
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
+	//Tileset *ts_testBlood;
+	//sf::Sprite bloodSprite;
+	//int bloodFrame;
 	bool facingRight;
 
 	struct Stored

@@ -45,7 +45,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 	SetDirs();
 
-
+	currDigAttacks = 3;
 
 	ts_face = owner->GetTileset( "Bosses/Crawler/01_crawler_face_02_384x384.png", 384, 384 );
 
@@ -148,7 +148,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 	ResetEnemy();
 
-	SetupPopoutSpots();
+	
 
 	//bezFrame = 0;
 	//bezLength = 60 * NUM_STEPS;
@@ -558,6 +558,10 @@ void Boss_Crawler::StartAfterFightSeq()
 	//frame = 0;
 }
 
+void Boss_Crawler::Init()
+{
+	SetupPopoutSpots();
+}
 
 void Boss_Crawler::UpdatePrePhysics()
 {
@@ -610,6 +614,7 @@ void Boss_Crawler::UpdatePrePhysics()
 	{
 		if( frameTest == 30 )
 		{
+			digAttackCounter = 0;
 			action = RUMBLE;
 			frameTest = 0;
 			owner->cam.SetRumble( 10, 10, 30 );
@@ -621,8 +626,9 @@ void Boss_Crawler::UpdatePrePhysics()
 		{	
 			if( digAttackCounter == currDigAttacks )
 			{
-				mover->ground = bulletHits[numBullets-1].edge;
-				mover->edgeQuantity = bulletHits[numBullets-1].quantity;
+				cout << "setting to bullet: " << numBullets-1 << endl;
+				mover->ground = bulletHits[travelIndex].edge;
+				mover->edgeQuantity = bulletHits[travelIndex].quantity;
 				mover->UpdateGroundPos();
 				action = DIGOUT;
 				frameTest = 0;
@@ -921,7 +927,7 @@ void Boss_Crawler::HitBulletPoint()
 	{
 			
 		travelIndex++;
-		cout << "new travelindex: " << travelIndex << endl;
+		cout << "new travelindex: " << travelIndex << ", numb: " << numBullets << endl;
 
 		if( false )
 		{

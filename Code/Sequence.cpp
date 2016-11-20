@@ -959,3 +959,49 @@ void BirdCrawlerAllianceSeq::Reset()
 {
 	frame = 0;
 }
+
+SkeletonFightSeq::SkeletonFightSeq( GameSession *p_owner )
+	:owner( p_owner )
+{
+}
+
+bool SkeletonFightSeq::Update()
+{
+	Actor *player = owner->player;
+
+	//player->action = Actor::SPAWNWAIT;
+	//player->frame = 0;
+
+	switch( frame )
+	{
+	case 0:
+		{
+			owner->Fade( true, 60, Color::Black );
+			owner->Pause( 60 );
+			//owner->cam.SetManual( true );		
+			break;
+		}
+	case 1:
+		{
+			//owner->Fade( false, 60, Color::Black );
+			//owner->Pause( 60 );
+			//owner->cam.Set( Vector2f( player->position.x, player->position.y ), 1, 0 );
+			//owner->cam.SetManual( false );
+			break;
+		}
+	}
+
+	++frame;
+
+	return true;
+}
+
+void SkeletonFightSeq::Draw( RenderTarget *target )
+{
+
+}
+
+void SkeletonFightSeq::Reset()
+{
+	frame = 0;
+}

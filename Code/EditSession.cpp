@@ -2143,6 +2143,16 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new CopycatParams( this, pos ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
+				else if( typeName == "bossskeleton" )
+				{
+					Vector2i pos;
+
+					is >> pos.x;
+					is >> pos.y;
+
+					a.reset( new BossSkeletonParams( this, pos ) );
+				}
+
 				else if( typeName == "nexus" )
 				{
 					//always grounded
@@ -3570,6 +3580,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *bossCoyotePanel = NULL;
 	ActorType *bossCoyoteType = new ActorType( "bosscoyote", bossCoyotePanel );
 
+	
+
 	types["patroller"] = patrollerType;
 	types["foottrap"] = footTrapType;
 	types["bosscrawler"] = bossCrawlerType;
@@ -3665,10 +3677,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	ActorType *copycatType = new ActorType( "copycat", copycatPanel );
 	//3 more in w6 later
 
+	Panel *bossSkeletonPanel = NULL;
+	ActorType *bossSkeletontype = new ActorType( "bossskeleton", bossSkeletonPanel );
+
 	types["specter"] = specterType;
 	types["gorilla"] = gorillaType;
 	types["narwhal"] = narwhalType;
 	types["copycat"] = copycatType;
+	types["bossskeleton"] = bossSkeletontype;
 
 	Panel *nexusPanel = CreateOptionsPanel( "nexus" );
 	ActorType *nexusType = new ActorType( "nexus", nexusPanel );
@@ -3741,6 +3757,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
 	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "overgrowth" );
 	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
+	gs->Set( 4, 5, Sprite( bossCrawlerType->iconTexture ), "bossskeleton" );
 
 	gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
 	gs->Set( 1, 6, Sprite( narwhalType->iconTexture ), "narwhal" );
@@ -6259,6 +6276,17 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										tempActor->SetPanelInfo();
 										showPanel = trackingEnemy->panel;
 									}
+									else if( trackingEnemy->name == "bossskeleton" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossSkeleton( new BossSkeletonParams( this, Vector2i( worldPos.x,
+											worldPos.y ) ) );
+										bossSkeleton->group = groups["--"];
+
+										CreateActor( bossSkeleton );
+									}
+
 
 									//w7
 									else if( trackingEnemy->name == "nexus" )
@@ -14165,7 +14193,14 @@ void ActorType::Init()
 		canBeGrounded = false;
 		canBeAerial = true;
 	}
-	
+	else if( name == "bossskeleton" )
+	{
+		width = 32;
+		height = 128;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+
 	//extra
 	else if( name == "nexus" )
 	{

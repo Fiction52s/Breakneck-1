@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -21,7 +22,7 @@ using namespace sf;
 
 
 Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE, false, 6 ), deathFrame( 0 ), moveBez( 0, 0, 1, 1 ),
+	:Enemy( owner, EnemyType::TURTLE, false, 6 ), deathFrame( 0 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
 	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 248 * 4 )
 {
@@ -58,49 +59,11 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	}
 	while( true );
 
-	//for( int i = 0; i < 10; ++i )
-	
-	//while( true );
-	
-	testCircle.setRadius( 30 );
-	testCircle.setFillColor( Color::Red );
-	testCircle.setOrigin( testCircle.getLocalBounds().width / 2, 
-		testCircle.getLocalBounds().height / 2 );
-
-	testFinalCircle.setRadius( 30 );
-	testFinalCircle.setFillColor( Color::Black );
-	testFinalCircle.setOrigin( testFinalCircle.getLocalBounds().width / 2, 
-		testFinalCircle.getLocalBounds().height / 2 );
-	//ClearPathVA();
-
-	nodeTravelFrames = 5;
-	travelFrame = 0;
-	travelIndex = 0;
-	testFrame = 0;
-	gridRatio = 1;
-	gridSizeRatio = 64;
-	gridOriginPos = V2d( pos.x, pos.y );
-	pathSize = MAX_PATH_SIZE;
-	moveX = false;
-	//xIndexMove = 0;
-	///yIndexMove = 0;
-	//loop = false; //no looping on Boss_Skeleton for now
-
 	bulletSpeed = 5;
 
-	action = PLANMOVE;
+	action = PAT_PLANMOVE;
 
-	/*animFactor[NEUTRAL] = 1;
-	animFactor[FIRE] = 1;
-	animFactor[FADEIN] = 1;
-	animFactor[FADEOUT] = 1;
-	animFactor[INVISIBLE] = 1;
-
-	actionLength[NEUTRAL] = 3;
-	actionLength[FIRE] = 20;
-	actionLength[FADEIN] = 60;
-	actionLength[FADEOUT] = 90;
-	actionLength[INVISIBLE] = 30;*/
+	skeletonFightSeq = new SkeletonFightSeq( owner );
 
 	fireCounter = 0;
 	receivedHit = NULL;
@@ -111,7 +74,7 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	deathFrame = 0;
 	
 	//launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
-	launcher->SetBulletSpeed( bulletSpeed );	
+	//launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
 	health = initHealth;
@@ -162,17 +125,14 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	dead = false;
 	dying = false;
 
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
 	facingRight = true;
 	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
@@ -191,29 +151,19 @@ void Boss_Skeleton::ResetEnemy()
 			break;
 	}
 	while( true );
-	/*for( int i = 0; i < 200 * 4; ++i )
-	{
-		flowerVA[i].position = Vector2f( 0, 0 );
-		flowerVA[i].color = Color::Red;
-	}*/
+
 	testIndex = 0;
 	//CreateQuadrant();
 
-	travelFrame = 0;
-	travelIndex = 0;
-	action = PLANMOVE;
+	
+	action = PAT_PLANMOVE;
 	//ClearPathVA();
-	testFrame = 0;
 
-	moveX = false;
-	moveIndex = Vector2i( 0, 0 );
+	
 
 	fireCounter = 0;
-	launcher->Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	//targetNode = 1;
-	//forward = true;
+	//launcher->Reset();
+
 	dead = false;
 	dying = false;
 	deathFrame = 0;
@@ -240,12 +190,12 @@ void Boss_Skeleton::HandleEntrant( QuadTreeEntrant *qte )
 
 void Boss_Skeleton::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
-	b->launcher->DeactivateBullet( b );
+	//b->launcher->DeactivateBullet( b );
 }
 
 void Boss_Skeleton::BulletHitPlayer(BasicBullet *b )
 {
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	//owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Boss_Skeleton::ActionEnded()
@@ -263,46 +213,17 @@ void Boss_Skeleton::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	launcher->UpdatePrePhysics();
+	//launcher->UpdatePrePhysics();
 
 	switch( action )
 	{
-	case PLANMOVE:
+	case PAT_PLANMOVE:
 		break;
-	case MOVE:
+	case PAT_MOVE:
 		break;
-	case SHOOT:
+	case PAT_SHOOT:
 		break;
 	}
-
-	//++travelFrame;
-	//if( travelFrame == nodeTravelFrames )
-	//{
-	//	travelFrame = 0;
-	//	travelIndex++;
-	//	if( travelIndex == pathSize )
-	//	{
-	//		frame = 0;
-	//		moveIndex = finalIndex;
-	//	}
-	//}
-	//switch( action )
-	//{
-	//case PLANMOVE:
-	//	if( frame == 0 )
-	//	{
-	//		//CreatePath();
-	//		travelFrame = 0;
-	//		travelIndex = 0;			
-	//	}
-	//	break;
-	//case MOVE:
-	//	break;
-	//case SHOOT:
-	//	break;
-	//}
-
-	//UpdatePathVA();
 	
 
 	if( !dead && !dying && receivedHit != NULL )
@@ -324,23 +245,6 @@ void Boss_Skeleton::UpdatePrePhysics()
 
 		receivedHit = NULL;
 	}
-
-	//if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
-	//{
-	//	//cout << "firing" << endl;
-	//	launcher->position = position;
-	//	launcher->facingDir = normalize( owner->player->position - position );
-	//	//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-	//	//	launcher->facingDir.y << endl;
-	//	launcher->Fire();
-	//	fireCounter = 0;
-	//	//testLauncher->Fire();
-	//}
-
-	/*if( latchedOn )
-	{
-		basePos = owner->player->position + offsetPlayer;
-	}*/
 }
 
 void Boss_Skeleton::UpdatePhysics()
@@ -363,19 +267,10 @@ void Boss_Skeleton::UpdatePhysics()
 		}
 	}
 
-	launcher->UpdatePhysics();
+	//launcher->UpdatePhysics();
 
 	if( !dead && !dying )
 	{
-		/*if( action == NEUTRAL )
-		{
-			Actor *player = owner->player;
-			if( length( player->position - position ) < 300 )
-			{
-				action = FADEOUT;
-				frame = 0;
-			}
-		}*/
 		PhysicsResponse();
 	}
 	return;
@@ -390,35 +285,14 @@ void Boss_Skeleton::PhysicsResponse()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
-			//cout << "color blue" << endl;
-			//triggers multiple times per frame? bad?
 			owner->player->ConfirmHit( 6, 5, .8, 6 );
-
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
 				owner->player->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
-
-			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
-			
-		//	cout << "Boss_Skeleton received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
+//			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 		}
 
 		if( IHitPlayer() )
@@ -439,24 +313,20 @@ void Boss_Skeleton::ClearPathVA()
 
 void Boss_Skeleton::UpdatePostPhysics()
 {
-	launcher->UpdatePostPhysics();
+	//launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
 	}
 
-	
-
 	if( slowCounter == slowMultiple )
 	{
-		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
 		++fireCounter;
 	
 		if( dying )
 		{
-			//cout << "deathFrame: " << deathFrame << endl;
 			deathFrame++;
 		}
 
@@ -468,23 +338,17 @@ void Boss_Skeleton::UpdatePostPhysics()
 
 	if( deathFrame == 60 && dying )
 	{
-		//cout << "switching dead" << endl;
 		dying = false;
 		dead = true;
-		//cout << "REMOVING" << endl;
-		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
 	}
 
-	if( dead && launcher->GetActiveCount() == 0 )
+	if( dead )//&& launcher->GetActiveCount() == 0 )
 	{
-		//cout << "REMOVING" << endl;
 		owner->RemoveEnemy( this );
 	}
 
 	UpdateSprite();
-	launcher->UpdateSprites();
+	//launcher->UpdateSprites();
 }
 
 void Boss_Skeleton::UpdateSprite()
@@ -537,7 +401,7 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 		target->draw( pathVA );
 		//target->draw( pathVA );
 
-		/*if( action == PLANMOVE )
+		/*if( action == PAT_PLANMOVE )
 		{
 			target->draw( testFinalCircle );
 			target->draw( testCircle );
@@ -551,11 +415,11 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 		if( deathFrame / 3 < 6 )
 		{
 			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
+			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
 			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
 			bloodSprite.setPosition( position.x, position.y );
 			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
+			target->draw( bloodSprite );*/
 		}
 		
 		target->draw( topDeathSprite );
@@ -909,70 +773,6 @@ Boss_Skeleton::FlowerNode * Boss_Skeleton::CreatePath()
 
 void Boss_Skeleton::UpdatePathVA()
 {
-	/*V2d trueLeft( -gridRatio, -1.0 / gridRatio );
-	V2d trueRight( gridRatio, 1.0 / gridRatio );
-	V2d trueDown( -gridRatio, 1.0 / gridRatio );
-	V2d trueUp( gridRatio, -1.0 / gridRatio );
-	 
-	Vector2i testIndex = moveIndex;
-	for( int i = 0; i <= travelIndex; ++i )
-	{
-		
-		
-		Vector2i dir( path[i].x, path[i].y );
-		V2d along;
-		if( dir == LEFT )
-		{
-			along = trueLeft;
-		}
-		else if( dir == DOWN ) 
-		{
-			along  = trueDown;
-		}
-		else if( dir == UP )
-		{
-			along  = trueUp;
-		}
-		else if( dir == RIGHT )
-		{
-			along  = trueRight;
-		}
-		
-		V2d norm( along.y, -along.x );
-
-		double height = 10;
-
-		V2d gridIndexPos = trueRight * (double)testIndex.x + trueDown * (double)testIndex.y;
-		gridIndexPos *= gridSizeRatio;
-
-
-		double val = moveBez.GetValue( (double)travelFrame / nodeTravelFrames );
-		V2d curr = gridIndexPos + gridOriginPos;
-		V2d next = curr;
-		if( i == travelIndex )
-		{
-			
-			next += along * gridSizeRatio * val;
-			testCircle.setPosition( next.x, next.y );
-		}
-		else
-		{
-			next += along * gridSizeRatio;
-		}
-
-		V2d c0 = curr + norm * height;
-		V2d c1 = next + norm * height;
-		V2d c2 = next - norm * height;
-		V2d c3 = curr - norm * height;
-
-
-		pathVA[i*4 + 0].position = Vector2f( c0.x, c0.y );
-		pathVA[i*4 + 1].position = Vector2f( c1.x, c1.y );
-		pathVA[i*4 + 2].position = Vector2f( c2.x, c2.y );
-		pathVA[i*4 + 3].position = Vector2f( c3.x, c3.y );
-
-		testIndex += path[i];
-	}*/
 }
 
 void Boss_Skeleton::CreateNode( sf::Vector2i &basePos,
@@ -985,7 +785,7 @@ void Boss_Skeleton::CreateNode( sf::Vector2i &basePos,
 	nodes[xIndex][yIndex] = fn;
 	
 	int blah = 10;
-	cout << "node " << testIndex << ": " << xIndex << ", " << yIndex << endl;
+	//cout << "node " << testIndex << ": " << xIndex << ", " << yIndex << endl;
 	//cout << "position: " << fn->position.x << ", " << fn->position.y << endl;
 	flowerVA[testIndex*4+0].position = Vector2f( fn->position.x - blah, fn->position.y - blah );
 	flowerVA[testIndex*4+1].position = Vector2f( fn->position.x + blah, fn->position.y - blah );

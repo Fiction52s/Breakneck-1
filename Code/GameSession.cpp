@@ -3084,7 +3084,32 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
-			
+			else if( typeName == "bossskeleton" )
+			{
+				//always grounded
+
+				/*int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;*/
+
+				int xPos,yPos;
+
+				is >> xPos;
+				is >> yPos;
+
+				Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
+
+				fullEnemyList.push_back( enemy );
+
+				b_skeleton = enemy;
+			}
+
+
 			else if( typeName == "nexus" )
 			{
 				//always grounded
@@ -3678,6 +3703,21 @@ bool GameSession::OpenFile( string fileName )
 		SetGlobalBorders();
 		CreateZones();
 		SetupZones();
+
+		if( b_crawler != NULL )
+		{
+			b_crawler->Init();
+		}
+
+		if( b_bird != NULL )
+		{
+			b_bird->Init();
+		}
+
+		if( b_skeleton != NULL )
+		{
+			b_skeleton->Init();
+		}
 
 		for( int i = 0; i < numGates; ++i )
 		{
@@ -10661,6 +10701,8 @@ void GameSession::ResetEnemies()
 	if( b_crawler != NULL ) b_crawler->Reset();
 
 	if( b_coyote != NULL ) b_coyote->Reset();
+
+	if( b_skeleton != NULL ) b_skeleton->Reset();
 }
 
 void GameSession::ResetPlants()
@@ -12113,6 +12155,17 @@ void GameSession::TriggerBarrier( Barrier *b )
 		powerWheel->Hide( true, 60 );
 		activeSequence = b_coyote->coyoteFightSeq;
 		activeSequence->frame = 0;
+	}
+	else if( name == "skeletonfighttrigger" )
+	{
+		Fade( false, 60, Color::Black );
+		Pause( 60 );
+		activeSequence = b_skeleton->skeletonFightSeq;
+		activeSequence->frame = 0;
+
+		assert( b_skeleton != NULL );
+		b_skeleton->spawned = true;
+		AddEnemy( b_skeleton );
 	}
 }
 

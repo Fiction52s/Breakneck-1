@@ -1159,6 +1159,17 @@ struct GorillaParams : public ActorParams
 	int followFrames;
 };
 
+struct BossSkeletonParams : public ActorParams
+{
+	BossSkeletonParams( 
+		EditSession *edit, 
+		sf::Vector2i &pos );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
 //no params for goal and foottrap atm
 struct ActorGroup
 {

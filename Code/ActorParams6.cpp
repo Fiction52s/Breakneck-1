@@ -348,3 +348,35 @@ ActorParams *NarwhalParams::Copy()
 	NarwhalParams *copy = new NarwhalParams( *this );
 	return copy;
 }
+
+BossSkeletonParams::BossSkeletonParams( EditSession *edit, Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	type = edit->types["bossskeleton"];
+
+	position = pos;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+				
+	SetBoundingQuad();	
+}
+
+bool BossSkeletonParams::CanApply()
+{
+	return true;
+}
+
+void BossSkeletonParams::WriteParamFile( ofstream &of )
+{
+	//no params its a boss!
+}
+
+ActorParams *BossSkeletonParams::Copy()
+{
+	BossSkeletonParams *copy = new BossSkeletonParams( *this );
+	return copy;
+}
+
