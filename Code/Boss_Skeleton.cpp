@@ -27,6 +27,10 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 248 * 4 ),
 	swingNodeVA( sf::Quads, 3 * 4 ), holdNodeVA( sf::Quads, 6 * 4 )
 {
+	actionLength[PLANSWING] = 10;
+	actionLength[SWING] = 1;
+	actionLength[PAUSE_SWING] = 30;
+
 	//current num links is 248	
 	position.x = pos.x;
 	position.y = pos.y;
@@ -62,7 +66,7 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 
 	bulletSpeed = 5;
 
-	action = WAITSWING;
+	
 	//action = PAT_PLANMOVE;
 
 	skeletonFightSeq = new SkeletonFightSeq( owner );
@@ -83,6 +87,7 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
+	action = PLANSWING;
 	frame = 0;
 
 	//animationFactor = 5;
@@ -150,7 +155,114 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 
 	UpdateHitboxes();
 
+	currHoldIndex = 0;
+	planIndex = 0;
+	//nextHoldIndex = GetNextHoldIndex( currHoldIndex, swingPlan[planIndex] );
 	//cout << "finish init" << endl;
+}
+
+void Boss_Skeleton::GeneratePlan()
+{
+	for( int i = 0; i < swingPlanLength; ++i )
+	{
+		swingPlan[i] = rand() % 3;
+	}
+}
+
+int Boss_Skeleton::GetNextHoldIndex( int currI,
+	int swingI )
+{
+	int plan = swingI;
+	if( currI == 0 )
+	{
+		if( swingI == 0 )
+		{
+			return 2;
+		}
+		else if( swingI == 1 )
+		{
+			return 4;
+		}
+		else if( swingI == 2 )
+		{
+			return 5;
+		}
+	}
+	else if( currI == 1 )
+	{
+		if( swingI == 0 )
+		{
+			return 3;
+		}
+		else if( swingI == 1 )
+		{
+			return 5;
+		}
+		else if( swingI == 2 )
+		{
+			return 2;
+		}
+	}
+	else if( currI == 2 )
+	{
+		if( swingI == 0 )
+		{
+			return 1;
+		}
+		else if( swingI == 1 )
+		{
+			return 3;
+		}
+		else if( swingI == 2 )
+		{
+			return 5;
+		}
+	}
+	else if( currI == 3 )
+	{
+		if( swingI == 0 )
+		{
+			return 0;
+		}
+		else if( swingI == 1 )
+		{
+			return 2;
+		}
+		else if( swingI == 2 )
+		{
+			return 4;
+		}
+	}
+	else if( currI == 4 )
+	{
+		if( swingI == 0 )
+		{
+			return 1;
+		}
+		else if( swingI == 1 )
+		{
+			return 0;
+		}
+		else if( swingI == 2 )
+		{
+			return 2;
+		}
+	}
+	else if( currI == 5 )
+	{
+		if( swingI == 0 )
+		{
+			return 2;
+		}
+		else if( swingI == 1 )
+		{
+			return 1;
+		}
+		else if( swingI == 2 )
+		{
+			return 3;
+		}
+	}
 }
 
 void Boss_Skeleton::SetupMovementNodes()
@@ -168,9 +280,9 @@ void Boss_Skeleton::SetupMovementNodes()
 	holdNodePos[4] = V2d( left + 4 * nodeSpread.x, top + nodeSpread.y );
 	holdNodePos[5] = V2d( left + 4 * nodeSpread.x, top + 2 * nodeSpread.y );
 
-	swingNodePos[0] = V2d( left + nodeSpread.x, -nodeSpread.y );
-	swingNodePos[1] = V2d( left + 2 * nodeSpread.x, -nodeSpread.y );
-	swingNodePos[2] = V2d( left + 3 * nodeSpread.x, -nodeSpread.y );
+	swingNodePos[0] = V2d( left + nodeSpread.x, top - nodeSpread.y );
+	swingNodePos[1] = V2d( left + 2 * nodeSpread.x, top - nodeSpread.y );
+	swingNodePos[2] = V2d( left + 3 * nodeSpread.x, top - nodeSpread.y );
 
 	for( int i = 0; i < swingPlanLength; ++i )
 	{
@@ -193,15 +305,31 @@ void Boss_Skeleton::SetupMovementNodes()
 	for( int i = 0; i < 6; ++i )
 	{
 		V2d hp = holdNodePos[i];
-		swingNodeVA[i*4+0].position = Vector2f( hp.x - swingNodeRadius,
-			hp.y - swingNodeRadius );
-		swingNodeVA[i*4+1].position = Vector2f( hp.x + swingNodeRadius,
-			hp.y - swingNodeRadius );
-		swingNodeVA[i*4+2].position = Vector2f( hp.x + swingNodeRadius,
-			hp.y + swingNodeRadius );
-		swingNodeVA[i*4+3].position = Vector2f( hp.x - swingNodeRadius,
-			hp.y + swingNodeRadius );
+		holdNodeVA[i*4+0].position = Vector2f( hp.x - holdNodeRadius,
+			hp.y - holdNodeRadius );
+		holdNodeVA[i*4+1].position = Vector2f( hp.x + holdNodeRadius,
+			hp.y - holdNodeRadius );
+		holdNodeVA[i*4+2].position = Vector2f( hp.x + holdNodeRadius,
+			hp.y + holdNodeRadius );
+		holdNodeVA[i*4+3].position = Vector2f( hp.x - holdNodeRadius,
+			hp.y + holdNodeRadius );
 	}
+
+	swingTopSideDurations[0] = 60; //A to C
+	swingTopSideDurations[1] = 60; //A to E
+	swingTopSideDurations[2] = 60; //A to F
+
+	swingBotSideDurations[0] = 60;
+	swingBotSideDurations[1] = 60;
+	swingBotSideDurations[2] = 60;
+
+	swingTopMidDurations[0] = 60;
+	swingTopMidDurations[1] = 60;
+	swingTopMidDurations[2] = 60;
+
+	swingBotMidDurations[0] = 60;
+	swingBotMidDurations[1] = 60;
+	swingBotMidDurations[2] = 60;
 }
 
 void Boss_Skeleton::ResetEnemy()
@@ -263,14 +391,58 @@ void Boss_Skeleton::BulletHitPlayer(BasicBullet *b )
 	//owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
+int Boss_Skeleton::GetSwingDuration( int currI, int swingI )
+{
+	if( currI == 0 || currI == 4 )
+	{
+		return swingTopSideDurations[swingI];
+	}
+	else if( currI == 1 || currI == 5 )
+	{
+		return swingBotSideDurations[swingI];
+	}
+	else if( currI == 2 )
+	{
+		return swingTopMidDurations[swingI];
+	}
+	else if( currI == 3 )
+	{
+		return swingBotMidDurations[swingI];
+	}
+}
+
 void Boss_Skeleton::ActionEnded()
 {
 	if( frame == actionLength[action] )
 	{
-	switch( action )
-	{
-	
-	}
+		switch( action )
+		{
+		case PLANSWING:
+			{
+			action = SWING;
+
+			frame = 0;
+			planIndex = 0;
+
+			
+
+			GeneratePlan();
+			
+			nextHoldIndex = GetNextHoldIndex( currHoldIndex, swingPlan[planIndex] );
+
+			currSwingDuration = GetSwingDuration( currHoldIndex, swingPlan[planIndex] );
+
+			++planIndex;
+			break;
+			}
+		case SWING:
+		//	frame = 0;
+			break;
+		case PAUSE_SWING:
+			action = SWING;
+			frame = 0;
+			break;
+		}
 	}
 }
 
@@ -280,6 +452,14 @@ void Boss_Skeleton::UpdatePrePhysics()
 
 	//launcher->UpdatePrePhysics();
 
+	if( action == SWING && frame == currSwingDuration )
+	{
+		action = PAUSE_SWING;
+		frame = 0;
+		position = holdNodePos[nextHoldIndex];
+		currHoldIndex = nextHoldIndex;
+	}
+
 	switch( action )
 	{
 	case PAT_PLANMOVE:
@@ -288,6 +468,56 @@ void Boss_Skeleton::UpdatePrePhysics()
 		break;
 	case PAT_SHOOT:
 		break;
+	case PLANSWING:
+		break;
+	case PAUSE_SWING:
+		{
+			if( frame == 0 )
+			{
+				if( planIndex == swingPlanLength )
+				{
+					action = PLANSWING;
+					frame = 0;
+				}
+				else
+				{
+					nextHoldIndex = GetNextHoldIndex( currHoldIndex, swingPlan[planIndex] );
+					++planIndex;
+				}
+			}
+			break;
+		}
+	case SWING:
+		{
+			
+			break;
+		}
+		
+	}
+
+	switch( action )
+	{
+	case PAT_PLANMOVE:
+		break;
+	case PAT_MOVE:
+		break;
+	case PAT_SHOOT:
+		break;
+	case PLANSWING:
+		{
+			
+		}
+		break;
+	case PAUSE_SWING:
+		{
+			
+		}
+		break;
+	case SWING:
+		{
+			break;
+		}
+		
 	}
 	
 
@@ -314,6 +544,25 @@ void Boss_Skeleton::UpdatePrePhysics()
 
 void Boss_Skeleton::UpdatePhysics()
 {	
+	if( action == SWING )
+	{
+	V2d startPos = holdNodePos[currHoldIndex];
+	V2d endPos = holdNodePos[nextHoldIndex];
+
+	//cout << "curr: " << currHoldIndex << ", next: " << nextHoldIndex << endl;
+
+	int extDur = currSwingDuration * NUM_STEPS * 5;
+	int currTime = frame * 5 * NUM_STEPS + owner->substep;
+	double a = (double)currTime / extDur;
+
+	CubicBezier b( 0, 0, 1, 1 );
+	double z = b.GetValue( a );
+	position = startPos * ( 1.0 - z ) + endPos * ( z );
+	}
+
+
+
+
 	specterProtected = false;
 	if( !dead )
 	{
@@ -331,6 +580,8 @@ void Boss_Skeleton::UpdatePhysics()
 			slowCounter = 1;
 		}
 	}
+
+
 
 	//launcher->UpdatePhysics();
 
@@ -458,10 +709,12 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 			cs.setPosition( position.x, position.y );
 			target->draw( cs );
 		}
-		
+		target->draw( swingNodeVA );
+		target->draw( holdNodeVA );
 		
 		target->draw( sprite );
 
+		
 		if( action == PAT_PLANMOVE ||
 			action == PAT_MOVE || action == PAT_SHOOT )
 		{
@@ -469,6 +722,7 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 			target->draw( linkVA );
 			target->draw( pathVA );
 		}
+		
 		//target->draw( pathVA );
 
 		/*if( action == PAT_PLANMOVE )

@@ -601,6 +601,7 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 		SEQ_ILL_TEST_YOU,
 		SEQ_RUN,
 		MOVE,
+		MOVE_WAIT,
 		SHOTGUN,
 		REVERSE_SHOTGUN,
 		Count
@@ -1023,9 +1024,9 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 		PAT_PLANMOVE,
 		PAT_MOVE,
 		PAT_SHOOT,
+		PLANSWING,
+		PAUSE_SWING,
 		SWING,
-		WAITSWING,
-		WALLCLING,
 		Count
 	};
 
@@ -1057,6 +1058,20 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	sf::Vector2<double> swingNodePos[3];
 	int numHoldNodes;
 	sf::Vector2<double> holdNodePos[6];
+	int swingTopSideDurations[3];
+	int swingBotSideDurations[3];
+	int swingTopMidDurations[3];
+	int swingBotMidDurations[3];
+
+	int GetSwingDuration( int currI, int swingI );
+
+	int GetNextHoldIndex( int currI, int swingI );
+
+	int currSwingDuration;
+	int currHoldIndex;
+	int nextHoldIndex;
+
+	int planIndex;
 	int swingPlan[10];
 	int swingPlanLength;
 	int maxSwingPlanSize;
@@ -1066,7 +1081,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	sf::VertexArray holdNodeVA;
 
 	void SetupMovementNodes();
-
+	void GeneratePlan();
 	
 	const static int GRID_SIZE = 23;
 	const static int HALF_GRID = 11;
