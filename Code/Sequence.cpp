@@ -663,15 +663,15 @@ CoyoteFightSeq::CoyoteFightSeq( GameSession *p_owner )
 	startQuant = start->edgeQuantity;
 	//PoiInfo *coyStart = owner->poiMap["coyotefight"];
 
-	bleft = owner->poiMap["coyfightleft"]->barrier;
-	bright = owner->poiMap["coyfightright"]->barrier;
-	btop = owner->poiMap["coyfighttop"]->barrier;
-	bbot = owner->poiMap["coyfightbot"]->barrier;
+	//bleft = owner->poiMap["coyfightleft"]->barrier;
+	//bright = owner->poiMap["coyfightright"]->barrier;
+	//btop = owner->poiMap["coyfighttop"]->barrier;
+	//bbot = owner->poiMap["coyfightbot"]->barrier;
 
-	bleft->triggered = true;
+	/*bleft->triggered = true;
 	bright->triggered = true;
 	btop->triggered = true;
-	bbot->triggered = true;
+	bbot->triggered = true;*/
 
 	//startEdge = start->edge;
 	//startQuant = start->edgeQuantity;
@@ -734,14 +734,14 @@ bool CoyoteFightSeq::Update()
 		player->facingRight = true;
 		player->PhysicsResponse();
 
-		bleft->triggered = false;
+		/*bleft->triggered = false;
 		bleft->SetPositive();
 		bright->triggered = false;
 		bright->SetPositive();
 		btop->triggered = false;
 		btop->SetPositive();
 		bbot->triggered = false;
-		bbot->SetPositive();
+		bbot->SetPositive();*/
 
 
 		//V2d center = startGround->GetPoint( startQuant ) + coyotePos->GetPoint( coyoteQuant );

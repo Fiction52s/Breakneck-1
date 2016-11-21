@@ -29,8 +29,8 @@ void Boss_Coyote::CreateNodes()
 	//V2d testPos = 
 	//testPos += V2d( -200, -200 );
 
-	double radius = 900;
-	double angle = 0;
+	double radius = 600;
+	double angle = PI / 2;
 	V2d curr,next;
 	V2d dir;
 	int lineIndex = 0;
@@ -77,7 +77,7 @@ void Boss_Coyote::CreateNodes()
 		int index = 0;
 		for( int j = 0; j < 6; ++j )
 		{
-			if( i != j && j != prevI && j != nextI )
+			if( i != j )//&& j != prevI && j != nextI )
 			{
 				points[i]->neighbors[index] = points[j];
 				++index;
@@ -104,10 +104,9 @@ void Boss_Coyote::CreateNodes()
 			++lineIndex;
 		}
 	}
-
-	//cout << "line Index: " << lineIndex << " -----------------" << endl;
 	
-
+	if( false )
+	{
 	//connect points to edges
 	for( int i = 0; i < 6; ++i )
 	{
@@ -175,6 +174,8 @@ void Boss_Coyote::CreateNodes()
 		edges[i]->neighbors[3] = points[prevI];
 		edges[i]->neighbors[4] = points[nextI];
 	}
+
+	}
 }
 
 void Boss_Coyote::SetPartyMode( bool party )
@@ -230,9 +231,8 @@ Boss_Coyote::ScorpionNode::ScorpionNode( sf::Vector2<double> &pos )
 
 void Boss_Coyote::ScorpionNode::SetNewDirection( bool onlyMovement )
 {
-
 	int r = rand() % 4;
-	if( r < 2 || onlyMovement )
+	if( true )//r < 2 || onlyMovement )
 	{
 		nType = DIRECTION;
 		int index = 0;
@@ -305,7 +305,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	pathSize = 120;
 	pathCutoff = pathSize;// 12 * 5 * 2
 	testPaths = new Vertex[pathSize];
-	speed = 25;
+	speed = 15;//25;
 	testCircle.setRadius( 30 );
 	testCircle.setFillColor( Color::Magenta );
 	testCircle.setOrigin( testCircle.getLocalBounds().width / 2, 
@@ -571,6 +571,13 @@ void Boss_Coyote::ActionEnded()
 	case MOVE:
 		frame = 0;
 		break;
+	case MOVE_WAIT:
+		if( frame == 20 )
+		{
+			action = MOVE;
+			frame = 0;
+		}
+		break;
 	case SHOTGUN:
 		if( frame == 60 )
 		{
@@ -623,6 +630,8 @@ void Boss_Coyote::UpdatePrePhysics()
 				travelFrame = 0;
 				currNode->SetNewDirection( false );
 				currNode = nextNode;
+				action = MOVE_WAIT;
+				frame = 0;
 
 				switch( currNode->nType )
 				{
@@ -712,6 +721,8 @@ void Boss_Coyote::UpdatePrePhysics()
 		else if( frame == 121 )
 		{
 			//frame = 122;
+
+			action = MOVE;
 
 			testMover->ground = startGround;
 			testMover->edgeQuantity = startQuant;
