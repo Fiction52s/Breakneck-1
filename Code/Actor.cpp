@@ -6356,7 +6356,7 @@ void Actor::UpdatePrePhysics()
 		V2d diff = wirePoint - future;
 		
 		//wire->segmentLength -= 10;
-		if( length( diff ) > wire->segmentLength )
+		if( length( diff ) > wire->segmentLength ) 
 		{
 			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
 			velocity = future - wPos;

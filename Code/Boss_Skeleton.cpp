@@ -24,7 +24,8 @@ using namespace sf;
 Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::TURTLE, false, 6 ), deathFrame( 0 ),
 	DOWN( 0, 1 ), LEFT( -1, 0 ), RIGHT( 1, 0 ), UP( 0, -1 ), pathVA( sf::Quads, MAX_PATH_SIZE * 4 ),
-	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 248 * 4 )
+	flowerVA( sf::Quads, 200 * 4 ), linkVA( sf::Quads, 248 * 4 ),
+	swingNodeVA( sf::Quads, 3 * 4 ), holdNodeVA( sf::Quads, 6 * 4 )
 {
 	//current num links is 248	
 	position.x = pos.x;
@@ -61,7 +62,8 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 
 	bulletSpeed = 5;
 
-	action = PAT_PLANMOVE;
+	action = WAITSWING;
+	//action = PAT_PLANMOVE;
 
 	skeletonFightSeq = new SkeletonFightSeq( owner );
 
@@ -134,9 +136,72 @@ Boss_Skeleton::Boss_Skeleton( GameSession *owner, Vector2i pos )
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
+	maxSwingPlanSize = 10;
+	swingPlanLength = 5;
+	numSwingNodes = 3;
+	numHoldNodes = 6;
+	nodeSpread.x = 100;
+	nodeSpread.y = 100;
+
+	swingNodeRadius = 32;
+	holdNodeRadius = 32;
+
+	SetupMovementNodes();
+
 	UpdateHitboxes();
 
 	//cout << "finish init" << endl;
+}
+
+void Boss_Skeleton::SetupMovementNodes()
+{
+	V2d topMiddlePos = position;
+
+	double left = position.x - nodeSpread.x * 2;
+	double top = position.y;
+
+	holdNodePos[0] = V2d( left, top + nodeSpread.y );
+	holdNodePos[1] = V2d( left, top + 2 * nodeSpread.y );
+
+	holdNodePos[2] = V2d( left + 2 * nodeSpread.x , top + nodeSpread.y );
+	holdNodePos[3] = V2d( left + 2 * nodeSpread.x, top + 2 * nodeSpread.y );
+	holdNodePos[4] = V2d( left + 4 * nodeSpread.x, top + nodeSpread.y );
+	holdNodePos[5] = V2d( left + 4 * nodeSpread.x, top + 2 * nodeSpread.y );
+
+	swingNodePos[0] = V2d( left + nodeSpread.x, -nodeSpread.y );
+	swingNodePos[1] = V2d( left + 2 * nodeSpread.x, -nodeSpread.y );
+	swingNodePos[2] = V2d( left + 3 * nodeSpread.x, -nodeSpread.y );
+
+	for( int i = 0; i < swingPlanLength; ++i )
+	{
+		swingPlan[i] = rand() % numSwingNodes;
+	}
+
+	for( int i = 0; i < 3; ++i )
+	{
+		V2d sp = swingNodePos[i];
+		swingNodeVA[i*4+0].position = Vector2f( sp.x - swingNodeRadius,
+			sp.y - swingNodeRadius );
+		swingNodeVA[i*4+1].position = Vector2f( sp.x + swingNodeRadius,
+			sp.y - swingNodeRadius );
+		swingNodeVA[i*4+2].position = Vector2f( sp.x + swingNodeRadius,
+			sp.y + swingNodeRadius );
+		swingNodeVA[i*4+3].position = Vector2f( sp.x - swingNodeRadius,
+			sp.y + swingNodeRadius );
+	}
+
+	for( int i = 0; i < 6; ++i )
+	{
+		V2d hp = holdNodePos[i];
+		swingNodeVA[i*4+0].position = Vector2f( hp.x - swingNodeRadius,
+			hp.y - swingNodeRadius );
+		swingNodeVA[i*4+1].position = Vector2f( hp.x + swingNodeRadius,
+			hp.y - swingNodeRadius );
+		swingNodeVA[i*4+2].position = Vector2f( hp.x + swingNodeRadius,
+			hp.y + swingNodeRadius );
+		swingNodeVA[i*4+3].position = Vector2f( hp.x - swingNodeRadius,
+			hp.y + swingNodeRadius );
+	}
 }
 
 void Boss_Skeleton::ResetEnemy()
@@ -396,9 +461,14 @@ void Boss_Skeleton::Draw( sf::RenderTarget *target )
 		
 		
 		target->draw( sprite );
-		target->draw( flowerVA );
-		target->draw( linkVA );
-		target->draw( pathVA );
+
+		if( action == PAT_PLANMOVE ||
+			action == PAT_MOVE || action == PAT_SHOOT )
+		{
+			target->draw( flowerVA );
+			target->draw( linkVA );
+			target->draw( pathVA );
+		}
 		//target->draw( pathVA );
 
 		/*if( action == PAT_PLANMOVE )

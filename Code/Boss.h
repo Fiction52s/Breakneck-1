@@ -1022,7 +1022,11 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	{
 		PAT_PLANMOVE,
 		PAT_MOVE,
-		PAT_SHOOT
+		PAT_SHOOT,
+		SWING,
+		WAITSWING,
+		WALLCLING,
+		Count
 	};
 
 	struct FlowerNode
@@ -1047,7 +1051,22 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int testLength;
 	int testFrame;
 
-	
+	sf::Vector2i nodeSpread;
+
+	int numSwingNodes;
+	sf::Vector2<double> swingNodePos[3];
+	int numHoldNodes;
+	sf::Vector2<double> holdNodePos[6];
+	int swingPlan[10];
+	int swingPlanLength;
+	int maxSwingPlanSize;
+	int swingNodeRadius;
+	int holdNodeRadius;
+	sf::VertexArray swingNodeVA;
+	sf::VertexArray holdNodeVA;
+
+	void SetupMovementNodes();
+
 	
 	const static int GRID_SIZE = 23;
 	const static int HALF_GRID = 11;
