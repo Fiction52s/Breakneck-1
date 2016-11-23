@@ -1,7 +1,7 @@
 0 0
 -100000 -100000 200000 200000
 158
--18591 -1864
+-17823 -1034
 -17329 -4767
 0 0
 4
@@ -210,7 +210,7 @@
 0
 0
 1
--- 8
+-- 7
 poi +air -18816 -1656
 crawlerfighttrigger y
 0
@@ -222,8 +222,6 @@ cfightcenter -
 0
 poi -air 11 6 45.7331
 cfightjumpback -
-poi -air 13 2 155.07
-afternexus -
 goal 0 1 141.996
 bosscrawler 11 9 67.0993
 nexus 13 6 414
