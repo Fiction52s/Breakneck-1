@@ -50,7 +50,9 @@ struct WorldMap
 	//sf::Texture *sectionTex[6];
 	//sf::Texture *colonyTex[6];
 	Tileset *ts_section[6];
-	Tileset *ts_colony[6];
+	//Tileset *ts_colony[6];
+
+	Tileset *ts_colony[7];
 	sf::Sprite back;
 	sf::Sprite front;
 

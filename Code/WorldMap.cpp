@@ -36,7 +36,7 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 
 		ss.clear();
 		ss.str( "" );
-		ss << "WorldMap/map_z4_" << (i+1) << ".png";
+		ss << "WorldMap/map_w" << (i+1) << ".png";
 		//colonyTex[i] = new Texture;
 		//colonyTex[i]->loadFromFile( ss.str() );
 		ts_colony[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );

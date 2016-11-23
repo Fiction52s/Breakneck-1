@@ -5182,15 +5182,17 @@ int GameSession::Run( string fileN )
 
 
 	int eType = envLevel + 1; //adjust for alex naming -_-
-	ss << "Backgrounds/bg_" << envType + 1 << "_";
-	if( envLevel < 10 )
+	ss << "Backgrounds/w" << envType+1 << "_BG";
+	//ss << "Backgrounds/bg_" << envType + 1 << "_";
+	/*if( envLevel < 10 )
 	{
 		ss << "0" << eType;
 	}
 	else
 	{
 		ss << eType;
-	}
+	}*/
+	ss << eType;
 
 	ss << ".png";
 	 
@@ -5452,10 +5454,25 @@ int GameSession::Run( string fileN )
 	
 	Parallax *testPar = new Parallax();
 
-	Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
-	Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
-	Tileset *ts_cloud1 = GetTileset( "Parallax/w1_cloud_02_1920x1080.png", 1920, 1080 );
-	Tileset *ts_cloud2 = GetTileset( "Parallax/w1_cloud_03_1920x1080.png", 1920, 1080 );
+	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
+	Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
+	Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
+
+	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
+	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
+
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
+	//Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
+	//Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
+	//Tileset *ts_cloud1 = GetTileset( "Parallax/w1_cloud_02_1920x1080.png", 1920, 1080 );
+	//Tileset *ts_cloud2 = GetTileset( "Parallax/w1_cloud_03_1920x1080.png", 1920, 1080 );
+	
+	
+	
+	
 	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
 	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
 	//testPar->AddRepeatingSprite( ts_cloud0, 0, Vector2f( 0, 0 ), 1920 * 2, 50 );
@@ -5470,7 +5487,7 @@ int GameSession::Run( string fileN )
 	Tileset *ts_mountain5 = GetTileset( "Parallax/parallax_w1_mountain_06.png", 1920, 1080 );*/
 
 
-	Tileset *ts_mountain0 = GetTileset( "Parallax/parallax_w2_tree_01.png", 1920, 1080 );
+	/*Tileset *ts_mountain0 = GetTileset( "Parallax/parallax_w2_tree_01.png", 1920, 1080 );
 	Tileset *ts_mountain1 = GetTileset( "Parallax/parallax_w2_tree_02.png", 1920, 1080 );
 	Tileset *ts_mountain2 = GetTileset( "Parallax/parallax_w2_tree_03.png", 1920, 1080 );
 	Tileset *ts_mountain3 = GetTileset( "Parallax/parallax_w2_tree_04.png", 1920, 1080 );
@@ -5487,15 +5504,8 @@ int GameSession::Run( string fileN )
 	testPar->AddRepeatingSprite( ts_mountain1, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
 	testPar->AddRepeatingSprite( ts_mountain1, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 0, 0 ), 1920 * 2, 30 );
-	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );
-	
-	
-	
-	
-	
-	
+	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
-	
 
 
 

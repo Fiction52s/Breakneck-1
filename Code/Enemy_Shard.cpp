@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
-	:Enemy( p_owner, EnemyType::SHARD, false, p_owner->envType ), deathFrame( 0 )
+	:Enemy( p_owner, EnemyType::SHARD, false, p_owner->envType + 1 ), deathFrame( 0 )
 {
 	shardIndex = p_shardIndex;
 	assert( shardIndex < 3 );
@@ -49,25 +49,25 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
 	//cout << "world: " << world << endl;
 	switch( p_owner->envType )
 	{
-	case 1:
+	case 0:
 		ts = owner->GetTileset( "shards_w1_64x64.png", 64, 64 );
 		break;
-	case 2:
+	case 1:
 		ts = owner->GetTileset( "shards_w2_64x64.png", 64, 64 );
 		break;
-	case 3:
+	case 2:
 		ts = owner->GetTileset( "shards_w3_64x64.png", 64, 64 );
 		break;
-	case 4:
+	case 3:
 		ts = owner->GetTileset( "shards_w4_64x64.png", 64, 64 );
 		break;
-	case 5:
+	case 4:
 		ts = owner->GetTileset( "shards_w5_64x64.png", 64, 64 );
 		break;
-	case 6:
+	case 5:
 		ts = owner->GetTileset( "shards_w6_64x64.png", 64, 64 );
 		break;
-	case 7:
+	case 6:
 		ts = owner->GetTileset( "shards_w7_64x64.png", 64, 64 );
 		break;
 	}
