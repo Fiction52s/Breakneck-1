@@ -2065,6 +2065,15 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new SharkParams( this, pos, circleFrames ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
+				else if( typeName == "bossgator" )
+				{
+					Vector2i pos;
+
+					is >> pos.x;
+					is >> pos.y;
+
+					a.reset( new BossGatorParams( this, pos ) );
+				}
 
 				//w6
 				else if( typeName == "specter" )
@@ -3658,10 +3667,14 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *ghostPanel = CreateOptionsPanel( "ghost" );
 	ActorType *ghostType = new ActorType( "ghost", ghostPanel );
 
+	Panel *bossGatorPanel = NULL;
+	ActorType *bossGatorType = new ActorType( "bossgator", bossGatorPanel );
+
 	types["swarm"] = swarmType;
 	types["overgrowth"] = overgrowthType;
 	types["shark"] = sharkType;
 	types["ghost"] = ghostType;
+	types["bossgator"] = bossGatorType;
 
 	//w6
 	Panel *specterPanel = CreateOptionsPanel( "specter" );
@@ -3757,12 +3770,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
 	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "overgrowth" );
 	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
-	gs->Set( 4, 5, Sprite( bossCrawlerType->iconTexture ), "bossskeleton" );
+	gs->Set( 4, 5, Sprite( bossCrawlerType->iconTexture ), "bossgator" );
 
 	gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
 	gs->Set( 1, 6, Sprite( narwhalType->iconTexture ), "narwhal" );
 	gs->Set( 2, 6, Sprite( copycatType->iconTexture ), "copycat" );
 	gs->Set( 3, 6, Sprite( gorillaType->iconTexture ), "gorilla" );
+	gs->Set( 4, 6, Sprite( bossCrawlerType->iconTexture ), "bossskeleton" );
 
 	gs->Set( 0, 7, Sprite( nexusType->iconTexture ), "nexus" );
 
@@ -6234,6 +6248,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											worldPos.y ) );
 										tempActor->SetPanelInfo();
 										showPanel = trackingEnemy->panel;
+									}
+									else if( trackingEnemy->name == "bossgator" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossGator( new BossGatorParams( this, Vector2i( worldPos.x,
+											worldPos.y ) ) );
+										bossGator->group = groups["--"];
+
+										CreateActor( bossGator );
 									}
 
 									//w6
@@ -14162,6 +14186,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+	}
+	else if( name == "bossgator" )
+	{
+		width = 32;
+		height = 128;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 
 	//w6

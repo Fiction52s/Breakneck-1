@@ -20,34 +20,49 @@ using namespace sf;
 
 
 Boss_Gator::Boss_Gator( GameSession *owner, Vector2i pos )
-	:Enemy( owner, EnemyType::TURTLE, false, 4 ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::TURTLE, false, 4 ), deathFrame( 0 ), orbVA( sf::Quads, 4 * NUM_ORBS )
 {
+	orbRadius = 160;
+
 	//loop = false; //no looping on Boss_Gator for now
 
-	bulletSpeed = 5;
+	//bulletSpeed = 5;
 
-	action = NEUTRAL;
+	//action = PLAN;
+	showFramesPerOrb = 30;
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[FIRE] = 1;
-	animFactor[CREATE_BARRIER] = 1;
+	actionLength[PLAN] = 10;
+	actionLength[SWIM] = 10;
+	actionLength[SHOW] = showFramesPerOrb * NUM_ORBS;
+	actionLength[SWAP] = 10;
+	actionLength[WAIT] = 10;
+	actionLength[ATTACK] = 10;
+	actionLength[RETURN] = 10;
 
-	actionLength[NEUTRAL] = 3;
-	actionLength[FIRE] = 20;
-	actionLength[CREATE_BARRIER] = 90;
+
+	animFactor[PLAN] = 1;
+	animFactor[SHOW] = 1;
+	animFactor[SWAP] = 1;
+	animFactor[SWIM] = 1;
+	animFactor[WAIT] = 1;
+	animFactor[ATTACK] = 1;
+	animFactor[RETURN] = 1;
 	
 
-	fireCounter = 0;
+	swimVelBez = CubicBezier( 0, 0, 1, 1 );
+	
+
+	//fireCounter = 0;
+	
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
+	basePos = Vector2f( position.x, position.y );
+
 	originalPos = pos;
 
 	deathFrame = 0;
-	
-	///launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
-	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
 	health = initHealth;
@@ -96,21 +111,18 @@ Boss_Gator::Boss_Gator( GameSession *owner, Vector2i pos )
 	
 
 	dead = false;
-	dying = false;
-
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	deathPartingSpeed = .4;
 	deathVector = V2d( 1, -1 );
 
 	facingRight = true;
-	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
+		
 
 	UpdateHitboxes();
+
+	ResetEnemy();
+
+	swimDuration = 60;
 
 	//cout << "finish init" << endl;
 }
@@ -124,27 +136,9 @@ void Boss_Gator::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Boss_Gator::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
-{
-	//b->launcher->DeactivateBullet( b );
-}
-
-void Boss_Gator::BulletHitPlayer(BasicBullet *b )
-{
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
-}
-
-
 void Boss_Gator::ResetEnemy()
 {
-	fireCounter = 0;
-	launcher->Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	//targetNode = 1;
-	//forward = true;
 	dead = false;
-	dying = false;
 	deathFrame = 0;
 	frame = 0;
 	position.x = originalPos.x;
@@ -155,72 +149,291 @@ void Boss_Gator::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
-	
+	showFramesPerOrb = 30;
+
+	numSwapsThisRound = 0;
+	rotateCW = false;
+	rotateCCW = false;
+	rotationSpeed = 1;//0.0;
+	swapCounter = 0;
+	currSwimIndex = 0;
+	swapDuration = 60;
+	SetOrbsOriginalPos();
+}
+
+void Boss_Gator::SetOrbsOriginalPos()
+{
+	int startingRadius = 600;
+	Transform t;
+	Vector2f out( 0, -startingRadius );
+	for( int i = 0; i < NUM_ORBS; ++i )
+	{
+		orbPosRel[i] = t.transformPoint( Vector2f( 0, -startingRadius ) );
+		t.rotate( 360.f / 5.f );
+	}
 }
 
 void Boss_Gator::ActionEnded()
 {
-	/*if( frame == actionLength[action] )
+	int len = actionLength[action] * animFactor[action];
+
+	if( action == SWAP )
 	{
-	switch( action )
-	{
-	case NEUTRAL:
-		frame = 0;
-		break;
-	case FIRE:
-		action = FADEOUT;
-		frame = 0;
-		break;
-	case INVISIBLE:
-		position = owner->player->position;
-		action = FADEIN;
-		frame = 0;
-		break;
-	case FADEIN:
-		action = FIRE;
-		frame = 0;
-		break;
-	case FADEOUT:
-		action = INVISIBLE;
-		frame = 0;
-		break;
+		if( swapDuration > len )
+		{
+			swapWaitingCounter = 0;
+			swapWaitDuration = swapDuration - len;
+			action = SWAPWAIT;
+			frame = 0;
+		}
+		else
+		{
+			if( swapCounter == numSwapsThisRound )
+			{
+				action = SWIM;
+				currSwimIndex = 0;
+				framesSwimming = 0;
+				frame = 0;
+			}
+			else
+			{
+				action = SWAP;
+				swapCounter++;
+			}
+		}
+		return;
 	}
-	}*/
+	else if( action == SWAPWAIT )
+	{
+		if( swapWaitingCounter == swapWaitDuration )
+		{
+			if( swapCounter == numSwapsThisRound )
+			{
+				action = SWIM;
+				frame = 0;
+				currSwimIndex = 0;
+				framesSwimming = 0;
+			}
+			else
+			{
+				action = SWAP;
+				swapCounter++;
+			}
+		}
+	}
+
+	
+	if( frame == len )
+	{
+		switch( action )
+		{
+		case PLAN:
+			action = SHOW;
+			frame = 0;
+			break;
+		case SHOW:
+			if( numSwapsThisRound > 0 )
+			{
+				action = SWAP;
+				frame = 0;
+				swapCounter = 0;
+			}
+			else
+			{
+				currSwimIndex = 0;
+				action = SWIM;
+				framesSwimming = 0;
+				frame = 0;
+				Vector2f currOrb = orbPosRel[currSwimIndex]; 
+				Vector2f nextOrb = orbPosRel[currSwimIndex+1]; 
+				startSwimPoint.x = basePos.x + currOrb.x;
+				startSwimPoint.y = basePos.y + currOrb.y;
+				endSwimPoint.x = basePos.x + nextOrb.x;
+				endSwimPoint.y = basePos.y + nextOrb.y;
+			}
+			break;
+		case SWAP:
+			//nothing
+			break;
+		case SWAPWAIT:
+			frame = 0;
+			break;
+		case SWIM:
+			frame = 0;
+			break;
+		case WAIT:
+			if( currSwimIndex == NUM_ORBS - 1 )
+			{
+				action = RETURN;
+				frame = 0;
+				Vector2f currOrb = orbPosRel[currSwimIndex]; 
+				startSwimPoint.x = basePos.x + currOrb.x;
+				startSwimPoint.y = basePos.y + currOrb.y;
+				endSwimPoint.x = basePos.x;
+				endSwimPoint.y = basePos.y;
+			}
+			else
+			{
+				action = SWIM;
+				framesSwimming = 0;
+				frame = 0;
+				Vector2f currOrb = orbPosRel[currSwimIndex]; 
+				Vector2f nextOrb = orbPosRel[currSwimIndex+1]; 
+				startSwimPoint.x = basePos.x + currOrb.x;
+				startSwimPoint.y = basePos.y + currOrb.y;
+				endSwimPoint.x = basePos.x + nextOrb.x;
+				endSwimPoint.y = basePos.y + nextOrb.y;
+				++currSwimIndex;
+			}
+			break;
+		case ATTACK:
+			break;
+		case RETURN:
+			break;
+		case AFTERFIGHT:
+			break;
+		}
+	}
+
+	if( rotateCW )
+	{
+		RotateOrbs( -rotationSpeed );
+	}
+	else if( rotateCCW )
+	{
+		RotateOrbs( rotationSpeed );
+	}
 }
+
+void Boss_Gator::RotateOrbs( float degrees )
+{
+	Transform t;
+	t.rotate( degrees );
+	for( int i = 0; i < NUM_ORBS; ++i )
+	{
+		orbPosRel[i] = t.transformPoint( orbPosRel[i] );
+	}
+}
+
+void Boss_Gator::UpdateOrbSprites()
+{
+	for( int i = 0; i < NUM_ORBS; ++i )
+	{
+		orbVA[i*4+0].position = basePos + orbPosRel[i] + Vector2f( -orbRadius, -orbRadius );
+		orbVA[i*4+1].position = basePos + orbPosRel[i] + Vector2f( orbRadius, -orbRadius );
+		orbVA[i*4+2].position = basePos + orbPosRel[i] + Vector2f( orbRadius, orbRadius );
+		orbVA[i*4+3].position = basePos + orbPosRel[i] + Vector2f( -orbRadius, orbRadius );
+
+		orbVA[i*4+0].color = Color::Red;
+		orbVA[i*4+1].color = Color::Red;
+		orbVA[i*4+2].color = Color::Red;
+		orbVA[i*4+3].color = Color::Red;
+	}
+}
+
+void Boss_Gator::SetupTravelOrder()
+{
+	//int possibles[NUM_ORBS];
+	for( int i = 0; i < NUM_ORBS; ++i )
+	{
+		orbTravelOrder[i] = i;
+		
+	}
+
+	//swap
+	for (int i = 0; i < NUM_ORBS; ++i)
+	{
+		int j = rand() % NUM_ORBS;
+		int temp = orbTravelOrder[i];
+		orbTravelOrder[i] = orbTravelOrder[j];
+		orbTravelOrder[j] = temp;
+	}
+}
+
 
 void Boss_Gator::UpdatePrePhysics()
 {
-	//ActionEnded();
-
-	launcher->UpdatePrePhysics();
+	ActionEnded();
 
 	switch( action )
 	{
-	case NEUTRAL:
-		//cout << "NEUTRAL";
+	case PLAN:
 		break;
-	case FIRE:
-		//cout << "FIRE";
+	case SHOW:
 		break;
-	case CREATE_BARRIER:
+	case SWAP:
+		break;
+	case SWAPWAIT:
+		break;
+	case SWIM:
+		break;
+	case WAIT:
+		break;
+	case ATTACK:
+		break;
+	case RETURN:
+		break;
+	case AFTERFIGHT:
 		break;
 	}
-
-	//cout << " " << frame << endl;
 
 	switch( action )
 	{
-	case NEUTRAL:
+	case PLAN:
+		{
+			if( frame == 0 )
+			{
+				SetupTravelOrder();
+			}
+			break;
+		}	
+	case SHOW:
+		{
+			if( frame % showFramesPerOrb == 0 )
+			{
+				int orb = frame / showFramesPerOrb;
+				//light up my orb, unlight the previous orb
+			}
+			break;
+		}
+	case SWAP:
 		break;
-	case FIRE:
+	case SWAPWAIT:
+		swapWaitingCounter++;
 		break;
-	case CREATE_BARRIER:
+	case SWIM:
+		break;
+	case WAIT:
+		break;
+	case ATTACK:
+		break;
+	case RETURN:
+		break;
+	case AFTERFIGHT:
 		break;
 	}
 
+	//switch( action )
+	//{
+	//case PLAN:
+	//	break;
+	//case SHOW:
+	//	break;
+	//case SWAP:
+	//	break;
+	//case SWIM:
+	//	break;
+	//case WAIT:
+	//	break;
+	//case ATTACK:
+	//	break;
+	//case RETURN:
+	//	break;
+	//case AFTERFIGHT:
+	//	break;
+	//}
 
-
-	if( !dead && !dying && receivedHit != NULL )
+	if( !dead && receivedHit != NULL )
 	{
 		//owner->Pause( 5 );
 		
@@ -233,33 +446,25 @@ void Boss_Gator::UpdatePrePhysics()
 		{
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
-			dying = true;
-			//cout << "dying" << endl;
+
+			action = AFTERFIGHT;
+			frame = 0;
+			//owner->activeSequence = crawlerAfterFightSeq;
 		}
 
 		receivedHit = NULL;
 	}
-
-	//if( !dying && !dead && action == FIRE && frame == actionLength[FIRE] - 1 )// frame == 0 && slowCounter == 1 )
-	//{
-	//	//cout << "firing" << endl;
-	//	launcher->position = position;
-	//	launcher->facingDir = normalize( owner->player->position - position );
-	//	//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-	//	//	launcher->facingDir.y << endl;
-	//	launcher->Fire();
-	//	fireCounter = 0;
-	//	//testLauncher->Fire();
-	//}
-
-	/*if( latchedOn )
-	{
-		basePos = owner->player->position + offsetPlayer;
-	}*/
 }
 
 void Boss_Gator::UpdatePhysics()
 {	
+	if( action == SWIM || action == RETURN )
+	{
+		double a = (double)framesSwimming / swimDuration;
+		double f = swimVelBez.GetValue( a );
+		position = startSwimPoint * ( 1.0 - f ) + endSwimPoint * ( f );
+	}
+
 	specterProtected = false;
 	if( !dead )
 	{
@@ -278,19 +483,8 @@ void Boss_Gator::UpdatePhysics()
 		}
 	}
 
-	launcher->UpdatePhysics();
-
-	if( !dead && !dying )
+	if( !dead )
 	{
-		/*if( action == NEUTRAL )
-		{
-			Actor *player = owner->player;
-			if( length( player->position - position ) < 300 )
-			{
-				action = FADEOUT;
-				frame = 0;
-			}
-		}*/
 		PhysicsResponse();
 	}
 	return;
@@ -298,7 +492,7 @@ void Boss_Gator::UpdatePhysics()
 
 void Boss_Gator::PhysicsResponse()
 {
-	if( !dead && !dying && receivedHit == NULL )
+	if( !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
@@ -313,58 +507,33 @@ void Boss_Gator::PhysicsResponse()
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
 				owner->player->velocity.y = 4;//.5;
-			}
-
-		//	cout << "frame: " << owner->player->frame << endl;
-
-			//owner->player->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
-			
-		//	cout << "Boss_Gator received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
+			}	
 		}
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Boss_Gator just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
 
 void Boss_Gator::UpdatePostPhysics()
 {
-	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
 	}
-
-	
 
 	if( slowCounter == slowMultiple )
 	{
 		//cout << "fireCounter: " << fireCounter << endl;
 		++frame;
 		slowCounter = 1;
-		++fireCounter;
 	
-		if( dying )
-		{
+		//if( dead )
+		//{
 			//cout << "deathFrame: " << deathFrame << endl;
-			deathFrame++;
-		}
+		//	deathFrame++;
+		//}
 
 	}
 	else
@@ -372,35 +541,26 @@ void Boss_Gator::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( deathFrame == 60 && dying )
-	{
-		//cout << "switching dead" << endl;
-		dying = false;
-		dead = true;
-		//cout << "REMOVING" << endl;
-		//testLauncher->Reset();
-		//owner->RemoveEnemy( this );
-		//return;
-	}
+	
 
-	if( dead && launcher->GetActiveCount() == 0 )
+	if( dead )
 	{
 		//cout << "REMOVING" << endl;
 		owner->RemoveEnemy( this );
 	}
 
 	UpdateSprite();
-	launcher->UpdateSprites();
+	UpdateOrbSprites();
 }
 
 void Boss_Gator::UpdateSprite()
 {
-	if( !dying && !dead )
+	if( !dead )
 	{
 		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 	}
-	if( dying )
+	/*if( dying )
 	{
 
 		botDeathSprite.setTexture( *ts->texture );
@@ -414,41 +574,20 @@ void Boss_Gator::UpdateSprite()
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-	}
+	}*/
 }
 
 void Boss_Gator::Draw( sf::RenderTarget *target )
 {
 	//cout << "draw" << endl;
-	if( !dead && !dying )
+	if( !dead )
 	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-
-			cs.setFillColor( Color::Black );
-
-			//cs.setFillColor( monitor-> );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
+		target->draw( orbVA );
+		target->draw( sprite );
 	}
 	else if( !dead )
 	{
 		target->draw( botDeathSprite );
-
-		if( deathFrame / 3 < 6 )
-		{
-			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
-		}
 		
 		target->draw( topDeathSprite );
 	}
@@ -459,14 +598,14 @@ void Boss_Gator::Draw( sf::RenderTarget *target )
 
 void Boss_Gator::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !dead && !dying )
+	if( !dead )
 	{
-		CircleShape enemyCircle;
+		/*CircleShape enemyCircle;
 		enemyCircle.setFillColor( COLOR_BLUE );
 		enemyCircle.setRadius( 50 );
 		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
 		enemyCircle.setPosition( position.x, position.y );
-		target->draw( enemyCircle );
+		target->draw( enemyCircle );*/
 
 		/*if( hasMonitor && !suppressMonitor )
 		{

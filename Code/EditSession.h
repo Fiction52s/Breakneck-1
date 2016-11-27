@@ -1159,6 +1159,17 @@ struct GorillaParams : public ActorParams
 	int followFrames;
 };
 
+struct BossGatorParams : public ActorParams
+{
+	BossGatorParams( 
+		EditSession *edit, 
+		sf::Vector2i &pos );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+};
+
 struct BossSkeletonParams : public ActorParams
 {
 	BossSkeletonParams( 

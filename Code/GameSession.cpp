@@ -2971,6 +2971,22 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if( typeName == "bossgator" )
+			{
+
+				int xPos,yPos;
+
+				is >> xPos;
+				is >> yPos;
+
+				Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
+
+				fullEnemyList.push_back( enemy );
+
+				b_gator = enemy;
+
+				enemyTree->Insert( enemy );
+			}
 
 			//w6
 			else if( typeName == "specter" )
@@ -3712,6 +3728,11 @@ bool GameSession::OpenFile( string fileName )
 		if( b_bird != NULL )
 		{
 			b_bird->Init();
+		}
+
+		if( b_gator != NULL )
+		{
+			b_gator->Init();
 		}
 
 		if( b_skeleton != NULL )

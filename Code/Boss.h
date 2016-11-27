@@ -926,23 +926,59 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	int bloodFrame;
 };
 
-struct Boss_Gator : Enemy, LauncherEnemy
+struct Boss_Gator : Enemy
 {
 	enum Action
 	{
-		NEUTRAL,
-		FIRE,
-		CREATE_BARRIER,
+		PLAN,
+		SHOW,
+		SWAP,
+		SWAPWAIT,
+		SWIM,
+		WAIT,
+		ATTACK,
+		RETURN,
+		AFTERFIGHT,
 		Count
 	};
 
-	const static int MAX_BARRIERS = 5;
+	const static int NUM_ORBS = 5;
+	int orbTravelOrder[NUM_ORBS];
+	void SetupTravelOrder();
+	int showFramesPerOrb;
+	sf::VertexArray orbVA;
+	int orbRadius;
+
+	sf::Vector2f orbPosRel[NUM_ORBS];
+	sf::Vector2f basePos;
+	
+	void UpdateOrbSprites();
+
+	void RotateOrbs( float degrees );
+
+	void SetOrbsOriginalPos();
+
+	int numSwapsThisRound;
+	int swapCounter;
+	int swapDuration;
+	bool rotateCW;
+	bool rotateCCW;
+	float rotationSpeed;
+
+	int currSwimIndex;
+	int swapWaitingCounter;
+	int swapWaitDuration;
+
+	sf::Vector2<double> startSwimPoint;
+	sf::Vector2<double> endSwimPoint;
+	CubicBezier swimVelBez;
+	int swimDuration;
+	int framesSwimming;
+
+
 
 
 	Boss_Gator( GameSession *owner, sf::Vector2i pos );
-	void BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos );
-	void BulletHitPlayer( BasicBullet *b );
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -964,10 +1000,7 @@ struct Boss_Gator : Enemy, LauncherEnemy
 	std::map<Action,int> actionLength;
 	std::map<Action,int> animFactor;
 
-	int bulletSpeed;
-
 	Action action;
-	//sf::Vector2<double> basePos;
 	int deathFrame;
 	sf::Vector2<double> deathVector;
 	double deathPartingSpeed;
@@ -977,12 +1010,6 @@ struct Boss_Gator : Enemy, LauncherEnemy
 	sf::Vector2i originalPos;
 	int frame;
 
-	Launcher *launcher;
-
-	int fireCounter;
-
-	bool dying;
-
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
@@ -991,11 +1018,7 @@ struct Boss_Gator : Enemy, LauncherEnemy
 
 	int hitlagFrames;
 	int hitstunFrames;
-	//int animationFactor;
 
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 	bool facingRight;
 
 	struct Stored

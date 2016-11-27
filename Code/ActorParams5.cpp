@@ -347,3 +347,35 @@ ActorParams *OvergrowthParams::Copy()
 	OvergrowthParams *copy = new OvergrowthParams( *this );
 	return copy;
 }
+
+BossGatorParams::BossGatorParams( EditSession *edit, Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	type = edit->types["bossgator"];
+
+	position = pos;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+				
+	SetBoundingQuad();	
+}
+
+bool BossGatorParams::CanApply()
+{
+	return true;
+}
+
+void BossGatorParams::WriteParamFile( ofstream &of )
+{
+	//no params its a boss!
+}
+
+ActorParams *BossGatorParams::Copy()
+{
+	BossGatorParams *copy = new BossGatorParams( *this );
+	return copy;
+}
+
