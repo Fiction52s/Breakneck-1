@@ -951,6 +951,8 @@ struct Boss_Gator : Enemy
 
 	sf::Vector2f orbPosRel[NUM_ORBS];
 	sf::Vector2f basePos;
+
+	void StartSwim();
 	
 	void UpdateOrbSprites();
 
@@ -958,16 +960,28 @@ struct Boss_Gator : Enemy
 
 	void SetOrbsOriginalPos();
 
+	void SetSwapOrbs();
+
 	int numSwapsThisRound;
 	int swapCounter;
 	int swapDuration;
+	int swapFrame;
+	
 	bool rotateCW;
 	bool rotateCCW;
 	float rotationSpeed;
 
+	int swapIndexA;
+	int swapIndexB;
+	sf::Vector2<double> swapAStart;
+	sf::Vector2<double> swapAEnd;
+	sf::Vector2<double> swapBStart;
+	sf::Vector2<double> swapBEnd;
+
 	int currSwimIndex;
 	int swapWaitingCounter;
 	int swapWaitDuration;
+	
 
 	sf::Vector2<double> startSwimPoint;
 	sf::Vector2<double> endSwimPoint;

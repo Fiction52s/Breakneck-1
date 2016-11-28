@@ -144,6 +144,8 @@ void Boss_Gator::ResetEnemy()
 	position.x = originalPos.x;
 	position.y = originalPos.y;
 	receivedHit = NULL;
+	action = PLAN;
+
 
 	UpdateHitboxes();
 
@@ -151,9 +153,10 @@ void Boss_Gator::ResetEnemy()
 	health = initHealth;
 	showFramesPerOrb = 30;
 
-	numSwapsThisRound = 0;
+	numSwapsThisRound = 3;
 	rotateCW = false;
 	rotateCCW = false;
+	rotateCW = true;
 	rotationSpeed = 1;//0.0;
 	swapCounter = 0;
 	currSwimIndex = 0;
@@ -177,8 +180,9 @@ void Boss_Gator::ActionEnded()
 {
 	int len = actionLength[action] * animFactor[action];
 
-	if( action == SWAP )
+	if( action == SWAP && frame == len )
 	{
+		//cout << "dur: " << swapDuration << ", len: " << len << endl;
 		if( swapDuration > len )
 		{
 			swapWaitingCounter = 0;
@@ -188,16 +192,16 @@ void Boss_Gator::ActionEnded()
 		}
 		else
 		{
-			if( swapCounter == numSwapsThisRound )
+			if( swapCounter == numSwapsThisRound - 1 )
 			{
-				action = SWIM;
-				currSwimIndex = 0;
-				framesSwimming = 0;
-				frame = 0;
+				StartSwim();
 			}
 			else
 			{
 				action = SWAP;
+				frame = 0;
+				SetSwapOrbs();
+				swapFrame = 0;
 				swapCounter++;
 			}
 		}
@@ -205,21 +209,25 @@ void Boss_Gator::ActionEnded()
 	}
 	else if( action == SWAPWAIT )
 	{
+		//if( frame == len )
+		//	frame = 0;
+
 		if( swapWaitingCounter == swapWaitDuration )
 		{
-			if( swapCounter == numSwapsThisRound )
+			if( swapCounter == numSwapsThisRound - 1 )
 			{
-				action = SWIM;
-				frame = 0;
-				currSwimIndex = 0;
-				framesSwimming = 0;
+				StartSwim();
 			}
 			else
 			{
 				action = SWAP;
+				frame = 0;
+				SetSwapOrbs();
+				swapFrame = 0;
 				swapCounter++;
 			}
 		}
+		//return;
 	}
 
 	
@@ -235,21 +243,15 @@ void Boss_Gator::ActionEnded()
 			if( numSwapsThisRound > 0 )
 			{
 				action = SWAP;
+				SetSwapOrbs();
 				frame = 0;
 				swapCounter = 0;
+				swapFrame = 0;
+
 			}
 			else
 			{
-				currSwimIndex = 0;
-				action = SWIM;
-				framesSwimming = 0;
-				frame = 0;
-				Vector2f currOrb = orbPosRel[currSwimIndex]; 
-				Vector2f nextOrb = orbPosRel[currSwimIndex+1]; 
-				startSwimPoint.x = basePos.x + currOrb.x;
-				startSwimPoint.y = basePos.y + currOrb.y;
-				endSwimPoint.x = basePos.x + nextOrb.x;
-				endSwimPoint.y = basePos.y + nextOrb.y;
+				StartSwim();
 			}
 			break;
 		case SWAP:
@@ -266,7 +268,8 @@ void Boss_Gator::ActionEnded()
 			{
 				action = RETURN;
 				frame = 0;
-				Vector2f currOrb = orbPosRel[currSwimIndex]; 
+				framesSwimming = 0;
+				Vector2f currOrb = orbPosRel[orbTravelOrder[currSwimIndex]]; 
 				startSwimPoint.x = basePos.x + currOrb.x;
 				startSwimPoint.y = basePos.y + currOrb.y;
 				endSwimPoint.x = basePos.x;
@@ -277,8 +280,25 @@ void Boss_Gator::ActionEnded()
 				action = SWIM;
 				framesSwimming = 0;
 				frame = 0;
-				Vector2f currOrb = orbPosRel[currSwimIndex]; 
-				Vector2f nextOrb = orbPosRel[currSwimIndex+1]; 
+				Vector2f currOrb = orbPosRel[orbTravelOrder[currSwimIndex]]; 
+				if( rotateCW )
+				{
+					RotateOrbs( rotationSpeed * swimDuration );
+				}
+				else if( rotateCCW )
+				{
+					RotateOrbs( -rotationSpeed * swimDuration );
+				}
+				Vector2f nextOrb = orbPosRel[orbTravelOrder[currSwimIndex+1]]; 
+				if( rotateCW )
+				{
+					RotateOrbs( -rotationSpeed * swimDuration );
+				}
+				else if( rotateCCW )
+				{
+					RotateOrbs( rotationSpeed * swimDuration );
+				}
+				
 				startSwimPoint.x = basePos.x + currOrb.x;
 				startSwimPoint.y = basePos.y + currOrb.y;
 				endSwimPoint.x = basePos.x + nextOrb.x;
@@ -295,14 +315,95 @@ void Boss_Gator::ActionEnded()
 		}
 	}
 
-	if( rotateCW )
+	if( rotateCCW )
 	{
 		RotateOrbs( -rotationSpeed );
 	}
-	else if( rotateCCW )
+	else if( rotateCW )
 	{
 		RotateOrbs( rotationSpeed );
 	}
+}
+
+void Boss_Gator::SetSwapOrbs()
+{
+	int secondPossibles[NUM_ORBS-1];
+	int r = rand() % NUM_ORBS;
+	for( int i = 0; i < NUM_ORBS; ++i )
+	{
+		if( i < r )
+			secondPossibles[i] = i;
+		else if( i > r )
+			secondPossibles[i-1] = i;
+	}
+
+	int r1 = rand() % ( NUM_ORBS - 1 );
+	swapIndexA = orbTravelOrder[r];
+	swapIndexB = orbTravelOrder[secondPossibles[r1]];
+
+	swapAStart.x = basePos.x + orbPosRel[swapIndexA].x;
+	swapAStart.y = basePos.y + orbPosRel[swapIndexA].y;
+
+	swapBStart.x = basePos.x + orbPosRel[swapIndexB].x;
+	swapBStart.y = basePos.y + orbPosRel[swapIndexB].y;
+
+	//cout << "swap a: " << swapIndexA << ", swapb: " << swapIndexB << endl;
+
+	if( rotateCW )
+	{
+		RotateOrbs( rotationSpeed * swapDuration );
+	}
+	else if( rotateCCW )
+	{
+		RotateOrbs( -rotationSpeed * swapDuration );
+	}
+	Vector2f nextA = basePos + orbPosRel[swapIndexB]; 
+	Vector2f nextB = basePos + orbPosRel[swapIndexA]; 
+	if( rotateCW )
+	{
+		RotateOrbs( -rotationSpeed * swapDuration );
+	}
+	else if( rotateCCW )
+	{
+		RotateOrbs( rotationSpeed * swapDuration );
+	}
+
+	swapAEnd.x = nextA.x;
+	swapAEnd.y = nextA.y;
+
+	swapBEnd.x = nextB.x;
+	swapBEnd.y = nextB.y;
+}
+
+void Boss_Gator::StartSwim()
+{
+	action = SWIM;
+	framesSwimming = 0;
+	frame = 0;
+	currSwimIndex = 0;
+	
+	if( rotateCW )
+	{
+		RotateOrbs( rotationSpeed * swimDuration );
+	}
+	else if( rotateCCW )
+	{
+		RotateOrbs( -rotationSpeed * swimDuration );
+	}
+	Vector2f currOrb = orbPosRel[orbTravelOrder[0]]; 
+	if( rotateCW )
+	{
+		RotateOrbs( -rotationSpeed * swimDuration );
+	}
+	else if( rotateCCW )
+	{
+		RotateOrbs( rotationSpeed * swimDuration );
+	}
+	
+	startSwimPoint.x = basePos.x;
+	startSwimPoint.y = basePos.y;
+	endSwimPoint.x = basePos.x + currOrb.x;
+	endSwimPoint.y = basePos.y + currOrb.y;
 }
 
 void Boss_Gator::RotateOrbs( float degrees )
@@ -311,6 +412,11 @@ void Boss_Gator::RotateOrbs( float degrees )
 	t.rotate( degrees );
 	for( int i = 0; i < NUM_ORBS; ++i )
 	{
+		if( action == SWAP || action == SWAPWAIT )
+		{
+			//if( i == swapIndexA || i == swapIndexB )
+			//	continue;
+		}
 		orbPosRel[i] = t.transformPoint( orbPosRel[i] );
 	}
 }
@@ -348,8 +454,13 @@ void Boss_Gator::SetupTravelOrder()
 		orbTravelOrder[i] = orbTravelOrder[j];
 		orbTravelOrder[j] = temp;
 	}
-}
 
+	/*for (int i = 0; i < NUM_ORBS; ++i)
+	{
+		cout << "setup order: " << orbTravelOrder[i] << endl;
+	}*/
+	
+}
 
 void Boss_Gator::UpdatePrePhysics()
 {
@@ -366,12 +477,22 @@ void Boss_Gator::UpdatePrePhysics()
 	case SWAPWAIT:
 		break;
 	case SWIM:
+		if( framesSwimming == swimDuration )
+		{
+			action = WAIT;
+			frame = 0;
+		}
 		break;
 	case WAIT:
 		break;
 	case ATTACK:
 		break;
 	case RETURN:
+		if( framesSwimming == swimDuration )
+		{
+			action = PLAN;
+			frame = 0;
+		}
 		break;
 	case AFTERFIGHT:
 		break;
@@ -397,22 +518,36 @@ void Boss_Gator::UpdatePrePhysics()
 			break;
 		}
 	case SWAP:
+		++swapFrame;
 		break;
 	case SWAPWAIT:
+		++swapFrame;
 		swapWaitingCounter++;
 		break;
 	case SWIM:
+		{
+			++framesSwimming;
+		}
 		break;
 	case WAIT:
-		break;
+		{
+			Vector2f temp = basePos + orbPosRel[orbTravelOrder[currSwimIndex]];
+			position.x = temp.x;
+			position.y = temp.y;
+			break;
+		}
 	case ATTACK:
 		break;
 	case RETURN:
+		{
+			++framesSwimming;
+		}
 		break;
 	case AFTERFIGHT:
 		break;
 	}
 
+	cout << "swapframe: " << swapFrame << ", dur: " << swapDuration << endl;
 	//switch( action )
 	//{
 	//case PLAN:
@@ -463,6 +598,16 @@ void Boss_Gator::UpdatePhysics()
 		double a = (double)framesSwimming / swimDuration;
 		double f = swimVelBez.GetValue( a );
 		position = startSwimPoint * ( 1.0 - f ) + endSwimPoint * ( f );
+	}
+	else if( action == SWAP || action == SWAPWAIT )
+	{
+		
+		double a = (double)swapFrame / swapDuration;
+		double f = a;//swimVelBez.GetValue( a );
+		V2d swapAPos = swapAStart * (1.0 - f ) + swapAEnd * f;
+		V2d swapBPos = swapBStart * (1.0 - f ) + swapBEnd * f;
+		orbPosRel[swapIndexA] = Vector2f( swapAPos.x - basePos.x, swapAPos.y - basePos.y );
+		orbPosRel[swapIndexB] = Vector2f( swapBPos.x - basePos.x, swapBPos.y - basePos.y );
 	}
 
 	specterProtected = false;
@@ -518,6 +663,7 @@ void Boss_Gator::PhysicsResponse()
 
 void Boss_Gator::UpdatePostPhysics()
 {
+	cout << "action: " << action << ", position: " << position.x << ", " << position.y << endl;
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
