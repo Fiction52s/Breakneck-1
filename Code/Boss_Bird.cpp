@@ -134,11 +134,15 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	activeHoming = NULL;
 	inactiveHoming = NULL;
 
+	for( int i = 0; i < MAX_HOMING; ++i )
+	{
+		AddHRing();
+	}
 
 	ResetEnemy();
 	//UpdateHitboxes();
 	
-
+	
 }
 
 void Boss_Bird::SetNextAttack()
@@ -187,49 +191,23 @@ void Boss_Bird::SetNextAttack()
 	cout << "chosen index: " << nextAttackIndex.x << ", " << nextAttackIndex.y << endl;
 }
 
-void Boss_Bird::ClearHoming()
+void Boss_Bird::ClearHomingRings()
 {
-	numActiveHoming = 0;
-	for( int i = 0; i < MAX_HOMING; ++i )
+	HomingRing *active = activeHoming;
+	while( active != NULL )
+	{
+		HomingRing *next = active->next;
+		DeactivateHRing( active );
+		active = next;
+	}
+
+	/*for( int i = 0; i < MAX_HOMING; ++i )
 	{
 		homingVA[i*4+0].position = Vector2f( 0, 0 );
 		homingVA[i*4+1].position = Vector2f( 0, 0 );
 		homingVA[i*4+2].position = Vector2f( 0, 0 );
 		homingVA[i*4+3].position = Vector2f( 0, 0 );
-
-		homingVA[i*4+0].color = Color::Red; 
-		homingVA[i*4+1].color = Color::Red;
-		homingVA[i*4+2].color = Color::Red;
-		homingVA[i*4+3].color = Color::Red;
-	}
-}
-
-void Boss_Bird::ClearHoming( int index )
-{
-	numActiveHoming--;
-	homingVA[index*4+0].position = Vector2f( 0, 0 );
-	homingVA[index*4+1].position = Vector2f( 0, 0 );
-	homingVA[index*4+2].position = Vector2f( 0, 0 );
-	homingVA[index*4+3].position = Vector2f( 0, 0 );
-}
-
-void Boss_Bird::SetHoming( V2d &dpos, int index, int tsIndex )
-{
-	Vector2f pos( dpos.x, dpos.y );
-	//numActiveHoming = 0;
-	int xSize = ts_homingRing->tileWidth / 2;
-	int ySize = ts_homingRing->tileHeight / 2;
-
-	homingVA[index*4+0].position = pos + Vector2f( -xSize, -ySize );
-	homingVA[index*4+1].position = pos + Vector2f( xSize, -ySize );
-	homingVA[index*4+2].position = pos + Vector2f( xSize, ySize );
-	homingVA[index*4+3].position = pos + Vector2f( -xSize, ySize );
-
-	IntRect ir = ts_homingRing->GetSubRect( tsIndex );
-	homingVA[index*4+0].texCoords = Vector2f( ir.left, ir.top );
-	homingVA[index*4+1].position = Vector2f( ir.left + ir.width, ir.top );
-	homingVA[index*4+2].position = Vector2f( ir.left + ir.width, ir.top + ir.height );
-	homingVA[index*4+3].position = Vector2f( ir.left, ir.top + ir.height );
+	}*/
 }
 
 sf::Vector2f Boss_Bird::GetGridPosF( sf::Vector2i &index )
@@ -264,8 +242,6 @@ void Boss_Bird::ResetEnemy()
 	currIndex.x = GRID_SIZE_X / 2;
 	currIndex.y = GRID_SIZE_Y / 2;
 
-	numActiveHoming = 0;
-
 	flyFrame = 0;
 	//fireCounter = 0;
 	//launcher->Reset();
@@ -285,7 +261,7 @@ void Boss_Bird::ResetEnemy()
 	UpdateSprite();
 	health = initHealth;
 	SetNextAttack();
-	ClearHoming();
+	ClearHomingRings();
 }
 
 void Boss_Bird::HandleEntrant( QuadTreeEntrant *qte )
@@ -322,8 +298,6 @@ void Boss_Bird::ActionEnded()
 			frame = 0;
 			break;
 		case THROWHOMING:
-			numActiveHoming++;
-			SetHoming( Vector2f( position.x, position.y ), 
 		case PUNCHPREPIN:
 			SetNextAttack();
 			action = FLY;
@@ -363,8 +337,6 @@ void Boss_Bird::UpdatePrePhysics()
 				break;
 			case ORB_KICK:
 				action = THROWHOMING;
-				currHoming++;
-				homingFrame = 0
 				frame = 0;
 				break;
 			case ORB_THROW:
@@ -383,6 +355,7 @@ void Boss_Bird::UpdatePrePhysics()
 	case PUNCH:
 		break;
 	case THROWHOMING:
+		
 		break;
 	
 	case KICK:
@@ -404,6 +377,10 @@ void Boss_Bird::UpdatePrePhysics()
 		cout << "PUNCH" << endl;
 		break;
 	case THROWHOMING:
+		if( frame == 1 )
+		{
+			HomingRing *hr = ActivateHRing();
+		}
 		cout << "THROWHOMING" << endl;
 		break;
 	case THROWCURVE:
@@ -414,6 +391,12 @@ void Boss_Bird::UpdatePrePhysics()
 		break;
 	}
 	
+	HomingRing *hr = activeHoming;
+	while( hr != NULL )
+	{
+		hr->UpdatePrePhysics();
+		hr = hr->next;
+	}
 
 	if( !dead && receivedHit != NULL )
 	{
@@ -452,10 +435,6 @@ void Boss_Bird::UpdatePhysics()
 		double f = a;//flyCurve.GetValue( a );
 		homingPos = startRing * ( 1.0 - f ) + endRing * ( f );
 	}
-	else if( action == THROWHOMING )
-	{
-		homingPos = owner->player->position;
-	}
 	
 	specterProtected = false;
 	if( !dead )
@@ -475,7 +454,12 @@ void Boss_Bird::UpdatePhysics()
 		}
 	}
 
-
+	HomingRing *hr = activeHoming;
+	while( hr != NULL )
+	{
+		hr->UpdatePhysics();
+		hr = hr->next;
+	}
 
 	//launcher->UpdatePhysics();
 
@@ -557,6 +541,14 @@ void Boss_Bird::UpdatePostPhysics()
 		owner->RemoveEnemy( this );
 	}
 
+	HomingRing *hr = activeHoming;
+	while( hr != NULL )
+	{
+		hr->UpdatePostPhysics();
+		hr = hr->next;
+	}
+
+
 	punchPulse.UpdatePoints();
 	UpdateSprite();
 	//launcher->UpdateSprites();
@@ -569,7 +561,7 @@ void Boss_Bird::UpdateSprite()
 		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 
-		SetHoming( position, currHoming, 0 );
+		//SetHoming( position, currHoming, 0 );
 		//targeterSprite.setPosition( homingPos.x, homingPos.y );
 	}
 }
@@ -579,7 +571,7 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 	//cout << "draw" << endl;
 	if( !dead )
 	{	
-		target->draw( 
+		target->draw( homingVA, ts_homingRing->texture );
 		target->draw( nextAttackOrb );
 		target->draw( sprite );
 		punchPulse.Draw( target );
@@ -782,6 +774,8 @@ void Boss_Bird::DeactivateHRing( HomingRing *hr )
 	inactiveHoming->prev = hr;
 	hr->next = inactiveHoming;
 	inactiveHoming = hr;
+
+	hr->Clear();
 }
 
 Boss_Bird::HomingRing * Boss_Bird::ActivateHRing()
@@ -795,8 +789,19 @@ Boss_Bird::HomingRing * Boss_Bird::ActivateHRing()
 		inactiveHoming = temp;
 		inactiveHoming->prev = NULL;
 
-		newHoming->prev = NULL;
-		newHoming->next = NULL;
+		newHoming->Reset( position );
+
+
+		if( activeHoming == NULL )
+		{
+			activeHoming = newHoming;
+		}
+		else
+		{
+			activeHoming->prev = newHoming;
+			newHoming->next = activeHoming;
+			activeHoming = newHoming;
+		}
 
 		return newHoming;
 	}
@@ -804,15 +809,28 @@ Boss_Bird::HomingRing * Boss_Bird::ActivateHRing()
 
 void Boss_Bird::AddHRing()
 {
+	if( inactiveHoming == NULL )
+	{
+		inactiveHoming = new HomingRing( this, 0 );
+	}
+	else
+	{
+		HomingRing *hr = inactiveHoming;
+		int numRings = 0;
+		while( hr != NULL )
+		{
+			numRings++;
+			hr = hr->next;
+		}
 
+		//cout << "adding ring: " << numRings << endl;
+
+		HomingRing *nhr = new HomingRing( this, numRings );
+		nhr->next = inactiveHoming;
+		inactiveHoming->prev = nhr;
+		inactiveHoming = nhr;
+	}
 }
-
-
-
-
-
-
-
 
 Boss_Bird::PunchPulse::PunchPulse( GameSession *p_owner )
 	:owner( p_owner ), circleVA( sf::Quads, CIRCLEPOINTS * 4 ), innerRadius( 10 ), 
@@ -924,14 +942,14 @@ void Boss_Bird::PunchPulse::PulseIn( sf::Vector2i &pos )
 	position.y = pos.y;
 }
 
-void Boss_Bird::HomingRing::Update()
+void Boss_Bird::HomingRing::UpdatePrePhysics()
 {
 	if( (action == DISSIPATE && frame == 60) )
 	{
 		parent->DeactivateHRing( this );
 		return;
 	}
-	if( action == FIND && frame == 5 )
+	if( action == FIND && frame == 5 + 1 )
 	{
 		action = LOCK;
 		frame = 0;
@@ -941,8 +959,44 @@ void Boss_Bird::HomingRing::Update()
 		action = FREEZE;
 		frame = 0;
 	}
-	
 
+	switch( action )
+	{
+	case FIND:
+		{
+			cout << "ring find " << frame << endl;
+			endRing = parent->owner->player->position;
+			double a = (double)frame / 5;
+			double f = a;//flyCurve.GetValue( a );
+			position = startRing * ( 1.0 - f ) + endRing * ( f );
+		}
+		break;
+	case LOCK:
+		{
+			position = parent->owner->player->position;
+			cout << "ring lock " << frame << endl;
+		}
+		break;
+	case FREEZE:
+		break;
+	case ACTIVATE:
+		break;
+	case DISSIPATE:
+		break;
+	}
+}
+
+Boss_Bird::HomingRing::HomingRing( Boss_Bird *p_parent, int p_vaIndex )
+	:parent( p_parent ), frame( 0 ), next( NULL ), prev( NULL ),
+	action( FIND ), vaIndex( p_vaIndex )
+{
+	hitbox.isCircle = true;
+	hitbox.rw = 64;
+	hitbox.rh = 64;
+}
+
+void Boss_Bird::HomingRing::UpdatePostPhysics()
+{
 	IntRect ir = parent->ts_homingRing->GetSubRect( 0 );
 	int hw = parent->ts_homingRing->tileWidth / 2;
 	int hh = parent->ts_homingRing->tileHeight / 2;
@@ -956,10 +1010,51 @@ void Boss_Bird::HomingRing::Update()
 	parent->homingVA[vaIndex*4+3].position = Vector2f( position.x, position.y ) 
 		+ Vector2f( -hw, hh );
 
-	parent->homingVA[vaIndex*4+0].color = Color::Green;
+	parent->homingVA[vaIndex*4+0].texCoords = Vector2f( ir.left, ir.top );
+	parent->homingVA[vaIndex*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+	parent->homingVA[vaIndex*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+	parent->homingVA[vaIndex*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+
+	/*parent->homingVA[vaIndex*4+0].color = Color::Green;
 	parent->homingVA[vaIndex*4+1].color = Color::Green;
 	parent->homingVA[vaIndex*4+2].color = Color::Green;
-	parent->homingVA[vaIndex*4+3].color = Color::Green;
+	parent->homingVA[vaIndex*4+3].color = Color::Green;*/
 
 	++frame;
+}
+
+void Boss_Bird::HomingRing::UpdatePhysics()
+{
+	Actor *player = parent->owner->player;
+	if( player->hurtBody.Intersects( hitbox ) )
+	{
+		parent->HomingRingTriggered( this );
+	}
+}
+
+void Boss_Bird::HomingRingTriggered( HomingRing *hr )
+{
+	if( action != KICK )
+	{
+		action = KICK;
+		frame = 0;
+		kickTargetPos = hr->position;
+	}
+}
+
+void Boss_Bird::HomingRing::Clear()
+{
+	parent->homingVA[vaIndex*4+0].position = Vector2f( 0, 0 );
+	parent->homingVA[vaIndex*4+1].position = Vector2f( 0, 0 );
+	parent->homingVA[vaIndex*4+2].position = Vector2f( 0, 0 );
+	parent->homingVA[vaIndex*4+3].position = Vector2f( 0, 0 );
+}
+
+void Boss_Bird::HomingRing::Reset( sf::Vector2<double> &pos )
+{
+	position = pos;
+	startRing = pos;
+
+	prev = NULL;
+	next = NULL;
 }

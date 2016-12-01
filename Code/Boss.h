@@ -640,16 +640,27 @@ struct Boss_Bird : Enemy, LauncherEnemy
 			Count
 		};
 
+		HomingRing( Boss_Bird *parent, int vaIndex );
+		void Reset( sf::Vector2<double> &pos );
 		Action action;
 		int frame;
 		Boss_Bird *parent;
 		HomingRing *next;
 		HomingRing *prev;
 		void Clear();
-		void Update();
+		void UpdatePrePhysics();
+		void UpdatePhysics();
+		void UpdatePostPhysics();
 		sf::Vector2<double> position;
+		CollisionBox hitbox;
 		int vaIndex;
+
+		sf::Vector2<double> startRing;
+		sf::Vector2<double> endRing;
 	};
+
+	void ClearHomingRings();
+	void HomingRingTriggered( HomingRing *hr );
 
 	void AddHRing();
 	HomingRing * ActivateHRing();
@@ -692,14 +703,8 @@ struct Boss_Bird : Enemy, LauncherEnemy
 
 	int bulletSpeed;
 
-	
-	void ClearHoming();
-	void ClearHoming( int index );
-	void SetHoming( sf::Vector2<double> &pos, int index,
-		int tsIndex );
-	int numActiveHoming;
-	int currHoming;
-	
+	sf::Vector2<double> kickTargetPos;
+	sf::Vector2<double> kickStartPos;
 
 	
 	sf::Vector2<double> gridCenter;
