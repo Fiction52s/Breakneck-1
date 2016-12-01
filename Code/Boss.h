@@ -284,7 +284,7 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 };
 
 struct PoiInfo;
-struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
+struct Boss_Bird0 : Enemy, LauncherEnemy, RayCastHandler
 {
 	enum Action
 	{
@@ -313,7 +313,7 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	const static int MAX_PROJECTILES = 3;
 	struct Projectile : QuadTreeCollider
 	{
-		Projectile( Boss_Bird *boss, bool large );
+		Projectile( Boss_Bird0 *boss, bool large );
 		enum State
 		{
 			NO_EXIST,
@@ -339,7 +339,7 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 		void UpdatePhysics();
 		void HitPlayer();
 		void HitTerrain();
-		Boss_Bird *boss;
+		Boss_Bird0 *boss;
 		sf::Sprite sprite;
 		HitboxInfo *hitboxInfo;
 		CollisionBox hurtBody;
@@ -457,7 +457,7 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 
 	int testFrame;
 
-	Boss_Bird( GameSession *owner, sf::Vector2i pos );
+	Boss_Bird0( GameSession *owner, sf::Vector2i pos );
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );
@@ -586,6 +586,203 @@ struct Boss_Bird : Enemy, LauncherEnemy, RayCastHandler
 	};
 	Stored stored;
 };
+
+struct Boss_Bird : Enemy, LauncherEnemy
+{
+	enum Action
+	{
+		FLY,
+		PUNCHPREPOUT,
+		PUNCHPREPIN,
+		PUNCH,
+		THROWHOMING,
+		THROWCURVE,
+		KICK,
+		Count
+	};
+	
+	struct PunchPulse
+	{
+		PunchPulse( GameSession *owner );
+		sf::VertexArray circleVA;
+		GameSession *owner;
+		void PulseOut( sf::Vector2i &pos );
+		void PulseIn( sf::Vector2i &pos );
+		void Draw( sf::RenderTarget *target );
+		void Reset();
+		void Update();
+		void UpdatePoints();
+		sf::Vector2f position;
+		float innerRadius;
+		float outerRadius;
+		const static int CIRCLEPOINTS = 32;
+
+		int pulseLength;
+		float maxOuterRadius;
+		float minOuterRadius;
+		float maxInnerRadius;
+		float minInnerRadius;
+		int frame;
+		bool show;
+		bool out;
+	};
+	PunchPulse punchPulse;
+
+	struct HomingRing
+	{
+		enum Action
+		{
+			FIND,
+			LOCK,
+			FREEZE,
+			ACTIVATE,
+			DISSIPATE,
+			Count
+		};
+
+		Action action;
+		int frame;
+		Boss_Bird *parent;
+		HomingRing *next;
+		HomingRing *prev;
+		void Clear();
+		void Update();
+		sf::Vector2<double> position;
+		int vaIndex;
+	};
+
+	void AddHRing();
+	HomingRing * ActivateHRing();
+	void DeactivateHRing( HomingRing *hr );
+	HomingRing *activeHoming;
+	HomingRing *inactiveHoming;
+
+	//SkeletonFightSeq *skeletonFightSeq;
+	Boss_Bird( GameSession *owner, sf::Vector2i pos );
+	void BulletHitTerrain( BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos );
+	void BulletHitPlayer( BasicBullet *b );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	void UpdatePostPhysics();
+	void ActionEnded();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer();
+	std::pair<bool,bool> PlayerHitMe();
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	sf::Vector2f GetGridPosF( sf::Vector2i &index );
+	sf::Vector2<double> GetGridPosD( sf::Vector2i &index );
+	sf::Vector2f GetGridPosF( int x, int y );
+	sf::Vector2<double> GetGridPosD( int x, int y );
+
+	void SetNextAttack();
+
+	std::map<Action,int> actionLength;
+	std::map<Action,int> animFactor;
+
+	int bulletSpeed;
+
+	
+	void ClearHoming();
+	void ClearHoming( int index );
+	void SetHoming( sf::Vector2<double> &pos, int index,
+		int tsIndex );
+	int numActiveHoming;
+	int currHoming;
+	
+
+	
+	sf::Vector2<double> gridCenter;
+	sf::Vector2<double> gridOrigin;
+	const static int GRID_SIZE_X = 9;
+	const static int GRID_SIZE_Y = 9;
+
+	const static int MAX_HOMING = 12;
+
+	sf::Vector2<double> homingPositions[MAX_HOMING];
+	sf::Vector2i gridCellSize;
+
+	sf::Vector2i currIndex;
+
+	sf::Vector2<double> startFly;
+	sf::Vector2<double> endFly;
+
+	int flyFrame;
+	int flyDuration;
+	CubicBezier flyCurve;
+
+	sf::Sprite targeterSprite;
+	Tileset *ts_homingRing;
+	sf::Vector2<double> homingPos;
+
+	sf::Vector2<double> startRing;
+	sf::Vector2<double> endRing;
+	int homingFrame;
+	sf::VertexArray homingVA;
+
+	Action action;
+	int deathFrame;
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	
+	sf::Vector2i originalPos;
+	int frame;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	CollisionBox hitBody;
+	HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	
+	enum AttackOrb
+	{
+		ORB_PUNCH,
+		ORB_KICK,
+		ORB_THROW
+	};
+
+	
+	sf::Vector2i nextAttackIndex;
+	AttackOrb nextAttackType;
+
+	sf::Sprite nextAttackOrb;
+	Tileset *ts_nextAttackOrb;
+	
+
+	bool facingRight;
+
+	struct Stored
+	{
+		bool dead;
+		int deathFrame;
+		//sf::Vector2<double> deathVector;
+		//double deathPartingSpeed;
+		int targetNode;
+		bool forward;
+		int frame;
+		sf::Vector2<double> position;
+
+		int hitlagFrames;
+		int hitstunFrames;
+	};
+	Stored stored;
+};
+
 
 struct CoyoteFightSeq;
 struct MeetCoyoteSeq;

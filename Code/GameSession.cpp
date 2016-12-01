@@ -2543,6 +2543,22 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if( typeName == "bossbird" )
+			{
+
+				int xPos,yPos;
+
+				is >> xPos;
+				is >> yPos;
+
+				Boss_Bird *enemy = new Boss_Bird( this, Vector2i ( xPos, yPos ) );
+
+				fullEnemyList.push_back( enemy );
+
+				b_bird = enemy;
+
+				enemyTree->Insert( enemy );
+			}
 
 			//w3
 			else if( typeName == "pulser" )

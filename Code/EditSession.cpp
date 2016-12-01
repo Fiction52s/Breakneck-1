@@ -1629,6 +1629,15 @@ bool EditSession::OpenFile( string fileName )
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if( typeName == "bossbird" )
+				{
+					Vector2i pos;
+
+					is >> pos.x;
+					is >> pos.y;
+
+					a.reset( new BossBirdParams( this, pos ) );
+				}
 
 				//w3
 				else if( typeName == "pulser" )
@@ -3612,10 +3621,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *poisonFrogPanel = CreateOptionsPanel( "poisonfrog" );
 	ActorType *poisonFrogType = new ActorType( "poisonfrog", poisonFrogPanel );
 
+	ActorType *bossBirdType = new ActorType( "bossbird", NULL );
+
 	types["bat"] = batType;
 	types["curveturret"] = curveTurretType;
 	types["poisonfrog"] = poisonFrogType;
 	types["stagbeetle"] = stagBeetleType;
+	types["bossbird"] = bossBirdType;
 
 	//w3
 	Panel *pulserPanel = CreateOptionsPanel( "pulser" );
@@ -3754,6 +3766,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 2, Sprite( curveTurretType->iconTexture ), "curveturret" );
 	gs->Set( 2, 2, Sprite( poisonFrogType->iconTexture ), "poisonfrog" );
 	gs->Set( 3, 2, Sprite( stagBeetleType->iconTexture ), "stagbeetle" );
+	gs->Set( 4, 2, Sprite( bossCoyoteType->iconTexture ), "bossbird" );
 
 	gs->Set( 0, 3, Sprite( pulserType->iconTexture ), "pulser" );
 	gs->Set( 1, 3, Sprite( badgerType->iconTexture ), "badger" );
@@ -6124,6 +6137,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											//showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
 											//showPanel->textBoxes["waitframes"]->text.setString( "10" );
 										}
+									}
+									else if( trackingEnemy->name == "bossbird" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossBird( new BossBirdParams( this, Vector2i( worldPos.x,
+											worldPos.y ) ) );
+										bossBird->group = groups["--"];
+
+										CreateActor( bossBird );
 									}
 
 									//w3
@@ -14089,6 +14112,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+	}
+	else if( name == "bossbird" )
+	{
+		width = 64;
+		height = 64;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 	
 	//w3

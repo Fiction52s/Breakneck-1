@@ -926,3 +926,34 @@ ActorParams *CurveTurretParams::Copy()
 	CurveTurretParams *copy = new CurveTurretParams( *this );
 	return copy;
 }
+
+BossBirdParams::BossBirdParams( EditSession *edit, Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY )
+{
+	type = edit->types["bossbird"];
+
+	position = pos;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+				
+	SetBoundingQuad();	
+}
+
+bool BossBirdParams::CanApply()
+{
+	return true;
+}
+
+void BossBirdParams::WriteParamFile( ofstream &of )
+{
+	//no params its a boss!
+}
+
+ActorParams *BossBirdParams::Copy()
+{
+	BossBirdParams *copy = new BossBirdParams( *this );
+	return copy;
+}
