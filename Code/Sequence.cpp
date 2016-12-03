@@ -31,6 +31,120 @@ using namespace std;
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
 
+
+ShipExitSeq::ShipExitSeq( GameSession *p_owner )
+	:owner( p_owner )
+{
+	center.AddLineMovement( V2d( 0, 0 ), V2d( 0, 0 ), 
+		CubicBezier( 0, 0, 1, 1 ), 60 );
+	//shipMovement.AddCubicMovement( 
+	shipMovement.AddLineMovement( V2d( 0, 0 ), 
+		V2d( 0, 0 ), CubicBezier( 0, 0, 1, 1 ), 60 );
+	shipMovement.AddLineMovement( V2d( 0, 0 ), 
+		V2d( 0, 0 ), CubicBezier( 0, 0, 1, 1 ), 60 );
+
+	ts_ship = owner->GetTileset( "Ship/ship_exit_1920x1080.png", 1920, 1080 );
+	shipSprite.setTexture( *ts_ship->texture );
+	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
+	shipSprite.setScale( .5, .5 );
+	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, 
+		shipSprite.getLocalBounds().height / 2 );
+	
+	//shipSprite.setTexture
+}
+
+bool ShipExitSeq::Update()
+{
+	Actor *player = owner->player;
+	int shipOffsetY = -200;
+	int pOffsetY = -170;
+	int sOffsetY = pOffsetY;//shipOffsetY + pOffsetY;
+	
+	//player->action = Actor::SPAWNWAIT;
+	//player->frame = 0;
+
+	switch( frame )
+	{
+	case 0:
+		{
+			owner->cam.SetManual( true );
+			center.movementList->start = V2d( owner->cam.pos.x, owner->cam.pos.y );
+			center.movementList->end = V2d( owner->player->position.x, 
+				owner->player->position.y - 200 );
+			
+			center.Reset();
+			owner->cam.SetMovementSeq( &center, false );
+
+			abovePlayer = V2d( player->position.x , player->position.y - 500 );
+
+			shipMovement.movementList->start = abovePlayer + V2d( -1000, -500 );//player->position + V2d( -1000, sOffsetY );
+			shipMovement.movementList->end = abovePlayer;//player->position + V2d( 1000, sOffsetY );
+			shipMovement.Reset();
+
+			Movement *m = shipMovement.movementList->next;
+
+			m->start = abovePlayer;
+			m->end = abovePlayer + V2d( 1000, -500 );
+
+			origPlayer = owner->player->position;
+			attachPoint = V2d( player->position.x, abovePlayer.y + 170 );
+			break;
+		}
+	case 1:
+		{
+			//owner->Fade( false, 60, Color::Black );
+			//owner->Pause( 60 );
+			//owner->cam.Set( Vector2f( player->position.x, player->position.y ), 1, 0 );
+			//owner->cam.SetManual( false );
+			break;
+		}
+	case (60-16):
+		{
+			owner->player->GrabShipWire();
+		}
+		break;
+	}
+
+	//cout << "sequence frame : " << frame << endl;
+	if( frame >= 61 )
+	{
+		owner->player->position = V2d( shipMovement.position.x, shipMovement.position.y + 170 );
+	}
+	else if( frame >= 45 )
+	{
+		double a = (double)(frame-44) / 16;
+		owner->player->position = origPlayer * (1.0 - a ) + attachPoint * a;
+	}
+	
+
+	for( int i = 0; i < NUM_STEPS; ++i )
+	{
+		shipMovement.Update();
+	}
+	
+	//cout << "shipmovement: " << shipMovement.currTime << endl;
+	
+	
+	shipSprite.setPosition( shipMovement.position.x,
+		shipMovement.position.y );
+
+	++frame;
+
+	return true;
+}
+
+void ShipExitSeq::Draw( RenderTarget *target )
+{
+	target->draw( shipSprite );
+}
+
+void ShipExitSeq::Reset()
+{
+	frame = 0;
+}
+
+
+
 CrawlerFightSeq::CrawlerFightSeq( GameSession *p_owner )
 	:owner( p_owner )
 {
@@ -1005,3 +1119,4 @@ void SkeletonFightSeq::Reset()
 {
 	frame = 0;
 }
+

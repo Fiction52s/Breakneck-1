@@ -303,6 +303,7 @@ struct Sequence;
 struct CrawlerFightSeq;
 struct CrawlerAfterFightSeq;
 struct EnterNexus1Seq;
+struct ShipExitSeq;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -344,6 +345,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::VertexArray cloud1;
 	sf::VertexArray cloudBot0;
 	sf::VertexArray cloudBot1;
+
+	ShipExitSeq *shipExitSeq;
+
 
 	//int shardsLoadedCounter;
 	//Level *currentLevelInfo;

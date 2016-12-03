@@ -4,6 +4,7 @@
 #include <iostream>
 #include <assert.h>
 #include "PowerOrbs.h"
+#include "Sequence.h"
 
 using namespace sf;
 using namespace std;
@@ -580,8 +581,12 @@ Actor::Actor( GameSession *gs )
 		normal[SKYDIVETOFALL] = owner->GetTileset( "intro_0_160x80.png", 160, 80 );
 
 		actionLength[WAITFORSHIP] = 60 * 1;
-		tileset[WAITFORSHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
-		normal[WAITFORSHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
+		tileset[WAITFORSHIP] = owner->GetTileset( "ship_exit_128x96.png", 128, 96 );
+		normal[WAITFORSHIP] = owner->GetTileset( "ship_exit_128x96.png", 128, 96 );
+
+		actionLength[GRABSHIP] = 4 * 4 + 20;
+		tileset[GRABSHIP] = owner->GetTileset( "ship_exit_128x96.png", 128, 96 );
+		normal[GRABSHIP] = owner->GetTileset( "ship_exit_128x96.png", 128, 96 );
 
 		actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
 		tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset( "w1_airdashget_128x128.png", 128, 128 );
@@ -1445,10 +1450,9 @@ void Actor::UpdatePrePhysics()
 	ActionEnded();
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
-		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT )
+		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
+		|| action == GRABSHIP )
 	{
-		
-
 		if( action == INTRO && frame == 0 )
 		{
 			owner->soundNodeList->ActivateSound( soundBuffers[S_ENTER] );
@@ -8671,7 +8675,8 @@ void Actor::UpdateFullPhysics()
 void Actor::UpdatePhysics()
 {
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT
-		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT )
+		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
+		|| action == GRABSHIP )
 		return;
 	/*if( blah == 0 )
 	{
@@ -14321,18 +14326,31 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 }
 
+void Actor::GrabShipWire()
+{
+	action = GRABSHIP;
+	ground = NULL;
+	frame = 0;
+}
+
 void Actor::ShipPickupPoint( double eq, bool fr )
 {
-	action = WAITFORSHIP;
-	frame = 0;
-	assert( ground != NULL );
-	edgeQuantity = eq;
-	groundSpeed = 0;
-	facingRight = fr;
-
-	if( ground->Normal().y == -1 )
+	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
-		offsetX = 0;
+		action = WAITFORSHIP;
+		frame = 0;
+		assert( ground != NULL );
+		edgeQuantity = eq;
+		groundSpeed = 0;
+		facingRight = fr;
+
+		if( ground->Normal().y == -1 )
+		{
+			offsetX = 0;
+		}
+
+		owner->activeSequence = owner->shipExitSeq;
+		owner->shipExitSeq->Reset();
 	}
 }
 
@@ -16664,6 +16682,20 @@ void Actor::UpdateSprite()
 
 				//cout << "angle: " << angle / PI * 180  << endl;
 			}
+		}
+		break;
+	case GRABSHIP:
+		{
+			//cout << "grabship: " << frame << endl;
+			if( frame / 4 < 4 )
+			{
+				sprite->setTexture( *(tileset[GRABSHIP]->texture));
+				sprite->setTextureRect( tileset[GRABSHIP]->GetSubRect( 1 + frame / 4 ) );
+				sprite->setOrigin( sprite->getLocalBounds().width / 2,
+					sprite->getLocalBounds().height / 2 );
+			}
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
 		}
 		break;
 	case GETPOWER_AIRDASH_MEDITATE:

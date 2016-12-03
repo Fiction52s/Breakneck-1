@@ -36,6 +36,23 @@ struct Sequence
 	virtual void Draw( sf::RenderTarget *target ) = 0;
 };
 
+struct ShipExitSeq : Sequence
+{
+	ShipExitSeq( GameSession *owner );
+	bool Update();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+
+	Tileset *ts_ship;
+	sf::Sprite shipSprite;
+	MovementSequence shipMovement;
+	MovementSequence center;
+	GameSession *owner;
+	sf::Vector2<double> abovePlayer;
+	sf::Vector2<double> origPlayer;
+	sf::Vector2<double> attachPoint;
+};
+
 struct CrawlerFightSeq : Sequence
 {
 	enum State

@@ -69,6 +69,7 @@ struct Actor : QuadTreeCollider,
 		SKYDIVE,
 		SKYDIVETOFALL,
 		WAITFORSHIP,
+		GRABSHIP,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
 		SEQ_CRAWLERFIGHT_STAND,
@@ -196,6 +197,7 @@ struct Actor : QuadTreeCollider,
 
 	void ShipPickupPoint( double eq,
 		bool facingRight );
+	void GrabShipWire();
 
 
 	void UpdatePostPhysics();

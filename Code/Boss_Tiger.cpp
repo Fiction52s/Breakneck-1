@@ -1,8 +1,9 @@
+#include "Boss.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Boss.h"
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -18,507 +19,233 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-//double fRand(double fMin, double fMax)
-//{
-//    double f = (double)rand() / RAND_MAX;
-//    return fMin + f * (fMax - fMin);
-//}
 
-Boss_Tiger::Boss_Tiger( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE, false, 4 ), facingRight( true )
-	//markerVA( sf::Quads, 5 * 4 )
-	//moveBezTest( .22,.85,.3,.91 )
+
+Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
+	:Enemy( owner, EnemyType::BOSS_TIGER, false, 6 ), deathFrame( 0 ),
+	nodeVA( sf::Quads, 13 * 4 )
 {
-	shootIndex = 0;
-	numBullets = 5;
-	//5 is max bullets
-	/*for( int i = 0; i < 5 * 4; ++i )
-	{
-		markerVA[i].position = Vector2f( 0, 0 );
-		markerVA[i].color = Color::Red;
-	}*/
+	//get point of interest where to place tiger's starting position
+	//and thats where you put startground and startquant
+
+	//startGround = edge;
+	//startQuant = edgeQuantity;
+	originalPos = pos;
 	
-	//22.59
-	bulletIndex = 0;
-	frameTest = 0;	
-	action = GRIND;
-	travelIndex = 0;
+	gridCenter.x = originalPos.x;
+	gridCenter.y = originalPos.y;
 
+	currIndex.x = GRID_SIZE_X / 2;
+	currIndex.y = GRID_SIZE_Y / 2;
 
+	gridCellSize.x = 64;
+	gridCellSize.y = 64;
 
+	gridOrigin = gridCenter + V2d( -currIndex.x * gridCellSize.x, -currIndex.y * gridCellSize.y );
 
-
-
-
-	initHealth = 60;
-	health = initHealth;
-	dead = false;
-	deathFrame = 0;
-
-	//double height = 128;
-	//double width = 128;
-
-	startGround = g;
-	startQuant = q;
-	frame = 0;
-
-	mover = new SurfaceMover( owner, g, q, 64 );
-	mover->surfaceHandler = this;
-	mover->SetSpeed( 0 );
+	actionLength[PLAN] = 10;
+	actionLength[GRIND] = 60;
+	actionLength[LUNGE] = 60;
+	
+	animFactor[PLAN] = 1;
+	animFactor[GRIND] = 1;
+	animFactor[LUNGE] = 1;
+	
+	
 	
 
-	//ts = owner->GetTileset( "crawler_128x128.png", width, height );
-	double width = 128;
-	double height = 144;
-	ts = owner->GetTileset( "bosscrawler_128x144.png", width, height );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( q );
-	sprite.setPosition( mover->physBody.globalPosition.x,
-		mover->physBody.globalPosition.y );
-	position = mover->physBody.globalPosition;
-	//roll = false;
-	//position = gPoint + ground->Normal() * height / 2.0;
-	
+	//current num links is 248	
+	//position.x = pos.x;
+	//position.y = pos.y;
+
+	ts_homingRing = owner->GetTileset( "bossbird_homing_100x100.png", 100, 100 );
+	targeterSprite.setTexture( *ts_homingRing->texture );
+	targeterSprite.setTextureRect( ts_homingRing->GetSubRect( 0 ) );
+	targeterSprite.setOrigin( targeterSprite.getLocalBounds().width / 2,
+		targeterSprite.getLocalBounds().height / 2 );
+
+
+	bulletSpeed = 5;
 
 	receivedHit = NULL;
+	
+	
+	flyDuration = 60;
+	
 
-	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
+	deathFrame = 0;
+	
+	//launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
+	//launcher->SetBulletSpeed( bulletSpeed );	
+
+	initHealth = 40;
+	health = initHealth;
+
+	//V2d pos = edge->GetPoint( edgeQuantity );
+	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	
+	action = PLAN;
+	frame = 0;
+
+	ts = owner->GetTileset( "bat_48x48.png", 48, 48 );
+	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect( ts->GetSubRect( frame ) );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	sprite.setPosition( pos.x, pos.y );
+
+	ts_nextAttackOrb = owner->GetTileset( "bossbird_orbs_64x64.png", 64, 64 );
+	nextAttackOrb.setTexture( *ts_nextAttackOrb->texture );
+	nextAttackOrb.setTextureRect( ts_nextAttackOrb->GetSubRect( ORB_PUNCH ) );
+	nextAttackOrb.setOrigin( nextAttackOrb.getLocalBounds().width / 2, 
+		nextAttackOrb.getLocalBounds().height / 2 );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 64;
-	hurtBody.rh = 64;
+	hurtBody.rw = 16;
+	hurtBody.rh = 16;
 
 	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 64;
-	hitBody.rh = 64;
+	hitBody.rw = 16;
+	hitBody.rh = 16;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+	//hitboxInfo->kbDir;
 
-	//crawlAnimationFactor = 5;
-	//rollAnimationFactor = 5;
-
-
-	/*testLaunch = new Launcher( this, owner, 10, 1,
-		mover->physBody.globalPosition, g->Normal(), 0 );*/
-	/*physBody.isCircle = true;
-	physBody.offset.x = 0;
-	physBody.offset.y = 0;
-	physBody.rw = 32;
-	physBody.rh = 32;
-	physBody.type = CollisionBox::BoxType::Physics;*/
-
-	launcher = new Launcher( this, BasicBullet::BOSS_TIGER, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
-	launcher->SetBulletSpeed( 10 );	
+	dead = false;
 
 	deathPartingSpeed = .4;
+	deathVector = V2d( 1, -1 );
 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
-
-	totalDistanceAround = 0;
-	Edge *curr = mover->ground;
-	do
-	{
-		
-		totalDistanceAround += length( curr->v1 - curr->v0 );
-		cout << "total add: " << totalDistanceAround << ", " << curr << endl;
-		curr = curr->edge1;
-	}
-	while( curr != mover->ground );
-
+	facingRight = true;
 	
+	activeHoming = NULL;
+	inactiveHoming = NULL;
 
-	//bezFrame = 0;
-	//bezLength = 60 * NUM_STEPS;
+	for( int i = 0; i < MAX_HOMING; ++i )
+	{
+		AddHRing();
+	}
 
-	//mover->SetSpeed( 0 );
-	//mover->Move( slowMultiple );
+	ResetEnemy();
+	//UpdateHitboxes();
+	
+	
+}
 
-	//ground = mover->ground;
-	//edgeQuantity = mover->edgeQuantity;
-	//position = mover->physBody.globalPosition;
+
+
+void Boss_Tiger::ClearHomingRings()
+{
+	HomingRing *active = activeHoming;
+	while( active != NULL )
+	{
+		HomingRing *next = active->next;
+		DeactivateHRing( active );
+		active = next;
+	}
+
+	/*for( int i = 0; i < MAX_HOMING; ++i )
+	{
+		homingVA[i*4+0].position = Vector2f( 0, 0 );
+		homingVA[i*4+1].position = Vector2f( 0, 0 );
+		homingVA[i*4+2].position = Vector2f( 0, 0 );
+		homingVA[i*4+3].position = Vector2f( 0, 0 );
+	}*/
 }
 
 void Boss_Tiger::ResetEnemy()
-{
-	shootIndex = 0;
-	launcher->Reset();
-	bulletIndex = 0;
-	frameTest = 0;	
-	action = GRIND;
-	travelIndex = 0;
-
-	/*for( int i = 0; i < 5 * 4; ++i )
-	{
-		markerVA[i].position = Vector2f( 0, 0 );
-		markerVA[i].color = Color::Red;
-	}*/
-
+{	
+	
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
-	mover->roll = false;
 	mover->UpdateGroundPos();
-	mover->SetSpeed( 0 );
+	action = PLAN;
 
-	position = mover->physBody.globalPosition;
-	//mover->UpdateGroundPos();
+	currIndex.x = GRID_SIZE_X / 2;
+	currIndex.y = GRID_SIZE_Y / 2;
 
-	//testLaunch->Reset();
-	//testLaunch->position = mover->physBody.globalPosition;
-	//testLaunch->facingDir = startGround->Normal();
+	flyFrame = 0;
+	//fireCounter = 0;
+	//launcher->Reset();
 
-	bezFrame = 0;
-	health = initHealth;
-	attackFrame = -1;
-	//lastReverser = false;
-	//roll = false;
-	//ground = startGround;
-	//edgeQuantity = startQuant;
-	V2d gPoint = mover->ground->GetPoint( mover->edgeQuantity );
-	//sprite.setPosition( mover->physBody.globalPosition.x,
-	//	mover->physBody.globalPosition.y );
+	dead = false;
+	//dying = false;
+	deathFrame = 0;
 	frame = 0;
 
-	V2d gn = mover->ground->Normal();
-	//mover->physBody.globalPosition = gPoint + mover->ground->Normal() * 64.0 / 2.0;
-
-	/*V2d gn = ground->Normal();
-	if( gn.x > 0 )
-		offset.x = physBody.rw;
-	else if( gn.x < 0 )
-		offset.x = -physBody.rw;
-	if( gn.y > 0 )
-		offset.y = physBody.rh;
-	else if( gn.y < 0 )
-		offset.y = -physBody.rh;*/
-
-	//position = gPoint + offset;
-
-	deathFrame = 0;
-	dead = false;
-
-	//----update the sprite
-	double angle = 0;
-	////position = gPoint + gn * 32.0;
-	angle = atan2( gn.x, -gn.y );
-	//	
-	//sprite.setTexture( *ts_walk->texture );
-	//sprite.setRotation( angle );
-	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	//sprite.setPosition( 
-	//V2d pp = ground->GetPoint( edgeQuantity );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	//----
+	//position.x = originalPos.x;
+	//position.y = originalPos.y;
+	receivedHit = NULL;
 
 	UpdateHitboxes();
-}
 
-int Boss_Tiger::NumTotalBullets()
-{
-	return 0;
+	UpdateSprite();
+	health = initHealth;
+
+	ClearHomingRings();
 }
 
 void Boss_Tiger::HandleEntrant( QuadTreeEntrant *qte )
 {
-	assert( queryMode != "" );
-
-	//might need for other queries but def not for physics
-}
-
-void Boss_Tiger::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
-{
-	bool okay = (mover->groundSpeed > 0 && edge != mover->ground->edge1 ) || 
-		(mover->groundSpeed < 0 && edge != mover->ground->edge0 );
-	//bool notMyEdge = (mover->groundSpeed > 0 && edge != mover->ground->edge1
-	if( edge != mover->ground && okay && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
-		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+	SpecterArea *sa = (SpecterArea*)qte;
+	if( sa->barrier.Intersects( hurtBody ) )
 	{
-		if( mover->groundSpeed > 0 )
-		{
-			rcEdge = edge->edge1;
-			rcQuantity = 0;
-		}
-		else
-		{
-			rcEdge = edge->edge0;
-			rcQuantity = length( edge->edge0->v1 - edge->edge0->v0 );
-		}
-		
+		specterProtected = true;
 	}
 }
 
-void Boss_Tiger::UpdateHitboxes()
+void Boss_Tiger::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
-	Edge *ground = mover->ground;
-	if( ground != NULL )
-	{
-		//V2d gn = ground->Normal();
-		//double angle = 0;
-		
-		
-		//angle = atan2( gn.x, -gn.y );
-		
-		//hitBody.globalAngle = angle;
-		//hurtBody.globalAngle = angle;
+	//b->launcher->DeactivateBullet( b );
+}
 
-		V2d knockbackDir( 1, -1 );
-		knockbackDir = normalize( knockbackDir );
-		if( mover->groundSpeed > 0 )
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-			hitboxInfo->knockback = 15;
-		}
-	}
-	else
-	{
-		//hitBody.globalAngle = 0;
-		//hurtBody.globalAngle = 0;
-	}
-
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	hitBody.globalPosition = mover->physBody.globalPosition;
-	hurtBody.globalPosition = mover->physBody.globalPosition;
-	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+void Boss_Tiger::BulletHitPlayer(BasicBullet *b )
+{
+	//owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Boss_Tiger::ActionEnded()
 {
-}
-
-double Boss_Tiger::GetDistanceCCW( int index )
-{
-	Edge *e = bulletHits[index].edge;
-	double q = bulletHits[index].quantity;
-
-	
-	double sum = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
-
-	sum += currQ;
-	curr = curr->edge0;
-
-	while( curr != e )
+	if( frame == actionLength[action] * animFactor[action] )
 	{
-		sum += length( curr->v1 - curr->v0 );	
-		curr = curr->edge0;
-	}
-
-	sum += length( curr->v1 - curr->v0 ) - q;
-
-	return sum;
-}
-
-double Boss_Tiger::GetDistanceClockwise( int index )
-{
-	Edge *e = bulletHits[index].edge;
-	double q = bulletHits[index].quantity;
-
-	
-	double sum = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
-
-	sum += length( curr->v1 - curr->v0 ) - currQ;
-	curr = curr->edge1;
-
-	while( curr != e )
-	{
-		sum += length( curr->v1 - curr->v0 );	
-		//cout << "sum clockwise: " << sum << ", " << curr << endl;
-		curr = curr->edge1;
-	}
-
-	sum += q;
-
-
-	return sum;
-}
-
-bool Boss_Tiger::GetClockwise( int index )
-{
-	Edge *e = bulletHits[index].edge;
-	double q = bulletHits[index].quantity;
-
-	
-	double sum = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
-
-	if( curr == e )
-	{
-		if( q > currQ )
-		{
-			cout << "false same edge" << endl;
-			return false;
-		}
-		else
-		{
-			cout << "true same edge" << endl;
-			return true;
-		}
-	}
-	else
-	{
-		double distanceClockwise = GetDistanceClockwise( index );
-		double ccw = GetDistanceCCW( index );
-		if( distanceClockwise >= ccw )
-		{
-			cout << "clockwise is greater: " << distanceClockwise << ", " << ccw << endl;
-			cout << "sum: " << distanceClockwise + ccw << endl;
-			//cout << "distance clock: " << distanceClockwise << ", " <<
-			//	totalDistanceAround / 2 << endl;
-			return true;
-		}
-		else
-		{
-			//cout << "distance clock false: " << distanceClockwise << ", blah: " << blah << ", "
-			//	<< totalDistanceAround / 2 << endl;
-			cout << "ccw is greater: " << distanceClockwise << ", " << ccw <<endl;
-			cout << "sum: " << distanceClockwise + ccw << endl;
-			return false;
-		}
+		
 	}
 }
 
 void Boss_Tiger::UpdatePrePhysics()
 {
-	launcher->UpdatePrePhysics();
-	Actor *player = owner->player;
-
-	if( dead )
-		return;
-
 	ActionEnded();
 
-	mover->SetSpeed( 10 );
-
-	bool roll = mover->roll;
-
-	if( !roll )
-	{
-
-		//int r = rand() % 120;
-		if( frameTest == 0 )
-		{
-			cout << "attempting ray" << endl;
-			V2d point = mover->ground->GetPoint( mover->edgeQuantity );
-			//point += mover->ground->Normal() * 1.0; //testing for now
-			V2d along = normalize( mover->ground->v1 - mover->ground->v0 );
-
-			rayStart = point;
-			rayEnd = rayStart + along * 1000.0;
-
-			rcEdge = NULL;
-			RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
-
-			if( rcEdge != NULL )
-			{
-				cout << "teleporting from: " << position.x << ", " << position.y <<
-					" to: " << mover->physBody.globalPosition.x << ", " <<
-					mover->physBody.globalPosition.y << endl;
-				mover->ground = rcEdge;
-				mover->edgeQuantity = rcQuantity;
-				mover->UpdateGroundPos();
-			}
-			frameTest = 0;
-		}
-		else
-		{
-			++frameTest;
-		}
-		
-	}
-
-	/*if( action == BOOST )
-	{
-		
-	}
-	else if( action == SHOOT )
-	{
-		if( frameTest == 250 )
-		{
-			action = BOOST;
-			travelIndex = 0;
-			frameTest = 0;
-			leftFirstEdge = false;
-			firstEdge = mover->ground;
-
-			if( GetClockwise( travelIndex ) )
-			{
-				mover->SetSpeed( 20 + travelIndex * 8 );
-			}
-			else
-			{
-				mover->SetSpeed( -20 - travelIndex * 8 );
-			}
-		}
-	}*/
-
-
-
-
-	//if( action == BOOST )
-	//{
-	//	
-	//	
-	//}
-	//else if( action == SHOOT )
-	//{
-	//	if( frameTest % 30 == 0 && frameTest < 30 * 5 )
-	//	{
-	//		
-	//		launcher->position = position;
-	//		//V2d test = normalize( V2d(  fRand( -1, 1 ),  fRand( -1, 1 ) ) );
-	//		//can shoot in 1 of 32 (or w.e.) directions. can't shoot
-	//		//the same direction twice
-	//		V2d gAlong = normalize( mover->ground->v1 - mover->ground->v0 );
-	//		double angle = atan2( gAlong.y, gAlong.x );
-	//		angle -= PI / 16.0 * bulletDirIndex[shootIndex];
-	//		//angle = 0;
-	//		//angle -= PI / 2;
-	//		
-	//		V2d dir( cos( angle ), sin( angle ) );
-	//		cout << "shooting: " << shootIndex 
-	//			<< ", dir: " << bulletDirIndex[shootIndex] << endl;
-	//		launcher->facingDir = dir;
-	//		launcher->Fire();
-	//		++shootIndex;
-	//	}
-	//	mover->SetSpeed( 0 );
-	//	frameTest++;
-	//}
-
+	//launcher->UpdatePrePhysics();
 
 	
 
+
+	
+	HomingRing *hr = activeHoming;
+	while( hr != NULL )
+	{
+		hr->UpdatePrePhysics();
+		hr = hr->next;
+	}
+
 	if( !dead && receivedHit != NULL )
-	{	
+	{
+		//owner->Pause( 5 );
+		
 		//gotta factor in getting hit by a clone
 		health -= 20;
 
@@ -526,11 +253,10 @@ void Boss_Tiger::UpdatePrePhysics()
 
 		if( health <= 0 )
 		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			dead = true;
-
-			
+			//if( hasMonitor && !suppressMonitor )
+			//	owner->keyMarker->CollectKey();
+			//dying = true;
+			//cout << "dying" << endl;
 		}
 
 		receivedHit = NULL;
@@ -538,429 +264,406 @@ void Boss_Tiger::UpdatePrePhysics()
 }
 
 void Boss_Tiger::UpdatePhysics()
-{
-	launcher->UpdatePhysics();
+{	
+
+	//if( action == FLY || action == THROWCURVE )
+	//{
+	//	double a = (double)flyFrame / flyDuration;
+	//	double f = flyCurve.GetValue( a );
+	//	position = startFly * ( 1.0 - f ) + endFly * ( f );
+	//}
+	//else if( action == THROWHOMING && frame <= 5 )
+	//{
+	//	endRing = owner->player->position;
+	//	double a = (double)frame / 5;
+	//	double f = a;//flyCurve.GetValue( a );
+	//	homingPos = startRing * ( 1.0 - f ) + endRing * ( f );
+	//}
+	
 	specterProtected = false;
-
-	if( dead )
+	if( !dead )
 	{
-		return;
-	}
-
-
-
-//	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
-	//mover->groundSpeed = groundSpeed;// * f;
-	if( !facingRight )
-	{
-	//	mover->groundSpeed = groundSpeed;// * f;
-	}
-	bezFrame++;
-
-	if( bezFrame == bezLength )
-	{
-		bezFrame = 0;
-		
-
-	}
-
-	mover->Move( slowMultiple );
-
-	
-	
-
-	position = mover->physBody.globalPosition;
-	
-	PhysicsResponse();
-}
-
-bool Boss_Tiger::ResolvePhysics( V2d vel )
-{
-	possibleEdgeCount = 0;
-
-	double rw = mover->physBody.rw;
-	double rh = mover->physBody.rh;
-
-	Rect<double> oldR( position.x - rw, 
-		position.y - rh, 2 * rw, 2 * rh );
-	position += vel;
-	
-	Rect<double> newR( position.x - rw, 
-		position.y - rh, 2 * rw, 2 * rh );
-	//minContact.collisionPriority = 1000000;
-	
-	double oldRight = oldR.left + oldR.width;
-	double right = newR.left + newR.width;
-
-	double oldBottom = oldR.top + oldR.height;
-	double bottom = newR.top + newR.height;
-
-	double maxRight = max( right, oldRight );
-	double maxBottom = max( oldBottom, bottom );
-	double minLeft = min( oldR.left, newR.left );
-	double minTop = min( oldR.top, newR.top );
-	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
-	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
-
-	
-	minContact.collisionPriority = 1000000;
-
-	
-
-	tempVel = vel;
-
-	col = false;
-	minContact.edge = NULL;
-
-	queryMode = "resolve";
-	owner->terrainTree->Query( this, r );
-	//Query( this, owner->testTree, r );
-
-	return col;
-}
-
-void Boss_Tiger::PhysicsResponse()
-{
-	if( !dead  )
-	{
-		bool roll = mover->roll;
-		double angle = 0;
-		Edge *ground = mover->ground;
-		double edgeQuantity = mover->edgeQuantity;
-
-		if( ground != NULL )
-		{
-		//cout << "response" << endl;
-			double spaceNeeded = 0;
-			V2d gn = ground->Normal();
-			V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
-		
-	
-		if( !roll )
-		{
-			//position = gPoint + gn * 32.0;
-			angle = atan2( gn.x, -gn.y );
-		
-//			sprite.setTexture( *ts_walk->texture );
-			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !facingRight )
-			{
-				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			else
-			{
-				sprite.setTextureRect( r );
-			}
-			
-			//V2d pp = ground->GetPoint( mover->edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( gPoint.x, gPoint.y );
-		}
-		else
-		{
-			
-			if( facingRight )
-			{
-				V2d vec = normalize( position - ground->v1 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}
-			else
-			{
-				//angle = 
-				/*V2d e0n = ground->edge0->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e0n.y, e0n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;*/
-
-			
-
-			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			//	angleVec = normalize( angleVec );
-
-			//	position = gPoint + angleVec * 16.0;
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}	
-		}
-		}
-		else
-		{
-			V2d p = mover->physBody.globalPosition;
-
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
-			sprite.setPosition( p.x, p.y );
-			sprite.setRotation( 0 );
-		}
-
-		//sprite.setPosition( position.x, position.y );
-
-		UpdateHitboxes();
-
 		if( PlayerSlowingMe() )
 		{
 			if( slowMultiple == 1 )
 			{
 				slowCounter = 1;
 				slowMultiple = 5;
-			//	cout << "yes slow" << endl;
 			}
 		}
 		else
 		{
-			slowCounter = 1;
 			slowMultiple = 1;
-		//	cout << "no slow" << endl;
+			slowCounter = 1;
 		}
+	}
 
-		if( receivedHit == NULL )
+	HomingRing *hr = activeHoming;
+	while( hr != NULL )
+	{
+		hr->UpdatePhysics();
+		hr = hr->next;
+	}
+
+	//launcher->UpdatePhysics();
+
+	if( !dead )
+	{
+		PhysicsResponse();
+	}
+	return;
+}
+
+void Boss_Tiger::PhysicsResponse()
+{
+	if( !dead && receivedHit == NULL )
+	{
+		UpdateHitboxes();
+
+		pair<bool,bool> result = PlayerHitMe();
+		if( result.first )
 		{
-			pair<bool, bool> result = PlayerHitMe();
-			if( result.first )
+			owner->player->ConfirmHit( 6, 5, .8, 6 );
+
+			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
-				//cout << "hit here!" << endl;
-				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( 4, 5, .8, 6 );
-
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
-				{
-					owner->player->velocity.y = 4;//.5;
-				}
-
-															//cout << "frame: " << owner->player->frame << endl;
-
-			//owner->player->frame--;
-			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			
-			/*if( !result.second )
-			{
-				owner->Pause( 6 );
-			}*/
-			
-			//dead = true;
-			//receivedHit = NULL;
+				owner->player->velocity.y = 4;//.5;
 			}
+
+//			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 		}
 
 		if( IHitPlayer() )
 		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		//	cout << "Boss_Tiger just hit player for " << hitboxInfo->damage << " damage!" << endl;
+		}
+	}
+}
+
+void Boss_Tiger::ConnectNodes()
+{
+	for( int i = 0; i < 13; ++i )
+	{
+		allNodes[i] = new Node;
+	}
+
+	allNodes[0]->position = V2d( originalPos.x, originalPos.y );
+
+	Vector2f op( originalPos.x, originalPos.y );
+	nodeVA[0].position = op + ( -nodeSize.x / 2, -nodeSize.y / 2 );
+	nodeVA[1].position = op + ( nodeSize.x / 2, -nodeSize.y / 2 );
+	nodeVA[2].position = op + ( nodeSize.x / 2, nodeSize.y / 2 );
+	nodeVA[3].position = op + ( -nodeSize.x / 2, nodeSize.y / 2 );
+
+	nodeVA[0].color = Color::Red;
+	nodeVA[1].color = Color::Red;
+	nodeVA[2].color = Color::Red;
+	nodeVA[3].color = Color::Red;
+
+	Transform t;
+	Vector2f offset( 0, -nodeRadius1 );
+	for( int i = 0; i < 6; ++i )
+	{
+		Vector2f newP = t.transformPoint( offset );
+		allNodes[i+1]->position = V2d( newP.x, newP.y );
+		t.rotate( -360.f / 6.f );
+
+		int j = i + 1;
+		nodeVA[j*4+0].position = newP + ( -nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+1].position = newP + ( nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+2].position = newP + ( nodeSize.x / 2, nodeSize.y / 2 );
+		nodeVA[j*4+3].position = newP + ( -nodeSize.x / 2, nodeSize.y / 2 );
+
+		nodeVA[j*4+0].color = Color::Red;
+		nodeVA[j*4+1].color = Color::Red;
+		nodeVA[j*4+2].color = Color::Red;
+		nodeVA[j*4+3].color = Color::Red;
+	}
+
+	Transform t2;
+	Vector2f offset2( 0, -nodeRadius2 );
+	t2.rotate( 360.f / 12.f );
+	for( int i = 0; i < 6; ++i )
+	{
+		Vector2f newP = t2.transformPoint( offset2 );
+		allNodes[i+7]->position = V2d( newP.x, newP.y );
+		t.rotate( -360.f / 6.f );
+
+		int j = i + 7;
+		nodeVA[j*4+0].position = newP + ( -nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+1].position = newP + ( nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+2].position = newP + ( nodeSize.x / 2, nodeSize.y / 2 );
+		nodeVA[j*4+3].position = newP + ( -nodeSize.x / 2, nodeSize.y / 2 );
+
+		nodeVA[j*4+0].color = Color::Red;
+		nodeVA[j*4+1].color = Color::Red;
+		nodeVA[j*4+2].color = Color::Red;
+		nodeVA[j*4+3].color = Color::Red;
+	}
+
+	Node *centerNode = allNodes[0];
+	for( int i = 0; i < 6; ++i )
+	{
+		V2d nextPos = allNodes[i+1]->position;
+		V2d thisPos = centerNode->position;
+
+		V2d inBetween = ( nextPos + thisPos ) / 2.0;
+
+		rcEdge = NULL;
+		rayStart = inBetween;
+		rayEnd = thisPos;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		centerNode->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = inBetween;
+		rayEnd = nextPos;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[i+1]->paths.push_back( new NodePath( centerNode, rcEdge, rcQuantity ) );
+	}
+
+	for( int i = 0; i < 6; ++i )
+	{
+		int prev = i - 1;
+		if( prev < 0 )
+			prev += 6;
+		int next = i + 1;
+		if( next > 5 )
+		{
+			next -= 6;
 		}
 
-		//gotta get the correct angle upon death
-		Transform t;
-		t.rotate( angle / PI * 180 );
-		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
-		deathVector = V2d( newPoint.x, newPoint.y );
+		int prev2 = i;
+		int next2 = i + 1;
+		if( next2 > 5 )
+			next2 -= 6;
 
-		queryMode = "reverse";
 
-		//physbody is a circle
-		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
-		//owner->crawlerReverserTree->Query( this, r );
+		V2d a = allNodes[prev+1]->position;
+		V2d b = allNodes[i+1]->position;
+		V2d c = allNodes[next+1]->position;
+		V2d d = allNodes[i+1]->position;
+		V2d e = allNodes[prev2+7]->position;
+		V2d f = allNodes[i+1]->position;
+		V2d g = allNodes[next2+7]->position;
+		V2d h = allNodes[i+1]->position;
+
+		V2d midAB = (a+b)/2.0;
+		V2d midCD = (c+d)/2.0;
+		V2d midEF = (e+f)/2.0;
+		V2d midHG = (g+h)/2.0;
+
+		rcEdge = NULL;
+		rayStart = midAB;
+		rayEnd = a;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[i+1]->paths.push_back( new NodePath( allNodes[prev+1], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midAB;
+		rayEnd = b;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[prev+1]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midCD;
+		rayEnd = c;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[i+1]->paths.push_back( new NodePath( allNodes[next+1], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midCD;
+		rayEnd = d;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[next+1]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midEF;
+		rayEnd = e;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[i+1]->paths.push_back( new NodePath( allNodes[prev2+7], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midEF;
+		rayEnd = f;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[prev2+7]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midGH;
+		rayEnd = g;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[i+1]->paths.push_back( new NodePath( allNodes[next2+7], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = midGH;
+		rayEnd = h;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		assert( rcEdge != NULL );
+
+		allNodes[next2+7]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+	}
+}
+
+void Boss_Tiger::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
+{
+	//give another edge type so that you can differentiate openable
+	//gates by unopenable gates
+	if( edge->edgeType == Edge::OPEN_GATE )//|| ( edge->edgeType == Edge::CLOSED_GATE	
+	{
+		return;
+	}
+
+	if( rcEdge == NULL || length( edge->GetPoint( equant ) - rayStart ) < 
+		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) )
+	{
+		rcEdge = edge;
+		rcQuantity = equant;
 	}
 }
 
 void Boss_Tiger::UpdatePostPhysics()
 {
-	launcher->UpdatePostPhysics();
-
+	//launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
-		owner->Pause( 5 );
-
-	if( deathFrame == 30 )
 	{
-		owner->RemoveEnemy( this );
-		return;
+		owner->Pause( 5 );
 	}
-
-	
-
-	UpdateSprite();
-	launcher->UpdateSprites();
 
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
 		slowCounter = 1;
 		
-		if( dead )
-		{
-			deathFrame++;
-		}
-		else
-		{
-			if( attackFrame >= 0 )
-				++attackFrame;
-		}
 	}
 	else
 	{
 		slowCounter++;
 	}
 
-	//cout << "position: " << position.x << ", " << position.y << endl;
-	//need to calculate frames in here!!!!
-
-	//sprite.setPosition( position );
-	//UpdateHitboxes();
-}
-
-bool Boss_Tiger::PlayerSlowingMe()
-{
-	Actor *player = owner->player;
-	for( int i = 0; i < player->maxBubbles; ++i )
+	if( dead )
 	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
+		owner->RemoveEnemy( this );
 	}
-	return false;
+
+	HomingRing *hr = activeHoming;
+	while( hr != NULL )
+	{
+		hr->UpdatePostPhysics();
+		hr = hr->next;
+	}
+
+
+	UpdateSprite();
+	//launcher->UpdateSprites();
 }
 
-void Boss_Tiger::Draw(sf::RenderTarget *target )
+void Boss_Tiger::UpdateSprite()
 {
 	if( !dead )
 	{
-		target->draw( markerVA );
-		target->draw( sprite );
-		sf::Vertex blah[] = { 
-			Vertex( Vector2f( rayStart.x, rayStart.y ), Color::Red ),
-			Vertex( Vector2f( rayEnd.x, rayEnd.y ), Color::Red )
-		};
-		target->draw( blah, 2, sf::Lines );
-	}
-	else
-	{
-		target->draw( botDeathSprite );
+		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		sprite.setPosition( position.x, position.y );
 
-		if( deathFrame / 3 < 6 )
-		{
-			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
-		}
-		
-		target->draw( topDeathSprite );
+		//SetHoming( position, currHoming, 0 );
+		//targeterSprite.setPosition( homingPos.x, homingPos.y );
+	}
+}
+
+void Boss_Tiger::Draw( sf::RenderTarget *target )
+{
+	//cout << "draw" << endl;
+	if( !dead )
+	{	
+		//target->draw( homingVA, ts_homingRing->texture );
+		target->draw( nextAttackOrb );
+		target->draw( sprite );
+		target->draw( nodeVA );
+		//punchPulse.Draw( target );
 	}
 }
 
 void Boss_Tiger::DrawMinimap( sf::RenderTarget *target )
 {
-	CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
-
-	/*if( hasMonitor && !suppressMonitor )
+	if( !dead )
 	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
-	}*/
+		CircleShape enemyCircle;
+		enemyCircle.setFillColor( COLOR_BLUE );
+		enemyCircle.setRadius( 50 );
+		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
+		enemyCircle.setPosition( position.x, position.y );
+		target->draw( enemyCircle );
+
+		/*if( hasMonitor && !suppressMonitor )
+		{
+			monitor->miniSprite.setPosition( position.x, position.y );
+			target->draw( monitor->miniSprite );
+		}*/
+	}
 }
 
 bool Boss_Tiger::IHitPlayer()
 {
+
 	Actor *player = owner->player;
 	
-	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
+	if( hitBody.Intersects( player->hurtBody ) )
 	{
-		if( player->position.x < position.x )
-		{
-			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
-			//cout << "left" << endl;
-		}
-		else if( player->position.x > position.x )
-		{
-			//cout << "right" << endl;
-			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
-		}
-		else
-		{
-			//dont change it
-		}
-		attackFrame = 0;
 		player->ApplyHit( hitboxInfo );
 		return true;
 	}
-	
 	return false;
 }
 
- pair<bool, bool> Boss_Tiger::PlayerHitMe()
+void Boss_Tiger::UpdateHitboxes()
+{
+	hurtBody.globalPosition = position;
+	hurtBody.globalAngle = 0;
+	hitBody.globalPosition = position;
+	hitBody.globalAngle = 0;
+
+	if( owner->player->ground != NULL )
+	{
+		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+	}
+	else
+	{
+		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+	}
+}
+
+//return pair<bool,bool>( hitme, was it with a clone)
+pair<bool,bool> Boss_Tiger::PlayerHitMe()
 {
 	Actor *player = owner->player;
-
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -1023,116 +726,258 @@ bool Boss_Tiger::IHitPlayer()
 			//player->ghosts[i]->curhi
 		}
 	}
+
 	return pair<bool, bool>(false,false);
 }
 
-void Boss_Tiger::UpdateSprite()
+bool Boss_Tiger::PlayerSlowingMe()
 {
-	if( dead )
+	Actor *player = owner->player;
+	for( int i = 0; i < player->maxBubbles; ++i )
 	{
-		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 31 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-		botDeathSprite.setRotation( sprite.getRotation() );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 30 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-		topDeathSprite.setRotation( sprite.getRotation() );
-	}
-	else
-	{
-		if( attackFrame >= 0 )
+		if( player->bubbleFramesToLive[i] > 0 )
 		{
-			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
-			if( !facingRight )
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
 			{
-				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
+				return true;
 			}
-			sprite.setTextureRect( r );
 		}
 	}
+	return false;
 }
 
 void Boss_Tiger::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
-		//if( ground != NULL )
-		{
-		/*CircleShape cs;
-		cs.setFillColor( Color::Cyan );
-		cs.setRadius( 10 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		V2d g = ground->GetPoint( edgeQuantity );
-		cs.setPosition( g.x, g.y );*/
-		}
-		//owner->window->draw( cs );
-		//UpdateHitboxes();
-		//physBody.DebugDraw( target );
-		mover->physBody.DebugDraw( target );
+		hurtBody.DebugDraw( target );
+		hitBody.DebugDraw( target );
 	}
-//	hurtBody.DebugDraw( target );
-//	hitBody.DebugDraw( target );
 }
 
 void Boss_Tiger::SaveEnemyState()
 {
+	stored.dead = dead;
+	stored.deathFrame = deathFrame;
+	stored.frame = frame;
+	stored.hitlagFrames = hitlagFrames;
+	stored.hitstunFrames = hitstunFrames;
+	stored.position = position;
 }
 
 void Boss_Tiger::LoadEnemyState()
 {
+	dead = stored.dead;
+	deathFrame = stored.deathFrame;
+	frame = stored.frame;
+	hitlagFrames = stored.hitlagFrames;
+	hitstunFrames = stored.hitstunFrames;
+	position = stored.position;
 }
 
-void Boss_Tiger::HitTerrain( double &q )
+void Boss_Tiger::DeactivateHRing( HomingRing *hr )
 {
-	//useless
-}
+	//remove from active list
 
-bool Boss_Tiger::StartRoll()
-{
+	assert( activeHoming != NULL );
 
-}
-
-void Boss_Tiger::FinishedRoll()
-{
-
-}
-
-void Boss_Tiger::BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos )
-{	
-	cout << "bullet index: " << bulletIndex << endl;
-	int size = 25;
-	markerVA[bulletIndex*4+0].position = Vector2f( pos.x - size, pos.y - size );
-	markerVA[bulletIndex*4+1].position = Vector2f( pos.x + size, pos.y - size );
-	markerVA[bulletIndex*4+2].position = Vector2f( pos.x + size, pos.y + size );
-	markerVA[bulletIndex*4+3].position = Vector2f( pos.x - size, pos.y + size );
-
-	bulletHits[bulletIndex].edge = edge;
-	bulletHits[bulletIndex].quantity = edge->GetQuantity( pos );
-	b->launcher->DeactivateBullet( b );
-	bulletIndex++;
-}
-
-void Boss_Tiger::BulletHitPlayer( BasicBullet *b )
-{
-}
-
-void Boss_Tiger::HitTerrainAerial(Edge *edge, double q)
-{
-}
-
-void Boss_Tiger::TransferEdge( Edge *edge )
-{
-	/*if( edge == bulletHits[travelIndex].edge )
+	if( hr->prev == NULL && hr->next == NULL )
 	{
-		onTargetEdge = true;
-		
-	}*/
+		activeHoming = NULL;
+	}
+	else if( hr->prev == NULL )
+	{
+		activeHoming = hr->next;
+	}
+	else if( hr->next == NULL )
+	{
+		hr->prev->next = NULL;
+		hr->prev = NULL;
+	}
+	else
+	{
+		hr->prev->next = hr->next;
+		hr->next->prev = hr->prev;
+		hr->prev = NULL;
+		hr->next = NULL;
+	}
+
+
+	//add to inactive list
+	inactiveHoming->prev = hr;
+	hr->next = inactiveHoming;
+	inactiveHoming = hr;
+
+	hr->Clear();
+}
+
+Boss_Tiger::HomingRing * Boss_Tiger::ActivateHRing()
+{
+	if( inactiveHoming == NULL )
+		return NULL;
+	else
+	{
+		HomingRing *temp = inactiveHoming->next;
+		HomingRing *newHoming = inactiveHoming;
+		inactiveHoming = temp;
+		inactiveHoming->prev = NULL;
+
+		newHoming->Reset( position );
+
+
+		if( activeHoming == NULL )
+		{
+			activeHoming = newHoming;
+		}
+		else
+		{
+			activeHoming->prev = newHoming;
+			newHoming->next = activeHoming;
+			activeHoming = newHoming;
+		}
+
+		return newHoming;
+	}
+}
+
+void Boss_Tiger::AddHRing()
+{
+	if( inactiveHoming == NULL )
+	{
+		inactiveHoming = new HomingRing( this, 0 );
+	}
+	else
+	{
+		HomingRing *hr = inactiveHoming;
+		int numRings = 0;
+		while( hr != NULL )
+		{
+			numRings++;
+			hr = hr->next;
+		}
+
+		//cout << "adding ring: " << numRings << endl;
+
+		HomingRing *nhr = new HomingRing( this, numRings );
+		nhr->next = inactiveHoming;
+		inactiveHoming->prev = nhr;
+		inactiveHoming = nhr;
+	}
+}
+
+void Boss_Tiger::HomingRing::UpdatePrePhysics()
+{
+	if( (action == DISSIPATE && frame == 60) )
+	{
+		parent->DeactivateHRing( this );
+		return;
+	}
+	if( action == FIND && frame == 5 + 1 )
+	{
+		action = LOCK;
+		frame = 0;
+	}
+	else if( action == LOCK && frame == 60 )
+	{
+		action = FREEZE;
+		frame = 0;
+	}
+
+	switch( action )
+	{
+	case FIND:
+		{
+			cout << "ring find " << frame << endl;
+			endRing = parent->owner->player->position;
+			double a = (double)frame / 5;
+			double f = a;//flyCurve.GetValue( a );
+			position = startRing * ( 1.0 - f ) + endRing * ( f );
+		}
+		break;
+	case LOCK:
+		{
+			position = parent->owner->player->position;
+			cout << "ring lock " << frame << endl;
+		}
+		break;
+	case FREEZE:
+		break;
+	case ACTIVATE:
+		break;
+	case DISSIPATE:
+		break;
+	}
+}
+
+Boss_Tiger::HomingRing::HomingRing( Boss_Tiger *p_parent, int p_vaIndex )
+	:parent( p_parent ), frame( 0 ), next( NULL ), prev( NULL ),
+	action( FIND ), vaIndex( p_vaIndex )
+{
+	hitbox.isCircle = true;
+	hitbox.rw = 64;
+	hitbox.rh = 64;
+}
+
+void Boss_Tiger::HomingRing::UpdatePostPhysics()
+{
+	IntRect ir = parent->ts_homingRing->GetSubRect( 0 );
+	int hw = parent->ts_homingRing->tileWidth / 2;
+	int hh = parent->ts_homingRing->tileHeight / 2;
+	//parent->ts_homingRing
+	/*parent->homingVA[vaIndex*4+0].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( -hw, -hh ); 
+	parent->homingVA[vaIndex*4+1].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( hw, -hh );
+	parent->homingVA[vaIndex*4+2].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( hw, hh );
+	parent->homingVA[vaIndex*4+3].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( -hw, hh );*/
+
+	//parent->homingVA[vaIndex*4+0].texCoords = Vector2f( ir.left, ir.top );
+	//parent->homingVA[vaIndex*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+	//parent->homingVA[vaIndex*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+	//parent->homingVA[vaIndex*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+
+	/*parent->homingVA[vaIndex*4+0].color = Color::Green;
+	parent->homingVA[vaIndex*4+1].color = Color::Green;
+	parent->homingVA[vaIndex*4+2].color = Color::Green;
+	parent->homingVA[vaIndex*4+3].color = Color::Green;*/
+
+	++frame;
+}
+
+void Boss_Tiger::HomingRing::UpdatePhysics()
+{
+	Actor *player = parent->owner->player;
+	if( player->hurtBody.Intersects( hitbox ) )
+	{
+		parent->HomingRingTriggered( this );
+	}
+}
+
+void Boss_Tiger::HomingRingTriggered( HomingRing *hr )
+{
+	//if( action != KICK )
+	//{
+	//	action = KICK;
+	//	frame = 0;
+	//	//kickTargetPos = hr->position;
+	//}
+}
+
+void Boss_Tiger::HomingRing::Clear()
+{
+	/*parent->homingVA[vaIndex*4+0].position = Vector2f( 0, 0 );
+	parent->homingVA[vaIndex*4+1].position = Vector2f( 0, 0 );
+	parent->homingVA[vaIndex*4+2].position = Vector2f( 0, 0 );
+	parent->homingVA[vaIndex*4+3].position = Vector2f( 0, 0 );*/
+}
+
+void Boss_Tiger::HomingRing::Reset( sf::Vector2<double> &pos )
+{
+	position = pos;
+	startRing = pos;
+
+	prev = NULL;
+	next = NULL;
 }

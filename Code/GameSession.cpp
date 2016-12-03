@@ -645,6 +645,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
+	shipExitSeq = NULL;
 	activeDialogue = NULL;
 
 	keyFrame = 0;
@@ -3187,6 +3188,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enem = enemy;
 
 				enemyTree->Insert( enemy );
+
+				if( shipExitSeq == NULL )
+				{
+					shipExitSeq = new ShipExitSeq( this );
+				}
 			}
 			else
 			{
