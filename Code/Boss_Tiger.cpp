@@ -27,7 +27,7 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 {
 	lockPath = NULL;
 	nodeRadius1 = 800;
-	nodeRadius2 = 1800;
+	nodeRadius2 = 1600;
 	//get point of interest where to place tiger's starting position
 	//and thats where you put startground and startquant
 

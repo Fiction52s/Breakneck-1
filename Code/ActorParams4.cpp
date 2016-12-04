@@ -324,7 +324,7 @@ BossTigerParams::BossTigerParams( EditSession *edit, Vector2i &pos )
 	image.setPosition( pos.x, pos.y );
 
 	radius1 = 800;
-	radius2 = 1800;
+	radius2 = 1600;
 				
 	SetBoundingQuad();	
 }

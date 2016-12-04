@@ -5065,6 +5065,7 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
+	
 	showDebugDraw = false;
 
 	fadingIn = false;
@@ -5200,6 +5201,7 @@ int GameSession::Run( string fileN )
 	//enterNexus1Seq = new EnterNexus1Seq( this );
 
 	pauseMenu = new PauseMenu( this );
+	pauseMenu->SetTab( PauseMenu::Tab::KIN );
 	//pauseMenu->cOptions->xboxInputAssoc[0];
 	mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
 
