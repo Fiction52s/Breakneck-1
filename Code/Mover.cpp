@@ -108,6 +108,7 @@ bool SurfaceMover::ResolvePhysics( V2d &vel )
 	double minLeft = min( oldR.left, newR.left );
 	double minTop = min( oldR.top, newR.top );
 	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
+
 	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
 
 	
@@ -471,6 +472,8 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	if( rollEnd < 0 )
 		rollEnd += 2 * PI;
 
+	//cout << "rollStart: " << rollStart << ", rollend: " << rollEnd << endl;
+
 	bool changed = false;
 	if( rollEnd > rollStart && ( rollNew > rollEnd || rollNew < rollStart ) )
 	{
@@ -492,6 +495,7 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 
 	if( changed )
 	{
+		//cout << "changed" << endl;
 		ground = ground->edge1;
 		q = 0;
 		roll = false;
@@ -612,12 +616,31 @@ void SurfaceMover::Move( int slowMultiple )
 
 
 			double m = movement;
+
 			double groundLength = length( ground->v1 - ground->v0 ); 
 
 			if( approxEquals( q, 0 ) )
 				q = 0;
 			else if( approxEquals( q, groundLength ) )
 				q = groundLength;
+
+			if( movement > 0 && roll && q == 0 )
+			{
+				ground = ground->edge0;
+				groundLength = length( ground->v1 - ground->v0 );
+				edgeQuantity = groundLength;
+				q = edgeQuantity;
+				gNormal = ground->Normal();
+			}
+			else if( movement < 0 && roll && q == groundLength )
+			{
+				ground = ground->edge1;
+				groundLength = length( ground->v1 - ground->v0 );
+				edgeQuantity = 0;
+				q = edgeQuantity;
+				gNormal = ground->Normal();
+			}
+			
 
 			Edge *e0 = ground->edge0;
 			Edge *e1 = ground->edge1;
@@ -627,6 +650,8 @@ void SurfaceMover::Move( int slowMultiple )
 			bool transferLeft = false;
 			bool transferRight = false;
 
+			
+			
 			if( movement > 0 && q == groundLength )
 			{
 				double c = cross( e1n, gNormal );
@@ -634,7 +659,7 @@ void SurfaceMover::Move( int slowMultiple )
 			
 				if( gNormal == e1n )
 				{
-					
+					cout << "transfer clockwise" << endl;
 					//cout << "t1" << endl;
 					q = 0;
 					ground = e1;
@@ -651,6 +676,7 @@ void SurfaceMover::Move( int slowMultiple )
 				}
 				else
 				{
+					//cout << "roll clockwise" << endl;
 					bool br = RollClockwise( q, m );
 					if( br )
 					{
@@ -765,13 +791,15 @@ void SurfaceMover::HitTerrainAerial()
 
 	if( corner )
 	{
+		//cout << "cornering" << endl;
 		roll = true;
 		physBody.globalPosition += minContact.resolution;	
 		ground = minContact.edge;
 
 		if( minContact.position == ground->v0 )
 		{
-			edgeQuantity = 0;
+			//ground = ground->edge0;
+			edgeQuantity = 0;//length( ground->v1 - ground->v0 );
 		}
 		else
 		{

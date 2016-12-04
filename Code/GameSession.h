@@ -335,6 +335,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	};
 
 	bool showDebugDraw;
+	bool showTerrainDecor;
 	
 
 	void ResetShipSequence(); 

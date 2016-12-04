@@ -1973,6 +1973,15 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new TurtleParams( this, pos ) );
 					a->hasMonitor = (bool)hasMonitor;
 				}
+				else if( typeName == "bosstiger" )
+				{
+					Vector2i pos;
+
+					is >> pos.x;
+					is >> pos.y;
+
+					a.reset( new BossTigerParams( this, pos ) );
+				}
 
 				//w5
 				else if( typeName == "overgrowth" )
@@ -3661,10 +3670,13 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *spiderPanel = CreateOptionsPanel( "spider" );
 	ActorType *spiderType = new ActorType( "spider", spiderPanel );
 
+	ActorType *bossTigerType = new ActorType( "bosstiger", NULL );
+
 	types["turtle"] = turtleType;
 	types["cheetah"] = cheetahType;
 	types["coral"] = coralType;
 	types["spider"] = spiderType;
+	types["bosstiger"] = bossTigerType;
 
 	//w5
 	Panel *swarmPanel = CreateOptionsPanel( "swarm" );
@@ -3778,6 +3790,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 1, 4, Sprite( turtleType->iconTexture ), "turtle" );
 	gs->Set( 2, 4, Sprite( cheetahType->iconTexture ), "cheetah" );
 	gs->Set( 3, 4, Sprite( coralType->iconTexture ), "coral" );
+	gs->Set( 4, 4, Sprite( bossCoyoteType->iconTexture ), "bosstiger" );
 
 	gs->Set( 0, 5, Sprite( swarmType->iconTexture ), "swarm" );
 	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
@@ -6238,6 +6251,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											showPanel = trackingEnemy->panel;
 											tempActor->SetPanelInfo();
 										}
+									}
+									else if( trackingEnemy->name == "bosstiger" )
+									{
+										showPanel = enemySelectPanel;
+										trackingEnemy = NULL;
+										ActorPtr bossTiger( new BossTigerParams( this, Vector2i( worldPos.x,
+											worldPos.y ) ) );
+										
+										bossTiger->group = groups["--"];
+
+										CreateActor( bossTiger );
+										((BossTigerParams*)bossTiger.get())->CreateFormation();
 									}
 
 									//w5
@@ -14186,6 +14211,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+	}
+	else if( name == "bosstiger" )
+	{
+		width = 64;
+		height = 64;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 	
 	//w5

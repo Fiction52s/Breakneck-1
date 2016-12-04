@@ -311,3 +311,142 @@ ActorParams *SpiderParams::Copy()
 	SpiderParams *copy = new SpiderParams( *this );
 	return copy;
 }
+
+BossTigerParams::BossTigerParams( EditSession *edit, Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 30 * 2 )
+{
+	type = edit->types["bosstiger"];
+
+	position = pos;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	radius1 = 500;
+	radius2 = 1000;
+				
+	SetBoundingQuad();	
+}
+
+void BossTigerParams::Draw( sf::RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	target->draw( debugLines );
+}
+
+void BossTigerParams::CreateFormation()
+{
+	sf::Vector2f nodePos[13];
+	//allNodes[0]->position = V2d( originalPos.x, originalPos.y );
+	Vector2f op( position.x, position.y );
+
+	Transform t;
+	Vector2f offset( 0, -radius1 );
+	for( int i = 0; i < 6; ++i )
+	{
+		Vector2f newP = t.transformPoint( offset ) + op;
+		nodePos[i+1] = newP;
+		t.rotate( -360.f / 6.f );
+	}
+
+	Transform t2;
+	Vector2f offset2( 0, -radius2 );
+	t2.rotate( 360.f / 12.f );
+	for( int i = 0; i < 6; ++i )
+	{
+		Vector2f newP = t2.transformPoint( offset2 ) + op;
+		nodePos[i+7] = newP;
+		t2.rotate( -360.f / 6.f );
+	}
+
+	for( int i = 0; i < 6; ++i )
+	{
+		Vector2f nextPos = nodePos[i+1];
+		Vector2f thisPos = op;
+		
+		debugLines[i*2 + 0].position = Vector2f( thisPos.x, thisPos.y );
+		debugLines[i*2 + 1].position = Vector2f( nextPos.x, nextPos.y );
+	}
+
+	//layer 1 and the connections to layer 2
+	int debugIndex = 6;
+	for( int i = 0; i < 6; ++i )
+	{
+		int prev = i - 1;
+		if( prev < 0 )
+			prev += 6;
+		int next = i + 1;
+		if( next > 5 )
+		{
+			next -= 6;
+		}
+
+		int prev2 = i;
+		int next2 = i + 1;
+		if( next2 > 5 )
+			next2 -= 6;
+
+
+		Vector2f a = nodePos[prev+1];
+		Vector2f b = nodePos[i+1];
+		Vector2f c = nodePos[next+1];
+		Vector2f d = nodePos[i+1];
+		Vector2f e = nodePos[prev2+7];
+		Vector2f f = nodePos[i+1];
+		Vector2f g = nodePos[next2+7];
+		Vector2f h = nodePos[i+1];
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( a.x, a.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( b.x, b.y );
+		debugIndex++;
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( e.x, e.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( f.x, f.y );
+		debugIndex++;		
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( g.x, g.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( h.x, h.y );
+		debugIndex++;
+	}
+
+	//layer 2 connections to layer 2
+	int layer2Start = 7;
+	for( int i = 0; i < 6; ++i )
+	{
+		int next = i + 1;
+		if( next > 5 )
+			next -= 6;
+
+		Vector2f a = nodePos[layer2Start + i];
+		Vector2f b = nodePos[layer2Start + next];
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( b.x, b.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( a.x, a.y );
+		debugIndex++;
+	}
+
+	for( int i = 0; i < 30; ++i )
+	{
+		debugLines[i*2+0].color = Color::Red;
+		debugLines[i*2+1].color = Color::Blue;
+	}
+}
+
+bool BossTigerParams::CanApply()
+{
+	CreateFormation();
+	return true;
+}
+
+void BossTigerParams::WriteParamFile( ofstream &of )
+{
+	//no params its a boss!
+}
+
+ActorParams *BossTigerParams::Copy()
+{
+	BossTigerParams *copy = new BossTigerParams( *this );
+	return copy;
+}

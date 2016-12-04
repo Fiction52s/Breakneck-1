@@ -23,8 +23,11 @@ using namespace sf;
 
 Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	:Enemy( owner, EnemyType::BOSS_TIGER, false, 6 ), deathFrame( 0 ),
-	nodeVA( sf::Quads, 13 * 4 )
+	nodeVA( sf::Quads, 13 * 4 ), debugLines( sf::Lines, 2 * 30 )
 {
+	lockPath = NULL;
+	nodeRadius1 = 500;
+	nodeRadius2 = 1000;
 	//get point of interest where to place tiger's starting position
 	//and thats where you put startground and startquant
 
@@ -51,7 +54,11 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	animFactor[GRIND] = 1;
 	animFactor[LUNGE] = 1;
 	
-	
+	testCS.setFillColor( Color::Blue );
+	testCS.setRadius( 40 );
+	testCS.setOrigin( testCS.getLocalBounds().width / 2, testCS.getLocalBounds().height / 2 );
+
+
 	
 
 	//current num links is 248	
@@ -99,6 +106,8 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	nextAttackOrb.setOrigin( nextAttackOrb.getLocalBounds().width / 2, 
 		nextAttackOrb.getLocalBounds().height / 2 );
 
+	
+
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -112,8 +121,8 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
 	hitBody.offset.y = 0;
-	hitBody.rw = 16;
-	hitBody.rh = 16;
+	hitBody.rw = 64;
+	hitBody.rh = 64;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -139,12 +148,30 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 		AddHRing();
 	}
 
+	position.x = pos.x;
+	position.y = pos.y;
+
+	ConnectNodes();
+
+	mover = NULL;
+
 	ResetEnemy();
 	//UpdateHitboxes();
 	
 	
 }
 
+void Boss_Tiger::Init()
+{
+	PoiInfo *poi = owner->poiMap["tigerstart"];
+	startGround = poi->edge;
+	startQuant = poi->edgeQuantity;
+
+	mover = new SurfaceMover( owner, startGround, startQuant, 64 );
+	mover->surfaceHandler = this;
+	mover->SetSpeed( 0 );
+	mover->roll = false;
+}
 
 
 void Boss_Tiger::ClearHomingRings()
@@ -168,11 +195,28 @@ void Boss_Tiger::ClearHomingRings()
 
 void Boss_Tiger::ResetEnemy()
 {	
-	
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->UpdateGroundPos();
+	lockPath = NULL;
+	//mover->ground = startGround;
+	//mover->edgeQuantity = startQuant;
+	//mover->UpdateGroundPos();
 	action = PLAN;
+
+	for( int i = 0; i < 13; ++i )
+	{
+		allNodes[i]->numTimesTouched = 0;
+	}
+
+	currNode = allNodes[0]; //center;
+	currNode->numTimesTouched++;
+	//lockPath->node->numTimesTouched++;
+
+	if( mover != NULL )
+	{
+		mover->ground = startGround;
+		mover->edgeQuantity = startQuant;
+		mover->roll = false;
+		mover->UpdateGroundPos();
+	}
 
 	currIndex.x = GRID_SIZE_X / 2;
 	currIndex.y = GRID_SIZE_Y / 2;
@@ -230,9 +274,9 @@ void Boss_Tiger::UpdatePrePhysics()
 	ActionEnded();
 
 	//launcher->UpdatePrePhysics();
+	mover->SetSpeed( 5 );
 
 	
-
 
 	
 	HomingRing *hr = activeHoming;
@@ -263,8 +307,95 @@ void Boss_Tiger::UpdatePrePhysics()
 	}
 }
 
+void Boss_Tiger::HitTerrainAerial(Edge *e, double q)
+{
+	
+}
+
+void Boss_Tiger::TransferEdge( Edge *e )
+{
+
+}
+
 void Boss_Tiger::UpdatePhysics()
 {	
+
+	if( lockPath == NULL )
+	{
+		//cout << "pahts: " << currNode->paths.size() << endl;
+		for( list<NodePath*>::iterator it = currNode->paths.begin(); 
+			it != currNode->paths.end(); ++it )
+		{
+			if( (*it)->node->numTimesTouched > 0 )
+			{
+				//cout << "skipping node" << endl;
+				continue;
+			}
+			V2d gn = (*it)->edge->Normal();
+			V2d circleCenter = (*it)->edge->GetPoint( (*it)->quant ) + gn * 64.0;
+			V2d pos = mover->physBody.globalPosition;
+
+			double len = length( circleCenter - pos );
+			if( len < 30 )
+			{
+				cout << "lockpath: " << len << endl;
+				lockPath = (*it);
+			}
+			else
+			{
+				cout << "not len: " << len << endl;
+			}
+
+		}
+	}
+
+	if( lockPath != NULL )
+	{
+		//cout << "lockpath: " << lockPath << endl;
+		//cout << "e: " << lockPath->edge << endl;
+		V2d norm = lockPath->edge->Normal();
+		V2d target = lockPath->edge->GetPoint( lockPath->quant ) + norm * mover->physBody.rw;
+		double len = length( mover->physBody.globalPosition - target );
+		//cout << "blah len: " << len << ", gspeed: " << mover->groundSpeed << endl;
+		if( len < mover->groundSpeed )
+		{
+			mover->ground = lockPath->edge;
+			mover->edgeQuantity = lockPath->quant;
+			mover->UpdateGroundPos();
+			mover->SetSpeed( 0 );
+			mover->Jump( normalize( lockPath->node->position - currNode->position ) * 10.0 );
+			mover->roll = false;
+			currNode = lockPath->node;
+			lockPath->node->numTimesTouched++;
+
+			//target = lockPath->node->position;
+
+			lockPath = NULL;
+			
+		}
+
+		testCS.setPosition( target.x, target.y );
+	}
+
+	if( lockPath != NULL )
+	{
+		if( mover->groundSpeed > 0 )
+		{
+			
+		}
+		else if( mover->groundSpeed < 0 )
+		{
+
+		}
+	}
+
+
+	mover->Move( 1 );
+
+	//position = mover->po
+
+	position = mover->physBody.globalPosition;
+
 
 	//if( action == FLY || action == THROWCURVE )
 	//{
@@ -350,10 +481,10 @@ void Boss_Tiger::ConnectNodes()
 	allNodes[0]->position = V2d( originalPos.x, originalPos.y );
 
 	Vector2f op( originalPos.x, originalPos.y );
-	nodeVA[0].position = op + ( -nodeSize.x / 2, -nodeSize.y / 2 );
-	nodeVA[1].position = op + ( nodeSize.x / 2, -nodeSize.y / 2 );
-	nodeVA[2].position = op + ( nodeSize.x / 2, nodeSize.y / 2 );
-	nodeVA[3].position = op + ( -nodeSize.x / 2, nodeSize.y / 2 );
+	nodeVA[0].position = op + Vector2f( -nodeSize.x / 2, -nodeSize.y / 2 );
+	nodeVA[1].position = op + Vector2f( nodeSize.x / 2, -nodeSize.y / 2 );
+	nodeVA[2].position = op + Vector2f( nodeSize.x / 2, nodeSize.y / 2 );
+	nodeVA[3].position = op + Vector2f( -nodeSize.x / 2, nodeSize.y / 2 );
 
 	nodeVA[0].color = Color::Red;
 	nodeVA[1].color = Color::Red;
@@ -364,15 +495,15 @@ void Boss_Tiger::ConnectNodes()
 	Vector2f offset( 0, -nodeRadius1 );
 	for( int i = 0; i < 6; ++i )
 	{
-		Vector2f newP = t.transformPoint( offset );
+		Vector2f newP = t.transformPoint( offset ) + Vector2f( originalPos.x, originalPos.y );
 		allNodes[i+1]->position = V2d( newP.x, newP.y );
 		t.rotate( -360.f / 6.f );
 
 		int j = i + 1;
-		nodeVA[j*4+0].position = newP + ( -nodeSize.x / 2, -nodeSize.y / 2 );
-		nodeVA[j*4+1].position = newP + ( nodeSize.x / 2, -nodeSize.y / 2 );
-		nodeVA[j*4+2].position = newP + ( nodeSize.x / 2, nodeSize.y / 2 );
-		nodeVA[j*4+3].position = newP + ( -nodeSize.x / 2, nodeSize.y / 2 );
+		nodeVA[j*4+0].position = newP + Vector2f( -nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+1].position = newP + Vector2f( nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+2].position = newP + Vector2f( nodeSize.x / 2, nodeSize.y / 2 );
+		nodeVA[j*4+3].position = newP + Vector2f( -nodeSize.x / 2, nodeSize.y / 2 );
 
 		nodeVA[j*4+0].color = Color::Red;
 		nodeVA[j*4+1].color = Color::Red;
@@ -385,15 +516,15 @@ void Boss_Tiger::ConnectNodes()
 	t2.rotate( 360.f / 12.f );
 	for( int i = 0; i < 6; ++i )
 	{
-		Vector2f newP = t2.transformPoint( offset2 );
+		Vector2f newP = t2.transformPoint( offset2 ) + Vector2f( originalPos.x, originalPos.y );
 		allNodes[i+7]->position = V2d( newP.x, newP.y );
-		t.rotate( -360.f / 6.f );
+		t2.rotate( -360.f / 6.f );
 
 		int j = i + 7;
-		nodeVA[j*4+0].position = newP + ( -nodeSize.x / 2, -nodeSize.y / 2 );
-		nodeVA[j*4+1].position = newP + ( nodeSize.x / 2, -nodeSize.y / 2 );
-		nodeVA[j*4+2].position = newP + ( nodeSize.x / 2, nodeSize.y / 2 );
-		nodeVA[j*4+3].position = newP + ( -nodeSize.x / 2, nodeSize.y / 2 );
+		nodeVA[j*4+0].position = newP + Vector2f( -nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+1].position = newP + Vector2f( nodeSize.x / 2, -nodeSize.y / 2 );
+		nodeVA[j*4+2].position = newP + Vector2f( nodeSize.x / 2, nodeSize.y / 2 );
+		nodeVA[j*4+3].position = newP + Vector2f( -nodeSize.x / 2, nodeSize.y / 2 );
 
 		nodeVA[j*4+0].color = Color::Red;
 		nodeVA[j*4+1].color = Color::Red;
@@ -414,20 +545,25 @@ void Boss_Tiger::ConnectNodes()
 		rayEnd = thisPos;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
 		centerNode->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+		debugLines[i*2 + 0].position = Vector2f( thisPos.x, thisPos.y );
+		debugLines[i*2 + 1].position = Vector2f( nextPos.x, nextPos.y );
+
 
 		rcEdge = NULL;
 		rayStart = inBetween;
 		rayEnd = nextPos;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
 		allNodes[i+1]->paths.push_back( new NodePath( centerNode, rcEdge, rcQuantity ) );
 	}
 
+	//layer 1 and the connections to layer 2
+	int debugIndex = 6;
 	for( int i = 0; i < 6; ++i )
 	{
 		int prev = i - 1;
@@ -457,83 +593,167 @@ void Boss_Tiger::ConnectNodes()
 		V2d midAB = (a+b)/2.0;
 		V2d midCD = (c+d)/2.0;
 		V2d midEF = (e+f)/2.0;
-		V2d midHG = (g+h)/2.0;
-
-		rcEdge = NULL;
-		rayStart = midAB;
-		rayEnd = a;
-		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
-
-		assert( rcEdge != NULL );
-
-		allNodes[i+1]->paths.push_back( new NodePath( allNodes[prev+1], rcEdge, rcQuantity ) );
+		V2d midGH = (g+h)/2.0;
 
 		rcEdge = NULL;
 		rayStart = midAB;
 		rayEnd = b;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[prev+1]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+		allNodes[i+1]->paths.push_back( new NodePath( allNodes[prev+1], rcEdge, rcQuantity ) );
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( a.x, a.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( b.x, b.y );
+		debugIndex++;
 
 		rcEdge = NULL;
-		rayStart = midCD;
-		rayEnd = c;
+		rayStart = midAB;
+		rayEnd = b;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[i+1]->paths.push_back( new NodePath( allNodes[next+1], rcEdge, rcQuantity ) );
+		//allNodes[prev+1]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		/*debugLines[debugIndex * 2 + 0].position = Vector2f( rayStart.x, rayStart.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( rayEnd.x, rayEnd.y );
+		debugIndex++;*/
 
 		rcEdge = NULL;
 		rayStart = midCD;
 		rayEnd = d;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[next+1]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+		allNodes[i+1]->paths.push_back( new NodePath( allNodes[next+1], rcEdge, rcQuantity ) );
+
+		/*debugLines[debugIndex * 2 + 0].position = Vector2f( c.x, c.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( d.x, d.y );
+		debugIndex++;*/
+
+		rcEdge = NULL;
+		rayStart = midCD;
+		rayEnd = d;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		//assert( rcEdge != NULL );
+
+		//allNodes[next+1]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		/*debugLines[debugIndex * 2 + 0].position = Vector2f( rayStart.x, rayStart.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( rayEnd.x, rayEnd.y );
+		debugIndex++;*/
 
 		rcEdge = NULL;
 		rayStart = midEF;
 		rayEnd = e;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[i+1]->paths.push_back( new NodePath( allNodes[prev2+7], rcEdge, rcQuantity ) );
+		//allNodes[i+1]->paths.push_back( new NodePath( allNodes[prev2+7], rcEdge, rcQuantity ) );
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( e.x, e.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( f.x, f.y );
+		debugIndex++;
 
 		rcEdge = NULL;
 		rayStart = midEF;
 		rayEnd = f;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[prev2+7]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+		//allNodes[prev2+7]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		/*debugLines[debugIndex * 2 + 0].position = Vector2f( rayStart.x, rayStart.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( rayEnd.x, rayEnd.y );
+		debugIndex++;*/
 
 		rcEdge = NULL;
 		rayStart = midGH;
 		rayEnd = g;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[i+1]->paths.push_back( new NodePath( allNodes[next2+7], rcEdge, rcQuantity ) );
+		//allNodes[i+1]->paths.push_back( new NodePath( allNodes[next2+7], rcEdge, rcQuantity ) );
+
+		debugLines[debugIndex * 2 + 0].position = Vector2f( g.x, g.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( h.x, h.y );
+		debugIndex++;
 
 		rcEdge = NULL;
 		rayStart = midGH;
 		rayEnd = h;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
-		assert( rcEdge != NULL );
+		//assert( rcEdge != NULL );
 
-		allNodes[next2+7]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+		//allNodes[next2+7]->paths.push_back( new NodePath( allNodes[i+1], rcEdge, rcQuantity ) );
+
+		/*debugLines[debugIndex * 2 + 0].position = Vector2f( rayStart.x, rayStart.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( rayEnd.x, rayEnd.y );
+		debugIndex++;*/
 	}
+
+	//cout << "NUM start layer2: " << debugIndex << endl;
+	//layer 2 connections to layer 2
+	int layer2Start = 7;
+	for( int i = 0; i < 6; ++i )
+	{
+		//int prev = i - 1;
+		//if( prev < 0 )
+		//	prev += 6;
+
+		int next = i + 1;
+		if( next > 5 )
+			next -= 6;
+
+		V2d a = allNodes[layer2Start + i]->position;
+		V2d b = allNodes[layer2Start + next]->position;
+
+		V2d mid = (a + b)/ 2.0;
+
+		rcEdge = NULL;
+		rayStart = mid;
+		rayEnd = a;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		//assert( rcEdge != NULL );
+
+		allNodes[layer2Start + i]->paths.push_back( new NodePath( allNodes[layer2Start+next], rcEdge, rcQuantity ) );
+
+		rcEdge = NULL;
+		rayStart = mid;
+		rayEnd = b;
+		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+
+		allNodes[layer2Start+next]->paths.push_back( new NodePath( allNodes[layer2Start+i], rcEdge, rcQuantity ) );
+		//allNodes[layer2Start+prev]->paths.push_back( new NodePath( allNodes[layer2Start+i], rcEdge, rcQuantity ) );
+		//cout << "debugindex: " << debugIndex << endl;
+		debugLines[debugIndex * 2 + 0].position = Vector2f( b.x, b.y );
+		debugLines[debugIndex * 2 + 1].position = Vector2f( a.x, a.y );
+		debugIndex++;
+	}
+
+	for( int i = 0; i < 30; ++i )
+	{
+		debugLines[i*2+0].color = Color::Red;
+		debugLines[i*2+1].color = Color::Blue;
+	}
+
+	//cout << "check: " << endl;
+	//for( int i = 0; i < 13; ++i )
+	//{
+	//	cout << i << ": " << allNodes[i]->paths.size() << endl;
+	//}
 }
 
-void Boss_Tiger::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
+void Boss_Tiger::HandleRayCollision( Edge *edge, double equant, double rayPortion )
 {
 	//give another edge type so that you can differentiate openable
 	//gates by unopenable gates
@@ -593,6 +813,15 @@ void Boss_Tiger::UpdateSprite()
 		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 
+
+		if( mover != NULL && mover->ground != NULL )
+		{
+			V2d gn = mover->ground->Normal();
+			double angle = atan2( gn.x, -gn.y );
+			sprite.setRotation( angle * 180 / PI );
+		}
+		
+		//sprite.setRotation( 
 		//SetHoming( position, currHoming, 0 );
 		//targeterSprite.setPosition( homingPos.x, homingPos.y );
 	}
@@ -607,6 +836,23 @@ void Boss_Tiger::Draw( sf::RenderTarget *target )
 		target->draw( nextAttackOrb );
 		target->draw( sprite );
 		target->draw( nodeVA );
+		target->draw( debugLines );
+		if( lockPath != NULL )
+			target->draw( testCS );
+
+		CircleShape cs;
+		cs.setFillColor( Color::Blue );
+		cs.setRadius( 20 );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		if( currNode != NULL )
+		{
+		for( list<NodePath*>::iterator it = currNode->paths.begin(); it != currNode->paths.end(); ++it )
+		{
+			V2d p = (*it)->edge->GetPoint( (*it)->quant ) + (*it)->edge->Normal() * 64.0;
+			cs.setPosition( p.x, p.y );
+			target->draw( cs );
+		}
+		}
 		//punchPulse.Draw( target );
 	}
 }

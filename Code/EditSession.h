@@ -1170,6 +1170,22 @@ struct BossBirdParams : public ActorParams
 	bool CanApply();
 };
 
+struct BossTigerParams : public ActorParams
+{
+	BossTigerParams( 
+		EditSession *edit, 
+		sf::Vector2i &pos );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void CreateFormation();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void Draw( sf::RenderTarget *target );
+	sf::VertexArray debugLines;
+	int radius1;
+	int radius2;
+};
+
 struct BossGatorParams : public ActorParams
 {
 	BossGatorParams( 

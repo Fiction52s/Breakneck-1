@@ -567,6 +567,9 @@ Actor::Actor( GameSession *gs )
 		tileset[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
 		normal[EXIT] = owner->GetTileset( "exit_0_128x160.png", 128, 160 );
 
+		actionLength[GRAVREVERSE] = 20;
+		tileset[GRAVREVERSE] = owner->GetTileset( "grav_64x64.png", 64, 64 );
+		normal[GRAVREVERSE] = owner->GetTileset( "grav_64x64.png", 64, 64 );
 		
 		actionLength[RIDESHIP] = 1;
 		tileset[RIDESHIP] = owner->GetTileset( "dive_80x80.png", 80, 80 );
@@ -971,6 +974,10 @@ void Actor::ActionEnded()
 		case WALLJUMP:
 			SetActionExpr( JUMP );
 			frame = 1;
+			break;
+		case GRAVREVERSE:
+			action = STAND;
+			frame = 0;
 			break;
 		case STANDN:
 
@@ -2553,6 +2560,95 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
+	case GRAVREVERSE:
+		{
+		//buffered grind ball works
+			if( hasPowerGrindBall && currInput.Y )//&& !prevInput.Y )
+			{
+				//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
+				if( !reversed || ( hasPowerGravReverse && reversed ) )
+				{
+					SetActionGrind();
+					break;
+				}
+			}
+
+
+			if( reversed )
+			{
+				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+				{
+				
+					if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+							
+						action = STEEPCLIMB;
+
+						frame = 0;
+						break;
+					}
+					else
+					{
+						if( groundSpeed > 0 )
+							facingRight = true;
+						else
+							facingRight = false;
+						action = STEEPSLIDE;
+						frame = 0;
+						break;
+					}
+					
+				}
+				else
+				{
+
+					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
+					{
+						/*re->Reset();
+						re1->Reset();*/
+						action = DASH;
+						frame = 0;
+
+						if( currInput.LLeft() )
+							facingRight = false;
+						else if( currInput.LRight() )
+							facingRight = true;
+					}
+					else if( currInput.LLeft() || currInput.LRight() )
+					{
+						SetActionExpr( RUN );
+						frame = 0;
+					}
+					else if( currInput.rightShoulder && !prevInput.rightShoulder )
+					{
+						GroundAttack();
+					}
+					else if( !currInput.LDown() )
+					{
+						action = STAND;
+						frame = 0;
+						/*bool okay = false;
+						if( frame > 0 && !prevInput.LUp() )
+						{
+							action = SLIDE;
+							frame = 0;
+						}*/
+					}
+					else
+					{
+						/*SetActionExpr( STAND );
+						frame = 0;*/
+					}
+				}
+			}
+			
+			break;
+		}
+		
 	case WALLCLING:
 		{
 			if( !currInput.LDown() && ( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) ) )
@@ -5690,6 +5786,9 @@ void Actor::UpdatePrePhysics()
 				currHitboxes = uairHitboxes[frame];
 			}
 		}
+		break;
+	case GRAVREVERSE:
+		groundSpeed = 0;
 		break;
 	case STEEPSLIDE:
 		{
@@ -11191,7 +11290,6 @@ void Actor::PhysicsResponse()
 				//cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
 				{
-					//cout << "blahaaa" << endl;
 					action = LAND2;
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
 					leftWire->UpdateAnchors(V2d( 0, 0 ));
@@ -11203,7 +11301,15 @@ void Actor::PhysicsResponse()
 					//cout << "blahbbb" << endl;
 					//cout << "l" << endl;
 					//cout << "action = 5" << endl;
-					action = LAND;
+
+					if( reversed )
+					{
+						action = GRAVREVERSE;
+					}
+					else
+					{
+						action = LAND;
+					}
 					rightWire->UpdateAnchors(V2d( 0, 0 ));
 					leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
@@ -16075,6 +16181,48 @@ void Actor::UpdateSprite()
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
 			break;
+		}
+	case GRAVREVERSE:
+		{
+		sprite->setTexture( *(tileset[GRAVREVERSE]->texture));
+		if( (facingRight && !reversed ) || (!facingRight && reversed ) )
+		{
+			sprite->setTextureRect( tileset[GRAVREVERSE]->GetSubRect( 0 ) );
+		}
+		else
+		{
+			sf::IntRect ir = tileset[GRAVREVERSE]->GetSubRect( 0 );
+				
+			sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		}
+		
+		double angle = GroundedAngle();
+
+		sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+		sprite->setRotation( angle / PI * 180 );
+		
+		V2d oldv0 = ground->v0;
+		V2d oldv1 = ground->v1;
+
+		if( movingGround != NULL )
+		{
+			ground->v0 += movingGround->position;
+			ground->v1 += movingGround->position;
+		}
+
+		V2d pp = ground->GetPoint( edgeQuantity );
+
+		if( movingGround != NULL )
+		{
+			ground->v0 = oldv0;
+			ground->v1 = oldv1;
+		}
+
+		if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			sprite->setPosition( pp.x + offsetX, pp.y );
+		else
+			sprite->setPosition( pp.x, pp.y );
+		break;
 		}
 	case STEEPCLIMB:
 		{

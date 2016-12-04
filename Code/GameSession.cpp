@@ -645,6 +645,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
+	showTerrainDecor = true;
 	shipExitSeq = NULL;
 	activeDialogue = NULL;
 
@@ -2865,6 +2866,21 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if( typeName == "bosstiger" )
+			{
+				int xPos,yPos;
+
+				is >> xPos;
+				is >> yPos;
+
+				Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
+
+				fullEnemyList.push_back( enemy );
+
+				b_tiger = enemy;
+
+				enemyTree->Insert( enemy );
+			}
 
 			//w5
 			else if( typeName == "swarm" )
@@ -3750,6 +3766,11 @@ bool GameSession::OpenFile( string fileName )
 		if( b_bird != NULL )
 		{
 			b_bird->Init();
+		}
+
+		if( b_tiger != NULL )
+		{
+			b_tiger->Init();
 		}
 
 		if( b_gator != NULL )
@@ -6785,6 +6806,8 @@ int GameSession::Run( string fileN )
 			sf::RenderStates rs;
 			rs.texture = listVAIter->ts_border->texture;
 
+			if( showTerrainDecor )
+			{
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
 
@@ -6805,6 +6828,8 @@ int GameSession::Run( string fileN )
 			{
 				//rs.texture = listVAIter->ts_plant->texture;
 				//preScreenTex->draw( *listVAIter->plantva, rs );
+			}
+
 			}
 
 		/*	if( listVAIter->flowva != NULL )
@@ -7012,6 +7037,14 @@ int GameSession::Run( string fileN )
 		else if( Keyboard::isKeyPressed( Keyboard::Num2 ) )
 		{
 			showDebugDraw = false;
+		}
+		else if( Keyboard::isKeyPressed( Keyboard::Num3 ) )
+		{
+			showTerrainDecor = false;
+		}
+		else if( Keyboard::isKeyPressed( Keyboard::Num4 ) )
+		{
+			showTerrainDecor = true;
 		}
 		
 

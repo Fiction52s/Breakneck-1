@@ -1187,6 +1187,8 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		std::list<NodePath*> paths;
 	};
 
+	sf::CircleShape testCS;
+
 	struct NodePath
 	{
 		NodePath( Node *n, Edge *e, double q )
@@ -1198,6 +1200,10 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		double quant;
 	};
 
+	Node *currNode;
+	NodePath *lockPath;
+
+	void Init();
 	void ConnectNodes();
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 
@@ -1205,6 +1211,8 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	double rcQuantity;
 	sf::Vector2<double> rayStart;
 	sf::Vector2<double> rayEnd;
+
+	sf::VertexArray debugLines;
 
 	Node *allNodes[13];
 	sf::VertexArray nodeVA;
@@ -1245,6 +1253,9 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	void ResetEnemy();
 	void SaveEnemyState();
 	void LoadEnemyState();
+
+	void HitTerrainAerial(Edge *, double);
+	void TransferEdge( Edge * );
 
 	//sf::Vector2f GetGridPosF( sf::Vector2i &index );
 	//sf::Vector2<double> GetGridPosD( sf::Vector2i &index );
