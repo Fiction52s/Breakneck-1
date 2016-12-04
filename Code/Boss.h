@@ -1191,18 +1191,26 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 
 	struct NodePath
 	{
-		NodePath( Node *n, Edge *e, double q )
-			:node( n ), edge( e ), quant( q )
+		NodePath( Node *n, Edge *e, double q,
+			sf::Vector2<double> &p_pos )
+			:node( n ), edge( e ), quant( q ),
+			pos( p_pos )
 		{
 		}
 		Node *node;
 		Edge *edge;
 		double quant;
+		sf::Vector2<double> pos;
 	};
 
 	Node *currNode;
 	NodePath *lockPath;
-
+	bool projecting;
+	SurfaceMover *projMover;
+	Edge *projEdge;
+	double projQuant;
+	void ProjectCircle( sf::Vector2<double> &start,
+		sf::Vector2<double> &end );
 	void Init();
 	void ConnectNodes();
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );

@@ -35,6 +35,13 @@ SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround,
 
 void SurfaceMover::UpdateGroundPos()
 {
+	if( ground == NULL )
+	{
+		physBody.globalAngle = 0;
+		return;
+	}
+	
+
 	if( roll )
 	{
 		V2d n;
