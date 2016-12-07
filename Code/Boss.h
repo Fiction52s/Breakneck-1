@@ -745,6 +745,8 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	sf::Vector2i originalPos;
 	int frame;
 
+	Launcher *launcher;
+
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
@@ -767,6 +769,8 @@ struct Boss_Bird : Enemy, LauncherEnemy
 
 	sf::Sprite nextAttackOrb;
 	Tileset *ts_nextAttackOrb;
+
+	
 	
 
 	bool facingRight;

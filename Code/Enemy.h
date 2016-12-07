@@ -33,6 +33,7 @@ struct BasicBullet : QuadTreeCollider
 		BAT,
 		CURVE_TURRET,
 		BOSS_CRAWLER,
+		BOSS_BIRD,
 		CACTUS_TURRET,
 		OWL,
 		BOSS_COYOTE,
@@ -197,6 +198,7 @@ struct Launcher
 	double amplitude;
 	int wavelength;
 	int maxFramesToLive;
+	double maxBulletSpeed;
 	//Launcher *next;
 };
 

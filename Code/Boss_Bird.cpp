@@ -25,6 +25,8 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::BOSS_BIRD, false, 6 ), deathFrame( 0 ),
 	flyCurve( 0, 0, 1, 1 ), punchPulse( owner ),  homingVA( sf::Quads, MAX_HOMING * 4 )
 {
+	bulletSpeed = 1;
+
 	originalPos = pos;
 	
 	gridCenter.x = originalPos.x;
@@ -76,8 +78,9 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	deathFrame = 0;
 	
-	//launcher = new Launcher( this, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, true );
-	//launcher->SetBulletSpeed( bulletSpeed );	
+	launcher = new Launcher( this, BasicBullet::BType::BOSS_BIRD, owner, 64, 1, position, V2d( 1, 0 ), 0, 60 * 5, false );
+	
+	launcher->SetBulletSpeed( bulletSpeed );	
 
 	initHealth = 40;
 	health = initHealth;
@@ -251,6 +254,8 @@ void Boss_Bird::ResetEnemy()
 	deathFrame = 0;
 	frame = 0;
 
+	launcher->Reset();
+
 	position = GetGridPosD( currIndex );
 	//position.x = originalPos.x;
 	//position.y = originalPos.y;
@@ -280,7 +285,7 @@ void Boss_Bird::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Boss_Bird::BulletHitPlayer(BasicBullet *b )
 {
-	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->player->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Boss_Bird::ActionEnded()
@@ -318,7 +323,13 @@ void Boss_Bird::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	//launcher->UpdatePrePhysics();
+	V2d playerPos = owner->player->position;
+	
+	launcher->SetGravity( normalize( playerPos - position ) * 1.0 );
+	launcher->maxBulletSpeed = 10;
+	launcher->UpdatePrePhysics();
+
+	
 
 	switch( action )
 	{
@@ -355,7 +366,6 @@ void Boss_Bird::UpdatePrePhysics()
 	case PUNCH:
 		break;
 	case THROWHOMING:
-		
 		break;
 	
 	case KICK:
@@ -384,8 +394,17 @@ void Boss_Bird::UpdatePrePhysics()
 		cout << "THROWHOMING" << endl;
 		break;
 	case THROWCURVE:
-		cout << "THROWCURVE" << endl;
-		break;
+		{
+			cout << "THROWCURVE" << endl;
+			if( flyFrame % 6 == 0 )
+			{
+				cout << "firing launcher!: " << flyFrame << endl;
+				launcher->facingDir = normalize( owner->player->position - position );
+				launcher->position = position;
+				launcher->Fire();
+			}
+			break;
+		}
 	case KICK:
 		cout << "KICK" << endl;
 		break;
@@ -461,7 +480,7 @@ void Boss_Bird::UpdatePhysics()
 		hr = hr->next;
 	}
 
-	//launcher->UpdatePhysics();
+	launcher->UpdatePhysics();
 
 	if( !dead )
 	{
@@ -498,7 +517,7 @@ void Boss_Bird::PhysicsResponse()
 
 void Boss_Bird::UpdatePostPhysics()
 {
-	//launcher->UpdatePostPhysics();
+	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
@@ -560,7 +579,7 @@ void Boss_Bird::UpdateSprite()
 	{
 		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
-
+		launcher->UpdateSprites();
 		//SetHoming( position, currHoming, 0 );
 		//targeterSprite.setPosition( homingPos.x, homingPos.y );
 	}

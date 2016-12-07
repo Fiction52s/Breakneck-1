@@ -50,6 +50,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 		position( p_position ), owner( p_owner ),handler(p_handler)
 
 {
+	maxBulletSpeed = 100;
 	//launchType = p_launchType;
 	interactWithTerrain = hitTerrain;
 	maxFramesToLive = p_maxFramesToLive;
@@ -89,6 +90,10 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 	case BasicBullet::BOSS_CRAWLER:
 		bulletTilesetIndex = 2;
 		break;
+	case BasicBullet::BOSS_BIRD:
+		bulletTilesetIndex = 1;
+		break;
+
 	}
 	
 	if( bulletType == BasicBullet::COPYCAT )
@@ -148,7 +153,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
 	int p_maxFramesToLive )
 {
-
+	maxBulletSpeed = 100;
 }
 
 void Launcher::CapBulletVel( double speed )
@@ -180,6 +185,8 @@ void Launcher::UpdatePrePhysics()
 		curr->UpdatePrePhysics();
 		curr = temp;
 	}
+
+	CapBulletVel( maxBulletSpeed );
 }
 
 void Launcher::UpdatePhysics()
@@ -414,6 +421,12 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	case BASIC_TURRET:
 		transform.rotate( angle );
 		break;
+	case BOSS_BIRD:
+		{
+			transform.rotate( angle );
+			break;
+		}
+		
 	}
 
 	frame = 0;
