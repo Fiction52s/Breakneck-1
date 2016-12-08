@@ -276,6 +276,8 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this ),
 	dialogue( owner, DialogueBox::BIRD )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
+	ts_afterImage = owner->GetTileset( "bosscoyote_afterimage_128x128.png", 128, 128 );
+
 	ts_face = owner->GetTileset( "Bosses/Coyote/03_coyote_face_02_384x384.png", 384, 384 );
 
 	ts_symbols0 = owner->GetTileset( "Bosses/Dialogue/Symbols/02_Symbols_256x256.png", 256, 256 );
@@ -388,7 +390,14 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
-
+	
+	afterImageHitboxInfo = new HitboxInfo;
+	afterImageHitboxInfo->damage = 18;
+	afterImageHitboxInfo->drainX = 0;
+	afterImageHitboxInfo->drainY = 0;
+	afterImageHitboxInfo->hitlagFrames = 0;
+	afterImageHitboxInfo->hitstunFrames = 15;
+	afterImageHitboxInfo->knockback = 0;
 
 	/*testLaunch = new Launcher( this, owner, 10, 1,
 		testMover->physBody.globalPosition, g->Normal(), 0 );*/
@@ -1485,4 +1494,122 @@ bool Boss_Coyote::ConfirmDialogue()
 	}
 
 	return true;
+}
+
+void Boss_Coyote::AfterImage::UpdatePrePhysics()
+{
+	if( (action == DISSIPATE && frame == 60) )
+	{
+		parent->DeactivateAfterImage( this );
+		return;
+	}
+	if( action == FIND && frame == 5 + 1 )
+	{
+		action = LOCK;
+		frame = 0;
+	}
+	else if( action == LOCK && frame == 60 )
+	{
+		action = FREEZE;
+		frame = 0;
+	}
+
+	if( action == STAY && frame == 60 )
+	{
+		action = DISSIPATE;
+		frame = 0;
+	}
+	else if( action == DISSIPATE && frame == 60 )
+	{
+		parent->dea
+	}
+
+	switch( action )
+	{
+	case FIND:
+		{
+			cout << "ring find " << frame << endl;
+			endRing = parent->owner->player->position;
+			double a = (double)frame / 5;
+			double f = a;//flyCurve.GetValue( a );
+			position = startRing * ( 1.0 - f ) + endRing * ( f );
+		}
+		break;
+	case LOCK:
+		{
+			position = parent->owner->player->position;
+			cout << "ring lock " << frame << endl;
+		}
+		break;
+	case FREEZE:
+		break;
+	case ACTIVATE:
+		break;
+	case DISSIPATE:
+		break;
+	}
+}
+
+Boss_Coyote::AfterImage::AfterImage( Boss_Coyote *p_parent, int p_vaIndex )
+	:parent( p_parent ), frame( 0 ), next( NULL ), prev( NULL ),
+	action( STAY ), vaIndex( p_vaIndex )
+{
+	hitbox.isCircle = true;
+	hitbox.rw = 64;
+	hitbox.rh = 64;
+}
+
+void Boss_Coyote::AfterImage::UpdatePostPhysics()
+{
+	IntRect ir = parent->ts_afterImage->GetSubRect( 0 );
+	int hw = parent->ts_afterImage->tileWidth / 2;
+	int hh = parent->ts_afterImage->tileHeight / 2;
+	//parent->ts_homingRing
+	parent->afterImageVA[vaIndex*4+0].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( -hw, -hh ); 
+	parent->afterImageVA[vaIndex*4+1].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( hw, -hh );
+	parent->afterImageVA[vaIndex*4+2].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( hw, hh );
+	parent->afterImageVA[vaIndex*4+3].position = Vector2f( position.x, position.y ) 
+		+ Vector2f( -hw, hh );
+
+	parent->afterImageVA[vaIndex*4+0].texCoords = Vector2f( ir.left, ir.top );
+	parent->afterImageVA[vaIndex*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+	parent->afterImageVA[vaIndex*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+	parent->afterImageVA[vaIndex*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+
+	/*parent->homingVA[vaIndex*4+0].color = Color::Green;
+	parent->homingVA[vaIndex*4+1].color = Color::Green;
+	parent->homingVA[vaIndex*4+2].color = Color::Green;
+	parent->homingVA[vaIndex*4+3].color = Color::Green;*/
+
+	++frame;
+}
+
+void Boss_Coyote::AfterImage::UpdatePhysics()
+{
+	Actor *player = parent->owner->player;
+	if( player->hurtBody.Intersects( hitbox ) )
+	{
+		owner->player->ApplyHit( parent->afterImageHitboxInfo );
+	}
+}
+
+void Boss_Coyote::AfterImage::Clear()
+{
+	parent->afterImageVA[vaIndex*4+0].position = Vector2f( 0, 0 );
+	parent->afterImageVA[vaIndex*4+1].position = Vector2f( 0, 0 );
+	parent->afterImageVA[vaIndex*4+2].position = Vector2f( 0, 0 );
+	parent->afterImageVA[vaIndex*4+3].position = Vector2f( 0, 0 );
+}
+
+void Boss_Coyote::AfterImage::Reset( sf::Vector2<double> &pos )
+{
+	action = STAY;
+	frame = 0;
+	position = pos;
+	prev = NULL;
+	next = NULL;
+	
 }

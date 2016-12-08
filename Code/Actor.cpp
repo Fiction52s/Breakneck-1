@@ -4066,8 +4066,16 @@ void Actor::UpdatePrePhysics()
 						frame = 0;
 
 						V2d grindNorm = grindEdge->Normal();
+						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
 						lungeNormal = grindNorm;
 						velocity = lungeNormal * grindLungeSpeed;
+						/*if( currInput.A )
+						{
+							velocity += gDir * grindSpeed;
+							V2d normV = normalize( velocity );
+							lungeNormal = V2d( normV.y, -normV.x );
+						}*/
+						
 						//grindEdge = NULL;
 
 						facingRight = (grindNorm.x > 0);
@@ -4102,8 +4110,14 @@ void Actor::UpdatePrePhysics()
 						frame = 0;
 
 						V2d grindNorm = grindEdge->Normal();
+						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
+
 						lungeNormal = grindNorm;
 						velocity = lungeNormal * grindLungeSpeed;
+						/*if( currInput.A )
+						{
+							velocity += gDir * grindSpeed;
+						}*/
 						//grindEdge = NULL;
 
 						facingRight = (grindNorm.x > 0);

@@ -46,7 +46,7 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
-	testSeq.AddRadialMovement( 1, 0, 2 * PI * 3, 
+	testSeq.AddRadialMovement( V2d( 0, 0 ), 1, 0, 2 * PI * 3, 
 		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
 	
 	testSeq.InitMovementDebug();

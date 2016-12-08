@@ -188,7 +188,7 @@ V2d CubicMovement::GetPosition( int t )
 		+ pow( v, 3 ) * D;
 }
 		
-RadialMovement::RadialMovement( double p_radius, 
+RadialMovement::RadialMovement( V2d &circleBase, double p_radius, 
 		double p_startAngle, 
 		double p_endAngle, 
 		bool p_clockwise,
@@ -196,7 +196,8 @@ RadialMovement::RadialMovement( double p_radius,
 		double p_ellipseAngle,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration, Types::RADIAL ), startAngle( p_startAngle ),
+		:Movement( bez, duration, Types::RADIAL ), basePos( circleBase ),
+		startAngle( p_startAngle ),
 		endAngle( p_endAngle ), clockwise( p_clockwise ), radius( p_radius ),
 		ellipseAngle( p_ellipseAngle ), scale( p_scale )
 {
@@ -248,7 +249,7 @@ sf::Vector2<double> RadialMovement::GetPosition( int t )
 	
 	//cout << "pos : " << pos.x << ", " << pos.y << endl;
 
-	return V2d( p0.x, p0.y );
+	return V2d( p0.x, p0.y ) + basePos;//Vector2f( basePos.x, basePos.y );
 }
 
 WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
@@ -305,12 +306,12 @@ void MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
  	AddMovement( new CubicMovement( A,B,C,D,bez,duration ) );
 }
 
-void MovementSequence::AddRadialMovement( double radius, double startAngle,
+void MovementSequence::AddRadialMovement( sf::Vector2<double> &base, double radius, double startAngle,
 		double endAngle, bool clockwise, sf::Vector2<double> scale,
 		double ellipseAngle,
 		CubicBezier &bez, int duration )
 {
-	AddMovement( new RadialMovement( radius, startAngle, endAngle, clockwise,
+	AddMovement( new RadialMovement( base, radius, startAngle, endAngle, clockwise,
 		scale, ellipseAngle, bez,
 		duration ) );
 }

@@ -50,7 +50,7 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 
 	//.44,.79,.77,.1
 	//.57,.3,.53,.97
-	circleSeq.AddRadialMovement( 1, 0, 2 * PI, 
+	circleSeq.AddRadialMovement( V2d( 0, 0 ), 1, 0, 2 * PI, 
 		true, V2d( 1, 1 ), 0, CubicBezier( .57,.3,.53,.97 ), circleFrames );
 	
 	circleSeq.InitMovementDebug();

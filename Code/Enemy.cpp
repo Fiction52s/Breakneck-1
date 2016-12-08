@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Zone.h"
 #include <sstream>
+#include "Boss.h"
 
 using namespace std;
 using namespace sf;
@@ -34,7 +35,7 @@ Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
 	};
 }
 
-Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
+Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	GameSession *p_owner,
 		int numTotalBullets,
 		int bulletsPerShot,
@@ -50,6 +51,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType bulletType,
 		position( p_position ), owner( p_owner ),handler(p_handler)
 
 {
+	bulletType = p_bulletType;
 	maxBulletSpeed = 100;
 	//launchType = p_launchType;
 	interactWithTerrain = hitTerrain;
@@ -534,6 +536,28 @@ void BasicBullet::UpdatePrePhysics()
 
 	velocity += gravity / (double)slowMultiple;
 
+	if( launcher->bulletType == BasicBullet::BOSS_BIRD )
+	{
+		int f = launcher->maxFramesToLive - framesToLive;
+		V2d playerPos = launcher->owner->player->position;
+		//V2d endFly = launcher->owner->b_bird->endFly;
+		V2d dir = normalize( velocity );
+		V2d norm( dir.y, -dir.x );
+		//angle = atan2( gn.x, -gn.y );
+		double len = length( velocity );
+		//double angle = atan2( dir.y, dir.x );//norm.x, -norm.y );
+		//angle += PI / len;
+		//V2d go( len, 0 );
+		//velocity.x = cos( angle ) * len;
+		//velocity.y = sin( angle ) * len;
+		
+		//velocity += norm * dot(normalize( playerPos - position ) * .5 / (double)slowMultiple, norm);
+		if( f < 30 )
+			velocity += normalize( playerPos - position ) * 2.0 / (double)slowMultiple;
+
+		//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+		//velocity += 
+	}
 	
 	//if( gravTowardsPlayer )
 	//{

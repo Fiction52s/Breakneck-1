@@ -843,6 +843,44 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 		NodeType nType;
 	};
 
+	struct AfterImage
+	{
+		enum Action
+		{
+			STAY,
+			DISSIPATE,
+			Count
+		};
+
+		AfterImage( Boss_Coyote *parent, int vaIndex );
+		void Reset( sf::Vector2<double> &pos );
+		Action action;
+		int frame;
+		Boss_Coyote *parent;
+		AfterImage *next;
+		AfterImage *prev;
+		void Clear();
+		void UpdatePrePhysics();
+		void UpdatePhysics();
+		void UpdatePostPhysics();
+		sf::Vector2<double> position;
+		CollisionBox hitbox;
+		int vaIndex;
+	};
+	Tileset *ts_afterImage;
+	sf::VertexArray afterImageVA;
+
+	void ClearAfterImages();
+
+	void AddAfterImage();
+	AfterImage * ActivateAfterImage();
+	void DeactivateAfterImage( AfterImage *im );
+	AfterImage *activeImages;
+	AfterImage *inactiveImages;
+
+	HitboxInfo *afterImageHitboxInfo;
+
+
 	struct BigBounceBullet : Movable
 	{
 		BigBounceBullet( Boss_Coyote *parent );
@@ -1529,6 +1567,26 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int testIndex;
 	int testLength;
 	int testFrame;
+
+	void SetMovementSeq();
+	MovementSequence seq2To3;
+	MovementSequence seq3To2;
+
+	//top side to top center
+	MovementSequence seq0To2;
+	MovementSequence seq4To2;
+
+	MovementSequence seq1To5;
+	MovementSequence seq5To1;
+
+	MovementSequence seq0To4;
+	MovementSequence seq4To0;
+
+	//MovementSequence seq1To5;
+	//MovementSequence seq4To2;
+
+	MovementSequence *currSequence;
+	//Movement midHighToLow;
 
 	sf::Vector2i nodeSpread;
 

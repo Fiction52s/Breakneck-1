@@ -68,7 +68,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 		targeterSprite.getLocalBounds().height / 2 );
 
 
-	bulletSpeed = 5;
+	bulletSpeed = 0;
 
 	receivedHit = NULL;
 	
@@ -78,7 +78,7 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	deathFrame = 0;
 	
-	launcher = new Launcher( this, BasicBullet::BType::BOSS_BIRD, owner, 64, 1, position, V2d( 1, 0 ), 0, 60 * 5, false );
+	launcher = new Launcher( this, BasicBullet::BType::BOSS_BIRD, owner, 64, 1, position, V2d( 1, 0 ), 0, 180, false );
 	
 	launcher->SetBulletSpeed( bulletSpeed );	
 
@@ -203,7 +203,7 @@ void Boss_Bird::ClearHomingRings()
 		DeactivateHRing( active );
 		active = next;
 	}
-
+	activeHoming = NULL;
 	/*for( int i = 0; i < MAX_HOMING; ++i )
 	{
 		homingVA[i*4+0].position = Vector2f( 0, 0 );
@@ -255,6 +255,8 @@ void Boss_Bird::ResetEnemy()
 	frame = 0;
 
 	launcher->Reset();
+
+
 
 	position = GetGridPosD( currIndex );
 	//position.x = originalPos.x;
@@ -325,11 +327,10 @@ void Boss_Bird::UpdatePrePhysics()
 
 	V2d playerPos = owner->player->position;
 	
-	launcher->SetGravity( normalize( playerPos - position ) * 1.0 );
-	launcher->maxBulletSpeed = 10;
-	launcher->UpdatePrePhysics();
-
 	
+	
+	launcher->maxBulletSpeed = 15;
+	launcher->UpdatePrePhysics();
 
 	switch( action )
 	{
@@ -396,7 +397,7 @@ void Boss_Bird::UpdatePrePhysics()
 	case THROWCURVE:
 		{
 			cout << "THROWCURVE" << endl;
-			if( flyFrame % 6 == 0 )
+			if( flyFrame % 20 == 0 )
 			{
 				cout << "firing launcher!: " << flyFrame << endl;
 				launcher->facingDir = normalize( owner->player->position - position );
