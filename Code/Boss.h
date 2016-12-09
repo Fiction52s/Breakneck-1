@@ -873,7 +873,7 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	void ClearAfterImages();
 
 	void AddAfterImage();
-	AfterImage * ActivateAfterImage();
+	AfterImage * ActivateAfterImage(sf::Vector2<double> &pos );
 	void DeactivateAfterImage( AfterImage *im );
 	AfterImage *activeImages;
 	AfterImage *inactiveImages;

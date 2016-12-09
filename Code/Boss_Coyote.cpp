@@ -274,7 +274,7 @@ void Boss_Coyote::RandomizeDirections()
 Boss_Coyote::Boss_Coyote( GameSession *owner, sf::Vector2i &pos )
 	:Enemy( owner, EnemyType::STAGBEETLE, false, 3 ),//, facingRight( cw ),
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this ),
-	dialogue( owner, DialogueBox::BIRD )//, testPaths( sf::Lines, 12 * 5 * 2 )
+	dialogue( owner, DialogueBox::BIRD ), afterImageVA( sf::Quads, 32 * 4 )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
 	ts_afterImage = owner->GetTileset( "bosscoyote_afterimage_128x128.png", 128, 128 );
 
@@ -431,6 +431,16 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, sf::Vector2i &pos )
 	launcher = new Launcher( this, BasicBullet::BOSS_COYOTE, owner, 144, 12, position, V2d( 1, 0 ), PI * 2.0 / 3.0, bulletTTL, true );
 	launcher->SetBulletSpeed( 3 );	
 	
+	inactiveImages = NULL;
+	activeImages = NULL;
+
+	for( int i = 0; i < 32; ++i )
+	{
+		AddAfterImage();
+	}
+	ClearAfterImages();
+	
+
 	//SetPartyMode( false );
 	//SetPartyMode( true );
 
@@ -487,29 +497,8 @@ void Boss_Coyote::ResetEnemy()
 	bezFrame = 0;
 	health = initHealth;
 	attackFrame = -1;
-	//lastReverser = false;
-	//roll = false;
-	//ground = startGround;
-	//edgeQuantity = startQuant;
-	//V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
-	//sprite.setPosition( testMover->physBody.globalPosition.x,
-	//	testMover->physBody.globalPosition.y );
+
 	frame = 0;
-
-	//V2d gn = testMover->ground->Normal();
-	//testMover->physBody.globalPosition = gPoint + testMover->ground->Normal() * 64.0 / 2.0;
-
-	/*V2d gn = ground->Normal();
-	if( gn.x > 0 )
-		offset.x = physBody.rw;
-	else if( gn.x < 0 )
-		offset.x = -physBody.rw;
-	if( gn.y > 0 )
-		offset.y = physBody.rh;
-	else if( gn.y < 0 )
-		offset.y = -physBody.rh;*/
-
-	//position = gPoint + offset;
 
 	deathFrame = 0;
 	dead = false;
@@ -518,12 +507,7 @@ void Boss_Coyote::ResetEnemy()
 	double angle = 0;
 	////position = gPoint + gn * 32.0;
 	angle = 0;//atan2( gn.x, -gn.y );
-	//	
-	//sprite.setTexture( *ts_walk->texture );
-	//sprite.setRotation( angle );
-	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	//sprite.setPosition( 
-	//V2d pp = ground->GetPoint( edgeQuantity );
+	
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);
 	sprite.setRotation( angle / PI * 180 );
 	sprite.setPosition( position.x, position.y );
@@ -685,6 +669,13 @@ void Boss_Coyote::UpdatePrePhysics()
 
 			double r = moveBezTest.GetValue( travelFrame / (double)cap );
 			position = currNode->position * (1 - r) + nextNode->position * r;
+			
+			if( travelFrame % 10 == 0 )
+			{
+				AfterImage *ai = ActivateAfterImage( position );
+				assert( ai != NULL );
+			}
+
 			travelFrame++;
 		}
 		break;
@@ -756,7 +747,13 @@ void Boss_Coyote::UpdatePrePhysics()
 	portrait.Update();
 	dialogue.Update();
 
-
+	AfterImage *ai = activeImages;
+	while( ai != NULL )
+	{
+		AfterImage *next = ai->next;
+		ai->UpdatePrePhysics();
+		ai = next;
+	}
 
 	launcher->UpdatePrePhysics();
 	bigBounceBullet.UpdatePrePhysics();
@@ -838,6 +835,15 @@ void Boss_Coyote::UpdatePhysics()
 	}
 	launcher->UpdatePhysics();
 	bigBounceBullet.UpdatePhysics();
+
+	AfterImage *ai = activeImages;
+	while( ai != NULL )
+	{
+		AfterImage *next = ai->next;
+		ai->UpdatePhysics();
+		ai = next;
+	}
+
 	return;
 	//testLaunch->UpdatePhysics();
 	specterProtected = false;
@@ -883,6 +889,8 @@ void Boss_Coyote::UpdatePhysics()
 
 	position = testMover->physBody.globalPosition;
 	
+	
+
 	PhysicsResponse();
 }
 
@@ -1017,6 +1025,15 @@ void Boss_Coyote::UpdatePostPhysics()
 	bigBounceBullet.UpdatePostPhysics();
 	launcher->UpdatePostPhysics();
 	launcher->UpdateSprites();
+
+	AfterImage *ai = activeImages;
+	while( ai != NULL )
+	{
+		AfterImage *next = ai->next;
+		ai->UpdatePostPhysics();
+		ai = next;
+	}
+
 	UpdateSprite();
 	++frame;
 	return;
@@ -1098,6 +1115,7 @@ void Boss_Coyote::Draw(sf::RenderTarget *target )
 		testCircle.setPosition( position.x, position.y );
 		target->draw( testCircle );
 		bigBounceBullet.Draw( target );
+		target->draw( afterImageVA, ts_afterImage->texture );
 	}
 	else
 	{
@@ -1552,7 +1570,7 @@ void Boss_Coyote::DeactivateAfterImage( AfterImage *afterImage )
 	afterImage->Clear();
 }
 
-Boss_Coyote::AfterImage * Boss_Coyote::ActivateAfterImage()
+Boss_Coyote::AfterImage * Boss_Coyote::ActivateAfterImage( sf::Vector2<double> &pos )
 {
 	if( inactiveImages == NULL )
 		return NULL;
@@ -1563,7 +1581,7 @@ Boss_Coyote::AfterImage * Boss_Coyote::ActivateAfterImage()
 		inactiveImages = temp;
 		inactiveImages->prev = NULL;
 
-		newImage->Reset( position );
+		newImage->Reset( pos );
 
 
 		if( activeImages == NULL )
@@ -1639,11 +1657,20 @@ Boss_Coyote::AfterImage::AfterImage( Boss_Coyote *p_parent, int p_vaIndex )
 	hitbox.isCircle = true;
 	hitbox.rw = 64;
 	hitbox.rh = 64;
+	hitbox.type = CollisionBox::Hit;
 }
 
 void Boss_Coyote::AfterImage::UpdatePostPhysics()
 {
-	IntRect ir = parent->ts_afterImage->GetSubRect( 0 );
+	IntRect ir; 
+	if( action == STAY )
+	{
+		ir = parent->ts_afterImage->GetSubRect( 0 );
+	}
+	else if( action == DISSIPATE )
+	{
+		ir = parent->ts_afterImage->GetSubRect( frame / 16 );
+	}
 	int hw = parent->ts_afterImage->tileWidth / 2;
 	int hh = parent->ts_afterImage->tileHeight / 2;
 	//parent->ts_homingRing
@@ -1693,4 +1720,5 @@ void Boss_Coyote::AfterImage::Reset( sf::Vector2<double> &pos )
 	position = pos;
 	prev = NULL;
 	next = NULL;
+	hitbox.globalPosition = pos;
 }
