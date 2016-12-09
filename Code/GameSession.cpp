@@ -2735,17 +2735,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 			{
 				//always grounded
 
-				int terrainIndex;
-				is >> terrainIndex;
+				Vector2i pos;
+				
+				is >> pos.x;
+				is >> pos.y;
 
-				int edgeIndex;
-				is >> edgeIndex;
-
-				double edgeQuantity;
-				is >> edgeQuantity;
-
-				Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex],
-					edgeQuantity );
+				Boss_Coyote *enemy = new Boss_Coyote( this, pos );
 				b_coyote = enemy;
 
 				fullEnemyList.push_back( enemy );
@@ -12103,11 +12098,10 @@ void GameSession::ActivateZone( Zone *z )
 			AddEnemy( (*it) );
 		}
 
+		//cout << "setting active " << z << " to true" << endl;
 		
 		z->active = true;
 
-
-		
 
 		if( activatedZoneList == NULL )
 		{

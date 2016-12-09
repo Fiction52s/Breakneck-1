@@ -1811,40 +1811,12 @@ bool EditSession::OpenFile( string fileName )
 				}
 				else if( typeName == "bosscoyote" )
 				{
-					//always grounded
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					int testIndex = 0;
-					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-					{
-						if( testIndex == terrainIndex )
-						{
-							terrain = (*it);
-							break;
-						}
-						testIndex++;
-					}
-
-					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing bosscrawler" );
-
-					if( edgeIndex == terrain->numPoints - 1 )
-						edgeIndex = 0;
-					else
-						edgeIndex++;
+					Vector2i pos;
+					is >> pos.x;
+					is >> pos.y;
 
 					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
-					a.reset( new BossCoyoteParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
-					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
-					terrain->UpdateBounds();
+					a.reset( new BossCoyoteParams( this, pos ) );
 				}
 
 				//w4
@@ -6210,8 +6182,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										showPanel = enemySelectPanel;
 										trackingEnemy = NULL;
-										ActorPtr bossCoyote( new BossCoyoteParams( this, enemyEdgePolygon, enemyEdgeIndex,
-											enemyEdgeQuantity ) );
+										ActorPtr bossCoyote( new BossCoyoteParams( this, 
+											Vector2i( worldPos.x, worldPos.y ) ) );
 										bossCoyote->group = groups["--"];
 
 										CreateActor( bossCoyote );
@@ -8253,8 +8225,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					bool w3Grounded =
 						name == "badger"
-						|| name == "cactus"
-						|| name == "bosscoyote";
+						|| name == "cactus";
+						//|| name == "bosscoyote";
 
 					bool w4Grounded =
 						name == "cheetah"
@@ -14179,8 +14151,8 @@ void ActorType::Init()
 	{
 		width = 200;
 		height = 200;
-		canBeGrounded = true;
-		canBeAerial = false;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 	
 	//w4

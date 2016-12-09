@@ -598,24 +598,30 @@ ActorParams *CactusParams::Copy()
 	return copy;
 }
 
-BossCoyoteParams::BossCoyoteParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
-	int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
+BossCoyoteParams::BossCoyoteParams( EditSession *edit, sf::Vector2i &pos )
+	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 6 * 2 )
 {
 	type = edit->types["bosscoyote"];
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+	position = pos;
+
+	image.setTexture( type->imageTexture );
+	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image.setPosition( pos.x, pos.y );
+
+	radius = 600;
+
+	//AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
+
+	CreateFormation();
 }
 
 bool BossCoyoteParams::CanApply()
 {
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	CreateFormation();
+	return true;
 }
 
 void BossCoyoteParams::WriteParamFile( ofstream &of )
@@ -627,4 +633,38 @@ ActorParams *BossCoyoteParams::Copy()
 {
 	BossCoyoteParams *copy = new BossCoyoteParams( *this );
 	return copy;
+}
+
+void BossCoyoteParams::CreateFormation()
+{
+	Vector2f op( position.x, position.y );
+
+	Transform t;
+	Vector2f offset( radius, 0 );
+
+	debugLines[0].position = op + offset;
+	t.rotate( -360.f / 6.f );
+	for( int i = 1; i < 6; ++i )
+	{
+		Vector2f newP = t.transformPoint( offset ) + op;
+		//Vector2f lastPos;
+		debugLines[(i-1)*2 + 1].position = newP;
+		debugLines[i*2 + 0].position = newP;
+
+		t.rotate( -360.f / 6.f );
+	}
+	debugLines[5*2+1].position = debugLines[0].position;
+
+	for( int i = 0; i < 6; ++i )
+	{
+		debugLines[i*2+0].color = Color::Red;
+		debugLines[i*2+1].color = Color::Blue;
+	}
+}
+
+void BossCoyoteParams::Draw( sf::RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	target->draw( debugLines );
 }

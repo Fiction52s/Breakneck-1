@@ -943,8 +943,7 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	bool partying;
 
 	ScorpionNode *currNode;
-	Boss_Coyote( GameSession *owner, Edge *ground, 
-		double quantity );
+	Boss_Coyote( GameSession *owner, sf::Vector2i &pos );
 	~Boss_Coyote();
 	void ActionEnded();
 	void BulletHitTerrain( BasicBullet *b,
@@ -1014,8 +1013,7 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 
 	int possibleEdgeCount;
 
-	Edge *startGround;
-	double startQuant;
+	sf::Vector2i originalPos;
 	//sf::Vector2<double> offset;
 	int frame;
 	//bool roll;

@@ -25,7 +25,7 @@ void Boss_Coyote::CreateNodes()
 	//V2d testPos = ground->GetPoint( quantity );
 
 	//V2d truePos = position;
-	arenaCenter = owner->poiMap["coyotecenter"]->pos;
+	arenaCenter = V2d( originalPos.x, originalPos.y );//owner->poiMap["coyotecenter"]->pos;
 	//V2d testPos = 
 	//testPos += V2d( -200, -200 );
 
@@ -271,7 +271,7 @@ void Boss_Coyote::RandomizeDirections()
 	}
 }
 
-Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
+Boss_Coyote::Boss_Coyote( GameSession *owner, sf::Vector2i &pos )
 	:Enemy( owner, EnemyType::STAGBEETLE, false, 3 ),//, facingRight( cw ),
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this ),
 	dialogue( owner, DialogueBox::BIRD )//, testPaths( sf::Lines, 12 * 5 * 2 )
@@ -295,6 +295,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 
 	dextra0 = Vector2f( -200, 0 );
 
+	originalPos = pos;
 
 	coyoteFightSeq = new CoyoteFightSeq( owner );
 	meetCoyoteSeq = new MeetCoyoteSeq( owner );
@@ -334,11 +335,12 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	double height = 128;
 	double width = 128;
 
-	startGround = g;
-	startQuant = q;
+	originalPos = pos;
+	//startGround = g;
+	//startQuant = q;
 	frame = 0;
 
-	testMover = new GroundMover( owner, g, q, 32, true, this );
+	testMover = new GroundMover( owner, NULL, 0, 32, true, this );
 	//testMover->gravity = V2d( 0, .5 );
 	testMover->SetSpeed( 0 );
 	//testMover->groundSpeed = s;
@@ -353,18 +355,18 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, Edge *g, double q )
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( q );
+	//V2d gPoint = g->GetPoint( q );
 	sprite.setPosition( testMover->physBody.globalPosition.x,
 		testMover->physBody.globalPosition.y );
-	position = testMover->physBody.globalPosition;
+	position = V2d( pos.x, pos.y );//testMover->physBody.globalPosition;
 	//roll = false;
 	//position = gPoint + ground->Normal() * height / 2.0;
 	
 
 	receivedHit = NULL;
 
-	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
+	double size = 32;//max( width, height );
+	spawnRect = sf::Rect<double>( pos.x - size, pos.y - size, size * 2, size * 2 );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -456,6 +458,7 @@ void Boss_Coyote::BulletHitPlayer( BasicBullet *b )
 
 void Boss_Coyote::ResetEnemy()
 {
+	activeImages = NULL;
 	bigBounceBullet.Reset( position );
 	launcher->Reset();
 	
@@ -464,11 +467,14 @@ void Boss_Coyote::ResetEnemy()
 	currNode = points[0];
 	//ResetDirections();
 	travelFrame = 0;
-	testMover->ground = startGround;
-	testMover->edgeQuantity = startQuant;
-	testMover->roll = false;
-	testMover->UpdateGroundPos();
-	testMover->SetSpeed( 0 );
+
+	//testMover->ground = startGround;
+	//testMover->edgeQuantity = startQuant;
+	testMover->physBody.globalPosition = V2d( originalPos.x, originalPos.y );
+	testMover->ground = NULL;
+	//testMover->roll = false;
+	//testMover->UpdateGroundPos();
+	//testMover->SetSpeed( 0 );
 
 	position = testMover->physBody.globalPosition;
 	
@@ -485,12 +491,12 @@ void Boss_Coyote::ResetEnemy()
 	//roll = false;
 	//ground = startGround;
 	//edgeQuantity = startQuant;
-	V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
+	//V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
 	//sprite.setPosition( testMover->physBody.globalPosition.x,
 	//	testMover->physBody.globalPosition.y );
 	frame = 0;
 
-	V2d gn = testMover->ground->Normal();
+	//V2d gn = testMover->ground->Normal();
 	//testMover->physBody.globalPosition = gPoint + testMover->ground->Normal() * 64.0 / 2.0;
 
 	/*V2d gn = ground->Normal();
@@ -511,19 +517,20 @@ void Boss_Coyote::ResetEnemy()
 	//----update the sprite
 	double angle = 0;
 	////position = gPoint + gn * 32.0;
-	angle = atan2( gn.x, -gn.y );
+	angle = 0;//atan2( gn.x, -gn.y );
 	//	
 	//sprite.setTexture( *ts_walk->texture );
 	//sprite.setRotation( angle );
 	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
 	//sprite.setPosition( 
 	//V2d pp = ground->GetPoint( edgeQuantity );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);
 	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( gPoint.x, gPoint.y );
+	sprite.setPosition( position.x, position.y );
 	//----
 
 	UpdateHitboxes();
+	ClearAfterImages();
 }
 
 void Boss_Coyote::HandleEntrant( QuadTreeEntrant *qte )
@@ -733,9 +740,10 @@ void Boss_Coyote::UpdatePrePhysics()
 
 			action = MOVE;
 
-			testMover->ground = startGround;
-			testMover->edgeQuantity = startQuant;
-			testMover->UpdateGroundPos();
+			testMover->ground = NULL;
+			//testMover->ground = startGround;
+			//testMover->edgeQuantity = startQuant;
+			//testMover->UpdateGroundPos();
 			facingRight = false;
 
 			meetCoyoteSeq->CoyoteGone();
@@ -1496,54 +1504,128 @@ bool Boss_Coyote::ConfirmDialogue()
 	return true;
 }
 
-void Boss_Coyote::AfterImage::UpdatePrePhysics()
+
+void Boss_Coyote::ClearAfterImages()
 {
-	if( (action == DISSIPATE && frame == 60) )
+	AfterImage *active = activeImages;
+	while( active != NULL )
 	{
-		parent->DeactivateAfterImage( this );
-		return;
+		AfterImage *next = active->next;
+		DeactivateAfterImage( active );
+		active = next;
 	}
-	if( action == FIND && frame == 5 + 1 )
+	activeImages = NULL;
+}
+
+void Boss_Coyote::DeactivateAfterImage( AfterImage *afterImage )
+{
+	//remove from active list
+	assert( activeImages != NULL );
+
+	if( afterImage->prev == NULL && afterImage->next == NULL )
 	{
-		action = LOCK;
-		frame = 0;
+		activeImages = NULL;
 	}
-	else if( action == LOCK && frame == 60 )
+	else if( afterImage->prev == NULL )
 	{
-		action = FREEZE;
-		frame = 0;
+		activeImages = afterImage->next;
+	}
+	else if( afterImage->next == NULL )
+	{
+		afterImage->prev->next = NULL;
+		afterImage->prev = NULL;
+	}
+	else
+	{
+		afterImage->prev->next = afterImage->next;
+		afterImage->next->prev = afterImage->prev;
+		afterImage->prev = NULL;
+		afterImage->next = NULL;
 	}
 
+
+	//add to inactive list
+	inactiveImages->prev = afterImage;
+	afterImage->next = inactiveImages;
+	inactiveImages = afterImage;
+
+	afterImage->Clear();
+}
+
+Boss_Coyote::AfterImage * Boss_Coyote::ActivateAfterImage()
+{
+	if( inactiveImages == NULL )
+		return NULL;
+	else
+	{
+		AfterImage *temp = inactiveImages->next;
+		AfterImage *newImage = inactiveImages;
+		inactiveImages = temp;
+		inactiveImages->prev = NULL;
+
+		newImage->Reset( position );
+
+
+		if( activeImages == NULL )
+		{
+			activeImages = newImage;
+		}
+		else
+		{
+			activeImages->prev = newImage;
+			newImage->next = activeImages;
+			activeImages = newImage;
+		}
+
+		return newImage;
+	}
+}
+
+void Boss_Coyote::AddAfterImage()
+{
+	if( inactiveImages == NULL )
+	{
+		inactiveImages = new AfterImage( this, 0 );
+	}
+	else
+	{
+		AfterImage *ai = inactiveImages;
+		int numImages = 0;
+		while( ai != NULL )
+		{
+			numImages++;
+			ai = ai->next;
+		}
+
+		//cout << "adding ring: " << numRings << endl;
+
+		AfterImage *nai = new AfterImage( this, numImages );
+		nai->next = inactiveImages;
+		inactiveImages->prev = nai;
+		inactiveImages = nai;
+	}
+}
+
+
+
+void Boss_Coyote::AfterImage::UpdatePrePhysics()
+{
 	if( action == STAY && frame == 60 )
 	{
 		action = DISSIPATE;
 		frame = 0;
 	}
-	else if( action == DISSIPATE && frame == 60 )
+	else if( (action == DISSIPATE && frame == 60) )
 	{
-		parent->dea
+		parent->DeactivateAfterImage( this );
+		return;
 	}
 
 	switch( action )
 	{
-	case FIND:
-		{
-			cout << "ring find " << frame << endl;
-			endRing = parent->owner->player->position;
-			double a = (double)frame / 5;
-			double f = a;//flyCurve.GetValue( a );
-			position = startRing * ( 1.0 - f ) + endRing * ( f );
+	case STAY:
+		{	
 		}
-		break;
-	case LOCK:
-		{
-			position = parent->owner->player->position;
-			cout << "ring lock " << frame << endl;
-		}
-		break;
-	case FREEZE:
-		break;
-	case ACTIVATE:
 		break;
 	case DISSIPATE:
 		break;
@@ -1592,7 +1674,7 @@ void Boss_Coyote::AfterImage::UpdatePhysics()
 	Actor *player = parent->owner->player;
 	if( player->hurtBody.Intersects( hitbox ) )
 	{
-		owner->player->ApplyHit( parent->afterImageHitboxInfo );
+		parent->owner->player->ApplyHit( parent->afterImageHitboxInfo );
 	}
 }
 
@@ -1611,5 +1693,4 @@ void Boss_Coyote::AfterImage::Reset( sf::Vector2<double> &pos )
 	position = pos;
 	prev = NULL;
 	next = NULL;
-	
 }

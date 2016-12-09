@@ -480,6 +480,7 @@ void Zone::Draw( RenderTarget *target )
 	{
 		if( showShadow )
 		{
+			//cout << "drawing area " << this << endl;
 			target->draw( *definedArea );
 		}
 	}

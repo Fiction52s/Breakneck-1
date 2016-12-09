@@ -819,7 +819,7 @@ bool CoyoteFightSeq::Update()
 		{
 			owner->ActivateZone( coy->zone );
 			assert( coy->zone != NULL );
-
+			coy->zone->active = true;
 			
 
 			

@@ -921,17 +921,7 @@ struct CactusParams : public ActorParams
 	int amplitude;
 };
 
-struct BossCoyoteParams : public ActorParams
-{
-	BossCoyoteParams( 
-		EditSession *edit, 
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity );
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile( std::ofstream &of );
-	bool CanApply();
-};
+
 
 //w4
 struct TurtleParams : public ActorParams
@@ -1168,6 +1158,20 @@ struct BossBirdParams : public ActorParams
 	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+};
+
+struct BossCoyoteParams : public ActorParams
+{
+	BossCoyoteParams( 
+		EditSession *edit, sf::Vector2i &pos );
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile( std::ofstream &of );
+	bool CanApply();
+	void CreateFormation();
+	void Draw( sf::RenderTarget *target );
+	int radius;
+	sf::VertexArray debugLines;
 };
 
 struct BossTigerParams : public ActorParams
