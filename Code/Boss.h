@@ -829,19 +829,26 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 		enum NodeType
 		{
 			DIRECTION,
+			INVINC,
+			AFTERIMAGE,
+			BULLET,
 			SHOTGUN,
 			REVERSE_SHOTGUN
 			//MIDDLE_PULSE
 		};
 		
-		ScorpionNode( sf::Vector2<double> &pos );
+		ScorpionNode( Boss_Coyote *parent, sf::Vector2<double> &pos );
 		ScorpionNode *neighbors[5];
 		//void ResetDirection();
 		void SetNewDirection( bool onlyMovement );
 		sf::Vector2<double> position;
 		int facingIndex;
 		NodeType nType;
+		Boss_Coyote *parent;
 	};
+
+	int fightingLevel;
+	Tileset *ts_bulletExplode;
 
 	struct AfterImage
 	{

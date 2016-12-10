@@ -39,7 +39,7 @@ void Boss_Coyote::CreateNodes()
 	for( int i = 0; i < 6; ++i )
 	{
 		dir = V2d( cos( angle - PI / 2 ), sin( angle - PI / 2 ) );
-		points[i] = new ScorpionNode( arenaCenter + dir * radius );
+		points[i] = new ScorpionNode( this, arenaCenter + dir * radius );
 		//edges[i] = new ScorpionNode;
 		angle += 2 * PI / 6;
 	}
@@ -56,7 +56,7 @@ void Boss_Coyote::CreateNodes()
 		{
 			next = points[i+1]->position;
 		}
-		edges[i] = new ScorpionNode( ( curr + next ) / 2.0 );
+		edges[i] = new ScorpionNode( this, ( curr + next ) / 2.0 );
 	}
 
 	for( int i = 0; i < pathSize; ++i )
@@ -219,8 +219,8 @@ void Boss_Coyote::SetPartyMode( bool party )
 	}
 }
 
-Boss_Coyote::ScorpionNode::ScorpionNode( sf::Vector2<double> &pos )
-	:position( pos ), facingIndex( -1 ), nType( DIRECTION )
+Boss_Coyote::ScorpionNode::ScorpionNode( Boss_Coyote *p_parent, sf::Vector2<double> &pos )
+	:position( pos ), facingIndex( -1 ), nType( DIRECTION ), parent( p_parent )
 {
 	//index as -1 means you stop
 	for( int i = 0; i < 5; ++i )
@@ -231,35 +231,60 @@ Boss_Coyote::ScorpionNode::ScorpionNode( sf::Vector2<double> &pos )
 
 void Boss_Coyote::ScorpionNode::SetNewDirection( bool onlyMovement )
 {
+	ScorpionNode::NodeType options[4] = { DIRECTION, DIRECTION, DIRECTION, DIRECTION };
+
+	int fightingLevel = parent->fightingLevel;
+	fightingLevel = 3;	
+	if( fightingLevel == 1 )
+	{
+		options[0] = AFTERIMAGE;
+	}
+	else if( fightingLevel == 2 )
+	{
+		options[0] = AFTERIMAGE;
+		options[1] = INVINC;
+	}
+	else if( fightingLevel == 3 )
+	{
+		options[0] = AFTERIMAGE;
+		options[1] = INVINC;
+		options[2] = BULLET;
+	}
+	
 	int r = rand() % 4;
-	if( true )//r < 2 || onlyMovement )
+
+	nType = options[r];
+
+	int index = 0;
+	int possibles[4];
+	for( int i = 0; i < 5; ++i )
 	{
-		nType = DIRECTION;
-		int index = 0;
-		int possibles[4];
-		for( int i = 0; i < 5; ++i )
+		if( i != facingIndex )
 		{
-			if( i != facingIndex )
-			{
-				possibles[index] = i;
-				++index;
-			}
+			possibles[index] = i;
+			++index;
 		}
-		int test = rand() % 4;
-		facingIndex = possibles[test];
 	}
-	else
-	{
-		if( r == 2 )
-		{
-			nType = SHOTGUN;
-		}
-		else
-		{
-			nType = REVERSE_SHOTGUN;
-		}
-		
-	}
+	int test = rand() % 4;
+	facingIndex = possibles[test];
+
+	//if( true )//r < 2 || onlyMovement )
+	//{
+	//	nType = DIRECTION;
+	//	
+	//}
+	//else
+	//{
+	//	if( r == 2 )
+	//	{
+	//		nType = SHOTGUN;
+	//	}
+	//	else
+	//	{
+	//		nType = REVERSE_SHOTGUN;
+	//	}
+	//	
+	//}
 }
 
 void Boss_Coyote::RandomizeDirections()
@@ -276,6 +301,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, sf::Vector2i &pos )
 	moveBezTest( 0,0,1,1 ), bigBounceBullet( this ),
 	dialogue( owner, DialogueBox::BIRD ), afterImageVA( sf::Quads, 32 * 4 )//, testPaths( sf::Lines, 12 * 5 * 2 )
 {
+	fightingLevel = 0;
 	ts_afterImage = owner->GetTileset( "bosscoyote_afterimage_128x128.png", 128, 128 );
 
 	ts_face = owner->GetTileset( "Bosses/Coyote/03_coyote_face_02_384x384.png", 384, 384 );
@@ -302,6 +328,7 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, sf::Vector2i &pos )
 	coyoteTalkSeq = new CoyoteTalkSeq( owner );
 	//skeletonAttackCoyoteSeq = new SkeletonAttackCoyoteSeq( owner );
 
+	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
 
 	action = SEQ_SLEEP;
 	frame = 0;
@@ -428,8 +455,9 @@ Boss_Coyote::Boss_Coyote( GameSession *owner, sf::Vector2i &pos )
 	RandomizeDirections();
 
 	int bulletTTL = 500;
-	launcher = new Launcher( this, BasicBullet::BOSS_COYOTE, owner, 144, 12, position, V2d( 1, 0 ), PI * 2.0 / 3.0, bulletTTL, true );
-	launcher->SetBulletSpeed( 3 );	
+	//launcher = new Launcher( this, BasicBullet::BPSS_COYOTE, owner, 144, 12, position, V2d( 1, 0 ), PI * 2.0 / 3.0, bulletTTL, true );
+	launcher = new Launcher( this, BasicBullet::OWL, owner, 12, 1, position, V2d( 1, 0 ), 0, 300, true );
+	launcher->SetBulletSpeed( 5 );	
 	
 	inactiveImages = NULL;
 	activeImages = NULL;
@@ -459,7 +487,32 @@ Boss_Coyote::~Boss_Coyote()
 void Boss_Coyote::BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos )
 {
-	
+	if( b->bounceCount == 2 )
+	{
+		V2d norm = edge->Normal();
+		double angle = atan2( norm.y, -norm.x );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
+		b->launcher->DeactivateBullet( b );
+	}
+	else
+	{
+		V2d en = edge->Normal();
+		if( pos == edge->v0 )
+		{
+			en = normalize( b->position - pos );
+		}
+		else if( pos == edge->v1 )
+		{
+			en = normalize( b->position - pos );
+		}
+		double d = dot( b->velocity, en );
+		V2d ref = b->velocity - (2.0 * d * en);
+		b->velocity = ref;
+		//cout << "ref: " << ref.x << ", " << ref.y << endl;
+		//b->velocity = -b->velocity;
+		b->bounceCount++;
+		b->framesToLive = b->launcher->maxFramesToLive;
+	}
 }
 
 void Boss_Coyote::BulletHitPlayer( BasicBullet *b )
@@ -468,6 +521,7 @@ void Boss_Coyote::BulletHitPlayer( BasicBullet *b )
 
 void Boss_Coyote::ResetEnemy()
 {
+	fightingLevel = 0;
 	activeImages = NULL;
 	bigBounceBullet.Reset( position );
 	launcher->Reset();
@@ -670,11 +724,33 @@ void Boss_Coyote::UpdatePrePhysics()
 			double r = moveBezTest.GetValue( travelFrame / (double)cap );
 			position = currNode->position * (1 - r) + nextNode->position * r;
 			
-			if( travelFrame % 10 == 0 )
+			
+			//cout << "node type: " << currNode->nType << endl;
+			switch( currNode->nType )
 			{
-				AfterImage *ai = ActivateAfterImage( position );
-				assert( ai != NULL );
+			case ScorpionNode::DIRECTION:
+				break;
+			case ScorpionNode::INVINC:
+				break;
+			case ScorpionNode::AFTERIMAGE:
+				if( travelFrame % 10 == 0 )
+				{
+					AfterImage *ai = ActivateAfterImage( position );
+					assert( ai != NULL );
+				}
+				break;
+			case ScorpionNode::BULLET:
+				{
+					if( travelFrame == 0 )
+					{
+						launcher->position = position;
+						launcher->facingDir = normalize( V2d( owner->player->position - position ) );
+						launcher->Fire();
+					}
+					break;
+				}	
 			}
+			
 
 			travelFrame++;
 		}
@@ -1623,8 +1699,6 @@ void Boss_Coyote::AddAfterImage()
 		inactiveImages = nai;
 	}
 }
-
-
 
 void Boss_Coyote::AfterImage::UpdatePrePhysics()
 {

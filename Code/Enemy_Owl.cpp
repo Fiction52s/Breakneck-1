@@ -165,7 +165,7 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 		double d = dot( b->velocity, en );
 		V2d ref = b->velocity - (2.0 * d * en);
 		b->velocity = ref;
-		cout << "ref: " << ref.x << ", " << ref.y << endl;
+		//cout << "ref: " << ref.x << ", " << ref.y << endl;
 		//b->velocity = -b->velocity;
 		b->bounceCount++;
 		b->framesToLive = b->launcher->maxFramesToLive;
