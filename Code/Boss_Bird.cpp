@@ -23,7 +23,8 @@ using namespace sf;
 
 Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	:Enemy( owner, EnemyType::BOSS_BIRD, false, 6 ), deathFrame( 0 ),
-	flyCurve( 0, 0, 1, 1 ), punchPulse( owner ),  homingVA( sf::Quads, MAX_HOMING * 4 )
+	flyCurve( 0, 0, 1, 1 ), punchPulse( owner ),  homingVA( sf::Quads, MAX_HOMING * 4 ),
+	debugLines( sf::Lines, GRID_SIZE_X * 2 + GRID_SIZE_Y * 2 )
 {
 	bulletSpeed = 1;
 
@@ -35,8 +36,8 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 	currIndex.x = GRID_SIZE_X / 2;
 	currIndex.y = GRID_SIZE_Y / 2;
 
-	gridCellSize.x = 64;
-	gridCellSize.y = 64;
+	gridCellSize.x = 160;
+	gridCellSize.y = 80;
 
 	gridOrigin = gridCenter + V2d( -currIndex.x * gridCellSize.x, -currIndex.y * gridCellSize.y );
 
@@ -144,8 +145,26 @@ Boss_Bird::Boss_Bird( GameSession *owner, Vector2i pos )
 
 	ResetEnemy();
 	//UpdateHitboxes();
-	
-	
+	int curr = 0;
+	for( int i = 0; i < GRID_SIZE_X; ++i )
+	{
+		debugLines[curr*2+0].position = GetGridPosF( i, 0 );
+		debugLines[curr*2+1].position = GetGridPosF( i, GRID_SIZE_Y - 1 );
+		++curr;
+	}
+
+	for( int i = 0; i < GRID_SIZE_Y; ++i )
+	{
+		debugLines[curr*2+0].position = GetGridPosF( 0, i );
+		debugLines[curr*2+1].position = GetGridPosF( GRID_SIZE_X-1, i );
+		++curr;
+	}
+
+	int totalLineVertices = GRID_SIZE_X * 2 + GRID_SIZE_Y * 2;
+	for( int i = 0; i < totalLineVertices; ++i )
+	{
+		debugLines[i].color = Color::Green;
+	}
 }
 
 void Boss_Bird::SetNextAttack()
@@ -595,6 +614,7 @@ void Boss_Bird::Draw( sf::RenderTarget *target )
 		target->draw( nextAttackOrb );
 		target->draw( sprite );
 		punchPulse.Draw( target );
+		target->draw( debugLines );
 	}
 }
 

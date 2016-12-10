@@ -5,6 +5,7 @@
 #include "Physics.h"
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include "Boss.h"
 
 using namespace std;
 using namespace sf;
@@ -928,7 +929,7 @@ ActorParams *CurveTurretParams::Copy()
 }
 
 BossBirdParams::BossBirdParams( EditSession *edit, Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 4 * 2 )
 {
 	type = edit->types["bossbird"];
 
@@ -938,12 +939,17 @@ BossBirdParams::BossBirdParams( EditSession *edit, Vector2i &pos )
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
+	width = Boss_Bird::GRID_SIZE_X * 160;
+	height = Boss_Bird::GRID_SIZE_Y * 80;
+
+	CreateFormation();
 				
 	SetBoundingQuad();	
 }
 
 bool BossBirdParams::CanApply()
 {
+	CreateFormation();
 	return true;
 }
 
@@ -956,4 +962,34 @@ ActorParams *BossBirdParams::Copy()
 {
 	BossBirdParams *copy = new BossBirdParams( *this );
 	return copy;
+}
+
+void BossBirdParams::Draw( sf::RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	target->draw( debugLines );
+}
+
+void BossBirdParams::CreateFormation()
+{
+	sf::Vector2f center( position.x, position.y );
+	sf::Vector2f origin( center.x - width / 2.f, center.y - height / 2.f );
+
+	debugLines[0].position = origin;
+	debugLines[1].position = Vector2f( origin.x + width, origin.y );
+
+	debugLines[2].position = Vector2f( origin.x + width, origin.y );
+	debugLines[3].position = Vector2f( origin.x + width, origin.y + height );
+
+	debugLines[4].position = Vector2f( origin.x + width, origin.y + height );
+	debugLines[5].position = Vector2f( origin.x, origin.y + height );
+
+	debugLines[6].position = Vector2f( origin.x, origin.y + height );
+	debugLines[7].position = origin;
+
+	for( int i = 0; i < 4 * 2; ++i )
+	{
+		debugLines[i].color = Color::Green;
+	}
 }

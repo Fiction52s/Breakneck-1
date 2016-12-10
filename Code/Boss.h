@@ -696,6 +696,8 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	sf::Vector2f GetGridPosF( int x, int y );
 	sf::Vector2<double> GetGridPosD( int x, int y );
 
+
+	sf::VertexArray debugLines;
 	void SetNextAttack();
 
 	std::map<Action,int> actionLength;

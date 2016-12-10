@@ -1158,6 +1158,11 @@ struct BossBirdParams : public ActorParams
 	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	void Draw( sf::RenderTarget *target );
+	sf::VertexArray debugLines;
+	void CreateFormation();
+	int width;
+	int height;
 };
 
 struct BossCoyoteParams : public ActorParams
