@@ -1200,7 +1200,8 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 
 		FirePillar( Boss_Tiger *parent, int vaIndex );
 		void Reset( sf::Vector2<double> &pos,
-			float startAngle, int waveLengthFrames );
+			float startAngle, int waveLengthFrames,
+			bool clockwise );
 		Action action;
 		int frame;
 		Boss_Tiger *parent;
@@ -1211,12 +1212,15 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		void UpdatePhysics();
 		void UpdatePostPhysics();
 		sf::Vector2<double> position;
-		CollisionBox hitbox;
+		CollisionBox *hitboxes;
 		int vaIndex;
 		int waveLengthFrames;
 		sf::Transform t;
+		bool clockwise;
 		float currAngle_d; //_d for degrees
 	};
+
+	
 
 	int numPillarTiles;
 	Tileset *ts_pillar;
@@ -1226,11 +1230,53 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	//void HomingRingTriggered( HomingRing *hr );
 
 	void AddPillar();
-	FirePillar * ActivatePillar();
+	FirePillar * ActivatePillar( sf::Vector2<double> &pos, 
+	float p_startAngle, int p_waveLengthFrames,
+	bool clockwise );
 	void DeactivatePillar( FirePillar *hr );
 	FirePillar *activePillars;
 	FirePillar *inactivePillars;
 	const static int MAX_PILLARS = 12;
+
+	struct Node;
+	struct GroundFlame
+	{
+		enum Action
+		{
+			ACTIVATE,
+			BURN,
+			DISSIPATE,
+			OFF,
+			Count
+		};
+
+		GroundFlame( Boss_Tiger *parent, Node *node );
+		void Init();
+		void Reset();
+		Action action;
+		int frame;
+		Boss_Tiger *parent;
+		//GroundFlame *next;
+		//GroundFlame *prev;
+		void Clear();
+		void UpdatePrePhysics();
+		void UpdatePhysics();
+		void UpdatePostPhysics();
+		void Draw( sf::RenderTarget *target );
+		//sf::Vector2<double> position;
+		Node *node;
+		CollisionBox *hitboxes;
+		sf::VertexArray *flameVA;
+	};
+
+	GroundFlame *groundFlames[MAX_PILLARS];
+	Tileset *ts_flame;
+	void ClearGroundFlames();
+	//void HomingRingTriggered( HomingRing *hr );
+
+	void AddGroundFlames();
+	GroundFlame * ActivateGroundFlame( Node *n );
+
 
 	struct NodePath;
 	struct Node
@@ -1245,7 +1291,15 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		int numTimesTouched;
 		sf::Vector2<double> position;
 		std::list<NodePath*> paths;
+		int index;
 	};
+
+
+
+	//void SetupFlames( Node *n );
+	
+
+
 
 	sf::CircleShape testCS;
 
@@ -1343,7 +1397,7 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 
 	
 
-	sf::Vector2<double> homingPositions[MAX_HOMING];
+	//sf::Vector2<double> homingPositions[MAX_HOMING];
 	sf::Vector2i gridCellSize;
 
 	sf::Vector2i currIndex;

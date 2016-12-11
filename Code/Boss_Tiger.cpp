@@ -23,7 +23,8 @@ using namespace sf;
 
 Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	:Enemy( owner, EnemyType::BOSS_TIGER, false, 6 ), deathFrame( 0 ),
-	nodeVA( sf::Quads, 13 * 4 ), debugLines( sf::Lines, 2 * 30 )
+	nodeVA( sf::Quads, 13 * 4 ), debugLines( sf::Lines, 2 * 30 ),
+	numPillarTiles( 8 ), pillarVA( sf::Quads, numPillarTiles * MAX_PILLARS * 4 )
 {
 	lockPath = NULL;
 	nodeRadius1 = 800;
@@ -69,7 +70,7 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 
 	ts_pillar = owner->GetTileset( "bosstiger_pillar_100x100.png", 100, 100 );
 
-
+	ts_flame = owner->GetTileset( "bosstiger_flame_64x100.png", 64, 100 );
 
 
 	bulletSpeed = 5;
@@ -153,11 +154,14 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 
 	ConnectNodes();
 
+	AddGroundFlames();
+
 	mover = NULL;
 
 	ResetEnemy();
 	//UpdateHitboxes();
 	
+
 	
 }
 
@@ -273,6 +277,8 @@ void Boss_Tiger::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
+
+
 void Boss_Tiger::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
 	//b->launcher->DeactivateBullet( b );
@@ -308,6 +314,11 @@ void Boss_Tiger::UpdatePrePhysics()
 		fp = fp->next;
 	}
 
+	for( int i = 0; i < MAX_PILLARS; ++i )
+	{
+		groundFlames[i]->UpdatePrePhysics();
+	}
+
 	if( !dead && receivedHit != NULL )
 	{
 		//owner->Pause( 5 );
@@ -331,6 +342,7 @@ void Boss_Tiger::UpdatePrePhysics()
 	projecting = false;
 }
 
+
 void Boss_Tiger::HitTerrainAerial(Edge *e, double q)
 {
 	if( projecting )
@@ -339,6 +351,8 @@ void Boss_Tiger::HitTerrainAerial(Edge *e, double q)
 		projQuant = q;
 	}
 }
+
+ 
 
 void Boss_Tiger::TransferEdge( Edge *e )
 {
@@ -396,6 +410,8 @@ void Boss_Tiger::UpdatePhysics()
 			currNode = lockPath->node;
 			lockPath->node->numTimesTouched++;
 
+			//ActivatePillar( currNode->position, 0, 180, true );
+			ActivateGroundFlame( currNode );
 			//target = lockPath->node->position;
 
 			lockPath = NULL;
@@ -464,6 +480,10 @@ void Boss_Tiger::UpdatePhysics()
 		fp = fp->next;
 	}
 
+	for( int i = 0; i < MAX_PILLARS; ++i )
+	{
+		groundFlames[i]->UpdatePhysics();
+	}
 	//launcher->UpdatePhysics();
 
 	if( !dead )
@@ -504,6 +524,7 @@ void Boss_Tiger::ConnectNodes()
 	for( int i = 0; i < 13; ++i )
 	{
 		allNodes[i] = new Node;
+		allNodes[i]->index = i;
 	}
 
 	allNodes[0]->position = V2d( originalPos.x, originalPos.y );
@@ -783,6 +804,11 @@ void Boss_Tiger::ConnectNodes()
 		debugLines[i*2+1].color = Color::Blue;
 	}
 
+	/*for( int i = 0; i < NUM_PILLARS; ++i )
+	{
+		SetupFlames( allNodes[i] );
+	}*/
+
 	//cout << "check: " << endl;
 	//for( int i = 0; i < 13; ++i )
 	//{
@@ -838,6 +864,10 @@ void Boss_Tiger::UpdatePostPhysics()
 		fp = fp->next;
 	}
 
+	for( int i = 0; i < MAX_PILLARS; ++i )
+	{
+		groundFlames[i]->UpdatePostPhysics();
+	}
 
 	UpdateSprite();
 	//launcher->UpdateSprites();
@@ -890,6 +920,11 @@ void Boss_Tiger::Draw( sf::RenderTarget *target )
 			cs.setPosition( p.x, p.y );
 			target->draw( cs );
 		}
+		}
+
+		for( int i = 0; i < MAX_PILLARS; ++i )
+		{
+			groundFlames[i]->Draw( target );
 		}
 
 		target->draw( pillarVA, ts_pillar->texture );
@@ -1065,7 +1100,7 @@ void Boss_Tiger::DeactivatePillar( FirePillar *hr )
 {
 	//remove from active list
 
-	assert( activePillar != NULL );
+	assert( activePillars != NULL );
 
 	if( hr->prev == NULL && hr->next == NULL )
 	{
@@ -1097,7 +1132,8 @@ void Boss_Tiger::DeactivatePillar( FirePillar *hr )
 	hr->Clear();
 }
 
-Boss_Tiger::FirePillar * Boss_Tiger::ActivatePillar()
+Boss_Tiger::FirePillar * Boss_Tiger::ActivatePillar( V2d &pos, 
+	float p_startAngle, int p_waveLengthFrames, bool clockwise )
 {
 	if( inactivePillars == NULL )
 		return NULL;
@@ -1108,7 +1144,7 @@ Boss_Tiger::FirePillar * Boss_Tiger::ActivatePillar()
 		inactivePillars = temp;
 		inactivePillars->prev = NULL;
 
-		newPillar->Reset( position );
+		newPillar->Reset( pos, p_startAngle, p_waveLengthFrames, clockwise );
 
 
 		if( activePillars == NULL )
@@ -1170,25 +1206,19 @@ void Boss_Tiger::FirePillar::UpdatePrePhysics()
 
 	switch( action )
 	{
-	case FIND:
-		{
-			cout << "ring find " << frame << endl;
-			endRing = parent->owner->player->position;
-			double a = (double)frame / 5;
-			double f = a;//flyCurve.GetValue( a );
-			position = startRing * ( 1.0 - f ) + endRing * ( f );
-		}
-		break;
-	case LOCK:
-		{
-			position = parent->owner->player->position;
-			cout << "ring lock " << frame << endl;
-		}
-		break;
-	case FREEZE:
-		break;
 	case ACTIVATE:
 		break;
+	case ROTATE:
+		{
+			double r = (double)frame / waveLengthFrames;
+			double full = 360;
+			if( !clockwise )
+				full = -full;
+
+			currAngle_d = full * r;
+			//cout << "currangle: " << currAngle_d << endl;
+			break;
+		}
 	case DISSIPATE:
 		break;
 	}
@@ -1196,11 +1226,19 @@ void Boss_Tiger::FirePillar::UpdatePrePhysics()
 
 Boss_Tiger::FirePillar::FirePillar( Boss_Tiger *p_parent, int p_vaIndex )
 	:parent( p_parent ), frame( 0 ), next( NULL ), prev( NULL ),
-	action( FIND ), vaIndex( p_vaIndex )
+	action( DISSIPATE ), vaIndex( p_vaIndex )
 {
-	hitbox.isCircle = true;
-	hitbox.rw = 64;
-	hitbox.rh = 64;
+	int numPillarTiles = parent->numPillarTiles;
+	hitboxes = new CollisionBox[numPillarTiles];
+	for( int i = 0; i < numPillarTiles; ++i )
+	{
+		//hitboxes[i] = new CollisionBox;
+		CollisionBox &hitbox = hitboxes[i];
+		hitbox.isCircle = true;
+		hitbox.rw = 64;
+		hitbox.rh = 64;
+	}
+	
 }
 
 void Boss_Tiger::FirePillar::UpdatePostPhysics()
@@ -1245,11 +1283,26 @@ void Boss_Tiger::FirePillar::UpdatePostPhysics()
 
 void Boss_Tiger::FirePillar::UpdatePhysics()
 {
-	Actor *player = parent->owner->player;
-	if( player->hurtBody.Intersects( hitbox ) )
+	//put hitboxes in correct position. update hitboxes?
+	int numPillarTiles = parent->numPillarTiles;
+	int hh = parent->ts_pillar->tileHeight / 2;
+	for( int i = 0; i < numPillarTiles; ++i )
 	{
-		//parent->HomingRingTriggered( this );
+		Vector2f offset( 0, -(hh*2) * i );
+		Vector2f indexPos = Vector2f( position.x, position.y ) 
+			+ t.transformPoint( offset );
+		int index = vaIndex + i;
 	}
+	for( int i = 0; i < numPillarTiles; ++i )
+	{
+
+	}
+
+	//Actor *player = parent->owner->player;
+	//if( player->hurtBody.Intersects( hitbox ) )
+	//{
+	//	//parent->HomingRingTriggered( this );
+	//}
 }
 
 void Boss_Tiger::FirePillar::Clear()
@@ -1267,11 +1320,257 @@ void Boss_Tiger::FirePillar::Clear()
 }
 
 void Boss_Tiger::FirePillar::Reset( sf::Vector2<double> &pos,
-	float angle, int p_waveLengthFrames )
+	float angle, int p_waveLengthFrames, bool p_clockwise )
 {
 	waveLengthFrames = p_waveLengthFrames;
 	position = pos;
-
+	clockwise = p_clockwise;
+	action = ACTIVATE;
+	frame = 0;
 	prev = NULL;
 	next = NULL;
+}
+
+void Boss_Tiger::AddGroundFlames()
+{
+	for( int i = 0; i < MAX_PILLARS; ++i )
+	{
+		groundFlames[i] = new GroundFlame( this, allNodes[i] );
+		//groundFlames[i]->Init();
+	}
+
+	//if( inactiveGroundFlames == NULL )
+	//{
+	//	inactiveGroundFlames = new GroundFlame( this, 0 );
+	//}
+	//else
+	//{
+	//	GroundFlame *gf = inactiveGroundFlames;
+	//	int numFlames = 0;
+	//	while( gf != NULL )
+	//	{
+	//		numFlames++;
+	//		gf = gf->next;
+	//	}
+
+	//	//cout << "adding ring: " << numRings << endl;
+
+	//	GroundFlame *nhr = new GroundFlame( this, numFlames );
+	//	nhr->next = inactiveGroundFlames;
+	//	inactiveGroundFlames->prev = nhr;
+	//	inactiveGroundFlames = nhr;
+	//}
+}
+
+Boss_Tiger::GroundFlame * Boss_Tiger::ActivateGroundFlame( Node *n )
+{
+	GroundFlame *gf = groundFlames[n->index];
+	gf->Reset();
+	return gf;	
+}
+
+void Boss_Tiger::ClearGroundFlames()
+{
+	for( int i = 0; i < MAX_PILLARS; ++i )
+	{
+		groundFlames[i]->Clear();
+	}
+
+	/*for( int i = 0; i < MAX_HOMING; ++i )
+	{
+		homingVA[i*4+0].position = Vector2f( 0, 0 );
+		homingVA[i*4+1].position = Vector2f( 0, 0 );
+		homingVA[i*4+2].position = Vector2f( 0, 0 );
+		homingVA[i*4+3].position = Vector2f( 0, 0 );
+	}*/
+}
+
+Boss_Tiger::GroundFlame::GroundFlame( Boss_Tiger *p_parent, Node *p_node )
+	:parent( p_parent ), node( p_node ), action( OFF ), frame( 0 )
+{
+	Init();	
+}
+
+void Boss_Tiger::GroundFlame::Init()
+{
+	Edge *startEdge = node->paths.front()->edge;
+
+	
+	/*list<NodePath*> &otherPaths = node->paths.front()->node->paths;
+	for( list<NodePath*>::iterator oit = otherPaths.begin(); oit != otherPaths.end(); ++oit )
+	{
+		if( (*oit)->node == this->node )
+		{
+			startEdge = (*oit)->;
+			break;
+		}
+	}*/
+
+	double w = parent->ts_flame->tileWidth;
+	double h = parent->ts_flame->tileHeight;
+
+	Edge *curr = startEdge;
+	//curr = curr->edge1;
+
+	int numQuads = 0;
+	
+	do
+	{
+		double edgeLength = length( curr->v1 - curr->v0 );
+
+		int tiles = edgeLength / w;
+		double extra = edgeLength - tiles * w;
+		
+		if( extra > 0 )
+			numQuads+= ( tiles + 1 );
+		else
+			numQuads+= ( tiles );
+		curr = curr->edge1;
+	}
+	while( curr != startEdge );
+
+	curr = startEdge;
+	//curr = curr->edge1;
+
+	flameVA = new VertexArray( sf::Quads, numQuads * 4 );
+	//flameVA[n->index] = new VertexArray( sf::Quads, numQuads * 4 );
+
+	VertexArray &fva = *flameVA;
+	int vi = 0;
+	
+	do
+	{
+		double edgeLength = length( curr->v1 - curr->v0 );
+		V2d along = normalize( curr->v1 - curr->v0 );
+		V2d other( along.y, -along.x );
+
+		//V2d start = startEdge->v0;
+
+		int tiles = edgeLength / w;
+		double extra = edgeLength - tiles * w;
+
+		int trueCount;
+		if( extra > 0 )
+			trueCount = tiles + 1;
+		else
+			trueCount = tiles;
+
+		double out = 0;
+		
+		for( int i = 0; i < trueCount; ++i )
+		{
+			V2d start = curr->v0 + along * (double)(i) * w;
+			V2d end;
+			
+			double width = w;
+			if( i == tiles )
+			{
+				width = extra;
+				end = start + along * extra;
+			}
+			else
+			{
+				end = start + along * w;
+			}
+
+			V2d startInner = start + other * out;
+			V2d endInner = end + other * out;
+			V2d startOuter = startInner + other * h;
+			V2d endOuter = endInner + other * h;
+
+			cout << "vi: " << vi << ", total: " << numQuads * 4 << endl;
+			fva[vi+0].position = Vector2f( startInner.x, startInner.y );
+			fva[vi+1].position = Vector2f( startOuter.x, startOuter.y );
+			fva[vi+2].position = Vector2f( endOuter.x, endOuter.y );
+			fva[vi+3].position = Vector2f( endInner.x, endInner.y );
+			vi+=4;
+		}
+
+		curr = curr->edge1;
+	}
+	while( curr != startEdge );
+	assert( startEdge != NULL );
+}
+
+void Boss_Tiger::GroundFlame::Clear()
+{
+	int numVertices = flameVA->getVertexCount();
+	for( int i = 0; i < numVertices; ++i )
+	{
+		(*flameVA)[i].position = Vector2f( 0, 0 );
+	}
+	action = OFF;
+	frame = 0;
+}
+
+void Boss_Tiger::GroundFlame::UpdatePrePhysics()
+{
+	if( action == ACTIVATE && frame == 60 )
+	{
+		action = BURN;
+		frame = 0;
+	}
+	else if( action == BURN && frame == 60 )
+	{
+		frame = 0;
+	}
+	else if( action == DISSIPATE && frame == 60 )
+	{
+		Clear();
+		//action = OFF;
+		//frame = 0;
+	}
+
+	switch( action )
+	{
+	case ACTIVATE:
+		break;
+	case BURN:
+		break;
+	case DISSIPATE:
+		break;
+	}
+}
+
+void Boss_Tiger::GroundFlame::UpdatePhysics()
+{
+	if( action == BURN || action == ACTIVATE )
+	{
+
+	}
+	//if hitboxes collide
+}
+
+void Boss_Tiger::GroundFlame::UpdatePostPhysics()
+{
+	//IntRect ir = parent->ts_flame->GetSubRect( 0 );
+	int quads = flameVA->getVertexCount() / 4;
+	VertexArray &fva = *flameVA;
+	for( int i = 0; i < quads; ++i )
+	{
+		/*fva[i*4+0].texCoords = Vector2f( ir.left, ir.top );
+		fva[i*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		fva[i*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		fva[i*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
+		fva[i*4+0].color = Color::Blue;
+		fva[i*4+1].color = Color::Blue;
+		fva[i*4+2].color = Color::Blue;
+		fva[i*4+3].color = Color::Blue;
+	}
+
+	++frame;
+}
+
+void Boss_Tiger::GroundFlame::Draw( sf::RenderTarget *target )
+{
+	if( action != OFF )
+	{
+		target->draw( *flameVA );//, parent->ts_flame->texture );
+	}
+}
+
+void Boss_Tiger::GroundFlame::Reset()
+{
+	action = ACTIVATE;
+	frame = 0;
 }

@@ -12554,7 +12554,7 @@ void Actor::UpdatePostPhysics()
 	{
 		if( wallJumpFrameCounter < wallJumpMovementLimit )
 			wallJumpFrameCounter++;
-		cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
+		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
 		framesInAir++;
 		framesSinceDouble++;
 
