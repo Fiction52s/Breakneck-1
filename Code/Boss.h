@@ -1188,25 +1188,24 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		Count
 	};
 	
-	struct HomingRing
+	struct FirePillar
 	{
 		enum Action
 		{
-			FIND,
-			LOCK,
-			FREEZE,
 			ACTIVATE,
+			ROTATE,
 			DISSIPATE,
 			Count
 		};
 
-		HomingRing( Boss_Tiger *parent, int vaIndex );
-		void Reset( sf::Vector2<double> &pos );
+		FirePillar( Boss_Tiger *parent, int vaIndex );
+		void Reset( sf::Vector2<double> &pos,
+			float startAngle, int waveLengthFrames );
 		Action action;
 		int frame;
 		Boss_Tiger *parent;
-		HomingRing *next;
-		HomingRing *prev;
+		FirePillar *next;
+		FirePillar *prev;
 		void Clear();
 		void UpdatePrePhysics();
 		void UpdatePhysics();
@@ -1214,12 +1213,24 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		sf::Vector2<double> position;
 		CollisionBox hitbox;
 		int vaIndex;
-
-		sf::Vector2<double> startRing;
-		sf::Vector2<double> endRing;
+		int waveLengthFrames;
+		sf::Transform t;
+		float currAngle_d; //_d for degrees
 	};
-	
-	
+
+	int numPillarTiles;
+	Tileset *ts_pillar;
+	sf::VertexArray pillarVA;
+
+	void ClearPillars();
+	//void HomingRingTriggered( HomingRing *hr );
+
+	void AddPillar();
+	FirePillar * ActivatePillar();
+	void DeactivatePillar( FirePillar *hr );
+	FirePillar *activePillars;
+	FirePillar *inactivePillars;
+	const static int MAX_PILLARS = 12;
 
 	struct NodePath;
 	struct Node
@@ -1278,14 +1289,7 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	int nodeRadius1;
 	int nodeRadius2;
 
-	void ClearHomingRings();
-	void HomingRingTriggered( HomingRing *hr );
-
-	void AddHRing();
-	HomingRing * ActivateHRing();
-	void DeactivateHRing( HomingRing *hr );
-	HomingRing *activeHoming;
-	HomingRing *inactiveHoming;
+	
 
 	//SkeletonFightSeq *skeletonFightSeq;
 	Boss_Tiger( GameSession *owner, 
@@ -1337,7 +1341,7 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	const static int GRID_SIZE_X = 9;
 	const static int GRID_SIZE_Y = 9;
 
-	const static int MAX_HOMING = 12;
+	
 
 	sf::Vector2<double> homingPositions[MAX_HOMING];
 	sf::Vector2i gridCellSize;

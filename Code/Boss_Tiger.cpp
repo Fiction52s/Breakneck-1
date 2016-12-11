@@ -67,11 +67,9 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	//position.x = pos.x;
 	//position.y = pos.y;
 
-	ts_homingRing = owner->GetTileset( "bossbird_homing_100x100.png", 100, 100 );
-	targeterSprite.setTexture( *ts_homingRing->texture );
-	targeterSprite.setTextureRect( ts_homingRing->GetSubRect( 0 ) );
-	targeterSprite.setOrigin( targeterSprite.getLocalBounds().width / 2,
-		targeterSprite.getLocalBounds().height / 2 );
+	ts_pillar = owner->GetTileset( "bosstiger_pillar_100x100.png", 100, 100 );
+
+
 
 
 	bulletSpeed = 5;
@@ -142,12 +140,12 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 
 	facingRight = true;
 	
-	activeHoming = NULL;
-	inactiveHoming = NULL;
+	activePillars = NULL;
+	inactivePillars = NULL;
 
-	for( int i = 0; i < MAX_HOMING; ++i )
+	for( int i = 0; i < MAX_PILLARS; ++i )
 	{
-		AddHRing();
+		AddPillar();
 	}
 
 	position.x = pos.x;
@@ -198,13 +196,13 @@ void Boss_Tiger::ProjectCircle( V2d &start, V2d &end )
 	}
 }
 
-void Boss_Tiger::ClearHomingRings()
+void Boss_Tiger::ClearPillars()
 {
-	HomingRing *active = activeHoming;
+	FirePillar *active = activePillars;
 	while( active != NULL )
 	{
-		HomingRing *next = active->next;
-		DeactivateHRing( active );
+		FirePillar *next = active->next;
+		DeactivatePillar( active );
 		active = next;
 	}
 
@@ -263,7 +261,7 @@ void Boss_Tiger::ResetEnemy()
 	UpdateSprite();
 	health = initHealth;
 
-	ClearHomingRings();
+	ClearPillars();
 }
 
 void Boss_Tiger::HandleEntrant( QuadTreeEntrant *qte )
@@ -303,11 +301,11 @@ void Boss_Tiger::UpdatePrePhysics()
 	
 
 	
-	HomingRing *hr = activeHoming;
-	while( hr != NULL )
+	FirePillar *fp = activePillars;
+	while( fp != NULL )
 	{
-		hr->UpdatePrePhysics();
-		hr = hr->next;
+		fp->UpdatePrePhysics();
+		fp = fp->next;
 	}
 
 	if( !dead && receivedHit != NULL )
@@ -459,11 +457,11 @@ void Boss_Tiger::UpdatePhysics()
 		}
 	}
 
-	HomingRing *hr = activeHoming;
-	while( hr != NULL )
+	FirePillar *fp = activePillars;
+	while( fp != NULL )
 	{
-		hr->UpdatePhysics();
-		hr = hr->next;
+		fp->UpdatePhysics();
+		fp = fp->next;
 	}
 
 	//launcher->UpdatePhysics();
@@ -833,11 +831,11 @@ void Boss_Tiger::UpdatePostPhysics()
 		owner->RemoveEnemy( this );
 	}
 
-	HomingRing *hr = activeHoming;
-	while( hr != NULL )
+	FirePillar *fp = activePillars;
+	while( fp != NULL )
 	{
-		hr->UpdatePostPhysics();
-		hr = hr->next;
+		fp->UpdatePostPhysics();
+		fp = fp->next;
 	}
 
 
@@ -852,6 +850,7 @@ void Boss_Tiger::UpdateSprite()
 		sprite.setTextureRect( ts->GetSubRect( 0 ) );
 		sprite.setPosition( position.x, position.y );
 
+		
 
 		if( mover != NULL && mover->ground != NULL )
 		{
@@ -892,6 +891,8 @@ void Boss_Tiger::Draw( sf::RenderTarget *target )
 			target->draw( cs );
 		}
 		}
+
+		target->draw( pillarVA, ts_pillar->texture );
 		//punchPulse.Draw( target );
 	}
 }
@@ -1060,19 +1061,19 @@ void Boss_Tiger::LoadEnemyState()
 	position = stored.position;
 }
 
-void Boss_Tiger::DeactivateHRing( HomingRing *hr )
+void Boss_Tiger::DeactivatePillar( FirePillar *hr )
 {
 	//remove from active list
 
-	assert( activeHoming != NULL );
+	assert( activePillar != NULL );
 
 	if( hr->prev == NULL && hr->next == NULL )
 	{
-		activeHoming = NULL;
+		activePillars = NULL;
 	}
 	else if( hr->prev == NULL )
 	{
-		activeHoming = hr->next;
+		activePillars = hr->next;
 	}
 	else if( hr->next == NULL )
 	{
@@ -1089,82 +1090,81 @@ void Boss_Tiger::DeactivateHRing( HomingRing *hr )
 
 
 	//add to inactive list
-	inactiveHoming->prev = hr;
-	hr->next = inactiveHoming;
-	inactiveHoming = hr;
+	inactivePillars->prev = hr;
+	hr->next = inactivePillars;
+	inactivePillars = hr;
 
 	hr->Clear();
 }
 
-Boss_Tiger::HomingRing * Boss_Tiger::ActivateHRing()
+Boss_Tiger::FirePillar * Boss_Tiger::ActivatePillar()
 {
-	if( inactiveHoming == NULL )
+	if( inactivePillars == NULL )
 		return NULL;
 	else
 	{
-		HomingRing *temp = inactiveHoming->next;
-		HomingRing *newHoming = inactiveHoming;
-		inactiveHoming = temp;
-		inactiveHoming->prev = NULL;
+		FirePillar *temp = inactivePillars->next;
+		FirePillar *newPillar = inactivePillars;
+		inactivePillars = temp;
+		inactivePillars->prev = NULL;
 
-		newHoming->Reset( position );
+		newPillar->Reset( position );
 
 
-		if( activeHoming == NULL )
+		if( activePillars == NULL )
 		{
-			activeHoming = newHoming;
+			activePillars = newPillar;
 		}
 		else
 		{
-			activeHoming->prev = newHoming;
-			newHoming->next = activeHoming;
-			activeHoming = newHoming;
+			activePillars->prev = newPillar;
+			newPillar->next = activePillars;
+			activePillars = newPillar;
 		}
 
-		return newHoming;
+		return newPillar;
 	}
 }
 
-void Boss_Tiger::AddHRing()
+void Boss_Tiger::AddPillar()
 {
-	if( inactiveHoming == NULL )
+	if( inactivePillars == NULL )
 	{
-		inactiveHoming = new HomingRing( this, 0 );
+		inactivePillars = new FirePillar( this, 0 );
 	}
 	else
 	{
-		HomingRing *hr = inactiveHoming;
-		int numRings = 0;
+		FirePillar *hr = inactivePillars;
+		int numPillars = 0;
 		while( hr != NULL )
 		{
-			numRings++;
+			numPillars += numPillarTiles;
 			hr = hr->next;
 		}
 
 		//cout << "adding ring: " << numRings << endl;
 
-		HomingRing *nhr = new HomingRing( this, numRings );
-		nhr->next = inactiveHoming;
-		inactiveHoming->prev = nhr;
-		inactiveHoming = nhr;
+		FirePillar *nhr = new FirePillar( this, numPillars );
+		nhr->next = inactivePillars;
+		inactivePillars->prev = nhr;
+		inactivePillars = nhr;
 	}
 }
 
-void Boss_Tiger::HomingRing::UpdatePrePhysics()
+void Boss_Tiger::FirePillar::UpdatePrePhysics()
 {
 	if( (action == DISSIPATE && frame == 60) )
 	{
-		parent->DeactivateHRing( this );
+		parent->DeactivatePillar( this );
 		return;
 	}
-	if( action == FIND && frame == 5 + 1 )
+	if( action == ACTIVATE && frame == 60 )
 	{
-		action = LOCK;
+		action = ROTATE;
 		frame = 0;
 	}
-	else if( action == LOCK && frame == 60 )
+	else if( action == ROTATE && frame == waveLengthFrames )
 	{
-		action = FREEZE;
 		frame = 0;
 	}
 
@@ -1194,7 +1194,7 @@ void Boss_Tiger::HomingRing::UpdatePrePhysics()
 	}
 }
 
-Boss_Tiger::HomingRing::HomingRing( Boss_Tiger *p_parent, int p_vaIndex )
+Boss_Tiger::FirePillar::FirePillar( Boss_Tiger *p_parent, int p_vaIndex )
 	:parent( p_parent ), frame( 0 ), next( NULL ), prev( NULL ),
 	action( FIND ), vaIndex( p_vaIndex )
 {
@@ -1203,25 +1203,37 @@ Boss_Tiger::HomingRing::HomingRing( Boss_Tiger *p_parent, int p_vaIndex )
 	hitbox.rh = 64;
 }
 
-void Boss_Tiger::HomingRing::UpdatePostPhysics()
+void Boss_Tiger::FirePillar::UpdatePostPhysics()
 {
-	IntRect ir = parent->ts_homingRing->GetSubRect( 0 );
-	int hw = parent->ts_homingRing->tileWidth / 2;
-	int hh = parent->ts_homingRing->tileHeight / 2;
+	IntRect ir = parent->ts_pillar->GetSubRect( 0 );
+	int hw = parent->ts_pillar->tileWidth / 2;
+	int hh = parent->ts_pillar->tileHeight / 2;
 	//parent->ts_homingRing
-	/*parent->homingVA[vaIndex*4+0].position = Vector2f( position.x, position.y ) 
-		+ Vector2f( -hw, -hh ); 
-	parent->homingVA[vaIndex*4+1].position = Vector2f( position.x, position.y ) 
-		+ Vector2f( hw, -hh );
-	parent->homingVA[vaIndex*4+2].position = Vector2f( position.x, position.y ) 
-		+ Vector2f( hw, hh );
-	parent->homingVA[vaIndex*4+3].position = Vector2f( position.x, position.y ) 
-		+ Vector2f( -hw, hh );*/
 
-	//parent->homingVA[vaIndex*4+0].texCoords = Vector2f( ir.left, ir.top );
-	//parent->homingVA[vaIndex*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
-	//parent->homingVA[vaIndex*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
-	//parent->homingVA[vaIndex*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+	int numPillarTiles = parent->numPillarTiles;
+	VertexArray &va = parent->pillarVA;
+
+	t = t.Identity;
+	t.rotate( currAngle_d );
+
+	for( int i = 0; i < numPillarTiles; ++i )
+	{
+		Vector2f offset( 0, -(hh*2) * i );
+		Vector2f indexPos = Vector2f( position.x, position.y ) 
+			+ t.transformPoint( offset );
+		int index = vaIndex + i;
+
+		va[index*4+0].position = indexPos + Vector2f( -hw, -hh ); 
+		va[index*4+1].position = indexPos + Vector2f( hw, -hh );
+		va[index*4+2].position = indexPos + Vector2f( hw, hh );
+		va[index*4+3].position = indexPos + Vector2f( -hw, hh );
+
+		va[index*4+0].texCoords = Vector2f( ir.left, ir.top );
+		va[index*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+		va[index*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+		va[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
+	}
+	
 
 	/*parent->homingVA[vaIndex*4+0].color = Color::Green;
 	parent->homingVA[vaIndex*4+1].color = Color::Green;
@@ -1231,37 +1243,34 @@ void Boss_Tiger::HomingRing::UpdatePostPhysics()
 	++frame;
 }
 
-void Boss_Tiger::HomingRing::UpdatePhysics()
+void Boss_Tiger::FirePillar::UpdatePhysics()
 {
 	Actor *player = parent->owner->player;
 	if( player->hurtBody.Intersects( hitbox ) )
 	{
-		parent->HomingRingTriggered( this );
+		//parent->HomingRingTriggered( this );
 	}
 }
 
-void Boss_Tiger::HomingRingTriggered( HomingRing *hr )
+void Boss_Tiger::FirePillar::Clear()
 {
-	//if( action != KICK )
-	//{
-	//	action = KICK;
-	//	frame = 0;
-	//	//kickTargetPos = hr->position;
-	//}
+	int pillarTiles = parent->numPillarTiles;
+	
+	for( int i = 0; i < pillarTiles; ++i )
+	{
+		int index = vaIndex + i;
+		parent->pillarVA[index*4+0].position = Vector2f( 0, 0 );
+		parent->pillarVA[index*4+1].position = Vector2f( 0, 0 );
+		parent->pillarVA[index*4+2].position = Vector2f( 0, 0 );
+		parent->pillarVA[index*4+3].position = Vector2f( 0, 0 );
+	}
 }
 
-void Boss_Tiger::HomingRing::Clear()
+void Boss_Tiger::FirePillar::Reset( sf::Vector2<double> &pos,
+	float angle, int p_waveLengthFrames )
 {
-	/*parent->homingVA[vaIndex*4+0].position = Vector2f( 0, 0 );
-	parent->homingVA[vaIndex*4+1].position = Vector2f( 0, 0 );
-	parent->homingVA[vaIndex*4+2].position = Vector2f( 0, 0 );
-	parent->homingVA[vaIndex*4+3].position = Vector2f( 0, 0 );*/
-}
-
-void Boss_Tiger::HomingRing::Reset( sf::Vector2<double> &pos )
-{
+	waveLengthFrames = p_waveLengthFrames;
 	position = pos;
-	startRing = pos;
 
 	prev = NULL;
 	next = NULL;

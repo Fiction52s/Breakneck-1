@@ -736,8 +736,8 @@ Actor::Actor( GameSession *gs )
 
 		steepThresh = .4; // go between 0 and 1
 
-		steepSlideGravFactor = .4;
-		steepSlideFastGravFactor = .5;
+		steepSlideGravFactor = .25;//.4;
+		steepSlideFastGravFactor = .3;//.5;
 
 		wallJumpStrength.x = 10;
 		wallJumpStrength.y = 20;
@@ -749,7 +749,7 @@ Actor::Actor( GameSession *gs )
 		steepClimbGravFactor = .31;//.7;
 		steepClimbFastFactor = .2;
 		framesSinceClimbBoost = 0;
-		climbBoostLimit = 5;
+		climbBoostLimit = 10;
 		
 
 		
@@ -779,7 +779,7 @@ Actor::Actor( GameSession *gs )
 		offSlopeByWallThresh = dashSpeed;//18;
 		slopeLaunchMinSpeed = 5;//dashSpeed * .7;
 		steepClimbSpeedThresh = dashSpeed - 1;
-		slideGravFactor = .45;
+		slideGravFactor = .25;//.3;//.45;
 
 		
 		maxRunInit = 4;
@@ -806,7 +806,7 @@ Actor::Actor( GameSession *gs )
 		runAccelInit = .5;
 		
 		runAccel = .03;
-		sprintAccel = .3;//.85;
+		sprintAccel = .2;//.3;//.85;
 
 		holdDashAccel = .07;
 		bounceFlameAccel = .15;
@@ -974,6 +974,7 @@ void Actor::ActionEnded()
 		case WALLJUMP:
 			SetActionExpr( JUMP );
 			frame = 1;
+			holdJump = false;
 			break;
 		case GRAVREVERSE:
 			action = STAND;
@@ -1089,6 +1090,7 @@ void Actor::ActionEnded()
 				{
 					SetActionExpr( JUMP );
 					frame = 1;
+					holdJump = false;
 				}
 			break;
 			}
@@ -1850,6 +1852,7 @@ void Actor::UpdatePrePhysics()
 		{
 			SetActionExpr( JUMP );
 			frame = 1;
+			holdJump = false;
 			prevInput = ControllerState();
 		}
 		
@@ -2678,6 +2681,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionExpr( JUMP );
 				frame = 1;
+				holdJump = false;
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
@@ -4300,6 +4304,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionExpr( JUMP );
 				frame = 1;
+				holdJump = false;
 				
 				if( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
 				{
@@ -4533,6 +4538,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 				bounceEdge = NULL;
 				bounceMovingTerrain = NULL;
+				holdJump = false;
 				break;
 			}
 
@@ -4998,7 +5004,7 @@ void Actor::UpdatePrePhysics()
 					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
 					reversed = false;
-
+					framesInAir = 0;
 					//facingRight = !facingRight;
 					
 
@@ -5126,7 +5132,7 @@ void Actor::UpdatePrePhysics()
 					movingGround = NULL;
 					holdJump = true;
 
-					
+					framesInAir = 0;
 					//steepJump = false;
 				}
 				
@@ -6679,8 +6685,9 @@ void Actor::UpdatePrePhysics()
 
 	if( !inBubble && action == AIRDASH && airDashStall )
 	{
-	SetActionExpr( JUMP );
+		SetActionExpr( JUMP );
 		frame = 1;
+		holdJump = false;
 	}
 
 	if( ( hasPowerTimeSlow && currInput.leftShoulder ) || cloneBubbleCreated )
@@ -7405,6 +7412,7 @@ V2d Actor::UpdateReversePhysics()
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
+									holdJump = false;
 									movingGround = NULL;
 
 									return leftGroundExtra;
@@ -7477,6 +7485,7 @@ V2d Actor::UpdateReversePhysics()
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 					movingGround = NULL;
+					holdJump = false;
 
 					//leftGroundExtra.y = .01;
 					//leftGroundExtra.x = .1;
@@ -7554,7 +7563,7 @@ V2d Actor::UpdateReversePhysics()
 						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
-						
+						holdJump = false;
 						leftGroundExtra = movementVec;
 						//leftGroundExtra.y = .01;
 						//leftGroundExtra.x = -.01;
@@ -7594,6 +7603,8 @@ V2d Actor::UpdateReversePhysics()
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									movingGround = NULL;
+
+									holdJump = false;
 
 									leftGroundExtra = movementVec;
 									//leftGroundExtra.y = .01;
@@ -7655,7 +7666,7 @@ V2d Actor::UpdateReversePhysics()
 						cout << "5 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
 							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
 					}
-					cout << "airborne 4" << endl;
+					cout << "airborne 4: " << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7664,6 +7675,7 @@ V2d Actor::UpdateReversePhysics()
 					reversed = false;
 					ground = NULL;
 					movingGround = NULL;
+					holdJump = false;
 
 					//leftGroundExtra.y = .01;
 					//leftGroundExtra.x = -.01;
@@ -9254,6 +9266,7 @@ void Actor::UpdatePhysics()
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
+									holdJump = false;
 									movingGround = NULL;
 								}
 								else
@@ -9308,6 +9321,7 @@ void Actor::UpdatePhysics()
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
+					holdJump = false;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
@@ -9404,6 +9418,7 @@ void Actor::UpdatePhysics()
 									leftGround = true;
 									SetActionExpr( JUMP );
 									frame = 1;
+									holdJump = false;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
@@ -9470,6 +9485,7 @@ void Actor::UpdatePhysics()
 					//cout << "airborne 10" << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
+					holdJump = false;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					//break;
@@ -9662,6 +9678,7 @@ void Actor::UpdatePhysics()
 							cout << "real slope jump A" << endl;
 							leftGround = true;
 							SetActionExpr( JUMP );
+							holdJump = false;
 							frame = 1;
 							rightWire->UpdateAnchors( V2d( 0, 0 ) );
 							leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -9687,6 +9704,7 @@ void Actor::UpdatePhysics()
 								cout << "real slope jump D" << endl;
 								leftGround = true;
 								SetActionExpr( JUMP );
+								holdJump = false;
 								frame = 1;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -9724,6 +9742,7 @@ void Actor::UpdatePhysics()
 							cout << "real slope jump B" << endl;
 							leftGround = true;
 							SetActionExpr( JUMP );
+							holdJump = false;
 							frame = 1;
 							rightWire->UpdateAnchors( V2d( 0, 0 ) );
 							leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -9747,6 +9766,7 @@ void Actor::UpdatePhysics()
 								cout << "real slope jump C" << endl;
 								leftGround = true;
 								SetActionExpr( JUMP );
+								holdJump = false;
 								frame = 1;
 								rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10162,6 +10182,7 @@ void Actor::UpdatePhysics()
 									movingGround = NULL;
 							//		cout << "airborne 11" << endl;
 									SetActionExpr( JUMP );
+									holdJump = false;
 									frame = 1;
 									rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10209,13 +10230,17 @@ void Actor::UpdatePhysics()
 									else //STEEPCLIMB
 									{
 										velocity = testVel;
-						
+
+										
+										//groundSpeed *= .7;
+										//velocity 
 										//movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						
 										//leftGround = true;
-										
+										//ground = NULL;
 										//cout << "airborne 12" << endl;
 										SetActionExpr( JUMPSQUAT );
+										
 										frame = 1;
 										
 										rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10516,6 +10541,7 @@ void Actor::UpdatePhysics()
 
 			//note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
 			//also theres a jump && false condition that would need to be changed back
+			
 			if( tempCollision && minContact.normal.y >= 0 )
 			{
 				framesInAir = maxJumpHeightFrame + 1;
@@ -10529,6 +10555,7 @@ void Actor::UpdatePhysics()
 					bounceEdge = NULL;
 					oldBounceEdge = NULL;
 					SetActionExpr( JUMP );
+					holdJump = false;
 					frame = 1;
 					break;
 				}
@@ -10634,6 +10661,7 @@ void Actor::UpdatePhysics()
 						bounceEdge = NULL;
 						oldBounceEdge = NULL;
 						SetActionExpr( JUMP );
+						holdJump = false;
 						frame = 1;
 						break;
 					}
@@ -10927,7 +10955,14 @@ void Actor::UpdatePhysics()
 				double angle = atan2( gno.x, -gno.y );
 
 
-				
+				//cout << "frames in air: " << framesInAir << ", holdJump: " << (int)holdJump << endl;
+				if( trueFramesInAir < 10 && holdJump && -gno.y > -steepThresh )
+				{
+					//cout << "adjusted y vel from: " << velocity.y;
+					//velocity.y *= .7;
+					//cout << ", new: " << velocity.y << endl;
+					
+				}
 
 				
 				//cout << "gno: " << gno.x << ", " << gno.y << endl;
@@ -11266,7 +11301,7 @@ void Actor::PhysicsResponse()
 				frame = 1;
 				
 				framesInAir = 0;
-
+				holdJump = false;
 				velocity = groundSpeed * normalize( ground->v1 - ground->v0 );
 				//velocity = V2d( 0, 0 );
 				leaveGround = true;
@@ -11286,7 +11321,7 @@ void Actor::PhysicsResponse()
 
 		if( !leaveGround )
 		{
-		framesInAir = 0;
+		
 		gn = ground->Normal();
 		if( collision )
 		{
@@ -11315,18 +11350,21 @@ void Actor::PhysicsResponse()
 					//cout << "blahbbb" << endl;
 					//cout << "l" << endl;
 					//cout << "action = 5" << endl;
-
-					if( reversed )
+					if( action != GRAVREVERSE )
 					{
-						action = GRAVREVERSE;
+						if( reversed )
+						{
+							//cout << "frames in air: " << framesInAir << endl;
+							action = GRAVREVERSE;
+						}
+						else
+						{
+							action = LAND;
+						}
+						rightWire->UpdateAnchors(V2d( 0, 0 ));
+						leftWire->UpdateAnchors(V2d( 0, 0 ));
+						frame = 0;
 					}
-					else
-					{
-						action = LAND;
-					}
-					rightWire->UpdateAnchors(V2d( 0, 0 ));
-					leftWire->UpdateAnchors(V2d( 0, 0 ));
-					frame = 0;
 				}
 			}
 			else if( action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK )
@@ -11337,7 +11375,8 @@ void Actor::PhysicsResponse()
 				groundSpeed = 0;
 			}
 		}
-
+		framesInAir = 0;
+		
 
 		V2d oldv0 = ground->v0;
 		V2d oldv1 = ground->v1;
@@ -11487,6 +11526,7 @@ void Actor::PhysicsResponse()
 					//cout << "stop wall clinging" << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
+					holdJump = false;
 				}
 			}
 
@@ -11494,7 +11534,7 @@ void Actor::PhysicsResponse()
 			{
 				SetActionExpr( JUMP );
 				frame = 1;
-				
+				holdJump = false;
 			}
 		}
 	}
@@ -12514,6 +12554,7 @@ void Actor::UpdatePostPhysics()
 	{
 		if( wallJumpFrameCounter < wallJumpMovementLimit )
 			wallJumpFrameCounter++;
+		cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
 		framesInAir++;
 		framesSinceDouble++;
 

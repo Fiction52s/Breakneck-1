@@ -1204,6 +1204,10 @@ struct BossGatorParams : public ActorParams
 	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
 	bool CanApply();
+	void Draw( sf::RenderTarget *target );
+	sf::CircleShape circles[5];
+	int orbRadius;
+	int radius;
 };
 
 struct BossSkeletonParams : public ActorParams

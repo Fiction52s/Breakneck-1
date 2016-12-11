@@ -353,18 +353,51 @@ BossGatorParams::BossGatorParams( EditSession *edit, Vector2i &pos )
 {
 	type = edit->types["bossgator"];
 
+	radius = 600;
+	orbRadius = 160;
+
 	position = pos;
 
 	image.setTexture( type->imageTexture );
 	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
+	
+	for( int i = 0; i < 5; ++i )
+	{
+		CircleShape &cs = circles[i];
+		cs.setFillColor( Color::Red );
+		cs.setRadius( orbRadius );
+		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+	}
+
+
+	Transform t;
+	Vector2f offset( 0, -radius );
+	for( int i = 0; i < 5; ++i )
+	{
+		CircleShape &cs = circles[i];
+		Vector2f truePos = t.transformPoint( offset ) + Vector2f( position.x, position.y );
+		cs.setPosition( truePos );
+		t.rotate( 360.f / 5.f );
+	}
+	
+		
 				
 	SetBoundingQuad();	
 }
 
 bool BossGatorParams::CanApply()
 {
+	Transform t;
+	Vector2f offset( 0, -radius );
+	for( int i = 0; i < 5; ++i )
+	{
+		CircleShape &cs = circles[i];
+		Vector2f truePos = t.transformPoint( offset ) + Vector2f( position.x, position.y );
+		cs.setPosition( truePos );
+		t.rotate( 360.f / 5.f );
+	}
 	return true;
 }
 
@@ -377,5 +410,15 @@ ActorParams *BossGatorParams::Copy()
 {
 	BossGatorParams *copy = new BossGatorParams( *this );
 	return copy;
+}
+
+void BossGatorParams::Draw( sf::RenderTarget *target )
+{
+	ActorParams::Draw( target );
+
+	for( int i = 0; i < 5; ++i )
+	{
+		target->draw( circles[i] );
+	}
 }
 
