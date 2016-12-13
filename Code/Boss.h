@@ -1236,7 +1236,7 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	void DeactivatePillar( FirePillar *hr );
 	FirePillar *activePillars;
 	FirePillar *inactivePillars;
-	const static int MAX_PILLARS = 12;
+	const static int MAX_PILLARS = 13;
 
 	struct Node;
 	struct GroundFlame
@@ -1292,8 +1292,14 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 		sf::Vector2<double> position;
 		std::list<NodePath*> paths;
 		int index;
+		bool clockwise;
+		Boss_Tiger *parent;
+		void SetClockwise( bool cw );
 	};
+	sf::VertexArray nodeMarkerVA;
+	Tileset *ts_nodeMarker;
 
+	void SetClockwiseNodes();
 
 
 	//void SetupFlames( Node *n );
@@ -1634,19 +1640,44 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	int testFrame;
 
 	void SetMovementSeq();
-	MovementSequence seq2To3;
-	MovementSequence seq3To2;
 
-	//top side to top center
 	MovementSequence seq0To2;
-	MovementSequence seq4To2;
-
-	MovementSequence seq1To5;
-	MovementSequence seq5To1;
-
 	MovementSequence seq0To4;
-	MovementSequence seq4To0;
+	MovementSequence seq0To5;
 
+	MovementSequence seq1To2;
+	MovementSequence seq1To3;
+	MovementSequence seq1To5;
+	
+	MovementSequence seq2To1;
+	MovementSequence seq2To3;
+	MovementSequence seq2To5;
+
+	MovementSequence seq3To0;
+	MovementSequence seq3To2;
+	MovementSequence seq3To4;
+	//top side to top center
+	
+	MovementSequence seq4To0;
+	MovementSequence seq4To1;
+	MovementSequence seq4To2;
+	
+	MovementSequence seq5To1;
+	MovementSequence seq5To2;
+	MovementSequence seq5To3;
+	
+	
+
+	
+
+	
+	
+	//MovementSequence seq3To1;
+
+	
+
+	
+	
 	//MovementSequence seq1To5;
 	//MovementSequence seq4To2;
 

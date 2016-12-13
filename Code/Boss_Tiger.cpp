@@ -25,6 +25,8 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	:Enemy( owner, EnemyType::BOSS_TIGER, false, 6 ), deathFrame( 0 ),
 	nodeVA( sf::Quads, 13 * 4 ), debugLines( sf::Lines, 2 * 30 ),
 	numPillarTiles( 8 ), pillarVA( sf::Quads, numPillarTiles * MAX_PILLARS * 4 )
+	, nodeMarkerVA( sf::Quads, MAX_PILLARS * 4 )
+
 {
 	lockPath = NULL;
 	nodeRadius1 = 800;
@@ -107,7 +109,7 @@ Boss_Tiger::Boss_Tiger( GameSession *owner, sf::Vector2i &pos )
 	nextAttackOrb.setOrigin( nextAttackOrb.getLocalBounds().width / 2, 
 		nextAttackOrb.getLocalBounds().height / 2 );
 
-	
+	ts_nodeMarker = owner->GetTileset( "bosstiger_nodemarker_100x100.png", 100, 100 );
 
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
@@ -266,6 +268,8 @@ void Boss_Tiger::ResetEnemy()
 	health = initHealth;
 
 	ClearPillars();
+
+	SetClockwiseNodes();
 }
 
 void Boss_Tiger::HandleEntrant( QuadTreeEntrant *qte )
@@ -352,7 +356,21 @@ void Boss_Tiger::HitTerrainAerial(Edge *e, double q)
 	}
 }
 
- 
+void Boss_Tiger::SetClockwiseNodes()
+{
+	for( int i = 0; i < MAX_PILLARS; ++i )
+	{
+		int r = rand() % 2;
+		if( r == 0 )
+		{
+			allNodes[i]->SetClockwise( true );
+		}
+		else
+		{
+			allNodes[0]->SetClockwise( false );
+		}
+	}
+}
 
 void Boss_Tiger::TransferEdge( Edge *e )
 {
@@ -410,8 +428,8 @@ void Boss_Tiger::UpdatePhysics()
 			currNode = lockPath->node;
 			lockPath->node->numTimesTouched++;
 
-			//ActivatePillar( currNode->position, 0, 180, true );
-			ActivateGroundFlame( currNode );
+			ActivatePillar( currNode->position, 0, 180, true );
+			//ActivateGroundFlame( currNode );
 			//target = lockPath->node->position;
 
 			lockPath = NULL;
@@ -521,10 +539,11 @@ void Boss_Tiger::PhysicsResponse()
 
 void Boss_Tiger::ConnectNodes()
 {
-	for( int i = 0; i < 13; ++i )
+	for( int i = 0; i < MAX_PILLARS; ++i )
 	{
 		allNodes[i] = new Node;
 		allNodes[i]->index = i;
+		allNodes[i]->parent = this;
 	}
 
 	allNodes[0]->position = V2d( originalPos.x, originalPos.y );
@@ -928,6 +947,8 @@ void Boss_Tiger::Draw( sf::RenderTarget *target )
 		}
 
 		target->draw( pillarVA, ts_pillar->texture );
+
+		target->draw( nodeMarkerVA, ts_nodeMarker->texture);
 		//punchPulse.Draw( target );
 	}
 }
@@ -1425,13 +1446,17 @@ void Boss_Tiger::GroundFlame::Init()
 			numQuads+= ( tiles + 1 );
 		else
 			numQuads+= ( tiles );
+
+		++numQuads; //for vertex
+		 
 		curr = curr->edge1;
+
 	}
 	while( curr != startEdge );
 
 	curr = startEdge;
 	//curr = curr->edge1;
-
+	//cout << "there are " <<  numQuads << " quads" << endl;
 	flameVA = new VertexArray( sf::Quads, numQuads * 4 );
 	//flameVA[n->index] = new VertexArray( sf::Quads, numQuads * 4 );
 
@@ -1478,13 +1503,31 @@ void Boss_Tiger::GroundFlame::Init()
 			V2d startOuter = startInner + other * h;
 			V2d endOuter = endInner + other * h;
 
-			cout << "vi: " << vi << ", total: " << numQuads * 4 << endl;
+			//cout << "vi: " << vi << ", total: " << numQuads * 4 << endl;
 			fva[vi+0].position = Vector2f( startInner.x, startInner.y );
 			fva[vi+1].position = Vector2f( startOuter.x, startOuter.y );
 			fva[vi+2].position = Vector2f( endOuter.x, endOuter.y );
 			fva[vi+3].position = Vector2f( endInner.x, endInner.y );
 			vi+=4;
 		}
+
+		//cout << "vi is: " << vi << endl;
+		V2d lastEdgeInner = curr->v0;
+		V2d lastEdgeOuter = curr->v0 + other * h;
+		V2d prevEdgeInner = curr->v0;
+		
+		Edge *prev = curr->edge0;
+
+		V2d alongPrev = normalize( prev->v1 - prev->v0 );
+		V2d otherPrev( alongPrev.y, -alongPrev.x );
+
+		V2d prevEdgeOuter = curr->v0 + otherPrev * h;
+
+		fva[vi+0].position = Vector2f( prevEdgeInner.x, prevEdgeInner.y );
+		fva[vi+1].position = Vector2f( prevEdgeOuter.x, prevEdgeOuter.y );
+		fva[vi+2].position = Vector2f( lastEdgeOuter.x, lastEdgeOuter.y );
+		fva[vi+3].position = Vector2f( lastEdgeInner.x, lastEdgeInner.y );
+		vi+=4;
 
 		curr = curr->edge1;
 	}
@@ -1573,4 +1616,33 @@ void Boss_Tiger::GroundFlame::Reset()
 {
 	action = ACTIVATE;
 	frame = 0;
+}
+
+void Boss_Tiger::Node::SetClockwise( bool cw )
+{
+	clockwise = cw;
+	IntRect ir;
+	if( clockwise )
+	{
+		ir = parent->ts_nodeMarker->GetSubRect( 0 );
+	}
+	else
+	{
+		ir = parent->ts_nodeMarker->GetSubRect( 1 );
+	}
+
+	double hw = ir.width / 2;
+	double hh = ir.height / 2;
+
+	VertexArray &va = parent->nodeMarkerVA;
+
+	va[index*4+0].position = Vector2f( position.x - hw, position.y - hh );
+	va[index*4+1].position = Vector2f( position.x + hw, position.y - hh );
+	va[index*4+2].position = Vector2f( position.x + hw, position.y + hh );
+	va[index*4+3].position = Vector2f( position.x - hw, position.y + hh );
+
+	va[index*4+0].texCoords = Vector2f( ir.left, ir.top );
+	va[index*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
+	va[index*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
+	va[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );
 }

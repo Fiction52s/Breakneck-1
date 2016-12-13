@@ -337,6 +337,9 @@ void Boss_Skeleton::SetupMovementNodes()
 	seq2To3.AddLineMovement( holdNodePos[2], holdNodePos[3], CubicBezier( .24,.96,.63,.91 ), swingTopMidDurations[1] );
 	seq3To2.AddLineMovement( holdNodePos[3], holdNodePos[2], CubicBezier( .24,.96,.63,.91 ), swingBotMidDurations[1] );
 
+	//from 0-------------------
+
+
 	//0 to 2
 	V2d dir = holdNodePos[0] - swingNodePos[0];
 	double radius = length( dir );
@@ -352,14 +355,13 @@ void Boss_Skeleton::SetupMovementNodes()
 
 	seq0To2.AddRadialMovement( swingNodePos[0], radius, angleStart, angleEnd, false, 
 		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingTopSideDurations[0] );
-	//seq0To2.InitMovementDebug();
-	
-	//4 to 2
-	dir =  holdNodePos[4] - swingNodePos[2];
+
+	//0 to 4
+	dir =  holdNodePos[0] - swingNodePos[1];
 	radius = length( dir );
 	dir = normalize( dir );
 
-	dirDest = normalize( holdNodePos[2] - swingNodePos[2] );
+	dirDest = normalize( holdNodePos[4] - swingNodePos[1] );
 
 	angleStart = atan2( dir.y, dir.x );
 	angleEnd = atan2( dirDest.y, dirDest.x );
@@ -369,9 +371,33 @@ void Boss_Skeleton::SetupMovementNodes()
 	if( angleEnd < 0 )
 		angleEnd += 2 * PI;
 
-	seq4To2.AddRadialMovement( swingNodePos[2], radius, angleStart, angleEnd,true, 
-		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingTopSideDurations[2] );
+	seq0To4.AddRadialMovement( swingNodePos[1], radius, angleStart, angleEnd,false, 
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
 
+	//0 to 5 missing
+	seq0To5.AddLineMovement( holdNodePos[0], holdNodePos[5], CubicBezier( 0, 0, 1, 1 ), swingTopMidDurations[1] );
+
+	//from 1 ------------------------
+	
+	//1 to 2 missing
+	seq1To2.AddLineMovement( holdNodePos[1], holdNodePos[2], CubicBezier( 0, 0, 1, 1 ), swingTopMidDurations[1] );
+
+	//1 to 3
+	dir = holdNodePos[1] - swingNodePos[0];
+	radius = length( dir );
+	dir = normalize( dir );
+	dirDest = normalize( holdNodePos[3] - swingNodePos[0] );
+	
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq1To3.AddRadialMovement( swingNodePos[0], radius, angleStart, angleEnd, false,
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
 
 	//1 to 5
 	dir =  holdNodePos[1] - swingNodePos[1];
@@ -390,6 +416,155 @@ void Boss_Skeleton::SetupMovementNodes()
 
 	seq1To5.AddRadialMovement( swingNodePos[1], radius, angleStart, angleEnd,false, 
 		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+
+	//from 2--------------
+
+	//2 to 1
+	V2d mid = ( holdNodePos[1] + holdNodePos[2] ) / 2.0;
+	V2d along = normalize( holdNodePos[2] - holdNodePos[1] );
+	V2d other( along.y, -along.x );
+	LineIntersection li = lineIntersection( holdNodePos[1], V2d( holdNodePos[1].x, holdNodePos[1].y - 1.0 ), 
+		mid, mid + other );//SegmentIntersect( topLeft, topRight, edges[i]->v0, edges[i]->v1 );
+
+	V2d center = li.position;
+	//LineIntersection li = 
+	dir = holdNodePos[2] - center;
+	radius = length( dir );
+	dir = normalize( dir );
+	dirDest = normalize( holdNodePos[1] - center );
+	
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq2To1.AddRadialMovement( center, radius, angleStart, angleEnd, true,
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+
+	//2 to 3 already done
+
+	//2 to 5
+	mid = ( holdNodePos[5] + holdNodePos[2] ) / 2.0;
+	along = normalize( holdNodePos[2] - holdNodePos[5] );
+	other = V2d( along.y, -along.x );
+	li = lineIntersection( holdNodePos[5], V2d( holdNodePos[5].x, holdNodePos[5].y - 1.0 ), 
+		mid, mid + other );//SegmentIntersect( topLeft, topRight, edges[i]->v0, edges[i]->v1 );
+
+	center = li.position;
+	//LineIntersection li = 
+	dir = holdNodePos[2] - center;
+	radius = length( dir );
+	dir = normalize( dir );
+	dirDest = normalize( holdNodePos[5] - center );
+	
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq2To5.AddRadialMovement( center, radius, angleStart, angleEnd, false,
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+
+	//from 3-----------------
+
+	//3 to 0
+	mid = ( holdNodePos[0] + holdNodePos[3] ) / 2.0;
+	along = normalize( holdNodePos[3] - holdNodePos[0] );
+	other = V2d( along.y, -along.x );
+	li = lineIntersection( holdNodePos[3], V2d( holdNodePos[3].x, holdNodePos[3].y - 1.0 ), 
+		mid, mid + other );//SegmentIntersect( topLeft, topRight, edges[i]->v0, edges[i]->v1 );
+
+	center = li.position;
+	//LineIntersection li = 
+	dir = holdNodePos[3] - center;
+	radius = length( dir );
+	dir = normalize( dir );
+	dirDest = normalize( holdNodePos[0] - center );
+	
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq3To0.AddRadialMovement( center, radius, angleStart, angleEnd, true,
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+
+	//3 to 2 already done
+
+	//3 to 4
+	mid = ( holdNodePos[4] + holdNodePos[3] ) / 2.0;
+	along = normalize( holdNodePos[4] - holdNodePos[3] );
+	other = V2d( along.y, -along.x );
+	li = lineIntersection( holdNodePos[3], V2d( holdNodePos[3].x, holdNodePos[3].y - 1.0 ), 
+		mid, mid + other );//SegmentIntersect( topLeft, topRight, edges[i]->v0, edges[i]->v1 );
+
+	center = li.position;
+	//LineIntersection li = 
+	dir = holdNodePos[3] - center;
+	radius = length( dir );
+	dir = normalize( dir );
+	dirDest = normalize( holdNodePos[4] - center );
+	
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq3To4.AddRadialMovement( center, radius, angleStart, angleEnd, false,
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+
+	//from 4------------------
+
+	//4 to 0
+	dir =  holdNodePos[4] - swingNodePos[1];
+	radius = length( dir );
+	dir = normalize( dir );
+
+	dirDest = normalize( holdNodePos[0] - swingNodePos[1] );
+
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq4To0.AddRadialMovement( swingNodePos[1], radius, angleStart, angleEnd,true, 
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+
+	//4 to 1 missing. similar to 0 to 5
+	seq4To1.AddLineMovement( holdNodePos[4], holdNodePos[1], CubicBezier( 0, 0, 1, 1 ), swingTopMidDurations[1] );
+
+	//4 to 2
+	dir =  holdNodePos[4] - swingNodePos[2];
+	radius = length( dir );
+	dir = normalize( dir );
+
+	dirDest = normalize( holdNodePos[2] - swingNodePos[2] );
+
+	angleStart = atan2( dir.y, dir.x );
+	angleEnd = atan2( dirDest.y, dirDest.x );
+
+	if( angleStart < 0 )
+		angleStart += 2 * PI;
+	if( angleEnd < 0 )
+		angleEnd += 2 * PI;
+
+	seq4To2.AddRadialMovement( swingNodePos[2], radius, angleStart, angleEnd,true, 
+		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingTopSideDurations[2] );
 
 
 	//5 to 1
@@ -410,13 +585,15 @@ void Boss_Skeleton::SetupMovementNodes()
 	seq5To1.AddRadialMovement( swingNodePos[1], radius, angleStart, angleEnd,true, 
 		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
 
-	//0 to 4
-	dir =  holdNodePos[0] - swingNodePos[1];
+	//5 to 2 missing
+	seq5To2.AddLineMovement( holdNodePos[5], holdNodePos[2], CubicBezier( 0, 0, 1, 1 ), swingTopMidDurations[1] );
+
+	//5 to 3
+	dir = holdNodePos[5] - swingNodePos[2];
 	radius = length( dir );
 	dir = normalize( dir );
-
-	dirDest = normalize( holdNodePos[4] - swingNodePos[1] );
-
+	dirDest = normalize( holdNodePos[3] - swingNodePos[2] );
+	
 	angleStart = atan2( dir.y, dir.x );
 	angleEnd = atan2( dirDest.y, dirDest.x );
 
@@ -425,26 +602,14 @@ void Boss_Skeleton::SetupMovementNodes()
 	if( angleEnd < 0 )
 		angleEnd += 2 * PI;
 
-	seq0To4.AddRadialMovement( swingNodePos[1], radius, angleStart, angleEnd,false, 
+	seq5To3.AddRadialMovement( swingNodePos[2], radius, angleStart, angleEnd, true,
 		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
 
-	//4 to 0
-	dir =  holdNodePos[4] - swingNodePos[1];
-	radius = length( dir );
-	dir = normalize( dir );
+	
 
-	dirDest = normalize( holdNodePos[0] - swingNodePos[1] );
+	
 
-	angleStart = atan2( dir.y, dir.x );
-	angleEnd = atan2( dirDest.y, dirDest.x );
-
-	if( angleStart < 0 )
-		angleStart += 2 * PI;
-	if( angleEnd < 0 )
-		angleEnd += 2 * PI;
-
-	seq4To0.AddRadialMovement( swingNodePos[1], radius, angleStart, angleEnd,true, 
-		V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1 ), swingBotSideDurations[1] );
+	
 }
 
 void Boss_Skeleton::ResetEnemy()
@@ -664,50 +829,105 @@ void Boss_Skeleton::UpdatePrePhysics()
 
 void Boss_Skeleton::SetMovementSeq()
 {
-	if( currHoldIndex == 2 && nextHoldIndex == 3 )
+	switch( currHoldIndex )
 	{
-		currSequence = &seq2To3;
+	case 0:
+		if( nextHoldIndex == 2 )
+		{
+			currSequence = &seq0To2;
+		}
+		else if( nextHoldIndex == 4 )
+		{
+			currSequence = &seq0To4;
+		}
+		else if( nextHoldIndex == 5 )
+		{
+			currSequence = &seq0To5;
+		}
 		currSequence->Reset();
-	}
-	else if( currHoldIndex == 3 && nextHoldIndex == 2 )
-	{
-		currSequence = &seq3To2;
+		break;
+	case 1:
+		if( nextHoldIndex == 2 )
+		{
+			currSequence = &seq1To2;
+		}
+		else if( nextHoldIndex == 3 )
+		{
+			currSequence = &seq1To3;
+		}
+		else if( nextHoldIndex == 5 )
+		{
+			currSequence = &seq1To5;
+		}
 		currSequence->Reset();
-	}
-	else if( currHoldIndex == 0 && nextHoldIndex == 2 )
-	{
-		currSequence = &seq0To2;
+		break;
+	case 2:
+		if( nextHoldIndex == 1 )
+		{
+			currSequence = &seq2To1;
+		}
+		else if( nextHoldIndex == 3 )
+		{
+			currSequence = &seq2To3;
+		}
+		else if( nextHoldIndex == 5 )
+		{
+			currSequence = &seq2To5;
+		}
 		currSequence->Reset();
-	}
-	else if( currHoldIndex == 4 && nextHoldIndex == 2 )
-	{
-		currSequence = &seq4To2;
+		break;
+	case 3:
+		if( nextHoldIndex == 0 )
+		{
+			currSequence = &seq3To0;
+		}
+		else if( nextHoldIndex == 2 )
+		{
+			currSequence = &seq3To2;
+		}
+		else if( nextHoldIndex == 4 )
+		{
+			currSequence = &seq3To4;
+		}
 		currSequence->Reset();
-	}
-	else if( currHoldIndex == 1 && nextHoldIndex == 5 )
-	{
-		currSequence = &seq1To5;
+		break;
+	case 4:
+		if( nextHoldIndex == 0 )
+		{
+			currSequence = &seq4To0;
+		}
+		else if( nextHoldIndex == 1 )
+		{
+			currSequence = &seq4To1;
+		}
+		else if( nextHoldIndex == 2 )
+		{
+			currSequence = &seq4To2;
+		}
 		currSequence->Reset();
-	}
-	else if( currHoldIndex == 5 && nextHoldIndex == 1 )
-	{
-		currSequence = &seq5To1;
+		break;
+	case 5:
+		if( nextHoldIndex == 1 )
+		{
+			currSequence = &seq5To1;
+		}
+		else if( nextHoldIndex == 2 )
+		{
+			currSequence = &seq5To2;
+		}
+		else if( nextHoldIndex == 3 )
+		{
+			currSequence = &seq5To3;
+		}
 		currSequence->Reset();
+		break;
 	}
-	else if( currHoldIndex == 0 && nextHoldIndex == 4 )
-	{
-		currSequence = &seq0To4;
-		currSequence->Reset();
-	}
-	else if( currHoldIndex == 4 && nextHoldIndex == 0 )
-	{
-		currSequence = &seq4To0;
-		currSequence->Reset();
-	}
-	else
+
+	cout << "seq: " << currHoldIndex << ", " << nextHoldIndex << endl;
+	/*else
 	{
 		currSequence = NULL;
-	}
+	}*/
 }
 
 void Boss_Skeleton::UpdatePhysics()
