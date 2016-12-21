@@ -111,8 +111,8 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
-	baseSpeed = 5;//20;
-	multSpeed = 1;//8;
+	baseSpeed = 17;//20;
+	multSpeed = 3;//8;
 
 	//crawlAnimationFactor = 5;
 	//rollAnimationFactor = 5;

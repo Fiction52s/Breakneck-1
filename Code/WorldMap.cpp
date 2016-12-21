@@ -296,9 +296,10 @@ void WorldMap::UpdateMapList()
 	//std::string path = "test/";
 	//std::string file = "map_online.brknk";
  //  bool goodDownload = levelServer.DownloadFile( path, file );
-
-   
-	UpdateMapList( entries, "Maps/W2" );
+	stringstream ss;
+	ss << "Maps/W" << (selectedColony+1);
+	cout << "stuff: " << ss.str() << endl;
+	UpdateMapList( entries, ss.str() );
 
 	text = new Text[numTotalEntries];
 
@@ -354,7 +355,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}*/
 		if( currInput.A && !prevInput.A )
 		{
-			state = SECTION_TRANSITION;
+			state = COLONY_TRANSITION;//SECTION_TRANSITION;
 			frame = 0;
 			break;
 		}
@@ -495,6 +496,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if( frame == 0 )
 			{
+				UpdateMapList();
 				front.setTexture( *ts_colony[selectedColony]->texture );
 				front.setColor( Color( 255, 255, 255, 255 ) );
 			}

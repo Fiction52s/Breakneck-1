@@ -159,6 +159,10 @@ void Gate::UpdateLine()
 			c = COLOR_MAGENTA;
 			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
 			break;
+		case 6:
+			c = COLOR_MAGENTA;
+			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			break;
 		}
 		
 		tileHeight = 128;

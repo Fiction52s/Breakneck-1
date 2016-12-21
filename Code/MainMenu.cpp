@@ -1018,7 +1018,6 @@ void MainMenu::Run()
 					transAlpha = 255;
 					worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
 					worldMap->frame = 0;
-					worldMap->UpdateMapList();
 					soundNodeList->ActivateSound( soundBuffers[S_SELECT] );
 					break;
 				}
