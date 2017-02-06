@@ -180,19 +180,21 @@ struct TerrainPolygon : ISelectable
 		int world, int variation );
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
 	//std::string material;
-	
 	void RemoveSelectedPoints();
 	std::list<Inter> GetIntersections( TerrainPolygon *poly );
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
+	void FinalizeInverse();
 	void Reset();
 	void SoftReset();
 	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
 	void FixWinding();
+	void FixWindingInverse();
 	bool IsClockwise();
 	void AlignExtremes( double primLimit );
 	void UpdateGrass();
+	
 	
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
@@ -287,6 +289,7 @@ struct TerrainPolygon : ISelectable
 
 	int layer; //0 is game layer. 1 is bg
 
+	bool inverse;
 };
 
 typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
@@ -1287,6 +1290,8 @@ struct EditSession : GUIHandler
 	void ClearSelectedPoints();
 	bool PolyIntersectGate( TerrainPolygon &poly );
 
+	void SetInversePoly();
+
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	void CreateActor( ActorPtr &actor );
 	std::list<GateInfoPtr> gates;
@@ -1388,6 +1393,7 @@ struct EditSession : GUIHandler
 	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;
 	//std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
+	boost::shared_ptr<TerrainPolygon> inversePolygon;
 	std::list<sf::VertexArray*> progressDrawList;
 	
 	sf::Font arialFont;
@@ -1505,7 +1511,7 @@ struct EditSession : GUIHandler
 	sf::View uiView;
 	sf::View view;
 	//void GoPopup();
-
+	
 	std::list<TerrainBrush*> copyBrushes;
 	std::list<TerrainBrush*> pasteBrushes;
 	void ClearCopyBrushes();

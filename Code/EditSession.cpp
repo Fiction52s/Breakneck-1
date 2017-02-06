@@ -513,6 +513,7 @@ EditSession::~EditSession()
 
 
 	polygonInProgress.reset();
+
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		(*it).reset();
@@ -522,7 +523,6 @@ EditSession::~EditSession()
 
 void EditSession::Draw()
 {
-	
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( extendingPolygon == NULL )
@@ -565,7 +565,11 @@ void EditSession::Draw()
 		}		
 	}
 
-	
+	if( inversePolygon != NULL && inversePolygon->finalized )
+	{
+		inversePolygon->Draw( false, zoomMultiple, preScreenTex, false, NULL );
+	}
+		
 }
 
 void EditSession::UpdateFullBounds()
@@ -3931,6 +3935,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//mode = "neutral";
 	bool quit = false;
 	polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
+	//inversePolygon.reset( NULL );
+
 	zoomMultiple = 1;
 	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
@@ -5258,43 +5264,51 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( removeSuccess == 1 )
 									{
-										//go through each polygon and get rid of the actors which are deleted by deleting points
-										for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-											it != selectedPolygons.end(); ++it )
+
+										for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 										{
-											for( EnemyMap::iterator mapIt = (*it)->enemies.begin(); mapIt != (*it)->enemies.end(); ++mapIt)
-											{
-												list<ActorPtr>::iterator et = (*mapIt).second.begin();
-												while( et != (*mapIt).second.end() )
-												{
-													TerrainPoint *edgeEnd = (*et)->groundInfo->edgeStart->next;
-													if( edgeEnd == NULL )
-														edgeEnd = (*et)->groundInfo->ground->pointStart;
-
-													bool deleted = (*(*et)->groundInfo->edgeStart).selected || edgeEnd->selected;
-													if (deleted)
-													{
-														//delete enemy here
-
-
-													//	(*et)->group->actors.remove( (*et ) );
-													//	delete (*et); //deleting actor
-													//	(*it)->enemies[(*et)->groundInfo->edgeStart].erase(et++); 
-													}
-													else
-													{
-														++et;
-													}
-												}
-											}
+											(*it).first->RemoveSelectedPoints();
 										}
 
+										selectedPoints.clear();
 
-										for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
+										//go through each polygon and get rid of the actors which are deleted by deleting points
+										//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
+										//	it != selectedPolygons.end(); ++it )
+										//{
+										//	for( EnemyMap::iterator mapIt = (*it)->enemies.begin(); mapIt != (*it)->enemies.end(); ++mapIt)
+										//	{
+										//		list<ActorPtr>::iterator et = (*mapIt).second.begin();
+										//		while( et != (*mapIt).second.end() )
+										//		{
+										//			TerrainPoint *edgeEnd = (*et)->groundInfo->edgeStart->next;
+										//			if( edgeEnd == NULL )
+										//				edgeEnd = (*et)->groundInfo->ground->pointStart;
+
+										//			bool deleted = (*(*et)->groundInfo->edgeStart).selected || edgeEnd->selected;
+										//			if (deleted)
+										//			{
+										//				//delete enemy here
+
+
+										//			//	(*et)->group->actors.remove( (*et ) );
+										//			//	delete (*et); //deleting actor
+										//			//	(*it)->enemies[(*et)->groundInfo->edgeStart].erase(et++); 
+										//			}
+										//			else
+										//			{
+										//				++et;
+										//			}
+										//		}
+										//	}
+										//}
+
+
+										/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 											it != selectedPolygons.end(); ++it )
 										{
 											(*it)->RemoveSelectedPoints();
-										}
+										}*/
 									}
 									else if( removeSuccess == 0 )
 									{
@@ -10942,17 +10956,25 @@ void EditSession::ClearUndoneActions()
 int EditSession::CountSelectedPoints()
 {
 	int count = 0;
-	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
-		for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
-		{
-			if( curr->selected ) //selected
-			{
-				++count;
-			}
-		}
+		count += (*it).second.size();
 	}
 	return count;
+	//return selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
+	
+	//int count = 0;
+	//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+	//{
+	//	for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
+	//	{
+	//		if( curr->selected ) //selected
+	//		{
+	//			++count;
+	//		}
+	//	}
+	//}
+	//return count;
 }
 
 void EditSession::ClearSelectedPoints()
@@ -12403,10 +12425,12 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 int EditSession::IsRemovePointsOkay()
 {
 	bool terrainOkay = true;
-	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-		it != selectedPolygons.end(); ++it )
+	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+		//list<PolyPtr>::iterator it = selectedPolygons.begin(); 
+		//it != selectedPolygons.end(); ++it )
 	{
-		bool res = (*it)->IsRemovePointsOkayTerrain( this );
+		TerrainPolygon *tp = (*it).first;
+		bool res = tp->IsRemovePointsOkayTerrain( this );
 		if( !res )
 		{
 			terrainOkay = false;
@@ -12419,7 +12443,7 @@ int EditSession::IsRemovePointsOkay()
 		return 0;
 	}
 
-	bool enemiesOkay = false;
+	/*bool enemiesOkay = false;
 	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
 		it != selectedPolygons.end(); ++it )
 	{
@@ -12432,7 +12456,7 @@ int EditSession::IsRemovePointsOkay()
 		{
 			return -1;
 		}
-	}
+	}*/
 
 	return 1;
 }
@@ -13597,7 +13621,12 @@ void EditSession::ExecuteTerrainCompletion()
 		}
 		else
 		{
-			if( intersectingPolys.empty() )
+			if( Keyboard::isKeyPressed( Keyboard::LControl )
+				|| Keyboard::isKeyPressed( Keyboard::RControl ) )
+			{
+				SetInversePoly();	
+			}
+			else if( intersectingPolys.empty() )
 			{
 				polygonInProgress->Finalize();
 
@@ -13633,7 +13662,7 @@ void EditSession::ExecuteTerrainCompletion()
 				}
 				else
 				{
-					ExecuteTerrainSubtract( intersectingPolys );
+					ExecuteTerrainSubtract( intersectingPolys );					
 				}
 
 			}
@@ -13646,6 +13675,57 @@ void EditSession::ExecuteTerrainCompletion()
 	}
 }
 
+void EditSession::SetInversePoly()
+{
+	polygonInProgress->FinalizeInverse();
+
+	//SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
+
+	//inversePolygon = polygonInProgress;				
+
+	Brush orig;
+	if( inversePolygon != NULL )
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( inversePolygon );
+		orig.AddObject( sp );
+	}
+	
+	//for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	//{
+	//	SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+	//	orig.AddObject( sp );
+	//	bool oldSelected = (*it)->selected;
+	//	(*it)->SetSelected( true );
+	//	Add( (*it), polygonInProgress );
+	//	(*it)->SetSelected( oldSelected ); //should i even store the old one?							
+	//}
+
+	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
+
+	progressBrush->Clear();
+	progressBrush->AddObject( sp );
+
+	Action * action = new ReplaceBrushAction( &orig, progressBrush );
+	action->Perform();
+	doneActionStack.push_back( action );
+
+	ClearUndoneActions();
+
+	PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+	polygonInProgress = newPoly;
+
+	progressBrush->Clear();
+	//progressBrush->AddObject( sp );
+									
+	//Action *action = new ApplyBrushAction( progressBrush );
+	//action->Perform();
+	//doneActionStack.push_back( action );
+
+	//ClearUndoneActions();
+
+	//PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+	//polygonInProgress = newPoly;
+}
 
 void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {

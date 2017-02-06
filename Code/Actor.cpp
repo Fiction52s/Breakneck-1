@@ -17160,7 +17160,13 @@ void Actor::ConfirmHit( int worldIndex,
 	runeSprite.setOrigin( runeSprite.getLocalBounds().width / 2, 
 		runeSprite.getLocalBounds().height / 2 );
 	
-
+	/*if( bounceFlameOn )
+	{
+		if( ground == NULL )
+		{
+			velocity = -velocity;
+		}
+	}*/
 	//owner->player->test = true;
 	//desperationMode = false;
 }

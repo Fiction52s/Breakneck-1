@@ -368,9 +368,15 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 {
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 
-	edit->polygons.push_back( poly );
-
-
+	if( !inverse )
+	{
+		edit->polygons.push_back( poly );
+	}
+	else
+	{
+		edit->inversePolygon = poly;
+	}
+	
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
@@ -796,6 +802,195 @@ void TerrainPolygon::SetMaterialType( int world, int variation )
 	}
 }
 
+void TerrainPolygon::FinalizeInverse()
+{
+	inverse = true;
+	finalized = true;
+	isGrassShowing = false;
+	//material = "mat";
+
+	
+
+	lines = new sf::Vertex[numPoints*2+1];
+	
+	FixWindingInverse();
+	//cout << "points size: " << points.size() << endl;
+
+	vector<p2t::Point*> polyline;
+	TerrainPoint *curr = pointStart;
+	while( curr != NULL )
+	{
+		TerrainPoint *temp = curr->next;
+		polyline.push_back( new p2t::Point(curr->pos.x, curr->pos.y ) );
+		curr = temp;
+	}
+
+	va = NULL;
+	//p2t::CDT * cdt = new p2t::CDT( polyline );
+	//
+	//cdt->Triangulate();
+	//vector<p2t::Triangle*> tris;
+	//tris = cdt->GetTriangles();
+	//
+	//vaSize = tris.size() * 3;
+	//va = new VertexArray( sf::Triangles , vaSize );
+	//
+	//VertexArray & v = *va;
+	//Color testColor( 0x75, 0x70, 0x90 );
+	//Color selectCol( 0x77, 0xBB, 0xDD );
+
+	//if( selected )
+	//{
+	//	testColor = selectCol;
+	//}
+	//for( int i = 0; i < tris.size(); ++i )
+	//{	
+	//	p2t::Point *p = tris[i]->GetPoint( 0 );	
+	//	p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+	//	p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+	//	v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+	//	v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+	//	v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+	//}
+
+	//SetMaterialType( terrainWorldType, terrainVariation );
+
+	////assert( tris.size() * 3 == points.size() );
+	//delete cdt;
+	//for( int i = 0; i < numPoints; ++i )
+	//{
+	//	delete polyline[i];
+	////	delete tris[i];
+	//}
+
+	if( numPoints > 0 )
+	{
+		int i = 0;
+		curr = pointStart;
+		lines[0] = sf::Vector2f( curr->pos.x, curr->pos.y );
+		lines[2 * numPoints - 1 ] = sf::Vector2f( curr->pos.x, curr->pos.y );
+		curr = curr->next;
+		++i;
+		while( curr != NULL )
+		{
+			lines[i] = sf::Vector2f( curr->pos.x, curr->pos.y );
+			lines[++i] = sf::Vector2f( curr->pos.x, curr->pos.y ); 
+			++i;
+			curr = curr->next;
+		}
+	}
+
+	UpdateBounds();
+	
+
+	double grassSize = 22;
+	double grassSpacing = -5;
+
+	numGrassTotal = 0;
+	int inds = 0;
+	for( curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		Vector2i next;
+
+		TerrainPoint *temp = curr->next;
+		if( temp == NULL )
+		{
+			next = pointStart->pos;
+		}
+		else
+		{
+			//++temp;
+			next = temp->pos;
+			//--temp;
+		}
+
+		V2d v0( curr->pos.x, curr->pos.y );
+		V2d v1( next.x, next.y );
+
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+				
+		int num = floor( remainder ) + 1;
+
+		numGrassTotal += num;
+		//cout << "plus: " << v0.x << ", " << v0.y << " " << v1.x << ", " << v1.y << endl;
+		++inds;
+	}
+	//assert( numGrassTotal !=  0 );
+	//cout << "total grass: " << numGrassTotal << endl;
+	VertexArray *gva = new VertexArray( sf::Quads, numGrassTotal * 4 );
+
+
+	VertexArray &grassVa = *gva;
+
+	int i = 0;
+	for( curr = pointStart; curr != NULL; curr = curr->next )
+	{
+		Vector2i next;
+
+		TerrainPoint *temp = curr->next;
+		if( temp == NULL )
+		{
+			next = pointStart->pos;
+		}
+		else
+		{
+			next = temp->pos;
+		}
+
+		V2d v0( curr->pos.x, curr->pos.y );
+		V2d v1( next.x, next.y );
+
+
+		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+
+		int num = floor( remainder ) + 1;
+
+		for( int j = 0; j < num; ++j )
+		{
+			V2d posd = v0 + (v1- v0) * ((double)j / num);
+			Vector2f pos( posd.x, posd.y );
+
+			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+
+			//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+			grassVa[i*4].color.a = 0;
+			grassVa[i*4].position = topLeft;
+			grassVa[i*4].texCoords = Vector2f( 0, 0 );
+
+			//grassVa[i*4+1].color = Color::Blue;
+			//borderVa[i*4+1].color.a = 10;
+			grassVa[i*4+1].color.a = 0;
+			grassVa[i*4+1].position = bottomLeft;
+			grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
+
+			//grassVa[i*4+2].color = Color::Blue;
+			//borderVa[i*4+2].color.a = 10;
+			grassVa[i*4+2].color.a = 0;
+			grassVa[i*4+2].position = bottomRight;
+			grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
+
+			//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+			//borderVa[i*4+3].color.a = 10;
+			grassVa[i*4+3].color.a = 0;
+			grassVa[i*4+3].position = topRight;
+			grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
+			++i;
+		}
+		
+	
+	}
+
+	/*if( grassVA != NULL )
+	{
+		delete grassVA;
+	}*/
+	grassVA = gva;	
+}
+
 void TerrainPolygon::Finalize()
 {
 	finalized = true;
@@ -1003,7 +1198,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 
 
 	Finalize();
-	SetSelected( true );
+	SetSelected( false );
 }
 
 void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
@@ -1437,6 +1632,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw( lines, numPoints * 2, sf::Lines );
 	}
 
+	rt->draw( lines, numPoints * 2, sf::Lines );
+
 	if( showPoints )
 	{
 		CircleShape cs;
@@ -1566,6 +1763,28 @@ void TerrainPolygon::FixWinding()
 		pointStart = pointEnd;
 		pointEnd = tt;
 
+    }
+}
+
+void TerrainPolygon::FixWindingInverse()
+{
+	if( !IsClockwise() )
+    {
+		//cout << "not fixing" << endl;
+    }
+    else
+    {
+		for( TerrainPoint *curr = pointStart; curr != NULL; )
+		{
+			TerrainPoint *tt = curr->next;
+			TerrainPoint *oldPrev = curr->prev;
+			curr->prev = curr->next;
+			curr->next = oldPrev;
+			curr = tt;
+		}
+		TerrainPoint *tt = pointStart;
+		pointStart = pointEnd;
+		pointEnd = tt;
     }
 }
 
@@ -2043,8 +2262,6 @@ bool TerrainPolygon::IsClockwise()
 
     return sum < 0;
 }
-
-
 
 void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 {
