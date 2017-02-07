@@ -567,7 +567,30 @@ void EditSession::Draw()
 
 	if( inversePolygon != NULL && inversePolygon->finalized )
 	{
-		inversePolygon->Draw( false, zoomMultiple, preScreenTex, false, NULL );
+		if( extendingPolygon == NULL )
+		{
+			inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, NULL );
+			//(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
+		}
+		else
+		{
+			if( inversePolygon == extendingPolygon )
+			{
+				inversePolygon->Draw( false, zoomMultiple, preScreenTex, true, extendingPoint );
+			}
+			else
+			{
+				if( extendingPolygon == NULL )
+				{
+					inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, extendingPoint );
+				}
+				else
+				{
+					inversePolygon->Draw( false, zoomMultiple, preScreenTex, false, extendingPoint );
+				}
+			}
+		}
+		
 	}
 		
 }
@@ -2821,6 +2844,12 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 	//	poly->DestroyEnemies();
 	//}
 
+	bool inverse = false;
+	if( brush->inverse || poly->inverse )
+	{
+		inverse = true;
+	}
+
 	TerrainPolygon z( &grassTex );
 	//1: choose start point
 
@@ -3128,7 +3157,15 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 		}
 	}
 
-	poly->Finalize();
+	if( inverse )
+	{
+		poly->FinalizeInverse();
+	}
+	else
+	{
+		poly->Finalize();
+	}
+	
 }
 
 
@@ -4125,8 +4162,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							}
 							else if( ev.key.code == sf::Keyboard::E )
 							{
-								//if( !showPoints )
-								if( false ) // this is only turned off for the beta build so I don't have to debug this.
+								if( !showPoints )
+								 // this is only turned off for the beta build so I don't have to debug this.
 								{
 									showPoints = true;
 									extendingPolygon = NULL;
@@ -7341,7 +7378,26 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 					if( showPoints && extendingPolygon == NULL )
 					{
+
 						bool none = true;
+						if( inversePolygon != NULL )
+						{
+							for( TerrainPoint *curr = inversePolygon->pointStart; curr != NULL;
+								curr = curr->next )
+							{
+								Vector2i pointPos = curr->pos;
+								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
+								if( dist < 8 * zoomMultiple )
+								{
+									extendingPolygon = inversePolygon;
+									extendingPoint = curr;
+									none = false;
+									break;
+								}
+							}
+						}
+
+						if( none )
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
 							for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
@@ -7371,8 +7427,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							//no error checking for extending polygon yet. ugh T_T you got this
 
-
-							okay = !extendingPolygon->ContainsPoint( testPoint );
+							bool containsPoint = extendingPolygon->ContainsPoint( testPoint );
+							if( !extendingPolygon->inverse )
+							{
+								okay = !containsPoint;
+							}
 							
 							/*if( polygonInProgress->numPoints > 1 )
 							{
@@ -7428,6 +7487,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								if( dist < 8 * zoomMultiple )
 								{
 									//ExtendPolygon();
+									//polygonInProgress->FixWindingInverse();
 									extendingPolygon->Extend( extendingPoint, curr, polygonInProgress );
 
 									ExtendAdd();
@@ -13615,6 +13675,9 @@ void EditSession::ExecuteTerrainCompletion()
 			//}
 		}
 
+		//temporary to make sure it doesnt add on top of stuff
+		
+
 		if( !applyOkay )
 		{
 			MessagePop( "polygon is invalid!!! new message" );
@@ -13677,7 +13740,24 @@ void EditSession::ExecuteTerrainCompletion()
 
 void EditSession::SetInversePoly()
 {
-	polygonInProgress->FinalizeInverse();
+	polygonInProgress->FixWinding();
+	//polygonInProgress->Finalize();
+
+	//touches inverse
+	if( inversePolygon != NULL && polygonInProgress->IsTouching( inversePolygon.get() ) )
+	{
+		bool oldSelected = inversePolygon->selected;
+		inversePolygon->SetSelected( true );
+		inversePolygon->FixWinding();
+		Add( inversePolygon, polygonInProgress );
+		inversePolygon->SetSelected( oldSelected );
+	}
+	else
+	{
+		polygonInProgress->FinalizeInverse();
+	}
+	
+	
 
 	//SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
 

@@ -198,6 +198,7 @@ struct TerrainPolygon : ISelectable
 	
 	void ShowGrass( bool show );
 	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
+	void Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );

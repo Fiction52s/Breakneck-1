@@ -337,7 +337,16 @@ void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr &select )
 {
 	cout << "deactivating polygon" << endl;
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
-	edit->polygons.remove( poly );
+
+	if( !inverse )
+	{
+		edit->polygons.remove( poly );
+	}
+	else
+	{
+		edit->inversePolygon.reset();
+	}
+	
 	
 	//remove enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -1201,8 +1210,31 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( false );
 }
 
+void TerrainPolygon::Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress )
+{
+
+}
+
 void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
 {
+	if( inverse )
+	{
+		bool add = true;
+		for( TerrainPoint *tp = inProgress->pointStart; tp != NULL; tp = tp->next )
+		{
+			if( tp->pos != startPoint->pos && tp->pos != endPoint->pos && ContainsPoint( Vector2f( tp->pos.x, tp->pos.y ) ) )
+			{
+				add = false;
+				break;
+			}
+		}
+		if( add )
+			FixWinding();
+
+		//inProgress->FixWindingInverse();
+	}
+
+
 	if( inProgress->numPoints < 2 )
 	{
 		return;
@@ -1217,6 +1249,9 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 	//inProgress->FixWinding();
 	
+	//start = startPoint;
+	//end = endPoint;
+
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		if( curr == startPoint )
@@ -1264,8 +1299,18 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 			//cout << "changing" << endl;
 		}
 	}
+	else
+	{
+
+		/*if( inverse )
+		{
+			inProgress->FixWindingInverse();
+		}*/
+	}
 
 	inProgress->RemovePoint( inProgress->pointEnd );
+
+	//inProgress->FixWindingInverse();
 
 	if( startFirst )
 	{	
@@ -1465,7 +1510,15 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 		AddPoint( tp );
 	}
 
-	Finalize();
+	if( inverse )
+	{
+		FinalizeInverse();
+	}
+	else
+	{
+		Finalize();
+	}
+	
 }
 
 void TerrainPolygon::SwitchGrass( V2d mousePos )
