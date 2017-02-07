@@ -1215,8 +1215,32 @@ void TerrainPolygon::Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, b
 
 }
 
-void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
+void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress, 
+	TerrainPoint *showKeep )
 {
+	bool specialCW;
+	TerrainPoint *prevDest = endPoint->prev;
+	TerrainPoint *nextDest = endPoint->next;
+	if( prevDest == NULL )
+	{
+		prevDest = pointEnd;
+	}
+	else if( nextDest == NULL )
+	{
+		nextDest = pointStart;
+	}
+
+	if( showKeep == prevDest )
+	{
+		//go one way
+	}
+	else if( showKeep == nextDest )
+	{
+		//go the other way
+	}
+
+
+	bool inverseAdd = true;
 	if( inverse )
 	{
 		bool add = true;
@@ -1231,6 +1255,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 		if( add )
 			FixWinding();
 
+		inverseAdd = add;
 		//inProgress->FixWindingInverse();
 	}
 
@@ -1252,6 +1277,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 	//start = startPoint;
 	//end = endPoint;
 
+	//finds out if start is first or if end is first on the full poly
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		if( curr == startPoint )
@@ -1278,6 +1304,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 	TerrainPolygon newList( grassTex );
 	inProgress->AddPoint( new TerrainPoint( *endPoint ) );
 	bool inProgresscw = inProgress->IsClockwise();
+
 	if( !inProgresscw )
 	{
 		inProgress->FixWinding();

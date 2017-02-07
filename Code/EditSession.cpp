@@ -3528,6 +3528,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
+	extendEndTemp = NULL;
 
 	radiusOption = false;
 	lightPosDown = false;
@@ -4168,6 +4169,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPoints = true;
 									extendingPolygon = NULL;
 									extendingPoint = NULL;
+									extendEndTemp = NULL;
 									polygonInProgress->ClearPoints();
 								}
 							}
@@ -4209,6 +4211,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								showPoints = false;
 								extendingPolygon = NULL;
 								extendingPoint = NULL;
+								extendEndTemp = NULL;
 								polygonInProgress->ClearPoints();
 								}
 							}
@@ -7486,24 +7489,75 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
 								if( dist < 8 * zoomMultiple )
 								{
-									//ExtendPolygon();
-									//polygonInProgress->FixWindingInverse();
-									extendingPolygon->Extend( extendingPoint, curr, polygonInProgress );
+									bool inverseSub = false;
+									if( extendingPolygon->inverse && extendEndTemp == NULL )
+									{
+										for( TerrainPoint *progCurr = polygonInProgress->pointStart;
+											progCurr != NULL; progCurr = progCurr->next )
+										{
+											if( !PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
+											{
+												if( extendingPolygon->ContainsPoint( 
+													Vector2f( progCurr->pos.x, progCurr->pos.y ) ) )
+												{
+													//subtract extension
+													polygonInProgress->AddPoint( new TerrainPoint( progCurr->pos, false ) );
+													inverseSub = true;
+													break;
+												}
+											}
+										}
 
-									ExtendAdd();
+										if( inverseSub )
+										{
+											extendEndTemp = curr;
+										}
+									}
+									else if( extendingPolygon->inverse )
+									{
+										//when temp isnt NULL
+										extendingPolygon->Extend( extendingPoint, extendEndTemp, polygonInProgress, curr );
 
-									//polygonInProgress->points.clear();
-									//polygonInProgress->Reset();
-									//cout << "EXTENDING POLYGON" << endl;
+										ExtendAdd();
+
+										//polygonInProgress->points.clear();
+										//polygonInProgress->Reset();
+										//cout << "EXTENDING POLYGON" << endl;
 									
 
-									polygonInProgress->Reset();
+										polygonInProgress->Reset();
 
-									extendingPolygon = NULL;
-									extendingPoint = NULL;
-									done = true;
-									//cout << "done!" << endl;
+										extendingPolygon = NULL;
+										extendingPoint = NULL;
+										extendEndTemp = NULL;
+										done = true;
+									}
+									
+									if( !inverseSub )
+									{
+										extendingPolygon->Extend( extendingPoint, curr, polygonInProgress, NULL );
+
+										ExtendAdd();
+
+										//polygonInProgress->points.clear();
+										//polygonInProgress->Reset();
+										//cout << "EXTENDING POLYGON" << endl;
+									
+
+										polygonInProgress->Reset();
+
+										extendingPolygon = NULL;
+										extendingPoint = NULL;
+										extendEndTemp = NULL;
+
+										done = true;
+										//cout << "done!" << endl;
+										
+									}
 									break;
+									//ExtendPolygon();
+									//polygonInProgress->FixWindingInverse();
+									
 								}
 							}
 						}
@@ -12052,6 +12106,7 @@ void EditSession::ExtendAdd()
 	showPoints = false;
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
+	extendEndTemp = NULL;
 
 	while( it != polygons.end() )
 	{
