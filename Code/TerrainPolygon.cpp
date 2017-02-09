@@ -1230,6 +1230,12 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 		nextDest = pointStart;
 	}
 
+	if( showKeep != NULL )
+	{
+
+	}
+
+
 	if( showKeep == prevDest )
 	{
 		//go one way
@@ -1244,18 +1250,23 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 	if( inverse )
 	{
 		bool add = true;
-		for( TerrainPoint *tp = inProgress->pointStart; tp != NULL; tp = tp->next )
+		/*for( TerrainPoint *tp = inProgress->pointStart; tp != NULL; tp = tp->next )
 		{
 			if( tp->pos != startPoint->pos && tp->pos != endPoint->pos && ContainsPoint( Vector2f( tp->pos.x, tp->pos.y ) ) )
 			{
 				add = false;
 				break;
 			}
-		}
-		if( add )
+		}*/
+		if( showKeep == NULL )
 			FixWinding();
+		else
+		{
+			
+		}
 
-		inverseAdd = add;
+		inverseAdd = (showKeep == NULL);
+		//inverseAdd = add;
 		//inProgress->FixWindingInverse();
 	}
 

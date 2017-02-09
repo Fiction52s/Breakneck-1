@@ -7481,7 +7481,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						{
 							for( TerrainPoint *curr = extendingPolygon->pointStart; curr != NULL; curr = curr->next )
 							{
-								if( curr == extendingPoint )
+								if( curr == extendingPoint || ( polygonInProgress->pointEnd != NULL 
+									&& curr->pos == polygonInProgress->pointEnd->pos ) )
 								{
 									continue;
 								}
@@ -7495,14 +7496,15 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										for( TerrainPoint *progCurr = polygonInProgress->pointStart;
 											progCurr != NULL; progCurr = progCurr->next )
 										{
-											if( !PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
+											if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
 											{
 												if( extendingPolygon->ContainsPoint( 
 													Vector2f( progCurr->pos.x, progCurr->pos.y ) ) )
 												{
 													//subtract extension
-													polygonInProgress->AddPoint( new TerrainPoint( progCurr->pos, false ) );
+													polygonInProgress->AddPoint( new TerrainPoint( curr->pos, false ) );
 													inverseSub = true;
+													done = true;
 													break;
 												}
 											}
@@ -7515,22 +7517,42 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									}
 									else if( extendingPolygon->inverse )
 									{
-										//when temp isnt NULL
-										extendingPolygon->Extend( extendingPoint, extendEndTemp, polygonInProgress, curr );
+										TerrainPoint *tprev = curr->prev;
+										TerrainPoint *tnext = curr->next;
 
-										ExtendAdd();
+										if( tprev == NULL )
+											tprev = extendingPolygon->pointEnd;
+										if( tnext == NULL )
+											tnext = extendingPolygon->pointStart;
 
-										//polygonInProgress->points.clear();
-										//polygonInProgress->Reset();
-										//cout << "EXTENDING POLYGON" << endl;
+										if( inverseSub && curr != tprev && curr != tnext )
+										{
+											MessagePop( "you must select a point next to the last point you selected to "
+												"determine the winding" );
+											//done = true;
+											okay = false;
+										}
+										else
+										{
+											//when temp isnt NULL
+											polygonInProgress->RemovePoint( polygonInProgress->pointEnd );
+
+											extendingPolygon->Extend( extendingPoint, extendEndTemp, polygonInProgress, curr );
+
+											ExtendAdd();
+
+											//polygonInProgress->points.clear();
+											//polygonInProgress->Reset();
+											//cout << "EXTENDING POLYGON" << endl;
 									
 
-										polygonInProgress->Reset();
+											polygonInProgress->Reset();
 
-										extendingPolygon = NULL;
-										extendingPoint = NULL;
-										extendEndTemp = NULL;
-										done = true;
+											extendingPolygon = NULL;
+											extendingPoint = NULL;
+											extendEndTemp = NULL;
+											done = true;
+										}
 									}
 									
 									if( !inverseSub )
