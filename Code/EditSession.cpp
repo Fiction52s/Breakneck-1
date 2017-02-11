@@ -592,7 +592,13 @@ void EditSession::Draw()
 		}
 		
 	}
-		
+	
+
+	if( cutChoose || cutChooseUp )
+	{
+		cutPoly0->Draw( preScreenTex );
+		cutPoly1->Draw( preScreenTex );
+	}
 }
 
 void EditSession::UpdateFullBounds()
@@ -3513,6 +3519,8 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 {
+	cutChoose = false;
+	cutChooseUp = false;
 	tempActor = NULL;
 	int width = 1920;//1920 - w->getSize().x;
 	int height = 1080; //1080 - w->getSize().y;
@@ -3528,7 +3536,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
-	extendEndTemp = NULL;
 
 	radiusOption = false;
 	lightPosDown = false;
@@ -4107,6 +4114,22 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
 									break;
 								}
+
+								if( cutChoose )
+								{
+									if( cutPoly0->ContainsPoint( testPoint ) )
+									{
+										ChooseCutPoly( cutPoly0 );
+									}
+									else if( cutPoly1->ContainsPoint( testPoint ) )
+									{
+										ChooseCutPoly( cutPoly1 );
+									}
+
+									extendingPolygon = NULL;
+									extendingPoint = NULL;
+								}
+
 							}
 							
 							break;
@@ -4169,7 +4192,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									showPoints = true;
 									extendingPolygon = NULL;
 									extendingPoint = NULL;
-									extendEndTemp = NULL;
 									polygonInProgress->ClearPoints();
 								}
 							}
@@ -4211,7 +4233,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								showPoints = false;
 								extendingPolygon = NULL;
 								extendingPoint = NULL;
-								extendEndTemp = NULL;
 								polygonInProgress->ClearPoints();
 								}
 							}
@@ -7117,7 +7138,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						if( ev.key.code == Keyboard::S && ev.key.control  )
 						{
 							polygonInProgress->ClearPoints();
-							cout << "writing to file: " << currentFile << ".brknk" << endl;
+							cout << "writing to file: " << currentFile << endl;
 							WriteFile(currentFile);
 						}
 						else if( ev.key.code == Keyboard::T && showPanel == NULL  )
@@ -7379,6 +7400,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						}
 					}
 
+					
+					if( cutChoose )
+					{
+						break;
+					}
+
 					if( showPoints && extendingPolygon == NULL )
 					{
 
@@ -7431,10 +7458,10 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							//no error checking for extending polygon yet. ugh T_T you got this
 
 							bool containsPoint = extendingPolygon->ContainsPoint( testPoint );
-							if( !extendingPolygon->inverse )
+							/*if( !extendingPolygon->inverse )
 							{
 								okay = !containsPoint;
-							}
+							}*/
 							
 							/*if( polygonInProgress->numPoints > 1 )
 							{
@@ -7490,74 +7517,25 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
 								if( dist < 8 * zoomMultiple )
 								{
-									bool inverseSub = false;
-									if( extendingPolygon->inverse && extendEndTemp == NULL )
+									for( TerrainPoint *progCurr = polygonInProgress->pointStart;
+										progCurr != NULL; progCurr = progCurr->next )
 									{
-										for( TerrainPoint *progCurr = polygonInProgress->pointStart;
-											progCurr != NULL; progCurr = progCurr->next )
+										if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
 										{
-											if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
+											if( extendingPolygon->ContainsPoint( 
+												Vector2f( progCurr->pos.x, progCurr->pos.y ) ) )
 											{
-												if( extendingPolygon->ContainsPoint( 
-													Vector2f( progCurr->pos.x, progCurr->pos.y ) ) )
-												{
-													//subtract extension
-													polygonInProgress->AddPoint( new TerrainPoint( curr->pos, false ) );
-													inverseSub = true;
-													done = true;
-													break;
-												}
+												extendingPolygon->Cut( extendingPoint, curr, polygonInProgress );	
+												polygonInProgress->Reset();
+												done = true;
+												break;
 											}
 										}
-
-										if( inverseSub )
-										{
-											extendEndTemp = curr;
-										}
 									}
-									else if( extendingPolygon->inverse )
+
+									if( !done )
 									{
-										TerrainPoint *tprev = curr->prev;
-										TerrainPoint *tnext = curr->next;
-
-										if( tprev == NULL )
-											tprev = extendingPolygon->pointEnd;
-										if( tnext == NULL )
-											tnext = extendingPolygon->pointStart;
-
-										if( inverseSub && curr != tprev && curr != tnext )
-										{
-											MessagePop( "you must select a point next to the last point you selected to "
-												"determine the winding" );
-											//done = true;
-											okay = false;
-										}
-										else
-										{
-											//when temp isnt NULL
-											polygonInProgress->RemovePoint( polygonInProgress->pointEnd );
-
-											extendingPolygon->Extend( extendingPoint, extendEndTemp, polygonInProgress, curr );
-
-											ExtendAdd();
-
-											//polygonInProgress->points.clear();
-											//polygonInProgress->Reset();
-											//cout << "EXTENDING POLYGON" << endl;
-									
-
-											polygonInProgress->Reset();
-
-											extendingPolygon = NULL;
-											extendingPoint = NULL;
-											extendEndTemp = NULL;
-											done = true;
-										}
-									}
-									
-									if( !inverseSub )
-									{
-										extendingPolygon->Extend( extendingPoint, curr, polygonInProgress, NULL );
+										extendingPolygon->Extend( extendingPoint, curr, polygonInProgress );
 
 										ExtendAdd();
 
@@ -7570,12 +7548,38 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 										extendingPolygon = NULL;
 										extendingPoint = NULL;
-										extendEndTemp = NULL;
-
 										done = true;
-										//cout << "done!" << endl;
-										
 									}
+										//else if( extendEndTemp != NULL )
+										//{
+										//	MessagePop( "you must select a point next to the last point you selected to "
+										//		"determine the winding" );
+										//	//done = true;
+										//	okay = false;
+										//}
+									
+									
+									//if( !done && okay )
+									//{
+									//	extendingPolygon->Extend( extendingPoint, curr, polygonInProgress, NULL );
+
+									//	ExtendAdd();
+
+									//	//polygonInProgress->points.clear();
+									//	//polygonInProgress->Reset();
+									//	//cout << "EXTENDING POLYGON" << endl;
+									//
+
+									//	polygonInProgress->Reset();
+
+									//	extendingPolygon = NULL;
+									//	extendingPoint = NULL;
+									//	extendEndTemp = NULL;
+
+									//	done = true;
+									//	//cout << "done!" << endl;
+									//	
+									//}
 									break;
 									//ExtendPolygon();
 									//polygonInProgress->FixWindingInverse();
@@ -11508,6 +11512,46 @@ void EditSession::ExtendPolygon()
 	polygonInProgress->Reset();
 }
 
+void EditSession::ChooseCutPoly( TerrainPolygon *choice )
+{
+	cutChoose = false;
+	cutChooseUp = false;
+
+	if( choice == cutPoly0 )
+		delete cutPoly1;
+	else
+		delete cutPoly0;
+
+
+	if( extendingPolygon->inverse )
+	{
+
+	}
+
+	PolyPtr chosen( choice );
+	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( chosen );
+
+	progressBrush->Clear();
+	progressBrush->AddObject( sp );
+
+	Brush orig;
+	
+	SelectPtr spe = boost::dynamic_pointer_cast<ISelectable>( extendingPolygon );
+	orig.AddObject( spe );
+	
+	Action * action = new ReplaceBrushAction( &orig, progressBrush );
+	action->Perform();
+	doneActionStack.push_back( action );
+
+	ClearUndoneActions();
+
+	polygonInProgress->Reset();
+	//PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+	//polygonInProgress = newPoly;
+
+	progressBrush->Clear();	
+}
+
 bool EditSession::IsExtendPointOkay( PolyPtr poly, sf::Vector2f testPoint )
 {
 	Vector2i worldi( testPoint.x, testPoint.y );
@@ -12128,7 +12172,6 @@ void EditSession::ExtendAdd()
 	showPoints = false;
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
-	extendEndTemp = NULL;
 
 	while( it != polygons.end() )
 	{

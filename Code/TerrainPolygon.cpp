@@ -30,6 +30,7 @@ using namespace sf;
 TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	:ISelectable( ISelectable::TERRAIN ), grassTex( gt )
 {
+	inverse = false;
 	layer = 0;
 	va = NULL;
 	lines = NULL;
@@ -414,6 +415,7 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
 	:ISelectable( ISelectable::TERRAIN )
 {
+	inverse = false;
 	grassTex = poly.grassTex;
 	if(  pointsOnly )
 	{
@@ -1210,13 +1212,58 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( false );
 }
 
-void TerrainPolygon::Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress )
+void TerrainPolygon::Cut( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress )
 {
+	if( inProgress->numPoints < 2 )
+	{
+		return;
+	}
 
+	//inProgress->RemovePoint( inProgress->pointEnd );
+
+	TerrainPolygon *p0 = new TerrainPolygon( grassTex );
+	TerrainPolygon *p1 = new TerrainPolygon( grassTex );
+
+	for( TerrainPoint *curr = inProgress->pointStart; curr != NULL; curr = curr->next )
+	{
+		p0->AddPoint( new TerrainPoint( *curr ) );
+		p1->AddPoint( new TerrainPoint( *curr ) );
+	}
+
+	TerrainPoint *t = endPoint;
+	while( t != startPoint )
+	{
+		p0->AddPoint( new TerrainPoint( *t ) );
+		t = t->next;
+		if( t == NULL )
+			t = pointStart;
+	}
+
+	t = endPoint;
+	while( t != startPoint )
+	{
+		p1->AddPoint( new TerrainPoint( *t ) );
+		t = t->prev;
+		if( t == NULL )
+			t = pointEnd;
+	}
+
+	p0->Finalize();
+	p1->Finalize();
+
+	session->cutPoly0 = p0;
+	session->cutPoly1 = p1;
+
+	session->cutChoose = true;
+
+
+	/*for( TerrainPoint *curr = inProgress->pointStart; curr != NULL; curr = curr->next )
+	{
+		p0->AddPoint( new TerrainPoint( *curr ) );
+	}*/
 }
 
-void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress, 
-	TerrainPoint *showKeep )
+void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
 {
 	bool specialCW;
 	TerrainPoint *prevDest = endPoint->prev;
@@ -1230,46 +1277,13 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 		nextDest = pointStart;
 	}
 
-	if( showKeep != NULL )
-	{
-
-	}
-
-
-	if( showKeep == prevDest )
-	{
-		//go one way
-	}
-	else if( showKeep == nextDest )
-	{
-		//go the other way
-	}
-
-
-	bool inverseAdd = true;
 	if( inverse )
 	{
 		bool add = true;
-		/*for( TerrainPoint *tp = inProgress->pointStart; tp != NULL; tp = tp->next )
-		{
-			if( tp->pos != startPoint->pos && tp->pos != endPoint->pos && ContainsPoint( Vector2f( tp->pos.x, tp->pos.y ) ) )
-			{
-				add = false;
-				break;
-			}
-		}*/
-		if( showKeep == NULL )
-			FixWinding();
-		else
-		{
-			
-		}
 
-		inverseAdd = (showKeep == NULL);
-		//inverseAdd = add;
-		//inProgress->FixWindingInverse();
+		FixWinding();
+
 	}
-
 
 	if( inProgress->numPoints < 2 )
 	{
@@ -1282,11 +1296,6 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 	bool startFound = false;
 	bool endFound = false;
-
-	//inProgress->FixWinding();
-	
-	//start = startPoint;
-	//end = endPoint;
 
 	//finds out if start is first or if end is first on the full poly
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
@@ -1347,6 +1356,18 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 	}
 
 	inProgress->RemovePoint( inProgress->pointEnd );
+
+	//if( showKeep == prevDest )
+	//{
+	//	//go one way
+	//	FixWindingInverse();
+	//}
+	//else if( showKeep == nextDest )
+	//{
+	//	FixWinding();
+	//	
+	//	//go the other way
+	//}
 
 	//inProgress->FixWindingInverse();
 
