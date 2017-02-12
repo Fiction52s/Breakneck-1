@@ -668,13 +668,34 @@ bool EditSession::OpenFile( string fileName )
 		is >> goalPosX;
 		is >> goalPosY;
 
+		string hasBorderPolyStr;
+		is >> hasBorderPolyStr;
+		bool hasBorderPoly;
+		bool hasReadBorderPoly;
+		if( hasBorderPolyStr == "borderpoly" )
+		{
+			hasBorderPoly = true;
+			hasReadBorderPoly = false;
+		}
+		else if( hasBorderPolyStr == "no_borderpoly" )
+		{
+			hasBorderPoly = false;
+			hasReadBorderPoly = true;
+		}
+		else
+		{
+			cout << hasBorderPolyStr << endl;
+			assert( 0 && "what is this string?" );
+		}
+
 		player->image.setPosition( player->position.x, player->position.y );
 		player->SetBoundingQuad();
 
+		
 		while( numPoints > 0 )
 		{
 			PolyPtr poly(  new TerrainPolygon( &grassTex ) );
-			polygons.push_back( poly );
+			
 
 			int matWorld;
 			int matVariation;
@@ -684,6 +705,16 @@ bool EditSession::OpenFile( string fileName )
 			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
 			poly->terrainVariation = matVariation;
 			
+			if( !hasReadBorderPoly )
+			{
+				poly->inverse = true;
+				inversePolygon = poly;
+				hasReadBorderPoly = true;
+			}
+			else
+			{
+				polygons.push_back( poly );
+			}
 
 			int polyPoints;
 			is >> polyPoints;
@@ -723,7 +754,15 @@ bool EditSession::OpenFile( string fileName )
 				}
 			}
 
-			poly->Finalize();
+			if( poly->inverse )
+			{
+				poly->FinalizeInverse();
+			}
+			else
+			{
+				poly->Finalize();	
+			}
+			
 
 
 			int grassIndex = 0;
@@ -936,16 +975,23 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1034,16 +1080,23 @@ bool EditSession::OpenFile( string fileName )
 						double edgeQuantity;
 						is >> edgeQuantity;
 
-						int testIndex = 0;
 						PolyPtr terrain( NULL );
-						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+						if( terrainIndex == -1  )
 						{
-							if( testIndex == terrainIndex )
+							terrain = inversePolygon;
+						}
+						else
+						{
+							int testIndex = 0;
+							for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 							{
-								terrain = (*it);
-								break;
+								if( testIndex == terrainIndex )
+								{
+									terrain = (*it);
+									break;
+								}
+								testIndex++;
 							}
-							testIndex++;
 						}
 
 						if( terrain == NULL )
@@ -1122,16 +1175,23 @@ bool EditSession::OpenFile( string fileName )
 					int facingRight;
 					is >> facingRight;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1176,16 +1236,23 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1213,16 +1280,23 @@ bool EditSession::OpenFile( string fileName )
 					double edgeQuantity;
 					is >> edgeQuantity;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1260,16 +1334,23 @@ bool EditSession::OpenFile( string fileName )
 					int framesWait;
 					is >> framesWait;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1301,16 +1382,23 @@ bool EditSession::OpenFile( string fileName )
 					int hasMonitor;
 					is >> hasMonitor;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1405,16 +1493,23 @@ bool EditSession::OpenFile( string fileName )
 					float speed;
 					is >> speed;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1520,16 +1615,23 @@ bool EditSession::OpenFile( string fileName )
 						relative = true;
 					}
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1580,16 +1682,23 @@ bool EditSession::OpenFile( string fileName )
 					float speed;
 					is >> speed;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1635,16 +1744,24 @@ bool EditSession::OpenFile( string fileName )
 					int jumpWaitFrames;
 					is >> jumpWaitFrames;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						PolyPtr terrain( NULL );
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1740,16 +1857,23 @@ bool EditSession::OpenFile( string fileName )
 					int jumpStrength;
 					is >> jumpStrength;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1792,16 +1916,23 @@ bool EditSession::OpenFile( string fileName )
 					int amplitude;
 					is >> amplitude;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1870,16 +2001,23 @@ bool EditSession::OpenFile( string fileName )
 					int hasMonitor;
 					is >> hasMonitor;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -1916,16 +2054,23 @@ bool EditSession::OpenFile( string fileName )
 					int speed;
 					is >> speed;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -2006,16 +2151,23 @@ bool EditSession::OpenFile( string fileName )
 					int hasMonitor;
 					is >> hasMonitor;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -2201,16 +2353,23 @@ bool EditSession::OpenFile( string fileName )
 					int nexusIndex;
 					is >> nexusIndex;
 
-					int testIndex = 0;
 					PolyPtr terrain( NULL );
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+					if( terrainIndex == -1  )
 					{
-						if( testIndex == terrainIndex )
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
-							terrain = (*it);
-							break;
+							if( testIndex == terrainIndex )
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
 						}
-						testIndex++;
 					}
 
 					if( terrain == NULL )
@@ -2272,9 +2431,21 @@ bool EditSession::OpenFile( string fileName )
 			PolyPtr terrain0(  NULL );
 			PolyPtr terrain1( NULL );
 			bool first = true;
+
+			if( poly0Index == -1 )
+			{
+				terrain0 = inversePolygon;
+			}
+			if( poly1Index == -1 )
+			{
+				terrain1 = inversePolygon;
+			}
 			for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 			{
-				if( testIndex == poly0Index )
+				if( terrain0 != NULL && terrain1 != NULL )
+					break;
+
+				if( testIndex == poly0Index && terrain0 == NULL )
 				{
 					terrain0 = (*it);
 
@@ -2283,7 +2454,7 @@ bool EditSession::OpenFile( string fileName )
 					else
 						break;
 				}
-				if( testIndex == poly1Index )
+				if( testIndex == poly1Index && terrain1 == NULL )
 				{
 					terrain1 = (*it);
 
@@ -2410,7 +2581,23 @@ void EditSession::WriteFile(string fileName)
 			movingPlatCount++;
 	}
 
-	
+	if( inversePolygon != NULL )
+	{
+		pointCount += inversePolygon->numPoints;
+	}
+
+	/*int inversePointCount;
+	if( inversePolygon == NULL )
+	{
+		inversePointCount = 0;
+	}
+	else
+	{
+		inversePointCount = inversePolygon->numPoints;
+	}
+
+	of << inversePointCount << endl;
+	*/
 
 	of << pointCount << endl;
 	of << player->position.x << " " << player->position.y << endl;
@@ -2448,6 +2635,17 @@ void EditSession::WriteFile(string fileName)
 
 
 	int writeIndex = 0;
+	
+	if( inversePolygon != NULL )
+	{
+		of << "borderpoly" << endl;
+		polygons.push_front( inversePolygon );
+		writeIndex = -1;
+	}
+	else
+	{
+		of << "no_borderpoly" << endl;
+	}
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( (*it)->layer == 0 && (*it)->path.size() < 2 )
@@ -2468,6 +2666,10 @@ void EditSession::WriteFile(string fileName)
 			WriteGrass( (*it), of );
 		}
 	}	
+	if( inversePolygon != NULL )
+	{
+		polygons.pop_front();
+	}
 
 	of << movingPlatCount << endl;
 
@@ -4117,11 +4319,19 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 								if( cutChoose )
 								{
-									if( cutPoly0->ContainsPoint( testPoint ) )
+									bool c0 = cutPoly0->ContainsPoint( testPoint );
+									bool c1 = cutPoly1->ContainsPoint( testPoint );
+									if( cutPoly0->inverse )
+										c0 = !c0;
+									if( cutPoly1->inverse )
+										c1 = !c1;
+
+									//contains point returns the opposite when you're inverse
+									if( c0 )
 									{
 										ChooseCutPoly( cutPoly0 );
 									}
-									else if( cutPoly1->ContainsPoint( testPoint ) )
+									else if( c1 )
 									{
 										ChooseCutPoly( cutPoly1 );
 									}
@@ -6935,6 +7145,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 							{
 								modifyGate = NULL;
 								bool found = false;
+								if( inversePolygon != NULL )
+									polygons.push_back( inversePolygon );
 								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end() && !found; ++it )
 								{
 									//extended aabb 
@@ -6993,6 +7205,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 										}
 									}
 								}
+
+								if( inversePolygon != NULL )
+									polygons.pop_back();
 
 								if( !found )
 								{
@@ -7522,8 +7737,11 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
 										{
-											if( extendingPolygon->ContainsPoint( 
-												Vector2f( progCurr->pos.x, progCurr->pos.y ) ) )
+											bool contains = extendingPolygon->ContainsPoint( 
+												Vector2f( progCurr->pos.x, progCurr->pos.y ) );
+											if( extendingPolygon->inverse )
+												contains = !contains;
+											if( contains )
 											{
 												extendingPolygon->Cut( extendingPoint, curr, polygonInProgress );	
 												polygonInProgress->Reset();
