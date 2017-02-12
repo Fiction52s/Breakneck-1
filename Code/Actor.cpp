@@ -2571,6 +2571,7 @@ void Actor::UpdatePrePhysics()
 				//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
 				if( !reversed || ( hasPowerGravReverse && reversed ) )
 				{
+					groundSpeed = storedReverseSpeed;
 					SetActionGrind();
 					break;
 				}
@@ -2613,6 +2614,7 @@ void Actor::UpdatePrePhysics()
 					{
 						/*re->Reset();
 						re1->Reset();*/
+						groundSpeed = storedReverseSpeed;
 						action = DASH;
 						frame = 0;
 
@@ -2623,6 +2625,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
+						groundSpeed = storedReverseSpeed;
 						SetActionExpr( RUN );
 						frame = 0;
 					}
@@ -4073,6 +4076,7 @@ void Actor::UpdatePrePhysics()
 						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
 						lungeNormal = grindNorm;
 						velocity = lungeNormal * grindLungeSpeed;
+
 						/*if( currInput.A )
 						{
 							velocity += gDir * grindSpeed;
@@ -5808,6 +5812,10 @@ void Actor::UpdatePrePhysics()
 		}
 		break;
 	case GRAVREVERSE:
+		if( groundSpeed != 0 )
+		{
+			storedReverseSpeed = groundSpeed;
+		}
 		groundSpeed = 0;
 		break;
 	case STEEPSLIDE:
@@ -8940,6 +8948,18 @@ void Actor::UpdatePhysics()
 						}
 					}
 					grindEdge = e1;
+
+					if( owner->IsWall( grindEdge->Normal() ) == -1 )
+					{
+						if( hasPowerGravReverse || grindEdge->Normal().y < 0 )
+						{
+							hasDoubleJump = true;
+							hasAirDash = true;
+							hasGravReverse = true;
+							lastWire = 0;
+						}
+					}
+					//if( IsSlopedGround( 
 					q = 0;
 					//sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
 					//sf::Rect<double> r( ( v0.x + v1.x ) / 2 - 1, ( v0.y + v1.y ) / 2 - 1, 2, 2 );
@@ -9047,6 +9067,17 @@ void Actor::UpdatePhysics()
 					}
 					grindEdge = e0;
 					q = length( grindEdge->v1 - grindEdge->v0 );
+
+					if( owner->IsWall( grindEdge->Normal() ) == -1 )
+					{
+						if( hasPowerGravReverse || grindEdge->Normal().y < 0 )
+						{
+							hasDoubleJump = true;
+							hasAirDash = true;
+							hasGravReverse = true;
+							lastWire = 0;
+						}
+					}
 				}
 				else
 				{
@@ -11356,6 +11387,7 @@ void Actor::PhysicsResponse()
 						{
 							//cout << "frames in air: " << framesInAir << endl;
 							action = GRAVREVERSE;
+							
 						}
 						else
 						{

@@ -391,6 +391,7 @@ struct Actor : QuadTreeCollider,
 	double bounceBoostSpeed;
 	double steepSlideGravFactor;
 	double steepSlideFastGravFactor;
+	double storedReverseSpeed;
 
 	double steepClimbGravFactor;
 	double steepClimbFastFactor;

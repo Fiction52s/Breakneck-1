@@ -42,6 +42,8 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 		cout << "failed to load: " << s << endl;
 		assert( false );
 	}
+
+
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;
 	t->sourceName = s;

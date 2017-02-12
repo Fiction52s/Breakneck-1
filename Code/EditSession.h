@@ -1338,7 +1338,8 @@ struct EditSession : GUIHandler
 	EnvType environmentType;
 	int envLevel;
 
-	void ExtendPolygon();
+	void ExtendPolygon( TerrainPoint *startPoint,
+		TerrainPoint *endPoint, PolyPtr inProgress );
 	bool showPoints;
 	boost::shared_ptr<TerrainPolygon> extendingPolygon;
 	TerrainPoint *extendingPoint;

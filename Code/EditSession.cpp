@@ -7535,19 +7535,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 
 									if( !done )
 									{
-										extendingPolygon->Extend( extendingPoint, curr, polygonInProgress );
-
-										ExtendAdd();
-
-										//polygonInProgress->points.clear();
-										//polygonInProgress->Reset();
-										//cout << "EXTENDING POLYGON" << endl;
-									
-
-										polygonInProgress->Reset();
-
-										extendingPolygon = NULL;
-										extendingPoint = NULL;
+										ExtendPolygon( extendingPoint, curr, polygonInProgress );
 										done = true;
 									}
 										//else if( extendEndTemp != NULL )
@@ -8401,7 +8389,9 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 						enemyEdgePolygon = NULL;
 				
 						double testRadius = 200;
-					
+						
+						if( inversePolygon != NULL )
+							polygons.push_back( inversePolygon );
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
 							if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
@@ -8498,6 +8488,8 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 								}
 							}
 						}
+						if( inversePolygon != NULL )
+							polygons.pop_back();
 					}
 				}
 
@@ -11452,64 +11444,120 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	}*/
 }
 
-void EditSession::ExtendPolygon()
+void EditSession::ExtendPolygon( TerrainPoint *startPoint,
+		TerrainPoint *endPoint, PolyPtr inProgress )
 {
-	if( polygonInProgress->numPoints > 1 )
+	//TerrainPolygon *p 
+	TerrainPoint *newStartPoint = NULL;
+	TerrainPoint *newEndPoint = NULL;
+	PolyPtr newPoly( new TerrainPolygon(*extendingPolygon, true ) ); //this should be false
+	//but i haven't implemented the false stuff yet
+	for( TerrainPoint *curr = newPoly->pointStart; curr != NULL; curr = curr->next )
 	{
-		//test final line
-
-		list<PolyPtr>::iterator it = polygons.begin();
-		bool added = false;
-		polygonInProgress->Finalize();
-		bool recursionDone = false;
-		PolyPtr currentBrush = polygonInProgress;
-
-			while( it != polygons.end() )
-			{
-				PolyPtr temp = (*it);
-				if( temp != currentBrush && currentBrush->IsTouching( temp.get() ) )
-				{
-					//cout << "before addi: " << (*it)->points.size() << endl;
-						
-					Add( currentBrush, temp );
-
-					polygonInProgress->Reset();
-						
-					//cout << "after adding: " << (*it)->points.size() << endl;
-					polygons.erase( it );
-
-					currentBrush = temp;
-
-					it = polygons.begin();
-
-					added = true;
-							
-					continue;
-				}
-				else
-				{
-					//cout << "not" << endl;
-				}
-				++it;
-			}
-				
-		//add final check for validity here
-				
-		if( !added )
+		if( curr->pos == startPoint->pos )
 		{
-			//polygonInProgress->Finalize();
-			//polygons.push_back( polygonInProgress );
-			//polygonInProgress = new TerrainPolygon(&grassTex );
-		}
-		else
-		{
-			polygons.push_back( currentBrush );
-			//polygonInProgress->Reset();
+			newStartPoint = curr;
+			break;
 		}
 	}
 
+	assert( newStartPoint != NULL );
+
+	for( TerrainPoint *curr = newPoly->pointStart; curr != NULL; curr = curr->next )
+	{
+		if( curr->pos == endPoint->pos )
+		{
+			newEndPoint = curr;
+			break;
+		}
+	}
+
+	assert( newEndPoint != NULL );
+
+	newPoly->Extend( newStartPoint, newEndPoint, polygonInProgress );
+
+	//PolyPtr chosen( choice );
+	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( newPoly );
+
+	progressBrush->Clear();
+	progressBrush->AddObject( sp );
+
+	Brush orig;
+	
+	SelectPtr spe = boost::dynamic_pointer_cast<ISelectable>( extendingPolygon );
+	orig.AddObject( spe );
+	
+	Action * action = new ReplaceBrushAction( &orig, progressBrush );
+	action->Perform();
+	doneActionStack.push_back( action );
+
+	ClearUndoneActions();
+
+	progressBrush->Clear();	
+
+	//ExtendAdd();
 
 	polygonInProgress->Reset();
+
+	extendingPolygon = NULL;
+	extendingPoint = NULL;
+
+	//if( polygonInProgress->numPoints > 1 )
+	//{
+	//	//test final line
+
+	//	list<PolyPtr>::iterator it = polygons.begin();
+	//	bool added = false;
+	//	polygonInProgress->Finalize();
+	//	bool recursionDone = false;
+	//	PolyPtr currentBrush = polygonInProgress;
+
+	//		while( it != polygons.end() )
+	//		{
+	//			PolyPtr temp = (*it);
+	//			if( temp != currentBrush && currentBrush->IsTouching( temp.get() ) )
+	//			{
+	//				//cout << "before addi: " << (*it)->points.size() << endl;
+	//					
+	//				Add( currentBrush, temp );
+
+	//				polygonInProgress->Reset();
+	//					
+	//				//cout << "after adding: " << (*it)->points.size() << endl;
+	//				polygons.erase( it );
+
+	//				currentBrush = temp;
+
+	//				it = polygons.begin();
+
+	//				added = true;
+	//						
+	//				continue;
+	//			}
+	//			else
+	//			{
+	//				//cout << "not" << endl;
+	//			}
+	//			++it;
+	//		}
+	//			
+	//	//add final check for validity here
+	//			
+	//	if( !added )
+	//	{
+	//		//polygonInProgress->Finalize();
+	//		//polygons.push_back( polygonInProgress );
+	//		//polygonInProgress = new TerrainPolygon(&grassTex );
+	//	}
+	//	else
+	//	{
+	//		polygons.push_back( currentBrush );
+	//		//polygonInProgress->Reset();
+	//	}
+	//}
+
+
+	//polygonInProgress->Reset();
 }
 
 void EditSession::ChooseCutPoly( TerrainPolygon *choice )
@@ -11522,10 +11570,11 @@ void EditSession::ChooseCutPoly( TerrainPolygon *choice )
 	else
 		delete cutPoly0;
 
-
+	choice->SetMaterialType( extendingPolygon->terrainWorldType, extendingPolygon->terrainVariation );
 	if( extendingPolygon->inverse )
 	{
-
+		choice->SoftReset();
+		choice->FinalizeInverse();
 	}
 
 	PolyPtr chosen( choice );
@@ -13485,6 +13534,9 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
 
+	if( inversePolygon != NULL )
+		polygons.push_back( inversePolygon );
+
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
@@ -13527,7 +13579,8 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				//int hh = trackingEnemy->height / 2;
 				//if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
 				//	&& length( newPoint - te ) < length( closestPoint - te ) )
-				if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) 
+				//dist < 100 
+				if( dist < testRadius && testQuantity >= 0 && testQuantity <= length( cu - pr ) 
 					&& length( newPoint - te ) < length( closestPoint - te ) )
 				{
 					minDistance = dist;
@@ -13578,6 +13631,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 			break;
 		}
+
 		if( testPoint.x >= (*it)->left - testRadius 
 			&& testPoint.x <= (*it)->right + testRadius
 			&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
@@ -13585,6 +13639,8 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 		}
 	}
+	if( inversePolygon != NULL )
+		polygons.pop_back();
 
 	return gi;
 

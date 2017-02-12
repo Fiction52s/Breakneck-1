@@ -1652,8 +1652,9 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		ss << ".png";
 		
 		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-		Tileset *ts_border = GetTileset( ss.str(), 8, 256 );//128 );
-
+		Tileset *ts_border = GetTileset( ss.str(), 8, 64 );//128 );
+		ts_border->texture->setSmooth( true );
+		//ts_border->texture->setSmooth( true );
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
 		VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
@@ -3636,7 +3637,7 @@ bool GameSession::OpenFile( string fileName )
 			ss << ".png";
 		
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 8, 256 );
+			Tileset *ts_border = GetTileset( ss.str(), 8, 64 );
 
 			
 
@@ -6805,14 +6806,14 @@ int GameSession::Run( string fileN )
 
 			if( showTerrainDecor )
 			{
-			if( listVAIter->triva != NULL )
-				preScreenTex->draw( *listVAIter->triva, rs );
-
+			//if( listVAIter->triva != NULL )
+			//	preScreenTex->draw( *listVAIter->triva, rs );
+			//preScreenTex->setSmooth( true );
 			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
-
+			//preScreenTex->setSmooth( false );
 			if( listVAIter->bushVA != NULL )
 			{
 				RenderStates bushRS;
@@ -9179,8 +9180,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
 
-			double out = 40;//16;
-			double in = 256 - out;//; - out;
+			double out = 16;//40;//16;
+			double in = 64 - out;//256 - out;//; - out;
 			
 
 			V2d startInner = te->v0 - along * test - other * in;
@@ -9191,7 +9192,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				//worldNum * 5
 				//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
-				int realIndex = valid * 32 + varietyCounter;
+				int realIndex = valid * 8 + varietyCounter;//32 + varietyCounter;
 				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
 				IntRect sub = ts->GetSubRect( realIndex );
 				//cout << "left: " << sub.left << ", top: " << sub.top << 
@@ -9205,8 +9206,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				V2d currEndInner = startInner + endAlong * along;
 				V2d currEndOuter = startOuter + endAlong * along;
 						
-				double realHeight0 = 256;//in;//sub.height;
-				double realHeight1 = 256;//in;//sub.height;
+				double realHeight0 = 64;//256;//in;//sub.height;
+				double realHeight1 = 64;//256;//in;//sub.height;
 				
 				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
 				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
@@ -9261,8 +9262,17 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				//}
 				//else
 				{
-					va[extra + i * 4 + 0].position = Vector2f( currStartOuter.x, currStartOuter.y );
-					va[extra + i * 4 + 3].position = Vector2f( currStartInner.x, currStartInner.y );
+					Vector2f a = Vector2f( currStartOuter.x, currStartOuter.y );
+					Vector2f b = Vector2f( currStartInner.x, currStartInner.y );
+					/*a += Vector2f( .5, .5 );
+					b += Vector2f( .5, .5 );
+					a.x = floor( a.x );
+					a.y = floor( a.y );
+					b.x = floor( b.x );
+					b.y = floor( b.y );*/
+
+					va[extra + i * 4 + 0].position = a;
+					va[extra + i * 4 + 3].position = b;
 				}
 
 				/*if( i == numQuads - 1 && d1 <= 0 )
@@ -9280,8 +9290,18 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				}
 				else*/
 				{
-					va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
-					va[extra + i * 4 + 1].position = Vector2f( currEndOuter.x, currEndOuter.y );
+					Vector2f c = Vector2f( currEndInner.x, currEndInner.y);
+					Vector2f d = Vector2f( currEndOuter.x, currEndOuter.y);
+
+					/*c += Vector2f( .5, .5 );
+					d += Vector2f( .5, .5 );
+					c.x = floor( c.x );
+					c.y = floor( c.y );
+					d.x = floor( d.x );
+					d.y = floor( d.y );*/
+
+					va[extra + i * 4 + 2].position = c;
+					va[extra + i * 4 + 1].position = d;
 				}
 
 				/*va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
@@ -9299,7 +9319,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				va[extra + i * 4 + 3].color = COLOR_TEAL;
 */
 				++varietyCounter;
-				if( varietyCounter == 32 )
+				if( varietyCounter == 8 )//32 )
 				{
 					varietyCounter = 0;
 				}
@@ -9906,10 +9926,10 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		qt = terrainBGTree;
 	}
 
-	double tw = 256;//64;//8;
-	double th = 256;
+	double tw = 64;//256;//64;//8;
+	double th = 64;//256;
 
-	int out = 40;
+	int out = 16;//40;
 	int in = th - out;
 	assert( qt != NULL );
 
@@ -10157,8 +10177,8 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 				//add (worldNum * 5) to realIndex to get the correct borders
 			
 
-			int realIndex = valid * 32;
-			int realOther = otherValid * 32;
+			int realIndex = valid * 8;//32;
+			int realOther = otherValid * 8;// * 32;
 
 			//cout << "valid: " << valid << ", otherValid: " << otherValid << endl;
 			//cout << "norm: " << eNorm.x << ", " << eNorm.y << endl;
@@ -10182,9 +10202,23 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 			//cout << "mid: " << mid << endl;
 			//cout << "jut length: " << length( jutPoint - point ) << endl;
 
-			va[extra + 0].position = Vector2f( point.x, point.y );
-			va[extra + 1].position = Vector2f( currInPoint.x, currInPoint.y );
-			va[extra + 2].position = Vector2f( jutPoint.x, jutPoint.y );
+			Vector2f pa = Vector2f( point.x, point.y );
+			Vector2f pb = Vector2f( currInPoint.x, currInPoint.y );
+			Vector2f pc = Vector2f( jutPoint.x, jutPoint.y );
+
+			/*pa += Vector2f( .5, .5 );
+			pb += Vector2f( .5, .5 );
+			pc += Vector2f( .5, .5 );
+			pa.x = floor( pa.x );
+			pa.y = floor( pa.y );
+			pb.x = floor( pb.x );
+			pb.y = floor( pb.y );
+			pc.x = floor( pc.x );
+			pc.y = floor( pc.y );*/
+
+			va[extra + 0].position = pa;
+			va[extra + 1].position = pb;
+			va[extra + 2].position = pc;
 
 			/*va[extra + i*3 + 0].color = Color::Red;
 			va[extra + i*3 + 1].color = Color::Green;

@@ -415,9 +415,12 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
 	:ISelectable( ISelectable::TERRAIN )
 {
-	inverse = false;
+	inverse = poly.inverse;
 	grassTex = poly.grassTex;
-	if(  pointsOnly )
+	terrainWorldType = poly.terrainWorldType;
+	terrainVariation = poly.terrainVariation;
+	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
+	if( pointsOnly )
 	{
 		va = NULL;
 		lines = NULL;
@@ -1852,7 +1855,23 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 		jt = it;
 		it = it->next;
 	}
-	return c;
+
+	if( !inverse )
+	{
+		return c;
+	}
+	else
+	{
+		return !c;
+		/*double inverseRange;
+		if( !c )
+		{
+			for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+			{
+				if( length( V2d( testPoint.x, testPoint.y ) - V2d( curr->pos.x, curr->pos.y ) ) >  )
+			}
+		}*/
+	}
 }
 
 void TerrainPolygon::FixWinding()
