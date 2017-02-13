@@ -724,9 +724,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::VertexArray *plantva;
 		sf::VertexArray *decorLayer0va;
 		sf::VertexArray *bushVA;
+		bool inverse;
 		Tileset *ts_plant;
 		Tileset *ts_terrain;
 		Tileset *ts_bush; //plant = surface
+		int numPoints;
 		//bush = middle area
 		
 		sf::Shader *pShader;
@@ -750,9 +752,23 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	};
 	TestVA *listVA;
 	std::string queryMode;
+
+	/*struct ListableEdge
+	{
+		Edge *edge;
+		Edge *next;
+	};*/
+
+	TestVA *inversePoly;
+	void SetupInversePoly( Tileset *ts_bush );
+	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
+	bool drawInversePoly;
 	QuadTree *borderTree;
+	Edge *inverseEdgeList;
 	std::list<TestVA*> allVA;
 	int numBorders;
+
+	
 
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
@@ -798,6 +814,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree * crawlerReverserTree;
 	QuadTree *envPlantTree;
 	QuadTree *specterTree;
+	QuadTree *inverseEdgeTree;
 	CrawlerReverser *drawCrawlerReversers;
 	
 	//std::map<Edge*, Gate*> gateMap;

@@ -199,6 +199,8 @@ MainMenu::~MainMenu()
 
 void MainMenu::Init()
 {
+
+	cout << "init started" << endl;
 	ts_saveMenuBG = tilesetManager.GetTileset( "Menu/save_bg_1920x1080.png", 1920, 1080 );
 	ts_saveMenuKinFace = tilesetManager.GetTileset( "Menu/save_menu_kin_256x256.png", 256, 256 );
 	ts_saveMenuSelect = tilesetManager.GetTileset( "Menu/save_select_710x270.png", 710, 270 );
@@ -285,6 +287,7 @@ void MainMenu::Init()
 	asteroidFrameBack = asteroidScrollFrames0 / 2;
 	asteroidFrameFront = asteroidScrollFrames1 / 2;
 
+	cout << "init finished" << endl;
 
 	//parBack = new Parallax();
 	//parFront = new Parallax();

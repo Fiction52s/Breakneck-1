@@ -876,6 +876,8 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	terrainBGTree = new QuadTree( 1000000, 1000000 );
 	//soon make these the actual size of the bordered level
 	terrainTree = new QuadTree( 1000000, 1000000 );
+
+	inverseEdgeTree = new QuadTree( 1000000, 1000000 );
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
 	//testTree->debug = rw;
@@ -1008,6 +1010,7 @@ GameSession::~GameSession()
 	
 
 	delete terrainTree;
+	delete inverseEdgeTree;
 	delete enemyTree;
 	delete lightTree;
 	delete grassTree;
@@ -1653,7 +1656,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		
 		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 		Tileset *ts_border = GetTileset( ss.str(), 8, 64 );//128 );
-		ts_border->texture->setSmooth( true );
+		//ts_border->texture->setSmooth( true );
 		//ts_border->texture->setSmooth( true );
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
@@ -1664,12 +1667,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		VertexArray *wallVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsWall );
 
-		
-
-
 		bool first = true;
-			
-		
 
 		TestVA * testva = new TestVA;
 		testva->next = NULL;
@@ -1681,6 +1679,8 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		testva->terrainVA = polygonVA;
 		testva->grassVA = NULL;//grassVA;
 
+		testva->numPoints = polyPoints;
+
 		testva->ts_border = ts_border;
 		testva->groundva = groundVA;
 		testva->slopeva = slopeVA;
@@ -1689,20 +1689,24 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		
 			
 		//cout << "before insert border: " << insertCount << endl;
-		borderTree->Insert( testva );
-		allVA.push_back( testva );
+		//if( !inverse )
+		//{
+			borderTree->Insert( testva );
+			allVA.push_back( testva );
+	//	}
 
 		//cout << "after insert border: " << insertCount << endl;
 		//insertCount++;
 			
 
+		
 		delete cdt;
 		for( int i = 0; i < polyPoints; ++i )
 		{
 			delete polyline[i];
 		//	delete tris[i];
 		}
-
+		
 		//no grass for now
 	}
 }
@@ -3271,6 +3275,25 @@ bool GameSession::OpenFile( string fileName )
 		is >> goalPos.x;
 		is >> goalPos.y;
 
+		string hasBorderPolyStr;
+		is >> hasBorderPolyStr;
+		bool hasBorderPoly;
+		bool hasReadBorderPoly;
+		if( hasBorderPolyStr == "borderpoly" )
+		{
+			hasBorderPoly = true;
+			hasReadBorderPoly = false;
+		}
+		else if( hasBorderPolyStr == "no_borderpoly" )
+		{
+			hasBorderPoly = false;
+			hasReadBorderPoly = true;
+		}
+		else
+		{
+			assert( 0 && "error reading borderpoly info" );
+		}
+
 		int pointsLeft = numPoints;
 
 		int pointCounter = 0;
@@ -3283,12 +3306,19 @@ bool GameSession::OpenFile( string fileName )
 
 		while( pointCounter < numPoints )
 		{
+			bool inverse = false;
+			if( !hasReadBorderPoly )
+			{
+				hasReadBorderPoly = true;
+				inverse = true;
+			}
+			
+
 			int matWorld;
 			is >> matWorld;
 
 			int matVariation;
 			is >> matVariation;
-
 			
 			//matWorld = 6;
 			//matWorld = 2;
@@ -3325,6 +3355,11 @@ bool GameSession::OpenFile( string fileName )
 					ee->v1 = points[currentEdgeIndex];
 
 				terrainTree->Insert( ee );
+
+				if( inverse )
+				{
+					inverseEdgeTree->Insert( ee );
+				}
 
 				double localLeft = min( ee->v0.x, ee->v1.x );
 				double localRight = max( ee->v0.x, ee->v1.x );
@@ -3432,82 +3467,44 @@ bool GameSession::OpenFile( string fileName )
 
 				grassTree->Insert( g );
 			}
+			TestVA * testva = NULL;
+			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
 
-			vector<p2t::Point*> polyline;
-			for( int i = 0; i < polyPoints; ++i )
+			if( !inverse )
 			{
-				polyline.push_back( new p2t::Point( points[currentEdgeIndex +i].x, points[currentEdgeIndex +i].y ) );
+				vector<p2t::Point*> polyline;
+				for( int i = 0; i < polyPoints; ++i )
+				{
+					polyline.push_back( new p2t::Point( points[currentEdgeIndex +i].x, points[currentEdgeIndex +i].y ) );
+				}
 
-			}
+				p2t::CDT * cdt = new p2t::CDT( polyline );
 
+
+				//cdt->add
 			
-			
-			p2t::CDT * cdt = new p2t::CDT( polyline );
+				vector<p2t::Triangle*> tris;
 
-
-			//cdt->add
-			
-			vector<p2t::Triangle*> tris;
-
-			cdt->Triangulate();
+				cdt->Triangulate();
 				
-			tris = cdt->GetTriangles();
-			//int adjustedCount = 0;
-			////do
-			//for( int j = 0; j < 1; ++j )
-			//{
-			//	adjustedCount = 0;
-			//	cdt->Triangulate();
-			//	
-			//	tris = cdt->GetTriangles();
-
-			//	for( int i = 0; i < tris.size(); ++i )
-			//	{
-			//		p2t::Point *p = tris[i]->GetPoint( 0 );	
-			//		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-			//		p2t::Point *p2 = tris[i]->GetPoint( 2 );
-
-			//		V2d pp0( p->x, p->y );
-			//		V2d pp1( p1->x, p1->y );
-			//		V2d pp2( p2->x, p2->y );
-
-			//		int f = 200;
-			//		if( length( pp0 - pp1 ) > f || length( pp0 - pp2 ) > f
-			//			|| length( pp1 - pp2 ) > f )
-			//		{
-			//			adjustedCount++;
-			//			p2t::Point *pNew = new p2t::Point;
-			//			V2d mid = ( pp0 + pp1 + pp2 ) / 3.0;
-			//			pNew->x = mid.x;
-			//			pNew->y = mid.y;
-			//			cdt->AddPoint( pNew );
-			//		}
-			//	}
-			//}
-
-			//if( adjustedCount > 0 )
-			//{
-			//	cdt->Triangulate();
-			//	
-			//	tris = cdt->GetTriangles();
-			//}
-			//while( adjustedCount > 0 );
-
-			va = new VertexArray( sf::Triangles , tris.size() * 3 );
-			VertexArray & v = *va;
-			Color testColor( 0x75, 0x70, 0x90 );
-			testColor = Color::White;
-			Vector2f topLeft( left, top );
-			//cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
-			for( int i = 0; i < tris.size(); ++i )
-			{	
-				p2t::Point *p = tris[i]->GetPoint( 0 );	
-				p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-				p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-				v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-				v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-				v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
-				/*Vector2f pp0 = (v[i*3].position - topLeft);
+				tris = cdt->GetTriangles();
+																																						
+			
+				va = new VertexArray( sf::Triangles , tris.size() * 3 );
+				VertexArray & v = *va;
+				Color testColor( 0x75, 0x70, 0x90 );
+				testColor = Color::White;
+				Vector2f topLeft( left, top );
+				//cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
+				for( int i = 0; i < tris.size(); ++i )
+				{	
+					p2t::Point *p = tris[i]->GetPoint( 0 );	
+					p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+					p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+					v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+					v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+					v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+																			/*Vector2f pp0 = (v[i*3].position - topLeft);
 				Vector2f pp1 = (v[i*3+1].position - topLeft);
 				Vector2f pp2 = (v[i*3+2].position - topLeft);
 				pp0 = Vector2f( (int)pp0.x % 1024, (int)pp0.y % 1024 );
@@ -3523,9 +3520,51 @@ bool GameSession::OpenFile( string fileName )
 				v[i*3].texCoords = pp0;
 				v[i*3+1].texCoords = pp1;
 				v[i*3+2].texCoords = pp2;*/
-			}
+				}
 
-			polygons.push_back( va );
+				double polygonArea = 0;
+				for( vector<p2t::Triangle*>::iterator it = tris.begin();
+					it != tris.end(); ++it )
+				{
+					polygonArea += GetTriangleArea( (*it) );
+				}
+
+				VertexArray *bushVA = SetupBushes( 0,  tris, ts_bush );
+
+				testva = new TestVA;
+				testva->polyArea = polygonArea;
+				testva->bushVA = bushVA;
+				//testva->va = va;
+				testva->aabb.left = left;
+				testva->aabb.top = top;
+				testva->aabb.width = right - left;
+				testva->aabb.height = bottom - top;
+				testva->terrainVA = va;
+
+				polygons.push_back( va );
+
+				delete cdt;
+				for( int i = 0; i < polyPoints; ++i )
+				{
+					delete polyline[i];
+				}
+
+			}
+			else
+			{
+				inversePoly = new TestVA;
+				inversePoly->numPoints = polyPoints;
+				//testva->va = va;
+				inversePoly->aabb.left = left;
+				inversePoly->aabb.top = top;
+				inversePoly->aabb.width = right - left;
+				inversePoly->aabb.height = bottom - top;
+				//testva->ts_bush = ts_bush;
+				SetupInversePoly( ts_bush );
+				testva = inversePoly;
+				testva->ts_bush = ts_bush;
+				//va = NULL;
+			}
 
 			VertexArray *polygonVA = va;
 
@@ -3548,79 +3587,70 @@ bool GameSession::OpenFile( string fileName )
 			
 			if( numGrassTotal > 0 )
 			{
-			grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
+				grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
-			//cout << "num grass total: " << numGrassTotal << endl;
-			VertexArray &grassVa = *va;
+				//cout << "num grass total: " << numGrassTotal << endl;
+				VertexArray &grassVa = *va;
 
-			int segIndex = 0;
-			int totalGrass = 0;
-			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
-			{	
-				Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
-				V2d v0 = segEdge->v0;
-				V2d v1 = segEdge->v1;
+				int segIndex = 0;
+				int totalGrass = 0;
+				for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+				{	
+					Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
+					V2d v0 = segEdge->v0;
+					V2d v1 = segEdge->v1;
 
-				int start = (*it).index;
-				int end = (*it).index + (*it).reps;
+					int start = (*it).index;
+					int end = (*it).index + (*it).reps;
 
-				int grassCount = (*it).reps + 1;
-				//cout << "Grasscount: " << grassCount << endl;
+					int grassCount = (*it).reps + 1;
+					//cout << "Grasscount: " << grassCount << endl;
 
-				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+					double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
 
-				int num = floor( remainder ) + 1;
+					int num = floor( remainder ) + 1;
 
-				for( int i = 0; i < grassCount; ++i )
-				{
-					//cout << "indexing at: " << i*4 + segIndex * 4 << endl;
-					V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
-					Vector2f pos( posd.x, posd.y );
+					for( int i = 0; i < grassCount; ++i )
+					{
+						//cout << "indexing at: " << i*4 + segIndex * 4 << endl;
+						V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
+						Vector2f pos( posd.x, posd.y );
 
-					Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
-					Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
-					Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
-					Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+						Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+						Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+						Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+						Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
 
-					//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+							//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
 					//borderVa[i*4].color.a = 10;
-					grassVa[(i+totalGrass)*4].position = topLeft;
-					grassVa[(i+totalGrass)*4].texCoords = Vector2f( 0, 0 );
+						grassVa[(i+totalGrass)*4].position = topLeft;
+						grassVa[(i+totalGrass)*4].texCoords = Vector2f( 0, 0 );
 
-					//grassVa[i*4+1].color = Color::Blue;
+							//grassVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
-					grassVa[(i+totalGrass)*4+1].position = bottomLeft;
-					grassVa[(i+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
+						grassVa[(i+totalGrass)*4+1].position = bottomLeft;
+						grassVa[(i+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
 
-					//grassVa[i*4+2].color = Color::Blue;
+							//grassVa[i*4+2].color = Color::Blue;
 					//borderVa[i*4+2].color.a = 10;
-					grassVa[(i+totalGrass)*4+2].position = bottomRight;
-					grassVa[(i+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
+						grassVa[(i+totalGrass)*4+2].position = bottomRight;
+						grassVa[(i+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
 
-					//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+							//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 					//borderVa[i*4+3].color.a = 10;
-					grassVa[(i+totalGrass)*4+3].position = topRight;
-					grassVa[(i+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
-					//++i;
+						grassVa[(i+totalGrass)*4+3].position = topRight;
+						grassVa[(i+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
+						//++i;
+					}
+					totalGrass += grassCount;
+					segIndex++;
 				}
-				totalGrass += grassCount;
-				segIndex++;
-			}
 			}
 			else
 			{
 				grassVA = NULL;
 			}
 
-
-			
-
-			//ground, slope, steep, wall
-
-			//ground
-
-			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			//Tileset *ts_border = GetTileset( "w1_borders_128x128.png", 8, 128 );
 			stringstream ss;
 
 			ss << "Borders/bor_" << matWorld + 1 << "_";
@@ -3639,8 +3669,6 @@ bool GameSession::OpenFile( string fileName )
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 			Tileset *ts_border = GetTileset( ss.str(), 8, 64 );
 
-			
-
 			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
 			VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
@@ -3651,26 +3679,21 @@ bool GameSession::OpenFile( string fileName )
 				&GameSession::IsWall );
 
 			Tileset *ts_plant = GetTileset( "testgrass.png", 32, 32 );
-			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
+			
 
 			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
 
-
-			
-			
-
-			double polygonArea = 0;
+			/*double polygonArea = 0;
 			for( vector<p2t::Triangle*>::iterator it = tris.begin();
 				it != tris.end(); ++it )
 			{
 				polygonArea += GetTriangleArea( (*it) );
-			}
+			}*/
 
+			
+			//testva->polyArea = polygonArea;
 
-			TestVA * testva = new TestVA;
-			testva->polyArea = polygonArea;
-
-			VertexArray *bushVA = SetupBushes( 0,  tris, ts_bush );
+			
 
 			//now that I have the area, get a number of random points
 			//around the polygon based on how much area there is. 
@@ -3693,15 +3716,11 @@ bool GameSession::OpenFile( string fileName )
 			
 			testva->plantva = NULL; //temporary
 			testva->next = NULL;
-			//testva->va = va;
-			testva->aabb.left = left;
-			testva->aabb.top = top;
-			testva->aabb.width = right - left;
-			testva->aabb.height = bottom - top;
-			testva->terrainVA = polygonVA;
+			
+			
 			testva->grassVA = grassVA;
 			testva->ts_bush = ts_bush;
-			testva->bushVA = bushVA;
+			//testva->bushVA = bushVA;
 			
 
 			testva->ts_border = ts_border;
@@ -3725,12 +3744,7 @@ bool GameSession::OpenFile( string fileName )
 			insertCount++;
 			
 
-			delete cdt;
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				delete polyline[i];
-			//	delete tris[i];
-			}
+			
 
 			//cout << "loaded to here" << endl;
 			++polyCounter;
@@ -5061,7 +5075,9 @@ void GameSession::SetupZones()
 
 int GameSession::Run( string fileN )
 {
-	
+	//cout << "game session run" << endl;
+	//should this always start as true?
+	drawInversePoly = true;
 	showDebugDraw = false;
 
 	fadingIn = false;
@@ -6372,6 +6388,7 @@ int GameSession::Run( string fileN )
 				numBorders = 0;
 				borderTree->Query( this, screenRect );
 
+				drawInversePoly = ScreenIntersectsInversePoly( screenRect );
 
 				TestVA *te = listVA;
 				while( te != NULL )
@@ -6750,6 +6767,20 @@ int GameSession::Run( string fileN )
 
 		UpdateTerrainShader( screenRect );
 
+		if( drawInversePoly )
+		{
+			if( listVAIter == NULL )
+			{
+				listVAIter = inversePoly;
+				inversePoly->next = NULL;
+			}
+			else
+			{
+				listVAIter->next = inversePoly;
+				inversePoly->next = NULL;
+			}
+		}
+
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
@@ -6780,15 +6811,7 @@ int GameSession::Run( string fileN )
 				polyAndScreen.top = top;
 				polyAndScreen.width = right - left;
 				polyAndScreen.height = bottom - top;
-				
-				//UpdateTerrainShader( polyAndScreen );//listVAIter->aabb );
-				
-				/*sf::RectangleShape rs( Vector2f( listVAIter->aabb.width, listVAIter->aabb.height ) );
-				rs.setPosition( listVAIter->aabb.left, listVAIter->aabb.top );
-				rs.setOutlineColor( Color::Red );
-				rs.setOutlineThickness( 3 );
-				rs.setFillColor( Color::Transparent );
-				preScreenTex->draw( rs );*/
+			
 				assert( listVAIter->pShader != NULL );
 				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->pShader );// listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
 			}
@@ -6838,7 +6861,6 @@ int GameSession::Run( string fileN )
 			listVAIter = listVAIter->next;
 			timesDraw++; 
 		}
-	
 		
 		preScreenTex->draw( *goalVAstuff, &flowShader );
 
@@ -8304,6 +8326,38 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		
 	}
+	else if( queryMode == "inverseborder" )
+	{
+		if( inverseEdgeList == NULL )
+		{
+			inverseEdgeList = (Edge*)qte;
+			inverseEdgeList->info = NULL;
+			//numBorders++;
+		}
+		else
+		{
+			
+			Edge *tva = (Edge*)qte;
+			Edge *temp = inverseEdgeList;
+			bool okay = true;
+			while( temp != NULL )
+			{
+				if( temp == tva )
+				{
+					okay = false;
+					break;
+				}	
+				temp = (Edge*)temp->info;//->edge1;
+			}
+
+			if( okay )
+			{
+				tva->info = (void*)inverseEdgeList;
+				inverseEdgeList = tva;
+			}
+		}
+		
+	}
 	else if( queryMode == "lightdisplay" )
 	{
 		if( lightList == NULL )
@@ -8425,6 +8479,117 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			eva[ep->vaIndex + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
 		}
 		//va[ep->
+	}
+}
+
+bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
+{
+	double extra = 32; //for some buffer room
+
+	screenRect.left -= extra;
+	screenRect.top -= extra;
+	screenRect.width += extra * 2;
+	screenRect.height += extra * 2;
+
+	inverseEdgeList = NULL;
+	queryMode = "inverseborder";
+	Edge *curr = inverseEdgeList;
+	while( curr != NULL )
+	{
+		if( IsEdgeTouchingBox( curr, screenRect ) )
+		{
+			return true;
+		}
+		curr = (Edge*)curr->info;
+	}
+
+	return false;
+
+	//IsEdgeTouchingBox
+}
+
+void GameSession::SetupInversePoly( Tileset *ts_bush )
+{
+	assert( inversePoly != NULL );
+
+	sf::Rect<double> aabb = inversePoly->aabb;
+
+	double testExtra = 500;
+
+	sf::Rect<double> finalRect = aabb;
+	finalRect.left -= testExtra;
+	finalRect.top -= testExtra;
+	finalRect.width += testExtra * 2;
+	finalRect.height += testExtra * 2;
+
+	vector<p2t::Point*> outerQuadPoints;
+	outerQuadPoints.push_back( new p2t::Point( finalRect.left, finalRect.top ) );
+	outerQuadPoints.push_back( new p2t::Point( finalRect.left + finalRect.width, finalRect.top ) );
+	outerQuadPoints.push_back( new p2t::Point( finalRect.left + finalRect.width, finalRect.top + finalRect.height ) );
+	outerQuadPoints.push_back( new p2t::Point( finalRect.left, finalRect.top + finalRect.height ) );
+
+	p2t::CDT * cdt = new p2t::CDT( outerQuadPoints );
+
+	vector<p2t::Point*> polyline;
+	for( int i = 0; i < inversePoly->numPoints; ++i )
+	{
+		
+		//inverse polygon will always be the first set of points in the list
+		polyline.push_back( new p2t::Point( points[i].x, points[i].y ) );
+		//cout << "polyline: " << polyline.back()->x << ", " << polyline.back()->y << endl;
+	}
+
+	//cut a hole in the polygon
+	cdt->AddHole( polyline );
+			
+	vector<p2t::Triangle*> tris;
+
+	cdt->Triangulate();
+				
+	tris = cdt->GetTriangles();
+
+	va = new VertexArray( sf::Triangles , tris.size() * 3 );
+	VertexArray & v = *va;
+	Color testColor( 0x75, 0x70, 0x90 );
+	testColor = Color::White;
+	//Vector2f topLeft( left, top );
+	//cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
+	for( int i = 0; i < tris.size(); ++i )
+	{	
+		p2t::Point *p = tris[i]->GetPoint( 0 );	
+		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+		v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+	}
+
+	inversePoly->terrainVA = va;
+
+	double polygonArea = 0;
+	for( vector<p2t::Triangle*>::iterator it = tris.begin();
+		it != tris.end(); ++it )
+	{
+		polygonArea += GetTriangleArea( (*it) );
+	}
+
+	inversePoly->polyArea = polygonArea;
+
+	VertexArray *bushVA = SetupBushes( 0,  tris, ts_bush );
+
+	inversePoly->bushVA = bushVA;
+
+	//polygons.push_back( va );
+
+	delete cdt;
+	for( int i = 0; i < inversePoly->numPoints; ++i )
+	{
+		delete polyline[i];
+	}
+	
+	for( int i = 0; i < 4; ++i )
+	{
+		delete outerQuadPoints[i];
 	}
 }
 

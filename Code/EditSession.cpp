@@ -2646,16 +2646,19 @@ void EditSession::WriteFile(string fileName)
 	{
 		of << "no_borderpoly" << endl;
 	}
+	cout << "writing to file with : " << polygons.size() << " polygons" << endl;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		if( (*it)->layer == 0 && (*it)->path.size() < 2 )
 		{
+			cout << "writing polygon of write index: " << writeIndex << endl;
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
 			of << (*it)->terrainWorldType << " " 
 				<< (*it)->terrainVariation << endl;
 
+			cout << "numpoints: " << (*it)->numPoints << endl;
 			of <<  (*it)->numPoints << endl;
 
 			for( TerrainPoint *pcurr = (*it)->pointStart;  pcurr != NULL; pcurr = pcurr->next )
