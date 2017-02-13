@@ -2649,6 +2649,7 @@ void EditSession::WriteFile(string fileName)
 	cout << "writing to file with : " << polygons.size() << " polygons" << endl;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
+		//cout << "layerrr: " << (*it)->layer << ", pathsize: " << (*it)->path.size() << endl;
 		if( (*it)->layer == 0 && (*it)->path.size() < 2 )
 		{
 			cout << "writing polygon of write index: " << writeIndex << endl;
@@ -7744,6 +7745,16 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 												Vector2f( progCurr->pos.x, progCurr->pos.y ) );
 											if( extendingPolygon->inverse )
 												contains = !contains;
+
+											/*if( polygonInProgress->numPoints == 1 )
+											{
+												contains = true;
+											}
+											cout << "polygonin projgresaghgg: " << polygonInProgress->numPoints << endl;*/
+
+											//okay this is buggy fix it in the morning. trying to make small cuts with
+											//no in between points
+
 											if( contains )
 											{
 												extendingPolygon->Cut( extendingPoint, curr, polygonInProgress );	

@@ -415,6 +415,7 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
 TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
 	:ISelectable( ISelectable::TERRAIN )
 {
+	layer = 0;
 	inverse = poly.inverse;
 	grassTex = poly.grassTex;
 	terrainWorldType = poly.terrainWorldType;
@@ -1217,7 +1218,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 
 void TerrainPolygon::Cut( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress )
 {
-	if( inProgress->numPoints < 2 )
+	if( inProgress->numPoints < 1 )
 	{
 		return;
 	}
@@ -1288,6 +1289,7 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 
 	}
 
+	//if I try to just go from one edge to another it chooses for me?
 	if( inProgress->numPoints < 2 )
 	{
 		return;
