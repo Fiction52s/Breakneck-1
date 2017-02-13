@@ -7739,18 +7739,18 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									for( TerrainPoint *progCurr = polygonInProgress->pointStart;
 										progCurr != NULL; progCurr = progCurr->next )
 									{
-										if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
+										//if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
 										{
 											bool contains = extendingPolygon->ContainsPoint( 
 												Vector2f( progCurr->pos.x, progCurr->pos.y ) );
 											if( extendingPolygon->inverse )
 												contains = !contains;
 
-											/*if( polygonInProgress->numPoints == 1 )
+											if( polygonInProgress->numPoints == 1 )
 											{
 												contains = true;
 											}
-											cout << "polygonin projgresaghgg: " << polygonInProgress->numPoints << endl;*/
+											//cout << "polygonin projgresaghgg: " << polygonInProgress->numPoints << endl;
 
 											//okay this is buggy fix it in the morning. trying to make small cuts with
 											//no in between points
