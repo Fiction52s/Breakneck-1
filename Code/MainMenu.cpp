@@ -28,6 +28,7 @@ int MainMenu::masterVolume = 100;
 MainMenu::MainMenu()
 	:controller( 0 ), windowWidth(1920), windowHeight( 1080 )
 {
+	cout << "start mm constfr" << endl;
 	//load a preferences file at some point for window resolution and stuff
 
 	//could be bad cuz its static
@@ -140,7 +141,7 @@ MainMenu::MainMenu()
 		windowWidth /= 2;
 		windowHeight /= 2;
 	}*/
-
+	cout << "start mm constr 222" << endl;
 	if( !fullWindow )
 	{
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/

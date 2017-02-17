@@ -5446,11 +5446,12 @@ int GameSession::Run( string fileN )
 			break;
 		}*/
 
-		ss1 << ".png";
-		ts_polyShaders[index] = GetTileset( ss1.str(), 1024, 1024 );
+		ss1 << "_512x512.png";
+		ts_polyShaders[index] = GetTileset( ss1.str(), 512, 512 ); //1024, 1024 );
 		cout << "loading: " << ss1.str() << endl;
 		polyShaders[index].setParameter( "u_texture", 
-			*GetTileset( ss1.str(), 1024, 1024 )->texture );
+			//*GetTileset( ss1.str(), 1024, 1024 )->texture );
+			*GetTileset( ss1.str(), 512, 512 )->texture );
 		//polyShaders[tType]->setParameter( "u_texture", *(ts_poly->texture) );
 		polyShaders[index].setParameter( "Resolution", 1920, 1080 );
 		polyShaders[index].setParameter( "AmbientColor", 1, 1, 1, 1 );

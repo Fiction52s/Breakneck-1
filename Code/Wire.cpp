@@ -79,7 +79,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				fireDir = V2d( 0, 0 );
 
 
-				if( true )
+				if( false )
 				{
 					if( currInput.LLeft() )
 					{
@@ -119,7 +119,13 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				{
 					double angle = currInput.leftStickRadians;
 
-					angle = angle / 64.0;
+					double degs = angle / PI * 180.0;
+					double sec = 360.0 / 64.0;
+					int mult = floor( (degs / sec) + .5 );
+					angle = (PI / 32.0) * mult;
+
+
+					/*angle = angle / ( 360.0  / 64.0 );
 					int mult = floor( angle );
 					double remain = angle - ( mult * PI / 32.0 );
 					if( remain >= PI / 64.0 )
@@ -127,7 +133,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						mult++;
 					}
 
-					angle = mult * PI / 32.0;
+					angle = mult * PI / 32.0;*/
 
 
 					/*fireDir.x = cos( currInput.leftStickRadians );
@@ -201,25 +207,30 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				state = RELEASED;
 			}
 
-			if( player->ground == NULL && hitStallCounter >= hitStallFrames && triggerDown )
+			if( player->ground == NULL && !touchEdgeWithWire && hitStallCounter >= hitStallFrames && triggerDown
+				&& player->oldAction != Actor::WALLCLING && player->action != Actor::WALLCLING )
 			{
+				//cout << "playeraction: " << player->action << endl;
+				//cout << "set state pulling" << endl;
 				state = PULLING;
 			}
 			else if( player->ground != NULL && hitStallCounter >= hitStallFrames && prevTriggerDown && !triggerDown )
 			{
-				state = RELEASED;
+				//state = RELEASED;
 			}
 			break;
 		}
 	case PULLING:
 		{
-			if( !triggerDown )
+			if( !triggerDown && player->ground == NULL )
 			{
 				state = RELEASED;
 			}
-			if( touchEdgeWithWire )
+			if( triggerDown && ( touchEdgeWithWire || player->action == Actor::WALLCLING ) )
 			{
-				state = RELEASED;
+				//cout << "set state hit" << endl;
+				state = HIT;
+				//state = RELEASED;
 			}
 
 			double total = 0;
@@ -397,7 +408,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				}
 			}
 
-			if( shrinkInput && triggerDown && player->ground == NULL )
+			if( shrinkInput && triggerDown && player->ground == NULL && totalLength > 128 )
 			//if( false )
 			{
 				//totalLength -= pullStrength;

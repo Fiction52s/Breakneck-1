@@ -6331,13 +6331,39 @@ void Actor::UpdatePrePhysics()
 		V2d otherDir( totalVelDir.y, -totalVelDir.x );
 		double dotvel =dot( velocity, otherDir );
 		//correction for momentum
+
+
+
+		V2d wdirs = ( wireDir1 + wireDir2 ) / 2.0;
+		V2d owdirs( wdirs.y, -wdirs.x );
+
+		V2d inputDir;
+		if( currInput.LLeft() )
+		{
+			inputDir.x = -1;
+		}
+		else if( currInput.LRight() )
+		{
+			inputDir.x = 1;
+		}
+		if( currInput.LUp() )
+		{
+			inputDir.y = -1;
+		}
+		else if( currInput.LDown() )
+		{
+			inputDir.y = 1;
+		}
+		
+		dotvel = -dot( inputDir, owdirs );
+		double v = 1.0;
 		if( dotvel > 0 )
 		{
-			velocity += -otherDir * 1.0 / (double)slowMultiple;
+			velocity += -otherDir * v / (double)slowMultiple;
 		}
 		else if( dotvel < 0 )
 		{
-			velocity += otherDir * 1.0 / (double)slowMultiple;
+			velocity += otherDir * v / (double)slowMultiple;
 		}
 		else
 		{
@@ -6370,6 +6396,12 @@ void Actor::UpdatePrePhysics()
 		{
 			velocity -= ( afterAlongAmount - maxAlong ) * totalVelDir;
 		}
+
+		//if( length( velocity ) > afterAlongAmount )
+		//{
+		//	velocity = normalize( velocity ) * afterAlongAmount;
+		//}
+
 		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
 		///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
 	}
@@ -10556,14 +10588,23 @@ void Actor::UpdatePhysics()
 
 			int maxJumpHeightFrame = 10;
 
-			if( tempCollision && leftWire->state == Wire::PULLING )
+			if( leftWire->state == Wire::PULLING || leftWire->state == Wire::HIT )
 			{
-				touchEdgeWithLeftWire = true;
+				touchEdgeWithLeftWire = tempCollision;
+				if( action == WALLCLING )
+				{
+					touchEdgeWithLeftWire = true;
+				}
 			}
+			
 
-			if( tempCollision && rightWire->state == Wire::PULLING )
+			if( rightWire->state == Wire::PULLING || rightWire->state == Wire::HIT )
 			{
-				touchEdgeWithRightWire = true;
+				touchEdgeWithRightWire = tempCollision;
+				if( action == WALLCLING )
+				{
+					touchEdgeWithRightWire = true;
+				}
 			}
 
 			bool bounceOkay = true;
@@ -11549,13 +11590,14 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
+					cout << "zzz: " << (int)collision << endl;//wallNormal.x << ", " << wallNormal.y << endl;
 					stopWallClinging = true;
 					
 				}
 
 				if( stopWallClinging )
 				{
-					//cout << "stop wall clinging" << endl;
+					cout << "stop wall clinging" << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
 					holdJump = false;
