@@ -71,6 +71,8 @@ struct Actor : QuadTreeCollider,
 		SKYDIVETOFALL,
 		WAITFORSHIP,
 		GRABSHIP,
+		DIAGUPATTACK,
+		DIAGDOWNATTACK,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
 		SEQ_CRAWLERFIGHT_STAND,
@@ -106,6 +108,8 @@ struct Actor : QuadTreeCollider,
 		S_TIMESLOW,
 		S_ENTER,
 		S_EXIT,
+		S_DIAGUPATTACK,
+		S_DIAGDOWNATTACK,
 		S_Count
 	};
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
@@ -221,6 +225,8 @@ struct Actor : QuadTreeCollider,
 
 	void CheckHoldJump();
 
+	void BounceFlameOff();
+
 	void SetActivePowers(
 		bool canAirDash,
 		bool canGravReverse,
@@ -313,6 +319,12 @@ struct Actor : QuadTreeCollider,
 
 	sf::Sprite steepClimbAttackSword;
 	Tileset *ts_steepClimbAttackSword[3];
+
+	sf::Sprite diagUpAttackSword;
+	Tileset *ts_diagUpSword[3];
+
+	sf::Sprite diagDownAttackSword;
+	Tileset *ts_diagDownSword[3];
 
 	Tileset *ts_bounceRun;
 	Tileset *ts_bounceSprint;
@@ -411,6 +423,9 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> wallHitboxes;
 	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
 	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
+	std::map<int, std::list<CollisionBox>*> diagUpHitboxes;
+	std::map<int, std::list<CollisionBox>*> diagDownHitboxes;
+
 
 	double steepThresh;
 
@@ -492,6 +507,7 @@ struct Actor : QuadTreeCollider,
 	Edge *grindEdge;
 	sf::Vector2<double> lungeNormal;
 	double grindLungeSpeed;
+	double grindLungeExtraMax;
 	MovingTerrain *grindMovingTerrain;
 	double grindQuantity;
 	double grindSpeed;
@@ -548,7 +564,7 @@ struct Actor : QuadTreeCollider,
 	bool touchEdgeWithRightWire;
 
 	Edge *bounceEdge;
-	MovingTerrain *bounceMovingTerrain;
+	MovingTerrain *bounceMovingTerrain; //not used
 	double bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;
@@ -809,7 +825,8 @@ struct PlayerGhost
 	std::map<int, std::list<CollisionBox>*> wallHitboxes;
 	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
 	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
-
+	std::map<int, std::list<CollisionBox>*> diagUpHitboxes;
+	std::map<int, std::list<CollisionBox>*> diagDownHitboxes;
 
 
 };

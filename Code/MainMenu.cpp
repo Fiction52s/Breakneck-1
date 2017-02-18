@@ -141,6 +141,7 @@ MainMenu::MainMenu()
 		windowWidth /= 2;
 		windowHeight /= 2;
 	}*/
+	window = NULL;
 	cout << "start mm constr 222" << endl;
 	if( !fullWindow )
 	{
@@ -164,6 +165,7 @@ MainMenu::MainMenu()
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	}
 
+	assert( window != NULL );
 	window->setVerticalSyncEnabled( true );
 	std::cout << "opened window" << endl;
 	

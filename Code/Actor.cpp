@@ -23,6 +23,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		oldBounceEdge = NULL;
 		//seq = SEQ_NOTHING;
 		enemiesKilledThisFrame = 0;
 		toggleBounceInput = gs->controller.keySettings.toggleBounce;
@@ -47,6 +48,7 @@ Actor::Actor( GameSession *gs )
 		speedChangeDown = .03;//.005;//.07;
 
 		grindLungeSpeed = 15.0;
+		grindLungeExtraMax = 10.0;
 
 		speedLevel = 0;
 		speedBarTarget = 0;
@@ -163,6 +165,11 @@ Actor::Actor( GameSession *gs )
 		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Audio/Sounds/timeslow.ogg" );
 		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Audio/Sounds/enter.ogg" );
 		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Audio/Sounds/exit.ogg" );
+
+		soundBuffers[S_DIAGUPATTACK] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
+		soundBuffers[S_DIAGDOWNATTACK] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
+
+
 
 		
 
@@ -373,13 +380,49 @@ Actor::Actor( GameSession *gs )
 			}
 		}
 
+		cb.rw = 64;
+		cb.rh = 64;
+		cb.offset.x = 0;
+		cb.offset.y = -14;
+
+		for( int j = 0; j <= 12; ++j )
+		{
+			diagUpHitboxes[j] = new list<CollisionBox>;
+			diagUpHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
+				//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
+			}
+		}
+
+		cb.rw = 64;
+		cb.rh = 64;
+		cb.offset.x = 0;
+		cb.offset.y = -14;
+
+		for( int j = 0; j <= 12; ++j )
+		{
+			diagDownHitboxes[j] = new list<CollisionBox>;
+			diagDownHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
+				//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
+			}
+		}
+
 		queryMode = "";
 		wallThresh = .9999;
 		//tileset setup
 		
 
-		bounceFlameOn = false;
-		
+		BounceFlameOff();
+
 		ts_airBounceFlame = owner->GetTileset( "bouncejumpflame.png", 128, 128 );
 		ts_runBounceFlame = owner->GetTileset( "bouncerunflame.png", 128, 96 );
 
@@ -409,7 +452,13 @@ Actor::Actor( GameSession *gs )
 		tileset[FAIR] = owner->GetTileset( "fair_64x64.png", 64, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
+		actionLength[DIAGUPATTACK] = 8 * 2;
+		tileset[DIAGUPATTACK] = owner->GetTileset( "fair_64x64.png", 64, 64 );
+		normal[DIAGUPATTACK] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
+		actionLength[DIAGDOWNATTACK] = 8 * 2;
+		tileset[DIAGDOWNATTACK] = owner->GetTileset( "fair_64x64.png", 64, 64 );
+		normal[DIAGDOWNATTACK] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
 		actionLength[JUMP] = 2;
 		tileset[JUMP] = owner->GetTileset( "jump_64x64.png", 64, 64 );
@@ -662,6 +711,14 @@ Actor::Actor( GameSession *gs )
 		ts_steepClimbAttackSword[0] = owner->GetTileset( "climb_att_sworda_256x80.png", 256, 80 );
 		ts_steepClimbAttackSword[1] = owner->GetTileset( "climb_att_swordb_320x96.png", 320, 96 );
 		ts_steepClimbAttackSword[2] = owner->GetTileset( "climb_att_swordc_352x112.png", 352, 112 );
+
+		ts_diagUpSword[0] = owner->GetTileset( "fair_sworda_192x192.png", 192, 192 );
+		ts_diagUpSword[1] = owner->GetTileset( "fair_swordb_256x256.png", 256, 256 );
+		ts_diagUpSword[2] = owner->GetTileset( "fair_swordc_384x384.png", 384, 384 );
+
+		ts_diagDownSword[0] = owner->GetTileset( "fair_sworda_192x192.png", 192, 192 );
+		ts_diagDownSword[1] = owner->GetTileset( "fair_swordb_256x256.png", 256, 256 );
+		ts_diagDownSword[2] = owner->GetTileset( "fair_swordc_384x384.png", 384, 384 );
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurt_spack_128x160.png", 128, 160 );
 
@@ -1028,6 +1085,14 @@ void Actor::ActionEnded()
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
+		case DIAGUPATTACK:
+			SetActionExpr( JUMP );
+			frame = 1;
+			break;
+		case DIAGDOWNATTACK:
+			SetActionExpr( JUMP );
+			frame = 1;
+			break;
 		case WALLATTACK:
 			SetActionExpr( WALLCLING );
 			frame = 0;
@@ -1222,6 +1287,30 @@ bool Actor::AirAttack()
 {
 	if( currInput.rightShoulder && !prevInput.rightShoulder )
 	{
+		if( action == AIRDASH )
+		{
+			if( currInput.LUp() )
+			{
+				if( currInput.LRight() || currInput.LLeft() )
+				{
+					cout << "diag up attack" << endl;
+					SetAction( DIAGUPATTACK );
+					frame = 0;
+					return true;
+				}
+			}
+			else if( currInput.LDown() )
+			{
+				if( currInput.LRight() || currInput.LLeft() )
+				{
+					cout << "diag down attack" << endl;
+					SetAction( DIAGDOWNATTACK );
+					frame = 0;
+					return true;
+				}
+			}
+		}
+		
 		if( currInput.LUp() )
 		{
 			SetAction( UAIR);
@@ -1237,6 +1326,7 @@ bool Actor::AirAttack()
 			SetAction( FAIR );
 			frame = 0;
 		}
+		
 		return true;
 	}
 	return false;
@@ -1829,7 +1919,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currInput.X && !prevInput.X )
 			{
-				bounceFlameOn = false;
+				BounceFlameOff();
 				bounceGrounded = false;
 				justToggledBounce = true;
 			}
@@ -1840,6 +1930,7 @@ void Actor::UpdatePrePhysics()
 			if( !currInput.X )
 			{
 				bounceFlameOn = false;
+				oldBounceEdge = NULL;
 				bounceGrounded = false;
 			}
 		}
@@ -1880,15 +1971,15 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
+				BounceFlameOff();
 				//bounceGrounded = false;
-				bounceFlameOn = false;
 			}
 
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
 				SetActionGrind();
-				bounceFlameOn = false;
+				BounceFlameOff();
 				////runTappingSound.stop();
 				break;
 			}
@@ -1997,14 +2088,13 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
 				SetActionGrind();
-				bounceFlameOn = false;
-				////runTappingSound.stop();
+				BounceFlameOff();
 				break;
 			}
 
@@ -2189,15 +2279,14 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
-				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					BounceFlameOff();
 					action = AIRDASH;
 					airDashStall = false;
 					
@@ -2306,7 +2395,7 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
@@ -2314,8 +2403,9 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					action = AIRDASH;
-					bounceFlameOn = false;
+					BounceFlameOff();
 					airDashStall = false;
+					
 					
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
@@ -2825,17 +2915,18 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					
 					action = AIRDASH;
 					airDashStall = false;
-					
+					BounceFlameOff();
+
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
 					{
@@ -2877,17 +2968,18 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					
 					action = AIRDASH;
 					airDashStall = false;
-					
+					BounceFlameOff();
+
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
 					{
@@ -2931,17 +3023,18 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					
 					action = AIRDASH;
 					airDashStall = false;
-					
+					BounceFlameOff();
+
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
 					{
@@ -2984,17 +3077,126 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					
 					action = AIRDASH;
 					airDashStall = false;
+					BounceFlameOff();
+
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				holdDouble = true;
+				frame = 0;
+				break;
+			}
+
+			AirAttack();
+			}
+			break;
+		}
+	case DIAGUPATTACK:
+		{
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				BounceFlameOff();
+			}
+
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
+				{
 					
+					action = AIRDASH;
+					airDashStall = false;
+					BounceFlameOff();
+
+					//special unlimited airdash
+					if( inBubble && !hasAirDash )
+					{
+						frame = actionLength[AIRDASH] - 1;
+					}
+					else
+					{
+						frame = 0;
+					}
+
+					break;
+				}
+			}
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				action = DOUBLE;
+				holdDouble = true;
+				frame = 0;
+				break;
+			}
+
+			AirAttack();
+			}
+			break;
+		}
+	case DIAGDOWNATTACK:
+		{
+			if( currAttackHit && frame > 0 )
+			{
+			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			{
+				//bounceGrounded = true;
+				bounceFlameOn = true;
+				airBounceFrame = 0;
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				break;
+			}
+			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			{
+				//bounceGrounded = false;
+				BounceFlameOff();
+			}
+
+			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			{
+				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
+				{
+					
+					action = AIRDASH;
+					airDashStall = false;
+					BounceFlameOff();
+
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
 					{
@@ -3035,12 +3237,12 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				bounceFlameOn = false;
+				BounceFlameOff();
 				SetActionGrind();
 				//dashStartSound.setLoop( false );
 				////runTappingSound.stop();
@@ -3135,12 +3337,12 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				bounceFlameOn = false;
+				BounceFlameOff();
 				SetActionGrind();
 				break;
 			}
@@ -3410,13 +3612,13 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 			//	bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
-				bounceFlameOn = false;
+				BounceFlameOff();
 				SetActionGrind();
 				break;
 			}
@@ -3580,12 +3782,12 @@ void Actor::UpdatePrePhysics()
 				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 				{
 					//bounceGrounded = false;
-					bounceFlameOn = false;
+					BounceFlameOff();
 				}
 
 				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 				{
-					bounceFlameOn = false;
+					BounceFlameOff();
 					SetActionGrind();
 					//dashStartSound.setLoop( false );
 					////runTappingSound.stop();
@@ -3660,12 +3862,12 @@ void Actor::UpdatePrePhysics()
 				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 				{
 					//bounceGrounded = false;
-					bounceFlameOn = false;
+					BounceFlameOff();
 				}
 
 				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 				{
-					bounceFlameOn = false;
+					BounceFlameOff();
 					SetActionGrind();
 					//dashStartSound.setLoop( false );
 					////runTappingSound.stop();
@@ -3739,7 +3941,7 @@ void Actor::UpdatePrePhysics()
 				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 				{
 					//bounceGrounded = false;
-					bounceFlameOn = false;
+					BounceFlameOff();
 				}
 
 				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
@@ -4075,7 +4277,11 @@ void Actor::UpdatePrePhysics()
 						V2d grindNorm = grindEdge->Normal();
 						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
 						lungeNormal = grindNorm;
-						velocity = lungeNormal * grindLungeSpeed;
+
+						double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+						double extra = f * grindLungeExtraMax;
+						
+						velocity = lungeNormal * ( grindLungeSpeed + extra );
 
 						/*if( currInput.A )
 						{
@@ -4121,12 +4327,11 @@ void Actor::UpdatePrePhysics()
 						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
 
 						lungeNormal = grindNorm;
-						velocity = lungeNormal * grindLungeSpeed;
-						/*if( currInput.A )
-						{
-							velocity += gDir * grindSpeed;
-						}*/
-						//grindEdge = NULL;
+
+						double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+						double extra = f * grindLungeExtraMax;
+						
+						velocity = lungeNormal * ( grindLungeSpeed + extra );
 
 						facingRight = (grindNorm.x > 0);
 
@@ -4173,14 +4378,14 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					BounceFlameOff();
 					action = AIRDASH;
 					airDashStall = false;
 					
@@ -4222,7 +4427,7 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
@@ -4342,7 +4547,7 @@ void Actor::UpdatePrePhysics()
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
 				//bounceGrounded = false;
-				bounceFlameOn = false;
+				BounceFlameOff();
 			}
 
 
@@ -4497,10 +4702,11 @@ void Actor::UpdatePrePhysics()
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					bounceFlameOn = false;
+					
 					action = AIRDASH;
 					airDashStall = false;
-					
+					BounceFlameOff();
+
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
 					{
@@ -4539,9 +4745,7 @@ void Actor::UpdatePrePhysics()
 				SetActionExpr( JUMP );
 				velocity = storedBounceVel;
 				frame = 1;
-				bounceFlameOn = false;
-				bounceEdge = NULL;
-				bounceMovingTerrain = NULL;
+				BounceFlameOff();
 				holdJump = false;
 				break;
 			}
@@ -4905,7 +5109,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
 			{
 				SetActionGrind();
-				bounceFlameOn = false;
+				BounceFlameOff();
 				//runTappingSound.stop();
 				break;
 			}
@@ -5356,9 +5560,6 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
-			
-
-
 			CheckHoldJump();
 
 			//currHitboxes = fairHitboxes;
@@ -5423,6 +5624,56 @@ void Actor::UpdatePrePhysics()
 			{	
 				AirMovement();
 			}
+			break;
+		}
+	case DIAGUPATTACK:
+		{
+			//CheckHoldJump();
+
+			//currHitboxes = fairHitboxes;
+			if( diagUpHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = diagUpHitboxes[frame];
+			}
+
+			if( frame == 0 && slowCounter == 1)
+			{
+				owner->soundNodeList->ActivateSound( soundBuffers[S_DIAGUPATTACK] );
+				currAttackHit = false;
+				//fairSound.play();
+			}
+			if( wallJumpFrameCounter >= wallJumpMovementLimit )
+			{
+				//cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << endl;
+
+				AirMovement();
+			}
+
+			break;
+		}
+	case DIAGDOWNATTACK:
+		{
+			//CheckHoldJump();
+
+			//currHitboxes = fairHitboxes;
+			if( diagDownHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = diagDownHitboxes[frame];
+			}
+
+			if( frame == 0 && slowCounter == 1)
+			{
+				owner->soundNodeList->ActivateSound( soundBuffers[S_DIAGDOWNATTACK] );
+				currAttackHit = false;
+				//fairSound.play();
+			}
+			if( wallJumpFrameCounter >= wallJumpMovementLimit )
+			{
+				//cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << endl;
+
+				AirMovement();
+			}
+
 			break;
 		}
 	case DASH:
@@ -11236,6 +11487,8 @@ void Actor::PhysicsResponse()
 
 			storedBounceVel = velocity;
 			bounceFlameOn = false;
+			//BounceFlameOff();
+			//bounceFlameOn = false;
 
 			action = BOUNCEGROUND;
 			boostBounce = false;
@@ -12784,6 +13037,15 @@ void Actor::UpdatePostPhysics()
 
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
+}
+
+void Actor::BounceFlameOff()
+{
+	bounceFlameOn = false;
+	oldBounceEdge = NULL;
+	bounceEdge = NULL;
+	boostBounce = false;
+	bounceGrounded = false;
 }
 
 //void Actor::StartSeq( SeqType s )
@@ -14490,6 +14752,32 @@ void Actor::Draw( sf::RenderTarget *target )
 					break;
 				
 				}
+			case DIAGUPATTACK:
+				{
+					if( flashFrames > 0 )
+					{
+						target->draw( diagUpAttackSword, &swordSh );
+						//cout << "shader!" << endl;
+					}
+					else
+					{
+						target->draw( diagUpAttackSword );
+					}
+					break;
+				}
+			case DIAGDOWNATTACK:
+				{
+					if( flashFrames > 0 )
+					{
+						target->draw( diagDownAttackSword, &swordSh );
+						//cout << "shader!" << endl;
+					}
+					else
+					{
+						target->draw( diagDownAttackSword );
+					}
+					break;
+				}
 				break;
 			}
 		}
@@ -15884,6 +16172,132 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+			break;
+		}
+	case DIAGUPATTACK:
+		{
+			Tileset *curr_ts = ts_diagUpSword[speedLevel];
+			//cout << "fair frame : " << frame / 2 << endl;
+			int startFrame = 0;
+			showSword = true;//frame >= startFrame && frame / 2 <= 9;
+
+			if( showSword )
+			{
+				diagUpAttackSword.setTexture( *curr_ts->texture );
+			}
+
+			sprite->setTexture( *(tileset[DIAGUPATTACK]->texture));
+
+			//Vector2i offset( 32, -16 );
+			Vector2i offset( 0, 0 );
+
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[DIAGUPATTACK]->GetSubRect( frame / 2 ) );
+				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
+				if( showSword )
+					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
+					diagUpAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[DIAGUPATTACK]->GetSubRect( frame / 2 );
+				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				
+				if( showSword  )
+				{
+					offset.x = -offset.x;
+
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					diagUpAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}
+					
+			}
+
+			if( showSword )
+			{
+				diagUpAttackSword.setOrigin( diagUpAttackSword.getLocalBounds().width / 2, diagUpAttackSword.getLocalBounds().height / 2 );
+				diagUpAttackSword.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword = showSword;
+				p.swordSprite1 = diagUpAttackSword;
+			}
+			
+			break;
+		}
+	case DIAGDOWNATTACK:
+		{
+			Tileset *curr_ts = ts_diagDownSword[speedLevel];
+			//cout << "fair frame : " << frame / 2 << endl;
+			int startFrame = 0;
+			showSword = true;//frame >= startFrame && frame / 2 <= 9;
+
+			if( showSword )
+			{
+				diagDownAttackSword.setTexture( *curr_ts->texture );
+			}
+
+			sprite->setTexture( *(tileset[DIAGDOWNATTACK]->texture));
+
+			//Vector2i offset( 32, -16 );
+			Vector2i offset( 0, 0 );
+
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[DIAGDOWNATTACK]->GetSubRect( frame / 2 ) );
+				//sprite->setTextureRect( tileset[FAIR]->GetSubRect( frame ) );
+				if( showSword )
+					//fairSword1.setTextureRect( ts_fairSword1->GetSubRect( frame - startFrame ) );
+					diagDownAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[DIAGDOWNATTACK]->GetSubRect( frame / 2 );
+				//sf::IntRect ir = tileset[FAIR]->GetSubRect( frame );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+
+				
+				if( showSword  )
+				{
+					offset.x = -offset.x;
+
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
+					diagDownAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+						irSword.top, -irSword.width, irSword.height ) );
+				}	
+			}
+
+			if( showSword )
+			{
+				diagDownAttackSword.setOrigin( diagDownAttackSword.getLocalBounds().width / 2, diagDownAttackSword.getLocalBounds().height / 2 );
+				diagDownAttackSword.setPosition( position.x + offset.x, position.y + offset.y );
+			}
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+
+			if( record > 0 )
+			{
+				PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
+				p.showSword = showSword;
+				p.swordSprite1 = diagDownAttackSword;
+			}
+			
 			break;
 		}
 	case DOUBLE:
@@ -18024,7 +18438,24 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 			break;
 		}
 	}
-
+	/*case DIAGUPATTACK:
+		{
+			if( diagUpHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = diagUpHitboxes[frame];
+			}
+			break;
+		}
+	case DIAGDOWNATTACK:
+		{
+			if( diagDownHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = diagDownHitboxes[frame];
+			}
+			break;
+		}
+	}
+*/
 	if( currHitboxes != NULL )
 	{
 		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )

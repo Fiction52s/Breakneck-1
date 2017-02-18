@@ -208,16 +208,24 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 
 			if( player->ground == NULL && !touchEdgeWithWire && hitStallCounter >= hitStallFrames && triggerDown
-				&& player->oldAction != Actor::WALLCLING && player->action != Actor::WALLCLING )
+				&& player->oldAction != Actor::WALLCLING && player->action != Actor::WALLCLING 
+				&& player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK 
+				&& ( player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL )
+				//&& player->oldAction != Actor::bouncewa&& player->action != Actor::WALLATTACK )
 			{
 				//cout << "playeraction: " << player->action << endl;
 				//cout << "set state pulling" << endl;
 				state = PULLING;
 			}
-			else if( player->ground != NULL && hitStallCounter >= hitStallFrames && prevTriggerDown && !triggerDown )
+			else
 			{
-				//state = RELEASED;
+				cout << "bounce edge: " << player->bounceEdge << ", " << player->framesSinceBounce << ", old: " <<
+					player->oldBounceEdge << endl;
 			}
+			//else if( player->ground != NULL && hitStallCounter >= hitStallFrames && prevTriggerDown && !triggerDown )
+			//{
+				//state = RELEASED;
+			//}
 			break;
 		}
 	case PULLING:
@@ -472,32 +480,7 @@ void Wire::UpdateAnchors( V2d vel )
 			//return;
 		}
 		
-		/*for( int i = numPoints - 1; i >= 0; --i )
-		{ 
-			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
-			if( result > 0 )
-			{
-				//cout << "removing point " << result << endl;
-				numPoints--;
-			}
-			else
-			{
-				break;
-			}
-		}*/
-		
-		
-		oldPos = storedPlayerPos;////playerPos - vel;//
-
-	/*	if( vel.x == 0 && vel.y == 0 )
-		{
-			if( player->action == Actor::DASH )
-				cout << "dash" << endl;
-			else if( player->action == Actor::STAND )
-				cout << "stand" << endl;
-		cout << "oldpos: " << oldPos.x << ", " << oldPos.y << endl;
-		cout << "player: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
-		}*/
+		oldPos = storedPlayerPos;
 
 		double radius = length( realAnchor - playerPos ); //new position after moving
 
@@ -511,8 +494,6 @@ void Wire::UpdateAnchors( V2d vel )
 			//line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
 			realAnchor = points[numPoints-1].pos;
 		}
-
-
 
 		int counter = 0;
 		while( true )
@@ -641,7 +622,6 @@ void Wire::UpdateAnchors( V2d vel )
 			
 		}
 		
-		//if( rcEdge != NULL )
 		if( false )
 		{
 			if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - rcQuant )
