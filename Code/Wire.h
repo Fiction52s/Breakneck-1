@@ -17,6 +17,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		FIRING,
 		HIT,
 		PULLING,
+		RETRACTING,
 		RELEASED
 	};
 
@@ -40,6 +41,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void UpdateQuads();
 	void Reset();
 	sf::Vector2<double> GetOriginPos( bool test );
+	void UpdateFuse();
 	
 	int extraBuffer; //when swinging around edges sometimes the wire
 	//stretches some. This is attemping to hole up that problem. if it happens
@@ -63,6 +65,17 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int addedPoints;
 	bool right;
 	WireState state;
+
+	sf::Vector2<double> retractPlayerPos;
+	double retractSpeed;
+	int fusePointIndex;
+	double fuseQuantity;
+	sf::Sprite fuseSprite;
+	bool canRetractGround;
+
+	bool triggerDown;
+	bool prevTriggerDown;
+
 
 	struct WirePoint
 	{

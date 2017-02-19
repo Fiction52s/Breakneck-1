@@ -148,9 +148,11 @@ MainMenu::MainMenu()
 		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
 			sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 		window->setPosition( Vector2i(800, 0 ));
+
 	}
 	else
 	{
+		cout << "blah0" << endl;
 		std::vector<sf::VideoMode> i = sf::VideoMode::getFullscreenModes();
 		VideoMode vm( 1600, 900 );
         //sf::RenderWindow window(i.front(), "SFML WORKS!", sf::Style::Fullscreen);
@@ -160,6 +162,7 @@ MainMenu::MainMenu()
 		style = sf::Style::None;
 		
 		window = new sf::RenderWindow( i.front(), "Breakneck", style);
+		cout << "blah1" << endl;
 		//window = new sf::RenderWindow( vm, "Breakneck", sf::Style::None);
 
 			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));

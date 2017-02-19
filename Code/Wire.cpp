@@ -16,7 +16,7 @@ Wire::Wire( Actor *p, bool r)
 	quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )), 
 	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )),
 	//eventually you can split this up into smaller sections so that they don't all need to draw
-  quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 3 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
+  quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
 {
 	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 	if( r )
@@ -30,6 +30,11 @@ Wire::Wire( Actor *p, bool r)
 	minSideEdge = NULL;
 	minSideOther = -1;
 	minSideAlong = -1;
+
+	triggerDown = false;
+	prevTriggerDown = false;
+
+	retractSpeed = 60;
 	//lockEdge = NULL;
 }
 
@@ -40,7 +45,16 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	ControllerState &prevInput = player->prevInput;
 
 	//V2d playerPos = player->position;
-	V2d playerPos = GetOriginPos(true);
+	
+	V2d playerPos;
+	if( state == RETRACTING )
+	{
+		playerPos = retractPlayerPos;
+	}
+	else
+	{
+		playerPos = GetOriginPos(true);
+	}
 	storedPlayerPos = playerPos;
 	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
 	/*V2d dir;
@@ -53,8 +67,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		dir = player->ground->Normal();
 	}*/
 	//playerPos += V2d( offset.x, offset.y );
-	bool triggerDown;
-	bool prevTriggerDown;
 
 	if( right )
 	{
@@ -173,6 +185,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			if( rcEdge != NULL )
 			{
 				state = HIT;
+				if( !triggerDown )
+				{
+					canRetractGround = true;
+				}
+				else
+				{
+					canRetractGround = false;
+				}
 				hitStallCounter = framesFiring;
 			}
 
@@ -205,6 +225,41 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			if( totalLength > maxTotalLength )
 			{
 				state = RELEASED;
+				break;
+			}
+			else
+			{
+				if( canRetractGround && !triggerDown && prevTriggerDown )
+				{
+					//if( numPoints == 0 )
+					//{
+						//state = RELEASED;
+					//}
+					//else
+					//{
+						state = RETRACTING;
+						cout << "beginning retracting" << endl;
+						retractPlayerPos = playerPos;
+						fusePointIndex = numPoints;
+						if( numPoints == 0 )
+						{
+							fuseQuantity = length( anchor.pos - retractPlayerPos );
+						}
+						else
+						{
+							fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+						}
+					//}
+					
+					break;
+				}
+				else
+				{
+					if( !triggerDown )
+					{
+						canRetractGround = true;
+					}
+				}
 			}
 
 			if( player->ground == NULL && !touchEdgeWithWire && hitStallCounter >= hitStallFrames && triggerDown
@@ -222,25 +277,10 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				cout << "bounce edge: " << player->bounceEdge << ", " << player->framesSinceBounce << ", old: " <<
 					player->oldBounceEdge << endl;
 			}
-			//else if( player->ground != NULL && hitStallCounter >= hitStallFrames && prevTriggerDown && !triggerDown )
-			//{
-				//state = RELEASED;
-			//}
 			break;
 		}
 	case PULLING:
 		{
-			if( !triggerDown && player->ground == NULL )
-			{
-				state = RELEASED;
-			}
-			if( triggerDown && ( touchEdgeWithWire || player->action == Actor::WALLCLING ) )
-			{
-				//cout << "set state hit" << endl;
-				state = HIT;
-				//state = RELEASED;
-			}
-
 			double total = 0;
 			
 			if( numPoints > 0 )
@@ -262,7 +302,132 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				state = RELEASED;
 			}
+			else
+			{
+				if( !triggerDown && player->ground == NULL )
+				{
+					state = RETRACTING;
+					retractPlayerPos = playerPos;
+					fusePointIndex = numPoints;
+					if( numPoints == 0 )
+					{
+						fuseQuantity = length( anchor.pos - retractPlayerPos );
+					}
+					else
+					{
+						fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+					}
+					
+				
+				}
+				if( triggerDown && ( touchEdgeWithWire || player->action == Actor::WALLCLING ) )
+				{
+					state = HIT;
+					if( !triggerDown )
+					{
+						canRetractGround = true;
+					}
+					else
+					{
+						canRetractGround = false;
+					}
+				}
+			}
+			break;
+		}
+	case RETRACTING:
+		{
+			if( triggerDown && !prevTriggerDown )
+			{
+				//cout << "firing" << endl;
+				fireDir = V2d( 0, 0 );
+
+
+				if( false )
+				{
+					if( currInput.LLeft() )
+					{
+						fireDir.x -= 1;
+					}
+					else if( currInput.LRight() )
+					{
+						fireDir.x += 1;
+					}
 			
+					if( currInput.LUp() )
+					{
+						if( player->reversed )
+						{
+							fireDir.y += 1;
+						}
+						else
+						{
+							fireDir.y -= 1;
+						}
+							
+					}
+					else if( currInput.LDown() )
+					{
+						if( player->reversed )
+						{
+							fireDir.y -= 1;
+						}
+						else
+						{
+							fireDir.y += 1;
+						}
+						
+					}
+				}
+				else
+				{
+					double angle = currInput.leftStickRadians;
+
+					double degs = angle / PI * 180.0;
+					double sec = 360.0 / 64.0;
+					int mult = floor( (degs / sec) + .5 );
+					angle = (PI / 32.0) * mult;
+
+
+					/*angle = angle / ( 360.0  / 64.0 );
+					int mult = floor( angle );
+					double remain = angle - ( mult * PI / 32.0 );
+					if( remain >= PI / 64.0 )
+					{
+						mult++;
+					}
+
+					angle = mult * PI / 32.0;*/
+
+
+					/*fireDir.x = cos( currInput.leftStickRadians );
+					fireDir.y = -sin( currInput.leftStickRadians );*/
+
+					fireDir.x = cos( angle );
+					fireDir.y = -sin( angle );
+				}
+
+				if( length( fireDir ) > .1 )
+				{
+					if( (right && ( player->lastWire == 0 || player->lastWire == 2 )) 
+						|| (!right && ( player->lastWire == 0 || player->lastWire == 1 ) ) )
+					{
+						if( right )
+						{
+							player->lastWire = 1;
+						}
+						else
+						{
+							player->lastWire = 2;
+						}
+
+						fireDir = normalize( fireDir );
+						state = FIRING;
+						framesFiring = 0;
+						frame = 0;
+					}
+				}
+			}
 			break;
 		}
 	case RELEASED:
@@ -417,11 +582,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 
 			if( shrinkInput && triggerDown && player->ground == NULL && totalLength > 128 )
-			//if( false )
 			{
-				//totalLength -= pullStrength;
-
-				
 				double segmentChange = pullStrength;
 				if( segmentLength - pullStrength < minSegmentLength )
 					segmentChange = minSegmentLength - (segmentLength - pullStrength);
@@ -430,7 +591,12 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				segmentLength -= segmentChange;
 			}
 			break;
-		}	
+		}
+	case RETRACTING:
+		{
+			UpdateFuse();
+			break;
+		}
 	case RELEASED:
 		{
 			break;
@@ -469,8 +635,6 @@ void Wire::SwapPoints( int aIndex, int bIndex )
 
 void Wire::UpdateAnchors( V2d vel )
 {
-	//V2d playerPos = player->position;
-	//playerPos += V2d( offset.x, offset.y );
 	V2d playerPos = GetOriginPos(true);
 
 	if( state == HIT || state == PULLING )
@@ -498,7 +662,6 @@ void Wire::UpdateAnchors( V2d vel )
 		int counter = 0;
 		while( true )
 		{
-			
 			if( counter > 1 )
 			{
 				cout << "COUNTER: " << counter << endl;
@@ -508,10 +671,6 @@ void Wire::UpdateAnchors( V2d vel )
 			V2d b = realAnchor - playerPos;
 			double len = max( length( a ), length( b ) );
 
-			/*double left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
-			double right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
-			double top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
-			double bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );*/
 			V2d oldDir = oldPos - realAnchor;
 			V2d dir = playerPos - realAnchor;
 			double left;
@@ -558,37 +717,20 @@ void Wire::UpdateAnchors( V2d vel )
 			double ex = 1;
 			Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, (bottom - top) + ex * 2 );
 			
-
-
-			
-
-
-			//addedPoints = 0;
 			foundPoint = false;
 
 			player->owner->terrainTree->Query( this, r );
-		
-
-			/*for( int i = 1; i < addedPoints; ++i )
-			{
-				for( int j = i; j > 0; ++j )
-				{
-
-				}
-			
-			}*/
 
 			if( foundPoint )
 			{
 				if( numPoints > 1 )
 				{
-					
 					if( (closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) )
 					{
 						cout << "problem  point: " << closestPoint.x << ", " << closestPoint.y << endl;
+						assert( 0 );
 						break;
 					}
-					//assert( !(closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) );
 				}
 
 
@@ -600,10 +742,8 @@ void Wire::UpdateAnchors( V2d vel )
 				{
 					points[numPoints].test = -points[numPoints].test;
 				}
-				//points[numPoints].test = normalize(  
 				numPoints++;
-				//cout << "closestPoint: " << closestPoint.x << ", " << closestPoint.y << endl;
-				//cout << "numpoints now! " << numPoints << endl;
+
 
 				V2d oldAnchor = realAnchor;
 				realAnchor = points[numPoints-1].pos;
@@ -618,8 +758,6 @@ void Wire::UpdateAnchors( V2d vel )
 			{
 				break;
 			}
-			//oldPos = 
-			
 		}
 		
 		if( false )
@@ -627,15 +765,11 @@ void Wire::UpdateAnchors( V2d vel )
 			if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - rcQuant )
 			{
 				points[numPoints].pos = rcEdge->v1;
-				//wirePoints[pointNum].e = rcEdge;
 				points[numPoints].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
-				//cout << "over" << endl;
-
 				numPoints++;
 			}
 			else
 			{
-				//cout << "under" << endl;
 				points[numPoints].pos = rcEdge->v0;
 				points[numPoints].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
 				numPoints++;
@@ -647,7 +781,6 @@ void Wire::UpdateAnchors( V2d vel )
 			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
 			if( result > 0 )
 			{
-				//cout << "removing point " << result << endl;
 				numPoints--;
 			}
 			else
@@ -658,7 +791,6 @@ void Wire::UpdateAnchors( V2d vel )
 	}
 	else if( state == FIRING )
 	{
-		//oldPos = playerPos - vel;
 		oldPos = storedPlayerPos;
 		V2d wireVec = fireDir * fireRate * (double)(framesFiring + 1 );
 		
@@ -677,46 +809,38 @@ void Wire::UpdateAnchors( V2d vel )
 		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
 		double right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
 
-		//cout << "A: " << quadOldPosA.x << ", " << quadOldPosA.y << ", B: " << quadOldWirePosB.x << ", " << quadOldWirePosB.y << 
-		//	", C: " << quadWirePosC.x << ", " << quadWirePosC.y << ", D: " << quadPlayerPosD.x << ", " << quadPlayerPosD.y << endl;
 		double ex = 1;
 		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
-		//cout << "diff: " << diff.x << ", " << diff.y << ", size: " << r.width << ", " << r.height << endl;
-		/*sf::RectangleShape *rs = new RectangleShape( Vector2f( r.width, r.height ) );
-		rs->setPosition( left, top );
-		rs->setFillColor( Color( 0, 255, 0, 100 ) );
-		progressDraw.push_back( rs );*/
-		//cout << "rect is: left: " << left << ", right: " << right << ", top: " << top << ", bot:" << bot << endl;
+
 		if( r.width == 0 || r.height == 0 )
 		{
 
 		}
 		else
 		{
-			//cout << "query" << endl;
 			minSideEdge = NULL;
 			player->owner->terrainTree->Query( this, r );
 			if( minSideEdge != NULL )
 			{
 				storedPlayerPos = playerPos;
 				state = HIT;
+				if( !triggerDown )
+				{
+					canRetractGround = true;
+				}
+				else
+				{
+					canRetractGround = false;
+				}
 				numPoints = 0;
 				anchor.pos = minSideEdge->v0;
 				anchor.quantity = 0;
 				anchor.e = minSideEdge;
 				UpdateAnchors( V2d( 0, 0 ) );
-				//owner->ActivateEffect( ts_miniHit, anchor.po, true, 0, 6, 3, facingRight );
 			}
 		}
 	}
 	
-
-	/*CircleShape *cs = new CircleShape;
-	cs->setFillColor( Color::Red );
-	cs->setRadius( 4 );
-	cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
-	cs->setPosition( playerPos.x, playerPos.y );
-	progressDraw.push_back( cs );*/
 	storedPlayerPos = playerPos;
 }
 
@@ -968,64 +1092,116 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 //make multiples of the quads for each edge later
 void Wire::UpdateQuads()
 {
-	//if( state == FIRING )
-	//	++framesFiring;
-	
-	V2d playerPos = GetOriginPos(false);
+	V2d playerPos;
+	if( state == RETRACTING )
+	{
+		playerPos = retractPlayerPos;
+	}
+	else
+	{
+		playerPos = GetOriginPos(false);
+	}
 
-	//cout << "starting update quads" << endl;
-	V2d alongDir;// = fireDir;
-	V2d otherDir;// = fireDir;
-	double temp;// = otherDir.x;
-	//otherDir.x = otherDir.y;
-	//otherDir.y = -temp;
+	V2d alongDir;
+	V2d otherDir;
+	double temp;
 
 	int tileHeight = 6;
 	int startIndex = 0;
-	bool hitOrPulling = (state == HIT || state == PULLING );
+	bool hitOrPulling = (state == HIT || state == PULLING || state == RETRACTING );
 	bool singleRope = ( hitOrPulling && numPoints == 0 );
-	
-	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) )
+	int cap = 0;
+
+	int currNumPoints = numPoints;
+
+	//fusePointIndex = numPoints;// - 1;
+	//fuseQuantity = 50;
+	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) || state == RETRACTING )
 	{
-		for( int pointI = numPoints; pointI >= 0; --pointI )
+		if( state == RETRACTING )
+		{
+			if( right )
+			{
+				currNumPoints = fusePointIndex;
+				//cap++;
+			}
+			else
+			{
+				currNumPoints = fusePointIndex;
+			}
+		}
+		for( int pointI = currNumPoints; pointI >= cap; --pointI )
 		{
 		V2d currWirePos;
 		V2d currWireStart;
 		if( hitOrPulling )
 		{	
-			if( pointI == 0 )
+			if( pointI == cap )
 			{
 				if( numPoints == 0 )
 				{
 					currWirePos = anchor.pos;
-					currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
-					//alongDir = normalize(currWirePos - playerPos);
-				//	cout << "only rope from anchor to player" << endl;
+					if( state == RETRACTING )
+					{
+						V2d start = anchor.pos;//points[pointI-1].pos;
+						V2d end = retractPlayerPos;
+						V2d dir = normalize( end - start );
+						currWireStart = start + dir * fuseQuantity; 
+					}
+					else
+					{
+						currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
+					}
+					//currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
 				}
 				else
 				{
 					currWirePos = anchor.pos;
-					currWireStart = points[0].pos;
-					//alongDir = normalize( anchor.pos - currWirePos );
-				//	cout << "anchor to first point" << endl;
+					//currWireStart = points[0].pos;
+					if( state == RETRACTING && fusePointIndex == 0 )
+					{
+						V2d start = anchor.pos;//points[0].pos;//points[pointI-1].pos;
+						V2d end = points[pointI].pos;
+						
+						V2d dir = normalize( end - start );
+						currWireStart = start + dir * fuseQuantity; 
+					}
+					else
+					{
+						currWireStart = points[0].pos;//playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
+					}
 				}
 			}
 			else
 			{
-				if( pointI == numPoints )
+				if( pointI == currNumPoints )
 				{
 					currWirePos = points[pointI-1].pos;
-					currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
-					//alongDir = normalize( currWirePos - playerPos );
 					
-				//	cout << "beginning rope from player to points" << endl;
+					if( state == RETRACTING )
+					{
+						V2d start = points[pointI-1].pos;
+						V2d end;
+						if( pointI == numPoints )
+						{
+							end = retractPlayerPos;
+						}
+						else
+						{
+							end = points[pointI].pos;
+						}
+						V2d dir = normalize( end - start );
+						currWireStart = start + dir * fuseQuantity; 
+					}
+					else
+					{
+						currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
+					}
 				}
 				else
 				{
 					currWirePos = points[pointI-1].pos;
 					currWireStart = points[pointI].pos;
-				//	alongDir = normalize( points[pointI-1].pos - points[pointI].pos );
-				//	cout << "middle of rope point: " << pointI << " to " << pointI-1 << endl;
 				}
 			}
 			alongDir = normalize( currWirePos - currWireStart );
@@ -1063,11 +1239,6 @@ void Wire::UpdateQuads()
 			assert( false );
 		}
 
-		//assert( firingTakingUp <= quads.getVertexCount() / 4 );
-		//startIndex is 0
-		//cout << "fireTakingUp: " << firingTakingUp << endl;
-
-
 		V2d startPartial;
 		V2d endPartial;
 		
@@ -1076,21 +1247,12 @@ void Wire::UpdateQuads()
 		{
 			startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
 			endPartial = ( currWireStart + alongDir * (double)(tileHeight * ( j + 1 )) );
-			
-			
-			//cout << "a: " << frame / animFactor << ", " << (tileHeight * (frame / animFactor)) << "startPartial: " << startPartial.x << ", " << startPartial.y << endl;
-			//cout << "b: " << frame / animFactor + 1 << ", " << (tileHeight * (frame / animFactor + 1)) << "endPartial: " << endPartial.x << ", " << endPartial.y << endl;
 
 			int diff = tileHeight * (j + 1) - length( currWirePos - currWireStart );
 		
 			if( diff > 0 )
 			{
-			//	cout << "j: " << j << ", firetu: " << firingTakingUp - 1 << endl;
 				assert( j == firingTakingUp - 1 );
-				//realTopLeft.y += diff;
-				//realTopRight.y += diff;
-			//	cout << "diff: " << diff << " len: " << length( currWirePos - playerPos ) << " currfirepos: " << currWirePos.x << ", " 
-			//		<< currWirePos.y << " pos: " << playerPos.x << ", " << playerPos.y << endl;
 				endPartial = currWirePos;
 			}
 
@@ -1138,10 +1300,17 @@ void Wire::UpdateQuads()
 			Vector2f realBottomRight= bottomRight;
 			Vector2f realBottomLeft = bottomLeft;
 
-			realTopLeft.y = tileHeight * (frame/animFactor);
-			realTopRight.y = tileHeight * (frame/animFactor);
-			realBottomRight.y = tileHeight * (frame/animFactor + 1);
-			realBottomLeft.y = tileHeight * (frame/animFactor + 1);
+			int fr  = frame/animFactor;
+			int ifr = animFactor * 5 - fr;
+			int f = ifr;
+			if( right )
+			{
+				f = fr;
+			}
+			realTopLeft.y = tileHeight * f;
+			realTopRight.y = tileHeight * f;
+			realBottomRight.y = tileHeight * (f+1);
+			realBottomLeft.y = tileHeight * (f+1);
 
 			if( !right )
 			{
@@ -1172,17 +1341,15 @@ void Wire::UpdateQuads()
 			minimapQuads[startIndex*4+2].position = Vector2f( 0, 0 );
 			minimapQuads[startIndex*4+3].position = Vector2f( 0, 0 );
 		}
+
+		if( state == FIRING )
+			++framesFiring;
 	}
-
-	if( state == FIRING )
-		++framesFiring;
-
-	//cout << "ending update quads" << endl;
 }
 
 void Wire::Draw( RenderTarget *target )
 {
-	if( state == FIRING || state == HIT || state == PULLING )
+	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
 	{
 		target->draw( quads, ts_wire->texture );
 	}
@@ -1269,7 +1436,7 @@ void Wire::Draw( RenderTarget *target )
 
 void Wire::DrawMinimap( sf::RenderTarget *target )
 {
-	if( state == FIRING || state == HIT || state == PULLING )
+	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
 	{
 		target->draw( minimapQuads );
 	}
@@ -1337,4 +1504,37 @@ V2d Wire::GetOriginPos( bool test )
 	return playerPos;
 }
 
+void Wire::UpdateFuse()
+{
+	int currPoints = fusePointIndex;
+	double momentum = retractSpeed;
+	while( !approxEquals( momentum, 0 ) )
+	{
+		if( fuseQuantity > momentum )
+		{
+			fuseQuantity -= momentum;
+			momentum = 0;
+		}
+		else
+		{
+			momentum = momentum - fuseQuantity;
+			fusePointIndex--;
+			if( fusePointIndex == -1 )
+			{
+				fuseQuantity = 0;
+				state = RELEASED;
+				//cout << "setting released" << endl;
+				return;
+			}
+			else if( fusePointIndex == 0 )
+			{
+				fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
+			}
+			else
+			{
+				fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
+			}
+		}
+	}
+}
 //actor should change the offset every frame based on its info. need a before movement wire position and a post movement wire position consistently
