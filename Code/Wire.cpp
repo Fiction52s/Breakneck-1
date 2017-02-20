@@ -34,7 +34,7 @@ Wire::Wire( Actor *p, bool r)
 	triggerDown = false;
 	prevTriggerDown = false;
 
-	retractSpeed = 15;//60;
+	retractSpeed = 60;
 	//lockEdge = NULL;
 }
 
@@ -231,32 +231,25 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				if( canRetractGround && !triggerDown && prevTriggerDown )
 				{
-					//if( numPoints == 0 )
-					//{
-						//state = RELEASED;
-					//}
-					//else
-					//{
-						state = RETRACTING;
-						cout << "beginning retracting" << endl;
-						retractPlayerPos = playerPos;
-						fusePointIndex = numPoints;
-						if( numPoints == 0 )
+					state = RETRACTING;
+					//cout << "beginning retracting" << endl;
+					retractPlayerPos = playerPos;
+					fusePointIndex = numPoints;
+					if( numPoints == 0 )
+					{
+						fuseQuantity = length( anchor.pos - retractPlayerPos );
+					}
+					else
+					{
+						if( right )
 						{
-							fuseQuantity = length( anchor.pos - retractPlayerPos );
+							fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
 						}
 						else
 						{
-							if( right )
-							{
-								fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
-							}
-							else
-							{
-								fuseQuantity = length( anchor.pos - points[0].pos );
-							}
+							fuseQuantity = length( anchor.pos - points[0].pos );
 						}
-					//}
+					}
 					
 					break;
 				}
@@ -330,10 +323,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						{
 							fuseQuantity = length( anchor.pos - points[0].pos );
 						}
-						//fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
 					}
-					
-				
 				}
 				if( triggerDown && ( touchEdgeWithWire || player->action == Actor::WALLCLING ) )
 				{
@@ -354,7 +344,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		{
 			if( triggerDown && !prevTriggerDown )
 			{
-				//cout << "firing" << endl;
 				fireDir = V2d( 0, 0 );
 
 
