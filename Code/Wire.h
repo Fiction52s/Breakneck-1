@@ -46,7 +46,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int extraBuffer; //when swinging around edges sometimes the wire
 	//stretches some. This is attemping to hole up that problem. if it happens
 	//too much then I can go into it and solve the real problems.
-
+	int numAnimFrames;
 	bool foundPoint;
 	sf::Vector2<double> closestPoint;
 	Tileset *ts_wire;
@@ -90,6 +90,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	};
 
 	double maxTotalLength;
+	double maxFireLength;
 
 	int frame;
 	int animFactor;

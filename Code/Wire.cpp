@@ -10,15 +10,16 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 5000 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 50 )
 	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, extraBuffer( 64 ), 
-	quads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )), 
-	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 6.0 ) + extraBuffer) * 4 )),
+	quads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )), 
+	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )),
 	//eventually you can split this up into smaller sections so that they don't all need to draw
-  quadHalfWidth( 3 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
+  quadHalfWidth( 4 ), ts_wire( NULL ), frame( 0 ), animFactor( 2 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
 {
-	ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
+	//ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
+	ts_wire = player->owner->GetTileset( "wire_01_8x8.png", 8, 8 );
 	if( r )
 	{
 		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
@@ -35,6 +36,8 @@ Wire::Wire( Actor *p, bool r)
 	prevTriggerDown = false;
 
 	retractSpeed = 60;
+
+	numAnimFrames = 8;
 	//lockEdge = NULL;
 }
 
@@ -196,7 +199,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				hitStallCounter = framesFiring;
 			}
 
-			if( framesFiring * fireRate > maxTotalLength )
+			if( framesFiring * fireRate > maxFireLength )
 			{
 				Reset();
 				
@@ -265,7 +268,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			if( player->ground == NULL && !touchEdgeWithWire && hitStallCounter >= hitStallFrames && triggerDown
 				&& player->oldAction != Actor::WALLCLING && player->action != Actor::WALLCLING 
 				&& player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK 
-				&& ( player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL )
+				&& ( !player->bounceFlameOn || player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL )
 				//&& player->oldAction != Actor::bouncewa&& player->action != Actor::WALLATTACK )
 			{
 				//cout << "playeraction: " << player->action << endl;
@@ -608,7 +611,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	}
 
 	++frame;
-	if( frame / animFactor > 5 )
+	if( frame / animFactor == numAnimFrames )
 	{
 		frame = 0;
 	}
@@ -1110,7 +1113,9 @@ void Wire::UpdateQuads()
 	V2d otherDir;
 	double temp;
 
-	int tileHeight = 6;
+	
+	int tileHeight = 8;//6;
+	int tileWidth = 8;
 	int startIndex = 0;
 	bool hitOrPulling = (state == HIT || state == PULLING || state == RETRACTING );
 	bool singleRope = ( hitOrPulling && numPoints == 0 );
@@ -1143,7 +1148,7 @@ void Wire::UpdateQuads()
 		{	
 			if( pointI == cap )
 			{
-				cout << "cap" << endl;
+				//cout << "cap" << endl;
 				if( numPoints == 0 )
 				{
 
@@ -1310,7 +1315,7 @@ void Wire::UpdateQuads()
 							//	currWireStart = end;
 							//}
 							
-							cout << "STARTING REVERSE: " << fuseQuantity << endl;
+							//cout << "STARTING REVERSE: " << fuseQuantity << endl;
 						}
 					}
 					else
@@ -1364,15 +1369,15 @@ void Wire::UpdateQuads()
 		
 		firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
-
+		
 		V2d endBack = currWirePos - otherDir * quadHalfWidth;
 		V2d endFront = currWirePos + otherDir * quadHalfWidth;
 
 		//cout << "fram: " << frame / animFactor << endl;
-		Vector2f topLeft( 0, tileHeight * frame / animFactor );
-		Vector2f topRight( 6, tileHeight * frame / animFactor );
-		Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
-		Vector2f bottomRight( 6, tileHeight * (frame / animFactor + 1 ) );
+		//Vector2f topLeft( 0, tileHeight * frame / animFactor );
+		//Vector2f topRight( tileWidth, tileHeight * frame / animFactor );
+		//Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
+		//Vector2f bottomRight( tileWidth, tileHeight * (frame / animFactor + 1 ) );
 		if( firingTakingUp > quads.getVertexCount() / 4 )
 		{
 			cout << "wirestart: " << currWireStart.x << ", " << currWireStart.y << ", curr: " << currWirePos.x << ", " << currWirePos.y << endl;
@@ -1436,34 +1441,41 @@ void Wire::UpdateQuads()
 
 			int trueFrame = frame / animFactor;
 
-			Vector2f realTopLeft = topLeft;
-			Vector2f realTopRight = topRight;
-			Vector2f realBottomRight= bottomRight;
-			Vector2f realBottomLeft = bottomLeft;
+			//Vector2f realTopLeft = topLeft;
+			//Vector2f realTopRight = topRight;
+			//Vector2f realBottomRight= bottomRight;
+			//Vector2f realBottomLeft = bottomLeft;
 
 			int fr  = frame/animFactor;
-			int ifr = animFactor * 5 - fr;
+			int ifr = (numAnimFrames-1) - fr;
 			int f = ifr;
 			if( right )
 			{
 				f = fr;
 			}
-			realTopLeft.y = tileHeight * f;
-			realTopRight.y = tileHeight * f;
-			realBottomRight.y = tileHeight * (f+1);
-			realBottomLeft.y = tileHeight * (f+1);
-
-			if( !right )
+			else
 			{
-				realTopLeft.y += 36;
-				realTopRight.y += 36;
-				realBottomRight.y += 36;
-				realBottomLeft.y += 36;
+				//f = fr;
+				//cout << "f: " << f << endl;
+				f += numAnimFrames;
 			}
-			quads[index*4].texCoords = realTopLeft;
-			quads[index*4+1].texCoords = realTopRight;
-			quads[index*4+2].texCoords = realBottomRight;
-			quads[index*4+3].texCoords = realBottomLeft;
+			IntRect subRect = ts_wire->GetSubRect( f );
+			/*realTopLeft.y = subRect.left;
+			realTopRight.y = subRect.left + subRect.width;
+			realBottomRight.y = subRect.top + ;
+			realBottomLeft.y = tileHeight * (f+1);*/
+
+			/*if( !right )
+			{
+				realTopLeft.y += tileHeight * numAnimFrames;
+				realTopRight.y += tileHeight * numAnimFrames;
+				realBottomRight.y += tileHeight * numAnimFrames;
+				realBottomLeft.y += tileHeight * numAnimFrames;
+			}*/
+			quads[index*4].texCoords = Vector2f( subRect.left, subRect.top );//realTopLeft;
+			quads[index*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+			quads[index*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+			quads[index*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 		}
 
 		startIndex += firingTakingUp;
@@ -1698,17 +1710,17 @@ void Wire::UpdateFuse()
 				}
 				else if( fusePointIndex == 0 )
 				{
-					cout << "zero" << endl;
+					//cout << "zero" << endl;
 					fuseQuantity = length( points[numPoints - 1].pos - retractPlayerPos );
 					//fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
 				}
 				else
 				{
-					cout << "other: " << fusePointIndex << endl;
+					//cout << "other: " << fusePointIndex << endl;
 					//fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
 					fuseQuantity = length( points[numPoints-1 - fusePointIndex].pos 
 					- points[(numPoints-1) - (fusePointIndex-1)].pos );
-					cout << "length: " << fuseQuantity << endl;
+					//cout << "length: " << fuseQuantity << endl;
 					
 					
 				}

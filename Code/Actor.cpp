@@ -2958,6 +2958,7 @@ void Actor::UpdatePrePhysics()
 			{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
+
 				//bounceGrounded = true;
 				bounceFlameOn = true;
 				airBounceFrame = 0;
@@ -11487,6 +11488,7 @@ void Actor::PhysicsResponse()
 
 			storedBounceVel = velocity;
 			bounceFlameOn = false;
+			//oldBounceEdge = NULL;
 			//BounceFlameOff();
 			//bounceFlameOn = false;
 
@@ -11537,7 +11539,7 @@ void Actor::PhysicsResponse()
 					ground = bounceEdge;
 					edgeQuantity = bounceQuant;
 					bounceEdge = NULL;
-					
+					//oldBounceEdge = NULL;
 				}
 			}
 
