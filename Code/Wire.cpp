@@ -34,7 +34,7 @@ Wire::Wire( Actor *p, bool r)
 	triggerDown = false;
 	prevTriggerDown = false;
 
-	retractSpeed = 60;
+	retractSpeed = 15;//60;
 	//lockEdge = NULL;
 }
 
@@ -247,7 +247,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						}
 						else
 						{
-							fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+							if( right )
+							{
+								fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+							}
+							else
+							{
+								fuseQuantity = length( anchor.pos - points[0].pos );
+							}
 						}
 					//}
 					
@@ -315,7 +322,15 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					}
 					else
 					{
-						fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+						if( right )
+						{
+							fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+						}
+						else
+						{
+							fuseQuantity = length( anchor.pos - points[0].pos );
+						}
+						//fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
 					}
 					
 				
@@ -1127,7 +1142,8 @@ void Wire::UpdateQuads()
 			}
 			else
 			{
-				currNumPoints = fusePointIndex;
+				cap = numPoints - fusePointIndex;
+				//currNumPoints = fusePointIndex;
 			}
 		}
 		for( int pointI = currNumPoints; pointI >= cap; --pointI )
@@ -1138,15 +1154,28 @@ void Wire::UpdateQuads()
 		{	
 			if( pointI == cap )
 			{
+				cout << "cap" << endl;
 				if( numPoints == 0 )
 				{
+
 					currWirePos = anchor.pos;
 					if( state == RETRACTING )
 					{
-						V2d start = anchor.pos;//points[pointI-1].pos;
-						V2d end = retractPlayerPos;
-						V2d dir = normalize( end - start );
-						currWireStart = start + dir * fuseQuantity; 
+						if( right )
+						{
+							V2d start = anchor.pos;//points[pointI-1].pos;
+							V2d end = retractPlayerPos;
+							V2d dir = normalize( end - start );
+							currWireStart = start + dir * fuseQuantity; 
+						}
+						else
+						{
+							currWirePos = retractPlayerPos;
+							V2d start = retractPlayerPos;//points[pointI-1].pos;
+							V2d end = anchor.pos;
+							V2d dir = normalize( end - start );
+							currWireStart = start + dir * fuseQuantity; 
+						}
 					}
 					else
 					{
@@ -1158,14 +1187,73 @@ void Wire::UpdateQuads()
 				{
 					currWirePos = anchor.pos;
 					//currWireStart = points[0].pos;
-					if( state == RETRACTING && fusePointIndex == 0 )
+					if( state == RETRACTING && ( (right && fusePointIndex == 0) || ( !right ) ) )
 					{
-						V2d start = anchor.pos;//points[0].pos;//points[pointI-1].pos;
-						V2d end = points[pointI].pos;
+						if( right )
+						{
+							V2d start = anchor.pos;//points[0].pos;//points[pointI-1].pos;
+							V2d end = points[pointI].pos;
 						
-						V2d dir = normalize( end - start );
-						currWireStart = start + dir * fuseQuantity; 
+							V2d dir = normalize( end - start );
+							currWireStart = start + dir * fuseQuantity; 
+						}
+						else
+						{
+							V2d start;
+							V2d end;
+							if( cap == 0 )
+							{
+								//cout << "cap zero" << endl;
+								start = points[0].pos;
+								end = anchor.pos;
+							}
+							else if( cap == numPoints )
+							{
+								//cout << "cap max" << endl;
+								start = retractPlayerPos;
+								end = points[cap-1].pos;
+								//currWirePos = points[
+							}
+							else
+							{
+								//cout << "cap mid" << endl;
+								start = points[cap].pos;;
+								end = points[cap-1].pos;
+							}
+
+							V2d dir = normalize( end - start );
+
+							currWireStart = start;
+
+							currWirePos = start + dir * fuseQuantity;
+							//currWirePos = end;
+							//currWirePos = end;
+							
+							//currWireStart = retractPlayerPos;
+							//V2d start = retractPlayerPos;
+							//V2d end = points[numPoints-1].pos;
+							//currWireStart = retractPlayerPos;
+							//V2d start = retractPlayerPos;//anchor.pos;
+							//V2d end = points[numPoints-1].pos;//points[pointI].pos;
+
+							//V2d dir = normalize( end - start );
+							//cout << "final: " << fuseQuantity;
+							////currWireStart = start + dir * fuseQuantity; 
+							//if( cap == numPoints )
+							//{
+							//	currWirePos = start + dir * fuseQuantity; 
+							//}
+							//else
+							//{
+							//	currWirePos = end;
+							//}
+							
+						}
 					}
+					/*else if( state == RETRACTING && !right  )
+					{
+
+					}*/
 					else
 					{
 						currWireStart = points[0].pos;//playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
@@ -1174,24 +1262,67 @@ void Wire::UpdateQuads()
 			}
 			else
 			{
+				//cout << "not cap" << endl;
 				if( pointI == currNumPoints )
 				{
+					
 					currWirePos = points[pointI-1].pos;
 					
 					if( state == RETRACTING )
 					{
-						V2d start = points[pointI-1].pos;
-						V2d end;
-						if( pointI == numPoints )
+						currWirePos = points[0].pos;
+						if( right )
 						{
-							end = retractPlayerPos;
+							V2d start = points[pointI-1].pos;
+							V2d end;
+							if( pointI == numPoints )
+							{
+								end = retractPlayerPos;
+							}
+							else
+							{
+								end = points[pointI].pos;
+							}
+							currWirePos = start;
+							V2d dir = normalize( end - start );
+							currWireStart = start + dir * fuseQuantity; 
 						}
 						else
 						{
-							end = points[pointI].pos;
+							V2d start = retractPlayerPos;
+							V2d end = points[numPoints-1].pos;
+
+							V2d dir = normalize( end - start );
+							currWirePos = end;
+							currWireStart = start;
+							//currWirePos = points[0].pos;
+							////currWireStart = retractPlayerPos;
+							//V2d start = currWirePos;//points[pointI-1].pos;
+							//V2d end = anchor.pos;
+							//
+							//V2d dir = normalize( end - start );
+							////if( cap == 0 )
+							//{
+							//	currWireStart = start + dir * fuseQuantity;
+							//}
+							////else
+							//{
+							//	//currWireStart = end;
+							//}
+
+
+
+							//if( cap == currNumPoints )
+							//{
+								
+							//}
+							//else
+							//{
+							//	currWireStart = end;
+							//}
+							
+							cout << "STARTING REVERSE: " << fuseQuantity << endl;
 						}
-						V2d dir = normalize( end - start );
-						currWireStart = start + dir * fuseQuantity; 
 					}
 					else
 					{
@@ -1200,8 +1331,28 @@ void Wire::UpdateQuads()
 				}
 				else
 				{
-					currWirePos = points[pointI-1].pos;
-					currWireStart = points[pointI].pos;
+					/*if( state == RETRACTING && !right )
+					{
+						currWireStart = points[pointI-1].pos;
+						currWirePos = points[pointI].pos;
+					}
+					else
+					{*/
+					if( false )//if( state == RETRACTING && !right )
+					{
+						cout << "pos ind: " << (numPoints-1)-(pointI-1) << endl;
+						cout << "start ind: " << (numPoints-1)-(pointI) << endl;
+						currWirePos = points[(numPoints-1)-(pointI-1)].pos;
+						currWireStart = points[(numPoints-1) -(pointI)].pos;
+					}
+					else
+					{
+						currWirePos = points[pointI-1].pos;
+						currWireStart = points[pointI].pos;
+					}
+						
+					//}
+					
 				}
 			}
 			alongDir = normalize( currWirePos - currWireStart );
@@ -1235,6 +1386,7 @@ void Wire::UpdateQuads()
 		Vector2f bottomRight( 6, tileHeight * (frame / animFactor + 1 ) );
 		if( firingTakingUp > quads.getVertexCount() / 4 )
 		{
+			cout << "wirestart: " << currWireStart.x << ", " << currWireStart.y << ", curr: " << currWirePos.x << ", " << currWirePos.y << endl;
 			cout << "firingTakingup: " << firingTakingUp << ", count: " << quads.getVertexCount() / 4 << endl;
 			assert( false );
 		}
@@ -1510,29 +1662,67 @@ void Wire::UpdateFuse()
 	double momentum = retractSpeed;
 	while( !approxEquals( momentum, 0 ) )
 	{
-		if( fuseQuantity > momentum )
+		if( right )
 		{
-			fuseQuantity -= momentum;
-			momentum = 0;
-		}
-		else
-		{
-			momentum = momentum - fuseQuantity;
-			fusePointIndex--;
-			if( fusePointIndex == -1 )
+			if( fuseQuantity > momentum )
 			{
-				fuseQuantity = 0;
-				state = RELEASED;
-				//cout << "setting released" << endl;
-				return;
-			}
-			else if( fusePointIndex == 0 )
-			{
-				fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
+				fuseQuantity -= momentum;
+				momentum = 0;
 			}
 			else
 			{
-				fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
+				momentum = momentum - fuseQuantity;
+				fusePointIndex--;
+				if( fusePointIndex == -1 )
+				{
+					fuseQuantity = 0;
+					state = RELEASED;
+					//cout << "setting released" << endl;
+					return;
+				}
+				else if( fusePointIndex == 0 )
+				{
+					fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
+				}
+				else
+				{
+					fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
+				}
+			}
+		}
+		else
+		{
+			if( fuseQuantity > momentum )
+			{
+				fuseQuantity -= momentum;
+				momentum = 0;
+			}
+			else
+			{
+				momentum = momentum - fuseQuantity;
+				fusePointIndex--;
+				if( fusePointIndex == -1 )
+				{
+					fuseQuantity = 0;
+					state = RELEASED;
+					return;
+				}
+				else if( fusePointIndex == 0 )
+				{
+					cout << "zero" << endl;
+					fuseQuantity = length( points[numPoints - 1].pos - retractPlayerPos );
+					//fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
+				}
+				else
+				{
+					cout << "other: " << fusePointIndex << endl;
+					//fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
+					fuseQuantity = length( points[numPoints-1 - fusePointIndex].pos 
+					- points[(numPoints-1) - (fusePointIndex-1)].pos );
+					cout << "length: " << fuseQuantity << endl;
+					
+					
+				}
 			}
 		}
 	}
