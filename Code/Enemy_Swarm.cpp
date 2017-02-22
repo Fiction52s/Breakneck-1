@@ -157,19 +157,11 @@ void SwarmMember::UpdateSprite()
 
 		Vector2f p( position.x, position.y );
 
-		/*Color c = Color::Red;
-		va[vaIndex*4+0].color = c;
-		va[vaIndex*4+1].color = c;
-		va[vaIndex*4+2].color = c;
-		va[vaIndex*4+3].color = c;*/
-
-
 		Vector2f spriteSize = parent->spriteSize;
 		va[vaIndex*4+0].position = p + Vector2f( -spriteSize.x, -spriteSize.y );
 		va[vaIndex*4+1].position = p + Vector2f( spriteSize.x, -spriteSize.y );
 		va[vaIndex*4+2].position = p + Vector2f( spriteSize.x, spriteSize.y );
 		va[vaIndex*4+3].position = p + Vector2f( -spriteSize.x, spriteSize.y );
-	
 	}
 }
 

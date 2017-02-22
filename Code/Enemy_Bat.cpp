@@ -366,43 +366,17 @@ void Bat::PhysicsResponse()
 
 		if( result.first && !specterProtected )
 		{
-
-			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
 			owner->player->ConfirmHit( 2, 5, .8, 6 );
-
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
 				owner->player->velocity.y = 4;//.5;
 			}
-
-
-			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
-		//	cout << "frame: " << owner->player->frame << endl;
-
-			//owner->player->frame--;
-			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
-			
-		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
 		}
 
 		if( IHitPlayer() )
 		{
-		//	cout << "Bat just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
 }
@@ -624,7 +598,6 @@ pair<bool,bool> Bat::PlayerHitMe()
 				break;
 			}
 		}
-		
 
 		if( hit )
 		{

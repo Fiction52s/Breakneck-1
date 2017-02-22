@@ -89,6 +89,50 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		double angleDiff;
 	};
 
+	const static int MAX_CHARGES = 16;
+	struct WireCharge
+	{
+		enum Action
+		{
+			INACTIVE,
+			RETRACTING,
+			//EXPLODING
+		};
+
+		WireCharge( int vIndex );
+		void Reset();
+		void UpdatePrePhysics();
+		void UpdatePhysics();
+		void UpdatePostPhysics();
+		void UpdateSprite();
+		void ClearSprite();
+
+		void HitEnemy();
+		WireCharge *next;
+		WireCharge *prev;
+		Action action;
+		Wire *wire;
+		sf::Vector2<double> position;
+		int edgeIndex;
+		double edgeQuantity;
+		CollisionBox hitbox;
+		int vaIndex;
+	};
+
+	void DrawWireCharges( sf::RenderTarget *target );
+	WireCharge *activeChargeList;
+	WireCharge *inactiveChargeList;
+	void CreateWireCharge();
+	void DeactivateWireCharge( WireCharge *wc );
+	WireCharge * GetWireCharge();
+	void ActivateWireCharge( int index );
+	void ClearWireCharges();
+	void ActivateRetractionCharges();
+	Tileset *ts_wireCharge;
+	int numTotalCharges;
+	sf::VertexArray chargeVA;
+
+
 	double maxTotalLength;
 	double maxFireLength;
 
@@ -97,6 +141,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	double quadHalfWidth;
 	int numPoints;
 	const static int MAX_POINTS = 20000;
+
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];
 	sf::VertexArray quads;

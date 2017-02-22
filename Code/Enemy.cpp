@@ -1172,5 +1172,43 @@ void Enemy::DirectKill()
 	receivedHit = NULL;
 }
 
+bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
+{
+	if( owner->player->hasPowerRightWire )
+	{
+		Wire::WireCharge *charge = owner->player->rightWire->activeChargeList;
+		while( charge != NULL )
+		{
+			if( charge->hitbox.Intersects( p_hurtBox ) )
+			{
+				receivedHit = owner->player->wireChargeInfo;
+				charge->HitEnemy();
+				return true;
+			}
+			charge = charge->next;
+		}
+	}
 
+	return false;
+}
+
+bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
+{
+	if( owner->player->hasPowerLeftWire )
+	{
+		Wire::WireCharge *charge = owner->player->leftWire->activeChargeList;
+		while( charge != NULL )
+		{
+			if( charge->hitbox.Intersects( p_hurtBox ) )
+			{
+				receivedHit = owner->player->wireChargeInfo;
+				charge->HitEnemy();
+				return true;
+			}
+			charge = charge->next;
+		}
+	}
+
+	return false;
+}
 

@@ -330,6 +330,24 @@ Actor::Actor( GameSession *gs )
 
 		cb.rw = 64;
 		cb.rh = 64;
+		cb.offset.x = 0;
+		cb.offset.y = 0;
+		//for( int j = 1; j <= 4; ++j )
+		for( int j = 0; j < 8; ++j )
+		{
+			shockwaveHitboxes[j] = new list<CollisionBox>;
+			shockwaveHitboxes[j]->push_back( cb );
+
+			for( int i = 0; i < MAX_GHOSTS; ++i )
+			{
+				//ghosts[i] = new PlayerGhost;
+				//ghosts[i]->shockwaveHitboxes[j] = new list<CollisionBox>;
+				//ghosts[i]->shockwaveHitboxes[j]->push_back( cb );			
+			}
+		}
+
+		cb.rw = 64;
+		cb.rh = 64;
 		cb.offset.x = 36;
 		cb.offset.y = -6;
 		//for( int j = 1; j <= 4; ++j )
@@ -908,6 +926,15 @@ Actor::Actor( GameSession *gs )
 		currHitboxInfo->hitlagFrames = 0;
 		currHitboxInfo->hitstunFrames = 30;
 		currHitboxInfo->knockback = 0;
+
+		 
+		wireChargeInfo = new HitboxInfo();
+		wireChargeInfo->damage = 20;
+		wireChargeInfo->drainX = 0;
+		wireChargeInfo->drainY = 0;
+		wireChargeInfo->hitlagFrames = 0;
+		wireChargeInfo->hitstunFrames = 0;//30;
+		wireChargeInfo->knockback = 0;
 
 		receivedHit = NULL;
 		hitlagFrames = 0;
@@ -2667,6 +2694,7 @@ void Actor::UpdatePrePhysics()
 	case GRAVREVERSE:
 		{
 		//buffered grind ball works
+
 			if( hasPowerGrindBall && currInput.Y )//&& !prevInput.Y )
 			{
 				//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
@@ -2753,6 +2781,11 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 			
+			if( shockwaveHitboxes.count( frame ) > 0 )
+			{
+				currHitboxes = shockwaveHitboxes[frame];
+			}
+
 			break;
 		}
 		
@@ -17767,6 +17800,12 @@ void Actor::ConfirmHit( int worldIndex,
 	//owner->player->test = true;
 	//desperationMode = false;
 }
+
+void Actor::ConfirmWireHit( bool right )
+{
+
+}
+
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {

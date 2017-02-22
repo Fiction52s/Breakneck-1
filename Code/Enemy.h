@@ -337,8 +337,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		Count
 	};
 
-	
-	
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world );
 	virtual void Init(){};
@@ -354,6 +352,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual bool IHitPlayer() = 0;
 	virtual void UpdateHitboxes() = 0;
 	virtual std::pair<bool,bool> PlayerHitMe() = 0;
+	bool RightWireHitMe( CollisionBox hurtBox );
+	bool LeftWireHitMe( CollisionBox hurtBox );
 	virtual bool PlayerSlowingMe() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target) = 0;
 	virtual int NumTotalBullets();

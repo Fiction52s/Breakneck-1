@@ -140,6 +140,7 @@ struct Actor : QuadTreeCollider,
 	SeqType seq;
 	int seqFrame;*/
 
+
 	void SetActionExpr( Action a );
 	void SetExpr( Expr ex );
 	void SetAction( Action a );
@@ -177,7 +178,7 @@ struct Actor : QuadTreeCollider,
 	int runeLength;
 	bool showRune;
 
-
+	HitboxInfo *wireChargeInfo;
 	//sf::Shader speedBarShader;
 	bool hitGoal;
 	int enemiesKilledThisFrame;
@@ -425,6 +426,7 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
 	std::map<int, std::list<CollisionBox>*> diagUpHitboxes;
 	std::map<int, std::list<CollisionBox>*> diagDownHitboxes;
+	std::map<int, std::list<CollisionBox>*> shockwaveHitboxes;
 
 
 	double steepThresh;
