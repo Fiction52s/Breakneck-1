@@ -493,6 +493,8 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
 	sf::Vector2<double> startAirDashVel;
+	double extraAirDashY;
+	sf::Vector2<double> AddGravity( sf::Vector2<double> vel );
 
 	int framesGrinding;
 	int framesNotGrinding;
@@ -506,8 +508,10 @@ struct Actor : QuadTreeCollider,
 
 	Edge *grindEdge;
 	sf::Vector2<double> lungeNormal;
-	double grindLungeSpeed;
-	double grindLungeExtraMax;
+	double grindLungeSpeed0;
+	double grindLungeSpeed1;
+	double grindLungeSpeed2;
+	//double grindLungeExtraMax;
 	MovingTerrain *grindMovingTerrain;
 	double grindQuantity;
 	double grindSpeed;

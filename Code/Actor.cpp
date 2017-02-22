@@ -47,8 +47,10 @@ Actor::Actor( GameSession *gs )
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
-		grindLungeSpeed = 15.0;
-		grindLungeExtraMax = 10.0;
+		grindLungeSpeed0 = 15.0;
+		grindLungeSpeed1 = 20.0;
+		grindLungeSpeed2 = 28.0;
+		//grindLungeExtraMax = 10.0;
 
 		speedLevel = 0;
 		speedBarTarget = 0;
@@ -1999,10 +2001,15 @@ void Actor::UpdatePrePhysics()
 					else
 					{
 						cout << "this steep 2" << endl;
-						if( groundSpeed < 0 )
-							facingRight = true;
-						else 
+						//if( groundSpeed < 0 )
+						//	facingRight = true;
+						//else 
+						//	facingRight = false;
+
+						if( gNorm.x > 0 )
 							facingRight = false;
+						else
+							facingRight = true;
 						action = STEEPSLIDE;
 						frame = 0;
 						break;
@@ -2022,10 +2029,14 @@ void Actor::UpdatePrePhysics()
 					else
 					{
 						cout << "this steep 3" << endl;
-						if( groundSpeed < 0 )
+						if( gNorm.x > 0 )
 							facingRight = true;
-						else 
+						else
 							facingRight = false;
+						/*if( groundSpeed < 0 )
+							facingRight = false;
+						else 
+							facingRight = true;*/
 						action = STEEPSLIDE;
 						frame = 0;
 						break;
@@ -4131,7 +4142,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) )//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
 							{
@@ -4199,7 +4210,7 @@ void Actor::UpdatePrePhysics()
 							edgeQuantity = grindQuantity;
 							grindEdge = NULL;
 							reversed = true;
-							hasGravReverse = false;
+							//hasGravReverse = false;
 
 								
 							if( currInput.LRight() )
@@ -4279,10 +4290,28 @@ void Actor::UpdatePrePhysics()
 						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
 						lungeNormal = grindNorm;
 
-						double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+						double lungeSpeed;
+						if( speedLevel == 0 )
+						{
+							lungeSpeed = grindLungeSpeed0;
+						}
+						else if( speedLevel == 1 )
+						{
+							lungeSpeed = grindLungeSpeed1;
+						}
+						else if( speedLevel == 2 )
+						{
+							lungeSpeed = grindLungeSpeed2;
+						}
+						//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+						//double extra = f * grindLungeExtraMax;
+						
+						velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
+
+						/*double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
 						double extra = f * grindLungeExtraMax;
 						
-						velocity = lungeNormal * ( grindLungeSpeed + extra );
+						velocity = lungeNormal * ( grindLungeSpeed + extra );*/
 
 						/*if( currInput.A )
 						{
@@ -4328,11 +4357,23 @@ void Actor::UpdatePrePhysics()
 						V2d gDir = normalize( grindEdge->v1 - grindEdge->v0 );
 
 						lungeNormal = grindNorm;
-
-						double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
-						double extra = f * grindLungeExtraMax;
+						double lungeSpeed;
+						if( speedLevel == 0 )
+						{
+							lungeSpeed = grindLungeSpeed0;
+						}
+						else if( speedLevel == 1 )
+						{
+							lungeSpeed = grindLungeSpeed1;
+						}
+						else if( speedLevel == 2 )
+						{
+							lungeSpeed = grindLungeSpeed2;
+						}
+						//double f = max( abs( grindSpeed ) - 20.0, 0.0 ) / maxGroundSpeed;
+						//double extra = f * grindLungeExtraMax;
 						
-						velocity = lungeNormal * ( grindLungeSpeed + extra );
+						velocity = lungeNormal * lungeSpeed;//( grindLungeSpeed + extra );
 
 						facingRight = (grindNorm.x > 0);
 
@@ -6207,6 +6248,35 @@ void Actor::UpdatePrePhysics()
 				{
 					hasAirDash = false;
 					startAirDashVel = V2d( velocity.x, 0 );//velocity;//
+					if( (velocity.y > 0 && currInput.LDown()) || ( velocity.y < 0 && currInput.LUp() ) )
+					{
+						if( abs( velocity.y ) > airDashSpeed )
+						{
+							if( velocity.y < 0 )
+							{
+								extraAirDashY = velocity.y + airDashSpeed;// / 2;
+							}
+							else
+							{
+								extraAirDashY = velocity.y - airDashSpeed;// / 2;
+							}
+						}
+						else
+						{
+							extraAirDashY = velocity.y;//0;
+						}
+
+						if( extraAirDashY > 0 )
+						{
+							extraAirDashY = .1;
+							//extraAirDashY = min( extraAirDashY, 5.0 );
+							//extraAirDashY *= 1.8;
+						}
+					}
+					else
+					{
+						extraAirDashY = 0;
+					}
 				}
 				velocity = V2d( 0, 0 );//startAirDashVel;
 			
@@ -6221,7 +6291,18 @@ void Actor::UpdatePrePhysics()
 						//cout << "velocity.x: " << velocity.x << endl;
 					}
 					
-					velocity.y = -airDashSpeed;
+					if( extraAirDashY > 0 )
+						extraAirDashY = 0;
+
+					velocity.y = -airDashSpeed + extraAirDashY;
+
+					if( extraAirDashY < 0 )
+					{
+						extraAirDashY = AddGravity( V2d( 0, extraAirDashY ) ).y;
+						//extraAirDashY += gravity / slowMultiple;
+						if( extraAirDashY > 0 )
+							extraAirDashY = 0;
+					}
 				}
 				else if( currInput.LDown() )
 				{
@@ -6231,7 +6312,20 @@ void Actor::UpdatePrePhysics()
 						//cout << "velocity.x: " << velocity.x << endl;
 					}
 
-					velocity.y = airDashSpeed;
+					if( extraAirDashY < 0 )
+						extraAirDashY = 0;
+
+					velocity.y = airDashSpeed + extraAirDashY;
+
+					if( extraAirDashY > 0 )
+					{
+						extraAirDashY = AddGravity( V2d( 0, extraAirDashY ) ).y;
+						//extraAirDashY += gravity / slowMultiple;
+					}
+				}
+				else
+				{
+					extraAirDashY = 0;
 				}
 
 
@@ -6266,9 +6360,13 @@ void Actor::UpdatePrePhysics()
 				if( velocity.x == 0 && velocity.y == 0 )
 				{
 					startAirDashVel = V2d( 0, 0 );
+					extraAirDashY = 0;
+					velocity = AddGravity( velocity );
 				}
 
-				velocity.y -= gravity / slowMultiple;
+				//cout << "extraAirDashY: " << extraAirDashY << endl;
+				//if( extraAirDashY == 0 || ( extraAirDashY < 0 && currInput.LUp() ) )
+					//velocity.y -= gravity / slowMultiple;
 			}
 			
 
@@ -6434,33 +6532,15 @@ void Actor::UpdatePrePhysics()
 	if( ground == NULL && bounceEdge == NULL && action != DEATH
 		&& action != ENTERNEXUS1 && action != GRINDLUNGE )
 	{
+		if( action != AIRDASH )
+		{
+			velocity = AddGravity( velocity );
+		}
+
 		if( velocity.x > maxAirXSpeed )
 			velocity.x = maxAirXSpeed;
 		else if( velocity.x < -maxAirXSpeed )
 			velocity.x = -maxAirXSpeed;
-
-		//if( velocity.y > 0 && velocity.y < 10 )
-		//{
-			//velocity += V2d( 0, gravity / slowMultiple * .6 );
-		//	velocity += V2d( 0, gravity / slowMultiple * .3 );
-		//}
-		if( velocity.y >= maxFallSpeedSlow )
-		{
-			velocity += V2d( 0, gravity * .4 / slowMultiple );
-		}
-		else if( velocity.y < 0 )
-		{
-			velocity += V2d( 0, gravity * 1.2 / slowMultiple );
-		}
-		else if( abs( velocity.y ) < 4 && action != AIRDASH )
-		{
-			velocity += V2d( 0, gravity / slowMultiple );
-			//velocity += V2d( 0, gravity / slowMultiple * .4 );
-		}
-		else
-		{
-			velocity += V2d( 0, gravity / slowMultiple );
-		}
 
 		if( velocity.y > maxFallSpeedFast )
 			velocity.y = maxFallSpeedFast;
@@ -13048,6 +13128,33 @@ void Actor::BounceFlameOff()
 	bounceEdge = NULL;
 	boostBounce = false;
 	bounceGrounded = false;
+}
+
+sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
+{
+	if( vel.y >= maxFallSpeedSlow )
+	{
+		vel += V2d( 0, gravity * .4 / slowMultiple );
+	}
+	else if( vel.y < 0 )
+	{
+		vel += V2d( 0, gravity * 1.2 / slowMultiple );
+	}
+	else
+	{
+		vel += V2d( 0, gravity / slowMultiple );
+	}
+	//else if( abs( vel.y ) < 4 && action != AIRDASH )
+	//{
+	//	vel += V2d( 0, gravity / slowMultiple );
+	//	//velocity += V2d( 0, gravity / slowMultiple * .4 );
+	//}
+	//else
+	//{
+	//	vel += V2d( 0, gravity / slowMultiple );
+	//}
+
+	return vel;
 }
 
 //void Actor::StartSeq( SeqType s )

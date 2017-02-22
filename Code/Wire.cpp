@@ -10,7 +10,7 @@ using namespace std;
 #define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
-	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 50 )
+	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
 	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
 	, extraBuffer( 64 ), 
 	quads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )), 
@@ -19,7 +19,7 @@ Wire::Wire( Actor *p, bool r)
   quadHalfWidth( 4 ), ts_wire( NULL ), frame( 0 ), animFactor( 2 ), offset( 8, 18 ) //, ts_redWire( NULL ) 
 {
 	//ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
-	ts_wire = player->owner->GetTileset( "wire_01_8x8.png", 8, 8 );
+	ts_wire = player->owner->GetTileset( "wire_01_10x8.png", 10, 8 );
 	if( r )
 	{
 		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
@@ -1115,7 +1115,7 @@ void Wire::UpdateQuads()
 
 	
 	int tileHeight = 8;//6;
-	int tileWidth = 8;
+	int tileWidth = 10;
 	int startIndex = 0;
 	bool hitOrPulling = (state == HIT || state == PULLING || state == RETRACTING );
 	bool singleRope = ( hitOrPulling && numPoints == 0 );

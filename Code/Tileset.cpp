@@ -13,10 +13,17 @@ Tileset::~Tileset()
 IntRect Tileset::GetSubRect( int localID )
 {
 	int xi,yi;
-	xi = localID % (texture->getSize().x / tileWidth );
-	yi = localID / (texture->getSize().x / tileWidth );
-		
+	int sx = (texture->getSize().x / tileWidth );
+	int sy = (texture->getSize().y / tileHeight );
 
+	xi = localID % sx;
+	yi = localID / sx;
+		
+	if( localID < 0 || localID >= sx * sy )
+	{
+		cout << "localID: " << localID << ", sx: " << sx << ", sy: " << sy << endl;
+		assert( 0 );
+	}
 	return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight ); 
 }
 
