@@ -145,6 +145,7 @@ void BasicEffect::UpdateHitboxes()
 
 bool BasicEffect::ResolvePhysics( sf::Vector2<double> vel )
 {
+	return false;
 }
 
 void BasicEffect::SaveEnemyState()

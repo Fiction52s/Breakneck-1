@@ -1491,7 +1491,7 @@ void Boss_Crawler::HitTerrain( double &q )
 
 bool Boss_Crawler::StartRoll()
 {
-
+	return false;
 }
 
 void Boss_Crawler::FinishedRoll()

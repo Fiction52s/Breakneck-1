@@ -1073,7 +1073,7 @@ void StagBeetle::HitTerrain( double &q )
 
 bool StagBeetle::StartRoll()
 {
-
+	return false;
 }
 
 void StagBeetle::FinishedRoll()

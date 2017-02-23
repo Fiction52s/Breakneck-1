@@ -36,6 +36,8 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 	momentum = 0;
 
 	maxMomentum = 4;
+
+	//cout << "end selector init" << endl;
 }
 
 void OptionSelector::Right()
@@ -1181,7 +1183,7 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 
 	
 
-	
+	//cout << "MIDDLE this initialization" << endl;
 
 	if( owner->saveFile != NULL )
 	{
@@ -1223,31 +1225,41 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	string vsync[] = { "on", "off" };
 	videoSelectors[2] = new OptionSelector( Vector2f( 100, 180 ), 2, vsync );
 
+	//cout << "YYYYY this initialization" << endl;
 	string masterVolume[101];
 	string musicVolume[101];
 	string soundVolume[101];
+
+	//cout << "WATTTT" << endl;
+
+	
 	for( int i = 0; i < 101; ++i )
 	{
-		stringstream ss;
+		//cout << "starting loop: " << i << endl;
+
+		stringstream ss;	
 		ss << i;
 
+		
 		masterVolume[i] = ss.str();
 		musicVolume[i] = ss.str();
 		soundVolume[i] = ss.str();
+		//cout << "end loop: " << i << endl;
 	}
-
+	//cout << "WATTTT" << endl;
 	numSoundOptions = 5;
 	soundSelectors = new OptionSelector*[numSoundOptions];
 
 	string enable[] = {"on", "off"};
 
+	//cout << "awfhaweioph ihewhtf a" << endl;
 	soundSelectors[0] = new OptionSelector( Vector2f( 100, 20 ), 101, masterVolume );
 	soundSelectors[1] = new OptionSelector( Vector2f( 100, 180 ), 2, enable );
 	soundSelectors[2] = new OptionSelector( Vector2f( 100, 260 ), 101, musicVolume );
 	soundSelectors[3] = new OptionSelector( Vector2f( 100, 340 ), 2, enable );
 	soundSelectors[4] = new OptionSelector( Vector2f( 100, 420 ), 101, soundVolume );
 
-	
+	//cout << "ZZZZ this initialization" << endl;
 
 	currentSelectors = soundSelectors;
 	numCurrentSelectors = numSoundOptions;
@@ -1268,7 +1280,7 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 
 	//SetTab( MAP );
 	//SetAssocSymbols();
-
+	//cout << "end this initialization" << endl;
 }
 
 PauseMenu::~PauseMenu()
@@ -1957,7 +1969,7 @@ PauseMenu::UpdateResponse PauseMenu::UpdateAudioOptions(
 PauseMenu::UpdateResponse PauseMenu::UpdateInputOptions(
 	ControllerState &currInput, ControllerState &prevInput)
 {
-	
+	return UpdateResponse::R_NONE;
 }
 //using namespace std;
 //using namespace sf;

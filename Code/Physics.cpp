@@ -55,6 +55,8 @@ double Edge::GetQuantityGivenX( double x )
 	V2d e = normalize(v1 - v0);
 	double deltax = x - v0.x;
 	double factor = deltax / e.y;
+
+	return 0;
 }
 
 bool Edge::IsTouchingBox( const sf::Rect<double> &r )

@@ -1277,7 +1277,7 @@ void Badger::HitTerrain( double &q )
 
 bool Badger::StartRoll()
 {
-
+	return false;
 }
 
 void Badger::FinishedRoll()

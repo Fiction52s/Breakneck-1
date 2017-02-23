@@ -160,7 +160,7 @@ MainMenu::MainMenu()
 		//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 		//window = new sf::RenderWindow( VideoMode( 1920, 1080 ), "Breakneck", sf::Style::None);
 		style = sf::Style::None;
-		
+		assert( i.size() != 0 );
 		window = new sf::RenderWindow( i.front(), "Breakneck", style);
 		cout << "blah1" << endl;
 		//window = new sf::RenderWindow( vm, "Breakneck", sf::Style::None);

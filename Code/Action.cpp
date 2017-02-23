@@ -174,6 +174,7 @@ bool Brush::CanApply()
 
 bool Brush::CanAdd()
 {
+	return false;
 }
 
 

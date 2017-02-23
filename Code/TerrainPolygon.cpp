@@ -2924,6 +2924,6 @@ bool TerrainPoint::ContainsPoint( Vector2f test )
 
 bool TerrainPoint::Intersects( IntRect rect )
 {
-
+	return false;
 }
 

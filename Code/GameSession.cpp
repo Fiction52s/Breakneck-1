@@ -1709,6 +1709,8 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		
 		//no grass for now
 	}
+
+	return true;
 }
 
 bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
@@ -3840,12 +3842,18 @@ bool GameSession::OpenFile( string fileName )
 			//player->frame = 1;
 		}
 
+
+		cout << "end of this" << endl;
+
+		return true;
 	}
 	else
 	{
 
 		//new file
 		assert( false && "error getting file to edit " );
+
+		return false;
 	}
 }
 
@@ -5062,7 +5070,7 @@ void GameSession::SetupZones()
 		(*it)->Init();
 	}
 
-
+	//cout << "init zones over" << endl;
 
 	/*for( int i = 0; i < numGates; ++i )
 	{
@@ -5211,11 +5219,15 @@ int GameSession::Run( string fileN )
 	
 	
 	//enterNexus1Seq = new EnterNexus1Seq( this );
-
+	cout << "NOTNOTNOTNTO" << endl;
 	pauseMenu = new PauseMenu( this );
 	pauseMenu->SetTab( PauseMenu::Tab::KIN );
+
+	cout << "TEST" << endl;
 	//pauseMenu->cOptions->xboxInputAssoc[0];
 	mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+
+	cout << "WHAT IS THIS" << endl;
 
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
 
@@ -5258,6 +5270,7 @@ int GameSession::Run( string fileN )
 
 	stringstream ss;
 
+	cout << "NICE" << endl;
 
 	int eType = envLevel + 1; //adjust for alex naming -_-
 	ss << "Backgrounds/w" << envType+1 << "_BG";
@@ -5286,7 +5299,7 @@ int GameSession::Run( string fileN )
 	background.setPosition( 0, 0 );
 	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 1920, 1080 ) );
 
-
+	cout << "NICE @@@@" << endl;
 	
 	flowShader.setParameter( "goalPos", goalPos.x, goalPos.y );
 	
@@ -5358,7 +5371,7 @@ int GameSession::Run( string fileN )
 	controller.UpdateState();
 	currInput = controller.GetState();
 	//ControllerState con = controller.GetState();
-
+	cout << "BLAHGWEHIGAWEGHEHG about to start" << endl;
 	
 	
 	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
@@ -5585,7 +5598,7 @@ int GameSession::Run( string fileN )
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 0, 0 ), 1920 * 2, 30 );
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
-
+	cout << "loop about to start" << endl;
 
 
 	while( !quit )
@@ -10462,6 +10475,8 @@ sf::VertexArray * GameSession::SetupDecor0( std::vector<p2t::Triangle*> &tris, T
 	{
 		//random point stuff. do this after you get the enemies working
 	}
+
+	return NULL;
 }
 
 sf::VertexArray *GameSession::SetupBushes( int bgLayer, std::vector<p2t::Triangle*> &tris, Tileset *ts )

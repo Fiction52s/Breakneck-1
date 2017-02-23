@@ -974,9 +974,10 @@ void Cheetah::HitTerrain( double &q )
 	
 }
 
+//why is this mostly empty??
 bool Cheetah::StartRoll()
 {
-
+	return false;
 }
 
 void Cheetah::FinishedRoll()

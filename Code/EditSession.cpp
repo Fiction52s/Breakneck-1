@@ -2519,9 +2519,13 @@ bool EditSession::OpenFile( string fileName )
 		//new file
 		cout << "filename: " << fileName << endl;
 		assert( false && "error getting file to edit " );
+
+		return false;
 	}
 
 	grassTex.loadFromFile( "newgrass2.png" );
+
+	return true;
 	
 }
 
@@ -13786,7 +13790,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			//int storedIndex;
 			TerrainPoint *storedEdge = NULL;
 			TerrainPolygon *storedPoly = NULL;
-			double storedQuantity;
+			double storedQuantity = 0;
 							
 			V2d closestPoint;
 

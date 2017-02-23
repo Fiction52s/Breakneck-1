@@ -33,6 +33,8 @@ Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
 	case BIRDBOSS:
 		break;
 	};
+
+	return NULL;
 }
 
 Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,

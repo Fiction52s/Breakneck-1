@@ -1330,8 +1330,9 @@ void PoisonFrog::HitTerrain( double &q )
 
 bool PoisonFrog::StartRoll()
 {
-	
+	return false;
 }
+
 void PoisonFrog::FinishedRoll()
 {
 	if( owner->IsSteepGround( mover->ground->Normal() ) == -1 )

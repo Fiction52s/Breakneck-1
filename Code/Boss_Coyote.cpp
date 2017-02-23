@@ -1398,7 +1398,7 @@ void Boss_Coyote::HitTerrain( double &q )
 
 bool Boss_Coyote::StartRoll()
 {
-
+	return false;
 }
 
 void Boss_Coyote::FinishedRoll()

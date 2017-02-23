@@ -1356,19 +1356,19 @@ void Spider::LoadEnemyState()
 {
 }
 
-void Spider::HitTerrain( double &q )
-{
-	
-}
 
 bool Spider::StartRoll()
 {
-
+	return false;
 }
 
 void Spider::FinishedRoll()
 {
+}
 
+void Spider::HitTerrain( double &q )
+{
+	
 }
 
 void Spider::HitOther()

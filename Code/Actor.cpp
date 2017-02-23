@@ -1994,9 +1994,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn && !justToggledBounce )
 			{
-			//	bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -2119,9 +2117,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -2309,8 +2305,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -2424,8 +2419,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -2706,7 +2700,7 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-
+			//groundSpeed = 0;
 			if( reversed )
 			{
 				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
@@ -2741,8 +2735,7 @@ void Actor::UpdatePrePhysics()
 
 					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
 					{
-						/*re->Reset();
-						re1->Reset();*/
+						cout << "storedreversesddddpeed: " << storedReverseSpeed << endl;
 						groundSpeed = storedReverseSpeed;
 						action = DASH;
 						frame = 0;
@@ -2754,6 +2747,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LLeft() || currInput.LRight() )
 					{
+						cout << "storedreversespeed: " << storedReverseSpeed << endl;
 						groundSpeed = storedReverseSpeed;
 						SetActionExpr( RUN );
 						frame = 0;
@@ -2780,7 +2774,11 @@ void Actor::UpdatePrePhysics()
 					}
 				}
 			}
-			
+			else
+			{
+				assert( 0 && "should be reversed here" );
+			}
+
 			if( shockwaveHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = shockwaveHitboxes[frame];
@@ -2788,7 +2786,6 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
-		
 	case WALLCLING:
 		{
 			if( !currInput.LDown() && ( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) ) )
@@ -2950,8 +2947,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -3004,8 +3000,7 @@ void Actor::UpdatePrePhysics()
 			{
 
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -3059,8 +3054,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -3113,8 +3107,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -3166,9 +3159,7 @@ void Actor::UpdatePrePhysics()
 			{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -3221,8 +3212,7 @@ void Actor::UpdatePrePhysics()
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -3274,10 +3264,7 @@ void Actor::UpdatePrePhysics()
 			//don't break becaus eyou can cancel this
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3375,9 +3362,7 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3650,9 +3635,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3819,10 +3802,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
-
-					//bounceGrounded = true;
-					bounceFlameOn = true;
-					runBounceFrame = 0;
+					BounceFlameOn();
 				}
 				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 				{
@@ -3899,10 +3879,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
-
-					//bounceGrounded = true;
-					bounceFlameOn = true;
-					runBounceFrame = 0;
+					BounceFlameOn();
 				}
 				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 				{
@@ -3979,9 +3956,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
-					//bounceGrounded = true;
-					bounceFlameOn = true;
-					runBounceFrame = 0;
+					BounceFlameOn();
 				}
 				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 				{
@@ -4443,9 +4418,7 @@ void Actor::UpdatePrePhysics()
 			{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				airBounceFrame = 0;
+				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				break;
@@ -4495,9 +4468,7 @@ void Actor::UpdatePrePhysics()
 
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -4615,9 +4586,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-				//bounceGrounded = true;
-				bounceFlameOn = true;
-				runBounceFrame = 0;
+				BounceFlameOn();
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -4771,6 +4740,7 @@ void Actor::UpdatePrePhysics()
 			{
 				SetActionExpr( JUMP );
 				frame = 1;
+				BounceFlameOff();
 			}
 
 			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
@@ -4780,7 +4750,7 @@ void Actor::UpdatePrePhysics()
 					
 					action = AIRDASH;
 					airDashStall = false;
-					BounceFlameOff();
+					//BounceFlameOff();
 
 					//special unlimited airdash
 					if( inBubble && !hasAirDash )
@@ -4806,7 +4776,8 @@ void Actor::UpdatePrePhysics()
 
 			if( AirAttack() )
 			{
-				bounceFlameOn = true;
+				BounceFlameOn();
+				//bounceFlameOn = true;
 				airBounceFrame = 13 * 3;
 			}
 			break;
@@ -6138,11 +6109,6 @@ void Actor::UpdatePrePhysics()
 		}
 		break;
 	case GRAVREVERSE:
-		if( groundSpeed != 0 )
-		{
-			storedReverseSpeed = groundSpeed;
-		}
-		groundSpeed = 0;
 		break;
 	case STEEPSLIDE:
 		{
@@ -7445,16 +7411,15 @@ bool Actor::CheckStandUp()
 			cout << "cant stand up" << endl;
 		}*/
 
-		if( checkValid )
+		/*if( checkValid )
 		{
 			cout << "canstand" << endl;
 		}
 		else
 		{
 			cout << "cannot stand" << endl;
-		}
+		}*/
 		return checkValid;
-
 	}
 	
 }
@@ -11644,8 +11609,9 @@ void Actor::PhysicsResponse()
 				if( abs( storedBounceVel.y ) < 10 )
 				{
 					//cout << "land: " << abs(storedBounceVel.y) << endl;
-					bounceFlameOn = true;
+					BounceFlameOn();
 					runBounceFrame = 4 * 3;
+					
 					action = LAND;
 					frame = 0;
 					//bounceEdge = NULL;
@@ -11796,6 +11762,21 @@ void Actor::PhysicsResponse()
 						{
 							//cout << "frames in air: " << framesInAir << endl;
 							action = GRAVREVERSE;
+
+							if( currInput.LLeft() || currInput.LRight() )
+							{
+								storedReverseSpeed = 0;
+							}
+							else
+							{
+								storedReverseSpeed = -groundSpeed;
+							}
+							
+							//if( groundSpeed != 0 )
+							//{
+							//storedReverseSpeed = -groundSpeed;
+							//}
+							//groundSpeed = 0;
 							
 						}
 						else
@@ -12230,7 +12211,7 @@ void Actor::UpdateHitboxes()
 			gd = V2d( 1, 0 );
 			if( reversed )
 			{
-				cout << "BLAH BLAH" << endl;
+				//cout << "BLAH BLAH" << endl;
 				angle = PI;
 				gn = V2d( 0, 1 );
 				gd = V2d( -1, 0 );
@@ -13152,6 +13133,13 @@ void Actor::UpdatePostPhysics()
 
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
+}
+
+void Actor::BounceFlameOn()
+{
+	bounceFlameOn = true;
+	runBounceFrame = 0;
+	airBounceFrame = 0;
 }
 
 void Actor::BounceFlameOff()
@@ -15033,29 +15021,30 @@ void Actor::EnterNexus( int nexusIndex, sf::Vector2<double> &pos )
 
 void Actor::DodecaLateDraw(sf::RenderTarget *target)
 {
-	sf::Sprite dodecaSprite;
 	int dodecaFactor = 1;
 	for( int i = 0; i < maxBubbles; ++i )
 	{
 		if( bubbleFramesToLive[i] > 0 )
 		{
-			int trueFrame = bubbleLifeSpan - ( bubbleFramesToLive[i] );
-			//cout << "trueFrame: " << trueFrame << endl;
-			if( trueFrame / dodecaFactor < 9 )
+			int trueFrame = bubbleLifeSpan - ( bubbleFramesToLive[i] - 1);
+			if( trueFrame / dodecaFactor - 9 < 12 )
 			{
-				dodecaSprite.setTexture( *ts_dodecaSmall->texture );
-				dodecaSprite.setTextureRect( ts_dodecaSmall->GetSubRect( trueFrame / dodecaFactor ) );
-				dodecaSprite.setOrigin( dodecaSprite.getLocalBounds().width / 2, dodecaSprite.getLocalBounds().height / 2 );
-			}
-			else
-			{
-				dodecaSprite.setTexture( *ts_dodecaBig->texture );
-				dodecaSprite.setTextureRect( ts_dodecaBig->GetSubRect( trueFrame / dodecaFactor - 9 ) );
-				dodecaSprite.setOrigin( dodecaSprite.getLocalBounds().width / 2, dodecaSprite.getLocalBounds().height / 2 );
-			}
-			dodecaSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
+				if( trueFrame / dodecaFactor < 9 )
+				{
+					dodecaSprite.setTexture( *ts_dodecaSmall->texture );
+					dodecaSprite.setTextureRect( ts_dodecaSmall->GetSubRect( trueFrame / dodecaFactor ) );
+					dodecaSprite.setOrigin( dodecaSprite.getLocalBounds().width / 2, dodecaSprite.getLocalBounds().height / 2 );
+				}
+				else
+				{
+					dodecaSprite.setTexture( *ts_dodecaBig->texture );
+					dodecaSprite.setTextureRect( ts_dodecaBig->GetSubRect( trueFrame / dodecaFactor - 9 ) );
+					dodecaSprite.setOrigin( dodecaSprite.getLocalBounds().width / 2, dodecaSprite.getLocalBounds().height / 2 );
+				}
+				dodecaSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
 
-			target->draw( dodecaSprite );
+				target->draw( dodecaSprite );
+			}
 		}
 	}
 }
@@ -17801,10 +17790,10 @@ void Actor::ConfirmHit( int worldIndex,
 	//desperationMode = false;
 }
 
-void Actor::ConfirmWireHit( bool right )
-{
-
-}
+//void Actor::ConfirmWireHit( bool right )
+//{
+//
+//}
 
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

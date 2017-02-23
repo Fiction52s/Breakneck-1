@@ -227,6 +227,9 @@ struct Actor : QuadTreeCollider,
 	void CheckHoldJump();
 
 	void BounceFlameOff();
+	void BounceFlameOn();
+
+	sf::Sprite dodecaSprite;
 
 	void SetActivePowers(
 		bool canAirDash,
