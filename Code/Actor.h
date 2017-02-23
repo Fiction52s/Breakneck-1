@@ -412,7 +412,14 @@ struct Actor : QuadTreeCollider,
 	double steepClimbGravFactor;
 	double steepClimbFastFactor;
 
+	double GetDashSpeed();
+	double GetAirDashSpeed();
 	double airDashSpeed;
+
+	double airDashSpeed0;
+	double airDashSpeed1;
+	double airDashSpeed2;
+
 
 	CollisionBox b;
 	CollisionBox hurtBody;
@@ -466,6 +473,9 @@ struct Actor : QuadTreeCollider,
 	double maxAirXSpeed;
 	double maxAirXControl;
 	double dashSpeed;
+	double dashSpeed0;
+	double dashSpeed1;
+	double dashSpeed2;
 	double slideGravFactor;
 
 	double doubleJumpStrength;
@@ -586,6 +596,11 @@ struct Actor : QuadTreeCollider,
 	const static int maxBubbles = 5;
 	int bubbleLifeSpan;
 	int bubbleRadius;
+	int bubbleRadius0;
+	int bubbleRadius1;
+	int bubbleRadius2;
+	
+	int GetBubbleRadius();
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	//--
@@ -593,6 +608,7 @@ struct Actor : QuadTreeCollider,
 	
 	sf::Vector2<double> bubblePos[maxBubbles];
 	int bubbleFramesToLive[maxBubbles];
+	int bubbleRadiusSize[maxBubbles];
 	int currBubble;
 
 	

@@ -7575,8 +7575,13 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y + view.getSize().y / 2 );
 
-		cloneShader.setParameter( "bubbleRadius", player->bubbleRadius );
+		cloneShader.setParameter( "bubbleRadius0", player->bubbleRadiusSize[0] );
+		cloneShader.setParameter( "bubbleRadius1", player->bubbleRadiusSize[1] );
+		cloneShader.setParameter( "bubbleRadius2", player->bubbleRadiusSize[2] );
+		cloneShader.setParameter( "bubbleRadius3", player->bubbleRadiusSize[3] );
+		cloneShader.setParameter( "bubbleRadius4", player->bubbleRadiusSize[4] );
 		
+
 		float windowx = 1920;//window->getSize().x;
 		float windowy = 1080;//window->getSize().y;
 
@@ -7613,8 +7618,8 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "b3Frame", player->bubbleFramesToLive[3] );
 		cloneShader.setParameter( "bubble4", pos4 );
 		cloneShader.setParameter( "b4Frame", player->bubbleFramesToLive[4] );
-		cloneShader.setParameter( "bubble5", pos5 );
-		cloneShader.setParameter( "b5Frame", player->bubbleFramesToLive[5] );
+		//cloneShader.setParameter( "bubble5", pos5 );
+		//cloneShader.setParameter( "b5Frame", player->bubbleFramesToLive[5] );
 		
 
 		

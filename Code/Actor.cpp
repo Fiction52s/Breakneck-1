@@ -48,8 +48,8 @@ Actor::Actor( GameSession *gs )
 		speedChangeDown = .03;//.005;//.07;
 
 		grindLungeSpeed0 = 15.0;
-		grindLungeSpeed1 = 20.0;
-		grindLungeSpeed2 = 28.0;
+		grindLungeSpeed1 = 17.0;//20.0;
+		grindLungeSpeed2 = 22.0;//28.0;
 		//grindLungeExtraMax = 10.0;
 
 		speedLevel = 0;
@@ -848,6 +848,15 @@ Actor::Actor( GameSession *gs )
 		jumpStrength = 21.5;//18;//25;//27.5; // 2 
 		doubleJumpStrength = 20;//17;//23;//26.5;
 		dashSpeed = 9;//12; // 3
+
+		dashSpeed0 = 9;
+		dashSpeed1 = 10.5;
+		dashSpeed2 = 12;
+
+		airDashSpeed0 = dashSpeed0;
+		airDashSpeed1 = dashSpeed1;
+		airDashSpeed2 = dashSpeed2;
+
 		airDashSpeed = dashSpeed;
 		maxFallSpeedSlow = 30;//30;//100; // 4
 		maxFallSpeedFast = 60;
@@ -969,6 +978,12 @@ Actor::Actor( GameSession *gs )
 
 		currBubble = 0;
 		bubbleRadius = 160;
+
+		bubbleRadius0 = 160;
+		bubbleRadius1 = 180;
+		bubbleRadius2 = 200;
+		
+
 		bubbleLifeSpan = 240;
 
 		for( int i = 0; i < maxBubbles; ++i )
@@ -4841,6 +4856,7 @@ void Actor::UpdatePrePhysics()
 				//double dd = dot( 
 				//velocity = normalize( 
 
+				double dSpeed = GetDashSpeed();
 				if( bn.y < 0 )
 				{
 					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
@@ -4888,11 +4904,11 @@ void Actor::UpdatePrePhysics()
 						
 						if( storedBounceVel.x > 0 && currInput.LLeft() )
 						{
-							storedBounceVel.x = -dashSpeed;
+							storedBounceVel.x = -dSpeed;
 						}
 						else if( storedBounceVel.x < 0 && currInput.LRight() )
 						{
-							storedBounceVel.x = dashSpeed;
+							storedBounceVel.x = dSpeed;
 						}
 						else if( storedBounceVel.x == 0 ) 
 						{
@@ -5265,7 +5281,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-
+					double dSpeed = GetDashSpeed();
 
 					if( bounceFlameOn )
 						airBounceFrame = 13 * 3;
@@ -5333,28 +5349,28 @@ void Actor::UpdatePrePhysics()
 					{
 						if( currInput.LRight() )
 						{
-							if( velocity.x < dashSpeed )
-								velocity.x = dashSpeed;
+							if( velocity.x < dSpeed )
+								velocity.x = dSpeed;
 						}
 						else if( currInput.LLeft() )
 						{
-							if( velocity.x > -dashSpeed )
-								velocity.x = -dashSpeed;
+							if( velocity.x > -dSpeed )
+								velocity.x = -dSpeed;
 						}
 					}
 					if( velocity.y > 0 )
 					{
 						//min jump velocity for jumping off of edges.
-						if( abs(velocity.x) < dashSpeed && length( velocity ) >= dashSpeed )
+						if( abs(velocity.x) < dSpeed && length( velocity ) >= dSpeed )
 						{
 					//		cout << "here: " << velocity.x << endl;
 							if( velocity.x > 0 )
 							{
-								velocity.x = dashSpeed;
+								velocity.x = dSpeed;
 							}
 							else
 							{
-								velocity.x = -dashSpeed;
+								velocity.x = -dSpeed;
 							}
 						}
 
@@ -5724,6 +5740,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DASH:
 		{
+			double dSpeed = GetDashSpeed();
 			b.rh = dashHeight;
 			b.offset.y = (normalHeight - dashHeight);
 			if( reversed )
@@ -5731,24 +5748,24 @@ void Actor::UpdatePrePhysics()
 			if( currInput.LLeft() && facingRight )
 			{
 				facingRight = false;
-				groundSpeed = -dashSpeed;
+				groundSpeed = -dSpeed;
 				frame = 0;
 			}
 			else if( currInput.LRight() && !facingRight )
 			{
 				facingRight = true;
-				groundSpeed = dashSpeed;
+				groundSpeed = dSpeed;
 				frame = 0;
 			}
 			else if( !facingRight )
 			{
-				if( groundSpeed > -dashSpeed )
-					groundSpeed = -dashSpeed;
+				if( groundSpeed > -dSpeed )
+					groundSpeed = -dSpeed;
 			}
 			else
 			{
-				if( groundSpeed < dashSpeed )
-					groundSpeed = dashSpeed;
+				if( groundSpeed < dSpeed )
+					groundSpeed = dSpeed;
 			}
 
 			double minFactor = .2;
@@ -6136,91 +6153,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
-		//	hurtBody.isCircle = true;
-		//	hurtBody.rw = 10;
-		//	hurtBody.rh = 10;
-
-			
-
-			/*if( frame == 0 )
-			{
-				
-
-
-				hasAirDash = false;
-				startAirDashVel = V2d( velocity.x, 0 );//velocity;//
-			}
-			velocity = V2d( 0, 0 );//startAirDashVel;
-			//velocity = V2d( 0, 0 ) velocity.x, -gravity / slowMultiple );
-
-			if( currInput.LUp() )
-			{
-				if( startAirDashVel.y > 0 )
-				{
-					startAirDashVel.y = 0;
-					velocity.y = 0;
-					velocity.y = -airDashSpeed;
-				}
-				else
-				{
-					velocity.y = -airDashSpeed;
-				}
-				
-			}
-			else if( currInput.LDown() )
-			{
-				if( startAirDashVel.y < 0 )
-				{
-					startAirDashVel.y = 0;
-					velocity.y = 0;
-					velocity.y = airDashSpeed;
-				}
-				else
-				{
-					velocity.y = airDashSpeed;
-				}
-				
-			}
-
-
-			if( currInput.LLeft() )
-			{
-				if( startAirDashVel.x > 0 )
-				{
-					startAirDashVel.x = 0;
-					velocity.x = 0;
-					velocity.x = -airDashSpeed;
-				}
-				else
-				{
-					velocity.x = min( startAirDashVel.x, -airDashSpeed );
-				}
-				facingRight = false;
-				//velocity.y -= gravity / slowMultiple;
-			}
-			else if( currInput.LRight() )
-			{
-				if( startAirDashVel.x < 0 )
-				{
-					startAirDashVel.x = 0;
-					velocity.x = 0;
-					velocity.x = airDashSpeed;
-				}
-				else
-				{
-					velocity.x = max( startAirDashVel.x, airDashSpeed );
-				}
-				facingRight = true;
-				//velocity.y -= gravity / slowMultiple;
-			}
-			
-			if( velocity.x == 0 && velocity.y == 0 )
-			{
-				startAirDashVel = V2d( 0, 0 );
-			}
-
-			velocity.y -= gravity / slowMultiple;
-			*/
+			double aSpeed = GetAirDashSpeed();
 			if( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
 			{
 				if( frame == 0 )
@@ -6249,15 +6182,15 @@ void Actor::UpdatePrePhysics()
 					startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 					if( (velocity.y > 0 && currInput.LDown()) || ( velocity.y < 0 && currInput.LUp() ) )
 					{
-						if( abs( velocity.y ) > airDashSpeed )
+						if( abs( velocity.y ) > aSpeed )
 						{
 							if( velocity.y < 0 )
 							{
-								extraAirDashY = velocity.y + airDashSpeed;// / 2;
+								extraAirDashY = velocity.y + aSpeed;// / 2;
 							}
 							else
 							{
-								extraAirDashY = velocity.y - airDashSpeed;// / 2;
+								extraAirDashY = velocity.y - aSpeed;// / 2;
 							}
 						}
 						else
@@ -6293,7 +6226,7 @@ void Actor::UpdatePrePhysics()
 					if( extraAirDashY > 0 )
 						extraAirDashY = 0;
 
-					velocity.y = -airDashSpeed + extraAirDashY;
+					velocity.y = -aSpeed + extraAirDashY;
 
 					if( extraAirDashY < 0 )
 					{
@@ -6314,7 +6247,7 @@ void Actor::UpdatePrePhysics()
 					if( extraAirDashY < 0 )
 						extraAirDashY = 0;
 
-					velocity.y = airDashSpeed + extraAirDashY;
+					velocity.y = aSpeed + extraAirDashY;
 
 					if( extraAirDashY > 0 )
 					{
@@ -6333,11 +6266,11 @@ void Actor::UpdatePrePhysics()
 					if( startAirDashVel.x > 0 )
 					{
 						startAirDashVel.x = 0;
-						velocity.x = -airDashSpeed;
+						velocity.x = -aSpeed;
 					}
 					else
 					{
-						velocity.x = min( startAirDashVel.x, -airDashSpeed );
+						velocity.x = min( startAirDashVel.x, -aSpeed );
 					}
 					facingRight = false;
 				
@@ -6347,11 +6280,11 @@ void Actor::UpdatePrePhysics()
 					if( startAirDashVel.x < 0 )
 					{
 						startAirDashVel.x = 0;
-						velocity.x = airDashSpeed;
+						velocity.x = aSpeed;
 					}
 					else
 					{
-						velocity.x = max( startAirDashVel.x, airDashSpeed );
+						velocity.x = max( startAirDashVel.x, aSpeed );
 					}
 					facingRight = true;
 				}
@@ -7033,7 +6966,7 @@ void Actor::UpdatePrePhysics()
 			if( bubbleFramesToLive[i] > 0 )
 			{
 				//if( IsQuadTouchingCircle( hurtB
-				if( length( position - bubblePos[i] ) < bubbleRadius )
+				if( length( position - bubblePos[i] ) < bubbleRadiusSize[i] )
 				{
 					inBubble = true;
 					break;
@@ -7063,17 +6996,13 @@ void Actor::UpdatePrePhysics()
 
 	if( ( hasPowerTimeSlow && currInput.leftShoulder ) || cloneBubbleCreated )
 	{
-		
-		
-
-		
-
 		if( (!prevInput.leftShoulder  && !inBubble) || cloneBubbleCreated )
 		{
 			if( bubbleFramesToLive[currBubble] == 0 )
 			{
 				inBubble = true;
 				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
+				bubbleRadiusSize[currBubble] = GetBubbleRadius();
 
 				if( !cloneBubbleCreated )
 				{
@@ -8747,6 +8676,54 @@ V2d Actor::UpdateReversePhysics()
 		}
 	}
 	return leftGroundExtra;
+}
+
+double Actor::GetDashSpeed()
+{
+	switch( speedLevel )
+	{
+	case 0:
+		return dashSpeed0;
+		break;
+	case 1:
+		return dashSpeed1;
+		break;
+	case 2:
+		return dashSpeed2;
+		break;
+	}
+}
+
+double Actor::GetAirDashSpeed()
+{
+	switch( speedLevel )
+	{
+	case 0:
+		return airDashSpeed0;
+		break;
+	case 1:
+		return airDashSpeed1;
+		break;
+	case 2:
+		return airDashSpeed2;
+		break;
+	}
+}
+
+int Actor::GetBubbleRadius()
+{
+	switch( speedLevel )
+	{
+	case 0:
+		return bubbleRadius0;
+		break;
+	case 1:
+		return bubbleRadius1;
+		break;
+	case 2:
+		return bubbleRadius2;
+		break;
+	}
 }
 
 //eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
@@ -14655,23 +14632,23 @@ void Actor::Draw( sf::RenderTarget *target )
 	if( ground != NULL )
 	{
 		double gs = abs( groundSpeed );
-		if( gs >= dashSpeed )
+		if( gs >= dashSpeed0 )
 		{
 			showMotionGhosts = 1;
 		}
-		else if( gs >= dashSpeed * 1.5 )
+		else if( gs >= dashSpeed0 * 1.5 )
 		{
 			showMotionGhosts = 2;
 		}
-		else if( gs >= dashSpeed * 1.7 )
+		else if( gs >= dashSpeed0 * 1.7 )
 		{
 			showMotionGhosts = 3;
 		}
-		else if( gs >= dashSpeed * 2 ) 
+		else if( gs >= dashSpeed0 * 2 ) 
 		{
 			showMotionGhosts = 4;
 		}
-		else if( gs >= dashSpeed * 2.3 )
+		else if( gs >= dashSpeed0 * 2.3 )
 		{
 			showMotionGhosts = 5;
 		}
@@ -14679,19 +14656,19 @@ void Actor::Draw( sf::RenderTarget *target )
 	else
 	{
 		double len = length( velocity );
-		if( len >= dashSpeed * 2 )
+		if( len >= dashSpeed0 * 2 )
 		{
 			showMotionGhosts = 5;
 		}
-		else if( len >= dashSpeed * 1.7 )
+		else if( len >= dashSpeed0 * 1.7 )
 		{
 			showMotionGhosts = 4;
 		}
-		else if( len >= dashSpeed * 1.5 )
+		else if( len >= dashSpeed0 * 1.5 )
 		{
 			showMotionGhosts = 3;
 		}
-		else if( len >= dashSpeed )
+		else if( len >= dashSpeed0 )
 		{
 			showMotionGhosts = 2;
 		}
@@ -14952,7 +14929,12 @@ void Actor::Draw( sf::RenderTarget *target )
 		if( bubbleFramesToLive[i] > 0 )
 		{
 			bubbleSprite.setTextureRect( ts_bubble->GetSubRect( bubbleFramesToLive[i] % 11 ) );
-			bubbleSprite.setScale( 2, 2 );
+			//this isnt going to be final anyway
+			//cout << "drawing " << i << ": " << bubbleRadiusSize[i] << endl;
+			double fac = ((double)bubbleRadiusSize[i]) / 160.0;
+			//cout << "fac: " << fac << endl;
+			bubbleSprite.setScale( fac * 2, fac * 2 );
+			//bubbleSprite.setScale( 2, 2 );
 			bubbleSprite.setOrigin( bubbleSprite.getLocalBounds().width / 2, bubbleSprite.getLocalBounds().height / 2 );
 			bubbleSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
 			bubbleSprite.setColor( Color( 255, 255, 255, 200 ) );
@@ -18057,9 +18039,10 @@ void Actor::AirMovement()
 	}
 	else
 	{
+		double dSpeed = GetDashSpeed();
 		if( currInput.LLeft() )
 		{
-			if( velocity.x > dashSpeed )
+			if( velocity.x > dSpeed )
 			{
 				velocity.x -= airAccel;
 			}
@@ -18074,7 +18057,7 @@ void Actor::AirMovement()
 		}
 		else if( currInput.LRight() )
 		{
-			if( velocity.x < -dashSpeed )
+			if( velocity.x < -dSpeed )
 			{
 				velocity.x += airAccel;
 			}
@@ -18089,37 +18072,37 @@ void Actor::AirMovement()
 		}
 		else if( !currInput.LUp() && !currInput.LDown() )
 		{
-			if( velocity.x > dashSpeed )
+			if( velocity.x > dSpeed )
 			{
 				velocity.x -= airSlow;
-				if( velocity.x < dashSpeed ) 
+				if( velocity.x < dSpeed ) 
 				{
-					velocity.x = dashSpeed;
+					velocity.x = dSpeed;
 				}
 			}
 			else if( velocity.x > 0 )
 			{
 				velocity.x += -airSlow;
 				if( velocity.x < 0 ) velocity.x = 0;
-				else if( velocity.x >= -dashSpeed )
+				else if( velocity.x >= -dSpeed )
 				{
 					velocity.x = 0;
 				}
 				//velocity.x = 0;
 			}
-			else if( velocity.x < -dashSpeed )
+			else if( velocity.x < -dSpeed )
 			{
 				velocity.x += airSlow;
-				if( velocity.x > -dashSpeed ) 
+				if( velocity.x > -dSpeed ) 
 				{
-					velocity.x = -dashSpeed;
+					velocity.x = -dSpeed;
 				}
 			}
 			else if( velocity.x < 0 )
 			{
 				velocity.x += airSlow;
 				if( velocity.x > 0 ) velocity.x = 0;
-				else if( velocity.x >= -dashSpeed )
+				else if( velocity.x >= -dSpeed )
 				{
 					velocity.x = 0;
 				}
@@ -18245,13 +18228,14 @@ void Actor::RunMovement()
 
 void Actor::AttackMovement()
 {
+	double dSpeed = GetDashSpeed();
 	if( currInput.LLeft() )
 	{
 		if( groundSpeed > 0 )
 		{
 			if( currInput.B )
 			{
-				groundSpeed = -dashSpeed;
+				groundSpeed = -dSpeed;
 			}
 			else
 			{
@@ -18260,9 +18244,9 @@ void Actor::AttackMovement()
 		}
 		else
 		{
-			if( groundSpeed > -dashSpeed && currInput.B )
+			if( groundSpeed > -dSpeed && currInput.B )
 			{
-				groundSpeed = -dashSpeed;
+				groundSpeed = -dSpeed;
 			}
 			else if( groundSpeed > -maxRunInit )
 			{
@@ -18283,7 +18267,7 @@ void Actor::AttackMovement()
 		{
 			if( currInput.B )
 			{
-				groundSpeed = dashSpeed;
+				groundSpeed = dSpeed;
 			}
 			else
 			{
@@ -18292,9 +18276,9 @@ void Actor::AttackMovement()
 		}
 		else
 		{
-			if( groundSpeed < dashSpeed && currInput.B )
+			if( groundSpeed < dSpeed && currInput.B )
 			{
-				groundSpeed = dashSpeed;
+				groundSpeed = dSpeed;
 			}
 			else if( groundSpeed < maxRunInit )
 			{
@@ -18325,30 +18309,31 @@ void Actor::SetActionGrind()
 	//if( reversed )
 	//	gSpeed = -gSpeed;
 	//groundSpeed = 10;
+	double dSpeed = GetDashSpeed();
 	if( groundSpeed == 0 )
 	{
 		if( facingRight )
 		{
 
 			//cout << "dashspeed" << endl;
-			grindSpeed = dashSpeed;
+			grindSpeed = dSpeed;
 			//if( reversed )
 			//	grindSpeed = -dashSpeed;
 		}
 		else
 		{
-			grindSpeed = -dashSpeed;
+			grindSpeed = -dSpeed;
 			//if( reversed )
 			//	grindSpeed = dashSpeed;
 		}
 	}
 	else if( groundSpeed > 0 )
 	{
-		grindSpeed = std::max( groundSpeed, dashSpeed );
+		grindSpeed = std::max( groundSpeed, dSpeed );
 	}
 	else
 	{
-		grindSpeed = std::min( groundSpeed, -dashSpeed );
+		grindSpeed = std::min( groundSpeed, -dSpeed );
 	}
 	
 
