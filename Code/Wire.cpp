@@ -30,7 +30,7 @@ Wire::Wire( Actor *p, bool r)
 		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
 	}
 
-	//ts_wireCharge = player->owner->GetTileset( "wirecharge_32x32.png", 32, 32 );
+	ts_wireCharge = player->owner->GetTileset( "wirecharge_32x32.png", 32, 32 );
 
 	minSideEdge = NULL;
 	minSideOther = -1;
@@ -39,20 +39,30 @@ Wire::Wire( Actor *p, bool r)
 	triggerDown = false;
 	prevTriggerDown = false;
 
-	retractSpeed = 60;
+	retractSpeed = 20;//60;
 
 	numAnimFrames = 8;
+
+	//numTotalCharges = 0;
 
 	activeChargeList = NULL;
 	inactiveChargeList = NULL;
 	//charges start at the earliest retraction points so they hit the most targets.
-	/*for( int i = 0; i < MAX_CHARGES; ++i )
+	for( int i = 0; i < MAX_CHARGES; ++i )
 	{
 		CreateWireCharge();
-	}*/
+	}
 	
 
 	//lockEdge = NULL;
+}
+
+void Wire::ActivateCharges()
+{
+	for( int i = 0; i < numPoints; ++i )
+	{
+		ActivateWireCharge( i );
+	}
 }
 
 void Wire::UpdateState( bool touchEdgeWithWire )
@@ -249,6 +259,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				if( canRetractGround && !triggerDown && prevTriggerDown )
 				{
 					state = RETRACTING;
+
+					ActivateCharges();
 					//cout << "beginning retracting" << endl;
 					retractPlayerPos = playerPos;
 					fusePointIndex = numPoints;
@@ -324,6 +336,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				if( !triggerDown && player->ground == NULL )
 				{
 					state = RETRACTING;
+					ActivateCharges();
 					retractPlayerPos = playerPos;
 					fusePointIndex = numPoints;
 					if( numPoints == 0 )
@@ -633,15 +646,17 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	}
 }
 
-void Wire::ClearWireCharges()
+void Wire::ClearCharges()
 {
-	/*WireCharge *curr = activeChargeList;
+	cout << "clearing charges" << endl;
+	WireCharge *curr = activeChargeList;
+	WireCharge *temp;
 	while( curr != NULL )
 	{
-		WireCharge *temp = curr->next;
+		temp = curr->next;
 		DeactivateWireCharge( curr );
 		curr = temp;
-	}*/
+	}
 }
 
 void Wire::SortNewPoints( int start, int end )
@@ -1525,6 +1540,12 @@ void Wire::UpdateQuads()
 		if( state == FIRING )
 			++framesFiring;
 	}
+
+	if( state == RETRACTING )
+	{
+		cout << "calling to update all sprites" << endl;
+		UpdateChargesSprites();
+	}
 }
 
 void Wire::Draw( RenderTarget *target )
@@ -1615,7 +1636,7 @@ void Wire::Draw( RenderTarget *target )
 
 	if( state == RETRACTING )
 	{
-		//target->draw( chargeVA, ts_wireCharge->texture );
+		target->draw( chargeVA, ts_wireCharge->texture );
 	}
 }
 
@@ -1671,7 +1692,7 @@ void Wire::Reset()
 	numPoints = 0;
 	framesFiring = 0;
 	frame = 0;
-	ClearWireCharges();
+	ClearCharges();
 }
 
 V2d Wire::GetOriginPos( bool test )
@@ -1731,7 +1752,7 @@ void Wire::UpdateFuse()
 				{
 					fuseQuantity = 0;
 					state = RELEASED;
-					ClearWireCharges();
+					ClearCharges();
 					//cout << "setting released" << endl;
 					return;
 				}
@@ -1760,7 +1781,7 @@ void Wire::UpdateFuse()
 				{
 					fuseQuantity = 0;
 					state = RELEASED;
-					ClearWireCharges();
+					ClearCharges();
 					return;
 				}
 				else if( fusePointIndex == 0 )
@@ -1784,8 +1805,8 @@ void Wire::UpdateFuse()
 	}
 }
 
-Wire::WireCharge::WireCharge( int vIndex )
-	:vaIndex( vIndex )
+Wire::WireCharge::WireCharge( Wire*w, int vIndex )
+	:vaIndex( vIndex ), wire( w ),edgeIndex( -1 )
 {
 	prev = NULL;
 	next = NULL;
@@ -1801,73 +1822,91 @@ void Wire::WireCharge::Reset()
 //actor should change the offset every frame based on its info. need a before movement wire position and a post movement wire position consistently
 void Wire::WireCharge::UpdatePhysics()
 {
-	//if( wire->right )
-	//{
-	//	double momentum = wire->retractSpeed;
+	int currPoints = edgeIndex;
+	double momentum = wire->retractSpeed / NUM_STEPS;
+	while( !approxEquals( momentum, 0 ) )
+	{
+		if( wire->right )
+		{
+			if( edgeQuantity > momentum )
+			{
+				edgeQuantity -= momentum;
+				cout << "changed: " << edgeQuantity << ", moment: " << momentum << endl;
+				momentum = 0;
+			}
+			else
+			{
+				cout << "OTHER: " << edgeQuantity << ", moment: " << momentum << endl;
+				momentum = momentum - edgeQuantity;
+				edgeIndex--;
+				if( edgeIndex == -1 )
+				{
+					action = INACTIVE;
+					ClearSprite();
+					wire->DeactivateWireCharge( this );
+					return;
+				}
+				else if( edgeIndex == 0 )
+				{
+					edgeQuantity = length( wire->points[edgeIndex].pos - wire->anchor.pos );
+				}
+				else
+				{
+					cout << "edgeIndex: " << edgeIndex << endl;
+					edgeQuantity = length( wire->points[edgeIndex].pos - wire->points[edgeIndex-1].pos );
+				}
+			}
+		}
+		else
+		{
+			if( edgeQuantity > momentum )
+			{
+				edgeQuantity -= momentum;
+				momentum = 0;
+			}
+			else
+			{
+				int numPoints = wire->numPoints;
+				momentum = momentum - edgeQuantity;
+				edgeIndex--;
+				if( edgeIndex == -1 )
+				{
+					wire->DeactivateWireCharge( this );
+					return;
+				}
+				else if( edgeIndex == 0 )
+				{
+					//cout << "zero" << endl;
+					edgeQuantity = length( wire->points[numPoints - 1].pos - wire->retractPlayerPos );
+					//fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
+				}
+				else
+				{
+					//cout << "other: " << fusePointIndex << endl;
+					//fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
+					edgeQuantity = length( wire->points[numPoints-1 - edgeIndex].pos 
+					- wire->points[(numPoints-1) - (edgeIndex-1)].pos );
+					//cout << "length: " << fuseQuantity << endl;
+				}
+			}
+		}
+	}
 
-	//	while( !approxEquals( momentum, 0 ) )
-	//	{
-	//		if( edgeQuantity > momentum )
-	//		{
-	//			edgeQuantity -= momentum;
-	//			momentum = 0;
-	//		}
-	//		else
-	//		{
-	//			momentum = momentum - edgeQuantity;
-	//			edgeIndex--;
-	//			if( edgeIndex == -1 )
-	//			{
-	//				fuseQuantity = 0;
-	//				
-	//				//state = RELEASED;
-	//				//cout << "setting released" << endl;
-	//				return;
-	//			}
-	//			else if( fusePointIndex == 0 )
-	//			{
-	//				fuseQuantity = length( points[fusePointIndex].pos - anchor.pos );
-	//			}
-	//			else
-	//			{
-	//				fuseQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
-	//			}
-	//		}
-	//	}
-	//}
-	//else
-	//{
-	//	double momentum = wire->retractSpeed;
+	if( edgeIndex == 0 )
+	{
+		V2d dir = normalize( wire->points[0].pos- wire->anchor.pos );
+		position = wire->anchor.pos + dir * edgeQuantity;
+	}
+	else
+	{
+		V2d dir = normalize( wire->points[edgeIndex].pos - wire->points[edgeIndex-1].pos );
+		position = wire->anchor.pos + dir * edgeQuantity;
+	}
+	//position = 
+}
 
-	//	while( !approxEquals( momentum, 0 ) )
-	//	{
-	//		if( edgeQuantity > momentum )
-	//		{
-	//			edgeQuantity -= momentum;
-	//			momentum = 0;
-	//		}
-	//		else
-	//		{
-	//			momentum = momentum - edgeQuantity;
-	//			edgeIndex++;
-	//			if( edgeIndex == numPoints )
-	//			{
-	//				ClearSprite();
-	//				action = INACTIVE;
-	//				wire->DeactivateWireCharge( this );
-	//				return;
-	//			}
-	//			else if( edgeIndex == 0 )
-	//			{
-	//				edgeQuantity = length( points[fusePointIndex].pos - anchor.pos );
-	//			}
-	//			else
-	//			{
-	//				edgeQuantity = length( points[fusePointIndex].pos - points[fusePointIndex-1].pos );
-	//			}
-	//		}
-	//	}
-	//}
+void Wire::WireCharge::UpdatePrePhysics()
+{
 }
 
 void Wire::WireCharge::HitEnemy()
@@ -1878,7 +1917,7 @@ void Wire::WireCharge::HitEnemy()
 
 void Wire::CreateWireCharge()
 {
-	WireCharge *charge = new WireCharge( numTotalCharges );
+	WireCharge *charge = new WireCharge( this, numTotalCharges );
 	++numTotalCharges;
 	if( inactiveChargeList == NULL )
 	{
@@ -1892,8 +1931,53 @@ void Wire::CreateWireCharge()
 	}
 }
 
+void Wire::ActivateWireCharge( int index )
+{
+	WireCharge *charge = GetWireCharge();
+	if( charge != NULL )
+	{
+		if( right )
+		{
+			//cout << "activate!: " << index << endl;
+			charge->edgeIndex = index;
+			if( index > 0 )
+			{
+				
+				charge->edgeQuantity = length(points[index].pos - points[index-1].pos);
+				cout << "setting quant: " << charge->edgeQuantity << endl;
+			}
+			else
+			{
+				charge->edgeQuantity = length( points[0].pos - anchor.pos );
+				cout << "setting quantb: " << charge->edgeQuantity << endl;
+			}
+		
+			//charge->edgeQuantity = 0;
+			charge->position = points[index].pos;
+			charge->action = WireCharge::Action::RETRACTING;
+
+			if( activeChargeList == NULL )
+			{
+				activeChargeList = charge;
+				charge->next = NULL;
+				charge->prev = NULL;
+			}
+			else
+			{
+				charge->next = activeChargeList;
+				activeChargeList->prev = charge;
+				activeChargeList = charge;
+			}
+		}
+		else
+		{
+		}
+	}
+}
+
 void Wire::DeactivateWireCharge( WireCharge *charge )
 {
+	cout << "removing charge from list!" << endl;
 	assert( activeChargeList != NULL );
 
 	if( charge->prev == NULL && charge->next == NULL )
@@ -1929,13 +2013,18 @@ Wire::WireCharge *Wire::GetWireCharge()
 			Wire::WireCharge * temp = inactiveChargeList;
 			inactiveChargeList = NULL;
 
+
 			return temp;
 		}
 		else
 		{
 			Wire::WireCharge * temp = inactiveChargeList;
+
+
 			inactiveChargeList = temp->next;
 			temp->next->prev = NULL;
+
+			inactiveChargeList->next = NULL;
 
 			return temp;
 		}
@@ -1944,63 +2033,97 @@ Wire::WireCharge *Wire::GetWireCharge()
 
 void Wire::WireCharge::UpdateSprite()
 {
-	/*if( action == INACTIVE )
+	if( action == INACTIVE )
 	{
 		ClearSprite();
-	}*/
-	//else
-	//{
-	//	IntRect subRect = wire->ts_wireCharge->GetSubRect( 0 );//frame / animFactor );
-	//	//if( owner->player->position.x < position.x )
-	//	//{
-	//	//	subRect.left += subRect.width;
-	//	//	subRect.width = -subRect.width;
-	//	//}
-	//	va[vaIndex*4+0].texCoords = Vector2f( subRect.left, 
-	//		subRect.top );
-	//	va[vaIndex*4+1].texCoords = Vector2f( subRect.left 
-	//		+ subRect.width, 
-	//		subRect.top );
-	//	va[vaIndex*4+2].texCoords = Vector2f( subRect.left 
-	//		+ subRect.width, 
-	//		subRect.top + subRect.height );
-	//	va[vaIndex*4+3].texCoords = Vector2f( subRect.left, 
-	//		subRect.top + subRect.height );
+		//cout << "updating inactive sprite" << endl;
+	}
+	else
+	{
+		//cout << "wire charge sprite update" << endl;
+		VertexArray &va = wire->chargeVA;
+		IntRect subRect = wire->ts_wireCharge->GetSubRect( 0 );//frame / animFactor );
+		//if( owner->player->position.x < position.x )
+		//{
+		//	subRect.left += subRect.width;
+		//	subRect.width = -subRect.width;
+		//}
+		va[vaIndex*4+0].texCoords = Vector2f( subRect.left, 
+			subRect.top );
+		va[vaIndex*4+1].texCoords = Vector2f( subRect.left 
+			+ subRect.width, 
+			subRect.top );
+		va[vaIndex*4+2].texCoords = Vector2f( subRect.left 
+			+ subRect.width, 
+			subRect.top + subRect.height );
+		va[vaIndex*4+3].texCoords = Vector2f( subRect.left, 
+			subRect.top + subRect.height );
 
-	//	Vector2f p( position.x, position.y );
+		//va[vaIndex*4+0].color = Color::Red;
+		//va[vaIndex*4+1].color = Color::Red;
+		//va[vaIndex*4+2].color = Color::Red;
+		//va[vaIndex*4+3].color = Color::Red;
 
-	//	Vector2f spriteSize = Vector2f( subRect.width / 2, subRect.height / 2 );//parent->spriteSize;
-	//	va[vaIndex*4+0].position = p + Vector2f( -spriteSize.x, -spriteSize.y );
-	//	va[vaIndex*4+1].position = p + Vector2f( spriteSize.x, -spriteSize.y );
-	//	va[vaIndex*4+2].position = p + Vector2f( spriteSize.x, spriteSize.y );
-	//	va[vaIndex*4+3].position = p + Vector2f( -spriteSize.x, spriteSize.y );
-	//}
+		Vector2f p( position.x, position.y );
+
+		Vector2f spriteSize = Vector2f( subRect.width / 2, subRect.height / 2 );
+		//spriteSize *= 10.f;
+		va[vaIndex*4+0].position = p + Vector2f( -spriteSize.x, -spriteSize.y );
+		va[vaIndex*4+1].position = p + Vector2f( spriteSize.x, -spriteSize.y );
+		va[vaIndex*4+2].position = p + Vector2f( spriteSize.x, spriteSize.y );
+		va[vaIndex*4+3].position = p + Vector2f( -spriteSize.x, spriteSize.y );
+	}
 }
 
 void Wire::WireCharge::ClearSprite()
 {
-	/*va[vaIndex*4+0].position = Vector2f( 0, 0 );
+	VertexArray &va = wire->chargeVA;
+	va[vaIndex*4+0].position = Vector2f( 0, 0 );
 	va[vaIndex*4+1].position = Vector2f( 0, 0 );
 	va[vaIndex*4+2].position = Vector2f( 0, 0 );
-	va[vaIndex*4+3].position = Vector2f( 0, 0 );*/
+	va[vaIndex*4+3].position = Vector2f( 0, 0 );
 }
 
-void Wire::ActivateWireCharge( int index )
+void Wire::UpdateChargesPhysics()
 {
-	WireCharge *charge = GetWireCharge();
-	if( charge != NULL )
-	{
-		charge->edgeIndex = index;
-		charge->edgeQuantity = 0;
-		charge->position = points[index].pos;
+	if( state != RETRACTING )
+		return;
 
-		if( activeChargeList == NULL )
-			activeChargeList = charge;
-		else
-		{
-			charge->next = activeChargeList;
-			activeChargeList->prev = charge;
-			activeChargeList = charge;
-		}
+	WireCharge *curr = activeChargeList;
+	while( curr != NULL )
+	{
+		curr->UpdatePhysics();
+		curr = curr->next;
+	}
+}
+
+void Wire::UpdateChargesPrePhysics()
+{
+	WireCharge *curr = activeChargeList;
+	while( curr != NULL )
+	{
+		curr->UpdatePrePhysics();
+		curr = curr->next;
+	}
+}
+
+void Wire::UpdateChargesPostPhysics()
+{
+	WireCharge *curr = activeChargeList;
+	while( curr != NULL )
+	{
+		curr->UpdatePrePhysics();
+		curr = curr->next;
+	}
+}
+
+void Wire::UpdateChargesSprites()
+{
+	WireCharge *curr = activeChargeList;
+	while( curr != NULL )
+	{
+		//cout << "update sprite---!!: " << endl;
+		curr->UpdateSprite();
+		curr = curr->next;
 	}
 }

@@ -99,7 +99,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 			//EXPLODING
 		};
 
-		WireCharge( int vIndex );
+		WireCharge( Wire *w, int vIndex );
 		void Reset();
 		void UpdatePrePhysics();
 		void UpdatePhysics();
@@ -126,8 +126,12 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void DeactivateWireCharge( WireCharge *wc );
 	WireCharge * GetWireCharge();
 	void ActivateWireCharge( int index );
-	void ClearWireCharges();
+	void ClearCharges();
 	void ActivateRetractionCharges();
+	void UpdateChargesPhysics();
+	void UpdateChargesSprites();
+	void UpdateChargesPrePhysics();
+	void UpdateChargesPostPhysics();
 	Tileset *ts_wireCharge;
 	int numTotalCharges;
 	sf::VertexArray chargeVA;
@@ -153,6 +157,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	double minSideAlong;
 	sf::Vector2<double> fireDir;
 	WirePoint anchor;
+
+	void ActivateCharges();
 	
 
 	int triggerThresh;

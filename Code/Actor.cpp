@@ -9180,7 +9180,10 @@ void Actor::UpdatePhysics()
 	if( test )
 		return;
 	
-	
+	if( rightWire != NULL )
+		rightWire->UpdateChargesPhysics();
+	if( leftWire != NULL )
+		leftWire->UpdateChargesPhysics();
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;
