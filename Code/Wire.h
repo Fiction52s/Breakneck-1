@@ -132,6 +132,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void UpdateChargesSprites();
 	void UpdateChargesPrePhysics();
 	void UpdateChargesPostPhysics();
+
+	int CountActiveCharges();
+	int CountInactiveCharges();
 	Tileset *ts_wireCharge;
 	int numTotalCharges;
 	sf::VertexArray chargeVA;
