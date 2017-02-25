@@ -2031,7 +2031,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
 				{
-					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+					if( (groundSpeed > 0 && gNorm.x < 0) || (groundSpeed < 0 && gNorm.x > 0) )
 					{
 
 						action = STEEPCLIMB;
@@ -7647,7 +7647,7 @@ V2d Actor::UpdateReversePhysics()
 						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-						movementVec.y += .01;
+						movementVec.y += .1;
 						if( movementVec.x <= .1 )
 						{
 							movementVec.x = .1;
@@ -7688,7 +7688,7 @@ V2d Actor::UpdateReversePhysics()
 									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-									movementVec.y += .01;
+									movementVec.y += .1;
 									if( movementVec.x <= .1 )
 									{
 										movementVec.x = .1;
@@ -7759,7 +7759,7 @@ V2d Actor::UpdateReversePhysics()
 					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-					movementVec.y += .01;
+					movementVec.y += .1;
 					if( movementVec.x <= .1 )
 					{
 						movementVec.x = .1;
@@ -7842,7 +7842,7 @@ V2d Actor::UpdateReversePhysics()
 						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-						movementVec.y += .01;
+						movementVec.y += .1;
 						if( movementVec.x >= -.1 )
 						{
 							movementVec.x = -.1;
@@ -7882,7 +7882,7 @@ V2d Actor::UpdateReversePhysics()
 									velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-									movementVec.y += .01;
+									movementVec.y += .1;
 									if( movementVec.x >= -.1 )
 									{
 										movementVec.x = -.1;
@@ -7952,8 +7952,10 @@ V2d Actor::UpdateReversePhysics()
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
-					//cout  <<  "reverse right" << endl;
-					movementVec.y += .01;
+
+
+					//cout  <<  "reverse right:" << movementVec.x << ", " << movementVec.y << endl;
+					movementVec.y += .1;//.01;
 					if( movementVec.x >= -.1 )
 					{
 						movementVec.x = -.1;
@@ -11720,7 +11722,7 @@ void Actor::PhysicsResponse()
 			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
 				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 				&& action != SEQ_CRAWLERFIGHT_LAND 
-				&& action != SEQ_CRAWLERFIGHT_DODGEBACK )
+				&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE )
 			{
 				//cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
@@ -11740,6 +11742,7 @@ void Actor::PhysicsResponse()
 					{
 						if( reversed )
 						{
+							//cout << "THIS GRAV REVERSE" << endl;
 							//cout << "frames in air: " << framesInAir << endl;
 							action = GRAVREVERSE;
 
@@ -16531,16 +16534,20 @@ void Actor::UpdateSprite()
 
 			sprite->setPosition( pp.x, pp.y );
 
+			bool fr = facingRight;
+			if( reversed )
+				fr = !fr;
 			if( frame == 0 && currInput.B && !prevInput.B )
 			{
+				
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart, 
-					pp + gn * 64.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
+					pp + gn * 64.0 + along * xExtraStart , false, angle, 9, 3, fr );
 				owner->soundNodeList->ActivateSound( soundBuffers[S_DASH_START] );
 			}
 			else if( frame % 5 == 0 )
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashRepeat, 
-					pp + gn * 32.0 + along * xExtraRepeat, false, angle, 12, 3, facingRight );
+					pp + gn * 32.0 + along * xExtraRepeat, false, angle, 12, 3, fr );
 			}
 
 			break;

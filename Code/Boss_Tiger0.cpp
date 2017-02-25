@@ -1096,7 +1096,7 @@ void Boss_Tiger0::HitTerrain( double &q )
 
 bool Boss_Tiger0::StartRoll()
 {
-
+	return false;
 }
 
 void Boss_Tiger0::FinishedRoll()

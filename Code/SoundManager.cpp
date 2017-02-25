@@ -64,6 +64,7 @@ SoundNodeList::~SoundNodeList()
 
 void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 {
+	//return;
 	//cout << "Activate sound!" << endl;
 	//SoundNode *node;
 	//assert( inactiveList == NULL );

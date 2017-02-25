@@ -1841,13 +1841,17 @@ void Wire::WireCharge::UpdatePhysics()
 				edgeIndex--;
 				if( edgeIndex == -1 )
 				{
+					cout << "DEACTIVA" << endl;
 					action = INACTIVE;
 					ClearSprite();
 					wire->DeactivateWireCharge( this );
+
+					//assert( wire->activeChargeList == NULL );
 					return;
 				}
 				else if( edgeIndex == 0 )
 				{
+					cout << "blah anchor" << endl;
 					edgeQuantity = length( wire->points[edgeIndex].pos - wire->anchor.pos );
 				}
 				else
@@ -1900,7 +1904,7 @@ void Wire::WireCharge::UpdatePhysics()
 	else
 	{
 		V2d dir = normalize( wire->points[edgeIndex].pos - wire->points[edgeIndex-1].pos );
-		position = wire->anchor.pos + dir * edgeQuantity;
+		position = wire->points[edgeIndex-1].pos + dir * edgeQuantity;
 	}
 	//position = 
 }
@@ -1984,6 +1988,8 @@ void Wire::DeactivateWireCharge( WireCharge *charge )
 	{
 		assert( activeChargeList == charge );
 		activeChargeList = NULL;
+		charge->prev = NULL;
+		charge->next = NULL;
 	}
 	else
 	{
@@ -1999,6 +2005,17 @@ void Wire::DeactivateWireCharge( WireCharge *charge )
 
 		charge->prev = NULL;
 		charge->next = NULL;
+	}
+
+	if( inactiveChargeList == NULL )
+	{
+		inactiveChargeList = charge;
+	}
+	else
+	{
+		charge->next = inactiveChargeList;
+		inactiveChargeList->prev = charge;
+		inactiveChargeList = charge;
 	}
 }
 
@@ -2023,8 +2040,9 @@ Wire::WireCharge *Wire::GetWireCharge()
 
 			inactiveChargeList = temp->next;
 			temp->next->prev = NULL;
-
-			inactiveChargeList->next = NULL;
+			
+			temp->next = NULL;
+			//inactiveChargeList->next = NULL;
 
 			return temp;
 		}
@@ -2090,10 +2108,15 @@ void Wire::UpdateChargesPhysics()
 		return;
 
 	WireCharge *curr = activeChargeList;
+	WireCharge *temp;
+	int numList = 0;
 	while( curr != NULL )
 	{
+		temp = curr->next;
+		cout << "updating charge: " << numList << endl;
 		curr->UpdatePhysics();
-		curr = curr->next;
+		curr = temp;
+		++numList;
 	}
 }
 
