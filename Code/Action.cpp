@@ -48,7 +48,7 @@ void Brush::SetSelected( bool select )
 	}
 }
 
-void Brush::AddObject( SelectPtr &obj )
+void Brush::AddObject( SelectPtr obj )
 {
 	if( obj->selectableType != ISelectable::TERRAIN )
 	{
@@ -58,7 +58,7 @@ void Brush::AddObject( SelectPtr &obj )
 	objects.push_back( obj );
 }
 
-void Brush::RemoveObject( SelectPtr &obj )
+void Brush::RemoveObject( SelectPtr obj )
 {
 	objects.remove( obj );
 

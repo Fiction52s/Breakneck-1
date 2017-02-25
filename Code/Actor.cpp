@@ -47,6 +47,8 @@ Actor::Actor( GameSession *gs )
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
+		bounceSwordBoostStrength = 10.0;
+
 		grindLungeSpeed0 = 15.0;
 		grindLungeSpeed1 = 17.0;//20.0;
 		grindLungeSpeed2 = 22.0;//28.0;
@@ -591,6 +593,10 @@ Actor::Actor( GameSession *gs )
 		actionLength[AIRDASH] = 33;//27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
+
+		actionLength[BOUNCESWORDBOOST] = 15;//27;
+		tileset[BOUNCESWORDBOOST] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
+		normal[BOUNCESWORDBOOST] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
 		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb_128x64.png", 128, 64 );
@@ -3011,9 +3017,17 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+			if( bounceAttackHit )
+			{
+				action = BOUNCESWORDBOOST;
+				frame = 0;
+				if( facingRight )
+					bounceSwordBoostDir = V2d( 1, 0 );
+				else
+					bounceSwordBoostDir = V2d( -1, 0 );
+			}
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
-
 				//bounceGrounded = true;
 				BounceFlameOn();
 				oldBounceEdge = NULL;
@@ -3060,6 +3074,7 @@ void Actor::UpdatePrePhysics()
 			AirAttack();
 
 			}
+
 			break;
 		}
 	case DAIR:
@@ -5200,7 +5215,11 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
-	
+	case BOUNCESWORDBOOST:
+		{
+			//first
+			break;
+		}
 	}
 	
 	currHitboxes = NULL;
@@ -6420,6 +6439,45 @@ void Actor::UpdatePrePhysics()
 		//cout << "frame: " << frame << endl;
 		//velocity = V2d( -30, -100 );
 		break;
+	case BOUNCESWORDBOOST:
+		{
+			//second
+			if( frame == 0 && slowCounter == 1 )
+			{
+				if( ground != NULL )
+				{
+					if( groundSpeed > 0 )
+					{
+						groundSpeed += bounceSwordBoostStrength;
+					}
+					else if( groundSpeed < 0 )
+					{
+						groundSpeed -= bounceSwordBoostStrength;
+					}
+					else
+					{
+						if( ( facingRight && !reversed ) || ( !facingRight && reversed ) )
+						{
+							groundSpeed += bounceSwordBoostStrength;
+						}
+						else
+						{
+							groundSpeed -= bounceSwordBoostStrength;
+						}
+					}
+				}
+				else
+				{
+					velocity += bounceSwordBoostStrength * bounceSwordBoostDir;
+				}
+			}
+
+			CheckHoldJump();
+
+			if( framesInAir > 1 || velocity.y < 0 )
+				AirMovement();
+			break;
+		}
 	}
 	
 	if( action != GRINDBALL )
@@ -13007,6 +13065,8 @@ void Actor::UpdatePostPhysics()
 				runBounceFrame = 8 * 3;
 			}
 		}
+
+		++framesFlameOn;
 	}
 
 	UpdateHitboxes();
@@ -13120,6 +13180,7 @@ void Actor::UpdatePostPhysics()
 
 void Actor::BounceFlameOn()
 {
+	framesFlameOn = 0;
 	bounceFlameOn = true;
 	runBounceFrame = 0;
 	airBounceFrame = 0;
@@ -13127,6 +13188,7 @@ void Actor::BounceFlameOn()
 
 void Actor::BounceFlameOff()
 {
+	framesFlameOn = 0;
 	bounceFlameOn = false;
 	oldBounceEdge = NULL;
 	bounceEdge = NULL;
@@ -17652,6 +17714,59 @@ void Actor::UpdateSprite()
 
 		break;
 		}
+	case BOUNCESWORDBOOST:
+		{
+			sprite->setTexture( *(tileset[BOUNCESWORDBOOST]->texture));
+			int f = 0;
+			/*int f = 0;
+			if( oldAction == FAIR )
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 2;
+				}
+				else
+				{
+					f = 1;
+				}
+			}
+			else if( currInput.LDown() )
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 4;
+				}
+				else
+				{
+					f = 5;
+				}
+			}
+			else
+			{
+				if( currInput.LLeft() || currInput.LRight() )
+				{
+					f = 3;
+				}
+				else
+				{
+					f = 0;
+				}
+			}*/
+			if( facingRight )
+			{
+				
+				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( f ) );
+			}
+			else
+			{
+				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( f );
+				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+			}
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
 	}
 	
 	if( bounceFlameOn )
@@ -17752,6 +17867,16 @@ void Actor::ConfirmHit( int worldIndex,
 	currentSpeedBar += speedBar;
 	test = true;
 	currAttackHit = true;
+	if( bounceFlameOn )
+	{
+		bounceAttackHit = true;
+	}
+	else
+	{
+		bounceAttackHit = false;
+	}
+
+
 	flashColor = c;	
 	flashFrames = p_flashFrames;
 	for( int i = 0; i < 3; ++i )

@@ -334,7 +334,7 @@ bool TerrainPolygon::CanAdd()
 	return false;
 }
 
-void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr &select )
+void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
 {
 	cout << "deactivating polygon" << endl;
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
@@ -374,7 +374,7 @@ void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr &select )
 	}
 }
 
-void TerrainPolygon::Activate( EditSession *edit, SelectPtr &select )
+void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 {
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 
@@ -637,7 +637,7 @@ void TerrainPolygon::DestroyEnemies()
 	enemies.clear();*/
 }
 
-void TerrainPolygon::Move( SelectPtr &me, Vector2i move )
+void TerrainPolygon::Move( SelectPtr me, Vector2i move )
 {
 	assert( finalized );
 	

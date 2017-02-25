@@ -32,15 +32,15 @@ struct ISelectable
 	virtual bool ContainsPoint( sf::Vector2f test ) = 0;
 	virtual bool Intersects( sf::IntRect rect ) = 0;
 	virtual bool IsPlacementOkay() = 0;
-	virtual void Move( boost::shared_ptr<ISelectable> &me,
+	virtual void Move( boost::shared_ptr<ISelectable> me,
 		sf::Vector2i delta ) = 0;
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;
 	virtual void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> & select ) = 0;
+		boost::shared_ptr<ISelectable> select ) = 0;
 	virtual void Activate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select) = 0;
+		boost::shared_ptr<ISelectable> select) = 0;
 	virtual bool CanApply() = 0;
 	virtual bool CanAdd() = 0;
 	virtual void SetSelected( bool select ) = 0;
@@ -104,9 +104,9 @@ struct TerrainPoint
 		bool valid );
 	void Draw( sf::RenderTarget *target );
 	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> & select );
+		boost::shared_ptr<ISelectable> select );
 	void Activate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select);
+		boost::shared_ptr<ISelectable> select);
 	bool CanApply();
 	bool CanAdd();
 	void SetSelected( bool select );
@@ -223,9 +223,9 @@ struct TerrainPolygon : ISelectable
 		bool valid );
 	void Draw( sf::RenderTarget *target );
 	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> & select);
+		boost::shared_ptr<ISelectable> select);
 	void Activate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select);
+		boost::shared_ptr<ISelectable> select);
 	
 	bool IsTouching( TerrainPolygon *poly );
 	bool Contains( TerrainPolygon *poly );
@@ -265,7 +265,7 @@ struct TerrainPolygon : ISelectable
 	
 	sf::Rect<int> TempAABB();
 
-	void Move( SelectPtr &me, sf::Vector2i move );
+	void Move( SelectPtr me, sf::Vector2i move );
 
 	sf::Vertex *lines;
 	sf::VertexArray *va;
@@ -404,14 +404,14 @@ struct ActorParams : ISelectable
 	virtual bool ContainsPoint( sf::Vector2f test );
 	virtual bool Intersects( sf::IntRect rect );
 	virtual bool IsPlacementOkay();
-	virtual void Move( SelectPtr &me, sf::Vector2i delta );
+	virtual void Move( SelectPtr me, sf::Vector2i delta );
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	virtual void Draw( sf::RenderTarget *target );
 	virtual void Deactivate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select);
+		boost::shared_ptr<ISelectable> select);
 	virtual void Activate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select );
+		boost::shared_ptr<ISelectable> select );
 
 	virtual void DrawQuad( sf::RenderTarget *target );
 
@@ -514,10 +514,10 @@ struct PlayerParams : public ActorParams
 	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
 	void Deactivate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select);
+		boost::shared_ptr<ISelectable>  select);
 	ActorParams *Copy();
 	void Activate( EditSession *edit,
-		boost::shared_ptr<ISelectable> & select );
+		boost::shared_ptr<ISelectable> select );
 };
 
 struct PoiParams : public ActorParams
@@ -1260,7 +1260,7 @@ struct EditSession : GUIHandler
 		sf::RenderTexture *preScreenTex );
 	~EditSession();
 	
-	bool AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly );
+	bool AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, TerrainPolygon *poly );
 	int Run(std::string fileName, 
 		sf::Vector2f cameraPos, 
@@ -1294,7 +1294,7 @@ struct EditSession : GUIHandler
 	void SetInversePoly();
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
-	void CreateActor( ActorPtr &actor );
+	void CreateActor( ActorPtr actor );
 	std::list<GateInfoPtr> gates;
 	GateInfo *selectedGate;
 	

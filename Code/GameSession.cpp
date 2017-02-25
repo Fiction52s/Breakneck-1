@@ -3253,6 +3253,11 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
+		//cout << "-------------" << endl;
+		//pauseMenu = new PauseMenu( this );
+		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
+		//cout << "after-------------" << endl;
+
 		is >> envType;
 
 		is >> envLevel;
@@ -3764,6 +3769,8 @@ bool GameSession::OpenFile( string fileName )
 
 		is.close();
 
+		
+
 		//loading done. now setup
 
 		SetGlobalBorders();
@@ -3841,6 +3848,8 @@ bool GameSession::OpenFile( string fileName )
 			//player->action = Actor::Action::Se;
 			//player->frame = 1;
 		}
+
+		
 
 
 		cout << "end of this" << endl;
@@ -5217,6 +5226,15 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
+	/*{
+		cout << "HAFHWEIFHWEFH" << endl;
+		string masterVolume[101];
+		string musicVolume[101];
+		string soundVolume[101];
+		char *blah = new char[10];
+		delete [] blah;
+		cout << "after AWHEIOHGAWEHGEWHGE" << endl;
+	}*/
 	
 	//enterNexus1Seq = new EnterNexus1Seq( this );
 	cout << "NOTNOTNOTNTO" << endl;

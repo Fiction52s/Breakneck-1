@@ -73,6 +73,7 @@ struct Actor : QuadTreeCollider,
 		GRABSHIP,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
+		BOUNCESWORDBOOST,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
 		SEQ_CRAWLERFIGHT_STAND,
@@ -177,6 +178,9 @@ struct Actor : QuadTreeCollider,
 	int runeStep;
 	int runeLength;
 	bool showRune;
+
+	double bounceSwordBoostStrength;
+	sf::Vector2<double> bounceSwordBoostDir;
 
 	HitboxInfo *wireChargeInfo;
 	//sf::Shader speedBarShader;
@@ -383,6 +387,7 @@ struct Actor : QuadTreeCollider,
 	int airBounceFrame;
 	Tileset *ts_airBounceFlame;
 
+	int framesFlameOn;
 	bool bounceFlameOn;
 	sf::Sprite bounceFlameSprite;
 	double bounceFlameAccel;
@@ -644,6 +649,7 @@ struct Actor : QuadTreeCollider,
 	Action oldAction;
 
 	bool currAttackHit;
+	bool bounceAttackHit;
 	double storedGroundSpeed;
 	
 	bool holdDouble;

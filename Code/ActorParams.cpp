@@ -440,7 +440,7 @@ bool ActorParams::IsPlacementOkay()
 	return false;
 }
 
-void ActorParams::Move( SelectPtr &me, sf::Vector2i delta )
+void ActorParams::Move( SelectPtr me, sf::Vector2i delta )
 {
 	//assert( groundInfo == NULL );
 
@@ -489,7 +489,7 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 	image.setColor( Color::White );
 }
 
-void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
+void ActorParams::Deactivate( EditSession *edit, SelectPtr select )
 {
 	cout << "DEACTIVATING ACTOR PARAMS size from: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
@@ -511,7 +511,7 @@ void ActorParams::Deactivate( EditSession *edit, SelectPtr &select )
 	}
 }
 
-void ActorParams::Activate( EditSession *edit, SelectPtr &select )
+void ActorParams::Activate( EditSession *edit, SelectPtr select )
 {
 	cout << "addding to group of size: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
@@ -640,12 +640,12 @@ void PlayerParams::WriteParamFile( std::ofstream &of )
 {
 }
 
-void PlayerParams::Deactivate( EditSession *edit, boost::shared_ptr<ISelectable> & select)
+void PlayerParams::Deactivate( EditSession *edit, boost::shared_ptr<ISelectable> select)
 {
 	//nothing
 }
 
-void PlayerParams::Activate( EditSession *edit, boost::shared_ptr<ISelectable> & select )
+void PlayerParams::Activate( EditSession *edit, boost::shared_ptr<ISelectable> select )
 {
 	//nothing
 }

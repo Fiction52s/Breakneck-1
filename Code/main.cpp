@@ -22,6 +22,7 @@
 #include "WorldMap.h"
 #include "SaveFile.h"
 #include "MainMenu.h"
+#include <crtdbg.h>
 
 
 using namespace std;
@@ -67,6 +68,20 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
+
+	// _CrtSetDbgFlag (
+    //  _CRTDBG_ALLOC_MEM_DF |
+    //  _CRTDBG_LEAK_CHECK_DF
+	//  | _CRTDBG_CHECK_ALWAYS_DF
+	//	);
+
+	 //_CrtMemState state;
+	 //_CrtMemCheckpoint(&state);
+	 //state.
+
+   //_CrtSetReportMode ( _CRT_ERROR,
+    //  _CRTDBG_MODE_DEBUG);
+
 	std::cout << "starting program" << endl;
 
 	/*Text mainMenu[5];

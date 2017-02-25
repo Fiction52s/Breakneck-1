@@ -1178,7 +1178,7 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 
 	pauseSelectIndex = 0;
 
-	numVideoOptions = 2;
+	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
 	
@@ -1221,18 +1221,18 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 
 	string windowType[] = { "Fullscreen", "Window", "Borderless Window" };
 	videoSelectors[1] = new OptionSelector( Vector2f( 100, 100 ), 3, windowType );
-	
+	//
 	string vsync[] = { "on", "off" };
 	videoSelectors[2] = new OptionSelector( Vector2f( 100, 180 ), 2, vsync );
 
-	//cout << "YYYYY this initialization" << endl;
+	////cout << "YYYYY this initialization" << endl;
 	string masterVolume[101];
 	string musicVolume[101];
 	string soundVolume[101];
 
-	//cout << "WATTTT" << endl;
+	////cout << "WATTTT" << endl;
 
-	
+	//
 	for( int i = 0; i < 101; ++i )
 	{
 		//cout << "starting loop: " << i << endl;

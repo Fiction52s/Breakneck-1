@@ -2912,7 +2912,7 @@ bool PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width = 0 )
 }
 
 //returns true if attach is successful
-bool EditSession::AttachActorToPolygon( ActorPtr &actor, TerrainPolygon *poly )
+bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 {
 	TerrainPoint *next;
 	V2d currPos, nextPos;
@@ -5823,7 +5823,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( (*it)->selectableType == ISelectable::TERRAIN )
 										{
-											SelectPtr &select = (*it);
+											SelectPtr select = (*it);
 											PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 											poly->SetLayer( 1 );
 										}
@@ -5839,7 +5839,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 									{
 										if( (*it)->selectableType == ISelectable::TERRAIN )
 										{
-											SelectPtr &select = (*it);
+											SelectPtr select = (*it);
 											PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 											poly->SetLayer( 0 );
 										}
@@ -10116,10 +10116,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				//eventually can convert this between indexes or 
 				//something to simplify when i have more types
-
+				//cout << "tempActor: " << tempActor->type->name << endl;
 				ActorPtr patroller( tempActor );//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+
 				patroller->SetParams();
 				patroller->group = groups["--"];
+				//patroller->SetParams();
+				//patroller->group = groups["--"];
 				//patroller->monitorType = GetMonitorType( p );
 
 				CreateActor( patroller );
@@ -10982,9 +10985,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			int minEdgeSize;
 
 			stringstream ss;
+			//string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
 			string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
 			ss << s;
-
+			
 			ss >> minEdgeSize;
 
 			if( ss.fail() )
@@ -13753,7 +13757,7 @@ bool EditSession::PolyIntersectGate( TerrainPolygon &poly )
 	return false;
 }
 
-void EditSession::CreateActor( ActorPtr &actor )
+void EditSession::CreateActor( ActorPtr actor )
 {
 	Brush b;
 	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(actor);
