@@ -39,7 +39,7 @@ Wire::Wire( Actor *p, bool r)
 	triggerDown = false;
 	prevTriggerDown = false;
 
-	retractSpeed = 20;//60;
+	retractSpeed = 30;//20;//60;
 
 	numAnimFrames = 8;
 
