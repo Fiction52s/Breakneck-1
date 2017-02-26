@@ -8795,7 +8795,7 @@ void GameSession::RespawnPlayer()
 	player->runeStep = 0;
 	player->runeLength = 0;
 	player->showRune = false;
-
+	player->bufferedAttack = Actor::JUMP;
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
 	player->hitGoal = false;

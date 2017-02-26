@@ -68,7 +68,6 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 
 int main()
 {
-
 	// _CrtSetDbgFlag (
     //  _CRTDBG_ALLOC_MEM_DF |
     //  _CRTDBG_LEAK_CHECK_DF
@@ -111,7 +110,6 @@ int main()
 
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();	*/
-
 
 	MainMenu *mm = new MainMenu();
 	mm->Run();

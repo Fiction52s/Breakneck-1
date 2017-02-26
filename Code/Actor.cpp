@@ -23,9 +23,11 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		bufferedAttack = JUMP;
 		oldBounceEdge = NULL;
 		//seq = SEQ_NOTHING;
 		enemiesKilledThisFrame = 0;
+		enemiesKilledLastFrame = 0;
 		toggleBounceInput = gs->controller.keySettings.toggleBounce;
 		toggleTimeSlowInput = gs->controller.keySettings.toggleTimeSlow;
 		toggleGrindInput = gs->controller.keySettings.toggleGrind;
@@ -42,12 +44,12 @@ Actor::Actor( GameSession *gs )
 		//re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
-		level1SpeedThresh = 22;//32;
+		level1SpeedThresh = 22;//22;//32;
 		level2SpeedThresh = 45;
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
-		bounceSwordBoostStrength = 10.0;
+		bounceSwordBoostStrength = 5.0;//10.0;
 
 		grindLungeSpeed0 = 15.0;
 		grindLungeSpeed1 = 17.0;//20.0;
@@ -594,7 +596,7 @@ Actor::Actor( GameSession *gs )
 		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
-		actionLength[BOUNCESWORDBOOST] = 15;//27;
+		actionLength[BOUNCESWORDBOOST] = 4;//27;
 		tileset[BOUNCESWORDBOOST] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[BOUNCESWORDBOOST] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
@@ -1409,6 +1411,7 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
 
+	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
 
 	//cout << "action: " << action << endl;
@@ -1596,6 +1599,9 @@ void Actor::UpdatePrePhysics()
 		if( down ) currInput.leftStickPad += 1;
 	}
 
+
+
+
 	ActionEnded();
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
@@ -1628,6 +1634,17 @@ void Actor::UpdatePrePhysics()
 		}
 		return;
 	}
+
+	/*if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+	{
+		action = BOUNCESWORDBOOST;
+		frame = 0;
+		if( facingRight )
+			bounceSwordBoostDir = normalize( V2d( 1, 1 ) );
+		else
+			bounceSwordBoostDir = normalize( V2d( -1, 1 ) );
+		break;
+	}*/
 
 	V2d gNorm;
 	if( ground != NULL )
@@ -2094,8 +2111,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				//action = JUMPSQUAT;
-				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -2157,7 +2172,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = false;
 				frame = 0;
 				////runTappingSound.stop();
 				break;
@@ -2313,7 +2327,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
-
+			if( bufferedAttack != JUMP )
+			{
+				SetAction( bufferedAttack );
+				bufferedAttack = JUMP;
+				//action = bufferedAttack;
+				frame = 0;
+				break;
+			}
 			/*if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
 			{
 			//	action = WIREHOLD;
@@ -2423,7 +2444,23 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				bufferedAttack = true;
+				if( currInput.LUp() )
+				{
+					bufferedAttack = UAIR; //none
+				}
+				else if( currInput.LDown() )
+				{
+					bufferedAttack = DAIR; 
+				}
+				else
+				{
+					bufferedAttack = FAIR; 
+				}
+				//bufferedAttack = true;
+			}
+			else
+			{
+				//bufferedAttack = JUMP;
 			}
 
 			if( frame == actionLength[JUMPSQUAT] - 1 )
@@ -2432,8 +2469,9 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				groundSpeed = storedGroundSpeed;
 			}
+
+			break;
 		}
-		break;
 	case DOUBLE:
 		{
 
@@ -2638,7 +2676,7 @@ void Actor::UpdatePrePhysics()
 					if( currInput.A && !prevInput.A )
 					{
 						SetActionExpr( JUMPSQUAT );
-						bufferedAttack = false;
+						bufferedAttack = JUMP;
 						frame = 0;
 						////runTappingSound.stop();
 						break;
@@ -3017,14 +3055,16 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-			if( bounceAttackHit )
+			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
 			{
-				action = BOUNCESWORDBOOST;
-				frame = 0;
 				if( facingRight )
 					bounceSwordBoostDir = V2d( 1, 0 );
 				else
 					bounceSwordBoostDir = V2d( -1, 0 );
+
+				BounceSwordBoost();
+
+				//break;
 			}
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
@@ -3081,6 +3121,17 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+			{
+				bounceSwordBoostDir = V2d( 0, 1 );
+
+				BounceSwordBoost();
+				///if( facingRight )
+				//	bounceSwordBoostDir = V2d( 1, 0 );
+				//else
+				//	bounceSwordBoostDir = V2d( -1, 0 );
+				//break;
+			}
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
@@ -3134,6 +3185,18 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+			{
+				
+				bounceSwordBoostDir = V2d( 0, -1 );
+
+				BounceSwordBoost();
+				/*if( facingRight )
+					bounceSwordBoostDir = V2d( 1, 0 );
+				else
+					bounceSwordBoostDir = V2d( -1, 0 );*/
+				break;
+			}
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
@@ -3187,6 +3250,16 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+			{
+				if( facingRight )
+					bounceSwordBoostDir = normalize( V2d( 1, -1 ) );
+				else
+					bounceSwordBoostDir = normalize( V2d( -1, -1 ) );
+
+				BounceSwordBoost();
+				break;
+			}
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				BounceFlameOn();
@@ -3239,6 +3312,16 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+			
+			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+			{
+				if( facingRight )
+					bounceSwordBoostDir = normalize( V2d( 1, 1 ) );
+				else
+					bounceSwordBoostDir = normalize( V2d( -1, 1 ) );
+				BounceSwordBoost();
+			}
+
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
@@ -3352,7 +3435,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = false;
+				bufferedAttack = JUMP;
 				frame = 0;
 				break;
 			}
@@ -3410,7 +3493,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = false;
+				bufferedAttack = JUMP;
 				frame = 0;
 				break;
 			}
@@ -3722,7 +3805,7 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = false;
+				bufferedAttack = JUMP;
 				frame = 0;
 				break;
 			}
@@ -3830,6 +3913,13 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+				if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+				{
+					BounceSwordBoost();
+					//action = BOUNCESWORDBOOST;
+					//frame = 0;
+					break;
+				}
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
 					BounceFlameOn();
@@ -3890,7 +3980,6 @@ void Actor::UpdatePrePhysics()
 				if( currInput.A && !prevInput.A )
 				{
 					SetActionExpr( JUMPSQUAT );
-					bufferedAttack = false;
 					frame = 0;
 					break;
 				}
@@ -3967,7 +4056,6 @@ void Actor::UpdatePrePhysics()
 				if( currInput.A && !prevInput.A )
 				{
 					SetActionExpr( JUMPSQUAT );
-					bufferedAttack = false;
 					frame = 0;
 					break;
 				}
@@ -3984,6 +4072,11 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
+				if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+				{
+					BounceSwordBoost();
+					break;
+				}
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
 					BounceFlameOn();
@@ -4003,7 +4096,6 @@ void Actor::UpdatePrePhysics()
 				if( currInput.A && !prevInput.A )
 				{
 					SetActionExpr( JUMPSQUAT );
-					bufferedAttack = false;
 					frame = 0;
 					break;
 				}
@@ -4069,8 +4161,91 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-				
+				if( bounceAttackHit && enemiesKilledLastFrame > 0 )
+				{
+					BounceSwordBoost();
+					break;
+				}
+				if( hasPowerBounce && currInput.X && !bounceFlameOn )
+				{
+					BounceFlameOn();
+				}
+				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+				{
+					//bounceGrounded = false;
+					BounceFlameOff();
+				}
+
+				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
+				{
+					SetActionGrind();
+					break;
+				}
+
+				if( currInput.A && !prevInput.A )
+				{
+					SetActionExpr( JUMPSQUAT );
+					frame = 0;
+					break;
+				}
+
+				if( currInput.rightShoulder && !prevInput.rightShoulder )
+				{
+					action = STEEPCLIMBATTACK;
+					frame = 0;
+					break;
+				}
+
+				//if( currInput.B && !prevInput.B )
+				////if( currInput.A && !prevInput.A )
+				//{
+				//	if( gNorm.x < 0 && currInput.LRight() )
+				//	{
+				//		action = STEEPCLIMB;
+				//		facingRight = true;
+				//		groundSpeed = 10;
+				//		frame = 0;
+				//	}
+				//	else if( gNorm.x > 0 && currInput.LLeft() )
+				//	{
+				//		action = STEEPCLIMB;
+				//		facingRight = false;
+				//		groundSpeed = -10;
+				//		frame = 0;
+				//	}
+				//	break;
+				//}
+
+				if( reversed )
+				{
+					if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+					{
+						action = LAND2;
+						frame = 0;
+					}
+				}
+				else
+				{
+					if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+					{
+						cout << "is it really this wtf" << endl;
+						action = LAND2;
+						frame = 0;
+						//not steep
+					}
+					else
+					{
+						//is steep
+						if( ( gNorm.x < 0 && groundSpeed < 0 ) || (gNorm.x > 0 && groundSpeed > 0 ) )
+						{
+							action = STEEPSLIDE;
+							frame = 0;
+							//frame = 1;
+						}
+					}
+				}
 			}
+			
 			break;
 		}
 	case GRINDBALL:
@@ -4515,7 +4690,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -4634,7 +4808,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = false;
 				frame = 0;
 				break;
 			}
@@ -6444,32 +6617,7 @@ void Actor::UpdatePrePhysics()
 			//second
 			if( frame == 0 && slowCounter == 1 )
 			{
-				if( ground != NULL )
-				{
-					if( groundSpeed > 0 )
-					{
-						groundSpeed += bounceSwordBoostStrength;
-					}
-					else if( groundSpeed < 0 )
-					{
-						groundSpeed -= bounceSwordBoostStrength;
-					}
-					else
-					{
-						if( ( facingRight && !reversed ) || ( !facingRight && reversed ) )
-						{
-							groundSpeed += bounceSwordBoostStrength;
-						}
-						else
-						{
-							groundSpeed -= bounceSwordBoostStrength;
-						}
-					}
-				}
-				else
-				{
-					velocity += bounceSwordBoostStrength * bounceSwordBoostDir;
-				}
+				
 			}
 
 			CheckHoldJump();
@@ -6480,6 +6628,9 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 	
+	if( action != GRINDBALL && action != GROUNDHITSTUN && action != AIRHITSTUN )
+
+
 	if( action != GRINDBALL )
 	{
 		//for camera smoothing
@@ -8783,6 +8934,37 @@ int Actor::GetBubbleRadius()
 	case 2:
 		return bubbleRadius2;
 		break;
+	}
+}
+
+void Actor::BounceSwordBoost()
+{
+	double str = enemiesKilledLastFrame * bounceSwordBoostStrength;
+	if( ground != NULL )
+	{
+		if( groundSpeed > 0 )
+		{
+			groundSpeed += str;
+		}
+		else if( groundSpeed < 0 )
+		{
+			groundSpeed -= str;
+		}
+		else
+		{
+			if( ( facingRight && !reversed ) || ( !facingRight && reversed ) )
+			{
+				groundSpeed += str;
+			}
+			else
+			{
+				groundSpeed -= str;
+			}
+		}
+	}
+	else
+	{
+		velocity += str * bounceSwordBoostDir;
 	}
 }
 
@@ -18571,6 +18753,9 @@ void Actor::SetActionExpr( Action a )
 
 	switch( a )
 	{
+	case JUMPSQUAT:
+		bufferedAttack = JUMP;
+		break;
 	case JUMP:
 		steepJump = false;
 	case WALLJUMP:

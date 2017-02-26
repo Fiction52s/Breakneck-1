@@ -126,6 +126,8 @@ struct Actor : QuadTreeCollider,
 		Expr_NONE
 	};
 
+	void BounceSwordBoost();
+
 	/*enum SeqType
 	{
 		SEQ_NOTHING,
@@ -186,6 +188,7 @@ struct Actor : QuadTreeCollider,
 	//sf::Shader speedBarShader;
 	bool hitGoal;
 	int enemiesKilledThisFrame;
+	int enemiesKilledLastFrame;
 
 	Actor( GameSession *owner );
 	void UpdateSprite();
@@ -661,7 +664,8 @@ struct Actor : QuadTreeCollider,
 	sf::Color flashColor;
 	int flashFrames;
 
-	bool bufferedAttack;
+	//bool bufferedAttack;
+	Action bufferedAttack;
 
 	int drainCounter;
 	int drainCounterMax;
