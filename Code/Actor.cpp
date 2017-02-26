@@ -2442,7 +2442,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMPSQUAT:
 		{
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if( currInput.rightShoulder && !prevInput.rightShoulder && bufferedAttack == JUMP )
 			{
 				if( currInput.LUp() )
 				{
@@ -2458,11 +2458,7 @@ void Actor::UpdatePrePhysics()
 				}
 				//bufferedAttack = true;
 			}
-			else
-			{
-				//bufferedAttack = JUMP;
-			}
-
+			
 			if( frame == actionLength[JUMPSQUAT] - 1 )
 			{
 				SetActionExpr( JUMP );
@@ -2676,7 +2672,6 @@ void Actor::UpdatePrePhysics()
 					if( currInput.A && !prevInput.A )
 					{
 						SetActionExpr( JUMPSQUAT );
-						bufferedAttack = JUMP;
 						frame = 0;
 						////runTappingSound.stop();
 						break;
@@ -3435,7 +3430,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = JUMP;
 				frame = 0;
 				break;
 			}
@@ -3493,7 +3487,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = JUMP;
 				frame = 0;
 				break;
 			}
@@ -3805,7 +3798,6 @@ void Actor::UpdatePrePhysics()
 			if( currInput.A && !prevInput.A )
 			{
 				SetActionExpr( JUMPSQUAT );
-				bufferedAttack = JUMP;
 				frame = 0;
 				break;
 			}
@@ -18755,6 +18747,23 @@ void Actor::SetActionExpr( Action a )
 	{
 	case JUMPSQUAT:
 		bufferedAttack = JUMP;
+
+		if( currInput.rightShoulder && !prevInput.rightShoulder )
+		{
+			if( currInput.LUp() )
+			{
+				bufferedAttack = UAIR; //none
+			}
+			else if( currInput.LDown() )
+			{
+				bufferedAttack = DAIR; 
+			}
+			else
+			{
+				bufferedAttack = FAIR; 
+			}
+			//bufferedAttack = true;
+		}
 		break;
 	case JUMP:
 		steepJump = false;
