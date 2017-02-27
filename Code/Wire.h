@@ -176,6 +176,14 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	double segmentLength;
 	double minSegmentLength;
 	double pullStrength;
+	double pullAccel;
+	double maxPullStrength;
+	double startPullStrength;
+
+	double dragStrength;
+	double dragAccel;
+	double maxDragStrength;
+	double startDragStrength;
 
 	Actor *player;
 

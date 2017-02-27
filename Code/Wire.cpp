@@ -11,7 +11,7 @@ using namespace std;
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
-	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
+	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), right( r )
 	, extraBuffer( MAX_POINTS ),//64  ), 
 	quads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )), 
 	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )),
@@ -43,6 +43,17 @@ Wire::Wire( Actor *p, bool r)
 
 	numAnimFrames = 8;
 
+	//pullStrength = 10;
+	maxPullStrength = 30;
+	startPullStrength = 10;
+	pullStrength = startPullStrength;
+	pullAccel = (maxPullStrength - startPullStrength) / 180.0;
+	//.1 = 10 frames per 1. 100 frames per 10
+
+	maxDragStrength = 30;
+	startDragStrength = 10;
+	dragStrength = startDragStrength;
+	dragAccel = (maxDragStrength - startDragStrength) / 180.0;
 	//numTotalCharges = 0;
 
 	activeChargeList = NULL;
@@ -316,6 +327,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//cout << "playeraction: " << player->action << endl;
 				//cout << "set state pulling" << endl;
 				state = PULLING;
+				pullStrength = startPullStrength;
+				dragStrength = startDragStrength;
 			}
 			else
 			{
@@ -597,15 +610,25 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			if( currInput.A )
 			{
 				shrinkInput = true;
+				dragStrength = startDragStrength;
 			}
 			else if( currInput.B )
 			{
 				if( triggerDown && player->ground == NULL )
 				{
-					segmentLength += pullStrength;
-					totalLength += pullStrength;
+					segmentLength += dragStrength;
+					totalLength += dragStrength;
+
+					dragStrength += dragAccel;
+					if( dragStrength > maxDragStrength )
+						dragStrength = maxDragStrength;
+					
 					//cout << "GROWING" << endl;
 				}
+			}
+			else
+			{
+				dragStrength = startDragStrength;
 			}
 
 			bool bounceWindow = (player->action == Actor::BOUNCEAIR && player->framesSinceBounce > 10)
@@ -621,6 +644,21 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 				totalLength -= segmentChange;
 				segmentLength -= segmentChange;
+
+				if( segmentChange > 0 )
+				{
+					pullStrength += pullAccel;
+					if( pullStrength > maxPullStrength )
+						pullStrength = maxPullStrength;
+				}
+				else
+				{
+					pullStrength = startPullStrength;
+				}
+			}
+			else
+			{
+				pullStrength = startPullStrength;
 			}
 			break;
 		}
@@ -1716,7 +1754,7 @@ void Wire::Reset()
 	framesFiring = 0;
 	frame = 0;
 	ClearCharges();
-
+	pullStrength = startPullStrength;
 	cout << "reset wire reset clear" << endl;
 }
 

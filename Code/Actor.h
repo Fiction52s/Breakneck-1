@@ -220,7 +220,7 @@ struct Actor : QuadTreeCollider,
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
-	void RunMovement();
+	void RunMovement( double bounceFlameAccel );
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();
@@ -388,7 +388,9 @@ struct Actor : QuadTreeCollider,
 	int framesFlameOn;
 	bool bounceFlameOn;
 	sf::Sprite bounceFlameSprite;
-	double bounceFlameAccel;
+	double bounceFlameAccel0;
+	double bounceFlameAccel1;
+	double bounceFlameAccel2;
 
 	Tileset *ts_bounceBoost;
 
@@ -461,7 +463,6 @@ struct Actor : QuadTreeCollider,
 	double maxRunInit;
 	double maxGroundSpeed;
 	double runAccelInit;
-	double runGain;
 	double sprintAccel;
 
 	double maxNormalRun;

@@ -898,7 +898,9 @@ Actor::Actor( GameSession *gs )
 		sprintAccel = .2;//.3;//.85;
 
 		holdDashAccel = .07;
-		bounceFlameAccel = .15;
+		bounceFlameAccel0 = .08;//.15;//.8;
+		bounceFlameAccel1 = .15; //this was the original
+		bounceFlameAccel2 = .18;//.18;
 
 		dashHeight = 10;
 		normalHeight = 20;
@@ -1958,7 +1960,25 @@ void Actor::UpdatePrePhysics()
 	//cout << "hitstunFrames: " << hitstunFrames << endl;
 	//choose action
 
-	
+	double bounceFlameAccel = 0;
+	switch( speedLevel )
+	{
+	case 0:
+		
+		bounceFlameAccel = bounceFlameAccel0;
+		cout << "zero: " << bounceFlameAccel << endl;
+		break;
+	case 1:
+		bounceFlameAccel = bounceFlameAccel1;
+		cout << "one: " << bounceFlameAccel << endl;
+		break;
+	case 2:
+		
+		bounceFlameAccel = bounceFlameAccel2;
+		cout << "two: " << bounceFlameAccel << endl;
+		break;
+	}
+	assert( bounceFlameAccel != 0 );
 	
 	bool canStandUp = true;
 	if( b.rh < normalHeight )
@@ -2020,6 +2040,8 @@ void Actor::UpdatePrePhysics()
 		}
 		
 	}
+
+	
 
 	switch( action )
 	{
@@ -5348,7 +5370,7 @@ void Actor::UpdatePrePhysics()
 	case RUN:
 		{
 			//cout << "frame: " << frame << endl;
-			RunMovement();
+			RunMovement( bounceFlameAccel );
 		break;
 		}
 	case JUMP:
@@ -6537,7 +6559,7 @@ void Actor::UpdatePrePhysics()
 	case SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY:
 		{
 			//cout << "frame: " << frame << endl;
-			RunMovement();
+			RunMovement( bounceFlameAccel );
 			break;
 		}
 	case SEQ_CRAWLERFIGHT_DODGEBACK:
@@ -18350,7 +18372,7 @@ Vector2i Actor::GetWireOffset()
 	return offset;
 }
 
-void Actor::RunMovement()
+void Actor::RunMovement( double bounceFlameAccel )
 {
 	if( currInput.LLeft() )
 		facingRight = false;
