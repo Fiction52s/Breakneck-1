@@ -612,7 +612,46 @@ void Camera::Update( Actor *player )
 	pos.x += offset.x;
 	pos.y += offset.y;
 
+	//is >> leftBounds;
+	//	is >> topBounds;
+	//	is >> boundsWidth;
+	//	is >> boundsHeight;
+
+	float halfw = 960 / 2;
+	float halfh = 540 / 2;
+
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+
+	float left = pos.x - halfw * zoomFactor;
+
+	float tdiff = owner->leftBounds - left;
+	if( tdiff > 0 )
+	{
+		xChangePos = tdiff;
+	}
+	float right = pos.x + halfw * zoomFactor;
+
+	tdiff =  right - (owner->leftBounds + owner->boundsWidth);
+	if( tdiff > 0 )
+	{
+		xChangeNeg = -tdiff;
+	}
+	float top = pos.y - halfh * zoomFactor;
+	tdiff = owner->topBounds - top;
+	if( tdiff > 0 )
+	{
+		yChangePos = tdiff;
+	}
+
+	float bot = pos.y + halfh * zoomFactor;
+	tdiff = bot - (owner->topBounds + owner->boundsHeight);
+	if( tdiff > 0 )
+	{
+		yChangeNeg = -tdiff;
+	}
+
+
+	
 	Barrier *leftb = NULL, *rightb = NULL, *topb = NULL, *botb = NULL;
 	for(list<Barrier*>::iterator it = owner->barriers.begin(); it != owner->barriers.end(); ++it )
 	{
@@ -621,13 +660,11 @@ void Camera::Update( Actor *player )
 			continue;
 		}
 
-		float halfw = 960 / 2;
-		float halfh = 540 / 2;
+		
 		if( (*it)->x )
 		{
 			if( (*it)->positiveOpen )
 			{
-				float left = pos.x - halfw * zoomFactor;
 				float diff = (*it)->pos - left;
 				if( diff > 0 )
 				{
@@ -643,7 +680,6 @@ void Camera::Update( Actor *player )
 			}
 			else
 			{
-				float right = pos.x + halfw * zoomFactor;
 				float diff =  right - (*it)->pos;
 				if( diff > 0 )
 				{
@@ -663,7 +699,6 @@ void Camera::Update( Actor *player )
 		{
 			if( (*it)->positiveOpen )
 			{
-				float top = pos.y - halfh * zoomFactor;
 				float diff = (*it)->pos - top;
 				if( diff > 0 )
 				{
@@ -678,7 +713,6 @@ void Camera::Update( Actor *player )
 			}
 			else
 			{
-				float bot = pos.y + halfh * zoomFactor;
 				float diff = bot - (*it)->pos;
 				if( diff > 0 )
 				{

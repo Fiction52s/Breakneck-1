@@ -23,6 +23,7 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
+		climbBoostBuffered = false;
 		bufferedAttack = JUMP;
 		oldBounceEdge = NULL;
 		//seq = SEQ_NOTHING;
@@ -829,7 +830,7 @@ Actor::Actor( GameSession *gs )
 		steepClimbGravFactor = .31;//.7;
 		steepClimbFastFactor = .2;
 		framesSinceClimbBoost = 0;
-		climbBoostLimit = 10;
+		climbBoostLimit = 15;
 		
 
 		
@@ -2122,10 +2123,32 @@ void Actor::UpdatePrePhysics()
 				{
 					SetActionExpr( SPRINT );
 					frame = 0;
+
+					/*if( currInput.LLeft() )
+						if( reversed )
+							facingRight = false;
+						else
+							facingRight = true;
+					else if( currInput.LRight() )
+						if( reversed )
+							facingRight = true;
+						else
+							facingRight = false;*/
 				}
 				else
 				{
 					SetActionExpr( RUN );
+					/*if( currInput.LLeft() )
+						if( reversed )
+							facingRight = false;
+						else
+							facingRight = true;
+					else if( currInput.LRight() )
+						if( reversed )
+							facingRight = true;
+						else
+							facingRight = false;*/
+
 					
 					frame = 0;
 				}
@@ -4771,7 +4794,9 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.B && !prevInput.B && framesSinceClimbBoost > climbBoostLimit )
+
+			bool pressB = currInput.B && !prevInput.B;
+			if( ( pressB || climbBoostBuffered ) && framesSinceClimbBoost >= climbBoostLimit )
 			{
 				//cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
@@ -4785,14 +4810,16 @@ void Actor::UpdatePrePhysics()
 				{
 					groundSpeed = std::max( groundSpeed + extra, sp );
 				}
+				climbBoostBuffered = false;
 				/*else
 				{
 					
 				}*/
 				break;
 			}
-			else
+			else if( pressB && framesSinceClimbBoost < climbBoostLimit )
 			{
+				climbBoostBuffered = true;
 				//purposely counts outside of time slow so you can get extra boosts in time slow for now
 				
 			}
@@ -6005,7 +6032,10 @@ void Actor::UpdatePrePhysics()
 					b.offset.y = -b.offset.y;
 			}
 
-			
+			if( currInput.LLeft() )
+				facingRight = false;
+			else if( currInput.LRight() )				
+				facingRight = true;
 
 			if( !facingRight )//currInput.LLeft() )
 			{
@@ -15287,6 +15317,10 @@ void Actor::UpdateSprite()
 			double angle = GroundedAngle();
 			V2d along = normalize( ground->v1 - ground->v0 );
 
+			bool fr = facingRight;
+			if( reversed )
+			fr = !fr;
+
 			double xExtraStartRun = 0.0;//5.0
 
 			//this seems pretty odd. need a thing for its first repetition
@@ -15296,7 +15330,7 @@ void Actor::UpdateSprite()
 				||  ( currInput.LRight() && !prevInput.LRight() ) )  )
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart,
-				pp + gn * 32.0 + along * xExtraStartRun, false, angle, 6, 3, facingRight );
+				pp + gn * 32.0 + along * xExtraStartRun, false, angle, 6, 3, fr );
 				//runTappingSound.stop();
 				//runTappingSound.play();
 			}
@@ -15304,16 +15338,20 @@ void Actor::UpdateSprite()
 		double xExtraStart = -48.0;
 		if( !facingRight )
 			xExtraStart = -xExtraStart;
+		if( reversed )
+			xExtraStart = -xExtraStart;
+
+		
 		if( frame == 3 * 4 )
 		{
 			owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
-				pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, facingRight );
+				pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
 			owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP1] );
 		}
 		else if( frame == 8 * 4 )
 		{
 			owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
-				pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, facingRight );
+				pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
 			//owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart, 
 			//		pp + gn * 32.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
 			owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
@@ -18295,6 +18333,11 @@ Vector2i Actor::GetWireOffset()
 
 void Actor::RunMovement()
 {
+	if( currInput.LLeft() )
+		facingRight = false;
+	else if( currInput.LRight() )				
+		facingRight = true;
+
 	if( !facingRight )
 	{
 		if( groundSpeed > 0 )
