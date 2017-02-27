@@ -23,7 +23,6 @@ using namespace std;
 Actor::Actor( GameSession *gs )
 	:owner( gs ), dead( false )
 	{
-		climbBoostBuffered = false;
 		bufferedAttack = JUMP;
 		oldBounceEdge = NULL;
 		//seq = SEQ_NOTHING;
@@ -834,7 +833,7 @@ Actor::Actor( GameSession *gs )
 		
 
 		
-
+		
 		hasDoubleJump = true;
 		
 
@@ -4796,12 +4795,13 @@ void Actor::UpdatePrePhysics()
 
 
 			bool pressB = currInput.B && !prevInput.B;
-			if( ( pressB || climbBoostBuffered ) && framesSinceClimbBoost >= climbBoostLimit )
+			if( pressB )
 			{
 				//cout << "climb" << endl;
 				framesSinceClimbBoost = 0;
 				double sp = 5;//jumpStrength + 1;//28.0;
-				double extra = 5.0;
+				double fac = min( (double)framesSinceClimbBoost / climbBoostLimit, 1.0 );
+				double extra = 5.0 * fac;
 				if( gNorm.x > 0 )//&& currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
@@ -4810,20 +4810,12 @@ void Actor::UpdatePrePhysics()
 				{
 					groundSpeed = std::max( groundSpeed + extra, sp );
 				}
-				climbBoostBuffered = false;
 				/*else
 				{
 					
 				}*/
 				break;
 			}
-			else if( pressB && framesSinceClimbBoost < climbBoostLimit )
-			{
-				climbBoostBuffered = true;
-				//purposely counts outside of time slow so you can get extra boosts in time slow for now
-				
-			}
-
 			
 
 			if( reversed )
@@ -6815,6 +6807,12 @@ void Actor::UpdatePrePhysics()
 	{
 		//lastWire = 1;
 		V2d wPos = rightWire->storedPlayerPos;
+		if( position != rightWire->storedPlayerPos )
+		{
+			cout << "wPos: " << wPos.x << ", " << wPos.y << endl;
+			cout << "pp: " << position.x << ", " << position.y << endl;
+			//assert( 0 && "what" );
+		}
 		V2d wirePoint = wire->anchor.pos;
 		if( wire->numPoints > 0 )
 			wirePoint = wire->points[wire->numPoints-1].pos;
@@ -6831,14 +6829,15 @@ void Actor::UpdatePrePhysics()
 			otherTes = val * normalize( wirePoint - wPos );
 		}
 		
-		 
+		//otherTes = V2d( 0, 0 );
 
 		V2d old = velocity;
 		
-		if( normalize( wirePoint - wPos ).y > 0 )
-		{
-		//	velocity -= V2d( 0, gravity );
-		}
+		//if( normalize( wirePoint - wPos ).y > 0 )
+		//{
+		//	V2d g = AddGravity( V2d( 0, 0 ) );
+		//	velocity -= g;//V2d( 0, gravity );
+		//}
 		
 		
 		double speed = dot( velocity, tes ); 
@@ -6860,31 +6859,35 @@ void Actor::UpdatePrePhysics()
 
 		V2d wireDir = normalize( wirePoint - wPos );
 		double otherAccel = .5;
-		if( abs( wireDir.x ) < .7 )
+
+		V2d vec45( 1, 1 );
+		vec45 = normalize( vec45 );
+		double xLimit = vec45.x;
+		if( abs( wireDir.x ) < xLimit )
+		{
+			if( wireDir.y < 0 )
 			{
-				if( wireDir.y < 0 )
+				if( currInput.LLeft() )
 				{
-					if( currInput.LLeft() )
-					{
-						speed -= otherAccel;
-					}
-					else if( currInput.LRight() )
-					{
-						speed += otherAccel;
-					}
+					speed -= otherAccel;
 				}
-				else if( wireDir.y > 0 )
+				else if( currInput.LRight() )
 				{
-					if( currInput.LLeft() )
-					{
-						speed += otherAccel;
-					}
-					else if( currInput.LRight() )
-					{
-						speed -= otherAccel;
-					}
+					speed += otherAccel;
 				}
 			}
+			else if( wireDir.y > 0 )
+			{
+				if( currInput.LLeft() )
+				{
+					speed += otherAccel;
+				}
+				else if( currInput.LRight() )
+				{
+					speed -= otherAccel;
+				}
+			}
+		}
 		else
 		{
 			if( wireDir.x > 0 )
@@ -6924,12 +6927,25 @@ void Actor::UpdatePrePhysics()
 		double segLength = length( seg );
 		V2d diff = wirePoint - future;
 		
+		
 		//wire->segmentLength -= 10;
+		//cout << "ws: " << wire->segmentLength << ", segg: " << segLength << ", get: " << wire->GetSegmentLength() << endl;
 		if( length( diff ) > wire->segmentLength ) 
 		{
-			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
+			double pullVel = length( diff ) - wire->segmentLength;
+			V2d pullDir = normalize(diff);
+			//cout << "lengthdiff: " << length( diff ) << ", : seglength: " << wire->segmentLength << endl;
+			future += pullDir * pullVel;
+			//cout << "fut: " << length( future - wirePoint ) << ", seglength: " << wire->segmentLength << endl;
 			velocity = future - wPos;
+			
+			//cout << "pullVel: " << pullVel << endl;
+			
 		}
+
+		//velocity = V2d( 0, 0 );
+
+		//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 	}
 	else if( leftWire->state == Wire::PULLING  )
 	{
@@ -6980,7 +6996,10 @@ void Actor::UpdatePrePhysics()
 
 		V2d wireDir = normalize( wirePoint - wPos );
 		double otherAccel = .5;
-		if( abs( wireDir.x ) < .7 )
+		V2d vec45( 1, 1 );
+		vec45 = normalize( vec45 );
+		double xLimit = vec45.x;
+		if( abs( wireDir.x ) < xLimit )
 			{
 				if( wireDir.y < 0 )
 				{

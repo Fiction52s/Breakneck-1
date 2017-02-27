@@ -12,7 +12,7 @@ using namespace std;
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
 	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), pullStrength( 10 ), right( r )
-	, extraBuffer( 64 ), 
+	, extraBuffer( MAX_POINTS ),//64  ), 
 	quads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )), 
 	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )),
 	//eventually you can split this up into smaller sections so that they don't all need to draw
@@ -257,22 +257,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case HIT:
 		{
-			double total = 0;
-			
-			if( numPoints > 0 )
-			{
-				total += length( points[0].pos - anchor.pos );
-				for( int i = 1; i < numPoints; ++i )
-				{
-					total += length( points[i].pos - points[i-1].pos );
-				}
-				total += length( points[numPoints-1].pos - playerPos );
-			}
-			else
-			{
-				total += length( anchor.pos - playerPos );
-			}
-			totalLength = total;
+			totalLength = GetCurrentTotalLength();
 
 			if( totalLength > maxTotalLength )
 			{
@@ -319,11 +304,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				}
 			}
 
-			if( player->ground == NULL && !touchEdgeWithWire && hitStallCounter >= hitStallFrames && triggerDown
-				&& player->oldAction != Actor::WALLCLING && player->action != Actor::WALLCLING 
-				&& player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK 
-				&& ( !player->bounceFlameOn || player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL )
-				//&& player->oldAction != Actor::bouncewa&& player->action != Actor::WALLATTACK )
+			bool a = player->ground == NULL;
+			bool b = !touchEdgeWithWire;
+			bool c = hitStallCounter >= hitStallFrames;
+			bool d = triggerDown;
+			bool e = player->oldAction != Actor::WALLCLING && player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK;
+			bool f = ( !player->bounceFlameOn || player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL;
+			
+			if( a && b && c && d && e && f )
 			{
 				//cout << "playeraction: " << player->action << endl;
 				//cout << "set state pulling" << endl;
@@ -331,6 +319,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 			else
 			{
+				cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d
+					<< ", e: " << e << ",f: " << f << endl;
 				//cout << "bounce edge: " << player->bounceEdge << ", " << player->framesSinceBounce << ", old: " <<
 				//	player->oldBounceEdge << endl;
 			}
@@ -338,22 +328,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case PULLING:
 		{
-			double total = 0;
-			
-			if( numPoints > 0 )
-			{
-				total += length( points[0].pos - anchor.pos );
-				for( int i = 1; i < numPoints; ++i )
-				{
-					total += length( points[i].pos - points[i-1].pos );
-				}
-				total += length( points[numPoints-1].pos - playerPos );
-			}
-			else
-			{
-				total += length( anchor.pos - playerPos );
-			}
-			totalLength = total;
+			totalLength = GetCurrentTotalLength();
 
 			if( totalLength > maxTotalLength )
 			{
@@ -507,6 +482,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	}
 
+	if( right )
+		cout << "state: " << state << ", what" << endl;
 	switch( state )
 	{
 	case IDLE:
@@ -565,44 +542,23 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case PULLING:
 		{
-			double total = 0;
-			
-			if( numPoints > 0 )
-			{
-				total += length( points[0].pos - anchor.pos );
-				for( int i = 1; i < numPoints; ++i )
-				{
-					total += length( points[i].pos - points[i-1].pos );
-				}
-				total += length( points[numPoints-1].pos - playerPos );
-				//cout << "multi: " << "numPoints: " << numPoints << " , " << total << endl;
-			}
-			else
-			{
-				total += length( anchor.pos - playerPos );
-				//cout << "single: " << total << endl;
-			}
-			//totalLength = total;
-			//if( total < totalLength )
-				totalLength = total;
+			//cout << "pulling!" << endl;
+			totalLength = GetCurrentTotalLength();
 
 			V2d wn;
+			segmentLength = GetSegmentLength();
 
 			if( numPoints == 0 )
 			{
-				//if( totalLength < segmentLength )
-					segmentLength = totalLength;
+				//segmentLength = totalLength;
 				wn = normalize( anchor.pos - playerPos );
-				//cout << "segment length single: " << segmentLength << endl;
+				cout << "A segmentLength: " << segmentLength << endl;
 			}
 			else
 			{
-				double temp = length( points[numPoints-1].pos - playerPos );
-				//if( temp < segmentLength )
-				{
-					segmentLength = temp;
-				}
+				//double segmentLength = length( points[numPoints-1].pos - playerPos );
 				wn = normalize( points[numPoints-1].pos - playerPos );
+				cout << "B segmentLength: " << segmentLength << endl;
 				//cout << "segment length multi: " << segmentLength << endl;
 			}
 			
@@ -648,16 +604,20 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				{
 					segmentLength += pullStrength;
 					totalLength += pullStrength;
+					//cout << "GROWING" << endl;
 				}
 			}
 
 			bool bounceWindow = (player->action == Actor::BOUNCEAIR && player->framesSinceBounce > 10)
 				|| player->action != Actor::BOUNCEAIR;
-			if( shrinkInput && triggerDown && player->ground == NULL && totalLength > 128 && bounceWindow )
+			bool c = totalLength > 128;//minSegmentLength > 128;//
+			if( shrinkInput && triggerDown && player->ground == NULL && c && bounceWindow )
 			{
+				//cout << "SHRINKING " << endl;
 				double segmentChange = pullStrength;
+				
 				if( segmentLength - pullStrength < minSegmentLength )
-					segmentChange = minSegmentLength - (segmentLength - pullStrength);
+					segmentChange = 0;//-(minSegmentLength - (segmentLength - pullStrength));
 
 				totalLength -= segmentChange;
 				segmentLength -= segmentChange;
@@ -1469,6 +1429,7 @@ void Wire::UpdateQuads()
 		V2d startPartial;
 		V2d endPartial;
 		
+
 		//cout << "startIndex: " << startIndex << ", firingTakingUp: " << firingTakingUp << endl;
 		for( int j = 0; j < firingTakingUp; ++j )
 		{
@@ -1522,10 +1483,7 @@ void Wire::UpdateQuads()
 
 			int trueFrame = frame / animFactor;
 
-			//Vector2f realTopLeft = topLeft;
-			//Vector2f realTopRight = topRight;
-			//Vector2f realBottomRight= bottomRight;
-			//Vector2f realBottomLeft = bottomLeft;
+		
 
 			int fr  = frame/animFactor;
 			int ifr = (numAnimFrames-1) - fr;
@@ -1536,23 +1494,10 @@ void Wire::UpdateQuads()
 			}
 			else
 			{
-				//f = fr;
-				//cout << "f: " << f << endl;
 				f += numAnimFrames;
 			}
 			IntRect subRect = ts_wire->GetSubRect( f );
-			/*realTopLeft.y = subRect.left;
-			realTopRight.y = subRect.left + subRect.width;
-			realBottomRight.y = subRect.top + ;
-			realBottomLeft.y = tileHeight * (f+1);*/
-
-			/*if( !right )
-			{
-				realTopLeft.y += tileHeight * numAnimFrames;
-				realTopRight.y += tileHeight * numAnimFrames;
-				realBottomRight.y += tileHeight * numAnimFrames;
-				realBottomLeft.y += tileHeight * numAnimFrames;
-			}*/
+		
 			quads[index*4].texCoords = Vector2f( subRect.left, subRect.top );//realTopLeft;
 			quads[index*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
 			quads[index*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
@@ -1586,6 +1531,22 @@ void Wire::UpdateQuads()
 		//cout << "calling to update all sprites" << endl;
 		UpdateChargesSprites();
 	}
+}
+
+double Wire::GetSegmentLength()
+{
+	V2d playerPos = storedPlayerPos;//player->position;
+	double segLength;
+	if( numPoints == 0 )
+	{
+		segLength = length( anchor.pos - playerPos );
+	}
+	else
+	{
+		segLength = length( points[numPoints-1].pos - playerPos );
+	}
+
+	return segLength;
 }
 
 void Wire::Draw( RenderTarget *target )
@@ -1724,6 +1685,28 @@ void Wire::ClearDebug()
 		delete (*it);
 	}
 	progressDraw.clear();
+}
+
+double Wire::GetCurrentTotalLength()
+{
+	V2d playerPos = storedPlayerPos;//player->position;
+	double total = 0;
+			
+	if( numPoints > 0 )
+	{
+		total += length( points[0].pos - anchor.pos );
+		for( int i = 1; i < numPoints; ++i )
+		{
+			total += length( points[i].pos - points[i-1].pos );
+		}
+		total += length( points[numPoints-1].pos - playerPos );
+	}
+	else
+	{
+		total += length( anchor.pos - playerPos );
+	}
+
+	return total;
 }
 
 void Wire::Reset()

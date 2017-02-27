@@ -8792,7 +8792,6 @@ void GameSession::ResetShipSequence()
 
 void GameSession::RespawnPlayer()
 {
-	player->climbBoostBuffered = false;
 	player->runeStep = 0;
 	player->runeLength = 0;
 	player->showRune = false;

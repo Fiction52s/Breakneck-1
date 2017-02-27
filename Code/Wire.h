@@ -42,6 +42,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void Reset();
 	sf::Vector2<double> GetOriginPos( bool test );
 	void UpdateFuse();
+	double GetSegmentLength();
+
+	double GetCurrentTotalLength();
 	
 	int extraBuffer; //when swinging around edges sometimes the wire
 	//stretches some. This is attemping to hole up that problem. if it happens
@@ -147,7 +150,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int animFactor;
 	double quadHalfWidth;
 	int numPoints;
-	const static int MAX_POINTS = 20000;
+	const static int MAX_POINTS = 2000;
 
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];

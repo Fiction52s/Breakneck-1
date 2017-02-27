@@ -642,7 +642,6 @@ struct Actor : QuadTreeCollider,
 
 	int framesSinceClimbBoost;
 	int climbBoostLimit;
-	bool climbBoostBuffered;
 
 	bool longWallJump;
 	Action oldAction;
