@@ -332,8 +332,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 			else
 			{
-				cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d
-					<< ", e: " << e << ",f: " << f << endl;
+				//cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d
+				//	<< ", e: " << e << ",f: " << f << endl;
 				//cout << "bounce edge: " << player->bounceEdge << ", " << player->framesSinceBounce << ", old: " <<
 				//	player->oldBounceEdge << endl;
 			}
@@ -495,8 +495,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	}
 
-	if( right )
-		cout << "state: " << state << ", what" << endl;
+	//if( right )
+		//cout << "state: " << state << ", what" << endl;
 	switch( state )
 	{
 	case IDLE:
@@ -565,13 +565,13 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				//segmentLength = totalLength;
 				wn = normalize( anchor.pos - playerPos );
-				cout << "A segmentLength: " << segmentLength << endl;
+				//cout << "A segmentLength: " << segmentLength << endl;
 			}
 			else
 			{
 				//double segmentLength = length( points[numPoints-1].pos - playerPos );
 				wn = normalize( points[numPoints-1].pos - playerPos );
-				cout << "B segmentLength: " << segmentLength << endl;
+				//cout << "B segmentLength: " << segmentLength << endl;
 				//cout << "segment length multi: " << segmentLength << endl;
 			}
 			

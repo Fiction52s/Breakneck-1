@@ -873,7 +873,7 @@ Actor::Actor( GameSession *gs )
 		
 		maxRunInit = 4;
 		maxAirXControl = 6;//maxRunInit;
-		airSlow = .7;//.3;
+		airSlow = .3;//.7;//.3;
 
 		groundOffsetX = 0;
 
@@ -899,8 +899,8 @@ Actor::Actor( GameSession *gs )
 
 		holdDashAccel = .07;
 		bounceFlameAccel0 = .08;//.15;//.8;
-		bounceFlameAccel1 = .15; //this was the original
-		bounceFlameAccel2 = .18;//.18;
+		bounceFlameAccel1 = .1; //this was the original
+		bounceFlameAccel2 = .15;//.18;
 
 		dashHeight = 10;
 		normalHeight = 20;
@@ -1966,16 +1966,16 @@ void Actor::UpdatePrePhysics()
 	case 0:
 		
 		bounceFlameAccel = bounceFlameAccel0;
-		cout << "zero: " << bounceFlameAccel << endl;
+		//cout << "zero: " << bounceFlameAccel << endl;
 		break;
 	case 1:
 		bounceFlameAccel = bounceFlameAccel1;
-		cout << "one: " << bounceFlameAccel << endl;
+		//cout << "one: " << bounceFlameAccel << endl;
 		break;
 	case 2:
 		
 		bounceFlameAccel = bounceFlameAccel2;
-		cout << "two: " << bounceFlameAccel << endl;
+		//cout << "two: " << bounceFlameAccel << endl;
 		break;
 	}
 	assert( bounceFlameAccel != 0 );
@@ -5727,7 +5727,15 @@ void Actor::UpdatePrePhysics()
 					velocity.x = -strengthX;
 				}
 
-				velocity.y = -strengthY;
+				if( velocity.y < -strengthY )
+				{
+					
+				}
+				else
+				{
+					velocity.y = -strengthY;
+				}
+				
 
 				owner->soundNodeList->ActivateSound( soundBuffers[S_WALLJUMP] );
 			}
