@@ -1359,7 +1359,6 @@ struct EditSession : GUIHandler
 	bool showTerrainPath;
 	
 	sf::RenderWindow *w;
-	sf::Vector2i playerPosition;
 	//sf::Vector2i goalPosition;
 	std::string currentFile;
 	static double zoomMultiple;

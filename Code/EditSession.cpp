@@ -9591,7 +9591,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 		if( zoomMultiple > 7 )
 		{
 			playerZoomIcon.setPosition( player->position.x, player->position.y );
-			playerZoomIcon.setScale( zoomMultiple * 2, zoomMultiple * 2 );
+			playerZoomIcon.setScale( zoomMultiple * 1.8, zoomMultiple * 1.8 );
 			preScreenTex->draw( playerZoomIcon );
 		}
 		
@@ -14580,8 +14580,8 @@ void ActorType::Init()
 	}
 	else if( name == "player" )
 	{
-		width = 40;
-		height = 64;
+		width = 22;//40;
+		height = 42;//64;
 		canBeGrounded = false;
 		canBeAerial = true;
 	}
