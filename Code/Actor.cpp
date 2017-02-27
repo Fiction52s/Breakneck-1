@@ -49,7 +49,6 @@ Actor::Actor( GameSession *gs )
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
-		bounceSwordBoostStrength = 5.0;//10.0;
 
 		grindLungeSpeed0 = 15.0;
 		grindLungeSpeed1 = 17.0;//20.0;
@@ -595,10 +594,6 @@ Actor::Actor( GameSession *gs )
 		actionLength[AIRDASH] = 33;//27;
 		tileset[AIRDASH] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
 		normal[AIRDASH] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
-
-		actionLength[BOUNCESWORDBOOST] = 4;//27;
-		tileset[BOUNCESWORDBOOST] = owner->GetTileset( "airdash_80x80.png", 80, 80 );
-		normal[BOUNCESWORDBOOST] = owner->GetTileset( "airdash_NORMALS.png", 64, 64 );
 
 		actionLength[STEEPCLIMB] = 8 * 4;
 		tileset[STEEPCLIMB] = owner->GetTileset( "steepclimb_128x64.png", 128, 64 );
@@ -3050,17 +3045,6 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-			{
-				if( facingRight )
-					bounceSwordBoostDir = V2d( 1, 0 );
-				else
-					bounceSwordBoostDir = V2d( -1, 0 );
-
-				BounceSwordBoost();
-
-				//break;
-			}
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
@@ -3116,17 +3100,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-			{
-				bounceSwordBoostDir = V2d( 0, 1 );
-
-				BounceSwordBoost();
-				///if( facingRight )
-				//	bounceSwordBoostDir = V2d( 1, 0 );
-				//else
-				//	bounceSwordBoostDir = V2d( -1, 0 );
-				//break;
-			}
+			
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
@@ -3180,18 +3154,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-			{
-				
-				bounceSwordBoostDir = V2d( 0, -1 );
-
-				BounceSwordBoost();
-				/*if( facingRight )
-					bounceSwordBoostDir = V2d( 1, 0 );
-				else
-					bounceSwordBoostDir = V2d( -1, 0 );*/
-				break;
-			}
+			
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				//bounceGrounded = true;
@@ -3245,16 +3208,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-			{
-				if( facingRight )
-					bounceSwordBoostDir = normalize( V2d( 1, -1 ) );
-				else
-					bounceSwordBoostDir = normalize( V2d( -1, -1 ) );
-
-				BounceSwordBoost();
-				break;
-			}
+			
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				BounceFlameOn();
@@ -3308,14 +3262,7 @@ void Actor::UpdatePrePhysics()
 			if( currAttackHit && frame > 0 )
 			{
 			
-			if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-			{
-				if( facingRight )
-					bounceSwordBoostDir = normalize( V2d( 1, 1 ) );
-				else
-					bounceSwordBoostDir = normalize( V2d( -1, 1 ) );
-				BounceSwordBoost();
-			}
+			
 
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
@@ -3905,13 +3852,6 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-				if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-				{
-					BounceSwordBoost();
-					//action = BOUNCESWORDBOOST;
-					//frame = 0;
-					break;
-				}
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
 					BounceFlameOn();
@@ -4064,11 +4004,6 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-				if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-				{
-					BounceSwordBoost();
-					break;
-				}
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
 					BounceFlameOn();
@@ -4153,11 +4088,6 @@ void Actor::UpdatePrePhysics()
 		{
 			if( currAttackHit && frame > 0 )
 			{
-				if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-				{
-					BounceSwordBoost();
-					break;
-				}
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
 					BounceFlameOn();
@@ -5380,11 +5310,6 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
-	case BOUNCESWORDBOOST:
-		{
-			//first
-			break;
-		}
 	}
 	
 	currHitboxes = NULL;
@@ -6604,20 +6529,6 @@ void Actor::UpdatePrePhysics()
 		//cout << "frame: " << frame << endl;
 		//velocity = V2d( -30, -100 );
 		break;
-	case BOUNCESWORDBOOST:
-		{
-			//second
-			if( frame == 0 && slowCounter == 1 )
-			{
-				
-			}
-
-			CheckHoldJump();
-
-			if( framesInAir > 1 || velocity.y < 0 )
-				AirMovement();
-			break;
-		}
 	}
 	
 	if( action != GRINDBALL && action != GROUNDHITSTUN && action != AIRHITSTUN )
@@ -8926,37 +8837,6 @@ int Actor::GetBubbleRadius()
 	case 2:
 		return bubbleRadius2;
 		break;
-	}
-}
-
-void Actor::BounceSwordBoost()
-{
-	double str = enemiesKilledLastFrame * bounceSwordBoostStrength;
-	if( ground != NULL )
-	{
-		if( groundSpeed > 0 )
-		{
-			groundSpeed += str;
-		}
-		else if( groundSpeed < 0 )
-		{
-			groundSpeed -= str;
-		}
-		else
-		{
-			if( ( facingRight && !reversed ) || ( !facingRight && reversed ) )
-			{
-				groundSpeed += str;
-			}
-			else
-			{
-				groundSpeed -= str;
-			}
-		}
-	}
-	else
-	{
-		velocity += str * bounceSwordBoostDir;
 	}
 }
 
@@ -17888,59 +17768,7 @@ void Actor::UpdateSprite()
 
 		break;
 		}
-	case BOUNCESWORDBOOST:
-		{
-			sprite->setTexture( *(tileset[BOUNCESWORDBOOST]->texture));
-			int f = 0;
-			/*int f = 0;
-			if( oldAction == FAIR )
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					f = 2;
-				}
-				else
-				{
-					f = 1;
-				}
-			}
-			else if( currInput.LDown() )
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					f = 4;
-				}
-				else
-				{
-					f = 5;
-				}
-			}
-			else
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					f = 3;
-				}
-				else
-				{
-					f = 0;
-				}
-			}*/
-			if( facingRight )
-			{
-				
-				sprite->setTextureRect( tileset[AIRDASH]->GetSubRect( f ) );
-			}
-			else
-			{
-				sf::IntRect ir = tileset[AIRDASH]->GetSubRect( f );
-				sprite->setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-			}
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
+		
 	}
 	
 	if( bounceFlameOn )

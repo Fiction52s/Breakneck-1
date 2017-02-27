@@ -73,7 +73,6 @@ struct Actor : QuadTreeCollider,
 		GRABSHIP,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
-		BOUNCESWORDBOOST,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
 		SEQ_CRAWLERFIGHT_STAND,
@@ -126,7 +125,6 @@ struct Actor : QuadTreeCollider,
 		Expr_NONE
 	};
 
-	void BounceSwordBoost();
 
 	/*enum SeqType
 	{
@@ -180,9 +178,6 @@ struct Actor : QuadTreeCollider,
 	int runeStep;
 	int runeLength;
 	bool showRune;
-
-	double bounceSwordBoostStrength;
-	sf::Vector2<double> bounceSwordBoostDir;
 
 	HitboxInfo *wireChargeInfo;
 	//sf::Shader speedBarShader;
