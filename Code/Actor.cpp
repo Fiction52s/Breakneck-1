@@ -4670,14 +4670,14 @@ void Actor::UpdatePrePhysics()
 			if( currInput.B && !prevInput.B )
 			//if( currInput.A && !prevInput.A )
 			{
-				if( gNorm.x < 0 && currInput.LRight() )
+				if( gNorm.x < 0 && (currInput.LRight() || currInput.LUp() ) )
 				{
 					action = STEEPCLIMB;
 					facingRight = true;
 					groundSpeed = 10;
 					frame = 0;
 				}
-				else if( gNorm.x > 0 && currInput.LLeft() )
+				else if( gNorm.x > 0 && (currInput.LLeft() || currInput.LUp()) )
 				{
 					action = STEEPCLIMB;
 					facingRight = false;
@@ -4820,10 +4820,21 @@ void Actor::UpdatePrePhysics()
 			if( pressB )
 			{
 				//cout << "climb" << endl;
-				framesSinceClimbBoost = 0;
+				
 				double sp = 5;//jumpStrength + 1;//28.0;
-				double fac = min( (double)framesSinceClimbBoost / climbBoostLimit, 1.0 );
-				double extra = 5.0 * fac;
+				double fac = min( ((double)framesSinceClimbBoost) / climbBoostLimit, 1.0 );
+
+				double extra = 5.0;
+				if( currInput.LUp() )
+				{
+					//cout << "boost but better" << endl;
+					extra = 6.0;
+				}
+				
+				extra = extra * fac;
+
+				//cout << "frames: " << framesSinceClimbBoos
+				//cout << "fac: " << fac << " extra: " << extra << endl;
 				if( gNorm.x > 0 )//&& currInput.LLeft() )
 				{
 					groundSpeed = std::min( groundSpeed - extra, -sp );
@@ -4832,6 +4843,8 @@ void Actor::UpdatePrePhysics()
 				{
 					groundSpeed = std::max( groundSpeed + extra, sp );
 				}
+
+				framesSinceClimbBoost = 0;
 				/*else
 				{
 					
@@ -7951,9 +7964,9 @@ V2d Actor::UpdateReversePhysics()
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 					movementVec.y += .1;
-					if( movementVec.x <= .1 )
+					if( movementVec.x >= -.1 )
 					{
-						movementVec.x = .1;
+						movementVec.x = -.1;
 					}
 
 					
@@ -8147,9 +8160,9 @@ V2d Actor::UpdateReversePhysics()
 
 					//cout  <<  "reverse right:" << movementVec.x << ", " << movementVec.y << endl;
 					movementVec.y += .1;//.01;
-					if( movementVec.x >= -.1 )
+					if( movementVec.x <= .1 )
 					{
-						movementVec.x = -.1;
+						movementVec.x = .1;
 					}
 
 					if( movingGround != NULL )
