@@ -6204,6 +6204,43 @@ void Actor::UpdatePrePhysics()
 				currAttackHit = false;
 			}
 
+
+			bool pressB = currInput.B && !prevInput.B;
+			if( pressB )
+			{
+				//cout << "climb" << endl;
+				
+				double sp = 5;//jumpStrength + 1;//28.0;
+				double fac = min( ((double)framesSinceClimbBoost) / climbBoostLimit, 1.0 );
+
+				double extra = 5.0;
+				if( currInput.LUp() )
+				{
+					//cout << "boost but better" << endl;
+					extra = 5.5;
+				}
+				
+				extra = extra * fac;
+
+				//cout << "frames: " << framesSinceClimbBoos
+				//cout << "fac: " << fac << " extra: " << extra << endl;
+				if( gNorm.x > 0 )//&& currInput.LLeft() )
+				{
+					groundSpeed = std::min( groundSpeed - extra, -sp );
+				}
+				else if( gNorm.x < 0 )// && currInput.LRight() )
+				{
+					groundSpeed = std::max( groundSpeed + extra, sp );
+				}
+
+				framesSinceClimbBoost = 0;
+				/*else
+				{
+					
+				}*/
+				break;
+			}
+
 			float factor = steepClimbGravFactor;//.7 ;
 			if( currInput.LUp() )
 			{
