@@ -6889,8 +6889,8 @@ void Actor::UpdatePrePhysics()
 		V2d wPos = rightWire->storedPlayerPos;
 		if( position != rightWire->storedPlayerPos )
 		{
-			cout << "wPos: " << wPos.x << ", " << wPos.y << endl;
-			cout << "pp: " << position.x << ", " << position.y << endl;
+			//cout << "wPos: " << wPos.x << ", " << wPos.y << endl;
+			//cout << "pp: " << position.x << ", " << position.y << endl;
 			//assert( 0 && "what" );
 		}
 		V2d wirePoint = wire->anchor.pos;
@@ -7889,9 +7889,9 @@ V2d Actor::UpdateReversePhysics()
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .1;
-						if( movementVec.x <= .1 )
+						if( movementVec.x >= -.1 )
 						{
-							movementVec.x = .1;
+							movementVec.x = -.1;
 						}
 
 						if( movingGround != NULL )
@@ -8079,14 +8079,14 @@ V2d Actor::UpdateReversePhysics()
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
 						reversed = false;
-						//cout << "b" << endl;
+						cout << "b" << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 						movementVec.y += .1;
-						if( movementVec.x >= -.1 )
+						if( movementVec.x <= .1 )
 						{
-							movementVec.x = -.1;
+							movementVec.x = .1;
 						}
 
 						if( movingGround != NULL )

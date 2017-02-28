@@ -1859,6 +1859,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
+				cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
 				Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
@@ -3310,6 +3311,8 @@ bool GameSession::OpenFile( string fileName )
 		int polyCounter = 0;
 		//could use an array later if i wanted to
 		map<int, int> polyIndex;
+	
+
 
 		while( pointCounter < numPoints )
 		{
@@ -3318,6 +3321,7 @@ bool GameSession::OpenFile( string fileName )
 			{
 				hasReadBorderPoly = true;
 				inverse = true;
+				polyCounter = -1;
 			}
 			
 
@@ -3335,6 +3339,7 @@ bool GameSession::OpenFile( string fileName )
 			is >> polyPoints;
 
 			polyIndex[polyCounter] = pointCounter;
+			cout << "setting poly index at : " << polyCounter << " to " << pointCounter << endl;
 
 			int currentEdgeIndex = pointCounter;
 			for( int i = 0; i < polyPoints; ++i )
@@ -3754,9 +3759,12 @@ bool GameSession::OpenFile( string fileName )
 			
 
 			//cout << "loaded to here" << endl;
+			
 			++polyCounter;
 		}
 		
+		
+
 		LoadMovingPlats( is, polyIndex );
 
 		LoadBGPlats( is, polyIndex );
