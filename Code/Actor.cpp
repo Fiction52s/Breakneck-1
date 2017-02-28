@@ -4828,7 +4828,7 @@ void Actor::UpdatePrePhysics()
 				if( currInput.LUp() )
 				{
 					//cout << "boost but better" << endl;
-					extra = 6.0;
+					extra = 5.5;
 				}
 				
 				extra = extra * fac;
