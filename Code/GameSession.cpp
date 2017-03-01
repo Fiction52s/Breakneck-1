@@ -574,7 +574,7 @@ void KeyMarker::SetStartKeys( int sKeys )
 	//assert( state == ZERO || state == TOZERO );
 	startKeys = sKeys;
 	keysRequired = startKeys;
-	SetEnergySprite();
+	
 
 	//set bg sprite
 	
@@ -588,6 +588,8 @@ void KeyMarker::SetStartKeys( int sKeys )
 		state = ZERO;
 		backSprite.setTextureRect( ts_keys->GetSubRect( 24 ) );
 	}
+
+	SetEnergySprite();
 }
 
 void KeyMarker::Draw( sf::RenderTarget *target )
