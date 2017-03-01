@@ -728,7 +728,7 @@ void Wire::UpdateAnchors( V2d vel )
 		{
 			if( counter > 1 )
 			{
-				cout << "COUNTER: " << counter << endl;
+				//cout << "COUNTER: " << counter << endl;
 			}
 
 			V2d a = realAnchor - oldPos;
@@ -1763,7 +1763,9 @@ void Wire::Reset()
 	frame = 0;
 	ClearCharges();
 	pullStrength = startPullStrength;
-	cout << "reset wire reset clear" << endl;
+	//cout << "reset wire reset clear" << endl;
+
+	//clear charges gets called twice and thats not useful
 }
 
 V2d Wire::GetOriginPos( bool test )
