@@ -11321,9 +11321,12 @@ void Actor::UpdatePhysics()
 				//cout << "offsetX: " << offsetX << endl;
 
 				//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
+				////if( false )
+				//{
+				//	cout << "prevented glitchy offset: " << offsetX << endl;
+				//	assert( 0 );
 				if( false )
 				{
-					//cout << "prevented glitchy offset: " << offsetX << endl;
 				}
 				else
 				{
@@ -11427,7 +11430,24 @@ void Actor::UpdatePhysics()
 
 				if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
 				{
-					groundSpeed = dot( testVel, alongVel );
+					double res = dot( testVel, alongVel );
+
+					if( gNorm.y <= -steepThresh )
+					{
+						if( testVel.x > 0 && gNorm.x < 0 )
+						{
+							V2d straight( 1, 0 );
+							res = dot( testVel, straight );
+						}
+						else if( testVel.x < 0 && gNorm.x > 0 )
+						{
+							V2d straight( -1, 0 );
+							res = dot( testVel, straight );
+						}
+					}
+					groundSpeed = res;
+					
+					//groundSpeed = 
 				}
 				else
 				{
@@ -18618,8 +18638,13 @@ void Actor::SetActionGrind()
 
 
 	framesGrinding = 0;
-	rightWire->Reset();
-	leftWire->Reset();
+	if( rightWire != NULL )
+		rightWire->Retract();
+
+	if( leftWire != NULL )
+		leftWire->Retract();
+	//rightWire->Reset();
+	//leftWire->Reset();
 	action = GRINDBALL;
 	grindEdge = ground;
 	grindMovingTerrain = movingGround;

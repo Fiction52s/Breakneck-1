@@ -165,7 +165,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	WirePoint anchor;
 
 	void ActivateCharges();
-	
+	void Retract();
 
 	int triggerThresh;
 	int hitStallFrames;

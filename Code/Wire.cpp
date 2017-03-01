@@ -280,29 +280,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				if( canRetractGround && !triggerDown && prevTriggerDown )
 				{
-					state = RETRACTING;
-
-					retractPlayerPos = playerPos;
-
-					ActivateCharges();
-					//cout << "beginning retracting" << endl;
-					
-					fusePointIndex = numPoints;
-					if( numPoints == 0 )
-					{
-						fuseQuantity = length( anchor.pos - retractPlayerPos );
-					}
-					else
-					{
-						if( right )
-						{
-							fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
-						}
-						else
-						{
-							fuseQuantity = length( anchor.pos - points[0].pos );
-						}
-					}
+					Retract();
 					
 					break;
 				}
@@ -1585,6 +1563,36 @@ double Wire::GetSegmentLength()
 	}
 
 	return segLength;
+}
+
+void Wire::Retract()
+{
+	if( state == HIT || state == PULLING )
+	{
+	state = RETRACTING;
+
+	retractPlayerPos = storedPlayerPos;
+
+	ActivateCharges();
+	//cout << "beginning retracting" << endl;
+					
+	fusePointIndex = numPoints;
+	if( numPoints == 0 )
+	{
+		fuseQuantity = length( anchor.pos - retractPlayerPos );
+	}
+	else
+	{
+		if( right )
+		{
+			fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+		}
+		else
+		{
+			fuseQuantity = length( anchor.pos - points[0].pos );
+		}
+	}
+	}
 }
 
 void Wire::Draw( RenderTarget *target )
