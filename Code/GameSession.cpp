@@ -559,6 +559,9 @@ void KeyMarker::CollectKey()
 
 void KeyMarker::SetEnergySprite()
 {
+	if( state != NONZERO )
+		return;
+
 	int starts[] = { 0, 1, 3, 6, 10, 15 };
 	int trueStart = starts[startKeys-1];
 

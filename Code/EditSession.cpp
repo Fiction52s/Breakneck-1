@@ -2402,7 +2402,7 @@ bool EditSession::OpenFile( string fileName )
 		{
 			int gType;
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
-			int numKeysRequired;
+			int numKeysRequired = -1;
 
 			string reformBehindYouStr;
 
