@@ -131,6 +131,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 	}
 	else
 	{
+		//inactiveList is null! bug
 		if( sn->next == NULL )
 		{
 			assert( sn != activeList );
@@ -143,9 +144,19 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 
 			sn->prev->next = NULL;
 			sn->prev = NULL;
-			inactiveList->prev = sn;
-			sn->next = inactiveList;
-			inactiveList = sn;
+
+			if( inactiveList != NULL )
+			{
+				inactiveList->prev = sn;
+				sn->next = inactiveList;
+				inactiveList = sn;
+			}
+			else
+			{
+				inactiveList = sn;
+				inactiveList->next = NULL;
+				inactiveList->prev = NULL;
+			}
 
 			//a = GetActiveCount();
 			//n = GetInactiveCount();
@@ -159,9 +170,18 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			sn->next->prev = NULL;
 			activeList = sn->next;
 
-			sn->next = inactiveList;
-			inactiveList->prev = sn;
-			inactiveList = sn;
+			if( inactiveList != NULL )
+			{
+				sn->next = inactiveList;
+				inactiveList->prev = sn;
+				inactiveList = sn;
+			}
+			else
+			{
+				inactiveList = sn;
+				inactiveList->next = NULL;
+				inactiveList->prev = NULL;
+			}
 			//int a = GetActiveCount();
 			//int n = GetInactiveCount();
 			//cout << "c count: " << a << ", inactive: " << n << endl;
@@ -182,9 +202,17 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			if( inactiveList != NULL )
 			{
 				inactiveList->prev = sn;
+				sn->next = inactiveList;
+				inactiveList = sn;
 			}
-			sn->next = inactiveList;
-			inactiveList = sn;
+			else
+			{
+				inactiveList = sn;
+				inactiveList->next = NULL;
+				inactiveList->prev = NULL;
+			}
+			
+			
 
 			//int a = GetActiveCount();
 			//int n = GetInactiveCount();

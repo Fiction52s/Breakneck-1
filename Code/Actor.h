@@ -425,9 +425,9 @@ struct Actor : QuadTreeCollider,
 	double airDashSpeed1;
 	double airDashSpeed2;
 
-
 	CollisionBox b;
 	CollisionBox hurtBody;
+	//CollisionBox grindHurtBody;
 	std::list<CollisionBox> *currHitboxes;
 	//int numCurrHitboxes;
 	HitboxInfo *currHitboxInfo;
@@ -442,6 +442,9 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>*> diagUpHitboxes;
 	std::map<int, std::list<CollisionBox>*> diagDownHitboxes;
 	std::map<int, std::list<CollisionBox>*> shockwaveHitboxes;
+	std::map<int, std::list<CollisionBox>*> grindHitboxes;
+	//CollisionBox grindHitbox;
+
 
 
 	double steepThresh;

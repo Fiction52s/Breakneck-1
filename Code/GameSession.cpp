@@ -6991,9 +6991,12 @@ int GameSession::Run( string fileN )
 
 		goalPulse->Draw( preScreenTex );
 
-		if( player->action != Actor::GRINDBALL )
+		if( ( player->action != Actor::GRINDBALL && player->action != Actor::GRINDATTACK ) || player->leftWire->state == Wire::RETRACTING )
 		{
 			player->leftWire->Draw( preScreenTex );
+		}
+		if( ( player->action != Actor::GRINDBALL && player->action != Actor::GRINDATTACK ) || player->rightWire->state == Wire::RETRACTING )
+		{
 			player->rightWire->Draw( preScreenTex );
 		}
 
@@ -7229,7 +7232,7 @@ int GameSession::Run( string fileN )
 		//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
 		//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
 		
-		if( player->action != Actor::GRINDBALL )
+		if( ( player->action != Actor::GRINDBALL && player->action != Actor::GRINDATTACK ) )
 		{
 			player->rightWire->DrawMinimap( minimapTex );
 			player->leftWire->DrawMinimap( minimapTex );
@@ -8805,6 +8808,7 @@ void GameSession::ResetShipSequence()
 
 void GameSession::RespawnPlayer()
 {
+	player->framesNotGrinding = 0;
 	player->runeStep = 0;
 	player->runeLength = 0;
 	player->showRune = false;
