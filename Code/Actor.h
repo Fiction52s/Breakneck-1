@@ -140,7 +140,7 @@ struct Actor : QuadTreeCollider,
 	
 	SeqType seq;
 	int seqFrame;*/
-
+	
 
 	void SetActionExpr( Action a );
 	void SetExpr( Expr ex );
@@ -185,7 +185,8 @@ struct Actor : QuadTreeCollider,
 	int enemiesKilledThisFrame;
 	int enemiesKilledLastFrame;
 
-	Actor( GameSession *owner );
+	Actor( GameSession *owner, int actorIndex );
+	int actorIndex;
 	void UpdateSprite();
 	void ConfirmEnemyNoKill( Enemy *e );
 	void ConfirmHit( int worldIndex, 
@@ -202,6 +203,9 @@ struct Actor : QuadTreeCollider,
 	bool physicsOver;
 	void GroundAttack();
 	void ConfirmEnemyKill( Enemy *e );
+	bool IHitPlayer( int otherPlayerIndex );
+	std::pair<bool,bool> PlayerHitMe( int otherPlayerIndex );
+	
 
 	void ShipPickupPoint( double eq,
 		bool facingRight );
@@ -227,6 +231,7 @@ struct Actor : QuadTreeCollider,
 	bool CanUnlockGate( Gate *g );
 
 	void CheckHoldJump();
+	void Respawn();
 
 	void BounceFlameOff();
 	void BounceFlameOn();

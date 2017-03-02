@@ -334,6 +334,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
+
+	bool multiSession;
+
 	bool showDebugDraw;
 	bool showTerrainDecor;
 	
@@ -349,16 +352,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	ShipExitSeq *shipExitSeq;
 
-
-	//int shardsLoadedCounter;
-	//Level *currentLevelInfo;
-
 	sf::Vector2f relShipVel;
-	//sf::Vector2f shipKinVel;
-	//sf::Sprite cloud0a;
-	//sf::Sprite cloud0b;
-	//sf::Sprite cloud1a;
-	//sf::Sprite cloud1b;
 	sf::Sprite shipSprite;
 	sf::RectangleShape middleClouds;
 
@@ -399,13 +393,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//int f;
 	std::map<std::string,PoiInfo*> poiMap;
 	std::list<Barrier*> barriers;
-	//Barrier *bar2;
-	//Barrier *bar;
-	//int f;
+	
 	GameSession(GameController &c, 
 		SaveFile *sf,
 		MainMenu *mainMenu
 		);
+	void SetSecondController( GameController &c );
 	void TriggerBarrier( Barrier *b );
 
 	//Boss_Crawler *b_crawler;
@@ -437,7 +430,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	SoundManager *soundManager;
 	sf::Music *currMusic;
 
-	int Run( std::string fileName );
+	virtual int Run( std::string fileName );
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,
 		std::map<int, int> &polyIndex);
@@ -586,6 +579,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Transform groundTrans;
 	Camera cam;
 	Actor *player;
+	Actor *player2;
 	int numPolyTypes;
 	sf::Shader *polyShaders;
 	Tileset **ts_polyShaders;
@@ -626,9 +620,17 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//sf::Sprite topbarSprite;
 
 	sf::VertexArray *va;
+
 	ControllerState prevInput;
 	ControllerState currInput;
+	ControllerState prevInput2;
+	ControllerState currInput2;
+
 	GameController &controller;
+	GameController *controller2;
+
+	
+
 	Collider coll;
 	std::list<sf::VertexArray*> polygons;
 	std::list<sf::VertexArray*> polygonBorders;
@@ -753,12 +755,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	TestVA *listVA;
 	std::string queryMode;
 
-	/*struct ListableEdge
-	{
-		Edge *edge;
-		Edge *next;
-	};*/
-
 	TestVA *inversePoly;
 	void SetupInversePoly( Tileset *ts_bush );
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
@@ -768,12 +764,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<TestVA*> allVA;
 	int numBorders;
 
-	
-
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
-	//EdgeQNode *testTree;
-	//EnemyQNode *enemyTree;
+
 	std::string fileName;
 	bool goalDestroyed;
 	sf::View cloudView;
@@ -817,11 +810,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *inverseEdgeTree;
 	CrawlerReverser *drawCrawlerReversers;
 	
-	//std::map<Edge*, Gate*> gateMap;
-
-	//int numKeys;
-	//Key *keys;
-	//std::list<Key*> keyList;
 
 	Edge *borderEdge; 
 	//for creating the outside zone

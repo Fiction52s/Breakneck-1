@@ -650,6 +650,8 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
+	multiSession = true;
+	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
 	activeDialogue = NULL;
@@ -1056,6 +1058,9 @@ void GameSession::UpdateEnemiesPhysics()
 	}
 
 	player->physicsOver = false;
+	
+	if( multiSession )
+		player2->physicsOver = false;
 	///for( int i = 0; i < NUM_STEPS; ++i )
 	//	player->UpdatePhysics( );
 
@@ -1068,6 +1073,9 @@ void GameSession::UpdateEnemiesPhysics()
 		}
 
 		player->UpdatePhysics();
+
+		if( multiSession )
+			player2->UpdatePhysics();
 
 		Enemy *current = activeEnemyList;
 		while( current != NULL )
@@ -3285,6 +3293,11 @@ bool GameSession::OpenFile( string fileName )
 		originalPos.x = player->position.x;
 		originalPos.y = player->position.y;
 
+		if( multiSession )
+		{
+			player2->position = player->position;
+		}
+
 		is >> goalPos.x;
 		is >> goalPos.y;
 
@@ -5235,7 +5248,18 @@ int GameSession::Run( string fileN )
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 	bool bdrawdraw = false;
 
-	player = new Actor( this );
+	player = new Actor( this, 0 );
+
+	
+	if( multiSession )
+	{
+		player2 = new Actor( this, 1 );
+	}
+	else
+	{
+		player2 = NULL;
+	}
+
 
 	OpenFile( fileName );
 	
@@ -5706,6 +5730,8 @@ int GameSession::Run( string fileN )
 				
 
 				ControllerState con;
+
+				ControllerState con2;
 				//con = controller.GetState();
 				
 				
@@ -5718,6 +5744,15 @@ int GameSession::Run( string fileN )
 					//player->prevInput = currInput;
 					controller.UpdateState();
 					con = controller.GetState();
+
+					if( controller2 != NULL )
+					{
+						controller2->UpdateState();
+						con2 = controller2->GetState();
+					}
+
+					
+					
 					//player->currInput = currInput;
 					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
 					
@@ -5822,10 +5857,20 @@ int GameSession::Run( string fileN )
 
 			prevInput = currInput;
 
+			if( multiSession )
+				prevInput2 = currInput2;
+			
+
 			if( !cutPlayerInput )
+			{
 				player->prevInput = currInput;
 
-			if( !controller.UpdateState() )
+				if( multiSession )
+					player2->prevInput = currInput2;
+			}
+
+			bool canControllerUpdate = controller.UpdateState();
+			if( !canControllerUpdate )
 			{
 				bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
 				bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
@@ -5934,7 +5979,80 @@ int GameSession::Run( string fileN )
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
+			if( multiSession )
+			{
+				//prevInput2 = currInput2;
 
+				assert( controller2 != NULL );
+				bool canControllerUpdate2 = controller2->UpdateState();
+				if( canControllerUpdate && !canControllerUpdate2 )
+				{
+					bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+					bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+					bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+					bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
+
+					ControllerState keyboardInput;    
+					keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
+					keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
+					keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
+					keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
+					//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
+					keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
+					keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
+					keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
+					keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
+					keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
+					keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
+			
+					keyboardInput.rightStickPad = 0;
+					if( Keyboard::isKeyPressed( Keyboard::A ) )
+					{
+						keyboardInput.rightStickPad += 1 << 1;
+					}
+					else if( Keyboard::isKeyPressed( Keyboard::S ) )
+					{
+						keyboardInput.rightStickPad += 1;
+					}
+				
+					if( up && down )
+					{
+						if( prevInput2.LUp() )
+							keyboardInput.leftStickPad += 1;
+						else if( prevInput2.LDown() )
+							keyboardInput.leftStickPad += ( 1 && down ) << 1;
+					}
+					else
+					{
+						keyboardInput.leftStickPad += 1 && up;
+						keyboardInput.leftStickPad += ( 1 && down ) << 1;
+					}
+
+					if( left && right )
+					{
+						if( prevInput2.LLeft() )
+						{
+							keyboardInput.leftStickPad += ( 1 && left ) << 2;
+						}
+						else if( prevInput2.LRight() )
+						{
+							keyboardInput.leftStickPad += ( 1 && right ) << 3;
+						}
+					}
+					else
+					{
+						keyboardInput.leftStickPad += ( 1 && left ) << 2;
+						keyboardInput.leftStickPad += ( 1 && right ) << 3;
+					}
+
+					currInput2 = keyboardInput;
+				}
+				else
+				{
+					//controller2->UpdateState();
+					currInput2 = controller2->GetState();
+				}
+			}
 
 
 			if( !cutPlayerInput )
@@ -5984,7 +6102,57 @@ int GameSession::Run( string fileN )
 					}
 				}
 
+				if( multiSession )
+				{
+					assert( controller2 != NULL );
 
+					ControllerState &pCurr = player2->currInput;
+				//ControllerState &pPrev = player->prevInput;
+
+				
+					bool alreadyBounce = pCurr.X;
+					bool alreadyGrind = pCurr.Y;
+					bool alreadyTimeSlow = pCurr.leftShoulder;
+
+					player2->currInput = currInput2;
+
+					if( controller2->keySettings.toggleBounce )
+					{
+						if( currInput2.X && !prevInput2.X )
+						{
+							pCurr.X = !alreadyBounce;
+						}
+						else
+						{
+							pCurr.X = alreadyBounce;
+						}
+					}
+					if( controller2->keySettings.toggleGrind )
+					{
+						if( currInput2.Y && !prevInput2.Y )
+						{
+							pCurr.Y = !alreadyGrind;
+							//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
+						}
+						else
+						{
+							pCurr.Y = alreadyGrind;
+						}
+					}
+					if( controller2->keySettings.toggleTimeSlow )
+					{
+						if( currInput2.leftShoulder && !prevInput2.leftShoulder )
+						{
+						
+							pCurr.leftShoulder = !alreadyTimeSlow;
+						
+						}
+						else
+						{
+							pCurr.leftShoulder = alreadyTimeSlow;
+						}
+					}
+				}
 
 				//else
 			}
@@ -6098,11 +6266,21 @@ int GameSession::Run( string fileN )
 				totalGameFrames++;
 				player->UpdatePrePhysics();
 
+				if( multiSession )
+				{
+					player2->UpdatePrePhysics();
+				}
+
 				UpdateEnemiesPrePhysics();
 
 				UpdateEnemiesPhysics();
 
 				player->UpdatePostPhysics();
+
+				if( multiSession )
+				{
+					player2->UpdatePostPhysics();
+				}
 
 				if( goalDestroyed )
 				{
@@ -6116,6 +6294,15 @@ int GameSession::Run( string fileN )
 
 				if( player->hasPowerRightWire )
 					player->rightWire->UpdateQuads();
+
+				if( multiSession )
+				{
+					if( player->hasPowerLeftWire )
+						player->leftWire->UpdateQuads();
+
+					if( player->hasPowerRightWire )
+						player->rightWire->UpdateQuads();
+				}
 
 				UpdateEnemiesPostPhysics();
 				
@@ -6186,8 +6373,15 @@ int GameSession::Run( string fileN )
 				//polyShader.setParameter( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
 				//	view.getCenter().y + view.getSize().y / 2 );
 
-
-				cam.Update( player );
+				if( multiSession )
+				{
+					cam.Update( player2 );
+				}
+				else
+				{
+					cam.Update( player );
+				}
+				
 
 				Vector2f camPos = cam.GetPos();
 
@@ -7020,6 +7214,9 @@ int GameSession::Run( string fileN )
 		if( player->action != Actor::DEATH )
 			player->Draw( preScreenTex );
 
+		if( player2 != NULL && player2->action != Actor::DEATH )
+			player2->Draw( preScreenTex );
+
 
 		if( shipSequence )
 		{
@@ -7598,6 +7795,10 @@ int GameSession::Run( string fileN )
 		{
 			player->Draw( preScreenTex );
 		}
+		if( player2 != NULL && player2->action == Actor::DEATH )
+		{
+			player2->Draw( preScreenTex );
+		}
 	//	preScreenTex->setSmooth( true );
 		
 		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
@@ -7678,7 +7879,8 @@ int GameSession::Run( string fileN )
 
 		player->DodecaLateDraw( preScreenTex );
 
-		
+		if( multiSession )
+			player2->DodecaLateDraw( preScreenTex );
 
 		//enemyTree->DebugDraw( preScreenTex );
 
@@ -8649,6 +8851,9 @@ void GameSession::SetupInversePoly( Tileset *ts_bush )
 void GameSession::DebugDrawActors()
 {
 	player->DebugDraw( preScreenTex );
+
+	if( multiSession )
+		player2->DebugDraw( preScreenTex );
 	
 	Enemy *currEnemy = activeEnemyList;
 	while( currEnemy != NULL )
@@ -8806,6 +9011,11 @@ void GameSession::ResetShipSequence()
 	middleClouds.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
 }
 
+void GameSession::SetSecondController( GameController &c )
+{
+	controller2 = &c;
+}
+
 void GameSession::RespawnPlayer()
 {
 	player->framesNotGrinding = 0;
@@ -8850,9 +9060,6 @@ void GameSession::RespawnPlayer()
 	if( poiMap.count( "ship" ) > 0 )
 	{
 		ResetShipSequence();
-		//shipSequence = true;
-		//relShipVel = Vector2f( 2, 0 );
-
 	}
 	else
 	{
@@ -8983,7 +9190,44 @@ void GameSession::RestartLevel()
 	//enterNexus1Seq->Reset();
 	activeSequence = NULL;
 
-	RespawnPlayer();
+	soundNodeList->Reset();
+	scoreDisplay->Reset();
+
+	currentZone = originalZone;
+	if( currentZone != NULL )
+		keyMarker->SetStartKeys( currentZone->requiredKeys );
+
+	if( poiMap.count( "ship" ) > 0 )
+	{
+		ResetShipSequence();
+	}
+
+	powerBar.points = 100;
+	powerBar.layer = 0;
+
+	powerWheel->Reset();
+	//currentZone = NULL;
+	cam.zoomFactor = 1;
+	
+	cam.offset = Vector2f( 0, 0 );
+	cam.manual = false;
+	cam.rumbling = false;
+
+	if( !cam.bossCrawler )
+	{
+		cam.zoomFactor = 1;
+		cam.zoomLevel = 0;
+		cam.offset = Vector2f( 0, 0 );
+	}
+
+	player->Respawn();
+	
+	cam.pos.x = player->position.x;
+	cam.pos.y = player->position.y;
+
+	if( player2 != NULL )
+		player2->Respawn();
+	//RespawnPlayer();
 	pauseFrames = 0;
 
 	ResetEnemies();

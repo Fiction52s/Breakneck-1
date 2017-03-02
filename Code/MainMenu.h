@@ -76,6 +76,7 @@ struct MainMenu
 	sf::View v;
 	sf::View uiView;
 	GameController controller;
+	GameController controller2;
 	SoundManager soundManager;
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
@@ -109,6 +110,7 @@ struct MainMenu
 
 	ControllerState currInput;
 	ControllerState prevInput;
+
 
 	sf::Sprite saveBG;
 	sf::Sprite saveSelect;

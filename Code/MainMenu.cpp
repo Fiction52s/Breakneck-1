@@ -26,7 +26,7 @@ sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
 
 MainMenu::MainMenu()
-	:controller( 0 ), windowWidth(1920), windowHeight( 1080 )
+	:controller( 0 ), windowWidth(1920), windowHeight( 1080 ), controller2( 1 )
 {
 	cout << "start mm constfr" << endl;
 	//load a preferences file at some point for window resolution and stuff
@@ -326,7 +326,8 @@ void MainMenu::GameEditLoop( const std::string &filename)
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
 		GameSession *gs = new GameSession( controller, NULL, this );
-		
+
+		gs->SetSecondController( controller2 );
 		result = gs->Run( filename );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
@@ -344,6 +345,9 @@ void MainMenu::GameEditLoop2( const std::string &filename)
 	{
 		window->setView( v );
 		GameSession *gs = new GameSession( controller, NULL, this );
+
+		gs->SetSecondController( controller2 );
+
 		result = gs->Run( filename );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;

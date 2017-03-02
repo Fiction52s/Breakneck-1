@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "PowerOrbs.h"
 #include "Sequence.h"
+#include <list>
 
 using namespace sf;
 using namespace std;
@@ -20,8 +21,8 @@ using namespace std;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Actor::Actor( GameSession *gs )
-	:owner( gs ), dead( false )
+Actor::Actor( GameSession *gs, int p_actorIndex )
+	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
 		framesNotGrinding = 0;
 		bufferedAttack = JUMP;
@@ -1395,8 +1396,93 @@ bool Actor::AirAttack()
 	return false;
 }
 
+void Actor::Respawn()
+{
+	framesNotGrinding = 0;
+	runeStep = 0;
+	runeLength = 0;
+	showRune = false;
+	bufferedAttack = Actor::JUMP;
+
+	//clean up the checkpoint code at some point
+
+	hitGoal = false;
+	position = owner->originalPos;
+
+	followerPos = position;
+	followerVel = V2d( 0, 0 );
+	enemiesKilledThisFrame = 0;
+	gateTouched = NULL;
+
+	if( !owner->poiMap.count( "ship" ) > 0 )
+	{
+		action = INTRO;
+		frame = 0;
+	}
+
+	velocity.x = 0;
+	velocity.y = 0;
+	reversed = false;
+	b.offset.y = 0;
+	b.rh = normalHeight;
+	facingRight = true;
+	offsetX = 0;
+	prevInput = ControllerState();
+	currInput = ControllerState();
+	ground = NULL;
+	grindEdge = NULL;
+	bounceEdge = NULL;
+	dead = false;
+	
+	record = 0;
+	recordedGhosts = 0;
+	blah = false;
+	receivedHit = NULL;
+	speedParticleCounter = 1;
+	speedLevel = 0;
+	speedBarTarget = 0;//60;
+	currentSpeedBar = 0;//60;
+
+	bounceFlameOn = false;
+
+	if( hasPowerLeftWire )
+	{
+		leftWire->Reset();
+	}
+	if( hasPowerRightWire )
+	{
+		rightWire->Reset();
+	}
+	
+	//powerBar.Reset();
+	lastWire = 0;
+	desperationMode = false;
+
+	flashFrames = 0;
+	
+	hasDoubleJump = true;
+	hasAirDash = true;
+	hasGravReverse = true;
+
+	for( int i = 0; i < maxBubbles; ++i )
+	{
+		bubbleFramesToLive[i] = 0;
+	}
+
+	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
+	{
+		motionGhosts[i].setPosition( position.x, position.y );
+	}
+
+	SetExpr( Actor::Expr::Expr_NEUTRAL );
+}
+
 void Actor::UpdatePrePhysics()
 {
+	if( owner->multiSession )
+	{
+		cout << owner->player2->position.x << ", " << owner->player2->position.y << endl;
+	}
 	//cout << "JFRAME BEHI: " << frame << endl;
 	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
@@ -12188,11 +12274,6 @@ void Actor::GroundAttack()
 
 void Actor::PhysicsResponse()
 {
-	//velocity *= (double)slowMultiple;
-	//groundSpeed *= slowMultiple;
-	//grindSpeed *= slowMultiple;
-
-
 	V2d gn;
 	//Edge *e;
 	if( grindEdge != NULL )
@@ -12843,6 +12924,28 @@ void Actor::PhysicsResponse()
 
 	//only for motion ghosts
 	//UpdateSprite();
+
+	if( owner->multiSession )
+	{
+		Actor *pTarget = NULL;
+		int target = 0;
+		if( actorIndex == 0 )
+		{
+			target = 1;
+			pTarget = owner->player2;
+		}
+		else if( actorIndex == 1 )
+		{
+			target = 0;
+			pTarget = owner->player;
+		}
+
+		if( IHitPlayer( target ) )
+		{
+			pTarget->ApplyHit( currHitboxInfo );
+			ConfirmHit( 2, 5, .8, 6 );
+		}
+	}
 
 	if( ghostSpacingCounter == motionGhostSpacing )
 	{
@@ -19237,6 +19340,122 @@ void Actor::SetActionExpr( Action a )
 
 	SetAction( a );
 	//action = a;
+}
+
+bool Actor::IHitPlayer( int otherPlayerIndex )
+{
+	Actor *player = NULL;
+	switch( otherPlayerIndex )
+	{
+	case 0:
+		player = owner->player;
+		break;
+	case 1:
+		player = owner->player2;
+		break;
+	}
+	
+	if( player->invincibleFrames == 0 )
+	{
+		if( currHitboxes != NULL )
+		{
+			bool hit = false;
+
+			for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+			{
+				if( player->hurtBody.Intersects( (*it) ) )
+				{
+					hit = true;
+					break;
+				}
+			}
+
+			if( hit )
+			{
+				//receivedHit = player->currHitboxInfo;
+				return true;
+			}
+		}
+		//if( player->position.x < position.x )
+		//{
+		//	hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
+		//	//cout << "left" << endl;
+		//}
+		//else if( player->position.x > position.x )
+		//{
+		//	//cout << "right" << endl;
+		//	hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
+		//}
+		//else
+		//{
+		//	//dont change it
+		//}
+		//attackFrame = 0;
+		//player->ApplyHit( hitboxInfo );
+		//return true;
+	}
+	
+	return false;
+}
+
+ pair<bool, bool> Actor::PlayerHitMe( int otherPlayerIndex )
+{
+	Actor *player = NULL;
+	switch( otherPlayerIndex )
+	{
+	case 0:
+		player = owner->player;
+		break;
+	case 1:
+		player = owner->player2;
+		break;
+	}
+
+	if( player->currHitboxes != NULL )
+	{
+		bool hit = false;
+
+		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		{
+			if( hurtBody.Intersects( (*it) ) )
+			{
+				hit = true;
+				break;
+			}
+		}
+		
+		receivedHit = player->currHitboxInfo;
+		return pair<bool, bool>(true,false);
+	}
+
+	//for( int i = 0; i < player->recordedGhosts; ++i )
+	//{
+	//	if( player->ghostFrame < player->ghosts[i]->totalRecorded )
+	//	{
+	//		if( player->ghosts[i]->currHitboxes != NULL )
+	//		{
+	//			bool hit = false;
+	//			
+	//			for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
+	//			{
+	//				if( hurtBody.Intersects( (*it) ) )
+	//				{
+	//					hit = true;
+	//					break;
+	//				}
+	//			}
+	//	
+
+	//			if( hit )
+	//			{
+	//				receivedHit = player->currHitboxInfo;
+	//				return pair<bool, bool>(true,true);
+	//			}
+	//		}
+	//		//player->ghosts[i]->curhi
+	//	}
+	//}
+	return pair<bool, bool>(false,false);
 }
 
 PlayerGhost::PlayerGhost()
