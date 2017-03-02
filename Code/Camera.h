@@ -73,6 +73,8 @@ struct Camera
 	void Update2( Actor *a );
 	void UpdateReal( Actor *a );
 	void Update( Actor *a );
+	void UpdateVS( Actor *a, 
+		Actor *a2 );
 };
 
 #endif

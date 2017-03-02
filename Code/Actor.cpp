@@ -1479,10 +1479,10 @@ void Actor::Respawn()
 
 void Actor::UpdatePrePhysics()
 {
-	if( owner->multiSession )
+	/*if( owner->multiSession )
 	{
 		cout << owner->player2->position.x << ", " << owner->player2->position.y << endl;
-	}
+	}*/
 	//cout << "JFRAME BEHI: " << frame << endl;
 	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{

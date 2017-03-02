@@ -6375,7 +6375,7 @@ int GameSession::Run( string fileN )
 
 				if( multiSession )
 				{
-					cam.Update( player2 );
+					cam.UpdateVS( player, player2 );
 				}
 				else
 				{

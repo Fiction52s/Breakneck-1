@@ -270,8 +270,6 @@ void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 	
 }
 
-
-
 void Camera::Update( Actor *player )
 {
 	if( manual || player->action == Actor::SPAWNWAIT || player->action == Actor::INTRO
@@ -304,7 +302,6 @@ void Camera::Update( Actor *player )
 	//	UpdateRumble();
 		return;
 	}
-	
 
 	if( bossCrawler )
 	{
@@ -890,6 +887,63 @@ void Camera::Update( Actor *player )
 		curr = curr->next;
 	}
 	cout << "num active: " << numActive << endl;*/
+}
+
+void Camera::UpdateVS( Actor *a, Actor *a2 )
+{
+	V2d center = (a->position + a2->position) / 2.0;
+
+	Vector2f res( 1920 / 2, 1080 / 2 );
+	double distx = abs( a->position.x - a2->position.x );
+	double disty = abs( a->position.y - a2->position.y );
+
+	double zx = distx / res.x;
+	double zy = disty / res.y;
+	
+	double maxDist = max( zx, zy );
+
+	if( zx == maxDist )
+	{
+		zoomFactor = zx;// / 2.0;
+
+		double adistx = distx + max( 200.f * zoomFactor, 200.f );
+		double azx = adistx / res.x;
+		zoomFactor = azx;
+	}
+	else if( zy == maxDist )
+	{
+		zoomFactor = zy;// / 2.0;
+
+		double adisty = disty + max( 200.f * zoomFactor, 200.f );
+		double azy = adisty / res.y;
+		zoomFactor = azy;
+	}
+	
+	
+
+	//double adistx = distx + 200;
+	//double adisty = disty + 200;
+
+	
+	//double azy = adisty / res.y;
+	
+	
+
+	
+	//zoomFactor += 200 / res.x;
+
+	double minZoom = 1.0;
+	double maxZoom = 8;
+	if( zoomFactor < minZoom )
+		zoomFactor = minZoom;
+	else if( zoomFactor > maxZoom )
+		zoomFactor = maxZoom;
+
+
+	pos.x = center.x;
+	pos.y = center.y;
+
+	cout << "zoomfactor: " << zoomFactor << endl;
 }
 
 void Camera::Update2( Actor *player )
