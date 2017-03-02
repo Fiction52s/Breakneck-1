@@ -12688,14 +12688,14 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
-					cout << "zzz: " << (int)collision << endl;//wallNormal.x << ", " << wallNormal.y << endl;
+					//cout << "zzz: " << (int)collision << endl;//wallNormal.x << ", " << wallNormal.y << endl;
 					stopWallClinging = true;
 					
 				}
 
 				if( stopWallClinging )
 				{
-					cout << "stop wall clinging" << endl;
+					//cout << "stop wall clinging" << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
 					holdJump = false;

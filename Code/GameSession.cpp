@@ -6804,7 +6804,7 @@ int GameSession::Run( string fileN )
 		//preScreenTex->draw( testParallaxSprite );
 		preScreenTex->setView( view );
 
-		testPar->Draw( preScreenTex );
+		//testPar->Draw( preScreenTex );
 		
 
 		//window->draw( background );

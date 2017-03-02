@@ -932,7 +932,7 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	
 	//zoomFactor += 200 / res.x;
 
-	double minZoom = 1.0;
+	double minZoom = .6;//1.0;
 	double maxZoom = 8;
 	if( zoomFactor < minZoom )
 		zoomFactor = minZoom;
@@ -943,7 +943,7 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	pos.x = center.x;
 	pos.y = center.y;
 
-	cout << "zoomfactor: " << zoomFactor << endl;
+	//cout << "zoomfactor: " << zoomFactor << endl;
 }
 
 void Camera::Update2( Actor *player )

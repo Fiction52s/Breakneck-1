@@ -815,7 +815,7 @@ void Wire::UpdateAnchors( V2d vel )
 				radius = radius - length( oldAnchor - realAnchor );
 				oldPos = realAnchor + normalize( realAnchor - oldAnchor ) * radius;
 
-				cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
+				//cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
 				counter++;
 			}
 			else
