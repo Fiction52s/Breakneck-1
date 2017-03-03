@@ -9208,6 +9208,11 @@ void GameSession::RestartLevel()
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
 
+	recGhost->StopRecording();
+	recGhost->StartRecording();
+
+	repGhost->frame = 0;
+
 	currentZone = originalZone;
 	if( currentZone != NULL )
 		keyMarker->SetStartKeys( currentZone->requiredKeys );
