@@ -650,7 +650,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
-	multiSession = true;
+	multiSession = false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
@@ -5249,7 +5249,8 @@ int GameSession::Run( string fileN )
 	bool bdrawdraw = false;
 
 	player = new Actor( this, 0 );
-
+	recGhost = new RecordGhost( player );
+	repGhost = new ReplayGhost( player );
 	
 	if( multiSession )
 	{
@@ -5654,7 +5655,9 @@ int GameSession::Run( string fileN )
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
 	cout << "loop about to start" << endl;
+	recGhost->StartRecording();
 
+	repGhost->OpenGhost( "testghost.bghst" );
 
 	while( !quit )
 	{
@@ -6220,8 +6223,10 @@ int GameSession::Run( string fileN )
 				//accumulator = 0;
 				
 				accumulator -= TIMESTEP;
+
+				recGhost->RecordFrame();
 				
-				
+				repGhost->UpdateReplaySprite();
 
 				//currentTime = gameClock.getElapsedTime().asSeconds();
 				//break;
@@ -6282,10 +6287,16 @@ int GameSession::Run( string fileN )
 					player2->UpdatePostPhysics();
 				}
 
+				recGhost->RecordFrame();
+
+				repGhost->UpdateReplaySprite();
+
 				if( goalDestroyed )
 				{
 					quit = true;
 					returnVal = 1;
+					//recGhost->StopRecording();
+					//recGhost->WriteToFile( "testghost.bghst" );
 					break;
 				}
 
@@ -7212,7 +7223,11 @@ int GameSession::Run( string fileN )
 		}
 
 		if( player->action != Actor::DEATH )
+		{
 			player->Draw( preScreenTex );
+
+			repGhost->Draw( preScreenTex );
+		}
 
 		if( player2 != NULL && player2->action != Actor::DEATH )
 			player2->Draw( preScreenTex );
@@ -10070,12 +10085,13 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 				{
 					if( pointList.size() > 0 && pointList.back().second == false )
 					{
+						pointList.pop_back();
 						//cout << "failing here: " << i << endl;
 						assert( 0 );
 					}
 					else
 					{
-						
+						//pointList.pop_back
 						pointList.push_back( pair<V2d,bool>( hitPoint, false ) ); //not facing the ray, so im inside
 						//cout << "adding false: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
 					}
@@ -10084,6 +10100,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 				{
 					if( pointList.size() > 0 && pointList.back().second == true)
 					{
+						pointList.pop_back();
 						//cout << "failing here111 " << i << endl;
 						assert( 0 );
 					}

@@ -334,7 +334,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
-
+	std::list<ReplayGhost*> replayGhosts;
+	RecordGhost *recGhost;
+	ReplayGhost *repGhost;
 	bool multiSession;
 
 	bool showDebugDraw;
@@ -629,6 +631,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GameController &controller;
 	GameController *controller2;
 
+	
 	
 
 	Collider coll;

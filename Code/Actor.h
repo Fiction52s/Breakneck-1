@@ -127,6 +127,8 @@ struct Actor : QuadTreeCollider,
 
 	Action spriteAction;
 	int currTileIndex;
+	bool flipTileX;
+	bool flipTileY;
 
 	/*enum SeqType
 	{
@@ -873,114 +875,50 @@ struct PlayerGhost
 
 };
 
+
+struct SprInfo
+{
+	sf::Vector2f position;
+	sf::Vector2f origin;
+	float rotation;
+	bool flipX;
+	bool flipY;
+
+	int action;
+	int tileIndex;
+
+	int speedLevel;
+};
+
 struct RecordGhost
 {
-	struct SprInfo
-	{
-		SprInfo *prev;
-		int action;
-		int tileIndex;
-		float angle;
-		bool facingRight;
-		int speedLevel;
-	};
+	RecordGhost( Actor *p );
 	int frame;
 	void StartRecording();
-	void RecordFrame( Actor *player );
-	SprInfo sprBuffer[3600*60]; //1 hour
+	void StopRecording();
+	int numTotalFrames;
+	Actor *player;
+	void WriteToFile( const std::string &fileName );
+	void RecordFrame();
+	const static int MAX_RECORD = 3600 * 60;
+	SprInfo sprBuffer[MAX_RECORD]; //1 hour
 };
 
 struct ReplayGhost
 {
-	enum Action
-	{
-		DAIR,
-		DASH,
-		DOUBLE,
-		FAIR,
-		JUMP,
-		LAND,
-		LAND2,
-		RUN,
-		SLIDE,
-		SPRINT,
-		STAND,
-		DASHATTACK,
-		WALLATTACK,
-		STEEPCLIMBATTACK,
-		STEEPSLIDEATTACK,
-		STANDN,
-		UAIR,
-		WALLCLING,
-		WALLJUMP,
-		STEEPSLIDE,
-		GRAVREVERSE,
-		GRINDBALL,
-		GRINDLUNGE,
-		GRINDSLASH,
-		GRINDATTACK,
-		AIRDASH,
-		STEEPCLIMB,
-		AIRHITSTUN,
-		GROUNDHITSTUN,
-		WIREHOLD,
-		BOUNCEAIR,
-		BOUNCEGROUND,
-		BOUNCEGROUNDEDWALL,
-		JUMPSQUAT,
-		INTRO,
-		EXIT,
-		GOALKILL,
-		GOALKILLWAIT,
-		SPAWNWAIT,
-		DEATH,
-		RIDESHIP,
-		SKYDIVE,
-		SKYDIVETOFALL,
-		WAITFORSHIP,
-		GRABSHIP,
-		DIAGUPATTACK,
-		DIAGDOWNATTACK,
-		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
-		SEQ_CRAWLERFIGHT_LAND,
-		SEQ_CRAWLERFIGHT_STAND,
-		SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY,
-		SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED,
-		SEQ_CRAWLERFIGHT_DODGEBACK,
-		SEQ_WAIT,
-		GETPOWER_AIRDASH_MEDITATE,		
-		GETPOWER_AIRDASH_FLIP,
-		ENTERNEXUS1,
-		Count
-	};
-
-
-	struct SprInfo
-	{
-		SprInfo *prev;
-		int action;
-		int tileIndex;
-		sf::Vector2i origin;
-		sf::Vector2f position;
-		float angle;
-		bool facingRight;
-		int speedLevel;
-	};
-
-
-	//SprInfo *recordedLatest;
-	//SprInfo *front;
-
-	ReplayGhost();
-	sf::Sprite replaySprite;
-	std::list<SprInfo*> loadedReplay;
-	void StartRecording();
-	void RecordFrame( Actor *player );
+	bool init;
+	ReplayGhost( Actor *p );
 	bool OpenGhost( const std::string &fileName );
+	sf::Sprite replaySprite;
+	
 	void UpdateReplaySprite();
-	int frame;
-	int numFrames;
+	
 	void Draw( sf::RenderTarget *target );
+
+	SprInfo *sprBuffer;
+	Actor *player;
+	int frame;
+	int numTotalFrames;
 };
 
 #endif

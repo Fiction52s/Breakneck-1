@@ -25,6 +25,9 @@ using namespace std;
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		spriteAction = FAIR;
+		currTileIndex = 0;
+
 		framesNotGrinding = 0;
 		bufferedAttack = JUMP;
 		oldBounceEdge = NULL;
@@ -13302,6 +13305,8 @@ void Actor::UpdatePostPhysics()
 	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
 		SetActionExpr( GOALKILL );
+		owner->recGhost->StopRecording();
+		owner->recGhost->WriteToFile( "testghost.bghst" );
 		frame = 0;
 		position = owner->goalNodePos;
 		rightWire->Reset();
@@ -17120,10 +17125,6 @@ void Actor::UpdateSprite()
 		}
 	case GRINDLUNGE:
 		{
-			sprite->setTexture( *(tileset[GRINDLUNGE]->texture) );
-
-			IntRect ir = tileset[GRINDLUNGE]->GetSubRect( 1 );
-			
 			SetSpriteTexture( GRINDLUNGE );
 
 			SetSpriteTile( 1, facingRight );
@@ -18261,14 +18262,27 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 	IntRect ir = tileset[spriteAction]->GetSubRect( currTileIndex );
 	if( !noFlipX )
 	{
+		flipTileX = true;
 		ir.left += ir.width;
 		ir.width = -ir.width;
 	}
+	else
+	{
+		flipTileX = false;
+	}
+
 	if( !noFlipY )
 	{
+		flipTileY = true;
 		ir.top += ir.height;
 		ir.height = -ir.height;
 	}
+	else
+	{
+		flipTileY = false;
+	}
+
+
 	sprite->setTextureRect( ir );
 }
 
@@ -19145,41 +19159,64 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 	}
 }
 
-ReplayGhost::ReplayGhost()
+ReplayGhost::ReplayGhost( Actor *p_player )
+	:player( p_player ), sprBuffer( NULL )
 {
-
+	frame = 0;
+	init = false;
 }
 
 void ReplayGhost::Draw( RenderTarget *target )
 {
-	if( frame >= 0 && frame < numFrames )
+	if( !init )
+		return;
+	
+	if( frame >= 0 && frame < numTotalFrames )
 		target->draw( replaySprite );
 }
 
 bool ReplayGhost::OpenGhost( const std::string &fileName )
 {
 	ifstream is;
+
 	is.open( fileName );
 	if( is.is_open() )
 	{
-		is >> numFrames;
+		is >> numTotalFrames;
+		sprBuffer = new SprInfo[numTotalFrames];
 
-		for( int i = 0; i < numFrames; ++i )
+		for( int i = 0; i < numTotalFrames; ++i )
 		{
-			SprInfo *info = new SprInfo;
-			is >> info->action;
-			is >> info->tileIndex;
-			is >> info->angle;
-			int fr;
-			is >> fr;
-			info->facingRight = (bool)fr;
-			is >> info->speedLevel;
-			loadedReplay.push_back( info );
+			SprInfo &info = sprBuffer[i];
+			is >> info.position.x;
+			is >> info.position.y;
+
+			is >> info.origin.x;
+			is >> info.origin.y;
+
+			is >> info.rotation;
+
+			int fx;
+			int fy;
+
+			is >> fx;
+			is >> fy;
+
+			info.flipX = (bool)fx;
+			info.flipY = (bool)fy;
+
+			is >> info.action;
+			is >> info.tileIndex;
+
+			is >> info.speedLevel;
+			init = true;
 		}
 
+		is.close();
+
+		frame = 0;
 		return true;
 	}
-
 	//return false on failure
 	return false;
 
@@ -19187,22 +19224,106 @@ bool ReplayGhost::OpenGhost( const std::string &fileName )
 
 void ReplayGhost::UpdateReplaySprite()
 {
+	if( !init || frame == numTotalFrames )
+		return;
 
+	SprInfo &info = sprBuffer[frame];
+	Tileset *ts = player->tileset[(Actor::Action)info.action];
+	replaySprite.setTexture( *ts->texture );
+
+	IntRect ir = ts->GetSubRect( info.tileIndex );
+	
+	replaySprite.setRotation( info.rotation );
+	
+	if( info.flipX )
+	{
+		ir.left += ir.width;
+		ir.width = -ir.width;
+	}
+	if( info.flipY )
+	{
+		ir.top += ir.height;
+		ir.height = -ir.height;
+	}
+
+	replaySprite.setTextureRect( ir );
+	replaySprite.setOrigin( info.origin.x, info.origin.y );
+	replaySprite.setRotation( info.rotation );
+	replaySprite.setPosition( info.position.x, info.position.y );
+	
+	replaySprite.setColor( Color( 255, 255, 255, 150 ) );
+
+	++frame;
 }
 
-void ReplayGhost::StartRecording()
+RecordGhost::RecordGhost( Actor *p_player )
+	:player( p_player )
 {
-	//if( front != NULL )
+	numTotalFrames = -1;
+	frame = -1;
+}
+
+void RecordGhost::StartRecording()
+{
+	frame = 0;
+	numTotalFrames = -1;
+}
+
+void RecordGhost::StopRecording()
+{
+	//cout << "stop recording: " << frame << endl;
+	numTotalFrames = frame;
+	frame = -1;
+}
+
+void RecordGhost::RecordFrame()
+{
+	if( frame < 0 )
+		return;
+	//assert( frame >= 0 );
+	if( frame >= MAX_RECORD )
+		return;
+
+	SprInfo &info = sprBuffer[frame];
+	info.position = player->sprite->getPosition();
+	info.origin = player->sprite->getOrigin();
+	info.rotation = player->sprite->getRotation();
+	info.flipX = player->flipTileX;
+	info.flipY = player->flipTileY;
+	info.action = (int)player->spriteAction;
+	info.tileIndex = player->currTileIndex;
+	info.speedLevel = player->speedLevel;
+
+	cout << "record frame: " << frame << ",action: " << info.action << ", t: " << info.tileIndex << endl;
+	++frame;
+}
+
+void RecordGhost::WriteToFile( const std::string &fileName )
+{
+	assert( numTotalFrames > 0 );
+
+	ofstream of;
+	of.open( fileName );
+	if( of.is_open() )
 	{
-		//delete [] front;
+		of << numTotalFrames << endl;
+		for( int i = 0; i < numTotalFrames; ++i )
+		{
+			SprInfo &info = sprBuffer[i];
+			of << info.position.x << " " << info.position.y << endl;
+			of << info.origin.x << " " << info.origin.y << endl;
+			of << info.rotation << endl;
+			of << (int)info.flipX << " " << (int)info.flipY << endl;
+			of << info.action << " " << info.tileIndex << endl;
+			of << info.speedLevel << endl;
+		}
+
+		of.close();
+	}
+	else
+	{
+		cout << "recordghost fileName: " << fileName << endl;
+		assert( false && "failed to open file to write to" );
 	}
 }
-
-void RecordGhost::RecordFrame( Actor *player )
-{
-	SprInfo &info = sprBuffer[frame];
-	info.action = (int)player->action;
-	//info.tileIndex = 
-}
-
 
