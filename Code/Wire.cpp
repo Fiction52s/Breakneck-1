@@ -191,13 +191,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				}
 				else
 				{
-					double angle = currInput.leftStickRadians;
-
-					double degs = angle / PI * 180.0;
-					double sec = 360.0 / 64.0;
-					int mult = floor( (degs / sec) + .5 );
-					angle = (PI / 32.0) * mult;
-
 
 					/*angle = angle / ( 360.0  / 64.0 );
 					int mult = floor( angle );
@@ -212,6 +205,13 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 					/*fireDir.x = cos( currInput.leftStickRadians );
 					fireDir.y = -sin( currInput.leftStickRadians );*/
+
+					double angle = currInput.leftStickRadians;
+
+					double degs = angle / PI * 180.0;
+					double sec = 360.0 / 64.0;
+					int mult = floor( (degs / sec) + .5 );
+					angle = (PI / 32.0) * mult;
 
 					fireDir.x = cos( angle );
 					fireDir.y = -sin( angle );
@@ -234,10 +234,13 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 						fireDir = normalize( fireDir );
 						state = FIRING;
+						//cout << "firing from idle" << endl;
 						framesFiring = 0;
 						frame = 0;
 					}
 				}
+
+				//fireDir = normalize( V2d( -1, -1 ) );
 			}
 			break;
 		}
@@ -376,7 +379,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//ClearCharges();
 				//Reset();
 				fireDir = V2d( 0, 0 );
-				
+				playerPos = GetOriginPos(true);
+				storedPlayerPos = playerPos;
 
 				if( false )
 				{
@@ -416,27 +420,37 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				}
 				else
 				{
+					//double angle = currInput.leftStickRadians;
+
+					//double degs = angle / PI * 180.0;
+					//double sec = 360.0 / 64.0;
+					//int mult = floor( (degs / sec) + .5 );
+					//angle = (PI / 32.0) * mult;
+
+
+					///*angle = angle / ( 360.0  / 64.0 );
+					//int mult = floor( angle );
+					//double remain = angle - ( mult * PI / 32.0 );
+					//if( remain >= PI / 64.0 )
+					//{
+					//	mult++;
+					//}
+
+					//angle = mult * PI / 32.0;*/
+
+
+					///*fireDir.x = cos( currInput.leftStickRadians );
+					//fireDir.y = -sin( currInput.leftStickRadians );*/
+
+					//fireDir.x = cos( angle );
+					//fireDir.y = -sin( angle );
+
 					double angle = currInput.leftStickRadians;
 
 					double degs = angle / PI * 180.0;
 					double sec = 360.0 / 64.0;
 					int mult = floor( (degs / sec) + .5 );
 					angle = (PI / 32.0) * mult;
-
-
-					/*angle = angle / ( 360.0  / 64.0 );
-					int mult = floor( angle );
-					double remain = angle - ( mult * PI / 32.0 );
-					if( remain >= PI / 64.0 )
-					{
-						mult++;
-					}
-
-					angle = mult * PI / 32.0;*/
-
-
-					/*fireDir.x = cos( currInput.leftStickRadians );
-					fireDir.y = -sin( currInput.leftStickRadians );*/
 
 					fireDir.x = cos( angle );
 					fireDir.y = -sin( angle );
@@ -459,10 +473,13 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 						fireDir = normalize( fireDir );
 						state = FIRING;
+						//cout << "firing from retracting" << endl;
 						framesFiring = 0;
 						frame = 0;
 					}
 				}
+
+				//fireDir = normalize( V2d( -1, -1 ) );
 			}
 			break;
 		}
@@ -499,27 +516,53 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			if( rcEdge != NULL )
 			{
+				//cout << "hit edge!: " << rcEdge->Normal().x << ", " << rcEdge->Normal().y << ", : " << rcEdge << endl;
 				if( rcQuant < 4 )
 				{
+					//cout << "Aw" << endl;
 					//cout << "lock1" << endl;
 					anchor.pos = rcEdge->v0;
 				}
 				else if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - 4 )
 				{
+					//cout << "Bw" << endl;
 					//cout << "lock2" << endl;
 					anchor.pos = rcEdge->v1;
 				}
 				else
 				{
+					//cout << "Cw" << endl;
 					anchor.pos = rcEdge->GetPoint( rcQuant );
 				}
 				
 				anchor.e = rcEdge;
 				anchor.quantity = rcQuant;
 
+				//cout << "anchor pos: " << anchor.pos.x << ", " << anchor.pos.y << endl;
 				//player->owner->ActivateEffect( ts_miniHit, rcEdge->GetPoint( rcQuant ), true, 0, , 3, facingRight );
 
 				numPoints = 0;
+
+				state = HIT;
+
+				storedPlayerPos = playerPos;
+				//storedPlayerPos = playerPos;
+				//state = HIT;
+				//if( !triggerDown )
+				//{
+				//	canRetractGround = true;
+				//}
+				//else
+				//{
+				////	canRetractGround = false;
+				//}
+				//numPoints = 0;
+				//anchor.pos = minSideEdge->v0;
+				//anchor.quantity = 0;
+				//anchor.e = minSideEdge;
+				//UpdateAnchors( V2d( 0, 0 ) );
+
+				//UpdateAnchors( V2d( 0, 0 ) );
 			}
 			break;
 		}
@@ -815,7 +858,7 @@ void Wire::UpdateAnchors( V2d vel )
 				radius = radius - length( oldAnchor - realAnchor );
 				oldPos = realAnchor + normalize( realAnchor - oldAnchor ) * radius;
 
-				//cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
+				cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
 				counter++;
 			}
 			else
@@ -868,6 +911,8 @@ void Wire::UpdateAnchors( V2d vel )
 		quadWirePosC = wirePos;
 		quadPlayerPosD = playerPos;
 
+
+		//for grabbing onto points
 		double top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
 		double bot = max( quadOldPosA.y, max( quadOldWirePosB.y, max( quadWirePosC.y, quadPlayerPosD.y ) ) );
 		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
@@ -1126,11 +1171,12 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 		double alongQ = dot( e->v0 - quadOldPosA, along );
 		double otherQ = cross( e->v0 - quadOldPosA, along );
 
+		double extra = 0;
 		//cout << "checking: " << e->v0.x << ", " << e->v0.y << ", along/other: " << alongQ << ", " << otherQ 
 		//	<< ", alongLen: " << length( quadOldWirePosB - quadOldPosA ) << ", otherLen: " << length( quadOldPosA - quadPlayerPosD ) << endl;
-		if( -otherQ >= 0  && -otherQ <= length( quadOldPosA - quadPlayerPosD ) )
+		if( -otherQ >= -extra  && -otherQ <= length( quadOldPosA - quadPlayerPosD ) + extra )
 		{
-			if( alongQ >= 0 && alongQ <= length( quadOldWirePosB - quadOldPosA ) )
+			if( alongQ >= -extra && alongQ <= length( quadOldWirePosB - quadOldPosA ) + extra )
 			{
 				if( minSideEdge == NULL 
 					|| ( minSideEdge != NULL 
