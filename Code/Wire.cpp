@@ -873,7 +873,7 @@ void Wire::UpdateAnchors( V2d vel )
 		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
 		double right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
 
-		double ex = 3;
+		double ex = 1;
 		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
 
 		if( r.width == 0 || r.height == 0 )

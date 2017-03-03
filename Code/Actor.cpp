@@ -13374,11 +13374,11 @@ void Actor::UpdatePostPhysics()
 					//cout << "STUFF???" << endl;
 					if( velocity.x > 0 )
 					{
-						owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d( position.x - 64, position.y - 18 ), false, PI / 2.0, 15, 3, true );
+						owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d( position.x - 64, position.y - 18 ), false, PI / 2.0, 15, 3, true );
 					}
 					else
 					{
-						owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d( position.x + 64, position.y - 18 ), false, -PI / 2.0, 15, 3, true );
+						owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d( position.x + 64, position.y - 18 ), false, -PI / 2.0, 15, 3, true );
 					}
 				}
 				else if( velocity.x == 0 && velocity.y < 0 )
