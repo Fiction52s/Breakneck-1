@@ -4332,7 +4332,8 @@ void Actor::UpdatePrePhysics()
 	case GRINDBALL:
 		{
 		
-			if( !currInput.Y )//&& grindEdge->Normal().y < 0 )
+			bool j = currInput.A && !prevInput.A;
+			if( !currInput.Y || j )//&& grindEdge->Normal().y < 0 )
 			{
 				V2d op = position;
 
@@ -4380,32 +4381,42 @@ void Actor::UpdatePrePhysics()
 						hasGravReverse = true;
 						hasDoubleJump = true;
 						lastWire = 0;
-						ground = grindEdge;
-						movingGround = grindMovingTerrain;
-						edgeQuantity = grindQuantity;
-						action = LAND;
-						frame = 0;
-						groundSpeed = grindSpeed;
 
-						if( currInput.LRight() )
+						if( !j )
 						{
-							facingRight = true;
-							if( groundSpeed < 0 )
+							ground = grindEdge;
+							movingGround = grindMovingTerrain;
+							edgeQuantity = grindQuantity;
+							action = LAND;
+							frame = 0;
+							groundSpeed = grindSpeed;
+
+							if( currInput.LRight() )
 							{
-								groundSpeed = 0;
+								facingRight = true;
+								if( groundSpeed < 0 )
+								{
+									groundSpeed = 0;
+								}
+							}
+							else if( currInput.LLeft() )
+							{
+								facingRight = false;
+								if( groundSpeed > 0 )
+								{
+									groundSpeed = 0;
+								}
 							}
 						}
-						else if( currInput.LLeft() )
+						else
 						{
-							facingRight = false;
-							if( groundSpeed > 0 )
-							{
-								groundSpeed = 0;
-							}
+							ground = grindEdge;
+							movingGround = grindMovingTerrain;
+							edgeQuantity = grindQuantity;
+							groundSpeed = grindSpeed;
+							SetActionExpr( JUMPSQUAT );
+							frame = 0;
 						}
-
-						
-
 
 
 						grindEdge = NULL;
@@ -4436,7 +4447,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) )//|| !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || j )//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
 							{
@@ -4682,6 +4693,7 @@ void Actor::UpdatePrePhysics()
 				action = GRINDATTACK;
 				frame = 0;
 			}
+			
 
 			if( action != GRINDBALL && action != GRINDATTACK )
 			{
@@ -5916,7 +5928,7 @@ void Actor::UpdatePrePhysics()
 						}*/
 						
 					}
-
+					dir.y = .2;
 					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
 					velocity = -groundSpeed * trueNormal;
 					//velocity = -groundSpeed * normalize(V2d( 0, -1 ) + normalize(ground->v1 - ground->v0 ));
@@ -6179,7 +6191,11 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
+				
 				storedGroundSpeed = groundSpeed;
+				/*if( reversed )
+					storedGroundSpeed = -storedGroundSpeed;*/
+
 				groundSpeed = 0;
 			}
 		}
@@ -7830,7 +7846,14 @@ void Actor::UpdatePrePhysics()
 	collision = false;
 	groundedWallBounce = false;
 
-	
+	if( ground != NULL )
+	{
+		cout << "groundspeed: " << groundSpeed << endl;
+	}
+	else
+	{
+		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+	}
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	//cout << "before position: " << position.x << ", " << position.y << endl;
@@ -7840,10 +7863,18 @@ void Actor::UpdatePrePhysics()
 void Actor::SetAction( Action a )
 {
 	action = a;
-	if( slowMultiple > 1 )
+	//shouldnt this be slow counter?
+	/*if( slowMultiple > 1 )
 	{
 		slowMultiple = 1;
+	}*/
+
+	if( slowCounter > 1 )
+	{
+		slowCounter = 1;
 	}
+
+
 }
 
 bool Actor::CheckWall( bool right )
@@ -8509,9 +8540,9 @@ V2d Actor::UpdateReversePhysics()
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 					movementVec.y += .1;
-					if( movementVec.x >= -.1 )
+					if( movementVec.x <= .1 )
 					{
-						movementVec.x = -.1;
+						movementVec.x = .1;
 					}
 
 					
@@ -8697,7 +8728,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else
 				{
-					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+					//remember this is modified
+					velocity = normalize( V2d( 0, 0 ) + normalize(ground->v1 - ground->v0 ) ) * -groundSpeed;
 						
 					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
@@ -8705,9 +8737,9 @@ V2d Actor::UpdateReversePhysics()
 
 					//cout  <<  "reverse right:" << movementVec.x << ", " << movementVec.y << endl;
 					movementVec.y += .1;//.01;
-					if( movementVec.x <= .1 )
+					if( movementVec.x >= -.1 )
 					{
-						movementVec.x = .1;
+						movementVec.x = -.1;
 					}
 
 					if( movingGround != NULL )
@@ -8716,7 +8748,7 @@ V2d Actor::UpdateReversePhysics()
 						cout << "5 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
 							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
 					}
-					cout << "airborne 4: " << endl;
+					cout << "airborne 4: " << velocity.x << ", " << velocity.y << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -19294,7 +19326,7 @@ void RecordGhost::RecordFrame()
 	info.tileIndex = player->currTileIndex;
 	info.speedLevel = player->speedLevel;
 
-	cout << "record frame: " << frame << ",action: " << info.action << ", t: " << info.tileIndex << endl;
+	//cout << "record frame: " << frame << ",action: " << info.action << ", t: " << info.tileIndex << endl;
 	++frame;
 }
 

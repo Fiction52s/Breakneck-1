@@ -1800,7 +1800,7 @@ V2d Wire::GetOriginPos( bool test )
 	if( test )
 		playerPos = player->position;
 
-	playerPos += gNormal * (double)offset.y + other * (double)offset.x;
+	playerPos += gNormal * (double)offset.y - other * (double)offset.x;
 	return playerPos;
 }
 
