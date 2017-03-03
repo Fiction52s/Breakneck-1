@@ -761,27 +761,30 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurt_spack_128x160.png", 128, 160 );
 
-		ts_fx_dashStart = owner->GetTileset( "fx_dashstart_192x160.png", 192, 160 );
+		ts_fx_dashStart = owner->GetTileset( "fx_dashstart_160x160.png", 160, 160 );
 		ts_fx_dashRepeat = owner->GetTileset( "fx_dashrepeat_192x128.png", 192, 128 );
 		ts_fx_land = owner->GetTileset( "fx_land_128x128.png", 128, 128 );
 
-		ts_fx_runStart = owner->GetTileset( "fx_runstart_96x96.png", 96, 96 );
-		ts_fx_sprint = owner->GetTileset( "fx_sprint_192x192.png", 192, 192 );
-		ts_fx_run = owner->GetTileset( "fx_run_160x128.png", 160, 128 );
+		ts_fx_runStart = owner->GetTileset( "fx_runstart_128x112.png", 128, 112 );
+		ts_fx_sprint = owner->GetTileset( "fx_sprint_176x176.png", 176, 176 );
+		ts_fx_run = owner->GetTileset( "fx_run_144x128.png", 144, 128 );
 
 		ts_fx_bigRunRepeat = owner->GetTileset( "fx_bigrunrepeat.png", 176, 112 );
-		ts_fx_jump = owner->GetTileset( "fx_jump_160x64.png", 160, 64 );
-		ts_fx_wallJump = owner->GetTileset( "fx_walljump_128x160.png", 128, 160 );
+		ts_fx_jump = owner->GetTileset( "fx_jump_128x80.png", 128, 80 );
+		ts_fx_wallJump = owner->GetTileset( "fx_walljump_112x160.png", 112, 160 );
 		ts_fx_double = owner->GetTileset( "fx_doublejump_196x160.png", 196 , 160 );
 		ts_fx_gravReverse = owner->GetTileset( "fx_grav_reverse_128x128.png", 128 , 128 );
 		ts_fx_chargeBlue0 = owner->GetTileset( "elec_01_128x128.png", 128, 128 );
 		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
 		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
 		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
+
 		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
-		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
-		ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );		
+		//ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
+		ts_fx_airdashUp = owner->GetTileset( "fx_airdash_128x128.png", 128, 128 );
+		//ts_fx_airdashSmall = owner->GetTileset( "fx_airdash.png", 32, 32 );		
 		ts_fx_airdashHover = owner->GetTileset( "fx_airdash_hold_1_96x80.png", 96, 80 ); 
+
 		ts_fx_death_1a = owner->GetTileset( "death_fx_1a_256x256.png", 256, 256 );
 		ts_fx_death_1b = owner->GetTileset( "death_fx_1b_128x80.png", 128, 80 );
 		ts_fx_death_1c = owner->GetTileset( "death_fx_1c_128x128.png", 128, 128 );
@@ -1402,6 +1405,7 @@ bool Actor::AirAttack()
 
 void Actor::Respawn()
 {
+	speedParticleCounter = 0;
 	framesNotGrinding = 0;
 	runeStep = 0;
 	runeLength = 0;
@@ -4508,7 +4512,6 @@ void Actor::UpdatePrePhysics()
 							hasDoubleJump = true;
 							lastWire = 0;
 
-
 							ground = grindEdge;
 							movingGround = grindMovingTerrain;
 							groundSpeed = -grindSpeed;
@@ -6058,7 +6061,7 @@ void Actor::UpdatePrePhysics()
 
 					fxPos += gNorm * 16.0;
 					
-					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 12, 2, facingRight );
+					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
 
 					ground = NULL;
 					movingGround = NULL;
@@ -7846,14 +7849,14 @@ void Actor::UpdatePrePhysics()
 	collision = false;
 	groundedWallBounce = false;
 
-	if( ground != NULL )
+	/*if( ground != NULL )
 	{
 		cout << "groundspeed: " << groundSpeed << endl;
 	}
 	else
 	{
 		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-	}
+	}*/
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	//cout << "before position: " << position.x << ", " << position.y << endl;
@@ -13359,7 +13362,7 @@ void Actor::UpdatePostPhysics()
 				//owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
 			}
 
-			if( frame % 4 == 0 )
+			if( frame % 4 == 0 && slowCounter == 1 )
 			{
 				if( stopped )
 				{
@@ -15998,49 +16001,9 @@ void Actor::UpdateSprite()
 			}
 			
 			double angle = GroundedAngle();
-			V2d along = normalize( ground->v1 - ground->v0 );
 
-			bool fr = facingRight;
-			if( reversed )
-			fr = !fr;
 
-			double xExtraStartRun = 0.0;//5.0
-
-			//this seems pretty odd. need a thing for its first repetition
-			//so i dont need to check the controller here
-			if( frame == 0 && ( 
-					( currInput.LLeft() && !prevInput.LLeft() ) 
-				||  ( currInput.LRight() && !prevInput.LRight() ) )  )
-			{
-				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart,
-				pp + gn * 32.0 + along * xExtraStartRun, false, angle, 6, 3, fr );
-				//runTappingSound.stop();
-				//runTappingSound.play();
-			}
-		
-			double xExtraStart = -48.0;
-			if( !facingRight )
-				xExtraStart = -xExtraStart;
-			if( reversed )
-				xExtraStart = -xExtraStart;
-
-		
-			if( frame == 3 * 4 )
-			{
-				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
-					pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP1] );
-			}
-			else if( frame == 8 * 4 )
-			{
-				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
-					pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
-					//owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart, 
-			//		pp + gn * 32.0 + along * xExtraStart , false, angle, 9, 3, facingRight );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
-			}
-		
-		
+			//V2d along = normalize( ground->v1 - ground->v0 );
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
@@ -16051,16 +16014,64 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			
-			
-
+			V2d along;
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			{
 				sprite->setPosition( pp.x + offsetX, pp.y );
+				if( !reversed )
+				{
+					along = V2d( 1, 0 );
+				}
+				else
+				{
+					along = V2d( -1, 0 );
+				}
+			}
 			else
+			{
 				sprite->setPosition( pp.x, pp.y );
-			//sprite->setPosition( position.x, position.y );
-			
-			//sprite->setPosition( position.x, position.y );
-			//cout << "angle: " << angle / PI * 180  << endl;
+				along = normalize( ground->v1 - ground->v0 );
+			}
+
+			V2d gn( along.y, -along.x );
+
+			bool fr = facingRight;
+			if( reversed )
+				fr = !fr;
+
+			double xExtraStartRun = -48.0;//0.0;//5.0
+			if( !fr )
+				xExtraStartRun = -xExtraStartRun;
+
+			//this seems pretty odd. need a thing for its first repetition
+			//so i dont need to check the controller here
+			if( frame == 0 && slowCounter == 1 && ( 
+					( currInput.LLeft() && !prevInput.LLeft() ) 
+				||  ( currInput.LRight() && !prevInput.LRight() ) )  )
+			{
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart,
+				pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr );
+			}
+		
+			double xExtraStart = -48.0;
+			if( !facingRight )
+				xExtraStart = -xExtraStart;
+			if( reversed )
+				xExtraStart = -xExtraStart;
+
+		
+			if( frame == 3 * 4 && slowCounter == 1 )
+			{
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
+					pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP1] );
+			}
+			else if( frame == 8 * 4 && slowCounter == 1 )
+			{
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
+					pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
+			}
 
 			if( frame % 5 == 0 && abs( groundSpeed ) > 0 )
 			{
@@ -16071,15 +16082,6 @@ void Actor::UpdateSprite()
 		}
 	case SPRINT:
 		{	
-			if( frame == 2 * 4 )
-			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP1] );
-			}
-			else if( frame == 6 * 4 )
-			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP2] );
-			}
-
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
@@ -16109,11 +16111,47 @@ void Actor::UpdateSprite()
 				ground->v1 = oldv1;
 			}
 
+			V2d along;
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+			{
 				sprite->setPosition( pp.x + offsetX, pp.y );
+				if( !reversed )
+				{
+					along = V2d( 1, 0 );
+				}
+				else
+				{
+					along = V2d( -1, 0 );
+				}
+			}
 			else
+			{
 				sprite->setPosition( pp.x, pp.y );
+				along = normalize( ground->v1 - ground->v0 );
+			}
+
+			V2d gn( along.y, -along.x );
 			
+
+			double xExtraStart = -48.0;
+			if( !facingRight )
+				xExtraStart = -xExtraStart;
+			if( reversed )
+				xExtraStart = -xExtraStart;
+
+			if( frame == 2 * 4 && slowCounter == 1 )
+			{
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
+					pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP1] );
+			}
+			else if( frame == 6 * 4 && slowCounter == 1 )
+			{
+				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
+					pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP2] );
+			}
+
 			break;
 		}
 	case SEQ_CRAWLERFIGHT_STRAIGHTFALL:
@@ -16264,17 +16302,22 @@ void Actor::UpdateSprite()
 			else
 				sprite->setPosition( pp.x, pp.y );
 
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == 1 )
 			{
 				V2d fxPos;
 				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
+				{
 					fxPos = V2d( pp.x + offsetX, pp.y );
+					fxPos += V2d( 0, -1 ) * 48.0;
+				}
 				else
+				{
 					fxPos = pp;
-
-				fxPos += gn * 48.0;
+					fxPos += gn * 48.0;
+				}
 
 				//cout << "activating" << endl;
+
 				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_land, fxPos, false, angle, 8, 2, facingRight );
 			}
 			break;
@@ -16327,7 +16370,7 @@ void Actor::UpdateSprite()
 		}
 	case WALLJUMP:
 		{
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == 1 )
 			{
 				V2d fxPos = position;
 				if( facingRight )
@@ -16338,7 +16381,7 @@ void Actor::UpdateSprite()
 				{
 					fxPos += V2d( 0, 0 );
 				}
-				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_wallJump, fxPos, false, 0, 8, 2, facingRight );
+				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_wallJump, fxPos, false, 0, 8, 3, facingRight );
 				
 				//cout << "ACTIVATING WALLJUMP" << endl;
 			}

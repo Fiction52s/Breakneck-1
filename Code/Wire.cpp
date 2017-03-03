@@ -20,7 +20,7 @@ Wire::Wire( Actor *p, bool r)
   numTotalCharges( 0 ), chargeVA( sf::Quads, MAX_CHARGES * 4 )
 {
 	//ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
-	ts_wire = player->owner->GetTileset( "wire_01_10x8.png", 10, 8 );
+	ts_wire = player->owner->GetTileset( "wire_01_14x8.png", 14, 8 );
 	if( r )
 	{
 		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
@@ -873,7 +873,7 @@ void Wire::UpdateAnchors( V2d vel )
 		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
 		double right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
 
-		double ex = 1;
+		double ex = 3;
 		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
 
 		if( r.width == 0 || r.height == 0 )

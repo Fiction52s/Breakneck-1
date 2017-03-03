@@ -650,7 +650,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
-	multiSession = false;//true;
+	multiSession = false;//false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
@@ -6308,11 +6308,11 @@ int GameSession::Run( string fileN )
 
 				if( multiSession )
 				{
-					if( player->hasPowerLeftWire )
-						player->leftWire->UpdateQuads();
+					if( player2->hasPowerLeftWire )
+						player2->leftWire->UpdateQuads();
 
-					if( player->hasPowerRightWire )
-						player->rightWire->UpdateQuads();
+					if( player2->hasPowerRightWire )
+						player2->rightWire->UpdateQuads();
 				}
 
 				UpdateEnemiesPostPhysics();
@@ -7079,8 +7079,8 @@ int GameSession::Run( string fileN )
 
 			if( showTerrainDecor )
 			{
-			//if( listVAIter->triva != NULL )
-			//	preScreenTex->draw( *listVAIter->triva, rs );
+			if( listVAIter->triva != NULL )
+				preScreenTex->draw( *listVAIter->triva, rs );
 			//preScreenTex->setSmooth( true );
 			preScreenTex->draw( *listVAIter->wallva, rs );
 			preScreenTex->draw( *listVAIter->steepva, rs );
