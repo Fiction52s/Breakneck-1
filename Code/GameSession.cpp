@@ -7200,6 +7200,7 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( *listVAIter->steepva, rs );
 			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
+
 			//preScreenTex->setSmooth( false );
 			listVAIter->DrawBushes( preScreenTex );
 			/*if( listVAIter->bushVA != NULL )
@@ -11338,7 +11339,7 @@ int GameSession::IsSlopedGround( sf::Vector2<double> &normal )
 {
 	//.4 is the current steepthresh value
 	double steepThresh = .4;
-	if( abs( normal.y ) > steepThresh  )
+	if( abs( normal.y ) > steepThresh && normal.x != 0  )
 	{
 		return 1;
 	}
