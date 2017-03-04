@@ -167,6 +167,7 @@ struct EnvPlant : QuadTreeEntrant
 };
 
 
+struct ScrollingBackground;
 struct Boss_Crawler;
 struct Boss_Bird;
 struct Boss_Coyote;
@@ -751,6 +752,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		CubicBezier penBez );
 
 	std::list<BushLayer*> bushLayers;
+
+	std::list<ScrollingBackground*> scrollingBackgrounds;
+	//ScrollingBackground *scrollingTest;
 
 	struct TestVA : QuadTreeEntrant
 	{

@@ -5683,6 +5683,17 @@ int GameSession::Run( string fileN )
 	Rain rain( this );
 	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 	
+	//scrollingTest = new ScrollingBackground( GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 10 );
+	scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset( "Parallax/w1_01c.png", 1920, 1080 ), 0, 10 ) );
+	scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset( "Parallax/w1_01b.png", 1920, 1080 ), 0, 25 ) );
+	scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 40 ) );
+
 	Parallax *testPar = new Parallax();
 
 	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
@@ -6495,6 +6506,13 @@ int GameSession::Run( string fileN )
 
 				testPar->Update( camPos );
 
+				for( list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+					it != scrollingBackgrounds.end(); ++it )
+				{
+					(*it)->Update( camPos );
+				}
+				//scrollingTest->Update( camPos );
+
 				//Vector2f diff = cam.pos - oldCam;
 
 				//cloudVel = Vector2f( -40, 0 );
@@ -6907,7 +6925,12 @@ int GameSession::Run( string fileN )
 		preScreenTex->setView( view );
 
 		//testPar->Draw( preScreenTex );
-		
+		for( list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+			it != scrollingBackgrounds.end(); ++it )
+		{
+			(*it)->Draw( preScreenTex );
+		}
+		//scrollingTest->Draw( preScreenTex );
 
 		//window->draw( background );
 

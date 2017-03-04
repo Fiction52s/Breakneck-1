@@ -57,4 +57,23 @@ struct Parallax
 	Arrange arrange;
 };
 
+struct ScrollingBackground
+{
+	ScrollingBackground( Tileset *ts, int index,
+		int depthLevel );
+	Tileset *ts;
+	int tsIndex;
+	sf::Vector2f relPos;
+	sf::VertexArray va;
+	float xPos;
+	int depthLevel;
+	sf::View oldView;
+	sf::View newView;
+	float depth;
+	void Update( sf::Vector2f &camPos );
+	void SetTileIndex( int index );
+	void Draw( sf::RenderTarget *target );
+	void SetLeftPos( sf::Vector2f &pos );
+};
+
 #endif
