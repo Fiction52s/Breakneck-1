@@ -711,9 +711,30 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	//	);
 	miniRect.setSize( Vector2f( 300, 300 ) );
 	miniRect.setPosition( 500, 500 );
+
+	/*minimapVA = new VertexArray( sf::Quads, 4 );
+	VertexArray &mva = *minimapVA;
+
+	float w = minimapTex->getSize().x;
+	float h = minimapTex->getSize().y;
+
+	
+
+	mva[0].position = minimapCenter + Vector2f( -w / 2, - h / 2 );
+	mva[1].position = minimapCenter + Vector2f( w / 2, - h / 2 );
+	mva[2].position = minimapCenter + Vector2f( w / 2,  h / 2 );
+	mva[3].position = minimapCenter + Vector2f( -w / 2,  h / 2 );
+
+	
+
+	mva[0].color = Color( 255, 255, 255, 255 );
+	mva[1].color = Color( 255, 255, 255, 255 );
+	mva[2].color = Color( 255, 255, 255, 255 );
+	mva[3].color = Color( 255, 255, 255, 255 );*/
 	//miniRect.
 	//miniMaskTex = new Texture;
-	miniMaskTex.loadFromFile( "minimapmask.png" );
+	//miniMaskTex.loadFromFile( "minimapmask.png" );
+	//miniMaskTex.sets
 
 	lifeBarTex.loadFromFile( "lifebar_768x768.png" );
 	lifeBarSprite.setTexture( lifeBarTex );
@@ -733,7 +754,15 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "minimap shader not loaded" );
 	}
-	minimapShader.setParameter( "u_mask", miniMaskTex );
+	//minimapShader.setParameter( "u_mask", miniMaskTex );
+	minimapShader.setParameter( "imageSize", Vector2f( minimapTex->getSize().x, 
+		minimapTex->getSize().y ) );
+	
+	minimapSprite.setTexture( minimapTex->getTexture() );
+	minimapSprite.setOrigin( minimapSprite.getLocalBounds().width / 2, 
+		minimapSprite.getLocalBounds().height / 2 );
+	minimapSprite.setPosition( Vector2f( 200, preScreenTex->getSize().y - 200 ) );
+	minimapSprite.setScale( 1, -1 );
 
 	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -785,7 +814,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	usePolyShader = true;
 	//minimapTex = miniTex;
 
-	minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
+	
 
 	ts_keyHolder = GetTileset( "keyholder.png", 115, 40 );
 	keyHolderSprite.setTexture( *ts_keyHolder->texture );
@@ -926,12 +955,14 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	kinMinimapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
 	kinMinimapIcon.setOrigin( kinMinimapIcon.getLocalBounds().width / 2,
 		kinMinimapIcon.getLocalBounds().height / 2 );
-	kinMinimapIcon.setPosition( 180, preScreenTex->getSize().y - 180 );
+	kinMinimapIcon.setPosition( minimapSprite.getPosition() );//180, preScreenTex->getSize().y - 180 );
+
 
 	kinMapSpawnIcon.setTexture( *ts_miniIcons->texture );
 	kinMapSpawnIcon.setTextureRect( ts_miniIcons->GetSubRect( 1 ) );
 	kinMapSpawnIcon.setOrigin( kinMapSpawnIcon.getLocalBounds().width / 2,
 		kinMapSpawnIcon.getLocalBounds().height / 2 );
+	//kinMapSpawnIcon.setpo
 	//kinMapSpawnIcon.setPosition( goalPos.x, goalPos.y );
 
 	
@@ -943,7 +974,9 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 
 	ts_miniCircle = GetTileset( "minimap_circle_320x320.png", 320, 320 );
 	miniCircle.setTexture( *ts_miniCircle->texture );
+	miniCircle.setScale( 2, 2 );
 	miniCircle.setOrigin( miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2 );
+
 	
 	miniCircle.setPosition( kinMinimapIcon.getPosition() );
 
@@ -7601,19 +7634,28 @@ int GameSession::Run( string fileN )
 			}
 		}
 
+		/*if( player->action != Actor::DEATH )
+		{
+			player->Draw( minimapTex );
+		}*/
+
 		minimapTex->display();
 		const Texture &miniTex = minimapTex->getTexture();
+		minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
 		//minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
 
-		Sprite minimapSprite( miniTex );
+		minimapSprite.setTexture( miniTex );
+		
+		//Sprite minimapSprite( miniTex );
 		//minimapSprite.setTexture( miniTex );
 		//minimapSprite.set
 		//minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
-		minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
+		
+		//minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
 		
 		//minimapSprite.setScale( .5, .5 );
 		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
-		minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
+		//minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
 
 
 		
@@ -7808,10 +7850,10 @@ int GameSession::Run( string fileN )
 		};*/
 		//VertexArray va( sf::Quads, 4 );
 	
-
+		preScreenTex->draw( minimapSprite, &minimapShader);
 		//preScreenTex->draw( lifeBarSprite );
-		preScreenTex->draw( miniVA, &minimapShader );
-		preScreenTex->draw( miniCircle );
+		//preScreenTex->draw( minimapVA, &minimapShader );
+		//preScreenTex->draw( miniCircle );
 
 		if( currentZone != NULL )
 		{
@@ -7856,7 +7898,7 @@ int GameSession::Run( string fileN )
 		}*/
 		
 		//inefficient because its in the draw call
-		kinMinimapIcon.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+		//kinMinimapIcon.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
 		
 
 

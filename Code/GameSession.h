@@ -903,6 +903,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RectangleShape miniRect;
 	sf::VertexArray miniVA;
 
+	sf::Sprite minimapSprite;
+	//sf::VertexArray *minimapVA;
+	//sf::Vector2f minimapCenter;
+
 	sf::Texture lifeBarTex;
 	sf::Sprite lifeBarSprite;
 

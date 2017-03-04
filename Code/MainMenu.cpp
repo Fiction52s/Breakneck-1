@@ -85,7 +85,8 @@ MainMenu::MainMenu()
 	if( minimapTexture == NULL )
 	{
 		minimapTexture = new RenderTexture;
-		minimapTexture->create( 300, 300 );
+		//minimapTexture->setSmooth( true );
+		minimapTexture->create( 500, 500 );
 		minimapTexture->clear();
 	}
 
