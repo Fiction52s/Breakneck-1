@@ -639,10 +639,6 @@ void KeyMarker::Update()
 	}
 }
 
-int GameSession::TestVA::bushFrame = 0;
-int GameSession::TestVA::bushAnimLength = 20;
-int GameSession::TestVA::bushAnimFactor = 8;
-
 GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu )
 	:controller(c),va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
@@ -661,7 +657,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	{
 		effectLists[i] = NULL;
 	}
-	TestVA::bushFrame = 0;
+	//TestVA::bushFrame = 0;
 
 	mainMenu = p_mainMenu;
 	window = mainMenu->window;
@@ -3559,11 +3555,24 @@ bool GameSession::OpenFile( string fileName )
 					polygonArea += GetTriangleArea( (*it) );
 				}
 
-				VertexArray *bushVA = SetupBushes( 0,  tris, ts_bush );
+				//VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
 				testva = new TestVA;
+
+
+				//int minDistanceApart = 10;
+	//int maxDistanceApart = 300;
+	//int minPen = 20;
+	//int maxPen = 200;
+				//list<Vector2f> bushPositions;
+				
+
+
+				
+
+				
 				testva->polyArea = polygonArea;
-				testva->bushVA = bushVA;
+				//testva->bushVA = bushVA;
 				//testva->va = va;
 				testva->aabb.left = left;
 				testva->aabb.top = top;
@@ -3590,11 +3599,85 @@ bool GameSession::OpenFile( string fileName )
 				inversePoly->aabb.width = right - left;
 				inversePoly->aabb.height = bottom - top;
 				//testva->ts_bush = ts_bush;
-				SetupInversePoly( ts_bush );
+				SetupInversePoly( ts_bush, currentEdgeIndex );
 				testva = inversePoly;
 				testva->ts_bush = ts_bush;
 				//va = NULL;
 			}
+
+			switch( matWorld )
+				{
+				case 0:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							//testva->AddBushExpression( 
+							//testva->bushes.push_back( 
+							break;
+						}
+						break;
+					}
+				case 1:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							break;
+						}
+						break;
+					}
+				case 2:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							break;
+						}
+						break;
+					}
+				case 3:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							break;
+						}
+						break;
+					}
+				case 4:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							break;
+						}
+						break;
+					}
+				case 5:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							break;
+						}
+						break;
+					}
+				case 6:
+					{
+						switch( matVariation )
+						{
+						case 0:
+							break;
+						}
+						break;
+					}
+				}
+
+			BushExpression *normalExpr = GetBush_NORMAL_Points( 0, edges[currentEdgeIndex], 20,
+					300, CubicBezier( 0, 0, 1, 1 ), 20, 1000, CubicBezier( 0, 0, 1, 1 ) );
+			if( normalExpr != NULL )
+				testva->AddBushExpression( normalExpr );
 
 			VertexArray *polygonVA = va;
 
@@ -6640,13 +6723,21 @@ int GameSession::Run( string fileN )
 
 				drawInversePoly = ScreenIntersectsInversePoly( screenRect );
 
+				
 				TestVA *te = listVA;
 				while( te != NULL )
 				{
-					te->UpdateBushes();
+					te->UpdateBushSprites();
 					te = te->next;
 				}
-				TestVA::UpdateBushFrame();
+
+				for( map<BushTypes,BushLayer*>::iterator mit =
+					bushLayerMap.begin(); mit != bushLayerMap.end();
+					++mit )
+				{
+					(*mit).second->Update();
+				}
+				//TestVA::UpdateBushFrame();
 
 				if( player->dead )
 				{
@@ -7087,13 +7178,14 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( *listVAIter->slopeva, rs );
 			preScreenTex->draw( *listVAIter->groundva, rs );
 			//preScreenTex->setSmooth( false );
-			if( listVAIter->bushVA != NULL )
+			listVAIter->DrawBushes( preScreenTex );
+			/*if( listVAIter->bushVA != NULL )
 			{
 				RenderStates bushRS;
 				bushRS.texture = listVAIter->ts_bush->texture;
 
 				preScreenTex->draw( *listVAIter->bushVA, bushRS );
-			}
+			}*/
 
 			if( listVAIter->plantva != NULL )
 			{
@@ -8778,7 +8870,7 @@ bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
 	//IsEdgeTouchingBox
 }
 
-void GameSession::SetupInversePoly( Tileset *ts_bush )
+void GameSession::SetupInversePoly( Tileset *ts_bush, int currentEdgeIndex )
 {
 	assert( inversePoly != NULL );
 
@@ -8845,7 +8937,7 @@ void GameSession::SetupInversePoly( Tileset *ts_bush )
 
 	inversePoly->polyArea = polygonArea;
 
-	VertexArray *bushVA = SetupBushes( 0,  tris, ts_bush );
+	VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
 	inversePoly->bushVA = bushVA;
 
@@ -8918,27 +9010,38 @@ void GameSession::KillAllEnemies()
 
 void GameSession::TestVA::UpdateBushFrame()
 {
-	bushFrame++;
+	/*bushFrame++;
 	if( bushFrame == bushAnimLength * bushAnimFactor )
 	{
 		bushFrame = 0;
+	}*/
+}
+
+void GameSession::TestVA::DrawBushes( sf::RenderTarget *target )
+{
+	for( list<BushExpression*>::iterator it = bushes.begin(); 
+		it != bushes.end(); ++it )
+	{
+		Tileset *ts = (*it)->layer->ts;
+		target->draw( *(*it)->va, ts->texture );
 	}
+	//target->draw( 
 }
 
 void GameSession::TestVA::UpdateBushes()
 {
-	int numBushes = bushVA->getVertexCount() / 4;
+	//int numBushes = bushVA->getVertexCount() / 4;
 
-	VertexArray &bVA = *bushVA;
-	IntRect subRect = ts_bush->GetSubRect( bushFrame / bushAnimFactor );
+	//VertexArray &bVA = *bushVA;
+	//IntRect subRect = ts_bush->GetSubRect( bushFrame / bushAnimFactor );
 
-	for( int i = 0; i < numBushes; ++i )
+	/*for( int i = 0; i < numBushes; ++i )
 	{
 		bVA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
 		bVA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
 		bVA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
 		bVA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-	}
+	}*/
 	//++bushFrame;
 }
 
@@ -9492,6 +9595,239 @@ double GameSession::GetTriangleArea( p2t::Triangle * t )
 
 	return A;
 }
+
+void GameSession::TestVA::AddBushExpression( GameSession::BushExpression *exp )
+{
+	bushes.push_back( exp );
+}
+
+void GameSession::TestVA::UpdateBushSprites()
+{
+	for( list<BushExpression*>::iterator it = bushes.begin();
+		it != bushes.end(); ++it )
+	{
+		(*it)->UpdateSprites();
+	}
+}
+
+GameSession::BushExpression::BushExpression( std::list<sf::Vector2f> &pointList,
+	GameSession::BushLayer *p_layer )
+	:layer( p_layer )
+{
+	int numBushes = pointList.size();
+	//cout << "numBushes: " << numBushes << endl;
+	Tileset *ts = layer->ts;
+
+	va = new VertexArray( sf::Quads, numBushes * 4 );
+	VertexArray &VA = *va;
+
+	IntRect subRect = ts->GetSubRect( 0 );
+	list<Vector2f>::iterator posIt;
+	if( numBushes > 0 )
+		posIt = pointList.begin();
+
+	Vector2f p;
+	for( int i = 0; i < numBushes; ++i )
+	{
+		p = (*posIt);
+		//cout << "i: " << i << ", p: " <<  p.x << ", " << p.y << endl;
+		VA[i*4+0].position = Vector2f( p.x - subRect.width / 2, p.y - subRect.height / 2 );
+		VA[i*4+1].position = Vector2f( p.x + subRect.width / 2, p.y - subRect.height / 2 );
+		VA[i*4+2].position = Vector2f( p.x + subRect.width / 2, p.y + subRect.height / 2 );
+		VA[i*4+3].position = Vector2f( p.x - subRect.width / 2, p.y + subRect.height / 2 );
+
+		/*VA[i*4+0].color= Color::Red;
+		VA[i*4+1].color= Color::Red;
+		VA[i*4+2].color= Color::Red;
+		VA[i*4+3].color= Color::Red;*/
+
+		VA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+		VA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+		VA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+		VA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+
+		++posIt;
+	}
+}
+
+GameSession::BushExpression::~BushExpression()
+{
+	delete va;
+}
+
+GameSession::BushLayer::BushLayer( Tileset *p_ts, int animFactor )
+	:ts( p_ts ), bushFrame( 0 ), bushAnimLength( p_ts->GetNumTiles() ),
+	bushAnimFactor( animFactor )
+{
+
+}
+
+void GameSession::BushLayer::Update()
+{
+	++bushFrame;
+	if( bushFrame == bushAnimLength * bushAnimFactor )
+	{
+		bushFrame = 0;
+	}
+}
+
+void GameSession::BushExpression::UpdateSprites()
+{
+	int numBushes = va->getVertexCount() / 4;
+
+	Tileset *ts_bush = layer->ts;
+	int bushFrame = layer->bushFrame;
+	int bushAnimLength = layer->bushAnimLength;
+	int bushAnimFactor = layer->bushAnimFactor;
+
+	VertexArray &bVA = *va;
+	IntRect subRect = ts_bush->GetSubRect( bushFrame / bushAnimFactor );
+
+	for( int i = 0; i < numBushes; ++i )
+	{
+		bVA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+		bVA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+		bVA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+		bVA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	}
+}
+
+GameSession::BushExpression * GameSession::GetBush_NORMAL_Points( 
+	int bgLayer,
+	Edge *startEdge, 
+	int minApart, 
+	int maxApart, 
+	CubicBezier apartBezier, 
+	int minPen, 
+	int maxPen, 
+	CubicBezier penBez )
+{
+	//assert( positions.empty() );
+
+	BushLayer *layer = NULL;
+	if( bushLayerMap.count( BUSH_NORMAL ) == 0 )
+	{
+		//int GameSession::TestVA::bushFrame = 0;
+		//int GameSession::TestVA::bushAnimLength = 20;
+		//int GameSession::TestVA::bushAnimFactor = 8;
+
+		Tileset *ts_b = GetTileset( "bush_01_64x64.png", 64, 64 );
+		layer = new BushLayer( ts_b, 8 );
+		bushLayerMap[BUSH_NORMAL] = layer;
+	}
+	else
+	{
+		layer = bushLayerMap[BUSH_NORMAL];
+	}
+
+	assert( layer != NULL );
+	list<Vector2f> positions;
+	//int minDistanceApart = 10;
+	//int maxDistanceApart = 300;
+	//int minPen = 20;
+	//int maxPen = 200;
+	double penLimit;
+
+	Edge *curr = startEdge;
+	double quant = 0;
+	double lenCurr = length( startEdge->v1 - startEdge->v0 );
+
+	double travelDistance;
+	double penDistance;
+	int diffApartMax = maxApart - minApart;
+	int diffPenMax = maxPen - minPen;
+	int r;
+	int rPen;
+	double momentum;
+	V2d pos;
+
+	bool loopOver = false;
+	V2d cn;
+
+	rayMode = "bushes";
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
+
+	assert( qt != NULL );
+
+	while( true )
+	{
+		//cout << "running loop" << endl;
+		r = rand() % diffApartMax;
+		travelDistance = minApart + r;
+
+		momentum = travelDistance;
+		
+		while( !approxEquals( momentum, 0 ) )
+		{
+			if( (lenCurr - quant) > momentum )
+			{
+				quant += momentum;
+				momentum = 0;
+			}
+			else
+			{
+				curr = curr->edge1;
+
+				if( curr == startEdge )
+				{
+					loopOver = true;
+					break;
+				}
+				else
+				{
+					momentum = momentum - ( lenCurr - quant );
+					quant = 0;
+					lenCurr = length( curr->v1 - curr->v0 );
+				}
+			}
+		}
+
+		if( loopOver )
+			break;
+
+		cn = curr->Normal();
+		rcEdge = NULL;
+		rayStart = curr->GetPoint( quant );
+		rayEnd = rayStart - cn * (double)maxPen;
+		rayIgnoreEdge = curr;
+
+		RayCast( this, qt->startNode, rayStart, rayEnd );
+
+		diffPenMax = maxPen;
+		if( rcEdge != NULL )
+		{
+			penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
+			diffPenMax = (int)penLimit - minApart;
+			if( diffPenMax == 0 || penLimit < 100 )
+				continue;
+		}
+
+		rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen;
+		
+		pos = curr->GetPoint( quant ) - curr->Normal() * penDistance;
+
+		positions.push_back( Vector2f( pos.x, pos.y ) );
+		//will have to do a raycast soon. ignore for now
+		//curr = curr->edge1;
+	}
+
+	if( positions.size() == 0 )
+		return NULL;
+	
+	BushExpression *expr = new BushExpression( positions, layer );
+
+	return expr;
+}
+
 
 struct PlantInfo
 {
@@ -10785,9 +11121,143 @@ sf::VertexArray * GameSession::SetupDecor0( std::vector<p2t::Triangle*> &tris, T
 	return NULL;
 }
 
-sf::VertexArray *GameSession::SetupBushes( int bgLayer, std::vector<p2t::Triangle*> &tris, Tileset *ts )
+sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset *ts )
 {
-	int numBushes = 0;
+	int minDistanceApart = 10;
+	int maxDistanceApart = 300;
+	int minPen = 20;
+	int maxPen = 200;
+	double penLimit;
+
+	list<Vector2f> positions;
+
+	Edge *curr = startEdge;
+	double quant = 0;
+	double lenCurr = length( startEdge->v1 - startEdge->v0 );
+
+	double travelDistance;
+	double penDistance;
+	int diffApartMax = maxDistanceApart - minDistanceApart;
+	int diffPenMax = maxPen - minPen;
+	int r;
+	int rPen;
+	double momentum;
+	V2d pos;
+
+	bool loopOver = false;
+	V2d cn;
+
+	rayMode = "bushes";
+	QuadTree *qt = NULL;
+	if( bgLayer == 0 )
+	{
+		qt = terrainTree;
+	}
+	else if( bgLayer == 1 )
+	{
+		qt = terrainBGTree;
+	}
+
+	assert( qt != NULL );
+
+	while( true )
+	{
+		//cout << "running loop" << endl;
+		r = rand() % diffApartMax;
+		travelDistance = minDistanceApart + r;
+
+		momentum = travelDistance;
+		
+		while( !approxEquals( momentum, 0 ) )
+		{
+			if( (lenCurr - quant) > momentum )
+			{
+				quant += momentum;
+				momentum = 0;
+			}
+			else
+			{
+				curr = curr->edge1;
+
+				if( curr == startEdge )
+				{
+					loopOver = true;
+					break;
+				}
+				else
+				{
+					momentum = momentum - ( lenCurr - quant );
+					quant = 0;
+					lenCurr = length( curr->v1 - curr->v0 );
+				}
+			}
+		}
+
+		if( loopOver )
+			break;
+
+		cn = curr->Normal();
+		rcEdge = NULL;
+		rayStart = curr->GetPoint( quant );
+		rayEnd = rayStart - cn * (double)maxPen;
+		rayIgnoreEdge = curr;
+
+		RayCast( this, qt->startNode, rayStart, rayEnd );
+
+		if( rcEdge != NULL )
+		{
+			penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
+			diffPenMax = (int)penLimit - minDistanceApart;
+		}
+
+		rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen;
+		
+		pos = curr->GetPoint( quant ) - curr->Normal() * penDistance;
+
+		positions.push_back( Vector2f( pos.x, pos.y ) );
+		//will have to do a raycast soon. ignore for now
+		//curr = curr->edge1;
+	}
+
+	
+	int numBushes = positions.size();
+	//cout << "numBushes: " << numBushes << endl;
+
+
+	VertexArray *va = new VertexArray( sf::Quads, numBushes * 4 );
+	VertexArray &VA = *va;
+
+	IntRect subRect = ts->GetSubRect( 0 );
+	list<Vector2f>::iterator posIt;
+	if( numBushes > 0 )
+		posIt = positions.begin();
+
+	Vector2f p;
+	for( int i = 0; i < numBushes; ++i )
+	{
+		p = (*posIt);
+		//cout << "i: " << i << ", p: " <<  p.x << ", " << p.y << endl;
+		VA[i*4+0].position = Vector2f( p.x - subRect.width / 2, p.y - subRect.height / 2 );
+		VA[i*4+1].position = Vector2f( p.x + subRect.width / 2, p.y - subRect.height / 2 );
+		VA[i*4+2].position = Vector2f( p.x + subRect.width / 2, p.y + subRect.height / 2 );
+		VA[i*4+3].position = Vector2f( p.x - subRect.width / 2, p.y + subRect.height / 2 );
+
+		/*VA[i*4+0].color= Color::Red;
+		VA[i*4+1].color= Color::Red;
+		VA[i*4+2].color= Color::Red;
+		VA[i*4+3].color= Color::Red;*/
+
+		VA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+		VA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+		VA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+		VA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+
+		++posIt;
+	}
+	//int penLimit =
+
+	/*int numBushes = 0;
 	
 	int trisSize = tris.size();
 	for( int i = 0; i < trisSize; ++i )
@@ -10825,10 +11295,9 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, std::vector<p2t::Triangl
 		VA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
 		VA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
 		VA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-	}
+	}*/
 	return va;
 }
-
 
 int GameSession::IsFlatGround( sf::Vector2<double> &normal )
 {
@@ -11070,6 +11539,26 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 		{
 			rcEdge = edge;
 			rcQuantity = edgeQuantity;
+		}
+	}
+	else if( rayMode == "bushes" )
+	{
+		if( edge == rayIgnoreEdge )
+			return; 
+
+		if( rcEdge == NULL )
+		{
+			rcEdge = edge;
+			rcQuantity = edgeQuantity;
+		}
+		else
+		{
+			V2d rc = rcEdge->GetPoint( rcQuantity );
+			if( length( rayStart - edge->GetPoint( edgeQuantity ) ) < length( rayStart - rc ) )
+			{
+				rcEdge = edge;
+				rcQuantity = edgeQuantity;
+			}
 		}
 	}
 	//if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )

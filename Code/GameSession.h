@@ -710,15 +710,58 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Tileset *ts );
 
 	sf::VertexArray *SetupBushes( int bgLayer,
-		std::vector<p2t::Triangle*> &tris, Tileset *ts );
+		Edge *startEdge, Tileset *ts );
 
 	
+	
+	
+	struct BushLayer
+	{
+		BushLayer( Tileset *ts,
+			int animFactor );
+		void Update();
+		Tileset *ts;
+		int bushFrame;
+		int bushAnimLength;
+		int bushAnimFactor;
+	};
+	struct BushExpression
+	{
+		BushExpression( 
+			std::list<sf::Vector2f> &pointList,
+			BushLayer *layer );
+		~BushExpression();
+
+		sf::VertexArray *va;
+		BushLayer *layer;
+
+		void UpdateSprites();
+	};
+
+	enum BushTypes
+	{
+		BUSH_NORMAL
+	};
+	std::map<BushTypes,BushLayer*> bushLayerMap;
+
+	BushExpression * GetBush_NORMAL_Points( int bgLayer,
+		Edge *startEdge, int minApart, 
+		int maxApart, CubicBezier apartBezier, 
+		int minPen, int maxPen,
+		CubicBezier penBez );
+
+	std::list<BushLayer*> bushLayers;
+
 	struct TestVA : QuadTreeEntrant
 	{
-		static int bushFrame;
-		static int bushAnimLength;
-		static int bushAnimFactor;
+		void AddBushExpression( BushExpression *expr );
+		void UpdateBushSprites();
+		void DrawBushes( sf::RenderTarget *target );
+		//static int bushFrame;
+		//static int bushAnimLength;
+		//static int bushAnimFactor;
 		//sf::VertexArray *va;
+		std::list<BushExpression*> bushes;
 		sf::VertexArray *groundva;
 		Tileset *ts_border;
 		sf::VertexArray *slopeva;
@@ -759,7 +802,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::string queryMode;
 
 	TestVA *inversePoly;
-	void SetupInversePoly( Tileset *ts_bush );
+	void SetupInversePoly( Tileset *ts_bush,
+		int currentEdgeIndex );
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	bool drawInversePoly;
 	QuadTree *borderTree;

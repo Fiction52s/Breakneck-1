@@ -8,7 +8,7 @@ struct Tileset
 {
 	~Tileset();
 	sf::IntRect GetSubRect( int localID );
-
+	int GetNumTiles();
 	sf::Texture * texture;
 	int tileWidth;
 	int tileHeight;

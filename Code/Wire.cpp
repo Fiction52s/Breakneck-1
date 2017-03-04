@@ -545,6 +545,16 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 				state = HIT;
 
+				if( !triggerDown )
+				{
+					canRetractGround = true;
+				}
+				else
+				{
+					canRetractGround = false;
+				}
+				hitStallCounter = framesFiring;
+
 				storedPlayerPos = playerPos;
 				//storedPlayerPos = playerPos;
 				//state = HIT;

@@ -27,6 +27,14 @@ IntRect Tileset::GetSubRect( int localID )
 	return IntRect( xi * tileWidth, yi * tileHeight, tileWidth, tileHeight ); 
 }
 
+int Tileset::GetNumTiles()
+{
+	int sx = (texture->getSize().x / tileWidth );
+	int sy = (texture->getSize().y / tileHeight );
+
+	return sx * sy;
+}
+
 Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight )
 {
 	//cout << "checking for string: " << s << endl;
