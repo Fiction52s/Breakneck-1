@@ -118,3 +118,23 @@ struct PowerWheel
 	sf::Vector2f basePos;
 	sf::Vector2f origBasePos;
 };
+
+struct PowerRing
+{
+	PowerRing( GameSession *owner );
+	void SetPowers( bool hasAirDash,
+		bool hasGravReverse,
+		bool hasBounce,
+		bool hasGrind,
+		bool hasTimeSlow,
+		bool hasWires );
+
+	sf::VertexArray *ringVA;
+	sf::VertexArray *middleVA;
+	sf::CircleShape scorpTest;
+	sf::CircleShape keyTest;
+	sf::Vector2f centerPos;
+	void CreateRing();
+	void Draw( sf::RenderTarget *target );
+
+};

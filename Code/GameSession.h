@@ -86,6 +86,7 @@ struct PowerBar
 
 struct PowerOrbs;
 struct PowerWheel;
+struct PowerRing;
 
 struct Critical : QuadTreeEntrant
 {
@@ -872,6 +873,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	PowerBar powerBar;
 	//PowerOrbs *powerOrbs;
 	PowerWheel *powerWheel;
+	PowerRing *powerRing;
 
 	int pauseFrames;
 

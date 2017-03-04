@@ -758,3 +758,76 @@ void PowerWheel::Charge( int power )
 	
 //	return true;
 }
+
+PowerRing::PowerRing( GameSession *owner )
+{
+	centerPos = Vector2f( 90, 230 );
+	CreateRing();
+}
+
+void PowerRing::CreateRing()
+{
+	scorpTest.setFillColor( Color::Yellow );
+	scorpTest.setRadius( 25 );
+	scorpTest.setOrigin( scorpTest.getLocalBounds().width / 2, 
+		scorpTest.getLocalBounds().height / 2 );
+	scorpTest.setPosition( centerPos + Vector2f( 155, 0 ));
+
+	keyTest.setFillColor( Color::Blue );
+	keyTest.setRadius( 25 );
+	keyTest.setOrigin( keyTest.getLocalBounds().width / 2, 
+		keyTest.getLocalBounds().height / 2 );
+	keyTest.setPosition( scorpTest.getPosition() + Vector2f( 40, -40 ) );
+	float innerRadius = 40;
+	float outerRadius = 64;
+	int reps = 4;
+	int numCirclePoints = 6 * reps;
+	int numPoints = numCirclePoints * 2;
+
+	ringVA = new VertexArray( sf::Quads, numCirclePoints * 4 );
+	middleVA = new VertexArray( sf::TrianglesFan, numCirclePoints + 2 );
+	VertexArray &va = *ringVA;
+	VertexArray &mva = *middleVA;
+
+	Vector2f dir( 0, -1 );
+	Transform t;
+	t.rotate( -360.f / numCirclePoints );
+	Vector2f trueDir;
+
+	mva[0].color = Color::Black;
+	mva[0].position = centerPos;
+
+	Color middleColor = Color::Black;
+	for( int i = 0; i < numCirclePoints; ++i )
+	{
+		trueDir = t.transformPoint( dir );
+
+		va[i*4+0].color = Color::Red;
+		va[i*4+1].color = Color::Red;
+		va[i*4+2].color = Color::Red;
+		va[i*4+3].color = Color::Red;
+
+		mva[(i+1)].color = middleColor;
+		mva[(i+1)].position = centerPos + trueDir * innerRadius;
+
+		va[i*4+0].position = centerPos + trueDir * outerRadius;
+		va[i*4+3].position = centerPos + trueDir * innerRadius;
+
+		t.rotate( -360.f / numCirclePoints );
+
+		trueDir = t.transformPoint( dir );
+
+		va[i*4+1].position = centerPos + trueDir * outerRadius;
+		va[i*4+2].position = centerPos + trueDir * innerRadius;
+	}
+	mva[numCirclePoints+1].color = middleColor;
+	mva[numCirclePoints+1].position = centerPos + trueDir * innerRadius;
+}
+
+void PowerRing::Draw( sf::RenderTarget *target )
+{
+	target->draw( *ringVA );
+	target->draw( *middleVA );
+	target->draw( scorpTest );
+	target->draw( keyTest );
+}

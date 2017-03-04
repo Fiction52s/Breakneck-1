@@ -5405,6 +5405,8 @@ int GameSession::Run( string fileN )
 		player->hasPowerGravReverse, player->hasPowerBounce, 
 		player->hasPowerGrindBall, player->hasPowerTimeSlow, player->hasPowerRightWire);
 
+	powerRing = new PowerRing( this );
+
 	sf::Texture backTex;
 
 	stringstream ss;
@@ -7867,7 +7869,8 @@ int GameSession::Run( string fileN )
 		
 		//powerOrbs->Draw( preScreenTex );
 		
-		powerWheel->Draw( preScreenTex );
+		//powerWheel->Draw( preScreenTex );
+		powerRing->Draw( preScreenTex );
 		keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
