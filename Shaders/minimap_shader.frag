@@ -28,14 +28,13 @@ void main()
 
 	float len = length( tpos - center );
 	
-	float startFade = 150.0;
+	float startFade = 100.0;
 	float diff = 250.0 - startFade;
-	float base = .8;
+	float base = .725;
 	
 	float end = 1.0 - ( len - startFade )/ diff;
 	end = end * base;
 	
-	distFact = distFact - realFact;
 	if( len > startFade )// && len < 250.0 )
 		DiffuseColor.a = end;// * float( len < 250.0 );//1.0 - .2;//length( fragC - vec2(.5) ); //length( fragC //texture2D( u_mask, texturePos ).a;
 	else
