@@ -165,6 +165,7 @@ void ThreadedBufferWrite( GameSession *session, std::ofstream *p_of )
 		mut.lock();
 		if( testBuf.byteIndex > 0 )
 		{
+			//cout << session->totalGameFrames << " writing " << testBuf.byteIndex << " characters" << endl;
 			of.write( (char*)testBuf.buf, testBuf.byteIndex );
 			testBuf.byteIndex = 0;
 		}
@@ -6562,7 +6563,7 @@ int GameSession::Run( string fileN )
 			{
 				//cout << "-----------updating total frames------" << endl;
 				//cout << "before count: " << CountActiveEnemies() << endl;
-				testBuf.Send( totalGameFrames );
+				//testBuf.Send( totalGameFrames );
 
 				totalGameFrames++;
 				player->UpdatePrePhysics();
@@ -8866,10 +8867,10 @@ int GameSession::Run( string fileN )
 			out.put( c );
 		}
 
-		//istreambuf_iterator<char> begin_source( is );
-		//istreambuf_iterator<char> end_source;
-		//ostreambuf_iterator<char> begin_dest( out );
-		//copy( begin_source, end_source, begin_dest );
+		/*istreambuf_iterator<char> begin_source( is );
+		istreambuf_iterator<char> end_source;
+		ostreambuf_iterator<char> begin_dest( out );
+		copy( begin_source, end_source, begin_dest );*/
 
 		is.close();
 		out.close();		

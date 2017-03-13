@@ -19456,10 +19456,13 @@ void RecordPlayer::RecordFrame()
 	//state = ;
 
 	Buf & b = player->owner->testBuf;
+
+	//b.Send( player->owner->totalGameFrames );
 	b.Send( s.leftStickMagnitude );
 	b.Send( s.leftStickRadians );
 	b.Send( s.leftTrigger );
 	b.Send( s.rightTrigger );
+
 	b.Send( s.leftShoulder );
 	b.Send( s.rightShoulder );
 	b.Send( s.A );
@@ -19467,7 +19470,7 @@ void RecordPlayer::RecordFrame()
 	b.Send( s.X );
 	b.Send( s.Y );
 
-	cout << "frame: " << frame << " buttons A: " << (int)s.A << ", B: " << (int)s.B << endl;
+	//cout << "record frame: " << frame << " buttons A: " << (int)s.A << ", B: " << (int)s.B << endl;
 	
 	//if( state.A )
 	//	cout << "record frame: " << frame << " jump" << endl;
@@ -19597,7 +19600,7 @@ bool ReplayPlayer::OpenReplay( const std::string &fileName )
 
 	ifstream is;
 
-	is.open( fileName, ios::binary || ios::in );
+	is.open( fileName, ios::binary | ios::in );
 	if( is.is_open() )
 	{
 		init = true;
@@ -19610,13 +19613,20 @@ bool ReplayPlayer::OpenReplay( const std::string &fileName )
 		for( int i = 0; i < numTotalFrames; ++i )
 		{
 			ControllerState &state = inputBuffer[i];
+
+			//int gameFrames = -1;
+
+			//assert( !is.eof() );
+			//is.read( (char*)&gameFrames, sizeof( int ) );
+
 			
+			//cout << "testing replay " << i << " : " << gameFrames << endl;
 			is.read( (char*)&state.leftStickMagnitude, sizeof( state.leftStickMagnitude ) );
 			is.read( (char*)&state.leftStickRadians, sizeof( state.leftStickRadians ) );
 			is.read( (char*)&state.leftTrigger, sizeof( state.leftTrigger ) );
 			is.read( (char*)&state.rightTrigger, sizeof( state.rightTrigger ) );
 			
-			//int start, back, leftShoulder, rightShoulder, A,B,X,Y;
+			int start, back, leftShoulder, rightShoulder, A,B,X,Y;
 
 			is.read( (char*)&state.leftShoulder, sizeof( bool ) );
 			is.read( (char*)&state.rightShoulder, sizeof( bool ) );
@@ -19625,8 +19635,9 @@ bool ReplayPlayer::OpenReplay( const std::string &fileName )
 			is.read( (char*)&state.X, sizeof( bool ) );
 			is.read( (char*)&state.Y, sizeof( bool ) );
 
-			//cout << "replay jump frame: " << i << " buttons A: " << (int)state.A << ", B: " << (int)state.B << endl;
-			cout << "replay frame: " << i << ", leftstickmag: " << state.leftStickMagnitude << endl;
+			//cout << "replay frame: " << i << " buttons A: " << (int)state.A << ", B: " << (int)state.B << endl;
+			//cout << "replay frame: " << i << " buttons A: " << (int)state.A << ", B: " << (int)state.B << endl;
+			//cout << "replay frame: " << i << ", leftstickmag: " << state.leftStickMagnitude << endl;
 			//is >> start;
 			//is >> back;
 			//is >> leftShoulder;
