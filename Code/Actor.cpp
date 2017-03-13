@@ -19438,15 +19438,37 @@ void RecordPlayer::StopRecording()
 
 void RecordPlayer::RecordFrame()
 {
+	
 	if( frame < 0 )
 		return;
 	//assert( frame >= 0 );
 	if( frame >= MAX_RECORD )
 		return;
 
-	ControllerState &state = inputBuffer[frame];
-	state = player->owner->currInput;
+	//of << state.leftStickMagnitude << " " << state.leftStickRadians << " " << state.leftTrigger << " "
+	//			<< state.rightTrigger 
+	//			<< " " // << (int)state.start << " " << (int)state.back << " "
+	//			<< (int)state.leftShoulder
+	//			<< " " << (int)state.rightShoulder << " " << (int)state.A << " " << (int)state.B << " " 
+	//			<< (int)state.X << " " << (int)state.Y << endl;
+	ControllerState &s = player->owner->currInput;
+	//ControllerState &state = inputBuffer[frame];
+	//state = ;
 
+	Buf & b = player->owner->testBuf;
+	b.Send( s.leftStickMagnitude );
+	b.Send( s.leftStickRadians );
+	b.Send( s.leftTrigger );
+	b.Send( s.rightTrigger );
+	b.Send( s.leftShoulder );
+	b.Send( s.rightShoulder );
+	b.Send( s.A );
+	b.Send( s.B );
+	b.Send( s.X );
+	b.Send( s.Y );
+
+	cout << "frame: " << frame << " buttons A: " << (int)s.A << ", B: " << (int)s.B << endl;
+	
 	//if( state.A )
 	//	cout << "record frame: " << frame << " jump" << endl;
 	/*info.position = player->sprite->getPosition();
@@ -19464,6 +19486,7 @@ void RecordPlayer::RecordFrame()
 
 void RecordPlayer::WriteToFile( const std::string &fileName )
 {
+	return;
 	assert( numTotalFrames > 0 );
 
 	ofstream of;
@@ -19507,61 +19530,117 @@ ReplayPlayer::ReplayPlayer( Actor *p_player )
 
 bool ReplayPlayer::OpenReplay( const std::string &fileName )
 {
+	//ifstream is;
+
+	//is.open( fileName );
+	//if( is.is_open() )
+	//{
+	//	init = true;
+
+	//	is >> numTotalFrames;
+	//	inputBuffer = new ControllerState[numTotalFrames];
+
+	//	for( int i = 0; i < numTotalFrames; ++i )
+	//	{
+	//		ControllerState &state = inputBuffer[i];
+	//		
+	//		is >> state.leftStickMagnitude;
+	//		is >> state.leftStickRadians;
+	//		is >> state.leftTrigger;
+	//		is >> state.rightTrigger;
+	//		int start, back, leftShoulder, rightShoulder, A,B,X,Y;
+	//		//is >> start;
+	//		//is >> back;
+	//		is >> leftShoulder;
+	//		is >> rightShoulder;
+	//		is >> A >> B >> X >> Y;
+
+	//		//state.start = start;
+	//		//state.back = back;
+	//		state.leftShoulder = leftShoulder;
+	//		state.rightShoulder = rightShoulder;
+	//		state.A = A;
+	//		state.B = B;
+	//		state.X = X;
+	//		state.Y = Y;
+	//		/*SprInfo &info = sprBuffer[i];
+	//		is >> info.position.x;
+	//		is >> info.position.y;
+
+	//		is >> info.origin.x;
+	//		is >> info.origin.y;
+
+	//		is >> info.rotation;
+
+	//		int fx;
+	//		int fy;
+
+	//		is >> fx;
+	//		is >> fy;
+
+	//		info.flipX = (bool)fx;
+	//		info.flipY = (bool)fy;
+
+	//		is >> info.action;
+	//		is >> info.tileIndex;
+
+	//		is >> info.speedLevel;*/
+	//	}
+
+	//	is.close();
+
+	//	frame = 0;
+	//	return true;
+	//}
+	////return false on failure
+	//return false;
+
 	ifstream is;
 
-	is.open( fileName );
+	is.open( fileName, ios::binary || ios::in );
 	if( is.is_open() )
 	{
 		init = true;
 
-		is >> numTotalFrames;
+		is.read( (char*)&numTotalFrames, sizeof( numTotalFrames ) );
+		cout << "reading num frames: " << numTotalFrames << endl;
+
 		inputBuffer = new ControllerState[numTotalFrames];
 
 		for( int i = 0; i < numTotalFrames; ++i )
 		{
 			ControllerState &state = inputBuffer[i];
 			
-			is >> state.leftStickMagnitude;
-			is >> state.leftStickRadians;
-			is >> state.leftTrigger;
-			is >> state.rightTrigger;
-			int start, back, leftShoulder, rightShoulder, A,B,X,Y;
+			is.read( (char*)&state.leftStickMagnitude, sizeof( state.leftStickMagnitude ) );
+			is.read( (char*)&state.leftStickRadians, sizeof( state.leftStickRadians ) );
+			is.read( (char*)&state.leftTrigger, sizeof( state.leftTrigger ) );
+			is.read( (char*)&state.rightTrigger, sizeof( state.rightTrigger ) );
+			
+			//int start, back, leftShoulder, rightShoulder, A,B,X,Y;
+
+			is.read( (char*)&state.leftShoulder, sizeof( bool ) );
+			is.read( (char*)&state.rightShoulder, sizeof( bool ) );
+			is.read( (char*)&state.A, sizeof( bool ) );
+			is.read( (char*)&state.B, sizeof( bool ) );
+			is.read( (char*)&state.X, sizeof( bool ) );
+			is.read( (char*)&state.Y, sizeof( bool ) );
+
+			//cout << "replay jump frame: " << i << " buttons A: " << (int)state.A << ", B: " << (int)state.B << endl;
+			cout << "replay frame: " << i << ", leftstickmag: " << state.leftStickMagnitude << endl;
 			//is >> start;
 			//is >> back;
-			is >> leftShoulder;
-			is >> rightShoulder;
-			is >> A >> B >> X >> Y;
+			//is >> leftShoulder;
+			//is >> rightShoulder;
+			//is >> A >> B >> X >> Y;
 
-			//state.start = start;
-			//state.back = back;
-			state.leftShoulder = leftShoulder;
-			state.rightShoulder = rightShoulder;
-			state.A = A;
-			state.B = B;
-			state.X = X;
-			state.Y = Y;
-			/*SprInfo &info = sprBuffer[i];
-			is >> info.position.x;
-			is >> info.position.y;
-
-			is >> info.origin.x;
-			is >> info.origin.y;
-
-			is >> info.rotation;
-
-			int fx;
-			int fy;
-
-			is >> fx;
-			is >> fy;
-
-			info.flipX = (bool)fx;
-			info.flipY = (bool)fy;
-
-			is >> info.action;
-			is >> info.tileIndex;
-
-			is >> info.speedLevel;*/
+			////state.start = start;
+			////state.back = back;
+			//state.leftShoulder = leftShoulder;
+			//state.rightShoulder = rightShoulder;
+			//state.A = A;
+			//state.B = B;
+			//state.X = X;
+			//state.Y = Y;
 		}
 
 		is.close();

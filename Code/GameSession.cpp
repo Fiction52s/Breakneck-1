@@ -25,6 +25,8 @@
 #include "GoalExplosion.h"
 #include "PauseMenu.h"
 #include "Parallax.h"
+#include <boost/thread.hpp>
+#include <iostream>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -69,6 +71,138 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
+std::stringstream recStream;
+boost::mutex mut;
+boost::mutex overMut;
+bool recOver;
+
+void Buf::Send( int x )
+{
+	int size = sizeof( x );
+
+	mut.lock();
+
+	std::memcpy( &(buf[byteIndex]), &x, size );
+	byteIndex+= size;
+
+	/*buf[byteIndex] = '\n';
+	++byteIndex;*/
+
+	mut.unlock();
+}
+
+void Buf::Send( double x )
+{
+	int size = sizeof( x );
+
+	mut.lock();
+
+	std::memcpy( &(buf[byteIndex]), &x, size );
+	byteIndex+= size;
+
+	/*buf[byteIndex] = '\n';
+	++byteIndex;*/
+
+	mut.unlock();
+}
+
+void Buf::Send( bool x )
+{
+	int size = sizeof( x );
+
+	mut.lock();
+
+	std::memcpy( &(buf[byteIndex]), &x, size );
+	byteIndex+= size;
+
+	/*buf[byteIndex] = '\n';
+	++byteIndex;*/
+
+	mut.unlock();
+}
+
+void Buf::Send( float x )
+{
+	int size = sizeof( x );
+
+	mut.lock();
+
+	std::memcpy( &(buf[byteIndex]), &x, size );
+	byteIndex+= size;
+
+	/*buf[byteIndex] = '\n';
+	++byteIndex;*/
+
+	mut.unlock();
+}
+
+void Buf::Send( BYTE x )
+{
+	int size = sizeof( x );
+
+	mut.lock();
+
+	std::memcpy( &(buf[byteIndex]), &x, size );
+	byteIndex+= size;
+
+	/*buf[byteIndex] = '\n';
+	++byteIndex;*/
+
+	mut.unlock();
+}
+
+void ThreadedBufferWrite( GameSession *session, std::ofstream *p_of )
+{
+	ofstream &of = *p_of;
+	Buf &testBuf = session->testBuf;
+	int over;
+	//ofstream of;
+	//of.open( fileName );
+
+	while( true )
+	{
+
+		mut.lock();
+		if( testBuf.byteIndex > 0 )
+		{
+			of.write( (char*)testBuf.buf, testBuf.byteIndex );
+			testBuf.byteIndex = 0;
+		}
+
+		mut.unlock();
+
+
+		overMut.lock();
+		over = recOver;
+		overMut.unlock();
+
+		if( over )
+			break;
+	}
+
+	
+	
+	
+	//of.close();
+
+	
+	/*ofstream of;
+	of.open( "multitest.blah" );
+	if( of.is_open() )
+	{
+		for( int i = 0; i < 1000000; ++i )
+		{
+			of << i << endl;
+			
+			cout << "test" << i << endl;
+		}
+	}
+	else
+	{
+		assert( 0 );
+	}*/
+
+}
 
 
 ScoreDisplay::ScoreDisplay( GameSession *p_owner, Vector2f &position,
@@ -5243,6 +5377,8 @@ int GameSession::Run( string fileN )
 	fadingOut = false;
 	fadeRect.setSize( Vector2f( 1920, 1080 ) );
 	
+	
+	recOver = false;
 
 	soundManager = new SoundManager;
 
@@ -5795,6 +5931,15 @@ int GameSession::Run( string fileN )
 
 	repPlayer->OpenReplay( "testreplay.brep" );
 
+	testBuf.byteIndex = 0;
+
+	boost::thread *threa;
+	ofstream of;
+	if( !repPlayer->init )
+	{
+		of.open( "tempreplay.brep", ios::binary | ios::out );
+		threa = new boost::thread( &ThreadedBufferWrite, this, &of );
+	}
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -6417,6 +6562,8 @@ int GameSession::Run( string fileN )
 			{
 				//cout << "-----------updating total frames------" << endl;
 				//cout << "before count: " << CountActiveEnemies() << endl;
+				testBuf.Send( totalGameFrames );
+
 				totalGameFrames++;
 				player->UpdatePrePhysics();
 
@@ -8687,6 +8834,45 @@ int GameSession::Run( string fileN )
 	{
 		currMusic->stop();
 		currMusic = NULL;
+	}
+	
+	overMut.lock();
+	recOver = true;
+	overMut.unlock();
+
+	if( !repPlayer->init )
+	{
+		threa->join();
+		delete threa;
+		
+		assert( of.is_open() );
+		of.close();
+
+		ifstream is;
+		is.open( "tempreplay.brep", ios::binary | ios::in );
+
+
+		ofstream out;
+		//custom file
+		out.open( "testreplay.brep", ios::binary | ios::out );
+		out.write( (char*)&(recPlayer->numTotalFrames), sizeof( int ) );
+		//out << recPlayer->numTotalFrames << "\n";
+
+		char c;
+		while( true )
+		{
+			c = is.get();
+			if( is.eof() ) break;
+			out.put( c );
+		}
+
+		//istreambuf_iterator<char> begin_source( is );
+		//istreambuf_iterator<char> end_source;
+		//ostreambuf_iterator<char> begin_dest( out );
+		//copy( begin_source, end_source, begin_dest );
+
+		is.close();
+		out.close();		
 	}
 	
 	soundNodeList->Reset();

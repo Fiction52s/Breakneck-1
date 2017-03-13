@@ -307,6 +307,17 @@ struct CrawlerAfterFightSeq;
 struct EnterNexus1Seq;
 struct ShipExitSeq;
 
+struct Buf
+{
+	char buf[10000]; //no checks for boundaries atm
+	int byteIndex;
+	void Send( int x );
+	void Send( double x );
+	void Send( bool x );
+	void Send( float x );
+	void Send( BYTE x );
+};
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -335,6 +346,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		S_KEY_ENTER_6,
 		Count
 	};
+
+	Buf testBuf;
 
 	std::list<ReplayGhost*> replayGhosts;
 	RecordGhost *recGhost;
