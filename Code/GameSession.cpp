@@ -5367,6 +5367,9 @@ int GameSession::Run( string fileN )
 	player = new Actor( this, 0 );
 	recGhost = new RecordGhost( player );
 	repGhost = new ReplayGhost( player );
+
+	recPlayer = new RecordPlayer( player );
+	repPlayer = new ReplayPlayer( player );
 	
 	if( multiSession )
 	{
@@ -5788,6 +5791,10 @@ int GameSession::Run( string fileN )
 
 	repGhost->OpenGhost( "testghost.bghst" );
 
+	recPlayer->StartRecording();
+
+	repPlayer->OpenReplay( "testreplay.brep" );
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -6111,6 +6118,19 @@ int GameSession::Run( string fileN )
 	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
+
+			if( repPlayer->init )
+			{
+				//cout << "replay input" << repPlayer->frame << endl;
+				repPlayer->UpdateInput( currInput );
+				//repPlayer->up
+			}
+			else
+			{
+				//cout << "record player " << recPlayer->frame << endl;
+				recPlayer->RecordFrame();
+			}
+
 			if( multiSession )
 			{
 				//prevInput2 = currInput2;
@@ -6353,9 +6373,9 @@ int GameSession::Run( string fileN )
 				
 				accumulator -= TIMESTEP;
 
-				recGhost->RecordFrame();
+				//recGhost->RecordFrame();
 				
-				repGhost->UpdateReplaySprite();
+				//repGhost->UpdateReplaySprite();
 
 				//currentTime = gameClock.getElapsedTime().asSeconds();
 				//break;
@@ -6395,7 +6415,7 @@ int GameSession::Run( string fileN )
 			}
 			//else
 			{
-				
+				//cout << "-----------updating total frames------" << endl;
 				//cout << "before count: " << CountActiveEnemies() << endl;
 				totalGameFrames++;
 				player->UpdatePrePhysics();
@@ -6418,12 +6438,17 @@ int GameSession::Run( string fileN )
 
 				recGhost->RecordFrame();
 
+				//cout << "replaying ghost: " << repGhost->frame << endl;
+				//if( re
+
 				repGhost->UpdateReplaySprite();
 
 				if( goalDestroyed )
 				{
 					quit = true;
 					returnVal = 1;
+
+					
 					//recGhost->StopRecording();
 					//recGhost->WriteToFile( "testghost.bghst" );
 					break;
@@ -9380,9 +9405,12 @@ void GameSession::RestartLevel()
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
 
+	recPlayer->StopRecording();
+	recPlayer->StartRecording();
 	recGhost->StopRecording();
 	recGhost->StartRecording();
 
+	repPlayer->frame = 0;
 	repGhost->frame = 0;
 
 	currentZone = originalZone;

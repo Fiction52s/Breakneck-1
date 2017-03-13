@@ -921,4 +921,31 @@ struct ReplayGhost
 	int numTotalFrames;
 };
 
+struct RecordPlayer
+{
+	RecordPlayer( Actor *p );
+	int frame;
+	void StartRecording();
+	void StopRecording();
+	int numTotalFrames;
+	Actor *player;
+	void WriteToFile( const std::string &fileName );
+	void RecordFrame();
+	const static int MAX_RECORD = 3600 * 60;
+	ControllerState inputBuffer[MAX_RECORD]; //1 hour
+};
+
+struct ReplayPlayer
+{
+	bool init;
+	ReplayPlayer( Actor *p );
+	bool OpenReplay( const std::string &fileName );
+	void UpdateInput( ControllerState &state );
+	ControllerState *inputBuffer;
+	Actor *player;
+	int frame;
+	int numTotalFrames;
+};
+
+
 #endif

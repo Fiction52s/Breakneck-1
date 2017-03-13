@@ -339,6 +339,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<ReplayGhost*> replayGhosts;
 	RecordGhost *recGhost;
 	ReplayGhost *repGhost;
+
+	RecordPlayer *recPlayer;
+	ReplayPlayer *repPlayer;
+
 	bool multiSession;
 
 	bool showDebugDraw;

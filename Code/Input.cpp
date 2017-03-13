@@ -430,10 +430,11 @@ int GameController::Pressed( XBoxButton b )
 	}
 }
 
+float GameController::stickThresh = .4;
 GameController::GameController( DWORD index )
 	:m_index( index )
 {
-	stickThresh = .4;
+	
 
 	for( int i = 0; i < ControllerSettings::Count; ++i )
 	{
