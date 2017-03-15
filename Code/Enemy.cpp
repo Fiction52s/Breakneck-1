@@ -1214,3 +1214,25 @@ bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 	return false;
 }
 
+void Enemy::Record( int enemyIndex )
+{
+	Buf & b = owner->testBuf;
+
+	b.Send( enemyIndex );
+
+	//note: in order for this to work I can't send any pointers to the buf
+	//and expect it to work on the next run. just doesnt work
+
+	//need to index the enemies in the list somehow. list changes all the time
+
+	//b.Send( prev );
+	//b.Send( next );
+	//b.Send( spawned );
+	//b.Send( receivedHit );
+	//b.Send( 
+}
+
+void Enemy::RecordEnemy()
+{
+	//stub
+}

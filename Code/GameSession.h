@@ -493,6 +493,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEnemiesPrePhysics();
 	void UpdateEnemiesPhysics();
 	void UpdateEnemiesPostPhysics();
+	void RecordReplayEnemies();
 	void UpdateEffects();
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();

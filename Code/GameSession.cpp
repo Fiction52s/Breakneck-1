@@ -785,7 +785,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	repPlayer = NULL;
 	recGhost = NULL;
 	repGhost = NULL;
-	multiSession = true;//false;//true;
+	multiSession = false;//true;//false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
@@ -1203,6 +1203,7 @@ Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeig
 	//make sure to set up tileset here
 }
 
+
 void GameSession::UpdateEnemiesPrePhysics()
 {
 	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
@@ -1290,6 +1291,25 @@ void GameSession::UpdateEnemiesPostPhysics()
 		}
 
 		current = temp;
+	}
+}
+
+void GameSession::RecordReplayEnemies()
+{
+	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
+	{
+		return;
+	}
+
+	int index = 0;
+
+	Enemy *current = activeEnemyList;
+	while( current != NULL )
+	{
+		current->Record( index );
+		//current->UpdatePrePhysics();
+		current = current->next;
+		++index;
 	}
 }
 
@@ -6593,6 +6613,8 @@ int GameSession::Run( string fileN )
 				UpdateEnemiesPrePhysics();
 
 				UpdateEnemiesPhysics();
+
+				RecordReplayEnemies();
 
 				player->UpdatePostPhysics();
 

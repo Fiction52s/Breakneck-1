@@ -619,6 +619,7 @@ VertexArray * PowerWheel::CreateSectionVA( OrbColor col, float p_radius )
 
 bool PowerWheel::Damage( int power )
 {
+	return true;
 	/*if( mode == DESPERATION )
 	{
 		return true;
@@ -702,6 +703,7 @@ bool PowerWheel::Damage( int power )
 
 bool PowerWheel::Use( int power )
 {
+	return true;
 	return Damage( power );
 }
 

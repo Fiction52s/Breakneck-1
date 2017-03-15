@@ -341,6 +341,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		bool hasMonitor, int world );
 	virtual void Init(){};
 
+	void Record( int enemyIndex );
+	virtual void RecordEnemy();
 	virtual void DirectKill();
 	//virtual void HandleEdge( Edge *e ) = 0;
 	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
