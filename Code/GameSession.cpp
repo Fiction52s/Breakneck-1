@@ -781,7 +781,11 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
-	multiSession = false;//false;//true;
+	recPlayer = NULL;
+	repPlayer = NULL;
+	recGhost = NULL;
+	repGhost = NULL;
+	multiSession = true;//false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
@@ -5502,11 +5506,13 @@ int GameSession::Run( string fileN )
 	bool bdrawdraw = false;
 
 	player = new Actor( this, 0 );
-	recGhost = new RecordGhost( player );
-	repGhost = new ReplayGhost( player );
 
-	recPlayer = new RecordPlayer( player );
-	repPlayer = new ReplayPlayer( player );
+	
+	//recGhost = new RecordGhost( player );
+	//repGhost = new ReplayGhost( player );
+
+	//recPlayer = new RecordPlayer( player );
+	//repPlayer = new ReplayPlayer( player );
 	
 	if( multiSession )
 	{
@@ -5538,6 +5544,7 @@ int GameSession::Run( string fileN )
 	cout << "TEST" << endl;
 	//pauseMenu->cOptions->xboxInputAssoc[0];
 	mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+	mainMenu->controller2.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
 
 	cout << "WHAT IS THIS" << endl;
 
@@ -5924,19 +5931,28 @@ int GameSession::Run( string fileN )
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
 	cout << "loop about to start" << endl;
-	recGhost->StartRecording();
 
-	repGhost->OpenGhost( "testghost.bghst" );
+	if( recGhost != NULL )
+	{
+		recGhost->StartRecording();
+	}
+	
+	if( repGhost != NULL )
+	{
+		repGhost->OpenGhost( "testghost.bghst" );
+	}
 
-	recPlayer->StartRecording();
+	if( recPlayer != NULL )
+		recPlayer->StartRecording();
 
-	repPlayer->OpenReplay( "testreplay.brep" );
+	if( repPlayer != NULL )
+		repPlayer->OpenReplay( "testreplay.brep" );
 
 	testBuf.byteIndex = 0;
 
 	boost::thread *threa;
 	ofstream of;
-	if( !repPlayer->init )
+	if( recPlayer != NULL )//&& !repPlayer->init )
 	{
 		of.open( "tempreplay.brep", ios::binary | ios::out );
 		threa = new boost::thread( &ThreadedBufferWrite, this, &of );
@@ -6265,13 +6281,14 @@ int GameSession::Run( string fileN )
 			}
 
 
-			if( repPlayer->init )
+			if( repPlayer != NULL )//repPlayer->init )
 			{
 				//cout << "replay input" << repPlayer->frame << endl;
 				repPlayer->UpdateInput( currInput );
 				//repPlayer->up
 			}
-			else
+
+			if( recPlayer != NULL )
 			{
 				//cout << "record player " << recPlayer->frame << endl;
 				recPlayer->RecordFrame();
@@ -6584,12 +6601,13 @@ int GameSession::Run( string fileN )
 					player2->UpdatePostPhysics();
 				}
 
-				recGhost->RecordFrame();
+				if( recGhost != NULL )
+					recGhost->RecordFrame();
 
 				//cout << "replaying ghost: " << repGhost->frame << endl;
 				//if( re
-
-				repGhost->UpdateReplaySprite();
+				if( repGhost != NULL )
+					repGhost->UpdateReplaySprite();
 
 				if( goalDestroyed )
 				{
@@ -7529,6 +7547,18 @@ int GameSession::Run( string fileN )
 			player->rightWire->Draw( preScreenTex );
 		}
 
+		if( player2 != NULL )
+		{
+			if( ( player2->action != Actor::GRINDBALL && player2->action != Actor::GRINDATTACK ) || player2->leftWire->state == Wire::RETRACTING )
+			{
+				player2->leftWire->Draw( preScreenTex );
+			}
+			if( ( player2->action != Actor::GRINDBALL && player2->action != Actor::GRINDATTACK ) || player2->rightWire->state == Wire::RETRACTING )
+			{
+				player2->rightWire->Draw( preScreenTex );
+			}
+		}
+
 		//cout << "view: " << view.getSize().x << ", " << view.getSize().y << endl;
 		//preScreenTex->setView( view );
 		//cout << "size what: " << preScreenTex->getView().getSize().x
@@ -7550,7 +7580,8 @@ int GameSession::Run( string fileN )
 		{
 			player->Draw( preScreenTex );
 
-			repGhost->Draw( preScreenTex );
+			if( repGhost != NULL )
+				repGhost->Draw( preScreenTex );
 		}
 
 		if( player2 != NULL && player2->action != Actor::DEATH )
@@ -8841,7 +8872,7 @@ int GameSession::Run( string fileN )
 	recOver = true;
 	overMut.unlock();
 
-	if( !repPlayer->init )
+	if( recPlayer != NULL )
 	{
 		threa->join();
 		delete threa;
@@ -8852,7 +8883,7 @@ int GameSession::Run( string fileN )
 		ifstream is;
 		is.open( "tempreplay.brep", ios::binary | ios::in );
 
-
+		
 		ofstream out;
 		//custom file
 		out.open( "testreplay.brep", ios::binary | ios::out );
@@ -8867,13 +8898,16 @@ int GameSession::Run( string fileN )
 			out.put( c );
 		}
 
+		out.close();
+		
+
 		/*istreambuf_iterator<char> begin_source( is );
 		istreambuf_iterator<char> end_source;
 		ostreambuf_iterator<char> begin_dest( out );
 		copy( begin_source, end_source, begin_dest );*/
 
 		is.close();
-		out.close();		
+			
 	}
 	
 	soundNodeList->Reset();
@@ -9591,14 +9625,23 @@ void GameSession::RestartLevel()
 
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
+	if( recPlayer != NULL )
+	{
+		recPlayer->StopRecording();
+		recPlayer->StartRecording();
+	}
 
-	recPlayer->StopRecording();
-	recPlayer->StartRecording();
-	recGhost->StopRecording();
-	recGhost->StartRecording();
+	if( recGhost != NULL )
+	{
+		recGhost->StopRecording();
+		recGhost->StartRecording();
+	}
 
-	repPlayer->frame = 0;
-	repGhost->frame = 0;
+	if( repPlayer != NULL )
+		repPlayer->frame = 0;
+
+	if( repGhost != NULL )
+		repGhost->frame = 0;
 
 	currentZone = originalZone;
 	if( currentZone != NULL )

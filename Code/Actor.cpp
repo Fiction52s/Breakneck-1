@@ -251,6 +251,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		offsetX = 0;
 		sprite = new Sprite;
+		if( actorIndex == 1 )
+		{
+			sprite->setColor( Color( 255, 0, 0 ) );
+		}
+
 		velocity = Vector2<double>( 0, 0 );
 		
 		CollisionBox cb;
@@ -1061,6 +1066,33 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		sh.setParameter( "hasPowerTimeSlow", hasPowerTimeSlow );
 		sh.setParameter( "hasPowerLeftWire", hasPowerLeftWire );
 		sh.setParameter( "hasPowerRightWire", hasPowerRightWire );
+
+		/*Color basicArmor( 0x14, 0x59, 0x22 );
+		Color basicArmorDark( 0x08, 0x40, 0x12 );
+
+		if( actorIndex == 1 )
+		{
+			sf::Uint8 basicRed = basicArmor.r;
+			sf::Uint8 basicGreen = basicArmor.g;
+			sf::Uint8 basicBlue = basicArmor.b;
+
+			basicArmor.r = basicGreen;
+			basicArmor.b = basicRed;
+			basicArmor.g = basicBlue;
+
+			sf::Uint8 basicRedDark = basicArmorDark.r;
+			sf::Uint8 basicGreenDark = basicArmorDark.g;
+			sf::Uint8 basicBlueDark = basicArmorDark.b;
+
+			basicArmorDark.r = basicGreenDark;
+			basicArmorDark.b = basicRedDark;
+			basicArmorDark.g = basicBlueDark;
+
+		}*/
+			
+		//sh.setParameter( "armorColor", basicArmor );
+		//sh.setParameter( "armorColorDark", basicArmorDark );
+		
 		//sh.setParameter( "hasPowerClones", hasPowerClones > 0 );
 
 		//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
@@ -5521,7 +5553,9 @@ void Actor::UpdatePrePhysics()
 				//cout << "setting vel: " << velocity.x << ", " << velocity.y << endl;
 				//double dd = dot( 
 				//velocity = normalize( 
-
+				double extraBUp = .2;
+				double extraBDown = .2;
+				double extraBThresh = .8; //works on almost everything
 				double dSpeed = GetDashSpeed();
 				if( bn.y < 0 )
 				{
@@ -5550,10 +5584,27 @@ void Actor::UpdatePrePhysics()
 							//cout << "set vel: " << velocity.x << ", " << velocity.y << endl;
 						}
 
+						double velStrength = length( velocity );
+						V2d vDir = normalize( velocity );
+						if( abs( vDir.y ) < extraBThresh )
+						{
+							if( currInput.LUp() )
+							{
+								vDir = normalize( vDir + V2d( 0, -extraBUp ) );
+							}
+							else if( currInput.LDown() )
+							{
+								vDir = normalize( vDir + V2d( 0, extraBDown ) );
+							}
+							velocity = vDir * velStrength;
+						}
+
 						if( boostNow )
 						{
 							//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
-							velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+							velocity += vDir * bounceBoostSpeed / (double)slowMultiple;
+						
+
 							boostBounce = false;
 						}
 						else if( boostBounce )
@@ -5594,7 +5645,7 @@ void Actor::UpdatePrePhysics()
 						if( boostNow )
 						{
 							double fac = max( 6.0, .25 * abs(velocity.y) ); //bounceBoostSpeed;
-							cout << "fac: " << fac << ", vy: "<< velocity.y << endl;
+							//cout << "fac: " << fac << ", vy: "<< velocity.y << endl;
 							velocity += normalize( velocity ) * fac / (double)slowMultiple;
 							boostBounce = false;
 						}
@@ -5660,10 +5711,27 @@ void Actor::UpdatePrePhysics()
 						
 					}
 
+					double velStrength = length( velocity );
+					V2d vDir = normalize( velocity );
+					if( abs( vDir.y ) < extraBThresh )
+					{
+						if( currInput.LUp() )
+						{
+							vDir = normalize( vDir + V2d( 0, -extraBUp ) );
+						}
+						else if( currInput.LDown() )
+						{
+							vDir = normalize( vDir + V2d( 0, extraBDown ) );
+						}
+						velocity = vDir * velStrength;
+					}
+
 					if( boostNow )
 					{
 						//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
-						velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+						//velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+						velocity += vDir * bounceBoostSpeed / (double)slowMultiple;
+
 						boostBounce = false;
 					}
 					else if( boostBounce )
@@ -5676,10 +5744,35 @@ void Actor::UpdatePrePhysics()
 				//	cout << "F" << endl;
 					velocity = V2d( -storedBounceVel.x, storedBounceVel.y ); 
 
+					double velStrength = length( velocity );
+					V2d vDir = normalize( velocity );
+					if( abs( vDir.y ) < extraBThresh )
+					{
+						if( currInput.LUp() )
+						{
+							vDir = normalize( vDir + V2d( 0, -extraBUp ) );
+						}
+						else if( currInput.LDown() )
+						{
+							vDir = normalize( vDir + V2d( 0, extraBDown ) );
+						}
+						velocity = vDir * velStrength;
+					}
+
 					if( boostNow )
 					{
-						//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
-						velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
+						velocity += vDir * bounceBoostSpeed / (double)slowMultiple;
+
+						
+						/*if( currInput.LUp() )
+						{
+							velocity += V2d( 0, -1 ) * extraBUp;
+						}
+						else if( currInput.LDown() )
+						{
+							velocity += V2d( 0, 1 ) * extraBDown;
+						}*/
+
 						boostBounce = false;
 					}
 					else if( boostBounce )
@@ -13341,14 +13434,19 @@ void Actor::UpdatePostPhysics()
 	{
 		SetActionExpr( GOALKILL );
 
-		if( !owner->repPlayer->init )
+		if( owner->recPlayer != NULL )
 		{
 			owner->recPlayer->RecordFrame();
 			owner->recPlayer->StopRecording();
 			owner->recPlayer->WriteToFile( "testreplay.brep" );
 		}
-		owner->recGhost->StopRecording();
-		owner->recGhost->WriteToFile( "testghost.bghst" );
+
+		if( owner->recGhost != NULL )
+		{
+			owner->recGhost->StopRecording();
+			owner->recGhost->WriteToFile( "testghost.bghst" );
+		}
+
 		frame = 0;
 		position = owner->goalNodePos;
 		rightWire->Reset();
@@ -15613,7 +15711,6 @@ void Actor::Draw( sf::RenderTarget *target )
 			//cout << "action: " << action << endl;
 			sh.setParameter( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			sh.setParameter( "u_normals", *normal[action]->texture );
-
 			target->draw( *sprite, &sh );
 		}
 		else
