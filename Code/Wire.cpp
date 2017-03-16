@@ -844,7 +844,10 @@ void Wire::UpdateAnchors( V2d vel )
 				{
 					if( (closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) )
 					{
+						//this means ive already gone through a point and im coming back to the same point
+						//again immediately after which means I intersected a polygon
 						cout << "problem  point: " << closestPoint.x << ", " << closestPoint.y << endl;
+						cout << "numPoints: " << numPoints << endl;
 						assert( 0 );
 						break;
 					}

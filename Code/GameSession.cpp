@@ -785,7 +785,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	repPlayer = NULL;
 	recGhost = NULL;
 	repGhost = NULL;
-	multiSession = false;//true;//false;//true;
+	multiSession = true;//true;//false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;

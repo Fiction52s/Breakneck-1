@@ -17238,7 +17238,7 @@ void Actor::UpdateSprite()
 
 			gsdodeca.setTextureRect( tsgsdodeca->GetSubRect( (grindActionInt * 5) % grindActionLength   ) );
 			gstriblue.setTextureRect( tsgstriblue->GetSubRect( (grindActionInt * 5) % grindActionLength ) );
-			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt ) );
+			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt % grindActionLength ) ); //broken?
 			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( (grindActionInt * 5) % grindActionLength ) );
 			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ));
 			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
