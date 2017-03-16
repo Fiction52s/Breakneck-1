@@ -13,12 +13,16 @@ Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
 	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), right( r )
 	, extraBuffer( MAX_POINTS ),//64  ), 
-	quads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )), 
-	minimapQuads( sf::Quads, (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 )),
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 4 ), ts_wire( NULL ), frame( 0 ), animFactor( 2 ), offset( 8, 18 ),
   numTotalCharges( 0 ), chargeVA( sf::Quads, MAX_CHARGES * 4 )
 {
+	numQuadVertices = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
+	quads = new Vertex[numQuadVertices];
+
+	numMinimapQuads = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
+	minimapQuads = new Vertex[numMinimapQuads];
+
 	//ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
 	ts_wire = player->owner->GetTileset( "wire_01_14x8.png", 14, 8 );
 	if( r )
@@ -102,6 +106,7 @@ int Wire::CountInactiveCharges()
 
 void Wire::UpdateState( bool touchEdgeWithWire )
 {
+	
 	//cout << "update state" << endl;
 	ControllerState &currInput = player->currInput;
 	ControllerState &prevInput = player->prevInput;
@@ -709,6 +714,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	{
 		frame = 0;
 	}
+
+	
 }
 
 void Wire::ClearCharges()
@@ -750,12 +757,18 @@ void Wire::SwapPoints( int aIndex, int bIndex )
 	points[bIndex] = temp;
 }
 
-void Wire::UpdateAnchors( V2d vel )
+void Wire::UpdateAnchors2( V2d vel )
 {
+	
+	//assert( vel.x != 0 || vel.y != 0 );
+
+	wireTestClock.restart();
 	V2d playerPos = GetOriginPos(true);
 
 	if( state == HIT || state == PULLING )
 	{
+		
+
 		if( oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y )
 		{
 			//return;
@@ -776,7 +789,21 @@ void Wire::UpdateAnchors( V2d vel )
 			realAnchor = points[numPoints-1].pos;
 		}
 
+		if( vel.x == 0 && vel.y == 0 )
+		{
+			//cout << "skipping" << endl;
+		//	return;
+		}
+
 		int counter = 0;
+		V2d a;
+		V2d b;
+		double len;
+		V2d oldDir;
+		V2d dir;
+		double left, right, top, bottom;
+		double ex = 1;
+		Rect<double> r;
 		while( true )
 		{
 			if( counter > 1 )
@@ -784,16 +811,12 @@ void Wire::UpdateAnchors( V2d vel )
 				//cout << "COUNTER: " << counter << endl;
 			}
 
-			V2d a = realAnchor - oldPos;
-			V2d b = realAnchor - playerPos;
-			double len = max( length( a ), length( b ) );
+			a = realAnchor - oldPos;
+			b = realAnchor - playerPos;
+			len = max( length( a ), length( b ) );
 
-			V2d oldDir = oldPos - realAnchor;
-			V2d dir = playerPos - realAnchor;
-			double left;
-			double right;
-			double top;
-			double bottom;
+			oldDir = oldPos - realAnchor;
+			dir = playerPos - realAnchor;
 
 			if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x > 0 && dir.y < 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y < 0 ) )
 			{
@@ -831,8 +854,10 @@ void Wire::UpdateAnchors( V2d vel )
 				bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
 			}
 
-			double ex = 1;
-			Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, (bottom - top) + ex * 2 );
+			r.left = left - ex;
+			r.top = top - ex;
+			r.width = (right - left) + ex * 2;
+			r.height = (bottom - top) + ex * 2;
 			
 			foundPoint = false;
 
@@ -871,7 +896,7 @@ void Wire::UpdateAnchors( V2d vel )
 				radius = radius - length( oldAnchor - realAnchor );
 				oldPos = realAnchor + normalize( realAnchor - oldAnchor ) * radius;
 
-				cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
+				//cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
 				counter++;
 			}
 			else
@@ -880,7 +905,7 @@ void Wire::UpdateAnchors( V2d vel )
 			}
 		}
 		
-		if( false )
+		/*if( false )
 		{
 			if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - rcQuant )
 			{
@@ -894,7 +919,7 @@ void Wire::UpdateAnchors( V2d vel )
 				points[numPoints].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
 				numPoints++;
 			}
-		}
+		}*/
 
 		for( int i = numPoints - 1; i >= 0; --i )
 		{ 
@@ -964,6 +989,13 @@ void Wire::UpdateAnchors( V2d vel )
 	}
 	
 	storedPlayerPos = playerPos;
+
+	//cout << "wire update milli: " << wireTestClock.getElapsedTime().asMilliseconds() << endl;
+}
+
+void Wire::UpdateAnchors( V2d vel )
+{
+	UpdateAnchors2( vel );
 }
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
@@ -1003,14 +1035,6 @@ void Wire::TestPoint( Edge *e )
 {
 	V2d p = e->v0;
 
-	/*if( abs( p.x - points[numPoints-1].pos.x ) < 1 && abs( p.y - points[numPoints-1].pos.y ) < 1 )
-	{
-		//cout << "that was a close one" << endl;
-		return;
-	}*/
-	
-	//V2d playerPos = player->position;
-	//playerPos += V2d( offset.x, offset.y );
 	V2d playerPos = GetOriginPos(true);
 
 	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
@@ -1026,22 +1050,9 @@ void Wire::TestPoint( Edge *e )
 		return;
 	}
 	
-	//cout << "anchordist: " << anchorDist << ", radius: " << radius << endl;
 
 	V2d oldVec = normalize( oldPos - realAnchor );
 	V2d newVec = normalize( playerPos - realAnchor );
-
-	//cout << "old: " << oldPos.x << ", " << oldPos.y << endl;
-	//cout << "new: " << playerPos.x << ", " << playerPos.y << endl;
-
-	/*sf::VertexArray *line = new VertexArray( sf::Lines, 0 );
-	line->append( sf::Vertex(sf::Vector2f(realAnchor.x, realAnchor.y), Color::Black ) );
-	line->append( sf::Vertex(sf::Vector2f(oldPos.x, oldPos.y), Color::Black ) );
-	line->append( sf::Vertex(sf::Vector2f(realAnchor.x, realAnchor.y), Color::Black ) );
-	line->append( sf::Vertex(sf::Vector2f(playerPos.x, playerPos.y), Color::Black ) );*/
-
-
-	//progressDraw.push_back( line );
 
 	V2d pVec = normalize( p - realAnchor );
 
@@ -1070,14 +1081,6 @@ void Wire::TestPoint( Edge *e )
 	if( pAngle < 0 )
 		pAngle += 2 * PI;
 
-	/*CircleShape *cs = new CircleShape;
-	cs->setFillColor( Color::Green );
-	cs->setRadius( 4 );
-	cs->setOrigin( cs->getLocalBounds().width / 2, cs->getLocalBounds().height / 2 );
-	cs->setPosition( p.x, p.y );
-	progressDraw.push_back( cs );*/
-
-	//cout << "p: " << p.x << ", " << p.y << " old: " << oldAngle << ", new: " << newAngle << ", pangle: " << pAngle << endl;
 	bool tempClockwise = false;
 	if( newAngle > oldAngle )
 	{
@@ -1239,8 +1242,6 @@ void Wire::UpdateQuads()
 
 	int currNumPoints = numPoints;
 
-	//fusePointIndex = numPoints;// - 1;
-	//fuseQuantity = 50;
 	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) || state == RETRACTING )
 	{
 		if( state == RETRACTING )
@@ -1489,15 +1490,10 @@ void Wire::UpdateQuads()
 		V2d endBack = currWirePos - otherDir * quadHalfWidth;
 		V2d endFront = currWirePos + otherDir * quadHalfWidth;
 
-		//cout << "fram: " << frame / animFactor << endl;
-		//Vector2f topLeft( 0, tileHeight * frame / animFactor );
-		//Vector2f topRight( tileWidth, tileHeight * frame / animFactor );
-		//Vector2f bottomLeft( 0, tileHeight * (frame / animFactor + 1 ) );
-		//Vector2f bottomRight( tileWidth, tileHeight * (frame / animFactor + 1 ) );
-		if( firingTakingUp > quads.getVertexCount() / 4 )
+		if( firingTakingUp > numQuadVertices / 4 )
 		{
 			cout << "wirestart: " << currWireStart.x << ", " << currWireStart.y << ", curr: " << currWirePos.x << ", " << currWirePos.y << endl;
-			cout << "firingTakingup: " << firingTakingUp << ", count: " << quads.getVertexCount() / 4 << endl;
+			cout << "firingTakingup: " << firingTakingUp << ", count: " << numQuadVertices / 4 << endl;
 			assert( false );
 		}
 
@@ -1582,8 +1578,12 @@ void Wire::UpdateQuads()
 		startIndex += firingTakingUp;
 
 		}
+
+		numVisibleIndexes = startIndex;
+
+		
 		//cout << "clearing: " << startIndex << " and beyond" << endl;
-		for( ; startIndex < quads.getVertexCount() / 4; ++startIndex )
+		/*for( ; startIndex < numQuadVertices / 4; ++startIndex )
 		{
 			quads[startIndex*4].position = Vector2f( 0, 0 );
 			quads[startIndex*4+1].position = Vector2f( 0, 0 );
@@ -1594,7 +1594,7 @@ void Wire::UpdateQuads()
 			minimapQuads[startIndex*4+1].position = Vector2f( 0, 0 );
 			minimapQuads[startIndex*4+2].position = Vector2f( 0, 0 );
 			minimapQuads[startIndex*4+3].position = Vector2f( 0, 0 );
-		}
+		}*/
 
 		if( state == FIRING )
 			++framesFiring;
@@ -1656,70 +1656,14 @@ void Wire::Retract()
 
 void Wire::Draw( RenderTarget *target )
 {
+	//return;
 	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
-	{
-		target->draw( quads, ts_wire->texture );
+	{	
+		target->draw( quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture );
 	}
 	
-	if( state == FIRING )
+	if( state == HIT || state == PULLING )
 	{
-		sf::Vertex line[] =
-		{
-			sf::Vertex(sf::Vector2f(player->position.x, player->position.y), Color::Blue),
-			sf::Vertex(sf::Vector2f(player->position.x + fireDir.x * 40 * framesFiring,
-			player->position.y + fireDir.y * 40 * framesFiring), Color::Magenta)
-		};
-
-		//target->draw(line, 2, sf::Lines);
-			
-	}
-	else if( state == HIT || state == PULLING )
-	{
-		//V2d wirePos = wireEdge->GetPoint( wireQuant );
-		if( numPoints == 0 )
-		{
-			sf::Vertex line0[] =
-			{
-				sf::Vertex(sf::Vector2f( player->position.x, player->position.y ), Color::Red),
-				sf::Vertex(sf::Vector2f( anchor.pos.x, anchor.pos.y ), Color::Magenta)
-			};
-
-		//	target->draw(line0, 2, sf::Lines);
-		}
-		else
-		{
-			sf::Vertex line0[] =
-			{
-				sf::Vertex(sf::Vector2f( points[numPoints-1].pos.x, points[numPoints-1].pos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f( player->position.x, player->position.y ), Color::Magenta)
-			};
-
-		//	target->draw(line0, 2, sf::Lines);
-		}
-
-		if( numPoints > 0 )
-		{
-			sf::Vertex line1[] =
-			{
-				sf::Vertex(sf::Vector2f( anchor.pos.x, anchor.pos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f( points[0].pos.x, points[0].pos.y ), Color::Magenta)
-			};
-
-		//	target->draw(line1, 2, sf::Lines);
-		}
-
-		for( int i = 1; i < numPoints; ++i )
-		{
-		
-			sf::Vertex line[] =
-			{
-				sf::Vertex(sf::Vector2f(points[i-1].pos.x, points[i-1].pos.y ), Color::Red),
-				sf::Vertex(sf::Vector2f(points[i].pos.x, points[i].pos.y ), Color::Magenta)
-			};
-
-		//	target->draw(line, 2, sf::Lines);
-		}
-
 		CircleShape cs1;
 		cs1.setFillColor( Color::Red );
 		cs1.setRadius( 2 );
@@ -1750,7 +1694,7 @@ void Wire::DrawMinimap( sf::RenderTarget *target )
 {
 	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
 	{
-		target->draw( minimapQuads );
+		target->draw( minimapQuads, numVisibleIndexes * 4, sf::Quads );
 	}
 }
 

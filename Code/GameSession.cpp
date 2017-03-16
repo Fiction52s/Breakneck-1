@@ -785,7 +785,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	repPlayer = NULL;
 	recGhost = NULL;
 	repGhost = NULL;
-	multiSession = true;//true;//false;//true;
+	multiSession = true;//false;//true;//true;//false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
@@ -6037,6 +6037,7 @@ int GameSession::Run( string fileN )
 		postProcessTex1->clear();
 		postProcessTex2->clear();
 		
+		
 
 		
 		coll.ClearDebug();		
@@ -6642,11 +6643,13 @@ int GameSession::Run( string fileN )
 					break;
 				}
 
+				//wireTestClock.restart();
 				if( player->hasPowerLeftWire )
 					player->leftWire->UpdateQuads();
 
 				if( player->hasPowerRightWire )
 					player->rightWire->UpdateQuads();
+				//cout << "wire update milli: " << wireTestClock.getElapsedTime().asMilliseconds() << endl;
 
 				if( multiSession )
 				{
@@ -9468,7 +9471,8 @@ void GameSession::ResetShipSequence()
 
 void GameSession::SetSecondController( GameController &c )
 {
-	controller2 = &c;
+	if( multiSession )
+		controller2 = &c;
 }
 
 void GameSession::RespawnPlayer()

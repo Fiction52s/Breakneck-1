@@ -7283,14 +7283,14 @@ void Actor::UpdatePrePhysics()
 	if( hasPowerLeftWire && ( (action != GRINDBALL && action != GRINDATTACK ) || leftWire->state == Wire::RETRACTING ) )
 	{
 		leftWire->ClearDebug();
-		leftWire->UpdateAnchors( V2d( 0, 0 ) );
+		leftWire->UpdateAnchors2( V2d( 0, 0 ) );
 		leftWire->UpdateState( touchEdgeWithLeftWire );
 	}
 
 	if( hasPowerRightWire && ((action != GRINDBALL && action != GRINDATTACK ) || rightWire->state == Wire::RETRACTING ) )
 	{
 		rightWire->ClearDebug();
-		rightWire->UpdateAnchors( V2d( 0, 0 ) );
+		rightWire->UpdateAnchors2( V2d( 0, 0 ) );
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
@@ -13319,7 +13319,10 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-	
+	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
+	//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
+
+
 	//cout << "action: " << action << endl;
 	test = false;
 

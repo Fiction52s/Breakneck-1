@@ -6,6 +6,7 @@
 #include "Physics.h"
 #include "QuadTree.h"
 #include "Tileset.h"
+#include <SFML/System/Clock.hpp>
 //#include "GameSession.h"
 
 struct Actor;
@@ -21,10 +22,11 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		RELEASED
 	};
 
+	sf::Clock wireTestClock;
 	//sf::Vector2<double> 
 	Wire( Actor *player, bool right );
 	void UpdateAnchors( sf::Vector2<double> vel );
-	void UpdateAnchors2();
+	void UpdateAnchors2( sf::Vector2<double> vel );
 	void SetFireDirection( sf::Vector2<double> dir );
 	void Check();
 	void UpdateMinimapQuads( sf::View &uiView );
@@ -79,6 +81,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	bool triggerDown;
 	bool prevTriggerDown;
 
+	int numVisibleIndexes;
 
 	struct WirePoint
 	{
@@ -154,8 +157,12 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];
-	sf::VertexArray quads;
-	sf::VertexArray minimapQuads;
+	//sf::VertexArray quads;
+	sf::Vertex *quads;
+	int numQuadVertices;
+	//sf::VertexArray minimapQuads;
+	sf::Vertex *minimapQuads;
+	int numMinimapQuads;
 	int framesFiring;
 	double fireRate;
 	Edge *minSideEdge;
