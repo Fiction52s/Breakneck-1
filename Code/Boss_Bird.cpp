@@ -637,7 +637,7 @@ void Boss_Bird::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Boss_Bird::IHitPlayer()
+bool Boss_Bird::IHitPlayer( int index )
 {
 
 	Actor *player = owner->player;
@@ -668,7 +668,7 @@ void Boss_Bird::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Boss_Bird::PlayerHitMe()
+pair<bool,bool> Boss_Bird::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

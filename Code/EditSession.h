@@ -596,6 +596,19 @@ struct ShardParams : public ActorParams
 	ActorParams *Copy();
 };
 
+struct RaceFightTargetParams : public ActorParams
+{
+	RaceFightTargetParams( EditSession *edit,
+		sf::Vector2i &pos );
+	void WriteParamFile( std::ofstream &of );
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
 //w1
 struct PatrollerParams : public ActorParams
 {

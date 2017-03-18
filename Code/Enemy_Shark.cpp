@@ -649,7 +649,7 @@ void Shark::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Shark::IHitPlayer()
+bool Shark::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -679,7 +679,7 @@ void Shark::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Shark::PlayerHitMe()
+pair<bool,bool> Shark::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

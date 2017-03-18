@@ -1196,7 +1196,7 @@ void Spider::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Spider::IHitPlayer()
+bool Spider::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -1224,7 +1224,7 @@ bool Spider::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Spider::PlayerHitMe()
+ pair<bool, bool> Spider::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

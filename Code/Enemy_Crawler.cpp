@@ -1321,7 +1321,7 @@ void Crawler::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Crawler::IHitPlayer()
+bool Crawler::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -1349,7 +1349,7 @@ bool Crawler::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Crawler::PlayerHitMe()
+ pair<bool, bool> Crawler::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

@@ -457,7 +457,7 @@ bool Cactus::IHitPlayerWithBullets()
 	return false;
 }
 
-bool Cactus::IHitPlayer()
+bool Cactus::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -482,7 +482,7 @@ bool Cactus::IHitPlayer()
 	}
 }
 
- pair<bool, bool> Cactus::PlayerHitMe()
+ pair<bool, bool> Cactus::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

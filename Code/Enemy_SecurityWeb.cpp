@@ -832,7 +832,7 @@ void SecurityWeb::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool SecurityWeb::IHitPlayer()
+bool SecurityWeb::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -862,7 +862,7 @@ void SecurityWeb::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> SecurityWeb::PlayerHitMe()
+pair<bool,bool> SecurityWeb::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

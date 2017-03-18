@@ -724,7 +724,7 @@ void Owl::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Owl::IHitPlayer()
+bool Owl::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -754,7 +754,7 @@ void Owl::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Owl::PlayerHitMe()
+pair<bool,bool> Owl::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

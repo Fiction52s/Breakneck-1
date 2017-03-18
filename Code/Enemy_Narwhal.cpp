@@ -631,7 +631,7 @@ void Narwhal::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Narwhal::IHitPlayer()
+bool Narwhal::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -661,7 +661,7 @@ void Narwhal::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Narwhal::PlayerHitMe()
+pair<bool,bool> Narwhal::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

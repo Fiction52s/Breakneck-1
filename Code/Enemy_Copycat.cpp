@@ -1016,7 +1016,7 @@ void Copycat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Copycat::IHitPlayer()
+bool Copycat::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -1083,7 +1083,7 @@ void Copycat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Copycat::PlayerHitMe()
+pair<bool,bool> Copycat::PlayerHitMe( int index )
 {
 	//if( action == INVISIBLE )
 	//	return pair<bool,bool>(false,false);
