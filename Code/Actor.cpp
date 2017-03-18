@@ -2333,7 +2333,7 @@ void Actor::UpdatePrePhysics()
 			{
 				GroundAttack();
 			}
-			else if( currInput.LDown() )
+			else if( currInput.LDown() || currInput.LUp() )
 			{
 				action = SLIDE;
 				frame = 0;
@@ -2436,7 +2436,7 @@ void Actor::UpdatePrePhysics()
 			bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || ( gNorm.x < 0 && !facingRight ) ));
 			if(!( currInput.LLeft() || currInput.LRight() ) )//&& t )
 			{
-				if( currInput.LDown())
+				if( currInput.LDown() || currInput.LUp() )
 				{
 					action = SLIDE;
 					frame = 0;
@@ -2808,7 +2808,7 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( RUN );
 						frame = 0;
 					}
-					else if( currInput.LDown() )
+					else if( currInput.LDown() || currInput.LUp() )
 					{
 						action = SLIDE;
 						frame = 0;
@@ -2915,7 +2915,7 @@ void Actor::UpdatePrePhysics()
 						frame = 0;
 						facingRight = currInput.LRight();
 					}
-					else if( currInput.LDown() )
+					else if( currInput.LDown() || currInput.LUp() )
 					{
 						action = SLIDE;
 						frame = 0;
@@ -3673,7 +3673,7 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					//you can't dash on the ceiling with no horizontal input. probably a weakness
-					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
+					if( ( currInput.B /*&& !( reversed && (!currInput.LLeft() && !currInput.LRight() ) )*/ ) || !canStandUp )
 					{
 						action = DASH;
 						/*re->Reset();
@@ -3724,7 +3724,7 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( RUN );
 						frame = 0;
 					}
-					else if( currInput.LDown() )
+					else if( currInput.LDown() || currInput.LUp() )
 					{
 						action = SLIDE;
 						frame = 0;
@@ -3818,7 +3818,7 @@ void Actor::UpdatePrePhysics()
 						frame = 0;
 						facingRight = currInput.LRight();
 					}
-					else if( currInput.LDown() )
+					else if( currInput.LDown() || currInput.LUp() )
 					{
 						action = SLIDE;
 						frame = 0;
@@ -3963,7 +3963,7 @@ void Actor::UpdatePrePhysics()
 
 			if(!( currInput.LLeft() || currInput.LRight() ))
 			{
-				if( currInput.LDown())
+				if( currInput.LDown() || currInput.LUp() )
 				{
 					action = SLIDE;
 					frame = 0;
@@ -5564,17 +5564,17 @@ void Actor::UpdatePrePhysics()
 					//cout << "prevel: " << velocity.x << ", " << velocity.y << endl;
 					if( bn.y > -steepThresh )
 					{
-						if( bn.x > 0  && storedBounceVel.x < 0 )
-						{
-							//cout << "A" << endl;
-							velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
-						}
-						else if( bn.x < 0 && storedBounceVel.x > 0 )
-						{
-						//	cout << "B" << endl;
-							velocity = V2d( -abs(storedBounceVel.x), -abs(storedBounceVel.y) );
-						}
-						else
+						//if( bn.x > 0  && storedBounceVel.x < 0 )
+						//{
+						//	//cout << "A" << endl;
+						//	velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
+						//}
+						//else if( bn.x < 0 && storedBounceVel.x > 0 )
+						//{
+						////	cout << "B" << endl;
+						//	velocity = V2d( -abs(storedBounceVel.x), -abs(storedBounceVel.y) );
+						//}
+						//else
 						{
 							double lenVel = length( storedBounceVel );
 							double reflX = cross( normalize( -storedBounceVel ), bn );
@@ -5662,17 +5662,17 @@ void Actor::UpdatePrePhysics()
 				{
 					if( -bn.y > -steepThresh )
 					{
-						if( bn.x > 0 && storedBounceVel.x < 0 )
-						{
-						//	cout << "C" << endl;
-							velocity = V2d( abs(storedBounceVel.x), storedBounceVel.y );
-						}
-						else if( bn.x < 0 && storedBounceVel.x > 0 )
-						{
-						//	cout << "D" << endl;
-							velocity = V2d( -abs(storedBounceVel.x), storedBounceVel.y );
-						}
-						else
+						//if( bn.x > 0 && storedBounceVel.x < 0 )
+						//{
+						////	cout << "C" << endl;
+						//	velocity = V2d( abs(storedBounceVel.x), storedBounceVel.y );
+						//}
+						//else if( bn.x < 0 && storedBounceVel.x > 0 )
+						//{
+						////	cout << "D" << endl;
+						//	velocity = V2d( -abs(storedBounceVel.x), storedBounceVel.y );
+						//}
+						//else
 						{
 							double lenVel = length( storedBounceVel );
 							double reflX = cross( normalize( -storedBounceVel ), bn );
@@ -6030,38 +6030,6 @@ void Actor::UpdatePrePhysics()
 					double blah = .25;
 
 					V2d dir( 0, 0 );
-					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
-					{
-						dir = V2d( blah, 0 );
-						//dir = V2d( blah, 0 );
-						if( groundSpeed > 0 )
-						{
-							cout << "right" << endl;
-							
-						}
-						else
-						{
-							cout << "left" << endl;
-							//dir = V2d( -blah, 0 );
-							//dir = V2d( -blah, 0 );
-						}
-						
-					}
-					else if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
-					{
-						//cout << "this!" << endl;
-						double bb = 0;
-						//dir = V2d( bb, 0 );
-						if( groundSpeed > 0 )
-						{
-							//dir = V2d( blah, 0 );
-						}
-						else
-						{
-							//dir = V2d( -blah, 0 );
-						}
-						
-					}
 					
 					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
 					velocity = groundSpeed * trueNormal;
@@ -6070,21 +6038,6 @@ void Actor::UpdatePrePhysics()
 						velocity.y *= .7;
 					}
 					
-					if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
-					{
-						//cout << "this!" << endl;
-						if( groundSpeed > 0 )
-						{
-							//velocity.y /= 2;
-							//dir = V2d( .7, 0 );
-						}
-						else
-						{
-							//velocity.y /= 2;
-							//dir = V2d( -.7, 0 );
-						}
-						
-					}
 
 					if( currInput.B )
 					{
