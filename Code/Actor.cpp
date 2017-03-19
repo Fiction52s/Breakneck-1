@@ -8653,6 +8653,7 @@ V2d Actor::UpdateReversePhysics()
 					{
 						reversed = false;
 						cout << "b" << endl;
+						cout << "gNormal: " << gNormal.x << ", " << gNormal.y << endl;
 						velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
 						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
@@ -8663,11 +8664,11 @@ V2d Actor::UpdateReversePhysics()
 						}
 
 						if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "3 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}
+						{
+							movementVec += currMovingTerrain->vel / (double)slowMultiple;
+							cout << "3 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+								", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+						}
 
 						leftGround = true;
 						SetActionExpr( JUMP );
@@ -12097,7 +12098,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( hasPowerGravReverse /*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
-				cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 				/*if( b.rh == doubleJumpHeight )
 				{
 					b.offset.y = (normalHeight - doubleJumpHeight);
