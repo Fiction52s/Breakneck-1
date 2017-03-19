@@ -8412,7 +8412,7 @@ V2d Actor::UpdateReversePhysics()
 			//cout << "a: " << a << " b: " << c << endl;
 			if( transferLeft )
 			{
-				//cout << "transfer left" << endl;
+				cout << "transfer left" << endl;
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
@@ -8432,16 +8432,133 @@ V2d Actor::UpdateReversePhysics()
 						}
 					}
 				}
+
+				//gNormal.x = -gNormal.x;
 				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				V2d nextNorm = e0n;
 				double yDist = abs( gNormal.x ) * -groundSpeed;
+
+				//bool jumpOff = (currInput.LUp() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x <= 0 );
+				//jumpOff = jumpOff || abs( e0n.x ) >= wallThresh || nextNorm.y >= 0;
+				
+				bool nextSteep = e0n.y > -steepThresh;
+				bool currSteep = gNormal.y > -steepThresh;
+				bool movingDown = gNormal.x < 0;
+				bool movingUp = gNormal.x > 0;
+				bool nextMovingDown = e0n.x < 0;
+				bool nextMovingUp = e0n.x > 0;
+
+				//if( !jumpOff )
+				//{
+
+				bool jumpOff = false;
+				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh )
+				{
+					jumpOff = true;
+				}
+				else if( currSteep )
+				{
+					if( movingUp )
+					{
+						if( nextMovingUp )
+						{
+							jumpOff = false;
+						}
+						else
+						{
+							jumpOff = true;
+						}
+					}
+					else
+					{
+						jumpOff = false;
+					}
+				}
+				else
+				{
+					if( movingUp )
+					{
+						if( nextSteep && nextMovingDown )
+						{
+							jumpOff = true;
+						}
+						else if( nextNorm.x <= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
+						{
+							jumpOff = true;
+						}
+						else
+						{
+							jumpOff = false;
+						}
+					}
+					else
+					{
+						jumpOff = false;
+					}
+				}
+
+
+				//}
+				
+				if( jumpOff )
+				{	
+					reversed = false;
+					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+					movementVec.y += .1;
+					if( movementVec.x <= .1 )
+					{
+						movementVec.x = .1;
+					}
+
+					if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "6 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+					}				
+
+					//cout << "airborne 2" << endl;
+					leftGround = true;
+					SetActionExpr( JUMP );
+					frame = 1;
+					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					ground = NULL;
+					movingGround = NULL;
+
+					leftGroundExtra = movementVec;
+					return leftGroundExtra;
+				}
+				else if( nextSteep && nextMovingUp )
+				{
+					if( groundSpeed <= steepClimbSpeedThresh )
+					{
+						offsetX = -offsetX;
+						groundSpeed = 0;
+						break;
+					}
+					else
+					{
+						ground = next;
+						q = length( ground->v1 - ground->v0 );	
+					}
+				}
+				else
+				{
+					ground = next;
+					q = length( ground->v1 - ground->v0 );	
+				}
+
+				if( false )
 				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
 				{
-					//cout << "e0n: " << e0n.x << ", " << e0n.y << endl;
-					if( e0n.x > 0 && e0n.y > -steepThresh )
+					cout << "e0n: " << e0n.x << ", " << e0n.y << endl;
+					if( e0n.x > 0 && nextSteep )
 					{
-						//cout << "c" << endl;
+						cout << "c" << endl;
 						if( groundSpeed <= steepClimbSpeedThresh )
 						{
 							offsetX = -offsetX;
@@ -8454,7 +8571,7 @@ V2d Actor::UpdateReversePhysics()
 							q = length( ground->v1 - ground->v0 );	
 						}
 					}
-					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
+					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
 						cout << "A" << endl;
 						reversed = false;
@@ -8610,6 +8727,7 @@ V2d Actor::UpdateReversePhysics()
 			}
 			else if( transferRight )
 			{
+				cout << "transferright" << endl;
 				if( e1->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e1->info;
@@ -8628,15 +8746,127 @@ V2d Actor::UpdateReversePhysics()
 					}
 				}
 
+
 				Edge *next = ground->edge1;
 				V2d nextNorm = e1n;
 				double yDist = abs( gNormal.x ) * -groundSpeed;
+
+				bool nextSteep = e1n.y > -steepThresh;
+				bool currSteep = gNormal.y > -steepThresh;
+				bool movingDown = gNormal.x > 0;
+				bool movingUp = gNormal.x < 0;
+				bool nextMovingDown = e1n.x > 0;
+				bool nextMovingUp = e1n.x < 0;
+
+				//if( !jumpOff )
+				//{
+
+				bool jumpOff = false;
+				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh )
+				{
+					jumpOff = true;
+				}
+				else if( currSteep )
+				{
+					if( movingUp )
+					{
+						if( nextMovingUp )
+						{
+							jumpOff = false;
+						}
+						else
+						{
+							jumpOff = true;
+						}
+					}
+					else
+					{
+						jumpOff = false;
+					}
+				}
+				else
+				{
+					if( movingUp )
+					{
+						if( nextSteep && nextMovingDown )
+						{
+							jumpOff = true;
+						}
+						else if( nextNorm.x >= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
+						{
+							jumpOff = true;
+						}
+						else
+						{
+							jumpOff = false;
+						}
+					}
+					else
+					{
+						jumpOff = false;
+					}
+				}
+
+				if( jumpOff )
+				{
+					reversed = false;
+						
+					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
+					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
+
+					movementVec.y += .1;
+					if( movementVec.x >= -.1 )
+					{
+						movementVec.x = -.1;
+					}
+
+					if( movingGround != NULL )
+					{
+						movementVec += currMovingTerrain->vel / (double)slowMultiple;
+						cout << "3 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
+							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
+					}
+
+					leftGround = true;
+					SetActionExpr( JUMP );
+					frame = 1;
+					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					ground = NULL;
+					movingGround = NULL;
+					holdJump = false;
+					leftGroundExtra = movementVec;
+					//leftGroundExtra.y = .01;
+					//leftGroundExtra.x = -.01;
+					return leftGroundExtra;
+				}
+				else if( nextSteep && nextMovingUp )
+				{
+					if( groundSpeed >= -steepClimbSpeedThresh )
+					{
+						groundSpeed = 0;
+						offsetX = -offsetX;
+						break;
+					}
+					else
+					{
+						ground = next;
+						q = 0;
+					}
+				}
+				else
+				{
+					ground = next;
+					q = 0;
+				}
+
+				if( false )
 				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
 				{
-					//cout << "e1n: " << e1n.x << ", " << e1n.y << endl;
+					cout << "e1n: " << e1n.x << ", " << e1n.y << endl;
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-					//	cout << "a" << endl;
+						cout << "dd" << endl;
 						if( groundSpeed >= -steepClimbSpeedThresh )
 						{
 							groundSpeed = 0;
@@ -8649,7 +8879,7 @@ V2d Actor::UpdateReversePhysics()
 							q = 0;
 						}
 					}
-					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
+					else if( e1n.x > 0 && e1n.y > -steepThresh )
 					{
 						reversed = false;
 						cout << "b" << endl;
@@ -11535,8 +11765,8 @@ void Actor::UpdatePhysics()
 				//{
 				//	//velocity += minContact.movingPlat->vel * NUM_STEPS;
 				//}
-				cout << "movmeent vec: " << movementVec.x << ", " << movementVec.y << endl;
-				cout << "contact res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
+				//cout << "movmeent vec: " << movementVec.x << ", " << movementVec.y << endl;
+				//cout << "contact res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
