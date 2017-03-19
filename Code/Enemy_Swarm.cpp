@@ -260,7 +260,7 @@ void SwarmMember::Draw(sf::RenderTarget *target )
 {
 }
 
-bool SwarmMember::IHitPlayer()
+bool SwarmMember::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -285,7 +285,7 @@ bool SwarmMember::IHitPlayer()
 	}
 }
 
-std::pair<bool,bool> SwarmMember::PlayerHitMe()
+std::pair<bool,bool> SwarmMember::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 
@@ -908,7 +908,7 @@ void Swarm::UpdateHitboxes()
 {
 }
 
-bool Swarm::IHitPlayer()
+bool Swarm::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -933,7 +933,7 @@ bool Swarm::IHitPlayer()
 	}
 }
 
-std::pair<bool,bool> Swarm::PlayerHitMe()
+std::pair<bool,bool> Swarm::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

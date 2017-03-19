@@ -334,6 +334,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		SHIPPICKUP,
 		SHARD,
 		MINE,
+		RACEFIGHTTARGET,
 		Count
 	};
 
@@ -351,9 +352,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	virtual void UpdatePostPhysics() = 0;
 	virtual void Draw( sf::RenderTarget *target) = 0;
 	virtual void DrawMinimap( sf::RenderTarget *target ){};
-	virtual bool IHitPlayer() = 0;
+	virtual bool IHitPlayer(int index = 0) = 0;
 	virtual void UpdateHitboxes() = 0;
-	virtual std::pair<bool,bool> PlayerHitMe() = 0;
+	virtual std::pair<bool,bool> PlayerHitMe(int index = 0) = 0;
 	bool RightWireHitMe( CollisionBox hurtBox );
 	bool LeftWireHitMe( CollisionBox hurtBox );
 	virtual bool PlayerSlowingMe() = 0;
@@ -437,8 +438,8 @@ struct Nexus : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -501,8 +502,8 @@ struct ShipPickup : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -573,8 +574,8 @@ struct BasicEffect : Enemy
 	void UpdatePhysics();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -610,8 +611,8 @@ struct Goal : Enemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -677,9 +678,9 @@ struct HealthFly : Enemy
 	void UpdatePostPhysics();
 	void Draw( sf::RenderTarget *target);
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
+	bool IHitPlayer( int index = 0 );
 	void UpdateHitboxes();
-	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void DebugDraw(sf::RenderTarget *target);
 	void SaveEnemyState();
@@ -713,8 +714,8 @@ struct Shard : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -798,8 +799,8 @@ struct Mine : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -842,6 +843,60 @@ struct Mine : Enemy
 	Stored stored;
 };
 
+struct RaceFightTarget : Enemy
+{
+	enum Action
+	{
+		NEUTRAL,
+		PLAYER1,
+		PLAYER2,
+		PLAYER3,
+		PLAYER4,
+		Count
+	};
+
+	RaceFightTarget *pPrev;
+	RaceFightTarget *pNext;
+	RaceFightTarget *p2Prev;
+	RaceFightTarget *p2Next;
+
+	Action action;
+	//MovementSequence testSeq;
+	RaceFightTarget( GameSession *owner,
+		 sf::Vector2i &pos );
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void PhysicsResponse();
+	bool physicsOver;
+
+	void UpdatePostPhysics();
+	void Draw(sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target );
+	void DebugDraw(sf::RenderTarget *target);
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
+	void UpdateSprite();
+	void UpdateHitboxes();
+	bool PlayerSlowingMe();
+	void ResetEnemy();
+
+	void SaveEnemyState();
+	void LoadEnemyState();
+
+	int frame;
+
+	sf::Sprite sprite;
+	Tileset *ts;
+	CollisionBox hurtBody;
+	//CollisionBox hitBody;
+	//HitboxInfo *hitboxInfo;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+};
+
 //w1
 struct Patroller : Enemy
 {
@@ -857,8 +912,8 @@ struct Patroller : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -948,8 +1003,8 @@ struct Crawler : Enemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -1019,9 +1074,9 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
+	bool IHitPlayer( int index = 0 );
 	bool IHitPlayerWithBullets();
-	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	std::pair<bool, bool> PlayerHitMyBullets();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -1124,8 +1179,8 @@ struct FootTrap : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -1244,8 +1299,8 @@ struct BossCrawler : Enemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -1337,8 +1392,8 @@ struct Bat : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -1438,8 +1493,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -1543,9 +1598,9 @@ struct CurveTurret : Enemy, LauncherEnemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
+	bool IHitPlayer( int index = 0 );
 	bool IHitPlayerWithBullets();
-	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	std::pair<bool, bool> PlayerHitMyBullets();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -1690,8 +1745,8 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -1783,8 +1838,8 @@ struct Pulser : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -1877,8 +1932,8 @@ struct Badger : Enemy, GroundMoverHandler
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -2001,8 +2056,8 @@ struct Owl : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -2098,9 +2153,9 @@ struct Cactus : Enemy, LauncherEnemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
+	bool IHitPlayer( int index = 0 );
 	bool IHitPlayerWithBullets();
-	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	std::pair<bool, bool> PlayerHitMyBullets();
 	bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -2189,8 +2244,8 @@ struct CoralBlock : Enemy
 	void PhysicsResponse();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -2281,7 +2336,7 @@ struct CoralNanobots : Enemy//, LauncherEnemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	//bool IHitPlayer();
+	//bool IHitPlayer( int index = 0 );
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -2294,8 +2349,8 @@ struct CoralNanobots : Enemy//, LauncherEnemy
 		sf::Vector2<double> &dir,
 		int iteration );
 
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 
 	int animationFactor;
@@ -2346,8 +2401,8 @@ struct SecurityWeb : Enemy, RayCastHandler
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -2463,8 +2518,8 @@ struct Turtle : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -2554,8 +2609,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -2674,8 +2729,8 @@ struct Spider : Enemy, RayCastHandler
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -2814,8 +2869,8 @@ struct Ghost : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -2914,8 +2969,8 @@ struct GrowingTree : Enemy, LauncherEnemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
 	void Fire();
@@ -3027,8 +3082,8 @@ struct Shark : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -3118,8 +3173,8 @@ struct Tree : Enemy, LauncherEnemy
 	void PhysicsResponse();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -3190,7 +3245,7 @@ struct Overgrowth : Enemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	//bool IHitPlayer();
+	//bool IHitPlayer( int index = 0 );
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -3200,8 +3255,8 @@ struct Overgrowth : Enemy
 	void DeactivateTree( Tree *tree );
 	Tree * ActivateTree( Edge *g, double q );
 
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 
 	int animationFactor;
@@ -3243,8 +3298,8 @@ struct SwarmMember : Enemy
 	void PhysicsResponse();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -3325,12 +3380,12 @@ struct Swarm : Enemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	//bool IHitPlayer();
+	//bool IHitPlayer( int index = 0 );
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void Launch();
 
@@ -3405,8 +3460,8 @@ struct Specter : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -3489,8 +3544,8 @@ struct Narwhal : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -3606,8 +3661,8 @@ struct Jay : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	//std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	//std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -3636,7 +3691,7 @@ struct Jay : Enemy
 	
 	std::pair<bool,bool> PlayerHitRed();
 	std::pair<bool,bool> PlayerHitBlue();
-	std::pair<bool,bool> PlayerHitMe();
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void ActionEnded();
 	
 
@@ -3771,8 +3826,8 @@ struct Gorilla : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
@@ -3960,8 +4015,8 @@ struct Copycat : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer();
-	std::pair<bool,bool> PlayerHitMe();
+	bool IHitPlayer( int index = 0 );
+	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();

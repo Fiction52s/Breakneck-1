@@ -1076,7 +1076,7 @@ void PoisonFrog::DrawMinimap( sf::RenderTarget *target )
 	target->draw( cs );*/
 }
 
-bool PoisonFrog::IHitPlayer()
+bool PoisonFrog::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -1101,7 +1101,7 @@ bool PoisonFrog::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> PoisonFrog::PlayerHitMe()
+ pair<bool, bool> PoisonFrog::PlayerHitMe( int index )
 {
 	if( invincibleFrames > 0 )
 	{

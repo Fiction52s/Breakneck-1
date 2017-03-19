@@ -532,7 +532,7 @@ bool BasicTurret::IHitPlayerWithBullets()
 	return false;
 }
 
-bool BasicTurret::IHitPlayer()
+bool BasicTurret::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -557,7 +557,7 @@ bool BasicTurret::IHitPlayer()
 	}
 }
 
- pair<bool, bool> BasicTurret::PlayerHitMe()
+ pair<bool, bool> BasicTurret::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

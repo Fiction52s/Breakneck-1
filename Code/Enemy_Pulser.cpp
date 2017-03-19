@@ -445,7 +445,7 @@ void Pulser::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Pulser::IHitPlayer()
+bool Pulser::IHitPlayer( int index )
 {
 	assert( testSeq.currMovement != NULL );
 	if( testSeq.currMovement->moveType == Movement::WAIT )
@@ -479,7 +479,7 @@ void Pulser::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Pulser::PlayerHitMe()
+pair<bool,bool> Pulser::PlayerHitMe( int index )
 {
 	assert( testSeq.currMovement != NULL );
 	if( testSeq.currMovement->moveType == Movement::WAIT )

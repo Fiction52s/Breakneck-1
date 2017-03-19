@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Mine::Mine( GameSession *owner, bool p_hasMonitor, Vector2i pos )
-	:Enemy( owner, EnemyType::MINE, p_hasMonitor, 1 )
+RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
+	:Enemy( owner, EnemyType::RACEFIGHTTARGET, false, 1 )
 {
 	initHealth = 60;
 	health = initHealth;
@@ -37,8 +37,8 @@ Mine::Mine( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 
 	animationFactor = 10;
 
-	//ts = owner->GetTileset( "Mine.png", 80, 80 );
-	ts = owner->GetTileset( "mine1_64x64.png", 64, 64 );
+	//ts = owner->GetTileset( "RaceFightTarget.png", 80, 80 );
+	ts = owner->GetTileset( "racefighttarget_64x64.png", 64, 64 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -53,7 +53,7 @@ Mine::Mine( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	hurtBody.rw = 32;
 	hurtBody.rh = 32;
 
-	hitBody.type = CollisionBox::Hit;
+	/*hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
@@ -67,9 +67,13 @@ Mine::Mine( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->knockback = 4;*/
 	//hitboxInfo->kbDir;
 
+	pPrev = NULL;
+	pNext = NULL;
+	p2Prev = NULL;
+	p2Next = NULL;
 	
 
 	dead = false;
@@ -83,13 +87,13 @@ Mine::Mine( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	//cout << "finish init" << endl;
 }
 
-void Mine::HandleEntrant( QuadTreeEntrant *qte )
+void RaceFightTarget::HandleEntrant( QuadTreeEntrant *qte )
 {
-	//Mine 
+	//RaceFightTarget 
 }
 
 
-void Mine::ResetEnemy()
+void RaceFightTarget::ResetEnemy()
 {
 	dead = false;
 	action = NEUTRAL;
@@ -102,46 +106,50 @@ void Mine::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
+
+	pPrev = NULL;
+	pNext = NULL;
+	p2Prev = NULL;
+	p2Next = NULL;
 	
 }
 
-void Mine::UpdatePrePhysics()
+void RaceFightTarget::UpdatePrePhysics()
 {
-	if( action == NEUTRAL )
+	frame = 0;
+	/*if( action == NEUTRAL )
 	{
 		frame = 0;
-	}
+	}*/
 	//frame = 0;
-	if( action == MALFUNCTION && frame == 60 )
-	{
-		owner->RemoveEnemy( this );
-	}
 	//if( frame == 11 * animationFactor )
 	//{
 	//	frame = 0;
 	//}
 
-	if( !dead && receivedHit != NULL && action == NEUTRAL )
-	{	
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			action = MALFUNCTION;
-			frame = 0;
-			//dead = true;
-		}
-
+	if( receivedHit != NULL )
 		receivedHit = NULL;
-	}
+	//if( !dead && receivedHit != NULL && action == NEUTRAL )
+	//{	
+	//	//gotta factor in getting hit by a clone
+	//	//health -= 20;
+
+	//	//cout << "health now: " << health << endl;
+
+	//	if( health <= 0 )
+	//	{
+	//		if( hasMonitor && !suppressMonitor )
+	//			owner->keyMarker->CollectKey();
+	//		action = MALFUNCTION;
+	//		frame = 0;
+	//		//dead = true;
+	//	}
+
+	//	receivedHit = NULL;
+	//}
 }
 
-void Mine::UpdatePhysics()
+void RaceFightTarget::UpdatePhysics()
 {	
 	if( PlayerSlowingMe() )
 	{
@@ -160,56 +168,45 @@ void Mine::UpdatePhysics()
 	PhysicsResponse();
 }
 
-void Mine::PhysicsResponse()
+void RaceFightTarget::PhysicsResponse()
 {
-	if( !dead && receivedHit == NULL  )
+	if( action == NEUTRAL && !dead && receivedHit == NULL )
 	{
 		UpdateHitboxes();
 
-		if( action == NEUTRAL )
+		//if( action == NEUTRAL )
+		
+		pair<bool,bool> result = PlayerHitMe( 0 );
+		pair<bool,bool> result2 = PlayerHitMe( 1 );
+		if( result.first || result2.first )
 		{
-		pair<bool,bool> result = PlayerHitMe();
-		if( result.first )
-		{
-			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 1, 5, .8, 6 );
+			//instead of 6
+			owner->player->ConfirmHit( 1, 5, .8, 0 );
 
+			if( result.first )
+			{
+				action = PLAYER1;
+				assert( owner->raceFight != NULL );
+				owner->raceFight->HitByPlayer( 0, this );
+				//owner->raceFight->playerScore++;
+			}
+			else
+			{
+				action = PLAYER2;
+				assert( owner->raceFight != NULL );
+				owner->raceFight->HitByPlayer( 1, this );
+			}
 
 			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
 			{
 				owner->player->velocity.y = 4;//.5;
 			}
-
-		//	cout << "frame: " << owner->player->frame << endl;
-
-			//owner->player->frame--;
-			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, true );
-			
-		//	cout << "Mine received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
-		}
-		}
-		if( IHitPlayer() )
-		{
-		//	cout << "Mine just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
+		}	
 	}
 }
 
-void Mine::UpdatePostPhysics()
+void RaceFightTarget::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
@@ -232,7 +229,7 @@ void Mine::UpdatePostPhysics()
 	}
 }
 
-void Mine::UpdateSprite()
+void RaceFightTarget::UpdateSprite()
 {
 	if( !dead )
 	{
@@ -242,8 +239,11 @@ void Mine::UpdateSprite()
 		case NEUTRAL:
 			ir = ts->GetSubRect( 0 );
 			break;
-		case MALFUNCTION:
-			ir = ts->GetSubRect( 1);
+		case PLAYER1:
+			ir = ts->GetSubRect( 1 );
+			break;
+		case PLAYER2:
+			ir = ts->GetSubRect( 2 );
 			break;
 		}
 		sprite.setTextureRect( ir );
@@ -256,10 +256,12 @@ void Mine::UpdateSprite()
 	}
 }
 
-void Mine::Draw( sf::RenderTarget *target )
+void RaceFightTarget::Draw( sf::RenderTarget *target )
 {
+	target->draw( sprite );
+
 	//cout << "draw" << endl;
-	if( !dead )
+	/*if( !dead )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
@@ -287,13 +289,10 @@ void Mine::Draw( sf::RenderTarget *target )
 	}
 	else
 	{
-	}
-
-
-
+	}*/
 }
 
-void Mine::DrawMinimap( sf::RenderTarget *target )
+void RaceFightTarget::DrawMinimap( sf::RenderTarget *target )
 {
 	if( !dead )
 	{
@@ -312,39 +311,27 @@ void Mine::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Mine::IHitPlayer( int index )
+bool RaceFightTarget::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
-	
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
 	return false;
 }
 
-void Mine::UpdateHitboxes()
+void RaceFightTarget::UpdateHitboxes()
 {
 	hurtBody.globalPosition = position;
 	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position;
-	hitBody.globalAngle = 0;
-
-	if( owner->player->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
-	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Mine::PlayerHitMe( int index )
+pair<bool,bool> RaceFightTarget::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
+	if( index == 1 )
+	{
+		player = owner->player2;
+		assert( player != NULL );
+	}
+
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -399,7 +386,7 @@ pair<bool,bool> Mine::PlayerHitMe( int index )
 	return pair<bool, bool>(false,false);
 }
 
-bool Mine::PlayerSlowingMe()
+bool RaceFightTarget::PlayerSlowingMe()
 {
 	Actor *player = owner->player;
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -415,31 +402,20 @@ bool Mine::PlayerSlowingMe()
 	return false;
 }
 
-void Mine::DebugDraw( RenderTarget *target )
+void RaceFightTarget::DebugDraw( RenderTarget *target )
 {
 	if( !dead )
 	{
 		hurtBody.DebugDraw( target );
-		hitBody.DebugDraw( target );
 	}
 }
 
-void Mine::SaveEnemyState()
+void RaceFightTarget::SaveEnemyState()
 {
-	stored.dead = dead;
-//	stored.deathFrame = deathFrame;
-	stored.frame = frame;
-	stored.hitlagFrames = hitlagFrames;
-	stored.hitstunFrames = hitstunFrames;
-	stored.position = position;
+
 }
 
-void Mine::LoadEnemyState()
+void RaceFightTarget::LoadEnemyState()
 {
-	dead = stored.dead;
-//	deathFrame = stored.deathFrame;
-	frame = stored.frame;
-	hitlagFrames = stored.hitlagFrames;
-	hitstunFrames = stored.hitstunFrames;
-	position = stored.position;
+
 }

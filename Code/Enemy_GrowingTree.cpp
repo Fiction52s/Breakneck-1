@@ -549,7 +549,7 @@ void GrowingTree::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool GrowingTree::IHitPlayer()
+bool GrowingTree::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -562,7 +562,7 @@ bool GrowingTree::IHitPlayer()
 	return false;
 }
 
-pair<bool, bool> GrowingTree::PlayerHitMe()
+pair<bool, bool> GrowingTree::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

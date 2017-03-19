@@ -391,7 +391,7 @@ void Specter::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Specter::IHitPlayer()
+bool Specter::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -421,7 +421,7 @@ void Specter::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Specter::PlayerHitMe()
+pair<bool,bool> Specter::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

@@ -728,7 +728,7 @@ void Gorilla::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Gorilla::IHitPlayer()
+bool Gorilla::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -773,7 +773,7 @@ void Gorilla::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Gorilla::PlayerHitMe()
+pair<bool,bool> Gorilla::PlayerHitMe( int index )
 {
 	if( action == WAKEUP )
 		return pair<bool,bool>(false,false);

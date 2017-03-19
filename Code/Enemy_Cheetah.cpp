@@ -809,7 +809,7 @@ void Cheetah::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Cheetah::IHitPlayer()
+bool Cheetah::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -837,7 +837,7 @@ bool Cheetah::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Cheetah::PlayerHitMe()
+ pair<bool, bool> Cheetah::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

@@ -962,20 +962,22 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		currHitboxInfo = new HitboxInfo();
 		currHitboxInfo->damage = 20;
-		currHitboxInfo->drainX = 0;
-		currHitboxInfo->drainY = 0;
+		currHitboxInfo->drainX = .5;
+		currHitboxInfo->drainY = .5;
 		currHitboxInfo->hitlagFrames = 0;
 		currHitboxInfo->hitstunFrames = 30;
 		currHitboxInfo->knockback = 0;
+		currHitboxInfo->freezeDuringStun = true;
 
 		 
 		wireChargeInfo = new HitboxInfo();
 		wireChargeInfo->damage = 20;
-		wireChargeInfo->drainX = 0;
-		wireChargeInfo->drainY = 0;
+		wireChargeInfo->drainX = .5;
+		wireChargeInfo->drainY = .5;
 		wireChargeInfo->hitlagFrames = 0;
-		wireChargeInfo->hitstunFrames = 0;//30;
+		wireChargeInfo->hitstunFrames = 30;//30;
 		wireChargeInfo->knockback = 0;
+		currHitboxInfo->freezeDuringStun = true;
 
 		receivedHit = NULL;
 		hitlagFrames = 0;
@@ -5997,44 +5999,25 @@ void Actor::UpdatePrePhysics()
 					double blah = .5;
 
 					V2d dir( 0, 0 );
-					if( (groundSpeed > 0 && gNorm.x > 0) || ( groundSpeed < 0 && gNorm.x < 0 ) )
-					{
-						/*if( groundSpeed > 0 )
-						{
-							dir = V2d( blah, 0 );
-							cout << "bbb" << endl;
-						}
-						else
-						{
-							dir = V2d( blah, 0 );
-							cout << "aaa" << endl;
-						}*/
-						
-					}
-					else if( ( groundSpeed > 0 && gNorm.x < 0 ) || ( groundSpeed < 0 && gNorm.x > 0 ) )
-					{
-						//cout << "this!" << endl;
-						/*if( groundSpeed > 0 )
-						{
-							dir = V2d( 2, 0 );
-						}
-						else
-						{
-							dir = V2d( -2, 0 );
-						}*/
-						
-					}
+
 					dir.y = .2;
-					V2d trueNormal = normalize(dir + normalize(ground->v1 - ground->v0 ));
-					velocity = -groundSpeed * trueNormal;
+					V2d along = normalize(ground->v1 - ground->v0 );
+					V2d trueNormal = along;
+					if( groundSpeed > 0 )
+						trueNormal = -trueNormal;
+
+					trueNormal = normalize( trueNormal + dir );
+					velocity = abs(groundSpeed) * trueNormal;
+
+					//cout << "real dir: " << trueNormal.x << ", " << trueNormal.y << endl;
+					//cout << "and edge : " << along.x << ", " << along.y << endl;
+					//velocity += V2d( 0, .1 );
 					//velocity = -groundSpeed * normalize(V2d( 0, -1 ) + normalize(ground->v1 - ground->v0 ));
 					ground = NULL;
 					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
 					reversed = false;
 					framesInAir = 0;
-					//facingRight = !facingRight;
-					
 
 				}
 				else
@@ -8516,7 +8499,7 @@ V2d Actor::UpdateReversePhysics()
 							q = length( ground->v1 - ground->v0 );	
 						}
 					}
-					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
+					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
 					{
 						cout << "A" << endl;
 						reversed = false;
@@ -8711,7 +8694,7 @@ V2d Actor::UpdateReversePhysics()
 							q = 0;
 						}
 					}
-					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
+					else if( gNormal.x > 0 && gNormal.y > -steepThresh )
 					{
 						reversed = false;
 						cout << "b" << endl;
@@ -10327,6 +10310,7 @@ void Actor::UpdatePhysics()
 
 	do
 	{
+		trueFramesInAir = framesInAir;
 		if( ground != NULL )
 		{
 			double steal = 0;
@@ -11591,7 +11575,8 @@ void Actor::UpdatePhysics()
 				//{
 				//	//velocity += minContact.movingPlat->vel * NUM_STEPS;
 				//}
-
+				cout << "movmeent vec: " << movementVec.x << ", " << movementVec.y << endl;
+				cout << "contact res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
@@ -11798,7 +11783,7 @@ void Actor::UpdatePhysics()
 
 			bool bounceOkay = true;
 			
-			int trueFramesInAir = framesInAir;
+			trueFramesInAir = framesInAir;
 
 			//note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
 			//also theres a jump && false condition that would need to be changed back
@@ -12153,6 +12138,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( hasPowerGravReverse /*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
+				cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 				/*if( b.rh == doubleJumpHeight )
 				{
 					b.offset.y = (normalHeight - doubleJumpHeight);
@@ -12614,9 +12600,10 @@ void Actor::PhysicsResponse()
 			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
 				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 				&& action != SEQ_CRAWLERFIGHT_LAND 
-				&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE )
+				&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
+				&& action != JUMPSQUAT )
 			{
-				//cout << "Action: " << action << endl;
+				cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = LAND2;
@@ -12626,42 +12613,46 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
+					if( reversed )//&& trueFramesInAir > 1 )
+					{
+						cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+						cout << "trueframes in air: " << trueFramesInAir << endl;
+						//cout << "THIS GRAV REVERSE" << endl;
+						//cout << "frames in air: " << framesInAir << endl;
+						//cout << "frame: " << frame << endl;
+						action = GRAVREVERSE;
+
+						if( currInput.LLeft() || currInput.LRight() )
+						{
+							storedReverseSpeed = 0;
+						}
+						else
+						{
+							storedReverseSpeed = -groundSpeed;
+						}
+							
+						//if( groundSpeed != 0 )
+						//{
+						//storedReverseSpeed = -groundSpeed;
+						//}
+						//groundSpeed = 0;
+							
+					}
+					else
+					{
+						action = LAND;
+					}
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
+					frame = 0;
 					//cout << "blahaaa" << endl;
 					//cout << "blahbbb" << endl;
 					//cout << "l" << endl;
 					//cout << "action = 5" << endl;
-					if( action != GRAVREVERSE )
-					{
-						if( reversed )
-						{
-							//cout << "THIS GRAV REVERSE" << endl;
-							//cout << "frames in air: " << framesInAir << endl;
-							action = GRAVREVERSE;
-
-							if( currInput.LLeft() || currInput.LRight() )
-							{
-								storedReverseSpeed = 0;
-							}
-							else
-							{
-								storedReverseSpeed = -groundSpeed;
-							}
-							
-							//if( groundSpeed != 0 )
-							//{
-							//storedReverseSpeed = -groundSpeed;
-							//}
-							//groundSpeed = 0;
-							
-						}
-						else
-						{
-							action = LAND;
-						}
-						rightWire->UpdateAnchors(V2d( 0, 0 ));
-						leftWire->UpdateAnchors(V2d( 0, 0 ));
-						frame = 0;
-					}
+					//if( framesInAir > 0 )
+					//{
+						
+					//}
 				}
 			}
 			else if( action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK )
@@ -13070,6 +13061,9 @@ void Actor::PhysicsResponse()
 		{
 			pTarget->ApplyHit( currHitboxInfo );
 			ConfirmHit( 2, 5, .8, 6 );
+
+			if( owner->raceFight != NULL )
+				owner->raceFight->PlayerHitByPlayer( actorIndex, target );
 		}
 	}
 
@@ -13321,7 +13315,7 @@ void Actor::UpdatePostPhysics()
 {
 	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
 	//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
-
+	 
 
 	//cout << "action: " << action << endl;
 	test = false;
@@ -19048,6 +19042,7 @@ void Actor::SetActionExpr( Action a )
 	switch( a )
 	{
 	case JUMPSQUAT:
+		framesInAir = 0;
 		bufferedAttack = JUMP;
 
 		if( currInput.rightShoulder && !prevInput.rightShoulder )

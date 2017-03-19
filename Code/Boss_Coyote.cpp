@@ -1222,7 +1222,7 @@ void Boss_Coyote::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Boss_Coyote::IHitPlayer()
+bool Boss_Coyote::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -1250,7 +1250,7 @@ bool Boss_Coyote::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Boss_Coyote::PlayerHitMe()
+ pair<bool, bool> Boss_Coyote::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

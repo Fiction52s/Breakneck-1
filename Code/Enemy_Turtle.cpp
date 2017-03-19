@@ -603,7 +603,7 @@ void Turtle::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Turtle::IHitPlayer()
+bool Turtle::IHitPlayer( int index )
 {
 	if( action == FADEIN || action == INVISIBLE )
 		return false;
@@ -636,7 +636,7 @@ void Turtle::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Turtle::PlayerHitMe()
+pair<bool,bool> Turtle::PlayerHitMe( int index )
 {
 	if( action == INVISIBLE || action == FADEIN )
 		return pair<bool,bool>(false,false);

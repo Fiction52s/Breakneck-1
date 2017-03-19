@@ -560,7 +560,7 @@ void Ghost::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Ghost::IHitPlayer()
+bool Ghost::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -593,7 +593,7 @@ void Ghost::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Ghost::PlayerHitMe()
+pair<bool,bool> Ghost::PlayerHitMe( int index )
 {
 	if( action == WAKEUP )
 		return pair<bool,bool>(false,false);

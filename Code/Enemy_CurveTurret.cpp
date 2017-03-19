@@ -461,7 +461,7 @@ bool CurveTurret::IHitPlayerWithBullets()
 	return false;
 }
 
-bool CurveTurret::IHitPlayer()
+bool CurveTurret::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -486,7 +486,7 @@ bool CurveTurret::IHitPlayer()
 	}
 }
 
- pair<bool, bool> CurveTurret::PlayerHitMe()
+ pair<bool, bool> CurveTurret::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 

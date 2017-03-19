@@ -181,7 +181,7 @@ void HealthFly::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool HealthFly::IHitPlayer()
+bool HealthFly::IHitPlayer( int index )
 {
 	Actor *player = owner->player;
 	
@@ -199,7 +199,7 @@ void HealthFly::UpdateHitboxes()
 	hitBody.globalPosition = position;
 }
 
-std::pair<bool,bool> HealthFly::PlayerHitMe()
+std::pair<bool,bool> HealthFly::PlayerHitMe( int index )
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

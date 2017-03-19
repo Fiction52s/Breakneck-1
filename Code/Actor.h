@@ -524,6 +524,10 @@ struct Actor : QuadTreeCollider,
 	ControllerState currInput;
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
+	int trueFramesInAir; 
+	//need this^ because i manipulate
+	//the framesInAir for the jump
+	//but I need to make sure 
 	sf::Vector2<double> startAirDashVel;
 	double extraAirDashY;
 	sf::Vector2<double> AddGravity( sf::Vector2<double> vel );
