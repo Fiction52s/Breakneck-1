@@ -386,7 +386,7 @@ void Shard::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Shard::IHitPlayer( int index )
+bool Shard::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -416,7 +416,7 @@ void Shard::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Shard::PlayerHitMe( int index )
+pair<bool,bool> Shard::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

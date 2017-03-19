@@ -103,13 +103,6 @@ struct CollisionBox
 
 struct HitboxInfo
 {
-	HitboxInfo()
-		:knockback( 0 ), kbDir( 0, 0 ),
-		drainX( 0 ), drainY( 0 ), hitstunFrames( 1 ), hitlagFrames( 1 ), damage( 10 ),
-		freezeDuringStun( false )
-	{
-	};
-
 	double knockback; //0+
 	sf::Vector2<double> kbDir;
 	//double drain; //0-1
@@ -118,7 +111,6 @@ struct HitboxInfo
 	int hitstunFrames; 
 	int hitlagFrames;
 	int damage;
-	bool freezeDuringStun;
 };
 
 struct Contact

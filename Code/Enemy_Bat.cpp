@@ -553,7 +553,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Bat::IHitPlayer( int index )
+bool Bat::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -583,7 +583,7 @@ void Bat::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Bat::PlayerHitMe( int index )
+pair<bool,bool> Bat::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

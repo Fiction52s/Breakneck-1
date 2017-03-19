@@ -1169,7 +1169,7 @@ void Boss_Skeleton::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Boss_Skeleton::IHitPlayer( int index )
+bool Boss_Skeleton::IHitPlayer()
 {
 
 	Actor *player = owner->player;
@@ -1200,7 +1200,7 @@ void Boss_Skeleton::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Boss_Skeleton::PlayerHitMe( int index )
+pair<bool,bool> Boss_Skeleton::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

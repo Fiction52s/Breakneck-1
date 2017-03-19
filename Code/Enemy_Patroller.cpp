@@ -467,7 +467,7 @@ void Patroller::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Patroller::IHitPlayer( int index )
+bool Patroller::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -497,7 +497,7 @@ void Patroller::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Patroller::PlayerHitMe( int index )
+pair<bool,bool> Patroller::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

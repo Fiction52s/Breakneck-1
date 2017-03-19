@@ -317,7 +317,7 @@ void FootTrap::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool FootTrap::IHitPlayer( int index )
+bool FootTrap::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -330,7 +330,7 @@ bool FootTrap::IHitPlayer( int index )
 	return false;
 }
 
-pair<bool, bool> FootTrap::PlayerHitMe( int index )
+pair<bool, bool> FootTrap::PlayerHitMe()
 {
 	Actor *player = owner->player;
 

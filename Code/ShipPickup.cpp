@@ -341,7 +341,7 @@ void ShipPickup::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool ShipPickup::IHitPlayer( int index )
+bool ShipPickup::IHitPlayer()
 {
 	return false;
 
@@ -356,7 +356,7 @@ bool ShipPickup::IHitPlayer( int index )
 	return false;
 }
 
-pair<bool, bool> ShipPickup::PlayerHitMe( int index )
+pair<bool, bool> ShipPickup::PlayerHitMe()
 {
 	return pair<bool,bool>( false, false );
 	Actor *player = owner->player;

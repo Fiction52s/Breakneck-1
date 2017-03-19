@@ -333,7 +333,7 @@ void Nexus::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Nexus::IHitPlayer( int index )
+bool Nexus::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -346,7 +346,7 @@ bool Nexus::IHitPlayer( int index )
 	return false;
 }
 
-pair<bool, bool> Nexus::PlayerHitMe( int index )
+pair<bool, bool> Nexus::PlayerHitMe()
 {
 	Actor *player = owner->player;
 

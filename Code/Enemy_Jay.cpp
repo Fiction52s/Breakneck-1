@@ -212,7 +212,7 @@ Jay::Jay( GameSession *owner, bool p_hasMonitor, Vector2i &startPos,
 	SetupWall();
 }
 
-pair<bool,bool> Jay::PlayerHitMe( int index )
+pair<bool,bool> Jay::PlayerHitMe()
 {
 	return pair<bool,bool>(false, false);
 }
@@ -948,7 +948,7 @@ void Jay::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Jay::IHitPlayer( int index )
+bool Jay::IHitPlayer()
 {
 	Actor *player = owner->player;
 	

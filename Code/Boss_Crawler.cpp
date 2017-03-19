@@ -1322,7 +1322,7 @@ void Boss_Crawler::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Boss_Crawler::IHitPlayer( int index )
+bool Boss_Crawler::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -1350,7 +1350,7 @@ bool Boss_Crawler::IHitPlayer( int index )
 	return false;
 }
 
- pair<bool, bool> Boss_Crawler::PlayerHitMe( int index )
+ pair<bool, bool> Boss_Crawler::PlayerHitMe()
 {
 	Actor *player = owner->player;
 

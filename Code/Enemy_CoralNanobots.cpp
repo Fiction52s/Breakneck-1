@@ -558,7 +558,7 @@ void CoralBlock::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool CoralBlock::IHitPlayer( int index )
+bool CoralBlock::IHitPlayer()
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -583,7 +583,7 @@ bool CoralBlock::IHitPlayer( int index )
 	}
 }
 
- pair<bool, bool> CoralBlock::PlayerHitMe( int index )
+ pair<bool, bool> CoralBlock::PlayerHitMe()
 {
 	//cout << "check if hit me" << endl;
 	Actor *player = owner->player;
@@ -896,12 +896,12 @@ void CoralNanobots::ResetEnemy()
 	//c->botOpen = true;
 }
 
-bool CoralNanobots::IHitPlayer( int index )
+bool CoralNanobots::IHitPlayer()
 {
 	return false;
 }
 
-std::pair<bool,bool> CoralNanobots::PlayerHitMe( int index )
+std::pair<bool,bool> CoralNanobots::PlayerHitMe()
 {
 	return pair<bool,bool>(false,false);
 }

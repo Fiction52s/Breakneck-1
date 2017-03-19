@@ -761,7 +761,7 @@ void Boss_Gator::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Boss_Gator::IHitPlayer( int index )
+bool Boss_Gator::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -791,7 +791,7 @@ void Boss_Gator::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Boss_Gator::PlayerHitMe( int index )
+pair<bool,bool> Boss_Gator::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

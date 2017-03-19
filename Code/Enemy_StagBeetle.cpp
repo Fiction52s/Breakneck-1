@@ -787,7 +787,7 @@ void StagBeetle::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool StagBeetle::IHitPlayer( int index )
+bool StagBeetle::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -815,7 +815,7 @@ bool StagBeetle::IHitPlayer( int index )
 	return false;
 }
 
- pair<bool, bool> StagBeetle::PlayerHitMe( int index )
+ pair<bool, bool> StagBeetle::PlayerHitMe()
 {
 	Actor *player = owner->player;
 

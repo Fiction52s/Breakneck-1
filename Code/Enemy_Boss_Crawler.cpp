@@ -1485,7 +1485,7 @@ void BossCrawler::DrawMinimap( sf::RenderTarget *target )
 	target->draw( cs );
 }
 
-bool BossCrawler::IHitPlayer( int index )
+bool BossCrawler::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -1529,7 +1529,7 @@ bool BossCrawler::IHitPlayerWithBullets()
 	return false;
 }
 
- pair<bool, bool> BossCrawler::PlayerHitMe( int index )
+ pair<bool, bool> BossCrawler::PlayerHitMe()
 {
 	if( invincibleFrames > 0 )
 	{

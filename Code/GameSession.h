@@ -347,31 +347,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
-	
-
-	struct RaceFight
-	{
-		RaceFight( GameSession *owner );
-		void Reset();
-		int playerScore;
-		int player2Score;
-
-		//RaceFightTarget *targetList;
-		GameSession *owner;
-		RaceFightTarget *hitByPlayerList;
-		RaceFightTarget *hitByPlayer2List;
-		void HitByPlayer( int playerIndex,
-			RaceFightTarget *target );
-
-		void PlayerHitByPlayer( int attacker,
-			int defender );
-		int numTargets;
-	};
-	RaceFight *raceFight;
-	
-	//int playerScore[4];
-
-
 	Buf testBuf;
 
 	std::list<ReplayGhost*> replayGhosts;

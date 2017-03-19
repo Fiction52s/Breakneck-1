@@ -116,12 +116,12 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 	target->draw( s );	
 }
 
-bool BasicEffect::IHitPlayer( int index )
+bool BasicEffect::IHitPlayer()
 {
 	return false;
 }
 
- pair<bool, bool> BasicEffect::PlayerHitMe( int index )
+ pair<bool, bool> BasicEffect::PlayerHitMe()
 {
 	return pair<bool, bool>(false,false);
 }

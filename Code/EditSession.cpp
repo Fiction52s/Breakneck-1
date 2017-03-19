@@ -1221,21 +1221,7 @@ bool EditSession::OpenFile( string fileName )
 					a.reset( new ShardParams( this, pos ) );
 					//a->hasMonitor = (bool)hasMonitor;
 				}
-				else if( typeName == "racefighttarget" )
-				{
-					Vector2i pos;
 
-					//always air
-					is >> pos.x;
-					is >> pos.y;
-
-					//int hasMonitor;
-					//is >> hasMonitor;
-
-					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset( new RaceFightTargetParams( this, pos ) );
-					//a->hasMonitor = (bool)hasMonitor;
-				}
 
 				//w1
 				else if( typeName == "crawlerreverser" )
@@ -3823,17 +3809,12 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	Panel *shardPanel = NULL;
 	ActorType *shardType = new ActorType( "shard", shardPanel );
 
-	Panel *raceFightTargetPanel = NULL;
-	ActorType *raceFightTargetType = new ActorType( "racefighttarget", raceFightTargetPanel );
-
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
 	types["poi"] = poiType;
 	types["key"] = keyType;
 
 	types["shard"] = shardType;
-
-	types["racefighttarget"] = raceFightTargetType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -4016,7 +3997,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	gs->Set( 3, 0, Sprite( keyType->iconTexture ), "key" );
 	gs->Set( 4, 0, Sprite( shipPickupType->iconTexture ), "shippickup" );
 	gs->Set( 5, 0, Sprite( shardType->iconTexture ), "shard" );
-	gs->Set( 6, 0, Sprite( raceFightTargetType->iconTexture ), "racefighttarget" );
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -6298,16 +6278,6 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 											worldPos.y ) ) );
 										shard->group = groups["--"];
 										CreateActor( shard );
-										showPanel = enemySelectPanel;
-									}
-									else if( trackingEnemy->name == "racefighttarget" )
-									{
-										trackingEnemy = NULL;
-										ActorPtr raceFightTarget( new RaceFightTargetParams( this, Vector2i( worldPos.x, 
-											worldPos.y ) ) );
-										raceFightTarget->group = groups["--"];
-										CreateActor( raceFightTarget );
-										showPanel = enemySelectPanel;
 									}
 
 
@@ -13410,16 +13380,6 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "nexusindex", Vector2i( 20, 150 ), 200, 20, "1" );
 		return p;
 	}
-	//else if( name == "racefighttarget" )
-	//{
-	
-		/*Panel *p = new Panel( "racefighttarget_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-
-		return p;*/
-	//}
 
 	/*else if( name == "crawlerreverser" )
 	{
@@ -13668,12 +13628,6 @@ void EditSession::SetEnemyEditPanel()
 		NexusParams *nexus = (NexusParams*)ap;
 		nexus->SetPanelInfo();
 	}
-	else if( name == "racefighttarget" )
-	{
-		RaceFightTargetParams *raceFightTarget= (RaceFightTargetParams*)ap;
-		raceFightTarget->SetPanelInfo();
-	}
-
 	showPanel = p;
 	
 	
@@ -14653,13 +14607,6 @@ void ActorType::Init()
 		canBeAerial = false;
 	}
 	else if( name == "shard" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "racefighttarget" )
 	{
 		width = 32;
 		height = 32;

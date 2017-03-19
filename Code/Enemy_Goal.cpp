@@ -269,7 +269,7 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 	target->draw( miniSprite );
 }
 
-bool Goal::IHitPlayer( int index )
+bool Goal::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -284,7 +284,7 @@ bool Goal::IHitPlayer( int index )
 	return false;
 }
 
-pair<bool, bool> Goal::PlayerHitMe( int index )
+pair<bool, bool> Goal::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

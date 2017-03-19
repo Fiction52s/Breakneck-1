@@ -781,8 +781,6 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
 {	
-	raceFight = NULL;
-
 	recPlayer = NULL;
 	repPlayer = NULL;
 	recGhost = NULL;
@@ -3415,35 +3413,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				{
 					shipExitSeq = new ShipExitSeq( this );
 				}
-			}
-			//w6
-			else if( typeName == "racefighttarget" )
-			{
-				int xPos,yPos;
-
-				//always air
-
-				is >> xPos;
-				is >> yPos;
-
-				if( raceFight == NULL )
-				{
-					raceFight = new RaceFight( this );
-				}
-
-				raceFight->numTargets++;
-
-				//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-
-				RaceFightTarget *enemy = new RaceFightTarget( this, Vector2i( xPos, yPos ) );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
 			else
 			{
@@ -9657,9 +9626,6 @@ void GameSession::ClearFX()
 
 void GameSession::RestartLevel()
 {
-	if( raceFight != NULL )
-		raceFight->Reset();
-
 	soundNodeList->Clear();
 
 	totalGameFrames = 0;
@@ -13734,95 +13700,4 @@ void Critical::Draw( RenderTarget *target )
 		target->draw( bar );
 		target->draw( cs );
 	}
-}
-
-GameSession::RaceFight::RaceFight( GameSession *p_owner )
-	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
-	hitByPlayer2List( NULL ), numTargets( 0 )
-{
-}
-
-void GameSession::RaceFight::HitByPlayer( int playerIndex,
-			RaceFightTarget *target )
-{
-	Actor *player = NULL;
-	if( playerIndex == 0 )
-	{
-		player = owner->player;
-		playerScore++;
-
-		if( hitByPlayerList == NULL )
-		{
-			hitByPlayerList = target;
-			target->pPrev = NULL;
-			target->pNext = NULL;
-		}
-		else
-		{
-			target->pNext = hitByPlayerList;
-			hitByPlayerList->pPrev = target;
-			hitByPlayerList = target;
-		}
-	}
-	else if( playerIndex == 1 )
-	{
-		player = owner->player2;
-		player2Score++;
-		
-		if( hitByPlayer2List == NULL )
-		{
-			hitByPlayer2List = target;
-			target->p2Prev = NULL;
-			target->p2Next = NULL;
-		}
-		else
-		{
-			target->p2Next = hitByPlayer2List;
-			hitByPlayer2List->p2Prev = target;
-			hitByPlayer2List = target;
-		}
-	}
-}
-
-void GameSession::RaceFight::Reset()
-{
-	playerScore = 0;
-	player2Score = 0;
-	hitByPlayerList = NULL;
-	hitByPlayer2List = NULL;
-}
-
-void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
-			int defender )
-{
-	Actor *at = NULL;
-	Actor *def = NULL;
-	if( attacker == 0 )
-	{
-		at = owner->player;
-		def = owner->player2;
-
-		if( hitByPlayer2List != NULL )
-		{
-			hitByPlayer2List->action = RaceFightTarget::Action::PLAYER1;
-			--player2Score;
-
-			HitByPlayer( attacker, hitByPlayer2List );
-		}
-	}
-	else
-	{
-		at = owner->player2;
-		def = owner->player;
-
-		if( hitByPlayerList != NULL )
-		{
-			hitByPlayerList->action = RaceFightTarget::Action::PLAYER2;
-			--playerScore;
-
-			HitByPlayer( attacker, hitByPlayerList );
-		}
-	}
-
-
 }

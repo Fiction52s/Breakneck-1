@@ -312,7 +312,7 @@ void Mine::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Mine::IHitPlayer( int index )
+bool Mine::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -342,7 +342,7 @@ void Mine::UpdateHitboxes()
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Mine::PlayerHitMe( int index )
+pair<bool,bool> Mine::PlayerHitMe()
 {
 	Actor *player = owner->player;
 	if( player->currHitboxes != NULL )

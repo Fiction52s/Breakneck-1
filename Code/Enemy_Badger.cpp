@@ -963,7 +963,7 @@ void Badger::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Badger::IHitPlayer( int index )
+bool Badger::IHitPlayer()
 {
 	Actor *player = owner->player;
 	
@@ -991,7 +991,7 @@ bool Badger::IHitPlayer( int index )
 	return false;
 }
 
- pair<bool, bool> Badger::PlayerHitMe( int index )
+ pair<bool, bool> Badger::PlayerHitMe()
 {
 	Actor *player = owner->player;
 

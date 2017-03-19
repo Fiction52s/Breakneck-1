@@ -302,7 +302,7 @@ void Tree::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Tree::IHitPlayer( int index )
+bool Tree::IHitPlayer()
 {
 	Actor *player = owner->player;
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -327,7 +327,7 @@ bool Tree::IHitPlayer( int index )
 	}
 }
 
- pair<bool, bool> Tree::PlayerHitMe( int index )
+ pair<bool, bool> Tree::PlayerHitMe()
 {
 	Actor *player = owner->player;
 
@@ -596,12 +596,12 @@ void Overgrowth::ResetEnemy()
 	ActivateTree( origGround, origQuantity );
 }
 
-bool Overgrowth::IHitPlayer( int index )
+bool Overgrowth::IHitPlayer()
 {
 	return false;
 }
 
-std::pair<bool,bool> Overgrowth::PlayerHitMe( int index )
+std::pair<bool,bool> Overgrowth::PlayerHitMe()
 {
 	return pair<bool,bool>(false,false);
 }
