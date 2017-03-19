@@ -7219,16 +7219,14 @@ void Actor::UpdatePrePhysics()
 	if( hasPowerLeftWire && ( (action != GRINDBALL && action != GRINDATTACK ) || leftWire->state == Wire::RETRACTING ) )
 	{
 		leftWire->ClearDebug();
-		leftWire->storedPlayerPos = leftWire->GetOriginPos(true);
-		//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
+		leftWire->UpdateAnchors2( V2d( 0, 0 ) );
 		leftWire->UpdateState( touchEdgeWithLeftWire );
 	}
 
 	if( hasPowerRightWire && ((action != GRINDBALL && action != GRINDATTACK ) || rightWire->state == Wire::RETRACTING ) )
 	{
 		rightWire->ClearDebug();
-		rightWire->storedPlayerPos = rightWire->GetOriginPos(true);
-		//rightWire->UpdateAnchors2( V2d( 0, 0 ) );
+		rightWire->UpdateAnchors2( V2d( 0, 0 ) );
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
@@ -8481,8 +8479,8 @@ V2d Actor::UpdateReversePhysics()
 						leftGround = true;
 						SetActionExpr( JUMP );
 						frame = 1;
-						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+						rightWire->UpdateAnchors( V2d( 0, 0 ) );
+						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
 
@@ -8522,8 +8520,8 @@ V2d Actor::UpdateReversePhysics()
 									leftGround = true;
 									SetActionExpr( JUMP );
 									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									holdJump = false;
 									movingGround = NULL;
@@ -8535,8 +8533,8 @@ V2d Actor::UpdateReversePhysics()
 									facingRight = true;
 									action = STEEPSLIDE;
 									frame = 0;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
 									q = length( ground->v1 - ground->v0 );	
 								}
@@ -8546,8 +8544,8 @@ V2d Actor::UpdateReversePhysics()
 								facingRight = false;
 								action = STEEPCLIMB;
 								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = next;
 								q = length( ground->v1 - ground->v0 );	
 							}
@@ -8594,8 +8592,8 @@ V2d Actor::UpdateReversePhysics()
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 					movingGround = NULL;
 					holdJump = false;
@@ -8672,8 +8670,8 @@ V2d Actor::UpdateReversePhysics()
 						leftGround = true;
 						SetActionExpr( JUMP );
 						frame = 1;
-						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+						rightWire->UpdateAnchors( V2d( 0, 0 ) );
+						leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
 						movingGround = NULL;
 						holdJump = false;
@@ -8712,8 +8710,8 @@ V2d Actor::UpdateReversePhysics()
 									leftGround = true;
 									SetActionExpr( JUMP );
 									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									movingGround = NULL;
 
@@ -8730,8 +8728,8 @@ V2d Actor::UpdateReversePhysics()
 									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
 									q = 0;
 								}
@@ -8742,8 +8740,8 @@ V2d Actor::UpdateReversePhysics()
 								facingRight = true;
 								action = STEEPCLIMB;
 								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = next;
 								q = 0;
 							}
@@ -8785,8 +8783,8 @@ V2d Actor::UpdateReversePhysics()
 					cout << "airborne 4: " << velocity.x << ", " << velocity.y << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					leftGround = true;
 					reversed = false;
 					ground = NULL;
@@ -9021,11 +9019,9 @@ V2d Actor::UpdateReversePhysics()
 					{
 						V2d wVel = position - oldPos;
 						edgeQuantity = q;
-						
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
 					}
-
-					leftWire->UpdateAnchors( V2d( 0, 0 ) );
-					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 
 				}
 				else
@@ -9475,10 +9471,10 @@ V2d Actor::UpdateReversePhysics()
 					{
 						V2d wVel = position - oldPos;
 						edgeQuantity = q;
-						
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
 					}
-					leftWire->UpdateAnchors( V2d( 0, 0 ) );
-					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					
 					
 				}
 			
@@ -10456,8 +10452,8 @@ void Actor::UpdatePhysics()
 									leftGround = true;
 									SetActionExpr( JUMP );
 									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									holdJump = false;
 									movingGround = NULL;
@@ -10468,8 +10464,8 @@ void Actor::UpdatePhysics()
 									facingRight = false;
 									action = STEEPSLIDE;
 									frame = 0;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
 									q = length( ground->v1 - ground->v0 );	
 								}
@@ -10480,8 +10476,8 @@ void Actor::UpdatePhysics()
 								facingRight = false;
 								action = STEEPCLIMB;
 								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = next;
 								q = length( ground->v1 - ground->v0 );	
 							}
@@ -10515,8 +10511,8 @@ void Actor::UpdatePhysics()
 					SetActionExpr( JUMP );
 					frame = 1;
 					holdJump = false;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 					movingGround = NULL;
 				}
@@ -10612,8 +10608,8 @@ void Actor::UpdatePhysics()
 									SetActionExpr( JUMP );
 									frame = 1;
 									holdJump = false;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									movingGround = NULL;
 
@@ -10625,8 +10621,8 @@ void Actor::UpdatePhysics()
 									facingRight = true;
 									action = STEEPSLIDE;
 									frame = 0;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
 									q = 0;
 								}
@@ -10637,8 +10633,8 @@ void Actor::UpdatePhysics()
 								facingRight = true;
 								action = STEEPCLIMB;
 								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = next;
 								q = 0;
 							}
@@ -10679,8 +10675,8 @@ void Actor::UpdatePhysics()
 					SetActionExpr( JUMP );
 					frame = 1;
 					holdJump = false;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					rightWire->UpdateAnchors( V2d( 0, 0 ) );
+					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					//break;
 					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}
@@ -10824,10 +10820,9 @@ void Actor::UpdatePhysics()
 					{
 						V2d wVel = position - oldPos;
 						edgeQuantity = q;
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
 					}
-
-					leftWire->UpdateAnchors( V2d( 0, 0 ) );
-					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 				}
 			}
 			else
@@ -10874,8 +10869,8 @@ void Actor::UpdatePhysics()
 							SetActionExpr( JUMP );
 							holdJump = false;
 							frame = 1;
-							//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-							//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+							rightWire->UpdateAnchors( V2d( 0, 0 ) );
+							leftWire->UpdateAnchors( V2d( 0, 0 ) );
 							ground = NULL;
 							movingGround = NULL;
 
@@ -10900,8 +10895,8 @@ void Actor::UpdatePhysics()
 								SetActionExpr( JUMP );
 								holdJump = false;
 								frame = 1;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = NULL;
 								movingGround = NULL;
 								break;
@@ -10938,8 +10933,8 @@ void Actor::UpdatePhysics()
 							SetActionExpr( JUMP );
 							holdJump = false;
 							frame = 1;
-							//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-							//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+							rightWire->UpdateAnchors( V2d( 0, 0 ) );
+							leftWire->UpdateAnchors( V2d( 0, 0 ) );
 							ground = NULL;
 							movingGround = NULL;
 							break;
@@ -10962,8 +10957,8 @@ void Actor::UpdatePhysics()
 								SetActionExpr( JUMP );
 								holdJump = false;
 								frame = 1;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								rightWire->UpdateAnchors( V2d( 0, 0 ) );
+								leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = NULL;
 								movingGround = NULL;
 								break;
@@ -11378,8 +11373,8 @@ void Actor::UpdatePhysics()
 									SetActionExpr( JUMP );
 									holdJump = false;
 									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+									rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								}
 								else
 								{
@@ -11437,8 +11432,8 @@ void Actor::UpdatePhysics()
 										
 										frame = 1;
 										
-										//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-										//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+										rightWire->UpdateAnchors( V2d( 0, 0 ) );
+										leftWire->UpdateAnchors( V2d( 0, 0 ) );
 										break;
 
 									}
@@ -11477,10 +11472,9 @@ void Actor::UpdatePhysics()
 					{
 						V2d wVel = position - oldPos;
 						edgeQuantity = q;
+						leftWire->UpdateAnchors( wVel );
+						rightWire->UpdateAnchors( wVel );
 					}
-
-					leftWire->UpdateAnchors( V2d( 0, 0 ) );
-					rightWire->UpdateAnchors( V2d( 0, 0 ) );
 				}
 
 				
@@ -12566,8 +12560,8 @@ void Actor::PhysicsResponse()
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = LAND2;
-					//rightWire->UpdateAnchors(V2d( 0, 0 ));
-					//leftWire->UpdateAnchors(V2d( 0, 0 ));
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
 				}
 				else
@@ -12601,8 +12595,8 @@ void Actor::PhysicsResponse()
 					{
 						action = LAND;
 					}
-					//rightWire->UpdateAnchors(V2d( 0, 0 ));
-					//leftWire->UpdateAnchors(V2d( 0, 0 ));
+					rightWire->UpdateAnchors(V2d( 0, 0 ));
+					leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
 					//cout << "blahaaa" << endl;
 					//cout << "blahbbb" << endl;
@@ -12805,8 +12799,8 @@ void Actor::PhysicsResponse()
 		}
 	}
 
-	//rightWire->UpdateAnchors(V2d( 0, 0 ));
-	//leftWire->UpdateAnchors(V2d( 0, 0 ));
+	rightWire->UpdateAnchors(V2d( 0, 0 ));
+	leftWire->UpdateAnchors(V2d( 0, 0 ));
 
 	UpdateHitboxes();
 
