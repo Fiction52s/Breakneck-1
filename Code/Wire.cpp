@@ -68,7 +68,7 @@ Wire::Wire( Actor *p, bool r)
 		CreateWireCharge();
 	}
 	
-
+	//offsetFlagged = false;
 	//lockEdge = NULL;
 }
 
@@ -104,6 +104,23 @@ int Wire::CountInactiveCharges()
 	return counter;
 }
 
+sf::Vector2<double> Wire::GetPlayerPos()
+{
+	currOffset = V2d( 0, 0 );//GetOriginPos( true );
+	if( false )//offset != currOffset )
+	{
+		//offsetFlagged = true;
+		//currOffset = offset;
+		//UpdateAnchors( V2d(0, 0 ) );
+		return player->position + currOffset;
+	}
+	else
+	{
+		
+		return player->position + currOffset;
+	}
+}
+
 void Wire::UpdateState( bool touchEdgeWithWire )
 {
 	
@@ -120,7 +137,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	}
 	else
 	{
-		playerPos = GetOriginPos(true);
+		playerPos = GetPlayerPos();//GetOriginPos(true);
 	}
 	storedPlayerPos = playerPos;
 	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
@@ -384,7 +401,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//ClearCharges();
 				//Reset();
 				fireDir = V2d( 0, 0 );
-				playerPos = GetOriginPos(true);
+				playerPos = GetPlayerPos();//GetOriginPos(true);
 				storedPlayerPos = playerPos;
 
 				if( false )
@@ -734,21 +751,6 @@ void Wire::ClearCharges()
 	activeChargeList = NULL;
 }
 
-void Wire::SortNewPoints( int start, int end )
-{
-	/*int first;
-	for( int i = end; i >= start; --i )
-	{
-		first = start;
-		for( int j = 1; j <= i; ++j )
-		{
-			if( points[j].angleDiff < points[first].angleDiff )
-			{
-				first = 
-			}
-		}
-	}*/
-}
 
 void Wire::SwapPoints( int aIndex, int bIndex )
 {
@@ -763,12 +765,12 @@ void Wire::UpdateAnchors2( V2d vel )
 	//assert( vel.x != 0 || vel.y != 0 );
 
 	wireTestClock.restart();
-	V2d playerPos = GetOriginPos(true);
+	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
+
+
 
 	if( state == HIT || state == PULLING )
 	{
-		
-
 		if( oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y )
 		{
 			//return;
@@ -804,128 +806,99 @@ void Wire::UpdateAnchors2( V2d vel )
 		double left, right, top, bottom;
 		double ex = 1;
 		Rect<double> r;
-		while( true )
+
+		if( counter > 1 )
 		{
-			if( counter > 1 )
-			{
-				//cout << "COUNTER: " << counter << endl;
-			}
-
-			a = realAnchor - oldPos;
-			b = realAnchor - playerPos;
-			len = max( length( a ), length( b ) );
-
-			oldDir = oldPos - realAnchor;
-			dir = playerPos - realAnchor;
-
-			if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x > 0 && dir.y < 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y < 0 ) )
-			{
-				top = realAnchor.y - len;
-			}
-			else
-			{
-				top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
-			}
-
-			if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x < 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y > 0 ) )
-			{
-				left = realAnchor.x - len;
-			}
-			else
-			{
-				left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
-			}
-
-			if( ( oldDir.x > 0 && oldDir.y < 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x > 0 && dir.y < 0 && oldDir.x > 0 && oldDir.y > 0 ) )
-			{
-				right = realAnchor.x + len;
-			}
-			else
-			{
-				right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
-			}
-
-			if( ( oldDir.x < 0 && oldDir.y > 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y > 0 && oldDir.x > 0 && oldDir.y > 0 ) )
-			{
-				bottom = realAnchor.y + len;
-			}
-			else
-			{
-				bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
-			}
-
-			r.left = left - ex;
-			r.top = top - ex;
-			r.width = (right - left) + ex * 2;
-			r.height = (bottom - top) + ex * 2;
-			
-			foundPoint = false;
-
-			player->owner->terrainTree->Query( this, r );
-
-			if( foundPoint )
-			{
-				if( numPoints > 1 )
-				{
-					if( (closestPoint.x == points[numPoints-2].pos.x && closestPoint.y == points[numPoints-2].pos.y ) )
-					{
-						//this means ive already gone through a point and im coming back to the same point
-						//again immediately after which means I intersected a polygon
-						cout << "problem  point: " << closestPoint.x << ", " << closestPoint.y << endl;
-						cout << "numPoints: " << numPoints << endl;
-						assert( 0 );
-						break;
-					}
-				}
-
-
-				points[numPoints].pos = closestPoint;
-				
-
-				points[numPoints].test = normalize( closestPoint - realAnchor );
-				if( !clockwise )
-				{
-					points[numPoints].test = -points[numPoints].test;
-				}
-				numPoints++;
-
-
-				V2d oldAnchor = realAnchor;
-				realAnchor = points[numPoints-1].pos;
-
-				radius = radius - length( oldAnchor - realAnchor );
-				oldPos = realAnchor + normalize( realAnchor - oldAnchor ) * radius;
-
-				//cout << "point added!: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << ", numpoints: " << numPoints << endl;
-				counter++;
-			}
-			else
-			{
-				break;
-			}
+			//cout << "COUNTER: " << counter << endl;
 		}
-		
-		/*if( false )
+
+		a = realAnchor - oldPos;
+		b = realAnchor - playerPos;
+		len = max( length( a ), length( b ) );
+
+		oldDir = oldPos - realAnchor;
+		dir = playerPos - realAnchor;
+
+		left = min( min( realAnchor.x, oldPos.x ), playerPos.x );
+		top = min( min( realAnchor.y, oldPos.y ), playerPos.y );
+		right = max( max( realAnchor.x, oldPos.x ), playerPos.x );
+		bottom = max( max( realAnchor.y, oldPos.y ), playerPos.y );
+
+		/*if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x > 0 && dir.y < 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y < 0 ) )
 		{
-			if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - rcQuant )
-			{
-				points[numPoints].pos = rcEdge->v1;
-				points[numPoints].test = normalize(rcEdge->edge1->v1 - rcEdge->edge1->v0 );
-				numPoints++;
-			}
-			else
-			{
-				points[numPoints].pos = rcEdge->v0;
-				points[numPoints].test = normalize( rcEdge->edge0->v1 - rcEdge->edge0->v0 );
-				numPoints++;
-			}
+			top = realAnchor.y - len;
+		}
+		else
+		{
+			top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
+		}
+
+		if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x < 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y > 0 ) )
+		{
+			left = realAnchor.x - len;
+		}
+		else
+		{
+			left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
+		}
+
+		if( ( oldDir.x > 0 && oldDir.y < 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x > 0 && dir.y < 0 && oldDir.x > 0 && oldDir.y > 0 ) )
+		{
+			right = realAnchor.x + len;
+		}
+		else
+		{
+			right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
+		}
+
+		if( ( oldDir.x < 0 && oldDir.y > 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y > 0 && oldDir.x > 0 && oldDir.y > 0 ) )
+		{
+			bottom = realAnchor.y + len;
+		}
+		else
+		{
+			bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
 		}*/
 
+		r.left = left - ex;
+		r.top = top - ex;
+		r.width = (right - left) + ex * 2;
+		r.height = (bottom - top) + ex * 2;
+			
+		foundPoint = false;
+		newWirePoints = 0; //number of points added
+
+		V2d normalizedA = normalize( a );
+		V2d otherA( normalizedA.y, -normalizedA.x );
+		if( dot( normalize( playerPos - oldPos ), otherA ) > 0 )
+			clockwise = true;
+		else
+			clockwise = false;
+
+		player->owner->terrainTree->Query( this, r );
+
+		if( player->owner->showDebugDraw )
+		{
+			sf::RectangleShape queryDebug;
+			queryDebug.setPosition( Vector2f( r.left, r.top ) );
+			queryDebug.setSize( Vector2f( r.width, r.height ) );
+			queryDebug.setFillColor( Color::Transparent );//Color( 255, 255, 255, 100 ) );
+			queryDebug.setOutlineColor( Color::White );
+			queryDebug.setOutlineThickness( 1 );
+			progressDraw.push_back( new sf::RectangleShape( queryDebug ) );
+		}
+
+		SortNewPoints();
+
+		//remove points as need be
 		for( int i = numPoints - 1; i >= 0; --i )
 		{ 
 			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
 			if( result > 0 )
 			{
+				//V2d along = 
+				//cout << "removing along: " << 
+				//cout << "removePoint: " << points[numPoints-1].pos.x << ", " << points[numPoints-1].pos.y << endl;
 				numPoints--;
 			}
 			else
@@ -1022,7 +995,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	//rayPortion > 1 &&
 	//V2d playerPos = player->position;
 	//playerPos += V2d( offset.x, offset.y );	
-	V2d playerPos = GetOriginPos(true);
+	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
 
 	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
 	{
@@ -1031,11 +1004,123 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	}
 }
 
+//returns -1 on errror
+double Wire::GetTestPointAngle( Edge *e )
+{
+	V2d p = e->v0;
+
+	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
+
+	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
+	{
+		return -1;
+	}
+
+	double radius = length( realAnchor - playerPos ); //new position after moving
+
+	double anchorDist = length( realAnchor - p );
+
+	if( anchorDist > radius )
+	{
+		return -1;
+	}
+
+	V2d oldVec = normalize( oldPos - realAnchor );
+	V2d newVec = normalize( playerPos - realAnchor );
+
+	V2d pVec = normalize( p - realAnchor );
+
+	double oldAngle = atan2( oldVec.y, oldVec.x );
+
+	double newAngle = atan2( newVec.y, newVec.x );
+	
+
+	double pAngle = atan2( pVec.y, pVec.x );
+	
+	double angleDiff = abs( oldAngle - pAngle );
+
+	double maxAngleDiff = abs( newAngle - oldAngle );
+
+	if( oldAngle < 0 )
+		oldAngle += 2 * PI;
+	if( newAngle < 0 )
+		newAngle += 2 * PI;
+	if( pAngle < 0 )
+		pAngle += 2 * PI;
+
+	bool tempClockwise = false;
+	if( newAngle > oldAngle )
+	{
+		if( newAngle - oldAngle < PI )
+		{
+			tempClockwise = true;
+			//cw
+			double diff = pAngle - oldAngle;
+			if( diff >= 0 && diff <= newAngle - oldAngle )
+			{
+				return diff;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			double diff = oldAngle - pAngle;
+			if( pAngle >= newAngle || pAngle <= oldAngle )
+			{
+				return diff;
+				//cw
+			}
+			else
+			{
+				return -1;
+			}
+		}
+	}
+	else if( newAngle < oldAngle )
+	{
+		if( oldAngle - newAngle < PI )
+		{
+			//ccw
+			double diff = pAngle - newAngle;
+			if( diff >= 0 && diff <= oldAngle - newAngle )
+			{
+				return diff;
+				//good
+			}
+			else
+			{
+				return -1;
+			}
+		}
+		else
+		{
+			tempClockwise = true;
+			double diff = pAngle - oldAngle;
+			if( pAngle <= newAngle || pAngle >= oldAngle )
+			{
+				return diff;
+				//ccw
+			}
+			else
+			{
+				return -1;
+			}
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
 void Wire::TestPoint( Edge *e )
 {
 	V2d p = e->v0;
 
-	V2d playerPos = GetOriginPos(true);
+	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
 
 	if( length( p - realAnchor ) < 1 ) //if applied to moving platforms this will need to account for rounding bugs.
 	{
@@ -1045,6 +1130,7 @@ void Wire::TestPoint( Edge *e )
 	double radius = length( realAnchor - playerPos ); //new position after moving
 
 	double anchorDist = length( realAnchor - p );
+
 	if( anchorDist > radius )
 	{
 		return;
@@ -1057,8 +1143,6 @@ void Wire::TestPoint( Edge *e )
 	V2d pVec = normalize( p - realAnchor );
 
 	double oldAngle = atan2( oldVec.y, oldVec.x );
-	
-	
 
 	double newAngle = atan2( newVec.y, newVec.x );
 	
@@ -1068,11 +1152,6 @@ void Wire::TestPoint( Edge *e )
 	double angleDiff = abs( oldAngle - pAngle );
 
 	double maxAngleDiff = abs( newAngle - oldAngle );
-
-	
-
-	//if( angleDiff > maxAngleDiff )
-	//	return;
 
 	if( oldAngle < 0 )
 		oldAngle += 2 * PI;
@@ -1141,8 +1220,6 @@ void Wire::TestPoint( Edge *e )
 		return;
 	}
 
-	
-
 	//would be more efficient to remove this calculation and only do it once per frame
 	clockwise = tempClockwise;
 	
@@ -1155,16 +1232,14 @@ void Wire::TestPoint( Edge *e )
 	}
 	else
 	{
-		double closestDist = length( realAnchor - closestPoint );
-		//not sure if switching the order of these does anything
 		if( angleDiff < closestDiff )
 		{
 			closestDiff = angleDiff;
 			closestPoint = p;
-			//cout << "closestPoint: " << p.x << ", " << p.y << endl;
 		}
 		else if( approxEquals( angleDiff, closestDiff ) )
 		{
+			double closestDist = length( realAnchor - closestPoint );
 			if( anchorDist < closestDist )
 			{
 				closestDiff = angleDiff;
@@ -1172,6 +1247,32 @@ void Wire::TestPoint( Edge *e )
 			}
 		}
 		
+	}
+}
+
+void Wire::TestPoint2( Edge *e )
+{
+	V2d p = e->v0;
+
+	double res = GetTestPointAngle( e );
+	if( res >=0 )
+	{
+		//cout << "adding point at p: " << p.x << ", " << p.y << endl;
+		if( numPoints < MAX_POINTS )
+		{
+			WirePoint &wp = points[numPoints];
+			wp.pos = p;
+			
+			wp.sortingAngleDist = res;
+
+			wp.test = normalize( p - realAnchor );						
+			if( !clockwise )
+			{
+				points[numPoints].test = -points[numPoints].test;
+			}
+			numPoints++;
+		}
+		newWirePoints++;
 	}
 }
 
@@ -1209,9 +1310,9 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else
 	{
-		V2d v0 = e->v0;
-		V2d v1 = e->v1;
-		TestPoint( e );	
+		//V2d v0 = e->v0;
+		//V2d v1 = e->v1;
+		TestPoint2( e );	
 	}
 }
 
@@ -1225,7 +1326,7 @@ void Wire::UpdateQuads()
 	}
 	else
 	{
-		playerPos = GetOriginPos(false);
+		playerPos = GetPlayerPos();//GetOriginPos(false);
 	}
 
 	V2d alongDir;
@@ -1657,6 +1758,16 @@ void Wire::Retract()
 void Wire::Draw( RenderTarget *target )
 {
 	//return;
+	if( player->owner->showDebugDraw )
+	{
+		CircleShape *cstest = new CircleShape;
+		cstest->setRadius( 10 );
+		cstest->setFillColor( Color::Green );
+		cstest->setOrigin( cstest->getLocalBounds().width / 2, cstest->getLocalBounds().height / 2 );
+		cstest->setPosition( Vector2f( player->position.x, player->position.y ) );
+		progressDraw.push_back( cstest );
+	}
+
 	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
 	{	
 		target->draw( quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture );
@@ -1703,8 +1814,9 @@ void Wire::DebugDraw( RenderTarget *target )
 	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
 	{
 		target->draw( *(*it) );
+		delete (*it);
 	}
-	//progressDraw.clear();
+	progressDraw.clear();
 }
 
 void Wire::ActivateRetractionCharges()
@@ -1734,6 +1846,26 @@ void Wire::ClearDebug()
 		delete (*it);
 	}
 	progressDraw.clear();
+}
+
+void Wire::SortNewPoints()
+{
+	//insertion sort just for easy testing
+	if( newWirePoints > 1 )
+	{
+		for( int i = numPoints - newWirePoints; i < numPoints; ++i )
+		{
+			int j = i;
+
+			while( j > 0 && ( (points[j-1].sortingAngleDist > points[j].sortingAngleDist) 
+				|| ( points[j-1].sortingAngleDist == points[j].sortingAngleDist && length( points[j-1].pos - realAnchor )
+					> length( points[j].pos - realAnchor ) ) ) )
+			{
+				SwapPoints( j-1, j );
+				--j;
+			}
+		}
+	}
 }
 
 double Wire::GetCurrentTotalLength()
@@ -1767,12 +1899,23 @@ void Wire::Reset()
 	ClearCharges();
 	pullStrength = startPullStrength;
 	//cout << "reset wire reset clear" << endl;
-
+	//offsetFlagged = false;
 	//clear charges gets called twice and thats not useful
 }
 
 V2d Wire::GetOriginPos( bool test )
 {
+	if( player->ground != NULL )
+	{//only when not reversed
+		V2d gNorm = player->ground->Normal();
+		
+		return gNorm * ( player->normalHeight / 2 - 8 );
+		//if( player->ground->Normal().y 
+	}
+	else
+	{
+		return V2d( 0, -10 );
+	}
 	offset = player->GetWireOffset();
 
 	if( player->facingRight )
@@ -1792,8 +1935,17 @@ V2d Wire::GetOriginPos( bool test )
 
 	if( player->ground != NULL )
 	{
+		V2d norm = player->ground->Normal();
 		V2d pp = player->ground->GetPoint( player->edgeQuantity );
 		playerPos = pp + gNormal * player->normalHeight;
+		if( norm.y == -1 )
+		{
+			playerPos.x += player->offsetX;
+		}
+		else
+		{
+			
+		}
 	}
 	else
 	{

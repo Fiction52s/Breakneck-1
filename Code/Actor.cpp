@@ -416,10 +416,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		cb.rw = 64;
 		cb.rh = 64;
-		cb.offset.x = 0;
+		cb.offset.x = 14;
 		cb.offset.y = -14;
 
-		for( int j = 0; j <= 12; ++j )
+		for( int j = 0; j < 11 * 2; ++j )
 		{
 			diagUpHitboxes[j] = new list<CollisionBox>;
 			diagUpHitboxes[j]->push_back( cb );
@@ -434,10 +434,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		cb.rw = 64;
 		cb.rh = 64;
-		cb.offset.x = 0;
-		cb.offset.y = -14;
+		cb.offset.x = 14;
+		cb.offset.y = 14;
 
-		for( int j = 0; j <= 12; ++j )
+		for( int j = 0; j < 11 * 2; ++j )
 		{
 			diagDownHitboxes[j] = new list<CollisionBox>;
 			diagDownHitboxes[j]->push_back( cb );
@@ -496,12 +496,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		tileset[FAIR] = owner->GetTileset( "fair_64x64.png", 64, 64 );
 		normal[FAIR] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
-		actionLength[DIAGUPATTACK] = 8 * 2;
-		tileset[DIAGUPATTACK] = owner->GetTileset( "fair_64x64.png", 64, 64 );
+		actionLength[DIAGUPATTACK] = 14 * 2;
+		tileset[DIAGUPATTACK] = owner->GetTileset( "airdash_attack_up_96x80.png", 96, 80 );
 		normal[DIAGUPATTACK] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
-		actionLength[DIAGDOWNATTACK] = 8 * 2;
-		tileset[DIAGDOWNATTACK] = owner->GetTileset( "fair_64x64.png", 64, 64 );
+		actionLength[DIAGDOWNATTACK] = 15 * 2;
+		tileset[DIAGDOWNATTACK] = owner->GetTileset( "airdash_attack_down_64x64.png", 64, 64 );
 		normal[DIAGDOWNATTACK] = owner->GetTileset( "fair_NORMALS.png", 80, 64 );
 
 		actionLength[JUMP] = 2;
@@ -633,11 +633,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		normal[WIREHOLD] = owner->GetTileset( "steepslide_NORMALS.png", 64, 32 );
 
 		actionLength[BOUNCEAIR] = 1;
-		tileset[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
+		tileset[BOUNCEAIR] = owner->GetTileset( "bounce_224x224.png", 224, 224 );
 		normal[BOUNCEAIR] = owner->GetTileset( "bounce.png", 96, 96 );
 
 		actionLength[BOUNCEGROUND] = 15;
-		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce.png", 96, 96 );
+		tileset[BOUNCEGROUND] = owner->GetTileset( "bounce_224x224.png", 224, 224 );
 		normal[BOUNCEGROUND] = owner->GetTileset( "bounce_NORMALS.png", 96, 96 );
 
 		actionLength[BOUNCEGROUNDEDWALL] = 30;
@@ -756,13 +756,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		ts_steepClimbAttackSword[1] = owner->GetTileset( "climb_att_swordb_320x96.png", 320, 96 );
 		ts_steepClimbAttackSword[2] = owner->GetTileset( "climb_att_swordc_352x112.png", 352, 112 );
 
-		ts_diagUpSword[0] = owner->GetTileset( "fair_sworda_192x192.png", 192, 192 );
-		ts_diagUpSword[1] = owner->GetTileset( "fair_swordb_256x256.png", 256, 256 );
-		ts_diagUpSword[2] = owner->GetTileset( "fair_swordc_384x384.png", 384, 384 );
+		ts_diagUpSword[0] = owner->GetTileset( "airdash_u_sword_144x208.png", 144, 208 );
+		ts_diagUpSword[1] = owner->GetTileset( "airdash_u_sword_b_224x240.png", 224, 240 );
+		ts_diagUpSword[2] = owner->GetTileset( "airdash_u_sword_p_320x384.png", 320, 384 );
 
-		ts_diagDownSword[0] = owner->GetTileset( "fair_sworda_192x192.png", 192, 192 );
-		ts_diagDownSword[1] = owner->GetTileset( "fair_swordb_256x256.png", 256, 256 );
-		ts_diagDownSword[2] = owner->GetTileset( "fair_swordc_384x384.png", 384, 384 );
+		ts_diagDownSword[0] = owner->GetTileset( "airdash_sword_128x208.png", 128, 208 );
+		ts_diagDownSword[1] = owner->GetTileset( "airdash_sword_b_224x240.png", 224, 240 );
+		ts_diagDownSword[2] = owner->GetTileset( "airdash_sword_p_320x384.png", 320, 384 );
 
 		ts_fx_hurtSpack = owner->GetTileset( "hurt_spack_128x160.png", 128, 160 );
 
@@ -5598,7 +5598,7 @@ void Actor::UpdatePrePhysics()
 							{
 								vDir = normalize( vDir + V2d( 0, extraBDown ) );
 							}
-							velocity = vDir * velStrength;
+							//velocity = vDir * velStrength;
 						}
 
 						if( boostNow )
@@ -5725,7 +5725,7 @@ void Actor::UpdatePrePhysics()
 						{
 							vDir = normalize( vDir + V2d( 0, extraBDown ) );
 						}
-						velocity = vDir * velStrength;
+						//velocity = vDir * velStrength;
 					}
 
 					if( boostNow )
@@ -7158,7 +7158,7 @@ void Actor::UpdatePrePhysics()
 			{
 				
 				groundSpeed = -storedBounceGroundSpeed;
-				cout << "set ground speed to: " << groundSpeed << endl;
+				//cout << "set ground speed to: " << groundSpeed << endl;
 			}
 			break;
 		}
@@ -7219,7 +7219,7 @@ void Actor::UpdatePrePhysics()
 	if( hasPowerLeftWire && ( (action != GRINDBALL && action != GRINDATTACK ) || leftWire->state == Wire::RETRACTING ) )
 	{
 		leftWire->ClearDebug();
-		leftWire->storedPlayerPos = leftWire->GetOriginPos(true);
+		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();//leftWire->GetOriginPos(true);
 		//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
 		leftWire->UpdateState( touchEdgeWithLeftWire );
 	}
@@ -7227,7 +7227,7 @@ void Actor::UpdatePrePhysics()
 	if( hasPowerRightWire && ((action != GRINDBALL && action != GRINDATTACK ) || rightWire->state == Wire::RETRACTING ) )
 	{
 		rightWire->ClearDebug();
-		rightWire->storedPlayerPos = rightWire->GetOriginPos(true);
+		rightWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
 		//rightWire->UpdateAnchors2( V2d( 0, 0 ) );
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
@@ -8412,7 +8412,7 @@ V2d Actor::UpdateReversePhysics()
 			//cout << "a: " << a << " b: " << c << endl;
 			if( transferLeft )
 			{
-				cout << "transfer left" << endl;
+				//cout << "transfer left" << endl;
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
@@ -8494,7 +8494,14 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else
 					{
-						jumpOff = false;
+						if( gNormal.x == 0 && nextMovingDown && nextSteep )
+						{
+							jumpOff = true;
+						}
+						else
+						{
+							jumpOff = false;
+						}
 					}
 				}
 
@@ -8524,8 +8531,7 @@ V2d Actor::UpdateReversePhysics()
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+					
 					ground = NULL;
 					movingGround = NULL;
 
@@ -8551,6 +8557,9 @@ V2d Actor::UpdateReversePhysics()
 					ground = next;
 					q = length( ground->v1 - ground->v0 );	
 				}
+
+				//rightWire->UpdateAnchors( V2d( 0, 0 ) );
+				//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 
 				if( false )
 				if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LLeft() &&*/ gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x <= 0 ) )
@@ -8727,7 +8736,7 @@ V2d Actor::UpdateReversePhysics()
 			}
 			else if( transferRight )
 			{
-				cout << "transferright" << endl;
+				//cout << "transferright" << endl;
 				if( e1->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e1->info;
@@ -8803,7 +8812,15 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else
 					{
-						jumpOff = false;
+						if( gNormal.x == 0 && nextMovingDown && nextSteep )
+						{
+							jumpOff = true;
+						}
+						else
+						{
+							jumpOff = false;
+						}
+						//jumpOff = false;
 					}
 				}
 
@@ -8859,6 +8876,9 @@ V2d Actor::UpdateReversePhysics()
 					ground = next;
 					q = 0;
 				}
+
+				//rightWire->UpdateAnchors( V2d( 0, 0 ) );
+				//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 
 				if( false )
 				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && /*!currInput.LRight() && */gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
@@ -9146,23 +9166,16 @@ V2d Actor::UpdateReversePhysics()
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
-					
-						V2d eNorm = minContact.normal;//minContact.edge->Normal();
-						//eNorm = -eNorm;
+						V2d eNorm = minContact.normal;
 						m = -m;
-						cout << "eNorm: " << eNorm.x << ", " << eNorm.y << ", m: " << m << endl;
+						//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << ", m: " << m << endl;
 						if( eNorm.y > 0 )
 						{
-
 							//this could be a problem later hopefully i solved it!
 							bool speedTransfer = (eNorm.x < 0 && eNorm.y < steepThresh 
 								&& groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
 									|| (eNorm.x >0  && eNorm.y < steepThresh 
 									&& groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh);
-
-
-							//bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed >= -steepClimbSpeedThresh)
-							//		|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed <= steepClimbSpeedThresh)
 
 							if( minContact.position.y <= position.y - b.rh + 5 && !speedTransfer )
 							{
@@ -9402,7 +9415,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 					else if( groundSpeed < 0 )
 					{
-						cout << "right"<< endl;
+						//cout << "right"<< endl;
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						double yDist = abs( gNormal.x ) * -groundSpeed;
@@ -9413,7 +9426,7 @@ V2d Actor::UpdateReversePhysics()
 							{
 								if( e1->edgeType == Edge::CLOSED_GATE )
 								{
-									cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
+								//	cout << "OPENING GATE HERE I THOUGHT THIS WASNT NECESSARY B" << endl;
 									Gate *g = (Gate*)e1->info;
 
 									if( CanUnlockGate( g ) )
@@ -9524,33 +9537,7 @@ V2d Actor::UpdateReversePhysics()
 					{
 						V2d eNorm = minContact.normal;//minContact.edge->Normal();
 						eNorm = -eNorm;
-						/*if( minContact.position.y < position.y + b.offset.y - b.rh + 5 && eNorm.y >= 0 )
-						{
-							if( minContact.position == minContact.edge->v0 ) 
-							{
-							//	cout << "edit1" << endl;
-								if( minContact.edge->edge0 != ground ) //this line and the other one below are
-									//because of how collision positions work on flat surfaces
-								if( minContact.edge->edge0->Normal().y >= 0 )
-								{
-									minContact.edge = minContact.edge->edge0;
-									eNorm = minContact.edge->Normal();
-									eNorm = -eNorm;
-								}
-							}
-							else if( minContact.position == minContact.edge->v1 )
-							{
-							//	cout << "edit2" << endl;
-
-								if( minContact.edge->edge1 != ground )//same as above in terms of use
-								if( minContact.edge->edge1->Normal().y >= 0 )
-								{
-									minContact.edge = minContact.edge->edge1;
-									eNorm = minContact.edge->Normal();
-									eNorm = -eNorm;
-								}
-							}
-						}*/
+						
 						
 						//cout<< "blah" << endl;
 						if( eNorm.y < 0 )
@@ -9558,24 +9545,13 @@ V2d Actor::UpdateReversePhysics()
 							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh)
 									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh);
 
-							//regular
-						//	bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
-						//			|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
-
-							//bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
-							//		|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
-							//cout << "speed transfer: " << speedTransfer << endl;
+						
 							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
 							{
 								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
 								double sum = position.x + minContact.resolution.x;
 								double diff = sum - minContact.position.x;
-								//double test = position.x + minContact.resolution.x - minContact.position.x;
-								/*cout << "pos: " << position.x << ", res: " << minContact.resolution.x
-									<< ", minContact: " << minContact.position.x << endl;
-								cout << "sum: " << sum << ", diff: " << diff << endl;
-								cout << "test: " << test << endl;
-								cout << "oldpos: " << oldPos.x << ", vel: " << resMove.x << endl;*/
+								
 								if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
 								{
 									//this is for corner border cases
@@ -12793,7 +12769,7 @@ void Actor::PhysicsResponse()
 				&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
 				&& action != JUMPSQUAT )
 			{
-				cout << "Action: " << action << endl;
+			//	cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = LAND2;
@@ -12905,7 +12881,7 @@ void Actor::PhysicsResponse()
 			
 			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
 			{
-				cout << "here no: " << action << ", " << offsetX << endl;
+				//cout << "here no: " << action << ", " << offsetX << endl;
 				action = LAND2;
 				frame = 0;
 			}
@@ -13026,12 +13002,12 @@ void Actor::PhysicsResponse()
 		//already bounced by here i think
 		if( storedBounceGroundSpeed < 0 )
 		{
-			cout << "facing right: " << groundSpeed << endl;
+			//cout << "facing right: " << groundSpeed << endl;
 			facingRight = true;
 		}
 		else
 		{
-			cout << "facing left: " << groundSpeed << endl;
+			//cout << "facing left: " << groundSpeed << endl;
 			facingRight = false;
 		}
 	}
@@ -17178,7 +17154,7 @@ void Actor::UpdateSprite()
 			Tileset *curr_ts = ts_diagUpSword[speedLevel];
 			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
-			showSword = true;//frame >= startFrame && frame / 2 <= 9;
+			showSword = frame/2 < 11;//frame >= startFrame && frame / 2 <= 9;
 
 			if( showSword )
 			{
@@ -17188,22 +17164,29 @@ void Actor::UpdateSprite()
 
 			SetSpriteTexture( action );
 
-			SetSpriteTile( frame / 2, facingRight );
+			SetSpriteTile( frame/2, facingRight );
 
 			//Vector2i offset( 32, -16 );
-			Vector2i offset( 0, 0 );
+			//Vector2i offset( 0, 0 );
 
 			if( showSword )
 			{
+				Vector2i offsets[3];//( 0, 0 );
+				offsets[0] = Vector2i( 40, -32 );
+				offsets[1] = Vector2i( 16, -40 );
+				offsets[2] = Vector2i( 32, -48 );
+
+				Vector2i offset = offsets[speedLevel];
+
 				if( facingRight )
 				{
-					diagUpAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+					diagUpAttackSword.setTextureRect( curr_ts->GetSubRect( frame /2 - startFrame ) );
 				}
 				else
 				{
 					offset.x = -offset.x;
 
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame/2 - startFrame );
 					diagUpAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );	
 				}
@@ -17230,7 +17213,7 @@ void Actor::UpdateSprite()
 			Tileset *curr_ts = ts_diagDownSword[speedLevel];
 			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
-			showSword = true;//frame >= startFrame && frame / 2 <= 9;
+			showSword = frame/2 < 11;//frame >= startFrame && frame / 2 <= 9;
 
 			if( showSword )
 			{
@@ -17243,20 +17226,28 @@ void Actor::UpdateSprite()
 			SetSpriteTile( frame / 2, facingRight );
 
 			//Vector2i offset( 32, -16 );
-			Vector2i offset( 0, 0 );
+			
 
 			if( showSword )
 			{
+
+				Vector2i offsets[3];//( 0, 0 );
+				offsets[0] = Vector2i( 32, 24 );
+				offsets[1] = Vector2i( 16, 32 );
+				offsets[2] = Vector2i( 16, 64 );
+
+				Vector2i offset = offsets[speedLevel];
+
 				if( facingRight )
 				{
-					diagDownAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+					diagDownAttackSword.setTextureRect( curr_ts->GetSubRect( frame/2 - startFrame ) );
 				}
 				else
 				{
 				
 					offset.x = -offset.x;
 
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame/2 - startFrame );
 					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
 					diagDownAttackSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );	
@@ -17283,7 +17274,7 @@ void Actor::UpdateSprite()
 		{
 	
 			int fr = frame;
-			if ( frame > 27)
+			if ( frame > 27 )
 			{
 				fr = 27;
 			}
@@ -17801,7 +17792,7 @@ void Actor::UpdateSprite()
 				V2d bn = oldBounceNorm;//oldBounceEdge->Normal();
 				if( bn.y <= 0 && bn.y > -steepThresh )
 				{
-					bounceFrame = 3;
+					bounceFrame = 0;
 					if( facingRight )
 					{
 						//facingRight = false;
@@ -17811,7 +17802,7 @@ void Actor::UpdateSprite()
 				else if( bn.y >= 0 && -bn.y > -steepThresh )
 				{
 					
-					bounceFrame = 3;
+					bounceFrame = 5;
 				}
 				else if( bn.y == 0 )
 				{
@@ -17823,12 +17814,12 @@ void Actor::UpdateSprite()
 				}
 				else if( bn.y > 0 )
 				{
-					bounceFrame = 5;
+					bounceFrame = 6;
 				}
 			}
 			else
 			{
-				bounceFrame = 6;
+				bounceFrame = 7;
 			}
 			
 			SetSpriteTexture( action );
@@ -17847,18 +17838,28 @@ void Actor::UpdateSprite()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
-					bounceFrame = 0;
-				else
-					bounceFrame = 2;
-				//facingRight = !facingRight;
+				//if( storedBounceVel.y > 0 ) //falling
+				//{
+
+				//}
+				//else
+				//{
+
+				//}
+				//if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
+				//	bounceFrame = 0;
+				//else
+				//	bounceFrame = 2;
+
+				bounceFrame = 2;
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
+				/*if( (bn.x > 0 && storedBounceVel.x >= 0) || (bn.x < 0 && storedBounceVel.x <= 0 ) )
 					bounceFrame = 4;
 				else
-					bounceFrame = 2;
+					bounceFrame = 2;*/
+				bounceFrame = 2;
 				//facingRight = !facingRight;
 			}
 			else if( bn.y == 0 )
@@ -17868,7 +17869,7 @@ void Actor::UpdateSprite()
 			}
 			else if( bn.y < 0 )
 			{
-				bounceFrame = 0;
+				bounceFrame = 1;//8
 			}
 			else if( bn.y > 0 )
 			{

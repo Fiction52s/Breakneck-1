@@ -38,13 +38,14 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void ClearDebug();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void TestPoint( Edge * e);
-	void SortNewPoints( int start, int end );
 	void SwapPoints( int aIndex, int bIndex );
 	void UpdateQuads();
 	void Reset();
 	sf::Vector2<double> GetOriginPos( bool test );
 	void UpdateFuse();
 	double GetSegmentLength();
+	sf::Vector2<double> GetPlayerPos();
+	sf::Vector2<double> currOffset;
 
 	double GetCurrentTotalLength();
 	
@@ -93,6 +94,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		sf::Vector2<double> test;
 		bool clockwise;
 		double angleDiff;
+
+		double sortingAngleDist;
 	};
 
 	const static int MAX_CHARGES = 16;
@@ -139,6 +142,10 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void UpdateChargesPrePhysics();
 	void UpdateChargesPostPhysics();
 
+	void TestPoint2( Edge *e );
+	int newWirePoints;
+	double GetTestPointAngle( Edge *e );
+
 	int CountActiveCharges();
 	int CountInactiveCharges();
 	Tileset *ts_wireCharge;
@@ -153,10 +160,12 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int animFactor;
 	double quadHalfWidth;
 	int numPoints;
-	const static int MAX_POINTS = 2000;
+	const static int MAX_POINTS = 64;
 
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];
+
+	void SortNewPoints( );
 	//sf::VertexArray quads;
 	sf::Vertex *quads;
 	int numQuadVertices;
@@ -204,6 +213,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::Vector2<double> quadWirePosC;
 	sf::Vector2<double> quadPlayerPosD;
 	sf::Vector2<double> minPoint;
+
 
 	std::list<sf::Drawable*> progressDraw;
 };
