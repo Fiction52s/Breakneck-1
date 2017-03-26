@@ -877,6 +877,13 @@ void Wire::UpdateAnchors2( V2d vel )
 
 		player->owner->terrainTree->Query( this, r );
 
+		if( state == RELEASED )
+		{
+			cout << "went too many points" << endl;
+			//should cut the wire when you go over the point count
+			return;
+		}
+
 		if( player->owner->showDebugDraw )
 		{
 			sf::RectangleShape queryDebug;
@@ -1271,6 +1278,11 @@ void Wire::TestPoint2( Edge *e )
 				points[numPoints].test = -points[numPoints].test;
 			}
 			numPoints++;
+		}
+		else
+		{
+			state = RELEASED;
+			numPoints = 0;
 		}
 		newWirePoints++;
 	}

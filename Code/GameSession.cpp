@@ -27,6 +27,7 @@
 #include "Parallax.h"
 #include <boost/thread.hpp>
 #include <iostream>
+#include "ImageText.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -787,7 +788,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	repPlayer = NULL;
 	recGhost = NULL;
 	repGhost = NULL;
-	multiSession = false;//false;//true;//true;//false;//true;
+	multiSession = true;//false;//true;//true;//false;//true;
 	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
@@ -6788,6 +6789,11 @@ int GameSession::Run( string fileN )
 
 				testPar->Update( camPos );
 
+				if( raceFight != NULL )
+				{
+					raceFight->UpdateScore();
+				}
+
 				for( list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 					it != scrollingBackgrounds.end(); ++it )
 				{
@@ -7060,6 +7066,15 @@ int GameSession::Run( string fileN )
 						pauseMenu->SetTab( PauseMenu::MAP );
 					
 						soundNodeList->Pause( true );
+					}
+				}
+				else if( raceFight != NULL )
+				{
+					if( raceFight->playerScore == raceFight->numTargets )
+					{
+						state = RACEFIGHT_RESULTS;
+						raceFight->raceFightResultsFrame = 0;
+						break;
 					}
 				}
 				
@@ -7975,7 +7990,10 @@ int GameSession::Run( string fileN )
 
 		preScreenTex->setView( uiView );
 
-		
+		if( raceFight != NULL )
+		{
+			raceFight->DrawScore( preScreenTex );
+		}
 		
 		if( false )
 		{
@@ -8906,7 +8924,12 @@ int GameSession::Run( string fileN )
 			window->draw( mapTexSprite );
 
 		}
+		else if( state == RACEFIGHT_RESULTS )
+		{
+			//TODO_AFTERSCORE
 
+			++raceFight->raceFightResultsFrame;
+		}
 		window->display();
 
 		
@@ -13740,6 +13763,13 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner )
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
 	hitByPlayer2List( NULL ), numTargets( 0 )
 {
+	Tileset *scoreTS = owner->GetTileset( "number_score_80x80.png", 80, 80 );
+	Tileset *score2TS = scoreTS;
+	int numDigits = 2;
+	playerScoreImage = new ImageText( 2, scoreTS );
+	playerScoreImage->topRight = Vector2f( 1920/2 - 200, 0 );
+	player2ScoreImage = new ImageText( 2, score2TS );
+	player2ScoreImage->topRight = Vector2f( 1920/2 + 200 + 80 * 2, 0 );
 }
 
 void GameSession::RaceFight::HitByPlayer( int playerIndex,
@@ -13750,6 +13780,7 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 	{
 		player = owner->player;
 		playerScore++;
+		playerScoreImage->SetNumber( playerScore );
 
 		if( hitByPlayerList == NULL )
 		{
@@ -13768,6 +13799,7 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 	{
 		player = owner->player2;
 		player2Score++;
+		player2ScoreImage->SetNumber( player2Score );
 		
 		if( hitByPlayer2List == NULL )
 		{
@@ -13806,6 +13838,7 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 		{
 			hitByPlayer2List->action = RaceFightTarget::Action::PLAYER1;
 			--player2Score;
+			//playerScoreImage->SetNumber( player2Score );
 
 			HitByPlayer( attacker, hitByPlayer2List );
 		}
@@ -13819,10 +13852,23 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 		{
 			hitByPlayerList->action = RaceFightTarget::Action::PLAYER2;
 			--playerScore;
+			//playerScoreImage->SetNumber( playerScore );
 
 			HitByPlayer( attacker, hitByPlayerList );
 		}
 	}
 
 
+}
+
+void GameSession::RaceFight::DrawScore( sf::RenderTarget *target )
+{
+	playerScoreImage->Draw( target );
+	player2ScoreImage->Draw( target );
+}
+
+void GameSession::RaceFight::UpdateScore()
+{
+	playerScoreImage->UpdateSprite();
+	player2ScoreImage->UpdateSprite();
 }
