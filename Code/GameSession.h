@@ -319,6 +319,7 @@ struct Buf
 };
 
 struct ImageText;
+struct TimerText;
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -353,15 +354,20 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	struct RaceFight
 	{
-		RaceFight( GameSession *owner );
+		RaceFight( GameSession *owner, 
+			int raceFightMaxSeconds );
 		void Reset();
 		int playerScore;
 		int player2Score;
 		void DrawScore( sf::RenderTarget *target );
 		void UpdateScore();
+		void Init();
 
 		//RaceFightTarget *targetList;
 		GameSession *owner;
+
+		sf::Text tempAllTargets;
+
 		RaceFightTarget *hitByPlayerList;
 		RaceFightTarget *hitByPlayer2List;
 		void HitByPlayer( int playerIndex,
@@ -369,10 +375,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 		void PlayerHitByPlayer( int attacker,
 			int defender );
+		void TickClock();
+		void TickFrame();
+		int NumDigits( int number );
+		int frameCounter;
+
 		int numTargets;
 		ImageText *playerScoreImage;
 		ImageText *player2ScoreImage;
 		int raceFightResultsFrame;
+		TimerText *gameTimer;
+		ImageText *numberTargetsRemainingImage;
+		ImageText *numberTargetsTotalImage;
 	};
 	RaceFight *raceFight;
 	

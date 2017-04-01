@@ -79,3 +79,65 @@ void ImageText::SetNumber( int num )
 {
 	value = num;
 }
+
+TimerText::TimerText( Tileset *ts_tex )
+	:ImageText(5, ts_tex )
+{
+	int colonIndex = 5/2;
+	IntRect subRect = ts->GetSubRect( 10 );
+	vert[colonIndex*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+	vert[colonIndex*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	vert[colonIndex*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	vert[colonIndex*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+}
+
+void TimerText::UpdateSprite()
+{
+	int numMinutes = value / 60;
+	int numSeconds = value % 60;
+
+	for( int i = 0; i < maxDigits; ++i )
+	{
+		vert[i*4 + 0].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( -ts->tileWidth, 0 );
+		vert[i*4 + 1].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight;
+		vert[i*4 + 2].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( 0, ts->tileHeight );
+		vert[i*4 + 3].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( -ts->tileWidth, ts->tileHeight );
+	}
+
+	int div = 10;
+	int val = value;
+	int ind = 0;
+	
+	int numDigit1 = numSeconds / 10;
+	int numDigit2 = numSeconds % 10;
+
+	IntRect subRect = ts->GetSubRect( numDigit2 );
+	vert[0*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+	vert[0*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	vert[0*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	vert[0*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+
+	subRect = ts->GetSubRect( numDigit1 );
+	vert[1*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+	vert[1*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	vert[1*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	vert[1*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+
+	
+	numDigit1 = numMinutes / 10;
+	numDigit2 = numMinutes % 10;
+
+	subRect = ts->GetSubRect( numDigit2 );
+	vert[3*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+	vert[3*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	vert[3*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	vert[3*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+
+	subRect = ts->GetSubRect( numDigit1 );
+	vert[4*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+	vert[4*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	vert[4*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	vert[4*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+
+	activeDigits = maxDigits;
+}

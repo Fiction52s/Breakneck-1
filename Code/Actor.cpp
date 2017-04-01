@@ -25,6 +25,20 @@ using namespace std;
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+
+		if( gs->raceFight != NULL )
+		{
+			maxBubbles = 1;
+		}
+		else
+		{
+			maxBubbles = 5;
+		}
+
+		bubblePos = new V2d[maxBubbles];
+		bubbleFramesToLive = new int[maxBubbles];
+		bubbleRadiusSize = new int[maxBubbles];
+
 		spriteAction = FAIR;
 		currTileIndex = 0;
 
@@ -2549,7 +2563,10 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			bool wireCanDouble = !(rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
+			wireCanDouble |= (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
+
+			if( hasPowerAirDash && wireCanDouble )
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
@@ -2571,7 +2588,9 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			
+
+			if( hasDoubleJump && currInput.A && !prevInput.A && wireCanDouble )
 			{
 				action = DOUBLE;
 				frame = 0;
@@ -5279,7 +5298,10 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 			//else if( currInput.A && !prevInput.A && hasDoubleJump )
-			else if( currInput.A && !prevInput.A && hasDoubleJump && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
+			bool wireCanDouble = !(rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
+			wireCanDouble |= (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
+
+			if( currInput.A && !prevInput.A && hasDoubleJump && wireCanDouble )
 			{
 				action = DOUBLE;
 				holdDouble = true;
@@ -6925,7 +6947,11 @@ void Actor::UpdatePrePhysics()
 	case AIRDASH:
 		{
 			double aSpeed = GetAirDashSpeed();
-			if( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
+
+			bool wireCanDouble = !(rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
+			wireCanDouble |= (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
+
+			if( !wireCanDouble )
 			{
 				if( frame == 0 )
 				{
@@ -6947,8 +6973,16 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
+				bool isDoubleWiring = rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING;
+
+				
+
+
 				if( frame == 0 )
 				{
+					dWireAirDash = V2d( 0, 0 );
+					dWireAirDashOld = V2d( 0, 0 );
+
 					hasAirDash = false;
 					startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 					if( (velocity.y > 0 && currInput.LDown()) || ( velocity.y < 0 && currInput.LUp() ) )
@@ -6981,8 +7015,32 @@ void Actor::UpdatePrePhysics()
 						extraAirDashY = 0;
 					}
 				}
+				//V2d oldvel = velocity;
+
+				dWireAirDash = V2d( 0, 0 );
+				if( false )//isDoubleWiring )
+				{
+					if( currInput.LUp() )
+					{
+						dWireAirDash += V2d( 0, -aSpeed );
+					}
+					if( currInput.LLeft() )
+					{
+						dWireAirDash += V2d( -aSpeed, 0 );
+					}
+					if( currInput.LRight() )
+					{
+						dWireAirDash += V2d( aSpeed, 0);
+					}
+					if( currInput.LDown() )
+					{
+						dWireAirDash += V2d( 0, aSpeed );
+					}
+				}
+				else
+				{
 				velocity = V2d( 0, 0 );//startAirDashVel;
-			
+				
 				double keepHorizontalLimit = 30;
 				double removeSpeedFactor = .5;
 
@@ -7062,10 +7120,25 @@ void Actor::UpdatePrePhysics()
 			
 				if( velocity.x == 0 && velocity.y == 0 )
 				{
-					startAirDashVel = V2d( 0, 0 );
-					extraAirDashY = 0;
-					velocity = AddGravity( velocity );
+					/*if( isDoubleWiring )
+					{
+						velocity = oldvel;
+					}
+					else*/
+					{
+						startAirDashVel = V2d( 0, 0 );
+						extraAirDashY = 0;
+						velocity = AddGravity( velocity );
+					}
+					
 				}
+
+				}
+
+				velocity -= dWireAirDashOld;
+				velocity += dWireAirDash;
+
+				dWireAirDashOld = dWireAirDash;
 
 				//cout << "extraAirDashY: " << extraAirDashY << endl;
 				//if( extraAirDashY == 0 || ( extraAirDashY < 0 && currInput.LUp() ) )
@@ -7234,9 +7307,9 @@ void Actor::UpdatePrePhysics()
 	
 
 	if( ground == NULL && bounceEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1 && action != GRINDLUNGE )
+		&& action != ENTERNEXUS1 )
 	{
-		if( action != AIRDASH )
+		if( action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING ) && action != GRINDLUNGE )
 		{
 			velocity = AddGravity( velocity );
 		}
@@ -7294,7 +7367,7 @@ void Actor::UpdatePrePhysics()
 	
 	double accel = .15;
 	double triggerSpeed = 17;
-	double doubleWirePull = 2.0;
+	double doubleWirePull = 1.0;//2.0
 	if( framesInAir > 1 )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
@@ -7364,13 +7437,22 @@ void Actor::UpdatePrePhysics()
 
 		totalVelDir = normalize( wireDir1 + wireDir2 );
 
+		double dott = dot( -wireDir1, wireDir2 );
+		bool opposite = (dott > .95);
+
 		V2d otherDir( totalVelDir.y, -totalVelDir.x );
 		double dotvel =dot( velocity, otherDir );
 		//correction for momentum
 
-
-
+		
+		
 		V2d wdirs = ( wireDir1 + wireDir2 ) / 2.0;
+
+		
+		if( opposite)
+			wdirs = wireDir1;
+		
+		
 		V2d owdirs( wdirs.y, -wdirs.x );
 
 		V2d inputDir;
@@ -7395,20 +7477,25 @@ void Actor::UpdatePrePhysics()
 		double v = 1.0;
 		if( dotvel > 0 )
 		{
-			velocity += -otherDir * v / (double)slowMultiple;
+			cout << "a" << endl;
+			velocity += -owdirs * v / (double)slowMultiple;
 		}
 		else if( dotvel < 0 )
 		{
-			velocity += otherDir * v / (double)slowMultiple;
+			cout << "b" << endl;
+			velocity += owdirs * v / (double)slowMultiple;
 		}
 		else
 		{
 		}
 
+		if( !opposite )
+		{
 		V2d totalAcc;
 		totalAcc.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
 		if( totalVelDir.y < 0 )
-			totalAcc.y = totalVelDir.y * ( doubleWirePull + 1 )/ (double)slowMultiple;
+			totalAcc.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
+			//totalAcc.y = totalVelDir.y * ( doubleWirePull + 1 )/ (double)slowMultiple;
 		else
 			totalAcc.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
 		
@@ -7424,14 +7511,67 @@ void Actor::UpdatePrePhysics()
 		//}
 		//totalVel *= dot( totalVelDir, rightWire->
 		velocity += totalAcc;
-
-		double afterAlongAmount = dot( velocity, totalVelDir );
-		double maxAlong = 45.0;
-
-		if( afterAlongAmount > maxAlong )
-		{
-			velocity -= ( afterAlongAmount - maxAlong ) * totalVelDir;
 		}
+
+		if( opposite && !currInput.LLeft() && !currInput.LDown() && !currInput.LUp() && !currInput.LRight() )
+		{
+			double wdirsVel = dot( velocity, wdirs );
+			double owdirsVel = dot( velocity, owdirs );
+
+			//wdirsVel /= 2;
+			//owdirsVel /= 2;
+			if( abs( wdirsVel ) < 5 )
+			{
+				//wdirsVel = 0;
+			}
+			if( abs( owdirsVel ) < 5 )
+			{
+			//	owdirsVel = 0;
+			}
+		
+			
+			velocity = wdirsVel * wdirs + owdirsVel * owdirs;
+
+
+			V2d g = AddGravity( velocity );
+			g -= velocity;
+			g = -g;
+			//velocity -= g;
+			//velocity += V2d( 0, -gravity );
+		}
+
+		if( opposite )
+		{
+			dotvel = dot( inputDir, wireDir1 );
+			double v = 1.0;
+			if( dotvel > 0 )
+			{
+				//cout << "a" << endl;
+				velocity += wireDir1 * v / (double)slowMultiple;
+			}
+			else if( dotvel < 0 )
+			{
+				//cout << "b" << endl;
+				velocity += wireDir2 * v / (double)slowMultiple;
+			}
+			else
+			{
+			}
+		}
+		else
+		{
+			//totalVelDir
+			if( dot( wireDir1, wireDir2 ) > .99 )
+				velocity = (velocity + AddGravity( velocity )) / 2.0;
+		}
+		//removing the max velocity cap now that it doesnt pull you in a straight direction
+		//double afterAlongAmount = dot( velocity, totalVelDir );
+		//double maxAlong = 100;//45.0;
+
+		//if( afterAlongAmount > maxAlong )
+		//{
+		//	velocity -= ( afterAlongAmount - maxAlong ) * totalVelDir;
+		//}
 
 		//if( length( velocity ) > afterAlongAmount )
 		//{
@@ -7757,6 +7897,8 @@ void Actor::UpdatePrePhysics()
 	oldInBubble = inBubble;
 	inBubble = false;
 
+	//int mBubbles = maxBubbles;
+
 	if( hasPowerTimeSlow )
 	{
 		//calculate this all the time so I can give myself infinite airdash
@@ -7772,6 +7914,13 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 		}
+	}
+
+	bool isInOwnBubble = inBubble;
+	bool isBeingSlowed = IsBeingSlowed();
+	if( isBeingSlowed )
+	{
+		inBubble = true;
 	}
 
 	if( toggleTimeSlowInput && !inBubble && oldInBubble )
@@ -7793,6 +7942,7 @@ void Actor::UpdatePrePhysics()
 		holdJump = false;
 	}
 
+	int tempSlowCounter = slowCounter;
 	if( ( hasPowerTimeSlow && currInput.leftShoulder ) || cloneBubbleCreated )
 	{
 		if( (!prevInput.leftShoulder  && !inBubble) || cloneBubbleCreated )
@@ -7844,6 +7994,19 @@ void Actor::UpdatePrePhysics()
 		slowMultiple = 1;
 	}
 
+	if( isBeingSlowed && !isInOwnBubble )
+	{
+		if( currInput.leftShoulder )
+		{
+			slowCounter = 1;
+			slowMultiple = 1;
+		}
+		else
+		{
+			slowCounter = tempSlowCounter;
+			slowMultiple = timeSlowStrength;
+		}
+	}
 	
 
 
@@ -14238,6 +14401,40 @@ void Actor::BounceFlameOff()
 	bounceGrounded = false;
 }
 
+bool Actor::IsBeingSlowed()
+{
+	if( owner->raceFight != NULL )
+	{
+		Actor *other;
+		if( actorIndex == 0 )
+		{
+			other = owner->player2;
+		}
+		else
+		{
+			other = owner->player;
+		}
+
+		bool found = false;
+		for( int i = 0; i < other->maxBubbles; ++i )
+		{
+			if( other->bubbleFramesToLive[i] > 0 )
+			{
+				if( length( position - other->bubblePos[i] ) <= other->bubbleRadius )
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	else
+	{
+		//except for gator fight
+		return false;
+	}
+}
+
 sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 {
 	if( vel.y >= maxFallSpeedSlow )
@@ -18717,8 +18914,8 @@ void Actor::SaveState()
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
-		stored.bubblePos[i] = bubblePos[i];
-		stored.bubbleFramesToLive[i] = bubbleFramesToLive[i];
+	//	stored.bubblePos[i] = bubblePos[i];
+	//	stored.bubbleFramesToLive[i] = bubbleFramesToLive[i];
 	}
 	stored.currBubble = currBubble;
 
@@ -18793,8 +18990,8 @@ void Actor::LoadState()
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
-		bubblePos[i] = stored.bubblePos[i];
-		bubbleFramesToLive[i] = stored.bubbleFramesToLive[i];
+	//	bubblePos[i] = stored.bubblePos[i];
+	//	bubbleFramesToLive[i] = stored.bubbleFramesToLive[i];
 	}
 	currBubble = stored.currBubble;
 

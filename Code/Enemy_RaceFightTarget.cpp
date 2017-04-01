@@ -35,10 +35,12 @@ RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
 	
 	frame = 0;
 
+	
+
 	animationFactor = 10;
 
 	//ts = owner->GetTileset( "RaceFightTarget.png", 80, 80 );
-	ts = owner->GetTileset( "target_80x80.png", 80, 80 );
+	ts = owner->GetTileset( "target_224x224.png", 224, 224 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -50,8 +52,8 @@ RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
+	hurtBody.rw = 40;
+	hurtBody.rh = 40;
 
 	/*hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;

@@ -210,7 +210,6 @@ struct Actor : QuadTreeCollider,
 	void ConfirmEnemyKill( Enemy *e );
 	bool IHitPlayer( int otherPlayerIndex );
 	std::pair<bool,bool> PlayerHitMe( int otherPlayerIndex );
-	
 
 	void ShipPickupPoint( double eq,
 		bool facingRight );
@@ -614,7 +613,9 @@ struct Actor : QuadTreeCollider,
 
 	
 	//dont need to store these
-	const static int maxBubbles = 5;
+	//const static int MAX_BUBBLES = 5;
+	//const static int MAX_BUBBLES_RACEFIGHT = 1;
+	int maxBubbles;
 	int bubbleLifeSpan;
 	int bubbleRadius;
 	int bubbleRadius0;
@@ -622,14 +623,15 @@ struct Actor : QuadTreeCollider,
 	int bubbleRadius2;
 	
 	int GetBubbleRadius();
+	bool IsBeingSlowed();
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	//--
 	
 	
-	sf::Vector2<double> bubblePos[maxBubbles];
-	int bubbleFramesToLive[maxBubbles];
-	int bubbleRadiusSize[maxBubbles];
+	sf::Vector2<double> *bubblePos;//[maxBubbles];
+	int *bubbleFramesToLive;//[maxBubbles];
+	int *bubbleRadiusSize;//[maxBubbles];
 	int currBubble;
 
 	
@@ -685,6 +687,8 @@ struct Actor : QuadTreeCollider,
 
 	Critical *currentCheckPoint;
 
+	sf::Vector2<double> dWireAirDash;
+	sf::Vector2<double> dWireAirDashOld;
 	//end unstored
 
 	void SaveState();
@@ -754,9 +758,11 @@ struct Actor : QuadTreeCollider,
 		bool touchEdgeWithLeftWire;
 		bool touchEdgeWithRightWire;
 
-		sf::Vector2<double> bubblePos[maxBubbles];
-		int bubbleFramesToLive[maxBubbles];
+		//sf::Vector2<double> bubblePos[maxBubbles];
+		//int bubbleFramesToLive[maxBubbles];
 		int currBubble;
+
+		
 
 		sf::Vector2<double> bounceNorm;
 		sf::Vector2<double> oldBounceNorm;

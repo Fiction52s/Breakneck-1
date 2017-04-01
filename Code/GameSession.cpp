@@ -3429,7 +3429,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				if( raceFight == NULL )
 				{
-					raceFight = new RaceFight( this );
+					raceFight = new RaceFight( this, 180 );
 				}
 
 				raceFight->numTargets++;
@@ -3476,6 +3476,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		ts_basicBullets = NULL;
 	}
 
+	if( raceFight != NULL )
+	{
+		raceFight->Init();
+	}
+
 	return true;
 }
 
@@ -3508,15 +3513,8 @@ bool GameSession::OpenFile( string fileName )
 		points = new Vector2<double>[numPoints];
 		
 
-		is >> player->position.x;
-		is >> player->position.y;
-		originalPos.x = player->position.x;
-		originalPos.y = player->position.y;
-
-		if( multiSession )
-		{
-			player2->position = player->position;
-		}
+		is >> originalPos.x;
+		is >> originalPos.y;
 
 		is >> goalPos.x;
 		is >> goalPos.y;
@@ -5557,7 +5555,7 @@ int GameSession::Run( string fileN )
 	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
 	bool bdrawdraw = false;
 
-	player = new Actor( this, 0 );
+	
 
 	
 	//recGhost = new RecordGhost( player );
@@ -5566,6 +5564,15 @@ int GameSession::Run( string fileN )
 	//recPlayer = new RecordPlayer( player );
 	//repPlayer = new ReplayPlayer( player );
 	
+	
+
+	
+
+
+	OpenFile( fileName );
+	
+	player = new Actor( this, 0 );
+
 	if( multiSession )
 	{
 		player2 = new Actor( this, 1 );
@@ -5575,9 +5582,11 @@ int GameSession::Run( string fileN )
 		player2 = NULL;
 	}
 
-
-	OpenFile( fileName );
-	
+	player->position = originalPos;
+	if( multiSession )
+	{
+		player2->position = player->position;
+	}
 	/*{
 		cout << "HAFHWEIFHWEFH" << endl;
 		string masterVolume[101];
@@ -7049,6 +7058,15 @@ int GameSession::Run( string fileN )
 				{
 					RestartLevel();
 				}
+				else if( raceFight != NULL )
+				{
+					if( raceFight->playerScore == raceFight->numTargets || raceFight->gameTimer->value == 0 )
+					{
+						state = RACEFIGHT_RESULTS;
+						raceFight->raceFightResultsFrame = 0;
+						break;
+					}
+				}
 				else if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT )
 				{
 					//if( Keyboard::isKeyPressed( Keyboard ) )
@@ -7068,15 +7086,7 @@ int GameSession::Run( string fileN )
 						soundNodeList->Pause( true );
 					}
 				}
-				else if( raceFight != NULL )
-				{
-					if( raceFight->playerScore == raceFight->numTargets )
-					{
-						state = RACEFIGHT_RESULTS;
-						raceFight->raceFightResultsFrame = 0;
-						break;
-					}
-				}
+				
 				
 
 				if( player->record > 0 )
@@ -8926,7 +8936,23 @@ int GameSession::Run( string fileN )
 		}
 		else if( state == RACEFIGHT_RESULTS )
 		{
-			//TODO_AFTERSCORE
+			//TODO
+			window->clear();
+
+			prevInput = currInput;
+
+			controller.UpdateState();
+			currInput = controller.GetState();
+
+
+			if( raceFight->raceFightResultsFrame > 30 )
+			{
+				if( currInput.A && !prevInput.A )
+				{
+					quit = true;
+					returnVal = 1;
+				}
+			}
 
 			++raceFight->raceFightResultsFrame;
 		}
@@ -13759,7 +13785,7 @@ void Critical::Draw( RenderTarget *target )
 	}
 }
 
-GameSession::RaceFight::RaceFight( GameSession *p_owner )
+GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
 	hitByPlayer2List( NULL ), numTargets( 0 )
 {
@@ -13770,6 +13796,43 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner )
 	playerScoreImage->topRight = Vector2f( 1920/2 - 200, 0 );
 	player2ScoreImage = new ImageText( 2, score2TS );
 	player2ScoreImage->topRight = Vector2f( 1920/2 + 200 + 80 * 2, 0 );
+
+	gameTimer = new TimerText( scoreTS );
+	gameTimer->topRight = Vector2f( 1920/2 + 80 * 2.5, 0 );
+	gameTimer->SetNumber( raceFightMaxSeconds );
+
+	
+
+	Reset();
+
+	tempAllTargets.setFont( owner->arial );
+	tempAllTargets.setCharacterSize( 12 );
+	tempAllTargets.setColor( Color::Red );
+	
+}
+
+int GameSession::RaceFight::NumDigits( int number )
+{
+	int digits = 0;
+	do
+	{
+		++digits;
+		number /= 10;
+	}
+	while( number > 0 );
+
+	return digits;
+}
+
+void GameSession::RaceFight::Init()
+{
+	//after we know how many total targets we have
+	int digits = NumDigits( numTargets );
+	numberTargetsRemainingImage = new ImageText( digits, playerScoreImage->ts );
+	numberTargetsRemainingImage->topRight = Vector2f( 1920/2 + 80 * 3, 90 );
+	numberTargetsTotalImage = new ImageText( digits, playerScoreImage->ts );
+	numberTargetsTotalImage->topRight = Vector2f( 1920/2 + 80 * 2, 90 );
+	numberTargetsTotalImage->UpdateSprite();
 }
 
 void GameSession::RaceFight::HitByPlayer( int playerIndex,
@@ -13781,6 +13844,8 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 		player = owner->player;
 		playerScore++;
 		playerScoreImage->SetNumber( playerScore );
+
+		
 
 		if( hitByPlayerList == NULL )
 		{
@@ -13822,6 +13887,7 @@ void GameSession::RaceFight::Reset()
 	player2Score = 0;
 	hitByPlayerList = NULL;
 	hitByPlayer2List = NULL;
+	frameCounter = 0;
 }
 
 void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
@@ -13865,10 +13931,40 @@ void GameSession::RaceFight::DrawScore( sf::RenderTarget *target )
 {
 	playerScoreImage->Draw( target );
 	player2ScoreImage->Draw( target );
+
+	gameTimer->Draw( target );
+
+	numberTargetsTotalImage->Draw( target );
+	numberTargetsRemainingImage->Draw( target );
 }
 
 void GameSession::RaceFight::UpdateScore()
 {
+	gameTimer->UpdateSprite();
 	playerScoreImage->UpdateSprite();
 	player2ScoreImage->UpdateSprite();
+
+	numberTargetsRemainingImage->SetNumber( numTargets - ( playerScore + player2Score ) );
+	numberTargetsRemainingImage->UpdateSprite();
+
+	TickFrame();
+}
+
+void GameSession::RaceFight::TickClock()
+{
+	gameTimer->SetNumber( gameTimer->value-- );
+}
+
+void GameSession::RaceFight::TickFrame()
+{
+	if( frameCounter == 60 )
+	{
+		int val = gameTimer->value - 1;
+		gameTimer->SetNumber( val );
+		frameCounter = 0;
+	}
+	else
+	{
+		++frameCounter;
+	}
 }

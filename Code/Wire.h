@@ -146,9 +146,13 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int newWirePoints;
 	double GetTestPointAngle( Edge *e );
 
+	Tileset *ts_wireTip;
+	sf::Sprite wireTip;
+
 	int CountActiveCharges();
 	int CountInactiveCharges();
 	Tileset *ts_wireCharge;
+	
 	int numTotalCharges;
 	sf::VertexArray chargeVA;
 

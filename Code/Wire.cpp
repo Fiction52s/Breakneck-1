@@ -14,7 +14,7 @@ Wire::Wire( Actor *p, bool r)
 	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), right( r )
 	, extraBuffer( MAX_POINTS ),//64  ), 
 	//eventually you can split this up into smaller sections so that they don't all need to draw
-  quadHalfWidth( 4 ), ts_wire( NULL ), frame( 0 ), animFactor( 2 ), offset( 8, 18 ),
+  quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 ),
   numTotalCharges( 0 ), chargeVA( sf::Quads, MAX_CHARGES * 4 )
 {
 	numQuadVertices = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
@@ -23,16 +23,28 @@ Wire::Wire( Actor *p, bool r)
 	numMinimapQuads = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
 	minimapQuads = new Vertex[numMinimapQuads];
 
+	int tipIndex = 0;
 	//ts_wire = player->owner->GetTileset( "wire.png", 6, 36 );
-	ts_wire = player->owner->GetTileset( "wire_01_14x8.png", 14, 8 );
+	ts_wire = player->owner->GetTileset( "wires_16x16.png", 16, 16 );
 	if( r )
 	{
 		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
+		tipIndex = 0;
 	}
 	else
 	{
+		tipIndex = 2;
 		ts_miniHit = player->owner->GetTileset( "rain_64x64.png", 64, 64 );
 	}
+
+	ts_wireTip = player->owner->GetTileset( "wire_tips_16x16.png", 16, 16 );
+
+	
+
+	wireTip.setTexture( *ts_wireTip->texture );
+	wireTip.setTextureRect( ts_wireTip->GetSubRect( tipIndex ) );
+	wireTip.setOrigin( wireTip.getLocalBounds().width / 2, wireTip.getLocalBounds().height / 2 );
+
 
 	ts_wireCharge = player->owner->GetTileset( "wirecharge_32x32.png", 32, 32 );
 
@@ -45,7 +57,7 @@ Wire::Wire( Actor *p, bool r)
 
 	retractSpeed = 30;//20;//60;
 
-	numAnimFrames = 8;
+	numAnimFrames = 16;
 
 	//pullStrength = 10;
 	maxPullStrength = 30;
@@ -255,10 +267,15 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						}
 
 						fireDir = normalize( fireDir );
+
+						float angle = atan2( fireDir.y, fireDir.x );
+
 						state = FIRING;
 						//cout << "firing from idle" << endl;
 						framesFiring = 0;
 						frame = 0;
+
+						wireTip.setRotation( angle );
 					}
 				}
 
@@ -494,10 +511,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						}
 
 						fireDir = normalize( fireDir );
+
+						float angle = atan2( fireDir.y, fireDir.x );
 						state = FIRING;
 						//cout << "firing from retracting" << endl;
 						framesFiring = 0;
 						frame = 0;
+
+						wireTip.setRotation( angle );
 					}
 				}
 
@@ -1065,6 +1086,7 @@ double Wire::GetTestPointAngle( Edge *e )
 			double diff = pAngle - oldAngle;
 			if( diff >= 0 && diff <= newAngle - oldAngle )
 			{
+				//cout << "a" << endl;
 				return diff;
 			}
 			else
@@ -1074,11 +1096,19 @@ double Wire::GetTestPointAngle( Edge *e )
 		}
 		else
 		{
-			double diff = oldAngle - pAngle;
-			if( pAngle >= newAngle || pAngle <= oldAngle )
+			double diff; //= oldAngle - pAngle;
+			if( pAngle >= newAngle )
 			{
+				diff = pAngle - oldAngle;
+				//cout << "b" << endl;
 				return diff;
 				//cw
+			}
+			else if( pAngle <= oldAngle )
+			{
+				//cout << "b1" << endl;
+				diff = oldAngle - pAngle;
+				return diff;
 			}
 			else
 			{
@@ -1091,9 +1121,10 @@ double Wire::GetTestPointAngle( Edge *e )
 		if( oldAngle - newAngle < PI )
 		{
 			//ccw
-			double diff = pAngle - newAngle;
+			double diff = oldAngle - pAngle;
 			if( diff >= 0 && diff <= oldAngle - newAngle )
 			{
+				//cout << "c" << endl;
 				return diff;
 				//good
 			}
@@ -1106,10 +1137,17 @@ double Wire::GetTestPointAngle( Edge *e )
 		{
 			tempClockwise = true;
 			double diff = pAngle - oldAngle;
-			if( pAngle <= newAngle || pAngle >= oldAngle )
+			if( pAngle <= newAngle )
 			{
+				diff = oldAngle - pAngle;
+				//cout << "d" << endl;
 				return diff;
 				//ccw
+			}
+			else if( pAngle >= oldAngle )
+			{
+				diff = pAngle - oldAngle;
+				return diff;
 			}
 			else
 			{
@@ -1262,6 +1300,7 @@ void Wire::TestPoint2( Edge *e )
 	V2d p = e->v0;
 
 	double res = GetTestPointAngle( e );
+	//cout << "Res: " << res << endl;
 	if( res >=0 )
 	{
 		//cout << "adding point at p: " << p.x << ", " << p.y << endl;
@@ -1272,11 +1311,15 @@ void Wire::TestPoint2( Edge *e )
 			
 			wp.sortingAngleDist = res;
 
-			wp.test = normalize( p - realAnchor );						
+			wp.test = normalize( p - realAnchor );	
+			
 			if( !clockwise )
 			{
 				points[numPoints].test = -points[numPoints].test;
 			}
+
+			//cout << "adding point with test: " << wp.test.x << ", " << wp.test.y << endl;
+
 			numPoints++;
 		}
 		else
@@ -1346,8 +1389,8 @@ void Wire::UpdateQuads()
 	double temp;
 
 	
-	int tileHeight = 8;//6;
-	int tileWidth = 10;
+	int tileHeight = 16;//6;
+	int tileWidth = 16;
 	int startIndex = 0;
 	bool hitOrPulling = (state == HIT || state == PULLING || state == RETRACTING );
 	bool singleRope = ( hitOrPulling && numPoints == 0 );
@@ -1783,6 +1826,7 @@ void Wire::Draw( RenderTarget *target )
 	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
 	{	
 		target->draw( quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture );
+		target->draw( wireTip );
 	}
 	
 	if( state == HIT || state == PULLING )
