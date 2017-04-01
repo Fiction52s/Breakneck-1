@@ -891,6 +891,9 @@ void Camera::Update( Actor *player )
 
 void Camera::UpdateVS( Actor *a, Actor *a2 )
 {
+
+	float targetZoomFactor = zoomFactor;
+
 	V2d center = (a->position + a2->position) / 2.0;
 
 	Vector2f res( 1920 / 2, 1080 / 2 );
@@ -904,19 +907,19 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 
 	if( zx == maxDist )
 	{
-		zoomFactor = zx;// / 2.0;
+		targetZoomFactor = zx;// / 2.0;
 
-		double adistx = distx + max( 200.f * zoomFactor, 200.f );
+		double adistx = distx + max( 200.f * targetZoomFactor, 200.f );
 		double azx = adistx / res.x;
-		zoomFactor = azx;
+		targetZoomFactor = azx;
 	}
 	else if( zy == maxDist )
 	{
-		zoomFactor = zy;// / 2.0;
+		targetZoomFactor = zy;// / 2.0;
 
-		double adisty = disty + max( 200.f * zoomFactor, 200.f );
+		double adisty = disty + max( 200.f * targetZoomFactor, 200.f );
 		double azy = adisty / res.y;
-		zoomFactor = azy;
+		targetZoomFactor = azy;
 	}
 	
 	
@@ -934,14 +937,17 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 
 	double minZoom = .6;//1.0;
 	double maxZoom = 8;
-	if( zoomFactor < minZoom )
-		zoomFactor = minZoom;
-	else if( zoomFactor > maxZoom )
-		zoomFactor = maxZoom;
+	if( targetZoomFactor < minZoom )
+		targetZoomFactor = minZoom;
+	else if( targetZoomFactor > maxZoom )
+		targetZoomFactor = maxZoom;
 
-
-	pos.x = center.x;
-	pos.y = center.y;
+	float rz = .25;
+	zoomFactor = targetZoomFactor * rz + zoomFactor * (1-rz);
+	
+	float r = .25;
+	pos.x = center.x * r + pos.x * (1-r) ;
+	pos.y = center.y * r + pos.y * (1-r);
 
 	//cout << "zoomfactor: " << zoomFactor << endl;
 }
