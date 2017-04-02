@@ -5567,11 +5567,11 @@ int GameSession::Run( string fileN )
 	
 
 	
-
+	player = new Actor( this, 0 );
 
 	OpenFile( fileName );
 	
-	player = new Actor( this, 0 );
+	
 
 	if( multiSession )
 	{
