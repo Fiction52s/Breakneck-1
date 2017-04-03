@@ -26,6 +26,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
 
+		//(0x14, 0x59, 0x22) = Kin Green
+		// gonna try to make this red in his airdash animation
+
 		if( gs->raceFight != NULL )
 		{
 			maxBubbles = 1;
@@ -267,7 +270,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		sprite = new Sprite;
 		if( actorIndex == 1 )
 		{
-			sprite->setColor( Color( 255, 0, 0 ) );
+			//sprite->setColor( Color( 255, 0, 0 ) );
 		}
 
 		velocity = Vector2<double>( 0, 0 );
@@ -569,10 +572,31 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		normal[SPRINT] = owner->GetTileset( "sprint_NORMALS.png", 128, 64 );		
 
 		actionLength[STAND] = 20 * 8;
-		tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
+
+		sf::Color startChanges[] = {
+			sf::Color(0x14, 0x59, 0x22),
+			sf::Color(8, 64, 18)
+		};
+		sf::Color endChanges[] = {
+			sf::Color( 255, 0, 0 ),
+			sf::Color( 255, 0, 0 )
+			};
+		
+		if( actorIndex == 1 )
+		{
+			tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64, 1, sizeof( startChanges ), startChanges, endChanges );
+		}
+		else
+		{
+			tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
+		}
+
+		//tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
 		normal[STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
 
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
+
+		
 		tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset( "stand_64x64.png", 64, 64 );
 		normal[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset( "stand_NORMALS.png", 64, 64 );
 
@@ -5845,6 +5869,7 @@ void Actor::UpdatePrePhysics()
 					action = LAND;
 					frame = 0;
 
+					bounceFlameOn = true;
 
 					V2d testVel = storedBounceVel;
 
@@ -11444,7 +11469,6 @@ void Actor::UpdatePhysics()
 								}
 							}
 
-
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
 								storedBounceGroundSpeed = groundSpeed * slowMultiple;
@@ -11753,6 +11777,9 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
+
+									//cout << "action: "<< (int)action << endl;
+									//cout << "a bounceFlameOn: " << (int)bounceFlameOn << "gspeed: " << groundSpeed << endl;
 									if( bounceFlameOn && abs( groundSpeed ) > 1)
 									{
 										if( action != STEEPCLIMB )

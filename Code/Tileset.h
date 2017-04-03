@@ -13,13 +13,21 @@ struct Tileset
 	int tileWidth;
 	int tileHeight;
 	std::string sourceName;
+	int altColorIndex;
 };
 
 struct TilesetManager
 {
 	~TilesetManager();
-	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight );
+	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight,  int altColorIndex = 0 );
+	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
+		sf::Color *startColorBuf, sf::Color *endColorBuf);
 	void ClearTilesets();
+
+	sf::Texture *CreateAltColorTex( sf::Image &im,
+		int numAltColors, 
+		sf::Color *startColorBuf,
+		sf::Color *endColorBuf );
 	std::list<Tileset*> tilesetList;
 };
 

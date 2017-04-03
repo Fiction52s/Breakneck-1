@@ -1200,12 +1200,18 @@ GameSession::~GameSession()
 }
 
 //should only be used to assign a variable. don't use at runtime
-Tileset * GameSession::GetTileset( const string & s, int tileWidth, int tileHeight )
+Tileset * GameSession::GetTileset( const std::string & s, int tileWidth, int tileHeight,  int altColorIndex )
 {
-	return tm.GetTileset( s, tileWidth, tileHeight );
+	return tm.GetTileset( s, tileWidth, tileHeight, altColorIndex );
 	//make sure to set up tileset here
 }
 
+
+Tileset * GameSession::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
+	sf::Color *startColorBuf, sf::Color *endColorBuf)
+{
+	return tm.GetTileset( s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf );
+}
 
 void GameSession::UpdateEnemiesPrePhysics()
 {

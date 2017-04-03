@@ -517,8 +517,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderWindow *window;
 	std::string currentFile;
 	
-	Tileset * GetTileset( const std::string & s,
-		int tileWidth, int tileHeight );
+	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight,  int altColorIndex = 0 );
+	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
+		sf::Color *startColorBuf, sf::Color *endColorBuf);
 	TilesetManager tm;
 	
 	void Test( Edge *e );
