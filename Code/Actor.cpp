@@ -68,7 +68,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//ae = new AirParticleEffect( position );
 
 		level1SpeedThresh = 22;//22;//32;
-		level2SpeedThresh = 45;
+		level2SpeedThresh = 45; 
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
 
@@ -7502,12 +7502,12 @@ void Actor::UpdatePrePhysics()
 		double v = 1.0;
 		if( dotvel > 0 )
 		{
-			cout << "a" << endl;
+			//cout << "a" << endl;
 			velocity += -owdirs * v / (double)slowMultiple;
 		}
 		else if( dotvel < 0 )
 		{
-			cout << "b" << endl;
+			//cout << "b" << endl;
 			velocity += owdirs * v / (double)slowMultiple;
 		}
 		else
@@ -9369,7 +9369,7 @@ V2d Actor::UpdateReversePhysics()
 							{
 								if( m > 0 && eNorm.x < 0 )
 								{
-									cout << "a" << endl;
+									//cout << "a" << endl;
 									ground = minContact.edge;
 									movingGround = minContact.movingPlat;
 
@@ -9396,7 +9396,7 @@ V2d Actor::UpdateReversePhysics()
 								}
 								else if( m < 0 && eNorm.x > 0 )
 								{
-									cout << "b" << endl;
+									//cout << "b" << endl;
 									ground = minContact.edge;
 									movingGround = minContact.movingPlat;
 
@@ -9442,7 +9442,7 @@ V2d Actor::UpdateReversePhysics()
 								groundedWallBounce = true;
 							}
 
-							cout << "d" << endl;
+							//cout << "d" << endl;
 							offsetX -= minContact.resolution.x;
 							groundSpeed = 0;
 							offsetX = -offsetX;
@@ -12058,6 +12058,9 @@ void Actor::UpdatePhysics()
 				//might still need some more work
 				extraVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
 				
+				if( length(extraVel) < .01 )
+					extraVel = V2d( 0, 0 );
+
 				//extraVel = V2d( 0, 0 );
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
 				//if( length( newVel ) < .0001 )
@@ -13874,15 +13877,22 @@ void Actor::UpdatePostPhysics()
 		break;
 	}
 
+	V2d trueVel;
 	double speed;
 	if( ground != NULL ) //ground
 	{
-		speed = abs(groundSpeed);
+		trueVel = normalize( ground->v1 - ground->v0 ) * groundSpeed;
+		//speed = abs(groundSpeed);
 	}
 	else //air
 	{
-		speed = length( velocity );
+		trueVel = velocity;
+		//speed = length( velocity );
 	}
+
+	trueVel.y = min( 40.0, trueVel.y ); //falling can only help your speed so much
+		
+	speed = length( trueVel );
 
 	if( action != DEATH && action != EXIT && action != GOALKILL
 		&& action != GOALKILLWAIT && action != RIDESHIP && action != GRINDBALL
