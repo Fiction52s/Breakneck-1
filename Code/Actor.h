@@ -130,6 +130,21 @@ struct Actor : QuadTreeCollider,
 	bool flipTileX;
 	bool flipTileY;
 
+	//these are for the wire boost particles 
+	sf::Vector2<double> leftWireBoostDir;
+	sf::Vector2<double> rightWireBoostDir;
+	sf::Vector2<double> doubleWireBoostDir;
+
+	int framesSinceRightWireBoost;
+	int singleWireBoostTiming;
+	int framesSinceLeftWireBoost;
+	int framesSinceDoubleWireBoost;
+	int doubleWireBoostTiming;
+
+	bool leftWireBoost;
+	bool rightWireBoost;
+	bool doubleWireBoost;
+
 	/*enum SeqType
 	{
 		SEQ_NOTHING,
@@ -175,6 +190,10 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite kinBlueOutline;
 	sf::Sprite kinPurpleOutline;
 	sf::Color currentDespColor;
+
+	Tileset *ts_fx_rightWire;
+	Tileset *ts_fx_leftWire;
+	Tileset *ts_fx_doubleWire;
 
 	Tileset *ts_fx_rune0;
 	Tileset *ts_fx_rune1;
@@ -610,6 +629,7 @@ struct Actor : QuadTreeCollider,
 	bool groundedWallBounce;
 	bool boostBounce;
 	
+	void InitAfterEnemies();
 
 	
 	//dont need to store these

@@ -26,21 +26,17 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
 
+		framesSinceRightWireBoost = 0;
+		framesSinceLeftWireBoost = 0;
+		framesSinceDoubleWireBoost = 0;
+
+		singleWireBoostTiming = 4;
+		doubleWireBoostTiming = 4;
+
 		//(0x14, 0x59, 0x22) = Kin Green
 		// gonna try to make this red in his airdash animation
 
-		if( gs->raceFight != NULL )
-		{
-			maxBubbles = 1;
-		}
-		else
-		{
-			maxBubbles = 5;
-		}
-
-		bubblePos = new V2d[maxBubbles];
-		bubbleFramesToLive = new int[maxBubbles];
-		bubbleRadiusSize = new int[maxBubbles];
+		
 
 		spriteAction = FAIR;
 		currTileIndex = 0;
@@ -679,7 +675,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		normal[BOUNCEGROUND] = owner->GetTileset( "bounce_NORMALS.png", 96, 96 );
 
 		actionLength[BOUNCEGROUNDEDWALL] = 30;
-		tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall.png", 80, 48 );
+		tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bounce_wall_224x224.png", 224, 224 );
 		normal[BOUNCEGROUNDEDWALL] = owner->GetTileset( "bouncegroundedwall_NORMALS.png", 80, 48 );
 
 		actionLength[DEATH] = 44 * 2;
@@ -821,6 +817,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		ts_fx_chargeBlue1 = owner->GetTileset( "elec_03_128x128.png", 128, 128 );
 		ts_fx_chargeBlue2 = owner->GetTileset( "elec_04_128x128.png", 128, 128 );
 		ts_fx_chargePurple = owner->GetTileset( "elec_02_128x128.png", 128, 128 );
+
+		ts_fx_rightWire = owner->GetTileset( "wire_boost_r_64x64.png", 64, 64 );
+		ts_fx_leftWire = owner->GetTileset( "wire_boost_b_64x64.png", 64, 64 );
+		ts_fx_doubleWire = owner->GetTileset( "wire_boost_m_64x64.png", 64, 64 );
 
 		ts_fx_airdashDiagonal = owner->GetTileset( "fx_airdash_diagonal_1_128x128.png", 128, 128 );
 		//ts_fx_airdashUp = owner->GetTileset( "fx_airdash_up_1_128x128.png", 128, 128 );
@@ -1058,11 +1058,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		bubbleLifeSpan = 240;
 
-		for( int i = 0; i < maxBubbles; ++i )
-		{
-			bubbleFramesToLive[i] = 0;
-			//bubblePos[i]
-		}
+		
 		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		
 
@@ -1139,7 +1135,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//{
 		//	motionGhosts[i] = 
 		//}
-	}
+}
 
 void Actor::ActionEnded()
 {
@@ -1477,6 +1473,10 @@ bool Actor::AirAttack()
 
 void Actor::Respawn()
 {
+	framesSinceRightWireBoost = 0;
+	framesSinceLeftWireBoost = 0;
+	framesSinceDoubleWireBoost = 0;
+
 	speedParticleCounter = 0;
 	framesNotGrinding = 0;
 	runeStep = 0;
@@ -1552,6 +1552,11 @@ void Actor::Respawn()
 	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 	{
 		motionGhosts[i].setPosition( position.x, position.y );
+	}
+
+	if( owner->raceFight != NULL )
+	{
+		invincibleFrames = 180;
 	}
 
 	SetExpr( Actor::Expr::Expr_NEUTRAL );
@@ -5830,7 +5835,10 @@ void Actor::UpdatePrePhysics()
 				}
 
 				//velocity += V2d( 0, -gravity * slowMultiple );
-
+				if( facingRight && velocity.x < 0 )
+					facingRight = false;
+				else if( !facingRight && velocity.x > 0 )
+					facingRight = true;
 
 				/*double lenVel = length( storedBounceVel );
 				double reflX = cross( normalize( -storedBounceVel ), bn );
@@ -7255,7 +7263,7 @@ void Actor::UpdatePrePhysics()
 			else if( frame == 6 )
 			{
 				
-				groundSpeed = -storedBounceGroundSpeed;
+				groundSpeed = -storedBounceGroundSpeed / (double)slowMultiple;
 				//cout << "set ground speed to: " << groundSpeed << endl;
 			}
 			break;
@@ -7393,9 +7401,21 @@ void Actor::UpdatePrePhysics()
 	double accel = .15;
 	double triggerSpeed = 17;
 	double doubleWirePull = 1.0;//2.0
+
+	doubleWireBoost = false; //just for now temp
+	rightWireBoost = false;
+	leftWireBoost = false;
+
 	if( framesInAir > 1 )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
+		bool canDoubleWireBoostParticle = false;
+		if( framesSinceDoubleWireBoost >= doubleWireBoostTiming )
+		{
+			canDoubleWireBoostParticle = true;
+			framesSinceDoubleWireBoost = 0;
+		}
+
 		lastWire = 0;
 		V2d rwPos = rightWire->storedPlayerPos;
 		V2d lwPos = rightWire->storedPlayerPos;
@@ -7476,9 +7496,13 @@ void Actor::UpdatePrePhysics()
 		
 		if( opposite)
 			wdirs = wireDir1;
+
+
 		
 		
 		V2d owdirs( wdirs.y, -wdirs.x );
+
+		doubleWireBoostDir = -owdirs;
 
 		V2d inputDir;
 		if( currInput.LLeft() )
@@ -7503,10 +7527,19 @@ void Actor::UpdatePrePhysics()
 		if( dotvel > 0 )
 		{
 			//cout << "a" << endl;
+			if( canDoubleWireBoostParticle )
+			{
+				doubleWireBoost = true;
+			}
 			velocity += -owdirs * v / (double)slowMultiple;
+			doubleWireBoostDir = -doubleWireBoostDir;
 		}
 		else if( dotvel < 0 )
 		{
+			if( canDoubleWireBoostParticle )
+			{
+				doubleWireBoost = true;
+			}
 			//cout << "b" << endl;
 			velocity += owdirs * v / (double)slowMultiple;
 		}
@@ -7538,32 +7571,11 @@ void Actor::UpdatePrePhysics()
 		velocity += totalAcc;
 		}
 
-		if( opposite && !currInput.LLeft() && !currInput.LDown() && !currInput.LUp() && !currInput.LRight() )
+		/*if( opposite && !currInput.LLeft() && !currInput.LDown() && !currInput.LUp() && !currInput.LRight() )
 		{
 			double wdirsVel = dot( velocity, wdirs );
 			double owdirsVel = dot( velocity, owdirs );
-
-			//wdirsVel /= 2;
-			//owdirsVel /= 2;
-			if( abs( wdirsVel ) < 5 )
-			{
-				//wdirsVel = 0;
-			}
-			if( abs( owdirsVel ) < 5 )
-			{
-			//	owdirsVel = 0;
-			}
-		
-			
-			velocity = wdirsVel * wdirs + owdirsVel * owdirs;
-
-
-			V2d g = AddGravity( velocity );
-			g -= velocity;
-			g = -g;
-			//velocity -= g;
-			//velocity += V2d( 0, -gravity );
-		}
+		}*/
 
 		if( opposite )
 		{
@@ -7648,11 +7660,13 @@ void Actor::UpdatePrePhysics()
 
 		if( speed > triggerSpeed )
 		{
-			speed += accel;
+			//rightWireBoost = true;
+			speed += accel / (double)slowMultiple;
 		}
 		else if( speed < -triggerSpeed )
 		{
-			speed -= accel;
+			//rightWireBoost = true;
+			speed -= accel / (double)slowMultiple;
 		}
 		else
 		{
@@ -7661,21 +7675,27 @@ void Actor::UpdatePrePhysics()
 		}
 
 		V2d wireDir = normalize( wirePoint - wPos );
-		double otherAccel = .5;
+		double otherAccel = .5 / (double)slowMultiple;
 
 		V2d vec45( 1, 1 );
 		vec45 = normalize( vec45 );
 		double xLimit = vec45.x;
+		
+		rightWireBoostDir = -V2d( wireDir.y, -wireDir.x );
+
 		if( abs( wireDir.x ) < xLimit )
 		{
 			if( wireDir.y < 0 )
 			{
 				if( currInput.LLeft() )
 				{
+					rightWireBoost = true;
 					speed -= otherAccel;
+					rightWireBoostDir = -rightWireBoostDir;
 				}
 				else if( currInput.LRight() )
 				{
+					rightWireBoost = true;
 					speed += otherAccel;
 				}
 			}
@@ -7683,11 +7703,14 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LLeft() )
 				{
+					rightWireBoost = true;
 					speed += otherAccel;
 				}
 				else if( currInput.LRight() )
 				{
+					rightWireBoost = true;
 					speed -= otherAccel;
+					rightWireBoostDir = -rightWireBoostDir;
 				}
 			}
 		}
@@ -7697,10 +7720,13 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LUp() )
 				{
+					rightWireBoost = true;
 					speed -= otherAccel;
+					rightWireBoostDir = -rightWireBoostDir;
 				}
 				else if( currInput.LDown() )
 				{
+					rightWireBoost = true;
 					speed += otherAccel;
 				}
 			}
@@ -7708,15 +7734,29 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LUp() )
 				{
+					rightWireBoost = true;
 					speed += otherAccel;
 				}
 				else if( currInput.LDown() )
 				{
+					rightWireBoost = true;
 					speed -= otherAccel;
+					rightWireBoostDir = -rightWireBoostDir;
 				}
 			}
 
 			
+		}
+
+		
+
+		if( rightWireBoost && framesSinceRightWireBoost >= singleWireBoostTiming && slowCounter == 1 )
+		{
+			framesSinceRightWireBoost = 0;
+		}
+		else
+		{
+			rightWireBoost = false;
 		}
 
 		velocity = speed * tes;
@@ -7785,11 +7825,12 @@ void Actor::UpdatePrePhysics()
 
 		if( speed > triggerSpeed )
 		{
-			speed += accel;
+
+			speed += accel / (double)slowMultiple;
 		}
 		else if( speed < -triggerSpeed )
 		{
-			speed -= accel;
+			speed -= accel / (double)slowMultiple;
 		}
 		else
 		{
@@ -7798,34 +7839,41 @@ void Actor::UpdatePrePhysics()
 		}
 
 		V2d wireDir = normalize( wirePoint - wPos );
-		double otherAccel = .5;
+		double otherAccel = .5 / (double)slowMultiple;
 		V2d vec45( 1, 1 );
 		vec45 = normalize( vec45 );
 		double xLimit = vec45.x;
+		leftWireBoostDir = -V2d( wireDir.y, -wireDir.x );
 		if( abs( wireDir.x ) < xLimit )
+		{
+			if( wireDir.y < 0 )
 			{
-				if( wireDir.y < 0 )
+				if( currInput.LLeft() )
 				{
-					if( currInput.LLeft() )
-					{
-						speed -= otherAccel;
-					}
-					else if( currInput.LRight() )
-					{
-						speed += otherAccel;
-					}
+					leftWireBoost = true;
+					leftWireBoostDir = -leftWireBoostDir;
+					speed -= otherAccel;
 				}
-				else if( wireDir.y > 0 )
+				else if( currInput.LRight() )
 				{
-					if( currInput.LLeft() )
-					{
-						speed += otherAccel;
-					}
-					else if( currInput.LRight() )
-					{
-						speed -= otherAccel;
-					}
+					leftWireBoost = true;
+					speed += otherAccel;
 				}
+			}
+			else if( wireDir.y > 0 )
+			{
+				if( currInput.LLeft() )
+				{
+					leftWireBoost = true;
+					speed += otherAccel;
+				}
+				else if( currInput.LRight() )
+				{
+					leftWireBoost = true;
+					speed -= otherAccel;
+					leftWireBoostDir = -leftWireBoostDir;
+				}
+			}
 			}
 		else
 		{
@@ -7833,10 +7881,13 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LUp() )
 				{
+					leftWireBoost = true;
 					speed -= otherAccel;
+					leftWireBoostDir = -leftWireBoostDir;
 				}
 				else if( currInput.LDown() )
 				{
+					leftWireBoost = true;
 					speed += otherAccel;
 				}
 			}
@@ -7844,15 +7895,28 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LUp() )
 				{
+					leftWireBoost = true;
 					speed += otherAccel;
 				}
 				else if( currInput.LDown() )
 				{
+					leftWireBoost = true;
 					speed -= otherAccel;
+					leftWireBoostDir = -leftWireBoostDir;
 				}
 			}
 
 			
+		}
+
+
+		if( leftWireBoost && framesSinceLeftWireBoost >= singleWireBoostTiming )
+		{
+			framesSinceLeftWireBoost = 0;
+		}
+		else
+		{
+			leftWireBoost = false;
 		}
 
 		velocity = speed * tes;
@@ -8080,6 +8144,33 @@ void Actor::UpdatePrePhysics()
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	//cout << "before position: " << position.x << ", " << position.y << endl;
 	
+}
+
+void Actor::InitAfterEnemies()
+{
+	if( owner->raceFight != NULL )
+	{
+		maxBubbles = 2;
+	}
+	else
+	{
+		maxBubbles = 5;
+	}
+
+	bubblePos = new V2d[maxBubbles];
+	bubbleFramesToLive = new int[maxBubbles];
+	bubbleRadiusSize = new int[maxBubbles];
+
+	for( int i = 0; i < maxBubbles; ++i )
+	{
+		bubbleFramesToLive[i] = 0;
+		//bubblePos[i]
+	}
+
+	if( owner->raceFight != NULL )
+	{
+		invincibleFrames = 180;
+	}
 }
 
 void Actor::SetAction( Action a )
@@ -14271,6 +14362,10 @@ void Actor::UpdatePostPhysics()
 			framesSinceBounce++;
 		}
 
+		++framesSinceRightWireBoost;
+		++framesSinceLeftWireBoost;
+		++framesSinceDoubleWireBoost;
+
 		++frame;
 		//cout << "frame: " << frame << endl;
 
@@ -14280,8 +14375,9 @@ void Actor::UpdatePostPhysics()
 
 		slowCounter = 1;
 
-		if( invincibleFrames > 0 )
-			--invincibleFrames;
+		if( action != INTRO && action != SPAWNWAIT )
+			if( invincibleFrames > 0 )
+				--invincibleFrames;
 
 		if( flashFrames > 0 )
 			--flashFrames;
@@ -16435,10 +16531,34 @@ void Actor::SetFakeCurrInput( ControllerState &state )
 void Actor::UpdateSprite()
 {
 
+
+
 	V2d gn( 0, 0 );
 	if( ground != NULL )
 	{
 		gn = ground->Normal();
+	}
+	else
+	{
+		bool r = rightWire->state == Wire::PULLING;
+		bool l = leftWire->state == Wire::PULLING;
+		if( r && l && doubleWireBoost )
+		{
+			
+			//create double wire boost
+		}
+		else if( r && rightWireBoost )
+		{
+			owner->ActivateEffect( EffectLayer::BEHIND_ENEMIES, ts_fx_rightWire, position, false, 
+				atan2( rightWireBoostDir.y, rightWireBoostDir.x ), 8, 2, true );
+			//create right wire boost
+		}
+		else if( l && leftWireBoost )
+		{
+			owner->ActivateEffect( EffectLayer::BEHIND_ENEMIES, ts_fx_leftWire, position, false, 
+				atan2( leftWireBoostDir.y, leftWireBoostDir.x ), 8, 2, true );
+			//create left wire boost
+		}
 	}
 	switch( action )
 	{
@@ -18023,38 +18143,80 @@ void Actor::UpdateSprite()
 			}
 			else if( framesSinceBounce < 10 )
 			{
-				V2d bn = oldBounceNorm;//oldBounceEdge->Normal();
-				if( bn.y <= 0 && bn.y > -steepThresh )
+				int xThresh = 10;
+				int yThresh = 10;
+				if( velocity.y > yThresh )
 				{
-					bounceFrame = 0;
-					if( facingRight )
+					if( abs( velocity.x ) < xThresh )//10 just for testing
 					{
-						//facingRight = false;
-
+						bounceFrame = 5;
+					}
+					else
+					{
+						bounceFrame = 8;
 					}
 				}
-				else if( bn.y >= 0 && -bn.y > -steepThresh )
+				else if( velocity.y < -yThresh )
 				{
-					
-					bounceFrame = 5;
+					if( abs( velocity.x ) < xThresh )//10 just for testing
+					{
+						bounceFrame = 1;
+					}
+					else
+					{
+						bounceFrame = 7;
+					}
 				}
-				else if( bn.y == 0 )
+				else
 				{
-					bounceFrame = 3;
+					if( abs( velocity.x ) > xThresh )
+					{
+						bounceFrame = 3;
+					}
+					else
+					{
+						bounceFrame = 6;
+					}
 				}
-				else if( bn.y < 0 )
-				{
-					bounceFrame = 1;
-				}
-				else if( bn.y > 0 )
-				{
-					bounceFrame = 6;
-				}
+
+
+
+				V2d bn = oldBounceNorm;//oldBounceEdge->Normal();
+			//	if( bn.y <= 0 && bn.y > -steepThresh )
+			//	{
+			//		bounceFrame = 7;
+			//		if( facingRight )
+			//		{
+			//			//facingRight = false;
+
 			}
 			else
 			{
-				bounceFrame = 7;
+				bounceFrame = 6;
 			}
+			//	}
+			//	else if( bn.y >= 0 && -bn.y > -steepThresh )
+			//	{
+			//		
+			//		bounceFrame = 8;
+			//	}
+			//	else if( bn.y == 0 )
+			//	{
+			//		bounceFrame = 3;
+			//	}
+			//	else if( bn.y < 0 )
+			//	{
+			//		bounceFrame = 1;
+			//	}
+			//	else if( bn.y > 0 )
+			//	{
+			//		bounceFrame = 5;
+			//	}
+			//}
+			//else
+			//{
+			//	bounceFrame = 6;
+			//}
 			
 			SetSpriteTexture( action );
 
@@ -18069,6 +18231,8 @@ void Actor::UpdateSprite()
 		{
 			int bounceFrame = 0;
 			V2d bn = bounceNorm;//bounceEdge->Normal();
+
+			bool bounceFacingRight = facingRight;
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
@@ -18086,6 +18250,8 @@ void Actor::UpdateSprite()
 				//	bounceFrame = 2;
 
 				bounceFrame = 2;
+
+				bounceFacingRight = (bn.x > 0 );
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
@@ -18094,6 +18260,7 @@ void Actor::UpdateSprite()
 				else
 					bounceFrame = 2;*/
 				bounceFrame = 2;
+				bounceFacingRight = (bn.x > 0 );
 				//facingRight = !facingRight;
 			}
 			else if( bn.y == 0 )
@@ -18103,7 +18270,7 @@ void Actor::UpdateSprite()
 			}
 			else if( bn.y < 0 )
 			{
-				bounceFrame = 1;//8
+				bounceFrame = 0;//8
 			}
 			else if( bn.y > 0 )
 			{
@@ -18113,8 +18280,8 @@ void Actor::UpdateSprite()
 
 			SetSpriteTexture( action );
 
-			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( bounceFrame, r );
+			//bool r = (bounceFacingRight && !reversed ) || (!bounceFacingRight && reversed );
+			SetSpriteTile( bounceFrame, bounceFacingRight );
 
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
@@ -18133,71 +18300,48 @@ void Actor::UpdateSprite()
 			{
 				if( bn.x > 0 )
 				{
-					sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+					sprite->setOrigin( 110, sprite->getLocalBounds().height / 2);
 				}
 				else
 				{
-					sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+					sprite->setOrigin( sprite->getLocalBounds().width-110, sprite->getLocalBounds().height / 2);
 				}
 			}
 			else if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				if( bounceFrame == 0 )
+				if( bounceFacingRight )
 				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
+					sprite->setOrigin( 110, sprite->getLocalBounds().height / 2);
+					//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
 				}
 				else
 				{
-					if( facingRight )
-					{
-						
-						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-					}
-					else
-					{
-						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-						
-					}
-					
-					//sprite->setOrigin( 10, sprite->getLocalBounds().height / 2);
+					//sprite->setOrigin( , sprite->getLocalBounds().height / 2);
+					sprite->setOrigin( sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
 				}
 			}
 			else if( bn.y >= 0 && -bn.y > -steepThresh )
 			{
-				if( bounceFrame == 2 )
+				if( bounceFacingRight )//bounceFrame == 4 )
 				{
-					if( facingRight )//bounceFrame == 4 )
-					{
-						//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
-						sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-					}
-					else
-					{
-						sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-					}	
+					sprite->setOrigin( 110, sprite->getLocalBounds().height / 2);
+					//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+					//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
 				}
 				else
 				{
-					//if( facingRight )//bounceFrame == 4 )
-					//{
-					//	//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
-					//	sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-					//}
-					//else
-					//{
-					//	sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-					//}	
-					sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
-				}
+					sprite->setOrigin( sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
+					//sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+				}	
 			}
 			else if( bn.y < 0 )
 			{
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - normalHeight);
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - 120);
 			}
 			else if( bn.y > 0 )
 			{
 				//cout << "this one" << endl;
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, normalHeight );
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, 80 );
 			}
 
 			
@@ -18260,15 +18404,16 @@ void Actor::UpdateSprite()
 				angle = atan2( gn.x, -gn.y );
 			}
 
+			int yOffset = -75;
 			if( frame < 6 )
 			{
 				if( ( facingRight && !reversed ) || (!facingRight && reversed ) )
 				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2 - 3, sprite->getLocalBounds().height);
+					sprite->setOrigin( sprite->getLocalBounds().width / 2 - 3, sprite->getLocalBounds().height + yOffset);
 				}
 				else
 				{
-					sprite->setOrigin( sprite->getLocalBounds().width / 2 + 3, sprite->getLocalBounds().height);
+					sprite->setOrigin( sprite->getLocalBounds().width / 2 + 3, sprite->getLocalBounds().height + yOffset);
 				}
 				
 				angle = 0;
@@ -18277,8 +18422,9 @@ void Actor::UpdateSprite()
 			}
 			else
 			{
-				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height + yOffset);
 			}
+			//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 			
 			sprite->setRotation( angle / PI * 180 );
 			

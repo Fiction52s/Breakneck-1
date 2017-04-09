@@ -5577,11 +5577,12 @@ int GameSession::Run( string fileN )
 
 	OpenFile( fileName );
 	
-	
+	player->InitAfterEnemies();
 
 	if( multiSession )
 	{
 		player2 = new Actor( this, 1 );
+		player2->InitAfterEnemies();
 	}
 	else
 	{

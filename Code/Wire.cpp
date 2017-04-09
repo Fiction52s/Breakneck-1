@@ -349,6 +349,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				state = PULLING;
 				pullStrength = startPullStrength;
 				dragStrength = startDragStrength;
+				if( right )
+				{
+					player->framesSinceRightWireBoost = 0;
+				}
+				else
+				{
+					player->framesSinceLeftWireBoost = 0;
+				}
 			}
 			else
 			{

@@ -94,8 +94,6 @@ void BasicEffect::UpdatePostPhysics()
 	//s.setPosition( pos.x, pos.y );
 	//s.setRotation( angle / PI * 180 );
 
-
-
 	frame++;
 	if( frame / animationFactor == frameCount )
 	{
