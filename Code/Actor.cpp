@@ -18315,7 +18315,7 @@ void Actor::UpdateSprite()
 					//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
 				}
 				else
-				{
+				{6
 					//sprite->setOrigin( , sprite->getLocalBounds().height / 2);
 					sprite->setOrigin( sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
 				}

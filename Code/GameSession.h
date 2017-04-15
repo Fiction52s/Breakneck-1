@@ -320,6 +320,7 @@ struct Buf
 
 struct ImageText;
 struct TimerText;
+struct VictoryScreen2PlayerVS;
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -367,6 +368,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		GameSession *owner;
 
 		sf::Text tempAllTargets;
+		
+		VictoryScreen2PlayerVS *victoryScreen;
 
 		RaceFightTarget *hitByPlayerList;
 		RaceFightTarget *hitByPlayer2List;
@@ -621,6 +624,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float radDiff;
 	float flowSpacing;
 	float maxFlowRings;
+
+
 
 	EnvPlant *activeEnvPlants;
 	int totalGameFrames;

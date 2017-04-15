@@ -28,6 +28,7 @@
 #include <boost/thread.hpp>
 #include <iostream>
 #include "ImageText.h"
+#include "VictoryScreen.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -13808,7 +13809,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	gameTimer->topRight = Vector2f( 1920/2 + 80 * 2.5, 0 );
 	gameTimer->SetNumber( raceFightMaxSeconds );
 
-	
+	victoryScreen = new VictoryScreen2PlayerVS( owner );
 
 	Reset();
 
