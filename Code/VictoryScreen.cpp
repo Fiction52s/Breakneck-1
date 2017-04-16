@@ -111,5 +111,5 @@ const sf::Vector2f &PlayerInfoBar::GetBottomLeftPos()
 
 void PlayerInfoBar::Draw( sf::RenderTarget *target )
 {
-	target->draw( infoBarVa, 12, sf::Quads, ts_bar->texture );
+	target->draw( infoBarVA, 12, sf::Quads, ts_bar->texture );
 }

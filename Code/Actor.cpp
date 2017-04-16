@@ -580,7 +580,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		if( actorIndex == 1 )
 		{
-			tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64, 1, sizeof( startChanges ), startChanges, endChanges );
+			tileset[STAND] = owner->GetTileset( "stand_64x64.png", 64, 64, 1, sizeof( startChanges ) / sizeof( sf::Color ), startChanges, endChanges );
 		}
 		else
 		{
@@ -18315,7 +18315,7 @@ void Actor::UpdateSprite()
 					//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
 				}
 				else
-				{6
+				{
 					//sprite->setOrigin( , sprite->getLocalBounds().height / 2);
 					sprite->setOrigin( sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
 				}

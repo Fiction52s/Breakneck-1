@@ -929,7 +929,7 @@ void Boss_Tiger0::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Boss_Tiger0::IHitPlayer()
+bool Boss_Tiger0::IHitPlayer( int p )
 {
 	Actor *player = owner->player;
 	
@@ -957,7 +957,7 @@ bool Boss_Tiger0::IHitPlayer()
 	return false;
 }
 
- pair<bool, bool> Boss_Tiger0::PlayerHitMe()
+ pair<bool, bool> Boss_Tiger0::PlayerHitMe( int p )
 {
 	Actor *player = owner->player;
 

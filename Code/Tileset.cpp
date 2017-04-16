@@ -49,7 +49,10 @@ Texture *TilesetManager::CreateAltColorTex( sf::Image &im,
 			for( int i = 0; i < numAltColors; ++i )
 			{
 				if( startColorBuf[i] == im.getPixel( x, y ) )
+				{
+					assert( x != 0 || y != 0 );
 					im.setPixel( x, y, endColorBuf[i] );
+				}
 			}
 		}
 	}
