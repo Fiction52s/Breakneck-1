@@ -742,13 +742,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		actionLength[SPAWNWAIT] = 120;
 		}
-		tsgsdodeca = owner->GetTileset( "dodeca.png", 64, 64 ); 	
+		tsgsdodeca = owner->GetTileset( "dodeca_64x64.png", 64, 64 ); 	
 		tsgstriblue = owner->GetTileset( "triblue.png", 64, 64 ); 	
-		tsgstricym = owner->GetTileset( "tricym.png", 128, 128 ); 	
+		tsgstricym = owner->GetTileset( "tricym_128x128.png", 128, 128 ); 	
 		tsgstrigreen = owner->GetTileset( "trigreen.png", 64, 64 ); 	
-		tsgstrioran = owner->GetTileset( "trioran.png", 128, 128 ); 	
-		tsgstripurp = owner->GetTileset( "tripurp.png", 128, 128 ); 	
-		tsgstrirgb = owner->GetTileset( "trirgb.png", 128, 128 ); 	
+		tsgstrioran = owner->GetTileset( "trioran_128x128.png", 128, 128 ); 	
+		tsgstripurp = owner->GetTileset( "tripurp_128x128.png", 128, 128 ); 	
+		tsgstrirgb = owner->GetTileset( "trirgb_128x128.png", 128, 128 ); 	
 
 		gsdodeca.setTexture( *tsgsdodeca->texture);
 		gstriblue.setTexture( *tsgstriblue->texture);
@@ -16330,7 +16330,6 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	else
 	{
-		target->draw( *sprite );
 		target->draw( gsdodeca );
 		target->draw( gstriblue );
 		target->draw( gstricym );
@@ -16338,6 +16337,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( gstrioran );
 		target->draw( gstripurp );
 		target->draw( gstrirgb );
+		target->draw( *sprite );
 	}
 
 	if( blah || record > 1 )
@@ -17772,9 +17772,9 @@ void Actor::UpdateSprite()
 			gstriblue.setTextureRect( tsgstriblue->GetSubRect( (grindActionInt * 5) % grindActionLength ) );
 			gstricym.setTextureRect( tsgstricym->GetSubRect( grindActionInt % grindActionLength ) ); //broken?
 			gstrigreen.setTextureRect( tsgstrigreen->GetSubRect( (grindActionInt * 5) % grindActionLength ) );
-			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt ));
-			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt ) );
-			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt ) );
+			gstrioran.setTextureRect( tsgstrioran->GetSubRect( grindActionInt% grindActionLength ));
+			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt% grindActionLength ) );
+			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt% grindActionLength ) );
 
 			V2d grindNorm = grindEdge->Normal();
 

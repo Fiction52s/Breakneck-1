@@ -21,6 +21,7 @@ IntRect Tileset::GetSubRect( int localID )
 		
 	if( localID < 0 || localID >= sx * sy )
 	{
+		cout << "texture error: " << this->sourceName << endl;
 		cout << "localID: " << localID << ", sx: " << sx << ", sy: " << sy << endl;
 		assert( 0 );
 	}
