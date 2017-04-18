@@ -202,6 +202,8 @@ void PlayerInfoBar::SetBottomLeftPos( sf::Vector2i &pos )
 	SetCornerPos( Vector2f( rightWall, trueBottom - minSize ), 2 );
 	SetCornerPos( Vector2f( rightWall, topTop - minSize ), 3 );
 
+	//about to set up the function for setwallpos and get the window all set up tomorrow
+
 	/*infoBarVA[BOT_QUAD_INDEX+0].position = Vector2f( pos.x, botTop );
 	infoBarVA[BOT_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, botTop );
 	infoBarVA[BOT_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, trueBottom );
