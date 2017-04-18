@@ -20,10 +20,11 @@ struct PlayerInfoBar
 {
 	enum State
 	{
+		STATE_INITIAL_WAIT, //STODO
 		STATE_SHOW_FACE,
 		STATE_WAIT,
-		STATE_EXPANDING,
-		STATE_WAIT_EXPANDED
+		STATE_WAIT_EXPANDED,
+		STATE_CLOSED
 	};
 
 	State currState;
@@ -36,18 +37,41 @@ struct PlayerInfoBar
 	};
 
 	PlayerInfoBar( GameSession *owner );
-	void AssignTiles();
-	void SetBottomLeftPos( sf::Vector2f &pos );
+	void AssignCorners();
+	void AssignEdges();
+	void Update( bool pressedA );
+	int frame;
+	State state;
+	void SetBottomLeftPos( sf::Vector2i &pos );
 	const sf::Vector2f &GetBottomLeftPos();
 	void Draw( sf::RenderTarget *target );
+	void SetHeight( int height );
+	void SetCornerPos( sf::Vector2i &topLeft, int index ); 
+	void SetWallPos( int x, int index );
 
+	int minSize;
 	Tileset *ts_bar;
-	sf::Vertex infoBarVA[4*3];
+	sf::Vertex windowVA[8 * 4];
+	//sf::Vertex infoBarVA[4*3];
+
+	sf::Vector2i windowSize;
 	GameSession *owner;
 	int botQuadHeight;
 	int topQuadHeight;
 	int totalWidth;
 	int currMiddleHeight;
+	int origMiddleHeight;
+
+	int framesBeforeShowFace;
+	int framesExpandingShowFace;
+	int framesExpandingFull;
+	int framesToClose;
+
+	int heightWait;
+	int heightShowFace;
+	int heightFull;
+
+	sf::Vector2i bottomLeft;
 };
 
 struct VictoryScreen2PlayerVS : VictoryScreen

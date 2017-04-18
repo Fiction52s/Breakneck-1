@@ -3436,7 +3436,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				if( raceFight == NULL )
 				{
-					raceFight = new RaceFight( this, 180 );
+					raceFight = new RaceFight( this, 10 );
 				}
 
 				raceFight->numTargets++;
@@ -8945,22 +8945,44 @@ int GameSession::Run( string fileN )
 		else if( state == RACEFIGHT_RESULTS )
 		{
 			//TODO
+
+
+			preScreenTex->clear();
 			window->clear();
+
+			accumulator += frameTime;
+
+			while ( accumulator >= TIMESTEP  )
+			{
+				accumulator -= TIMESTEP;
+			
 
 			prevInput = currInput;
 
 			controller.UpdateState();
 			currInput = controller.GetState();
 
+			prevInput2 = currInput2;
 
-			if( raceFight->raceFightResultsFrame > 30 )
-			{
-				if( currInput.A && !prevInput.A )
-				{
-					quit = true;
-					returnVal = 1;
-				}
+			controller2->UpdateState();
+			currInput2 = controller2->GetState();
+
+			raceFight->victoryScreen->Update();
+
+			preScreenTex->setView( uiView );
+
 			}
+
+			raceFight->victoryScreen->Draw( preScreenTex );
+
+			preScreenTex->display();
+			const Texture &preTex = preScreenTex->getTexture();
+		
+			Sprite preTexSprite( preTex );
+			preTexSprite.setPosition( 0, 0 );//-960 / 2, -540 / 2 );
+			//preTexSprite.setScale( .5, .5 );		
+
+			window->draw( preTexSprite  );
 
 			++raceFight->raceFightResultsFrame;
 		}
