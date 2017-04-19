@@ -321,6 +321,8 @@ struct Buf
 struct ImageText;
 struct TimerText;
 struct VictoryScreen2PlayerVS;
+struct UIWindow;
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -390,6 +392,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		TimerText *gameTimer;
 		ImageText *numberTargetsRemainingImage;
 		ImageText *numberTargetsTotalImage;
+
+		UIWindow *testWindow;
 	};
 	RaceFight *raceFight;
 	

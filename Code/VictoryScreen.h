@@ -2,6 +2,7 @@
 #define __VICTORY_SCREEN_H__
 
 #include "SFML/Graphics.hpp"
+#include "Input.h"
 
 struct VictoryScreen
 {
@@ -16,8 +17,11 @@ struct VictoryScreen
 struct Tileset;
 struct GameSession;
 
+
 struct PlayerInfoBar
 {
+	
+
 	enum State
 	{
 		STATE_INITIAL_WAIT, //STODO
@@ -51,7 +55,7 @@ struct PlayerInfoBar
 
 	int minSize;
 	Tileset *ts_bar;
-	sf::Vertex windowVA[8 * 4];
+	sf::Vertex windowVA[4 * 4];
 	//sf::Vertex infoBarVA[4*3];
 
 	sf::Vector2i windowSize;

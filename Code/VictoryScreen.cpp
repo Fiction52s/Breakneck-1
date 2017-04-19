@@ -10,7 +10,7 @@ VictoryScreen2PlayerVS::VictoryScreen2PlayerVS( GameSession *p_owner )
 	player1Bar = new PlayerInfoBar( owner );
 	player2Bar = new PlayerInfoBar( owner );
 
-	player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
+	//player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
 }
 
 void VictoryScreen::Reset()
@@ -61,7 +61,7 @@ PlayerInfoBar::PlayerInfoBar( GameSession *p_owner )
 
 	minSize = 92;
 
-	SetBottomLeftPos( Vector2f( 0, 0 ) );
+	//SetBottomLeftPos( Vector2f( 0, 0 ) );
 
 	currState = STATE_SHOW_FACE;
 
@@ -75,7 +75,7 @@ PlayerInfoBar::PlayerInfoBar( GameSession *p_owner )
 	heightWait = 80;
 	heightShowFace = 300;
 	heightFull = 900;
-	//infoBarVA[BOT_QUAD_INDEX]
+	//windowVA[BOT_QUAD_INDEX]
 }
 
 void PlayerInfoBar::AssignEdges()
@@ -86,7 +86,7 @@ void PlayerInfoBar::AssignEdges()
 	//walls
 
 	Vertex *wallVA = windowVA;
-	Vertex *flatVA = (windowVA + 2 * 4 );
+	Vertex *flatVA = (windowVA+ 2 * 4 );
 
 	//ceiling and floor
 
@@ -111,20 +111,20 @@ void PlayerInfoBar::AssignEdges()
 
 	
 
-	/*infoBarVA[BOT_QUAD_INDEX+0].texCoords = Vector2f( 0, totalHeight - botQuadHeight );
-	infoBarVA[BOT_QUAD_INDEX+1].texCoords = Vector2f( totalWidth, totalHeight - botQuadHeight );
-	infoBarVA[BOT_QUAD_INDEX+2].texCoords = Vector2f( totalWidth, totalHeight );
-	infoBarVA[BOT_QUAD_INDEX+3].texCoords = Vector2f( 0, totalHeight );
+	/*windowVA[BOT_QUAD_INDEX+0].texCoords = Vector2f( 0, totalHeight - botQuadHeight );
+	windowVA[BOT_QUAD_INDEX+1].texCoords = Vector2f( totalWidth, totalHeight - botQuadHeight );
+	windowVA[BOT_QUAD_INDEX+2].texCoords = Vector2f( totalWidth, totalHeight );
+	windowVA[BOT_QUAD_INDEX+3].texCoords = Vector2f( 0, totalHeight );
 
-	infoBarVA[STRETCH_QUAD_INDEX+0].texCoords = Vector2f( 0, topQuadHeight );
-	infoBarVA[STRETCH_QUAD_INDEX+1].texCoords = Vector2f( totalWidth, topQuadHeight );
-	infoBarVA[STRETCH_QUAD_INDEX+2].texCoords = Vector2f( totalWidth, topQuadHeight + middleHeight );
-	infoBarVA[STRETCH_QUAD_INDEX+3].texCoords = Vector2f( 0, topQuadHeight + middleHeight );
+	windowVA[STRETCH_QUAD_INDEX+0].texCoords = Vector2f( 0, topQuadHeight );
+	windowVA[STRETCH_QUAD_INDEX+1].texCoords = Vector2f( totalWidth, topQuadHeight );
+	windowVA[STRETCH_QUAD_INDEX+2].texCoords = Vector2f( totalWidth, topQuadHeight + middleHeight );
+	windowVA[STRETCH_QUAD_INDEX+3].texCoords = Vector2f( 0, topQuadHeight + middleHeight );
 
-	infoBarVA[TOP_QUAD_INDEX+0].texCoords = Vector2f( 0, 0 );
-	infoBarVA[TOP_QUAD_INDEX+1].texCoords = Vector2f( totalWidth, 0 );
-	infoBarVA[TOP_QUAD_INDEX+2].texCoords = Vector2f( totalWidth, topQuadHeight );
-	infoBarVA[TOP_QUAD_INDEX+3].texCoords = Vector2f( 0, topQuadHeight );*/
+	windowVA[TOP_QUAD_INDEX+0].texCoords = Vector2f( 0, 0 );
+	windowVA[TOP_QUAD_INDEX+1].texCoords = Vector2f( totalWidth, 0 );
+	windowVA[TOP_QUAD_INDEX+2].texCoords = Vector2f( totalWidth, topQuadHeight );
+	windowVA[TOP_QUAD_INDEX+3].texCoords = Vector2f( 0, topQuadHeight );*/
 }
 
 void PlayerInfoBar::AssignCorners()
@@ -176,7 +176,7 @@ void PlayerInfoBar::SetWallPos( int x, int index )
 {
 	Vertex *wallVA = windowVA;
 
-	wallVA
+	//wallVA
 }
 
 void PlayerInfoBar::SetBottomLeftPos( sf::Vector2i &pos )
@@ -197,37 +197,37 @@ void PlayerInfoBar::SetBottomLeftPos( sf::Vector2i &pos )
 	int ceiling = pos.y - windowSize.y;
 	int floorH = pos.y;
 
-	SetCornerPos( Vector2f( leftWall, trueBottom - minSize ), 0 );
+	/*SetCornerPos( Vector2f( leftWall, trueBottom - minSize ), 0 );
 	SetCornerPos( Vector2f( leftWall, topTop - minSize ), 1 );
 	SetCornerPos( Vector2f( rightWall, trueBottom - minSize ), 2 );
-	SetCornerPos( Vector2f( rightWall, topTop - minSize ), 3 );
+	SetCornerPos( Vector2f( rightWall, topTop - minSize ), 3 );*/
 
 	//about to set up the function for setwallpos and get the window all set up tomorrow
 
-	/*infoBarVA[BOT_QUAD_INDEX+0].position = Vector2f( pos.x, botTop );
-	infoBarVA[BOT_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, botTop );
-	infoBarVA[BOT_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, trueBottom );
-	infoBarVA[BOT_QUAD_INDEX+3].position = Vector2f( pos.x, trueBottom );
+	/*windowVA[BOT_QUAD_INDEX+0].position = Vector2f( pos.x, botTop );
+	windowVA[BOT_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, botTop );
+	windowVA[BOT_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, trueBottom );
+	windowVA[BOT_QUAD_INDEX+3].position = Vector2f( pos.x, trueBottom );
 
-	infoBarVA[STRETCH_QUAD_INDEX+0].position = Vector2f( pos.x, midTop );
-	infoBarVA[STRETCH_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, midTop );
-	infoBarVA[STRETCH_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, botTop );
-	infoBarVA[STRETCH_QUAD_INDEX+3].position = Vector2f( pos.x, botTop );
+	windowVA[STRETCH_QUAD_INDEX+0].position = Vector2f( pos.x, midTop );
+	windowVA[STRETCH_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, midTop );
+	windowVA[STRETCH_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, botTop );
+	windowVA[STRETCH_QUAD_INDEX+3].position = Vector2f( pos.x, botTop );
 
-	infoBarVA[TOP_QUAD_INDEX+0].position = Vector2f( pos.x, topTop );
-	infoBarVA[TOP_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, topTop );
-	infoBarVA[TOP_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, midTop );
-	infoBarVA[TOP_QUAD_INDEX+3].position = Vector2f( pos.x, midTop );*/
+	windowVA[TOP_QUAD_INDEX+0].position = Vector2f( pos.x, topTop );
+	windowVA[TOP_QUAD_INDEX+1].position = Vector2f( pos.x + totalWidth, topTop );
+	windowVA[TOP_QUAD_INDEX+2].position = Vector2f( pos.x + totalWidth, midTop );
+	windowVA[TOP_QUAD_INDEX+3].position = Vector2f( pos.x, midTop );*/
 }
 
 const sf::Vector2f &PlayerInfoBar::GetBottomLeftPos()
 {
-	return infoBarVA[BOT_QUAD_INDEX+2].position;
+	return windowVA[BOT_QUAD_INDEX+2].position;
 }
 
 void PlayerInfoBar::Draw( sf::RenderTarget *target )
 {
-	target->draw( infoBarVA, 12, sf::Quads, ts_bar->texture );
+	target->draw( windowVA, 12, sf::Quads, ts_bar->texture );
 }
 
 void PlayerInfoBar::Update( bool pressedA )
@@ -326,3 +326,4 @@ void PlayerInfoBar::SetHeight( int height )
 	currMiddleHeight = trueHeight;
 	SetBottomLeftPos( bottomLeft );
 }
+

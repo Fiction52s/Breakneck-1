@@ -29,6 +29,7 @@
 #include <iostream>
 #include "ImageText.h"
 #include "VictoryScreen.h"
+#include "UIWindow.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -8945,10 +8946,12 @@ int GameSession::Run( string fileN )
 		else if( state == RACEFIGHT_RESULTS )
 		{
 			//TODO
-
+			window->setView( v );
 
 			preScreenTex->clear();
 			window->clear();
+
+			preScreenTex->setView( uiView );
 
 			accumulator += frameTime;
 
@@ -8967,22 +8970,24 @@ int GameSession::Run( string fileN )
 			controller2->UpdateState();
 			currInput2 = controller2->GetState();
 
-			raceFight->victoryScreen->Update();
+			//raceFight->victoryScreen->Update();
 
-			preScreenTex->setView( uiView );
+			
 
 			}
 
-			raceFight->victoryScreen->Draw( preScreenTex );
+			//raceFight->victoryScreen->Draw( preScreenTex );
+			raceFight->testWindow->Draw( preScreenTex );
 
 			preScreenTex->display();
 			const Texture &preTex = preScreenTex->getTexture();
 		
 			Sprite preTexSprite( preTex );
-			preTexSprite.setPosition( 0, 0 );//-960 / 2, -540 / 2 );
-			//preTexSprite.setScale( .5, .5 );		
+			preTexSprite.setPosition( -960 / 2, -540 /2 );//-960 / 2, -540 / 2 );
+			
+			preTexSprite.setScale( .5, .5 );		
 
-			window->draw( preTexSprite  );
+			window->draw( preTexSprite );
 
 			++raceFight->raceFightResultsFrame;
 		}
@@ -13831,14 +13836,17 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	gameTimer->topRight = Vector2f( 1920/2 + 80 * 2.5, 0 );
 	gameTimer->SetNumber( raceFightMaxSeconds );
 
-	victoryScreen = new VictoryScreen2PlayerVS( owner );
+	//victoryScreen = new VictoryScreen2PlayerVS( owner );
 
 	Reset();
 
 	tempAllTargets.setFont( owner->arial );
 	tempAllTargets.setCharacterSize( 12 );
 	tempAllTargets.setColor( Color::Red );
-	
+
+	testWindow = new UIWindow( owner, owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),
+		Vector2f( 400, 400) );
+	testWindow->SetTopLeft( Vector2f( 50, 0 ) );
 }
 
 int GameSession::RaceFight::NumDigits( int number )
