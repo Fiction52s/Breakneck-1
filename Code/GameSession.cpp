@@ -813,7 +813,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 	minimapTex = mainMenu->minimapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
-	arial.loadFromFile( "arial.ttf" );
+	arial.loadFromFile( "Breakneck_Font_01.ttf" );
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( 100 );
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ), arial );

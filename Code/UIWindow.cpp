@@ -12,8 +12,22 @@ UIWindow::UIWindow( GameSession *p_owner, Tileset *t, sf::Vector2f &p_windowSize
 	AssignTextureToCorners();
 	AssignTextureToCornerEdges();
 	AssignTextureToEdges();
-	minSize = t->tileWidth;
+	AssignTextureCenter();
+	minSize = t->tileWidth * 2;
 	tileSize = t->tileWidth;
+	Resize( Vector2f( 600, 100 ) );
+}
+
+void UIWindow::Resize( sf::Vector2f &size )
+{
+	windowSize = size;
+	SetTopLeft( GetTopLeft() );
+}
+
+void UIWindow::Resize( float x, float y )
+{
+	windowSize = Vector2f( x, y );
+	SetTopLeft( GetTopLeft() );
 }
 
 void UIWindow::AssignTextureToCorners()
@@ -64,6 +78,36 @@ void UIWindow::AssignTextureToCorners()
 	cornerVA[i*4+1].texCoords = points[2];
 	cornerVA[i*4+2].texCoords = points[3];
 	cornerVA[i*4+3].texCoords = points[0];*/
+}
+
+void UIWindow::AssignTextureCenter()
+{
+	float th = ts_window->tileWidth;
+
+	IntRect sub = ts_window->GetSubRect( 11 );
+	/*centerVA[0].texCoords = Vector2f( sub.left, sub.top );
+	centerVA[1].texCoords = Vector2f( sub.left + th, sub.top );
+	centerVA[2].texCoords = Vector2f( sub.left + th, sub.top + th );
+	centerVA[3].texCoords = Vector2f( sub.left, sub.top + th );*/
+
+	centerVA[0].color = Color::Blue;
+	centerVA[1].color = Color::Blue;
+	centerVA[2].color = Color::Blue;
+	centerVA[3].color = Color::Blue;
+}
+
+void UIWindow::SetCenterVertices( sf::Vector2f &A,
+		sf::Vector2f &B, sf::Vector2f &C,
+		sf::Vector2f &D )
+{
+	float th = ts_window->tileWidth;
+	float tw = ts_window->tileHeight;
+
+	//goes behind the other stuff halfway
+	centerVA[0].position = A;
+	centerVA[1].position = B;
+	centerVA[2].position = C;
+	centerVA[3].position = D;
 }
 
 void UIWindow::AssignTextureToCornerEdges()
@@ -146,15 +190,25 @@ void UIWindow::AssignTextureToEdges()
 
 void UIWindow::Draw( sf::RenderTarget *target )
 {
-	sf::CircleShape c;
+	/*sf::CircleShape c;
 	c.setRadius( 20 );
 	c.setFillColor( Color::White );
 	c.setOrigin( c.getLocalBounds().width / 2, c.getLocalBounds().height / 2 );
-	c.setPosition( 0, 0 );
+	c.setPosition( 0, 0 );*/
 	
+	target->draw( centerVA, 4, sf::Quads /*TODO shader here*/ );
+
 	target->draw( borderVA, 16 * 4, sf::Quads, ts_window->texture );
 
-	target->draw( c );
+	sf::RectangleShape rs;
+	rs.setFillColor( Color( 0, 255, 0, 60 ) );
+	rs.setSize( Vector2f( 600, 100 ) );
+	rs.setPosition( 50 + ts_window->tileHeight, ts_window->tileHeight );
+
+	target->draw( rs );
+
+
+	//target->draw( c );
 }
 
 const sf::Vector2f &UIWindow::GetTopLeft()
@@ -162,7 +216,7 @@ const sf::Vector2f &UIWindow::GetTopLeft()
 	return borderVA[CORNER_TOPLEFT * 4].position;
 }
 
-void UIWindow::SetTopLeft( sf::Vector2f &pos )
+void UIWindow::SetTopLeft( const sf::Vector2f &pos )
 {
 	//window size minimum is 2x tilewidth
 	float tw = ts_window->tileWidth;
@@ -172,6 +226,11 @@ void UIWindow::SetTopLeft( sf::Vector2f &pos )
 	float rightLeft = left + th + windowSize.x;
 	float botTop = top + th + windowSize.y;
 	
+	SetCenterVertices( Vector2f( left + th / 2, top + th / 2 ),
+		Vector2f( rightLeft + th / 2, top + th / 2 ),
+		Vector2f( rightLeft + th / 2, botTop + th / 2 ),
+		Vector2f( left + th / 2, botTop + th / 2 ) );
+
 	SetCornerVertices( Vector2f( left, top ), 0 );
 	SetCornerVertices( Vector2f( rightLeft, top ), 1 );
 	SetCornerVertices( Vector2f( rightLeft, botTop ), 2 );

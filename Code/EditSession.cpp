@@ -454,7 +454,8 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), fullBounds( sf::Quads, 16 )
 {
-	arialFont.loadFromFile( "arial.ttf" );
+	
+	arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
 	cursorLocationText.setFont( arialFont );
 	cursorLocationText.setCharacterSize( 16 );
 	cursorLocationText.setColor( Color::White );
@@ -3781,7 +3782,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	showPanel = NULL;
 
 	sf::Font arial;
-	arial.loadFromFile( "arial.ttf" );
+	arial.loadFromFile( "Breakneck_Font_01.ttf" );
 
 
 

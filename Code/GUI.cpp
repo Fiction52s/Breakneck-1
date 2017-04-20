@@ -150,7 +150,7 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	:handler( h ), size( width, height ), name( n )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
-	arial.loadFromFile( "arial.ttf" );
+	arial.loadFromFile("Breakneck_Font_01.ttf");
 }
 
 void Panel::Update( bool mouseDown, int posx, int posy )

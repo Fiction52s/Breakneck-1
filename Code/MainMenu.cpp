@@ -32,8 +32,7 @@ MainMenu::MainMenu()
 	//load a preferences file at some point for window resolution and stuff
 
 	//could be bad cuz its static
-	arial.loadFromFile( "arial.ttf" );
-	
+	arial.loadFromFile( "Breakneck_Font_01.ttf" );
 		
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 	v = View( Vector2f( 1920/2, 1080/2 ), Vector2f( 1920, 1080 ) );

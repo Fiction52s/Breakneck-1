@@ -35,9 +35,10 @@ struct UIWindow
 	void AssignTextureToCorners();
 	void AssignTextureToCornerEdges();
 	void AssignTextureToEdges();
+	void AssignTextureCenter();
 	void Update();
 	
-	void SetTopLeft( sf::Vector2f &pos );
+	void SetTopLeft( const sf::Vector2f &pos );
 	const sf::Vector2f &GetTopLeft();
 	void Draw( sf::RenderTarget *target );
 	void SetCornerVertices( sf::Vector2f &topLeft, int index );
@@ -45,12 +46,18 @@ struct UIWindow
 	void SetCornerEdgesHorizVertices( sf::Vector2f &topLeft, int index );
 	void SetCornerEdgesVertVertices( sf::Vector2f &topLeft, int index );
 	void SetFlatVertices( sf::Vector2f &topLeft, int index );
+	void SetCenterVertices( sf::Vector2f &A,
+		sf::Vector2f &B, sf::Vector2f &C,
+		sf::Vector2f &D );
+	void Resize( sf::Vector2f &size );
+	void Resize( float x, float y );
 
 	int minSize;
 	int tileSize;
 
 	//sf::Vector2f position;
 	sf::Vertex borderVA[Count * 4];
+	sf::Vertex centerVA[4];
 	Tileset *ts_window;
 	GameSession *owner;
 	sf::Vector2f windowSize;
