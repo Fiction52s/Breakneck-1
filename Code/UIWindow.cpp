@@ -5,8 +5,19 @@
 using namespace sf;
 using namespace std;
 
-UIWindow::UIWindow( GameSession *p_owner, Tileset *t, sf::Vector2f &p_windowSize )
-	:owner( p_owner ), ts_window( t ), windowSize( p_windowSize )
+UIControl::UIControl( UIControl *p_parent )
+	:parent( p_parent ), focused( false )
+{
+}
+
+const sf::Vector2f &UIControl::GetTopLeftRel()
+{
+	return relTopLeft;
+}
+
+
+UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize )
+	:UIControl( p_parent ), ts_window( t ), windowSize( p_windowSize )
 {
 	//uiwindowtest_96x30.png
 	AssignTextureToCorners();
@@ -21,13 +32,13 @@ UIWindow::UIWindow( GameSession *p_owner, Tileset *t, sf::Vector2f &p_windowSize
 void UIWindow::Resize( sf::Vector2f &size )
 {
 	windowSize = size;
-	SetTopLeft( GetTopLeft() );
+	SetTopLeft( GetTopLeftRel() );
 }
 
 void UIWindow::Resize( float x, float y )
 {
 	windowSize = Vector2f( x, y );
-	SetTopLeft( GetTopLeft() );
+	SetTopLeft( GetTopLeftRel() );
 }
 
 void UIWindow::AssignTextureToCorners()
@@ -37,12 +48,22 @@ void UIWindow::AssignTextureToCorners()
 	float th = ts_window->tileHeight;
 	IntRect cornerRect( 0, th * 10, th, th );
 
+	int indexes[4];
+	int temp;
 	for( int i = 0; i < 4; ++i )
 	{
-		cornerVA[i*4+0].texCoords = Vector2f( cornerRect.left, cornerRect.top );
-		cornerVA[i*4+1].texCoords = Vector2f( cornerRect.left + cornerRect.width, cornerRect.top );
-		cornerVA[i*4+2].texCoords = Vector2f( cornerRect.left + cornerRect.width, cornerRect.top + cornerRect.height);
-		cornerVA[i*4+3].texCoords = Vector2f( cornerRect.left, cornerRect.top + cornerRect.height );
+		temp = i;
+		for( int j = 0; j < 4; ++j )
+		{
+			indexes[j] = temp;
+			++temp;
+			if( temp == 4 )
+				temp = 0;
+		}
+		cornerVA[i*4+indexes[1]].texCoords = Vector2f( cornerRect.left, cornerRect.top );
+		cornerVA[i*4+indexes[2]].texCoords = Vector2f( cornerRect.left + cornerRect.width, cornerRect.top );
+		cornerVA[i*4+indexes[3]].texCoords = Vector2f( cornerRect.left + cornerRect.width, cornerRect.top + cornerRect.height);
+		cornerVA[i*4+indexes[0]].texCoords = Vector2f( cornerRect.left, cornerRect.top + cornerRect.height );
 
 		/*cornerVA[i*4+0].color = Color::Red;
 		cornerVA[i*4+1].color = Color::Red;
@@ -84,16 +105,16 @@ void UIWindow::AssignTextureCenter()
 {
 	float th = ts_window->tileWidth;
 
-	IntRect sub = ts_window->GetSubRect( 11 );
+	//IntRect sub = ts_window->GetSubRect( 11 );
 	/*centerVA[0].texCoords = Vector2f( sub.left, sub.top );
 	centerVA[1].texCoords = Vector2f( sub.left + th, sub.top );
 	centerVA[2].texCoords = Vector2f( sub.left + th, sub.top + th );
 	centerVA[3].texCoords = Vector2f( sub.left, sub.top + th );*/
 
-	centerVA[0].color = Color::Blue;
-	centerVA[1].color = Color::Blue;
-	centerVA[2].color = Color::Blue;
-	centerVA[3].color = Color::Blue;
+	centerVA[0].color = Color::Cyan;
+	centerVA[1].color = Color::Cyan;
+	centerVA[2].color = Color::Cyan;
+	centerVA[3].color = Color::Cyan;
 }
 
 void UIWindow::SetCenterVertices( sf::Vector2f &A,
@@ -200,29 +221,43 @@ void UIWindow::Draw( sf::RenderTarget *target )
 
 	target->draw( borderVA, 16 * 4, sf::Quads, ts_window->texture );
 
-	sf::RectangleShape rs;
+	test->Draw( target );
+
+	/*sf::RectangleShape rs;
 	rs.setFillColor( Color( 0, 255, 0, 60 ) );
 	rs.setSize( Vector2f( 600, 100 ) );
-	rs.setPosition( 50 + ts_window->tileHeight, ts_window->tileHeight );
+	rs.setPosition( 50 + ts_window->tileHeight, ts_window->tileHeight );*/
 
-	target->draw( rs );
+	//target->draw( rs );
 
 
 	//target->draw( c );
 }
 
-const sf::Vector2f &UIWindow::GetTopLeft()
+void UIWindow::Update( ControllerState &curr,
+		ControllerState &prev )
 {
-	return borderVA[CORNER_TOPLEFT * 4].position;
+
 }
 
-void UIWindow::SetTopLeft( const sf::Vector2f &pos )
+const sf::Vector2f &UIWindow::GetTopLeftGlobal()
 {
+	return borderVA[CORNER_TOPLEFT * 4].position;;
+}
+
+void UIWindow::SetTopLeft( const Vector2f &pos )
+{
+	SetTopLeft( pos.x, pos.y );
+}
+
+void UIWindow::SetTopLeft( float x, float y )
+{
+	relTopLeft = Vector2f( x, y );
 	//window size minimum is 2x tilewidth
 	float tw = ts_window->tileWidth;
 	float th = ts_window->tileHeight;
-	float left = pos.x;
-	float top = pos.y;
+	float left = x;
+	float top = y;
 	float rightLeft = left + th + windowSize.x;
 	float botTop = top + th + windowSize.y;
 	

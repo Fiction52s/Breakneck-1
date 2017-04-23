@@ -3437,7 +3437,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				if( raceFight == NULL )
 				{
-					raceFight = new RaceFight( this, 10 );
+					raceFight = new RaceFight( this, 180 );//10 );
 				}
 
 				raceFight->numTargets++;
@@ -7069,7 +7069,7 @@ int GameSession::Run( string fileN )
 				}
 				else if( raceFight != NULL )
 				{
-					if( raceFight->playerScore == raceFight->numTargets || raceFight->gameTimer->value == 0 )
+					if( raceFight->playerScore == raceFight->numTargets || raceFight->gameTimer->value == 0 || currInput.back )
 					{
 						state = RACEFIGHT_RESULTS;
 						raceFight->raceFightResultsFrame = 0;
@@ -13844,9 +13844,17 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	tempAllTargets.setCharacterSize( 12 );
 	tempAllTargets.setColor( Color::Red );
 
-	testWindow = new UIWindow( owner, owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),
+	testWindow = new UIWindow( NULL, owner->GetTileset( "window_64x24.png", 64, 24 ),
 		Vector2f( 400, 400) );
-	testWindow->SetTopLeft( Vector2f( 50, 0 ) );
+	testWindow->SetTopLeft( Vector2f( 100, 100 ) );
+
+	string options[] = {"blah", "blah2" , "blah3" };
+	string results[] = {"blah", "blah2" , "blah3" };
+
+	UIHorizChooserStr *test = new UIHorizChooserStr( testWindow, &owner->tm, &owner->arial, 3, options, 
+		results, false, 0, 200 );
+	test->SetTopLeft( Vector2f( 50, 0 ) );
+	testWindow->test = test;
 }
 
 int GameSession::RaceFight::NumDigits( int number )
