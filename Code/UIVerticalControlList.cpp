@@ -6,8 +6,9 @@
 using namespace sf;
 using namespace std;
 
-UIVerticalControlList::UIVerticalControlList( UIControl *p_parent, int p_numControls, UIControl **p_controls, int p_spacing )
-	:UIControl( p_parent, UI_VERTICAL_CONTROL_LIST ), spacing( p_spacing ), numControls( p_numControls ), 
+UIVerticalControlList::UIVerticalControlList( UIControl *p_parent,
+	int p_numControls, UIControl **p_controls, int p_spacing )
+	:UIControl( p_parent, NULL, UI_VERTICAL_CONTROL_LIST ), spacing( p_spacing ), numControls( p_numControls ), 
 	controls( p_controls ), focusedIndex( 0 )
 {
 	controls = new UIControl*[numControls];

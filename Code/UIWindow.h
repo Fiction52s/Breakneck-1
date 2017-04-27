@@ -54,16 +54,16 @@ struct UIControl
 	enum UIControlType
 	{
 		UI_BAR,
-		UI_HORIZSELECTOR,
-		UI_HORIZSELECTOR_INT,
-		UI_HORIZSELECTOR_STR,
+		UI_HORIZ_SELECTOR_INT,
+		UI_HORIZ_SELECTOR_STR,
 		UI_VERTICAL_CONTROL_LIST,
 		UI_BUTTON,
 		UI_WINDOW,
 		UI_Count
 	};
 
-	UIControl( UIControl *p_parent, UIControlType p_cType );
+	UIControl( UIControl *p_parent, UIEventHandlerBase *p_handler,
+		UIControlType p_cType );
 	virtual ~UIControl();
 	void SetTopLeftVec( const sf::Vector2f &pos );
 	virtual void SetTopLeft( float x, float y ) = 0;
@@ -72,7 +72,9 @@ struct UIControl
 	virtual bool Update( ControllerState &curr,
 		ControllerState &prev ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;	
-	bool focused;
+	virtual void Focus();
+	virtual void Unfocus();
+	bool IsFocused();
 	UIControl *parent;
 	sf::Vector2f relTopLeft;
 	sf::Vector2f dimensions;
@@ -82,6 +84,8 @@ struct UIControl
 	UIControlType GetType();
 private:
 	UIControlType cType;
+	bool focused;
+	UIEventHandlerBase *handler;
 };
 
 struct UIBar : UIControl
@@ -129,12 +133,15 @@ struct UIHorizSelector : UIControl
 
 	
 	UIHorizSelector( UIControl *parent, 
+		UIEventHandlerBase *p_handler,
 		UIControlType p_cType,
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
+		const std::string &label, int p_labelWidth,
 		Type type, bool p_loop, int p_defaultIndex,
 		int chooserWidth );	
+	virtual ~UIHorizSelector();
 	void Draw( sf::RenderTarget *target );
 	bool Update( ControllerState &curr,
 		ControllerState &prev );
@@ -146,6 +153,7 @@ struct UIHorizSelector : UIControl
 	void SetTopLeft( float x, float y );
 
 	UIBar *bar;
+	UIBar *nameBar;
 	sf::Vertex arrows[2*4];
 	Tileset *ts_arrow;
 
@@ -164,6 +172,7 @@ struct UIHorizSelector : UIControl
 struct UIHorizSelectorInt : UIHorizSelector
 {
 	UIHorizSelectorInt( UIControl *parent, 
+		UIEventHandlerBase *p_handler,
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
@@ -177,6 +186,7 @@ struct UIHorizSelectorInt : UIHorizSelector
 struct UIHorizSelectorStr : UIHorizSelector
 {
 	UIHorizSelectorStr( UIControl *parent,
+		UIEventHandlerBase *p_handler,
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
@@ -207,16 +217,40 @@ struct UIVerticalControlList : UIControl
 
 struct UIButton : UIControl
 {
-	UIButton( UIControl *p_parent,
+	UIButton( UIControl *p_parent,  
+		UIEventHandlerBase *p_handler,
+		const std::string &text );
+	~UIButton();
+	void Unfocus();
+	void SetTopLeft( float x, float y );
+	const sf::Vector2f &GetTopLeftGlobal();
+	bool Update( ControllerState &curr,
+		ControllerState &prev );
+	void Draw( sf::RenderTarget *target );	
+
+	int spacing;
+	int numControls;
+	int focusedIndex;
+	UIBar *bar;
+	bool pressedDown;
+};
+
+struct UICheckbox : UIControl
+{
+	bool pressedDown;
+	UICheckbox( UIControl *p_parent,
+		UIEventHandlerBase *p_handler,
 		int p_numControls, UIControl **p_controls,
 		int p_spacing );
-	~UIButton();
+	~UICheckbox();
+	void Unfocus();
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();
 	bool Update( ControllerState &curr,
 		ControllerState &prev );
 	void Draw( sf::RenderTarget *target );	
 	int spacing;
+	bool checked;
 	int numControls;
 	int focusedIndex;
 	sf::Vector2f globalTopLeft;

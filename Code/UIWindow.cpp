@@ -5,8 +5,8 @@
 using namespace sf;
 using namespace std;
 
-UIControl::UIControl( UIControl *p_parent, UIControlType p_cType )
-	:parent( p_parent ), focused( false ), dimensions( 0, 0 ), cType( p_cType )
+UIControl::UIControl( UIControl *p_parent, UIEventHandlerBase *p_handler, UIControlType p_cType )
+	:parent( p_parent ), focused( false ), dimensions( 0, 0 ), cType( p_cType ), handler( p_handler )
 {
 }
 
@@ -23,6 +23,21 @@ UIControl::~UIControl()
 void UIControl::SetTopLeftVec( const sf::Vector2f &pos )
 {
 	SetTopLeft( pos.x, pos.y );
+}
+
+void UIControl::Focus()
+{
+	focused = true;
+}
+
+void UIControl::Unfocus()
+{
+	focused = false;
+}
+
+bool UIControl::IsFocused()
+{
+	return focused;
 }
 
 UIControl *UIControl::GetOwner()
@@ -53,7 +68,7 @@ UIControl::UIControlType UIControl::GetType()
 }
 
 UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize )
-	:UIControl( p_parent, UI_WINDOW ), ts_window( t )
+	:UIControl( p_parent, NULL, UI_WINDOW ), ts_window( t )
 {
 	dimensions = p_windowSize;
 	//uiwindowtest_96x30.png

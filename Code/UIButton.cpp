@@ -6,8 +6,8 @@
 using namespace sf;
 using namespace std;
 
-UIButton::UIButton( UIControl *p_parent, int p_numControls, UIControl **p_controls, int p_spacing )
-	:UIControl( p_parent, UI_BUTTON ), spacing( p_spacing ), numControls( p_numControls ), 
+UIButton::UIButton( UIControl *p_parent, UIEventHandlerBase *p_handler, int p_numControls, UIControl **p_controls, int p_spacing )
+	:UIControl( p_parent, p_handler, UI_BUTTON ), spacing( p_spacing ), numControls( p_numControls ), 
 	controls( p_controls ), focusedIndex( 0 )
 {
 	controls = new UIControl*[numControls];
@@ -27,6 +27,12 @@ UIButton::~UIButton()
 		delete controls[i];
 	}
 	delete [] controls;
+}
+
+void UIButton::Unfocus()
+{
+	UIControl::Focus();
+	pressedDown = false;
 }
 
 void UIButton::SetTopLeft( float x, float y )

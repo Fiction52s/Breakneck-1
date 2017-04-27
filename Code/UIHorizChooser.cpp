@@ -7,7 +7,7 @@ using namespace sf;
 using namespace std;
 
 UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width )
-	:UIControl( p_parent, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
+	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
 {
 	//ts_bar = tsMan->GetTileset( "blahbar" );
 	AssignTexture();
@@ -118,13 +118,6 @@ void UIBar::SetTextAlignment( Alignment align )
 
 void UIBar::Draw( sf::RenderTarget *target )
 {
-	if( focused )
-	{
-	}
-	else
-	{
-	}
-
 	target->draw( barVA, 12, sf::Quads ); //ts_bar->texture
 	target->draw( currText );
 }
@@ -136,9 +129,11 @@ bool UIBar::Update( ControllerState &curr,
 	//nothing here
 }
 
-UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIControlType p_cType, TilesetManager *tsMan, sf::Font *f, int p_numOptions, std::string *p_names, Type p_chooserType,
+UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIEventHandlerBase *p_handler, 
+	UIControlType p_cType, TilesetManager *tsMan, sf::Font *f, int p_numOptions, 
+	std::string *p_names, const std::string &label, int p_labelWidth, Type p_chooserType,
 	bool p_loop, int p_defaultIndex, int p_chooserWidth )
-	:UIControl( p_parent, p_cType ), numOptions( p_numOptions ), chooserType( p_chooserType ), loop( p_loop ), 
+	:UIControl( p_parent, p_handler, p_cType ), numOptions( p_numOptions ), chooserType( p_chooserType ), loop( p_loop ), 
 	defaultIndex( p_defaultIndex )
 {
 
@@ -149,11 +144,13 @@ UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIControlType p_cType, Ti
 		names[i] = p_names[i];
 	}
 	currIndex = defaultIndex;
-	focused = false;
 
 	AssignArrowTexture();
 
 	bar = new UIBar( p_parent, tsMan, f, p_chooserWidth );
+
+	nameBar = new UIBar( p_parent, tsMan, f, p_labelWidth );
+	nameBar->SetText( label, UIBar::Alignment::MIDDLE );
 	
 	dimensions = bar->dimensions;
 
@@ -161,6 +158,13 @@ UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIControlType p_cType, Ti
 	currIndexText.setCharacterSize( 40 );
 	currIndexText.setColor( Color::White );*/
 	bar->SetText( names[defaultIndex] );
+}
+
+UIHorizSelector::~UIHorizSelector()
+{
+	delete bar;
+	delete nameBar;
+	delete [] names;
 }
 
 const sf::Vector2f &UIHorizSelector::GetTopLeftRel()
@@ -233,8 +237,10 @@ bool UIHorizSelector::Update( ControllerState &curr, ControllerState &prev )
 
 void UIHorizSelector::SetTopLeft( float x, float y )
 {
+	int extraSpacing = 20;
 	relTopLeft = Vector2f( x, y );
-	bar->SetTopLeft( x, y );
+	nameBar->SetTopLeft( x, y );
+	bar->SetTopLeft( x + nameBar->GetWidth() + extraSpacing, y );
 
 	//set arrows
 	//currIndexText.setPosition( x, y );
@@ -250,9 +256,10 @@ void UIHorizSelector::Draw( sf::RenderTarget *target )
 	bar->Draw( target );
 }
 
-UIHorizSelectorInt::UIHorizSelectorInt( UIControl *p_parent, TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
+UIHorizSelectorInt::UIHorizSelectorInt( UIControl *p_parent, UIEventHandlerBase *p_handler, 
+	TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
 		int *p_results, bool p_loop, int p_defaultIndex, int p_chooserWidth )
-		:UIHorizSelector( p_parent, tsMan, f, p_numOptions, p_names, Type::INT, p_loop, p_defaultIndex,
+		:UIHorizSelector( p_parent, p_handler, UI_HORIZ_SELECTOR_INT, tsMan, f, p_numOptions, p_names, Type::INT, p_loop, p_defaultIndex,
 		p_chooserWidth )
 {
 	results = new int[p_numOptions];
@@ -267,9 +274,10 @@ int UIHorizSelectorInt::GetResult( int index )
 	return results[index];
 }
 
-UIHorizSelectorStr::UIHorizSelectorStr( UIControl *p_parent, TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
+UIHorizSelectorStr::UIHorizSelectorStr( UIControl *p_parent, UIEventHandlerBase *p_handler,
+	TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
 		std::string *p_results, bool p_loop, int p_defaultIndex, int p_chooserWidth )
-		:UIHorizSelector( p_parent, tsMan, f, p_numOptions, p_names, Type::STR, p_loop, p_defaultIndex,
+		:UIHorizSelector( p_parent, p_handler, UI_HORIZ_SELECTOR_STR, tsMan, f, p_numOptions, p_names, Type::STR, p_loop, p_defaultIndex,
 		p_chooserWidth )
 {
 	results = new std::string[p_numOptions];
