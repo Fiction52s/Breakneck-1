@@ -8972,7 +8972,7 @@ int GameSession::Run( string fileN )
 
 			//raceFight->victoryScreen->Update();
 
-			
+			raceFight->testWindow->Update( currInput, prevInput );
 
 			}
 
@@ -13846,15 +13846,24 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 
 	testWindow = new UIWindow( NULL, owner->GetTileset( "window_64x24.png", 64, 24 ),
 		Vector2f( 400, 400) );
-	testWindow->SetTopLeft( Vector2f( 100, 100 ) );
+	testWindow->SetTopLeftVec( Vector2f( 100, 100 ) );
+	
 
 	string options[] = {"blah", "blah2" , "blah3" };
 	string results[] = {"blah", "blah2" , "blah3" };
 
-	UIHorizChooserStr *test = new UIHorizChooserStr( testWindow, &owner->tm, &owner->arial, 3, options, 
+	UIHorizSelectorStr *test = new UIHorizSelectorStr( testWindow, &owner->tm, &owner->arial, 3, options, 
 		results, false, 0, 200 );
-	test->SetTopLeft( Vector2f( 50, 0 ) );
-	testWindow->test = test;
+
+	UIHorizSelectorStr *test2 = new UIHorizSelectorStr( testWindow, &owner->tm, &owner->arial, 3, options, 
+		results, false, 1, 200 );
+	//test->SetTopLeft( Vector2f( 50, 0 ) );
+
+	UIControl *testBlah[2] = { test, test2 };
+
+	testWindow->controlList = new UIVerticalControlList( testWindow, 2, testBlah, 20 );
+
+	//testWindow->test = test;
 }
 
 int GameSession::RaceFight::NumDigits( int number )
@@ -13998,6 +14007,7 @@ void GameSession::RaceFight::UpdateScore()
 
 void GameSession::RaceFight::TickClock()
 {
+	testWindow->Update( owner->currInput, owner->prevInput );
 	gameTimer->SetNumber( gameTimer->value-- );
 }
 

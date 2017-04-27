@@ -7,7 +7,7 @@ using namespace sf;
 using namespace std;
 
 UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width )
-	:UIControl( p_parent ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
+	:UIControl( p_parent, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
 {
 	//ts_bar = tsMan->GetTileset( "blahbar" );
 	AssignTexture();
@@ -15,6 +15,8 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 	currText.setFont( *f );
 	currText.setCharacterSize( 40 );
 	currText.setColor( Color::White );
+
+	dimensions = Vector2f( p_width, 50 ); //50 is just a random constant
 }
 
 void UIBar::AssignTexture()
@@ -33,11 +35,6 @@ void UIBar::AssignTexture()
 	barVA[RIGHT*4+1].color = Color::Blue;
 	barVA[RIGHT*4+2].color = Color::Blue;
 	barVA[RIGHT*4+3].color = Color::Blue;
-}
-
-void UIBar::SetTopLeft( const sf::Vector2f &pos )
-{
-	SetTopLeft( pos.x, pos.y );
 }
 
 void UIBar::SetTopLeft( float x, float y )
@@ -132,17 +129,19 @@ void UIBar::Draw( sf::RenderTarget *target )
 	target->draw( currText );
 }
 
-void UIBar::Update( ControllerState &curr,
+bool UIBar::Update( ControllerState &curr,
 		ControllerState &prev )
 {
+	return false;
 	//nothing here
 }
 
-UIHorizChooser::UIHorizChooser( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_numOptions, std::string *p_names, Type p_chooserType,
+UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIControlType p_cType, TilesetManager *tsMan, sf::Font *f, int p_numOptions, std::string *p_names, Type p_chooserType,
 	bool p_loop, int p_defaultIndex, int p_chooserWidth )
-	:UIControl( p_parent ), numOptions( p_numOptions ), chooserType( p_chooserType ), loop( p_loop ), 
+	:UIControl( p_parent, p_cType ), numOptions( p_numOptions ), chooserType( p_chooserType ), loop( p_loop ), 
 	defaultIndex( p_defaultIndex )
 {
+
 	//ts_arrows = tsMan->GetTileset( "arrows_" );
 	names = new std::string[numOptions];
 	for( int i = 0; i < numOptions; ++i )
@@ -155,6 +154,8 @@ UIHorizChooser::UIHorizChooser( UIControl *p_parent, TilesetManager *tsMan, sf::
 	AssignArrowTexture();
 
 	bar = new UIBar( p_parent, tsMan, f, p_chooserWidth );
+	
+	dimensions = bar->dimensions;
 
 	/*currIndexText.setFont( *f );
 	currIndexText.setCharacterSize( 40 );
@@ -162,17 +163,17 @@ UIHorizChooser::UIHorizChooser( UIControl *p_parent, TilesetManager *tsMan, sf::
 	bar->SetText( names[defaultIndex] );
 }
 
-const sf::Vector2f &UIHorizChooser::GetTopLeftRel()
+const sf::Vector2f &UIHorizSelector::GetTopLeftRel()
 {
 	return bar->GetTopLeftRel();
 }
 
-const sf::Vector2f &UIHorizChooser::GetTopLeftGlobal()
+const sf::Vector2f &UIHorizSelector::GetTopLeftGlobal()
 {
 	return bar->GetTopLeftGlobal();
 }
 
-void UIHorizChooser::AssignArrowTexture()
+void UIHorizSelector::AssignArrowTexture()
 {
 	IntRect sub;
 	for( int i = 0; i < 2; ++i )
@@ -190,20 +191,47 @@ void UIHorizChooser::AssignArrowTexture()
 	}
 }
 
-void UIHorizChooser::Update( ControllerState &curr, ControllerState &prev )
+bool UIHorizSelector::Update( ControllerState &curr, ControllerState &prev )
 {
 	bool left = curr.LLeft();
 	bool right = curr.LRight();
 
+	if( right )
+	{
+		if( currIndex < numOptions - 1 )
+		{
+			currIndex++;
+		}
+		else
+		{
+			if( loop )
+			{
+				currIndex = 0;
+			}
+		}
+	}
+	else if( left )
+	{
+		if( currIndex > 0 )
+		{
+			currIndex--;
+		}
+		else
+		{
+			if( loop )
+			{
+				currIndex = numOptions - 1;
+			}
+		}
+	}
 
+	bar->SetText( names[currIndex] );
+
+
+	return false;
 }
 
-void UIHorizChooser::SetTopLeft( const sf::Vector2f &pos )
-{
-	SetTopLeft( pos.x, pos.y );
-}
-
-void UIHorizChooser::SetTopLeft( float x, float y )
+void UIHorizSelector::SetTopLeft( float x, float y )
 {
 	relTopLeft = Vector2f( x, y );
 	bar->SetTopLeft( x, y );
@@ -212,19 +240,19 @@ void UIHorizChooser::SetTopLeft( float x, float y )
 	//currIndexText.setPosition( x, y );
 }
 
-void UIHorizChooser::UpdateSprite()
+void UIHorizSelector::UpdateSprite()
 {
 	
 }
 
-void UIHorizChooser::Draw( sf::RenderTarget *target )
+void UIHorizSelector::Draw( sf::RenderTarget *target )
 {
 	bar->Draw( target );
 }
 
-UIHorizChooserInt::UIHorizChooserInt( UIControl *p_parent, TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
+UIHorizSelectorInt::UIHorizSelectorInt( UIControl *p_parent, TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
 		int *p_results, bool p_loop, int p_defaultIndex, int p_chooserWidth )
-		:UIHorizChooser( p_parent, tsMan, f, p_numOptions, p_names, Type::INT, p_loop, p_defaultIndex,
+		:UIHorizSelector( p_parent, tsMan, f, p_numOptions, p_names, Type::INT, p_loop, p_defaultIndex,
 		p_chooserWidth )
 {
 	results = new int[p_numOptions];
@@ -234,14 +262,14 @@ UIHorizChooserInt::UIHorizChooserInt( UIControl *p_parent, TilesetManager *tsMan
 	}
 }
 
-int UIHorizChooserInt::GetResult( int index )
+int UIHorizSelectorInt::GetResult( int index )
 {
 	return results[index];
 }
 
-UIHorizChooserStr::UIHorizChooserStr( UIControl *p_parent, TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
+UIHorizSelectorStr::UIHorizSelectorStr( UIControl *p_parent, TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
 		std::string *p_results, bool p_loop, int p_defaultIndex, int p_chooserWidth )
-		:UIHorizChooser( p_parent, tsMan, f, p_numOptions, p_names, Type::STR, p_loop, p_defaultIndex,
+		:UIHorizSelector( p_parent, tsMan, f, p_numOptions, p_names, Type::STR, p_loop, p_defaultIndex,
 		p_chooserWidth )
 {
 	results = new std::string[p_numOptions];
@@ -251,7 +279,7 @@ UIHorizChooserStr::UIHorizChooserStr( UIControl *p_parent, TilesetManager *tsMan
 	}
 }
 
-const std::string &UIHorizChooserStr::GetResult( int index )
+const std::string &UIHorizSelectorStr::GetResult( int index )
 {
 	return results[index];
 }

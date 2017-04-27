@@ -8,19 +8,80 @@ struct Tileset;
 struct GameSession;
 struct TilesetManager;
 
+struct UIButton;
+struct UIHorizSelector;
+struct UICheckbox;
+struct UIWindow;
+
+struct UIEventHandlerBase
+{
+	enum UIEvent
+	{
+		E_BUTTON_PRESSED,
+		E_CHECKBOX_CHECKED,
+		E_SELECTOR_CHANGED,
+		E_Count
+	};
+
+	struct SelectorEventParams
+	{
+		int oldSelectorIndex;
+		int newSelectorIndex;
+		UIHorizSelector *selector;
+	};
+
+	struct ButtonEventParams
+	{
+		UIButton *button;
+	};
+
+	struct CheckboxEventParams
+	{
+		UICheckbox *checkbox;
+	};
+
+	virtual bool ButtonEvent( UIEvent eType,
+		ButtonEventParams *param ) = 0;
+	virtual bool CheckboxEvent( UIEvent eType,
+		CheckboxEventParams *param ) = 0;
+	virtual bool SelectorEvent( UIEvent eType,
+		SelectorEventParams *param ) = 0;
+
+};
+
 struct UIControl
 {
-	UIControl( UIControl *p_parent );
-	virtual void SetTopLeft( const sf::Vector2f &pos ) = 0;
+	enum UIControlType
+	{
+		UI_BAR,
+		UI_HORIZSELECTOR,
+		UI_HORIZSELECTOR_INT,
+		UI_HORIZSELECTOR_STR,
+		UI_VERTICAL_CONTROL_LIST,
+		UI_BUTTON,
+		UI_WINDOW,
+		UI_Count
+	};
+
+	UIControl( UIControl *p_parent, UIControlType p_cType );
+	virtual ~UIControl();
+	void SetTopLeftVec( const sf::Vector2f &pos );
 	virtual void SetTopLeft( float x, float y ) = 0;
 	virtual const sf::Vector2f &GetTopLeftGlobal() = 0;
 	virtual const sf::Vector2f &GetTopLeftRel();
-	virtual void Update( ControllerState &curr,
+	virtual bool Update( ControllerState &curr,
 		ControllerState &prev ) = 0;
 	virtual void Draw( sf::RenderTarget *target ) = 0;	
 	bool focused;
 	UIControl *parent;
 	sf::Vector2f relTopLeft;
+	sf::Vector2f dimensions;
+	float GetWidth();
+	float GetHeight();
+	UIControl *GetOwner();
+	UIControlType GetType();
+private:
+	UIControlType cType;
 };
 
 struct UIBar : UIControl
@@ -36,9 +97,8 @@ struct UIBar : UIControl
 		int p_width );
 	void Draw( sf::RenderTarget *target );
 	void AssignTexture();
-	void SetTopLeft( const sf::Vector2f &pos );
 	void SetTopLeft( float x, float y );
-	virtual void Update( ControllerState &curr,
+	virtual bool Update( ControllerState &curr,
 		ControllerState &prev );
 	const sf::Vector2f &GetTopLeftGlobal();
 	void SetText( const std::string &text );
@@ -58,7 +118,7 @@ struct UIBar : UIControl
 
 
 
-struct UIHorizChooser : UIControl
+struct UIHorizSelector : UIControl
 {
 	enum Type
 	{
@@ -68,20 +128,21 @@ struct UIHorizChooser : UIControl
 	};
 
 	
-	UIHorizChooser( UIControl *parent, TilesetManager *tsMan,
+	UIHorizSelector( UIControl *parent, 
+		UIControlType p_cType,
+		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
 		Type type, bool p_loop, int p_defaultIndex,
 		int chooserWidth );	
 	void Draw( sf::RenderTarget *target );
-	void Update( ControllerState &curr,
+	bool Update( ControllerState &curr,
 		ControllerState &prev );
 	void UpdateSprite();
 	void AssignArrowTexture();
 
 	const sf::Vector2f &GetTopLeftGlobal();
 	const sf::Vector2f &GetTopLeftRel();
-	void SetTopLeft( const sf::Vector2f &pos );
 	void SetTopLeft( float x, float y );
 
 	UIBar *bar;
@@ -100,9 +161,9 @@ struct UIHorizChooser : UIControl
 
 
 
-struct UIHorizChooserInt : UIHorizChooser
+struct UIHorizSelectorInt : UIHorizSelector
 {
-	UIHorizChooserInt( UIControl *parent, 
+	UIHorizSelectorInt( UIControl *parent, 
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
@@ -113,9 +174,9 @@ struct UIHorizChooserInt : UIHorizChooser
 	int GetResult( int index );
 };
 
-struct UIHorizChooserStr : UIHorizChooser
+struct UIHorizSelectorStr : UIHorizSelector
 {
-	UIHorizChooserStr( UIControl *parent,
+	UIHorizSelectorStr( UIControl *parent,
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
@@ -124,6 +185,42 @@ struct UIHorizChooserStr : UIHorizChooser
 		int chooserWidth );
 	std::string *results;
 	const std::string &GetResult( int index );
+};
+
+struct UIVerticalControlList : UIControl
+{
+	UIVerticalControlList( UIControl *p_parent,
+		int p_numControls, UIControl **p_controls,
+		int p_spacing );
+	~UIVerticalControlList();
+	void SetTopLeft( float x, float y );
+	const sf::Vector2f &GetTopLeftGlobal();
+	bool Update( ControllerState &curr,
+		ControllerState &prev );
+	void Draw( sf::RenderTarget *target );	
+	int spacing;
+	int numControls;
+	int focusedIndex;
+	sf::Vector2f globalTopLeft;
+	UIControl **controls;
+};
+
+struct UIButton : UIControl
+{
+	UIButton( UIControl *p_parent,
+		int p_numControls, UIControl **p_controls,
+		int p_spacing );
+	~UIButton();
+	void SetTopLeft( float x, float y );
+	const sf::Vector2f &GetTopLeftGlobal();
+	bool Update( ControllerState &curr,
+		ControllerState &prev );
+	void Draw( sf::RenderTarget *target );	
+	int spacing;
+	int numControls;
+	int focusedIndex;
+	sf::Vector2f globalTopLeft;
+	UIControl **controls;
 };
 
 struct UIWindow : UIControl
@@ -156,9 +253,8 @@ struct UIWindow : UIControl
 	void AssignTextureToCornerEdges();
 	void AssignTextureToEdges();
 	void AssignTextureCenter();
-	void Update();
+	bool Update();
 	
-	void SetTopLeft( const sf::Vector2f &pos );
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();
 	void Draw( sf::RenderTarget *target );
@@ -172,7 +268,7 @@ struct UIWindow : UIControl
 		sf::Vector2f &D );
 	void Resize( sf::Vector2f &size );
 	void Resize( float x, float y );
-	void Update( ControllerState &curr,
+	bool Update( ControllerState &curr,
 		ControllerState &prev );
 
 	int minSize;
@@ -183,9 +279,8 @@ struct UIWindow : UIControl
 	sf::Vertex centerVA[4];
 	Tileset *ts_window;
 	//GameSession *owner;
-	sf::Vector2f windowSize;
 
-	UIHorizChooserStr *test;
+	UIVerticalControlList *controlList;
 };
 
 #endif

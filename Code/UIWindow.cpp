@@ -5,8 +5,8 @@
 using namespace sf;
 using namespace std;
 
-UIControl::UIControl( UIControl *p_parent )
-	:parent( p_parent ), focused( false )
+UIControl::UIControl( UIControl *p_parent, UIControlType p_cType )
+	:parent( p_parent ), focused( false ), dimensions( 0, 0 ), cType( p_cType )
 {
 }
 
@@ -15,10 +15,47 @@ const sf::Vector2f &UIControl::GetTopLeftRel()
 	return relTopLeft;
 }
 
+UIControl::~UIControl()
+{
+
+}
+
+void UIControl::SetTopLeftVec( const sf::Vector2f &pos )
+{
+	SetTopLeft( pos.x, pos.y );
+}
+
+UIControl *UIControl::GetOwner()
+{
+	UIControl *tempParent = this;
+
+	while( tempParent->parent != NULL )
+	{
+		tempParent = tempParent->parent;
+	}
+
+	return tempParent;
+}
+
+float UIControl::GetWidth()
+{
+	return dimensions.x;
+}
+
+float UIControl::GetHeight()
+{
+	return dimensions.y;
+}
+
+UIControl::UIControlType UIControl::GetType()
+{
+	return cType;
+}
 
 UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize )
-	:UIControl( p_parent ), ts_window( t ), windowSize( p_windowSize )
+	:UIControl( p_parent, UI_WINDOW ), ts_window( t )
 {
+	dimensions = p_windowSize;
 	//uiwindowtest_96x30.png
 	AssignTextureToCorners();
 	AssignTextureToCornerEdges();
@@ -31,14 +68,14 @@ UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize 
 
 void UIWindow::Resize( sf::Vector2f &size )
 {
-	windowSize = size;
-	SetTopLeft( GetTopLeftRel() );
+	dimensions = size;
+	UIControl::SetTopLeftVec( GetTopLeftRel() );
 }
 
 void UIWindow::Resize( float x, float y )
 {
-	windowSize = Vector2f( x, y );
-	SetTopLeft( GetTopLeftRel() );
+	dimensions = Vector2f( x, y );
+	UIControl::SetTopLeftVec( GetTopLeftRel() );
 }
 
 void UIWindow::AssignTextureToCorners()
@@ -221,7 +258,7 @@ void UIWindow::Draw( sf::RenderTarget *target )
 
 	target->draw( borderVA, 16 * 4, sf::Quads, ts_window->texture );
 
-	test->Draw( target );
+	controlList->Draw( target );
 
 	/*sf::RectangleShape rs;
 	rs.setFillColor( Color( 0, 255, 0, 60 ) );
@@ -234,20 +271,16 @@ void UIWindow::Draw( sf::RenderTarget *target )
 	//target->draw( c );
 }
 
-void UIWindow::Update( ControllerState &curr,
+bool UIWindow::Update( ControllerState &curr,
 		ControllerState &prev )
 {
-
+	controlList->Update( curr, prev );
+	return true;
 }
 
 const sf::Vector2f &UIWindow::GetTopLeftGlobal()
 {
 	return borderVA[CORNER_TOPLEFT * 4].position;;
-}
-
-void UIWindow::SetTopLeft( const Vector2f &pos )
-{
-	SetTopLeft( pos.x, pos.y );
 }
 
 void UIWindow::SetTopLeft( float x, float y )
@@ -258,8 +291,8 @@ void UIWindow::SetTopLeft( float x, float y )
 	float th = ts_window->tileHeight;
 	float left = x;
 	float top = y;
-	float rightLeft = left + th + windowSize.x;
-	float botTop = top + th + windowSize.y;
+	float rightLeft = left + th + GetWidth();
+	float botTop = top + th + GetHeight();
 	
 	SetCenterVertices( Vector2f( left + th / 2, top + th / 2 ),
 		Vector2f( rightLeft + th / 2, top + th / 2 ),
@@ -306,7 +339,7 @@ void UIWindow::SetWallVertices( Vector2f &topLeft, int index )
 	float th = ts_window->tileHeight;
 	float tw = ts_window->tileWidth;
 
-	float height = (windowSize.y - 2 * tw );
+	float height = (GetHeight() - 2 * tw );
 	Vertex *wallVA = (borderVA + WALL_LEFT * 4 );
 	wallVA[index*4+0].position = Vector2f( topLeft.x, topLeft.y );
 	wallVA[index*4+1].position = Vector2f( topLeft.x + th, topLeft.y );
@@ -319,7 +352,7 @@ void UIWindow::SetFlatVertices( Vector2f &topLeft, int index )
 	float th = ts_window->tileHeight;
 	float tw = ts_window->tileWidth;
 
-	float width = (windowSize.x - 2 * tw );
+	float width = (GetWidth() - 2 * tw );
 	Vertex *flatVA = (borderVA + FLOOR * 4 );
 	flatVA[index*4+0].position = Vector2f( topLeft.x, topLeft.y );
 	flatVA[index*4+1].position = Vector2f( topLeft.x + width, topLeft.y );
