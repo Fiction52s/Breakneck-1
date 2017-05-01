@@ -60,10 +60,10 @@ Wire::Wire( Actor *p, bool r)
 	numAnimFrames = 16;
 
 	//pullStrength = 10;
-	maxPullStrength = 30;
+	maxPullStrength = 10;
 	startPullStrength = 10;
 	pullStrength = startPullStrength;
-	pullAccel = (maxPullStrength - startPullStrength) / 180.0;
+	pullAccel = (maxPullStrength - startPullStrength) / 180;
 	//.1 = 10 frames per 1. 100 frames per 10
 
 	maxDragStrength = 30;
@@ -720,14 +720,30 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			{
 				//cout << "SHRINKING " << endl;
 				double segmentChange = pullStrength;
-				
-				if( segmentLength - pullStrength < minSegmentLength )
+				double minSeg = 100;
+				double maxSeg = 1000;
+
+				if( segmentLength < minSeg )
+				{
+					segmentChange = pullStrength * .1;
+				}
+				else if( segmentLength > maxSeg )
+				{
+					segmentChange = pullStrength * 1.0;
+				}
+				else
+				{
+					segmentChange = pullStrength * min((segmentLength-minSeg) / (maxSeg - minSeg) + .1, 1.0);
+				}
+				//min( max( segmentLength / 1000.0, 1.0 ), 1.0;
+
+				if( segmentLength - segmentChange < minSegmentLength )
 					segmentChange = 0;//-(minSegmentLength - (segmentLength - pullStrength));
 
 				totalLength -= segmentChange;
 				segmentLength -= segmentChange;
 
-				if( segmentChange > 0 )
+				/*if( segmentChange > 0 )
 				{
 					pullStrength += pullAccel;
 					if( pullStrength > maxPullStrength )
@@ -736,7 +752,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				else
 				{
 					pullStrength = startPullStrength;
-				}
+				}*/
 			}
 			else
 			{

@@ -1,4 +1,5 @@
 #include "UIWindow.h"
+
 #include "GameSession.h"
 #include "Tileset.h"
 #include <string>
@@ -6,97 +7,110 @@
 using namespace sf;
 using namespace std;
 
-
-UICheckbox::UICheckbox( UIControl *p_parent, UIEventHandlerBase *p_handler, int p_numControls, UIControl **p_controls, int p_spacing )
-	:UIControl( p_parent, p_handler, UI_BUTTON ), spacing( p_spacing ), numControls( p_numControls ), 
-	controls( p_controls ), focusedIndex( 0 )
+UICheckbox::UICheckbox( UIControl *p_parent, UIEventHandlerBase *p_handler, 
+	TilesetManager *tsMan, Font *f, const std::string &text, int p_width )
+	:UIControl( p_parent, p_handler, UI_CHECKBOX )
 {
-	controls = new UIControl*[numControls];
-	for( int i = 0; i < numControls; ++i )
-	{
-		controls[i] = p_controls[i];
-		controls[i]->parent = this;
-	}
-
+	bar = new UIBar( p_parent, tsMan, f, p_width );
 	SetTopLeft( 0, 0 );
+	dimensions = bar->dimensions;
+	checked = false;
+
+	if( checked )
+	{
+		bar->SetState( UIBar::BAR_ALT0 );
+	}
+	else
+	{
+		bar->SetState( UIBar::BAR_ALT1 );
+	}
 }
 
 UICheckbox::~UICheckbox()
 {
-	for( int i = 0; i < numControls; ++i )
-	{
-		delete controls[i];
-	}
-	delete [] controls;
+	delete bar;
 }
 
 void UICheckbox::Unfocus()
 {
+	UIControl::Unfocus();
+	pressedDown = false;
+	bar->Unfocus();
+
+	if( checked )
+	{
+		bar->SetState( UIBar::BAR_ALT0 );
+	}
+	else
+	{
+		bar->SetState( UIBar::BAR_ALT1 );
+	}
+	//bar->bState = UIBar::BAR_UNFOCUSED;
+}
+
+void UICheckbox::Focus()
+{
 	UIControl::Focus();
 	pressedDown = false;
+	bar->Focus();
+
+	if( checked )
+	{
+		bar->SetState( UIBar::BAR_ALT0 );
+	}
+	else
+	{
+		bar->SetState( UIBar::BAR_ALT1 );
+	}
+	
+	//bar->bState = UIBar::BAR_FOCUSED;
 }
 
 void UICheckbox::SetTopLeft( float x, float y )
 {
 	relTopLeft = Vector2f( x, y );
-	if( parent != NULL )
-	{
-		globalTopLeft = relTopLeft + parent->GetTopLeftGlobal();
-	}
-	else
-	{
-		globalTopLeft = relTopLeft;
-	}
+	bar->SetTopLeft( x, y );
+}
 
-	int spaceCounter = 0;
-	for( int i = 0; i < numControls; ++i )
-	{
-		controls[i]->SetTopLeft( globalTopLeft.x, spaceCounter );
-		spaceCounter += controls[i]->GetHeight() + spacing;
-	}
+const sf::Vector2f &UICheckbox::GetTopLeftRel()
+{
+	return bar->GetTopLeftRel();
 }
 
 const sf::Vector2f &UICheckbox::GetTopLeftGlobal()
 {
-	return globalTopLeft;
+	return bar->GetTopLeftGlobal();
 }
+
 
 bool UICheckbox::Update( ControllerState &curr,
 	ControllerState &prev )
 {
-	bool up = curr.LUp();
-	bool down = curr.LDown();
+	CheckboxEventParams params;
+	params.checkbox = this;
 
-	int oldIndex = focusedIndex;
-	bool consumed = controls[focusedIndex]->Update( curr, prev );
-
-	if( down )
+	if( curr.A && !prev.A && !pressedDown )
 	{
-		if( focusedIndex < numControls - 1 )
+		pressedDown = true;
+		
+	}
+	else if( !curr.A && prev.A && pressedDown )
+	{
+		pressedDown = false;
+		checked = !checked;
+		if( checked )
 		{
-			focusedIndex++;
+			bar->SetState( UIBar::BAR_ALT0 );
 		}
 		else
 		{
-			focusedIndex = 0;
+			bar->SetState( UIBar::BAR_ALT1 );
 		}
-	}
-	else if( up )
-	{
-		if( focusedIndex > 0 )
+		
+		if( handler != NULL )
 		{
-			focusedIndex--;
+			return handler->CheckboxEvent( UIEvent::E_CHECKBOX_CHANGED, &params );
 		}
-		else
-		{
-			focusedIndex = numControls - 1;	
-		}
-	}
-
-	if( focusedIndex != oldIndex )
-	{
-		controls[oldIndex]->focused = false;
-		controls[focusedIndex]->focused = true; //might be unnecessary
 	}
 
 	return false;
@@ -104,8 +118,5 @@ bool UICheckbox::Update( ControllerState &curr,
 
 void UICheckbox::Draw( sf::RenderTarget *target )
 {
-	for( int i = 0; i < numControls; ++i )
-	{
-		controls[i]->Draw( target );
-	}
+	bar->Draw( target );
 }

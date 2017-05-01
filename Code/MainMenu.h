@@ -8,6 +8,8 @@
 #include "WorldMap.h"
 #include "GUI.h"
 
+struct Config;
+
 struct SaveFile;
 
 struct MainMenu;
@@ -45,6 +47,8 @@ struct MainMenu
 
 	enum Mode
 	{
+		SPLASH,
+		SPLASH_TRANS,
 		MAINMENU,
 		WORLDMAP,
 		SAVEMENU,
@@ -101,6 +105,9 @@ struct MainMenu
 	Tileset *ts_kinTitle[7];
 	Tileset *ts_breakneckTitle;
 	Tileset *ts_backgroundTitle;
+
+	sf::Sprite splashSprite;
+	Tileset *ts_splashScreen;
 
 	void CustomMapOption();
 	
@@ -193,6 +200,12 @@ struct MainMenu
 
 	int saveJumpFactor;
 	int saveJumpLength;
+
+	Config *config;
+
+	int splashFadeFrame;
+	int splashFadeOutLength;
+	sf::RectangleShape fadeRect;
 	//int saveKinFaceFactor;
 };
 

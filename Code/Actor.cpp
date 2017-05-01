@@ -25,7 +25,7 @@ using namespace std;
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
-
+		scorpOn = false;
 		framesSinceRightWireBoost = 0;
 		framesSinceLeftWireBoost = 0;
 		framesSinceDoubleWireBoost = 0;
@@ -856,9 +856,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		}
 		swordShaders[2].setParameter( "fromColor", Color( 140, 145, 255 ) );
 
-
-		//ts_bounceRun = owner->GetTileset( "bouncerun.png", 128, 64 );
-		//ts_bounceSprint = owner->GetTileset( "bouncesprint.png", 128, 64 );
+		ts_scorpRun = owner->GetTileset( "scorp_run_192x128.png", 192, 128 );
+		ts_scorpSlide = owner->GetTileset( "scorp_slide_160x128.png", 160, 128 );
+		ts_scorpSteepSlide = owner->GetTileset( "scorp_steep_slide_224x128.png", 224, 128 );
+		ts_scorpStart = owner->GetTileset( "scorp_start_256x256.png", 256, 256 );
+		ts_scorpStand = owner->GetTileset( "scorp_stand_224x128.png", 224, 128 );
+		ts_scorpJump = owner->GetTileset( "scorp_jump_192x144.png", 192, 144 );
 
 		grindActionLength = 32;
 		SetActionExpr( SPAWNWAIT );
@@ -5878,6 +5881,7 @@ void Actor::UpdatePrePhysics()
 					frame = 0;
 
 					bounceFlameOn = true;
+					scorpOn = true;
 
 					V2d testVel = storedBounceVel;
 
@@ -7398,7 +7402,7 @@ void Actor::UpdatePrePhysics()
 	}
 	wPos += gNormal * (double)rightWire->offset.y + other * (double)rightWire->offset.x;*/
 	
-	double accel = .15;
+	double accel = .15;//.2;//.15;//.15;
 	double triggerSpeed = 17;
 	double doubleWirePull = 1.0;//2.0
 
@@ -7523,7 +7527,7 @@ void Actor::UpdatePrePhysics()
 		}
 		
 		dotvel = -dot( inputDir, owdirs );
-		double v = 1.0;
+		double v = .5;//.73;//.8;//.5;//1.0;
 		if( dotvel > 0 )
 		{
 			//cout << "a" << endl;
@@ -7531,7 +7535,17 @@ void Actor::UpdatePrePhysics()
 			{
 				doubleWireBoost = true;
 			}
-			velocity += -owdirs * v / (double)slowMultiple;
+			double q = dot( velocity, normalize( -owdirs ) );
+			
+			if( q >= 0 && q < 40 )
+			{
+				velocity += -owdirs * v / (double)slowMultiple;
+			}
+			else
+			{
+				velocity += -owdirs * (v*2) / (double)slowMultiple;
+			}
+			
 			doubleWireBoostDir = -doubleWireBoostDir;
 		}
 		else if( dotvel < 0 )
@@ -7541,7 +7555,16 @@ void Actor::UpdatePrePhysics()
 				doubleWireBoost = true;
 			}
 			//cout << "b" << endl;
-			velocity += owdirs * v / (double)slowMultiple;
+			double q = dot( velocity, normalize( owdirs ) );
+			if( q >= 0 && q < 40 )
+			{
+				velocity += owdirs * v / (double)slowMultiple;
+			}
+			else
+			{
+				velocity += owdirs * ( v * 2 ) / (double)slowMultiple;
+			}
+			
 		}
 		else
 		{
@@ -7563,6 +7586,10 @@ void Actor::UpdatePrePhysics()
 		{
 			totalAcc *= .5;
 		}
+		else if( beforeAlongAmount >= 40 )
+		{
+			totalAcc = V2d( 0, 0 );
+		}
 		//if( length( velocity ) > 20.0 )
 		//{
 		//	totalAcc *= .5;
@@ -7580,16 +7607,19 @@ void Actor::UpdatePrePhysics()
 		if( opposite )
 		{
 			dotvel = dot( inputDir, wireDir1 );
-			double v = 1.0;
+			double towardsExtra = .5;//.7;//1.0;
 			if( dotvel > 0 )
 			{
-				//cout << "a" << endl;
-				velocity += wireDir1 * v / (double)slowMultiple;
+				//cout << "a" << endl;\
+
+				
+
+				velocity += wireDir1 * towardsExtra / (double)slowMultiple;
 			}
 			else if( dotvel < 0 )
 			{
 				//cout << "b" << endl;
-				velocity += wireDir2 * v / (double)slowMultiple;
+				velocity += wireDir2 * towardsExtra / (double)slowMultiple;
 			}
 			else
 			{
@@ -14520,12 +14550,14 @@ void Actor::BounceFlameOn()
 {
 	framesFlameOn = 0;
 	bounceFlameOn = true;
+	scorpOn = true;
 	runBounceFrame = 0;
 	airBounceFrame = 0;
 }
 
 void Actor::BounceFlameOff()
 {
+	scorpOn = false;
 	framesFlameOn = 0;
 	bounceFlameOn = false;
 	oldBounceEdge = NULL;
@@ -16064,7 +16096,8 @@ void Actor::Draw( sf::RenderTarget *target )
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
 		&& action != GOALKILLWAIT )
 	{
-		target->draw( bounceFlameSprite );
+		//target->draw( bounceFlameSprite );
+		target->draw( scorpSprite );
 	}
 
 
@@ -16530,7 +16563,7 @@ void Actor::SetFakeCurrInput( ControllerState &state )
 
 void Actor::UpdateSprite()
 {
-
+	scorpSet = false;
 
 
 	V2d gn( 0, 0 );
@@ -16569,7 +16602,8 @@ void Actor::UpdateSprite()
 
 			//the %20 is for seq
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( (frame / 8) % 20, r );
+			int f = (frame / 8) % 20;
+			SetSpriteTile( f, r );
 			assert( ground != NULL );
 		
 			double angle = GroundedAngle();
@@ -16598,6 +16632,19 @@ void Actor::UpdateSprite()
 			else
 				sprite->setPosition( pp.x, pp.y );
 			sprite->setRotation( angle / PI * 180 );
+
+			if( scorpOn )
+			{
+				scorpSprite.setTexture( *ts_scorpStand->texture );
+				
+				SetSpriteTile( &scorpSprite, ts_scorpStand, f, r );
+				
+				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2 + 10 );
+				scorpSprite.setPosition( position.x, position.y );
+				scorpSprite.setRotation( sprite->getRotation() );
+				scorpSet = true;
+			}
 
 			break;
 		}
@@ -16628,7 +16675,8 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( (frame / 4) % 10, r );
+			int f = (frame / 4) % 10;
+			SetSpriteTile( f, r );
 		
 			assert( ground != NULL );
 		
@@ -16698,7 +16746,20 @@ void Actor::UpdateSprite()
 			{
 				//owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
 			}
-		
+			
+			if( scorpOn )
+			{
+				scorpSprite.setTexture( *ts_scorpRun->texture );
+				
+				SetSpriteTile( &scorpSprite, ts_scorpRun, f, fr );
+				
+				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2 + 20 );
+				scorpSprite.setPosition( position.x, position.y );
+				scorpSprite.setRotation( sprite->getRotation() );
+				scorpSet = true;
+			}
+
 			break;
 		}
 	case SPRINT:
@@ -16832,6 +16893,19 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 
+
+			if( scorpOn )
+			{
+				scorpSprite.setTexture( *ts_scorpJump->texture );
+				
+				SetSpriteTile( &scorpSprite, ts_scorpJump, tFrame, r );
+				
+				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2 );
+				scorpSprite.setPosition( position.x, position.y );
+				scorpSprite.setRotation( sprite->getRotation() );
+				scorpSet = true;
+			}
 			break;
 		}
 	case JUMPSQUAT:
@@ -18225,6 +18299,8 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			scorpSet = true;
 			break;
 		}
 	case BOUNCEGROUND:
@@ -18370,6 +18446,7 @@ void Actor::UpdateSprite()
 				//else
 				//	sprite->setPosition( pp.x, pp.y );
 
+			scorpSet = true;
 			break;
 		}
 	case BOUNCEGROUNDEDWALL:
@@ -18450,6 +18527,8 @@ void Actor::UpdateSprite()
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
 				sprite->setPosition( pp.x, pp.y );
+
+			scorpSet = true;
 
 			break;
 		}
@@ -18749,7 +18828,18 @@ void Actor::UpdateSprite()
 		
 	}
 	
-	if( bounceFlameOn )
+	if( scorpOn && !scorpSet )
+	{
+		if( ground != NULL )
+		{
+			
+		}
+		else
+		{
+		}
+	}
+
+	if( false )//bounceFlameOn )
 	{
 		if( ground == NULL )
 		{
@@ -19031,6 +19121,36 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 
 
 	sprite->setTextureRect( ir );
+}
+
+void Actor::SetSpriteTile( sf::Sprite *spr, 
+		Tileset *t, int tileIndex, bool noFlipX, bool noFlipY )
+{
+	IntRect ir = t->GetSubRect( tileIndex );
+	if( !noFlipX )
+	{
+		flipTileX = true;
+		ir.left += ir.width;
+		ir.width = -ir.width;
+	}
+	else
+	{
+		flipTileX = false;
+	}
+
+	if( !noFlipY )
+	{
+		flipTileY = true;
+		ir.top += ir.height;
+		ir.height = -ir.height;
+	}
+	else
+	{
+		flipTileY = false;
+	}
+
+
+	spr->setTextureRect( ir );
 }
 
 void Actor::SaveState()

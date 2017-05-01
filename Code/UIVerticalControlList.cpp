@@ -19,6 +19,18 @@ UIVerticalControlList::UIVerticalControlList( UIControl *p_parent,
 	}
 
 	SetTopLeft( 0, 0 );
+
+	waitFrames[0] = 10;
+	waitFrames[1] = 5;
+	waitFrames[2] = 2;
+
+	waitModeThresh[0] = 2;
+	waitModeThresh[1] = 2;
+
+	currWaitLevel = 0;
+	flipCounterUp = 0;
+	flipCounterDown = 0;
+	framesWaiting = 0;
 }
 
 UIVerticalControlList::~UIVerticalControlList()
@@ -66,31 +78,87 @@ bool UIVerticalControlList::Update( ControllerState &curr,
 
 	if( down )
 	{
-		if( focusedIndex < numControls - 1 )
+		if( flipCounterDown == 0 
+			|| ( flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			)
 		{
-			focusedIndex++;
+			if( flipCounterDown == 0 )
+			{
+				currWaitLevel = 0;
+			}
+
+			++flipCounterDown;
+
+			if( flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			{
+				currWaitLevel++;
+			}
+
+			flipCounterUp = 0;
+			framesWaiting = 0;
+
+			if( focusedIndex < numControls - 1 )
+			{
+				focusedIndex++;
+			}
+			else
+			{
+				focusedIndex = 0;
+			}
 		}
 		else
 		{
-			focusedIndex = 0;
+			++framesWaiting;
 		}
+		
 	}
 	else if( up )
 	{
-		if( focusedIndex > 0 )
+		if( flipCounterUp == 0 
+			|| ( flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			)
 		{
-			focusedIndex--;
+			if( flipCounterUp == 0 )
+			{
+				currWaitLevel = 0;
+			}
+
+			++flipCounterUp;
+
+			if( flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			{
+				currWaitLevel++;
+			}
+
+			flipCounterDown = 0;
+			framesWaiting = 0;
+			if( focusedIndex > 0 )
+			{
+				focusedIndex--;
+			}
+			else
+			{
+				focusedIndex = numControls - 1;	
+			}
 		}
 		else
 		{
-			focusedIndex = numControls - 1;	
+			++framesWaiting;
 		}
+		
+	}
+	else
+	{
+		flipCounterUp = 0;
+		flipCounterDown = 0;
+		currWaitLevel = 0;
+		framesWaiting = 0;
 	}
 
 	if( focusedIndex != oldIndex )
 	{
-		controls[oldIndex]->focused = false;
-		controls[focusedIndex]->focused = true; //might be unnecessary
+		controls[oldIndex]->Unfocus();
+		controls[focusedIndex]->Focus();
 	}
 
 	return false;

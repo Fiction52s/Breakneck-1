@@ -162,6 +162,8 @@ struct Actor : QuadTreeCollider,
 	
 	void SetSpriteTexture( Action a );
 	void SetSpriteTile( int tileIndex, bool noFlipX = true, bool noFlipY = true );
+	void SetSpriteTile( sf::Sprite *spr, 
+		Tileset *t, int tileIndex, bool noFlipX = true, bool noFlipY = true );
 	void SetActionExpr( Action a );
 	void SetExpr( Expr ex );
 	void SetAction( Action a );
@@ -360,8 +362,33 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite diagDownAttackSword;
 	Tileset *ts_diagDownSword[3];
 
-	Tileset *ts_bounceRun;
-	Tileset *ts_bounceSprint;
+	int runBounceFlameFrames;
+	int runBounceFrame;
+	Tileset *ts_runBounceFlame;
+
+	int airBounceFlameFrames;
+	int airBounceFrame;
+	Tileset *ts_airBounceFlame;
+
+	int framesFlameOn;
+	bool bounceFlameOn;
+	sf::Sprite bounceFlameSprite;
+	double bounceFlameAccel0;
+	double bounceFlameAccel1;
+	double bounceFlameAccel2;
+
+	Tileset *ts_bounceBoost;
+	bool scorpOn;
+	bool scorpSet;
+	
+	Tileset *ts_scorpRun;
+	Tileset *ts_scorpSlide;
+	Tileset *ts_scorpSteepSlide;
+	Tileset *ts_scorpStart;
+	Tileset *ts_scorpStand;
+	Tileset *ts_scorpJump;
+
+	sf::Sprite scorpSprite;
 
 	Tileset * ts_fx_airdashUp;
 	Tileset * ts_fx_airdashDiagonal;
@@ -401,26 +428,10 @@ struct Actor : QuadTreeCollider,
 
 	int speedParticleCounter;
 	int speedParticleRate;
+	bool steepJump;
 
 	//new variables in here that need to work with clone power later
-	int runBounceFlameFrames;
-	int runBounceFrame;
-	Tileset *ts_runBounceFlame;
-
-	bool steepJump;
 	
-	int airBounceFlameFrames;
-	int airBounceFrame;
-	Tileset *ts_airBounceFlame;
-
-	int framesFlameOn;
-	bool bounceFlameOn;
-	sf::Sprite bounceFlameSprite;
-	double bounceFlameAccel0;
-	double bounceFlameAccel1;
-	double bounceFlameAccel2;
-
-	Tileset *ts_bounceBoost;
 
 	bool test;
 	

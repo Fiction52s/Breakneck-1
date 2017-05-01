@@ -30,6 +30,7 @@
 #include "ImageText.h"
 #include "VictoryScreen.h"
 #include "UIWindow.h"
+#include "Config.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -815,7 +816,7 @@ GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu 
 
 	arial.loadFromFile( "Breakneck_Font_01.ttf" );
 	soundNodeList = new SoundNodeList( 10 );
-	soundNodeList->SetGlobalVolume( 100 );
+	soundNodeList->SetGlobalVolume( mainMenu->config->GetData().volume );
 	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ), arial );
 	
 	currentZone = NULL;
@@ -13824,6 +13825,10 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
 	hitByPlayer2List( NULL ), numTargets( 0 )
 {
+	ts_scoreTest = owner->GetTileset( "score_menu_01.png", 1920, 1080 );
+	scoreTestSprite.setTexture( *ts_scoreTest->texture );
+	scoreTestSprite.setPosition( 0, 0 );
+
 	Tileset *scoreTS = owner->GetTileset( "number_score_80x80.png", 80, 80 );
 	Tileset *score2TS = scoreTS;
 	int numDigits = 2;
@@ -13852,16 +13857,26 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	string options[] = {"blah", "blah2" , "blah3" };
 	string results[] = {"blah", "blah2" , "blah3" };
 
-	UIHorizSelectorStr *test = new UIHorizSelectorStr( testWindow, &owner->tm, &owner->arial, 3, options, 
-		results, false, 0, 200 );
 
-	UIHorizSelectorStr *test2 = new UIHorizSelectorStr( testWindow, &owner->tm, &owner->arial, 3, options, 
-		results, false, 1, 200 );
+
+	UIHorizSelectorStr *test = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->arial, 3, 
+		options, "first", 200, results, false, 0, 200 );
+
+	UIHorizSelectorStr *test2 = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->arial, 3, 
+		options, "second", 200, results, false, 0, 200 );
+
+	UIButton *but = new UIButton( testWindow, NULL, &owner->tm, &owner->arial, "testbutton", 300 );
+
+	UICheckbox *check = new UICheckbox( testWindow, NULL, &owner->tm, &owner->arial, "testcheckbox", 300 );
 	//test->SetTopLeft( Vector2f( 50, 0 ) );
 
-	UIControl *testBlah[2] = { test, test2 };
+	string resolutionOptions[] = {"1366 x 768", "1920 x 1080", "1280 x 800", "1280 x 720" };
 
-	testWindow->controlList = new UIVerticalControlList( testWindow, 2, testBlah, 20 );
+
+
+	UIControl *testBlah[4] = { test, test2, but, check };
+
+	testWindow->controlList = new UIVerticalControlList( testWindow, 4, testBlah, 20 );
 
 	//testWindow->test = test;
 }
@@ -13984,13 +13999,14 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 
 void GameSession::RaceFight::DrawScore( sf::RenderTarget *target )
 {
-	playerScoreImage->Draw( target );
-	player2ScoreImage->Draw( target );
+	target->draw( scoreTestSprite );
+	//playerScoreImage->Draw( target );
+	//player2ScoreImage->Draw( target );
 
-	gameTimer->Draw( target );
+	//gameTimer->Draw( target );
 
-	numberTargetsTotalImage->Draw( target );
-	numberTargetsRemainingImage->Draw( target );
+	//numberTargetsTotalImage->Draw( target );
+	//numberTargetsRemainingImage->Draw( target );
 }
 
 void GameSession::RaceFight::UpdateScore()

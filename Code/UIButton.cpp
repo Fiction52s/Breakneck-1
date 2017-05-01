@@ -6,96 +6,82 @@
 using namespace sf;
 using namespace std;
 
-UIButton::UIButton( UIControl *p_parent, UIEventHandlerBase *p_handler, int p_numControls, UIControl **p_controls, int p_spacing )
-	:UIControl( p_parent, p_handler, UI_BUTTON ), spacing( p_spacing ), numControls( p_numControls ), 
-	controls( p_controls ), focusedIndex( 0 )
+UIButton::UIButton( UIControl *p_parent, UIEventHandlerBase *p_handler, 
+	TilesetManager *tsMan, Font *f, const std::string &text, int p_width )
+	:UIControl( p_parent, p_handler, UI_BUTTON )
 {
-	controls = new UIControl*[numControls];
-	for( int i = 0; i < numControls; ++i )
-	{
-		controls[i] = p_controls[i];
-		controls[i]->parent = this;
-	}
-
+	bar = new UIBar( p_parent, tsMan, f, p_width );
 	SetTopLeft( 0, 0 );
+	dimensions = bar->dimensions;
 }
 
 UIButton::~UIButton()
 {
-	for( int i = 0; i < numControls; ++i )
-	{
-		delete controls[i];
-	}
-	delete [] controls;
+	delete bar;
 }
 
 void UIButton::Unfocus()
 {
+	UIControl::Unfocus();
+	pressedDown = false;
+	bar->Unfocus();
+	//bar->bState = UIBar::BAR_UNFOCUSED;
+}
+
+void UIButton::Focus()
+{
 	UIControl::Focus();
 	pressedDown = false;
+	bar->Focus();
+	//bar->bState = UIBar::BAR_FOCUSED;
 }
 
 void UIButton::SetTopLeft( float x, float y )
 {
 	relTopLeft = Vector2f( x, y );
-	if( parent != NULL )
-	{
-		globalTopLeft = relTopLeft + parent->GetTopLeftGlobal();
-	}
-	else
-	{
-		globalTopLeft = relTopLeft;
-	}
+	bar->SetTopLeft( x, y );
+}
 
-	int spaceCounter = 0;
-	for( int i = 0; i < numControls; ++i )
-	{
-		controls[i]->SetTopLeft( globalTopLeft.x, spaceCounter );
-		spaceCounter += controls[i]->GetHeight() + spacing;
-	}
+const sf::Vector2f &UIButton::GetTopLeftRel()
+{
+	return bar->GetTopLeftRel();
 }
 
 const sf::Vector2f &UIButton::GetTopLeftGlobal()
 {
-	return globalTopLeft;
+	return bar->GetTopLeftGlobal();
 }
+
 
 bool UIButton::Update( ControllerState &curr,
 	ControllerState &prev )
 {
-	bool up = curr.LUp();
-	bool down = curr.LDown();
+	ButtonEventParams params;
+	params.button = this;
 
-	int oldIndex = focusedIndex;
-	bool consumed = controls[focusedIndex]->Update( curr, prev );
-
-	if( down )
+	if( curr.A && !prev.A && !pressedDown )
 	{
-		if( focusedIndex < numControls - 1 )
+		pressedDown = true;
+		bar->SetState( UIBar::BAR_ALT0 );
+		if( handler != NULL )
 		{
-			focusedIndex++;
-		}
-		else
-		{
-			focusedIndex = 0;
+			return handler->ButtonEvent( UIEvent::E_BUTTON_DOWN, &params );
 		}
 	}
-	else if( up )
+	else if( !curr.A && prev.A && pressedDown )
 	{
-		if( focusedIndex > 0 )
+		pressedDown = false;
+		bar->SetState( UIBar::BAR_FOCUSED );
+		if( handler != NULL )
 		{
-			focusedIndex--;
-		}
-		else
-		{
-			focusedIndex = numControls - 1;	
+			return handler->ButtonEvent( UIEvent::E_BUTTON_PRESSED, &params );
 		}
 	}
-
-	if( focusedIndex != oldIndex )
+	else if( curr.A )
 	{
-		controls[oldIndex]->focused = false;
-		controls[focusedIndex]->focused = true; //might be unnecessary
+		bar->SetState( UIBar::BAR_ALT1 );
+		if( handler != NULL )
+			return handler->ButtonEvent( UIEvent::E_BUTTON_HOLD_DOWN, &params );
 	}
 
 	return false;
@@ -103,8 +89,5 @@ bool UIButton::Update( ControllerState &curr,
 
 void UIButton::Draw( sf::RenderTarget *target )
 {
-	for( int i = 0; i < numControls; ++i )
-	{
-		controls[i]->Draw( target );
-	}
+	bar->Draw( target );
 }

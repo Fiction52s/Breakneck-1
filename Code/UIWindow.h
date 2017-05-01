@@ -13,32 +13,38 @@ struct UIHorizSelector;
 struct UICheckbox;
 struct UIWindow;
 
+enum UIEvent
+{
+	E_BUTTON_DOWN,
+	E_BUTTON_HOLD_DOWN,
+	E_BUTTON_PRESSED,
+	E_CHECKBOX_CHANGED,
+	E_SELECTOR_CHANGED,
+	E_Count
+};
+
+struct SelectorEventParams
+{
+	int oldSelectorIndex;
+	int newSelectorIndex;
+	UIHorizSelector *selector;
+};
+
+struct ButtonEventParams
+{
+	UIButton *button;
+};
+
+struct CheckboxEventParams
+{
+	UICheckbox *checkbox;
+};
+
 struct UIEventHandlerBase
 {
-	enum UIEvent
-	{
-		E_BUTTON_PRESSED,
-		E_CHECKBOX_CHECKED,
-		E_SELECTOR_CHANGED,
-		E_Count
-	};
 
-	struct SelectorEventParams
-	{
-		int oldSelectorIndex;
-		int newSelectorIndex;
-		UIHorizSelector *selector;
-	};
 
-	struct ButtonEventParams
-	{
-		UIButton *button;
-	};
-
-	struct CheckboxEventParams
-	{
-		UICheckbox *checkbox;
-	};
+	
 
 	virtual bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param ) = 0;
@@ -59,6 +65,7 @@ struct UIControl
 		UI_VERTICAL_CONTROL_LIST,
 		UI_BUTTON,
 		UI_WINDOW,
+		UI_CHECKBOX,
 		UI_Count
 	};
 
@@ -85,11 +92,23 @@ struct UIControl
 private:
 	UIControlType cType;
 	bool focused;
+protected:
 	UIEventHandlerBase *handler;
 };
 
 struct UIBar : UIControl
 {
+	enum BarState
+	{
+		BAR_UNFOCUSED,
+		BAR_FOCUSED,
+		BAR_ALT0,
+		BAR_ALT1,
+		BAR_ALT2,
+		BAR_Count
+	};
+
+
 	enum Alignment
 	{
 		LEFT,
@@ -109,12 +128,17 @@ struct UIBar : UIControl
 	void SetText( const std::string &text, 
 		Alignment align );
 	void SetTextAlignment( Alignment align );
+	void SetState( BarState state );
+	void Focus();
+	void Unfocus();
+	void UpdateSprite();
 	Tileset *ts_bar;
 	int width;
 	sf::Vertex barVA[3*4];
 	sf::Text currText;
 	Alignment alignment;
 	sf::Vector2f textOffset;
+	BarState bState;
 };
 
 //types of bars: horizchooser, button, checkbox,
@@ -145,7 +169,8 @@ struct UIHorizSelector : UIControl
 	void Draw( sf::RenderTarget *target );
 	bool Update( ControllerState &curr,
 		ControllerState &prev );
-	void UpdateSprite();
+	void Focus();
+	void Unfocus();
 	void AssignArrowTexture();
 
 	const sf::Vector2f &GetTopLeftGlobal();
@@ -163,6 +188,13 @@ struct UIHorizSelector : UIControl
 	int currIndex;
 	bool loop;
 	int defaultIndex;
+
+	int waitFrames[3];
+	int waitModeThresh[2];
+	int framesWaiting;
+	int currWaitLevel;
+	int flipCounterLeft;
+	int flipCounterRight;
 	
 };
 
@@ -176,6 +208,7 @@ struct UIHorizSelectorInt : UIHorizSelector
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
+		const std::string &label, int p_labelWidth,
 		int *results,
 		bool p_loop, int p_defaultIndex,
 		int chooserWidth );
@@ -190,6 +223,7 @@ struct UIHorizSelectorStr : UIHorizSelector
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
+		const std::string &label, int p_labelWidth,
 		std::string *results,
 		bool p_loop, int p_defaultIndex,
 		int chooserWidth );
@@ -213,17 +247,29 @@ struct UIVerticalControlList : UIControl
 	int focusedIndex;
 	sf::Vector2f globalTopLeft;
 	UIControl **controls;
+
+	int waitFrames[3];
+	int waitModeThresh[2];
+	int framesWaiting;
+	int currWaitLevel;
+	int flipCounterUp;
+	int flipCounterDown;
 };
 
 struct UIButton : UIControl
 {
 	UIButton( UIControl *p_parent,  
 		UIEventHandlerBase *p_handler,
-		const std::string &text );
+		TilesetManager *tsMan,
+		sf::Font *f,
+		const std::string &text,
+		int p_width );
 	~UIButton();
+	void Focus();
 	void Unfocus();
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();
+	const sf::Vector2f &GetTopLeftRel();
 	bool Update( ControllerState &curr,
 		ControllerState &prev );
 	void Draw( sf::RenderTarget *target );	
@@ -237,24 +283,28 @@ struct UIButton : UIControl
 
 struct UICheckbox : UIControl
 {
-	bool pressedDown;
-	UICheckbox( UIControl *p_parent,
+	UICheckbox( UIControl *p_parent,  
 		UIEventHandlerBase *p_handler,
-		int p_numControls, UIControl **p_controls,
-		int p_spacing );
+		TilesetManager *tsMan,
+		sf::Font *f,
+		const std::string &text,
+		int p_width );
 	~UICheckbox();
+	void Focus();
 	void Unfocus();
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();
+	const sf::Vector2f &GetTopLeftRel();
 	bool Update( ControllerState &curr,
 		ControllerState &prev );
 	void Draw( sf::RenderTarget *target );	
-	int spacing;
+
 	bool checked;
+	int spacing;
 	int numControls;
 	int focusedIndex;
-	sf::Vector2f globalTopLeft;
-	UIControl **controls;
+	UIBar *bar;
+	bool pressedDown;
 };
 
 struct UIWindow : UIControl

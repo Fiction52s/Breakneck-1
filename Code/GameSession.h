@@ -18,6 +18,8 @@
 #include <map>
 #include "BarrierReactions.h"
 
+struct Config;
+
 struct Barrier;
 struct PoiInfo
 {
@@ -394,6 +396,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		ImageText *numberTargetsTotalImage;
 
 		UIWindow *testWindow;
+
+		Tileset *ts_scoreTest;
+		sf::Sprite scoreTestSprite;
 	};
 	RaceFight *raceFight;
 	
@@ -482,6 +487,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Boss_Tiger *b_tiger;
 	Boss_Gator *b_gator;
 	Boss_Skeleton *b_skeleton;
+
+	Config *config;
 
 	~GameSession();
 	void HandleRayCollision( Edge *edge, 

@@ -16,7 +16,11 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 	currText.setCharacterSize( 40 );
 	currText.setColor( Color::White );
 
-	dimensions = Vector2f( p_width, 50 ); //50 is just a random constant
+	bState = BAR_UNFOCUSED;
+
+	dimensions = Vector2f( p_width, 80 ); //50 is just a random constant
+
+	SetState( BAR_UNFOCUSED );
 }
 
 void UIBar::AssignTexture()
@@ -26,15 +30,28 @@ void UIBar::AssignTexture()
 	barVA[LEFT*4+2].color = Color::Red;
 	barVA[LEFT*4+3].color = Color::Red;
 
-	barVA[MIDDLE*4+0].color = Color::Green;
-	barVA[MIDDLE*4+1].color = Color::Green;
-	barVA[MIDDLE*4+2].color = Color::Green;
-	barVA[MIDDLE*4+3].color = Color::Green;
-
 	barVA[RIGHT*4+0].color = Color::Blue;
 	barVA[RIGHT*4+1].color = Color::Blue;
 	barVA[RIGHT*4+2].color = Color::Blue;
 	barVA[RIGHT*4+3].color = Color::Blue;
+}
+
+void UIBar::Focus()
+{
+	UIControl::Focus();
+	SetState( BAR_FOCUSED );
+
+
+	//temporary
+}
+
+void UIBar::Unfocus()
+{
+	UIControl::Unfocus();
+	SetState( BAR_UNFOCUSED );
+
+	//temporary
+	
 }
 
 void UIBar::SetTopLeft( float x, float y )
@@ -82,6 +99,40 @@ void UIBar::SetText( const std::string &text, Alignment align )
 	SetTextAlignment( align );
 }
 
+void UIBar::SetState( BarState state )
+{
+	bState = state;
+	UpdateSprite();
+}
+
+void UIBar::UpdateSprite()
+{
+	Color currColor;
+	switch( bState )
+	{
+	case BAR_UNFOCUSED:
+		currColor = Color::Yellow;
+		break;
+	case BAR_FOCUSED:
+		currColor = Color::Cyan;
+		break;
+	case BAR_ALT0:
+		currColor = Color::Green;
+		break;
+	case BAR_ALT1:
+		currColor = Color::Red;
+		break;
+	case BAR_ALT2:
+		currColor = Color::Blue;
+		break;
+	}
+
+	barVA[MIDDLE*4+0].color = currColor;
+	barVA[MIDDLE*4+1].color = currColor;
+	barVA[MIDDLE*4+2].color = currColor;
+	barVA[MIDDLE*4+3].color = currColor;
+}
+
 const sf::Vector2f &UIBar::GetTopLeftGlobal()
 {
 	return barVA[0].position;
@@ -101,7 +152,7 @@ void UIBar::SetTextAlignment( Alignment align )
 		}
 	case MIDDLE:
 		{
-			Vector2f topMiddle = GetTopLeftGlobal() + Vector2f( width, textOffset.y );
+			Vector2f topMiddle = GetTopLeftGlobal() + Vector2f( width / 2, textOffset.y );
 			currText.setOrigin( currText.getLocalBounds().width / 2, 0 );
 			currText.setPosition( topMiddle );
 			break;
@@ -158,6 +209,18 @@ UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIEventHandlerBase *p_han
 	currIndexText.setCharacterSize( 40 );
 	currIndexText.setColor( Color::White );*/
 	bar->SetText( names[defaultIndex] );
+
+	waitFrames[0] = 10;
+	waitFrames[1] = 5;
+	waitFrames[2] = 2;
+
+	waitModeThresh[0] = 2;
+	waitModeThresh[1] = 2;
+
+	currWaitLevel = 0;
+	flipCounterLeft = 0;
+	flipCounterRight = 0;
+	framesWaiting = 0;
 }
 
 UIHorizSelector::~UIHorizSelector()
@@ -175,6 +238,20 @@ const sf::Vector2f &UIHorizSelector::GetTopLeftRel()
 const sf::Vector2f &UIHorizSelector::GetTopLeftGlobal()
 {
 	return bar->GetTopLeftGlobal();
+}
+
+void UIHorizSelector::Focus()
+{
+	UIControl::Focus();
+	bar->Focus();
+	nameBar->Focus();
+}
+
+void UIHorizSelector::Unfocus()
+{
+	UIControl::Unfocus();
+	bar->Unfocus();
+	nameBar->Unfocus();
 }
 
 void UIHorizSelector::AssignArrowTexture()
@@ -197,36 +274,93 @@ void UIHorizSelector::AssignArrowTexture()
 
 bool UIHorizSelector::Update( ControllerState &curr, ControllerState &prev )
 {
-	bool left = curr.LLeft();
-	bool right = curr.LRight();
+	bool upOrDown = curr.LUp() || curr.LDown();
+	bool left = curr.LLeft() && !upOrDown;
+	bool right = curr.LRight() && !upOrDown;
 
 	if( right )
 	{
-		if( currIndex < numOptions - 1 )
+		if( flipCounterRight == 0 
+			|| ( flipCounterRight > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			)
 		{
-			currIndex++;
+			if( flipCounterRight == 0 )
+			{
+				currWaitLevel = 0;
+			}
+
+			++flipCounterRight;
+
+			if( flipCounterRight == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			{
+				currWaitLevel++;
+			}
+
+			flipCounterLeft = 0;
+			framesWaiting = 0;
+
+			if( currIndex < numOptions - 1 )
+			{
+				currIndex++;
+			}
+			else
+			{
+				if( loop )
+				{
+					currIndex = 0;
+				}
+			}
 		}
 		else
 		{
-			if( loop )
-			{
-				currIndex = 0;
-			}
+			++framesWaiting;
 		}
+		
 	}
 	else if( left )
 	{
-		if( currIndex > 0 )
+		if( flipCounterLeft == 0 
+			|| ( flipCounterLeft > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			)
 		{
-			currIndex--;
+			if( flipCounterLeft == 0 )
+			{
+				currWaitLevel = 0;
+			}
+
+			++flipCounterLeft;
+
+			if( flipCounterLeft == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			{
+				currWaitLevel++;
+			}
+
+			flipCounterRight = 0;
+			framesWaiting = 0;
+			if( currIndex > 0 )
+			{
+				currIndex--;
+			}
+			else
+			{
+				if( loop )
+				{
+					currIndex = numOptions - 1;
+				}
+			}
 		}
 		else
 		{
-			if( loop )
-			{
-				currIndex = numOptions - 1;
-			}
+			++framesWaiting;
 		}
+		
+	}
+	else
+	{
+		flipCounterLeft = 0;
+		flipCounterRight = 0;
+		currWaitLevel = 0;
+		framesWaiting = 0;
 	}
 
 	bar->SetText( names[currIndex] );
@@ -246,20 +380,18 @@ void UIHorizSelector::SetTopLeft( float x, float y )
 	//currIndexText.setPosition( x, y );
 }
 
-void UIHorizSelector::UpdateSprite()
-{
-	
-}
-
 void UIHorizSelector::Draw( sf::RenderTarget *target )
 {
+	nameBar->Draw( target );
 	bar->Draw( target );
 }
 
 UIHorizSelectorInt::UIHorizSelectorInt( UIControl *p_parent, UIEventHandlerBase *p_handler, 
 	TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
+	const std::string &p_label, int p_labelWidth,
 		int *p_results, bool p_loop, int p_defaultIndex, int p_chooserWidth )
-		:UIHorizSelector( p_parent, p_handler, UI_HORIZ_SELECTOR_INT, tsMan, f, p_numOptions, p_names, Type::INT, p_loop, p_defaultIndex,
+		:UIHorizSelector( p_parent, p_handler, UI_HORIZ_SELECTOR_INT, tsMan, f, p_numOptions, p_names, 
+		p_label, p_labelWidth, Type::INT, p_loop, p_defaultIndex,
 		p_chooserWidth )
 {
 	results = new int[p_numOptions];
@@ -276,9 +408,10 @@ int UIHorizSelectorInt::GetResult( int index )
 
 UIHorizSelectorStr::UIHorizSelectorStr( UIControl *p_parent, UIEventHandlerBase *p_handler,
 	TilesetManager *tsMan, Font *f, int p_numOptions, std::string *p_names,
-		std::string *p_results, bool p_loop, int p_defaultIndex, int p_chooserWidth )
-		:UIHorizSelector( p_parent, p_handler, UI_HORIZ_SELECTOR_STR, tsMan, f, p_numOptions, p_names, Type::STR, p_loop, p_defaultIndex,
-		p_chooserWidth )
+	const std::string &p_label, int p_labelWidth, std::string *p_results, bool p_loop, 
+	int p_defaultIndex, int p_chooserWidth )
+		:UIHorizSelector( p_parent, p_handler, UI_HORIZ_SELECTOR_STR, tsMan, f, p_numOptions, p_names, 
+		p_label, p_labelWidth, Type::STR, p_loop, p_defaultIndex, p_chooserWidth )
 {
 	results = new std::string[p_numOptions];
 	for( int i = 0; i < p_numOptions; ++i )

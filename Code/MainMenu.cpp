@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include "Parallax.h"
+#include "Config.h"
 
 using namespace std;
 using namespace sf;
@@ -28,6 +29,15 @@ int MainMenu::masterVolume = 100;
 MainMenu::MainMenu()
 	:controller( 0 ), windowWidth(1920), windowHeight( 1080 ), controller2( 1 )
 {
+	fadeRect.setFillColor( Color::Black );
+	fadeRect.setSize( Vector2f( 1920, 1080 ) );
+	fadeRect.setPosition( 0, 0 );
+
+	config = new Config();
+	config->WaitForLoad();
+	windowWidth = config->GetData().resolutionX;
+	windowHeight = config->GetData().resolutionY;
+
 	cout << "start mm constfr" << endl;
 	//load a preferences file at some point for window resolution and stuff
 
@@ -39,7 +49,8 @@ MainMenu::MainMenu()
 
 	selectCreateNew = false;
 
-	
+	splashFadeFrame = 0;
+	splashFadeOutLength = 40;
 
 	files[0] = new SaveFile( "blue" );
 	files[1] = new SaveFile( "green" );
@@ -49,9 +60,9 @@ MainMenu::MainMenu()
 	files[5] = new SaveFile( "magenta" );
 
 	soundNodeList = new SoundNodeList( 10 );
-	soundNodeList->SetGlobalVolume( 100 );
+	soundNodeList->SetGlobalVolume( config->GetData().volume );
 
-	menuMode = MAINMENU;
+	menuMode = SPLASH;
 
 	if( preScreenTexture == NULL )
 	{
@@ -142,34 +153,37 @@ MainMenu::MainMenu()
 		windowHeight /= 2;
 	}*/
 	window = NULL;
+
+	window = new RenderWindow( sf::VideoMode( windowWidth, windowHeight ), "Breakneck",
+		config->GetData().windowStyle, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 	cout << "start mm constr 222" << endl;
-	if( !fullWindow )
-	{
-		window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-			sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-		window->setPosition( Vector2i(800, 0 ));
+	//if( fullWindow )
+	//{
+	//	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
+	//		sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	//	window->setPosition( Vector2i(800, 0 ));
 
-	}
-	else
-	{
-		cout << "blah0" << endl;
-		std::vector<sf::VideoMode> i = sf::VideoMode::getFullscreenModes();
-		VideoMode vm( 1600, 900 );
-        //sf::RenderWindow window(i.front(), "SFML WORKS!", sf::Style::Fullscreen);
-		//window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-		//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-		//window = new sf::RenderWindow( VideoMode( 1920, 1080 ), "Breakneck", sf::Style::None);
-		style = sf::Style::None;
-		assert( i.size() != 0 );
-		VideoMode vidMode = i.front();
+	//}
+	//else
+	//{
+	//	cout << "blah0" << endl;
+	//	std::vector<sf::VideoMode> i = sf::VideoMode::getFullscreenModes();
+	//	VideoMode vm( 1600, 900 );
+ //       //sf::RenderWindow window(i.front(), "SFML WORKS!", sf::Style::Fullscreen);
+	//	//window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
+	//	//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	//	//window = new sf::RenderWindow( VideoMode( 1920, 1080 ), "Breakneck", sf::Style::None);
+	//	style = sf::Style::None;
+	//	assert( i.size() != 0 );
+	//	VideoMode vidMode = i.front();
 
-		cout << "creating window: " << (int)vidMode.isValid() << endl;
-		window = new sf::RenderWindow( vidMode, "Breakneck", style);
-		cout << "blah1" << endl;
-		//window = new sf::RenderWindow( vm, "Breakneck", sf::Style::None);
+	//	cout << "creating window: " << (int)vidMode.isValid() << endl;
+	//	window = new sf::RenderWindow( vidMode, "Breakneck", style);
+	//	cout << "blah1" << endl;
+	//	//window = new sf::RenderWindow( vm, "Breakneck", sf::Style::None);
 
-			//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	}
+	//		//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	//}
 
 	assert( window != NULL );
 	window->setVerticalSyncEnabled( true );
@@ -190,9 +204,9 @@ MainMenu::MainMenu()
 
 MainMenu::~MainMenu()
 {
-	
-
 	window->close();
+
+	delete config;
 
 	delete window;
 	
@@ -210,9 +224,14 @@ void MainMenu::Init()
 {
 
 	cout << "init started" << endl;
+
+	
+
 	ts_saveMenuBG = tilesetManager.GetTileset( "Menu/save_bg_1920x1080.png", 1920, 1080 );
 	ts_saveMenuKinFace = tilesetManager.GetTileset( "Menu/save_menu_kin_256x256.png", 256, 256 );
 	ts_saveMenuSelect = tilesetManager.GetTileset( "Menu/save_select_710x270.png", 710, 270 );
+	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
+	splashSprite.setTexture( *ts_splashScreen->texture );
 
 	ts_kinTitle[0] = tilesetManager.GetTileset( "Title/kin_title_1_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[1] = tilesetManager.GetTileset( "Title/kin_title_2_1216x1080.png", 1216, 1080 );
@@ -644,8 +663,59 @@ void MainMenu::Run()
 
 			switch( menuMode )
 		{
+			case SPLASH:
+				{
+					bool A = currInput.A && !prevInput.A;
+					bool B = currInput.B && !prevInput.B;
+					bool X = currInput.X && !prevInput.X;
+					bool Y = currInput.Y && !prevInput.Y;
+					bool r = currInput.rightShoulder && !prevInput.rightShoulder;
+					bool l = currInput.leftShoulder && !prevInput.leftShoulder;
+
+					if( A || B || X || Y || r || l )
+					{
+						menuMode = SPLASH_TRANS;
+						splashFadeFrame = 0;
+
+						sf::Color fadeColor = fadeRect.getFillColor();
+						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
+							fadeColor.b, 
+							(((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
+					}
+					break;
+				}
+			case SPLASH_TRANS:
+				{
+					if( splashFadeFrame > splashFadeOutLength )
+					{
+						menuMode = MAINMENU;
+						splashFadeFrame = 0;
+
+						sf::Color fadeColor = fadeRect.getFillColor();
+						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
+							fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
+					}
+					else
+					{
+						sf::Color fadeColor = fadeRect.getFillColor();
+						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
+							fadeColor.b, 
+							(((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
+						++splashFadeFrame;
+					}
+					break;
+				}
 		case MAINMENU:
 			{
+				if( splashFadeFrame <= splashFadeOutLength )
+				{
+					sf::Color fadeColor = fadeRect.getFillColor();
+					fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
+						fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
+					++splashFadeFrame;
+				}
+
+
 				while( window->pollEvent( ev ) )
 				{
 					switch( ev.type )
@@ -1226,6 +1296,17 @@ void MainMenu::Run()
 
 		switch( menuMode )
 		{
+		case SPLASH:
+			{
+				preScreenTexture->draw( splashSprite );
+				break;
+			}
+		case SPLASH_TRANS:
+			{
+				preScreenTexture->draw( splashSprite );
+				preScreenTexture->draw( fadeRect );
+				break;
+			}
 		case MAINMENU:
 			{
 				preScreenTexture->setView( v );
@@ -1240,6 +1321,10 @@ void MainMenu::Run()
 
 				preScreenTexture->setView( uiView );
 
+				if( splashFadeFrame <= splashFadeOutLength )
+				{
+					preScreenTexture->draw( fadeRect );
+				}
 				
 
 				//for( int i = 0; i < 5; ++i )
