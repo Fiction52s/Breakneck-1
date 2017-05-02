@@ -9,6 +9,7 @@ using namespace std;
 UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width )
 	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
 {
+	ts_bar = tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
 	//ts_bar = tsMan->GetTileset( "blahbar" );
 	AssignTexture();
 	SetTopLeft( 0, 0 );
@@ -25,15 +26,35 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 
 void UIBar::AssignTexture()
 {
-	barVA[LEFT*4+0].color = Color::Red;
+	sf::IntRect irLeft = ts_bar->GetSubRect( 0 );
+	sf::IntRect irMiddle = ts_bar->GetSubRect( 1 );
+	sf::IntRect irRight = ts_bar->GetSubRect( 2 );
+	
+
+	/*barVA[LEFT*4+0].color = Color::Red;
 	barVA[LEFT*4+1].color = Color::Red;
 	barVA[LEFT*4+2].color = Color::Red;
-	barVA[LEFT*4+3].color = Color::Red;
+	barVA[LEFT*4+3].color = Color::Red;*/
 
-	barVA[RIGHT*4+0].color = Color::Blue;
+	barVA[LEFT*4+0].texCoords = Vector2f( irLeft.left, irLeft.top );
+	barVA[LEFT*4+1].texCoords = Vector2f( irLeft.left + irLeft.width, irLeft.top );
+	barVA[LEFT*4+2].texCoords = Vector2f( irLeft.left + irLeft.width, irLeft.top + irLeft.height );
+	barVA[LEFT*4+3].texCoords = Vector2f( irLeft.left, irLeft.top + irLeft.height );
+
+	/*barVA[RIGHT*4+0].color = Color::Blue;
 	barVA[RIGHT*4+1].color = Color::Blue;
 	barVA[RIGHT*4+2].color = Color::Blue;
-	barVA[RIGHT*4+3].color = Color::Blue;
+	barVA[RIGHT*4+3].color = Color::Blue;*/
+
+	barVA[RIGHT*4+0].texCoords = Vector2f( irRight.left, irRight.top );
+	barVA[RIGHT*4+1].texCoords = Vector2f( irRight.left + irRight.width, irRight.top );
+	barVA[RIGHT*4+2].texCoords = Vector2f( irRight.left + irRight.width, irRight.top + irRight.height );
+	barVA[RIGHT*4+3].texCoords = Vector2f( irRight.left, irRight.top + irRight.height );
+
+	barVA[MIDDLE*4+0].texCoords = Vector2f( irMiddle.left, irMiddle.top );
+	barVA[MIDDLE*4+1].texCoords = Vector2f( irMiddle.left + irMiddle.width, irMiddle.top );
+	barVA[MIDDLE*4+2].texCoords = Vector2f( irMiddle.left + irMiddle.width, irMiddle.top + irMiddle.height );
+	barVA[MIDDLE*4+3].texCoords = Vector2f( irMiddle.left, irMiddle.top + irMiddle.height );
 }
 
 void UIBar::Focus()
@@ -127,10 +148,10 @@ void UIBar::UpdateSprite()
 		break;
 	}
 
-	barVA[MIDDLE*4+0].color = currColor;
-	barVA[MIDDLE*4+1].color = currColor;
-	barVA[MIDDLE*4+2].color = currColor;
-	barVA[MIDDLE*4+3].color = currColor;
+	//barVA[MIDDLE*4+0].color = currColor;
+	//barVA[MIDDLE*4+1].color = currColor;
+	//barVA[MIDDLE*4+2].color = currColor;
+	//barVA[MIDDLE*4+3].color = currColor;
 }
 
 const sf::Vector2f &UIBar::GetTopLeftGlobal()
@@ -169,7 +190,8 @@ void UIBar::SetTextAlignment( Alignment align )
 
 void UIBar::Draw( sf::RenderTarget *target )
 {
-	target->draw( barVA, 12, sf::Quads ); //ts_bar->texture
+	//target->draw( barVA, 12, sf::Quads ); //ts_bar->texture
+	target->draw( barVA, 12, sf::Quads, ts_bar->texture );
 	target->draw( currText );
 }
 

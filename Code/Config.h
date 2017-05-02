@@ -17,11 +17,15 @@ struct ConfigData
 struct Config
 {
 	Config();
+
 	bool IsDoneLoading();
 	void Load();
+	void Shutdown();
+	bool shutDown;
 	void WaitForLoad();
 	const ConfigData &GetData();
 	void SetThread( boost::thread *p_t );
+
 	int resolutionX;
 	int resolutionY;
 

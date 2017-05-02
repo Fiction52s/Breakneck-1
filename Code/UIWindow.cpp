@@ -78,7 +78,7 @@ UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize 
 	AssignTextureCenter();
 	minSize = t->tileWidth * 2;
 	tileSize = t->tileWidth;
-	Resize( Vector2f( 600, 100 ) );
+	Resize( dimensions );
 }
 
 void UIWindow::Resize( sf::Vector2f &size )

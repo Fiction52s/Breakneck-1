@@ -13849,8 +13849,8 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	tempAllTargets.setCharacterSize( 12 );
 	tempAllTargets.setColor( Color::Red );
 
-	testWindow = new UIWindow( NULL, owner->GetTileset( "window_64x24.png", 64, 24 ),
-		Vector2f( 400, 400) );
+	testWindow = new UIWindow( NULL, owner->GetTileset( "Menu/windows_64x24.png", 64, 24 ),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
+		Vector2f( 600, 600) );
 	testWindow->SetTopLeftVec( Vector2f( 100, 100 ) );
 	
 
