@@ -1290,7 +1290,9 @@ void Actor::ActionEnded()
 				//cout << "inBubble: " << inBubble << endl;
 				if( inBubble )//|| rightWire->state == Wire::PULLING )
 				{
+					//5 is here to give you extra frames to airdash
 					frame = actionLength[AIRDASH] - 1;
+					++framesExtendingAirdash;
 					airDashStall = true;
 				}
 				else
@@ -2602,19 +2604,8 @@ void Actor::UpdatePrePhysics()
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					BounceFlameOff();
-					action = AIRDASH;
-					airDashStall = false;
+					SetActionExpr( AIRDASH );
 					
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
 
 					break;
 				}
@@ -2732,20 +2723,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					action = AIRDASH;
-					BounceFlameOff();
-					airDashStall = false;
-					
-					
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3129,18 +3107,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					action = AIRDASH;
-					airDashStall = false;
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3260,19 +3227,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3312,19 +3267,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3368,19 +3311,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3422,19 +3353,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3475,19 +3394,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -3531,19 +3438,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -5193,19 +5088,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
-					BounceFlameOff();
-					action = AIRDASH;
-					airDashStall = false;
-					
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 
 					break;
 				}
@@ -5517,19 +5400,7 @@ void Actor::UpdatePrePhysics()
 				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 				{
 					
-					action = AIRDASH;
-					airDashStall = false;
-					//BounceFlameOff();
-
-					//special unlimited airdash
-					if( inBubble && !hasAirDash )
-					{
-						frame = actionLength[AIRDASH] - 1;
-					}
-					else
-					{
-						frame = 0;
-					}
+					SetActionExpr( AIRDASH );
 					break;
 				}
 			}
@@ -5896,7 +5767,9 @@ void Actor::UpdatePrePhysics()
 						testVel.y *= .5;
 					}
 
-					if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
+					groundSpeed = CalcLandingSpeed( testVel, alongVel, bn );
+
+					/*if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
 					{
 						groundSpeed = dot( testVel, alongVel );
 					}
@@ -5910,7 +5783,7 @@ void Actor::UpdatePrePhysics()
 						{
 							groundSpeed = 0;
 						}
-					}
+					}*/
 
 					//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 					//cout << "setting groundSpeed: " << groundSpeed << endl;
@@ -6638,14 +6511,18 @@ void Actor::UpdatePrePhysics()
 		}
 	case SLIDE:
 		{
+			double gAngle = GroundedAngle();
 			//double fac = gravity * 2.0 / 3;
-			if( reversed )
+			if( gAngle != 0 && gAngle != PI )
 			{
-				groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
-			}
-			else
-			{
-				groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				if( reversed )
+				{
+					groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				}
+				else
+				{
+					groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				}
 			}
 			//groundSpeed = 
 			break;
@@ -8097,18 +7974,21 @@ void Actor::UpdatePrePhysics()
 		{
 			if( slowMultiple == 1 )
 			{
+				cout << "a" << endl;
 				slowCounter = 1;
 				slowMultiple = timeSlowStrength;
 			}
 		}
 		else
 		{
+			cout << "b" << endl;
 			slowCounter = 1;
 			slowMultiple = 1;
 		}
 	}
 	else
 	{
+		cout << "C " << endl;
 		slowCounter = 1;
 		slowMultiple = 1;
 	}
@@ -12529,43 +12409,14 @@ void Actor::UpdatePhysics()
 				//testVel.y /= 2.0
 				//cout << "groundspeed: " << groundSpeed << endl;
 
-				if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
-				{
-					double res = dot( testVel, alongVel );
+				gNorm = ground->Normal();
 
-					if( gNorm.y <= -steepThresh )
-					{
-						if( testVel.x > 0 && gNorm.x < 0 )
-						{
-							V2d straight( 1, 0 );
-							res = max( res, dot( testVel, straight ) );
-						}
-						else if( testVel.x < 0 && gNorm.x > 0 )
-						{
-							V2d straight( -1, 0 );
-							res = min( res, dot( testVel, straight ) );
-						}
-					}
-					groundSpeed = res;
-					
-					//groundSpeed = 
-				}
-				else
-				{
-					if( gNorm.y > -steepThresh )
-					{
-						groundSpeed = dot( testVel, alongVel );
-					}
-					else
-					{
-						groundSpeed = 0;
-					}
-				}
+				groundSpeed = CalcLandingSpeed( testVel, alongVel, gNorm );
 
 				//normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
 				//cout << "setting groundSpeed: " << groundSpeed << endl;
 				//V2d gNorm = ground->Normal();//minContact.normal;//ground->Normal();
-				gNorm = ground->Normal();
+				
 
 				//if( gNorm.y <= -steepThresh )
 				{
@@ -13937,19 +13788,21 @@ void Actor::UpdatePostPhysics()
 	{
 	case AIRDASH:
 		{
-			bool horizontal = abs( velocity.y ) < .21;
+			bool horizontal = abs( velocity.y ) < 7; //for hover
 			bool stopped = horizontal && velocity.x == 0;
 			if( frame % 1 == 0 && !stopped )
 			{
 				//owner->ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
 			}
 
-			if( frame % 4 == 0 && slowCounter == 1 )
+			if( ( frame + framesExtendingAirdash ) % 4 == 0 && slowCounter == 1 )
 			{
 				if( stopped )
 				{
-					if( frame % 4 == 0 )
-						owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_airdashHover, V2d( position.x, position.y + 70 ), false, 0, 12, 4, facingRight );
+					//cout << "frame: " << frame << endl;
+					//if( frame % 4 == 1 )
+						owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashHover, V2d( position.x, position.y + 70 ), 
+							false, 0, 12, 1, facingRight );
 				}
 				else if( horizontal )
 				{
@@ -16061,6 +15914,46 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}*/
 	
 	++possibleEdgeCount;
+}
+
+double Actor::CalcLandingSpeed( V2d &testVel,
+		V2d &alongVel, V2d &gNorm )
+{
+	double gSpeed = groundSpeed;
+	if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
+	{
+		double res = dot( testVel, alongVel );
+
+		if( gNorm.y <= -steepThresh )
+		{
+			if( testVel.x > 0 && gNorm.x < 0 )
+			{
+				V2d straight( 1, 0 );
+				res = max( res, dot( testVel, straight ) );
+			}
+			else if( testVel.x < 0 && gNorm.x > 0 )
+			{
+				V2d straight( -1, 0 );
+				res = min( res, dot( testVel, straight ) );
+			}
+		}
+		gSpeed = res;
+					
+		//groundSpeed = 
+	}
+	else
+	{
+		if( gNorm.y > -steepThresh )
+		{
+			gSpeed = dot( testVel, alongVel );
+		}
+		else
+		{
+			gSpeed = 0;
+		}
+	}
+
+	return gSpeed;
 }
 
 void Actor::ApplyHit( HitboxInfo *info )
@@ -19777,6 +19670,26 @@ void Actor::SetActionExpr( Action a )
 	case GOALKILL:
 		SetExpr( Expr_NEUTRAL );
 		break;
+	case AIRDASH:
+		{
+			framesExtendingAirdash = 0;
+			BounceFlameOff();
+			action = AIRDASH;
+			airDashStall = false;
+					
+			//special unlimited airdash
+			if( inBubble && !hasAirDash )
+			{
+				frame = actionLength[AIRDASH] - 1;
+			}
+			else
+			{
+				frame = 0;
+			}
+
+			break;
+		}
+		
 	}
 
 	SetAction( a );

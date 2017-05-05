@@ -380,6 +380,13 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceBoost;
 	bool scorpOn;
 	bool scorpSet;
+
+	double CalcLandingSpeed( sf::Vector2<double> &testVel,
+		sf::Vector2<double> &alongVel, 
+		sf::Vector2<double> &gNorm );
+
+	int framesExtendingAirdash;
+
 	
 	Tileset *ts_scorpRun;
 	Tileset *ts_scorpSlide;
