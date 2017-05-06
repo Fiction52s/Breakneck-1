@@ -29,6 +29,7 @@ struct Actor : QuadTreeCollider,
 		DAIR,
 		DASH,
 		DOUBLE,
+		BACKWARDSDOUBLE,
 		FAIR,
 		JUMP,
 		LAND,
@@ -134,6 +135,13 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> leftWireBoostDir;
 	sf::Vector2<double> rightWireBoostDir;
 	sf::Vector2<double> doubleWireBoostDir;
+
+	Action GetDoubleJump();
+	bool CanDoubleJump();
+	bool IsSingleWirePulling();
+	bool IsDoubleWirePulling();
+	bool TryDoubleJump();
+	bool TryAirDash();
 
 	int framesSinceRightWireBoost;
 	int singleWireBoostTiming;
@@ -394,6 +402,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_scorpStart;
 	Tileset *ts_scorpStand;
 	Tileset *ts_scorpJump;
+	Tileset *ts_scorpDash;
+	Tileset *ts_scorpSprint;
 
 	sf::Sprite scorpSprite;
 
@@ -853,6 +863,7 @@ struct PlayerGhost
 		DAIR,
 		DASH,
 		DOUBLE,
+		BACKWARDSDOUBLE,
 		FAIR,
 		JUMP,
 		LAND,

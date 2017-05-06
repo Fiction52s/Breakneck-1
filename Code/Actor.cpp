@@ -504,6 +504,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[DOUBLE] = 28 + 10;
 		tileset[DOUBLE] = owner->GetTileset( "double_64x64.png", 64, 64 );
 		normal[DOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
+
+		actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
+		tileset[BACKWARDSDOUBLE] = owner->GetTileset( "double_back_96x96.png", 96, 96 );
+		normal[BACKWARDSDOUBLE] = owner->GetTileset( "double_NORMALS.png", 64, 64 );
 		
 		actionLength[FAIR] = 8 * 2;
 		tileset[FAIR] = owner->GetTileset( "fair_64x64.png", 64, 64 );
@@ -857,11 +861,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[2].setParameter( "fromColor", Color( 140, 145, 255 ) );
 
 		ts_scorpRun = owner->GetTileset( "scorp_run_192x128.png", 192, 128 );
-		ts_scorpSlide = owner->GetTileset( "scorp_slide_160x128.png", 160, 128 );
+		ts_scorpSlide = owner->GetTileset( "scorp_slide_160x96.png", 160, 96 );
 		ts_scorpSteepSlide = owner->GetTileset( "scorp_steep_slide_224x128.png", 224, 128 );
 		ts_scorpStart = owner->GetTileset( "scorp_start_256x256.png", 256, 256 );
 		ts_scorpStand = owner->GetTileset( "scorp_stand_224x128.png", 224, 128 );
 		ts_scorpJump = owner->GetTileset( "scorp_jump_192x144.png", 192, 144 );
+		ts_scorpDash = owner->GetTileset( "scorp_dash_192x80.png", 192, 80 );
+		ts_scorpSprint = owner->GetTileset( "scorp_sprint_192x96.png", 192, 96 );
 
 		grindActionLength = 32;
 		SetActionExpr( SPAWNWAIT );
@@ -1260,6 +1266,7 @@ void Actor::ActionEnded()
 			SetActionExpr( STAND );
 			frame = 0;
 			break;
+		case BACKWARDSDOUBLE:
 		case DOUBLE:
 			SetActionExpr( JUMP );
 			frame = 1;
@@ -2597,29 +2604,11 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			bool wireCanDouble = !(rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
-			wireCanDouble |= (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
-
-			if( hasPowerAirDash && wireCanDouble )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					SetActionExpr( AIRDASH );
-					
-
-					break;
-				}
-			}
+			if( TryAirDash() ) break;
 
 			
 
-			if( hasDoubleJump && currInput.A && !prevInput.A && wireCanDouble )
-			{
-				action = DOUBLE;
-				frame = 0;
-				holdDouble = true;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 
 			//cout << CheckWall( true ) << endl;
@@ -2702,6 +2691,7 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
+	case BACKWARDSDOUBLE:
 	case DOUBLE:
 		{
 
@@ -2719,15 +2709,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					SetActionExpr( AIRDASH );
-
-					break;
-				}
-			}
+			if( TryAirDash() ) break;
 
 			if( CheckWall( false ) )
 			{
@@ -3078,13 +3060,9 @@ void Actor::UpdatePrePhysics()
 				}*/
 				//facingRight = !facingRight;
 			}
-			else if( currInput.A && !prevInput.A )
+			else if( TryDoubleJump() )
 			{
-				if( hasDoubleJump )
-				{
-					action = DOUBLE;
-					frame = 0;
-				}
+				break;
 			}
 			else if( currInput.LDown() )
 			{
@@ -3103,24 +3081,10 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					SetActionExpr( AIRDASH );
-
-					break;
-				}
-			}
+			if( TryAirDash() ) break;
 
 
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				frame = 0;
-				holdDouble = true;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			if( CheckWall( false ) )
 			{
@@ -3222,24 +3186,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				frame = 0;
-				holdDouble = true;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			}
 			break;
@@ -3262,24 +3211,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				frame = 0;
-				holdDouble = true;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 
@@ -3306,24 +3240,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				frame = 0;
-				holdDouble = true;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 			}
@@ -3348,24 +3267,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				holdDouble = true;
-				frame = 0;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 			}
@@ -3389,24 +3293,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				holdDouble = true;
-				frame = 0;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 			}
@@ -3433,24 +3322,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				holdDouble = true;
-				frame = 0;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 			}
@@ -5084,23 +4958,9 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					SetActionExpr( AIRDASH );
+			if( TryAirDash() ) break;
 
-					break;
-				}
-			}
-
-			if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				holdDouble = true;
-				frame = 0;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 			}
@@ -5213,16 +5073,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 			//else if( currInput.A && !prevInput.A && hasDoubleJump )
-			bool wireCanDouble = !(rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
-			wireCanDouble |= (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
 
-			if( currInput.A && !prevInput.A && hasDoubleJump && wireCanDouble )
-			{
-				action = DOUBLE;
-				holdDouble = true;
-				frame = 0;
-				break;
-			}
+			if( TryDoubleJump() ) break;
 
 			AirAttack();
 			break;
@@ -5395,24 +5247,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( hasPowerAirDash && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
-				{
-					
-					SetActionExpr( AIRDASH );
-					break;
-				}
-			}
-
-			/*if( hasDoubleJump && currInput.A && !prevInput.A && ( rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING ) )
-			{
-				action = DOUBLE;
-				frame = 0;
-				bounceFlameOn = true;
-				airBounceFrame = 13 * 3;
-				break;
-			}*/
+			if( TryAirDash() ) break;
 
 			if( AirAttack() )
 			{
@@ -6460,9 +6295,14 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+	case BACKWARDSDOUBLE:
 	case DOUBLE:
 		{
-			b.rh = doubleJumpHeight;
+			if( action == DOUBLE )
+			{
+				b.rh = doubleJumpHeight;
+			}
+			
 		//	b.offset.y = -5;
 			if( frame == 0 )
 			{
@@ -6862,36 +6702,20 @@ void Actor::UpdatePrePhysics()
 		{
 			double aSpeed = GetAirDashSpeed();
 
-			bool wireCanDouble = !(rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
-			wireCanDouble |= (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
 
-			if( !wireCanDouble )
+			if( IsSingleWirePulling() )
 			{
 				if( frame == 0 )
 				{
 					hasAirDash = false;
 					startAirDashVel = velocity;//V2d( velocity.x, 0 );//velocity;//
 				}
-
-				V2d wireDir;
-				if( rightWire->numPoints == 0 )
-				{
-					wireDir = normalize( position - rightWire->anchor.pos );
-				}
-				else
-				{
-					wireDir = normalize( position - rightWire->points[rightWire->numPoints-1].pos );
-				}
-
-				V2d wn( wireDir.y, -wireDir.x );
 			}
 			else
 			{
-				bool isDoubleWiring = rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING;
+				bool isDoubleWiring = IsDoubleWirePulling();
 
-				
-
-
+				//some old code in here for an alternate airdash when double wiring. ignore for now
 				if( frame == 0 )
 				{
 					dWireAirDash = V2d( 0, 0 );
@@ -7053,10 +6877,6 @@ void Actor::UpdatePrePhysics()
 				velocity += dWireAirDash;
 
 				dWireAirDashOld = dWireAirDash;
-
-				//cout << "extraAirDashY: " << extraAirDashY << endl;
-				//if( extraAirDashY == 0 || ( extraAirDashY < 0 && currInput.LUp() ) )
-					//velocity.y -= gravity / slowMultiple;
 			}
 			
 
@@ -16660,7 +16480,8 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( frame / 4, r );
+			int tFrame = frame / 4;
+			SetSpriteTile( tFrame, r );
 			
 			assert( ground != NULL );
 			
@@ -16725,6 +16546,19 @@ void Actor::UpdateSprite()
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
 					pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight );
 				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP2] );
+			}
+
+			if( scorpOn )
+			{
+				scorpSprite.setTexture( *ts_scorpSprint->texture );
+				
+				SetSpriteTile( &scorpSprite, ts_scorpSprint, tFrame, r );
+				
+				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2 + 20 );
+				scorpSprite.setPosition( position.x, position.y );
+				scorpSprite.setRotation( sprite->getRotation() );
+				scorpSet = true;
 			}
 
 			break;
@@ -17017,6 +16851,19 @@ void Actor::UpdateSprite()
 					sprite->setPosition( pp.x + offsetX, pp.y );
 				else
 					sprite->setPosition( pp.x, pp.y );
+
+			if( scorpOn )
+			{
+				scorpSprite.setTexture( *ts_scorpSlide->texture );
+				
+				SetSpriteTile( &scorpSprite, ts_scorpSlide, 0, r );
+				
+				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2 + 15 );
+				scorpSprite.setPosition( position.x, position.y );
+				scorpSprite.setRotation( sprite->getRotation() );
+				scorpSet = true;
+			}
 			break;
 		}
 	case STANDN:
@@ -17591,6 +17438,18 @@ void Actor::UpdateSprite()
 			
 			break;
 		}
+	case BACKWARDSDOUBLE:
+		{
+			int fr = frame;
+
+			SetSpriteTexture( action );
+			SetSpriteTile( fr / 1, facingRight );
+
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );
+			sprite->setRotation( 0 );
+			break;
+		}
 	case DOUBLE:
 		{
 	
@@ -17707,6 +17566,19 @@ void Actor::UpdateSprite()
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashRepeat, 
 					pp + gn * 32.0 + along * xExtraRepeat, false, angle, 12, 3, fr );
+			}
+
+			if( scorpOn )
+			{
+				scorpSprite.setTexture( *ts_scorpDash->texture );
+				
+				SetSpriteTile( &scorpSprite, ts_scorpDash, checkFrame, r );
+				
+				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2 + 10 );
+				scorpSprite.setPosition( position.x, position.y );
+				scorpSprite.setRotation( sprite->getRotation() );
+				scorpSet = true;
 			}
 
 			break;
@@ -19301,6 +19173,8 @@ Vector2i Actor::GetWireOffset()
 		offset = Vector2i( 0, 4.9 );
 	}
 
+	offset = Vector2i( 0, 4.9 );
+
 	if( reversed )
 	{
 		//offset.y = -offset.y;
@@ -19608,6 +19482,59 @@ void Actor::SetExpr( Expr ex )
 	expr = ex;
 }
 
+Actor::Action Actor::GetDoubleJump()
+{
+	if( (facingRight && currInput.LLeft()) || ( !facingRight && currInput.LRight() ) )
+	{
+		return BACKWARDSDOUBLE;
+	}
+	else
+	{
+		return DOUBLE;
+	}
+}
+
+bool Actor::CanDoubleJump()
+{
+	return ( hasDoubleJump && currInput.A && !prevInput.A && !IsSingleWirePulling() );
+}
+
+bool Actor::IsDoubleWirePulling()
+{
+	return ( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING );
+}
+
+bool Actor::TryDoubleJump()
+{
+	if( CanDoubleJump() )
+	{
+		SetActionExpr( DOUBLE );
+		return true;
+	}
+	
+	return false;
+}
+
+bool Actor::TryAirDash()
+{
+	if( hasPowerAirDash && !IsSingleWirePulling() )
+	{
+		if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
+		{
+			SetActionExpr( AIRDASH );
+			return true;
+		}
+	}
+
+	return false;
+}
+//you can pull with both or neither to return false. pulling with a single wire will return true;
+bool Actor::IsSingleWirePulling()
+{
+	return ( ( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
+		&& !IsDoubleWirePulling() );
+}
+
 void Actor::SetActionExpr( Action a )
 {
 	//SetExpr( Expr_NEUTRAL );
@@ -19646,13 +19573,18 @@ void Actor::SetActionExpr( Action a )
 			//bufferedAttack = true;
 		}
 		break;
+	case BACKWARDSDOUBLE:
+	case DOUBLE:
+		a = GetDoubleJump();
+		frame = 0;
+		holdDouble = true;
+		break;
 	case JUMP:
 		steepJump = false;
 	case WALLJUMP:
 	case DASH:
 	case LAND:
 	case LAND2:
-	case DOUBLE:
 	case WALLCLING:
 	case SLIDE:
 	case STEEPSLIDE:
@@ -19674,7 +19606,6 @@ void Actor::SetActionExpr( Action a )
 		{
 			framesExtendingAirdash = 0;
 			BounceFlameOff();
-			action = AIRDASH;
 			airDashStall = false;
 					
 			//special unlimited airdash
