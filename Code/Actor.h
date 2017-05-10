@@ -257,7 +257,7 @@ struct Actor : QuadTreeCollider,
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
-	void RunMovement( double bounceFlameAccel );
+	void RunMovement();
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();
@@ -462,6 +462,9 @@ struct Actor : QuadTreeCollider,
 	float percentCloneRate;
 	bool changingClone;
 
+	void GroundExtraAccel();
+	double GetBounceFlameAccel();
+
 	double holdDashAccel;
 	double wallThresh;
 
@@ -540,6 +543,8 @@ struct Actor : QuadTreeCollider,
 	double dashSpeed1;
 	double dashSpeed2;
 	double slideGravFactor;
+	double GetFullSprintAccel( bool downSlope,
+		sf::Vector2<double> &gNorm );
 
 	double doubleJumpStrength;
 

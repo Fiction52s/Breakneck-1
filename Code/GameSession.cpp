@@ -4200,7 +4200,7 @@ bool GameSession::OpenFile( string fileName )
 	{
 
 		//new file
-		assert( false && "error getting file to edit " );
+		assert( false && "error getting file to play " );
 
 		return false;
 	}
@@ -6001,6 +6001,7 @@ int GameSession::Run( string fileN )
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 0, 0 ), 1920 * 2, 30 );
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
+
 	cout << "loop about to start" << endl;
 
 	if( recGhost != NULL )
@@ -7070,7 +7071,7 @@ int GameSession::Run( string fileN )
 				}
 				else if( raceFight != NULL )
 				{
-					if( raceFight->playerScore == raceFight->numTargets || raceFight->gameTimer->value == 0 || currInput.back )
+					if( raceFight->gameOver || currInput.back )
 					{
 						state = RACEFIGHT_RESULTS;
 						raceFight->raceFightResultsFrame = 0;
@@ -8966,19 +8967,28 @@ int GameSession::Run( string fileN )
 			controller.UpdateState();
 			currInput = controller.GetState();
 
+			if( currInput.start )
+			{
+				//break;
+				quit = true;
+				returnVal = 1;
+
+				break;
+			}
+
 			prevInput2 = currInput2;
 
 			controller2->UpdateState();
 			currInput2 = controller2->GetState();
 
-			//raceFight->victoryScreen->Update();
+			raceFight->victoryScreen->Update();
 
 			raceFight->testWindow->Update( currInput, prevInput );
 
 			}
 
-			//raceFight->victoryScreen->Draw( preScreenTex );
-			raceFight->testWindow->Draw( preScreenTex );
+			raceFight->victoryScreen->Draw( preScreenTex );
+			//raceFight->testWindow->Draw( preScreenTex );
 
 			preScreenTex->display();
 			const Texture &preTex = preScreenTex->getTexture();
@@ -13825,6 +13835,8 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
 	hitByPlayer2List( NULL ), numTargets( 0 )
 {
+	
+
 	ts_scoreTest = owner->GetTileset( "score_menu_01.png", 1920, 1080 );
 	scoreTestSprite.setTexture( *ts_scoreTest->texture );
 	scoreTestSprite.setPosition( 0, 0 );
@@ -13841,7 +13853,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	gameTimer->topRight = Vector2f( 1920/2 + 80 * 2.5, 0 );
 	gameTimer->SetNumber( raceFightMaxSeconds );
 
-	//victoryScreen = new VictoryScreen2PlayerVS( owner );
+	victoryScreen = new VictoryScreen2PlayerVS( owner );
 
 	Reset();
 
@@ -13903,18 +13915,107 @@ void GameSession::RaceFight::Init()
 	numberTargetsTotalImage = new ImageText( digits, playerScoreImage->ts );
 	numberTargetsTotalImage->topRight = Vector2f( 1920/2 + 80 * 2, 90 );
 	numberTargetsTotalImage->UpdateSprite();
+
+	raceWinnerIndex = -1;
+	gameOver = false;
+	p1Place = 0;
+	p2Place = 0;
+
+	playerScore = 0;
+	player2Score = 0;
+}
+
+void GameSession::RaceFight::RemoveFromPlayerHitList( RaceFightTarget *target )
+{
+	assert( hitByPlayerList != NULL );
+
+	--playerScore;
+	cout << "subbig playerscore is now: " << playerScore << endl;
+	if( hitByPlayerList->pPrev == NULL && hitByPlayerList->pNext == NULL )
+	{
+		cout << "a" << endl;
+		assert( hitByPlayerList == target );
+		hitByPlayerList = NULL;
+	}
+	else if( target == hitByPlayerList )
+	{
+		cout << "b" << endl;
+		target->pNext->pPrev = NULL;
+		RaceFightTarget *newListHead = target->pNext;
+		target->pNext = NULL;
+		hitByPlayerList = newListHead;
+	}
+	else if( target->pPrev != NULL && target->pNext != NULL )
+	{
+		cout << "c" << endl;
+		target->pPrev->pNext = target->pNext;
+		target->pNext->pPrev = target->pPrev;
+		target->pPrev = NULL;
+		target->pNext = NULL;
+	}
+	else if( target->pNext == NULL )
+	{
+		cout << "d" << endl;
+		target->pPrev->pNext = NULL;
+		target->pPrev = NULL;
+	}
+}
+
+void GameSession::RaceFight::RemoveFromPlayer2HitList( RaceFightTarget *target )
+{
+	assert( hitByPlayer2List != NULL );
+
+	--player2Score;
+	cout << "subbig player2score is now: " << player2Score << endl;
+	if( hitByPlayer2List->pPrev == NULL && hitByPlayer2List->pNext == NULL )
+	{
+		cout << "e" << endl;
+		assert( hitByPlayer2List == target );
+		hitByPlayer2List = NULL;
+	}
+	else if( target == hitByPlayer2List )
+	{
+		cout << "f" << endl;
+		target->pNext->pPrev = NULL;
+		RaceFightTarget *newListHead = target->pNext;
+		target->pNext = NULL;
+		hitByPlayer2List = newListHead;
+	}
+	else if( target->pPrev != NULL && target->pNext != NULL )
+	{
+		cout << "g" << endl;
+		target->pPrev->pNext = target->pNext;
+		target->pNext->pPrev = target->pPrev;
+		target->pPrev = NULL;
+		target->pNext = NULL;
+	}
+	else if( target->pNext == NULL )
+	{
+		cout << "h" << endl;
+		target->pPrev->pNext = NULL;
+		target->pPrev = NULL;
+	}
 }
 
 void GameSession::RaceFight::HitByPlayer( int playerIndex,
 			RaceFightTarget *target )
 {
+	assert( target != NULL );
 	Actor *player = NULL;
 	if( playerIndex == 0 )
 	{
 		player = owner->player;
+		
 		playerScore++;
-		playerScoreImage->SetNumber( playerScore );
+		if( target->action == RaceFightTarget::Action::PLAYER2 )
+		{
+			RemoveFromPlayer2HitList( target );
+			target->action = RaceFightTarget::Action::PLAYER1;
+			playerScoreImage->SetNumber( playerScore );
+		}
 
+		target->gameTimeP1Hit = gameTimer->value;
+		player2ScoreImage->SetNumber( player2Score );
 		
 
 		if( hitByPlayerList == NULL )
@@ -13929,11 +14030,32 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 			hitByPlayerList->pPrev = target;
 			hitByPlayerList = target;
 		}
+
+		if( raceWinnerIndex == -1 && playerScore == numTargets )
+		{
+			gameOver = true;
+			p1Place = 1;
+			p2Place = 2;
+			return;
+		}
+		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
+		{
+			raceWinnerIndex = 0;
+		}
 	}
 	else if( playerIndex == 1 )
 	{
 		player = owner->player2;
+
 		player2Score++;
+		if( target->action == RaceFightTarget::Action::PLAYER1 )
+		{
+			RemoveFromPlayerHitList( target );
+			target->action = RaceFightTarget::Action::PLAYER2;
+			playerScoreImage->SetNumber( playerScore );
+		}
+
+		target->gameTimeP2Hit = gameTimer->value;
 		player2ScoreImage->SetNumber( player2Score );
 		
 		if( hitByPlayer2List == NULL )
@@ -13948,6 +14070,18 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 			hitByPlayer2List->p2Prev = target;
 			hitByPlayer2List = target;
 		}
+
+		if( raceWinnerIndex == -1 && player2Score == numTargets )
+		{
+			gameOver = true;
+			p1Place = 2;
+			p2Place = 1;
+			return;
+		}
+		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
+		{
+			raceWinnerIndex = 1;
+		}
 	}
 }
 
@@ -13958,6 +14092,11 @@ void GameSession::RaceFight::Reset()
 	hitByPlayerList = NULL;
 	hitByPlayer2List = NULL;
 	frameCounter = 0;
+	playerHitCounter = 0;
+	player2HitCounter = 0;
+	gameOver = false;
+	p1Place = 0;
+	p2Place = 0;
 }
 
 void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
@@ -13970,31 +14109,93 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 		at = owner->player;
 		def = owner->player2;
 
-		if( hitByPlayer2List != NULL )
+		++playerHitCounter;
+		if( raceWinnerIndex == -1 )
 		{
-			hitByPlayer2List->action = RaceFightTarget::Action::PLAYER1;
-			--player2Score;
-			//playerScoreImage->SetNumber( player2Score );
+			if( hitByPlayer2List != NULL )
+			{
+				
+				HitByPlayer( attacker, hitByPlayer2List );
+			}
+		}
+		else
+		{
+			if( playerScore < player2Score 
+				|| ( playerScore == player2Score && raceWinnerIndex == 1 ) )
+			{
+				//losing
+				assert( hitByPlayer2List != NULL );
+				
+				
+				//inefficient but I'm lazy
+				RaceFightTarget *last = hitByPlayer2List;
+				while( last->next != NULL )
+				{
+					last = last->p2Next;
+				}
+				last->action = RaceFightTarget::Action::PLAYER1;
 
-			HitByPlayer( attacker, hitByPlayer2List );
+				HitByPlayer( attacker, last );
+			}
+			else
+			{
+				//winning
+				gameOver = true;
+				p1Place = 1;
+				p2Place = 2;
+			}
 		}
 	}
 	else
 	{
+		++player2HitCounter;
+
 		at = owner->player2;
 		def = owner->player;
 
-		if( hitByPlayerList != NULL )
+		if( raceWinnerIndex == -1 ) //race is not over
 		{
-			hitByPlayerList->action = RaceFightTarget::Action::PLAYER2;
-			--playerScore;
-			//playerScoreImage->SetNumber( playerScore );
+			if( hitByPlayerList != NULL )
+			{
+				//hitByPlayerList->action = RaceFightTarget::Action::PLAYER2;
+				HitByPlayer( attacker, hitByPlayerList );
+			}
+		}
+		else //race is over
+		{
+			if( player2Score < playerScore 
+				|| ( player2Score == playerScore && raceWinnerIndex == 0 ) )
+			{
+				//losing
+				assert( hitByPlayerList != NULL );
+				
+				
+				//inefficient but I'm lazy
+				RaceFightTarget *last = hitByPlayerList;
+				while( last->next != NULL )
+				{
+					last = last->pNext;
+				}
+				last->action = RaceFightTarget::Action::PLAYER2;
 
-			HitByPlayer( attacker, hitByPlayerList );
+				HitByPlayer( attacker, last );
+			}
+			else
+			{
+				//winning
+				gameOver = true;
+				p1Place = 2;
+				p2Place = 1;
+			}
 		}
 	}
 
 
+}
+
+int GameSession::RaceFight::GetNumRemainingTargets()
+{
+	return numTargets - ( playerScore + player2Score );
 }
 
 void GameSession::RaceFight::DrawScore( sf::RenderTarget *target )
@@ -14015,7 +14216,7 @@ void GameSession::RaceFight::UpdateScore()
 	playerScoreImage->UpdateSprite();
 	player2ScoreImage->UpdateSprite();
 
-	numberTargetsRemainingImage->SetNumber( numTargets - ( playerScore + player2Score ) );
+	numberTargetsRemainingImage->SetNumber( GetNumRemainingTargets() );
 	numberTargetsRemainingImage->UpdateSprite();
 
 	TickFrame();
@@ -14024,7 +14225,89 @@ void GameSession::RaceFight::UpdateScore()
 void GameSession::RaceFight::TickClock()
 {
 	testWindow->Update( owner->currInput, owner->prevInput );
-	gameTimer->SetNumber( gameTimer->value-- );
+
+	if( gameTimer->value > 0 )
+		gameTimer->SetNumber( gameTimer->value-- );
+
+	if( gameTimer->value == 0 )
+	{
+		gameOver = true;
+
+		if( raceWinnerIndex == -1 ) //race isnt over
+		{
+			 if( playerScore < player2Score )
+			 {
+				 p1Place = 2;
+				 p2Place = 1;
+			 }
+			 else if( playerScore > player2Score )
+			 {
+				 p1Place = 1;
+				 p2Place = 2;
+			 }
+			 else
+			 {
+				 if( playerHitCounter < player2HitCounter )
+				 {
+					 p1Place = 2;
+					 p2Place = 1;
+				 }
+				 else if( playerHitCounter > player2HitCounter )
+				 {
+					 p1Place = 1;
+					 p2Place = 2;
+				 }
+				 else
+				 {
+					 if( playerScore == 0 )
+					 {
+						 //draw
+						 assert( player2Score == 0 );
+						 p1Place = 1;
+						 p2Place = 1;
+					 }
+					 else
+					 {
+						 RaceFightTarget *last1 = hitByPlayerList;
+						 RaceFightTarget *last2 = hitByPlayer2List;
+
+						 while( last1->pNext != NULL )
+						 {
+							 last1 = last1->pNext;
+						 }
+						 while( last2->p2Next != NULL )
+						 {
+							 last2 = last2->p2Next;
+						 }
+
+						 int lastTimeP1 = last1->gameTimeP1Hit;
+						 int lastTimeP2 = last2->gameTimeP2Hit;
+
+						 if( lastTimeP1 > lastTimeP2 ) //greater time means hit sooner
+						 {
+							 p1Place = 1;
+							 p2Place = 2;
+						 }
+						 else if( lastTimeP1 < lastTimeP2 )//greater time means hit sooner
+						 {
+							 p1Place = 2;
+							 p2Place = 1;
+						 }
+						 else
+						 {
+							 //draw
+							 p1Place = 1;
+							 p2Place = 1;
+						 }
+					 }
+				 }
+			 }
+		}
+		else
+		{
+
+		}
+	}
 }
 
 void GameSession::RaceFight::TickFrame()
@@ -14032,7 +14315,11 @@ void GameSession::RaceFight::TickFrame()
 	if( frameCounter == 60 )
 	{
 		int val = gameTimer->value - 1;
-		gameTimer->SetNumber( val );
+		if( val > 0 )		
+		{
+			gameTimer->SetNumber( val );
+			
+		}
 		frameCounter = 0;
 	}
 	else

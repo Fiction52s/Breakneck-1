@@ -887,7 +887,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		steepThresh = .4; // go between 0 and 1
 
-		steepSlideGravFactor = .25;//.4;
+		steepSlideGravFactor = .25;//.25;//.4;
 		steepSlideFastGravFactor = .3;//.5;
 
 		wallJumpStrength.x = 10;
@@ -939,7 +939,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		offSlopeByWallThresh = dashSpeed;//18;
 		slopeLaunchMinSpeed = 5;//dashSpeed * .7;
 		steepClimbSpeedThresh = dashSpeed - 1;
-		slideGravFactor = .25;//.3;//.45;
+		slideGravFactor = .25;//.25;//.3;//.45;
 
 		
 		maxRunInit = 4;
@@ -966,9 +966,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		runAccelInit = .5;
 		
 		runAccel = .03;
-		sprintAccel = .2;//.3;//.85;
+		sprintAccel = .08;//.3;//.85;
 
-		holdDashAccel = .07;
+		holdDashAccel = .05;
 		bounceFlameAccel0 = .08;//.15;//.8;
 		bounceFlameAccel1 = .1; //this was the original
 		bounceFlameAccel2 = .15;//.18;
@@ -1574,6 +1574,31 @@ void Actor::Respawn()
 	SetExpr( Actor::Expr::Expr_NEUTRAL );
 }
 
+double Actor::GetBounceFlameAccel()
+{
+	double bounceFlameAccel = 0;
+	switch( speedLevel )
+	{
+	case 0:
+		
+		bounceFlameAccel = bounceFlameAccel0;
+		//cout << "zero: " << bounceFlameAccel << endl;
+		break;
+	case 1:
+		bounceFlameAccel = bounceFlameAccel1;
+		//cout << "one: " << bounceFlameAccel << endl;
+		break;
+	case 2:
+		
+		bounceFlameAccel = bounceFlameAccel2;
+		//cout << "two: " << bounceFlameAccel << endl;
+		break;
+	}
+	assert( bounceFlameAccel != 0 );
+
+	return bounceFlameAccel;
+}
+
 void Actor::UpdatePrePhysics()
 {
 	/*if( owner->multiSession )
@@ -2168,25 +2193,7 @@ void Actor::UpdatePrePhysics()
 	//cout << "hitstunFrames: " << hitstunFrames << endl;
 	//choose action
 
-	double bounceFlameAccel = 0;
-	switch( speedLevel )
-	{
-	case 0:
-		
-		bounceFlameAccel = bounceFlameAccel0;
-		//cout << "zero: " << bounceFlameAccel << endl;
-		break;
-	case 1:
-		bounceFlameAccel = bounceFlameAccel1;
-		//cout << "one: " << bounceFlameAccel << endl;
-		break;
-	case 2:
-		
-		bounceFlameAccel = bounceFlameAccel2;
-		//cout << "two: " << bounceFlameAccel << endl;
-		break;
-	}
-	assert( bounceFlameAccel != 0 );
+	
 	
 	bool canStandUp = true;
 	if( b.rh < normalHeight )
@@ -3413,6 +3420,11 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( RUN );
 						frame = 0;
 					}
+					else if( currInput.LDown() || currInput.LUp() )
+					{
+						action = SLIDE;
+						frame = 0;
+					}
 					else
 					{
 						action = STAND;
@@ -3493,7 +3505,7 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					//you can't dash on the ceiling with no horizontal input. probably a weakness
-					if( ( currInput.B /*&& !( reversed && (!currInput.LLeft() && !currInput.LRight() ) )*/ ) || !canStandUp )
+					if( ( currInput.B && !prevInput.B/*&& !( reversed && (!currInput.LLeft() && !currInput.LRight() ) )*/ ) || !canStandUp )
 					{
 						action = DASH;
 						/*re->Reset();
@@ -3586,7 +3598,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					if( currInput.B || !canStandUp )
+					if( (currInput.B && !prevInput.B) || !canStandUp )
 					{
 						//cout << "start dash" << endl;
 						action = DASH;
@@ -5747,7 +5759,7 @@ void Actor::UpdatePrePhysics()
 	case RUN:
 		{
 			//cout << "frame: " << frame << endl;
-			RunMovement( bounceFlameAccel );
+			RunMovement( );
 		break;
 		}
 	case JUMP:
@@ -6241,58 +6253,36 @@ void Actor::UpdatePrePhysics()
 					groundSpeed = dSpeed;
 			}
 
-			double minFactor = .2;
-			double factor = abs( gNorm.x );
-			factor = std::max( factor, minFactor );
+			
+			
 
 			if( currInput.LDown() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
+				double sprAccel = GetFullSprintAccel(true, gNorm);
 				if( facingRight )
 				{
-					groundSpeed += sprintAccel * factor / slowMultiple;
+					groundSpeed += sprAccel / slowMultiple;
 				}
 				else 
 				{
-					groundSpeed -= sprintAccel * factor / slowMultiple;
+					groundSpeed -= sprAccel / slowMultiple;
 				}
 			}
 			else if( currInput.LUp() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
-				double upMax = .3;
-
-				factor = std::min( factor, upMax );
+				double sprAccel = GetFullSprintAccel(false, gNorm);
 
 				if( facingRight )
 				{
-					groundSpeed += sprintAccel * factor / slowMultiple; 
+					groundSpeed += sprAccel / slowMultiple; 
 				}
 				else 
 				{	
-					groundSpeed -= sprintAccel * factor / slowMultiple; 
-				}
-			}
-			else
-			{
-				if( !bounceFlameOn )
-				{
-					if( facingRight )
-					{
-						groundSpeed += holdDashAccel / slowMultiple;
-					}
-					else
-					{
-						groundSpeed -= holdDashAccel / slowMultiple;
-					}
+					groundSpeed -= sprAccel / slowMultiple; 
 				}
 			}
 
-			if( bounceFlameOn )
-			{
-				if( facingRight )
-					groundSpeed += bounceFlameAccel / slowMultiple;
-				else
-					groundSpeed -= bounceFlameAccel / slowMultiple;
-			}
+			GroundExtraAccel();
 			break;
 		}
 	case BACKWARDSDOUBLE:
@@ -6357,18 +6347,25 @@ void Actor::UpdatePrePhysics()
 			{
 				if( reversed )
 				{
-					groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+					double accel = dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+					groundSpeed += accel;
+					
 				}
 				else
 				{
-					groundSpeed += dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+					double accel = dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+					groundSpeed += accel;
+					cout << "accel slide: \n" << accel;
 				}
 			}
+
+			GroundExtraAccel();
 			//groundSpeed = 
 			break;
 		}
 	case SPRINT:
 		{
+			
 			if( b.rh > sprintHeight || canStandUp )
 			{
 				b.rh = sprintHeight;
@@ -6383,8 +6380,10 @@ void Actor::UpdatePrePhysics()
 			else if( currInput.LRight() )				
 				facingRight = true;
 
+			double accel = 0;
 			if( !facingRight )//currInput.LLeft() )
 			{
+
 				if( groundSpeed > 0 )
 				{
 					groundSpeed = 0;
@@ -6399,33 +6398,29 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						double minFactor = .2;
-						double factor = abs( gNorm.x );
-						factor = std::max( factor, minFactor );
+						
 
 						if( gNorm.x > 0 )
 						{
 							//up a slope
-							double upMax = .3;
+							double sprAccel = GetFullSprintAccel(false, gNorm);
+
+							//GroundExtraAccel();
+
+							accel = sprAccel / slowMultiple;
+							groundSpeed -= accel;
 							
-							if( factor > upMax  )
-								factor = upMax;
-
-							if( bounceFlameOn )
-							{
-								groundSpeed -= bounceFlameAccel / slowMultiple;
-							}
-
-							groundSpeed -= sprintAccel * factor / slowMultiple; 
 						}
 						else
 						{	
-							if( bounceFlameOn )
-							{
-								groundSpeed -= bounceFlameAccel / slowMultiple;
-							}
+							//GroundExtraAccel();
 
-							groundSpeed -= sprintAccel * factor / slowMultiple;
+							double sprAccel = GetFullSprintAccel(true, gNorm);
+
+							accel = sprAccel / slowMultiple;
+							groundSpeed -= accel;
+
+						
 							//down a slope
 						}
 					}
@@ -6455,28 +6450,22 @@ void Actor::UpdatePrePhysics()
 
 						if( gNorm.x < 0 )
 						{
-							//up a slope
-							double upMax = .3;
-							
-							if( factor > upMax  )
-								factor = upMax;
+							//GroundExtraAccel();
 
-							if( bounceFlameOn )
-							{
-								groundSpeed += bounceFlameAccel / slowMultiple;
-							}
+							double sprAccel = GetFullSprintAccel(false, gNorm);
 
-							groundSpeed += sprintAccel * factor / slowMultiple; 
+							accel = sprAccel / slowMultiple; 
+							groundSpeed += accel;
 						}
 						else
 						{	
 
-							if( bounceFlameOn )
-							{
-								groundSpeed += bounceFlameAccel / slowMultiple;
-							}
+							//GroundExtraAccel();
 
-							groundSpeed += sprintAccel * factor / slowMultiple;
+							double sprAccel = GetFullSprintAccel(true, gNorm);
+
+							accel = sprAccel / slowMultiple;
+							groundSpeed += accel;
 							//down a slope
 						}
 					}
@@ -6484,6 +6473,7 @@ void Actor::UpdatePrePhysics()
 				facingRight = true;
 			}
 
+			cout << "sprint accel: " << accel << "\n";
 			break;
 		}
 	case STANDN:
@@ -6980,7 +6970,7 @@ void Actor::UpdatePrePhysics()
 	case SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY:
 		{
 			//cout << "frame: " << frame << endl;
-			RunMovement( bounceFlameAccel );
+			RunMovement( );
 			break;
 		}
 	case SEQ_CRAWLERFIGHT_DODGEBACK:
@@ -7808,7 +7798,7 @@ void Actor::UpdatePrePhysics()
 	}
 	else
 	{
-		cout << "C " << endl;
+		//cout << "C " << endl;
 		slowCounter = 1;
 		slowMultiple = 1;
 	}
@@ -9761,6 +9751,26 @@ int Actor::GetBubbleRadius()
 	}
 }
 
+double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
+{
+	double extraSprintAccel;
+
+	extraSprintAccel = abs(dot( gNorm, V2d( 1, 0 ) ));
+
+
+	if( downSlope )
+	{
+	}
+	else
+	{
+		extraSprintAccel = min( .3, extraSprintAccel );
+	}
+	extraSprintAccel *= .09;
+
+	return sprintAccel + extraSprintAccel;
+}
+
+
 //eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
 //for universal substeps. guess box2d makes more sense now doesn't it XD
 
@@ -10176,6 +10186,25 @@ void Actor::UpdateFullPhysics()
 
 	
 
+}
+
+void Actor::GroundExtraAccel()
+{
+	if( bounceFlameOn )
+	{
+		double bounceFlameAccel = GetBounceFlameAccel();
+		if( groundSpeed > 0 )
+			groundSpeed += bounceFlameAccel / slowMultiple;
+		else if( groundSpeed < 0 )
+			groundSpeed -= bounceFlameAccel / slowMultiple;
+	}
+	else if( currInput.B )
+	{
+		if( groundSpeed > 0 )
+			groundSpeed += holdDashAccel / slowMultiple;
+		else if( groundSpeed < 0 )
+			groundSpeed -= holdDashAccel / slowMultiple;
+	}
 }
 
 //int blah = 0;
@@ -19196,7 +19225,7 @@ Vector2i Actor::GetWireOffset()
 	return offset;
 }
 
-void Actor::RunMovement( double bounceFlameAccel )
+void Actor::RunMovement()
 {
 	if( currInput.LLeft() )
 		facingRight = false;
@@ -19224,14 +19253,7 @@ void Actor::RunMovement( double bounceFlameAccel )
 				
 		}
 		
-		if( bounceFlameOn )
-		{
-			groundSpeed -= bounceFlameAccel / slowMultiple;
-		}
-		else if( currInput.B )
-		{
-			groundSpeed -= holdDashAccel / slowMultiple;
-		}
+		GroundExtraAccel();
 
 		
 
@@ -19256,16 +19278,7 @@ void Actor::RunMovement( double bounceFlameAccel )
 			}
 		}
 
-		if( bounceFlameOn )
-		{
-			groundSpeed += bounceFlameAccel / slowMultiple;
-		}
-		else if( currInput.B )
-		{
-			groundSpeed += holdDashAccel / slowMultiple;
-		}
-
-		
+		GroundExtraAccel();
 
 		facingRight = true;
 	}

@@ -860,6 +860,9 @@ struct RaceFightTarget : Enemy
 	RaceFightTarget *p2Prev;
 	RaceFightTarget *p2Next;
 
+	int gameTimeP1Hit;
+	int gameTimeP2Hit;
+
 	Action action;
 	//MovementSequence testSeq;
 	RaceFightTarget( GameSession *owner,

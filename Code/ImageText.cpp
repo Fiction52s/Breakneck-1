@@ -77,6 +77,7 @@ void ImageText::ShowZeroes( int numZ )
 
 void ImageText::SetNumber( int num )
 {
+	assert( num >= 0 );
 	value = num;
 }
 

@@ -7,6 +7,7 @@ using namespace std;
 
 UIControl::UIControl( UIControl *p_parent, UIEventHandlerBase *p_handler, UIControlType p_cType )
 	:parent( p_parent ), focused( false ), dimensions( 0, 0 ), cType( p_cType ), handler( p_handler )
+	
 {
 }
 
@@ -68,7 +69,7 @@ UIControl::UIControlType UIControl::GetType()
 }
 
 UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize )
-	:UIControl( p_parent, NULL, UI_WINDOW ), ts_window( t )
+	:UIControl( p_parent, NULL, UI_WINDOW ), ts_window( t ), controlList( NULL )
 {
 	dimensions = p_windowSize;
 	//uiwindowtest_96x30.png
@@ -273,7 +274,8 @@ void UIWindow::Draw( sf::RenderTarget *target )
 
 	target->draw( borderVA, 16 * 4, sf::Quads, ts_window->texture );
 
-	controlList->Draw( target );
+	if( controlList != NULL )
+		controlList->Draw( target );
 
 	/*sf::RectangleShape rs;
 	rs.setFillColor( Color( 0, 255, 0, 60 ) );
@@ -289,7 +291,8 @@ void UIWindow::Draw( sf::RenderTarget *target )
 bool UIWindow::Update( ControllerState &curr,
 		ControllerState &prev )
 {
-	controlList->Update( curr, prev );
+	if( controlList != NULL )
+		controlList->Update( curr, prev );
 	return true;
 }
 

@@ -385,6 +385,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		void TickClock();
 		void TickFrame();
 		int NumDigits( int number );
+		void RemoveFromPlayerHitList( RaceFightTarget *target );
+		void RemoveFromPlayer2HitList( RaceFightTarget *target );
 		int frameCounter;
 
 		int numTargets;
@@ -394,11 +396,22 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		TimerText *gameTimer;
 		ImageText *numberTargetsRemainingImage;
 		ImageText *numberTargetsTotalImage;
+		int GetNumRemainingTargets();
 
 		UIWindow *testWindow;
 
 		Tileset *ts_scoreTest;
 		sf::Sprite scoreTestSprite;
+
+		int playerHitCounter;
+		int player2HitCounter;
+
+		bool gameOver;
+		int p1Place;
+		int p2Place;
+		//int p3Place;
+		//int p4Place;
+		int raceWinnerIndex;
 	};
 	RaceFight *raceFight;
 	

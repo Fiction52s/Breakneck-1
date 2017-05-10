@@ -4,6 +4,7 @@
 #include "SFML/Graphics.hpp"
 #include "Input.h"
 
+struct UIWindow;
 struct VictoryScreen
 {
 	virtual void Draw( sf::RenderTarget *target ) = 0;
@@ -24,7 +25,7 @@ struct PlayerInfoBar
 
 	enum State
 	{
-		STATE_INITIAL_WAIT, //STODO
+		STATE_INITIAL_WAIT, //TODO
 		STATE_SHOW_FACE,
 		STATE_WAIT,
 		STATE_WAIT_EXPANDED,
@@ -40,32 +41,16 @@ struct PlayerInfoBar
 		TOP_QUAD_INDEX = 2
 	};
 
-	PlayerInfoBar( GameSession *owner );
-	void AssignCorners();
-	void AssignEdges();
+	PlayerInfoBar( GameSession *owner, int width,
+		int playerIndex );
 	void Update( bool pressedA );
 	int frame;
 	State state;
-	void SetBottomLeftPos( sf::Vector2i &pos );
-	const sf::Vector2f &GetBottomLeftPos();
 	void Draw( sf::RenderTarget *target );
 	void SetHeight( int height );
-	void SetCornerPos( sf::Vector2i &topLeft, int index ); 
-	void SetWallPos( int x, int index );
-
-	int minSize;
-	Tileset *ts_bar;
-	sf::Vertex windowVA[4 * 4];
-	//sf::Vertex infoBarVA[4*3];
-
-	sf::Vector2i windowSize;
+	
 	GameSession *owner;
-	int botQuadHeight;
-	int topQuadHeight;
-	int totalWidth;
-	int currMiddleHeight;
-	int origMiddleHeight;
-
+	
 	int framesBeforeShowFace;
 	int framesExpandingShowFace;
 	int framesExpandingFull;
@@ -75,7 +60,7 @@ struct PlayerInfoBar
 	int heightShowFace;
 	int heightFull;
 
-	sf::Vector2i bottomLeft;
+	UIWindow *uiWindow;
 };
 
 struct VictoryScreen2PlayerVS : VictoryScreen

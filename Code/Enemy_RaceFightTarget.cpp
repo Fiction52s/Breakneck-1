@@ -35,7 +35,8 @@ RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
 	
 	frame = 0;
 
-	
+	gameTimeP1Hit = -1;
+	gameTimeP2Hit = -1;
 
 	animationFactor = 10;
 
@@ -97,6 +98,9 @@ void RaceFightTarget::HandleEntrant( QuadTreeEntrant *qte )
 
 void RaceFightTarget::ResetEnemy()
 {
+	gameTimeP1Hit = -1;
+	gameTimeP2Hit = -1;
+
 	dead = false;
 	action = NEUTRAL;
 	frame = 0;

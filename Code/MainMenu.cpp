@@ -630,7 +630,7 @@ void MainMenu::Run()
 	gameClock.restart();
 
 	saveTexture->setView( v );
-
+	menuMode = DEBUG_RACEFIGHT_RESULTS;
 
 	while( !quit )
 	{
@@ -663,6 +663,15 @@ void MainMenu::Run()
 
 			switch( menuMode )
 		{
+			case DEBUG_RACEFIGHT_RESULTS:
+				{
+				GameSession *gs = new GameSession( controller, NULL, this );
+
+				gs->SetSecondController( controller2 );
+				gs->Run( "Maps/W1/arena04.brknk" );
+				return;
+				break;
+				}
 			case SPLASH:
 				{
 					bool A = currInput.A && !prevInput.A;
