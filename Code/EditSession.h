@@ -391,6 +391,7 @@ struct ActorParams : ISelectable
 	virtual void SetPath( std::list<sf::Vector2i> &globalPath );
 	void DrawBoundary( sf::RenderTarget *target );
 	void DrawMonitor( sf::RenderTarget *target );
+
 	virtual void SetParams();
 	virtual void SetPanelInfo();
 	static  Panel * CreateOptionsPanel();
@@ -408,6 +409,7 @@ struct ActorParams : ISelectable
 	virtual void BrushDraw( sf::RenderTarget *target, 
 		bool valid );
 	virtual void Draw( sf::RenderTarget *target );
+	virtual void DrawPreview( sf::RenderTarget *target );
 	virtual void Deactivate( EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
 	virtual void Activate( EditSession *edit,
@@ -1246,6 +1248,7 @@ struct ActorGroup
 	std::list<ActorPtr> actors;
 	void Draw( sf::RenderTarget *target );
 	void WriteFile( std::ofstream &of );
+	void DrawPreview( sf::RenderTarget *target );
 };
 
 struct Brush;
@@ -1279,6 +1282,7 @@ struct EditSession : GUIHandler
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
 	void Draw();
+
 	bool OpenFile();
 	void WriteFile(std::string fileName);
 	void ButtonCallback( Button *b, const std::string & e );

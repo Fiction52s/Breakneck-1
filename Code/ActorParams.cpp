@@ -81,6 +81,10 @@ void ActorParams::Draw( sf::RenderTarget *target )
 	DrawBoundary( target );
 }
 
+void ActorParams::DrawPreview( sf::RenderTarget *target )
+{
+}
+
 void ActorParams::DrawMonitor( sf::RenderTarget *target )
 {
 	

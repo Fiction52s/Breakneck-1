@@ -13843,13 +13843,13 @@ void EditSession::CreatePreview()
 		double idealXYRatio = 920.0/540.0;
 		double realXYRatio = (double)width/(double)height;
 
-		
+		double facX = (right - left) / 920.0;
 		double facY = (bot - top) / 540.0;
 
 		if( realXYRatio > idealXYRatio )
 		{
 			//wider than it should be
-			double facX = (right - left) / 920.0;
+			
 
 			height = ceil(height * (realXYRatio / idealXYRatio));
 
@@ -13862,7 +13862,7 @@ void EditSession::CreatePreview()
 		{
 			//taller than it should be
 
-			double facY = (bot - top) / 540.0;
+			
 
 			width = ceil( width * (idealXYRatio / realXYRatio) );
 
@@ -13883,17 +13883,35 @@ void EditSession::CreatePreview()
 		mapPreviewTex->clear();
 		mapPreviewTex->setView( pView );
 		
-
-		/*for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-		{
-			(*it).second->Draw( mapPreviewTex );
-		}*/
+		CircleShape cs;
+		cs.setRadius( 10.f * ( (float)width / 1920 ) );
+		cs.setFillColor( Color::Red );
+		cs.setOrigin( cs.getLocalBounds().width / 2, 
+			cs.getLocalBounds().height / 2 );
 
 		for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
 			= polygons.begin(); it != polygons.end(); ++it )
 		{
+			if( (*it)->IsTouching( inversePolygon.get() ) )
+				continue;
+
 			(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
 		}
+
+		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+		{
+			for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
+				it2 != (*it).second->actors.end(); ++it2 )
+			{
+				cs.setPosition( (*it2)->position.x, (*it2)->position.y );
+				mapPreviewTex->draw( cs );
+			}
+
+			
+			//(*it).second->DrawPreview( mapPreviewTex );
+		}
+
+		
 
 		Image img = mapPreviewTex->getTexture().copyToImage();
 		
@@ -15005,6 +15023,18 @@ void ActorGroup::Draw( sf::RenderTarget *target )
 	{
 		(*it)->Draw( target );
 		(*it)->DrawQuad( target );
+	}
+}
+
+void ActorGroup::DrawPreview( sf::RenderTarget *target )
+{
+	//CircleShape cs;
+	//cs.setFillColor( Color::Red );
+
+	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
+	{
+
+		//(*it)->DrawPreview( target );
 	}
 }
 
