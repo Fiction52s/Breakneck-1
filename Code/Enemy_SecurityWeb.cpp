@@ -263,7 +263,7 @@ SecurityWeb::~SecurityWeb()
 
 void SecurityWeb::ResetNodes()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	activeNodes = allNodes[numProtrusions];
 
@@ -337,7 +337,7 @@ void SecurityWeb::DirectKill()
 
 void SecurityWeb::ActionEnded()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	double len = length( player->position - position );
 	//if( frame == actionLength[action] )
 	//{
@@ -413,7 +413,7 @@ void SecurityWeb::ActionEnded()
 void SecurityWeb::UpdatePrePhysics()
 {
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( !dead && !dying )
 	{
@@ -510,7 +510,7 @@ void SecurityWeb::UpdatePrePhysics()
 			curr = curr->nextProj;
 		}
 	}
-	//Actor *player = owner->player;
+	//Actor *player = owner->GetPlayer( 0 );
 
 	if( !dead && !dying && receivedHit != NULL )
 	{
@@ -527,12 +527,12 @@ void SecurityWeb::UpdatePrePhysics()
 				owner->keyMarker->CollectKey();
 			dying = true;
 
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 			//cout << "dying" << endl;
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;
@@ -600,17 +600,17 @@ void SecurityWeb::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 4, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 4, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, true );
 			
 		//	cout << "SecurityWeb received damage of: " << receivedHit->damage << endl;
@@ -638,7 +638,7 @@ void SecurityWeb::PhysicsResponse()
 		{
 			for( int i = 0; i < numProtrusions+1;++i )//numProtrusions; ++i )//numProtrusions; ++i )
 			{
-				if( edgeHitboxes[i].Intersects( owner->player->hurtBody ) )
+				if( edgeHitboxes[i].Intersects( owner->GetPlayer( 0 )->hurtBody ) )
 				{
 					dynamicMode = true;
 					dynamicFrame = 0;
@@ -665,7 +665,7 @@ void SecurityWeb::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
@@ -834,7 +834,7 @@ void SecurityWeb::DrawMinimap( sf::RenderTarget *target )
 
 bool SecurityWeb::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -851,20 +851,20 @@ void SecurityWeb::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> SecurityWeb::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -933,7 +933,7 @@ pair<bool,bool> SecurityWeb::PlayerHitMe( int index )
 
 bool SecurityWeb::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1124,7 +1124,7 @@ void SecurityWeb::NodeProjectile::HitPlayer()
 {
 	if( parent->dynamicMode && parent->dynamicFrame >= parent->targetFrames )
 	{
-		Actor *player = parent->owner->player;
+		Actor *player = parent->owner->GetPlayer( 0 );
 	//probably deactivate the bullet during this also
 		player->ApplyHit( parent->hitboxInfo );
 	}
@@ -1139,7 +1139,7 @@ void SecurityWeb::NodeProjectile::IncrementFrame()
 
 bool SecurityWeb::NodeProjectile::PlayerSlowingMe()
 {
-	Actor *player = parent->owner->player;
+	Actor *player = parent->owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

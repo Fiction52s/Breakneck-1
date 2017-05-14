@@ -161,7 +161,7 @@ void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Turtle::BulletHitPlayer(BasicBullet *b )
 {
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
 
 
@@ -212,7 +212,7 @@ void Turtle::ActionEnded()
 		break;
 	case INVISIBLE:
 
-		if( owner->player->position.x < position.x )
+		if( owner->GetPlayer( 0 )->position.x < position.x )
 		{
 			facingRight = false;
 		}
@@ -220,7 +220,7 @@ void Turtle::ActionEnded()
 		{
 			facingRight = true;
 		}
-		position = owner->player->position;
+		position = owner->GetPlayer( 0 )->position;
 		action = FADEIN;
 
 		frame = 0;
@@ -308,7 +308,7 @@ void Turtle::UpdatePrePhysics()
 		{
 			//cout << "firing" << endl;
 			launcher->position = position;
-			launcher->facingDir = normalize( owner->player->position - position );
+			launcher->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
 				//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 		//	launcher->facingDir.y << endl;
 			launcher->Reset();
@@ -321,7 +321,7 @@ void Turtle::UpdatePrePhysics()
 
 	/*if( latchedOn )
 	{
-		basePos = owner->player->position + offsetPlayer;
+		basePos = owner->GetPlayer( 0 )->position + offsetPlayer;
 	}*/
 }
 
@@ -351,7 +351,7 @@ void Turtle::UpdatePhysics()
 	{
 		if( action == NEUTRAL )
 		{
-			Actor *player = owner->player;
+			Actor *player = owner->GetPlayer( 0 );
 			if( length( player->position - position ) < 600 )
 			{
 				action = FIRE;
@@ -374,19 +374,19 @@ void Turtle::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 4, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 4, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
 
 			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			
 			
 		//	cout << "Turtle received damage of: " << receivedHit->damage << endl;
@@ -417,7 +417,7 @@ void Turtle::UpdatePostPhysics()
 	launcher->UpdatePostPhysics();
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
@@ -608,7 +608,7 @@ bool Turtle::IHitPlayer( int index )
 	if( action == FADEIN || action == INVISIBLE )
 		return false;
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -625,13 +625,13 @@ void Turtle::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
@@ -641,7 +641,7 @@ pair<bool,bool> Turtle::PlayerHitMe( int index )
 	if( action == INVISIBLE || action == FADEIN )
 		return pair<bool,bool>(false,false);
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -710,7 +710,7 @@ pair<bool,bool> Turtle::PlayerHitMe( int index )
 
 bool Turtle::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

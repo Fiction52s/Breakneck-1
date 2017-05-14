@@ -141,9 +141,9 @@ void Cactus::BulletHitPlayer(BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
-	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Cactus::ResetEnemy()
@@ -179,11 +179,11 @@ void Cactus::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dying = true;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;
@@ -195,7 +195,7 @@ void Cactus::UpdatePrePhysics()
 	{
 		double pi8 = PI / 8.0;
 		double pi4 = PI / 4.0;
-		V2d playerPos = owner->player->position;
+		V2d playerPos = owner->GetPlayer( 0 )->position;
 		V2d playerDir = normalize( playerPos - position );
 		double angle = atan2( playerDir.x, -playerDir.y );
 		if( angle < 0 )
@@ -283,12 +283,12 @@ void Cactus::PhysicsResponse()
 				receivedHit = NULL;
 			}*/
 
-				owner->player->ConfirmHit( 3, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 3, 5, .8, 6 );
 
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 				//	dead = true;
 		//	receivedHit = NULL;
@@ -316,7 +316,7 @@ void Cactus::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
@@ -459,7 +459,7 @@ bool Cactus::IHitPlayerWithBullets()
 
 bool Cactus::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
 		if( player->position.x < position.x )
@@ -484,7 +484,7 @@ bool Cactus::IHitPlayer( int index )
 
  pair<bool, bool> Cactus::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -558,7 +558,7 @@ bool Cactus::IHitPlayer( int index )
 
 bool Cactus::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	bool found = false;
 	for( int i = 0; i < player->maxBubbles; ++i )

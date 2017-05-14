@@ -290,7 +290,7 @@ void Boss_Tiger::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Boss_Tiger::BulletHitPlayer(BasicBullet *b )
 {
-	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Boss_Tiger::ActionEnded()
@@ -467,7 +467,7 @@ void Boss_Tiger::UpdatePhysics()
 	//}
 	//else if( action == THROWHOMING && frame <= 5 )
 	//{
-	//	endRing = owner->player->position;
+	//	endRing = owner->GetPlayer( 0 )->position;
 	//	double a = (double)frame / 5;
 	//	double f = a;//flyCurve.GetValue( a );
 	//	homingPos = startRing * ( 1.0 - f ) + endRing * ( f );
@@ -520,11 +520,11 @@ void Boss_Tiger::PhysicsResponse()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
 //			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
@@ -975,7 +975,7 @@ void Boss_Tiger::DrawMinimap( sf::RenderTarget *target )
 bool Boss_Tiger::IHitPlayer( int index )
 {
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -992,20 +992,20 @@ void Boss_Tiger::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Boss_Tiger::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -1074,7 +1074,7 @@ pair<bool,bool> Boss_Tiger::PlayerHitMe( int index )
 
 bool Boss_Tiger::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1319,7 +1319,7 @@ void Boss_Tiger::FirePillar::UpdatePhysics()
 
 	}
 
-	//Actor *player = parent->owner->player;
+	//Actor *player = parent->owner->GetPlayer( 0 );
 	//if( player->hurtBody.Intersects( hitbox ) )
 	//{
 	//	//parent->HomingRingTriggered( this );

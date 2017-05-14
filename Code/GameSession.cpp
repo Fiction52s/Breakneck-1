@@ -793,7 +793,6 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu )
 	recGhost = NULL;
 	repGhost = NULL;
 	multiSession = true;
-	controller2 = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
 	activeDialogue = NULL;
@@ -1161,7 +1160,17 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu )
 
 GameSession::~GameSession()
 {
-	delete player;
+	Actor *p = NULL;
+	for( int i = 0; i < 4; ++i )
+	{
+		p = GetPlayer( i );
+		if( p != NULL )
+		{
+			delete p;
+			p = NULL;
+		}
+	}
+	
 	delete soundManager;
 
 	//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
@@ -1260,7 +1269,8 @@ void GameSession::UpdateEnemiesPhysics()
 		for( int i = 0; i < 4; ++i )
 		{
 			p = GetPlayer( i );
-			p->UpdatePhysics();
+			if( p != NULL )
+				p->UpdatePhysics();
 		}
 
 		Enemy *current = activeEnemyList;
@@ -5461,6 +5471,9 @@ GameController &GameSession::GetController( int index )
 void GameSession::ApplyToggleUpdates( int index )
 {
 	Actor *player = GetPlayer( index );
+	if( player == NULL )
+		return;
+
 	ControllerState &pCurr = player->currInput;
 	GameController &controller = GetController( index );
 	ControllerState &currInput = GetCurrInput( index );
@@ -5592,7 +5605,7 @@ void GameSession::KeyboardUpdate( int index )
 		keyboardInput.leftStickPad += ( 1 && right ) << 3;
 	}
 
-	GetCurrInput(i) = keyboardInput;
+	GetCurrInput(index) = keyboardInput;
 }
 
 int GameSession::Run( string fileN )
@@ -5741,7 +5754,7 @@ int GameSession::Run( string fileN )
 	
 
 	
-	player[0] = new Actor( this, 0 );
+	players[0] = new Actor( this, 0 );
 
 	OpenFile( fileName );
 	
@@ -5750,15 +5763,15 @@ int GameSession::Run( string fileN )
 	
 	if( raceFight != NULL )
 	{
-		player[1] = new Actor( this, 1 );
+		players[1] = new Actor( this, 1 );
 	}
 	else
 	{
-		player[1] = NULL;
+		players[1] = NULL;
 	}
 
-	player[2] = NULL;
-	player[3] = NULL;
+	players[2] = NULL;
+	players[3] = NULL;
 
 	Actor *p = NULL;
 	for( int i = 0; i < 4; ++i )
@@ -5788,7 +5801,11 @@ int GameSession::Run( string fileN )
 
 	cout << "TEST" << endl;
 	//pauseMenu->cOptions->xboxInputAssoc[0];
-	//mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+	for( int i = 0; i < 4; ++i )
+	{
+		mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+	}
+	
 	//mainMenu->controller2.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
 
 	cout << "WHAT IS THIS" << endl;
@@ -5935,14 +5952,18 @@ int GameSession::Run( string fileN )
 	bool oneFrameMode = false;
 	quit = false;
 
-
-	controller.UpdateState();
-	currInput = controller.GetState();
+	for( int i = 0; i < 4; ++i )
+	{
+		GetController(i).UpdateState();
+		GetCurrInput(i) = GetController(i).GetState();
+	}
+	//controller.UpdateState();
+	//currInput = controller.GetState();
 	//ControllerState con = controller.GetState();
 	cout << "BLAHGWEHIGAWEGHEHG about to start" << endl;
 	
 	
-	bool t = currInput.start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
+	bool t = GetCurrInput( 0 ).start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
 	//bool goalPlayerCollision = false;
@@ -6413,7 +6434,6 @@ int GameSession::Run( string fileN )
 			
 			if( pauseFrames == 0 )
 			{
-
 				for( int i = 0; i < 4; ++i )
 				{
 					GetPrevInput( i ) = GetCurrInput( i );
@@ -6427,9 +6447,12 @@ int GameSession::Run( string fileN )
 			if( !cutPlayerInput )
 			{
 
+				Actor *pTemp = NULL;
 				for( int i = 0; i < 4; ++i )
 				{
-					GetPlayer(i)->prevInput = GetCurrInput( i );
+					pTemp = GetPlayer(i);
+					if( pTemp != NULL )
+						pTemp->prevInput = GetCurrInput( i );
 				}
 				//player->prevInput = currInput;
 
@@ -6439,16 +6462,16 @@ int GameSession::Run( string fileN )
 
 			for( int i = 0; i < 4; ++i )
 			{
-				Controller &c = GetController( i );
-				bool canControllerUpdate = c.UpdateState();
+				GameController &con = GetController( i );
+				bool canControllerUpdate = con.UpdateState();
 				if( !canControllerUpdate )
 				{
 					//KeyboardUpdate( 0 );
 				}
 				else
 				{
-					c.UpdateState();
-					GetCurrInput( i ) = c.GetState();
+					con.UpdateState();
+					GetCurrInput( i ) = con.GetState();
 				}
 			}
 
@@ -6577,7 +6600,7 @@ int GameSession::Run( string fileN )
 
 			if( activeDialogue != NULL )
 			{
-				if( currInput.A && !prevInput.A )
+				if( GetCurrInput( 0 ).A && !GetPrevInput( 0 ).A )
 				{
 					if( activeDialogue->ConfirmDialogue() )
 						activeDialogue = NULL;
@@ -6651,7 +6674,7 @@ int GameSession::Run( string fileN )
 					gates[i]->Update();
 				}
 
-				if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || player->frame > 20 )
+				if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || GetPlayer( 0 )->frame > 20 )
 					powerWheel->UpdateSections();
 
 				UpdateEffects();
@@ -6702,11 +6725,11 @@ int GameSession::Run( string fileN )
 
 				if( multiSession )
 				{
-					cam.UpdateVS( player, player2 );
+					cam.UpdateVS( GetPlayer( 0 ), GetPlayer( 1 ) );
 				}
 				else
 				{
-					cam.Update( player );
+					cam.Update( GetPlayer( 0 ) );
 				}
 				
 
@@ -6715,7 +6738,7 @@ int GameSession::Run( string fileN )
 				for( list<Barrier*>::iterator it = barriers.begin();
 					it != barriers.end(); ++it )
 				{
-					bool trig = (*it)->Update( player );
+					bool trig = (*it)->Update( GetPlayer( 0 ) );
 					if( trig )
 					{
 						TriggerBarrier( (*it) );
@@ -6881,7 +6904,7 @@ int GameSession::Run( string fileN )
 				}
 				else if( speedLevel == 1 )
 				{
-					quant = (float)((p0->currentSpeedBar-player->level1SpeedThresh) / ( p0->level2SpeedThresh - p0->level1SpeedThresh) );
+					quant = (float)((p0->currentSpeedBar-p0->level1SpeedThresh) / ( p0->level2SpeedThresh - p0->level1SpeedThresh) );
 				}
 				else 
 				{
@@ -6992,7 +7015,7 @@ int GameSession::Run( string fileN )
 				}
 				else if( raceFight != NULL )
 				{
-					if( raceFight->gameOver || currInput.back )
+					if( raceFight->gameOver || GetCurrInput( 0 ).back )
 					{
 						state = RACEFIGHT_RESULTS;
 						raceFight->raceFightResultsFrame = 0;
@@ -7583,7 +7606,7 @@ int GameSession::Run( string fileN )
 
 		for( int i = 0; i < 4; ++i )
 		{
-			p = GetPlayer( 0 );
+			p = GetPlayer( i );
 			if( p != NULL )
 			{
 				p->Draw( preScreenTex );
@@ -8037,18 +8060,18 @@ int GameSession::Run( string fileN )
 		
 		if( p0->speedLevel == 0 )
 		{
-			preScreenTex->draw( player->kinUnderOutline );
-			preScreenTex->draw( player->kinTealOutline, &speedBarShader );
+			preScreenTex->draw( p0->kinUnderOutline );
+			preScreenTex->draw( p0->kinTealOutline, &speedBarShader );
 		}
 		else if( p0->speedLevel == 1 )
 		{
-			preScreenTex->draw( player->kinTealOutline );
-			preScreenTex->draw( player->kinBlueOutline, &speedBarShader );
+			preScreenTex->draw( p0->kinTealOutline );
+			preScreenTex->draw( p0->kinBlueOutline, &speedBarShader );
 		}
 		else if( p0->speedLevel == 2 )
 		{
-			preScreenTex->draw( player->kinBlueOutline );
-			preScreenTex->draw( player->kinPurpleOutline, &speedBarShader );
+			preScreenTex->draw( p0->kinBlueOutline );
+			preScreenTex->draw( p0->kinPurpleOutline, &speedBarShader );
 		}
 
 		if( p0->desperationMode )
@@ -8200,7 +8223,7 @@ int GameSession::Run( string fileN )
 		}
 
 		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
-		cloneShader.setParameter( "newscreen", player->percentCloneChanged );
+		cloneShader.setParameter( "newscreen", p0->percentCloneChanged );
 		cloneShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
 		cloneShader.setParameter( "zoom", cam.GetZoom() );
 
@@ -8329,13 +8352,17 @@ int GameSession::Run( string fileN )
 			}
 
 			//savedinput when you enter pause
-			prevInput = currInput;
 
-			controller.UpdateState();
-			currInput = controller.GetState();
+			for( int i = 0; i < 4; ++i )
+			{
+				GetPrevInput( i ) = GetCurrInput( i );
+				GetController( i ).UpdateState();
+				GetCurrInput( i ) = GetController( i ).GetState();
+			}
+			
 			//cout << "up: " << (int)currInput.LUp() << "down: " << (int)currInput.LDown() <<
 			//	", left: " << (int)currInput.LLeft() << ", right: " << (int)currInput.LRight() << endl;
-			PauseMenu::UpdateResponse ur = pauseMenu->Update( currInput, prevInput );
+			PauseMenu::UpdateResponse ur = pauseMenu->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
 			switch( ur )
 			{
 			case PauseMenu::R_NONE:
@@ -8599,87 +8626,27 @@ int GameSession::Run( string fileN )
 
 			while ( accumulator >= TIMESTEP  )
 			{
-				prevInput = currInput;
-
-				
-				if( !controller.UpdateState() )
+				for( int i = 0; i < 4; ++i )
 				{
-					bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-					bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-					bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-					bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
-
-				//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
-						//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
-			//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
-			//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
-
-					ControllerState keyboardInput;    
-					keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
-					keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
-					keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
-						keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
-				//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
-					keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
-					keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
-					keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
-					keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
-					keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
-					keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
-			
-					keyboardInput.rightStickPad = 0;
-								if( Keyboard::isKeyPressed( Keyboard::A ) )
-				{
-					keyboardInput.rightStickPad += 1 << 1;
-				}
-								else if( Keyboard::isKeyPressed( Keyboard::S ) )
-				{
-					keyboardInput.rightStickPad += 1;
-				}
-				
-					if( up && down )
+					GetPrevInput( i ) = GetCurrInput( i );
+					GameController &con = GetController( i );
+					bool canControllerUpdate = con.UpdateState();
+					if( !canControllerUpdate )
 					{
-						if( prevInput.LUp() )
-							keyboardInput.leftStickPad += 1;
-						else if( prevInput.LDown() )
-							keyboardInput.leftStickPad += ( 1 && down ) << 1;
+						//KeyboardUpdate( 0 );
 					}
 					else
 					{
-						keyboardInput.leftStickPad += 1 && up;
-						keyboardInput.leftStickPad += ( 1 && down ) << 1;
+						con.UpdateState();
+						GetCurrInput( i ) = con.GetState();
 					}
-
-					if( left && right )
-					{
-						if( prevInput.LLeft() )
-						{
-							keyboardInput.leftStickPad += ( 1 && left ) << 2;
-						}
-						else if( prevInput.LRight() )
-						{
-							keyboardInput.leftStickPad += ( 1 && right ) << 3;
-						}
-					}
-					else
-					{
-						keyboardInput.leftStickPad += ( 1 && left ) << 2;
-						keyboardInput.leftStickPad += ( 1 && right ) << 3;
-					}
-
-					currInput = keyboardInput;
-				}
-				else
-				{
-					controller.UpdateState();
-					currInput = controller.GetState();
 				}
 
 			
 
 				
 
-				if( ( currInput.back && !prevInput.back ) && state == MAP )
+				if( ( GetCurrInput( 0 ).back && !GetPrevInput( 0 ).back ) && state == MAP )
 				{
 					state = RUN;
 					soundNodeList->Pause( false );
@@ -8888,12 +8855,18 @@ int GameSession::Run( string fileN )
 				accumulator -= TIMESTEP;
 			
 
-			prevInput = currInput;
+			
 
-			controller.UpdateState();
-			currInput = controller.GetState();
+			for( int i = 0; i < 4; ++i )
+			{
+				GetPrevInput( i ) = GetCurrInput( i );
 
-			if( currInput.start )
+				GameController &con = GetController(i);
+				con.UpdateState();
+				GetCurrInput( i ) = con.GetState();
+			}
+
+			if( GetCurrInput( 0 ).start )
 			{
 				//break;
 				quit = true;
@@ -8902,14 +8875,9 @@ int GameSession::Run( string fileN )
 				break;
 			}
 
-			prevInput2 = currInput2;
-
-			controller2->UpdateState();
-			currInput2 = controller2->GetState();
-
 			raceFight->victoryScreen->Update();
 
-			raceFight->testWindow->Update( currInput, prevInput );
+			raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
 
 			}
 
@@ -9686,11 +9654,11 @@ void GameSession::RestartLevel()
 
 	totalGameFrames = 0;
 
-	if( player->record > 1 )
+	/*if( GetPlayer->record > 1 )
 	{
 		player->LoadState();
 		LoadState();
-	}
+	}*/
 
 	goalPulse->Reset();
 	//f->Reset();
@@ -9760,8 +9728,8 @@ void GameSession::RestartLevel()
 	}
 	//player->Respawn();
 	
-	cam.pos.x = player->position.x;
-	cam.pos.y = player->position.y;
+	cam.pos.x = GetPlayer( 0 )->position.x;
+	cam.pos.y = GetPlayer( 0 )->position.y;
 
 	//RespawnPlayer();
 	pauseFrames = 0;
@@ -12771,7 +12739,7 @@ void EnvPlant::Reset()
 //	stormSprite.setTexture( stormTex );
 //	
 //	//shipSprite.setPosition( 250, 250 );
-//	startPos = Vector2f( owner->player->position.x, owner->player->position.y );
+//	startPos = Vector2f( owner->GetPlayer( 0 )->position.x, owner->GetPlayer( 0 )->position.y );
 //	frameCount = 1;//180;
 //	frame = 0;
 //
@@ -13936,7 +13904,7 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 	Actor *player = NULL;
 	if( playerIndex == 0 )
 	{
-		player = owner->player;
+		player = owner->GetPlayer( 0 );
 		
 		playerScore++;
 		if( target->action == RaceFightTarget::Action::PLAYER2 )
@@ -13977,7 +13945,7 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 	}
 	else if( playerIndex == 1 )
 	{
-		player = owner->player2;
+		player = owner->GetPlayer( 0 );
 
 		player2Score++;
 		if( target->action == RaceFightTarget::Action::PLAYER1 )
@@ -14038,8 +14006,8 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 	Actor *def = NULL;
 	if( attacker == 0 )
 	{
-		at = owner->player;
-		def = owner->player2;
+		at = owner->GetPlayer( 0 );
+		def = owner->GetPlayer( 0 );
 
 		++playerHitCounter;
 		if( raceWinnerIndex == -1 )
@@ -14082,8 +14050,8 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 	{
 		++player2HitCounter;
 
-		at = owner->player2;
-		def = owner->player;
+		at = owner->GetPlayer( 0 );
+		def = owner->GetPlayer( 0 );
 
 		if( raceWinnerIndex == -1 ) //race is not over
 		{
@@ -14156,7 +14124,7 @@ void GameSession::RaceFight::UpdateScore()
 
 void GameSession::RaceFight::TickClock()
 {
-	testWindow->Update( owner->currInput, owner->prevInput );
+	testWindow->Update( owner->GetCurrInput( 0 ), owner->GetPrevInput( 0 ) );
 
 	if( gameTimer->value > 0 )
 		gameTimer->SetNumber( gameTimer->value-- );

@@ -744,7 +744,7 @@ void Boss_Coyote::UpdatePrePhysics()
 					if( travelFrame == 0 )
 					{
 						launcher->position = position;
-						launcher->facingDir = normalize( V2d( owner->player->position - position ) );
+						launcher->facingDir = normalize( V2d( owner->GetPlayer( 0 )->position - position ) );
 						launcher->Fire();
 					}
 					break;
@@ -836,7 +836,7 @@ void Boss_Coyote::UpdatePrePhysics()
 
 	return;
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( dead )
 		return;
@@ -1050,16 +1050,16 @@ void Boss_Coyote::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( 3, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 3, 5, .8, 6 );
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player->frame << endl;
+															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -1155,7 +1155,7 @@ void Boss_Coyote::UpdatePostPhysics()
 
 bool Boss_Coyote::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1224,7 +1224,7 @@ void Boss_Coyote::DrawMinimap( sf::RenderTarget *target )
 
 bool Boss_Coyote::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
@@ -1252,7 +1252,7 @@ bool Boss_Coyote::IHitPlayer( int index )
 
  pair<bool, bool> Boss_Coyote::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -1772,10 +1772,10 @@ void Boss_Coyote::AfterImage::UpdatePostPhysics()
 
 void Boss_Coyote::AfterImage::UpdatePhysics()
 {
-	Actor *player = parent->owner->player;
+	Actor *player = parent->owner->GetPlayer( 0 );
 	if( player->hurtBody.Intersects( hitbox ) )
 	{
-		parent->owner->player->ApplyHit( parent->afterImageHitboxInfo );
+		parent->owner->GetPlayer( 0 )->ApplyHit( parent->afterImageHitboxInfo );
 	}
 }
 

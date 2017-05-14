@@ -209,7 +209,7 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -296,11 +296,11 @@ void Bat::UpdatePrePhysics()
 			//AttemptSpawnMonitor();
 			dying = true;
 			//cout << "dying" << endl;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;
@@ -309,7 +309,7 @@ void Bat::UpdatePrePhysics()
 	if( !dying && !dead && fireCounter == framesBetween - 1 )// frame == 0 && slowCounter == 1 )
 	{
 		launcher->position = position;
-		launcher->facingDir = normalize( owner->player->position - position );
+		launcher->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
 		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
 		//	launcher->facingDir.y << endl;
 		launcher->Fire();
@@ -319,7 +319,7 @@ void Bat::UpdatePrePhysics()
 
 	/*if( latchedOn )
 	{
-		basePos = owner->player->position + offsetPlayer;
+		basePos = owner->GetPlayer( 0 )->position + offsetPlayer;
 	}*/
 }
 
@@ -367,11 +367,11 @@ void Bat::PhysicsResponse()
 		if( result.first && !specterProtected )
 		{
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 2, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 2, 5, .8, 6 );
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 		}
 
@@ -388,7 +388,7 @@ void Bat::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
@@ -555,7 +555,7 @@ void Bat::DrawMinimap( sf::RenderTarget *target )
 
 bool Bat::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -572,20 +572,20 @@ void Bat::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Bat::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -653,7 +653,7 @@ pair<bool,bool> Bat::PlayerHitMe( int index )
 
 bool Bat::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

@@ -43,7 +43,7 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	//latchedOn = true; 
 
 	circleFrames = 120;
-	V2d dirFromPlayer = normalize( owner->player->position - position );
+	V2d dirFromPlayer = normalize( owner->GetPlayer( 0 )->position - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
@@ -209,12 +209,12 @@ void Shark::UpdatePrePhysics()
 
 		if( latchedOn )
 		{
-			basePos = owner->player->position;// + offsetPlayer;
+			basePos = owner->GetPlayer( 0 )->position;// + offsetPlayer;
 		}
 		
 		if( action == WAKEUP )
 		{
-			if( length( basePos - owner->player->position ) < 400 )
+			if( length( basePos - owner->GetPlayer( 0 )->position ) < 400 )
 			{
 				wakeCounter++;
 				if( wakeCounter == wakeCap )
@@ -223,13 +223,13 @@ void Shark::UpdatePrePhysics()
 					action = CIRCLE;
 					frame = 0;
 					latchedOn = true;
-					offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
+					offsetPlayer = basePos - owner->GetPlayer( 0 )->position;//owner->GetPlayer( 0 )->position - basePos;
 					origOffset = offsetPlayer;//length( offsetPlayer );
 					V2d offsetDir = normalize( offsetPlayer );
 					latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 					//cout << "latchStart: " << latchStartAngle << endl;
 					circleSeq.Update( slowMultiple );
-					basePos = owner->player->position;
+					basePos = owner->GetPlayer( 0 )->position;
 				}
 			}
 			else
@@ -242,7 +242,7 @@ void Shark::UpdatePrePhysics()
 		else if( action == CIRCLE )
 		{
 			
-			if( owner->player->hitstunFrames > 0  )
+			if( owner->GetPlayer( 0 )->hitstunFrames > 0  )
 			{
 				//cout << "final circle" << endl;
 				//got hit!
@@ -282,7 +282,7 @@ void Shark::UpdatePrePhysics()
 				latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 				circleSeq.Reset();
 				circleSeq.Update( slowMultiple );
-					//basePos = owner->player->position;
+					//basePos = owner->GetPlayer( 0 )->position;
 			}
 		}
 		
@@ -399,17 +399,17 @@ void Shark::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 5, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 5, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 //			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Shark received damage of: " << receivedHit->damage << endl;
@@ -432,7 +432,7 @@ void Shark::PhysicsResponse()
 		{
 			//cout << "Shark hit player Shark pos: " <<
 			//	position.x << ", " << position.y << ", playerpos: "
-			//	<< owner->player->position.x << ", " << owner->player->position.y << endl;
+			//	<< owner->GetPlayer( 0 )->position.x << ", " << owner->GetPlayer( 0 )->position.y << endl;
 		//	cout << "Shark just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -651,7 +651,7 @@ void Shark::DrawMinimap( sf::RenderTarget *target )
 
 bool Shark::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -668,20 +668,20 @@ void Shark::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Shark::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -751,7 +751,7 @@ pair<bool,bool> Shark::PlayerHitMe( int index )
 
 bool Shark::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

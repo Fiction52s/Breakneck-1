@@ -133,7 +133,7 @@ void Tree::UpdatePrePhysics()
 	if( frame == 60 - 1 && slowCounter == 1 )
 	{
 		//cout << "FIRING" << endl;
-		launcher->facingDir = normalize( owner->player->position
+		launcher->facingDir = normalize( owner->GetPlayer( 0 )->position
 			- position );
 		launcher->Fire();
 	}
@@ -160,12 +160,12 @@ void Tree::PhysicsResponse()
 			pair<bool, bool> result = PlayerHitMe();
 			if( result.first )
 			{
-				owner->player->ConfirmHit( 5, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 5, 5, .8, 6 );
 
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 			}
 		}
@@ -304,7 +304,7 @@ void Tree::DrawMinimap( sf::RenderTarget *target )
 
 bool Tree::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
 		if( player->position.x < position.x )
@@ -329,7 +329,7 @@ bool Tree::IHitPlayer( int index )
 
  pair<bool, bool> Tree::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -398,7 +398,7 @@ bool Tree::IHitPlayer( int index )
 
 bool Tree::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	bool found = false;
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{

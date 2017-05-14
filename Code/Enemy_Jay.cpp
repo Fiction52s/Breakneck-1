@@ -509,7 +509,7 @@ void Jay::UpdatePrePhysics()
 		{
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 			action = SHUTDOWN;
 			frame = 0;
 			//dying = true;
@@ -517,7 +517,7 @@ void Jay::UpdatePrePhysics()
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 		receivedHit = NULL;
 	}
@@ -530,11 +530,11 @@ void Jay::UpdatePrePhysics()
 			if( !redDead && hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			blueDead = true;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 		receivedHitBlue = NULL;
 	}*/
@@ -593,7 +593,7 @@ void Jay::PhysicsResponse()
 {
 	UpdateHitboxes();
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( action != PROTECTED && action != WAITTOFIRE && action != SHUTDOWN )
 	{
 		//if( !redDead && receivedHitRed == NULL )
@@ -603,12 +603,12 @@ void Jay::PhysicsResponse()
 		//	{
 		//		//cout << "color blue" << endl;
 		//		//triggers multiple times per frame? bad?
-		//		owner->player->ConfirmHit( 6, 5, .8, 6 );
+		//		owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
 
-		//		if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+		//		if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 		//		{
-		//			owner->player->velocity.y = 4;//.5;
+		//			owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 		//		}
 		//	}
 
@@ -626,12 +626,12 @@ void Jay::PhysicsResponse()
 		//	{
 		//		//cout << "color blue" << endl;
 		//		//triggers multiple times per frame? bad?
-		//		owner->player->ConfirmHit( 6, 5, .8, 6 );
+		//		owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
 
-		//		if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+		//		if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 		//		{
-		//			owner->player->velocity.y = 4;//.5;
+		//			owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 		//		}
 		//	}
 
@@ -651,12 +651,12 @@ void Jay::PhysicsResponse()
 			{
 				//cout << "color blue" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( 6, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 			}
 
@@ -681,7 +681,7 @@ void Jay::PhysicsResponse()
 
 	if( action == PROTECTED && !triggered )
 	{
-		if( triggerBox.Intersects( owner->player->hurtBody ) )
+		if( triggerBox.Intersects( owner->GetPlayer( 0 )->hurtBody ) )
 		{
 			triggered = true;
 		}
@@ -694,7 +694,7 @@ void Jay::UpdatePostPhysics()
 	{
 		action = WAITTOFIRE;
 		frame = 0;
-		Actor *player = owner->player;
+		Actor *player = owner->GetPlayer( 0 );
 		if( player->ground == NULL && player->grindEdge == NULL )
 		{
 			wallVel = player->velocity;
@@ -711,12 +711,12 @@ void Jay::UpdatePostPhysics()
 
 	if( !dead && receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + redPos ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + redPos ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 	/*if( !blueDead && receivedHitBlue != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + bluePos ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + bluePos ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}*/
 
@@ -950,7 +950,7 @@ void Jay::DrawMinimap( sf::RenderTarget *target )
 
 bool Jay::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( action == FIRE )
 	{
@@ -987,22 +987,22 @@ void Jay::UpdateHitboxes()
 	wallNodeHitboxBlue.globalPosition = redNodePos + origDiff;
 	//}
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
-		wallHitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
+		wallHitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
-		wallHitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
+		wallHitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Jay::PlayerHitRed()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -1060,7 +1060,7 @@ pair<bool,bool> Jay::PlayerHitRed()
 
 pair<bool,bool> Jay::PlayerHitBlue()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -1118,7 +1118,7 @@ pair<bool,bool> Jay::PlayerHitBlue()
 
 bool Jay::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1134,7 +1134,7 @@ bool Jay::PlayerSlowingMe()
 
 bool Jay::PlayerSlowingWall()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

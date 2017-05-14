@@ -174,11 +174,11 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Owl::BulletHitPlayer(BasicBullet *b )
 {
-	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -233,7 +233,7 @@ void Owl::DirectKill()
 void Owl::ActionEnded()
 {
 	double dist = 800;
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	double len = length( player->position - position );
 	if( frame == actionLength[action] )
 	{
@@ -248,7 +248,7 @@ void Owl::ActionEnded()
 				//V2d dir = normalize( parent->position - position );
 				//double angle = atan2( dir.x, -dir.y );
 				launcher->position = position + fireDir * 40.0;
-				fireDir = normalize( owner->player->position - position );
+				fireDir = normalize( owner->GetPlayer( 0 )->position - position );
 				ang = atan2( fireDir.x, -fireDir.y );
 				//cout << "true ang: " << (ang / PI * 180.0) << endl;
 			}
@@ -325,7 +325,7 @@ void Owl::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	double dist = 600;
 	bool lessThanSize = length( player->position - position ) < dist;
 	
@@ -410,12 +410,12 @@ void Owl::UpdatePrePhysics()
 					owner->keyMarker->CollectKey();
 				dying = true;
 
-				owner->player->ConfirmEnemyKill( this );
+				owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 				//cout << "dying" << endl;
 			}
 			else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 			receivedHit = NULL;
@@ -433,7 +433,7 @@ void Owl::UpdatePrePhysics()
 	if( !dying && !dead && action == FIRE && frame == 3 * 6 - 1  )// frame == 0 && slowCounter == 1 )
 	{
 		launcher->position = position;
-		launcher->facingDir = fireDir;//normalize( owner->player->position - position );
+		launcher->facingDir = fireDir;//normalize( owner->GetPlayer( 0 )->position - position );
 		launcher->Fire();
 	}
 }
@@ -478,17 +478,17 @@ void Owl::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 3, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 3, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Owl received damage of: " << receivedHit->damage << endl;
@@ -521,7 +521,7 @@ void Owl::UpdatePostPhysics()
 	{
 		if( action != GUARD )
 		{
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 			owner->Pause( 5 );
 		}
 		else
@@ -726,7 +726,7 @@ void Owl::DrawMinimap( sf::RenderTarget *target )
 
 bool Owl::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -743,20 +743,20 @@ void Owl::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Owl::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -825,7 +825,7 @@ pair<bool,bool> Owl::PlayerHitMe( int index )
 
 bool Owl::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

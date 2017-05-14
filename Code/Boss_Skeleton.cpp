@@ -668,7 +668,7 @@ void Boss_Skeleton::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Boss_Skeleton::BulletHitPlayer(BasicBullet *b )
 {
-	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
 
 int Boss_Skeleton::GetSwingDuration( int currI, int swingI )
@@ -998,11 +998,11 @@ void Boss_Skeleton::PhysicsResponse()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
 //			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
@@ -1172,7 +1172,7 @@ void Boss_Skeleton::DrawMinimap( sf::RenderTarget *target )
 bool Boss_Skeleton::IHitPlayer( int index )
 {
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -1189,20 +1189,20 @@ void Boss_Skeleton::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Boss_Skeleton::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -1271,7 +1271,7 @@ pair<bool,bool> Boss_Skeleton::PlayerHitMe( int index )
 
 bool Boss_Skeleton::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

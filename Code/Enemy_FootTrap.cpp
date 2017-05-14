@@ -30,7 +30,7 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
-	//cout << "player " << owner->player->position.x << ", " << owner->player->position.y << endl;
+	//cout << "player " << owner->GetPlayer( 0 )->position.x << ", " << owner->GetPlayer( 0 )->position.y << endl;
 	//cout << "gPoint: " << gPoint.x << ", " << gPoint.y << endl;
 	
 
@@ -122,16 +122,16 @@ void FootTrap::UpdatePrePhysics()
 		//cout << "damaging: " << health << endl;
 		if( health <= 0 )
 		{
-			//cout << "attempting. blue key is: " << owner->player->hasBlueKey << endl;
+			//cout << "attempting. blue key is: " << owner->GetPlayer( 0 )->hasBlueKey << endl;
 			//AttemptSpawnMonitor();
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dead = true;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		
@@ -171,19 +171,19 @@ void FootTrap::UpdatePhysics()
 		{
 			//cout << "hit here!" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 1, 5, .8, 6 );
-			/*owner->player->test = true;
-			owner->player->currAttackHit = true;
-			owner->player->flashColor = COLOR_BLUE;
-			owner->player->flashFrames = 5;
-			owner->player->currentSpeedBar += .8;
-			owner->player->swordShaders[owner->player->speedLevel]setParameter( "energyColor", COLOR_BLUE );
-			owner->player->desperationMode = false;
+			owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
+			/*owner->GetPlayer( 0 )->test = true;
+			owner->GetPlayer( 0 )->currAttackHit = true;
+			owner->GetPlayer( 0 )->flashColor = COLOR_BLUE;
+			owner->GetPlayer( 0 )->flashFrames = 5;
+			owner->GetPlayer( 0 )->currentSpeedBar += .8;
+			owner->GetPlayer( 0 )->swordShaders[owner->GetPlayer( 0 )->speedLevel]setParameter( "energyColor", COLOR_BLUE );
+			owner->GetPlayer( 0 )->desperationMode = false;
 			owner->powerBar.Charge( 2 * 6 * 3 );*/
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 		}
 
@@ -213,7 +213,7 @@ void FootTrap::UpdatePostPhysics()
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
 	UpdateSprite();
@@ -319,7 +319,7 @@ void FootTrap::DrawMinimap( sf::RenderTarget *target )
 
 bool FootTrap::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -332,7 +332,7 @@ bool FootTrap::IHitPlayer( int index )
 
 pair<bool, bool> FootTrap::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -388,7 +388,7 @@ pair<bool, bool> FootTrap::PlayerHitMe( int index )
 
 bool FootTrap::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

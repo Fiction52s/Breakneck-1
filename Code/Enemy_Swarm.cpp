@@ -139,7 +139,7 @@ void SwarmMember::UpdateSprite()
 	else
 	{
 		IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
-		if( owner->player->position.x < position.x )
+		if( owner->GetPlayer( 0 )->position.x < position.x )
 		{
 			subRect.left += subRect.width;
 			subRect.width = -subRect.width;
@@ -178,7 +178,7 @@ void SwarmMember::UpdatePhysics()
 	{
 		
 		position += velocity / NUM_STEPS / (double)slowMultiple;
-		V2d pPos = owner->player->position + targetOffset;
+		V2d pPos = owner->GetPlayer( 0 )->position + targetOffset;
 		V2d dir( pPos - position );
 		dir = normalize( dir );
 		double gFactor = .5;
@@ -207,12 +207,12 @@ void SwarmMember::PhysicsResponse()
 			pair<bool, bool> result = PlayerHitMe();
 			if( result.first )
 			{
-				owner->player->ConfirmHit( 5, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 5, 5, .8, 6 );
 
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 			}
 		}
@@ -262,7 +262,7 @@ void SwarmMember::Draw(sf::RenderTarget *target )
 
 bool SwarmMember::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
 		if( player->position.x < position.x )
@@ -287,7 +287,7 @@ bool SwarmMember::IHitPlayer( int index )
 
 std::pair<bool,bool> SwarmMember::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -356,7 +356,7 @@ std::pair<bool,bool> SwarmMember::PlayerHitMe( int index )
 
 bool SwarmMember::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	bool found = false;
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
@@ -622,11 +622,11 @@ void Swarm::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dying = true;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		receivedHit = NULL;
@@ -672,7 +672,7 @@ void Swarm::UpdatePrePhysics()
 			}
 			else if( action == NEUTRAL )
 			{
-				double dist = length( owner->player->position - position );
+				double dist = length( owner->GetPlayer( 0 )->position - position );
 				if( dist < 900 )
 				{
 					action = FIRE;
@@ -713,11 +713,11 @@ void Swarm::PhysicsResponse()
 			pair<bool, bool> result = PlayerHitMe();
 			if( result.first && !specterProtected )
 			{
-				owner->player->ConfirmHit( 5, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 5, 5, .8, 6 );
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 			}
 		}
@@ -732,7 +732,7 @@ void Swarm::UpdatePostPhysics()
 {
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
@@ -910,7 +910,7 @@ void Swarm::UpdateHitboxes()
 
 bool Swarm::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
 		if( player->position.x < position.x )
@@ -935,7 +935,7 @@ bool Swarm::IHitPlayer( int index )
 
 std::pair<bool,bool> Swarm::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -1004,7 +1004,7 @@ std::pair<bool,bool> Swarm::PlayerHitMe( int index )
 
 bool Swarm::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	bool found = false;
 	for( int i = 0; i < player->maxBubbles; ++i )

@@ -2429,7 +2429,7 @@ void Wire::WireCharge::UpdateSprite()
 		//cout << "wire charge sprite update" << endl;
 		VertexArray &va = wire->chargeVA;
 		IntRect subRect = wire->ts_wireCharge->GetSubRect( 0 );//frame / animFactor );
-		//if( owner->player->position.x < position.x )
+		//if( owner->GetPlayer( 0 )->position.x < position.x )
 		//{
 		//	subRect.left += subRect.width;
 		//	subRect.width = -subRect.width;

@@ -240,7 +240,7 @@ void Spider::SetClosestLeft()
 	V2d testPos;
 	Edge *testEdge = mover->ground;
 
-	V2d playerPos = owner->player->position;
+	V2d playerPos = owner->GetPlayer( 0 )->position;
 
 	while( movementPossible > 0 )
 	{
@@ -273,7 +273,7 @@ void Spider::SetClosestRight()
 	V2d testPos;
 	Edge *testEdge = mover->ground;
 
-	V2d playerPos = owner->player->position;
+	V2d playerPos = owner->GetPlayer( 0 )->position;
 
 	while( movementPossible > 0 )
 	{
@@ -432,7 +432,7 @@ void Spider::ActionEnded()
 void Spider::UpdatePrePhysics()
 {
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( dead )
 		return;
@@ -866,16 +866,16 @@ void Spider::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( 4, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 4, 5, .8, 6 );
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player->frame << endl;
+															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -920,14 +920,14 @@ void Spider::UpdatePostPhysics()
 		case 0:
 			break;
 		case 1:
-			owner->player->ApplyHit( laserInfo1 );
-			//owner->player->app
+			owner->GetPlayer( 0 )->ApplyHit( laserInfo1 );
+			//owner->GetPlayer( 0 )->app
 			break;
 		case 2:
-			owner->player->ApplyHit( laserInfo2 );
+			owner->GetPlayer( 0 )->ApplyHit( laserInfo2 );
 			break;
 		case 3:
-			owner->player->ApplyHit( laserInfo3 );
+			owner->GetPlayer( 0 )->ApplyHit( laserInfo3 );
 			break;
 		};
 	}
@@ -946,20 +946,20 @@ void Spider::UpdatePostPhysics()
 		return;
 	}
 
-	if( length( owner->player->position - mover->physBody.globalPosition ) < 1200 )
+	if( length( owner->GetPlayer( 0 )->position - mover->physBody.globalPosition ) < 1200 )
 	{
 		rayStart = mover->physBody.globalPosition;
 		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
 
-		//rayEnd = rayStart + laserDir * 1000.0;//owner->player->position;
-		rayEnd = owner->player->position;
+		//rayEnd = rayStart + laserDir * 1000.0;//owner->GetPlayer( 0 )->position;
+		rayEnd = owner->GetPlayer( 0 )->position;
 		rcEdge = NULL;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
 		if( rcEdge != NULL )
 		{
 			V2d rcPoint = rcEdge->GetPoint( rcQuantity );
-			if( length( rcPoint - position ) < length( owner->player->position - position ) )
+			if( length( rcPoint - position ) < length( owner->GetPlayer( 0 )->position - position ) )
 			{
 				canSeePlayer = false;
 			}
@@ -1051,7 +1051,7 @@ void Spider::UpdatePostPhysics()
 
 bool Spider::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1198,7 +1198,7 @@ void Spider::DrawMinimap( sf::RenderTarget *target )
 
 bool Spider::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
@@ -1226,7 +1226,7 @@ bool Spider::IHitPlayer( int index )
 
  pair<bool, bool> Spider::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{

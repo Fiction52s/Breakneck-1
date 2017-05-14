@@ -1587,7 +1587,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "Play" )
 		{
 			optionChosen = true;
-			GameSession *gs = new GameSession( menu->controller, NULL, menu );
+			GameSession *gs = new GameSession( NULL, menu );
 			gs->Run( ls.GetSelectedPath() );
 			menu->window->setView( menu->uiView );
 			delete gs;

@@ -59,7 +59,7 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	totalFrame = 0;
 
 	//latchedOn = true; 
-	//V2d dirFromPlayer = normalize( owner->player->position - position );
+	//V2d dirFromPlayer = normalize( owner->GetPlayer( 0 )->position - position );
 	//double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
@@ -216,16 +216,16 @@ void Gorilla::ActionEnded()
 			//if( recoveryCounter == recoveryLoops )
 			{
 				latchedOn = true;
-				offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
+				offsetPlayer = basePos - owner->GetPlayer( 0 )->position;//owner->GetPlayer( 0 )->position - basePos;
 				origOffset = offsetPlayer;//length( offsetPlayer );
 				V2d offsetDir = normalize( offsetPlayer );
 				//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 				//cout << "latchStart: " << latchStartAngle << endl;
 				//testSeq.Update();
-				basePos = owner->player->position;
+				basePos = owner->GetPlayer( 0 )->position;
 
 
-				V2d playerPos = owner->player->position;
+				V2d playerPos = owner->GetPlayer( 0 )->position;
 				action = ALIGN;
 				double currRadius = length( offsetPlayer );
 				alignMoveFrames = 60 * 5 * NUM_STEPS;//(int)((abs(idealRadius - currRadius)) / 3.0) * NUM_STEPS * 5;
@@ -262,7 +262,7 @@ void Gorilla::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	V2d playerPos = owner->player->position;
+	V2d playerPos = owner->GetPlayer( 0 )->position;
 
 	switch( action )
 	{
@@ -296,13 +296,13 @@ void Gorilla::UpdatePrePhysics()
 					
 					//cout << "JUST LATCHING NOW" << endl;
 					latchedOn = true;
-					offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
+					offsetPlayer = basePos - owner->GetPlayer( 0 )->position;//owner->GetPlayer( 0 )->position - basePos;
 					origOffset = offsetPlayer;//length( offsetPlayer );
 					V2d offsetDir = normalize( offsetPlayer );
 					//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 					//cout << "latchStart: " << latchStartAngle << endl;
 					//testSeq.Update();
-					basePos = owner->player->position;
+					basePos = owner->GetPlayer( 0 )->position;
 
 					double currRadius = length( offsetPlayer );
 					alignMoveFrames = 60 * 5 * NUM_STEPS;//(int)((abs(idealRadius - currRadius)) / 3.0) * NUM_STEPS * 5;
@@ -407,7 +407,7 @@ void Gorilla::UpdatePhysics()
 	specterProtected = false;
 	if( latchedOn )
 	{
-		basePos = owner->player->position;// + offsetPlayer;
+		basePos = owner->GetPlayer( 0 )->position;// + offsetPlayer;
 	}
 	else
 	{
@@ -491,17 +491,17 @@ void Gorilla::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Gorilla received damage of: " << receivedHit->damage << endl;
@@ -524,7 +524,7 @@ void Gorilla::PhysicsResponse()
 		{
 			//cout << "Gorilla hit player Gorilla pos: " <<
 			//	position.x << ", " << position.y << ", playerpos: "
-			//	<< owner->player->position.x << ", " << owner->player->position.y << endl;
+			//	<< owner->GetPlayer( 0 )->position.x << ", " << owner->GetPlayer( 0 )->position.y << endl;
 		//	cout << "Gorilla just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -534,7 +534,7 @@ void Gorilla::UpdatePostPhysics()
 {
 	/*if( latchedOn )
 	{
-		basePos = owner->player->position;
+		basePos = owner->GetPlayer( 0 )->position;
 		position = basePos + offsetPlayer;
 	}*/
 
@@ -552,7 +552,7 @@ void Gorilla::UpdatePostPhysics()
 
 	if( receivedHit != NULL )
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 	
@@ -596,7 +596,7 @@ void Gorilla::UpdateSprite()
 	//3 is biting
 	if( !dead )
 	{
-		V2d diff = owner->player->position - position;
+		V2d diff = owner->GetPlayer( 0 )->position - position;
 		double lenDiff = length( diff );
 		IntRect ir;
 		switch( action )
@@ -730,7 +730,7 @@ void Gorilla::DrawMinimap( sf::RenderTarget *target )
 
 bool Gorilla::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 
 	if( hitBody.Intersects( player->hurtBody ) )
@@ -762,13 +762,13 @@ void Gorilla::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
@@ -778,7 +778,7 @@ pair<bool,bool> Gorilla::PlayerHitMe( int index )
 	if( action == WAKEUP )
 		return pair<bool,bool>(false,false);
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -847,7 +847,7 @@ pair<bool,bool> Gorilla::PlayerHitMe( int index )
 
 bool Gorilla::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -876,7 +876,7 @@ void Gorilla::DebugDraw( RenderTarget *target )
 		{
 			wallHitbox.DebugDraw( target );
 
-			/*V2d playerPos = owner->player->position;
+			/*V2d playerPos = owner->GetPlayer( 0 )->position;
 			sf::Vertex blah[2] = { 
 				Vertex( Vector2f( position.x, position.y ), Color::Red ),
 				Vertex( Vector2f( playerPos.x, playerPos.y ), Color::Red ) };

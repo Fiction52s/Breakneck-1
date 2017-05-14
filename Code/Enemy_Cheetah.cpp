@@ -269,7 +269,7 @@ void Cheetah::ActionEnded()
 void Cheetah::UpdatePrePhysics()
 {
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( dead )
 		return;
@@ -625,16 +625,16 @@ void Cheetah::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( 4, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 4, 5, .8, 6 );
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player->frame << endl;
+															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -678,7 +678,7 @@ void Cheetah::UpdatePostPhysics()
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
 	if( deathFrame == 0 && dead )
@@ -718,7 +718,7 @@ void Cheetah::UpdatePostPhysics()
 
 bool Cheetah::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -811,7 +811,7 @@ void Cheetah::DrawMinimap( sf::RenderTarget *target )
 
 bool Cheetah::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
@@ -839,7 +839,7 @@ bool Cheetah::IHitPlayer( int index )
 
  pair<bool, bool> Cheetah::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{

@@ -322,7 +322,7 @@ void Gate::Update()
 	//if( keyGate )
 	//{
 
-	//	if( owner->player->numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->player->position, radius ) )
+	//	if( owner->GetPlayer( 0 )->numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->GetPlayer( 0 )->position, radius ) )
 	//	{
 	//		//cout << "HARDENING: " << type << endl;
 	//		if( gState == SOFTEN )
@@ -365,8 +365,8 @@ void Gate::Update()
 			gState = SOFT; //SOFTEN
 			frame = 0;
 
-			Wire *rw = owner->player->rightWire;
-			Wire *lw = owner->player->leftWire;
+			Wire *rw = owner->GetPlayer( 0 )->rightWire;
+			Wire *lw = owner->GetPlayer( 0 )->leftWire;
 			if( rw != NULL && rw->anchor.e == edgeA || rw->anchor.e == edgeB )
 			{
 				rw->Reset();

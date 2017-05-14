@@ -30,7 +30,7 @@ Copycat::PlayerAttack::PlayerAttack( Copycat *p_parent )
 	position = Vector2f( 0, 0 );
 	attackActive = false;
 	//delayFrames = 0;
-	Actor *player = parent->owner->player;
+	Actor *player = parent->owner->GetPlayer( 0 );
 	CopyHitboxes( FAIR, player->fairHitboxes );
 	CopyHitboxes( DAIR, player->dairHitboxes );
 	CopyHitboxes( UAIR, player->uairHitboxes );
@@ -443,7 +443,7 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	ts_attacks[PlayerAttack::FAIR] = player->tileset[Actor::FAIR];
 	ts_attacks[PlayerAttack::DAIR] = player->tileset[Actor::DAIR];
 	ts_attacks[PlayerAttack::UAIR] = player->tileset[Actor::UAIR];
@@ -511,8 +511,8 @@ Copycat::Copycat( GameSession *owner, bool p_hasMonitor, Vector2i &pos )
 	 
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
-	//Actor *player = owner->player;
-	//for( map<int, list<CollisionBox*>>::iterator it = owner->player->fairHitboxes.begin();
+	//Actor *player = owner->GetPlayer( 0 );
+	//for( map<int, list<CollisionBox*>>::iterator it = owner->GetPlayer( 0 )->fairHitboxes.begin();
 
 	attackLength[PlayerAttack::FAIR] = player->actionLength[Actor::FAIR];
 	attackLength[PlayerAttack::DAIR] = player->actionLength[Actor::DAIR];
@@ -584,7 +584,7 @@ void Copycat::BulletHitTarget( BasicBullet *b )
 	//V2d vel = b->velocity;
 	//double angle = atan2( vel.y, vel.x );
 	//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	//owner->player->ApplyHit( b->launcher->hitboxInfo );
+	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 	//assert( p != NULL );
 
@@ -658,7 +658,7 @@ void Copycat::UpdatePrePhysics()
 	}
 
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	PlayerAttack *pa = activeAttacksFront;
 	while( pa != NULL )
@@ -735,7 +735,7 @@ void Copycat::UpdatePhysics()
 	{
 		/*if( action == NEUTRAL )
 		{
-			Actor *player = owner->player;
+			Actor *player = owner->GetPlayer( 0 );
 			if( length( player->position - position ) < 300 )
 			{
 				action = FADEOUT;
@@ -758,19 +758,19 @@ void Copycat::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
 
 			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			
 			
 		//	cout << "Copycat received damage of: " << receivedHit->damage << endl;
@@ -821,7 +821,7 @@ void Copycat::UpdatePostPhysics()
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
 	if( deathFrame == 0 && dead )
@@ -852,7 +852,7 @@ void Copycat::UpdatePostPhysics()
 	{
 		slowCounter++;
 	}
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	//the player already did a ++frame for their action
 
 	fire = false;
@@ -1018,7 +1018,7 @@ void Copycat::DrawMinimap( sf::RenderTarget *target )
 
 bool Copycat::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -1038,16 +1038,16 @@ void Copycat::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	int frameLimit = 0;
 	
 
@@ -1088,7 +1088,7 @@ pair<bool,bool> Copycat::PlayerHitMe( int index )
 	//if( action == INVISIBLE )
 	//	return pair<bool,bool>(false,false);
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -1157,7 +1157,7 @@ pair<bool,bool> Copycat::PlayerHitMe( int index )
 
 bool Copycat::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

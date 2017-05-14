@@ -505,7 +505,7 @@ void BasicBullet::ResetSprite()
 
 bool BasicBullet::PlayerSlowingMe()
 {
-	Actor *player = launcher->owner->player;
+	Actor *player = launcher->owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -541,7 +541,7 @@ void BasicBullet::UpdatePrePhysics()
 	if( launcher->bulletType == BasicBullet::BOSS_BIRD )
 	{
 		int f = launcher->maxFramesToLive - framesToLive;
-		V2d playerPos = launcher->owner->player->position;
+		V2d playerPos = launcher->owner->GetPlayer( 0 )->position;
 		//V2d endFly = launcher->owner->b_bird->endFly;
 		V2d dir = normalize( velocity );
 		V2d norm( dir.y, -dir.x );
@@ -564,7 +564,7 @@ void BasicBullet::UpdatePrePhysics()
 	//if( gravTowardsPlayer )
 	//{
 	//	double len = gravity.y;//length( gravity );
-	//	V2d diff = launcher->owner->player->position - position;
+	//	V2d diff = launcher->owner->GetPlayer( 0 )->position - position;
 	//	int t = 100;
 	//	diff += V2d( (rand() % t) - t / 2, (rand() % t) - t / 2);
 	//	V2d towards = normalize( diff );
@@ -656,7 +656,7 @@ void BasicBullet::UpdatePhysics()
 
 		hitBody.globalPosition = position;
 
-		Actor *player = launcher->owner->player;
+		Actor *player = launcher->owner->GetPlayer( 0 );
 		if( player->hurtBody.Intersects( hitBody ) && player->invincibleFrames == 0 )
 		{	
 			//cout << "hit??" << endl;
@@ -874,7 +874,7 @@ void SinBullet::UpdatePhysics()
 		hitBody.globalPosition = position;
 		hurtBody.globalPosition = position;
 
-		Actor *player = launcher->owner->player;
+		Actor *player = launcher->owner->GetPlayer( 0 );
 		if( player->hurtBody.Intersects( hitBody ) )
 		{
 			HitPlayer();
@@ -956,7 +956,7 @@ void CopycatBullet::UpdatePhysics()
 		hitBody.globalPosition = position;
 		//hurtBody.globalPosition = position;
 
-		/*Actor *player = launcher->owner->player;
+		/*Actor *player = launcher->owner->GetPlayer( 0 );
 		if( player->hurtBody.Intersects( hitBody ) )
 		{
 			HitPlayer();
@@ -1176,14 +1176,14 @@ void Enemy::DirectKill()
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 {
-	if( owner->player->hasPowerRightWire )
+	if( owner->GetPlayer( 0 )->hasPowerRightWire )
 	{
-		Wire::WireCharge *charge = owner->player->rightWire->activeChargeList;
+		Wire::WireCharge *charge = owner->GetPlayer( 0 )->rightWire->activeChargeList;
 		while( charge != NULL )
 		{
 			if( charge->hitbox.Intersects( p_hurtBox ) )
 			{
-				receivedHit = owner->player->wireChargeInfo;
+				receivedHit = owner->GetPlayer( 0 )->wireChargeInfo;
 				charge->HitEnemy();
 				return true;
 			}
@@ -1196,14 +1196,14 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 
 bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 {
-	if( owner->player->hasPowerLeftWire )
+	if( owner->GetPlayer( 0 )->hasPowerLeftWire )
 	{
-		Wire::WireCharge *charge = owner->player->leftWire->activeChargeList;
+		Wire::WireCharge *charge = owner->GetPlayer( 0 )->leftWire->activeChargeList;
 		while( charge != NULL )
 		{
 			if( charge->hitbox.Intersects( p_hurtBox ) )
 			{
-				receivedHit = owner->player->wireChargeInfo;
+				receivedHit = owner->GetPlayer( 0 )->wireChargeInfo;
 				charge->HitEnemy();
 				return true;
 			}

@@ -47,10 +47,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//seq = SEQ_NOTHING;
 		enemiesKilledThisFrame = 0;
 		enemiesKilledLastFrame = 0;
-		GameController &c = gs->GetController( actorIndex );
-		toggleBounceInput = c.keySettings.toggleBounce;
-		toggleTimeSlowInput = c.keySettings.toggleTimeSlow;
-		toggleGrindInput = c.keySettings.toggleGrind;
+		GameController &cont = gs->GetController( actorIndex );
+		toggleBounceInput = cont.keySettings.toggleBounce;
+		toggleTimeSlowInput = cont.keySettings.toggleTimeSlow;
+		toggleGrindInput = cont.keySettings.toggleGrind;
 		speedParticleRate = 10; //20
 		speedParticleCounter = 1;
 		followerPos = V2d( 0, 0 );
@@ -1604,7 +1604,7 @@ void Actor::UpdatePrePhysics()
 {
 	/*if( owner->multiSession )
 	{
-		cout << owner->player2->position.x << ", " << owner->player2->position.y << endl;
+		cout << owner->GetPlayer( 0 )2->position.x << ", " << owner->GetPlayer( 0 )2->position.y << endl;
 	}*/
 	//cout << "JFRAME BEHI: " << frame << endl;
 	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
@@ -13230,13 +13230,12 @@ void Actor::PhysicsResponse()
 		if( actorIndex == 0 )
 		{
 			target = 1;
-			pTarget = owner->player2;
 		}
 		else if( actorIndex == 1 )
 		{
 			target = 0;
-			pTarget = owner->player;
 		}
+		pTarget = owner->GetPlayer( target );
 
 		if( IHitPlayer( target ) )
 		{
@@ -14276,11 +14275,11 @@ bool Actor::IsBeingSlowed()
 		Actor *other;
 		if( actorIndex == 0 )
 		{
-			other = owner->player2;
+			other = owner->GetPlayer( 0 );
 		}
 		else
 		{
-			other = owner->player;
+			other = owner->GetPlayer( 0 );
 		}
 
 		bool found = false;
@@ -18768,7 +18767,7 @@ void Actor::ConfirmHit( int worldIndex,
 			velocity = -velocity;
 		}
 	}*/
-	//owner->player->test = true;
+	//owner->GetPlayer( 0 )->test = true;
 	//desperationMode = false;
 }
 
@@ -19643,16 +19642,7 @@ void Actor::SetActionExpr( Action a )
 
 bool Actor::IHitPlayer( int otherPlayerIndex )
 {
-	Actor *player = NULL;
-	switch( otherPlayerIndex )
-	{
-	case 0:
-		player = owner->player;
-		break;
-	case 1:
-		player = owner->player2;
-		break;
-	}
+	Actor *player = owner->GetPlayer( otherPlayerIndex );
 	
 	if( player->invincibleFrames == 0 )
 	{
@@ -19703,10 +19693,10 @@ bool Actor::IHitPlayer( int otherPlayerIndex )
 	switch( otherPlayerIndex )
 	{
 	case 0:
-		player = owner->player;
+		player = owner->GetPlayer( 0 );
 		break;
 	case 1:
-		player = owner->player2;
+		player = owner->GetPlayer( 0 );
 		break;
 	}
 

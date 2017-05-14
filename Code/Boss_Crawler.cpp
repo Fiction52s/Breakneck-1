@@ -567,7 +567,7 @@ void Boss_Crawler::UpdatePrePhysics()
 {
 	portrait.Update();
 	launcher->UpdatePrePhysics();
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	
 
@@ -1172,16 +1172,16 @@ void Boss_Crawler::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->player->ConfirmHit( 1, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player->frame << endl;
+															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -1263,7 +1263,7 @@ void Boss_Crawler::UpdatePostPhysics()
 
 bool Boss_Crawler::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1324,7 +1324,7 @@ void Boss_Crawler::DrawMinimap( sf::RenderTarget *target )
 
 bool Boss_Crawler::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
@@ -1352,7 +1352,7 @@ bool Boss_Crawler::IHitPlayer( int index )
 
  pair<bool, bool> Boss_Crawler::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{

@@ -99,7 +99,7 @@ void HealthFly::UpdatePhysics()
 			int rows = 10;
 			int rowCap = 2 * 5;
 			owner->powerBar.Charge( rowCap * rows ); 
-			owner->player->desperationMode = false;
+			owner->GetPlayer( 0 )->desperationMode = false;
 		}
 		//owner->RemoveEnemy( this );
 		//get rid of me
@@ -183,7 +183,7 @@ void HealthFly::DrawMinimap( sf::RenderTarget *target )
 
 bool HealthFly::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -201,7 +201,7 @@ void HealthFly::UpdateHitboxes()
 
 std::pair<bool,bool> HealthFly::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -270,7 +270,7 @@ std::pair<bool,bool> HealthFly::PlayerHitMe( int index )
 
 bool HealthFly::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

@@ -306,7 +306,7 @@ void Boss_Bird::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Boss_Bird::BulletHitPlayer(BasicBullet *b )
 {
-	owner->player->ApplyHit( b->launcher->hitboxInfo );
+	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
 
 void Boss_Bird::ActionEnded()
@@ -344,7 +344,7 @@ void Boss_Bird::UpdatePrePhysics()
 {
 	ActionEnded();
 
-	V2d playerPos = owner->player->position;
+	V2d playerPos = owner->GetPlayer( 0 )->position;
 	
 	
 	
@@ -419,7 +419,7 @@ void Boss_Bird::UpdatePrePhysics()
 			if( flyFrame % 20 == 0 )
 			{
 				cout << "firing launcher!: " << flyFrame << endl;
-				launcher->facingDir = normalize( owner->player->position - position );
+				launcher->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
 				launcher->position = position;
 				launcher->Fire();
 			}
@@ -469,7 +469,7 @@ void Boss_Bird::UpdatePhysics()
 	}
 	else if( action == THROWHOMING && frame <= 5 )
 	{
-		endRing = owner->player->position;
+		endRing = owner->GetPlayer( 0 )->position;
 		double a = (double)frame / 5;
 		double f = a;//flyCurve.GetValue( a );
 		homingPos = startRing * ( 1.0 - f ) + endRing * ( f );
@@ -518,11 +518,11 @@ void Boss_Bird::PhysicsResponse()
 		pair<bool,bool> result = PlayerHitMe();
 		if( result.first )
 		{
-			owner->player->ConfirmHit( 6, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
 //			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
@@ -640,7 +640,7 @@ void Boss_Bird::DrawMinimap( sf::RenderTarget *target )
 bool Boss_Bird::IHitPlayer( int index )
 {
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -657,20 +657,20 @@ void Boss_Bird::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> Boss_Bird::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -739,7 +739,7 @@ pair<bool,bool> Boss_Bird::PlayerHitMe( int index )
 
 bool Boss_Bird::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -1005,7 +1005,7 @@ void Boss_Bird::HomingRing::UpdatePrePhysics()
 	case FIND:
 		{
 			cout << "ring find " << frame << endl;
-			endRing = parent->owner->player->position;
+			endRing = parent->owner->GetPlayer( 0 )->position;
 			double a = (double)frame / 5;
 			double f = a;//flyCurve.GetValue( a );
 			position = startRing * ( 1.0 - f ) + endRing * ( f );
@@ -1013,7 +1013,7 @@ void Boss_Bird::HomingRing::UpdatePrePhysics()
 		break;
 	case LOCK:
 		{
-			position = parent->owner->player->position;
+			position = parent->owner->GetPlayer( 0 )->position;
 			cout << "ring lock " << frame << endl;
 		}
 		break;
@@ -1065,7 +1065,7 @@ void Boss_Bird::HomingRing::UpdatePostPhysics()
 
 void Boss_Bird::HomingRing::UpdatePhysics()
 {
-	Actor *player = parent->owner->player;
+	Actor *player = parent->owner->GetPlayer( 0 );
 	if( player->hurtBody.Intersects( hitbox ) )
 	{
 		parent->HomingRingTriggered( this );

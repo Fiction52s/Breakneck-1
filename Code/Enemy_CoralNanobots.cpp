@@ -254,11 +254,11 @@ void CoralBlock::UpdatePrePhysics()
 	//{
 	//	//cout << "SHOOTING" << endl;
 	//	parent->launcher->position = position;
-	//	parent->launcher->facingDir = normalize( owner->player->position
+	//	parent->launcher->facingDir = normalize( owner->GetPlayer( 0 )->position
 	//		- position );
 	//	parent->launcher->Fire( 1 );
 	//	//cout << "FIRING" << endl;
-	//	//launcher->facingDir = normalize( owner->player->position
+	//	//launcher->facingDir = normalize( owner->GetPlayer( 0 )->position
 	//	//	- position );
 	//	//launcher->Fire();
 	//}
@@ -358,12 +358,12 @@ void CoralBlock::PhysicsResponse()
 			if( result.first )
 			{
 				//cout << "HITTT" << endl;
-				owner->player->ConfirmHit( 4, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 4, 5, .8, 6 );
 
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 			}
 		}
@@ -560,7 +560,7 @@ void CoralBlock::DrawMinimap( sf::RenderTarget *target )
 
 bool CoralBlock::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
 		if( player->position.x < position.x )
@@ -586,7 +586,7 @@ bool CoralBlock::IHitPlayer( int index )
  pair<bool, bool> CoralBlock::PlayerHitMe( int index )
 {
 	//cout << "check if hit me" << endl;
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -656,7 +656,7 @@ bool CoralBlock::IHitPlayer( int index )
 
 bool CoralBlock::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	bool found = false;
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{

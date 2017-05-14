@@ -188,7 +188,7 @@ void RaceFightTarget::PhysicsResponse()
 		{
 			//triggers multiple times per frame? bad?
 			//instead of 6
-			owner->player->ConfirmHit( 1, 5, .8, 0 );
+			owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 0 );
 
 			if( result.first )
 			{
@@ -204,9 +204,9 @@ void RaceFightTarget::PhysicsResponse()
 				owner->raceFight->HitByPlayer( 1, this );
 			}
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 		}	
 	}
@@ -217,7 +217,7 @@ void RaceFightTarget::UpdatePostPhysics()
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
 	
@@ -331,10 +331,10 @@ void RaceFightTarget::UpdateHitboxes()
 //return pair<bool,bool>( hitme, was it with a clone)
 pair<bool,bool> RaceFightTarget::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( index == 1 )
 	{
-		player = owner->player2;
+		player = owner->GetPlayer( 0 );
 		assert( player != NULL );
 	}
 
@@ -394,7 +394,7 @@ pair<bool,bool> RaceFightTarget::PlayerHitMe( int index )
 
 bool RaceFightTarget::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

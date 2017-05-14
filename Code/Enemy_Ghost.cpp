@@ -42,7 +42,7 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i pos, float pspeed 
 	totalFrame = 0;
 
 	//latchedOn = true; 
-	V2d dirFromPlayer = normalize( owner->player->position - position );
+	V2d dirFromPlayer = normalize( owner->GetPlayer( 0 )->position - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	//cout << "dirfrom: " << dirFromPlayer.x << ", " << dirFromPlayer.y << endl;
 	//cout << "from player angle: " << fromPlayerAngle << endl;
@@ -203,7 +203,7 @@ void Ghost::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	V2d playerPos = owner->player->position;
+	V2d playerPos = owner->GetPlayer( 0 )->position;
 	if( !dead )
 	{
 		if( !awake )
@@ -235,13 +235,13 @@ void Ghost::UpdatePrePhysics()
 					
 					//cout << "JUST LATCHING NOW" << endl;
 					latchedOn = true;
-					offsetPlayer = basePos - owner->player->position;//owner->player->position - basePos;
+					offsetPlayer = basePos - owner->GetPlayer( 0 )->position;//owner->GetPlayer( 0 )->position - basePos;
 					origOffset = offsetPlayer;//length( offsetPlayer );
 					V2d offsetDir = normalize( offsetPlayer );
 					//latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 					//cout << "latchStart: " << latchStartAngle << endl;
 					//testSeq.Update();
-					basePos = owner->player->position;
+					basePos = owner->GetPlayer( 0 )->position;
 					//launchStartAngle / PI * 180;
 					
 				}
@@ -264,7 +264,7 @@ void Ghost::UpdatePhysics()
 	specterProtected = false;
 	if( latchedOn )
 	{
-		basePos = owner->player->position;// + offsetPlayer;
+		basePos = owner->GetPlayer( 0 )->position;// + offsetPlayer;
 	}
 	else
 	{
@@ -349,17 +349,17 @@ void Ghost::PhysicsResponse()
 		{
 			//cout << "color blue" << endl;
 			//triggers multiple times per frame? bad?
-			owner->player->ConfirmHit( 5, 5, .8, 6 );
+			owner->GetPlayer( 0 )->ConfirmHit( 5, 5, .8, 6 );
 
 
-			if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 			{
-				owner->player->velocity.y = 4;//.5;
+				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 			}
 
-		//	cout << "frame: " << owner->player->frame << endl;
+		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, facingRight );
 			
 		//	cout << "Ghost received damage of: " << receivedHit->damage << endl;
@@ -382,7 +382,7 @@ void Ghost::PhysicsResponse()
 		{
 			//cout << "ghost hit player ghost pos: " <<
 			//	position.x << ", " << position.y << ", playerpos: "
-			//	<< owner->player->position.x << ", " << owner->player->position.y << endl;
+			//	<< owner->GetPlayer( 0 )->position.x << ", " << owner->GetPlayer( 0 )->position.y << endl;
 		//	cout << "Ghost just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
 	}
@@ -438,7 +438,7 @@ void Ghost::UpdateSprite()
 	//3 is biting
 	if( !dead )
 	{
-		V2d diff = owner->player->position - position;
+		V2d diff = owner->GetPlayer( 0 )->position - position;
 		double lenDiff = length( diff );
 		IntRect ir;
 		switch( action )
@@ -562,7 +562,7 @@ void Ghost::DrawMinimap( sf::RenderTarget *target )
 
 bool Ghost::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( action == EXPLODE )
 	{
@@ -582,13 +582,13 @@ void Ghost::UpdateHitboxes()
 	hitBody.globalPosition = position;
 	hitBody.globalAngle = 0;
 
-	if( owner->player->ground != NULL )
+	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->groundSpeed * ( owner->player->ground->v1 - owner->player->ground->v0 ) );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->player->velocity );
+		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
 }
 
@@ -598,7 +598,7 @@ pair<bool,bool> Ghost::PlayerHitMe( int index )
 	if( action == WAKEUP )
 		return pair<bool,bool>(false,false);
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;
@@ -667,7 +667,7 @@ pair<bool,bool> Ghost::PlayerHitMe( int index )
 
 bool Ghost::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )

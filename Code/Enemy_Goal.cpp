@@ -197,7 +197,7 @@ void Goal::UpdatePhysics()
 			owner->KillAllEnemies();
 			//kinKillFrame = 0;
 			frame = 0;
-			owner->player->hitGoal = true;
+			owner->GetPlayer( 0 )->hitGoal = true;
 
 			owner->goalPulse->show = true;
 
@@ -243,7 +243,7 @@ void Goal::UpdatePostPhysics()
 
 	if( dead )
 	{
-		/*if( owner->player->record == 0 )
+		/*if( owner->GetPlayer( 0 )->record == 0 )
 		{
 			cout << "GAME OVER" << endl;
 			owner->goalDestroyed = true;
@@ -271,7 +271,7 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 
 bool Goal::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 
 	/*if( currBullet->hitBody.Intersects( player->hurtBody ) )
@@ -286,7 +286,7 @@ bool Goal::IHitPlayer( int index )
 
 pair<bool, bool> Goal::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	if( player->currHitboxes != NULL )
 	{
 		bool hit = false;

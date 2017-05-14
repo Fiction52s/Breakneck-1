@@ -300,7 +300,7 @@ void Badger::UpdateNextAction()
 		break;
 	}
 
-	if( owner->player->position.x > position.x )
+	if( owner->GetPlayer( 0 )->position.x > position.x )
 	{
 		cout << "facing right" << endl;
 		facingRight = true;
@@ -389,7 +389,7 @@ void Badger::UpdatePrePhysics()
 {
 	//cout << "action: " << (int)action << endl;
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( dead )
 		return;
@@ -797,16 +797,16 @@ void Badger::PhysicsResponse()
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
 
-				owner->player->ConfirmHit( 1, 5, .8, 6 );
+				owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
 
-				if( owner->player->ground == NULL && owner->player->velocity.y > 0 )
+				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{
-					owner->player->velocity.y = 4;//.5;
+					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
 
-															//cout << "frame: " << owner->player->frame << endl;
+															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 
-			//owner->player->frame--;
+			//owner->GetPlayer( 0 )->frame--;
 			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
 		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
 			
@@ -882,7 +882,7 @@ void Badger::UpdatePostPhysics()
 
 bool Badger::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
@@ -965,7 +965,7 @@ void Badger::DrawMinimap( sf::RenderTarget *target )
 
 bool Badger::IHitPlayer( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
@@ -993,7 +993,7 @@ bool Badger::IHitPlayer( int index )
 
  pair<bool, bool> Badger::PlayerHitMe( int index )
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
