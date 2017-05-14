@@ -6359,7 +6359,7 @@ void Actor::UpdatePrePhysics()
 				}
 			}
 
-			GroundExtraAccel();
+			//GroundExtraAccel();
 			//groundSpeed = 
 			break;
 		}

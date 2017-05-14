@@ -179,6 +179,12 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 	}
 }
 
+const std::string &LevelSelector::GetSelectedPath()
+{
+	return localPaths[selectedIndex];
+}
+
+
 int LevelSelector::Tex(int index, int level, TreeNode *entry)
 {
 	Text &t0 = text[index];

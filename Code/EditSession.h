@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
 #include <map>
-
+#include <boost/filesystem.hpp>
 
 struct EditSession;
 struct ISelectable
@@ -1275,11 +1275,11 @@ struct EditSession : GUIHandler
 	
 	bool AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, TerrainPolygon *poly );
-	int Run(std::string fileName, 
+	int Run(const boost::filesystem::path &p_filePath,
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
 	void Draw();
-	bool OpenFile( std::string fileName );
+	bool OpenFile();
 	void WriteFile(std::string fileName);
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
@@ -1305,6 +1305,10 @@ struct EditSession : GUIHandler
 	bool PolyIntersectGate( TerrainPolygon &poly );
 
 	void SetInversePoly();
+
+	static void s_CreatePreview( EditSession *session );
+	void CreatePreview();
+	sf::RenderTexture *mapPreviewTex;
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	void CreateActor( ActorPtr actor );
@@ -1374,6 +1378,7 @@ struct EditSession : GUIHandler
 	sf::RenderWindow *w;
 	//sf::Vector2i goalPosition;
 	std::string currentFile;
+	boost::filesystem::path currentPath;
 	static double zoomMultiple;
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;

@@ -22,6 +22,7 @@ sf::RenderTexture *MainMenu::minimapTexture = NULL;
 sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
+sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
@@ -119,6 +120,13 @@ MainMenu::MainMenu()
 		saveTexture= new RenderTexture;
 		saveTexture->create( 1920, 1080 );
 		saveTexture->clear();
+	}
+
+	if( mapPreviewTexture == NULL )
+	{
+		mapPreviewTexture= new RenderTexture;
+		mapPreviewTexture->create( 960, 540 );
+		mapPreviewTexture->clear();
 	}
 
 	transWorldMapFrame = 0;
@@ -328,7 +336,7 @@ void MainMenu::Init()
 	
 }
 
-void MainMenu::GameEditLoop( const std::string &filename)
+void MainMenu::GameEditLoop( const std::string &p_path )
 {
 	int result = 0;
 
@@ -337,7 +345,8 @@ void MainMenu::GameEditLoop( const std::string &filename)
 	while( result == 0 )
 	{
 		EditSession *es = new EditSession(window, preScreenTexture );
-		result = es->Run( filename, lastViewCenter, lastViewSize );
+		//boost::filesystem::path( p_path );
+		result = es->Run( p_path, lastViewCenter, lastViewSize );
 		delete es;
 		if( result > 0 )
 			break;
@@ -347,14 +356,14 @@ void MainMenu::GameEditLoop( const std::string &filename)
 		GameSession *gs = new GameSession( controller, NULL, this );
 
 		gs->SetSecondController( controller2 );
-		result = gs->Run( filename );
+		result = gs->Run( p_path );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
 		delete gs;
 	}
 }
 
-void MainMenu::GameEditLoop2( const std::string &filename)
+void MainMenu::GameEditLoop2( const std::string &p_path )
 {
 	int result = 0;
 
@@ -367,7 +376,7 @@ void MainMenu::GameEditLoop2( const std::string &filename)
 
 		gs->SetSecondController( controller2 );
 
-		result = gs->Run( filename );
+		result = gs->Run( p_path );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
 		delete gs;
@@ -375,7 +384,7 @@ void MainMenu::GameEditLoop2( const std::string &filename)
 			break;
 
 		EditSession *es = new EditSession(window, preScreenTexture );
-		result = es->Run( filename, lastViewCenter, lastViewSize );
+		result = es->Run( p_path, lastViewCenter, lastViewSize );
 		delete es;
 	}
 }
@@ -448,14 +457,17 @@ void MainMenu::CustomMapsOption()
 								if( ls.text[ls.selectedIndex].getColor() == Color::Red )
 								{
 									path from( "Maps/empty.brknk" );
-									string toString = ls.localPaths[ls.selectedIndex] + ls.newLevelName + ".brknk";
+
+									std::stringstream ssPath;
+									ssPath << ls.localPaths[ls.selectedIndex] << ls.newLevelName << ".brknk";
+									string toString = ssPath.str();
 									path to( toString );
 
 									try 
 									{
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
-										GameEditLoop( ls.localPaths[ls.selectedIndex] + ls.newLevelName + ".brknk" );
+										GameEditLoop( ls.GetSelectedPath() );
 
 										ls.UpdateMapList();
 
@@ -468,16 +480,21 @@ void MainMenu::CustomMapsOption()
 								}
 								else
 								{
-									path from( ls.localPaths[ls.selectedIndex] );
+									path from( ls.GetSelectedPath() );
 									TreeNode * toNode = ls.dirNode[ls.selectedIndex];
-									path to( toNode->GetLocalPath() + ls.newLevelName + ".brknk" );
+
+									std::stringstream ssPath;
+									ssPath << toNode->GetLocalPath() << ls.newLevelName << ".brknk";
+									string toString = ssPath.str();
+
+									path to( toString );
 									
 									try 
 									{
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
 										//cout << "copying to: " << to.string() << endl;
-										GameEditLoop( to.string() );
+										GameEditLoop( toNode->GetLocalPath() );
 
 										ls.UpdateMapList();
 
@@ -534,7 +551,7 @@ void MainMenu::CustomMapsOption()
 									{
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
-										GameEditLoop( ls.localPaths[ls.selectedIndex] + ls.newLevelName + ".brknk" );
+										GameEditLoop( ls.GetSelectedPath() );
 
 										ls.UpdateMapList();
 
@@ -630,7 +647,7 @@ void MainMenu::Run()
 	gameClock.restart();
 
 	saveTexture->setView( v );
-	menuMode = DEBUG_RACEFIGHT_RESULTS;
+	menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
 
 	while( !quit )
 	{
@@ -1055,13 +1072,17 @@ void MainMenu::Run()
 				}
 				else
 				{
-					string file = worldMap->GetSelected();
-					stringstream ss; 
-					ss << "Maps/" << file;
+
+					
+					//stringstream ss; 
+
+					//size_t lastindex = file.find_last_of("."); 
+					//string rawname = fullname.substr(0, lastindex); 
+					//ss << "Maps/" << file;
 					//cout << "-----------------------------" << endl;
 					//cout << "file: " << file << endl;
 					GameSession *gs = new GameSession( controller, NULL, this );
-					int result = gs->Run( ss.str() );
+					int result = gs->Run( worldMap->GetSelected() );
 					delete gs;
 
 					if( result == 0 || result == 1 )
@@ -1505,6 +1526,8 @@ CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 {
 }
 
+
+
 void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 {
 	LevelSelector &ls = *menu->levelSelector;
@@ -1514,19 +1537,21 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		{
 			optionChosen = true;
 			GameSession *gs = new GameSession( menu->controller, NULL, menu );
-			gs->Run( ls.localPaths[ls.selectedIndex] );
+			gs->Run( ls.GetSelectedPath() );
 			menu->window->setView( menu->uiView );
 			delete gs;
 		}
 		else if( b->name == "Edit" )
 		{
 			optionChosen = true;
-			menu->GameEditLoop( ls.localPaths[ls.selectedIndex] );//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
+			menu->GameEditLoop( ls.GetSelectedPath() );//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
 			menu->window->setView( menu->uiView );
 		}
 		else if( b->name == "Delete" )
 		{	
-			boost::filesystem::remove(ls.localPaths[ls.selectedIndex]);
+			//std::stringstream SSr;
+			//SSr << ls.GetSelectedPath() << ls.GetSelectedName() << ".brknk";
+			boost::filesystem::remove( ls.GetSelectedPath() );
 			ls.UpdateMapList();
 		}
 	}
@@ -1547,7 +1572,6 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 	{
 		showNamePopup = false;
 		ls.newLevelName = b->owner->textBoxes["name"]->text.getString().toAnsiString();
-				
 	}
 		
 }

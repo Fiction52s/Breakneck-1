@@ -11,6 +11,7 @@
 #include "Physics.h"
 #include "Action.h"
 #include <set>
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -463,6 +464,8 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 
 	PoiParams::font = &arialFont;
 	
+	mapPreviewTex = MainMenu::mapPreviewTexture;
+
 
 	for( int i = 0; i < 16; ++i )
 	{
@@ -486,6 +489,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	playerHalfHeight = 32;
 	preScreenTex = preTex;
 	showTerrainPath = false;
+	
 	minAngle = .99;
 	showPoints = false;
 	messagePopup = NULL;
@@ -630,12 +634,10 @@ void EditSession::UpdateFullBounds()
 	fullBounds[15].position = Vector2f( leftBound - boundRectWidth, topBound + boundHeight );
 }
 
-bool EditSession::OpenFile( string fileName )
+bool EditSession::OpenFile()
 {
-	currentFile = fileName;
-
 	ifstream is;
-	is.open( fileName );
+	is.open( currentFile );
 
 	double grassSize = 22;
 	double radius = grassSize / 2;
@@ -2532,7 +2534,7 @@ bool EditSession::OpenFile( string fileName )
 	{
 
 		//new file
-		cout << "filename: " << fileName << endl;
+		cout << "filename: " << currentFile << endl;
 		assert( false && "error getting file to edit " );
 
 		return false;
@@ -2803,7 +2805,7 @@ void EditSession::WriteFile(string fileName)
 		(*it)->WriteFile( of );
 	}
 
-	
+	CreatePreview();
 
 	//enemies here
 
@@ -3742,8 +3744,12 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 	return li;
 }
 
-int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
+int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	currentFile = p_filePath.string();
+	currentPath = p_filePath;
+	
+
 	cutChoose = false;
 	cutChooseUp = false;
 	tempActor = NULL;
@@ -4194,7 +4200,7 @@ int EditSession::Run( string fileName, Vector2f cameraPos, Vector2f cameraSize )
 	//w->setVerticalSyncEnabled( true );
 	//w->setFramerateLimit( 60 );
 
-	OpenFile( fileName );
+	OpenFile();
 
 
 //	ActorParams *ap = new ActorParams;
@@ -13812,6 +13818,91 @@ void EditSession::CreateActor( ActorPtr actor )
 	Action * action = new ApplyBrushAction( &b );
 	action->Perform();
 	doneActionStack.push_back( action );
+}
+
+void EditSession::CreatePreview()
+{
+	if( inversePolygon != NULL )
+	{
+		cout << "CREATING PREVIEW" << endl;
+		int left = inversePolygon->left;
+		int top = inversePolygon->top;
+		int right = inversePolygon->right;
+		int bot = inversePolygon->bottom;
+
+		
+
+		int width = right - left;
+		int height = bot - top;
+
+		Vector2f middle( left + width / 2, top + height / 2 );
+
+		int remX = (right - left) % 920;
+		int remY = (bot - top) % 540;
+
+		double idealXYRatio = 920.0/540.0;
+		double realXYRatio = (double)width/(double)height;
+
+		
+		double facY = (bot - top) / 540.0;
+
+		if( realXYRatio > idealXYRatio )
+		{
+			//wider than it should be
+			double facX = (right - left) / 920.0;
+
+			height = ceil(height * (realXYRatio / idealXYRatio));
+
+			if( height % 540 == 1 )
+				height--;
+			else if( height % 540 == 539 )
+				height++;
+		}
+		else if( realXYRatio < idealXYRatio )
+		{
+			//taller than it should be
+
+			double facY = (bot - top) / 540.0;
+
+			width = ceil( width * (idealXYRatio / realXYRatio) );
+
+			if( width % 920 == 1 )
+				width--;
+			if( width % 920 == 919 )
+				width++;
+		}
+		else
+		{
+			//its exactly right
+		}
+
+		sf::View pView;
+		pView.setCenter( middle );
+		pView.setSize( Vector2f( width, -height ) );
+
+		mapPreviewTex->clear();
+		mapPreviewTex->setView( pView );
+		
+
+		/*for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+		{
+			(*it).second->Draw( mapPreviewTex );
+		}*/
+
+		for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
+			= polygons.begin(); it != polygons.end(); ++it )
+		{
+			(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
+		}
+
+		Image img = mapPreviewTex->getTexture().copyToImage();
+		
+		std::stringstream ssPrev;
+		ssPrev << currentPath.parent_path().relative_path().string() << "/" << currentPath.stem().string() << "_preview.png";
+		std::string previewFile = ssPrev.str();
+		img.saveToFile( previewFile );
+	}
+	//currentFile
 }
 
 GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )

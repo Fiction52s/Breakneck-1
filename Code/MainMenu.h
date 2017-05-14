@@ -96,6 +96,7 @@ struct MainMenu
 	static sf::RenderTexture *mapTexture;
 	static sf::RenderTexture *pauseTexture;
 	static sf::RenderTexture *saveTexture;
+	static sf::RenderTexture *mapPreviewTexture;
 	
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;

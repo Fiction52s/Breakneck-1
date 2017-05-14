@@ -31,6 +31,7 @@ struct LevelSelector
 	void Draw( sf::RenderTarget *target );
 	void MouseUpdate( sf::Vector2f mousePos );
 	void LeftClick( bool click, sf::Vector2f mousePos );
+	const std::string &GetSelectedPath();
 	//std::list<std::string> maps;
 	TreeNode *entries;
 	void Print();
