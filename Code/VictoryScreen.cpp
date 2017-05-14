@@ -26,8 +26,8 @@ void VictoryScreen2PlayerVS::Draw( sf::RenderTarget *target )
 
 void VictoryScreen2PlayerVS::Update()
 {
-	player1Bar->Update( owner->currInput.A && !owner->prevInput.A );
-	player2Bar->Update( owner->currInput2.A && !owner->prevInput2.A );
+	player1Bar->Update( owner->GetCurrInput( 0 ).A && !owner->GetPrevInput( 0 ).A );
+	player2Bar->Update( owner->GetCurrInput( 1 ).A && !owner->GetPrevInput( 1 ).A );
 	++frame;
 }
 

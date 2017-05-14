@@ -136,11 +136,11 @@ void Nexus::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dead = true;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		
@@ -171,10 +171,10 @@ void Nexus::UpdatePhysics()
 		slowCounter = 1;
 	}
 
-	if( action == NORMAL && length( owner->player->position - entrancePos ) < 30.0 )
+	if( action == NORMAL && length( owner->GetPlayer( 0 )->position - entrancePos ) < 30.0 )
 	{
 		action = ENTERED;
-		owner->player->EnterNexus( 0, entrancePos );
+		owner->GetPlayer( 0 )->EnterNexus( 0, entrancePos );
 		owner->activeSequence = enterNexus1Seq;
 		enterNexus1Seq->nexus = this;
 	}

@@ -27,6 +27,28 @@ struct CustomMapsHandler : GUIHandler
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 };
 
+struct MultiSelectionInfo
+{
+	
+	enum Team
+	{
+		T_RED,
+		T_BLUE,
+		T_Count
+	};
+
+	enum Skin
+	{
+		S_STANDARD,
+		S_ALT0,
+		S_Count
+	};
+
+	Team team;
+	Skin skin;
+	XBoxButton *filter;//[ControllerSettings::Count];
+};
+
 
 struct Parallax;
 struct MainMenu
@@ -55,6 +77,8 @@ struct MainMenu
 		TRANS_MAIN_TO_SAVE,
 		TRANS_SAVE_TO_MAIN,
 		TRANS_SAVE_TO_WORLDMAP,
+		TRANS_MAIN_TO_MULTIPREVIEW,
+		TRANS_MULTIPREVIEW_TO_MAIN,
 		DEBUG_RACEFIGHT_RESULTS,
 	};
 
@@ -80,8 +104,10 @@ struct MainMenu
 	sf::RenderWindow *window;
 	sf::View v;
 	sf::View uiView;
-	GameController controller;
-	GameController controller2;
+	//GameController controller;
+	//GameController controller2;
+	GameController *controllers[4];
+	GameController &GetController( int index );
 	SoundManager soundManager;
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
@@ -117,9 +143,15 @@ struct MainMenu
 
 	SaveFile *files[6];
 
-	ControllerState currInput;
-	ControllerState prevInput;
+	//ControllerState currInput;
+	//ControllerState prevInput;
+	ControllerState prevInput[4];
+	ControllerState currInput[4];
+	ControllerState &GetPrevInput( int index );
+	ControllerState &GetCurrInput( int index );
 
+	ControllerState menuPrevInput;
+	ControllerState menuCurrInput;
 
 	sf::Sprite saveBG;
 	sf::Sprite saveSelect;

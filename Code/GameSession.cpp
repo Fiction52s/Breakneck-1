@@ -629,9 +629,10 @@ bool Barrier::Update( Actor *player )
 
 void Barrier::SetPositive()
 {
+	//should use a parameter eventually but for now just using this
 	if( x )
 	{
-		if( owner->player->position.x - pos > 0 )
+		if( owner->GetPlayer( 0 )->position.x - pos > 0 )
 		{
 			positiveOpen = true;
 		}
@@ -640,7 +641,7 @@ void Barrier::SetPositive()
 	}
 	else
 	{
-		if( owner->player->position.y - pos > 0 )
+		if( owner->GetPlayer( 0 )->position.y - pos > 0 )
 		{
 			positiveOpen = true;
 		}
@@ -778,8 +779,8 @@ void KeyMarker::Update()
 	}
 }
 
-GameSession::GameSession( GameController &c, SaveFile *sf, MainMenu *p_mainMenu )
-	:controller(c),va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
+GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu )
+	:va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
@@ -1218,6 +1219,7 @@ Tileset * GameSession::GetTileset( const std::string & s, int tileWidth, int til
 
 void GameSession::UpdateEnemiesPrePhysics()
 {
+	Actor *player = GetPlayer( 0 );
 	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
 	{
 		return;
@@ -1233,17 +1235,19 @@ void GameSession::UpdateEnemiesPrePhysics()
 
 void GameSession::UpdateEnemiesPhysics()
 {
+	Actor *p = NULL;
+	Actor *player = GetPlayer( 0 );
 	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
 	{
 		return;
 	}
 
-	player->physicsOver = false;
-	
-	if( multiSession )
-		player2->physicsOver = false;
-	///for( int i = 0; i < NUM_STEPS; ++i )
-	//	player->UpdatePhysics( );
+	for( int i = 0; i < 4; ++i )
+	{
+		p = GetPlayer( i );
+		if( p != NULL )
+			p->physicsOver = false;
+	}
 
 
 	for( substep = 0; substep < NUM_STEPS; ++substep )
@@ -1253,10 +1257,11 @@ void GameSession::UpdateEnemiesPhysics()
 			(*it)->UpdatePhysics();
 		}
 
-		player->UpdatePhysics();
-
-		if( multiSession )
-			player2->UpdatePhysics();
+		for( int i = 0; i < 4; ++i )
+		{
+			p = GetPlayer( i );
+			p->UpdatePhysics();
+		}
 
 		Enemy *current = activeEnemyList;
 		while( current != NULL )
@@ -1271,6 +1276,7 @@ void GameSession::UpdateEnemiesPhysics()
 
 void GameSession::UpdateEnemiesPostPhysics()
 {
+	Actor *player = GetPlayer( 0 );
 	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
 	{
 		return;
@@ -1308,6 +1314,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 
 void GameSession::RecordReplayEnemies()
 {
+	Actor *player = GetPlayer( 0 );
 	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
 	{
 		return;
@@ -1368,6 +1375,7 @@ void GameSession::UpdateEnemiesDraw()
 
 void GameSession::UpdateEnemiesSprites()
 {
+	Actor *player = GetPlayer( 0 );
 	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
 	{
 		return;
@@ -1410,10 +1418,10 @@ void GameSession::AddEffect( EffectLayer layer, Enemy *e )
 		fxList = e;
 	}
 
-	if( player->record > 0 )
+	/*if( player->record > 0 )
 	{
 		e->spawnedByClone = true;
-	}
+	}*/
 }
 
 void GameSession::AddEnemy( Enemy *e )
@@ -1442,10 +1450,10 @@ void GameSession::AddEnemy( Enemy *e )
 		activeEnemyList = e;
 	}
 
-	if( player->record > 0 )
+	/*if( player->record > 0 )
 	{
 		e->spawnedByClone = true;
-	}
+	}*/
 	
 
 	/*int counter = 0;
@@ -1526,33 +1534,33 @@ void GameSession::RemoveEnemy( Enemy *e )
 
 	//might need to give enemies a second next/prev pair for clone power?
 	//totally does >.> CLONE POWER
-	if( player->record > 0 )
-	{
-		if( cloneInactiveEnemyList == NULL )
-		{
-			cloneInactiveEnemyList = e;
-			e->next = NULL;
-			e->prev = NULL;
-			//cout << "creating first dead clone enemy" << endl;
+	//if( player->record > 0 )
+	//{
+	//	if( cloneInactiveEnemyList == NULL )
+	//	{
+	//		cloneInactiveEnemyList = e;
+	//		e->next = NULL;
+	//		e->prev = NULL;
+	//		//cout << "creating first dead clone enemy" << endl;
 
-			/*int listSize = 0;
-			Enemy *ba = cloneInactiveEnemyList;
-			while( ba != NULL )
-			{
-				listSize++;
-				ba = ba->next;
-			}
+	//		/*int listSize = 0;
+	//		Enemy *ba = cloneInactiveEnemyList;
+	//		while( ba != NULL )
+	//		{
+	//			listSize++;
+	//			ba = ba->next;
+	//		}
 
-			cout << "size of dead list after first add: " << listSize << endl;*/
-		}
-		else
-		{
-			//cout << "creating more dead clone enemies" << endl;
-			e->next = cloneInactiveEnemyList;
-			cloneInactiveEnemyList->prev = e;
-			cloneInactiveEnemyList = e;
-		}
-	}
+	//		cout << "size of dead list after first add: " << listSize << endl;*/
+	//	}
+	//	else
+	//	{
+	//		//cout << "creating more dead clone enemies" << endl;
+	//		e->next = cloneInactiveEnemyList;
+	//		cloneInactiveEnemyList->prev = e;
+	//		cloneInactiveEnemyList = e;
+	//	}
+	//}
 	
 
 //	cout << "number of enemies is now: " << CountActiveEnemies() << endl;
@@ -2167,7 +2175,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 	btop = owner->poiMap["coyfighttop"]->barrier;
 	bbot = owner->poiMap["coyfightbot"]->barrier;*/
 
-						Barrier *b = new Barrier( this, pi, true, pos.x, ( player->position.x > pos.x ),  NULL );
+						Barrier *b = new Barrier( this, pi, true, pos.x, ( GetPlayer( 0 )->position.x > pos.x ),  NULL );
 						string na = b->poi->name;
 						/*if( na == "coyfightleft"
 							|| na == "coyfightright"
@@ -2179,7 +2187,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					}
 					else if( barStr == "y" )
 					{
-						Barrier *b = new Barrier( this, pi, false, pos.y, ( player->position.y > pos.y ), NULL );
+						Barrier *b = new Barrier( this, pi, false, pos.y, ( GetPlayer( 0 )->position.y > pos.y ), NULL );
 						//b->triggered = true;
 						barriers.push_back( b );
 					}
@@ -2228,11 +2236,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					}
 					else if( barStr == "x" )
 					{
-						barriers.push_back( new Barrier( this, pi, true, floor( p.x + .5 ), ( player->position.x > p.x ), NULL  ) );
+						barriers.push_back( new Barrier( this, pi, true, floor( p.x + .5 ), ( GetPlayer( 0 )->position.x > p.x ), NULL  ) );
 					}
 					else if( barStr == "y" )
 					{
-						barriers.push_back( new Barrier( this, pi, false, floor( p.y + .5 ), ( player->position.y > p.y ), NULL ) );
+						barriers.push_back( new Barrier( this, pi, false, floor( p.y + .5 ), ( GetPlayer( 0 )->position.y > p.y ), NULL ) );
 					}
 					else
 					{
@@ -5346,13 +5354,13 @@ void GameSession::SetupZones()
 	for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
 	{
 		//Vector2i truePos = Vector2i( player->position.x, player->position.y );
-		bool hasPoint = (*zit)->ContainsPoint( player->position );
+		bool hasPoint = (*zit)->ContainsPoint( GetPlayer( 0 )->position );
 		if( hasPoint )
 		{
 			bool mostSpecific = true;
 			for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
 			{
-				if( (*zit2)->ContainsPoint( player->position ) )
+				if( (*zit2)->ContainsPoint( GetPlayer( 0 )->position ) )
 				{
 					mostSpecific = false;
 					break;
@@ -5428,6 +5436,163 @@ void GameSession::SetupZones()
 			gates[i]->SetLocked( true );
 		}
 	}*/
+}
+
+ControllerState &GameSession::GetPrevInput( int index )
+{
+	return mainMenu->GetPrevInput( index );
+}
+
+ControllerState &GameSession::GetCurrInput( int index )
+{
+	return mainMenu->GetCurrInput( index );
+}
+
+Actor *GameSession::GetPlayer( int index )
+{
+	return players[index];
+}
+
+GameController &GameSession::GetController( int index )
+{
+	return mainMenu->GetController( index );
+}
+
+void GameSession::ApplyToggleUpdates( int index )
+{
+	Actor *player = GetPlayer( index );
+	ControllerState &pCurr = player->currInput;
+	GameController &controller = GetController( index );
+	ControllerState &currInput = GetCurrInput( index );
+	ControllerState &prevInput = GetPrevInput( index );
+
+				//ControllerState &pPrev = player->prevInput;
+	bool alreadyBounce = pCurr.X;
+	bool alreadyGrind = pCurr.Y;
+	bool alreadyTimeSlow = pCurr.leftShoulder;
+	player->currInput = currInput;
+	if( controller.keySettings.toggleBounce )
+	{
+		if( currInput.X && !prevInput.X )
+		{
+			pCurr.X = !alreadyBounce;
+		}
+		else
+		{
+			pCurr.X = alreadyBounce;
+		}
+	}
+	if( controller.keySettings.toggleGrind )
+	{
+		if( currInput.Y && !prevInput.Y )
+		{
+			pCurr.Y = !alreadyGrind;
+			//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
+		}
+		else
+		{
+			pCurr.Y = alreadyGrind;
+		}
+	}
+	if( controller.keySettings.toggleTimeSlow )
+	{
+		if( currInput.leftShoulder && !prevInput.leftShoulder )
+		{
+			pCurr.leftShoulder = !alreadyTimeSlow;
+						
+		}
+		else
+		{
+			pCurr.leftShoulder = alreadyTimeSlow;
+		}
+	}
+}
+
+void GameSession::KeyboardUpdate( int index )
+{
+	bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+	bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+	bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+	bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
+
+//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
+//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
+//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
+//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
+
+	ControllerState keyboardInput;    
+	keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
+	keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
+	keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
+	keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
+	//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
+	keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
+	keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
+	keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
+	keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
+	keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
+	keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
+			
+	keyboardInput.rightStickPad = 0;
+	if( Keyboard::isKeyPressed( Keyboard::A ) )
+	{
+		keyboardInput.rightStickPad += 1 << 1;
+	}
+	else if( Keyboard::isKeyPressed( Keyboard::S ) )
+	{
+		keyboardInput.rightStickPad += 1;
+	}
+				
+
+				
+				
+	//keyboardInput.rightStickMagnitude
+				
+
+	/*if( altRight )
+		currInput .altPad += 1 << 3;
+	if( altLeft )
+		currInput .altPad += 1 << 2;
+	if( altUp )
+		currInput .altPad += 1;
+	if( altDown )
+		currInput .altPad += 1 << 1;*/
+				
+
+	ControllerState &prevInput = GetPrevInput(index);
+
+	if( up && down )
+	{
+		
+		if( prevInput.LUp() )
+			keyboardInput.leftStickPad += 1;
+		else if( prevInput.LDown() )
+			keyboardInput.leftStickPad += ( 1 && down ) << 1;
+	}
+	else
+	{
+		keyboardInput.leftStickPad += 1 && up;
+		keyboardInput.leftStickPad += ( 1 && down ) << 1;
+	}
+
+	if( left && right )
+	{
+		if( prevInput.LLeft() )
+		{
+			keyboardInput.leftStickPad += ( 1 && left ) << 2;
+		}
+		else if( prevInput.LRight() )
+		{
+			keyboardInput.leftStickPad += ( 1 && right ) << 3;
+		}
+	}
+	else
+	{
+		keyboardInput.leftStickPad += ( 1 && left ) << 2;
+		keyboardInput.leftStickPad += ( 1 && right ) << 3;
+	}
+
+	GetCurrInput(i) = keyboardInput;
 }
 
 int GameSession::Run( string fileN )
@@ -5576,46 +5741,55 @@ int GameSession::Run( string fileN )
 	
 
 	
-	player = new Actor( this, 0 );
+	player[0] = new Actor( this, 0 );
 
 	OpenFile( fileName );
 	
-	player->InitAfterEnemies();
 
-	if( multiSession )
+	
+	
+	if( raceFight != NULL )
 	{
-		player2 = new Actor( this, 1 );
-		player2->InitAfterEnemies();
+		player[1] = new Actor( this, 1 );
 	}
 	else
 	{
-		player2 = NULL;
+		player[1] = NULL;
 	}
 
-	player->position = originalPos;
-	if( multiSession )
+	player[2] = NULL;
+	player[3] = NULL;
+
+	Actor *p = NULL;
+	for( int i = 0; i < 4; ++i )
 	{
-		player2->position = player->position;
+		p = GetPlayer( i );
+		if( p != NULL )
+			p->InitAfterEnemies();
 	}
-	/*{
-		cout << "HAFHWEIFHWEFH" << endl;
-		string masterVolume[101];
-		string musicVolume[101];
-		string soundVolume[101];
-		char *blah = new char[10];
-		delete [] blah;
-		cout << "after AWHEIOHGAWEHGEWHGE" << endl;
-	}*/
-	
-	//enterNexus1Seq = new EnterNexus1Seq( this );
+
+	Actor *p0 = GetPlayer( 0 );
+	p0->position = originalPos;
+
+	for( int i = 1; i < 4; ++i )
+	{
+		p = GetPlayer( i );
+		if( p != NULL )
+		{
+			p->position = p0->position;
+		}
+
+	}
+
+
 	cout << "NOTNOTNOTNTO" << endl;
 	pauseMenu = new PauseMenu( this );
 	pauseMenu->SetTab( PauseMenu::Tab::KIN );
 
 	cout << "TEST" << endl;
 	//pauseMenu->cOptions->xboxInputAssoc[0];
-	mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-	mainMenu->controller2.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+	//mainMenu->controller.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+	//mainMenu->controller2.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
 
 	cout << "WHAT IS THIS" << endl;
 
@@ -5652,9 +5826,10 @@ int GameSession::Run( string fileN )
 	//use player->setactivepowers to set it up from the level. need to add it
 	//to the editor
 
-	powerWheel = new PowerWheel( this, player->hasPowerAirDash, 
-		player->hasPowerGravReverse, player->hasPowerBounce, 
-		player->hasPowerGrindBall, player->hasPowerTimeSlow, player->hasPowerRightWire);
+	
+	powerWheel = new PowerWheel( this, p0->hasPowerAirDash, 
+		p0->hasPowerGravReverse, p0->hasPowerBounce, 
+		p0->hasPowerGrindBall, p0->hasPowerTimeSlow, p0->hasPowerRightWire);
 
 	powerRing = new PowerRing( this );
 
@@ -5711,8 +5886,8 @@ int GameSession::Run( string fileN )
 	groundTrans.translate( 0, 0 );
 	
 
-	cam.pos.x = player->position.x;
-	cam.pos.y = player->position.y;
+	cam.pos.x = p0->position.x;
+	cam.pos.y = p0->position.y;
 	
 	sf::Vertex *line = new sf::Vertex[numPoints*2];
 	for( int i = 0; i < numPoints; ++i )
@@ -5759,6 +5934,7 @@ int GameSession::Run( string fileN )
 	bool skipped = false;
 	bool oneFrameMode = false;
 	quit = false;
+
 
 	controller.UpdateState();
 	currInput = controller.GetState();
@@ -6116,14 +6292,23 @@ int GameSession::Run( string fileN )
 				{
 					//prevInput = currInput;
 					//player->prevInput = currInput;
-					controller.UpdateState();
+
+					for( int i = 0; i < 4; ++i )
+					{
+						GetController( i ).UpdateState();
+					}
+					/*controller.UpdateState();
 					con = controller.GetState();
 
 					if( controller2 != NULL )
 					{
 						controller2->UpdateState();
 						con2 = controller2->GetState();
-					}
+					}*/
+
+					//UpdateControllers();
+
+					
 
 					
 					
@@ -6196,7 +6381,7 @@ int GameSession::Run( string fileN )
 			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
 			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead /*|| (currInput.start && !prevInput.start )*/ ) )
+			//if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead /*|| (currInput.start && !prevInput.start )*/ ) )
 			{
 				//levelReset = true;
 				//RestartLevel();
@@ -6229,135 +6414,50 @@ int GameSession::Run( string fileN )
 			if( pauseFrames == 0 )
 			{
 
-			prevInput = currInput;
+				for( int i = 0; i < 4; ++i )
+				{
+					GetPrevInput( i ) = GetCurrInput( i );
+				}
+			//prevInput = currInput;
 
-			if( multiSession )
-				prevInput2 = currInput2;
+			//if( multiSession )
+			//	prevInput2 = currInput2;
 			
 
 			if( !cutPlayerInput )
 			{
-				player->prevInput = currInput;
 
-				if( multiSession )
-					player2->prevInput = currInput2;
+				for( int i = 0; i < 4; ++i )
+				{
+					GetPlayer(i)->prevInput = GetCurrInput( i );
+				}
+				//player->prevInput = currInput;
+
+				//if( multiSession )
+				//	player2->prevInput = currInput2;
 			}
 
-			bool canControllerUpdate = controller.UpdateState();
-			if( !canControllerUpdate )
+			for( int i = 0; i < 4; ++i )
 			{
-				bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-				bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-				bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-				bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
-
-			//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
-			//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
-			//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
-			//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
-
-				ControllerState keyboardInput;    
-				keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
-				keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
-				keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
-				keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
-				//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
-				keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
-				keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
-				keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
-				keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
-				keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
-				keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
-			
-				keyboardInput.rightStickPad = 0;
-				if( Keyboard::isKeyPressed( Keyboard::A ) )
+				Controller &c = GetController( i );
+				bool canControllerUpdate = c.UpdateState();
+				if( !canControllerUpdate )
 				{
-					keyboardInput.rightStickPad += 1 << 1;
-				}
-				else if( Keyboard::isKeyPressed( Keyboard::S ) )
-				{
-					keyboardInput.rightStickPad += 1;
-				}
-				
-
-				
-				
-				//keyboardInput.rightStickMagnitude
-				
-
-				/*if( altRight )
-					currInput .altPad += 1 << 3;
-				if( altLeft )
-					currInput .altPad += 1 << 2;
-				if( altUp )
-					currInput .altPad += 1;
-				if( altDown )
-					currInput .altPad += 1 << 1;*/
-				
-				if( up && down )
-				{
-					if( prevInput.LUp() )
-						keyboardInput.leftStickPad += 1;
-					else if( prevInput.LDown() )
-						keyboardInput.leftStickPad += ( 1 && down ) << 1;
+					//KeyboardUpdate( 0 );
 				}
 				else
 				{
-					keyboardInput.leftStickPad += 1 && up;
-					keyboardInput.leftStickPad += ( 1 && down ) << 1;
+					c.UpdateState();
+					GetCurrInput( i ) = c.GetState();
 				}
-
-				if( left && right )
-				{
-					if( prevInput.LLeft() )
-					{
-						keyboardInput.leftStickPad += ( 1 && left ) << 2;
-					}
-					else if( prevInput.LRight() )
-					{
-						keyboardInput.leftStickPad += ( 1 && right ) << 3;
-					}
-				}
-				else
-				{
-					keyboardInput.leftStickPad += ( 1 && left ) << 2;
-					keyboardInput.leftStickPad += ( 1 && right ) << 3;
-				}
-
-				currInput = keyboardInput;
-			}
-			else
-			{
-				controller.UpdateState();
-				currInput = controller.GetState();
-
-				/*bool leftShoulder = currInput.leftShoulder;
-				bool rightShoulder = currInput.rightShoulder;
-				bool A = currInput.A;
-				bool X = currInput.X;
-				bool Y = currInput.Y;
-				bool B = currInput.B;
-				
-				currInput.A = rightShoulder;
-				currInput.rightShoulder = A;
-
-				currInput.X = Y;
-				currInput.leftShoulder = X;
-				currInput.Y = leftShoulder;*/
-				
-
-
-				//currInput.X |= currInput.rightShoulder;
-
-			//currInput.B;//|= currInput.rightTrigger > 200;
-	//		cout << "up: " << currInput.LUp() << ", " << (int)currInput.leftStickPad << ", " << (int)currInput.pad << ", " << (int)currInput.rightStickPad << endl;
 			}
 
 
+			//currently only records 1 player replays. fix this later
 			if( repPlayer != NULL )//repPlayer->init )
 			{
 				//cout << "replay input" << repPlayer->frame << endl;
-				repPlayer->UpdateInput( currInput );
+				repPlayer->UpdateInput( GetCurrInput( 0 ) );
 				//repPlayer->up
 			}
 
@@ -6367,209 +6467,44 @@ int GameSession::Run( string fileN )
 				recPlayer->RecordFrame();
 			}
 
-			if( multiSession )
-			{
-				//prevInput2 = currInput2;
-
-				assert( controller2 != NULL );
-				bool canControllerUpdate2 = controller2->UpdateState();
-				if( canControllerUpdate && !canControllerUpdate2 )
-				{
-					bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-					bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-					bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-					bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
-
-					ControllerState keyboardInput;    
-					keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
-					keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
-					keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
-					keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
-					//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
-					keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
-					keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
-					keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
-					keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
-					keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
-					keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
 			
-					keyboardInput.rightStickPad = 0;
-					if( Keyboard::isKeyPressed( Keyboard::A ) )
-					{
-						keyboardInput.rightStickPad += 1 << 1;
-					}
-					else if( Keyboard::isKeyPressed( Keyboard::S ) )
-					{
-						keyboardInput.rightStickPad += 1;
-					}
-				
-					if( up && down )
-					{
-						if( prevInput2.LUp() )
-							keyboardInput.leftStickPad += 1;
-						else if( prevInput2.LDown() )
-							keyboardInput.leftStickPad += ( 1 && down ) << 1;
-					}
-					else
-					{
-						keyboardInput.leftStickPad += 1 && up;
-						keyboardInput.leftStickPad += ( 1 && down ) << 1;
-					}
-
-					if( left && right )
-					{
-						if( prevInput2.LLeft() )
-						{
-							keyboardInput.leftStickPad += ( 1 && left ) << 2;
-						}
-						else if( prevInput2.LRight() )
-						{
-							keyboardInput.leftStickPad += ( 1 && right ) << 3;
-						}
-					}
-					else
-					{
-						keyboardInput.leftStickPad += ( 1 && left ) << 2;
-						keyboardInput.leftStickPad += ( 1 && right ) << 3;
-					}
-
-					currInput2 = keyboardInput;
-				}
-				else
-				{
-					//controller2->UpdateState();
-					currInput2 = controller2->GetState();
-				}
-			}
 
 
 			if( !cutPlayerInput )
 			{
-				ControllerState &pCurr = player->currInput;
-				//ControllerState &pPrev = player->prevInput;
-
-				
-				bool alreadyBounce = pCurr.X;
-				bool alreadyGrind = pCurr.Y;
-				bool alreadyTimeSlow = pCurr.leftShoulder;
-				player->currInput = currInput;
-				if( controller.keySettings.toggleBounce )
+				for( int i = 0; i < 4; ++i )
 				{
-					if( currInput.X && !prevInput.X )
-					{
-						pCurr.X = !alreadyBounce;
-					}
-					else
-					{
-						pCurr.X = alreadyBounce;
-					}
+					ApplyToggleUpdates( i );
 				}
-				if( controller.keySettings.toggleGrind )
-				{
-					if( currInput.Y && !prevInput.Y )
-					{
-						pCurr.Y = !alreadyGrind;
-						//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
-					}
-					else
-					{
-						pCurr.Y = alreadyGrind;
-					}
-				}
-				if( controller.keySettings.toggleTimeSlow )
-				{
-					if( currInput.leftShoulder && !prevInput.leftShoulder )
-					{
-						
-						pCurr.leftShoulder = !alreadyTimeSlow;
-						
-					}
-					else
-					{
-						pCurr.leftShoulder = alreadyTimeSlow;
-					}
-				}
-
-				if( multiSession )
-				{
-					assert( controller2 != NULL );
-
-					ControllerState &pCurr = player2->currInput;
-				//ControllerState &pPrev = player->prevInput;
-
-				
-					bool alreadyBounce = pCurr.X;
-					bool alreadyGrind = pCurr.Y;
-					bool alreadyTimeSlow = pCurr.leftShoulder;
-
-					player2->currInput = currInput2;
-
-					if( controller2->keySettings.toggleBounce )
-					{
-						if( currInput2.X && !prevInput2.X )
-						{
-							pCurr.X = !alreadyBounce;
-						}
-						else
-						{
-							pCurr.X = alreadyBounce;
-						}
-					}
-					if( controller2->keySettings.toggleGrind )
-					{
-						if( currInput2.Y && !prevInput2.Y )
-						{
-							pCurr.Y = !alreadyGrind;
-							//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
-						}
-						else
-						{
-							pCurr.Y = alreadyGrind;
-						}
-					}
-					if( controller2->keySettings.toggleTimeSlow )
-					{
-						if( currInput2.leftShoulder && !prevInput2.leftShoulder )
-						{
-						
-							pCurr.leftShoulder = !alreadyTimeSlow;
-						
-						}
-						else
-						{
-							pCurr.leftShoulder = alreadyTimeSlow;
-						}
-					}
-				}
-
 				//else
 			}
 
 			}
 			else if( pauseFrames > 0 )
 			{
-				if( player->changingClone )
+				//if( player->changingClone )
+				//{
+				//	player->percentCloneChanged += player->percentCloneRate;
+				//	//if( player->percentCloneChanged >= 1 )
+				//	{
+				//		player->percentCloneChanged = 0;
+				//	//	player->percentCloneChanged = 1;
+				//		player->changingClone = false;
+				//		pauseFrames = 0;
+				//	}
+
+				//	//pauseFrames--;
+				//	accumulator -= TIMESTEP;
+				//	//break;
+				//	continue;
+				//}
+				Actor *p = NULL;
+				for( int i = 0; i < 4; ++i )
 				{
-					player->percentCloneChanged += player->percentCloneRate;
-					//if( player->percentCloneChanged >= 1 )
-					{
-						player->percentCloneChanged = 0;
-					//	player->percentCloneChanged = 1;
-						player->changingClone = false;
-						pauseFrames = 0;
-					}
-
-					//pauseFrames--;
-					accumulator -= TIMESTEP;
-					//break;
-					continue;
+					 p = GetPlayer( i );
+					 if( p != NULL )
+						p->flashFrames--;
 				}
-
-				player->flashFrames--;
-				//cam.offset.y += 10;
-				
-				
-				//cam.Update( &player );
 				
 				//view fx that are outside of hitlag pausing
 				Enemy *currFX = activeEnemyList;
@@ -6656,11 +6591,11 @@ int GameSession::Run( string fileN )
 				//testBuf.Send( totalGameFrames );
 
 				totalGameFrames++;
-				player->UpdatePrePhysics();
-
-				if( multiSession )
+				for( int i = 0; i < 4; ++i )
 				{
-					player2->UpdatePrePhysics();
+					p = GetPlayer( i );
+					if( p != NULL )
+						p->UpdatePrePhysics();
 				}
 
 				UpdateEnemiesPrePhysics();
@@ -6669,11 +6604,11 @@ int GameSession::Run( string fileN )
 
 				RecordReplayEnemies();
 
-				player->UpdatePostPhysics();
-
-				if( multiSession )
+				for( int i = 0; i < 4; ++i )
 				{
-					player2->UpdatePostPhysics();
+					p = GetPlayer( i );
+					if( p != NULL )
+						p->UpdatePostPhysics();
 				}
 
 				if( recGhost != NULL )
@@ -6695,21 +6630,18 @@ int GameSession::Run( string fileN )
 					break;
 				}
 
-				//wireTestClock.restart();
-				if( player->hasPowerLeftWire )
-					player->leftWire->UpdateQuads();
 
-				if( player->hasPowerRightWire )
-					player->rightWire->UpdateQuads();
-				//cout << "wire update milli: " << wireTestClock.getElapsedTime().asMilliseconds() << endl;
-
-				if( multiSession )
+				for( int i = 0; i < 4; ++i )
 				{
-					if( player2->hasPowerLeftWire )
-						player2->leftWire->UpdateQuads();
+					p = GetPlayer( i );
+					if( p != NULL )
+					{
+						if( p->hasPowerLeftWire )
+							p->leftWire->UpdateQuads();
 
-					if( player2->hasPowerRightWire )
-						player2->rightWire->UpdateQuads();
+						if( p->hasPowerRightWire )
+							p->rightWire->UpdateQuads();
+					}
 				}
 
 				UpdateEnemiesPostPhysics();
@@ -6719,20 +6651,7 @@ int GameSession::Run( string fileN )
 					gates[i]->Update();
 				}
 
-				
-
-				//cout << "after count: " << CountActiveEnemies() << endl;
-
-				//cout << "updating loop" << endl;
-
-				//Vector2f oldCam = cam.pos;
-				//float oldCamZoom = cam.GetZoom();
-
-				//f->Update();
-
-				//powerOrbs->UpdateStarVA();
-				//powerWheel->UpdateStarVA();
-				if( player->action != Actor::Action::SPAWNWAIT || player->frame > 20 )
+				if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || player->frame > 20 )
 					powerWheel->UpdateSections();
 
 				UpdateEffects();
@@ -6896,6 +6815,7 @@ int GameSession::Run( string fileN )
 					}
 					else if( shipSeqFrame == 240 )//121 )
 					{
+						Actor *player = GetPlayer( 0 );
 						//cout << "relshipvel: " << relShipVel.x << ", " << relShipVel.y << endl;
 						player->action = Actor::JUMP;
 						player->frame = 1;
@@ -6942,7 +6862,7 @@ int GameSession::Run( string fileN )
 				flowShader.setParameter( "radius", flowRadius / maxFlowRings );
 				//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
 				flowShader.setParameter( "zoom", cam.GetZoom() );
-				flowShader.setParameter( "playerPos", player->position.x, player->position.y );
+				flowShader.setParameter( "playerPos", p0->position.x, p0->position.y );
 
 
 				++flowFrame;
@@ -6951,21 +6871,21 @@ int GameSession::Run( string fileN )
 					flowFrame = 0;
 				}
 				
-				int speedLevel = player->speedLevel;
+				int speedLevel = p0->speedLevel;
 				//speedBarShader.setParameter( "onPortion", (float)speedLevel );
 				//speedBarShader.setParameter( "quant", (float)currentSpeedBar );
 				float quant = 0;
 				if( speedLevel == 0 )
 				{
-					quant = (float)(player->currentSpeedBar / player->level1SpeedThresh);
+					quant = (float)(p0->currentSpeedBar / p0->level1SpeedThresh);
 				}
 				else if( speedLevel == 1 )
 				{
-					quant = (float)((player->currentSpeedBar-player->level1SpeedThresh) / ( player->level2SpeedThresh - player->level1SpeedThresh) );
+					quant = (float)((p0->currentSpeedBar-player->level1SpeedThresh) / ( p0->level2SpeedThresh - p0->level1SpeedThresh) );
 				}
 				else 
 				{
-					quant = (float)((player->currentSpeedBar-player->level2SpeedThresh) / ( player->maxGroundSpeed - player->level2SpeedThresh) );
+					quant = (float)((p0->currentSpeedBar-p0->level2SpeedThresh) / ( p0->maxGroundSpeed - p0->level2SpeedThresh) );
 					
 				}
 
@@ -6977,23 +6897,23 @@ int GameSession::Run( string fileN )
 				tempSpawnRect = screenRect;
 				enemyTree->Query( this, screenRect );
 
-				if( player->blah || player->record > 1 )
-				{
-					int playback = player->recordedGhosts;
-					if( player->record > 1 )
-						playback--;
+				//if( player->blah || player->record > 1 )
+				//{
+				//	int playback = player->recordedGhosts;
+				//	if( player->record > 1 )
+				//		playback--;
 
-					for( int i = 0; i < playback; ++i )
-					{
-						PlayerGhost *g = player->ghosts[i];
-						if( player->ghostFrame < g->totalRecorded )
-						{
-							//cout << "querying! " << player->ghostFrame << endl;
-							tempSpawnRect = g->states[player->ghostFrame].screenRect;
-							enemyTree->Query( this, g->states[player->ghostFrame].screenRect );
-						}
-					}
-				}
+				//	for( int i = 0; i < playback; ++i )
+				//	{
+				//		PlayerGhost *g = player->ghosts[i];
+				//		if( player->ghostFrame < g->totalRecorded )
+				//		{
+				//			//cout << "querying! " << player->ghostFrame << endl;
+				//			tempSpawnRect = g->states[player->ghostFrame].screenRect;
+				//			enemyTree->Query( this, g->states[player->ghostFrame].screenRect );
+				//		}
+				//	}
+				//}
 
 				queryMode = "crawlerreverser";
 				drawCrawlerReversers = NULL;
@@ -7004,7 +6924,7 @@ int GameSession::Run( string fileN )
 				while( ev != NULL )
 				{
 					EnvPlant *tempNext = ev->next;
-					ev->particle->Update( player->position );
+					ev->particle->Update( p0->position );
 
 					ev->frame++;
 					if( ev->frame == ev->disperseLength * ev->disperseFactor )
@@ -7065,7 +6985,8 @@ int GameSession::Run( string fileN )
 				}
 				//TestVA::UpdateBushFrame();
 
-				if( player->dead )
+				//hacky
+				if( p0->dead )
 				{
 					RestartLevel();
 				}
@@ -7078,8 +6999,10 @@ int GameSession::Run( string fileN )
 						break;
 					}
 				}
-				else if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT )
+				else if( p0->action != Actor::GOALKILLWAIT && p0->action != Actor::GOALKILL && p0->action != Actor::EXIT )
 				{
+					ControllerState &currInput = GetCurrInput( 0 );
+					ControllerState &prevInput = GetPrevInput( 0 );
 					//if( Keyboard::isKeyPressed( Keyboard ) )
 					if( currInput.start && !prevInput.start )
 					{
@@ -7100,11 +7023,11 @@ int GameSession::Run( string fileN )
 				
 				
 
-				if( player->record > 0 )
+				/*if( player->record > 0 )
 				{
 					player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
 						screenRect;
-				}
+				}*/
 			}
 			
 
@@ -7302,9 +7225,9 @@ int GameSession::Run( string fileN )
 		
 		preScreenTex->setView( view );
 		
-		bDraw.setSize( sf::Vector2f(player->b.rw * 2, player->b.rh * 2) );
+		bDraw.setSize( sf::Vector2f(p0->b.rw * 2, p0->b.rh * 2) );
 		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-		bDraw.setPosition( player->position.x + player->b.offset.x , player->position.y + player->b.offset.y );
+		bDraw.setPosition( p0->position.x + p0->b.offset.x , p0->position.y + p0->b.offset.y );
 	//	bDraw.setRotation( player->sprite->getRotation() );
 		if( bdrawdraw)
 		{
@@ -7572,13 +7495,13 @@ int GameSession::Run( string fileN )
 			motionBlurShader.setParameter( "zoom", cam.GetZoom() );*/
 			//negative player y because of bottom left origin
 
-			V2d t = player->velocity;
+			V2d t = p0->velocity;
 			double maxBlur = 8;
-			t.x = t.x / player->maxGroundSpeed * maxBlur;
-			t.y = t.y / player->maxGroundSpeed * maxBlur;
+			t.x = t.x / p0->maxGroundSpeed * maxBlur;
+			t.y = t.y / p0->maxGroundSpeed * maxBlur;
 
 			
-			Vector2f testVel = Vector2f( player->velocity.x, -player->velocity.y );
+			Vector2f testVel = Vector2f( p0->velocity.x, -p0->velocity.y );
 
 			motionBlurShader.setParameter( "testVel", Vector2f( t.x, t.y ) );
 
@@ -7630,31 +7553,21 @@ int GameSession::Run( string fileN )
 
 		goalPulse->Draw( preScreenTex );
 
-		if( ( player->action != Actor::GRINDBALL && player->action != Actor::GRINDATTACK ) || player->leftWire->state == Wire::RETRACTING )
+		for( int i = 0; i < 4; ++i )
 		{
-			player->leftWire->Draw( preScreenTex );
-		}
-		if( ( player->action != Actor::GRINDBALL && player->action != Actor::GRINDATTACK ) || player->rightWire->state == Wire::RETRACTING )
-		{
-			player->rightWire->Draw( preScreenTex );
-		}
-
-		if( player2 != NULL )
-		{
-			if( ( player2->action != Actor::GRINDBALL && player2->action != Actor::GRINDATTACK ) || player2->leftWire->state == Wire::RETRACTING )
+			p = GetPlayer( 0 );
+			if( p != NULL )
 			{
-				player2->leftWire->Draw( preScreenTex );
-			}
-			if( ( player2->action != Actor::GRINDBALL && player2->action != Actor::GRINDATTACK ) || player2->rightWire->state == Wire::RETRACTING )
-			{
-				player2->rightWire->Draw( preScreenTex );
+				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) || p->leftWire->state == Wire::RETRACTING )
+				{
+					p->leftWire->Draw( preScreenTex );
+				}
+				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) || p->rightWire->state == Wire::RETRACTING )
+				{
+					p->rightWire->Draw( preScreenTex );
+				}
 			}
 		}
-
-		//cout << "view: " << view.getSize().x << ", " << view.getSize().y << endl;
-		//preScreenTex->setView( view );
-		//cout << "size what: " << preScreenTex->getView().getSize().x
-		//	<< ", " << preScreenTex->getView().getSize().y << endl;
 
 		if( shipSequence )
 		{
@@ -7668,16 +7581,17 @@ int GameSession::Run( string fileN )
 			preScreenTex->draw( shipSprite );
 		}
 
-		if( player->action != Actor::DEATH )
+		for( int i = 0; i < 4; ++i )
 		{
-			player->Draw( preScreenTex );
+			p = GetPlayer( 0 );
+			if( p != NULL )
+			{
+				p->Draw( preScreenTex );
 
-			if( repGhost != NULL )
-				repGhost->Draw( preScreenTex );
+				if( repGhost != NULL && i == 0 )
+					repGhost->Draw( preScreenTex );
+			}
 		}
-
-		if( player2 != NULL && player2->action != Actor::DEATH )
-			player2->Draw( preScreenTex );
 
 
 		if( shipSequence )
@@ -7791,7 +7705,7 @@ int GameSession::Run( string fileN )
 		double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
 		View vv;
-		vv.setCenter( player->position.x, player->position.y );
+		vv.setCenter( p0->position.x, p0->position.y );
 		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
 
 		minimapTex->setView( vv );
@@ -7891,11 +7805,19 @@ int GameSession::Run( string fileN )
 		//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
 		//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
 		
-		if( ( player->action != Actor::GRINDBALL && player->action != Actor::GRINDATTACK ) )
+		for( int i = 0; i < 4; ++i )
 		{
-			player->rightWire->DrawMinimap( minimapTex );
-			player->leftWire->DrawMinimap( minimapTex );
+			p = GetPlayer( 0 );
+			if( p != NULL )
+			{
+				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) )
+				{
+					p->rightWire->DrawMinimap( minimapTex );
+					p->leftWire->DrawMinimap( minimapTex );
+				}
+			}
 		}
+		
 
 		/*queryMode = "enemyminimap";
 		enemyTree->Query( this, minimapRect );
@@ -7974,12 +7896,12 @@ int GameSession::Run( string fileN )
 			Vector2f shockSize( 580/2, 580/2 );
 			sf::RectangleShape rectPost( shockSize );
 			rectPost.setOrigin( rectPost.getLocalBounds().width / 2, rectPost.getLocalBounds().height / 2 );
-			rectPost.setPosition( player->position.x, player->position.y ); //testing for now
+			rectPost.setPosition( p0->position.x, p0->position.y ); //testing for now
 
 			Sprite shockSprite;
 			shockSprite.setTexture( shockwaveTex );
 			shockSprite.setOrigin( shockSprite.getLocalBounds().width / 2, shockSprite.getLocalBounds().height / 2 );
-			shockSprite.setPosition( player->position.x, player->position.y );
+			shockSprite.setPosition( p0->position.x, p0->position.y );
 			//rectPost.setPosition( 0, 0 );
 
 			Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y );
@@ -8113,29 +8035,29 @@ int GameSession::Run( string fileN )
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
 		
-		if( player->speedLevel == 0 )
+		if( p0->speedLevel == 0 )
 		{
 			preScreenTex->draw( player->kinUnderOutline );
 			preScreenTex->draw( player->kinTealOutline, &speedBarShader );
 		}
-		else if( player->speedLevel == 1 )
+		else if( p0->speedLevel == 1 )
 		{
 			preScreenTex->draw( player->kinTealOutline );
 			preScreenTex->draw( player->kinBlueOutline, &speedBarShader );
 		}
-		else if( player->speedLevel == 2 )
+		else if( p0->speedLevel == 2 )
 		{
 			preScreenTex->draw( player->kinBlueOutline );
 			preScreenTex->draw( player->kinPurpleOutline, &speedBarShader );
 		}
 
-		if( player->desperationMode )
+		if( p0->desperationMode )
 		{
-			preScreenTex->draw( player->kinFace, &(player->despFaceShader) );
+			preScreenTex->draw( p0->kinFace, &(p0->despFaceShader) );
 		}
 		else
 		{
-			preScreenTex->draw( player->kinFace );
+			preScreenTex->draw( p0->kinFace );
 		}
 		
 		//else 
@@ -8172,12 +8094,12 @@ int GameSession::Run( string fileN )
 				V2d avg = ( tGate->edgeA->v1 + tGate->edgeA->v0 ) / 2.0;
 
 				double rad = minimapRect.width / 2 - 100;
-				if( length( player->position - avg ) < rad )
+				if( length( p0->position - avg ) < rad )
 				{
 					continue;
 				}
 				
-				V2d dir = normalize( avg - player->position );
+				V2d dir = normalize( avg - p0->position );
 				double angle = atan2( dir.y, -dir.x );
 				gateDirections[index].setRotation( -angle / PI * 180 - 90 );
 				preScreenTex->draw( gateDirections[index] );
@@ -8265,18 +8187,18 @@ int GameSession::Run( string fileN )
 		//}
 
 		
+		for( int i = 0; i < 4; ++i )
+		{
+			p = GetPlayer( i );
+			if( p != NULL )
+			{
+				if( p->action == Actor::DEATH )
+				{
+					p->Draw( preScreenTex );
+				}
+			}
+		}
 
-		if( player->action == Actor::DEATH )
-		{
-			player->Draw( preScreenTex );
-		}
-		if( player2 != NULL && player2->action == Actor::DEATH )
-		{
-			player2->Draw( preScreenTex );
-		}
-	//	preScreenTex->setSmooth( true );
-		
-		//preTexSprite.setOrigin( preTexSprite.getLocalBounds().width / 2, preTexSprite.getLocalBounds().height / 2 );
 		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
 		cloneShader.setParameter( "newscreen", player->percentCloneChanged );
 		cloneShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
@@ -8285,32 +8207,32 @@ int GameSession::Run( string fileN )
 		cloneShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y + view.getSize().y / 2 );
 
-		cloneShader.setParameter( "bubbleRadius0", player->bubbleRadiusSize[0] );
-		cloneShader.setParameter( "bubbleRadius1", player->bubbleRadiusSize[1] );
-		cloneShader.setParameter( "bubbleRadius2", player->bubbleRadiusSize[2] );
-		cloneShader.setParameter( "bubbleRadius3", player->bubbleRadiusSize[3] );
-		cloneShader.setParameter( "bubbleRadius4", player->bubbleRadiusSize[4] );
+		cloneShader.setParameter( "bubbleRadius0", p0->bubbleRadiusSize[0] );
+		cloneShader.setParameter( "bubbleRadius1", p0->bubbleRadiusSize[1] );
+		cloneShader.setParameter( "bubbleRadius2", p0->bubbleRadiusSize[2] );
+		cloneShader.setParameter( "bubbleRadius3", p0->bubbleRadiusSize[3] );
+		cloneShader.setParameter( "bubbleRadius4", p0->bubbleRadiusSize[4] );
 		
 
 		float windowx = 1920;//window->getSize().x;
 		float windowy = 1080;//window->getSize().y;
 
-		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[0].x, player->bubblePos[0].y ) );
+		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[0].x, p0->bubblePos[0].y ) );
 		Vector2f pos0( vi0.x / windowx, -1 + vi0.y / windowy ); 
 
-		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[1].x, player->bubblePos[1].y ) );
+		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[1].x, p0->bubblePos[1].y ) );
 		Vector2f pos1( vi1.x / windowx, -1 + vi1.y / windowy ); 
 
-		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[2].x, player->bubblePos[2].y ) );
+		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[2].x, p0->bubblePos[2].y ) );
 		Vector2f pos2( vi2.x / windowx, -1 + vi2.y / windowy ); 
 
-		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[3].x, player->bubblePos[3].y ) );
+		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[3].x, p0->bubblePos[3].y ) );
 		Vector2f pos3( vi3.x / windowx, -1 + vi3.y / windowy ); 
 
-		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[4].x, player->bubblePos[4].y ) );
+		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[4].x, p0->bubblePos[4].y ) );
 		Vector2f pos4( vi4.x / windowx, -1 + vi4.y / windowy ); 
 
-		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( player->bubblePos[5].x, player->bubblePos[5].y ) );
+		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[5].x, p0->bubblePos[5].y ) );
 		Vector2f pos5( vi5.x / windowx, -1 + vi5.y / windowy ); 
 
 		//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
@@ -8319,15 +8241,15 @@ int GameSession::Run( string fileN )
 		//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
 
 		cloneShader.setParameter( "bubble0", pos0 );
-		cloneShader.setParameter( "b0Frame", player->bubbleFramesToLive[0] );
+		cloneShader.setParameter( "b0Frame", p0->bubbleFramesToLive[0] );
 		cloneShader.setParameter( "bubble1", pos1 );
-		cloneShader.setParameter( "b1Frame", player->bubbleFramesToLive[1] );
+		cloneShader.setParameter( "b1Frame", p0->bubbleFramesToLive[1] );
 		cloneShader.setParameter( "bubble2", pos2 );
-		cloneShader.setParameter( "b2Frame", player->bubbleFramesToLive[2] );
+		cloneShader.setParameter( "b2Frame", p0->bubbleFramesToLive[2] );
 		cloneShader.setParameter( "bubble3", pos3 );
-		cloneShader.setParameter( "b3Frame", player->bubbleFramesToLive[3] );
+		cloneShader.setParameter( "b3Frame", p0->bubbleFramesToLive[3] );
 		cloneShader.setParameter( "bubble4", pos4 );
-		cloneShader.setParameter( "b4Frame", player->bubbleFramesToLive[4] );
+		cloneShader.setParameter( "b4Frame", p0->bubbleFramesToLive[4] );
 		//cloneShader.setParameter( "bubble5", pos5 );
 		//cloneShader.setParameter( "b5Frame", player->bubbleFramesToLive[5] );
 		
@@ -8352,10 +8274,14 @@ int GameSession::Run( string fileN )
 		/*if( player->action != Actor::DEATH )
 			player->Draw( preScreenTex );*/
 
-		player->DodecaLateDraw( preScreenTex );
-
-		if( multiSession )
-			player2->DodecaLateDraw( preScreenTex );
+		for( int i = 0; i < 4; ++i )
+		{
+			p = GetPlayer( i );
+			if( p != NULL )
+			{
+				p->DodecaLateDraw( preScreenTex );
+			}
+		}
 
 		//enemyTree->DebugDraw( preScreenTex );
 
@@ -8575,7 +8501,7 @@ int GameSession::Run( string fileN )
 
 			
 
-			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
+			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( p0->position.x, p0->position.y ) );
 
 			mapTex->setView( vuiView );
 
@@ -8891,7 +8817,7 @@ int GameSession::Run( string fileN )
 				}
 			}
 
-			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
+			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( p0->position.x, p0->position.y ) );
 
 			mapTex->setView( vuiView );
 
@@ -9423,10 +9349,15 @@ void GameSession::SetupInversePoly( Tileset *ts_bush, int currentEdgeIndex )
 
 void GameSession::DebugDrawActors()
 {
-	player->DebugDraw( preScreenTex );
-
-	if( multiSession )
-		player2->DebugDraw( preScreenTex );
+	Actor *p = NULL;
+	for( int i = 0; i < 4; ++i )
+	{
+		p = GetPlayer( i );
+		if( p != NULL )
+		{
+			p->DebugDraw( preScreenTex );
+		}
+	}
 	
 	Enemy *currEnemy = activeEnemyList;
 	while( currEnemy != NULL )
@@ -9523,6 +9454,7 @@ bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
 
 void GameSession::ResetShipSequence()
 {
+	Actor *player = GetPlayer( 0 );
 	drain = false;
 	player->action = Actor::RIDESHIP;
 	player->frame = 0;
@@ -9595,14 +9527,9 @@ void GameSession::ResetShipSequence()
 	middleClouds.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
 }
 
-void GameSession::SetSecondController( GameController &c )
+void GameSession::RespawnPlayer( int index )
 {
-	if( multiSession )
-		controller2 = &c;
-}
-
-void GameSession::RespawnPlayer()
-{
+	Actor *player = GetPlayer( index );
 	player->framesNotGrinding = 0;
 	player->runeStep = 0;
 	player->runeLength = 0;
@@ -9825,13 +9752,17 @@ void GameSession::RestartLevel()
 		cam.offset = Vector2f( 0, 0 );
 	}
 
-	player->Respawn();
+	for( int i = 0; i < 4; ++i )
+	{
+		Actor *player = GetPlayer( i );
+		if( player != NULL )
+			player->Respawn();
+	}
+	//player->Respawn();
 	
 	cam.pos.x = player->position.x;
 	cam.pos.y = player->position.y;
 
-	if( player2 != NULL )
-		player2->Respawn();
 	//RespawnPlayer();
 	pauseFrames = 0;
 
@@ -12187,33 +12118,33 @@ void GameSession::RemoveEffect( EffectLayer layer, Enemy *e )
 
 	//might need to give enemies a second next/prev pair for clone power?
 	//totally does >.> CLONE POWER
-	if( player->record > 0 )
-	{
-		if( cloneInactiveEnemyList == NULL )
-		{
-			cloneInactiveEnemyList = e;
-			e->next = NULL;
-			e->prev = NULL;
-			//cout << "creating first dead clone enemy" << endl;
+	//if( player->record > 0 )
+	//{
+	//	if( cloneInactiveEnemyList == NULL )
+	//	{
+	//		cloneInactiveEnemyList = e;
+	//		e->next = NULL;
+	//		e->prev = NULL;
+	//		//cout << "creating first dead clone enemy" << endl;
 
-			/*int listSize = 0;
-			Enemy *ba = cloneInactiveEnemyList;
-			while( ba != NULL )
-			{
-				listSize++;
-				ba = ba->next;
-			}
+	//		/*int listSize = 0;
+	//		Enemy *ba = cloneInactiveEnemyList;
+	//		while( ba != NULL )
+	//		{
+	//			listSize++;
+	//			ba = ba->next;
+	//		}
 
-			cout << "size of dead list after first add: " << listSize << endl;*/
-		}
-		else
-		{
-			//cout << "creating more dead clone enemies" << endl;
-			e->next = cloneInactiveEnemyList;
-			cloneInactiveEnemyList->prev = e;
-			cloneInactiveEnemyList = e;
-		}
-	}
+	//		cout << "size of dead list after first add: " << listSize << endl;*/
+	//	}
+	//	else
+	//	{
+	//		//cout << "creating more dead clone enemies" << endl;
+	//		e->next = cloneInactiveEnemyList;
+	//		cloneInactiveEnemyList->prev = e;
+	//		cloneInactiveEnemyList = e;
+	//	}
+	//}
 }
 
 void GameSession::DeactivateEffect( BasicEffect *b )
@@ -12222,7 +12153,7 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 	RemoveEffect( b->layer, b );
 	//RemoveEnemy( b );
 
-	if( player->record == 0 )
+	/*if( player->record == 0 )
 	{
 		if( inactiveEffects == NULL )
 		{
@@ -12236,7 +12167,7 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 			inactiveEffects->prev = b;
 			inactiveEffects = b;
 		}
-	}
+	}*/
 }
 
 void GameSession::ResetEnemies()
@@ -13317,6 +13248,7 @@ void GameSession::SetCloudParAndDraw()
 
 void GameSession::SetUndergroundParAndDraw()
 {
+	Actor *player = GetPlayer( 0 );
 	preScreenTex->setView( view );
 
 	underShader.setParameter( "u_texture", *GetTileset( "underground01.png" , 128, 128 )->texture );

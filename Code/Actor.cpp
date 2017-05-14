@@ -47,9 +47,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//seq = SEQ_NOTHING;
 		enemiesKilledThisFrame = 0;
 		enemiesKilledLastFrame = 0;
-		toggleBounceInput = gs->controller.keySettings.toggleBounce;
-		toggleTimeSlowInput = gs->controller.keySettings.toggleTimeSlow;
-		toggleGrindInput = gs->controller.keySettings.toggleGrind;
+		GameController &c = gs->GetController( actorIndex );
+		toggleBounceInput = c.keySettings.toggleBounce;
+		toggleTimeSlowInput = c.keySettings.toggleTimeSlow;
+		toggleGrindInput = c.keySettings.toggleGrind;
 		speedParticleRate = 10; //20
 		speedParticleCounter = 1;
 		followerPos = V2d( 0, 0 );
@@ -20094,7 +20095,8 @@ void RecordPlayer::RecordFrame()
 	//			<< (int)state.leftShoulder
 	//			<< " " << (int)state.rightShoulder << " " << (int)state.A << " " << (int)state.B << " " 
 	//			<< (int)state.X << " " << (int)state.Y << endl;
-	ControllerState &s = player->owner->currInput;
+	ControllerState &s = player->owner->GetCurrInput( 0 );//currInput;
+	//temporary hack^
 	//ControllerState &state = inputBuffer[frame];
 	//state = ;
 

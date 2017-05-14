@@ -419,7 +419,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 
 	Buf testBuf;
-
+	MainMenu *mainMenu;
 	std::list<ReplayGhost*> replayGhosts;
 	RecordGhost *recGhost;
 	ReplayGhost *repGhost;
@@ -477,7 +477,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Tileset *ts_testParallax;
 	sf::Sprite testParallaxSprite;
 	
-	MainMenu *mainMenu;
+	
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
 	
@@ -486,11 +486,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::map<std::string,PoiInfo*> poiMap;
 	std::list<Barrier*> barriers;
 	
-	GameSession(GameController &c, 
-		SaveFile *sf,
+	GameSession( SaveFile *sf,
 		MainMenu *mainMenu
 		);
-	void SetSecondController( GameController &c );
 	void TriggerBarrier( Barrier *b );
 
 	//Boss_Crawler *b_crawler;
@@ -572,7 +570,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
 	double GetTriangleArea( p2t::Triangle * t );
-	void RespawnPlayer();
+	void RespawnPlayer(int index);
 	void ResetEnemies();
 	void ResetPlants();
 	void ResetInactiveEnemies();
@@ -676,8 +674,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::Transform groundTrans;
 	Camera cam;
-	Actor *player;
-	Actor *player2;
+	//Actor *player;
+	//Actor *player2;
+	Actor *players[4];
+	Actor *GetPlayer( int index );
 	int numPolyTypes;
 	sf::Shader *polyShaders;
 	Tileset **ts_polyShaders;
@@ -719,13 +719,13 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::VertexArray *va;
 
-	ControllerState prevInput;
-	ControllerState currInput;
-	ControllerState prevInput2;
-	ControllerState currInput2;
-
-	GameController &controller;
-	GameController *controller2;
+	ControllerState &GetPrevInput( int index );
+	ControllerState &GetCurrInput( int index );
+	GameController &GetController( int index );
+	void KeyboardUpdate( int index );
+	void ApplyToggleUpdates( int index );
+	//GameController &controller;
+	//GameController *controller2;
 
 	
 	

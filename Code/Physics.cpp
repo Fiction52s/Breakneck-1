@@ -212,7 +212,7 @@ void MovingTerrain::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
 
 void MovingTerrain::UpdatePhysics()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	//return;
 	oldPosition = position;
 

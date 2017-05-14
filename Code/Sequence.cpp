@@ -55,7 +55,7 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 
 bool ShipExitSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	int shipOffsetY = -200;
 	int pOffsetY = -170;
 	int sOffsetY = pOffsetY;//shipOffsetY + pOffsetY;
@@ -69,8 +69,8 @@ bool ShipExitSeq::Update()
 		{
 			owner->cam.SetManual( true );
 			center.movementList->start = V2d( owner->cam.pos.x, owner->cam.pos.y );
-			center.movementList->end = V2d( owner->player->position.x, 
-				owner->player->position.y - 200 );
+			center.movementList->end = V2d( owner->GetPlayer( 0 )->position.x, 
+				owner->GetPlayer( 0 )->position.y - 200 );
 			
 			center.Reset();
 			owner->cam.SetMovementSeq( &center, false );
@@ -86,7 +86,7 @@ bool ShipExitSeq::Update()
 			m->start = abovePlayer;
 			m->end = abovePlayer + V2d( 1000, -500 );
 
-			origPlayer = owner->player->position;
+			origPlayer = owner->GetPlayer( 0 )->position;
 			attachPoint = V2d( player->position.x, abovePlayer.y + 170 );
 			break;
 		}
@@ -100,7 +100,7 @@ bool ShipExitSeq::Update()
 		}
 	case (60-16):
 		{
-			owner->player->GrabShipWire();
+			owner->GetPlayer( 0 )->GrabShipWire();
 		}
 		break;
 	}
@@ -108,12 +108,12 @@ bool ShipExitSeq::Update()
 	//cout << "sequence frame : " << frame << endl;
 	if( frame >= 61 )
 	{
-		owner->player->position = V2d( shipMovement.position.x, shipMovement.position.y + 170 );
+		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 170 );
 	}
 	else if( frame >= 45 )
 	{
 		double a = (double)(frame-44) / 16;
-		owner->player->position = origPlayer * (1.0 - a ) + attachPoint * a;
+		owner->GetPlayer( 0 )->position = origPlayer * (1.0 - a ) + attachPoint * a;
 	}
 	
 
@@ -181,7 +181,7 @@ void CrawlerFightSeq::Reset()
 
 bool CrawlerFightSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	switch( frame )
 	{
 	case 0:
@@ -301,7 +301,7 @@ void CrawlerAfterFightSeq::Reset()
 
 bool CrawlerAfterFightSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	switch( frame )
 	{
 	case 0:
@@ -444,7 +444,7 @@ void EnterNexus1Seq::Reset()
 
 bool EnterNexus1Seq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	switch( frame )
 	{
 	case 0:
@@ -600,7 +600,7 @@ MeetCoyoteSeq::MeetCoyoteSeq( GameSession *p_owner )
 bool MeetCoyoteSeq::Update()
 {
 	Boss_Coyote *coy = owner->b_coyote;
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	switch( frame )
 	{
 	case 0:
@@ -713,7 +713,7 @@ CoyoteTalkSeq::CoyoteTalkSeq( GameSession *p_owner )
 
 bool CoyoteTalkSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	switch( frame )
 	{
 	case 0:
@@ -811,7 +811,7 @@ CoyoteFightSeq::CoyoteFightSeq( GameSession *p_owner )
 
 bool CoyoteFightSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	Boss_Coyote *coy = owner->b_coyote;
 	switch( frame )
 	{
@@ -928,7 +928,7 @@ SkeletonAttackCoyoteSeq::SkeletonAttackCoyoteSeq( GameSession *p_owner )
 
 bool SkeletonAttackCoyoteSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	switch( frame )
 	{
 	case 0:
@@ -997,7 +997,7 @@ BirdCrawlerAllianceSeq::BirdCrawlerAllianceSeq( GameSession *p_owner )
 
 bool BirdCrawlerAllianceSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	player->action = Actor::SPAWNWAIT;
 	player->frame = 0;
@@ -1081,7 +1081,7 @@ SkeletonFightSeq::SkeletonFightSeq( GameSession *p_owner )
 
 bool SkeletonFightSeq::Update()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	//player->action = Actor::SPAWNWAIT;
 	//player->frame = 0;

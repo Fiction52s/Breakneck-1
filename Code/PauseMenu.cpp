@@ -446,7 +446,7 @@ bool OptionsMenu::Update( ControllerState &currInput,
 					break;
 				case L_CONTROLLER_OPTIONS:
 					useControllerSchemeIndex = controllerSchemeIndex;
-					mainMenu->controller.SetFilter( xboxInputAssoc[useControllerSchemeIndex] );
+					//mainMenu->Getco.SetFilter( xboxInputAssoc[useControllerSchemeIndex] );
 					break;
 				}
 				//mode = SELECT_SCHEME;
@@ -631,147 +631,147 @@ bool OptionsMenu::Update( ControllerState &currInput,
 			}
 			break;
 		}
-	case MODIFY_XBOX_CONTROLS:
-		{
-			
+	//case MODIFY_XBOX_CONTROLS:
+	//	{
+	//		
 
-			if( !currInput.A && prevInput.A )
-			{
-				XBoxButton b;
-				
-				do
-				{
-					mainMenu->controller.UpdateState();
-					
-					ControllerState &c = mainMenu->controller.GetState();
+	//		if( !currInput.A && prevInput.A )
+	//		{
+	//			XBoxButton b;
+	//			
+	//			do
+	//			{
+	//				mainMenu->controller.UpdateState();
+	//				
+	//				ControllerState &c = mainMenu->controller.GetState();
 
-					b = CheckXBoxInput( c );
-				}
-				while( b == XBoxButton::XBOX_BLANK );
+	//				b = CheckXBoxInput( c );
+	//			}
+	//			while( b == XBoxButton::XBOX_BLANK );
 
-				XBoxButton bb;
-				do
-				{
-					mainMenu->controller.UpdateState();
-					
-					ControllerState &c = mainMenu->controller.GetState();
+	//			XBoxButton bb;
+	//			do
+	//			{
+	//				mainMenu->controller.UpdateState();
+	//				
+	//				ControllerState &c = mainMenu->controller.GetState();
 
-					bb = CheckXBoxInput( c );
-				}
-				while( bb != XBoxButton::XBOX_BLANK );
-				//cout << "b: " << b << endl;
-				SetButtonAssoc( useControllerSchemeIndex, b );
-				//xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
+	//				bb = CheckXBoxInput( c );
+	//			}
+	//			while( bb != XBoxButton::XBOX_BLANK );
+	//			//cout << "b: " << b << endl;
+	//			SetButtonAssoc( useControllerSchemeIndex, b );
+	//			//xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
 
-				UpdateXboxButtonIcons( useControllerSchemeIndex );
+	//			UpdateXboxButtonIcons( useControllerSchemeIndex );
 
-				SaveControlOptions();
+	//			SaveControlOptions();
 
-				mainMenu->controller.SetFilter( xboxInputAssoc[ useControllerSchemeIndex ] );
-			}
-			else if( currInput.B )
-			{
-				mode = LEFTBAR;
-				break;
-			}
-			else if( currInput.LLeft() && !prevInput.LLeft() )
-			{
-			}
-			else if( currInput.LRight() && !prevInput.LRight() )
-			{
-			}
-			else if( currInput.LUp() && !prevInput.LUp() )
-			{
-			}
-			else if( currInput.LDown() && !prevInput.LDown() )
-			{
-			}
+	//			mainMenu->controller.SetFilter( xboxInputAssoc[ useControllerSchemeIndex ] );
+	//		}
+	//		else if( currInput.B )
+	//		{
+	//			mode = LEFTBAR;
+	//			break;
+	//		}
+	//		else if( currInput.LLeft() && !prevInput.LLeft() )
+	//		{
+	//		}
+	//		else if( currInput.LRight() && !prevInput.LRight() )
+	//		{
+	//		}
+	//		else if( currInput.LUp() && !prevInput.LUp() )
+	//		{
+	//		}
+	//		else if( currInput.LDown() && !prevInput.LDown() )
+	//		{
+	//		}
 
 
-			bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-			bool canMoveSame = (moveDelayCounter == 0);
+	//		bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
+	//		bool canMoveSame = (moveDelayCounter == 0);
 
-			if( (currInput.LDown() || currInput.PDown()) && ( 
-					(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
-			{
-				
-				modifyIndex++;
-				//currentMenuSelect++;
-				if( modifyIndex > ControllerSettings::Count - 1 )
-					modifyIndex -= ControllerSettings::Count;
+	//		if( (currInput.LDown() || currInput.PDown()) && ( 
+	//				(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
+	//		{
+	//			
+	//			modifyIndex++;
+	//			//currentMenuSelect++;
+	//			if( modifyIndex > ControllerSettings::Count - 1 )
+	//				modifyIndex -= ControllerSettings::Count;
 
-				moveDown = true;
-				moveDelayCounter = moveDelayFrames;
-				//soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
-				//cout << "down modifyIndex: " << modifyIndex << endl;
-			}
-			else if( ( currInput.LUp() || currInput.PUp() ) && ( 
-				(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
-			{
-				//cout << "up modifyIndex: " << modifyIndex << endl;
-				modifyIndex--;
+	//			moveDown = true;
+	//			moveDelayCounter = moveDelayFrames;
+	//			//soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
+	//			//cout << "down modifyIndex: " << modifyIndex << endl;
+	//		}
+	//		else if( ( currInput.LUp() || currInput.PUp() ) && ( 
+	//			(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
+	//		{
+	//			//cout << "up modifyIndex: " << modifyIndex << endl;
+	//			modifyIndex--;
 
-				
-				
-				moveUp = true;
-				moveDelayCounter = moveDelayFrames;
-				//soundNodeList->ActivateSound( soundBuffers[S_UP] );
-			}
+	//			
+	//			
+	//			moveUp = true;
+	//			moveDelayCounter = moveDelayFrames;
+	//			//soundNodeList->ActivateSound( soundBuffers[S_UP] );
+	//		}
 
-			if( (currInput.LRight() || currInput.PRight()) && ( 
-				(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
-			{
-				modifyIndex+= ControllerSettings::Count / 2;
+	//		if( (currInput.LRight() || currInput.PRight()) && ( 
+	//			(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
+	//		{
+	//			modifyIndex+= ControllerSettings::Count / 2;
 
-				if( modifyIndex > ControllerSettings::Count - 1 )
-					modifyIndex -= ControllerSettings::Count;
-				//currentMenuSelect++;
-				/*if( selectedSaveIndex % 2 == 0 )
-					selectedSaveIndex-= 2;*/
-				moveRight = true;
-				moveDelayCounter = moveDelayFrames;
-			}
-			else if( ( currInput.LLeft() || currInput.PLeft() ) && ( 
-				(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
-			{
-				modifyIndex -= ControllerSettings::Count / 2;
+	//			if( modifyIndex > ControllerSettings::Count - 1 )
+	//				modifyIndex -= ControllerSettings::Count;
+	//			//currentMenuSelect++;
+	//			/*if( selectedSaveIndex % 2 == 0 )
+	//				selectedSaveIndex-= 2;*/
+	//			moveRight = true;
+	//			moveDelayCounter = moveDelayFrames;
+	//		}
+	//		else if( ( currInput.LLeft() || currInput.PLeft() ) && ( 
+	//			(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
+	//		{
+	//			modifyIndex -= ControllerSettings::Count / 2;
 
-				if( modifyIndex < 0 )
-					modifyIndex += ControllerSettings::Count;
+	//			if( modifyIndex < 0 )
+	//				modifyIndex += ControllerSettings::Count;
 
-				
-				moveLeft = true;
+	//			
+	//			moveLeft = true;
 
-				moveDelayCounter = moveDelayFrames;
-			}
-				
-			if( moveDelayCounter > 0 )
-			{
-				moveDelayCounter--;
-			}
-				
+	//			moveDelayCounter = moveDelayFrames;
+	//		}
+	//			
+	//		if( moveDelayCounter > 0 )
+	//		{
+	//			moveDelayCounter--;
+	//		}
+	//			
 
-			if( !(currInput.LDown() || currInput.PDown()) )
-			{
-				moveDown = false;
-			}
-			if( ! ( currInput.LUp() || currInput.PUp() ) )
-			{
-				moveUp = false;
-			}
+	//		if( !(currInput.LDown() || currInput.PDown()) )
+	//		{
+	//			moveDown = false;
+	//		}
+	//		if( ! ( currInput.LUp() || currInput.PUp() ) )
+	//		{
+	//			moveUp = false;
+	//		}
 
-			if( !(currInput.LRight() || currInput.PRight()) )
-			{
-				moveRight = false;
-			}
-			if( !(currInput.LLeft() || currInput.PLeft() ) )
-			{
-				moveLeft = false;
-			}
+	//		if( !(currInput.LRight() || currInput.PRight()) )
+	//		{
+	//			moveRight = false;
+	//		}
+	//		if( !(currInput.LLeft() || currInput.PLeft() ) )
+	//		{
+	//			moveLeft = false;
+	//		}
 
-			
-			break;
-		}
+	//		
+	//		break;
+	//	}
 	}
 }
 
@@ -1331,8 +1331,8 @@ void PauseMenu::SetTab( Tab t )
 	switch( t )
 	{
 	case MAP:
-		mapCenter.x = owner->player->position.x;
-		mapCenter.y = owner->player->position.y;
+		mapCenter.x = owner->GetPlayer( 0 )->position.x;
+		mapCenter.y = owner->GetPlayer( 0 )->position.y;
 		mapZoomFactor = 16;	
 		break;
 	case KIN:

@@ -27,9 +27,19 @@ sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
 
-MainMenu::MainMenu()
-	:controller( 0 ), windowWidth(1920), windowHeight( 1080 ), controller2( 1 )
+GameController &MainMenu::GetController( int index )
 {
+	return *controllers[index];
+}
+
+MainMenu::MainMenu()
+	:windowWidth(1920), windowHeight( 1080 )
+{
+	for( int i = 0; i < 4; ++i )
+	{
+		controllers[i] = new GameController( i );
+	}
+
 	fadeRect.setFillColor( Color::Black );
 	fadeRect.setSize( Vector2f( 1920, 1080 ) );
 	fadeRect.setPosition( 0, 0 );
@@ -353,9 +363,9 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
-		GameSession *gs = new GameSession( controller, NULL, this );
+		GameSession *gs = new GameSession( NULL, this );
 
-		gs->SetSecondController( controller2 );
+		//gs->SetSecondController( controller2 );
 		result = gs->Run( p_path );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
@@ -372,9 +382,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	while( result == 0 )
 	{
 		window->setView( v );
-		GameSession *gs = new GameSession( controller, NULL, this );
-
-		gs->SetSecondController( controller2 );
+		GameSession *gs = new GameSession( NULL, this );
 
 		result = gs->Run( p_path );
 		lastViewCenter = gs->lastViewCenter;
@@ -621,6 +629,18 @@ void MainMenu::CustomMapsOption()
 	window->setView( v );
 }
 
+
+ControllerState &MainMenu::GetPrevInput( int index )
+{
+	return prevInput[index];
+}
+
+
+ControllerState &MainMenu::GetCurrInput( int index )
+{
+	return currInput[index];
+}
+
 void MainMenu::Run()
 {
 	sf::Event ev;
@@ -672,31 +692,62 @@ void MainMenu::Run()
         {
 			worldMapUpdate = false;
 
-			
+			menuPrevInput = menuCurrInput;
+			menuCurrInput.Set( ControllerState() );
 
-			prevInput = currInput;
-			controller.UpdateState();
-			currInput = controller.GetState();
+			//int upCount = 0;
+			//int downCount = 0;
+
+			for( int i = 0; i < 4; ++i )
+			{
+				ControllerState &prevInput = GetPrevInput( i );
+				ControllerState &currInput = GetCurrInput( i );
+				GameController &c = GetController( i );
+
+				prevInput = currInput;
+				bool active = c.UpdateState();
+
+				if( active )
+				{
+					currInput = c.GetState();
+
+					menuCurrInput.A |= ( currInput.A && !prevInput.A );
+					menuCurrInput.B |= ( currInput.B && !prevInput.B );
+					menuCurrInput.X |= ( currInput.B && !prevInput.B );
+					menuCurrInput.Y |= ( currInput.B && !prevInput.B );
+					menuCurrInput.rightShoulder |= ( currInput.rightShoulder && !prevInput.rightShoulder );
+					menuCurrInput.leftShoulder |= ( currInput.leftShoulder && !prevInput.leftShoulder );
+					menuCurrInput.start |= ( currInput.start && !prevInput.start );
+					menuCurrInput.back |= ( currInput.back && !prevInput.back );
+
+					menuCurrInput.leftStickPad |= currInput.leftStickPad;
+				}
+				else
+				{
+					currInput.Set( ControllerState() );
+				}
+
+			}
+			
 
 			switch( menuMode )
 		{
 			case DEBUG_RACEFIGHT_RESULTS:
 				{
-				GameSession *gs = new GameSession( controller, NULL, this );
+				GameSession *gs = new GameSession( NULL, this );
 
-				gs->SetSecondController( controller2 );
 				gs->Run( "Maps/W1/arena04.brknk" );
 				return;
 				break;
 				}
 			case SPLASH:
 				{
-					bool A = currInput.A && !prevInput.A;
-					bool B = currInput.B && !prevInput.B;
-					bool X = currInput.X && !prevInput.X;
-					bool Y = currInput.Y && !prevInput.Y;
-					bool r = currInput.rightShoulder && !prevInput.rightShoulder;
-					bool l = currInput.leftShoulder && !prevInput.leftShoulder;
+					bool A = menuCurrInput.A && !menuPrevInput.A;
+					bool B = menuCurrInput.B && !menuPrevInput.B;
+					bool X = menuCurrInput.X && !menuPrevInput.X;
+					bool Y = menuCurrInput.Y && !menuPrevInput.Y;
+					bool r = menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder;
+					bool l = menuCurrInput.leftShoulder && !menuPrevInput.leftShoulder;
 
 					if( A || B || X || Y || r || l )
 					{
@@ -838,14 +889,14 @@ void MainMenu::Run()
 			}
 				}
 
-				if( currInput.B && !prevInput.B )
+				if( menuCurrInput.B && !menuPrevInput.B )
 				{
 					quit = true;
 					break;
 				}
 
-				if( currInput.A || currInput.back || currInput.Y || currInput.X || 
-					currInput.rightShoulder || currInput.leftShoulder )
+				if( menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X || 
+					menuCurrInput.rightShoulder || menuCurrInput.leftShoulder )
 				{
 					switch( currentMenuSelect )
 					{
@@ -903,7 +954,7 @@ void MainMenu::Run()
 				bool canMoveSame = (moveDelayCounter == 0);
 
 				
-				if( (currInput.LDown() || currInput.PDown()) && ( !moveDown || canMoveSame ) )
+				if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( !moveDown || canMoveSame ) )
 				{
 					currentMenuSelect++;
 					if( currentMenuSelect == M_Count )
@@ -911,7 +962,7 @@ void MainMenu::Run()
 					//moveDown = true;
 					moveDelayCounter = moveDelayFrames;
 				}
-				else if( ( currInput.LUp() || currInput.PUp() ) && ( !moveUp || canMoveSame ) )
+				else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( !moveUp || canMoveSame ) )
 				{
 					currentMenuSelect--;
 					if( currentMenuSelect < 0 )
@@ -929,12 +980,12 @@ void MainMenu::Run()
 					moveDelayCounter--;
 				}
 				
-				if( !(currInput.LDown() || currInput.PDown()) )
+				if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
 					{
 						moveDelayCounter = 0;
 						moveDown = false;
 					}
-					else if( ! ( currInput.LUp() || currInput.PUp() ) )
+					else if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
 					{
 						moveDelayCounter = 0;
 						moveUp = false;
@@ -1003,7 +1054,7 @@ void MainMenu::Run()
 
 				//worldMap->currInput = currInput;
 
-				if( currInput.B && !prevInput.B )
+				if( menuCurrInput.B && !menuPrevInput.B )
 				{
 					menuMode = MAINMENU;
 					//quit = true;
@@ -1066,7 +1117,7 @@ void MainMenu::Run()
 				
 
 				//cout << "worldmap" << endl;
-				if( worldMap->Update( prevInput, currInput ) )
+				if( worldMap->Update( menuPrevInput, menuCurrInput ) )
 				{
 					worldMapUpdate = true;
 				}
@@ -1081,7 +1132,7 @@ void MainMenu::Run()
 					//ss << "Maps/" << file;
 					//cout << "-----------------------------" << endl;
 					//cout << "file: " << file << endl;
-					GameSession *gs = new GameSession( controller, NULL, this );
+					GameSession *gs = new GameSession( NULL, this );
 					int result = gs->Run( worldMap->GetSelected() );
 					delete gs;
 
@@ -1116,12 +1167,12 @@ void MainMenu::Run()
 		case SAVEMENU:
 			{
 				
-				if( currInput.B && !prevInput.B )
+				if( menuCurrInput.B && !menuPrevInput.B )
 				{
 					menuMode = MAINMENU;
 					break;
 				}
-				else if( currInput.A && !prevInput.A )
+				else if( menuCurrInput.A && !menuPrevInput.A )
 				{
 					/*GameSession * gs = new GameSession( controller, window, 
 						files[selectedSaveIndex], preScreenTexture, postProcessTexture,
@@ -1140,7 +1191,7 @@ void MainMenu::Run()
 
 				bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
 				bool canMoveSame = (moveDelayCounter == 0);
-				if( (currInput.LDown() || currInput.PDown()) && ( 
+				if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( 
 					(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
 				{
 					selectedSaveIndex+=2;
@@ -1151,7 +1202,7 @@ void MainMenu::Run()
 					moveDelayCounter = moveDelayFrames;
 					soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
 				}
-				else if( ( currInput.LUp() || currInput.PUp() ) && ( 
+				else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( 
 					(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
 				{
 					selectedSaveIndex-=2;
@@ -1162,7 +1213,7 @@ void MainMenu::Run()
 					soundNodeList->ActivateSound( soundBuffers[S_UP] );
 				}
 
-				if( (currInput.LRight() || currInput.PRight()) && ( 
+				if( (menuCurrInput.LRight() || menuCurrInput.PRight()) && ( 
 					(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
 				{
 					selectedSaveIndex++;
@@ -1172,7 +1223,7 @@ void MainMenu::Run()
 					moveRight = true;
 					moveDelayCounter = moveDelayFrames;
 				}
-				else if( ( currInput.LLeft() || currInput.PLeft() ) && ( 
+				else if( ( menuCurrInput.LLeft() || menuCurrInput.PLeft() ) && ( 
 					(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
 				{
 					selectedSaveIndex--;
@@ -1193,20 +1244,20 @@ void MainMenu::Run()
 				}
 				
 
-				if( !(currInput.LDown() || currInput.PDown()) )
+				if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
 				{
 					moveDown = false;
 				}
-				if( ! ( currInput.LUp() || currInput.PUp() ) )
+				if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
 				{
 					moveUp = false;
 				}
 
-				if( !(currInput.LRight() || currInput.PRight()) )
+				if( !(menuCurrInput.LRight() || menuCurrInput.PRight()) )
 				{
 					moveRight = false;
 				}
-				if( !(currInput.LLeft() || currInput.PLeft() ) )
+				if( !(menuCurrInput.LLeft() || menuCurrInput.PLeft() ) )
 				{
 					moveLeft = false;
 				}

@@ -128,11 +128,11 @@ void ShipPickup::UpdatePrePhysics()
 			if( hasMonitor && !suppressMonitor )
 				owner->keyMarker->CollectKey();
 			dead = true;
-			owner->player->ConfirmEnemyKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
 		}
 		else
 		{
-			owner->player->ConfirmEnemyNoKill( this );
+			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 
 		
@@ -148,7 +148,7 @@ void ShipPickup::UpdatePrePhysics()
 
 void ShipPickup::UpdatePhysics()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->ground == ground )
 	{
@@ -237,7 +237,7 @@ void ShipPickup::UpdatePostPhysics()
 	if( receivedHit != NULL )
 	{
 		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->player->position + position ) / 2.0, true, 0, 10, 2, true );
+		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
 	UpdateSprite();
@@ -345,7 +345,7 @@ bool ShipPickup::IHitPlayer( int index )
 {
 	return false;
 
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	
 	if( hitBody.Intersects( player->hurtBody ) )
 	{
@@ -359,7 +359,7 @@ bool ShipPickup::IHitPlayer( int index )
 pair<bool, bool> ShipPickup::PlayerHitMe( int index )
 {
 	return pair<bool,bool>( false, false );
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 
 	if( player->currHitboxes != NULL )
 	{
@@ -415,7 +415,7 @@ pair<bool, bool> ShipPickup::PlayerHitMe( int index )
 
 bool ShipPickup::PlayerSlowingMe()
 {
-	Actor *player = owner->player;
+	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
 	{
 		if( player->bubbleFramesToLive[i] > 0 )
