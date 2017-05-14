@@ -46,7 +46,7 @@ struct MultiSelectionInfo
 
 	Team team;
 	Skin skin;
-	XBoxButton *filter;//[ControllerSettings::Count];
+	//[ControllerSettings::Count];
 };
 
 
@@ -136,6 +136,8 @@ struct MainMenu
 
 	sf::Sprite splashSprite;
 	Tileset *ts_splashScreen;
+
+	MultiSelectionInfo multiInfo[4];
 
 	void CustomMapOption();
 	
