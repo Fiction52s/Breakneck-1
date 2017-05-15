@@ -756,3 +756,43 @@ void KeyboardSettings::Update( ControllerState &cs )
 	//cs.rightTrigger = state.Gamepad.bRightTrigger;
 	
 }
+
+void SetFilterDefault( XBoxButton *filter)
+{
+	filter[ControllerSettings::JUMP] = XBOX_A;
+	filter[ControllerSettings::DASH] = XBOX_B;
+	filter[ControllerSettings::ATTACK] = XBOX_R1;
+	filter[ControllerSettings::BOUNCE] = XBOX_X;
+	filter[ControllerSettings::GRIND] = XBOX_Y;
+	filter[ControllerSettings::TIMESLOW] = XBOX_L1;
+	filter[ControllerSettings::LEFTWIRE] = XBOX_L2;
+	filter[ControllerSettings::RIGHTWIRE] = XBOX_R2;
+	filter[ControllerSettings::MAP] = XBOX_BACK;
+	filter[ControllerSettings::PAUSE] = XBOX_START;
+}
+
+std::string GetXBoxButtonString( XBoxButton button )
+{
+	switch( button )
+	{
+	case XBOX_A:
+		return "A";
+	case XBOX_B:
+		return "B";
+	case XBOX_X:
+		return "X";
+	case XBOX_Y:
+		return "Y";
+	case XBOX_R1:
+		return "R1";
+	case XBOX_L1:
+		return "L1";
+	case XBOX_R2:
+		return "R2";
+	case XBOX_L2:
+		return "L2";
+	default:
+		assert( 0 );
+		return "";
+	}
+}

@@ -31,6 +31,7 @@
 #include "VictoryScreen.h"
 #include "UIWindow.h"
 #include "Config.h"
+#include "ControlProfile.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -5610,6 +5611,16 @@ void GameSession::KeyboardUpdate( int index )
 
 int GameSession::Run( string fileN )
 {
+	ControlProfileManager *cpm = new ControlProfileManager;
+	bool success = cpm->LoadProfiles();
+	if( success )
+		cout << "did it!" << endl;
+	else
+		cout << "failed" << endl;
+	
+	cpm->DebugPrint();
+
+
 	//cout << "game session run" << endl;
 	//should this always start as true?
 	drawInversePoly = true;
@@ -5803,7 +5814,8 @@ int GameSession::Run( string fileN )
 	//pauseMenu->cOptions->xboxInputAssoc[0];
 	for( int i = 0; i < 4; ++i )
 	{
-		mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+		GetController(i).SetFilter( cpm->profiles.front()->filter );
 	}
 	
 	//mainMenu->controller2.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
@@ -8957,6 +8969,11 @@ int GameSession::Run( string fileN )
 	
 	soundNodeList->Reset();
 	
+	for( int i = 0; i < 4; ++i )
+	{
+		SetFilterDefault( GetController(i).filter );
+	}
+
 	return returnVal;
 }
 
@@ -12058,6 +12075,20 @@ void GameSession::RemoveEffect( EffectLayer layer, Enemy *e )
 		
 	}
 
+	//	if( inactiveEnemyList == NULL )
+	//	{
+	//		inactiveEnemyList = e;
+	//		e->next = NULL;
+	//		e->prev = NULL;
+	//	}
+	//	else
+	//	{
+	//		//cout << "creating more dead clone enemies" << endl;
+	//		e->next = inactiveEnemyList;
+	//		inactiveEnemyList->prev = e;
+	//		inactiveEnemyList = e;
+	//	}
+
 	//if( e->type != e->BASICEFFECT )
 	//{
 	//	/*if( e->hasMonitor )
@@ -12120,6 +12151,19 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 	//cout << "deactivate " << b << endl;
 	RemoveEffect( b->layer, b );
 	//RemoveEnemy( b );
+
+	if( inactiveEffects == NULL )
+	{
+		inactiveEffects = b;
+		b->next = NULL;
+		b->prev = NULL;
+	}
+	else
+	{
+		b->next = inactiveEffects;
+		inactiveEffects->prev = b;
+		inactiveEffects = b;
+	}
 
 	/*if( player->record == 0 )
 	{

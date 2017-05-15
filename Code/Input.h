@@ -140,7 +140,8 @@ enum XBoxButton
 	XBOX_RDOWN,
 	XBOX_Count
 };	
-
+void SetFilterDefault( XBoxButton *filter);
+std::string GetXBoxButtonString( XBoxButton button );
 
 struct ControllerSettings
 {
