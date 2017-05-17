@@ -12164,22 +12164,6 @@ void GameSession::DeactivateEffect( BasicEffect *b )
 		inactiveEffects->prev = b;
 		inactiveEffects = b;
 	}
-
-	/*if( player->record == 0 )
-	{
-		if( inactiveEffects == NULL )
-		{
-			inactiveEffects = b;
-			b->next = NULL;
-			b->prev = NULL;
-		}
-		else
-		{
-			b->next = inactiveEffects;
-			inactiveEffects->prev = b;
-			inactiveEffects = b;
-		}
-	}*/
 }
 
 void GameSession::ResetEnemies()

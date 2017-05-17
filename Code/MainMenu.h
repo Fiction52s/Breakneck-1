@@ -27,7 +27,11 @@ struct CustomMapsHandler : GUIHandler
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 };
 
-struct MultiSelectionInfo
+struct ControlProfile;
+struct ControlProfileMenu;
+struct MultiLoadingScreen;
+struct ControlProfileManager;
+struct MultiSelectionSection
 {
 	
 	enum Team
@@ -44,9 +48,34 @@ struct MultiSelectionInfo
 		S_Count
 	};
 
+	MultiSelectionSection(MultiLoadingScreen *parent,
+		int p_playerIndex );
 	Team team;
 	Skin skin;
-	//[ControllerSettings::Count];
+	void Update();
+	ControlProfile *profile;
+	ControlProfileMenu *profileSelect;
+	void Draw( sf::RenderTarget *target );
+	sf::Sprite playerSprite;
+	bool active;
+	int playerIndex;
+	MultiLoadingScreen *parent;
+
+};
+
+struct MultiLoadingScreen
+{
+	MultiLoadingScreen( MainMenu *p_mainMenu );
+	void Reset(boost::filesystem::path path );
+	void Update();
+	void Draw( sf::RenderTarget *target );
+	MultiSelectionSection *playerSection[4];
+	sf::Sprite previewSprite;
+	sf::Texture previewTex;
+	boost::filesystem::path filePath;
+	void SetPreview();
+	MainMenu *mainMenu;
+	ControlProfileManager *cpm;
 };
 
 
@@ -77,6 +106,7 @@ struct MainMenu
 		TRANS_MAIN_TO_SAVE,
 		TRANS_SAVE_TO_MAIN,
 		TRANS_SAVE_TO_WORLDMAP,
+		MULTIPREVIEW,
 		TRANS_MAIN_TO_MULTIPREVIEW,
 		TRANS_MULTIPREVIEW_TO_MAIN,
 		DEBUG_RACEFIGHT_RESULTS,
@@ -111,8 +141,10 @@ struct MainMenu
 	SoundManager soundManager;
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
+	MultiLoadingScreen *multiLoadingScreen;
+	
 
-	sf::Text betaText;
+	sf::Text betaText; 
 
 	static sf::RenderTexture *preScreenTexture;
 	static sf::RenderTexture *postProcessTexture;
@@ -136,8 +168,6 @@ struct MainMenu
 
 	sf::Sprite splashSprite;
 	Tileset *ts_splashScreen;
-
-	MultiSelectionInfo multiInfo[4];
 
 	void CustomMapOption();
 	

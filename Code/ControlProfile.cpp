@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <iostream>
 
+using namespace sf;
 using namespace std;
 
 #define PROFILE_START_CHAR '<'
@@ -13,9 +14,168 @@ using namespace std;
 #define INPUT_TYPE_KEYBOARD "KEYBOARD"
 #define EQUALS '='
 
+//const int ControlProfileMenu::NUM_BOXES = 8;
+const int ControlProfileMenu::BOX_WIDTH = 300;
+const int ControlProfileMenu::BOX_HEIGHT = 40;
+const int ControlProfileMenu::BOX_SPACING = 10;
+
+
+
+
+ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
+	int p_playerIndex, list<ControlProfile*> &p_profiles )
+	:profiles( p_profiles ), playerIndex( p_playerIndex ), font( p_font ),
+	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 )
+{
+	int quarter = 1920 / 4;
+	topMid = Vector2f( quarter * playerIndex + quarter / 2, 1080-400 );
+
+	SetupBoxes();
+
+	for( int i = 0; i < NUM_BOXES; ++i )
+	{
+		profileNames[i].setFont( p_font );
+		profileNames[i].setCharacterSize( 40 );
+		profileNames[i].setColor( Color::White );
+	}
+}
+
+void ControlProfileMenu::Draw( sf::RenderTarget *target )
+{
+	if( state == S_SHOWING_OPTIONS )
+	{
+		target->draw( boxes, NUM_BOXES*4,sf::Quads );
+		for( int i = 0; i < NUM_BOXES; ++i )
+		{
+			//cout << "drawing: " << profileNames[i].getString().toAnsiString() << "\n";
+			target->draw( profileNames[i] );
+		}
+	}
+}
+
+void ControlProfileMenu::UpdateNames()
+{
+	if( profiles.size() == 0 )
+	{
+
+		return;
+	}
+
+
+	list<ControlProfile*>::iterator lit = profiles.begin();
+	if( topIndex > profiles.size() )
+	{
+		topIndex = profiles.size() - 1;
+	}
+
+	for( int i = 0; i < topIndex; ++i )
+	{
+		++lit;
+	}
+
+	int trueI;
+	int i = 0;
+	int numProfiles = profiles.size();
+	for( ; i < NUM_BOXES; ++i )
+	{
+		trueI = (topIndex + i) % NUM_BOXES;
+		if( i == numProfiles )
+		{
+			for( ; i < NUM_BOXES; ++i )
+			{
+				profileNames[i].setString( "" );
+			}
+			break;
+		}
+
+		if( lit == profiles.end() )
+			lit = profiles.begin();
+
+		profileNames[i].setString( (*lit)->name );
+		profileNames[i].setOrigin( profileNames[i].getLocalBounds().width / 2, 
+			profileNames[i].getLocalBounds().height / 2 );
+		//profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
+		profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
+
+		++lit;
+	}
+}
+
+void ControlProfileMenu::Update( ControllerState &currInput,
+		ControllerState &prevInput )
+{
+	if( currInput.A && !prevInput.A )
+	{
+		switch( state )
+		{
+		case S_SELECTED:
+			state = S_SHOWING_OPTIONS;
+			UpdateNames();
+			break;
+		case S_SHOWING_OPTIONS:
+			state = S_SELECTED;
+			break;
+		}
+	}
+}
+
+void ControlProfileMenu::SetupBoxes()
+{
+	sf::Vector2f currTopMid;
+	int extraHeight = 0;
+	
+	for( int i = 0; i < NUM_BOXES; ++i )
+	{
+		currTopMid = topMid + Vector2f( 0, extraHeight );
+
+		boxes[i*4+0].position = Vector2f( currTopMid.x - BOX_WIDTH / 2, currTopMid.y );
+		boxes[i*4+1].position = Vector2f( currTopMid.x + BOX_WIDTH / 2, currTopMid.y );
+		boxes[i*4+2].position = Vector2f( currTopMid.x + BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT );
+		boxes[i*4+3].position = Vector2f( currTopMid.x - BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT );
+
+		boxes[i*4+0].color = Color::Red;
+		boxes[i*4+1].color = Color::Red;
+		boxes[i*4+2].color = Color::Red;
+		boxes[i*4+3].color = Color::Red;
+
+		extraHeight += BOX_HEIGHT + BOX_SPACING;
+	}
+}
+
+void ControlProfileMenu::MoveUp()
+{
+	topIndex++;
+	if( topIndex == profiles.size() )
+	{
+		topIndex = 0;
+	}
+}
+
+void ControlProfileMenu::MoveDown()
+{
+	topIndex--;
+	if( topIndex == -1 )
+	{
+		topIndex = profiles.size() - 1;
+	}
+}
+
+void ControlProfileManager::ClearProfiles()
+{
+	for( list<ControlProfile*>::iterator it = profiles.begin(); it != profiles.end(); ++it )
+	{
+		delete (*it);
+	}
+	profiles.clear();
+}
 
 bool ControlProfileManager::LoadProfiles()
 {
+	ClearProfiles();
+
+	
+
+
 	is.open( "controlprofiles.txt" );
 
 	if( is.is_open() )
@@ -73,8 +233,14 @@ bool ControlProfileManager::LoadProfiles()
 	{
 	}
 
-	WriteProfiles(); //debug
+	WriteProfiles(); //debug, will be in other functions
 	//DeleteProfile( profiles.begin() );
+
+	ControlProfile *def= new ControlProfile;
+	SetFilterDefault( def->filter );
+	def->hasXBoxFilter = true;
+	def->name = "KIN";
+	profiles.push_front( def );
 
 }
 
@@ -392,5 +558,11 @@ void ControlProfileManager::WriteProfiles()
 	}
 }
 
-
+ControlProfileManager::~ControlProfileManager()
+{
+	for( list<ControlProfile*>::iterator it = profiles.begin(); it != profiles.end(); ++it )
+	{
+		delete (*it);
+	}
+}
 

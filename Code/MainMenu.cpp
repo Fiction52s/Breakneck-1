@@ -7,6 +7,7 @@
 #include <sstream>
 #include "Parallax.h"
 #include "Config.h"
+#include "ControlProfile.h"
 
 using namespace std;
 using namespace sf;
@@ -27,6 +28,78 @@ sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
 
+MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
+	int p_playerIndex )
+	:parent( p_parent ), playerIndex( p_playerIndex )
+{
+	profileSelect = new ControlProfileMenu( parent->mainMenu->arial,playerIndex,
+		parent->cpm->profiles );
+
+	profileSelect->UpdateNames();
+}
+
+void MultiSelectionSection::Update()
+{
+	MainMenu *mm = parent->mainMenu;
+	ControllerState &currInput = mm->GetCurrInput( playerIndex );
+	ControllerState &prevInput = mm->GetPrevInput( playerIndex );
+
+	profileSelect->Update( currInput, prevInput );
+	//profileSelect->state = ControlProfileMenu::State::S_SHOWING_OPTIONS;
+}
+
+void MultiSelectionSection::Draw( sf::RenderTarget *target )
+{
+	target->draw( playerSprite );
+	profileSelect->Draw( target );
+}
+
+MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
+	:mainMenu( p_mainMenu )
+{
+	
+
+	cpm = new ControlProfileManager;
+	cpm->LoadProfiles();
+
+	for( int i = 0; i < 4; ++i )
+	{
+		playerSection[i] = new MultiSelectionSection( this, i );
+		
+	}
+}
+
+void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
+{
+	filePath = p_path;
+	SetPreview();
+}
+
+void MultiLoadingScreen::SetPreview()
+{
+	string previewFile = filePath.parent_path().relative_path().string() + string( "/" ) + filePath.stem().string() + string( "_preview.png" );
+	previewTex.loadFromFile( previewFile );
+	previewSprite.setTexture( previewTex );
+	previewSprite.setPosition( 480, 0 );
+}
+
+void MultiLoadingScreen::Draw( sf::RenderTarget *target )
+{
+	target->draw( previewSprite );
+	for( int i = 0; i < 4; ++i )
+	{
+		playerSection[i]->Draw( target );
+	}
+}
+
+void MultiLoadingScreen::Update()
+{
+	for( int i = 0; i < 4; ++i )
+	{
+		playerSection[i]->Update();
+	}
+}
+
 GameController &MainMenu::GetController( int index )
 {
 	return *controllers[index];
@@ -35,6 +108,8 @@ GameController &MainMenu::GetController( int index )
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight( 1080 )
 {
+	
+
 	for( int i = 0; i < 4; ++i )
 	{
 		controllers[i] = new GameController( i );
@@ -218,6 +293,8 @@ MainMenu::MainMenu()
 	
 
 	Init();
+
+	multiLoadingScreen = new MultiLoadingScreen( this );
 }
 
 MainMenu::~MainMenu()
@@ -902,6 +979,13 @@ void MainMenu::Run()
 					{
 					case M_NEW_GAME:
 						{
+							menuMode = MULTIPREVIEW;
+							multiLoadingScreen->Reset( "Maps/W1/arena04.brknk" );
+
+
+							break;
+
+
 							menuMode = SAVEMENU;
 							selectedSaveIndex = 0;
 							saveKinFaceFrame = 0;
@@ -1362,6 +1446,19 @@ void MainMenu::Run()
 				UpdateClouds();
 				break;
 			}
+		case MULTIPREVIEW:
+			{
+				multiLoadingScreen->Update();
+				break;
+			}
+		case TRANS_MAIN_TO_MULTIPREVIEW:
+			{
+				break;
+			}
+		case TRANS_MULTIPREVIEW_TO_MAIN:
+			{
+				break;
+			}
 		}
 			
 
@@ -1487,6 +1584,11 @@ void MainMenu::Run()
 				
 				break;
 			}
+		case MULTIPREVIEW:
+			{
+				multiLoadingScreen->Draw( preScreenTexture );
+				break;
+			}
 		}
 		//window->pushGLStates();
 		
@@ -1571,6 +1673,8 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	//v.setCenter( 960, 540 );
 	window->setView( blahV );
 }
+
+
 
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
