@@ -75,12 +75,20 @@ struct ControlProfileMenu
 	sf::Vector2f topMid;
 
 	int currIndex;
+	int oldCurrIndex;
 
 	int topIndex;
 	
 	std::list<ControlProfile*> profiles;
 	int playerIndex;
 	sf::Font font;
+
+	int waitFrames[3];
+	int waitModeThresh[2];
+	int framesWaiting;
+	int currWaitLevel;
+	int flipCounterUp;
+	int flipCounterDown;
 };
 
 #endif

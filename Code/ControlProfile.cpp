@@ -25,7 +25,7 @@ const int ControlProfileMenu::BOX_SPACING = 10;
 ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
 	int p_playerIndex, list<ControlProfile*> &p_profiles )
 	:profiles( p_profiles ), playerIndex( p_playerIndex ), font( p_font ),
-	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 )
+	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 ), oldCurrIndex( 0 )
 {
 	int quarter = 1920 / 4;
 	topMid = Vector2f( quarter * playerIndex + quarter / 2, 1080-400 );
@@ -38,6 +38,18 @@ ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
 		profileNames[i].setCharacterSize( 40 );
 		profileNames[i].setColor( Color::White );
 	}
+
+	waitFrames[0] = 10;
+	waitFrames[1] = 5;
+	waitFrames[2] = 2;
+
+	waitModeThresh[0] = 2;
+	waitModeThresh[1] = 2;
+
+	currWaitLevel = 0;
+	flipCounterUp = 0;
+	flipCounterDown = 0;
+	framesWaiting = 0;
 }
 
 void ControlProfileMenu::Draw( sf::RenderTarget *target )
@@ -111,11 +123,120 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		case S_SELECTED:
 			state = S_SHOWING_OPTIONS;
 			UpdateNames();
+			oldCurrIndex = currIndex;
 			break;
 		case S_SHOWING_OPTIONS:
 			state = S_SELECTED;
+			
 			break;
 		}
+	}
+	if( currInput.B && !prevInput.B )
+	{
+		if( state == S_SHOWING_OPTIONS )
+		{
+			currIndex = oldCurrIndex;
+			state = S_SELECTED;
+		}
+	}
+
+	if( state == S_SHOWING_OPTIONS )
+	{
+
+		bool up = currInput.LUp();
+		bool down = currInput.LDown();
+
+		int oldIndex = currIndex;
+		//bool consumed = controls[focusedIndex]->Update( curr, prev );
+
+		if( down )
+		{
+			if( flipCounterDown == 0 
+				|| ( flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel] )
+				)
+			{
+				if( flipCounterDown == 0 )
+				{
+					currWaitLevel = 0;
+				}
+
+				++flipCounterDown;
+
+				if( flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+				{
+					currWaitLevel++;
+				}
+
+				flipCounterUp = 0;
+				framesWaiting = 0;
+
+				if( currIndex < profiles.size() - 1 )
+				{
+					currIndex++;
+				}
+				else
+				{
+					currIndex = 0;
+				}
+			}
+			else
+			{
+				++framesWaiting;
+			}
+		
+		}
+		else if( up )
+		{
+			if( flipCounterUp == 0 
+				|| ( flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel] )
+				)
+			{
+				if( flipCounterUp == 0 )
+				{
+					currWaitLevel = 0;
+				}
+
+				++flipCounterUp;
+
+				if( flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+				{
+					currWaitLevel++;
+				}
+
+				flipCounterDown = 0;
+				framesWaiting = 0;
+				if( currIndex > 0 )
+				{
+					currIndex--;
+				}
+				else
+				{
+					currIndex = profiles.size() - 1;	
+				}
+			}
+			else
+			{
+				++framesWaiting;
+			}
+		
+		}
+		else
+		{
+			flipCounterUp = 0;
+			flipCounterDown = 0;
+			currWaitLevel = 0;
+			framesWaiting = 0;
+		}
+
+		if( currIndex != oldIndex )
+		{
+			UpdateNames();
+			//controls[oldIndex]->Unfocus();
+			//controls[focusedIndex]->Focus();
+		}
+
+		cout << "currIndex : " << currIndex << endl;
+		
 	}
 }
 
@@ -184,7 +305,7 @@ bool ControlProfileManager::LoadProfiles()
 		string inputTypeName;
 		while( MoveToNextSymbolText( PROFILE_START_CHAR, PROFILE_END_CHAR, profileName ) )
 		{
-			cout << "new profile: " << profileName << "\n";
+			//cout << "new profile: " << profileName << "\n";
 			ControlProfile *newProfile = new ControlProfile;
 			newProfile->name = profileName;
 			profiles.push_back( newProfile );
