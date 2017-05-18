@@ -8,6 +8,7 @@
 #include "Parallax.h"
 #include "Config.h"
 #include "ControlProfile.h"
+#include "UIWindow.h"
 
 using namespace std;
 using namespace sf;
@@ -36,6 +37,15 @@ MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
 		parent->cpm->profiles );
 
 	profileSelect->UpdateNames();
+
+
+	
+}
+
+bool MultiSelectionSection::ButtonEvent( UIEvent eType,
+		ButtonEventParams *param )
+{
+
 }
 
 void MultiSelectionSection::Update()
@@ -45,6 +55,8 @@ void MultiSelectionSection::Update()
 	ControllerState &prevInput = mm->GetPrevInput( playerIndex );
 
 	profileSelect->Update( currInput, prevInput );
+
+	
 	//profileSelect->state = ControlProfileMenu::State::S_SHOWING_OPTIONS;
 }
 

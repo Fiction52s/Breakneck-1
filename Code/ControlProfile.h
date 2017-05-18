@@ -6,8 +6,6 @@
 #include <list>
 #include <SFML\Graphics.hpp>
 
-
-
 struct ControlProfile
 {
 	//you must make a named profile to store
@@ -43,6 +41,7 @@ private:
 	std::ifstream is;
 };
 
+struct UIControlGrid;
 struct ControlProfileMenu
 {
 	enum State
@@ -53,6 +52,7 @@ struct ControlProfileMenu
 	};
 
 	
+	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;
 	static const int BOX_WIDTH;
 	static const int BOX_HEIGHT;
@@ -67,6 +67,7 @@ struct ControlProfileMenu
 	void MoveUp();
 	void MoveDown();
 	void UpdateNames();
+	void UpdateBoxesDebug();
 	void Draw( sf::RenderTarget *target );
 
 	sf::Vertex boxes[NUM_BOXES*4];
@@ -89,6 +90,8 @@ struct ControlProfileMenu
 	int currWaitLevel;
 	int flipCounterUp;
 	int flipCounterDown;
+
+	UIControlGrid *editProfileGrid;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include <sstream>
 #include <assert.h>
 #include <iostream>
+#include "UIWindow.h"
 
 using namespace sf;
 using namespace std;
@@ -50,6 +51,20 @@ ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
 	flipCounterUp = 0;
 	flipCounterDown = 0;
 	framesWaiting = 0;
+
+	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
+		"POWER5", "POWER6LEFT", "POWER6RIGHT" };
+	UIControl *controls[2 * 4];
+	for( int i = 0; i < 2; ++i  )
+	{
+		for( int j = 0; j < 4; ++j )
+		{
+			controls[i*4+j] = new UIButton( NULL, this, &p_parent->mainMenu->tilesetManager,
+				p_parent->mainMenu->arial, buttonTexts[i*4+j], 120 );
+		}
+	}
+
+	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 10, 10, true );
 }
 
 void ControlProfileMenu::Draw( sf::RenderTarget *target )
@@ -104,8 +119,8 @@ void ControlProfileMenu::UpdateNames()
 			lit = profiles.begin();
 
 		profileNames[i].setString( (*lit)->name );
-		profileNames[i].setOrigin( profileNames[i].getLocalBounds().width / 2, 
-			profileNames[i].getLocalBounds().height / 2 );
+		profileNames[i].setOrigin( profileNames[i].getLocalBounds().width / 2, 0 );
+			//profileNames[i].getLocalBounds().height / 2 );
 		//profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
 		profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
 
@@ -140,6 +155,10 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		}
 	}
 
+	//tomorrow: set up the edit profile grid to draw in a separate state from a selected
+	//profile. then make a popup window where you input a button to change your controls.
+	//editProfileGrid->Update( currInput, prevInput );
+
 	if( state == S_SHOWING_OPTIONS )
 	{
 
@@ -173,10 +192,14 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 				if( currIndex < profiles.size() - 1 )
 				{
 					currIndex++;
+
+					if( currIndex - topIndex == NUM_BOXES )
+						topIndex = currIndex - (NUM_BOXES-1);
 				}
 				else
 				{
 					currIndex = 0;
+					topIndex = 0;
 				}
 			}
 			else
@@ -208,10 +231,16 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 				if( currIndex > 0 )
 				{
 					currIndex--;
+
+					if( currIndex < topIndex )
+					{
+						topIndex = currIndex;
+					}
 				}
 				else
 				{
-					currIndex = profiles.size() - 1;	
+					currIndex = profiles.size() - 1;
+					topIndex = profiles.size() - NUM_BOXES;
 				}
 			}
 			else
@@ -231,13 +260,18 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		if( currIndex != oldIndex )
 		{
 			UpdateNames();
+			cout << "currIndex: " << currIndex << ", topIndex: " << topIndex << endl;
 			//controls[oldIndex]->Unfocus();
 			//controls[focusedIndex]->Focus();
 		}
 
-		cout << "currIndex : " << currIndex << endl;
+		//cout << "currIndex : " << currIndex << endl;
+		UpdateBoxesDebug();
 		
 	}
+
+	
+	
 }
 
 void ControlProfileMenu::SetupBoxes()
@@ -278,6 +312,27 @@ void ControlProfileMenu::MoveDown()
 	if( topIndex == -1 )
 	{
 		topIndex = profiles.size() - 1;
+	}
+}
+
+void ControlProfileMenu::UpdateBoxesDebug()
+{
+	Color c;
+	int trueI = ( currIndex - topIndex );// % NUM_BOXES;
+	for( int i = 0; i < NUM_BOXES; ++i )
+	{
+		if( i == trueI )
+		{
+			c = Color::Blue;
+		}
+		else
+		{
+			c = Color::Red;
+		}
+		boxes[i*4+0].color = c;
+		boxes[i*4+1].color = c;
+		boxes[i*4+2].color = c;
+		boxes[i*4+3].color = c;
 	}
 }
 

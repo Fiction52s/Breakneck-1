@@ -42,17 +42,12 @@ struct CheckboxEventParams
 
 struct UIEventHandlerBase
 {
-
-
-	
-
 	virtual bool ButtonEvent( UIEvent eType,
-		ButtonEventParams *param ) = 0;
+		ButtonEventParams *param ){return false;}
 	virtual bool CheckboxEvent( UIEvent eType,
-		CheckboxEventParams *param ) = 0;
+		CheckboxEventParams *param ){return false;}
 	virtual bool SelectorEvent( UIEvent eType,
-		SelectorEventParams *param ) = 0;
-
+		SelectorEventParams *param ){return false;}
 };
 
 struct UIControl
@@ -66,6 +61,7 @@ struct UIControl
 		UI_BUTTON,
 		UI_WINDOW,
 		UI_CHECKBOX,
+		UI_CONTROLGRID,
 		UI_Count
 	};
 
@@ -255,6 +251,41 @@ struct UIVerticalControlList : UIControl
 	int flipCounterUp;
 	int flipCounterDown;
 };
+
+struct UIControlGrid : UIControl
+{
+	UIControlGrid( UIControl *p_parent,
+		int p_numControlsX, 
+		int p_numControlsY,
+		UIControl **p_controls,
+		int p_spacingX, int p_spacingY,
+		bool horizontalDominant );
+	~UIControlGrid();
+	void SetTopLeft( float x, float y );
+	const sf::Vector2f &GetTopLeftGlobal();
+	bool Update( ControllerState &curr,
+		ControllerState &prev );
+	void Draw( sf::RenderTarget *target );	
+	int spacingX;
+	int spacingY;
+	int numControlsX;
+	int numControlsY;
+	int focusedIndexX;
+	int focusedIndexY;
+	sf::Vector2f globalTopLeft;
+	UIControl **controls;
+
+	int waitFrames[3];
+	int waitModeThresh[2];
+	int framesWaiting;
+	int currWaitLevel;
+	int flipCounterUp;
+	int flipCounterDown;
+	int flipCounterLeft;
+	int flipCounterRight;
+};
+
+
 
 struct UIButton : UIControl
 {

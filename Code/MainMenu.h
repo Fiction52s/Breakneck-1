@@ -31,7 +31,8 @@ struct ControlProfile;
 struct ControlProfileMenu;
 struct MultiLoadingScreen;
 struct ControlProfileManager;
-struct MultiSelectionSection
+struct UIControlGrid;
+struct MultiSelectionSection : UIEventHandlerBase
 {
 	
 	enum Team
@@ -50,6 +51,8 @@ struct MultiSelectionSection
 
 	MultiSelectionSection(MultiLoadingScreen *parent,
 		int p_playerIndex );
+	bool ButtonEvent( UIEvent eType,
+		ButtonEventParams *param );
 	Team team;
 	Skin skin;
 	void Update();
