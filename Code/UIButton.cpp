@@ -7,10 +7,10 @@ using namespace sf;
 using namespace std;
 
 UIButton::UIButton( UIControl *p_parent, UIEventHandlerBase *p_handler, 
-	TilesetManager *tsMan, Font *f, const std::string &text, int p_width )
+	TilesetManager *tsMan, Font *f, const std::string &text, int p_width, int p_height )
 	:UIControl( p_parent, p_handler, UI_BUTTON )
 {
-	bar = new UIBar( p_parent, tsMan, f, p_width );
+	bar = new UIBar( p_parent, tsMan, f, p_width, p_height );
 	SetTopLeft( 0, 0 );
 	dimensions = bar->dimensions;
 }

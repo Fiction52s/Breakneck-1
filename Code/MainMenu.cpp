@@ -33,7 +33,7 @@ MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
 	int p_playerIndex )
 	:parent( p_parent ), playerIndex( p_playerIndex )
 {
-	profileSelect = new ControlProfileMenu( parent->mainMenu->arial,playerIndex,
+	profileSelect = new ControlProfileMenu( this,playerIndex,
 		parent->cpm->profiles );
 
 	profileSelect->UpdateNames();
@@ -45,7 +45,7 @@ MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
 bool MultiSelectionSection::ButtonEvent( UIEvent eType,
 		ButtonEventParams *param )
 {
-
+	return true;
 }
 
 void MultiSelectionSection::Update()

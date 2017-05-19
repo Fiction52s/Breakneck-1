@@ -7,6 +7,7 @@
 #include "Tileset.h"
 #include "WorldMap.h"
 #include "GUI.h"
+#include "UIWindow.h"
 
 struct Config;
 

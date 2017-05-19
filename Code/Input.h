@@ -145,7 +145,7 @@ std::string GetXBoxButtonString( XBoxButton button );
 
 struct ControllerSettings
 {
-	enum ButtonType
+	enum ButtonType	
 	{
 		JUMP,
 		DASH,

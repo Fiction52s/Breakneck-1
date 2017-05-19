@@ -113,7 +113,7 @@ struct UIBar : UIControl
 	};
 
 	UIBar( UIControl *parent, TilesetManager *tsMan, sf::Font *f,
-		int p_width );
+		int p_width, int p_height = 80 );
 	void Draw( sf::RenderTarget *target );
 	void AssignTexture();
 	void SetTopLeft( float x, float y );
@@ -294,7 +294,8 @@ struct UIButton : UIControl
 		TilesetManager *tsMan,
 		sf::Font *f,
 		const std::string &text,
-		int p_width );
+		int p_width,
+		int p_height = 80 );
 	~UIButton();
 	void Focus();
 	void Unfocus();

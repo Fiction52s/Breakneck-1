@@ -6,7 +6,7 @@
 using namespace sf;
 using namespace std;
 
-UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width )
+UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width, int p_height )
 	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
 {
 	ts_bar = tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
@@ -19,7 +19,7 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 
 	bState = BAR_UNFOCUSED;
 
-	dimensions = Vector2f( p_width, 80 ); //50 is just a random constant
+	dimensions = Vector2f( p_width, p_height ); //50 is just a random constant
 
 	SetState( BAR_UNFOCUSED );
 }
@@ -88,7 +88,7 @@ void UIBar::SetTopLeft( float x, float y )
 	//float tw = ts_bar->tileWidth;
 	//float th = ts_bar->tileHeight;
 	float tw = 20;
-	float th = 80;
+	float th = dimensions.y;
 
 	barVA[LEFT*4+0].position = Vector2f( x, y );
 	barVA[LEFT*4+1].position = Vector2f( x + tw, y );

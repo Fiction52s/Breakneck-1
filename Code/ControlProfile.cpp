@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include "UIWindow.h"
-
+#include "MainMenu.h"
 using namespace sf;
 using namespace std;
 
@@ -23,10 +23,12 @@ const int ControlProfileMenu::BOX_SPACING = 10;
 
 
 
-ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
+ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	int p_playerIndex, list<ControlProfile*> &p_profiles )
-	:profiles( p_profiles ), playerIndex( p_playerIndex ), font( p_font ),
-	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 ), oldCurrIndex( 0 )
+	:profiles( p_profiles ), playerIndex( p_playerIndex ), 
+	font( p_section->parent->mainMenu->arial ),
+	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 ), oldCurrIndex( 0 ), 
+	section( p_section )
 {
 	int quarter = 1920 / 4;
 	topMid = Vector2f( quarter * playerIndex + quarter / 2, 1080-400 );
@@ -35,7 +37,7 @@ ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
 
 	for( int i = 0; i < NUM_BOXES; ++i )
 	{
-		profileNames[i].setFont( p_font );
+		profileNames[i].setFont( font );
 		profileNames[i].setCharacterSize( 40 );
 		profileNames[i].setColor( Color::White );
 	}
@@ -54,17 +56,23 @@ ControlProfileMenu::ControlProfileMenu( sf::Font &p_font,
 
 	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
 		"POWER5", "POWER6LEFT", "POWER6RIGHT" };
-	UIControl *controls[2 * 4];
+	UIControl **controls = new UIControl*[2*4];
 	for( int i = 0; i < 2; ++i  )
 	{
 		for( int j = 0; j < 4; ++j )
 		{
-			controls[i*4+j] = new UIButton( NULL, this, &p_parent->mainMenu->tilesetManager,
-				p_parent->mainMenu->arial, buttonTexts[i*4+j], 120 );
+			controls[i*4+j] = new UIButton( NULL, section, &section->parent->mainMenu->tilesetManager,
+				&section->parent->mainMenu->arial, buttonTexts[i*4+j], 120, 50 );
+
 		}
 	}
 
-	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 10, 10, true );
+	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 100, 40, true );
+
+	
+
+
+	editProfileGrid->SetTopLeft( topMid.x - quarter/2, topMid.y );
 }
 
 void ControlProfileMenu::Draw( sf::RenderTarget *target )
@@ -77,6 +85,10 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 			//cout << "drawing: " << profileNames[i].getString().toAnsiString() << "\n";
 			target->draw( profileNames[i] );
 		}
+	}
+	else if( state == S_EDIT_CONFIG )
+	{
+		editProfileGrid->Draw( target );
 	}
 }
 
@@ -144,6 +156,27 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			state = S_SELECTED;
 			
 			break;
+		case S_EDIT_CONFIG:
+			{
+				break;
+			}
+		}
+	}
+	else if( currInput.X && !prevInput.X )
+	{
+		switch( state )
+		{
+		case S_SELECTED:
+			state = S_EDIT_CONFIG;
+			break;
+		case S_SHOWING_OPTIONS:
+			state = S_SELECTED;
+			
+			break;
+		case S_EDIT_CONFIG:
+			{
+				break;
+			}
 		}
 	}
 	if( currInput.B && !prevInput.B )

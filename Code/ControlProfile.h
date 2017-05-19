@@ -6,6 +6,8 @@
 #include <list>
 #include <SFML\Graphics.hpp>
 
+struct MainMenu;
+
 struct ControlProfile
 {
 	//you must make a named profile to store
@@ -42,12 +44,14 @@ private:
 };
 
 struct UIControlGrid;
+struct MultiSelectionSection;
 struct ControlProfileMenu
 {
 	enum State
 	{
 		S_SELECTED,
 		S_SHOWING_OPTIONS,
+		S_EDIT_CONFIG,
 		S_Count
 	};
 
@@ -59,7 +63,8 @@ struct ControlProfileMenu
 	static const int BOX_SPACING;
 	
 
-	ControlProfileMenu( sf::Font &font, int playerIndex,
+	ControlProfileMenu( MultiSelectionSection *section, 
+		int playerIndex,
 		std::list<ControlProfile*> &p_profiles );
 	void SetupBoxes();
 	void Update( ControllerState &currInput,
@@ -77,7 +82,7 @@ struct ControlProfileMenu
 
 	int currIndex;
 	int oldCurrIndex;
-
+	MultiSelectionSection *section;
 	int topIndex;
 	
 	std::list<ControlProfile*> profiles;

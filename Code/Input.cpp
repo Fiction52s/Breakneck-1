@@ -436,10 +436,12 @@ GameController::GameController( DWORD index )
 {
 	
 
-	for( int i = 0; i < ControllerSettings::Count; ++i )
+	/*for( int i = 0; i < ControllerSettings::Count; ++i )
 	{
 		filter[i] = (XBoxButton)(i+1);
-	}
+	}*/
+
+	SetFilterDefault( filter );
 }
 
 ControllerState & GameController::GetState()

@@ -21,6 +21,9 @@ UIControlGrid::UIControlGrid( UIControl *p_parent, int p_numControlsX, int p_num
 			index = i*numControlsY + j;
 			//controls[index] = p_controls[index];
 			controls[index]->parent = this;
+
+			//controls[i*4+j]->SetTopLeft( i * ( spacingX + controls[i*4+j]->GetWidth() ), 
+			//	j * ( spacingY + controls[i*4+j]->GetHeight() ) );
 		}
 	}
 
@@ -247,10 +250,10 @@ void UIControlGrid::SetTopLeft( float x, float y )
 	//int spaceCounterX = 0;
 	for( int i = 0; i < numControlsX; ++i )
 	{
-		for( int j = 0; j < numControlsY; ++i )
+		for( int j = 0; j < numControlsY; ++j )
 		{
 			controls[i*numControlsY+j]->SetTopLeft( globalTopLeft.x + i * (controls[i*numControlsY+j]->GetWidth() + spacingX ), 
-				globalTopLeft.y + i * (controls[i*numControlsY+j]->GetHeight() + spacingY ) );
+				globalTopLeft.y + j * (controls[i*numControlsY+j]->GetHeight() + spacingY ) );
 			//spaceCounter += controls[i]->GetHeight() + spacing;
 		}
 	}
