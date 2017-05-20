@@ -301,7 +301,10 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		UpdateBoxesDebug();
 		
 	}
-
+	else if( state == S_EDIT_CONFIG )
+	{
+		editProfileGrid->Update( currInput, prevInput );
+	}
 	
 	
 }

@@ -101,6 +101,7 @@ struct UIBar : UIControl
 		BAR_ALT0,
 		BAR_ALT1,
 		BAR_ALT2,
+		BAR_ALT3,
 		BAR_Count
 	};
 
@@ -115,7 +116,7 @@ struct UIBar : UIControl
 	UIBar( UIControl *parent, TilesetManager *tsMan, sf::Font *f,
 		int p_width, int p_height = 80, int p_textHeight = 40 );
 	void Draw( sf::RenderTarget *target );
-	void AssignTexture();
+	void AssignTexture( int tileIndex );
 	void SetTopLeft( float x, float y );
 	virtual bool Update( ControllerState &curr,
 		ControllerState &prev );
@@ -280,8 +281,10 @@ struct UIControlGrid : UIControl
 
 	int waitFrames[3];
 	int waitModeThresh[2];
-	int framesWaiting;
-	int currWaitLevel;
+	int framesWaitingHoriz;
+	int framesWaitingVert;
+	int currWaitLevelHoriz;
+	int currWaitLevelVert;
 	int flipCounterUp;
 	int flipCounterDown;
 	int flipCounterLeft;

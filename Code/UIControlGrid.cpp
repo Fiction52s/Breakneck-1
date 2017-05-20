@@ -19,27 +19,27 @@ UIControlGrid::UIControlGrid( UIControl *p_parent, int p_numControlsX, int p_num
 		for( int j = 0; j < numControlsY; ++j )
 		{
 			index = i*numControlsY + j;
-			//controls[index] = p_controls[index];
 			controls[index]->parent = this;
-
-			//controls[i*4+j]->SetTopLeft( i * ( spacingX + controls[i*4+j]->GetWidth() ), 
-			//	j * ( spacingY + controls[i*4+j]->GetHeight() ) );
 		}
 	}
 
-	waitFrames[0] = 10;
-	waitFrames[1] = 5;
-	waitFrames[2] = 2;
+	waitFrames[0] = 20;
+	waitFrames[1] = 10;
+	waitFrames[2] = 5;
 
 	waitModeThresh[0] = 2;
 	waitModeThresh[1] = 2;
 
-	currWaitLevel = 0;
+	currWaitLevelHoriz = 0;
+	currWaitLevelVert = 0;
 	flipCounterLeft = 0;
 	flipCounterRight = 0;
 	flipCounterLeft = 0;
 	flipCounterRight = 0;
-	framesWaiting = 0;
+	framesWaitingHoriz = 0;
+	framesWaitingVert = 0;
+
+	controls[focusedIndexX * numControlsY + focusedIndexY]->Focus();
 }
 
 UIControlGrid::~UIControlGrid()
@@ -63,25 +63,25 @@ bool UIControlGrid::Update( ControllerState &curr, ControllerState &prev )
 	if( down )
 	{
 		if( flipCounterDown == 0 
-			|| ( flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			|| ( flipCounterDown > 0 && framesWaitingVert == waitFrames[currWaitLevelVert] )
 			)
 		{
 			if( flipCounterDown == 0 )
 			{
-				currWaitLevel = 0;
+				currWaitLevelVert = 0;
 			}
 
 			++flipCounterDown;
 
-			if( flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			if( flipCounterDown == waitModeThresh[currWaitLevelVert] && currWaitLevelVert < 2 )
 			{
-				currWaitLevel++;
+				currWaitLevelVert++;
 			}
 
 			flipCounterUp = 0;
-			flipCounterLeft = 0;
-			flipCounterRight = 0;
-			framesWaiting = 0;
+			//flipCounterLeft = 0;
+			//flipCounterRight = 0;
+			framesWaitingVert = 0;
 
 			if( focusedIndexY < numControlsY - 1 )
 			{
@@ -94,32 +94,32 @@ bool UIControlGrid::Update( ControllerState &curr, ControllerState &prev )
 		}
 		else
 		{
-			++framesWaiting;
+			++framesWaitingVert;
 		}
 		
 	}
 	else if( up )
 	{
 		if( flipCounterUp == 0 
-			|| ( flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			|| ( flipCounterUp > 0 && framesWaitingVert == waitFrames[currWaitLevelVert] )
 			)
 		{
 			if( flipCounterUp == 0 )
 			{
-				currWaitLevel = 0;
+				currWaitLevelVert = 0;
 			}
 
 			++flipCounterUp;
 
-			if( flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			if( flipCounterUp == waitModeThresh[currWaitLevelVert] && currWaitLevelVert < 2 )
 			{
-				currWaitLevel++;
+				currWaitLevelVert++;
 			}
 
 			flipCounterDown = 0;
-			flipCounterRight = 0;
-			flipCounterLeft = 0;
-			framesWaiting = 0;
+			//flipCounterRight = 0;
+			//flipCounterLeft = 0;
+			framesWaitingVert = 0;
 			if( focusedIndexY > 0 )
 			{
 				focusedIndexY--;
@@ -131,32 +131,40 @@ bool UIControlGrid::Update( ControllerState &curr, ControllerState &prev )
 		}
 		else
 		{
-			++framesWaiting;
+			++framesWaitingVert;
 		}
 		
 	}
-	else if( right )
+	else
 	{
-		if( flipCounterDown == 0 
-			|| ( flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel] )
+		flipCounterUp = 0;
+		flipCounterDown = 0;
+		currWaitLevelVert = 0;
+		framesWaitingVert = 0;
+	}
+
+	if( right )
+	{
+		if( flipCounterRight == 0 
+			|| ( flipCounterRight > 0 && framesWaitingHoriz == waitFrames[currWaitLevelHoriz] )
 			)
 		{
-			if( flipCounterDown == 0 )
+			if( flipCounterRight == 0 )
 			{
-				currWaitLevel = 0;
+				currWaitLevelHoriz = 0;
 			}
 
-			++flipCounterDown;
+			++flipCounterRight;
 
-			if( flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			if( flipCounterRight == waitModeThresh[currWaitLevelHoriz] && currWaitLevelHoriz < 2 )
 			{
-				currWaitLevel++;
+				currWaitLevelHoriz++;
 			}
 
-			flipCounterDown = 0;
+			//flipCounterDown = 0;
 			flipCounterLeft = 0;
-			flipCounterUp = 0;
-			framesWaiting = 0;
+			//flipCounterUp = 0;
+			framesWaitingHoriz = 0;
 
 			if( focusedIndexX < numControlsX - 1 )
 			{
@@ -169,32 +177,32 @@ bool UIControlGrid::Update( ControllerState &curr, ControllerState &prev )
 		}
 		else
 		{
-			++framesWaiting;
+			++framesWaitingHoriz;
 		}
 		
 	}
 	else if( left )
 	{
 		if( flipCounterLeft == 0 
-			|| ( flipCounterLeft > 0 && framesWaiting == waitFrames[currWaitLevel] )
+			|| ( flipCounterLeft > 0 && framesWaitingHoriz == waitFrames[currWaitLevelHoriz] )
 			)
 		{
 			if( flipCounterLeft == 0 )
 			{
-				currWaitLevel = 0;
+				currWaitLevelHoriz = 0;
 			}
 
 			++flipCounterLeft;
 
-			if( flipCounterLeft == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
+			if( flipCounterLeft == waitModeThresh[currWaitLevelHoriz] && currWaitLevelHoriz < 2 )
 			{
-				currWaitLevel++;
+				currWaitLevelHoriz++;
 			}
 
-			flipCounterUp = 0;
+			//flipCounterUp = 0;
 			flipCounterRight = 0;
-			flipCounterDown = 0;
-			framesWaiting = 0;
+			//flipCounterDown = 0;
+			framesWaitingHoriz = 0;
 			if( focusedIndexX > 0 )
 			{
 				focusedIndexX--;
@@ -206,24 +214,22 @@ bool UIControlGrid::Update( ControllerState &curr, ControllerState &prev )
 		}
 		else
 		{
-			++framesWaiting;
+			++framesWaitingHoriz;
 		}
 		
 	}
 	else
 	{
-		flipCounterUp = 0;
-		flipCounterDown = 0;
 		flipCounterLeft = 0;
 		flipCounterRight = 0;
-		currWaitLevel = 0;
-		framesWaiting = 0;
+		currWaitLevelHoriz = 0;
+		framesWaitingHoriz = 0;
 	}
 
 	if( focusedIndexX != oldIndexX || focusedIndexY !=  oldIndexY )
 	{
 		controls[oldIndexX * numControlsY + oldIndexY]->Unfocus();
-		controls[focusedIndexX * numControlsY + oldIndexY]->Focus();
+		controls[focusedIndexX * numControlsY + focusedIndexY]->Focus();
 	}
 
 	return false;

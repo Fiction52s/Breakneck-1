@@ -12,7 +12,7 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 	sideWidth = 20;
 	ts_bar = tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
 	//ts_bar = tsMan->GetTileset( "blahbar" );
-	AssignTexture();
+	AssignTexture(0);
 	SetTopLeft( 0, 0 );
 	currText.setFont( *f );
 	currText.setCharacterSize( p_textHeight );
@@ -31,11 +31,11 @@ void UIBar::SetTextHeight( int height )
 	SetTextAlignment( alignment, textOffset );
 }
 
-void UIBar::AssignTexture()
+void UIBar::AssignTexture(int tileIndex )
 {
-	sf::IntRect irLeft = ts_bar->GetSubRect( 0 );
-	sf::IntRect irMiddle = ts_bar->GetSubRect( 1 );
-	sf::IntRect irRight = ts_bar->GetSubRect( 2 );
+	sf::IntRect irLeft = ts_bar->GetSubRect( tileIndex * 3 + 0 );
+	sf::IntRect irMiddle = ts_bar->GetSubRect( tileIndex * 3 + 1 );
+	sf::IntRect irRight = ts_bar->GetSubRect( tileIndex * 3 + 2 );
 	
 
 	/*barVA[LEFT*4+0].color = Color::Red;
@@ -135,25 +135,30 @@ void UIBar::SetState( BarState state )
 
 void UIBar::UpdateSprite()
 {
-	Color currColor;
+	int sub = 0;
 	switch( bState )
 	{
 	case BAR_UNFOCUSED:
-		currColor = Color::Yellow;
+		sub = 0;
 		break;
 	case BAR_FOCUSED:
-		currColor = Color::Cyan;
+		sub = 1;
 		break;
 	case BAR_ALT0:
-		currColor = Color::Green;
+		sub = 2;
 		break;
 	case BAR_ALT1:
-		currColor = Color::Red;
+		sub = 3;
 		break;
 	case BAR_ALT2:
-		currColor = Color::Blue;
+		sub = 4;
+		break;
+	case BAR_ALT3:
+		sub = 5;
 		break;
 	}
+
+	AssignTexture( sub );
 
 	//barVA[MIDDLE*4+0].color = currColor;
 	//barVA[MIDDLE*4+1].color = currColor;
