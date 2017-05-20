@@ -30,6 +30,8 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 ), oldCurrIndex( 0 ), 
 	section( p_section )
 {
+	currProfile = p_profiles.front(); //KIN 
+
 	int quarter = 1920 / 4;
 	topMid = Vector2f( quarter * playerIndex + quarter / 2, 1080-400 );
 
@@ -62,7 +64,7 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	{
 		for( int j = 0; j < 4; ++j )
 		{
-			currButton = new UIButton( NULL, section, &section->parent->mainMenu->tilesetManager,
+			currButton = new UIButton( NULL, this, &section->parent->mainMenu->tilesetManager,
 				&section->parent->mainMenu->arial, buttonTexts[i*4+j], 220, 80 );
 			currButton->bar->SetTextHeight( 20 );
 			currButton->bar->SetTextAlignment( UIBar::Alignment::MIDDLE, Vector2i( 0, 3 ) );
@@ -72,6 +74,69 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 20, 20, true );
 	editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
+
+	maxReceiveFrames = 240;
+}
+
+bool ControlProfileMenu::ButtonEvent( UIEvent eType,
+		ButtonEventParams *param )
+{
+	string s = param->button->bar->GetString();
+	state = S_RECEIVE_BUTTON;
+	currReceiveFrame = 0;
+
+	editIndex = ControlProfileManager::GetButtonTypeFromAction( s );
+
+	return true;
+}
+
+XBoxButton ControlProfileMenu::ReceiveInput( ControllerState &currInput, 
+	ControllerState &prevInput )
+{
+	if( currReceiveFrame < maxReceiveFrames )
+	{
+		if( currInput.A && !prevInput.A )
+		{
+			return XBoxButton::XBOX_A;
+		}
+		else if( currInput.B && !prevInput.B )
+		{
+			return XBoxButton::XBOX_B;
+		}
+		else if( currInput.X && !prevInput.X )
+		{
+			return XBoxButton::XBOX_X;
+		}
+		else if( currInput.Y && !prevInput.Y )
+		{
+			return XBoxButton::XBOX_Y;
+		}
+		else if( currInput.leftShoulder && !prevInput.leftShoulder )
+		{
+			return XBoxButton::XBOX_L1;
+		}
+		else if( currInput.rightShoulder && !prevInput.rightShoulder )
+		{
+			return XBoxButton::XBOX_R1;
+		}
+		else if( currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed() )
+		{
+			return XBoxButton::XBOX_L2;
+		}
+		else if( currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed() )
+		{
+			return XBoxButton::XBOX_R2;
+		}
+		
+		++currReceiveFrame;
+		return XBoxButton::XBOX_BLANK;
+		
+	}
+	else
+	{
+		return XBoxButton::XBOX_BLANK;
+		//assert( 0 );
+	}
 }
 
 void ControlProfileMenu::Draw( sf::RenderTarget *target )
@@ -152,9 +217,21 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			oldCurrIndex = currIndex;
 			break;
 		case S_SHOWING_OPTIONS:
-			state = S_SELECTED;
-			
-			break;
+			{
+				int test = 0;
+				state = S_SELECTED;
+				for( list<ControlProfile*>::iterator it = profiles.begin(); 
+					it != profiles.end(); ++it )
+				{
+					if( test == currIndex )
+					{
+						currProfile = (*it);
+						break;
+					}
+					++test;
+				}
+				break;
+			}
 		case S_EDIT_CONFIG:
 			{
 				break;
@@ -304,6 +381,21 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 	else if( state == S_EDIT_CONFIG )
 	{
 		editProfileGrid->Update( currInput, prevInput );
+	}
+	else if( state == S_RECEIVE_BUTTON )
+	{
+		XBoxButton but = ReceiveInput( currInput, prevInput );
+		if( but == XBoxButton::XBOX_BLANK )
+		{
+			if( currReceiveFrame == maxReceiveFrames )
+			{
+				state = S_EDIT_CONFIG;
+			}
+		}
+		else
+		{
+			currProfile->filter[editIndex] = but;
+		}
 	}
 	
 	
@@ -585,8 +677,19 @@ bool ControlProfileManager::LoadXBOXConfig( ControlProfile *profile )
 	}
 
 	XBoxButton b = GetButton( buttonStr );
-	ControllerSettings::ButtonType buttonType = ControllerSettings::Count;
-	cout << "inputName: " << inputName << endl;
+	ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction( inputName );
+
+	assert( buttonType < ControllerSettings::Count );
+
+	profile->filter[buttonType] = b;
+
+	}
+}
+
+ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction( 
+	const std::string &inputName )
+{
+	ControllerSettings::ButtonType buttonType;
 	if( inputName == "JUMP" )
 	{
 		buttonType = ControllerSettings::JUMP;
@@ -619,12 +722,12 @@ bool ControlProfileManager::LoadXBOXConfig( ControlProfile *profile )
 	{
 		buttonType = ControllerSettings::LEFTWIRE;
 	}
-
-	assert( buttonType < ControllerSettings::Count );
-
-	profile->filter[buttonType] = b;
-
+	else
+	{
+		assert( 0 );
 	}
+
+	return buttonType;
 }
 
 XBoxButton ControlProfileManager::GetButton( const std::string &str )

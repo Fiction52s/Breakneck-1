@@ -5,6 +5,7 @@
 #include <fstream>
 #include <list>
 #include <SFML\Graphics.hpp>
+#include "UIWindow.h"
 
 struct MainMenu;
 
@@ -26,14 +27,15 @@ struct ControlProfileManager
 	bool LoadProfiles();
 	void DebugPrint();
 	std::list<ControlProfile*> profiles;
+	static XBoxButton GetButton( const std::string &str );
+	static ControllerSettings::ButtonType 
+		GetButtonTypeFromAction( const std::string &str );
 private:
 	bool MoveToNextSymbolText( char startSymbol,
 		char endSymbol, std::string &outStr );
 	bool MoveToPeekNextOpener( char &outChar );
 	char MoveToEquals( std::string &outStr );
 	bool LoadXBOXConfig( ControlProfile *profile );
-	XBoxButton GetButton( const std::string &str );
-	std::string GetString( XBoxButton button );
 	bool IsSymbol( char c );
 	void DeleteProfile( std::list<ControlProfile*>::iterator &it );
 	void WriteProfiles();
@@ -43,29 +45,40 @@ private:
 	std::ifstream is;
 };
 
-struct UIControlGrid;
 struct MultiSelectionSection;
-struct ControlProfileMenu
+struct ControlProfileMenu : UIEventHandlerBase
 {
 	enum State
 	{
 		S_SELECTED,
 		S_SHOWING_OPTIONS,
 		S_EDIT_CONFIG,
+		S_RECEIVE_BUTTON,
 		S_Count
 	};
 
+	int currReceiveFrame;
+	int maxReceiveFrames;
+	ControllerSettings::ButtonType editIndex;
 	
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;
 	static const int BOX_WIDTH;
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
+
+	XBoxButton ReceiveInput( ControllerState &currInput, 
+	ControllerState &prevInput );
 	
 
 	ControlProfileMenu( MultiSelectionSection *section, 
 		int playerIndex,
 		std::list<ControlProfile*> &p_profiles );
+
+	
+
+	bool ButtonEvent( UIEvent eType,
+		ButtonEventParams *param );
 	void SetupBoxes();
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
@@ -95,6 +108,7 @@ struct ControlProfileMenu
 	int currWaitLevel;
 	int flipCounterUp;
 	int flipCounterDown;
+	ControlProfile *currProfile;
 
 	UIControlGrid *editProfileGrid;
 };

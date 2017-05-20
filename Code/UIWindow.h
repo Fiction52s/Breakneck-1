@@ -132,6 +132,7 @@ struct UIBar : UIControl
 	void Unfocus();
 	void UpdateSprite();
 	Tileset *ts_bar;
+	const sf::String &GetString();
 	int width;
 	sf::Vertex barVA[3*4];
 	sf::Text currText;

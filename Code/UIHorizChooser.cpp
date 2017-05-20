@@ -133,6 +133,11 @@ void UIBar::SetState( BarState state )
 	UpdateSprite();
 }
 
+const sf::String &UIBar::GetString()
+{
+	return currText.getString();
+}
+
 void UIBar::UpdateSprite()
 {
 	int sub = 0;
