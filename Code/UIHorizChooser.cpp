@@ -6,15 +6,16 @@
 using namespace sf;
 using namespace std;
 
-UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width, int p_height )
+UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width, int p_height, int p_textHeight )
 	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
 {
+	sideWidth = 20;
 	ts_bar = tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
 	//ts_bar = tsMan->GetTileset( "blahbar" );
 	AssignTexture();
 	SetTopLeft( 0, 0 );
 	currText.setFont( *f );
-	currText.setCharacterSize( 40 );
+	currText.setCharacterSize( p_textHeight );
 	currText.setColor( Color::White );
 
 	bState = BAR_UNFOCUSED;
@@ -22,6 +23,12 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 	dimensions = Vector2f( p_width, p_height ); //50 is just a random constant
 
 	SetState( BAR_UNFOCUSED );
+}
+
+void UIBar::SetTextHeight( int height )
+{
+	currText.setCharacterSize( height );
+	SetTextAlignment( alignment, textOffset );
 }
 
 void UIBar::AssignTexture()
@@ -87,7 +94,7 @@ void UIBar::SetTopLeft( float x, float y )
 	}
 	//float tw = ts_bar->tileWidth;
 	//float th = ts_bar->tileHeight;
-	float tw = 20;
+	float tw = sideWidth;
 	float th = dimensions.y;
 
 	barVA[LEFT*4+0].position = Vector2f( x, y );
@@ -96,8 +103,8 @@ void UIBar::SetTopLeft( float x, float y )
 	barVA[LEFT*4+3].position = Vector2f( x, y + th );
 
 	barVA[MIDDLE*4+0].position = barVA[LEFT*4+1].position;
-	barVA[MIDDLE*4+1].position = barVA[LEFT*4+1].position + Vector2f( width, 0 );
-	barVA[MIDDLE*4+2].position = barVA[LEFT*4+2].position + Vector2f( width, 0 );
+	barVA[MIDDLE*4+1].position = barVA[LEFT*4+1].position + Vector2f( width - sideWidth * 2, 0 );
+	barVA[MIDDLE*4+2].position = barVA[LEFT*4+2].position + Vector2f( width - sideWidth * 2, 0 );
 	barVA[MIDDLE*4+3].position = barVA[LEFT*4+2].position;
 
 	barVA[RIGHT*4+0].position = barVA[MIDDLE*4+1].position;

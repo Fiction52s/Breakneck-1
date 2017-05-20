@@ -113,7 +113,7 @@ struct UIBar : UIControl
 	};
 
 	UIBar( UIControl *parent, TilesetManager *tsMan, sf::Font *f,
-		int p_width, int p_height = 80 );
+		int p_width, int p_height = 80, int p_textHeight = 40 );
 	void Draw( sf::RenderTarget *target );
 	void AssignTexture();
 	void SetTopLeft( float x, float y );
@@ -124,6 +124,7 @@ struct UIBar : UIControl
 	void SetText( const std::string &text,
 		sf::Vector2i offset,
 		Alignment align);
+	void SetTextHeight( int height );
 	void SetTextAlignment( Alignment align, sf::Vector2i &offset );
 	void SetState( BarState state );
 	void Focus();
@@ -136,6 +137,7 @@ struct UIBar : UIControl
 	Alignment alignment;
 	sf::Vector2i textOffset;
 	BarState bState;
+	int sideWidth;
 };
 
 //types of bars: horizchooser, button, checkbox,

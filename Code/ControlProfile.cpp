@@ -63,18 +63,15 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 		for( int j = 0; j < 4; ++j )
 		{
 			currButton = new UIButton( NULL, section, &section->parent->mainMenu->tilesetManager,
-				&section->parent->mainMenu->arial, buttonTexts[i*4+j], 120, 50 );
-			currButton->bar->SetTextAlignment( UIBar::Alignment::LEFT, Vector2i( 0, 0 ) );
+				&section->parent->mainMenu->arial, buttonTexts[i*4+j], 220, 80 );
+			currButton->bar->SetTextHeight( 20 );
+			currButton->bar->SetTextAlignment( UIBar::Alignment::MIDDLE, Vector2i( 0, 3 ) );
 			controls[i*4+j] = currButton;
 		}
 	}
 
-	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 100, 40, true );
-
-	
-
-
-	editProfileGrid->SetTopLeft( topMid.x - quarter/2, topMid.y );
+	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 20, 20, true );
+	editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
 }
 
 void ControlProfileMenu::Draw( sf::RenderTarget *target )
