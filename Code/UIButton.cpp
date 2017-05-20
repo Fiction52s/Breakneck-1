@@ -78,7 +78,7 @@ bool UIButton::Update( ControllerState &curr,
 			return handler->ButtonEvent( UIEvent::E_BUTTON_PRESSED, &params );
 		}
 	}
-	else if( curr.A )
+	else if( curr.A && pressedDown )
 	{
 		bar->SetState( UIBar::BAR_ALT1 );
 		if( handler != NULL )

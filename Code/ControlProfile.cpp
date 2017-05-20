@@ -81,11 +81,14 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 bool ControlProfileMenu::ButtonEvent( UIEvent eType,
 		ButtonEventParams *param )
 {
-	string s = param->button->bar->GetString();
-	state = S_RECEIVE_BUTTON;
-	currReceiveFrame = 0;
+	if( eType == UIEvent::E_BUTTON_PRESSED )
+	{
+		string s = param->button->bar->GetString();
+		state = S_RECEIVE_BUTTON;
+		currReceiveFrame = 0;
 
-	editIndex = ControlProfileManager::GetButtonTypeFromAction( s );
+		editIndex = ControlProfileManager::GetButtonTypeFromAction( s );
+	}
 
 	return true;
 }
@@ -243,14 +246,23 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		switch( state )
 		{
 		case S_SELECTED:
-			state = S_EDIT_CONFIG;
-			break;
+			{
+				state = S_EDIT_CONFIG;
+				for( int i = 0; i < ControllerSettings::Count; ++i )
+				{
+					tempFilter[i] = currProfile->filter[i];
+				}
+				break;
+			}
 		case S_SHOWING_OPTIONS:
 			state = S_SELECTED;
 			
 			break;
 		case S_EDIT_CONFIG:
 			{
+				//save
+				bool res = SaveCurrConfig();
+				assert( res ); //if failed, file write failed
 				break;
 			}
 		}
@@ -394,11 +406,29 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		}
 		else
 		{
-			currProfile->filter[editIndex] = but;
+			tempFilter[editIndex] = but;
+			state = S_EDIT_CONFIG;
 		}
 	}
-	
-	
+}
+
+bool ControlProfileMenu::SaveCurrConfig()
+{
+	bool different = false;
+	for( int i = 0; i < ControllerSettings::Count; ++i )
+	{
+		if( currProfile->filter[i] != tempFilter[i] )
+		{
+			currProfile->filter[i] = tempFilter[i];
+			different = true;
+		}
+	}
+
+	if( different ) section->parent->cpm->WriteProfiles();
+
+
+	state = S_SELECTED;
+	return true;
 }
 
 void ControlProfileMenu::SetupBoxes()
@@ -536,7 +566,7 @@ bool ControlProfileManager::LoadProfiles()
 	{
 	}
 
-	WriteProfiles(); //debug, will be in other functions
+	//WriteProfiles(); //debug, will be in other functions
 	//DeleteProfile( profiles.begin() );
 
 	ControlProfile *def= new ControlProfile;
@@ -849,7 +879,10 @@ void ControlProfileManager::WriteProfiles()
 	of.open( "controlprofiles.txt" );
 
 	XBoxButton *filter = NULL;
-	for( list<ControlProfile*>::iterator it = profiles.begin(); it != profiles.end(); ++it )
+	list<ControlProfile*>::iterator it = profiles.begin();
+	++it; //always skip KIN
+
+	for( ; it != profiles.end(); ++it )
 	{
 		of << PROFILE_START_CHAR << (*it)->name << PROFILE_END_CHAR << "\n";
 		if( (*it)->hasXBoxFilter )

@@ -30,6 +30,7 @@ struct ControlProfileManager
 	static XBoxButton GetButton( const std::string &str );
 	static ControllerSettings::ButtonType 
 		GetButtonTypeFromAction( const std::string &str );
+	void WriteProfiles();
 private:
 	bool MoveToNextSymbolText( char startSymbol,
 		char endSymbol, std::string &outStr );
@@ -38,7 +39,6 @@ private:
 	bool LoadXBOXConfig( ControlProfile *profile );
 	bool IsSymbol( char c );
 	void DeleteProfile( std::list<ControlProfile*>::iterator &it );
-	void WriteProfiles();
 	void ClearProfiles();
 
 	//std::list<ControlProfile*> profiles;
@@ -60,6 +60,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	int currReceiveFrame;
 	int maxReceiveFrames;
 	ControllerSettings::ButtonType editIndex;
+	XBoxButton tempFilter[ControllerSettings::Count];
 	
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;
@@ -69,6 +70,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 
 	XBoxButton ReceiveInput( ControllerState &currInput, 
 	ControllerState &prevInput );
+	bool SaveCurrConfig();
 	
 
 	ControlProfileMenu( MultiSelectionSection *section, 
