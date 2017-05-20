@@ -12,6 +12,7 @@ UIButton::UIButton( UIControl *p_parent, UIEventHandlerBase *p_handler,
 {
 	bar = new UIBar( p_parent, tsMan, f, p_width, p_height );
 	SetTopLeft( 0, 0 );
+	bar->SetText( text );
 	dimensions = bar->dimensions;
 }
 

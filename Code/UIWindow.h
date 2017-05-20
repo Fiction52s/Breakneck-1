@@ -121,9 +121,10 @@ struct UIBar : UIControl
 		ControllerState &prev );
 	const sf::Vector2f &GetTopLeftGlobal();
 	void SetText( const std::string &text );
-	void SetText( const std::string &text, 
-		Alignment align );
-	void SetTextAlignment( Alignment align );
+	void SetText( const std::string &text,
+		sf::Vector2i offset,
+		Alignment align);
+	void SetTextAlignment( Alignment align, sf::Vector2i &offset );
 	void SetState( BarState state );
 	void Focus();
 	void Unfocus();
@@ -133,7 +134,7 @@ struct UIBar : UIControl
 	sf::Vertex barVA[3*4];
 	sf::Text currText;
 	Alignment alignment;
-	sf::Vector2f textOffset;
+	sf::Vector2i textOffset;
 	BarState bState;
 };
 

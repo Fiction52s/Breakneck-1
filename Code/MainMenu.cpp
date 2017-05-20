@@ -62,6 +62,27 @@ void MultiSelectionSection::Update()
 
 void MultiSelectionSection::Draw( sf::RenderTarget *target )
 {
+	sf::RectangleShape rs;
+	Color c;
+	switch( playerIndex )
+	{
+	case 0:
+		c = Color::Red;
+		break;
+	case 1:
+		c = Color::Yellow;
+		break;
+	case 2:
+		c = Color::White;
+		break;
+	case 3:
+		c = Color::Magenta;
+		break;
+	}
+	rs.setFillColor( c );
+	rs.setPosition( 1920 / 4 *  playerIndex, 1080 - 400 );
+	rs.setSize( Vector2f( 1920/4, 400 ) );
+	target->draw( rs );
 	target->draw( playerSprite );
 	profileSelect->Draw( target );
 }

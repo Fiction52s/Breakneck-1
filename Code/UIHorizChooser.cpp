@@ -105,19 +105,19 @@ void UIBar::SetTopLeft( float x, float y )
 	barVA[RIGHT*4+2].position = barVA[MIDDLE*4+2].position + Vector2f( tw, 0 );
 	barVA[RIGHT*4+3].position = barVA[MIDDLE*4+2].position;
 
-	SetTextAlignment( alignment );
+	SetTextAlignment( alignment, textOffset );
 }
 
 void UIBar::SetText( const std::string &text )
 {
 	currText.setString( text );
-	SetTextAlignment( alignment );
+	SetTextAlignment( alignment, textOffset );
 }
 
-void UIBar::SetText( const std::string &text, Alignment align )
+void UIBar::SetText( const std::string &text, sf::Vector2i offset, Alignment align )
 {
 	currText.setString( text );
-	SetTextAlignment( align );
+	SetTextAlignment( align, offset );
 }
 
 void UIBar::SetState( BarState state )
@@ -159,30 +159,32 @@ const sf::Vector2f &UIBar::GetTopLeftGlobal()
 	return barVA[0].position;
 }
 
-void UIBar::SetTextAlignment( Alignment align )
+void UIBar::SetTextAlignment( Alignment align, sf::Vector2i &offset )
 {
+	textOffset = offset;
+	Vector2f off( textOffset.x, textOffset.y );
 	alignment = align;
 	switch( align )
 	{
 	case LEFT:
 		{
-			Vector2f topLeft = GetTopLeftGlobal() + textOffset;
+			Vector2f topLeft = GetTopLeftGlobal() + off;
 			currText.setOrigin( 0, 0 ); 
 			currText.setPosition( topLeft );
 			break;
 		}
 	case MIDDLE:
 		{
-			Vector2f topMiddle = GetTopLeftGlobal() + Vector2f( width / 2, textOffset.y );
+			Vector2f topMiddle = GetTopLeftGlobal() + Vector2f( width / 2, 0 ) + off;
 			currText.setOrigin( currText.getLocalBounds().width / 2, 0 );
 			currText.setPosition( topMiddle );
 			break;
 		}
 	case RIGHT:
 		{
-			Vector2f topRight = GetTopLeftGlobal() + Vector2f( width - textOffset.x, textOffset.y );
+			Vector2f topRight = GetTopLeftGlobal() + Vector2f( width, 0 ) + off;
 			currText.setOrigin( currText.getLocalBounds().width, 0 );
-			currText.setPosition( topRight );
+			currText.setPosition( topRight);
 			break;
 		}
 	}
@@ -223,14 +225,14 @@ UIHorizSelector::UIHorizSelector( UIControl *p_parent, UIEventHandlerBase *p_han
 	bar = new UIBar( p_parent, tsMan, f, p_chooserWidth );
 
 	nameBar = new UIBar( p_parent, tsMan, f, p_labelWidth );
-	nameBar->SetText( label, UIBar::Alignment::MIDDLE );
+	nameBar->SetText( label, Vector2i( 0, 0 ), UIBar::Alignment::MIDDLE );
 	
 	dimensions = bar->dimensions;
 
 	/*currIndexText.setFont( *f );
 	currIndexText.setCharacterSize( 40 );
 	currIndexText.setColor( Color::White );*/
-	bar->SetText( names[defaultIndex] );
+	bar->SetText( names[defaultIndex] ); 
 
 	waitFrames[0] = 10;
 	waitFrames[1] = 5;

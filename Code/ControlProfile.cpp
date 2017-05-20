@@ -57,13 +57,15 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
 		"POWER5", "POWER6LEFT", "POWER6RIGHT" };
 	UIControl **controls = new UIControl*[2*4];
+	UIButton *currButton;
 	for( int i = 0; i < 2; ++i  )
 	{
 		for( int j = 0; j < 4; ++j )
 		{
-			controls[i*4+j] = new UIButton( NULL, section, &section->parent->mainMenu->tilesetManager,
+			currButton = new UIButton( NULL, section, &section->parent->mainMenu->tilesetManager,
 				&section->parent->mainMenu->arial, buttonTexts[i*4+j], 120, 50 );
-
+			currButton->bar->SetTextAlignment( UIBar::Alignment::LEFT, Vector2i( 0, 0 ) );
+			controls[i*4+j] = currButton;
 		}
 	}
 
