@@ -31,15 +31,13 @@ int MainMenu::masterVolume = 100;
 
 MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
 	int p_playerIndex )
-	:parent( p_parent ), playerIndex( p_playerIndex )
+	:parent( p_parent ), playerIndex( p_playerIndex ), team( T_NOT_CHOSEN ),
+	skinIndex( S_STANDARD ), isReady( false ), active( false )
 {
 	profileSelect = new ControlProfileMenu( this,playerIndex,
 		parent->cpm->profiles );
 
-	profileSelect->UpdateNames();
-
-
-	
+	profileSelect->UpdateNames();	
 }
 
 bool MultiSelectionSection::ButtonEvent( UIEvent eType,
@@ -54,10 +52,104 @@ void MultiSelectionSection::Update()
 	ControllerState &currInput = mm->GetCurrInput( playerIndex );
 	ControllerState &prevInput = mm->GetPrevInput( playerIndex );
 
-	profileSelect->Update( currInput, prevInput );
+	if( !active )
+	{
+		bool a = currInput.A && !prevInput.A;
+		if( a )
+			active = true;
+		return;
+	}
 
-	
-	//profileSelect->state = ControlProfileMenu::State::S_SHOWING_OPTIONS;
+	if( !isReady )
+	{
+		bool rT = (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed() );
+		bool lT = (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed() );
+
+		bool rS = (currInput.rightShoulder && !prevInput.rightShoulder);
+		bool lS = (currInput.leftShoulder && !prevInput.leftShoulder);
+		if( rT )
+		{
+			switch( team )
+			{
+			case T_NOT_CHOSEN:
+				{
+					team = T_RED;
+					break;
+				}
+			case T_RED:
+				{
+					team = T_BLUE;
+					break;
+				}
+			case T_BLUE:
+				{
+					team = T_RED;
+					break;
+				}
+			}
+		}
+		else if( lT )
+		{
+			switch( team )
+			{
+			case T_NOT_CHOSEN:
+				{
+					team = T_BLUE;
+					break;
+				}
+			case T_RED:
+				{
+					team = T_BLUE;
+					break;
+				}
+			case T_BLUE:
+				{
+					team = T_RED;
+					break;
+				}
+			}
+		}
+
+		if( rS )
+		{
+			if( skinIndex < S_Count )
+			{
+				++skinIndex;
+			}
+			else
+			{
+				skinIndex = 0;
+			}
+		}
+		else if( lS )
+		{
+			if( skinIndex > 0 )
+			{
+				--skinIndex;
+			}
+			else
+			{
+				skinIndex = S_Count - 1;
+			}
+		}
+
+		profileSelect->Update( currInput, prevInput );
+	}
+
+	int numPlayersActive = parent->GetNumActivePlayers();
+	if( !isReady && currInput.start && !prevInput.start
+		&& profileSelect->state == ControlProfileMenu::S_SELECTED )
+	{
+		/*if( team != T_NOT_CHOSEN || numPlayersActive == 2 )
+		{
+			if( numPlayersActive
+		}*/
+		isReady = true;
+	}
+	else if( isReady && currInput.B && !currInput.B )
+	{
+		isReady = false;
+	}
 }
 
 void MultiSelectionSection::Draw( sf::RenderTarget *target )
@@ -98,7 +190,6 @@ MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	for( int i = 0; i < 4; ++i )
 	{
 		playerSection[i] = new MultiSelectionSection( this, i );
-		
 	}
 }
 
@@ -125,11 +216,56 @@ void MultiLoadingScreen::Draw( sf::RenderTarget *target )
 	}
 }
 
+int MultiLoadingScreen::GetNumActivePlayers()
+{
+	int activeCount = 0;
+	for( int i = 0; i < 4; ++i )
+	{
+		if( playerSection[i]->active )
+		{
+			activeCount++;
+		}
+	}
+
+	return activeCount;
+}
+
+bool MultiLoadingScreen::AllPlayersReady()
+{
+	int readyCount = 0;
+	for( int i = 0; i < 4; ++i )
+	{
+		if( playerSection[i]->active )
+		{
+			if( playerSection[i]->isReady )
+			{
+				readyCount++;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+
+	return readyCount > 0;
+}
+
 void MultiLoadingScreen::Update()
 {
 	for( int i = 0; i < 4; ++i )
 	{
 		playerSection[i]->Update();
+	}
+
+	if( AllPlayersReady() )
+	{
+		GameSession *gs = new GameSession( NULL, mainMenu );
+		gs->Run( filePath.string() );
+
+		delete gs;
+
+		//go into game!
 	}
 }
 

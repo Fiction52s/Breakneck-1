@@ -38,6 +38,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	
 	enum Team
 	{
+		T_NOT_CHOSEN,
 		T_RED,
 		T_BLUE,
 		T_Count
@@ -55,7 +56,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param );
 	Team team;
-	Skin skin;
+	int skinIndex;
 	void Update();
 	ControlProfile *profile;
 	ControlProfileMenu *profileSelect;
@@ -64,7 +65,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	bool active;
 	int playerIndex;
 	MultiLoadingScreen *parent;
-
+	bool isReady;
 };
 
 struct MultiLoadingScreen
@@ -78,6 +79,8 @@ struct MultiLoadingScreen
 	sf::Texture previewTex;
 	boost::filesystem::path filePath;
 	void SetPreview();
+	bool AllPlayersReady();
+	int GetNumActivePlayers();
 	MainMenu *mainMenu;
 	ControlProfileManager *cpm;
 };
