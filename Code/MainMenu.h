@@ -8,6 +8,8 @@
 #include "WorldMap.h"
 #include "GUI.h"
 #include "UIWindow.h"
+#include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 struct Config;
 
@@ -83,6 +85,8 @@ struct MultiLoadingScreen
 	int GetNumActivePlayers();
 	MainMenu *mainMenu;
 	ControlProfileManager *cpm;
+	boost::thread *loadThread;
+	GameSession *gs;
 };
 
 

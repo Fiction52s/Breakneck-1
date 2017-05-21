@@ -32,6 +32,7 @@
 #include "UIWindow.h"
 #include "Config.h"
 #include "ControlProfile.h"
+#include <boost/thread.hpp>
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -780,12 +781,13 @@ void KeyMarker::Update()
 	}
 }
 
-GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu )
+GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
+	const std::string &p_fileName )
 	:va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
 	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
-	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 )
+	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_fileName )
 {	
 	raceFight = NULL;
 
@@ -5609,20 +5611,13 @@ void GameSession::KeyboardUpdate( int index )
 	GetCurrInput(index) = keyboardInput;
 }
 
-int GameSession::Run( string fileN )
+bool GameSession::sLoad( GameSession *gs )
 {
-	ControlProfileManager *cpm = new ControlProfileManager;
-	bool success = cpm->LoadProfiles();
-	if( success )
-		cout << "did it!" << endl;
-	else
-		cout << "failed" << endl;
-	
-	cpm->DebugPrint();
+	return gs->Load();
+}
 
-
-	//cout << "game session run" << endl;
-	//should this always start as true?
+bool GameSession::Load()
+{
 	drawInversePoly = true;
 	showDebugDraw = false;
 
@@ -5632,6 +5627,7 @@ int GameSession::Run( string fileN )
 	
 	
 	recOver = false;
+
 
 	soundManager = new SoundManager;
 
@@ -5648,14 +5644,7 @@ int GameSession::Run( string fileN )
 	gameSoundBuffers[S_KEY_ENTER_4] = soundManager->GetSound( "Audio/Sounds/key_enter_4.ogg" );
 	gameSoundBuffers[S_KEY_ENTER_5] = soundManager->GetSound( "Audio/Sounds/key_enter_5.ogg" );
 	gameSoundBuffers[S_KEY_ENTER_6] = soundManager->GetSound( "Audio/Sounds/key_enter_6.ogg" );
-	//gameSoundBuffers[KEY_ENTER_0] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
 
-	//soundManager->GetMusic( "Audio/Music/02_bird_fight.ogg" );
-	//currMusic = soundManager->GetMusic( "Audio/Music/w02_Bird_Talk.ogg" );
-	//currMusic->setLoop( true );
-	//testMusic->
-	//currMusic->play();
-	//currMusic->
 	currMusic = NULL;
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
@@ -5673,16 +5662,10 @@ int GameSession::Run( string fileN )
 	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
 	speedBarSprite.setTexture( *ts_speedBar->texture );
 
-	//speedBarShader.setParameter( "u_texture", *ts_kinFace->texture );
-
-	//speedBarSprite.setPosition( 0, 176 );
 	leftHUDSprite.setTexture( *ts_leftHUD->texture );
 	leftHUDBlankSprite.setTexture( *ts_leftHUD->texture );
 	leftHUDBlankSprite.setTextureRect( ts_leftHUD->GetSubRect( 0 ) );
 	leftHUDSprite.setTextureRect( ts_leftHUD->GetSubRect( 1 ) );
-	//topbar = GetTileset( "topbar_308x128.png", 308, 128 );
-	//topbarSprite.setTexture( *topbar->texture );
-	//topbarSprite.setPosition( 2, 16 );
 
 	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
 	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
@@ -5693,85 +5676,31 @@ int GameSession::Run( string fileN )
 	
 	undergroundTileset = GetTileset( "terrainworld1.png", 128, 128 );//GetTileset( "underground01.png", 32, 32 );
 	undergroundTilesetNormal = GetTileset( "terrainworld1_NORMALS.png", 128, 128 );
-	//just to load it
-	//GetTileset( "terrainworld1_PATTERN.png", 16, 16 );
-
-
-	/*undergroundPar[0].color = Color::Red;
-	undergroundPar[1].color = Color::Red;
-	undergroundPar[2].color = Color::Red;
-	undergroundPar[3].color = Color::Red;*/
 
 	undergroundPar[0].position = Vector2f( 0, 0 );
 	undergroundPar[1].position = Vector2f( 0, 0 );
 	undergroundPar[2].position = Vector2f( 0, 0 );
 	undergroundPar[3].position = Vector2f( 0, 0 );
 
-
-	bool showFrameRate = true;
-
-	
-
-	sf::Text frameRate( "00", arial, 30 );
-	frameRate.setColor( Color::Red );
-
 	activeSequence = NULL;
 
-	fileName = fileN;
-	
-	
-
-
-	sf::Texture alphaTex;
-	alphaTex.loadFromFile( "alphatext.png" );
-	Sprite alphaTextSprite(alphaTex);
-
-	//sf::Texture healthTex;
-	//healthTex.loadFromFile( "lifebar.png" );
-	//sf::Sprite healthSprite( healthTex );
-	//healthSprite.setScale( 4, 4 );
-	//healthSprite.setPosition( 10, 100 );
-	
-	//window->setPosition( pos );
-	//window->setVerticalSyncEnabled( true );
-	//window->setFramerateLimit( 60 );
 	window->setMouseCursorVisible( true );
 
 	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
-	preScreenTex->setView( view );
-	//window->setView( view );
-
 	
+
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
-	//window->setVerticalSyncEnabled( true );
-
-	
-	sf::RectangleShape bDraw;
-	bDraw.setFillColor( Color::Red );
-	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
-	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-	bool bdrawdraw = false;
-
-	
-
-	
 	//recGhost = new RecordGhost( player );
 	//repGhost = new ReplayGhost( player );
 
 	//recPlayer = new RecordPlayer( player );
 	//repPlayer = new ReplayPlayer( player );
-	
-	
-
-	
+		
 	players[0] = new Actor( this, 0 );
 
 	OpenFile( fileName );
-	
 
-	
-	
 	if( raceFight != NULL )
 	{
 		players[1] = new Actor( this, 1 );
@@ -5802,25 +5731,17 @@ int GameSession::Run( string fileN )
 		{
 			p->position = p0->position;
 		}
-
 	}
 
-
-	cout << "NOTNOTNOTNTO" << endl;
 	pauseMenu = new PauseMenu( this );
 	pauseMenu->SetTab( PauseMenu::Tab::KIN );
 
-	cout << "TEST" << endl;
-	//pauseMenu->cOptions->xboxInputAssoc[0];
 	for( int i = 0; i < 4; ++i )
 	{
+		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		GetController(i).SetFilter( cpm->profiles.front()->filter );
+		GetController(i).SetFilter( mainMenu->multiLoadingScreen->cpm->profiles.front()->filter );
 	}
-	
-	//mainMenu->controller2.SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-
-	cout << "WHAT IS THIS" << endl;
 
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
 
@@ -5852,33 +5773,17 @@ int GameSession::Run( string fileN )
 	assert( goalTile >= 0 );
 	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( goalTile ) );
 
-	//use player->setactivepowers to set it up from the level. need to add it
-	//to the editor
-
-	
 	powerWheel = new PowerWheel( this, p0->hasPowerAirDash, 
 		p0->hasPowerGravReverse, p0->hasPowerBounce, 
 		p0->hasPowerGrindBall, p0->hasPowerTimeSlow, p0->hasPowerRightWire);
 
 	powerRing = new PowerRing( this );
 
-	sf::Texture backTex;
-
 	stringstream ss;
-
-	cout << "NICE" << endl;
 
 	int eType = envLevel + 1; //adjust for alex naming -_-
 	ss << "Backgrounds/w" << envType+1 << "_BG";
-	//ss << "Backgrounds/bg_" << envType + 1 << "_";
-	/*if( envLevel < 10 )
-	{
-		ss << "0" << eType;
-	}
-	else
-	{
-		ss << eType;
-	}*/
+
 	ss << eType;
 
 	ss << ".png";
@@ -5895,28 +5800,127 @@ int GameSession::Run( string fileN )
 	background.setPosition( 0, 0 );
 	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 1920, 1080 ) );
 
-	cout << "NICE @@@@" << endl;
-	
 	flowShader.setParameter( "goalPos", goalPos.x, goalPos.y );
-	
 
-	//parTest = RectangleShape( Vector2f( 1000, 1000 ) );
-	//parTest.setFillColor( Color::Red );
-	//Texture tex;
-	//tex.loadFromFile( "cloud01.png" );
-	
-	//parTest.setTexture( tex ); 
-	//parTest.setTexture( *cloudTileset->texture );
-	//parTest.setPosition( 0, 0 );
-
-	VertexArray *goalVAstuff = SetupEnergyFlow();
+	goalEnergyFlowVA = SetupEnergyFlow();
 
 	groundTrans = Transform::Identity;
 	groundTrans.translate( 0, 0 );
-	
 
 	cam.pos.x = p0->position.x;
 	cam.pos.y = p0->position.y;
+
+	numPolyTypes = matSet.size();
+	polyShaders = new Shader[numPolyTypes];
+
+	ts_polyShaders = new Tileset*[numPolyTypes];
+
+	map<pair<int,int>, int> indexConvert;
+	int index = 0;
+	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
+	{
+		if (!polyShaders[index].loadFromFile("mat_shader2.frag", sf::Shader::Fragment ) )
+		{
+			cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
+			assert( 0 && "polygon shader not loaded" );
+			usePolyShader = false;
+		}
+
+		int matWorld = (*it).first;
+		int matVariation = (*it).second;
+
+		cout << "matWorld: " << matWorld << ", matvar: " << matVariation << endl;
+
+		indexConvert[pair<int,int>(matWorld,matVariation)] = index;
+
+		stringstream ss1;
+		ss1 << "terrain_";
+		
+		ss1 << matWorld + 1 << "_";
+		if( matVariation < 10 )
+		{
+			ss1 << "0" << matVariation + 1;
+		}
+		else
+		{
+			ss1 << matVariation + 1;
+		}
+	
+		ss1 << "_512x512.png";
+		ts_polyShaders[index] = GetTileset( ss1.str(), 512, 512 ); //1024, 1024 );
+		cout << "loading: " << ss1.str() << endl;
+		polyShaders[index].setParameter( "u_texture", 
+			//*GetTileset( ss1.str(), 1024, 1024 )->texture );
+			*GetTileset( ss1.str(), 512, 512 )->texture );
+		//polyShaders[tType]->setParameter( "u_texture", *(ts_poly->texture) );
+		polyShaders[index].setParameter( "Resolution", 1920, 1080 );
+		polyShaders[index].setParameter( "AmbientColor", 1, 1, 1, 1 );
+		polyShaders[index].setParameter( "u_normals", *undergroundTilesetNormal->texture );
+		
+		++index;
+	}
+
+	for( list<TestVA*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
+	{
+		int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
+		(*it)->terrainVariation)];
+		//cout << "real index: " << realIndex << endl;
+		(*it)->pShader = &polyShaders[realIndex];
+		(*it)->ts_terrain = ts_polyShaders[realIndex];
+	}
+
+	LevelSpecifics();
+
+		scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset( "Parallax/w1_01c.png", 1920, 1080 ), 0, 10 ) );
+	scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset( "Parallax/w1_01b.png", 1920, 1080 ), 0, 25 ) );
+	scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 40 ) );
+
+	testPar = new Parallax();
+
+	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
+	Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
+	Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
+
+	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
+	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
+
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
+
+	return true;
+}
+
+int GameSession::Run()
+{
+	preScreenTex->setView( view );
+
+	bool showFrameRate = true;	
+
+	sf::Text frameRate( "00", arial, 30 );
+	frameRate.setColor( Color::Red );
+
+	sf::Texture alphaTex;
+	alphaTex.loadFromFile( "alphatext.png" );
+	Sprite alphaTextSprite(alphaTex);
+
+	sf::RectangleShape bDraw;
+	bDraw.setFillColor( Color::Red );
+	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
+	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
+	bool bdrawdraw = false;
+
+	Actor *p0 = GetPlayer( 0 );
+	Actor *p = NULL;
+	//use player->setactivepowers to set it up from the level. need to add it
+	//to the editor
 	
 	sf::Vertex *line = new sf::Vertex[numPoints*2];
 	for( int i = 0; i < numPoints; ++i )
@@ -5969,152 +5973,20 @@ int GameSession::Run( string fileN )
 		GetController(i).UpdateState();
 		GetCurrInput(i) = GetController(i).GetState();
 	}
-	//controller.UpdateState();
-	//currInput = controller.GetState();
-	//ControllerState con = controller.GetState();
-	cout << "BLAHGWEHIGAWEGHEHG about to start" << endl;
-	
 	
 	bool t = GetCurrInput( 0 ).start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
-	//bool goalPlayerCollision = false;
+	
 	int returnVal = 0;
 
-	//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png", 128, 128 )->texture );
-	//polyShader.setParameter( "u_texture", *GetTileset( "washworld1.png", 512, 512 )->texture );
-
-	numPolyTypes = matSet.size();
-	polyShaders = new Shader[numPolyTypes];
-
-	ts_polyShaders = new Tileset*[numPolyTypes];
-	map<pair<int,int>, int> indexConvert;
-
-	//cout << "NUM POLY TYPES: " << numPolyTypes << endl;
-	int index = 0;
-	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
-	{
-		if (!polyShaders[index].loadFromFile("mat_shader2.frag", sf::Shader::Fragment ) )
-		{
-			cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "polygon shader not loaded" );
-			usePolyShader = false;
-		}
-
-		int matWorld = (*it).first;
-		int matVariation = (*it).second;
-
-		cout << "matWorld: " << matWorld << ", matvar: " << matVariation << endl;
-
-		indexConvert[pair<int,int>(matWorld,matVariation)] = index;
-
-		//TerrainPolygon::TerrainType tType = (TerrainPolygon::TerrainType)(*it);
-
-		//tType = //TerrainPolygon::TerrainType::DESERT0;
-
-		stringstream ss1;
-		ss1 << "terrain_";
-		
-		ss1 << matWorld + 1 << "_";
-		if( matVariation < 10 )
-		{
-			ss1 << "0" << matVariation + 1;
-		}
-		else
-		{
-			ss1 << matVariation + 1;
-		}
-		/*switch( tType )
-		{
-		case TerrainPolygon::TerrainType::MOUNTAIN0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_1_01.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::GLADE0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_2_01.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::GLADE1:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_2_02.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::DESERT0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_3_01.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::COVE0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_4_01.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::JUNGLE0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_5_01.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::FORTRESS0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_6_01.png", 1024, 1024 )->texture );
-			break;
-		case TerrainPolygon::TerrainType::CORE0:
-			polyShaders[index].setParameter( "u_texture", 
-				*GetTileset( "terrain_7_01.png", 1024, 1024 )->texture );
-			break;
-		}*/
-
-		ss1 << "_512x512.png";
-		ts_polyShaders[index] = GetTileset( ss1.str(), 512, 512 ); //1024, 1024 );
-		cout << "loading: " << ss1.str() << endl;
-		polyShaders[index].setParameter( "u_texture", 
-			//*GetTileset( ss1.str(), 1024, 1024 )->texture );
-			*GetTileset( ss1.str(), 512, 512 )->texture );
-		//polyShaders[tType]->setParameter( "u_texture", *(ts_poly->texture) );
-		polyShaders[index].setParameter( "Resolution", 1920, 1080 );
-		polyShaders[index].setParameter( "AmbientColor", 1, 1, 1, 1 );
-		polyShaders[index].setParameter( "u_normals", *undergroundTilesetNormal->texture );
-
-		
-		++index;
-	}
-
-	for( list<TestVA*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
-	{
-		int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
-		(*it)->terrainVariation)];
-		//cout << "real index: " << realIndex << endl;
-		(*it)->pShader = &polyShaders[realIndex];
-		(*it)->ts_terrain = ts_polyShaders[realIndex];
-	}
-
-	/*polyShader.setParameter( "u_texture", *(ts_poly->texture) );
-	polyShader.setParameter( "Resolution", 1920, 1080 );
-	polyShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
-	polyShader.setParameter( "u_normals", *undergroundTilesetNormal->texture );*///*GetTileset( "testterrain2_NORMALS.png", 96, 96 )->texture );
-	//polyShader.setParameter( "u_normal", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
-
-	//polyShader.setParameter( "u_texture", *GetTileset( "testterrain2.png" , 96, 96 )->texture ); 
-	
-	//polyShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
 
 	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
 
 	goalDestroyed = false;
 
-	//list<Vector2i> pathTest;
-	//list<Vector2i> pointsTest;
-	//pathTest.push_back( Vector2i( 200, 0 ) );
-	////pathTest.push_back( Vector2i( 0, 100 ) );
-	////pathTest.push_back( Vector2i( 100, 100 ) );
 	
-	//pointsTest.push_back( Vector2i(-100, -100) );
-	//pointsTest.push_back( Vector2i(300, 100) );
-	//pointsTest.push_back( Vector2i(300, 200) );
-	//pointsTest.push_back( Vector2i(-100, 200) );
-
-	////MovingTerrain *mt = new MovingTerrain( this, Vector2i( 900, -600 ), pathTest, pointsTest, false, 2 );
-	////movingPlats.push_back( mt );
-	
-	
-	LevelSpecifics();
 	//lights.push_back( new Light( this ) );
 
 	View v;
@@ -6123,7 +5995,7 @@ int GameSession::Run( string fileN )
 	window->setView( v );
 
 	//stringstream ss;
-	ss.clear(); //needed?
+	//ss.clear(); //needed?
 
 	int frameCounterWait = 20;
 	int frameCounter = 0;
@@ -6146,29 +6018,7 @@ int GameSession::Run( string fileN )
 	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
 	
 	//scrollingTest = new ScrollingBackground( GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 10 );
-	scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset( "Parallax/w1_01c.png", 1920, 1080 ), 0, 10 ) );
-	scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset( "Parallax/w1_01b.png", 1920, 1080 ), 0, 25 ) );
-	scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 40 ) );
 
-	Parallax *testPar = new Parallax();
-
-	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
-	Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
-	Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
-
-	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
-	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
-
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
 	//Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
 	//Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
 	//Tileset *ts_cloud1 = GetTileset( "Parallax/w1_cloud_02_1920x1080.png", 1920, 1080 );
@@ -6210,7 +6060,7 @@ int GameSession::Run( string fileN )
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 0, 0 ), 1920 * 2, 30 );
 	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
-
+	//might move replay stuff later
 	cout << "loop about to start" << endl;
 
 	if( recGhost != NULL )
@@ -6238,6 +6088,9 @@ int GameSession::Run( string fileN )
 		of.open( "tempreplay.brep", ios::binary | ios::out );
 		threa = new boost::thread( &ThreadedBufferWrite, this, &of );
 	}
+
+
+	std::stringstream ss;
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -7504,7 +7357,7 @@ int GameSession::Run( string fileN )
 			timesDraw++; 
 		}
 		
-		preScreenTex->draw( *goalVAstuff, &flowShader );
+		preScreenTex->draw( *goalEnergyFlowVA, &flowShader );
 
 		
 		//motion blur

@@ -180,10 +180,8 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 }
 
 MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
-	:mainMenu( p_mainMenu )
+	:mainMenu( p_mainMenu ), loadThread( NULL )
 {
-	
-
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
 
@@ -191,12 +189,29 @@ MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	{
 		playerSection[i] = new MultiSelectionSection( this, i );
 	}
+
+	gs = NULL;
+	loadThread = NULL;	
 }
 
 void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 {
 	filePath = p_path;
+
 	SetPreview();
+	
+	if( gs != NULL )
+	{
+		delete gs;
+	}
+	else if( loadThread != NULL )
+	{
+		delete loadThread;
+	}
+
+	gs = new GameSession( NULL, mainMenu, p_path.string() );
+
+	loadThread = new boost::thread( GameSession::sLoad, gs );
 }
 
 void MultiLoadingScreen::SetPreview()
@@ -260,12 +275,29 @@ void MultiLoadingScreen::Update()
 
 	if( AllPlayersReady() )
 	{
-		GameSession *gs = new GameSession( NULL, mainMenu );
-		gs->Run( filePath.string() );
+		loadThread->join();
+		//if( loadThread->try_join_until( boost::chrono::steady_clock::now() ) )
+		{
+			for( int i = 0; i < 4; ++i )
+			{
+				mainMenu->GetController( i ).SetFilter( playerSection[i]->profileSelect->currProfile->filter );
+			}
 
-		delete gs;
+			int res = gs->Run();
 
-		//go into game!
+			XBoxButton filter[ControllerSettings::Count];
+			SetFilterDefault( filter );
+
+			for( int i = 0; i < 4; ++i )
+			{
+				mainMenu->GetController( i ).SetFilter( filter );
+			}
+
+			delete loadThread;
+			loadThread = NULL;
+			delete gs;
+			gs = NULL;
+		}	
 	}
 }
 
@@ -609,10 +641,11 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
-		GameSession *gs = new GameSession( NULL, this );
+		GameSession *gs = new GameSession( NULL, this, p_path );
+		gs->Load();
+		result = gs->Run();
+	
 
-		//gs->SetSecondController( controller2 );
-		result = gs->Run( p_path );
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
 		delete gs;
@@ -628,9 +661,9 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	while( result == 0 )
 	{
 		window->setView( v );
-		GameSession *gs = new GameSession( NULL, this );
-
-		result = gs->Run( p_path );
+		GameSession *gs = new GameSession( NULL, this, p_path );
+		gs->Load();
+		result = gs->Run();
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
 		delete gs;
@@ -980,9 +1013,9 @@ void MainMenu::Run()
 		{
 			case DEBUG_RACEFIGHT_RESULTS:
 				{
-				GameSession *gs = new GameSession( NULL, this );
-
-				gs->Run( "Maps/W1/arena04.brknk" );
+				GameSession *gs = new GameSession( NULL, this, "Maps/W1/arena04.brknk" );
+				gs->Load();
+				gs->Run();
 				return;
 				break;
 				}
@@ -1385,8 +1418,9 @@ void MainMenu::Run()
 					//ss << "Maps/" << file;
 					//cout << "-----------------------------" << endl;
 					//cout << "file: " << file << endl;
-					GameSession *gs = new GameSession( NULL, this );
-					int result = gs->Run( worldMap->GetSelected() );
+					GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
+					gs->Load();
+					int result = gs->Run(  );
 					delete gs;
 
 					if( result == 0 || result == 1 )
@@ -1860,8 +1894,9 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "Play" )
 		{
 			optionChosen = true;
-			GameSession *gs = new GameSession( NULL, menu );
-			gs->Run( ls.GetSelectedPath() );
+			GameSession *gs = new GameSession( NULL, menu, ls.GetSelectedPath() );
+			gs->Load();
+			gs->Run();
 			menu->window->setView( menu->uiView );
 			delete gs;
 		}

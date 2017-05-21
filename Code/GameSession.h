@@ -324,6 +324,7 @@ struct ImageText;
 struct TimerText;
 struct VictoryScreen2PlayerVS;
 struct UIWindow;
+struct Parallax;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -413,6 +414,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		//int p4Place;
 		int raceWinnerIndex;
 	};
+
+	static bool sLoad( GameSession *gs );
+	bool Load();	
 	RaceFight *raceFight;
 	
 	//int playerScore[4];
@@ -487,8 +491,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<Barrier*> barriers;
 	
 	GameSession( SaveFile *sf,
-		MainMenu *mainMenu
-		);
+		MainMenu *mainMenu,
+		const std::string &fileName );
 	void TriggerBarrier( Barrier *b );
 
 	//Boss_Crawler *b_crawler;
@@ -500,6 +504,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Boss_Skeleton *b_skeleton;
 
 	Config *config;
+
+	sf::VertexArray * goalEnergyFlowVA;
 
 	~GameSession();
 	void HandleRayCollision( Edge *edge, 
@@ -521,8 +527,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool cutPlayerInput;
 	SoundManager *soundManager;
 	sf::Music *currMusic;
+	sf::Texture backTex;
 
-	virtual int Run( std::string fileName );
+	Parallax *testPar;
+
+	virtual int Run();
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,
 		std::map<int, int> &polyIndex);
