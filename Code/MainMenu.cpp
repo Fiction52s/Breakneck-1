@@ -275,8 +275,9 @@ void MultiLoadingScreen::Update()
 
 	if( AllPlayersReady() )
 	{
-		loadThread->join();
-		//if( loadThread->try_join_until( boost::chrono::steady_clock::now() ) )
+		//loadThread->join();
+		//boost::chrono::steady_clock::now()
+		if( loadThread->try_join_for( boost::chrono::milliseconds( 0 ) ) )
 		{
 			for( int i = 0; i < 4; ++i )
 			{
