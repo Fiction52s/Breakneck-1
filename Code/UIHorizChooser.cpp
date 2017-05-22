@@ -16,7 +16,7 @@ UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_wid
 	SetTopLeft( 0, 0 );
 	currText.setFont( *f );
 	currText.setCharacterSize( p_textHeight );
-	currText.setColor( Color::White );
+	currText.setFillColor( Color::White );
 
 	bState = BAR_UNFOCUSED;
 

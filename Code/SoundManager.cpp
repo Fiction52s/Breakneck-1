@@ -8,6 +8,7 @@ using namespace sf;
 
 SoundNodeList::SoundNodeList( int p_maxSounds )
 {
+	globalVolume = 100;
 	maxSounds = p_maxSounds;
 	activeList = NULL;
 	inactiveList = NULL;
@@ -271,7 +272,7 @@ void SoundNodeList::SetRelativeMusicVolume( int vol )
 
 void SoundNodeList::SetSoundVolume( int v )
 {
-
+	assert(v >= 0);
 	if( !enableSounds )
 	{
 		v = 0;
@@ -313,6 +314,7 @@ void SoundNodeList::SetRelativeSoundVolume( int vol )
 
 void SoundNodeList::SetGlobalVolume( float vol )
 {
+	assert(vol >= 0);
 	globalVolume = vol;
 
 	SetRelativeSoundVolume( soundVolume );

@@ -7,6 +7,7 @@
 #include "Sequence.h"
 #include <list>
 #include <fstream>
+#include "MainMenu.h" //just for glsl color macro
 
 using namespace sf;
 using namespace std;
@@ -154,11 +155,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//uniform vec4 toColor;
 		//uniform vec4 fromColor;
 		Color c( 0x66, 0xee, 0xff );
-		despFaceShader.setParameter( "fromColor", c );
+		despFaceShader.setUniform( "fromColor", Glsl::Vec4( c.r, c.g, c.b, c.a ) );
 
 		
 		
-		//swordShader.setParameter("u_texture", sf::Shader::CurrentTexture);
+		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
 		{
@@ -845,21 +846,21 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
 		}
-		swordShaders[0].setParameter( "fromColor", COLOR_TEAL );
+		swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
 		//swordShaders[1] = swordShaders[0];
 		if (!swordShaders[1].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
 		}
-		swordShaders[1].setParameter( "fromColor", Color( 43, 167, 255 ) );
+		swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
 		//swordShaders[2] = swordShaders[0];
 		if (!swordShaders[2].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
 		}
-		swordShaders[2].setParameter( "fromColor", Color( 140, 145, 255 ) );
+		swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 145, 255 )) );
 
 		ts_scorpRun = owner->GetTileset( "scorp_run_192x128.png", 192, 128 );
 		ts_scorpSlide = owner->GetTileset( "scorp_slide_160x96.png", 160, 96 );
@@ -1105,13 +1106,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 
 		//only set these parameters again if u get a power or lose one.
-		sh.setParameter( "hasPowerAirDash", hasPowerAirDash );
-		sh.setParameter( "hasPowerGravReverse", hasPowerGravReverse );
-		sh.setParameter( "hasPowerBounce", hasPowerBounce );
-		sh.setParameter( "hasPowerGrindBall", hasPowerGrindBall );
-		sh.setParameter( "hasPowerTimeSlow", hasPowerTimeSlow );
-		sh.setParameter( "hasPowerLeftWire", hasPowerLeftWire );
-		sh.setParameter( "hasPowerRightWire", hasPowerRightWire );
+		sh.setUniform( "hasPowerAirDash", hasPowerAirDash );
+		sh.setUniform( "hasPowerGravReverse", hasPowerGravReverse );
+		sh.setUniform( "hasPowerBounce", hasPowerBounce );
+		sh.setUniform( "hasPowerGrindBall", hasPowerGrindBall );
+		sh.setUniform( "hasPowerTimeSlow", hasPowerTimeSlow );
+		sh.setUniform( "hasPowerLeftWire", hasPowerLeftWire );
+		sh.setUniform( "hasPowerRightWire", hasPowerRightWire );
 
 		/*Color basicArmor( 0x14, 0x59, 0x22 );
 		Color basicArmorDark( 0x08, 0x40, 0x12 );
@@ -1136,10 +1137,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		}*/
 			
-		//sh.setParameter( "armorColor", basicArmor );
-		//sh.setParameter( "armorColorDark", basicArmorDark );
+		//sh.setUniform( "armorColor", basicArmor );
+		//sh.setUniform( "armorColorDark", basicArmorDark );
 		
-		//sh.setParameter( "hasPowerClones", hasPowerClones > 0 );
+		//sh.setUniform( "hasPowerClones", hasPowerClones > 0 );
 
 		//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
 		//{
@@ -1602,6 +1603,7 @@ double Actor::GetBounceFlameAccel()
 
 void Actor::UpdatePrePhysics()
 {
+	cout << "Start frame" << endl;
 	/*if( owner->multiSession )
 	{
 		cout << owner->GetPlayer( 0 )2->position.x << ", " << owner->GetPlayer( 0 )2->position.y << endl;
@@ -1717,9 +1719,9 @@ void Actor::UpdatePrePhysics()
 		auraColor.r = floor( auraColor.r * ( 1.f - overallFac ) + Color::Black.r * fac + .5 );
 		auraColor.g = floor( auraColor.g * ( 1.f - overallFac ) + Color::Black.g * fac + .5 );
 		auraColor.b = floor( auraColor.b * ( 1.f - overallFac ) + Color::Black.b * fac + .5 );
-		sh.setParameter( "despColor", currentDespColor );
-		despFaceShader.setParameter( "toColor", currentDespColor );
-		sh.setParameter( "auraColor", auraColor );
+		sh.setUniform( "despColor", ColorGL(currentDespColor) );
+		despFaceShader.setUniform( "toColor", ColorGL(currentDespColor) );
+		sh.setUniform( "auraColor", ColorGL(auraColor) );
 		//currentDespColor
 
 
@@ -13521,10 +13523,10 @@ void Actor::UpdatePostPhysics()
 
 	if( action == DEATH )
 	{
-		sh.setParameter( "On0", false );
-		sh.setParameter( "On1", false );
-		sh.setParameter( "On2", false );
-		sh.setParameter( "despFrame", -1 );
+		sh.setUniform( "On0", false );
+		sh.setUniform( "On1", false );
+		sh.setUniform( "On2", false );
+		sh.setUniform( "despFrame", -1 );
 
 		sprite->setTexture( *(tileset[DEATH]->texture));
 		if( facingRight )
@@ -13877,10 +13879,11 @@ void Actor::UpdatePostPhysics()
 		on[i] = false;
 	}
 
-	sh.setParameter( "AmbientColor", 1, 1, 1, 1 );
-	sh.setParameter( "Resolution", 1920, 1080 );//owner->window->getSize().x, owner->window->getSize().y );
-	sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
-	sh.setParameter( "zoom", owner->cam.GetZoom() );
+	char f1 = 1;
+	sh.setUniform( "AmbientColor", ColorGL( Color( f1,f1,f1,f1 ) ) );
+	sh.setUniform( "Resolution", Vector2f( 1920, 1080 ) );//owner->window->getSize().x, owner->window->getSize().y );
+	sh.setUniform( "right", (facingRight && !reversed) || (facingRight && reversed ) );
+	sh.setUniform( "zoom", owner->cam.GetZoom() );
 
 	float windowx = 1920;//owner->window->getSize().x;
 	float windowy = 1080;//owner->window->getSize().y;
@@ -13893,12 +13896,12 @@ void Actor::UpdatePostPhysics()
 		Vector3f pos0( vi0.x / windowx, ( windowy - vi0.y) / windowy, depth0 ); 
 		Color c0 = owner->touchedLights[0]->color;
 		
-		//sh.setParameter( "On0", true );
+		//sh.setUniform( "On0", true );
 		on[0] = true;
-		sh.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		sh.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		sh.setParameter( "Radius0", owner->touchedLights[0]->radius );
-		sh.setParameter( "Brightness0", owner->touchedLights[0]->brightness);
+		sh.setUniform( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
+		sh.setUniform( "LightColor0", ColorGL( Color( c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius0", owner->touchedLights[0]->radius );
+		sh.setUniform( "Brightness0", owner->touchedLights[0]->brightness);
 		
 	}
 	if( owner->lightsAtOnce > 1 )
@@ -13910,11 +13913,11 @@ void Actor::UpdatePostPhysics()
 		Color c1 = owner->touchedLights[1]->color;
 		
 		on[1] = true;
-		//sh.setParameter( "On1", true );
-		sh.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		sh.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		sh.setParameter( "Radius1", owner->touchedLights[1]->radius );
-		sh.setParameter( "Brightness1", owner->touchedLights[1]->brightness);
+		//sh.setUniform( "On1", true );
+		sh.setUniform( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
+		sh.setUniform( "LightColor1", ColorGL( Color( c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius1", owner->touchedLights[1]->radius );
+		sh.setUniform( "Brightness1", owner->touchedLights[1]->brightness);
 	}
 	if( owner->lightsAtOnce > 2 )
 	{
@@ -13924,11 +13927,11 @@ void Actor::UpdatePostPhysics()
 		Color c2 = owner->touchedLights[2]->color;
 		
 		on[2] = true;
-		//sh.setParameter( "On2", true );
-		sh.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		sh.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		sh.setParameter( "Radius2", owner->touchedLights[2]->radius );
-		sh.setParameter( "Brightness2", owner->touchedLights[2]->brightness);
+		//sh.setUniform( "On2", true );
+		sh.setUniform( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
+		sh.setUniform( "LightColor2", ColorGL( Color( c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius2", owner->touchedLights[2]->radius );
+		sh.setUniform( "Brightness2", owner->touchedLights[2]->brightness);
 	}
 	if( owner->lightsAtOnce > 3 )
 	{
@@ -13938,11 +13941,11 @@ void Actor::UpdatePostPhysics()
 		Color c3 = owner->touchedLights[3]->color;
 		
 		on[3] = true;
-		//sh.setParameter( "On3", true );
-		sh.setParameter( "LightPos3", pos3 );
-		sh.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
-		sh.setParameter( "Radius3", owner->touchedLights[3]->radius );
-		sh.setParameter( "Brightness3", owner->touchedLights[3]->brightness);
+		//sh.setUniform( "On3", true );
+		sh.setUniform( "LightPos3", pos3 );
+		sh.setUniform( "LightColor3", ColorGL( Color( c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius3", owner->touchedLights[3]->radius );
+		sh.setUniform( "Brightness3", owner->touchedLights[3]->brightness);
 	}
 	if( owner->lightsAtOnce > 4 )
 	{
@@ -13953,10 +13956,10 @@ void Actor::UpdatePostPhysics()
 		
 		
 		on[4] = true;
-		sh.setParameter( "LightPos4", pos4 );
-		sh.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
-		sh.setParameter( "Radius4", owner->touchedLights[4]->radius );
-		sh.setParameter( "Brightness4", owner->touchedLights[4]->brightness);
+		sh.setUniform( "LightPos4", pos4 );
+		sh.setUniform( "LightColor4", ColorGL( Color( c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius4", owner->touchedLights[4]->radius );
+		sh.setUniform( "Brightness4", owner->touchedLights[4]->brightness);
 	}
 	if( owner->lightsAtOnce > 5 )
 	{
@@ -13967,10 +13970,10 @@ void Actor::UpdatePostPhysics()
 		
 		
 		on[5] = true;
-		sh.setParameter( "LightPos5", pos5 );
-		sh.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
-		sh.setParameter( "Radius5", owner->touchedLights[5]->radius );
-		sh.setParameter( "Brightness5", owner->touchedLights[5]->brightness);
+		sh.setUniform( "LightPos5", pos5 );
+		sh.setUniform( "LightColor5", ColorGL( Color( c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius5", owner->touchedLights[5]->radius );
+		sh.setUniform( "Brightness5", owner->touchedLights[5]->brightness);
 	}
 	if( owner->lightsAtOnce > 6 )
 	{
@@ -13980,10 +13983,10 @@ void Actor::UpdatePostPhysics()
 		Color c6 = owner->touchedLights[6]->color;
 		
 		on[6] = true;
-		sh.setParameter( "LightPos6", pos6 );
-		sh.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
-		sh.setParameter( "Radius6", owner->touchedLights[0]->radius );
-		sh.setParameter( "Brightness6", owner->touchedLights[0]->brightness);
+		sh.setUniform( "LightPos6", pos6 );
+		sh.setUniform( "LightColor6", ColorGL( Color( c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius6", owner->touchedLights[0]->radius );
+		sh.setUniform( "Brightness6", owner->touchedLights[0]->brightness);
 	}
 	if( owner->lightsAtOnce > 7 )
 	{
@@ -13993,10 +13996,10 @@ void Actor::UpdatePostPhysics()
 		Color c7 = owner->touchedLights[7]->color;
 		
 		on[7] = true;
-		sh.setParameter( "LightPos7", pos7 );
-		sh.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
-		sh.setParameter( "Radius7", owner->touchedLights[7]->radius );
-		sh.setParameter( "Brightness7", owner->touchedLights[7]->brightness);
+		sh.setUniform( "LightPos7", pos7 );
+		sh.setUniform( "LightColor7", ColorGL( Color( c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius7", owner->touchedLights[7]->radius );
+		sh.setUniform( "Brightness7", owner->touchedLights[7]->brightness);
 	}
 	if( owner->lightsAtOnce > 8 )
 	{
@@ -14006,33 +14009,33 @@ void Actor::UpdatePostPhysics()
 		Color c8 = owner->touchedLights[8]->color;
 		
 		on[8] = true;
-		sh.setParameter( "LightPos8", pos8 );
-		sh.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
-		sh.setParameter( "Radius8", owner->touchedLights[8]->radius );
-		sh.setParameter( "Brightness8", owner->touchedLights[8]->brightness);
+		sh.setUniform( "LightPos8", pos8 );
+		sh.setUniform( "LightColor8", ColorGL( Color( c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 ) ) );
+		sh.setUniform( "Radius8", owner->touchedLights[8]->radius );
+		sh.setUniform( "Brightness8", owner->touchedLights[8]->brightness);
 	}
 
-	sh.setParameter( "On0", on[0] );
-	sh.setParameter( "On1", on[1] );
-	sh.setParameter( "On2", on[2] );
-	sh.setParameter( "On3", on[3] );
-	sh.setParameter( "On4", on[4] );
-	sh.setParameter( "On5", on[5] );
-	sh.setParameter( "On6", on[6] );
-	sh.setParameter( "On7", on[7] );
-	sh.setParameter( "On8", on[8] );
+	sh.setUniform( "On0", on[0] );
+	sh.setUniform( "On1", on[1] );
+	sh.setUniform( "On2", on[2] );
+	sh.setUniform( "On3", on[3] );
+	sh.setUniform( "On4", on[4] );
+	sh.setUniform( "On5", on[5] );
+	sh.setUniform( "On6", on[6] );
+	sh.setUniform( "On7", on[7] );
+	sh.setUniform( "On8", on[8] );
 	
 	}
 
 	if( desperationMode )
 	{
 		//cout << "sending this parameter! "<< endl;
-		sh.setParameter( "despFrame", despCounter );
+		sh.setUniform( "despFrame", despCounter );
 	}
 	else
 	{
 		
-		sh.setParameter( "despFrame", -1 );
+		sh.setUniform( "despFrame", -1 );
 	}
 
 
@@ -15896,12 +15899,12 @@ void Actor::Draw( sf::RenderTarget *target )
 	showMotionGhosts = 4;
 	if( showMotionGhosts && !desperationMode )
 	{
-		//swordShader.setParameter( "isTealAlready", 0 );
+		//swordShader.setUniform( "isTealAlready", 0 );
 		//
 		//for( int i = 0; i < showMotionGhosts; ++i )
 		//{
 		//	float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
-		//	swordShader.setParameter( "opacity", opac );
+		//	swordShader.setUniform( "opacity", opac );
 		//	//cout << "setting : " << i << endl;
 		//	//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
 		//	//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
@@ -15929,8 +15932,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		if( action != DEATH && action != SPAWNWAIT && action != GOALKILL && action != GOALKILLWAIT )
 		//if( action == RUN )
 		{
-			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+			//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
 			/*Sprite spr;
 			
 			spr.setTexture( *owner->GetTileset( "testrocks.png", 300, 225)->texture );
@@ -15945,15 +15948,15 @@ void Actor::Draw( sf::RenderTarget *target )
 			// global positions first. then zooming
 
 			
-			sh.setParameter( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			sh.setParameter( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
-			sh.setParameter( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
-			//sh.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
-			//sh.setParameter( "LightColor", 1, .8, .6, 1 );
-			sh.setParameter( "AmbientColor", .6, .6, 1, .8 );
-			//sh.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
-			sh.setParameter( "right", (facingRight && !reversed) || (facingRight && reversed ) );
-			sh.setParameter( "zoom", owner->cam.GetZoom() );
+			sh.setUniform( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			sh.setUniform( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
+			sh.setUniform( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
+			//sh.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+			//sh.setUniform( "LightColor", 1, .8, .6, 1 );
+			sh.setUniform( "AmbientColor", .6, .6, 1, .8 );
+			//sh.setUniform( "Falloff", Vector3f( .4, 3, 20 ) );
+			sh.setUniform( "right", (facingRight && !reversed) || (facingRight && reversed ) );
+			sh.setUniform( "zoom", owner->cam.GetZoom() );
 			//cout << "right: " << (float)facingRight << endl;
 
 			CircleShape cs;
@@ -15970,15 +15973,15 @@ void Actor::Draw( sf::RenderTarget *target )
 
 
 
-			//sh.setParameter( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setParameter( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
+			//sh.setUniform( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setUniform( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
 
 
-			//sh.setParameter( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setParameter( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+			//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
 			//cout << "action: " << action << endl;
-			sh.setParameter( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			sh.setParameter( "u_normals", *normal[action]->texture );
+			sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			sh.setUniform( "u_normals", *normal[action]->texture );
 			target->draw( *sprite, &sh );
 		}
 		else
@@ -15990,7 +15993,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		if( showSword )
 		{
 			sf::Shader &swordSh = swordShaders[speedLevel];
-			//swordShader.setParameter( "isTealAlready", 1 );
+			//swordShader.setUniform( "isTealAlready", 1 );
 			switch( action )
 			{
 			case FAIR:
@@ -18745,7 +18748,7 @@ void Actor::ConfirmHit( int worldIndex,
 	flashFrames = p_flashFrames;
 	for( int i = 0; i < 3; ++i )
 	{
-		swordShaders[i].setParameter( "toColor", flashColor );
+		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );
 	}
 
 
@@ -19767,6 +19770,7 @@ void PlayerGhost::DebugDraw( sf::RenderTarget *target )
 
 void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 {
+	
 	Action action = states[ghostFrame].action;
 	int frame = states[ghostFrame].frame;
 	double angle = states[ghostFrame].angle;

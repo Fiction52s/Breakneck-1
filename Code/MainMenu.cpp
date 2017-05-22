@@ -488,7 +488,7 @@ MainMenu::MainMenu()
 
 	betaText.setString( " Press any button to start \n For help and info check \n - beta_info.txt\n Breakneck Beta\n Updated 9/2/2016");
 	betaText.setCharacterSize( 20 );
-	betaText.setColor( Color::Red );
+	betaText.setFillColor( Color::Red );
 	betaText.setPosition( 50, 200 );
 	betaText.setFont( arial );
 
@@ -742,7 +742,7 @@ void MainMenu::CustomMapsOption()
 							if( ls.newLevelName != "" )
 							{
 								
-								if( ls.text[ls.selectedIndex].getColor() == Color::Red )
+								if( ls.text[ls.selectedIndex].getFillColor() == Color::Red )
 								{
 									path from( "Maps/empty.brknk" );
 
@@ -829,7 +829,7 @@ void MainMenu::CustomMapsOption()
 							if( ls.newLevelName != "" )
 							{
 								
-								if( ls.text[ls.selectedIndex].getColor() == Color::Blue )
+								if( ls.text[ls.selectedIndex].getFillColor() == Color::Blue )
 								{
 									path from( "Maps/empty.brknk" );
 									string toString = ls.localPaths[ls.selectedIndex] + ls.newLevelName + ".brknk";
@@ -879,7 +879,7 @@ void MainMenu::CustomMapsOption()
 						{
 							p.Update( false, uiMouse.x, uiMouse.y );
 							ls.LeftClick( false, uiMouse );
-							if( ls.text[ls.selectedIndex].getColor() == Color::Red )
+							if( ls.text[ls.selectedIndex].getFillColor() == Color::Red )
 							{
 								p.buttons["Create New"]->text.setString( "CREATE NEW" );
 							}
@@ -1890,7 +1890,7 @@ CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 {
 	LevelSelector &ls = *menu->levelSelector;
-	if( ls.text[ls.selectedIndex].getColor() == Color::Blue )
+	if( ls.text[ls.selectedIndex].getFillColor() == Color::Blue )
 	{
 		if( b->name == "Play" )
 		{

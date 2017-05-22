@@ -675,7 +675,7 @@ PoiParams::PoiParams( EditSession *edit,
 
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
-	nameText.setColor( Color::White );
+	nameText.setFillColor( Color::White );
 	
 	name = "-";
 	type = edit->types["poi"];
@@ -696,7 +696,7 @@ PoiParams::PoiParams( EditSession *edit,
 
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
-	nameText.setColor( Color::White );
+	nameText.setFillColor( Color::White );
 
 	type = edit->types["poi"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -717,7 +717,7 @@ PoiParams::PoiParams( EditSession *edit,
 
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
-	nameText.setColor( Color::White );
+	nameText.setFillColor( Color::White );
 
 	hasCamProperties = false;
 	camZoom = 1;
@@ -750,7 +750,7 @@ PoiParams::PoiParams( EditSession *edit,
 
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
-	nameText.setColor( Color::White );
+	nameText.setFillColor( Color::White );
 
 	//name = "-";
 	position = pos;	

@@ -248,7 +248,7 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 	assert( labels.count( name ) == 0 );
 	sf::Text *t = new sf::Text( text, arial, characterHeight );
 	t->setPosition( labelPos.x, labelPos.y );
-	t->setColor( Color::Black );
+	t->setFillColor( Color::Black );
 
 	labels[name] = t;
 }
@@ -339,12 +339,12 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	characterHeight = 20;
 	text.setString( initialText );
 	text.setFont( f );
-	text.setColor( Color::Black );
+	text.setFillColor( Color::Black );
 	text.setCharacterSize( characterHeight );
 
 	cursor.setString( "|" );
 	cursor.setFont( f );
-	cursor.setColor( Color::Red );
+	cursor.setFillColor( Color::Red );
 	cursor.setCharacterSize( characterHeight );
 	
 	cursor.setPosition( owner->pos.x + pos.x + text.getLocalBounds().width + leftBorder, owner->pos.y + pos.y );
@@ -650,7 +650,7 @@ Button::Button( const string &n, int posx, int posy, int width, int height, sf::
 {	
 	text.setString( t );
 	text.setFont( f );
-	text.setColor( Color::White );
+	text.setFillColor( Color::White );
 	text.setCharacterSize( characterHeight );
 }
 

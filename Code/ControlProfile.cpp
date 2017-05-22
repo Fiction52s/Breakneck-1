@@ -41,7 +41,7 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	{
 		profileNames[i].setFont( font );
 		profileNames[i].setCharacterSize( 40 );
-		profileNames[i].setColor( Color::White );
+		profileNames[i].setFillColor( Color::White );
 	}
 
 	waitFrames[0] = 10;

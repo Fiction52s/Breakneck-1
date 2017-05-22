@@ -17,7 +17,7 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 	selected = false;
 	currentText.setFont( MainMenu::arial );
 	currentText.setCharacterSize( 80 );
-	currentText.setColor( Color::White );
+	currentText.setFillColor( Color::White );
 	options = new string[optionCount];
 	for( int i = 0; i < optionCount; ++i )
 	{
@@ -116,9 +116,9 @@ const std::string & OptionSelector::GetString()
 void OptionSelector::Draw( sf::RenderTarget *target )
 {
 	if( selected )
-		currentText.setColor( Color::Red );
+		currentText.setFillColor( Color::Red );
 	else
-		currentText.setColor( Color::White );
+		currentText.setFillColor( Color::White );
 	target->draw( currentText );
 }
 
@@ -364,7 +364,7 @@ void OptionsMenu::InitAssocSymbols()
 		actionText[i].setFont( mainMenu->arial );
 		actionText[i].setCharacterSize( 24 );
 		actionText[i].setPosition( basePos + Vector2f( extraX + textX, (symbolSize + spacing) * i + extraY + textY ) );//textX, 50 * i );
-		actionText[i].setColor( Color::White );
+		actionText[i].setFillColor( Color::White );
 		actionText[i].setString( possibleActions[i] );
 
 	}
@@ -1012,7 +1012,7 @@ void OptionsMenu::SetAssocSymbols( bool kb )
 			actionText[i].setFont( mainMenu->arial );
 			actionText[i].setCharacterSize( 24 );
 			actionText[i].setPosition( Vector2f( extraX + textX, (symbolSize + spacing) * i + extraY + textY ) );//textX, 50 * i );
-			actionText[i].setColor( Color::White );
+			actionText[i].setFillColor( Color::White );
 			actionText[i].setString( possibleControllerActions[i] );
 
 		}
@@ -1052,7 +1052,7 @@ void OptionsMenu::SetAssocSymbols( bool kb )
 			actionText[i].setFont( mainMenu->arial );
 			actionText[i].setCharacterSize( 24 );
 			actionText[i].setPosition( 100, 50 * i );
-			actionText[i].setColor( Color::White );
+			actionText[i].setFillColor( Color::White );
 			actionText[i].setString( possibleKeyboardActions[i] );
 		}
 	}

@@ -353,7 +353,7 @@ void GrowingTree::UpdatePhysics()
 			owner->GetPlayer( 0 )->flashColor = COLOR_BLUE;
 			owner->GetPlayer( 0 )->flashFrames = 5;
 			owner->GetPlayer( 0 )->currentSpeedBar += .8;
-			owner->GetPlayer( 0 )->swordShaders[owner->GetPlayer( 0 )->speedLevel]setParameter( "energyColor", COLOR_BLUE );
+			owner->GetPlayer( 0 )->swordShaders[owner->GetPlayer( 0 )->speedLevel]setUniform( "energyColor", COLOR_BLUE );
 			owner->GetPlayer( 0 )->desperationMode = false;
 			owner->powerBar.Charge( 2 * 6 * 3 );*/
 

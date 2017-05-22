@@ -131,10 +131,10 @@ void GPUFlow::SetImpulse( Textures tex )
 	
 	
 	Shader &sh = shaders[SHADER_IMPULSE];
-	sh.setParameter( "Resolution", Vector2f( width, height) );
-	sh.setParameter( "playerCoords", playerCoords );
-	sh.setParameter( "vel", vel );
-	sh.setParameter( "tex", textures[tex]->getTexture() );
+	sh.setUniform( "Resolution", Vector2f( width, height) );
+	sh.setUniform( "playerCoords", playerCoords );
+	sh.setUniform( "vel", vel );
+	sh.setUniform( "tex", textures[tex]->getTexture() );
 	currShader = &sh;
 }
 
@@ -148,13 +148,13 @@ void GPUFlow::SetAdvect( Textures velTex, Textures quantityTex )
 	//textures[velTex]->display();
 	//textures[quantityTex]->display();
 	//need to make sure the texture is displayed before doing this
-	sh.setParameter( "u", textures[velTex]->getTexture() );
-	sh.setParameter( "x", textures[quantityTex]->getTexture() );
-	sh.setParameter( "rdx", 1.f / tileSize );
-	sh.setParameter( "timestep", timestep );
+	sh.setUniform( "u", textures[velTex]->getTexture() );
+	sh.setUniform( "x", textures[quantityTex]->getTexture() );
+	sh.setUniform( "rdx", 1.f / tileSize );
+	sh.setUniform( "timestep", timestep );
 	Vector2u blah = textures[quantityTex]->getSize();
 	Vector2f si( blah.x, blah.y );
-	sh.setParameter( "texSize", si );
+	sh.setUniform( "texSize", si );
 	currShader = &sh;
 }
 
@@ -163,14 +163,14 @@ void GPUFlow::SetJacobi( float alpha, float rBeta, Textures xTex, Textures bTex 
 	//textures[xTex]->display();
 	//textures[bTex]->display();
 	Shader &sh = shaders[SHADER_JACOBI];
-	sh.setParameter( "alpha", alpha );
-	sh.setParameter( "rBeta", rBeta );
-	sh.setParameter( "x", textures[xTex]->getTexture() );
-	sh.setParameter( "b", textures[bTex]->getTexture() );
+	sh.setUniform( "alpha", alpha );
+	sh.setUniform( "rBeta", rBeta );
+	sh.setUniform( "x", textures[xTex]->getTexture() );
+	sh.setUniform( "b", textures[bTex]->getTexture() );
 
 	Vector2u blah = textures[xTex]->getSize();
 	Vector2f si( blah.x, blah.y );
-	sh.setParameter( "texSize", si );
+	sh.setUniform( "texSize", si );
 
 	currShader = &sh;
 }
@@ -181,12 +181,12 @@ void GPUFlow::SetDivergence( Textures wTex )
 
 	//textures[wTex]->display();
 	Shader &sh = shaders[SHADER_DIVERGENCE];
-	sh.setParameter( "halfrdx", .5f / tileSize );
-	sh.setParameter( "w", textures[wTex]->getTexture() );
+	sh.setUniform( "halfrdx", .5f / tileSize );
+	sh.setUniform( "w", textures[wTex]->getTexture() );
 
 	Vector2u blah = textures[wTex]->getSize();
 	Vector2f si( blah.x, blah.y );
-	sh.setParameter( "texSize", si );
+	sh.setUniform( "texSize", si );
 
 	currShader = &sh;
 }
@@ -196,13 +196,13 @@ void GPUFlow::SetGradient( Textures wTex, Textures pTex )
 	//textures[wTex]->display();
 	//textures[pTex]->display();
 	Shader &sh = shaders[SHADER_GRADIENT];
-	sh.setParameter( "halfrdx", .5f / tileSize );
-	sh.setParameter( "w", textures[wTex]->getTexture() );
-	sh.setParameter( "p", textures[pTex]->getTexture() );
+	sh.setUniform( "halfrdx", .5f / tileSize );
+	sh.setUniform( "w", textures[wTex]->getTexture() );
+	sh.setUniform( "p", textures[pTex]->getTexture() );
 
 	Vector2u blah = textures[pTex]->getSize();
 	Vector2f si( blah.x, blah.y );
-	sh.setParameter( "texSize", si );
+	sh.setUniform( "texSize", si );
 
 	currShader = &sh;
 }
@@ -210,13 +210,13 @@ void GPUFlow::SetGradient( Textures wTex, Textures pTex )
 void GPUFlow::SetBoundary( Vector2f &offset, Textures xTex )
 {
 	Shader &sh = shaders[SHADER_BOUNDARY];
-	sh.setParameter( "offset", offset );
-	sh.setParameter( "scale", tileSize );
-	sh.setParameter( "x", textures[xTex]->getTexture() );
+	sh.setUniform( "offset", offset );
+	sh.setUniform( "scale", tileSize );
+	sh.setUniform( "x", textures[xTex]->getTexture() );
 
 	Vector2u blah = textures[xTex]->getSize();
 	Vector2f si( blah.x, blah.y );
-	sh.setParameter( "texSize", si );
+	sh.setUniform( "texSize", si );
 
 	currShader = &sh;
 }
@@ -240,7 +240,7 @@ void GPUFlow::SetDiffuse( Textures xTex, Textures bTex )
 		{	
 			ExecuteShaderRect( xTex );
 			//textures[xTex]->display();
-			sh.setParameter( "x", textures[xTex]->getTexture());
+			sh.setUniform( "x", textures[xTex]->getTexture());
 		}
 	}
 	//LinSolve( b, x, x0, a, ( 1 + 4 * a ) );
@@ -329,7 +329,7 @@ void GPUFlow::VelocityStep()
 	for( int i = 0; i < 20; ++i )
 	{
 		ExecuteShaderRect( TEXTURE_PRESSURE );
-		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+		sh.setUniform( "x", textures[TEXTURE_PRESSURE]->getTexture());
 	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
@@ -416,7 +416,7 @@ void GPUFlow::Project(Textures velTex, Textures pTex, Textures divTex )
 	for( int i = 0; i < 20; ++i )
 	{
 		ExecuteShaderRect( pTex );
-		sh.setParameter( "x", textures[pTex]->getTexture());
+		sh.setUniform( "x", textures[pTex]->getTexture());
 	}
 }
 
@@ -534,7 +534,7 @@ void GPUFlow::Update()
 	for( int i = 0; i < 20; ++i )
 	{
 		ExecuteShaderRect( TEXTURE_PRESSURE );
-		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+		sh.setUniform( "x", textures[TEXTURE_PRESSURE]->getTexture());
 	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
@@ -551,7 +551,7 @@ void GPUFlow::Update()
 	for( int i = 0; i < 20; ++i )
 	{
 		ExecuteShaderRect( TEXTURE_PRESSURE );
-		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+		sh.setUniform( "x", textures[TEXTURE_PRESSURE]->getTexture());
 	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
@@ -583,7 +583,7 @@ void GPUFlow::Update()
 	for( int i = 0; i < 20; ++i )
 	{
 		ExecuteShaderRect( TEXTURE_PRESSURE );
-		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+		sh.setUniform( "x", textures[TEXTURE_PRESSURE]->getTexture());
 	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );
@@ -622,7 +622,7 @@ void GPUFlow::Update()
 	for( int i = 0; i < 20; ++i )
 	{
 		ExecuteShaderRect( TEXTURE_PRESSURE );
-		sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+		sh.setUniform( "x", textures[TEXTURE_PRESSURE]->getTexture());
 	}
 
 	SetGradient( TEXTURE_VELOCITY, TEXTURE_PRESSURE );*/
@@ -701,7 +701,7 @@ void GPUFlow::Update2()
 	//for( int i = 0; i < 20; ++i )
 	//{
 	//	ExecuteShaderRect( TEXTURE_PRESSURE );
-	//	sh.setParameter( "x", textures[TEXTURE_PRESSURE]->getTexture());
+	//	sh.setUniform( "x", textures[TEXTURE_PRESSURE]->getTexture());
 	//}
 
 	////c: compute the divergence free velocity

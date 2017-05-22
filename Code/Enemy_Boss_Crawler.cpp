@@ -1236,7 +1236,7 @@ void BossCrawler::PhysicsResponse()
 			//owner->GetPlayer( 0 )->flashColor = COLOR_BLUE;
 			//owner->GetPlayer( 0 )->flashFrames = 5;
 			//owner->GetPlayer( 0 )->desperationMode = false;
-			//owner->GetPlayer( 0 )->swordShader.setParameter( "energyColor", COLOR_BLUE );
+			//owner->GetPlayer( 0 )->swordShader.setUniform( "energyColor", COLOR_BLUE );
 			//owner->powerBar.Charge( 2 * 6 * 2 );
 			//owner->powerBar.Charge( 6 );
 

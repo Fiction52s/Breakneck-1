@@ -1296,8 +1296,8 @@ void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, Po
 	}
 
 	bool startFirst = true;
-	TerrainPoint *start;
-	TerrainPoint *end;
+	TerrainPoint *start = NULL;
+	TerrainPoint *end = NULL;
 
 	bool startFound = false;
 	bool endFound = false;

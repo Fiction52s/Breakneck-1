@@ -322,7 +322,7 @@ void ScoreDisplay::Activate()
 	
 	time.setFont( font );
 	time.setCharacterSize( 14 );
-	time.setColor( Color::Black );
+	time.setFillColor( Color::Black );
 
 	stringstream ss;
 
@@ -902,8 +902,8 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "minimap shader not loaded" );
 	}
-	//minimapShader.setParameter( "u_mask", miniMaskTex );
-	minimapShader.setParameter( "imageSize", Vector2f( minimapTex->getSize().x, 
+	//minimapShader.setUniform( "u_mask", miniMaskTex );
+	minimapShader.setUniform( "imageSize", Vector2f( minimapTex->getSize().x, 
 		minimapTex->getSize().y ) );
 	
 	minimapSprite.setTexture( minimapTex->getTexture() );
@@ -918,13 +918,13 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
-	speedBarShader.setParameter( "u_texture", sf::Shader::CurrentTexture );
+	speedBarShader.setUniform( "u_texture", sf::Shader::CurrentTexture );
 
 	if( !glowShader.loadFromFile( "glow_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	glowShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+	glowShader.setUniform( "texSize", Vector2f( 1920, 1080 ) );
 
 
 
@@ -932,20 +932,20 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	{
 		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	hBlurShader.setParameter( "texSize", Vector2f( 1920/2, 1080/2 ) );
+	hBlurShader.setUniform( "texSize", Vector2f( 1920/2, 1080/2 ) );
 
 	if( !vBlurShader.loadFromFile( "vblur_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	vBlurShader.setParameter( "texSize", Vector2f( 1920/2, 1080/2 ) );
+	vBlurShader.setUniform( "texSize", Vector2f( 1920/2, 1080/2 ) );
 	
 
 	if( !motionBlurShader.loadFromFile( "motionblur_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	motionBlurShader.setParameter( "texSize", Vector2f( 1920, 1080 ) );
+	motionBlurShader.setUniform( "texSize", Vector2f( 1920, 1080 ) );
 
 	
 
@@ -953,10 +953,10 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	{
 		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
 	}
-	shockwaveShader.setParameter( "resolution", Vector2f( 1920, 1080 ) );
-	shockwaveShader.setParameter( "texSize", Vector2f( 580, 580 ) );
+	shockwaveShader.setUniform( "resolution", Vector2f( 1920, 1080 ) );
+	shockwaveShader.setUniform( "texSize", Vector2f( 580, 580 ) );
 	shockwaveTex.loadFromFile( "shockwave_580x580.png" );
-	shockwaveShader.setParameter( "shockwaveTex", shockwaveTex );
+	shockwaveShader.setUniform( "shockwaveTex", shockwaveTex );
 
 
 	usePolyShader = true;
@@ -987,10 +987,10 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	flowSpacing = 600;
 	maxFlowRings = 40;
 
-	flowShader.setParameter( "radDiff", radDiff );
-	flowShader.setParameter( "Resolution", 1920, 1080 );// window->getSize().x, window->getSize().y);
-	flowShader.setParameter( "flowSpacing", flowSpacing );
-	flowShader.setParameter( "maxFlowRings", maxFlowRadius / maxFlowRings );
+	flowShader.setUniform( "radDiff", radDiff );
+	flowShader.setUniform( "Resolution", Vector2f(1920, 1080) );// window->getSize().x, window->getSize().y);
+	flowShader.setUniform( "flowSpacing", flowSpacing );
+	flowShader.setUniform( "maxFlowRings", maxFlowRadius / maxFlowRings );
 	
 
 
@@ -1001,7 +1001,7 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	mountainShader.setParameter( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
+	mountainShader.setUniform( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
 
 	if (!mountainShader1.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -1010,9 +1010,9 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	mountainShader1.setParameter( "u_texture", *GetTileset( "w1mountains2.png", 1920, 406 )->texture );
+	mountainShader1.setUniform( "u_texture", *GetTileset( "w1mountains2.png", 1920, 406 )->texture );
 
-	onTopShader.setParameter( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
+	onTopShader.setUniform( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
 
 
 	if( !underShader.loadFromFile( "under_shader.frag", sf::Shader::Fragment ) )
@@ -1318,7 +1318,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 			{
 				fac = 1.f - ( keyFrame - halftot ) / (halftot-1);
 			}
-			current->keyShader->setParameter( "prop", fac );
+			current->keyShader->setUniform( "prop", fac );
 		}
 
 		current = temp;
@@ -5800,7 +5800,7 @@ bool GameSession::Load()
 	background.setPosition( 0, 0 );
 	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 1920, 1080 ) );
 
-	flowShader.setParameter( "goalPos", goalPos.x, goalPos.y );
+	flowShader.setUniform( "goalPos", Vector2f( goalPos.x, goalPos.y ) );
 
 	goalEnergyFlowVA = SetupEnergyFlow();
 
@@ -5849,13 +5849,13 @@ bool GameSession::Load()
 		ss1 << "_512x512.png";
 		ts_polyShaders[index] = GetTileset( ss1.str(), 512, 512 ); //1024, 1024 );
 		cout << "loading: " << ss1.str() << endl;
-		polyShaders[index].setParameter( "u_texture", 
+		polyShaders[index].setUniform( "u_texture", 
 			//*GetTileset( ss1.str(), 1024, 1024 )->texture );
 			*GetTileset( ss1.str(), 512, 512 )->texture );
-		//polyShaders[tType]->setParameter( "u_texture", *(ts_poly->texture) );
-		polyShaders[index].setParameter( "Resolution", 1920, 1080 );
-		polyShaders[index].setParameter( "AmbientColor", 1, 1, 1, 1 );
-		polyShaders[index].setParameter( "u_normals", *undergroundTilesetNormal->texture );
+		//polyShaders[tType]->setUniform( "u_texture", *(ts_poly->texture) );
+		polyShaders[index].setUniform( "Resolution", Vector2f( 1920, 1080 ) );
+		polyShaders[index].setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
+		polyShaders[index].setUniform( "u_normals", *undergroundTilesetNormal->texture );
 		
 		++index;
 	}
@@ -5905,7 +5905,7 @@ int GameSession::Run()
 	bool showFrameRate = true;	
 
 	sf::Text frameRate( "00", arial, 30 );
-	frameRate.setColor( Color::Red );
+	frameRate.setFillColor( Color::Red );
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile( "alphatext.png" );
@@ -6206,13 +6206,13 @@ int GameSession::Run()
 					
 					if( screenShot )
 					{
-						cout << "TOOK A SCREENSHOT" << endl;
-						tookScreenShot = true;
-						Image im = window->capture();
+						//cout << "TOOK A SCREENSHOT" << endl;
+						//tookScreenShot = true;
+						//Image im = window->capture();
 
-						 time_t now = time(0);
-						 char* dt = ctime(&now);
-						im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
+						// time_t now = time(0);
+						// char* dt = ctime(&now);
+						//im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
 					}
 					else
 					{
@@ -6584,8 +6584,8 @@ int GameSession::Run()
 				oldView = view;
 
 
-				//polyShader.setParameter( "oldZoom", cam.GetZoom() );
-				//polyShader.setParameter( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
+				//polyShader.setUniform( "oldZoom", cam.GetZoom() );
+				//polyShader.setUniform( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
 				//	view.getCenter().y + view.getSize().y / 2 );
 
 				if( multiSession )
@@ -6742,15 +6742,15 @@ int GameSession::Run()
 				
 				screenRect = sf::Rect<double>( camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight );
 			
-				//flowShader.setParameter( "radius0", flow
+				//flowShader.setUniform( "radius0", flow
 				
 				
 				flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
 
-				flowShader.setParameter( "radius", flowRadius / maxFlowRings );
+				flowShader.setUniform( "radius", flowRadius / maxFlowRings );
 				//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
-				flowShader.setParameter( "zoom", cam.GetZoom() );
-				flowShader.setParameter( "playerPos", p0->position.x, p0->position.y );
+				flowShader.setUniform( "zoom", cam.GetZoom() );
+				flowShader.setUniform( "playerPos", Vector2f( p0->position.x, p0->position.y ) );
 
 
 				++flowFrame;
@@ -6760,8 +6760,8 @@ int GameSession::Run()
 				}
 				
 				int speedLevel = p0->speedLevel;
-				//speedBarShader.setParameter( "onPortion", (float)speedLevel );
-				//speedBarShader.setParameter( "quant", (float)currentSpeedBar );
+				//speedBarShader.setUniform( "onPortion", (float)speedLevel );
+				//speedBarShader.setUniform( "quant", (float)currentSpeedBar );
 				float quant = 0;
 				if( speedLevel == 0 )
 				{
@@ -6778,7 +6778,7 @@ int GameSession::Run()
 				}
 
 				//cout << "quant: " << quant << endl;
-				speedBarShader.setParameter( "onPortion", quant );
+				speedBarShader.setUniform( "onPortion", quant );
 
 				queryMode = "enemy";
 
@@ -7023,8 +7023,8 @@ int GameSession::Run()
 		//preScreenTex->setView( cut.GetView( cutFrame ) );
 		lastViewCenter = view.getCenter();
 
-		flowShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-					view.getCenter().y + view.getSize().y / 2 );
+		flowShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
+					view.getCenter().y + view.getSize().y / 2 ) );
 		
 		//window->setView( bgView );
 		preScreenTex->setView( bgView );
@@ -7131,8 +7131,8 @@ int GameSession::Run()
 		window->draw( cs );*/
 
 	
-		//player->sh.setParameter( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
-		//player->sh.setParameter( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
+		//player->sh.setUniform( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
+		//player->sh.setUniform( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
 		
 		
 		
@@ -7176,8 +7176,8 @@ int GameSession::Run()
 		//window->draw( circle );
 		//window->draw(line, numPoints * 2, sf::Lines);
 		
-		//polyShader.setParameter( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//polyShader.setParameter( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
+		//polyShader.setUniform( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//polyShader.setUniform( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
 
 		
 
@@ -7190,10 +7190,10 @@ int GameSession::Run()
 		blahblah.y = 1 - blahblah.y;
 
 
-		//polyShader.setParameter( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
-		//polyShader.setParameter( "LightColor", 1, .8, .6, 1 );
+		//polyShader.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+		//polyShader.setUniform( "LightColor", 1, .8, .6, 1 );
 		
-		//polyShader.setParameter( "Falloff", Vector3f( .4, 3, 20 ) );
+		//polyShader.setUniform( "Falloff", Vector3f( .4, 3, 20 ) );
 		//cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
 
 
@@ -7206,20 +7206,20 @@ int GameSession::Run()
 		
 		for( int i = 0; i < numPolyTypes; ++i )
 		{
-			polyShaders[i].setParameter( "zoom", cam.GetZoom() );
-			polyShaders[i].setParameter( "topLeft", botLeft ); //just need to change the name topleft eventually
-			polyShaders[i].setParameter( "playertest", playertest );
+			polyShaders[i].setUniform( "zoom", cam.GetZoom() );
+			polyShaders[i].setUniform( "topLeft", botLeft ); //just need to change the name topleft eventually
+			polyShaders[i].setUniform( "playertest", playertest );
 		}
 		
-		//polyShader.setParameter( "zoom", cam.GetZoom() );
-		//polyShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
+		//polyShader.setUniform( "zoom", cam.GetZoom() );
+		//polyShader.setUniform( "topLeft", view.getCenter().x - view.getSize().x / 2, 
 		//	view.getCenter().y + view.getSize().y / 2 );
 
 		
-		//polyShader.setParameter( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
+		//polyShader.setUniform( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
 
 
-		//polyShader.setParameter(  = GetTileset( "testterrain.png", 25, 25 )->texture;
+		//polyShader.setUniform(  = GetTileset( "testterrain.png", 25, 25 )->texture;
 
 		//for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 		//{
@@ -7376,11 +7376,11 @@ int GameSession::Run()
 				view.getCenter().y + view.getSize().y / 2 );
 			
 
-			motionBlurShader.setParameter( "tex", preScreenTex->getTexture() );
-			/*motionBlurShader.setParameter( "oldBotLeft", oldCamBotLeft );
-			motionBlurShader.setParameter( "botLeft", botLeft );
-			motionBlurShader.setParameter( "oldZoom", oldZoom );
-			motionBlurShader.setParameter( "zoom", cam.GetZoom() );*/
+			motionBlurShader.setUniform( "tex", preScreenTex->getTexture() );
+			/*motionBlurShader.setUniform( "oldBotLeft", oldCamBotLeft );
+			motionBlurShader.setUniform( "botLeft", botLeft );
+			motionBlurShader.setUniform( "oldZoom", oldZoom );
+			motionBlurShader.setUniform( "zoom", cam.GetZoom() );*/
 			//negative player y because of bottom left origin
 
 			V2d t = p0->velocity;
@@ -7391,10 +7391,10 @@ int GameSession::Run()
 			
 			Vector2f testVel = Vector2f( p0->velocity.x, -p0->velocity.y );
 
-			motionBlurShader.setParameter( "testVel", Vector2f( t.x, t.y ) );
+			motionBlurShader.setUniform( "testVel", Vector2f( t.x, t.y ) );
 
-			motionBlurShader.setParameter( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse() );
-			motionBlurShader.setParameter( "g_previousViewProjectionMatrix", oldView.getTransform() );
+			motionBlurShader.setUniform( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse().getMatrix() );
+			motionBlurShader.setUniform( "g_previousViewProjectionMatrix", oldView.getTransform().getMatrix() );
 
 			
 			postProcessTex->draw( rectPost, &motionBlurShader );
@@ -7747,8 +7747,8 @@ int GameSession::Run()
 
 		minimapTex->display();
 		const Texture &miniTex = minimapTex->getTexture();
-		minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
-		//minimapShader.setParameter( "u_texture", minimapTex->getTexture() );
+		minimapShader.setUniform( "u_texture", minimapTex->getTexture() );
+		//minimapShader.setUniform( "u_texture", minimapTex->getTexture() );
 
 		minimapSprite.setTexture( miniTex );
 		
@@ -7794,11 +7794,11 @@ int GameSession::Run()
 
 			Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y );
 
-			shockwaveShader.setParameter( "underTex", postProcessTex2->getTexture() );
-			shockwaveShader.setParameter( "shockSize", Vector2f( 580, 580 ) );
-			shockwaveShader.setParameter( "botLeft", Vector2f( rectPost.getPosition().x - rectPost.getSize().x / 2 - botLeft.x, 
+			shockwaveShader.setUniform( "underTex", postProcessTex2->getTexture() );
+			shockwaveShader.setUniform( "shockSize", Vector2f( 580, 580 ) );
+			shockwaveShader.setUniform( "botLeft", Vector2f( rectPost.getPosition().x - rectPost.getSize().x / 2 - botLeft.x, 
 				rectPost.getPosition().y - rectPost.getSize().y / 2 + rectPost.getSize().y - botLeft.y ) );
-			shockwaveShader.setParameter( "zoom", cam.GetZoom() );
+			shockwaveShader.setUniform( "zoom", cam.GetZoom() );
 			//preScreenTex->draw( shockSprite );
 
 			shockSprite.setScale( (1. / 60.) * shockTestFrame, (1. / 60.) * shockTestFrame );
@@ -7836,14 +7836,14 @@ int GameSession::Run()
 				view.getCenter().y + view.getSize().y / 2 );
 			
 
-			motionBlurShader.setParameter( "tex", preScreenTex->getTexture() );
-			motionBlurShader.setParameter( "oldBotLeft", oldCamBotLeft );
-			motionBlurShader.setParameter( "botLeft", botLeft );
-			motionBlurShader.setParameter( "oldZoom", oldZoom );
-			motionBlurShader.setParameter( "zoom", cam.GetZoom() );
+			motionBlurShader.setUniform( "tex", preScreenTex->getTexture() );
+			motionBlurShader.setUniform( "oldBotLeft", oldCamBotLeft );
+			motionBlurShader.setUniform( "botLeft", botLeft );
+			motionBlurShader.setUniform( "oldZoom", oldZoom );
+			motionBlurShader.setUniform( "zoom", cam.GetZoom() );
 
-			motionBlurShader.setParameter( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse() );
-			motionBlurShader.setParameter( "g_previousViewProjectionMatrix", oldView.getTransform() );
+			motionBlurShader.setUniform( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse().getMatrix() );
+			motionBlurShader.setUniform( "g_previousViewProjectionMatrix", oldView.getTransform().getMatrix());
 
 			
 			postProcessTex->draw( rectPost, &motionBlurShader );
@@ -7864,19 +7864,19 @@ int GameSession::Run()
 		{
 		sf::RectangleShape rectPost( Vector2f( 1920/2, 1080/2 ) );
 		rectPost.setPosition( 0, 0 );
-		glowShader.setParameter( "tex", preScreenTex->getTexture() );
-		//glowShader.setParameter( "old", postProcessTex->getTexture() );
+		glowShader.setUniform( "tex", preScreenTex->getTexture() );
+		//glowShader.setUniform( "old", postProcessTex->getTexture() );
 		postProcessTex->draw( rectPost, &glowShader );
 
 		for( int i = 0; i < 3; ++i )
 		{
 			postProcessTex->display();
-			hBlurShader.setParameter( "tex", postProcessTex->getTexture() );
+			hBlurShader.setUniform( "tex", postProcessTex->getTexture() );
 			
 			postProcessTex1->draw( rectPost, &hBlurShader );
 
 			postProcessTex1->display();
-			vBlurShader.setParameter( "tex", postProcessTex1->getTexture() );
+			vBlurShader.setUniform( "tex", postProcessTex1->getTexture() );
 			postProcessTex->draw( rectPost, &vBlurShader );
 		}
 		
@@ -7898,11 +7898,11 @@ int GameSession::Run()
 			rectPost.setPosition( 0, 0 );
 			for( int i = 0; i < 3; ++i )
 			{
-				hBlurShader.setParameter( "tex", preScreenTex->getTexture() );
+				hBlurShader.setUniform( "tex", preScreenTex->getTexture() );
 				postProcessTex->draw( rectPost, &hBlurShader );
 
 				postProcessTex->display();
-				vBlurShader.setParameter( "tex", postProcessTex->getTexture() );
+				vBlurShader.setUniform( "tex", postProcessTex->getTexture() );
 				preScreenTex->draw( rectPost, &vBlurShader );
 
 				if( i < 2 )
@@ -8087,19 +8087,19 @@ int GameSession::Run()
 			}
 		}
 
-		cloneShader.setParameter( "u_texture", preScreenTex->getTexture() );
-		cloneShader.setParameter( "newscreen", p0->percentCloneChanged );
-		cloneShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
-		cloneShader.setParameter( "zoom", cam.GetZoom() );
+		cloneShader.setUniform( "u_texture", preScreenTex->getTexture() );
+		cloneShader.setUniform( "newscreen", p0->percentCloneChanged );
+		cloneShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );//window->getSize().x, window->getSize().y);
+		cloneShader.setUniform( "zoom", cam.GetZoom() );
 
-		cloneShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-			view.getCenter().y + view.getSize().y / 2 );
+		cloneShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
+			view.getCenter().y + view.getSize().y / 2 ) );
 
-		cloneShader.setParameter( "bubbleRadius0", p0->bubbleRadiusSize[0] );
-		cloneShader.setParameter( "bubbleRadius1", p0->bubbleRadiusSize[1] );
-		cloneShader.setParameter( "bubbleRadius2", p0->bubbleRadiusSize[2] );
-		cloneShader.setParameter( "bubbleRadius3", p0->bubbleRadiusSize[3] );
-		cloneShader.setParameter( "bubbleRadius4", p0->bubbleRadiusSize[4] );
+		cloneShader.setUniform( "bubbleRadius0", p0->bubbleRadiusSize[0] );
+		cloneShader.setUniform( "bubbleRadius1", p0->bubbleRadiusSize[1] );
+		cloneShader.setUniform( "bubbleRadius2", p0->bubbleRadiusSize[2] );
+		cloneShader.setUniform( "bubbleRadius3", p0->bubbleRadiusSize[3] );
+		cloneShader.setUniform( "bubbleRadius4", p0->bubbleRadiusSize[4] );
 		
 
 		float windowx = 1920;//window->getSize().x;
@@ -8128,18 +8128,18 @@ int GameSession::Run()
 		//cout << "b1frame: " << player->bubbleFramesToLive[1] << endl;
 		//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
 
-		cloneShader.setParameter( "bubble0", pos0 );
-		cloneShader.setParameter( "b0Frame", p0->bubbleFramesToLive[0] );
-		cloneShader.setParameter( "bubble1", pos1 );
-		cloneShader.setParameter( "b1Frame", p0->bubbleFramesToLive[1] );
-		cloneShader.setParameter( "bubble2", pos2 );
-		cloneShader.setParameter( "b2Frame", p0->bubbleFramesToLive[2] );
-		cloneShader.setParameter( "bubble3", pos3 );
-		cloneShader.setParameter( "b3Frame", p0->bubbleFramesToLive[3] );
-		cloneShader.setParameter( "bubble4", pos4 );
-		cloneShader.setParameter( "b4Frame", p0->bubbleFramesToLive[4] );
-		//cloneShader.setParameter( "bubble5", pos5 );
-		//cloneShader.setParameter( "b5Frame", player->bubbleFramesToLive[5] );
+		cloneShader.setUniform( "bubble0", pos0 );
+		cloneShader.setUniform( "b0Frame", p0->bubbleFramesToLive[0] );
+		cloneShader.setUniform( "bubble1", pos1 );
+		cloneShader.setUniform( "b1Frame", p0->bubbleFramesToLive[1] );
+		cloneShader.setUniform( "bubble2", pos2 );
+		cloneShader.setUniform( "b2Frame", p0->bubbleFramesToLive[2] );
+		cloneShader.setUniform( "bubble3", pos3 );
+		cloneShader.setUniform( "b3Frame", p0->bubbleFramesToLive[3] );
+		cloneShader.setUniform( "bubble4", pos4 );
+		cloneShader.setUniform( "b4Frame", p0->bubbleFramesToLive[4] );
+		//cloneShader.setUniform( "bubble5", pos5 );
+		//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 		
 
 		
@@ -9648,7 +9648,7 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
-	//polyShader.setParameter( "stuff", 10, 10, 10 );
+	//polyShader.setUniform( "stuff", 10, 10, 10 );
 	
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
@@ -9678,12 +9678,12 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
 	//	Color c0 = touchedLights[0]->color;
 	//	
-	//	//underShader.setParameter( "On0", true );
+	//	//underShader.setUniform( "On0", true );
 	//	on[0] = true;
-	//	polyShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-	//	polyShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius0", touchedLights[0]->radius );
-	//	polyShader.setParameter( "Brightness0", touchedLights[0]->brightness);
+	//	polyShader.setUniform( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
+	//	polyShader.setUniform( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius0", touchedLights[0]->radius );
+	//	polyShader.setUniform( "Brightness0", touchedLights[0]->brightness);
 	//	
 	//}
 	//if( lightsAtOnce > 1 )
@@ -9695,11 +9695,11 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	Color c1 = touchedLights[1]->color;
 	//	
 	//	on[1] = true;
-	//	//underShader.setParameter( "On1", true );
-	//	polyShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-	//	polyShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius1", touchedLights[1]->radius );
-	//	polyShader.setParameter( "Brightness1", touchedLights[1]->brightness);
+	//	//underShader.setUniform( "On1", true );
+	//	polyShader.setUniform( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
+	//	polyShader.setUniform( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius1", touchedLights[1]->radius );
+	//	polyShader.setUniform( "Brightness1", touchedLights[1]->brightness);
 	//}
 	//if( lightsAtOnce > 2 )
 	//{
@@ -9710,11 +9710,11 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	Color c2 = touchedLights[2]->color;
 	//	
 	//	on[2] = true;
-	//	//underShader.setParameter( "On2", true );
-	//	polyShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-	//	polyShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius2", touchedLights[2]->radius );
-	//	polyShader.setParameter( "Brightness2", touchedLights[2]->brightness);
+	//	//underShader.setUniform( "On2", true );
+	//	polyShader.setUniform( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
+	//	polyShader.setUniform( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius2", touchedLights[2]->radius );
+	//	polyShader.setUniform( "Brightness2", touchedLights[2]->brightness);
 	//}
 	//if( lightsAtOnce > 3 )
 	//{
@@ -9725,11 +9725,11 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	Color c3 = touchedLights[3]->color;
 	//	
 	//	on[3] = true;
-	//	//underShader.setParameter( "On3", true );
-	//	polyShader.setParameter( "LightPos3", pos3 );
-	//	polyShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius3", touchedLights[3]->radius );
-	//	polyShader.setParameter( "Brightness3", touchedLights[3]->brightness);
+	//	//underShader.setUniform( "On3", true );
+	//	polyShader.setUniform( "LightPos3", pos3 );
+	//	polyShader.setUniform( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius3", touchedLights[3]->radius );
+	//	polyShader.setUniform( "Brightness3", touchedLights[3]->brightness);
 	//}
 	//if( lightsAtOnce > 4 )
 	//{
@@ -9741,10 +9741,10 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	
 	//	
 	//	on[4] = true;
-	//	polyShader.setParameter( "LightPos4", pos4 );
-	//	polyShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius4", touchedLights[4]->radius );
-	//	polyShader.setParameter( "Brightness4", touchedLights[4]->brightness);
+	//	polyShader.setUniform( "LightPos4", pos4 );
+	//	polyShader.setUniform( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius4", touchedLights[4]->radius );
+	//	polyShader.setUniform( "Brightness4", touchedLights[4]->brightness);
 	//}
 	//if( lightsAtOnce > 5 )
 	//{
@@ -9756,10 +9756,10 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	
 	//	
 	//	on[5] = true;
-	//	polyShader.setParameter( "LightPos5", pos5 );
-	//	polyShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius5", touchedLights[5]->radius );
-	//	polyShader.setParameter( "Brightness5", touchedLights[5]->brightness);
+	//	polyShader.setUniform( "LightPos5", pos5 );
+	//	polyShader.setUniform( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius5", touchedLights[5]->radius );
+	//	polyShader.setUniform( "Brightness5", touchedLights[5]->brightness);
 	//}
 	//if( lightsAtOnce > 6 )
 	//{
@@ -9770,10 +9770,10 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	Color c6 = touchedLights[6]->color;
 	//	
 	//	on[6] = true;
-	//	polyShader.setParameter( "LightPos6", pos6 );
-	//	polyShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius6", touchedLights[0]->radius );
-	//	polyShader.setParameter( "Brightness6", touchedLights[0]->brightness);
+	//	polyShader.setUniform( "LightPos6", pos6 );
+	//	polyShader.setUniform( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius6", touchedLights[0]->radius );
+	//	polyShader.setUniform( "Brightness6", touchedLights[0]->brightness);
 	//}
 	//if( lightsAtOnce > 7 )
 	//{
@@ -9784,10 +9784,10 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	Color c7 = touchedLights[7]->color;
 	//	
 	//	on[7] = true;
-	//	polyShader.setParameter( "LightPos7", pos7 );
-	//	polyShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius7", touchedLights[7]->radius );
-	//	polyShader.setParameter( "Brightness7", touchedLights[7]->brightness);
+	//	polyShader.setUniform( "LightPos7", pos7 );
+	//	polyShader.setUniform( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius7", touchedLights[7]->radius );
+	//	polyShader.setUniform( "Brightness7", touchedLights[7]->brightness);
 	//}
 	//if( lightsAtOnce > 8 )
 	//{
@@ -9798,30 +9798,30 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	//	Color c8 = touchedLights[8]->color;
 	//	
 	//	on[8] = true;
-	//	polyShader.setParameter( "LightPos8", pos8 );
-	//	polyShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
-	//	polyShader.setParameter( "Radius8", touchedLights[8]->radius );
-	//	polyShader.setParameter( "Brightness8", touchedLights[8]->brightness);
+	//	polyShader.setUniform( "LightPos8", pos8 );
+	//	polyShader.setUniform( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
+	//	polyShader.setUniform( "Radius8", touchedLights[8]->radius );
+	//	polyShader.setUniform( "Brightness8", touchedLights[8]->brightness);
 	//}
 
-	//polyShader.setParameter( "On0", on[0] );
-	//polyShader.setParameter( "On1", on[1] );
-	//polyShader.setParameter( "On2", on[2] );
-	//polyShader.setParameter( "On3", on[3] );
-	//polyShader.setParameter( "On4", on[4] );
-	//polyShader.setParameter( "On5", on[5] );
-	//polyShader.setParameter( "On6", on[6] );
-	//polyShader.setParameter( "On7", on[7] );
-	//polyShader.setParameter( "On8", on[8] );
+	//polyShader.setUniform( "On0", on[0] );
+	//polyShader.setUniform( "On1", on[1] );
+	//polyShader.setUniform( "On2", on[2] );
+	//polyShader.setUniform( "On3", on[3] );
+	//polyShader.setUniform( "On4", on[4] );
+	//polyShader.setUniform( "On5", on[5] );
+	//polyShader.setUniform( "On6", on[6] );
+	//polyShader.setUniform( "On7", on[7] );
+	//polyShader.setUniform( "On8", on[8] );
 
 	//Color c = player->testLight->color;
 	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
 	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
-	//polyShader.setParameter( "LightPosPlayer", posp );
-	//polyShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
-	//polyShader.setParameter( "RadiusPlayer", player->testLight->radius );
-	//polyShader.setParameter( "BrightnessPlayer", player->testLight->brightness );
-	//polyShader.setParameter( "OnD0", true );
+	//polyShader.setUniform( "LightPosPlayer", posp );
+	//polyShader.setUniform( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
+	//polyShader.setUniform( "RadiusPlayer", player->testLight->radius );
+	//polyShader.setUniform( "BrightnessPlayer", player->testLight->brightness );
+	//polyShader.setUniform( "OnD0", true );
 }
 
 double GameSession::GetTriangleArea( p2t::Triangle * t )
@@ -12735,9 +12735,9 @@ void GameSession::SetParMountains( sf::RenderTarget *target )
 	rs.setFillColor( Color::Red );
 	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, - 512 + yChange );
 
-	mountainShader.setParameter( "Resolution", 1920, 1080 );
-	mountainShader.setParameter( "zoom", newZoom );
-	mountainShader.setParameter( "size", 1920, 1024 );
+	mountainShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );
+	mountainShader.setUniform( "zoom", (float)newZoom );
+	mountainShader.setUniform( "size", Vector2f( 1920, 1024 ) );
 	
 	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
 	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
@@ -12746,7 +12746,7 @@ void GameSession::SetParMountains( sf::RenderTarget *target )
 	trueBotLeft.y -= yChange;
 
 
-	mountainShader.setParameter( "topLeft", trueBotLeft );
+	mountainShader.setUniform( "topLeft", trueBotLeft );
 
 	preScreenTex->draw( rs, &mountainShader );
 
@@ -12771,9 +12771,9 @@ void GameSession::SetParMountains1( sf::RenderTarget *target )
 	//rs.setFillColor( Color::Red );
 	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, -406 + yChange );//- 512 );
 
-	mountainShader1.setParameter( "Resolution", 1920, 1080 );
-	mountainShader1.setParameter( "zoom", newZoom );
-	mountainShader1.setParameter( "size", 1920, 812 );
+	mountainShader1.setUniform( "Resolution", Vector2f( 1920, 1080 ) );
+	mountainShader1.setUniform( "zoom", (float)newZoom );
+	mountainShader1.setUniform( "size", Vector2f( 1920, 812 ) );
 	
 	
 	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
@@ -12782,7 +12782,7 @@ void GameSession::SetParMountains1( sf::RenderTarget *target )
 	trueBotLeft = preScreenTex->mapPixelToCoords( tempPos );
 	trueBotLeft.y -= yChange;
 
-	mountainShader1.setParameter( "topLeft", trueBotLeft );
+	mountainShader1.setUniform( "topLeft", trueBotLeft );
 
 	preScreenTex->draw( rs, &mountainShader1 );
 
@@ -12800,10 +12800,10 @@ void GameSession::SetParOnTop( sf::RenderTarget *target )
 	rs.setFillColor( Color::White );
 	rs.setPosition( view.getCenter().x - view.getSize().x / 2, - 370 / 2 );
 
-	onTopShader.setParameter( "Resolution", 1920, 1080 );
-	onTopShader.setParameter( "zoom", cam.GetZoom() );
-	onTopShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2,
-		view.getCenter().y + view.getSize().y / 2 );
+	onTopShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );
+	onTopShader.setUniform( "zoom", cam.GetZoom() );
+	onTopShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2,
+		view.getCenter().y + view.getSize().y / 2 ) );
 
 	preScreenTex->draw( rs, &onTopShader );
 	//preScreenTex->draw( rs );
@@ -13100,15 +13100,15 @@ void GameSession::SetUndergroundParAndDraw()
 	Actor *player = GetPlayer( 0 );
 	preScreenTex->setView( view );
 
-	underShader.setParameter( "u_texture", *GetTileset( "underground01.png" , 128, 128 )->texture );
-	underShader.setParameter( "u_normals", *GetTileset( "underground01_NORMALS.png", 128, 128 )->texture );
-	//underShader.setParameter( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
+	underShader.setUniform( "u_texture", *GetTileset( "underground01.png" , 128, 128 )->texture );
+	underShader.setUniform( "u_normals", *GetTileset( "underground01_NORMALS.png", 128, 128 )->texture );
+	//underShader.setUniform( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 
-	underShader.setParameter( "AmbientColor", 1, 1, 1, 1 );
-	underShader.setParameter( "Resolution", 1920, 1080 );//window->getSize().x, window->getSize().y);
-	underShader.setParameter( "zoom", cam.GetZoom() );
-	underShader.setParameter( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-		view.getCenter().y + view.getSize().y / 2 );
+	underShader.setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
+	underShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );//window->getSize().x, window->getSize().y);
+	underShader.setUniform( "zoom", cam.GetZoom() );
+	underShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
+		view.getCenter().y + view.getSize().y / 2 ) );
 
 	lightsAtOnce = 0;
 	tempLightLimit = 0;//9; //only for now
@@ -13120,7 +13120,7 @@ void GameSession::SetUndergroundParAndDraw()
 
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
-	//polyShader.setParameter( "stuff", 10, 10, 10 );
+	//polyShader.setUniform( "stuff", 10, 10, 10 );
 	
 /*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
 	pos0.y = 1 - pos0.y;
@@ -13148,12 +13148,12 @@ void GameSession::SetUndergroundParAndDraw()
 		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
 		Color c0 = touchedLights[0]->color;
 		
-		//underShader.setParameter( "On0", true );
+		//underShader.setUniform( "On0", true );
 		on[0] = true;
-		underShader.setParameter( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		underShader.setParameter( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-		underShader.setParameter( "Radius0", touchedLights[0]->radius );
-		underShader.setParameter( "Brightness0", touchedLights[0]->brightness);
+		underShader.setUniform( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
+		underShader.setUniform( "LightColor0", Glsl::Vec4(c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius0", touchedLights[0]->radius );
+		underShader.setUniform( "Brightness0", touchedLights[0]->brightness);
 		
 	}
 	if( lightsAtOnce > 1 )
@@ -13165,11 +13165,11 @@ void GameSession::SetUndergroundParAndDraw()
 		Color c1 = touchedLights[1]->color;
 		
 		on[1] = true;
-		//underShader.setParameter( "On1", true );
-		underShader.setParameter( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		underShader.setParameter( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-		underShader.setParameter( "Radius1", touchedLights[1]->radius );
-		underShader.setParameter( "Brightness1", touchedLights[1]->brightness);
+		//underShader.setUniform( "On1", true );
+		underShader.setUniform( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
+		underShader.setUniform( "LightColor1", Glsl::Vec4( c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius1", touchedLights[1]->radius );
+		underShader.setUniform( "Brightness1", touchedLights[1]->brightness);
 	}
 	if( lightsAtOnce > 2 )
 	{
@@ -13180,11 +13180,11 @@ void GameSession::SetUndergroundParAndDraw()
 		Color c2 = touchedLights[2]->color;
 		
 		on[2] = true;
-		//underShader.setParameter( "On2", true );
-		underShader.setParameter( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		underShader.setParameter( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-		underShader.setParameter( "Radius2", touchedLights[2]->radius );
-		underShader.setParameter( "Brightness2", touchedLights[2]->brightness);
+		//underShader.setUniform( "On2", true );
+		underShader.setUniform( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
+		underShader.setUniform( "LightColor2", Glsl::Vec4( c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius2", touchedLights[2]->radius );
+		underShader.setUniform( "Brightness2", touchedLights[2]->brightness);
 	}
 	if( lightsAtOnce > 3 )
 	{
@@ -13195,11 +13195,11 @@ void GameSession::SetUndergroundParAndDraw()
 		Color c3 = touchedLights[3]->color;
 		
 		on[3] = true;
-		//underShader.setParameter( "On3", true );
-		underShader.setParameter( "LightPos3", pos3 );
-		underShader.setParameter( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
-		underShader.setParameter( "Radius3", touchedLights[3]->radius );
-		underShader.setParameter( "Brightness3", touchedLights[3]->brightness);
+		//underShader.setUniform( "On3", true );
+		underShader.setUniform( "LightPos3", pos3 );
+		underShader.setUniform( "LightColor3", Glsl::Vec4( c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius3", touchedLights[3]->radius );
+		underShader.setUniform( "Brightness3", touchedLights[3]->brightness);
 	}
 	if( lightsAtOnce > 4 )
 	{
@@ -13211,10 +13211,10 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		
 		on[4] = true;
-		underShader.setParameter( "LightPos4", pos4 );
-		underShader.setParameter( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
-		underShader.setParameter( "Radius4", touchedLights[4]->radius );
-		underShader.setParameter( "Brightness4", touchedLights[4]->brightness);
+		underShader.setUniform( "LightPos4", pos4 );
+		underShader.setUniform( "LightColor4", Glsl::Vec4( c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius4", touchedLights[4]->radius );
+		underShader.setUniform( "Brightness4", touchedLights[4]->brightness);
 	}
 	if( lightsAtOnce > 5 )
 	{
@@ -13226,10 +13226,10 @@ void GameSession::SetUndergroundParAndDraw()
 		
 		
 		on[5] = true;
-		underShader.setParameter( "LightPos5", pos5 );
-		underShader.setParameter( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
-		underShader.setParameter( "Radius5", touchedLights[5]->radius );
-		underShader.setParameter( "Brightness5", touchedLights[5]->brightness);
+		underShader.setUniform( "LightPos5", pos5 );
+		underShader.setUniform( "LightColor5", Glsl::Vec4( c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius5", touchedLights[5]->radius );
+		underShader.setUniform( "Brightness5", touchedLights[5]->brightness);
 	}
 	if( lightsAtOnce > 6 )
 	{
@@ -13240,10 +13240,10 @@ void GameSession::SetUndergroundParAndDraw()
 		Color c6 = touchedLights[6]->color;
 		
 		on[6] = true;
-		underShader.setParameter( "LightPos6", pos6 );
-		underShader.setParameter( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
-		underShader.setParameter( "Radius6", touchedLights[0]->radius );
-		underShader.setParameter( "Brightness6", touchedLights[0]->brightness);
+		underShader.setUniform( "LightPos6", pos6 );
+		underShader.setUniform( "LightColor6", Glsl::Vec4(c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius6", touchedLights[0]->radius );
+		underShader.setUniform( "Brightness6", touchedLights[0]->brightness);
 	}
 	if( lightsAtOnce > 7 )
 	{
@@ -13254,10 +13254,10 @@ void GameSession::SetUndergroundParAndDraw()
 		Color c7 = touchedLights[7]->color;
 		
 		on[7] = true;
-		underShader.setParameter( "LightPos7", pos7 );
-		underShader.setParameter( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
-		underShader.setParameter( "Radius7", touchedLights[7]->radius );
-		underShader.setParameter( "Brightness7", touchedLights[7]->brightness);
+		underShader.setUniform( "LightPos7", pos7 );
+		underShader.setUniform( "LightColor7", Glsl::Vec4(c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius7", touchedLights[7]->radius );
+		underShader.setUniform( "Brightness7", touchedLights[7]->brightness);
 	}
 	if( lightsAtOnce > 8 )
 	{
@@ -13268,29 +13268,29 @@ void GameSession::SetUndergroundParAndDraw()
 		Color c8 = touchedLights[8]->color;
 		
 		on[8] = true;
-		underShader.setParameter( "LightPos8", pos8 );
-		underShader.setParameter( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
-		underShader.setParameter( "Radius8", touchedLights[8]->radius );
-		underShader.setParameter( "Brightness8", touchedLights[8]->brightness);
+		underShader.setUniform( "LightPos8", pos8 );
+		underShader.setUniform( "LightColor8", Glsl::Vec4(c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 ) );
+		underShader.setUniform( "Radius8", touchedLights[8]->radius );
+		underShader.setUniform( "Brightness8", touchedLights[8]->brightness);
 	}
 
-	underShader.setParameter( "On0", on[0] );
-	underShader.setParameter( "On1", on[1] );
-	underShader.setParameter( "On2", on[2] );
-	underShader.setParameter( "On3", on[3] );
-	underShader.setParameter( "On4", on[4] );
-	underShader.setParameter( "On5", on[5] );
-	underShader.setParameter( "On6", on[6] );
-	underShader.setParameter( "On7", on[7] );
-	underShader.setParameter( "On8", on[8] );
+	underShader.setUniform( "On0", on[0] );
+	underShader.setUniform( "On1", on[1] );
+	underShader.setUniform( "On2", on[2] );
+	underShader.setUniform( "On3", on[3] );
+	underShader.setUniform( "On4", on[4] );
+	underShader.setUniform( "On5", on[5] );
+	underShader.setUniform( "On6", on[6] );
+	underShader.setUniform( "On7", on[7] );
+	underShader.setUniform( "On8", on[8] );
 
 	Color c = player->testLight->color;
 	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
 	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
-	underShader.setParameter( "LightPosPlayer", posp );
-	underShader.setParameter( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
-	underShader.setParameter( "RadiusPlayer", player->testLight->radius );
-	underShader.setParameter( "BrightnessPlayer", player->testLight->brightness );
+	underShader.setUniform( "LightPosPlayer", posp );
+	underShader.setUniform( "LightColorPlayer", Glsl::Vec4( c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 ) );
+	underShader.setUniform( "RadiusPlayer", player->testLight->radius );
+	underShader.setUniform( "BrightnessPlayer", player->testLight->brightness );
 
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;
@@ -13640,7 +13640,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 
 	tempAllTargets.setFont( owner->arial );
 	tempAllTargets.setCharacterSize( 12 );
-	tempAllTargets.setColor( Color::Red );
+	tempAllTargets.setFillColor( Color::Red );
 
 	testWindow = new UIWindow( NULL, owner->GetTileset( "Menu/windows_64x24.png", 64, 24 ),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
 		Vector2f( 600, 600) );

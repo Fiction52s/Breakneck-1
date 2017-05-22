@@ -213,7 +213,7 @@ int WorldMap::Tex( int index, int level, TreeNode *entry )
 
 
 		t.setString( name );
-		t.setColor( Color::White );
+		t.setFillColor( Color::White );
 		t.setPosition( menuPos.x + leftBorder, menuPos.y + index * yspacing );
 		localPaths[index] = ( entry->GetLocalPath() / (*it).filename()).string();
 		dirNode[index] = entry;

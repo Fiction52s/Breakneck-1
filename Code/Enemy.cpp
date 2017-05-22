@@ -1064,8 +1064,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 			assert( false );
 		}
 
-		keyShader->setParameter( "toColor", keyColor );
-		keyShader->setParameter( "auraColor", auraColor );
+		keyShader->setUniform( "toColor", Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
+		keyShader->setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
 	//	keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
@@ -1105,10 +1105,10 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		cout << "couldnt load enemy enemyhurt shader" << endl;
 		assert( false );
 	}
-	hurtShader->setParameter( "toColor", Color::White );
-	hurtShader->setParameter( "auraColor", auraColor );
+	hurtShader->setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
+	hurtShader->setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
 
-		//hurtShader->setParameter( "toColor", keyColor );
+		//hurtShader->setUniform( "toColor", keyColor );
 	
 }
 

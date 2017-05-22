@@ -20,9 +20,9 @@ Light::Light( GameSession *own, sf::Vector2i &p, Color &c, double rad, double br
 		assert( 0 && "light shader not loaded" );
 	}*/
 	
-	//sh.setParameter( "pos", 0, 0 );
+	//sh.setUniform( "pos", 0, 0 );
 	//rad = rad * 10.f;// * 10.f;
-	//sh.setParameter( "lightpos", 0, -300 );
+	//sh.setUniform( "lightpos", 0, -300 );
 	
 	//rad = 100;	
 	radius = rad;//rad / (110*brightness);
@@ -59,17 +59,17 @@ bool Light::IsTouchingBox( const sf::Rect<double> &r )
 void Light::Draw( RenderTarget *target )
 {
 	//falloff2 *= 100.f;
-	//sh.setParameter( "pos", owner->cam.pos.x, owner->cam.pos.y );
-	//sh.setParameter( "zoom", owner->cam.GetZoom() );
-	//sh.setParameter( "resolution", owner->window->getSize().x, owner->window->getSize().y);
-	//sh.setParameter( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2, 
+	//sh.setUniform( "pos", owner->cam.pos.x, owner->cam.pos.y );
+	//sh.setUniform( "zoom", owner->cam.GetZoom() );
+	//sh.setUniform( "resolution", owner->window->getSize().x, owner->window->getSize().y);
+	//sh.setUniform( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2, 
 	//	owner->view.getCenter().y + owner->view.getSize().y / 2 );
 
 	Vector2i vi0 = Vector2i( owner->preScreenTex->mapCoordsToPixel( cs.getPosition() ) );
 		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, .015 ); 
 	Vector3f lightpos( vi0.x / (float)owner->window->getSize().x, -1 + vi0.y / (float)owner->window->getSize().y, depth );
 
-	//sh.setParameter( "lightpos", lightpos );
+	//sh.setUniform( "lightpos", lightpos );
 
 	
 	/*cs.setRadius( 20 );

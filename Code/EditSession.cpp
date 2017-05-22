@@ -459,7 +459,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
 	cursorLocationText.setFont( arialFont );
 	cursorLocationText.setCharacterSize( 16 );
-	cursorLocationText.setColor( Color::White );
+	cursorLocationText.setFillColor( Color::White );
 	cursorLocationText.setPosition( 0, 0 );
 
 	PoiParams::font = &arialFont;
@@ -3094,7 +3094,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 	PolyPtr currentPoly = NULL;
 	PolyPtr otherPoly = NULL;
 	TerrainPoint *curr = poly->pointStart;
-	TerrainPoint *start;	
+	TerrainPoint *start = NULL;
 
 	PolyPtr minPoly = NULL;
 
@@ -3195,7 +3195,7 @@ void EditSession::Add( PolyPtr brush, PolyPtr poly )
 
 		//preScreenTex->display();
 
-		TerrainPoint *min;
+		TerrainPoint *min = NULL;
 		Vector2i minIntersection;
 		bool emptyInter = true;
 		
@@ -3499,7 +3499,7 @@ void EditSession::Sub( TerrainPolygon *brush, std::list<PolyPtr> &orig, std::lis
 				
 				//untouched.pop_front();
 			
-				TerrainPoint *min;
+				TerrainPoint *min = NULL;
 				Vector2i minIntersection;
 				bool emptyInter = true;
 
@@ -9689,7 +9689,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					textblue.setCharacterSize( 14 );
 					textblue.setFont( arial );
 					textblue.setString( "CREATE\nTERRAIN" );
-					textblue.setColor( sf::Color::White );
+					textblue.setFillColor( sf::Color::White );
 					textblue.setOrigin( textblue.getLocalBounds().width / 2, textblue.getLocalBounds().height / 2 );
 					textblue.setPosition( (menuDownPos + upperRightPos).x, (menuDownPos + upperRightPos).y );
 					preScreenTex->draw( textblue);
@@ -9703,7 +9703,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					textgreen.setCharacterSize( 14 );
 					textgreen.setFont( arial );
 					textgreen.setString( "MAP\nOPTIONS" );
-					textgreen.setColor( sf::Color::White );
+					textgreen.setFillColor( sf::Color::White );
 					textgreen.setOrigin( textgreen.getLocalBounds().width / 2, textgreen.getLocalBounds().height / 2 );
 					textgreen.setPosition( (menuDownPos + lowerRightPos).x, (menuDownPos + lowerRightPos).y );
 					preScreenTex->draw( textgreen );
@@ -9721,7 +9721,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					textorange.setString( "CREATE\nLIGHTS" );
 					textorange.setFont( arial );
 					textorange.setCharacterSize( 14 );
-					textorange.setColor( sf::Color::White );
+					textorange.setFillColor( sf::Color::White );
 					textorange.setOrigin( textorange.getLocalBounds().width / 2, textorange.getLocalBounds().height / 2 );
 					textorange.setPosition( (menuDownPos + lowerLeftPos).x, (menuDownPos + lowerLeftPos).y );
 					preScreenTex->draw( textorange );
@@ -9734,7 +9734,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					textred.setString( "CREATE\nENEMIES" );
 					textred.setFont( arial );
 					textred.setCharacterSize( 14 );
-					textred.setColor( sf::Color::White );
+					textred.setFillColor( sf::Color::White );
 					textred.setOrigin( textred.getLocalBounds().width / 2, textred.getLocalBounds().height / 2 );
 					textred.setPosition( (menuDownPos + upperLeftPos).x, (menuDownPos + upperLeftPos).y );
 					preScreenTex->draw( textred );
@@ -9774,7 +9774,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					
 					textmag.setFont( arial );
 					textmag.setCharacterSize( 14 );
-					textmag.setColor( sf::Color::White );
+					textmag.setFillColor( sf::Color::White );
 					textmag.setOrigin( textmag.getLocalBounds().width / 2, textmag.getLocalBounds().height / 2 );
 					textmag.setPosition( (menuDownPos + topPos).x, (menuDownPos + topPos).y );
 					preScreenTex->draw( textmag );

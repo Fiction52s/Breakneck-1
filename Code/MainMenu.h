@@ -89,6 +89,8 @@ struct MultiLoadingScreen
 	GameSession *gs;
 };
 
+#define ColorGL( c ) sf::Glsl::Vec4( c.r, c.g, c.b, c.a )
+//#define _WIN32_WINNT 0x0601
 
 struct Parallax;
 struct MainMenu

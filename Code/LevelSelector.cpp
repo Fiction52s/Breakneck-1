@@ -191,7 +191,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 	t0.setFont( font );
 	t0.setCharacterSize( fontHeight );
 	t0.setString( entry->name );
-	t0.setColor( Color::Red );
+	t0.setFillColor( Color::Red );
 	t0.setPosition( level * xspacing, index * yspacing );
 	localPaths[index] = entry->GetLocalPath();//entry->filePath;
 	dirNode[index] = NULL;
@@ -212,7 +212,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 
 
 		t.setString( name );
-		t.setColor( Color::Blue );
+		t.setFillColor( Color::Blue );
 		t.setPosition( (level + 1) * xspacing, index * yspacing );
 		localPaths[index] = (entry->GetLocalPath() / (*it).filename()).string();
 		dirNode[index] = entry;
