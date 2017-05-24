@@ -9,6 +9,7 @@
 #include "Config.h"
 #include "ControlProfile.h"
 #include "UIWindow.h"
+#include "sfeMovie/StreamSelection.hpp"
 
 using namespace std;
 using namespace sf;
@@ -310,7 +311,6 @@ GameController &MainMenu::GetController( int index )
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight( 1080 )
 {
-	
 
 	for( int i = 0; i < 4; ++i )
 	{
@@ -921,8 +921,10 @@ ControllerState &MainMenu::GetCurrInput( int index )
 	return currInput[index];
 }
 
+#include <sfeMovie/Movie.hpp>
 void MainMenu::Run()
 {
+
 	sf::Event ev;
 
 	bool quit = false;
@@ -935,6 +937,13 @@ void MainMenu::Run()
 	bool moveUp = false;
 	bool moveLeft = false;
 	bool moveRight = false;
+
+	sfe::Movie m;
+	assert( m.openFromFile("Movie/cube.mp4") );
+	m.fit(sf::FloatRect(0, 0, 1920, 1080));
+	
+	
+	m.play();
 
 	/*int moveDownFrames = 0;
 	int moveUpFrames = 0;
@@ -949,6 +958,15 @@ void MainMenu::Run()
 	saveTexture->setView( v );
 	menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
 
+	sf::Shader sh;
+	assert( sh.loadFromFile("test.frag", sf::Shader::Fragment ) );
+	
+	sf::Vertex ff[4] = {
+		sf::Vertex( Vector2f( 0, 0 ) ),
+		sf::Vertex(Vector2f(500, 0)),
+		sf::Vertex(Vector2f(500, 500)),
+		sf::Vertex(Vector2f(0, 500))
+	};
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -970,6 +988,17 @@ void MainMenu::Run()
 
 		while ( accumulator >= TIMESTEP  )
         {
+			if (m.getStatus() == sfe::Status::Stopped)
+			{
+				m.setPlayingOffset(sf::Time::Zero);
+				m.play();
+			}
+			
+			m.update();
+			const sf::Texture &currImage = m.getCurrentImage();
+
+			sh.setUniform("texture", currImage);
+
 			worldMapUpdate = false;
 
 			menuPrevInput = menuCurrInput;
@@ -1831,6 +1860,9 @@ void MainMenu::Run()
 			}
 			preScreenTexture->draw( saveSpr );
 		}
+
+		//preScreenTexture->draw( ff, 4, sf::Quads,  &sh );
+		preScreenTexture->draw(m, &sh);
 
 		preScreenTexture->display();
 		sf::Sprite pspr;

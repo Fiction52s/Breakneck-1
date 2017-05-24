@@ -8095,11 +8095,11 @@ int GameSession::Run()
 		cloneShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
 			view.getCenter().y + view.getSize().y / 2 ) );
 
-		cloneShader.setUniform( "bubbleRadius0", p0->bubbleRadiusSize[0] );
-		cloneShader.setUniform( "bubbleRadius1", p0->bubbleRadiusSize[1] );
-		cloneShader.setUniform( "bubbleRadius2", p0->bubbleRadiusSize[2] );
-		cloneShader.setUniform( "bubbleRadius3", p0->bubbleRadiusSize[3] );
-		cloneShader.setUniform( "bubbleRadius4", p0->bubbleRadiusSize[4] );
+		cloneShader.setUniform( "bubbleRadius0", (float)p0->bubbleRadiusSize[0] );
+		cloneShader.setUniform( "bubbleRadius1", (float)p0->bubbleRadiusSize[1] );
+		cloneShader.setUniform( "bubbleRadius2", (float)p0->bubbleRadiusSize[2] );
+		cloneShader.setUniform( "bubbleRadius3", (float)p0->bubbleRadiusSize[3] );
+		cloneShader.setUniform( "bubbleRadius4", (float)p0->bubbleRadiusSize[4] );
 		
 
 		float windowx = 1920;//window->getSize().x;
@@ -8129,15 +8129,15 @@ int GameSession::Run()
 		//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
 
 		cloneShader.setUniform( "bubble0", pos0 );
-		cloneShader.setUniform( "b0Frame", p0->bubbleFramesToLive[0] );
+		cloneShader.setUniform( "b0Frame", (float)p0->bubbleFramesToLive[0] );
 		cloneShader.setUniform( "bubble1", pos1 );
-		cloneShader.setUniform( "b1Frame", p0->bubbleFramesToLive[1] );
+		cloneShader.setUniform( "b1Frame", (float)p0->bubbleFramesToLive[1] );
 		cloneShader.setUniform( "bubble2", pos2 );
-		cloneShader.setUniform( "b2Frame", p0->bubbleFramesToLive[2] );
+		cloneShader.setUniform( "b2Frame", (float)p0->bubbleFramesToLive[2] );
 		cloneShader.setUniform( "bubble3", pos3 );
-		cloneShader.setUniform( "b3Frame", p0->bubbleFramesToLive[3] );
+		cloneShader.setUniform( "b3Frame", (float)p0->bubbleFramesToLive[3] );
 		cloneShader.setUniform( "bubble4", pos4 );
-		cloneShader.setUniform( "b4Frame", p0->bubbleFramesToLive[4] );
+		cloneShader.setUniform( "b4Frame", (float)p0->bubbleFramesToLive[4] );
 		//cloneShader.setUniform( "bubble5", pos5 );
 		//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 		

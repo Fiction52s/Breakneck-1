@@ -1719,9 +1719,9 @@ void Actor::UpdatePrePhysics()
 		auraColor.r = floor( auraColor.r * ( 1.f - overallFac ) + Color::Black.r * fac + .5 );
 		auraColor.g = floor( auraColor.g * ( 1.f - overallFac ) + Color::Black.g * fac + .5 );
 		auraColor.b = floor( auraColor.b * ( 1.f - overallFac ) + Color::Black.b * fac + .5 );
-		sh.setUniform( "despColor", ColorGL(currentDespColor) );
+		//sh.setUniform( "despColor", ColorGL(currentDespColor) );
 		despFaceShader.setUniform( "toColor", ColorGL(currentDespColor) );
-		sh.setUniform( "auraColor", ColorGL(auraColor) );
+		//sh.setUniform( "auraColor", ColorGL(auraColor) );
 		//currentDespColor
 
 
@@ -13523,10 +13523,10 @@ void Actor::UpdatePostPhysics()
 
 	if( action == DEATH )
 	{
-		sh.setUniform( "On0", false );
-		sh.setUniform( "On1", false );
-		sh.setUniform( "On2", false );
-		sh.setUniform( "despFrame", -1 );
+		//sh.setUniform( "On0", false );
+		//sh.setUniform( "On1", false );
+		//sh.setUniform( "On2", false );
+		sh.setUniform( "despFrame", (float)-1 );
 
 		sprite->setTexture( *(tileset[DEATH]->texture));
 		if( facingRight )
@@ -14015,7 +14015,7 @@ void Actor::UpdatePostPhysics()
 		sh.setUniform( "Brightness8", owner->touchedLights[8]->brightness);
 	}
 
-	sh.setUniform( "On0", on[0] );
+	/*sh.setUniform( "On0", on[0] );
 	sh.setUniform( "On1", on[1] );
 	sh.setUniform( "On2", on[2] );
 	sh.setUniform( "On3", on[3] );
@@ -14023,19 +14023,19 @@ void Actor::UpdatePostPhysics()
 	sh.setUniform( "On5", on[5] );
 	sh.setUniform( "On6", on[6] );
 	sh.setUniform( "On7", on[7] );
-	sh.setUniform( "On8", on[8] );
+	sh.setUniform( "On8", on[8] );*/
 	
 	}
 
 	if( desperationMode )
 	{
 		//cout << "sending this parameter! "<< endl;
-		sh.setUniform( "despFrame", despCounter );
+		sh.setUniform( "despFrame", (float)despCounter );
 	}
 	else
 	{
 		
-		sh.setUniform( "despFrame", -1 );
+		sh.setUniform( "despFrame", (float)-1 );
 	}
 
 
@@ -15981,7 +15981,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
 			//cout << "action: " << action << endl;
 			sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			sh.setUniform( "u_normals", *normal[action]->texture );
+			//sh.setUniform( "u_normals", *normal[action]->texture );
 			target->draw( *sprite, &sh );
 		}
 		else
