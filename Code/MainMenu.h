@@ -192,7 +192,7 @@ struct SaveMenuScreen
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 	MainMenu *mainMenu;
-
+	sf::Vector2f menuOffset;
 	sf::Sprite background;
 	sf::Sprite selectSlot;
 	sf::Sprite kinFace;
@@ -373,8 +373,6 @@ struct MainMenu
 	LevelSelector *levelSelector;
 	WorldMap *worldMap;
 
-	
-	bool selectCreateNew;
 
 	int kinTitleSpriteFrame;
 	int kinTotalFrames;

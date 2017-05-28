@@ -323,7 +323,7 @@ MainMenu::MainMenu()
 	leftCenter = Vector2f(halfX - wholeX, halfY);
 	rightCenter = Vector2f(halfX + wholeX, halfY);
 	topCenter = Vector2f(halfX, halfY - wholeY );
-	bottomCenter = Vector2f(-halfX, halfY + wholeY );
+	bottomCenter = Vector2f(halfX, halfY + wholeY );
 
 
 	for( int i = 0; i < 4; ++i )
@@ -632,7 +632,7 @@ void MainMenu::SetMode(Mode m)
 	case TRANS_OPTIONS_TO_MAIN:
 	{
 		slideCurrFrame = 0;
-		slideStart = leftCenter;
+		slideStart = topCenter;
 		slideEnd = trueCenter;
 		break;
 	}
@@ -640,7 +640,21 @@ void MainMenu::SetMode(Mode m)
 	{
 		slideCurrFrame = 0;
 		slideStart = trueCenter;
-		slideEnd = leftCenter;
+		slideEnd = topCenter;
+		break;
+	}
+	case TRANS_MAIN_TO_SAVE:
+	{
+		slideCurrFrame = 0;
+		slideStart = trueCenter;
+		slideEnd = rightCenter;
+		break;
+	}
+	case TRANS_SAVE_TO_MAIN:
+	{
+		slideCurrFrame = 0;
+		slideStart = rightCenter;
+		slideEnd = trueCenter;
 		break;
 	}
 	}
@@ -897,8 +911,15 @@ ControllerState &MainMenu::GetCurrInput( int index )
 void MainMenu::Slide()
 {
 	CubicBezier bez(0, 0, 1, 1);
-	float f = bez.GetValue((double)slideCurrFrame / numSlideFrames);
-	v.setCenter(slideStart * (1 - f) + slideEnd * f);
+	if (slideCurrFrame == 0)
+		v.setCenter(slideStart);
+	else if (slideCurrFrame == numSlideFrames)
+		v.setCenter(slideEnd);
+	else
+	{
+		float f = bez.GetValue((double)slideCurrFrame / numSlideFrames);
+		v.setCenter(slideStart * (1 - f) + slideEnd * f);
+	}
 
 	slideCurrFrame++;
 }
@@ -933,11 +954,12 @@ void MainMenu::Run()
 
 	gameClock.restart();
 
-	saveTexture->setView( v );
+	//saveTexture->setView( v );
 	//menuMode = MAPSELECT;//menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
 	//menuMode = OPTIONS;
 
-	SetMode(TRANS_MAIN_TO_OPTIONS);
+	//SetMode(TRANS_MAIN_TO_OPTIONS);
+	SetMode(TRANS_MAIN_TO_SAVE);
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -1452,9 +1474,29 @@ void MainMenu::Run()
 					break;
 				}
 			case TRANS_MAIN_TO_SAVE:
+			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = SAVEMENU;
+				}
+				else
+				{
+					Slide();
+				}
 				break;
+			}
 			case TRANS_SAVE_TO_MAIN:
+			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = MAINMENU;
+				}
+				else
+				{
+					Slide();
+				}
 				break;
+			}
 			case TRANS_SAVE_TO_WORLDMAP:
 				{
 				
@@ -1654,6 +1696,18 @@ void MainMenu::Run()
 			mapSelectionMenu->Draw( preScreenTexture );
 				break;
 			}
+		case TRANS_MAIN_TO_SAVE:
+		{
+			preScreenTexture->setView(v);
+			saveMenu->Draw(preScreenTexture);
+			break;
+		}
+		case TRANS_SAVE_TO_MAIN:
+		{
+			preScreenTexture->setView(v);
+			saveMenu->Draw(preScreenTexture);
+			break;
+		}
 		case TRANS_OPTIONS_TO_MAIN:
 		{
 			preScreenTexture->setView(v);
@@ -1668,7 +1722,8 @@ void MainMenu::Run()
 		}
 		case OPTIONS:
 		{
-			v.setCenter(-960, 540);
+			//Vector2f f = v.getCenter();
+			//v.setCenter(-960, 540);
 			preScreenTexture->setView(v);
 			optionsMenu->Draw(preScreenTexture);
 			break;
@@ -1700,18 +1755,19 @@ void MainMenu::Run()
 
 		//window->popGLStates();
 
-		if( menuMode == SAVEMENU || menuMode == TRANS_SAVE_TO_WORLDMAP )
-		{
-			saveTexture->display();
-			sf::Sprite saveSpr;
-			saveSpr.setTexture( saveTexture->getTexture() );
+		//if( menuMode == SAVEMENU || menuMode == TRANS_SAVE_TO_WORLDMAP )
+		//{
+		//	saveTexture->display();
+		//	sf::Sprite saveSpr;
+		//	saveSpr.setTexture( saveTexture->getTexture() );
+		//	//saveSpr.getOrigin( )
 
-			if( menuMode == TRANS_SAVE_TO_WORLDMAP )
-			{
-				saveSpr.setColor( Color( 255, 255, 255, transAlpha ) );
-			}
-			preScreenTexture->draw( saveSpr );
-		}
+		//	if( menuMode == TRANS_SAVE_TO_WORLDMAP )
+		//	{
+		//		saveSpr.setColor( Color( 255, 255, 255, transAlpha ) );
+		//	}
+		//	preScreenTexture->draw( saveSpr );
+		//}
 
 		//preScreenTexture->draw( ff, 4, sf::Quads,  &sh );
 #if defined( USE_MOVIE_TEST )
@@ -2216,7 +2272,7 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 {
 	int width = 500;
 	int height = 500;
-	Vector2f menuOffset(-1920, 0);
+	Vector2f menuOffset(0, -1080);
 
 	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
 			Vector2f(width, height));
@@ -2241,6 +2297,8 @@ void OptionsMenuScreen::Draw(RenderTarget *target)
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
+	menuOffset = Vector2f(1920, 0);
+
 	TilesetManager &tsMan = mainMenu->tilesetManager;
 
 	kinFaceFrame = 0;
@@ -2264,6 +2322,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	ts_selectSlot = tsMan.GetTileset("Menu/save_select_710x270.png", 710, 270);
 
 	background.setTexture(*ts_background->texture);
+	background.setPosition(menuOffset);
 	kinFace.setTexture(*ts_kinFace->texture);
 	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 	selectSlot.setTexture(*ts_selectSlot->texture);
@@ -2279,26 +2338,27 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	kinClouds.setTexture(*ts_kinClouds->texture);
 	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(0));
 	kinClouds.setOrigin(kinClouds.getLocalBounds().width, kinClouds.getLocalBounds().height);
-	kinClouds.setPosition(1920, 1080);
+	kinClouds.setPosition(Vector2f( 1920, 1080) + menuOffset);
 
 	kinWindow.setTexture(*ts_kinWindow->texture);
 	kinWindow.setOrigin(kinWindow.getLocalBounds().width, 0);
-	kinWindow.setPosition(1920, 0);
+	kinWindow.setPosition(Vector2f( 1920, 0 ) + menuOffset);
 
 	kinSky.setTexture(*ts_kinSky->texture);
 	kinSky.setOrigin(kinSky.getLocalBounds().width, 0);
-	kinSky.setPosition(1920, 0);
+	kinSky.setPosition(Vector2f( 1920, 0 ) + menuOffset );
 	//saveKinJump.setTexture( ts_saveKin
 
 	cloudFrame = 0;
 
 	ts_starBackground = tsMan.GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
 	starBackground.setTexture(*ts_starBackground->texture);
+	starBackground.setPosition(menuOffset);
 
 	ts_world = tsMan.GetTileset("WorldMap/map_z1_world.png", 1120, 1080);
 	world.setTexture(*ts_world->texture);
 	world.setOrigin(world.getLocalBounds().width / 2, world.getLocalBounds().height / 2);
-	world.setPosition(960, 540);
+	world.setPosition(Vector2f( 960, 540 ) + menuOffset);
 
 	Tileset *ts_asteroid0 = tsMan.GetTileset("Menu/w0_asteroid_01_960x1080.png", 960, 1080);
 	Tileset *ts_asteroid1 = tsMan.GetTileset("Menu/w0_asteroid_02_1920x1080.png", 1920, 1080);
@@ -2308,18 +2368,18 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	asteroid1.setTexture(*ts_asteroid1->texture);
 	asteroid2.setTexture(*ts_asteroid2->texture);
 
-	asteroid0.setPosition(0, 0);
-	asteroid1.setPosition(0, 0);
-	asteroid2.setPosition(0, 0);
+	asteroid0.setPosition(Vector2f(0, 0) + menuOffset);
+	asteroid1.setPosition(Vector2f(0, 0) + menuOffset);
+	asteroid2.setPosition(Vector2f( 0, 0 ) + menuOffset);
 
-	a0start = Vector2f(-1920, 0);
-	a0end = Vector2f(1920, 0);
+	a0start = Vector2f(-1920, 0) + menuOffset;
+	a0end = Vector2f(1920, 0) + menuOffset;
 
-	a1start = Vector2f(1920, 0);
-	a1end = Vector2f(-1920, 0);
+	a1start = Vector2f(1920, 0) + menuOffset;
+	a1end = Vector2f(-1920, 0) + menuOffset;
 
-	a2start = Vector2f(-1920, 0);
-	a2end = Vector2f(1920, 0);
+	a2start = Vector2f(-1920, 0) + menuOffset;
+	a2end = Vector2f(1920, 0) + menuOffset;
 
 	asteroidScrollFrames0 = 2000;
 	asteroidScrollFrames1 = 500;
@@ -2345,7 +2405,7 @@ void SaveMenuScreen::Update()
 
 	if (menuCurrInput.B && !menuPrevInput.B)
 	{
-		mainMenu->menuMode = MainMenu::MAINMENU;
+		mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
 		return;
 	}
 	else if (menuCurrInput.A && !menuPrevInput.A)
@@ -2437,6 +2497,7 @@ void SaveMenuScreen::Update()
 	Vector2f topLeftPos;
 	topLeftPos.x += ts_selectSlot->tileWidth * (selectedSaveIndex % 2);
 	topLeftPos.y += ts_selectSlot->tileHeight * (selectedSaveIndex / 2);
+	topLeftPos += menuOffset;
 
 	selectSlot.setPosition(topLeftPos);
 	kinFace.setPosition(topLeftPos);
@@ -2467,7 +2528,11 @@ void SaveMenuScreen::Update()
 
 void SaveMenuScreen::Draw(sf::RenderTarget *target)
 {
-	RenderTexture *saveTexture = mainMenu->saveTexture;
+	//RenderTexture *saveTexture = mainMenu->saveTexture;
+
+	//target->setView(mainMenu->v);
+
+	target->setView(mainMenu->v);
 
 	target->draw(starBackground);
 	
@@ -2476,21 +2541,29 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	target->draw(asteroid0);
 	target->draw(asteroid2);
 
-	target->setView(mainMenu->v);
+	
+	
+	target->draw(background);
+	target->draw(kinSky);
+	target->draw(kinClouds);
+	target->draw(kinWindow);
+	target->draw(kinJump);
+	target->draw(selectSlot);
+	target->draw(kinFace);
 
-	saveTexture->clear(Color::Transparent);
+	/*saveTexture->clear(Color::Transparent);
 	saveTexture->setView(mainMenu->v);
 	saveTexture->draw(background);
 	saveTexture->draw(kinSky);
 	saveTexture->draw(kinClouds);
-	saveTexture->draw(kinWindow);
+	saveTexture->draw(kinWindow);*/
 	//TODO
 	//if (menuMode == SAVEMENU ||
 	//	kinFaceFrame < saveJumpLength * saveJumpFactor)
-	saveTexture->draw(kinJump);
+	/*saveTexture->draw(kinJump);
 
 	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace);
+	saveTexture->draw(kinFace);*/
 }
 
 void SaveMenuScreen::Reset()
@@ -2503,7 +2576,7 @@ void SaveMenuScreen::Reset()
 	kinJump.setTexture(*ts_kinJump1->texture);
 	kinJump.setTextureRect(ts_kinJump1->GetSubRect(0));
 	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
-	kinJump.setPosition(1920, 0);
+	kinJump.setPosition(Vector2f( 1920, 0 ) + menuOffset);
 
 	for (int i = 0; i < 6; ++i)
 	{
