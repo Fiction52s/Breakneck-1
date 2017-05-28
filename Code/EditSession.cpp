@@ -2805,7 +2805,8 @@ void EditSession::WriteFile(string fileName)
 		(*it)->WriteFile( of );
 	}
 
-	CreatePreview();
+	CreatePreview(Vector2i( 1920 / 2, 1080 / 2 ));
+	//CreatePreview(Vector2i(960 * 1.25f, 540 * ));
 
 	//enemies here
 
@@ -13820,7 +13821,7 @@ void EditSession::CreateActor( ActorPtr actor )
 	doneActionStack.push_back( action );
 }
 
-void EditSession::CreatePreview()
+void EditSession::CreatePreview( Vector2i imageSize )
 {
 	if( inversePolygon != NULL )
 	{
@@ -13837,14 +13838,14 @@ void EditSession::CreatePreview()
 
 		Vector2f middle( left + width / 2, top + height / 2 );
 
-		int remX = (right - left) % 920;
-		int remY = (bot - top) % 540;
+		int remX = (right - left) % imageSize.x;
+		int remY = (bot - top) % imageSize.y;
 
-		double idealXYRatio = 920.0/540.0;
+		double idealXYRatio = (double)imageSize.x/imageSize.y;
 		double realXYRatio = (double)width/(double)height;
 
-		double facX = (right - left) / 920.0;
-		double facY = (bot - top) / 540.0;
+		double facX = (right - left) / (double)imageSize.x;
+		double facY = (bot - top) / (double)imageSize.y;
 
 		if( realXYRatio > idealXYRatio )
 		{
@@ -13853,9 +13854,9 @@ void EditSession::CreatePreview()
 
 			height = ceil(height * (realXYRatio / idealXYRatio));
 
-			if( height % 540 == 1 )
+			if( height % imageSize.y == 1 )
 				height--;
-			else if( height % 540 == 539 )
+			else if( height % imageSize.y == imageSize.y - 1 )
 				height++;
 		}
 		else if( realXYRatio < idealXYRatio )
@@ -13866,9 +13867,9 @@ void EditSession::CreatePreview()
 
 			width = ceil( width * (idealXYRatio / realXYRatio) );
 
-			if( width % 920 == 1 )
+			if( width % imageSize.x == 1 )
 				width--;
-			if( width % 920 == 919 )
+			if( width % imageSize.x == imageSize.x - 1 )
 				width++;
 		}
 		else
@@ -13916,7 +13917,7 @@ void EditSession::CreatePreview()
 		Image img = mapPreviewTex->getTexture().copyToImage();
 		
 		std::stringstream ssPrev;
-		ssPrev << currentPath.parent_path().relative_path().string() << "/" << currentPath.stem().string() << "_preview.png";
+		ssPrev << currentPath.parent_path().relative_path().string() << "/" << currentPath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
 		std::string previewFile = ssPrev.str();
 		img.saveToFile( previewFile );
 	}

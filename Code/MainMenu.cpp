@@ -221,7 +221,7 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 
 void MultiLoadingScreen::SetPreview()
 {
-	string previewFile = filePath.parent_path().relative_path().string() + string( "/" ) + filePath.stem().string() + string( "_preview.png" );
+	string previewFile = filePath.parent_path().relative_path().string() + string( "/" ) + filePath.stem().string() + string( "_preview_960x540.png" );
 	previewTex.loadFromFile( previewFile );
 	previewSprite.setTexture( previewTex );
 	previewSprite.setPosition( 480, 0 );

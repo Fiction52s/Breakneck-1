@@ -1310,8 +1310,9 @@ struct EditSession : GUIHandler
 
 	void SetInversePoly();
 
-	static void s_CreatePreview( EditSession *session );
-	void CreatePreview();
+	static void s_CreatePreview( EditSession *session, 
+		sf::Vector2i imageSize );
+	void CreatePreview( Vector2i imageSize );
 	sf::RenderTexture *mapPreviewTex;
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
