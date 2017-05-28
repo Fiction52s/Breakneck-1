@@ -27,6 +27,10 @@ sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
 sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 
+const int MapSelectionMenu::BOX_WIDTH = 480;
+const int MapSelectionMenu::BOX_HEIGHT = 50;
+const int MapSelectionMenu::BOX_SPACING = 0;
+
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
 
@@ -311,7 +315,6 @@ GameController &MainMenu::GetController( int index )
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight( 1080 )
 {
-
 	for( int i = 0; i < 4; ++i )
 	{
 		controllers[i] = new GameController( i );
@@ -335,22 +338,17 @@ MainMenu::MainMenu()
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 	v = View( Vector2f( 1920/2, 1080/2 ), Vector2f( 1920, 1080 ) );
 
-	selectCreateNew = false;
 
 	splashFadeFrame = 0;
 	splashFadeOutLength = 40;
 
-	files[0] = new SaveFile( "blue" );
-	files[1] = new SaveFile( "green" );
-	files[2] = new SaveFile( "yellow" );
-	files[3] = new SaveFile( "orange" );
-	files[4] = new SaveFile( "red" );
-	files[5] = new SaveFile( "magenta" );
+	
 
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( config->GetData().volume );
 
-	menuMode = SPLASH;
+	//menuMode = SPLASH;
+	//menuMode = MAPSELECT;
 
 	if( preScreenTexture == NULL )
 	{
@@ -417,13 +415,12 @@ MainMenu::MainMenu()
 	}
 
 	transWorldMapFrame = 0;
-	saveKinFaceFrame = 0;
-	saveKinFaceTurnLength = 15;
+	
 
 	worldMap = new WorldMap( this );
 	levelSelector = new LevelSelector( this );
 
-	selectedSaveIndex = 0;
+	
 
 	kinTitleSprite.setPosition( 512, 1080 );
 	
@@ -435,11 +432,7 @@ MainMenu::MainMenu()
 	bool fullWindow = true;
 
 	
-	cloudLoopLength = 8;
-	cloudLoopFactor = 5;
-
-	saveJumpFactor = 5;
-	saveJumpLength = 6;
+	
 	
 	/*if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
 	{
@@ -497,6 +490,12 @@ MainMenu::MainMenu()
 	Init();
 
 	multiLoadingScreen = new MultiLoadingScreen( this );
+
+	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 0));
+
+	optionsMenu = new OptionsMenuScreen(this);
+
+	saveMenu = new SaveMenuScreen(this);
 }
 
 MainMenu::~MainMenu()
@@ -524,9 +523,7 @@ void MainMenu::Init()
 
 	
 
-	ts_saveMenuBG = tilesetManager.GetTileset( "Menu/save_bg_1920x1080.png", 1920, 1080 );
-	ts_saveMenuKinFace = tilesetManager.GetTileset( "Menu/save_menu_kin_256x256.png", 256, 256 );
-	ts_saveMenuSelect = tilesetManager.GetTileset( "Menu/save_select_710x270.png", 710, 270 );
+	
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
 
@@ -541,11 +538,7 @@ void MainMenu::Init()
 	ts_breakneckTitle = tilesetManager.GetTileset( "Title/kin_title_1920x416.png", 1920, 416 );
 	ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
 
-	saveBG.setTexture( *ts_saveMenuBG->texture );
-	saveKinFace.setTexture( *ts_saveMenuKinFace->texture );
-	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( 0 ) );
-	saveSelect.setTexture( *ts_saveMenuSelect->texture );
-	saveSelect.setTextureRect( ts_saveMenuSelect->GetSubRect( 0 ) );
+	
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
 	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
 
@@ -553,64 +546,7 @@ void MainMenu::Init()
 	soundBuffers[S_UP] = soundManager.GetSound( "Audio/Sounds/menu_up.ogg" );
 	soundBuffers[S_SELECT] = soundManager.GetSound( "Audio/Sounds/menu_select.ogg" );
 
-	ts_saveKinJump1 = tilesetManager.GetTileset( "Menu/save_kin_jump1_500x1080.png", 500, 1080 );
-	ts_saveKinJump2 = tilesetManager.GetTileset( "Menu/save_kin_jump2_500x1080.png", 500, 1080 );
-	ts_saveKinClouds = tilesetManager.GetTileset( "Menu/save_kin_clouds_500x384.png", 500, 384 );
-	ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
-	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
-	ts_saveKinSky = tilesetManager.GetTileset( "Menu/save_menu_sky_01_500x1080.png", 500, 1080 );
 	
-	saveKinClouds.setTexture( *ts_saveKinClouds->texture );
-	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( 0 ) );
-	saveKinClouds.setOrigin( saveKinClouds.getLocalBounds().width, saveKinClouds.getLocalBounds().height );
-	saveKinClouds.setPosition( 1920, 1080);
-
-	saveKinWindow.setTexture( *ts_saveKinWindow->texture );
-	saveKinWindow.setOrigin( saveKinWindow.getLocalBounds().width, 0 );
-	saveKinWindow.setPosition( 1920, 0 );
-
-	saveKinSky.setTexture( *ts_saveKinSky->texture );
-	saveKinSky.setOrigin( saveKinSky.getLocalBounds().width, 0 );
-	saveKinSky.setPosition( 1920, 0 );
-	//saveKinJump.setTexture( ts_saveKin
-
-	cloudFrame = 0;
-
-	ts_saveStarBackground = tilesetManager.GetTileset( "WorldMap/map_z1_stars.png", 1920, 1080 );
-	saveStarBackground.setTexture( *ts_saveStarBackground->texture );
-
-	ts_saveWorld = tilesetManager.GetTileset( "WorldMap/map_z1_world.png", 1120, 1080 );
-	saveWorld.setTexture( *ts_saveWorld->texture );
-	saveWorld.setOrigin( saveWorld.getLocalBounds().width / 2, saveWorld.getLocalBounds().height / 2 );
-	saveWorld.setPosition( 960, 540 );
-
-	Tileset *ts_asteroid0 = tilesetManager.GetTileset( "Menu/w0_asteroid_01_960x1080.png", 960, 1080 );
-	Tileset *ts_asteroid1 = tilesetManager.GetTileset( "Menu/w0_asteroid_02_1920x1080.png", 1920, 1080 );
-	Tileset *ts_asteroid2 = tilesetManager.GetTileset( "Menu/w0_asteroid_03_1920x1080.png", 1920, 1080 );
-
-	asteroid0.setTexture( *ts_asteroid0->texture );
-	asteroid1.setTexture( *ts_asteroid1->texture );
-	asteroid2.setTexture( *ts_asteroid2->texture );
-
-	asteroid0.setPosition( 0, 0 );
-	asteroid1.setPosition( 0, 0 );
-	asteroid2.setPosition( 0, 0 );
-
-	a0start = Vector2f( -1920, 0 );
-	a0end = Vector2f( 1920, 0 );
-
-	a1start = Vector2f( 1920, 0 );
-	a1end = Vector2f( -1920, 0 );
-
-	a2start = Vector2f( -1920, 0 );
-	a2end = Vector2f( 1920, 0 );
-
-	asteroidScrollFrames0 = 2000;
-	asteroidScrollFrames1 = 500;
-	asteroidScrollFrames2 = 120;
-
-	asteroidFrameBack = asteroidScrollFrames0 / 2;
-	asteroidFrameFront = asteroidScrollFrames1 / 2;
 
 	cout << "init finished" << endl;
 
@@ -922,6 +858,8 @@ ControllerState &MainMenu::GetCurrInput( int index )
 }
 
 #include <sfeMovie/Movie.hpp>
+
+//#define USE_MOVIE_TEST
 void MainMenu::Run()
 {
 
@@ -933,31 +871,28 @@ void MainMenu::Run()
 	double currentTime = 0;
 	double accumulator = TIMESTEP + .1;
 
-	bool moveDown = false;
-	bool moveUp = false;
-	bool moveLeft = false;
-	bool moveRight = false;
+	
 
+#if defined( USE_MOVIE_TEST )
 	sfe::Movie m;
 	assert( m.openFromFile("Movie/cube.mp4") );
 	m.fit(sf::FloatRect(0, 0, 1920, 1080));
-	
+
 	
 	m.play();
-
+#endif
 	/*int moveDownFrames = 0;
 	int moveUpFrames = 0;
 	int moveLeftFrames = 0;
 	int moveRightFrames = 0;*/
-	int moveDelayCounter = 0;
-	int moveDelayFrames = 15;
-	int moveDelayFramesSmall = 6;
+	
 
 	gameClock.restart();
 
 	saveTexture->setView( v );
-	menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
-
+	//menuMode = MAPSELECT;//menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
+	menuMode = OPTIONS;
+#if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
 	assert( sh.loadFromFile("test.frag", sf::Shader::Fragment ) );
 	
@@ -967,6 +902,7 @@ void MainMenu::Run()
 		sf::Vertex(Vector2f(500, 500)),
 		sf::Vertex(Vector2f(0, 500))
 	};
+#endif
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -984,21 +920,22 @@ void MainMenu::Run()
 		window->clear();
 		
 		
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Srcreen And Depth Buffer
 
 		while ( accumulator >= TIMESTEP  )
         {
+#if defined( USE_MOVIE_TEST )
 			if (m.getStatus() == sfe::Status::Stopped)
 			{
 				m.setPlayingOffset(sf::Time::Zero);
 				m.play();
 			}
-			
+
 			m.update();
 			const sf::Texture &currImage = m.getCurrentImage();
 
 			sh.setUniform("texture", currImage);
-
+#endif
 			worldMapUpdate = false;
 
 			menuPrevInput = menuCurrInput;
@@ -1091,604 +1028,475 @@ void MainMenu::Run()
 					}
 					break;
 				}
-		case MAINMENU:
-			{
-				if( splashFadeFrame <= splashFadeOutLength )
+			case MAINMENU:
 				{
-					sf::Color fadeColor = fadeRect.getFillColor();
-					fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
-						fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
-					++splashFadeFrame;
-				}
+					if( splashFadeFrame <= splashFadeOutLength )
+					{
+						sf::Color fadeColor = fadeRect.getFillColor();
+						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
+							fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
+						++splashFadeFrame;
+					}
 
 
-				while( window->pollEvent( ev ) )
+					while( window->pollEvent( ev ) )
+					{
+						switch( ev.type )
 				{
-					switch( ev.type )
-			{
-			case sf::Event::KeyPressed:
-				{
-					/*if( ev.key.code == Keyboard::Num1 )
+				case sf::Event::KeyPressed:
 					{
-						cout << "starting level 1" << endl;
-						titleMusic.stop();
-						GameEditLoop2( "test1" );
-						window->setView( v );
-						titleMusic.play();
-					}
-					else if( ev.key.code == Keyboard::Num2 )
-					{
-						cout << "starting level 2" << endl;
-						titleMusic.stop();
-						GameEditLoop2( "test2" );
-						window->setView( v );
-						titleMusic.play();
-					}
-					else if( ev.key.code == Keyboard::Num3 )
-					{
-						cout << "starting level 3" << endl;
-						titleMusic.stop();
-
-						GameEditLoop2( "test3" );
-						window->setView( v );
-						titleMusic.play();
-					}*/
-					if( ev.key.code == Keyboard::Escape )
-					{
-						//quit = true;
-					}
-					else if( ev.key.code == Keyboard::M )
-					{
-						CustomMapsOption();
-						//WorldSelectMenu();
-					}
-					else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
-					{
-						//menuMode = WORLDMAP;
-						//worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
-						//worldMap->frame = 0;
-						//worldMap->UpdateMapList();
-
-					}
-					else if( ev.key.code == Keyboard::Up )
-					{
-						/*currentMenuSelect--;
-						if( currentMenuSelect < 0 )
-							currentMenuSelect = 4;*/
-					}
-					else if( ev.key.code == Keyboard::Down )
-					{
-						/*currentMenuSelect++;
-						if( currentMenuSelect > 4 )
-							currentMenuSelect = 0;*/
-					}
-					else
-					{
-						//titleMusic.stop();
-						//GameEditLoop2( "Maps/aba.brknk" );
-						//window->setView( v );
-						//titleMusic.play();
-					}
-					break;
-				}
-			case sf::Event::MouseButtonPressed:
-				{
-					if( ev.mouseButton.button == Mouse::Button::Left )
-					{
-				//		ls.LeftClick( true, sf::Mouse::getPosition( *window ) );
-					}
-					break;
-				}
-			case sf::Event::MouseButtonReleased:
-				{
-					if( ev.mouseButton.button == Mouse::Button::Left )
-					{
-				//		ls.LeftClick( false, sf::Mouse::getPosition( *window ) );
-					}
-					break;
-				}
-			case sf::Event::Resized:
-				{
-					windowWidth = window->getSize().x;
-					windowHeight = window->getSize().y;
-					cout << "window: " << windowWidth << ", " << windowHeight << endl;
-					break;
-				}
-				
-			}
-				}
-
-				if( menuCurrInput.B && !menuPrevInput.B )
-				{
-					quit = true;
-					break;
-				}
-
-				if( menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X || 
-					menuCurrInput.rightShoulder || menuCurrInput.leftShoulder )
-				{
-					switch( currentMenuSelect )
-					{
-					case M_NEW_GAME:
+						/*if( ev.key.code == Keyboard::Num1 )
 						{
-							menuMode = MULTIPREVIEW;
-							multiLoadingScreen->Reset( "Maps/W1/arena04.brknk" );
-
-
-							break;
-
-
-							menuMode = SAVEMENU;
-							selectedSaveIndex = 0;
-							saveKinFaceFrame = 0;
-							transWorldMapFrame = 0;
-							asteroidFrameBack = 0;
-							asteroidFrameFront = 0;
-							moveDelayCounter = 0;
-							selectCreateNew = true;
-
-							saveKinJump.setTexture( *ts_saveKinJump1->texture );
-							saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( 0 ) );
-							saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0 );
-							saveKinJump.setPosition( 1920, 0 );
-
-							for( int i = 0; i < 6; ++i )
-							{
-								files[i]->LoadFromFile();
-							}
-							break;
+							cout << "starting level 1" << endl;
+							titleMusic.stop();
+							GameEditLoop2( "test1" );
+							window->setView( v );
+							titleMusic.play();
 						}
-					case M_CONTINUE:
+						else if( ev.key.code == Keyboard::Num2 )
 						{
-							menuMode = SAVEMENU;
-							selectedSaveIndex = 0;
-							asteroidFrameBack = 0;
-							transWorldMapFrame = 0;
-							asteroidFrameFront = 0;
-							saveKinFaceFrame = 0;
-							moveDelayCounter = 0;
-							selectCreateNew = false;
-							for( int i = 0; i < 6; ++i )
-							{
-								files[i]->LoadFromFile();
-							}
-							break;
+							cout << "starting level 2" << endl;
+							titleMusic.stop();
+							GameEditLoop2( "test2" );
+							window->setView( v );
+							titleMusic.play();
 						}
-					case M_CUSTOM_MAPS:
-						break;
-					case M_LEVEL_EDITOR:
-						break;
-					case M_OPTIONS:
-						break;
-					case M_CREDITS:
-						break;
-					case M_EXIT:
-						break;
-					}
-				}
-
-				bool canMoveSame = (moveDelayCounter == 0);
-
-				
-				if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( !moveDown || canMoveSame ) )
-				{
-					currentMenuSelect++;
-					if( currentMenuSelect == M_Count )
-						currentMenuSelect = 0;
-					//moveDown = true;
-					moveDelayCounter = moveDelayFrames;
-				}
-				else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( !moveUp || canMoveSame ) )
-				{
-					currentMenuSelect--;
-					if( currentMenuSelect < 0 )
-						currentMenuSelect = M_Count - 1;
-					//moveUp = true;
-					moveDelayCounter = moveDelayFrames;
-				}
-				else
-				{
-				}
-				
-
-				if( moveDelayCounter > 0 )
-				{
-					moveDelayCounter--;
-				}
-				
-				if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
-					{
-						moveDelayCounter = 0;
-						moveDown = false;
-					}
-					else if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
-					{
-						moveDelayCounter = 0;
-						moveUp = false;
-					}
-				
-
-				if( kinTitleSpriteFrame == kinTotalFrames )
-				{
-					kinTitleSpriteFrame = 0;
-				}
-
-				int trueKinFrame = 0;
-				if( kinTitleSpriteFrame < 8 * 2 )
-				{
-					trueKinFrame = 0;
-				}
-				else if( kinTitleSpriteFrame < 16 * 2 )
-				{
-					trueKinFrame = 1;
-				}
-				else if( kinTitleSpriteFrame < 24 * 2 )
-				{
-					trueKinFrame = 2;
-				}
-				else if( kinTitleSpriteFrame < 48 * 2 )
-				{
-					trueKinFrame = 3;
-				}
-				else if( kinTitleSpriteFrame < 56 * 2 )
-				{
-					trueKinFrame = 4;
-				}
-				else if( kinTitleSpriteFrame < 60 * 2 )
-				{
-					trueKinFrame = 5;
-				}
-				else
-				{
-					trueKinFrame = 6;
-				}
-
-				//cout << "kinsprite: " << trueKinFrame << endl;
-				kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
-				kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
-
-				kinTitleSpriteFrame++;	
-				break;
-			}
-		case WORLDMAP:
-			{
-				while( window->pollEvent( ev ) )
-				{
-					switch( ev.type )
-					{
-						case sf::Event::KeyPressed:
+						else if( ev.key.code == Keyboard::Num3 )
 						{
-							if( ev.key.code == Keyboard::Escape )
-							{
-								//quit = true;
-							}
+							cout << "starting level 3" << endl;
+							titleMusic.stop();
+
+							GameEditLoop2( "test3" );
+							window->setView( v );
+							titleMusic.play();
+						}*/
+						if( ev.key.code == Keyboard::Escape )
+						{
+							//quit = true;
 						}
+						else if( ev.key.code == Keyboard::M )
+						{
+							CustomMapsOption();
+							//WorldSelectMenu();
+						}
+						else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
+						{
+							//menuMode = WORLDMAP;
+							//worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+							//worldMap->frame = 0;
+							//worldMap->UpdateMapList();
+
+						}
+						else if( ev.key.code == Keyboard::Up )
+						{
+							/*currentMenuSelect--;
+							if( currentMenuSelect < 0 )
+								currentMenuSelect = 4;*/
+						}
+						else if( ev.key.code == Keyboard::Down )
+						{
+							/*currentMenuSelect++;
+							if( currentMenuSelect > 4 )
+								currentMenuSelect = 0;*/
+						}
+						else
+						{
+							//titleMusic.stop();
+							//GameEditLoop2( "Maps/aba.brknk" );
+							//window->setView( v );
+							//titleMusic.play();
+						}
+						break;
 					}
-				}
-
-				//worldMap->prevInput = worldMap->currInput;
-
-				//worldMap->currInput = currInput;
-
-				if( menuCurrInput.B && !menuPrevInput.B )
-				{
-					menuMode = MAINMENU;
-					//quit = true;
-					break;
-				}
-
-
-
-				//if( controller.UpdateState() )
-				//{
-				//	worldMap->currInput = controller.GetState();
-				//	//cout << "tjhingff" << endl;
-				//	//cout << "thing" << endl;
-				//	//ControllerState &cs = worldMap->currInput;
-				//}
-				//else
-				//{
-				//	//cout << "tjhingff" << endl;
-				//	worldMap->currInput.A = Keyboard::isKeyPressed( Keyboard::A );
-				//	worldMap->currInput.B = Keyboard::isKeyPressed( Keyboard::S );
-
-				//	bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-				//	bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-				//	bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-				//	bool right = Keyboard::isKeyPressed( Keyboard::Right );
-
-				//	worldMap->currInput.leftStickPad = 0;
-
-				//	if( up && down )
-				//	{
-				//		if( worldMap->prevInput.LUp() )
-				//			worldMap->currInput.leftStickPad += 1;
-				//		else if( worldMap->prevInput.LDown() )
-				//			worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
-				//	}
-				//	else
-				//	{
-				//		worldMap->currInput.leftStickPad += 1 && up;
-				//		worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
-				//	}
-
-				//	if( left && right )
-				//	{
-				//		if( worldMap->prevInput.LLeft() )
-				//		{
-				//			worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
-				//		}
-				//		else if( worldMap->prevInput.LRight() )
-				//		{
-				//			worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
-				//		}
-				//	}
-				//	else
-				//	{
-				//		worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
-				//		worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
-				//	}
-				//	//worldMap->currInput.ld
-				//}
+				case sf::Event::MouseButtonPressed:
+					{
+						if( ev.mouseButton.button == Mouse::Button::Left )
+						{
+					//		ls.LeftClick( true, sf::Mouse::getPosition( *window ) );
+						}
+						break;
+					}
+				case sf::Event::MouseButtonReleased:
+					{
+						if( ev.mouseButton.button == Mouse::Button::Left )
+						{
+					//		ls.LeftClick( false, sf::Mouse::getPosition( *window ) );
+						}
+						break;
+					}
+				case sf::Event::Resized:
+					{
+						windowWidth = window->getSize().x;
+						windowHeight = window->getSize().y;
+						cout << "window: " << windowWidth << ", " << windowHeight << endl;
+						break;
+					}
 				
-
-				//cout << "worldmap" << endl;
-				if( worldMap->Update( menuPrevInput, menuCurrInput ) )
-				{
-					worldMapUpdate = true;
 				}
-				else
-				{
-
-					
-					//stringstream ss; 
-
-					//size_t lastindex = file.find_last_of("."); 
-					//string rawname = fullname.substr(0, lastindex); 
-					//ss << "Maps/" << file;
-					//cout << "-----------------------------" << endl;
-					//cout << "file: " << file << endl;
-					GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
-					gs->Load();
-					int result = gs->Run(  );
-					delete gs;
-
-					if( result == 0 || result == 1 )
-					{
-						v.setSize( 1920, 1080 );
-						v.setCenter( 1920/2, 1080/ 2);
-						window->setView( v );
-						worldMap->state = WorldMap::PLANET_AND_SPACE;
-						worldMap->frame = 0;
-						worldMap->UpdateMapList();
 					}
-					else if( result == 2 )
-					{
-						v.setSize( 1920, 1080 );
-						v.setCenter( 1920/2, 1080/ 2);
-						window->setView( v );
-						menuMode = MainMenu::MAINMENU;
-					}
-					else if( result == 3 )
+
+					if( menuCurrInput.B && !menuPrevInput.B )
 					{
 						quit = true;
 						break;
 					}
 
-					
-					continue;
-				}
-				
-				break;
-			}
-		case SAVEMENU:
-			{
-				
-				if( menuCurrInput.B && !menuPrevInput.B )
-				{
-					menuMode = MAINMENU;
-					break;
-				}
-				else if( menuCurrInput.A && !menuPrevInput.A )
-				{
-					/*GameSession * gs = new GameSession( controller, window, 
-						files[selectedSaveIndex], preScreenTexture, postProcessTexture,
-						postProcessTexture1, postProcessTexture2, minimapTexture, mapTexture );
-					gs->Run(  );
-
-					delete gs;*/
-
-					menuMode = Mode::TRANS_SAVE_TO_WORLDMAP;
-					transAlpha = 255;
-					worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
-					worldMap->frame = 0;
-					soundNodeList->ActivateSound( soundBuffers[S_SELECT] );
-					break;
-				}
-
-				bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-				bool canMoveSame = (moveDelayCounter == 0);
-				if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( 
-					(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
-				{
-					selectedSaveIndex+=2;
-					//currentMenuSelect++;
-					if( selectedSaveIndex > 5 )
-						selectedSaveIndex -= 6;
-					moveDown = true;
-					moveDelayCounter = moveDelayFrames;
-					soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
-				}
-				else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( 
-					(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
-				{
-					selectedSaveIndex-=2;
-					if( selectedSaveIndex < 0 )
-						selectedSaveIndex += 6;
-					moveUp = true;
-					moveDelayCounter = moveDelayFrames;
-					soundNodeList->ActivateSound( soundBuffers[S_UP] );
-				}
-
-				if( (menuCurrInput.LRight() || menuCurrInput.PRight()) && ( 
-					(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
-				{
-					selectedSaveIndex++;
-					//currentMenuSelect++;
-					if( selectedSaveIndex % 2 == 0 )
-						selectedSaveIndex-= 2;
-					moveRight = true;
-					moveDelayCounter = moveDelayFrames;
-				}
-				else if( ( menuCurrInput.LLeft() || menuCurrInput.PLeft() ) && ( 
-					(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
-				{
-					selectedSaveIndex--;
-					if( selectedSaveIndex % 2 == 1 )
-						selectedSaveIndex += 2;
-								else if( selectedSaveIndex < 0 )
-				{
-					selectedSaveIndex += 2;
-				}
-					moveLeft = true;
-
-					moveDelayCounter = moveDelayFrames;
-				}
-				
-				if( moveDelayCounter > 0 )
-				{
-					moveDelayCounter--;
-				}
-				
-
-				if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
-				{
-					moveDown = false;
-				}
-				if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
-				{
-					moveUp = false;
-				}
-
-				if( !(menuCurrInput.LRight() || menuCurrInput.PRight()) )
-				{
-					moveRight = false;
-				}
-				if( !(menuCurrInput.LLeft() || menuCurrInput.PLeft() ) )
-				{
-					moveLeft = false;
-				}
-
-				saveSelect.setTextureRect( ts_saveMenuSelect->GetSubRect( selectedSaveIndex ) );
-				saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( 0 ) );
-
-				Vector2f topLeftPos;
-				topLeftPos.x += ts_saveMenuSelect->tileWidth * ( selectedSaveIndex % 2 );
-				topLeftPos.y += ts_saveMenuSelect->tileHeight * ( selectedSaveIndex / 2 );
-
-				saveSelect.setPosition( topLeftPos );
-				saveKinFace.setPosition( topLeftPos );
-
-				UpdateClouds();
-				++asteroidFrameBack;
-				++asteroidFrameFront;
-
-				int r0 = asteroidFrameBack % asteroidScrollFrames0;
-				int r1 = asteroidFrameFront % asteroidScrollFrames1;
-				//int r2 = asteroidFrame % asteroidScrollFrames2;
-
-				Vector2f offset0( 0, 0 );
-				Vector2f offset1( 0, 0 );
-				CubicBezier bez( 0, 0, 1, 1 );
-				double v = bez.GetValue( r0 / (double)asteroidScrollFrames0 );
-				double v1 = bez.GetValue( r1 / (double)asteroidScrollFrames1 );
-				offset0.x = 1920 * 3 * v;
-				offset1.x = -1920 * v1;
-
-				//cout << "asteroidframe: " << asteroidFrame << ", offset0: " << offset0.x << ", offset1: " << offset1.x << endl;
-				
-				
-				asteroid0.setPosition( a0start * (float)(1.0-v1) + a0end * (float)v1 );
-				asteroid1.setPosition( a1start * (float)(1.0-v) + a1end * (float)v );
-				asteroid2.setPosition( a2start * (float)(1.0-v1) + a2end * (float)v1 );
-				//parBack->Update( offset0 );
-				//parFront->Update( offset1 );
-
-				//backPar->Update( 
-
-				break;
-			}
-		case TRANS_MAIN_TO_SAVE:
-			break;
-		case TRANS_SAVE_TO_MAIN:
-			break;
-		case TRANS_SAVE_TO_WORLDMAP:
-			{
-				
-				//saveTexture->clear();
-				if( saveKinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
-				{
-					menuMode = WORLDMAP;
-					break;
-					//saveKinFaceFrame = 0;
-				}
-
-				if( saveKinFaceFrame < saveKinFaceTurnLength * 3 )
-				{
-					saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceFrame / 3 ) );
-				}
-				else
-				{
-					saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
-				}
-				
-				if( saveKinFaceFrame < saveJumpLength * saveJumpFactor )
-				{
-					if( saveKinFaceFrame == 0 )
+					if( menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X || 
+						menuCurrInput.rightShoulder || menuCurrInput.leftShoulder )
 					{
-						saveKinJump.setTexture( *ts_saveKinJump1->texture );
-					}
-					else if( saveKinFaceFrame == 3 * saveJumpFactor )
-					{
-						saveKinJump.setTexture( *ts_saveKinJump2->texture );
+						switch( currentMenuSelect )
+						{
+						case M_NEW_GAME:
+							{
+								menuMode = MULTIPREVIEW;
+								multiLoadingScreen->Reset( "Maps/W1/arena04.brknk" );
+
+
+								break;
+
+
+								menuMode = SAVEMENU;
+								saveMenu->Reset();
+								
+								break;
+							}
+						case M_CONTINUE:
+							{
+								menuMode = SAVEMENU;
+								saveMenu->Reset();
+								break;
+							}
+						case M_CUSTOM_MAPS:
+							break;
+						case M_LEVEL_EDITOR:
+							break;
+						case M_OPTIONS:
+							break;
+						case M_CREDITS:
+							break;
+						case M_EXIT:
+							break;
+						}
 					}
 
-					int f = saveKinFaceFrame / saveJumpFactor;
-					if( saveKinFaceFrame < 3 * saveJumpFactor )
+					//bool canMoveSame = (moveDelayCounter == 0);
+
+				
+					//if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( !moveDown || canMoveSame ) )
+					//{
+					//	currentMenuSelect++;
+					//	if( currentMenuSelect == M_Count )
+					//		currentMenuSelect = 0;
+					//	//moveDown = true;
+					//	moveDelayCounter = moveDelayFrames;
+					//}
+					//else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( !moveUp || canMoveSame ) )
+					//{
+					//	currentMenuSelect--;
+					//	if( currentMenuSelect < 0 )
+					//		currentMenuSelect = M_Count - 1;
+					//	//moveUp = true;
+					//	moveDelayCounter = moveDelayFrames;
+					//}
+					//else
+					//{
+					//}
+				
+
+					/*if( moveDelayCounter > 0 )
 					{
-						saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
+						moveDelayCounter--;
+					}*/
+				
+					/*if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
+						{
+							moveDelayCounter = 0;
+							moveDown = false;
+						}
+						else if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
+						{
+							moveDelayCounter = 0;
+							moveUp = false;
+						}*/
+				
+
+					if( kinTitleSpriteFrame == kinTotalFrames )
+					{
+						kinTitleSpriteFrame = 0;
+					}
+
+					int trueKinFrame = 0;
+					if( kinTitleSpriteFrame < 8 * 2 )
+					{
+						trueKinFrame = 0;
+					}
+					else if( kinTitleSpriteFrame < 16 * 2 )
+					{
+						trueKinFrame = 1;
+					}
+					else if( kinTitleSpriteFrame < 24 * 2 )
+					{
+						trueKinFrame = 2;
+					}
+					else if( kinTitleSpriteFrame < 48 * 2 )
+					{
+						trueKinFrame = 3;
+					}
+					else if( kinTitleSpriteFrame < 56 * 2 )
+					{
+						trueKinFrame = 4;
+					}
+					else if( kinTitleSpriteFrame < 60 * 2 )
+					{
+						trueKinFrame = 5;
 					}
 					else
 					{
-						saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
+						trueKinFrame = 6;
 					}
 
-					saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
+					//cout << "kinsprite: " << trueKinFrame << endl;
+					kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
+					kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
+
+					kinTitleSpriteFrame++;	
+					break;
 				}
-				
-				transAlpha = (1.f - transWorldMapFrame / 40.f) * 255;
-
-				saveKinFaceFrame++;
-
-				if( saveKinFaceFrame >= saveKinFaceTurnLength * 3 )
+			case WORLDMAP:
 				{
-					transWorldMapFrame++;
-				}
+					while( window->pollEvent( ev ) )
+					{
+						switch( ev.type )
+						{
+							case sf::Event::KeyPressed:
+							{
+								if( ev.key.code == Keyboard::Escape )
+								{
+									//quit = true;
+								}
+							}
+						}
+					}
+
+					//worldMap->prevInput = worldMap->currInput;
+
+					//worldMap->currInput = currInput;
+
+					if( menuCurrInput.B && !menuPrevInput.B )
+					{
+						menuMode = MAINMENU;
+						//quit = true;
+						break;
+					}
+
+
+
+					//if( controller.UpdateState() )
+					//{
+					//	worldMap->currInput = controller.GetState();
+					//	//cout << "tjhingff" << endl;
+					//	//cout << "thing" << endl;
+					//	//ControllerState &cs = worldMap->currInput;
+					//}
+					//else
+					//{
+					//	//cout << "tjhingff" << endl;
+					//	worldMap->currInput.A = Keyboard::isKeyPressed( Keyboard::A );
+					//	worldMap->currInput.B = Keyboard::isKeyPressed( Keyboard::S );
+
+					//	bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
+					//	bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
+					//	bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
+					//	bool right = Keyboard::isKeyPressed( Keyboard::Right );
+
+					//	worldMap->currInput.leftStickPad = 0;
+
+					//	if( up && down )
+					//	{
+					//		if( worldMap->prevInput.LUp() )
+					//			worldMap->currInput.leftStickPad += 1;
+					//		else if( worldMap->prevInput.LDown() )
+					//			worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
+					//	}
+					//	else
+					//	{
+					//		worldMap->currInput.leftStickPad += 1 && up;
+					//		worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
+					//	}
+
+					//	if( left && right )
+					//	{
+					//		if( worldMap->prevInput.LLeft() )
+					//		{
+					//			worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
+					//		}
+					//		else if( worldMap->prevInput.LRight() )
+					//		{
+					//			worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
+					//		}
+					//	}
+					//	else
+					//	{
+					//		worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
+					//		worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
+					//	}
+					//	//worldMap->currInput.ld
+					//}
 				
 
-				UpdateClouds();
+					//cout << "worldmap" << endl;
+					if( worldMap->Update( menuPrevInput, menuCurrInput ) )
+					{
+						worldMapUpdate = true;
+					}
+					else
+					{
+
+					
+						//stringstream ss; 
+
+						//size_t lastindex = file.find_last_of("."); 
+						//string rawname = fullname.substr(0, lastindex); 
+						//ss << "Maps/" << file;
+						//cout << "-----------------------------" << endl;
+						//cout << "file: " << file << endl;
+						GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
+						gs->Load();
+						int result = gs->Run(  );
+						delete gs;
+
+						if( result == 0 || result == 1 )
+						{
+							v.setSize( 1920, 1080 );
+							v.setCenter( 1920/2, 1080/ 2);
+							window->setView( v );
+							worldMap->state = WorldMap::PLANET_AND_SPACE;
+							worldMap->frame = 0;
+							worldMap->UpdateMapList();
+						}
+						else if( result == 2 )
+						{
+							v.setSize( 1920, 1080 );
+							v.setCenter( 1920/2, 1080/ 2);
+							window->setView( v );
+							menuMode = MainMenu::MAINMENU;
+						}
+						else if( result == 3 )
+						{
+							quit = true;
+							break;
+						}
+
+					
+						continue;
+					}
+				
+					break;
+				}
+			case SAVEMENU:
+				{
+				
+				saveMenu->Update();
+					//parBack->Update( offset0 );
+					//parFront->Update( offset1 );
+
+					//backPar->Update( 
+
+					break;
+				}
+			case TRANS_MAIN_TO_SAVE:
 				break;
-			}
-		case MULTIPREVIEW:
+			case TRANS_SAVE_TO_MAIN:
+				break;
+			case TRANS_SAVE_TO_WORLDMAP:
+				{
+				
+					//saveTexture->clear();
+					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
+					//{
+					//	menuMode = WORLDMAP;
+					//	break;
+					//	//kinFaceFrame = 0;
+					//}
+
+					//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
+					//{
+					//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
+					//}
+					//else
+					//{
+					//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
+					//}
+				
+					//if( kinFaceFrame < saveJumpLength * saveJumpFactor )
+					//{
+					//	if( kinFaceFrame == 0 )
+					//	{
+					//		saveKinJump.setTexture( *ts_saveKinJump1->texture );
+					//	}
+					//	else if( kinFaceFrame == 3 * saveJumpFactor )
+					//	{
+					//		saveKinJump.setTexture( *ts_saveKinJump2->texture );
+					//	}
+
+					//	int f = kinFaceFrame / saveJumpFactor;
+					//	if( kinFaceFrame < 3 * saveJumpFactor )
+					//	{
+					//		saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
+					//	}
+					//	else
+					//	{
+					//		saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
+					//	}
+
+					//	saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
+					//}
+				
+					//transAlpha = (1.f - transWorldMapFrame / 40.f) * 255;
+
+					//kinFaceFrame++;
+
+					//if( kinFaceFrame >= saveKinFaceTurnLength * 3 )
+					//{
+					//	transWorldMapFrame++;
+					//}
+				
+
+					//UpdateClouds();
+					break;
+				}
+			case MULTIPREVIEW:
+				{
+					multiLoadingScreen->Update();
+					break;
+				}
+			case TRANS_MAIN_TO_MULTIPREVIEW:
+				{
+					break;
+				}
+			case TRANS_MULTIPREVIEW_TO_MAIN:
+				{
+					break;
+				}
+			case TRANS_MAIN_TO_MAPSELECT:
+				{
+					break;
+				}
+			case MAPSELECT:
+				{
+				mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
+					break;
+				}
+			case TRANS_MAIN_TO_OPTIONS:
 			{
-				multiLoadingScreen->Update();
 				break;
 			}
-		case TRANS_MAIN_TO_MULTIPREVIEW:
+			case OPTIONS:
 			{
+				optionsMenu->Update();
 				break;
 			}
-		case TRANS_MULTIPREVIEW_TO_MAIN:
+			case TRANS_OPTIONS_TO_MAIN:
 			{
 				break;
 			}
@@ -1767,51 +1575,7 @@ void MainMenu::Run()
 			{
 			///	preScreenTexture->draw( worldMap->
 				
-				View test;
-				if( false )
-				//if( menuMode == TRANS_SAVE_TO_WORLDMAP )
-				{
-				test.setCenter( v.getCenter() );
-				CubicBezier testBez( 0, 0, 1, 1 );
-				float val = testBez.GetValue( transWorldMapFrame / 40.0 );
-				test.setSize( Vector2f( 1920.f, 1080.f ) * (1.f - val)
-					+ Vector2f( 960, 540 ) * val );
-				
-				preScreenTexture->setView( test );
-				}
-				else
-				{
-					preScreenTexture->setView( v );
-				}
-				//preScreenTexture->setView( v );					
-				preScreenTexture->draw( saveStarBackground );
-				//parBack->Draw( preScreenTexture );
-				preScreenTexture->draw( asteroid1 );
-				preScreenTexture->draw( saveWorld );
-				preScreenTexture->draw( asteroid0 );
-				preScreenTexture->draw( asteroid2 );
-				
-				if( false )
-				//if( menuMode == TRANS_SAVE_TO_WORLDMAP )
-				{
-					preScreenTexture->setView( v );
-				}
-				//parFront->Draw( preScreenTexture );
-
-				saveTexture->clear( Color::Transparent );
-				saveTexture->setView( v );
-				saveTexture->draw( saveBG );
-				saveTexture->draw( saveKinSky );
-				saveTexture->draw( saveKinClouds );
-				saveTexture->draw( saveKinWindow );
-				if( menuMode == SAVEMENU ||
-					saveKinFaceFrame < saveJumpLength * saveJumpFactor )
-				{
-					saveTexture->draw( saveKinJump );
-				}
-				
-				saveTexture->draw( saveSelect );
-				saveTexture->draw( saveKinFace );
+			saveMenu->Draw(preScreenTexture);
 
 				
 				
@@ -1822,6 +1586,28 @@ void MainMenu::Run()
 				multiLoadingScreen->Draw( preScreenTexture );
 				break;
 			}
+		case MAPSELECT:
+			{
+			mapSelectionMenu->Draw( preScreenTexture );
+				break;
+			}
+		case TRANS_OPTIONS_TO_MAIN:
+		{
+			
+			break;
+		}
+		case TRANS_MAIN_TO_OPTIONS:
+		{
+			break;
+		}
+		case OPTIONS:
+		{
+			v.setCenter(-960, 540);
+			preScreenTexture->setView(v);
+			optionsMenu->Draw(preScreenTexture);
+			break;
+		}
+
 		}
 		//window->pushGLStates();
 		
@@ -1862,7 +1648,9 @@ void MainMenu::Run()
 		}
 
 		//preScreenTexture->draw( ff, 4, sf::Quads,  &sh );
+#if defined( USE_MOVIE_TEST )
 		preScreenTexture->draw(m, &sh);
+#endif
 
 		preScreenTexture->display();
 		sf::Sprite pspr;
@@ -1873,20 +1661,7 @@ void MainMenu::Run()
 	}
 }
 
-void MainMenu::UpdateClouds()
-{
-	if( cloudFrame == cloudLoopLength * cloudLoopFactor )
-	{
-		cloudFrame = 0;
-	}
 
-	int f = cloudFrame / cloudLoopFactor;
-
-	//cout << "cloud frame: " << f << endl;
-	saveKinClouds.setTextureRect( ts_saveKinClouds->GetSubRect( f ) );
-
-	cloudFrame++;
-}
 
 void MainMenu::ResizeWindow( int p_windowWidth, 
 		int p_windowHeight, int p_style )
@@ -1978,4 +1753,704 @@ void CustomMapsHandler::GridSelectorCallback( GridSelector *gs, const std::strin
 
 void CustomMapsHandler::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
+}
+
+
+
+MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
+	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ), currIndex( 0 ),
+	oldCurrIndex( 0 )
+{
+	topMid = p_pos + Vector2f( BOX_WIDTH / 2, 0 );
+
+	SetupBoxes();
+
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		itemName[i].setFont(font);
+		itemName[i].setCharacterSize(40);
+		itemName[i].setFillColor(Color::White);
+	}
+
+	waitFrames[0] = 10;
+	waitFrames[1] = 5;
+	waitFrames[2] = 2;
+
+	waitModeThresh[0] = 2;
+	waitModeThresh[1] = 2;
+
+	currWaitLevel = 0;
+	flipCounterUp = 0;
+	flipCounterDown = 0;
+	framesWaiting = 0;
+
+	LoadItems();
+
+	UpdateItemText();
+}
+
+void MapSelectionMenu::SetupBoxes()
+{
+	sf::Vector2f currTopMid;
+	int extraHeight = 0;
+
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		currTopMid = topMid + Vector2f(0, extraHeight);
+
+		boxes[i * 4 + 0].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y);
+		boxes[i * 4 + 1].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y);
+		boxes[i * 4 + 2].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
+		boxes[i * 4 + 3].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
+
+		boxes[i * 4 + 0].color = Color::Red;
+		boxes[i * 4 + 1].color = Color::Red;
+		boxes[i * 4 + 2].color = Color::Red;
+		boxes[i * 4 + 3].color = Color::Red;
+
+		extraHeight += BOX_HEIGHT + BOX_SPACING;
+	}
+}
+
+#include <boost/filesystem.hpp>
+void MapSelectionMenu::LoadItems()
+{
+	//path p(current_path() / "/Maps/");
+
+	//vector<path> v;
+	//try
+	//{
+	//	if (exists(p))    // does p actually exist?
+	//	{
+	//		if (is_regular_file(p))        // is p a regular file?   
+	//		{
+	//			if (p.extension().string() == ".brknk")
+	//			{
+	//				//string name = p.filename().string();
+	//				parentNode->files.push_back(p);//name.substr( 0, name.size() - 6 ) );
+	//				numTotalEntries++;
+	//			}
+	//		}
+	//		else if (is_directory(p))      // is p a directory?
+	//		{
+	//			//cout << p << " is a directory containing:\n";
+
+	//			TreeNode *newDir = new TreeNode;
+	//			newDir->parent = parentNode;
+	//			newDir->next = NULL;
+	//			newDir->name = p.filename().string();
+	//			newDir->filePath = p;
+
+	//			copy(directory_iterator(p), directory_iterator(), back_inserter(v));
+
+	//			sort(v.begin(), v.end());             // sort, since directory iteration
+	//												  // is not ordered on some file systems
+
+	//			if (parentNode == NULL)
+	//			{
+	//				entries = newDir;
+	//			}
+	//			else
+	//			{
+	//				parentNode->dirs.push_back(newDir);
+	//			}
+	//			numTotalEntries++;
+
+
+	//			for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
+	//			{
+	//				UpdateMapList(newDir, relativePath + "/" + (*it).filename().string());
+	//				cout << "   " << *it << '\n';
+	//			}
+	//		}
+	//		else
+	//			cout << p << " exists, but is neither a regular file nor a directory\n";
+	//	}
+	//	else
+	//		cout << p << " does not exist\n";
+	//}
+	//catch (const filesystem_error& ex)
+	//{
+	//	cout << ex.what() << '\n';
+	//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*MapCollection *mc = new MapCollection;
+	if (!mc->Load("Maps/testcollection.col"))
+	{
+		assert(0);
+	}
+
+	MapSelectionItem( "Maps/testcollection.col", )
+
+	items.push_back(mc);*/
+	/*items.push_back(new MapSelectionItem( "one", MapSelectionItem::F_CONTAINER ) );
+	items.push_back(new MapSelectionItem("two", MapSelectionItem::F_MAP));
+	items.push_back(new MapSelectionItem("three", MapSelectionItem::F_MAP));
+	items.push_back(new MapSelectionItem("four", MapSelectionItem::F_MAP));
+	items.push_back(new MapSelectionItem("five", MapSelectionItem::F_MAP));*/
+
+	currItemIt = items.begin();
+}
+
+void MapSelectionMenu::Update(ControllerState &currInput,
+	ControllerState &prevInput)
+{
+	bool up = currInput.LUp();
+	bool down = currInput.LDown();
+
+	int oldIndex = currIndex;
+	//bool consumed = controls[focusedIndex]->Update( curr, prev );
+
+	if (down)
+	{
+		if (flipCounterDown == 0
+			|| (flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel])
+			)
+		{
+			if (flipCounterDown == 0)
+			{
+				currWaitLevel = 0;
+			}
+
+			++flipCounterDown;
+
+			if (flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+			{
+				currWaitLevel++;
+			}
+
+			flipCounterUp = 0;
+			framesWaiting = 0;
+
+			if (currIndex < items.size() - 1)
+			{
+				currIndex++;
+				++currItemIt;
+
+				if (currIndex - topIndex == NUM_BOXES)
+				{
+					topIndex = currIndex - (NUM_BOXES - 1);
+				}
+			}
+			else
+			{
+				currIndex = 0;
+				topIndex = 0;
+
+				assert(items.size() > 0);
+				currItemIt = items.begin();
+			}
+		}
+		else
+		{
+			++framesWaiting;
+		}
+
+	}
+	else if (up)
+	{
+		if (flipCounterUp == 0
+			|| (flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel])
+			)
+		{
+			if (flipCounterUp == 0)
+			{
+				currWaitLevel = 0;
+			}
+
+			++flipCounterUp;
+
+			if (flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+			{
+				currWaitLevel++;
+			}
+
+			flipCounterDown = 0;
+			framesWaiting = 0;
+			if (currIndex > 0)
+			{
+				currIndex--;
+				currItemIt--;
+
+				if (currIndex < topIndex)
+				{
+					topIndex = currIndex;
+				}
+			}
+			else
+			{
+				assert(items.size() > 0);
+				currItemIt = items.end();
+				--currItemIt;
+
+				currIndex = items.size() - 1;
+				topIndex = items.size() - NUM_BOXES;
+			}
+		}
+		else
+		{
+			++framesWaiting;
+		}
+
+	}
+	else
+	{
+		flipCounterUp = 0;
+		flipCounterDown = 0;
+		currWaitLevel = 0;
+		framesWaiting = 0;
+	}
+
+	if (currIndex != oldIndex)
+	{
+		UpdateItemText();
+		//cout << "currIndex: " << currIndex << ", topIndex: " << topIndex << endl;
+		//controls[oldIndex]->Unfocus();
+		//controls[focusedIndex]->Focus();
+	}
+	UpdateBoxesDebug();
+}
+
+void MapSelectionMenu::MoveUp()
+{
+	topIndex++;
+	if (topIndex == items.size())
+	{
+		topIndex = 0;
+	}
+}
+
+void MapSelectionMenu::MoveDown()
+{
+	topIndex--;
+	if (topIndex == -1)
+	{
+		topIndex = items.size() - 1;
+	}
+}
+
+void MapSelectionMenu::UpdateItemText()
+{
+	if (items.size() == 0)
+	{
+		return;
+	}
+
+
+	list<MapSelectionItem*>::iterator lit = items.begin();
+	if (topIndex > items.size())
+	{
+		topIndex = items.size() - 1;
+	}
+
+	for (int i = 0; i < topIndex; ++i)
+	{
+		++lit;
+	}
+
+	int trueI;
+	int i = 0;
+	int numProfiles = items.size();
+	for (; i < NUM_BOXES; ++i)
+	{
+		trueI = (topIndex + i) % NUM_BOXES;
+		if (i == numProfiles)
+		{
+			for (; i < NUM_BOXES; ++i)
+			{
+				itemName[i].setString("");
+			}
+			break;
+		}
+
+		if (lit == items.end())
+			lit = items.begin();
+		string printStr = (*lit)->path.filename().stem().string().c_str();
+		itemName[i].setString(printStr);
+		itemName[i].setOrigin(itemName[i].getLocalBounds().width / 2, 0);
+		itemName[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+
+		++lit;
+	}
+}
+
+void MapSelectionMenu::UpdateBoxesDebug()
+{
+	Color c;
+	int trueI = (currIndex - topIndex);// % NUM_BOXES;
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		if (i == trueI)
+		{
+			c = Color::Blue;
+		}
+		else
+		{
+			c = Color::Red;
+		}
+		boxes[i * 4 + 0].color = c;
+		boxes[i * 4 + 1].color = c;
+		boxes[i * 4 + 2].color = c;
+		boxes[i * 4 + 3].color = c;
+	}
+}
+
+void MapSelectionMenu::Draw(sf::RenderTarget *target)
+{
+	target->draw(boxes, NUM_BOXES * 4, sf::Quads);
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		target->draw(itemName[i]);
+	}
+}
+
+#include <fstream>
+MapCollection::MapCollection()
+{
+	tags = 0;
+}
+
+bool MapCollection::Load( boost::filesystem::path path )
+{
+	ifstream is;
+	is.open(path.string());
+	if (is.is_open())
+	{
+		string map;
+		while (cin >> map)
+		{
+			map += string(".brknk");
+			maps.push_back(new MapSelectionItem(map, MapSelectionItem::FileType::F_MAP));
+		}
+
+
+		return true;
+	}
+	else
+	{
+		assert(0);
+		return false;
+	}
+}
+
+OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
+	:mainMenu(p_mainMenu)
+{
+	int width = 500;
+	int height = 500;
+	Vector2f menuOffset(-1920, 0);
+
+	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
+			Vector2f(width, height));
+	optionsWindow->SetTopLeftVec(Vector2f(1920/2 - width / 2, 1080/2 - height / 2) + menuOffset);
+}
+
+void OptionsMenuScreen::Update()
+{
+	optionsWindow->Update(mainMenu->menuCurrInput, mainMenu->menuPrevInput);
+}
+
+void OptionsMenuScreen::Draw(RenderTarget *target)
+{
+	optionsWindow->Draw(target);
+}
+
+SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
+	:mainMenu( p_mainMenu )
+{
+	TilesetManager &tsMan = mainMenu->tilesetManager;
+
+	kinFaceFrame = 0;
+	kinFaceTurnLength = 15;
+	selectedSaveIndex = 0;
+	cloudLoopLength = 8;
+	cloudLoopFactor = 5;
+
+	saveJumpFactor = 5;
+	saveJumpLength = 6;
+
+	files[0] = new SaveFile("blue");
+	files[1] = new SaveFile("green");
+	files[2] = new SaveFile("yellow");
+	files[3] = new SaveFile("orange");
+	files[4] = new SaveFile("red");
+	files[5] = new SaveFile("magenta");
+
+	ts_background = tsMan.GetTileset("Menu/save_bg_1920x1080.png", 1920, 1080);
+	ts_kinFace = tsMan.GetTileset("Menu/save_menu_kin_256x256.png", 256, 256);
+	ts_selectSlot = tsMan.GetTileset("Menu/save_select_710x270.png", 710, 270);
+
+	background.setTexture(*ts_background->texture);
+	kinFace.setTexture(*ts_kinFace->texture);
+	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+	selectSlot.setTexture(*ts_selectSlot->texture);
+	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(0));
+
+	ts_kinJump1 = tsMan.GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
+	ts_kinJump2 = tsMan.GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
+	ts_kinClouds = tsMan.GetTileset("Menu/save_kin_clouds_500x384.png", 500, 384);
+	ts_kinWindow = tsMan.GetTileset("Menu/save_kin_window_500x1080.png", 500, 1080);
+	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
+	ts_kinSky = tsMan.GetTileset("Menu/save_menu_sky_01_500x1080.png", 500, 1080);
+
+	kinClouds.setTexture(*ts_kinClouds->texture);
+	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(0));
+	kinClouds.setOrigin(kinClouds.getLocalBounds().width, kinClouds.getLocalBounds().height);
+	kinClouds.setPosition(1920, 1080);
+
+	kinWindow.setTexture(*ts_kinWindow->texture);
+	kinWindow.setOrigin(kinWindow.getLocalBounds().width, 0);
+	kinWindow.setPosition(1920, 0);
+
+	kinSky.setTexture(*ts_kinSky->texture);
+	kinSky.setOrigin(kinSky.getLocalBounds().width, 0);
+	kinSky.setPosition(1920, 0);
+	//saveKinJump.setTexture( ts_saveKin
+
+	cloudFrame = 0;
+
+	ts_starBackground = tsMan.GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
+	starBackground.setTexture(*ts_starBackground->texture);
+
+	ts_world = tsMan.GetTileset("WorldMap/map_z1_world.png", 1120, 1080);
+	world.setTexture(*ts_world->texture);
+	world.setOrigin(world.getLocalBounds().width / 2, world.getLocalBounds().height / 2);
+	world.setPosition(960, 540);
+
+	Tileset *ts_asteroid0 = tsMan.GetTileset("Menu/w0_asteroid_01_960x1080.png", 960, 1080);
+	Tileset *ts_asteroid1 = tsMan.GetTileset("Menu/w0_asteroid_02_1920x1080.png", 1920, 1080);
+	Tileset *ts_asteroid2 = tsMan.GetTileset("Menu/w0_asteroid_03_1920x1080.png", 1920, 1080);
+
+	asteroid0.setTexture(*ts_asteroid0->texture);
+	asteroid1.setTexture(*ts_asteroid1->texture);
+	asteroid2.setTexture(*ts_asteroid2->texture);
+
+	asteroid0.setPosition(0, 0);
+	asteroid1.setPosition(0, 0);
+	asteroid2.setPosition(0, 0);
+
+	a0start = Vector2f(-1920, 0);
+	a0end = Vector2f(1920, 0);
+
+	a1start = Vector2f(1920, 0);
+	a1end = Vector2f(-1920, 0);
+
+	a2start = Vector2f(-1920, 0);
+	a2end = Vector2f(1920, 0);
+
+	asteroidScrollFrames0 = 2000;
+	asteroidScrollFrames1 = 500;
+	asteroidScrollFrames2 = 120;
+
+	asteroidFrameBack = asteroidScrollFrames0 / 2;
+	asteroidFrameFront = asteroidScrollFrames1 / 2;
+}
+
+void SaveMenuScreen::Update()
+{
+	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
+	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
+
+	bool moveDown = false;
+	bool moveUp = false;
+	bool moveLeft = false;
+	bool moveRight = false;
+
+	
+	int moveDelayFrames = 15;
+	int moveDelayFramesSmall = 6;
+
+	if (menuCurrInput.B && !menuPrevInput.B)
+	{
+		mainMenu->menuMode = MainMenu::MAINMENU;
+		return;
+	}
+	else if (menuCurrInput.A && !menuPrevInput.A)
+	{
+		mainMenu->menuMode = MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP;
+		mainMenu->transAlpha = 255;
+		mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+		mainMenu->worldMap->frame = 0;
+		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+		return;
+	}
+
+	bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
+	bool canMoveSame = (moveDelayCounter == 0);
+	if ((menuCurrInput.LDown() || menuCurrInput.PDown()) && (
+		(!moveDown && canMoveOther) || (moveDown && canMoveSame)))
+	{
+		selectedSaveIndex += 2;
+		//currentMenuSelect++;
+		if (selectedSaveIndex > 5)
+			selectedSaveIndex -= 6;
+		moveDown = true;
+		moveDelayCounter = moveDelayFrames;
+		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
+	}
+	else if ((menuCurrInput.LUp() || menuCurrInput.PUp()) && (
+		(!moveUp && canMoveOther) || (moveUp && canMoveSame)))
+	{
+		selectedSaveIndex -= 2;
+		if (selectedSaveIndex < 0)
+			selectedSaveIndex += 6;
+		moveUp = true;
+		moveDelayCounter = moveDelayFrames;
+		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
+	}
+
+	if ((menuCurrInput.LRight() || menuCurrInput.PRight()) && (
+		(!moveRight && canMoveOther) || (moveRight && canMoveSame)))
+	{
+		selectedSaveIndex++;
+		//currentMenuSelect++;
+		if (selectedSaveIndex % 2 == 0)
+			selectedSaveIndex -= 2;
+		moveRight = true;
+		moveDelayCounter = moveDelayFrames;
+	}
+	else if ((menuCurrInput.LLeft() || menuCurrInput.PLeft()) && (
+		(!moveLeft && canMoveOther) || (moveLeft && canMoveSame)))
+	{
+		selectedSaveIndex--;
+		if (selectedSaveIndex % 2 == 1)
+			selectedSaveIndex += 2;
+		else if (selectedSaveIndex < 0)
+		{
+			selectedSaveIndex += 2;
+		}
+		moveLeft = true;
+
+		moveDelayCounter = moveDelayFrames;
+	}
+
+	if (moveDelayCounter > 0)
+	{
+		moveDelayCounter--;
+	}
+
+
+	if (!(menuCurrInput.LDown() || menuCurrInput.PDown()))
+	{
+		moveDown = false;
+	}
+	if (!(menuCurrInput.LUp() || menuCurrInput.PUp()))
+	{
+		moveUp = false;
+	}
+
+	if (!(menuCurrInput.LRight() || menuCurrInput.PRight()))
+	{
+		moveRight = false;
+	}
+	if (!(menuCurrInput.LLeft() || menuCurrInput.PLeft()))
+	{
+		moveLeft = false;
+	}
+
+	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
+	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+
+	Vector2f topLeftPos;
+	topLeftPos.x += ts_selectSlot->tileWidth * (selectedSaveIndex % 2);
+	topLeftPos.y += ts_selectSlot->tileHeight * (selectedSaveIndex / 2);
+
+	selectSlot.setPosition(topLeftPos);
+	kinFace.setPosition(topLeftPos);
+
+	UpdateClouds();
+	++asteroidFrameBack;
+	++asteroidFrameFront;
+
+	int r0 = asteroidFrameBack % asteroidScrollFrames0;
+	int r1 = asteroidFrameFront % asteroidScrollFrames1;
+	//int r2 = asteroidFrame % asteroidScrollFrames2;
+
+	Vector2f offset0(0, 0);
+	Vector2f offset1(0, 0);
+	CubicBezier bez(0, 0, 1, 1);
+	double v = bez.GetValue(r0 / (double)asteroidScrollFrames0);
+	double v1 = bez.GetValue(r1 / (double)asteroidScrollFrames1);
+	offset0.x = 1920 * 3 * v;
+	offset1.x = -1920 * v1;
+
+	//cout << "asteroidframe: " << asteroidFrame << ", offset0: " << offset0.x << ", offset1: " << offset1.x << endl;
+
+
+	asteroid0.setPosition(a0start * (float)(1.0 - v1) + a0end * (float)v1);
+	asteroid1.setPosition(a1start * (float)(1.0 - v) + a1end * (float)v);
+	asteroid2.setPosition(a2start * (float)(1.0 - v1) + a2end * (float)v1);
+}
+
+void SaveMenuScreen::Draw(sf::RenderTarget *target)
+{
+	RenderTexture *saveTexture = mainMenu->saveTexture;
+
+	target->draw(starBackground);
+	
+	target->draw(asteroid1);
+	target->draw(world);
+	target->draw(asteroid0);
+	target->draw(asteroid2);
+
+	target->setView(mainMenu->v);
+
+	saveTexture->clear(Color::Transparent);
+	saveTexture->setView(mainMenu->v);
+	saveTexture->draw(background);
+	saveTexture->draw(kinSky);
+	saveTexture->draw(kinClouds);
+	saveTexture->draw(kinWindow);
+	//TODO
+	//if (menuMode == SAVEMENU ||
+	//	kinFaceFrame < saveJumpLength * saveJumpFactor)
+	saveTexture->draw(kinJump);
+
+	saveTexture->draw(selectSlot);
+	saveTexture->draw(kinFace);
+}
+
+void SaveMenuScreen::Reset()
+{
+	selectedSaveIndex = 0;
+	asteroidFrameBack = 0;
+	asteroidFrameFront = 0;
+	moveDelayCounter = 0;
+
+	kinJump.setTexture(*ts_kinJump1->texture);
+	kinJump.setTextureRect(ts_kinJump1->GetSubRect(0));
+	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
+	kinJump.setPosition(1920, 0);
+
+	for (int i = 0; i < 6; ++i)
+	{
+		files[i]->LoadFromFile();
+	}
+}
+
+void SaveMenuScreen::UpdateClouds()
+{
+	if (cloudFrame == cloudLoopLength * cloudLoopFactor)
+	{
+		cloudFrame = 0;
+	}
+
+	int f = cloudFrame / cloudLoopFactor;
+
+	//cout << "cloud frame: " << f << endl;
+	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(f));
+
+	cloudFrame++;
 }

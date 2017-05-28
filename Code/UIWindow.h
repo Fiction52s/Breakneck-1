@@ -376,7 +376,6 @@ struct UIWindow : UIControl
 	void AssignTextureToCornerEdges();
 	void AssignTextureToEdges();
 	void AssignTextureCenter();
-	bool Update();
 	
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();

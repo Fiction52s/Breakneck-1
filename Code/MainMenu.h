@@ -93,6 +93,160 @@ struct MultiLoadingScreen
 #define ColorGL( c ) sf::Glsl::Vec4( c.r, c.g, c.b, c.a )
 //#define _WIN32_WINNT 0x0601
 
+struct OptionsMenuScreen
+{
+	OptionsMenuScreen(MainMenu *p_mainMenu);
+	UIWindow *optionsWindow;
+	void Update();
+	void Draw(sf::RenderTarget *target);
+	MainMenu *mainMenu;
+};
+
+struct MapSelectionItem;
+struct MapCollection
+{
+	enum Tags
+	{
+		SINGLE = 1 << 0,
+		DOUBLE = 1 << 1,
+	};
+
+	int tags;
+
+	MapCollection();
+	bool Load(boost::filesystem::path path);
+
+	std::string collectionName;
+	std::list<MapSelectionItem*> maps;
+};
+
+struct MapSelectionItem
+{
+
+	enum FileType
+	{
+		F_CONTAINER,
+		F_MAP
+	};
+
+	MapSelectionItem(boost::filesystem::path p_path,
+		FileType p_fType)
+		:fType(p_fType), path(p_path)
+	{
+	}
+
+	FileType fType;
+	boost::filesystem::path path;
+	MapCollection *collection;
+};
+
+struct MapSelectionMenu
+{
+	//TODO scrollbar to show how far in to the names you are
+	static const int NUM_BOXES = 10;
+	static const int BOX_WIDTH;
+	static const int BOX_HEIGHT;
+	static const int BOX_SPACING;
+
+	MapSelectionMenu( MainMenu *p_mainMenu,
+		sf::Vector2f &p_pos );
+	MainMenu *mainMenu;
+	void SetupBoxes();
+	void LoadItems();
+	void Update(ControllerState &currInput,
+		ControllerState &prevInput);
+	void MoveUp();
+	void MoveDown();
+	void UpdateItemText();
+	void UpdateBoxesDebug();
+	void Draw(sf::RenderTarget *target);
+
+	sf::Vertex boxes[NUM_BOXES * 4];
+	sf::Text itemName[NUM_BOXES];
+
+	sf::Vector2f topMid;
+
+	int currIndex;
+	int oldCurrIndex;
+	int topIndex;
+
+	std::list<MapSelectionItem*> items;
+	sf::Font &font;
+
+	int waitFrames[3];
+	int waitModeThresh[2];
+	int framesWaiting;
+	int currWaitLevel;
+	int flipCounterUp;
+	int flipCounterDown;
+	std::list<MapSelectionItem*>::iterator currItemIt;
+};
+
+struct SaveMenuScreen
+{
+	SaveMenuScreen(MainMenu *p_mainMenu);
+	Tileset *ts_background;//ts_saveMenuBG;
+	Tileset *ts_selectSlot;//ts_saveMenuSelect;
+	Tileset *ts_kinFace;//ts_saveMenuKinFace;
+	void Update();
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+	MainMenu *mainMenu;
+
+	sf::Sprite background;
+	sf::Sprite selectSlot;
+	sf::Sprite kinFace;
+	int selectedSaveIndex;
+
+	Tileset *ts_kinJump1;
+	Tileset *ts_kinJump2;
+	Tileset *ts_kinClouds;
+	Tileset *ts_kinWindow;
+	Tileset *ts_kinSky;
+
+	sf::Sprite kinClouds;
+	sf::Sprite kinJump;
+	sf::Sprite kinWindow;
+	sf::Sprite kinSky;
+
+	Tileset *ts_starBackground;
+	sf::Sprite starBackground;
+
+	Tileset *ts_world;
+	sf::Sprite world;
+	int asteroidScrollFrames0;
+	int asteroidScrollFrames1;
+	int asteroidScrollFrames2;
+	int asteroidFrameBack;
+	int asteroidFrameFront;
+
+	sf::Sprite asteroid0;
+	sf::Sprite asteroid1;
+	sf::Sprite asteroid2;
+	sf::Vector2f a0start;
+	sf::Vector2f a0end;
+	sf::Vector2f a1start;
+	sf::Vector2f a1end;
+	sf::Vector2f a2start;
+	sf::Vector2f a2end;
+	void UpdateClouds();
+	int cloudFrame;
+	int cloudLoopLength;
+	int cloudLoopFactor;
+
+	int kinFaceFrame;
+	int kinFaceTurnLength;
+
+	int saveJumpFactor;
+	int saveJumpLength;
+
+	SaveFile *files[6];
+
+	int moveDelayCounter;
+};
+
+
+
 struct Parallax;
 struct MainMenu
 {
@@ -124,6 +278,11 @@ struct MainMenu
 		TRANS_MAIN_TO_MULTIPREVIEW,
 		TRANS_MULTIPREVIEW_TO_MAIN,
 		DEBUG_RACEFIGHT_RESULTS,
+		TRANS_MAIN_TO_MAPSELECT,
+		TRANS_MAIN_TO_OPTIONS,
+		OPTIONS,
+		TRANS_OPTIONS_TO_MAIN,
+		MAPSELECT
 	};
 
 	enum SoundType
@@ -134,6 +293,9 @@ struct MainMenu
 		S_Count
 	};
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
+	MapSelectionMenu *mapSelectionMenu;
+	OptionsMenuScreen *optionsMenu;
+	SaveMenuScreen *saveMenu;
 
 	MainMenu();
 	~MainMenu();
@@ -173,9 +335,7 @@ struct MainMenu
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;
 	Tileset *ts_worldMap;
-	Tileset *ts_saveMenuBG;
-	Tileset *ts_saveMenuSelect;
-	Tileset *ts_saveMenuKinFace;
+	
 	Tileset *ts_kinTitle[7];
 	Tileset *ts_breakneckTitle;
 	Tileset *ts_backgroundTitle;
@@ -187,7 +347,7 @@ struct MainMenu
 	
 	Mode menuMode;
 
-	SaveFile *files[6];
+	
 
 	//ControllerState currInput;
 	//ControllerState prevInput;
@@ -199,9 +359,7 @@ struct MainMenu
 	ControllerState menuPrevInput;
 	ControllerState menuCurrInput;
 
-	sf::Sprite saveBG;
-	sf::Sprite saveSelect;
-	sf::Sprite saveKinFace;
+	
 	sf::Sprite backgroundTitleSprite;
 	sf::Sprite breakneckTitleSprite;
 	sf::Sprite kinTitleSprite;
@@ -212,7 +370,7 @@ struct MainMenu
 	LevelSelector *levelSelector;
 	WorldMap *worldMap;
 
-	int selectedSaveIndex;
+	
 	bool selectCreateNew;
 
 	int kinTitleSpriteFrame;
@@ -226,23 +384,7 @@ struct MainMenu
 
 	static int masterVolume;
 
-	Tileset *ts_saveKinJump1;
-	Tileset *ts_saveKinJump2;
-	Tileset *ts_saveKinClouds;
-	Tileset *ts_saveKinWindow;
-	Tileset *ts_saveKinSky;
-
-	sf::Sprite saveKinClouds;
-	sf::Sprite saveKinJump;
-	sf::Sprite saveKinWindow;
-	sf::Sprite saveKinSky;
-
-	Tileset *ts_saveStarBackground;
-	sf::Sprite saveStarBackground;
-
-	Tileset *ts_saveWorld;
-	sf::Sprite saveWorld;
-
+;
 	//Tileset *ts_asteroid0;
 	//Tileset *ts_asteroid1;
 	//sf::Sprite asteroid0;
@@ -250,36 +392,13 @@ struct MainMenu
 	//sf::Sprite asteroid2;
 	Parallax *parBack;
 	Parallax *parFront;
-	int asteroidScrollFrames0;
-	int asteroidScrollFrames1;
-	int asteroidScrollFrames2;
-	int asteroidFrameBack;
-	int asteroidFrameFront;
-
-	sf::Sprite asteroid0;
-	sf::Sprite asteroid1;
-	sf::Sprite asteroid2;
-	sf::Vector2f a0start;
-	sf::Vector2f a0end;
-	sf::Vector2f a1start;
-	sf::Vector2f a1end;
-	sf::Vector2f a2start;
-	sf::Vector2f a2end;
+	
 
 	int transWorldMapFrame;
 	sf::Uint8 transAlpha;
 
 
-	void UpdateClouds();
-	int cloudFrame;
-	int cloudLoopLength;
-	int cloudLoopFactor;
-
-	int saveKinFaceFrame;
-	int saveKinFaceTurnLength;
-
-	int saveJumpFactor;
-	int saveJumpLength;
+	
 
 	Config *config;
 
