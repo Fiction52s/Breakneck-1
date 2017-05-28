@@ -48,6 +48,25 @@ private:
 	std::ifstream is;
 };
 
+
+//struct ScrollingVerticalSelector
+//{
+//	ScrollingVerticalSelector(MainMenu *mainMenu);
+//	void Draw(sf::RenderTarget *target);
+//	int numBoxes;
+//	int boxWidth;
+//	int boxHeight;
+//	int boxSpacing;
+//	void SetupBoxes();
+//	sf::Vertex *boxes;// [NUM_BOXES * 4];
+//	sf::Text *profileNames;// [NUM_BOXES];
+//	sf::Vector2f topMid;
+//	int topIndex;
+//	int currIndex;
+//	sf::Font &font;
+//	MainMenu *mainMenu;
+//};
+
 struct MultiSelectionSection;
 struct ControlProfileMenu : UIEventHandlerBase
 {

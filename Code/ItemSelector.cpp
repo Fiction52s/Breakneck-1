@@ -23,6 +23,12 @@ SingleAxisSelector::SingleAxisSelector(int numWaitFramesLevels, int*p_waitFrames
 	oldCurrIndex = startIndex;
 }
 
+SingleAxisSelector::~SingleAxisSelector()
+{
+	delete[] waitFrames;
+	delete[] waitModeThresh;
+}
+
 int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 {
 	oldCurrIndex = currIndex;

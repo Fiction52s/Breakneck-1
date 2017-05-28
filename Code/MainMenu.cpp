@@ -42,7 +42,7 @@ MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
 	profileSelect = new ControlProfileMenu( this,playerIndex,
 		parent->cpm->profiles );
 
-	profileSelect->UpdateNames();	
+	//profileSelect->UpdateNames();	
 }
 
 bool MultiSelectionSection::ButtonEvent( UIEvent eType,
@@ -312,8 +312,23 @@ GameController &MainMenu::GetController( int index )
 	return *controllers[index];
 }
 
+void MainMenu::UpdateMenuOptionText()
+{
+	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	{
+		if (saSelector->currIndex == i)
+		{
+			menuOptions[i].setFillColor(Color::Red);
+		}
+		else
+		{
+			menuOptions[i].setFillColor(Color::White);
+		}
+	}
+}
+
 MainMenu::MainMenu()
-	:windowWidth(1920), windowHeight( 1080 )
+	:windowWidth(1920), windowHeight(1080)
 {
 	int wholeX = 1920;
 	int wholeY = 1080;
@@ -322,18 +337,18 @@ MainMenu::MainMenu()
 	trueCenter = Vector2f(halfX, halfY);
 	leftCenter = Vector2f(halfX - wholeX, halfY);
 	rightCenter = Vector2f(halfX + wholeX, halfY);
-	topCenter = Vector2f(halfX, halfY - wholeY );
-	bottomCenter = Vector2f(halfX, halfY + wholeY );
+	topCenter = Vector2f(halfX, halfY - wholeY);
+	bottomCenter = Vector2f(halfX, halfY + wholeY);
 
 
-	for( int i = 0; i < 4; ++i )
+	for (int i = 0; i < 4; ++i)
 	{
-		controllers[i] = new GameController( i );
+		controllers[i] = new GameController(i);
 	}
 
-	fadeRect.setFillColor( Color::Black );
-	fadeRect.setSize( Vector2f( 1920, 1080 ) );
-	fadeRect.setPosition( 0, 0 );
+	fadeRect.setFillColor(Color::Black);
+	fadeRect.setSize(Vector2f(1920, 1080));
+	fadeRect.setPosition(0, 0);
 
 	config = new Config();
 	config->WaitForLoad();
@@ -344,16 +359,42 @@ MainMenu::MainMenu()
 	//load a preferences file at some point for window resolution and stuff
 
 	//could be bad cuz its static
-	arial.loadFromFile( "Breakneck_Font_01.ttf" );
-		
-	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
-	v = View( Vector2f( 1920/2, 1080/2 ), Vector2f( 1920, 1080 ) );
+	arial.loadFromFile("Breakneck_Font_01.ttf");
+
+	uiView = View(sf::Vector2f(960, 540), sf::Vector2f(1920, 1080));
+	v = View(Vector2f(1920 / 2, 1080 / 2), Vector2f(1920, 1080));
 
 
 	splashFadeFrame = 0;
 	splashFadeOutLength = 40;
 
-	
+	int waitFrames[] = { 10, 5, 2 };
+	int waitModeThresh[] = { 2, 2 };
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
+
+	Vector2f textBase(500, 500);
+	int textOptionSpacing = 10;
+	int charHeight = 40;
+	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	{
+		menuOptions[i].setFont(arial);
+		menuOptions[i].setCharacterSize(charHeight);
+		menuOptions[i].setFillColor(Color::White);
+	}
+
+	menuOptions[0].setString("Adventure");
+	menuOptions[1].setString("Free Play");
+	menuOptions[2].setString("Local Multiplayer");
+	menuOptions[3].setString("Level Editor");
+	menuOptions[4].setString("Options");
+	menuOptions[5].setString("Credits");
+	menuOptions[6].setString("Exit");
+
+	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	{
+		menuOptions[i].setOrigin(menuOptions[i].getLocalBounds().width / 2, 0);
+		menuOptions[i].setPosition(textBase.x, textBase.y + (textOptionSpacing + charHeight) * i);
+	}
 
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( config->GetData().volume );
@@ -993,7 +1034,8 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_OPTIONS);
 	//SetMode(TRANS_MAIN_TO_SAVE);
 	//SetMode(TRANS_MAIN_TO_CREDITS);
-	SetMode(TRANS_MAIN_TO_MAPSELECT);
+	//SetMode(TRANS_MAIN_TO_MAPSELECT);
+	SetMode(MAINMENU);
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -1247,9 +1289,46 @@ void MainMenu::Run()
 					if( menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X || 
 						menuCurrInput.rightShoulder || menuCurrInput.leftShoulder )
 					{
-						switch( currentMenuSelect )
+						switch (saSelector->currIndex)
 						{
-						case M_NEW_GAME:
+						case M_ADVENTURE:
+						{
+							SetMode(TRANS_MAIN_TO_SAVE);
+							break;
+						}
+						case M_FREE_PLAY:
+						{
+							SetMode(TRANS_MAIN_TO_MAPSELECT);
+							break;
+						}
+						case M_LOCAL_MULTIPLAYER:
+						{
+							SetMode(TRANS_MAIN_TO_MAPSELECT);
+							break;
+						}
+						case M_LEVEL_EDITOR:
+						{
+							SetMode(TRANS_MAIN_TO_MAPSELECT);
+							break;
+						}
+						case M_OPTIONS:
+						{
+							SetMode(TRANS_MAIN_TO_OPTIONS);
+							break;
+						}
+						case M_CREDITS:
+						{
+							SetMode(TRANS_MAIN_TO_CREDITS);
+							break;
+						}
+						case M_EXIT:
+						{
+							quit = true;
+							break;
+						}
+						}
+
+						/*case M_ADVENTURE:
 							{
 								menuMode = MULTIPREVIEW;
 								multiLoadingScreen->Reset( "Maps/W1/arena04.brknk" );
@@ -1279,8 +1358,14 @@ void MainMenu::Run()
 							break;
 						case M_EXIT:
 							break;
-						}
+						}*/
 					}
+					else
+					{
+						saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+					}
+
+					UpdateMenuOptionText();
 
 					//bool canMoveSame = (moveDelayCounter == 0);
 
@@ -1622,7 +1707,7 @@ void MainMenu::Run()
 			{
 				if (slideCurrFrame > numSlideFrames)
 				{
-					menuMode = MAPSELECT;
+					menuMode = MAINMENU;
 				}
 				else
 				{
@@ -1651,7 +1736,7 @@ void MainMenu::Run()
 			{
 				if (slideCurrFrame > numSlideFrames)
 				{
-					menuMode = OPTIONS;
+					menuMode = MAINMENU;
 				}
 				else
 				{
@@ -1680,7 +1765,7 @@ void MainMenu::Run()
 			{
 				if (slideCurrFrame > numSlideFrames)
 				{
-					menuMode = CREDITS;
+					menuMode = MAINMENU;
 				}
 				else
 				{
@@ -1717,14 +1802,19 @@ void MainMenu::Run()
 		case MAINMENU:
 			{
 				preScreenTexture->setView( v );
-				preScreenTexture->draw( backgroundTitleSprite );
-				preScreenTexture->draw( kinTitleSprite );
-				preScreenTexture->draw( breakneckTitleSprite );
+				//preScreenTexture->draw( backgroundTitleSprite );
+				//preScreenTexture->draw( kinTitleSprite );
+				//preScreenTexture->draw( breakneckTitleSprite );
 
-				preScreenTexture->draw( betaText );
+				//preScreenTexture->draw( betaText );
 				
 				//window->draw( titleSprite );
 				//preScreenTexture->draw( menu );	
+
+				for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+				{
+					preScreenTexture->draw(menuOptions[i]);
+				}
 
 				preScreenTexture->setView( uiView );
 

@@ -36,9 +36,10 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), 
 	section( p_section )
 {
-	int waitFrames[] = { 10, 5, 2 };
-	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector( sizeof(waitFrames), waitFrames, sizeof( waitModeThresh ), waitModeThresh, 0, 0 );
+	assert(!p_profiles.empty());
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	saSelector = new SingleAxisSelector( 3, waitFrames, 2, waitModeThresh, 0, 0 );
 
 	currProfile = p_profiles.front(); //KIN 
 

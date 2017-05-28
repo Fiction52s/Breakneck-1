@@ -259,15 +259,16 @@ struct CreditsMenuScreen
 
 
 struct Parallax;
+struct SingleAxisSelector;
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
 
 	enum MainMenuOptions
 	{
-		M_NEW_GAME,
-		M_CONTINUE,
-		M_CUSTOM_MAPS,
+		M_ADVENTURE,
+		M_FREE_PLAY,
+		M_LOCAL_MULTIPLAYER,
 		M_LEVEL_EDITOR,
 		M_OPTIONS,
 		M_CREDITS,
@@ -312,6 +313,10 @@ struct MainMenu
 	OptionsMenuScreen *optionsMenu;
 	CreditsMenuScreen *creditsMenu;
 	SaveMenuScreen *saveMenu;
+	SingleAxisSelector *saSelector;
+	sf::Text menuOptions[MainMenuOptions::M_Count];
+	void UpdateMenuOptionText();
+	
 
 	MainMenu();
 	~MainMenu();
