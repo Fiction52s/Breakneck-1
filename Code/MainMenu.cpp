@@ -2592,6 +2592,21 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	asteroidFrameBack = asteroidScrollFrames0 / 2;
 	asteroidFrameFront = asteroidScrollFrames1 / 2;
+
+	Reset();
+
+	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
+	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+
+	Vector2f topLeftPos;
+	topLeftPos.x += ts_selectSlot->tileWidth * (selectedSaveIndex % 2);
+	topLeftPos.y += ts_selectSlot->tileHeight * (selectedSaveIndex / 2);
+	topLeftPos += menuOffset;
+
+	selectSlot.setPosition(topLeftPos);
+	kinFace.setPosition(topLeftPos);
+
+	
 }
 
 void SaveMenuScreen::Update()
@@ -2729,6 +2744,39 @@ void SaveMenuScreen::Update()
 	asteroid0.setPosition(a0start * (float)(1.0 - v1) + a0end * (float)v1);
 	asteroid1.setPosition(a1start * (float)(1.0 - v) + a1end * (float)v);
 	asteroid2.setPosition(a2start * (float)(1.0 - v1) + a2end * (float)v1);
+
+	//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
+	//{
+	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
+	//}
+	//else
+	//{
+	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
+	//}
+
+	//if( kinFaceFrame < saveJumpLength * saveJumpFactor )
+	//{
+	//	if( kinFaceFrame == 0 )
+	//	{
+	//		saveKinJump.setTexture( *ts_saveKinJump1->texture );
+	//	}
+	//	else if( kinFaceFrame == 3 * saveJumpFactor )
+	//	{
+	//		saveKinJump.setTexture( *ts_saveKinJump2->texture );
+	//	}
+
+	//	int f = kinFaceFrame / saveJumpFactor;
+	//	if( kinFaceFrame < 3 * saveJumpFactor )
+	//	{
+	//		saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
+	//	}
+	//	else
+	//	{
+	//		saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
+	//	}
+
+	//	saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
+	//}
 }
 
 void SaveMenuScreen::Draw(sf::RenderTarget *target)
