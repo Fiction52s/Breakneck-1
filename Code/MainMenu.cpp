@@ -315,6 +315,17 @@ GameController &MainMenu::GetController( int index )
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight( 1080 )
 {
+	int wholeX = 1920;
+	int wholeY = 1080;
+	int halfX = wholeX / 2;
+	int halfY = wholeY / 2;
+	trueCenter = Vector2f(halfX, halfY);
+	leftCenter = Vector2f(halfX - wholeX, halfY);
+	rightCenter = Vector2f(halfX + wholeX, halfY);
+	topCenter = Vector2f(halfX, halfY - wholeY );
+	bottomCenter = Vector2f(-halfX, halfY + wholeY );
+
+
 	for( int i = 0; i < 4; ++i )
 	{
 		controllers[i] = new GameController( i );
@@ -485,7 +496,8 @@ MainMenu::MainMenu()
 	betaText.setPosition( 50, 200 );
 	betaText.setFont( arial );
 
-	
+	slideCurrFrame = 0;
+	numSlideFrames = 60;
 
 	Init();
 
@@ -611,6 +623,29 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 		result = es->Run( p_path, lastViewCenter, lastViewSize );
 		delete es;
 	}
+}
+
+void MainMenu::SetMode(Mode m)
+{
+	switch (m)
+	{
+	case TRANS_OPTIONS_TO_MAIN:
+	{
+		slideCurrFrame = 0;
+		slideStart = leftCenter;
+		slideEnd = trueCenter;
+		break;
+	}
+	case TRANS_MAIN_TO_OPTIONS:
+	{
+		slideCurrFrame = 0;
+		slideStart = trueCenter;
+		slideEnd = leftCenter;
+		break;
+	}
+	}
+
+	menuMode = m;
 }
 
 void MainMenu::CustomMapsOption()
@@ -859,6 +894,15 @@ ControllerState &MainMenu::GetCurrInput( int index )
 
 #include <sfeMovie/Movie.hpp>
 
+void MainMenu::Slide()
+{
+	CubicBezier bez(0, 0, 1, 1);
+	float f = bez.GetValue((double)slideCurrFrame / numSlideFrames);
+	v.setCenter(slideStart * (1 - f) + slideEnd * f);
+
+	slideCurrFrame++;
+}
+
 //#define USE_MOVIE_TEST
 void MainMenu::Run()
 {
@@ -891,7 +935,10 @@ void MainMenu::Run()
 
 	saveTexture->setView( v );
 	//menuMode = MAPSELECT;//menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
-	menuMode = OPTIONS;
+	//menuMode = OPTIONS;
+
+	SetMode(TRANS_MAIN_TO_OPTIONS);
+	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
 	assert( sh.loadFromFile("test.frag", sf::Shader::Fragment ) );
@@ -1489,6 +1536,14 @@ void MainMenu::Run()
 				}
 			case TRANS_MAIN_TO_OPTIONS:
 			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = OPTIONS;
+				}
+				else
+				{
+					Slide();
+				}
 				break;
 			}
 			case OPTIONS:
@@ -1498,6 +1553,14 @@ void MainMenu::Run()
 			}
 			case TRANS_OPTIONS_TO_MAIN:
 			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = OPTIONS;
+				}
+				else
+				{
+					Slide();
+				}
 				break;
 			}
 		}
@@ -1593,11 +1656,14 @@ void MainMenu::Run()
 			}
 		case TRANS_OPTIONS_TO_MAIN:
 		{
-			
+			preScreenTexture->setView(v);
+			optionsMenu->Draw(preScreenTexture);
 			break;
 		}
 		case TRANS_MAIN_TO_OPTIONS:
 		{
+			preScreenTexture->setView(v);
+			optionsMenu->Draw(preScreenTexture);
 			break;
 		}
 		case OPTIONS:
@@ -2159,6 +2225,11 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 
 void OptionsMenuScreen::Update()
 {
+	if (mainMenu->menuCurrInput.B && !mainMenu->menuPrevInput.B)
+	{
+		mainMenu->SetMode(MainMenu::Mode::TRANS_OPTIONS_TO_MAIN);
+	}
+
 	optionsWindow->Update(mainMenu->menuCurrInput, mainMenu->menuPrevInput);
 }
 

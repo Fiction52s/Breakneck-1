@@ -300,6 +300,9 @@ struct MainMenu
 	MainMenu();
 	~MainMenu();
 	void Init();
+
+	void SetMode(Mode m);
+
 	void ResizeWindow( int windowWidth, 
 		int windowHeight, int style );
 	//void Deactivate();
@@ -393,6 +396,8 @@ struct MainMenu
 	Parallax *parBack;
 	Parallax *parFront;
 	
+	void Slide();
+	
 
 	int transWorldMapFrame;
 	sf::Uint8 transAlpha;
@@ -405,6 +410,18 @@ struct MainMenu
 	int splashFadeFrame;
 	int splashFadeOutLength;
 	sf::RectangleShape fadeRect;
+
+	int numSlideFrames;
+	int slideCurrFrame;
+	sf::Vector2f slideStart;
+	sf::Vector2f slideEnd;
+
+	sf::Vector2f leftCenter;
+	sf::Vector2f rightCenter;
+	sf::Vector2f trueCenter;
+	
+	sf::Vector2f topCenter;
+	sf::Vector2f bottomCenter;
 	//int saveKinFaceFactor;
 };
 

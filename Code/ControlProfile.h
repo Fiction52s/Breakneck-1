@@ -6,8 +6,11 @@
 #include <list>
 #include <SFML\Graphics.hpp>
 #include "UIWindow.h"
+#include "ItemSelector.h"
 
 struct MainMenu;
+
+
 
 struct ControlProfile
 {
@@ -95,7 +98,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	State state;
 	sf::Vector2f topMid;
 
-	int currIndex;
+	//int currIndex;
 	int oldCurrIndex;
 	MultiSelectionSection *section;
 	int topIndex;
@@ -104,13 +107,14 @@ struct ControlProfileMenu : UIEventHandlerBase
 	int playerIndex;
 	sf::Font font;
 
-	int waitFrames[3];
-	int waitModeThresh[2];
-	int framesWaiting;
-	int currWaitLevel;
-	int flipCounterUp;
-	int flipCounterDown;
+	//int waitFrames[3];
+	//int waitModeThresh[2];
+	//int framesWaiting;
+	//int currWaitLevel;
+	//int flipCounterUp;
+	//int flipCounterDown;
 	ControlProfile *currProfile;
+	SingleAxisSelector *saSelector;
 
 	UIControlGrid *editProfileGrid;
 };

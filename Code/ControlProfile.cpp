@@ -4,6 +4,7 @@
 #include <iostream>
 #include "UIWindow.h"
 #include "MainMenu.h"
+
 using namespace sf;
 using namespace std;
 
@@ -20,16 +21,25 @@ const int ControlProfileMenu::BOX_WIDTH = 300;
 const int ControlProfileMenu::BOX_HEIGHT = 40;
 const int ControlProfileMenu::BOX_SPACING = 10;
 
+//waitFrames[0] = 10;
+//waitFrames[1] = 5;
+//waitFrames[2] = 2;
 
+//waitModeThresh[0] = 2;
+//waitModeThresh[1] = 2;
 
 
 ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	int p_playerIndex, list<ControlProfile*> &p_profiles )
 	:profiles( p_profiles ), playerIndex( p_playerIndex ), 
 	font( p_section->parent->mainMenu->arial ),
-	topIndex( 0 ), state( S_SELECTED ), currIndex( 0 ), oldCurrIndex( 0 ), 
+	topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), 
 	section( p_section )
 {
+	int waitFrames[] = { 10, 5, 2 };
+	int waitModeThresh[] = { 2, 2 };
+	saSelector = new SingleAxisSelector( sizeof(waitFrames), waitFrames, sizeof( waitModeThresh ), waitModeThresh, 0, 0 );
+
 	currProfile = p_profiles.front(); //KIN 
 
 	int quarter = 1920 / 4;
@@ -44,7 +54,7 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 		profileNames[i].setFillColor( Color::White );
 	}
 
-	waitFrames[0] = 10;
+	/*waitFrames[0] = 10;
 	waitFrames[1] = 5;
 	waitFrames[2] = 2;
 
@@ -54,7 +64,7 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	currWaitLevel = 0;
 	flipCounterUp = 0;
 	flipCounterDown = 0;
-	framesWaiting = 0;
+	framesWaiting = 0;*/
 
 	std::string buttonTexts[] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
 		"POWER5", "POWER6LEFT", "POWER6RIGHT" };
@@ -76,6 +86,8 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
 
 	maxReceiveFrames = 240;
+
+	
 }
 
 bool ControlProfileMenu::ButtonEvent( UIEvent eType,
@@ -205,6 +217,8 @@ void ControlProfileMenu::UpdateNames()
 
 		++lit;
 	}
+
+	saSelector->totalItems = numProfiles;
 }
 
 void ControlProfileMenu::Update( ControllerState &currInput,
@@ -217,7 +231,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		case S_SELECTED:
 			state = S_SHOWING_OPTIONS;
 			UpdateNames();
-			oldCurrIndex = currIndex;
+			oldCurrIndex = saSelector->currIndex;
 			break;
 		case S_SHOWING_OPTIONS:
 			{
@@ -226,7 +240,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 				for( list<ControlProfile*>::iterator it = profiles.begin(); 
 					it != profiles.end(); ++it )
 				{
-					if( test == currIndex )
+					if( test == saSelector->currIndex )
 					{
 						currProfile = (*it);
 						break;
@@ -271,7 +285,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 	{
 		if( state == S_SHOWING_OPTIONS )
 		{
-			currIndex = oldCurrIndex;
+			saSelector->currIndex = oldCurrIndex;
 			state = S_SELECTED;
 		}
 	}
@@ -286,102 +300,50 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		bool up = currInput.LUp();
 		bool down = currInput.LDown();
 
-		int oldIndex = currIndex;
-		//bool consumed = controls[focusedIndex]->Update( curr, prev );
+		int changed = saSelector->UpdateIndex(up, down);
+		int cIndex = saSelector->currIndex;
 
-		if( down )
+		bool inc = changed > 0;
+		bool dec = changed < 0;
+
+		if (inc)
 		{
-			if( flipCounterDown == 0 
-				|| ( flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel] )
-				)
+			if (cIndex - topIndex == NUM_BOXES)
 			{
-				if( flipCounterDown == 0 )
+				topIndex = cIndex - (NUM_BOXES - 1);
+			}
+			else if (cIndex == 0)
+			{
+				topIndex = 0;
+			}
+		}
+		else if (dec)
+		{
+			/*if (currIndex > 0)
+			{
+				currIndex--;
+
+				if (currIndex < topIndex)
 				{
-					currWaitLevel = 0;
-				}
-
-				++flipCounterDown;
-
-				if( flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
-				{
-					currWaitLevel++;
-				}
-
-				flipCounterUp = 0;
-				framesWaiting = 0;
-
-				if( currIndex < profiles.size() - 1 )
-				{
-					currIndex++;
-
-					if( currIndex - topIndex == NUM_BOXES )
-						topIndex = currIndex - (NUM_BOXES-1);
-				}
-				else
-				{
-					currIndex = 0;
-					topIndex = 0;
+					topIndex = currIndex;
 				}
 			}
 			else
 			{
-				++framesWaiting;
-			}
-		
-		}
-		else if( up )
-		{
-			if( flipCounterUp == 0 
-				|| ( flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel] )
-				)
-			{
-				if( flipCounterUp == 0 )
-				{
-					currWaitLevel = 0;
-				}
+				currIndex = profiles.size() - 1;
+				topIndex = profiles.size() - NUM_BOXES;
+			}*/
 
-				++flipCounterUp;
-
-				if( flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2 )
-				{
-					currWaitLevel++;
-				}
-
-				flipCounterDown = 0;
-				framesWaiting = 0;
-				if( currIndex > 0 )
-				{
-					currIndex--;
-
-					if( currIndex < topIndex )
-					{
-						topIndex = currIndex;
-					}
-				}
-				else
-				{
-					currIndex = profiles.size() - 1;
-					topIndex = profiles.size() - NUM_BOXES;
-				}
-			}
-			else
-			{
-				++framesWaiting;
-			}
-		
-		}
-		else
-		{
-			flipCounterUp = 0;
-			flipCounterDown = 0;
-			currWaitLevel = 0;
-			framesWaiting = 0;
+			if (cIndex == saSelector->totalItems - 1)
+				topIndex = saSelector->totalItems - NUM_BOXES;
+			else if (cIndex < topIndex)
+				topIndex = cIndex;
 		}
 
-		if( currIndex != oldIndex )
+		if( changed != 0 )
 		{
 			UpdateNames();
-			cout << "currIndex: " << currIndex << ", topIndex: " << topIndex << endl;
+			cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 			//controls[oldIndex]->Unfocus();
 			//controls[focusedIndex]->Focus();
 		}
@@ -475,7 +437,7 @@ void ControlProfileMenu::MoveDown()
 void ControlProfileMenu::UpdateBoxesDebug()
 {
 	Color c;
-	int trueI = ( currIndex - topIndex );// % NUM_BOXES;
+	int trueI = ( saSelector->currIndex - topIndex );// % NUM_BOXES;
 	for( int i = 0; i < NUM_BOXES; ++i )
 	{
 		if( i == trueI )
@@ -574,6 +536,8 @@ bool ControlProfileManager::LoadProfiles()
 	def->hasXBoxFilter = true;
 	def->name = "KIN";
 	profiles.push_front( def );
+
+	
 
 }
 
