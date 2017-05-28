@@ -245,6 +245,17 @@ struct SaveMenuScreen
 	int moveDelayCounter;
 };
 
+struct CreditsMenuScreen
+{
+	sf::Sprite testSprite;
+	Tileset *ts_test;
+	CreditsMenuScreen(MainMenu *p_mainMenu);
+	void Draw(sf::RenderTarget *target);
+	void Update();
+	MainMenu *mainMenu;
+	sf::Vector2f menuOffset;
+};
+
 
 
 struct Parallax;
@@ -279,10 +290,14 @@ struct MainMenu
 		TRANS_MULTIPREVIEW_TO_MAIN,
 		DEBUG_RACEFIGHT_RESULTS,
 		TRANS_MAIN_TO_MAPSELECT,
+		MAPSELECT,
+		TRANS_MAPSELECT_TO_MAIN,
 		TRANS_MAIN_TO_OPTIONS,
 		OPTIONS,
 		TRANS_OPTIONS_TO_MAIN,
-		MAPSELECT
+		TRANS_MAIN_TO_CREDITS,
+		CREDITS,
+		TRANS_CREDITS_TO_MAIN
 	};
 
 	enum SoundType
@@ -295,6 +310,7 @@ struct MainMenu
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	MapSelectionMenu *mapSelectionMenu;
 	OptionsMenuScreen *optionsMenu;
+	CreditsMenuScreen *creditsMenu;
 	SaveMenuScreen *saveMenu;
 
 	MainMenu();

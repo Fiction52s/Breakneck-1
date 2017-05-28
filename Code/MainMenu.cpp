@@ -507,6 +507,8 @@ MainMenu::MainMenu()
 
 	optionsMenu = new OptionsMenuScreen(this);
 
+	creditsMenu = new CreditsMenuScreen(this);
+
 	saveMenu = new SaveMenuScreen(this);
 }
 
@@ -657,6 +659,36 @@ void MainMenu::SetMode(Mode m)
 		slideEnd = trueCenter;
 		break;
 	}
+	case TRANS_MAIN_TO_CREDITS:
+	{
+		slideCurrFrame = 0;
+		slideStart = trueCenter;
+		slideEnd = bottomCenter;
+		break;
+	}
+	case TRANS_CREDITS_TO_MAIN:
+	{
+		slideCurrFrame = 0;
+		slideStart = bottomCenter;
+		slideEnd = trueCenter;
+		break;
+	}
+	case TRANS_MAIN_TO_MAPSELECT:
+	{
+		slideCurrFrame = 0;
+		slideStart = trueCenter;
+		slideEnd = leftCenter;
+		
+		break;
+	}
+	case TRANS_MAPSELECT_TO_MAIN:
+	{
+		slideCurrFrame = 0;
+		slideStart = leftCenter;
+		slideEnd = trueCenter;
+		break;
+	}
+	
 	}
 
 	menuMode = m;
@@ -959,7 +991,9 @@ void MainMenu::Run()
 	//menuMode = OPTIONS;
 
 	//SetMode(TRANS_MAIN_TO_OPTIONS);
-	SetMode(TRANS_MAIN_TO_SAVE);
+	//SetMode(TRANS_MAIN_TO_SAVE);
+	//SetMode(TRANS_MAIN_TO_CREDITS);
+	SetMode(TRANS_MAIN_TO_MAPSELECT);
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -1569,6 +1603,14 @@ void MainMenu::Run()
 				}
 			case TRANS_MAIN_TO_MAPSELECT:
 				{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = MAPSELECT;
+				}
+				else
+				{
+					Slide();
+				}
 					break;
 				}
 			case MAPSELECT:
@@ -1576,6 +1618,18 @@ void MainMenu::Run()
 				mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
 					break;
 				}
+			case TRANS_MAPSELECT_TO_MAIN:
+			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = MAPSELECT;
+				}
+				else
+				{
+					Slide();
+				}
+				break;
+			}
 			case TRANS_MAIN_TO_OPTIONS:
 			{
 				if (slideCurrFrame > numSlideFrames)
@@ -1598,6 +1652,35 @@ void MainMenu::Run()
 				if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = OPTIONS;
+				}
+				else
+				{
+					Slide();
+				}
+				break;
+			}
+			case TRANS_MAIN_TO_CREDITS:
+			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = CREDITS;
+				}
+				else
+				{
+					Slide();
+				}
+				break;
+			}
+			case CREDITS:
+			{
+				creditsMenu->Update();
+				break;
+			}
+			case TRANS_CREDITS_TO_MAIN:
+			{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = CREDITS;
 				}
 				else
 				{
@@ -1691,11 +1774,24 @@ void MainMenu::Run()
 				multiLoadingScreen->Draw( preScreenTexture );
 				break;
 			}
+		case TRANS_MAIN_TO_MAPSELECT:
+		{
+			preScreenTexture->setView(v);
+			mapSelectionMenu->Draw(preScreenTexture);
+			break;
+		}
 		case MAPSELECT:
 			{
+			preScreenTexture->setView(v);
 			mapSelectionMenu->Draw( preScreenTexture );
 				break;
 			}
+		case TRANS_MAPSELECT_TO_MAIN:
+		{
+			preScreenTexture->setView(v);
+			mapSelectionMenu->Draw(preScreenTexture);
+			break;
+		}
 		case TRANS_MAIN_TO_SAVE:
 		{
 			preScreenTexture->setView(v);
@@ -1726,6 +1822,24 @@ void MainMenu::Run()
 			//v.setCenter(-960, 540);
 			preScreenTexture->setView(v);
 			optionsMenu->Draw(preScreenTexture);
+			break;
+		}
+		case TRANS_CREDITS_TO_MAIN:
+		{
+			preScreenTexture->setView(v);
+			creditsMenu->Draw(preScreenTexture);
+			break;
+		}
+		case TRANS_MAIN_TO_CREDITS:
+		{
+			preScreenTexture->setView(v);
+			creditsMenu->Draw(preScreenTexture);
+			break;
+		}
+		case CREDITS:
+		{
+			preScreenTexture->setView(v);
+			creditsMenu->Draw(preScreenTexture);
 			break;
 		}
 
@@ -1883,7 +1997,8 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ), currIndex( 0 ),
 	oldCurrIndex( 0 )
 {
-	topMid = p_pos + Vector2f( BOX_WIDTH / 2, 0 );
+	Vector2f menuOffset(-1920, 0);
+	topMid = p_pos + Vector2f( BOX_WIDTH / 2, 0 ) + menuOffset;
 
 	SetupBoxes();
 
@@ -2597,4 +2712,29 @@ void SaveMenuScreen::UpdateClouds()
 	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(f));
 
 	cloudFrame++;
+}
+
+CreditsMenuScreen::CreditsMenuScreen(MainMenu *p_mainMenu)
+	:mainMenu( p_mainMenu )
+{
+	menuOffset = Vector2f(0, 1080);
+	ts_test = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
+	testSprite.setTexture(*ts_test->texture);
+	testSprite.setPosition(menuOffset + Vector2f(500, 500));
+}
+
+void CreditsMenuScreen::Draw(sf::RenderTarget *target)
+{
+	target->draw(testSprite);
+}
+
+void CreditsMenuScreen::Update()
+{
+	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
+	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
+
+	if (menuCurrInput.B && !menuPrevInput.B)
+	{
+		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN );
+	}
 }
