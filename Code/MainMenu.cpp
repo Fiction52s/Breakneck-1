@@ -2182,6 +2182,76 @@ void MapSelectionMenu::LoadPath(boost::filesystem::path &p)
 	}
 }
 
+MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
+{
+
+	MapHeader *mh = new MapHeader;
+
+	assert(is.is_open());
+
+	int part1Num = -1;
+	int part2Num = -1;
+
+	string versionString;
+	is >> versionString;
+	int sepIndex = versionString.find('.');
+	string part1 = versionString.substr(0, sepIndex);
+	string part2 = versionString.substr(sepIndex);
+	try
+	{
+		part1Num = stoi(part1);
+	}
+	catch (std::exception & e)
+	{
+		assert(0);
+	}
+
+	try
+	{
+		part2Num = stoi(part2);
+	}
+	catch (std::exception & e)
+	{
+		assert(0);
+	}
+
+	//get description
+	char last = 0;
+	char curr = 0;
+	stringstream ss;
+	string tempStr;
+	while (true)
+	{
+		last = curr;
+		if (!is.get(curr))
+		{
+			assert(0);
+		}
+
+		if (last == '<' && curr == '>')
+		{
+			break;
+		}
+		else
+		{
+			if (last != 0)
+			{
+				ss << last;
+			}
+		}
+	}
+
+	string collectionName;
+	is >> collectionName;
+
+	mh->collectionName = collectionName;
+	mh->ver1 = part1Num;
+	mh->ver2 = part2Num;
+	mh->description = ss.str();
+
+	return mh;
+}
+
 void MapSelectionMenu::LoadItems()
 {
 	path p(current_path() / "/Maps/");
@@ -2190,86 +2260,38 @@ void MapSelectionMenu::LoadItems()
 	map<string, MapCollection*> collectionMap;
 	for (auto it = items.begin(); it != items.end(); ++it)
 	{
-		int part1Num = -1;
-		int part2Num = -1;
-
 		ifstream is;
 		is.open((*it).string());
 		if (is.is_open())
 		{
-			//get version
-			string versionString;
-			is >> versionString;
-			int sepIndex = versionString.find('.');
-			string part1 = versionString.substr(0, sepIndex );
-			string part2 = versionString.substr(sepIndex);
-			try
-			{
-				part1Num = stoi(part1);
-			}
-			catch ( std::exception & e)
-			{
-				assert(0);
-			}
+			MapHeader *mh = ReadMapHeader(is);
 
-			try
+			if (collectionMap.find(mh->collectionName) != collectionMap.end())
 			{
-				part2Num = stoi(part2);
-			}
-			catch (std::exception & e)
-			{
-				assert(0);
-			}
 
-			//get description
-			char last = 0;
-			char curr = 0;
-			stringstream ss;
-			string tempStr;
-			while (true)
-			{
-				last = curr;
-				if (!is.get(curr))
-				{
-					assert(0);
-				}
-
-				if (last == '<' && curr == '>')
-				{
-					break;
-				}
-				else
-				{
-					if( last != 0 )
-					{
-						ss << last;
-					}
-				}
-			}
-
-			string collectionName;
-			is >> collectionName;
-
-			
-
-			if (collectionMap.find(collectionName) != collectionMap.end())
-			{
+				MapSelectionItem *item = new MapSelectionItem((*it), mh);
 				//assert(0);
-				auto temp = collectionMap[collectionName];
+				MapCollection *temp = collectionMap[mh->collectionName];
 
-				temp->collectionName = collectionName;
-				temp->maps.push_back((*it).string());
-				
+				item->collection = temp;
+
+				temp->collectionName = mh->collectionName;
+				temp->maps.push_back(item);
 			}
 			else
 			{
-				collectionMap[collectionName] = new MapCollection;
+				MapSelectionItem *item = new MapSelectionItem((*it), mh);
 
-				auto temp = collectionMap[collectionName];
+				MapCollection *coll = new MapCollection;
+				collectionMap[mh->collectionName] = coll;
 
-				temp->collectionName = collectionName;
-				temp->maps.push_back((*it).string());
+				item->collection = coll;
+
+				coll->collectionName = mh->collectionName;
+				coll->maps.push_back(item);
 			}
+
+			delete mh;
 		}
 		else
 		{

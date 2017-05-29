@@ -112,6 +112,7 @@ struct MapHeaderInfo
 };
 
 struct MapSelectionItem;
+struct MapHeader;
 struct MapCollection
 {
 	enum Tags
@@ -126,27 +127,33 @@ struct MapCollection
 	//bool Load(boost::filesystem::path path);
 
 	std::string collectionName;
-	std::list<boost::filesystem::path> maps;
+	std::list<MapSelectionItem*> maps;
 };
 
 struct MapSelectionItem
 {
-
-	enum FileType
-	{
-		F_CONTAINER,
-		F_MAP
-	};
-
 	MapSelectionItem(boost::filesystem::path p_path,
-		FileType p_fType)
-		:fType(p_fType), path(p_path)
+		MapHeader *mh)
+		:path(p_path), headerInfo(mh)
 	{
 	}
 
-	FileType fType;
+	~MapSelectionItem()
+	{
+		delete headerInfo;
+	}
+
 	boost::filesystem::path path;
 	MapCollection *collection;
+	MapHeader *headerInfo;
+};
+
+struct MapHeader
+{
+	int ver1;
+	int ver2;
+	std::string collectionName;
+	std::string description;
 };
 
 struct MapSelectionMenu
@@ -169,7 +176,7 @@ struct MapSelectionMenu
 	void UpdateItemText();
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
-
+	static MapHeader * ReadMapHeader(std::ifstream &is);
 
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text itemName[NUM_BOXES];
