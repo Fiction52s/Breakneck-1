@@ -2084,9 +2084,14 @@ void CustomMapsHandler::CheckBoxCallback( CheckBox *cb, const std::string & e )
 
 
 MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
-	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ), currIndex( 0 ),
+	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ),
 	oldCurrIndex( 0 )
 {
+	allItems = NULL;
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
+
 	Vector2f menuOffset(-1920, 0);
 	topMid = p_pos + Vector2f( BOX_WIDTH / 2, 0 ) + menuOffset;
 
@@ -2097,19 +2102,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 		itemName[i].setFont(font);
 		itemName[i].setCharacterSize(40);
 		itemName[i].setFillColor(Color::White);
-	}
-
-	waitFrames[0] = 10;
-	waitFrames[1] = 5;
-	waitFrames[2] = 2;
-
-	waitModeThresh[0] = 2;
-	waitModeThresh[1] = 2;
-
-	currWaitLevel = 0;
-	flipCounterUp = 0;
-	flipCounterDown = 0;
-	framesWaiting = 0;
+	}	
 
 	LoadItems();
 
@@ -2140,6 +2133,11 @@ void MapSelectionMenu::SetupBoxes()
 }
 
 #include <boost/filesystem.hpp>
+
+MapSelectionItem::~MapSelectionItem()
+{
+	delete headerInfo;
+}
 
 void MapSelectionMenu::LoadPath(boost::filesystem::path &p)
 {
@@ -2196,7 +2194,7 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	is >> versionString;
 	int sepIndex = versionString.find('.');
 	string part1 = versionString.substr(0, sepIndex);
-	string part2 = versionString.substr(sepIndex);
+	string part2 = versionString.substr(sepIndex + 1);
 	try
 	{
 		part1Num = stoi(part1);
@@ -2304,6 +2302,32 @@ void MapSelectionMenu::LoadItems()
 		collections.push_back((*it).second);
 	}
 
+	numTotalItems = 0;
+	for (auto it = collections.begin(); it != collections.end(); ++it)
+	{
+		++numTotalItems;
+		numTotalItems += (*it)->maps.size();
+	}
+
+	if (allItems != NULL)
+	{
+		delete[] allItems;
+	}
+	
+	allItems = new pair<string, MapCollection*>[numTotalItems];
+	
+	int ind = 0;
+	for (auto it = collections.begin(); it != collections.end(); ++it)
+	{
+		allItems[ind] = pair<string, MapCollection*>((*it)->collectionName, (*it));
+		++ind;
+		assert((*it)->maps.size() > 0);
+		for (auto it2 = (*it)->maps.begin(); it2 != (*it)->maps.end(); ++it2)
+		{
+			allItems[ind] = pair<string, MapCollection*>((*it2)->path.filename().stem().string(), NULL);
+			++ind;
+		}
+	}
 	//vector<path> v;
 	//try
 	//{
@@ -2388,125 +2412,65 @@ void MapSelectionMenu::LoadItems()
 	items.push_back(new MapSelectionItem("four", MapSelectionItem::F_MAP));
 	items.push_back(new MapSelectionItem("five", MapSelectionItem::F_MAP));*/
 
-	currItemIt = items.begin();
+	//currItemIt = items.begin();
 }
 
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
+	
+	int cIndex = saSelector->currIndex;
+	if (currInput.A && !prevInput.A)
+	{
+		int pIndex = GetPairIndex(cIndex);
+		MapCollection *mc = allItems[pIndex].second;
+		if (mc != NULL)
+		{
+			mc->expanded = !mc->expanded;
+			UpdateItemText();
+		}
+	}
+
 	bool up = currInput.LUp();
 	bool down = currInput.LDown();
 
-	int oldIndex = currIndex;
-	//bool consumed = controls[focusedIndex]->Update( curr, prev );
-
-	if (down)
+	if (saSelector->totalItems > 1 )
 	{
-		if (flipCounterDown == 0
-			|| (flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel])
-			)
+
+
+		int changed = saSelector->UpdateIndex(up, down);
+		cIndex = saSelector->currIndex;
+
+		bool inc = changed > 0;
+		bool dec = changed < 0;
+
+
+		if (inc)
 		{
-			if (flipCounterDown == 0)
+			if (cIndex - topIndex == NUM_BOXES)
 			{
-				currWaitLevel = 0;
+				topIndex = cIndex - (NUM_BOXES - 1);
 			}
-
-			++flipCounterDown;
-
-			if (flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+			else if (cIndex == 0)
 			{
-				currWaitLevel++;
-			}
-
-			flipCounterUp = 0;
-			framesWaiting = 0;
-
-			if (currIndex < items.size() - 1)
-			{
-				currIndex++;
-				++currItemIt;
-
-				if (currIndex - topIndex == NUM_BOXES)
-				{
-					topIndex = currIndex - (NUM_BOXES - 1);
-				}
-			}
-			else
-			{
-				currIndex = 0;
 				topIndex = 0;
-
-				assert(items.size() > 0);
-				currItemIt = items.begin();
 			}
 		}
-		else
+		else if (dec)
 		{
-			++framesWaiting;
+			if (cIndex == saSelector->totalItems - 1)
+				topIndex = max( saSelector->totalItems - NUM_BOXES, 0 );
+			else if (cIndex < topIndex)
+				topIndex = cIndex;
 		}
 
-	}
-	else if (up)
-	{
-		if (flipCounterUp == 0
-			|| (flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel])
-			)
+		if (changed != 0)
 		{
-			if (flipCounterUp == 0)
-			{
-				currWaitLevel = 0;
-			}
-
-			++flipCounterUp;
-
-			if (flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
-			{
-				currWaitLevel++;
-			}
-
-			flipCounterDown = 0;
-			framesWaiting = 0;
-			if (currIndex > 0)
-			{
-				currIndex--;
-				currItemIt--;
-
-				if (currIndex < topIndex)
-				{
-					topIndex = currIndex;
-				}
-			}
-			else
-			{
-				assert(items.size() > 0);
-				currItemIt = items.end();
-				--currItemIt;
-
-				currIndex = items.size() - 1;
-				topIndex = items.size() - NUM_BOXES;
-			}
+			UpdateItemText();
+			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 		}
-		else
-		{
-			++framesWaiting;
-		}
-
-	}
-	else
-	{
-		flipCounterUp = 0;
-		flipCounterDown = 0;
-		currWaitLevel = 0;
-		framesWaiting = 0;
 	}
 
-	if (currIndex != oldIndex)
-	{
-		UpdateItemText();
-		//cout << "currIndex: " << currIndex << ", topIndex: " << topIndex << endl;
-		//controls[oldIndex]->Unfocus();
-		//controls[focusedIndex]->Focus();
-	}
 	UpdateBoxesDebug();
 }
 
@@ -2530,30 +2494,55 @@ void MapSelectionMenu::MoveDown()
 
 void MapSelectionMenu::UpdateItemText()
 {
-	if (items.size() == 0)
+	int totalShownItems = 0;
+	for (auto it = collections.begin(); it != collections.end(); ++it)
+	{
+		++totalShownItems;
+		if ((*it)->expanded)
+		{
+			totalShownItems += (*it)->maps.size();
+		}
+	}
+
+	saSelector->totalItems = totalShownItems;
+	//saSelector->totalItems = numProfiles;
+
+	if (numTotalItems == 0)
 	{
 		return;
 	}
 
+	/*vector<string> itemStrings;
+	itemStrings.reserve(totalShownItems);
 
-	list<MapSelectionItem*>::iterator lit = items.begin();
-	if (topIndex > items.size())
+	for (auto it = collections.begin(); it != collections.end(); ++it)
 	{
-		topIndex = items.size() - 1;
+		itemStrings.push_back((*it)->collectionName);
+		if ((*it)->expanded)
+		{
+			for (auto it2 = (*it)->maps.begin(); it2 != (*it)->maps.end(); ++it2)
+			{
+				itemStrings.push_back((*it2)->path.filename().stem().string());
+			}
+		}
+	}*/
+
+	//list<MapSelectionItem*>::iterator lit = items.begin();
+	//auto lit = collections.begin();
+	if (topIndex > totalShownItems)
+	{
+		topIndex = totalShownItems - 1;
 	}
 
-	for (int i = 0; i < topIndex; ++i)
-	{
-		++lit;
-	}
+	int ind = topIndex;
 
 	int trueI;
 	int i = 0;
-	int numProfiles = items.size();
+	//int numItems = items.size();
 	for (; i < NUM_BOXES; ++i)
 	{
 		trueI = (topIndex + i) % NUM_BOXES;
-		if (i == numProfiles)
+		if (i == totalShownItems)
 		{
 			for (; i < NUM_BOXES; ++i)
 			{
@@ -2562,21 +2551,38 @@ void MapSelectionMenu::UpdateItemText()
 			break;
 		}
 
-		if (lit == items.end())
-			lit = items.begin();
-		string printStr = (*lit)->path.filename().stem().string().c_str();
+		if (ind == totalShownItems)
+			ind = 0;
+		
+		string printStr = allItems[GetPairIndex( ind )].first;//->path.filename().stem().string().c_str();
 		itemName[i].setString(printStr);
 		itemName[i].setOrigin(itemName[i].getLocalBounds().width / 2, 0);
 		itemName[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
 
-		++lit;
+		++ind;
 	}
+}
+
+int MapSelectionMenu::GetPairIndex(int index)
+{
+	int i = 0;
+	for (int it = 0; it < index; ++it)
+	{
+		if (allItems[i].second != NULL && !allItems[i].second->expanded )
+		{
+			i += allItems[i].second->maps.size();
+		}
+
+		++i;
+	}
+
+	return i;
 }
 
 void MapSelectionMenu::UpdateBoxesDebug()
 {
 	Color c;
-	int trueI = (currIndex - topIndex);// % NUM_BOXES;
+	int trueI = (saSelector->currIndex - topIndex);// % NUM_BOXES;
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
 		if (i == trueI)
@@ -2606,30 +2612,8 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 #include <fstream>
 MapCollection::MapCollection()
 {
+	expanded = false;
 	tags = 0;
-}
-
-bool MapCollection::Load( boost::filesystem::path path )
-{
-	ifstream is;
-	is.open(path.string());
-	if (is.is_open())
-	{
-		string map;
-		while (cin >> map)
-		{
-			map += string(".brknk");
-			maps.push_back(new MapSelectionItem(map, MapSelectionItem::FileType::F_MAP));
-		}
-
-
-		return true;
-	}
-	else
-	{
-		assert(0);
-		return false;
-	}
 }
 
 OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)

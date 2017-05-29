@@ -128,6 +128,7 @@ struct MapCollection
 
 	std::string collectionName;
 	std::list<MapSelectionItem*> maps;
+	bool expanded;
 };
 
 struct MapSelectionItem
@@ -138,10 +139,7 @@ struct MapSelectionItem
 	{
 	}
 
-	~MapSelectionItem()
-	{
-		delete headerInfo;
-	}
+	~MapSelectionItem();
 
 	boost::filesystem::path path;
 	MapCollection *collection;
@@ -156,6 +154,7 @@ struct MapHeader
 	std::string description;
 };
 
+struct SingleAxisSelector;
 struct MapSelectionMenu
 {
 	//TODO scrollbar to show how far in to the names you are
@@ -183,7 +182,7 @@ struct MapSelectionMenu
 
 	sf::Vector2f topMid;
 
-	int currIndex;
+	//int currIndex;
 	int oldCurrIndex;
 	int topIndex;
 
@@ -191,14 +190,14 @@ struct MapSelectionMenu
 	std::list<MapCollection*> collections;
 	void LoadPath( boost::filesystem::path & p);
 	sf::Font &font;
+	SingleAxisSelector *saSelector;
 
-	int waitFrames[3];
-	int waitModeThresh[2];
-	int framesWaiting;
-	int currWaitLevel;
-	int flipCounterUp;
-	int flipCounterDown;
 	std::list<MapSelectionItem*>::iterator currItemIt;
+
+
+	int numTotalItems;
+	std::pair<std::string, MapCollection *> *allItems;
+	int GetPairIndex(int index);
 
 	sf::Sprite previewSprite;
 	sf::Texture *previewTex;
