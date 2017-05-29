@@ -36,6 +36,7 @@ struct ControlProfileMenu;
 struct MultiLoadingScreen;
 struct ControlProfileManager;
 struct UIControlGrid;
+
 struct MultiSelectionSection : UIEventHandlerBase
 {
 	
@@ -54,8 +55,10 @@ struct MultiSelectionSection : UIEventHandlerBase
 		S_Count
 	};
 
-	MultiSelectionSection(MultiLoadingScreen *parent,
-		int p_playerIndex );
+	MultiSelectionSection( MainMenu *p_mainMenu,
+		MultiLoadingScreen *parent,
+		int p_playerIndex,
+		sf::Vector2f &topMid );
 	bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param );
 	Team team;
@@ -68,6 +71,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	bool active;
 	int playerIndex;
 	MultiLoadingScreen *parent;
+	MainMenu *mainMenu;
 	bool isReady;
 };
 
@@ -86,7 +90,7 @@ struct MultiLoadingScreen
 	bool AllPlayersReady();
 	int GetNumActivePlayers();
 	MainMenu *mainMenu;
-	ControlProfileManager *cpm;
+	
 	boost::thread *loadThread;
 	GameSession *gs;
 };
@@ -164,6 +168,13 @@ struct MapIndexInfo
 struct SingleAxisSelector;
 struct MapSelectionMenu
 {
+	enum State
+	{
+		S_SELECTING_MAP,
+		S_SELECTING_SKIN
+	};
+
+	State state;
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 24;
 	static const int BOX_WIDTH;
@@ -212,10 +223,13 @@ struct MapSelectionMenu
 	
 	sf::Sprite bg;
 	Tileset *ts_bg;
+
 	//sf::Sprite previewSprite;
 	//sf::Texture previewTex;
 
 	//void SetPreview();
+
+	MultiSelectionSection *singleSection;
 };
 
 struct SaveMenuScreen
@@ -344,6 +358,8 @@ struct MainMenu
 		S_SELECT,
 		S_Count
 	};
+
+	ControlProfileManager *cpm;
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	MapSelectionMenu *mapSelectionMenu;
 	OptionsMenuScreen *optionsMenu;

@@ -97,7 +97,8 @@ struct ControlProfileMenu : UIEventHandlerBase
 
 	ControlProfileMenu( MultiSelectionSection *section, 
 		int playerIndex,
-		std::list<ControlProfile*> &p_profiles );
+		std::list<ControlProfile*> &p_profiles,
+		sf::Vector2f &p_topMid );
 
 	
 

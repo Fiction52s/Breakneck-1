@@ -30,11 +30,11 @@ const int ControlProfileMenu::BOX_SPACING = 10;
 
 
 ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
-	int p_playerIndex, list<ControlProfile*> &p_profiles )
+	int p_playerIndex, list<ControlProfile*> &p_profiles, Vector2f &p_topMid )
 	:profiles( p_profiles ), playerIndex( p_playerIndex ), 
 	font( p_section->parent->mainMenu->arial ),
 	topIndex( 0 ), state( S_SELECTED ), oldCurrIndex( 0 ), 
-	section( p_section )
+	section( p_section ), topMid( p_topMid )
 {
 	assert(!p_profiles.empty());
 	int waitFrames[3] = { 10, 5, 2 };
@@ -43,8 +43,6 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 	currProfile = p_profiles.front(); //KIN 
 
-	int quarter = 1920 / 4;
-	topMid = Vector2f( quarter * playerIndex + quarter / 2, 1080-400 );
 
 	SetupBoxes();
 
@@ -75,14 +73,15 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	{
 		for( int j = 0; j < 4; ++j )
 		{
-			currButton = new UIButton( NULL, this, &section->parent->mainMenu->tilesetManager,
-				&section->parent->mainMenu->arial, buttonTexts[i*4+j], 220, 80 );
+			currButton = new UIButton( NULL, this, &section->mainMenu->tilesetManager,
+				&section->mainMenu->arial, buttonTexts[i*4+j], 220, 80 );
 			currButton->bar->SetTextHeight( 20 );
 			currButton->bar->SetTextAlignment( UIBar::Alignment::MIDDLE, Vector2i( 0, 3 ) );
 			controls[i*4+j] = currButton;
 		}
 	}
-
+	
+	int quarter = 1920 / 4;
 	editProfileGrid = new UIControlGrid( NULL, 2, 4, controls, 20, 20, true );
 	editProfileGrid->SetTopLeft( topMid.x - quarter/2 + 10, topMid.y + 10 );
 
@@ -344,7 +343,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		if( changed != 0 )
 		{
 			UpdateNames();
-			cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
+			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 			//controls[oldIndex]->Unfocus();
 			//controls[focusedIndex]->Focus();
 		}
@@ -387,7 +386,7 @@ bool ControlProfileMenu::SaveCurrConfig()
 		}
 	}
 
-	if( different ) section->parent->cpm->WriteProfiles();
+	if( different ) section->mainMenu->cpm->WriteProfiles();
 
 
 	state = S_SELECTED;

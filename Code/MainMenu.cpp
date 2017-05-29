@@ -34,14 +34,17 @@ const int MapSelectionMenu::BOX_SPACING = 0;
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
 
-MultiSelectionSection::MultiSelectionSection(MultiLoadingScreen *p_parent,
-	int p_playerIndex )
-	:parent( p_parent ), playerIndex( p_playerIndex ), team( T_NOT_CHOSEN ),
+MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MultiLoadingScreen *p_parent,
+	int p_playerIndex, Vector2f &p_topMid )
+	:mainMenu( p_mainMenu ), parent( p_parent ), playerIndex( p_playerIndex ), team( T_NOT_CHOSEN ),
 	skinIndex( S_STANDARD ), isReady( false ), active( false )
 {
 	profileSelect = new ControlProfileMenu( this,playerIndex,
-		parent->cpm->profiles );
-
+		mainMenu->cpm->profiles, p_topMid );
+	if (parent == NULL)
+	{
+		active = true;
+	}
 	//profileSelect->UpdateNames();	
 }
 
@@ -53,7 +56,7 @@ bool MultiSelectionSection::ButtonEvent( UIEvent eType,
 
 void MultiSelectionSection::Update()
 {
-	MainMenu *mm = parent->mainMenu;
+	MainMenu *mm = mainMenu;
 	ControllerState &currInput = mm->GetCurrInput( playerIndex );
 	ControllerState &prevInput = mm->GetPrevInput( playerIndex );
 
@@ -141,7 +144,15 @@ void MultiSelectionSection::Update()
 		profileSelect->Update( currInput, prevInput );
 	}
 
-	int numPlayersActive = parent->GetNumActivePlayers();
+	int numPlayersActive;
+	if (parent != NULL)
+	{
+		numPlayersActive  = parent->GetNumActivePlayers();
+	}
+	else
+	{
+		numPlayersActive = 1;
+	}
 	if( !isReady && currInput.start && !prevInput.start
 		&& profileSelect->state == ControlProfileMenu::S_SELECTED )
 	{
@@ -159,27 +170,34 @@ void MultiSelectionSection::Update()
 
 void MultiSelectionSection::Draw( sf::RenderTarget *target )
 {
-	sf::RectangleShape rs;
-	Color c;
-	switch( playerIndex )
+	
+	//if (parent != NULL)
 	{
-	case 0:
-		c = Color::Red;
-		break;
-	case 1:
-		c = Color::Yellow;
-		break;
-	case 2:
-		c = Color::White;
-		break;
-	case 3:
-		c = Color::Magenta;
-		break;
+		Color c;
+		switch (playerIndex)
+		{
+		case 0:
+			c = Color::Red;
+			break;
+		case 1:
+			c = Color::Yellow;
+			break;
+		case 2:
+			c = Color::White;
+			break;
+		case 3:
+			c = Color::Magenta;
+			break;
+		}
+
+		sf::RectangleShape rs;
+		rs.setFillColor(c);
+		rs.setSize(Vector2f(1920 / 4, 400));
+		rs.setOrigin(rs.getLocalBounds().width / 2, 0);
+		rs.setPosition(profileSelect->topMid);
+		target->draw(rs);
 	}
-	rs.setFillColor( c );
-	rs.setPosition( 1920 / 4 *  playerIndex, 1080 - 400 );
-	rs.setSize( Vector2f( 1920/4, 400 ) );
-	target->draw( rs );
+
 	target->draw( playerSprite );
 	profileSelect->Draw( target );
 }
@@ -187,12 +205,12 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	:mainMenu( p_mainMenu ), loadThread( NULL )
 {
-	cpm = new ControlProfileManager;
-	cpm->LoadProfiles();
 
+	int quarter = 1920 / 4;
 	for( int i = 0; i < 4; ++i )
 	{
-		playerSection[i] = new MultiSelectionSection( this, i );
+		Vector2f topMid = Vector2f(quarter * i + quarter / 2, 1080 - 400);
+		playerSection[i] = new MultiSelectionSection( mainMenu, this, i, topMid);
 	}
 
 	gs = NULL;
@@ -541,6 +559,9 @@ MainMenu::MainMenu()
 	numSlideFrames = 60;
 
 	Init();
+
+	cpm = new ControlProfileManager;
+	cpm->LoadProfiles();
 
 	multiLoadingScreen = new MultiLoadingScreen( this );
 
@@ -2120,6 +2141,11 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	bg.setTexture(*ts_bg->texture);
 	bg.setPosition(menuOffset);
 
+	//playerindex may change later
+	singleSection = new MultiSelectionSection(mainMenu, NULL, 0, Vector2f( 190, 120 ) + menuOffset);
+	
+	state = S_SELECTING_MAP;
+
 	LoadItems();
 
 	UpdateItemText();
@@ -2365,75 +2391,95 @@ void MapSelectionMenu::LoadItems()
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
-	if (currInput.B && !prevInput.B)
-	{
-		mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MAIN);
-	}
 
-	int cIndex = saSelector->currIndex;
-	if (currInput.A && !prevInput.A)
+	if (state == S_SELECTING_MAP)
 	{
+		if (currInput.B && !prevInput.B)
+		{
+			mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MAIN);
+		}
+
+		int cIndex = saSelector->currIndex;
 		int pIndex = GetPairIndex(cIndex);
-		MapCollection *mc = allItems[pIndex].second.coll;
-		if (mc != NULL)
+		if (currInput.A && !prevInput.A)
 		{
-			mc->expanded = !mc->expanded;
-			UpdateItemText();
-		}
-	}
-
-	bool up = currInput.LUp();
-	bool down = currInput.LDown();
-
-	if (saSelector->totalItems > 1 )
-	{
-		int changed = saSelector->UpdateIndex(up, down);
-		cIndex = saSelector->currIndex;
-
-		bool inc = changed > 0;
-		bool dec = changed < 0;
-
-
-		if (inc)
-		{
-			if (cIndex - topIndex == NUM_BOXES)
+			MapCollection *mc = allItems[pIndex].second.coll;
+			if (mc != NULL)
 			{
-				topIndex = cIndex - (NUM_BOXES - 1);
-			}
-			else if (cIndex == 0)
-			{
-				topIndex = 0;
-			}
-		}
-		else if (dec)
-		{
-			if (cIndex == saSelector->totalItems - 1)
-				topIndex = max( saSelector->totalItems - NUM_BOXES, 0 );
-			else if (cIndex < topIndex)
-				topIndex = cIndex;
-		}
-
-		if (changed != 0)
-		{
-			UpdateItemText();
-
-			int pIndex = GetPairIndex(cIndex);
-			if (allItems[pIndex].second.item == NULL)
-			{
-				descriptionText.setString("");
-				previewBlank = true;
+				mc->expanded = !mc->expanded;
+				UpdateItemText();
 			}
 			else
 			{
-				descriptionText.setString(allItems[pIndex].second.item->headerInfo->description);
-				previewSprite.setTexture(*allItems[pIndex].second.item->ts_preview->texture);
-				previewBlank = false;
+				MapSelectionItem *item = allItems[pIndex].second.item;
+				state = S_SELECTING_SKIN;
 			}
-			
+		}
+
+		bool up = currInput.LUp();
+		bool down = currInput.LDown();
+
+		if (saSelector->totalItems > 1)
+		{
+			int changed = saSelector->UpdateIndex(up, down);
+			cIndex = saSelector->currIndex;
+
+			bool inc = changed > 0;
+			bool dec = changed < 0;
+
+			if (inc)
+			{
+				if (cIndex - topIndex == NUM_BOXES)
+				{
+					topIndex = cIndex - (NUM_BOXES - 1);
+				}
+				else if (cIndex == 0)
+				{
+					topIndex = 0;
+				}
+			}
+			else if (dec)
+			{
+				if (cIndex == saSelector->totalItems - 1)
+					topIndex = max(saSelector->totalItems - NUM_BOXES, 0);
+				else if (cIndex < topIndex)
+					topIndex = cIndex;
+			}
+
+			if (changed != 0)
+			{
+				UpdateItemText();
+
+				int pIndex = GetPairIndex(cIndex);
+				if (allItems[pIndex].second.item == NULL)
+				{
+					descriptionText.setString("");
+					previewBlank = true;
+				}
+				else
+				{
+					descriptionText.setString(allItems[pIndex].second.item->headerInfo->description);
+					previewSprite.setTexture(*allItems[pIndex].second.item->ts_preview->texture);
+					previewBlank = false;
+				}
+
+			}
+		}
+
+
+		UpdateBoxesDebug();
+	}
+	else if (state == S_SELECTING_SKIN)
+	{
+		if (currInput.B && !prevInput.B)
+		{
+			state = S_SELECTING_MAP;
+		}
+		else
+		{
+			singleSection->Update();
 		}
 	}
-
-	UpdateBoxesDebug();
 }
 
 void MapSelectionMenu::MoveUp()
@@ -2576,6 +2622,13 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	}
 
 	target->draw(descriptionText);
+
+	if (state == S_SELECTING_SKIN)
+	{
+		singleSection->Draw(target);
+		//target->draw(playerSprite);
+		//profileSelect->Draw(target);
+	}
 }
 
 #include <fstream>

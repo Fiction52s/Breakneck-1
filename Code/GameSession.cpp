@@ -5740,7 +5740,7 @@ bool GameSession::Load()
 	{
 		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		GetController(i).SetFilter( mainMenu->multiLoadingScreen->cpm->profiles.front()->filter );
+		GetController(i).SetFilter( mainMenu->cpm->profiles.front()->filter );
 	}
 
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
