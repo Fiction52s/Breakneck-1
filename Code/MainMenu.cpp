@@ -2467,7 +2467,6 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		if (changed != 0)
 		{
 			UpdateItemText();
-			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 		}
 	}
 
@@ -2554,10 +2553,18 @@ void MapSelectionMenu::UpdateItemText()
 		if (ind == totalShownItems)
 			ind = 0;
 		
-		string printStr = allItems[GetPairIndex( ind )].first;//->path.filename().stem().string().c_str();
+		pair<string, MapCollection*> &p = allItems[GetPairIndex(ind)];
+		string printStr = p.first;//->path.filename().stem().string().c_str();
 		itemName[i].setString(printStr);
-		itemName[i].setOrigin(itemName[i].getLocalBounds().width / 2, 0);
-		itemName[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+		//itemName[i].setOrigin(itemName[i].getLocalBounds().width / 2, 0);
+		itemName[i].setOrigin(0, 0);
+
+		int xVal = topMid.x - BOX_WIDTH / 2;
+		if (p.second == NULL)
+		{
+			xVal += 50;
+		}
+		itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
 
 		++ind;
 	}
