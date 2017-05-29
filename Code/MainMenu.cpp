@@ -2109,6 +2109,17 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	descriptionText.setFillColor(Color::White);
 	descriptionText.setPosition(Vector2f( 960 + 100, 680 + 40) + menuOffset);
 
+	previewBlank = true;
+	blankTest.setFillColor(Color::Blue);
+	blankTest.setSize(Vector2f(960, 540));
+	blankTest.setPosition(Vector2f( 960, 0 ) + menuOffset);
+
+	previewSprite.setPosition(blankTest.getPosition());
+
+	ts_bg = mainMenu->tilesetManager.GetTileset("Menu/map_load_1920x1080.png", 1920, 1080);
+	bg.setTexture(*ts_bg->texture);
+	bg.setPosition(menuOffset);
+
 	LoadItems();
 
 	UpdateItemText();
@@ -2271,11 +2282,15 @@ void MapSelectionMenu::LoadItems()
 		if (is.is_open())
 		{
 			MapHeader *mh = ReadMapHeader(is);
+			string pFile = string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
 
 			if (collectionMap.find(mh->collectionName) != collectionMap.end())
 			{
 
 				MapSelectionItem *item = new MapSelectionItem((*it), mh);
+
+				
+				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
 				//assert(0);
 				MapCollection *temp = collectionMap[mh->collectionName];
 
@@ -2287,6 +2302,8 @@ void MapSelectionMenu::LoadItems()
 			else
 			{
 				MapSelectionItem *item = new MapSelectionItem((*it), mh);
+
+				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
 
 				MapCollection *coll = new MapCollection;
 				collectionMap[mh->collectionName] = coll;
@@ -2400,10 +2417,13 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			if (allItems[pIndex].second.item == NULL)
 			{
 				descriptionText.setString("");
+				previewBlank = true;
 			}
 			else
 			{
 				descriptionText.setString(allItems[pIndex].second.item->headerInfo->description);
+				previewSprite.setTexture(*allItems[pIndex].second.item->ts_preview->texture);
+				previewBlank = false;
 			}
 			
 		}
@@ -2534,10 +2554,21 @@ void MapSelectionMenu::UpdateBoxesDebug()
 
 void MapSelectionMenu::Draw(sf::RenderTarget *target)
 {
+	target->draw(bg);
+
 	target->draw(boxes, NUM_BOXES * 4, sf::Quads);
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
 		target->draw(itemName[i]);
+	}
+
+	if (previewBlank)
+	{
+		target->draw(blankTest);
+	}
+	else
+	{
+		target->draw(previewSprite);
 	}
 
 	target->draw(descriptionText);

@@ -144,6 +144,7 @@ struct MapSelectionItem
 	boost::filesystem::path path;
 	MapCollection *collection;
 	MapHeader *headerInfo;
+	Tileset *ts_preview;
 };
 
 struct MapHeader
@@ -204,10 +205,13 @@ struct MapSelectionMenu
 	int GetPairIndex(int index);
 
 	sf::Sprite previewSprite;
-	sf::Texture *previewTex;
+	bool previewBlank;
+	sf::RectangleShape blankTest;
 
 	sf::Text descriptionText;
 	
+	sf::Sprite bg;
+	Tileset *ts_bg;
 	//sf::Sprite previewSprite;
 	//sf::Texture previewTex;
 
