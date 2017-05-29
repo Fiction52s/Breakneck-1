@@ -27,8 +27,8 @@ sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
 sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 
-const int MapSelectionMenu::BOX_WIDTH = 480;
-const int MapSelectionMenu::BOX_HEIGHT = 50;
+const int MapSelectionMenu::BOX_WIDTH = 580;
+const int MapSelectionMenu::BOX_HEIGHT = 40;
 const int MapSelectionMenu::BOX_SPACING = 0;
 
 sf::Font MainMenu::arial;
@@ -544,7 +544,7 @@ MainMenu::MainMenu()
 
 	multiLoadingScreen = new MultiLoadingScreen( this );
 
-	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 0));
+	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(380, 100));
 
 	optionsMenu = new OptionsMenuScreen(this);
 
@@ -2104,6 +2104,11 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 		itemName[i].setFillColor(Color::White);
 	}	
 
+	descriptionText.setFont(font);
+	descriptionText.setCharacterSize(20);
+	descriptionText.setFillColor(Color::White);
+	descriptionText.setPosition(Vector2f( 960 + 100, 680 + 40) + menuOffset);
+
 	LoadItems();
 
 	UpdateItemText();
@@ -2182,7 +2187,6 @@ void MapSelectionMenu::LoadPath(boost::filesystem::path &p)
 
 MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 {
-
 	MapHeader *mh = new MapHeader;
 
 	assert(is.is_open());
@@ -2218,6 +2222,10 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	char curr = 0;
 	stringstream ss;
 	string tempStr;
+	if (!is.get()) //get newline char out of the way
+	{
+		assert(0);
+	}
 	while (true)
 	{
 		last = curr;
@@ -2289,7 +2297,7 @@ void MapSelectionMenu::LoadItems()
 				coll->maps.push_back(item);
 			}
 
-			delete mh;
+			//delete mh;
 		}
 		else
 		{
@@ -2314,105 +2322,27 @@ void MapSelectionMenu::LoadItems()
 		delete[] allItems;
 	}
 	
-	allItems = new pair<string, MapCollection*>[numTotalItems];
+	allItems = new pair<string, MapIndexInfo>[numTotalItems];
 	
 	int ind = 0;
 	for (auto it = collections.begin(); it != collections.end(); ++it)
 	{
-		allItems[ind] = pair<string, MapCollection*>((*it)->collectionName, (*it));
+		MapIndexInfo mi;
+		mi.coll = (*it);
+		mi.item = NULL;
+
+		allItems[ind] = pair<string, MapIndexInfo>((*it)->collectionName, mi);
 		++ind;
 		assert((*it)->maps.size() > 0);
 		for (auto it2 = (*it)->maps.begin(); it2 != (*it)->maps.end(); ++it2)
 		{
-			allItems[ind] = pair<string, MapCollection*>((*it2)->path.filename().stem().string(), NULL);
+			mi.coll = NULL;
+			mi.item = (*it2);
+
+			allItems[ind] = pair<string, MapIndexInfo>((*it2)->path.filename().stem().string(), mi);
 			++ind;
 		}
 	}
-	//vector<path> v;
-	//try
-	//{
-	//	if (exists(p))    // does p actually exist?
-	//	{
-	//		if (is_regular_file(p))        // is p a regular file?   
-	//		{
-	//			if (p.extension().string() == ".brknk")
-	//			{
-	//				//string name = p.filename().string();
-	//				parentNode->files.push_back(p);//name.substr( 0, name.size() - 6 ) );
-	//				numTotalEntries++;
-	//			}
-	//		}
-	//		else if (is_directory(p))      // is p a directory?
-	//		{
-	//			//cout << p << " is a directory containing:\n";
-
-	//			TreeNode *newDir = new TreeNode;
-	//			newDir->parent = parentNode;
-	//			newDir->next = NULL;
-	//			newDir->name = p.filename().string();
-	//			newDir->filePath = p;
-
-	//			copy(directory_iterator(p), directory_iterator(), back_inserter(v));
-
-	//			sort(v.begin(), v.end());             // sort, since directory iteration
-	//												  // is not ordered on some file systems
-
-	//			if (parentNode == NULL)
-	//			{
-	//				entries = newDir;
-	//			}
-	//			else
-	//			{
-	//				parentNode->dirs.push_back(newDir);
-	//			}
-	//			numTotalEntries++;
-
-
-	//			for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
-	//			{
-	//				UpdateMapList(newDir, relativePath + "/" + (*it).filename().string());
-	//				cout << "   " << *it << '\n';
-	//			}
-	//		}
-	//		else
-	//			cout << p << " exists, but is neither a regular file nor a directory\n";
-	//	}
-	//	else
-	//		cout << p << " does not exist\n";
-	//}
-	//catch (const filesystem_error& ex)
-	//{
-	//	cout << ex.what() << '\n';
-	//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*MapCollection *mc = new MapCollection;
-	if (!mc->Load("Maps/testcollection.col"))
-	{
-		assert(0);
-	}
-
-	MapSelectionItem( "Maps/testcollection.col", )
-
-	items.push_back(mc);*/
-	/*items.push_back(new MapSelectionItem( "one", MapSelectionItem::F_CONTAINER ) );
-	items.push_back(new MapSelectionItem("two", MapSelectionItem::F_MAP));
-	items.push_back(new MapSelectionItem("three", MapSelectionItem::F_MAP));
-	items.push_back(new MapSelectionItem("four", MapSelectionItem::F_MAP));
-	items.push_back(new MapSelectionItem("five", MapSelectionItem::F_MAP));*/
-
-	//currItemIt = items.begin();
 }
 
 void MapSelectionMenu::Update(ControllerState &currInput,
@@ -2423,7 +2353,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	if (currInput.A && !prevInput.A)
 	{
 		int pIndex = GetPairIndex(cIndex);
-		MapCollection *mc = allItems[pIndex].second;
+		MapCollection *mc = allItems[pIndex].second.coll;
 		if (mc != NULL)
 		{
 			mc->expanded = !mc->expanded;
@@ -2436,8 +2366,6 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 	if (saSelector->totalItems > 1 )
 	{
-
-
 		int changed = saSelector->UpdateIndex(up, down);
 		cIndex = saSelector->currIndex;
 
@@ -2467,6 +2395,17 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		if (changed != 0)
 		{
 			UpdateItemText();
+
+			int pIndex = GetPairIndex(cIndex);
+			if (allItems[pIndex].second.item == NULL)
+			{
+				descriptionText.setString("");
+			}
+			else
+			{
+				descriptionText.setString(allItems[pIndex].second.item->headerInfo->description);
+			}
+			
 		}
 	}
 
@@ -2504,30 +2443,12 @@ void MapSelectionMenu::UpdateItemText()
 	}
 
 	saSelector->totalItems = totalShownItems;
-	//saSelector->totalItems = numProfiles;
 
 	if (numTotalItems == 0)
 	{
 		return;
 	}
 
-	/*vector<string> itemStrings;
-	itemStrings.reserve(totalShownItems);
-
-	for (auto it = collections.begin(); it != collections.end(); ++it)
-	{
-		itemStrings.push_back((*it)->collectionName);
-		if ((*it)->expanded)
-		{
-			for (auto it2 = (*it)->maps.begin(); it2 != (*it)->maps.end(); ++it2)
-			{
-				itemStrings.push_back((*it2)->path.filename().stem().string());
-			}
-		}
-	}*/
-
-	//list<MapSelectionItem*>::iterator lit = items.begin();
-	//auto lit = collections.begin();
 	if (topIndex > totalShownItems)
 	{
 		topIndex = totalShownItems - 1;
@@ -2537,7 +2458,6 @@ void MapSelectionMenu::UpdateItemText()
 
 	int trueI;
 	int i = 0;
-	//int numItems = items.size();
 	for (; i < NUM_BOXES; ++i)
 	{
 		trueI = (topIndex + i) % NUM_BOXES;
@@ -2553,16 +2473,21 @@ void MapSelectionMenu::UpdateItemText()
 		if (ind == totalShownItems)
 			ind = 0;
 		
-		pair<string, MapCollection*> &p = allItems[GetPairIndex(ind)];
-		string printStr = p.first;//->path.filename().stem().string().c_str();
+		pair<string, MapIndexInfo> &p = allItems[GetPairIndex(ind)];
+		string printStr = p.first;
 		itemName[i].setString(printStr);
-		//itemName[i].setOrigin(itemName[i].getLocalBounds().width / 2, 0);
 		itemName[i].setOrigin(0, 0);
 
 		int xVal = topMid.x - BOX_WIDTH / 2;
-		if (p.second == NULL)
+		if (p.second.coll == NULL) //its just a file
 		{
+			MapSelectionItem *mi = p.second.item;
+			
 			xVal += 50;
+		}
+		else
+		{
+			//descriptionText.setString("");
 		}
 		itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
 
@@ -2575,9 +2500,9 @@ int MapSelectionMenu::GetPairIndex(int index)
 	int i = 0;
 	for (int it = 0; it < index; ++it)
 	{
-		if (allItems[i].second != NULL && !allItems[i].second->expanded )
+		if (allItems[i].second.coll != NULL && !allItems[i].second.coll->expanded )
 		{
-			i += allItems[i].second->maps.size();
+			i += allItems[i].second.coll->maps.size();
 		}
 
 		++i;
@@ -2589,7 +2514,7 @@ int MapSelectionMenu::GetPairIndex(int index)
 void MapSelectionMenu::UpdateBoxesDebug()
 {
 	Color c;
-	int trueI = (saSelector->currIndex - topIndex);// % NUM_BOXES;
+	int trueI = (saSelector->currIndex - topIndex);
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
 		if (i == trueI)
@@ -2614,6 +2539,8 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	{
 		target->draw(itemName[i]);
 	}
+
+	target->draw(descriptionText);
 }
 
 #include <fstream>

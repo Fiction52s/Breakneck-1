@@ -154,11 +154,17 @@ struct MapHeader
 	std::string description;
 };
 
+struct MapIndexInfo
+{
+	MapCollection*coll;
+	MapSelectionItem *item;
+};
+
 struct SingleAxisSelector;
 struct MapSelectionMenu
 {
 	//TODO scrollbar to show how far in to the names you are
-	static const int NUM_BOXES = 10;
+	static const int NUM_BOXES = 24;
 	static const int BOX_WIDTH;
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
@@ -182,7 +188,6 @@ struct MapSelectionMenu
 
 	sf::Vector2f topMid;
 
-	//int currIndex;
 	int oldCurrIndex;
 	int topIndex;
 
@@ -191,16 +196,17 @@ struct MapSelectionMenu
 	void LoadPath( boost::filesystem::path & p);
 	sf::Font &font;
 	SingleAxisSelector *saSelector;
-
 	std::list<MapSelectionItem*>::iterator currItemIt;
 
 
 	int numTotalItems;
-	std::pair<std::string, MapCollection *> *allItems;
+	std::pair<std::string,MapIndexInfo> *allItems;
 	int GetPairIndex(int index);
 
 	sf::Sprite previewSprite;
 	sf::Texture *previewTex;
+
+	sf::Text descriptionText;
 	
 	//sf::Sprite previewSprite;
 	//sf::Texture previewTex;
