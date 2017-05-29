@@ -2140,9 +2140,147 @@ void MapSelectionMenu::SetupBoxes()
 }
 
 #include <boost/filesystem.hpp>
+
+void MapSelectionMenu::LoadPath(boost::filesystem::path &p)
+{
+	vector<path> v;
+	try
+	{
+		if (exists(p))    // does p actually exist?
+		{
+			if (is_regular_file(p))        // is p a regular file?   
+			{
+				if (p.extension().string() == ".brknk")
+				{
+					items.push_back(p);
+				}
+			}
+			else if (is_directory(p))      // is p a directory?
+			{
+				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
+
+				sort(v.begin(), v.end());
+
+				for (vector<path>::iterator it(v.begin()); it != v.end(); ++it)
+				{
+					LoadPath( (*it));
+				}
+			}
+			else
+				cout << p << " exists, but is neither a regular file nor a directory\n";
+		}
+		else
+		{
+			cout << p << " does not exist\n";
+			assert(0);
+		}
+	}
+	catch (const filesystem_error& ex)
+	{
+		cout << ex.what() << '\n';
+		assert(0);
+	}
+}
+
 void MapSelectionMenu::LoadItems()
 {
-	//path p(current_path() / "/Maps/");
+	path p(current_path() / "/Maps/");
+	LoadPath(p);
+
+	map<string, MapCollection*> collectionMap;
+	for (auto it = items.begin(); it != items.end(); ++it)
+	{
+		int part1Num = -1;
+		int part2Num = -1;
+
+		ifstream is;
+		is.open((*it).string());
+		if (is.is_open())
+		{
+			//get version
+			string versionString;
+			is >> versionString;
+			int sepIndex = versionString.find('.');
+			string part1 = versionString.substr(0, sepIndex );
+			string part2 = versionString.substr(sepIndex);
+			try
+			{
+				part1Num = stoi(part1);
+			}
+			catch ( std::exception & e)
+			{
+				assert(0);
+			}
+
+			try
+			{
+				part2Num = stoi(part2);
+			}
+			catch (std::exception & e)
+			{
+				assert(0);
+			}
+
+			//get description
+			char last = 0;
+			char curr = 0;
+			stringstream ss;
+			string tempStr;
+			while (true)
+			{
+				last = curr;
+				if (!is.get(curr))
+				{
+					assert(0);
+				}
+
+				if (last == '<' && curr == '>')
+				{
+					break;
+				}
+				else
+				{
+					if( last != 0 )
+					{
+						ss << last;
+					}
+				}
+			}
+
+			string collectionName;
+			is >> collectionName;
+
+			
+
+			if (collectionMap.find(collectionName) != collectionMap.end())
+			{
+				//assert(0);
+				auto temp = collectionMap[collectionName];
+
+				temp->collectionName = collectionName;
+				temp->maps.push_back((*it).string());
+				
+			}
+			else
+			{
+				collectionMap[collectionName] = new MapCollection;
+
+				auto temp = collectionMap[collectionName];
+
+				temp->collectionName = collectionName;
+				temp->maps.push_back((*it).string());
+			}
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+
+	for( auto it = collectionMap.begin(); it != collectionMap.end(); ++it )
+	{
+		collections.push_back((*it).second);
+	}
 
 	//vector<path> v;
 	//try

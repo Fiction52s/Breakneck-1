@@ -1312,7 +1312,7 @@ struct EditSession : GUIHandler
 
 	static void s_CreatePreview( EditSession *session, 
 		sf::Vector2i imageSize );
-	void CreatePreview( Vector2i imageSize );
+	void CreatePreview( sf::Vector2i imageSize );
 	sf::RenderTexture *mapPreviewTex;
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );

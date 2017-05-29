@@ -78,9 +78,10 @@ struct MultiLoadingScreen
 	void Update();
 	void Draw( sf::RenderTarget *target );
 	MultiSelectionSection *playerSection[4];
+	boost::filesystem::path filePath;
 	sf::Sprite previewSprite;
 	sf::Texture previewTex;
-	boost::filesystem::path filePath;
+	
 	void SetPreview();
 	bool AllPlayersReady();
 	int GetNumActivePlayers();
@@ -102,6 +103,14 @@ struct OptionsMenuScreen
 	MainMenu *mainMenu;
 };
 
+struct MapHeaderInfo
+{
+	std::string description;
+	std::string collectionName;
+	int verA;
+	int verB;
+};
+
 struct MapSelectionItem;
 struct MapCollection
 {
@@ -114,10 +123,10 @@ struct MapCollection
 	int tags;
 
 	MapCollection();
-	bool Load(boost::filesystem::path path);
+	//bool Load(boost::filesystem::path path);
 
 	std::string collectionName;
-	std::list<MapSelectionItem*> maps;
+	std::list<boost::filesystem::path> maps;
 };
 
 struct MapSelectionItem
@@ -161,6 +170,7 @@ struct MapSelectionMenu
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
 
+
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text itemName[NUM_BOXES];
 
@@ -170,7 +180,9 @@ struct MapSelectionMenu
 	int oldCurrIndex;
 	int topIndex;
 
-	std::list<MapSelectionItem*> items;
+	std::list<boost::filesystem::path> items;
+	std::list<MapCollection*> collections;
+	void LoadPath( boost::filesystem::path & p);
 	sf::Font &font;
 
 	int waitFrames[3];
@@ -180,6 +192,14 @@ struct MapSelectionMenu
 	int flipCounterUp;
 	int flipCounterDown;
 	std::list<MapSelectionItem*>::iterator currItemIt;
+
+	sf::Sprite previewSprite;
+	sf::Texture *previewTex;
+	
+	//sf::Sprite previewSprite;
+	//sf::Texture previewTex;
+
+	//void SetPreview();
 };
 
 struct SaveMenuScreen
