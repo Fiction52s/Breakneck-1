@@ -2365,7 +2365,11 @@ void MapSelectionMenu::LoadItems()
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
-	
+	if (currInput.B && !prevInput.B)
+	{
+		mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MAIN);
+	}
+
 	int cIndex = saSelector->currIndex;
 	if (currInput.A && !prevInput.A)
 	{
