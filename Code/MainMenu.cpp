@@ -565,7 +565,7 @@ MainMenu::MainMenu()
 
 	multiLoadingScreen = new MultiLoadingScreen( this );
 
-	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(380, 100));
+	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 100));
 
 	optionsMenu = new OptionsMenuScreen(this);
 
@@ -2128,7 +2128,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	descriptionText.setFont(font);
 	descriptionText.setCharacterSize(20);
 	descriptionText.setFillColor(Color::White);
-	descriptionText.setPosition(Vector2f( 960 + 100, 680 + 40) + menuOffset);
+	descriptionText.setPosition(Vector2f( 960 + 150, 680 + 40) + menuOffset);
 
 	previewBlank = true;
 	blankTest.setFillColor(Color::Blue);
@@ -2142,7 +2142,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	bg.setPosition(menuOffset);
 
 	//playerindex may change later
-	singleSection = new MultiSelectionSection(mainMenu, NULL, 0, Vector2f( 0, 120 ) + menuOffset);
+	singleSection = new MultiSelectionSection(mainMenu, NULL, 0, Vector2f( 580 + 240, 680 ) + menuOffset);
 	
 	state = S_SELECTING_MAP;
 

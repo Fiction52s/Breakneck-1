@@ -949,7 +949,9 @@ void GameSession::Cleanup()
 		{
 			delete edges[i];
 		}
-		delete[] edges;
+		delete [] edges;
+
+		edges = NULL;
 	}
 
 	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
@@ -5387,6 +5389,7 @@ bool GameSession::Load()
 
 	if (!ShouldContinueLoading())
 	{
+		cout << "cleanup 0" << endl;
 		Cleanup();
 		return false;
 	}
@@ -5515,6 +5518,7 @@ bool GameSession::Load()
 
 	if (!ShouldContinueLoading())
 	{
+		cout << "cleanup blabhagbo4a" << endl;
 		Cleanup();
 		return false;
 	}
@@ -5616,7 +5620,9 @@ bool GameSession::Load()
 
 	if (!ShouldContinueLoading())
 	{
+		cout << "cleanup A" << endl;
 		Cleanup();
+		
 		return false;
 	}
 
@@ -5689,7 +5695,9 @@ bool GameSession::Load()
 		
 	if (!ShouldContinueLoading())
 	{
+		cout << "cleanup B" << endl;
 		Cleanup();
+		
 		return false;
 	}
 
@@ -5808,6 +5816,7 @@ bool GameSession::Load()
 
 	if (!ShouldContinueLoading())
 	{
+		cout << "cleanup FF" << endl;
 		Cleanup();
 		return false;
 	}
@@ -8834,6 +8843,59 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
+	goalPulse = NULL;
+	pauseMenu = NULL;
+
+
+	for (int i = 0; i < 4; ++i)
+	{
+		players[i] = NULL;
+	}
+
+	soundManager = NULL;
+	
+	keyMarker = NULL;
+	
+	specterTree = NULL;
+	
+	envPlantTree = NULL;
+	
+	itemTree = NULL;
+	
+	gateTree = NULL;
+	
+	lightTree = NULL;
+	
+	grassTree = NULL;
+	
+	borderTree = NULL;
+	
+	enemyTree = NULL;
+	
+	terrainTree = NULL;
+	
+	terrainBGTree = NULL;
+	
+	scoreDisplay = NULL;
+	
+	soundNodeList = NULL;
+	
+		
+
+		
+	
+
+	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		delete (*it);
+	}
+	polygons.clear();
+
+	powerRing = NULL;
+	powerWheel = NULL;
+	polyShaders = NULL;
+	ts_polyShaders = NULL;
+	testPar = NULL;
 	va = NULL;
 	edges = NULL;
 	activeEnemyList = NULL;
