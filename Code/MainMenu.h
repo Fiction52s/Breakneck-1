@@ -198,7 +198,11 @@ struct MapSelectionMenu
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text itemName[NUM_BOXES];
 
+	void LoadMap();
+	boost::thread *loadThread;
+
 	sf::Vector2f topMid;
+	GameSession *gs;
 
 	int oldCurrIndex;
 	int topIndex;

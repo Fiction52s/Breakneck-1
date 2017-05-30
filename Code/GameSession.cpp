@@ -783,436 +783,185 @@ void KeyMarker::Update()
 
 GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
 	const std::string &p_fileName )
-	:va(NULL),edges(NULL), activeEnemyList( NULL ), pauseFrames( 0 )
-	,groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
+	:groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_fileName )
 {	
-	raceFight = NULL;
-
-	recPlayer = NULL;
-	repPlayer = NULL;
-	recGhost = NULL;
-	repGhost = NULL;
-	multiSession = true;
-	showTerrainDecor = true;
-	shipExitSeq = NULL;
-	activeDialogue = NULL;
-
-	keyFrame = 0;
-	for( int i = 0; i < EffectLayer::Count; ++i )
-	{
-		effectLists[i] = NULL;
-	}
-	//TestVA::bushFrame = 0;
-
 	mainMenu = p_mainMenu;
-	window = mainMenu->window;
-	preScreenTex = mainMenu->preScreenTexture;
-	postProcessTex = mainMenu->postProcessTexture;
-	postProcessTex1 = mainMenu->postProcessTexture1;
-	postProcessTex2 = mainMenu->postProcessTexture2;
-	mapTex = mainMenu->mapTexture;
-	minimapTex = mainMenu->minimapTexture;
-	pauseTex = mainMenu->pauseTexture;
+	Init();
+}
 
-	arial.loadFromFile( "Breakneck_Font_01.ttf" );
-	soundNodeList = new SoundNodeList( 10 );
-	soundNodeList->SetGlobalVolume( mainMenu->config->GetData().volume );
-	scoreDisplay = new ScoreDisplay( this, Vector2f( 1920, 0 ), arial );
-	
-	currentZone = NULL;
-	Movable::owner = this;
-	b_crawler = NULL;
-	b_bird = NULL;
-	b_coyote = NULL;
-	b_tiger = NULL;
-	b_gator = NULL;
-	b_skeleton = NULL;
-
-	cutPlayerInput = false;
-	//powerOrbs = new PowerOrbs( true, true, true, true, true, true);
-	//powerOrbs = new PowerOrbs( this, true, true, true, false, false, false);
-	
-	Vector2f miniPos = Vector2f( 30, 750 );
-	miniVA[0].position = miniPos + Vector2f( 0, 0 );
-	miniVA[1].position = miniPos + Vector2f( 300, 0 );
-	miniVA[2].position = miniPos + Vector2f( 300, 300 );
-	miniVA[3].position = miniPos + Vector2f( 0, 300 );
-
-	miniVA[0].texCoords = Vector2f( 0, 0 );
-	miniVA[1].texCoords = Vector2f( 300, 0 );
-	miniVA[2].texCoords = Vector2f( 300, 300 );
-	miniVA[3].texCoords = Vector2f( 0, 300 );
-
-	miniVA[0].color = Color::Red;
-	miniVA[1].color = Color::Blue;
-	miniVA[2].color = Color::Green;
-	miniVA[3].color = Color::Magenta;
-
-	//miniGoalPtrTex.loadFromFile( 
-
-	//minimapCircle.setRadius( 500 );
-	//minimapCircle.setFillColor( Color::Red );
-	//minimapCircle.setPosition( 100, 100
-	//	);
-	miniRect.setSize( Vector2f( 300, 300 ) );
-	miniRect.setPosition( 500, 500 );
-
-	/*minimapVA = new VertexArray( sf::Quads, 4 );
-	VertexArray &mva = *minimapVA;
-
-	float w = minimapTex->getSize().x;
-	float h = minimapTex->getSize().y;
-
-	
-
-	mva[0].position = minimapCenter + Vector2f( -w / 2, - h / 2 );
-	mva[1].position = minimapCenter + Vector2f( w / 2, - h / 2 );
-	mva[2].position = minimapCenter + Vector2f( w / 2,  h / 2 );
-	mva[3].position = minimapCenter + Vector2f( -w / 2,  h / 2 );
-
-	
-
-	mva[0].color = Color( 255, 255, 255, 255 );
-	mva[1].color = Color( 255, 255, 255, 255 );
-	mva[2].color = Color( 255, 255, 255, 255 );
-	mva[3].color = Color( 255, 255, 255, 255 );*/
-	//miniRect.
-	//miniMaskTex = new Texture;
-	//miniMaskTex.loadFromFile( "minimapmask.png" );
-	//miniMaskTex.sets
-
-	lifeBarTex.loadFromFile( "lifebar_768x768.png" );
-	lifeBarSprite.setTexture( lifeBarTex );
-	lifeBarSprite.setPosition( 30, 200 );
-
-	bigBulletVA = NULL;
-	preScreenTex->setSmooth( false );
-	postProcessTex->setSmooth( false );
-	postProcessTex1->setSmooth( false );
-	postProcessTex2->setSmooth( false );
-
-	shockTestFrame = 0;
-
-	if (!minimapShader.loadFromFile("minimap_shader.frag", sf::Shader::Fragment ) )
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+void GameSession::Cleanup()
+{
+	if (testPar != NULL)
 	{
-		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "minimap shader not loaded" );
-	}
-	//minimapShader.setUniform( "u_mask", miniMaskTex );
-	minimapShader.setUniform( "imageSize", Vector2f( minimapTex->getSize().x, 
-		minimapTex->getSize().y ) );
-	
-	minimapSprite.setTexture( minimapTex->getTexture() );
-	minimapSprite.setOrigin( minimapSprite.getLocalBounds().width / 2, 
-		minimapSprite.getLocalBounds().height / 2 );
-	minimapSprite.setPosition( Vector2f( 200, preScreenTex->getSize().y - 200 ) );
-	minimapSprite.setScale( 1, -1 );
-
-	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment ) )
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
-	}
-	speedBarShader.setUniform( "u_texture", sf::Shader::CurrentTexture );
-
-	if( !glowShader.loadFromFile( "glow_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	glowShader.setUniform( "texSize", Vector2f( 1920, 1080 ) );
-
-
-
-	if( !hBlurShader.loadFromFile( "hblur_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	hBlurShader.setUniform( "texSize", Vector2f( 1920/2, 1080/2 ) );
-
-	if( !vBlurShader.loadFromFile( "vblur_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	vBlurShader.setUniform( "texSize", Vector2f( 1920/2, 1080/2 ) );
-	
-
-	if( !motionBlurShader.loadFromFile( "motionblur_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	motionBlurShader.setUniform( "texSize", Vector2f( 1920, 1080 ) );
-
-	
-
-	if( !shockwaveShader.loadFromFile( "shockwave_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	shockwaveShader.setUniform( "resolution", Vector2f( 1920, 1080 ) );
-	shockwaveShader.setUniform( "texSize", Vector2f( 580, 580 ) );
-	shockwaveTex.loadFromFile( "shockwave_580x580.png" );
-	shockwaveShader.setUniform( "shockwaveTex", shockwaveTex );
-
-
-	usePolyShader = true;
-	//minimapTex = miniTex;
-
-	
-
-	ts_keyHolder = GetTileset( "keyholder.png", 115, 40 );
-	keyHolderSprite.setTexture( *ts_keyHolder->texture );
-	keyHolderSprite.setPosition( 10, 50 );
-
-	if (!onTopShader.loadFromFile("ontop_shader.frag", sf::Shader::Fragment ) )
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
+		delete testPar;
+		testPar = NULL;
 	}
 
-	if( !flowShader.loadFromFile( "flow_shader.frag", sf::Shader::Fragment ) )
+	if (ts_polyShaders != NULL)
 	{
-		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	
-	flowFrameCount = 60;
-	flowFrame = 0;
-	maxFlowRadius = 10000;
-	radDiff = 100;
-	flowSpacing = 600;
-	maxFlowRings = 40;
-
-	flowShader.setUniform( "radDiff", radDiff );
-	flowShader.setUniform( "Resolution", Vector2f(1920, 1080) );// window->getSize().x, window->getSize().y);
-	flowShader.setUniform( "flowSpacing", flowSpacing );
-	flowShader.setUniform( "maxFlowRings", maxFlowRadius / maxFlowRings );
-	
-
-
-	if (!mountainShader.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
-		cout << "mountain SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
+		delete [] ts_polyShaders;
+		ts_polyShaders = NULL;
 	}
 
-	mountainShader.setUniform( "u_texture", *GetTileset( "w1mountains.png", 1920, 512 )->texture );
-
-	if (!mountainShader1.loadFromFile("mountain_shader.frag", sf::Shader::Fragment ) )
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	if (polyShaders != NULL)
 	{
-		cout << "mountain SHADER 1 NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
+		delete [] polyShaders;
+		polyShaders = NULL;
 	}
 
-	mountainShader1.setUniform( "u_texture", *GetTileset( "w1mountains2.png", 1920, 406 )->texture );
-
-	onTopShader.setUniform( "u_texture", *GetTileset( "w1undertrans.png", 1920, 540 )->texture );
-
-
-	if( !underShader.loadFromFile( "under_shader.frag", sf::Shader::Fragment ) )
+	if (powerRing != NULL)
 	{
-		cout << "under shader not loading correctly!" << endl;
-		assert( false );
-	}
-	
-	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
+		delete powerRing;
+		powerRing = NULL;
 	}
 
-	/*if (!enemyKeyShader.loadFromFile("key_shader.frag", sf::Shader::Fragment))
+	if (powerWheel != NULL)
 	{
-		cout << "KEY SHADER NOT LOADING CORRECTLY" << endl;
+		delete powerWheel;
+		powerWheel = NULL;
 	}
 
-	if (!enemyHurtShader.loadFromFile("enemyhurt_shader.frag", sf::Shader::Fragment))
+	if (goalPulse != NULL)
 	{
-		cout << "HURT SHADER NOT LOADING CORRECTLY" << endl;
-	}*/
-
-	stringstream ss;
-
-	for( int i = 1; i <= 17; ++i )
-	{
-		ss << i;
-		string texName = "deathbg" + ss.str() + ".png";
-		ss.str( "" );
-		ss.clear();
-		wipeTextures[i-1].loadFromFile( texName );
+		delete goalPulse;
+		goalPulse = NULL;
 	}
 
-	deathWipe = false;
-	deathWipeFrame = 0;
-	deathWipeLength = 17 * 5;
-
-	//preScreenTex = preTex;
-
-	terrainBGTree = new QuadTree( 1000000, 1000000 );
-	//soon make these the actual size of the bordered level
-	terrainTree = new QuadTree( 1000000, 1000000 );
-
-	inverseEdgeTree = new QuadTree( 1000000, 1000000 );
-	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
-	//testTree->parent = NULL;
-	//testTree->debug = rw;
-
-	enemyTree = new QuadTree( 1000000, 1000000 );
-
-	borderTree = new QuadTree( 1000000, 1000000 ); 
-
-	grassTree = new QuadTree( 1000000, 1000000 ); 
-
-	lightTree = new QuadTree( 1000000, 1000000 );
-
-	gateTree = new QuadTree( 1000000, 1000000 );
-
-	itemTree = new QuadTree( 1000000, 1000000 );
-
-	crawlerReverserTree = new QuadTree( 1000000, 1000000 );
-
-	envPlantTree = new QuadTree( 1000000, 1000000 );
-
-	specterTree = new QuadTree( 1000000, 1000000 );
-
-	listVA = NULL;
-	lightList = NULL;
-
-	inactiveEffects = NULL;
-	pauseImmuneEffects = NULL;
-	inactiveLights = NULL;
-
-	//sets up fx so that they can be used
-	for( int i = 0; i < MAX_EFFECTS; ++i )
+	if (pauseMenu != NULL)
 	{
-		AllocateEffect();
+		delete pauseMenu;
+		pauseMenu = NULL;
 	}
 
-	for( int i = 0; i < MAX_DYN_LIGHTS; ++i )
+	for (int i = 0; i < 4; ++i)
 	{
-		AllocateLight();
-	}
-	
-	ts_miniIcons = GetTileset( "minimap_icons_64x64.png", 64, 64 );
-	kinMinimapIcon.setTexture( *ts_miniIcons->texture );
-	kinMinimapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
-	kinMinimapIcon.setOrigin( kinMinimapIcon.getLocalBounds().width / 2,
-		kinMinimapIcon.getLocalBounds().height / 2 );
-	kinMinimapIcon.setPosition( minimapSprite.getPosition() );//180, preScreenTex->getSize().y - 180 );
-
-
-	kinMapSpawnIcon.setTexture( *ts_miniIcons->texture );
-	kinMapSpawnIcon.setTextureRect( ts_miniIcons->GetSubRect( 1 ) );
-	kinMapSpawnIcon.setOrigin( kinMapSpawnIcon.getLocalBounds().width / 2,
-		kinMapSpawnIcon.getLocalBounds().height / 2 );
-	//kinMapSpawnIcon.setpo
-	//kinMapSpawnIcon.setPosition( goalPos.x, goalPos.y );
-
-	
-
-	goalMapIcon.setTexture( *ts_miniIcons->texture );
-	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( 0 ) );
-	goalMapIcon.setOrigin( goalMapIcon.getLocalBounds().width / 2,
-		goalMapIcon.getLocalBounds().height / 2 );
-
-	ts_miniCircle = GetTileset( "minimap_circle_320x320.png", 320, 320 );
-	miniCircle.setTexture( *ts_miniCircle->texture );
-	miniCircle.setScale( 2, 2 );
-	miniCircle.setOrigin( miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2 );
-
-	
-	miniCircle.setPosition( kinMinimapIcon.getPosition() );
-
-	ts_minimapGateDirection = GetTileset( "minimap_gate_w02_192x64.png", 192, 64 );
-	for( int i = 0; i < 6; ++i )
-	{
-		Sprite &gds = gateDirections[i];
-		gds.setTexture( *ts_minimapGateDirection->texture );
-		gds.setTextureRect( ts_minimapGateDirection->GetSubRect( 0 ) );
-		gds.setOrigin( gds.getLocalBounds().width / 2, 120 + gds.getLocalBounds().height );
-		gds.setPosition( miniCircle.getPosition() );
+		if (players[i] != NULL)
+		{
+			delete players[i];
+			players[i] = NULL;
+		}
 	}
 
-	ts_testParallax = GetTileset( "parallax_w2_01.png", 960, 540 ); 
-	testParallaxSprite.setTexture( *ts_testParallax->texture );
-	testParallaxSprite.setOrigin( testParallaxSprite.getLocalBounds().width / 2,
-		testParallaxSprite.getLocalBounds().height / 2 );
+	if (soundManager != NULL)
+	{
+		delete soundManager;
+		soundManager = NULL;
+	}
 
-	keyMarker = new KeyMarker( this );
+	if (keyMarker != NULL)
+	{
+		delete keyMarker;
+		keyMarker = NULL;
+	}
 
-	ts_w1ShipClouds0 = GetTileset( "Ship/cloud_w1_a1_960x128.png", 960, 128 );
-	ts_w1ShipClouds1 = GetTileset( "Ship/cloud_w1_b1_960x320.png", 960, 320 );
-	ts_ship = GetTileset( "Ship/ship_1728x800.png", 1728, 800 );
-	
+	if (specterTree != NULL)
+	{
+		delete specterTree;
+		specterTree = NULL;
+	}
 
-	shipSprite.setTexture( *ts_ship->texture );
-	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
-	shipSprite.setScale( .5, .5 );
-	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, 
-		shipSprite.getLocalBounds().height / 2 );
-	
-	//enemyTree = new EnemyLeafNode( V2d( 0, 0), 1000000, 1000000);
-	//enemyTree->parent = NULL;
-	//enemyTree->debug = rw;
+	if (envPlantTree != NULL)
+	{
+		delete envPlantTree;
+		envPlantTree = NULL;
+	}
+
+	//if (crawlerReverseTree != NULL)
+	//	delete crawlerReverseTree;
+
+	if (itemTree != NULL)
+	{
+		delete itemTree;
+		itemTree = NULL;
+	}
+
+	if (gateTree != NULL)
+	{
+		delete gateTree;
+		gateTree = NULL;
+	}
+
+	if (lightTree != NULL)
+	{
+		delete lightTree;
+		lightTree = NULL;
+	}
+
+	if (grassTree != NULL)
+	{
+		delete grassTree;
+		grassTree = NULL;
+	}
+
+	if (borderTree != NULL)
+	{
+		delete borderTree;
+		borderTree = NULL;
+	}
+
+	if (enemyTree != NULL)
+	{
+		delete enemyTree;
+		enemyTree = NULL;
+	}
+
+	if (terrainTree != NULL)
+	{
+		delete terrainTree;
+		terrainTree = NULL;
+	}
+
+	if (terrainBGTree != NULL)
+	{
+		delete terrainBGTree;
+		terrainBGTree = NULL;
+	}
+
+	if (scoreDisplay != NULL)
+	{
+		delete scoreDisplay;
+		scoreDisplay = NULL;
+	}
+
+	if (soundNodeList != NULL)
+	{
+		delete soundNodeList;
+		soundNodeList = NULL;
+	}
+
+	if (gates != NULL)
+	{
+		for (int i = 0; i < numGates; ++i)
+		{
+			delete gates[i];
+		}
+		delete[] gates;
+
+		gates = NULL;
+	}
+
+	if (edges != NULL)
+	{
+		for (int i = 0; i < numPoints; ++i)
+		{
+			delete edges[i];
+		}
+		delete[] edges;
+	}
+
+	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		delete (*it);
+	}
+	polygons.clear();
 }
 
 GameSession::~GameSession()
 {
-	Actor *p = NULL;
-	for( int i = 0; i < 4; ++i )
-	{
-		p = GetPlayer( i );
-		if( p != NULL )
-		{
-			delete p;
-			p = NULL;
-		}
-	}
-	
-	delete soundManager;
-
-	//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	//{
-	//	cout << "about: " << (*it)->sourceName << ", "
-	//		<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
-	//	//delete (*it);
-	//}
-	for( int i = 0; i < numGates; ++i )
-	{
-		delete gates[i];
-	}
-	delete [] gates;
-
-	for( int i = 0; i < numPoints; ++i )
-	{
-		delete edges[i];
-	}
-	delete [] edges;
-
-	for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-	{
-		delete (*it);
-	}
-
-	//tm.ClearTilesets();
-
-	
-
-	delete terrainTree;
-	delete inverseEdgeTree;
-	delete enemyTree;
-	delete lightTree;
-	delete grassTree;
-	delete gateTree;
-	delete itemTree;
-	delete crawlerReverserTree;
-	delete envPlantTree;
-	delete specterTree;
+	Cleanup();
 }
 
 //should only be used to assign a variable. don't use at runtime
@@ -1366,12 +1115,12 @@ void GameSession::UpdateEffects()
 
 void GameSession::UpdateEnemiesDraw()
 {
-	CrawlerReverser *cr = drawCrawlerReversers;
+	/*CrawlerReverser *cr = drawCrawlerReversers;
 	while( cr != NULL )
 	{
 		cr->Draw( preScreenTex );
 		cr = cr->drawNext;
-	}
+	}*/
 	//CrawlerReverser *cr = 
 
 	Enemy *current = activeEnemyList;
@@ -2370,7 +2119,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 			{
 				//always grounded
 
-				int terrainIndex;
+				/*int terrainIndex;
 				is >> terrainIndex;
 
 				int edgeIndex;
@@ -2382,13 +2131,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				CrawlerReverser *cr = new CrawlerReverser( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 
-				crawlerReverserTree->Insert( cr );
-				//Crawler *enemy = new Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity, clockwise, speed );
-				//enemyTree = Insert( enemyTree, enemy );
-				//fullEnemyList.push_back( enemy );
-
-				//enemyTree->Insert( enemy );
+				crawlerReverserTree->Insert( cr );*/
 			}
 			else if( typeName == "bosscrawler" )
 			{
@@ -3522,6 +3265,9 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
+
+		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
+		delete mh;
 		//cout << "-------------" << endl;
 		//pauseMenu = new PauseMenu( this );
 		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
@@ -5613,21 +5359,266 @@ void GameSession::KeyboardUpdate( int index )
 
 bool GameSession::sLoad( GameSession *gs )
 {
+	gs->SetContinueLoading(true);
 	return gs->Load();
+}
+
+void GameSession::SetContinueLoading( bool cont )
+{
+	continueLoadingLock.lock();
+
+	continueLoading = cont;
+
+	continueLoadingLock.unlock();
+}
+
+bool GameSession::ShouldContinueLoading()
+{
+	bool b;
+	continueLoadingLock.lock();
+		b = continueLoading;
+	continueLoadingLock.unlock();
+
+	return b;
 }
 
 bool GameSession::Load()
 {
-	drawInversePoly = true;
-	showDebugDraw = false;
 
-	fadingIn = false;
-	fadingOut = false;
-	fadeRect.setSize( Vector2f( 1920, 1080 ) );
-	
-	
-	recOver = false;
+	if (!ShouldContinueLoading())
+	{
+		Cleanup();
+		return false;
+	}
 
+	soundNodeList = new SoundNodeList(10);
+	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().volume);
+	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
+
+	lifeBarTex.loadFromFile("lifebar_768x768.png");
+	lifeBarSprite.setTexture(lifeBarTex);
+	lifeBarSprite.setPosition(30, 200);
+
+	if (!minimapShader.loadFromFile("minimap_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "minimap shader not loaded");
+	}
+	minimapShader.setUniform("imageSize", Vector2f(minimapTex->getSize().x,
+		minimapTex->getSize().y));
+
+	minimapSprite.setTexture(minimapTex->getTexture());
+	minimapSprite.setOrigin(minimapSprite.getLocalBounds().width / 2,
+		minimapSprite.getLocalBounds().height / 2);
+	minimapSprite.setPosition(Vector2f(200, preScreenTex->getSize().y - 200));
+	minimapSprite.setScale(1, -1);
+
+	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
+	speedBarShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+	if (!glowShader.loadFromFile("glow_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	glowShader.setUniform("texSize", Vector2f(1920, 1080));
+
+	if (!hBlurShader.loadFromFile("hblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	hBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
+
+	if (!vBlurShader.loadFromFile("vblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	vBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
+
+	if (!motionBlurShader.loadFromFile("motionblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
+
+	if (!shockwaveShader.loadFromFile("shockwave_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	shockwaveShader.setUniform("resolution", Vector2f(1920, 1080));
+	shockwaveShader.setUniform("texSize", Vector2f(580, 580));
+	shockwaveTex.loadFromFile("shockwave_580x580.png");
+	shockwaveShader.setUniform("shockwaveTex", shockwaveTex);
+
+	ts_keyHolder = GetTileset("keyholder.png", 115, 40);
+	keyHolderSprite.setTexture(*ts_keyHolder->texture);
+	keyHolderSprite.setPosition(10, 50);
+
+	if (!onTopShader.loadFromFile("ontop_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
+
+	if (!flowShader.loadFromFile("flow_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
+	}
+
+	flowShader.setUniform("radDiff", radDiff);
+	flowShader.setUniform("Resolution", Vector2f(1920, 1080));// window->getSize().x, window->getSize().y);
+	flowShader.setUniform("flowSpacing", flowSpacing);
+	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
+
+	if (!mountainShader.loadFromFile("mountain_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "mountain SHADER NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
+
+	mountainShader.setUniform("u_texture", *GetTileset("w1mountains.png", 1920, 512)->texture);
+
+	if (!mountainShader1.loadFromFile("mountain_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "mountain SHADER 1 NOT LOADING CORRECTLY" << endl;
+		//assert( 0 && "polygon shader not loaded" );
+	}
+
+	mountainShader1.setUniform("u_texture", *GetTileset("w1mountains2.png", 1920, 406)->texture);
+
+	onTopShader.setUniform("u_texture", *GetTileset("w1undertrans.png", 1920, 540)->texture);
+
+	if (!underShader.loadFromFile("under_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "under shader not loading correctly!" << endl;
+		assert(false);
+	}
+
+	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
+	}
+
+	stringstream ss;
+
+	for (int i = 1; i <= 17; ++i)
+	{
+		ss << i;
+		string texName = "deathbg" + ss.str() + ".png";
+		ss.str("");
+		ss.clear();
+		wipeTextures[i - 1].loadFromFile(texName);
+	}
+
+	if (!ShouldContinueLoading())
+	{
+		Cleanup();
+		return false;
+	}
+
+	terrainBGTree = new QuadTree(1000000, 1000000);
+	//soon make these the actual size of the bordered level
+	terrainTree = new QuadTree(1000000, 1000000);
+
+	inverseEdgeTree = new QuadTree(1000000, 1000000);
+	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
+	//testTree->parent = NULL;
+	//testTree->debug = rw;
+
+	enemyTree = new QuadTree(1000000, 1000000);
+
+	borderTree = new QuadTree(1000000, 1000000);
+
+	grassTree = new QuadTree(1000000, 1000000);
+
+	lightTree = new QuadTree(1000000, 1000000);
+
+	gateTree = new QuadTree(1000000, 1000000);
+
+	itemTree = new QuadTree(1000000, 1000000);
+
+	//crawlerReverserTree = new QuadTree(1000000, 1000000);
+
+	envPlantTree = new QuadTree(1000000, 1000000);
+
+	specterTree = new QuadTree(1000000, 1000000);
+
+
+	//sets up fx so that they can be used
+	for (int i = 0; i < MAX_EFFECTS; ++i)
+	{
+		AllocateEffect();
+	}
+
+	for (int i = 0; i < MAX_DYN_LIGHTS; ++i)
+	{
+		AllocateLight();
+	}
+
+	ts_miniIcons = GetTileset("minimap_icons_64x64.png", 64, 64);
+	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
+	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
+	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
+		kinMinimapIcon.getLocalBounds().height / 2);
+	kinMinimapIcon.setPosition(minimapSprite.getPosition());//180, preScreenTex->getSize().y - 180 );
+
+
+	kinMapSpawnIcon.setTexture(*ts_miniIcons->texture);
+	kinMapSpawnIcon.setTextureRect(ts_miniIcons->GetSubRect(1));
+	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
+		kinMapSpawnIcon.getLocalBounds().height / 2);
+
+
+	goalMapIcon.setTexture(*ts_miniIcons->texture);
+	goalMapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
+	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
+		goalMapIcon.getLocalBounds().height / 2);
+
+	ts_miniCircle = GetTileset("minimap_circle_320x320.png", 320, 320);
+	miniCircle.setTexture(*ts_miniCircle->texture);
+	miniCircle.setScale(2, 2);
+	miniCircle.setOrigin(miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2);
+
+
+	miniCircle.setPosition(kinMinimapIcon.getPosition());
+
+	ts_minimapGateDirection = GetTileset("minimap_gate_w02_192x64.png", 192, 64);
+	for (int i = 0; i < 6; ++i)
+	{
+		Sprite &gds = gateDirections[i];
+		gds.setTexture(*ts_minimapGateDirection->texture);
+		gds.setTextureRect(ts_minimapGateDirection->GetSubRect(0));
+		gds.setOrigin(gds.getLocalBounds().width / 2, 120 + gds.getLocalBounds().height);
+		gds.setPosition(miniCircle.getPosition());
+	}
+
+	ts_testParallax = GetTileset("parallax_w2_01.png", 960, 540);
+	testParallaxSprite.setTexture(*ts_testParallax->texture);
+	testParallaxSprite.setOrigin(testParallaxSprite.getLocalBounds().width / 2,
+		testParallaxSprite.getLocalBounds().height / 2);
+
+	keyMarker = new KeyMarker(this);
+
+	ts_w1ShipClouds0 = GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
+	ts_w1ShipClouds1 = GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
+	ts_ship = GetTileset("Ship/ship_1728x800.png", 1728, 800);
+
+
+	shipSprite.setTexture(*ts_ship->texture);
+	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
+	shipSprite.setScale(.5, .5);
+	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2,
+		shipSprite.getLocalBounds().height / 2);
+
+
+	if (!ShouldContinueLoading())
+	{
+		Cleanup();
+		return false;
+	}
 
 	soundManager = new SoundManager;
 
@@ -5651,8 +5642,7 @@ bool GameSession::Load()
 	totalGameFrames = 0;	
 	originalZone = NULL;
 	
-	drawCrawlerReversers = NULL;
-	//inactiveLights = NULL;
+	//drawCrawlerReversers = NULL;
 	inactiveEnemyList = NULL;
 	cloneInactiveEnemyList = NULL;
 	unlockedGateList = NULL;
@@ -5697,6 +5687,12 @@ bool GameSession::Load()
 	//recPlayer = new RecordPlayer( player );
 	//repPlayer = new ReplayPlayer( player );
 		
+	if (!ShouldContinueLoading())
+	{
+		Cleanup();
+		return false;
+	}
+
 	players[0] = new Actor( this, 0 );
 
 	OpenFile( fileName );
@@ -5779,19 +5775,19 @@ bool GameSession::Load()
 
 	powerRing = new PowerRing( this );
 
-	stringstream ss;
+	stringstream ss1;
 
 	int eType = envLevel + 1; //adjust for alex naming -_-
-	ss << "Backgrounds/w" << envType+1 << "_BG";
+	ss1 << "Backgrounds/w" << envType+1 << "_BG";
 
-	ss << eType;
+	ss1 << eType;
 
-	ss << ".png";
+	ss1 << ".png";
 	 
-	cout << "back tex: " << ss.str() << endl;
+	cout << "back tex: " << ss1.str() << endl;
 	cout << "envtype: " << envType << ", eType: " << eType << endl;
 	//cout << "loading bg: " << ss.str() << endl;
-	if( !backTex.loadFromFile( ss.str() ) )
+	if( !backTex.loadFromFile( ss1.str() ) )
 	{
 		assert( 0 && "error loading background texture" );
 	}
@@ -5809,6 +5805,12 @@ bool GameSession::Load()
 
 	cam.pos.x = p0->position.x;
 	cam.pos.y = p0->position.y;
+
+	if (!ShouldContinueLoading())
+	{
+		Cleanup();
+		return false;
+	}
 
 	numPolyTypes = matSet.size();
 	polyShaders = new Shader[numPolyTypes];
@@ -5904,7 +5906,7 @@ int GameSession::Run()
 
 	bool showFrameRate = true;	
 
-	sf::Text frameRate( "00", arial, 30 );
+	sf::Text frameRate( "00", mainMenu->arial, 30 );
 	frameRate.setFillColor( Color::Red );
 
 	sf::Texture alphaTex;
@@ -6803,9 +6805,9 @@ int GameSession::Run()
 				//	}
 				//}
 
-				queryMode = "crawlerreverser";
-				drawCrawlerReversers = NULL;
-				crawlerReverserTree->Query( this, screenRect );
+				//queryMode = "crawlerreverser";
+				//drawCrawlerReversers = NULL;
+				//crawlerReverserTree->Query( this, screenRect );
 				
 				EnvPlant *prevPlant = NULL;
 				EnvPlant *ev = activeEnvPlants;
@@ -8830,6 +8832,114 @@ int GameSession::Run()
 	return returnVal;
 }
 
+void GameSession::Init()
+{
+	va = NULL;
+	edges = NULL;
+	activeEnemyList = NULL;
+	pauseFrames = 0;
+
+	raceFight = NULL;
+
+	recPlayer = NULL;
+	repPlayer = NULL;
+	recGhost = NULL;
+	repGhost = NULL;
+	multiSession = true;
+	showTerrainDecor = true;
+	shipExitSeq = NULL;
+	activeDialogue = NULL;
+
+	keyFrame = 0;
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		effectLists[i] = NULL;
+	}
+
+	
+	window = mainMenu->window;
+	preScreenTex = mainMenu->preScreenTexture;
+	postProcessTex = mainMenu->postProcessTexture;
+	postProcessTex1 = mainMenu->postProcessTexture1;
+	postProcessTex2 = mainMenu->postProcessTexture2;
+	mapTex = mainMenu->mapTexture;
+	minimapTex = mainMenu->minimapTexture;
+	pauseTex = mainMenu->pauseTexture;
+
+	currentZone = NULL;
+	Movable::owner = this;
+	b_crawler = NULL;
+	b_bird = NULL;
+	b_coyote = NULL;
+	b_tiger = NULL;
+	b_gator = NULL;
+	b_skeleton = NULL;
+
+	cutPlayerInput = false;
+
+	Vector2f miniPos = Vector2f(30, 750);
+	miniVA[0].position = miniPos + Vector2f(0, 0);
+	miniVA[1].position = miniPos + Vector2f(300, 0);
+	miniVA[2].position = miniPos + Vector2f(300, 300);
+	miniVA[3].position = miniPos + Vector2f(0, 300);
+
+	miniVA[0].texCoords = Vector2f(0, 0);
+	miniVA[1].texCoords = Vector2f(300, 0);
+	miniVA[2].texCoords = Vector2f(300, 300);
+	miniVA[3].texCoords = Vector2f(0, 300);
+
+	miniVA[0].color = Color::Red;
+	miniVA[1].color = Color::Blue;
+	miniVA[2].color = Color::Green;
+	miniVA[3].color = Color::Magenta;
+
+	miniRect.setSize(Vector2f(300, 300));
+	miniRect.setPosition(500, 500);
+
+	bigBulletVA = NULL;
+
+	preScreenTex->setSmooth(false);
+	postProcessTex->setSmooth(false);
+	postProcessTex1->setSmooth(false);
+	postProcessTex2->setSmooth(false);
+
+	shockTestFrame = 0;
+
+	usePolyShader = true;
+
+	flowFrameCount = 60;
+	flowFrame = 0;
+	maxFlowRadius = 10000;
+	radDiff = 100;
+	flowSpacing = 600;
+	maxFlowRings = 40;
+
+	deathWipe = false;
+	deathWipeFrame = 0;
+	deathWipeLength = 17 * 5;
+
+	listVA = NULL;
+	lightList = NULL;
+
+	inactiveEffects = NULL;
+	pauseImmuneEffects = NULL;
+	inactiveLights = NULL;
+
+	drawInversePoly = true;
+	showDebugDraw = false;
+
+	fadingIn = false;
+	fadingOut = false;
+	fadeRect.setSize(Vector2f(1920, 1080));
+
+
+	recOver = false;
+
+
+	gates = NULL;
+	edges = NULL;
+}
+
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 {
 	if( queryMode == "enemy" )
@@ -9041,7 +9151,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "crawlerreverser" )
 	{
-		CrawlerReverser *cr = (CrawlerReverser*)qte;
+		/*CrawlerReverser *cr = (CrawlerReverser*)qte;
 		if( drawCrawlerReversers == NULL )
 		{
 			drawCrawlerReversers = cr;
@@ -9051,7 +9161,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			cr->drawNext = drawCrawlerReversers;
 			drawCrawlerReversers = cr;
-		}
+		}*/
 	}
 	else if( queryMode == "envplant" )
 	{
@@ -13638,7 +13748,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 
 	Reset();
 
-	tempAllTargets.setFont( owner->arial );
+	tempAllTargets.setFont( owner->mainMenu->arial );
 	tempAllTargets.setCharacterSize( 12 );
 	tempAllTargets.setFillColor( Color::Red );
 
@@ -13652,15 +13762,15 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 
 
 
-	UIHorizSelectorStr *test = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->arial, 3, 
+	UIHorizSelectorStr *test = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, 3, 
 		options, "first", 200, results, false, 0, 200 );
 
-	UIHorizSelectorStr *test2 = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->arial, 3, 
+	UIHorizSelectorStr *test2 = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, 3,
 		options, "second", 200, results, false, 0, 200 );
 
-	UIButton *but = new UIButton( testWindow, NULL, &owner->tm, &owner->arial, "testbutton", 300 );
+	UIButton *but = new UIButton( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, "testbutton", 300 );
 
-	UICheckbox *check = new UICheckbox( testWindow, NULL, &owner->tm, &owner->arial, "testcheckbox", 300 );
+	UICheckbox *check = new UICheckbox( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, "testcheckbox", 300 );
 	//test->SetTopLeft( Vector2f( 50, 0 ) );
 
 	string resolutionOptions[] = {"1366 x 768", "1920 x 1080", "1280 x 800", "1280 x 720" };

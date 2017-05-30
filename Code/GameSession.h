@@ -326,6 +326,8 @@ struct VictoryScreen2PlayerVS;
 struct UIWindow;
 struct Parallax;
 
+#include <boost/thread/mutex.hpp>
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -419,6 +421,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool Load();	
 	RaceFight *raceFight;
 	
+	bool continueLoading;
+	void SetContinueLoading( bool cont );
+	bool ShouldContinueLoading();
+	boost::mutex continueLoadingLock;
+
 	//int playerScore[4];
 
 
@@ -494,6 +501,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		MainMenu *mainMenu,
 		const std::string &fileName );
 	void TriggerBarrier( Barrier *b );
+	void Init();
+	void Cleanup();
 
 	//Boss_Crawler *b_crawler;
 	Boss_Crawler *b_crawler;
@@ -522,7 +531,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int substep;
 	
 	int keyFrame;
-	sf::Font arial;
+	//sf::Font arial;
 
 	bool cutPlayerInput;
 	SoundManager *soundManager;
@@ -959,11 +968,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree * grassTree;
 	QuadTree * gateTree;
 	QuadTree * itemTree;
-	QuadTree * crawlerReverserTree;
 	QuadTree *envPlantTree;
 	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
-	CrawlerReverser *drawCrawlerReversers;
+	//CrawlerReverser *drawCrawlerReversers;
 	
 
 	Edge *borderEdge; 

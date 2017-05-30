@@ -95,6 +95,8 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	{
 		cout << "failed to load IM: " << s << endl;
 		assert( false );
+
+		return NULL;
 	}
 
 	t->altColorIndex = altColorIndex;
@@ -108,6 +110,8 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	return t;
 }
 
+
+#include <boost/filesystem.hpp>
 Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex )
 {
 	//cout << "checking for string: " << s << endl;
@@ -119,17 +123,26 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 		}
 	}
 
-
 	//not found
 
+	if (!boost::filesystem::exists(s))
+	{
+		cout << "NO FILE EXISTS: " << s << endl;
+		return NULL;
+	}
+
+	Texture *tex = new Texture();
+	if( !tex->loadFromFile( s ) )
+	{
+		delete tex;
+		//cout << "failed to load: " << s << endl;
+		//assert( false );
+
+		return NULL;
+	}
 
 	Tileset *t = new Tileset();
-	t->texture = new Texture();
-	if( !t->texture->loadFromFile( s ) )
-	{
-		cout << "failed to load: " << s << endl;
-		assert( false );
-	}
+	t->texture = tex;
 
 	t->altColorIndex = altColorIndex;
 	t->tileWidth = tileWidth;

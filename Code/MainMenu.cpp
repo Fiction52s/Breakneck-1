@@ -1056,7 +1056,7 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_SAVE);
 	//SetMode(TRANS_MAIN_TO_CREDITS);
 	//SetMode(TRANS_MAIN_TO_MAPSELECT);
-	SetMode(MAINMENU);
+	SetMode(SPLASH);
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -2142,9 +2142,12 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	bg.setPosition(menuOffset);
 
 	//playerindex may change later
-	singleSection = new MultiSelectionSection(mainMenu, NULL, 0, Vector2f( 190, 120 ) + menuOffset);
+	singleSection = new MultiSelectionSection(mainMenu, NULL, 0, Vector2f( 0, 120 ) + menuOffset);
 	
 	state = S_SELECTING_MAP;
+
+	gs = NULL;
+	loadThread = NULL;
 
 	LoadItems();
 
@@ -2308,7 +2311,8 @@ void MapSelectionMenu::LoadItems()
 		if (is.is_open())
 		{
 			MapHeader *mh = ReadMapHeader(is);
-			string pFile = string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
+			string pFile = string( "Maps/") + (*it).relative_path().stem().string() + string("_preview_960x540.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
+			string defaultFile = "Menu/nopreview_960x540.png";
 
 			if (collectionMap.find(mh->collectionName) != collectionMap.end())
 			{
@@ -2317,6 +2321,10 @@ void MapSelectionMenu::LoadItems()
 
 				
 				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
+				if (item->ts_preview == NULL)
+				{
+					item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);
+				}
 				//assert(0);
 				MapCollection *temp = collectionMap[mh->collectionName];
 
@@ -2388,10 +2396,41 @@ void MapSelectionMenu::LoadItems()
 	}
 }
 
+void MapSelectionMenu::LoadMap()
+{
+	//filePath = p_path;
+
+	//SetPreview();
+
+
+	if (loadThread != NULL)
+	{
+		//assert(loadThread->joinable());
+		//cout << "joining111" << endl;
+		//loadThread->join();
+
+		delete loadThread;
+	}
+	
+	if (gs != NULL)
+	{
+		delete gs;
+	}
+	
+
+	int cIndex = saSelector->currIndex;
+	int pIndex = GetPairIndex(cIndex);
+
+
+
+	gs = new GameSession(NULL, mainMenu, allItems[pIndex].second.item->path.string() );
+
+	loadThread = new boost::thread(GameSession::sLoad, gs);
+}
+
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
-
 	if (state == S_SELECTING_MAP)
 	{
 		if (currInput.B && !prevInput.B)
@@ -2413,6 +2452,9 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			{
 				MapSelectionItem *item = allItems[pIndex].second.item;
 				state = S_SELECTING_SKIN;
+
+				LoadMap();
+				
 			}
 		}
 
@@ -2474,10 +2516,56 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		if (currInput.B && !prevInput.B)
 		{
 			state = S_SELECTING_MAP;
+
+			gs->SetContinueLoading(false);
+			loadThread->join();
+			delete loadThread;
+			loadThread = NULL;
+			delete gs;
+			gs = NULL;
+
+			//kill the current loading thread
 		}
 		else
 		{
 			singleSection->Update();
+		}
+
+		if (singleSection->isReady )
+		{
+			//loadThread->join();
+			//boost::chrono::steady_clock::now()
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				mainMenu->GetController(singleSection->playerIndex).SetFilter(singleSection->profileSelect->currProfile->filter);
+
+				int res = gs->Run();
+
+				XBoxButton filter[ControllerSettings::Count];
+				SetFilterDefault(filter);
+
+				for (int i = 0; i < 4; ++i)
+				{
+					mainMenu->GetController(i).SetFilter(filter);
+				}
+
+				delete loadThread;
+				loadThread = NULL;
+				delete gs;
+				gs = NULL;
+
+				View vv;
+				vv.setCenter(960, 540);
+				vv.setSize(1920, 1080);
+				mainMenu->window->setView(vv);
+
+				mainMenu->v.setCenter(mainMenu->leftCenter);
+				mainMenu->v.setSize(Vector2f( 1920, 1080 ));
+				mainMenu->preScreenTexture->setView(mainMenu->v);
+
+				singleSection->isReady = false;
+				state = S_SELECTING_MAP;
+			}
 		}
 	}
 }
@@ -2553,10 +2641,11 @@ void MapSelectionMenu::UpdateItemText()
 		{
 			MapSelectionItem *mi = p.second.item;
 			
-			xVal += 50;
+			xVal += 60;
 		}
 		else
 		{
+			xVal += 10;
 			//descriptionText.setString("");
 		}
 		itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);

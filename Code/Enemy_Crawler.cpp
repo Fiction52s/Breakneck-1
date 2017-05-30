@@ -1164,8 +1164,8 @@ void Crawler::PhysicsResponse()
 		queryMode = "reverse";
 
 		//physbody is a circle
-		Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
-		owner->crawlerReverserTree->Query( this, r );
+		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
+		//owner->crawlerReverserTree->Query( this, r );
 	}
 }
 
