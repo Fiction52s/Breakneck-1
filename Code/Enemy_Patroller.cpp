@@ -51,10 +51,10 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	//speed = 2;
 	frame = 0;
 
-	animationFactor = 5;
+	animationFactor = 1;
 
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
-	ts = owner->GetTileset( "patroller_192x192.png", 192, 192 );
+	ts = owner->GetTileset( "patroller_224x272.png", 224, 272 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -142,7 +142,7 @@ void Patroller::UpdatePrePhysics()
 
 
 
-	if( frame == 15 * animationFactor )
+	if( frame == 11 * animationFactor )
 	{
 		frame = 0;
 	}

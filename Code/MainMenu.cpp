@@ -386,6 +386,12 @@ MainMenu::MainMenu()
 	splashFadeFrame = 0;
 	splashFadeOutLength = 40;
 
+	sf::Text t;
+	t.setFont(arial);
+	t.setCharacterSize(40);
+	t.setFillColor(Color::White);
+	
+
 	int waitFrames[] = { 10, 5, 2 };
 	int waitModeThresh[] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
@@ -393,6 +399,9 @@ MainMenu::MainMenu()
 	Vector2f textBase(500, 500);
 	int textOptionSpacing = 10;
 	int charHeight = 40;
+
+	
+
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
 		menuOptions[i].setFont(arial);
@@ -400,16 +409,22 @@ MainMenu::MainMenu()
 		menuOptions[i].setFillColor(Color::White);
 	}
 
-	menuOptions[0].setString("Adventure");
+
+	string optionStrings[] = { "Adventure", "Free Play", "Local Multiplayer", "Level Editor",
+		"Options", "Credits", "Exit" };
+	/*menuOptions[0].setString("Adventure");
 	menuOptions[1].setString("Free Play");
 	menuOptions[2].setString("Local Multiplayer");
 	menuOptions[3].setString("Level Editor");
 	menuOptions[4].setString("Options");
 	menuOptions[5].setString("Credits");
-	menuOptions[6].setString("Exit");
+	menuOptions[6].setString("Exit");*/
+
+	
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
+		menuOptions[i].setString(optionStrings[i]);
 		menuOptions[i].setOrigin(menuOptions[i].getLocalBounds().width / 2, 0);
 		menuOptions[i].setPosition(textBase.x, textBase.y + (textOptionSpacing + charHeight) * i);
 	}
@@ -572,6 +587,8 @@ MainMenu::MainMenu()
 	creditsMenu = new CreditsMenuScreen(this);
 
 	saveMenu = new SaveMenuScreen(this);
+
+	
 }
 
 MainMenu::~MainMenu()

@@ -1328,6 +1328,10 @@ struct EditSession : GUIHandler
 	GroundInfo worldPosGround;
 	ActorParams* tempActor;
 	sf::Vector2i airPos;
+	std::string description;
+	std::string collection;
+	int ver1;
+	int ver2;
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;

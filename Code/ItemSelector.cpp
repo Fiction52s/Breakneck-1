@@ -11,7 +11,7 @@ SingleAxisSelector::SingleAxisSelector(int numWaitFramesLevels, int*p_waitFrames
 	}
 
 	waitModeThresh = new int[numWaitModeThreshLevels];
-	for (int i = 0; i < numWaitFramesLevels; ++i)
+	for (int i = 0; i < numWaitModeThreshLevels; ++i)
 	{
 		waitModeThresh[i] = p_waitModeThresh[i];
 	}

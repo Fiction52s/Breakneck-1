@@ -6092,7 +6092,7 @@ int GameSession::Run()
 
 	testBuf.byteIndex = 0;
 
-	boost::thread *threa;
+	boost::thread *threa = NULL;
 	ofstream of;
 	if( recPlayer != NULL )//&& !repPlayer->init )
 	{

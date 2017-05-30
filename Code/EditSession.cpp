@@ -455,7 +455,8 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	:w( wi ), fullBounds( sf::Quads, 16 )
 {
-	
+	ver1 = 1;
+	ver2 = 5;
 	arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
 	cursorLocationText.setFont( arialFont );
 	cursorLocationText.setCharacterSize( 16 );
@@ -645,6 +646,14 @@ bool EditSession::OpenFile()
 
 	if( is.is_open() )
 	{
+		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
+		description = mh->description;
+		collection = mh->collectionName;
+		ver1 = mh->ver1;
+		ver2 = mh->ver2;
+		delete mh;
+
+
 		int env;
 		is >> env;
 		environmentType = (EnvType)env;
@@ -2574,6 +2583,10 @@ void EditSession::WriteFile(string fileName)
 
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
+
+	of << ver1 << "." << ver2 << "\n";
+	of << description << "<>\n";
+	of << collection << "\n";
 
 	of << (int)environmentType << " " << envLevel << endl;
 

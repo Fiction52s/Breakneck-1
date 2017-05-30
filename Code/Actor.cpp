@@ -1603,7 +1603,7 @@ double Actor::GetBounceFlameAccel()
 
 void Actor::UpdatePrePhysics()
 {
-	cout << "Start frame" << endl;
+	//cout << "Start frame" << endl;
 	/*if( owner->multiSession )
 	{
 		cout << owner->GetPlayer( 0 )2->position.x << ", " << owner->GetPlayer( 0 )2->position.y << endl;
