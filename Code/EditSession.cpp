@@ -452,18 +452,21 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	target->draw( thickLine );
 }
 
-EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
-	:w( wi ), fullBounds( sf::Quads, 16 )
+EditSession::EditSession( MainMenu *p_mainMenu )
+	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu )
 {
-	ver1 = 1;
-	ver2 = 5;
-	arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
-	cursorLocationText.setFont( arialFont );
+	mapHeader.ver1 = 1;
+	mapHeader.ver2 = 5;
+	mapHeader.description = "no description";
+	mapHeader.collectionName = "default";
+	mapHeader.gameTypeName = "default";
+	//arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
+	cursorLocationText.setFont( mainMenu->arial );
 	cursorLocationText.setCharacterSize( 16 );
 	cursorLocationText.setFillColor( Color::White );
 	cursorLocationText.setPosition( 0, 0 );
 
-	PoiParams::font = &arialFont;
+	PoiParams::font = &mainMenu->arial;
 	
 	mapPreviewTex = MainMenu::mapPreviewTexture;
 
@@ -488,7 +491,7 @@ EditSession::EditSession( RenderWindow *wi, sf::RenderTexture *preTex )
 	//adding 5 for random distance buffer
 	playerHalfWidth = 32;
 	playerHalfHeight = 32;
-	preScreenTex = preTex;
+	preScreenTex = mainMenu->preScreenTexture;
 	showTerrainPath = false;
 	
 	minAngle = .99;
@@ -647,10 +650,10 @@ bool EditSession::OpenFile()
 	if( is.is_open() )
 	{
 		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
-		description = mh->description;
-		collection = mh->collectionName;
-		ver1 = mh->ver1;
-		ver2 = mh->ver2;
+		mapHeader.description = mh->description;
+		mapHeader.collectionName = mh->collectionName;
+		mapHeader.ver1 = mh->ver1;
+		mapHeader.ver2 = mh->ver2;
 		delete mh;
 
 
@@ -2584,9 +2587,10 @@ void EditSession::WriteFile(string fileName)
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
 
-	of << ver1 << "." << ver2 << "\n";
-	of << description << "<>\n";
-	of << collection << "\n";
+	of << mapHeader.ver1 << "." << mapHeader.ver2 << "\n";
+	of << mapHeader.description << "<>\n";
+	of << mapHeader.collectionName << "\n";
+	of << mapHeader.gameTypeName << "\n";
 
 	of << (int)environmentType << " " << envLevel << endl;
 

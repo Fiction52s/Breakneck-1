@@ -412,15 +412,6 @@ MainMenu::MainMenu()
 
 	string optionStrings[] = { "Adventure", "Free Play", "Local Multiplayer", "Level Editor",
 		"Options", "Credits", "Exit" };
-	/*menuOptions[0].setString("Adventure");
-	menuOptions[1].setString("Free Play");
-	menuOptions[2].setString("Local Multiplayer");
-	menuOptions[3].setString("Level Editor");
-	menuOptions[4].setString("Options");
-	menuOptions[5].setString("Credits");
-	menuOptions[6].setString("Exit");*/
-
-	
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
@@ -662,7 +653,7 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
-		EditSession *es = new EditSession(window, preScreenTexture );
+		EditSession *es = new EditSession(this);
 		//boost::filesystem::path( p_path );
 		result = es->Run( p_path, lastViewCenter, lastViewSize );
 		delete es;
@@ -700,7 +691,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 		if( result > 0 )
 			break;
 
-		EditSession *es = new EditSession(window, preScreenTexture );
+		EditSession *es = new EditSession(this );
 		result = es->Run( p_path, lastViewCenter, lastViewSize );
 		delete es;
 	}
@@ -2307,10 +2298,14 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	string collectionName;
 	is >> collectionName;
 
+	string gameTypeName;
+	is >> gameTypeName;
+
 	mh->collectionName = collectionName;
 	mh->ver1 = part1Num;
 	mh->ver2 = part2Num;
 	mh->description = ss.str();
+	mh->gameTypeName = gameTypeName;
 
 	return mh;
 }

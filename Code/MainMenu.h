@@ -107,14 +107,6 @@ struct OptionsMenuScreen
 	MainMenu *mainMenu;
 };
 
-struct MapHeaderInfo
-{
-	std::string description;
-	std::string collectionName;
-	int verA;
-	int verB;
-};
-
 struct MapSelectionItem;
 struct MapHeader;
 struct MapCollection
@@ -157,6 +149,7 @@ struct MapHeader
 	int ver2;
 	std::string collectionName;
 	std::string description;
+	std::string gameTypeName;
 };
 
 struct MapIndexInfo

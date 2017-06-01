@@ -12,6 +12,7 @@
 #include <boost/pointer_cast.hpp>
 #include <map>
 #include <boost/filesystem.hpp>
+#include "MainMenu.h"
 
 struct EditSession;
 struct ISelectable
@@ -1270,10 +1271,10 @@ struct PointMoveInfo
 typedef std::map<TerrainPolygon*,
 	std::list<PointMoveInfo>> PointMap;
 
+struct MainMenu;
 struct EditSession : GUIHandler
 {
-	EditSession( sf::RenderWindow *w,
-		sf::RenderTexture *preScreenTex );
+	EditSession( MainMenu *p_mainMenu );
 	~EditSession();
 	
 	bool AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
@@ -1319,6 +1320,7 @@ struct EditSession : GUIHandler
 	void CreateActor( ActorPtr actor );
 	std::list<GateInfoPtr> gates;
 	GateInfo *selectedGate;
+	MainMenu *mainMenu;
 	
 	void MoveSelectedPoints( 
 		//sf::Vector2i delta );
@@ -1328,10 +1330,7 @@ struct EditSession : GUIHandler
 	GroundInfo worldPosGround;
 	ActorParams* tempActor;
 	sf::Vector2i airPos;
-	std::string description;
-	std::string collection;
-	int ver1;
-	int ver2;
+	MapHeader mapHeader;
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
