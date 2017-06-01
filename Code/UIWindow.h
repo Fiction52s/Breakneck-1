@@ -327,7 +327,8 @@ struct UICheckbox : UIControl
 		TilesetManager *tsMan,
 		sf::Font *f,
 		const std::string &text,
-		int p_width );
+		int p_width,
+		int p_height = 80 );
 	~UICheckbox();
 	void Focus();
 	void Unfocus();

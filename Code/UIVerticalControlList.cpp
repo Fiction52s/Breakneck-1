@@ -57,7 +57,7 @@ void UIVerticalControlList::SetTopLeft( float x, float y )
 	int spaceCounter = 0;
 	for( int i = 0; i < numControls; ++i )
 	{
-		controls[i]->SetTopLeft( globalTopLeft.x, spaceCounter );
+		controls[i]->SetTopLeft( globalTopLeft.x, globalTopLeft.y + spaceCounter );
 		spaceCounter += controls[i]->GetHeight() + spacing;
 	}
 }

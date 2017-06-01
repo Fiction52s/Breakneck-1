@@ -1133,13 +1133,14 @@ void MainMenu::Run()
 
 					menuCurrInput.A |= ( currInput.A && !prevInput.A );
 					menuCurrInput.B |= ( currInput.B && !prevInput.B );
-					menuCurrInput.X |= ( currInput.B && !prevInput.B );
-					menuCurrInput.Y |= ( currInput.B && !prevInput.B );
+					menuCurrInput.X |= ( currInput.X && !prevInput.X );
+					menuCurrInput.Y |= ( currInput.Y && !prevInput.Y );
 					menuCurrInput.rightShoulder |= ( currInput.rightShoulder && !prevInput.rightShoulder );
 					menuCurrInput.leftShoulder |= ( currInput.leftShoulder && !prevInput.leftShoulder );
 					menuCurrInput.start |= ( currInput.start && !prevInput.start );
+					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
+					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
 					menuCurrInput.back |= ( currInput.back && !prevInput.back );
-
 					menuCurrInput.leftStickPad |= currInput.leftStickPad;
 				}
 				else
@@ -2160,6 +2161,17 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	LoadItems();
 
 	UpdateItemText();
+
+	UICheckbox *check = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300, 50);
+	UICheckbox *check1 = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300, 50);
+	UICheckbox *check2 = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300, 50);
+
+	UIControl *testBlah[] = { check, check1, check2 };
+
+	filterOptions = new UIVerticalControlList(NULL, sizeof( testBlah ) / sizeof( UIControl*), testBlah, 20);
+	Vector2f tLeft = Vector2f(600, 120) + menuOffset;
+	filterOptions->SetTopLeft( tLeft.x, tLeft.y );
+	//filterOptions = new UIVerticalControlList()
 }
 
 void MapSelectionMenu::SetupBoxes()
@@ -2448,7 +2460,14 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		if (currInput.B && !prevInput.B)
 		{
 			mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MAIN);
+			return;
 		}
+		else if (currInput.Y && !prevInput.Y)
+		{
+			state = S_FILTER_OPTIONS;
+			return;
+		}
+		
 
 		int cIndex = saSelector->currIndex;
 		int pIndex = GetPairIndex(cIndex);
@@ -2579,6 +2598,15 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				state = S_SELECTING_MAP;
 			}
 		}
+	}
+	else if (state == S_FILTER_OPTIONS)
+	{
+		if (currInput.Y && !prevInput.Y)
+		{
+			state = S_SELECTING_MAP;
+		}
+
+		filterOptions->Update( currInput, prevInput );
 	}
 }
 
@@ -2730,6 +2758,8 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 		//target->draw(playerSprite);
 		//profileSelect->Draw(target);
 	}
+
+	filterOptions->Draw(target);
 }
 
 #include <fstream>

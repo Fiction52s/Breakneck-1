@@ -159,11 +159,13 @@ struct MapIndexInfo
 };
 
 struct SingleAxisSelector;
+struct UIVerticalControlList;
 struct MapSelectionMenu
 {
 	enum State
 	{
 		S_SELECTING_MAP,
+		S_FILTER_OPTIONS,
 		S_SELECTING_SKIN
 	};
 
@@ -187,6 +189,8 @@ struct MapSelectionMenu
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
 	static MapHeader * ReadMapHeader(std::ifstream &is);
+
+	UIVerticalControlList *filterOptions;
 
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text itemName[NUM_BOXES];
