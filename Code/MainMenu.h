@@ -143,6 +143,31 @@ struct MapSelectionItem
 	Tileset *ts_preview;
 };
 
+struct LoadingMapProgressDisplay
+{
+
+	enum ProgressString
+	{
+
+	};
+
+	~LoadingMapProgressDisplay();
+
+	const static int NUM_LOAD_THREADS;
+	LoadingMapProgressDisplay(MainMenu *mainMenu,
+		sf::Vector2f &topLeft );
+	void SetProgressString(const std::string &str,
+		int threadIndex = 0);
+	void UpdateText();
+	void Draw(sf::RenderTarget *target);
+
+	sf::Text *text;
+	MainMenu *mainMenu;
+	boost::mutex stringLock;
+	std::string currString;
+	int currStringThreadIndex;
+};
+
 struct MapHeader
 {
 	int ver1;
@@ -190,6 +215,7 @@ struct MapSelectionMenu
 	void Draw(sf::RenderTarget *target);
 	static MapHeader * ReadMapHeader(std::ifstream &is);
 
+	LoadingMapProgressDisplay *progressDisplay;
 	UIVerticalControlList *filterOptions;
 
 	sf::Vertex boxes[NUM_BOXES * 4];

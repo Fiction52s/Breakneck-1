@@ -17,6 +17,9 @@ using namespace boost::filesystem;
 
 #define TIMESTEP 1.0 / 60.0
 
+
+const int LoadingMapProgressDisplay::NUM_LOAD_THREADS = 5;
+
 sf::RenderTexture *MainMenu::preScreenTexture = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture1 = NULL;
@@ -2171,6 +2174,10 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	filterOptions = new UIVerticalControlList(NULL, sizeof( testBlah ) / sizeof( UIControl*), testBlah, 20);
 	Vector2f tLeft = Vector2f(600, 120) + menuOffset;
 	filterOptions->SetTopLeft( tLeft.x, tLeft.y );
+
+	progressDisplay = new LoadingMapProgressDisplay(mainMenu, menuOffset + Vector2f(960, 540));
+	progressDisplay->SetProgressString("hello here i am");
+	progressDisplay->SetProgressString("hello here i am", 2);
 	//filterOptions = new UIVerticalControlList()
 }
 
@@ -2455,6 +2462,7 @@ void MapSelectionMenu::LoadMap()
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
+	progressDisplay->UpdateText();
 	if (state == S_SELECTING_MAP)
 	{
 		if (currInput.B && !prevInput.B)
@@ -2760,6 +2768,7 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	}
 
 	filterOptions->Draw(target);
+	progressDisplay->Draw(target);
 }
 
 #include <fstream>
@@ -3171,5 +3180,64 @@ void CreditsMenuScreen::Update()
 	if (menuCurrInput.B && !menuPrevInput.B)
 	{
 		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN );
+	}
+}
+
+
+LoadingMapProgressDisplay::LoadingMapProgressDisplay( MainMenu *p_mainMenu,
+	Vector2f &topLeft )
+	:mainMenu( p_mainMenu )
+{
+	text = new Text[NUM_LOAD_THREADS];
+	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
+	{
+		sf::Text &t = text[i];
+		t.setCharacterSize(20);
+		t.setFont(mainMenu->arial);
+		t.setPosition(topLeft + Vector2f( 0, 30 * i + 20 * i ) );
+		t.setFillColor(Color::Red);
+	}
+}
+
+LoadingMapProgressDisplay::~LoadingMapProgressDisplay()
+{
+	delete[] text;
+}
+
+void LoadingMapProgressDisplay::SetProgressString(const std::string & str,
+	int threadIndex)
+{
+	stringLock.lock();
+	
+	currString = str;
+	currStringThreadIndex = threadIndex;
+	
+	stringLock.unlock();
+}
+
+void LoadingMapProgressDisplay::UpdateText()
+{
+	string temp;
+	int cIndex;
+
+	stringLock.lock();
+
+	temp = currString;
+	cIndex = currStringThreadIndex;
+
+	stringLock.unlock();
+
+	sf::Text &t = text[cIndex];
+	if ( temp != t.getString().toAnsiString() )
+	{
+		t.setString(currString);
+	}
+}
+
+void LoadingMapProgressDisplay::Draw(sf::RenderTarget *target)
+{
+	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
+	{
+		target->draw(text[i]);
 	}
 }
