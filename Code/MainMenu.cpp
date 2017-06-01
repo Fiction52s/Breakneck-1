@@ -3189,6 +3189,7 @@ LoadingMapProgressDisplay::LoadingMapProgressDisplay( MainMenu *p_mainMenu,
 	:mainMenu( p_mainMenu )
 {
 	text = new Text[NUM_LOAD_THREADS];
+	currString = new string[NUM_LOAD_THREADS];
 	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
 	{
 		sf::Text &t = text[i];
@@ -3202,6 +3203,7 @@ LoadingMapProgressDisplay::LoadingMapProgressDisplay( MainMenu *p_mainMenu,
 LoadingMapProgressDisplay::~LoadingMapProgressDisplay()
 {
 	delete[] text;
+	delete[] currString;
 }
 
 void LoadingMapProgressDisplay::SetProgressString(const std::string & str,
@@ -3209,8 +3211,7 @@ void LoadingMapProgressDisplay::SetProgressString(const std::string & str,
 {
 	stringLock.lock();
 	
-	currString = str;
-	currStringThreadIndex = threadIndex;
+	currString[threadIndex] = str;
 	
 	stringLock.unlock();
 }
@@ -3218,19 +3219,17 @@ void LoadingMapProgressDisplay::SetProgressString(const std::string & str,
 void LoadingMapProgressDisplay::UpdateText()
 {
 	string temp;
-	int cIndex;
-
-	stringLock.lock();
-
-	temp = currString;
-	cIndex = currStringThreadIndex;
-
-	stringLock.unlock();
-
-	sf::Text &t = text[cIndex];
-	if ( temp != t.getString().toAnsiString() )
+	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
 	{
-		t.setString(currString);
+		stringLock.lock();
+		temp = currString[i];
+		stringLock.unlock();
+
+		sf::Text &t = text[i];
+		if (temp != t.getString().toAnsiString())
+		{
+			t.setString(temp);
+		}
 	}
 }
 

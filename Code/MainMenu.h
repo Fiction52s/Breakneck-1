@@ -164,7 +164,7 @@ struct LoadingMapProgressDisplay
 	sf::Text *text;
 	MainMenu *mainMenu;
 	boost::mutex stringLock;
-	std::string currString;
+	std::string *currString;
 	int currStringThreadIndex;
 };
 
