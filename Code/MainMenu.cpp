@@ -2356,7 +2356,7 @@ void MapSelectionMenu::LoadItems()
 				{
 					item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);
 				}
-				//assert(0);
+				
 				MapCollection *temp = collectionMap[mh->collectionName];
 
 				item->collection = temp;
@@ -2378,8 +2378,6 @@ void MapSelectionMenu::LoadItems()
 				coll->collectionName = mh->collectionName;
 				coll->maps.push_back(item);
 			}
-
-			//delete mh;
 		}
 		else
 		{
@@ -3200,6 +3198,15 @@ LoadingMapProgressDisplay::LoadingMapProgressDisplay( MainMenu *p_mainMenu,
 	}
 }
 
+void LoadingMapProgressDisplay::Reset()
+{
+	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
+	{
+		text[i].setString("");
+		currString[i] = "";
+	}
+}
+
 LoadingMapProgressDisplay::~LoadingMapProgressDisplay()
 {
 	delete[] text;
@@ -3222,7 +3229,7 @@ void LoadingMapProgressDisplay::UpdateText()
 	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
 	{
 		stringLock.lock();
-		temp = currString[i];
+		temp.assign( currString[i] );
 		stringLock.unlock();
 
 		sf::Text &t = text[i];

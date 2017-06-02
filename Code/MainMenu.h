@@ -160,11 +160,13 @@ struct LoadingMapProgressDisplay
 		int threadIndex = 0);
 	void UpdateText();
 	void Draw(sf::RenderTarget *target);
+	void Reset();
 
 	sf::Text *text;
 	MainMenu *mainMenu;
 	boost::mutex stringLock;
 	std::string *currString;
+	//std::string *
 	int currStringThreadIndex;
 };
 
@@ -185,6 +187,9 @@ struct MapIndexInfo
 
 struct SingleAxisSelector;
 struct UIVerticalControlList;
+
+//you should retain the last 
+
 struct MapSelectionMenu
 {
 	enum State
