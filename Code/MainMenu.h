@@ -172,17 +172,11 @@ struct LoadingMapProgressDisplay
 
 struct MapHeader
 {
-	enum MapType
-	{
-		T_RACEFIGHT,
-		T_STANDARD,
-	};
-
 	int ver1;
 	int ver2;
 	std::string collectionName;
 	std::string description;
-	MapType gameMode;
+	std::string gameTypeName;
 };
 
 struct MapIndexInfo
@@ -204,8 +198,6 @@ struct MapSelectionMenu
 		S_FILTER_OPTIONS,
 		S_SELECTING_SKIN
 	};
-
-
 
 	State state;
 	//TODO scrollbar to show how far in to the names you are
