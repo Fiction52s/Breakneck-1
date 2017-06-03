@@ -1,6 +1,7 @@
 #include "Tileset.h"	
 #include <iostream>
 #include <assert.h>
+//#include "globals.h"
 
 using namespace std;
 using namespace sf;

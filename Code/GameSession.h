@@ -745,7 +745,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//GameController &controller;
 	//GameController *controller2;
 
-	
+
+	MapHeader *mh;
 	
 
 	Collider coll;

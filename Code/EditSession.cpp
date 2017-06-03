@@ -459,7 +459,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	mapHeader.ver2 = 5;
 	mapHeader.description = "no description";
 	mapHeader.collectionName = "default";
-	mapHeader.gameTypeName = "default";
+	mapHeader.gameMode = MapHeader::T_STANDARD;//"default";
 	//arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
 	cursorLocationText.setFont( mainMenu->arial );
 	cursorLocationText.setCharacterSize( 16 );
@@ -2590,7 +2590,7 @@ void EditSession::WriteFile(string fileName)
 	of << mapHeader.ver1 << "." << mapHeader.ver2 << "\n";
 	of << mapHeader.description << "<>\n";
 	of << mapHeader.collectionName << "\n";
-	of << mapHeader.gameTypeName << "\n";
+	of << mapHeader.gameMode << "\n";
 
 	of << (int)environmentType << " " << envLevel << endl;
 
