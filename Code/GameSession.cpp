@@ -959,6 +959,12 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 	polygons.clear();
+
+	if (mh != NULL)
+	{
+		delete mh;
+		mh = NULL;
+	}
 }
 
 GameSession::~GameSession()
@@ -3268,8 +3274,7 @@ bool GameSession::OpenFile( string fileName )
 	if( is.is_open() )
 	{
 
-		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
-		delete mh;
+		mh = MapSelectionMenu::ReadMapHeader(is);
 		//cout << "-------------" << endl;
 		//pauseMenu = new PauseMenu( this );
 		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
@@ -8848,6 +8853,7 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
+	mh = NULL;
 	goalPulse = NULL;
 	pauseMenu = NULL;
 

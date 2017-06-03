@@ -2317,14 +2317,16 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	string collectionName;
 	is >> collectionName;
 
-	string gameTypeName;
-	is >> gameTypeName;
+	//string gameTypeName;
+	int gameMode;
+	is >> gameMode;
 
 	mh->collectionName = collectionName;
 	mh->ver1 = part1Num;
 	mh->ver2 = part2Num;
 	mh->description = ss.str();
-	mh->gameTypeName = gameTypeName;
+
+	mh->gameMode = (MapHeader::MapType)gameMode;
 
 	return mh;
 }
