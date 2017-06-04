@@ -84,15 +84,16 @@ struct MultiLoadingScreen
 	MultiSelectionSection *playerSection[4];
 	boost::filesystem::path filePath;
 	sf::Sprite previewSprite;
-	sf::Texture previewTex;
+//	sf::Texture previewTex;
 	
-	void SetPreview();
+//	void SetPreview();
 	bool AllPlayersReady();
 	int GetNumActivePlayers();
 	MainMenu *mainMenu;
 	
 	boost::thread *loadThread;
 	GameSession *gs;
+	sf::Vector2f menuOffset;
 };
 
 #define ColorGL( c ) sf::Glsl::Vec4( c.r, c.g, c.b, c.a )
@@ -107,8 +108,22 @@ struct OptionsMenuScreen
 	MainMenu *mainMenu;
 };
 
+struct MapHeader
+{
+	enum MapType
+	{
+		T_RACEFIGHT,
+		T_STANDARD,
+	};
+
+	int ver1;
+	int ver2;
+	std::string collectionName;
+	std::string description;
+	MapType gameMode;
+};
+
 struct MapSelectionItem;
-struct MapHeader;
 struct MapCollection
 {
 	enum Tags
@@ -170,20 +185,7 @@ struct LoadingMapProgressDisplay
 	int currStringThreadIndex;
 };
 
-struct MapHeader
-{
-	enum MapType
-	{
-		T_RACEFIGHT,
-		T_STANDARD,
-	};
 
-	int ver1;
-	int ver2;
-	std::string collectionName;
-	std::string description;
-	MapType gameMode;
-};
 
 struct MapIndexInfo
 {
@@ -377,8 +379,8 @@ struct MainMenu
 		TRANS_SAVE_TO_MAIN,
 		TRANS_SAVE_TO_WORLDMAP,
 		MULTIPREVIEW,
-		TRANS_MAIN_TO_MULTIPREVIEW,
-		TRANS_MULTIPREVIEW_TO_MAIN,
+		TRANS_MAPSELECT_TO_MULTIPREVIEW,
+		TRANS_MULTIPREVIEW_TO_MAPSELECT,
 		DEBUG_RACEFIGHT_RESULTS,
 		TRANS_MAIN_TO_MAPSELECT,
 		MAPSELECT,
@@ -388,7 +390,7 @@ struct MainMenu
 		TRANS_OPTIONS_TO_MAIN,
 		TRANS_MAIN_TO_CREDITS,
 		CREDITS,
-		TRANS_CREDITS_TO_MAIN
+		TRANS_CREDITS_TO_MAIN,
 	};
 
 	enum SoundType
@@ -527,6 +529,7 @@ struct MainMenu
 	sf::Vector2f slideStart;
 	sf::Vector2f slideEnd;
 
+	sf::Vector2f doubleLeftCenter;
 	sf::Vector2f leftCenter;
 	sf::Vector2f rightCenter;
 	sf::Vector2f trueCenter;

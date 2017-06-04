@@ -208,11 +208,12 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	:mainMenu( p_mainMenu ), loadThread( NULL )
 {
-
+	
 	int quarter = 1920 / 4;
+	menuOffset = Vector2f(-1920 * 2, 0);
 	for( int i = 0; i < 4; ++i )
 	{
-		Vector2f topMid = Vector2f(quarter * i + quarter / 2, 1080 - 400);
+		Vector2f topMid = Vector2f(quarter * i + quarter / 2, 1080 - 400) + menuOffset;
 		playerSection[i] = new MultiSelectionSection( mainMenu, this, i, topMid);
 	}
 
@@ -224,7 +225,9 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 {
 	filePath = p_path;
 
-	SetPreview();
+	previewSprite.setTexture(*mainMenu->mapSelectionMenu->previewSprite.getTexture());
+	previewSprite.setPosition(Vector2f(400, 0) + menuOffset);
+	//SetPreview();
 	
 	if( gs != NULL )
 	{
@@ -240,13 +243,13 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 	loadThread = new boost::thread( GameSession::sLoad, gs );
 }
 
-void MultiLoadingScreen::SetPreview()
-{
-	string previewFile = filePath.parent_path().relative_path().string() + string( "/" ) + filePath.stem().string() + string( "_preview_960x540.png" );
-	previewTex.loadFromFile( previewFile );
-	previewSprite.setTexture( previewTex );
-	previewSprite.setPosition( 480, 0 );
-}
+//void MultiLoadingScreen::SetPreview()
+//{
+//	string previewFile = filePath.parent_path().relative_path().string() + string( "/" ) + filePath.stem().string() + string( "_preview_960x540.png" );
+//	previewTex.loadFromFile( previewFile );
+//	previewSprite.setTexture( previewTex );
+//	previewSprite.setPosition( Vector2f( 480, 0 ) + menuOffset );
+//}
 
 void MultiLoadingScreen::Draw( sf::RenderTarget *target )
 {
@@ -294,6 +297,19 @@ bool MultiLoadingScreen::AllPlayersReady()
 
 void MultiLoadingScreen::Update()
 {
+	if (mainMenu->menuCurrInput.B && !mainMenu->menuPrevInput.B)
+	{
+		mainMenu->SetMode(MainMenu::Mode::TRANS_MULTIPREVIEW_TO_MAPSELECT);
+
+		gs->SetContinueLoading(false);
+		loadThread->join();
+		delete loadThread;
+		loadThread = NULL;
+		delete gs;
+		gs = NULL;
+		return;
+	}
+
 	for( int i = 0; i < 4; ++i )
 	{
 		playerSection[i]->Update();
@@ -355,6 +371,7 @@ MainMenu::MainMenu()
 	int wholeY = 1080;
 	int halfX = wholeX / 2;
 	int halfY = wholeY / 2;
+	doubleLeftCenter = Vector2f(-halfX - wholeX, halfY);
 	trueCenter = Vector2f(halfX, halfY);
 	leftCenter = Vector2f(halfX - wholeX, halfY);
 	rightCenter = Vector2f(halfX + wholeX, halfY);
@@ -751,7 +768,7 @@ void MainMenu::SetMode(Mode m)
 		slideCurrFrame = 0;
 		slideStart = trueCenter;
 		slideEnd = leftCenter;
-		
+
 		break;
 	}
 	case TRANS_MAPSELECT_TO_MAIN:
@@ -761,7 +778,20 @@ void MainMenu::SetMode(Mode m)
 		slideEnd = trueCenter;
 		break;
 	}
-	
+	case TRANS_MAPSELECT_TO_MULTIPREVIEW:
+	{
+		slideCurrFrame = 0;
+		slideStart = leftCenter;
+		slideEnd = doubleLeftCenter;
+		break;
+	}
+	case TRANS_MULTIPREVIEW_TO_MAPSELECT:
+	{
+		slideCurrFrame = 0;
+		slideStart = doubleLeftCenter;
+		slideEnd = leftCenter;
+		break;
+	}
 	}
 
 	menuMode = m;
@@ -1711,12 +1741,28 @@ void MainMenu::Run()
 					multiLoadingScreen->Update();
 					break;
 				}
-			case TRANS_MAIN_TO_MULTIPREVIEW:
+			case TRANS_MAPSELECT_TO_MULTIPREVIEW:
 				{
+					if (slideCurrFrame > numSlideFrames)
+					{
+						menuMode = MULTIPREVIEW;
+					}
+					else
+					{
+						Slide();
+					}
 					break;
 				}
-			case TRANS_MULTIPREVIEW_TO_MAIN:
+			case TRANS_MULTIPREVIEW_TO_MAPSELECT:
 				{
+				if (slideCurrFrame > numSlideFrames)
+				{
+					menuMode = MAPSELECT;
+				}
+				else
+				{
+					Slide();
+				}
 					break;
 				}
 			case TRANS_MAIN_TO_MAPSELECT:
@@ -1963,6 +2009,20 @@ void MainMenu::Run()
 		{
 			preScreenTexture->setView(v);
 			creditsMenu->Draw(preScreenTexture);
+			break;
+		}
+		case TRANS_MAPSELECT_TO_MULTIPREVIEW:
+		{
+			preScreenTexture->setView(v);
+			mapSelectionMenu->Draw(preScreenTexture);
+			multiLoadingScreen->Draw(preScreenTexture);
+			break;
+		}
+		case TRANS_MULTIPREVIEW_TO_MAPSELECT:
+		{
+			preScreenTexture->setView(v);
+			mapSelectionMenu->Draw(preScreenTexture);
+			multiLoadingScreen->Draw(preScreenTexture);
 			break;
 		}
 
@@ -2489,10 +2549,22 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			}
 			else
 			{
+				
 				MapSelectionItem *item = allItems[pIndex].second.item;
-				state = S_SELECTING_SKIN;
+				if (item->headerInfo->gameMode == MapHeader::T_RACEFIGHT)
+				{
+					mainMenu->multiLoadingScreen->Reset(item->path);
+					mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MULTIPREVIEW);
+					return;
+				}
+				else
+				{
+					//single player
+					state = S_SELECTING_SKIN;
 
-				LoadMap();
+					LoadMap();
+				}
+				
 				
 			}
 		}
