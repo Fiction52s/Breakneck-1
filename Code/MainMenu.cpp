@@ -71,9 +71,24 @@ void MultiSelectionSection::Update()
 	if( !active )
 	{
 		bool a = currInput.A && !prevInput.A;
-		if( a )
+		if (a)
+		{
 			active = true;
+			bHoldFrames = 0;
+		}
 		return;
+	}
+	else
+	{
+		if (currInput.B )
+		{
+			if (bHoldFrames < bHoldThresh)
+				++bHoldFrames;
+		}
+		else
+		{
+			bHoldFrames = 0;
+		}
 	}
 
 	if (!isReady)
@@ -218,6 +233,11 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 	profileSelect->Draw( target );
 }
 
+bool MultiSelectionSection::ShouldGoBack()
+{
+	return active && (bHoldFrames == bHoldThresh);
+}
+
 MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	:mainMenu( p_mainMenu ), loadThread( NULL )
 {
@@ -327,19 +347,23 @@ void MultiLoadingScreen::Update()
 
 	for (int i = 0; i < 4; ++i)
 	{
+		if (playerSection[i]->ShouldGoBack())
+		{
+			mainMenu->SetMode(MainMenu::Mode::TRANS_MULTIPREVIEW_TO_MAPSELECT);
+
+			gs->SetContinueLoading(false);
+			loadThread->join();
+			delete loadThread;
+			loadThread = NULL;
+			delete gs;
+			gs = NULL;
+			return;
+		}
 		if (!playerSection[i]->active)
 		{
 			if (mainMenu->GetCurrInput(i).B && !mainMenu->GetPrevInput(i).B)
 			{
-				mainMenu->SetMode(MainMenu::Mode::TRANS_MULTIPREVIEW_TO_MAPSELECT);
-
-				gs->SetContinueLoading(false);
-				loadThread->join();
-				delete loadThread;
-				loadThread = NULL;
-				delete gs;
-				gs = NULL;
-				return;
+				
 			}
 		}
 	}
@@ -1089,6 +1113,9 @@ ControllerState &MainMenu::GetCurrInput( int index )
 	return currInput[index];
 }
 
+
+
+
 #include <sfeMovie/Movie.hpp>
 
 void MainMenu::Slide()
@@ -1425,6 +1452,8 @@ void MainMenu::Run()
 						}
 						case M_OPTIONS:
 						{
+							//config->Load();
+							Config::CreateLoadThread(config);
 							SetMode(TRANS_MAIN_TO_OPTIONS);
 							break;
 						}
@@ -1848,6 +1877,9 @@ void MainMenu::Run()
 				if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = OPTIONS;
+					config->WaitForLoad();
+
+					optionsMenu->Load();
 				}
 				else
 				{
@@ -2921,10 +2953,10 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 
 	Vector2i resolutions[] = { Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i(1280, 800), Vector2i(1280, 720) };
 
-	UIHorizSelector<Vector2i> *horizResolution = new UIHorizSelector<Vector2i>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 4,
+	horizResolution = new UIHorizSelector<Vector2i>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 4,
 		resolutionOptions, "Resolution", 200, resolutions, false, 0, 400);
 
-	UIHorizSelector<int> *horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
+	horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
 		windowModes, "Window Mode", 200, windowModeInts, false, 0, 200);
 
 	int vol[101];
@@ -2935,13 +2967,13 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	for (int i = 0; i < 101; ++i)
 		volStrings[i] = to_string(i);
 
-	UIHorizSelector<int> *volume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
+	volume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
 		volStrings, "Volume", 200, vol, false, 0, 200);
 
-	UIButton *defaultButton = new UIButton(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "set to defaults", 300);
-	UIButton *applyButton = new UIButton(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "apply settings", 300);
+	defaultButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "set to defaults", 300);
+	applyButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "apply settings", 300);
 
-	UICheckbox *check = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300);
+	//UICheckbox *check = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300);
 	//test->SetTopLeft( Vector2f( 50, 0 ) );
 
 	
@@ -2953,6 +2985,46 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	cList->SetTopLeft( 50,  50);
 	optionsWindow->controls.push_back(cList);
 	//optionsWindow->controls.push_back(check);
+}
+
+bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
+	ButtonEventParams *param)
+{
+	UIButton *pButton = param->button;
+	if (pButton == defaultButton)
+	{
+		mainMenu->config->SetToDefault();
+	}
+	else if (pButton == applyButton)
+	{
+		Config::CreateSaveThread(mainMenu->config);
+		mainMenu->config->WaitForSave();
+		//mainMenu->config->
+	}
+
+	return true;
+}
+
+bool OptionsMenuScreen::CheckboxEvent(UIEvent eType,
+	CheckboxEventParams *param)
+{
+	return false;
+}
+
+
+bool OptionsMenuScreen::SelectorEvent(UIEvent eType,
+	SelectorEventParams *param)
+{
+	return false;
+}
+
+void OptionsMenuScreen::Load()
+{
+	const ConfigData &cd = mainMenu->config->GetData();
+
+	horizResolution->SetCurrAsResult(Vector2i(cd.resolutionX, cd.resolutionY));
+	horizWindowModes->SetCurrAsResult(cd.windowStyle);
+	volume->SetCurrAsResult(cd.volume);
 }
 
 void OptionsMenuScreen::Update()

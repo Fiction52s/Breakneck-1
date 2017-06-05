@@ -73,6 +73,10 @@ struct MultiSelectionSection : UIEventHandlerBase
 	MultiLoadingScreen *parent;
 	MainMenu *mainMenu;
 	bool isReady;
+	bool ShouldGoBack();
+
+	int bHoldFrames;
+	int bHoldThresh;
 };
 
 struct LoadingMapProgressDisplay;
@@ -96,18 +100,34 @@ struct MultiLoadingScreen
 	GameSession *gs;
 	sf::Vector2f menuOffset;
 	LoadingMapProgressDisplay *progressDisplay;
+
+	
 };
 
 #define ColorGL( c ) sf::Glsl::Vec4( c.r, c.g, c.b, c.a )
 //#define _WIN32_WINNT 0x0601
 
-struct OptionsMenuScreen
+struct OptionsMenuScreen : UIEventHandlerBase
 {
 	OptionsMenuScreen(MainMenu *p_mainMenu);
 	UIWindow *optionsWindow;
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	MainMenu *mainMenu;
+	void Load();
+
+	bool ButtonEvent(UIEvent eType,
+		ButtonEventParams *param);
+	bool CheckboxEvent(UIEvent eType,
+		CheckboxEventParams *param);
+	bool SelectorEvent(UIEvent eType,
+		SelectorEventParams *param);
+
+	UIHorizSelector<sf::Vector2i> *horizResolution;
+	UIHorizSelector<int> *horizWindowModes;
+	UIHorizSelector<int> *volume;
+	UIButton *defaultButton;
+	UIButton *applyButton;
 };
 
 struct MapHeader

@@ -247,6 +247,21 @@ struct UIHorizSelector : UIControl
 		delete[] results;
 	}
 
+	//returns true on success
+	bool SetCurrAsResult( const T &param )
+	{
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (results[i] == param)
+			{
+				currIndex = i;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	const sf::Vector2f &GetTopLeftRel()
 	{
 		return bar->GetTopLeftRel();
