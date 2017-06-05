@@ -44,7 +44,7 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MultiLoadingS
 {
 	profileSelect = new ControlProfileMenu( this,playerIndex,
 		mainMenu->cpm->profiles, p_topMid );
-
+	bHoldThresh = 30;
 
 	
 	
@@ -84,6 +84,10 @@ void MultiSelectionSection::Update()
 		{
 			if (bHoldFrames < bHoldThresh)
 				++bHoldFrames;
+			else
+			{
+
+			}
 		}
 		else
 		{
