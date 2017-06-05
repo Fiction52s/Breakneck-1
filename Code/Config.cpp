@@ -74,7 +74,7 @@ void Config::Load()
 				{
 					data.windowStyle = sf::Style::Default;
 				}
-				else if( mode == "windownoborder" )
+				else if( mode == "borderlesswindow" )
 				{
 					data.windowStyle = sf::Style::None;
 				}

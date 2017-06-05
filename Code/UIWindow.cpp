@@ -69,7 +69,7 @@ UIControl::UIControlType UIControl::GetType()
 }
 
 UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize )
-	:UIControl( p_parent, NULL, UI_WINDOW ), ts_window( t ), controlList( NULL )
+	:UIControl( p_parent, NULL, UI_WINDOW ), ts_window( t )
 {
 	dimensions = p_windowSize;
 	//uiwindowtest_96x30.png
@@ -80,6 +80,14 @@ UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize 
 	minSize = t->tileWidth * 2;
 	tileSize = t->tileWidth;
 	Resize( dimensions );
+}
+
+UIWindow::~UIWindow()
+{
+	for (auto it = controls.begin(); it != controls.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 void UIWindow::Resize( sf::Vector2f &size )
@@ -274,8 +282,10 @@ void UIWindow::Draw( sf::RenderTarget *target )
 
 	target->draw( borderVA, 16 * 4, sf::Quads, ts_window->texture );
 
-	if( controlList != NULL )
-		controlList->Draw( target );
+	for (auto it = controls.begin(); it != controls.end(); ++it)
+	{
+		(*it)->Draw( target );
+	}
 
 	/*sf::RectangleShape rs;
 	rs.setFillColor( Color( 0, 255, 0, 60 ) );
@@ -291,8 +301,10 @@ void UIWindow::Draw( sf::RenderTarget *target )
 bool UIWindow::Update( ControllerState &curr,
 		ControllerState &prev )
 {
-	if( controlList != NULL )
-		controlList->Update( curr, prev );
+	for (auto it = controls.begin(); it != controls.end(); ++it)
+	{
+		(*it)->Update(curr, prev);
+	}
 	return true;
 }
 

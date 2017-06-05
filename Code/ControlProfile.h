@@ -136,6 +136,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	ControlProfile *currProfile;
 	SingleAxisSelector *saSelector;
 
+	sf::Text selectedProfileText;
 	UIControlGrid *editProfileGrid;
 };
 

@@ -631,8 +631,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		normal[GRINDLUNGE] = owner->GetTileset( "grindball_NORMALS.png", 32, 32 );
 
 
-		actionLength[GRINDSLASH] = 6 * 3;
-		tileset[GRINDSLASH] = owner->GetTileset( "uair_80x80.png", 80, 80 );
+		actionLength[GRINDSLASH] = 16;
+		tileset[GRINDSLASH] = owner->GetTileset( "grind_lunge_96x128.png", 96, 128 );
 		normal[GRINDSLASH] = owner->GetTileset( "uair_NORMALS.png", 80, 80 );
 
 		actionLength[GRINDATTACK] = 1;
@@ -773,8 +773,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		ts_dairSword[2] = owner->GetTileset( "dair_swordc_256x256.png", 256, 256 );
 
 		ts_uairSword[0] = owner->GetTileset( "uair_sworda_160x160.png", 160, 160 );
-		ts_uairSword[1] = owner->GetTileset( "uair_swordb_224x224.png", 224, 224 );
-		ts_uairSword[2] = owner->GetTileset( "uair_swordc_384x384.png", 384, 384 );
+		ts_uairSword[1] = owner->GetTileset("uair_swordb_224x224.png", 224, 224);
+		ts_uairSword[2] = owner->GetTileset("uair_swordc_384x384.png", 384, 384);
+		
+		ts_grindLungeSword[0] = owner->GetTileset("grind_lunge_sworda_160x160.png", 160, 160);
+		ts_grindLungeSword[1] = owner->GetTileset("grind_lunge_swordb_192x192.png", 192, 192);
+		ts_grindLungeSword[2] = owner->GetTileset("grind_lunge_swordc_224x208.png", 224, 208);
 
 		ts_standingNSword[0] = owner->GetTileset( "stand_sworda_272x160.png", 272, 160 );
 		ts_standingNSword[1] = owner->GetTileset( "stand_swordb_304x160.png", 304, 160 );
@@ -16070,9 +16074,9 @@ void Actor::Draw( sf::RenderTarget *target )
 				{
 				
 					if( flashFrames > 0 )
-						target->draw( uairSword, &swordSh );
+						target->draw( grindLungeSword, &swordSh );
 					else
-						target->draw( uairSword );
+						target->draw( grindLungeSword );
 					break;
 				
 				}
@@ -17728,42 +17732,52 @@ void Actor::UpdateSprite()
 
 			//IntRect ir = tileset[GRINDLUNGE]->GetSubRect( 1 );
 
-			Tileset *curr_ts = ts_uairSword[speedLevel];
+			Tileset *curr_ts = ts_grindLungeSword[speedLevel];
 			int startFrame = 0;
-			showSword = true;
+			showSword = frame < 15;
 			//showSword = frame / 3 >= startFrame && frame / 3 <= 5;
 
 			if( showSword )
 			{
-				uairSword.setTexture( *curr_ts->texture );
+				grindLungeSword.setTexture( *curr_ts->texture );
 			}
 
-			SetSpriteTexture( UAIR );
+			SetSpriteTexture( GRINDSLASH );
 
-			SetSpriteTile( frame / 3, facingRight );
+			SetSpriteTile( frame, facingRight );
 
 			Vector2i offset( 0, 0 );
+			switch (speedLevel)
+			{
+			case 0:
+			case 1:
+				offset = Vector2i(16, 24);
+				break;
+			case 2:
+				offset = Vector2i(32, 32);
+				break;
+			}
 			//Vector2i offset( 8, -24 );
 
 			if( showSword )
 			{
 				if( facingRight )
 				{
-					uairSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
+					grindLungeSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
 				}
 				else
 				{
 					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
-					uairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
+					grindLungeSword.setTextureRect( sf::IntRect( irSword.left + irSword.width,
 						irSword.top, -irSword.width, irSword.height ) );
 				
 
 					offset.x = -offset.x;
 				}
 
-				uairSword.setOrigin( uairSword.getLocalBounds().width / 2, uairSword.getLocalBounds().height / 2 );
-				uairSword.setPosition( position.x + offset.x, position.y + offset.y );
-				uairSword.setRotation( sprite->getRotation() );
+				grindLungeSword.setOrigin(grindLungeSword.getLocalBounds().width / 2, grindLungeSword.getLocalBounds().height / 2 );
+				grindLungeSword.setPosition( position.x + offset.x, position.y + offset.y );
+				grindLungeSword.setRotation( sprite->getRotation() );
 			}
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );

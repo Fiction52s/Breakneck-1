@@ -44,6 +44,11 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MultiLoadingS
 {
 	profileSelect = new ControlProfileMenu( this,playerIndex,
 		mainMenu->cpm->profiles, p_topMid );
+
+
+	
+	
+
 	if (parent == NULL)
 	{
 		active = true;
@@ -71,59 +76,59 @@ void MultiSelectionSection::Update()
 		return;
 	}
 
-	if( !isReady )
+	if (!isReady)
 	{
-		bool rT = (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed() );
-		bool lT = (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed() );
+		bool rT = (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed());
+		bool lT = (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed());
 
 		bool rS = (currInput.rightShoulder && !prevInput.rightShoulder);
 		bool lS = (currInput.leftShoulder && !prevInput.leftShoulder);
-		if( rT )
+		if (rT)
 		{
-			switch( team )
+			switch (team)
 			{
 			case T_NOT_CHOSEN:
-				{
-					team = T_RED;
-					break;
-				}
+			{
+				team = T_RED;
+				break;
+			}
 			case T_RED:
-				{
-					team = T_BLUE;
-					break;
-				}
+			{
+				team = T_BLUE;
+				break;
+			}
 			case T_BLUE:
-				{
-					team = T_RED;
-					break;
-				}
+			{
+				team = T_RED;
+				break;
+			}
 			}
 		}
-		else if( lT )
+		else if (lT)
 		{
-			switch( team )
+			switch (team)
 			{
 			case T_NOT_CHOSEN:
-				{
-					team = T_BLUE;
-					break;
-				}
+			{
+				team = T_BLUE;
+				break;
+			}
 			case T_RED:
-				{
-					team = T_BLUE;
-					break;
-				}
+			{
+				team = T_BLUE;
+				break;
+			}
 			case T_BLUE:
-				{
-					team = T_RED;
-					break;
-				}
+			{
+				team = T_RED;
+				break;
+			}
 			}
 		}
 
-		if( rS )
+		if (rS)
 		{
-			if( skinIndex < S_Count )
+			if (skinIndex < S_Count)
 			{
 				++skinIndex;
 			}
@@ -132,9 +137,9 @@ void MultiSelectionSection::Update()
 				skinIndex = 0;
 			}
 		}
-		else if( lS )
+		else if (lS)
 		{
-			if( skinIndex > 0 )
+			if (skinIndex > 0)
 			{
 				--skinIndex;
 			}
@@ -144,7 +149,15 @@ void MultiSelectionSection::Update()
 			}
 		}
 
-		profileSelect->Update( currInput, prevInput );
+		ControlProfile *oldProf = profileSelect->currProfile;
+
+		profileSelect->Update(currInput, prevInput);
+
+		/*if (profileSelect->currProfile != oldProf)
+		{
+			selectedProfileText.setString(profileSelect->currProfile->name);
+			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
+		}*/
 	}
 
 	int numPlayersActive;
@@ -241,6 +254,12 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 	gs = new GameSession( NULL, mainMenu, p_path.string() );
 
 	loadThread = new boost::thread( GameSession::sLoad, gs );
+
+	for (int i = 0; i < 4; ++i)
+	{
+		playerSection[i]->isReady = false;
+		playerSection[i]->active = false;
+	}
 }
 
 //void MultiLoadingScreen::SetPreview()
@@ -340,6 +359,20 @@ void MultiLoadingScreen::Update()
 			loadThread = NULL;
 			delete gs;
 			gs = NULL;
+
+			View vv;
+			vv.setCenter(960, 540);
+			vv.setSize(1920, 1080);
+			mainMenu->window->setView(vv);
+
+			mainMenu->v.setCenter(mainMenu->leftCenter);
+			mainMenu->v.setSize(Vector2f(1920, 1080));
+			mainMenu->preScreenTexture->setView(mainMenu->v);
+
+			mainMenu->SetMode(MainMenu::Mode::MAPSELECT);
+			mainMenu->mapSelectionMenu->state = MapSelectionMenu::State::S_SELECTING_MAP;
+			mainMenu->v.setCenter(mainMenu->leftCenter);
+			mainMenu->preScreenTexture->setView(mainMenu->v);
 		}	
 	}
 }
@@ -1098,6 +1131,7 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_CREDITS);
 	//SetMode(TRANS_MAIN_TO_MAPSELECT);
 	SetMode(SPLASH);
+	//SetMode(OPTIONS);
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -2860,6 +2894,48 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
 			Vector2f(width, height));
 	optionsWindow->SetTopLeftVec(Vector2f(1920/2 - width / 2, 1080/2 - height / 2) + menuOffset);
+
+	string options[] = { "1920 x 1080", "1600 x 900" , "1280 x 720" };
+	string results[] = { "blah", "blah2" , "blah3" };
+	string resolutionOptions[] = { "1366 x 768", "1920 x 1080", "1280 x 800", "1280 x 720" };
+	string windowModes[] = { "Borderless Windowed", "Windowed", "Fullscreen" };
+
+	int windowModeInts[] = { sf::Style::None, sf::Style::Default, sf::Style::Fullscreen };
+
+	Vector2i resolutions[] = { Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i(1280, 800), Vector2i(1280, 720) };
+
+	UIHorizSelector<Vector2i> *horizResolution = new UIHorizSelector<Vector2i>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 4,
+		resolutionOptions, "Resolution", 200, resolutions, false, 0, 400);
+
+	UIHorizSelector<int> *horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
+		windowModes, "Window Mode", 200, windowModeInts, false, 0, 200);
+
+	int vol[101];
+	for (int i = 0; i < 101; ++i)
+		vol[i] = i;
+
+	string volStrings[101];
+	for (int i = 0; i < 101; ++i)
+		volStrings[i] = to_string(i);
+
+	UIHorizSelector<int> *volume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
+		volStrings, "Volume", 200, vol, false, 0, 200);
+
+	UIButton *defaultButton = new UIButton(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "set to defaults", 300);
+	UIButton *applyButton = new UIButton(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "apply settings", 300);
+
+	UICheckbox *check = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300);
+	//test->SetTopLeft( Vector2f( 50, 0 ) );
+
+	
+
+	UIControl *testBlah[] = { horizResolution, horizWindowModes, volume, defaultButton, applyButton };
+
+	//check->SetTopLeft(100, 50);
+	UIVerticalControlList *cList = new UIVerticalControlList(optionsWindow, sizeof( testBlah ) / sizeof( UIControl* ), testBlah, 20);
+	cList->SetTopLeft( 50,  50);
+	optionsWindow->controls.push_back(cList);
+	//optionsWindow->controls.push_back(check);
 }
 
 void OptionsMenuScreen::Update()

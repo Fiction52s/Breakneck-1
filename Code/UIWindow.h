@@ -3,12 +3,14 @@
 
 #include "SFML/Graphics.hpp"
 #include "Input.h"
+#include <list>
 
 struct Tileset;
 struct GameSession;
 struct TilesetManager;
 
 struct UIButton;
+template <typename T>
 struct UIHorizSelector;
 struct UICheckbox;
 struct UIWindow;
@@ -27,7 +29,7 @@ struct SelectorEventParams
 {
 	int oldSelectorIndex;
 	int newSelectorIndex;
-	UIHorizSelector *selector;
+	void *selector; //needs to be cast to the correct type
 };
 
 struct ButtonEventParams
@@ -55,8 +57,7 @@ struct UIControl
 	enum UIControlType
 	{
 		UI_BAR,
-		UI_HORIZ_SELECTOR_INT,
-		UI_HORIZ_SELECTOR_STR,
+		UI_HORIZ_SELECTOR,
 		UI_VERTICAL_CONTROL_LIST,
 		UI_BUTTON,
 		UI_WINDOW,
@@ -146,25 +147,16 @@ struct UIBar : UIControl
 //lightup
 
 
-
+template <typename T>
 struct UIHorizSelector : UIControl
-{
-	enum Type
-	{
-		ERR,
-		INT,
-		STR
-	};
-
-	
-	UIHorizSelector( UIControl *parent, 
+{	
+	/*UIHorizSelector( UIControl *parent, 
 		UIEventHandlerBase *p_handler,
-		UIControlType p_cType,
 		TilesetManager *tsMan,
 		sf::Font *f,
 		int numOptions, std::string *names,
 		const std::string &label, int p_labelWidth,
-		Type type, bool p_loop, int p_defaultIndex,
+		T *results, bool p_loop, int p_defaultIndex,
 		int chooserWidth );	
 	virtual ~UIHorizSelector();
 	void Draw( sf::RenderTarget *target );
@@ -177,13 +169,13 @@ struct UIHorizSelector : UIControl
 	const sf::Vector2f &GetTopLeftGlobal();
 	const sf::Vector2f &GetTopLeftRel();
 	void SetTopLeft( float x, float y );
+	const T & GetResult(int index);*/
 
 	UIBar *bar;
 	UIBar *nameBar;
 	sf::Vertex arrows[2*4];
 	Tileset *ts_arrow;
 
-	Type chooserType;
 	std::string *names;
 	int numOptions;
 	int currIndex;
@@ -196,41 +188,257 @@ struct UIHorizSelector : UIControl
 	int currWaitLevel;
 	int flipCounterLeft;
 	int flipCounterRight;
+	T *results;
 	
+
+	UIHorizSelector(UIControl *p_parent, UIEventHandlerBase *p_handler,
+		TilesetManager *tsMan, sf::Font *f, int p_numOptions,
+		std::string *p_names, const std::string &label, int p_labelWidth, T *p_results,
+		bool p_loop, int p_defaultIndex, int p_chooserWidth)
+		:UIControl(p_parent, p_handler, UIControl::UIControlType::UI_HORIZ_SELECTOR), 
+		numOptions(p_numOptions), loop(p_loop),
+		defaultIndex(p_defaultIndex)
+	{
+		results = new T[p_numOptions];
+		for (int i = 0; i < p_numOptions; ++i)
+		{
+			results[i] = p_results[i];
+		}
+		//ts_arrows = tsMan->GetTileset( "arrows_" );
+		names = new std::string[numOptions];
+		for (int i = 0; i < numOptions; ++i)
+		{
+			names[i] = p_names[i];
+		}
+		currIndex = defaultIndex;
+
+		AssignArrowTexture();
+
+		bar = new UIBar(p_parent, tsMan, f, p_chooserWidth);
+
+		nameBar = new UIBar(p_parent, tsMan, f, p_labelWidth);
+		nameBar->SetText(label, Vector2i(0, 0), UIBar::Alignment::MIDDLE);
+
+		dimensions = bar->dimensions;
+
+		/*currIndexText.setFont( *f );
+		currIndexText.setCharacterSize( 40 );
+		currIndexText.setColor( Color::White );*/
+		bar->SetText(names[defaultIndex]);
+
+		waitFrames[0] = 10;
+		waitFrames[1] = 5;
+		waitFrames[2] = 2;
+
+		waitModeThresh[0] = 2;
+		waitModeThresh[1] = 2;
+
+		currWaitLevel = 0;
+		flipCounterLeft = 0;
+		flipCounterRight = 0;
+		framesWaiting = 0;
+	}
+
+	~UIHorizSelector()
+	{
+		delete bar;
+		delete nameBar;
+		delete[] names;
+		delete[] results;
+	}
+
+	const sf::Vector2f &GetTopLeftRel()
+	{
+		return bar->GetTopLeftRel();
+	}
+
+	const sf::Vector2f &GetTopLeftGlobal()
+	{
+		return bar->GetTopLeftGlobal();
+	}
+
+	void Focus()
+	{
+		UIControl::Focus();
+		bar->Focus();
+		nameBar->Focus();
+	}
+
+	void Unfocus()
+	{
+		UIControl::Unfocus();
+		bar->Unfocus();
+		nameBar->Unfocus();
+	}
+
+	void AssignArrowTexture()
+	{
+		IntRect sub;
+		for (int i = 0; i < 2; ++i)
+		{
+			/*sub = ts_arrow->GetSubRect( i );
+			arrows[i*4+0].texCoords = Vector2f( sub.left, sub.top );
+			arrows[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
+			arrows[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
+			arrows[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );*/
+
+			arrows[i * 4 + 0].color = Color::Blue;
+			arrows[i * 4 + 1].color = Color::Cyan;
+			arrows[i * 4 + 2].color = Color::Yellow;
+			arrows[i * 4 + 3].color = Color::Red;
+		}
+	}
+
+	bool Update(ControllerState &curr, ControllerState &prev)
+	{
+		bool upOrDown = curr.LUp() || curr.LDown();
+		bool left = curr.LLeft() && !upOrDown;
+		bool right = curr.LRight() && !upOrDown;
+
+		if (right)
+		{
+			if (flipCounterRight == 0
+				|| (flipCounterRight > 0 && framesWaiting == waitFrames[currWaitLevel])
+				)
+			{
+				if (flipCounterRight == 0)
+				{
+					currWaitLevel = 0;
+				}
+
+				++flipCounterRight;
+
+				if (flipCounterRight == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+				{
+					currWaitLevel++;
+				}
+
+				flipCounterLeft = 0;
+				framesWaiting = 0;
+
+				if (currIndex < numOptions - 1)
+				{
+					currIndex++;
+				}
+				else
+				{
+					if (loop)
+					{
+						currIndex = 0;
+					}
+				}
+			}
+			else
+			{
+				++framesWaiting;
+			}
+
+		}
+		else if (left)
+		{
+			if (flipCounterLeft == 0
+				|| (flipCounterLeft > 0 && framesWaiting == waitFrames[currWaitLevel])
+				)
+			{
+				if (flipCounterLeft == 0)
+				{
+					currWaitLevel = 0;
+				}
+
+				++flipCounterLeft;
+
+				if (flipCounterLeft == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+				{
+					currWaitLevel++;
+				}
+
+				flipCounterRight = 0;
+				framesWaiting = 0;
+				if (currIndex > 0)
+				{
+					currIndex--;
+				}
+				else
+				{
+					if (loop)
+					{
+						currIndex = numOptions - 1;
+					}
+				}
+			}
+			else
+			{
+				++framesWaiting;
+			}
+
+		}
+		else
+		{
+			flipCounterLeft = 0;
+			flipCounterRight = 0;
+			currWaitLevel = 0;
+			framesWaiting = 0;
+		}
+
+		bar->SetText(names[currIndex]);
+
+
+		return false;
+	}
+
+	void SetTopLeft(float x, float y)
+	{
+		int extraSpacing = 20;
+		relTopLeft = Vector2f(x, y);
+		nameBar->SetTopLeft(x, y);
+		bar->SetTopLeft(x + nameBar->GetWidth() + extraSpacing, y);
+
+		//set arrows
+		//currIndexText.setPosition( x, y );
+	}
+
+	void Draw(sf::RenderTarget *target)
+	{
+		nameBar->Draw(target);
+		bar->Draw(target);
+	}
+
+	const T & GetResult(int index)
+	{
+		return results[index];
+	}
 };
 
 
-
-
-struct UIHorizSelectorInt : UIHorizSelector
-{
-	UIHorizSelectorInt( UIControl *parent, 
-		UIEventHandlerBase *p_handler,
-		TilesetManager *tsMan,
-		sf::Font *f,
-		int numOptions, std::string *names,
-		const std::string &label, int p_labelWidth,
-		int *results,
-		bool p_loop, int p_defaultIndex,
-		int chooserWidth );
-	int *results;
-	int GetResult( int index );
-};
-
-struct UIHorizSelectorStr : UIHorizSelector
-{
-	UIHorizSelectorStr( UIControl *parent,
-		UIEventHandlerBase *p_handler,
-		TilesetManager *tsMan,
-		sf::Font *f,
-		int numOptions, std::string *names,
-		const std::string &label, int p_labelWidth,
-		std::string *results,
-		bool p_loop, int p_defaultIndex,
-		int chooserWidth );
-	std::string *results;
-	const std::string &GetResult( int index );
-};
+//struct UIHorizSelectorInt : UIHorizSelector
+//{
+//	UIHorizSelectorInt( UIControl *parent, 
+//		UIEventHandlerBase *p_handler,
+//		TilesetManager *tsMan,
+//		sf::Font *f,
+//		int numOptions, std::string *names,
+//		const std::string &label, int p_labelWidth,
+//		int *results,
+//		bool p_loop, int p_defaultIndex,
+//		int chooserWidth );
+//	int *results;
+//	int GetResult( int index );
+//};
+//
+//struct UIHorizSelectorStr : UIHorizSelector
+//{
+//	UIHorizSelectorStr( UIControl *parent,
+//		UIEventHandlerBase *p_handler,
+//		TilesetManager *tsMan,
+//		sf::Font *f,
+//		int numOptions, std::string *names,
+//		const std::string &label, int p_labelWidth,
+//		std::string *results,
+//		bool p_loop, int p_defaultIndex,
+//		int chooserWidth );
+//	std::string *results;
+//	const std::string &GetResult( int index );
+//};
 
 struct UIVerticalControlList : UIControl
 {
@@ -373,6 +581,7 @@ struct UIWindow : UIControl
 	UIWindow( UIControl *p_parent, 
 		Tileset *t,
 		sf::Vector2f &p_windowSize );
+	~UIWindow();
 	void AssignTextureToCorners();
 	void AssignTextureToCornerEdges();
 	void AssignTextureToEdges();
@@ -403,7 +612,8 @@ struct UIWindow : UIControl
 	Tileset *ts_window;
 	//GameSession *owner;
 
-	UIVerticalControlList *controlList;
+	std::list<UIControl*> controls;
+	//UIVerticalControlList *controlList;
 };
 
 #endif

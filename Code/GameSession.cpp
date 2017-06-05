@@ -13824,37 +13824,6 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	tempAllTargets.setFont( owner->mainMenu->arial );
 	tempAllTargets.setCharacterSize( 12 );
 	tempAllTargets.setFillColor( Color::Red );
-
-	testWindow = new UIWindow( NULL, owner->GetTileset( "Menu/windows_64x24.png", 64, 24 ),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
-		Vector2f( 600, 600) );
-	testWindow->SetTopLeftVec( Vector2f( 100, 100 ) );
-	
-
-	string options[] = {"blah", "blah2" , "blah3" };
-	string results[] = {"blah", "blah2" , "blah3" };
-
-
-
-	UIHorizSelectorStr *test = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, 3, 
-		options, "first", 200, results, false, 0, 200 );
-
-	UIHorizSelectorStr *test2 = new UIHorizSelectorStr( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, 3,
-		options, "second", 200, results, false, 0, 200 );
-
-	UIButton *but = new UIButton( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, "testbutton", 300 );
-
-	UICheckbox *check = new UICheckbox( testWindow, NULL, &owner->tm, &owner->mainMenu->arial, "testcheckbox", 300 );
-	//test->SetTopLeft( Vector2f( 50, 0 ) );
-
-	string resolutionOptions[] = {"1366 x 768", "1920 x 1080", "1280 x 800", "1280 x 720" };
-
-
-
-	UIControl *testBlah[4] = { test, test2, but, check };
-
-	testWindow->controlList = new UIVerticalControlList( testWindow, 4, testBlah, 20 );
-
-	//testWindow->test = test;
 }
 
 int GameSession::RaceFight::NumDigits( int number )

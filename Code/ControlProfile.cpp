@@ -43,6 +43,16 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 	currProfile = p_profiles.front(); //KIN 
 
+	selectedProfileText.setString(currProfile->name);
+	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
+
+	selectedProfileText.setFont(section->mainMenu->arial);
+	selectedProfileText.setCharacterSize(30);
+	selectedProfileText.setFillColor(Color::Black);
+	selectedProfileText.setPosition(p_topMid.x, p_topMid.y + 10);
+
+
+	
 
 	SetupBoxes();
 
@@ -87,7 +97,6 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 	maxReceiveFrames = 240;
 
-	
 }
 
 bool ControlProfileMenu::ButtonEvent( UIEvent eType,
@@ -169,7 +178,12 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 	{
 		editProfileGrid->Draw( target );
 	}
+	else if (state == State::S_SELECTED)
+	{
+		target->draw(selectedProfileText);
+	}
 }
+
 
 void ControlProfileMenu::UpdateNames()
 {
@@ -232,11 +246,13 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			state = S_SHOWING_OPTIONS;
 			UpdateNames();
 			oldCurrIndex = saSelector->currIndex;
+
 			break;
 		case S_SHOWING_OPTIONS:
 			{
 				int test = 0;
 				state = S_SELECTED;
+
 				for( list<ControlProfile*>::iterator it = profiles.begin(); 
 					it != profiles.end(); ++it )
 				{
@@ -247,6 +263,9 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 					}
 					++test;
 				}
+
+				selectedProfileText.setString(currProfile->name);
+				selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
 				break;
 			}
 		case S_EDIT_CONFIG:

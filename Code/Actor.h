@@ -342,6 +342,9 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fairSword[3];
 	bool showSword;
 
+	sf::Sprite grindLungeSword;
+	Tileset *ts_grindLungeSword[3];
+
 	sf::Sprite dairSword;
 	Tileset *ts_dairSword[3];
 	//sf::Vector2i dairOffset[3];
