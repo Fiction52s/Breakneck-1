@@ -2950,18 +2950,19 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 
 	string options[] = { "1920 x 1080", "1600 x 900" , "1280 x 720" };
 	string results[] = { "blah", "blah2" , "blah3" };
-	string resolutionOptions[] = { "1366 x 768", "1920 x 1080", "1280 x 800", "1280 x 720" };
+	string resolutionOptions[] = { "1920 x 1080", "1600 x 900", "1366 x 768", "1280 x 800", "1280 x 720" };
 	string windowModes[] = { "Borderless Windowed", "Windowed", "Fullscreen" };
 
 	int windowModeInts[] = { sf::Style::None, sf::Style::Default, sf::Style::Fullscreen };
 
-	Vector2i resolutions[] = { Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i(1280, 800), Vector2i(1280, 720) };
+	Vector2i resolutions[] = { Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i( 1366, 768 ),
+		Vector2i(1280, 800), Vector2i(1280, 720) };
 
 	horizResolution = new UIHorizSelector<Vector2i>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 4,
-		resolutionOptions, "Resolution", 200, resolutions, false, 0, 400);
+		resolutionOptions, "Resolution", 200, resolutions, true, 0, 400);
 
 	horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
-		windowModes, "Window Mode", 200, windowModeInts, false, 0, 200);
+		windowModes, "Window Mode", 200, windowModeInts, true, 0, 200);
 
 	int vol[101];
 	for (int i = 0; i < 101; ++i)
@@ -2971,8 +2972,8 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	for (int i = 0; i < 101; ++i)
 		volStrings[i] = to_string(i);
 
-	volume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
-		volStrings, "Volume", 200, vol, false, 0, 200);
+	volume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 101,
+		volStrings, "Volume", 200, vol, true, 0, 200);
 
 	defaultButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "set to defaults", 300);
 	applyButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "apply settings", 300);
@@ -2995,15 +2996,29 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 	ButtonEventParams *param)
 {
 	UIButton *pButton = param->button;
-	if (pButton == defaultButton)
+	if (eType == UIEvent::E_BUTTON_PRESSED)
 	{
-		mainMenu->config->SetToDefault();
-	}
-	else if (pButton == applyButton)
-	{
-		Config::CreateSaveThread(mainMenu->config);
-		mainMenu->config->WaitForSave();
-		//mainMenu->config->
+		if (pButton == defaultButton)
+		{
+			mainMenu->config->SetToDefault();
+			Load();
+		}
+		else if (pButton == applyButton)
+		{
+			Vector2i res = horizResolution->GetResult(horizResolution->currIndex);
+			int winMode = horizWindowModes->GetResult(horizWindowModes->currIndex);
+			int vol = volume->GetResult(volume->currIndex);
+			ConfigData d;
+			d.resolutionX = res.x;
+			d.resolutionY = res.y;
+			d.windowStyle = winMode;
+			d.volume = vol;
+
+			mainMenu->config->SetData(d);
+			Config::CreateSaveThread(mainMenu->config);
+			mainMenu->config->WaitForSave();
+			//mainMenu->config->
+		}
 	}
 
 	return true;
@@ -3026,9 +3041,9 @@ void OptionsMenuScreen::Load()
 {
 	const ConfigData &cd = mainMenu->config->GetData();
 
-	horizResolution->SetCurrAsResult(Vector2i(cd.resolutionX, cd.resolutionY));
-	horizWindowModes->SetCurrAsResult(cd.windowStyle);
-	volume->SetCurrAsResult(cd.volume);
+	assert( horizResolution->SetCurrAsResult(Vector2i(cd.resolutionX, cd.resolutionY)) );
+	assert( horizWindowModes->SetCurrAsResult(cd.windowStyle) );
+	assert( volume->SetCurrAsResult(cd.volume) );
 }
 
 void OptionsMenuScreen::Update()

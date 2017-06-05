@@ -32,8 +32,9 @@ void ConfigData::SetToDefault()
 }
 
 Config::Config()
-	:doneLoading( false )
+	:doneLoading( false ), doneSaving( false )
 {
+	t = NULL;
 	CreateLoadThread( this );
 }
 
@@ -44,6 +45,7 @@ void Config::SetToDefault()
 
 void Config::SetThread( boost::thread *p_t )
 {
+	assert(t == NULL);
 	t = p_t;
 }
 
@@ -148,16 +150,15 @@ std::string ConfigData::GetWindowModeString()
 
 void Config::Save()
 {
+	cout << "config::save\n";
 	ofstream of;
 	of.open("config");
 	if (of.is_open())
 	{
 		of << "ResolutionX " << data.resolutionX << "\n";
 		of << "ResolutionY " << data.resolutionY << "\n";
-
-
 		of << "WindowMode " << data.GetWindowModeString() << "\n";
-		of << "ResolutionY " << data.volume;// << "\n";
+		of << "Volume " << data.volume;// << "\n";
 
 		of.close();
 	}

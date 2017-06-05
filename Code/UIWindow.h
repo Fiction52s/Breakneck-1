@@ -255,6 +255,7 @@ struct UIHorizSelector : UIControl
 			if (results[i] == param)
 			{
 				currIndex = i;
+				UpdateOption();
 				return true;
 			}
 		}
@@ -302,6 +303,11 @@ struct UIHorizSelector : UIControl
 			arrows[i * 4 + 2].color = Color::Yellow;
 			arrows[i * 4 + 3].color = Color::Red;
 		}
+	}
+
+	void UpdateOption()
+	{
+		bar->SetText(names[currIndex]);
 	}
 
 	bool Update(ControllerState &curr, ControllerState &prev)
@@ -395,8 +401,8 @@ struct UIHorizSelector : UIControl
 			framesWaiting = 0;
 		}
 
-		bar->SetText(names[currIndex]);
-
+		
+		UpdateOption();
 
 		return false;
 	}
