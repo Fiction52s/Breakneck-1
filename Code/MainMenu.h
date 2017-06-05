@@ -75,6 +75,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	bool isReady;
 };
 
+struct LoadingMapProgressDisplay;
 struct MultiLoadingScreen
 {
 	MultiLoadingScreen( MainMenu *p_mainMenu );
@@ -94,6 +95,7 @@ struct MultiLoadingScreen
 	boost::thread *loadThread;
 	GameSession *gs;
 	sf::Vector2f menuOffset;
+	LoadingMapProgressDisplay *progressDisplay;
 };
 
 #define ColorGL( c ) sf::Glsl::Vec4( c.r, c.g, c.b, c.a )

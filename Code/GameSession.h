@@ -731,6 +731,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Vector2f testShock;
 	sf::Texture shockwaveTex;
 	int shockTestFrame;
+
+	LoadingMapProgressDisplay *progressDisplay;
 	//sf::Sprite shockwaveSprite;
 
 	//sf::Sprite topbarSprite;

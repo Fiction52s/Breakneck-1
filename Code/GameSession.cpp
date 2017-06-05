@@ -5391,7 +5391,8 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
-	mainMenu->mapSelectionMenu->progressDisplay->SetProgressString("started loading!", 0);
+	if( progressDisplay != NULL )
+		progressDisplay->SetProgressString("started loading!", 0);
 
 	if (!ShouldContinueLoading())
 	{
@@ -5709,8 +5710,8 @@ bool GameSession::Load()
 
 	players[0] = new Actor( this, 0 );
 
-
-	mainMenu->mapSelectionMenu->progressDisplay->SetProgressString("opening map file!", 1);
+	if (progressDisplay != NULL)
+		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
 	if( raceFight != NULL )
@@ -5914,7 +5915,8 @@ bool GameSession::Load()
 	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
 	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
 
-	mainMenu->mapSelectionMenu->progressDisplay->SetProgressString("done loading!", 0);
+	if (progressDisplay != NULL)
+		progressDisplay->SetProgressString("done loading!", 0);
 
 	return true;
 }
@@ -8856,7 +8858,7 @@ void GameSession::Init()
 	mh = NULL;
 	goalPulse = NULL;
 	pauseMenu = NULL;
-
+	progressDisplay = NULL;
 
 	for (int i = 0; i < 4; ++i)
 	{

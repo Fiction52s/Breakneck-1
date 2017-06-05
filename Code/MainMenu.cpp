@@ -230,6 +230,10 @@ MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 		playerSection[i] = new MultiSelectionSection( mainMenu, this, i, topMid);
 	}
 
+	progressDisplay = new LoadingMapProgressDisplay(mainMenu, menuOffset + Vector2f(480, 540));
+	//progressDisplay->SetProgressString("hello here i am");
+	//progressDisplay->SetProgressString("hello here i am", 2);
+
 	gs = NULL;
 	loadThread = NULL;	
 }
@@ -252,6 +256,8 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 	}
 
 	gs = new GameSession( NULL, mainMenu, p_path.string() );
+
+	gs->progressDisplay = progressDisplay;
 
 	loadThread = new boost::thread( GameSession::sLoad, gs );
 
@@ -277,6 +283,7 @@ void MultiLoadingScreen::Draw( sf::RenderTarget *target )
 	{
 		playerSection[i]->Draw( target );
 	}
+	progressDisplay->Draw(target);
 }
 
 int MultiLoadingScreen::GetNumActivePlayers()
@@ -316,17 +323,25 @@ bool MultiLoadingScreen::AllPlayersReady()
 
 void MultiLoadingScreen::Update()
 {
-	if (mainMenu->menuCurrInput.B && !mainMenu->menuPrevInput.B)
-	{
-		mainMenu->SetMode(MainMenu::Mode::TRANS_MULTIPREVIEW_TO_MAPSELECT);
+	progressDisplay->UpdateText();
 
-		gs->SetContinueLoading(false);
-		loadThread->join();
-		delete loadThread;
-		loadThread = NULL;
-		delete gs;
-		gs = NULL;
-		return;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (!playerSection[i]->active)
+		{
+			if (mainMenu->GetCurrInput(i).B && !mainMenu->GetPrevInput(i).B)
+			{
+				mainMenu->SetMode(MainMenu::Mode::TRANS_MULTIPREVIEW_TO_MAPSELECT);
+
+				gs->SetContinueLoading(false);
+				loadThread->join();
+				delete loadThread;
+				loadThread = NULL;
+				delete gs;
+				gs = NULL;
+				return;
+			}
+		}
 	}
 
 	for( int i = 0; i < 4; ++i )
@@ -2549,6 +2564,8 @@ void MapSelectionMenu::LoadMap()
 
 
 	gs = new GameSession(NULL, mainMenu, allItems[pIndex].second.item->path.string() );
+
+	gs->progressDisplay = progressDisplay;
 
 	loadThread = new boost::thread(GameSession::sLoad, gs);
 }
