@@ -79,10 +79,6 @@ struct ControlProfileMenu : UIEventHandlerBase
 		S_Count
 	};
 
-	int currReceiveFrame;
-	int maxReceiveFrames;
-	ControllerSettings::ButtonType editIndex;
-	XBoxButton tempFilter[ControllerSettings::Count];
 	
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;

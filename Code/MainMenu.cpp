@@ -10,6 +10,7 @@
 #include "ControlProfile.h"
 #include "UIWindow.h"
 #include "sfeMovie/StreamSelection.hpp"
+#include "MusicSelector.h"
 
 using namespace std;
 using namespace sf;
@@ -3017,6 +3018,8 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 			mainMenu->config->SetData(d);
 			Config::CreateSaveThread(mainMenu->config);
 			mainMenu->config->WaitForSave();
+
+			mainMenu->ResizeWindow(res.x, res.y, winMode);
 			//mainMenu->config->
 		}
 	}
@@ -3504,4 +3507,46 @@ void LoadingMapProgressDisplay::Draw(sf::RenderTarget *target)
 	{
 		target->draw(text[i]);
 	}
+}
+
+MusicSelectionMenu::MusicSelectionMenu(MainMenu *p_mainMenu)
+	:mainMenu( p_mainMenu )
+{
+	menuOFfset = Vector2f(-1920, 1080);
+	musicSelector = new MusicSelector( mainMenu, menuOFfset + Vector2f( 400, 400 ),);	
+}
+
+MusicManager::MusicManager()
+{
+
+}
+
+MusicManager::~MusicManager()
+{
+
+}
+
+bool MusicManager::LoadFolderPaths()
+{
+	ifstream is;
+	is.open("musicdirectories.txt");
+	if (is.is_open())
+	{
+		string s;
+		while (getline(is, s))
+		{
+			cout << "reading directory: " << s << "\n";
+		}
+	}
+	else
+	{
+		assert(0 && "failed to open music directories sheet");
+	}
+
+	return true;
+}
+
+bool MusicManager::LoadMusic()
+{
+	return false;
 }

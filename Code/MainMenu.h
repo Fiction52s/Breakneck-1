@@ -220,6 +220,18 @@ struct UIVerticalControlList;
 
 //you should retain the last 
 
+struct MusicSelector;
+struct MusicSelectionMenu
+{
+	MusicSelectionMenu(MainMenu *p_mainMenu);
+
+	MusicSelector *musicSelector;
+	sf::Sprite previewSpr;
+	sf::Vector2f menuOFfset;
+	MainMenu *mainMenu;
+};
+
+
 struct MapSelectionMenu
 {
 	enum State
@@ -228,8 +240,6 @@ struct MapSelectionMenu
 		S_FILTER_OPTIONS,
 		S_SELECTING_SKIN
 	};
-
-
 
 	State state;
 	//TODO scrollbar to show how far in to the names you are
