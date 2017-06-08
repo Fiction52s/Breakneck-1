@@ -9,6 +9,7 @@
 
 using namespace sf;
 using namespace std;
+using namespace boost::filesystem;
 
 //const int MusicSelector::NUM_BOXES = 8;
 const int MusicSelector::BOX_WIDTH = 300;
@@ -85,7 +86,7 @@ void MusicSelector::UpdateNames()
 		if (lit == songs.end())
 			lit = songs.begin();
 
-		musicNames[i].setString((*lit)->name);
+		musicNames[i].setString((*lit)->songPath.string());
 		musicNames[i].setOrigin(musicNames[i].getLocalBounds().width / 2, 0);
 		musicNames[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
 
@@ -238,4 +239,161 @@ void MusicSelector::UpdateBoxesDebug()
 		boxes[i * 4 + 2].color = c;
 		boxes[i * 4 + 3].color = c;
 	}
+}
+
+
+//use the options section of single player, and then make the right side of multiplayer an options section
+//people can press a button (y) to switch their control to that window and influence the single menu input that is built from them
+//need a function that can combine controlelrs into a menu input even if there are not all of them present
+
+MusicManager::MusicManager(MainMenu *p_mainMenu)
+	:mainMenu( p_mainMenu )
+{
+	LoadFolderPaths();
+	LoadMusicNames();
+	DebugLoadMusic();
+}
+
+MusicManager::~MusicManager()
+{
+	for (auto it = songs.begin(); it != songs.end(); ++it)
+	{
+		delete (*it);
+	}
+	songs.clear();
+}
+
+bool MusicManager::LoadFolderPaths()
+{
+	ifstream is;
+	is.open("Audio/Music/musicpaths.txt");
+	if (is.is_open())
+	{
+		string s;
+		while (getline(is, s))
+		{
+			cout << "reading directory: " << s << "\n";
+		}
+
+		folderPaths.push_back(s);
+	}
+	else
+	{
+		assert(0 && "failed to open music directories sheet");
+	}
+
+	folderPaths.push_back(current_path().string() + "/Audio/Music/");
+	return true;
+}
+
+bool MusicManager::rLoadMusicNames(const path &p)
+{
+	try
+	{
+		if (exists(p))    // does p actually exist?
+		{
+			if (is_regular_file(p))        // is p a regular file?   
+			{
+				if (p.extension().string() == ".ogg")
+				{
+					songPaths.push_back(p.string());
+					//cout << "loading ogg: " << p.filename().string() << "\n";
+					return true;
+				}
+			}
+			else if (is_directory(p))      // is p a directory?
+			{
+				vector<path> v;
+				////cout << p << " is a directory containing:\n";
+
+				//TreeNode *newDir = new TreeNode;
+				//newDir->parent = parentNode;
+				//newDir->next = NULL;
+				//newDir->name = p.filename().string();
+				//newDir->filePath = p;
+
+				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
+
+				//sort(v.begin(), v.end());             // sort, since directory iteration
+				//									  // is not ordered on some file systems
+
+				for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
+				{
+					//cout << "loading folder: " << (*it).filename().string() << "\n";
+					rLoadMusicNames((*it));
+					//cout << "   " << *it << '\n';
+				}
+			}
+			else
+				cout << p << " exists, but is neither a regular file nor a directory\n";
+		}
+		else
+		{
+			cout << p << " does not exist music\n";
+			return false;
+		}
+	}
+	catch (const filesystem_error& ex)
+	{
+		cout << ex.what() << '\n';
+		return false;
+	}
+
+	return true;
+}
+
+MusicInfo::MusicInfo()
+	:music( NULL )
+{
+
+}
+
+bool MusicManager::LoadMusicNames()
+{
+	for (auto it = folderPaths.begin(); it != folderPaths.end(); ++it)
+	{
+		rLoadMusicNames((*it));
+	}
+	return true;
+}
+
+bool MusicInfo::Load()
+{
+	if (music == NULL)
+	{
+		music = new sf::Music;
+		bool res = music->openFromFile(songPath.string());
+		music->setVolume(0);
+		return res;
+	}
+	return true;
+}
+
+bool MusicManager::LoadSong(const std::string &name)
+{
+	for (auto it = songs.begin(); it != songs.end(); ++it)
+	{
+		string fName = (*it)->songPath.filename().stem().string();
+		if (name == fName)
+		{
+			return (*it)->Load();
+		}
+	}
+	assert(0);
+	return false;
+}
+
+bool MusicManager::DebugLoadMusic()
+{
+	for (auto it = songPaths.begin(); it != songPaths.end(); ++it)
+	{
+		MusicInfo *info = new MusicInfo;
+		info->music = new sf::Music;
+		info->music->openFromFile((*it).string());//mainMenu->soundManager.GetMusic((*it).string());
+		//info->name = (*it).filename().stem().string();
+		info->songPath = (*it);
+		songs.push_back(info);
+	}
+
+	return true;
 }

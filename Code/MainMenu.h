@@ -220,17 +220,6 @@ struct UIVerticalControlList;
 
 //you should retain the last 
 
-struct MusicSelector;
-struct MusicSelectionMenu
-{
-	MusicSelectionMenu(MainMenu *p_mainMenu);
-
-	MusicSelector *musicSelector;
-	sf::Sprite previewSpr;
-	sf::Vector2f menuOFfset;
-	MainMenu *mainMenu;
-};
-
 
 struct MapSelectionMenu
 {

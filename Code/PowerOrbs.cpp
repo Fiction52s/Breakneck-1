@@ -761,181 +761,181 @@ void PowerWheel::Charge( int power )
 //	return true;
 }
 
-
-PowerRingSection::PowerRingSection(const sf::Color &active, const sf::Color &remove,
-	const sf::Color &empty, int p_width, int p_maxPower)
-	:activeColor(active), removeColor(remove), emptyColor(empty), width(p_width),
-	maxPower(p_maxPower), numEmptyDivs(0), numRemovedDivs(0)
-{}
-
-void PowerRingSection::Reset()
-{
-	currPower = maxPower;
-	numEmptyDivs = 0;
-	numRemovedDivs = 0;
-
-	for (int i = 0; i < maxPower; ++i)
-	{
-		va[i].color = activeColor;
-	}
-}
-
-int PowerRingSection::GetDivsActive()
-{
-	return 0;
-	//double f = (currPower/(double)maxPower) * numDivisions;
-}
-
-int PowerRingSection::GetDivsRemoved()
-{
-	return 0;
-	//double f = (removedPower / (double)maxPower) * numDivisions;
-}
-
-int PowerRingSection::GetDivsEmpty()
-{
-	return 0;
-	//double f = (currPower / (double)maxPower) * numDivisions;
-}
-
-void PowerRingSection::Update()
-{
-
-}
-
-int PowerRingSection::Damage(int dmg)
-{
-	prevPower = currPower;
-	currPower -= dmg;
-	if (currPower < 0)
-	{
-		return -currPower;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-int PowerRingSection::Heal(int power)
-{
-	currPower += power;
-	if (currPower > maxPower)
-		return -currPower;
-	else
-		return 0;
-}
-
-//you are trying to figure out a simple way to represent this so that you don't have to touch up all the 
-//vertices each frame. you should only change the color if the color needs to be changed
-
-
-void PowerRingSection::SetupSection(int startRadius)
-{
-	int innerRadius = startRadius;
-	int outerRadius = startRadius + width;
-
-	double div = 360.0 / maxPower;
-
-	Vector2f innerOffset(0, -innerRadius);
-	Vector2f outerOffset(0, -outerRadius);
-
-	//Vertex *circleVA = va;
-	//Vertex *ringVA = (va + maxPower * 4);
-	sf::Transform t;
-
-	Vector2f innerPointCurr;
-	Vector2f outerPointCurr;
-	Vector2f innerPointPrev;
-	Vector2f outerPointPrev;
-	for (int i = 0; i < maxPower; ++i)
-	{
-		innerPointPrev = t.transformPoint(innerOffset);
-		outerPointPrev = t.transformPoint(outerOffset);
-		
-		t.rotate(div);
-
-		innerPointCurr = t.transformPoint(innerOffset);
-		outerPointCurr = t.transformPoint(outerOffset);
-
-		va[i * 4 + 0].position = innerPointPrev;
-		va[i * 4 + 1].position = outerPointPrev;
-		va[i * 4 + 2].position = outerPointCurr;
-		va[i * 4 + 3].position = innerPointCurr;
-
-		t.rotate(div);
-	}
-}
-
-PowerRing::PowerRing(GameSession *owner, int numRings, PowerRingSection *rings, int *spacing)
-{
-	centerPos = Vector2f( 90, 230 );
-	CreateRing();
-}
-
-void PowerRing::CreateRing()
-{
-	scorpTest.setFillColor( Color::Yellow );
-	scorpTest.setRadius( 25 );
-	scorpTest.setOrigin( scorpTest.getLocalBounds().width / 2, 
-		scorpTest.getLocalBounds().height / 2 );
-	scorpTest.setPosition( centerPos + Vector2f( 155, 0 ));
-
-	keyTest.setFillColor( Color::Blue );
-	keyTest.setRadius( 25 );
-	keyTest.setOrigin( keyTest.getLocalBounds().width / 2, 
-		keyTest.getLocalBounds().height / 2 );
-	keyTest.setPosition( scorpTest.getPosition() + Vector2f( 40, -40 ) );
-	float innerRadius = 40;
-	float outerRadius = 64;
-	int reps = 4;
-	int numCirclePoints = 6 * reps;
-	int numPoints = numCirclePoints * 2;
-
-	ringVA = new VertexArray( sf::Quads, numCirclePoints * 4 );
-	middleVA = new VertexArray( sf::TrianglesFan, numCirclePoints + 2 );
-	VertexArray &va = *ringVA;
-	VertexArray &mva = *middleVA;
-
-	Vector2f dir( 0, -1 );
-	Transform t;
-	t.rotate( -360.f / numCirclePoints );
-	Vector2f trueDir;
-
-	mva[0].color = Color::Black;
-	mva[0].position = centerPos;
-
-	Color middleColor = Color::Black;
-	for( int i = 0; i < numCirclePoints; ++i )
-	{
-		trueDir = t.transformPoint( dir );
-
-		va[i*4+0].color = Color::Red;
-		va[i*4+1].color = Color::Red;
-		va[i*4+2].color = Color::Red;
-		va[i*4+3].color = Color::Red;
-
-		mva[(i+1)].color = middleColor;
-		mva[(i+1)].position = centerPos + trueDir * innerRadius;
-
-		va[i*4+0].position = centerPos + trueDir * outerRadius;
-		va[i*4+3].position = centerPos + trueDir * innerRadius;
-
-		t.rotate( -360.f / numCirclePoints );
-
-		trueDir = t.transformPoint( dir );
-
-		va[i*4+1].position = centerPos + trueDir * outerRadius;
-		va[i*4+2].position = centerPos + trueDir * innerRadius;
-	}
-	mva[numCirclePoints+1].color = middleColor;
-	mva[numCirclePoints+1].position = centerPos + trueDir * innerRadius;
-}
-
-void PowerRing::Draw( sf::RenderTarget *target )
-{
-	target->draw( *ringVA );
-	target->draw( *middleVA );
-	target->draw( scorpTest );
-	target->draw( keyTest );
-}
+//
+//PowerRingSection::PowerRingSection(const sf::Color &active, const sf::Color &remove,
+//	const sf::Color &empty, int p_width, int p_maxPower)
+//	:activeColor(active), removeColor(remove), emptyColor(empty), width(p_width),
+//	maxPower(p_maxPower), numEmptyDivs(0), numRemovedDivs(0)
+//{}
+//
+//void PowerRingSection::Reset()
+//{
+//	currPower = maxPower;
+//	numEmptyDivs = 0;
+//	numRemovedDivs = 0;
+//
+//	for (int i = 0; i < maxPower; ++i)
+//	{
+//		va[i].color = activeColor;
+//	}
+//}
+//
+//int PowerRingSection::GetDivsActive()
+//{
+//	return 0;
+//	//double f = (currPower/(double)maxPower) * numDivisions;
+//}
+//
+//int PowerRingSection::GetDivsRemoved()
+//{
+//	return 0;
+//	//double f = (removedPower / (double)maxPower) * numDivisions;
+//}
+//
+//int PowerRingSection::GetDivsEmpty()
+//{
+//	return 0;
+//	//double f = (currPower / (double)maxPower) * numDivisions;
+//}
+//
+//void PowerRingSection::Update()
+//{
+//
+//}
+//
+//int PowerRingSection::Damage(int dmg)
+//{
+//	prevPower = currPower;
+//	currPower -= dmg;
+//	if (currPower < 0)
+//	{
+//		return -currPower;
+//	}
+//	else
+//	{
+//		return 0;
+//	}
+//}
+//
+//int PowerRingSection::Heal(int power)
+//{
+//	currPower += power;
+//	if (currPower > maxPower)
+//		return -currPower;
+//	else
+//		return 0;
+//}
+//
+////you are trying to figure out a simple way to represent this so that you don't have to touch up all the 
+////vertices each frame. you should only change the color if the color needs to be changed
+//
+//
+//void PowerRingSection::SetupSection(int startRadius)
+//{
+//	int innerRadius = startRadius;
+//	int outerRadius = startRadius + width;
+//
+//	double div = 360.0 / maxPower;
+//
+//	Vector2f innerOffset(0, -innerRadius);
+//	Vector2f outerOffset(0, -outerRadius);
+//
+//	//Vertex *circleVA = va;
+//	//Vertex *ringVA = (va + maxPower * 4);
+//	sf::Transform t;
+//
+//	Vector2f innerPointCurr;
+//	Vector2f outerPointCurr;
+//	Vector2f innerPointPrev;
+//	Vector2f outerPointPrev;
+//	for (int i = 0; i < maxPower; ++i)
+//	{
+//		innerPointPrev = t.transformPoint(innerOffset);
+//		outerPointPrev = t.transformPoint(outerOffset);
+//		
+//		t.rotate(div);
+//
+//		innerPointCurr = t.transformPoint(innerOffset);
+//		outerPointCurr = t.transformPoint(outerOffset);
+//
+//		va[i * 4 + 0].position = innerPointPrev;
+//		va[i * 4 + 1].position = outerPointPrev;
+//		va[i * 4 + 2].position = outerPointCurr;
+//		va[i * 4 + 3].position = innerPointCurr;
+//
+//		t.rotate(div);
+//	}
+//}
+//
+//PowerRing::PowerRing(GameSession *owner, int numRings, PowerRingSection *rings, int *spacing)
+//{
+//	centerPos = Vector2f( 90, 230 );
+//	CreateRing();
+//}
+//
+//void PowerRing::CreateRing()
+//{
+//	scorpTest.setFillColor( Color::Yellow );
+//	scorpTest.setRadius( 25 );
+//	scorpTest.setOrigin( scorpTest.getLocalBounds().width / 2, 
+//		scorpTest.getLocalBounds().height / 2 );
+//	scorpTest.setPosition( centerPos + Vector2f( 155, 0 ));
+//
+//	keyTest.setFillColor( Color::Blue );
+//	keyTest.setRadius( 25 );
+//	keyTest.setOrigin( keyTest.getLocalBounds().width / 2, 
+//		keyTest.getLocalBounds().height / 2 );
+//	keyTest.setPosition( scorpTest.getPosition() + Vector2f( 40, -40 ) );
+//	float innerRadius = 40;
+//	float outerRadius = 64;
+//	int reps = 4;
+//	int numCirclePoints = 6 * reps;
+//	int numPoints = numCirclePoints * 2;
+//
+//	ringVA = new VertexArray( sf::Quads, numCirclePoints * 4 );
+//	middleVA = new VertexArray( sf::TrianglesFan, numCirclePoints + 2 );
+//	VertexArray &va = *ringVA;
+//	VertexArray &mva = *middleVA;
+//
+//	Vector2f dir( 0, -1 );
+//	Transform t;
+//	t.rotate( -360.f / numCirclePoints );
+//	Vector2f trueDir;
+//
+//	mva[0].color = Color::Black;
+//	mva[0].position = centerPos;
+//
+//	Color middleColor = Color::Black;
+//	for( int i = 0; i < numCirclePoints; ++i )
+//	{
+//		trueDir = t.transformPoint( dir );
+//
+//		va[i*4+0].color = Color::Red;
+//		va[i*4+1].color = Color::Red;
+//		va[i*4+2].color = Color::Red;
+//		va[i*4+3].color = Color::Red;
+//
+//		mva[(i+1)].color = middleColor;
+//		mva[(i+1)].position = centerPos + trueDir * innerRadius;
+//
+//		va[i*4+0].position = centerPos + trueDir * outerRadius;
+//		va[i*4+3].position = centerPos + trueDir * innerRadius;
+//
+//		t.rotate( -360.f / numCirclePoints );
+//
+//		trueDir = t.transformPoint( dir );
+//
+//		va[i*4+1].position = centerPos + trueDir * outerRadius;
+//		va[i*4+2].position = centerPos + trueDir * innerRadius;
+//	}
+//	mva[numCirclePoints+1].color = middleColor;
+//	mva[numCirclePoints+1].position = centerPos + trueDir * innerRadius;
+//}
+//
+//void PowerRing::Draw( sf::RenderTarget *target )
+//{
+//	target->draw( *ringVA );
+//	target->draw( *middleVA );
+//	target->draw( scorpTest );
+//	target->draw( keyTest );
+//}

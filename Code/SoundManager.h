@@ -9,20 +9,21 @@ struct SoundInfo
 	std::string name;
 };
 
-struct MusicInfo
-{
-	sf::Music *music;
-	std::string name;
-};
+//struct MusicInfo
+//{
+//	sf::Music *music;
+//	boost::filesystem::path songPath;
+//	//std::string name;
+//};
 
 struct SoundManager
 {
 	~SoundManager();
-	sf::Music *GetMusic( const std::string &name );
+	//sf::Music *GetMusic( const std::string &name );
 	sf::SoundBuffer *GetSound( const std::string &name );
 	void ClearAll();
 	std::list<SoundInfo*> sounds;
-	std::list<MusicInfo*> songs;
+	//std::list<MusicInfo*> songs;
 };
 
 

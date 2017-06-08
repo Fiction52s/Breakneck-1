@@ -812,11 +812,11 @@ void GameSession::Cleanup()
 		polyShaders = NULL;
 	}
 
-	if (powerRing != NULL)
+	/*if (powerRing != NULL)
 	{
 		delete powerRing;
 		powerRing = NULL;
-	}
+	}*/
 
 	if (powerWheel != NULL)
 	{
@@ -5790,7 +5790,7 @@ bool GameSession::Load()
 		p0->hasPowerGravReverse, p0->hasPowerBounce, 
 		p0->hasPowerGrindBall, p0->hasPowerTimeSlow, p0->hasPowerRightWire);
 
-	powerRing = new PowerRing( this );
+	//powerRing = new PowerRing( this );
 
 	stringstream ss1;
 
@@ -8044,7 +8044,7 @@ int GameSession::Run()
 		//powerOrbs->Draw( preScreenTex );
 		
 		//powerWheel->Draw( preScreenTex );
-		powerRing->Draw( preScreenTex );
+		//powerRing->Draw( preScreenTex );
 		keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
@@ -8904,7 +8904,7 @@ void GameSession::Init()
 	}
 	polygons.clear();
 
-	powerRing = NULL;
+	//powerRing = NULL;
 	powerWheel = NULL;
 	polyShaders = NULL;
 	ts_polyShaders = NULL;

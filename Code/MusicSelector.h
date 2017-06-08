@@ -5,8 +5,12 @@
 #include <SFML\Graphics.hpp>
 #include "UIWindow.h"
 #include "ItemSelector.h"
-
+#include <boost\filesystem.hpp>
+#include <SFML\Audio.hpp>
 struct MusicInfo;
+struct MainMenu;
+
+
 
 struct MusicSelector
 {
@@ -45,15 +49,29 @@ struct MusicSelector
 	SingleAxisSelector *saSelector;
 };
 
+struct MusicManager;
+struct MusicInfo
+{
+	MusicInfo();
+	sf::Music *music;
+	boost::filesystem::path songPath;
+	bool Load();
+};
+
 struct MusicManager
 {
 
-	MusicManager();
+	MusicManager( MainMenu *p_mainMenu );
 	~MusicManager();
 	bool LoadFolderPaths();
-	bool LoadMusic();
-
+	bool LoadMusicNames();
+	bool rLoadMusicNames( const boost::filesystem::path &p );
+	bool LoadSong(const std::string &name );
+	bool DebugLoadMusic();
+	std::list<std::string> folderPaths;
+	std::list<boost::filesystem::path> songPaths;
 	std::list<MusicInfo*> songs;
+	MainMenu *mainMenu;
 };
 
 #endif
