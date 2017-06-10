@@ -219,13 +219,14 @@ struct SingleAxisSelector;
 struct UIVerticalControlList;
 
 //you should retain the last 
-
+struct MusicSelector;
 
 struct MapSelectionMenu
 {
 	enum State
 	{
 		S_SELECTING_MAP,
+		S_MUSIC_SELECTOR,
 		S_FILTER_OPTIONS,
 		S_SELECTING_SKIN
 	};
@@ -272,7 +273,7 @@ struct MapSelectionMenu
 	sf::Font &font;
 	SingleAxisSelector *saSelector;
 	std::list<MapSelectionItem*>::iterator currItemIt;
-
+	MusicSelector *musicSelector;
 
 	int numTotalItems;
 	std::pair<std::string,MapIndexInfo> *allItems;
@@ -373,6 +374,8 @@ struct CreditsMenuScreen
 
 struct Parallax;
 struct SingleAxisSelector;
+struct MusicManager;
+
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
@@ -432,6 +435,7 @@ struct MainMenu
 	sf::Text menuOptions[MainMenuOptions::M_Count];
 	void UpdateMenuOptionText();
 	
+	MusicManager *musicManager;
 
 	MainMenu();
 	~MainMenu();

@@ -444,7 +444,10 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
-	MusicManager mm(this);
+	//MusicManager mm(this);
+	musicManager = new MusicManager(this);
+	musicManager->LoadMusicNames();
+	
   	int wholeX = 1920;
 	int wholeY = 1080;
 	int halfX = wholeX / 2;
@@ -2325,6 +2328,9 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	progressDisplay = new LoadingMapProgressDisplay(mainMenu, menuOffset + Vector2f(960, 540));
 	progressDisplay->SetProgressString("hello here i am");
 	progressDisplay->SetProgressString("hello here i am", 2);
+
+	musicSelector = new MusicSelector(mainMenu, menuOffset + Vector2f(600, 140), mainMenu->musicManager->songs );
+	musicSelector->UpdateNames();
 	//filterOptions = new UIVerticalControlList()
 }
 
@@ -2619,9 +2625,14 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MAIN);
 			return;
 		}
-		else if (currInput.Y && !prevInput.Y)
+		else if (currInput.X && !prevInput.X)
 		{
 			state = S_FILTER_OPTIONS;
+			return;
+		}
+		else if (currInput.Y && !prevInput.Y)
+		{
+			state = S_MUSIC_SELECTOR;
 			return;
 		}
 		
@@ -2726,6 +2737,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 			//kill the current loading thread
 		}
+		else if (currInput.Y && !prevInput.Y)
+		{
+			state = S_MUSIC_SELECTOR;
+			return;
+		}
 		else
 		{
 			singleSection->Update();
@@ -2776,6 +2792,10 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		}
 
 		filterOptions->Update( currInput, prevInput );
+	}
+	else if (state == S_MUSIC_SELECTOR)
+	{
+		musicSelector->Update();
 	}
 }
 
@@ -2927,7 +2947,10 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 		//target->draw(playerSprite);
 		//profileSelect->Draw(target);
 	}
-
+	else if (state == S_MUSIC_SELECTOR)
+	{
+		musicSelector->Draw(target);
+	}
 	filterOptions->Draw(target);
 	progressDisplay->Draw(target);
 }

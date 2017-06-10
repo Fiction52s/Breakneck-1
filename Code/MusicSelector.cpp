@@ -21,12 +21,14 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu, Vector2f &p_topMid,
 	:font(p_mainMenu->arial),topIndex(0), oldCurrIndex(0), topMid(p_topMid),
 	mainMenu( p_mainMenu ), rawSongs( p_songs )
 {
+	previewSong = NULL;
+	songs = NULL;
 	//assert(!p_profiles.empty());
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
 
-	currSong = songs.front();//p_profiles.front(); //KIN 
+	LoadNames();
 
 	SetupBoxes();
 
@@ -48,33 +50,56 @@ void MusicSelector::Draw(sf::RenderTarget *target)
 	}
 }
 
+void MusicSelector::LoadNames()
+{
+	int numSongs = rawSongs.size();
+
+	if( songs != NULL )
+		delete[]songs;
+
+
+	songs = new MusicInfo*[numSongs];
+
+	int ind = 0;
+	for (auto it = rawSongs.begin(); it != rawSongs.end(); ++it)
+	{
+		songs[ind] = (*it);
+		ind++;
+	}
+
+	saSelector->totalItems = numSongs;
+}
 
 void MusicSelector::UpdateNames()
 {
-	if (songs.size() == 0)
+	int numTotalSongs = saSelector->totalItems;
+
+	if (numTotalSongs == 0)
 	{
 
 		return;
 	}
 
-	auto lit = songs.begin();
-	if (topIndex > songs.size())
+	//auto lit = songs.begin();
+	if (topIndex > numTotalSongs)
 	{
-		topIndex = songs.size() - 1;
+		topIndex = numTotalSongs - 1;
 	}
 
-	for (int i = 0; i < topIndex; ++i)
-	{
-		++lit;
-	}
+	int ind = topIndex;
+	//for (int i = 0; i < topIndex; ++i)
+	//{
+	//	//++lit;
+	//	++ind;
+	//}
 
 	int trueI;
 	int i = 0;
-	int numSongs = songs.size();
+
 	for (; i < NUM_BOXES; ++i)
 	{
 		trueI = (topIndex + i) % NUM_BOXES;
-		if (i == numSongs)
+		if (i == numTotalSongs)
 		{
 			for (; i < NUM_BOXES; ++i)
 			{
@@ -83,17 +108,17 @@ void MusicSelector::UpdateNames()
 			break;
 		}
 
-		if (lit == songs.end())
-			lit = songs.begin();
+		if (ind == numTotalSongs)
+			ind = 0;
 
-		musicNames[i].setString((*lit)->songPath.string());
+		musicNames[i].setString(songs[ind]->songPath.filename().stem().string() );
 		musicNames[i].setOrigin(musicNames[i].getLocalBounds().width / 2, 0);
 		musicNames[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
 
-		++lit;
+		++ind;
 	}
 
-	saSelector->totalItems = numSongs;
+	
 }
 
 void MusicSelector::Update()
@@ -101,10 +126,46 @@ void MusicSelector::Update()
 	ControllerState &currInput = mainMenu->menuCurrInput;
 	ControllerState &prevInput = mainMenu->menuPrevInput;
 
+	MusicInfo *mi = songs[saSelector->currIndex];
+
 	if (currInput.A && !prevInput.A)
 	{
-		
-		
+		if ( previewSong != NULL )//mi->music != NULL && mi->music->getStatus() == sf::Music::Status::Playing)
+		{
+			if (previewSong == mi)
+			{
+				if (mi->music->getStatus() == sf::Music::Status::Playing)
+				{
+					mi->music->pause();
+				}
+				else
+				{
+					mi->music->setVolume(100);
+					mi->music->setLoop(true);
+					mi->music->play();
+				}
+				
+				//previewSong = NULL;
+				//previewSong->music->pause();
+				//previewSong = NULL;
+			}
+			else
+			{
+				previewSong->music->stop();
+				mi->Load();
+				previewSong = mi;
+				mi->music->setLoop(true);
+				mi->music->setVolume(100);
+				previewSong->music->play();
+			}
+		}
+		else
+		{
+			mi->Load();
+			mi->music->setVolume(100);
+			mi->music->play();
+			previewSong = mi;
+		}
 	}
 	else if (currInput.X && !prevInput.X)
 	{
@@ -114,11 +175,6 @@ void MusicSelector::Update()
 	{
 		
 	}
-
-	//tomorrow: set up the edit profile grid to draw in a separate state from a selected
-	//profile. then make a popup window where you input a button to change your controls.
-	//editProfileGrid->Update( currInput, prevInput );
-
 
 	bool up = currInput.LUp();
 	bool down = currInput.LDown();
@@ -158,13 +214,23 @@ void MusicSelector::Update()
 		}*/
 
 		if (cIndex == saSelector->totalItems - 1)
+		{
 			topIndex = saSelector->totalItems - NUM_BOXES;
+		}
 		else if (cIndex < topIndex)
+		{
 			topIndex = cIndex;
+		}
 	}
 
 	if (changed != 0)
 	{
+		if (previewSong != NULL && previewSong->music->getStatus() == Music::Status::Paused)
+		{
+			previewSong->music->stop();
+			previewSong = NULL;
+		}
+
 		UpdateNames();
 		//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 		//controls[oldIndex]->Unfocus();
@@ -203,7 +269,7 @@ void MusicSelector::SetupBoxes()
 void MusicSelector::MoveUp()
 {
 	topIndex++;
-	if (topIndex == songs.size())
+	if (topIndex == saSelector->totalItems )
 	{
 		topIndex = 0;
 	}
@@ -214,7 +280,7 @@ void MusicSelector::MoveDown()
 	topIndex--;
 	if (topIndex == -1)
 	{
-		topIndex = songs.size() - 1;
+		topIndex = saSelector->totalItems - 1;
 	}
 }
 
@@ -250,8 +316,8 @@ MusicManager::MusicManager(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
 	LoadFolderPaths();
-	LoadMusicNames();
-	DebugLoadMusic();
+	//LoadMusicNames();
+	//DebugLoadMusic();
 }
 
 MusicManager::~MusicManager()
@@ -259,6 +325,7 @@ MusicManager::~MusicManager()
 	for (auto it = songs.begin(); it != songs.end(); ++it)
 	{
 		delete (*it);
+		
 	}
 	songs.clear();
 }
@@ -296,7 +363,11 @@ bool MusicManager::rLoadMusicNames(const path &p)
 			{
 				if (p.extension().string() == ".ogg")
 				{
-					songPaths.push_back(p.string());
+					MusicInfo *mi = new MusicInfo;
+					mi->songPath = p;
+					mi->music = NULL;
+					songs.push_back(mi);
+					//songPaths.push_back(p.string());
 					//cout << "loading ogg: " << p.filename().string() << "\n";
 					return true;
 				}
@@ -348,6 +419,11 @@ MusicInfo::MusicInfo()
 
 }
 
+MusicInfo::~MusicInfo()
+{
+	delete music;
+}
+
 bool MusicManager::LoadMusicNames()
 {
 	for (auto it = folderPaths.begin(); it != folderPaths.end(); ++it)
@@ -385,15 +461,15 @@ bool MusicManager::LoadSong(const std::string &name)
 
 bool MusicManager::DebugLoadMusic()
 {
-	for (auto it = songPaths.begin(); it != songPaths.end(); ++it)
-	{
-		MusicInfo *info = new MusicInfo;
-		info->music = new sf::Music;
-		info->music->openFromFile((*it).string());//mainMenu->soundManager.GetMusic((*it).string());
-		//info->name = (*it).filename().stem().string();
-		info->songPath = (*it);
-		songs.push_back(info);
-	}
+	//for (auto it = songPaths.begin(); it != songPaths.end(); ++it)
+	//{
+	//	//MusicInfo *info = new MusicInfo;
+	//	info->music = new sf::Music;
+	//	info->music->openFromFile((*it).string());//mainMenu->soundManager.GetMusic((*it).string());
+	//	//info->name = (*it).filename().stem().string();
+	//	info->songPath = (*it);
+	//	songs.push_back(info);
+	//}
 
 	return true;
 }

@@ -30,6 +30,7 @@ struct MusicSelector
 	void MoveUp();
 	void MoveDown();
 	void UpdateNames();
+	void LoadNames();
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
 
@@ -42,10 +43,13 @@ struct MusicSelector
 	int topIndex;
 
 	std::list<MusicInfo*> &rawSongs;
-	std::list<MusicInfo*> songs;
+	//std::list<MusicInfo*> songs;
+	MusicInfo **songs;
+	MusicInfo *previewSong;
+	int numSongs;
 	sf::Font font;
 
-	MusicInfo *currSong;
+	//int currSongIndex;
 	SingleAxisSelector *saSelector;
 };
 
@@ -53,6 +57,7 @@ struct MusicManager;
 struct MusicInfo
 {
 	MusicInfo();
+	~MusicInfo();
 	sf::Music *music;
 	boost::filesystem::path songPath;
 	bool Load();
@@ -69,7 +74,7 @@ struct MusicManager
 	bool LoadSong(const std::string &name );
 	bool DebugLoadMusic();
 	std::list<std::string> folderPaths;
-	std::list<boost::filesystem::path> songPaths;
+	//std::list<boost::filesystem::path> songPaths;
 	std::list<MusicInfo*> songs;
 	MainMenu *mainMenu;
 };
