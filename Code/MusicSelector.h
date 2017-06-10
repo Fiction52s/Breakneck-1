@@ -10,6 +10,23 @@
 struct MusicInfo;
 struct MainMenu;
 
+struct SingleAxisSlider
+{
+	//eventually can optimize the drawing of this with a va
+	SingleAxisSlider(sf::Vector2f &p_topMid,
+		int numOptions, int startIndex,
+		int width, int height );
+	~SingleAxisSlider();
+	void Update(ControllerState &currInput, ControllerState &prevInput);
+	void Draw(sf::RenderTarget *target );
+	SingleAxisSelector *saSelector;
+
+	sf::RectangleShape sliderRect;
+	float leftPos;
+	sf::RectangleShape scopeRect;
+	sf::Vector2f topMid;
+	sf::Vector2f size;
+};
 
 
 struct MusicSelector
@@ -37,6 +54,7 @@ struct MusicSelector
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text musicNames[NUM_BOXES];
 	sf::Vector2f topMid;
+	SingleAxisSlider *oftenSlider[NUM_BOXES];
 
 	//int currIndex;
 	int oldCurrIndex;

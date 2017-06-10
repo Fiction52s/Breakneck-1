@@ -59,6 +59,9 @@ int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 			}
 			else
 			{
+				if (!loop)
+					return 0;
+
 				currIndex = 0;
 			}
 			return 1;
@@ -95,6 +98,9 @@ int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 			}
 			else
 			{
+				if (!loop)
+					return 0;
+
 				currIndex = totalItems - 1;
 			}
 			return -1;
