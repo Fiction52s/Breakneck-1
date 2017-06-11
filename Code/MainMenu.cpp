@@ -2862,6 +2862,16 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			//boost::chrono::steady_clock::now()
 			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 			{
+				int cIndex = saSelector->currIndex;
+				int pIndex = GetPairIndex(cIndex);
+
+				if (musicSelector->modifiedValues)
+				{
+					MapSelectionItem *mi = allItems[pIndex].second.item;
+
+					ReplaceHeader(mi->path, mi->headerInfo);
+				}
+
 				mainMenu->GetController(singleSection->playerIndex).SetFilter(singleSection->profileSelect->currProfile->filter);
 
 				int res = gs->Run();
@@ -2913,12 +2923,15 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				
 				MapSelectionItem *mi = allItems[pIndex].second.item;
 				
-
+				//guaranteed to be a file not a folder
 				ReplaceHeader(mi->path, mi->headerInfo );
+
+				musicSelector->modifiedValues = false;
 				//save
 			}
 			else if (oldState == S_SELECTING_SKIN || oldState == S_FILTER_OPTIONS )
 			{
+
 				//save after starting the level or when someone cancels the load
 			}
 			if (musicSelector->modifiedValues)
