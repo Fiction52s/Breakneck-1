@@ -10,6 +10,9 @@
 #include "UIWindow.h"
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <list>
+#include <string>
+#include <map>
 
 
 struct Config;
@@ -143,6 +146,17 @@ struct MapHeader
 	std::string collectionName;
 	std::string description;
 	MapType gameMode;
+	int envType;
+	int envLevel;
+	int leftBounds;
+	int topBounds;
+	int boundsWidth;
+	int boundsHeight;
+	int numVertices;
+
+	std::map < std::string,int > songLevels;
+
+	bool songLevelsModified;
 };
 
 struct MapSelectionItem;
@@ -251,6 +265,9 @@ struct MapSelectionMenu
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
 	static MapHeader * ReadMapHeader(std::ifstream &is);
+	static bool WriteMapHeader(std::ofstream &of, MapHeader *mh);
+	static bool ReplaceHeader(boost::filesystem::path &p,
+		MapHeader *mh);
 
 	LoadingMapProgressDisplay *progressDisplay;
 	UIVerticalControlList *filterOptions;
@@ -266,13 +283,14 @@ struct MapSelectionMenu
 
 	int oldCurrIndex;
 	int topIndex;
+	State oldState;
 
 	std::list<boost::filesystem::path> items;
 	std::list<MapCollection*> collections;
 	void LoadPath( boost::filesystem::path & p);
 	sf::Font &font;
 	SingleAxisSelector *saSelector;
-	std::list<MapSelectionItem*>::iterator currItemIt;
+
 	MusicSelector *musicSelector;
 
 	int numTotalItems;

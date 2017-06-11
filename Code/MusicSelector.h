@@ -17,7 +17,8 @@ struct SingleAxisSlider
 		int numOptions, int startIndex,
 		int width, int height );
 	~SingleAxisSlider();
-	void Update(ControllerState &currInput, ControllerState &prevInput);
+	int Update(ControllerState &currInput, ControllerState &prevInput);
+	void UpdateSliderPos();
 	void Draw(sf::RenderTarget *target );
 	SingleAxisSelector *saSelector;
 
@@ -28,7 +29,8 @@ struct SingleAxisSlider
 	sf::Vector2f size;
 };
 
-
+struct MusicManager;
+struct MapSelectionMenu;
 struct MusicSelector
 {
 	//TODO scrollbar to show how far in to the names you are
@@ -37,8 +39,9 @@ struct MusicSelector
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
 
-	MusicSelector ( MainMenu *mainMenu, sf::Vector2f &p_topMid,
-		std::list<MusicInfo*> &p_songs );
+	MusicSelector ( MainMenu *mainMenu, MapSelectionMenu *mapMenu,
+		sf::Vector2f &p_topMid,
+		MusicManager *mm );
 
 	MainMenu *mainMenu;
 
@@ -55,12 +58,14 @@ struct MusicSelector
 	sf::Text musicNames[NUM_BOXES];
 	sf::Vector2f topMid;
 	SingleAxisSlider *oftenSlider[NUM_BOXES];
+	bool modifiedValues;
 
 	//int currIndex;
 	int oldCurrIndex;
 	int topIndex;
 
-	std::list<MusicInfo*> &rawSongs;
+	//std::list<MusicInfo*> &rawSongs;
+	MusicManager *musicMan;
 	//std::list<MusicInfo*> songs;
 	MusicInfo **songs;
 	MusicInfo *previewSong;
@@ -69,6 +74,7 @@ struct MusicSelector
 
 	//int currSongIndex;
 	SingleAxisSelector *saSelector;
+	MapSelectionMenu *mapMenu;
 };
 
 struct MusicManager;
@@ -93,6 +99,7 @@ struct MusicManager
 	bool DebugLoadMusic();
 	std::list<std::string> folderPaths;
 	//std::list<boost::filesystem::path> songPaths;
+	std::map<std::string, MusicInfo*> songMap;
 	std::list<MusicInfo*> songs;
 	MainMenu *mainMenu;
 };

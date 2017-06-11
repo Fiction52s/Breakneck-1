@@ -133,7 +133,7 @@ void Gate::UpdateLine()
 		{
 		
 
-		switch( owner->envType )
+		switch( owner->mh->envType )
 		{
 		case 0:
 			c = COLOR_BLUE;

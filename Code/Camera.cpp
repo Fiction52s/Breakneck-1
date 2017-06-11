@@ -621,27 +621,27 @@ void Camera::Update( Actor *player )
 
 	float left = pos.x - halfw * zoomFactor;
 
-	float tdiff = owner->leftBounds - left;
+	float tdiff = owner->mh->leftBounds - left;
 	if( tdiff > 0 )
 	{
 		xChangePos = tdiff;
 	}
 	float right = pos.x + halfw * zoomFactor;
 
-	tdiff =  right - (owner->leftBounds + owner->boundsWidth);
+	tdiff =  right - (owner->mh->leftBounds + owner->mh->boundsWidth);
 	if( tdiff > 0 )
 	{
 		xChangeNeg = -tdiff;
 	}
 	float top = pos.y - halfh * zoomFactor;
-	tdiff = owner->topBounds - top;
+	tdiff = owner->mh->topBounds - top;
 	if( tdiff > 0 )
 	{
 		yChangePos = tdiff;
 	}
 
 	float bot = pos.y + halfh * zoomFactor;
-	tdiff = bot - (owner->topBounds + owner->boundsHeight);
+	tdiff = bot - (owner->mh->topBounds + owner->mh->boundsHeight);
 	if( tdiff > 0 )
 	{
 		yChangeNeg = -tdiff;
@@ -823,10 +823,10 @@ void Camera::Update( Actor *player )
 	double camWidth = 960 * GetZoom();
 	double camHeight = 540 * GetZoom();
 
-	double rightExtra = (pos.x + camWidth / 2) - ( owner->leftBounds + owner->boundsWidth );
-	double leftExtra = owner->leftBounds - ( pos.x - camWidth / 2 );
-	double botExtra = (pos.y + camHeight / 2) - (owner->topBounds + owner->boundsHeight );
-	double topExtra = owner->topBounds - (pos.y - camHeight / 2 );
+	double rightExtra = (pos.x + camWidth / 2) - ( owner->mh->leftBounds + owner->mh->boundsWidth );
+	double leftExtra = owner->mh->leftBounds - ( pos.x - camWidth / 2 );
+	double botExtra = (pos.y + camHeight / 2) - (owner->mh->topBounds + owner->mh->boundsHeight );
+	double topExtra = owner->mh->topBounds - (pos.y - camHeight / 2 );
 
 	if( rightExtra > 0 )
 	{

@@ -654,27 +654,22 @@ bool EditSession::OpenFile()
 		mapHeader.collectionName = mh->collectionName;
 		mapHeader.ver1 = mh->ver1;
 		mapHeader.ver2 = mh->ver2;
+		
+		environmentType = (EnvType)mh->envType;
+		envLevel = mh->envLevel;
+		
+		leftBound = mh->leftBounds;
+		topBound = mh->topBounds;
+		boundWidth = mh->boundsHeight;
+		boundHeight  = mh->boundsHeight;
+
+		int numPoints = mh->numVertices;
+
 		delete mh;
+		mh = NULL;
 
-
-		int env;
-		is >> env;
-		environmentType = (EnvType)env;
-
-		is >> envLevel;
-
-		is >> leftBound;
-		is >> topBound;
-		is >> boundWidth;
-		is >> boundHeight;
-
-		
 		UpdateFullBounds();
-		
 
-
-		int numPoints;
-		is >> numPoints;
 		is >> player->position.x;
 		is >> player->position.y;
 
@@ -2587,8 +2582,17 @@ void EditSession::WriteFile(string fileName)
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
 
+
+	//this is wrong when someone changes these values
 	of << mapHeader.ver1 << "." << mapHeader.ver2 << "\n";
 	of << mapHeader.description << "<>\n";
+
+	of << mapHeader.songLevels.size() << "\n";
+	for (auto it = mapHeader.songLevels.begin(); it != mapHeader.songLevels.end(); ++it)
+	{
+		of << (*it).first << " " << (*it).second << "\n";
+	}
+
 	of << mapHeader.collectionName << "\n";
 	of << mapHeader.gameMode << "\n";
 

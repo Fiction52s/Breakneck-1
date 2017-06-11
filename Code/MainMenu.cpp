@@ -2329,7 +2329,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	progressDisplay->SetProgressString("hello here i am");
 	progressDisplay->SetProgressString("hello here i am", 2);
 
-	musicSelector = new MusicSelector(mainMenu, menuOffset + Vector2f(600, 140), mainMenu->musicManager->songs );
+	musicSelector = new MusicSelector(mainMenu, this, menuOffset + Vector2f(770, 110), mainMenu->musicManager );
 	musicSelector->UpdateNames();
 	//filterOptions = new UIVerticalControlList()
 }
@@ -2467,12 +2467,36 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 		}
 	}
 
+	int numSongValues;
+	is >> numSongValues;
+
+	int oftenLevel;
+	string tempSongStr;
+	for (int i = 0; i < numSongValues; ++i)
+	{
+		is >> tempSongStr;	
+		is >> oftenLevel;
+
+		mh->songLevels[tempSongStr] = oftenLevel;
+	}
+
 	string collectionName;
 	is >> collectionName;
 
 	//string gameTypeName;
 	int gameMode;
 	is >> gameMode;
+
+	is >> mh->envType;
+
+	is >> mh->envLevel;
+
+	is >> mh->leftBounds;
+	is >> mh->topBounds;
+	is >> mh->boundsWidth;
+	is >> mh->boundsHeight;
+
+	is >> mh->numVertices;
 
 	mh->collectionName = collectionName;
 	mh->ver1 = part1Num;
@@ -2532,6 +2556,8 @@ void MapSelectionMenu::LoadItems()
 
 				coll->collectionName = mh->collectionName;
 				coll->maps.push_back(item);
+
+
 			}
 		}
 		else
@@ -2614,6 +2640,72 @@ void MapSelectionMenu::LoadMap()
 	loadThread = new boost::thread(GameSession::sLoad, gs);
 }
 
+bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
+{
+	of << mh->ver1 << "." << mh->ver2 << "\n";
+	of << mh->description << "<>\n";
+
+	of << mh->songLevels.size() << "\n";
+	for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+	{
+		of << (*it).first << " " << (*it).second << "\n";
+	}
+
+	of << mh->collectionName << "\n";
+	of << mh->gameMode << "\n";
+
+	of << (int)mh->envType << " " << mh->envLevel << endl;
+
+	of << mh->leftBounds << " " << mh->topBounds << " " << mh->boundsWidth << " " << mh->boundsHeight << endl;
+
+	of << mh->numVertices << endl;
+
+	return true;
+}
+
+bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
+{
+	ifstream is;
+	is.open(p.string());
+
+	path from("map.tmp");
+	ofstream of;
+	of.open(from.string());
+	assert(of.is_open());
+	WriteMapHeader(of, mh);
+
+	if (is.is_open())
+	{
+		MapHeader *oldHeader = ReadMapHeader(is);
+
+		char c;
+		while (is.get(c))
+		{
+			of.put(c);
+		}
+
+		of.close();
+		is.close();
+	}
+	else
+	{
+		assert(0);
+	}
+
+	try
+	{
+		//assert(boost::filesystem::exists(from) && boost::filesystem::exists(p));
+		boost::filesystem::copy_file(from, p, copy_option::overwrite_if_exists );
+	}
+	catch (const boost::system::system_error &err)
+	{
+		cout << "file already exists!" << endl;
+		assert(0);
+	}
+
+	return true;
+}
+
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
@@ -2632,8 +2724,17 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		}
 		else if (currInput.Y && !prevInput.Y)
 		{
-			state = S_MUSIC_SELECTOR;
-			return;
+			int cIndex = saSelector->currIndex;
+			int pIndex = GetPairIndex(cIndex);
+			MapSelectionItem *item = allItems[pIndex].second.item;
+			if (item != NULL)
+			{
+				oldState = state;
+				state = S_MUSIC_SELECTOR;
+				musicSelector->UpdateNames();
+				musicSelector->modifiedValues = false;
+				return;
+			}
 		}
 		
 
@@ -2735,11 +2836,17 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			delete gs;
 			gs = NULL;
 
+			//save the header if its modified
+
+
 			//kill the current loading thread
 		}
 		else if (currInput.Y && !prevInput.Y)
 		{
+			oldState = state;
 			state = S_MUSIC_SELECTOR;
+			musicSelector->UpdateNames();
+			musicSelector->modifiedValues = false;
 			return;
 		}
 		else
@@ -2795,6 +2902,30 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	}
 	else if (state == S_MUSIC_SELECTOR)
 	{
+		if (currInput.B && !prevInput.B)
+		{
+			if (oldState == S_SELECTING_MAP)
+			{
+				int cIndex = saSelector->currIndex;
+				int pIndex = GetPairIndex(cIndex);
+				
+				MapSelectionItem *mi = allItems[pIndex].second.item;
+				
+
+				ReplaceHeader(mi->path, mi->headerInfo );
+				//save
+			}
+			else if (oldState == S_SELECTING_SKIN || oldState == S_FILTER_OPTIONS )
+			{
+				//save after starting the level or when someone cancels the load
+			}
+			if (musicSelector->modifiedValues)
+			{
+
+			}
+			state = oldState;
+		}
+
 		musicSelector->Update();
 	}
 }

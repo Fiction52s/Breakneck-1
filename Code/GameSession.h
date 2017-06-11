@@ -526,8 +526,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Edge *rayIgnoreEdge;
 	Edge *rayIgnoreEdge1;
 	bool quit;
-	int envType;
-	int envLevel;
 	int substep;
 	
 	int keyFrame;
@@ -572,10 +570,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void RemoveEnemy( Enemy * e );
 
 	void SetGlobalBorders();
-	int leftBounds;
-	int topBounds;
-	int boundsWidth;
-	int boundsHeight;
+
 	
 	void KillAllEnemies();
 	void SetParOnTop(sf::RenderTarget *target );
@@ -704,7 +699,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Shader cloneShader;
 	Edge **edges;
 	sf::Vector2<double> *points;
-	int numPoints;
 
 	int numGates;
 	Gate **gates;

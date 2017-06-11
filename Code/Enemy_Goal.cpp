@@ -25,7 +25,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	miniSprite.setTextureRect( ts_mini->GetSubRect( 2 ) );
 	miniSprite.setScale( 16, 16 );
 	
-	switch( owner->envType )
+	switch( owner->mh->envType )
 	{
 	case 0:
 		miniSprite.setTextureRect( ts_mini->GetSubRect( 5 ) );

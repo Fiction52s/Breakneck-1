@@ -945,7 +945,7 @@ void GameSession::Cleanup()
 
 	if (edges != NULL)
 	{
-		for (int i = 0; i < numPoints; ++i)
+		for (int i = 0; i < mh->numVertices; ++i)
 		{
 			delete edges[i];
 		}
@@ -1634,7 +1634,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 
 		ss << "Borders/bor_" << matWorld + 1 << "_";
 
-		if( envLevel < 10 )
+		if( mh->envLevel < 10 )
 		{
 			ss << "0" << matVariation + 1;
 		}
@@ -3279,21 +3279,8 @@ bool GameSession::OpenFile( string fileName )
 		//pauseMenu = new PauseMenu( this );
 		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
 		//cout << "after-------------" << endl;
-
-		is >> envType;
-
-		is >> envLevel;
 		
-		//currentLevelInfo = saveFile-
-		//cout << "just read it: " << envType << ", " << envLevel << endl;
-
-		is >> leftBounds;
-		is >> topBounds;
-		is >> boundsWidth;
-		is >> boundsHeight;
-
-		is >> numPoints;
-		points = new Vector2<double>[numPoints];
+		points = new Vector2<double>[mh->numVertices];
 		
 
 		is >> originalPos.x;
@@ -3321,11 +3308,11 @@ bool GameSession::OpenFile( string fileName )
 			assert( 0 && "error reading borderpoly info" );
 		}
 
-		int pointsLeft = numPoints;
+		int pointsLeft = mh->numVertices;
 
 		int pointCounter = 0;
 
-		edges = new Edge*[numPoints];
+		edges = new Edge*[mh->numVertices];
 
 		int polyCounter = 0;
 		//could use an array later if i wanted to
@@ -3333,7 +3320,7 @@ bool GameSession::OpenFile( string fileName )
 	
 
 
-		while( pointCounter < numPoints )
+		while( pointCounter < mh->numVertices)
 		{
 			bool inverse = false;
 			if( !hasReadBorderPoly )
@@ -3773,7 +3760,7 @@ bool GameSession::OpenFile( string fileName )
 
 			ss << "Borders/bor_" << matWorld + 1 << "_";
 
-			if( envLevel < 10 )
+			if(mh->envLevel < 10 )
 			{
 				ss << "0" << matVariation + 1;
 			}
@@ -3995,10 +3982,10 @@ void GameSession::SetGlobalBorders()
 	borderEdge = NULL;
 	//borders not allowed to intersect w/ gates
 
-	V2d topLeft( leftBounds, topBounds );
-	V2d topRight( leftBounds + boundsWidth, topBounds );
-	V2d bottomRight( leftBounds + boundsWidth, topBounds + boundsHeight );
-	V2d bottomLeft( leftBounds, topBounds + boundsHeight );
+	V2d topLeft( mh->leftBounds, mh->topBounds );
+	V2d topRight(mh->leftBounds + mh->boundsWidth, mh->topBounds );
+	V2d bottomRight(mh->leftBounds + mh->boundsWidth, mh->topBounds + mh->boundsHeight );
+	V2d bottomLeft(mh->leftBounds, mh->topBounds + mh->boundsHeight );
 
 	//get intersections with top row
 	list<pair<double,int>> inters;
@@ -4014,7 +4001,7 @@ void GameSession::SetGlobalBorders()
 
 	//top section-----------------
 	{
-	for( int i = 0; i < numPoints; ++i )
+	for( int i = 0; i < mh->numVertices; ++i )
 	{
 		LineIntersection li = SegmentIntersect( topLeft, topRight, edges[i]->v0, edges[i]->v1 );
 		if( !li.parallel ) //or no intersection
@@ -4024,7 +4011,7 @@ void GameSession::SetGlobalBorders()
 	}
 
 	segInProcess = false;
-	segStart = leftBounds;
+	segStart = mh->leftBounds;
 	first = true;
 
 	inters.sort( cmpPairs );
@@ -4039,14 +4026,14 @@ void GameSession::SetGlobalBorders()
 
 		cout << "processing intersection at: " << xInter << endl;
 		
-		if( v0.y > topBounds )
+		if( v0.y > mh->topBounds )
 		{
 			if( first || segInProcess )
 			{
 				//cout << "a" << endl;
 				Edge *newSeg = new Edge;
-				newSeg->v0 = V2d( xInter, topBounds );
-				newSeg->v1 = V2d( segStart, topBounds );
+				newSeg->v0 = V2d( xInter, mh->topBounds );
+				newSeg->v1 = V2d( segStart, mh->topBounds );
 				newSeg->edgeType = Edge::BORDER;
 				
 				edge->v1 = newSeg->v0;
@@ -4078,7 +4065,7 @@ void GameSession::SetGlobalBorders()
 
 			segInProcess = true;
 			segStart = xInter;
-			edge->v0 = V2d( xInter, topBounds );
+			edge->v0 = V2d( xInter, mh->topBounds );
 			prevIndex = index;
 			
 		}
@@ -4091,7 +4078,7 @@ void GameSession::SetGlobalBorders()
 	{
 		Edge *newSeg = new Edge;
 		newSeg->v0 = topRight;
-		newSeg->v1 = V2d( segStart, topBounds );
+		newSeg->v1 = V2d( segStart, mh->topBounds );
 		newSeg->edgeType = Edge::BORDER;
 		
 		Edge *edge = edges[prevIndex];
@@ -4119,7 +4106,7 @@ void GameSession::SetGlobalBorders()
 	{
 	inters.clear();
 
-	for( int i = 0; i < numPoints; ++i )
+	for( int i = 0; i < mh->numVertices; ++i )
 	{
 		LineIntersection li = SegmentIntersect( topRight, bottomRight, edges[i]->v0, edges[i]->v1 );
 		if( !li.parallel ) //or no intersection
@@ -4129,7 +4116,7 @@ void GameSession::SetGlobalBorders()
 	}
 
 	segInProcess = false;
-	segStart = topBounds;
+	segStart = mh->topBounds;
 	prevIndex;
 	first = true;
 
@@ -4221,7 +4208,7 @@ void GameSession::SetGlobalBorders()
 	{
 	inters.clear();
 
-	for( int i = 0; i < numPoints; ++i )
+	for( int i = 0; i < mh->numVertices; ++i )
 	{
 		LineIntersection li = SegmentIntersect( bottomRight, bottomLeft, edges[i]->v0, edges[i]->v1 );
 		if( !li.parallel ) //or no intersection
@@ -4322,7 +4309,7 @@ void GameSession::SetGlobalBorders()
 	{
 	inters.clear();
 
-	for( int i = 0; i < numPoints; ++i )
+	for( int i = 0; i < mh->numVertices; ++i )
 	{
 		LineIntersection li = SegmentIntersect( bottomLeft, topLeft, edges[i]->v0, edges[i]->v1 );
 		if( !li.parallel ) //or no intersection
@@ -4348,14 +4335,14 @@ void GameSession::SetGlobalBorders()
 
 		//cout << "processing intersection at: " << yInter << endl;
 		
-		if( v0.x > leftBounds )
+		if( v0.x > mh->leftBounds )
 		{
 			if( first || segInProcess )
 			{
 				//cout << "a" << endl;
 				Edge *newSeg = new Edge;
-				newSeg->v0 = V2d( leftBounds, yInter );
-				newSeg->v1 = V2d( leftBounds, segStart );
+				newSeg->v0 = V2d( mh->leftBounds, yInter );
+				newSeg->v1 = V2d( mh->leftBounds, segStart );
 				newSeg->edgeType = Edge::BORDER;
 				
 				edge->v1 = newSeg->v0;
@@ -4387,7 +4374,7 @@ void GameSession::SetGlobalBorders()
 
 			segInProcess = true;
 			segStart = yInter;
-			edge->v0 = V2d( leftBounds, yInter );
+			edge->v0 = V2d(mh->leftBounds, yInter );
 			prevIndex = index;
 			
 		}		
@@ -4397,7 +4384,7 @@ void GameSession::SetGlobalBorders()
 	{
 		Edge *newSeg = new Edge;
 		newSeg->v0 = topLeft;
-		newSeg->v1 = V2d( leftBounds, segStart );
+		newSeg->v1 = V2d( mh->leftBounds, segStart );
 		newSeg->edgeType = Edge::BORDER;
 		
 		Edge *edge = edges[prevIndex];
@@ -5759,7 +5746,7 @@ bool GameSession::Load()
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
 
 	int goalTile = -1;
-	switch( envType )
+	switch(mh->envType )
 	{
 	case 0:
 		goalTile = 5;
@@ -5794,15 +5781,15 @@ bool GameSession::Load()
 
 	stringstream ss1;
 
-	int eType = envLevel + 1; //adjust for alex naming -_-
-	ss1 << "Backgrounds/w" << envType+1 << "_BG";
+	int eType = mh->envLevel + 1; //adjust for alex naming -_-
+	ss1 << "Backgrounds/w" << mh->envType+1 << "_BG";
 
 	ss1 << eType;
 
 	ss1 << ".png";
 	 
 	cout << "back tex: " << ss1.str() << endl;
-	cout << "envtype: " << envType << ", eType: " << eType << endl;
+	cout << "envtype: " << mh->envType << ", eType: " << eType << endl;
 	//cout << "loading bg: " << ss.str() << endl;
 	if( !backTex.loadFromFile( ss1.str() ) )
 	{
@@ -5945,8 +5932,8 @@ int GameSession::Run()
 	//use player->setactivepowers to set it up from the level. need to add it
 	//to the editor
 	
-	sf::Vertex *line = new sf::Vertex[numPoints*2];
-	for( int i = 0; i < numPoints; ++i )
+	sf::Vertex *line = new sf::Vertex[mh->numVertices *2];
+	for( int i = 0; i < mh->numVertices; ++i )
 	{
 		//cout << "i: " << i << endl;
 		line[i*2] = sf::Vertex( Vector2f( edges[i]->v0.x, edges[i]->v0.y  ) );
@@ -10822,8 +10809,8 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 		rayEnd = rayStart + rayDir * rayLen;
 		//rayIgnoreEdge->
 		//while( rcEdge 
-		bool rayOkay = rayEnd.x >= leftBounds && rayEnd.y >= topBounds && rayEnd.x <= leftBounds + boundsWidth 
-			&& rayEnd.y <= topBounds + boundsHeight;
+		bool rayOkay = rayEnd.x >= mh->leftBounds && rayEnd.y >= mh->topBounds && rayEnd.x <= mh->leftBounds + mh->boundsWidth
+			&& rayEnd.y <= mh->topBounds + mh->boundsHeight;
 		
 		
 		Edge *cEdge = NULL;

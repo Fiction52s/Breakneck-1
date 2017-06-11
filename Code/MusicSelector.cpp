@@ -13,7 +13,7 @@ using namespace boost::filesystem;
 
 //const int MusicSelector::NUM_BOXES = 8;
 const int MusicSelector::BOX_WIDTH = 300;
-const int MusicSelector::BOX_HEIGHT = 40;
+const int MusicSelector::BOX_HEIGHT = 100;
 const int MusicSelector::BOX_SPACING = 10;
 
 SingleAxisSlider::SingleAxisSlider(Vector2f &p_topMid, int numOptions, int startIndex,
@@ -32,16 +32,16 @@ SingleAxisSlider::SingleAxisSlider(Vector2f &p_topMid, int numOptions, int start
 	scopeRect.setPosition(topMid);
 	scopeRect.setFillColor(Color::Red);
 
-	sliderRect.setSize(Vector2f(max(2.f, (float)numOptions / width), height) );
+	float sectionWidth = (float)size.x / (saSelector->totalItems - 1);
+
+	sliderRect.setSize(Vector2f(sectionWidth, height) );
 	sliderRect.setOrigin(sliderRect.getLocalBounds().width / 2, 0);
 	sliderRect.setFillColor(Color::Blue);
 
-	float sectionWidth = (float)size.x / saSelector->totalItems;
-
-	sliderRect.setPosition(Vector2f(leftPos + saSelector->currIndex * sectionWidth, topMid.y));
+	UpdateSliderPos();
 }
 
-void SingleAxisSlider::Update(ControllerState &currInput, ControllerState &prevInput)
+int SingleAxisSlider::Update(ControllerState &currInput, ControllerState &prevInput)
 {
 	int currIndex = saSelector->currIndex;
 
@@ -54,12 +54,18 @@ void SingleAxisSlider::Update(ControllerState &currInput, ControllerState &prevI
 	bool inc = changed > 0;
 	bool dec = changed < 0;
 
-	float sectionWidth = (float)size.x / saSelector->totalItems;
-
 	if (changed != 0)
 	{
-		sliderRect.setPosition(Vector2f(leftPos + saSelector->currIndex * sectionWidth, topMid.y));
+		UpdateSliderPos();
 	}
+
+	return changed;
+}
+
+void SingleAxisSlider::UpdateSliderPos()
+{
+	float sectionWidth = (float)size.x / (saSelector->totalItems-1);
+	sliderRect.setPosition(Vector2f(leftPos + saSelector->currIndex * sectionWidth, topMid.y));
 }
 
 void SingleAxisSlider::Draw(sf::RenderTarget *target)
@@ -69,10 +75,11 @@ void SingleAxisSlider::Draw(sf::RenderTarget *target)
 }
 
 
-MusicSelector::MusicSelector(MainMenu *p_mainMenu, Vector2f &p_topMid,
-	list<MusicInfo*> &p_songs)
+MusicSelector::MusicSelector(MainMenu *p_mainMenu, 
+	MapSelectionMenu *p_mapMenu, Vector2f &p_topMid,
+	MusicManager *p_musicMan )
 	:font(p_mainMenu->arial),topIndex(0), oldCurrIndex(0), topMid(p_topMid),
-	mainMenu( p_mainMenu ), rawSongs( p_songs )
+	mainMenu( p_mainMenu ), musicMan( p_musicMan ), mapMenu( p_mapMenu )
 {
 	previewSong = NULL;
 	songs = NULL;
@@ -106,7 +113,7 @@ void MusicSelector::Draw(sf::RenderTarget *target)
 
 void MusicSelector::LoadNames()
 {
-	int numSongs = rawSongs.size();
+	int numSongs = musicMan->songMap.size();//rawSongs.size();
 
 	if( songs != NULL )
 		delete[]songs;
@@ -115,9 +122,9 @@ void MusicSelector::LoadNames()
 	songs = new MusicInfo*[numSongs];
 
 	int ind = 0;
-	for (auto it = rawSongs.begin(); it != rawSongs.end(); ++it)
+	for (auto it = musicMan->songMap.begin(); it != musicMan->songMap.end(); ++it)
 	{
-		songs[ind] = (*it);
+		songs[ind] = (*it).second;
 		ind++;
 	}
 
@@ -150,6 +157,7 @@ void MusicSelector::UpdateNames()
 	int trueI;
 	int i = 0;
 
+	string nameStr;
 	for (; i < NUM_BOXES; ++i)
 	{
 		trueI = (topIndex + i) % NUM_BOXES;
@@ -165,9 +173,33 @@ void MusicSelector::UpdateNames()
 		if (ind == numTotalSongs)
 			ind = 0;
 
-		musicNames[i].setString(songs[ind]->songPath.filename().stem().string() );
+		nameStr = songs[ind]->songPath.filename().stem().string();
+		musicNames[i].setString(nameStr);
 		musicNames[i].setOrigin(musicNames[i].getLocalBounds().width / 2, 0);
 		musicNames[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+
+		int cIndex = mapMenu->saSelector->currIndex;
+		int pIndex = mapMenu->GetPairIndex(cIndex);
+
+		MapSelectionItem *mi = mapMenu->allItems[pIndex].second.item;
+
+		if (mi != NULL)
+		{
+			auto &songLevels = mi->headerInfo->songLevels;
+			if (songLevels.count(nameStr) == 0)
+			{
+				oftenSlider[i]->saSelector->currIndex = 0;
+			}
+			else
+			{
+				oftenSlider[i]->saSelector->currIndex = songLevels[nameStr];
+			}
+
+			oftenSlider[i]->UpdateSliderPos();
+		}
+		
+
+		//oftenSlider[i]->saSelector->currIndex = songLevels.count( musicNames[i]. )
 
 		++ind;
 	}
@@ -292,7 +324,32 @@ void MusicSelector::Update()
 	}
 	else
 	{
-		oftenSlider[cIndex-topIndex]->Update(currInput, prevInput);
+		if (oftenSlider[cIndex - topIndex]->Update(currInput, prevInput) != 0)
+		{
+
+			int mcIndex = mapMenu->saSelector->currIndex;
+			int mpIndex = mapMenu->GetPairIndex(mcIndex);
+
+			MapSelectionItem *mi = mapMenu->allItems[mpIndex].second.item;
+
+			MapHeader *mh = mi->headerInfo;
+			auto &songLevels = mh->songLevels; //from the map
+			string nameStr = songs[saSelector->currIndex]->songPath.filename().stem().string();
+			if (songLevels.count(nameStr) == 0) //i dont have the song im looking for
+			{
+				songLevels[nameStr] = oftenSlider[cIndex - topIndex]->saSelector->currIndex;
+				oftenSlider[cIndex - topIndex]->UpdateSliderPos();
+				mh->songLevelsModified = true;
+					//headerInfo->songLevels[nameStr] = headerInfo->
+			}
+			else
+			{
+				songLevels[nameStr] = oftenSlider[cIndex - topIndex]->saSelector->currIndex;
+				oftenSlider[cIndex - topIndex]->UpdateSliderPos();
+				mh->songLevelsModified = true;
+			}
+			//modifiedValues = true;
+		}
 	}
 
 	//cout << "currIndex : " << currIndex << endl;
@@ -321,7 +378,7 @@ void MusicSelector::SetupBoxes()
 		boxes[i * 4 + 3].color = Color::Red;
 
 		
-		oftenSlider[i] = new SingleAxisSlider(Vector2f(currTopMid.x, currTopMid.y + 20), 30, 15, 300, 24 );
+		oftenSlider[i] = new SingleAxisSlider(Vector2f(currTopMid.x, currTopMid.y + 50), 30, 15, 300, 24 );
 		
 
 		extraHeight += BOX_HEIGHT + BOX_SPACING;
@@ -425,10 +482,17 @@ bool MusicManager::rLoadMusicNames(const path &p)
 			{
 				if (p.extension().string() == ".ogg")
 				{
-					MusicInfo *mi = new MusicInfo;
-					mi->songPath = p;
-					mi->music = NULL;
-					songs.push_back(mi);
+					string fString = p.filename().string();
+					if (songMap.count(fString) == 0)
+					{ 
+						MusicInfo *mi = new MusicInfo;
+						mi->songPath = p;
+						mi->music = NULL;
+					
+						songMap[fString] = mi;
+					}
+
+					//songs.push_back(mi);
 					//songPaths.push_back(p.string());
 					//cout << "loading ogg: " << p.filename().string() << "\n";
 					return true;
