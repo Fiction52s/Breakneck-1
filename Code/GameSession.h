@@ -438,7 +438,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
 
-	bool multiSession;
 
 	bool showDebugDraw;
 	bool showTerrainDecor;

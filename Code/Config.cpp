@@ -102,11 +102,11 @@ void Config::Load()
 				{
 					data.windowStyle = sf::Style::Fullscreen;
 				}
-				else if( mode == "window" )
+				else if( mode == "window" || mode == "windowed" )
 				{
 					data.windowStyle = sf::Style::Default;
 				}
-				else if( mode == "borderlesswindow" )
+				else if( mode == "borderlesswindow" || mode == "borderlesswindowed" )
 				{
 					data.windowStyle = sf::Style::None;
 				}
@@ -137,10 +137,10 @@ std::string ConfigData::GetWindowModeString()
 		s = "Fullscreen";
 		break;
 	case sf::Style::None:
-		s = "BorderlessWindow";
+		s = "BorderlessWindowed";
 		break;
 	case sf::Style::Default:
-		s = "Window";
+		s = "Windowed";
 		break;
 	default:
 		assert(0);

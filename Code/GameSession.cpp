@@ -3208,24 +3208,26 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 
-				if( raceFight == NULL )
+				if( raceFight != NULL )
 				{
-					raceFight = new RaceFight( this, 180 );//10 );
+					raceFight->numTargets++;
+
+					//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
+
+					RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
+					//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+					//	400, 50, 60, 1 );
+					//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+					fullEnemyList.push_back(enemy);
+					enem = enemy;
+
+					enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
 				}
-
-				raceFight->numTargets++;
-
-				//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-
-				RaceFightTarget *enemy = new RaceFightTarget( this, Vector2i( xPos, yPos ) );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				else
+				{
+					//ignore
+				}				
 			}
 			else
 			{
@@ -3273,8 +3275,20 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
+		//if (raceFight == NULL)
+		
+		
+
 
 		mh = MapSelectionMenu::ReadMapHeader(is);
+
+
+		if (mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
+		{
+			assert(raceFight == NULL);
+			raceFight = new RaceFight(this, 180);
+		}
+
 		//cout << "-------------" << endl;
 		//pauseMenu = new PauseMenu( this );
 		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
@@ -6313,10 +6327,7 @@ int GameSession::Run()
 				{
 					GetPrevInput( i ) = GetCurrInput( i );
 				}
-			//prevInput = currInput;
-
-			//if( multiSession )
-			//	prevInput2 = currInput2;
+			
 			
 
 			if( !cutPlayerInput )
@@ -6329,10 +6340,7 @@ int GameSession::Run()
 					if( pTemp != NULL )
 						pTemp->prevInput = GetCurrInput( i );
 				}
-				//player->prevInput = currInput;
-
-				//if( multiSession )
-				//	player2->prevInput = currInput2;
+				
 			}
 
 			for( int i = 0; i < 4; ++i )
@@ -6598,7 +6606,7 @@ int GameSession::Run()
 				//polyShader.setUniform( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
 				//	view.getCenter().y + view.getSize().y / 2 );
 
-				if( multiSession )
+				if( raceFight != NULL )
 				{
 					cam.UpdateVS( GetPlayer( 0 ), GetPlayer( 1 ) );
 				}
@@ -8907,7 +8915,6 @@ void GameSession::Init()
 	repPlayer = NULL;
 	recGhost = NULL;
 	repGhost = NULL;
-	multiSession = true;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
 	activeDialogue = NULL;

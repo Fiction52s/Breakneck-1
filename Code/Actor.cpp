@@ -1608,10 +1608,7 @@ double Actor::GetBounceFlameAccel()
 void Actor::UpdatePrePhysics()
 {
 	//cout << "Start frame" << endl;
-	/*if( owner->multiSession )
-	{
-		cout << owner->GetPlayer( 0 )2->position.x << ", " << owner->GetPlayer( 0 )2->position.y << endl;
-	}*/
+	
 	//cout << "JFRAME BEHI: " << frame << endl;
 	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
 	{
@@ -13229,7 +13226,7 @@ void Actor::PhysicsResponse()
 	//only for motion ghosts
 	//UpdateSprite();
 
-	if( owner->multiSession )
+	if( owner->raceFight != NULL )
 	{
 		Actor *pTarget = NULL;
 		int target = 0;
