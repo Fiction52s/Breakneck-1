@@ -337,25 +337,37 @@ void MusicSelector::Update()
 			string nameStr = songs[saSelector->currIndex]->songPath.filename().stem().string();
 			if (songLevels.count(nameStr) == 0) //i dont have the song im looking for
 			{
-				songLevels[nameStr] = oftenSlider[cIndex - topIndex]->saSelector->currIndex;
-				oftenSlider[cIndex - topIndex]->UpdateSliderPos();
-				mh->songLevelsModified = true;
+				int sliderCurr = oftenSlider[cIndex - topIndex]->saSelector->currIndex;
+				if (sliderCurr == 0)
+				{
+
+				}
+				else
+				{
+					songLevels[nameStr] = sliderCurr;
+					oftenSlider[cIndex - topIndex]->UpdateSliderPos();
+					mh->songLevelsModified = true;
+				}
 					//headerInfo->songLevels[nameStr] = headerInfo->
 			}
 			else
 			{
-				songLevels[nameStr] = oftenSlider[cIndex - topIndex]->saSelector->currIndex;
-				oftenSlider[cIndex - topIndex]->UpdateSliderPos();
-				mh->songLevelsModified = true;
+				int sliderCurr = oftenSlider[cIndex - topIndex]->saSelector->currIndex;
+				if (sliderCurr == 0)
+				{
+					songLevels.erase(nameStr);
+				}
+				else
+				{
+					songLevels[nameStr] = sliderCurr;
+					oftenSlider[cIndex - topIndex]->UpdateSliderPos();
+					mh->songLevelsModified = true;
+				}
 			}
-			//modifiedValues = true;
 		}
 	}
 
-	//cout << "currIndex : " << currIndex << endl;
-	UpdateBoxesDebug();
-
-	
+	UpdateBoxesDebug();	
 }
 
 void MusicSelector::SetupBoxes()
