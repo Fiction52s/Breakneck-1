@@ -2678,6 +2678,8 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 	{
 		MapHeader *oldHeader = ReadMapHeader(is);
 
+		is.get(); //gets rid of the extra newline char
+
 		char c;
 		while (is.get(c))
 		{
