@@ -2916,6 +2916,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	{
 		if (currInput.B && !prevInput.B)
 		{
+			if (musicSelector->previewSong != NULL)
+			{
+				musicSelector->previewSong->music->stop();
+				musicSelector->previewSong = NULL;
+			}
 			if (oldState == S_SELECTING_MAP)
 			{
 				int cIndex = saSelector->currIndex;

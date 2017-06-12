@@ -32,6 +32,7 @@
 #include "UIWindow.h"
 #include "Config.h"
 #include "ControlProfile.h"
+#include "MusicSelector.h"
 #include <boost/thread.hpp>
 
 #define TIMESTEP 1.0 / 60.0
@@ -5907,14 +5908,14 @@ bool GameSession::Load()
 	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
 	Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
 	Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
 
 	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
 	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
 
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
 
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("done loading!", 0);
@@ -5924,43 +5925,43 @@ bool GameSession::Load()
 
 int GameSession::Run()
 {
-	preScreenTex->setView( view );
+	preScreenTex->setView(view);
 
-	bool showFrameRate = true;	
+	bool showFrameRate = true;
 
-	sf::Text frameRate( "00", mainMenu->arial, 30 );
-	frameRate.setFillColor( Color::Red );
+	sf::Text frameRate("00", mainMenu->arial, 30);
+	frameRate.setFillColor(Color::Red);
 
 	sf::Texture alphaTex;
-	alphaTex.loadFromFile( "alphatext.png" );
+	alphaTex.loadFromFile("alphatext.png");
 	Sprite alphaTextSprite(alphaTex);
 
 	sf::RectangleShape bDraw;
-	bDraw.setFillColor( Color::Red );
-	bDraw.setSize( sf::Vector2f(32 * 2, 32 * 2) );
-	bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
+	bDraw.setFillColor(Color::Red);
+	bDraw.setSize(sf::Vector2f(32 * 2, 32 * 2));
+	bDraw.setOrigin(bDraw.getLocalBounds().width / 2, bDraw.getLocalBounds().height / 2);
 	bool bdrawdraw = false;
 
-	Actor *p0 = GetPlayer( 0 );
+	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
 	//use player->setactivepowers to set it up from the level. need to add it
 	//to the editor
-	
-	sf::Vertex *line = new sf::Vertex[mh->numVertices *2];
-	for( int i = 0; i < mh->numVertices; ++i )
+
+	sf::Vertex *line = new sf::Vertex[mh->numVertices * 2];
+	for (int i = 0; i < mh->numVertices; ++i)
 	{
 		//cout << "i: " << i << endl;
-		line[i*2] = sf::Vertex( Vector2f( edges[i]->v0.x, edges[i]->v0.y  ) );
-		line[i*2+1] =  sf::Vertex( Vector2f( edges[i]->v1.x, edges[i]->v1.y ) );
-	}	
+		line[i * 2] = sf::Vertex(Vector2f(edges[i]->v0.x, edges[i]->v0.y));
+		line[i * 2 + 1] = sf::Vertex(Vector2f(edges[i]->v1.x, edges[i]->v1.y));
+	}
 
-	sf::Vector2<double> nLine( ( line[1].position - line[0].position).x, (line[1].position - line[0].position).y );
-	nLine = normalize( nLine );
+	sf::Vector2<double> nLine((line[1].position - line[0].position).x, (line[1].position - line[0].position).y);
+	nLine = normalize(nLine);
 
-	sf::Vector2<double> lineNormal( -nLine.y, nLine.x );
+	sf::Vector2<double> lineNormal(-nLine.y, nLine.x);
 
-	sf::CircleShape circle( 30 );
-	circle.setFillColor( Color::Blue );
+	sf::CircleShape circle(30);
+	circle.setFillColor(Color::Blue);
 
 
 	//sf::Clock inGameClock;
@@ -5970,14 +5971,14 @@ int GameSession::Run()
 	double accumulator = TIMESTEP + .1;
 
 	Vector2<double> otherPlayerPos;
-	
+
 	double zoomMultiple = 1;
 
 	Color borderColor = sf::Color::Green;
 	int max = 1000000;
 	sf::Vertex border[] =
 	{
-		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor ),
+		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor),
 		sf::Vertex(sf::Vector2<float>(-max, max), borderColor),
 		sf::Vertex(sf::Vector2<float>(-max, max), borderColor),
 		sf::Vertex(sf::Vector2<float>(max, max), borderColor),
@@ -5987,36 +5988,36 @@ int GameSession::Run()
 		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
 	};
 
-	
+
 	bool skipped = false;
 	bool oneFrameMode = false;
 	quit = false;
 
-	for( int i = 0; i < 4; ++i )
+	for (int i = 0; i < 4; ++i)
 	{
 		GetController(i).UpdateState();
 		GetCurrInput(i) = GetController(i).GetState();
 	}
-	
-	bool t = GetCurrInput( 0 ).start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
+
+	bool t = GetCurrInput(0).start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
-	
+
 	int returnVal = 0;
 
-	Texture & borderTex = *GetTileset( "borders.png", 16, 16 )->texture;
+	Texture & borderTex = *GetTileset("borders.png", 16, 16)->texture;
 
-	Texture & grassTex = *GetTileset( "newgrass2.png", 22, 22 )->texture;
+	Texture & grassTex = *GetTileset("newgrass2.png", 22, 22)->texture;
 
 	goalDestroyed = false;
 
-	
+
 	//lights.push_back( new Light( this ) );
 
 	View v;
-	v.setCenter( 0, 0 );
-	v.setSize( 1920/ 2, 1080 / 2 );
-	window->setView( v );
+	v.setCenter(0, 0);
+	v.setSize(1920 / 2, 1080 / 2);
+	window->setView(v);
 
 	//stringstream ss;
 	//ss.clear(); //needed?
@@ -6025,7 +6026,7 @@ int GameSession::Run()
 	int frameCounter = 0;
 	double total = 0;
 
-	cloudView = View( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
+	cloudView = View(Vector2f(0, 0), Vector2f(1920, 1080));
 
 	int flowSize = 64;
 	//GPUFlow *f = new GPUFlow( Vector2i( player->position.x + 100, player->position.y ), flowSize, flowSize ); 
@@ -6038,19 +6039,19 @@ int GameSession::Run()
 
 	state = RUN;
 
-	Rain rain( this );
-	sf::View rainView( Vector2f( 0, 0 ), Vector2f( 1920, 1080 ) );
-	
+	Rain rain(this);
+	sf::View rainView(Vector2f(0, 0), Vector2f(1920, 1080));
+
 	//scrollingTest = new ScrollingBackground( GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 10 );
 
 	//Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
 	//Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
 	//Tileset *ts_cloud1 = GetTileset( "Parallax/w1_cloud_02_1920x1080.png", 1920, 1080 );
 	//Tileset *ts_cloud2 = GetTileset( "Parallax/w1_cloud_03_1920x1080.png", 1920, 1080 );
-	
-	
-	
-	
+
+
+
+
 	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
 	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
 	//testPar->AddRepeatingSprite( ts_cloud0, 0, Vector2f( 0, 0 ), 1920 * 2, 50 );
@@ -6087,31 +6088,63 @@ int GameSession::Run()
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
 
-	if( recGhost != NULL )
+	if (recGhost != NULL)
 	{
 		recGhost->StartRecording();
 	}
-	
-	if( repGhost != NULL )
+
+	if (repGhost != NULL)
 	{
-		repGhost->OpenGhost( "testghost.bghst" );
+		repGhost->OpenGhost("testghost.bghst");
 	}
 
-	if( recPlayer != NULL )
+	if (recPlayer != NULL)
 		recPlayer->StartRecording();
 
-	if( repPlayer != NULL )
-		repPlayer->OpenReplay( "testreplay.brep" );
+	if (repPlayer != NULL)
+		repPlayer->OpenReplay("testreplay.brep");
 
 	testBuf.byteIndex = 0;
 
 	boost::thread *threa = NULL;
 	ofstream of;
-	if( recPlayer != NULL )//&& !repPlayer->init )
+	if (recPlayer != NULL)//&& !repPlayer->init )
 	{
-		of.open( "tempreplay.brep", ios::binary | ios::out );
-		threa = new boost::thread( &ThreadedBufferWrite, this, &of );
+		of.open("tempreplay.brep", ios::binary | ios::out);
+		threa = new boost::thread(&ThreadedBufferWrite, this, &of);
 	}
+
+	int pointsTotal = 0;
+	for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+	{
+		pointsTotal += (*it).second;
+	}
+
+
+	//TODO : use a better random algorithm later
+	srand(time(0));
+
+	if (levelMusic == NULL)
+	{
+		int r = rand() % pointsTotal;
+
+		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+		{
+			r -= (*it).second;
+			if (r < 0)
+			{
+				//assumes that this is a valid check
+				levelMusic = mainMenu->musicManager->songMap[(*it).first];
+				break;
+			}
+		}
+	}
+
+	assert(levelMusic != NULL);
+	levelMusic->Load();
+	levelMusic->music->setVolume(mainMenu->config->GetData().volume );
+	levelMusic->music->setLoop(true);
+	levelMusic->music->play();
 
 
 	std::stringstream ss;
@@ -8785,6 +8818,10 @@ int GameSession::Run()
 		
 	}
 
+	levelMusic->music->stop();
+	levelMusic->music->setVolume(0);
+	levelMusic = NULL;
+
 	delete [] line;
 
 	//window->setView( window->getDefaultView() );
@@ -8888,7 +8925,7 @@ void GameSession::Init()
 	
 	soundNodeList = NULL;
 	
-		
+	levelMusic = NULL;
 
 		
 	

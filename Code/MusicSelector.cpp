@@ -5,6 +5,7 @@
 #include <iostream>
 #include "UIWindow.h"
 #include "MainMenu.h"
+#include "GameSession.h"
 
 
 using namespace sf;
@@ -12,6 +13,7 @@ using namespace std;
 using namespace boost::filesystem;
 
 //const int MusicSelector::NUM_BOXES = 8;
+const int MusicSelector::NUM_SLIDER_OPTIONS = 30;
 const int MusicSelector::BOX_WIDTH = 300;
 const int MusicSelector::BOX_HEIGHT = 100;
 const int MusicSelector::BOX_SPACING = 10;
@@ -255,7 +257,10 @@ void MusicSelector::Update()
 	}
 	else if (currInput.X && !prevInput.X)
 	{
-		
+		if (mapMenu->gs != NULL)
+		{
+			mapMenu->gs->levelMusic = songs[saSelector->currIndex];
+		}
 	}
 	if (currInput.B && !prevInput.B)
 	{
@@ -390,7 +395,7 @@ void MusicSelector::SetupBoxes()
 		boxes[i * 4 + 3].color = Color::Red;
 
 		
-		oftenSlider[i] = new SingleAxisSlider(Vector2f(currTopMid.x, currTopMid.y + 50), 30, 15, 300, 24 );
+		oftenSlider[i] = new SingleAxisSlider(Vector2f(currTopMid.x, currTopMid.y + 50), NUM_SLIDER_OPTIONS, 15, 300, 24 );
 		
 
 		extraHeight += BOX_HEIGHT + BOX_SPACING;
@@ -494,7 +499,7 @@ bool MusicManager::rLoadMusicNames(const path &p)
 			{
 				if (p.extension().string() == ".ogg")
 				{
-					string fString = p.filename().string();
+					string fString = p.filename().stem().string();
 					if (songMap.count(fString) == 0)
 					{ 
 						MusicInfo *mi = new MusicInfo;

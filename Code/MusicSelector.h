@@ -33,6 +33,7 @@ struct MusicManager;
 struct MapSelectionMenu;
 struct MusicSelector
 {
+	static const int NUM_SLIDER_OPTIONS;
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;
 	static const int BOX_WIDTH;

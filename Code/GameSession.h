@@ -328,6 +328,8 @@ struct Parallax;
 
 #include <boost/thread/mutex.hpp>
 
+struct MusicInfo;
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum State
@@ -426,6 +428,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool ShouldContinueLoading();
 	boost::mutex continueLoadingLock;
 
+	MusicInfo *levelMusic;
 	//int playerScore[4];
 
 
