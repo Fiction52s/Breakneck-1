@@ -81,7 +81,7 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 	MapSelectionMenu *p_mapMenu, Vector2f &p_topMid,
 	MusicManager *p_musicMan )
 	:font(p_mainMenu->arial),topIndex(0), oldCurrIndex(0), topMid(p_topMid),
-	mainMenu( p_mainMenu ), musicMan( p_musicMan ), mapMenu( p_mapMenu )
+	mainMenu( p_mainMenu ), musicMan( p_musicMan ), mapMenu( p_mapMenu ), modifiedValues( false )
 {
 	previewSong = NULL;
 	songs = NULL;

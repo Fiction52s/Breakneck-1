@@ -5893,15 +5893,19 @@ bool GameSession::Load()
 
 	LevelSpecifics();
 
-		scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset( "Parallax/w1_01c.png", 1920, 1080 ), 0, 10 ) );
+	stringstream pss;
+	pss << "Parallax/w" << (mh->envType + 1) << "_0" << (mh->envLevel + 1);
+	string pStr = pss.str();
+	string eStr = ".png";
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
-		GetTileset( "Parallax/w1_01b.png", 1920, 1080 ), 0, 25 ) );
+		GetTileset( pStr + string( "c" ) + eStr, 1920, 1080 ), 0, 10 ) );
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
-		GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 40 ) );
+		GetTileset(pStr + string("b") + eStr, 1920, 1080 ), 0, 25 ) );
+	scrollingBackgrounds.push_back( 
+		new ScrollingBackground( 
+		GetTileset(pStr + string("a") + eStr, 1920, 1080 ), 0, 40 ) );
 
 	testPar = new Parallax();
 

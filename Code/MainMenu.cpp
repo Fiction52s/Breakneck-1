@@ -2528,7 +2528,6 @@ void MapSelectionMenu::LoadItems()
 			{
 
 				MapSelectionItem *item = new MapSelectionItem((*it), mh);
-
 				
 				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
 				if (item->ts_preview == NULL)
@@ -2705,6 +2704,8 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 		assert(0);
 	}
 
+	mh->songLevelsModified = false;
+
 	return true;
 }
 
@@ -2865,10 +2866,10 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				int cIndex = saSelector->currIndex;
 				int pIndex = GetPairIndex(cIndex);
 
-				if (musicSelector->modifiedValues)
+				//mh->songLevelsModified = true;
+				MapSelectionItem *mi = allItems[pIndex].second.item;
+				if (mi->headerInfo->songLevelsModified )
 				{
-					MapSelectionItem *mi = allItems[pIndex].second.item;
-
 					ReplaceHeader(mi->path, mi->headerInfo);
 				}
 
