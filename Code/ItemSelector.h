@@ -1,5 +1,7 @@
 #ifndef __ITEM_SELECTOR_H__
 #define __ITEM_SELECTOR_H__
+#include <SFML\Graphics.hpp>
+#include "Input.h"
 
 struct SingleAxisSelector
 {
@@ -25,6 +27,38 @@ struct SingleAxisSelector
 	int totalItems;
 	int oldCurrIndex;
 	int startIndex;
+};
+
+struct VertSlider
+{
+	VertSlider();
+	void Setup(sf::Vector2f &pos, sf::Vector2f &barSize,
+		sf::Vector2f &selectorSize);
+	void SetSlider(float f);
+	void Draw(sf::RenderTarget *target);
+	sf::Vector2f pos;
+	sf::Vector2f barSize;
+	sf::Vector2f selectorSize;
+	sf::Vertex barVA[8];
+};
+
+struct SingleAxisSlider
+{
+	//eventually can optimize the drawing of this with a va
+	SingleAxisSlider(sf::Vector2f &p_topMid,
+		int numOptions, int startIndex,
+		int width, int height);
+	~SingleAxisSlider();
+	int Update(ControllerState &currInput, ControllerState &prevInput);
+	void UpdateSliderPos();
+	void Draw(sf::RenderTarget *target);
+	SingleAxisSelector *saSelector;
+
+	sf::RectangleShape sliderRect;
+	float leftPos;
+	sf::RectangleShape scopeRect;
+	sf::Vector2f topMid;
+	sf::Vector2f size;
 };
 
 #endif

@@ -173,6 +173,7 @@ void ControlProfileMenu::Draw( sf::RenderTarget *target )
 			//cout << "drawing: " << profileNames[i].getString().toAnsiString() << "\n";
 			target->draw( profileNames[i] );
 		}
+		vSlider.Draw(target);
 	}
 	else if( state == S_EDIT_CONFIG )
 	{
@@ -233,6 +234,12 @@ void ControlProfileMenu::UpdateNames()
 	}
 
 	saSelector->totalItems = numProfiles;
+
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), 
+		Vector2f(vSlider.barSize.x, max((vSlider.selectorSize.y / numProfiles), 5.f) ), vSlider.selectorSize);
+
+	vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
 }
 
 void ControlProfileMenu::Update( ControllerState &currInput,
@@ -365,6 +372,9 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 			//controls[oldIndex]->Unfocus();
 			//controls[focusedIndex]->Focus();
+
+			vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
+
 		}
 
 		//cout << "currIndex : " << currIndex << endl;
@@ -433,6 +443,10 @@ void ControlProfileMenu::SetupBoxes()
 
 		extraHeight += BOX_HEIGHT + BOX_SPACING;
 	}
+
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f(30, 0),
+		Vector2f(30, NUM_BOXES * (BOX_HEIGHT + BOX_SPACING)));
 }
 
 void ControlProfileMenu::MoveUp()

@@ -13,6 +13,7 @@
 #include <list>
 #include <string>
 #include <map>
+#include "ItemSelector.h"
 
 
 struct Config;

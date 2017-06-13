@@ -127,6 +127,8 @@ struct ControlProfileMenu : UIEventHandlerBase
 	int playerIndex;
 	sf::Font font;
 
+	VertSlider vSlider;
+
 	//int waitFrames[3];
 	//int waitModeThresh[2];
 	//int framesWaiting;

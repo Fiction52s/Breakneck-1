@@ -18,63 +18,6 @@ const int MusicSelector::BOX_WIDTH = 300;
 const int MusicSelector::BOX_HEIGHT = 100;
 const int MusicSelector::BOX_SPACING = 10;
 
-SingleAxisSlider::SingleAxisSlider(Vector2f &p_topMid, int numOptions, int startIndex,
-	int width, int height )
-	:topMid(p_topMid)
-{
-	int waitFrames[3] = { 10, 5, 2 };
-	int waitModeThresh[2] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numOptions, startIndex, false);
-	leftPos = topMid.x - (float)width / 2;
-
-	size = Vector2f(width, height);
-
-	scopeRect.setSize(Vector2f(width, height));
-	scopeRect.setOrigin(scopeRect.getLocalBounds().width / 2, 0);
-	scopeRect.setPosition(topMid);
-	scopeRect.setFillColor(Color::Red);
-
-	float sectionWidth = (float)size.x / (saSelector->totalItems - 1);
-
-	sliderRect.setSize(Vector2f(sectionWidth, height) );
-	sliderRect.setOrigin(sliderRect.getLocalBounds().width / 2, 0);
-	sliderRect.setFillColor(Color::Blue);
-
-	UpdateSliderPos();
-}
-
-int SingleAxisSlider::Update(ControllerState &currInput, ControllerState &prevInput)
-{
-	int currIndex = saSelector->currIndex;
-
-	bool left = currInput.LLeft();
-	bool right = currInput.LRight();
-
-	int changed = saSelector->UpdateIndex(left, right);
-	int cIndex = saSelector->currIndex;
-
-	bool inc = changed > 0;
-	bool dec = changed < 0;
-
-	if (changed != 0)
-	{
-		UpdateSliderPos();
-	}
-
-	return changed;
-}
-
-void SingleAxisSlider::UpdateSliderPos()
-{
-	float sectionWidth = (float)size.x / (saSelector->totalItems-1);
-	sliderRect.setPosition(Vector2f(leftPos + saSelector->currIndex * sectionWidth, topMid.y));
-}
-
-void SingleAxisSlider::Draw(sf::RenderTarget *target)
-{
-	target->draw(scopeRect);
-	target->draw(sliderRect);
-}
 
 
 MusicSelector::MusicSelector(MainMenu *p_mainMenu, 
@@ -90,9 +33,9 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
 
-	LoadNames();
-
 	SetupBoxes();
+
+	LoadNames();
 
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
@@ -100,6 +43,8 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 		musicNames[i].setCharacterSize(40);
 		musicNames[i].setFillColor(Color::White);
 	}
+
+	
 }
 
 void MusicSelector::Draw(sf::RenderTarget *target)
@@ -111,6 +56,8 @@ void MusicSelector::Draw(sf::RenderTarget *target)
 		target->draw(musicNames[i]);
 		oftenSlider[i]->Draw(target);
 	}
+
+	vSlider.Draw(target);
 }
 
 void MusicSelector::LoadNames()
@@ -119,7 +66,6 @@ void MusicSelector::LoadNames()
 
 	if( songs != NULL )
 		delete[]songs;
-
 
 	songs = new MusicInfo*[numSongs];
 
@@ -131,6 +77,10 @@ void MusicSelector::LoadNames()
 	}
 
 	saSelector->totalItems = numSongs;
+
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f( vSlider.barSize.x, max( vSlider.selectorSize.y / numSongs, 5.f ) ),
+		vSlider.selectorSize );
 }
 
 void MusicSelector::UpdateNames()
@@ -323,6 +273,8 @@ void MusicSelector::Update()
 		}
 
 		UpdateNames();
+
+		vSlider.SetSlider((float)cIndex / (saSelector->totalItems-1));
 		//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 		//controls[oldIndex]->Unfocus();
 		//controls[focusedIndex]->Focus();
@@ -400,6 +352,10 @@ void MusicSelector::SetupBoxes()
 
 		extraHeight += BOX_HEIGHT + BOX_SPACING;
 	}
+
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f(30, 0),
+		Vector2f(30, NUM_BOXES * ( BOX_HEIGHT + BOX_SPACING ) ) );
 }
 
 void MusicSelector::MoveUp()
