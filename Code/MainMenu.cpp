@@ -2698,6 +2698,8 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 
 		of.close();
 		is.close();
+
+		delete oldHeader;
 	}
 	else
 	{

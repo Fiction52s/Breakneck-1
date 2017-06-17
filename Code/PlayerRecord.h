@@ -3,6 +3,11 @@
 
 #include <SFML\Graphics.hpp>
 #include "Input.h"
+#include <boost\filesystem.hpp>
+#include <list>
+#include <map>
+#include "ItemSelector.h"
+#include "UIWindow.h"
 
 struct Actor;
 
@@ -84,6 +89,132 @@ struct ReplayPlayer
 	Actor *player;
 	int frame;
 	int numTotalFrames;
+};
+
+struct RecordGhostManager
+{
+
+};
+
+struct MainMenu;
+
+struct GhostInfo
+{
+
+};
+
+struct GhostHeader
+{
+	enum GhostType
+	{
+		G_SINGLE_LEVEL_COMPLETE,
+		G_SINGLE_FAILURE,
+		G_SINGLE_RESTART_OR_QUIT,
+		G_MULTI
+	};
+	~GhostHeader()
+	{
+		delete[] numFramesPerPlayer;
+	}
+	int ver1;
+	int ver2;
+	int numberOfPlayers;
+	GhostType gType;
+	int *numFramesPerPlayer;
+};
+
+struct GhostFolder;
+struct GhostEntry
+{
+	GhostEntry(boost::filesystem::path &p_path,
+		GhostHeader *gh)
+		:gPath(p_path), headerInfo(gh), activeForMap( false )
+	{
+	}
+	~GhostEntry() { if (headerInfo != NULL) delete headerInfo; }
+
+	boost::filesystem::path gPath;
+	GhostFolder *folder;
+	GhostHeader *headerInfo;
+	bool activeForMap;
+};
+
+struct GhostFolder
+{
+	GhostFolder( const std::string &fName )
+		:expanded( false ), folderName( fName )
+	{
+	}
+
+	std::string folderName;
+	//std::list<GhostEntry*> ghosts;
+	std::list<GhostEntry*> autoGhosts;
+	std::list<GhostEntry*> saveGhosts;
+	bool expanded;
+	int folderLevel; //0 for map 
+};
+
+struct GhostIndexInfo
+{
+	GhostFolder*folder;
+	GhostEntry *entry;
+};
+
+struct RecordGhostMenu
+{
+	static const int NUM_BOXES = 24;
+	static const int BOX_WIDTH;
+	static const int BOX_HEIGHT;
+	static const int BOX_SPACING;
+
+	RecordGhostMenu(MainMenu *p_mainMenu,
+		sf::Vector2f &p_pos);
+	MainMenu *mainMenu;
+	void SetupBoxes();
+	void LoadItems();
+	void Update(ControllerState &currInput,
+		ControllerState &prevInput);
+
+	static GhostHeader * ReadGhostHeader(std::ifstream &is);
+	static bool WriteGhostHeader(std::ofstream &of, GhostHeader *mh);
+	static bool ReplaceGhostHeader(boost::filesystem::path &p,
+		GhostHeader *mh);
+
+	void SetupInds( int &startInd, GhostFolder *gf );
+
+	void MoveUp();
+	void MoveDown();
+	void UpdateItemText();
+	void UpdateBoxesDebug();
+	void Draw(sf::RenderTarget *target);
+
+	sf::Vertex boxes[NUM_BOXES * 4];
+	sf::Text itemName[NUM_BOXES];
+	std::pair<std::string, GhostIndexInfo> *allItems;
+	sf::Vector2f topMid;
+	std::list<GhostFolder*> folders;
+	GhostFolder *autoFolder;
+	GhostFolder *saveFolder;
+
+	int oldCurrIndex;
+	int topIndex;
+
+	std::list<boost::filesystem::path> items;
+	void LoadPath(boost::filesystem::path & p);
+	sf::Font &font;
+	SingleAxisSelector *saSelector;
+	std::map<boost::filesystem::path, GhostFolder*> ghostFolders;
+
+	int numTotalItems;
+	int GetPairIndex(int index);
+
+	UIVerticalControlList *ghostOptions;
+
+	void LoadFolders();
+	void LoadMapReplays(const boost::filesystem::path &p);
+
+	//list<
+	void LoadDir(boost::filesystem::path &p, std::list<GhostEntry*> &entries);
 };
 
 #endif
