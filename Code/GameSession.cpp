@@ -34,6 +34,10 @@
 #include "ControlProfile.h"
 #include "MusicSelector.h"
 #include <boost/thread.hpp>
+#include <ctime>
+#include "PlayerRecord.h"
+#include "Buf.h"
+
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -77,140 +81,6 @@ using namespace sf;
 #define COLOR_STEEP_CEILING Color( 0x2d, 0xcd, 0xed )
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
-
-std::stringstream recStream;
-boost::mutex mut;
-boost::mutex overMut;
-bool recOver;
-
-void Buf::Send( int x )
-{
-	int size = sizeof( x );
-
-	mut.lock();
-
-	std::memcpy( &(buf[byteIndex]), &x, size );
-	byteIndex+= size;
-
-	/*buf[byteIndex] = '\n';
-	++byteIndex;*/
-
-	mut.unlock();
-}
-
-void Buf::Send( double x )
-{
-	int size = sizeof( x );
-
-	mut.lock();
-
-	std::memcpy( &(buf[byteIndex]), &x, size );
-	byteIndex+= size;
-
-	/*buf[byteIndex] = '\n';
-	++byteIndex;*/
-
-	mut.unlock();
-}
-
-void Buf::Send( bool x )
-{
-	int size = sizeof( x );
-
-	mut.lock();
-
-	std::memcpy( &(buf[byteIndex]), &x, size );
-	byteIndex+= size;
-
-	/*buf[byteIndex] = '\n';
-	++byteIndex;*/
-
-	mut.unlock();
-}
-
-void Buf::Send( float x )
-{
-	int size = sizeof( x );
-
-	mut.lock();
-
-	std::memcpy( &(buf[byteIndex]), &x, size );
-	byteIndex+= size;
-
-	/*buf[byteIndex] = '\n';
-	++byteIndex;*/
-
-	mut.unlock();
-}
-
-void Buf::Send( BYTE x )
-{
-	int size = sizeof( x );
-
-	mut.lock();
-
-	std::memcpy( &(buf[byteIndex]), &x, size );
-	byteIndex+= size;
-
-	/*buf[byteIndex] = '\n';
-	++byteIndex;*/
-
-	mut.unlock();
-}
-
-void ThreadedBufferWrite( GameSession *session, std::ofstream *p_of )
-{
-	ofstream &of = *p_of;
-	Buf &testBuf = session->testBuf;
-	int over;
-	//ofstream of;
-	//of.open( fileName );
-
-	while( true )
-	{
-
-		mut.lock();
-		if( testBuf.byteIndex > 0 )
-		{
-			//cout << session->totalGameFrames << " writing " << testBuf.byteIndex << " characters" << endl;
-			of.write( (char*)testBuf.buf, testBuf.byteIndex );
-			testBuf.byteIndex = 0;
-		}
-
-		mut.unlock();
-
-
-		overMut.lock();
-		over = recOver;
-		overMut.unlock();
-
-		if( over )
-			break;
-	}
-
-	
-	
-	
-	//of.close();
-
-	
-	/*ofstream of;
-	of.open( "multitest.blah" );
-	if( of.is_open() )
-	{
-		for( int i = 0; i < 1000000; ++i )
-		{
-			of << i << endl;
-			
-			cout << "test" << i << endl;
-		}
-	}
-	else
-	{
-		assert( 0 );
-	}*/
-
-}
 
 
 ScoreDisplay::ScoreDisplay( GameSession *p_owner, Vector2f &position,
@@ -783,11 +653,12 @@ void KeyMarker::Update()
 }
 
 GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
-	const std::string &p_fileName )
+	const boost::filesystem::path &p_filePath )
 	:groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
-	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_fileName )
+	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_filePath.string() ),
+	filePath( p_filePath )
 {	
 	mainMenu = p_mainMenu;
 	Init();
@@ -5696,7 +5567,7 @@ bool GameSession::Load()
 
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
-	//recGhost = new RecordGhost( player );
+	
 	//repGhost = new ReplayGhost( player );
 
 	//recPlayer = new RecordPlayer( player );
@@ -5736,8 +5607,16 @@ bool GameSession::Load()
 			p->InitAfterEnemies();
 	}
 
+	
+
 	Actor *p0 = GetPlayer( 0 );
 	p0->position = originalPos;
+
+	if( mh->gameMode == MapHeader::MapType::T_STANDARD )
+	{ 
+		recGhost = new RecordGhost(p0);
+	}
+	
 
 	for( int i = 1; i < 4; ++i )
 	{
@@ -6115,7 +5994,7 @@ int GameSession::Run()
 	if (recPlayer != NULL)//&& !repPlayer->init )
 	{
 		of.open("tempreplay.brep", ios::binary | ios::out);
-		threa = new boost::thread(&ThreadedBufferWrite, this, &of);
+		threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
 	}
 
 	int pointsTotal = 0;
@@ -6487,6 +6366,7 @@ int GameSession::Run()
 				
 				accumulator -= TIMESTEP;
 
+				//if( recGhost != NULL)
 				//recGhost->RecordFrame();
 				
 				//repGhost->UpdateReplaySprite();
@@ -6568,8 +6448,8 @@ int GameSession::Run()
 					returnVal = 1;
 
 					
-					//recGhost->StopRecording();
-					//recGhost->WriteToFile( "testghost.bghst" );
+					/*recGhost->StopRecording();
+					recGhost->WriteToFile( "testghost.bghst" );*/
 					break;
 				}
 
@@ -8822,6 +8702,32 @@ int GameSession::Run()
 		
 	}
 
+	if (recGhost != NULL)
+	{
+		recGhost->StopRecording();
+
+		//string fName = fileName
+		//1. get folder. if it doesn't exist, make it.
+		//2. include map name in ghost name
+		//3. tag ghost with timestamp
+		//4. 
+
+		time_t t = time(0);
+		struct tm now;
+		localtime_s( &now, &t);
+
+
+
+
+
+		stringstream fss;
+		fss << filePath.filename().stem().string() << "_ghost_"
+			<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
+			<< now.tm_min << "_" << now.tm_sec << ".bghst";
+
+		recGhost->WriteToFile(fss.str());
+	}
+
 	levelMusic->music->stop();
 	levelMusic->music->setVolume(0);
 	levelMusic = NULL;
@@ -8837,9 +8743,8 @@ int GameSession::Run()
 		currMusic = NULL;
 	}
 	
-	overMut.lock();
-	recOver = true;
-	overMut.unlock();
+	testBuf.SetRecOver( true );
+	
 
 	if( recPlayer != NULL )
 	{
@@ -9043,7 +8948,7 @@ void GameSession::Init()
 	fadeRect.setSize(Vector2f(1920, 1080));
 
 
-	recOver = false;
+	testBuf.SetRecOver(false);
 
 
 	gates = NULL;

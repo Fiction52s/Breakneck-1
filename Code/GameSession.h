@@ -17,7 +17,12 @@
 #include "SoundManager.h"
 #include <map>
 #include "BarrierReactions.h"
+#include "Buf.h"
 
+struct RecordPlayer;
+struct ReplayPlayer;
+struct RecordGhost;
+struct ReplayGhost;
 struct Config;
 
 struct Barrier;
@@ -309,16 +314,7 @@ struct CrawlerAfterFightSeq;
 struct EnterNexus1Seq;
 struct ShipExitSeq;
 
-struct Buf
-{
-	char buf[10000]; //no checks for boundaries atm
-	int byteIndex;
-	void Send( int x );
-	void Send( double x );
-	void Send( bool x );
-	void Send( float x );
-	void Send( BYTE x );
-};
+
 
 struct ImageText;
 struct TimerText;
@@ -360,7 +356,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 
-	
 
 	struct RaceFight
 	{
@@ -501,7 +496,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	GameSession( SaveFile *sf,
 		MainMenu *mainMenu,
-		const std::string &fileName );
+		const boost::filesystem::path &p_filePath );
 	void TriggerBarrier( Barrier *b );
 	void Init();
 	void Cleanup();
@@ -931,6 +926,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Vector2f lastViewCenter;
 
 	std::string fileName;
+	boost::filesystem::path filePath;
 	bool goalDestroyed;
 	sf::View cloudView;
 

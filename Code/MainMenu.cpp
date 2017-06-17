@@ -2184,14 +2184,25 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	windowWidth = p_windowWidth;
 	windowHeight = p_windowHeight;
 
-	//window->res
-	//window->close();
-	window->create( VideoMode( windowWidth, windowHeight ), "Breakneck", style );
-	View blahV;
-	blahV.setCenter( 0, 0 );
-	blahV.setSize( 1920/ 2, 1080 / 2 );
-	//v.setCenter( 960, 540 );
-	window->setView( blahV );
+	//if( style == p_style )
+
+	//make sure to set to the center
+	window->setSize(Vector2u(windowWidth, windowHeight));
+	/*else
+	{
+		if (window->isOpen())
+		{
+			window->
+		}
+
+		window->create(VideoMode(windowWidth, windowHeight), "Breakneck", style);
+	}*/
+	 
+	//View blahV;
+	//blahV.setCenter( 0, 0 );
+	//blahV.setSize( 1920/ 2, 1080 / 2 );
+	////v.setCenter( 960, 540 );
+	//window->setView( blahV );
 }
 
 
