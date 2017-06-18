@@ -114,7 +114,15 @@ struct GhostHeader
 	};
 	~GhostHeader()
 	{
-		delete[] numFramesPerPlayer;
+		if( numFramesPerPlayer != NULL )
+			delete[] numFramesPerPlayer;
+	}
+
+	GhostHeader()
+		:numFramesPerPlayer( NULL ), ver1( -1 ),
+		ver2( -1 )
+	{
+
 	}
 	int ver1;
 	int ver2;
@@ -143,7 +151,8 @@ struct GhostFolder
 {
 	GhostFolder( const boost::filesystem::path &p )
 		:expanded( false ), folderPath( p ),
-		autoExpanded( false ), saveExpanded( false )
+		autoExpanded( false ), saveExpanded( false ),
+		autoLoaded( false ), saveLoaded( false )
 	{
 	}
 
@@ -156,6 +165,11 @@ struct GhostFolder
 	std::list<GhostEntry*> saveGhosts;
 	bool expanded;
 	int folderLevel; //0 for map 
+	bool autoLoaded;
+	bool saveLoaded;
+	bool IsSaveActive();
+	bool IsAutoActive();
+	bool IsActive() { return IsSaveActive() || IsAutoActive(); }
 };
 
 struct GhostIndexInfo

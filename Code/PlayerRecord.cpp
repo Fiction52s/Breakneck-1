@@ -607,7 +607,7 @@ void RecordGhostMenu::LoadDir(boost::filesystem::path &p, list<GhostEntry*> &ent
 						//items.push_back(p);
 						//entries.push_back( )
 						ifstream is;
-						is.open(p.string(), std::ios::binary );
+						is.open((*it).string(), std::ios::binary );
 						assert(is.is_open());
 
 						GhostEntry *ge = new GhostEntry((*it), ReadGhostHeader(is));
@@ -736,14 +736,14 @@ void RecordGhostMenu::LoadItems()
 GhostHeader * RecordGhostMenu::ReadGhostHeader(std::ifstream &is)
 {
 	GhostHeader *gh = new GhostHeader;
-	memset(gh, 0, sizeof(GhostHeader));
+	//memset(gh, 0, sizeof(GhostHeader));
 
 	assert(is.is_open());
 
-	if (!is.read((char*)gh, sizeof(GhostHeader)))
+	/*if (!is.read((char*)gh, sizeof(GhostHeader)))
 	{
 		assert(0);
-	}
+	}*/
 
 	return gh;
 }
@@ -829,9 +829,10 @@ void RecordGhostMenu::Update()
 		{
 			if (inf.onAuto)
 			{
-				if (!gf->autoExpanded)
+				if (!gf->autoExpanded && !gf->autoLoaded )
 				{
 					LoadMapGhosts(false, gf->folderPath);
+					gf->autoLoaded = true;
 				}
 				if (gf->autoGhosts.size() > 0)
 				{
@@ -840,9 +841,10 @@ void RecordGhostMenu::Update()
 			}
 			else if (inf.onSave)
 			{
-				if (!gf->saveExpanded)
+				if (!gf->saveExpanded && !gf->saveLoaded )
 				{
 					LoadMapGhosts(true, gf->folderPath);
+					gf->saveLoaded = true;
 				}
 
 				if (gf->saveGhosts.size() > 0)
@@ -1003,81 +1005,81 @@ void RecordGhostMenu::UpdateItemText()
 {
 	int totalShownItems = 0;
 
-	for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
+for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
+{
+	GhostFolder *gf = (*it);
+	++totalShownItems;
+	if (gf->expanded)
 	{
-		GhostFolder *gf = (*it);
-		++totalShownItems;
-		if (gf->expanded)
+		totalShownItems += 2; //save and auto folders
+		if (gf->autoExpanded)
 		{
-			totalShownItems += 2; //save and auto folders
-			if (gf->autoExpanded)
-			{
-				totalShownItems += gf->autoGhosts.size();
-			}
-			if (gf->saveExpanded)
-			{
-				totalShownItems += gf->saveGhosts.size();
-			}
+			totalShownItems += gf->autoGhosts.size();
+		}
+		if (gf->saveExpanded)
+		{
+			totalShownItems += gf->saveGhosts.size();
 		}
 	}
+}
 
-	saSelector->totalItems = totalShownItems;
+saSelector->totalItems = totalShownItems;
 
-	if (numTotalItems == 0)
+if (numTotalItems == 0)
+{
+	return;
+}
+
+if (topIndex > totalShownItems)
+{
+	topIndex = totalShownItems - 1;
+}
+
+int ind = topIndex;
+
+int trueI;
+int i = 0;
+for (; i < NUM_BOXES; ++i)
+{
+	trueI = (topIndex + i) % NUM_BOXES;
+	if (i == totalShownItems)
 	{
-		return;
+		for (; i < NUM_BOXES; ++i)
+		{
+			itemName[i].setString("");
+		}
+		break;
 	}
 
-	if (topIndex > totalShownItems)
+	if (ind == totalShownItems)
+		ind = 0;
+
+
+	GhostIndexInfo inf = GetIndexInfo(ind);
+
+	itemName[i].setString(inf.GetName());
+	itemName[i].setOrigin(0, 0);
+
+	int xVal = topMid.x - BOX_WIDTH / 2;
+	if (inf.folder == NULL) //its just a file
 	{
-		topIndex = totalShownItems - 1;
+		GhostEntry *ge = inf.entry;
+
+		xVal += 80;
 	}
-
-	int ind = topIndex;
-
-	int trueI;
-	int i = 0;
-	for (; i < NUM_BOXES; ++i)
+	else
 	{
-		trueI = (topIndex + i) % NUM_BOXES;
-		if (i == totalShownItems)
+		if (inf.onAuto || inf.onSave)
 		{
-			for (; i < NUM_BOXES; ++i)
-			{
-				itemName[i].setString("");
-			}
-			break;
+			xVal += 40;
 		}
 
-		if (ind == totalShownItems)
-			ind = 0;
-
-
-		GhostIndexInfo inf = GetIndexInfo(ind);
-		
-		itemName[i].setString(inf.GetName());
-		itemName[i].setOrigin(0, 0);
-
-		int xVal = topMid.x - BOX_WIDTH / 2;
-		if (inf.folder == NULL) //its just a file
-		{
-			GhostEntry *ge = inf.entry;
-
-			xVal += 80;
-		}
-		else
-		{
-			if (inf.onAuto || inf.onSave )
-			{
-				xVal += 40;
-			}
-			
-			xVal += 10;
-		}
-		itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
-
-		++ind;
+		xVal += 10;
 	}
+	itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+
+	++ind;
+}
 }
 
 
@@ -1085,16 +1087,70 @@ void RecordGhostMenu::UpdateBoxesDebug()
 {
 	Color c;
 	int trueI = (saSelector->currIndex - topIndex);
+
+
+
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
-		if (i == trueI)
+		if (topIndex + i < saSelector->totalItems)
 		{
-			c = Color::Blue;
+			GhostIndexInfo inf = GetIndexInfo(topIndex + i);
+
+			if (i == trueI)
+			{
+				if (inf.entry != NULL && inf.entry->activeForMap)
+				{
+					c = Color::Magenta;
+				}
+				else
+				{
+					if (inf.folder != NULL 
+						&& (
+						( inf.onAuto && inf.folder->IsAutoActive())
+						|| ( inf.onSave && inf.folder->IsSaveActive() ) 
+						|| ( !inf.onAuto && !inf.onSave && inf.folder->IsActive() ) 
+							) 
+						)
+					{
+						c = Color::Green;
+					}
+					else
+					{
+						c = Color::Blue;
+					}
+					
+				}
+			}
+			else
+			{
+				if (inf.entry != NULL && inf.entry->activeForMap)
+				{
+					c = Color::Green;
+				}
+				else
+				{
+					if (inf.folder != NULL
+						&& (
+						(inf.onAuto && inf.folder->IsAutoActive())
+							|| (inf.onSave && inf.folder->IsSaveActive())
+							|| (!inf.onAuto && !inf.onSave && inf.folder->IsActive())
+							)
+						)
+					{
+						c = Color::Cyan;
+					}
+					else
+					{
+						c = Color::Red;
+					}
+				}
+			}
 		}
 		else
 		{
-			c = Color::Red;
+			c = Color::Black;
 		}
+
 		boxes[i * 4 + 0].color = c;
 		boxes[i * 4 + 1].color = c;
 		boxes[i * 4 + 2].color = c;
@@ -1136,4 +1192,30 @@ std::string GhostIndexInfo::GetName()
 	}
 
 	assert(0);
+}
+
+bool GhostFolder::IsSaveActive()
+{
+	for (auto it = saveGhosts.begin(); it != saveGhosts.end(); ++it)
+	{
+		if ((*it)->activeForMap)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool GhostFolder::IsAutoActive()
+{
+	for (auto it = autoGhosts.begin(); it != autoGhosts.end(); ++it)
+	{
+		if ((*it)->activeForMap)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
