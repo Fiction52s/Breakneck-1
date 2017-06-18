@@ -520,8 +520,8 @@ RecordGhostMenu::RecordGhostMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos)
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
 
-	Vector2f menuOffset(-1920, 0);
-	topMid = p_pos + Vector2f(BOX_WIDTH / 2, 0) + menuOffset;
+	//Vector2f menuOffset(-1920, 0);
+	topMid = p_pos;//p_pos + Vector2f(BOX_WIDTH / 2, 0) + menuOffset;
 
 	SetupBoxes();
 
@@ -543,14 +543,14 @@ RecordGhostMenu::RecordGhostMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos)
 	UIControl *testBlah[] = { check, check1, check2 };
 
 	ghostOptions = new UIVerticalControlList(NULL, sizeof(testBlah) / sizeof(UIControl*), testBlah, 20);
-	Vector2f tLeft = Vector2f(600, 120) + menuOffset;
-	ghostOptions->SetTopLeft(tLeft.x, tLeft.y);
+	//Vector2f tLeft = Vector2f(600, 120) + menuOffset;
+	//ghostOptions->SetTopLeft(tLeft.x, tLeft.y);
 
-	autoFolder = new GhostFolder("auto");
-	saveFolder = new GhostFolder("save");
+	//autoFolder = new GhostFolder("auto");
+	//saveFolder = new GhostFolder("save");
 
-	folders.push_back(autoFolder);
-	folders.push_back(saveFolder);
+	//folders.push_back(autoFolder);
+	//folders.push_back(saveFolder);
 }
 
 void RecordGhostMenu::SetupBoxes()
@@ -581,6 +581,12 @@ using namespace boost::filesystem;
 
 void RecordGhostMenu::LoadDir(boost::filesystem::path &p, list<GhostEntry*> &entries )
 {
+	for (auto it = entries.begin(); it != entries.end(); ++it)
+	{
+		delete (*it);
+	}
+	entries.clear();
+
 	try
 	{
 		if (exists(p))    // does p actually exist?
@@ -605,6 +611,8 @@ void RecordGhostMenu::LoadDir(boost::filesystem::path &p, list<GhostEntry*> &ent
 						assert(is.is_open());
 
 						GhostEntry *ge = new GhostEntry((*it), ReadGhostHeader(is));
+
+						entries.push_back(ge);
 					}
 				}
 			}
@@ -626,7 +634,7 @@ void RecordGhostMenu::LoadFolders()
 {
 	path pFolder(current_path() / "/Recordings/Ghost/");
 
-	ghostFolderPaths.clear();
+	ghostFolders.clear();
 	try
 	{
 		if (exists(pFolder))    // does p actually exist?
@@ -642,14 +650,14 @@ void RecordGhostMenu::LoadFolders()
 			{
 				if ( is_directory((*it) ) )
 				{
-					ghostFolderPaths.push_back((*it));
+					ghostFolders[(*it).filename().stem().string()] = new GhostFolder((*it));
 				}
 			}
 		}
 		else
 		{
 			//folder doesn't exist
-			create_directory(p);
+			create_directory(pFolder);
 		}
 	}
 	catch (const filesystem_error& ex)
@@ -661,52 +669,68 @@ void RecordGhostMenu::LoadFolders()
 
 void RecordGhostMenu::SetupInds( int &ind, GhostFolder *gf )
 {
-	GhostIndexInfo gi;
-	gi.folder = gf;
-	gi.entry = NULL;
+	//GhostIndexInfo gi;
+	//gi.folder = gf;
+	//gi.entry = NULL;
 
-	allItems[ind] = pair<string, GhostIndexInfo>(gf->folderName, gi);
-	++ind;
-	//assert(gf->.size() > 0);
-	for (auto it2 = gf->ghosts.begin(); it2 != gf->ghosts.end(); ++it2)
-	{
-		gi.folder = NULL;
-		gi.entry = (*it2);
+	//allItems[ind] = pair<string, GhostIndexInfo>(gf->folderName, gi);
+	//++ind;
+	////assert(gf->.size() > 0);
+	//for (auto it2 = gf->ghosts.begin(); it2 != gf->ghosts.end(); ++it2)
+	//{
+	//	gi.folder = NULL;
+	//	gi.entry = (*it2);
 
-		allItems[ind] = pair<string, GhostIndexInfo>((*it2)->gPath.filename().stem().string(), gi);
-		++ind;
-	}
+	//	allItems[ind] = pair<string, GhostIndexInfo>((*it2)->gPath.filename().stem().string(), gi);
+	//	++ind;
+	//}
 }
 
-void RecordGhostMenu::LoadMapReplays(const boost::filesystem::path &p)
+void RecordGhostMenu::LoadMapGhosts( bool save, const boost::filesystem::path &p) //save compared to auto
 {
-
+	string mapName = p.filename().stem().string();
+	GhostFolder *gf = NULL;
+	gf = ghostFolders[mapName];
+	assert(gf != NULL);
+	if (save)
+	{
+		path pSave(current_path() / "/Recordings/Ghost/" / mapName / "/save/");
+		LoadDir(pSave, gf->saveGhosts);
+	}
+	else
+	{
+		path pAuto(current_path() / "/Recordings/Ghost/" / mapName / "/auto/");
+		LoadDir(pAuto, gf->autoGhosts);
+	}
 }
 
 void RecordGhostMenu::LoadItems()
 {
 	LoadFolders();
-	path pAuto(current_path() / "/Recordings/Ghost/auto");
-	path pSave(current_path() / "/Recordings/Ghost/save");
-	LoadDir(pAuto, autoFolder->ghosts);
-	LoadDir(pSave, saveFolder->ghosts );
 
-	numTotalItems = 0;
-
-	numTotalItems += autoFolder->ghosts.size() + 1;
-	numTotalItems += saveFolder->ghosts.size() + 1;
-
-	if (allItems != NULL)
+	sortedFolders.clear();
+	for (auto it = ghostFolders.begin(); it != ghostFolders.end(); ++it)
 	{
-		delete[] allItems;
+		sortedFolders.push_back((*it).second);
 	}
+	
+	//numTotalItems = 0;
 
-	allItems = new pair<string, GhostIndexInfo>[numTotalItems];
 
-	int ind = 0;
+	////numTotalItems += autoFolder->ghosts.size() + 1;
+	////numTotalItems += saveFolder->ghosts.size() + 1;
 
-	SetupInds(ind, autoFolder);
-	SetupInds(ind, saveFolder);
+	//if (allItems != NULL)
+	//{
+	//	delete[] allItems;
+	//}
+
+	//allItems = new pair<string, GhostIndexInfo>[numTotalItems];
+
+	//int ind = 0;
+
+	//SetupInds(ind, autoFolder);
+	//SetupInds(ind, saveFolder);
 }
 
 GhostHeader * RecordGhostMenu::ReadGhostHeader(std::ifstream &is)
@@ -777,9 +801,11 @@ bool RecordGhostMenu::ReplaceGhostHeader(boost::filesystem::path &p, GhostHeader
 	return true;
 }
 
-void RecordGhostMenu::Update(ControllerState &currInput,
-	ControllerState &prevInput)
+void RecordGhostMenu::Update()
 {	
+	ControllerState &currInput = mainMenu->menuCurrInput;
+	ControllerState &prevInput = mainMenu->menuPrevInput;
+
 	if (currInput.B && !prevInput.B)
 	{
 		return;
@@ -793,18 +819,47 @@ void RecordGhostMenu::Update(ControllerState &currInput,
 	}
 
 	int cIndex = saSelector->currIndex;
-	int pIndex = GetPairIndex(cIndex);
+
+	GhostIndexInfo inf = GetIndexInfo(cIndex);
+
 	if (currInput.A && !prevInput.A)
 	{
-		GhostFolder *gf = allItems[pIndex].second.folder;
+		GhostFolder *gf = inf.folder;
 		if (gf != NULL)
 		{
-			gf->expanded = !gf->expanded;
+			if (inf.onAuto)
+			{
+				if (!gf->autoExpanded)
+				{
+					LoadMapGhosts(false, gf->folderPath);
+				}
+				if (gf->autoGhosts.size() > 0)
+				{
+					gf->autoExpanded = !gf->autoExpanded;
+				}
+			}
+			else if (inf.onSave)
+			{
+				if (!gf->saveExpanded)
+				{
+					LoadMapGhosts(true, gf->folderPath);
+				}
+
+				if (gf->saveGhosts.size() > 0)
+				{
+					gf->saveExpanded = !gf->saveExpanded;	
+				}
+			}
+			else
+			{
+				gf->expanded = !gf->expanded;
+			}
+			
 			UpdateItemText();
 		}
 		else
 		{
-			GhostEntry *entry = allItems[pIndex].second.entry;
+			GhostEntry *entry = inf.entry;
 			
 			entry->activeForMap = !entry->activeForMap;
 
@@ -846,8 +901,7 @@ void RecordGhostMenu::Update(ControllerState &currInput,
 		{
 			UpdateItemText();
 
-			int pIndex = GetPairIndex(cIndex);
-			//if (allItems[pIndex].second.info == NULL)
+			
 		}
 	}
 
@@ -873,16 +927,97 @@ void RecordGhostMenu::MoveDown()
 	}
 }
 
+GhostIndexInfo RecordGhostMenu::GetIndexInfo(int index)
+{
+	int checkerIndex = 0;
+	GhostIndexInfo info;
+	info.entry = NULL;
+	info.folder = NULL;
+	info.onAuto = false;
+	info.onSave = false;
+	
+	for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
+	{
+		if (checkerIndex == index)
+		{
+			info.folder = (*it);
+			return info;
+		}
+
+		GhostFolder *gf = (*it);
+		++checkerIndex;
+
+		if (gf->expanded)
+		{
+			//checkerIndex += 2; //save and auto folders
+			if (checkerIndex == index)
+			{
+				info.folder = (*it);
+				info.onAuto = true;
+				return info;
+			}
+			++checkerIndex;
+
+			if (gf->autoExpanded)
+			{
+				for (auto ai = gf->autoGhosts.begin(); ai != gf->autoGhosts.end(); ++ai )
+				{
+					if (checkerIndex == index)
+					{
+						info.entry = (*ai);
+						return info;
+					}
+					++checkerIndex;
+				}
+			}
+
+			if (checkerIndex == index)
+			{
+				info.folder = (*it);
+				info.onSave = true;
+				return info;
+			}
+			++checkerIndex;
+
+			if (gf->saveExpanded)
+			{
+				for (auto ai = gf->saveGhosts.begin(); ai != gf->saveGhosts.end(); ++ai)
+				{
+					if (checkerIndex == index)
+					{
+						info.entry = (*ai);
+						return info;
+					}
+					++checkerIndex;
+				}
+			}
+		}
+	}
+
+	assert(0);
+
+	return info;
+}
+
 void RecordGhostMenu::UpdateItemText()
 {
 	int totalShownItems = 0;
 
-	for (auto it = folders.begin(); it != folders.end(); ++it)
+	for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
 	{
+		GhostFolder *gf = (*it);
 		++totalShownItems;
-		if ((*it)->expanded)
+		if (gf->expanded)
 		{
-			totalShownItems += (*it)->ghosts.size();
+			totalShownItems += 2; //save and auto folders
+			if (gf->autoExpanded)
+			{
+				totalShownItems += gf->autoGhosts.size();
+			}
+			if (gf->saveExpanded)
+			{
+				totalShownItems += gf->saveGhosts.size();
+			}
 		}
 	}
 
@@ -917,22 +1052,27 @@ void RecordGhostMenu::UpdateItemText()
 		if (ind == totalShownItems)
 			ind = 0;
 
-		pair<string, GhostIndexInfo> &p = allItems[GetPairIndex(ind)];
-		string printStr = p.first;
-		itemName[i].setString(printStr);
+
+		GhostIndexInfo inf = GetIndexInfo(ind);
+		
+		itemName[i].setString(inf.GetName());
 		itemName[i].setOrigin(0, 0);
 
 		int xVal = topMid.x - BOX_WIDTH / 2;
-		if (p.second.folder == NULL) //its just a file
+		if (inf.folder == NULL) //its just a file
 		{
-			GhostEntry *ge = p.second.entry;
+			GhostEntry *ge = inf.entry;
 
-			xVal += 60;
+			xVal += 80;
 		}
 		else
 		{
+			if (inf.onAuto || inf.onSave )
+			{
+				xVal += 40;
+			}
+			
 			xVal += 10;
-			//descriptionText.setString("");
 		}
 		itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
 
@@ -940,21 +1080,6 @@ void RecordGhostMenu::UpdateItemText()
 	}
 }
 
-int RecordGhostMenu::GetPairIndex(int index)
-{
-	int i = 0;
-	for (int it = 0; it < index; ++it)
-	{
-		if (allItems[i].second.folder != NULL && !allItems[i].second.folder->expanded)
-		{
-			i += allItems[i].second.folder->ghosts.size();
-		}
-
-		++i;
-	}
-
-	return i;
-}
 
 void RecordGhostMenu::UpdateBoxesDebug()
 {
@@ -984,4 +1109,31 @@ void RecordGhostMenu::Draw(sf::RenderTarget *target)
 	{
 		target->draw(itemName[i]);
 	}
+}
+
+std::string GhostIndexInfo::GetName()
+{
+	if (folder == NULL)
+	{
+		assert(entry != NULL);
+		return entry->gPath.filename().stem().string();
+	}
+	else if (entry == NULL)
+	{
+		assert(folder != NULL);
+		if (onAuto)
+		{
+			return "auto";
+		}
+		else if (onSave)
+		{
+			return "save";
+		}
+		else
+		{
+			return folder->folderPath.filename().stem().string();
+		}
+	}
+
+	assert(0);
 }

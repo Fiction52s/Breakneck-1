@@ -11,6 +11,7 @@
 #include "UIWindow.h"
 #include "sfeMovie/StreamSelection.hpp"
 #include "MusicSelector.h"
+#include "PlayerRecord.h"
 
 using namespace std;
 using namespace sf;
@@ -2342,6 +2343,9 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	musicSelector = new MusicSelector(mainMenu, this, menuOffset + Vector2f(770, 110), mainMenu->musicManager );
 	musicSelector->UpdateNames();
+
+	ghostSelector = new RecordGhostMenu(mainMenu, menuOffset + Vector2f(1100, 110));
+	ghostSelector->UpdateItemText();
 	//filterOptions = new UIVerticalControlList()
 }
 
@@ -2865,6 +2869,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			musicSelector->modifiedValues = false;
 			return;
 		}
+		else if (currInput.leftShoulder && !prevInput.leftShoulder)
+		{
+			state = S_GHOST_SELECTOR;
+			return;
+		}
 		else
 		{
 			singleSection->Update();
@@ -2961,6 +2970,19 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		}
 
 		musicSelector->Update();
+	}
+	else if (state == S_GHOST_SELECTOR)
+	{
+		if (currInput.leftShoulder && !prevInput.leftShoulder)
+		{
+			//state = S_MUSIC_SELECTOR;
+		}
+		else if (currInput.rightShoulder && !prevInput.rightShoulder)
+		{
+			state = S_SELECTING_SKIN;
+		}
+		
+		ghostSelector->Update( );
 	}
 }
 
@@ -3115,6 +3137,10 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	else if (state == S_MUSIC_SELECTOR)
 	{
 		musicSelector->Draw(target);
+	}
+	else if (state == S_GHOST_SELECTOR)
+	{
+		ghostSelector->Draw(target);
 	}
 	filterOptions->Draw(target);
 	progressDisplay->Draw(target);

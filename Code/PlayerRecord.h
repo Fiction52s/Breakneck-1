@@ -141,13 +141,17 @@ struct GhostEntry
 
 struct GhostFolder
 {
-	GhostFolder( const std::string &fName )
-		:expanded( false ), folderName( fName )
+	GhostFolder( const boost::filesystem::path &p )
+		:expanded( false ), folderPath( p ),
+		autoExpanded( false ), saveExpanded( false )
 	{
 	}
 
-	std::string folderName;
+	//std::string folderName;
+	boost::filesystem::path folderPath;
 	//std::list<GhostEntry*> ghosts;
+	bool autoExpanded;
+	bool saveExpanded;
 	std::list<GhostEntry*> autoGhosts;
 	std::list<GhostEntry*> saveGhosts;
 	bool expanded;
@@ -158,6 +162,9 @@ struct GhostIndexInfo
 {
 	GhostFolder*folder;
 	GhostEntry *entry;
+	bool onAuto;
+	bool onSave;
+	std::string GetName();
 };
 
 struct RecordGhostMenu
@@ -172,8 +179,7 @@ struct RecordGhostMenu
 	MainMenu *mainMenu;
 	void SetupBoxes();
 	void LoadItems();
-	void Update(ControllerState &currInput,
-		ControllerState &prevInput);
+	void Update();
 
 	static GhostHeader * ReadGhostHeader(std::ifstream &is);
 	static bool WriteGhostHeader(std::ofstream &of, GhostHeader *mh);
@@ -187,6 +193,7 @@ struct RecordGhostMenu
 	void UpdateItemText();
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
+	GhostIndexInfo GetIndexInfo(int index);
 
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text itemName[NUM_BOXES];
@@ -203,15 +210,15 @@ struct RecordGhostMenu
 	void LoadPath(boost::filesystem::path & p);
 	sf::Font &font;
 	SingleAxisSelector *saSelector;
-	std::map<boost::filesystem::path, GhostFolder*> ghostFolders;
+	std::map<std::string, GhostFolder*> ghostFolders;
+	std::list<GhostFolder*> sortedFolders;
 
 	int numTotalItems;
-	int GetPairIndex(int index);
 
 	UIVerticalControlList *ghostOptions;
 
 	void LoadFolders();
-	void LoadMapReplays(const boost::filesystem::path &p);
+	void LoadMapGhosts( bool save, const boost::filesystem::path &p);
 
 	//list<
 	void LoadDir(boost::filesystem::path &p, std::list<GhostEntry*> &entries);

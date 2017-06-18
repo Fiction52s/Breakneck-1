@@ -245,6 +245,7 @@ struct UIVerticalControlList;
 
 //you should retain the last 
 struct MusicSelector;
+struct RecordGhostMenu;
 
 struct MapSelectionMenu
 {
@@ -253,7 +254,8 @@ struct MapSelectionMenu
 		S_SELECTING_MAP,
 		S_MUSIC_SELECTOR,
 		S_FILTER_OPTIONS,
-		S_SELECTING_SKIN
+		S_SELECTING_SKIN,
+		S_GHOST_SELECTOR
 	};
 
 	State state;
@@ -321,6 +323,7 @@ struct MapSelectionMenu
 	//sf::Texture previewTex;
 
 	//void SetPreview();
+	RecordGhostMenu *ghostSelector;
 
 	MultiSelectionSection *singleSection;
 };
