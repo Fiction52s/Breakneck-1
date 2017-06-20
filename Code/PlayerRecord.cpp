@@ -32,11 +32,11 @@ void ReplayGhost::Draw(RenderTarget *target)
 		target->draw(replaySprite);
 }
 
-bool ReplayGhost::OpenGhost(const std::string &fileName)
+bool ReplayGhost::OpenGhost(const boost::filesystem::path &filePath)
 {
 	ifstream is;
 
-	is.open(fileName);
+	is.open(filePath.string());
 	if (is.is_open())
 	{
 		is >> numTotalFrames;
@@ -167,10 +167,15 @@ void RecordGhost::WriteToFile(const std::string &fileName)
 	assert(numTotalFrames > 0);
 
 	ofstream of;
-	of.open(fileName);
+	of.open(fileName, ios::binary );
+
+	//header
+	GhostHeader header;
+	
 	if (of.is_open())
 	{
-		of << numTotalFrames << endl;
+
+		/*of << numTotalFrames << endl;
 		for (int i = 0; i < numTotalFrames; ++i)
 		{
 			SprInfo &info = sprBuffer[i];
@@ -182,7 +187,7 @@ void RecordGhost::WriteToFile(const std::string &fileName)
 			of << info.speedLevel << endl;
 		}
 
-		of.close();
+		of.close();*/
 	}
 	else
 	{
@@ -1167,6 +1172,34 @@ void RecordGhostMenu::Draw(sf::RenderTarget *target)
 	}
 }
 
+void RecordGhostMenu::GetActiveList(std::list<GhostEntry*> &entries)
+{
+	assert(entries.empty());
+	for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
+	{
+		if ((*it)->IsAutoActive())
+		{
+			for (auto ait = (*it)->autoGhosts.begin(); ait != (*it)->autoGhosts.end(); ++ait)
+			{
+				if ((*ait)->activeForMap)
+				{
+					entries.push_back((*ait));
+				}
+			}
+		}
+		if ((*it)->IsSaveActive())
+		{
+			for (auto sit = (*it)->autoGhosts.begin(); sit != (*it)->autoGhosts.end(); ++sit)
+			{
+				if ((*sit)->activeForMap)
+				{
+					entries.push_back((*sit));
+				}
+			}
+		}
+	}
+}
+
 std::string GhostIndexInfo::GetName()
 {
 	if (folder == NULL)
@@ -1218,4 +1251,15 @@ bool GhostFolder::IsAutoActive()
 	}
 
 	return false;
+}
+
+void GhostHeader::Read(std::ifstream &is)
+{
+	assert(playerInfo == NULL);
+
+	is.read((char*)&ver1, sizeof(int) * 4); //read in the basic vars
+
+	assert(numberOfPlayers > 0 && numberOfPlayers < 5);
+	playerInfo = new PlayerInfo[numberOfPlayers];
+	is.read((char*)playerInfo, sizeof(PlayerInfo) * numberOfPlayers);
 }

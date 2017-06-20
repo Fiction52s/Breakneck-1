@@ -5806,6 +5806,19 @@ bool GameSession::Load()
 	return true;
 }
 
+
+void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
+{
+	for( auto it = ghostEntries.begin(); it != ghostEntries.end(); ++it )
+	{
+		boost::filesystem::path &p = (*it)->gPath;
+		ReplayGhost *rg = new ReplayGhost(players[0]);
+		rg->OpenGhost(p);
+		replayGhosts.push_back(rg);
+	}
+}
+
+
 int GameSession::Run()
 {
 	preScreenTex->setView(view);
@@ -5976,10 +5989,10 @@ int GameSession::Run()
 		recGhost->StartRecording();
 	}
 
-	if (repGhost != NULL)
+	/*if (repGhost != NULL)
 	{
 		repGhost->OpenGhost("testghost.bghst");
-	}
+	}*/
 
 	if (recPlayer != NULL)
 		recPlayer->StartRecording();
@@ -6369,6 +6382,7 @@ int GameSession::Run()
 				//if( recGhost != NULL)
 				//recGhost->RecordFrame();
 				
+
 				//repGhost->UpdateReplaySprite();
 
 				//currentTime = gameClock.getElapsedTime().asSeconds();
@@ -6439,8 +6453,13 @@ int GameSession::Run()
 
 				//cout << "replaying ghost: " << repGhost->frame << endl;
 				//if( re
-				if( repGhost != NULL )
-					repGhost->UpdateReplaySprite();
+				/*if( repGhost != NULL )
+					repGhost->UpdateReplaySprite();*/
+
+				for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+				{
+					(*it)->UpdateReplaySprite();
+				}
 
 				if( goalDestroyed )
 				{
@@ -7411,11 +7430,16 @@ int GameSession::Run()
 			{
 				p->Draw( preScreenTex );
 
-				if( repGhost != NULL && i == 0 )
-					repGhost->Draw( preScreenTex );
+				/*if( repGhost != NULL && i == 0 )
+					repGhost->Draw( preScreenTex );*/
+				
 			}
 		}
 
+		for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+		{
+			(*it)->Draw(preScreenTex);
+		}
 
 		if( shipSequence )
 		{
@@ -8860,7 +8884,7 @@ void GameSession::Init()
 	recPlayer = NULL;
 	repPlayer = NULL;
 	recGhost = NULL;
-	repGhost = NULL;
+	//repGhost = NULL;
 	showTerrainDecor = true;
 	shipExitSeq = NULL;
 	activeDialogue = NULL;
@@ -9685,8 +9709,13 @@ void GameSession::RestartLevel()
 	if( repPlayer != NULL )
 		repPlayer->frame = 0;
 
-	if( repGhost != NULL )
-		repGhost->frame = 0;
+	/*if( repGhost != NULL )
+		repGhost->frame = 0;*/
+
+	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	{
+		(*it)->frame = 0;
+	}
 
 	currentZone = originalZone;
 	if( currentZone != NULL )

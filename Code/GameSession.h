@@ -325,6 +325,8 @@ struct Parallax;
 #include <boost/thread/mutex.hpp>
 
 struct MusicInfo;
+struct GhostEntry;
+
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -429,9 +431,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	Buf testBuf;
 	MainMenu *mainMenu;
-	std::list<ReplayGhost*> replayGhosts;
 	RecordGhost *recGhost;
-	ReplayGhost *repGhost;
 
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
@@ -972,7 +972,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Edge *borderEdge; 
 	//for creating the outside zone
 
-	
+	void SetupGhosts( std::list<GhostEntry*> &ghosts );
+	std::list<ReplayGhost*> replayGhosts;
 
 	bool usePolyShader;
 

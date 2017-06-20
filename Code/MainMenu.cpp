@@ -2897,6 +2897,15 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 				mainMenu->GetController(singleSection->playerIndex).SetFilter(singleSection->profileSelect->currProfile->filter);
 
+				list< GhostEntry*> ghosts;
+				ghostSelector->GetActiveList(ghosts);
+				if (!ghosts.empty())
+				{
+					gs->SetupGhosts(ghosts);
+					//load ghosts
+					//into list
+				}
+
 				int res = gs->Run();
 
 				XBoxButton filter[ControllerSettings::Count];

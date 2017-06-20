@@ -46,7 +46,7 @@ struct ReplayGhost
 {
 	bool init;
 	ReplayGhost(Actor *p);
-	bool OpenGhost(const std::string &fileName);
+	bool OpenGhost(const boost::filesystem::path &fileName);
 	sf::Sprite replaySprite;
 
 	void UpdateReplaySprite();
@@ -114,21 +114,33 @@ struct GhostHeader
 	};
 	~GhostHeader()
 	{
-		if( numFramesPerPlayer != NULL )
-			delete[] numFramesPerPlayer;
+		if (playerInfo != NULL)
+		{
+			delete[] playerInfo;
+		}
 	}
 
 	GhostHeader()
-		:numFramesPerPlayer( NULL ), ver1( -1 ),
-		ver2( -1 )
+		:ver1(-1),
+		ver2(-1), playerInfo(NULL)
 	{
 
 	}
+
+	void Read(std::ifstream &is);
+
+	struct PlayerInfo
+	{
+		int skinIndex;
+		//might have other params here later
+	};
+	void Init(int numberOfPlayers);
+	
 	int ver1;
 	int ver2;
-	int numberOfPlayers;
 	GhostType gType;
-	int *numFramesPerPlayer;
+	int numberOfPlayers;
+	PlayerInfo *playerInfo; //array 
 };
 
 struct GhostFolder;
@@ -226,6 +238,7 @@ struct RecordGhostMenu
 	SingleAxisSelector *saSelector;
 	std::map<std::string, GhostFolder*> ghostFolders;
 	std::list<GhostFolder*> sortedFolders;
+	void GetActiveList(std::list<GhostEntry*> &entries);
 
 	int numTotalItems;
 
