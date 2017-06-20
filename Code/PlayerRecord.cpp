@@ -36,15 +36,21 @@ bool ReplayGhost::OpenGhost(const boost::filesystem::path &filePath)
 {
 	ifstream is;
 
-	is.open(filePath.string());
+	is.open(filePath.string(), ios::binary );
 	if (is.is_open())
 	{
-		is >> numTotalFrames;
+		header.Read(is);
+		//is.read((char*)&header, sizeof(header);
+
+		is.read((char*)&numTotalFrames, sizeof(int));
+		
 		sprBuffer = new SprInfo[numTotalFrames];
 
 		init = true;
 
-		for (int i = 0; i < numTotalFrames; ++i)
+		is.read((char*)sprBuffer, sizeof(SprInfo) * numTotalFrames);
+
+		/*for (int i = 0; i < numTotalFrames; ++i)
 		{
 			SprInfo &info = sprBuffer[i];
 			is >> info.position.x;
@@ -69,7 +75,7 @@ bool ReplayGhost::OpenGhost(const boost::filesystem::path &filePath)
 
 			is >> info.speedLevel;
 
-		}
+		}*/
 
 		is.close();
 
@@ -125,6 +131,10 @@ RecordGhost::RecordGhost(Actor *p_player)
 {
 	numTotalFrames = -1;
 	frame = -1;
+	header.ver1 = 1;
+	header.ver2 = 0;
+	header.playerInfo = new GhostHeader::PlayerInfo[1];
+	header.playerInfo[0].skinIndex = 0;
 }
 
 void RecordGhost::StartRecording()
@@ -138,6 +148,8 @@ void RecordGhost::StopRecording()
 	//cout << "stop recording: " << frame << endl;
 	numTotalFrames = frame;
 	frame = -1;
+	header.gType = GhostHeader::G_SINGLE_LEVEL_COMPLETE;
+	header.numberOfPlayers = 1;
 }
 
 void RecordGhost::RecordFrame()
@@ -170,11 +182,14 @@ void RecordGhost::WriteToFile(const std::string &fileName)
 	of.open(fileName, ios::binary );
 
 	//header
-	GhostHeader header;
-	
 	if (of.is_open())
 	{
+		header.Write(of);
 
+		of.write((char*)&numTotalFrames, sizeof(int));
+		of.write((char*)sprBuffer, numTotalFrames * sizeof(SprInfo));
+
+		of.close();
 		/*of << numTotalFrames << endl;
 		for (int i = 0; i < numTotalFrames; ++i)
 		{
@@ -1262,4 +1277,18 @@ void GhostHeader::Read(std::ifstream &is)
 	assert(numberOfPlayers > 0 && numberOfPlayers < 5);
 	playerInfo = new PlayerInfo[numberOfPlayers];
 	is.read((char*)playerInfo, sizeof(PlayerInfo) * numberOfPlayers);
+}
+
+void GhostHeader::Write(std::ofstream &of)
+{
+	of.write((char*)&ver1, sizeof(int) * 4);
+	for (int i = 0; i < numberOfPlayers; ++i)
+	{
+		playerInfo[i].Write(of);
+	}
+}
+
+void GhostHeader::PlayerInfo::Write(std::ofstream &of)
+{
+	of.write((char*)&skinIndex, sizeof(int));
 }

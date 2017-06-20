@@ -26,6 +26,48 @@ struct SprInfo
 	int speedLevel;
 };
 
+struct GhostHeader
+{
+	enum GhostType
+	{
+		G_SINGLE_LEVEL_COMPLETE,
+		G_SINGLE_FAILURE,
+		G_SINGLE_RESTART_OR_QUIT,
+		G_MULTI
+	};
+	~GhostHeader()
+	{
+		if (playerInfo != NULL)
+		{
+			delete[] playerInfo;
+		}
+	}
+
+	GhostHeader()
+		:ver1(-1),
+		ver2(-1), playerInfo(NULL)
+	{
+
+	}
+
+	void Read(std::ifstream &is);
+	void Write(std::ofstream &of);
+
+	struct PlayerInfo
+	{
+		int skinIndex;
+		void Write(std::ofstream &of);
+		//might have other params here later
+	};
+	void Init(int numberOfPlayers);
+
+	int ver1;
+	int ver2;
+	GhostType gType;
+	int numberOfPlayers;
+	PlayerInfo *playerInfo; //array 
+};
+
 //record the players sprite info
 struct RecordGhost
 {
@@ -39,6 +81,7 @@ struct RecordGhost
 	void RecordFrame();
 	const static int MAX_RECORD = 3600 * 60;
 	SprInfo sprBuffer[MAX_RECORD]; //1 hour
+	GhostHeader header;
 };
 
 //play back the players sprite info
@@ -57,6 +100,7 @@ struct ReplayGhost
 	Actor *player;
 	int frame;
 	int numTotalFrames;
+	GhostHeader header;
 };
 
 struct RecordGhost;
@@ -103,45 +147,7 @@ struct GhostInfo
 
 };
 
-struct GhostHeader
-{
-	enum GhostType
-	{
-		G_SINGLE_LEVEL_COMPLETE,
-		G_SINGLE_FAILURE,
-		G_SINGLE_RESTART_OR_QUIT,
-		G_MULTI
-	};
-	~GhostHeader()
-	{
-		if (playerInfo != NULL)
-		{
-			delete[] playerInfo;
-		}
-	}
 
-	GhostHeader()
-		:ver1(-1),
-		ver2(-1), playerInfo(NULL)
-	{
-
-	}
-
-	void Read(std::ifstream &is);
-
-	struct PlayerInfo
-	{
-		int skinIndex;
-		//might have other params here later
-	};
-	void Init(int numberOfPlayers);
-	
-	int ver1;
-	int ver2;
-	GhostType gType;
-	int numberOfPlayers;
-	PlayerInfo *playerInfo; //array 
-};
 
 struct GhostFolder;
 struct GhostEntry

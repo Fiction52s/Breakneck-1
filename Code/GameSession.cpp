@@ -5815,6 +5815,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 		ReplayGhost *rg = new ReplayGhost(players[0]);
 		rg->OpenGhost(p);
 		replayGhosts.push_back(rg);
+
+		rg->frame = 0;
 	}
 }
 
@@ -6035,8 +6037,10 @@ int GameSession::Run()
 			}
 		}
 	}
-
-	assert(levelMusic != NULL);
+	if (levelMusic == NULL)
+	{
+		assert(0);
+	}
 	levelMusic->Load();
 	levelMusic->music->setVolume(mainMenu->config->GetData().volume );
 	levelMusic->music->setLoop(true);
@@ -8745,7 +8749,8 @@ int GameSession::Run()
 
 
 		stringstream fss;
-		fss << filePath.filename().stem().string() << "_ghost_"
+		string mName = filePath.filename().stem().string();
+		fss << "Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
 			<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
 			<< now.tm_min << "_" << now.tm_sec << ".bghst";
 

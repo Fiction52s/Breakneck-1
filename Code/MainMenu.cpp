@@ -2984,6 +2984,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	{
 		if (currInput.leftShoulder && !prevInput.leftShoulder)
 		{
+			
 			//state = S_MUSIC_SELECTOR;
 		}
 		else if (currInput.rightShoulder && !prevInput.rightShoulder)
