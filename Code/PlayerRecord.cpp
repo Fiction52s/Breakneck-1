@@ -12,9 +12,9 @@
 using namespace sf;
 using namespace std;
 
-const int RecordGhostMenu::BOX_WIDTH = 300;
-const int RecordGhostMenu::BOX_HEIGHT = 100;
-const int RecordGhostMenu::BOX_SPACING = 10;
+const int RecordGhostMenu::BOX_WIDTH = 580;
+const int RecordGhostMenu::BOX_HEIGHT = 40;
+const int RecordGhostMenu::BOX_SPACING = 0;
 
 ReplayGhost::ReplayGhost(Actor *p_player)
 	:player(p_player), sprBuffer(NULL)
@@ -92,6 +92,9 @@ void ReplayGhost::UpdateReplaySprite()
 	if (!init || frame == numTotalFrames)
 		return;
 
+	if (player->action == Actor::SPAWNWAIT)
+		return;
+
 	SprInfo &info = sprBuffer[frame];
 	Tileset *ts = player->tileset[(Actor::Action)info.action];
 	replaySprite.setTexture(*ts->texture);
@@ -160,22 +163,27 @@ void RecordGhost::RecordFrame()
 	if (frame >= MAX_RECORD)
 		return;
 
-	SprInfo &info = sprBuffer[frame];
-	info.position = player->sprite->getPosition();
-	info.origin = player->sprite->getOrigin();
-	info.rotation = player->sprite->getRotation();
-	info.flipX = player->flipTileX;
-	info.flipY = player->flipTileY;
-	info.action = (int)player->spriteAction;
-	info.tileIndex = player->currTileIndex;
-	info.speedLevel = player->speedLevel;
+	if (player->action != Actor::SPAWNWAIT)
+	{
+		SprInfo &info = sprBuffer[frame];
+		info.position = player->sprite->getPosition();
+		info.origin = player->sprite->getOrigin();
+		info.rotation = player->sprite->getRotation();
+		info.flipX = player->flipTileX;
+		info.flipY = player->flipTileY;
+		info.action = (int)player->spriteAction;
+		info.tileIndex = player->currTileIndex;
+		info.speedLevel = player->speedLevel;
 
-	//cout << "record frame: " << frame << ",action: " << info.action << ", t: " << info.tileIndex << endl;
-	++frame;
+		//cout << "record frame: " << frame << ",action: " << info.action << ", t: " << info.tileIndex << endl;
+		++frame;
+	}
 }
 
 void RecordGhost::WriteToFile(const std::string &fileName)
 {
+	if (numTotalFrames == 0)
+		return;
 	assert(numTotalFrames > 0);
 
 	ofstream of;
@@ -706,6 +714,29 @@ void RecordGhostMenu::SetupInds( int &ind, GhostFolder *gf )
 	//}
 }
 
+void RecordGhostMenu::UpdateLoadedFolders()
+{
+	for (auto it = ghostFolders.begin(); it != ghostFolders.end(); ++it)
+	{
+		if ((*it).second->autoLoaded)
+		{
+			LoadMapGhosts(false, (*it).second->folderPath);
+		}
+		if ((*it).second->saveLoaded)
+		{
+			for (auto lit = (*it).second->autoGhosts.begin(); lit != (*it).second->autoGhosts.end(); ++lit)
+			{
+				delete (*lit);
+			}
+			(*it).second->autoGhosts.clear();
+
+			LoadMapGhosts(true, (*it).second->folderPath);
+		}
+	}
+
+	UpdateItemText();
+}
+
 void RecordGhostMenu::LoadMapGhosts( bool save, const boost::filesystem::path &p) //save compared to auto
 {
 	string mapName = p.filename().stem().string();
@@ -1025,81 +1056,81 @@ void RecordGhostMenu::UpdateItemText()
 {
 	int totalShownItems = 0;
 
-for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
-{
-	GhostFolder *gf = (*it);
-	++totalShownItems;
-	if (gf->expanded)
+	for (auto it = sortedFolders.begin(); it != sortedFolders.end(); ++it)
 	{
-		totalShownItems += 2; //save and auto folders
-		if (gf->autoExpanded)
+		GhostFolder *gf = (*it);
+		++totalShownItems;
+		if (gf->expanded)
 		{
-			totalShownItems += gf->autoGhosts.size();
-		}
-		if (gf->saveExpanded)
-		{
-			totalShownItems += gf->saveGhosts.size();
+			totalShownItems += 2; //save and auto folders
+			if (gf->autoExpanded)
+			{
+				totalShownItems += gf->autoGhosts.size();
+			}
+			if (gf->saveExpanded)
+			{
+				totalShownItems += gf->saveGhosts.size();
+			}
 		}
 	}
-}
 
-saSelector->totalItems = totalShownItems;
+	saSelector->totalItems = totalShownItems;
 
-if (numTotalItems == 0)
-{
-	return;
-}
-
-if (topIndex > totalShownItems)
-{
-	topIndex = totalShownItems - 1;
-}
-
-int ind = topIndex;
-
-int trueI;
-int i = 0;
-for (; i < NUM_BOXES; ++i)
-{
-	trueI = (topIndex + i) % NUM_BOXES;
-	if (i == totalShownItems)
+	if (numTotalItems == 0)
 	{
-		for (; i < NUM_BOXES; ++i)
-		{
-			itemName[i].setString("");
-		}
-		break;
+		return;
 	}
 
-	if (ind == totalShownItems)
-		ind = 0;
-
-
-	GhostIndexInfo inf = GetIndexInfo(ind);
-
-	itemName[i].setString(inf.GetName());
-	itemName[i].setOrigin(0, 0);
-
-	int xVal = topMid.x - BOX_WIDTH / 2;
-	if (inf.folder == NULL) //its just a file
+	if (topIndex > totalShownItems)
 	{
-		GhostEntry *ge = inf.entry;
-
-		xVal += 80;
+		topIndex = totalShownItems - 1;
 	}
-	else
+
+	int ind = topIndex;
+
+	int trueI;
+	int i = 0;
+	for (; i < NUM_BOXES; ++i)
 	{
-		if (inf.onAuto || inf.onSave)
+		trueI = (topIndex + i) % NUM_BOXES;
+		if (i == totalShownItems)
 		{
-			xVal += 40;
+			for (; i < NUM_BOXES; ++i)
+			{
+				itemName[i].setString("");
+			}
+			break;
 		}
 
-		xVal += 10;
-	}
-	itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+		if (ind == totalShownItems)
+			ind = 0;
 
-	++ind;
-}
+
+		GhostIndexInfo inf = GetIndexInfo(ind);
+
+		itemName[i].setString(inf.GetName());
+		itemName[i].setOrigin(0, 0);
+
+		int xVal = topMid.x - BOX_WIDTH / 2;
+		if (inf.folder == NULL) //its just a file
+		{
+			GhostEntry *ge = inf.entry;
+
+			xVal += 80;
+		}
+		else
+		{
+			if (inf.onAuto || inf.onSave)
+			{
+				xVal += 40;
+			}
+
+			xVal += 10;
+		}
+		itemName[i].setPosition(xVal, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+
+		++ind;
+	}
 }
 
 

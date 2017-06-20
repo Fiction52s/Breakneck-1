@@ -2341,10 +2341,10 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	progressDisplay->SetProgressString("hello here i am");
 	progressDisplay->SetProgressString("hello here i am", 2);
 
-	musicSelector = new MusicSelector(mainMenu, this, menuOffset + Vector2f(770, 110), mainMenu->musicManager );
+	musicSelector = new MusicSelector(mainMenu, this, Vector2f( topMid.x, topMid.y + 80 ), mainMenu->musicManager );
 	musicSelector->UpdateNames();
 
-	ghostSelector = new RecordGhostMenu(mainMenu, menuOffset + Vector2f(1100, 110));
+	ghostSelector = new RecordGhostMenu(mainMenu, topMid);
 	ghostSelector->UpdateItemText();
 	//filterOptions = new UIVerticalControlList()
 }
@@ -2753,6 +2753,8 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				state = S_MUSIC_SELECTOR;
 				musicSelector->UpdateNames();
 				musicSelector->modifiedValues = false;
+				musicSelector->SetMapName(item->path.filename().stem().string());
+				
 				return;
 			}
 		}
@@ -2863,15 +2865,22 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		}
 		else if (currInput.Y && !prevInput.Y)
 		{
+			int cIndex = saSelector->currIndex;
+			int pIndex = GetPairIndex(cIndex);
+			
+			MapIndexInfo &mi = allItems[pIndex].second;
+
 			oldState = state;
 			state = S_MUSIC_SELECTOR;
 			musicSelector->UpdateNames();
 			musicSelector->modifiedValues = false;
+			musicSelector->SetMapName(mi.item->path.filename().stem().string());
 			return;
 		}
 		else if (currInput.leftShoulder && !prevInput.leftShoulder)
 		{
 			state = S_GHOST_SELECTOR;
+			ghostSelector->UpdateLoadedFolders();
 			return;
 		}
 		else
@@ -2932,6 +2941,8 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 				singleSection->isReady = false;
 				state = S_SELECTING_MAP;
+
+
 			}
 		}
 	}

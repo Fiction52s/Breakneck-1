@@ -6024,7 +6024,7 @@ int GameSession::Run()
 
 	if (levelMusic == NULL)
 	{
-		int r = rand() % pointsTotal;
+		int r = rand() % ( pointsTotal );
 
 		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
 		{
@@ -6032,7 +6032,16 @@ int GameSession::Run()
 			if (r < 0)
 			{
 				//assumes that this is a valid check
+				if (mainMenu->musicManager->songMap.count((*it).first) == 0)
+				{
+					assert(0);
+				}
+				
 				levelMusic = mainMenu->musicManager->songMap[(*it).first];
+				if (levelMusic == NULL)
+				{
+					assert(0);
+				}
 				break;
 			}
 		}
@@ -9719,7 +9728,7 @@ void GameSession::RestartLevel()
 
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
-		(*it)->frame = 0;
+		(*it)->frame = 0;//players[0]->actionLength[Actor::Action::SPAWNWAIT];
 	}
 
 	currentZone = originalZone;

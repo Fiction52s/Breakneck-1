@@ -14,9 +14,9 @@ using namespace boost::filesystem;
 
 //const int MusicSelector::NUM_BOXES = 8;
 const int MusicSelector::NUM_SLIDER_OPTIONS = 30;
-const int MusicSelector::BOX_WIDTH = 300;
-const int MusicSelector::BOX_HEIGHT = 100;
-const int MusicSelector::BOX_SPACING = 10;
+const int MusicSelector::BOX_WIDTH = 580;
+const int MusicSelector::BOX_HEIGHT = 80;
+const int MusicSelector::BOX_SPACING = 0;
 
 
 
@@ -37,6 +37,12 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 
 	LoadNames();
 
+	mapName.setFont(font);
+	mapName.setCharacterSize(40);
+	mapName.setFillColor(Color::Black);
+	//mapName.setOrigin( )
+	mapName.setPosition(Vector2f(topMid.x, topMid.y - 40));
+
 	for (int i = 0; i < NUM_BOXES; ++i)
 	{
 		musicNames[i].setFont(font);
@@ -44,7 +50,16 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 		musicNames[i].setFillColor(Color::White);
 	}
 
-	
+	mapNameRect.setFillColor(Color::White);
+	mapNameRect.setSize(Vector2f(BOX_WIDTH, 80));
+	mapNameRect.setOrigin(mapNameRect.getLocalBounds().width / 2, mapNameRect.getLocalBounds().height);
+	mapNameRect.setPosition(topMid);
+}
+
+void MusicSelector::SetMapName(const std::string &mName)
+{
+	mapName.setString(mName);
+	mapName.setOrigin(mapName.getLocalBounds().width / 2, mapName.getLocalBounds().height / 2);
 }
 
 void MusicSelector::Draw(sf::RenderTarget *target)
@@ -58,6 +73,8 @@ void MusicSelector::Draw(sf::RenderTarget *target)
 	}
 
 	vSlider.Draw(target);
+	target->draw(mapNameRect);
+	target->draw(mapName);
 }
 
 void MusicSelector::LoadNames()
@@ -156,7 +173,6 @@ void MusicSelector::UpdateNames()
 		++ind;
 	}
 
-	
 }
 
 void MusicSelector::Update()
@@ -341,10 +357,10 @@ void MusicSelector::SetupBoxes()
 		boxes[i * 4 + 2].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
 		boxes[i * 4 + 3].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
 
-		boxes[i * 4 + 0].color = Color::Red;
-		boxes[i * 4 + 1].color = Color::Red;
-		boxes[i * 4 + 2].color = Color::Red;
-		boxes[i * 4 + 3].color = Color::Red;
+		boxes[i * 4 + 0].color = Color::Yellow;
+		boxes[i * 4 + 1].color = Color::Yellow;
+		boxes[i * 4 + 2].color = Color::Yellow;
+		boxes[i * 4 + 3].color = Color::Yellow;
 
 		
 		oftenSlider[i] = new SingleAxisSlider(Vector2f(currTopMid.x, currTopMid.y + 50), NUM_SLIDER_OPTIONS, 15, 300, 24 );
@@ -390,7 +406,7 @@ void MusicSelector::UpdateBoxesDebug()
 		}
 		else
 		{
-			c = Color::Red;
+			c = Color::Black;
 		}
 		boxes[i * 4 + 0].color = c;
 		boxes[i * 4 + 1].color = c;
@@ -432,9 +448,8 @@ bool MusicManager::LoadFolderPaths()
 		while (getline(is, s))
 		{
 			cout << "reading directory: " << s << "\n";
+			folderPaths.push_back(s);
 		}
-
-		folderPaths.push_back(s);
 	}
 	else
 	{
@@ -461,8 +476,17 @@ bool MusicManager::rLoadMusicNames(const path &p)
 						MusicInfo *mi = new MusicInfo;
 						mi->songPath = p;
 						mi->music = NULL;
-					
+
+						if (fString == "w01_Cavern")
+						{
+							int x = 5;
+						}
+						
 						songMap[fString] = mi;
+					}
+					else
+					{
+						assert("probably don't want to have this multiple music");
 					}
 
 					//songs.push_back(mi);

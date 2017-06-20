@@ -219,7 +219,7 @@ struct RecordGhostMenu
 		GhostHeader *mh);
 
 	void SetupInds( int &startInd, GhostFolder *gf );
-
+	void UpdateLoadedFolders();
 	void MoveUp();
 	void MoveDown();
 	void UpdateItemText();

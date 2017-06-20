@@ -18,7 +18,7 @@ struct MusicSelector
 {
 	static const int NUM_SLIDER_OPTIONS;
 	//TODO scrollbar to show how far in to the names you are
-	static const int NUM_BOXES = 7;
+	static const int NUM_BOXES = 11;
 	static const int BOX_WIDTH;
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
@@ -26,7 +26,7 @@ struct MusicSelector
 	MusicSelector ( MainMenu *mainMenu, MapSelectionMenu *mapMenu,
 		sf::Vector2f &p_topMid,
 		MusicManager *mm );
-
+	void SetMapName(const std::string &mName);
 	VertSlider vSlider;
 	MainMenu *mainMenu;
 
@@ -60,6 +60,9 @@ struct MusicSelector
 	//int currSongIndex;
 	SingleAxisSelector *saSelector;
 	MapSelectionMenu *mapMenu;
+
+	sf::RectangleShape mapNameRect;
+	sf::Text mapName;
 };
 
 struct MusicManager;
