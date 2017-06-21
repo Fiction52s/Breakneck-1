@@ -415,7 +415,7 @@ void MultiLoadingScreen::Update()
 			mainMenu->preScreenTexture->setView(mainMenu->v);
 
 			mainMenu->SetMode(MainMenu::Mode::MAPSELECT);
-			mainMenu->mapSelectionMenu->state = MapSelectionMenu::State::S_SELECTING_MAP;
+			mainMenu->mapSelectionMenu->state = MapSelectionMenu::State::S_MAP_SELECTOR;
 			mainMenu->v.setCenter(mainMenu->leftCenter);
 			mainMenu->preScreenTexture->setView(mainMenu->v);
 		}	
@@ -2318,7 +2318,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	//playerindex may change later
 	singleSection = new MultiSelectionSection(mainMenu, NULL, 0, Vector2f( 580 + 240, 680 ) + menuOffset);
 	
-	state = S_SELECTING_MAP;
+	state = S_MAP_SELECTOR;
 
 	gs = NULL;
 	loadThread = NULL;
@@ -2730,7 +2730,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
 	progressDisplay->UpdateText();
-	if (state == S_SELECTING_MAP)
+	if (state == S_MAP_SELECTOR)
 	{
 		if (currInput.B && !prevInput.B)
 		{
@@ -2739,7 +2739,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		}
 		else if (currInput.X && !prevInput.X)
 		{
-			state = S_FILTER_OPTIONS;
+			state = S_MAP_OPTIONS;
 			return;
 		}
 		else if (currInput.Y && !prevInput.Y)
@@ -2849,7 +2849,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	{
 		if (currInput.B && !prevInput.B)
 		{
-			state = S_SELECTING_MAP;
+			state = S_MAP_SELECTOR;
 
 			gs->SetContinueLoading(false);
 			loadThread->join();
@@ -2877,7 +2877,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			musicSelector->SetMapName(mi.item->path.filename().stem().string());
 			return;
 		}
-		else if (currInput.leftShoulder && !prevInput.leftShoulder)
+		else if (currInput.X && !prevInput.X)
 		{
 			state = S_GHOST_SELECTOR;
 			ghostSelector->UpdateLoadedFolders();
@@ -2940,31 +2940,32 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				mainMenu->preScreenTexture->setView(mainMenu->v);
 
 				singleSection->isReady = false;
-				state = S_SELECTING_MAP;
+				state = S_MAP_SELECTOR;
 
 
 			}
 		}
 	}
-	else if (state == S_FILTER_OPTIONS)
+	else if (state == S_MAP_OPTIONS)
 	{
-		if (currInput.Y && !prevInput.Y)
+		if ((currInput.B && !prevInput.B) )//|| (currInput.B && !prevInput.B ) )
 		{
-			state = S_SELECTING_MAP;
+			state = S_MAP_SELECTOR;
+			return;
 		}
 
-		filterOptions->Update( currInput, prevInput );
+		filterOptions->Update(currInput, prevInput);
 	}
 	else if (state == S_MUSIC_SELECTOR)
 	{
-		if (currInput.B && !prevInput.B)
+		if ((currInput.B && !prevInput.B))
 		{
 			if (musicSelector->previewSong != NULL)
 			{
 				musicSelector->previewSong->music->stop();
 				musicSelector->previewSong = NULL;
 			}
-			if (oldState == S_SELECTING_MAP)
+			if (oldState == S_MAP_SELECTOR)
 			{
 				int cIndex = saSelector->currIndex;
 				int pIndex = GetPairIndex(cIndex);
@@ -2977,10 +2978,10 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				musicSelector->modifiedValues = false;
 				//save
 			}
-			else if (oldState == S_SELECTING_SKIN || oldState == S_FILTER_OPTIONS )
+			else if (oldState == S_SELECTING_SKIN || oldState == S_MAP_OPTIONS )
 			{
 
-				//save after starting the level or when someone cancels the load
+				//save after starting the level or when someone cancels the load //this might be causing a bug atm
 			}
 			if (musicSelector->modifiedValues)
 			{
@@ -2991,19 +2992,31 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 		musicSelector->Update();
 	}
+	else if (state == S_MUSIC_OPTIONS)
+	{
+		if (currInput.B && !prevInput.B)
+		{
+			state = S_MUSIC_SELECTOR;
+		}
+	}
 	else if (state == S_GHOST_SELECTOR)
 	{
-		if (currInput.leftShoulder && !prevInput.leftShoulder)
-		{
-			
-			//state = S_MUSIC_SELECTOR;
-		}
-		else if (currInput.rightShoulder && !prevInput.rightShoulder)
+		if (currInput.B && !prevInput.B)
 		{
 			state = S_SELECTING_SKIN;
+			return;
+			//state = S_MUSIC_SELECTOR;
 		}
 		
 		ghostSelector->Update( );
+	}
+	else if (state == S_GHOST_OPTIONS)
+	{
+		if (currInput.B && !prevInput.B)
+		{
+			state = S_GHOST_SELECTOR;
+			return;
+		}
 	}
 }
 
