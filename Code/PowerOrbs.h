@@ -128,7 +128,7 @@ struct PowerRingSection
 
 	PowerRingSection( TilesetManager &tm,
 		const sf::Color &active, const sf::Color &remove,
-		const sf::Color &empty, RingType rType, int p_maxPower,
+		const sf::Color &empty, int rType, int p_maxPower,
 		float startAngle );
 	sf::Color activeColor;
 	sf::Color removeColor;

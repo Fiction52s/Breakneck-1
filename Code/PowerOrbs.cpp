@@ -763,10 +763,11 @@ void PowerWheel::Charge( int power )
 
 //
 PowerRingSection::PowerRingSection( TilesetManager &tm, const sf::Color &active, const sf::Color &remove,
-	const sf::Color &empty, RingType rType, int p_maxPower, float startAngle )
+	const sf::Color &empty, int p_rType, int p_maxPower, float startAngle )
 	:activeColor(active), removeColor(remove), emptyColor(empty),
-	maxPower(p_maxPower), ringType( rType )
+	maxPower(p_maxPower)
 {
+	//ringType = (RingType)p_rType;
 	if (!ringShader.loadFromFile("ring_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "ring shader not loading correctly!" << endl;
@@ -777,23 +778,33 @@ PowerRingSection::PowerRingSection( TilesetManager &tm, const sf::Color &active,
 	ringShader.setUniform("u_activeColor", ColorGL(active));
 	ringShader.setUniform("u_removeColor", ColorGL(remove));
 	ringShader.setUniform("u_emptyColor", ColorGL(empty));
-		
-	switch( rType )
+	
+	stringstream ss;
+	//ss << "powerring" << (int)rType << "_200x200.png";
+	ss << "powerring" << p_rType << "_200x200.png";
+	//ss << "powerring_200x200.png";
+	ts_ring = tm.GetTileset(ss.str(), 200, 200);
+	/*switch( rType )
 	{
 	case NORMAL:
-		ts_ring = tm.GetTileset("powerring1_200x200.png", 200, 200);
+		
 		break;
-	}
+	}*/
 	ringShader.setUniform("u_ringTex", sf::Shader::CurrentTexture);
 	//ringShader.setUniform("u_ringTex", ts_ring->texture);
 	
 	ringSprite.setTexture(*ts_ring->texture);
+	//ringSprite.setTextureRect(ts_ring->GetSubRect(3));
 	ringSprite.setOrigin(ringSprite.getLocalBounds().width / 2, ringSprite.getLocalBounds().height / 2);
+
+	Reset();
+	
 }
 
 void PowerRingSection::Reset()
 {
 	currPower = maxPower;
+	Update();
 }
 
 int PowerRingSection::GetDivsActive()
