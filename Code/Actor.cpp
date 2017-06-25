@@ -1615,9 +1615,9 @@ void Actor::UpdatePrePhysics()
 	{
 		if( drainCounter == drainCounterMax)
 		{
-			bool stillHasHealth = owner->powerWheel->Use( 1 );	
+			int res = owner->powerRing->Drain(1);//powerWheel->Use( 1 );	
 
-			if( !stillHasHealth )
+			if( res > 0 )
 			{
 				desperationMode = true;
 				despCounter = 0;
@@ -1628,12 +1628,7 @@ void Actor::UpdatePrePhysics()
 		{
 			drainCounter++;
 		}
-	}
-	//cout << "vel at beg: " << velocity.x << ", " << velocity.y << endl;
-	
-	
-
-	//cout << "startvel : " << velocity.x << ", " << velocity.y << endl;	
+	}	
 
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
@@ -1760,7 +1755,8 @@ void Actor::UpdatePrePhysics()
 			recordedGhosts = 1;
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
-			owner->powerWheel->Use( 20 );
+			//owner->powerWheel->Use( 20 );
+			owner->powerRing->Drain(20);
 			record++;
 			changingClone = true;
 			percentCloneChanged = 0;
@@ -1807,7 +1803,8 @@ void Actor::UpdatePrePhysics()
 		blah = true;
 		ghostFrame = 1;
 		//cout << "recordedGhosts: " << recordedGhosts << endl;
-		owner->powerBar.Charge( 20 );
+		//owner->powerBar.Charge( 20 );
+		owner->powerRing->Fill(20);
 	}
 
 
@@ -1889,7 +1886,8 @@ void Actor::UpdatePrePhysics()
 		//expr = Expr::Expr_HURT;
 		
 		//cout << "damaging player with: " << receivedHit->damage << endl;
-		bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
+		int dmgRet = owner->powerRing->Drain(receivedHit->damage);
+		//bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
 		if( true )
 		{
 			if( grindEdge != NULL )
@@ -1927,7 +1925,8 @@ void Actor::UpdatePrePhysics()
 					if( !CheckStandUp() )
 					{
 						position = op;
-						owner->powerWheel->Damage( receivedHit->damage );
+						//owner->powerWheel->Damage( receivedHit->damage );
+						owner->powerRing->Drain(receivedHit->damage);
 						
 						//apply extra damage since you cant stand up
 					}
@@ -2008,7 +2007,8 @@ void Actor::UpdatePrePhysics()
 					{
 						position = op;
 
-						owner->powerWheel->Damage( receivedHit->damage );
+						//owner->powerWheel->Damage( receivedHit->damage );
+						owner->powerRing->Drain(receivedHit->damage);
 						
 						//apply extra damage since you cant stand up
 					}
@@ -2181,7 +2181,7 @@ void Actor::UpdatePrePhysics()
 			bounceEdge = NULL;
 		}
 		
-		if( !dmgSuccess && !desperationMode )
+		if( dmgRet > 0 && !desperationMode )
 		{
 			desperationMode = true;
 			despCounter = 0;
@@ -5085,7 +5085,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					velocity = V2d( 0, 0 );
+					//velocity = V2d( 0, 0 );
 				}
 				break;
 			}
@@ -8280,7 +8280,8 @@ bool Actor::ResolvePhysics( V2d vel )
 		frame = 0;
 		owner->deathWipe = true;
 
-		owner->powerWheel->Damage( 1000000 );
+		owner->powerRing->Drain(1000000);
+		//owner->powerWheel->Damage( 1000000 );
 	}
 
 	queryMode = "item";
@@ -18764,7 +18765,8 @@ void Actor::ConfirmHit( int worldIndex,
 	}
 
 
-	owner->powerWheel->Charge( charge );
+	//owner->powerWheel->Charge( charge );
+	owner->powerRing->Fill(charge);
 	desperationMode = false;
 
 	showRune = true;

@@ -5671,7 +5671,10 @@ bool GameSession::Load()
 		p0->hasPowerGravReverse, p0->hasPowerBounce, 
 		p0->hasPowerGrindBall, p0->hasPowerTimeSlow, p0->hasPowerRightWire);
 
-	//powerRing = new PowerRing( this );
+	PowerRingSection *blah[] = { new PowerRingSection(tm, Color::Red, Color::Yellow, sf::Color::Cyan,
+		PowerRingSection::NORMAL, 300, 0) };
+
+	powerRing = new PowerRing( Vector2f( 100, 200 ), 1, blah );
 
 	stringstream ss1;
 
@@ -6022,7 +6025,7 @@ int GameSession::Run()
 	//TODO : use a better random algorithm later
 	srand(time(0));
 
-	if (levelMusic == NULL)
+	if (levelMusic == NULL && pointsTotal > 0)
 	{
 		int r = rand() % ( pointsTotal );
 
@@ -6046,14 +6049,17 @@ int GameSession::Run()
 			}
 		}
 	}
-	if (levelMusic == NULL)
+	if (levelMusic == NULL && pointsTotal > 0 )
 	{
 		assert(0);
 	}
-	levelMusic->Load();
-	levelMusic->music->setVolume(mainMenu->config->GetData().volume );
-	levelMusic->music->setLoop(true);
-	levelMusic->music->play();
+	else if( levelMusic != NULL )
+	{
+		levelMusic->Load();
+		levelMusic->music->setVolume(mainMenu->config->GetData().volume);
+		levelMusic->music->setLoop(true);
+		levelMusic->music->play();
+	}
 
 
 	std::stringstream ss;
@@ -6508,6 +6514,8 @@ int GameSession::Run()
 
 				if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || GetPlayer( 0 )->frame > 20 )
 					powerWheel->UpdateSections();
+
+				powerRing->Update();
 
 				UpdateEffects();
 
@@ -7993,7 +8001,7 @@ int GameSession::Run()
 		//powerOrbs->Draw( preScreenTex );
 		
 		//powerWheel->Draw( preScreenTex );
-		//powerRing->Draw( preScreenTex );
+		powerRing->Draw( preScreenTex );
 		keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
@@ -8766,9 +8774,12 @@ int GameSession::Run()
 		recGhost->WriteToFile(fss.str());
 	}
 
-	levelMusic->music->stop();
-	levelMusic->music->setVolume(0);
-	levelMusic = NULL;
+	if (levelMusic != NULL)
+	{
+		levelMusic->music->stop();
+		levelMusic->music->setVolume(0);
+		levelMusic = NULL;
+	}
 
 	delete [] line;
 
@@ -9623,7 +9634,8 @@ void GameSession::RespawnPlayer( int index )
 
 	player->flashFrames = 0;
 	
-	powerWheel->Reset();
+	//powerWheel->Reset();
+	powerRing->Reset();
 	//currentZone = NULL;
 	cam.zoomFactor = 1;
 	cam.pos.x = player->position.x;

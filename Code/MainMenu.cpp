@@ -12,6 +12,7 @@
 #include "sfeMovie/StreamSelection.hpp"
 #include "MusicSelector.h"
 #include "PlayerRecord.h"
+#include "PowerOrbs.h"
 
 using namespace std;
 using namespace sf;
@@ -681,7 +682,10 @@ MainMenu::MainMenu()
 
 	saveMenu = new SaveMenuScreen(this);
 
-	
+	PowerRingSection *blah[] = { new PowerRingSection(tilesetManager, Color::Red, Color::Yellow, sf::Color::Cyan,
+		PowerRingSection::NORMAL, 300, 0) };
+
+	testRing = new PowerRing( Vector2f( 200, 200 ), 1, blah);
 }
 
 MainMenu::~MainMenu()
@@ -1182,7 +1186,8 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_SAVE);
 	//SetMode(TRANS_MAIN_TO_CREDITS);
 	//SetMode(TRANS_MAIN_TO_MAPSELECT);
-	SetMode(SPLASH);
+	//SetMode(SPLASH);
+	SetMode(MAINMENU);
 	//SetMode(OPTIONS);
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
@@ -1993,7 +1998,7 @@ void MainMenu::Run()
 					preScreenTexture->draw( fadeRect );
 				}
 				
-
+				testRing->Draw(preScreenTexture);
 				//for( int i = 0; i < 5; ++i )
 				//{
 				//	if( i == currentMenuSelect )
@@ -2849,15 +2854,21 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	{
 		if (currInput.B && !prevInput.B)
 		{
-			state = S_MAP_SELECTOR;
+			if (singleSection->isReady)
+			{
+				singleSection->isReady = false;
+			}
+			else
+			{
+				state = S_MAP_SELECTOR;
 
-			gs->SetContinueLoading(false);
-			loadThread->join();
-			delete loadThread;
-			loadThread = NULL;
-			delete gs;
-			gs = NULL;
-
+				gs->SetContinueLoading(false);
+				loadThread->join();
+				delete loadThread;
+				loadThread = NULL;
+				delete gs;
+				gs = NULL;
+			}
 			//save the header if its modified
 
 
@@ -2880,7 +2891,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		else if (currInput.X && !prevInput.X)
 		{
 			state = S_GHOST_SELECTOR;
-			ghostSelector->UpdateLoadedFolders();
+			
 			return;
 		}
 		else
@@ -2924,6 +2935,8 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				{
 					mainMenu->GetController(i).SetFilter(filter);
 				}
+
+				ghostSelector->UpdateLoadedFolders();
 
 				delete loadThread;
 				loadThread = NULL;
@@ -3066,6 +3079,7 @@ void MapSelectionMenu::UpdateItemText()
 
 	int trueI;
 	int i = 0;
+	Color col;
 	for (; i < NUM_BOXES; ++i)
 	{
 		trueI = (topIndex + i) % NUM_BOXES;
@@ -3085,6 +3099,29 @@ void MapSelectionMenu::UpdateItemText()
 		string printStr = p.first;
 		itemName[i].setString(printStr);
 		itemName[i].setOrigin(0, 0);
+		if (p.second.item != NULL)
+		{
+			MapSelectionItem *item = p.second.item;
+			switch (item->headerInfo->gameMode)
+			{
+				case MapHeader::T_STANDARD:
+				{
+					col = Color::Cyan;
+					break;
+				}
+				case MapHeader::T_RACEFIGHT:
+				{
+					col = Color::White;
+					break;
+				}
+				default:
+				{
+					col = Color::Yellow;
+				}
+			}
+			itemName[i].setFillColor(col);
+		}
+		
 
 		int xVal = topMid.x - BOX_WIDTH / 2;
 		if (p.second.coll == NULL) //its just a file

@@ -119,57 +119,76 @@ struct PowerWheel
 	sf::Vector2f origBasePos;
 };
 
-//struct PowerRingSection
-//{
-//	PowerRingSection(
-//		const sf::Color &active, const sf::Color &remove,
-//		const sf::Color &empty, int p_width, int p_maxPower);
-//	sf::Color activeColor;
-//	sf::Color removeColor;
-//	sf::Color emptyColor;
-//	void SetupSection(int startRadius);
-//	void Update();
-//	void Reset();
-//	
-//	int width;
-//	int prevPower;
-//	sf::Vertex *va;
-//	int maxPower;
-//	int currPower;
-//	//amount behind curr to color
-//	int currRemovingPower;
-//	int GetDivsActive();
-//	int GetDivsRemoved();
-//	int GetDivsEmpty();
-//	int Damage(int dmg);
-//	int Heal(int heal);
-//
-//
-//	int numEmptyDivs;
-//	int numRemovedDivs;
-//};
-//
-//struct PowerRing
-//{
-//	PowerRing( GameSession *owner, int numRings,
-//		PowerRingSection *rings, int *spacing );
-//	void SetPowers( bool hasAirDash,
-//		bool hasGravReverse,
-//		bool hasBounce,
-//		bool hasGrind,
-//		bool hasTimeSlow,
-//		bool hasWires );
-//
-//	PowerRingParams *rings;
-//	int *spacing;
-//
-//
-//	sf::VertexArray *ringVA;
-//	sf::VertexArray *middleVA;
-//	sf::CircleShape scorpTest;
-//	sf::CircleShape keyTest;
-//	sf::Vector2f centerPos;
-//	void CreateRing();
-//	void Draw( sf::RenderTarget *target );
-//
-//};
+struct PowerRingSection
+{
+	enum RingType
+	{
+		NORMAL
+	};
+
+	PowerRingSection( TilesetManager &tm,
+		const sf::Color &active, const sf::Color &remove,
+		const sf::Color &empty, RingType rType, int p_maxPower,
+		float startAngle );
+	sf::Color activeColor;
+	sf::Color removeColor;
+	sf::Color emptyColor;
+	void SetupSection(sf::Vector2f &centerPos);
+	void Update();
+	void UpdateSprite();
+	void Reset();
+	
+	RingType ringType;
+	int prevPower;
+	int maxPower;
+	int currPower;
+	//amount behind curr to color
+	int currRemovingPower;
+	int GetDivsActive();
+	int GetDivsRemoved();
+	int GetDivsEmpty();
+	int Fill(int dmg);
+	int Drain(int heal);
+	void Draw(sf::RenderTarget *target);
+
+	sf::Shader ringShader;
+	//sf::Vertex ringSprite[4];
+	sf::Sprite ringSprite;
+	Tileset *ts_ring;
+
+	int numRemovedDivs;
+};
+
+struct PowerRing
+{
+	PowerRing( sf::Vector2f &pos,int numRings,
+		PowerRingSection **rings);
+	~PowerRing();
+	void SetPowers( bool hasAirDash,
+		bool hasGravReverse,
+		bool hasBounce,
+		bool hasGrind,
+		bool hasTimeSlow,
+		bool hasWires );
+
+	PowerRingSection **rings;
+	int numRings;
+	int currRing;
+	int Fill(int fill);
+	int Drain(int drain);
+	void Reset();
+
+	sf::VertexArray *ringVA;
+	sf::VertexArray *middleVA;
+	sf::CircleShape scorpTest;
+	sf::CircleShape keyTest;
+	void Update();
+
+	//sf::Vertex *ringVA;
+	int numTotalVertices;
+
+	sf::Vector2f centerPos;
+	void CreateRing();
+	void Draw( sf::RenderTarget *target );
+
+};

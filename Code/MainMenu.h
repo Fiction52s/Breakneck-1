@@ -409,7 +409,7 @@ struct CreditsMenuScreen
 struct Parallax;
 struct SingleAxisSelector;
 struct MusicManager;
-
+struct PowerRing;
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
@@ -470,7 +470,7 @@ struct MainMenu
 	void UpdateMenuOptionText();
 	
 	MusicManager *musicManager;
-
+	PowerRing *testRing;
 	MainMenu();
 	~MainMenu();
 	void Init();

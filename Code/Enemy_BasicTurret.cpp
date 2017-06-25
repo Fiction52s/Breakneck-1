@@ -34,7 +34,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	double width = 112;
 	double height = 64;
 
-	ts = owner->GetTileset( "basicturret_112x64.png", width, height );
+	ts = owner->GetTileset( "basicturret_128x80.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -102,7 +102,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	frame = 0;
 	deathFrame = 0;
-	animationFactor = 3;
+	animationFactor = 1;
 	//slowCounter = 1;
 	//slowMultiple = 1;
 
@@ -200,7 +200,7 @@ void BasicTurret::UpdatePrePhysics()
 	if( !dead && !dying )
 	{
 
-	if( frame == 26 * animationFactor )
+	if( frame == 22 * animationFactor )
 	{
 		frame = 0;
 	}
@@ -692,7 +692,8 @@ bool BasicTurret::PlayerSlowingMe()
 
 void BasicTurret::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor / 14 ) );//frame / animationFactor ) );
+	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor / 14 ) );//frame / animationFactor ) );
+	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
 
 	int i = 0;
 	Bullet *currBullet = activeBullets;

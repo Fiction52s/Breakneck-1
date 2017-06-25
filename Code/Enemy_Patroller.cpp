@@ -139,10 +139,7 @@ void Patroller::ResetEnemy()
 
 void Patroller::UpdatePrePhysics()
 {
-
-
-
-	if( frame == 11 * animationFactor )
+	if( frame == 19 * animationFactor )
 	{
 		frame = 0;
 	}

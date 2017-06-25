@@ -980,7 +980,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	PowerBar powerBar;
 	//PowerOrbs *powerOrbs;
 	PowerWheel *powerWheel;
-	//PowerRing *powerRing;
+	PowerRing *powerRing;
 
 	int pauseFrames;
 

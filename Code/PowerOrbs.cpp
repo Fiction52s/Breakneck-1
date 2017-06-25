@@ -762,180 +762,247 @@ void PowerWheel::Charge( int power )
 }
 
 //
-//PowerRingSection::PowerRingSection(const sf::Color &active, const sf::Color &remove,
-//	const sf::Color &empty, int p_width, int p_maxPower)
-//	:activeColor(active), removeColor(remove), emptyColor(empty), width(p_width),
-//	maxPower(p_maxPower), numEmptyDivs(0), numRemovedDivs(0)
-//{}
-//
-//void PowerRingSection::Reset()
-//{
-//	currPower = maxPower;
-//	numEmptyDivs = 0;
-//	numRemovedDivs = 0;
-//
-//	for (int i = 0; i < maxPower; ++i)
-//	{
-//		va[i].color = activeColor;
-//	}
-//}
-//
-//int PowerRingSection::GetDivsActive()
-//{
-//	return 0;
-//	//double f = (currPower/(double)maxPower) * numDivisions;
-//}
-//
-//int PowerRingSection::GetDivsRemoved()
-//{
-//	return 0;
-//	//double f = (removedPower / (double)maxPower) * numDivisions;
-//}
-//
-//int PowerRingSection::GetDivsEmpty()
-//{
-//	return 0;
-//	//double f = (currPower / (double)maxPower) * numDivisions;
-//}
-//
-//void PowerRingSection::Update()
-//{
-//
-//}
-//
-//int PowerRingSection::Damage(int dmg)
-//{
-//	prevPower = currPower;
-//	currPower -= dmg;
-//	if (currPower < 0)
-//	{
-//		return -currPower;
-//	}
-//	else
-//	{
-//		return 0;
-//	}
-//}
-//
-//int PowerRingSection::Heal(int power)
-//{
-//	currPower += power;
-//	if (currPower > maxPower)
-//		return -currPower;
-//	else
-//		return 0;
-//}
-//
-////you are trying to figure out a simple way to represent this so that you don't have to touch up all the 
-////vertices each frame. you should only change the color if the color needs to be changed
-//
-//
-//void PowerRingSection::SetupSection(int startRadius)
-//{
-//	int innerRadius = startRadius;
-//	int outerRadius = startRadius + width;
-//
-//	double div = 360.0 / maxPower;
-//
-//	Vector2f innerOffset(0, -innerRadius);
-//	Vector2f outerOffset(0, -outerRadius);
-//
-//	//Vertex *circleVA = va;
-//	//Vertex *ringVA = (va + maxPower * 4);
-//	sf::Transform t;
-//
-//	Vector2f innerPointCurr;
-//	Vector2f outerPointCurr;
-//	Vector2f innerPointPrev;
-//	Vector2f outerPointPrev;
-//	for (int i = 0; i < maxPower; ++i)
-//	{
-//		innerPointPrev = t.transformPoint(innerOffset);
-//		outerPointPrev = t.transformPoint(outerOffset);
-//		
-//		t.rotate(div);
-//
-//		innerPointCurr = t.transformPoint(innerOffset);
-//		outerPointCurr = t.transformPoint(outerOffset);
-//
-//		va[i * 4 + 0].position = innerPointPrev;
-//		va[i * 4 + 1].position = outerPointPrev;
-//		va[i * 4 + 2].position = outerPointCurr;
-//		va[i * 4 + 3].position = innerPointCurr;
-//
-//		t.rotate(div);
-//	}
-//}
-//
-//PowerRing::PowerRing(GameSession *owner, int numRings, PowerRingSection *rings, int *spacing)
-//{
-//	centerPos = Vector2f( 90, 230 );
-//	CreateRing();
-//}
-//
-//void PowerRing::CreateRing()
-//{
-//	scorpTest.setFillColor( Color::Yellow );
-//	scorpTest.setRadius( 25 );
-//	scorpTest.setOrigin( scorpTest.getLocalBounds().width / 2, 
-//		scorpTest.getLocalBounds().height / 2 );
-//	scorpTest.setPosition( centerPos + Vector2f( 155, 0 ));
-//
-//	keyTest.setFillColor( Color::Blue );
-//	keyTest.setRadius( 25 );
-//	keyTest.setOrigin( keyTest.getLocalBounds().width / 2, 
-//		keyTest.getLocalBounds().height / 2 );
-//	keyTest.setPosition( scorpTest.getPosition() + Vector2f( 40, -40 ) );
-//	float innerRadius = 40;
-//	float outerRadius = 64;
-//	int reps = 4;
-//	int numCirclePoints = 6 * reps;
-//	int numPoints = numCirclePoints * 2;
-//
-//	ringVA = new VertexArray( sf::Quads, numCirclePoints * 4 );
-//	middleVA = new VertexArray( sf::TrianglesFan, numCirclePoints + 2 );
-//	VertexArray &va = *ringVA;
-//	VertexArray &mva = *middleVA;
-//
-//	Vector2f dir( 0, -1 );
-//	Transform t;
-//	t.rotate( -360.f / numCirclePoints );
-//	Vector2f trueDir;
-//
-//	mva[0].color = Color::Black;
-//	mva[0].position = centerPos;
-//
-//	Color middleColor = Color::Black;
-//	for( int i = 0; i < numCirclePoints; ++i )
-//	{
-//		trueDir = t.transformPoint( dir );
-//
-//		va[i*4+0].color = Color::Red;
-//		va[i*4+1].color = Color::Red;
-//		va[i*4+2].color = Color::Red;
-//		va[i*4+3].color = Color::Red;
-//
-//		mva[(i+1)].color = middleColor;
-//		mva[(i+1)].position = centerPos + trueDir * innerRadius;
-//
-//		va[i*4+0].position = centerPos + trueDir * outerRadius;
-//		va[i*4+3].position = centerPos + trueDir * innerRadius;
-//
-//		t.rotate( -360.f / numCirclePoints );
-//
-//		trueDir = t.transformPoint( dir );
-//
-//		va[i*4+1].position = centerPos + trueDir * outerRadius;
-//		va[i*4+2].position = centerPos + trueDir * innerRadius;
-//	}
-//	mva[numCirclePoints+1].color = middleColor;
-//	mva[numCirclePoints+1].position = centerPos + trueDir * innerRadius;
-//}
-//
-//void PowerRing::Draw( sf::RenderTarget *target )
-//{
-//	target->draw( *ringVA );
-//	target->draw( *middleVA );
-//	target->draw( scorpTest );
-//	target->draw( keyTest );
-//}
+PowerRingSection::PowerRingSection( TilesetManager &tm, const sf::Color &active, const sf::Color &remove,
+	const sf::Color &empty, RingType rType, int p_maxPower, float startAngle )
+	:activeColor(active), removeColor(remove), emptyColor(empty),
+	maxPower(p_maxPower), ringType( rType )
+{
+	if (!ringShader.loadFromFile("ring_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "ring shader not loading correctly!" << endl;
+		assert(false);
+	}
+	ringShader.setUniform("u_startAngle", startAngle);
+	ringShader.setUniform("u_filledRange", float( 1.6 * PI) ); //just for testing. should be //1.f);
+	ringShader.setUniform("u_activeColor", ColorGL(active));
+	ringShader.setUniform("u_removeColor", ColorGL(remove));
+	ringShader.setUniform("u_emptyColor", ColorGL(empty));
+		
+	switch( rType )
+	{
+	case NORMAL:
+		ts_ring = tm.GetTileset("powerring1_200x200.png", 200, 200);
+		break;
+	}
+	ringShader.setUniform("u_ringTex", sf::Shader::CurrentTexture);
+	//ringShader.setUniform("u_ringTex", ts_ring->texture);
+	
+	ringSprite.setTexture(*ts_ring->texture);
+	ringSprite.setOrigin(ringSprite.getLocalBounds().width / 2, ringSprite.getLocalBounds().height / 2);
+}
+
+void PowerRingSection::Reset()
+{
+	currPower = maxPower;
+}
+
+int PowerRingSection::GetDivsActive()
+{
+	return 0;
+	//double f = (currPower/(double)maxPower) * numDivisions;
+}
+
+int PowerRingSection::GetDivsRemoved()
+{
+	return 0;
+	//double f = (removedPower / (double)maxPower) * numDivisions;
+}
+
+int PowerRingSection::GetDivsEmpty()
+{
+	return 0;
+	//double f = (currPower / (double)maxPower) * numDivisions;
+}
+
+void PowerRingSection::Update()
+{
+	ringShader.setUniform("u_filledRange", float(2 * PI) * (float)currPower / maxPower);
+}
+
+void PowerRingSection::UpdateSprite()
+{
+	
+}
+
+int PowerRingSection::Drain(int dmg)
+{
+	prevPower = currPower;
+	currPower -= dmg;
+	if (currPower < 0)
+	{
+		int ret = -currPower;
+		currPower = 0;
+		return ret;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int PowerRingSection::Fill(int power)
+{
+	currPower += power;
+	if (currPower > maxPower)
+	{
+		int ret = -currPower;
+		currPower = maxPower;
+		return ret;
+	}
+	else
+		return 0;
+}
+
+void PowerRingSection::Draw(sf::RenderTarget *target)
+{
+	target->draw(ringSprite, &ringShader);
+}
+
+//you are trying to figure out a simple way to represent this so that you don't have to touch up all the 
+//vertices each frame. you should only change the color if the color needs to be changed
+
+
+void PowerRingSection::SetupSection( sf::Vector2f &centerPos)
+{
+
+	ringSprite.setPosition(centerPos);
+	//int innerRadius = startRadius;
+	//int outerRadius = startRadius + width;
+
+	//double div = 360.0 / maxPower;
+
+	//Vector2f innerOffset(0, -innerRadius);
+	//Vector2f outerOffset(0, -outerRadius);
+
+	////Vertex *circleVA = va;
+	////Vertex *ringVA = (va + maxPower * 4);
+	//sf::Transform t;
+
+	//Vector2f innerPointCurr;
+	//Vector2f outerPointCurr;
+	//Vector2f innerPointPrev;
+	//Vector2f outerPointPrev;
+	//for (int i = 0; i < maxPower; ++i)
+	//{
+	//	innerPointPrev = t.transformPoint(innerOffset);
+	//	outerPointPrev = t.transformPoint(outerOffset);
+	//	
+	//	t.rotate(div);
+
+	//	innerPointCurr = t.transformPoint(innerOffset);
+	//	outerPointCurr = t.transformPoint(outerOffset);
+
+	//	va[i * 4 + 0].position = innerPointPrev + centerPos;
+	//	va[i * 4 + 1].position = outerPointPrev + centerPos;
+	//	va[i * 4 + 2].position = outerPointCurr + centerPos;
+	//	va[i * 4 + 3].position = innerPointCurr + centerPos;
+
+	//	t.rotate(div);
+	//}
+}
+
+PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
+	:numRings( p_numRings ), rings( p_rings ), centerPos( pos )
+{
+
+	//centerPos = Vector2f( 90, 230 );
+
+	numTotalVertices = 0;
+	int radiusSum = 50; //internal start radius
+
+	rings = new PowerRingSection*[numRings];
+
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i] = p_rings[i];
+		rings[i]->SetupSection(centerPos);
+	}
+	Reset();
+	/*for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->SetupSection(centerPos, radiusSum);
+		rings[i]->Reset();
+		radiusSum += rings[i]->width;
+		numTotalVertices += rings[i]->maxPower * 4;
+	}*/
+	//CreateRing();
+}
+
+void PowerRing::Reset()
+{
+	currRing = numRings - 1;
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->Reset();
+	}
+}
+
+PowerRing::~PowerRing()
+{
+	for (int i = 0; i < numRings; ++i)
+	{
+		delete rings[i];
+	}
+	delete[] rings;
+}
+
+void PowerRing::Update()
+{
+	rings[currRing]->Update();
+}
+
+void PowerRing::CreateRing()
+{
+	scorpTest.setFillColor( Color::Yellow );
+	scorpTest.setRadius( 25 );
+	scorpTest.setOrigin( scorpTest.getLocalBounds().width / 2, 
+		scorpTest.getLocalBounds().height / 2 );
+	scorpTest.setPosition( centerPos + Vector2f( 155, 0 ));
+
+	keyTest.setFillColor( Color::Blue );
+	keyTest.setRadius( 25 );
+	keyTest.setOrigin( keyTest.getLocalBounds().width / 2, 
+		keyTest.getLocalBounds().height / 2 );
+	keyTest.setPosition( scorpTest.getPosition() + Vector2f( 40, -40 ) );
+	float innerRadius = 40;
+	float outerRadius = 64;
+	int reps = 4;
+	int numCirclePoints = 6 * reps;
+	int numPoints = numCirclePoints * 2;
+}
+
+void PowerRing::Draw( sf::RenderTarget *target )
+{
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->Draw(target);
+	}
+	//target->draw( *ringVA );
+	//target->draw( *middleVA );
+	//target->draw( scorpTest );
+	//target->draw( keyTest );
+}
+
+int PowerRing::Fill( int fill )
+{
+	int res = rings[currRing]->Fill(fill);
+	if (res > 0 && currRing < numRings - 1)
+	{
+		++currRing;
+		return Fill(res);	
+	}
+
+	return res;
+}
+
+int PowerRing::Drain(int drain)
+{
+	int res = rings[currRing]->Drain(drain);
+	if (res > 0 && currRing > 0)
+	{
+		--currRing;
+		return Drain(res);
+	}
+
+	return res;
+}
