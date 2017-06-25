@@ -683,6 +683,7 @@ MainMenu::MainMenu()
 	saveMenu = new SaveMenuScreen(this);
 
 	PowerRingSection *blah[] = { new PowerRingSection(tilesetManager, Color::Red, Color::Yellow, sf::Color::Cyan,
+		Color::Red, Color::Yellow, sf::Color::Cyan,
 		PowerRingSection::NORMAL, 300, 0) };
 
 	testRing = new PowerRing( Vector2f( 200, 200 ), 1, blah);

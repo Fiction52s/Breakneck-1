@@ -5672,10 +5672,14 @@ bool GameSession::Load()
 		p0->hasPowerGrindBall, p0->hasPowerTimeSlow, p0->hasPowerRightWire);
 
 	PowerRingSection *blah[] = { 
-		new PowerRingSection(tm, Color::Red, Color::Yellow, sf::Color::Cyan,0, 300, 0),
-		new PowerRingSection(tm, Color::Red, Color::Yellow, sf::Color::Cyan,1, 300, 0),
-		new PowerRingSection(tm, Color::Red, Color::Yellow, sf::Color::Cyan,2, 300, 0),
-		new PowerRingSection(tm, Color::Red, Color::Yellow, sf::Color::Cyan,3, 300, 0)
+		new PowerRingSection(tm, Color::Cyan, Color::Yellow, sf::Color::Cyan,
+		Color::Cyan, Color::Yellow, sf::Color::Cyan,0, 300, 0),
+		new PowerRingSection(tm, Color::Cyan, Color::Yellow, sf::Color::Green,
+		Color::Green, Color::Yellow, sf::Color::Cyan,1, 300, 0),
+		new PowerRingSection(tm, Color::Cyan, Color::Yellow, sf::Color::Yellow,
+		Color::Blue, Color::Yellow, sf::Color::Cyan,2, 300, 0),
+		new PowerRingSection(tm, Color::Cyan, Color::Yellow, sf::Color::Red,
+		Color::Red, Color::Yellow, sf::Color::Cyan,3, 300, 0)
 	};
 
 	powerRing = new PowerRing( Vector2f( 100, 200 ), sizeof( blah ) / sizeof( PowerRingSection*), blah );

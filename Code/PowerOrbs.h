@@ -126,13 +126,16 @@ struct PowerRingSection
 		NORMAL
 	};
 
-	PowerRingSection( TilesetManager &tm,
-		const sf::Color &active, const sf::Color &remove,
-		const sf::Color &empty, int rType, int p_maxPower,
+	PowerRingSection(TilesetManager &tm,
+		const sf::Color &active0, const sf::Color &remove0,
+		const sf::Color &empty0, 
+		const sf::Color &active1, const sf::Color &remove1,
+		const sf::Color &empty1,
+		int rType, int p_maxPower,
 		float startAngle );
-	sf::Color activeColor;
-	sf::Color removeColor;
-	sf::Color emptyColor;
+	sf::Glsl::Vec4 activeColor[2];
+	sf::Glsl::Vec4 removeColor[2];
+	sf::Glsl::Vec4 emptyColor[2];
 	void SetupSection(sf::Vector2f &centerPos);
 	void Update();
 	void UpdateSprite();

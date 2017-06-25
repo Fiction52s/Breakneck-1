@@ -3,9 +3,9 @@
 uniform sampler2D u_ringTex; 
 uniform float u_startAngle;
 uniform float u_filledRange;
-uniform vec4 u_activeColor;
-uniform vec4 u_removeColor;
-uniform vec4 u_emptyColor;
+uniform vec4 u_activeColor[2];
+uniform vec4 u_removeColor[2];
+uniform vec4 u_emptyColor[2];
 
 #define PI 3.1415926535897932384626433832795
 
@@ -19,16 +19,25 @@ void main()
 	float angle = atan(diff.y, diff.x );
 	float blahDiff = (u_startAngle+u_filledRange) - (PI - u_startAngle);
 	float blahStart = (-PI - u_startAngle ) + blahDiff;
-	
-	if( texColor == vec4( 0.0, 0.0, 0.0, 1.0 ) 
+	vec2 other = vec2( sin( u_startAngle ), cos( u_startAngle ) );
+	if( texColor.a == 1.0
 		&& (
 		( angle > u_startAngle && angle < u_startAngle + u_filledRange ) 
 	 || ( angle < u_startAngle && u_startAngle + u_filledRange > PI && angle < blahStart ) ) )
 	{
-		gl_FragColor = u_activeColor;
+		if( dot( diff, other ) > 0 )
+		{
+			gl_FragColor = u_activeColor[1];
+		}
+		else
+		{
+			gl_FragColor = u_activeColor[0];
+		}
+		
 	}
 	else
 	{
 		gl_FragColor = texColor;
 	}
+	
 }

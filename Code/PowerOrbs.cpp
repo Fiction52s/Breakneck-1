@@ -762,22 +762,33 @@ void PowerWheel::Charge( int power )
 }
 
 //
-PowerRingSection::PowerRingSection( TilesetManager &tm, const sf::Color &active, const sf::Color &remove,
-	const sf::Color &empty, int p_rType, int p_maxPower, float startAngle )
-	:activeColor(active), removeColor(remove), emptyColor(empty),
-	maxPower(p_maxPower)
+PowerRingSection::PowerRingSection(TilesetManager &tm,
+	const sf::Color &active0, const sf::Color &remove0,
+	const sf::Color &empty0,
+	const sf::Color &active1, const sf::Color &remove1,
+	const sf::Color &empty1,
+	int p_rType, int p_maxPower,
+	float p_startAngle)
+	:maxPower(p_maxPower)
 {
+	activeColor[0] = ColorGL( active0 );
+	activeColor[1] = ColorGL(active1);
+	removeColor[0] = ColorGL(remove0);
+	removeColor[1] = ColorGL(remove1);
+	emptyColor[0] = ColorGL(empty0);
+	emptyColor[1] = ColorGL(empty1);
+
 	//ringType = (RingType)p_rType;
 	if (!ringShader.loadFromFile("ring_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "ring shader not loading correctly!" << endl;
 		assert(false);
 	}
-	ringShader.setUniform("u_startAngle", startAngle);
+	ringShader.setUniform("u_startAngle", p_startAngle);
 	ringShader.setUniform("u_filledRange", float( 1.6 * PI) ); //just for testing. should be //1.f);
-	ringShader.setUniform("u_activeColor", ColorGL(active));
-	ringShader.setUniform("u_removeColor", ColorGL(remove));
-	ringShader.setUniform("u_emptyColor", ColorGL(empty));
+	ringShader.setUniformArray("u_activeColor", activeColor, 2);
+	ringShader.setUniformArray("u_removeColor", removeColor, 2);
+	ringShader.setUniformArray("u_emptyColor", emptyColor, 2);
 	
 	stringstream ss;
 	//ss << "powerring" << (int)rType << "_200x200.png";
