@@ -12139,7 +12139,7 @@ void Actor::UpdatePhysics()
 			//	cout << "bouncing" << endl;
 			}
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
-			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > 0 ) || action == WALLCLING || action == WALLATTACK ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > -8 || !holdJump ) || action == WALLCLING || action == WALLATTACK ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
 				if( minContact.movingPlat != NULL )
 				{
@@ -15774,6 +15774,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 double Actor::CalcLandingSpeed( V2d &testVel,
 		V2d &alongVel, V2d &gNorm )
 {
+	cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
 	double gSpeed = groundSpeed;
 	if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
 	{
@@ -15808,6 +15809,8 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 		}
 	}
 
+	cout << " gspeed: " << gSpeed << endl;
+	
 	return gSpeed;
 }
 
@@ -15844,8 +15847,9 @@ void Actor::Draw( sf::RenderTarget *target )
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
 		&& action != GOALKILLWAIT )
 	{
-		//target->draw( bounceFlameSprite );
-		target->draw( scorpSprite );
+		if( action != DOUBLE && action != STEEPCLIMB && action != STEEPSLIDE
+			&& action != STEEPCLIMBATTACK && action != STEEPSLIDEATTACK ) //temporary
+			target->draw( scorpSprite );
 	}
 
 
