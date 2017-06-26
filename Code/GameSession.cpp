@@ -5811,6 +5811,12 @@ bool GameSession::Load()
 	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
 	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
 
+
+	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
+	{
+		(*it)->Setup();
+	}
+
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("done loading!", 0);
 
@@ -6125,14 +6131,12 @@ int GameSession::Run()
 		
 		accumulator += frameTime;
 
-		window->clear();
-		preScreenTex->clear();
-		postProcessTex->clear();
-		postProcessTex1->clear();
-		postProcessTex2->clear();
+		window->clear(Color::Red);
+		preScreenTex->clear(Color::Red);
+		postProcessTex->clear(Color::Red);
+		postProcessTex1->clear(Color::Red);
+		postProcessTex2->clear(Color::Red);
 		
-		
-
 		
 		coll.ClearDebug();		
 
@@ -6968,7 +6972,7 @@ int GameSession::Run()
 		
 		if( false )//activeSequence != NULL && activeSequence == startSeq )
 		{
-			activeSequence->Draw( preScreenTex );
+			//activeSequence->Draw( preScreenTex );
 			
 
 			preScreenTex->display();
@@ -7997,7 +8001,7 @@ int GameSession::Run()
 		//inefficient because its in the draw call
 		//kinMinimapIcon.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
 		
-
+		
 
 
 		preScreenTex->draw( kinMinimapIcon );
@@ -8131,46 +8135,54 @@ int GameSession::Run()
 		
 
 		
+		
+		
+
+
+		
 
 		//this is so inefficient LOL
-		preScreenTex->display();
-		
-		const Texture &preTex = preScreenTex->getTexture();
-		
-		Sprite preTexSprite( preTex );
-		preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		preTexSprite.setScale( .5, .5 );
-
-		preScreenTex->setView( v );
-		preScreenTex->draw( preTexSprite, &cloneShader );
-
-		preScreenTex->setView( view );
-
-		//draws the player again on top of everything
-		/*if( player->action != Actor::DEATH )
-			player->Draw( preScreenTex );*/
-
-		for( int i = 0; i < 4; ++i )
+		if (true)
 		{
-			p = GetPlayer( i );
-			if( p != NULL )
+			preScreenTex->display();
+			const Texture &preTex = preScreenTex->getTexture();
+
+			Sprite preTexSprite(preTex);
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+
+			preScreenTex->setView(v);
+			preScreenTex->draw(preTexSprite, &cloneShader);
+
+			preScreenTex->setView(view);
+
+			//draws the player again on top of everything
+			/*if( player->action != Actor::DEATH )
+				player->Draw( preScreenTex );*/
+
+			for (int i = 0; i < 4; ++i)
 			{
-				p->DodecaLateDraw( preScreenTex );
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->DodecaLateDraw(preScreenTex);
+				}
 			}
+
+			//enemyTree->DebugDraw( preScreenTex );
+
+			preScreenTex->draw(*debugBorders);
+
+			preScreenTex->setView(uiView);
+			DrawFade(preScreenTex);
 		}
-
-		//enemyTree->DebugDraw( preScreenTex );
-
-		preScreenTex->draw( *debugBorders );
-
-		preScreenTex->setView( uiView );
-		DrawFade( preScreenTex );
-
 
 		preScreenTex->display();
 
 		const Texture &preTex0 = preScreenTex->getTexture();
-		
+		Sprite preTexSprite(preTex0);
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
 		preTexSprite.setTexture( preTex0 );
 		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
 		//preTexSprite.setScale( .5, .5 );

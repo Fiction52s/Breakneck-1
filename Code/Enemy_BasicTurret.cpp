@@ -31,8 +31,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	initHealth = 60;
 	health = initHealth;
 
-	double width = 112;
-	double height = 64;
+	double width = 128;
+	double height = 80;
 
 	ts = owner->GetTileset( "basicturret_128x80.png", width, height );
 	sprite.setTexture( *ts->texture );
@@ -123,7 +123,9 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	launcher = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, gn, 0, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );
 	launcher->hitboxInfo->damage = 18;
-
+	//launcher->Reset();
+	
+	
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 }
@@ -177,8 +179,10 @@ void BasicTurret::BulletHitTerrain( BasicBullet *b,
 	V2d norm = edge->Normal();
 	double angle = atan2( norm.y, -norm.x );
 
-	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
+	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
+	if( launcher->def_e == NULL )
+		launcher->SetDefaultCollision(b->framesToLive, testSubstep , edge, pos);
 }
 
 void BasicTurret::BulletHitPlayer( BasicBullet *b )
@@ -497,6 +501,17 @@ void BasicTurret::Draw(sf::RenderTarget *target )
 	{
 		target->draw( bulletVA, ts_bullet->texture );
 	}
+
+	/*sf::CircleShape cs;
+	cs.setFillColor(Color::Magenta);
+	cs.setRadius(20);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	if (launcher->def_e != NULL)
+	{
+		cs.setPosition(launcher->def_pos.x, launcher->def_pos.y);
+	}
+
+	target->draw(cs);*/
 	
 }
 
@@ -693,7 +708,8 @@ bool BasicTurret::PlayerSlowingMe()
 void BasicTurret::UpdateSprite()
 {
 	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor / 14 ) );//frame / animationFactor ) );
-	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
+	//frame / animationFactor ) );
+
 
 	int i = 0;
 	Bullet *currBullet = activeBullets;
@@ -737,7 +753,7 @@ void BasicTurret::UpdateSprite()
 	if( dying && !dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 2 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 23 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, 
 			botDeathSprite.getLocalBounds().height / 2  );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
@@ -745,7 +761,7 @@ void BasicTurret::UpdateSprite()
 		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 3 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 22 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, 
 			topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
@@ -763,6 +779,9 @@ void BasicTurret::UpdateSprite()
 			keySprite->setPosition( position.x, position.y );
 
 		}
+
+		if( !dying && !dead )
+			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 	}
 }
 
@@ -977,4 +996,25 @@ BasicTurret::Bullet::Bullet()
 	:prev( NULL ), next( NULL ), frame( 0 ), slowCounter( 1 ), slowMultiple( 1 ), maxFramesToLive( 120 )
 {
 	//framesToLive = maxFramesToLive;
+}
+
+void BasicTurret::Setup()
+{
+	frameTestCounter = 0;
+
+	launcher->Reset();
+	launcher->Fire();
+	while (launcher->GetActiveCount() > 0)
+	{
+		launcher->UpdatePrePhysics();
+		for (int i = 0; i < NUM_STEPS; ++i)
+		{
+			testSubstep = i;
+			launcher->UpdatePhysics();
+		}
+		launcher->UpdatePostPhysics();
+		frameTestCounter++;
+	}
+
+	launcher->interactWithTerrain = false;
 }

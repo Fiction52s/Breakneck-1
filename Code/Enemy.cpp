@@ -50,8 +50,8 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		double p_amplitude )
 		:totalBullets( numTotalBullets ), perShot( bulletsPerShot ),
 		facingDir( direction ), angleSpread( p_angleSpread ), 
-		position( p_position ), owner( p_owner ),handler(p_handler)
-
+		position( p_position ), owner( p_owner ),handler(p_handler),
+		def_e ( NULL )
 {
 	bulletType = p_bulletType;
 	maxBulletSpeed = 100;
@@ -160,6 +160,14 @@ Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
 	maxBulletSpeed = 100;
 }
 
+void Launcher::SetDefaultCollision(int framesToLive, int substep, Edge*e, V2d &pos)
+{
+	def_framesToLive = framesToLive;
+	def_substep = substep;
+	def_e = e;
+	def_pos = pos;
+}
+
 void Launcher::CapBulletVel( double speed )
 {
 	BasicBullet *curr = activeBullets;
@@ -186,6 +194,7 @@ void Launcher::UpdatePrePhysics()
 	{
 		temp = curr->next;
 	//	cout << "updating bullet pre" << endl;
+
 		curr->UpdatePrePhysics();
 		curr = temp;
 	}
@@ -615,6 +624,9 @@ void BasicBullet::UpdatePostPhysics()
 		
 		//cout << "time out!" << endl;
 		//explode
+		if( launcher->handler != NULL )
+			launcher->handler->BulletTTLDeath(this);
+
 		launcher->DeactivateBullet( this );
 		//parent->DeactivateTree( this );
 		//owner->RemoveEnemy( this );
@@ -666,6 +678,14 @@ void BasicBullet::UpdatePhysics()
 	}
 	while( movementLen > 0 );
 
+	if (launcher->def_e != NULL && framesToLive == launcher->def_framesToLive
+		&& launcher->owner->substep == launcher->def_substep)
+	{
+		launcher->handler->BulletHitTerrain(this,
+			launcher->def_e, launcher->def_pos);
+		col = true;
+		//int x = 5;
+	}
 	//bool slowed = PlayerSlowingMe();
 
 
@@ -686,46 +706,54 @@ void BasicBullet::HitPlayer()
 
 bool BasicBullet::ResolvePhysics( V2d vel )
 {
-	Rect<double> oldR( position.x - physBody.rw, position.y - physBody.rw, 
-		2 * physBody.rw, 2 * physBody.rw );
+	if (launcher->interactWithTerrain)
+	{
+		Rect<double> oldR(position.x - physBody.rw, position.y - physBody.rw,
+			2 * physBody.rw, 2 * physBody.rw);
 
-	position += vel;
+		position += vel;
 
-	Rect<double> newR( position.x - physBody.rw, position.y - physBody.rw, 
-		2 * physBody.rw, 2 * physBody.rw );
+		Rect<double> newR(position.x - physBody.rw, position.y - physBody.rw,
+			2 * physBody.rw, 2 * physBody.rw);
 
-	double oldRight = oldR.left + oldR.width;
-	double right = newR.left + newR.width;
+		double oldRight = oldR.left + oldR.width;
+		double right = newR.left + newR.width;
 
-	double oldBottom = oldR.top + oldR.height;
-	double bottom = newR.top + newR.height;
+		double oldBottom = oldR.top + oldR.height;
+		double bottom = newR.top + newR.height;
 
-	double maxRight = max( right, oldRight );
-	double maxBottom = max( oldBottom, bottom );
-	double minLeft = min( oldR.left, newR.left );
-	double minTop = min( oldR.top, newR.top );
-
-
-	double ex = 1;
-	Rect<double> r( minLeft - ex, minTop - ex, 
-		(maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2 );
-	//Rect<double> realRect( min( oldR.left, r.left ),
-	//	min( oldR.top, r.top ));
-
-	minContact.collisionPriority = 1000000;
-
-	col = false;
-
-	tempVel = vel;
-	minContact.edge = NULL;
-
-	//queryMode = "resolve";
-//	Query( this, owner->testTree, r );
-	//queryBullet = bullet;
+		double maxRight = max(right, oldRight);
+		double maxBottom = max(oldBottom, bottom);
+		double minLeft = min(oldR.left, newR.left);
+		double minTop = min(oldR.top, newR.top);
 
 
-	if( launcher->interactWithTerrain )
-		launcher->owner->terrainTree->Query( this, r );
+		double ex = 1;
+		Rect<double> r(minLeft - ex, minTop - ex,
+			(maxRight - minLeft) + ex * 2, (maxBottom - minTop) + ex * 2);
+		//Rect<double> realRect( min( oldR.left, r.left ),
+		//	min( oldR.top, r.top ));
+
+		minContact.collisionPriority = 1000000;
+
+		col = false;
+
+		tempVel = vel;
+		minContact.edge = NULL;
+
+		//queryMode = "resolve";
+	//	Query( this, owner->testTree, r );
+		//queryBullet = bullet;
+
+
+
+		launcher->owner->terrainTree->Query(this, r);
+	}
+	else
+	{
+		col = false;
+		position += vel;
+	}
 
 	return col;
 }

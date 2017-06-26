@@ -6360,7 +6360,7 @@ void Actor::UpdatePrePhysics()
 				{
 					double accel = dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 					groundSpeed += accel;
-					cout << "accel slide: \n" << accel;
+					//cout << "accel slide: \n" << accel;
 				}
 			}
 
@@ -6478,7 +6478,7 @@ void Actor::UpdatePrePhysics()
 				facingRight = true;
 			}
 
-			cout << "sprint accel: " << accel << "\n";
+			//cout << "sprint accel: " << accel << "\n";
 			break;
 		}
 	case STANDN:

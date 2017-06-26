@@ -20,6 +20,7 @@ struct LauncherEnemy
 		Edge *edge, sf::Vector2<double> &pos ){};
 	virtual void BulletHitPlayer( BasicBullet *b ){};
 	virtual void BulletHitTarget( BasicBullet *b ){};
+	virtual void BulletTTLDeath(BasicBullet *b) {};
 	virtual int GetAttackIndex(){return -1;};
 };
 //a step is the amount of time in a substep
@@ -199,6 +200,13 @@ struct Launcher
 	int wavelength;
 	int maxFramesToLive;
 	double maxBulletSpeed;
+
+	void SetDefaultCollision( int framesToLive,
+		int substep, Edge *e, sf::Vector2<double> &pos);
+	int def_framesToLive;
+	int def_substep;
+	Edge* def_e;
+	sf::Vector2<double> def_pos;
 	//Launcher *next;
 };
 
@@ -341,6 +349,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world );
 	virtual void Init(){};
+	virtual void Setup() {};
 
 	void Record( int enemyIndex );
 	virtual void RecordEnemy();
@@ -1086,7 +1095,10 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	void UpdateBulletHitboxes();
+	void Setup();
 	Tileset *ts_bulletExplode;
+	int testSubstep;
+	int frameTestCounter;
 
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
