@@ -25,8 +25,8 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	initHealth = 40;
 	health = initHealth;
 
-	double height = 48;
-	ts = owner->GetTileset( "foottrap_128x48.png", 128, height );
+	double height = 128;
+	ts = owner->GetTileset( "foottrap_160x128.png", 160, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -72,7 +72,7 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 
 	frame = 0;
 	deathFrame = 0;
-	animationFactor = 7;
+	animationFactor = 2;
 	slowCounter = 1;
 	slowMultiple = 1;
 
@@ -234,7 +234,7 @@ void FootTrap::UpdatePostPhysics()
 		slowCounter++;
 	}
 
-	if( frame == 7 * animationFactor )
+	if( frame == 25 * animationFactor )
 	{
 		frame = 0;
 	}
@@ -404,20 +404,17 @@ bool FootTrap::PlayerSlowingMe()
 
 void FootTrap::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
-
 	if( dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 9 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 26 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2  );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 8 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 25 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
@@ -425,6 +422,9 @@ void FootTrap::UpdateSprite()
 	}
 	else
 	{
+		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+		sprite.setPosition(position.x, position.y);
+
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
