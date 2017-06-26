@@ -770,6 +770,9 @@ void BasicTurret::UpdateSprite()
 	}
 	else
 	{
+		if (!dying && !dead)
+			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
@@ -780,8 +783,7 @@ void BasicTurret::UpdateSprite()
 
 		}
 
-		if( !dying && !dead )
-			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+		
 	}
 }
 

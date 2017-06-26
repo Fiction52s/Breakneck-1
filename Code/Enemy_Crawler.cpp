@@ -38,7 +38,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
 	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 	attackFrame = -1;
-	attackMult = 10;
+	attackMult = 3;
 
 	double height = 128;
 	double width = 128;
@@ -88,7 +88,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
-	crawlAnimationFactor = 5;
+	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
 	physBody.isCircle = true;
 	physBody.offset.x = 0;
@@ -540,7 +540,7 @@ void Crawler::UpdatePrePhysics()
 		receivedHit = NULL;
 	}
 
-	if( attackFrame == 2 * attackMult )
+	if( attackFrame == 7 * attackMult )
 	{
 		attackFrame = -1;
 	}
@@ -549,8 +549,8 @@ void Crawler::UpdatePrePhysics()
 	//}
 	//else
 	//{
-
-		if( !roll && frame == 16 * crawlAnimationFactor )
+	//need roll start and roll end states
+		if( !roll && frame == 43 * crawlAnimationFactor )
 		{
 			frame = 0;
 		}
@@ -1023,7 +1023,7 @@ void Crawler::PhysicsResponse()
 	
 
 				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
+				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 46 );
 				if( clockwise )
 				{
 					sprite.setTextureRect( r );
@@ -1411,7 +1411,7 @@ void Crawler::UpdateSprite()
 	{
 		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
 		botDeathSprite.setTexture( *ts->texture );
-		IntRect ir = ts->GetSubRect( 31 );
+		IntRect ir = ts->GetSubRect( 62 );
 		if( !clockwise )
 		{
 			ir = IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
@@ -1424,7 +1424,7 @@ void Crawler::UpdateSprite()
 		botDeathSprite.setRotation( sprite.getRotation() );
 
 		topDeathSprite.setTexture( *ts->texture );
-		ir = ts->GetSubRect( 30 );
+		ir = ts->GetSubRect( 61 );
 		if( !clockwise )
 		{
 			ir = IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
@@ -1441,7 +1441,7 @@ void Crawler::UpdateSprite()
 	{
 		if( attackFrame >= 0 )
 		{
-			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
+			IntRect r = ts->GetSubRect( 54 + attackFrame / attackMult );
 			if( !clockwise )
 			{
 				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );

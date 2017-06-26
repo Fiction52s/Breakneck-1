@@ -3122,6 +3122,10 @@ void MapSelectionMenu::UpdateItemText()
 			}
 			itemName[i].setFillColor(col);
 		}
+		else if (p.second.coll != NULL)
+		{
+			itemName[i].setFillColor(Color::White);
+		}
 		
 
 		int xVal = topMid.x - BOX_WIDTH / 2;

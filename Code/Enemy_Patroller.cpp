@@ -51,7 +51,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	//speed = 2;
 	frame = 0;
 
-	animationFactor = 1;
+	animationFactor = 2;
 
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
 	ts = owner->GetTileset( "patroller_224x272.png", 224, 272 );
@@ -139,7 +139,7 @@ void Patroller::ResetEnemy()
 
 void Patroller::UpdatePrePhysics()
 {
-	if( frame == 19 * animationFactor )
+	if( frame == 12 * animationFactor )
 	{
 		frame = 0;
 	}
@@ -344,25 +344,25 @@ void Patroller::UpdatePostPhysics()
 
 void Patroller::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 
 	if( dead )
 	{
 		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 15 ) );
+		botDeathSprite.setTextureRect( ts->GetSubRect( 13 ) );
 		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
 		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + deathVector.y * deathPartingSpeed * deathFrame );
 
 		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 16 ) );
+		topDeathSprite.setTextureRect( ts->GetSubRect( 12 ) );
 		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 	}
 	else
 	{
+		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
@@ -372,6 +372,8 @@ void Patroller::UpdateSprite()
 			keySprite->setPosition( position.x, position.y );
 
 		}
+
+		
 	}
 }
 
