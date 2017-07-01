@@ -15774,7 +15774,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 double Actor::CalcLandingSpeed( V2d &testVel,
 		V2d &alongVel, V2d &gNorm )
 {
-	cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
+	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
 	double gSpeed = groundSpeed;
 	if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
 	{

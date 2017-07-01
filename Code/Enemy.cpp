@@ -53,6 +53,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		position( p_position ), owner( p_owner ),handler(p_handler),
 		def_e ( NULL )
 {
+	skipPlayerCollideForSubstep = false;
 	bulletType = p_bulletType;
 	maxBulletSpeed = 100;
 	//launchType = p_launchType;
@@ -154,10 +155,22 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	hitboxInfo->knockback = 0;
 }
 
+double Launcher::GetRadius(BasicBullet::BType bt)
+{
+	switch (bt)
+	{
+	case BasicBullet::BASIC_TURRET:
+		return 12;
+	}
+
+	return 10;
+}
+
 Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
 	int p_maxFramesToLive )
 {
 	maxBulletSpeed = 100;
+	skipPlayerCollideForSubstep = false;
 }
 
 void Launcher::SetDefaultCollision(int framesToLive, int substep, Edge*e, V2d &pos)
@@ -213,6 +226,8 @@ void Launcher::UpdatePhysics()
 		curr->UpdatePhysics();
 		curr = temp;
 	}
+
+	skipPlayerCollideForSubstep = false;
 }
 
 void Launcher::UpdateSprites()
@@ -474,7 +489,7 @@ BasicBullet::BasicBullet( int indexVA, BType bType, Launcher *launch )
 		break;
 	}
 	//framesToLive = maxFram
-	double rad = 12;
+	double rad = Launcher::GetRadius( bType );
 	bounceCount = 0;
 	/*hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -668,12 +683,15 @@ void BasicBullet::UpdatePhysics()
 
 		hitBody.globalPosition = position;
 
-		Actor *player = launcher->owner->GetPlayer( 0 );
-		if( player->hurtBody.Intersects( hitBody ) && player->invincibleFrames == 0 )
-		{	
-			//cout << "hit??" << endl;
-			HitPlayer();
-			break;
+		if (!launcher->skipPlayerCollideForSubstep)
+		{
+			Actor *player = launcher->owner->GetPlayer(0);
+			if (player->hurtBody.Intersects(hitBody) && player->invincibleFrames == 0)
+			{
+				//cout << "hit??" << endl;
+				HitPlayer();
+				break;
+			}
 		}
 	}
 	while( movementLen > 0 );
@@ -687,8 +705,6 @@ void BasicBullet::UpdatePhysics()
 		//int x = 5;
 	}
 	//bool slowed = PlayerSlowingMe();
-
-
 }
 
 bool BasicBullet::HitTerrain()

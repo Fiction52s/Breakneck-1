@@ -58,6 +58,7 @@ struct BasicBullet : QuadTreeCollider
 	virtual void Reset(
 		sf::Vector2<double> &pos,
 		sf::Vector2<double> &vel );
+	
 	virtual void UpdatePhysics();
 	virtual void UpdateSprite();
 	virtual void UpdatePostPhysics();
@@ -163,7 +164,7 @@ struct Launcher
 	Launcher( LauncherEnemy *handler,
 		GameSession *owner,
 		int maxFramesToLive );
-
+	static double GetRadius(BasicBullet::BType bt);
 	//Launcher( LauncherEnemy *handler,
 	bool interactWithTerrain;
 	void CapBulletVel( double speed );
@@ -206,6 +207,7 @@ struct Launcher
 	int def_framesToLive;
 	int def_substep;
 	Edge* def_e;
+	bool skipPlayerCollideForSubstep;
 	sf::Vector2<double> def_pos;
 	//Launcher *next;
 };
@@ -1103,6 +1105,9 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void BulletHitTerrain( BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos );
 	void BulletHitPlayer( BasicBullet *b );
+
+	CollisionBox prelimBox;
+	bool playerPrelimHit[4];
 
 	void SaveEnemyState();
 	void LoadEnemyState();

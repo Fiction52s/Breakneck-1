@@ -82,14 +82,16 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
+	
+
 	activeBullets = NULL;
 	inactiveBullets = NULL;
 
 
-	for( int i = 0; i < maxBullets; ++i )
+	/*for( int i = 0; i < maxBullets; ++i )
 	{
 		AddBullet();
-	}
+	}*/
 
 	
 	bulletHitboxInfo = new HitboxInfo;
@@ -263,6 +265,11 @@ void BasicTurret::UpdatePrePhysics()
 
 void BasicTurret::UpdatePhysics()
 {
+	if (!prelimBox.Intersects(owner->players[0]->hurtBody))
+	{
+		launcher->skipPlayerCollideForSubstep = true;
+	}
+
 	launcher->UpdatePhysics();
 	specterProtected = false;
 	Bullet *currBullet = activeBullets;
@@ -806,8 +813,10 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 	
 	//target->draw( cs );
 
-	hitBody.DebugDraw( target );
-	hurtBody.DebugDraw( target );
+	//hitBody.DebugDraw( target );
+	//hurtBody.DebugDraw( target );
+
+	prelimBox.DebugDraw(target);
 }
 
 void BasicTurret::UpdateHitboxes()
@@ -879,7 +888,7 @@ void BasicTurret::AddBullet()
 		inactiveBullets = b;
 	}
 
-	double rad = 12;
+	double rad = Launcher::GetRadius(launcher->bulletType);
 	inactiveBullets->hurtBody.isCircle = true;
 	inactiveBullets->hurtBody.globalAngle = 0;
 	inactiveBullets->hurtBody.offset.x = 0;
@@ -1006,6 +1015,9 @@ void BasicTurret::Setup()
 
 	launcher->Reset();
 	launcher->Fire();
+	BasicBullet *bb = launcher->activeBullets;
+	V2d finalPos;
+	bool collide = true;
 	while (launcher->GetActiveCount() > 0)
 	{
 		launcher->UpdatePrePhysics();
@@ -1014,9 +1026,35 @@ void BasicTurret::Setup()
 			testSubstep = i;
 			launcher->UpdatePhysics();
 		}
+
+		if (bb->framesToLive == 0)
+		{
+			finalPos = bb->position;
+			collide = false;
+		}
+		
 		launcher->UpdatePostPhysics();
+		
 		frameTestCounter++;
 	}
 
+	if (collide)
+	{
+		finalPos = launcher->def_pos;
+	}
+
 	launcher->interactWithTerrain = false;
+
+	double rad = Launcher::GetRadius(launcher->bulletType);
+	double width = length(finalPos - launcher->position) + rad * 2;
+
+	prelimBox.type = CollisionBox::Hit;
+	prelimBox.isCircle = false;
+	prelimBox.rw = width / 2;
+	prelimBox.rh = rad;
+
+	V2d norm = ground->Normal();
+
+	prelimBox.globalAngle = atan2(norm.y, norm.x);
+	prelimBox.globalPosition = (finalPos + launcher->position) / 2.0;
 }

@@ -8460,7 +8460,7 @@ int GameSession::Run()
 			mapTexSprite.setScale( .5, -.5 );
 			//mapTexSprite.setScale( 1, -1 );
 
-			window->draw( mapTexSprite );
+  			window->draw( mapTexSprite );
 			//pauseTex->draw( mapTexSprite );
 
 			//pauseTex->setV
