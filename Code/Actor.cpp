@@ -1566,6 +1566,12 @@ void Actor::Respawn()
 	for( int i = 0; i < maxBubbles; ++i )
 	{
 		bubbleFramesToLive[i] = 0;
+		
+	}
+
+	for (int i = 0; i < 5; ++i)
+	{
+		fBubbleFrame[i] = 0;
 	}
 
 	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
@@ -7673,6 +7679,7 @@ void Actor::UpdatePrePhysics()
 		if( bubbleFramesToLive[i] > 0 )
 		{
 			bubbleFramesToLive[i]--;
+			fBubbleFrame[i] = bubbleFramesToLive[i];
 		}
 	}
 
@@ -7761,16 +7768,23 @@ void Actor::UpdatePrePhysics()
 			if( bubbleFramesToLive[currBubble] == 0 )
 			{
 				inBubble = true;
+				//bubbleFramesToLive[currBubble] = bubbleLifeSpan;
 				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
+				fBubbleFrame[currBubble] = bubbleLifeSpan;
 				bubbleRadiusSize[currBubble] = GetBubbleRadius();
+				fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
 
 				if( !cloneBubbleCreated )
 				{
 					bubblePos[currBubble] = position;
+					fBubblePos[currBubble].x = position.x;
+					fBubblePos[currBubble].y = position.y;
 				}
 				else
 				{
 					bubblePos[currBubble] = cloneBubbleCreatedPos;
+					fBubblePos[currBubble].x = cloneBubbleCreatedPos.x;
+					fBubblePos[currBubble].y = cloneBubbleCreatedPos.y;
 				}
 				
 
@@ -7885,10 +7899,15 @@ void Actor::InitAfterEnemies()
 	bubblePos = new V2d[maxBubbles];
 	bubbleFramesToLive = new int[maxBubbles];
 	bubbleRadiusSize = new int[maxBubbles];
+	/*fBubbleFrame = new float[maxBubbles];
+	fBubblePos = new sf::Vector2f[maxBubbles];
+	fBubbleRadiusSize = new float[maxBubbles];*/
+	
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
 		bubbleFramesToLive[i] = 0;
+		fBubbleFrame[i] = 0;
 		//bubblePos[i]
 	}
 

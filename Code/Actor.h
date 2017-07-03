@@ -688,6 +688,10 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> *bubblePos;//[maxBubbles];
 	int *bubbleFramesToLive;//[maxBubbles];
 	int *bubbleRadiusSize;//[maxBubbles];
+	float *fBubbleRadiusSize;
+	sf::Vector2f *fBubblePos;
+	float *fBubbleFrame;
+
 	int currBubble;
 
 	

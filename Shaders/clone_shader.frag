@@ -30,8 +30,14 @@ uniform float bubbleRadius2;
 uniform float bubbleRadius3;
 uniform float bubbleRadius4;
 
-
 const int numBubbles = 5;
+const int maxPlayers = 4;
+uniform float totalBubbles;
+uniform float numPlayers;
+uniform float bubbleRadius[20];
+uniform float bFrame[20];
+uniform vec2 bPos[20];
+
 struct Bubble
 {
 	bool on;
@@ -52,9 +58,9 @@ void InitBubbles()
 	else
 	{
 		bubbles[0].on = true;
-		bubbles[0].pos = bubble0;
-		bubbles[0].frame = b0Frame;
-		bubbles[0].radius = bubbleRadius0;
+		bubbles[0].pos = bPos[0];
+		bubbles[0].frame = bFrame[0];
+		bubbles[0].radius = bubbleRadius[0];
 	}
 	
 	if( b1Frame == 0 )
@@ -64,9 +70,9 @@ void InitBubbles()
 	else
 	{
 		bubbles[1].on = true;
-		bubbles[1].pos = bubble1;
-		bubbles[1].frame = b1Frame;
-		bubbles[1].radius = bubbleRadius1;
+		bubbles[1].pos = bPos[1];
+		bubbles[1].frame = bFrame[1];
+		bubbles[1].radius = bubbleRadius[1];
 	}
 	
 	if( b2Frame == 0 )
@@ -76,9 +82,9 @@ void InitBubbles()
 	else
 	{
 		bubbles[2].on = true;
-		bubbles[2].pos = bubble2;
-		bubbles[2].frame = b2Frame;
-		bubbles[2].radius = bubbleRadius2;
+		bubbles[2].pos = bPos[2];
+		bubbles[2].frame = bFrame[2];
+		bubbles[2].radius = bubbleRadius[2];
 	}
 	
 	if( b3Frame == 0 )
@@ -88,9 +94,9 @@ void InitBubbles()
 	else
 	{
 		bubbles[3].on = true;
-		bubbles[3].pos = bubble3;
-		bubbles[3].frame = b3Frame;
-		bubbles[3].radius = bubbleRadius3;
+		bubbles[3].pos = bPos[3];
+		bubbles[3].frame = bFrame[3];
+		bubbles[3].radius = bubbleRadius[3];
 	}
 	
 	if( b4Frame == 0 )
@@ -100,9 +106,9 @@ void InitBubbles()
 	else
 	{
 		bubbles[4].on = true;
-		bubbles[4].pos = bubble4;
-		bubbles[4].frame = b4Frame;
-		bubbles[4].radius = bubbleRadius4;
+		bubbles[4].pos = bPos[4];
+		bubbles[4].frame = bFrame[4];
+		bubbles[4].radius = bubbleRadius[4];
 	}
 	
 	//if( b5Frame == 0 )
@@ -167,34 +173,28 @@ void main()
 	
 	
 	
-	for( int i = 0; i < numBubbles; i++ )
+	for( int i = 0; i < 10; i++ )
 	{
-		if( bubbles[i].on )
+		if( bFrame[i] > 0.0 )
 		{
-			float D = length( bubbles[i].pos * Resolution.xy - vec2( fragC.x, fragC.y) ) * zoom;
-			vec2 dir = bubbles[i].pos * Resolution.xy - vec2( fragC.x, fragC.y) * zoom;
+			float D = length( bPos[i] * Resolution.xy - vec2( fragC.x, fragC.y) ) * zoom;
+			vec2 dir = bPos[i] * Resolution.xy - vec2( fragC.x, fragC.y) * zoom;
 			dir = normalize( dir );
-			float trueRad = bubbles[i].radius * 2.0;
+			float trueRad = bubbleRadius[i] * 2.0;
 			float expandFrames = 20.0;
-			float trueFrame = ( 240.0 - bubbles[i].frame );
+			float trueFrame  = ( 240.0 - bFrame[i] );
 			if( trueFrame < expandFrames )
 			{
-				trueRad = (trueRad + 80.0 ) * ( 240.0 - bubbles[i].frame ) / expandFrames;
+				trueRad = (trueRad + 80.0 ) * ( 240.0 - bFrame[i] ) / expandFrames;
 			}
 			else if( trueFrame == expandFrames )
 			{
-				trueRad = (trueRad + 40.0 ) * ( 240.0 - bubbles[i].frame - 1.0 ) / expandFrames;
+				trueRad = (trueRad + 40.0 ) * ( 240.0 - bFrame[i] - 1.0 ) / expandFrames;
 			}
 			
 			
 			if( D <= trueRad )
 			{
-				/*if( bubbles[i].frame > 240 - expandFrames )
-				{
-					
-					col = texture2D( u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
-				}*/
-				
 				if( trueFrame <= expandFrames )
 				{
 					col.r = 1.0 - col.r;

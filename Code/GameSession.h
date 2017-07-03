@@ -688,6 +688,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//Actor *player2;
 	Actor *players[4];
 	Actor *GetPlayer( int index );
+	int m_numActivePlayers;
 	int numPolyTypes;
 	sf::Shader *polyShaders;
 	Tileset **ts_polyShaders;
@@ -1021,7 +1022,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite miniGoalPtrSprite;
 	//temp only^^
 
-	
+	float *fBubbleRadiusSize;
+	sf::Vector2f *fBubblePos;
+	float *fBubbleFrame;
 
 	Sequence *activeSequence;
 	Sequence *startMapSeq;

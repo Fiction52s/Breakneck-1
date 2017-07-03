@@ -5587,9 +5587,12 @@ bool GameSession::Load()
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
+	int maxBubbles = 5;
+
 	if( raceFight != NULL )
 	{
 		players[1] = new Actor( this, 1 );
+		maxBubbles = 2;
 	}
 	else
 	{
@@ -5598,6 +5601,45 @@ bool GameSession::Load()
 
 	players[2] = NULL;
 	players[3] = NULL;
+
+
+	m_numActivePlayers = 0;
+	Actor *activePlayer = NULL;
+	Actor *tempPlayer = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (tempPlayer = GetPlayer(i))
+		{
+			if (!activePlayer)
+			{
+				activePlayer = tempPlayer;
+			}
+			++m_numActivePlayers;
+		}
+	}
+	assert(activePlayer);
+	//int maxBubbles = activePlayer->maxBubbles;
+
+	fBubbleFrame = new float[5 * 4];
+	for (int i = 0; i < 5 * 4; ++i)
+	{
+		fBubbleFrame[i] = 0;
+	}
+	fBubblePos = new sf::Vector2f[5 * 4];
+	fBubbleRadiusSize = new float[5 * 4];
+
+	int count = 0;
+	tempPlayer = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (tempPlayer = GetPlayer(i))
+		{
+			tempPlayer->fBubbleFrame = (fBubbleFrame + i * 5);
+			tempPlayer->fBubblePos = (fBubblePos + i * 5);
+			tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * 5);
+			++count;
+		}
+	}
 
 	Actor *p = NULL;
 	for( int i = 0; i < 4; ++i )
@@ -5811,11 +5853,15 @@ bool GameSession::Load()
 	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
 	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
 
+	
 
 	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
 	{
 		(*it)->Setup();
 	}
+
+
+
 
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("done loading!", 0);
@@ -8092,43 +8138,67 @@ int GameSession::Run()
 		cloneShader.setUniform( "bubbleRadius2", (float)p0->bubbleRadiusSize[2] );
 		cloneShader.setUniform( "bubbleRadius3", (float)p0->bubbleRadiusSize[3] );
 		cloneShader.setUniform( "bubbleRadius4", (float)p0->bubbleRadiusSize[4] );
+		cloneShader.setUniformArray("bubbleRadius", fBubbleRadiusSize, 20);//p0->maxBubbles * m_numActivePlayers);
+		cloneShader.setUniformArray("bPos", fBubblePos, 20);//p0->maxBubbles * m_numActivePlayers);
+		cloneShader.setUniformArray("bFrame", fBubbleFrame, 20);//p0->maxBubbles * m_numActivePlayers);
+		cloneShader.setUniform("totalBubbles", p0->maxBubbles * m_numActivePlayers);
+		//too many assumptions that p0 will always be here lots of refactoring to do
 		
 
 		float windowx = 1920;//window->getSize().x;
 		float windowy = 1080;//window->getSize().y;
 
-		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[0].x, p0->bubblePos[0].y ) );
-		Vector2f pos0( vi0.x / windowx, -1 + vi0.y / windowy ); 
+		Vector2i vi0, vi1, vi2, vi3, vi4;
+		Vector2f tpos[5];
+		Actor *tPlayer = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			if (tPlayer = GetPlayer(i))
+			{
+				vi0 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[0].x, tPlayer->bubblePos[0].y));
+				tpos[0] = Vector2f(vi0.x / windowx, -1 + vi0.y / windowy);
 
-		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[1].x, p0->bubblePos[1].y ) );
-		Vector2f pos1( vi1.x / windowx, -1 + vi1.y / windowy ); 
+				vi1 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[1].x, tPlayer->bubblePos[1].y));
+				tpos[1] = Vector2f(vi1.x / windowx, -1 + vi1.y / windowy);
 
-		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[2].x, p0->bubblePos[2].y ) );
-		Vector2f pos2( vi2.x / windowx, -1 + vi2.y / windowy ); 
+				vi2 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[2].x, tPlayer->bubblePos[2].y));
+				tpos[2] = Vector2f(vi2.x / windowx, -1 + vi2.y / windowy);
 
-		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[3].x, p0->bubblePos[3].y ) );
-		Vector2f pos3( vi3.x / windowx, -1 + vi3.y / windowy ); 
+				vi3 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[3].x, tPlayer->bubblePos[3].y));
+				tpos[3] = Vector2f(vi3.x / windowx, -1 + vi3.y / windowy);
 
-		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[4].x, p0->bubblePos[4].y ) );
-		Vector2f pos4( vi4.x / windowx, -1 + vi4.y / windowy ); 
+				vi4 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[4].x, tPlayer->bubblePos[4].y));
+				tpos[4] = Vector2f(vi4.x / windowx, -1 + vi4.y / windowy);
 
-		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( p0->bubblePos[5].x, p0->bubblePos[5].y ) );
-		Vector2f pos5( vi5.x / windowx, -1 + vi5.y / windowy ); 
+				for (int j = 0; j < 5; ++j)
+				{
+					fBubblePos[i * 5 + j] = tpos[j];
+				}
+				
+				//vi5 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[5].x, tPlayer->bubblePos[5].y));
+				//Vector2f pos5(vi5.x / windowx, -1 + vi5.y / windowy);
+			}
+		}
+		
 
+
+		
+
+		cloneShader.setUniformArray("bPos", fBubblePos, 5 * 4);
 		//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
 		//cout << "b0frame: " << player->bubbleFramesToLive[0] << endl;
 		//cout << "b1frame: " << player->bubbleFramesToLive[1] << endl;
 		//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
 
-		cloneShader.setUniform( "bubble0", pos0 );
+		//cloneShader.setUniform( "bubble0", pos0 );
 		cloneShader.setUniform( "b0Frame", (float)p0->bubbleFramesToLive[0] );
-		cloneShader.setUniform( "bubble1", pos1 );
+		//cloneShader.setUniform( "bubble1", pos1 );
 		cloneShader.setUniform( "b1Frame", (float)p0->bubbleFramesToLive[1] );
-		cloneShader.setUniform( "bubble2", pos2 );
+		//cloneShader.setUniform( "bubble2", pos2 );
 		cloneShader.setUniform( "b2Frame", (float)p0->bubbleFramesToLive[2] );
-		cloneShader.setUniform( "bubble3", pos3 );
+		//cloneShader.setUniform( "bubble3", pos3 );
 		cloneShader.setUniform( "b3Frame", (float)p0->bubbleFramesToLive[3] );
-		cloneShader.setUniform( "bubble4", pos4 );
+		//cloneShader.setUniform( "bubble4", pos4 );
 		cloneShader.setUniform( "b4Frame", (float)p0->bubbleFramesToLive[4] );
 		//cloneShader.setUniform( "bubble5", pos5 );
 		//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
