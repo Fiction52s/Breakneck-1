@@ -37,6 +37,7 @@
 #include <ctime>
 #include "PlayerRecord.h"
 #include "Buf.h"
+#include "HUD.h"
 
 
 #define TIMESTEP 1.0 / 60.0
@@ -7476,7 +7477,7 @@ int GameSession::Run()
 
 		for( int i = 0; i < 4; ++i )
 		{
-			p = GetPlayer( 0 );
+			p = GetPlayer( i );
 			if( p != NULL )
 			{
 				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) || p->leftWire->state == Wire::RETRACTING )
@@ -13886,7 +13887,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
 	hitByPlayer2List( NULL ), numTargets( 0 )
 {
-	
+	hud = new RaceFightHUD(owner);
 
 	ts_scoreTest = owner->GetTileset( "score_menu_01.png", 1920, 1080 );
 	scoreTestSprite.setTexture( *ts_scoreTest->texture );
@@ -14220,7 +14221,8 @@ int GameSession::RaceFight::GetNumRemainingTargets()
 
 void GameSession::RaceFight::DrawScore( sf::RenderTarget *target )
 {
-	target->draw( scoreTestSprite );
+	//target->draw( scoreTestSprite );
+	hud->Draw(target);
 	//playerScoreImage->Draw( target );
 	//player2ScoreImage->Draw( target );
 

@@ -24,6 +24,7 @@ struct ReplayPlayer;
 struct RecordGhost;
 struct ReplayGhost;
 struct Config;
+struct RaceFightHUD;
 
 struct Barrier;
 struct PoiInfo
@@ -370,6 +371,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		void UpdateScore();
 		void Init();
 
+		RaceFightHUD *hud;
 		//RaceFightTarget *targetList;
 		GameSession *owner;
 

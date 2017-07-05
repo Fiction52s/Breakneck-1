@@ -852,6 +852,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			assert( 0 && "sword shader not loaded" );
 		}
 		swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
+		swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShaders[1] = swordShaders[0];
 		if (!swordShaders[1].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
 		{
@@ -859,6 +860,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			assert( 0 && "sword shader not loaded" );
 		}
 		swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
+		swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShaders[2] = swordShaders[0];
 		if (!swordShaders[2].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
 		{
@@ -866,6 +868,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			assert( 0 && "sword shader not loaded" );
 		}
 		swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 145, 255 )) );
+		swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
+
+		//sh.setUniform( "u_texture", *tileset[action]->texture ); 
 
 		ts_scorpRun = owner->GetTileset( "scorp_run_192x128.png", 192, 128 );
 		ts_scorpSlide = owner->GetTileset( "scorp_slide_160x96.png", 160, 96 );
@@ -12121,6 +12126,26 @@ void Actor::UpdatePhysics()
 					}
 
 					movement = 0;
+
+					V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
+
+					//double groundLength = length(ground->v1 - ground->v0);
+
+					V2d bn = bounceEdge->Normal();
+
+					V2d testVel = velocity;
+
+					
+					/*if (testVel.y > 20)
+					{
+						testVel.y *= .7;
+					}
+					else if (testVel.y < -30)
+					{
+						testVel.y *= .5;
+					}*/
+					
+					groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 					break;
 					//cout << "bouncing: " << bounceQuant << endl;
 				}
@@ -14300,7 +14325,7 @@ bool Actor::IsBeingSlowed()
 		Actor *other;
 		if( actorIndex == 0 )
 		{
-			other = owner->GetPlayer( 0 );
+			other = owner->GetPlayer( 1 );
 		}
 		else
 		{
@@ -16006,7 +16031,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
 			//cout << "action: " << action << endl;
-			sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+			//sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setUniform( "u_normals", *normal[action]->texture );
 			target->draw( *sprite, &sh );
 		}
@@ -18787,8 +18812,8 @@ void Actor::ConfirmHit( int worldIndex,
 		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );
 	}
 
-
 	//owner->powerWheel->Charge( charge );
+
 	owner->powerRing->Fill(charge);
 	desperationMode = false;
 
