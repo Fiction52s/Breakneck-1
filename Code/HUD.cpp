@@ -9,8 +9,10 @@ RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 {
 	owner = rf->owner;
 	//Tileset *scoreTS = owner->GetTileset("number_score_80x80.png", 80, 80);
-	scoreRed = new ImageText(2, owner->GetTileset( "number_score_red_64x64.png", 64, 64 ));
-	scoreBlue = new ImageText(2, owner->GetTileset("number_score_blue_64x64.png", 64, 64));
+	Tileset *ts_scoreRed = owner->GetTileset("number_score_red_64x64.png", 64, 64);
+	Tileset *ts_scoreBlue = owner->GetTileset("number_score_blue_64x64.png", 64, 64);
+	scoreRed = new ImageText(2,ts_scoreRed );
+	scoreBlue = new ImageText(2,ts_scoreBlue );
 	ts_mask = owner->GetTileset("multi_mask_160x160.png", 160, 160);
 
 	ts_smallMask = owner->GetTileset("multi_mask_race_80x80.png", 80, 80);
@@ -22,20 +24,22 @@ RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 
 	mask.setTexture(*ts_mask->texture);
 	mask.setTextureRect(ts_mask->GetSubRect(0));
-	mask.setOrigin(mask.getLocalBounds().width / 2, 0);// mask.getLocalBounds().height / 2);
+	mask.setOrigin(mask.getLocalBounds().width / 2, mask.getLocalBounds().height / 2);
 
 	smallMask.setTexture(*ts_smallMask->texture);
 	smallMask.setTextureRect(ts_smallMask->GetSubRect(0));
 	smallMask.setOrigin(smallMask.getLocalBounds().width / 2, 0);
 
-	Vector2f maskPos(960, 20);
+	Vector2f maskPos(960, 70);
 
-	scoreRed->SetNumber(22);
-	scoreRed->topRight = Vector2f(maskPos.x - 200, maskPos.y);
+	scoreRed->ShowZeroes(2);
+	scoreRed->SetNumber(0);
+	scoreRed->topRight = Vector2f(maskPos.x - 200 + ts_scoreRed->GetSubRect(0).width * 2, maskPos.y - 60);
 	scoreRed->UpdateSprite();
 	
-	scoreBlue->SetNumber(55);
-	scoreBlue->topRight = Vector2f(maskPos.x + 200, maskPos.y);
+	scoreBlue->ShowZeroes(2);
+	scoreBlue->SetNumber(0);
+	scoreBlue->topRight = Vector2f(maskPos.x + 200, maskPos.y - 60);
 	scoreBlue->UpdateSprite();
 
 	mask.setPosition(maskPos);
@@ -91,14 +95,15 @@ void RaceFightHUD::SetRaceWinner(RaceFightHUD::PlayerColor pc)
 
 void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 {
+	Vector2<double> maskPos(mask.getPosition().x, mask.getPosition().y + 10);
 	switch (pc)
 	{
 	case BLUE:
-		owner->ActivateEffect(EffectLayer::UI_FRONT, ts_fx_gainPointBlue, Vector2<double>(960, 100),
+		owner->ActivateEffect(EffectLayer::UI_FRONT, ts_fx_gainPointBlue, maskPos,
 			true, 0, 16, 1, true);
 		break;
 	case RED:
-		owner->ActivateEffect(EffectLayer::UI_FRONT, ts_fx_gainPointRed, Vector2<double>(960, 100),
+		owner->ActivateEffect(EffectLayer::UI_FRONT, ts_fx_gainPointRed, maskPos,
 			true, 0, 16, 1, true);
 		break;
 	case GREEN:
