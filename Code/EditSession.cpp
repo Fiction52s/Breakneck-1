@@ -13852,6 +13852,8 @@ void EditSession::CreatePreview( Vector2i imageSize )
 		int right = inversePolygon->right;
 		int bot = inversePolygon->bottom;
 
+
+
 		
 
 		int width = right - left;
@@ -13884,8 +13886,6 @@ void EditSession::CreatePreview( Vector2i imageSize )
 		{
 			//taller than it should be
 
-			
-
 			width = ceil( width * (idealXYRatio / realXYRatio) );
 
 			if( width % imageSize.x == 1 )
@@ -13900,16 +13900,91 @@ void EditSession::CreatePreview( Vector2i imageSize )
 
 		sf::View pView;
 		pView.setCenter( middle );
-		pView.setSize( Vector2f( width, -height ) );
+		pView.setSize( Vector2f( width, -height ) * 1.05f );
 
-		mapPreviewTex->clear();
+		Color inversePolyTypeColor;// = Color::Blue;
+
+
+		switch (environmentType)
+		{
+		case 0:
+			inversePolyTypeColor = Color::Blue;
+			break;
+		case 1:
+			inversePolyTypeColor = Color::Green;
+			break;
+		case 2:
+			inversePolyTypeColor = Color::Yellow;
+			break;
+		case 3:
+			inversePolyTypeColor = Color(100, 200, 200);
+			break;
+		case 4:
+			inversePolyTypeColor = Color::Red;
+			break;
+		case 5:
+			inversePolyTypeColor = Color::Magenta;
+			break;
+		case 6:
+			inversePolyTypeColor = Color::White;
+			break;
+		}
+
+		mapPreviewTex->clear(inversePolyTypeColor);
 		mapPreviewTex->setView( pView );
 		
+
+
+
+		vector<p2t::Point*> polyline;
+
+		for (TerrainPoint *tp = inversePolygon->pointStart; tp != NULL; tp = tp->next)
+		{
+			polyline.push_back(new p2t::Point(tp->pos.x, tp->pos.y));
+		}
+		p2t::CDT * cdt = new p2t::CDT(polyline);
+
+		vector<p2t::Triangle*> tris;
+
+		cdt->Triangulate();
+
+		tris = cdt->GetTriangles();
+
+		VertexArray *tempva = new VertexArray(sf::Triangles, tris.size() * 3);
+		VertexArray & v = *tempva;
+		Color testColor(0x75, 0x70, 0x90);
+		testColor = Color::Black;
+		Vector2f topLeft(left, top);
+		for (int i = 0; i < tris.size(); ++i)
+		{
+			p2t::Point *p = tris[i]->GetPoint(0);
+			p2t::Point *p1 = tris[i]->GetPoint(1);
+			p2t::Point *p2 = tris[i]->GetPoint(2);
+			v[i * 3] = Vertex(Vector2f(p->x, p->y), testColor);
+			v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y), testColor);
+			v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y), testColor);
+		}
+
+		delete cdt;
+		int ii = 0;
+		for (TerrainPoint *tp = inversePolygon->pointStart; tp != NULL; tp = tp->next)
+		{
+			delete polyline[ii];
+			++ii;
+		}
+
+		//TerrainPolygon *tempPoly = new TerrainPolygon(&grassTex);
+
+
 		CircleShape cs;
 		cs.setRadius( 10.f * ( (float)width / 1920 ) );
 		cs.setFillColor( Color::Red );
 		cs.setOrigin( cs.getLocalBounds().width / 2, 
 			cs.getLocalBounds().height / 2 );
+
+
+		mapPreviewTex->draw(*tempva);
+		delete tempva;
 
 		for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
 			= polygons.begin(); it != polygons.end(); ++it )

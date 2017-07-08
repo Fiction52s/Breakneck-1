@@ -574,6 +574,7 @@ enum EffectLayer
 	IN_FRONT,
 	IN_FRONT_1,
 	IN_FRONT_OF_UI,
+	UI_FRONT,
 	Count
 };
 

@@ -1034,11 +1034,21 @@ void GameSession::UpdateEnemiesSprites()
 
 void GameSession::DrawEffects( EffectLayer layer )
 {
+	sf::View oldView = preScreenTex->getView();
+	if (layer == UI_FRONT)
+	{
+		preScreenTex->setView(uiView);
+	}
 	Enemy *currentEnem = effectLists[layer];
 	while( currentEnem != NULL )
 	{
 		currentEnem->Draw( preScreenTex );	
 		currentEnem = currentEnem->next;
+	}
+
+	if (layer == UI_FRONT)
+	{
+		preScreenTex->setView(oldView);
 	}
 }
 
@@ -3553,10 +3563,20 @@ bool GameSession::OpenFile( string fileName )
 					}
 				}
 
+			Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
+
 			BushExpression *normalExpr = GetBush_NORMAL_Points( 0, edges[currentEdgeIndex], 20,
 					300, CubicBezier( 0, 0, 1, 1 ), 20, 1000, CubicBezier( 0, 0, 1, 1 ) );
 			if( normalExpr != NULL )
 				testva->AddBushExpression( normalExpr );
+
+			BushExpression *testExpr = GetBush_NORMAL_Points(0, edges[currentEdgeIndex], 20,
+				300, CubicBezier(0, 0, 1, 1), 20, 1000, CubicBezier(0, 0, 1, 1));
+
+			if (testExpr != NULL)
+			{
+				testva->AddBushExpression(testExpr);
+			}
 
 			VertexArray *polygonVA = va;
 
@@ -8247,6 +8267,8 @@ int GameSession::Run()
 			preScreenTex->setView(uiView);
 			DrawFade(preScreenTex);
 		}
+
+		DrawEffects(EffectLayer::UI_FRONT);
 
 		preScreenTex->display();
 
@@ -13887,7 +13909,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
 	hitByPlayer2List( NULL ), numTargets( 0 )
 {
-	hud = new RaceFightHUD(owner);
+	hud = new RaceFightHUD(this);
 
 	ts_scoreTest = owner->GetTileset( "score_menu_01.png", 1920, 1080 );
 	scoreTestSprite.setTexture( *ts_scoreTest->texture );
@@ -13987,34 +14009,34 @@ void GameSession::RaceFight::RemoveFromPlayer2HitList( RaceFightTarget *target )
 	assert( hitByPlayer2List != NULL );
 
 	--player2Score;
-	cout << "subbig player2score is now: " << player2Score << endl;
-	if( hitByPlayer2List->pPrev == NULL && hitByPlayer2List->pNext == NULL )
+	//cout << "subbig player2score is now: " << player2Score << endl;
+	if( hitByPlayer2List->p2Prev == NULL && hitByPlayer2List->p2Next == NULL )
 	{
-		cout << "e" << endl;
+		//cout << "e" << endl;
 		assert( hitByPlayer2List == target );
 		hitByPlayer2List = NULL;
 	}
 	else if( target == hitByPlayer2List )
 	{
-		cout << "f" << endl;
-		target->pNext->pPrev = NULL;
-		RaceFightTarget *newListHead = target->pNext;
-		target->pNext = NULL;
+		//cout << "f" << endl;
+		target->p2Next->p2Prev = NULL;
+		RaceFightTarget *newListHead = target->p2Next;
+		target->p2Next = NULL;
 		hitByPlayer2List = newListHead;
 	}
-	else if( target->pPrev != NULL && target->pNext != NULL )
+	else if( target->p2Prev != NULL && target->p2Next != NULL )
 	{
-		cout << "g" << endl;
-		target->pPrev->pNext = target->pNext;
-		target->pNext->pPrev = target->pPrev;
-		target->pPrev = NULL;
-		target->pNext = NULL;
+		//cout << "g" << endl;
+		target->p2Prev->p2Next = target->p2Next;
+		target->p2Next->p2Prev = target->p2Prev;
+		target->p2Prev = NULL;
+		target->p2Next = NULL;
 	}
-	else if( target->pNext == NULL )
+	else if( target->p2Next == NULL )
 	{
-		cout << "h" << endl;
-		target->pPrev->pNext = NULL;
-		target->pPrev = NULL;
+		//cout << "h" << endl;
+		target->p2Prev->p2Next = NULL;
+		target->p2Prev = NULL;
 	}
 }
 
@@ -14028,15 +14050,17 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 		player = owner->GetPlayer( 0 );
 		
 		playerScore++;
+		hud->ScorePoint(RaceFightHUD::PlayerColor::BLUE);
 		if( target->action == RaceFightTarget::Action::PLAYER2 )
 		{
 			RemoveFromPlayer2HitList( target );
 			target->action = RaceFightTarget::Action::PLAYER1;
-			playerScoreImage->SetNumber( playerScore );
+			//playerScoreImage->SetNumber( playerScore );
+			//hud->UpdateScore();
 		}
 
 		target->gameTimeP1Hit = gameTimer->value;
-		player2ScoreImage->SetNumber( player2Score );
+		//player2ScoreImage->SetNumber( player2Score );
 		
 
 		if( hitByPlayerList == NULL )
@@ -14066,18 +14090,20 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 	}
 	else if( playerIndex == 1 )
 	{
-		player = owner->GetPlayer( 0 );
+		player = owner->GetPlayer( 1 );
 
 		player2Score++;
+		hud->ScorePoint(RaceFightHUD::PlayerColor::RED);
 		if( target->action == RaceFightTarget::Action::PLAYER1 )
 		{
 			RemoveFromPlayerHitList( target );
 			target->action = RaceFightTarget::Action::PLAYER2;
-			playerScoreImage->SetNumber( playerScore );
+			//playerScoreImage->SetNumber( playerScore );
 		}
+		
 
 		target->gameTimeP2Hit = gameTimer->value;
-		player2ScoreImage->SetNumber( player2Score );
+		//player2ScoreImage->SetNumber( player2Score );
 		
 		if( hitByPlayer2List == NULL )
 		{
@@ -14104,6 +14130,8 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 			raceWinnerIndex = 1;
 		}
 	}
+
+	hud->UpdateScore();
 }
 
 void GameSession::RaceFight::Reset()
@@ -14128,14 +14156,13 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 	if( attacker == 0 )
 	{
 		at = owner->GetPlayer( 0 );
-		def = owner->GetPlayer( 0 );
+		def = owner->GetPlayer( 1 );
 
 		++playerHitCounter;
 		if( raceWinnerIndex == -1 )
 		{
 			if( hitByPlayer2List != NULL )
 			{
-				
 				HitByPlayer( attacker, hitByPlayer2List );
 			}
 		}
@@ -14171,7 +14198,7 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 	{
 		++player2HitCounter;
 
-		at = owner->GetPlayer( 0 );
+		at = owner->GetPlayer( 1 );
 		def = owner->GetPlayer( 0 );
 
 		if( raceWinnerIndex == -1 ) //race is not over

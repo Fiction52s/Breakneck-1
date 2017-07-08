@@ -4,27 +4,52 @@
 #include "ImageText.h"
 #include "Tileset.h"
 #include <SFML\Graphics.hpp>
+#include "GameSession.h"
 
-struct GameSession;
+
+
 struct RaceFightHUD
 {
-	enum MaskState
+	/*enum MaskState
 	{
 		NEUTRAL,
 		RED,
 		BLUE
+	};*/
+
+	enum PlayerColor
+	{
+		BLUE,
+		RED,
+		GREEN,
+		PURPLE,
+		NONE
 	};
 
-	RaceFightHUD( GameSession *owner );
+	RaceFightHUD(GameSession::RaceFight *rf );
 	sf::Sprite mask;
 	ImageText *scoreRed;
 	ImageText *scoreBlue;
 	GameSession *owner;
 	Tileset *ts_mask;
 
+	Tileset *ts_smallMask;
+
+	Tileset *ts_fx_gainPointBlue;
+	Tileset *ts_fx_gainPointRed;
+	Tileset *ts_ready;
+
+	sf::Sprite smallMask;
+
 	void Draw(sf::RenderTarget *target);
-	void UpdateScoreRed( int newScore );
-	void UpdateScoreBlue(int newScore );
+	void UpdateScore( PlayerColor pc, int newScore );
+	void UpdateScore();
+	
+
+	void SetRaceWinner( PlayerColor pc );
+	void ScorePoint( PlayerColor pc );
+
+	GameSession::RaceFight *raceFight;
 };
 
 #endif
