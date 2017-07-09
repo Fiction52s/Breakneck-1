@@ -76,6 +76,8 @@ struct ControlProfileMenu : UIEventHandlerBase
 		S_SHOWING_OPTIONS,
 		S_EDIT_CONFIG,
 		S_RECEIVE_BUTTON,
+		S_MUSIC_SELECTOR,
+		S_GHOST_SELECTOR,
 		S_Count
 	};
 

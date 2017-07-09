@@ -43,13 +43,17 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 	currProfile = p_profiles.front(); //KIN 
 
-	selectedProfileText.setString(currProfile->name);
-	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
-
 	selectedProfileText.setFont(section->mainMenu->arial);
 	selectedProfileText.setCharacterSize(30);
 	selectedProfileText.setFillColor(Color::Black);
-	selectedProfileText.setPosition(p_topMid.x, p_topMid.y + 10);
+	
+	selectedProfileText.setString(currProfile->name);
+
+	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 
+		selectedProfileText.getLocalBounds().height / 2);
+	selectedProfileText.setPosition(p_topMid.x, p_topMid.y + 90);
+
+	
 
 
 	
@@ -272,7 +276,13 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 				}
 
 				selectedProfileText.setString(currProfile->name);
-				selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
+				/*selectedProfileText.setOrigin(  
+					selectedProfileText.getLocalBounds().width / 2 
+					- selectedProfileText.getLocalBounds().left, 
+					selectedProfileText.getLocalBounds().height );*/
+				selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2,
+					selectedProfileText.getLocalBounds().height / 2);
+				//selectedProfileText.setPosition(selectedProfileText.getPosition());
 				break;
 			}
 		case S_EDIT_CONFIG:
@@ -295,8 +305,8 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 				break;
 			}
 		case S_SHOWING_OPTIONS:
-			state = S_SELECTED;
-			
+			//state = S_SELECTED;
+			state = S_GHOST_SELECTOR;
 			break;
 		case S_EDIT_CONFIG:
 			{
@@ -307,13 +317,35 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			}
 		}
 	}
+	else if (currInput.Y && !prevInput.Y)
+	{
+		switch (state)
+		{
+		case S_SELECTED:
+			state = S_MUSIC_SELECTOR;
+			break;
+		}
+	}
 	if( currInput.B && !prevInput.B )
 	{
-		if( state == S_SHOWING_OPTIONS )
+		switch (state)
+		{
+		case S_SHOWING_OPTIONS:
 		{
 			saSelector->currIndex = oldCurrIndex;
 			state = S_SELECTED;
+			break;
 		}
+		case S_MUSIC_SELECTOR:
+			state = S_SELECTED;
+			break;
+		case S_GHOST_SELECTOR:
+			state = S_SELECTED;
+			break;
+		}
+		
+			
+		
 	}
 
 	//tomorrow: set up the edit profile grid to draw in a separate state from a selected

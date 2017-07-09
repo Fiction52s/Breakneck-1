@@ -852,10 +852,10 @@ bool RecordGhostMenu::ReplaceGhostHeader(boost::filesystem::path &p, GhostHeader
 	return true;
 }
 
-void RecordGhostMenu::Update()
+void RecordGhostMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 {	
-	ControllerState &currInput = mainMenu->menuCurrInput;
-	ControllerState &prevInput = mainMenu->menuPrevInput;
+	 //= mainMenu->menuCurrInput;
+	// = mainMenu->menuPrevInput;
 
 	if (currInput.B && !prevInput.B)
 	{

@@ -37,7 +37,7 @@ struct CustomMapsHandler : GUIHandler
 
 struct ControlProfile;
 struct ControlProfileMenu;
-struct MultiLoadingScreen;
+struct MapSelectionMenu;
 struct ControlProfileManager;
 struct UIControlGrid;
 
@@ -60,7 +60,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	};
 
 	MultiSelectionSection( MainMenu *p_mainMenu,
-		MultiLoadingScreen *parent,
+		MapSelectionMenu *parent,
 		int p_playerIndex,
 		sf::Vector2f &topMid );
 	bool ButtonEvent( UIEvent eType,
@@ -74,7 +74,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	sf::Sprite playerSprite;
 	bool active;
 	int playerIndex;
-	MultiLoadingScreen *parent;
+	MapSelectionMenu *parent;
 	MainMenu *mainMenu;
 	bool isReady;
 	bool ShouldGoBack();
@@ -93,9 +93,6 @@ struct MultiLoadingScreen
 	MultiSelectionSection *playerSection[4];
 	boost::filesystem::path filePath;
 	sf::Sprite previewSprite;
-//	sf::Texture previewTex;
-	
-//	void SetPreview();
 	bool AllPlayersReady();
 	int GetNumActivePlayers();
 	MainMenu *mainMenu;
@@ -257,7 +254,10 @@ struct MapSelectionMenu
 		S_MUSIC_OPTIONS,
 		S_GHOST_SELECTOR,
 		S_GHOST_OPTIONS,
-		S_SELECTING_SKIN
+		S_SELECTING_SKIN,
+		S_TO_MULTI_TRANS,
+		S_FROM_MULTI_TRANS,
+		S_MULTI_SCREEN
 	};
 
 	State state;
@@ -307,6 +307,7 @@ struct MapSelectionMenu
 	SingleAxisSelector *saSelector;
 
 	MusicSelector *musicSelector;
+	void UpdateMultiInput();
 
 	int numTotalItems;
 	std::pair<std::string,MapIndexInfo> *allItems;
@@ -328,6 +329,33 @@ struct MapSelectionMenu
 	RecordGhostMenu *ghostSelector;
 
 	MultiSelectionSection *singleSection;
+
+	int multiTransFrame;
+	int toMultiTransLength;
+	int fromMultiTransLength;
+
+	ControllerState multiMusicPrev;
+	ControllerState multiMusicCurr;
+	ControllerState multiGhostPrev;
+	ControllerState multiGhostCurr;
+
+	bool multiMusicOptions;
+	bool multiGhostOptions;
+
+	MultiSelectionSection *multiPlayerSection[4];
+
+	Tileset *ts_multiProfileRow;
+	sf::Sprite multiProfileRow;
+
+	Tileset *ts_multiSelect;
+	sf::Sprite multiSelect;
+
+	sf::Vector2f multiRowOnPos;
+	sf::Vector2f multiRowOffPos;
+
+	sf::Vector2f multiSelectOnPos;
+	sf::Vector2f multiSelectOffPos;
+	// more transition information later
 };
 
 struct SaveMenuScreen
@@ -535,7 +563,6 @@ struct MainMenu
 
 	ControllerState menuPrevInput;
 	ControllerState menuCurrInput;
-
 	
 	sf::Sprite backgroundTitleSprite;
 	sf::Sprite breakneckTitleSprite;

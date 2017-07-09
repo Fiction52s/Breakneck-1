@@ -175,10 +175,10 @@ void MusicSelector::UpdateNames()
 
 }
 
-void MusicSelector::Update()
+void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInput)
 {
-	ControllerState &currInput = mainMenu->menuCurrInput;
-	ControllerState &prevInput = mainMenu->menuPrevInput;
+	//ControllerState &currInput = mainMenu->menuCurrInput;
+	//ControllerState &prevInput = mainMenu->menuPrevInput;
 
 	MusicInfo *mi = songs[saSelector->currIndex];
 

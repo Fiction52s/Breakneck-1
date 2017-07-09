@@ -14086,6 +14086,7 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
 		{
 			raceWinnerIndex = 0;
+			hud->SetRaceWinner(RaceFightHUD::BLUE);
 		}
 	}
 	else if( playerIndex == 1 )
@@ -14128,6 +14129,7 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
 		{
 			raceWinnerIndex = 1;
+			hud->SetRaceWinner(RaceFightHUD::RED);
 		}
 	}
 

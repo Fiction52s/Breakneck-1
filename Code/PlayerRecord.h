@@ -211,7 +211,7 @@ struct RecordGhostMenu
 	MainMenu *mainMenu;
 	void SetupBoxes();
 	void LoadItems();
-	void Update();
+	void Update(ControllerState &currInput, ControllerState &prevInput);
 
 	static GhostHeader * ReadGhostHeader(std::ifstream &is);
 	static bool WriteGhostHeader(std::ofstream &of, GhostHeader *mh);

@@ -91,6 +91,15 @@ void RaceFightHUD::Draw( RenderTarget *target )
 void RaceFightHUD::SetRaceWinner(RaceFightHUD::PlayerColor pc)
 {
 	smallMask.setTextureRect(ts_smallMask->GetSubRect( (int)pc) );
+	switch (pc)
+	{
+	case BLUE:
+		smallMask.setPosition(960-200, 40);
+		break;
+	case RED:
+		smallMask.setPosition(960 + 200, 40);
+		break;
+	}
 }
 
 void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)

@@ -31,7 +31,7 @@ struct MusicSelector
 	MainMenu *mainMenu;
 
 	void SetupBoxes();
-	void Update();
+	void Update(ControllerState &curr, ControllerState &prev);
 	void MoveUp();
 	void MoveDown();
 	void UpdateNames();

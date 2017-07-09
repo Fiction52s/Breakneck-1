@@ -40,7 +40,7 @@ const int MapSelectionMenu::BOX_SPACING = 0;
 sf::Font MainMenu::arial;
 int MainMenu::masterVolume = 100;
 
-MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MultiLoadingScreen *p_parent,
+MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionMenu *p_parent,
 	int p_playerIndex, Vector2f &p_topMid )
 	:mainMenu( p_mainMenu ), parent( p_parent ), playerIndex( p_playerIndex ), team( T_NOT_CHOSEN ),
 	skinIndex( S_STANDARD ), isReady( false ), active( false )
@@ -182,10 +182,17 @@ void MultiSelectionSection::Update()
 		}*/
 	}
 
-	int numPlayersActive;
+	int numPlayersActive = 0;
 	if (parent != NULL)
 	{
-		numPlayersActive  = parent->GetNumActivePlayers();
+		for (int i = 0; i < 4; ++i)
+		{
+			if (parent->multiPlayerSection[i]->active)
+			{
+				++numPlayersActive;
+			}
+		}
+		//numPlayersActive  = parent->GetNumActivePlayers();
 	}
 	else
 	{
@@ -210,7 +217,7 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 {
 	
 	//if (parent != NULL)
-	{
+	/*{
 		Color c;
 		switch (playerIndex)
 		{
@@ -234,7 +241,7 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 		rs.setOrigin(rs.getLocalBounds().width / 2, 0);
 		rs.setPosition(profileSelect->topMid);
 		target->draw(rs);
-	}
+	}*/
 
 	target->draw( playerSprite );
 	profileSelect->Draw( target );
@@ -254,7 +261,7 @@ MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	for( int i = 0; i < 4; ++i )
 	{
 		Vector2f topMid = Vector2f(quarter * i + quarter / 2, 1080 - 400) + menuOffset;
-		playerSection[i] = new MultiSelectionSection( mainMenu, this, i, topMid);
+		//playerSection[i] = new MultiSelectionSection( mainMenu, this, i, topMid);
 	}
 
 	progressDisplay = new LoadingMapProgressDisplay(mainMenu, menuOffset + Vector2f(480, 540));
@@ -2288,6 +2295,9 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ),
 	oldCurrIndex( 0 )
 {
+	toMultiTransLength = 60;
+	fromMultiTransLength = 60;
+
 	allItems = NULL;
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
@@ -2317,7 +2327,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	previewSprite.setPosition(blankTest.getPosition());
 
-	ts_bg = mainMenu->tilesetManager.GetTileset("Menu/map_load_1920x1080.png", 1920, 1080);
+	ts_bg = mainMenu->tilesetManager.GetTileset("Menu/map_select_menu.png", 1920, 1080);
 	bg.setTexture(*ts_bg->texture);
 	bg.setPosition(menuOffset);
 
@@ -2352,6 +2362,30 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	ghostSelector = new RecordGhostMenu(mainMenu, topMid);
 	ghostSelector->UpdateItemText();
+
+	ts_multiProfileRow = mainMenu->tilesetManager.GetTileset("Menu/multiprofile.png", 1920, 400);
+	multiProfileRow.setTexture(*ts_multiProfileRow->texture);
+
+	ts_multiSelect = mainMenu->tilesetManager.GetTileset("Menu/multiselector.png", 960, 680);
+	multiSelect.setTexture(*ts_multiSelect->texture);
+
+	multiRowOnPos = menuOffset + Vector2f(0, 1080 - 400);
+	multiRowOffPos = menuOffset + Vector2f(0, 1080);
+
+	multiProfileRow.setPosition( multiRowOffPos );
+
+	multiSelectOnPos = menuOffset + Vector2f(0, 0);
+	multiSelectOffPos = menuOffset + Vector2f(0, -680);
+	
+
+	int quarter = 1920 / 4;
+	//menuOffset = Vector2f(-1920 * 2, 0);
+	for (int i = 0; i < 4; ++i)
+	{
+		Vector2f topMid = Vector2f(quarter * i + quarter / 2, 1080 - 400) + menuOffset;
+		multiPlayerSection[i] = new MultiSelectionSection(mainMenu, this, i, topMid);
+	}
+
 	//filterOptions = new UIVerticalControlList()
 }
 
@@ -2732,6 +2766,109 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 	return true;
 }
 
+void MapSelectionMenu::UpdateMultiInput()
+{
+	bool musicOn[4];
+	bool ghostOn[4];
+	memset(&musicOn, 0, sizeof(musicOn));
+	memset(&ghostOn, 0, sizeof(ghostOn));
+
+	for (int i = 0; i < 4; ++i)
+	{
+		//if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_SELECTED)
+		//{
+			//multiPlayerSection[i]->Update();
+			ControlProfileMenu::State s = multiPlayerSection[i]->profileSelect->state;
+			if (s == ControlProfileMenu::State::S_MUSIC_SELECTOR)
+			{
+				musicOn[i] = true;
+			}
+			else if (s == ControlProfileMenu::State::S_GHOST_SELECTOR)
+			{
+				ghostOn[i] = true;
+			}
+		//}
+	}
+
+	multiMusicPrev = multiMusicCurr;
+	multiGhostPrev = multiGhostCurr;
+
+	multiMusicCurr.Set(ControllerState());
+	multiGhostCurr.Set(ControllerState());
+
+	//setup music curr
+	for (int i = 0; i < 4; ++i)
+	{
+		if (!musicOn[i])
+		{
+			continue;
+		}
+
+		ControllerState &pInput = mainMenu->GetPrevInput(i);
+		ControllerState &cInput = mainMenu->GetCurrInput(i);
+		GameController &c = mainMenu->GetController(i);
+
+		//pInput = cInput;
+		bool active = c.UpdateState();
+
+		if (active)
+		{
+			cInput = c.GetState();
+			multiMusicCurr.A |= (cInput.A && !pInput.A);
+			multiMusicCurr.B |= (cInput.B && !pInput.B);
+			multiMusicCurr.X |= (cInput.X && !pInput.X);
+			multiMusicCurr.Y |= (cInput.Y && !pInput.Y);
+			multiMusicCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
+			multiMusicCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
+			multiMusicCurr.start |= (cInput.start && !pInput.start);
+			multiMusicCurr.leftTrigger = max(multiMusicCurr.leftTrigger, cInput.leftTrigger);
+			multiMusicCurr.rightTrigger = max(multiMusicCurr.rightTrigger, cInput.rightTrigger);
+			multiMusicCurr.back |= (cInput.back && !pInput.back);
+			multiMusicCurr.leftStickPad |= cInput.leftStickPad;
+		}
+		else
+		{
+			cInput.Set(ControllerState());
+		}
+	}
+
+	//setup ghost curr
+	for (int i = 0; i < 4; ++i)
+	{
+		if (!ghostOn[i])
+		{
+			continue;
+		}
+
+		ControllerState &pInput = mainMenu->GetPrevInput(i);
+		ControllerState &cInput = mainMenu->GetCurrInput(i);
+		GameController &c = mainMenu->GetController(i);
+
+		//pInput = cInput;
+		bool active = c.UpdateState();
+
+		if (active)
+		{
+			cInput = c.GetState();
+			multiGhostCurr.A |= (cInput.A && !pInput.A);
+			multiGhostCurr.B |= (cInput.B && !pInput.B);
+			multiGhostCurr.X |= (cInput.X && !pInput.X);
+			multiGhostCurr.Y |= (cInput.Y && !pInput.Y);
+			multiGhostCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
+			multiGhostCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
+			multiGhostCurr.start |= (cInput.start && !pInput.start);
+			multiGhostCurr.leftTrigger = max(multiGhostCurr.leftTrigger, cInput.leftTrigger);
+			multiGhostCurr.rightTrigger = max(multiGhostCurr.rightTrigger, cInput.rightTrigger);
+			multiGhostCurr.back |= (cInput.back && !pInput.back);
+			multiGhostCurr.leftStickPad |= cInput.leftStickPad;
+		}
+		else
+		{
+			cInput.Set(ControllerState());
+		}
+	}
+}
+
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
@@ -2782,8 +2919,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				MapSelectionItem *item = allItems[pIndex].second.item;
 				if (item->headerInfo->gameMode == MapHeader::T_RACEFIGHT)
 				{
-					mainMenu->multiLoadingScreen->Reset(item->path);
-					mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MULTIPREVIEW);
+					//mainMenu->multiLoadingScreen->Reset(item->path);
+					//mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MULTIPREVIEW);
+
+					state = S_TO_MULTI_TRANS;
+					multiTransFrame = 0;
 					return;
 				}
 				else
@@ -3004,7 +3144,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			state = oldState;
 		}
 
-		musicSelector->Update();
+		musicSelector->Update(mainMenu->menuCurrInput, mainMenu->menuPrevInput);
 	}
 	else if (state == S_MUSIC_OPTIONS)
 	{
@@ -3022,7 +3162,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			//state = S_MUSIC_SELECTOR;
 		}
 		
-		ghostSelector->Update( );
+		ghostSelector->Update( mainMenu->menuCurrInput, mainMenu->menuPrevInput );
 	}
 	else if (state == S_GHOST_OPTIONS)
 	{
@@ -3031,6 +3171,111 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			state = S_GHOST_SELECTOR;
 			return;
 		}
+	}
+	else if (state == S_TO_MULTI_TRANS)
+	{
+		if (multiTransFrame > toMultiTransLength)
+		{
+			state = S_MULTI_SCREEN;
+		}
+		else
+		{
+			float r = (float)multiTransFrame / toMultiTransLength;
+			multiProfileRow.setPosition(multiRowOffPos * (1 - r) + multiRowOnPos * r);
+
+			multiSelect.setPosition(multiSelectOffPos * (1 - r) + multiSelectOnPos * r);
+			
+			++multiTransFrame;
+		}
+	}
+	else if (state == S_FROM_MULTI_TRANS)
+	{
+		if (multiTransFrame > fromMultiTransLength)
+		{
+			state = S_MAP_SELECTOR;
+		}
+		else
+		{
+			float r = (float)multiTransFrame / fromMultiTransLength;
+			multiProfileRow.setPosition(multiRowOnPos * (1 - r) + multiRowOffPos * r);
+
+			multiSelect.setPosition(multiSelectOnPos * (1 - r) + multiSelectOffPos * r);
+
+			++multiTransFrame;
+		}
+	}
+	else if (state == S_MULTI_SCREEN)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			multiPlayerSection[i]->Update();
+		}
+
+		UpdateMultiInput();
+		bool ghostOn = false;
+		bool musicOn = false;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_MUSIC_SELECTOR)
+			{
+				musicOn = true;
+				break;
+			}
+		}
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_GHOST_SELECTOR )
+			{
+				ghostOn = true;
+				break;
+			}
+		}
+
+		if (musicOn)
+		{
+			musicSelector->Update(multiMusicCurr, multiMusicPrev);
+		}
+		if ( musicOn &&  (multiMusicCurr.B && !multiMusicPrev.B))
+		{
+			if (musicSelector->previewSong != NULL)
+			{
+				musicSelector->previewSong->music->stop();
+				musicSelector->previewSong = NULL;
+			}
+
+			if (multiMusicOptions)
+			{
+				multiMusicOptions = false;
+			}
+			
+			//save after starting the level or when someone cancels the load //this might be causing a bug atm
+			
+			if (musicSelector->modifiedValues)
+			{
+
+			}
+		}
+
+
+		if (ghostOn)
+		{
+			ghostSelector->Update(multiMusicCurr, multiMusicPrev);
+		}
+		if (ghostOn && (multiGhostCurr.B && !multiGhostPrev.B))
+		{
+			if (multiGhostOptions)
+			{
+				multiGhostOptions = false;
+			}
+		}
+
+		
+	}
+	else if (state == S_TO_MULTI_TRANS)
+	{
+		//hold B to go back
 	}
 }
 
@@ -3218,6 +3463,17 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	{
 		ghostSelector->Draw(target);
 	}
+	else if (state == S_MULTI_SCREEN || state == S_TO_MULTI_TRANS
+		|| state == S_FROM_MULTI_TRANS)
+	{
+		target->draw(multiProfileRow);
+		target->draw(multiSelect);
+		for (int i = 0; i < 4; ++i)
+		{
+			multiPlayerSection[i]->Draw(target);
+		}
+	}
+	
 	filterOptions->Draw(target);
 	progressDisplay->Draw(target);
 }
