@@ -297,16 +297,23 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		{
 		case S_SELECTED:
 			{
-				state = S_EDIT_CONFIG;
-				for( int i = 0; i < ControllerSettings::Count; ++i )
+				if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
 				{
-					tempFilter[i] = currProfile->filter[i];
+					if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
+						|| section->parent->multiSelectorState == MapSelectionMenu::MS_GHOST)
+					{
+						state = S_GHOST_SELECTOR;
+					}
 				}
 				break;
 			}
 		case S_SHOWING_OPTIONS:
 			//state = S_SELECTED;
-			state = S_GHOST_SELECTOR;
+			state = S_EDIT_CONFIG;
+			for (int i = 0; i < ControllerSettings::Count; ++i)
+			{
+				tempFilter[i] = currProfile->filter[i];
+			}
 			break;
 		case S_EDIT_CONFIG:
 			{
@@ -322,7 +329,19 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 		switch (state)
 		{
 		case S_SELECTED:
-			state = S_MUSIC_SELECTOR;
+			if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
+			{
+				if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
+					|| section->parent->multiSelectorState == MapSelectionMenu::MS_MUSIC )
+				{
+					state = S_MUSIC_SELECTOR;
+				}
+			}
+			else
+			{
+
+			}
+			
 			break;
 		}
 	}

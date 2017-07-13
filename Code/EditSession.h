@@ -1346,6 +1346,8 @@ struct EditSession : GUIHandler
 	sf::Vector2i polyGrabPos;
 	sf::Vector2i polyGrabDelta;
 	sf::Vector2f polyMove;
+	char numPlayerInfoByte;
+	//char GetDefaultNumPlayerInfo( MapHeader::)
 
 	bool makingRect;
 	sf::Vector2i rectStart;

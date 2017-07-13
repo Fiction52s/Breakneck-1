@@ -283,6 +283,8 @@ struct MapSelectionMenu
 	static bool WriteMapHeader(std::ofstream &of, MapHeader *mh);
 	static bool ReplaceHeader(boost::filesystem::path &p,
 		MapHeader *mh);
+	bool AllPlayersReady();
+	int NumPlayersReady();
 
 	LoadingMapProgressDisplay *progressDisplay;
 	UIVerticalControlList *filterOptions;
@@ -339,11 +341,18 @@ struct MapSelectionMenu
 	ControllerState multiGhostPrev;
 	ControllerState multiGhostCurr;
 
-	bool multiMusicOptions;
-	bool multiGhostOptions;
-
 	MultiSelectionSection *multiPlayerSection[4];
 
+	enum MultiSelectorState
+	{
+		MS_NEUTRAL,
+		MS_MUSIC,
+		MS_GHOST,
+		MS_MUSIC_OPTIONS,
+		MS_GHOST_OPTIONS
+	};
+
+	MultiSelectorState multiSelectorState;
 	Tileset *ts_multiProfileRow;
 	sf::Sprite multiProfileRow;
 

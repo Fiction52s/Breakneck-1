@@ -178,10 +178,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Audio/Sounds/dash.ogg" );
 
 		soundBuffers[S_HIT] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack_short.ogg" );
-		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hurt_spack.ogg" );
+		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hurt.ogg" );
 		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack.ogg" );
 		soundBuffers[S_HIT_AND_KILL_KEY] = owner->soundManager->GetSound( "Audio/Sounds/key_kill.ogg" );
-		soundBuffers[S_FAIR] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
+		soundBuffers[S_FAIR1] = owner->soundManager->GetSound( "Audio/Sounds/fair_1.ogg" );
 		soundBuffers[S_DAIR] = owner->soundManager->GetSound( "Audio/Sounds/dair.ogg" );
 		soundBuffers[S_UAIR] = owner->soundManager->GetSound( "Audio/Sounds/uair.ogg" );
 		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound( "Audio/Sounds/walljump.ogg" );
@@ -193,8 +193,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Audio/Sounds/enter.ogg" );
 		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Audio/Sounds/exit.ogg" );
 
-		soundBuffers[S_DIAGUPATTACK] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
-		soundBuffers[S_DIAGDOWNATTACK] = owner->soundManager->GetSound( "Audio/Sounds/fair.ogg" );
+		soundBuffers[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
+		soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];
+		soundBuffers[S_LAND] = owner->soundManager->GetSound("Audio/Sounds/land.ogg");
 
 
 
@@ -4398,35 +4399,37 @@ void Actor::UpdatePrePhysics()
 							movingGround = grindMovingTerrain;
 							groundSpeed = -grindSpeed;
 							edgeQuantity = grindQuantity;
-							grindEdge = NULL;
 							reversed = true;
+							grindEdge = NULL;
+							
 							//hasGravReverse = false;
 
 								
-							if( currInput.LRight() )
-							{
-								if( groundSpeed < 0 )
-								{
-									//cout << "bleh2" << endl;
-									groundSpeed = 0;
-								}
-								facingRight = true;
-							//	groundSpeed = abs( groundSpeed );
-							}
-							else if( currInput.LLeft() )
-							{
-								facingRight = false;
-								if( groundSpeed > 0 )
-								{
-									//cout << "bleh1" << endl;
-									groundSpeed = 0;
-								}
-							//	groundSpeed = -abs( groundSpeed );
-							}
+							//if( currInput.LRight() )
+							//{
+							//	if( groundSpeed < 0 )
+							//	{
+							//		//cout << "bleh2" << endl;
+							//		groundSpeed = 0;
+							//	}
+							//	facingRight = true;
+							////	groundSpeed = abs( groundSpeed );
+							//}
+							//else if( currInput.LLeft() )
+							//{
+							//	facingRight = false;
+							//	if( groundSpeed > 0 )
+							//	{
+							//		//cout << "bleh1" << endl;
+							//		groundSpeed = 0;
+							//	}
+							////	groundSpeed = -abs( groundSpeed );
+							//}
 
 							action = LAND2;
-							frame = 0;
 							framesNotGrinding = 0;
+							frame = 0;
+							
 
 							double angle = GroundedAngle();
 
@@ -6133,7 +6136,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_FAIR] );
+				owner->soundNodeList->ActivateSound( soundBuffers[S_FAIR1] );
 				currAttackHit = false;
 				//fairSound.play();
 			}
@@ -12837,6 +12840,7 @@ void Actor::PhysicsResponse()
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					action = LAND2;
+					owner->soundNodeList->ActivateSound(soundBuffers[S_LAND]);
 					//rightWire->UpdateAnchors(V2d( 0, 0 ));
 					//leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
@@ -12871,6 +12875,7 @@ void Actor::PhysicsResponse()
 					else
 					{
 						action = LAND;
+						owner->soundNodeList->ActivateSound(soundBuffers[S_LAND]);
 					}
 					//rightWire->UpdateAnchors(V2d( 0, 0 ));
 					//leftWire->UpdateAnchors(V2d( 0, 0 ));

@@ -596,7 +596,7 @@ MainMenu::MainMenu()
 	if( mapPreviewTexture == NULL )
 	{
 		mapPreviewTexture= new RenderTexture;
-		mapPreviewTexture->create( 960, 540 );
+		mapPreviewTexture->create( 960-48, 540-48 );
 		mapPreviewTexture->clear();
 	}
 
@@ -2322,10 +2322,10 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	previewBlank = true;
 	blankTest.setFillColor(Color::Blue);
-	blankTest.setSize(Vector2f(960, 540));
+	blankTest.setSize(Vector2f(960 + 24, 540 + 24));
 	blankTest.setPosition(Vector2f( 960, 0 ) + menuOffset);
 
-	previewSprite.setPosition(blankTest.getPosition());
+	previewSprite.setPosition(menuOffset + Vector2f(960 + 24, 24));//blankTest.getPosition());
 
 	ts_bg = mainMenu->tilesetManager.GetTileset("Menu/map_select_menu.png", 1920, 1080);
 	bg.setTexture(*ts_bg->texture);
@@ -2387,6 +2387,11 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	}
 
 	//filterOptions = new UIVerticalControlList()
+}
+
+int MapSelectionMenu::NumPlayersReady()
+{
+	return 4;
 }
 
 void MapSelectionMenu::SetupBoxes()
@@ -2458,6 +2463,23 @@ void MapSelectionMenu::LoadPath(boost::filesystem::path &p)
 		cout << ex.what() << '\n';
 		assert(0);
 	}
+}
+
+bool MapSelectionMenu::AllPlayersReady()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (multiPlayerSection[i]->active)
+		{
+			ControlProfileMenu *cpm = multiPlayerSection[i]->profileSelect;
+			if (cpm->state != ControlProfileMenu::S_SELECTED)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
@@ -2576,8 +2598,8 @@ void MapSelectionMenu::LoadItems()
 		if (is.is_open())
 		{
 			MapHeader *mh = ReadMapHeader(is);
-			string pFile = string( "Maps/") + (*it).relative_path().stem().string() + string("_preview_960x540.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
-			string defaultFile = "Menu/nopreview_960x540.png";
+			string pFile = string( "Maps/") + (*it).relative_path().stem().string() + string("_preview_912x492.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
+			//string defaultFile = "Menu/nopreview_960x540.png";
 
 			if (collectionMap.find(mh->collectionName) != collectionMap.end())
 			{
@@ -2587,7 +2609,7 @@ void MapSelectionMenu::LoadItems()
 				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
 				if (item->ts_preview == NULL)
 				{
-					item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);
+					//item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);
 				}
 				
 				MapCollection *temp = collectionMap[mh->collectionName];
@@ -2768,103 +2790,88 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 
 void MapSelectionMenu::UpdateMultiInput()
 {
-	bool musicOn[4];
-	bool ghostOn[4];
-	memset(&musicOn, 0, sizeof(musicOn));
-	memset(&ghostOn, 0, sizeof(ghostOn));
-
-	for (int i = 0; i < 4; ++i)
+	if (multiSelectorState == MS_NEUTRAL)
 	{
-		//if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_SELECTED)
-		//{
-			//multiPlayerSection[i]->Update();
-			ControlProfileMenu::State s = multiPlayerSection[i]->profileSelect->state;
-			if (s == ControlProfileMenu::State::S_MUSIC_SELECTOR)
-			{
-				musicOn[i] = true;
-			}
-			else if (s == ControlProfileMenu::State::S_GHOST_SELECTOR)
-			{
-				ghostOn[i] = true;
-			}
-		//}
+
 	}
-
-	multiMusicPrev = multiMusicCurr;
-	multiGhostPrev = multiGhostCurr;
-
-	multiMusicCurr.Set(ControllerState());
-	multiGhostCurr.Set(ControllerState());
-
-	//setup music curr
-	for (int i = 0; i < 4; ++i)
+	else if( multiSelectorState == MS_MUSIC )
 	{
-		if (!musicOn[i])
+		multiMusicPrev = multiMusicCurr;
+		for (int i = 0; i < 4; ++i)
 		{
-			continue;
-		}
+			
+			
 
-		ControllerState &pInput = mainMenu->GetPrevInput(i);
-		ControllerState &cInput = mainMenu->GetCurrInput(i);
-		GameController &c = mainMenu->GetController(i);
+			if (multiPlayerSection[i]->profileSelect->state != ControlProfileMenu::S_MUSIC_SELECTOR )
+			{
+				continue;
+			}
 
-		//pInput = cInput;
-		bool active = c.UpdateState();
+			ControllerState &pInput = mainMenu->GetPrevInput(i);
+			ControllerState &cInput = mainMenu->GetCurrInput(i);
+			GameController &c = mainMenu->GetController(i);
 
-		if (active)
-		{
-			cInput = c.GetState();
-			multiMusicCurr.A |= (cInput.A && !pInput.A);
-			multiMusicCurr.B |= (cInput.B && !pInput.B);
-			multiMusicCurr.X |= (cInput.X && !pInput.X);
-			multiMusicCurr.Y |= (cInput.Y && !pInput.Y);
-			multiMusicCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
-			multiMusicCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
-			multiMusicCurr.start |= (cInput.start && !pInput.start);
-			multiMusicCurr.leftTrigger = max(multiMusicCurr.leftTrigger, cInput.leftTrigger);
-			multiMusicCurr.rightTrigger = max(multiMusicCurr.rightTrigger, cInput.rightTrigger);
-			multiMusicCurr.back |= (cInput.back && !pInput.back);
-			multiMusicCurr.leftStickPad |= cInput.leftStickPad;
-		}
-		else
-		{
-			cInput.Set(ControllerState());
+			//pInput = cInput;
+			bool active = c.UpdateState();
+
+			if (active)
+			{
+				cInput = c.GetState();
+				multiMusicCurr.A |= (cInput.A && !pInput.A);
+				multiMusicCurr.B |= (cInput.B && !pInput.B);
+				multiMusicCurr.X |= (cInput.X && !pInput.X);
+				multiMusicCurr.Y |= (cInput.Y && !pInput.Y);
+				multiMusicCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
+				multiMusicCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
+				multiMusicCurr.start |= (cInput.start && !pInput.start);
+				multiMusicCurr.leftTrigger = max(multiMusicCurr.leftTrigger, cInput.leftTrigger);
+				multiMusicCurr.rightTrigger = max(multiMusicCurr.rightTrigger, cInput.rightTrigger);
+				multiMusicCurr.back |= (cInput.back && !pInput.back);
+				multiMusicCurr.leftStickPad |= cInput.leftStickPad;
+			}
+			else
+			{
+				cInput.Set(ControllerState());
+			}
 		}
 	}
-
-	//setup ghost curr
-	for (int i = 0; i < 4; ++i)
+	else if (multiSelectorState == MS_GHOST)
 	{
-		if (!ghostOn[i])
+		//setup ghost curr
+		multiGhostPrev = multiGhostCurr;
+		for (int i = 0; i < 4; ++i)
 		{
-			continue;
-		}
+			if (multiPlayerSection[i]->profileSelect->state != ControlProfileMenu::S_GHOST_SELECTOR )
+			{
+				continue;
+			}
 
-		ControllerState &pInput = mainMenu->GetPrevInput(i);
-		ControllerState &cInput = mainMenu->GetCurrInput(i);
-		GameController &c = mainMenu->GetController(i);
+			ControllerState &pInput = mainMenu->GetPrevInput(i);
+			ControllerState &cInput = mainMenu->GetCurrInput(i);
+			GameController &c = mainMenu->GetController(i);
 
-		//pInput = cInput;
-		bool active = c.UpdateState();
+			//pInput = cInput;
+			bool active = c.UpdateState();
 
-		if (active)
-		{
-			cInput = c.GetState();
-			multiGhostCurr.A |= (cInput.A && !pInput.A);
-			multiGhostCurr.B |= (cInput.B && !pInput.B);
-			multiGhostCurr.X |= (cInput.X && !pInput.X);
-			multiGhostCurr.Y |= (cInput.Y && !pInput.Y);
-			multiGhostCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
-			multiGhostCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
-			multiGhostCurr.start |= (cInput.start && !pInput.start);
-			multiGhostCurr.leftTrigger = max(multiGhostCurr.leftTrigger, cInput.leftTrigger);
-			multiGhostCurr.rightTrigger = max(multiGhostCurr.rightTrigger, cInput.rightTrigger);
-			multiGhostCurr.back |= (cInput.back && !pInput.back);
-			multiGhostCurr.leftStickPad |= cInput.leftStickPad;
-		}
-		else
-		{
-			cInput.Set(ControllerState());
+			if (active)
+			{
+				cInput = c.GetState();
+				multiGhostCurr.A |= (cInput.A && !pInput.A);
+				multiGhostCurr.B |= (cInput.B && !pInput.B);
+				multiGhostCurr.X |= (cInput.X && !pInput.X);
+				multiGhostCurr.Y |= (cInput.Y && !pInput.Y);
+				multiGhostCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
+				multiGhostCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
+				multiGhostCurr.start |= (cInput.start && !pInput.start);
+				multiGhostCurr.leftTrigger = max(multiGhostCurr.leftTrigger, cInput.leftTrigger);
+				multiGhostCurr.rightTrigger = max(multiGhostCurr.rightTrigger, cInput.rightTrigger);
+				multiGhostCurr.back |= (cInput.back && !pInput.back);
+				multiGhostCurr.leftStickPad |= cInput.leftStickPad;
+			}
+			else
+			{
+				cInput.Set(ControllerState());
+			}
 		}
 	}
 }
@@ -2924,6 +2931,8 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 					state = S_TO_MULTI_TRANS;
 					multiTransFrame = 0;
+
+					LoadMap();
 					return;
 				}
 				else
@@ -3211,27 +3220,108 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			multiPlayerSection[i]->Update();
 		}
 
-		UpdateMultiInput();
 		bool ghostOn = false;
 		bool musicOn = false;
+		bool allNeutral = true;
 
 		for (int i = 0; i < 4; ++i)
 		{
 			if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_MUSIC_SELECTOR)
 			{
 				musicOn = true;
+				allNeutral = false;
 				break;
 			}
 		}
 
 		for (int i = 0; i < 4; ++i)
 		{
-			if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_GHOST_SELECTOR )
+			if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::State::S_GHOST_SELECTOR)
 			{
-				ghostOn = true;
-				break;
+				if (musicOn)
+				{
+					multiPlayerSection[i]->profileSelect->state = ControlProfileMenu::State::S_SELECTED;
+				}
+				else
+				{
+					ghostOn = true;
+					allNeutral = false;
+					break;
+				}
 			}
 		}
+
+		
+
+		if (multiSelectorState == MS_NEUTRAL)
+		{
+			if (musicOn)
+			{
+				multiSelectorState = MS_MUSIC;
+				return;
+			}
+			else if (ghostOn)
+			{
+				multiSelectorState = MS_GHOST;
+				return;
+			}
+		}
+		else if ((multiSelectorState == MS_MUSIC || multiSelectorState == MS_GHOST ) && allNeutral )
+		{
+			multiSelectorState = MS_NEUTRAL;
+			return;
+		}
+
+
+		
+		if (!musicOn && !ghostOn && mainMenu->menuCurrInput.start && !mainMenu->menuPrevInput.start )
+		{
+			if (AllPlayersReady() && NumPlayersReady() > 1 )
+			{
+				//loadThread->join();
+				//boost::chrono::steady_clock::now()
+				if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+				{
+					for (int i = 0; i < 4; ++i)
+					{
+						mainMenu->GetController(i).SetFilter(multiPlayerSection[i]->profileSelect->currProfile->filter);
+					}
+
+					int res = gs->Run();
+
+					XBoxButton filter[ControllerSettings::Count];
+					SetFilterDefault(filter);
+
+					for (int i = 0; i < 4; ++i)
+					{
+						mainMenu->GetController(i).SetFilter(filter);
+					}
+
+					delete loadThread;
+					loadThread = NULL;
+					delete gs;
+					gs = NULL;
+
+					View vv;
+					vv.setCenter(960, 540);
+					vv.setSize(1920, 1080);
+					mainMenu->window->setView(vv);
+
+					mainMenu->v.setCenter(mainMenu->leftCenter);
+					mainMenu->v.setSize(Vector2f(1920, 1080));
+					mainMenu->preScreenTexture->setView(mainMenu->v);
+
+					mainMenu->SetMode(MainMenu::Mode::MAPSELECT);
+					mainMenu->mapSelectionMenu->state = MapSelectionMenu::State::S_MAP_SELECTOR;
+					mainMenu->v.setCenter(mainMenu->leftCenter);
+					mainMenu->preScreenTexture->setView(mainMenu->v);
+				}
+			}
+		}
+
+
+		UpdateMultiInput();
+		
 
 		if (musicOn)
 		{
@@ -3245,9 +3335,10 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				musicSelector->previewSong = NULL;
 			}
 
-			if (multiMusicOptions)
+			if (multiSelectorState == MS_MUSIC_OPTIONS)
 			{
-				multiMusicOptions = false;
+				multiSelectorState == MS_MUSIC;
+				return;
 			}
 			
 			//save after starting the level or when someone cancels the load //this might be causing a bug atm
@@ -3265,13 +3356,12 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		}
 		if (ghostOn && (multiGhostCurr.B && !multiGhostPrev.B))
 		{
-			if (multiGhostOptions)
+			if (multiSelectorState == MS_GHOST_OPTIONS)
 			{
-				multiGhostOptions = false;
+				multiSelectorState = MS_GHOST;
+				return;
 			}
 		}
-
-		
 	}
 	else if (state == S_TO_MULTI_TRANS)
 	{
@@ -3438,11 +3528,7 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 		target->draw(itemName[i]);
 	}
 
-	if (previewBlank)
-	{
-		target->draw(blankTest);
-	}
-	else
+	if (!previewBlank)
 	{
 		target->draw(previewSprite);
 	}
@@ -3471,6 +3557,15 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 		for (int i = 0; i < 4; ++i)
 		{
 			multiPlayerSection[i]->Draw(target);
+		}
+
+		if (multiSelectorState == MS_MUSIC)
+		{
+			musicSelector->Draw(target);
+		}
+		else if (multiSelectorState == MS_GHOST)
+		{
+			ghostSelector->Draw(target);
 		}
 	}
 	

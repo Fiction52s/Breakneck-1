@@ -3158,11 +3158,6 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
-		//if (raceFight == NULL)
-		
-		
-
-
 		mh = MapSelectionMenu::ReadMapHeader(is);
 
 

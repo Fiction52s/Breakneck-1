@@ -2595,6 +2595,7 @@ void EditSession::WriteFile(string fileName)
 
 	of << mapHeader.collectionName << "\n";
 	of << mapHeader.gameMode << "\n";
+	//of << (int)numPlayerInfoByte << "\n"; //eventually don't cast this when you make this a binary file
 
 	of << (int)environmentType << " " << envLevel << endl;
 
@@ -2826,7 +2827,7 @@ void EditSession::WriteFile(string fileName)
 		(*it)->WriteFile( of );
 	}
 
-	CreatePreview(Vector2i( 1920 / 2, 1080 / 2 ));
+	CreatePreview(Vector2i( 1920 / 2 - 48, 1080 / 2 - 48 ));
 	//CreatePreview(Vector2i(960 * 1.25f, 540 * ));
 
 	//enemies here
