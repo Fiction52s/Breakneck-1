@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 #include "ItemSelector.h"
+#include "Movement.h"
 
 
 struct Config;
@@ -258,6 +259,15 @@ struct MapSelectionMenu
 		S_TO_MULTI_TRANS,
 		S_FROM_MULTI_TRANS,
 		S_MULTI_SCREEN
+	};
+
+	struct OptionWindow
+	{
+		sf::RectangleShape optionRect;
+		sf::Vector2f startPos; //top left
+		sf::Vector2f endPos;
+		CubicBezier slideInBez;
+		CubicBezier slideOutBez;
 	};
 
 	State state;

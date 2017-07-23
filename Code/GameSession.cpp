@@ -859,6 +859,18 @@ Tileset * GameSession::GetTileset( const std::string & s, int tileWidth, int til
 	return tm.GetTileset( s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf );
 }
 
+Tileset * GameSession::GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin )
+{
+	if (skin != NULL)
+	{
+		return tm.GetTileset(s, tileWidth, tileHeight, skin->index, skin->numChanges, skin->startColors, skin->endColors);
+	}
+	else
+	{
+		return tm.GetTileset(s, tileWidth, tileHeight );
+	}
+}
+
 void GameSession::UpdateEnemiesPrePhysics()
 {
 	Actor *player = GetPlayer( 0 );
@@ -8076,7 +8088,7 @@ int GameSession::Run()
 		
 		//powerWheel->Draw( preScreenTex );
 		powerRing->Draw( preScreenTex );
-		keyMarker->Draw( preScreenTex );
+		//keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
 

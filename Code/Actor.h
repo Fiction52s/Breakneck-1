@@ -21,6 +21,21 @@ struct PlayerGhost;
 struct Monitor;
 struct Enemy;
 
+struct KinSkin
+{
+	KinSkin(sf::Color *startCols, sf::Color *endCols,
+		int p_numChanges, int p_index)
+		:startColors(startCols), endColors( endCols ),
+		numChanges( p_numChanges ), index( p_index )
+	{
+
+	}
+	sf::Color *startColors;
+	sf::Color *endColors;
+	int numChanges;
+	int index;
+};
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
@@ -179,6 +194,8 @@ struct Actor : QuadTreeCollider,
 	void SetExpr( Expr ex );
 	void SetAction( Action a );
 
+	void SetupTilesets(KinSkin *kSkin, KinSkin *swordSkin);
+
 	bool AirAttack();
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
@@ -317,7 +334,6 @@ struct Actor : QuadTreeCollider,
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
-	Tileset *normal[Count];
 
 	Tileset *ts_dodecaSmall;
 	Tileset *ts_dodecaBig;

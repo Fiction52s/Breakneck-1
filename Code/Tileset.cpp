@@ -44,16 +44,28 @@ Texture *TilesetManager::CreateAltColorTex( sf::Image &im,
 {
 	int imW = im.getSize().x;
 	int imH = im.getSize().y;
+	sf::Color tempColor;
 	for( int x = 0; x < imW; ++x )
 	{
 		for( int y = 0; y < imH; ++y )
 		{
 			for( int i = 0; i < numAltColors; ++i )
 			{
-				if( startColorBuf[i] == im.getPixel( x, y ) )
+				tempColor = im.getPixel(x, y);
+				if( startColorBuf[i].r == tempColor.r &&
+					startColorBuf[i].g == tempColor.g &&
+					startColorBuf[i].b == tempColor.b )
 				{
+					tempColor.r = endColorBuf[i].r;
+					tempColor.g = endColorBuf[i].g;
+					tempColor.b = endColorBuf[i].b;
+
+					if (tempColor.a != 255)
+					{
+						int xxxx = 6;
+					}
 					assert( x != 0 || y != 0 );
-					im.setPixel( x, y, endColorBuf[i] );
+					im.setPixel( x, y, tempColor );
 				}
 			}
 		}
