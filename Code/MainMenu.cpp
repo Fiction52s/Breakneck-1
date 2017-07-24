@@ -49,13 +49,18 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionM
 		mainMenu->cpm->profiles, p_topMid );
 	bHoldThresh = 30;
 
-	
-	
 
 	if (parent == NULL)
 	{
 		active = true;
 	}
+	holdingB = false;
+	PowerRingSection *blah[] = { new PowerRingSection(mainMenu->tilesetManager, Color::Red, sf::Color::Black,
+		sf::Color::Blue,
+		4, 40, 0) };
+
+	backLoader = new PowerRing(Vector2f(p_topMid.x, p_topMid.y + 50), 1, blah);
+	backLoader->ResetEmpty();
 	//profileSelect->UpdateNames();	
 }
 
@@ -83,18 +88,35 @@ void MultiSelectionSection::Update()
 	}
 	else
 	{
-		if (currInput.B )
+		if (profileSelect->state == ControlProfileMenu::S_SELECTED)
 		{
-			if (bHoldFrames < bHoldThresh)
-				++bHoldFrames;
+			if (currInput.B)
+			{
+				holdingB = true;
+			}
 			else
 			{
+				holdingB = false;
+				bHoldFrames = 0;
+			}
 
+			if (holdingB)
+			{
+				if (backLoader->Fill(1) > 0)
+				{
+
+				}
+				backLoader->Update();
+			}
+			else
+			{
+				backLoader->Drain(1);
+				backLoader->Update();
 			}
 		}
 		else
 		{
-			bHoldFrames = 0;
+			holdingB = false;
 		}
 	}
 
@@ -207,10 +229,6 @@ void MultiSelectionSection::Update()
 		}*/
 		isReady = true;
 	}
-	else if( isReady && currInput.B && !currInput.B )
-	{
-		isReady = false;
-	}
 }
 
 void MultiSelectionSection::Draw( sf::RenderTarget *target )
@@ -243,13 +261,26 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 		target->draw(rs);
 	}*/
 
+	
+
 	target->draw( playerSprite );
 	profileSelect->Draw( target );
+
+	if (holdingB)
+	{
+		backLoader->Draw(target);
+	}
 }
 
 bool MultiSelectionSection::ShouldGoBack()
 {
-	return active && (bHoldFrames == bHoldThresh);
+	if (backLoader->IsFull())
+	{
+		backLoader->ResetEmpty();
+		return true;
+	}
+	
+	return false;
 }
 
 MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
@@ -689,9 +720,9 @@ MainMenu::MainMenu()
 
 	saveMenu = new SaveMenuScreen(this);
 
-	PowerRingSection *blah[] = { new PowerRingSection(tilesetManager, Color::Red, Color::Yellow, sf::Color::Cyan,
-		Color::Red, Color::Yellow, sf::Color::Cyan,
-		PowerRingSection::NORMAL, 300, 0) };
+	PowerRingSection *blah[] = { new PowerRingSection(tilesetManager, Color::Red, sf::Color::Black,
+		sf::Color::Blue,
+		5, 300, 0) };
 
 	testRing = new PowerRing( Vector2f( 200, 200 ), 1, blah);
 }
@@ -2295,6 +2326,8 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ),
 	oldCurrIndex( 0 )
 {
+	
+
 	toMultiTransLength = 60;
 	fromMultiTransLength = 60;
 
@@ -2338,6 +2371,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	gs = NULL;
 	loadThread = NULL;
+	stopThread = NULL;
 
 	LoadItems();
 
@@ -2386,6 +2420,8 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 		multiPlayerSection[i] = new MultiSelectionSection(mainMenu, this, i, topMid);
 	}
 
+
+	
 	//filterOptions = new UIVerticalControlList()
 }
 
@@ -2687,7 +2723,11 @@ void MapSelectionMenu::LoadMap()
 	//filePath = p_path;
 
 	//SetPreview();
-
+	if (stopThread != NULL)
+	{
+		stopThread->join();
+		stopThread = NULL;
+	}
 
 	if (loadThread != NULL)
 	{
@@ -2876,6 +2916,21 @@ void MapSelectionMenu::UpdateMultiInput()
 	}
 }
 
+void MapSelectionMenu::sStopLoadThread(MapSelectionMenu *mapMenu)
+{
+	mapMenu->StopLoadThread();
+}
+
+void MapSelectionMenu::StopLoadThread()
+{
+	gs->SetContinueLoading(false);
+	loadThread->join();
+	delete loadThread;
+	loadThread = NULL;
+	delete gs;
+	gs = NULL;
+}
+
 void MapSelectionMenu::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
@@ -3002,29 +3057,19 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	}
 	else if (state == S_SELECTING_SKIN)
 	{
-		if (currInput.B && !prevInput.B)
+		if (singleSection->ShouldGoBack())
 		{
-			if (singleSection->isReady)
-			{
-				singleSection->isReady = false;
-			}
-			else
-			{
-				state = S_MAP_SELECTOR;
+			//kill loading map!
 
-				gs->SetContinueLoading(false);
-				loadThread->join();
-				delete loadThread;
-				loadThread = NULL;
-				delete gs;
-				gs = NULL;
-			}
-			//save the header if its modified
+			state = S_MAP_SELECTOR;
 
-
-			//kill the current loading thread
+			assert(stopThread == NULL);
+			stopThread = new boost::thread(&MapSelectionMenu::sStopLoadThread, this);
+			return;
 		}
-		else if (currInput.Y && !prevInput.Y)
+
+
+		if (currInput.Y && !prevInput.Y)
 		{
 			int cIndex = saSelector->currIndex;
 			int pIndex = GetPairIndex(cIndex);
@@ -3215,6 +3260,26 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 	}
 	else if (state == S_MULTI_SCREEN)
 	{
+		for (int i = 0; i < 4; ++i)
+		{
+			if (multiPlayerSection[i]->ShouldGoBack())
+			{
+				//kill loading map!
+				state = S_FROM_MULTI_TRANS;
+				multiTransFrame = 0;
+
+				assert(stopThread == NULL);
+				stopThread = new boost::thread(&MapSelectionMenu::sStopLoadThread, this);
+				//gs->SetContinueLoading(false);
+				//loadThread->join();
+				/*delete loadThread;
+				loadThread = NULL;
+				delete gs;
+				gs = NULL;*/
+				return;
+			}
+		}
+
 		for (int i = 0; i < 4; ++i)
 		{
 			multiPlayerSection[i]->Update();

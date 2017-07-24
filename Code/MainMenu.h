@@ -41,6 +41,7 @@ struct ControlProfileMenu;
 struct MapSelectionMenu;
 struct ControlProfileManager;
 struct UIControlGrid;
+struct PowerRing;
 
 struct MultiSelectionSection : UIEventHandlerBase
 {
@@ -79,9 +80,12 @@ struct MultiSelectionSection : UIEventHandlerBase
 	MainMenu *mainMenu;
 	bool isReady;
 	bool ShouldGoBack();
+	bool holdingB;
 
 	int bHoldFrames;
 	int bHoldThresh;
+
+	PowerRing *backLoader;
 };
 
 struct LoadingMapProgressDisplay;
@@ -277,6 +281,8 @@ struct MapSelectionMenu
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
 
+	
+
 	MapSelectionMenu( MainMenu *p_mainMenu,
 		sf::Vector2f &p_pos );
 	MainMenu *mainMenu;
@@ -295,6 +301,8 @@ struct MapSelectionMenu
 		MapHeader *mh);
 	bool AllPlayersReady();
 	int NumPlayersReady();
+	static void sStopLoadThread(MapSelectionMenu *mapMenu);
+	void StopLoadThread();
 
 	LoadingMapProgressDisplay *progressDisplay;
 	UIVerticalControlList *filterOptions;
@@ -304,6 +312,7 @@ struct MapSelectionMenu
 
 	void LoadMap();
 	boost::thread *loadThread;
+	boost::thread *stopThread;
 
 	sf::Vector2f topMid;
 	GameSession *gs;

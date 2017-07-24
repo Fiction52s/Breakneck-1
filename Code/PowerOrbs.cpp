@@ -804,11 +804,17 @@ PowerRingSection::PowerRingSection(TilesetManager &tm,
 	//ringSprite.setTextureRect(ts_ring->GetSubRect(3));
 	ringSprite.setOrigin(ringSprite.getLocalBounds().width / 2, ringSprite.getLocalBounds().height / 2);
 
-	Reset();
+	ResetFull();
 	
 }
 
-void PowerRingSection::Reset()
+void PowerRingSection::ResetEmpty()
+{
+	currPower = 0;
+	Update();
+}
+
+void PowerRingSection::ResetFull()
 {
 	currPower = maxPower;
 	Update();
@@ -919,6 +925,11 @@ void PowerRingSection::SetupSection( sf::Vector2f &centerPos)
 	//}
 }
 
+bool PowerRingSection::IsFull()
+{
+	return (currPower == maxPower);
+}
+
 PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
 	:numRings( p_numRings ), rings( p_rings ), centerPos( pos )
 {
@@ -935,7 +946,7 @@ PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
 		rings[i] = p_rings[i];
 		rings[i]->SetupSection(centerPos);
 	}
-	Reset();
+	ResetFull();
 	/*for (int i = 0; i < numRings; ++i)
 	{
 		rings[i]->SetupSection(centerPos, radiusSum);
@@ -946,12 +957,31 @@ PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
 	//CreateRing();
 }
 
-void PowerRing::Reset()
+bool PowerRing::IsFull()
+{
+	for (int i = 0; i < numRings; ++i)
+	{
+		if (!rings[i]->IsFull())
+			return false;
+	}
+	return true;
+}
+
+void PowerRing::ResetEmpty()
+{
+	currRing = 0;
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->ResetEmpty();
+	}
+}
+
+void PowerRing::ResetFull()
 {
 	currRing = numRings - 1;
 	for (int i = 0; i < numRings; ++i)
 	{
-		rings[i]->Reset();
+		rings[i]->ResetFull();
 	}
 }
 

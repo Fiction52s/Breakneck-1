@@ -136,8 +136,9 @@ struct PowerRingSection
 	void SetupSection(sf::Vector2f &centerPos);
 	void Update();
 	void UpdateSprite();
-	void Reset();
-	
+	void ResetEmpty();
+	void ResetFull();
+	bool IsFull();
 	RingType ringType;
 	int prevPower;
 	int maxPower;
@@ -176,7 +177,9 @@ struct PowerRing
 	int currRing;
 	int Fill(int fill);
 	int Drain(int drain);
-	void Reset();
+	void ResetEmpty();
+	void ResetFull();
+	bool IsFull();
 
 	sf::VertexArray *ringVA;
 	sf::VertexArray *middleVA;
