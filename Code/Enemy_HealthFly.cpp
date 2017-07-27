@@ -98,8 +98,8 @@ void HealthFly::UpdatePhysics()
 			//give player health right here!
 			int rows = 10;
 			int rowCap = 2 * 5;
-			owner->powerBar.Charge( rowCap * rows ); 
-			owner->GetPlayer( 0 )->desperationMode = false;
+			//owner->powerBar.Charge( rowCap * rows ); 
+			//owner->GetPlayer( 0 )->desperationMode = false;
 		}
 		//owner->RemoveEnemy( this );
 		//get rid of me

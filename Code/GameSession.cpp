@@ -685,16 +685,10 @@ void GameSession::Cleanup()
 		polyShaders = NULL;
 	}
 
-	/*if (powerRing != NULL)
+	if (powerRing != NULL)
 	{
 		delete powerRing;
 		powerRing = NULL;
-	}*/
-
-	if (powerWheel != NULL)
-	{
-		delete powerWheel;
-		powerWheel = NULL;
 	}
 
 	if (goalPulse != NULL)
@@ -5737,18 +5731,17 @@ bool GameSession::Load()
 	assert( goalTile >= 0 );
 	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( goalTile ) );
 
-	powerWheel = new PowerWheel( this, p0->hasPowerAirDash, 
-		p0->hasPowerGravReverse, p0->hasPowerBounce, 
-		p0->hasPowerGrindBall, p0->hasPowerTimeSlow, p0->hasPowerRightWire);
+	if (mh->gameMode == MapHeader::MapType::T_STANDARD)
+	{
+		FillRingSection *blah[] = {
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,0, 300, 0),
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, 300, 0),
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, 300, 0),
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, 300, 0)
+		};
 
-	PowerRingSection *blah[] = { 
-		new PowerRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,0, 300, 0),
-		new PowerRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, 300, 0),
-		new PowerRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, 300, 0),
-		new PowerRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, 300, 0)
-	};
-
-	powerRing = new PowerRing( Vector2f( 100, 200 ), sizeof( blah ) / sizeof( PowerRingSection*), blah );
+		powerRing = new PowerRing(Vector2f(100, 200), sizeof(blah) / sizeof(FillRingSection*), blah);
+	}
 
 	stringstream ss1;
 
@@ -6459,9 +6452,10 @@ int GameSession::Run()
 				}
 
 				UpdateFade();
-				powerWheel->UpdateHide();
+				//powerWheel->UpdateHide();
 
-				miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+				//miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+				miniCircle.setPosition(180, preScreenTex->getSize().y - 180);
 				for( int i = 0; i < 6; ++i )
 				{
 					Sprite &gds = gateDirections[i];
@@ -6469,7 +6463,7 @@ int GameSession::Run()
 				}
 
 				Vector2f miniPos = Vector2f( 30, 750 );
-				miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
+				//miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
 				miniVA[0].position = miniPos + Vector2f( 0, 0 );
 				miniVA[1].position = miniPos + Vector2f( 300, 0 );
 				miniVA[2].position = miniPos + Vector2f( 300, 300 );
@@ -6594,10 +6588,12 @@ int GameSession::Run()
 					gates[i]->Update();
 				}
 
-				if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || GetPlayer( 0 )->frame > 20 )
-					powerWheel->UpdateSections();
+				//if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || GetPlayer( 0 )->frame > 20 )
+				//	powerWheel->UpdateSections();
 
-				powerRing->Update();
+				//if (GetPlayer(0)->action != Actor::Action::SPAWNWAIT || GetPlayer(0)->frame > 20)
+				if( powerRing != NULL )
+					powerRing->Update();
 
 				UpdateEffects();
 
@@ -6609,10 +6605,11 @@ int GameSession::Run()
 
 				goalPulse->Update();
 
-				powerWheel->UpdateHide();
+				//powerWheel->UpdateHide();
 
 
-				miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+				//miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+				miniCircle.setPosition(180, preScreenTex->getSize().y - 180);
 				for( int i = 0; i < 6; ++i )
 				{
 					Sprite &gds = gateDirections[i];
@@ -6620,7 +6617,7 @@ int GameSession::Run()
 				}
 
 				Vector2f miniPos = Vector2f( 30, 750 );
-				miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
+				//miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
 				miniVA[0].position = miniPos + Vector2f( 0, 0 );
 				miniVA[1].position = miniPos + Vector2f( 300, 0 );
 				miniVA[2].position = miniPos + Vector2f( 300, 300 );
@@ -6941,6 +6938,7 @@ int GameSession::Run()
 					{
 						state = RACEFIGHT_RESULTS;
 						raceFight->raceFightResultsFrame = 0;
+						raceFight->victoryScreen->SetupColumns();
 						break;
 					}
 				}
@@ -7984,30 +7982,33 @@ int GameSession::Run()
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
-		
-		if( p0->speedLevel == 0 )
+		if (mh->gameMode == MapHeader::MapType::T_STANDARD)
 		{
-			preScreenTex->draw( p0->kinUnderOutline );
-			preScreenTex->draw( p0->kinTealOutline, &speedBarShader );
-		}
-		else if( p0->speedLevel == 1 )
-		{
-			preScreenTex->draw( p0->kinTealOutline );
-			preScreenTex->draw( p0->kinBlueOutline, &speedBarShader );
-		}
-		else if( p0->speedLevel == 2 )
-		{
-			preScreenTex->draw( p0->kinBlueOutline );
-			preScreenTex->draw( p0->kinPurpleOutline, &speedBarShader );
-		}
+			if (p0->speedLevel == 0)
+			{
+				preScreenTex->draw(p0->kinUnderOutline);
+				preScreenTex->draw(p0->kinTealOutline, &speedBarShader);
+			}
+			else if (p0->speedLevel == 1)
+			{
+				preScreenTex->draw(p0->kinTealOutline);
+				preScreenTex->draw(p0->kinBlueOutline, &speedBarShader);
+			}
+			else if (p0->speedLevel == 2)
+			{
+				preScreenTex->draw(p0->kinBlueOutline);
+				preScreenTex->draw(p0->kinPurpleOutline, &speedBarShader);
+			}
 
-		if( p0->desperationMode )
-		{
-			preScreenTex->draw( p0->kinFace, &(p0->despFaceShader) );
-		}
-		else
-		{
-			preScreenTex->draw( p0->kinFace );
+
+			if (p0->desperationMode)
+			{
+				preScreenTex->draw(p0->kinFace, &(p0->despFaceShader));
+			}
+			else
+			{
+				preScreenTex->draw(p0->kinFace);
+			}
 		}
 		
 		//else 
@@ -8077,13 +8078,16 @@ int GameSession::Run()
 		preScreenTex->draw( kinMinimapIcon );
 	//minimapSprite.draw( preScreenTex );
 		//preScreenTex->draw( minimapSprite, &minimapShader );
-		//powerBar.Draw( preScreenTex );
+		
 		
 		
 		//powerOrbs->Draw( preScreenTex );
 		
 		//powerWheel->Draw( preScreenTex );
-		powerRing->Draw( preScreenTex );
+		if (powerRing != NULL )
+		{
+			powerRing->Draw(preScreenTex);
+		}
 		//keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
@@ -8801,6 +8805,9 @@ int GameSession::Run()
 		}
 		else if( state == RACEFIGHT_RESULTS )
 		{
+			/*quit = true;
+			returnVal = 1;
+			break;*/
 			//TODO
 			window->setView( v );
 
@@ -8838,7 +8845,13 @@ int GameSession::Run()
 
 			raceFight->victoryScreen->Update();
 
-			raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
+			if (raceFight->victoryScreen->IsDone())
+			{
+				quit = true;
+				returnVal = 1;
+				break;
+			}
+			//raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
 
 			}
 
@@ -8896,7 +8909,7 @@ int GameSession::Run()
 		levelMusic->music->setVolume(0);
 		levelMusic = NULL;
 	}
-
+	
 	delete [] line;
 
 	//window->setView( window->getDefaultView() );
@@ -9010,8 +9023,8 @@ void GameSession::Init()
 	}
 	polygons.clear();
 
-	//powerRing = NULL;
-	powerWheel = NULL;
+	powerRing = NULL;
+	
 	polyShaders = NULL;
 	ts_polyShaders = NULL;
 	testPar = NULL;
@@ -9722,8 +9735,6 @@ void GameSession::RespawnPlayer( int index )
 	player->grindEdge = NULL;
 	player->bounceEdge = NULL;
 	player->dead = false;
-	powerBar.points = 100;
-	powerBar.layer = 0;
 	player->record = 0;
 	player->recordedGhosts = 0;
 	player->blah = false;
@@ -9744,14 +9755,14 @@ void GameSession::RespawnPlayer( int index )
 		player->rightWire->Reset();
 	}
 	
-	//powerBar.Reset();
 	player->lastWire = 0;
 	player->desperationMode = false;
 
 	player->flashFrames = 0;
 	
-	//powerWheel->Reset();
-	powerRing->ResetFull();
+	
+	if( powerRing != NULL )
+		powerRing->ResetFull();
 	//currentZone = NULL;
 	cam.zoomFactor = 1;
 	cam.pos.x = player->position.x;
@@ -9867,11 +9878,6 @@ void GameSession::RestartLevel()
 	{
 		ResetShipSequence();
 	}
-
-	powerBar.points = 100;
-	powerBar.layer = 0;
-
-	powerWheel->Reset();
 	//currentZone = NULL;
 	cam.zoomFactor = 1;
 	
@@ -13791,7 +13797,7 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
-		powerWheel->Hide( true, 60 );
+		//powerWheel->Hide( true, 60 );
 		activeSequence = b_coyote->meetCoyoteSeq;
 		activeSequence->frame = 0;
 
@@ -13803,7 +13809,7 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
-		powerWheel->Hide( true, 60 );
+		//powerWheel->Hide( true, 60 );
 		activeSequence = b_coyote->coyoteFightSeq;
 		activeSequence->frame = 0;
 	}
@@ -13930,7 +13936,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	gameTimer->topRight = Vector2f( 1920/2 + 80 * 2.5, 0 );
 	gameTimer->SetNumber( raceFightMaxSeconds );
 
-	victoryScreen = new VictoryScreen2PlayerVS( owner );
+	victoryScreen = new ResultsScreen( owner );
 
 	Reset();
 
@@ -13964,8 +13970,7 @@ void GameSession::RaceFight::Init()
 
 	raceWinnerIndex = -1;
 	gameOver = false;
-	p1Place = 0;
-	p2Place = 0;
+	memset(place, 0, sizeof(place));
 
 	playerScore = 0;
 	player2Score = 0;
@@ -14082,8 +14087,8 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 		if( raceWinnerIndex == -1 && playerScore == numTargets )
 		{
 			gameOver = true;
-			p1Place = 1;
-			p2Place = 2;
+			place[0] = 1;
+			place[1] = 2;
 			return;
 		}
 		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
@@ -14125,8 +14130,8 @@ void GameSession::RaceFight::HitByPlayer( int playerIndex,
 		if( raceWinnerIndex == -1 && player2Score == numTargets )
 		{
 			gameOver = true;
-			p1Place = 2;
-			p2Place = 1;
+			place[0] = 2;
+			place[1] = 1;
 			return;
 		}
 		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
@@ -14149,8 +14154,7 @@ void GameSession::RaceFight::Reset()
 	playerHitCounter = 0;
 	player2HitCounter = 0;
 	gameOver = false;
-	p1Place = 0;
-	p2Place = 0;
+	memset(place, 0, sizeof(place));
 }
 
 void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
@@ -14194,8 +14198,8 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 			{
 				//winning
 				gameOver = true;
-				p1Place = 1;
-				p2Place = 2;
+				place[0] = 1;
+				place[1] = 2;
 			}
 		}
 	}
@@ -14237,8 +14241,8 @@ void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
 			{
 				//winning
 				gameOver = true;
-				p1Place = 2;
-				p2Place = 1;
+				place[0] = 2;
+				place[1] = 1;
 			}
 		}
 	}
@@ -14291,25 +14295,25 @@ void GameSession::RaceFight::TickClock()
 		{
 			 if( playerScore < player2Score )
 			 {
-				 p1Place = 2;
-				 p2Place = 1;
+				 place[0] = 2;
+				 place[1] = 1;
 			 }
 			 else if( playerScore > player2Score )
 			 {
-				 p1Place = 1;
-				 p2Place = 2;
+				 place[0] = 1;
+				 place[1] = 2;
 			 }
 			 else
 			 {
 				 if( playerHitCounter < player2HitCounter )
 				 {
-					 p1Place = 2;
-					 p2Place = 1;
+					 place[0] = 2;
+					 place[1] = 1;
 				 }
 				 else if( playerHitCounter > player2HitCounter )
 				 {
-					 p1Place = 1;
-					 p2Place = 2;
+					 place[0] = 1;
+					 place[1] = 2;
 				 }
 				 else
 				 {
@@ -14317,8 +14321,8 @@ void GameSession::RaceFight::TickClock()
 					 {
 						 //draw
 						 assert( player2Score == 0 );
-						 p1Place = 1;
-						 p2Place = 1;
+						 place[0] = 1;
+						 place[1] = 1;
 					 }
 					 else
 					 {
@@ -14339,19 +14343,19 @@ void GameSession::RaceFight::TickClock()
 
 						 if( lastTimeP1 > lastTimeP2 ) //greater time means hit sooner
 						 {
-							 p1Place = 1;
-							 p2Place = 2;
+							 place[0] = 1;
+							 place[1] = 2;
 						 }
 						 else if( lastTimeP1 < lastTimeP2 )//greater time means hit sooner
 						 {
-							 p1Place = 2;
-							 p2Place = 1;
+							 place[0] = 2;
+							 place[1] = 1;
 						 }
 						 else
 						 {
 							 //draw
-							 p1Place = 1;
-							 p2Place = 1;
+							 place[0] = 1;
+							 place[1] = 1;
 						 }
 					 }
 				 }

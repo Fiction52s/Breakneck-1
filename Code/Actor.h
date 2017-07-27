@@ -144,6 +144,16 @@ struct Actor : QuadTreeCollider,
 		Expr_NONE
 	};
 
+	enum Team
+	{
+		T_BLUE,
+		T_RED,
+		T_GREEN,
+		T_PURPLE
+	};
+
+	Team team;
+
 	Action spriteAction;
 	int currTileIndex;
 	bool flipTileX;

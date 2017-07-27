@@ -221,10 +221,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			sf::Color(0x53, 0xf9, 0xf9)
 		};
 
-		KinSkin *skin = new KinSkin(startChanges, endChanges, 9, 1);
 		KinSkin *swordSkin = new KinSkin(startChanges, endChanges, 9, 1);
-
-		SetupTilesets(skin, swordSkin);
+		KinSkin *skin = new KinSkin(startChanges, endChanges, 9, 1);
+		
+		team = (Team)actorIndex; //debug
+		//SetupTilesets(skin, swordSkin);
+		SetupTilesets(NULL,NULL);
 
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
@@ -1524,24 +1526,28 @@ void Actor::UpdatePrePhysics()
 	//cout << "Start frame" << endl;
 	
 	//cout << "JFRAME BEHI: " << frame << endl;
-	if( owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
-	{
-		if( drainCounter == drainCounterMax)
-		{
-			int res = owner->powerRing->Drain(1);//powerWheel->Use( 1 );	
 
-			if( res > 0 )
-			{
-				desperationMode = true;
-				despCounter = 0;
-			}
-			drainCounter = 0;
-		}
-		else
+	if (owner->powerRing != NULL)
+	{
+		if (owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT)
 		{
-			drainCounter++;
+			if (drainCounter == drainCounterMax)
+			{
+				int res = owner->powerRing->Drain(1);//powerWheel->Use( 1 );	
+
+				if (res > 0)
+				{
+					desperationMode = true;
+					despCounter = 0;
+				}
+				drainCounter = 0;
+			}
+			else
+			{
+				drainCounter++;
+			}
 		}
-	}	
+	}
 
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
@@ -1640,13 +1646,7 @@ void Actor::UpdatePrePhysics()
 		if( despCounter == maxDespFrames )
 		{
 			desperationMode = false;
-			if( owner->powerWheel->activeOrb > 0 || owner->powerWheel->activeLevel > 0
-				||  owner->powerWheel->activeSection > 0 )
-			{
-				owner->powerWheel->mode = PowerWheel::NORMAL;
-				//you gathered health in desp mode!
-			}
-			else
+			if (owner->powerRing->IsEmpty())
 			{
 				action = DEATH;
 				rightWire->Reset();
@@ -1655,6 +1655,24 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				owner->deathWipe = true;
 			}
+			else
+			{
+				owner->powerRing->mode == PowerRing::NORMAL;
+			}
+			//	||  owner->powerWheel->activeSection > 0 )
+			//{
+			//	owner->powerWheel->mode = PowerWheel::NORMAL;
+			//	//you gathered health in desp mode!
+			//}
+			//else
+			//{
+			//	action = DEATH;
+			//	rightWire->Reset();
+			//	leftWire->Reset();
+			//	slowCounter = 1;
+			//	frame = 0;
+			//	owner->deathWipe = true;
+			//}
 			
 		}
 	}
@@ -18720,7 +18738,9 @@ void Actor::ConfirmHit( int worldIndex,
 
 	//owner->powerWheel->Charge( charge );
 
-	owner->powerRing->Fill(charge);
+	if( owner->powerRing != NULL )
+		owner->powerRing->Fill(charge);
+	
 	desperationMode = false;
 
 	showRune = true;

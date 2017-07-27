@@ -26,7 +26,13 @@ sf::Vector2<double> GetLinearValue(
 
 struct CubicBezier
 {
-	CubicBezier(){}
+	CubicBezier()
+		:p0( sf::Vector2<double>( 0, 0 ) )
+		,p1(sf::Vector2<double>(0, 0))
+		, p2(sf::Vector2<double>(1, 1))
+		,p3(sf::Vector2<double>(1, 1))
+
+	{}
 	CubicBezier( double p1x,
 		double p1y,
 		double p2x,

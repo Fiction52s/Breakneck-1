@@ -41,7 +41,7 @@ struct ControlProfileMenu;
 struct MapSelectionMenu;
 struct ControlProfileManager;
 struct UIControlGrid;
-struct PowerRing;
+struct FillRing;
 
 struct MultiSelectionSection : UIEventHandlerBase
 {
@@ -85,7 +85,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	int bHoldFrames;
 	int bHoldThresh;
 
-	PowerRing *backLoader;
+	FillRing *backLoader;
 };
 
 struct LoadingMapProgressDisplay;
@@ -281,7 +281,11 @@ struct MapSelectionMenu
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
 
-	
+	struct TInfo
+	{
+		GameSession *gsession;
+		boost::thread *loadThread;
+	};
 
 	MapSelectionMenu( MainMenu *p_mainMenu,
 		sf::Vector2f &p_pos );
@@ -301,8 +305,9 @@ struct MapSelectionMenu
 		MapHeader *mh);
 	bool AllPlayersReady();
 	int NumPlayersReady();
-	static void sStopLoadThread(MapSelectionMenu *mapMenu);
-	void StopLoadThread();
+	static void sStopLoadThread(MapSelectionMenu *mapMenu,
+		TInfo &ti );
+	void StopLoadThread( TInfo &ti );
 
 	LoadingMapProgressDisplay *progressDisplay;
 	UIVerticalControlList *filterOptions;
@@ -312,7 +317,8 @@ struct MapSelectionMenu
 
 	void LoadMap();
 	boost::thread *loadThread;
-	boost::thread *stopThread;
+	
+	std::list<boost::thread*> stopThreads;
 
 	sf::Vector2f topMid;
 	GameSession *gs;
@@ -465,7 +471,7 @@ struct CreditsMenuScreen
 struct Parallax;
 struct SingleAxisSelector;
 struct MusicManager;
-struct PowerRing;
+struct FillRing;
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
@@ -526,7 +532,7 @@ struct MainMenu
 	void UpdateMenuOptionText();
 	
 	MusicManager *musicManager;
-	PowerRing *testRing;
+	FillRing *testRing;
 	MainMenu();
 	~MainMenu();
 	void Init();

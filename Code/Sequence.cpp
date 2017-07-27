@@ -186,7 +186,7 @@ bool CrawlerFightSeq::Update()
 	{
 	case 0:
 		{
-			owner->powerWheel->Hide( true, 0 );
+			//owner->powerWheel->Hide( true, 0 );
 			owner->cam.SetManual( true );
 			owner->cam.SetMovementSeq( &camMove0, false );
 			//owner->cam.Set( Vector2f( cfightCenter.x, cfightCenter.y - 300), 1, 0 );
@@ -260,7 +260,7 @@ void CrawlerFightSeq::Draw( sf::RenderTarget *target )
 void CrawlerFightSeq::StartFightMsg()
 {
 	startFightMsgFrame = frame;
-	owner->powerWheel->Hide( false, 30 );
+	//owner->powerWheel->Hide( false, 30 );
 	owner->cam.SetManual( false );
 	owner->cam.EaseOutOfManual( 30 );
 }
@@ -681,7 +681,7 @@ void MeetCoyoteSeq::CoyoteGone()
 	coyoteGone = true;
 	coyoteGoneFrame = frame;
 	
-	owner->powerWheel->Hide( false, 60 );
+	//owner->powerWheel->Hide( false, 60 );
 }
 
 void MeetCoyoteSeq::Draw( RenderTarget *target )

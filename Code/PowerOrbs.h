@@ -119,14 +119,14 @@ struct PowerWheel
 	sf::Vector2f origBasePos;
 };
 
-struct PowerRingSection
+struct FillRingSection
 {
 	enum RingType
 	{
 		NORMAL
 	};
 
-	PowerRingSection(TilesetManager &tm,
+	FillRingSection(TilesetManager &tm,
 		const sf::Color &active0, const sf::Color &remove0,
 		const sf::Color &empty0, int rType, int p_maxPower,
 		float startAngle );
@@ -139,6 +139,7 @@ struct PowerRingSection
 	void ResetEmpty();
 	void ResetFull();
 	bool IsFull();
+	bool IsEmpty();
 	RingType ringType;
 	int prevPower;
 	int maxPower;
@@ -160,11 +161,11 @@ struct PowerRingSection
 	int numRemovedDivs;
 };
 
-struct PowerRing
+struct FillRing
 {
-	PowerRing( sf::Vector2f &pos,int numRings,
-		PowerRingSection **rings);
-	~PowerRing();
+	FillRing( sf::Vector2f &pos,int numRings,
+		FillRingSection **rings);
+	~FillRing();
 	void SetPowers( bool hasAirDash,
 		bool hasGravReverse,
 		bool hasBounce,
@@ -172,7 +173,7 @@ struct PowerRing
 		bool hasTimeSlow,
 		bool hasWires );
 
-	PowerRingSection **rings;
+	FillRingSection **rings;
 	int numRings;
 	int currRing;
 	int Fill(int fill);
@@ -180,6 +181,7 @@ struct PowerRing
 	void ResetEmpty();
 	void ResetFull();
 	bool IsFull();
+	bool IsEmpty();
 
 	sf::VertexArray *ringVA;
 	sf::VertexArray *middleVA;
@@ -194,4 +196,21 @@ struct PowerRing
 	void CreateRing();
 	void Draw( sf::RenderTarget *target );
 
+};
+
+struct PowerRing : FillRing
+{
+	enum Mode
+	{
+		NORMAL,
+		DESPERATION
+	};
+	PowerRing(sf::Vector2f &pos, int numRings,
+		FillRingSection **rings)
+		:FillRing( pos, numRings, rings ), mode( NORMAL )
+	{
+
+	}
+	Mode mode;
+	sf::CircleShape despCircle;
 };

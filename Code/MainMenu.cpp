@@ -55,11 +55,11 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionM
 		active = true;
 	}
 	holdingB = false;
-	PowerRingSection *blah[] = { new PowerRingSection(mainMenu->tilesetManager, Color::Red, sf::Color::Black,
+	FillRingSection *blah[] = { new FillRingSection(mainMenu->tilesetManager, Color::Red, sf::Color::Black,
 		sf::Color::Blue,
 		4, 40, 0) };
 
-	backLoader = new PowerRing(Vector2f(p_topMid.x, p_topMid.y + 50), 1, blah);
+	backLoader = new FillRing(Vector2f(p_topMid.x, p_topMid.y + 50), 1, blah);
 	backLoader->ResetEmpty();
 	//profileSelect->UpdateNames();	
 }
@@ -720,11 +720,11 @@ MainMenu::MainMenu()
 
 	saveMenu = new SaveMenuScreen(this);
 
-	PowerRingSection *blah[] = { new PowerRingSection(tilesetManager, Color::Red, sf::Color::Black,
+	FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
 		sf::Color::Blue,
 		5, 300, 0) };
 
-	testRing = new PowerRing( Vector2f( 200, 200 ), 1, blah);
+	testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
 MainMenu::~MainMenu()
@@ -2371,7 +2371,6 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	gs = NULL;
 	loadThread = NULL;
-	stopThread = NULL;
 
 	LoadItems();
 
@@ -2723,25 +2722,26 @@ void MapSelectionMenu::LoadMap()
 	//filePath = p_path;
 
 	//SetPreview();
-	if (stopThread != NULL)
+
+	/*if (stopThread != NULL)
 	{
 		stopThread->join();
 		stopThread = NULL;
-	}
+	}*/
 
-	if (loadThread != NULL)
-	{
-		//assert(loadThread->joinable());
-		//cout << "joining111" << endl;
-		//loadThread->join();
+	//if (loadThread != NULL)
+	//{
+	//	//assert(loadThread->joinable());
+	//	//cout << "joining111" << endl;
+	//	//loadThread->join();
 
-		delete loadThread;
-	}
-	
-	if (gs != NULL)
-	{
-		delete gs;
-	}
+	//	delete loadThread;
+	//}
+	//
+	//if (gs != NULL)
+	//{
+	//	delete gs;
+	//}
 	
 
 	int cIndex = saSelector->currIndex;
@@ -2916,19 +2916,17 @@ void MapSelectionMenu::UpdateMultiInput()
 	}
 }
 
-void MapSelectionMenu::sStopLoadThread(MapSelectionMenu *mapMenu)
+void MapSelectionMenu::sStopLoadThread(MapSelectionMenu *mapMenu, TInfo &ti)
 {
-	mapMenu->StopLoadThread();
+	mapMenu->StopLoadThread( ti );
 }
 
-void MapSelectionMenu::StopLoadThread()
+void MapSelectionMenu::StopLoadThread( TInfo &ti )
 {
-	gs->SetContinueLoading(false);
-	loadThread->join();
-	delete loadThread;
-	loadThread = NULL;
-	delete gs;
-	gs = NULL;
+	ti.gsession->SetContinueLoading(false);
+	ti.loadThread->join();
+	delete ti.loadThread;
+	delete ti.gsession;
 }
 
 void MapSelectionMenu::Update(ControllerState &currInput,
@@ -3063,8 +3061,26 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 			state = S_MAP_SELECTOR;
 
-			assert(stopThread == NULL);
-			stopThread = new boost::thread(&MapSelectionMenu::sStopLoadThread, this);
+			//assert(stopThread == NULL);
+			
+			for (auto it = stopThreads.begin(); it != stopThreads.end();)
+			{
+				if ((*it)->try_join_for(boost::chrono::milliseconds(0)))
+				{
+					(*it)->join();
+					delete (*it);
+					stopThreads.erase(it++);
+				}
+				else
+				{
+					++it;
+				}
+			}
+
+			TInfo ti;
+			ti.gsession = gs;
+			ti.loadThread = loadThread;
+			stopThreads.push_back( new boost::thread(&MapSelectionMenu::sStopLoadThread, this, ti ) );
 			return;
 		}
 
@@ -3268,14 +3284,26 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				state = S_FROM_MULTI_TRANS;
 				multiTransFrame = 0;
 
-				assert(stopThread == NULL);
-				stopThread = new boost::thread(&MapSelectionMenu::sStopLoadThread, this);
-				//gs->SetContinueLoading(false);
-				//loadThread->join();
-				/*delete loadThread;
-				loadThread = NULL;
-				delete gs;
-				gs = NULL;*/
+				//assert(stopThread == NULL);
+
+				for (auto it = stopThreads.begin(); it != stopThreads.end();)
+				{
+					if ((*it)->try_join_for(boost::chrono::milliseconds(0) ) )
+					{
+						(*it)->join();
+						delete (*it);
+						stopThreads.erase(it++);
+					}
+					else
+					{
+						++it;
+					}
+				}
+
+				TInfo ti;
+				ti.gsession = gs;
+				ti.loadThread = loadThread;
+				stopThreads.push_back(new boost::thread(&MapSelectionMenu::sStopLoadThread, this, ti));
 				return;
 			}
 		}

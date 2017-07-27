@@ -762,7 +762,7 @@ void PowerWheel::Charge( int power )
 }
 
 //
-PowerRingSection::PowerRingSection(TilesetManager &tm,
+FillRingSection::FillRingSection(TilesetManager &tm,
 	const sf::Color &active, const sf::Color &remove,
 	const sf::Color &empty,
 	int p_rType, int p_maxPower,
@@ -808,47 +808,47 @@ PowerRingSection::PowerRingSection(TilesetManager &tm,
 	
 }
 
-void PowerRingSection::ResetEmpty()
+void FillRingSection::ResetEmpty()
 {
 	currPower = 0;
 	Update();
 }
 
-void PowerRingSection::ResetFull()
+void FillRingSection::ResetFull()
 {
 	currPower = maxPower;
 	Update();
 }
 
-int PowerRingSection::GetDivsActive()
+int FillRingSection::GetDivsActive()
 {
 	return 0;
 	//double f = (currPower/(double)maxPower) * numDivisions;
 }
 
-int PowerRingSection::GetDivsRemoved()
+int FillRingSection::GetDivsRemoved()
 {
 	return 0;
 	//double f = (removedPower / (double)maxPower) * numDivisions;
 }
 
-int PowerRingSection::GetDivsEmpty()
+int FillRingSection::GetDivsEmpty()
 {
 	return 0;
 	//double f = (currPower / (double)maxPower) * numDivisions;
 }
 
-void PowerRingSection::Update()
+void FillRingSection::Update()
 {
 	ringShader.setUniform("u_filledRange", float(2 * PI) * (float)currPower / maxPower);
 }
 
-void PowerRingSection::UpdateSprite()
+void FillRingSection::UpdateSprite()
 {
 	
 }
 
-int PowerRingSection::Drain(int dmg)
+int FillRingSection::Drain(int dmg)
 {
 	prevPower = currPower;
 	currPower -= dmg;
@@ -864,7 +864,7 @@ int PowerRingSection::Drain(int dmg)
 	}
 }
 
-int PowerRingSection::Fill(int power)
+int FillRingSection::Fill(int power)
 {
 	currPower += power;
 	if (currPower > maxPower)
@@ -877,7 +877,7 @@ int PowerRingSection::Fill(int power)
 		return 0;
 }
 
-void PowerRingSection::Draw(sf::RenderTarget *target)
+void FillRingSection::Draw(sf::RenderTarget *target)
 {
 	target->draw(ringSprite, &ringShader);
 }
@@ -886,7 +886,7 @@ void PowerRingSection::Draw(sf::RenderTarget *target)
 //vertices each frame. you should only change the color if the color needs to be changed
 
 
-void PowerRingSection::SetupSection( sf::Vector2f &centerPos)
+void FillRingSection::SetupSection( sf::Vector2f &centerPos)
 {
 
 	ringSprite.setPosition(centerPos);
@@ -925,12 +925,17 @@ void PowerRingSection::SetupSection( sf::Vector2f &centerPos)
 	//}
 }
 
-bool PowerRingSection::IsFull()
+bool FillRingSection::IsFull()
 {
 	return (currPower == maxPower);
 }
 
-PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
+bool FillRingSection::IsEmpty()
+{
+	return (currPower == 0);
+}
+
+FillRing::FillRing( Vector2f &pos, int p_numRings, FillRingSection **p_rings)
 	:numRings( p_numRings ), rings( p_rings ), centerPos( pos )
 {
 
@@ -939,7 +944,7 @@ PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
 	numTotalVertices = 0;
 	int radiusSum = 50; //internal start radius
 
-	rings = new PowerRingSection*[numRings];
+	rings = new FillRingSection*[numRings];
 
 	for (int i = 0; i < numRings; ++i)
 	{
@@ -957,7 +962,7 @@ PowerRing::PowerRing( Vector2f &pos, int p_numRings, PowerRingSection **p_rings)
 	//CreateRing();
 }
 
-bool PowerRing::IsFull()
+bool FillRing::IsFull()
 {
 	for (int i = 0; i < numRings; ++i)
 	{
@@ -967,7 +972,17 @@ bool PowerRing::IsFull()
 	return true;
 }
 
-void PowerRing::ResetEmpty()
+bool FillRing::IsEmpty()
+{
+	for (int i = 0; i < numRings; ++i)
+	{
+		if (!rings[i]->IsEmpty())
+			return false;
+	}
+	return true;
+}
+
+void FillRing::ResetEmpty()
 {
 	currRing = 0;
 	for (int i = 0; i < numRings; ++i)
@@ -976,7 +991,7 @@ void PowerRing::ResetEmpty()
 	}
 }
 
-void PowerRing::ResetFull()
+void FillRing::ResetFull()
 {
 	currRing = numRings - 1;
 	for (int i = 0; i < numRings; ++i)
@@ -985,7 +1000,7 @@ void PowerRing::ResetFull()
 	}
 }
 
-PowerRing::~PowerRing()
+FillRing::~FillRing()
 {
 	for (int i = 0; i < numRings; ++i)
 	{
@@ -994,12 +1009,12 @@ PowerRing::~PowerRing()
 	delete[] rings;
 }
 
-void PowerRing::Update()
+void FillRing::Update()
 {
 	rings[currRing]->Update();
 }
 
-void PowerRing::CreateRing()
+void FillRing::CreateRing()
 {
 	scorpTest.setFillColor( Color::Yellow );
 	scorpTest.setRadius( 25 );
@@ -1019,7 +1034,7 @@ void PowerRing::CreateRing()
 	int numPoints = numCirclePoints * 2;
 }
 
-void PowerRing::Draw( sf::RenderTarget *target )
+void FillRing::Draw( sf::RenderTarget *target )
 {
 	for (int i = 0; i < numRings; ++i)
 	{
@@ -1031,7 +1046,7 @@ void PowerRing::Draw( sf::RenderTarget *target )
 	//target->draw( keyTest );
 }
 
-int PowerRing::Fill( int fill )
+int FillRing::Fill( int fill )
 {
 	int res = rings[currRing]->Fill(fill);
 	if (res > 0 && currRing < numRings - 1)
@@ -1043,7 +1058,7 @@ int PowerRing::Fill( int fill )
 	return res;
 }
 
-int PowerRing::Drain(int drain)
+int FillRing::Drain(int drain)
 {
 	int res = rings[currRing]->Drain(drain);
 	if (res > 0 && currRing > 0)

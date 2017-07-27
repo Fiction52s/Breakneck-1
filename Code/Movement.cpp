@@ -69,6 +69,8 @@ double CubicBezier::GetValue( double a )
 
 	double x = GetX( t );
 	
+	int maxSteps = 20;
+	int currStep = 0;
 	//int testSteps = 0;
 	while( abs( x - a ) > precision )
 	{
@@ -78,6 +80,10 @@ double CubicBezier::GetValue( double a )
 		x = GetX( t );
 
 		//testSteps++;
+		++currStep;
+
+		if (currStep == maxSteps)
+			break;
 	}
 	//cout << "steps: " << testSteps << endl;
 

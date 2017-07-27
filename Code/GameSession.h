@@ -94,6 +94,7 @@ struct PowerBar
 
 struct PowerOrbs;
 struct PowerWheel;
+struct FillRing;
 struct PowerRing;
 
 struct Critical : QuadTreeEntrant
@@ -319,6 +320,7 @@ struct ShipExitSeq;
 
 struct ImageText;
 struct TimerText;
+struct VictoryScreen;
 struct VictoryScreen2PlayerVS;
 struct UIWindow;
 struct Parallax;
@@ -327,6 +329,7 @@ struct Parallax;
 
 struct MusicInfo;
 struct GhostEntry;
+struct ResultsScreen;
 
 
 struct GameSession : QuadTreeCollider, RayCastHandler
@@ -358,7 +361,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		S_KEY_ENTER_6,
 		Count
 	};
-
+	
 
 	struct RaceFight
 	{
@@ -377,7 +380,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 		sf::Text tempAllTargets;
 		
-		VictoryScreen2PlayerVS *victoryScreen;
+		ResultsScreen *victoryScreen;
 
 		RaceFightTarget *hitByPlayerList;
 		RaceFightTarget *hitByPlayer2List;
@@ -411,8 +414,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int player2HitCounter;
 
 		bool gameOver;
-		int p1Place;
-		int p2Place;
+		int place[4];
 		//int p3Place;
 		//int p4Place;
 		int raceWinnerIndex;
@@ -981,9 +983,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	bool usePolyShader;
 
-	PowerBar powerBar;
+	//PowerBar powerBar;
 	//PowerOrbs *powerOrbs;
-	PowerWheel *powerWheel;
+	//PowerWheel *powerWheel;
 	PowerRing *powerRing;
 
 	int pauseFrames;

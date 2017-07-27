@@ -3,6 +3,7 @@
 
 #include "SFML/Graphics.hpp"
 #include "Input.h"
+#include "Movement.h"
 
 struct UIWindow;
 struct VictoryScreen
@@ -76,6 +77,48 @@ struct VictoryScreen2PlayerVS : VictoryScreen
 	PlayerInfoBar *player1Bar;
 	PlayerInfoBar *player2Bar;
 	
+};
+
+struct Tileset;
+struct ResultsScreen : VictoryScreen
+{
+	enum State
+	{
+		FADEIN,
+		SLIDEIN,
+		WAIT,
+		SLIDEOUT,
+		FADEOUT,
+		DONE,
+	};
+
+	State state;
+	ResultsScreen(GameSession *owner);
+	void Draw(sf::RenderTarget *target);
+	void Update();
+	void ResetSprites();
+	void UpdateSprites();
+	void Reset();
+	bool IsDone();
+	GameSession *owner;
+	void SetupColumns();
+
+	Tileset *ts_column[4];
+	int maxPlacing;
+
+	sf::Sprite columnSprites[4];
+
+	bool columnReady[4];
+
+	Tileset * GetTeamTileset(int teamIndex, bool win);
+	Tileset * GetSoloTilset(int soloIndex, bool win);
+
+	void SetTile(int boxIndex, int tile);
+	void SetBoxPos(int boxIndex, float yHeight);
+
+	CubicBezier slideInBez[4];
+	int slideInStartFrame[4];
+	int slideInFrames[4];
 };
 
 #endif

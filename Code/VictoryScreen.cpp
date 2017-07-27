@@ -172,3 +172,294 @@ void PlayerInfoBar::SetHeight( int height )
 	//uiWindow->Resize( uiWindow->GetWidth(), height );
 }
 
+ResultsScreen::ResultsScreen(GameSession *p_owner)
+	:owner( p_owner )
+{
+	frame = 0;
+	state = FADEIN;
+
+	memset(columnReady, 0, sizeof(columnReady));
+
+	for (int i = 0; i < 4; ++i)
+	{
+		SetBoxPos(i, 1080);
+	}
+
+	memset(ts_column, 0, sizeof(ts_column));
+
+	slideInStartFrame[0] = 0;
+	slideInStartFrame[1] = 60;
+	slideInStartFrame[2] = 120;
+	slideInStartFrame[3] = 180;
+
+	slideInFrames[0] = 60;
+	slideInFrames[1] = 60;
+	slideInFrames[2] = 60;
+	slideInFrames[3] = 60;
+}
+
+void ResultsScreen::SetBoxPos(int boxIndex, float yHeight)
+{
+	columnSprites[boxIndex].setPosition(boxIndex * 1920 / 4, yHeight);
+	/*boxes[boxIndex * 4].position = Vector2f(boxIndex * 1920 / 4, yHeight);
+	boxes[boxIndex * 4+1].position = Vector2f((boxIndex+1)* 1920 / 4, yHeight);
+	boxes[boxIndex * 4+2].position = Vector2f((boxIndex + 1) * 1920 / 4, yHeight + 1080);
+	boxes[boxIndex * 4+3].position = Vector2f(boxIndex * 1920 / 4, yHeight + 1080);*/
+}
+
+void ResultsScreen::SetTile(int boxIndex, int tile)
+{
+
+	if (ts_column[boxIndex] != NULL )
+	{
+		sf::Texture *tex = ts_column[boxIndex]->texture;
+		sf::IntRect rect = ts_column[boxIndex]->GetSubRect(tile);
+		columnSprites[boxIndex].setTexture(*tex);
+		columnSprites[boxIndex].setTextureRect(rect);
+	}
+	/*boxes[boxIndex * 4].texCoords = Vector2f(rect.left, rect.top);
+	boxes[boxIndex * 4 + 1].texCoords = Vector2f(rect.left + rect.width, rect.top);
+	boxes[boxIndex * 4 + 2].texCoords = Vector2f(rect.left + rect.width, rect.top + rect.height);
+	boxes[boxIndex * 4 + 3].texCoords = Vector2f(rect.left, rect.top + rect.height);*/
+}
+
+Tileset * ResultsScreen::GetTeamTileset(int teamIndex, bool win )
+{
+	switch (teamIndex)
+	{
+	case 0:
+		if (win)
+		{
+			return owner->GetTileset("Menu/Results/blue_win_480x1080.png", 480, 1080);
+		}
+		else
+		{
+			return owner->GetTileset("Menu/Results/blue_lose_480x1080.png", 480, 1080);
+		}
+		
+		break;
+	case 1:
+		if (win)
+		{
+			return owner->GetTileset("Menu/Results/red_win_480x1080.png", 480, 1080);
+		}
+		else
+		{
+			return owner->GetTileset("Menu/Results/red_lose_480x1080.png", 480, 1080);
+		}
+	case 2:
+		if (win)
+		{
+			return owner->GetTileset("Menu/Results/green_win_480x1080.png", 480, 1080);
+		}
+		else
+		{
+			return owner->GetTileset("Menu/Results/green_lose_480x1080.png", 480, 1080);
+		}
+	case 3:
+		if (win)
+		{
+			return owner->GetTileset("Menu/Results/purp_win_480x1080.png", 480, 1080);
+		}
+		else
+		{
+			return owner->GetTileset("Menu/Results/purp_lose_480x1080.png", 480, 1080);
+		}
+	
+		break;
+	}
+}
+
+Tileset * ResultsScreen::GetSoloTilset(int soloIndex, bool win)
+{
+	return NULL;
+}
+
+void ResultsScreen::SetupColumns()
+{
+	maxPlacing = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		SetBoxPos(i, 1080);
+	}
+
+	int currPlace;
+	switch (owner->mh->gameMode)
+	{
+	case MapHeader::T_RACEFIGHT:
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			currPlace = owner->raceFight->place[i];
+			if (currPlace == 1)
+			{
+				ts_column[i] = GetTeamTileset(owner->GetPlayer(i)->team, true);
+				maxPlacing = 1;
+			}
+			else if (currPlace > 1)
+			{
+				ts_column[i] = GetTeamTileset(owner->GetPlayer(i)->team, false);
+				if (currPlace > maxPlacing)
+					maxPlacing = currPlace;
+			}
+			else
+			{
+				ts_column[i] = NULL;
+			}
+		}
+		break;
+	}
+
+	}
+}
+
+void ResultsScreen::Update()
+{
+	switch (state)
+	{
+	case FADEIN:
+		state = SLIDEIN;
+		frame = 0;
+		break;
+	case SLIDEIN:
+		if (frame <= slideInStartFrame[maxPlacing] + slideInFrames[maxPlacing])
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				if (owner->mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
+				{
+					if (owner->raceFight->place[i] == 1 && frame <= slideInFrames[0])
+					{
+						double f = (double)frame / slideInFrames[0];
+						double a = slideInBez[1].GetValue(f);
+
+						SetBoxPos(i, 1080.0 * (1.0 - a));
+					}
+					else if (owner->raceFight->place[i] == 2 && frame <= slideInFrames[1] + slideInStartFrame[1])
+					{
+						double f = (double)(frame - slideInFrames[1]) / slideInStartFrame[1];
+						double a = slideInBez[1].GetValue(f);
+
+						SetBoxPos(i, 1080.0 * (1.0 - a));
+					}
+					/*else if (owner->raceFight->place[i] == 3 && frame <= secondPlaceStartSlideFrame + secondPlaceSlideInFrames)
+					{
+						double f = (double)(frame - secondPlaceStartSlideFrame) / secondPlaceSlideInFrames;
+						double a = secondPlaceBez.GetValue(f);
+
+						SetBoxPos(i, 1080.0 * (1.0 - a));
+					}*/
+				}
+
+				
+			}
+		}
+		else
+		{
+			state = WAIT;
+			frame = 0;
+		}
+		break;
+	case WAIT:
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			if ((owner->GetCurrInput(i).A && !owner->GetPrevInput(i).A)
+				|| (owner->GetCurrInput(i).start && !owner->GetPrevInput(i).start))
+			{
+				columnReady[i] = !columnReady[i];
+			}
+		}
+
+		bool allReady = true;
+		for (int i = 0; i < 4; ++i)
+		{
+			if (ts_column[i] != NULL && !columnReady[i] )
+			{
+				allReady = false;
+				break;
+			}
+		}
+
+		if (allReady)
+		{
+			state = SLIDEOUT;
+			frame = 0;
+		}
+
+		break;
+	}
+	case SLIDEOUT:
+		if (frame == 60)
+		{
+			state = FADEOUT;
+			frame = 0;
+		}
+		break;
+	case FADEOUT:
+		if (frame == 60)
+		{
+			state = DONE;
+			frame = 0;
+		}
+		break;
+	}
+
+	switch (state)
+	{
+	case FADEIN:
+		break;
+	case SLIDEIN:
+		break;
+	case WAIT:
+		break;
+	case SLIDEOUT:
+		break;
+	case FADEOUT:
+		break;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		SetTile(i, (int)columnReady[i]);
+	}
+
+	++frame;
+}
+
+void ResultsScreen::ResetSprites()
+{
+
+}
+
+bool ResultsScreen::IsDone()
+{
+	return (state == DONE);
+}
+
+void ResultsScreen::UpdateSprites()
+{
+
+}
+
+void ResultsScreen::Reset()
+{
+
+}
+
+void ResultsScreen::Draw(RenderTarget *target)
+{
+	switch (owner->mh->gameMode)
+	{
+	case MapHeader::T_RACEFIGHT:
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			if( owner->raceFight->place[i] > 0 )
+				target->draw(columnSprites[i]);
+		}
+		break;
+	}
+	}
+	
+}
