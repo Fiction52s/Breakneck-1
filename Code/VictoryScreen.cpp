@@ -196,6 +196,8 @@ ResultsScreen::ResultsScreen(GameSession *p_owner)
 	slideInFrames[1] = 60;
 	slideInFrames[2] = 60;
 	slideInFrames[3] = 60;
+
+	slideOutFrames = 60;
 }
 
 void ResultsScreen::SetBoxPos(int boxIndex, float yHeight)
@@ -390,14 +392,32 @@ void ResultsScreen::Update()
 		break;
 	}
 	case SLIDEOUT:
-		if (frame == 60)
+		/*if (frame == 60)
 		{
 			state = FADEOUT;
+			frame = 0;
+		}*/
+
+		if (frame <= slideOutFrames )
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				if (owner->mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
+				{
+					double f = (double)frame / slideOutFrames;
+					double a = slideOutBez.GetValue(f);
+					SetBoxPos(i, 1080.0 * a);
+				}
+			}
+		}
+		else
+		{
+			state = DONE;
 			frame = 0;
 		}
 		break;
 	case FADEOUT:
-		if (frame == 60)
+		if (frame == 0)
 		{
 			state = DONE;
 			frame = 0;
@@ -421,7 +441,7 @@ void ResultsScreen::Update()
 
 	for (int i = 0; i < 4; ++i)
 	{
-		SetTile(i, (int)columnReady[i]);
+		SetTile(i, (int)( !columnReady[i] ));
 	}
 
 	++frame;
@@ -444,7 +464,14 @@ void ResultsScreen::UpdateSprites()
 
 void ResultsScreen::Reset()
 {
-
+	for (int i = 0; i < 4; ++i)
+	{
+		columnReady[i] = false;
+		columnSprites[i] = sf::Sprite();
+		ts_column[i] = NULL;
+	}
+	frame = 0;
+	state = SLIDEIN;
 }
 
 void ResultsScreen::Draw(RenderTarget *target)

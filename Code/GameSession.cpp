@@ -6015,7 +6015,21 @@ int GameSession::Run()
 	//cut.LoadFromFile( "gametest" );
 	//int cutFrame = 0;
 
-	state = RUN;
+
+	if (raceFight != NULL)
+	{
+		raceFight->victoryScreen->Reset();
+		state = RACEFIGHT_RESULTS;
+		raceFight->place[0] = 1;
+		raceFight->place[1] = 2;
+
+		raceFight->raceFightResultsFrame = 0;
+		raceFight->victoryScreen->SetupColumns();
+	}
+	else
+	{
+		state = RUN;
+	}
 
 	Rain rain(this);
 	sf::View rainView(Vector2f(0, 0), Vector2f(1920, 1080));
@@ -6938,6 +6952,7 @@ int GameSession::Run()
 					{
 						state = RACEFIGHT_RESULTS;
 						raceFight->raceFightResultsFrame = 0;
+						raceFight->victoryScreen->Reset();
 						raceFight->victoryScreen->SetupColumns();
 						break;
 					}
@@ -8834,14 +8849,14 @@ int GameSession::Run()
 				GetCurrInput( i ) = con.GetState();
 			}
 
-			if( GetCurrInput( 0 ).start )
-			{
-				//break;
-				quit = true;
-				returnVal = 1;
+			//if( GetCurrInput( 0 ).start )
+			//{
+			//	//break;
+			//	quit = true;
+			//	returnVal = 1;
 
-				break;
-			}
+			//	break;
+			//}
 
 			raceFight->victoryScreen->Update();
 

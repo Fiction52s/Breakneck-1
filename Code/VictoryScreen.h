@@ -119,6 +119,9 @@ struct ResultsScreen : VictoryScreen
 	CubicBezier slideInBez[4];
 	int slideInStartFrame[4];
 	int slideInFrames[4];
+
+	CubicBezier slideOutBez;
+	int slideOutFrames;
 };
 
 #endif
