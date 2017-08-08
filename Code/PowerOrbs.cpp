@@ -935,6 +935,15 @@ bool FillRingSection::IsEmpty()
 	return (currPower == 0);
 }
 
+void FillRing::SetPosition(sf::Vector2f &pos)
+{
+	centerPos = pos;
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->SetupSection(centerPos);
+	}
+}
+
 FillRing::FillRing( Vector2f &pos, int p_numRings, FillRingSection **p_rings)
 	:numRings( p_numRings ), rings( p_rings ), centerPos( pos )
 {

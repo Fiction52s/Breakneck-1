@@ -40,6 +40,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_scorpJump = owner->GetTileset("scorp_jump_192x144.png", 192, 144);
 	ts_scorpDash = owner->GetTileset("scorp_dash_192x80.png", 192, 80);
 	ts_scorpSprint = owner->GetTileset("scorp_sprint_192x96.png", 192, 96);
+	ts_scorpClimb = owner->GetTileset("scorp_climb_256x128.png", 256, 128);
 	ts_bubble = owner->GetTileset("timemiddle.png", 160, 160);
 
 	ts_airBounceFlame = owner->GetTileset("bouncejumpflame.png", 128, 128, skin);
@@ -1817,7 +1818,7 @@ void Actor::UpdatePrePhysics()
 		//expr = Expr::Expr_HURT;
 		
 		//cout << "damaging player with: " << receivedHit->damage << endl;
-		int dmgRet = owner->powerRing->Drain(receivedHit->damage);
+		int dmgRet = 0;//owner->powerRing->Drain(receivedHit->damage);
 		//bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
 		if( true )
 		{
@@ -8235,6 +8236,9 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	queryMode = "envplant";
 	owner->envPlantTree->Query( this, r );
+
+	Rect<double>(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
+	owner->staticItemTree->Query(NULL, r);
 
 	//queryMode = "gate";
 	//owner->testGateCount = 0;
@@ -15813,11 +15817,9 @@ void Actor::Draw( sf::RenderTarget *target )
 	//target->draw( *pTrail->particles );
 
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
-		&& action != GOALKILLWAIT )
+		&& action != GOALKILLWAIT && action != BOUNCEGROUNDEDWALL )
 	{
-		if( action != DOUBLE && action != STEEPCLIMB && action != STEEPSLIDE
-			&& action != STEEPCLIMBATTACK && action != STEEPSLIDEATTACK ) //temporary
-			target->draw( scorpSprite );
+		target->draw( scorpSprite );
 	}
 
 
@@ -16281,6 +16283,50 @@ void Actor::SetFakeCurrInput( ControllerState &state )
 	currInput = state;
 }
 
+int Actor::GetJumpFrame()
+{
+	sf::IntRect ir;
+	int tFrame = -1;
+	/*if( frame == 0 )
+	{
+	ir = tileset[JUMP]->GetSubRect( 0 );
+	}
+	else */if (velocity.y < -15)
+	{
+		tFrame = 1;
+	}
+	else if (velocity.y < 7)
+	{
+		tFrame = 2;
+	}
+	else if (velocity.y < 9)
+	{
+		tFrame = 3;
+	}
+	else if (velocity.y < 12)
+	{
+		tFrame = 4;
+	}
+	else if (velocity.y < 35)
+	{
+		tFrame = 5;
+	}
+	else if (velocity.y < 37)
+	{
+		tFrame = 6;
+	}
+	else if (velocity.y < 40)
+	{
+		tFrame = 7;
+	}
+	else
+	{
+		tFrame = 8;
+	}
+
+	return tFrame;
+}
+
 void Actor::UpdateSprite()
 {
 	scorpSet = false;
@@ -16575,44 +16621,7 @@ void Actor::UpdateSprite()
 	case JUMP:
 		{
 			sf::IntRect ir;
-			int tFrame = -1;
-			/*if( frame == 0 )
-			{
-				ir = tileset[JUMP]->GetSubRect( 0 );
-			}
-			else */if( velocity.y < -15)
-			{
-				tFrame = 1;
-			}
-			else if( velocity.y < 7 )
-			{
-				tFrame = 2;
-			}
-			else if( velocity.y < 9 )
-			{
-				tFrame = 3;
-			}
-			else if( velocity.y < 12 )
-			{
-				tFrame = 4;
-			}
-			else if( velocity.y < 35)
-			{
-				tFrame = 5;
-			}
-			else if( velocity.y < 37 )
-			{
-				tFrame = 6;
-			}
-			else if( velocity.y < 40 )
-			{
-				tFrame = 7;
-			}
-			else
-			{
-				tFrame = 8;
-			}
-
+			int tFrame = GetJumpFrame();
 
 			SetSpriteTexture( action );
 			
@@ -16628,18 +16637,8 @@ void Actor::UpdateSprite()
 			sprite->setPosition( position.x, position.y );
 
 
-			if( scorpOn )
-			{
-				scorpSprite.setTexture( *ts_scorpJump->texture );
-				
-				SetSpriteTile( &scorpSprite, ts_scorpJump, tFrame, r );
-				
-				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
-					scorpSprite.getLocalBounds().height / 2 );
-				scorpSprite.setPosition( position.x, position.y );
-				scorpSprite.setRotation( sprite->getRotation() );
-				scorpSet = true;
-			}
+			if (scorpOn)
+				SetAerialScorpSprite();
 			break;
 		}
 	case JUMPSQUAT:
@@ -16981,7 +16980,8 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( frame / animFactor, r );
+			int tFrame = frame / animFactor;
+			SetSpriteTile( tFrame, r );
 
 			Vector2i offset( 0, 0 );
 
@@ -17041,6 +17041,19 @@ void Actor::UpdateSprite()
 			pos += truDir * (double)offset.x;
 
 			steepClimbAttackSword.setPosition( pos.x, pos.y );
+
+			if (scorpOn)
+			{
+				scorpSprite.setTexture(*ts_scorpClimb->texture);
+
+				SetSpriteTile(&scorpSprite, ts_scorpClimb, 0, r);
+
+				scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+					scorpSprite.getLocalBounds().height / 2);
+				scorpSprite.setPosition(position.x, position.y);
+				scorpSprite.setRotation(sprite->getRotation());
+				scorpSet = true;
+			}
 
 			/*if( record > 0 )
 			{
@@ -17125,6 +17138,29 @@ void Actor::UpdateSprite()
 			pos += truDir * (double)offset.x;
 
 			steepSlideAttackSword.setPosition( pos.x, pos.y );
+
+			if (scorpOn)
+			{
+				scorpSprite.setTexture(*ts_scorpSteepSlide->texture);
+
+				SetSpriteTile(&scorpSprite, ts_scorpSteepSlide, 0, r);
+
+				if (r)
+				{
+					scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 20,
+						scorpSprite.getLocalBounds().height / 2 + 20);
+				}
+				else
+				{
+					scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 20,
+						scorpSprite.getLocalBounds().height / 2 + 20);
+				}
+
+				scorpSprite.setPosition(position.x, position.y);
+				scorpSprite.setRotation(sprite->getRotation());
+				scorpSet = true;
+			}
+
 			break;
 		}
 	case WALLATTACK:
@@ -17229,6 +17265,9 @@ void Actor::UpdateSprite()
 				p.swordSprite1 = fairSword;
 			}
 			
+			if (scorpOn)
+				SetAerialScorpSprite();
+
 			break;
 		}
 	case DAIR:
@@ -17277,6 +17316,9 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			if (scorpOn)
+				SetAerialScorpSprite();
 			break;
 		}
 	case UAIR:
@@ -17322,6 +17364,9 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			if (scorpOn)
+				SetAerialScorpSprite();
 			break;
 		}
 	case DIAGUPATTACK:
@@ -17381,6 +17426,9 @@ void Actor::UpdateSprite()
 				p.swordSprite1 = diagUpAttackSword;
 			}
 			
+			if (scorpOn)
+				SetAerialScorpSprite();
+
 			break;
 		}
 	case DIAGDOWNATTACK:
@@ -17443,6 +17491,9 @@ void Actor::UpdateSprite()
 				p.swordSprite1 = diagDownAttackSword;
 			}
 			
+			if (scorpOn)
+				SetAerialScorpSprite();
+
 			break;
 		}
 	case BACKWARDSDOUBLE:
@@ -17455,6 +17506,9 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			if (scorpOn)
+				SetAerialScorpSprite();
 			break;
 		}
 	case DOUBLE:
@@ -17473,6 +17527,9 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			if (scorpOn)
+				SetAerialScorpSprite();
 			break;
 		}
 	case DASH:
@@ -17695,6 +17752,8 @@ void Actor::UpdateSprite()
 			sprite->setPosition( position.x, position.y );
 			//float angle = atan2( 
 
+			if (scorpOn)
+				SetAerialScorpSprite();
 			break;
 		}
 	case GRINDSLASH:
@@ -17754,7 +17813,8 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			//sprite->setRotation( 0 );
-
+			if (scorpOn)
+				SetAerialScorpSprite();
 			//sprite->setPosition( position.x, position.y );
 		}
 		break;
@@ -17803,6 +17863,28 @@ void Actor::UpdateSprite()
 			//	sprite->setPosition( pp.x + offsetX, pp.y );
 			//else
 			//	sprite->setPosition( pp.x, pp.y );
+
+			if (scorpOn)
+			{
+				scorpSprite.setTexture(*ts_scorpSteepSlide->texture);
+
+				SetSpriteTile(&scorpSprite, ts_scorpSteepSlide, 0, r);
+
+				if (r)
+				{
+					scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 20,
+						scorpSprite.getLocalBounds().height / 2 + 20);
+				}
+				else
+				{
+					scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 20,
+						scorpSprite.getLocalBounds().height / 2 + 20);
+				}
+				
+				scorpSprite.setPosition(position.x, position.y);
+				scorpSprite.setRotation(sprite->getRotation());
+				scorpSet = true;
+			}
 			break;
 		}
 	case AIRDASH:
@@ -17849,6 +17931,9 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( position.x, position.y );
 			sprite->setRotation( 0 );
+
+			//if (scorpOn)
+			//	SetAerialScorpSprite();
 			break;
 		}
 	case GRAVREVERSE:
@@ -17892,7 +17977,8 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( frame / 4, r );
+			int tFrame = frame / 4;
+			SetSpriteTile( tFrame, r );
 
 			double angle = 0;
 			if( !approxEquals( abs(offsetX), b.rw ) )
@@ -17927,6 +18013,28 @@ void Actor::UpdateSprite()
 			}
 
 			sprite->setPosition( pp.x, pp.y );
+
+			if (scorpOn)
+			{
+				scorpSprite.setTexture(*ts_scorpClimb->texture);
+
+				SetSpriteTile(&scorpSprite, ts_scorpClimb, tFrame, r);
+
+				if (r)
+				{
+					scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 30,
+						scorpSprite.getLocalBounds().height / 2 + 25);
+				}
+				else
+				{
+					scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 30,
+						scorpSprite.getLocalBounds().height / 2 + 25);
+				}
+			
+				scorpSprite.setPosition(position.x, position.y);
+				scorpSprite.setRotation(sprite->getRotation());
+				scorpSet = true;
+			}
 			//if( angle == 0 )
 			//	sprite->setPosition( pp.x + offsetX, pp.y );
 			//else
@@ -18876,6 +18984,20 @@ void Actor::SetSpriteTexture( Action a )
 	sprite->setTexture( *tileset[a]->texture );
 }
 
+void Actor::SetAerialScorpSprite()
+{
+	assert(scorpOn);
+	int tFrame = GetJumpFrame();
+	scorpSprite.setTexture(*ts_scorpJump->texture);
+
+	SetSpriteTile(&scorpSprite, ts_scorpJump, tFrame, facingRight);
+
+	scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+		scorpSprite.getLocalBounds().height / 2);
+	scorpSprite.setPosition(position.x, position.y);
+	scorpSprite.setRotation(sprite->getRotation());
+	scorpSet = true;
+}
 
 void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 {

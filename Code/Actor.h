@@ -425,6 +425,9 @@ struct Actor : QuadTreeCollider,
 		sf::Vector2<double> &alongVel, 
 		sf::Vector2<double> &gNorm );
 
+	void SetAerialScorpSprite();
+	int GetJumpFrame();
+
 	int framesExtendingAirdash;
 
 	
@@ -436,6 +439,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_scorpJump;
 	Tileset *ts_scorpDash;
 	Tileset *ts_scorpSprint;
+	Tileset *ts_scorpClimb;
 
 	sf::Sprite scorpSprite;
 

@@ -787,6 +787,12 @@ void GameSession::Cleanup()
 		terrainBGTree = NULL;
 	}
 
+	if (staticItemTree!= NULL)
+	{
+		delete staticItemTree;
+		staticItemTree = NULL;
+	}
+
 	if (scoreDisplay != NULL)
 	{
 		delete scoreDisplay;
@@ -1951,6 +1957,45 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
+			else if (typeName == "blocker")
+			{
+				int xPos, yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for (int i = 0; i < pathLength; ++i)
+				{
+					int localX, localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back(Vector2i(localX, localY));
+				}
+
+				int bType;
+				is >> bType;
+
+				int armored;
+				is >> armored;
+
+				BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored);
+				//Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
+				//enemy->Monitor::MonitorType
+
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
+			}
+
 
 
 			//w1
@@ -5430,6 +5475,8 @@ bool GameSession::Load()
 	terrainTree = new QuadTree(1000000, 1000000);
 
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
+
+	staticItemTree = new QuadTree(1000000, 1000000);
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
 	//testTree->debug = rw;
@@ -6000,8 +6047,9 @@ int GameSession::Run()
 	//stringstream ss;
 	//ss.clear(); //needed?
 
-	int frameCounterWait = 20;
+	
 	int frameCounter = 0;
+	int frameCounterWait = 20;
 	double total = 0;
 
 	cloudView = View(Vector2f(0, 0), Vector2f(1920, 1080));
@@ -6019,7 +6067,7 @@ int GameSession::Run()
 	if (raceFight != NULL)
 	{
 		raceFight->victoryScreen->Reset();
-		state = RACEFIGHT_RESULTS;
+		state = RUN;//RACEFIGHT_RESULTS;
 		raceFight->place[0] = 1;
 		raceFight->place[1] = 2;
 
@@ -9020,6 +9068,8 @@ void GameSession::Init()
 	enemyTree = NULL;
 	
 	terrainTree = NULL;
+
+	staticItemTree = NULL;
 	
 	terrainBGTree = NULL;
 	

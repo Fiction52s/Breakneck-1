@@ -23,13 +23,15 @@ struct MusicSelector
 	static const int BOX_HEIGHT;
 	static const int BOX_SPACING;
 
+	int GetNumBoxes();
+
 	MusicSelector ( MainMenu *mainMenu, MapSelectionMenu *mapMenu,
 		sf::Vector2f &p_topMid,
 		MusicManager *mm );
 	void SetMapName(const std::string &mName);
 	VertSlider vSlider;
 	MainMenu *mainMenu;
-
+	int GetSelectorHeight();
 	void SetupBoxes();
 	void Update(ControllerState &curr, ControllerState &prev);
 	void MoveUp();
@@ -38,13 +40,14 @@ struct MusicSelector
 	void LoadNames();
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
+	void SetMultiOn(bool on);
 
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text musicNames[NUM_BOXES];
 	sf::Vector2f topMid;
 	SingleAxisSlider *oftenSlider[NUM_BOXES];
 	bool modifiedValues;
-
+	bool multiMode;
 	//int currIndex;
 	int oldCurrIndex;
 	int topIndex;

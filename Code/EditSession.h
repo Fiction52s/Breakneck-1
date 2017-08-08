@@ -612,6 +612,54 @@ struct RaceFightTargetParams : public ActorParams
 	ActorParams *Copy();
 };
 
+struct BlockerParams : public ActorParams
+{
+	enum BlockerType
+	{
+		NORMAL,
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		BLACK
+	};
+
+	BlockerParams(EditSession *edit,
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath,
+		int bType, bool invinc );
+	BlockerParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+	void SetPath(
+		std::list<int> &angleList );
+	std::list<int> GetAngleList();
+	void Draw(sf::RenderTarget *target);
+
+	bool CanApply();
+	ActorParams *Copy();
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	std::list<sf::Vector2i> GetGlobalChain();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	//std::list<int> angleList;
+	bool armored;
+	//sf::VertexArray *lines; //local pos
+
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	
+
+	BlockerType bType;
+	//will have multiple types
+};
+
 //w1
 struct PatrollerParams : public ActorParams
 {
@@ -1591,6 +1639,7 @@ struct EditSession : GUIHandler
 		EDIT,
 		SELECT_MODE,
 		CREATE_PATROL_PATH,
+		CREATE_BLOCKER_CHAIN,
 		//PLACE_PLAYER,
 		//PLACE_GOAL,
 		SELECT_POLYGONS,

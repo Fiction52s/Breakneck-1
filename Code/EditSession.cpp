@@ -1246,7 +1246,38 @@ bool EditSession::OpenFile()
 					a.reset( new RaceFightTargetParams( this, pos ) );
 					//a->hasMonitor = (bool)hasMonitor;
 				}
+				else if (typeName == "blocker")
+				{
+					Vector2i pos;
 
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int pathLength;
+					is >> pathLength;
+
+					list<Vector2i> globalPath;
+					globalPath.push_back(Vector2i(pos.x, pos.y));
+
+					for (int i = 0; i < pathLength; ++i)
+					{
+						int localX, localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back(Vector2i(pos.x + localX, pos.y + localY));
+					}
+
+					int bType;
+					is >> bType;
+
+					int armored;
+					is >> armored;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new BlockerParams(this, pos, globalPath, bType, armored));
+					//a->hasMonitor = (bool)hasMonitor;
+				}
 				//w1
 				else if( typeName == "crawlerreverser" )
 				{
@@ -3856,6 +3887,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *raceFightTargetPanel = NULL;
 	ActorType *raceFightTargetType = new ActorType( "racefighttarget", raceFightTargetPanel );
 
+	Panel *blockerPanel = CreateOptionsPanel("blocker");
+	ActorType *blockerType = new ActorType("blocker", blockerPanel);
+
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
 	types["poi"] = poiType;
@@ -3864,6 +3898,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	types["shard"] = shardType;
 
 	types["racefighttarget"] = raceFightTargetType;
+
+	types["blocker"] = blockerType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -4034,7 +4070,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	errorPopup = CreatePopupPanel( "error" );
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 7, 8, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 10, 8, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
@@ -4047,6 +4083,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set( 4, 0, Sprite( shipPickupType->iconTexture ), "shippickup" );
 	gs->Set( 5, 0, Sprite( shardType->iconTexture ), "shard" );
 	gs->Set( 6, 0, Sprite( raceFightTargetType->iconTexture ), "racefighttarget" );
+	gs->Set(7, 0, Sprite(blockerType->iconTexture), "blocker");
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -6339,6 +6376,23 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										CreateActor( raceFightTarget );
 										showPanel = enemySelectPanel;
 									}
+									else if (trackingEnemy->name == "blocker")
+									{
+										//trackingEnemy = NULL;
+										tempActor = new BlockerParams(this, Vector2i(worldPos.x,
+											worldPos.y));
+										//blocker->group = groups["--"];
+										//CreateActor(blocker);
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
+										
+
+										patrolPath.clear();
+										patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
+										//showPanel = trackingEnemy->panel;
+										//tempActor->SetPanelInfo();
+										//showPanel = enemySelectPanel;
+									}
 
 
 									//w1
@@ -7062,6 +7116,97 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 					}
 					break;
+				}
+			case CREATE_BLOCKER_CHAIN:
+				{
+				minimumPathEdgeLength = 16;
+				switch (ev.type)
+				{
+				case Event::MouseButtonPressed:
+				{
+
+					break;
+				}
+				case Event::MouseButtonReleased:
+				{
+					break;
+				}
+				case Event::MouseWheelMoved:
+				{
+					break;
+				}
+				case Event::KeyPressed:
+				{
+					if ((ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete) && patrolPath.size() > 1)
+					{
+						patrolPath.pop_back();
+					}
+					else if (ev.key.code == Keyboard::Space)
+					{
+						if (selectedBrush->objects.size() == 1) //EDIT
+						{
+							//showPanel = trackingEnemy->panel;
+							ISelectable *select = selectedBrush->objects.front().get();
+							ActorParams *actor = (ActorParams*)select;
+							showPanel = actor->type->panel;
+							actor->SetPath(patrolPath);
+							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+							mode = EDIT;
+						}
+						else
+						{
+							showPanel = trackingEnemy->panel;
+							//ISelectable *select = selectedBrush->objects.front().get();
+							//ActorParams *actor = (ActorParams*)select;
+							tempActor->SetPath(patrolPath);
+							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+							mode = CREATE_ENEMY;
+						}
+						//if( selectedActor != NULL )
+						//{
+						//	showPanel = selectedActor->type->panel;
+						//	((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+						//	mode = EDIT;
+						//}
+						//else
+						//{
+						//	showPanel = trackingEnemy->panel;
+						//	
+						//	assert( selectedBrush->objects.size() == 1 );
+
+						//	ISelectable *select = selectedBrush->objects.front().get();
+						//	ActorParams *actor = (ActorParams*)select;
+						//	actor->SetPath( patrolPath );
+						//	//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+						//	mode = EDIT;
+						//	//mode = CREATE_ENEMY;
+						//}
+
+						/*showPanel = trackingEnemy->panel;
+						trackingEnemy = NULL;
+						ActorParams *actor = new ActorParams;
+						actor->SetAsPatroller( patrollerType, patrolPath.front(), patrolPath, 10, false );
+						groups["--"]->actors.push_back( actor);
+						actor->group = groups["--"];
+						patrolPath.clear();
+						mode = CREATE_ENEMY;*/
+					}
+					break;
+				}
+				case Event::KeyReleased:
+				{
+					break;
+				}
+				case Event::LostFocus:
+				{
+					break;
+				}
+				case Event::GainedFocus:
+				{
+					break;
+				}
+				}
+				break;
 				}
 			case CREATE_TERRAIN_PATH:
 				{
@@ -8857,6 +9002,43 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 			}
+		case CREATE_BLOCKER_CHAIN:
+		{
+			if (showPanel != NULL)
+				break;
+
+
+			if (!panning && Mouse::isButtonPressed(Mouse::Left))
+			{
+				//double test = 100;
+				//worldPos before testPoint
+				V2d temp = V2d(testPoint.x, testPoint.y) - Vector2<double>(patrolPath.back().x,
+					patrolPath.back().y);
+				double tempQuant = length(temp);
+				if (tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple, 1.0)
+					&& tempQuant > patrolPathLengthSize / 2)
+				{
+
+					if (patrolPathLengthSize > 0)
+					{
+						V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y);
+						temp = normalize(V2d(testPoint.x, testPoint.y) - temp1)
+							* (double)patrolPathLengthSize + temp1;
+						Vector2i worldi(temp.x, temp.y);
+						patrolPath.push_back(worldi);
+					}
+					else
+					{
+						Vector2i worldi(testPoint.x, testPoint.y);
+						patrolPath.push_back(worldi);
+					}
+
+
+
+				}
+			}
+			break;
+		}
 		case CREATE_TERRAIN_PATH:
 			{
 				showTerrainPath = false;
@@ -9136,6 +9318,68 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 			}
+		case CREATE_BLOCKER_CHAIN:
+		{
+
+			if (trackingEnemy != NULL)
+			{
+				if (tempActor != NULL)
+					tempActor->Draw(preScreenTex);
+				else
+				{
+					preScreenTex->draw(enemySprite);
+				}
+				preScreenTex->draw(enemyQuad);
+			}
+			int pathSize = patrolPath.size();
+			if (pathSize > 0)
+			{
+				Vector2i backPoint = patrolPath.back();
+
+				Color validColor = Color::Green;
+				Color invalidColor = Color::Red;
+				Color colorSelection;
+				if (true)
+				{
+					colorSelection = validColor;
+				}
+				sf::Vertex activePreview[2] =
+				{
+					sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection),
+					sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+				};
+				preScreenTex->draw(activePreview, 2, sf::Lines);
+
+				if (pathSize > 1)
+				{
+					VertexArray v(sf::LinesStrip, pathSize);
+					int i = 0;
+					for (list<sf::Vector2i>::iterator it = patrolPath.begin();
+						it != patrolPath.end(); ++it)
+					{
+						v[i] = Vertex(Vector2f((*it).x, (*it).y));
+						++i;
+					}
+					preScreenTex->draw(v);
+				}
+			}
+
+			if (pathSize > 0) //always
+			{
+				CircleShape cs;
+				cs.setRadius(5 * zoomMultiple);
+				cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+				cs.setFillColor(Color::Green);
+
+
+				for (list<Vector2i>::iterator it = patrolPath.begin(); it != patrolPath.end(); ++it)
+				{
+					cs.setPosition((*it).x, (*it).y);
+					preScreenTex->draw(cs);
+				}
+			}
+			break;
+		}
 		case SELECT_MODE:
 			{
 				
@@ -9660,7 +9904,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		preScreenTex->setView( uiView );
 
 		stringstream cursorPosSS;
-		if( mode == CREATE_PATROL_PATH )
+		if( mode == CREATE_PATROL_PATH || mode == CREATE_BLOCKER_CHAIN )
 		{
 			V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
 				patrolPath.back().y );
@@ -10150,7 +10394,70 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if (p->name == "blocker_options")
+	{
+		if (b->name == "ok")
+		{
 
+
+			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				BlockerParams *blocker = (BlockerParams*)select;
+				blocker->SetParams();
+
+				//patroller->monitorType = GetMonitorType( p );
+				//patroller->speed = speed;
+				//patroller->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or 
+				//something to simplify when i have more types
+				//cout << "tempActor: " << tempActor->type->name << endl;
+				ActorPtr blocker(tempActor);//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+
+				blocker->SetParams();
+				blocker->group = groups["--"];
+				//patroller->SetParams();
+				//patroller->group = groups["--"];
+				//patroller->monitorType = GetMonitorType( p );
+
+				CreateActor(blocker);
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+		else if (b->name == "createchain")
+		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+			showPanel = NULL;
+			mode = CREATE_BLOCKER_CHAIN;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back(front);
+			patrolPathLengthSize = 0;
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		}
+		//else if (b->name == "createpath")
+		//{
+		//	//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+		//	showPanel = NULL;
+		//	mode = CREATE_PATROL_PATH;
+		//	Vector2i front = patrolPath.front();
+		//	patrolPath.clear();
+		//	patrolPath.push_back(front);
+		//	patrolPathLengthSize = 0;
+		//	//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		//}
+	}
 
 	else if( p->name == "patroller_options" )
 	{
@@ -13039,6 +13346,27 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		return p;
 	}
+	else if (name == "blocker")
+	{
+		Panel *p = new Panel("blocker_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		//p->AddLabel("type_label", Vector2i(20, 150), 20, "type");
+		p->AddCheckBox("armored", Vector2i(120, 155));
+		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
+		p->AddButton("createchain", Vector2i(20, 250), Vector2f(100, 50), "Create Chain");
+
+		//p->AddCheckBox("monitor", Vector2i(20, 330));
+		/*GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
+		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
+		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
+		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
+		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );*/
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+		//p->
+	}
 	//else if( name == "shard1" )
 	//{
 	//	Panel *p = new Panel( "turtle_options", 200, 600, this );
@@ -13550,6 +13878,12 @@ void EditSession::SetEnemyEditPanel()
 	{
 		ShardParams *shard= (ShardParams*)ap;
 		shard->SetPanelInfo();
+	}
+	else if (name == "blocker")
+	{
+		BlockerParams *block = (BlockerParams*)ap;
+		block->SetPanelInfo();
+		patrolPath = block->GetGlobalChain();
 	}
 	//w1
 	else if( name == "patroller" )
@@ -14868,6 +15202,13 @@ void ActorType::Init()
 		canBeAerial = true;
 	}
 	else if( name == "racefighttarget" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if (name == "blocker")
 	{
 		width = 32;
 		height = 32;

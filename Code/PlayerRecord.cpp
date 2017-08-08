@@ -215,7 +215,8 @@ void RecordGhost::WriteToFile(const std::string &fileName)
 	else
 	{
 		cout << "recordghost fileName: " << fileName << endl;
-		assert(false && "failed to open file to write to");
+		cout << "RECORD FAILED" << endl;
+		//assert(false && "failed to open file to write to");
 	}
 }
 

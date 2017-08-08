@@ -174,6 +174,7 @@ struct FillRing
 		bool hasWires );
 
 	FillRingSection **rings;
+	void SetPosition(sf::Vector2f &pos);
 	int numRings;
 	int currRing;
 	int Fill(int fill);

@@ -324,7 +324,7 @@ void ResultsScreen::Update()
 		frame = 0;
 		break;
 	case SLIDEIN:
-		if (frame <= slideInStartFrame[maxPlacing] + slideInFrames[maxPlacing])
+		if (frame <= slideInStartFrame[maxPlacing-1] + slideInFrames[maxPlacing-1])
 		{
 			for (int i = 0; i < 4; ++i)
 			{

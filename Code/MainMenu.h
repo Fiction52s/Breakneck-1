@@ -73,19 +73,28 @@ struct MultiSelectionSection : UIEventHandlerBase
 	ControlProfile *profile;
 	ControlProfileMenu *profileSelect;
 	void Draw( sf::RenderTarget *target );
+
+	void SetTopMid( sf::Vector2f &tm );
 	sf::Sprite playerSprite;
 	bool active;
 	int playerIndex;
 	MapSelectionMenu *parent;
 	MainMenu *mainMenu;
-	bool isReady;
+	//bool isReady;
+	bool IsReady();
 	bool ShouldGoBack();
 	bool holdingB;
 
 	int bHoldFrames;
 	int bHoldThresh;
 
+	sf::Vector2f topMid;
 	FillRing *backLoader;
+	sf::Vector2f backLoaderOffset;
+
+	sf::RectangleShape offRect;
+	sf::Sprite bgSprite;
+	//Tileset *ts_bg;
 };
 
 struct LoadingMapProgressDisplay;
@@ -292,6 +301,11 @@ struct MapSelectionMenu
 	MainMenu *mainMenu;
 	void SetupBoxes();
 	void LoadItems();
+
+	bool IsMultiMusicOn();
+	bool IsMultiGhostOn();
+	bool IsMusicSelectorVisible();
+	bool IsGhostSelectorVisible();
 	void Update(ControllerState &currInput,
 		ControllerState &prevInput);
 	void MoveUp();
@@ -303,6 +317,7 @@ struct MapSelectionMenu
 	static bool WriteMapHeader(std::ofstream &of, MapHeader *mh);
 	static bool ReplaceHeader(boost::filesystem::path &p,
 		MapHeader *mh);
+	void CleanupStopThreads();
 	bool AllPlayersReady();
 	int NumPlayersReady();
 	static void sStopLoadThread(MapSelectionMenu *mapMenu,
@@ -365,6 +380,8 @@ struct MapSelectionMenu
 	ControllerState multiMusicCurr;
 	ControllerState multiGhostPrev;
 	ControllerState multiGhostCurr;
+
+	sf::Vector2f menuOffset;
 
 	MultiSelectionSection *multiPlayerSection[4];
 

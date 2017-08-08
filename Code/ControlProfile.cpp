@@ -246,6 +246,13 @@ void ControlProfileMenu::UpdateNames()
 	vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
 }
 
+void ControlProfileMenu::SetTopMid(Vector2f &tm)
+{
+	topMid = tm;
+	//SetupBoxes(); //only need this if i was going to be moving the boxes while the selector isup
+	selectedProfileText.setPosition(topMid.x, topMid.y + 90);
+}
+
 void ControlProfileMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {

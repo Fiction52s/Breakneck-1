@@ -101,7 +101,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 		int playerIndex,
 		std::list<ControlProfile*> &p_profiles,
 		sf::Vector2f &p_topMid );
-
+	void SetTopMid(sf::Vector2f &tm);
 	
 
 	bool ButtonEvent( UIEvent eType,

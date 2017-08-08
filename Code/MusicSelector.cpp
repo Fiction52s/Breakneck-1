@@ -26,6 +26,7 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 	:font(p_mainMenu->arial),topIndex(0), oldCurrIndex(0), topMid(p_topMid),
 	mainMenu( p_mainMenu ), musicMan( p_musicMan ), mapMenu( p_mapMenu ), modifiedValues( false )
 {
+	multiMode = false;
 	previewSong = NULL;
 	songs = NULL;
 	//assert(!p_profiles.empty());
@@ -64,8 +65,8 @@ void MusicSelector::SetMapName(const std::string &mName)
 
 void MusicSelector::Draw(sf::RenderTarget *target)
 {
-	target->draw(boxes, NUM_BOXES * 4, sf::Quads);
-	for (int i = 0; i < NUM_BOXES; ++i)
+	target->draw(boxes, GetNumBoxes() * 4, sf::Quads);
+	for (int i = 0; i < GetNumBoxes(); ++i)
 	{
 		//cout << "drawing: " << profileNames[i].getString().toAnsiString() << "\n";
 		target->draw(musicNames[i]);
@@ -96,8 +97,9 @@ void MusicSelector::LoadNames()
 	saSelector->totalItems = numSongs;
 
 	Vector2f offset(20, 0);
-	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f( vSlider.barSize.x, max( vSlider.selectorSize.y / numSongs, 5.f ) ),
-		vSlider.selectorSize );
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), 
+		Vector2f( vSlider.barSize.x, 
+			max((float)GetSelectorHeight() / numSongs, 5.f)), Vector2f( 30, GetSelectorHeight() ) );
 }
 
 void MusicSelector::UpdateNames()
@@ -127,12 +129,12 @@ void MusicSelector::UpdateNames()
 	int i = 0;
 
 	string nameStr;
-	for (; i < NUM_BOXES; ++i)
+	for (; i < GetNumBoxes(); ++i)
 	{
-		trueI = (topIndex + i) % NUM_BOXES;
+		trueI = (topIndex + i) % GetNumBoxes();
 		if (i == numTotalSongs)
 		{
-			for (; i < NUM_BOXES; ++i)
+			for (; i < GetNumBoxes(); ++i)
 			{
 				musicNames[i].setString("");
 			}
@@ -173,6 +175,30 @@ void MusicSelector::UpdateNames()
 		++ind;
 	}
 
+}
+
+void MusicSelector::SetMultiOn(bool on)
+{
+	multiMode = on;
+	LoadNames();
+	//Vector2f offset(20, 0);
+	//Vector2f offset(20, 0);
+
+	//vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y),
+	//	Vector2f(vSlider.barSize.x, max(vSlider.selectorSize.y / numSongs, 5.f)), Vector2f(30, GetSelectorHeight()));
+	//vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
+}
+
+int MusicSelector::GetNumBoxes()
+{
+	if (multiMode)
+	{
+		return 5;
+	}
+	else
+	{
+		return NUM_BOXES;
+	}
 }
 
 void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInput)
@@ -244,9 +270,9 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 
 	if (inc)
 	{
-		if (cIndex - topIndex == NUM_BOXES)
+		if (cIndex - topIndex == GetNumBoxes())
 		{
-			topIndex = cIndex - (NUM_BOXES - 1);
+			topIndex = cIndex - (GetNumBoxes() - 1);
 		}
 		else if (cIndex == 0)
 		{
@@ -272,7 +298,7 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 
 		if (cIndex == saSelector->totalItems - 1)
 		{
-			topIndex = saSelector->totalItems - NUM_BOXES;
+			topIndex = saSelector->totalItems - GetNumBoxes();
 		}
 		else if (cIndex < topIndex)
 		{
@@ -348,7 +374,7 @@ void MusicSelector::SetupBoxes()
 	sf::Vector2f currTopMid;
 	int extraHeight = 0;
 
-	for (int i = 0; i < NUM_BOXES; ++i)
+	for (int i = 0; i < GetNumBoxes(); ++i)
 	{
 		currTopMid = topMid + Vector2f(0, extraHeight);
 
@@ -371,7 +397,12 @@ void MusicSelector::SetupBoxes()
 
 	Vector2f offset(20, 0);
 	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f(30, 0),
-		Vector2f(30, NUM_BOXES * ( BOX_HEIGHT + BOX_SPACING ) ) );
+		Vector2f(30, GetSelectorHeight()) );
+}
+
+int MusicSelector::GetSelectorHeight()
+{
+	return GetNumBoxes() * (BOX_HEIGHT + BOX_SPACING);
 }
 
 void MusicSelector::MoveUp()
@@ -398,7 +429,7 @@ void MusicSelector::UpdateBoxesDebug()
 	int trueI = (saSelector->currIndex - topIndex);
 	
 
-	for (int i = 0; i < NUM_BOXES; ++i)
+	for (int i = 0; i < GetNumBoxes(); ++i)
 	{
 		if (i == trueI)
 		{

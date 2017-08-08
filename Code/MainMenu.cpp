@@ -43,7 +43,7 @@ int MainMenu::masterVolume = 100;
 MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionMenu *p_parent,
 	int p_playerIndex, Vector2f &p_topMid )
 	:mainMenu( p_mainMenu ), parent( p_parent ), playerIndex( p_playerIndex ), team( T_NOT_CHOSEN ),
-	skinIndex( S_STANDARD ), isReady( false ), active( false )
+	skinIndex( S_STANDARD ), active( false ), topMid( p_topMid )
 {
 	profileSelect = new ControlProfileMenu( this,playerIndex,
 		mainMenu->cpm->profiles, p_topMid );
@@ -59,9 +59,42 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionM
 		sf::Color::Blue,
 		4, 40, 0) };
 
-	backLoader = new FillRing(Vector2f(p_topMid.x, p_topMid.y + 50), 1, blah);
+	backLoaderOffset = Vector2f(0, 50);
+	backLoader = new FillRing(topMid + backLoaderOffset, 1, blah);
 	backLoader->ResetEmpty();
+
+	Tileset *ts_bg = mainMenu->tilesetManager.GetTileset( "Menu/multiprofile.png", 480, 400);
+	bgSprite.setTexture(*ts_bg->texture);
+	bgSprite.setTextureRect(ts_bg->GetSubRect( p_playerIndex ));
+	bgSprite.setOrigin(bgSprite.getLocalBounds().width / 2, 0);
+	bgSprite.setPosition(topMid);
+
+	offRect.setSize(Vector2f( ts_bg->tileWidth, ts_bg->tileHeight ));
+	offRect.setFillColor(Color(0, 0, 0, 180));
+	offRect.setOrigin(offRect.getLocalBounds().width / 2, 0);
+	offRect.setPosition(topMid);
 	//profileSelect->UpdateNames();	
+}
+
+bool MultiSelectionSection::IsReady()
+{
+	if (profileSelect->state == ControlProfileMenu::S_SELECTED)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void MultiSelectionSection::SetTopMid( sf::Vector2f &tm )
+{
+	topMid = tm;
+	backLoader->SetPosition(topMid + backLoaderOffset);
+	profileSelect->SetTopMid(topMid);
+	bgSprite.setPosition(topMid);
+	offRect.setPosition(topMid);
 }
 
 bool MultiSelectionSection::ButtonEvent( UIEvent eType,
@@ -120,7 +153,7 @@ void MultiSelectionSection::Update()
 		}
 	}
 
-	if (!isReady)
+	//if (!IsReady())
 	{
 		bool rT = (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed());
 		bool lT = (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed());
@@ -220,15 +253,6 @@ void MultiSelectionSection::Update()
 	{
 		numPlayersActive = 1;
 	}
-	if( !isReady && currInput.start && !prevInput.start
-		&& profileSelect->state == ControlProfileMenu::S_SELECTED )
-	{
-		/*if( team != T_NOT_CHOSEN || numPlayersActive == 2 )
-		{
-			if( numPlayersActive
-		}*/
-		isReady = true;
-	}
 }
 
 void MultiSelectionSection::Draw( sf::RenderTarget *target )
@@ -262,7 +286,7 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 	}*/
 
 	
-
+	target->draw(bgSprite);
 	target->draw( playerSprite );
 	profileSelect->Draw( target );
 
@@ -270,6 +294,9 @@ void MultiSelectionSection::Draw( sf::RenderTarget *target )
 	{
 		backLoader->Draw(target);
 	}
+
+	if( !active )
+		target->draw(offRect);
 }
 
 bool MultiSelectionSection::ShouldGoBack()
@@ -328,7 +355,6 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 
 	for (int i = 0; i < 4; ++i)
 	{
-		playerSection[i]->isReady = false;
 		playerSection[i]->active = false;
 	}
 }
@@ -372,7 +398,7 @@ bool MultiLoadingScreen::AllPlayersReady()
 	{
 		if( playerSection[i]->active )
 		{
-			if( playerSection[i]->isReady )
+			if( playerSection[i]->IsReady() )
 			{
 				readyCount++;
 			}
@@ -1203,7 +1229,7 @@ void MainMenu::Run()
 
 #if defined( USE_MOVIE_TEST )
 	sfe::Movie m;
-	assert( m.openFromFile("Movie/cube.mp4") );
+	assert( m.openFromFile("Movie/testvid.ogv") );
 	m.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	
@@ -2203,7 +2229,7 @@ void MainMenu::Run()
 
 		//preScreenTexture->draw( ff, 4, sf::Quads,  &sh );
 #if defined( USE_MOVIE_TEST )
-		preScreenTexture->draw(m, &sh);
+		preScreenTexture->draw(m);// , &sh);
 #endif
 
 		preScreenTexture->display();
@@ -2326,7 +2352,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ),
 	oldCurrIndex( 0 )
 {
-	
+	multiSelectorState = MS_NEUTRAL;
 
 	toMultiTransLength = 60;
 	fromMultiTransLength = 60;
@@ -2336,7 +2362,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
 
-	Vector2f menuOffset(-1920, 0);
+	menuOffset = Vector2f(-1920, 0);
 	topMid = p_pos + Vector2f( BOX_WIDTH / 2, 0 ) + menuOffset;
 
 	SetupBoxes();
@@ -2396,8 +2422,8 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	ghostSelector = new RecordGhostMenu(mainMenu, topMid);
 	ghostSelector->UpdateItemText();
 
-	ts_multiProfileRow = mainMenu->tilesetManager.GetTileset("Menu/multiprofile.png", 1920, 400);
-	multiProfileRow.setTexture(*ts_multiProfileRow->texture);
+	//ts_multiProfileRow = mainMenu->tilesetManager.GetTileset("Menu/multiprofile.png", 1920, 400);
+	//multiProfileRow.setTexture(*ts_multiProfileRow->texture);
 
 	ts_multiSelect = mainMenu->tilesetManager.GetTileset("Menu/multiselector.png", 960, 680);
 	multiSelect.setTexture(*ts_multiSelect->texture);
@@ -2405,7 +2431,8 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	multiRowOnPos = menuOffset + Vector2f(0, 1080 - 400);
 	multiRowOffPos = menuOffset + Vector2f(0, 1080);
 
-	multiProfileRow.setPosition( multiRowOffPos );
+	//multiProfileRow.setPosition( multiRowOffPos );
+	
 
 	multiSelectOnPos = menuOffset + Vector2f(0, 0);
 	multiSelectOffPos = menuOffset + Vector2f(0, -680);
@@ -2419,7 +2446,10 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 		multiPlayerSection[i] = new MultiSelectionSection(mainMenu, this, i, topMid);
 	}
 
-
+	for (int i = 0; i < 4; ++i)
+	{
+		multiPlayerSection[i]->SetTopMid(menuOffset + Vector2f(480 * i + 240, multiRowOffPos.y));
+	}
 	
 	//filterOptions = new UIVerticalControlList()
 }
@@ -2506,13 +2536,12 @@ bool MapSelectionMenu::AllPlayersReady()
 	{
 		if (multiPlayerSection[i]->active)
 		{
-			ControlProfileMenu *cpm = multiPlayerSection[i]->profileSelect;
-			if (cpm->state != ControlProfileMenu::S_SELECTED)
-			{
+			if (!multiPlayerSection[i]->IsReady())
 				return false;
-			}
 		}
 	}
+
+
 
 	return true;
 }
@@ -2837,6 +2866,7 @@ void MapSelectionMenu::UpdateMultiInput()
 	else if( multiSelectorState == MS_MUSIC )
 	{
 		multiMusicPrev = multiMusicCurr;
+		multiMusicCurr = ControllerState();
 		for (int i = 0; i < 4; ++i)
 		{
 			
@@ -2984,6 +3014,12 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 					state = S_TO_MULTI_TRANS;
 					multiTransFrame = 0;
+					//multiProfileRow.setPosition(multiRowOffPos);
+					multiSelect.setPosition(multiSelectOffPos);
+					for (int i = 0; i < 4; ++i)
+					{
+						multiPlayerSection[i]->SetTopMid(menuOffset + Vector2f(480 * i + 240, multiRowOffPos.y));
+					}
 
 					LoadMap();
 					return;
@@ -3063,19 +3099,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 			//assert(stopThread == NULL);
 			
-			for (auto it = stopThreads.begin(); it != stopThreads.end();)
-			{
-				if ((*it)->try_join_for(boost::chrono::milliseconds(0)))
-				{
-					(*it)->join();
-					delete (*it);
-					stopThreads.erase(it++);
-				}
-				else
-				{
-					++it;
-				}
-			}
+			CleanupStopThreads();
 
 			TInfo ti;
 			ti.gsession = gs;
@@ -3110,7 +3134,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			singleSection->Update();
 		}
 
-		if (singleSection->isReady )
+		if (singleSection->IsReady() )
 		{
 			//loadThread->join();
 			//boost::chrono::steady_clock::now()
@@ -3149,10 +3173,17 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 				ghostSelector->UpdateLoadedFolders();
 
-				delete loadThread;
+
+
+				TInfo ti;
+				ti.gsession = gs;
+				ti.loadThread = loadThread;
+				stopThreads.push_back(new boost::thread(&MapSelectionMenu::sStopLoadThread, this, ti));
+
+				/*delete loadThread;
 				loadThread = NULL;
 				delete gs;
-				gs = NULL;
+				gs = NULL;*/
 
 				View vv;
 				vv.setCenter(960, 540);
@@ -3163,7 +3194,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				mainMenu->v.setSize(Vector2f( 1920, 1080 ));
 				mainMenu->preScreenTexture->setView(mainMenu->v);
 
-				singleSection->isReady = false;
+				//singleSection->isReady = false;
 				state = S_MAP_SELECTOR;
 
 
@@ -3255,6 +3286,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 			multiSelect.setPosition(multiSelectOffPos * (1 - r) + multiSelectOnPos * r);
 			
+			for (int i = 0; i < 4; ++i)
+			{
+				multiPlayerSection[i]->SetTopMid(menuOffset + Vector2f(480 * i + 240, multiProfileRow.getPosition().y));
+			}
+
 			++multiTransFrame;
 		}
 	}
@@ -3271,6 +3307,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 			multiSelect.setPosition(multiSelectOnPos * (1 - r) + multiSelectOffPos * r);
 
+			for (int i = 0; i < 4; ++i)
+			{
+				multiPlayerSection[i]->SetTopMid(menuOffset + Vector2f(480 * i + 240, multiProfileRow.getPosition().y));
+			}
+
 			++multiTransFrame;
 		}
 	}
@@ -3286,19 +3327,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 				//assert(stopThread == NULL);
 
-				for (auto it = stopThreads.begin(); it != stopThreads.end();)
-				{
-					if ((*it)->try_join_for(boost::chrono::milliseconds(0) ) )
-					{
-						(*it)->join();
-						delete (*it);
-						stopThreads.erase(it++);
-					}
-					else
-					{
-						++it;
-					}
-				}
+				CleanupStopThreads();
 
 				TInfo ti;
 				ti.gsession = gs;
@@ -3351,6 +3380,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			if (musicOn)
 			{
 				multiSelectorState = MS_MUSIC;
+				musicSelector->SetMultiOn(true);
 				return;
 			}
 			else if (ghostOn)
@@ -3362,6 +3392,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		else if ((multiSelectorState == MS_MUSIC || multiSelectorState == MS_GHOST ) && allNeutral )
 		{
 			multiSelectorState = MS_NEUTRAL;
+			musicSelector->SetMultiOn(false);
 			return;
 		}
 
@@ -3369,7 +3400,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 		
 		if (!musicOn && !ghostOn && mainMenu->menuCurrInput.start && !mainMenu->menuPrevInput.start )
 		{
-			if (AllPlayersReady() && NumPlayersReady() > 1 )
+			if (AllPlayersReady() && NumPlayersReady() > 1 ) //replace the numplayersready based on the map specifics
 			{
 				//loadThread->join();
 				//boost::chrono::steady_clock::now()
@@ -3390,10 +3421,16 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 						mainMenu->GetController(i).SetFilter(filter);
 					}
 
-					delete loadThread;
+					/*delete loadThread;
 					loadThread = NULL;
 					delete gs;
-					gs = NULL;
+					gs = NULL;*/
+					CleanupStopThreads();
+
+					TInfo ti;
+					ti.gsession = gs;
+					ti.loadThread = loadThread;
+					stopThreads.push_back(new boost::thread(&MapSelectionMenu::sStopLoadThread, this, ti));
 
 					View vv;
 					vv.setCenter(960, 540);
@@ -3611,6 +3648,59 @@ void MapSelectionMenu::UpdateBoxesDebug()
 	}
 }
 
+void MapSelectionMenu::CleanupStopThreads()
+{
+	for (auto it = stopThreads.begin(); it != stopThreads.end();)
+	{
+		if ((*it)->try_join_for(boost::chrono::milliseconds(0)))
+		{
+			(*it)->join();
+			delete (*it);
+			stopThreads.erase(it++);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
+bool MapSelectionMenu::IsMusicSelectorVisible()
+{
+	return state == S_MUSIC_SELECTOR || (state == S_MULTI_SCREEN && IsMultiMusicOn());
+}
+
+bool MapSelectionMenu::IsGhostSelectorVisible()
+{
+	return state == S_GHOST_SELECTOR || (state == S_MULTI_SCREEN && IsMultiGhostOn());
+}
+
+bool MapSelectionMenu::IsMultiMusicOn()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::S_MUSIC_SELECTOR)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool MapSelectionMenu::IsMultiGhostOn()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (multiPlayerSection[i]->profileSelect->state == ControlProfileMenu::S_GHOST_SELECTOR)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void MapSelectionMenu::Draw(sf::RenderTarget *target)
 {
 	target->draw(bg);
@@ -3628,24 +3718,19 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 
 	target->draw(descriptionText);
 
+
+	
+
 	if (state == S_SELECTING_SKIN)
 	{
 		singleSection->Draw(target);
 		//target->draw(playerSprite);
 		//profileSelect->Draw(target);
 	}
-	else if (state == S_MUSIC_SELECTOR)
-	{
-		musicSelector->Draw(target);
-	}
-	else if (state == S_GHOST_SELECTOR)
-	{
-		ghostSelector->Draw(target);
-	}
-	else if (state == S_MULTI_SCREEN || state == S_TO_MULTI_TRANS
+	if (state == S_MULTI_SCREEN || state == S_TO_MULTI_TRANS
 		|| state == S_FROM_MULTI_TRANS)
 	{
-		target->draw(multiProfileRow);
+		//target->draw(multiProfileRow);
 		target->draw(multiSelect);
 		for (int i = 0; i < 4; ++i)
 		{
@@ -3664,6 +3749,16 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	
 	filterOptions->Draw(target);
 	progressDisplay->Draw(target);
+
+	if (IsMusicSelectorVisible())
+	{
+		musicSelector->Draw(target);
+	}
+
+	if (IsGhostSelectorVisible())
+	{
+		ghostSelector->Draw(target);
+	}
 }
 
 #include <fstream>
