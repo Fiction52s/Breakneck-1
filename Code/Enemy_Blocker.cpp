@@ -42,19 +42,108 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 
 	ts = owner->GetTileset("blocker.png", 64, 64);
 
+	double rad = 32;
+	double minDistance = 60;
 
 	dead = false;
+	double totalLength = 0;
+	double dist = minDistance + (double)spacing;
 
-	numBlockers = pathParam.size();
+	int pathSize = pathParam.size();
+
+	if (pathSize == 0)
+	{
+		numBlockers = 1;
+	}
+	else
+	{
+		V2d prev = position;;
+		V2d temp;
+		int i = 0;
+		for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
+		{
+			temp = V2d((*it).x + pos.x, (*it).y + pos.y);
+			totalLength += length( temp - prev);
+			prev = temp;
+		}
+
+		
+		numBlockers = totalLength / dist; //round down
+	}
+	
+
+
+	//numBlockers = pathParam.size();
 	blockers = new Blocker*[numBlockers];
 	va = new Vertex[numBlockers * 4];
-	int i = 0;
-	for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
+	
+	
+	
+	if (pathSize > 0)
 	{
-		blockers[i] = new Blocker(this, (*it) + pos, i);
-		++i;
+		
 	}
 
+	pathParam.push_front(Vector2i( 0, 0 ) );
+
+	for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
+	{
+		(*it) += pos;
+	}
+	//
+	auto currPoint = pathParam.begin();
+	++currPoint;
+	auto nextPoint = currPoint;
+	--currPoint;
+
+	V2d currWalk = position;
+	V2d nextD((*nextPoint).x, (*nextPoint).y);
+	double pathWalk = 0;
+	double travel = 0;
+	double tempLen = 0;
+	bool end = false;
+	//while (pathWalk < totalLength)
+	int ind = 0;
+
+	while( true )
+	{
+		if (ind == numBlockers)
+			break;
+		assert(ind < numBlockers);
+		blockers[ind] = new Blocker(this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
+		cout << blockers[ind]->position.x << ", " << blockers[ind]->position.y << endl;
+		travel = dist;
+
+		tempLen = length(nextD - currWalk);
+		
+		while (tempLen < travel)
+		{
+			travel -= tempLen;
+			currPoint = nextPoint;
+			currWalk = nextD;
+			nextPoint++;
+			if (nextPoint == pathParam.end())
+			{
+				end = true;
+				break;
+			}
+
+			nextD = V2d((*nextPoint).x, (*nextPoint).y);
+				
+			tempLen = length(nextD - currWalk);
+		}
+
+		if (end)
+			break;
+
+		if (travel > 0)
+		{
+			currWalk += travel * normalize(nextD - currWalk);
+		}
+
+		++ind;
+	}
+	
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
 	int minY = blockers[0]->spawnRect.top;
@@ -68,9 +157,12 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 		maxY = max((int)blockers[i]->spawnRect.top + (int)blockers[i]->spawnRect.height, maxY);
 	}
 
-	spawnRect = sf::Rect<double>(minX - 16, minY - 16, (maxX - minX) + 16, (maxY - minY) + 16);
+	spawnRect = sf::Rect<double>(minX - 16, minY - 16, (maxX - minX) + 32, (maxY - minY) + 32);
 
-	
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		blockers[i]->UpdateSprite();
+	}
 
 	//eventually use a quadtree for all static collision types
 	
@@ -346,6 +438,10 @@ bool BlockerChain::PlayerSlowingMe()
 
 void BlockerChain::DebugDraw(RenderTarget *target)
 {
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		blockers[i]->DebugDraw(target);
+	}
 }
 
 void BlockerChain::SaveEnemyState()

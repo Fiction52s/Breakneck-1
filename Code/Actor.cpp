@@ -8237,8 +8237,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "envplant";
 	owner->envPlantTree->Query( this, r );
 
-	Rect<double>(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
-	owner->staticItemTree->Query(NULL, r);
+	Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
+	owner->staticItemTree->Query(NULL, staticItemRect);
 
 	//queryMode = "gate";
 	//owner->testGateCount = 0;

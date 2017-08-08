@@ -175,6 +175,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		prevTriggerDown = prevInput.LeftTriggerPressed();//prevInput.leftTrigger >= triggerThresh;
 	}
 
+	if( state == PULLING )
+	{ 
+		if (player->ground != NULL && player->bounceEdge != NULL)
+		{
+			state = HIT;
+		}
+	}
+
 
 	switch( state )
 	{
@@ -378,6 +386,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 			else
 			{
+				
+
 				if( !triggerDown && player->ground == NULL )
 				{
 					state = RETRACTING;
