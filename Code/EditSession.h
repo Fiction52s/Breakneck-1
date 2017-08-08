@@ -629,7 +629,7 @@ struct BlockerParams : public ActorParams
 	BlockerParams(EditSession *edit,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
-		int bType, bool invinc );
+		int bType, bool invinc, int spacing );
 	BlockerParams(EditSession *edit,
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
@@ -654,7 +654,7 @@ struct BlockerParams : public ActorParams
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
 
-	
+	int spacing;
 
 	BlockerType bType;
 	//will have multiple types

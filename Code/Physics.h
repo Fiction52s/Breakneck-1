@@ -103,13 +103,26 @@ struct CollisionBox
 
 struct HitboxInfo
 {
+	enum HitboxType
+	{
+		NORMAL,
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		Count
+	};
+
 	HitboxInfo()
 		:knockback( 0 ), kbDir( 0, 0 ),
 		drainX( 0 ), drainY( 0 ), hitstunFrames( 1 ), hitlagFrames( 1 ), damage( 10 ),
-		freezeDuringStun( false )
+		freezeDuringStun( false ), hType( NORMAL )
 	{
 	};
 
+	HitboxType hType;
 	double knockback; //0+
 	sf::Vector2<double> kbDir;
 	//double drain; //0-1

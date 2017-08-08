@@ -625,12 +625,56 @@ void Blocker::UpdatePrePhysics()
 
 		if (health <= 0)
 		{
-			action = MALFUNCTION;
-			frame = 0;
+			if (IsFastDying())
+			{
+				action = FASTDEATH;
+				frame = 0;
+			}
+			else
+			{
+				action = MALFUNCTION;
+				frame = 0;
+			}
+			
 		}
 
 		receivedHit = NULL;
 	}
+}
+
+bool Blocker::IsFastDying()
+{
+	switch (bc->bType)
+	{
+	case BlockerChain::NORMAL:
+		break;
+	case BlockerChain::BLUE:
+		if (receivedHit->hType == HitboxInfo::BLUE)
+			return true;
+		break;
+	case BlockerChain::GREEN:
+		if (receivedHit->hType == HitboxInfo::GREEN)
+			return true;
+		break;
+	case BlockerChain::YELLOW:
+		if (receivedHit->hType == HitboxInfo::YELLOW)
+			return true;
+		break;
+	case BlockerChain::ORANGE:
+		if (receivedHit->hType == HitboxInfo::ORANGE)
+			return true;
+		break;
+	case BlockerChain::RED:
+		if (receivedHit->hType == HitboxInfo::RED)
+			return true;
+		break;
+	case BlockerChain::MAGENTA:
+		if (receivedHit->hType == HitboxInfo::MAGENTA)
+			return true;
+		break;
+	}
+
+	return false;
 }
 
 void Blocker::UpdatePhysics()
@@ -655,7 +699,7 @@ void Blocker::UpdatePhysics()
 
 void Blocker::PhysicsResponse()
 {
-	if (!checkCol)
+	if (!checkCol || action == FASTDEATH )
 		return;
 
 	if (!dead && receivedHit == NULL)
@@ -714,6 +758,12 @@ void Blocker::UpdatePostPhysics()
 	}
 
 	if (action == MALFUNCTION && frame == 60)
+	{
+		dead = true;
+		ClearSprite();
+		return;
+	}
+	else if (action == FASTDEATH && frame == 30)
 	{
 		dead = true;
 		ClearSprite();

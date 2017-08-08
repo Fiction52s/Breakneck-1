@@ -1985,7 +1985,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int armored;
 				is >> armored;
 
-				BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored);
+				int spacing;
+				is >> spacing;
+
+				BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
 				//Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
 				//enemy->Monitor::MonitorType
 

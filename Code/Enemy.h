@@ -922,12 +922,13 @@ struct Blocker : Enemy,QuadTreeEntrant
 	{
 		WAIT,
 		MALFUNCTION,
+		FASTDEATH,
 		Count
 	};
 
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
-
+	bool IsFastDying();
 	Action action;
 	Blocker(BlockerChain *bc, sf::Vector2i &pos, int index);
 	void HandleEntrant(QuadTreeEntrant *qte);
@@ -978,8 +979,7 @@ struct BlockerChain : Enemy
 		YELLOW,
 		ORANGE,
 		RED,
-		MAGENTA,
-		BLACK
+		MAGENTA
 	};
 
 	sf::Vertex *va;

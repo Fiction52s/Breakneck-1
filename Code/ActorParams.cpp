@@ -1206,7 +1206,8 @@ ActorParams *RaceFightTargetParams::Copy()
 	return copy;
 }
 
-BlockerParams::BlockerParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored)
+BlockerParams::BlockerParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
+	int p_spacing )
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
@@ -1218,6 +1219,7 @@ BlockerParams::BlockerParams(EditSession *edit, sf::Vector2i pos, list<sf::Vecto
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
+	spacing = p_spacing;
 	//list<Vector2i> localPath;
 	//SetPath(globalPath);
 	SetPath(globalPath);
@@ -1247,6 +1249,7 @@ BlockerParams::BlockerParams(EditSession *edit,
 
 	bType = NORMAL;
 
+	spacing = 0;
 	//loop = false;
 	//speed = 10;
 
@@ -1321,6 +1324,8 @@ void BlockerParams::SetParams()
 	}
 
 	hasMonitor = false;
+
+	spacing = p->textBoxes["spacing"]->text.getString().toAnsiString();
 	//hasMonitor = p->checkBoxes["monitor"]->checked;
 	//try
 	//{
@@ -1340,6 +1345,7 @@ void BlockerParams::SetPanelInfo()
 		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
 	p->checkBoxes["armored"]->checked = armored;
+	p->textBoxes["spacing"]->text.setSTring(boost::lexical_cast<string>spacing);
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -1410,6 +1416,8 @@ void BlockerParams::WriteParamFile(ofstream &of)
 	of << bType << "\n";
 
 	of << (int)armored << "\n";
+	
+	of << spacing << endl;
 
 	/*if (loop)
 	{

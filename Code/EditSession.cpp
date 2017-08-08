@@ -1274,8 +1274,11 @@ bool EditSession::OpenFile()
 					int armored;
 					is >> armored;
 
+					int spacing;
+					is >> spacing;
+
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset(new BlockerParams(this, pos, globalPath, bType, armored));
+					a.reset(new BlockerParams(this, pos, globalPath, bType, armored, spacing));
 					//a->hasMonitor = (bool)hasMonitor;
 				}
 				//w1
@@ -13355,7 +13358,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel("type_label", Vector2i(20, 150), 20, "type");
 		p->AddCheckBox("armored", Vector2i(120, 155));
 		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
-		p->AddButton("createchain", Vector2i(20, 250), Vector2f(100, 50), "Create Chain");
+		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
+		p->AddButton("createchain", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
 
 		//p->AddCheckBox("monitor", Vector2i(20, 330));
 		/*GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
