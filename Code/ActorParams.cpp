@@ -1325,7 +1325,18 @@ void BlockerParams::SetParams()
 
 	hasMonitor = false;
 
-	spacing = p->textBoxes["spacing"]->text.getString().toAnsiString();
+	string spacingStr = p->textBoxes["spacing"]->text.getString().toAnsiString();
+
+	
+	ss << spacingStr;
+
+	int t_spacing;
+	ss >> t_spacing;
+
+	if (!ss.fail())
+	{
+		spacing = t_spacing;
+	}
 	//hasMonitor = p->checkBoxes["monitor"]->checked;
 	//try
 	//{
@@ -1345,7 +1356,7 @@ void BlockerParams::SetPanelInfo()
 		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
 	p->checkBoxes["armored"]->checked = armored;
-	p->textBoxes["spacing"]->text.setSTring(boost::lexical_cast<string>spacing);
+	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 

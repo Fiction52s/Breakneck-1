@@ -527,7 +527,7 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 
 
 
-	dead = false;
+	//dead = false;
 
 	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
 	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
@@ -541,12 +541,14 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
-	UpdateHitboxes();
+	//UpdateHitboxes();
 
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
 	owner->staticItemTree->Insert(this);
+
+	ResetEnemy();
 	//cout << "finish init" << endl;
 }
 
@@ -831,10 +833,30 @@ void Blocker::UpdateSprite()
 		va[vaIndex * 4 + 2].position = p + Vector2f(spriteSize.x, spriteSize.y);
 		va[vaIndex * 4 + 3].position = p + Vector2f(-spriteSize.x, spriteSize.y);
 
-		/*va[vaIndex * 4 + 0].color = Color::Red;
-		va[vaIndex * 4 + 1].color = Color::Red;
-		va[vaIndex * 4 + 2].color = Color::Red;
-		va[vaIndex * 4 + 3].color = Color::Red;*/
+		//if (checkCol)
+		//{
+		//	va[vaIndex * 4 + 0].color.a = 255;
+		//	va[vaIndex * 4 + 1].color.a = 255;
+		//	va[vaIndex * 4 + 2].color.a = 255;
+		//	va[vaIndex * 4 + 3].color.a = 255;
+		//	/*va[vaIndex * 4 + 0].color = Color::Red;
+		//	va[vaIndex * 4 + 1].color = Color::Red;
+		//	va[vaIndex * 4 + 2].color = Color::Red;
+		//	va[vaIndex * 4 + 3].color = Color::Red;*/
+		//}
+		//else
+		//{
+		//	va[vaIndex * 4 + 0].color.a = 0;
+		//	va[vaIndex * 4 + 1].color.a = 0;
+		//	va[vaIndex * 4 + 2].color.a = 0;
+		//	va[vaIndex * 4 + 3].color.a = 0;
+		//	/*va[vaIndex * 4 + 0].color = Color::Blue;
+		//	va[vaIndex * 4 + 1].color = Color::Blue;
+		//	va[vaIndex * 4 + 2].color = Color::Blue;
+		//	va[vaIndex * 4 + 3].color = Color::Blue;*/
+		//}
+
+		
 	}
 
 	/*if (!dead)

@@ -19476,6 +19476,8 @@ void Actor::AttackMovement()
 
 void Actor::SetActionGrind()
 {
+	BounceFlameOff();
+
 	//double gSpeed = groundSpeed;
 	//if( reversed )
 	//	gSpeed = -gSpeed;
