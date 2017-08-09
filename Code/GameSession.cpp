@@ -793,6 +793,12 @@ void GameSession::Cleanup()
 		staticItemTree = NULL;
 	}
 
+	if (railTree != NULL)
+	{
+		delete railTree;
+		railTree = NULL;
+	}
+
 	if (scoreDisplay != NULL)
 	{
 		delete scoreDisplay;
@@ -1998,7 +2004,39 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
 			}
+			else if (typeName == "rail")
+			{
+				int xPos, yPos;
 
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for (int i = 0; i < pathLength; ++i)
+				{
+					int localX, localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back(Vector2i(localX, localY));
+				}
+
+				int energized;
+				is >> energized;
+
+				//BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
+				
+
+				/*fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);*/
+			}
 
 
 			//w1
@@ -5480,6 +5518,7 @@ bool GameSession::Load()
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
 
 	staticItemTree = new QuadTree(1000000, 1000000);
+	railTree = new QuadTree(1000000, 1000000);
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
 	//testTree->debug = rw;
@@ -9073,6 +9112,8 @@ void GameSession::Init()
 	terrainTree = NULL;
 
 	staticItemTree = NULL;
+
+	railTree;
 	
 	terrainBGTree = NULL;
 	

@@ -1307,7 +1307,7 @@ void BlockerParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	bool armored = p->checkBoxes["armored"]->checked;
+	armored = p->checkBoxes["armored"]->checked;
 
 
 	string typeStr = p->textBoxes["btype"]->text.getString().toAnsiString();
@@ -1462,6 +1462,206 @@ ActorParams *BlockerParams::Copy()
 		{
 			li[i] = oldli[i];
 		}
+	}
+	return copy;*/
+
+}
+
+RailParams::RailParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized )
+	:ActorParams(PosType::AIR_ONLY)
+{
+	lines = NULL;
+	//lines = NULL;
+	position = pos;
+	type = edit->types["rail"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetPath(globalPath);
+	
+
+	energized = p_energized;
+
+
+	SetBoundingQuad();
+}
+
+RailParams::RailParams(EditSession *edit,
+	sf::Vector2i &pos)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	lines = NULL;
+	position = pos;
+	type = edit->types["rail"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	energized = false;
+
+	SetBoundingQuad();
+}
+
+std::list<sf::Vector2i> RailParams::GetGlobalChain()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
+}
+
+void RailParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+}
+
+void RailParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	energized = p->checkBoxes["energized"]->checked;
+
+	hasMonitor = false;
+}
+
+void RailParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	p->checkBoxes["energized"]->checked = energized;
+}
+
+bool RailParams::CanApply()
+{
+	return true;
+	//see note for keyparams
+}
+
+void RailParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+
+
+		//if (loop)
+		//{
+
+		//	//draw the line between the first and last
+		//	sf::Vertex vertices[2] =
+		//	{
+		//		sf::Vertex(li[localPathSize].position, Color::Magenta),
+		//		sf::Vertex(li[0].position, Color::White)
+		//	};
+
+		//	target->draw(vertices, 2, sf::Lines);
+		//}
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+void RailParams::WriteParamFile(ofstream &of)
+{
+
+	of << localPath.size() << endl;
+
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		of << (*it).x << " " << (*it).y << endl;
+	}
+
+	of << (int)energized << "\n";
+
+	/*if (loop)
+	{
+	of << "+loop" << endl;
+	}
+	else
+	{
+	of << "-loop" << endl;
+	}*/
+
+	//of.precision( 5 );
+	//of << speed << endl;
+	//of << fixed << speed << endl;
+}
+
+ActorParams *RailParams::Copy()
+{
+	RailParams *rp = new RailParams(*this);
+	return rp;
+	/*PatrollerParams *copy = new PatrollerParams(*this);
+	if (copy->lines != NULL)
+	{
+	int numVertices = copy->lines->getVertexCount();
+
+	VertexArray &oldli = *copy->lines;
+	copy->lines = new VertexArray(sf::LinesStrip, numVertices);
+	VertexArray &li = *copy->lines;
+
+
+	for (int i = 0; i < numVertices; ++i)
+	{
+	li[i] = oldli[i];
+	}
 	}
 	return copy;*/
 }

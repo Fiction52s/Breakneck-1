@@ -523,6 +523,8 @@ struct PlayerParams : public ActorParams
 		boost::shared_ptr<ISelectable> select );
 };
 
+
+
 struct PoiParams : public ActorParams
 {
 	enum Barrier
@@ -658,6 +660,39 @@ struct BlockerParams : public ActorParams
 
 	BlockerType bType;
 	//will have multiple types
+};
+
+struct RailParams : public ActorParams
+{
+	RailParams(EditSession *edit,
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath,
+		bool energized );
+	RailParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+	void SetPath(
+		std::list<int> &angleList);
+	std::list<int> GetAngleList();
+	void Draw(sf::RenderTarget *target);
+
+	bool CanApply();
+	ActorParams *Copy();
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	std::list<sf::Vector2i> GetGlobalChain();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	//std::list<int> angleList;
+	bool armored;
+	//sf::VertexArray *lines; //local pos
+
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	bool energized;
 };
 
 //w1

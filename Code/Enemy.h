@@ -347,6 +347,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		BLOCKER,
 		BLOCKERCHAIN,
 		RACEFIGHTTARGET,
+		RAIL,
 		Count
 	};
 
@@ -1045,7 +1046,6 @@ struct BlockerChain : Enemy
 	bool armored;
 	BlockerType bType;
 };
-
 
 //w1
 struct Patroller : Enemy

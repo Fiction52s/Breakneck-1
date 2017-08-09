@@ -1281,6 +1281,35 @@ bool EditSession::OpenFile()
 					a.reset(new BlockerParams(this, pos, globalPath, bType, armored, spacing));
 					//a->hasMonitor = (bool)hasMonitor;
 				}
+				else if (typeName == "rail")
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int pathLength;
+					is >> pathLength;
+
+					list<Vector2i> globalPath;
+					globalPath.push_back(Vector2i(pos.x, pos.y));
+
+					for (int i = 0; i < pathLength; ++i)
+					{
+						int localX, localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back(Vector2i(pos.x + localX, pos.y + localY));
+					}
+
+					int energized;
+					is >> energized;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new RailParams(this, pos, globalPath, energized));
+					//a->hasMonitor = (bool)hasMonitor;
+				}
 				//w1
 				else if( typeName == "crawlerreverser" )
 				{
@@ -3893,6 +3922,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *blockerPanel = CreateOptionsPanel("blocker");
 	ActorType *blockerType = new ActorType("blocker", blockerPanel);
 
+	Panel *railPanel = CreateOptionsPanel("rail");
+	ActorType *railType = new ActorType("rail", blockerPanel);
+
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
 	types["poi"] = poiType;
@@ -3903,6 +3935,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	types["racefighttarget"] = raceFightTargetType;
 
 	types["blocker"] = blockerType;
+	types["rail"] = railType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -4073,7 +4106,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	errorPopup = CreatePopupPanel( "error" );
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 10, 8, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 10, 10, 32, 32, false, true );
 	//gs->selectedX = -1;
 	//gs->selectedY = -1;
 	//GridSelector gs( 3, 2, 32, 32, this );
@@ -4126,6 +4159,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set( 4, 6, Sprite( bossCrawlerType->iconTexture ), "bossskeleton" );
 
 	gs->Set( 0, 7, Sprite( nexusType->iconTexture ), "nexus" );
+
+	gs->Set( 4, 8, Sprite(blockerType->iconTexture), "rail");
 
 	
 
@@ -10461,7 +10496,58 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		//	//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		//}
 	}
+	else if (p->name == "blocker_options")
+	{
+		if (b->name == "ok")
+		{
 
+
+			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				RailParams *rail = (RailParams*)select;
+				rail->SetParams();
+
+				//patroller->monitorType = GetMonitorType( p );
+				//patroller->speed = speed;
+				//patroller->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or 
+				//something to simplify when i have more types
+				//cout << "tempActor: " << tempActor->type->name << endl;
+				ActorPtr rail(tempActor);//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+
+				rail->SetParams();
+				rail->group = groups["--"];
+				//patroller->SetParams();
+				//patroller->group = groups["--"];
+				//patroller->monitorType = GetMonitorType( p );
+
+				CreateActor(rail);
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+		else if (b->name == "createrail")
+		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back(front);
+			patrolPathLengthSize = 0;
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		}
+	}
 	else if( p->name == "patroller_options" )
 	{
 		if( b->name == "ok" )
@@ -13087,6 +13173,7 @@ void EditSession::ErrorPop( const std::string &error )
 
 }
 
+
 void EditSession::GridSelectPop( const std::string &type )
 {
 	Panel *panel = NULL;
@@ -13213,7 +13300,6 @@ void EditSession::GridSelectPop( const std::string &type )
 	preScreenTex->setView( view );
 	w->setView( v );
 }
-
 Panel * EditSession::CreatePopupPanel( const std::string &type )
 {
 	if( type == "message" )
@@ -13370,6 +13456,18 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
+	}
+	else if (name == "rail")
+	{
+		Panel *p = new Panel("blocker_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		
+		p->AddCheckBox("energized", Vector2i(120, 155));
+		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
+
+		return p;
 	}
 	//else if( name == "shard1" )
 	//{
@@ -13888,6 +13986,12 @@ void EditSession::SetEnemyEditPanel()
 		BlockerParams *block = (BlockerParams*)ap;
 		block->SetPanelInfo();
 		patrolPath = block->GetGlobalChain();
+	}
+	else if (name == "rail")
+	{
+		RailParams *rail = (RailParams*)ap;
+		rail->SetPanelInfo();
+		patrolPath = rail->GetGlobalChain();
 	}
 	//w1
 	else if( name == "patroller" )
@@ -15213,6 +15317,13 @@ void ActorType::Init()
 		canBeAerial = true;
 	}
 	else if (name == "blocker")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if (name == "rail")
 	{
 		width = 32;
 		height = 32;
