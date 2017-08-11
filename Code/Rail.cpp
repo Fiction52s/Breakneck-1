@@ -53,17 +53,16 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 
 			curr = edges[i];
 
-			if (it == path.end())
+			if (i > 0)
+				curr->edge0 = edges[i - 1];
+			if (i < numEdges - 1)
 			{
-				int xxxx = 5;
+				curr->edge1 = edges[i + 1];
 			}
+
 			curr->v0 = V2d((*it).x, (*it).y);
 			++it;
 
-			if (it == path.end())
-			{
-				int xxxx = 5;
-			}
 			curr->v1 = V2d((*it).x, (*it).y);
 			assert(it != path.end());
 			owner->railEdgeTree->Insert(curr);

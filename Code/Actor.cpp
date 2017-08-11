@@ -1195,6 +1195,7 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case GRINDBALL:
+		case RAILGRIND:
 			frame = 0;
 			break;
 		case GRINDLUNGE:
@@ -4513,6 +4514,16 @@ void Actor::UpdatePrePhysics()
 				
 			break;
 		}
+	case RAILGRIND:
+	{
+		if (!currInput.Y)
+		{
+			action = JUMP;
+			grindEdge = NULL;
+			frame = 1;
+		}
+		break;
+	}
 	case GRINDATTACK:
 		{
 		
@@ -6557,6 +6568,12 @@ void Actor::UpdatePrePhysics()
 			//framesGrinding++;
 			break;
 		}
+	case RAILGRIND:
+	{
+		velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+		//framesGrinding++;
+		break;
+	}
 	case GRINDATTACK:
 		{
 			
@@ -8240,6 +8257,11 @@ bool Actor::ResolvePhysics( V2d vel )
 	Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
 	owner->staticItemTree->Query(NULL, staticItemRect);
 
+	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+	{
+		queryMode = "rail";
+		owner->railEdgeTree->Query(this, r);
+	}
 	//queryMode = "gate";
 	//owner->testGateCount = 0;
 	//owner->gateTree->Query( this, r );
@@ -10259,7 +10281,7 @@ void Actor::UpdatePhysics()
 	}
 	
 
-	if( grindEdge != NULL )
+	if( grindEdge != NULL && action == GRINDBALL )
 	{
 		Edge *e0 = grindEdge->edge0;
 		Edge *e1 = grindEdge->edge1;
@@ -10380,25 +10402,6 @@ void Actor::UpdatePhysics()
 
 					V2d v0 = grindEdge->v0;
 					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
-					/*queryMode = "gate";
-					owner->testGateCount = 0;
-					owner->gateTree->Query( this, r );
-
-					if( owner->testGateCount > 0 )
-					{
-						action = DEATH;
-						rightWire->Reset();
-						leftWire->Reset();
-						slowCounter = 1;
-						frame = 0;
-						owner->deathWipe = true;
-
-						owner->powerBar.Damage( 1000000 );
-						return;
-					}*/
-
-					
-					//q = length( e0->v1 - e0->v0 );
 
 
 					if( e0->edgeType == Edge::CLOSED_GATE )
@@ -10439,6 +10442,87 @@ void Actor::UpdatePhysics()
 							hasGravReverse = true;
 							lastWire = 0;
 						}
+					}
+				}
+				else
+				{
+					q += movement;
+					movement = 0;
+				}
+			}
+		}
+		grindQuantity = q;
+
+		PhysicsResponse();
+		return;
+	}
+	else if (grindEdge != NULL && action == RAILGRIND)
+	{
+		Edge *e0 = grindEdge->edge0;
+		Edge *e1 = grindEdge->edge1;
+		//V2d e0n = e0->Normal();
+		//V2d e1n = e1->Normal();
+
+		double q = grindQuantity;
+		while (!approxEquals(movement, 0))
+		{
+			//cout << "movement: " << movement << endl;
+			double gLen = length(grindEdge->v1 - grindEdge->v0);
+			if (movement > 0)
+			{
+				double extra = q + movement - gLen;
+				if (extra > 0)
+				{
+					movement -= gLen - q;
+
+					V2d v0 = grindEdge->v0;
+					V2d v1 = grindEdge->v1;
+					
+					if (e1 != NULL)
+					{
+						grindEdge = e1;
+						q = 0;
+					}
+					else
+					{
+						action = JUMP;
+						frame = 1;
+						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+						grindEdge = NULL;
+						PhysicsResponse();
+						return;
+					}					
+				}
+				else
+				{
+					q += movement;
+					movement = 0;
+				}
+			}
+			else if (movement < 0)
+			{
+				double extra = q + movement;
+				if (extra < 0)
+				{
+					movement -= movement - extra;
+
+					V2d v0 = grindEdge->v0;
+					sf::Rect<double> r(v0.x - 1, v0.y - 1, 2, 2);
+
+					if (e0 != NULL)
+					{
+						grindEdge = e0;
+						q = length(grindEdge->v1 - grindEdge->v0);
+					}
+					else
+					{
+						action = JUMP;
+						frame = 1;
+						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+						grindEdge = NULL;
+						PhysicsResponse();
+						return;
+						
 					}
 				}
 				else
@@ -15731,6 +15815,36 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			ev->frame = 0;
 		}
 	}
+	else if (queryMode == "rail")
+	{
+		Edge *e = (Edge*)qte;
+		V2d r = e->v1 - e->v0;
+		double lenR = length(r);
+		V2d along = normalize(r);
+		double q = dot(position - e->v0, along);
+		if (q >= 0 && q <= lenR )
+		{
+			double c = cross(position - e->v0, along);
+			double preC = cross((position - tempVel) - e->v0, along);
+			if ((c >= 0 && preC <= 0) || (c <= 0 && preC >= 0 ) )
+			{
+				//cout << "HIT IT" << endl;
+				action = RAILGRIND;
+				frame = 0;
+				grindEdge = e;
+
+				LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
+				if (!li.parallel)
+				{
+					V2d p = li.position;
+					grindQuantity = grindEdge->GetQuantity(p);
+				}
+
+				grindSpeed = 10;
+				//grindQuantity 
+			}
+		}
+	}
 	/*else if( queryMode == "specter" )
 	{
 		SpecterArea *sp = (SpecterArea*)qte;
@@ -17650,6 +17764,7 @@ void Actor::UpdateSprite()
 	case GRINDATTACK:
 		{
 		}
+	case RAILGRIND:
 	case GRINDBALL:
 		{
 			assert( grindEdge != NULL );
