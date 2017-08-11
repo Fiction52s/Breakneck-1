@@ -9,6 +9,7 @@
 #include <fstream>
 #include "MainMenu.h" //just for glsl color macro
 #include "PlayerRecord.h"
+#include "Rail.h"
 
 using namespace sf;
 using namespace std;
@@ -228,6 +229,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		team = (Team)actorIndex; //debug
 		//SetupTilesets(skin, swordSkin);
 		SetupTilesets(NULL,NULL);
+
+		regrindOffMax = 3;
+		regrindOffCount = 3;
 
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
@@ -4516,11 +4520,22 @@ void Actor::UpdatePrePhysics()
 		}
 	case RAILGRIND:
 	{
-		if (!currInput.Y)
+		Rail *rail = (Rail*)grindEdge->info;
+		if (currInput.A && !prevInput.A)
+		{
+			action = DOUBLE;
+			frame = 0;
+			grindEdge = NULL;
+			regrindOffCount = 0;
+			break;
+		}
+		if (!rail->energized && !currInput.Y)
 		{
 			action = JUMP;
 			grindEdge = NULL;
 			frame = 1;
+			regrindOffCount = 0;
+			break;
 		}
 		break;
 	}
@@ -7816,6 +7831,14 @@ void Actor::UpdatePrePhysics()
 	collision = false;
 	groundedWallBounce = false;
 
+	if (action != RAILGRIND)
+	{
+		if (regrindOffCount < regrindOffMax)
+		{
+			regrindOffCount++;
+		}
+	}
+
 	/*if( ground != NULL )
 	{
 		cout << "groundspeed: " << groundSpeed << endl;
@@ -10281,7 +10304,7 @@ void Actor::UpdatePhysics()
 	}
 	
 
-	if( grindEdge != NULL && action == GRINDBALL )
+	if( grindEdge != NULL && ( action == GRINDBALL || action == GRINDATTACK ))
 	{
 		Edge *e0 = grindEdge->edge0;
 		Edge *e1 = grindEdge->edge1;
@@ -10489,6 +10512,8 @@ void Actor::UpdatePhysics()
 						frame = 1;
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
+						regrindOffCount = 0;
+
 						PhysicsResponse();
 						return;
 					}					
@@ -10520,6 +10545,7 @@ void Actor::UpdatePhysics()
 						frame = 1;
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
+						regrindOffCount = 0;
 						PhysicsResponse();
 						return;
 						
@@ -15818,30 +15844,44 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if (queryMode == "rail")
 	{
 		Edge *e = (Edge*)qte;
+		Rail *rail = (Rail*)e->info;
 		V2d r = e->v1 - e->v0;
 		double lenR = length(r);
 		V2d along = normalize(r);
 		double q = dot(position - e->v0, along);
-		if (q >= 0 && q <= lenR )
+
+		double alongQuantVel = dot(velocity, along);
+		if ( regrindOffCount == regrindOffMax && (rail->energized || currInput.Y))
 		{
-			double c = cross(position - e->v0, along);
-			double preC = cross((position - tempVel) - e->v0, along);
-			if ((c >= 0 && preC <= 0) || (c <= 0 && preC >= 0 ) )
+			if (q >= 0 && q <= lenR && alongQuantVel != 0)
 			{
-				//cout << "HIT IT" << endl;
-				action = RAILGRIND;
-				frame = 0;
-				grindEdge = e;
-
-				LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
-				if (!li.parallel)
+				double c = cross(position - e->v0, along);
+				double preC = cross((position - tempVel) - e->v0, along);
+				if ((c >= 0 && preC <= 0) || (c <= 0 && preC >= 0))
 				{
-					V2d p = li.position;
-					grindQuantity = grindEdge->GetQuantity(p);
-				}
+					//cout << "HIT IT" << endl;
+					action = RAILGRIND;
+					hasDoubleJump = true;
+					frame = 0;
+					grindEdge = e;
 
-				grindSpeed = 10;
-				//grindQuantity 
+					LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
+					if (!li.parallel)
+					{
+						V2d p = li.position;
+						grindQuantity = grindEdge->GetQuantity(p);
+					}
+
+					if (alongQuantVel > 0)
+					{
+						grindSpeed = max(12.0, alongQuantVel);
+					}
+					else if (alongQuantVel < 0)
+					{
+						grindSpeed = min(-12.0, alongQuantVel);
+					}
+
+				}
 			}
 		}
 	}

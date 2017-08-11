@@ -384,7 +384,7 @@ void Camera::Update( Actor *player )
 	V2d pVel;
 	
 	double cap = 30;
-	if( player->grindEdge != NULL )
+	if( player->grindEdge != NULL && ( player->action == Actor::GRINDBALL || player->action == Actor::GRINDATTACK ) )
 	{
 		//cout << "here!" << endl;
 		V2d grindDir = normalize( player->grindEdge->v1 - player->grindEdge->v0 );

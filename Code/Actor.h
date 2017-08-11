@@ -632,6 +632,8 @@ struct Actor : QuadTreeCollider,
 
 	Edge *grindEdge;
 	bool railGrind;
+	int regrindOffCount;
+	int regrindOffMax;
 	sf::Vector2<double> lungeNormal;
 	double grindLungeSpeed0;
 	double grindLungeSpeed1;

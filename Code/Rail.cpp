@@ -35,6 +35,7 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 		for (int i = 0; i < numEdges; ++i)
 		{
 			edges[i] = new Edge;
+			edges[i]->info = (void*)this;
 		}
 
 		int ind = 0;
