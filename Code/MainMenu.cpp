@@ -3079,8 +3079,11 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				else
 				{
 					descriptionText.setString(allItems[pIndex].second.item->headerInfo->description);
-					previewSprite.setTexture(*allItems[pIndex].second.item->ts_preview->texture);
-					previewBlank = false;
+					if (allItems[pIndex].second.item->ts_preview != NULL)
+					{
+						previewSprite.setTexture(*allItems[pIndex].second.item->ts_preview->texture);
+						previewBlank = false;
+					}
 				}
 
 			}

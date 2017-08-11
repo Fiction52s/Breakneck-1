@@ -3923,7 +3923,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	ActorType *blockerType = new ActorType("blocker", blockerPanel);
 
 	Panel *railPanel = CreateOptionsPanel("rail");
-	ActorType *railType = new ActorType("rail", blockerPanel);
+	ActorType *railType = new ActorType("rail", railPanel);
 
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
@@ -4160,7 +4160,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	gs->Set( 0, 7, Sprite( nexusType->iconTexture ), "nexus" );
 
-	gs->Set( 4, 8, Sprite(blockerType->iconTexture), "rail");
+	gs->Set( 4, 8, Sprite(railType->iconTexture), "rail");
 
 	
 
@@ -6424,6 +6424,23 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										tempActor->SetPanelInfo();
 										showPanel = trackingEnemy->panel;
 										
+
+										patrolPath.clear();
+										patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
+										//showPanel = trackingEnemy->panel;
+										//tempActor->SetPanelInfo();
+										//showPanel = enemySelectPanel;
+									}
+									else if (trackingEnemy->name == "rail")
+									{
+										//trackingEnemy = NULL;
+										tempActor = new RailParams(this, Vector2i(worldPos.x,
+											worldPos.y));
+										//blocker->group = groups["--"];
+										//CreateActor(blocker);
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
+
 
 										patrolPath.clear();
 										patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
@@ -10496,7 +10513,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		//	//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		//}
 	}
-	else if (p->name == "blocker_options")
+	else if (p->name == "rail_options")
 	{
 		if (b->name == "ok")
 		{
@@ -13459,7 +13476,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if (name == "rail")
 	{
-		Panel *p = new Panel("blocker_options", 200, 500, this);
+		Panel *p = new Panel("rail_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");

@@ -38,7 +38,7 @@
 #include "PlayerRecord.h"
 #include "Buf.h"
 #include "HUD.h"
-
+#include "Rail.h"
 
 #define TIMESTEP 1.0 / 60.0
 #define V2d sf::Vector2<double>
@@ -793,10 +793,16 @@ void GameSession::Cleanup()
 		staticItemTree = NULL;
 	}
 
-	if (railTree != NULL)
+	if (railDrawTree != NULL)
 	{
-		delete railTree;
-		railTree = NULL;
+		delete railDrawTree;
+		railDrawTree = NULL;
+	}
+
+	if (railEdgeTree != NULL)
+	{
+		delete railEdgeTree;
+		railEdgeTree = NULL;
 	}
 
 	if (scoreDisplay != NULL)
@@ -2029,9 +2035,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int energized;
 				is >> energized;
 
+				Rail *r = new Rail(this, Vector2i( xPos, yPos ), localPath, energized);
 				//BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
 				
-
+				
 				/*fullEnemyList.push_back(enemy);
 				enem = enemy;
 
@@ -5518,7 +5525,8 @@ bool GameSession::Load()
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
 
 	staticItemTree = new QuadTree(1000000, 1000000);
-	railTree = new QuadTree(1000000, 1000000);
+	railDrawTree = new QuadTree(1000000, 1000000);
+	railEdgeTree = new QuadTree(1000000, 1000000);
 	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
 	//testTree->parent = NULL;
 	//testTree->debug = rw;
@@ -7589,6 +7597,17 @@ int GameSession::Run()
 			gateList = next;
 		}
 
+		railDrawList = NULL;
+		queryMode = "rail";
+		railDrawTree->Query(this, screenRect);
+		while (railDrawList != NULL)
+		{
+			railDrawList->Draw(preScreenTex);
+			Rail *next = railDrawList->drawNext;
+			railDrawList->drawNext = NULL;
+			railDrawList = next;
+		}
+
 		DrawEffects( EffectLayer::BEHIND_ENEMIES );
 
 		//cout << "enemies draw" << endl;
@@ -9113,7 +9132,9 @@ void GameSession::Init()
 
 	staticItemTree = NULL;
 
-	railTree;
+	railEdgeTree = NULL;
+
+	railDrawTree = NULL;
 	
 	terrainBGTree = NULL;
 	
@@ -9483,6 +9504,20 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			eva[ep->vaIndex + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
 		}
 		//va[ep->
+	}
+	else if (queryMode == "rail")
+	{
+		Rail *r = (Rail*)qte;
+
+		if (railDrawList == NULL)
+		{
+			railDrawList = r;
+		}
+		else
+		{
+			r->drawNext = railDrawList;
+			railDrawList = r;
+		}
 	}
 }
 

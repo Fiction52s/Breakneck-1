@@ -25,6 +25,7 @@ struct RecordGhost;
 struct ReplayGhost;
 struct Config;
 struct RaceFightHUD;
+struct Rail;
 
 struct Barrier;
 struct PoiInfo
@@ -973,9 +974,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
 	QuadTree *staticItemTree;
-	QuadTree *railTree;
+	QuadTree *railEdgeTree;
+	QuadTree *railDrawTree;
 	//CrawlerReverser *drawCrawlerReversers;
 	
+	Rail *railDrawList;
 
 	Edge *borderEdge; 
 	//for creating the outside zone

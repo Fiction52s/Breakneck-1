@@ -8,10 +8,15 @@
 #include "Movement.h"
 #include "Physics.h"
 
-struct Rail
+struct Rail : QuadTreeEntrant
 {
 	Rail(GameSession *owner, sf::Vector2i &pos, 
 		std::list<sf::Vector2i> &path, bool energized );
+	void HandleQuery(QuadTreeCollider * qtc);
+	bool IsTouchingBox(const sf::Rect<double> &r);
+
+	Rail *drawNext;
+
 	Edge ** edges;
 	int numEdges;
 	sf::Vertex *va;
@@ -22,6 +27,9 @@ struct Rail
 	void UpdateSprite();
 	void Draw(sf::RenderTarget *target);
 	GameSession *owner;
+
+	sf::Rect<double> aabb;
+
 };
 
 #endif
