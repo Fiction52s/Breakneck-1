@@ -623,6 +623,11 @@ struct Actor : QuadTreeCollider,
 	int framesGrinding;
 	int framesNotGrinding;
 
+	int framesSinceGrindAttempt;
+	int maxFramesSinceGrindAttempt;
+	bool canGrabRail;
+
+	sf::RectangleShape railTest;
 
 	Edge *ground;
 	MovingTerrain *movingGround;
@@ -634,6 +639,7 @@ struct Actor : QuadTreeCollider,
 	bool railGrind;
 	int regrindOffCount;
 	int regrindOffMax;
+	
 	sf::Vector2<double> lungeNormal;
 	double grindLungeSpeed0;
 	double grindLungeSpeed1;

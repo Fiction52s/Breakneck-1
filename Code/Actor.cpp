@@ -233,6 +233,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		regrindOffMax = 3;
 		regrindOffCount = 3;
 
+		railTest.setSize(Vector2f(64, 64));
+		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
+		railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
+
+		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+		maxFramesSinceGrindAttempt = 60;
+
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
 		framesSinceLeftWireBoost = 0;
@@ -1407,6 +1414,11 @@ bool Actor::AirAttack()
 
 void Actor::Respawn()
 {
+	regrindOffCount = 3;
+
+	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	scorpOn = false;
+
 	framesSinceRightWireBoost = 0;
 	framesSinceLeftWireBoost = 0;
 	framesSinceDoubleWireBoost = 0;
@@ -4143,7 +4155,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case GRINDBALL:
 		{
-		
+			framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 			bool j = currInput.A && !prevInput.A;
 			if( !currInput.Y || j )//&& grindEdge->Normal().y < 0 )
 			{
@@ -4523,9 +4535,20 @@ void Actor::UpdatePrePhysics()
 		Rail *rail = (Rail*)grindEdge->info;
 		if (currInput.A && !prevInput.A)
 		{
-			action = DOUBLE;
+			if (owner->IsWall(grindEdge->Normal()) < 0 ) //not wall
+			{
+				SetActionExpr(JUMPSQUAT);
+				//frame = 0;
+			}
+			else
+			{
+				action = DOUBLE;
+				grindEdge = NULL;
+			}
+			//if( abs( grindEdge->Normal().y ) )
+			
 			frame = 0;
-			grindEdge = NULL;
+			
 			regrindOffCount = 0;
 			break;
 		}
@@ -5729,7 +5752,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMP:
 		{
-		if( frame == 0 )
+		if( frame == 0 && slowCounter == 1 )
 		{
 			if( ground != NULL ) //this should always be true but we haven't implemented running off an edge yet
 			{
@@ -5845,10 +5868,104 @@ void Actor::UpdatePrePhysics()
 				}
 				
 			}
+			else if (grindEdge != NULL )
+			{
+				//V2d ev0, ev1;
+				Edge tempEdge(*grindEdge);
+				/*if (tempEdge.Normal().y > 0)
+				{
+					V2d temp = tempEdge.v0;
+					tempEdge.v0 = tempEdge.v1;
+					tempEdge.v1 = temp;
+				}*/
+
+				double dSpeed = GetDashSpeed();
+
+				if (bounceFlameOn)
+					airBounceFrame = 13 * 3;
+
+				double blah = .25;
+
+				V2d dir(0, 0);
+
+				V2d trueNormal = normalize(dir + normalize(tempEdge.v1 - tempEdge.v0));
+				velocity = grindSpeed * trueNormal;
+				if (velocity.y < 0)
+				{
+					velocity.y *= .7;
+				}
+
+				/*if (currInput.B)
+				{
+					if (currInput.LRight())
+					{
+						if (velocity.x < dSpeed)
+							velocity.x = dSpeed;
+					}
+					else if (currInput.LLeft())
+					{
+						if (velocity.x > -dSpeed)
+							velocity.x = -dSpeed;
+					}
+				}*/
+				if (velocity.y > 0)
+				{
+					//min jump velocity for jumping off of edges.
+					if (abs(velocity.x) < dSpeed && length(velocity) >= dSpeed)
+					{
+						//		cout << "here: " << velocity.x << endl;
+						if (velocity.x > 0)
+						{
+							velocity.x = dSpeed;
+						}
+						else
+						{
+							velocity.x = -dSpeed;
+						}
+					}
+
+					velocity.y = 0;
+				}
+
+				if (steepJump)
+				{
+					velocity.y -= jumpStrength * .75;
+				}
+				else
+				{
+					velocity.y -= jumpStrength;
+				}
+
+				/*V2d pp = ground->GetPoint(edgeQuantity);
+				double ang = GroundedAngle();
+				V2d fxPos;
+				if ((approxEquals(ang, 0) && !reversed) || (approxEquals(ang, PI) && reversed))
+					fxPos = V2d(pp.x + offsetX, pp.y);
+				else
+					fxPos = pp;
+
+				fxPos += gNorm * 16.0;*/
+
+				//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump, fxPos, false, ang, 6, 4, facingRight);
+
+				//ground = NULL;
+				//movingGround = NULL;
+				holdJump = true;
+
+				framesInAir = 0;
+
+				
+				grindEdge = NULL;
+				
+			}
+			else
+			{
+				assert(0);
+			}
 
 			
 		}
-		else
+		else if( frame > 0 )
 		{
 			//if( bufferedAttack )
 			//{
@@ -6580,19 +6697,126 @@ void Actor::UpdatePrePhysics()
 	case GRINDBALL:
 		{
 			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+			//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 			//framesGrinding++;
 			break;
 		}
 	case RAILGRIND:
 	{
+		double ffac = 1.0;
+		double startAccel = .3;
+
+		V2d grn = grindEdge->Normal();
+		
+		V2d along = normalize(grindEdge->v1 - grindEdge->v0);
+		if (grn.y > 0)
+		{
+			along = -along;
+			grn = -grn;
+		}
+		//if (grn.x > 0)
+		//{
+		//	if (grindSpeed > 0)
+		//	{
+		//		if (currInput.LDown() || currInput.LRight())
+		//		{
+		//			double accel = startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//			grindSpeed += accel;
+		//		}
+		//		else if (currInput.LUp() || currInput.LLeft())
+		//		{
+		//			grindSpeed -= startAccel;
+		//		}
+		//	}
+		//	else if (grindSpeed < 0)
+		//	{
+		//		if (currInput.LUp() || currInput.LLeft())
+		//		{
+		//			double accel = -startAccel;// +dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//			grindSpeed += accel;
+		//		}
+		//		else if (currInput.LDown() || currInput.LRight())
+		//		{
+		//			double accel = startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//			grindSpeed += accel;
+		//		}
+		//	}
+		//	//if( currInput.LDown() && currInput.)
+		//}
+		//else if (grn.x < 0)
+		//{
+		//	if (grindSpeed > 0)
+		//	{
+		//		if (currInput.LUp() || currInput.LRight())
+		//		{
+		//			grindSpeed += startAccel;
+		//		}
+		//		else if (currInput.LDown() || currInput.LLeft())
+		//		{
+		//			double accel = -startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//			grindSpeed += accel;
+		//		}
+		//	}
+		//	else if (grindSpeed < 0)
+		//	{
+		//		if (currInput.LDown() || currInput.LLeft())
+		//		{
+		//			double accel = -startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//			grindSpeed += accel;
+		//		}
+		//		else if (currInput.LUp() || currInput.LRight())
+		//		{
+		//			double accel = startAccel;// +dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//			grindSpeed += accel;
+		//		}
+		//	}
+		//	//if( currInput.LDown() && currInput.)
+		//}
+		//else
+		//{
+		//}
+		//if (currInput.LDown())
+		//{
+		//	//double gAngle = GroundedAngle();
+		//	//double fac = gravity * 2.0 / 3;
+		//	//if (gAngle != 0)
+		//	//{
+		//	double accel = dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//	grindSpeed += accel;
+		//	//}
+		//}
+		//else if (currInput.LUp())
+		//{
+		//	double accel = dot(V2d(0, ffac * -gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
+		//	grindSpeed += accel;
+		//}
+		//double gAngle = GroundedAngle();
+		//double fac = gravity * 2.0 / 3;
+
+		//if (e0n.x > 0 && e0n.y > -steepThresh)
+		double accel = 0;
+		if (owner->IsSteepGround(grn) > 0)
+		{
+			double fac = gravity *steepSlideGravFactor;//gravity * 2.0 / 3.0;
+			accel = dot(V2d(0, fac), along) / slowMultiple;
+			
+		}
+		else if(grn.x != 0)
+		{
+			accel = dot(V2d(0, slideGravFactor * gravity), along) / slowMultiple;
+		}
+		if (accel != 0 && abs(grindSpeed + accel) > abs(grindSpeed))
+			grindSpeed += accel;
+
 		velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 		//framesGrinding++;
 		break;
 	}
 	case GRINDATTACK:
 		{
 			
-			
+			framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 			double dSpeed = GetDashSpeed();
 			double adSpeed = abs( dSpeed );
 			double tot = ( abs( grindSpeed ) - adSpeed ) / ( maxGroundSpeed - adSpeed );
@@ -7812,6 +8036,24 @@ void Actor::UpdatePrePhysics()
 	//cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;m
 	
+	if (!currInput.Y && prevInput.Y)
+	{
+		framesSinceGrindAttempt = 0;
+	}
+
+	canGrabRail = false;
+	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
+	{
+		if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+		{
+			canGrabRail = true;
+		}
+	}
+	else
+	{
+		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	}
+	
 	
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
@@ -8280,7 +8522,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
 	owner->staticItemTree->Query(NULL, staticItemRect);
 
-	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && canGrabRail )
 	{
 		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);
@@ -10514,6 +10756,8 @@ void Actor::UpdatePhysics()
 						grindEdge = NULL;
 						regrindOffCount = 0;
 
+						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
 						PhysicsResponse();
 						return;
 					}					
@@ -10546,6 +10790,9 @@ void Actor::UpdatePhysics()
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
 						regrindOffCount = 0;
+						framesSinceGrindAttempt = 0;
+						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
 						PhysicsResponse();
 						return;
 						
@@ -12122,6 +12369,7 @@ void Actor::UpdatePhysics()
 					bounceEdge = minContact.edge;
 					bounceMovingTerrain = minContact.movingPlat;
 					bounceNorm = minContact.normal;
+					framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
 				
 
 					V2d oldv0 = bounceEdge->v0;
@@ -12295,6 +12543,7 @@ void Actor::UpdatePhysics()
 				//}
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
+				framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
 				movingGround = minContact.movingPlat;
 
 				V2d oldv0 = ground->v0;
@@ -14205,6 +14454,11 @@ void Actor::UpdatePostPhysics()
 	else
 		slowCounter++;
 
+	if (framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+	{
+		++framesSinceGrindAttempt;
+	}
+
 	if( bounceFlameOn )
 	{
 		if( ground == NULL )
@@ -15861,6 +16115,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				{
 					//cout << "HIT IT" << endl;
 					action = RAILGRIND;
+					hasAirDash = true;
 					hasDoubleJump = true;
 					frame = 0;
 					grindEdge = e;
@@ -15974,6 +16229,12 @@ void Actor::Draw( sf::RenderTarget *target )
 		&& action != GOALKILLWAIT && action != BOUNCEGROUNDEDWALL )
 	{
 		target->draw( scorpSprite );
+	}
+
+	if (canGrabRail)
+	{
+		railTest.setPosition(position.x, position.y);
+		target->draw(railTest);
 	}
 
 
@@ -16820,11 +17081,13 @@ void Actor::UpdateSprite()
 				}
 			}
 
+
+
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-		
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
+			
+			//V2d oldv0 = ground->v0;
+			//V2d oldv1 = ground->v1;
 
 			/*if( movingGround != NULL )
 			{
@@ -16832,7 +17095,15 @@ void Actor::UpdateSprite()
 				ground->v1 += movingGround->position;
 			}*/
 
-			V2d pp = ground->GetPoint( edgeQuantity );
+			V2d pp;
+			if (ground != NULL)
+				pp = ground->GetPoint(edgeQuantity);
+			else if (grindEdge != NULL)
+				pp = grindEdge->GetPoint(grindQuantity);
+			else
+			{
+				assert(0);
+			}
 
 			/*if( movingGround != NULL )
 			{
@@ -19043,36 +19314,52 @@ void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPorti
 
 double Actor::GroundedAngle()
 {
-	if( ground == NULL )
+	V2d gn;
+	if( ground != NULL )
 	{
-		//cout << "ground is null" << endl;
+		gn = ground->Normal();
+		//return 0;
+	}
+	else if( grindEdge != NULL )
+	{
+		gn = grindEdge->Normal();
+		if (gn.y > 0)
+		{
+			gn = -gn;
+		}
+	}
+	else
+	{
 		return 0;
 	}
 	
-	V2d gn = ground->Normal();
 	//cout << "gn: " << gn.x << ", " << gn.y << endl;
 
 	double angle = 0;
 	
-	bool extraCase;
-	if( !reversed )
+	bool extraCase = false;
+	
+	if (ground != NULL)
 	{
-		V2d e0n = ground->edge0->Normal();
-		V2d e1n = ground->edge1->Normal();
-		bool a = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 );
-		bool b =( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) && e1n.x > 0 );
-		extraCase = a || b;
-		//cout << "extra: " << extraCase << endl;
-	}
-	else
-	{
-		V2d e0n = ground->edge0->Normal();
-		V2d e1n = ground->edge1->Normal();
-		bool a = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) && e0n.x < 0 );
-		bool b = ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) && e1n.x > 0 );
-		extraCase = a || b;
-		//cout << "extraCSe : " << a <<", " << b << ", edge: " << edgeQuantity << ", " << length( ground->v1 - ground->v0 )
-		//	 << ", " << approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) << endl;
+		if (!reversed)
+		{
+			V2d e0n = ground->edge0->Normal();
+			V2d e1n = ground->edge1->Normal();
+			bool a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
+			bool b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
+			extraCase = a || b;
+			//cout << "extra: " << extraCase << endl;
+		}
+		else
+		{
+			V2d e0n = ground->edge0->Normal();
+			V2d e1n = ground->edge1->Normal();
+			bool a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
+			bool b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
+			extraCase = a || b;
+			//cout << "extraCSe : " << a <<", " << b << ", edge: " << edgeQuantity << ", " << length( ground->v1 - ground->v0 )
+			//	 << ", " << approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) << endl;
+		}
 	}
 	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
 	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );
