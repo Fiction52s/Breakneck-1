@@ -20,6 +20,7 @@ struct GameSession;
 struct PlayerGhost;
 struct Monitor;
 struct Enemy;
+struct Aura;
 
 struct KinSkin
 {
@@ -181,6 +182,7 @@ struct Actor : QuadTreeCollider,
 	bool leftWireBoost;
 	bool rightWireBoost;
 	bool doubleWireBoost;
+
 
 	/*enum SeqType
 	{
@@ -406,6 +408,9 @@ struct Actor : QuadTreeCollider,
 	int runBounceFlameFrames;
 	int runBounceFrame;
 	Tileset *ts_runBounceFlame;
+
+	Aura *testAura;
+	std::list<sf::Vector2f> *runPoints;
 
 	int airBounceFlameFrames;
 	int airBounceFrame;

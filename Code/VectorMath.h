@@ -7,9 +7,11 @@ double cross( sf::Vector2<double> a, sf::Vector2<double> b );
 
 #define PI 3.14159265359
 double length( sf::Vector2<double> v);
+float length(sf::Vector2f v);
 double lengthSqr( sf::Vector2<double> v);
 
 sf::Vector2<double> normalize( sf::Vector2<double> v );
+sf::Vector2f normalize(sf::Vector2f v);
 
 double dot( sf::Vector2<double> a, sf::Vector2<double> b );
 

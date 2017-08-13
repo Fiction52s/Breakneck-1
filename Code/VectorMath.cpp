@@ -14,6 +14,13 @@ double length( sf::Vector2<double> v)
 	return sqrt( vx * vx + vy * vy );
 }
 
+float length(sf::Vector2f v)
+{
+	float vx = v.x;
+	float vy = v.y;
+	return sqrt(vx * vx + vy * vy);
+}
+
 double lengthSqr( sf::Vector2<double> v )
 {
 	double vx = v.x;
@@ -28,6 +35,15 @@ sf::Vector2<double> normalize( sf::Vector2<double> v )
 		return sf::Vector2<double>( v.x / vLen, v.y / vLen );
 	else
 		return sf::Vector2<double>( 0, 0 );
+}
+
+sf::Vector2f normalize(sf::Vector2f v)
+{
+	float vLen = length(v);
+	if (vLen > 0)
+		return sf::Vector2f(v.x / vLen, v.y / vLen);
+	else
+		return sf::Vector2f(0, 0);
 }
 
 double dot( sf::Vector2<double> a, sf::Vector2<double> b )

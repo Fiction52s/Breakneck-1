@@ -10,6 +10,7 @@
 #include "MainMenu.h" //just for glsl color macro
 #include "PlayerRecord.h"
 #include "Rail.h"
+#include "Aura.h"
 
 using namespace sf;
 using namespace std;
@@ -229,6 +230,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		team = (Team)actorIndex; //debug
 		//SetupTilesets(skin, swordSkin);
 		SetupTilesets(NULL,NULL);
+
 
 		regrindOffMax = 3;
 		regrindOffCount = 3;
@@ -998,6 +1000,17 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		
+		testAura = new Aura(this, 60, 64 * 64);
+
+		int runLen = actionLength[RUN];
+		runPoints = new std::list<Vector2f>[runLen];
+
+		Tileset *auraTestTS = tileset[RUN];
+		Image im = auraTestTS->texture->copyToImage();
+		for (int i = 0; i < 10; ++i)
+		{
+			Aura::CreateParticlePointList(auraTestTS, im, i, runPoints[i], Vector2f( 32, 64 ));
+		}
 
 
 		bool noPowers = false;
@@ -1541,6 +1554,9 @@ double Actor::GetBounceFlameAccel()
 
 void Actor::UpdatePrePhysics()
 {
+
+	
+
 	//cout << "Start frame" << endl;
 	
 	//cout << "JFRAME BEHI: " << frame << endl;
@@ -13831,7 +13847,7 @@ void Actor::UpdatePostPhysics()
 {
 	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
 	//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
-	 
+	
 
 	//cout << "action: " << action << endl;
 	test = false;
@@ -14588,6 +14604,8 @@ void Actor::UpdatePostPhysics()
 
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
+
+	testAura->Update();
 }
 
 void Actor::BounceFlameOn()
@@ -16224,6 +16242,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( *re1->particles );
 	}*/
 	//target->draw( *pTrail->particles );
+	testAura->Draw(target);
+
 
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
 		&& action != GOALKILLWAIT && action != BOUNCEGROUNDEDWALL )
@@ -16940,6 +16960,16 @@ void Actor::UpdateSprite()
 				scorpSprite.setRotation( sprite->getRotation() );
 				scorpSet = true;
 			}
+
+			Transform tr;
+			tr.rotate(sprite->getRotation());
+			if (!fr)
+			{
+				tr.scale(Vector2f(-1, 1));
+			}
+			//tr.scale(4, 4);
+			
+			testAura->ActivateParticles(runPoints[f], tr );
 
 			break;
 		}
