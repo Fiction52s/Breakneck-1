@@ -1310,6 +1310,46 @@ bool EditSession::OpenFile()
 					a.reset(new RailParams(this, pos, globalPath, energized));
 					//a->hasMonitor = (bool)hasMonitor;
 				}
+				else if (typeName == "booster")
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int strength;
+					is >> strength;
+					//int hasMonitor;
+					//is >> hasMonitor;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new BoosterParams(this, pos, strength ));
+					//a->hasMonitor = (bool)hasMonitor;
+				}
+				else if (typeName == "spring")
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					//int hasMonitor;
+					//is >> hasMonitor;
+					int angle;
+					is >> angle;
+
+					int speed;
+					is >> speed;
+
+					int stunFrames;
+					is >> stunFrames;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new SpringParams(this, pos, angle, speed, stunFrames));
+					//a->hasMonitor = (bool)hasMonitor;
+				}
 				//w1
 				else if( typeName == "crawlerreverser" )
 				{
@@ -3925,6 +3965,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *railPanel = CreateOptionsPanel("rail");
 	ActorType *railType = new ActorType("rail", railPanel);
 
+	Panel *boosterPanel = CreateOptionsPanel("booster");
+	ActorType *boosterType = new ActorType("booster", boosterPanel);
+
+	Panel *springPanel = CreateOptionsPanel("spring");
+	ActorType *springType = new ActorType("spring", springPanel);
+
 	types["healthfly"] = healthflyType;
 	types["goal"] = goalType;
 	types["poi"] = poiType;
@@ -3936,6 +3982,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	types["blocker"] = blockerType;
 	types["rail"] = railType;
+
+	types["booster"] = boosterType;
+	types["spring"] = springType;
 
 	//w1
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
@@ -4160,7 +4209,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	gs->Set( 0, 7, Sprite( nexusType->iconTexture ), "nexus" );
 
-	gs->Set( 4, 8, Sprite(railType->iconTexture), "rail");
+	gs->Set(0, 8, Sprite(boosterType->iconTexture), "booster");
+	gs->Set(2, 8, Sprite(springType->iconTexture), "spring");
+	gs->Set(3, 8, Sprite(railType->iconTexture), "rail");
+	
 
 	
 
@@ -6447,6 +6499,24 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										//showPanel = trackingEnemy->panel;
 										//tempActor->SetPanelInfo();
 										//showPanel = enemySelectPanel;
+									}
+									else if (trackingEnemy->name == "booster")
+									{
+										trackingEnemy = NULL;
+										ActorPtr booster(new BoosterParams(this, Vector2i(worldPos.x,
+											worldPos.y)));
+										booster->group = groups["--"];
+										CreateActor(booster);
+										showPanel = enemySelectPanel;
+									}
+									else if (trackingEnemy->name == "spring")
+									{
+										trackingEnemy = NULL;
+										ActorPtr spring(new SpringParams(this, Vector2i(worldPos.x,
+											worldPos.y)));
+										spring->group = groups["--"];
+										CreateActor(spring);
+										showPanel = enemySelectPanel;
 									}
 
 
@@ -10565,6 +10635,67 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 	}
+	else if( p->name == "booster_options")
+	{
+		if (b->name == "ok")
+		{
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				BoosterParams *booster = (BoosterParams*)select;
+				booster->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr booster(tempActor);//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				booster->SetParams();
+				booster->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor(booster);
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+	}
+	else if (p->name == "spring_options")
+	{
+		if (b->name == "ok")
+		{
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				SpringParams *spring = (SpringParams*)select;
+				spring->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr spring(tempActor);//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				spring->SetParams();
+				spring->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor(spring);
+
+				tempActor = NULL;
+
+
+			}
+			showPanel = NULL;
+		}
+	
+	}
 	else if( p->name == "patroller_options" )
 	{
 		if( b->name == "ok" )
@@ -13486,6 +13617,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		return p;
 	}
+	else if (name == "booster")
+	{
+		Panel *p = new Panel("booster_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
+		return p;
+	}
 	//else if( name == "shard1" )
 	//{
 	//	Panel *p = new Panel( "turtle_options", 200, 600, this );
@@ -14009,6 +14150,16 @@ void EditSession::SetEnemyEditPanel()
 		RailParams *rail = (RailParams*)ap;
 		rail->SetPanelInfo();
 		patrolPath = rail->GetGlobalChain();
+	}
+	else if (name == "booster")
+	{
+		BoosterParams *booster = (BoosterParams*)ap;
+		booster->SetPanelInfo();
+	}
+	else if (name == "spring")
+	{
+		SpringParams *spring = (SpringParams*)ap;
+		spring->SetPanelInfo();
 	}
 	//w1
 	else if( name == "patroller" )
@@ -15341,6 +15492,20 @@ void ActorType::Init()
 		canBeAerial = true;
 	}
 	else if (name == "rail")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if (name == "booster")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if (name == "spring")
 	{
 		width = 32;
 		height = 32;

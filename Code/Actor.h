@@ -183,6 +183,7 @@ struct Actor : QuadTreeCollider,
 	bool rightWireBoost;
 	bool doubleWireBoost;
 
+	bool updateAura;
 
 	/*enum SeqType
 	{
@@ -430,6 +431,9 @@ struct Actor : QuadTreeCollider,
 	double CalcLandingSpeed( sf::Vector2<double> &testVel,
 		sf::Vector2<double> &alongVel, 
 		sf::Vector2<double> &gNorm );
+	double CalcRailLandingSpeed(sf::Vector2<double> &testVel,
+		sf::Vector2<double> &alongDir,
+		sf::Vector2<double> &railNorm);
 
 	void SetAerialScorpSprite();
 	int GetJumpFrame();
@@ -589,6 +593,7 @@ struct Actor : QuadTreeCollider,
 		sf::Vector2<double> &gNorm );
 
 	double doubleJumpStrength;
+	double backDoubleJumpStrength;
 
 	int timeSlowStrength;
 
@@ -908,6 +913,7 @@ struct Actor : QuadTreeCollider,
 	bool blah;
 	int ghostFrame;
 
+	
 	
 
 	

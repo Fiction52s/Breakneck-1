@@ -695,6 +695,43 @@ struct RailParams : public ActorParams
 	bool energized;
 };
 
+struct BoosterParams : public ActorParams
+{
+	BoosterParams(EditSession *edit,
+		sf::Vector2i &pos, int strength );
+	BoosterParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+
+	int strength;
+};
+
+struct SpringParams : public ActorParams
+{
+	SpringParams(EditSession *edit,
+		sf::Vector2i &pos, int angle,
+		int speed, int stunFrames );
+	SpringParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+
+	int angle;
+	int speed;
+	int stunFrames;
+};
+
 //w1
 struct PatrollerParams : public ActorParams
 {

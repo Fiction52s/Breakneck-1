@@ -1666,3 +1666,183 @@ ActorParams *RailParams::Copy()
 	return copy;*/
 }
 
+BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos, int p_strength )
+	:ActorParams(PosType::AIR_ONLY), strength( p_strength )
+{
+	position = pos;
+	type = edit->types["booster"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+}
+
+BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	position = pos;
+	type = edit->types["booster"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+}
+
+void BoosterParams::WriteParamFile(std::ofstream &of)
+{
+	of << strength << "\n";
+}
+
+void BoosterParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string strengthStr = p->textBoxes["strength"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << strengthStr;
+
+	int t_strength;
+	ss >> t_strength;
+
+	if (!ss.fail())
+	{
+		strength = t_strength;
+	}
+	//hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void BoosterParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
+	//p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+bool BoosterParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *BoosterParams::Copy()
+{
+	BoosterParams *copy = new BoosterParams(*this);
+	return copy;
+}
+
+SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, int p_angle, int p_speed, int p_stunFrames)
+	:ActorParams(PosType::AIR_ONLY), angle( p_angle ), speed( p_speed ), stunFrames( p_stunFrames )
+{
+	position = pos;
+	type = edit->types["spring"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+}
+
+SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	position = pos;
+	type = edit->types["spring"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+}
+
+void SpringParams::WriteParamFile(std::ofstream &of)
+{
+	of << angle << "\n";
+	of << speed << "\n";
+	of << stunFrames << "\n";
+}
+
+void SpringParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string angleStr = p->textBoxes["angle"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << angleStr;
+
+	int t_angle;
+	ss >> t_angle;
+
+	if (!ss.fail())
+	{
+		angle = t_angle;
+	}
+
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+
+	ss << speedStr;
+
+	int t_speed;
+	ss >> t_speed;
+
+	if (!ss.fail())
+	{
+		speed = t_speed;
+	}
+
+	string stunStr = p->textBoxes["stunframes"]->text.getString().toAnsiString();
+
+	ss << stunStr;
+
+	int t_stun;
+	ss >> t_stun;
+
+	if (!ss.fail())
+	{
+		stunFrames = t_stun;
+	}
+
+	hasMonitor = false;
+
+	//hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void SpringParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->textBoxes["angle"]->text.setString((boost::lexical_cast<string>(angle)));
+	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
+	p->textBoxes["stunframes"]->text.setString((boost::lexical_cast<string>(stunFrames)));
+	//p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+bool SpringParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *SpringParams::Copy()
+{
+	SpringParams *copy = new SpringParams(*this);
+	return copy;
+}

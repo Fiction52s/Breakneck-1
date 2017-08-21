@@ -851,11 +851,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		gravity = 1;//1.9; // 1 
 		jumpStrength = 21.5;//18;//25;//27.5; // 2 
 		doubleJumpStrength = 20;//17;//23;//26.5;
+		backDoubleJumpStrength = 22;
 		dashSpeed = 9;//12; // 3
 
 		dashSpeed0 = 9;
 		dashSpeed1 = 10.5;
-		dashSpeed2 = 12;
+		dashSpeed2 = 14;
 
 		airDashSpeed0 = dashSpeed0;
 		airDashSpeed1 = dashSpeed1;
@@ -1000,7 +1001,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		
-		testAura = new Aura(this, 60, 64 * 64);
+		testAura = new Aura(this, 2, 64 * 64);
 
 		int runLen = actionLength[RUN];
 		runPoints = new std::list<Vector2f>[runLen];
@@ -1009,7 +1010,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		Image im = auraTestTS->texture->copyToImage();
 		for (int i = 0; i < 10; ++i)
 		{
-			Aura::CreateParticlePointList(auraTestTS, im, i, runPoints[i], Vector2f( 32, 64 ));
+			Aura::CreateParticlePointList(auraTestTS, im, i, runPoints[i]);
 		}
 
 
@@ -6403,7 +6404,15 @@ void Actor::UpdatePrePhysics()
 				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 				if( velocity.y > 0 )
 					velocity.y = 0;
-				velocity.y = -doubleJumpStrength;
+
+				if (action == BACKWARDSDOUBLE)
+				{
+					velocity.y = -backDoubleJumpStrength;
+				}
+				else
+				{
+					velocity.y = -doubleJumpStrength;
+				}
 				hasDoubleJump = false;
 
 				if( currInput.LLeft() )
@@ -6826,6 +6835,15 @@ void Actor::UpdatePrePhysics()
 
 		velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
+		if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		else if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
 		//framesGrinding++;
 		break;
 	}
@@ -13847,7 +13865,7 @@ void Actor::UpdatePostPhysics()
 {
 	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
 	//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
-	
+	updateAura = true;
 
 	//cout << "action: " << action << endl;
 	test = false;
@@ -13984,6 +14002,10 @@ void Actor::UpdatePostPhysics()
 	}
 
 	UpdateSprite();
+	//if (updateAura)
+	{
+		testAura->Update();
+	}
 
 	switch( action )
 	{
@@ -14605,7 +14627,8 @@ void Actor::UpdatePostPhysics()
 	//playerLight->pos.x = position.x;
 	//playerLight->pos.y = position.y;
 
-	testAura->Update();
+	/*if( updateAura )
+		testAura->Update();*/
 }
 
 void Actor::BounceFlameOn()
@@ -16117,10 +16140,51 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Edge *e = (Edge*)qte;
 		Rail *rail = (Rail*)e->info;
-		V2d r = e->v1 - e->v0;
+		V2d r;
+		if (e->Normal().y > 0)
+		{
+			r = e->v0 - e->v1;
+		}
+		else
+		{
+			r = e->v1 - e->v0;
+		}
+		
+
 		double lenR = length(r);
 		V2d along = normalize(r);
+		V2d rn(along.y, -along.x);
 		double q = dot(position - e->v0, along);
+
+		double landingSpeed = CalcLandingSpeed(velocity, along, rn);
+		double railSpeed;
+
+		if (landingSpeed == 0)
+		{
+			if (!currInput.LDown())
+			{
+				if (facingRight)
+				{
+					railSpeed = 12.0;
+				}
+				else
+				{
+					railSpeed = -12.0;
+				}
+			}
+			else 
+			{
+
+			}
+		}
+		else if( landingSpeed > 0 )
+		{
+			railSpeed = max(landingSpeed, 12.0);
+		}
+		else if (landingSpeed < 0)
+		{
+			railSpeed = min(landingSpeed, -12.0);
+		}
 
 		double alongQuantVel = dot(velocity, along);
 		if ( regrindOffCount == regrindOffMax && (rail->energized || currInput.Y))
@@ -16144,16 +16208,24 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						V2d p = li.position;
 						grindQuantity = grindEdge->GetQuantity(p);
 					}
+					else
+					{
+						assert(0);
+					}
 
-					if (alongQuantVel > 0)
+					
+
+					/*if (alongQuantVel > 0)
 					{
 						grindSpeed = max(12.0, alongQuantVel);
 					}
 					else if (alongQuantVel < 0)
 					{
 						grindSpeed = min(-12.0, alongQuantVel);
-					}
+					}*/
+					grindSpeed = railSpeed;
 
+					
 				}
 			}
 		}
@@ -16174,8 +16246,8 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 		V2d &alongVel, V2d &gNorm )
 {
 	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
-	double gSpeed = groundSpeed;
-	if( currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp() )
+	double gSpeed = 0; //groundSpeed;
+	if( ( currInput.LLeft() && testVel.x < 0 ) || ( currInput.LRight() && testVel.x > 0 ) || currInput.LDown() || currInput.LUp() )
 	{
 		double res = dot( testVel, alongVel );
 
@@ -16184,12 +16256,14 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 			if( testVel.x > 0 && gNorm.x < 0 )
 			{
 				V2d straight( 1, 0 );
-				res = max( res, dot( testVel, straight ) );
+				double temp = dot(testVel, straight);
+				res = max( res, temp );
 			}
 			else if( testVel.x < 0 && gNorm.x > 0 )
 			{
-				V2d straight( -1, 0 );
-				res = min( res, dot( testVel, straight ) );
+				V2d straight( 1, 0 );
+				double temp = dot(testVel, straight);
+				res = min( res, temp );
 			}
 		}
 		gSpeed = res;
@@ -16208,9 +16282,49 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 		}
 	}
 
-	cout << " gspeed: " << gSpeed << endl;
+	//cout << " gspeed: " << gSpeed << endl;
 	
 	return gSpeed;
+}
+
+double Actor::CalcRailLandingSpeed(V2d &testVel,
+	V2d &alongDir, V2d &railNorm)
+{
+	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
+	double rSpeed = 0; //groundSpeed;
+
+	if (currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp())
+	{
+		double res = dot(testVel, alongDir);
+
+		if (railNorm.y <= -steepThresh) //not steep
+		{
+			if (testVel.x > 0 && railNorm.x < 0)
+			{
+				V2d straight(1, 0);
+				res = max(res, dot(testVel, straight));
+			}
+			else if (testVel.x < 0 && railNorm.x > 0)
+			{
+				V2d straight(-1, 0);
+				res = min(res, dot(testVel, straight));
+			}
+		}
+		rSpeed = res;
+	}
+	else
+	{
+		if (railNorm.y > -steepThresh)
+		{
+			rSpeed = dot(testVel, alongDir);
+		}
+		else
+		{
+			rSpeed = 0;
+		}
+	}
+
+	return rSpeed;
 }
 
 void Actor::ApplyHit( HitboxInfo *info )
@@ -16246,7 +16360,8 @@ void Actor::Draw( sf::RenderTarget *target )
 
 
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
-		&& action != GOALKILLWAIT && action != BOUNCEGROUNDEDWALL )
+		&& action != GOALKILLWAIT && action != BOUNCEGROUNDEDWALL && action != GRINDBALL 
+		&& action != RAILGRIND )
 	{
 		target->draw( scorpSprite );
 	}
@@ -16325,7 +16440,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		//}
 	}
 
-	if( action != GRINDBALL && action != GRINDATTACK )
+	
 	{
 
 		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
@@ -16394,7 +16509,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			//cout << "action: " << action << endl;
 			//sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 			//sh.setUniform( "u_normals", *normal[action]->texture );
-			target->draw( *sprite, &sh );
+			
 		}
 		else
 		{
@@ -16402,124 +16517,11 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 		
 
-		if( showSword )
-		{
-			sf::Shader &swordSh = swordShaders[speedLevel];
-			//swordShader.setUniform( "isTealAlready", 1 );
-			switch( action )
-			{
-			case FAIR:
-				{
-					if( flashFrames > 0 )
-					{
-						target->draw( fairSword, &swordSh );
-						//cout << "shader!" << endl;
-					}
-					else
-					{
-						target->draw( fairSword );
-					}
-					break;
-				}
-			case DAIR:
-				{
-					if( flashFrames > 0 )
-						target->draw( dairSword, &swordSh );
-					else
-						target->draw( dairSword );
-					break;
-				}
-			case UAIR:
-				{
-					if( flashFrames > 0 )
-						target->draw( uairSword, &swordSh );
-					else
-						target->draw( uairSword );
-					break;
-				}
-			case STANDN:
-				{
-					
-					if( flashFrames > 0 )
-					{
-						target->draw( standingNSword, &swordSh );
-						//cout << "Standn" << endl;
-					}
-					else
-						target->draw( standingNSword );
-					break;
-				}
-			case DASHATTACK:
-				{
-					if( flashFrames > 0 )
-						target->draw( dashAttackSword, &swordSh );
-					else
-						target->draw( dashAttackSword );
-					break;
-				}
-			case WALLATTACK:
-				if( flashFrames > 0 )
-						target->draw( wallAttackSword, &swordSh );
-					else
-						target->draw( wallAttackSword );
-					break;
-				break;
-			case STEEPCLIMBATTACK:
-				if( flashFrames > 0 )
-						target->draw( steepClimbAttackSword, &swordSh );
-					else
-						target->draw( steepClimbAttackSword );
-					break;
-				break;
-			case STEEPSLIDEATTACK:
-				if( flashFrames > 0 )
-						target->draw( steepSlideAttackSword, &swordSh );
-					else
-						target->draw( steepSlideAttackSword);
-					break;
-				break;
-			case GRINDSLASH:
-				{
-				
-					if( flashFrames > 0 )
-						target->draw( grindLungeSword, &swordSh );
-					else
-						target->draw( grindLungeSword );
-					break;
-				
-				}
-			case DIAGUPATTACK:
-				{
-					if( flashFrames > 0 )
-					{
-						target->draw( diagUpAttackSword, &swordSh );
-						//cout << "shader!" << endl;
-					}
-					else
-					{
-						target->draw( diagUpAttackSword );
-					}
-					break;
-				}
-			case DIAGDOWNATTACK:
-				{
-					if( flashFrames > 0 )
-					{
-						target->draw( diagDownAttackSword, &swordSh );
-						//cout << "shader!" << endl;
-					}
-					else
-					{
-						target->draw( diagDownAttackSword );
-					}
-					break;
-				}
-				break;
-			}
-		}
+		
 	}
-	else
+	if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 	{
+		target->draw(*sprite, &sh);
 		target->draw( gsdodeca );
 		target->draw( gstriblue );
 		target->draw( gstricym );
@@ -16529,6 +16531,126 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( gstrirgb );
 		target->draw( *sprite );
 	}
+	else
+	{
+		target->draw(*sprite, &sh);
+		if (showSword)
+		{
+			sf::Shader &swordSh = swordShaders[speedLevel];
+			//swordShader.setUniform( "isTealAlready", 1 );
+			switch (action)
+			{
+			case FAIR:
+			{
+				if (flashFrames > 0)
+				{
+					target->draw(fairSword, &swordSh);
+					//cout << "shader!" << endl;
+				}
+				else
+				{
+					target->draw(fairSword);
+				}
+				break;
+			}
+			case DAIR:
+			{
+				if (flashFrames > 0)
+					target->draw(dairSword, &swordSh);
+				else
+					target->draw(dairSword);
+				break;
+			}
+			case UAIR:
+			{
+				if (flashFrames > 0)
+					target->draw(uairSword, &swordSh);
+				else
+					target->draw(uairSword);
+				break;
+			}
+			case STANDN:
+			{
+
+				if (flashFrames > 0)
+				{
+					target->draw(standingNSword, &swordSh);
+					//cout << "Standn" << endl;
+				}
+				else
+					target->draw(standingNSword);
+				break;
+			}
+			case DASHATTACK:
+			{
+				if (flashFrames > 0)
+					target->draw(dashAttackSword, &swordSh);
+				else
+					target->draw(dashAttackSword);
+				break;
+			}
+			case WALLATTACK:
+				if (flashFrames > 0)
+					target->draw(wallAttackSword, &swordSh);
+				else
+					target->draw(wallAttackSword);
+				break;
+				break;
+			case STEEPCLIMBATTACK:
+				if (flashFrames > 0)
+					target->draw(steepClimbAttackSword, &swordSh);
+				else
+					target->draw(steepClimbAttackSword);
+				break;
+				break;
+			case STEEPSLIDEATTACK:
+				if (flashFrames > 0)
+					target->draw(steepSlideAttackSword, &swordSh);
+				else
+					target->draw(steepSlideAttackSword);
+				break;
+				break;
+			case GRINDSLASH:
+			{
+
+				if (flashFrames > 0)
+					target->draw(grindLungeSword, &swordSh);
+				else
+					target->draw(grindLungeSword);
+				break;
+
+			}
+			case DIAGUPATTACK:
+			{
+				if (flashFrames > 0)
+				{
+					target->draw(diagUpAttackSword, &swordSh);
+					//cout << "shader!" << endl;
+				}
+				else
+				{
+					target->draw(diagUpAttackSword);
+				}
+				break;
+			}
+			case DIAGDOWNATTACK:
+			{
+				if (flashFrames > 0)
+				{
+					target->draw(diagDownAttackSword, &swordSh);
+					//cout << "shader!" << endl;
+				}
+				else
+				{
+					target->draw(diagDownAttackSword);
+				}
+				break;
+			}
+			break;
+			}
+		}
+	}
+	
 
 	if( blah || record > 1 )
 	{
@@ -16943,6 +17065,7 @@ void Actor::UpdateSprite()
 				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
 			}
 
+
 			if( frame % 5 == 0 && abs( groundSpeed ) > 0 )
 			{
 				//owner->ActivateEffect( ts_fx_bigRunRepeat, pp + gn * 56.0, false, angle, 24, 1, facingRight );
@@ -16968,9 +17091,10 @@ void Actor::UpdateSprite()
 				tr.scale(Vector2f(-1, 1));
 			}
 			//tr.scale(4, 4);
-			
-			testAura->ActivateParticles(runPoints[f], tr );
-
+			Aura::NormalParams np;
+			np.centerPos = sprite->getPosition() + Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
+			testAura->ActivateParticles(runPoints[f], tr, sprite->getOrigin(), &np );
+			updateAura = false;
 			break;
 		}
 	case SPRINT:
@@ -18111,7 +18235,15 @@ void Actor::UpdateSprite()
 			assert( grindEdge != NULL );
 			
 			SetSpriteTexture( GRINDBALL );
+
+			V2d grindNorm = grindEdge->Normal();
 			bool r = grindSpeed > 0;
+
+			if (action == RAILGRIND && grindNorm.y > 0)
+			{
+				grindNorm = -grindNorm;
+				r = !r;
+			}
 
 			SetSpriteTile( 0, r );
 			
@@ -18135,7 +18267,7 @@ void Actor::UpdateSprite()
 			gstripurp.setTextureRect( tsgstripurp->GetSubRect( grindActionInt% grindActionLength ) );
 			gstrirgb.setTextureRect( tsgstrirgb->GetSubRect( grindActionInt% grindActionLength ) );
 
-			V2d grindNorm = grindEdge->Normal();
+			
 
 			double angle = 0;
 			angle = atan2( grindNorm.x, -grindNorm.y );

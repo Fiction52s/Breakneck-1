@@ -43,8 +43,20 @@ void Aura::Draw(sf::RenderTarget *target)
 	target->draw(va, totalParticles * 4, sf::Quads, ts->texture);
 }
 
-void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr)
+void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf::Vector2f &origin, AuraParams *ap )
 {
+	ParticleSet *tps = activeSets;
+	ParticleSet *tnext = NULL;
+	while (tps != NULL)
+	{
+		tnext = tps->next;
+		if (tps->actuallyDone)
+		{
+			DeactivateParticles(tps);
+		}
+		tps = tnext;
+	}
+
 	ParticleSet *ps = NULL;
 	if (inactiveSets == NULL)
 	{
@@ -76,7 +88,8 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr)
 	int pointsSize = points.size();
 	ps->numParticlesFromSprite = pointsSize;
 	ps->frame = 0;
-
+	ps->ap = ap;
+	ps->actuallyDone = false;
 	int ind = 0;
 	Vector2f playerPos(player->position.x, player->position.y);
 
@@ -88,14 +101,28 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr)
 
 	//tr.scale(Vector2f(-1, 1));
 
+
+
 	Vector2f p;
 	Vector2f v;
+
+	Vector2f center = truePos;
+	if (ap->pType == Aura::AuraParams::NORMAL)
+	{
+		Aura::NormalParams *np = (Aura::NormalParams*)ap;
+		center = np->centerPos;
+	}
+	
+
+
 	for (auto it = points.begin(); it != points.end(); ++it)
 	{
-		p = tr.transformPoint((*it)) + truePos;
-		v = normalize(p - truePos) * 2.f;
+		p = tr.transformPoint((*it) - origin) + truePos;
+
+		//sf::Vector2<double> vel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed / 2.0;
+		//v =  * 2.f;
 		//float lv = sqrt( ( )
-		
+		v = Vector2f(0, 0);//normalize( p - center ) * .3f;//Vector2f(0, 0);//Vector2f(vel.x, vel.y);
 		ps->particles[ind]->Set(p, v, Vector2f(0, 0));
 		++ind;
 		if (ind == maxParticlesPerSet)
@@ -117,25 +144,37 @@ void Aura::ParticleSet::Activate()
 }
 
 Aura::ParticleSet::ParticleSet(Aura *p_aura, int p_index)
-	:index( p_index ), next( NULL ), prev( NULL ), frame( 0 ), maxFramesToLive( 60 ), aura( p_aura )
+	:index( p_index ), next( NULL ), prev( NULL ), frame( 0 ), aura( p_aura )
 {
+	actuallyDone = false;
+	maxFramesToLive = 0;
 	int maxParticles = aura->maxParticlesPerSet;
 	particles = new Particle*[maxParticles];
 	for (int i = 0; i < maxParticles; ++i)
 	{
-		particles[i] = new Particle((aura->va + (index * maxParticles * 4) + (i*4)), maxFramesToLive, aura->ts->GetSubRect( 0 ) );
+		particles[i] = new Particle( this, (aura->va + (index * maxParticles * 4) + (i*4)), maxFramesToLive, aura->ts->GetSubRect( 0 ) );
 	}
 }
 
 void Aura::ParticleSet::Update()
 {
 	bool allInactive = true;
+	actuallyDone = true;
 	for (int i = 0; i < numParticlesFromSprite; ++i)
 	{
 		if (particles[i]->active)
 		{
-			allInactive = false;
 			particles[i]->Update();
+			allInactive = false;
+			if (particles[i]->active)
+			{
+				actuallyDone = false;
+			}
+
+			/*if (particles[i]->active)
+			{
+				allInactive = false;
+			}*/
 		}
 	}
 
@@ -183,7 +222,7 @@ void Aura::DeactivateParticles(ParticleSet *ps)
 }
 
 void Aura::CreateParticlePointList(Tileset *ts, Image &im, int tileIndex,
-	std::list<sf::Vector2f> &outPoints, sf::Vector2f &origin)
+	std::list<sf::Vector2f> &outPoints )
 {
 	assert(outPoints.size() == 0);
 	IntRect sub = ts->GetSubRect(tileIndex);
@@ -197,17 +236,41 @@ void Aura::CreateParticlePointList(Tileset *ts, Image &im, int tileIndex,
 		{
 			 col = im.getPixel(x, y);
 			 //currently use every pixel that isnt transparent
-			 if (col.a != 0 )
+
+
+			 if (col.a != 0 )//&& col.r == 250 && col.g == 0 && col.b == 158 )
 			 {
-				 outPoints.push_back(Vector2f((x - sub.left) - origin.x, (y - sub.top) - origin.y ));
+				 bool transAround = false;
+				 if ((x < right - 1 && im.getPixel(x + 1, y).a == 0) || (x == right - 1  ))
+				 {
+					 transAround = true;
+				 }
+				 if ((x > sub.left && im.getPixel(x - 1, y).a == 0) || (x == sub.left ))
+				 {
+					 transAround = true;
+				 }
+				 if ((y < bot - 1 && im.getPixel(x, y + 1).a == 0) || (y == bot - 1 ))
+				 {
+					 transAround = true;
+				 }
+				 if ((y > sub.top && im.getPixel(x, y - 1).a == 0) || (y == sub.top ))
+				 {
+					 transAround = true;
+				 }
+
+				 if (transAround)
+				 {
+					 outPoints.push_back(Vector2f((x - sub.left), (y - sub.top)));
+				 }
 			 }
 		}
 	}
 }
 
-Aura::Particle::Particle(sf::Vertex *va, int p_ttl, sf::IntRect &sub)
+Aura::Particle::Particle( ParticleSet *p_ps, sf::Vertex *va, int p_ttl, sf::IntRect &sub)
 	:quad( va )
 {
+	ps = p_ps;
 	maxTTL = p_ttl;
 
 	/*quad[0].color = Color::Red;
@@ -235,23 +298,52 @@ void Aura::Particle::Update()
 {
 	//if (active)
 	//{
-		pos += vel;
-		vel += accel;
-		ttl--;
-
-		if (ttl < 0)
+	if (ttl >= 0)
+	{
+		Actor *player = ps->aura->player;
+		float hw;
+		switch (player->speedLevel)
 		{
-			active = false;
-			Clear();
-			return;
+		case 0:
+			hw = 6;//8
+			break;
+		case 1:
+			hw = 12;//8
+			break;
+		case 2:
+			hw = 18;//8
+			break;
 		}
-
-		float hw = 4;
+		 ;
 
 		quad[0].position = Vector2f(pos.x - hw, pos.y - hw);
 		quad[1].position = Vector2f(pos.x + hw, pos.y - hw);
 		quad[2].position = Vector2f(pos.x + hw, pos.y + hw);
 		quad[3].position = Vector2f(pos.x - hw, pos.y + hw);
+		
+		pos += vel;
+		vel += accel;
+		ttl--;
+	}
+	else 
+	{
+		active = false;
+		Clear();
+		return;
+	}
+
+	
+		
+
+		/*quad[0].color.a = 255 * ( (float)ttl / maxTTL );
+		quad[1].color.a = 255 * ((float)ttl / maxTTL);
+		quad[2].color.a = 255 * ((float)ttl / maxTTL);
+		quad[3].color.a = 255 * ((float)ttl / maxTTL);*/
+	int f = 10;
+		quad[0].color.a = f;
+		quad[1].color.a = f;
+		quad[2].color.a = f;
+		quad[3].color.a = f;
 	//}
 }
 
