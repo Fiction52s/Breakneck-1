@@ -231,6 +231,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//SetupTilesets(skin, swordSkin);
 		SetupTilesets(NULL,NULL);
 
+		prevRail = NULL;
+
+		maxFramesSinceGrindAttempt = 30;
+		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+		canGrabRail = false;
 
 		regrindOffMax = 3;
 		regrindOffCount = 3;
@@ -239,8 +244,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 		railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
-		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		maxFramesSinceGrindAttempt = 60;
+		//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+		
 
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
@@ -756,6 +761,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[ENTERNEXUS1] = 10 * 4;
 		actionLength[GOALKILLWAIT] = 2;
 		actionLength[SPAWNWAIT] = 120;
+		actionLength[RAILDASH] = 20;
 
 
 		}
@@ -863,9 +869,18 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		airDashSpeed2 = dashSpeed2;
 
 		airDashSpeed = dashSpeed;
-		maxFallSpeedSlow = 30;//30;//100; // 4
-		maxFallSpeedFast = 60;
 
+		maxVelocity = 60;
+		double maxSpeed = maxVelocity;
+		double maxXSpeed = maxVelocity;
+		maxGroundSpeed = maxSpeed;
+		maxAirXSpeed = maxSpeed;
+		maxFallSpeedSlow = 30;//30;//100; // 4
+		maxFallSpeedFast = maxSpeed;
+
+		scorpAdditionalAccel = .2;
+		scorpAdditionalCapMax = 20.0;//12.0;
+		scorpAdditionalCap = 0.0;
 
 		offSlopeByWallThresh = dashSpeed;//18;
 		slopeLaunchMinSpeed = 5;//dashSpeed * .7;
@@ -889,9 +904,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		//max ground speed should probably start around 60-80 and then get powerups to rise to 100
 		//for world 1 lets do the lowest number for the beta
-		double maxXSpeed = 60;
-		maxGroundSpeed = maxXSpeed;
-		maxAirXSpeed = maxXSpeed;
+		
 
 
 		runAccelInit = .5;
@@ -975,6 +988,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		bounceMovingTerrain = NULL;
 		bounceGrounded = false;
 
+		
+
+		minRailGrindSpeed[0] = dashSpeed0;
+		minRailGrindSpeed[1] = dashSpeed1;
+		minRailGrindSpeed[2] = dashSpeed2;
 
 		record = false;
 		blah = false;
@@ -1223,6 +1241,10 @@ void Actor::ActionEnded()
 		case RAILGRIND:
 			frame = 0;
 			break;
+		case RAILDASH:
+			SetActionExpr(JUMP);
+			frame = 1;
+			break;
 		case GRINDLUNGE:
 			action = JUMP;
 			frame = 1;
@@ -1429,8 +1451,10 @@ bool Actor::AirAttack()
 void Actor::Respawn()
 {
 	regrindOffCount = 3;
-
+	scorpAdditionalCap = 0.0;
+	prevRail = NULL;
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	canGrabRail = false;
 	scorpOn = false;
 
 	framesSinceRightWireBoost = 0;
@@ -1484,6 +1508,7 @@ void Actor::Respawn()
 	currentSpeedBar = 0;//60;
 
 	bounceFlameOn = false;
+	scorpOn = false;
 
 	if( hasPowerLeftWire )
 	{
@@ -2200,6 +2225,7 @@ void Actor::UpdatePrePhysics()
 				bounceFlameOn = false;
 				oldBounceEdge = NULL;
 				bounceGrounded = false;
+				scorpOn = false;
 			}
 		}
 	}
@@ -2575,7 +2601,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -2679,7 +2705,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -2746,6 +2772,20 @@ void Actor::UpdatePrePhysics()
 					SetActionGrind();
 					break;
 				}
+			}
+
+			if (hasPowerBounce && currInput.X && !bounceFlameOn)
+			{
+				//bounceGrounded = true;
+				BounceFlameOn();
+				oldBounceEdge = NULL;
+				bounceMovingTerrain = NULL;
+				//break;
+			}
+			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
+			{
+				//bounceGrounded = false;
+				BounceFlameOff();
 			}
 
 
@@ -3156,7 +3196,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3181,7 +3221,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3210,7 +3250,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3237,7 +3277,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3263,7 +3303,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -3292,7 +3332,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -4569,7 +4609,13 @@ void Actor::UpdatePrePhysics()
 			regrindOffCount = 0;
 			break;
 		}
-		if (!rail->energized && !currInput.Y)
+		else if (currInput.B && !prevInput.B)
+		{
+			action = RAILDASH;
+			frame = 0;
+			grindEdge = NULL;
+		}
+		if ( currInput.Y && !prevInput.Y && framesGrinding > 1)
 		{
 			action = JUMP;
 			grindEdge = NULL;
@@ -4577,6 +4623,86 @@ void Actor::UpdatePrePhysics()
 			regrindOffCount = 0;
 			break;
 		}
+		break;
+	}
+	case RAILDASH:
+	{
+		if (hasPowerBounce && currInput.X && !bounceFlameOn)
+		{
+			//bounceGrounded = true;
+			BounceFlameOn();
+			oldBounceEdge = NULL;
+			bounceMovingTerrain = NULL;
+			//break;
+		}
+		else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
+		{
+			BounceFlameOff();
+		}
+
+		//if (TryAirDash()) break;
+
+
+
+		if (TryDoubleJump()) break;
+
+
+		//cout << CheckWall( true ) << endl;
+
+		//if (CheckWall(false))
+		//{
+		//	//cout << "special walljump right" << endl;
+		//	if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
+		//	{
+		//		action = WALLJUMP;
+		//		frame = 0;
+		//		facingRight = true;
+
+		//		if (currInput.A)
+		//		{
+		//			longWallJump = true;
+		//		}
+		//		else
+		//		{
+		//			longWallJump = false;
+		//		}
+		//		break;
+		//	}
+		//}
+
+
+		//if (CheckWall(true))
+		//{
+		//	//cout << "special walljump left" << endl;
+		//	if (!currInput.LDown() && currInput.LLeft() && !prevInput.LLeft())
+		//	{
+
+		//		action = WALLJUMP;
+		//		frame = 0;
+		//		facingRight = false;
+
+		//		if (currInput.A)
+		//		{
+		//			longWallJump = true;
+		//		}
+		//		else
+		//		{
+		//			longWallJump = false;
+		//		}
+		//		break;
+		//	}
+		//}
+
+
+
+		AirAttack();
+
+		if (!currInput.B)
+		{
+			action = JUMP;
+			frame = 1;
+		}
+		
 		break;
 	}
 	case GRINDATTACK:
@@ -4967,7 +5093,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
-				break;
+				//break;
 			}
 			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
 			{
@@ -6721,6 +6847,15 @@ void Actor::UpdatePrePhysics()
 		}
 	case GRINDBALL:
 		{
+			if (grindSpeed > 0)
+			{
+				grindSpeed = std::min(maxGroundSpeed + scorpAdditionalCap,grindSpeed);
+			}
+			else
+			{
+				grindSpeed = std::max(-maxGroundSpeed - scorpAdditionalCap, grindSpeed);
+			}
+
 			velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 			//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 			//framesGrinding++;
@@ -7258,65 +7393,38 @@ void Actor::UpdatePrePhysics()
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
-
-	if( ground == NULL && bounceEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1 )
+	double maxReal = maxVelocity + scorpAdditionalCap;
+	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
+		&& action != ENTERNEXUS1)
 	{
-		if( action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING ) && action != GRINDLUNGE )
+		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH)
 		{
-			velocity = AddGravity( velocity );
+			velocity = AddGravity(velocity);
 		}
 
-		if( velocity.x > maxAirXSpeed )
-			velocity.x = maxAirXSpeed;
-		else if( velocity.x < -maxAirXSpeed )
-			velocity.x = -maxAirXSpeed;
+		if (velocity.x > maxReal)
+			velocity.x = maxReal;
+		else if (velocity.x < -maxReal)
+			velocity.x = -maxReal;
 
-		if( velocity.y > maxFallSpeedFast )
-			velocity.y = maxFallSpeedFast;
+		if (velocity.y > maxReal)
+			velocity.y = maxReal;
+		else if (velocity.y < -maxReal)
+			velocity.y = -maxReal;
 	}
 	else
 	{
-		if( groundSpeed > maxGroundSpeed )
-			groundSpeed = maxGroundSpeed;
-		else if( groundSpeed < -maxGroundSpeed )
+		if (groundSpeed > maxReal)
 		{
-			groundSpeed = -maxGroundSpeed;
+			groundSpeed = maxReal;
+		}
+		else if (groundSpeed < -maxReal)
+		{
+			groundSpeed = -maxReal;
 		}
 	}
 
-//	wire->UpdateAnchors();
-	
-	//if( false )
 	Wire *wire = rightWire;
-	//while( wire != leftWire )
-	// = position;
-	//wPos += V2d( rightWire->offset.x, rightWire->offset.y );
-	/*if( player->facingRight )
-	{
-		offset.x = -abs( offset.x );
-	}
-	else
-	{
-		offset.x = abs( offset.x );
-	}*/
-	//V2d playerPos;
-	/*double angle = GroundedAngle();
-	double x = sin( angle );
-	double y = -cos( angle );
-	V2d gNormal( x, y ); 
-	V2d other( -gNormal.y, gNormal.x );
-
-	if( ground != NULL )
-	{
-		V2d pp = ground->GetPoint( edgeQuantity );
-		wPos = pp + gNormal * normalHeight;
-	}
-	else
-	{
-		wPos = position;
-	}
-	wPos += gNormal * (double)rightWire->offset.y + other * (double)rightWire->offset.x;*/
 	
 	double accel = .15;//.2;//.15;//.15;
 	double triggerSpeed = 17;
@@ -8076,7 +8184,7 @@ void Actor::UpdatePrePhysics()
 	}
 
 	canGrabRail = false;
-	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
+	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH )
 	{
 		if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
 		{
@@ -8126,6 +8234,18 @@ void Actor::UpdatePrePhysics()
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	//cout << "before position: " << position.x << ", " << position.y << endl;
+	if (grindEdge != NULL)
+	{
+		cout << "grindspeed: " << grindSpeed << endl;
+	}
+	else if (ground != NULL)
+	{
+		cout << "speed: " << groundSpeed << endl;
+	}
+	else
+	{
+		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
+	}
 	
 }
 
@@ -10047,6 +10167,10 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 	return sprintAccel + extraSprintAccel;
 }
 
+double Actor::GetMinRailGrindSpeed()
+{
+	return minRailGrindSpeed[speedLevel];
+}
 
 //eventually need to change resolve physics so that the player can't miss going by enemies. i understand the need now
 //for universal substeps. guess box2d makes more sense now doesn't it XD
@@ -12397,6 +12521,7 @@ void Actor::UpdatePhysics()
 
 			if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
+				prevRail = NULL;
 				//this condition might only work when not reversed? does it matter?
 				if( bounceEdge == NULL )//|| ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
 				{
@@ -12509,7 +12634,7 @@ void Actor::UpdatePhysics()
 					minContact.position -= minContact.movingPlat->vel;
 				}
 				//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
-
+				prevRail = NULL;
 
 				//b.rh = dashHeight;
 				//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
@@ -12687,6 +12812,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( hasPowerGravReverse /*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
+				prevRail = NULL;
 				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 				/*if( b.rh == doubleJumpHeight )
 				{
@@ -12835,6 +12961,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh  )
 			{
+				prevRail = NULL;
 				Edge *e = minContact.edge;
 				V2d mp = minContact.position;
 				double q = e->GetQuantity( mp );
@@ -12975,6 +13102,7 @@ void Actor::PhysicsResponse()
 
 			storedBounceVel = velocity;
 			bounceFlameOn = false;
+			scorpOn = false;
 			//oldBounceEdge = NULL;
 			//BounceFlameOff();
 			//bounceFlameOn = false;
@@ -13870,7 +13998,18 @@ void Actor::UpdatePostPhysics()
 	//cout << "action: " << action << endl;
 	test = false;
 
-
+	if (scorpOn)
+	{
+		scorpAdditionalCap += scorpAdditionalAccel;
+		if (scorpAdditionalCap > scorpAdditionalCapMax)
+			scorpAdditionalCap = scorpAdditionalCapMax;
+	}
+	else
+	{
+		scorpAdditionalCap -= scorpAdditionalAccel;
+		if (scorpAdditionalCap < 0)
+			scorpAdditionalCap = 0;
+	}
 
 	//rightWire->UpdateState( false );
 	if( rightWire->numPoints == 0 )
@@ -14458,7 +14597,7 @@ void Actor::UpdatePostPhysics()
 		framesInAir++;
 		framesSinceDouble++;
 
-		if( action == GRINDBALL || action == GRINDATTACK )
+		if( action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND )
 			framesGrinding++;
 		else
 			framesNotGrinding++;
@@ -16141,53 +16280,52 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Edge *e = (Edge*)qte;
 		Rail *rail = (Rail*)e->info;
 		V2d r;
+		V2d eFocus;
+		bool ceiling = false;
 		if (e->Normal().y > 0)
 		{
 			r = e->v0 - e->v1;
+			eFocus = e->v1;
+			ceiling = true;
 		}
 		else
 		{
 			r = e->v1 - e->v0;
+			eFocus = e->v0;
 		}
 		
 
 		double lenR = length(r);
 		V2d along = normalize(r);
 		V2d rn(along.y, -along.x);
-		double q = dot(position - e->v0, along);
+		double q = dot(position - eFocus, along);
 
 		double landingSpeed = CalcLandingSpeed(velocity, along, rn);
 		double railSpeed;
+		double minRailCurr = GetMinRailGrindSpeed();
 
 		if (landingSpeed == 0)
 		{
-			if (!currInput.LDown())
+			if (facingRight)
 			{
-				if (facingRight)
-				{
-					railSpeed = 12.0;
-				}
-				else
-				{
-					railSpeed = -12.0;
-				}
+				railSpeed = minRailCurr;
 			}
-			else 
+			else
 			{
-
+				railSpeed = -minRailCurr;
 			}
 		}
 		else if( landingSpeed > 0 )
 		{
-			railSpeed = max(landingSpeed, 12.0);
+			railSpeed = max(landingSpeed, minRailCurr);
 		}
 		else if (landingSpeed < 0)
 		{
-			railSpeed = min(landingSpeed, -12.0);
+			railSpeed = min(landingSpeed, -minRailCurr);
 		}
 
 		double alongQuantVel = dot(velocity, along);
-		if ( regrindOffCount == regrindOffMax && (rail->energized || currInput.Y))
+		if ( ( rail != prevRail || regrindOffCount == regrindOffMax ) && (rail->energized || canGrabRail))
 		{
 			if (q >= 0 && q <= lenR && alongQuantVel != 0)
 			{
@@ -16200,7 +16338,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					hasAirDash = true;
 					hasDoubleJump = true;
 					frame = 0;
+					framesGrinding = 0;
 					grindEdge = e;
+					prevRail = (Rail*)grindEdge->info;
 
 					LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
 					if (!li.parallel)
@@ -16213,17 +16353,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						assert(0);
 					}
 
-					
-
-					/*if (alongQuantVel > 0)
+					if (ceiling) //ceiling rail
 					{
-						grindSpeed = max(12.0, alongQuantVel);
+						grindSpeed = -railSpeed;
 					}
-					else if (alongQuantVel < 0)
+					else
 					{
-						grindSpeed = min(-12.0, alongQuantVel);
-					}*/
-					grindSpeed = railSpeed;
+						grindSpeed = railSpeed;
+					}
+					
 
 					
 				}
@@ -18325,6 +18463,64 @@ void Actor::UpdateSprite()
 
 			break;
 		}
+	case RAILDASH:
+	{
+		//SetSpriteTexture(GRINDBALL);
+
+		//V2d grindNorm = grindEdge->Normal();
+		//bool r = grindSpeed > 0;
+
+		//if (action == RAILGRIND && grindNorm.y > 0)
+		//{
+		//	grindNorm = -grindNorm;
+		//	r = !r;
+		//}
+
+		//SetSpriteTile(0, r);
+
+		//grindActionCurrent += grindSpeed / 20;
+		//while (grindActionCurrent >= grindActionLength)
+		//{
+		//	grindActionCurrent -= grindActionLength;
+		//}
+		//while (grindActionCurrent < 0)
+		//{
+		//	grindActionCurrent += grindActionLength;
+		//}
+
+		//int grindActionInt = grindActionCurrent;
+
+		//gsdodeca.setTextureRect(tsgsdodeca->GetSubRect((grindActionInt * 5) % grindActionLength));
+		//gstriblue.setTextureRect(tsgstriblue->GetSubRect((grindActionInt * 5) % grindActionLength));
+		//gstricym.setTextureRect(tsgstricym->GetSubRect(grindActionInt % grindActionLength)); //broken?
+		//gstrigreen.setTextureRect(tsgstrigreen->GetSubRect((grindActionInt * 5) % grindActionLength));
+		//gstrioran.setTextureRect(tsgstrioran->GetSubRect(grindActionInt% grindActionLength));
+		//gstripurp.setTextureRect(tsgstripurp->GetSubRect(grindActionInt% grindActionLength));
+		//gstrirgb.setTextureRect(tsgstrirgb->GetSubRect(grindActionInt% grindActionLength));
+
+
+
+		//double angle = 0;
+		//angle = atan2(grindNorm.x, -grindNorm.y);
+		//if (!approxEquals(abs(offsetX), b.rw))
+		//{
+
+		//}
+		//else
+		//{
+		//	//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
+		//	//angle = asin( dot( grindNorm, V2d( 1, 0 ) ) ); 
+
+		//}
+		//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		//sprite->setRotation(angle / PI * 180);
+
+		sprite->setPosition(position.x, position.y);
+
+
+
+		break;
+	}
 	case GRINDLUNGE:
 		{
 			SetSpriteTexture( GRINDLUNGE );
@@ -20106,11 +20302,11 @@ void Actor::SetActionGrind()
 	}
 	else if( groundSpeed > 0 )
 	{
-		grindSpeed = std::max( groundSpeed, dSpeed );
+		grindSpeed = std::min( maxGroundSpeed + scorpAdditionalCap, std::max( groundSpeed, dSpeed ) );
 	}
 	else
 	{
-		grindSpeed = std::min( groundSpeed, -dSpeed );
+		grindSpeed = std::max( -maxGroundSpeed - scorpAdditionalCap, std::min( groundSpeed, -dSpeed ) );
 	}
 	
 

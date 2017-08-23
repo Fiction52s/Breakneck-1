@@ -21,6 +21,7 @@ struct PlayerGhost;
 struct Monitor;
 struct Enemy;
 struct Aura;
+struct Rail;
 
 struct KinSkin
 {
@@ -66,6 +67,7 @@ struct Actor : QuadTreeCollider,
 		GRAVREVERSE,
 		GRINDBALL,
 		RAILGRIND,
+		RAILDASH,
 		GRINDLUNGE,
 		GRINDSLASH,
 		GRINDATTACK,
@@ -428,12 +430,19 @@ struct Actor : QuadTreeCollider,
 	bool scorpOn;
 	bool scorpSet;
 
+	//these are for your max vel
+	double scorpAdditionalCap;
+	double scorpAdditionalCapMax;
+	double scorpAdditionalAccel;
+	double maxVelocity;
+
+
 	double CalcLandingSpeed( sf::Vector2<double> &testVel,
 		sf::Vector2<double> &alongVel, 
 		sf::Vector2<double> &gNorm );
 	double CalcRailLandingSpeed(sf::Vector2<double> &testVel,
 		sf::Vector2<double> &alongDir,
-		sf::Vector2<double> &railNorm);
+		sf::Vector2<double> &railNorm); 
 
 	void SetAerialScorpSprite();
 	int GetJumpFrame();
@@ -636,11 +645,15 @@ struct Actor : QuadTreeCollider,
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
 	bool canGrabRail;
+	double minRailGrindSpeed[3];
+	double GetMinRailGrindSpeed();
 
 	sf::RectangleShape railTest;
 
 	Edge *ground;
 	MovingTerrain *movingGround;
+
+	Rail *prevRail;
 
 	bool hasAirDash;
 	bool hasGravReverse;
@@ -949,6 +962,7 @@ struct PlayerGhost
 		STEEPSLIDE,
 		GRINDBALL,
 		RAILGRIND,
+		RAILDASH,
 		AIRDASH,
 		STEEPCLIMB,
 		AIRHITSTUN,
