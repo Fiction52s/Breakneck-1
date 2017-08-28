@@ -5597,9 +5597,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 								if( showGrass )
 								{
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 									{
-										(*it)->UpdateGrass();
+										if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
+										{
+											boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+											d->UpdateGrass();
+										}
 									}
 									//showGrass = false;
 								}
@@ -5909,10 +5913,18 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							else if( ev.key.code == Keyboard::R )
 							{
 								showGrass = true;
-								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+								{
+									if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
+									{
+										boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+										d->ShowGrass(true);
+									}
+								}
+								/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 								{
 									(*it)->ShowGrass( true );
-								}
+								}*/
 							}
 							else if( ev.key.code == Keyboard::B )
 							{
@@ -6284,15 +6296,24 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							else if( ev.key.code == Keyboard::R )
 							{
 								showGrass = false;
-								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 								{
-									
-									//showGrass = true;
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+									if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
 									{
-										(*it)->ShowGrass( false );
+										boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+										d->ShowGrass(false);
 									}
 								}
+
+								//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								//{
+								//	
+								//	//showGrass = true;
+								//	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+								//	{
+								//		(*it)->ShowGrass( false );
+								//	}
+								//}
 							}
 							break;
 						}
@@ -8925,9 +8946,17 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 				if( showGrass && Mouse::isButtonPressed( Mouse::Button::Left ) )
 				{
-					for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
+					/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 					{
 						(*it)->SwitchGrass( worldPos );
+					}*/
+					for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+					{
+						if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
+						{
+							boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+							d->SwitchGrass( worldPos );
+						}
 					}
 				}
 				

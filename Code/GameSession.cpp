@@ -3756,7 +3756,7 @@ bool GameSession::OpenFile( string fileName )
 				grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
 				//cout << "num grass total: " << numGrassTotal << endl;
-				VertexArray &grassVa = *va;
+				VertexArray &grassVa = *grassVA;//*va;
 
 				int segIndex = 0;
 				int totalGrass = 0;
@@ -3794,6 +3794,10 @@ bool GameSession::OpenFile( string fileName )
 
 							//grassVa[i*4+1].color = Color::Blue;
 					//borderVa[i*4+1].color.a = 10;
+
+						int stuff = (i + totalGrass) * 4 + 1;
+
+						cout << "i: " << i << ", stuff: " << stuff << ", total: " << totalGrass << endl;
 						grassVa[(i+totalGrass)*4+1].position = bottomLeft;
 						grassVa[(i+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
 

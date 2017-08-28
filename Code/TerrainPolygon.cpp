@@ -1705,7 +1705,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 
 	if( grassVA != NULL )
-		rt->draw( *grassVA, grassTex );
+		rt->draw(*grassVA);// , grassTex );
 
 	if( va != NULL )
 		rt->draw( *va );
