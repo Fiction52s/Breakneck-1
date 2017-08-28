@@ -6505,12 +6505,18 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									}
 									else if (trackingEnemy->name == "booster")
 									{
-										trackingEnemy = NULL;
+										tempActor = new BoosterParams(this, Vector2i(worldPos.x,
+											worldPos.y));
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
+
+
+										/*trackingEnemy = NULL;
 										ActorPtr booster(new BoosterParams(this, Vector2i(worldPos.x,
 											worldPos.y)));
 										booster->group = groups["--"];
 										CreateActor(booster);
-										showPanel = enemySelectPanel;
+										showPanel = trackingEnemy->panel;*/
 									}
 									else if (trackingEnemy->name == "spring")
 									{
@@ -6520,6 +6526,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										spring->group = groups["--"];
 										CreateActor(spring);
 										showPanel = enemySelectPanel;*/
+
+
 
 										tempActor = new SpringParams(this, Vector2i(worldPos.x, worldPos.y));
 										tempActor->SetPanelInfo();

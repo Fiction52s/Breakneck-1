@@ -2016,6 +2016,30 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
 			}
+			else if (typeName == "booster")
+			{
+				int xPos, yPos;
+
+				//always air
+
+				is >> xPos;
+				is >> yPos;
+
+				int strength;
+				is >> strength;
+
+				Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
+				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				//	400, 50, 60, 1 );
+				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+
+				//activeItemTree->Insert(enemy);
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
+			}
 			else if (typeName == "spring")
 			{
 				int xPos, yPos;

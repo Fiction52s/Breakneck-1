@@ -1690,6 +1690,8 @@ BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos)
 	image.setPosition(pos.x, pos.y);
 
 	SetBoundingQuad();
+	
+	strength = 10;
 }
 
 void BoosterParams::WriteParamFile(std::ofstream &of)
@@ -1771,9 +1773,11 @@ SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos)
 
 	SetBoundingQuad();
 
-	moveFrames = 0;
+	moveFrames = 60;
 
 	lines = NULL;
+
+
 }
 
 void SpringParams::WriteParamFile(std::ofstream &of)

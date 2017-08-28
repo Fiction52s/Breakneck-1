@@ -242,6 +242,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		regrindOffCount = 3;
 
 		currSpring = NULL;
+		currBooster = NULL;
 
 		railTest.setSize(Vector2f(64, 64));
 		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
@@ -1460,6 +1461,7 @@ bool Actor::AirAttack()
 void Actor::Respawn()
 {
 	currSpring = NULL;
+	currBooster = NULL;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -7298,7 +7300,21 @@ void Actor::UpdatePrePhysics()
 				dWireAirDashOld = dWireAirDash;
 			}
 			
-
+			if (currBooster != NULL)
+			{
+				velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
+				startAirDashVel.x = velocity.x;//normalize(velocity).x * ( length( velocity ) + currBooster->strength);
+				extraAirDashY = velocity.y; //- aSpeed;
+				if (extraAirDashY > aSpeed)
+				{
+					extraAirDashY = extraAirDashY - aSpeed;
+				}
+				else if (extraAirDashY < -aSpeed)
+				{
+					extraAirDashY = extraAirDashY + aSpeed;
+				}
+				currBooster = NULL;
+			}
 			break;
 		}
 	case STEEPCLIMB:
@@ -7458,6 +7474,36 @@ void Actor::UpdatePrePhysics()
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
+	if (currBooster != NULL)
+	{	
+		if (ground == NULL && bounceEdge == NULL && (grindEdge == NULL || action == RAILGRIND))
+		{
+			velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
+		}
+		else if (grindEdge != NULL)
+		{
+			if (grindSpeed > 0)
+			{
+				grindSpeed += currBooster->strength;
+			}
+			else if (grindSpeed < 0)
+			{
+				grindSpeed -= currBooster->strength;
+			}
+		}
+		else if (ground != NULL)
+		{
+			if (groundSpeed > 0)
+			{
+				groundSpeed += currBooster->strength;
+			}
+			else if (groundSpeed < 0)
+			{
+				groundSpeed -= currBooster->strength;
+			}
+		}
+		currBooster = NULL;
+	}
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
 		&& action != ENTERNEXUS1)
@@ -20844,5 +20890,7 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 		
 		}
 	}
+
+	
 }
 

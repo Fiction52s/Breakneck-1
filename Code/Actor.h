@@ -38,6 +38,7 @@ struct KinSkin
 	int index;
 };
 
+struct Booster;
 struct Spring;
 
 struct Actor : QuadTreeCollider,
@@ -434,6 +435,7 @@ struct Actor : QuadTreeCollider,
 	bool scorpSet;
 
 	Spring *currSpring;
+	Booster *currBooster;
 	sf::Vector2<double> springVel;
 	int springStunFrames;
 
