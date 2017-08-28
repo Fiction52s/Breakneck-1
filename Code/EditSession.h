@@ -715,23 +715,27 @@ struct BoosterParams : public ActorParams
 struct SpringParams : public ActorParams
 {
 	SpringParams(EditSession *edit,
-		sf::Vector2i &pos, int angle,
-		int speed, int stunFrames );
+		sf::Vector2i &pos,
+		std::list<sf::Vector2i> &globalPath,
+		int moveFrames);
 	SpringParams(EditSession *edit,
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
-
-	void SetParams();
-	void SetPanelInfo();
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	void Draw(sf::RenderTarget *target);
 
 	bool CanApply();
 	ActorParams *Copy();
 
-	int angle;
-	int speed;
-	int stunFrames;
-};
+	void SetParams();
+	void SetPanelInfo();
+	std::list<sf::Vector2i> GetGlobalPath();
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
 
+	int moveFrames;
+};
 //w1
 struct PatrollerParams : public ActorParams
 {
@@ -1712,6 +1716,7 @@ struct EditSession : GUIHandler
 		SELECT_MODE,
 		CREATE_PATROL_PATH,
 		CREATE_BLOCKER_CHAIN,
+		SET_DIRECTION,
 		//PLACE_PLAYER,
 		//PLACE_GOAL,
 		SELECT_POLYGONS,

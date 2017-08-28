@@ -1337,17 +1337,20 @@ bool EditSession::OpenFile()
 
 					//int hasMonitor;
 					//is >> hasMonitor;
-					int angle;
-					is >> angle;
+					int moveFrames;
+					is >> moveFrames;
 
-					int speed;
-					is >> speed;
+					Vector2i other;
+					is >> other.x;
+					is >> other.y;
+					
 
-					int stunFrames;
-					is >> stunFrames;
+					list<Vector2i> globalPath;
+					globalPath.push_back(Vector2i(pos.x, pos.y));
+					globalPath.push_back(pos + other);
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset(new SpringParams(this, pos, angle, speed, stunFrames));
+					a.reset(new SpringParams(this, pos, globalPath, moveFrames) );
 					//a->hasMonitor = (bool)hasMonitor;
 				}
 				//w1
@@ -6511,12 +6514,19 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									}
 									else if (trackingEnemy->name == "spring")
 									{
-										trackingEnemy = NULL;
+										/*trackingEnemy = NULL;
 										ActorPtr spring(new SpringParams(this, Vector2i(worldPos.x,
 											worldPos.y)));
 										spring->group = groups["--"];
 										CreateActor(spring);
-										showPanel = enemySelectPanel;
+										showPanel = enemySelectPanel;*/
+
+										tempActor = new SpringParams(this, Vector2i(worldPos.x, worldPos.y));
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
+
+										patrolPath.clear();
+										patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
 									}
 
 
@@ -7333,6 +7343,31 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 				}
+			case SET_DIRECTION:
+			{
+				minimumPathEdgeLength = 16;
+
+				switch (ev.type)
+				{
+				case Event::MouseButtonPressed:
+				{
+					if (ev.mouseButton.button == Mouse::Left)
+					{
+						Vector2i worldi(testPoint.x, testPoint.y);
+						patrolPath.push_back(worldi);
+
+						ISelectable *select = selectedBrush->objects.front().get();
+						ActorParams *actor = (ActorParams*)select;
+						showPanel = actor->type->panel;
+						actor->SetPath(patrolPath);
+						mode = EDIT;
+					}
+					break;
+				}
+				}
+
+				break;
+			}
 			case CREATE_TERRAIN_PATH:
 				{
 					minimumPathEdgeLength = 16;
@@ -9164,6 +9199,46 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 			break;
 		}
+		case SET_DIRECTION:
+		{
+			if (showPanel != NULL)
+				break;
+
+
+			//if (!panning && Mouse::isButtonPressed(Mouse::Left))
+			//{
+			//	//double test = 100;
+			//	//worldPos before testPoint
+			//	//V2d temp = V2d(testPoint.x, testPoint.y) - Vector2<double>(patrolPath.back().x,
+			//	//	patrolPath.back().y);
+			//	Vector2i worldi(testPoint.x, testPoint.y);
+			//	patrolPath.push_back(worldi);
+
+			//	/*double tempQuant = length(temp);
+			//	if (tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple, 1.0)
+			//		&& tempQuant > patrolPathLengthSize / 2)
+			//	{
+
+			//		if (patrolPathLengthSize > 0)
+			//		{
+			//			V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y);
+			//			temp = normalize(V2d(testPoint.x, testPoint.y) - temp1)
+			//				* (double)patrolPathLengthSize + temp1;
+			//			Vector2i worldi(temp.x, temp.y);
+			//			patrolPath.push_back(worldi);
+			//		}
+			//		else
+			//		{
+			//			Vector2i worldi(testPoint.x, testPoint.y);
+			//			patrolPath.push_back(worldi);
+			//		}
+
+
+
+			//	}*/
+			//}
+			break;
+		}
 		case CREATE_TERRAIN_PATH:
 			{
 				showTerrainPath = false;
@@ -9444,6 +9519,68 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				break;
 			}
 		case CREATE_BLOCKER_CHAIN:
+		{
+
+			if (trackingEnemy != NULL)
+			{
+				if (tempActor != NULL)
+					tempActor->Draw(preScreenTex);
+				else
+				{
+					preScreenTex->draw(enemySprite);
+				}
+				preScreenTex->draw(enemyQuad);
+			}
+			int pathSize = patrolPath.size();
+			if (pathSize > 0)
+			{
+				Vector2i backPoint = patrolPath.back();
+
+				Color validColor = Color::Green;
+				Color invalidColor = Color::Red;
+				Color colorSelection;
+				if (true)
+				{
+					colorSelection = validColor;
+				}
+				sf::Vertex activePreview[2] =
+				{
+					sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection),
+					sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+				};
+				preScreenTex->draw(activePreview, 2, sf::Lines);
+
+				if (pathSize > 1)
+				{
+					VertexArray v(sf::LinesStrip, pathSize);
+					int i = 0;
+					for (list<sf::Vector2i>::iterator it = patrolPath.begin();
+						it != patrolPath.end(); ++it)
+					{
+						v[i] = Vertex(Vector2f((*it).x, (*it).y));
+						++i;
+					}
+					preScreenTex->draw(v);
+				}
+			}
+
+			if (pathSize > 0) //always
+			{
+				CircleShape cs;
+				cs.setRadius(5 * zoomMultiple);
+				cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+				cs.setFillColor(Color::Green);
+
+
+				for (list<Vector2i>::iterator it = patrolPath.begin(); it != patrolPath.end(); ++it)
+				{
+					cs.setPosition((*it).x, (*it).y);
+					preScreenTex->draw(cs);
+				}
+			}
+			break;
+		}
+		case SET_DIRECTION:
 		{
 
 			if (trackingEnemy != NULL)
@@ -10029,7 +10166,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		preScreenTex->setView( uiView );
 
 		stringstream cursorPosSS;
-		if( mode == CREATE_PATROL_PATH || mode == CREATE_BLOCKER_CHAIN )
+		if( mode == CREATE_PATROL_PATH || mode == CREATE_BLOCKER_CHAIN || mode == SET_DIRECTION )
 		{
 			V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
 				patrolPath.back().y );
@@ -10693,6 +10830,17 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			}
 			showPanel = NULL;
+		}
+		else if (b->name == "setdirection")
+		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+			showPanel = NULL;
+			mode = SET_DIRECTION;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back(front);
+			patrolPathLengthSize = 0;
 		}
 	
 	}
@@ -13627,6 +13775,19 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
 		return p;
 	}
+
+	else if (name == "spring")
+	{
+		Panel *p = new Panel("spring_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
+
+		p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
+		return p;
+	}
 	//else if( name == "shard1" )
 	//{
 	//	Panel *p = new Panel( "turtle_options", 200, 600, this );
@@ -14160,6 +14321,7 @@ void EditSession::SetEnemyEditPanel()
 	{
 		SpringParams *spring = (SpringParams*)ap;
 		spring->SetPanelInfo();
+		patrolPath = spring->GetGlobalPath();
 	}
 	//w1
 	else if( name == "patroller" )

@@ -71,7 +71,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[JUMP] = owner->GetTileset("jump_64x64.png", 64, 64, skin);
 	tileset[LAND] = owner->GetTileset("land_64x64.png", 64, 64, skin);
 	tileset[LAND2] = owner->GetTileset("land_64x64.png", 64, 64, skin);
-	tileset[RUN] = owner->GetTileset("run_64x64.png", 64, 64, skin);
+	tileset[RUN] = owner->GetTileset("run_2_64x64.png", 64, 64, skin);
+	tileset[SPRINGSTUN] = owner->GetTileset("double_64x64.png", 64, 64, skin);
 	tileset[SLIDE] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
 	tileset[SPRINT] = owner->GetTileset("sprint_128x48.png", 128, 48, skin);	
 	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
@@ -239,6 +240,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		regrindOffMax = 3;
 		regrindOffCount = 3;
+
+		currSpring = NULL;
 
 		railTest.setSize(Vector2f(64, 64));
 		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
@@ -724,6 +727,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
 		actionLength[SPRINT] = 8 * 4;
 		actionLength[STAND] = 20 * 8;
+		actionLength[SPRINGSTUN] = 8;
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
 		actionLength[STANDN] = 4 * 4;
@@ -1145,6 +1149,11 @@ void Actor::ActionEnded()
 			action = STAND;
 			frame = 0;
 			break;
+		case SPRINGSTUN:
+			//action = JUMP;
+			frame = 0;
+			//assert(ground == NULL);
+			break;
 		case STANDN:
 
 			if( currInput.LLeft() || currInput.LRight() )
@@ -1450,6 +1459,7 @@ bool Actor::AirAttack()
 
 void Actor::Respawn()
 {
+	currSpring = NULL;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -3061,6 +3071,56 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
+	case SPRINGSTUN:
+	{
+		if (CheckWall(false))
+		{
+			if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
+			{
+				action = WALLJUMP;
+				frame = 0;
+				facingRight = true;
+
+				if (currInput.A)
+				{
+					longWallJump = true;
+				}
+				else
+				{
+					longWallJump = false;
+				}
+				break;
+			}
+		}
+
+
+		if (CheckWall(true))
+		{
+			if (!currInput.LDown() && currInput.LLeft() && !prevInput.LLeft())
+			{
+				action = WALLJUMP;
+				frame = 0;
+				facingRight = false;
+
+				if (currInput.A)
+				{
+					longWallJump = true;
+				}
+				else
+				{
+					longWallJump = false;
+				}
+				break;
+			}
+		}
+
+		if (springStunFrames == 0)
+		{
+			action = JUMP;
+			frame = 1;
+		}
+		break;
+	}
 	case WALLCLING:
 		{
 			if( !currInput.LDown() && ( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) ) )
@@ -7028,6 +7088,11 @@ void Actor::UpdatePrePhysics()
 		break;
 	case GRAVREVERSE:
 		break;
+	case SPRINGSTUN:
+	{
+		velocity = springVel;
+		break;
+	}
 	case STEEPSLIDE:
 		{
 			//if( groundSpeed > 0 )
@@ -8681,6 +8746,10 @@ bool Actor::ResolvePhysics( V2d vel )
 		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);
 	}
+
+	/*queryMode = "activeitem";
+	owner->activeItemTree->Query(this, r);*/
+
 	//queryMode = "gate";
 	//owner->testGateCount = 0;
 	//owner->gateTree->Query( this, r );
@@ -13409,7 +13478,14 @@ void Actor::PhysicsResponse()
 	}
 	else
 	{
-		
+		if (currSpring != NULL)
+		{
+			springVel = currSpring->dir * (double)currSpring->speed;
+			springStunFrames = currSpring->stunFrames;
+			currSpring = NULL;
+			action = SPRINGSTUN;
+			frame = 0;
+		}
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -14613,6 +14689,9 @@ void Actor::UpdatePostPhysics()
 		++framesSinceDoubleWireBoost;
 
 		++frame;
+
+		if (springStunFrames > 0)
+			--springStunFrames;
 		//cout << "frame: " << frame << endl;
 
 		++framesSinceClimbBoost;
@@ -14901,18 +14980,18 @@ void Actor::SetActivePowers(
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
 {
-	Edge *e = (Edge*)qte;
-
-	if( e->edgeType == Edge::OPEN_GATE )
-	{
-		return;
-	}
+	
 
 	assert( queryMode != "" );
 
 	if( queryMode == "moving_resolve" )
 	{
-		
+		Edge *e = (Edge*)qte;
+
+		if (e->edgeType == Edge::OPEN_GATE)
+		{
+			return;
+		}
 
 		bool bb = false;
 		
@@ -15292,6 +15371,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	if( queryMode == "resolve" )
 	{
+		Edge *e = (Edge*)qte;
+
+		if (e->edgeType == Edge::OPEN_GATE)
+		{
+			return;
+		}
 
 		bool bb = false;
 		
@@ -15816,6 +15901,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "check" )
 	{
+		Edge *e = (Edge*)qte;
+
+		if (e->edgeType == Edge::OPEN_GATE)
+		{
+			return;
+		}
 		//cout << "checking: " << e << endl;
 		if( (grindEdge == NULL && ground == e) || grindEdge == e )
 			return;
@@ -15988,6 +16079,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "moving_check" )
 	{
+		Edge *e = (Edge*)qte;
+
+		if (e->edgeType == Edge::OPEN_GATE)
+		{
+			return;
+		}
 		if ( action != GRINDBALL && action != GRINDATTACK )
 		{
 			if( ( e->Normal().y <= 0 && !reversed && ground != NULL ) || ( e->Normal().y >= 0 && reversed && ground != NULL ) )
@@ -16000,6 +16097,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "checkwall" )
 	{
+		Edge *e = (Edge*)qte;
 		if( ground == e )
 			return;
 
@@ -16039,6 +16137,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "moving_checkwall" )
 	{
+		Edge *e = (Edge*)qte;
 		if( e == ground )
 			return;
 
@@ -16121,83 +16220,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 		if( g->IsTouchingBox( r ) )
 		{
-		//	sf::VertexArray va( sf::Quads, 4 );
-			/*va[0].position = Vector2f( g->A.x, g->A.y );
-			va[1].position = Vector2f( g->B.x, g->B.y );
-			va[2].position = Vector2f( g->C.x, g->C.y );
-			va[3].position = Vector2f( g->D.x, g->D.y );*/
-			
-
-			/*va[0].color = Color::Red;
-			va[1].color = Color::Red;
-			va[2].color = Color::Red;
-			va[3].color = Color::Red;
-
-			owner->preScreenTex->draw( va );
-
-			CircleShape cs;
-			cs.setFillColor( Color::Green );
-			cs.setRadius( 10000 );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( 0, 0 );//g->A.x, g->A.y );
-			cout << "pos: " << g->A.x << ", " << g->A.y << ", playerpos: " << position.x << ", " << position.y << endl;
-			
-			owner->preScreenTex->draw( cs );*/
-
-			//owner->preScreenTex->draw( va );
-
 			++testGrassCount;
 		}
 	}
-	//else if( queryMode == "gate" )
-	//{
-	//	Gate *g = (Gate*)qte;
-	//	
-	//	if( action == GRINDBALL )
-	//	{
-	//		if( g->locked && ( g->edgeA->v0 == grindEdge->v0 || g->edgeA->v1 == grindEdge->v0 ) )
-	//		{
-	//			if( CanUnlockGate( g )
-	//			{
-	//				owner->UnlockGate( g );
-
-	//				if( e0 == g->edgeA )
-	//				{
-	//					gateTouched = g->edgeB;
-	//				//	owner->ActivateZone( g->zoneB );
-	//				}
-	//				else
-	//				{
-	//					gateTouched = g->edgeA;
-	//				//	owner->ActivateZone( g->zoneA );
-	//				}
-	//				//g->locked = false;
-	//				//hasKey[g->type] = false;
-	//			}
-	//			else
-	//			{
-	//				++owner->testGateCount;
-	//			}
-	//		}
-	//	}
-	//	else
-	//	{
-	//		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-	//		cout << "this better not be happening lol" << endl;
-	//		if( g->locked && g->edgeA->IsTouchingBox( r ) )
-	//		{
-	//			if( g->keyGate && hasKey[g->type] )
-	//			{
-	//				g->locked = false;
-	//				hasKey[g->type] = false;
-	//			}
-	//			else
-	//			{
-	//				++owner->testGateCount;
-	//			}
-	//		}
-	//	}
-	//}
 	else if( queryMode == "item" )
 	{
 		Critical *c = (Critical*)qte;
@@ -16361,21 +16386,37 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					{
 						grindSpeed = railSpeed;
 					}
-					
-
-					
 				}
 			}
 		}
 	}
-	/*else if( queryMode == "specter" )
+	else if (queryMode == "activeitem")
 	{
-		SpecterArea *sp = (SpecterArea*)qte;
-		V2d center( sp->testRect.left + radius,
-			sp->testRect.top + radius );
-		CollisionBox b;
-		b.isCircle = true;
-	}*/
+		Enemy *en = (Enemy*)qte;
+		if (en->type == Enemy::BOOSTER)
+		{
+
+		}
+		else if (en->type == Enemy::GRAVITYGRASS)
+		{
+
+		}
+		else if (en->type == Enemy::SPRING)
+		{
+			Spring *spr = (Spring*)qte;
+			if (currSpring == NULL)
+			{
+				if (spr->hurtBody.Intersects(hurtBody))
+				{
+					currSpring = spr;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+	}
 	
 	++possibleEdgeCount;
 }
@@ -17136,7 +17177,7 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			int f = (frame / 4) % 10;
+			int f = (frame / 2) % 10;
 			SetSpriteTile( f, r );
 		
 			assert( ground != NULL );
@@ -18249,6 +18290,20 @@ void Actor::UpdateSprite()
 				SetAerialScorpSprite();
 			break;
 		}
+	case SPRINGSTUN:
+	{
+		SetSpriteTexture(action);
+
+		SetSpriteTile(0, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+		sprite->setRotation(0);
+
+		if (scorpOn)
+			SetAerialScorpSprite();
+		break;
+	}
 	case DASH:
 		{
 			

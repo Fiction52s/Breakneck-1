@@ -1741,8 +1741,9 @@ ActorParams *BoosterParams::Copy()
 	return copy;
 }
 
-SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, int p_angle, int p_speed, int p_stunFrames)
-	:ActorParams(PosType::AIR_ONLY), angle( p_angle ), speed( p_speed ), stunFrames( p_stunFrames )
+SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
+	int p_moveFrames)
+	:ActorParams(PosType::AIR_ONLY), moveFrames( p_moveFrames )
 {
 	position = pos;
 	type = edit->types["spring"];
@@ -1752,6 +1753,10 @@ SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, int p_angle, in
 	image.setPosition(pos.x, pos.y);
 
 	SetBoundingQuad();
+
+	lines = NULL;
+
+	SetPath(globalPath);	
 }
 
 SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos)
@@ -1765,59 +1770,77 @@ SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos)
 	image.setPosition(pos.x, pos.y);
 
 	SetBoundingQuad();
+
+	moveFrames = 0;
+
+	lines = NULL;
 }
 
 void SpringParams::WriteParamFile(std::ofstream &of)
 {
-	of << angle << "\n";
-	of << speed << "\n";
-	of << stunFrames << "\n";
+
+	of << moveFrames << "\n";
+	of << localPath.front().x << " " << localPath.front().y << endl;
+
+	
+}
+
+void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
 }
 
 void SpringParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	string angleStr = p->textBoxes["angle"]->text.getString().toAnsiString();
+	string moveFrameStr = p->textBoxes["moveframes"]->text.getString().toAnsiString();
 
 	stringstream ss;
-	ss << angleStr;
+	ss << moveFrameStr;
 
-	int t_angle;
-	ss >> t_angle;
-
-	if (!ss.fail())
-	{
-		angle = t_angle;
-	}
-
-	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
-
-	ss << speedStr;
-
-	int t_speed;
-	ss >> t_speed;
+	int t_moveFrames;
+	ss >> t_moveFrames;
 
 	if (!ss.fail())
 	{
-		speed = t_speed;
+		moveFrames = t_moveFrames;
 	}
 
-	string stunStr = p->textBoxes["stunframes"]->text.getString().toAnsiString();
-
-	ss << stunStr;
-
-	int t_stun;
-	ss >> t_stun;
-
-	if (!ss.fail())
-	{
-		stunFrames = t_stun;
-	}
-
+	
 	hasMonitor = false;
 
-	//hasMonitor = p->checkBoxes["monitor"]->checked;
 }
 
 void SpringParams::SetPanelInfo()
@@ -1830,9 +1853,7 @@ void SpringParams::SetPanelInfo()
 		p->textBoxes["group"]->text.setString(group->name);
 	}
 
-	p->textBoxes["angle"]->text.setString((boost::lexical_cast<string>(angle)));
-	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
-	p->textBoxes["stunframes"]->text.setString((boost::lexical_cast<string>(stunFrames)));
+	p->textBoxes["moveframes"]->text.setString((boost::lexical_cast<string>(moveFrames)));
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -1845,4 +1866,42 @@ ActorParams *SpringParams::Copy()
 {
 	SpringParams *copy = new SpringParams(*this);
 	return copy;
+}
+
+void SpringParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+
+std::list<sf::Vector2i> SpringParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
 }

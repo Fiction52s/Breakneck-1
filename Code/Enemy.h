@@ -347,7 +347,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		BLOCKER,
 		BLOCKERCHAIN,
 		RACEFIGHTTARGET,
+		BOOSTER,
+		GRAVITYGRASS,
+		SPRING,
 		RAIL,
+
 		Count
 	};
 
@@ -415,8 +419,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	sf::Color keyColor;
 	int world;
 
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
+	virtual void HandleQuery( QuadTreeCollider * qtc );
+	virtual bool IsTouchingBox( const sf::Rect<double> &r );
 
 	struct Stored
 	{
@@ -1054,11 +1058,9 @@ struct Booster : Enemy
 
 struct Spring : Enemy
 {
-
 	//MovementSequence testSeq;
 	Spring(GameSession *owner,
-		bool hasMonitor,
-		sf::Vector2i pos);
+		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames );
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -1075,44 +1077,26 @@ struct Spring : Enemy
 	void UpdateHitboxes();
 	bool PlayerSlowingMe();
 	void ResetEnemy();
-
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	int deathFrame;
 	
+	//void HandleQuery(QuadTreeCollider * qtc);
+	//bool IsTouchingBox(const sf::Rect<double> &r);
+
 	int frame;
 
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBox hurtBody;
 	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
+	//HitboxInfo *hitboxInfo;
 
-	int hitlagFrames;
-	int hitstunFrames;
 	int animationFactor;
 
-	//Tileset *ts_testBlood;
-	//sf::Sprite bloodSprite;
-	//int bloodFrame;
-	//bool facingRight;
+	void SaveEnemyState() {}
+	void LoadEnemyState() {}
 
-	struct Stored
-	{
-		bool dead;
-		int deathFrame;
-		//sf::Vector2<double> deathVector;
-		//double deathPartingSpeed;
-		int targetNode;
-		bool forward;
-		int frame;
-		sf::Vector2<double> position;
-
-		int hitlagFrames;
-		int hitstunFrames;
-	};
-	Stored stored;
+	sf::Vector2<double> dir;
+	int speed;
+	int stunFrames;
 };
 
 //w1

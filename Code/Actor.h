@@ -38,6 +38,8 @@ struct KinSkin
 	int index;
 };
 
+struct Spring;
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
@@ -93,6 +95,7 @@ struct Actor : QuadTreeCollider,
 		GRABSHIP,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
+		SPRINGSTUN,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
 		SEQ_CRAWLERFIGHT_STAND,
@@ -429,6 +432,10 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceBoost;
 	bool scorpOn;
 	bool scorpSet;
+
+	Spring *currSpring;
+	sf::Vector2<double> springVel;
+	int springStunFrames;
 
 	//these are for your max vel
 	double scorpAdditionalCap;

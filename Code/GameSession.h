@@ -976,6 +976,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *staticItemTree;
 	QuadTree *railEdgeTree;
 	QuadTree *railDrawTree;
+	QuadTree *activeItemTree; 
 	//CrawlerReverser *drawCrawlerReversers;
 	
 	Rail *railDrawList;
