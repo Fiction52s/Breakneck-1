@@ -1593,7 +1593,8 @@ double Actor::GetBounceFlameAccel()
 void Actor::UpdatePrePhysics()
 {
 
-	if (ground != NULL && reversed /*&& !hasPowerGravReverse*/ && testGrassCount == 0 )
+	//for gravity grass
+	if (ground != NULL && reversed && !hasPowerGravReverse && testGrassCount == 0 )
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
