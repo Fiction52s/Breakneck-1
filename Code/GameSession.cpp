@@ -6148,7 +6148,7 @@ int GameSession::Run()
 
 	Texture & borderTex = *GetTileset("borders.png", 16, 16)->texture;
 
-	Texture & grassTex = *GetTileset("newgrass2.png", 22, 22)->texture;
+	Texture & grassTex = *GetTileset("placeholdergrass_22x22.png", 22, 22)->texture;
 
 	goalDestroyed = false;
 
@@ -7512,7 +7512,7 @@ int GameSession::Run()
 		//for( int i = 0; i < numBorders; ++i )
 		{
 			if( listVAIter->grassVA != NULL )
-				preScreenTex->draw( *listVAIter->grassVA, &grassTex );
+				preScreenTex->draw(*listVAIter->grassVA);// , &grassTex );
 
 			if( usePolyShader )
 			//if(false )

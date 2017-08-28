@@ -2653,7 +2653,7 @@ bool EditSession::OpenFile()
 		return false;
 	}
 
-	grassTex.loadFromFile( "newgrass2.png" );
+	grassTex.loadFromFile( "placeholdergrass_22x22.png" );
 
 	return true;
 	

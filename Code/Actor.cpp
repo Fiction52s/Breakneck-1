@@ -1593,7 +1593,36 @@ double Actor::GetBounceFlameAccel()
 void Actor::UpdatePrePhysics()
 {
 
-	
+	if (ground != NULL && reversed /*&& !hasPowerGravReverse*/ && testGrassCount == 0 )
+	{
+		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
+		//need to delay a frame so that the player can see themselves not being in the grass
+		//before they fall
+		if (bounceFlameOn)
+			airBounceFrame = 13 * 3;
+		//so you dont jump straight up on a nearly vertical edge
+		double blah = .5;
+
+		V2d dir(0, 0);
+
+		dir.y = .2;
+		V2d along = normalize(ground->v1 - ground->v0);
+		V2d trueNormal = along;
+		if (groundSpeed > 0)
+			trueNormal = -trueNormal;
+
+		trueNormal = normalize(trueNormal + dir);
+		velocity = abs(groundSpeed) * trueNormal;
+
+		ground = NULL;
+		movingGround = NULL;
+		frame = 1; //so it doesnt use the jump frame when just dropping
+		reversed = false;
+		framesInAir = 0;
+		action = JUMP;
+		frame = 1;
+
+	}
 
 	//cout << "Start frame" << endl;
 	
@@ -2304,7 +2333,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						cout << "this steep 2" << endl;
+						//cout << "this steep 2" << endl;
 						//if( groundSpeed < 0 )
 						//	facingRight = true;
 						//else 
@@ -2332,7 +2361,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						cout << "this steep 3" << endl;
+						//cout << "this steep 3" << endl;
 						if( gNorm.x > 0 )
 							facingRight = true;
 						else
@@ -5981,10 +6010,6 @@ void Actor::UpdatePrePhysics()
 					trueNormal = normalize( trueNormal + dir );
 					velocity = abs(groundSpeed) * trueNormal;
 
-					//cout << "real dir: " << trueNormal.x << ", " << trueNormal.y << endl;
-					//cout << "and edge : " << along.x << ", " << along.y << endl;
-					//velocity += V2d( 0, .1 );
-					//velocity = -groundSpeed * normalize(V2d( 0, -1 ) + normalize(ground->v1 - ground->v0 ));
 					ground = NULL;
 					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
@@ -8767,14 +8792,26 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( testGrassCount > 0 )
 	{
-		action = DEATH;
+		/*if (ground == NULL && bounceEdge == NULL && grindEdge == NULL )
+		{
+			velocity = velocity * .5;
+		}
+		else if( ground != NULL )
+		{
+			groundSpeed = groundSpeed * .5;
+		}
+		else if (grindEdge != NULL)
+		{
+			grindSpeed = grindSpeed * .5;
+		}*/
+		/*action = DEATH;
 		rightWire->Reset();
 		leftWire->Reset();
 		slowCounter = 1;
 		frame = 0;
 		owner->deathWipe = true;
 
-		owner->powerRing->Drain(1000000);
+		owner->powerRing->Drain(1000000);*/
 		//owner->powerWheel->Damage( 1000000 );
 	}
 
@@ -12925,7 +12962,7 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( hasPowerGravReverse /*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( ( hasPowerGravReverse || testGrassCount > 0 )/*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
 				prevRail = NULL;
 				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
@@ -20790,6 +20827,8 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 	V2d position = states[ghostFrame].position;
 
 	currHitboxes = NULL;
+
+	
 
 	switch( action )
 	{
