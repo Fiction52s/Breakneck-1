@@ -658,6 +658,7 @@ bool EditSession::OpenFile()
 		environmentType = (EnvType)mh->envType;
 		envLevel = mh->envLevel;
 		
+		
 		leftBound = mh->leftBounds;
 		topBound = mh->topBounds;
 		boundWidth = mh->boundsHeight;
@@ -672,6 +673,12 @@ bool EditSession::OpenFile()
 
 		is >> player->position.x;
 		is >> player->position.y;
+
+		//mh->topBounds = player->position.y - 1000;
+		//topBound = mh->topBounds;
+		
+		//UpdateFullBounds();
+
 
 		int goalPosX;
 		int goalPosY; //discard these
@@ -14564,15 +14571,15 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 				}
 				else
 				{
-					prev = pcurr->prev;
+				prev = pcurr->prev;
 				}
 
 				Vector2i prevPos = prev->pos;
 				Vector2i pos = pcurr->pos;
 
-				LineIntersection li = LimitSegmentIntersect( prevPos, pos, v0, v1 );
+				LineIntersection li = LimitSegmentIntersect(prevPos, pos, v0, v1);
 
-				if( !li.parallel )
+				if (!li.parallel)
 				{
 					return false;
 				}
@@ -14585,8 +14592,8 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 
 void EditSession::ClearCopyBrushes()
 {
-	for( list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
-		++it )
+	for (list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
+		++it)
 	{
 		delete (*it);
 	}
@@ -14595,8 +14602,8 @@ void EditSession::ClearCopyBrushes()
 
 void EditSession::ClearPasteBrushes()
 {
-	for( list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end();
-		++it )
+	for (list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end();
+		++it)
 	{
 		delete (*it);
 	}
@@ -14605,56 +14612,56 @@ void EditSession::ClearPasteBrushes()
 
 void EditSession::CopyToPasteBrushes()
 {
-	for( list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
-		++it )
+	for (list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
+		++it)
 	{
-		TerrainBrush* tb  = new TerrainBrush( *(*it) );
-		pasteBrushes.push_back( tb );
+		TerrainBrush* tb = new TerrainBrush(*(*it));
+		pasteBrushes.push_back(tb);
 	}
 }
 
-bool EditSession::PolyIntersectGate( TerrainPolygon &poly )
+bool EditSession::PolyIntersectGate(TerrainPolygon &poly)
 {
 	//can be optimized with bounding box checks.
-	for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
+	for (list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it)
 	{
 		Vector2i point0 = (*it)->point0->pos;
 		Vector2i point1 = (*it)->point1->pos;
 
-		for( TerrainPoint *my = poly.pointStart; my != NULL; my = my->next )
+		for (TerrainPoint *my = poly.pointStart; my != NULL; my = my->next)
 		{
 			TerrainPoint *prev;
-			if( my == poly.pointStart )
+			if (my == poly.pointStart)
 				prev = poly.pointEnd;
 			else
 			{
 				prev = my->prev;
 			}
 
-			LineIntersection li = LimitSegmentIntersect( point0, point1, prev->pos, my->pos );
-			if( !li.parallel )
+			LineIntersection li = LimitSegmentIntersect(point0, point1, prev->pos, my->pos);
+			if (!li.parallel)
 			{
 				return true;
 			}
-		}	
+		}
 	}
 
 	return false;
 }
 
-void EditSession::CreateActor( ActorPtr actor )
+void EditSession::CreateActor(ActorPtr actor)
 {
 	Brush b;
 	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(actor);
-	b.AddObject( select );
-	Action * action = new ApplyBrushAction( &b );
+	b.AddObject(select);
+	Action * action = new ApplyBrushAction(&b);
 	action->Perform();
-	doneActionStack.push_back( action );
+	doneActionStack.push_back(action);
 }
 
-void EditSession::CreatePreview( Vector2i imageSize )
+void EditSession::CreatePreview(Vector2i imageSize)
 {
-	if( inversePolygon != NULL )
+	if (inversePolygon != NULL)
 	{
 		cout << "CREATING PREVIEW" << endl;
 		int left = inversePolygon->left;
@@ -14662,7 +14669,20 @@ void EditSession::CreatePreview( Vector2i imageSize )
 		int right = inversePolygon->right;
 		int bot = inversePolygon->bottom;
 
-
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			for (auto it2 = (*it).second->actors.begin(); it2 != (*it).second->actors.end(); ++it2)
+			{
+				if ((*it2)->type->name == "poi" )
+				{
+					boost::shared_ptr<PoiParams> pp = boost::static_pointer_cast<PoiParams>((*it2));
+					if (pp->name == "stormceiling")
+					{
+						top = pp->position.y;
+					}
+				}
+			}
+		}
 
 		
 
@@ -14817,6 +14837,13 @@ void EditSession::CreatePreview( Vector2i imageSize )
 			
 			//(*it).second->DrawPreview( mapPreviewTex );
 		}
+
+		sf::RectangleShape rs;
+		rs.setPosition(pView.getCenter().x - pView.getSize().x / 2, top);// pView.getCenter().y);
+		rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2 )));
+		rs.setFillColor(Color::Red);
+		mapPreviewTex->draw(rs);
+		//this rectangle shape is just a placeholder, because eventually we will texture stuff.
 
 		
 

@@ -708,6 +708,7 @@ struct Actor : QuadTreeCollider,
 
 	sf::Vector2<double> wallNormal;
 	int testGrassCount;
+	int gravityGrassCount;
 	Action action;
 	int frame;
 	sf::Vector2<double> position;

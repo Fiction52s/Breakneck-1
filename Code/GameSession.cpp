@@ -662,6 +662,9 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	filePath( p_filePath )
 {	
 	mainMenu = p_mainMenu;
+
+	
+
 	Init();
 }
 
@@ -736,6 +739,10 @@ void GameSession::Cleanup()
 		envPlantTree = NULL;
 	}
 
+	/*if (stormCeilingInfo != NULL)
+	{
+		stormCeilingInfo = NULL;
+	}*/
 	//if (crawlerReverseTree != NULL)
 	//	delete crawlerReverseTree;
 
@@ -3326,6 +3333,8 @@ bool GameSession::OpenFile( string fileName )
 			raceFight = new RaceFight(this, 180);
 		}
 
+		
+
 		//cout << "-------------" << endl;
 		//pauseMenu = new PauseMenu( this );
 		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
@@ -3935,6 +3944,31 @@ bool GameSession::OpenFile( string fileName )
 
 		is.close();
 
+
+
+
+		if (inversePoly != NULL)
+		{
+
+
+
+			mh->topBounds = inversePoly->aabb.top;
+			mh->leftBounds = inversePoly->aabb.left;
+			mh->boundsWidth = inversePoly->aabb.width;
+			mh->boundsHeight = inversePoly->aabb.height;
+
+
+			if (poiMap.count("stormceiling") > 0)
+			{
+				stormCeilingOn = true;
+				stormCeilingHeight = poiMap["stormceiling"]->pos.y;
+
+				int oldBottom = mh->topBounds + mh->boundsHeight;
+				mh->topBounds = stormCeilingHeight;
+				mh->boundsHeight = oldBottom - stormCeilingHeight;
+				assert(mh->boundsHeight > 0);
+			}
+		}
 		
 
 		//loading done. now setup
@@ -4018,7 +4052,7 @@ bool GameSession::OpenFile( string fileName )
 		
 
 
-		cout << "end of this" << endl;
+		//cout << "end of this" << endl;
 
 		return true;
 	}
@@ -9164,6 +9198,9 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
+	stormCeilingOn = false;
+	stormCeilingHeight = 0;
+
 	mh = NULL;
 	goalPulse = NULL;
 	pauseMenu = NULL;
@@ -9212,7 +9249,7 @@ void GameSession::Init()
 	
 	levelMusic = NULL;
 
-		
+	//stormCeilingInfo = NULL;
 	
 
 	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
@@ -9247,6 +9284,14 @@ void GameSession::Init()
 		effectLists[i] = NULL;
 	}
 
+	/*stormCeilingInfo = new HitboxInfo;
+	stormCeilingInfo->damage = 20;
+	stormCeilingInfo->drainX = .5;
+	stormCeilingInfo->drainY = .5;
+	stormCeilingInfo->hitlagFrames = 0;
+	stormCeilingInfo->hitstunFrames = 30;
+	stormCeilingInfo->knockback = 0;
+	stormCeilingInfo->freezeDuringStun = true;*/
 	
 	window = mainMenu->window;
 	preScreenTex = mainMenu->preScreenTexture;

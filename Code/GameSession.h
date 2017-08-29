@@ -663,7 +663,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float flowSpacing;
 	float maxFlowRings;
 
+	bool stormCeilingOn;
+	double stormCeilingHeight;
 
+	//HitboxInfo *stormCeilingInfo;
 
 	EnvPlant *activeEnvPlants;
 	int totalGameFrames;

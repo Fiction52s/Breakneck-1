@@ -249,7 +249,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
 		//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		
+		testGrassCount = 0;
+		gravityGrassCount = 0;
 
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
@@ -1460,6 +1461,9 @@ bool Actor::AirAttack()
 
 void Actor::Respawn()
 {
+
+	testGrassCount = 0;
+	gravityGrassCount = 0;
 	currSpring = NULL;
 	currBooster = NULL;
 	regrindOffCount = 3;
@@ -1593,8 +1597,44 @@ double Actor::GetBounceFlameAccel()
 void Actor::UpdatePrePhysics()
 {
 
+	if (owner->stormCeilingOn)
+	{
+		//if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
+		//{
+		//	if (position.y < owner->stormCeilingHeight)
+		//	{
+		//		/*hitlagFrames = 10;
+		//		hitstunFrames = 60;
+		//		invincibleFrames = 0;
+
+		//		
+		//		owner->Pause(6);
+
+		//		
+
+		//		SetExpr(Expr::Expr_HURT);*/
+
+		//		
+		//	}
+
+		//	if (dmgRet > 0 && !desperationMode)
+		//	{
+		//		desperationMode = true;
+		//		despCounter = 0;
+		//		//action = DEATH;
+		//		//frame = 0;
+		//	}
+
+
+
+
+		//	receivedHit = NULL;
+		//	}
+		//}
+	}
+
 	//for gravity grass
-	if (ground != NULL && reversed && !hasPowerGravReverse && testGrassCount == 0 )
+	if (ground != NULL && reversed && !hasPowerGravReverse && gravityGrassCount == 0 )
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
@@ -8371,7 +8411,7 @@ void Actor::UpdatePrePhysics()
 	//if( ground == NULL )
 	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
 	//cout << "before position: " << position.x << ", " << position.y << endl;
-	if (grindEdge != NULL)
+	/*if (grindEdge != NULL)
 	{
 		cout << "grindspeed: " << grindSpeed << endl;
 	}
@@ -8382,7 +8422,7 @@ void Actor::UpdatePrePhysics()
 	else
 	{
 		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-	}
+	}*/
 	
 }
 
@@ -8789,6 +8829,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	queryMode = "grass";
 	testGrassCount = 0;
+	gravityGrassCount = 0;
 	owner->grassTree->Query( this, r );
 
 	if( testGrassCount > 0 )
@@ -12963,7 +13004,7 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( ( hasPowerGravReverse || testGrassCount > 0 )/*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( ( hasPowerGravReverse || gravityGrassCount > 0 )/*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
 			{
 				prevRail = NULL;
 				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
@@ -13880,7 +13921,7 @@ void Actor::PhysicsResponse()
 
 	//only for motion ghosts
 	//UpdateSprite();
-
+	
 	if( owner->raceFight != NULL )
 	{
 		Actor *pTarget = NULL;
@@ -16304,7 +16345,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 		if( g->IsTouchingBox( r ) )
 		{
-			++testGrassCount;
+			++gravityGrassCount; //if gravity type
 		}
 	}
 	else if( queryMode == "item" )
