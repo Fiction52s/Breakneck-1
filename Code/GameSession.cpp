@@ -3432,6 +3432,8 @@ bool GameSession::OpenFile( string fileName )
 				else
 					ee->v1 = points[currentEdgeIndex];
 
+				assert(ee->v0.x != ee->v1.x || ee->v0.y != ee->v1.y );
+
 				terrainTree->Insert( ee );
 
 				if( inverse )
@@ -3951,11 +3953,11 @@ bool GameSession::OpenFile( string fileName )
 		{
 
 
-
-			mh->topBounds = inversePoly->aabb.top;
-			mh->leftBounds = inversePoly->aabb.left;
-			mh->boundsWidth = inversePoly->aabb.width;
-			mh->boundsHeight = inversePoly->aabb.height;
+			double extra = 100;
+			mh->topBounds = inversePoly->aabb.top - extra;
+			mh->leftBounds = inversePoly->aabb.left - extra;
+			mh->boundsWidth = inversePoly->aabb.width + extra * 2;
+			mh->boundsHeight = inversePoly->aabb.height * extra * 2;
 
 
 			if (poiMap.count("stormceiling") > 0)
@@ -3963,7 +3965,7 @@ bool GameSession::OpenFile( string fileName )
 				stormCeilingOn = true;
 				stormCeilingHeight = poiMap["stormceiling"]->pos.y;
 
-				int oldBottom = mh->topBounds + mh->boundsHeight;
+				int oldBottom = mh->topBounds + mh->boundsHeight - extra;
 				mh->topBounds = stormCeilingHeight;
 				mh->boundsHeight = oldBottom - stormCeilingHeight;
 				assert(mh->boundsHeight > 0);

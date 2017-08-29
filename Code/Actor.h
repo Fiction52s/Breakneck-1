@@ -683,6 +683,9 @@ struct Actor : QuadTreeCollider,
 
 	double slopeTooSteepLaunchLimitX;
 
+	void HitEdge(
+		sf::Vector2<double> &newVel );
+
 	bool reversed;
 
 	double edgeQuantity;

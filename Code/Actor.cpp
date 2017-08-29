@@ -11092,6 +11092,8 @@ void Actor::UpdatePhysics()
 				{
 					movement -= gLen - q;
 
+					
+
 					V2d v0 = grindEdge->v0;
 					V2d v1 = grindEdge->v1;
 					
@@ -11107,7 +11109,7 @@ void Actor::UpdatePhysics()
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
 						regrindOffCount = 0;
-
+						framesNotGrinding = 0;
 						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
 						PhysicsResponse();
@@ -11117,6 +11119,19 @@ void Actor::UpdatePhysics()
 				else
 				{
 					q += movement;
+					V2d posOld = position;
+					bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+					if (col)
+					{
+						position = posOld;
+						action = JUMP;
+						frame = 1;
+						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+						grindEdge = NULL;
+						regrindOffCount = 0;
+						framesNotGrinding = 0;
+						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+					}
 					movement = 0;
 				}
 			}
@@ -11143,6 +11158,7 @@ void Actor::UpdatePhysics()
 						grindEdge = NULL;
 						regrindOffCount = 0;
 						framesSinceGrindAttempt = 0;
+						framesNotGrinding = 0;
 						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 
 						PhysicsResponse();
@@ -11153,14 +11169,31 @@ void Actor::UpdatePhysics()
 				else
 				{
 					q += movement;
+					V2d posOld = position;
+					bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+					if (col)
+					{
+						position = posOld;
+						action = JUMP;
+						frame = 1;
+						framesNotGrinding = 0;
+						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+						grindEdge = NULL;
+						regrindOffCount = 0;
+						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+					}
 					movement = 0;
 				}
 			}
 		}
-		grindQuantity = q;
 
-		PhysicsResponse();
-		return;
+		if (action == RAILGRIND)
+		{
+			grindQuantity = q;
+
+			PhysicsResponse();
+			return;
+		}
 	}
 	else if( reversed )
 	{
@@ -12578,34 +12611,6 @@ void Actor::UpdatePhysics()
 
 				//extraVel = V2d( 0, 0 );
 				newVel = dot( normalize( velocity ), extraDir ) * extraDir * length( velocity );
-				//if( length( newVel ) < .0001 )
-				//{
-				//	//velocity = V2d( 0, 0 );
-				//	break;
-				//}
-				//if( length( extraVel ) < .0001 )
-				//{
-				//	extraVel = V2d( 0, 0 ); //weird bug fix?
-				//}
-				//cout << "newVel: " << newVel.x << ", " << newVel.y << ", extraVel: "
-				//	<< extraVel.x << ", " << extraVel.y << endl;
-				
-				
-				//if( minContact.movingPlat != NULL )
-				//{
-				//	if( dot( newVel, normalize( minContact.movingPlat->vel ) ) < minContact.movingPlat->speed )
-				//	{
-				//		V2d temp = newVel;
-				//		newVel = minContact.movingPlat->vel;
-				//		newVel.y = temp.y;
-				//	}
-				//	//newVel += minContact.movingPlat->vel;
-				//}
-				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-				//cout << "newvel: " << newVel.x << ", " << newVel.y << endl;
-				//newVel = extraDir * length( velocity );//extraVel;
-				//newVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
-				//extraVel = newVel;
 				
 				if( length( stealVec ) > 0 )
 				{
@@ -13239,6 +13244,642 @@ void Actor::UpdatePhysics()
 	PhysicsResponse();
 }
 
+void Actor::HitEdge( V2d &newVel )
+{
+	//V2d extraVel(0, 0);
+	//	
+	//collision = true;
+	//position += minContact.resolution;
+
+	//Edge *e = minContact.edge;
+	//V2d en = e->Normal();
+	//Edge *e0 = e->edge0;
+	//Edge *e1 = e->edge1;
+	//V2d e0n = e0->Normal();
+	//V2d e1n = e1->Normal();
+
+	//if (minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0)
+	//{
+	//	if (minContact.position == minContact.edge->v0)
+	//	{
+	//		if (minContact.edge->edge0->Normal().y <= 0)
+	//		{
+	//			minContact.edge = minContact.edge->edge0;
+	//		}
+	//	}
+	//}
+
+	//if (abs(minContact.edge->Normal().x) > wallThresh)
+	//{
+	//	wallNormal = minContact.edge->Normal();
+	//}
+
+
+	//V2d extraDir = normalize(minContact.edge->v1 - minContact.edge->v0);
+
+	//if ((minContact.position == e->v0 && en.x < 0 && en.y < 0))
+	//{
+	//	V2d te = e0->v0 - e0->v1;
+	//	if (te.x > 0)
+	//	{
+	//		extraDir = V2d(0, -1);
+	//		wallNormal = extraDir;
+	//	}
+	//}
+	//else if ((minContact.position == e->v1 && en.x < 0 && en.y > 0))
+	//{
+	//	V2d te = e1->v1 - e1->v0;
+	//	if (te.x > 0)
+	//	{
+	//		extraDir = V2d(0, -1);
+	//		wallNormal = extraDir;
+	//	}
+	//}
+
+	//else if ((minContact.position == e->v1 && en.x < 0 && en.y < 0))
+	//{
+	//	V2d te = e1->v1 - e1->v0;
+	//	if (te.x < 0)
+	//	{
+	//		extraDir = V2d(0, 1);
+	//		wallNormal = extraDir;
+	//	}
+	//}
+	//else if ((minContact.position == e->v0 && en.x > 0 && en.y < 0))
+	//{
+	//	V2d te = e0->v0 - e0->v1;
+	//	if (te.x > 0)
+	//	{
+	//		extraDir = V2d(0, -1);
+	//		wallNormal = extraDir;
+	//	}
+	//}
+	//else if ((minContact.position == e->v1 && en.x > 0 && en.y < 0))
+	//{
+	//	V2d te = e1->v1 - e1->v0;
+	//	if (te.x < 0)
+	//	{
+	//		extraDir = V2d(0, 1);
+	//		wallNormal = V2d(1, 0);//extraDir;
+	//	}
+	//}
+	//else if ((minContact.position == e->v0 && en.x > 0 && en.y > 0))
+	//{
+	//	V2d te = e0->v0 - e0->v1;
+	//	if (te.x < 0)
+	//	{
+	//		extraDir = V2d(0, 1);
+	//		wallNormal = V2d(1, 0);
+	//	}
+	//}
+
+	//if ((minContact.position == e->v1 && en.x > 0 && en.y > 0))
+	//{
+	//	V2d te = e1->v1 - e1->v0;
+	//	if (te.y < 0)
+	//	{
+	//		extraDir = V2d(-1, 0);
+	//	}
+	//}
+	//else if ((minContact.position == e->v0 && en.x < 0 && en.y > 0))
+	//{
+	//	V2d te = e0->v0 - e0->v1;
+	//	if (te.y < 0)
+	//	{
+	//		extraDir = V2d(-1, 0);
+	//	}
+	//}
+
+	//if (minContact.normal.x != 0 || minContact.normal.y != 0)
+	//{
+	//	if (abs(minContact.normal.x) > wallThresh || (minContact.normal.y > 0 && abs(minContact.normal.x) > .9))
+	//	{
+	//		wallNormal = minContact.normal;
+	//	}
+	//	extraDir = V2d(minContact.normal.y, -minContact.normal.x);
+	//}
+
+	//double blah = length(velocity) - length(minContact.resolution);
+	////cout << "blah: " << blah << endl;
+	////wish i knew what this one meant
+	////extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
+	////extraVel = (length( velocity ) - length( minContact.resolution )) * extraDir;
+	//if (dot(velocity, extraDir) < 0)
+	//{
+	//	//extraVel = -extraVel;
+	//}
+
+	////might still need some more work
+	//extraVel = dot(normalize(velocity), extraDir) * length(minContact.resolution) * extraDir;
+
+	//if (length(extraVel) < .01)
+	//	extraVel = V2d(0, 0);
+
+	////extraVel = V2d( 0, 0 );
+	//newVel = dot(normalize(velocity), extraDir) * extraDir * length(velocity);
+
+	//V2d wVel = position - oldPos;
+
+	//leftWire->UpdateAnchors(wVel);
+	//rightWire->UpdateAnchors(wVel);
+
+
+	//int maxJumpHeightFrame = 10;
+
+	//if (leftWire->state == Wire::PULLING || leftWire->state == Wire::HIT)
+	//{
+	//	touchEdgeWithLeftWire = true;
+	//	if (action == WALLCLING)
+	//	{
+	//		touchEdgeWithLeftWire = true;
+	//	}
+	//}
+
+
+	//if (rightWire->state == Wire::PULLING || rightWire->state == Wire::HIT)
+	//{
+	//	touchEdgeWithRightWire = tempCollision;
+	//	if (action == WALLCLING)
+	//	{
+	//		touchEdgeWithRightWire = true;
+	//	}
+	//}
+
+	//bool bounceOkay = true;
+
+	//trueFramesInAir = framesInAir;
+
+	////note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
+	////also theres a jump && false condition that would need to be changed back
+
+	//if (tempCollision && minContact.normal.y >= 0)
+	//{
+	//	framesInAir = maxJumpHeightFrame + 1;
+	//}
+
+	//if (tempCollision)
+	//{
+	//	if (bounceEdge != NULL)
+	//	{
+	//		bounceOkay = false;
+	//		bounceEdge = NULL;
+	//		oldBounceEdge = NULL;
+	//		SetActionExpr(JUMP);
+	//		holdJump = false;
+	//		frame = 1;
+	//		break;
+	//	}
+	//	V2d en = minContact.normal;
+
+	//	if (en.y <= 0 && en.y > -steepThresh)
+	//	{
+	//		if (en.x < 0 && velocity.x < 0
+	//			|| en.x > 0 && velocity.x > 0)
+	//			bounceOkay = false;
+	//	}
+	//	else if (en.y >= 0 && -en.y > -steepThresh)
+	//	{
+	//		if (en.x < 0 && velocity.x < 0
+	//			|| en.x > 0 && velocity.x > 0)
+	//			bounceOkay = false;
+	//	}
+	//	else if (en.y == 0)
+	//	{
+	//		if (en.x < 0 && velocity.x < 0
+	//			|| en.x > 0 && velocity.x > 0)
+	//			bounceOkay = false;
+	//	}
+	//	else if (en.y < 0)
+	//	{
+	//		if (velocity.y < 0)
+	//			bounceOkay = false;
+	//	}
+	//	else if (en.y > 0)
+	//	{
+	//		if (velocity.y > 0)
+	//			bounceOkay = false;
+	//	}
+	//}
+
+	//if ((action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn) && bounceOkay)
+	//{
+	//	prevRail = NULL;
+	//	//this condition might only work when not reversed? does it matter?
+	//	if (bounceEdge == NULL)//|| ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
+	//	{
+	//		bounceEdge = minContact.edge;
+	//		bounceMovingTerrain = minContact.movingPlat;
+	//		bounceNorm = minContact.normal;
+	//		framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
+
+
+	//		V2d oldv0 = bounceEdge->v0;
+	//		V2d oldv1 = bounceEdge->v1;
+
+	//		if (bounceMovingTerrain != NULL)
+	//		{
+	//			bounceEdge->v0 += bounceMovingTerrain->position;
+	//			bounceEdge->v1 += bounceMovingTerrain->position;
+	//		}
+
+	//		bounceQuant = bounceEdge->GetQuantity(minContact.position);
+
+
+	//		if (bounceMovingTerrain != NULL)
+	//		{
+	//			bounceEdge->v0 = oldv0;
+	//			bounceEdge->v1 = oldv1;
+	//		}
+
+	//		offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+	//		/*if( b.rh == doubleJumpHeight )
+	//		{
+	//		b.offset.y = (normalHeight - doubleJumpHeight);
+	//		}*/
+
+	//		if (b.rh < normalHeight)
+	//		{
+	//			if (minContact.normal.y > 0)
+	//				b.offset.y = -(normalHeight - b.rh);
+	//			else if (minContact.normal.y < 0)
+	//				b.offset.y = (normalHeight - b.rh);
+	//		}
+	//		else
+	//		{
+	//			b.offset.y = 0;
+	//		}
+
+	//		movement = 0;
+
+	//		V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
+
+	//		//double groundLength = length(ground->v1 - ground->v0);
+
+	//		V2d bn = bounceEdge->Normal();
+
+	//		V2d testVel = velocity;
+
+
+	//		/*if (testVel.y > 20)
+	//		{
+	//		testVel.y *= .7;
+	//		}
+	//		else if (testVel.y < -30)
+	//		{
+	//		testVel.y *= .5;
+	//		}*/
+
+	//		groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
+	//		break;
+	//		//cout << "bouncing: " << bounceQuant << endl;
+	//	}
+	//	else
+	//	{
+	//		//if( oldBounceEdge != NULL && minContact.edge != oldBounceEdge && action == BOUNCEAIR && framesInAir < 11 )
+	//		//if( bounceEdge != NULL && minContact.edge != bounceEdge )
+	//		{
+	//			if (action == BOUNCEAIR)
+	//			{
+	//				cout << "bounce air" << endl;
+	//			}
+	//			else
+	//			{
+	//				cout << "bounce ground" << endl;
+	//			}
+	//			cout << "stopped it here! framesinair: " << trueFramesInAir << endl;
+	//			bounceEdge = NULL;
+	//			oldBounceEdge = NULL;
+	//			SetActionExpr(JUMP);
+	//			holdJump = false;
+	//			frame = 1;
+	//			break;
+	//		}
+
+	//		/*oldBounceEdge = bounceEdge;
+	//		bounceEdge = minContact.edge;
+	//		bounceNorm = minContact.normal;
+	//		bounceMovingTerrain = minContact.movingPlat;*/
+	//	}
+
+
+	//	//	cout << "offset now!: " << offsetX << endl;
+	//	//groundSpeed = 0;
+	//	//	cout << "bouncing" << endl;
+	//}
+	////else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
+	//else if (((action == JUMP && /*!holdJump*/false) || (framesInAir > maxJumpHeightFrame || velocity.y > -8 || !holdJump) || action == WALLCLING || action == WALLATTACK) && minContact.normal.y < 0 && abs(minContact.normal.x) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1)
+	//{
+	//	if (minContact.movingPlat != NULL)
+	//	{
+	//		//minContact.position += minContact.movingPlat->vel * minContact.collisionPriority;//(1 -minContact.collisionPriority );
+	//		minContact.position -= minContact.movingPlat->vel;
+	//	}
+	//	//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
+	//	prevRail = NULL;
+
+	//	//b.rh = dashHeight;
+	//	//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
+	//	//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
+	//	offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+	//	//cout << "offsetX: " << offsetX << endl;
+
+	//	//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
+	//	////if( false )
+	//	//{
+	//	//	cout << "prevented glitchy offset: " << offsetX << endl;
+	//	//	assert( 0 );
+	//	if (false)
+	//	{
+	//	}
+	//	else
+	//	{
+	//		if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
+	//		{
+	//			//assert( minContact.edge->Normal().y == -1 );
+	//			cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
+	//				<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
+	//			cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;
+	//			if (offsetX > 0)
+	//			{
+	//				offsetX = b.rw;
+	//				minContact.position.x = position.x - b.rw;
+	//			}
+	//			else
+	//			{
+	//				offsetX = -b.rw;
+	//				minContact.position.x = position.x + b.rw;
+	//			}
+	//		}
+
+	//		if (b.rh < normalHeight)
+	//		{
+	//			if (minContact.normal.y > 0)
+	//				b.offset.y = -(normalHeight - b.rh);
+	//			else if (minContact.normal.y < 0)
+	//				b.offset.y = (normalHeight - b.rh);
+	//		}
+	//		else
+	//		{
+	//			b.offset.y = 0;
+	//		}
+
+	//		assert(!(minContact.normal.x == 0 && minContact.normal.y == 0));
+	//		groundOffsetX = ((position.x + b.offset.x) - minContact.position.x) / 2; //halfway?
+	//		ground = minContact.edge;
+	//		framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
+	//		movingGround = minContact.movingPlat;
+
+	//		V2d oldv0 = ground->v0;
+	//		V2d oldv1 = ground->v1;
+
+	//		if (movingGround != NULL)
+	//		{
+	//			ground->v0 += movingGround->position;
+	//			ground->v1 += movingGround->position;
+
+	//			//minContact.position += minContafct
+	//		}
+
+	//		edgeQuantity = minContact.edge->GetQuantity(minContact.position);
+
+	//		//edgeQuantity -= .01;
+	//		//cout << "landing edge quantity is: " << edgeQuantity << ", edge length is: " << length( ground->v1 - ground->v0 ) << endl;
+
+	//		if (movingGround != NULL)
+	//		{
+
+	//			//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
+	//			ground->v0 = oldv0;
+	//			ground->v1 = oldv1;
+	//		}
+
+	//		V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
+
+	//		double groundLength = length(ground->v1 - ground->v0);
+
+	//		V2d gNorm = ground->Normal();
+
+	//		V2d testVel = velocity;
+
+	//		//testVel.y *= .7;
+	//		if (testVel.y > 20)
+	//		{
+	//			testVel.y *= .7;
+	//		}
+	//		else if (testVel.y < -30)
+	//		{
+	//			//testVel.y = -30;
+	//			testVel.y *= .5;
+	//		}
+	//		//testVel.y /= 2.0
+	//		//cout << "groundspeed: " << groundSpeed << endl;
+
+	//		gNorm = ground->Normal();
+
+	//		groundSpeed = CalcLandingSpeed(testVel, alongVel, gNorm);
+
+
+	//		//if( gNorm.y <= -steepThresh )
+	//		{
+	//			hasGravReverse = true;
+	//			hasAirDash = true;
+	//			hasDoubleJump = true;
+	//			lastWire = 0;
+	//		}
+
+	//		if (velocity.x < 0 && gNorm.y <= -steepThresh)
+	//		{
+	//			groundSpeed = min(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
+	//			//cout << "left boost: " << groundSpeed << endl;
+	//		}
+	//		else if (velocity.x > 0 && gNorm.y <= -steepThresh)
+	//		{
+	//			groundSpeed = max(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
+	//			//cout << "right boost: " << groundSpeed << endl;
+	//		}
+
+	//		movement = 0;
+
+	//	}
+	//}
+	//else if ((hasPowerGravReverse || gravityGrassCount > 0)/*&& hasGravReverse */ && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs(minContact.normal.x) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1)
+	//{
+	//	prevRail = NULL;
+
+	//	if (b.rh < normalHeight)
+	//	{
+	//		b.offset.y = -(normalHeight - b.rh);
+	//	}
+
+	//	if (minContact.edge->Normal().y <= 0)
+	//	{
+	//		if (minContact.position == minContact.edge->v0)
+	//		{
+	//			if (minContact.edge->edge0->Normal().y >= 0)
+	//			{
+	//				minContact.edge = minContact.edge->edge0;
+	//			}
+	//		}
+	//	}
+
+
+	//	hasGravReverse = false;
+	//	hasAirDash = true;
+	//	hasDoubleJump = true;
+	//	reversed = true;
+	//	lastWire = 0;
+
+	//	//b.offset.y = -b.offset.y;
+	//	groundOffsetX = ((position.x + b.offset.x) - minContact.position.x) / 2; //halfway?
+	//	ground = minContact.edge;
+	//	movingGround = minContact.movingPlat;
+
+	//	V2d oldv0 = ground->v0;
+	//	V2d oldv1 = ground->v1;
+
+	//	if (movingGround != NULL)
+	//	{
+	//		ground->v0 += movingGround->position;
+	//		ground->v1 += movingGround->position;
+	//	}
+
+	//	edgeQuantity = minContact.edge->GetQuantity(minContact.position);
+
+	//	if (movingGround != NULL)
+	//	{
+	//		ground->v0 = oldv0;
+	//		ground->v1 = oldv1;
+	//	}
+
+	//	double groundLength = length(ground->v1 - ground->v0);
+	//	groundSpeed = 0;
+	//	//groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+	//	V2d gno = ground->Normal();
+
+
+	//	double angle = atan2(gno.x, -gno.y);
+
+
+	//	//cout << "frames in air: " << framesInAir << ", holdJump: " << (int)holdJump << endl;
+	//	if (trueFramesInAir < 10 && holdJump && -gno.y > -steepThresh)
+	//	{
+	//		//cout << "adjusted y vel from: " << velocity.y;
+	//		//velocity.y *= .7;
+	//		//cout << ", new: " << velocity.y << endl;
+
+	//	}
+
+
+	//	//cout << "gno: " << gno.x << ", " << gno.y << endl;
+	//	if (-gno.y > -steepThresh)
+	//	{
+	//		//	cout << "a" << endl;
+	//		groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+	//		if (velocity.x < 0)
+	//		{
+	//			//	groundSpeed = -min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+	//		}
+	//		else if (velocity.x > 0)
+	//		{
+	//			//	groundSpeed = -max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+	//		}
+	//		//groundSpeed = 0;
+	//	}
+	//	else
+	//	{
+	//		//	cout << "b" << endl;
+	//		groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
+	//		if (velocity.x < 0)
+	//		{
+	//			//groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+	//		}
+	//		else if (velocity.x > 0)
+	//		{
+	//			//groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
+	//		}
+	//	}
+
+	//	//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
+
+	//	//movement = 0; just commented this out now
+
+	//	offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+	//	if (ground->Normal().x > 0 && offsetX < b.rw && !approxEquals(offsetX, b.rw))
+	//	{
+	//		//	cout << "super secret fix offsetx122: " << offsetX << endl;
+	//		//	offsetX = b.rw;
+	//	}
+	//	if (ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals(offsetX, -b.rw))
+	//	{
+	//		//	cout << "super secret fix offsetx222: " << offsetX << endl;
+	//		//	offsetX = -b.rw;
+	//	}
+
+	//	//if( reversed )
+	//	//{
+	//	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+	//	owner->soundNodeList->ActivateSound(soundBuffers[S_GRAVREVERSE]);
+	//	//}
+	//}
+	//else if ( hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 && abs(minContact.normal.x) >= wallThresh)
+	//{
+	//	prevRail = NULL;
+	//	Edge *e = minContact.edge;
+	//	V2d mp = minContact.position;
+	//	double q = e->GetQuantity(mp);
+	//	ground = e;
+	//	edgeQuantity = q;
+
+	//	if (e->Normal().x > 0)
+	//	{
+	//		groundSpeed = velocity.y;
+	//	}
+	//	else
+	//	{
+	//		groundSpeed = -velocity.y;
+	//	}
+
+	//	SetActionGrind();
+	//	//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
+	//	//	&& action == AIRDASH && length( wallNormal ) > 0 )
+	//	//{
+	//	//	//assert( minContact.edge != NULL );
+	//	//	Edge *e = storedContact.edge;
+	//	//	V2d mp = storedContact.position;
+	//	//	double q = e->GetQuantity( mp );
+
+	//	//	
+
+	//	//	//cout << "grinding" << endl;
+	//	//}
+	//}
+	//else 
+	//{
+	//	if (minContact.movingPlat != NULL)
+	//	{
+	//		//velocity = newVel + minContact.movingPlat->vel;
+	//		//	minContact.position -= minContact.movingPlat->vel;
+	//	}
+	//	//else
+	//	{
+
+	//		velocity = newVel;
+
+	//	}
+
+
+
+
+	//}
+	//else
+	//{
+	//	//cout << "no temp collision" << endl;
+	//}
+}
+
 void Actor::GroundAttack()
 {
 	SetAction( STANDN );
@@ -13258,6 +13899,18 @@ void Actor::PhysicsResponse()
 {
 	V2d gn;
 	//Edge *e;
+
+	if (action == RAILGRIND && collision )
+	{
+		grindEdge = NULL;
+		action = JUMP;
+		frame = 1;
+		framesNotGrinding = 0;
+		
+		regrindOffCount = 0;
+		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	}
+
 	if( grindEdge != NULL )
 	{
 		//e = grindEdge;
@@ -14798,10 +15451,17 @@ void Actor::UpdatePostPhysics()
 		framesInAir++;
 		framesSinceDouble++;
 
-		if( action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND )
+		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
+		{
 			framesGrinding++;
+			framesNotGrinding = 0;
+		}
 		else
+		{
+			framesGrinding = 0;
 			framesNotGrinding++;
+		}
+			
 
 
 		if( action == BOUNCEAIR && oldBounceEdge != NULL )
