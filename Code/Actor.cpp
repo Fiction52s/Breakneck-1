@@ -13240,8 +13240,32 @@ void Actor::UpdatePhysics()
 		cout << "not grounded now" << endl;
 	}*/
 
+
+
 	
 	PhysicsResponse();
+
+	if ( reversed && ( action == STANDN || action == STEEPCLIMBATTACK || action == STEEPSLIDEATTACK ) && currHitboxes != NULL)
+	{
+		auto it = currHitboxes->begin();
+		sf::IntRect aabb;
+		aabb.left = (*it).
+		for ( it != currHitboxes->end(); ++it)
+		{
+			
+			/*Grass *g = owner->explodingGravityGrass;
+			while (g != NULL)
+			{
+				if ( g->visible && !g->exploding )
+				{
+					
+				}
+			}*/
+		}
+
+		queryMode = "gravitygrass";
+		//owner->grassTree->Query( this, )
+	}
 }
 
 void Actor::HitEdge( V2d &newVel )

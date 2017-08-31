@@ -84,6 +84,79 @@ using namespace sf;
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
 
+Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
+	sf::Vector2<double> &pA, sf::Vector2<double> &pB,
+	sf::Vector2<double> &pC, sf::Vector2<double> &pD, GameSession::TestVA *p_poly)
+	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
+	ts_grass(p_ts_grass), A(pA), B(pB), C(pC), D(pD), owner(p_owner), poly( p_poly )
+{
+	explosion.isCircle = true;
+	explosion.rw = 64;
+	explosion.rh = 64;
+	explosion.type = CollisionBox::BoxType::Hit;
+
+	explosion.globalPosition = (A + B + C + D) / 4.0;
+
+	explodeFrame = 0;
+	explodeLimit = 20;
+	exploding = false;
+
+	aabb.left = min(min(A.x, B.x), min(C.x, D.x));
+	aabb.top = min(min(A.y, B.y), min(C.y, D.y));
+	int right = max(max(A.x, B.x), max(C.x, D.x));
+	int bot = max(max(A.y, B.y), max(C.y, D.y));
+
+	aabb.width = right - aabb.left;
+	aabb.height = bot - aabb.top;
+}
+
+void Grass::Reset()
+{
+	next = NULL;
+	prev = NULL;
+	exploding = false;
+	visible = true;
+}
+
+void Grass::Update()
+{
+	if (visible && exploding)
+	{
+		if (explodeFrame == 0)
+		{
+			SetVisible(false);
+		}
+		
+		++explodeFrame;
+		if (explodeFrame == explodeLimit)
+		{
+			explodeFrame = 0;
+			owner->RemoveGravityGrassFromExplodeList(this);
+		}
+	}
+}
+
+void Grass::SetVisible(bool p_visible)
+{
+	visible = p_visible;
+	sf::VertexArray &gva = *(poly->grassVA);
+	if (visible)
+	{
+		gva[tileIndex * 4 + 0].position = Vector2f( A.x, A.y );
+		gva[tileIndex * 4 + 1].position = Vector2f(B.x, B.y);
+		gva[tileIndex * 4 + 2].position = Vector2f(C.x, C.y);
+		gva[tileIndex * 4 + 3].position = Vector2f(D.x, D.y);
+	}
+	else
+	{
+		gva[tileIndex * 4 + 0].position = Vector2f(0, 0);
+		gva[tileIndex * 4 + 1].position = Vector2f(0, 0);
+		gva[tileIndex * 4 + 2].position = Vector2f(0, 0);
+		gva[tileIndex * 4 + 3].position = Vector2f(0, 0);
+	}
+}
+
+
 ScoreDisplay::ScoreDisplay( GameSession *p_owner, Vector2f &position,
 	sf::Font &testFont )
 	:scoreBarVA( sf::Quads, 4 * NUM_BARS ), scoreSymbolsVA( sf::Quads, 4 * NUM_BARS ), scoreSheetVA( sf::Quads, 4 * NUM_BARS ),font( testFont )
@@ -3506,47 +3579,7 @@ bool GameSession::OpenFile( string fileName )
 				}
 			}
 
-			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
-			{
-				V2d A,B,C,D;
-				Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
-				V2d v0 = currE->v0;
-				V2d v1 = currE->v1;
-
-				double grassSize = 22;
-				double grassSpacing = -5;
-
-				double edgeLength = length( v1 - v0 );
-				double remainder = edgeLength / ( grassSize + grassSpacing );
-
-				double num = floor( remainder ) + 1;
-
-				int reps = (*it).reps;
-
-				V2d edgeDir = normalize( v1 - v0 );
-				
-				//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
-				V2d ABmin = v0 + edgeDir * ( edgeLength * (double)(*it).index / num - grassSize / 2 );
-				V2d ABmax = v0 + edgeDir * ( edgeLength * (double)( (*it).index + reps )/ num + grassSize / 2 );
-				double height = grassSize / 2;
-				V2d normal = normalize( v1 - v0 );
-				double temp = -normal.x;
-				normal.x = normal.y;
-				normal.y = temp;
-
-				A = ABmin + normal * height;
-				B = ABmax + normal * height;
-				C = ABmax;
-				D = ABmin;
-				
-				Grass * g = new Grass;
-				g->A = A;
-				g->B = B;
-				g->C = C;
-				g->D = D;
-
-				grassTree->Insert( g );
-			}
+			
 			TestVA * testva = NULL;
 			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
 
@@ -3830,6 +3863,51 @@ bool GameSession::OpenFile( string fileName )
 			else
 			{
 				grassVA = NULL;
+			}
+
+			int totalGrassIndex = 0;
+			for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
+			{
+				V2d A, B, C, D;
+				Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
+				V2d v0 = currE->v0;
+				V2d v1 = currE->v1;
+
+				double grassSize = 22;
+				double grassSpacing = -5;
+
+				double edgeLength = length(v1 - v0);
+				double remainder = edgeLength / (grassSize + grassSpacing);
+
+				double num = floor(remainder) + 1;
+
+				int reps = (*it).reps;
+
+				V2d edgeDir = normalize(v1 - v0);
+
+				//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
+				V2d ABmin = v0 + edgeDir * (edgeLength * (double)(*it).index / num - grassSize / 2);
+				V2d ABmax = v0 + edgeDir * (edgeLength * (double)((*it).index + reps) / num + grassSize / 2);
+				double height = grassSize / 2;
+				V2d normal = normalize(v1 - v0);
+				double temp = -normal.x;
+				normal.x = normal.y;
+				normal.y = temp;
+
+				A = ABmin + normal * height;
+				B = ABmax + normal * height;
+				C = ABmax;
+				D = ABmin;
+
+				Grass * g = new Grass(ts_grass, totalGrassIndex);
+				g->A = A;
+				g->B = B;
+				g->C = C;
+				g->D = D;
+
+				grassTree->Insert(g);
+
+				totalGrassIndex++;
 			}
 
 			stringstream ss;
@@ -6184,7 +6262,9 @@ int GameSession::Run()
 
 	Texture & borderTex = *GetTileset("borders.png", 16, 16)->texture;
 
-	Texture & grassTex = *GetTileset("placeholdergrass_22x22.png", 22, 22)->texture;
+	//Texture & grassTex = *GetTileset("placeholdergrass_22x22.png", 22, 22)->texture;
+	ts_gravityGrass = GetTileset("placeholdergrass_22x22.png", 22, 22);
+	
 
 	goalDestroyed = false;
 
@@ -7548,7 +7628,7 @@ int GameSession::Run()
 		//for( int i = 0; i < numBorders; ++i )
 		{
 			if( listVAIter->grassVA != NULL )
-				preScreenTex->draw(*listVAIter->grassVA);// , &grassTex );
+				preScreenTex->draw(*listVAIter->grassVA) , ts_gravityGrass->texture );
 
 			if( usePolyShader )
 			//if(false )
@@ -9341,6 +9421,8 @@ void GameSession::Init()
 	postProcessTex1->setSmooth(false);
 	postProcessTex2->setSmooth(false);
 
+	explodingGravityGrass = NULL;
+
 	shockTestFrame = 0;
 
 	usePolyShader = true;
@@ -10197,6 +10279,54 @@ void GameSession::RestartLevel()
 
 	cam.SetManual( false );
 	//inGameClock.restart();
+}
+
+void GameSession::AddGravityGrassToExplodeList(Grass *g)
+{
+	if (explodingGravityGrass == NULL)
+	{
+		explodingGravityGrass = g;
+		explodingGravityGrass->next = NULL;
+		explodingGravityGrass->prev = NULL;
+	}
+	else
+	{
+		g->next = explodingGravityGrass;
+		explodingGravityGrass->prev = g;
+		explodingGravityGrass = g;
+		explodingGravityGrass->prev = NULL;
+	}
+}
+
+void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
+{
+	assert(explodingGravityGrass != NULL);
+
+	if (explodingGravityGrass == g )
+	{
+		explodingGravityGrass = g->next;
+	}
+	else
+	{
+		if (g->prev != NULL)
+			g->prev->next = g->next;
+		if (g->next != NULL)
+			g->next->prev = g->prev;
+		g->SetActive(false);
+	}
+}
+
+
+void GameSession::UpdateExplodingGravityGrass()
+{
+	Grass *curr = explodingGravityGrass;
+	Grass *next;
+	while (curr != NULL)
+	{
+		next = curr->next;
+		curr->Update();
+		curr = next;
+	}
 }
 
 void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )

@@ -123,26 +123,19 @@ struct Critical : QuadTreeEntrant
 
 struct GrassSegment
 {
+	CollisionBox explosion;
 	GrassSegment( int edgeI, int grassIndex, int rep )
 		:edgeIndex( edgeI ), index( grassIndex ), 
 		reps (rep)
-	{}
+	{
+	}
 	int edgeIndex;
 	int index;
 	int reps;
+	
 };
 
-struct Grass : QuadTreeEntrant
-{
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D; 
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
-
-	//bool prevGrass;
-};
+struct Grass;
 
 struct EnvPlant : QuadTreeEntrant
 {
@@ -441,7 +434,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
 
-
+	Tileset *ts_gravityGrass;
+	Grass *explodingGravityGrass;
+	void UpdateExplodingGravityGrass();
+	void AddGravityGrassToExplodeList(Grass *g);
+	void RemoveGravityGrassFromExplodeList(Grass *g);
 	bool showDebugDraw;
 	bool showTerrainDecor;
 	
@@ -1071,6 +1068,39 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	//sf::Sprite healthSprite;
 
+};
+
+struct Grass : QuadTreeEntrant
+{
+	Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
+		sf::Vector2<double> &pA, sf::Vector2<double> &pB,
+		sf::Vector2<double> &pC, sf::Vector2<double> &pD, GameSession::TestVA *poly);
+
+	void Reset();
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D;
+	void SetVisible(bool p_visible);
+	void HandleQuery(QuadTreeCollider * qtc);
+	bool IsTouchingBox(const sf::Rect<double> &r);
+	
+	void Update();
+	bool exploding;
+	int tileIndex;
+	Grass *next;
+	Grass *prev;
+	bool visible;
+	Tileset *ts_grass;
+	CollisionBox explosion;
+	int explodeFrame;
+	int explodeLimit;
+	GameSession *owner;
+	GameSession::TestVA *poly;
+	sf::IntRect aabb;
+	//bool active;
+
+	//bool prevGrass;
 };
 
 

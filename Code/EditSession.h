@@ -252,6 +252,7 @@ struct TerrainPolygon : ISelectable
 		bool intersectAllowed,
 		int minDistance );
 
+	TilesetManager tm;
 	sf::Color selectCol;
 	sf::Color fillCol;
 
