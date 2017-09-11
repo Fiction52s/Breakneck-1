@@ -74,10 +74,10 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[RUN] = owner->GetTileset("run_2_64x64.png", 64, 64, skin);
 	tileset[SPRINGSTUN] = owner->GetTileset("double_64x64.png", 64, 64, skin);
 	tileset[SLIDE] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
-	tileset[SPRINT] = owner->GetTileset("sprint_128x48.png", 128, 48, skin);	
+	tileset[SPRINT] = owner->GetTileset("sprint_80x48.png", 80, 48, skin);	
 	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
 	tileset[STANDN] = owner->GetTileset("standn_96x64.png", 96, 64, skin);
-	tileset[UAIR] = owner->GetTileset("uair_80x80.png", 80, 80, skin);
+	tileset[UAIR] = owner->GetTileset("uair_96x96.png", 96, 96, skin);
 	tileset[WALLCLING] = owner->GetTileset("wallcling_64x64.png", 64, 64, skin);
 	tileset[WALLJUMP] = owner->GetTileset("walljump_64x64.png", 64, 64, skin);
 	tileset[GRINDBALL] = owner->GetTileset("grindball_64x64.png", 64, 64, skin);
@@ -709,7 +709,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		airBounceFlameFrames = 20 * 3;
 		runBounceFlameFrames = 21 * 3;
 		actionLength[WALLATTACK] = 8 * 2;
-		actionLength[DAIR] = 9 * 2;
+		actionLength[DAIR] = 16;
 		actionLength[DASH] = 45;
 		actionLength[DOUBLE] = 28 + 10;
 		actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
@@ -733,7 +733,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
 		actionLength[STANDN] = 4 * 4;
-		actionLength[UAIR] = 6 * 3;
+		actionLength[UAIR] = 16;
 		actionLength[GRINDATTACK] = 1;
 		actionLength[STEEPSLIDE] = 1;
 		actionLength[WALLCLING] = 1;
@@ -1567,6 +1567,9 @@ void Actor::Respawn()
 	}
 
 	SetExpr( Actor::Expr::Expr_NEUTRAL );
+
+	if( owner->powerRing != NULL )
+		owner->powerRing->ResetFull(); //only means anything for single player
 }
 
 double Actor::GetBounceFlameAccel()
@@ -2425,6 +2428,10 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				break;
 			}
+			else if (currInput.rightShoulder && !prevInput.rightShoulder)
+			{
+				GroundAttack();
+			}
 			else if( currInput.B && !prevInput.B )
 			{
 				action = DASH;
@@ -2469,10 +2476,6 @@ void Actor::UpdatePrePhysics()
 				}
 				break;
 				
-			}
-			else if( currInput.rightShoulder && !prevInput.rightShoulder )
-			{
-				GroundAttack();
 			}
 			else if( currInput.LDown() || currInput.LUp() )
 			{
@@ -3345,9 +3348,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case FAIR:
 		{
-			if( currAttackHit && frame > 0 )
-			{
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if (hasPowerBounce && currInput.X && !bounceFlameOn)
 			{
 				//bounceGrounded = true;
 				BounceFlameOn();
@@ -3355,11 +3356,15 @@ void Actor::UpdatePrePhysics()
 				bounceMovingTerrain = NULL;
 				//break;
 			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
 			{
 				//bounceGrounded = false;
 				BounceFlameOff();
 			}
+
+			if( currAttackHit && frame > 0 )
+			{
+			
 
 			if( TryAirDash() ) break;
 
@@ -3373,10 +3378,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DAIR:
 		{
-			if( currAttackHit && frame > 0 )
-			{
-			
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if (hasPowerBounce && currInput.X && !bounceFlameOn)
 			{
 				//bounceGrounded = true;
 				BounceFlameOn();
@@ -3384,11 +3386,16 @@ void Actor::UpdatePrePhysics()
 				bounceMovingTerrain = NULL;
 				//break;
 			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
 			{
 				//bounceGrounded = false;
 				BounceFlameOff();
 			}
+
+			if( currAttackHit && frame > 0 )
+			{
+			
+			
 
 			if( TryAirDash() ) break;
 
@@ -3400,10 +3407,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case UAIR:
 		{
-			if( currAttackHit && frame > 0 )
-			{
-			
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if (hasPowerBounce && currInput.X && !bounceFlameOn)
 			{
 				//bounceGrounded = true;
 				BounceFlameOn();
@@ -3411,11 +3415,16 @@ void Actor::UpdatePrePhysics()
 				bounceMovingTerrain = NULL;
 				//break;
 			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
 			{
 				//bounceGrounded = false;
 				BounceFlameOff();
 			}
+
+			if( currAttackHit && frame > 0 )
+			{
+			
+			
 
 			if( TryAirDash() ) break;
 
@@ -3427,21 +3436,23 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGUPATTACK:
 		{
-			if( currAttackHit && frame > 0 )
-			{
-			
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if (hasPowerBounce && currInput.X && !bounceFlameOn)
 			{
 				BounceFlameOn();
 				oldBounceEdge = NULL;
 				bounceMovingTerrain = NULL;
 				//break;
 			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
 			{
 				//bounceGrounded = false;
 				BounceFlameOff();
 			}
+
+			if( currAttackHit && frame > 0 )
+			{
+			
+			
 
 			if( TryAirDash() ) break;
 
@@ -3453,12 +3464,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGDOWNATTACK:
 		{
-			if( currAttackHit && frame > 0 )
-			{
-			
-			
-
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if (hasPowerBounce && currInput.X && !bounceFlameOn)
 			{
 				//bounceGrounded = true;
 				BounceFlameOn();
@@ -3466,11 +3472,18 @@ void Actor::UpdatePrePhysics()
 				bounceMovingTerrain = NULL;
 				//break;
 			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
+			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
 			{
 				//bounceGrounded = false;
 				BounceFlameOff();
 			}
+
+			if( currAttackHit && frame > 0 )
+			{
+			
+			
+
+			
 
 			if( TryAirDash() ) break;
 
@@ -13247,23 +13260,23 @@ void Actor::UpdatePhysics()
 
 	if ( reversed && ( action == STANDN || action == STEEPCLIMBATTACK || action == STEEPSLIDEATTACK ) && currHitboxes != NULL)
 	{
-		auto it = currHitboxes->begin();
-		sf::IntRect aabb;
-		aabb.left = (*it).
-		for ( it != currHitboxes->end(); ++it)
-		{
-			
-			/*Grass *g = owner->explodingGravityGrass;
-			while (g != NULL)
-			{
-				if ( g->visible && !g->exploding )
-				{
-					
-				}
-			}*/
-		}
+		//auto it = currHitboxes->begin();
+		//sf::IntRect aabb;
+		//aabb.left = (*it).
+		//for ( it != currHitboxes->end(); ++it)
+		//{
+		//	
+		//	/*Grass *g = owner->explodingGravityGrass;
+		//	while (g != NULL)
+		//	{
+		//		if ( g->visible && !g->exploding )
+		//		{
+		//			
+		//		}
+		//	}*/
+		//}
 
-		queryMode = "gravitygrass";
+		//queryMode = "gravitygrass";
 		//owner->grassTree->Query( this, )
 	}
 }
@@ -13906,6 +13919,15 @@ void Actor::HitEdge( V2d &newVel )
 
 void Actor::GroundAttack()
 {
+	if (currInput.LLeft())
+	{
+		facingRight = false;
+	}
+	else if (currInput.LRight())
+	{
+		facingRight = true;
+	}
+
 	SetAction( STANDN );
 	frame = 0;
 	//if( currInput.B )//action == DASH )
@@ -18090,7 +18112,7 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			int tFrame = frame / 4;
+			int tFrame = frame / 2;
 			SetSpriteTile( tFrame, r );
 			
 			assert( ground != NULL );
@@ -18799,19 +18821,19 @@ void Actor::UpdateSprite()
 
 			SetSpriteTexture( action );
 
-			SetSpriteTile( frame / 2, facingRight );
+			SetSpriteTile( frame, facingRight );
 
 			if( showSword )
 			{
 				if( facingRight )
 				{
-					fairSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+					fairSword.setTextureRect( curr_ts->GetSubRect( frame/2 - startFrame ) );
 				}
 				else
 				{
 					offset.x = -offset.x;
 
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame/2 - startFrame );
 					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
 					fairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );	
@@ -18858,7 +18880,7 @@ void Actor::UpdateSprite()
 
 			SetSpriteTexture( action );
 
-			SetSpriteTile( frame / 2, facingRight );
+			SetSpriteTile( frame, facingRight );
 
 			if( showSword )
 			{
@@ -18902,7 +18924,7 @@ void Actor::UpdateSprite()
 
 			SetSpriteTexture( action );
 
-			SetSpriteTile( frame / 3, facingRight );
+			SetSpriteTile( frame, facingRight );
 			
 
 			Vector2i offset( 0, 0 );

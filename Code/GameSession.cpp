@@ -3866,6 +3866,8 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 			int totalGrassIndex = 0;
+			Tileset *ts_grass = GetTileset("grass_32x32.png", 32, 32);
+			if( false )
 			for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
 			{
 				V2d A, B, C, D;
@@ -3899,13 +3901,13 @@ bool GameSession::OpenFile( string fileName )
 				C = ABmax;
 				D = ABmin;
 
-				Grass * g = new Grass(ts_grass, totalGrassIndex);
+				/*Grass * g = new Grass(this, ts_grass, totalGrassIndex,);
 				g->A = A;
 				g->B = B;
 				g->C = C;
 				g->D = D;
 
-				grassTree->Insert(g);
+				grassTree->Insert(g);*/
 
 				totalGrassIndex++;
 			}
@@ -7628,7 +7630,7 @@ int GameSession::Run()
 		//for( int i = 0; i < numBorders; ++i )
 		{
 			if( listVAIter->grassVA != NULL )
-				preScreenTex->draw(*listVAIter->grassVA) , ts_gravityGrass->texture );
+				preScreenTex->draw(*listVAIter->grassVA , ts_gravityGrass->texture );
 
 			if( usePolyShader )
 			//if(false )
@@ -10312,7 +10314,7 @@ void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
 			g->prev->next = g->next;
 		if (g->next != NULL)
 			g->next->prev = g->prev;
-		g->SetActive(false);
+		g->SetVisible(false);
 	}
 }
 
