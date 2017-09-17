@@ -728,10 +728,11 @@ bool EditSession::OpenFile()
 				inversePolygon = poly;
 				hasReadBorderPoly = true;
 			}
-			else
+			/*else
 			{
 				polygons.push_back( poly );
-			}
+			}*/
+			polygons.push_back(poly);
 
 			int polyPoints;
 			is >> polyPoints;
@@ -1000,7 +1001,11 @@ bool EditSession::OpenFile()
 					else
 					{
 						int testIndex = 0;
-						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+						list<PolyPtr>::iterator it = polygons.begin();
+						if (inversePolygon != NULL)
+							++it;
+
+						for( ; it != polygons.end(); ++it )
 						{
 							if( testIndex == terrainIndex )
 							{
@@ -3171,6 +3176,8 @@ void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon 
 //
 EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 {
+	brush->FixWinding();
+	poly->FixWinding();
 	//both of these polygons must be confirmed to be valid already in their individual shape
 
 	/*1. check if add valid
@@ -3326,23 +3333,6 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 		assert(startPointFound);*/
 	}
 
-
-
-	
-	//get which polygon I should start on
-	
-	//curr = start;
-	//Vector2i currPoint = startPoint;
-	//curr = curr->next;
-	//if( curr == NULL )
-//	{
-//		curr = currentPoly->pointStart;
-//	}
-//	Vector2i nextPoint = curr->pos;
-
-	//z.points.push_back( startPoint );
-
-	//2. run a loop clockwise until you arrive back at the original state
 	currP = startP;
 	bool firstRun = true;
 	TerrainPoint *tp = new TerrainPoint(currP->pos, false);
@@ -3354,9 +3344,19 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 	startSegPos = currP->pos;
 	while (true)
 	{
-		nextP = currP->next;
-		if (nextP == NULL)
-			nextP = currentPoly->pointStart;
+		if (inverse && !currentPoly->inverse)
+		{
+			nextP = currP->prev;
+			if (nextP == NULL)
+				nextP = currentPoly->pointEnd;
+		}
+		else
+		{
+			nextP = currP->next;
+			if (nextP == NULL)
+				nextP = currentPoly->pointStart;
+		}
+		
 
 		LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd);
 		
@@ -3364,38 +3364,36 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 		if (!li.parallel) 
 		{
 			Vector2i intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
-			//if (currPoint == startPoint && !firstTime)
-			//{
-			//	//	cout << "secondary break" << endl;
-			//	break;
-			//}
-
-			//push back intersection
+			
 			PolyPtr temp = currentPoly;
 			currentPoly = otherPoly;
 			otherPoly = temp;
-			//curr = min;
-
-			//cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
-
-			//currPoint = minIntersection;
 
 			TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
 			z.AddPoint(tp);
 
 			startSegPos = intersectPoint;
 
-			currP = outStart;
+			if (inverse && !currentPoly->inverse)
+			{
+				currP = outEnd;
+			}
+			else
+			{
+				currP = outStart;
+			}
+			
 		}
 		//no intersection
 		else 
 		{
-			//currPointPos = currP->pos;
 			if (!firstRun && nextP == startP )
 				break;
 
 			TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
 			z.AddPoint(tp);
+
+			//deal with enemies and gates
 			//tp->gate = curr->gate;
 			//if (tp->gate != NULL)
 			//{
@@ -3422,11 +3420,23 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 			//	}
 			//}
 
-			currP = currP->next;
-			if (currP == NULL)
+			if (inverse && !currentPoly->inverse)
 			{
-				currP = currentPoly->pointStart;
+				currP = currP->prev;
+				if (currP == NULL)
+				{
+					currP = currentPoly->pointEnd;
+				}
 			}
+			else
+			{
+				currP = currP->next;
+				if (currP == NULL)
+				{
+					currP = currentPoly->pointStart;
+				}
+			}
+			
 
 			startSegPos = currP->pos;
 
@@ -3435,258 +3445,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 				list<ActorPtr> &en = z.enemies[tp];
 				en = currentPoly->enemies[curr];
 			}*/
-
-			
-
-
-			//cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
-
-			/*if (currPoint == startPoint && !firstTime)
-				break;
-
-			if (currentPoly->inverse)
-			{
-				curr = curr->prev;
-				if (curr == NULL)
-					curr = currentPoly->pointEnd;
-			}
-			else
-			{
-				curr = curr->next;
-				if (curr == NULL)
-				{
-					curr = currentPoly->pointStart;
-				}
-				nextPoint = curr->pos;
-			}*/
 		}
 		
 		firstRun = false;
 	}
-	
-
-
-	//TerrainPoint *currNext = NULL;
-
-	//TerrainPoint *prevP = NULL;
-	//TerrainPoint *other = NULL;
-	//TerrainPoint *otherPrev = NULL;
-
-	//TerrainPoint *min = NULL;
-	//Vector2i minIntersection;
-	//bool emptyInter = true;
-	//
-	//TerrainPoint *firstPoint = curr;
-	//do
-	//{
-	//	currNext = curr->next;
-	//	if (currNext == NULL)
-	//		currNext = currentPoly->pointStart;
-
-	//	prevP = curr->prev;
-	//	if (prevP == NULL)
-	//		prevP = currentPoly->pointEnd;
-
-	//	if (curr == NULL)
-	//	{
-	//		curr = currentPoly->pointStart;
-	//	}
-
-	//	other = otherPoly->pointStart;
-	//	for (; other != NULL; other = other->next)
-	//	{
-	//		otherPrev = other->prev;
-	//		if (otherPrev == NULL)
-	//		{
-	//			otherPrev = otherPoly->pointEnd;
-	//		}
-
-	//		LineIntersection li = SegmentIntersect(prevP->pos, curr->pos, otherPrev->pos, other->pos);
-	//		Vector2i lii(round(li.position.x), round(li.position.y));
-	//		if (!li.parallel)
-	//		{
-	//			if (emptyInter)
-	//			{
-	//				emptyInter = false;
-	//				minIntersection = lii;
-	//				realStartPoint = other;
-	//				min = other;
-	//			}
-	//			else
-	//			{
-	//				V2d blah(minIntersection - realStartPoint->pos);
-	//				V2d blah2(lii - realStartPoint->pos);
-	//				if (length(blah2) < length(blah))
-	//				{
-	//					minIntersection = lii;
-	//					realStartPoint = other;
-	//					min = other;
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//	curr = curr->next;
-	//	if (curr == NULL)
-	//		curr = currentPoly->pointStart;
-	//} while (curr != firstPoint);
-
-
-
-
-
-
-	//bool firstTime = true;
-
-	//while( firstTime || currPoint != startPoint )
-	//{
-	//	TerrainPoint *min = NULL;
-	//	Vector2i minIntersection;
-	//	bool emptyInter = true;
-	//	
-
-	//	TerrainPoint * other = otherPoly->pointStart;
-	//	Vector2i otherCurrPoint = other->pos;
-	//	other = other->next;
-	//	Vector2i otherNextPoint;
-	//	Vector2i minPoint;
-	//	
-	//	LineIntersection li1 = SegmentIntersect( currPoint, nextPoint, otherPoly->pointEnd->pos, otherPoly->pointStart->pos);
-	//	Vector2i lii1( round(li1.position.x), round(li1.position.y ) );
-	//	if( !li1.parallel )//&& ( lii1 != currPoint && lii1 != nextPoint && lii1 != otherPoly->pointEnd->pos && lii1 != otherCurrPoint ) ) 
-	//	{
-	//		minIntersection = lii1;
-	//		minPoint = otherCurrPoint;
-	//		min = otherPoly->pointStart;
-	//		emptyInter = false;
-	//	}
-
-	//	for(; other != NULL; other = other->next )
-	//	{
-	//		otherNextPoint = other->pos;
-	//		LineIntersection li = SegmentIntersect( currPoint, nextPoint, otherCurrPoint, otherNextPoint );
-	//		Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-	//		if( !li.parallel )
-	//		{
-	//			if( emptyInter )
-	//			{
-	//				emptyInter = false;
-	//				minIntersection = lii;
-	//				minPoint = otherNextPoint;
-	//				min = other;
-	//			}
-	//			else
-	//			{
-	//				V2d blah( minIntersection - currPoint );
-	//				V2d blah2( lii - currPoint );
-	//				//cout << "lengths: " << length( li.position - V2d(currPoint.x, currPoint.y) ) << ", " << length( V2d( blah.x, blah.y ) ) << endl;
-	//				if( length( blah2 ) < length( blah ) )
-	//				{
-	//					minIntersection = lii;
-	//					minPoint = otherNextPoint;
-	//					min = other;
-	//				}
-	//			}
-
-	//				
-	//		}
-	//		otherCurrPoint = otherNextPoint;
-	//		
-	//	}
-
-	//	if( !emptyInter )
-	//	{
-
-	//		if( currPoint == startPoint && !firstTime )
-	//		{
-	//		//	cout << "secondary break" << endl;
-	//			break;
-	//		}
-	//		
-	//		//push back intersection
-	//		PolyPtr temp = currentPoly;
-	//		currentPoly = otherPoly;
-	//		otherPoly = temp;
-	//		curr = min;
-	//		
-	//		//cout << "adding new intersection: " << minIntersection.x << ", " << minIntersection.y << endl;
-
-	//		currPoint = minIntersection;
-
-	//		TerrainPoint *tp = new TerrainPoint( currPoint, false );
-	//		
-	//		
-	//		z.AddPoint( tp );
-	//		
-	//		
-	//		nextPoint = curr->pos;
-	//	}
-	//	else
-	//	{
-
-	//		currPoint = curr->pos;
-
-	//		TerrainPoint *tp = new TerrainPoint( currPoint, false );
-	//		tp->gate = curr->gate;
-	//		if( tp->gate != NULL )
-	//		{
-	//		//	cout << "other gate not null!" << endl;
-	//			if( curr == tp->gate->point0 )
-	//			{
-	//		//		cout << "putting a" << endl;
-	//				tp->gate->point0 = tp;
-	//			}
-	//			else if( curr == tp->gate->point1 )
-	//			{
-	//		//		cout << "putting b at: " << tp->pos.x << ", " << tp->pos.y << endl;
-	//				tp->gate->point1 = tp;
-	//				
-	//			}
-	//			else
-	//			{
-	//				//cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y << ", "
-	//				//	<< tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << ", " << endl;
-	//				//cout << "tp: " << tp->pos.x << ", " << tp->pos.y << endl;
-	//				assert( false );
-	//				//tp->gate = NULL;
-	//				//tp->gate == NULL;
-	//			}
-	//		}
-
-	//		
-
-	//		if( currentPoly->enemies.count( curr ) > 0 )
-	//		{
-	//			list<ActorPtr> &en = z.enemies[tp];
-	//			en = currentPoly->enemies[curr];
-	//		}
-	//		
-	//		z.AddPoint( tp );
-
-
-	//		//cout << "adding point: " << currPoint.x << ", " << currPoint.y << endl;
-
-	//		if( currPoint == startPoint && !firstTime )
-	//			break;
-	//		
-	//		if (currentPoly->inverse)
-	//		{
-	//			curr = curr->prev;
-	//			if (curr == NULL)
-	//				curr = currentPoly->pointEnd;
-	//		}
-	//		else
-	//		{
-	//			curr = curr->next;
-	//			if (curr == NULL)
-	//			{
-	//				curr = currentPoly->pointStart;
-	//			}
-	//			nextPoint = curr->pos;
-	//		}
-	//	}
-	//	firstTime = false;
-	//}
 
 	poly->Reset();
 	
@@ -9238,8 +9000,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				
 						double testRadius = 200;
 						
-						if( inversePolygon != NULL )
-							polygons.push_back( inversePolygon );
+						/*if( inversePolygon != NULL )
+							polygons.push_back( inversePolygon );*/
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
 							if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
@@ -9336,8 +9098,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 							}
 						}
-						if( inversePolygon != NULL )
-							polygons.pop_back();
+						/*if( inversePolygon != NULL )
+							polygons.pop_back();*/
 					}
 				}
 
@@ -14863,8 +14625,8 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
 
-	if( inversePolygon != NULL )
-		polygons.push_back( inversePolygon );
+	/*if( inversePolygon != NULL )
+		polygons.push_back( inversePolygon );*/
 
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -14968,8 +14730,8 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 		}
 	}
-	if( inversePolygon != NULL )
-		polygons.pop_back();
+	/*if( inversePolygon != NULL )
+		polygons.pop_back();*/
 
 	return gi;
 
@@ -15181,21 +14943,21 @@ void EditSession::ExecuteTerrainCompletion()
 		}
 
 		
-		bool intersectInverse = false;
-		if (inversePolygon != NULL)
-		{
-			if (polygonInProgress->LinesTooClose(inversePolygon.get(), minimumEdgeLength))
-			{
-				//cout << "LINES TOO CLOSE" << endl;
-				applyOkay = false;
-			}
-			else if (polygonInProgress->LinesIntersect(inversePolygon.get()))
-			{
-				//not too close and I intersect, so I can add
-				intersectingPolys.push_back(inversePolygon);
-				intersectInverse = true;
-			}
-		}
+		//bool intersectInverse = false;
+		//if (inversePolygon != NULL)
+		//{
+		//	if (polygonInProgress->LinesTooClose(inversePolygon.get(), minimumEdgeLength))
+		//	{
+		//		//cout << "LINES TOO CLOSE" << endl;
+		//		applyOkay = false;
+		//	}
+		//	else if (polygonInProgress->LinesIntersect(inversePolygon.get()))
+		//	{
+		//		//not too close and I intersect, so I can add
+		//		intersectingPolys.push_back(inversePolygon);
+		//		intersectInverse = true;
+		//	}
+		//}
 
 		//temporary to make sure it doesnt add on top of stuff
 		
@@ -15210,10 +14972,10 @@ void EditSession::ExecuteTerrainCompletion()
 
 			if( empty && Keyboard::isKeyPressed(Keyboard::F1))
 			{
-				SetInversePoly();
+				polygonInProgress->inverse = true;
 			}
 			
-			else if (intersectInverse)
+			/*else if (intersectInverse)
 			{
 				bool oldSelected = inversePolygon->selected;
 				inversePolygon->SetSelected( true );
@@ -15224,10 +14986,18 @@ void EditSession::ExecuteTerrainCompletion()
 				inversePolygon->SetSelected( oldSelected );
 
 				SetInversePoly();
-			}
-			else if( empty && !intersectInverse )
+			}*/
+			if( empty )
 			{
-				polygonInProgress->Finalize();
+				if (polygonInProgress->inverse)
+				{
+					polygonInProgress->FinalizeInverse();
+					inversePolygon = polygonInProgress;
+				}
+				else
+				{
+					polygonInProgress->Finalize();
+				}
 
 				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
 
@@ -15251,18 +15021,13 @@ void EditSession::ExecuteTerrainCompletion()
 				//then do a replacebrushaction
 
 				//polygonInProgress->Finalize();
-				polygonInProgress->FixWinding();
+				//polygonInProgress->FixWinding();
 
 				//hold shift ATM to activate subtraction
 				if( !( Keyboard::isKeyPressed( Keyboard::LShift ) ||
 					Keyboard::isKeyPressed( Keyboard::RShift ) ) )
 				{
 					ExecuteTerrainAdd( intersectingPolys );
-					if (intersectInverse)
-					{
-						//ExecuteTerrainAdd(intersectingPolys);
-						SetInversePoly();
-					}
 				}
 				else
 				{

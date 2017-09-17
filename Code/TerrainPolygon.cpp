@@ -339,15 +339,12 @@ void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
 	cout << "deactivating polygon" << endl;
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 
-	if( !inverse )
-	{
-		edit->polygons.remove( poly );
-	}
-	else
+	edit->polygons.remove(poly);
+
+	if (inverse)
 	{
 		edit->inversePolygon.reset();
 	}
-	
 	
 	//remove enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -378,11 +375,10 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 {
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 
-	if( !inverse )
-	{
-		edit->polygons.push_back( poly );
-	}
-	else
+	edit->polygons.push_back(poly);
+	
+	
+	if (inverse)
 	{
 		edit->inversePolygon = poly;
 	}
