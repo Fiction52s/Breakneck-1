@@ -17,6 +17,8 @@ double dot( sf::Vector2<double> a, sf::Vector2<double> b );
 
 struct LineIntersection
 {
+	LineIntersection()
+		:parallel(true) {}
 	LineIntersection(const sf::Vector2<double> &pos, bool p );
 	sf::Vector2<double> position;
 	bool parallel;

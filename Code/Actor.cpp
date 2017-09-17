@@ -18085,7 +18085,7 @@ void Actor::UpdateSprite()
 			{
 				scorpSprite.setTexture( *ts_scorpRun->texture );
 				
-				SetSpriteTile( &scorpSprite, ts_scorpRun, f, fr );
+				SetSpriteTile( &scorpSprite, ts_scorpRun, f/2, fr );
 				
 				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
 					scorpSprite.getLocalBounds().height / 2 + 20 );
@@ -18184,7 +18184,7 @@ void Actor::UpdateSprite()
 			{
 				scorpSprite.setTexture( *ts_scorpSprint->texture );
 				
-				SetSpriteTile( &scorpSprite, ts_scorpSprint, tFrame, r );
+				SetSpriteTile( &scorpSprite, ts_scorpSprint, tFrame/2, r );
 				
 				scorpSprite.setOrigin( scorpSprite.getLocalBounds().width / 2,
 					scorpSprite.getLocalBounds().height / 2 + 20 );

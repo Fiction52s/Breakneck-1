@@ -1858,22 +1858,17 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 		it = it->next;
 	}
 
-	if( !inverse )
-	{
-		return c;
-	}
-	else
-	{
-		return !c;
-		/*double inverseRange;
-		if( !c )
-		{
-			for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-			{
-				if( length( V2d( testPoint.x, testPoint.y ) - V2d( curr->pos.x, curr->pos.y ) ) >  )
-			}
-		}*/
-	}
+
+	return c;
+	//if( !inverse )
+	//{
+	//	
+	//}
+	//else
+	//{
+	//	return !c;
+
+	//}
 }
 
 void TerrainPolygon::FixWinding()
@@ -1938,6 +1933,67 @@ void TerrainPolygon::AddPoint( TerrainPoint* tp)
 		pointEnd->next = NULL;
 	}
 	++numPoints;
+}
+
+LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
+	TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd )
+{
+	LineIntersection li;
+
+	V2d A(a.x, a.y);
+
+	outSegStart = NULL;
+	outSegEnd = NULL;
+
+	TerrainPoint *prevP = NULL;
+	TerrainPoint *other = NULL;
+	TerrainPoint *otherPrev = NULL;
+
+	TerrainPoint *min = NULL;
+	Vector2i minIntersection;
+	bool emptyInter = true;
+
+	TerrainPoint *realStartPoint = NULL;
+	TerrainPoint *currP = pointStart;
+	TerrainPoint *nextP = NULL;
+
+	V2d storedPos;
+
+	for (; currP != NULL; currP = currP->next)
+	{
+		nextP = currP->next;
+		if (nextP == NULL)
+			nextP = pointStart;
+
+		
+		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos);
+		//Vector2i lii(round(li.position.x), round(li.position.y));
+
+		if (!li.parallel)
+		{
+			if (emptyInter)
+			{
+				emptyInter = false;
+				storedPos = li.position;
+				outSegStart = currP;
+				outSegEnd = nextP;
+			}
+			else if (length(li.position - A) < length(storedPos - A))
+			{
+				storedPos = li.position;
+				outSegStart = currP;
+				outSegEnd = nextP;
+			}
+		}
+	}
+
+	if (!emptyInter)
+	{
+		li.position = storedPos;
+		li.parallel = false;
+	}
+
+	return li;
 }
 
 void TerrainPolygon::InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint )
@@ -2437,8 +2493,12 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p  )
 	//make sure its not ourselves!
 	assert( p != this );
 
-	//check aabb
 	if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
+		return LinesIntersect(p);
+
+	return false;
+	//check aabb
+	/*if( left <= p->right && right >= p->left && top <= p->bottom && bottom >= p->top )
 	{	
 		TerrainPoint *curr = pointStart;
 		Vector2i currPos = curr->pos;
@@ -2487,7 +2547,7 @@ bool TerrainPolygon::IsTouching( TerrainPolygon *p  )
 			}
 		}
 	}
-	return false;
+	return false;*/
 }
 
 void TerrainPolygon::ShowGrass( bool show )
@@ -2650,11 +2710,6 @@ bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance )
 		{
 			prev = pcurr->prev;
 		}
-		//if( pcurr->pos == oldPoint || pcurr->pos == oldPoint )
-		//{
-		//	prev = pcurr;
-		//	continue;
-		//}
 		
 		if( SegmentWithinDistanceOfPoint( prev->pos, pcurr->pos, point, minDistance ) )
 		{
@@ -2664,6 +2719,7 @@ bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance )
 	return false;
 }
 
+//points are circles, and the lines are bars, and you're testing to see if a point is within that or not.
 bool TerrainPolygon::SegmentWithinDistanceOfPoint( sf::Vector2i startSeg, sf::Vector2i endSeg, sf::Vector2i testPoint, int distance )
 {
 	V2d p( testPoint.x, testPoint.y );

@@ -180,6 +180,8 @@ struct TerrainPolygon : ISelectable
 	void SetMaterialType(
 		int world, int variation );
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
+	LineIntersection GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
+		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd );
 	//std::string material;
 	void RemoveSelectedPoints();
 	std::list<Inter> GetIntersections( TerrainPolygon *poly );
@@ -1417,7 +1419,7 @@ struct EditSession : GUIHandler
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 	bool IsExtendPointOkay( boost::shared_ptr<TerrainPolygon> poly,
 		sf::Vector2f testPoint );
-	bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon * poly );
+	//bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon * poly );
 	void ExtendAdd();
 	bool IsPolygonExternallyValid( TerrainPolygon &poly,
 		 TerrainPolygon* ignore );
@@ -1533,7 +1535,14 @@ struct EditSession : GUIHandler
 	bool selectedActorGrabbed;
 
 	//CREATE_TERRAIN mode
-	void Add( boost::shared_ptr<TerrainPolygon> brush, 
+	enum AddResult
+	{
+		ADD_SUCCESS,
+		ADD_INVALID_RESULT,
+		ADD_NO_CHANGE,
+		ADD_
+	};
+	AddResult Add( boost::shared_ptr<TerrainPolygon> brush,
 		boost::shared_ptr<TerrainPolygon> poly);	
 	void Sub( TerrainPolygon *brush,
 		std::list<PolyPtr> &polys,
