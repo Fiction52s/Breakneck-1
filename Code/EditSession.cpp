@@ -3579,11 +3579,14 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 			starts.push_back(Inter( outSegStart, li.position ));
 		}
 
+		bool startsEmpty = false;
+		TerrainPoint *leftPoint = NULL;
 		if (starts.empty())
 		{
+			startsEmpty = true;
 			//this means that all the points that lead to intersections are actually inside the polygon. in this case, we can just
 			//get the leftmost and start there
-			TerrainPoint *leftPoint = (*polyIt)->GetMostLeftPoint();
+			leftPoint = (*polyIt)->GetMostLeftPoint();
 			starts.push_back(Inter(leftPoint, V2d(leftPoint->pos.x, leftPoint->pos.y)));
 		}
 
@@ -3677,8 +3680,12 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 				//no intersection
 				else
 				{
-					/*if (!firstRun && nextP == startP)
-						break;*/
+					
+					if (!firstRun && startsEmpty && nextP == leftPoint)
+					{
+						break;
+					}
+						
 
 					TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
 					//z.AddPoint(tp);
