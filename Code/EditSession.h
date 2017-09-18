@@ -179,6 +179,7 @@ struct TerrainPolygon : ISelectable
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation );
+	TerrainPoint *GetMostLeftPoint();
 	bool SharesPoints(TerrainPolygon *poly);
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
 	LineIntersection GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,

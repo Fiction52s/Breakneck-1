@@ -3511,6 +3511,7 @@ struct SubInfo
 
 void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<PolyPtr> &results)
 {
+	list<PolyPtr> potentialInversePolys;
 	brushPtr->FixWinding();
 	for (list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt)
 	{
@@ -3519,6 +3520,7 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 		TerrainPolygon *poly = (*polyIt).get();
 
 		list<Inter> inters = brushPtr->GetIntersections(poly);
+		assert(!inters.empty() );
 		list<TerrainPoint*> interStarts;
 
 		LineIntersection li;
@@ -3531,21 +3533,37 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 		TerrainPoint *outSegStart;
 		TerrainPoint *outSegEnd;
 
-
-
 		PolyPtr currentPoly = NULL;
 		PolyPtr otherPoly = NULL;
 
 		bool alreadyTested = false;
+		//start moving along brush
 		for (auto it = inters.begin(); it != inters.end(); ++it)
 		{
 			currP = (*it).first;
+			nextP = currP->next;
+			if (nextP == NULL)
+				nextP = brushPtr->pointStart;
 
-			if (poly->ContainsPoint(Vector2f(currP->pos.x, currP->pos.y)))
+
+			V2d dir = normalize(V2d(nextP->pos.x, nextP->pos.y) - V2d(currP->pos.x, currP->pos.y));
+			
+			//if (poly->ContainsPoint(Vector2f(currP->pos.x, currP->pos.y)))
+			//	continue;
+
+			LineIntersection li = poly->GetSegmentFirstIntersection(currP->pos, nextP->pos, outSegStart, outSegEnd);
+
+			assert(!li.parallel);
+			
+			V2d otherEdge = normalize(V2d(outSegEnd->pos.x, outSegEnd->pos.y) - V2d(outSegStart->pos.x, outSegStart->pos.y));
+			if (cross(dir, otherEdge) >= 0)
+			{
+				//this result will be less than 0 if you're coming from outside the polygon
 				continue;
+			}
 
 			alreadyTested = false;
-			for (auto it2 = interStarts.begin(); it2 != interStarts.end(); ++it2 )
+			for (auto it2 = interStarts.begin(); it2 != interStarts.end(); ++it2)
 			{
 				if ((*it2) == currP)
 				{
@@ -3558,15 +3576,15 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 			interStarts.push_back(currP);
 
-			nextP = currP->next;
-			if (nextP == NULL)
-				nextP = brushPtr->pointStart;
-
-			LineIntersection li = poly->GetSegmentFirstIntersection(currP->pos, nextP->pos, outSegStart, outSegEnd);
-
-			assert(!li.parallel);
-			
 			starts.push_back(Inter( outSegStart, li.position ));
+		}
+
+		if (starts.empty())
+		{
+			//this means that all the points that lead to intersections are actually inside the polygon. in this case, we can just
+			//get the leftmost and start there
+			TerrainPoint *leftPoint = (*polyIt)->GetMostLeftPoint();
+			starts.push_back(Inter(leftPoint, V2d(leftPoint->pos.x, leftPoint->pos.y)));
 		}
 
 		sf::Vector2i startSegPos;
@@ -15536,9 +15554,9 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
-		list<Inter> inters = (*it)->GetIntersections( polygonInProgress.get() );
-		cout << "inters size: " << inters.size() << endl;
-		addedPointsMap[(*it).get()] = InsertTemporaryPoints( (*it).get(), inters );
+		//list<Inter> inters = (*it)->GetIntersections( polygonInProgress.get() );
+		//cout << "inters size: " << inters.size() << endl;
+		//addedPointsMap[(*it).get()] = InsertTemporaryPoints( (*it).get(), inters );
 
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
@@ -15551,7 +15569,7 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	list<PolyPtr> results;
 	//cout << "calling sub!" << endl;
 	Sub( polygonInProgress, intersectingPolys, results );
-
+	 
 	//before deleting the points, need to remove and delete the points of the new polygons
 	//that have the same values
 

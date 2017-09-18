@@ -2128,6 +2128,20 @@ bool TerrainPolygon::SharesPoints(TerrainPolygon *poly)
 	return false;
 }
 
+TerrainPoint *TerrainPolygon::GetMostLeftPoint()
+{
+	TerrainPoint *leftPoint = pointStart;
+	
+	for (TerrainPoint *currP = pointStart; currP != NULL; currP = currP->next)
+	{
+		if (currP->pos.x < leftPoint->pos.x)
+		{
+			leftPoint = currP;
+		}
+	}
+	return leftPoint;
+}
+
 //void TerrainPolygon::MovePoint(
 
 bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
