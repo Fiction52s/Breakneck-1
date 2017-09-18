@@ -1026,7 +1026,7 @@ void MainMenu::CustomMapsOption()
 									{
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
-										GameEditLoop( ls.GetSelectedPath() );
+										//GameEditLoop( ls.GetSelectedPath() );
 
 										ls.UpdateMapList();
 
@@ -1053,7 +1053,7 @@ void MainMenu::CustomMapsOption()
 										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
 
 										//cout << "copying to: " << to.string() << endl;
-										GameEditLoop( toNode->GetLocalPath() );
+										//GameEditLoop( toNode->GetLocalPath() );
 
 										ls.UpdateMapList();
 

@@ -179,6 +179,7 @@ struct TerrainPolygon : ISelectable
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation );
+	bool SharesPoints(TerrainPolygon *poly);
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
 	LineIntersection GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
 		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd );
@@ -1544,7 +1545,7 @@ struct EditSession : GUIHandler
 	};
 	AddResult Add( boost::shared_ptr<TerrainPolygon> brush,
 		boost::shared_ptr<TerrainPolygon> poly);	
-	void Sub( TerrainPolygon *brush,
+	void Sub(PolyPtr brushPtr,
 		std::list<PolyPtr> &polys,
 		std::list<PolyPtr> &results );
 	

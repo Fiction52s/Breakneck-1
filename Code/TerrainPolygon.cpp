@@ -1004,6 +1004,11 @@ void TerrainPolygon::FinalizeInverse()
 
 void TerrainPolygon::Finalize()
 {
+	if (inverse)
+	{
+		FinalizeInverse();
+		return;
+	}
 	finalized = true;
 	isGrassShowing = false;
 	//material = "mat";
@@ -2013,46 +2018,46 @@ void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 {
 	assert( pointStart != NULL );
 
-	if( tp->prev != NULL )
-	{
-		tp->prev->next = tp->next;
-	}
-	if( tp->next != NULL )
-	{
-		tp->next->prev = tp->prev;
-	}
-
-	if( tp == pointStart )
-	{
-		pointStart = tp->next;
-	}
-	if( tp == pointEnd )
-	{
-		pointEnd = tp->prev;
-	}
-
-	GateInfoPtr gi = tp->gate;
-	if( gi != NULL )
-	{
-		gi->point0->gate = NULL;
-		gi->point1->gate = NULL;
-		gi->edit->gates.remove( gi );
-		//delete gi;
-
-		//was deleting just fine before, but now it needs to be adjusted for undo/redo
-	}
-	//delete tp;
-
-
-	--numPoints;
+if (tp->prev != NULL)
+{
+	tp->prev->next = tp->next;
+}
+if (tp->next != NULL)
+{
+	tp->next->prev = tp->prev;
 }
 
-TerrainPoint * TerrainPolygon::HasPointPos( Vector2i &pos )
+if (tp == pointStart)
+{
+	pointStart = tp->next;
+}
+if (tp == pointEnd)
+{
+	pointEnd = tp->prev;
+}
+
+GateInfoPtr gi = tp->gate;
+if (gi != NULL)
+{
+	gi->point0->gate = NULL;
+	gi->point1->gate = NULL;
+	gi->edit->gates.remove(gi);
+	//delete gi;
+
+	//was deleting just fine before, but now it needs to be adjusted for undo/redo
+}
+//delete tp;
+
+
+--numPoints;
+}
+
+TerrainPoint * TerrainPolygon::HasPointPos(Vector2i &pos)
 {
 	TerrainPoint *curr = pointStart;
-	while( curr != NULL )
+	while (curr != NULL)
 	{
-		if( curr->pos == pos )
+		if (curr->pos == pos)
 		{
 			return curr;
 		}
@@ -2065,11 +2070,11 @@ TerrainPoint * TerrainPolygon::HasPointPos( Vector2i &pos )
 void TerrainPolygon::Reset()
 {
 	ClearPoints();
-	if( lines != NULL )
-		delete [] lines;
-	if( va != NULL )
+	if (lines != NULL)
+		delete[] lines;
+	if (va != NULL)
 		delete va;
-	if( grassVA != NULL )
+	if (grassVA != NULL)
 		delete grassVA;
 
 	lines = NULL;
@@ -2080,11 +2085,11 @@ void TerrainPolygon::Reset()
 
 void TerrainPolygon::SoftReset()
 {
-	if( lines != NULL )
-		delete [] lines;
-	if( va != NULL )
+	if (lines != NULL)
+		delete[] lines;
+	if (va != NULL)
 		delete va;
-	if( grassVA != NULL )
+	if (grassVA != NULL)
 		delete grassVA;
 
 	lines = NULL;
@@ -2096,7 +2101,7 @@ void TerrainPolygon::SoftReset()
 void TerrainPolygon::ClearPoints()
 {
 	TerrainPoint *curr = pointStart;
-	while( curr != NULL )
+	while (curr != NULL)
 	{
 		TerrainPoint *temp = curr->next;
 		delete curr;
@@ -2106,6 +2111,21 @@ void TerrainPolygon::ClearPoints()
 	pointStart = NULL;
 	pointEnd = NULL;
 	numPoints = 0;
+}
+
+bool TerrainPolygon::SharesPoints(TerrainPolygon *poly)
+{
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	{
+		for (TerrainPoint *other = poly->pointStart; other != NULL; other = other->next)
+		{
+			if (curr->pos == other->pos)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 //void TerrainPolygon::MovePoint(
