@@ -24,7 +24,6 @@
 #include "MainMenu.h"
 #include <crtdbg.h>
 
-
 using namespace std;
 using namespace sf;
 

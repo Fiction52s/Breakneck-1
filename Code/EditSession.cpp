@@ -3186,6 +3186,260 @@ void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon 
 	}
 }
 
+void EditSession::Extend(boost::shared_ptr<TerrainPolygon> extension,
+	boost::shared_ptr<TerrainPolygon> poly )
+{
+	bool extendCW = extension->IsClockwise();
+	poly->FixWinding();
+	//both of these polygons must be confirmed to be valid already in their individual shape
+
+	TerrainPoint *endTransfer = NULL;
+
+	if (!extendCW) //ccw
+	{
+		for (TerrainPoint *t = poly->pointEnd; t != NULL; t = t->prev)
+		{
+			if (t->pos == extension->pointStart->pos)
+			{
+				endTransfer = t;
+			}
+		}
+	}
+	else //cw
+	{
+		for (TerrainPoint *t = poly->pointStart; t != NULL; t = t->next)
+		{
+			if (t->pos == extension->pointEnd->pos)
+			{
+				endTransfer = t;
+			}
+		}
+	}
+
+	bool inverse = false;
+	if ( poly->inverse)
+	{
+		inverse = true;
+	}
+
+	TerrainPolygon z(&grassTex);
+	//1: choose start point
+
+	Vector2i startPoint;
+	bool startPointFound = false;
+	bool firstPolygon = true;
+
+
+	PolyPtr currentPoly = NULL;
+	PolyPtr otherPoly = NULL;
+	TerrainPoint *currP = extension->pointStart;
+
+	TerrainPoint *nextP = NULL;
+	TerrainPoint *startP = NULL;
+
+	TerrainPoint *outStart = NULL;
+	TerrainPoint *outEnd = NULL;
+
+	PolyPtr minPoly = NULL;
+	
+	currentPoly = extension;
+	otherPoly = poly;
+
+	currP = startP;
+	bool firstRun = true;
+	TerrainPoint *tp = new TerrainPoint(currP->pos, false);
+	z.AddPoint(tp);
+
+	Vector2i startSegPos;// = currP->pos;
+	Vector2i endSegPos;
+
+	startSegPos = currP->pos;
+	while (true)
+	{
+
+		if (!extendCW) //ccw extension
+		{
+			nextP = currP->prev;
+			if (nextP == NULL)
+			{
+				if (currentPoly == extension && endTransfer != NULL)
+				{
+					currentPoly = poly;
+					otherPoly = extension;
+					currP = endTransfer;
+					nextP = currP->prev;
+					if (nextP == NULL)
+					{
+						nextP = currentPoly->pointEnd;
+					}
+				}
+				else
+				{
+					nextP = currentPoly->pointEnd;
+				}
+
+			}
+		}
+		else
+		{
+			nextP = currP->next;
+			if (nextP == NULL)
+			{
+				if (currentPoly == extension && endTransfer != NULL)
+				{
+					currentPoly = poly;
+					otherPoly = extension;
+					currP = endTransfer;
+					nextP = currP->next;
+					if (nextP == NULL)
+					{
+						nextP = currentPoly->pointStart;
+					}
+				}
+				else
+				{
+					nextP = currentPoly->pointStart;
+				}
+
+			}
+		}
+
+		
+		
+
+
+		LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd);
+
+		//there was an intersection
+		if (!li.parallel)
+		{
+			Vector2i intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
+
+			PolyPtr temp = currentPoly;
+			currentPoly = otherPoly;
+			otherPoly = temp;
+
+			TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
+			z.AddPoint(tp);
+
+			startSegPos = intersectPoint;
+
+			if (!extendCW)
+			{
+				currP = outEnd;
+			}
+			else
+			{
+				currP = outStart;
+			}
+			
+			
+			
+
+		}
+		//no intersection
+		else
+		{
+			if (!firstRun && nextP->pos == startP->pos)
+				break;
+
+			TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
+			z.AddPoint(tp);
+
+			if (!extendCW)
+			{
+				currP = currP->prev;
+				if (currP == NULL)
+				{
+					if (currentPoly == extension && endTransfer != NULL)
+					{
+						currentPoly = poly;
+						otherPoly = extension;
+						currP = endTransfer;
+					}
+					else
+					{
+						currP = currentPoly->pointEnd;
+					}
+				}
+			}
+			else
+			{
+				currP = currP->next;
+				if (currP == NULL)
+				{
+					if (currentPoly == extension && endTransfer != NULL)
+					{
+						currentPoly = poly;
+						otherPoly = extension;
+						currP = endTransfer;
+					}
+					else
+					{
+						currP = currentPoly->pointStart;
+					}
+				}
+			}
+			
+			
+
+
+			startSegPos = currP->pos;
+
+			/*if (currentPoly->enemies.count(curr) > 0)
+			{
+			list<ActorPtr> &en = z.enemies[tp];
+			en = currentPoly->enemies[curr];
+			}*/
+		}
+
+		firstRun = false;
+	}
+
+	poly->Reset();
+
+	for (TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next)
+	{
+		TerrainPoint *tp = new TerrainPoint(*zit);
+		if (tp->gate != NULL)
+		{
+			//cout << "new polygon will have gate" << endl;
+			if (zit == tp->gate->point0)
+			{
+				tp->gate->point0 = tp;
+				tp->gate->poly0 = poly;
+			}
+			else
+			{
+				tp->gate->point1 = tp;
+				tp->gate->poly1 = poly;
+			}
+		}
+		poly->AddPoint(tp);
+	}
+
+
+	//cout << "about to check for enemy stuff" << endl;
+	//for (TerrainPoint *bit = brush->pointStart; bit != NULL; bit = bit->next)
+	//{
+	//	//cout << "z enems: " << z.enemies.count( zit ) << endl;
+	//	//cout << "enems: " << 
+	//	//if( z.enemies.count( zit ) > 0 )
+	//	if (brush->enemies.count(bit) > 0)
+	//	{
+	//		//list<ActorPtr> &en = poly->enemies[tp];
+	//		//en = z.enemies[zit];
+	//		list<ActorPtr> &en = brush->enemies[bit];//z.enemies[zit];
+
+	//		AttachActorsToPolygon(en, poly.get());
+	//	}
+	//}
+
+	poly->inverse = inverse;
+	poly->Finalize();
+
+	return;
+}
 //
 EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 {
@@ -3281,61 +3535,6 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 	else
 	{
 		startP = leftPoint;
-		/*for (; curr != NULL; curr = curr->next)
-		{
-			if (!brush->ContainsPoint(Vector2f(curr->pos.x, curr->pos.y)))
-			{
-				if (!startPointFound)
-				{
-					startPoint = curr->pos;
-					start = curr;
-					startPointFound = true;
-				}
-				else
-				{
-					if (curr->pos.y > startPoint.y)
-					{
-						startPoint = curr->pos;
-						start = curr;
-					}
-				}
-			}
-		}
-
-		curr = brush->pointStart;
-		for (; curr != NULL; curr = curr->next)
-		{
-			if (!poly->ContainsPoint(Vector2f(curr->pos.x, curr->pos.y)))
-				if (!startPointFound)
-				{
-					startPoint = curr->pos;
-					startPointFound = true;
-					firstPolygon = false;
-					start = curr;
-				}
-				else
-				{
-					if (curr->pos.y > startPoint.y)
-					{
-						startPoint = curr->pos;
-						firstPolygon = false;
-						start = curr;
-					}
-				}
-		}
-
-		if (firstPolygon)
-		{
-			currentPoly = poly;
-			otherPoly = brush;
-		}
-		else
-		{
-			currentPoly = brush;
-			otherPoly = poly;
-		}
-
-		assert(startPointFound);*/
 	}
 
 	currP = startP;
@@ -3509,6 +3708,11 @@ struct SubInfo
 	TerrainPoint *point;
 };
 
+bool IsWithinOne(sf::Vector2i &a, sf::Vector2i &b)
+{
+	return (abs(a.x - b.x) <= 1 && abs(a.y - b.y) <= 1);
+}
+
 void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<PolyPtr> &results)
 {
 	list<PolyPtr> potentialInversePolys;
@@ -3540,43 +3744,58 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 		//start moving along brush
 		for (auto it = inters.begin(); it != inters.end(); ++it)
 		{
-			currP = (*it).first;
+			currP = (*it).point;
 			nextP = currP->next;
 			if (nextP == NULL)
 				nextP = brushPtr->pointStart;
 
+			bool pointInside = (*polyIt)->ContainsPoint(Vector2f(currP->pos.x, currP->pos.y));
 
-			V2d dir = normalize(V2d(nextP->pos.x, nextP->pos.y) - V2d(currP->pos.x, currP->pos.y));
-			
-			//if (poly->ContainsPoint(Vector2f(currP->pos.x, currP->pos.y)))
+			int intersectionNumber = (*polyIt)->GetIntersectionNumber(currP->pos, nextP->pos, (*it), outSegStart );
+			if ( (!pointInside && intersectionNumber % 2 == 0) 
+				|| ( pointInside && intersectionNumber % 2 != 0 ) )
+			{
+				TerrainPoint *outEnd = outSegStart->next;
+				if (outEnd == NULL)
+					outEnd = (*polyIt)->pointStart;
+
+
+
+				(*it).point = outSegStart;
+				starts.push_back((*it));
+			}
+
+			//V2d dir = normalize(V2d(nextP->pos.x, nextP->pos.y) - V2d(currP->pos.x, currP->pos.y));
+			//
+			////if (poly->ContainsPoint(Vector2f(currP->pos.x, currP->pos.y)))
+			////	continue;
+
+			//LineIntersection li = poly->GetSegmentFirstIntersection(currP->pos, nextP->pos, outSegStart, outSegEnd);
+
+			//assert(!li.parallel);
+			//
+			//V2d otherEdge = normalize(V2d(outSegEnd->pos.x, outSegEnd->pos.y) - V2d(outSegStart->pos.x, outSegStart->pos.y));
+			//if (cross(dir, otherEdge) >= 0)
+			//{
+			//	//this result will be less than 0 if you're coming from outside the polygon
+			//	continue;
+			//}
+
+			//alreadyTested = false;
+			//for (auto it2 = interStarts.begin(); it2 != interStarts.end(); ++it2)
+			//{
+			//	if ((*it2) == currP)
+			//	{
+			//		alreadyTested = true;
+			//		break;
+			//	}
+			//}
+			//if (alreadyTested)
 			//	continue;
 
-			LineIntersection li = poly->GetSegmentFirstIntersection(currP->pos, nextP->pos, outSegStart, outSegEnd);
+			//interStarts.push_back(currP);
 
-			assert(!li.parallel);
 			
-			V2d otherEdge = normalize(V2d(outSegEnd->pos.x, outSegEnd->pos.y) - V2d(outSegStart->pos.x, outSegStart->pos.y));
-			if (cross(dir, otherEdge) >= 0)
-			{
-				//this result will be less than 0 if you're coming from outside the polygon
-				continue;
-			}
-
-			alreadyTested = false;
-			for (auto it2 = interStarts.begin(); it2 != interStarts.end(); ++it2)
-			{
-				if ((*it2) == currP)
-				{
-					alreadyTested = true;
-					break;
-				}
-			}
-			if (alreadyTested)
-				continue;
-
-			interStarts.push_back(currP);
-
-			starts.push_back(Inter( outSegStart, li.position ));
 		}
 
 		bool startsEmpty = false;
@@ -3599,13 +3818,13 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 			currentPoly = (*polyIt);
 			otherPoly = brushPtr;
 
-			startSegPos = Vector2i(round((*it).second.x), round((*it).second.y));
+			startSegPos = Vector2i(round((*it).position.x), round((*it).position.y));
 			Vector2i startPos = startSegPos;
 			TerrainPoint *tp = new TerrainPoint(startSegPos, false);
 			newPolyPoints.push_back(tp);
 			firstRun = true;
 
-			currP = (*it).first;
+			currP = (*it).point;
 
 			while (true)
 			{
@@ -3619,7 +3838,7 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 
 
-				if (currentPoly == (*polyIt))
+				if (currentPoly == (*polyIt) || (*polyIt)->inverse )
 				{
 					nextP = currP->next;
 					if (nextP == NULL)
@@ -3627,7 +3846,7 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 				}
 				else
 				{
-					//go ccw on brush
+					//go ccw on brush if not inverse
 					nextP = currP->prev;
 					if (nextP == NULL)
 						nextP = currentPoly->pointEnd;
@@ -3647,7 +3866,7 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 				{
 					Vector2i intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
 					
-					if (intersectPoint == startPos )
+					if ( IsWithinOne( intersectPoint, startPos ) )
 					{
 						break;
 					}
@@ -3661,13 +3880,13 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 					startSegPos = intersectPoint;
 
-					/*if (inverse && !currentPoly->inverse)
+					/*if (inverse && !currentPoly->inver se)
 					{
 						currP = outEnd;
 					}
 					else*/
 
-					if( currentPoly == (*polyIt) )
+					if( currentPoly == (*polyIt) || (*polyIt)->inverse )
 					{
 						currP = outSegStart;
 					}
@@ -3706,59 +3925,59 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 //		//		cout << "putting b at: " << tp->pos.x << ", " << tp->pos.y << endl;
 //		tp->gate->point1 = tp;
 
-//	}
-//	else
-//	{
-//		//cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y << ", "
-//		//	<< tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << ", " << endl;
-//		//cout << "tp: " << tp->pos.x << ", " << tp->pos.y << endl;
-//		assert(false);
-//		//tp->gate = NULL;
-//		//tp->gate == NULL;
-//	}
-//}
+					//	}
+					//	else
+					//	{
+					//		//cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y << ", "
+					//		//	<< tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << ", " << endl;
+					//		//cout << "tp: " << tp->pos.x << ", " << tp->pos.y << endl;
+					//		assert(false);
+					//		//tp->gate = NULL;
+					//		//tp->gate == NULL;
+					//	}
+					//}
 
-/*if (inverse && !currentPoly->inverse)
-{
-	currP = currP->prev;
-	if (currP == NULL)
-	{
-		currP = currentPoly->pointEnd;
-	}
-}
-else*/
-/*{
-	currP = currP->next;
-	if (currP == NULL)
-	{
-		currP = currentPoly->pointStart;
-	}
-}*/
+					/*if (inverse && !currentPoly->inverse)
+					{
+						currP = currP->prev;
+						if (currP == NULL)
+						{
+							currP = currentPoly->pointEnd;
+						}
+					}
+					else*/
+					/*{
+						currP = currP->next;
+						if (currP == NULL)
+						{
+							currP = currentPoly->pointStart;
+						}
+					}*/
 
-if (currentPoly == (*polyIt))
-{
-	currP = currP->next;
-	if (currP == NULL)
-	{
-		currP = currentPoly->pointStart;
-	}
-}
-else
-{
-	currP = currP->prev;
-	if (currP == NULL)
-	{
-		currP = currentPoly->pointEnd;
-	}
-}
+					if (currentPoly == (*polyIt) || (*polyIt)->inverse )
+					{
+						currP = currP->next;
+						if (currP == NULL)
+						{
+							currP = currentPoly->pointStart;
+						}
+					}
+					else
+					{
+						currP = currP->prev;
+						if (currP == NULL)
+						{
+							currP = currentPoly->pointEnd;
+						}
+					}
 
-startSegPos = currP->pos;
+					startSegPos = currP->pos;
 
-/*if (currentPoly->enemies.count(curr) > 0)
-{
-list<ActorPtr> &en = z.enemies[tp];
-en = currentPoly->enemies[curr];
-}*/
+					/*if (currentPoly->enemies.count(curr) > 0)
+					{
+					list<ActorPtr> &en = z.enemies[tp];
+					en = currentPoly->enemies[curr];
+					}*/
 				}
 
 				firstRun = false;
@@ -3809,14 +4028,44 @@ en = currentPoly->enemies[curr];
 
 			if (!sharesPoints)
 			{
-				newPoly->Finalize();
+				//newPoly->Finalize();
+				if ((*polyIt)->inverse)
+				{
+					potentialInversePolys.push_back(newPoly);
+				}
 				results.push_back(newPoly);
 			}
 		}
 
 	}
 
-	
+	bool isOuter;
+	for (auto it = potentialInversePolys.begin(); it != potentialInversePolys.end(); ++it)
+	{
+		isOuter = true;
+		for (auto it2 = potentialInversePolys.begin(); it2 != potentialInversePolys.end(); ++it2)
+		{
+			if ((*it) == (*it2))
+				continue;
+
+			if (!(*it)->Contains((*it2).get()))
+			{
+				isOuter = false;
+			}
+		}
+
+		if (isOuter)
+		{
+			(*it)->inverse = true;
+			break;
+		}
+	}
+
+	//finalize now that we've found our inverse
+	for (auto it = results.begin(); it != results.end(); ++it)
+	{
+		(*it)->Finalize();
+	}
 
 
 	return;
@@ -8434,7 +8683,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 											if( contains )
 											{
-												extendingPolygon->Cut( extendingPoint, curr, polygonInProgress );	
+												extendingPolygon->Cut2( extendingPoint, curr, polygonInProgress );	
 												polygonInProgress->Reset();
 												done = true;
 												break;
@@ -15467,7 +15716,7 @@ list<TerrainPoint*> InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &in
 	map<TerrainPoint*, list<V2d>> interMap;
 	for( list<Inter>::iterator it = inters.begin(); it != inters.end(); ++it )
 	{
-		interMap[(*it).first].push_back( (*it).second );
+		interMap[(*it).point].push_back( (*it).position );
 	}
 
 	for( map<TerrainPoint*, list<V2d>>::iterator it = interMap.begin(); it != interMap.end(); ++it )

@@ -1966,7 +1966,7 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 		if (nextP == NULL)
 			nextP = pointStart;
 
-		
+
 		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos);
 		//Vector2i lii(round(li.position.x), round(li.position.y));
 
@@ -1996,6 +1996,73 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 
 	return li;
 }
+
+bool compareInter(DetailedInter &inter0, DetailedInter &inter1)
+{
+	TerrainPoint *start = inter0.inter.point;
+	V2d startD = V2d(start->pos.x, start->pos.y);
+	return length(inter0.inter.position - startD) < length(inter1.inter.position- startD);
+}
+
+int TerrainPolygon::GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inter &inter,
+	TerrainPoint *&outSegStart)
+{
+	outSegStart = NULL;
+
+	TerrainPoint dummy(a, false);
+
+	LineIntersection li;
+
+	//V2d A(a.x, a.y);
+
+	TerrainPoint *prevP = NULL;
+	TerrainPoint *other = NULL;
+	TerrainPoint *otherPrev = NULL;
+
+	TerrainPoint *min = NULL;
+	Vector2i minIntersection;
+	bool emptyInter = true;
+
+	TerrainPoint *realStartPoint = NULL;
+	TerrainPoint *currP = pointStart;
+	TerrainPoint *nextP = NULL;
+
+	V2d storedPos;
+
+	list<DetailedInter> inters;
+	list<DetailedInter> sortedInters;
+
+	for (; currP != NULL; currP = currP->next)
+	{
+		nextP = currP->next;
+		if (nextP == NULL)
+			nextP = pointStart;
+
+		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos);
+		//Vector2i lii(round(li.position.x), round(li.position.y));
+
+		if (!li.parallel)
+		{
+			inters.push_back(DetailedInter(&dummy, li.position, currP));
+		}
+	}
+
+	inters.sort(compareInter);
+
+	int interIndex = 0;
+	for (auto it = inters.begin(); it != inters.end(); ++it )
+	{
+		if ((*it).inter.position == inter.position)
+		{
+			outSegStart = (*it).otherPoint;
+			return interIndex;
+		}
+		++interIndex;
+	}
+
+	return -1;
+}
+
 
 void TerrainPolygon::InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint )
 {

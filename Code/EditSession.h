@@ -142,7 +142,32 @@ struct TerrainBrush
 	
 };
 
-typedef std::pair<TerrainPoint*,sf::Vector2<double>> Inter;
+struct Inter
+{
+	Inter()
+		:point( NULL )
+	{
+
+	}
+	Inter(TerrainPoint *p_point, sf::Vector2<double> &p_pos)
+		:point( p_point ), position( p_pos )
+	{
+
+	}
+	TerrainPoint *point;
+	sf::Vector2<double> position;
+};
+
+struct DetailedInter
+{
+	DetailedInter(TerrainPoint *p_point, sf::Vector2<double> &p_pos, TerrainPoint *p_otherPoint)
+		:inter( p_point, p_pos ), otherPoint( p_otherPoint )
+	{
+
+	}
+	Inter inter;
+	TerrainPoint *otherPoint;
+};
 struct TerrainPolygon : ISelectable
 {
 	enum TerrainWorldType
@@ -179,6 +204,7 @@ struct TerrainPolygon : ISelectable
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation );
+	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inter &inter, TerrainPoint *&outSegStart );
 	TerrainPoint *GetMostLeftPoint();
 	bool SharesPoints(TerrainPolygon *poly);
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
@@ -202,8 +228,9 @@ struct TerrainPolygon : ISelectable
 	
 	
 	void ShowGrass( bool show );
-	void Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
-	void Cut( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
+	void Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
+	void Cut2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
+	
 	void SwitchGrass( sf::Vector2<double> mousePos );
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
@@ -1549,6 +1576,8 @@ struct EditSession : GUIHandler
 	void Sub(PolyPtr brushPtr,
 		std::list<PolyPtr> &polys,
 		std::list<PolyPtr> &results );
+	void Extend(boost::shared_ptr<TerrainPolygon> extension,
+		boost::shared_ptr<TerrainPolygon> poly );
 	
 	
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
