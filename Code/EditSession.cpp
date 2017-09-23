@@ -3441,8 +3441,9 @@ void EditSession::Extend(boost::shared_ptr<TerrainPolygon> extension,
 	return;
 }
 //
-EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
+EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPolygon *&outPoly )
 {
+	outPoly = NULL;
 	brush->FixWinding();
 	poly->FixWinding();
 	//both of these polygons must be confirmed to be valid already in their individual shape
@@ -3453,7 +3454,8 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 		inverse = true;
 	}
 
-	TerrainPolygon z( &grassTex );
+	outPoly = new TerrainPolygon(&grassTex);
+	//TerrainPolygon z( &grassTex );
 	//1: choose start point
 
 	Vector2i startPoint;
@@ -3540,7 +3542,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 	currP = startP;
 	bool firstRun = true;
 	TerrainPoint *tp = new TerrainPoint(currP->pos, false);
-	z.AddPoint(tp);
+	outPoly->AddPoint(tp);
 
 	Vector2i startSegPos;// = currP->pos;
 	Vector2i endSegPos;
@@ -3574,7 +3576,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 			otherPoly = temp;
 
 			TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
-			z.AddPoint(tp);
+			outPoly->AddPoint(tp);
 
 			startSegPos = intersectPoint;
 
@@ -3595,7 +3597,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 				break;
 
 			TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
-			z.AddPoint(tp);
+			outPoly->AddPoint(tp);
 
 			//deal with enemies and gates
 			//tp->gate = curr->gate;
@@ -3654,47 +3656,47 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly )
 		firstRun = false;
 	}
 
-	poly->Reset();
+	//poly->Reset();
 
-	for (TerrainPoint *zit = z.pointStart; zit != NULL; zit = zit->next)
-	{
-		TerrainPoint *tp = new TerrainPoint(*zit);
-		if (tp->gate != NULL)
-		{
-			//cout << "new polygon will have gate" << endl;
-			if (zit == tp->gate->point0)
-			{
-				tp->gate->point0 = tp;
-				tp->gate->poly0 = poly;
-			}
-			else
-			{
-				tp->gate->point1 = tp;
-				tp->gate->poly1 = poly;
-			}
-		}
-		poly->AddPoint(tp);
-	}
+	//for (TerrainPoint *zit = outPoly->pointStart; zit != NULL; zit = zit->next)
+	//{
+	//	TerrainPoint *tp = new TerrainPoint(*zit);
+	//	if (tp->gate != NULL)
+	//	{
+	//		//cout << "new polygon will have gate" << endl;
+	//		if (zit == tp->gate->point0)
+	//		{
+	//			tp->gate->point0 = tp;
+	//			tp->gate->poly0 = poly;
+	//		}
+	//		else
+	//		{
+	//			tp->gate->point1 = tp;
+	//			tp->gate->poly1 = poly;
+	//		}
+	//	}
+	//	poly->AddPoint(tp);
+	//}
 
 
 	//cout << "about to check for enemy stuff" << endl;
-	for (TerrainPoint *bit = brush->pointStart; bit != NULL; bit = bit->next)
-	{
-		//cout << "z enems: " << z.enemies.count( zit ) << endl;
-		//cout << "enems: " << 
-		//if( z.enemies.count( zit ) > 0 )
-		if (brush->enemies.count(bit) > 0)
-		{
-			//list<ActorPtr> &en = poly->enemies[tp];
-			//en = z.enemies[zit];
-			list<ActorPtr> &en = brush->enemies[bit];//z.enemies[zit];
+	//for (TerrainPoint *bit = brush->pointStart; bit != NULL; bit = bit->next)
+	//{
+	//	//cout << "z enems: " << z.enemies.count( zit ) << endl;
+	//	//cout << "enems: " << 
+	//	//if( z.enemies.count( zit ) > 0 )
+	//	if (brush->enemies.count(bit) > 0)
+	//	{
+	//		//list<ActorPtr> &en = poly->enemies[tp];
+	//		//en = z.enemies[zit];
+	//		list<ActorPtr> &en = brush->enemies[bit];//z.enemies[zit];
 
-			AttachActorsToPolygon(en, poly.get());
-		}
-	}
+	//		AttachActorsToPolygon(en, poly.get());
+	//	}
+	//}
 
-	poly->inverse = inverse;
-	poly->Finalize();
+	outPoly->inverse = inverse;
+	outPoly->Finalize();
 
 	return AddResult::ADD_SUCCESS;
 }
@@ -6033,8 +6035,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											if( currentBrush->IsTouching( temp.get() ) )
 											{
 												cout << "before addi: " << (*it)->numPoints << endl;
-						
-												Add( currentBrush, temp );
+												
+												TerrainPolygon *outPoly = NULL;
+												Add( currentBrush, temp, outPoly );
 
 												//currentBrush->Reset();
 												//delete currentBrush;
@@ -13031,7 +13034,7 @@ void EditSession::ExtendPolygon( TerrainPoint *startPoint,
 
 	assert( newEndPoint != NULL );
 
-	newPoly->Extend( newStartPoint, newEndPoint, polygonInProgress );
+	newPoly->Extend2( newStartPoint, newEndPoint, polygonInProgress );
 
 	//PolyPtr chosen( choice );
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( newPoly );
@@ -13592,7 +13595,8 @@ void EditSession::ExtendAdd()
 			{
 				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
 			}*/
-			Add( currentBrush, temp );
+			TerrainPolygon *outPoly = NULL;
+			Add( currentBrush, temp, outPoly);
 			
 			//currentBrush->Reset();
 			polygons.remove( currentBrush );
@@ -15671,6 +15675,7 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
 	tempActors.clear();
 
+	TerrainPolygon *outPoly = NULL;
 	Brush orig;
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
@@ -15678,11 +15683,12 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		orig.AddObject( sp );
 		bool oldSelected = (*it)->selected;
 		(*it)->SetSelected( true );
-		Add( (*it), polygonInProgress );
+		Add( (*it), polygonInProgress, outPoly );
+		polygonInProgress.reset(outPoly);
 		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
 	}
 
-	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
+	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
 
 	progressBrush->Clear();
 	progressBrush->AddObject( sp );

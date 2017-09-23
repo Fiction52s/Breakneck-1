@@ -1217,7 +1217,7 @@ void TerrainPolygon::RemoveSelectedPoints()
 	SetSelected( false );
 }
 
-void TerrainPolygon::Cut( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress )
+void TerrainPolygon::Cut2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress )
 {
 	if( inProgress->numPoints < 1 )
 	{
@@ -1268,7 +1268,7 @@ void TerrainPolygon::Cut( TerrainPoint* startPoint, TerrainPoint*endPoint, boost
 	}*/
 }
 
-void TerrainPolygon::Extend( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
+void TerrainPolygon::Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, PolyPtr inProgress )
 {
 	bool specialCW;
 	TerrainPoint *prevDest = endPoint->prev;

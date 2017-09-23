@@ -1572,7 +1572,7 @@ struct EditSession : GUIHandler
 		ADD_
 	};
 	AddResult Add( boost::shared_ptr<TerrainPolygon> brush,
-		boost::shared_ptr<TerrainPolygon> poly);	
+		boost::shared_ptr<TerrainPolygon> poly, TerrainPolygon *&outPoly );	
 	void Sub(PolyPtr brushPtr,
 		std::list<PolyPtr> &polys,
 		std::list<PolyPtr> &results );
