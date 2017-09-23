@@ -3443,6 +3443,62 @@ void EditSession::Extend(boost::shared_ptr<TerrainPolygon> extension,
 //
 EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPolygon *&outPoly )
 {
+	map<TerrainPoint*, DetailedInter> pointInterMap;
+	//map<TerrainPoint*, Inter> pointInterMapFromPoly;
+	outPoly = NULL;
+	brush->FixWinding();
+	poly->FixWinding();
+
+	list<DetailedInter> brushInters; 
+	brush->GetDetailedIntersections(poly.get(), brushInters);
+
+	//might add 2 inters for an intersection right on a point
+	for (auto it = brushInters.begin(); it != brushInters.end(); ++it)
+	{
+		TerrainPoint *itNext = (*it).inter.point->next;
+		if (itNext == NULL)
+			itNext = brush->pointStart;
+
+		if (length((*it).inter.position - V2d((*it).inter.point->pos)) < 1.0)
+		{
+			pointInterMap[(*it).inter.point] = (*it);
+		}
+		else if (length((*it).inter.position - V2d(itNext->pos)) < 1.0)
+		{
+			pointInterMap[itNext] = (*it);
+		}
+	}
+
+	/*list<Inter> polyInters = poly->GetIntersections(brush.get());
+
+	for (auto it = polyInters.begin(); it != polyInters.end(); ++it)
+	{
+		for (TerrainPoint *tp = brush->pointStart; tp != NULL; tp = tp->next)
+		{
+			TerrainPoint *tpNext = tp->next;
+			if (itNext == NULL)
+				itNext = poly->pointStart;
+		}
+		
+
+		if (length((*it).position - V2d((*it).point->pos)) < 1.0)
+		{
+			pointInterMapFromPoly[(*it).point] = (*it);
+		}
+	}*/
+	/*for (auto it = inters.begin(); it != inters.end(); ++it)
+	{
+		for (TerrainPoint *tp = brush->pointStart; tp != NULL; tp = tp->next)
+		{
+			if (length((*it).position - V2d(tp->pos.x, tp->pos.y)) < 1.0)
+			{
+				
+			}
+		}
+		
+	}*/
+
+
 	outPoly = NULL;
 	brush->FixWinding();
 	poly->FixWinding();
@@ -3507,10 +3563,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 			startP = leftPoint;
 		}
 		else
-		{	
+		{
 			currP = leftPoint;
 
-			while( true )
+			while (true)
 			{
 				nextP = currP->next;
 				if (nextP == NULL)
@@ -3530,7 +3586,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 				currP = currP->next;
 				if (currP == NULL)
 					currP = currentPoly->pointStart;
-			} 
+			}
 			assert(startP != NULL);
 		}
 	}
@@ -3550,36 +3606,39 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 	startSegPos = currP->pos;
 	while (true)
 	{
-		if (inverse && !currentPoly->inverse)
+	if (inverse && !currentPoly->inverse)
+	{
+		nextP = currP->prev;
+		if (nextP == NULL)
+			nextP = currentPoly->pointEnd;
+	}
+	else
+	{
+		nextP = currP->next;
+		if (nextP == NULL)
+			nextP = currentPoly->pointStart;
+	}
+
+
+	LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd);
+
+	//there was an intersection
+	if (!li.parallel)
+	{
+		Vector2i intersectPoint;
+		if (length(li.position - V2d(outEnd->pos)) < 1.0)
 		{
-			nextP = currP->prev;
-			if (nextP == NULL)
-				nextP = currentPoly->pointEnd;
+			intersectPoint = outEnd->pos;
+			currP = outEnd;
+		}
+		else if (length(li.position - V2d(outStart->pos)) < 1.0)
+		{
+			intersectPoint = outStart->pos;
+			currP = outStart;
 		}
 		else
 		{
-			nextP = currP->next;
-			if (nextP == NULL)
-				nextP = currentPoly->pointStart;
-		}
-		
-
-		LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd);
-		
-		//there was an intersection
-		if (!li.parallel) 
-		{
-			Vector2i intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
-			
-			PolyPtr temp = currentPoly;
-			currentPoly = otherPoly;
-			otherPoly = temp;
-
-			TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
-			outPoly->AddPoint(tp);
-
-			startSegPos = intersectPoint;
-
+			intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
 			if (inverse && !currentPoly->inverse)
 			{
 				currP = outEnd;
@@ -3588,8 +3647,17 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 			{
 				currP = outStart;
 			}
-			
 		}
+			
+		PolyPtr temp = currentPoly;
+		currentPoly = otherPoly;
+		otherPoly = temp;
+
+		TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
+		outPoly->AddPoint(tp);
+
+		startSegPos = intersectPoint;
+	}
 		//no intersection
 		else 
 		{
@@ -3598,6 +3666,40 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 			TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
 			outPoly->AddPoint(tp);
+
+			if ( pointInterMap.count(nextP) > 0)
+			{
+
+				//assert(currPoly == brush);
+				DetailedInter &di = pointInterMap[nextP];
+				currP = di.otherPoint;
+
+				PolyPtr temp = currentPoly;
+				currentPoly = otherPoly;
+				otherPoly = temp;
+
+				startSegPos = di.inter.point->pos;
+			}
+			else
+			{
+				if (inverse && !currentPoly->inverse)
+				{
+					currP = currP->prev;
+					if (currP == NULL)
+					{
+						currP = currentPoly->pointEnd;
+					}
+				}
+				else
+				{
+					currP = currP->next;
+					if (currP == NULL)
+					{
+						currP = currentPoly->pointStart;
+					}
+				}
+				startSegPos = currP->pos;
+			}
 
 			//deal with enemies and gates
 			//tp->gate = curr->gate;
@@ -3626,25 +3728,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 //	}
 //}
 
-			if (inverse && !currentPoly->inverse)
-			{
-				currP = currP->prev;
-				if (currP == NULL)
-				{
-					currP = currentPoly->pointEnd;
-				}
-			}
-			else
-			{
-				currP = currP->next;
-				if (currP == NULL)
-				{
-					currP = currentPoly->pointStart;
-				}
-			}
+			
 
 
-			startSegPos = currP->pos;
+			
 
 			/*if (currentPoly->enemies.count(curr) > 0)
 			{
@@ -3725,7 +3812,8 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 		TerrainPolygon *poly = (*polyIt).get();
 
-		list<Inter> inters = brushPtr->GetIntersections(poly);
+		list<Inter> inters;
+		brushPtr->GetIntersections(poly, inters);
 		assert(!inters.empty() );
 		list<TerrainPoint*> interStarts;
 
@@ -4361,7 +4449,7 @@ bool EditSession::QuadPolygonIntersect( TerrainPolygon* poly, Vector2i a, Vector
 	return false;*/
 }
 
-LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d, bool firstLimitOnly )
 {
 	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
 				V2d( c.x, c.y ), V2d( d.x, d.y ) );
@@ -4386,8 +4474,8 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
 				{
 					V2d &pos = li.position;
-					if( length( li.position - V2d( a.x, a.y ) ) > 1 &&  length( li.position - V2d( b.x, b.y ) ) > 1
-						&&  length( li.position - V2d( c.x, c.y ) ) > 1 &&  length( li.position - V2d( d.x, d.y ) ) > 1 )
+					if( ( length( li.position - V2d( a.x, a.y ) ) > 1 ) &&  length( li.position - V2d( b.x, b.y ) ) > 1 
+						&&  ( firstLimitOnly || ( ( length( li.position - V2d( c.x, c.y ) ) > 1 &&  length( li.position - V2d( d.x, d.y ) ) > 1 ))) )
 					{
 						return li;
 					}
@@ -4405,6 +4493,8 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	currTool = TOOL_ADD;
+
 	currentFile = p_filePath.string();
 	currentPath = p_filePath;
 	
@@ -4730,7 +4820,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	gs->Set( 0, 5, Sprite( swarmType->iconTexture ), "swarm" );
 	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
-	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "overgrowth" );
+	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "ov ergrowth" );
 	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
 	gs->Set( 4, 5, Sprite( bossCrawlerType->iconTexture ), "bossgator" );
 
@@ -8755,14 +8845,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 							//cout << "valid: " << validNearPolys << endl;
 
-							if( validNearPolys )
+							//if( validNearPolys )
 							{
 								if( polygonInProgress->numPoints > 0 && length( V2d( testPoint.x, testPoint.y ) 
 									- Vector2<double>(polygonInProgress->pointEnd->pos.x, 
 									polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
 								{
 								//	cout << "check1" << endl;
-									if( PointValid( polygonInProgress->pointEnd->pos, worldi ) )
+									//if( PointValid( polygonInProgress->pointEnd->pos, worldi ) )
 									{
 								//		cout << "blah1" << endl;
 										polygonInProgress->AddPoint( new TerrainPoint( worldi, false ) );
@@ -13233,8 +13323,12 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 			return false;
 
 		//this is only if its not touching stuff
-		if (!poly.GetIntersections((*polyIt).get()).empty())
-			return false;
+		{
+			list<Inter> pInters;
+			poly.GetIntersections((*polyIt).get(), pInters);
+			if (!pInters.empty())
+				return false;
+		}
 		
 
 		//return false if one of the points is inside my poly, change this along with the prev one
@@ -15484,13 +15578,14 @@ void EditSession::ExecuteTerrainCompletion()
 		bool applyOkay = true;
 		for(; it != polygons.end(); ++it )
 		{
-			if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
-			{
-				//cout << "LINES TOO CLOSE" << endl;
-				applyOkay = false;
-				break;
-			}
-			else if( polygonInProgress->LinesIntersect( (*it).get() ) )
+			//if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
+			//{
+			//	//cout << "LINES TOO CLOSE" << endl;
+			//	applyOkay = false;
+			//	break;
+			//}
+			//else 
+			if( polygonInProgress->LinesIntersect( (*it).get() ) )
 			{
 				//not too close and I intersect, so I can add
 				intersectingPolys.push_back( (*it) );

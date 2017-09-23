@@ -1967,7 +1967,7 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 			nextP = pointStart;
 
 
-		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos);
+		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos, true );
 		//Vector2i lii(round(li.position.x), round(li.position.y));
 
 		if (!li.parallel)
@@ -2967,6 +2967,18 @@ bool TerrainPolygon::TooClose( TerrainPolygon *poly, bool intersectAllowed, int 
 	return false;
 }
 
+bool TerrainPolygon::IsPoint(sf::Vector2i &p)
+{
+	for (TerrainPoint *tp = pointStart; tp != NULL; tp = tp->next)
+	{
+		if (tp->pos == p)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 sf::Rect<int> TerrainPolygon::TempAABB()
 {
 	assert( numPoints > 1 );
@@ -3021,10 +3033,49 @@ void TerrainPolygon::Draw( sf::RenderTarget *target )
 {
 }
 
-//returns the intersections w/ the terrain point values of THIS polygon, NOT poly
-list<Inter> TerrainPolygon::GetIntersections( TerrainPolygon *poly )
+void TerrainPolygon::GetDetailedIntersections(TerrainPolygon *poly, std::list<DetailedInter> &outInters)
 {
-	list<Inter> inters;
+	outInters.clear();
+		//list<DetailedInter> inters;
+		//my lines vs his lines
+	for (TerrainPoint *my = pointStart; my != NULL; my = my->next)
+	{
+		TerrainPoint *myPrev;
+		if (my == pointStart)
+		{
+			myPrev = pointEnd;
+		}
+		else
+		{
+			myPrev = my->prev;
+		}
+
+		for (TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next)
+		{
+			TerrainPoint *prev;
+			if (pcurr == poly->pointStart)
+			{
+				prev = poly->pointEnd;
+			}
+			else
+			{
+				prev = pcurr->prev;
+			}
+
+			LineIntersection li = EditSession::SegmentIntersect((*myPrev).pos, my->pos, (*prev).pos, pcurr->pos);
+			if (!li.parallel)
+			{
+
+				//Vector2i pos( li.position.x + .5, li.position.y + .5 ); //rounding
+				outInters.push_back(DetailedInter(myPrev, li.position, prev));
+				//return true;
+			}
+		}
+	}
+}
+//returns the intersections w/ the terrain point values of THIS polygon, NOT poly
+void TerrainPolygon::GetIntersections( TerrainPolygon *poly, std::list<Inter> &outInters)
+{
 	//my lines vs his lines
 	for( TerrainPoint *my = pointStart; my != NULL; my = my->next )
 	{
@@ -3055,13 +3106,11 @@ list<Inter> TerrainPolygon::GetIntersections( TerrainPolygon *poly )
 			{
 				
 				//Vector2i pos( li.position.x + .5, li.position.y + .5 ); //rounding
-				inters.push_back( Inter( myPrev, li.position ) );
+				outInters.push_back( Inter( myPrev, li.position ) );
 				//return true;
 			}
 		}
 	}
-
-	return inters;
 }
 
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )

@@ -3451,7 +3451,7 @@ bool GameSession::OpenFile( string fileName )
 		//could use an array later if i wanted to
 		map<int, int> polyIndex;
 	
-
+		inversePoly = NULL;
 
 		while( pointCounter < mh->numVertices)
 		{

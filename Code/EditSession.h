@@ -160,6 +160,11 @@ struct Inter
 
 struct DetailedInter
 {
+	DetailedInter()
+		:otherPoint(NULL)
+	{
+		inter.point = NULL;
+	}
 	DetailedInter(TerrainPoint *p_point, sf::Vector2<double> &p_pos, TerrainPoint *p_otherPoint)
 		:inter( p_point, p_pos ), otherPoint( p_otherPoint )
 	{
@@ -196,6 +201,7 @@ struct TerrainPolygon : ISelectable
 		TerrainPoint *tp );
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
+	bool IsPoint(sf::Vector2i &p);
 	int numPoints;
 	void AddPoint( TerrainPoint* tp);
 	void InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint );
@@ -212,7 +218,8 @@ struct TerrainPolygon : ISelectable
 		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd );
 	//std::string material;
 	void RemoveSelectedPoints();
-	std::list<Inter> GetIntersections( TerrainPolygon *poly );
+	void GetIntersections( TerrainPolygon *poly, std::list<Inter> &outInters);
+	void GetDetailedIntersections(TerrainPolygon *poly, std::list<DetailedInter> &outInters);
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
@@ -1430,6 +1437,17 @@ typedef std::map<TerrainPolygon*,
 struct MainMenu;
 struct EditSession : GUIHandler
 {
+	enum Tool
+	{
+		TOOL_ADD,
+		TOOL_SUBTRACT,
+		TOOL_EXTEND,
+		TOOL_CUT
+	};
+
+	Tool currTool;
+
+
 	EditSession( MainMenu *p_mainMenu );
 	~EditSession();
 	
@@ -1587,7 +1605,7 @@ struct EditSession : GUIHandler
 		sf::Vector2i d );
 	static LineIntersection LimitSegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
-		sf::Vector2i d );
+		sf::Vector2i d, bool firstLimitOnly = false );
 
 	double minimumEdgeLength;
 	double minAngle;
