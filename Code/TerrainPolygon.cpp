@@ -514,19 +514,25 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 				{
 					if( nextExtreme.x != 0 )
 					{
-						cout << "a" << endl;
-						prev->pos.y = curr->pos.y;
-						next->pos.y = curr->pos.y;
+						double sum = curr->pos.y + prev->pos.y + next->pos.y;
+						int avg = round(sum / 3.0);
+						prev->pos.y = avg;
+						curr->pos.y = avg;
+						next->pos.y = avg;
+
+						//cout << "a" << endl;
+						//prev->pos.y = curr->pos.y;
+						//next->pos.y = curr->pos.y;
 					}
 					else if( nextExtreme.y != 0 )
 					{
-						cout << "b" << endl;
+						//cout << "b" << endl;
 						curr->pos.y = prev->pos.y;
 						curr->pos.x = next->pos.x;
 					}
 					else
 					{
-						cout << "c" << endl;
+						//cout << "c" << endl;
 						curr->pos.y = prev->pos.y;
 					}
 				}
@@ -534,19 +540,33 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 				{
 					if( nextExtreme.y != 0 )
 					{
-						cout << "d" << endl;
-						prev->pos.x = curr->pos.x;
-						next->pos.x = curr->pos.x;
+						double sum = curr->pos.x + prev->pos.x + next->pos.x;
+						int avg = round(sum / 3.0);
+						prev->pos.x = avg;
+						curr->pos.x = avg;
+						next->pos.x = avg;
+
+
+
+						//cout << "d" << endl;
+						//prev->pos.x = curr->pos.x;
+						//next->pos.x = curr->pos.x;
 					}
 					else if( nextExtreme.x != 0 )
 					{
-						cout << "e" << endl;
+						//double sum = curr->pos.x + prev->pos.x + next->pos.x;
+						//int avg = round(sum / 3.0);
+						//prev->pos.x = avg;
+						//curr->pos.x = avg;
+						//next->pos.x = avg;
+						//cout << "e" << endl;
+
 						curr->pos.x = prev->pos.x;
 						curr->pos.y = next->pos.y;
 					}
 					else
 					{
-						cout << "f" << endl;
+						//cout << "f" << endl;
 						curr->pos.x = prev->pos.x;
 					}
 				}
@@ -555,22 +575,40 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 			{
 				if( prevExtreme.y != 0 )
 				{
-					curr->pos.x = prev->pos.x;
+					double sum = curr->pos.x + prev->pos.x;
+					int avg = round(sum / 2.0);
+					curr->pos.x = avg;
+					prev->pos.x = avg;
+					//curr->pos.x = prev->pos.x;
 				}
 				else if( prevExtreme.x != 0 )
 				{
-					curr->pos.y = prev->pos.y;
+					double sum = curr->pos.y + prev->pos.y;
+					int avg = round(sum / 2.0);
+					curr->pos.y = avg;
+					prev->pos.y = avg;
+
+					//curr->pos.y = prev->pos.y;
 				}
 			}
 			else if( nextValid )
 			{
 				if( nextExtreme.y != 0 )
 				{
-					curr->pos.x = next->pos.x;
+					double sum = curr->pos.x + next->pos.x;
+					int avg = round(sum / 2.0);
+					curr->pos.x = avg;
+					next->pos.x = avg;
+
+					//curr->pos.x = next->pos.x;
 				}
 				else if( nextExtreme.x != 0 )
 				{
-					curr->pos.y = next->pos.y;
+					double sum = curr->pos.y + next->pos.y;
+					int avg = round(sum / 2.0);
+					curr->pos.y = avg;
+					next->pos.y = avg;
+					//curr->pos.y = next->pos.y;
 				}
 			}
 			else
@@ -588,13 +626,24 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 
 			if( nextExtreme.x != 0 )
 			{
-				curr->pos.y = next->pos.y;
+
+				double sum = curr->pos.y + next->pos.y;
+				int avg = round(sum / 2.0);
+				curr->pos.y = avg;
+				next->pos.y = avg;
+
+				//curr->pos.y = next->pos.y;
 				//cout << "lining up x" << endl;
 			}
 
 			if( nextExtreme.y != 0 )
 			{
-				curr->pos.x = next->pos.x;
+				double sum = curr->pos.x + next->pos.x;
+				int avg = round(sum / 2.0);
+				curr->pos.x = avg;
+				next->pos.x = avg;
+
+				//curr->pos.x = next->pos.x;
 				//cout << "lining up y" << endl;
 			}
 		}
@@ -1937,7 +1986,7 @@ void TerrainPolygon::AddPoint( TerrainPoint* tp)
 }
 
 LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
-	TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd )
+	TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd, bool ignoreStartPoint )
 {
 	LineIntersection li;
 
@@ -1966,8 +2015,36 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 		if (nextP == NULL)
 			nextP = pointStart;
 
+		V2d A(a);
+		V2d B(b);
+		V2d dir = normalize(B - A);
+		V2d CurrP = V2d(currP->pos);
+		V2d NextP = V2d(nextP->pos);
+		V2d otherDir = normalize( NextP - CurrP );
 
-		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos, true );
+		//if it dives into a poly as soon as you hit it, ignore
+		double c = cross(otherDir, dir);
+		double c0 = cross(normalize(CurrP - A), dir );
+		double c1 = cross(normalize(NextP - A), dir );
+		if (c <= 0 || ( c0 <= 0 && c1 <= 0 ) )
+		{
+			continue;
+		}
+		//if ( dir == otherDir || dir == -otherDir )
+		//{
+		//	//possible rounding error gonna happen
+		//	continue;
+		//}
+		if (ignoreStartPoint)
+		{
+			li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos, true);
+		}
+		else
+		{
+			li = EditSession::SegmentIntersect(a, b, currP->pos, nextP->pos);
+		}
+		//li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos, true );
+		
 		//Vector2i lii(round(li.position.x), round(li.position.y));
 
 		if (!li.parallel)
@@ -1995,6 +2072,18 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 	}
 
 	return li;
+}
+
+TerrainPoint *TerrainPolygon::GetSamePoint(sf::Vector2i &p)
+{
+	for (TerrainPoint *tp = pointStart; tp != NULL; tp = tp->next)
+	{
+		if (tp->pos == p)
+		{
+			return tp;
+		}
+	}
+	return NULL;
 }
 
 bool compareInter(DetailedInter &inter0, DetailedInter &inter1)

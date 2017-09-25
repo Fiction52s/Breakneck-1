@@ -202,6 +202,7 @@ struct TerrainPolygon : ISelectable
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
 	bool IsPoint(sf::Vector2i &p);
+	TerrainPoint *GetSamePoint(sf::Vector2i &p);
 	int numPoints;
 	void AddPoint( TerrainPoint* tp);
 	void InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint );
@@ -215,7 +216,8 @@ struct TerrainPolygon : ISelectable
 	bool SharesPoints(TerrainPolygon *poly);
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
 	LineIntersection GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
-		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd );
+		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd,
+		bool ignoreStartPoint = false);
 	//std::string material;
 	void RemoveSelectedPoints();
 	void GetIntersections( TerrainPolygon *poly, std::list<Inter> &outInters);

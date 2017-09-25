@@ -3440,6 +3440,48 @@ void EditSession::Extend(boost::shared_ptr<TerrainPolygon> extension,
 
 	return;
 }
+
+double GetClockwiseAngleDifference(const V2d &A, const V2d &B)
+{
+	double angleA = atan2(-A.y, A.x);
+	if (angleA < 0)
+	{
+		angleA += PI * 2;
+	}
+	double angleB = atan2(-B.y, B.x);
+	double xxx = atan2(0, 1.0);
+	double yyy = atan2(0, -1.0);
+	double ggg = atan2(-1.0, 0);
+	double fff = atan2(1.0, 0);
+	if (angleB < 0)
+	{
+		angleB += PI * 2;
+	}
+
+	if (angleA > angleB)
+	{
+		return angleA - angleB;
+	}
+	else if (angleA < angleB)
+	{
+		return ((2 * PI) - angleB) + angleA;
+		/*if (angleA == 0)
+		{
+			return angleB;
+		}
+		else
+		{
+			return angleB + ((PI * 2) - angleA);
+		}*/
+		
+
+	}
+
+	/*if (angle < 0)
+	{
+		angle += PI * 2;
+	}*/
+}
 //
 EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPolygon *&outPoly )
 {
@@ -3466,6 +3508,18 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 		else if (length((*it).inter.position - V2d(itNext->pos)) < 1.0)
 		{
 			pointInterMap[itNext] = (*it);
+		}
+	}
+
+	//referenced by the brush pointer
+	map< TerrainPoint*, TerrainPoint*> samePointMap;
+	for (TerrainPoint *tp = brush->pointStart; tp != NULL; tp = tp->next)
+	{
+		TerrainPoint *same = poly->GetSamePoint(tp->pos);
+		if (same != NULL)
+		{
+			samePointMap[tp] = same;
+			//samePointMap[same] = tp;
 		}
 	}
 
@@ -3538,7 +3592,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 	for (; currP != NULL; currP = currP->next)
 	{
-		if (currP->pos.x < leftPoint->pos.x)
+		if (currP->pos.x < leftPoint->pos.x )
 		{
 			leftPoint = currP;
 			currentPoly = poly;
@@ -3548,7 +3602,8 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 	currP = brush->pointStart;
 	for (; currP != NULL; currP = currP->next)
 	{
-		if (currP->pos.x < leftPoint->pos.x)
+		// the <= is there because brush should be prioritized 
+		if (currP->pos.x <= leftPoint->pos.x)
 		{
 			leftPoint = currP;
 			currentPoly = brush;
@@ -3572,6 +3627,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 				if (nextP == NULL)
 					nextP = currentPoly->pointStart;
 
+				//might not account for hitting pointsin this area yet
 				LineIntersection li = otherPoly->GetSegmentFirstIntersection(currP->pos, nextP->pos, outStart, outEnd);
 
 				if (!li.parallel)
@@ -3604,73 +3660,118 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 	Vector2i endSegPos;
 
 	startSegPos = currP->pos;
+
+
+	bool skipBorderCase = false;
 	while (true)
 	{
-	if (inverse && !currentPoly->inverse)
-	{
-		nextP = currP->prev;
-		if (nextP == NULL)
-			nextP = currentPoly->pointEnd;
-	}
-	else
-	{
-		nextP = currP->next;
-		if (nextP == NULL)
-			nextP = currentPoly->pointStart;
-	}
-
-
-	LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd);
-
-	//there was an intersection
-	if (!li.parallel)
-	{
-		Vector2i intersectPoint;
-		if (length(li.position - V2d(outEnd->pos)) < 1.0)
+		if (inverse && !currentPoly->inverse)
 		{
-			intersectPoint = outEnd->pos;
-			currP = outEnd;
-		}
-		else if (length(li.position - V2d(outStart->pos)) < 1.0)
-		{
-			intersectPoint = outStart->pos;
-			currP = outStart;
+			nextP = currP->prev;
+			if (nextP == NULL)
+				nextP = currentPoly->pointEnd;
 		}
 		else
 		{
-			intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
-			if (inverse && !currentPoly->inverse)
+			nextP = currP->next;
+			if (nextP == NULL)
+				nextP = currentPoly->pointStart;
+		}
+
+
+		LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd, skipBorderCase);
+
+		bool pointOnLine = !li.parallel && (length(li.position - V2d(nextP->pos)) == 0.0);
+
+		bool stayWhenHitLine = false;
+		if (pointOnLine)
+		{
+			TerrainPoint *nn = nextP->next;
+			if (nn == NULL)
 			{
-				currP = outEnd;
+				nn = currentPoly->pointStart;
+			}
+			V2d origDir = normalize(V2d(currP->pos) - V2d(nextP->pos));
+			V2d stayDir = normalize(V2d(nn->pos) - V2d(nextP->pos));
+			V2d otherDir = normalize(V2d(outEnd->pos) - V2d(outStart->pos));
+
+			double stay = GetClockwiseAngleDifference(origDir, stayDir);
+			double other = GetClockwiseAngleDifference(origDir, otherDir);
+
+			if (stay < other)
+			{
+				stayWhenHitLine = true;
+				skipBorderCase = true;
 			}
 			else
 			{
-				currP = outStart;
+				skipBorderCase = true;
 			}
 		}
-			
-		PolyPtr temp = currentPoly;
-		currentPoly = otherPoly;
-		otherPoly = temp;
-
-		TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
-		outPoly->AddPoint(tp);
-
-		startSegPos = intersectPoint;
-	}
-		//no intersection
-		else 
+		else
 		{
-			if (!firstRun && nextP == startP )
+			skipBorderCase = false;
+		}
+		//there was an intersection
+		if (!li.parallel && !stayWhenHitLine)
+		{
+			Vector2i intersectPoint;
+			if (length(li.position - V2d(outEnd->pos)) < 8.0)
+			{
+				intersectPoint = outEnd->pos;
+				currP = outEnd;
+			}
+			else if (length(li.position - V2d(outStart->pos)) < 8.0)
+			{
+				intersectPoint = outStart->pos;
+				currP = outStart;
+				skipBorderCase = true;
+			}
+			else if (length(li.position - V2d(startSegPos)) < 8.0)
+			{
+				V2d middlePos = (V2d(startSegPos) + li.position) / 2.0;
+				intersectPoint.x = round(middlePos.x);
+				intersectPoint.y = round(middlePos.y);
+				outPoly->RemovePoint(outPoly->pointEnd);
+
+				currP = outStart;
+				//TODO: memory leak
+			}
+			else
+			{
+				intersectPoint = Vector2i(round(li.position.x), round(li.position.y));
+				if (inverse && !currentPoly->inverse)
+				{
+					currP = outEnd;
+				}
+				else
+				{
+					currP = outStart;
+				}
+			}
+
+			PolyPtr temp = currentPoly;
+			currentPoly = otherPoly;
+			otherPoly = temp;
+
+			TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
+			outPoly->AddPoint(tp);
+
+			startSegPos = intersectPoint;
+		}
+		//no intersection
+		else
+		{
+			if (!firstRun && nextP == startP)
 				break;
 
 			TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
 			outPoly->AddPoint(tp);
 
-			if ( pointInterMap.count(nextP) > 0)
+			if (pointInterMap.count(nextP) > 0 && !stayWhenHitLine )
 			{
 
-				//assert(currPoly == brush);
+				//assert(currPoly == bru  sh);
 				DetailedInter &di = pointInterMap[nextP];
 				currP = di.otherPoint;
 
@@ -3682,6 +3783,19 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 			}
 			else
 			{
+				/*if (samePointMap.count(nextP))
+				{
+					TerrainPoint *otherP = samePointMap[nextP];
+
+					PolyPtr temp = currentPoly;
+					currentPoly = otherPoly;
+					otherPoly = temp;
+
+					currP = otherP;
+
+					startSegPos = currP->pos;
+				}
+				else*/
 				if (inverse && !currentPoly->inverse)
 				{
 					currP = currP->prev;
@@ -3728,10 +3842,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 //	}
 //}
 
-			
 
 
-			
+
+
 
 			/*if (currentPoly->enemies.count(curr) > 0)
 			{
@@ -3782,6 +3896,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 	//	}
 	//}
 
+	outPoly->AlignExtremes(PRIMARY_LIMIT);
 	outPoly->inverse = inverse;
 	outPoly->Finalize();
 
@@ -4474,8 +4589,8 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
 				{
 					V2d &pos = li.position;
-					if( ( length( li.position - V2d( a.x, a.y ) ) > 1 ) &&  length( li.position - V2d( b.x, b.y ) ) > 1 
-						&&  ( firstLimitOnly || ( ( length( li.position - V2d( c.x, c.y ) ) > 1 &&  length( li.position - V2d( d.x, d.y ) ) > 1 ))) )
+					if( ( length( li.position - V2d( a.x, a.y ) ) > 0 ) && ( firstLimitOnly || length( li.position - V2d( b.x, b.y ) ) > 0 ) 
+						&&  ( firstLimitOnly || ( ( length( li.position - V2d( c.x, c.y ) ) > 0 &&  length( li.position - V2d( d.x, d.y ) ) > 0 ))) )
 					{
 						return li;
 					}
@@ -8726,8 +8841,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
 									if( !li.parallel )//&& lii != a && lii != b && lii != c && lii != d )
 									{
-										okay = false;
-										break;
+										//okay = false;
+										//break;
 									}
 									okayPrev = okay;
 								}
@@ -8837,8 +8952,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								{
 									if( (*it)->SegmentTooClose( polygonInProgress->pointEnd->pos, worldi, minimumEdgeLength ) )
 									{
-										validNearPolys = false;
-										break;
+										//validNearPolys = false;
+										//break;
 									}
 								}
 							}
@@ -15559,9 +15674,9 @@ void EditSession::ExecuteTerrainCompletion()
 
 		if( !valid )
 		{
-			MessagePop( "unable to complete polygon" );
+			//MessagePop( "unable to complete polygon" );
 			//popupPanel = messagePopup;
-			return;
+			//return;
 		}
 
 									
@@ -15778,7 +15893,7 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		orig.AddObject( sp );
 		bool oldSelected = (*it)->selected;
 		(*it)->SetSelected( true );
-		Add( (*it), polygonInProgress, outPoly );
+		Add(polygonInProgress, (*it), outPoly );
 		polygonInProgress.reset(outPoly);
 		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
 	}
