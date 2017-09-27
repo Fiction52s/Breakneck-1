@@ -15,6 +15,14 @@ sf::Vector2f normalize(sf::Vector2f v);
 
 double dot( sf::Vector2<double> a, sf::Vector2<double> b );
 
+double GetVectorAngleCW(sf::Vector2<double> &a);
+double GetVectorAngleCCW(sf::Vector2<double> &a);
+double GetVectorAngleDiffCW(sf::Vector2<double> &a, sf::Vector2<double> &b);
+double GetVectorAngleDiffCCW(sf::Vector2<double> &a, sf::Vector2<double> &b);
+
+void RotateCCW(sf::Vector2<double> &a, double angle);
+void RotateCW(sf::Vector2<double> &a, double angle);
+
 struct LineIntersection
 {
 	LineIntersection()

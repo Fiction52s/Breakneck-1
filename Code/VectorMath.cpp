@@ -73,6 +73,86 @@ bool approxEquals( double a, double b )
 	return abs( a - b ) < .0001;
 }
 
+double GetVectorAngleCW(sf::Vector2<double> &a)
+{
+	double angleA = atan2(a.y, a.x);
+	if (angleA < 0)
+	{
+		angleA += PI * 2;
+	}
+	return angleA;
+}
+
+double GetVectorAngleCCW(sf::Vector2<double> &a)
+{
+	double angleA = atan2(-a.y, a.x);
+	if (angleA < 0)
+	{
+		angleA += PI * 2;
+	}
+	return angleA;
+}
+
+double GetVectorAngleDiffCW(sf::Vector2<double> &a, sf::Vector2<double> &b)
+{
+	double angleA = GetVectorAngleCW(a);
+	double angleB = GetVectorAngleCW(b);
+	if (angleB > angleA)
+	{
+		return angleB - angleA;
+	}
+	else if (angleB < angleA)
+	{
+		return ((2 * PI) - angleA) + angleB;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+double GetVectorAngleDiffCCW(sf::Vector2<double> &a, sf::Vector2<double> &b)
+{
+	double angleA = GetVectorAngleCCW(a);
+	double angleB = GetVectorAngleCCW(b);
+	if (angleB > angleA)
+	{
+		return angleB - angleA;
+	}
+	else if (angleB < angleA)
+	{
+		return ((2 * PI) - angleA) + angleB;
+	}
+	else
+	{
+		return 0;
+	}
+	
+}
+
+void RotateCW(sf::Vector2<double> &a, double angle )
+{
+	//RotateCCW(a, -angle;c)
+	double angleA = GetVectorAngleCCW(a);//GetVectorAngleCW(a);
+	double ca = cos(-angle);
+	double sa = sin(-angle);
+	double ax = a.x;
+	double ay = a.y;
+	a.x = ca * ax + sa * ay;
+	a.y = -sa * ax + ca * ay;
+}
+
+void RotateCCW(sf::Vector2<double> &a, double angle)
+{
+	double angleA = GetVectorAngleCCW(a);
+	double ca = cos(-angle);
+	double sa = sin(-angle);
+	double ax = a.x;
+	double ay = a.y;
+	a.x = ca * ax - sa * ay;
+	a.y = sa * ax + ca * ay;
+}
+
 
 LineIntersection::LineIntersection(const sf::Vector2<double> &pos, bool p )
 {

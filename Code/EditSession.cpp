@@ -494,7 +494,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	preScreenTex = mainMenu->preScreenTexture;
 	showTerrainPath = false;
 	
-	minAngle = .99;
+	//minAngle = .99;
 	showPoints = false;
 	messagePopup = NULL;
 	errorPopup = NULL;
@@ -3681,6 +3681,8 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 		LineIntersection li = otherPoly->GetSegmentFirstIntersection(startSegPos, nextP->pos, outStart, outEnd, skipBorderCase);
 
+		bool pointFromOtherLine = !li.parallel && length(li.position - V2d(outStart->pos)) != 0
+			&& length(li.position - V2d(outEnd->pos)) != 0;
 		bool pointOnLine = !li.parallel && (length(li.position - V2d(nextP->pos)) == 0.0);
 
 		bool stayWhenHitLine = false;
@@ -3896,7 +3898,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 	//	}
 	//}
 
+	outPoly->RemoveSlivers(PI / 20.0);
 	outPoly->AlignExtremes(PRIMARY_LIMIT);
+
+
 	outPoly->inverse = inverse;
 	outPoly->Finalize();
 
@@ -11141,7 +11146,7 @@ bool EditSession::PointValid( Vector2i prev, Vector2i point)
 				//{
 					double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y ) )
 					, normalize( V2d(rcurr->pos.x, rcurr->pos.y ) - V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y ) ) );
-					if( ff > minAngle )
+					if( ff > .99 )
 					{
 						cout << "ff: " << ff << endl;
 						return false;
@@ -13572,6 +13577,8 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 	return true;
 }
 
+
+
 bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 {
 	poly.AlignExtremes( PRIMARY_LIMIT );
@@ -13632,7 +13639,7 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 
 		
 		double ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
-		if( ff > minAngle )
+		if( ff > .99 )
 		{
 			//cout << "ff: " << ff << endl;
 			return false;
@@ -15759,6 +15766,8 @@ void EditSession::ExecuteTerrainCompletion()
 			}*/
 			if( empty )
 			{
+				polygonInProgress->FixWinding();
+				polygonInProgress->RemoveSlivers(PI / 20.0);
 				polygonInProgress->Finalize();
 
 				/*if (polygonInProgress->inverse)

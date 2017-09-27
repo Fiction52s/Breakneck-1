@@ -196,6 +196,9 @@ struct TerrainPolygon : ISelectable
 	
 	void CopyPoints( TerrainPoint *&start,
 		TerrainPoint *&end );
+	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
+		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
+		double minAngle,bool cw);
 
 	void MovePoint( sf::Vector2i &delta,
 		TerrainPoint *tp );
@@ -211,6 +214,7 @@ struct TerrainPolygon : ISelectable
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation );
+	void RemoveSlivers( double minAngle );
 	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inter &inter, TerrainPoint *&outSegStart );
 	TerrainPoint *GetMostLeftPoint();
 	bool SharesPoints(TerrainPolygon *poly);
@@ -1610,7 +1614,7 @@ struct EditSession : GUIHandler
 		sf::Vector2i d, bool firstLimitOnly = false );
 
 	double minimumEdgeLength;
-	double minAngle;
+	//double minAngle;
 	
 	std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;

@@ -2152,6 +2152,112 @@ int TerrainPolygon::GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inte
 	return -1;
 }
 
+sf::Vector2i TerrainPolygon::TrimSliverPos(sf::Vector2<double> &prevPos,
+	sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
+	double minAngle, bool cw )
+{
+	double halfMinAngle = minAngle / 2;
+	double angle = PI / 2.0 - halfMinAngle;
+
+	double lenA = length(pos - prevPos);
+	double lenB = length(nextPos - pos);
+	double minLen = min(lenA, lenB);
+
+	V2d adjA = prevPos;
+	V2d adjB = nextPos;
+
+	adjA = pos + normalize(prevPos - pos) * minLen;
+	adjB = pos + normalize(nextPos - pos) * minLen;
+
+	V2d dA = normalize(adjB - adjA);
+	V2d dB = -dA;
+	double xx = length(dA);
+	double yy = length(dB);
+
+	if (cw)
+	{
+		RotateCCW(dA, angle);
+		RotateCW(dB, angle);
+	}
+	else
+	{
+		RotateCW(dA, angle);
+		RotateCCW(dB, angle);
+	}
+	
+
+	V2d aStart = adjA;
+	V2d bStart = adjB;
+
+	V2d aEnd = aStart + dA * 100.0;
+	V2d bEnd = bStart + dB * 100.0;
+
+	LineIntersection li = lineIntersection(aStart, aEnd, bStart, bEnd);
+	if (!li.parallel)
+	{
+
+		double lenA = length(aStart - li.position);
+		double lenB = length(bStart - li.position);
+		double lenDA = length(dA);
+		double lenDB = length(dB);
+		//might miss minAngle slightly
+		return Vector2i( round(li.position.x), round(li.position.y));
+	}
+	else
+	{
+		assert(0);
+		return Vector2i(-5, -5);
+	}
+}
+
+//angle in radians
+void TerrainPolygon::RemoveSlivers( double minAngle )
+{	
+	//check for slivers that are at too extreme of an angle. tiny triangle type things
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	{
+		TerrainPoint *prev, *next;
+		if (curr == pointStart)
+		{
+			prev = pointEnd;
+		}
+		else
+		{
+			prev = curr->prev;
+		}
+
+		TerrainPoint *temp = curr->next;
+		if (temp == NULL)
+		{
+			next = pointStart;
+		}
+		else
+		{
+			next = curr->next;
+		}
+
+		//test for minimum angle difference between edges
+		V2d pos(curr->pos.x, curr->pos.y);
+		V2d prevPos(prev->pos.x, prev->pos.y);
+		V2d nextPos(next->pos.x, next->pos.y);
+		V2d dirA = normalize(prevPos - pos);
+		V2d dirB = normalize(nextPos - pos);
+
+		double diff = GetVectorAngleDiffCCW(dirA, dirB);
+		double diffCW = GetVectorAngleDiffCW(dirA, dirB);
+		if ( diff < minAngle )
+		{
+			Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
+			curr->pos = trimPos;
+		}
+		else if( diffCW < minAngle )
+		{
+			Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
+			curr->pos = trimPos;
+		}
+	}
+}
+
 
 void TerrainPolygon::InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint )
 {
