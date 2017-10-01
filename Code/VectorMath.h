@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#define V2d sf::Vector2<double>
 double cross( sf::Vector2<double> a, sf::Vector2<double> b );
 
 #define PI 3.14159265359

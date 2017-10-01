@@ -29,7 +29,6 @@ using namespace sf;
 
 using namespace boost::filesystem;
 
-#define V2d sf::Vector2<double>
 
 
 void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar )

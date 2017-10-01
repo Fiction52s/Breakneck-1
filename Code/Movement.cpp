@@ -4,7 +4,6 @@
 #include <assert.h>
 
 #define TIMESTEP 1.0 / 60.0
-#define V2d sf::Vector2<double>
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )

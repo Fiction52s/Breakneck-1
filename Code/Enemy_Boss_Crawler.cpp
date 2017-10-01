@@ -8,7 +8,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 

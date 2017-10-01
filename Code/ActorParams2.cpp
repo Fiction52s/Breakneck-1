@@ -11,7 +11,6 @@ using namespace std;
 using namespace sf;
 
 #define cout std::cout
-#define V2d sf::Vector2<double>
 
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )

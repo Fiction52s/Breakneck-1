@@ -107,7 +107,7 @@ double GetVectorAngleDiffCW(sf::Vector2<double> &a, sf::Vector2<double> &b)
 	}
 	else
 	{
-		return 0;
+		return 2 * PI;
 	}
 }
 

@@ -8,7 +8,6 @@
 using namespace sf;
 using namespace std;
 
-#define V2d sf::Vector2<double>
 
 //EDGE FUNCTIONS
 Edge::Edge()

@@ -29,7 +29,6 @@ using namespace sf;
 using namespace std;
 
 #define TIMESTEP 1.0 / 60.0
-#define V2d sf::Vector2<double>
 
 
 ShipExitSeq::ShipExitSeq( GameSession *p_owner )

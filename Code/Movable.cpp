@@ -5,7 +5,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
 GameSession *Movable::owner = NULL;
 

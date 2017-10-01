@@ -4,7 +4,6 @@
 using namespace sf;
 using namespace std;
 
-#define V2d sf::Vector2<double>
 
 EnemyParentNode::EnemyParentNode( const V2d &poss, double rww, double rhh )
 {

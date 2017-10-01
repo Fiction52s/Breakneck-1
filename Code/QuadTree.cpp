@@ -4,7 +4,6 @@
 #include <iostream>
 #include "Enemy.h"
 
-#define V2d sf::Vector2<double>
 
 using namespace sf;
 using namespace std;

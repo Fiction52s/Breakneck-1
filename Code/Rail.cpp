@@ -4,7 +4,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
 Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 	std::list<sf::Vector2i> &path, bool energized)

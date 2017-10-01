@@ -7,7 +7,6 @@
 using namespace sf;
 using namespace std;
 
-#define V2d sf::Vector2<double>
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )

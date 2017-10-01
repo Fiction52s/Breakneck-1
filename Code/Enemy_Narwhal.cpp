@@ -8,7 +8,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )

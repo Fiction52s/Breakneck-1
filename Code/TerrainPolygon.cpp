@@ -15,7 +15,6 @@
 using namespace std;
 using namespace sf;
 
-#define V2d sf::Vector2<double>
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
@@ -44,6 +43,44 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
+}
+
+bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
+	TerrainPoint *otherEnd )
+{
+	if (cw)
+	{
+		TerrainPoint *prev = rootPoint->prev;
+		if (prev == NULL)
+			prev = pointEnd;
+
+		TerrainPoint *next = rootPoint->next;
+		if (next == NULL)
+			next = pointStart;
+
+		V2d rp(rootPoint->pos);
+
+		V2d origDir = normalize( rp - V2d( prev->pos ) );
+		V2d stayDir = normalize( rp - V2d( next->pos ) );
+		V2d otherDir = normalize( rp - V2d( otherEnd->pos ) );
+
+		double stay = GetVectorAngleDiffCW(origDir, stayDir);//GetClockwiseAngleDifference(origDir, stayDir);
+		double other = GetVectorAngleDiffCW(origDir, otherDir);
+
+		if (stay < other)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		assert(0);
+		return false;
+	}
 }
 
 bool TerrainPolygon::CanApply()
@@ -2026,7 +2063,7 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 		double c = cross(otherDir, dir);
 		double c0 = cross(normalize(CurrP - A), dir );
 		double c1 = cross(normalize(NextP - A), dir );
-		if (c <= 0 || ( c0 <= 0 && c1 <= 0 ) )
+		if (c < 0 || ( c0 < 0 && c1 < 0 ) )
 		{
 			continue;
 		}

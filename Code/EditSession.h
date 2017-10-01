@@ -193,7 +193,8 @@ struct TerrainPolygon : ISelectable
 	TerrainPolygon( sf::Texture *grassTex );
 	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
 	~TerrainPolygon();
-	
+	bool SwitchPolygon( bool cw, TerrainPoint *rootPoint,
+		TerrainPoint *switchStart);
 	void CopyPoints( TerrainPoint *&start,
 		TerrainPoint *&end );
 	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
@@ -1745,6 +1746,9 @@ struct EditSession : GUIHandler
 	void ClearPasteBrushes();
 	void CopyToPasteBrushes();
 	sf::Vector2i pastePos;
+	//int CompareAngle(bool cw, V2d &origDir,
+	//	V2d stayDir, V2d otherDir);
+	
 
 	int gatePoints;
 
