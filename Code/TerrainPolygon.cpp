@@ -2063,10 +2063,14 @@ LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf
 		double c = cross(otherDir, dir);
 		double c0 = cross(normalize(CurrP - A), dir );
 		double c1 = cross(normalize(NextP - A), dir );
+
+
 		if (c < 0 || ( c0 < 0 && c1 < 0 ) )
 		{
-			continue;
+			int ff = 0;
+			//continue;
 		}
+
 		//if ( dir == otherDir || dir == -otherDir )
 		//{
 		//	//possible rounding error gonna happen
@@ -2131,8 +2135,9 @@ bool compareInter(DetailedInter &inter0, DetailedInter &inter1)
 }
 
 int TerrainPolygon::GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inter &inter,
-	TerrainPoint *&outSegStart)
+	TerrainPoint *&outSegStart, bool &outFirstPoint )
 {
+	outFirstPoint = false;
 	outSegStart = NULL;
 
 	TerrainPoint dummy(a, false);
@@ -2164,11 +2169,17 @@ int TerrainPolygon::GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inte
 		if (nextP == NULL)
 			nextP = pointStart;
 
-		li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos);
+		li = EditSession::SegmentIntersect(a, b, currP->pos, nextP->pos);
 		//Vector2i lii(round(li.position.x), round(li.position.y));
+
+		
 
 		if (!li.parallel)
 		{
+			if (length(li.position - V2d(a)) == 0.0)
+			{
+				outFirstPoint = true;
+			}
 			inters.push_back(DetailedInter(&dummy, li.position, currP));
 		}
 	}
@@ -2781,6 +2792,40 @@ bool TerrainPolygon::IsClockwise()
     return sum < 0;
 }
 
+void TerrainPolygon::Copy(TerrainPolygon *poly)
+{
+	TerrainPoint *start = new TerrainPoint(poly->pointStart->pos, false );
+	pointStart = start;
+	
+	TerrainPoint *prev = pointStart;
+	TerrainPoint *it = poly->pointStart->next;
+	TerrainPoint *newPoint;
+
+	for (; it != NULL; it = it->next)
+	{
+		newPoint = new TerrainPoint(it->pos, false);
+		prev->next = newPoint;
+		newPoint->prev = prev;
+		prev = newPoint;
+	}
+
+	pointEnd = prev;
+	numPoints = poly->numPoints;
+}
+
+bool TerrainPolygon::PointOnBorder(V2d &point)
+{
+	TerrainPoint *prev = pointEnd;
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	{
+		if (EditSession::PointOnLine(V2d(prev->pos), V2d(curr->pos), point))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 {
 	//start.prev = &end;
@@ -2788,10 +2833,13 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 	TerrainPoint *copyCurr = NULL;
 	TerrainPoint *copyPrev = NULL;
 	TerrainPoint *prev = pointEnd;
+	int numNewPoints = 0;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		//cout << "copying " << endl;
 		copyCurr = new TerrainPoint( curr->pos, false );
+
+		numNewPoints++;
 
 		if( curr == pointStart )
 		{
@@ -2814,6 +2862,8 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 		}
 		copyPrev = copyCurr;
 	}
+
+
 }
 
 //returns true if LinesIntersect or 
@@ -3334,6 +3384,12 @@ void TerrainPolygon::GetIntersections( TerrainPolygon *poly, std::list<Inter> &o
 			}
 
 			LineIntersection li = EditSession::SegmentIntersect( (*myPrev).pos, my->pos, (*prev).pos, pcurr->pos );
+
+			if (length(li.position - V2d(my->pos)) == 0)
+			{
+				continue;
+			}
+
 			if( !li.parallel )
 			{
 				

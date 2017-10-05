@@ -200,9 +200,11 @@ struct TerrainPolygon : ISelectable
 	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle,bool cw);
-
+	void Copy(TerrainPolygon *poly);
+	bool PointOnBorder(V2d &point);
 	void MovePoint( sf::Vector2i &delta,
 		TerrainPoint *tp );
+	
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
 	bool IsPoint(sf::Vector2i &p);
@@ -216,7 +218,8 @@ struct TerrainPolygon : ISelectable
 	void SetMaterialType(
 		int world, int variation );
 	void RemoveSlivers( double minAngle );
-	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inter &inter, TerrainPoint *&outSegStart );
+	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, 
+		Inter &inter, TerrainPoint *&outSegStart, bool &outFirstPoint );
 	TerrainPoint *GetMostLeftPoint();
 	bool SharesPoints(TerrainPolygon *poly);
 	TerrainPoint * HasPointPos( sf::Vector2i &pos );
@@ -1464,7 +1467,7 @@ struct EditSession : GUIHandler
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
 	void Draw();
-
+	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
 	bool OpenFile();
 	void WriteFile(std::string fileName);
 	void ButtonCallback( Button *b, const std::string & e );
@@ -1598,6 +1601,13 @@ struct EditSession : GUIHandler
 	};
 	AddResult Add( boost::shared_ptr<TerrainPolygon> brush,
 		boost::shared_ptr<TerrainPolygon> poly, TerrainPolygon *&outPoly );	
+	AddResult InverseAdd(boost::shared_ptr<TerrainPolygon> brush,
+		boost::shared_ptr<TerrainPolygon> poly, std::list<TerrainPolygon*> &outPolyList);
+	TerrainPoint * GetNextAddPoint(
+		TerrainPoint *previousPoint,
+		sf::Vector2i &stargSegPos, TerrainPoint *&curr,
+		PolyPtr &currPoly, PolyPtr &otherPoly, bool &skipBorderCase,
+		bool &replaceLastPoint );
 	void Sub(PolyPtr brushPtr,
 		std::list<PolyPtr> &polys,
 		std::list<PolyPtr> &results );
