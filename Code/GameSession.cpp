@@ -3698,7 +3698,7 @@ bool GameSession::OpenFile( string fileName )
 						switch( matVariation )
 						{
 						case 0:
-							//testva->AddBushExpression( 
+							//testva->AddDecorExpression( 
 							//testva->bushes.push_back( 
 							break;
 						}
@@ -3762,18 +3762,39 @@ bool GameSession::OpenFile( string fileName )
 
 			Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
 
-			BushExpression *normalExpr = GetBush_NORMAL_Points( 0, edges[currentEdgeIndex], 20,
-					300, CubicBezier( 0, 0, 1, 1 ), 20, 1000, CubicBezier( 0, 0, 1, 1 ) );
-			if( normalExpr != NULL )
-				testva->AddBushExpression( normalExpr );
+			DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
+			if (rock1 != NULL)
+				testva->AddDecorExpression(rock1);
 
-			BushExpression *testExpr = GetBush_NORMAL_Points(0, edges[currentEdgeIndex], 20,
+			DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, edges[currentEdgeIndex]);
+			if (rock2 != NULL)
+				testva->AddDecorExpression(rock2);
+
+			DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, edges[currentEdgeIndex]);
+			if (rock3 != NULL)
+				testva->AddDecorExpression(rock3);
+
+			DecorExpression *grassyRock= CreateDecorExpression(D_W1_GRASSYROCK, 0, edges[currentEdgeIndex]);
+			if (grassyRock != NULL)
+				testva->AddDecorExpression(grassyRock);
+
+			DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex] );
+			if( normalExpr != NULL )
+				testva->AddDecorExpression( normalExpr );
+
+			DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
+			if (exprPlantRock != NULL)
+				testva->AddDecorExpression(exprPlantRock);
+
+			
+
+		/*	DecorExpression *testExpr = GetBush_NORMAL_Points(0, edges[currentEdgeIndex], 20,
 				300, CubicBezier(0, 0, 1, 1), 20, 1000, CubicBezier(0, 0, 1, 1));
 
 			if (testExpr != NULL)
 			{
-				testva->AddBushExpression(testExpr);
-			}
+				testva->AddDecorExpression(testExpr);
+			}*/
 
 			VertexArray *polygonVA = va;
 
@@ -3924,10 +3945,10 @@ bool GameSession::OpenFile( string fileName )
 				ss << matVariation + 1;
 			}
 
-			ss << ".png";
+			ss << "_128x64.png";
 		
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 8, 64 );
+			Tileset *ts_border = GetTileset( ss.str(), 128, 64 );
 
 			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
@@ -3963,8 +3984,8 @@ bool GameSession::OpenFile( string fileName )
 
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
-			VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
-
+			//VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
+			VertexArray *triVA = NULL;
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
 			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
 
@@ -7214,8 +7235,8 @@ int GameSession::Run()
 					te = te->next;
 				}
 
-				for( map<BushTypes,BushLayer*>::iterator mit =
-					bushLayerMap.begin(); mit != bushLayerMap.end();
+				for( map<DecorType,DecorLayer*>::iterator mit =
+					decorLayerMap.begin(); mit != decorLayerMap.end();
 					++mit )
 				{
 					(*mit).second->Update();
@@ -9899,7 +9920,7 @@ void GameSession::TestVA::UpdateBushFrame()
 
 void GameSession::TestVA::DrawBushes( sf::RenderTarget *target )
 {
-	for( list<BushExpression*>::iterator it = bushes.begin(); 
+	for( list<DecorExpression*>::iterator it = bushes.begin(); 
 		it != bushes.end(); ++it )
 	{
 		Tileset *ts = (*it)->layer->ts;
@@ -10539,22 +10560,22 @@ double GameSession::GetTriangleArea( p2t::Triangle * t )
 	return A;
 }
 
-void GameSession::TestVA::AddBushExpression( GameSession::BushExpression *exp )
+void GameSession::TestVA::AddDecorExpression( GameSession::DecorExpression *exp )
 {
 	bushes.push_back( exp );
 }
 
 void GameSession::TestVA::UpdateBushSprites()
 {
-	for( list<BushExpression*>::iterator it = bushes.begin();
+	for( list<DecorExpression*>::iterator it = bushes.begin();
 		it != bushes.end(); ++it )
 	{
 		(*it)->UpdateSprites();
 	}
 }
 
-GameSession::BushExpression::BushExpression( std::list<sf::Vector2f> &pointList,
-	GameSession::BushLayer *p_layer )
+GameSession::DecorExpression::DecorExpression( std::list<sf::Vector2f> &pointList,
+	GameSession::DecorLayer *p_layer )
 	:layer( p_layer )
 {
 	int numBushes = pointList.size();
@@ -10593,38 +10614,37 @@ GameSession::BushExpression::BushExpression( std::list<sf::Vector2f> &pointList,
 	}
 }
 
-GameSession::BushExpression::~BushExpression()
+GameSession::DecorExpression::~DecorExpression()
 {
 	delete va;
 }
 
-GameSession::BushLayer::BushLayer( Tileset *p_ts, int animFactor )
-	:ts( p_ts ), bushFrame( 0 ), bushAnimLength( p_ts->GetNumTiles() ),
-	bushAnimFactor( animFactor )
+GameSession::DecorLayer::DecorLayer( Tileset *p_ts, int p_animLength, int p_animFactor, int p_startTile )
+	:ts( p_ts ), frame( 0 ), animLength( p_animLength ), startTile( p_startTile ), animFactor( p_animFactor )
 {
 
 }
 
-void GameSession::BushLayer::Update()
+void GameSession::DecorLayer::Update()
 {
-	++bushFrame;
-	if( bushFrame == bushAnimLength * bushAnimFactor )
+	++frame;
+	if(frame == animLength * animFactor )
 	{
-		bushFrame = 0;
+		frame = 0;
 	}
 }
 
-void GameSession::BushExpression::UpdateSprites()
+void GameSession::DecorExpression::UpdateSprites()
 {
 	int numBushes = va->getVertexCount() / 4;
 
 	Tileset *ts_bush = layer->ts;
-	int bushFrame = layer->bushFrame;
-	int bushAnimLength = layer->bushAnimLength;
-	int bushAnimFactor = layer->bushAnimFactor;
+	int frame = layer->frame;
+	int animLength = layer->animLength;
+	int animFactor = layer->animFactor;
 
 	VertexArray &bVA = *va;
-	IntRect subRect = ts_bush->GetSubRect( bushFrame / bushAnimFactor );
+	IntRect subRect = ts_bush->GetSubRect( (layer->startTile + frame) / animFactor );
 
 	for( int i = 0; i < numBushes; ++i )
 	{
@@ -10635,32 +10655,87 @@ void GameSession::BushExpression::UpdateSprites()
 	}
 }
 
-GameSession::BushExpression * GameSession::GetBush_NORMAL_Points( 
+GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dType,
 	int bgLayer,
-	Edge *startEdge, 
-	int minApart, 
-	int maxApart, 
-	CubicBezier apartBezier, 
-	int minPen, 
-	int maxPen, 
-	CubicBezier penBez )
+	Edge *startEdge)
 {
+	int minApart;
+	int maxApart;
+	CubicBezier apartBezier;
+	int minPen;
+	int maxPen;
+	CubicBezier penBez;
+	int animFactor = 1;
+
+	switch (dType)
+	{
+	case D_W1_BUSH_NORMAL:
+		minApart = 20;
+		maxApart = 300;
+		apartBezier = CubicBezier(0, 0, 1, 1);
+		minPen = 20;
+		maxPen = 1000;
+		penBez = CubicBezier(0, 0, 1, 1);
+		animFactor = 8;
+		break;
+	case D_W1_ROCK_1:
+	case D_W1_ROCK_2:
+	case D_W1_ROCK_3:
+	case D_W1_PLANTROCK:
+	case D_W1_GRASSYROCK:
+		minApart = 500;
+		maxApart = 700;
+		apartBezier = CubicBezier(0, 0, 1, 1);
+		minPen = 200;
+		maxPen = 1200;
+		penBez = CubicBezier(0, 0, 1, 1);
+		animFactor = 1;
+		break;
+	}
+
 	//assert( positions.empty() );
 
-	BushLayer *layer = NULL;
-	if( bushLayerMap.count( BUSH_NORMAL ) == 0 )
+	DecorLayer *layer = NULL;
+	if( decorLayerMap.count(dType) == 0 )
 	{
 		//int GameSession::TestVA::bushFrame = 0;
 		//int GameSession::TestVA::bushAnimLength = 20;
 		//int GameSession::TestVA::bushAnimFactor = 8;
 
-		Tileset *ts_b = GetTileset( "bush_01_64x64.png", 64, 64 );
-		layer = new BushLayer( ts_b, 8 );
-		bushLayerMap[BUSH_NORMAL] = layer;
+		Tileset *ts_d = NULL;
+		switch (dType)
+		{
+		case D_W1_BUSH_NORMAL:
+			ts_d = GetTileset("bush_01_64x64.png", 64, 64);
+			layer = new DecorLayer(ts_d, 20, 8);
+			break;
+		case D_W1_ROCK_1:
+			ts_d = GetTileset("rock_1_01_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_ROCK_2:
+			ts_d = GetTileset("rock_1_02_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_ROCK_3:
+			ts_d = GetTileset("rock_1_03_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_PLANTROCK:
+			ts_d = GetTileset("bush_1_01_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_GRASSYROCK:
+			ts_d = GetTileset("bush_1_02_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		}
+		
+		decorLayerMap[dType] = layer;
 	}
 	else
 	{
-		layer = bushLayerMap[BUSH_NORMAL];
+		layer = decorLayerMap[dType];
 	}
 
 	assert( layer != NULL );
@@ -10687,7 +10762,7 @@ GameSession::BushExpression * GameSession::GetBush_NORMAL_Points(
 	bool loopOver = false;
 	V2d cn;
 
-	rayMode = "bushes";
+	rayMode = "decor";
 	QuadTree *qt = NULL;
 	if( bgLayer == 0 )
 	{
@@ -10739,22 +10814,37 @@ GameSession::BushExpression * GameSession::GetBush_NORMAL_Points(
 		cn = curr->Normal();
 		rcEdge = NULL;
 		rayStart = curr->GetPoint( quant );
-		rayEnd = rayStart - cn * (double)maxPen;
+
+		rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen; //minpen times 2 cuz gotta account for the other side too
+
+		rayEnd = rayStart - cn * ( penDistance + minPen );
 		rayIgnoreEdge = curr;
 
 		RayCast( this, qt->startNode, rayStart, rayEnd );
 
-		diffPenMax = maxPen;
+		if (rcEdge != NULL)
+		{
+			V2d rcPos = rcEdge->GetPoint(rcQuantity);
+			continue;
+			/*if (length(rcPos - rayStart) < minPen || length( rcPos - rayEnd ) < minPen)
+			{
+				continue;
+			}*/
+			//penLimit = length(rcEdge->GetPoint(rcQuantity) - rayStart);
+			
+		}
+		/*diffPenMax = maxPen;
 		if( rcEdge != NULL )
 		{
 			penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
 			diffPenMax = (int)penLimit - minApart;
 			if( diffPenMax == 0 || penLimit < 100 )
 				continue;
-		}
+		}*/
 
-		rPen = rand() % diffPenMax;
-		penDistance = minPen + rPen;
+		/*rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen;*/
 		
 		pos = curr->GetPoint( quant ) - curr->Normal() * penDistance;
 
@@ -10766,7 +10856,7 @@ GameSession::BushExpression * GameSession::GetBush_NORMAL_Points(
 	if( positions.size() == 0 )
 		return NULL;
 	
-	BushExpression *expr = new BushExpression( positions, layer );
+	DecorExpression *expr = new DecorExpression( positions, layer );
 
 	return expr;
 }
@@ -10884,9 +10974,10 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 	assert( qt != NULL );
 
-	int tw = 8;//64;
+	int tw = 128;//64;
 	//int th = 512;
 	int numTotalQuads = 0;
+	double intersect = 20;
 	double test = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 	do
@@ -10896,7 +10987,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		if( valid != -1 )//eNorm.x == 0 )
 		{
 			double len = length( te->v1 - te->v0 ) + test * 2;
-			int numQuads = len / tw;
+			int numQuads = ceil(len / (tw - intersect));
 			//double quadWidth = len / numQuads;
 				
 			if( numQuads == 0 )
@@ -10912,8 +11003,6 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 	VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
 	
-	
-
 	VertexArray &va = *currVA;
 			
 	int extra = 0;
@@ -10926,14 +11015,15 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		int valid = ValidEdge( eNorm );
 		if( valid != -1 )
 		{
+			
 			double len = length( te->v1 - te->v0 ) + test * 2;
-			int numQuads = len / tw;
-			double quadWidth = len / numQuads;
+			int numQuads = ceil( len / tw ); 
+			double quadWidth = 128;//len / numQuads;
 
 			if( numQuads == 0 )
 			{
 				numQuads = 1;
-				quadWidth = 8;//std::min( len, 16 );
+				quadWidth = 128;//std::min( len, 16 );
 				//quadWidth =;
 			}
 			
@@ -10942,6 +11032,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
 
+			
 			double out = 16;//40;//16;
 			double in = 64 - out;//256 - out;//; - out;
 			
@@ -10954,14 +11045,14 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				//worldNum * 5
 				//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
-				int realIndex = valid * 8 + varietyCounter;//32 + varietyCounter;
+				int realIndex = valid * 4 + varietyCounter;//32 + varietyCounter;
 				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
 				IntRect sub = ts->GetSubRect( realIndex );
 				//cout << "left: " << sub.left << ", top: " << sub.top << 
 				//	", w: " << sub.width << ", h: " << sub.height << endl;
 
-				double startAlong = (double)i * quadWidth;
-				double endAlong = (double)(i+1) * quadWidth;
+				double startAlong = i * quadWidth - intersect * i;
+				double endAlong = startAlong + quadWidth;
 
 				V2d currStartInner = startInner + startAlong * along;
 				V2d currStartOuter = startOuter + startAlong * along;
@@ -11081,7 +11172,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				va[extra + i * 4 + 3].color = COLOR_TEAL;
 */
 				++varietyCounter;
-				if( varietyCounter == 8 )//32 )
+				if( varietyCounter == 4 )//32 )
 				{
 					varietyCounter = 0;
 				}
@@ -12090,7 +12181,7 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 	bool loopOver = false;
 	V2d cn;
 
-	rayMode = "bushes";
+	rayMode = "decor";
 	QuadTree *qt = NULL;
 	if( bgLayer == 0 )
 	{
@@ -12484,7 +12575,7 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 			rcQuantity = edgeQuantity;
 		}
 	}
-	else if( rayMode == "bushes" )
+	else if( rayMode == "decor" )
 	{
 		if( edge == rayIgnoreEdge )
 			return; 

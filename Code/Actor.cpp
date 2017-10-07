@@ -4358,6 +4358,7 @@ void Actor::UpdatePrePhysics()
 		{
 			framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 			bool j = currInput.A && !prevInput.A;
+			//bool isntWall = grindEdge->Normal().y != 0;
 			if( !currInput.Y || j )//&& grindEdge->Normal().y < 0 )
 			{
 				V2d op = position;
@@ -4439,7 +4440,7 @@ void Actor::UpdatePrePhysics()
 							movingGround = grindMovingTerrain;
 							edgeQuantity = grindQuantity;
 							groundSpeed = grindSpeed;
-							SetActionExpr( JUMPSQUAT );
+							SetActionExpr(JUMPSQUAT);
 							frame = 0;
 						}
 
@@ -4449,7 +4450,7 @@ void Actor::UpdatePrePhysics()
 					}
 
 				}
-				else
+				else if( grindNorm.y > 0 )
 				{
 					
 					if( grindNorm.x > 0 )
@@ -4493,10 +4494,9 @@ void Actor::UpdatePrePhysics()
 							{
 								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 							}
-							
 
 							SetActionExpr( JUMP );
-							frame = 0;
+							frame = 1;
 							ground = NULL;
 							movingGround = NULL;
 							grindEdge = NULL;
@@ -4575,7 +4575,25 @@ void Actor::UpdatePrePhysics()
 							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 						}
 					}
-				}		
+				}	
+				else
+				{
+					framesInAir = 0;
+					SetActionExpr(DOUBLE);
+					frame = 0;
+					grindEdge = NULL;
+					ground = NULL;
+
+					//TODO: this might glitch grind areas? test it with the range of your get out of grind query
+					if (grindNorm.x > 0)
+					{
+						position.x += b.rw + .1; 
+					}
+					else if (grindNorm.x < 0)
+					{
+						position.x += -b.rw - .1;
+					}
+				}
 				//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 			}
 			else if( currInput.B && !prevInput.B )
@@ -6153,6 +6171,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if (grindEdge != NULL )
 			{
+				assert(0);
 				//V2d ev0, ev1;
 				Edge tempEdge(*grindEdge);
 				/*if (tempEdge.Normal().y > 0)

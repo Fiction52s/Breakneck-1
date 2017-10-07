@@ -4307,6 +4307,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 			otherPoly = temp;
 
 			TerrainPoint *tp = new TerrainPoint(intersectPoint, false);
+			if (tp->pos == outPoly->pointEnd->pos)
+			{
+				int xxxx = 65;
+			}
 			outPoly->AddPoint(tp);
 
 			startSegPos = intersectPoint;
@@ -4318,6 +4322,10 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 				break;
 
 			TerrainPoint *tp = new TerrainPoint(nextP->pos, false);
+			if (tp->pos == outPoly->pointEnd->pos)
+			{
+				int xxxx = 65;
+			}
 			outPoly->AddPoint(tp);
 
 			if (inverse && !currentPoly->inverse)
@@ -5750,8 +5758,8 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 				if( li.position.x <= e2Right && li.position.x >= e2Left && li.position.y >= e2Top && li.position.y <= e2Bottom)
 				{
 					V2d &pos = li.position;
-					if( ( length( li.position - V2d( a.x, a.y ) ) > 0.0 ) && ( firstLimitOnly || length( li.position - V2d( b.x, b.y ) ) > 0.0 ) 
-						&&  ( firstLimitOnly || ( ( length( li.position - V2d( c.x, c.y ) ) > 0 &&  length( li.position - V2d( d.x, d.y ) ) > 0.0 ))) )
+					if( ( length( li.position - V2d( a.x, a.y ) ) > 1.0 ) && ( firstLimitOnly || length( li.position - V2d( b.x, b.y ) ) > 1.0 ) 
+						&&  ( firstLimitOnly || ( ( length( li.position - V2d( c.x, c.y ) ) > 0 &&  length( li.position - V2d( d.x, d.y ) ) > 1.0 ))) )
 					{
 						return li;
 					}

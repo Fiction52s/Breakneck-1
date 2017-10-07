@@ -829,57 +829,64 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	
 	
-	
-	struct BushLayer
+	//can make later children of this
+	//that implement more complex behaviors
+	struct DecorLayer
 	{
-		BushLayer( Tileset *ts,
-			int animFactor );
+		DecorLayer( Tileset *ts, int animLength,
+			int animFactor, int tileStart = 0 );
 		void Update();
 		Tileset *ts;
-		int bushFrame;
-		int bushAnimLength;
-		int bushAnimFactor;
+		int frame;
+		int animLength;
+		int animFactor;
+		int startTile;
 	};
-	struct BushExpression
+	struct DecorExpression
 	{
-		BushExpression( 
+		DecorExpression( 
 			std::list<sf::Vector2f> &pointList,
-			BushLayer *layer );
-		~BushExpression();
+			DecorLayer *layer );
+		~DecorExpression();
 
 		sf::VertexArray *va;
-		BushLayer *layer;
+		DecorLayer *layer;
 
 		void UpdateSprites();
 	};
 
-	enum BushTypes
+	enum DecorType
 	{
-		BUSH_NORMAL
+		D_W1_BUSH_NORMAL,
+		D_W1_ROCK_1,
+		D_W1_ROCK_2,
+		D_W1_ROCK_3,
+		D_W1_PLANTROCK,
+		D_W1_GRASSYROCK
 	};
-	std::map<BushTypes,BushLayer*> bushLayerMap;
+	std::map<DecorType,DecorLayer*> decorLayerMap;
 
-	BushExpression * GetBush_NORMAL_Points( int bgLayer,
-		Edge *startEdge, int minApart, 
-		int maxApart, CubicBezier apartBezier, 
-		int minPen, int maxPen,
-		CubicBezier penBez );
 
-	std::list<BushLayer*> bushLayers;
+
+	DecorExpression * CreateDecorExpression( DecorType dType,
+		int bgLayer,
+		Edge *startEdge );
+
+	std::list<DecorLayer*> DecorLayers;
 
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 	//ScrollingBackground *scrollingTest;
 
 	struct TestVA : QuadTreeEntrant
 	{
-		void AddBushExpression( BushExpression *expr );
+		void AddDecorExpression( DecorExpression *expr );
 		void UpdateBushSprites();
 		void DrawBushes( sf::RenderTarget *target );
 		//static int bushFrame;
 		//static int bushAnimLength;
 		//static int bushAnimFactor;
 		//sf::VertexArray *va;
-		std::list<BushExpression*> bushes;
+		std::list<DecorExpression*> bushes;
 		sf::VertexArray *groundva;
 		Tileset *ts_border;
 		sf::VertexArray *slopeva;
