@@ -6147,27 +6147,28 @@ bool GameSession::Load()
 	string eStr = ".png";
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
-		GetTileset( pStr + string( "c" ) + eStr, 1920, 1080 ), 0, 10 ) );
+		GetTileset( pStr + string( "c" ) + eStr, 1920, 1080 ), 0, 3 ) );
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
-		GetTileset(pStr + string("b") + eStr, 1920, 1080 ), 0, 25 ) );
+		GetTileset(pStr + string("b") + eStr, 1920, 1080 ), 0, 5 ) );
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
-		GetTileset(pStr + string("a") + eStr, 1920, 1080 ), 0, 40 ) );
+		GetTileset(pStr + string("a") + eStr, 1920, 1080 ), 0, 10 ) );
 
+	//this is outdated!
 	testPar = new Parallax();
 
 	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
 	Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
 	Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 80 );
+	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 80 );
 
-	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
-	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
+	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 150 );
+	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 150 );
 
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 40 );
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 40 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 250 );
+	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 250 );
 
 	
 
@@ -6202,6 +6203,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 
 int GameSession::Run()
 {
+	//rain = new Rain(this);
+
 	preScreenTex->setView(view);
 
 	bool showFrameRate = true;
@@ -6333,7 +6336,7 @@ int GameSession::Run()
 		state = RUN;
 	}
 
-	Rain rain(this);
+	//Rain rain(this);
 	sf::View rainView(Vector2f(0, 0), Vector2f(1920, 1080));
 
 	//scrollingTest = new ScrollingBackground( GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 10 );
@@ -6921,6 +6924,8 @@ int GameSession::Run()
 
 				goalPulse->Update();
 
+				if (rain != NULL)
+					rain->Update();
 				//powerWheel->UpdateHide();
 
 
@@ -6982,7 +6987,7 @@ int GameSession::Run()
 
 				UpdateFade();
 
-				rain.Update();
+				//rain.Update();
 
 				testPar->Update( camPos );
 
@@ -7697,10 +7702,25 @@ int GameSession::Run()
 			if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
 			//preScreenTex->setSmooth( true );
-			preScreenTex->draw( *listVAIter->wallva, rs );
-			preScreenTex->draw( *listVAIter->steepva, rs );
-			preScreenTex->draw( *listVAIter->slopeva, rs );
-			preScreenTex->draw( *listVAIter->groundva, rs );
+			if(listVAIter->wallva != NULL )
+				preScreenTex->draw(*listVAIter->wallva, rs);
+
+
+			if (listVAIter->steepva)
+			{
+				preScreenTex->draw(*listVAIter->steepva, rs);
+			}
+			
+			if (listVAIter->slopeva)
+			{
+				preScreenTex->draw(*listVAIter->slopeva, rs);
+			}
+			
+			if (listVAIter->groundva)
+			{
+				preScreenTex->draw(*listVAIter->groundva, rs);
+			}
+			
 
 			//preScreenTex->setSmooth( false );
 			listVAIter->DrawBushes( preScreenTex );
@@ -7899,6 +7919,9 @@ int GameSession::Run()
 		rainView.setCenter( (int)view.getCenter().x % 64, (int)view.getCenter().y % 64 );
 		rainView.setSize( view.getSize() );
 		preScreenTex->setView( rainView );
+
+		if (rain != NULL)
+			rain->Draw(preScreenTex);
 		//rain.Draw( preScreenTex );
 		preScreenTex->setView( view );
 
@@ -9353,6 +9376,7 @@ void GameSession::Init()
 	
 	levelMusic = NULL;
 
+	rain = NULL;
 	//stormCeilingInfo = NULL;
 	
 
@@ -10977,29 +11001,52 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	int tw = 128;//64;
 	//int th = 512;
 	int numTotalQuads = 0;
-	double intersect = 20;
-	double test = 0;//32.0;
+	double intersect = 48;
+	double extraLength = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
+
+	map<Edge*, int> numQuadMap;
+
 	do
 	{
 		V2d eNorm = te->Normal();
 		int valid = ValidEdge( eNorm );
 		if( valid != -1 )//eNorm.x == 0 )
 		{
-			double len = length( te->v1 - te->v0 ) + test * 2;
-			int numQuads = ceil(len / (tw - intersect));
-			//double quadWidth = len / numQuads;
-				
-			if( numQuads == 0 )
+			double len = length(te->v1 - te->v0);// +extraLength * 2;
+
+			int numQuads = 0;
+			if (len <= tw - extraLength * 2)
 			{
 				numQuads = 1;
 			}
+			else
+			{
+				numQuads = 2;
+				double firstRight = tw - extraLength - intersect;
+				double endLeft = (len + extraLength) - tw + intersect;
 
+				//optimize later to not be a loop
+				while (firstRight <= endLeft)
+				{
+					firstRight += tw - intersect;
+					++numQuads;
+				}
+			}
+
+			// = ceil(len / (tw - intersect));
+			//double quadWidth = len / numQuads;
 			numTotalQuads += numQuads;
+			numQuadMap[te] = numQuads;
 		}
 		te = te->edge1;
 	}
 	while( te != startEdge );
+
+	if (numTotalQuads == 0)
+	{
+		return NULL;
+	}
 
 	VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
 	
@@ -11015,19 +11062,9 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		int valid = ValidEdge( eNorm );
 		if( valid != -1 )
 		{
-			
-			double len = length( te->v1 - te->v0 ) + test * 2;
-			int numQuads = ceil( len / tw ); 
+			double len = length(te->v1 - te->v0);// +extraLength * 2;
+			int numQuads = numQuadMap[te];//ceil( len / tw ); 
 			double quadWidth = 128;//len / numQuads;
-
-			if( numQuads == 0 )
-			{
-				numQuads = 1;
-				quadWidth = 128;//std::min( len, 16 );
-				//quadWidth =;
-			}
-			
-
 
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
@@ -11037,8 +11074,12 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			double in = 64 - out;//256 - out;//; - out;
 			
 
-			V2d startInner = te->v0 - along * test - other * in;
-			V2d startOuter = te->v0 - along * test + other * out;
+			V2d startInner = te->v0 - along * extraLength - other * in;
+			V2d startOuter = te->v0 - along * extraLength + other * out;
+
+			double startAlong = -extraLength;
+			double endAlong;
+
 
 			for( int i = 0; i < numQuads; ++i )
 			{
@@ -11050,9 +11091,58 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				IntRect sub = ts->GetSubRect( realIndex );
 				//cout << "left: " << sub.left << ", top: " << sub.top << 
 				//	", w: " << sub.width << ", h: " << sub.height << endl;
-
-				double startAlong = i * quadWidth - intersect * i;
-				double endAlong = startAlong + quadWidth;
+				if (numQuads == 1)
+				{
+					startAlong = len / 2 - tw / 2;
+					endAlong = startAlong + tw;
+				}
+				else if (numQuads == 2)
+				{
+					if (i == 0)
+					{
+						startAlong = -extraLength;
+						endAlong = startAlong + tw;
+					}
+					else
+					{
+						endAlong = len + extraLength;
+						startAlong = endAlong - tw;
+					}
+				}
+				else if (numQuads % 2 == 0 )
+				{
+					if (i < numQuads / 2 )
+					{
+						startAlong = -extraLength + ((tw - intersect) * i);
+						endAlong = startAlong + tw;
+					}
+					else 
+					{
+						endAlong = len + extraLength - ((tw - intersect) * ((numQuads - 1) - i));
+						startAlong = endAlong - tw;
+					}
+				}
+				else
+				{
+					if (i * 2 == numQuads - 1)
+					{
+						startAlong = len / 2 - tw / 2;
+						endAlong = startAlong + tw;
+					}
+					else if (i < numQuads / 2)
+					{
+						startAlong = -extraLength + ((tw - intersect) * i);
+						endAlong = startAlong + tw;
+					}
+					else
+					{
+						endAlong = len + extraLength - ((tw - intersect) * (( numQuads -1 ) - i));
+						startAlong = endAlong - tw;
+					}
+				}
+				
+				
+				
 
 				V2d currStartInner = startInner + startAlong * along;
 				V2d currStartOuter = startOuter + startAlong * along;
@@ -11072,7 +11162,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 				rcEdge = NULL;
 				rayIgnoreEdge = te;
-				rayStart = te->v0 - along * test + ( startAlong ) * along;
+				rayStart = te->v0 - along * extraLength + ( startAlong ) * along;
 				rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
 				RayCast( this, qt->startNode, rayStart, rayEnd );
 
@@ -11080,20 +11170,20 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				//start ray
 				if( rcEdge != NULL )
 				{
-					currStartInner = rcEdge->GetPoint( rcQuantity );
-					realHeight0 = length( currStartInner - currStartOuter );
+					//currStartInner = rcEdge->GetPoint( rcQuantity );
+					//realHeight0 = length( currStartInner - currStartOuter );
 				}
 
 				rcEdge = NULL;
-				rayStart = te->v0 - along * test + ( endAlong ) * along;
+				rayStart = te->v0 - along * extraLength + ( endAlong ) * along;
 				rayEnd = currEndInner;
 				RayCast( this, qt->startNode, rayStart, rayEnd );
 
 				//end ray
 				if( rcEdge != NULL )
 				{
-					currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
-					realHeight1 = length( currEndInner - currStartOuter );
+					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
+					//realHeight1 = length( currEndInner - currStartOuter );
 				}
 
 				
@@ -11163,8 +11253,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				
 				va[extra + i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
 				va[extra + i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				va[extra + i * 4 + 2].texCoords = Vector2f( sub.left + sub.width, sub.top + realHeight1);
-				va[extra + i * 4 + 3].texCoords = Vector2f( sub.left, sub.top + realHeight0);
+				va[extra + i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);//realHeight1);
+				va[extra + i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);//+ realHeight0);
 
 				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
 				va[extra + i * 4 + 1].color = COLOR_YELLOW;
@@ -11176,6 +11266,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				{
 					varietyCounter = 0;
 				}
+
+				startAlong += tw - intersect;
 			}
 
 			extra += numQuads * 4;

@@ -18,6 +18,7 @@
 #include <map>
 #include "BarrierReactions.h"
 #include "Buf.h"
+#include "EnvEffects.h"
 
 struct RecordPlayer;
 struct ReplayPlayer;
@@ -761,7 +762,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::RenderTexture *mapTex;
 	sf::RenderTexture *pauseTex;
 
-	
+	Rain *rain;
 	
 	Tileset *ts_miniCircle;
 	sf::Sprite miniCircle;
