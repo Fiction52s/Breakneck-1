@@ -1,4 +1,4 @@
-#version 120
+//#version 120
 
 //our texture samplers
 uniform sampler2D u_texture;   //diffuse map
@@ -204,9 +204,19 @@ void main()
 				else
 				{
 					float gray = dot(col.rgb, vec3(0.299, 0.587, 0.114));
-					col.r = gray + .5;
+					if( i >= 5 )
+					{
+						col.r = gray;
+						col.b = gray + .5;
+					}
+					else
+					{
+						col.b = gray;
+						col.r = gray + .5;
+					}
+					
 					col.g = gray;
-					col.b = gray;
+					
 				}
 				break;
 			}
