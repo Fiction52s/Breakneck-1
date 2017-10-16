@@ -17369,6 +17369,10 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
+
+
+
+
 	/*double c = cos( -currInput.leftStickRadians);
 	double s = sin( -currInput.leftStickRadians);
 	V2d left( c, s );

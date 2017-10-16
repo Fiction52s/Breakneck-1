@@ -12,6 +12,8 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *mainMenu )
 	:font( mainMenu->arial )
 {
+	//extraPassRect.setSize(Vector2f(1920, 1080));
+
 	ts_planetAndSpace = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z1.jpg", 1920, 1080 );
 	//planetAndSpaceTex = new Texture;
 	//planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );
@@ -23,8 +25,29 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	ts_colonySelect = mainMenu->tilesetManager.GetTileset( "WorldMap/map_select_512x512.png"
 		, 512, 512 );
 
+	ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/W1.png", 1920, 1080);
+
+	zoomedMapSpr.setTexture(*ts_zoomedMapw1->texture);
+	zoomedMapSpr.setOrigin(zoomedMapSpr.getLocalBounds().width / 2, zoomedMapSpr.getLocalBounds().height / 2);
+	zoomedMapSpr.setPosition(1920 + 1400, 250);
+	zoomedMapSpr.setScale(.2, .2);
+
 	colonySelectSprite.setTexture( *ts_colonySelect->texture );
 	
+	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
+	if (!zoomShader.loadFromFile("zoomblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "zoom blur SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0);
+	}
+	zoomShader.setUniform("texSize", Vector2f(1920, 1080));
+	zoomShader.setUniform("radial_blur", 1.f);
+	zoomShader.setUniform("radial_bright", .1f);
+	zoomShader.setUniform("radial_origin", Vector2f( .5, .5 ) );
+	zoomShader.setUniform("radial_size", Vector2f( 1.f / 1920, 1.f / 1080 ));
+	//zoomShader.setUniform("sampleStregth", 5.f);
+	//zoomShader.setUniform("texSize", Vector3f(1920, 1080, 0));
+	//zoomShader.setUniform("texSize", Vector3f(1920, 1080, 0));
 
 	for( int i = 0; i < 6; ++i )
 	{
@@ -42,7 +65,7 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 		ts_colony[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
 	}
 
-	back.setPosition( 0, 0 );
+	back.setPosition( 1920, 0 );
 	//back.setOrigin( 0, 0 );
 	front.setPosition( 0, 0 );
 	//front.setOrigin( 1920 / 2, 1080 / 2 );
@@ -348,50 +371,120 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		break;
 	case PLANET:
+	{
+		int limit = 120 / 2;
+		if (frame == limit)
+			frame = 0;
+		
+
+		float a = frame / (float)(limit-1);
+
+		int mLimit = 50 / 2;
+		int mFrame = min(frame, mLimit);
+
+		float aMove = mFrame / (float)(mLimit - 1);
+
+		/*if (frame >= limit)
+		{
+			frame = limit;
+			a = 1.f;
+		}*/
+			
+		CubicBezier cb(.83, .27, .06, .63);//(0, 0, 1, 1);
+		CubicBezier cbMove(0, 0, 1, 1);
+
+		oldZoomCurvePos = zoomCurvePos;
+
+		zoomCurvePos = cb.GetValue(a);
+
+		
+		float f = zoomCurvePos;
+
+		float fz = cbMove.GetValue(aMove);
+
+		//float test = f * 5.f;
+
+
+		if( frame == 0 )
+			zoomShader.setUniform("sampleStrength", 0);
+
+		Vector2f endPos(1920 + 1400, 250);
+		float endScale = .2f;
+
+		Vector2f startPos(1920 + 960, 540);
+		float startScale = 1.f;
+
+
+		float oldA = currScale;
+		
+		
+
+		currScale = startScale * (1.f - f) + endScale * f;
+		
+		currCenter = startPos * (1.f - fz) + endPos * fz;
+
+		zoomView.setCenter(currCenter);
+		zoomView.setSize(Vector2f(1920, 1080) * currScale);
+
+		if (frame > 0)
+		{
+			float diff = zoomCurvePos - oldZoomCurvePos;//abs(currScale - oldScale);
+
+			//float diffFactor = diff / abs(endScale - startScale) / limit;
+			float multiple = limit;
+			diff *= multiple;
+			diff += 1.0;
+
+			zoomShader.setUniform("sampleStrength", diff);
+		}
+
+		//View testV( Vector2f( 1920 + 960))
 		/*if( frame == trans )
 		{
 			state = SECTION_TRANSITION;
 			frame = 0;
 		}*/
-		if( currInput.A && !prevInput.A )
+		if (currInput.A && !prevInput.A)
 		{
 			state = COLONY_TRANSITION;//SECTION_TRANSITION;
 			frame = 0;
 			break;
 		}
-		else if( currInput.B && !prevInput.B )
+		else if (currInput.B && !prevInput.B)
 		{
 			state = OFF;
 			frame = 0;
 			break;
 		}
-			
-		if( (currInput.LDown() || currInput.PDown()) && !moveDown )
+
+		if ((currInput.LDown() || currInput.PDown()) && !moveDown)
 		{
 			selectedColony++;
 			//currentMenuSelect++;
-			if( selectedColony > 5 )
+			if (selectedColony > 5)
 				selectedColony = 0;
 			moveDown = true;
 			UpdateColonySelect();
 		}
-		else if( ( currInput.LUp() || currInput.PUp() ) && !moveUp )
+		else if ((currInput.LUp() || currInput.PUp()) && !moveUp)
 		{
 			selectedColony--;
-			if( selectedColony < 0 )
+			if (selectedColony < 0)
 				selectedColony = 5;
 			moveUp = true;
 			UpdateColonySelect();
 		}
 
-		if( !(currInput.LDown() || currInput.PDown()) )
+		if (!(currInput.LDown() || currInput.PDown()))
 		{
 			moveDown = false;
 		}
-		if( ! ( currInput.LUp() || currInput.PUp() ) )
+		if (!(currInput.LUp() || currInput.PUp()))
 		{
 			moveUp = false;
 		}
+		//++frame;
+	}
 		break;
 	case SECTION_TRANSITION:
 		if( frame == trans )
@@ -459,7 +552,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 	case PLANET:
 		{
-			if( frame == 0 )
+			//if( frame == 0 )
 			{
 				//back.setTexture( *planetTex );
 				back.setTexture( *ts_planet->texture );
@@ -559,32 +652,53 @@ void WorldMap::Draw( RenderTarget *target )
 		return;
 	}
 
+	sf::RenderTexture *rt = MainMenu::extraScreenTexture;
+	rt->clear();
+	
 	//
-	if( state == PLANET_AND_SPACE || state == PLANET || state == SECTION || state == COLONY )
+	if( state == PLANET_AND_SPACE || state == SECTION || state == COLONY )
 	{
 		//cout << "drawing" << endl;
-		target->draw( back );
+		rt->draw( back );
 	}
 	else
 	{
 		//cout << "drawing" << endl;
-		target->draw( back );
-		target->draw( front );
+		rt->draw( back );
+		rt->draw( front );
 	}
 
 	if( state == COLONY )
 	{
-		target->draw( bgRect );
-		target->draw( selectedRect );
+		rt->draw( bgRect );
+		rt->draw( selectedRect );
 
 		for( int i = 0; i < numTotalEntries; ++i )
 		{
-			target->draw( text[i] );
+			rt->draw( text[i] );
 		}
 	}
 
 	if( state == PLANET )
 	{
-		target->draw( colonySelectSprite );
+		rt->setView(zoomView);
+		rt->draw(back);
+		rt->draw(zoomedMapSpr);
+		rt->draw( colonySelectSprite );
 	}
+
+	rt->display();
+	const sf::Texture &tex = rt->getTexture();
+	extraPassSpr.setTexture(tex);
+
+	//extraPassSprite.setTexture(tex);
+
+	
+	zoomShader.setUniform("zoomTex", sf::Shader::CurrentTexture );
+	//extraPassSpr.setFillColor(Color::White);
+	extraPassSpr.setPosition(1920, 0);
+	//extraPassSpr.setSize(Vector2f(1920, 1080));
+	//zoomView.setCenter(1920, 0);
+	//target->setView(zoomView);
+	target->draw(extraPassSpr, &zoomShader);
 }

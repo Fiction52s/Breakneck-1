@@ -32,6 +32,7 @@ sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
 sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
+sf::RenderTexture *MainMenu::extraScreenTexture = NULL;
 
 const int MapSelectionMenu::BOX_WIDTH = 580;
 const int MapSelectionMenu::BOX_HEIGHT = 40;
@@ -600,6 +601,13 @@ MainMenu::MainMenu()
 		preScreenTexture->clear();
 	}
 
+	if ( extraScreenTexture == NULL)
+	{
+		extraScreenTexture = new RenderTexture;
+		extraScreenTexture->create(1920, 1080);
+		extraScreenTexture->clear();
+	}
+
 	if( postProcessTexture == NULL )
 	{
 		postProcessTexture = new RenderTexture;
@@ -834,7 +842,8 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
 		GameSession *gs = new GameSession( NULL, this, p_path );
-		gs->Load();
+		GameSession::sLoad(gs);
+		
 		result = gs->Run();
 	
 
@@ -854,7 +863,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	{
 		window->setView( v );
 		GameSession *gs = new GameSession( NULL, this, p_path );
-		gs->Load();
+		GameSession::sLoad(gs);
 		result = gs->Run();
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
@@ -1345,7 +1354,7 @@ void MainMenu::Run()
 			case DEBUG_RACEFIGHT_RESULTS:
 				{
 				GameSession *gs = new GameSession( NULL, this, "Maps/W1/arena04.brknk" );
-				gs->Load();
+				GameSession::sLoad(gs);
 				gs->Run();
 				return;
 				break;
@@ -1770,7 +1779,7 @@ void MainMenu::Run()
 						//cout << "-----------------------------" << endl;
 						//cout << "file: " << file << endl;
 						GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
-						gs->Load();
+						GameSession::sLoad(gs);
 						int result = gs->Run(  );
 						delete gs;
 
@@ -1779,7 +1788,7 @@ void MainMenu::Run()
 							v.setSize( 1920, 1080 );
 							v.setCenter( 1920/2, 1080/ 2);
 							window->setView( v );
-							worldMap->state = WorldMap::PLANET_AND_SPACE;
+							worldMap->state = WorldMap::PLANET;
 							worldMap->frame = 0;
 							worldMap->UpdateMapList();
 						}
@@ -1839,7 +1848,8 @@ void MainMenu::Run()
 			}
 			case TRANS_SAVE_TO_WORLDMAP:
 				{
-				
+					menuMode = WORLDMAP;
+					break;
 					//saveTexture->clear();
 					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
 					//{
@@ -2294,7 +2304,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		{
 			optionChosen = true;
 			GameSession *gs = new GameSession( NULL, menu, ls.GetSelectedPath() );
-			gs->Load();
+			GameSession::sLoad( gs );
 			gs->Run();
 			menu->window->setView( menu->uiView );
 			delete gs;

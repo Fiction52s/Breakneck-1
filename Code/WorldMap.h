@@ -18,11 +18,13 @@ struct WorldMap
 		PLANET_TRANSITION,
 		PLANET,
 		SECTION_TRANSITION,
-		SECTION,
+		SECTION, 
 		COLONY_TRANSITION,
 		COLONY
 	};
 
+
+	sf::Shader zoomShader;
 	WorldMap( MainMenu *mainMenu );
 	void Reset( SaveFile *sf );
 	~WorldMap();
@@ -38,6 +40,14 @@ struct WorldMap
 	int Tex( int index, int level, TreeNode *entry );
 	State state;
 	int frame;
+	sf::Sprite extraPassSpr;
+	sf::Sprite zoomedMapSpr;
+	Tileset *ts_zoomedMapw1;
+	float currScale;
+	sf::Vector2f currCenter;
+	float oldZoomCurvePos;
+	float zoomCurvePos;
+	sf::View zoomView;
 
 	Tileset *ts_planetAndSpace;
 	Tileset *ts_planet;

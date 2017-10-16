@@ -820,6 +820,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int bgLayer,
 		Edge *start,
 		Tileset *ts );
+	sf::VertexArray *SetupTransitionQuads(
+		int bgLayer,
+		Edge *start,
+		Tileset *ts);
+
 
 	sf::VertexArray *SetupDecor0(
 		std::vector<p2t::Triangle*> &tris,
@@ -1047,6 +1052,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	Sequence *activeSequence;
 	Sequence *startMapSeq;
+
+
 
 	/*struct GameStartSeq : Sequence
 	{

@@ -3984,8 +3984,8 @@ bool GameSession::OpenFile( string fileName )
 
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
-			//VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
-			VertexArray *triVA = NULL;
+			VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
+			//VertexArray *triVA = NULL;
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
 			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
 
@@ -6227,18 +6227,18 @@ int GameSession::Run()
 	//use player->setactivepowers to set it up from the level. need to add it
 	//to the editor
 
-	sf::Vertex *line = new sf::Vertex[mh->numVertices * 2];
-	for (int i = 0; i < mh->numVertices; ++i)
-	{
-		//cout << "i: " << i << endl;
-		line[i * 2] = sf::Vertex(Vector2f(edges[i]->v0.x, edges[i]->v0.y));
-		line[i * 2 + 1] = sf::Vertex(Vector2f(edges[i]->v1.x, edges[i]->v1.y));
-	}
+	//sf::Vertex *line = new sf::Vertex[mh->numVertices * 2];
+	//for (int i = 0; i < mh->numVertices; ++i)
+	//{
+	//	//cout << "i: " << i << endl;
+	//	line[i * 2] = sf::Vertex(Vector2f(edges[i]->v0.x, edges[i]->v0.y));
+	//	line[i * 2 + 1] = sf::Vertex(Vector2f(edges[i]->v1.x, edges[i]->v1.y));
+	//}
 
-	sf::Vector2<double> nLine((line[1].position - line[0].position).x, (line[1].position - line[0].position).y);
-	nLine = normalize(nLine);
+	//sf::Vector2<double> nLine((line[1].position - line[0].position).x, (line[1].position - line[0].position).y);
+	//nLine = normalize(nLine);
 
-	sf::Vector2<double> lineNormal(-nLine.y, nLine.x);
+	//sf::Vector2<double> lineNormal(-nLine.y, nLine.x);
 
 	sf::CircleShape circle(30);
 	circle.setFillColor(Color::Blue);
@@ -6412,9 +6412,12 @@ int GameSession::Run()
 	}
 
 	int pointsTotal = 0;
-	for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+	if( mh->songLevels.size() > 0 )
 	{
-		pointsTotal += (*it).second;
+		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+		{
+			pointsTotal += (*it).second;
+		}
 	}
 
 
@@ -8179,7 +8182,7 @@ int GameSession::Run()
 		//for post processing
 		preScreenTex->display();
 
-		if( false )
+		if( true )
 		{
 
 			
@@ -9261,7 +9264,7 @@ int GameSession::Run()
 		levelMusic = NULL;
 	}
 	
-	delete [] line;
+	//delete [] line;
 
 	//window->setView( window->getDefaultView() );
 	//window->clear( Color::Red );
@@ -11861,6 +11864,262 @@ sf::VertexArray * GameSession::SetupBorderTris( int bgLayer, Edge *startEdge, Ti
 	return currVA;
 }
 
+sf::VertexArray *GameSession::SetupTransitionQuads(
+	int bgLayer,
+	Edge *startEdge,
+	Tileset *ts)
+{
+	QuadTree *qt = NULL;
+	if (bgLayer == 0)
+	{
+		qt = terrainTree;
+	}
+	else if (bgLayer == 1)
+	{
+		qt = terrainBGTree;
+	}
+
+	double tw = 128;//256;//64;//8;
+	double th = 64;//256;
+
+	int out = 16;//40;
+	int in = th - out;
+	assert(qt != NULL);
+
+
+	int numtotalQuads = 0;
+	Edge *te = startEdge;
+	do
+	{
+		Edge *e1 = te->edge1;
+		V2d eNorm = te->Normal();
+		V2d along = normalize(te->v1 - te->v0);
+		V2d nextAlong = normalize(e1->v1 - e1->v0);
+		V2d nextNorm = e1->Normal();
+		double c = cross(nextAlong, along);
+		bool viable = true;
+
+		V2d jutDir = normalize(normalize(te->v1 - te->v0) + normalize(te->v1 - e1->v1)) / 2.0;
+		V2d jutPoint = te->v1 + jutDir * (th - out);
+
+		//double rayTest = (th - out);
+
+		rcEdge = NULL;
+		rayIgnoreEdge = NULL;
+		rayStart = te->v1 + jutDir * 1.0;
+		rayEnd = jutPoint;//te->v0 + (double)i * quadWidth * along - other * in;
+		RayCast(this, qt->startNode, rayStart, rayEnd);
+
+		//start ray
+		if (rcEdge != NULL)
+		{
+			//cout << "viable is now false" << endl;
+			viable = false;
+		}
+		else
+		{
+			//rcEdge = NULL;
+			//rayIgnoreEdge = te;
+			//rayIgnoreEdge = NULL;
+			rayStart = te->v1 - eNorm * .01;
+			rayEnd = te->v1 - eNorm * (th - out);//te->v0 + (double)i * quadWidth * along - other * in;
+			RayCast(this, qt->startNode, rayStart, rayEnd);
+
+
+			//start ray
+			if (rcEdge != NULL)
+			{
+				viable = false;
+				//currStartInner = rcEdge->GetPoint( rcQuantity );
+				//realHeight0 = length( currStartInner - currStartOuter );
+			}
+			else
+			{
+				//rayIgnoreEdge = te;
+				//rayIgnoreEdge = NULL;
+				rayStart = te->v1 - nextNorm * .01;
+				rayEnd = te->v1 - nextNorm * (th - out);
+				RayCast(this, qt->startNode, rayStart, rayEnd);
+
+				//end ray
+				if (rcEdge != NULL)
+				{
+					viable = false;
+					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
+					//realHeight1 = length( currEndInner - currStartOuter );
+				}
+			}
+		}
+
+
+		if (viable)
+		{
+			numtotalQuads++;
+		}
+		te = te->edge1;
+	} while (te != startEdge);
+
+	if (numtotalQuads == 0)
+	{
+		return NULL;
+	}
+
+	VertexArray *currVA = new VertexArray(sf::Quads, numtotalQuads * 4);
+	VertexArray &va = *currVA;
+
+	//..IntRect sub = ts->GetSubRect( 0 );
+
+	te = startEdge;
+	int extra = 0;
+	do
+	{
+		Edge *e1 = te->edge1;
+		V2d eNorm = te->Normal();
+		V2d along = normalize(te->v1 - te->v0);
+		V2d nextAlong = normalize(e1->v1 - e1->v0);
+		double c = cross(nextAlong, along);
+		V2d nextNorm = e1->Normal();
+		V2d point = e1->v0;
+		int i = 0;
+		V2d jutDir = normalize((normalize(te->v1 - te->v0) + normalize(te->v1 - e1->v1)) / 2.0);
+		//cout << "length jut dir: " << length( jutDir ) << endl;
+		V2d jutPoint = te->v1 + jutDir * (th - out);
+		bool viable = true;
+
+		rcEdge = NULL;
+		rayIgnoreEdge = NULL;
+		rayStart = te->v1 + jutDir * 1.0;
+		rayEnd = jutPoint;//te->v0 + (double)i * quadWidth * along - other * in;
+		RayCast(this, qt->startNode, rayStart, rayEnd);
+
+		//start ray
+		if (rcEdge != NULL)
+		{
+			//cout << "viable is now false" << endl;
+			viable = false;
+		}
+		else
+		{
+			rcEdge = NULL;
+			rayIgnoreEdge = te;
+			rayStart = te->v1 - eNorm * .01;
+			rayEnd = te->v1 - eNorm * (th - out);//te->v0 + (double)i * quadWidth * along - other * in;
+			RayCast(this, qt->startNode, rayStart, rayEnd);
+
+
+			//start ray
+			//if (rcEdge != NULL)
+			//{
+			//	viable = false;
+			//}
+			//else
+			//{
+			//	rayIgnoreEdge = te;
+			//	rayStart = te->v1 - nextNorm * .01;
+			//	rayEnd = te->v1 - nextNorm * (th - out);
+			//	RayCast(this, qt->startNode, rayStart, rayEnd);
+
+			//	//end ray
+			//	if (rcEdge != NULL)
+			//	{
+			//		viable = false;
+			//	}
+			//}
+		}
+
+		viable = true;
+		if (c > 0 && viable)
+		{
+			int valid = -1;
+			valid = IsFlatGround(eNorm);
+			if (valid == -1)
+			{
+				valid = IsSlopedGround(eNorm);
+				if (valid == -1)
+				{
+					valid = IsWall(eNorm);
+
+					if (valid == -1)
+					{
+						valid = IsSteepGround(eNorm);
+					}
+				}
+
+			}
+
+			if (valid == -1)
+			{
+				cout << "wat: " << eNorm.x << ", " << eNorm.y << endl;
+			}
+			assert(valid != -1);
+
+			int otherValid = -1;
+			otherValid = IsFlatGround(nextNorm);
+			if (otherValid == -1)
+			{
+				otherValid = IsSlopedGround(nextNorm);
+				if (otherValid == -1)
+				{
+					otherValid = IsWall(nextNorm);
+
+					if (otherValid == -1)
+					{
+						otherValid = IsSteepGround(nextNorm);
+					}
+				}
+			}
+
+			if (otherValid == -1)
+			{
+				cout << "watother: " << eNorm.x << ", " << eNorm.y << endl;
+			}
+			assert(otherValid != -1);
+
+			int realIndex = valid * 4;//32;
+			int realOther = otherValid * 4;// * 32;
+
+			IntRect sub = ts->GetSubRect(realIndex);
+			IntRect subOther = ts->GetSubRect(realOther);
+
+			V2d currNormOpp = -te->Normal();
+			V2d nextNormOpp = -e1->Normal();
+
+			V2d currInPoint = point + currNormOpp * (th - out);
+			V2d nextInPoint = point + nextNormOpp * (th - out);
+			//cout << "mid: " << mid << endl;
+
+			Vector2f pa = Vector2f(point.x, point.y);
+			Vector2f pb = Vector2f(currInPoint.x, currInPoint.y);
+			Vector2f pc = Vector2f(jutPoint.x, jutPoint.y);
+
+			va[extra + 0].position = Vector2f(currInPoint.x, currInPoint.y );
+			va[extra + 0].position = Vector2f(currInPoint.x, currInPoint.y);
+			va[extra + 1].position = pb;
+			va[extra + 2].position = pc;
+
+			va[extra + 0].texCoords = Vector2f(sub.left, sub.top + out);
+			va[extra + 1].texCoords = Vector2f(sub.left, sub.top + out);
+			va[extra + 2].texCoords = Vector2f(sub.left, th + sub.top);
+			va[extra + 3].texCoords = Vector2f(sub.left, sub.top + th);
+
+			extra += 3;
+
+			va[extra + 0].position = Vector2f(point.x, point.y);
+			va[extra + 1].position = Vector2f(jutPoint.x, jutPoint.y);
+			va[extra + 2].position = Vector2f(nextInPoint.x, nextInPoint.y);
+
+			va[extra + 0].texCoords = Vector2f(subOther.left, subOther.top + out);
+			va[extra + 1].texCoords = Vector2f(subOther.left, th + subOther.top);
+			va[extra + 2].texCoords = Vector2f(subOther.left, th + subOther.top);
+
+			extra += 3;
+		}
+		te = te->edge1;
+	} while (te != startEdge);
+
+	return currVA;
+}
+
 sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, Tileset *ts )
 {
 	QuadTree *qt = NULL;
@@ -11873,7 +12132,7 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 		qt = terrainBGTree;
 	}
 
-	double tw = 64;//256;//64;//8;
+	double tw = 128;//256;//64;//8;
 	double th = 64;//256;
 
 	int out = 16;//40;
@@ -12124,8 +12383,8 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 				//add (worldNum * 5) to realIndex to get the correct borders
 			
 
-			int realIndex = valid * 8;//32;
-			int realOther = otherValid * 8;// * 32;
+			int realIndex = valid * 4;// *8;//32;
+			int realOther = otherValid * 4;// *8;// * 32;
 
 			//cout << "valid: " << valid << ", otherValid: " << otherValid << endl;
 			//cout << "norm: " << eNorm.x << ", " << eNorm.y << endl;
