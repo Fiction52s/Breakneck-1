@@ -840,13 +840,15 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	struct DecorLayer
 	{
 		DecorLayer( Tileset *ts, int animLength,
-			int animFactor, int tileStart = 0 );
+			int animFactor, int tileStart = 0,
+			int loopWait = 0 );
 		void Update();
 		Tileset *ts;
 		int frame;
 		int animLength;
 		int animFactor;
 		int startTile;
+		int loopWait;
 	};
 	struct DecorExpression
 	{
@@ -868,6 +870,13 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		D_W1_ROCK_2,
 		D_W1_ROCK_3,
 		D_W1_PLANTROCK,
+		D_W1_VEINS1,
+		D_W1_VEINS2,
+		D_W1_VEINS3,
+		D_W1_VEINS4,
+		D_W1_VEINS5,
+		D_W1_VEINS6,
+
 		D_W1_GRASSYROCK
 	};
 	std::map<DecorType,DecorLayer*> decorLayerMap;

@@ -176,7 +176,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 	if( state == PULLING )
 	{ 
-		if (player->ground != NULL && player->bounceEdge != NULL)
+		if (player->ground != NULL || player->bounceEdge != NULL || player->grindEdge != NULL )
 		{
 			state = HIT;
 		}

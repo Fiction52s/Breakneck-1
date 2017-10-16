@@ -3760,6 +3760,13 @@ bool GameSession::OpenFile( string fileName )
 					}
 				}
 
+			for (int i = 0; i < 6; ++i)
+			{
+				DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, edges[currentEdgeIndex]);
+				if (expr != NULL)
+					testva->AddDecorExpression(expr);
+			}
+
 			Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
 
 			DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
@@ -3781,10 +3788,13 @@ bool GameSession::OpenFile( string fileName )
 			DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex] );
 			if( normalExpr != NULL )
 				testva->AddDecorExpression( normalExpr );
-
+ 
 			DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
 			if (exprPlantRock != NULL)
 				testva->AddDecorExpression(exprPlantRock);
+
+			
+			
 
 			
 
@@ -8182,7 +8192,7 @@ int GameSession::Run()
 		//for post processing
 		preScreenTex->display();
 
-		if( true )
+		if( false )
 		{
 
 			
@@ -10646,8 +10656,9 @@ GameSession::DecorExpression::~DecorExpression()
 	delete va;
 }
 
-GameSession::DecorLayer::DecorLayer( Tileset *p_ts, int p_animLength, int p_animFactor, int p_startTile )
-	:ts( p_ts ), frame( 0 ), animLength( p_animLength ), startTile( p_startTile ), animFactor( p_animFactor )
+GameSession::DecorLayer::DecorLayer( Tileset *p_ts, int p_animLength, int p_animFactor, int p_startTile, int p_loopWait )
+	:ts( p_ts ), frame( 0 ), animLength( p_animLength ), startTile( p_startTile ), animFactor( p_animFactor ),
+	loopWait( p_loopWait )
 {
 
 }
@@ -10655,7 +10666,7 @@ GameSession::DecorLayer::DecorLayer( Tileset *p_ts, int p_animLength, int p_anim
 void GameSession::DecorLayer::Update()
 {
 	++frame;
-	if(frame == animLength * animFactor )
+	if(frame == animLength * animFactor + loopWait )
 	{
 		frame = 0;
 	}
@@ -10666,11 +10677,12 @@ void GameSession::DecorExpression::UpdateSprites()
 	int numBushes = va->getVertexCount() / 4;
 
 	Tileset *ts_bush = layer->ts;
-	int frame = layer->frame;
+	int frame = max( layer->frame - layer->loopWait, 0 );
 	int animLength = layer->animLength;
 	int animFactor = layer->animFactor;
 
 	VertexArray &bVA = *va;
+
 	IntRect subRect = ts_bush->GetSubRect( (layer->startTile + frame) / animFactor );
 
 	for( int i = 0; i < numBushes; ++i )
@@ -10710,6 +10722,7 @@ GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dT
 	case D_W1_ROCK_3:
 	case D_W1_PLANTROCK:
 	case D_W1_GRASSYROCK:
+	default:
 		minApart = 500;
 		maxApart = 700;
 		apartBezier = CubicBezier(0, 0, 1, 1);
@@ -10721,6 +10734,8 @@ GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dT
 	}
 
 	//assert( positions.empty() );
+
+	int veinLoopWait = 30;
 
 	DecorLayer *layer = NULL;
 	if( decorLayerMap.count(dType) == 0 )
@@ -10755,6 +10770,30 @@ GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dT
 		case D_W1_GRASSYROCK:
 			ts_d = GetTileset("bush_1_02_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_VEINS1:
+			ts_d = GetTileset("veins_w1_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS2:
+			ts_d = GetTileset("veins_w1_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS3:
+			ts_d = GetTileset("veins_w1_3_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS4:
+			ts_d = GetTileset("veins_w1_4_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS5:
+			ts_d = GetTileset("veins_w1_5_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS6:
+			ts_d = GetTileset("veins_w1_6_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
 			break;
 		}
 		
