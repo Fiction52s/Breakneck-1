@@ -8,9 +8,12 @@
 using namespace std;
 using namespace sf;
 
-Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet )
+
+
+Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 	:player( p_player ), maxParticlesPerSet( p_maxParticlesPerSet ), numParticleSets( numSets )
 {
+	testType = type;
 	inactiveSets = NULL;
 	ParticleSet *temp;
 	ts = player->owner->GetTileset("aura_16x16.png", 16, 16);
@@ -26,6 +29,28 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet )
 	activeSets = NULL;
 
 	
+	for (int i = 0; i < totalParticles * 4; ++i)
+	{
+		switch (testType)
+		{
+		case 0:
+			va[i].color = Color::Cyan;////
+			va[i].color.a = 40;
+			break;
+		case 1:
+			va[i].color = Color::Blue;//Color(0x94, 0xfa, 0xff);//Color::White;
+			va[i].color.a = 40;
+			break;
+		case 2:
+			va[i].color = Color(100, 0, 255);//Color::Green;//Color(0x00, 0x96, 0x9e);//Color::Black;
+			va[i].color.a = 40;
+			break;
+		case 3:
+			va[i].color = Color::Cyan;
+			va[i].color.a = 90;
+			break;
+		}
+	}
 }
 void Aura::Update()
 {
@@ -305,13 +330,13 @@ void Aura::Particle::Update()
 		switch (player->speedLevel)
 		{
 		case 0:
-			hw = 6;//8
+			hw = 2;//8
 			break;
 		case 1:
-			hw = 12;//8
+			hw = 2;//8
 			break;
 		case 2:
-			hw = 18;//8
+			hw = 4;//8
 			break;
 		}
 		 ;
@@ -339,11 +364,11 @@ void Aura::Particle::Update()
 		quad[1].color.a = 255 * ((float)ttl / maxTTL);
 		quad[2].color.a = 255 * ((float)ttl / maxTTL);
 		quad[3].color.a = 255 * ((float)ttl / maxTTL);*/
-	int f = 10;
-		quad[0].color.a = f;
-		quad[1].color.a = f;
-		quad[2].color.a = f;
-		quad[3].color.a = f;
+	//int f = 255;//10;
+	//	quad[0].color.a = f;
+	//	quad[1].color.a = f;
+	//	quad[2].color.a = f;
+	//	quad[3].color.a = f;
 	//}
 }
 

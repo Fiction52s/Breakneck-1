@@ -18,7 +18,7 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	//planetAndSpaceTex = new Texture;
 	//planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );
 	
-	ts_planet = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z2.png", 1920, 1080 );
+	ts_planet = mainMenu->tilesetManager.GetTileset( "WorldMap/Map.png", 1920, 1080 );
 	//planetTex = new Texture;
 	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
 

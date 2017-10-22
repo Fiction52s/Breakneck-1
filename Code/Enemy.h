@@ -2,7 +2,7 @@
 #define __ENEMY_H__
 
 
-#include "Actor.h"
+//#include "Actor.h"
 #include <list>
 #include "Mover.h"
 #include "Movement.h"
@@ -10,6 +10,7 @@
 
 struct Zone;
 struct Monitor;
+struct Tileset;
 //projectile shotting process
 
 //struct Bullet;
@@ -26,6 +27,7 @@ struct LauncherEnemy
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
 struct Launcher;
+
 struct BasicBullet : QuadTreeCollider
 {
 	enum BType

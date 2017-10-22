@@ -75,7 +75,9 @@ struct Aura
 
 
 	int totalParticles;
-	Aura( Actor *player, int numSets, int maxParticlesPerSet );
+	Aura( Actor *player, int numSets, int maxParticlesPerSet,
+		int type = 0 );
+	int testType;
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	//void SetParticleSet(std::list<sf::Vector2f> &points);

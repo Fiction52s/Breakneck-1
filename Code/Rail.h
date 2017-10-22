@@ -2,11 +2,13 @@
 #define __RAIL_H__
 
 
-#include "Actor.h"
+//#include "Actor.h"
 #include <list>
 #include "Mover.h"
 #include "Movement.h"
 #include "Physics.h"
+
+struct Tileset;
 
 struct Rail : QuadTreeEntrant
 {

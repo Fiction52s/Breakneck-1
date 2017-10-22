@@ -1,7 +1,8 @@
 #ifndef __MOVEMENT_H__
 #define __MOVEMENT_H__
 
-#include "Actor.h"
+//#include "Actor.h"
+#include <SFML\Graphics.hpp>
 
 sf::Vector2<double> GetQuadraticValue( 
 	sf::Vector2<double> &p0,
@@ -153,6 +154,7 @@ struct LineMovement: Movement
 	sf::Vector2<double> GetPosition( int t );
 };
 
+struct GameSession;
 struct MovementSequence
 {
 	MovementSequence();

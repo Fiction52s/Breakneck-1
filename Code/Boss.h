@@ -1,7 +1,7 @@
 #ifndef __BOSS_H__
 #define __BOSS_H__
 
-#include "Actor.h"
+//#include "Actor.h"
 #include <list>
 #include "Mover.h"
 #include "Movement.h"

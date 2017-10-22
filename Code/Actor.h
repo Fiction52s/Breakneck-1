@@ -125,6 +125,7 @@ struct Actor : QuadTreeCollider,
 		S_FAIR2,
 		S_FAIR3,
 		S_DAIR,
+		S_DAIR_B,
 		S_UAIR,
 		S_LAND,
 		S_STANDATTACK,
@@ -417,7 +418,9 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_runBounceFlame;
 
 	Aura *testAura;
-	std::list<sf::Vector2f> *runPoints;
+	Aura *testAura1;
+	Aura *testAura2;
+	Aura* testAura3;
 
 	int airBounceFlameFrames;
 	int airBounceFrame;
@@ -512,13 +515,16 @@ struct Actor : QuadTreeCollider,
 	bool steepJump;
 
 	//new variables in here that need to work with clone power later
-	
+
 
 	bool test;
 	
 	double offSlopeByWallThresh;
-	const static int MAX_MOTION_GHOSTS = 4;
-	sf::Sprite motionGhosts[MAX_MOTION_GHOSTS];
+	//const static int MAX_MOTION_GHOSTS = 10;
+	sf::Sprite *motionGhosts;// [MAX_MOTION_GHOSTS];
+	int maxMotionGhosts;
+	sf::Shader motionGhostShader;
+
 	int numMotionGhosts;
 	int motionGhostSpacing;
 	int ghostSpacingCounter;
@@ -573,6 +579,11 @@ struct Actor : QuadTreeCollider,
 	double steepThresh;
 
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
+	std::list<sf::Vector2f> *auraPoints[Action::Count];
+	void CreateAura( std::list<sf::Vector2f> *&outPointList,
+		Tileset *ts, int startTile = 0, int numTiles = 0 );
+	//std::list<sf::Vector2f> *runPoints;
+	//std::list<sf::Vector2f> *standPoints;
 
 	int wallJumpMovementLimit;
 
@@ -614,6 +625,8 @@ struct Actor : QuadTreeCollider,
 	double backDoubleJumpStrength;
 
 	int timeSlowStrength;
+
+	double lessSlowDownThresh;
 
 	sf::Vector2<double> wallJumpStrength;
 	double clingSpeed;

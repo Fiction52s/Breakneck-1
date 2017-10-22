@@ -4,7 +4,7 @@
 #include "Physics.h"
 #include "Tileset.h"
 #include <list>
-#include "Actor.h"
+//#include "Actor.h"
 #include "Enemy.h"
 #include "QuadTree.h"
 #include <SFML/Graphics.hpp>

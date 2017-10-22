@@ -8190,7 +8190,7 @@ int GameSession::Run()
 
 		
 		//for post processing
-		preScreenTex->display();
+		//preScreenTex->display();
 
 		if( false )
 		{
@@ -8604,7 +8604,7 @@ int GameSession::Run()
 		
 
 		//this is so inefficient LOL
-		if (true)
+		if (false)
 		{
 			preScreenTex->display();
 			const Texture &preTex = preScreenTex->getTexture();
@@ -10192,7 +10192,7 @@ void GameSession::RespawnPlayer( int index )
 		//}
 	}
 
-	for( int i = 0; i < player->MAX_MOTION_GHOSTS; ++i )
+	for( int i = 0; i < player->maxMotionGhosts; ++i )
 	{
 		player->motionGhosts[i].setPosition( player->position.x, player->position.y );
 	}
@@ -10773,27 +10773,27 @@ GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dT
 			break;
 		case D_W1_VEINS1:
 			ts_d = GetTileset("veins_w1_1_512x512.png", 512, 512);
-			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS2:
 			ts_d = GetTileset("veins_w1_2_512x512.png", 512, 512);
-			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS3:
 			ts_d = GetTileset("veins_w1_3_512x512.png", 512, 512);
-			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS4:
 			ts_d = GetTileset("veins_w1_4_512x512.png", 512, 512);
-			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS5:
 			ts_d = GetTileset("veins_w1_5_512x512.png", 512, 512);
-			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS6:
 			ts_d = GetTileset("veins_w1_6_512x512.png", 512, 512);
-			layer = new DecorLayer(ts_d, 12, 3, 0, veinLoopWait);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		}
 		

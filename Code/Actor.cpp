@@ -87,7 +87,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[STEEPCLIMBATTACK] = owner->GetTileset("climb_att_128x48.png", 128, 48, skin);
 	tileset[STEEPSLIDEATTACK] = owner->GetTileset("steep_att_80x64.png", 80, 64, skin);
 	tileset[AIRDASH] = owner->GetTileset("airdash_80x80.png", 80, 80, skin);
-	tileset[STEEPCLIMB] = owner->GetTileset("steepclimb_128x64.png", 128, 64, skin);
+	tileset[STEEPCLIMB] = owner->GetTileset("steepclimb_96x32.png", 96, 32, skin);
 	tileset[AIRHITSTUN] = owner->GetTileset("hurt_64x64.png", 64, 64, skin);
 	tileset[GROUNDHITSTUN] = owner->GetTileset("hurt_64x64.png", 64, 64, skin);
 	tileset[WIREHOLD] = owner->GetTileset("steepslide_80x48.png", 80, 48, skin);
@@ -196,11 +196,16 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_goalKillArray[2] = owner->GetTileset("goal_w02_killc_384x256.png", 384, 256);
 	ts_goalKillArray[3] = owner->GetTileset("goal_w02_killd_384x256.png", 384, 256);
 	ts_goalKillArray[4] = owner->GetTileset("goal_w02_kille_384x256.png", 384, 256);
+
+	
 }
 
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		maxMotionGhosts = 80;
+		motionGhosts = new Sprite[maxMotionGhosts];
+		memset(tileset, 0, sizeof(tileset));
 		sf::Color startChanges[] = {
 			sf::Color(0x14, 0x59, 0x22),
 			sf::Color(0x08, 0x40, 0x12),
@@ -330,7 +335,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		
 
-		motionGhostSpacing = 6;
+		motionGhostSpacing = 1;
 		ghostSpacingCounter = 0;
 
 		runeStep = 0;
@@ -375,10 +380,17 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//uniform vec4 toColor;
 		//uniform vec4 fromColor;
 		Color c( 0x66, 0xee, 0xff );
-		despFaceShader.setUniform( "fromColor", Glsl::Vec4( c.r, c.g, c.b, c.a ) );
+		despFaceShader.setUniform( "fromColor", ColorGL( c ) );
 
+		if (!motionGhostShader.loadFromFile("motionghost_shader.frag", sf::Shader::Fragment))
+		{
+			cout << "motion ghost SHADER NOT LOADING CORRECTLY" << endl;
+			assert(0 && "desp shader not loaded");
+		}
 		
+		motionGhostShader.setUniform("energyColor", ColorGL(Color::Cyan));
 		
+		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
@@ -393,21 +405,22 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		soundBuffers[S_RUN_STEP2] = owner->soundManager->GetSound( "Audio/Sounds/run2.ogg" );
 		soundBuffers[S_SPRINT_STEP1] = owner->soundManager->GetSound( "Audio/Sounds/sprint1.ogg" );
 		soundBuffers[S_SPRINT_STEP2] = owner->soundManager->GetSound( "Audio/Sounds/sprint2.ogg" );
-		soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Audio/Sounds/dash.ogg" );
+		soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Audio/Sounds/dash_02.ogg" );
 
 		soundBuffers[S_HIT] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack_short.ogg" );
-		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hurt.ogg" );
+		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hit_1b.ogg" );
 		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack.ogg" );
 		soundBuffers[S_HIT_AND_KILL_KEY] = owner->soundManager->GetSound( "Audio/Sounds/key_kill.ogg" );
 		soundBuffers[S_FAIR1] = owner->soundManager->GetSound( "Audio/Sounds/fair_1.ogg" );
 		soundBuffers[S_DAIR] = owner->soundManager->GetSound( "Audio/Sounds/dair.ogg" );
+		soundBuffers[S_DAIR_B] = owner->soundManager->GetSound("Audio/Sounds/dair_b.ogg");
 		soundBuffers[S_UAIR] = owner->soundManager->GetSound( "Audio/Sounds/uair.ogg" );
 		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound( "Audio/Sounds/walljump.ogg" );
 		soundBuffers[S_WALLATTACK] = owner->soundManager->GetSound( "Audio/Sounds/wallattack.ogg" );
 		soundBuffers[S_GRAVREVERSE] = owner->soundManager->GetSound( "Audio/Sounds/gravreverse.ogg" );
 		soundBuffers[S_BOUNCEJUMP] = owner->soundManager->GetSound( "Audio/Sounds/bounce.ogg" );
 		soundBuffers[S_STANDATTACK] = owner->soundManager->GetSound( "Audio/Sounds/standattack.ogg" );
-		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Audio/Sounds/timeslow.ogg" );
+		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Audio/Sounds/time_slow_1.ogg" );
 		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Audio/Sounds/enter.ogg" );
 		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Audio/Sounds/exit.ogg" );
 
@@ -708,9 +721,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		airBounceFlameFrames = 20 * 3;
 		runBounceFlameFrames = 21 * 3;
 		actionLength[WALLATTACK] = 8 * 2;
+		//CreateAura(auraPoints[WALLATTACK], tileset[WALLATTACK]);
 		actionLength[DAIR] = 16;
+		//CreateAura(auraPoints[DAIR], tileset[DAIR]);
 		actionLength[DASH] = 45;
+		//CreateAura(auraPoints[DASH], tileset[DASH] );
 		actionLength[DOUBLE] = 28 + 10;
+		//CreateAura(auraPoints[DOUBLE], tileset[DOUBLE]);
 		actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
 		actionLength[FAIR] = 8 * 2;
 		actionLength[DIAGUPATTACK] = 14 * 2;
@@ -768,7 +785,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SPAWNWAIT] = 120;
 		actionLength[RAILDASH] = 20;
 
-
+		
 		}
 		 	
 
@@ -807,7 +824,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
 		//sh.setUniform( "u_texture", *tileset[action]->texture ); 
+		for (int j = 0; j < Action::Count; ++j)
+		{
+			CreateAura(auraPoints[j], tileset[j]);
+		}
 
+		
 		
 
 		grindActionLength = 32;
@@ -1024,17 +1046,16 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		
-		testAura = new Aura(this, 2, 64 * 64);
+		testAura = new Aura(this, 2, 64 * 64, 0);
+		testAura1 = new Aura(this, 2, 64 * 64, 1);
+		testAura2 = new Aura(this, 2, 64 * 64, 2);
+		testAura3 = new Aura(this, 2, 64 * 64, 3);
 
-		int runLen = actionLength[RUN];
-		runPoints = new std::list<Vector2f>[runLen];
+		//int runLen = actionLength[RUN];
+		//runPoints = new std::list<Vector2f>[runLen];
+		//standPoints = new std::list<Vector2f>[20];
 
-		Tileset *auraTestTS = tileset[RUN];
-		Image im = auraTestTS->texture->copyToImage();
-		for (int i = 0; i < 10; ++i)
-		{
-			Aura::CreateParticlePointList(auraTestTS, im, i, runPoints[i]);
-		}
+		
 
 
 		bool noPowers = false;
@@ -1555,10 +1576,10 @@ void Actor::Respawn()
 		fBubbleFrame[i] = 0;
 	}
 
-	for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
-	{
-		motionGhosts[i].setPosition( position.x, position.y );
-	}
+	//for( int i = 0; i < maxMotionGhosts; ++i )
+	//{
+	//	motionGhosts[i].setPosition( position.x, position.y );
+	//}
 
 	if( owner->raceFight != NULL )
 	{
@@ -6525,7 +6546,16 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1 )
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_DAIR] );
+
+				if( speedLevel == 0 ) 
+				{
+					owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR]);
+				}
+				else if (speedLevel == 1)
+				{
+					owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR_B]);
+				}
+				
 				currAttackHit = false;
 			}
 
@@ -14663,10 +14693,11 @@ void Actor::PhysicsResponse()
 		}
 	}
 
-	if( ghostSpacingCounter == motionGhostSpacing )
+	
+	/*if( ghostSpacingCounter == motionGhostSpacing )
 	{
 		ghostSpacingCounter = 0;
-		for( int i = MAX_MOTION_GHOSTS-1; i > 0; --i )
+		for( int i = maxMotionGhosts -1; i > 0; --i )
 		{
 			motionGhosts[i] = motionGhosts[i-1];
 		}
@@ -14675,7 +14706,7 @@ void Actor::PhysicsResponse()
 	else
 	{
 		ghostSpacingCounter++;
-	}
+	}*/
 }
 
 void Actor::UpdateHitboxes()
@@ -15062,7 +15093,17 @@ void Actor::UpdatePostPhysics()
 	//if (updateAura)
 	{
 		testAura->Update();
+		testAura1->Update();
+		testAura2->Update();
+		testAura3->Update();
 	}
+
+	for (int i = 0; i < maxMotionGhosts; ++i)
+	{
+		motionGhosts[i] = *sprite;
+	}
+
+	
 
 	switch( action )
 	{
@@ -17388,7 +17429,11 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( *re1->particles );
 	}*/
 	//target->draw( *pTrail->particles );
+	
+	testAura2->Draw(target);
+	testAura1->Draw(target);
 	testAura->Draw(target);
+	testAura3->Draw(target);
 
 
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
@@ -17404,72 +17449,55 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw(railTest);
 	}
 
-
-	int showMotionGhosts = 0;
-	if( ground != NULL )
+	V2d motionGhostDir;
+	double motionMagnitude = 0;
+	if (ground != NULL)
 	{
-		double gs = abs( groundSpeed );
-		if( gs >= dashSpeed0 )
-		{
-			showMotionGhosts = 1;
-		}
-		else if( gs >= dashSpeed0 * 1.5 )
-		{
-			showMotionGhosts = 2;
-		}
-		else if( gs >= dashSpeed0 * 1.7 )
-		{
-			showMotionGhosts = 3;
-		}
-		else if( gs >= dashSpeed0 * 2 ) 
-		{
-			showMotionGhosts = 4;
-		}
-		else if( gs >= dashSpeed0 * 2.3 )
-		{
-			showMotionGhosts = 5;
-		}
+		motionGhostDir = -normalize(normalize( ground->v1 - ground->v0 ) * groundSpeed );
+		if (reversed)
+			motionGhostDir = -motionGhostDir;
+		motionMagnitude = abs(groundSpeed);
 	}
 	else
 	{
-		double len = length( velocity );
-		if( len >= dashSpeed0 * 2 )
-		{
-			showMotionGhosts = 5;
-		}
-		else if( len >= dashSpeed0 * 1.7 )
-		{
-			showMotionGhosts = 4;
-		}
-		else if( len >= dashSpeed0 * 1.5 )
-		{
-			showMotionGhosts = 3;
-		}
-		else if( len >= dashSpeed0 )
-		{
-			showMotionGhosts = 2;
-		}
-		else
-		{
-			showMotionGhosts = 1;
-		}
+		motionGhostDir = -normalize(velocity);
+		motionMagnitude = length(velocity);
 	}
 
-	showMotionGhosts = 4;
-	if( showMotionGhosts && !desperationMode )
+	float dist = motionGhostSpacing;
+
+	Vector2f oldOrigin = sprite->getOrigin();
+	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	Vector2f diff = center - oldOrigin;
+	int showMotionGhosts = maxMotionGhosts;
+
+
+	showMotionGhosts = min( motionMagnitude / 2.0, 79.0 );
+
+	Vector2f sprPos = sprite->getPosition();// +diff;
+	for (int i = 0; i < showMotionGhosts; ++i)
+	{
+		motionGhosts[i].setPosition(sprPos.x + motionGhostDir.x * (i * dist), sprPos.y + motionGhostDir.y * (i * dist));
+	}
+
+	motionGhostShader.setUniform("textureSize", Vector2f( sprite->getTextureRect().width,
+		sprite->getTextureRect().height ) );
+
+	
+	if( showMotionGhosts > 0 )
 	{
 		//swordShader.setUniform( "isTealAlready", 0 );
 		//
-		//for( int i = 0; i < showMotionGhosts; ++i )
-		//{
-		//	float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
-		//	swordShader.setUniform( "opacity", opac );
-		//	//cout << "setting : " << i << endl;
-		//	//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
-		//	//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
-		//	//target->draw( fairSword1, &swordShader );
-		//	target->draw( motionGhosts[i], &swordShader );
-		//}
+		for( int i = 0; i < showMotionGhosts; ++i )
+		{
+			//float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
+			//swordShader.setUniform( "opacity", opac );
+			//cout << "setting : " << i << endl;
+			//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
+			//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
+			//target->draw( fairSword1, &swordShader );
+			target->draw(motionGhosts[i], &motionGhostShader );// , &swordShader );
+		}
 	}
 
 	
@@ -17948,6 +17976,9 @@ void Actor::UpdateSprite()
 			//create left wire boost
 		}
 	}
+
+	
+
 	switch( action )
 	{
 	case SEQ_CRAWLERFIGHT_STAND:
@@ -18000,6 +18031,7 @@ void Actor::UpdateSprite()
 				scorpSprite.setRotation( sprite->getRotation() );
 				scorpSet = true;
 			}
+
 
 			break;
 		}
@@ -18116,16 +18148,7 @@ void Actor::UpdateSprite()
 				scorpSet = true;
 			}
 
-			Transform tr;
-			tr.rotate(sprite->getRotation());
-			if (!fr)
-			{
-				tr.scale(Vector2f(-1, 1));
-			}
-			//tr.scale(4, 4);
-			Aura::NormalParams np;
-			np.centerPos = sprite->getPosition() + Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
-			testAura->ActivateParticles(runPoints[f], tr, sprite->getOrigin(), &np );
+			
 			updateAura = false;
 			break;
 		}
@@ -18245,7 +18268,6 @@ void Actor::UpdateSprite()
 	case JUMPSQUAT:
 		{
 			SetSpriteTexture( action );
-			
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
 			SetSpriteTile( 0, r );		
 
@@ -20409,7 +20431,46 @@ void Actor::UpdateSprite()
 		}
 		
 	}
+
+	int t = 6;
+	Vector2f extraParticle0(rand() % t - t / 2, rand() % t - t / 2);
+	Vector2f extraParticle1(rand() % t - t / 2, rand() % t - t / 2);
+	Vector2f extraParticle2(rand() % t - t / 2, rand() % t - t / 2);
+
+	bool fr = facingRight;
+	if (reversed)
+		fr = !fr;
+
+	Transform tr;
+	tr.rotate(sprite->getRotation());
+	if (!fr)
+	{
+		tr.scale(Vector2f(-1, 1));
+	}
+
+
+	Vector2f oldOrigin = sprite->getOrigin();
+	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	Vector2f diff = center - oldOrigin;
+
+	//Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
+	Aura::NormalParams np;
+	//sf::FloatRect gb = sprite->getGlobalBounds();
+	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
+
+	np.centerPos = sprite->getPosition() + diff;//sprite->getPosition() + center;//Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
+	sprite->setOrigin(oldOrigin);
 	
+	if (auraPoints[spriteAction] != NULL)
+	{
+		testAura->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle0, &np);
+		testAura1->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle1, &np);
+		testAura2->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
+		testAura3->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin(), &np);
+	}
+
 	if( scorpOn && !scorpSet )
 	{
 		if( ground != NULL )
@@ -20734,14 +20795,18 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 		flipTileY = false;
 	}
 
+	
 
 	sprite->setTextureRect( ir );
+
+	
+	
 }
 
 void Actor::SetSpriteTile( sf::Sprite *spr, 
-		Tileset *t, int tileIndex, bool noFlipX, bool noFlipY )
+		Tileset *tss, int tileIndex, bool noFlipX, bool noFlipY )
 {
-	IntRect ir = t->GetSubRect( tileIndex );
+	IntRect ir = tss->GetSubRect( tileIndex );
 	if( !noFlipX )
 	{
 		flipTileX = true;
@@ -20766,6 +20831,43 @@ void Actor::SetSpriteTile( sf::Sprite *spr,
 
 
 	spr->setTextureRect( ir );
+
+	int t = 4;
+	Vector2f extraParticle0(rand() % t - t / 2, rand() % t - t / 2);
+	Vector2f extraParticle1(rand() % t - t / 2, rand() % t - t / 2);
+	Vector2f extraParticle2(rand() % t - t / 2, rand() % t - t / 2);
+
+	bool fr = facingRight;
+	if (reversed)
+		fr = !fr;
+
+	Transform tr;
+	tr.rotate(sprite->getRotation());
+	if (!fr)
+	{
+		tr.scale(Vector2f(-1, 1));
+	}
+
+
+	Vector2f oldOrigin = sprite->getOrigin();
+	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	Vector2f diff = center - oldOrigin;
+
+	//Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
+	Aura::NormalParams np;
+	//sf::FloatRect gb = sprite->getGlobalBounds();
+	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
+
+	np.centerPos = sprite->getPosition() + diff;//sprite->getPosition() + center;//Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
+	sprite->setOrigin(oldOrigin);
+	if (auraPoints[action] != NULL)
+	{
+		testAura->ActivateParticles(auraPoints[action][tileIndex], tr, sprite->getOrigin() + extraParticle0, &np);
+		testAura1->ActivateParticles(auraPoints[action][tileIndex], tr, sprite->getOrigin() + extraParticle1, &np);
+		testAura2->ActivateParticles(auraPoints[action][tileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
+	}
 }
 
 void Actor::SaveState()
@@ -21701,5 +21803,32 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 	}
 
 	
+}
+
+void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
+	Tileset *ts, int startTile, int numTiles)
+{
+	//auraPoints[WALLATTACK] = 8;
+	//CreateAura(WALLATTACK, 8);
+	if (ts == NULL)
+	{
+		outPointList = NULL;
+		return;
+	}
+
+	//int endTile = startTile + numTiles;
+	if (numTiles == 0)
+	{
+		numTiles = ts->GetNumTiles() - startTile;
+		//endTile = ts->GetNumTiles() - startTile;
+	}
+
+	outPointList = new list<Vector2f>[numTiles];
+
+	Image im = ts->texture->copyToImage();
+	for (int i = 0; i < numTiles; ++i)
+	{
+		Aura::CreateParticlePointList(ts, im, i + startTile, outPointList[i] );
+	}
 }
 
