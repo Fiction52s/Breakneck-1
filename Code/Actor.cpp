@@ -17472,7 +17472,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	int showMotionGhosts = maxMotionGhosts;
 
 
-	showMotionGhosts = min( motionMagnitude / 2.0, 79.0 );
+	showMotionGhosts = min( motionMagnitude / 3.0, 79.0 );
 
 	Vector2f sprPos = sprite->getPosition();// +diff;
 	for (int i = 0; i < showMotionGhosts; ++i)
@@ -17480,8 +17480,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		motionGhosts[i].setPosition(sprPos.x + motionGhostDir.x * (i * dist), sprPos.y + motionGhostDir.y * (i * dist));
 	}
 
-	motionGhostShader.setUniform("textureSize", Vector2f( sprite->getTextureRect().width,
-		sprite->getTextureRect().height ) );
+	//motionGhostShader.setUniform("textureSize", Vector2f( sprite->getTextureRect().width,
+	//	sprite->getTextureRect().height ) );
 
 	
 	if( showMotionGhosts > 0 )
@@ -17765,10 +17765,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	};
 	target->draw( follower, 2, sf::Lines );*/
 	
-	if( showRune )
+	/*if( showRune )
 	{
 		target->draw( runeSprite );
-	}
+	}*/
 	
 }
 
@@ -20538,6 +20538,8 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
 	}
 	enemiesKilledThisFrame++;
+
+
 	//for the growing tree
 	//wrong
 }
@@ -21832,3 +21834,267 @@ void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	}
 }
 
+AbsorbParticles::AbsorbParticles()
+	:maxNumParticles(1000), va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
+	activeList( NULL ), inactiveList( NULL )
+{
+	va = new Vertex[maxNumParticles * 4];
+
+	for (int i = 0; i < maxNumParticles; ++i)
+	{
+		AllocateParticle( i );
+	}
+	//particlePos = new Vector2f[maxNumParticles];
+}
+
+void AbsorbParticles::AllocateParticle( int tileIndex )
+{
+	SingleEnergyParticle *sp = new SingleEnergyParticle(this, tileIndex );
+	if (inactiveList == NULL)
+		inactiveList = sp;
+	else
+	{
+		sp->next = inactiveList;
+		inactiveList->prev = sp;
+		inactiveList = sp;
+	}
+}
+
+AbsorbParticles::~AbsorbParticles()
+{
+	delete[] va;
+
+	SingleEnergyParticle *sp = activeList;
+	SingleEnergyParticle *tNext;
+	while (sp != NULL)
+	{
+		tNext = sp->next;
+		delete sp;
+		sp = tNext;
+	}
+
+	sp = inactiveList;
+	while (sp != NULL)
+	{
+		tNext = sp->next;
+		delete sp;
+		sp = tNext;
+	}
+}
+
+void AbsorbParticles::Activate( Actor *p_playerTarget, int storedHits, V2d &p_pos,
+	float p_startAngle )
+{
+	playerTarget = p_playerTarget;
+	float startSpeed = 4;
+
+	int numProjectiles = storedHits;
+
+	pos = Vector2f(round(p_pos.x), round(p_pos.y));
+	startAngle = p_startAngle;
+
+	Transform t;
+	t.rotate(p_startAngle / PI * 180.f );
+
+	Vector2f vel(0, -startSpeed);
+	//Vector2f currVel = vel;
+
+	SingleEnergyParticle *sp = NULL;
+	for (int i = 0; i < numProjectiles; ++i)
+	{
+		sp = GetInactiveParticle();
+		assert(sp != NULL);
+
+		sp->Activate(pos, t.transformPoint(vel));
+
+		if (activeList == NULL)
+		{
+			activeList = sp;
+		}
+		else
+		{
+			sp->next = activeList;
+			activeList->prev = sp;
+			activeList = sp;
+		}
+		
+		t.rotate(360.f / numProjectiles);
+	}
+}
+
+AbsorbParticles::SingleEnergyParticle::SingleEnergyParticle(AbsorbParticles *p_parent,
+	int p_tileIndex )
+	:parent( p_parent ), next( NULL ), prev( NULL ), tileIndex( p_tileIndex )
+{
+	Clear();
+}
+
+void AbsorbParticles::SingleEnergyParticle::Clear()
+{
+	sf::Vertex *va = parent->va;
+	va[tileIndex * 4].position = Vector2f(0, 0);
+	va[tileIndex * 4 + 1].position = Vector2f(0, 0);
+	va[tileIndex * 4 + 2].position = Vector2f(0, 0);
+	va[tileIndex * 4 + 3].position = Vector2f(0, 0);
+}
+
+void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
+{
+	IntRect sub;
+	sub.width = 16;
+	sub.height = 16;
+
+	sf::Vertex *va = parent->va;
+
+	
+		
+	va[tileIndex * 4].color = Color::Red;
+	va[tileIndex * 4 + 1].color = Color::Blue;
+	va[tileIndex * 4 + 2].color = Color::Green;
+	va[tileIndex * 4 + 3].color = Color::Cyan;
+
+	va[tileIndex * 4].position = pos + Vector2f(-sub.width/2, -sub.height/2);
+	va[tileIndex * 4+1].position = pos + Vector2f(sub.width/2, -sub.height/2);
+	va[tileIndex * 4+2].position = pos + Vector2f(sub.width/2, sub.height/2);
+	va[tileIndex * 4+3].position = pos + Vector2f(-sub.width/2, sub.height/2);
+	
+}
+
+void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel)
+{
+	frame = 0;
+	velocity = vel;
+	pos = p_pos;
+	next = NULL;
+	prev = NULL;
+}
+
+bool AbsorbParticles::SingleEnergyParticle::Update()
+{
+	float accel = 1;
+	V2d playerPos = parent->playerTarget->position;
+	Vector2f pPos(playerPos);
+	assert(parent->playerTarget != NULL);
+	pos += velocity;
+	
+	if (length(velocity) > parent->maxSpeed)
+	{
+		velocity = normalize(velocity) * (float)parent->maxSpeed;
+	}
+
+	float blahFactor = 0;
+
+	if (frame < 20)
+	{
+		accel = .01;
+		
+		//blahFactor = 0;
+		//velocity = length(velocity) * normalize(pPos - pos);
+	}
+	else 
+	{
+		accel = 1.f;
+	}
+	velocity += normalize(pPos - pos) * accel;
+
+	if (frame > 30)
+	{
+		velocity = (length(velocity) * normalize(pPos - pos));
+	}
+	/*else if (frame < 120)
+	{
+		blahFactor = 0;
+	}
+	else
+	{
+		blahFactor = 1.0;
+	}*/
+	//velocity = (length(velocity) * normalize(pPos - pos)) * blahFactor + (1.f - blahFactor) * velocity;
+
+
+	if (length(pPos - pos) < 16.f )
+	{
+		return false;
+	}
+
+
+	++frame;
+	return true;
+}
+
+AbsorbParticles::SingleEnergyParticle *AbsorbParticles::GetInactiveParticle()
+{
+	if (inactiveList == NULL)
+		return NULL;
+	
+	SingleEnergyParticle *sp = inactiveList;
+
+	if (inactiveList->next != NULL)
+		inactiveList->next->prev = NULL;
+
+	inactiveList = inactiveList->next;
+
+	return sp;
+}
+
+void AbsorbParticles::DeactivateParticle(AbsorbParticles::SingleEnergyParticle *sp)
+{
+	if (activeList == NULL)
+		assert(0);
+
+	if (sp->prev == NULL)
+	{
+		if (sp->next != NULL)
+			sp->next->prev = NULL;
+		activeList = sp->next;
+	}
+	else
+	{
+		sp->prev->next = sp->next;
+		if (sp->next != NULL)
+			sp->next->prev = sp->prev;
+	}
+
+	sp->prev = NULL;
+	sp->next = NULL;
+
+	if (inactiveList != NULL)
+	{
+		sp->next = inactiveList;
+		inactiveList->prev = sp;
+	}
+	inactiveList = sp;
+}
+
+void AbsorbParticles::Update()
+{
+	SingleEnergyParticle *sp = activeList;
+	SingleEnergyParticle *tNext = NULL;
+	while (sp != NULL)
+	{
+		tNext = sp->next;
+		if (sp->Update())
+		{
+			sp->UpdateSprite();
+		}
+		else
+		{
+			sp->Clear();
+			DeactivateParticle(sp);
+		}
+		sp = tNext;
+	}
+}
+
+void AbsorbParticles::Draw(sf::RenderTarget *target)
+{
+	target->draw(va, maxNumParticles * 4, sf::Quads);
+}
+
+void AbsorbParticles::Reset()
+{
+	while (activeList != NULL)
+	{
+		DeactivateParticle(activeList);
+	}
+}

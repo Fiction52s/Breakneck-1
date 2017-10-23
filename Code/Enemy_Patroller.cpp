@@ -305,19 +305,23 @@ void Patroller::UpdatePostPhysics()
 	{
 		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
 		owner->RemoveEnemy( this );
-		//return;
+		return;
 	}
 	//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
-	if( receivedHit != NULL )
+
+	if (deathFrame == 0 && dead)
+	{
+		//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true);
+		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, position + owner->players[0]->position, true, 0, 10, 2, true);
+		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position);
+	}
+	else if( receivedHit != NULL && health > 20 )//hacky
 	{
 		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
+		//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
-	if( deathFrame == 0 && dead )
-	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
-	}
+	
 
 	UpdateSprite();
 

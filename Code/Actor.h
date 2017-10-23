@@ -22,6 +22,7 @@ struct Monitor;
 struct Enemy;
 struct Aura;
 struct Rail;
+struct Actor;
 
 struct KinSkin
 {
@@ -36,6 +37,50 @@ struct KinSkin
 	sf::Color *endColors;
 	int numChanges;
 	int index;
+};
+
+struct AbsorbParticles
+{
+	struct SingleEnergyParticle
+	{
+		SingleEnergyParticle(AbsorbParticles *parent,
+			int tileIndex );
+		void UpdateSprite();
+		bool Update();
+		void Activate(sf::Vector2f &pos, sf::Vector2f &vel);
+		void Clear();
+		sf::Vector2f pos;
+		int frame;
+		int tileIndex;
+		sf::Vector2f velocity;
+		AbsorbParticles *parent;
+
+		SingleEnergyParticle *next;
+		SingleEnergyParticle *prev;
+
+		//Vector2f accel;
+	};
+
+	AbsorbParticles();
+	~AbsorbParticles();
+	void Reset();
+	sf::Vertex *va;
+	int maxNumParticles;
+	void Activate( Actor *playerTarget, int storedHits, V2d &pos,
+		float startAngle = 0 );
+	void Update();
+	void Draw(sf::RenderTarget *rt);
+	float startAngle;
+	sf::Vector2f pos;
+	sf::Vector2f *particlePos;
+	int numActivatedParticles;
+	Actor *playerTarget;
+	double maxSpeed;
+	SingleEnergyParticle *GetInactiveParticle();
+	void DeactivateParticle(SingleEnergyParticle *sp);
+	SingleEnergyParticle *activeList;
+	SingleEnergyParticle *inactiveList;
+	void AllocateParticle(int tileIndex );
 };
 
 struct Booster;

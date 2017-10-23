@@ -1137,6 +1137,13 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	ss.clear();
 	ss.str("");
 
+	ss << "w" << world << "_kill_fx_512x512.png";
+
+	ts_killSpack = owner->GetTileset(ss.str(), 512, 512);
+
+	ss.clear();
+	ss.str("");
+
 	ss << "fx_blood_" << world << "_256x256.png";
 
 	ts_blood = owner->GetTileset( ss.str(), 256, 256 );

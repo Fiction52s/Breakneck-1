@@ -742,6 +742,12 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 
 void GameSession::Cleanup()
 {
+	if (absorbParticles != NULL)
+	{
+		delete absorbParticles;
+		absorbParticles = NULL;
+	}
+
 	if (testPar != NULL)
 	{
 		delete testPar;
@@ -5599,6 +5605,8 @@ bool GameSession::Load()
 		return false;
 	}
 
+	absorbParticles = new AbsorbParticles;
+
 	soundNodeList = new SoundNodeList(10);
 	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().volume);
 	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
@@ -6927,6 +6935,8 @@ int GameSession::Run()
 				if( powerRing != NULL )
 					powerRing->Update();
 
+				absorbParticles->Update();
+
 				UpdateEffects();
 
 				keyMarker->Update();
@@ -7884,6 +7894,8 @@ int GameSession::Run()
 			//preScreenTex->draw( cloud0b );
 			preScreenTex->draw( shipSprite );
 		}
+
+		absorbParticles->Draw(preScreenTex);
 
 		for( int i = 0; i < 4; ++i )
 		{
@@ -9341,6 +9353,8 @@ void GameSession::Init()
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;
 
+
+
 	mh = NULL;
 	goalPulse = NULL;
 	pauseMenu = NULL;
@@ -9517,6 +9531,8 @@ void GameSession::Init()
 
 	gates = NULL;
 	edges = NULL;
+
+	absorbParticles = NULL;
 }
 
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
@@ -10298,6 +10314,8 @@ void GameSession::RestartLevel()
 		if( player != NULL )
 			player->Respawn();
 	}
+
+	absorbParticles->Reset();
 	//player->Respawn();
 	
 	cam.pos.x = GetPlayer( 0 )->position.x;

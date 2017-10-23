@@ -2,9 +2,10 @@
 #define __CAMERA_H__
 
 #include <SFML/Graphics.hpp>
-#include "Actor.h"
+//#include "Actor.h"
 
 struct MovementSequence;
+struct Actor;
 struct Camera
 {
 	Camera();

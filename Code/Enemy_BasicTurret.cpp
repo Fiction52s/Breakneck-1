@@ -224,6 +224,7 @@ void BasicTurret::UpdatePrePhysics()
 			//AttemptSpawnMonitor();
 			dying = true;
 			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
+			//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
 		}
 		else
 		{
@@ -368,16 +369,20 @@ void BasicTurret::PhysicsResponse()
 void BasicTurret::UpdatePostPhysics()
 {
 	launcher->UpdatePostPhysics();
-	if( receivedHit != NULL )
+
+	if (deathFrame == 0 && dying)
 	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
+		//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true);
+		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, position, true, 0, 10, 3, true);
+		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position);
+	}
+	else if( receivedHit != NULL && health > 20 )
+	{
+		//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 		owner->Pause( 5 );
 	}
 
-	if( deathFrame == 0 && dying )
-	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
-	}
+	
 
 	if( deathFrame == 30 && dying )
 	{

@@ -407,6 +407,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool suppressMonitor;
 	bool specterProtected;
 	Tileset *ts_hitSpack;
+	Tileset *ts_killSpack;
 	sf::Shader *keyShader;
 	sf::Shader *hurtShader;
 

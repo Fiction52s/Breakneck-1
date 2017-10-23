@@ -19,6 +19,7 @@
 #include "BarrierReactions.h"
 #include "Buf.h"
 #include "EnvEffects.h"
+#include "Actor.h"
 
 struct RecordPlayer;
 struct ReplayPlayer;
@@ -27,6 +28,10 @@ struct ReplayGhost;
 struct Config;
 struct RaceFightHUD;
 struct Rail;
+
+struct AbsorbParticles;
+struct KinSkin;
+struct Tileset;
 
 struct Barrier;
 struct PoiInfo
@@ -414,6 +419,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		//int p4Place;
 		int raceWinnerIndex;
 	};
+
+	AbsorbParticles *absorbParticles;
 
 	static bool sLoad( GameSession *gs );
 	bool Load();	
