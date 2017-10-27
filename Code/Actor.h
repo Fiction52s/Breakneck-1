@@ -23,6 +23,7 @@ struct Enemy;
 struct Aura;
 struct Rail;
 struct Actor;
+struct ObjectPool;
 
 struct KinSkin
 {
@@ -39,6 +40,7 @@ struct KinSkin
 	int index;
 };
 
+//eventually make this an objectpool but don't need to for now
 struct AbsorbParticles
 {
 	struct SingleEnergyParticle
@@ -85,10 +87,13 @@ struct AbsorbParticles
 
 struct Booster;
 struct Spring;
+struct EffectPool;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
+	EffectPool *testPool;
+
 	enum Action
 	{
 		DAIR,
@@ -205,6 +210,12 @@ struct Actor : QuadTreeCollider,
 		T_GREEN,
 		T_PURPLE
 	};
+
+	void CreatePostAttackLightning();
+	EffectPool *fairLightningPool[4];
+	EffectPool *uairLightningPool[4];
+	EffectPool *dairLightningPool[4];
+	
 
 	Team team;
 

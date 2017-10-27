@@ -434,6 +434,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	MusicInfo *levelMusic;
 	//int playerScore[4];
 
+	//std::map<
 
 	Buf testBuf;
 	MainMenu *mainMenu;
@@ -632,7 +633,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		double angle, 
 		int frameCount,
 		int animationFactor,
-		bool right );
+		bool right,
+		float depth = 1.f);
 	void AllocateLight();
 	Light * ActivateLight( int radius,  int brightness, const sf::Color color );
 	void DeactivateLight( Light *light );

@@ -11,6 +11,7 @@
 #include "PlayerRecord.h"
 #include "Rail.h"
 #include "Aura.h"
+#include "VisualEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -117,15 +118,15 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset("run_64x64.png", 64, 64, skin);
 	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
 
-	ts_fairSword[0] = owner->GetTileset("fair_sworda_192x192.png", 192, 192, swordSkin);
+	ts_fairSword[0] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[1] = owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[2] = owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
 
-	ts_dairSword[0] = owner->GetTileset("dair_sworda_144x192.png", 144, 192, swordSkin);
+	ts_dairSword[0] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_dairSword[1] = owner->GetTileset("dair_swordb_192x208.png", 192, 208, swordSkin);
 	ts_dairSword[2] = owner->GetTileset("dair_swordc_256x256.png", 256, 256, swordSkin);
 
-	ts_uairSword[0] = owner->GetTileset("uair_sworda_160x160.png", 160, 160, swordSkin);
+	ts_uairSword[0] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_uairSword[1] = owner->GetTileset("uair_swordb_224x224.png", 224, 224, swordSkin);
 	ts_uairSword[2] = owner->GetTileset("uair_swordc_384x384.png", 384, 384, swordSkin);
 
@@ -203,6 +204,19 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
+		testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
+
+		for (int i = 0; i < 3; ++i)
+		{
+			fairLightningPool[i] = new EffectPool(EffectType::FX_REGULAR, 2, 1.f);
+			fairLightningPool[i]->ts = owner->GetTileset("fair_sworda_256x256.png", 256, 256);
+			dairLightningPool[i] = new EffectPool(EffectType::FX_REGULAR, 2, 1.f);
+			dairLightningPool[i]->ts = owner->GetTileset("dair_sworda_256x256.png", 256, 256);
+			uairLightningPool[i] = new EffectPool(EffectType::FX_REGULAR, 2, 1.f);
+			uairLightningPool[i]->ts = owner->GetTileset("uair_sworda_256x256.png", 256, 256);
+		}
+
 		maxMotionGhosts = 80;
 		motionGhosts = new Sprite[maxMotionGhosts];
 		memset(tileset, 0, sizeof(tileset));
@@ -235,6 +249,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		team = (Team)actorIndex; //debug
 		//SetupTilesets(skin, swordSkin);
 		SetupTilesets(NULL,NULL);
+
+		
 
 		prevRail = NULL;
 
@@ -388,7 +404,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			assert(0 && "desp shader not loaded");
 		}
 		
-		motionGhostShader.setUniform("energyColor", ColorGL(Color::Cyan));
+		Color mgc = Color::Cyan;
+		mgc.a = 25;
+		motionGhostShader.setUniform("energyColor", ColorGL(mgc));
 		
 		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
@@ -1138,7 +1156,7 @@ void Actor::ActionEnded()
 	if( frame >= actionLength[action] )
 	{
 		
-		switch( action )
+		switch (action)
 		{
 		case STAND:
 			frame = 0;
@@ -1163,7 +1181,7 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case WALLJUMP:
-			SetActionExpr( JUMP );
+			SetActionExpr(JUMP);
 			frame = 1;
 			holdJump = false;
 			break;
@@ -1178,9 +1196,9 @@ void Actor::ActionEnded()
 			break;
 		case STANDN:
 
-			if( currInput.LLeft() || currInput.LRight() )
+			if (currInput.LLeft() || currInput.LRight())
 			{
-				if( currInput.B )
+				if (currInput.B)
 				{
 					action = DASH;
 					//re->Reset();
@@ -1188,20 +1206,20 @@ void Actor::ActionEnded()
 				}
 				else
 				{
-					SetActionExpr( RUN );
+					SetActionExpr(RUN);
 				}
 				facingRight = currInput.LRight();
 			}
 			else
 			{
-				SetActionExpr( STAND );
+				SetActionExpr(STAND);
 			}
 			frame = 0;
 			break;
 		case DASHATTACK:
-			if( currInput.LLeft() || currInput.LRight() )
+			if (currInput.LLeft() || currInput.LRight())
 			{
-				if( currInput.B )
+				if (currInput.B)
 				{
 					action = DASH;
 					//re->Reset();
@@ -1209,21 +1227,28 @@ void Actor::ActionEnded()
 				}
 				else
 				{
-					SetActionExpr( RUN );
+					SetActionExpr(RUN);
 				}
 				facingRight = currInput.LRight();
 			}
 			else
 			{
-				SetActionExpr( STAND );
+				SetActionExpr(STAND);
 			}
 			frame = 0;
 			break;
 
 		case FAIR:
-			SetActionExpr( JUMP );
+		{
+			CreatePostAttackLightning();
+			
+
+			SetActionExpr(JUMP);
 			frame = 1;
 			break;
+
+			}
+			
 		case DIAGUPATTACK:
 			SetActionExpr( JUMP );
 			frame = 1;
@@ -1245,10 +1270,12 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case DAIR:
+			CreatePostAttackLightning();
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case UAIR:
+			CreatePostAttackLightning();
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
@@ -1479,8 +1506,39 @@ bool Actor::AirAttack()
 	return false;
 }
 
+void Actor::CreatePostAttackLightning()
+{
+	EffectInstance params;
+	Transform tr = sf::Transform::Identity;
+	params.SetParams(Vector2f(position), tr, 8, 1, 16);
+
+	if (!facingRight)
+	{
+		tr.scale(-1, 1);
+	}
+
+	switch (action)
+	{
+	case FAIR:
+		fairLightningPool[0]->ActivateEffect(&params);
+		break;
+	case DAIR:
+		dairLightningPool[0]->ActivateEffect(&params);
+		break;
+	case UAIR:
+		uairLightningPool[0]->ActivateEffect(&params);
+		break;
+	}
+}
+
 void Actor::Respawn()
 {
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i]->Reset();
+		dairLightningPool[i]->Reset();
+		uairLightningPool[i]->Reset();
+	}
 
 	testGrassCount = 0;
 	gravityGrassCount = 0;
@@ -14940,6 +14998,31 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
+	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % 10 == 0)
+	{
+
+
+		RelEffectInstance params;
+		//EffectInstance params;
+		Transform tr = sf::Transform::Identity;
+		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
+		Vector2f randPos(rand() % 100 - 50, rand() % 100 - 50);
+
+		params.SetParams(randPos, tr, 7, 1, 0, &position);
+
+		testPool->ActivateEffect(&params);
+	}
+
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i]->Update();
+		dairLightningPool[i]->Update();
+		uairLightningPool[i]->Update();
+	}
+
+	testPool->Update();
+	//testPool->ActivateEffect( )
+
 	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
 	//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
 	updateAura = true;
@@ -15102,6 +15185,17 @@ void Actor::UpdatePostPhysics()
 	{
 		motionGhosts[i] = *sprite;
 	}
+
+	/*CubicBezier cb(.11, 1.01, .4, .96);
+	float start = 255.0;
+	for (int i = 0; i < maxMotionGhosts; ++i)
+	{
+		motionGhosts[i] = *sprite;
+		float factor = (float)i / maxMotionGhosts;
+		float a = cb.GetValue(factor);
+		int alpha = max( start - a * start, 0.f );
+		motionGhosts[i].setColor(sf::Color(255, 255, 255, alpha ) );
+	}*/
 
 	
 
@@ -17469,10 +17563,8 @@ void Actor::Draw( sf::RenderTarget *target )
 	Vector2f oldOrigin = sprite->getOrigin();
 	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	Vector2f diff = center - oldOrigin;
-	int showMotionGhosts = maxMotionGhosts;
 
-
-	showMotionGhosts = min( motionMagnitude / 3.0, 79.0 );
+	int showMotionGhosts = min( motionMagnitude / 1.0, 79.0 );
 
 	Vector2f sprPos = sprite->getPosition();// +diff;
 	for (int i = 0; i < showMotionGhosts; ++i)
@@ -17486,6 +17578,18 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 	if( showMotionGhosts > 0 )
 	{
+
+		CubicBezier cb (.11, 1.01, .4, .96);
+		float start = 255.0;
+		for (int i = 0; i < showMotionGhosts; ++i)
+		{
+			//motionGhosts[i] = *sprite;
+			float factor = (float)i / showMotionGhosts;
+			float a = cb.GetValue(factor);
+			int alpha = max(start - a * start, 0.f);
+			motionGhosts[i].setColor(sf::Color(255, 255, 255, alpha));
+		}
+
 		//swordShader.setUniform( "isTealAlready", 0 );
 		//
 		for( int i = 0; i < showMotionGhosts; ++i )
@@ -17496,7 +17600,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
 			//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
 			//target->draw( fairSword1, &swordShader );
-			target->draw(motionGhosts[i], &motionGhostShader );// , &swordShader );
+			target->draw(motionGhosts[i], &motionGhostShader);//&motionGhostShader );// , &swordShader );
 		}
 	}
 
@@ -17769,7 +17873,14 @@ void Actor::Draw( sf::RenderTarget *target )
 	{
 		target->draw( runeSprite );
 	}*/
-	
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i]->Draw(target);
+		dairLightningPool[i]->Draw(target);
+		uairLightningPool[i]->Draw(target);
+	}
+
+	testPool->Draw(target);
 }
 
 void Actor::GrabShipWire()
@@ -18871,13 +18982,13 @@ void Actor::UpdateSprite()
 			{
 				if( facingRight )
 				{
-					fairSword.setTextureRect( curr_ts->GetSubRect( frame/2 - startFrame ) );
+					fairSword.setTextureRect( curr_ts->GetSubRect( frame - startFrame ) );
 				}
 				else
 				{
 					offset.x = -offset.x;
 
-					sf::IntRect irSword = curr_ts->GetSubRect( frame/2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame - startFrame );
 					//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
 					fairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );	
@@ -18916,7 +19027,7 @@ void Actor::UpdateSprite()
 			}
 
 			Vector2i offsetArr[3];
-			offsetArr[0] = Vector2i( 0, 24 );
+			offsetArr[0] = Vector2i( 0, 0 );
 			offsetArr[1] = Vector2i( 0, 48 );
 			offsetArr[2] = Vector2i( 0, 72 );
 
@@ -18930,11 +19041,11 @@ void Actor::UpdateSprite()
 			{
 				if( facingRight )
 				{
-					dairSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
+					dairSword.setTextureRect( curr_ts->GetSubRect( frame - startFrame ) );
 				}
 				else
 				{
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame - startFrame );
 					dairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );	
 				}
@@ -18978,11 +19089,11 @@ void Actor::UpdateSprite()
 			{
 				if( facingRight )
 				{
-					uairSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
+					uairSword.setTextureRect( curr_ts->GetSubRect( frame - startFrame ) );
 				}
 				else
 				{
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 3 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame - startFrame );
 					uairSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 
@@ -22001,7 +22112,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	{
 		velocity = (length(velocity) * normalize(pPos - pos));
 	}
-	/*else if (frame < 120)
+	/*else if (frame < 120) 
 	{
 		blahFactor = 0;
 	}

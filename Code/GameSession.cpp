@@ -6949,6 +6949,8 @@ int GameSession::Run()
 
 				if (rain != NULL)
 					rain->Update();
+
+				
 				//powerWheel->UpdateHide();
 
 
@@ -6997,6 +6999,12 @@ int GameSession::Run()
 				
 
 				Vector2f camPos = cam.GetPos();
+
+				if (totalGameFrames % 60 == 0)
+				{
+
+				}
+
 
 				for( list<Barrier*>::iterator it = barriers.begin();
 					it != barriers.end(); ++it )
@@ -7139,7 +7147,13 @@ int GameSession::Run()
 				double camHeight = 540 * cam.GetZoom();
 				
 				screenRect = sf::Rect<double>( camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight );
-			
+
+				if (totalGameFrames % 60 == 0)
+				{
+					float ddepth = .7;
+					//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("hit_spack_1_128x128.png", 128, 128), V2d(camPos / ddepth), true, 0, 10, 10, true, ddepth);
+				}
+
 				//flowShader.setUniform( "radius0", flow
 				
 				
@@ -13046,7 +13060,7 @@ void GameSession::AllocateLight()
 }
 
 BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
-	int animationFactor, bool right )
+	int animationFactor, bool right, float depth )
 {
 	if( inactiveEffects == NULL )
 	{
@@ -13069,7 +13083,7 @@ BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d p
 		}
 
 		//assert( ts != NULL );
-		b->Init( ts, pos, angle, frameCount, animationFactor, right );
+		b->Init( ts, pos, angle, frameCount, animationFactor, right, depth );
 		b->prev = NULL;
 		b->next = NULL;
 		b->pauseImmune = pauseImmune;

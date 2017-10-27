@@ -30,11 +30,14 @@ void BasicEffect::ResetEnemy()
 	//owner->DeactivateEffect( this );
 }
 
-void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right )
+void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right, float p_depth )
 {
+	depth = p_depth;
 	//cout << "init: " << this << ", " << t->sourceName << endl;
 	s.setTexture( *t->texture );
 	facingRight = right;
+
+	//pos /= (double)depth;
 
 	sf::IntRect ir = t->GetSubRect( 0 );		
 
@@ -47,8 +50,6 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 		s.setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 	}
 
-	
-
 	s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
 	s.setPosition( pos.x, pos.y );
 	s.setRotation( angle / PI * 180 );
@@ -59,6 +60,7 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	//position = pos;
 	frame = 0;
 	activated = true;
+	position = pos;
 }
 
 void BasicEffect::HandleEntrant( QuadTreeEntrant *qte )
@@ -79,6 +81,11 @@ void BasicEffect::UpdatePostPhysics()
 	//{
 	//	cout << "problem with: " << this << endl;
 	//}
+	//float depth = 1.f;
+
+	//Vector2f spritePos = Vector2f(position) * depth;
+	//s.setPosition(pos.x * depth, pos.y * depth);
+
 	sf::IntRect ir = ts->GetSubRect( frame / animationFactor );
 
 	if( facingRight )
@@ -110,7 +117,16 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 	target->draw( cs );*/
 
 	//cout << ts->sourceName << ": " << target->endl;
+
+	sf::View oldView = target->getView();
+	sf::View newView = oldView;
+	newView.setCenter(oldView.getCenter() / depth);
+	float oldFactor = oldView.getSize().x / 1920;
+	float newFactor = 1.0f * depth;
+	newView.setSize(Vector2f(1920, 1080) * newFactor);
+	target->setView(newView);
 	target->draw( s );	
+	target->setView(oldView);
 }
 
 bool BasicEffect::IHitPlayer( int index )
