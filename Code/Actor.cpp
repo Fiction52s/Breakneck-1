@@ -17558,6 +17558,10 @@ void Actor::Draw( sf::RenderTarget *target )
 		motionMagnitude = length(velocity);
 	}
 
+	//int testf = 20;
+
+	V2d motionNormal(motionGhostDir.y, -motionGhostDir.x);
+
 	float dist = motionGhostSpacing;
 
 	Vector2f oldOrigin = sprite->getOrigin();
@@ -17567,9 +17571,34 @@ void Actor::Draw( sf::RenderTarget *target )
 	int showMotionGhosts = min( motionMagnitude / 1.0, 79.0 );
 
 	Vector2f sprPos = sprite->getPosition();// +diff;
+	Vector2f tempPos;
+	int testq = 100;
+	int ttest;// = 20;
 	for (int i = 0; i < showMotionGhosts; ++i)
 	{
-		motionGhosts[i].setPosition(sprPos.x + motionGhostDir.x * (i * dist), sprPos.y + motionGhostDir.y * (i * dist));
+		if (i < 20)
+		{
+			ttest = 0;
+		}
+		else if (i < 40)
+		{
+			ttest = 10;
+		}
+		else if (i < 80)
+		{
+			ttest = 20;
+		}
+		tempPos = Vector2f(sprPos.x + motionGhostDir.x * (i * dist), sprPos.y + motionGhostDir.y * (i * dist));
+		if( ttest != 0 )
+			tempPos += Vector2f(motionNormal * (double)(rand() % ttest - ttest / 2) );
+		motionGhosts[i].setPosition( tempPos );
+
+		if (i >= 10)
+		{
+			float blah = ((rand() % testq) - testq / 2) / ((float)testq / 2);
+			blah /= 4.f;//2.f;
+			motionGhosts[i].setScale(Vector2f(1.f + blah, 1.f + blah));
+		}
 	}
 
 	//motionGhostShader.setUniform("textureSize", Vector2f( sprite->getTextureRect().width,
@@ -17579,7 +17608,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	if( showMotionGhosts > 0 )
 	{
 
-		CubicBezier cb (.11, 1.01, .4, .96);
+		CubicBezier cb(.11, 1.01, .4, .96);//(.1, .82, .49, .86);//(.29, .71, .49, .86);//(.11, 1.01, .4, .96);
 		float start = 255.0;
 		for (int i = 0; i < showMotionGhosts; ++i)
 		{
