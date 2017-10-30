@@ -24,6 +24,8 @@ struct Aura;
 struct Rail;
 struct Actor;
 struct ObjectPool;
+struct RelEffectInstance;
+struct VertexBuffer;
 
 struct KinSkin
 {
@@ -211,7 +213,7 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 
-	void CreatePostAttackLightning();
+	void CreateAttackLightning();
 	EffectPool *fairLightningPool[4];
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
@@ -305,6 +307,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_rune0;
 	Tileset *ts_fx_rune1;
 	Tileset *ts_fx_rune2;
+
+
 	sf::Sprite runeSprite;
 	int runeStep;
 	int runeLength;
@@ -436,6 +440,11 @@ struct Actor : QuadTreeCollider,
 
 	sf::Sprite fairSword;
 	Tileset *ts_fairSword[3];
+	Tileset *ts_fairSwordLightning[3];
+	RelEffectInstance *currLockedFairFX;
+	RelEffectInstance *currLockedDairFX;
+	RelEffectInstance *currLockedUairFX;
+
 	bool showSword;
 
 	sf::Sprite grindLungeSword;
@@ -443,10 +452,12 @@ struct Actor : QuadTreeCollider,
 
 	sf::Sprite dairSword;
 	Tileset *ts_dairSword[3];
+	Tileset *ts_dairSwordLightning[3];
 	//sf::Vector2i dairOffset[3];
 
 	sf::Sprite uairSword;
 	Tileset *ts_uairSword[3];
+	Tileset *ts_uairSwordLightning[3];
 
 	sf::Sprite standingNSword;
 	Tileset *ts_standingNSword[3];
@@ -578,6 +589,10 @@ struct Actor : QuadTreeCollider,
 	double offSlopeByWallThresh;
 	//const static int MAX_MOTION_GHOSTS = 10;
 	sf::Sprite *motionGhosts;// [MAX_MOTION_GHOSTS];
+	VertexBuffer *motionGhostBuffer;
+	VertexBuffer *testBuffer;
+	
+
 	int maxMotionGhosts;
 	sf::Shader motionGhostShader;
 

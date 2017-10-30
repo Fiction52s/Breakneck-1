@@ -2,6 +2,7 @@
 #include "Tileset.h"
 #include <assert.h>
 #include <iostream>
+#include "VectorMath.h"
 
 using namespace sf;
 using namespace std;
@@ -85,19 +86,22 @@ void EffectPool::Update()
 	
 }
 
-void EffectPool::ActivateEffect( EffectInstance *params )
+EffectInstance* EffectPool::ActivateEffect( EffectInstance *params )
 {
 	EffectInstance *ei = (EffectInstance*)ActivatePoolMember();
 
 	
 	if (ei == NULL)
 	{
-		cout << "cannot produce effect!" << endl;
-		assert(ei != NULL);
+		return NULL;
+		//cout << "cannot produce effect!" << endl;
+		//assert(ei != NULL);
 	}
 
 	ei->parent = this;
 	ei->InitFromParams( params );
+
+	return ei;
 	//*ei = *params;
 	
 }
@@ -176,7 +180,7 @@ void EffectInstance::Clear()
 
 bool EffectInstance::Update()
 {
-	if (frame * animFactor == frameCount)
+	if (frame == frameCount * animFactor )
 	{
 		Clear();
 		parent->DeactivatePoolMember(this);
@@ -212,6 +216,8 @@ bool RelEffectInstance::Update()
 	if (!EffectInstance::Update())
 		return false;
 
+	if (lockPos == NULL)
+		return true;
 
 	float width = parent->ts->tileWidth;
 	float height = parent->ts->tileHeight;
@@ -273,4 +279,189 @@ void RelEffectInstance::SetParams(
 {
 	lockPos = lockP;
 	EffectInstance::SetParams(p_pos, p_tr, p_frameCount, p_animFactor, p_startTile);
+}
+
+void RelEffectInstance::ClearLockPos()
+{
+	lockPos = NULL;
+}
+
+VertexBuffer::VertexBuffer(int p_numVertices, sf::PrimitiveType p_pType )
+	:numVertices( p_numVertices ), vb( NULL ), ts( NULL ), pType( p_pType )
+{
+	switch (p_pType)
+	{
+	case sf::Quads:
+		verticesPerMember = 4;
+		break;
+	case sf::Triangles:
+		verticesPerMember = 3;
+		break;
+	case sf::Lines:
+		verticesPerMember = 2;
+		break;
+	default:
+		assert(0);
+	}
+	numMembers = numVertices / verticesPerMember;
+
+	members = new VertexBufferMember[numMembers];
+	dirty = new bool[numMembers];
+	vb = new Vertex[numVertices];
+	Reset();
+}
+
+void VertexBuffer::Reset()
+{
+	memset(dirty, 0, sizeof(dirty));
+	dirtyTS = false;
+	SetNumActiveMembers(0);
+}
+
+VertexBuffer::~VertexBuffer()
+{
+	delete[] members;
+	delete[] vb;
+}
+
+void VertexBuffer::SetScale(int index, sf::Vector2f &scale)
+{
+	/*if (ts == NULL)
+	{
+		
+	}*/
+	//Vector2f size(scale.x * ts->tileWidth, scale.y * ts->tileHeight);
+	members[index].scale = scale;//size;
+	dirty[index] = true;
+}
+
+void VertexBuffer::SetPosition(int index, sf::Vector2f &pos)
+{
+	members[index].pos = pos;
+	dirty[index] = true;
+}
+void VertexBuffer::SetRotation(int index, double angle)
+{
+	members[index].angle = angle;
+	dirty[index] = true;
+}
+
+const VertexBufferMember const &VertexBuffer::GetMemberInfo( int index )
+{
+	return members[index];
+}
+
+void VertexBuffer::RotateMemberCW(int index, float angle)
+{
+	members[index].angle += angle;
+	dirty[index] = true;
+}
+
+void VertexBuffer::SetTileset(Tileset *p_ts)
+{
+	ts = p_ts;
+	dirtyTS = true;
+}
+
+void VertexBuffer::SetTile(int index, int tileIndex)
+{
+	members[index].tileIndex = tileIndex;
+	dirty[index] = true;
+}
+
+void VertexBuffer::UpdateVertices()
+{
+	if (ts == NULL)
+		return;
+	switch (pType)
+	{
+	case sf::Quads:
+	{
+		Vector2f vPos[4];
+
+		Vector2f quadSize;
+		IntRect sub;
+		for (int i = 0; i < numActiveMembers; ++i)
+		{
+			if (!dirtyTS && !dirty[i])
+				continue; 
+
+			VertexBufferMember &currMember = members[i];
+			if (ts == NULL)
+			{
+				quadSize = Vector2f(64, 64);
+				//debugging only
+			}
+			else
+			{
+				quadSize = Vector2f(ts->tileWidth * currMember.scale.x, ts->tileHeight * currMember.scale.y);
+			}
+			vPos[0] = Vector2f(-quadSize.x / 2, -quadSize.y / 2);
+			vPos[1] = Vector2f(quadSize.x / 2, -quadSize.y / 2);
+			vPos[2] = Vector2f(quadSize.x / 2, quadSize.y / 2);
+			vPos[3] = Vector2f(-quadSize.x / 2, quadSize.y / 2);
+
+			for (int j = 0; j < 4; ++j)
+			{
+				RotateCW(vPos[j], currMember.angle);
+				vPos[j] += currMember.pos;
+				vb[i * 4 + j].position = vPos[j];
+			}
+			dirty[i] = false;
+
+			sub = ts->GetSubRect(currMember.tileIndex);
+			
+			vb[i * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
+			vb[i * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top );
+			vb[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+			vb[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height );
+
+			vb[i * 4 + 0].color = currMember.color;
+			vb[i * 4 + 1].color = currMember.color;
+			vb[i * 4 + 2].color = currMember.color;
+			vb[i * 4 + 3].color = currMember.color;
+		}
+		break;
+	}
+	default:
+		assert(0 && "not implemented yet");
+	}
+	dirtyTS = false;
+}
+
+void VertexBuffer::SetColor(int index, sf::Color &color)
+{
+	members[index].color = color;
+	dirty[index] = true;
+}
+
+void VertexBuffer::SetNumActiveMembers(int p_numActiveMembers)
+{
+	assert(p_numActiveMembers <= numMembers && p_numActiveMembers >= 0);
+	numActiveMembers = p_numActiveMembers;
+}
+
+void VertexBuffer::Draw(sf::RenderTarget *rt, sf::Shader *shader )
+{
+	RenderStates rs;
+	rs.shader = shader;
+	if (ts != NULL)
+		rs.texture = ts->texture;
+
+	if (ts == NULL)
+	{
+		rt->draw(vb, numActiveMembers * verticesPerMember, pType, rs);
+	}
+	else
+	{
+		rt->draw(vb, numActiveMembers * verticesPerMember, pType, rs);
+	}
+}
+
+void VertexBufferMember::Reset()
+{
+	pos = Vector2f(0, 0);
+	angle = 0;
+	scale = Vector2f(1, 1);
+	tileIndex = 0;
 }

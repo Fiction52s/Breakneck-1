@@ -118,12 +118,13 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 
 	//cout << ts->sourceName << ": " << target->endl;
 
+	//target->draw(s);
 	sf::View oldView = target->getView();
 	sf::View newView = oldView;
 	newView.setCenter(oldView.getCenter() / depth);
-	float oldFactor = oldView.getSize().x / 1920;
+	float oldFactor = oldView.getSize().x / 960.f;
 	float newFactor = 1.0f * depth;
-	newView.setSize(Vector2f(1920, 1080) * newFactor);
+	newView.setSize(Vector2f(960, 540) * newFactor);
 	target->setView(newView);
 	target->draw( s );	
 	target->setView(oldView);

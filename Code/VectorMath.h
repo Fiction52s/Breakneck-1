@@ -21,8 +21,15 @@ double GetVectorAngleCCW(sf::Vector2<double> &a);
 double GetVectorAngleDiffCW(sf::Vector2<double> &a, sf::Vector2<double> &b);
 double GetVectorAngleDiffCCW(sf::Vector2<double> &a, sf::Vector2<double> &b);
 
+float GetVectorAngleCW(sf::Vector2f &a);
+float GetVectorAngleCCW(sf::Vector2f &a);
+float GetVectorAngleDiffCW(sf::Vector2f &a, sf::Vector2f &b);
+float GetVectorAngleDiffCCW(sf::Vector2f &a, sf::Vector2f &b);
+
 void RotateCCW(sf::Vector2<double> &a, double angle);
 void RotateCW(sf::Vector2<double> &a, double angle);
+void RotateCCW(sf::Vector2f &a, float angle);
+void RotateCW(sf::Vector2f &a, float angle);
 
 struct LineIntersection
 {

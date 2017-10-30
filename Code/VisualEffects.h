@@ -64,6 +64,7 @@ struct RelEffectInstance : EffectInstance
 		int p_animFactor,
 		int p_startTile,
 		sf::Vector2<double> *lockP );
+	void ClearLockPos();
 	sf::Vector2<double> *lockPos;
 };
 
@@ -74,7 +75,7 @@ struct EffectPool : ObjectPool
 	void Update();
 	
 	void SetTileset(Tileset *ts);
-	virtual void ActivateEffect( EffectInstance *params );
+	virtual EffectInstance * ActivateEffect( EffectInstance *params );
 	void Draw( sf::RenderTarget *target );
 	Tileset *ts;
 	sf::Vertex *va;
@@ -82,6 +83,49 @@ struct EffectPool : ObjectPool
 	float depth;
 	EffectType eType;
 	int maxNumFX;
+};
+
+struct VertexBufferMember
+{
+	VertexBufferMember()
+	{
+		Reset();
+	}
+	void Reset();
+	sf::Vector2f pos;
+	float angle;
+	sf::Vector2f scale;
+	int tileIndex;
+	sf::Color color;
+};
+
+struct VertexBuffer
+{
+	VertexBuffer(int numVertices, sf::PrimitiveType pType );
+	~VertexBuffer();
+	void SetScale(int index, sf::Vector2f &scale);
+	void SetPosition(int index, sf::Vector2f &pos);
+	void SetRotation(int index, double angle ); //ccw
+	void RotateMemberCW( int index, float angle);
+	const VertexBufferMember const &GetMemberInfo( int index );
+	void SetTileset(Tileset *p_ts);
+	void Draw(sf::RenderTarget *rt, sf::Shader *shader = NULL );
+	void UpdateVertices();
+	void SetTile(int index, int tileIndex);
+	void SetNumActiveMembers(int activeMembers);
+	void SetColor(int index, sf::Color &color);
+	void Reset();
+
+	int numVertices;
+	sf::Vertex *vb;
+	Tileset *ts;
+	sf::PrimitiveType pType;
+	int verticesPerMember;
+	int numMembers;
+	int numActiveMembers;
+	VertexBufferMember *members;
+	bool *dirty;
+	bool dirtyTS;
 };
 
 #endif

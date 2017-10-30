@@ -119,16 +119,28 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
 
 	ts_fairSword[0] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[1] = owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[2] = owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
+	ts_fairSword[1] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[2] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
+
+	ts_fairSwordLightning[0] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_fairSwordLightning[1] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_fairSwordLightning[2] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
 	ts_dairSword[0] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dairSword[1] = owner->GetTileset("dair_swordb_192x208.png", 192, 208, swordSkin);
-	ts_dairSword[2] = owner->GetTileset("dair_swordc_256x256.png", 256, 256, swordSkin);
+	ts_dairSword[1] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_dairSword[2] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
+
+	ts_dairSwordLightning[0] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_dairSwordLightning[1] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_dairSwordLightning[2] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
 	ts_uairSword[0] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_uairSword[1] = owner->GetTileset("uair_swordb_224x224.png", 224, 224, swordSkin);
-	ts_uairSword[2] = owner->GetTileset("uair_swordc_384x384.png", 384, 384, swordSkin);
+	ts_uairSword[1] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_uairSword[2] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
+
+	ts_uairSwordLightning[0] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_uairSwordLightning[1] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_uairSwordLightning[2] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
 	ts_grindLungeSword[0] = owner->GetTileset("grind_lunge_sworda_160x160.png", 160, 160, swordSkin);
 	ts_grindLungeSword[1] = owner->GetTileset("grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
@@ -204,21 +216,32 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		currLockedFairFX = NULL;
+		currLockedDairFX = NULL;
+		currLockedUairFX = NULL;
 		testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
 		testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
 
+		motionGhostBuffer = new VertexBuffer(80 * 4, sf::Quads);
+		testBuffer = new VertexBuffer(4, sf::Quads);
+		testBuffer->SetTile(0, 0);
+		testBuffer->SetTileset(owner->GetTileset("jump_64x64.png", 64, 64));
+		testBuffer->SetScale( 0, Vector2f( 4, 4 ));
+		testBuffer->SetNumActiveMembers(1);
+		
+
 		for (int i = 0; i < 3; ++i)
 		{
-			fairLightningPool[i] = new EffectPool(EffectType::FX_REGULAR, 2, 1.f);
-			fairLightningPool[i]->ts = owner->GetTileset("fair_sworda_256x256.png", 256, 256);
-			dairLightningPool[i] = new EffectPool(EffectType::FX_REGULAR, 2, 1.f);
-			dairLightningPool[i]->ts = owner->GetTileset("dair_sworda_256x256.png", 256, 256);
-			uairLightningPool[i] = new EffectPool(EffectType::FX_REGULAR, 2, 1.f);
-			uairLightningPool[i]->ts = owner->GetTileset("uair_sworda_256x256.png", 256, 256);
+			fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+			fairLightningPool[i]->ts = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256);
+			dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+			dairLightningPool[i]->ts = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256);
+			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+			uairLightningPool[i]->ts = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256);
 		}
 
 		maxMotionGhosts = 80;
-		motionGhosts = new Sprite[maxMotionGhosts];
+		//motionGhosts = new Sprite[maxMotionGhosts];
 		memset(tileset, 0, sizeof(tileset));
 		sf::Color startChanges[] = {
 			sf::Color(0x14, 0x59, 0x22),
@@ -1240,7 +1263,8 @@ void Actor::ActionEnded()
 
 		case FAIR:
 		{
-			CreatePostAttackLightning();
+			currLockedFairFX->ClearLockPos();
+			currLockedFairFX = NULL;
 			
 
 			SetActionExpr(JUMP);
@@ -1270,12 +1294,14 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case DAIR:
-			CreatePostAttackLightning();
+			currLockedDairFX->ClearLockPos();
+			currLockedDairFX = NULL;
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case UAIR:
-			CreatePostAttackLightning();
+			currLockedUairFX->ClearLockPos();
+			currLockedUairFX = NULL;
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
@@ -1487,16 +1513,40 @@ bool Actor::AirAttack()
 		
 		if( currInput.LUp() )
 		{
+			if (action == UAIR)
+			{
+				if (currLockedUairFX != NULL && action != UAIR)
+				{
+					currLockedUairFX->ClearLockPos();
+					currLockedUairFX = NULL;
+				}
+			}
 			SetAction( UAIR);
 			frame = 0;
 		}
 		else if( currInput.LDown() )
 		{
+			if (action == DAIR)
+			{
+				if (currLockedDairFX != NULL && action != DAIR)
+				{
+					currLockedDairFX->ClearLockPos();
+					currLockedDairFX = NULL;
+				}
+			}
 			SetAction( DAIR );
 			frame = 0;
 		}
 		else
 		{
+			if (action == FAIR)
+			{
+				if (currLockedFairFX != NULL && action != FAIR)
+				{
+					currLockedFairFX->ClearLockPos();
+					currLockedFairFX = NULL;
+				}
+			}
 			SetAction( FAIR );
 			frame = 0;
 		}
@@ -1506,11 +1556,20 @@ bool Actor::AirAttack()
 	return false;
 }
 
-void Actor::CreatePostAttackLightning()
+void Actor::CreateAttackLightning()
 {
-	EffectInstance params;
+	if ( frame != 0 || slowCounter != 1 
+		|| ( action != FAIR && action != DAIR && action != UAIR ) )
+		return;
+
+	RelEffectInstance params;
 	Transform tr = sf::Transform::Identity;
-	params.SetParams(Vector2f(position), tr, 8, 1, 16);
+	if (!facingRight)
+	{
+		tr.scale(Vector2f(-1, 1));
+	}
+	params.SetParams(Vector2f(0, 0), tr, 23, 1, 0, &position );
+	//fair should be 25 but meh
 
 	if (!facingRight)
 	{
@@ -1520,19 +1579,23 @@ void Actor::CreatePostAttackLightning()
 	switch (action)
 	{
 	case FAIR:
-		fairLightningPool[0]->ActivateEffect(&params);
+		currLockedFairFX = (RelEffectInstance*)fairLightningPool[0]->ActivateEffect(&params);
 		break;
 	case DAIR:
-		dairLightningPool[0]->ActivateEffect(&params);
+		currLockedDairFX = (RelEffectInstance*)dairLightningPool[0]->ActivateEffect(&params);
 		break;
 	case UAIR:
-		uairLightningPool[0]->ActivateEffect(&params);
+		currLockedUairFX = (RelEffectInstance*)uairLightningPool[0]->ActivateEffect(&params);
 		break;
 	}
 }
 
 void Actor::Respawn()
 {
+	currLockedFairFX = NULL;
+	currLockedDairFX = NULL;
+	currLockedUairFX = NULL;
+
 	for (int i = 0; i < 3; ++i)
 	{
 		fairLightningPool[i]->Reset();
@@ -1677,7 +1740,6 @@ double Actor::GetBounceFlameAccel()
 
 void Actor::UpdatePrePhysics()
 {
-
 	if (owner->stormCeilingOn)
 	{
 		//if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
@@ -15013,12 +15075,24 @@ void Actor::UpdatePostPhysics()
 		testPool->ActivateEffect(&params);
 	}
 
-	for (int i = 0; i < 3; ++i)
+	if (currLockedFairFX != NULL && action != FAIR )
 	{
-		fairLightningPool[i]->Update();
-		dairLightningPool[i]->Update();
-		uairLightningPool[i]->Update();
+		currLockedFairFX->ClearLockPos();
+		currLockedFairFX = NULL;
 	}
+	if (currLockedDairFX != NULL && action != DAIR)
+	{
+		currLockedDairFX->ClearLockPos();
+		currLockedDairFX = NULL;
+	}
+	if (currLockedUairFX != NULL && action != UAIR)
+	{
+		currLockedUairFX->ClearLockPos();
+		currLockedUairFX = NULL;
+	}
+
+
+	
 
 	testPool->Update();
 	//testPool->ActivateEffect( )
@@ -15172,7 +15246,17 @@ void Actor::UpdatePostPhysics()
 		desperationMode = false;
 	}
 
+	
 	UpdateSprite();
+	CreateAttackLightning();
+
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i]->Update();
+		dairLightningPool[i]->Update();
+		uairLightningPool[i]->Update();
+	}
+	
 	//if (updateAura)
 	{
 		testAura->Update();
@@ -15181,10 +15265,26 @@ void Actor::UpdatePostPhysics()
 		testAura3->Update();
 	}
 
+	//shouldn't be max motion ghosts cuz thats not efficient
 	for (int i = 0; i < maxMotionGhosts; ++i)
 	{
-		motionGhosts[i] = *sprite;
+		motionGhostBuffer->SetRotation( i, sprite->getRotation() / 180.f * PI);
+		/*Vector2f scale = motionGhostBuffer->GetMemberInfo(i).scale;
+		if (facingRight || (reversed && !facingRight) )
+		{
+			motionGhostBuffer->SetScale( i, Vector2f( abs(scale.x), scale.y ) );
+		}
+		else
+		{
+			motionGhostBuffer->SetScale(i, Vector2f(-abs( scale.x ), scale.y));
+		}*/
+		//motionGhostBuffer->setpo
 	}
+	
+	/*for (int i = 0; i < maxMotionGhosts; ++i)
+	{
+		motionGhosts[i] = *sprite;
+	}*/
 
 	/*CubicBezier cb(.11, 1.01, .4, .96);
 	float start = 255.0;
@@ -17504,7 +17604,7 @@ void Actor::ApplyHit( HitboxInfo *info )
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-
+	
 
 
 
@@ -17568,12 +17668,21 @@ void Actor::Draw( sf::RenderTarget *target )
 	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	Vector2f diff = center - oldOrigin;
 
+	RotateCW(diff, sprite->getRotation() / 180.f * PI);
+	//RotateCW( diff,);
 	int showMotionGhosts = min( motionMagnitude / 1.0, 79.0 );
 
-	Vector2f sprPos = sprite->getPosition();// +diff;
+	Vector2f sprPos = sprite->getPosition() + diff;
 	Vector2f tempPos;
 	int testq = 100;
 	int ttest;// = 20;
+
+	bool fr = facingRight;
+	if (ground != NULL && reversed )
+	{
+		fr = !fr;
+	}
+
 	for (int i = 0; i < showMotionGhosts; ++i)
 	{
 		if (i < 20)
@@ -17591,19 +17700,35 @@ void Actor::Draw( sf::RenderTarget *target )
 		tempPos = Vector2f(sprPos.x + motionGhostDir.x * (i * dist), sprPos.y + motionGhostDir.y * (i * dist));
 		if( ttest != 0 )
 			tempPos += Vector2f(motionNormal * (double)(rand() % ttest - ttest / 2) );
-		motionGhosts[i].setPosition( tempPos );
+		//motionGhosts[i].setPosition( tempPos );
+		motionGhostBuffer->SetPosition(i, tempPos);
+
+		float x = 1.f;
+		if (!fr)
+			x = -x;
+		float y = 1.f;
+		//if (reversed)
+		//	y = -y;
 
 		if (i >= 10)
 		{
-			float blah = ((rand() % testq) - testq / 2) / ((float)testq / 2);
+			//float blah = ((rand() % testq) - testq / 2) / ((float)testq / 2);
+			float blah = ((rand() % testq)) / ((float)testq);
 			blah /= 4.f;//2.f;
-			motionGhosts[i].setScale(Vector2f(1.f + blah, 1.f + blah));
+			//blah = -blah;
+			//motionGhosts[i].setScale( Vector2f(1.f + blah, 1.f + blah));
+			motionGhostBuffer->SetScale( i, Vector2f(x + blah, y + blah) );
+		}
+		else
+		{
+			motionGhostBuffer->SetScale(i, Vector2f( x, y ));
 		}
 	}
 
 	//motionGhostShader.setUniform("textureSize", Vector2f( sprite->getTextureRect().width,
 	//	sprite->getTextureRect().height ) );
 
+	motionGhostBuffer->SetNumActiveMembers(showMotionGhosts);
 	
 	if( showMotionGhosts > 0 )
 	{
@@ -17616,21 +17741,28 @@ void Actor::Draw( sf::RenderTarget *target )
 			float factor = (float)i / showMotionGhosts;
 			float a = cb.GetValue(factor);
 			int alpha = max(start - a * start, 0.f);
-			motionGhosts[i].setColor(sf::Color(255, 255, 255, alpha));
+			//motionGhosts[i].setColor();
+			motionGhostBuffer->SetColor(i, sf::Color(255, 255, 255, alpha));
 		}
 
 		//swordShader.setUniform( "isTealAlready", 0 );
 		//
-		for( int i = 0; i < showMotionGhosts; ++i )
-		{
+		//for( int i = 0; i < showMotionGhosts; ++i )
+	//	{
 			//float opac = .5 * ((MAX_MOTION_GHOSTS - i ) / (float)MAX_MOTION_GHOSTS);
 			//swordShader.setUniform( "opacity", opac );
 			//cout << "setting : " << i << endl;
 			//motionGhosts[i].setColor( Color( 50, 50, 255, 50 ) );
 			//motionGhosts[i].setColor( Color( 50, 50, 255, 100 * ( 1 - (double)i / showMotionGhosts ) ) );
 			//target->draw( fairSword1, &swordShader );
-			target->draw(motionGhosts[i], &motionGhostShader);//&motionGhostShader );// , &swordShader );
-		}
+			//target->draw(motionGhosts[i], &motionGhostShader);//&motionGhostShader );// , &swordShader );
+		//}
+		
+		//motionGhostBuffer->Draw(target, &motionGhostShader );
+		//motionGhostBuffer->Draw(target, motionGhostShader);
+		//target->draw()
+		motionGhostBuffer->UpdateVertices();
+		motionGhostBuffer->Draw(target, &motionGhostShader);
 	}
 
 	
@@ -17910,6 +18042,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 	testPool->Draw(target);
+
+	testBuffer->SetPosition(0, Vector2f(position));
+	testBuffer->UpdateVertices();
+	//testBuffer->Draw(target);
 }
 
 void Actor::GrabShipWire()
@@ -18990,6 +19126,7 @@ void Actor::UpdateSprite()
 		}
 	case FAIR:
 		{
+
 			Tileset *curr_ts = ts_fairSword[speedLevel];
 			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
@@ -20893,6 +21030,7 @@ void Actor::SetSpriteTexture( Action a )
 {
 	spriteAction = a;
 	sprite->setTexture( *tileset[a]->texture );
+	motionGhostBuffer->SetTileset(tileset[a]);
 }
 
 void Actor::SetAerialScorpSprite()
@@ -20937,17 +21075,23 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 		flipTileY = false;
 	}
 
-	
-
+	for( int i = 0; i < maxMotionGhosts; ++i )
+		motionGhostBuffer->SetTile( i, currTileIndex);
 	sprite->setTextureRect( ir );
-
-	
-	
 }
 
 void Actor::SetSpriteTile( sf::Sprite *spr, 
 		Tileset *tss, int tileIndex, bool noFlipX, bool noFlipY )
 {
+	//if (spr == sprite)
+	//{
+	//	//inefficient
+	//	for (int i = 0; i < maxMotionGhosts; ++i)
+	//	{
+	//		motionGhostBuffer->SetTile( i, tileIndex);
+	//	}
+	//	
+	//}
 	IntRect ir = tss->GetSubRect( tileIndex );
 	if( !noFlipX )
 	{

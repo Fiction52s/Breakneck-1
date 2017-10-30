@@ -4,6 +4,7 @@
 ObjectPool::ObjectPool()
 {
 	activeListStart = NULL;
+	inactiveListStart = NULL;
 	Reset();
 }
 
@@ -15,7 +16,7 @@ void ObjectPool::ResetPool()
 
 	activeListStart = NULL;
 	activeListEnd = NULL;
-	inactiveListStart = NULL;
+	//inactiveListStart = NULL;
 }
 
 PoolMember *ObjectPool::ActivatePoolMember( bool front )
