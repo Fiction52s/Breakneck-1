@@ -68,7 +68,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[FAIR] = owner->GetTileset("fair_64x64.png", 64, 64, skin);
 	tileset[DIAGUPATTACK] = owner->GetTileset("airdash_attack_up_96x80.png", 96, 80, skin);
 	tileset[DIAGDOWNATTACK] = owner->GetTileset("airdash_attack_down_64x64.png", 64, 64, skin);
-	tileset[JUMP] = owner->GetTileset("jump_64x64.png", 64, 64, skin);
+	tileset[JUMP] = owner->GetTileset("jump_64x64_02.png", 64, 64, skin);
 	tileset[LAND] = owner->GetTileset("land_64x64.png", 64, 64, skin);
 	tileset[LAND2] = owner->GetTileset("land_64x64.png", 64, 64, skin);
 	tileset[RUN] = owner->GetTileset("run_2_64x64.png", 64, 64, skin);
@@ -223,6 +223,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
 
 		motionGhostBuffer = new VertexBuffer(80 * 4, sf::Quads);
+		motionGhostBufferBlue = new VertexBuffer(80 * 4, sf::Quads);
+		motionGhostBufferPurple = new VertexBuffer(80 * 4, sf::Quads);
 		testBuffer = new VertexBuffer(4, sf::Quads);
 		testBuffer->SetTile(0, 0);
 		testBuffer->SetTileset(owner->GetTileset("jump_64x64.png", 64, 64));
@@ -429,7 +431,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		Color mgc = Color::Cyan;
 		mgc.a = 25;
-		motionGhostShader.setUniform("energyColor", ColorGL(mgc));
+		//motionGhostShader.setUniform("energyColor", ColorGL(mgc));
 		
 		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
@@ -15269,6 +15271,8 @@ void Actor::UpdatePostPhysics()
 	for (int i = 0; i < maxMotionGhosts; ++i)
 	{
 		motionGhostBuffer->SetRotation( i, sprite->getRotation() / 180.f * PI);
+		motionGhostBufferBlue->SetRotation(i, sprite->getRotation() / 180.f * PI);
+		motionGhostBufferPurple->SetRotation(i, sprite->getRotation() / 180.f * PI);
 		/*Vector2f scale = motionGhostBuffer->GetMemberInfo(i).scale;
 		if (facingRight || (reversed && !facingRight) )
 		{
@@ -17672,6 +17676,9 @@ void Actor::Draw( sf::RenderTarget *target )
 	//RotateCW( diff,);
 	int showMotionGhosts = min( motionMagnitude / 1.0, 79.0 );
 
+	if (showMotionGhosts == 0)
+		showMotionGhosts = 1;
+
 	Vector2f sprPos = sprite->getPosition() + diff;
 	Vector2f tempPos;
 	int testq = 100;
@@ -17701,7 +17708,14 @@ void Actor::Draw( sf::RenderTarget *target )
 		if( ttest != 0 )
 			tempPos += Vector2f(motionNormal * (double)(rand() % ttest - ttest / 2) );
 		//motionGhosts[i].setPosition( tempPos );
+
+		int tf = 10;
+		Vector2f ff(rand() % tf - tf / 2, rand() % tf - tf / 2);
+		Vector2f ff1(rand() % tf - tf / 2, rand() % tf - tf / 2);
+
 		motionGhostBuffer->SetPosition(i, tempPos);
+		motionGhostBufferBlue->SetPosition(i, tempPos + ff);
+		motionGhostBufferPurple->SetPosition(i, tempPos + ff1);
 
 		float x = 1.f;
 		if (!fr)
@@ -17718,10 +17732,14 @@ void Actor::Draw( sf::RenderTarget *target )
 			//blah = -blah;
 			//motionGhosts[i].setScale( Vector2f(1.f + blah, 1.f + blah));
 			motionGhostBuffer->SetScale( i, Vector2f(x + blah, y + blah) );
+			motionGhostBufferBlue->SetScale(i, Vector2f(x + blah, y + blah));
+			motionGhostBufferPurple->SetScale(i, Vector2f(x + blah, y + blah));
 		}
 		else
 		{
 			motionGhostBuffer->SetScale(i, Vector2f( x, y ));
+			motionGhostBufferBlue->SetScale(i, Vector2f(x, y));
+			motionGhostBufferPurple->SetScale(i, Vector2f(x, y));
 		}
 	}
 
@@ -17729,12 +17747,14 @@ void Actor::Draw( sf::RenderTarget *target )
 	//	sprite->getTextureRect().height ) );
 
 	motionGhostBuffer->SetNumActiveMembers(showMotionGhosts);
+	motionGhostBufferBlue->SetNumActiveMembers(showMotionGhosts);
+	motionGhostBufferPurple->SetNumActiveMembers(showMotionGhosts);
 	
 	if( showMotionGhosts > 0 )
 	{
 
 		CubicBezier cb(.11, 1.01, .4, .96);//(.1, .82, .49, .86);//(.29, .71, .49, .86);//(.11, 1.01, .4, .96);
-		float start = 255.0;
+		float start = 128.f;
 		for (int i = 0; i < showMotionGhosts; ++i)
 		{
 			//motionGhosts[i] = *sprite;
@@ -17742,7 +17762,19 @@ void Actor::Draw( sf::RenderTarget *target )
 			float a = cb.GetValue(factor);
 			int alpha = max(start - a * start, 0.f);
 			//motionGhosts[i].setColor();
-			motionGhostBuffer->SetColor(i, sf::Color(255, 255, 255, alpha));
+			Color tColor = Color::Cyan;
+			tColor.a = alpha;
+
+			Color bColor = Color::Blue;
+			bColor.a = alpha;
+
+			Color pColor = Color(255, 0, 255, alpha);
+			//motionGhostBuffer->SetColor(i, sf::Color(255, 255, 255, alpha));
+			//motionGhostBufferBlue->SetColor(i, sf::Color(255, 255, 255, alpha));
+			//motionGhostBufferPurple->SetColor(i, sf::Color(255, 255, 255, alpha));
+			motionGhostBuffer->SetColor(i, tColor);
+			motionGhostBufferBlue->SetColor(i, bColor);
+			motionGhostBufferPurple->SetColor(i, pColor);
 		}
 
 		//swordShader.setUniform( "isTealAlready", 0 );
@@ -17761,8 +17793,23 @@ void Actor::Draw( sf::RenderTarget *target )
 		//motionGhostBuffer->Draw(target, &motionGhostShader );
 		//motionGhostBuffer->Draw(target, motionGhostShader);
 		//target->draw()
-		motionGhostBuffer->UpdateVertices();
-		motionGhostBuffer->Draw(target, &motionGhostShader);
+		if (speedLevel > 1)
+		{
+			motionGhostBufferPurple->UpdateVertices();
+			motionGhostBufferPurple->Draw(target, &motionGhostShader);
+		}
+
+		if (speedLevel > 0)
+		{
+			motionGhostBufferBlue->UpdateVertices();
+			motionGhostBufferBlue->Draw(target, &motionGhostShader);
+		}
+
+		
+		{
+			motionGhostBuffer->UpdateVertices();
+			motionGhostBuffer->Draw(target, &motionGhostShader);
+		}
 	}
 
 	
@@ -18180,43 +18227,69 @@ int Actor::GetJumpFrame()
 {
 	sf::IntRect ir;
 	int tFrame = -1;
-	/*if( frame == 0 )
-	{
-	ir = tileset[JUMP]->GetSubRect( 0 );
-	}
-	else */if (velocity.y < -15)
+	
+
+	if (velocity.y < -15)
 	{
 		tFrame = 1;
 	}
-	else if (velocity.y < 7)
+	else if (velocity.y < -6)
 	{
 		tFrame = 2;
 	}
-	else if (velocity.y < 9)
+	else if (velocity.y < 2)
 	{
 		tFrame = 3;
 	}
-	else if (velocity.y < 12)
+	else if (velocity.y < 7)
 	{
 		tFrame = 4;
 	}
-	else if (velocity.y < 35)
+	else if (velocity.y < 9)
 	{
 		tFrame = 5;
 	}
-	else if (velocity.y < 37)
+	else if (velocity.y < 12)
 	{
 		tFrame = 6;
 	}
-	else if (velocity.y < 40)
+	else if (velocity.y < 16)
 	{
 		tFrame = 7;
 	}
-	else
+	else if (velocity.y < 20)
 	{
 		tFrame = 8;
 	}
+	else if (velocity.y < 26)
+	{
+		tFrame = 9;
+	}
+	else if (velocity.y < 30)
+	{
+		tFrame = 10;
+	}
+	else if (velocity.y < 35)
+	{
+		tFrame = 11;
+	}
+	else if (velocity.y < 37)
+	{
+		tFrame = 12;
+	}
+	else if (velocity.y < 40)
+	{
+		tFrame = 13;
+	}
+	else
+	{
+		tFrame = 14;
+	}
 
+	//if (tFrame = -1)
+	//	tFrame = 14;
+
+	//assert(tFrame != -1);
 	return tFrame;
 }
 
@@ -21031,6 +21104,8 @@ void Actor::SetSpriteTexture( Action a )
 	spriteAction = a;
 	sprite->setTexture( *tileset[a]->texture );
 	motionGhostBuffer->SetTileset(tileset[a]);
+	motionGhostBufferBlue->SetTileset(tileset[a]);
+	motionGhostBufferPurple->SetTileset(tileset[a]);
 }
 
 void Actor::SetAerialScorpSprite()
@@ -21075,8 +21150,13 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 		flipTileY = false;
 	}
 
-	for( int i = 0; i < maxMotionGhosts; ++i )
-		motionGhostBuffer->SetTile( i, currTileIndex);
+	for (int i = 0; i < maxMotionGhosts; ++i)
+	{
+		motionGhostBuffer->SetTile(i, currTileIndex);
+		motionGhostBufferBlue->SetTile(i, currTileIndex);
+		motionGhostBufferPurple->SetTile(i, currTileIndex);
+	}
+		
 	sprite->setTextureRect( ir );
 }
 

@@ -590,6 +590,8 @@ struct Actor : QuadTreeCollider,
 	//const static int MAX_MOTION_GHOSTS = 10;
 	sf::Sprite *motionGhosts;// [MAX_MOTION_GHOSTS];
 	VertexBuffer *motionGhostBuffer;
+	VertexBuffer *motionGhostBufferBlue;
+	VertexBuffer *motionGhostBufferPurple;
 	VertexBuffer *testBuffer;
 	
 
