@@ -122,7 +122,8 @@ struct VertexBuffer
 	void SetColor(int index, sf::Color &color);
 	void Reset();
 
-	int numVertices;
+	//int numVertices;
+	//int numMembers;
 	sf::Vertex *vb;
 	Tileset *ts;
 	sf::PrimitiveType pType;

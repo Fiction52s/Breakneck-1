@@ -11,7 +11,7 @@
 #include "Wire.h"
 #include "Light.h"
 #include "AirParticles.h"
-
+#include "Movement.h"
 #include "Gate.h"
 
 struct Gate;
@@ -40,6 +40,51 @@ struct KinSkin
 	sf::Color *endColors;
 	int numChanges;
 	int index;
+};
+
+struct MotionGhostEffect
+{
+	MotionGhostEffect( int maxGhosts );
+	void SetParams();
+	void SetShader(sf::Shader *pShad);
+	void SetRootPos(Vector2f &pos );
+	void SetDirection(Vector2f &dir, float magnitude );
+	//void SetSpread( int numGhosts, 
+	//	float distInBetween );
+	void SetTileset(Tileset *ts);
+	void SetTile(int tileIndex);
+	void SetColor(sf::Color &c);
+	
+	void SetColorGradient(sf::Color &c0,
+		sf::Color &c1, CubicBezier &bez);
+	void Draw(sf::RenderTarget *target);
+	void Update();
+
+	VertexBuffer *motionGhostBuffer;
+	sf::Color rootColor;
+	sf::Color tailColor;
+	CubicBezier colorBez; //starts at root
+	bool facingRight;
+	bool reversed;
+
+	int tileIndex;
+	Tileset *ts;
+	sf::Vector2f dir;
+	sf::Vector2f rootPos;
+	int numGhosts;
+	float distInBetween;
+	sf::Shader *shader;
+	float motionMagnitude;
+	//settileset and settile
+	//void SetParams( )
+	//setrotation
+	//setrootposition, direction, spread dist,offset
+	//set scale if i >= 10
+	//setnumactivemembers
+	//setghostcolor
+	//updatevertices
+	//draw
+
 };
 
 //eventually make this an objectpool but don't need to for now

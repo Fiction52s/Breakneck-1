@@ -240,10 +240,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
 		testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
 
-		motionGhostBuffer = new VertexBuffer(80 * 4, sf::Quads);
-		motionGhostBufferBlue = new VertexBuffer(80 * 4, sf::Quads);
-		motionGhostBufferPurple = new VertexBuffer(80 * 4, sf::Quads);
-		testBuffer = new VertexBuffer(4, sf::Quads);
+		motionGhostBuffer = new VertexBuffer(80, sf::Quads);
+		motionGhostBufferBlue = new VertexBuffer(80, sf::Quads);
+		motionGhostBufferPurple = new VertexBuffer(80, sf::Quads);
+		testBuffer = new VertexBuffer(1, sf::Quads);
 		testBuffer->SetTile(0, 0);
 		testBuffer->SetTileset(owner->GetTileset("jump_64x64.png", 64, 64));
 		testBuffer->SetScale( 0, Vector2f( 4, 4 ));
@@ -15105,9 +15105,9 @@ void Actor::UpdatePostPhysics()
 		Transform tr = sf::Transform::Identity;
 		Vector2f randPos(rand() % 20 - 10, rand() % 20 - 10);
 
-		params.SetParams(randPos, tr, 1, 30, 0, &spriteCenter, 10 );
+		params.SetParams(randPos, tr, 1, 60, 0, &spriteCenter, 40 );
 		EffectInstance *ei = risingAuraPool->ActivateEffect(&params);
-		ei->SetVelocityParams(Vector2f(0, 0), Vector2f(0, -.1), 20 );	
+		ei->SetVelocityParams(Vector2f(0, 0), Vector2f(0, -.02), 5 );
 	}
 
 	if (currLockedFairFX != NULL && action != FAIR )
@@ -15130,7 +15130,7 @@ void Actor::UpdatePostPhysics()
 	
 
 	testPool->Update();
-	risingAuraPool->Update();
+	
 	//testPool->ActivateEffect( )
 
 	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
@@ -15295,6 +15295,7 @@ void Actor::UpdatePostPhysics()
 	orbSprite.setRotation(sprite->getRotation());
 	orbSprite.setPosition(sprite->getPosition());
 	
+	risingAuraPool->Update();
 	CreateAttackLightning();
 
 	for (int i = 0; i < 3; ++i)
@@ -17655,7 +17656,7 @@ void Actor::Draw( sf::RenderTarget *target )
 {
 	
 
-
+	risingAuraPool->Draw(target);
 	
 	/*double c = cos( -currInput.leftStickRadians);
 	double s = sin( -currInput.leftStickRadians);
@@ -18139,7 +18140,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 	testPool->Draw(target);
-	risingAuraPool->Draw(target);
+	
 
 	testBuffer->SetPosition(0, Vector2f(position));
 	testBuffer->UpdateVertices();
@@ -22546,4 +22547,120 @@ void AbsorbParticles::Reset()
 	{
 		DeactivateParticle(activeList);
 	}
+}
+
+MotionGhostEffect::MotionGhostEffect( int maxGhosts )
+	:shader( NULL ), ts( NULL )
+{
+	motionGhostBuffer = new VertexBuffer( maxGhosts, sf::Quads);
+}
+
+void MotionGhostEffect::SetRootPos(Vector2f &pos)
+{
+	rootPos = pos;
+}
+
+void MotionGhostEffect::SetDirection(Vector2f &p_dir)
+{
+	dir = p_dir;
+}
+
+void MotionGhostEffect::SetColorGradient(sf::Color &c0,
+	sf::Color &c1, CubicBezier &bez)
+{
+	rootColor = c0;
+	tailColor = c1;
+	colorBez = bez;
+}
+
+void MotionGhostEffect::SetColor(sf::Color &c)
+{
+	rootColor = c;
+	tailColor = c;
+	colorBez = CubicBezier();
+}
+
+void MotionGhostEffect::Update()
+{
+	//int testf = 20;
+
+	
+
+	//float dist = motionGhostSpacing;
+
+	//RotateCW( diff,);
+	int showMotionGhosts = min((int)round(motionMagnitude), motionGhostBuffer->numMembers );
+	motionGhostBuffer->SetNumActiveMembers(showMotionGhosts);
+
+	Vector2f motionNormal(dir.y, -dir.x);
+
+	int ttest;
+	Vector2f tempPos;
+	for (int i = 0; i < showMotionGhosts; ++i)
+	{
+		if (i < 20)
+		{
+			ttest = 0;
+		}
+		else if (i < 40)
+		{
+			ttest = 10;
+		}
+		else if (i < 80)
+		{
+			ttest = 20;
+		}
+		else
+		{
+			ttest = 20;
+		}
+		tempPos = Vector2f(rootPos.x + dir.x * (i * distInBetween), rootPos.y + dir.y * (i * distInBetween));
+		if (ttest != 0)
+			tempPos += Vector2f(motionNormal * (float)(rand() % ttest - ttest / 2));
+		//motionGhosts[i].setPosition( tempPos );
+
+		int tf = 10;
+		Vector2f ff(rand() % tf - tf / 2, rand() % tf - tf / 2);
+		Vector2f ff1(rand() % tf - tf / 2, rand() % tf - tf / 2);
+
+		motionGhostBuffer->SetPosition(i, tempPos);
+		//motionGhostBufferBlue->SetPosition(i, tempPos + ff);
+		//motionGhostBufferPurple->SetPosition(i, tempPos + ff1);
+
+		float x = 1.f;
+		if (!fr)
+			x = -x;
+		float y = 1.f;
+		//if (reversed)
+		//	y = -y;
+
+		if (i >= 10)
+		{
+			//float blah = ((rand() % testq) - testq / 2) / ((float)testq / 2);
+			float blah = ((rand() % testq)) / ((float)testq);
+			blah /= 4.f;//2.f;
+						//blah = -blah;
+						//motionGhosts[i].setScale( Vector2f(1.f + blah, 1.f + blah));
+			motionGhostBuffer->SetScale(i, Vector2f(x + blah, y + blah));
+			motionGhostBufferBlue->SetScale(i, Vector2f(x + blah, y + blah));
+			motionGhostBufferPurple->SetScale(i, Vector2f(x + blah, y + blah));
+		}
+		else
+		{
+			motionGhostBuffer->SetScale(i, Vector2f(x, y));
+			motionGhostBufferBlue->SetScale(i, Vector2f(x, y));
+			motionGhostBufferPurple->SetScale(i, Vector2f(x, y));
+		}
+	}
+	motionGhostBuffer->UpdateVertices();
+}
+
+void MotionGhostEffect::Draw(sf::RenderTarget *target)
+{
+	motionGhostBuffer->Draw(target, shader );
+}
+
+void MotionGhostEffect::SetShader(sf::Shader *pShad)
+{
+	shader = pShad;
 }

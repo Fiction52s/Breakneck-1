@@ -334,8 +334,8 @@ void RelEffectInstance::ClearLockPos()
 	lockPos = NULL;
 }
 
-VertexBuffer::VertexBuffer(int p_numVertices, sf::PrimitiveType p_pType )
-	:numVertices( p_numVertices ), vb( NULL ), ts( NULL ), pType( p_pType )
+VertexBuffer::VertexBuffer(int p_numMembers, sf::PrimitiveType p_pType )
+	:numMembers(p_numMembers), vb( NULL ), ts( NULL ), pType( p_pType )
 {
 	switch (p_pType)
 	{
@@ -351,11 +351,10 @@ VertexBuffer::VertexBuffer(int p_numVertices, sf::PrimitiveType p_pType )
 	default:
 		assert(0);
 	}
-	numMembers = numVertices / verticesPerMember;
 
 	members = new VertexBufferMember[numMembers];
 	dirty = new bool[numMembers];
-	vb = new Vertex[numVertices];
+	vb = new Vertex[numMembers * verticesPerMember];
 	Reset();
 }
 
