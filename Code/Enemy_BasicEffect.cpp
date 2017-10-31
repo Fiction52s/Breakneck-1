@@ -123,7 +123,7 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 	sf::View newView = oldView;
 	newView.setCenter(oldView.getCenter() / depth);
 	float oldFactor = oldView.getSize().x / 960.f;
-	float newFactor = 1.0f * depth;
+	float newFactor = oldFactor * depth;
 	newView.setSize(Vector2f(960, 540) * newFactor);
 	target->setView(newView);
 	target->draw( s );	

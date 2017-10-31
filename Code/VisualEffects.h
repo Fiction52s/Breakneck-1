@@ -32,6 +32,8 @@ struct EffectInstance : PoolMember
 		int p_frameCount, 
 		int p_animFactor, 
 		int p_startTile);
+	virtual void SetVelocityParams(sf::Vector2f &vel,
+		sf::Vector2f &accel, float maxVelocity );
 	void Clear();
 	virtual bool Update();
 	int frame;
@@ -39,8 +41,11 @@ struct EffectInstance : PoolMember
 	int startFrame;
 	int frameCount;
 	int startTile;
+	sf::Vector2f vel;
+	sf::Vector2f accel;
 	sf::Transform tr;
 	sf::Vector2f pos;
+	float maxVel;
 	EffectPool *parent;
 };
 
@@ -55,7 +60,7 @@ struct RelEffectInstance : EffectInstance
 		sf::Transform &tr, int frameCount,
 		int animFactor,
 		int startTile,
-		sf::Vector2<double> *lock );
+		sf::Vector2<double> *lock, int detachFrames = -1 );
 	virtual	void InitFromParams(EffectInstance *ei) override;
 	virtual void SetParams(
 		sf::Vector2f &p_pos,
@@ -63,9 +68,10 @@ struct RelEffectInstance : EffectInstance
 		int p_frameCount,
 		int p_animFactor,
 		int p_startTile,
-		sf::Vector2<double> *lockP );
+		sf::Vector2<double> *lockP, int detachFrames = -1 );
 	void ClearLockPos();
 	sf::Vector2<double> *lockPos;
+	int detachFrames;
 };
 
 struct EffectPool : ObjectPool

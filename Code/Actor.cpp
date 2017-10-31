@@ -118,6 +118,19 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset("run_64x64.png", 64, 64, skin);
 	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
 
+	orbTS[DAIR] = owner->GetTileset("Orbs/dair_orb_80x80.png", 80, 80, skin);
+	orbTS[DOUBLE] = owner->GetTileset("Orbs/double_orb_64x64.png", 64, 64, skin);
+	orbTS[FAIR] = owner->GetTileset("Orbs/fair_orb_80x80.png", 80, 80, skin);
+	orbTS[LAND] = owner->GetTileset("Orbs/land_orb_64x64.png", 64, 64, skin);
+	orbTS[LAND2] = owner->GetTileset("Orbs/land_orb_64x64.png", 64, 64, skin);
+	orbTS[SLIDE] = owner->GetTileset("Orbs/slide_orb_64x64.png", 64, 64, skin);
+	orbTS[STAND] = owner->GetTileset("Orbs/stand_orb_64x64.png", 64, 64, skin);
+	orbTS[STEEPSLIDE] = owner->GetTileset("Orbs/steepslide_orb_64x64.png", 64, 64, skin);
+	orbTS[STEEPCLIMB] = owner->GetTileset("Orbs/steepclimb_orb_96x32.png", 96, 32, skin);
+	orbTS[UAIR] = owner->GetTileset("Orbs/uair_orb_96x96.png", 96, 96, skin);
+	orbTS[WALLCLING] = owner->GetTileset("Orbs/wallcling_orb_64x64.png", 64, 64, skin);
+	orbTS[WALLJUMP] = owner->GetTileset("Orbs/walljump_orb_64x64.png", 64, 64, skin);
+
 	ts_fairSword[0] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[1] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[2] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
@@ -216,6 +229,11 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		for (int i = 0; i < Count; ++i)
+		{
+			orbTS[i] = NULL;
+		}
+			
 		currLockedFairFX = NULL;
 		currLockedDairFX = NULL;
 		currLockedUairFX = NULL;
@@ -241,6 +259,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
 			uairLightningPool[i]->ts = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256);
 		}
+
+		risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
+		risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
 
 		maxMotionGhosts = 80;
 		//motionGhosts = new Sprite[maxMotionGhosts];
@@ -1570,7 +1591,7 @@ void Actor::CreateAttackLightning()
 	{
 		tr.scale(Vector2f(-1, 1));
 	}
-	params.SetParams(Vector2f(0, 0), tr, 23, 1, 0, &position );
+	params.SetParams(Vector2f(0, 0), tr, 23, 1, 0, &spriteCenter );
 	//fair should be 25 but meh
 
 	if (!facingRight)
@@ -15072,9 +15093,21 @@ void Actor::UpdatePostPhysics()
 		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
 		Vector2f randPos(rand() % 100 - 50, rand() % 100 - 50);
 
-		params.SetParams(randPos, tr, 7, 1, 0, &position);
+		params.SetParams(randPos, tr, 7, 1, 0, &spriteCenter);
 
 		testPool->ActivateEffect(&params);
+	}
+
+	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % 30 == 0)
+	{
+		RelEffectInstance params;
+		//EffectInstance params;
+		Transform tr = sf::Transform::Identity;
+		Vector2f randPos(rand() % 20 - 10, rand() % 20 - 10);
+
+		params.SetParams(randPos, tr, 1, 30, 0, &spriteCenter, 10 );
+		EffectInstance *ei = risingAuraPool->ActivateEffect(&params);
+		ei->SetVelocityParams(Vector2f(0, 0), Vector2f(0, -.1), 20 );	
 	}
 
 	if (currLockedFairFX != NULL && action != FAIR )
@@ -15097,6 +15130,7 @@ void Actor::UpdatePostPhysics()
 	
 
 	testPool->Update();
+	risingAuraPool->Update();
 	//testPool->ActivateEffect( )
 
 	//rightWire->UpdateAnchors2(V2d( 0, 0 ));
@@ -15250,6 +15284,17 @@ void Actor::UpdatePostPhysics()
 
 	
 	UpdateSprite();
+	Vector2f oldOrigin = sprite->getOrigin();
+	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	Vector2f diff = center - oldOrigin;
+	RotateCW(diff, sprite->getRotation() / 180.f * PI);
+	spriteCenter = V2d( sprite->getPosition() + diff );
+
+	orbSprite.setScale(sprite->getScale());
+	orbSprite.setOrigin(sprite->getOrigin());
+	orbSprite.setRotation(sprite->getRotation());
+	orbSprite.setPosition(sprite->getPosition());
+	
 	CreateAttackLightning();
 
 	for (int i = 0; i < 3; ++i)
@@ -17611,7 +17656,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 
 
-
+	
 	/*double c = cos( -currInput.leftStickRadians);
 	double s = sin( -currInput.leftStickRadians);
 	V2d left( c, s );
@@ -17628,10 +17673,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	}*/
 	//target->draw( *pTrail->particles );
 	
-	testAura2->Draw(target);
-	testAura1->Draw(target);
+	//testAura2->Draw(target);
+	//testAura1->Draw(target);
 	testAura->Draw(target);
-	testAura3->Draw(target);
+	//testAura3->Draw(target);
 
 
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
@@ -17668,18 +17713,13 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	float dist = motionGhostSpacing;
 
-	Vector2f oldOrigin = sprite->getOrigin();
-	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-	Vector2f diff = center - oldOrigin;
-
-	RotateCW(diff, sprite->getRotation() / 180.f * PI);
 	//RotateCW( diff,);
 	int showMotionGhosts = min( motionMagnitude / 1.0, 79.0 );
 
-	if (showMotionGhosts == 0)
-		showMotionGhosts = 1;
+	//if (showMotionGhosts == 0)
+	//	showMotionGhosts = 1;
 
-	Vector2f sprPos = sprite->getPosition() + diff;
+	Vector2f sprPos(spriteCenter.x, spriteCenter.y );//sprite->getPosition() + diff;
 	Vector2f tempPos;
 	int testq = 100;
 	int ttest;// = 20;
@@ -17763,12 +17803,18 @@ void Actor::Draw( sf::RenderTarget *target )
 			int alpha = max(start - a * start, 0.f);
 			//motionGhosts[i].setColor();
 			Color tColor = Color::Cyan;
-			tColor.a = alpha;
+
+			float startF = 64;
+
+			tColor.a = max(startF - a * startF, 0.f);
 
 			Color bColor = Color::Blue;
-			bColor.a = alpha;
+			bColor.a = max(startF - a * startF, 0.f);
 
-			Color pColor = Color(255, 0, 255, alpha);
+			//b500f7
+			Color pColor = Color(0xb5, 0x00, 0xf7);//Color(255, 0, 255);
+			//6100bd
+			pColor.a = max(startF - a * startF, 0.f);
 			//motionGhostBuffer->SetColor(i, sf::Color(255, 255, 255, alpha));
 			//motionGhostBufferBlue->SetColor(i, sf::Color(255, 255, 255, alpha));
 			//motionGhostBufferPurple->SetColor(i, sf::Color(255, 255, 255, alpha));
@@ -17793,10 +17839,14 @@ void Actor::Draw( sf::RenderTarget *target )
 		//motionGhostBuffer->Draw(target, &motionGhostShader );
 		//motionGhostBuffer->Draw(target, motionGhostShader);
 		//target->draw()
-		if (speedLevel > 1)
+		
+
+		
+
+		
 		{
-			motionGhostBufferPurple->UpdateVertices();
-			motionGhostBufferPurple->Draw(target, &motionGhostShader);
+			motionGhostBuffer->UpdateVertices();
+			motionGhostBuffer->Draw(target, &motionGhostShader);
 		}
 
 		if (speedLevel > 0)
@@ -17805,10 +17855,10 @@ void Actor::Draw( sf::RenderTarget *target )
 			motionGhostBufferBlue->Draw(target, &motionGhostShader);
 		}
 
-		
+		if (speedLevel > 1)
 		{
-			motionGhostBuffer->UpdateVertices();
-			motionGhostBuffer->Draw(target, &motionGhostShader);
+			motionGhostBufferPurple->UpdateVertices();
+			motionGhostBufferPurple->Draw(target, &motionGhostShader);
 		}
 	}
 
@@ -18089,9 +18139,15 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 	testPool->Draw(target);
+	risingAuraPool->Draw(target);
 
 	testBuffer->SetPosition(0, Vector2f(position));
 	testBuffer->UpdateVertices();
+
+	if (showOrbs)
+	{
+		target->draw(orbSprite);
+	}
 	//testBuffer->Draw(target);
 }
 
@@ -21103,6 +21159,17 @@ void Actor::SetSpriteTexture( Action a )
 {
 	spriteAction = a;
 	sprite->setTexture( *tileset[a]->texture );
+	Tileset *orb = orbTS[a];
+	if (orb != NULL)
+	{
+		orbSprite.setTexture(*orb->texture);
+		showOrbs = true;
+	}
+	else
+	{
+		showOrbs = false;
+	}
+	//orbSprite.setTexture( )
 	motionGhostBuffer->SetTileset(tileset[a]);
 	motionGhostBufferBlue->SetTileset(tileset[a]);
 	motionGhostBufferPurple->SetTileset(tileset[a]);
@@ -21156,8 +21223,26 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 		motionGhostBufferBlue->SetTile(i, currTileIndex);
 		motionGhostBufferPurple->SetTile(i, currTileIndex);
 	}
-		
+	
 	sprite->setTextureRect( ir );
+
+	if (showOrbs)
+	{
+		IntRect oir = orbTS[spriteAction]->GetSubRect(currTileIndex);
+		if (!noFlipX)
+		{
+			oir.left += oir.width;
+			oir.width = -oir.width;
+		}
+
+		if (!noFlipY)
+		{
+			oir.top += oir.height;
+			oir.height = -oir.height;
+		}
+
+		orbSprite.setTextureRect( oir );
+	}
 }
 
 void Actor::SetSpriteTile( sf::Sprite *spr, 

@@ -150,6 +150,9 @@ void EffectInstance::InitFromParams(EffectInstance *ei)
 
 void EffectInstance::Init( sf::Vector2f &p_pos, sf::Transform &p_tr, int p_frameCount, int p_animFactor, int p_startTile)
 {
+	maxVel = 0;
+	vel = Vector2f(0, 0);
+	accel = Vector2f(0, 0);
 	frame = 0;
 	SetParams(p_pos, p_tr, p_frameCount, p_animFactor, p_startTile);
 	float width = parent->ts->tileWidth;
@@ -178,6 +181,14 @@ void EffectInstance::Clear()
 	
 }
 
+void EffectInstance::SetVelocityParams(sf::Vector2f &p_vel,
+	sf::Vector2f &p_accel, float p_maxVel )
+{
+	vel = p_vel;
+	accel = p_accel;
+	maxVel = p_maxVel;
+}
+
 bool EffectInstance::Update()
 {
 	if (frame == frameCount * animFactor )
@@ -193,6 +204,30 @@ bool EffectInstance::Update()
 	parent->va[index * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
 	parent->va[index * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
 	parent->va[index * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+
+
+	float width = parent->ts->tileWidth;
+	float height = parent->ts->tileHeight;
+
+	Vector2f p[4];
+
+	p[0] = Vector2f(-width / 2.f, -height / 2.f);
+	p[1] = Vector2f(+width / 2.f, -height / 2.f);
+	p[2] = Vector2f(+width / 2.f, +height / 2.f);
+	p[3] = Vector2f(-width / 2.f, +height / 2.f);
+
+	if (vel.x != 0 || vel.y != 0)
+	{
+		pos += vel;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			p[i] = tr.transformPoint(p[i]);
+			parent->va[index * 4 + i].position = pos + p[i];
+		}
+	}
+
+	vel += accel;
 
 	++frame;
 
@@ -216,8 +251,19 @@ bool RelEffectInstance::Update()
 	if (!EffectInstance::Update())
 		return false;
 
+	if (detachFrames == 0)
+	{
+		lockPos = NULL;
+	}
+	
+
 	if (lockPos == NULL)
 		return true;
+
+	if (detachFrames > 0)
+	{
+		detachFrames--;
+	}
 
 	float width = parent->ts->tileWidth;
 	float height = parent->ts->tileHeight;
@@ -244,9 +290,10 @@ void RelEffectInstance::Init(sf::Vector2f &pos,
 	sf::Transform &tr, int frameCount,
 	int animFactor,
 	int startTile,
-	sf::Vector2<double> *lock )
+	sf::Vector2<double> *lock, int p_detachFrames )
 {
 	lockPos = lock;
+	detachFrames = p_detachFrames;
 	EffectInstance::Init(pos, tr, frameCount, animFactor, startTile );
 
 	float width = parent->ts->tileWidth;
@@ -275,9 +322,10 @@ void RelEffectInstance::SetParams(
 	int p_frameCount,
 	int p_animFactor,
 	int p_startTile,
-	sf::Vector2<double> *lockP)
+	sf::Vector2<double> *lockP, int p_detachFrames )
 {
 	lockPos = lockP;
+	detachFrames = p_detachFrames;
 	EffectInstance::SetParams(p_pos, p_tr, p_frameCount, p_animFactor, p_startTile);
 }
 

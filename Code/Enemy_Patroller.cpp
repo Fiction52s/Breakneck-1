@@ -20,7 +20,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 40;
+	initHealth = 80;
 	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
@@ -319,6 +319,10 @@ void Patroller::UpdatePostPhysics()
 	{
 		owner->Pause( 5 );
 		//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
+	}
+	else if (receivedHit != NULL && health <= 20)
+	{
+		owner->Pause(7);
 	}
 
 	

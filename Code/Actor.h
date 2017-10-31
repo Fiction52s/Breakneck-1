@@ -95,6 +95,7 @@ struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
 	EffectPool *testPool;
+	EffectPool *risingAuraPool;
 
 	enum Action
 	{
@@ -217,6 +218,8 @@ struct Actor : QuadTreeCollider,
 	EffectPool *fairLightningPool[4];
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
+
+	
 	
 
 	Team team;
@@ -225,6 +228,8 @@ struct Actor : QuadTreeCollider,
 	int currTileIndex;
 	bool flipTileX;
 	bool flipTileY;
+
+	sf::Vector2<double> spriteCenter;
 
 	//these are for the wire boost particles 
 	sf::Vector2<double> leftWireBoostDir;
@@ -307,6 +312,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_rune0;
 	Tileset *ts_fx_rune1;
 	Tileset *ts_fx_rune2;
+
+
 
 
 	sf::Sprite runeSprite;
@@ -415,6 +422,9 @@ struct Actor : QuadTreeCollider,
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
+	Tileset *orbTS[Count];
+	sf::Sprite orbSprite;
+	bool showOrbs;
 
 	Tileset *ts_dodecaSmall;
 	Tileset *ts_dodecaBig;
