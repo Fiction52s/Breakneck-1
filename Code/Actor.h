@@ -47,10 +47,10 @@ struct MotionGhostEffect
 	MotionGhostEffect( int maxGhosts );
 	void SetParams();
 	void SetShader(sf::Shader *pShad);
-	void SetRootPos(Vector2f &pos );
-	void SetDirection(Vector2f &dir, float magnitude );
-	//void SetSpread( int numGhosts, 
-	//	float distInBetween );
+	void SetRootPos(sf::Vector2f &pos );
+	void SetDistInBetween(float dist);
+	void SetSpread( int numGhosts, sf::Vector2f &dir, float angle );
+	void SetVibrateParams(CubicBezier &vBez, float maxVibrate, int startGhost = 0);
 	void SetTileset(Tileset *ts);
 	void SetTile(int tileIndex);
 	void SetColor(sf::Color &c);
@@ -58,13 +58,16 @@ struct MotionGhostEffect
 	void SetColorGradient(sf::Color &c0,
 		sf::Color &c1, CubicBezier &bez);
 	void Draw(sf::RenderTarget *target);
-	void Update();
+	void SetFacing(bool facingRight, bool reversed);
+	void SetScaleParams(CubicBezier &sBez, float p_maxScaleUp, float p_maxScaleDown, int startScaleGhost = 0 );
+	void ApplyUpdates();
 
 	VertexBuffer *motionGhostBuffer;
 	sf::Color rootColor;
 	sf::Color tailColor;
 	CubicBezier colorBez; //starts at root
 	bool facingRight;
+	float angle;
 	bool reversed;
 
 	int tileIndex;
@@ -74,7 +77,14 @@ struct MotionGhostEffect
 	int numGhosts;
 	float distInBetween;
 	sf::Shader *shader;
-	float motionMagnitude;
+
+	CubicBezier vibrateBez;
+	int startVibrateGhost;
+	CubicBezier scaleBez;
+	int startScaleGhost;
+	float maxScaleUp;
+	float maxScaleDown;
+	float maxVibrate;
 	//settileset and settile
 	//void SetParams( )
 	//setrotation
@@ -141,6 +151,7 @@ struct Actor : QuadTreeCollider,
 {
 	EffectPool *testPool;
 	EffectPool *risingAuraPool;
+	MotionGhostEffect *testMGE;
 
 	enum Action
 	{

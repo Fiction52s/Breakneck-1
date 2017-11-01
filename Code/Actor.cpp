@@ -233,7 +233,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 			orbTS[i] = NULL;
 		}
-			
+		
+		testMGE = new MotionGhostEffect(80);
+
 		currLockedFairFX = NULL;
 		currLockedDairFX = NULL;
 		currLockedUairFX = NULL;
@@ -15313,6 +15315,34 @@ void Actor::UpdatePostPhysics()
 		testAura3->Update();
 	}
 
+
+	V2d motionGhostDir;
+	double motionMagnitude = 0;
+	if (ground != NULL)
+	{
+		motionGhostDir = -normalize(normalize(ground->v1 - ground->v0) * groundSpeed);
+		if (reversed)
+			motionGhostDir = -motionGhostDir;
+		motionMagnitude = abs(groundSpeed);
+	}
+	else
+	{
+		motionGhostDir = -normalize(velocity);
+		motionMagnitude = length(velocity);
+	}
+
+	//int testf = 20;
+
+	//V2d motionNormal(motionGhostDir.y, -motionGhostDir.x);
+
+	float dist = motionGhostSpacing;
+
+	//RotateCW( diff,);
+	int showMotionGhosts = min(motionMagnitude / 1.0, 80.0);
+
+	testMGE->SetSpread(showMotionGhosts, Vector2f( motionGhostDir.x, motionGhostDir.y ), sprite->getRotation() / 180.f * PI);
+	testMGE->SetRootPos(Vector2f( spriteCenter.x, spriteCenter.y ));
+	
 	//shouldn't be max motion ghosts cuz thats not efficient
 	for (int i = 0; i < maxMotionGhosts; ++i)
 	{
@@ -17845,7 +17875,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		
 
 		
-		{
+		/*{
 			motionGhostBuffer->UpdateVertices();
 			motionGhostBuffer->Draw(target, &motionGhostShader);
 		}
@@ -17860,7 +17890,10 @@ void Actor::Draw( sf::RenderTarget *target )
 		{
 			motionGhostBufferPurple->UpdateVertices();
 			motionGhostBufferPurple->Draw(target, &motionGhostShader);
-		}
+		}*/
+
+		testMGE->SetShader(&motionGhostShader);
+		testMGE->Draw(target);
 	}
 
 	
@@ -21172,6 +21205,7 @@ void Actor::SetSpriteTexture( Action a )
 	}
 	//orbSprite.setTexture( )
 	motionGhostBuffer->SetTileset(tileset[a]);
+	testMGE->SetTileset(tileset[a]);
 	motionGhostBufferBlue->SetTileset(tileset[a]);
 	motionGhostBufferPurple->SetTileset(tileset[a]);
 }
@@ -21217,6 +21251,14 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 	{
 		flipTileY = false;
 	}
+
+	testMGE->SetTile(currTileIndex);
+	testMGE->SetFacing(facingRight, reversed);
+	testMGE->SetDistInBetween(1.f);
+	testMGE->SetScaleParams(CubicBezier(), .25, 0, 10);
+	testMGE->SetVibrateParams(CubicBezier(), 20, 10);
+	testMGE->SetColor(Color(Color::Magenta));
+	testMGE->ApplyUpdates();
 
 	for (int i = 0; i < maxMotionGhosts; ++i)
 	{
@@ -22555,14 +22597,21 @@ MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	motionGhostBuffer = new VertexBuffer( maxGhosts, sf::Quads);
 }
 
+void MotionGhostEffect::SetDistInBetween(float dist)
+{
+	distInBetween = dist;
+}
+
+void MotionGhostEffect::SetSpread(int numGhosts, Vector2f &p_dir, float p_angle )
+{
+	motionGhostBuffer->SetNumActiveMembers(numGhosts);
+	dir = p_dir;
+	angle = p_angle;
+}
+
 void MotionGhostEffect::SetRootPos(Vector2f &pos)
 {
 	rootPos = pos;
-}
-
-void MotionGhostEffect::SetDirection(Vector2f &p_dir)
-{
-	dir = p_dir;
 }
 
 void MotionGhostEffect::SetColorGradient(sf::Color &c0,
@@ -22580,84 +22629,145 @@ void MotionGhostEffect::SetColor(sf::Color &c)
 	colorBez = CubicBezier();
 }
 
-void MotionGhostEffect::Update()
+void MotionGhostEffect::ApplyUpdates()
 {
-	//int testf = 20;
+	int numActiveMembers = motionGhostBuffer->numActiveMembers;
 
 	
 
-	//float dist = motionGhostSpacing;
+	for (int i = 0; i < numActiveMembers; ++i)
+	{
+		motionGhostBuffer->SetRotation(i, angle);
 
-	//RotateCW( diff,);
-	int showMotionGhosts = min((int)round(motionMagnitude), motionGhostBuffer->numMembers );
-	motionGhostBuffer->SetNumActiveMembers(showMotionGhosts);
+	}
+
+	//int showMotionGhosts = min((int)round(motionMagnitude), motionGhostBuffer->numMembers );
+	//motionGhostBuffer->SetNumActiveMembers(showMotionGhosts);
 
 	Vector2f motionNormal(dir.y, -dir.x);
 
-	int ttest;
+	
+	//float scaleAmountDown = scaleBez.GetValue(pGhosts) * maxScaleDown;
+
 	Vector2f tempPos;
-	for (int i = 0; i < showMotionGhosts; ++i)
+	float pGhosts;
+	float vibrateAmount;
+	int iVibrateAmount;
+	float scaleAmountUp;
+	Color currColor;
+	int cr, cg, cb, ca;
+	float ta;
+	float recip;
+	for (int i = 0; i < numActiveMembers; ++i)
 	{
-		if (i < 20)
-		{
-			ttest = 0;
-		}
-		else if (i < 40)
-		{
-			ttest = 10;
-		}
-		else if (i < 80)
-		{
-			ttest = 20;
-		}
+		if (numActiveMembers == 1)
+			pGhosts = 0;
 		else
 		{
-			ttest = 20;
+			pGhosts = i / (float)(numActiveMembers - 1);
 		}
+		
+		ta = colorBez.GetValue(pGhosts);
+		recip = 1.f - ta;
+		cr = round(rootColor.r * recip + tailColor.r * ta);
+		cr = max(cr, 0);
+		cr = min(cr, 255);
+
+		cg = round(rootColor.g * recip + tailColor.g * ta);
+		cg = max(cg, 0);
+		cg = min(cg, 255);
+
+		cb = round(rootColor.b * recip + tailColor.b * ta);
+		cb = max(cb, 0);
+		cb = min(cb, 255);
+
+		ca = round(rootColor.a * recip + tailColor.a * ta);
+		ca = max(ca, 0);
+		ca = min(ca, 255);
+
+		 vibrateAmount = vibrateBez.GetValue(pGhosts) * maxVibrate;
+
+		iVibrateAmount = round(vibrateAmount);
+		if (iVibrateAmount % 2 == 1)
+			iVibrateAmount++;
+
+		scaleAmountUp = scaleBez.GetValue(pGhosts) * maxScaleUp;
+
+
 		tempPos = Vector2f(rootPos.x + dir.x * (i * distInBetween), rootPos.y + dir.y * (i * distInBetween));
-		if (ttest != 0)
-			tempPos += Vector2f(motionNormal * (float)(rand() % ttest - ttest / 2));
+		if (iVibrateAmount != 0)
+			tempPos += Vector2f(motionNormal * (float)(rand() % iVibrateAmount - iVibrateAmount / 2));
 		//motionGhosts[i].setPosition( tempPos );
 
-		int tf = 10;
+		/*int tf = 10;
 		Vector2f ff(rand() % tf - tf / 2, rand() % tf - tf / 2);
-		Vector2f ff1(rand() % tf - tf / 2, rand() % tf - tf / 2);
-
+		Vector2f ff1(rand() % tf - tf / 2, rand() % tf - tf / 2);*/
+		motionGhostBuffer->SetColor( i, sf::Color(cr, cg, cb, ca));
 		motionGhostBuffer->SetPosition(i, tempPos);
 		//motionGhostBufferBlue->SetPosition(i, tempPos + ff);
 		//motionGhostBufferPurple->SetPosition(i, tempPos + ff1);
 
 		float x = 1.f;
-		if (!fr)
+
+		if (!facingRight || ( facingRight && reversed ) )
 			x = -x;
 		float y = 1.f;
-		//if (reversed)
-		//	y = -y;
+		
+		if (reversed)
+			y = -y;
 
-		if (i >= 10)
+		if (i >= startVibrateGhost )
 		{
 			//float blah = ((rand() % testq) - testq / 2) / ((float)testq / 2);
-			float blah = ((rand() % testq)) / ((float)testq);
+			float blah = ((rand() % 100)) / 100.f;
 			blah /= 4.f;//2.f;
 						//blah = -blah;
 						//motionGhosts[i].setScale( Vector2f(1.f + blah, 1.f + blah));
 			motionGhostBuffer->SetScale(i, Vector2f(x + blah, y + blah));
-			motionGhostBufferBlue->SetScale(i, Vector2f(x + blah, y + blah));
-			motionGhostBufferPurple->SetScale(i, Vector2f(x + blah, y + blah));
+			/*motionGhostBufferBlue->SetScale(i, Vector2f(x + blah, y + blah));
+			motionGhostBufferPurple->SetScale(i, Vector2f(x + blah, y + blah));*/
 		}
 		else
 		{
 			motionGhostBuffer->SetScale(i, Vector2f(x, y));
-			motionGhostBufferBlue->SetScale(i, Vector2f(x, y));
-			motionGhostBufferPurple->SetScale(i, Vector2f(x, y));
+			/*motionGhostBufferBlue->SetScale(i, Vector2f(x, y));
+			motionGhostBufferPurple->SetScale(i, Vector2f(x, y));*/
 		}
 	}
 	motionGhostBuffer->UpdateVertices();
 }
 
+void MotionGhostEffect::SetVibrateParams(CubicBezier &vBez, float p_maxVibrate, int startGhost = 0)
+{
+	vibrateBez = vBez;
+	maxVibrate = p_maxVibrate;
+	startVibrateGhost = startGhost;
+}
+
+void MotionGhostEffect::SetScaleParams(CubicBezier &sBez, float p_maxScaleUp, float p_maxScaleDown, int p_startGhost )
+{
+	scaleBez = sBez;
+	maxScaleUp = p_maxScaleUp;
+	maxScaleDown = p_maxScaleDown;
+	startScaleGhost = p_startGhost;
+}
+
+void MotionGhostEffect::SetFacing(bool p_facingRight, bool p_reversed)
+{
+	facingRight = p_facingRight;
+	reversed = p_reversed;
+}
+
 void MotionGhostEffect::Draw(sf::RenderTarget *target)
 {
-	motionGhostBuffer->Draw(target, shader );
+	if (shader != NULL)
+	{
+		motionGhostBuffer->Draw(target, shader);
+	}
+	else
+	{
+		motionGhostBuffer->Draw(target);
+	}
 }
 
 void MotionGhostEffect::SetShader(sf::Shader *pShad)
