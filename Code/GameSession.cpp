@@ -3961,10 +3961,11 @@ bool GameSession::OpenFile( string fileName )
 				ss << matVariation + 1;
 			}
 
-			ss << "_128x64.png";
+			//ss << "_128x64.png";
+			ss << "_32x64.png";
 		
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 128, 64 );
+			Tileset *ts_border = GetTileset( ss.str(), 32, 64 );
 
 			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
@@ -4000,7 +4001,7 @@ bool GameSession::OpenFile( string fileName )
 
 
 			//VertexArray *triVA = SetupBorderTris( 0, edges[currentEdgeIndex], ts_border );
-			VertexArray *triVA = SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
+			VertexArray *triVA = NULL;//SetupTransitions( 0, edges[currentEdgeIndex], ts_border );
 			//VertexArray *triVA = NULL;
 			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
 			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
@@ -11072,10 +11073,10 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 	assert( qt != NULL );
 
-	int tw = 128;//64;
+	int tw = ts->tileWidth;//128;//64;
 	//int th = 512;
 	int numTotalQuads = 0;
-	double intersect = 48;
+	double intersect = 10;//tw / 6.0;//48;
 	double extraLength = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 
@@ -11090,6 +11091,11 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 			double len = length(te->v1 - te->v0);// +extraLength * 2;
 
 			int numQuads = 0;
+			//if (len < 8 )//tw)
+			//{
+			//	numQuads = 0;
+			//}
+		//else
 			if (len <= tw - extraLength * 2)
 			{
 				numQuads = 1;
@@ -11138,7 +11144,12 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 		{
 			double len = length(te->v1 - te->v0);// +extraLength * 2;
 			int numQuads = numQuadMap[te];//ceil( len / tw ); 
-			double quadWidth = 128;//len / numQuads;
+			if (numQuads == 0)
+			{
+				te = te->edge1;
+				continue;
+			}
+			double quadWidth = ts->tileWidth;;//len / numQuads;
 
 			V2d along = normalize( te->v1 - te->v0 );
 			V2d other( along.y, -along.x );
@@ -11160,7 +11171,7 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 				//worldNum * 5
 				//int valid = ValidEdge( eNorm );
 				//add (worldNum * 5) to realIndex to get the correct borders
-				int realIndex = valid * 4 + varietyCounter;//32 + varietyCounter;
+				int realIndex = valid;// *4 + varietyCounter;//32 + varietyCounter;
 				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
 				IntRect sub = ts->GetSubRect( realIndex );
 				//cout << "left: " << sub.left << ", top: " << sub.top << 

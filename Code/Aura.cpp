@@ -35,11 +35,11 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 		{
 		case 0:
 			va[i].color = Color::Cyan;////
-			va[i].color.a = 40;
+			va[i].color.a = 255;
 			break;
 		case 1:
 			va[i].color = Color::Blue;//Color(0x94, 0xfa, 0xff);//Color::White;
-			va[i].color.a = 40;
+			va[i].color.a = 255;
 			break;
 		case 2:
 			va[i].color = Color(100, 0, 255);//Color::Green;//Color(0x00, 0x96, 0x9e);//Color::Black;
@@ -142,7 +142,8 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 
 	for (auto it = points.begin(); it != points.end(); ++it)
 	{
-		p = tr.transformPoint((*it) - origin) + truePos;
+		p = tr.transformPoint((*it) - Vector2f( player->sprite->getLocalBounds().width / 2,
+			player->sprite->getLocalBounds().height / 2 )) + origin;
 
 		//sf::Vector2<double> vel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed / 2.0;
 		//v =  * 2.f;
