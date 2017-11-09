@@ -84,7 +84,7 @@ struct Aura
 
 	void ActivateParticles(std::list<sf::Vector2f> &points, 
 		sf::Transform &tr, const sf::Vector2f &origin, AuraParams *ap );
-	static void CreateParticlePointList(Tileset *ts, sf::Image &im, 
+	static void CreateParticlePointList(sf::RenderTexture *rtt, Tileset *ts,
 		int tileIndex,
 		std::list<sf::Vector2f> &outPoints );
 

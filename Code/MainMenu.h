@@ -588,6 +588,7 @@ struct MainMenu
 	static sf::RenderTexture *saveTexture;
 	static sf::RenderTexture *mapPreviewTexture;
 	static sf::RenderTexture *extraScreenTexture;
+	static sf::RenderTexture *auraCheckTexture;
 	
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;

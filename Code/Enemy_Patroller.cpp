@@ -235,10 +235,10 @@ void Patroller::PhysicsResponse()
 			owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
 
 
-			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-			{
-				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-			}
+			//if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
+			//{
+			//	owner->GetPlayer( 0 )->velocity.y = 4;//.5;
+			//}
 
 		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
 

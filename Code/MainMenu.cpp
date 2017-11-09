@@ -33,6 +33,7 @@ sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
 sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 sf::RenderTexture *MainMenu::extraScreenTexture = NULL;
+sf::RenderTexture *MainMenu::auraCheckTexture = NULL;
 
 const int MapSelectionMenu::BOX_WIDTH = 580;
 const int MapSelectionMenu::BOX_HEIGHT = 40;
@@ -663,6 +664,13 @@ MainMenu::MainMenu()
 		mapPreviewTexture= new RenderTexture;
 		mapPreviewTexture->create( 960-48, 540-48 );
 		mapPreviewTexture->clear();
+	}
+
+	if (auraCheckTexture == NULL)
+	{
+		auraCheckTexture = new RenderTexture;
+		auraCheckTexture->create(128, 128);
+		auraCheckTexture->clear();
 	}
 
 	transWorldMapFrame = 0;

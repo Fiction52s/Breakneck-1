@@ -247,46 +247,118 @@ void Aura::DeactivateParticles(ParticleSet *ps)
 	AddToInactive(ps);
 }
 
-void Aura::CreateParticlePointList(Tileset *ts, Image &im, int tileIndex,
+void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileIndex,
 	std::list<sf::Vector2f> &outPoints )
 {
 	assert(outPoints.size() == 0);
 	IntRect sub = ts->GetSubRect(tileIndex);
-	int right = sub.left + sub.width;
-	int bot = sub.top + sub.height;
+	int right = rtt->getSize().x;//sub.left + sub.width;
+	int bot = rtt->getSize().y;//sub.top + sub.height;
+
+	Sprite tSprite;
+	tSprite.setTexture(*ts->texture);
+	tSprite.setTextureRect(ts->GetSubRect(tileIndex));
+
+	tSprite.setOrigin(tSprite.getLocalBounds().width / 2, tSprite.getLocalBounds().height / 2);
+	tSprite.setPosition(rtt->getSize().x / 2, rtt->getSize().y / 2);
+
+	rtt->clear(Color::Transparent);
+	rtt->setView(View(sf::FloatRect(0, 0, rtt->getSize().x, rtt->getSize().y)));
+	rtt->draw(tSprite);
+	rtt->display();
+	Image im(rtt->getTexture().copyToImage());
+	//Image im2;
 
 	sf::Color col;
-	for (int y = sub.top; y < bot; ++y)
+	Color colNext;
+	//for (int y = sub.top; y < bot; ++y)
+	int ySize = rtt->getSize().y;
+	int xSize = rtt->getSize().x;
+	for(int z = 0; z < 2; ++z )
+	for (int y = 0; y < ySize; ++y)
 	{ 
-		for (int x = sub.left; x < right; ++x)
+		//for (int x = sub.left; x < right; ++x)
+		for (int x = 0; x < xSize; ++x)
 		{
 			 col = im.getPixel(x, y);
 			 //currently use every pixel that isnt transparent
 
 
-			 if (col.a != 0 )//&& col.r == 250 && col.g == 0 && col.b == 158 )
+			 if (col.a != 0 && col != Color::Red )//&& col.r == 250 && col.g == 0 && col.b == 158 )
 			 {
+				 
 				 bool transAround = false;
-				 if ((x < right - 1 && im.getPixel(x + 1, y).a == 0) || (x == right - 1  ))
+				 if (x < right - 1 )
+				 {
+					 colNext = im.getPixel(x + 1, y);
+					 if (colNext.a == 0 || colNext == Color::Red)
+					 {
+						 transAround = true;
+					 }
+				 }
+				 else
 				 {
 					 transAround = true;
 				 }
-				 if ((x > sub.left && im.getPixel(x - 1, y).a == 0) || (x == sub.left ))
+					
+				 if (x > 0 )
 				 {
-					 transAround = true;
+					 colNext = im.getPixel(x - 1, y);
+					 if (colNext.a == 0 || colNext == Color::Red)
+					 {
+						 transAround = true;
+					 }
+					 //transAround = true;
 				 }
-				 if ((y < bot - 1 && im.getPixel(x, y + 1).a == 0) || (y == bot - 1 ))
-				 {
-					 transAround = true;
-				 }
-				 if ((y > sub.top && im.getPixel(x, y - 1).a == 0) || (y == sub.top ))
+				 else 
 				 {
 					 transAround = true;
 				 }
 
+				 if ( y < bot - 1)
+				 {
+					 colNext = im.getPixel(x, y+1);
+					 if (colNext.a == 0 || colNext == Color::Red)
+					 {
+						 transAround = true;
+					 }
+					// transAround = true;
+				 }
+				 else
+				 {
+					 transAround = true;
+				 }
+
+				 if (y > 0)
+				 {
+					 colNext = im.getPixel(x, y - 1);
+					 if (colNext.a == 0 || colNext == Color::Red)
+					 {
+						 transAround = true;
+					 }
+					// transAround = true;
+				 }
+				 else
+				 {
+					 transAround = true;
+				 }
+
+				 
+
 				 if (transAround)
 				 {
-					 outPoints.push_back(Vector2f((x - sub.left), (y - sub.top)));
+					 if (z == 1 )//2-1)
+					 {
+						 float f = (right - tSprite.getLocalBounds().width) / 2.f;
+						 float h = (bot - tSprite.getLocalBounds().height) / 2.f;
+						 outPoints.push_back(Vector2f(x - f, y - h));
+					 }
+					 else
+					 {
+						 im.setPixel(x, y, Color::Red);
+					 }
+					 //(x - sub.left), (y - sub.top)));
+					 //outPoints.push_back(Vector2f(x, y));//(x - sub.left), (y - sub.top)));
 				 }
 			 }
 		}
@@ -331,7 +403,7 @@ void Aura::Particle::Update()
 		switch (player->speedLevel)
 		{
 		case 0:
-			hw = 2;//8
+			hw = 2.f;//8
 			break;
 		case 1:
 			hw = 2;//8

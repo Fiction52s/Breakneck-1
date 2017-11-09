@@ -286,6 +286,11 @@ struct Actor : QuadTreeCollider,
 	bool flipTileY;
 
 	sf::Vector2<double> spriteCenter;
+	bool dairBoostedDouble;
+	double dairBoostVel;
+
+	bool hasFairAirDashBoost;
+	double fairAirDashBoostQuant;
 
 	//these are for the wire boost particles 
 	sf::Vector2<double> leftWireBoostDir;

@@ -233,7 +233,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 			orbTS[i] = NULL;
 		}
-		
+		dairBoostVel = 4;
+		fairAirDashBoostQuant = 2;
 		testMGE = new MotionGhostEffect(80);
 
 		currLockedFairFX = NULL;
@@ -6873,6 +6874,11 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity.y = -doubleJumpStrength;
 				}
+
+				if (dairBoostedDouble)
+				{
+					velocity.y -= dairBoostVel;
+				}
 				hasDoubleJump = false;
 
 				if( currInput.LLeft() )
@@ -7415,6 +7421,19 @@ void Actor::UpdatePrePhysics()
 					dWireAirDashOld = V2d( 0, 0 );
 
 					hasAirDash = false;
+
+					if (hasFairAirDashBoost)
+					{
+						if (velocity.x > 0)
+						{
+							velocity.x += fairAirDashBoostQuant;
+						}
+						else if (velocity.x < 0)
+						{
+							velocity.x -= fairAirDashBoostQuant;
+						}
+					}
+
 					startAirDashVel = V2d( velocity.x, 0 );//velocity;//
 					if( (velocity.y > 0 && currInput.LDown()) || ( velocity.y < 0 && currInput.LUp() ) )
 					{
@@ -20896,7 +20915,7 @@ void Actor::UpdateSprite()
 	}
 
 	Transform tr1 = tr;
-	tr1.scale(1.5, 1.5);
+	//tr1.scale(1.5, 1.5);
 	//Vector2f oldOrigin = sprite->getOrigin();
 	//Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	//Vector2f diff = center - oldOrigin;
@@ -21062,6 +21081,22 @@ void Actor::ConfirmHit( int worldIndex,
 	runeSprite.setOrigin( runeSprite.getLocalBounds().width / 2, 
 		runeSprite.getLocalBounds().height / 2 );
 	
+	switch (action)
+	{
+	case UAIR:
+		if( velocity.y <= 0 )
+			hasDoubleJump = true;
+		break;
+	case DAIR:
+		dairBoostedDouble = true;
+		break;
+	}
+
+	double slowDownFall = 14;
+	if (velocity.y > slowDownFall)
+	{
+		velocity.y = slowDownFall;
+	}
 	/*if( bounceFlameOn )
 	{
 		if( ground == NULL )
@@ -21969,6 +22004,7 @@ bool Actor::TryDoubleJump()
 {
 	if( CanDoubleJump() )
 	{
+		dairBoostedDouble = (action == DAIR);
 		SetActionExpr( DOUBLE );
 		return true;
 	}
@@ -21982,6 +22018,7 @@ bool Actor::TryAirDash()
 	{
 		if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
 		{
+			hasFairAirDashBoost = (action == FAIR);
 			SetActionExpr( AIRDASH );
 			return true;
 		}
@@ -22348,10 +22385,10 @@ void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 
 	outPointList = new list<Vector2f>[numTiles];
 
-	Image im = ts->texture->copyToImage();
+	//Image im = ts->texture->copyToImage();
 	for (int i = 0; i < numTiles; ++i)
 	{
-		Aura::CreateParticlePointList(ts, im, i + startTile, outPointList[i] );
+		Aura::CreateParticlePointList( owner->mainMenu->auraCheckTexture, ts, i + startTile, outPointList[i]);
 	}
 }
 
