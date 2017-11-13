@@ -288,6 +288,8 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> spriteCenter;
 	bool dairBoostedDouble;
 	double dairBoostVel;
+	bool standNDashBoost;
+	double standNDashBoostQuant;
 
 	bool hasFairAirDashBoost;
 	double fairAirDashBoostQuant;

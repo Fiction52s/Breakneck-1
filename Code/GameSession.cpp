@@ -39,6 +39,7 @@
 #include "Buf.h"
 #include "HUD.h"
 #include "Rail.h"
+#include "TerrainRender.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -1675,6 +1676,8 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		testva->slopeva = slopeVA;
 		testva->steepva = steepVA;
 		testva->wallva = wallVA;
+
+		
 		
 			
 		//cout << "before insert border: " << insertCount << endl;
@@ -3980,6 +3983,13 @@ bool GameSession::OpenFile( string fileName )
 			
 
 			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
+
+			Tileset *ts_border1 = GetTileset("Borders/bor_1_01b_128x64.png", 128, 64);
+			testva->tr = new TerrainRender;// (terrainTree);
+			testva->tr->startEdge = edges[currentEdgeIndex];
+			testva->tr->GenerateBorderMesh(terrainTree);
+			testva->tr->ts_border = ts_border1;
+			
 
 			/*double polygonArea = 0;
 			for( vector<p2t::Triangle*>::iterator it = tris.begin();
@@ -7737,9 +7747,8 @@ int GameSession::Run()
 
 			if( showTerrainDecor )
 			{
-			if( listVAIter->triva != NULL )
+			/*if( listVAIter->triva != NULL )
 				preScreenTex->draw( *listVAIter->triva, rs );
-			//preScreenTex->setSmooth( true );
 			if(listVAIter->wallva != NULL )
 				preScreenTex->draw(*listVAIter->wallva, rs);
 
@@ -7757,7 +7766,8 @@ int GameSession::Run()
 			if (listVAIter->groundva)
 			{
 				preScreenTex->draw(*listVAIter->groundva, rs);
-			}
+			}*/
+			listVAIter->tr->Draw(preScreenTex);
 			
 
 			//preScreenTex->setSmooth( false );

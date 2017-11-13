@@ -233,6 +233,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 			orbTS[i] = NULL;
 		}
+		standNDashBoostQuant = 6;
 		dairBoostVel = 4;
 		fairAirDashBoostQuant = 2;
 		testMGE = new MotionGhostEffect(80);
@@ -1249,7 +1250,8 @@ void Actor::ActionEnded()
 			{
 				if (currInput.B)
 				{
-					action = DASH;
+					SetActionExpr(DASH);
+					//action = DASH;
 					//re->Reset();
 					//re1->Reset();
 				}
@@ -1270,7 +1272,8 @@ void Actor::ActionEnded()
 			{
 				if (currInput.B)
 				{
-					action = DASH;
+					//action = DASH;
+					SetActionExpr(DASH);
 					//re->Reset();
 					//re1->Reset();
 				}
@@ -2600,10 +2603,11 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.B && !prevInput.B )
 			{
-				action = DASH;
+				SetActionExpr(DASH);
+				//action = DASH;
 				//re->Reset();
 				//re1->Reset();
-				frame = 0;
+				//frame = 0;
 			}
 			else if( currInput.LLeft() || currInput.LRight() )
 			{
@@ -2734,10 +2738,11 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.B && !prevInput.B )
 			{
-				action = DASH;
+				//action = DASH;
 				/*re->Reset();
 				re1->Reset();*/
-				frame = 0;
+				//frame = 0;
+				SetActionExpr(DASH);
 				////runTappingSound.stop();
 				break;
 			}
@@ -3075,8 +3080,9 @@ void Actor::UpdatePrePhysics()
 					{
 						/*re->Reset();
 						re1->Reset();*/
-						action = DASH;
-						frame = 0;
+						//action = DASH;
+						//frame = 0;
+						SetActionExpr(DASH);
 
 						if( currInput.LLeft() )
 							facingRight = false;
@@ -3182,8 +3188,9 @@ void Actor::UpdatePrePhysics()
 							
 						}
 						
-						action = DASH;
-						frame = 0;
+						SetActionExpr(DASH);
+						//action = DASH;
+						//frame = 0;
 						/*re->Reset();
 						re1->Reset();*/
 
@@ -3263,8 +3270,9 @@ void Actor::UpdatePrePhysics()
 					{
 						cout << "storedreversesddddpeed: " << storedReverseSpeed << endl;
 						groundSpeed = storedReverseSpeed;
-						action = DASH;
-						frame = 0;
+						//action = DASH;
+						//frame = 0;
+						SetActionExpr(DASH);
 
 						if( currInput.LLeft() )
 							facingRight = false;
@@ -3829,10 +3837,11 @@ void Actor::UpdatePrePhysics()
 					//you can't dash on the ceiling with no horizontal input. probably a weakness
 					if( ( currInput.B && !prevInput.B/*&& !( reversed && (!currInput.LLeft() && !currInput.LRight() ) )*/ ) || !canStandUp )
 					{
-						action = DASH;
+						//action = DASH;
 						/*re->Reset();
 						re1->Reset();*/
-						frame = 0;
+						//frame = 0;
+						SetActionExpr(DASH);
 
 						if( currInput.LLeft() )
 							facingRight = false;
@@ -3923,10 +3932,11 @@ void Actor::UpdatePrePhysics()
 					if( (currInput.B && !prevInput.B) || !canStandUp )
 					{
 						//cout << "start dash" << endl;
-						action = DASH;
+						//action = DASH;
 						/*re->Reset();
 						re1->Reset();*/
-						frame = 0;
+						//frame = 0;
+						SetActionExpr(DASH);
 
 						if( currInput.LLeft() )
 							facingRight = false;
@@ -4109,10 +4119,11 @@ void Actor::UpdatePrePhysics()
 			
 			if( currInput.B && !prevInput.B )
 			{
-					action = DASH;
+					//action = DASH;
 					/*re->Reset();
 					re1->Reset();*/
-					frame = 0;
+					//frame = 0;
+				SetActionExpr(DASH);
 			}
 
 			if(!( currInput.LLeft() || currInput.LRight() ))
@@ -6843,6 +6854,20 @@ void Actor::UpdatePrePhysics()
 			}
 
 			GroundExtraAccel();
+
+			if (standNDashBoost)
+			{
+				if (groundSpeed > 0)
+				{
+					groundSpeed += standNDashBoostQuant;
+				}
+				else
+				{
+					groundSpeed -= standNDashBoostQuant;
+				}
+				standNDashBoost = false;
+			}
+
 			break;
 		}
 	case BACKWARDSDOUBLE:
@@ -8685,6 +8710,8 @@ void Actor::InitAfterEnemies()
 
 void Actor::SetAction( Action a )
 {
+	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
+
 	action = a;
 	//shouldnt this be slow counter?
 	/*if( slowMultiple > 1 )
@@ -21081,6 +21108,8 @@ void Actor::ConfirmHit( int worldIndex,
 	runeSprite.setOrigin( runeSprite.getLocalBounds().width / 2, 
 		runeSprite.getLocalBounds().height / 2 );
 	
+	
+
 	switch (action)
 	{
 	case UAIR:
@@ -21089,6 +21118,9 @@ void Actor::ConfirmHit( int worldIndex,
 		break;
 	case DAIR:
 		dairBoostedDouble = true;
+		break;
+	case STANDN:
+		standNDashBoost = true;
 		break;
 	}
 
@@ -22080,7 +22112,6 @@ void Actor::SetActionExpr( Action a )
 	case JUMP:
 		steepJump = false;
 	case WALLJUMP:
-	case DASH:
 	case LAND:
 	case LAND2:
 	case WALLCLING:
@@ -22118,6 +22149,11 @@ void Actor::SetActionExpr( Action a )
 
 			break;
 		}
+	case DASH:
+	{
+		frame = 0;
+		break;
+	}
 		
 	}
 

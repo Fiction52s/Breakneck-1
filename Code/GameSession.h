@@ -21,6 +21,7 @@
 #include "EnvEffects.h"
 #include "Actor.h"
 
+struct TerrainRender;
 struct RecordPlayer;
 struct ReplayPlayer;
 struct RecordGhost;
@@ -802,6 +803,22 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Tileset *ts,
 		int (*ValidEdge)(sf::Vector2<double> &)
 		);
+	enum EdgeType
+	{
+		FLAT_GROUND,
+		SLOPED_GROUND,
+		STEEP_GROUND,
+		WALL,
+		STEEP_CEILING,
+		SLOPED_CEILING,
+		CEILING
+	};
+	sf::VertexArray * SetupBorder(
+		int bgLayer,
+		Edge *start,
+		Tileset *ts,
+		int(*ValidEdge)(sf::Vector2<double> &)
+	);
 
 	sf::VertexArray * SetupPlants(
 		Edge *start,
@@ -903,6 +920,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	struct TestVA : QuadTreeEntrant
 	{
+		TerrainRender *tr;
 		void AddDecorExpression( DecorExpression *expr );
 		void UpdateBushSprites();
 		void DrawBushes( sf::RenderTarget *target );
