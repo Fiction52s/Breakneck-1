@@ -3984,7 +3984,7 @@ bool GameSession::OpenFile( string fileName )
 
 			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
 
-			Tileset *ts_border1 = GetTileset("Borders/bor_1_01b_128x64.png", 128, 64);
+			Tileset *ts_border1 = GetTileset("Borders/bor_1_01_512x704.png", 128, 64);
 			testva->tr = new TerrainRender;// (terrainTree);
 			testva->tr->startEdge = edges[currentEdgeIndex];
 			testva->tr->GenerateBorderMesh(terrainTree);

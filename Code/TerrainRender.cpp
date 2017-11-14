@@ -63,8 +63,8 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 	//double extraLength = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 
-	map<Edge*, Triple> numQuadMap[E_SLOPED_CEILING+1];
-
+	map<Edge*, Triple> numQuadMap[E_WALL +1];
+	list<Edge*> transEdges;
 
 
 	/*do
@@ -77,14 +77,39 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 	}
 	while (te != startEdge);*/
 
+	int startInter128 = 4;
+	int startInter32 = 4;
+	int startInter16 = 4;
+
+	int inter128 = GetBorderQuadIntersect(128);
+	int inter32 = GetBorderQuadIntersect(32);
+	int inter16 = GetBorderQuadIntersect(16);
+
+	int len128 = 128 - inter128 * 2;
+	int len32 = 32 - inter32 * 2;
+	int len16 = 16 - inter16 * 2;
+
+	int startLen128 = 128 - inter128;
+	int startLen32 = 32 - inter32;
+	int startLen16 = 16 - inter16;
+	
 	do
 	{
 		V2d eNorm = te->Normal();
+
+		V2d currDir = normalize(te->v1 - te->v0);
+		V2d prevDir = normalize(te->edge0->v0 - te->v0);
+		if (GetVectorAngleDiffCCW(Vector2f(currDir), Vector2f(prevDir)) < PI)
+		{
+			transEdges.push_back(te);
+		}
+
 		EdgeType eType = GetEdgeNormalType(eNorm);
 		//int valid = ValidEdge( eNorm );
 		//if( valid != -1 )//eNorm.x == 0 )
+		
 		{
-			double len = length(te->v1 - te->v0);// +extraLength * 2;
+			double len = length(te->v1 - te->v0) + 3 * 2.0;// +extraLength * 2;
 
 			double fullParts = len / 128.0;
 			int numFullparts = fullParts;
@@ -93,22 +118,23 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 			Triple numQuads;
 			
 			//if( len < GetBorderRealWidth( ))
-
+			bool first = true;
 			while (len > 0)
 			{
-				if (len > 128)
+
+				if (len >= len128)
 				{
-					len -= 128;
+					len -= len128;//GetBorderRealWidth(128, false);
 					numQuads.numQuads128++;
 				}
-				else if (len > 32)
+				else if (len >= len32)
 				{
-					len -= 32;
+					len -= len32;
 					numQuads.numQuads32++;
 				}
-				else if (len > 16)
+				else if (len >= len16)
 				{
-					len -= 16;
+					len -= len16;
 					numQuads.numQuads16++;
 				}
 				else
@@ -116,6 +142,7 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 					numQuads.numQuads16++;
 					break;
 				}
+				first = false;
 			}
 
 			
@@ -152,10 +179,12 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 			numQuadMap[eType][te] = numQuads;
 		}
 		te = te->edge1;
+		
 	}
 	while( te != startEdge );
 
 	totalNumBorderQuads = totalQuads.GetTotal();
+	totalNumBorderQuads += transEdges.size();
 	if (totalNumBorderQuads == 0)
 	{
 		//totalNumBorderQuads = 0;
@@ -164,15 +193,15 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 	}
 
 	
-	borderVA = new Vertex[totalNumBorderQuads * 4];
+	borderVA = new Vertex[totalNumBorderQuads * 4 ];
 
-	int totals[E_SLOPED_CEILING+1];
-	memset(totals, 0, sizeof(totals));
+	int totals[E_WALL +1];
+	std::memset(totals, 0, sizeof(totals));
 
-	int current[E_SLOPED_CEILING + 1];
-	memset(current, 0, sizeof(current));
+	int current[E_WALL + 1];
+	std::memset(current, 0, sizeof(current));
 
-	for (int i = 0; i < E_SLOPED_CEILING + 1; ++i)
+	for (int i = 0; i < E_WALL + 1; ++i)
 	{
 		auto &qmRef = numQuadMap[i];
 		for( auto it = qmRef.begin(); it != qmRef.end(); ++it )
@@ -180,13 +209,19 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 			totals[i] += (*it).second.GetTotal();
 		}
 	}
-	sf::Vertex *bva[E_SLOPED_CEILING + 1];
+	sf::Vertex *bva[E_WALL + 1];
+	sf::Vertex *transva;
 	int start = 0;
-	for (int i = 0; i < E_SLOPED_CEILING + 1; ++i)
+
+	transva = (borderVA + start * 4);
+	start += transEdges.size();
+	for (int i = E_WALL; i >= 0; --i)
 	{
 		bva[i] = (borderVA + start * 4);
 		start += totals[i];
 	}
+
+	
 	//VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
 	
 	//sf::Vertex *start128VA = borderVA;
@@ -229,12 +264,38 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 			V2d startInner = te->v0 - along * extraLength - other * in;
 			V2d startOuter = te->v0 - along * extraLength + other * out;
 
-			double startAlong = -extraLength;
+			double startAlong = 0;//-extraLength;
 			
 
 			int currTotal = numQuads.GetTotal();
 			Vertex *currBVA = bva[et] + current[et] * 4;
 			
+			int *numQ[3];
+
+			int numQI = 0;
+			if (numQuads.numQuads128 > 0)
+			{
+				numQ[numQI] = &numQuads.numQuads128;
+				++numQI;
+			}
+			if (numQuads.numQuads32 > 0)
+			{
+				numQ[numQI] = &numQuads.numQuads32;
+				++numQI;
+			}
+			if (numQuads.numQuads16 > 0)
+			{
+				numQ[numQI] = &numQuads.numQuads16;
+				++numQI;
+			}
+
+			assert(numQI != 0);
+
+			
+
+			
+			
+
 			for( int i = 0; i < currTotal; ++i )
 			{
 				//worldNum * 5
@@ -244,27 +305,64 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
 				//IntRect sub = ts->GetSubRect( realIndex );
 
+				int numQI = 0;
 				if (numQuads.numQuads128 > 0)
 				{
-					tw = 128;
-					numQuads.numQuads128--;
+					numQ[numQI] = &numQuads.numQuads128;
+					++numQI;
 				}
-				else if (numQuads.numQuads32 > 0)
+				if (numQuads.numQuads32 > 0)
+				{
+					numQ[numQI] = &numQuads.numQuads32;
+					++numQI;
+				}
+				if (numQuads.numQuads16 > 0)
+				{
+					numQ[numQI] = &numQuads.numQuads16;
+					++numQI;
+				}
+
+				int r = rand() % numQI;
+				
+
+				if (numQ[r] == &numQuads.numQuads128)
+				{
+					tw = 128;
+				}
+				else if (numQ[r] == &numQuads.numQuads32)
 				{
 					tw = 32;
-					numQuads.numQuads32--;
 				}
-				else if( numQuads.numQuads16 > 0 )
+				if (numQ[r] == &numQuads.numQuads16)
 				{
 					tw = 16;
-					numQuads.numQuads16--;
+				}
+
+				(*numQ[r])--;
+				
+				if (startAlong == 0)
+				{
+					startAlong -= 3;
 				}
 				else
 				{
-					assert(0);
+					startAlong -= GetBorderQuadIntersect(tw);
 				}
-				double endAlong = startAlong + tw;
-				IntRect sub = GetBorderSubRect(tw, et, 0);
+				
+
+				double endAlong = startAlong + tw;//GetBorderRealWidth(tw, false);
+				if (endAlong > len + 3)
+				{
+					endAlong = len + 3;
+					startAlong = endAlong - tw;
+				}
+
+				if (currTotal == 1)
+				{
+					startAlong = len / 2 - tw / 2 + GetBorderQuadIntersect(tw);
+					endAlong = len / 2 + tw / 2;
+				}
+				IntRect sub = GetBorderSubRect(tw, et, varietyCounter);
 				//cout << "left: " << sub.left << ", top: " << sub.top << 
 				//	", w: " << sub.width << ", h: " << sub.height << endl;
 				/*if (numQuads == 1)
@@ -320,8 +418,8 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				
 				
 
-				V2d currStartInner = startInner + startAlong * along;
-				V2d currStartOuter = startOuter + startAlong * along;
+				V2d currStartInner = startInner + ( startAlong - GetBorderQuadIntersect( tw )) * along;
+				V2d currStartOuter = startOuter + ( startAlong - GetBorderQuadIntersect(tw))* along;
 				V2d currEndInner = startInner + endAlong * along;
 				V2d currEndOuter = startOuter + endAlong * along;
 						
@@ -443,7 +541,15 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 					varietyCounter = 0;
 				}
 
-				startAlong += tw;//tw - intersect;
+				if (i == 0)
+				{
+					startAlong += tw -GetBorderQuadIntersect(tw);
+				}
+				else
+				{
+					startAlong += tw -GetBorderQuadIntersect(tw);
+				}
+				//startAlong += //GetBorderRealWidth(tw, false);//tw - intersect;
 			}
 
 			current[et] += currTotal;
@@ -455,6 +561,53 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 	}
 	while( te != startEdge );
 
+	for (auto it = transEdges.begin(); it != transEdges.end(); ++it)
+	{
+		V2d eNorm = (*it)->Normal();
+		V2d pNorm = (*it)->edge0->Normal();
+		V2d eDir = normalize((*it)->v1 - (*it)->v0);
+		V2d pDir = normalize((*it)->edge0->v1 - (*it)->edge0->v0);
+		V2d outCurr = (*it)->v0 - eNorm * 48.0;
+		V2d outPrev = (*it)->v0 - pNorm * 48.0;
+		V2d together = normalize( -eDir + pDir );
+		V2d tn(together.y, -together.x);
+
+		double width = length(outCurr - outPrev);
+		V2d p0 = (*it)->v0 - tn * width / 2.0;
+		V2d p1 = (*it)->v0 + tn * width / 2.0;
+		double extra = 4.0;
+		double height = length(p0 - outPrev) + extra;
+		//double a = abs( dot(outCurr - (*it)->v0, tn ) );
+		transva[0].position = Vector2f(p0); //Vector2f((*it)->v0);
+		transva[1].position = Vector2f(p1);//Vector2f((*it)->v0);
+		transva[2].position = Vector2f(outCurr + together * extra);
+		transva[3].position = Vector2f(outPrev + together * extra);
+
+		
+
+		EdgeType transType = GetEdgeTransType((*it));
+
+		IntRect sub;
+		if (transType > E_WALL )
+		{
+			sub = GetBorderSubRect(64, transType, 0);
+		}
+		else
+		{
+			sub = GetBorderSubRect(128, transType, 0);
+		}
+
+		//sub = GetBorderSubRect(128, E_WALL, 0);
+		float centerX = sub.left + sub.width / 2;
+
+		float startHeight = sub.top + (sub.height - height);
+
+		transva[0].texCoords = Vector2f(sub.left + centerX - width / 2, startHeight);
+		transva[1].texCoords = Vector2f(sub.left + centerX + width / 2, startHeight);
+		transva[2].texCoords = Vector2f(sub.left + centerX + width / 2, startHeight + height);
+		transva[3].texCoords = Vector2f(sub.left + centerX - width / 2, startHeight + height);
+		transva += 4;
+	}
 	
 	//return currVA;
 }
@@ -470,7 +623,7 @@ sf::IntRect TerrainRender::GetBorderSubRect(int tileWidth, EdgeType et, int var)
 	{
 	case 16:
 	{
-		if (et < E_WALL)
+		if (et < E_STEEP_CEILING)
 		{
 			ir.top = 7 * 64;
 			ir.left = 128 * 2 + 64 * et + 16 * var;
@@ -478,13 +631,13 @@ sf::IntRect TerrainRender::GetBorderSubRect(int tileWidth, EdgeType et, int var)
 		else
 		{
 			ir.top = 8 * 64;
-			ir.left = 64 * (et-E_WALL) + 16 * var;
+			ir.left = 64 * (et- E_STEEP_CEILING) + 16 * var;
 		}
 		break;
 	}
 	case 32:
 	{
-		if (et < E_WALL)
+		if (et < E_STEEP_CEILING )
 		{
 			ir.top = 6 * 64;
 			ir.left = 128 * et + 32 * var;
@@ -492,7 +645,7 @@ sf::IntRect TerrainRender::GetBorderSubRect(int tileWidth, EdgeType et, int var)
 		else
 		{
 			ir.top = 7 * 64;
-			ir.left = 128 * (et - E_WALL) + 32 * var;
+			ir.left = 128 * (et - E_STEEP_CEILING) + 32 * var;
 		}
 		break;
 	}
@@ -538,13 +691,13 @@ int TerrainRender::GetBorderQuadIntersect(int tileWidth)
 	switch (tileWidth)
 	{
 	case 16:
-		return 4;
+		return 4;//4;
 		break;
 	case 32:
-		return 10;
+		return 4;//10;
 		break;
 	case 128:
-		return 20;
+		return 10;//20;
 		break;
 	default:
 		assert(0);
@@ -605,4 +758,85 @@ void TerrainRender::Draw(sf::RenderTarget *target)
 {
 	if(totalNumBorderQuads > 0 )
 		target->draw(borderVA, totalNumBorderQuads * 4, sf::Quads, ts_border->texture);
+}
+
+EdgeType GetEdgeTransType(Edge *e)
+{
+	EdgeType currType = GetEdgeType(normalize(e->v1 - e->v0));
+	EdgeType prevType = GetEdgeType(normalize(e->edge0->v1 - e->edge0->v0));
+	
+	bool flat = currType == E_FLAT_GROUND || prevType == E_FLAT_GROUND;
+	bool sloped = currType == E_SLOPED_GROUND || prevType == E_SLOPED_GROUND;
+	bool steep = currType == E_STEEP_GROUND || prevType == E_STEEP_GROUND;
+	bool slopedCeiling = currType == E_SLOPED_CEILING || prevType == E_SLOPED_CEILING;
+	bool steepCeiling = currType == E_STEEP_CEILING || prevType == E_STEEP_CEILING;
+	bool wall = currType == E_WALL || prevType == E_WALL;
+
+	if (currType == prevType)
+	{
+		return currType;
+	}
+	
+	if (flat && sloped)
+	{
+		return E_TRANS_FLAT_TO_SLOPED;
+	}
+	else if (flat && steep)
+	{
+		return E_TRANS_FLAT_TO_STEEP;
+	}
+	else if (flat && steepCeiling)
+	{
+		return E_TRANS_FLAT_TO_STEEP_CEILING;  
+	}
+	else if (flat && wall)
+	{
+		return E_TRANS_FLAT_TO_WALL;
+	}
+	else if (flat && slopedCeiling)
+	{
+		return E_TRANS_FLAT_TO_SLOPED_CEILING;
+	}
+	else if (sloped && steep)
+	{
+		return E_TRANS_SLOPED_TO_STEEP;
+	}
+	else if (sloped && steepCeiling)
+	{
+		return E_TRANS_SLOPED_TO_STEEP_CEILING;
+	}
+	else if (sloped && wall)
+	{
+		return E_TRANS_SLOPED_TO_WALL;
+	}
+	else if (sloped && slopedCeiling)
+	{
+		return E_TRANS_SLOPED_TO_SLOPED_CEILING;
+	}
+	else if (steep && steepCeiling)
+	{
+		return E_TRANS_STEEP_TO_STEEP_CEILING;
+	}
+	else if (steep && wall)
+	{
+		return E_TRANS_STEEP_TO_WALL;
+	}
+	else if (steep && slopedCeiling)
+	{
+		return E_TRANS_STEEP_TO_SLOPED_CEILING;
+	}
+	else if (wall && steep)
+	{
+		return E_TRANS_WALL_TO_STEEP_CEILING;
+	}
+	else if (steepCeiling && slopedCeiling)
+	{
+		return E_TRANS_STEEP_CEILING_TO_SLOPED_CEILING;
+	}
+	else if (wall && slopedCeiling)
+	{
+		return E_TRANS_WALL_TO_SLOPED_CEILING;
+	}
+
+	assert(0);
 }

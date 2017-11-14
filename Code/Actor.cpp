@@ -10156,7 +10156,7 @@ V2d Actor::UpdateReversePhysics()
 
 				if( approxEquals( m, 0 ) )
 				{
-					cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
+					//cout << "reverse secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
 					if( groundSpeed > 0 )
 					{
 						double yDist = abs( gNormal.x ) * -groundSpeed;
@@ -10358,7 +10358,10 @@ V2d Actor::UpdateReversePhysics()
 						}
 
 					}
-					
+					else
+					{
+						break;
+					}
 					//groundSpeed = 0;
 					//offsetX = -offsetX;
 					//break;
@@ -12382,6 +12385,10 @@ void Actor::UpdatePhysics()
 						//	cout << "not sure leaving ground left" << endl;
 							movingGround = NULL;
 						}
+					}
+					else
+					{
+						break; //recently added for one last bug removal
 					}
 				}
 

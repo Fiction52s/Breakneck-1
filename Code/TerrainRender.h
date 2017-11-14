@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 
 struct Tileset;
+struct Edge;
 
 #define STEEP_THRESH .4
 
@@ -12,9 +13,9 @@ enum EdgeType : int
 	E_FLAT_GROUND,
 	E_SLOPED_GROUND,
 	E_STEEP_GROUND,
+	E_SLOPED_CEILING,
 	E_STEEP_CEILING,
 	E_WALL,
-	E_SLOPED_CEILING,
 	E_TRANS_FLAT_TO_SLOPED,
 	E_TRANS_FLAT_TO_STEEP,
 	E_TRANS_FLAT_TO_STEEP_CEILING,
@@ -34,6 +35,7 @@ enum EdgeType : int
 };
 static EdgeType GetEdgeNormalType(sf::Vector2<double> &norm);
 static EdgeType GetEdgeType(sf::Vector2<double> &dir);
+static EdgeType GetEdgeTransType(Edge *e);
 
 enum TerrainWorldType
 {
