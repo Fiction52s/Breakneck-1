@@ -29,6 +29,18 @@ struct Triple
 	int numQuads16;
 };
 
+enum EdgeSize
+{
+	T_128,
+	T_32,
+	T_16
+};
+
+struct EdgeInfo
+{
+
+};
+
 void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 {
 	/*int worldNum = 0;
@@ -89,27 +101,53 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 	int len32 = 32 - inter32 * 2;
 	int len16 = 16 - inter16 * 2;
 
+	int edgeLen128 = 128 - inter128;
+	int edgeLen32 = 32 - inter32;
+	int edgeLen16 = 16 - inter16;
+
 	int startLen128 = 128 - inter128;
 	int startLen32 = 32 - inter32;
 	int startLen16 = 16 - inter16;
+
+	int firstType;
+	int secondType;
 	
 	do
 	{
 		V2d eNorm = te->Normal();
 
-		V2d currDir = normalize(te->v1 - te->v0);
+		/*V2d currDir = normalize(te->v1 - te->v0);
 		V2d prevDir = normalize(te->edge0->v0 - te->v0);
-		if (GetVectorAngleDiffCCW(Vector2f(currDir), Vector2f(prevDir)) < PI)
+
+		V2d pCurrDir = -currDir;
+		V2d nDir = normalize(te->edge1->v1 - te->edge1->v0);
+		double cDiff = GetVectorAngleDiffCCW(Vector2f(currDir), Vector2f(prevDir));
+		double nDiff = GetVectorAngleDiffCCW(Vector2f(nDir), Vector2f(pCurrDir));
+
+		bool turnInward = cDiff < PI;
+		bool nextInward = nDiff < PI;
+		if ( turnInward )
 		{
 			transEdges.push_back(te);
-		}
+		}*/
 
 		EdgeType eType = GetEdgeNormalType(eNorm);
 		//int valid = ValidEdge( eNorm );
 		//if( valid != -1 )//eNorm.x == 0 )
 		
 		{
-			double len = length(te->v1 - te->v0) + 3 * 2.0;// +extraLength * 2;
+			
+			double len = length(te->v1 - te->v0);// +3 * 2.0;// +extraLength * 2;
+			len -= GetSubForOutward(te);
+			len -= GetSubForOutward(te->edge1);
+			len += GetExtraForInward(te);
+			len += GetExtraForInward(te->edge1);
+			if (len <= 0)
+			{
+				te = te->edge1;
+				continue;
+			}
+			
 
 			double fullParts = len / 128.0;
 			int numFullparts = fullParts;
@@ -118,10 +156,11 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 			Triple numQuads;
 			
 			//if( len < GetBorderRealWidth( ))
-			bool first = true;
+			int iter = 0;
+
+			
 			while (len > 0)
 			{
-
 				if (len >= len128)
 				{
 					len -= len128;//GetBorderRealWidth(128, false);
@@ -142,7 +181,6 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 					numQuads.numQuads16++;
 					break;
 				}
-				first = false;
 			}
 
 			
@@ -243,6 +281,10 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 		//if( valid != -1 )
 		{
 			double len = length(te->v1 - te->v0);// +extraLength * 2;
+			//len -= GetSubForOutward(te);
+			//len -= GetSubForOutward(te->edge1);
+
+
 			//int numQuads = numQuadMap[te];//ceil( len / tw ); 
 			EdgeType et = GetEdgeNormalType(eNorm);
 			Triple numQuads = numQuadMap[et][te];
@@ -251,6 +293,9 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				te = te->edge1;
 				continue;
 			}
+
+			
+
 			//double quadWidth = ts->tileWidth;;//len / numQuads;
 
 			V2d along = normalize( te->v1 - te->v0 );
@@ -260,11 +305,14 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 			double out = 16;//40;//16;
 			double in = 64 - out;//256 - out;//; - out;
 			
+			double inwardExtra = GetExtraForInward(te);
+			double nInwardExtra = GetExtraForInward(te->edge1);
 
 			V2d startInner = te->v0 - along * extraLength - other * in;
 			V2d startOuter = te->v0 - along * extraLength + other * out;
 
-			double startAlong = 0;//-extraLength;
+			double startAlong = GetSubForOutward(te) - inwardExtra;
+			double trueEnd = len - GetSubForOutward(te->edge1) + nInwardExtra;
 			
 
 			int currTotal = numQuads.GetTotal();
@@ -340,20 +388,17 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 
 				(*numQ[r])--;
 				
-				if (startAlong == 0)
-				{
-					startAlong -= 3;
-				}
-				else
+				
 				{
 					startAlong -= GetBorderQuadIntersect(tw);
 				}
 				
 
 				double endAlong = startAlong + tw;//GetBorderRealWidth(tw, false);
-				if (endAlong > len + 3)
+				//double trueLen = len - GetSubForOutward(te->edge1);
+				if (endAlong > trueEnd)// + 3 + nInwardExtra)
 				{
-					endAlong = len + 3;
+					endAlong = trueEnd;// +3 + nInwardExtra;
 					startAlong = endAlong - tw;
 				}
 
@@ -416,15 +461,19 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				}*/
 				
 				
-				
+				double trueAlong = startAlong;
+				if (startAlong > 0)
+				{
+					//trueAlong -= GetBorderQuadIntersect(tw);
+				}
 
-				V2d currStartInner = startInner + ( startAlong - GetBorderQuadIntersect( tw )) * along;
-				V2d currStartOuter = startOuter + ( startAlong - GetBorderQuadIntersect(tw))* along;
+				V2d currStartInner = startInner + trueAlong * along;
+				V2d currStartOuter = startOuter + trueAlong * along;
 				V2d currEndInner = startInner + endAlong * along;
 				V2d currEndOuter = startOuter + endAlong * along;
 						
-				double realHeight0 = 64;//256;//in;//sub.height;
-				double realHeight1 = 64;//256;//in;//sub.height;
+				double realHeightLeft = in;//sub.height - out;//256;//in;//sub.height;
+				double realHeightRight = in;//sub.height - out;//256;//in;//sub.height;
 				
 				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
 				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
@@ -432,32 +481,39 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
 				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
 
+				
 				//if( d0 <= 0
 
-				//rcEdge = NULL;
+				rcEdge = NULL;
+				ignoreEdge = te;
+				rcQuant = -1;
+				rcPortion = 2.0; //always greater than portion on first run
 				//rayIgnoreEdge = te;
+				V2d rayStart = te->v0 + along * max( startAlong, 0.0 );
+				V2d rayEnd = rayStart - eNorm * realHeightLeft;
 				//rayStart = te->v0 - along * extraLength + ( startAlong ) * along;
 				//rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
-				//RayCast( this, qt->startNode, rayStart, rayEnd );
+				RayCast( this, qt->startNode, rayStart, rayEnd );
 
 
 				//start ray
-				//if( rcEdge != NULL )
+				if( rcEdge != NULL )
 				{
-					//currStartInner = rcEdge->GetPoint( rcQuantity );
+					//currStartInner = rcEdge->GetPoint( rcQuant );
+					//realHeightLeft = length(currStartInner - currStartOuter);
 					//realHeight0 = length( currStartInner - currStartOuter );
 				}
 
-				//rcEdge = NULL;
-				//rayStart = te->v0 - along * extraLength + ( endAlong ) * along;
-				//rayEnd = currEndInner;
-				//RayCast( this, qt->startNode, rayStart, rayEnd );
+				rcEdge = NULL;
+				rayStart = te->v0 + along * endAlong;//te->v0 - along * extraLength + ( endAlong ) * along;
+				rayEnd = rayStart - eNorm * realHeightRight;//currEndInner;
+				RayCast( this, qt->startNode, rayStart, rayEnd );
 
 				//end ray
-				//if( rcEdge != NULL )
+				if( rcEdge != NULL )
 				{
-					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
-					//realHeight1 = length( currEndInner - currStartOuter );
+					//currEndInner =  rcEdge->GetPoint( rcQuant );//te->v0 + endAlong * along - rcQuantity * other;
+					//realHeightRight = length( currEndInner - currEndOuter );
 				}
 
 				
@@ -527,8 +583,8 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				
 				currBVA[i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
 				currBVA[i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);//realHeight1);
-				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);//+ realHeight0);
+				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightLeft + out );
+				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightRight + out );
 
 				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
 				va[extra + i * 4 + 1].color = COLOR_YELLOW;
@@ -590,14 +646,14 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 		IntRect sub;
 		if (transType > E_WALL )
 		{
-			sub = GetBorderSubRect(64, transType, 0);
+		//	sub = GetBorderSubRect(64, transType, 0);
 		}
 		else
 		{
-			sub = GetBorderSubRect(128, transType, 0);
+		//	sub = GetBorderSubRect(128, transType, 0);
 		}
 
-		//sub = GetBorderSubRect(128, E_WALL, 0);
+		sub = GetBorderSubRect(128, E_WALL, 0);
 		float centerX = sub.left + sub.width / 2;
 
 		float startHeight = sub.top + (sub.height - height);
@@ -839,4 +895,78 @@ EdgeType GetEdgeTransType(Edge *e)
 	}
 
 	assert(0);
+}
+
+double TerrainRender::GetExtraForInward(Edge *e)
+{
+	
+	double factor = 40.0;
+	V2d currDir = normalize(e->v1 - e->v0);
+	EdgeType test = GetEdgeType(currDir);
+	V2d prevDir = normalize(e->edge0->v0 - e->v0);
+	double cDiff = GetVectorAngleDiffCCW(currDir, prevDir);
+	bool turnInward = cDiff < PI;
+
+	if (turnInward)
+	{
+		return factor * (PI - cDiff) / PI;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void TerrainRender::HandleRayCollision(Edge *edge,
+	double edgeQuantity, double rayPortion)
+{
+	if (edge == ignoreEdge || edge->edge1 == ignoreEdge )
+		return;
+
+	if (rayPortion < rcPortion)
+	{
+		rcEdge = edge;
+		rcPortion = rayPortion;
+		rcQuant = edgeQuantity;
+	}
+}
+
+double TerrainRender::GetSubForOutward(Edge *e)
+{
+	double factor = 160.0;
+	V2d currDir = normalize(e->v1 - e->v0);
+	EdgeType test = GetEdgeType(currDir);
+	V2d prevDir = normalize(e->edge0->v0 - e->v0);
+	double cDiff = GetVectorAngleDiffCCW(currDir, prevDir);
+	bool turnOutward = cDiff > PI * 1.5 + .1;
+
+	V2d realPrevDir = normalize(e->edge0->v1 - e->edge0->v0);
+
+	if (turnOutward)
+	{
+		//V2d norm(currDir.y, -currDir.x);
+		//V2d pNorm(realPrevDir.y, -realPrevDir.x);
+		//V2d invNorm = -normalize(norm + pNorm);
+
+		//V2d test = e->v0 + norm * 48.0;
+		//LineIntersection li = lineIntersection(test, test + invNorm, e->v0, e->v1);
+
+		//if (li.parallel)
+		//{
+		//	int testff = 4;
+		//}
+		//assert(!li.parallel);
+
+		////V2d centerPos = li.position;
+		//V2d currInterPos = li.position;
+		////V2d center = currInterPos - norm * 48.0;
+
+		//double len = length(currInterPos - e->v0);
+		//return len;
+		return factor * (cDiff - PI * 1.5 ) / (PI / 2);
+	}
+	else
+	{
+		return 0;
+	}
 }

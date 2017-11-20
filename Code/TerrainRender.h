@@ -2,6 +2,7 @@
 #define __TERRAIN_RENDER_H__
 
 #include <SFML\Graphics.hpp>
+#include "Physics.h"
 
 struct Tileset;
 struct Edge;
@@ -53,7 +54,7 @@ enum TerrainWorldType
 struct Edge;
 struct QuadTree;
 
-struct TerrainRender
+struct TerrainRender : RayCastHandler
 {
 	sf::Vertex *borderVA;
 	sf::Vertex *centerVA;
@@ -66,16 +67,24 @@ struct TerrainRender
 	static sf::IntRect GetBorderSubRect(int tileWidth, EdgeType et, int var);
 	static int GetBorderQuadIntersect(int tileWidth);
 	static int GetBorderRealWidth(int tileWidth, bool border );
+	static double GetExtraForInward(Edge *e);
+	static double GetSubForOutward(Edge *e);
 
 	//void ApplyUpdates();
 	void Draw(sf::RenderTarget *target);
 
 	Tileset *ts_border;
 	int totalNumBorderQuads;
-
+	void HandleRayCollision(Edge *edge,
+		double edgeQuantity, double rayPortion);
 	//TerrainPoint *startPoint;
 	//TerrainPoint *endPoint;
 	Edge *startEdge;
+
+	Edge * rcEdge;
+	double rcQuant;
+	Edge *ignoreEdge;
+	double rcPortion;
 };
 
 #endif
