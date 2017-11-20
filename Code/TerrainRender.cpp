@@ -1023,11 +1023,14 @@ DecorExpression * TerrainRender::CreateDecorExpression(DecorType dType,
 		rayEnd = rayStart - cn * (penDistance + minPen);
 		ignoreEdge = curr;
 
+		rcPortion = 9999999;
 		RayCast(this, qt->startNode, rayStart, rayEnd);
 
 		if (rcEdge != NULL)
 		{
-			//V2d rcPos = rcEdge->GetPoint(rcQuant);
+			V2d rcPos = rcEdge->GetPoint(rcQuant);
+			continue;
+
 			//continue;
 			/*if (length(rcPos - rayStart) < minPen || length( rcPos - rayEnd ) < minPen)
 			{
@@ -1263,10 +1266,11 @@ void TerrainRender::HandleRayCollision(Edge *edge,
 		return;
 	}
 
-	if (rayPortion < rcPortion)
+	double len = length(edge->GetPoint(edgeQuantity) - rayStart);
+	if( rcEdge == NULL || len < rcPortion )
 	{
 		rcEdge = edge;
-		rcPortion = rayPortion;
+		rcPortion = len;
 		rcQuant = edgeQuantity;
 	}
 
