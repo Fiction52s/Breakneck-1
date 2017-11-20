@@ -233,7 +233,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 			orbTS[i] = NULL;
 		}
-		standNDashBoostQuant = 6;
+		standNDashBoostQuant = 5;
 		dairBoostVel = 4;
 		fairAirDashBoostQuant = 2;
 		testMGE = new MotionGhostEffect(80);
@@ -4281,6 +4281,14 @@ void Actor::UpdatePrePhysics()
 				if( currInput.rightShoulder && !prevInput.rightShoulder )
 				{
 					GroundAttack();
+					break;
+				}
+
+				if (currInput.B && !prevInput.B)
+				{
+					standNDashBoost = true;
+					SetActionExpr(DASH);
+					frame = 0;
 					break;
 				}
 			}
@@ -21125,9 +21133,6 @@ void Actor::ConfirmHit( int worldIndex,
 		break;
 	case DAIR:
 		dairBoostedDouble = true;
-		break;
-	case STANDN:
-		standNDashBoost = true;
 		break;
 	}
 
