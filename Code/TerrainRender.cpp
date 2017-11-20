@@ -2,15 +2,44 @@
 #include "Tileset.h"
 #include <assert.h>
 #include "Physics.h"
+#include "Movement.h"
 
 using namespace sf;
 using namespace std;
 
+std::map<DecorType, DecorLayer*> TerrainRender::s_decorLayerMap;
 
+void DecorRect::HandleQuery(QuadTreeCollider * qtc)
+{
+	if (qtc != NULL)
+		qtc->HandleEntrant(this);
+}
+
+bool DecorRect::IsTouchingBox(const sf::Rect<double> &r)
+{
+	return rect.intersects(r);
+}
 
 void TerrainRender::GenerateCenterMesh()
 {
 
+}
+
+void TerrainRender::CleanupLayers()
+{
+	for (auto it = s_decorLayerMap.begin(); it != s_decorLayerMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+		
+		
+	s_decorLayerMap.clear();
+}
+
+TerrainRender::TerrainRender(TilesetManager *p_tMan, QuadTree *p_terrainTree)
+	:tMan( p_tMan ), terrainTree(p_terrainTree )
+{
+	decorTree = new QuadTree(1000000, 1000000);
 }
 
 struct Triple
@@ -41,7 +70,7 @@ struct EdgeInfo
 
 };
 
-void TerrainRender::GenerateBorderMesh( QuadTree * qt )
+void TerrainRender::GenerateBorderMesh()
 {
 	/*int worldNum = 0;
 	if( envType < 1 )
@@ -64,7 +93,7 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 	{
 		qt = terrainBGTree;
 	}*/
-
+	QuadTree *qt = terrainTree;
 	assert( qt != NULL );
 
 	//int tw = ts->tileWidth;//128;//64;
@@ -489,8 +518,8 @@ void TerrainRender::GenerateBorderMesh( QuadTree * qt )
 				rcQuant = -1;
 				rcPortion = 2.0; //always greater than portion on first run
 				//rayIgnoreEdge = te;
-				V2d rayStart = te->v0 + along * max( startAlong, 0.0 );
-				V2d rayEnd = rayStart - eNorm * realHeightLeft;
+				rayStart = te->v0 + along * max( startAlong, 0.0 );
+				rayEnd = rayStart - eNorm * realHeightLeft;
 				//rayStart = te->v0 - along * extraLength + ( startAlong ) * along;
 				//rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
 				RayCast( this, qt->startNode, rayStart, rayEnd );
@@ -742,6 +771,313 @@ sf::IntRect TerrainRender::GetBorderSubRect(int tileWidth, EdgeType et, int var)
 	return ir;
 }
 
+void TerrainRender::GenerateDecor()
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, startEdge);
+		if (expr != NULL)
+			AddDecorExpression(expr);
+	}
+
+	Tileset *ts_testBush = tMan->GetTileset("bush_1_01_512x512.png", 512, 512);
+
+	DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, startEdge);
+	if (rock1 != NULL)
+		AddDecorExpression(rock1);
+
+	DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, startEdge);
+	if (rock2 != NULL)
+		AddDecorExpression(rock2);
+
+	DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, startEdge);
+	if (rock3 != NULL)
+		AddDecorExpression(rock3);
+
+	DecorExpression *grassyRock = CreateDecorExpression(D_W1_GRASSYROCK, 0, startEdge);
+	if (grassyRock != NULL)
+		AddDecorExpression(grassyRock);
+
+	DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, startEdge);
+	if (normalExpr != NULL)
+		AddDecorExpression(normalExpr);
+
+	DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, startEdge);
+	if (exprPlantRock != NULL)
+		AddDecorExpression(exprPlantRock);
+}
+
+void TerrainRender::AddDecorExpression(DecorExpression *exp)
+{
+	decorExprList.push_back(exp);
+}
+
+void TerrainRender::UpdateDecorSprites()
+{
+	for (list<DecorExpression*>::iterator it = decorExprList.begin();
+		it != decorExprList.end(); ++it)
+	{
+		(*it)->UpdateSprites();
+	}
+}
+
+bool TerrainRender::IsEmptyRect(sf::Rect<double> &rect )
+{
+	emptyResult = true;
+	decorTree->Query( this, rect);
+	terrainTree->Query(this, rect);
+	return emptyResult;
+}
+
+void TerrainRender::HandleEntrant(QuadTreeEntrant *qte)
+{
+	emptyResult = false;
+}
+
+DecorExpression * TerrainRender::CreateDecorExpression(DecorType dType,
+	int bgLayer,
+	Edge *startEdge)
+{
+	int minApart;
+	int maxApart;
+	CubicBezier apartBezier;
+	int minPen;
+	int maxPen;
+	CubicBezier penBez;
+	int animFactor = 1;
+
+	switch (dType)
+	{
+	case D_W1_BUSH_NORMAL:
+		minApart = 20;
+		maxApart = 300;
+		apartBezier = CubicBezier(0, 0, 1, 1);
+		minPen = 20;
+		maxPen = 1000;
+		penBez = CubicBezier(0, 0, 1, 1);
+		animFactor = 8;
+		break;
+	case D_W1_ROCK_1:
+	case D_W1_ROCK_2:
+	case D_W1_ROCK_3:
+	case D_W1_PLANTROCK:
+	case D_W1_GRASSYROCK:
+	default:
+		minApart = 500;
+		maxApart = 700;
+		apartBezier = CubicBezier(0, 0, 1, 1);
+		minPen = 200;
+		maxPen = 1200;
+		penBez = CubicBezier(0, 0, 1, 1);
+		animFactor = 1;
+		break;
+	}
+
+	//assert( positions.empty() );
+
+	int veinLoopWait = 30;
+
+	DecorLayer *layer = NULL;
+	Tileset *ts_d = NULL;
+	if (s_decorLayerMap.count(dType) == 0)
+	{
+		//int GameSession::TestVA::bushFrame = 0;
+		//int GameSession::TestVA::bushAnimLength = 20;
+		//int GameSession::TestVA::bushAnimFactor = 8;
+
+		
+		switch (dType)
+		{
+		case D_W1_BUSH_NORMAL:
+			ts_d = tMan->GetTileset("bush_01_64x64.png", 64, 64);
+			layer = new DecorLayer(ts_d, 20, 8);
+			break;
+		case D_W1_ROCK_1:
+			ts_d = tMan->GetTileset("rock_1_01_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_ROCK_2:
+			ts_d = tMan->GetTileset("rock_1_02_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_ROCK_3:
+			ts_d = tMan->GetTileset("rock_1_03_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_PLANTROCK:
+			ts_d = tMan->GetTileset("bush_1_01_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_GRASSYROCK:
+			ts_d = tMan->GetTileset("bush_1_02_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_VEINS1:
+			ts_d = tMan->GetTileset("veins_w1_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS2:
+			ts_d = tMan->GetTileset("veins_w1_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS3:
+			ts_d = tMan->GetTileset("veins_w1_3_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS4:
+			ts_d = tMan->GetTileset("veins_w1_4_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS5:
+			ts_d = tMan->GetTileset("veins_w1_5_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS6:
+			ts_d = tMan->GetTileset("veins_w1_6_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		}
+
+		s_decorLayerMap[dType] = layer;
+	}
+	else
+	{
+		layer = s_decorLayerMap[dType];
+		ts_d = layer->ts;
+	}
+
+
+
+	assert(layer != NULL);
+	list<Vector2f> positions;
+	//int minDistanceApart = 10;
+	//int maxDistanceApart = 300;
+	//int minPen = 20;
+	//int maxPen = 200;
+	double penLimit;
+
+	Edge *curr = startEdge;
+	double quant = 0;
+	double lenCurr = length(startEdge->v1 - startEdge->v0);
+
+	double travelDistance;
+	double penDistance;
+	int diffApartMax = maxApart - minApart;
+	int diffPenMax = maxPen - minPen;
+	int r;
+	int rPen;
+	double momentum;
+	V2d pos;
+
+	bool loopOver = false;
+	V2d cn;
+
+	rayMode = "decor";
+	QuadTree *qt = terrainTree;
+
+	assert(qt != NULL);
+
+	while (true)
+	{
+		//cout << "running loop" << endl;
+		r = rand() % diffApartMax;
+		travelDistance = minApart + r;
+
+		momentum = travelDistance;
+
+		while (!approxEquals(momentum, 0))
+		{
+			if ((lenCurr - quant) > momentum)
+			{
+				quant += momentum;
+				momentum = 0;
+			}
+			else
+			{
+				curr = curr->edge1;
+
+				if (curr == startEdge)
+				{
+					loopOver = true;
+					break;
+				}
+				else
+				{
+					momentum = momentum - (lenCurr - quant);
+					quant = 0;
+					lenCurr = length(curr->v1 - curr->v0);
+				}
+			}
+		}
+
+		if (loopOver)
+			break;
+
+		cn = curr->Normal();
+		rcEdge = NULL;
+		rayStart = curr->GetPoint(quant);
+
+		rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen; //minpen times 2 cuz gotta account for the other side too
+
+		rayEnd = rayStart - cn * (penDistance + minPen);
+		ignoreEdge = curr;
+
+		RayCast(this, qt->startNode, rayStart, rayEnd);
+
+		if (rcEdge != NULL)
+		{
+			//V2d rcPos = rcEdge->GetPoint(rcQuant);
+			//continue;
+			/*if (length(rcPos - rayStart) < minPen || length( rcPos - rayEnd ) < minPen)
+			{
+			continue;
+			}*/
+			//penLimit = length(rcEdge->GetPoint(rcQuantity) - rayStart);
+
+		}
+		/*diffPenMax = maxPen;
+		if( rcEdge != NULL )
+		{
+		penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
+		diffPenMax = (int)penLimit - minApart;
+		if( diffPenMax == 0 || penLimit < 100 )
+		continue;
+		}*/
+
+		/*rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen;*/
+
+		pos = curr->GetPoint(quant) - curr->Normal() * penDistance;
+
+
+		sf::Rect<double> testRect;
+		testRect.left = pos.x - ts_d->tileWidth / 2;
+		testRect.top = pos.y - ts_d->tileHeight / 2;
+		testRect.width = ts_d->tileWidth;
+		testRect.height = ts_d->tileHeight;
+
+		if (IsEmptyRect(testRect))
+		{
+			positions.push_back(Vector2f(pos.x, pos.y));
+			DecorRect *dr = new DecorRect(testRect);
+			currDecorRects.push_back(dr);
+			decorTree->Insert(dr);
+		}
+		//will have to do a raycast soon. ignore for now
+		//curr = curr->edge1;
+	}
+
+	if (positions.size() == 0)
+		return NULL;
+
+	DecorExpression *expr = new DecorExpression(positions, layer);
+
+	decorTree->Clear();
+
+	return expr;
+}
+
 int TerrainRender::GetBorderQuadIntersect(int tileWidth)
 {
 	switch (tileWidth)
@@ -814,6 +1150,8 @@ void TerrainRender::Draw(sf::RenderTarget *target)
 {
 	if(totalNumBorderQuads > 0 )
 		target->draw(borderVA, totalNumBorderQuads * 4, sf::Quads, ts_border->texture);
+
+	DrawDecor(target);
 }
 
 EdgeType GetEdgeTransType(Edge *e)
@@ -920,8 +1258,10 @@ double TerrainRender::GetExtraForInward(Edge *e)
 void TerrainRender::HandleRayCollision(Edge *edge,
 	double edgeQuantity, double rayPortion)
 {
-	if (edge == ignoreEdge || edge->edge1 == ignoreEdge )
+	if (edge == ignoreEdge)
+	{
 		return;
+	}
 
 	if (rayPortion < rcPortion)
 	{
@@ -929,6 +1269,16 @@ void TerrainRender::HandleRayCollision(Edge *edge,
 		rcPortion = rayPortion;
 		rcQuant = edgeQuantity;
 	}
+
+	/*if (edge == ignoreEdge || edge->edge1 == ignoreEdge )
+		return;
+
+	if (rayPortion < rcPortion)
+	{
+		rcEdge = edge;
+		rcPortion = rayPortion;
+		rcQuant = edgeQuantity;
+	}*/
 }
 
 double TerrainRender::GetSubForOutward(Edge *e)
@@ -968,5 +1318,108 @@ double TerrainRender::GetSubForOutward(Edge *e)
 	else
 	{
 		return 0;
+	}
+}
+
+DecorExpression::DecorExpression(std::list<sf::Vector2f> &pointList,
+	DecorLayer *p_layer)
+	:layer(p_layer)
+{
+	int numBushes = pointList.size();
+	//cout << "numBushes: " << numBushes << endl;
+	Tileset *ts = layer->ts;
+
+	va = new VertexArray(sf::Quads, numBushes * 4);
+	VertexArray &VA = *va;
+
+	IntRect subRect = ts->GetSubRect(0);
+	list<Vector2f>::iterator posIt;
+	if (numBushes > 0)
+		posIt = pointList.begin();
+
+	Vector2f p;
+	for (int i = 0; i < numBushes; ++i)
+	{
+		p = (*posIt);
+		//cout << "i: " << i << ", p: " <<  p.x << ", " << p.y << endl;
+		VA[i * 4 + 0].position = Vector2f(p.x - subRect.width / 2, p.y - subRect.height / 2);
+		VA[i * 4 + 1].position = Vector2f(p.x + subRect.width / 2, p.y - subRect.height / 2);
+		VA[i * 4 + 2].position = Vector2f(p.x + subRect.width / 2, p.y + subRect.height / 2);
+		VA[i * 4 + 3].position = Vector2f(p.x - subRect.width / 2, p.y + subRect.height / 2);
+
+		/*VA[i*4+0].color= Color::Red;
+		VA[i*4+1].color= Color::Red;
+		VA[i*4+2].color= Color::Red;
+		VA[i*4+3].color= Color::Red;*/
+
+		VA[i * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
+		VA[i * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
+		VA[i * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
+		VA[i * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
+
+		++posIt;
+	}
+}
+
+DecorExpression::~DecorExpression()
+{
+	delete va;
+}
+
+DecorLayer::DecorLayer(Tileset *p_ts, int p_animLength, int p_animFactor, int p_startTile, int p_loopWait)
+	:ts(p_ts), frame(0), animLength(p_animLength), startTile(p_startTile), animFactor(p_animFactor),
+	loopWait(p_loopWait)
+{
+
+}
+
+void DecorLayer::Update()
+{
+	++frame;
+	if (frame == animLength * animFactor + loopWait)
+	{
+		frame = 0;
+	}
+}
+
+void DecorExpression::UpdateSprites()
+{
+	int numBushes = va->getVertexCount() / 4;
+
+	Tileset *ts_bush = layer->ts;
+	int frame = max(layer->frame - layer->loopWait, 0);
+	int animLength = layer->animLength;
+	int animFactor = layer->animFactor;
+
+	VertexArray &bVA = *va;
+
+	IntRect subRect = ts_bush->GetSubRect((layer->startTile + frame) / animFactor);
+
+	for (int i = 0; i < numBushes; ++i)
+	{
+		bVA[i * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
+		bVA[i * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
+		bVA[i * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
+		bVA[i * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
+	}
+}
+
+void TerrainRender::DrawDecor(sf::RenderTarget *target)
+{
+	for (list<DecorExpression*>::iterator it = decorExprList.begin();
+		it != decorExprList.end(); ++it)
+	{
+		Tileset *ts = (*it)->layer->ts;
+		target->draw(*(*it)->va, ts->texture);
+	}	
+}
+
+void TerrainRender::UpdateDecorLayers()
+{
+	for (map<DecorType, DecorLayer*>::iterator mit =
+		s_decorLayerMap.begin(); mit != s_decorLayerMap.end();
+		++mit)
+	{
+		(*mit).second->Update();
 	}
 }

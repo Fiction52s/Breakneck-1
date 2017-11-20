@@ -24,6 +24,7 @@ struct ParentNode;
 struct QNode
 {
 	QNode():parent(NULL){}
+	virtual ~QNode() {}
 	sf::Vector2<double> pos;
 	double rw;
 	double rh;
@@ -36,6 +37,7 @@ struct ParentNode : QNode
 {
 	ParentNode( const sf::Vector2<double> &pos, double rw, double rh );
 	QNode *children[4];
+	~ParentNode();
 	std::list<QuadTreeEntrant*> extraChildren;
 	// 0    |     1
 	//--------------
@@ -54,16 +56,21 @@ struct RayCastHandler;
 struct QuadTree
 {
 	QuadTree( int width, int height );
+	~QuadTree();
 	//void Query( QuadTreeCollider *qtc, 
 	void DebugDraw( sf::RenderTarget *target );
 	void Insert( QuadTreeEntrant *qte );
 	void Query(QuadTreeCollider *qtc, const sf::Rect<double> &r );
+	void Clear();
 	QNode *startNode;
+	int width;
+	int height;
 private:
 	void rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );
 	QNode * rInsert( QNode *node, QuadTreeEntrant *qte );
-	
+	void rClear( QNode *node );
 	void rDebugDraw( sf::RenderTarget *target, QNode *node );
+	
 };
 
 #endif

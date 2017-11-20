@@ -20,6 +20,14 @@ ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
 	children[3] = new LeafNode( V2d(pos.x + rw / 2.0, pos.y + rh / 2.0), rw / 2.0, rh / 2.0 );
 }
 
+ParentNode::~ParentNode()
+{
+	for (auto it = extraChildren.begin(); it != extraChildren.end(); ++it)
+	{
+		delete (*it);
+	}
+}
+
 LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
 	:objCount(0)
 {
@@ -34,13 +42,19 @@ LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
 	}
 }
 
-QuadTree::QuadTree( int width, int height )
-	:startNode( NULL )
+
+QuadTree::QuadTree( int p_width, int p_height )
+	:startNode( NULL ), width( p_width ), height( p_height )
 {
 	startNode = new LeafNode( V2d( 0, 0), width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
 	//testTree->debug = rw;
 
+}
+
+QuadTree::~QuadTree()
+{
+	//Clear();
 }
 
 void QuadTree::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
@@ -256,4 +270,42 @@ void QuadTree::rDebugDraw( sf::RenderTarget *target, QNode *node )
 void QuadTree::DebugDraw( sf::RenderTarget *target )
 {
 	rDebugDraw( target, startNode );
+}
+
+void QuadTree::Clear()
+{
+	bool isParent = !startNode->leaf;
+
+	rClear(startNode);
+
+	
+	startNode = new LeafNode(V2d(0, 0), width, height);
+	startNode->parent = NULL;//testTree->parent = NULL;
+	
+}
+
+void QuadTree::rClear( QNode *node )
+{
+	if (node->leaf)
+	{
+		delete node;
+	}
+	else
+	{
+		//shouldn't this check for box touching box right here??
+		ParentNode *n = (ParentNode*)node;
+		//bool parentArr[4];
+		for (int i = 0; i < 4; ++i)
+		{
+			//	cout << "\tresetting child: " << i << endl;
+			//rResetEnemies(n->children[i]);
+			//parentArr[i] = !n->children[i]->leaf;
+			bool p = !n->children[i]->leaf;
+
+			rClear(n->children[i]);
+			//delete n->children[i];
+		}
+
+		delete node;
+	}
 }

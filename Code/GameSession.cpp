@@ -743,6 +743,8 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 
 void GameSession::Cleanup()
 {
+	TerrainRender::CleanupLayers();
+
 	if (absorbParticles != NULL)
 	{
 		delete absorbParticles;
@@ -3985,9 +3987,10 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
 
 			Tileset *ts_border1 = GetTileset("Borders/bor_1_01_512x704.png", 128, 64);
-			testva->tr = new TerrainRender;// (terrainTree);
+			testva->tr = new TerrainRender( &tm, terrainTree );// (terrainTree);
 			testva->tr->startEdge = edges[currentEdgeIndex];
-			testva->tr->GenerateBorderMesh(terrainTree);
+			testva->tr->GenerateBorderMesh();
+			testva->tr->GenerateDecor();
 			testva->tr->ts_border = ts_border1;
 			
 
@@ -7284,9 +7287,13 @@ int GameSession::Run()
 				TestVA *te = listVA;
 				while( te != NULL )
 				{
-					te->UpdateBushSprites();
+					te->tr->UpdateDecorSprites();
+					//te->tr->UpdateDecorLayers();
+					//te->UpdateBushSprites();
 					te = te->next;
 				}
+
+				TerrainRender::UpdateDecorLayers();
 
 				for( map<DecorType,DecorLayer*>::iterator mit =
 					decorLayerMap.begin(); mit != decorLayerMap.end();
@@ -7767,11 +7774,12 @@ int GameSession::Run()
 			{
 				preScreenTex->draw(*listVAIter->groundva, rs);
 			}*/
-			listVAIter->tr->Draw(preScreenTex);
+				//listVAIter->tr->UpdateDecor();
+				listVAIter->tr->Draw(preScreenTex);
 			
 
 			//preScreenTex->setSmooth( false );
-			listVAIter->DrawBushes( preScreenTex );
+			//listVAIter->DrawBushes( preScreenTex );
 			/*if( listVAIter->bushVA != NULL )
 			{
 				RenderStates bushRS;
@@ -10647,8 +10655,8 @@ void GameSession::TestVA::AddDecorExpression( GameSession::DecorExpression *exp 
 
 void GameSession::TestVA::UpdateBushSprites()
 {
-	for( list<DecorExpression*>::iterator it = bushes.begin();
-		it != bushes.end(); ++it )
+	for (list<DecorExpression*>::iterator it = bushes.begin();
+		it != bushes.end(); ++it)
 	{
 		(*it)->UpdateSprites();
 	}
