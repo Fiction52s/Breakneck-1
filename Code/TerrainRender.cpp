@@ -167,8 +167,8 @@ void TerrainRender::GenerateBorderMesh()
 		{
 			
 			double len = length(te->v1 - te->v0);// +3 * 2.0;// +extraLength * 2;
-			len -= GetSubForOutward(te);
-			len -= GetSubForOutward(te->edge1);
+			//len -= GetSubForOutward(te);
+			//len -= GetSubForOutward(te->edge1);
 			len += GetExtraForInward(te);
 			len += GetExtraForInward(te->edge1);
 			if (len <= 0)
@@ -340,8 +340,8 @@ void TerrainRender::GenerateBorderMesh()
 			V2d startInner = te->v0 - along * extraLength - other * in;
 			V2d startOuter = te->v0 - along * extraLength + other * out;
 
-			double startAlong = GetSubForOutward(te) - inwardExtra;
-			double trueEnd = len - GetSubForOutward(te->edge1) + nInwardExtra;
+			double startAlong = -inwardExtra;/*GetSubForOutward(te) - *///inwardExtra;
+			double trueEnd = len + nInwardExtra;// -nInwardExtra;
 			
 
 			int currTotal = numQuads.GetTotal();
@@ -370,8 +370,14 @@ void TerrainRender::GenerateBorderMesh()
 
 			
 
-			
-			
+			V2d curr = normalize(te->v1 - te->v0);
+			V2d prev = normalize(te->edge0->v0 - te->v0);
+			V2d bisector = normalize(curr + prev);
+			bool isAcute = IsAcute(te);
+			bool nextAcute = IsAcute(te->edge1);
+			V2d nCurr = normalize(te->edge1->v1 - te->v1);
+			V2d nPrev = normalize(te->v0 - te->v1);
+			V2d nBisector = normalize(nCurr + nPrev);
 
 			for( int i = 0; i < currTotal; ++i )
 			{
@@ -417,7 +423,6 @@ void TerrainRender::GenerateBorderMesh()
 
 				(*numQ[r])--;
 				
-				
 				{
 					startAlong -= GetBorderQuadIntersect(tw);
 				}
@@ -437,58 +442,6 @@ void TerrainRender::GenerateBorderMesh()
 					endAlong = len / 2 + tw / 2;
 				}
 				IntRect sub = GetBorderSubRect(tw, et, varietyCounter);
-				//cout << "left: " << sub.left << ", top: " << sub.top << 
-				//	", w: " << sub.width << ", h: " << sub.height << endl;
-				/*if (numQuads == 1)
-				{
-					startAlong = len / 2 - tw / 2;
-					endAlong = startAlong + tw;
-				}
-				else if (numQuads == 2)
-				{
-					if (i == 0)
-					{
-						startAlong = -extraLength;
-						endAlong = startAlong + tw;
-					}
-					else
-					{
-						endAlong = len + extraLength;
-						startAlong = endAlong - tw;
-					}
-				}
-				else if (numQuads % 2 == 0 )
-				{
-					if (i < numQuads / 2 )
-					{
-						startAlong = -extraLength + ((tw - intersect) * i);
-						endAlong = startAlong + tw;
-					}
-					else 
-					{
-						endAlong = len + extraLength - ((tw - intersect) * ((numQuads - 1) - i));
-						startAlong = endAlong - tw;
-					}
-				}
-				else
-				{
-					if (i * 2 == numQuads - 1)
-					{
-						startAlong = len / 2 - tw / 2;
-						endAlong = startAlong + tw;
-					}
-					else if (i < numQuads / 2)
-					{
-						startAlong = -extraLength + ((tw - intersect) * i);
-						endAlong = startAlong + tw;
-					}
-					else
-					{
-						endAlong = len + extraLength - ((tw - intersect) * (( numQuads -1 ) - i));
-						startAlong = endAlong - tw;
-					}
-				}*/
-				
 				
 				double trueAlong = startAlong;
 				if (startAlong > 0)
@@ -501,8 +454,8 @@ void TerrainRender::GenerateBorderMesh()
 				V2d currEndInner = startInner + endAlong * along;
 				V2d currEndOuter = startOuter + endAlong * along;
 						
-				double realHeightLeft = in;//sub.height - out;//256;//in;//sub.height;
-				double realHeightRight = in;//sub.height - out;//256;//in;//sub.height;
+				double realHeightLeft = 64.0;//sub.height - out;//256;//in;//sub.height;
+				double realHeightRight = 64.0;//sub.height - out;//256;//in;//sub.height;
 				
 				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
 				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
@@ -510,6 +463,68 @@ void TerrainRender::GenerateBorderMesh()
 				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
 				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
 
+				
+				if (isAcute)
+				{
+					LineIntersection li = lineIntersection(currStartInner,
+						currStartOuter, te->v0, te->v0 + bisector);
+					assert(!li.parallel);
+					if (!li.parallel)
+					{
+						double testLength = length(li.position - currStartOuter);
+						if (testLength < realHeightLeft)
+						{
+							double diffLen = realHeightLeft - testLength;
+							realHeightLeft = testLength;
+							currStartInner += diffLen * normalize(startOuter - startInner);
+						}
+					}
+
+					li = lineIntersection(currEndInner,
+						currEndOuter, te->v0, te->v0 + bisector);
+					assert(!li.parallel);
+					if (!li.parallel)
+					{
+						double testLength = length(li.position - currEndOuter);
+						if (testLength < realHeightRight)
+						{
+							double diffLen = realHeightRight - testLength;
+							realHeightRight = testLength;
+							currEndInner += diffLen * normalize(startOuter - startInner);
+						}
+					}
+				}
+				if (nextAcute )
+				//if( false )
+				{
+					LineIntersection li = lineIntersection(currStartInner,
+						currStartOuter, te->v1, te->v1 + nBisector);
+					assert(!li.parallel);
+					if (!li.parallel)
+					{
+						double testLength = length(li.position - currStartOuter);
+						if (testLength < realHeightLeft)
+						{
+							double diffLen = realHeightLeft - testLength;
+							realHeightLeft = testLength;
+							currStartInner += diffLen * normalize(startOuter - startInner);
+						}
+					}
+
+					li = lineIntersection(currEndInner,
+						currEndOuter, te->v1, te->v1 + nBisector);
+					assert(!li.parallel);
+					if (!li.parallel)
+					{
+						double testLength = length(li.position - currEndOuter);
+						if (testLength < realHeightRight)
+						{
+							double diffLen = realHeightRight - testLength;
+							realHeightRight = testLength;
+							currEndInner += diffLen * normalize(startOuter - startInner);
+						}
+					}
+				}
 				
 				//if( d0 <= 0
 
@@ -612,8 +627,8 @@ void TerrainRender::GenerateBorderMesh()
 				
 				currBVA[i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
 				currBVA[i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightLeft + out );
-				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightRight + out );
+				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightLeft);
+				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightRight);
 
 				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
 				va[extra + i * 4 + 1].color = COLOR_YELLOW;
@@ -1283,6 +1298,20 @@ void TerrainRender::HandleRayCollision(Edge *edge,
 		rcPortion = rayPortion;
 		rcQuant = edgeQuantity;
 	}*/
+}
+
+bool TerrainRender::IsAcute( Edge *e ) //edge and its previous edge
+{
+	double factor = 160.0;
+	V2d currDir = normalize(e->v1 - e->v0);
+	EdgeType test = GetEdgeType(currDir);
+	V2d prevDir = normalize(e->edge0->v0 - e->v0);
+	double cDiff = GetVectorAngleDiffCCW(currDir, prevDir);
+	bool turnOutward = cDiff > PI * 1.5 + .1;
+
+	V2d realPrevDir = normalize(e->edge0->v1 - e->edge0->v0);
+
+	return turnOutward;
 }
 
 double TerrainRender::GetSubForOutward(Edge *e)

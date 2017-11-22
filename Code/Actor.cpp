@@ -894,7 +894,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//sh.setUniform( "u_texture", *tileset[action]->texture ); 
 		for (int j = 0; j < Action::Count; ++j)
 		{
-			CreateAura(auraPoints[j], tileset[j]);
+			CreateAura(auraPoints[j], tileset[j], 0);
 		}
 
 		
@@ -22414,7 +22414,7 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 }
 
 void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
-	Tileset *ts, int startTile, int numTiles)
+	Tileset *ts, int startTile, int numTiles, int layer )
 {
 	//auraPoints[WALLATTACK] = 8;
 	//CreateAura(WALLATTACK, 8);

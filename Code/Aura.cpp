@@ -267,6 +267,12 @@ void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileInd
 	rtt->draw(tSprite);
 	rtt->display();
 	Image im(rtt->getTexture().copyToImage());
+	Image im2(rtt->getTexture().copyToImage());
+
+	Image *ims[2];
+	ims[0] = &im;
+	ims[1] = &im2;
+	//im2.copy(im, 0, 0 );
 	//Image im2;
 
 	sf::Color col;
@@ -274,95 +280,92 @@ void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileInd
 	//for (int y = sub.top; y < bot; ++y)
 	int ySize = rtt->getSize().y;
 	int xSize = rtt->getSize().x;
-	for(int z = 0; z < 2; ++z )
-	for (int y = 0; y < ySize; ++y)
-	{ 
-		//for (int x = sub.left; x < right; ++x)
-		for (int x = 0; x < xSize; ++x)
+	int maxIt = 3;
+	for (int z = 0; z < maxIt; ++z)
+	{
+		Image &currIm = *ims[z % 2];
+		Image &otherIm = *ims[(z + 1) % 2];
+		for (int y = 0; y < ySize; ++y)
 		{
-			 col = im.getPixel(x, y);
-			 //currently use every pixel that isnt transparent
+			//for (int x = sub.left; x < right; ++x)
+			for (int x = 0; x < xSize; ++x)
+			{
+
+				
+				col = currIm.getPixel(x, y);
+				//currently use every pixel that isnt transparent
 
 
-			 if (col.a != 0 && col != Color::Red )//&& col.r == 250 && col.g == 0 && col.b == 158 )
-			 {
-				 
-				 bool transAround = false;
-				 if (x < right - 1 )
-				 {
-					 colNext = im.getPixel(x + 1, y);
-					 if (colNext.a == 0 || colNext == Color::Red)
-					 {
-						 transAround = true;
-					 }
-				 }
-				 else
-				 {
-					 transAround = true;
-				 }
-					
-				 if (x > 0 )
-				 {
-					 colNext = im.getPixel(x - 1, y);
-					 if (colNext.a == 0 || colNext == Color::Red)
-					 {
-						 transAround = true;
-					 }
-					 //transAround = true;
-				 }
-				 else 
-				 {
-					 transAround = true;
-				 }
+				if (col.a == 0)//&& col.r == 250 && col.g == 0 && col.b == 158 )
+				{
 
-				 if ( y < bot - 1)
-				 {
-					 colNext = im.getPixel(x, y+1);
-					 if (colNext.a == 0 || colNext == Color::Red)
-					 {
-						 transAround = true;
-					 }
-					// transAround = true;
-				 }
-				 else
-				 {
-					 transAround = true;
-				 }
+					bool transAround = false;
+					if (x < right - 1)
+					{
+						colNext = currIm.getPixel(x + 1, y);
+						if (colNext.a != 0)
+						{
+							transAround = true;
+						}
+					}
 
-				 if (y > 0)
-				 {
-					 colNext = im.getPixel(x, y - 1);
-					 if (colNext.a == 0 || colNext == Color::Red)
-					 {
-						 transAround = true;
-					 }
-					// transAround = true;
-				 }
-				 else
-				 {
-					 transAround = true;
-				 }
+					if (x > 0)
+					{
+						colNext = currIm.getPixel(x - 1, y);
+						if (colNext.a != 0)
+						{
+							transAround = true;
+						}
+						//transAround = true;
+					}
 
-				 
 
-				 if (transAround)
-				 {
-					 if (z == 1 )//2-1)
-					 {
-						 float f = (right - tSprite.getLocalBounds().width) / 2.f;
-						 float h = (bot - tSprite.getLocalBounds().height) / 2.f;
-						 outPoints.push_back(Vector2f(x - f, y - h));
-					 }
-					 else
-					 {
-						 im.setPixel(x, y, Color::Red);
-					 }
-					 //(x - sub.left), (y - sub.top)));
-					 //outPoints.push_back(Vector2f(x, y));//(x - sub.left), (y - sub.top)));
-				 }
-			 }
+					if (y < bot - 1)
+					{
+						colNext = currIm.getPixel(x, y + 1);
+						if (colNext.a != 0)
+						{
+							transAround = true;
+						}
+						// transAround = true;
+					}
+
+					if (y > 0)
+					{
+						colNext = currIm.getPixel(x, y - 1);
+						if (colNext.a != 0)
+						{
+							transAround = true;
+						}
+						// transAround = true;
+					}
+
+					if (transAround)
+					{
+						if (z == maxIt - 1)//2-1)
+						{
+							float f = (right - tSprite.getLocalBounds().width) / 2.f;
+							float h = (bot - tSprite.getLocalBounds().height) / 2.f;
+
+
+
+							outPoints.push_back(Vector2f(x - f, y - h));
+						}
+						else
+						{
+
+							otherIm.setPixel(x, y, Color::Red);
+						}
+						//(x - sub.left), (y - sub.top)));
+						//outPoints.push_back(Vector2f(x, y));//(x - sub.left), (y - sub.top)));
+					}
+				}
+			}
 		}
+		currIm.copy(otherIm, 0, 0, IntRect(), true);
+		
 	}
+
 }
 
 Aura::Particle::Particle( ParticleSet *p_ps, sf::Vertex *va, int p_ttl, sf::IntRect &sub)
@@ -403,7 +406,7 @@ void Aura::Particle::Update()
 		switch (player->speedLevel)
 		{
 		case 0:
-			hw = 2.f;//8
+			hw = 1.f;//8
 			break;
 		case 1:
 			hw = 2;//8
@@ -412,7 +415,6 @@ void Aura::Particle::Update()
 			hw = 4;//8
 			break;
 		}
-		 ;
 
 		quad[0].position = Vector2f(pos.x - hw, pos.y - hw);
 		quad[1].position = Vector2f(pos.x + hw, pos.y - hw);

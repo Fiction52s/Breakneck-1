@@ -727,7 +727,7 @@ struct Actor : QuadTreeCollider,
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 	std::list<sf::Vector2f> *auraPoints[Action::Count];
 	void CreateAura( std::list<sf::Vector2f> *&outPointList,
-		Tileset *ts, int startTile = 0, int numTiles = 0 );
+		Tileset *ts, int startTile = 0, int numTiles= 0, int layer = 0);
 	//std::list<sf::Vector2f> *runPoints;
 	//std::list<sf::Vector2f> *standPoints;
 
