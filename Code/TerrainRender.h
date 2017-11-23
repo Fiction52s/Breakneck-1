@@ -142,6 +142,7 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 	static double GetSubForOutward(Edge *e);
 	static void CleanupLayers();
 	static bool IsAcute( Edge *e0 );
+	static V2d GetBisector(Edge *e);
 
 	DecorExpression * CreateDecorExpression(DecorType dType,
 		int bgLayer,

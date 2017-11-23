@@ -467,11 +467,12 @@ void TerrainRender::GenerateBorderMesh()
 				if (isAcute)
 				{
 					LineIntersection li = lineIntersection(currStartInner,
-						currStartOuter, te->v0, te->v0 + bisector);
+						currStartOuter, te->v0, te->v0 + bisector);//te->edge0->v0 );
 					assert(!li.parallel);
 					if (!li.parallel)
 					{
 						double testLength = length(li.position - currStartOuter);
+
 						if (testLength < realHeightLeft)
 						{
 							double diffLen = realHeightLeft - testLength;
@@ -481,7 +482,7 @@ void TerrainRender::GenerateBorderMesh()
 					}
 
 					li = lineIntersection(currEndInner,
-						currEndOuter, te->v0, te->v0 + bisector);
+						currEndOuter, te->v0, te->v0 + bisector);//te->edge0->v0 );
 					assert(!li.parallel);
 					if (!li.parallel)
 					{
@@ -498,7 +499,7 @@ void TerrainRender::GenerateBorderMesh()
 				//if( false )
 				{
 					LineIntersection li = lineIntersection(currStartInner,
-						currStartOuter, te->v1, te->v1 + nBisector);
+						currStartOuter, te->v1, te->v1 + nBisector);//te->edge1->v1);
 					assert(!li.parallel);
 					if (!li.parallel)
 					{
@@ -512,7 +513,7 @@ void TerrainRender::GenerateBorderMesh()
 					}
 
 					li = lineIntersection(currEndInner,
-						currEndOuter, te->v1, te->v1 + nBisector);
+						currEndOuter, te->v1, te->v1 + nBisector);//te->edge1->v1 );
 					assert(!li.parallel);
 					if (!li.parallel)
 					{
@@ -627,8 +628,8 @@ void TerrainRender::GenerateBorderMesh()
 				
 				currBVA[i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
 				currBVA[i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightLeft);
-				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightRight);
+				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightRight);
+				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
 
 				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
 				va[extra + i * 4 + 1].color = COLOR_YELLOW;
@@ -1455,4 +1456,12 @@ void TerrainRender::UpdateDecorLayers()
 	{
 		(*mit).second->Update();
 	}
+}
+
+V2d TerrainRender::GetBisector(Edge *e)
+{
+	V2d curr = normalize(e->v1 - e->v0);
+	V2d prev = normalize(e->edge0->v0 - e->v0);
+	return normalize(curr + prev);
+	
 }
