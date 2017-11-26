@@ -43,11 +43,11 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 			break;
 		case 2:
 			va[i].color = Color(100, 0, 255);//Color::Green;//Color(0x00, 0x96, 0x9e);//Color::Black;
-			va[i].color.a = 40;
+			va[i].color.a = 255;
 			break;
 		case 3:
 			va[i].color = Color::Cyan;
-			va[i].color.a = 90;
+			va[i].color.a = 255;
 			break;
 		}
 	}
@@ -68,7 +68,7 @@ void Aura::Draw(sf::RenderTarget *target)
 	target->draw(va, totalParticles * 4, sf::Quads, ts->texture);
 }
 
-void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf::Vector2f &origin, AuraParams *ap )
+void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf::Vector2f &origin, AuraParams *ap, int vibrateAmount )
 {
 	ParticleSet *tps = activeSets;
 	ParticleSet *tnext = NULL;
@@ -110,6 +110,8 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 		activeSets = ps;
 	}
 	
+	
+
 	int pointsSize = points.size();
 	ps->numParticlesFromSprite = pointsSize;
 	ps->frame = 0;
@@ -142,8 +144,24 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 
 	for (auto it = points.begin(); it != points.end(); ++it)
 	{
+		int ranX = 0;
+		int ranY = 0;
+		if (vibrateAmount > 0)
+		{
+			ranX = rand() % ((vibrateAmount) * 2);
+			ranX -= vibrateAmount;
+		}
+
+		if (vibrateAmount > 0)
+		{
+			ranY = rand() % ((vibrateAmount) * 2);
+			ranY -= vibrateAmount;
+		}
+
+		Vector2f ranVec(ranX, ranY);
+
 		p = tr.transformPoint((*it) - Vector2f( player->sprite->getLocalBounds().width / 2,
-			player->sprite->getLocalBounds().height / 2 )) + origin;
+			player->sprite->getLocalBounds().height / 2 )) + origin + ranVec;
 
 		//sf::Vector2<double> vel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed / 2.0;
 		//v =  * 2.f;
@@ -248,7 +266,7 @@ void Aura::DeactivateParticles(ParticleSet *ps)
 }
 
 void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileIndex,
-	std::list<sf::Vector2f> &outPoints )
+	std::list<sf::Vector2f> &outPoints, int layer ) 
 {
 	assert(outPoints.size() == 0);
 	IntRect sub = ts->GetSubRect(tileIndex);
@@ -280,7 +298,7 @@ void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileInd
 	//for (int y = sub.top; y < bot; ++y)
 	int ySize = rtt->getSize().y;
 	int xSize = rtt->getSize().x;
-	int maxIt = 3;
+	int maxIt = layer + 1;
 	for (int z = 0; z < maxIt; ++z)
 	{
 		Image &currIm = *ims[z % 2];
@@ -409,10 +427,10 @@ void Aura::Particle::Update()
 			hw = 1.f;//8
 			break;
 		case 1:
-			hw = 2;//8
+			hw = 1;//8
 			break;
 		case 2:
-			hw = 4;//8
+			hw = 1;//8
 			break;
 		}
 

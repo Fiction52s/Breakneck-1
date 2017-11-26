@@ -83,10 +83,11 @@ struct Aura
 	//void SetParticleSet(std::list<sf::Vector2f> &points);
 
 	void ActivateParticles(std::list<sf::Vector2f> &points, 
-		sf::Transform &tr, const sf::Vector2f &origin, AuraParams *ap );
+		sf::Transform &tr, const sf::Vector2f &origin, AuraParams *ap,
+		int vibrateAmount = 0 );
 	static void CreateParticlePointList(sf::RenderTexture *rtt, Tileset *ts,
 		int tileIndex,
-		std::list<sf::Vector2f> &outPoints );
+		std::list<sf::Vector2f> &outPoints, int layer = 0 );
 
 	sf::Vertex *va;
 	int numParticleSets;
