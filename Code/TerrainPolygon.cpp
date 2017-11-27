@@ -408,7 +408,7 @@ void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
 		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
 			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>( (*pit ) );
-			(*pit)->Deactivate( edit, ptr );
+			//(*pit)->Deactivate( edit, ptr );
 		}
 	}
 
@@ -445,7 +445,7 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
 		{
 			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>( (*pit ) );
-			(*pit)->Activate( edit, ptr );
+			//(*pit)->Activate( edit, ptr );
 		}
 	}
 

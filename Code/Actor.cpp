@@ -236,7 +236,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 			orbTS[i] = NULL;
 		}
-		standNDashBoostQuant = 5;
+		standNDashBoostQuant = 3;
 		dairBoostVel = 4;
 		fairAirDashBoostQuant = 2;
 		for (int i = 0; i < 3; ++i)

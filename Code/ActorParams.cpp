@@ -501,16 +501,8 @@ void ActorParams::Deactivate( EditSession *edit, SelectPtr select )
 	
 	if( actor->groundInfo != NULL )
 	{
-		if( actor->groundInfo->ground->selected )
-		{
-
-		}
-		else
-		{
-			actor->groundInfo->ground
-				->enemies[actor->groundInfo->edgeStart].remove( actor );
-		}
-		
+		actor->groundInfo->ground
+			->enemies[actor->groundInfo->edgeStart].remove( actor );
 	}
 }
 
@@ -520,11 +512,11 @@ void ActorParams::Activate( EditSession *edit, SelectPtr select )
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
 
-	/*if( actor->groundInfo != NULL )
+	if( actor->groundInfo != NULL )
 	{
 		actor->groundInfo->ground
 			->enemies[actor->groundInfo->edgeStart].push_back( actor );
-	}*/
+	}
 }
 
 

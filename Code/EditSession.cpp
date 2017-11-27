@@ -3138,6 +3138,10 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 			assert( actor->groundInfo != NULL ); 
 
 			ActorPtr newActor( actor->Copy() );
+			newActor->groundInfo = NULL;
+			//newActor->UnAnchor( newActor );
+			//newActor->groundInfo = NULL;
+			newActor->AnchorToGround(gi);
 			//GroundInfo *oldGI = actor->groundInfo;
 
 			//GroundInfo old = *actor->groundInfo;
@@ -3145,9 +3149,9 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 			assert( newActor.get() != NULL );
 
 			//newActor->UnAnchor( newActor );
-			newActor->groundInfo->edgeStart = gi.edgeStart;
-			newActor->groundInfo->ground = gi.ground;
-			newActor->groundInfo->groundQuantity= gi.groundQuantity;
+			//newActor->groundInfo->edgeStart = gi.edgeStart;
+			//newActor->groundInfo->ground = gi.ground;
+			//newActor->groundInfo->groundQuantity= gi.groundQuantity;
 
 			poly->enemies[p].push_back( newActor );
 
@@ -17072,17 +17076,37 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	TerrainPolygon *outPoly = NULL;
 	Brush orig;
 	list<boost::shared_ptr<GateInfo>> gateInfoList;
+	list<ActorPtr> actorList;
 
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
+		for (auto eit = (*it)->enemies.begin(); eit != (*it)->enemies.end(); ++eit)
+		{
+			for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+			{
+				actorList.push_back((*eit2));
+			}
+		}
+
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
+		for (auto eit = (*it)->enemies.begin(); eit != (*it)->enemies.end(); ++eit)
+		{
+			for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+			{
+				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
+				orig.AddObject(sp1);
+			}
+			
+		}
 		bool oldSelected = (*it)->selected;
 		(*it)->SetSelected( true );
 		Add(polygonInProgress, (*it), outPoly, gateInfoList);
-		polygonInProgress.reset(outPoly);
+ 		polygonInProgress.reset(outPoly);
 		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
 	}
+
+	
 
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
 
@@ -17140,8 +17164,30 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		}
 	}
 
+	for (auto it = actorList.begin(); it != actorList.end(); ++it)
+	{
+		//ActorPtr newActor((*it)->Copy());
+		//newActor->UnAnchor(newActor);
+		//bool res = AttachActorToPolygon(newActor, polygonInProgress.get() );
+		AttachActorToPolygon((*it), polygonInProgress.get());
+		//newActor->AnchorToGround( )
+		//newActor->groundInfo
+		//newActor->groundInfo->edgeStart
+	}
+
 	progressBrush->Clear();
 	progressBrush->AddObject( sp );
+
+	for (auto eit = polygonInProgress->enemies.begin(); 
+		eit != polygonInProgress->enemies.end(); ++eit)
+	{
+		for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+		{
+			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
+			progressBrush->AddObject(sp1);
+		}
+
+	}
 	//cout << "tempActors size: " << tempActors.size() << endl;
 	//for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
 	//{
