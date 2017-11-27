@@ -6765,6 +6765,56 @@ int GameSession::Run()
 			}
 			else if( pauseFrames > 0 )
 			{
+				for (int i = 0; i < 4; ++i)
+				{
+					GetPrevInput(i) = GetCurrInput(i);
+				}
+
+				if (!cutPlayerInput)
+				{
+
+					Actor *pTemp = NULL;
+					for (int i = 0; i < 4; ++i)
+					{
+						pTemp = GetPlayer(i);
+						if (pTemp != NULL)
+							pTemp->prevInput = GetCurrInput(i);
+					}
+				}
+
+				for (int i = 0; i < 4; ++i)
+				{
+					GameController &con = GetController(i);
+					bool canControllerUpdate = con.UpdateState();
+					if (!canControllerUpdate)
+					{
+						//KeyboardUpdate( 0 );
+					}
+					else
+					{
+						con.UpdateState();
+						GetCurrInput(i) = con.GetState();
+					}
+				}
+
+				if (!cutPlayerInput)
+				{
+					for (int i = 0; i < 4; ++i)
+					{
+						ApplyToggleUpdates(i);
+					}
+					//else
+				}
+
+				Actor *pTemp = NULL;
+				for (int i = 0; i < 4; ++i)
+				{
+					pTemp = GetPlayer(i);
+					if (pTemp != NULL)
+					{
+						pTemp->UpdateInHitlag();
+					}
+				}
 				//if( player->changingClone )
 				//{
 				//	player->percentCloneChanged += player->percentCloneRate;
@@ -12919,6 +12969,14 @@ void GameSession::LoadState()
 void GameSession::Pause( int frames )
 {
 	pauseFrames = frames;
+	for (int i = 0; i < 4; ++i)
+	{
+		Actor *p = players[i];
+		if (p != NULL)
+		{
+			p->ClearPauseBufferedActions();
+		}
+	}
 }
 
 void GameSession::Fade( bool in, int frames, sf::Color c)

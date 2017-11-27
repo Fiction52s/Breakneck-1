@@ -3174,14 +3174,14 @@ void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon 
 	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
 		res = AttachActorToPolygon( (*it), poly );
-		/*if( res )
+		if( res )
 		{
 			cout << "saved an actor!" << endl;
 		}
 		else
 		{
 			cout << "totally didn't save an actor! QQ" << endl;
-		}*/
+		}
 	}
 }
 
@@ -3788,10 +3788,16 @@ TerrainPoint * EditSession::GetNextAddPoint( TerrainPoint *previousPoint, sf::Ve
 	assert(0);
 }
 
-EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPolygon *&outPoly )
-{
-
-
+EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPolygon *&outPoly, list<boost::shared_ptr<GateInfo>> &gateInfoList )
+{	
+	TerrainPoint *gCurr = poly->pointStart;
+	for (; gCurr != NULL; gCurr = gCurr->next)
+	{
+		if (gCurr->gate != NULL)
+		{
+			gateInfoList.push_back(gCurr->gate);
+		}
+	}
 
 	map<TerrainPoint*, DetailedInter> pointInterMap;
 	//map<TerrainPoint*, Inter> pointInterMapFromPoly;
@@ -4349,6 +4355,8 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 		firstRun = false;
 	}
+
+	
 
 	//poly->Reset();
 
@@ -7402,7 +7410,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										
 
 									//	PolyPtr currentBrush = polygonInProgress;
-										
+										std::list<boost::shared_ptr<GateInfo>> gateInfoList;
 										while( it != polygons.end() )
 										{
 											PolyPtr temp = (*it);
@@ -7411,7 +7419,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 												cout << "before addi: " << (*it)->numPoints << endl;
 												
 												TerrainPolygon *outPoly = NULL;
-												Add( currentBrush, temp, outPoly );
+												
+												Add( currentBrush, temp, outPoly, gateInfoList);
 
 												//currentBrush->Reset();
 												//delete currentBrush;
@@ -14958,6 +14967,7 @@ void EditSession::ExtendAdd()
 	extendingPolygon = NULL;
 	extendingPoint = NULL;
 
+	std::list<boost::shared_ptr<GateInfo>> gateInfoList;
 	while( it != polygons.end() )
 	{
 		PolyPtr temp = (*it);
@@ -14976,7 +14986,8 @@ void EditSession::ExtendAdd()
 				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
 			}*/
 			TerrainPolygon *outPoly = NULL;
-			Add( currentBrush, temp, outPoly);
+			
+			Add( currentBrush, temp, outPoly, gateInfoList);
 			
 			//currentBrush->Reset();
 			polygons.remove( currentBrush );
@@ -17060,18 +17071,74 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	TerrainPolygon *outPoly = NULL;
 	Brush orig;
+	list<boost::shared_ptr<GateInfo>> gateInfoList;
+
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
 		bool oldSelected = (*it)->selected;
 		(*it)->SetSelected( true );
-		Add(polygonInProgress, (*it), outPoly );
+		Add(polygonInProgress, (*it), outPoly, gateInfoList);
 		polygonInProgress.reset(outPoly);
 		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
 	}
 
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
+
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+		{
+			TerrainPoint *test = NULL;
+			TerrainPoint * outTest = NULL;
+
+			TerrainPoint *p0 = polygonInProgress->GetSamePoint((*it)->point0->pos);
+			TerrainPoint *p1 = polygonInProgress->GetSamePoint((*it)->point1->pos);
+
+			GateInfoPtr gi(new GateInfo( *((*it).get()) ));
+			gi->edit = NULL;
+
+			if( p0 != NULL )
+			{
+				gi->point0 = p0;
+				gi->poly0 = polygonInProgress;
+				p0->gate = gi;
+				//test = (*it)->point0;//poly->GetPointAtIndex((*it)->vertexIndex0);
+				//outTest = outPoly->GetSamePoint(test->pos);
+
+				if (outTest != NULL)
+				{
+					//	(*it)->point0 = outTest;
+					//(*it)->poly0 = outPoly;
+				}
+			}
+			else
+			{
+				gi->point0 = (*it)->point0;
+				gi->poly0 = (*it)->poly0;
+			}
+			if( p1 != NULL )
+			{
+				gi->point1 = p1;
+				gi->poly1 = polygonInProgress;
+				p1->gate = gi;
+				//test = (*it)->point1;
+				//outTest = outPoly->GetSamePoint(test->pos);
+
+				//if (outTest != NULL)
+				//{
+				//	//(*it)->point0 = outTest;
+				//	//(*it)->poly0 = outPoly;
+				//}
+			}
+			else
+			{
+				gi->point1 = (*it)->point1;
+				gi->poly1 = (*it)->poly1;
+			}
+		}
+	}
 
 	progressBrush->Clear();
 	progressBrush->AddObject( sp );
@@ -17197,6 +17264,8 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	//cout << "subtracting!" << endl;
 	Brush orig;
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
+	list<boost::shared_ptr<GateInfo>> gateInfoList;
+
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
 		//list<Inter> inters = (*it)->GetIntersections( polygonInProgress.get() );
@@ -17206,13 +17275,18 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
 
-		//Add( (*it), polygonInProgress );
+		TerrainPoint *pCurr = (*it)->pointStart;
+		while (pCurr != NULL)
+		{
+			if (pCurr->gate != NULL)
+			{
+				gateInfoList.push_back(pCurr->gate);
+			}
+			pCurr = pCurr->next;
+		}
 	}
-//	return;
-	
 
 	list<PolyPtr> results;
-	//cout << "calling sub!" << endl;
 	Sub( polygonInProgress, intersectingPolys, results );
 	 
 	//before deleting the points, need to remove and delete the points of the new polygons
@@ -17272,6 +17346,48 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 				rit != results.end(); ++rit )
 			{
 				AttachActorsToPolygon( (*mit).second, (*rit).get()  );
+			}
+		}
+	}
+
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+		{
+			for (list<PolyPtr>::iterator rit = results.begin();
+				rit != results.end(); ++rit)
+			{
+				TerrainPoint *test = NULL;
+				TerrainPoint * outTest = NULL;
+
+				TerrainPoint *p0 = (*rit)->GetSamePoint((*it)->point0->pos);
+				TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
+
+				GateInfoPtr gi(new GateInfo(*((*it).get())));
+				gi->edit = NULL;
+
+				if (p0 != NULL)
+				{
+					gi->point0 = p0;
+					gi->poly0 = (*rit);
+					p0->gate = gi;
+				}
+				else
+				{
+					gi->point0 = (*it)->point0;
+					gi->poly0 = (*it)->poly0;
+				}
+				if (p1 != NULL)
+				{
+					gi->point1 = p1;
+					gi->poly1 = (*rit);
+					p1->gate = gi;
+				}
+				else
+				{
+					gi->point1 = (*it)->point1;
+					gi->poly1 = (*it)->poly1;
+				}
 			}
 		}
 	}

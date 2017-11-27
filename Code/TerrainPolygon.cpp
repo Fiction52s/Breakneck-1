@@ -110,6 +110,24 @@ bool TerrainPolygon::CanApply()
 	return applyOkay;
 }
 
+TerrainPoint *TerrainPolygon::GetPointAtIndex(int index)
+{
+	int i = 0;
+	TerrainPoint *curr = pointStart;
+	while (curr != NULL)
+	{
+		if (i == index)
+			return curr;
+
+		curr = curr->next;
+		++i;
+	}
+
+	assert(0);
+
+	return NULL;
+}
+
 bool CanApply()
 {
 	//can only apply if:

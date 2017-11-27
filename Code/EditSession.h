@@ -215,6 +215,7 @@ struct TerrainPolygon : ISelectable
 	void RemovePoint( TerrainPoint *tp );
 	void DestroyEnemies();
 	void ClearPoints();
+	TerrainPoint *GetPointAtIndex(int index);
 	void SetMaterialType(
 		int world, int variation );
 	void RemoveSlivers( double minAngle );
@@ -1600,7 +1601,8 @@ struct EditSession : GUIHandler
 		ADD_
 	};
 	AddResult Add( boost::shared_ptr<TerrainPolygon> brush,
-		boost::shared_ptr<TerrainPolygon> poly, TerrainPolygon *&outPoly );	
+		boost::shared_ptr<TerrainPolygon> poly, TerrainPolygon *&outPoly,
+		std::list<boost::shared_ptr<GateInfo>> &gateInfoList );
 	AddResult InverseAdd(boost::shared_ptr<TerrainPolygon> brush,
 		boost::shared_ptr<TerrainPolygon> poly, std::list<TerrainPolygon*> &outPolyList);
 	TerrainPoint * GetNextAddPoint(

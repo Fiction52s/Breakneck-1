@@ -229,6 +229,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		standNDashBoostCooldown = 10;
+		standNDashBoostCurr = 0;
+		ClearPauseBufferedActions();
 		for (int i = 0; i < Count; ++i)
 		{
 			orbTS[i] = NULL;
@@ -362,7 +365,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
-		level1SpeedThresh = 22;//22;//32;
+		level1SpeedThresh = 30;//22;//22;//32;
 		level2SpeedThresh = 45; 
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
@@ -1299,8 +1302,8 @@ void Actor::ActionEnded()
 
 		case FAIR:
 		{
-			currLockedFairFX->ClearLockPos();
-			currLockedFairFX = NULL;
+			//currLockedFairFX->ClearLockPos();
+			//currLockedFairFX = NULL;
 			
 
 			SetActionExpr(JUMP);
@@ -1330,14 +1333,14 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case DAIR:
-			currLockedDairFX->ClearLockPos();
-			currLockedDairFX = NULL;
+			//currLockedDairFX->ClearLockPos();
+			//currLockedDairFX = NULL;
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
 		case UAIR:
-			currLockedUairFX->ClearLockPos();
-			currLockedUairFX = NULL;
+			//currLockedUairFX->ClearLockPos();
+			//currLockedUairFX = NULL;
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
@@ -1521,6 +1524,13 @@ void Actor::CheckHoldJump()
 
 bool Actor::AirAttack()
 {
+	if (pauseBufferedAttack != Action::Count)
+	{
+		SetAction(pauseBufferedAttack);
+		frame = 0;
+		return true;
+	}
+
 	if( currInput.rightShoulder && !prevInput.rightShoulder )
 	{
 		if( action == AIRDASH )
@@ -1615,19 +1625,21 @@ void Actor::CreateAttackLightning()
 	switch (action)
 	{
 	case FAIR:
-		currLockedFairFX = (RelEffectInstance*)fairLightningPool[0]->ActivateEffect(&params);
+	//	currLockedFairFX = (RelEffectInstance*)fairLightningPool[0]->ActivateEffect(&params);
 		break;
 	case DAIR:
-		currLockedDairFX = (RelEffectInstance*)dairLightningPool[0]->ActivateEffect(&params);
+	//	currLockedDairFX = (RelEffectInstance*)dairLightningPool[0]->ActivateEffect(&params);
 		break;
 	case UAIR:
-		currLockedUairFX = (RelEffectInstance*)uairLightningPool[0]->ActivateEffect(&params);
+	//	currLockedUairFX = (RelEffectInstance*)uairLightningPool[0]->ActivateEffect(&params);
 		break;
 	}
 }
 
 void Actor::Respawn()
 {
+	standNDashBoostCurr = 0;
+	ClearPauseBufferedActions();
 	currLockedFairFX = NULL;
 	currLockedDairFX = NULL;
 	currLockedUairFX = NULL;
@@ -3543,7 +3555,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )//&& frame > 0 )
 			{
 			
 
@@ -3573,7 +3585,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )// && frame > 0 )
 			{
 			
 			
@@ -3602,7 +3614,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )//&& frame > 0 )
 			{
 			
 			
@@ -4219,7 +4231,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )//&& frame > 0 )
 			{
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
@@ -4291,9 +4303,13 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if (currInput.B && !prevInput.B)
+				if ( pauseBufferedDash || (currInput.B && !prevInput.B ))
 				{
-					standNDashBoost = true;
+					if (standNDashBoostCurr == 0)
+					{
+						standNDashBoost = true;
+						standNDashBoostCurr = standNDashBoostCooldown;
+					}
 					SetActionExpr(DASH);
 					frame = 0;
 					break;
@@ -8688,7 +8704,7 @@ void Actor::UpdatePrePhysics()
 	{
 		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 	}*/
-	
+	ClearPauseBufferedActions();
 }
 
 void Actor::InitAfterEnemies()
@@ -15381,39 +15397,7 @@ void Actor::UpdatePostPhysics()
 	}
 
 
-	V2d motionGhostDir;
-	double motionMagnitude = 0;
-	if (ground != NULL)
-	{
-		motionGhostDir = -normalize(normalize(ground->v1 - ground->v0) * groundSpeed);
-		if (reversed)
-			motionGhostDir = -motionGhostDir;
-		motionMagnitude = abs(groundSpeed);
-	}
-	else
-	{
-		motionGhostDir = -normalize(velocity);
-		motionMagnitude = length(velocity);
-	}
-
-	//int testf = 20;
-
-	//V2d motionNormal(motionGhostDir.y, -motionGhostDir.x);
-
-	float dist = motionGhostSpacing;
-
-	//RotateCW( diff,);
-	int showMotionGhosts = min(motionMagnitude / 1.0, 80.0);
-
-	if (speedLevel == 0)
-	{
-		showMotionGhosts = min(showMotionGhosts * 2.0, 80.0);
-	}
-	for (int i = 0; i < 3; ++i)
-	{
-		motionGhostsEffects[i]->SetSpread(showMotionGhosts, Vector2f(motionGhostDir.x, motionGhostDir.y), sprite->getRotation() / 180.f * PI);
-		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
-	}
+	
 	
 	
 	//shouldn't be max motion ghosts cuz thats not efficient
@@ -15567,6 +15551,35 @@ void Actor::UpdatePostPhysics()
 	else
 	{
 		speedLevel = 0;
+	}
+
+	V2d motionGhostDir;
+	double motionMagnitude = 0;
+	if (ground != NULL)
+	{
+		motionGhostDir = -normalize(normalize(ground->v1 - ground->v0) * groundSpeed);
+		if (reversed)
+			motionGhostDir = -motionGhostDir;
+		motionMagnitude = abs(groundSpeed);
+	}
+	else
+	{
+		motionGhostDir = -normalize(velocity);
+		motionMagnitude = length(velocity);
+	}
+
+	float dist = motionGhostSpacing;
+
+	int showMotionGhosts = min(motionMagnitude / 1.0, 80.0);
+
+	if (speedLevel == 0)
+	{
+		showMotionGhosts = min(showMotionGhosts * 2.0, 80.0);
+	}
+	for (int i = 0; i < 3; ++i)
+	{
+		motionGhostsEffects[i]->SetSpread(showMotionGhosts, Vector2f(motionGhostDir.x, motionGhostDir.y), sprite->getRotation() / 180.f * PI);
+		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
 	}
 
 	if( speedParticleCounter == speedParticleRate )
@@ -15951,6 +15964,9 @@ void Actor::UpdatePostPhysics()
 	{
 		++framesSinceGrindAttempt;
 	}
+
+	if( standNDashBoostCurr > 0 )
+		standNDashBoostCurr--;
 
 	if( bounceFlameOn )
 	{
@@ -22085,7 +22101,7 @@ Actor::Action Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
-	return ( hasDoubleJump && currInput.A && !prevInput.A && !IsSingleWirePulling() );
+	return ( hasDoubleJump && ((currInput.A && !prevInput.A) || pauseBufferedJump )  && !IsSingleWirePulling() );
 }
 
 bool Actor::IsDoubleWirePulling()
@@ -22109,7 +22125,7 @@ bool Actor::TryAirDash()
 {
 	if( hasPowerAirDash && !IsSingleWirePulling() )
 	{
-		if( ( hasAirDash || inBubble ) && !prevInput.B && currInput.B )
+		if( ( hasAirDash || inBubble ) && ( ( !prevInput.B && currInput.B) || pauseBufferedDash )  )
 		{
 			hasFairAirDashBoost = (action == FAIR);
 			SetActionExpr( AIRDASH );
@@ -22267,6 +22283,61 @@ bool Actor::IHitPlayer( int otherPlayerIndex )
 	}
 	
 	return false;
+}
+
+void Actor::ClearPauseBufferedActions()
+{
+	pauseBufferedJump = false;
+	pauseBufferedAttack = Action::Count;
+	pauseBufferedDash = false;
+}
+
+bool Actor::IsAttackAction( Action a )
+{
+	return (a == FAIR || a == DAIR || a == UAIR || a == STANDN);
+}
+
+void Actor::UpdateInHitlag()
+{
+	if (IsAttackAction(action) && currAttackHit )
+	{
+		if (pauseBufferedAttack == Action::Count)
+		{
+			if (currInput.rightShoulder && !prevInput.rightShoulder)
+			{
+				if (ground == NULL)
+				{
+					if (currInput.LUp())
+					{
+						pauseBufferedAttack = UAIR;
+					}
+					else if (currInput.LDown())
+					{
+						pauseBufferedAttack = DAIR;
+					}
+					else
+					{
+						pauseBufferedAttack = FAIR;
+					}
+				}
+				else
+				{
+					pauseBufferedAttack = STANDN;
+				}
+			}
+		}
+
+		if (ground == NULL && !pauseBufferedJump && currInput.A && !prevInput.A )
+		{
+			pauseBufferedJump = true;
+		}
+
+		if (!pauseBufferedDash && currInput.B && !prevInput.B)
+		{
+			if( ground != NULL || ( ground == NULL && hasAirDash ) )
+				pauseBufferedDash = true;
+		}
+	}	
 }
 
  pair<bool, bool> Actor::PlayerHitMe( int otherPlayerIndex )

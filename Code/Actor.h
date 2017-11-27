@@ -290,6 +290,8 @@ struct Actor : QuadTreeCollider,
 	double dairBoostVel;
 	bool standNDashBoost;
 	double standNDashBoostQuant;
+	int standNDashBoostCooldown;
+	int standNDashBoostCurr;
 
 	bool hasFairAirDashBoost;
 	double fairAirDashBoostQuant;
@@ -979,6 +981,17 @@ struct Actor : QuadTreeCollider,
 
 	//bool bufferedAttack;
 	Action bufferedAttack;
+
+	Action pauseBufferedAttack;
+	bool pauseBufferedJump;
+	bool pauseBufferedDash;
+	
+	void ClearPauseBufferedActions();
+	void UpdateInHitlag();
+	bool IsAttackAction( Action a );
+
+
+
 
 	int drainCounter;
 	int drainCounterMax;
