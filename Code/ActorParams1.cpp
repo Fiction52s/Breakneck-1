@@ -305,9 +305,6 @@ ActorParams *PatrollerParams::Copy()
 	return copy;
 }
 
-
-
-
 CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY )
 {
@@ -372,6 +369,10 @@ void CrawlerParams::SetParams()
 	}
 
 	hasMonitor = p->checkBoxes["monitor"]->checked;
+
+	s = p->textBoxes["dist"]->text.getString().toAnsiString();
+	//ss
+	dist = 1000;
 }
 
 bool CrawlerParams::CanApply()
@@ -396,8 +397,9 @@ void CrawlerParams::WriteParamFile( ofstream &of )
 	else
 		of << "-clockwise" << endl;
 	
-	of.precision( 5 );
-	of << fixed << speed << endl;
+	of << speed << endl;
+
+	of << dist << endl;
 }
 
 ActorParams *CrawlerParams::Copy()
@@ -406,38 +408,6 @@ ActorParams *CrawlerParams::Copy()
 	return copy;
 }
 
-
-
-
-CrawlerReverserParams::CrawlerReverserParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
-	int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
-{
-	type = edit->types["crawlerreverser"];
-
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
-}
-
-bool CrawlerReverserParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
-void CrawlerReverserParams::WriteParamFile( ofstream &of )
-{
-}
-
-ActorParams *CrawlerReverserParams::Copy()
-{
-	CrawlerReverserParams *copy = new CrawlerReverserParams( *this );
-	return copy;
-}
 
 
 

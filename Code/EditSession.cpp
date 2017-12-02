@@ -1356,50 +1356,6 @@ bool EditSession::OpenFile()
 					//a->hasMonitor = (bool)hasMonitor;
 				}
 				//w1
-				else if( typeName == "crawlerreverser" )
-				{
-					//always grounded
-					int terrainIndex;
-					is >> terrainIndex;
-
-					int edgeIndex;
-					is >> edgeIndex;
-
-					double edgeQuantity;
-					is >> edgeQuantity;
-
-					PolyPtr terrain( NULL );
-					if( terrainIndex == -1  )
-					{
-						terrain = inversePolygon;
-					}
-					else
-					{
-						int testIndex = 0;
-						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						{
-							if( testIndex == terrainIndex )
-							{
-								terrain = (*it);
-								break;
-							}
-							testIndex++;
-						}
-					}
-
-					if( terrain == NULL )
-						assert( 0 && "failure terrain indexing crawler_reverser" );
-
-					if( edgeIndex == terrain->numPoints - 1 )
-						edgeIndex = 0;
-					else
-						edgeIndex++;
-
-					//a->SetAsFootTrap( at, terrain, edgeIndex, edgeQuantity );
-					a.reset( new CrawlerReverserParams( this, terrain.get(), edgeIndex, edgeQuantity ) );
-					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
-					terrain->UpdateBounds();
-				}
 				else if( typeName == "bosscrawler" )
 				{
 					//always grounded
@@ -1622,8 +1578,11 @@ bool EditSession::OpenFile()
 						assert( false && "boolean problem" );
 					}
 
-					float speed;
+					int speed;
 					is >> speed;
+
+					int dist;
+					is >> dist;
 
 					PolyPtr terrain( NULL );
 					if( terrainIndex == -1  )
@@ -5912,9 +5871,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
 	ActorType *crawlerType = new ActorType( "crawler", crawlerPanel );
 
-	//Panel *crawlerReverserPanel = NULL;
-	//ActorType *crawlerReverserType = new ActorType( "crawlerreverser", crawlerReverserPanel );
-
 	Panel *basicTurretPanel = CreateOptionsPanel( "basicturret" );
 	ActorType *basicTurretType = new ActorType( "basicturret", basicTurretPanel );
 
@@ -6094,7 +6050,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set( 2, 1, Sprite( basicTurretType->iconTexture ), "basicturret" );
 	gs->Set( 3, 1, Sprite( footTrapType->iconTexture ), "foottrap" );
 	gs->Set( 4, 1, Sprite( bossCrawlerType->iconTexture ), "bosscrawler" );
-	//gs->Set( 1, 1, Sprite( patrollerType->iconTexture ), "crawlerreverser" );
 
 	gs->Set( 0, 2, Sprite( batType->iconTexture ), "bat" );
 	gs->Set( 1, 2, Sprite( curveTurretType->iconTexture ), "curveturret" );
@@ -8503,21 +8458,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											tempActor->SetPanelInfo();
 										}
 									}
-									else if( trackingEnemy->name == "crawlerreverser" )
-									{
-										if( enemyEdgePolygon != NULL )
-										{
-											ActorPtr crawlerReverser( new CrawlerReverserParams( this, 
-												enemyEdgePolygon, enemyEdgeIndex, enemyEdgeQuantity ) );
-											crawlerReverser->group = groups["--"];
-											//groups["--"]->actors.push_back( crawlerReverser );
-											enemyEdgePolygon->enemies[crawlerReverser->groundInfo->edgeStart].push_back( crawlerReverser );
-											enemyEdgePolygon->UpdateBounds();
-
-
-											CreateActor( crawlerReverser );
-										}
-									}
 									else if( trackingEnemy->name == "basicturret" )
 									{
 										if( enemyEdgePolygon != NULL )
@@ -10908,13 +10848,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				if( showPanel == NULL && trackingEnemy != NULL  )
 				{
 					string name = trackingEnemy->name;
-					bool w1Grounded = 
+					bool w1Grounded =
 						name == "crawler"
 						|| name == "foottrap"
 						|| name == "crawler"
 						|| name == "basicturret"
-						|| name == "bosscrawler"
-						|| name == "crawlerreverser";
+						|| name == "bosscrawler";
 
 					bool w2Grounded = 
 						name == "stagbeetle"
@@ -15960,15 +15899,6 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;*/
 	//}
 
-	/*else if( name == "crawlerreverser" )
-	{
-		//Panel *p = new Panel( "crawlerreverser_options", 200, 400, this );
-		//p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		//p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		//p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-	}*/
 
 	else if( name == "map" )
 	{
@@ -17666,13 +17596,6 @@ void ActorType::Init()
 		canBeAerial = false;
 	}
 	else if( name == "foottrap" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-	}
-	else if( name == "crawlerreverser" )
 	{
 		width = 32;
 		height = 32;

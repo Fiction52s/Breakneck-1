@@ -8,6 +8,7 @@
 #include "Enemy.h"
 #include "BarrierReactions.h"
 
+
 struct DialogueUser
 {
 	virtual bool ConfirmDialogue() = 0;

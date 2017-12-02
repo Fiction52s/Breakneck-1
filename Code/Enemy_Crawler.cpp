@@ -17,7 +17,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, double s )
+Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int dist )
 	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
 	//cout << "inside crawler" << endl;
@@ -31,7 +31,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	//}
 	initHealth = 60;
 	health = initHealth;
-	lastReverser = false;
+	//lastReverser = false;
 	dead = false;
 	deathFrame = 0;
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
@@ -123,7 +123,6 @@ void Crawler::ResetEnemy()
 {
 	health = initHealth;
 	attackFrame = -1;
-	lastReverser = false;
 	roll = false;
 	ground = startGround;
 	edgeQuantity = startQuant;
@@ -436,21 +435,6 @@ void Crawler::HandleEntrant( QuadTreeEntrant *qte )
 					col = true;
 					
 				}
-			}
-		}
-	}
-	else if( queryMode == "reverse" )
-	{	
-		CrawlerReverser *cr = (CrawlerReverser*)qte;
-		if( cr != lastReverser )
-		{
-			//cout << "PLEASE" << endl;
-			if( cr->hurtBody.Intersects( physBody ) )
-			{
-				//cout << "reversed!" << endl;
-				lastReverser = cr;
-				groundSpeed = -groundSpeed;
-				clockwise = !clockwise;
 			}
 		}
 	}
@@ -1485,67 +1469,4 @@ void Crawler::SaveEnemyState()
 
 void Crawler::LoadEnemyState()
 {
-}
-
-CrawlerReverser::CrawlerReverser( GameSession *owner, Edge *edge, double q )
-	:ground( edge ), quantity( q )
-{
-
-	V2d gNorm = edge->Normal();
-	ts = owner->GetTileset( "crawlerreverser.png", 32, 32 );
-	position = edge->GetPoint( quantity ) + 16.0 * gNorm;
-	sprite.setTexture( *ts->texture );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-
-	drawNext = NULL;
-	double angle = atan2( gNorm.y, gNorm.x );
-	sprite.setRotation( angle );
-	sprite.setPosition( position.x, position.y );
-
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
-
-	hurtBody.globalAngle = 0;
-	hurtBody.globalPosition = position;
-}
-
-void CrawlerReverser::HandleQuery( QuadTreeCollider *qtc )
-{
-	qtc->HandleEntrant( this );
-}
-
-bool CrawlerReverser::IsTouchingBox( const sf::Rect<double> &r )
-{
-	V2d rA( r.left, r.top );
-	V2d rB( r.left + r.width, r.top );
-	V2d rC( r.left + r.width, r.top + r.height );
-	V2d rD( r.left, r.top + r.height );
-
-	V2d gPos = ground->GetPoint( quantity );
-	V2d along = normalize( ground->v1 - ground->v0 );
-	V2d other( along.y, -along.x );
-
-	double width = 16;
-	double height = 16;
-	V2d A = gPos - along * width;
-	V2d B = A + other * height;
-	V2d C = B + along * width;
-	V2d D = C - other * height;
-
-	if( isQuadTouchingQuad( rA, rB, rC, rD, A, B, C, D ) )
-	{
-		return true;
-	}
-
-	return false;
-}
-
-void CrawlerReverser::Draw( sf::RenderTarget *target )
-{
-	target->draw( sprite );
 }

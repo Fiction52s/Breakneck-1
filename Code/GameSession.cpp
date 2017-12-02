@@ -40,6 +40,7 @@
 #include "HUD.h"
 #include "Rail.h"
 #include "TerrainRender.h"
+#include "Enemy.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -1114,13 +1115,6 @@ void GameSession::UpdateEffects()
 
 void GameSession::UpdateEnemiesDraw()
 {
-	/*CrawlerReverser *cr = drawCrawlerReversers;
-	while( cr != NULL )
-	{
-		cr->Draw( preScreenTex );
-		cr = cr->drawNext;
-	}*/
-	//CrawlerReverser *cr = 
 
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
@@ -2255,24 +2249,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
 			}
-			else if( typeName == "crawlerreverser" )
-			{
-				//always grounded
-
-				/*int terrainIndex;
-				is >> terrainIndex;
-
-				int edgeIndex;
-				is >> edgeIndex;
-
-				double edgeQuantity;
-				is >> edgeQuantity;
-
-				CrawlerReverser *cr = new CrawlerReverser( this, edges[polyIndex[terrainIndex] + edgeIndex],
-					edgeQuantity );
-
-				crawlerReverserTree->Insert( cr );*/
-			}
 			else if( typeName == "bosscrawler" )
 			{
 				//always grounded
@@ -2353,8 +2329,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					assert( false && "boolean problem" );
 				}
 
-				float speed;
+				int speed;
 				is >> speed;
+
+				int dist;
+				is >> dist;
 
 				if( hasMonitor )
 				{
@@ -2367,7 +2346,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 				Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, clockwise, speed );
+					edgeQuantity, clockwise, speed, dist );
 
 
 				/*if( enemy->hasMonitor )
@@ -5775,8 +5754,6 @@ bool GameSession::Load()
 
 	itemTree = new QuadTree(1000000, 1000000);
 
-	//crawlerReverserTree = new QuadTree(1000000, 1000000);
-
 	envPlantTree = new QuadTree(1000000, 1000000);
 
 	specterTree = new QuadTree(1000000, 1000000);
@@ -5881,7 +5858,6 @@ bool GameSession::Load()
 	totalGameFrames = 0;	
 	originalZone = NULL;
 	
-	//drawCrawlerReversers = NULL;
 	inactiveEnemyList = NULL;
 	cloneInactiveEnemyList = NULL;
 	unlockedGateList = NULL;
@@ -7278,10 +7254,6 @@ int GameSession::Run()
 				//		}
 				//	}
 				//}
-
-				//queryMode = "crawlerreverser";
-				//drawCrawlerReversers = NULL;
-				//crawlerReverserTree->Query( this, screenRect );
 				
 				EnvPlant *prevPlant = NULL;
 				EnvPlant *ev = activeEnvPlants;
@@ -9826,20 +9798,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			c->next = drawCritical;
 			drawCritical = c;
 		}
-	}
-	else if( queryMode == "crawlerreverser" )
-	{
-		/*CrawlerReverser *cr = (CrawlerReverser*)qte;
-		if( drawCrawlerReversers == NULL )
-		{
-			drawCrawlerReversers = cr;
-			cr->drawNext = NULL;
-		}
-		else
-		{
-			cr->drawNext = drawCrawlerReversers;
-			drawCrawlerReversers = cr;
-		}*/
 	}
 	else if( queryMode == "envplant" )
 	{

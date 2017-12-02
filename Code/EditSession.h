@@ -813,6 +813,7 @@ struct PatrollerParams : public ActorParams
 
 	bool loop;
 	int speed;
+	int swoopSpeed;
 };
 
 struct CrawlerParams : public ActorParams
@@ -833,19 +834,8 @@ struct CrawlerParams : public ActorParams
 	ActorParams *Copy();
 	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
-	float speed;
-};
-
-struct CrawlerReverserParams : public ActorParams
-{
-	CrawlerReverserParams( 
-		EditSession *edit, 
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity );
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile( std::ofstream &of );
-	bool CanApply();
+	int speed;
+	int dist;
 };
 
 struct BasicTurretParams : public ActorParams

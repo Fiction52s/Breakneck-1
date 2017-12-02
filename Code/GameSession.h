@@ -5,7 +5,7 @@
 #include "Tileset.h"
 #include <list>
 //#include "Actor.h"
-#include "Enemy.h"
+//#include "Enemy.h"
 #include "QuadTree.h"
 #include <SFML/Graphics.hpp>
 #include "Light.h"
@@ -20,6 +20,7 @@
 #include "Buf.h"
 #include "EnvEffects.h"
 #include "Actor.h"
+#include "EffectLayer.h"
 
 struct TerrainRender;
 struct RecordPlayer;
@@ -331,7 +332,8 @@ struct Parallax;
 struct MusicInfo;
 struct GhostEntry;
 struct ResultsScreen;
-
+struct RaceFightTarget;
+struct BasicEffect;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -1026,7 +1028,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *railEdgeTree;
 	QuadTree *railDrawTree;
 	QuadTree *activeItemTree; 
-	//CrawlerReverser *drawCrawlerReversers;
 	
 	Rail *railDrawList;
 
