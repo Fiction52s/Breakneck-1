@@ -3,6 +3,7 @@
 #include <iostream>
 #include "GameSession.h"
 #include "Movement.h"
+#include "Enemy.h"
 
 using namespace std;
 using namespace sf;

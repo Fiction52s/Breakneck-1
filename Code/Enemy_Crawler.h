@@ -3,11 +3,28 @@
 
 #include "Enemy.h"
 
-struct Crawler : Enemy
+struct Crawler : Enemy, SurfaceMoverHandler
 {
+	enum Action
+	{
+		LATENT,
+		UNBURROW,
+		CRAWL,
+		STARTROLL,
+		ROLL,
+		ENDROLL,
+		DASH,
+		BURROW,
+		DYING
+	};
+
+	int actionLength[DYING+1];
 	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int dist);
+
+	void TransferEdge(Edge *);
 	//	void HandleEdge( Edge *e );
 	void HandleEntrant(QuadTreeEntrant *qte);
+	bool ShouldDash();
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void PhysicsResponse();
@@ -26,6 +43,8 @@ struct Crawler : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 	sf::Sprite sprite;
+	double totalDistBeforeBurrow;
+	double currDistTravelled;
 	Tileset *ts;
 	//Tileset *ts_walk;
 	//Tileset *ts_roll;
@@ -33,8 +52,12 @@ struct Crawler : Enemy
 	bool clockwise;
 	double groundSpeed;
 	Edge *ground;
+
+	SurfaceMover *mover;
 	//sf::Vector2<double> offset;
 	double edgeQuantity;
+
+	Action action;
 
 	CollisionBox hurtBody;
 	CollisionBox hitBody;

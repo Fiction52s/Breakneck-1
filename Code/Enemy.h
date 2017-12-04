@@ -128,24 +128,6 @@ struct CopycatBullet : BasicBullet
 	//CollisionBox hurtBody;
 };
 
-//struct SwarmBullet : BasicBullet
-//{
-//	SwarmBullet( int indexVA,
-//		Launcher *launcher );
-//	void UpdatePrePhysics();
-//	void UpdatePhysics();
-//
-//	double gravStrength;
-//
-//	//SwarmBullet *prev;
-//	//SwarmBullet *next;
-//};
-
-
-//struct CurveBullet : BasicBullet
-//{
-//};
-
 struct Launcher
 {
 	
@@ -576,108 +558,6 @@ struct ShipPickup : Enemy
 };
 //set up the movers first
 
-
-
-
-
-
-
-
-
-
-
-
-
-struct Booster : Enemy
-{
-	enum Action
-	{
-		NEUTRAL,
-		BOOST,
-		REFRESH,
-		Count
-	};
-
-	Action action;
-	Booster(GameSession *owner,
-		sf::Vector2i &pos, int strength );
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	bool physicsOver;
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	void UpdateSprite();
-	void UpdateHitboxes();
-	bool PlayerSlowingMe();
-	void ResetEnemy();
-	int frame;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	//CollisionBox hurtBody;
-	CollisionBox hitBody;
-
-	int strength;
-	//HitboxInfo *hitboxInfo;
-
-	int animationFactor;
-
-	void SaveEnemyState() {}
-	void LoadEnemyState() {}
-};
-
-struct Spring : Enemy
-{
-	//MovementSequence testSeq;
-	Spring(GameSession *owner,
-		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames );
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	bool physicsOver;
-
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	void UpdateSprite();
-	void UpdateHitboxes();
-	bool PlayerSlowingMe();
-	void ResetEnemy();
-	
-	//void HandleQuery(QuadTreeCollider * qtc);
-	//bool IsTouchingBox(const sf::Rect<double> &r);
-
-	int frame;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//HitboxInfo *hitboxInfo;
-
-	int animationFactor;
-
-	void SaveEnemyState() {}
-	void LoadEnemyState() {}
-
-	sf::Vector2<double> dir;
-	int speed;
-	int stunFrames;
-};
-
-//w1
-
-
 struct BossCrawler : Enemy
 {
 	enum Action
@@ -811,143 +691,6 @@ struct BossCrawler : Enemy
 	
 };
 
-//w2
-
-
-
-
-
-
-
-
-
-//w3
-
-
-
-
-
-
-
-//w4
-
-
-
-
-
-
-
-
-
-
-//w5
-
-
-
-
-
-
-
-
-
-//w6
-struct Specter;
-struct SpecterArea : QuadTreeEntrant
-{
-	SpecterArea( Specter *sp, sf::Vector2i &pos, int rad );
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
-	int radius;
-	sf::Rect<double> testRect;
-	CollisionBox barrier;
-	Specter *specter;
-};
-
-struct Specter : Enemy
-{
-	
-	//MovementSequence testSeq;
-	Specter( GameSession *owner,
-		 bool hasMonitor,
-		 sf::Vector2i pos );
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	bool physicsOver;
-
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target );
-	void DrawMinimap( sf::RenderTarget *target );
-	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer( int index = 0 );
-	std::pair<bool,bool> PlayerHitMe( int index = 0 );
-	void UpdateSprite();
-	void UpdateHitboxes();
-	bool PlayerSlowingMe();
-	void ResetEnemy();
-
-	void SaveEnemyState();
-	void LoadEnemyState();
-
-	int deathFrame;
-
-	int radius;
-	
-	
-	SpecterArea myArea;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	//Tileset * ts_death;
-	//std::list<sf::Vector2i> path;
-	
-	//int targetNode;
-	//bool forward;
-	//sf::Vector2<double>
-	int frame;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
-
-	int hitlagFrames;
-	int hitstunFrames;
-	int animationFactor;
-
-	//Tileset *ts_testBlood;
-	//sf::Sprite bloodSprite;
-	//int bloodFrame;
-	//bool facingRight;
-
-	struct Stored
-	{
-		bool dead;
-		int deathFrame;
-		//sf::Vector2<double> deathVector;
-		//double deathPartingSpeed;
-		int targetNode;
-		bool forward;
-		int frame;
-		sf::Vector2<double> position;
-
-		int hitlagFrames;
-		int hitstunFrames;
-	};
-	Stored stored;
-};
-
-
-
-
-
-
-
-
-
 struct EnemyParentNode;
 
 struct EnemyQNode
@@ -993,7 +736,17 @@ void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<double>
 
 bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<double> & ir );
 
-
+struct Specter;
+struct SpecterArea : QuadTreeEntrant
+{
+	SpecterArea(Specter *sp, sf::Vector2i &pos, int rad);
+	void HandleQuery(QuadTreeCollider * qtc);
+	bool IsTouchingBox(const sf::Rect<double> &r);
+	int radius;
+	sf::Rect<double> testRect;
+	CollisionBox barrier;
+	Specter *specter;
+};
 
 
 #endif

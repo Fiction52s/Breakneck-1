@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include <iostream>
 #include "GameSession.h"
+#include "Enemy_HealthFly.h"
 
 using namespace std;
 using namespace sf;

@@ -13,6 +13,8 @@
 #include "Aura.h"
 #include "VisualEffects.h"
 #include "Enemy.h"
+#include "Enemy_Booster.h"
+#include "Enemy_Spring.h"
 
 using namespace sf;
 using namespace std;

@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Movement.h"
+#include "Enemy_Narwhal.h"
 
 using namespace std;
 using namespace sf;

@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Movement.h"
+#include "Enemy_Jay.h"
 
 using namespace std;
 using namespace sf;

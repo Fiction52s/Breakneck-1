@@ -171,7 +171,9 @@ bool SurfaceMover::MoveAlongEdge( double &movement, double &groundLength, double
 		bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
 		if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 		{
-			HitTerrain( q );	
+			HitTerrain( q );
+			//if (surfaceHandler != NULL)
+			//	surfaceHandler->TransferEdge(ground);
 			return true;
 			//return false;
 		}			

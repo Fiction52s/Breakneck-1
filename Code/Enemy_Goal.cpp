@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "GoalExplosion.h"
+#include "Enemy_Goal.h"
 
 using namespace std;
 using namespace sf;

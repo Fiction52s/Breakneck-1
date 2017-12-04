@@ -370,7 +370,7 @@ void CrawlerParams::SetParams()
 
 	hasMonitor = p->checkBoxes["monitor"]->checked;
 
-	s = p->textBoxes["dist"]->text.getString().toAnsiString();
+	//s = p->textBoxes["dist"]->text.getString().toAnsiString();
 	//ss
 	dist = 1000;
 }

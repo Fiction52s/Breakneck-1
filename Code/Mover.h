@@ -18,8 +18,8 @@ struct GroundMoverHandler
 
 struct SurfaceMoverHandler
 {
-	virtual void HitTerrainAerial(Edge *, double) = 0;
-	virtual void TransferEdge( Edge * ) = 0;
+	virtual void HitTerrainAerial(Edge *, double) {};
+	virtual void TransferEdge(Edge *) {};
 };
 
 struct GameSession;

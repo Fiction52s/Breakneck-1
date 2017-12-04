@@ -1,3 +1,5 @@
+#ifndef __EFFECTLAYER_H__
+#define __EFFECTLAYER_H__
 enum EffectLayer
 {
 	BEHIND_TERRAIN,
@@ -9,3 +11,5 @@ enum EffectLayer
 	UI_FRONT,
 	Count
 };
+
+#endif 

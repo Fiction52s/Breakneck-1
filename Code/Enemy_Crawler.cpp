@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Enemy_Crawler.h"
 
 using namespace std;
 using namespace sf;
@@ -20,6 +21,8 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int dist )
 	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	currDistTravelled = 0;
+	totalDistBeforeBurrow = dist;
 	//cout << "inside crawler" << endl;
 	//if( hasMonitor )
 	//{
@@ -29,6 +32,11 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	//{
 	//	cout << "no monitor" << endl;
 	//}
+	mover = new SurfaceMover(owner, g, q, 32 );
+	mover->surfaceHandler = this;
+	//testMover->gravity = V2d( 0, .5 );
+	mover->SetSpeed(0);
+
 	initHealth = 60;
 	health = initHealth;
 	//lastReverser = false;
@@ -45,9 +53,9 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	V2d gPoint = mover->ground->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
-	V2d gNorm = g->Normal();
+	V2d gNorm = mover->ground->Normal();
 
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
@@ -57,6 +65,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	{
 		groundSpeed = -groundSpeed;
 	}
+
+
 
 	receivedHit = NULL;
 
@@ -101,7 +111,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	frame = 0;
 
 	deathPartingSpeed = .4;
-
+	mover->SetSpeed(groundSpeed);
+	action = CRAWL;
 	/*if( hasMonitor )
 	{
 		cout << "HAS MONMITOR NOW END" << endl;
@@ -121,6 +132,17 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 void Crawler::ResetEnemy()
 {
+	//action = LATENT;
+	action = CRAWL;
+	mover->ground = startGround;
+	mover->edgeQuantity = startQuant;
+	mover->roll = false;
+	mover->UpdateGroundPos();
+	mover->SetSpeed(groundSpeed);
+
+	position = mover->physBody.globalPosition;
+
+	currDistTravelled = 0;
 	health = initHealth;
 	attackFrame = -1;
 	roll = false;
@@ -131,7 +153,7 @@ void Crawler::ResetEnemy()
 	frame = 0;
 	position = gPoint + ground->Normal() * 64.0 / 2.0;
 
-	V2d gn = ground->Normal();
+	V2d gn = mover->ground->Normal();
 	if( gn.x > 0 )
 		offset.x = physBody.rw;
 	else if( gn.x < 0 )
@@ -153,7 +175,7 @@ void Crawler::ResetEnemy()
 		
 	//sprite.setTexture( *ts_walk->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	V2d pp = ground->GetPoint( edgeQuantity );
+	V2d pp = mover->ground->GetPoint(mover->edgeQuantity );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation( angle / PI * 180 );
 	sprite.setPosition( pp.x, pp.y );
@@ -486,13 +508,8 @@ void Crawler::UpdateHitboxes()
 
 void Crawler::UpdatePrePhysics()
 {
-	if( dead )
+	if( action == DYING )
 		return;
-
-	/*if( keyFrame == 16 * 5 )
-	{
-		keyFrame = 0;
-	}*/
 
 	if( !dead && receivedHit != NULL )
 	{	
@@ -518,30 +535,188 @@ void Crawler::UpdatePrePhysics()
 			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
 		}
 			
-		
-
 		receivedHit = NULL;
+	}
+
+	//if (frame == actionLength[action])
+	if( false )
+	{
+		switch (action)
+		{
+		case LATENT:
+			frame = 0;
+			break;
+		case UNBURROW:
+			action = CRAWL;
+			frame = 0;
+			break;
+		case CRAWL:
+			frame = 0;
+			break;
+		case ROLL:
+			frame = 0;
+			break;
+		case DASH:
+			action = CRAWL;
+			frame = 0;
+			break;
+		case BURROW:
+			action = LATENT;
+			frame = 0;
+			break;
+		case DYING:
+			assert(0);
+			break;
+		}
+	}
+	
+
+	switch (action)
+	{
+	case LATENT:
+		break;
+	case UNBURROW:
+		break;
+	case CRAWL:
+		/*if (length(owner->GetPlayer(0)->position - position) < 400)
+		{
+			action = DASH;
+			frame = 0;
+		}*/
+		break;
+	case DASH:
+		break;
+	case BURROW:
+		break;
+	case DYING:
+		break;
+	}
+
+
+	V2d en = mover->ground->Normal();
+	switch (action)
+	{
+	case LATENT:
+		break;
+	case UNBURROW:
+		break;
+	case CRAWL:
+		if (frame == 35 * crawlAnimationFactor)
+		{
+			frame = 0;
+		}
+		if( ShouldDash() )
+		{
+			action = DASH;
+			frame = 0;
+
+			mover->SetSpeed(groundSpeed * 2);
+		}
+		break;
+	case STARTROLL:
+		if (frame == 3 * crawlAnimationFactor)
+		{
+			action = ROLL;
+			frame = 0;
+		}
+		if( ShouldDash() )
+		{
+			action = DASH;
+			frame = 0;
+
+			mover->SetSpeed(groundSpeed * 2);
+		}
+		break;
+	case ROLL:
+		if (frame == 13 * crawlAnimationFactor)
+		{
+			frame = 0;
+		}
+		if( ShouldDash() )
+		{
+			action = DASH;
+			frame = 0;
+
+			mover->SetSpeed(groundSpeed * 2);
+		}
+		{
+			
+			V2d gn = mover->ground->Normal();
+			double acc = .08;
+			
+			if (mover->groundSpeed > 0)
+			{
+				if (gn.x < 0)
+				{
+					acc = -acc;
+				}
+			}
+			else if (mover->groundSpeed < 0)
+			{
+				if (gn.x > 0)
+				{
+					acc = -acc;
+				}
+			}
+
+			if (mover->groundSpeed > 0)
+			{
+				mover->SetSpeed(mover->groundSpeed + acc);
+				if (mover->groundSpeed < groundSpeed)
+				{
+					mover->SetSpeed(groundSpeed);
+				}
+			}
+			else if (mover->groundSpeed < 0)
+			{
+				mover->SetSpeed(mover->groundSpeed - acc);
+				if (mover->groundSpeed > -groundSpeed)
+				{
+					mover->SetSpeed(-groundSpeed);
+				}
+			}
+		}
+		break;
+	case ENDROLL:
+		if (frame == 4 * crawlAnimationFactor)
+		{
+			action = CRAWL;
+			frame = 0;
+		}
+		break;
+	case DASH:
+		if (frame == 7 * crawlAnimationFactor)
+		{
+			if (mover->groundSpeed > 0 && (en.x > 0 && en.y < 0)
+				|| (mover->groundSpeed < 0 && en.x < 0 && en.y < 0))
+			{
+				action = STARTROLL;
+				frame = 0;
+			}
+			else
+			{
+				action = CRAWL;
+				frame = 0;
+				mover->SetSpeed(groundSpeed);
+			}	
+		}
+		break;
+	case BURROW:
+		break;
+	case DYING:
+		break;
 	}
 
 	if( attackFrame == 7 * attackMult )
 	{
 		attackFrame = -1;
 	}
-	//if( attacking )
-	//{
-	//}
-	//else
-	//{
-	//need roll start and roll end states
-		if( !roll && frame == 43 * crawlAnimationFactor )
-		{
-			frame = 0;
-		}
+	
 
-		if ( roll && frame == 10 * rollAnimationFactor )
-		{
-			frame = rollAnimationFactor * 2; 
-		}
+	if (mover->roll && frame == 19 * rollAnimationFactor )
+	{
+		//frame = 0;//rollAnimationFactor * 2; 
+	}
 	//}
 }
 
@@ -553,331 +728,8 @@ void Crawler::UpdatePhysics()
 		return;
 	}
 
-	double movement = 0;
-	double maxMovement = min( physBody.rw, physBody.rh );
-	movement = groundSpeed;
-
-	movement /= slowMultiple * NUM_STEPS;
-	while( movement != 0 )
-	{
-		//ground is always some value
-
-		double steal = 0;
-		if( movement > 0 )
-		{
-			if( movement > maxMovement )
-			{
-				steal = movement - maxMovement;
-				movement = maxMovement;
-			}
-		}
-		else 
-		{
-			if( movement < -maxMovement )
-			{
-				steal = movement + maxMovement;
-				movement = -maxMovement;
-			}
-		}
-
-		double extra = 0;
-		bool leaveGround = false;
-		double q = edgeQuantity;
-
-		V2d gNormal = ground->Normal();
-
-
-		double m = movement;
-		double groundLength = length( ground->v1 - ground->v0 ); 
-
-		if( approxEquals( q, 0 ) )
-			q = 0;
-		else if( approxEquals( q, groundLength ) )
-			q = groundLength;
-
-		Edge *e0 = ground->edge0;
-		Edge *e1 = ground->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
-
-		bool transferLeft = false;
-		bool transferRight = false;
-
-		if( movement > 0 && q == groundLength )
-		{
-			double c = cross( e1n, gNormal );
-			double d = dot( e1n, gNormal );
-			//cout << "c: " << c << ", d: " << d << endl;
-			//if( c >= -.5 && d > 0 )
-			//if( d > . )
-			if( gNormal == e1n )
-			{
-				//cout << "t1" << endl;
-				q = 0;
-				ground = e1;
-			}
-			else if( !roll )
-			{
-				//cout << "roll is true" << endl;
-				roll = true;
-				rollFactor = 0;
-				frame = 0;
-			}
-			else
-			{
-				//cout << "rollin" << endl;
-				double angle = m / 3.0 /  physBody.rw;
-				V2d currVec = position - ground->v1;
-				V2d newPos;
-				newPos.x = currVec.x * cos( angle ) - 
-					currVec.y * sin( angle ) + ground->v1.x;
-				newPos.y = currVec.x * sin( angle ) + 
-					currVec.y * cos( angle ) + ground->v1.y;
-				V2d newVec = newPos - ground->v1;
-				double rollNew = atan2( newVec.y, newVec.x );
-				if( rollNew < 0 )
-				{
-					rollNew += 2 * PI;
-				}
-
-				double oldRollFactor = rollFactor;
-				double rollStart = atan2( gNormal.y, gNormal.x );
-				V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-				double rollEnd = atan2( e1n.y, e1n.x );
-
-				if( rollStart < 0 )
-					rollStart += 2 * PI;
-				if( rollEnd < 0 )
-					rollEnd += 2 * PI;
-
-				//cout << "totalAngleDist: " << totalAngleDist << endl;
-				//cout << "angleDist: " << angleDist << endl;
-				//cout << "rollEnd: " << rollEnd << endl;
-				//cout << "rollNew: " << rollNew << endl;
-
-				bool changed = false;
-				if( rollEnd > rollStart && ( rollNew > rollEnd || rollNew < rollStart ) )
-				{
-					changed = true;
-					newPos = ground->v1 + e1n * physBody.rw;
-				}
-				//else if( rollEnd < rollStart && rollNew < rollEnd )
-				else if( rollEnd < rollStart && ( rollNew > rollEnd && rollNew < rollStart ) )
-				{
-					changed = true;
-					newPos = ground->v1 + e1n * physBody.rw;
-				}
-
-				//V2d newVec = newPos - ground->v1;
-
-
-				bool hit = ResolvePhysics( newPos - position );
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					//hitting while in a roll already. do the normal one first
-					V2d eNorm = minContact.normal;//
-					Edge *e = minContact.edge;
-					if( eNorm.x == 0 && eNorm.y == 0 )
-					{
-						if( minContact.position == e->v0 )
-						{
-
-						}
-						else if( minContact.position == e->v1 )
-						{
-
-						}
-
-					}
-					ground = minContact.edge;
-					q = ground->GetQuantity( minContact.position + minContact.resolution );
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
-					roll = false;
-					//cout << "hitting" << endl;
-					break;
-				}
-
-				if( changed )
-				{
-				//	cout << "t2" << endl;
-					ground = e1;
-					q = 0;
-					roll = false;
-				}
-			}
-		}
-		else if( movement < 0 && q == 0 )
-		{
-			double d = dot( e1n, gNormal );
-
-			if( gNormal == e0n )
-			{
-				q = length( e0->v1 - e0->v0 );
-				ground = e0;
-			}
-			else if( !roll )
-			{
-				roll = true;
-				rollFactor = 0;
-				frame = 0;
-			}
-			else
-			{
-				//cout << "roll left" << endl;
-				double angle = m / 3.0 / physBody.rw;
-				V2d currVec = position - ground->v0;
-				V2d newPos;
-				newPos.x = currVec.x * cos( angle ) - 
-					currVec.y * sin( angle ) + ground->v0.x;
-				newPos.y = currVec.x * sin( angle ) + 
-					currVec.y * cos( angle ) + ground->v0.y;
-				V2d newVec = newPos - ground->v0;
-				double rollNew = atan2( newVec.y, newVec.x );
-				if( rollNew < 0 )
-				{
-					rollNew += 2 * PI;
-				}
-
-				double oldRollFactor = rollFactor;
-				double rollStart = atan2( gNormal.y, gNormal.x );
-				V2d startVec = V2d( cos( rollStart ), sin( rollStart ) );
-				double rollEnd = atan2( e0n.y, e0n.x );
-
-				if( rollStart < 0 )
-					rollStart += 2 * PI;
-				if( rollEnd < 0 )
-					rollEnd += 2 * PI;
-
-				bool changed = false;
-				if( rollEnd < rollStart && ( rollNew < rollEnd || rollNew > rollStart ) )
-				{
-					//cout << "first" << endl;
-					changed = true;
-					newPos = ground->v0 + e0n * physBody.rw;
-				}
-				else if( rollEnd > rollStart && ( rollNew < rollEnd && rollNew > rollStart ) )
-				{
-					//cout << "second: " << rollStart << ", end: " << rollEnd << ", new: " << rollNew << endl;
-					changed = true;
-					newPos = ground->v0 + e0n * physBody.rw;
-				}
-
-				bool hit = ResolvePhysics( newPos - position );
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					V2d eNorm = minContact.normal;//edge->Normal();
-					Edge *e = minContact.edge;
-
-					if( eNorm.x == 0 && eNorm.y == 0 )
-					{
-						if( minContact.position == e->v0 )
-						{
-							//q = ;
-
-						}
-						else //v1
-						{
-						}
-					}
-					ground = minContact.edge;
-					q = ground->GetQuantity( minContact.position + minContact.resolution );
-					edgeQuantity = q;
-					V2d gn = ground->Normal();
-					roll = false;
-					//cout << "hitting" << endl;
-					break;
-				}	
-
-				if( changed )
-				{
-					//cout << "cmon" << endl;
-					ground = e0;
-					q = length( e0->v1 - e0->v0 );
-					roll = false;
-				}
-			}
-		}
-		else
-		{
-			if( movement > 0 )
-			{	
-				extra = (q + movement) - groundLength;
-			}
-			else 
-			{
-				extra = (q + movement);
-			}
-					
-			if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
-			{
-				if( movement > 0 )
-				{
-					q = groundLength;
-				}
-				else
-				{
-					q = 0;
-				}
-				movement = extra;
-				m -= extra;
-				//cout << "adjusting m to: " << m << endl;
-						
-			}
-			else
-			{
-				movement = 0;
-				q += m;
-			}
-				
-			if( !approxEquals( m, 0 ) )//	if(m != 0 )
-			{	
-				bool down = true;
-				bool hit = ResolvePhysics( normalize( ground->v1 - ground->v0 ) * m);
-				if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
-				{
-					V2d eNorm = minContact.edge->Normal();
-					V2d movetest =  (normalize( ground->v1 - ground->v0 ) * m);
-					ground = minContact.edge;
-					if( minContact.normal.x == 0 && minContact.normal.y == 0 )
-					{
-						roll = true;
-						edgeQuantity = ground->GetQuantity( minContact.position );
-						position += minContact.resolution;
-					}
-					else
-					{
-						//cout << "point!" << endl;
-						edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
-					}
-					break;
-				}			
-			}
-			else
-			{
-				if( clockwise )
-				{
-					//cout << "t33" << endl;
-					ground = e1;
-					q = 0;
-				}
-				else
-				{
-					//cout << "here>? " << endl;
-					ground = e0;
-					q = length( e0->v1 - e0->v0 );
-				}
-				
-			}
-		}
-
-		if( movement == extra )
-			movement += steal;
-		else
-			movement = steal;
-
-		edgeQuantity = q;
-	}
+	mover->Move(slowMultiple);
+	position = mover->physBody.globalPosition;
 
 	PhysicsResponse();
 }
@@ -928,161 +780,7 @@ void Crawler::PhysicsResponse()
 {
 	if( !dead  )
 	{
-		//cout << "response" << endl;
-		double spaceNeeded = 0;
-		V2d gn = ground->Normal();
-		V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
-		double angle = 0;
-	
-		if( !roll )
-		{
-			position = gPoint + gn * 32.0;
-			angle = atan2( gn.x, -gn.y );
 		
-//			sprite.setTexture( *ts_walk->texture );
-			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !clockwise )
-			{
-				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			else
-			{
-				sprite.setTextureRect( r );
-			}
-			
-			V2d pp = ground->GetPoint( edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
-		}
-		else
-		{
-			
-			if( clockwise )
-			{
-				/*V2d e1n = ground->edge1->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e1n.y, e1n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;
-
-		
-
-				V2d angleVec = V2d( cos( angle ), sin( angle ) );
-				angleVec = normalize( angleVec );
-
-				position = gPoint + angleVec * 16.0;
-
-				angle += PI / 2.0;*/
-
-				V2d vec = normalize( position - ground->v1 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 46 );
-				if( clockwise )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				V2d pp = ground->GetPoint( edgeQuantity );
-				sprite.setPosition( pp.x, pp.y );
-			}
-			else
-			{
-				//angle = 
-				/*V2d e0n = ground->edge0->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e0n.y, e0n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;*/
-
-			
-
-			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			//	angleVec = normalize( angleVec );
-
-			//	position = gPoint + angleVec * 16.0;
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( clockwise )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				V2d pp = ground->GetPoint( edgeQuantity );
-				sprite.setPosition( pp.x, pp.y );
-			}
-
-			
-		}
 	
 
 		UpdateHitboxes();
@@ -1139,10 +837,10 @@ void Crawler::PhysicsResponse()
 		}
 
 		//gotta get the correct angle upon death
-		Transform t;
-		t.rotate( angle / PI * 180 );
-		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
-		deathVector = V2d( newPoint.x, newPoint.y );
+		//Transform t;
+		//t.rotate( angle / PI * 180 );
+		//Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
+		deathVector = V2d(0, 0);//V2d( newPoint.x, newPoint.y );
 
 		queryMode = "reverse";
 
@@ -1422,24 +1120,130 @@ void Crawler::UpdateSprite()
 	}
 	else
 	{
-		if( attackFrame >= 0 )
+		//cout << "response" << endl;
+		double spaceNeeded = 0;
+		V2d gn = mover->ground->Normal();
+		V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
+
+		//return;
+
+		double angle = 0;
+
+		IntRect ir;
+		switch (action)
 		{
-			IntRect r = ts->GetSubRect( 54 + attackFrame / attackMult );
-			if( !clockwise )
-			{
-				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
-			}
-			sprite.setTextureRect( r );
+		case CRAWL:
+			ir = ts->GetSubRect(frame / crawlAnimationFactor);
+			break;
+		case STARTROLL:
+			ir = ts->GetSubRect(frame / crawlAnimationFactor + 35);
+			break;
+		case ROLL:
+			ir = ts->GetSubRect(frame / crawlAnimationFactor + 38 );
+			break;
+		case ENDROLL:
+			ir = ts->GetSubRect(frame / crawlAnimationFactor + 50);
+			break;
+		case DASH:
+			ir = ts->GetSubRect(frame / crawlAnimationFactor + 54);
+			break;
 		}
 
-		if( keySprite != NULL && hasMonitor && !suppressMonitor )
+		if (!clockwise)
 		{
-			//cout << "frame: " << keyFrame / 2 << endl;
-			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-				keySprite->getLocalBounds().height / 2 );
-			keySprite->setPosition( position.x, position.y );
+			sprite.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
 		}
+		else
+		{
+			sprite.setTextureRect(ir);
+		}
+
+		if (!mover->roll)
+		{
+			//position = gPoint + gn * 32.0;
+			angle = atan2(gn.x, -gn.y);
+
+			//			sprite.setTexture( *ts_walk->texture );
+			/*IntRect r = ts->GetSubRect(frame / crawlAnimationFactor);
+			if (!clockwise)
+			{
+				sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
+			}
+			else
+			{
+				sprite.setTextureRect(r);
+			}*/
+
+			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation(angle / PI * 180);
+			sprite.setPosition(pp.x, pp.y);
+		}
+		else
+		{
+			if (clockwise)
+			{
+				V2d vec = normalize(position - mover->ground->v1);
+				angle = atan2(vec.y, vec.x);
+				angle += PI / 2.0;
+
+				/*IntRect r = ts->GetSubRect(frame / rollAnimationFactor + 35);
+				if (clockwise)
+				{
+					sprite.setTextureRect(r);
+				}
+				else
+				{
+					sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
+				}*/
+
+				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+				sprite.setRotation(angle / PI * 180);
+				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+				sprite.setPosition(pp.x, pp.y);
+			}
+			else
+			{
+				V2d vec = normalize(position - mover->ground->v0);
+				angle = atan2(vec.y, vec.x);
+				angle += PI / 2.0;
+
+				/*IntRect r = ts->GetSubRect(frame / rollAnimationFactor + 35);
+				if (clockwise)
+				{
+					sprite.setTextureRect(r);
+				}
+				else
+				{
+					sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
+				}*/
+
+				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+				sprite.setRotation(angle / PI * 180);
+				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
+				sprite.setPosition(pp.x, pp.y);
+			}
+		}
+
+
+		//if( attackFrame >= 0 )
+		//{
+		//	IntRect r = ts->GetSubRect( 54 + attackFrame / attackMult );
+		//	if( !clockwise )
+		//	{
+		//		r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
+		//	}
+		//	sprite.setTextureRect( r );
+		//}
+
+		//if( keySprite != NULL && hasMonitor && !suppressMonitor )
+		//{
+		//	//cout << "frame: " << keyFrame / 2 << endl;
+		//	keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
+		//	keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
+		//		keySprite->getLocalBounds().height / 2 );
+		//	keySprite->setPosition( position.x, position.y );
+		//}
 	}
 }
 
@@ -1469,4 +1273,54 @@ void Crawler::SaveEnemyState()
 
 void Crawler::LoadEnemyState()
 {
+}
+
+void Crawler::TransferEdge(Edge *e)
+{
+	V2d en = e->Normal();
+	if ( mover->groundSpeed > 0 && (en.x > 0 && en.y < 0) 
+		|| ( mover->groundSpeed < 0 && en.x < 0 && en.y < 0))
+	{
+		if (action != ROLL && action != DASH )
+		{
+			action = ROLL;
+			frame = 0;
+		}
+	}
+	else if (action == ROLL)
+	{
+		action = ENDROLL;
+		frame = 0;
+
+		mover->SetSpeed(groundSpeed);
+		/*if (mover->groundSpeed > 0)
+		{
+			mover->SetSpeed(groundSpeed);
+		}
+		else if (mover->groundSpeed < 0)
+		{
+			mover->SetSpeed(-groundSpeed);
+		}*/
+	}
+}
+
+bool Crawler::ShouldDash()
+{
+	if (length(owner->GetPlayer(0)->position - position) < 200)
+	{
+		V2d dir;
+		if (groundSpeed > 0)
+		{
+			dir = normalize(mover->ground->v1 - mover->ground->v0);
+		}
+		else if (groundSpeed < 0)
+		{
+			dir = normalize(mover->ground->v0 - mover->ground->v1);
+		}
+		
+		double alongDist = dot(owner->GetPlayer(0)->position - position, dir);
+		if (alongDist > -60)
+			return true;
+	}
+	return false;
 }

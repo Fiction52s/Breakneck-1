@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Enemy_Blocker.h"
 
 using namespace std;
 using namespace sf;

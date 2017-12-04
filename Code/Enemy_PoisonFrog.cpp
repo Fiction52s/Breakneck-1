@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include <cstdlib>
+#include "Enemy_PoisonFrog.h"
 
 using namespace std;
 using namespace sf;
