@@ -7,7 +7,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
-		LATENT,
 		UNBURROW,
 		CRAWL,
 		STARTROLL,
@@ -15,16 +14,22 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		ENDROLL,
 		DASH,
 		BURROW,
+		UNDERGROUND,
 		DYING
 	};
 
 	int actionLength[DYING+1];
-	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int dist);
-
+	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
+	void SetActionDash();
+	bool TryDash();
+	double dashAccel;
+	void Accelerate(double amount);
+	void SetForwardSpeed( double speed );
 	void TransferEdge(Edge *);
 	//	void HandleEdge( Edge *e );
 	void HandleEntrant(QuadTreeEntrant *qte);
 	bool ShouldDash();
+	bool PlayerInFront();
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void PhysicsResponse();
@@ -48,6 +53,9 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	Tileset *ts;
 	//Tileset *ts_walk;
 	//Tileset *ts_roll;
+
+	int maxFramesUntilBurrow;
+	int framesUntilBurrow;
 
 	bool clockwise;
 	double groundSpeed;

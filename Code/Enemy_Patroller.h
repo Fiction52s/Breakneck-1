@@ -5,6 +5,18 @@
 
 struct Patroller : Enemy
 {
+	enum Action
+	{
+		FLAP,
+		TRANSFORM,
+		CHARGEDFLAP
+	};
+
+	Action action;
+
+	int chargeFrames;
+	int maxChargeFrames;
+	bool charging;
 	Patroller(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	//void HandleEdge( Edge *e );

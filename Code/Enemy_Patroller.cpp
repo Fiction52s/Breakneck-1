@@ -16,11 +16,13 @@ using namespace sf;
 Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
 	:Enemy( owner, EnemyType::PATROLLER, p_hasMonitor, 1 ), deathFrame( 0 )
 {
-
+	action = FLAP;
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
+	chargeFrames = 0;
+	maxChargeFrames = 180;
 	initHealth = 80;
 	health = initHealth;
 
@@ -99,7 +101,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	deathVector = V2d( 1, -1 );
 
 	facingRight = true;
-	 
+	charging = false;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
 	//bloodSprite.setTexture( *ts_testBlood->texture );
@@ -118,11 +120,14 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 
 void Patroller::ResetEnemy()
 {
+	chargeFrames = 0;
+	charging = false;
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
 	targetNode = 1;
 	forward = true;
 	dead = false;
+	action = FLAP;
 	deathFrame = 0;
 	frame = 0;
 	position.x = path[0].x;

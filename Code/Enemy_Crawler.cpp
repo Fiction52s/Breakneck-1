@@ -18,11 +18,16 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int dist )
+Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
 	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	clockwise = true;
+	maxFramesUntilBurrow = p_framesUntilBurrow;
+	maxFramesUntilBurrow = 200;
+	framesUntilBurrow = maxFramesUntilBurrow;
+
+	dashAccel = 3;
 	currDistTravelled = 0;
-	totalDistBeforeBurrow = dist;
 	//cout << "inside crawler" << endl;
 	//if( hasMonitor )
 	//{
@@ -61,10 +66,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	sprite.setRotation( angle / PI * 180.f );
 	roll = false;
 	position = gPoint + gNorm * height / 2.0;
-	if( !clockwise )
-	{
-		groundSpeed = -groundSpeed;
-	}
+	
 
 
 
@@ -111,8 +113,21 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	frame = 0;
 
 	deathPartingSpeed = .4;
-	mover->SetSpeed(groundSpeed);
-	action = CRAWL;
+	//mover->SetSpeed(groundSpeed);
+	//action = CRAWL;
+
+	actionLength[UNBURROW] = 60;
+	actionLength[CRAWL] = 35 * crawlAnimationFactor;
+	actionLength[STARTROLL] = 3 * crawlAnimationFactor;
+	actionLength[ROLL] = 13 * crawlAnimationFactor;
+	actionLength[ENDROLL] = 4 * crawlAnimationFactor;
+	actionLength[DASH] = 7 * crawlAnimationFactor;
+	actionLength[BURROW] = 20;//3 * crawlAnimationFactor;
+	actionLength[UNDERGROUND] = 60;//3 * crawlAnimationFactor;
+	actionLength[DYING] = 1;//3 * crawlAnimationFactor;
+
+	action = UNDERGROUND;
+	frame = actionLength[UNDERGROUND];
 	/*if( hasMonitor )
 	{
 		cout << "HAS MONMITOR NOW END" << endl;
@@ -132,13 +147,14 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 void Crawler::ResetEnemy()
 {
-	//action = LATENT;
-	action = CRAWL;
+	framesUntilBurrow = maxFramesUntilBurrow;
+	
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
 	mover->roll = false;
 	mover->UpdateGroundPos();
-	mover->SetSpeed(groundSpeed);
+	mover->SetSpeed(0);
+	//mover->SetSpeed(groundSpeed);
 
 	position = mover->physBody.globalPosition;
 
@@ -183,6 +199,8 @@ void Crawler::ResetEnemy()
 
 	UpdateHitboxes();
 
+	action = UNDERGROUND;
+	frame = actionLength[UNDERGROUND];
 }
 
 void Crawler::HandleEntrant( QuadTreeEntrant *qte )
@@ -501,9 +519,9 @@ void Crawler::UpdateHitboxes()
 
 	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
 	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	hitBody.globalPosition = position;
-	hurtBody.globalPosition = position;
-	physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	hitBody.globalPosition = mover->physBody.globalPosition;
+	hurtBody.globalPosition = mover->physBody.globalPosition;//position;
+	physBody.globalPosition = mover->physBody.globalPosition;//position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
 void Crawler::UpdatePrePhysics()
@@ -537,156 +555,50 @@ void Crawler::UpdatePrePhysics()
 			
 		receivedHit = NULL;
 	}
+	V2d en = mover->ground->Normal();
 
-	//if (frame == actionLength[action])
-	if( false )
+	if (action != BURROW && action != UNDERGROUND )
+	{
+		if (framesUntilBurrow == 0)
+		{
+			action = BURROW;
+			frame = 0;
+			mover->SetSpeed(0);
+		}
+	}
+
+	if (frame == actionLength[action])
+	//if( false )
 	{
 		switch (action)
 		{
-		case LATENT:
-			frame = 0;
-			break;
 		case UNBURROW:
 			action = CRAWL;
 			frame = 0;
+			if (clockwise)
+			{
+				mover->SetSpeed(groundSpeed);
+			}
+			else
+			{
+				mover->SetSpeed(-groundSpeed);
+			}
 			break;
 		case CRAWL:
+			frame = 0;
+			break;
+		case STARTROLL:
+			action = ROLL;
 			frame = 0;
 			break;
 		case ROLL:
 			frame = 0;
 			break;
+		case ENDROLL:
+			action = CRAWL;
+			frame = 0;
+			break;
 		case DASH:
-			action = CRAWL;
-			frame = 0;
-			break;
-		case BURROW:
-			action = LATENT;
-			frame = 0;
-			break;
-		case DYING:
-			assert(0);
-			break;
-		}
-	}
-	
-
-	switch (action)
-	{
-	case LATENT:
-		break;
-	case UNBURROW:
-		break;
-	case CRAWL:
-		/*if (length(owner->GetPlayer(0)->position - position) < 400)
-		{
-			action = DASH;
-			frame = 0;
-		}*/
-		break;
-	case DASH:
-		break;
-	case BURROW:
-		break;
-	case DYING:
-		break;
-	}
-
-
-	V2d en = mover->ground->Normal();
-	switch (action)
-	{
-	case LATENT:
-		break;
-	case UNBURROW:
-		break;
-	case CRAWL:
-		if (frame == 35 * crawlAnimationFactor)
-		{
-			frame = 0;
-		}
-		if( ShouldDash() )
-		{
-			action = DASH;
-			frame = 0;
-
-			mover->SetSpeed(groundSpeed * 2);
-		}
-		break;
-	case STARTROLL:
-		if (frame == 3 * crawlAnimationFactor)
-		{
-			action = ROLL;
-			frame = 0;
-		}
-		if( ShouldDash() )
-		{
-			action = DASH;
-			frame = 0;
-
-			mover->SetSpeed(groundSpeed * 2);
-		}
-		break;
-	case ROLL:
-		if (frame == 13 * crawlAnimationFactor)
-		{
-			frame = 0;
-		}
-		if( ShouldDash() )
-		{
-			action = DASH;
-			frame = 0;
-
-			mover->SetSpeed(groundSpeed * 2);
-		}
-		{
-			
-			V2d gn = mover->ground->Normal();
-			double acc = .08;
-			
-			if (mover->groundSpeed > 0)
-			{
-				if (gn.x < 0)
-				{
-					acc = -acc;
-				}
-			}
-			else if (mover->groundSpeed < 0)
-			{
-				if (gn.x > 0)
-				{
-					acc = -acc;
-				}
-			}
-
-			if (mover->groundSpeed > 0)
-			{
-				mover->SetSpeed(mover->groundSpeed + acc);
-				if (mover->groundSpeed < groundSpeed)
-				{
-					mover->SetSpeed(groundSpeed);
-				}
-			}
-			else if (mover->groundSpeed < 0)
-			{
-				mover->SetSpeed(mover->groundSpeed - acc);
-				if (mover->groundSpeed > -groundSpeed)
-				{
-					mover->SetSpeed(-groundSpeed);
-				}
-			}
-		}
-		break;
-	case ENDROLL:
-		if (frame == 4 * crawlAnimationFactor)
-		{
-			action = CRAWL;
-			frame = 0;
-		}
-		break;
-	case DASH:
-		if (frame == 7 * crawlAnimationFactor)
-		{
 			if (mover->groundSpeed > 0 && (en.x > 0 && en.y < 0)
 				|| (mover->groundSpeed < 0 && en.x < 0 && en.y < 0))
 			{
@@ -697,9 +609,40 @@ void Crawler::UpdatePrePhysics()
 			{
 				action = CRAWL;
 				frame = 0;
-				mover->SetSpeed(groundSpeed);
-			}	
+				//mover->SetSpeed(groundSpeed);
+			}
+			break;
+		case BURROW:
+			action = UNDERGROUND;
+			frame = 0;
+			mover->ground = startGround;
+			mover->edgeQuantity = startQuant;
+			mover->roll = false;
+			mover->UpdateGroundPos();
+			break;
+		case UNDERGROUND:			
+			action = UNBURROW;
+			framesUntilBurrow = maxFramesUntilBurrow;
+			frame = 0;
+			if (!PlayerInFront())
+			{
+				clockwise = !clockwise;
+			}
+			break;
+		case DYING:
+			assert(0);
+			break;
 		}
+	}
+	
+
+	switch (action)
+	{
+	case UNBURROW:
+		break;
+	case CRAWL:
+		break;
+	case DASH:
 		break;
 	case BURROW:
 		break;
@@ -707,17 +650,38 @@ void Crawler::UpdatePrePhysics()
 		break;
 	}
 
-	if( attackFrame == 7 * attackMult )
-	{
-		attackFrame = -1;
-	}
 	
-
-	if (mover->roll && frame == 19 * rollAnimationFactor )
+	switch (action)
 	{
-		//frame = 0;//rollAnimationFactor * 2; 
+	case UNBURROW:
+		break;
+	case CRAWL:
+		TryDash();
+		break;
+	case STARTROLL:
+		TryDash();
+		break;
+	case ROLL:
+		TryDash();
+		{
+			V2d gn = mover->ground->Normal();
+			double acc = .08;
+			
+			if ((mover->groundSpeed > 0 && gn.x < 0) || (mover->groundSpeed < 0 && gn.x > 0) )
+			{
+				Accelerate(acc);
+			}
+		}
+		break;
+	case ENDROLL:
+		break;
+	case DASH:
+		break;
+	case BURROW:
+		break;
+	case DYING:
+		break;
 	}
-	//}
 }
 
 void Crawler::UpdatePhysics()
@@ -780,9 +744,6 @@ void Crawler::PhysicsResponse()
 {
 	if( !dead  )
 	{
-		
-	
-
 		UpdateHitboxes();
 
 		if( PlayerSlowingMe() )
@@ -814,20 +775,6 @@ void Crawler::PhysicsResponse()
 				{
 					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
 				}
-
-															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
-
-			//owner->GetPlayer( 0 )->frame--;
-			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			
-			/*if( !result.second )
-			{
-				owner->Pause( 6 );
-			}*/
-			
-			//dead = true;
-			//receivedHit = NULL;
 			}
 		}
 
@@ -879,6 +826,8 @@ void Crawler::UpdatePostPhysics()
 	{
 		//++keyFrame;
 		++frame;
+		if( framesUntilBurrow > 0 )
+			--framesUntilBurrow;
 		slowCounter = 1;
 		
 		if( dead )
@@ -921,29 +870,44 @@ void Crawler::Draw(sf::RenderTarget *target )
 {
 	if( !dead )
 	{
-		if( hasMonitor && !suppressMonitor )
+		if (action != UNBURROW && action != BURROW && action != UNDERGROUND)
 		{
-			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			if (hasMonitor && !suppressMonitor)
 			{
-				target->draw( sprite, keyShader );
+				if (owner->pauseFrames < 2 || receivedHit == NULL)
+				{
+					target->draw(sprite, keyShader);
+				}
+				else
+				{
+					target->draw(sprite, hurtShader);
+				}
+				target->draw(*keySprite);
 			}
 			else
 			{
-				target->draw( sprite, hurtShader );
+				if (owner->pauseFrames < 2 || receivedHit == NULL)
+				{
+					target->draw(sprite);
+				}
+				else
+				{
+					target->draw(sprite, hurtShader);
+				}
+
 			}
-			target->draw( *keySprite );
 		}
 		else
 		{
-			if( owner->pauseFrames < 2 || receivedHit == NULL )
+			if (action != UNDERGROUND)
 			{
-				target->draw( sprite );
+				sf::RectangleShape rs;
+				rs.setFillColor(Color::Red);
+				rs.setSize(Vector2f(64, 64));
+				rs.setOrigin(rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2);
+				rs.setPosition(Vector2f(mover->physBody.globalPosition));
+				target->draw(rs);
 			}
-			else
-			{
-				target->draw( sprite, hurtShader );
-			}
-			
 		}
 	}
 	else
@@ -1006,7 +970,7 @@ bool Crawler::IHitPlayer( int index )
 {
 	Actor *player = owner->GetPlayer( 0 );
 	
-	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
+	if( action != UNDERGROUND && player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
 	{
 		if( player->position.x < position.x )
 		{
@@ -1292,7 +1256,7 @@ void Crawler::TransferEdge(Edge *e)
 		action = ENDROLL;
 		frame = 0;
 
-		mover->SetSpeed(groundSpeed);
+		//mover->SetSpeed(groundSpeed);
 		/*if (mover->groundSpeed > 0)
 		{
 			mover->SetSpeed(groundSpeed);
@@ -1308,19 +1272,73 @@ bool Crawler::ShouldDash()
 {
 	if (length(owner->GetPlayer(0)->position - position) < 200)
 	{
-		V2d dir;
-		if (groundSpeed > 0)
-		{
-			dir = normalize(mover->ground->v1 - mover->ground->v0);
-		}
-		else if (groundSpeed < 0)
-		{
-			dir = normalize(mover->ground->v0 - mover->ground->v1);
-		}
 		
-		double alongDist = dot(owner->GetPlayer(0)->position - position, dir);
-		if (alongDist > -60)
+		
+		if (PlayerInFront())
 			return true;
 	}
+	return false;
+}
+
+bool Crawler::PlayerInFront()
+{
+	V2d dir;
+	if (clockwise )
+	{
+		dir = normalize(mover->ground->v1 - mover->ground->v0);
+	}
+	else if (!clockwise )
+	{
+		dir = normalize(mover->ground->v0 - mover->ground->v1);
+	}
+	double alongDist = dot(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	if (alongDist > -60)
+		return true;
+	else
+		return false;
+}
+
+void Crawler::Accelerate(double amount)
+{
+	if ( clockwise )
+	{
+		amount = abs(amount);
+	}
+	else
+	{
+		amount = -abs(amount);
+	}
+	mover->SetSpeed( mover->groundSpeed + amount );
+}
+
+void Crawler::SetForwardSpeed( double speed )
+{
+	double aSpeed = abs(speed);
+	if (clockwise)
+	{
+		mover->SetSpeed(aSpeed);
+	}
+	else
+	{
+		mover->SetSpeed(-aSpeed);
+	}
+}
+
+void Crawler::SetActionDash()
+{
+	action = DASH;
+	frame = 0;
+
+	Accelerate(dashAccel);
+}
+
+bool Crawler::TryDash()
+{
+	if (ShouldDash())
+	{
+		SetActionDash();
+		return true;
+	}
+
 	return false;
 }
