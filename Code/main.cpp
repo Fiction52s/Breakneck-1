@@ -23,6 +23,7 @@
 #include "SaveFile.h"
 #include "MainMenu.h"
 #include <crtdbg.h>
+#include "Enemy.h"
 
 using namespace std;
 using namespace sf;

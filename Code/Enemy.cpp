@@ -20,6 +20,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+EnemyParams * Enemy::enemyTypeHitParams[] = { 0 };
+
 Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
 {
 	using namespace BulletType;
@@ -258,7 +260,7 @@ void Launcher::Fire()
 	dirAngle -= angleSpread / 2;
 	for( int i = 0; i < perShot; ++i )
 	{
-
+		dir = V2d(cos(dirAngle - PI / 2.0), sin(dirAngle - PI / 2.0));
 		//cout << "trying to activate bullet" << endl;
 		BasicBullet * b = ActivateBullet();
 		//cout << "bullet done activating" << endl;
@@ -268,8 +270,8 @@ void Launcher::Fire()
 			b->Reset( position, dir * bulletSpeed );
 		}
 
-		dirAngle += angleSpread / perShot;
-		dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
+		dirAngle += angleSpread / (perShot-1);
+		//dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
 
 	
@@ -1285,4 +1287,65 @@ void Enemy::Record( int enemyIndex )
 void Enemy::RecordEnemy()
 {
 	//stub
+}
+
+EnemyParamsManager::EnemyParamsManager()
+{
+	memset(params, 0, sizeof(params));
+}
+
+EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
+{
+	EnemyParams *ep = params[et];
+	if ( ep == NULL)
+	{
+		switch (et)
+		{
+		case E_CRAWLER:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case E_PATROLLER:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case E_FOOTTRAP:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case E_BASICTURRET:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		default:
+			return NULL;
+		}
+	}
+
+	return ep;
+}
+
+EnemyParamsManager::~EnemyParamsManager()
+{
+	for (int i = 0; i < E_Count; ++i)
+	{
+		if (params[i] != NULL)
+		{
+			delete params[i];
+			params[i] = NULL;
+		}
+	}
+}
+
+bool HittableObject::CheckHit( Actor *player, EnemyType et )
+{
+	if (receivedHit == NULL)
+	{
+		receivedHit = IsHit(player);
+		if (receivedHit->hType < HitboxInfo::HitboxType::WIREHITRED)
+		{
+			player->ConfirmHit(player->owner->eHitParamsMan->GetHitParams(et));
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	return false;
 }

@@ -104,7 +104,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	frame = 0;
 	deathFrame = 0;
-	animationFactor = 1;
+	animationFactor = 3;
 	//slowCounter = 1;
 	//slowMultiple = 1;
 
@@ -122,7 +122,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-	launcher = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, gn, 0, 300 );
+	launcher = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16 * 3, 3, position, gn, PI, 300 );
 	launcher->SetBulletSpeed( bulletSpeed );
 	launcher->hitboxInfo->damage = 18;
 	//launcher->Reset();

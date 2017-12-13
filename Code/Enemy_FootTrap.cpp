@@ -21,7 +21,7 @@ using namespace sf;
 FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 		:Enemy( owner, EnemyType::FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 {
-
+	action = LATENT;
 	initHealth = 40;
 	health = initHealth;
 
@@ -71,7 +71,7 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	hitboxInfo->knockback = 0;
 
 	frame = 0;
-	deathFrame = 0;
+	//deathFrame = 0;
 	animationFactor = 2;
 	slowCounter = 1;
 	slowMultiple = 1;
@@ -87,15 +87,24 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	t.rotate( angle / PI * 180 );
 	Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
-	//deathVector = V2d( 1, -1 );
+
+	actionLength[LATENT] = 25 * animationFactor;
+	actionLength[CHOMPING] = 25 * animationFactor;
+	actionLength[DYING] = 60;
+	actionLength[ROOTPREPARE] = 60;
+	actionLength[ROOTWAIT] = 20;
+	actionLength[ROOTSTRIKE] = 20;
+	actionLength[ROOTSPIKEDYING] = 30;
+		//deathVector = V2d( 1, -1 );
 }
 
 void FootTrap::ResetEnemy()
 {
+	action = LATENT;
 	//cout << "reset" << endl;
 	health = initHealth;
 	frame = 0;
-	deathFrame = 0;
+	//deathFrame = 0;
 	dead = false;
 	receivedHit = NULL;
 	slowCounter = 1;
@@ -113,6 +122,77 @@ void FootTrap::HandleEntrant( QuadTreeEntrant *qte )
 
 void FootTrap::UpdatePrePhysics()
 {
+	
+	if (frame == actionLength[action])
+	{
+		switch (action)
+		{
+		case LATENT:
+			frame = 0;
+			break;
+		case CHOMPING:
+			frame = 0;
+			break;
+		case DYING:
+			action = ROOTPREPARE;
+			frame = 0;
+			break;
+		case ROOTPREPARE:
+			action = ROOTWAIT;
+			frame = 0;
+			break;
+		case ROOTWAIT:
+			frame = 0;
+			break;
+		case ROOTSTRIKE:
+			action = ROOTSPIKEWAIT;
+			frame = 0;
+			break;
+		case ROOTSPIKEWAIT:
+			frame = 0;
+			break;
+		case ROOTSPIKEDYING:
+			owner->RemoveEnemy(this);
+			return;
+			//actually dead
+			break;
+		}
+	}
+
+	switch (action)
+	{
+	case LATENT:
+		if (length(owner->GetPlayer(0)->position - position) < 450)
+		{
+			action = CHOMPING;
+			frame = 0;
+		}
+		break;
+	case CHOMPING:
+		if (length(owner->GetPlayer(0)->position - position) > 450)
+		{
+			action = LATENT;
+			frame = 0;
+		}
+		break;
+	case DYING:
+		break;
+	case ROOTPREPARE:
+		break;
+	case ROOTWAIT:
+		if (length(owner->GetPlayer(0)->position - position) < 200)
+		{
+			action = ROOTSTRIKE;
+			frame = 0;
+		}
+		break;
+	case ROOTSTRIKE:
+		break;
+	case ROOTSPIKEWAIT:
+		break;
+	case ROOTSPIKEDYING:
+		break;
+	}
 	//cout << "dead: " << dead << endl;
 	if( !dead && receivedHit != NULL )
 	{	
@@ -137,11 +217,6 @@ void FootTrap::UpdatePrePhysics()
 		
 
 		receivedHit = NULL;
-	}
-
-	if( frame == 0 )
-	{
-		
 	}
 }
 
@@ -198,14 +273,7 @@ void FootTrap::UpdatePhysics()
 
 void FootTrap::UpdatePostPhysics()
 {
-	if( deathFrame == 30 )
-	{
-		
-		owner->RemoveEnemy( this );
-		return;
-	}
-
-	if( deathFrame == 0 && dead )
+	if( ( action == ROOTSPIKEDYING || action == DYING ) && frame == 0 )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
 	}
@@ -222,22 +290,16 @@ void FootTrap::UpdatePostPhysics()
 	{
 		++frame;
 		slowCounter = 1;
-	
-		if( dead )
-		{
-			deathFrame++;
-		}
-
 	}
 	else
 	{
 		slowCounter++;
 	}
 
-	if( frame == 25 * animationFactor )
+	/*if( frame == 25 * animationFactor )
 	{
 		frame = 0;
-	}
+	}*/
 
 	//cout << "dead post: " << dead << endl;
 	
@@ -245,7 +307,7 @@ void FootTrap::UpdatePostPhysics()
 
 void FootTrap::Draw(sf::RenderTarget *target )
 {
-	if( !dead )
+	if( action != DYING )//and action != ROOTSPIKEDYING
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
@@ -273,18 +335,9 @@ void FootTrap::Draw(sf::RenderTarget *target )
 		}
 	}
 	else
+	//else if( action == DYING )
 	{
 		target->draw( botDeathSprite );
-
-		if( deathFrame / 3 < 15 )
-		{
-			
-			//bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			//bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			//bloodSprite.setPosition( position.x, position.y );
-			////bloodSprite.setScale( 2, 2 );
-			//target->draw( bloodSprite );
-		}
 		
 		target->draw( topDeathSprite );
 	}
@@ -292,9 +345,7 @@ void FootTrap::Draw(sf::RenderTarget *target )
 
 void FootTrap::DrawMinimap( sf::RenderTarget *target )
 {
-	
-
-	if( !dead )
+	if( action != ROOTSPIKEDYING )
 	{
 		if( hasMonitor && !suppressMonitor )
 		{
@@ -404,26 +455,59 @@ bool FootTrap::PlayerSlowingMe()
 
 void FootTrap::UpdateSprite()
 {
-	if( dead )
+	if( action == ROOTSPIKEDYING )
 	{
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 26 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2  );
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-		botDeathSprite.setRotation( sprite.getRotation() );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 25 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-		topDeathSprite.setRotation( sprite.getRotation() );
+		
 	}
 	else
 	{
-		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
-		sprite.setPosition(position.x, position.y);
+		switch (action)
+		{
+		case LATENT:
+			sprite.setTextureRect(ts->GetSubRect((frame / animationFactor) % 3 ));
+			sprite.setPosition(position.x, position.y);
+			break;
+		case CHOMPING:
+			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+			sprite.setPosition(position.x, position.y);
+			break;
+		case DYING:
+			botDeathSprite.setTexture(*ts->texture);
+			botDeathSprite.setTextureRect(ts->GetSubRect(26));
+			botDeathSprite.setOrigin(botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
+			botDeathSprite.setPosition(position.x + deathVector.x * deathPartingSpeed * frame,
+				position.y + deathVector.y * deathPartingSpeed * frame);
+			botDeathSprite.setRotation(sprite.getRotation());
+
+			topDeathSprite.setTexture(*ts->texture);
+			topDeathSprite.setTextureRect(ts->GetSubRect(25));
+			topDeathSprite.setOrigin(topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2);
+			topDeathSprite.setPosition(position.x + -deathVector.x * deathPartingSpeed * frame,
+				position.y + -deathVector.y * deathPartingSpeed * frame);
+			topDeathSprite.setRotation(sprite.getRotation());
+			break;
+		case ROOTPREPARE:
+			sprite.setTextureRect(ts->GetSubRect(0));
+			sprite.setPosition(position.x, position.y);
+			break;
+		case ROOTWAIT:
+			sprite.setTextureRect(ts->GetSubRect(4));
+			sprite.setPosition(position.x, position.y);
+			break;
+		case ROOTSTRIKE:
+			sprite.setTextureRect(ts->GetSubRect(10));
+			sprite.setPosition(position.x, position.y);
+			break;
+		case ROOTSPIKEWAIT:
+			sprite.setTextureRect(ts->GetSubRect(15));
+			sprite.setPosition(position.x, position.y);
+			break;
+		case ROOTSPIKEDYING:
+			sprite.setTextureRect(ts->GetSubRect(20));
+			sprite.setPosition(position.x, position.y);
+			break;
+		}
+		
 
 		if( hasMonitor && !suppressMonitor )
 		{
@@ -464,7 +548,7 @@ bool FootTrap::ResolvePhysics( sf::Vector2<double> vel )
 void FootTrap::SaveEnemyState()
 {
 	stored.dead = dead;
-	stored.deathFrame = deathFrame;
+	//stored.deathFrame = deathFrame;
 	stored.frame = frame;
 //	stored.hitlagFrames = hitlagFrames;
 //	stored.hitstunFrames = hitstunFrames;
@@ -473,7 +557,7 @@ void FootTrap::SaveEnemyState()
 void FootTrap::LoadEnemyState()
 {
 	dead = stored.dead;
-	deathFrame = stored.deathFrame;
+	//deathFrame = stored.deathFrame;
 	frame = stored.frame;
 //	hitlagFrames = stored.hitlagFrames;
 //	hitstunFrames = stored.hitstunFrames;

@@ -43,7 +43,7 @@ struct EffectInstance : PoolMember
 	int startTile;
 	sf::Vector2f vel;
 	sf::Vector2f accel;
-	sf::Transform tr;
+	sf::Transform tr; 
 	sf::Vector2f pos;
 	float maxVel;
 	EffectPool *parent;

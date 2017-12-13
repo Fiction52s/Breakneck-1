@@ -21,6 +21,9 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
 	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	//owner- >GetPlayer(0)->ConfirmHit(1, 5, .8, 6);
+	//pHitParams = new PlayerHitParams(1, 5, .8, 6);
+
 	clockwise = true;
 	maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
@@ -116,14 +119,14 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	//mover->SetSpeed(groundSpeed);
 	//action = CRAWL;
 
-	actionLength[UNBURROW] = 60;
+	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35 * crawlAnimationFactor;
 	actionLength[STARTROLL] = 3 * crawlAnimationFactor;
 	actionLength[ROLL] = 13 * crawlAnimationFactor;
 	actionLength[ENDROLL] = 4 * crawlAnimationFactor;
 	actionLength[DASH] = 7 * crawlAnimationFactor;
 	actionLength[BURROW] = 20;//3 * crawlAnimationFactor;
-	actionLength[UNDERGROUND] = 60;//3 * crawlAnimationFactor;
+	actionLength[UNDERGROUND] = 20;//3 * crawlAnimationFactor;
 	actionLength[DYING] = 1;//3 * crawlAnimationFactor;
 
 	action = UNDERGROUND;
@@ -657,9 +660,11 @@ void Crawler::UpdatePrePhysics()
 		break;
 	case CRAWL:
 		TryDash();
+		AttemptRunAwayBoost();
 		break;
 	case STARTROLL:
 		TryDash();
+		AttemptRunAwayBoost();
 		break;
 	case ROLL:
 		TryDash();
@@ -672,16 +677,20 @@ void Crawler::UpdatePrePhysics()
 				Accelerate(acc);
 			}
 		}
+		AttemptRunAwayBoost();
 		break;
 	case ENDROLL:
+		AttemptRunAwayBoost();
 		break;
 	case DASH:
+		AttemptRunAwayBoost();
 		break;
 	case BURROW:
 		break;
 	case DYING:
 		break;
 	}
+
 }
 
 void Crawler::UpdatePhysics()
@@ -746,54 +755,13 @@ void Crawler::PhysicsResponse()
 	{
 		UpdateHitboxes();
 
-		if( PlayerSlowingMe() )
-		{
-			if( slowMultiple == 1 )
-			{
-				slowCounter = 1;
-				slowMultiple = 5;
-			//	cout << "yes slow" << endl;
-			}
-		}
-		else
-		{
-			slowCounter = 1;
-			slowMultiple = 1;
-		//	cout << "no slow" << endl;
-		}
+		SlowCheck();
 
-		if( receivedHit == NULL )
-		{
-			pair<bool, bool> result = PlayerHitMe();
-			if( result.first )
-			{
-				//cout << "hit here!" << endl;
-				//triggers multiple times per frame? bad?
-				owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
+		CheckHit(owner->GetPlayer(0), type);
+		
+		IHitPlayer();
 
-				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-				{
-					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-				}
-			}
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-
-		//gotta get the correct angle upon death
-		//Transform t;
-		//t.rotate( angle / PI * 180 );
-		//Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
-		deathVector = V2d(0, 0);//V2d( newPoint.x, newPoint.y );
-
-		queryMode = "reverse";
-
-		//physbody is a circle
-		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
-		//owner->crawlerReverserTree->Query( this, r );
+		deathVector = V2d(0, 0);
 	}
 }
 
@@ -812,8 +780,6 @@ void Crawler::UpdatePostPhysics()
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
 	}
 
-	
-
 	if( deathFrame == 0 && dead )
 	{
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
@@ -821,36 +787,25 @@ void Crawler::UpdatePostPhysics()
 
 	UpdateSprite();
 
-
-	if( slowCounter == slowMultiple )
+	if (UpdateAccountingForSlow())
 	{
-		//++keyFrame;
 		++frame;
-		if( framesUntilBurrow > 0 )
+		if (framesUntilBurrow > 0)
 			--framesUntilBurrow;
-		slowCounter = 1;
-		
-		if( dead )
+
+		if (dead)
 		{
 			deathFrame++;
 		}
 		else
 		{
-			if( attackFrame >= 0 )
+			if (attackFrame >= 0)
 				++attackFrame;
 		}
 	}
-	else
-	{
-		slowCounter++;
-	}
-	//need to calculate frames in here!!!!
-
-	//sprite.setPosition( position );
-	//UpdateHitboxes();
 }
 
-bool Crawler::PlayerSlowingMe()
+bool Crawler::IsSlowed()
 {
 	Actor *player = owner->GetPlayer( 0 );
 	for( int i = 0; i < player->maxBubbles; ++i )
@@ -994,6 +949,30 @@ bool Crawler::IHitPlayer( int index )
 	return false;
 }
 
+HitboxInfo * Crawler::IsHit(Actor *player)
+{
+	if (player->currHitboxes != NULL)
+	{
+		bool hit = false;
+
+		for (list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it)
+		{
+			if (hurtBody.Intersects((*it)))
+			{
+				hit = true;
+				break;
+			}
+		}
+
+		if (hit)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
  pair<bool, bool> Crawler::PlayerHitMe( int index )
 {
 	Actor *player = owner->GetPlayer( 0 );
@@ -1011,10 +990,8 @@ bool Crawler::IHitPlayer( int index )
 			}
 		}
 		
-
 		if( hit )
 		{
-			receivedHit = player->currHitboxInfo;
 			return pair<bool, bool>(true,false);
 		}
 		
@@ -1270,10 +1247,21 @@ void Crawler::TransferEdge(Edge *e)
 
 bool Crawler::ShouldDash()
 {
-	if (length(owner->GetPlayer(0)->position - position) < 200)
+	V2d dir;
+	if (clockwise)
 	{
-		
-		
+		dir = normalize(mover->ground->v1 - mover->ground->v0);
+	}
+	else if (!clockwise)
+	{
+		dir = normalize(mover->ground->v0 - mover->ground->v1);
+	}
+	double heightOff = cross(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	if (abs(heightOff) > 150 )
+		return false;
+
+	if (length(owner->GetPlayer(0)->position - position) < 350)
+	{
 		if (PlayerInFront())
 			return true;
 	}
@@ -1341,4 +1329,18 @@ bool Crawler::TryDash()
 	}
 
 	return false;
+}
+
+bool Crawler::IsPlayerChasingMe()
+{
+	return (!PlayerInFront() &&
+		length(owner->GetPlayer(0)->position - mover->physBody.globalPosition) < 400);
+}
+
+void Crawler::AttemptRunAwayBoost()
+{
+	if (IsPlayerChasingMe())
+	{
+		Accelerate(.1);
+	}
 }

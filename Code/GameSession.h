@@ -424,11 +424,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	};
 
 	AbsorbParticles *absorbParticles;
+	EnemyParamsManager *eHitParamsMan;
 
 	static bool sLoad( GameSession *gs );
 	bool Load();	
 	RaceFight *raceFight;
-	
+
 	bool continueLoading;
 	void SetContinueLoading( bool cont );
 	bool ShouldContinueLoading();

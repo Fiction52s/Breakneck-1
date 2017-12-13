@@ -21116,11 +21116,17 @@ void Actor::ConfirmEnemyNoKill( Enemy *e )
 	owner->soundNodeList->ActivateSound( soundBuffers[S_HIT] );
 }
 
-void Actor::ConfirmHit( int worldIndex, 
-		int p_flashFrames, double speedBar, int charge)
+void Actor::ConfirmHit( EnemyParams *hitParams )
 {
+	owner->cam.SetRumble(3, 3, 5);
+
+	if (ground == NULL && velocity.y > 0)
+	{
+		velocity.y = 4;//.5;
+	}
+
 	Color c;
-	switch( worldIndex )
+	switch(hitParams->worldIndex )
 	{
 	case 1:
 		c = COLOR_BLUE;
@@ -21145,7 +21151,7 @@ void Actor::ConfirmHit( int worldIndex,
 		break;
 	}
 
-	currentSpeedBar += speedBar;
+	currentSpeedBar += hitParams->speedBar;
 	test = true;
 	currAttackHit = true;
 	if( bounceFlameOn )
@@ -21159,7 +21165,7 @@ void Actor::ConfirmHit( int worldIndex,
 
 
 	flashColor = c;	
-	flashFrames = p_flashFrames;
+	flashFrames = hitParams->flashFrames;
 	for( int i = 0; i < 3; ++i )
 	{
 		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );
@@ -21168,7 +21174,7 @@ void Actor::ConfirmHit( int worldIndex,
 	//owner->powerWheel->Charge( charge );
 
 	if( owner->powerRing != NULL )
-		owner->powerRing->Fill(charge);
+		owner->powerRing->Fill(hitParams->charge);
 	
 	desperationMode = false;
 
@@ -21176,7 +21182,7 @@ void Actor::ConfirmHit( int worldIndex,
 	runeLength = 50 * 5;
 	runeStep = 0;
 	runeSprite.setTexture( *ts_fx_rune1->texture );
-	runeSprite.setTextureRect( ts_fx_rune1->GetSubRect( (worldIndex-1) ) );
+	runeSprite.setTextureRect( ts_fx_rune1->GetSubRect( (hitParams->worldIndex-1) ) );
 	runeSprite.setOrigin( runeSprite.getLocalBounds().width / 2, 
 		runeSprite.getLocalBounds().height / 2 );
 	

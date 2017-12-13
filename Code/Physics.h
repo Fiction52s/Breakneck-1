@@ -112,6 +112,9 @@ struct HitboxInfo
 		ORANGE,
 		RED,
 		MAGENTA,
+		WIREHITRED,
+		WIREHITBLUE,
+		SCORPIONSTRIKE,
 		Count
 	};
 

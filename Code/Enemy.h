@@ -11,6 +11,7 @@
 struct Zone;
 struct Monitor;
 struct Tileset;
+struct Actor;
 //projectile shotting process
 
 //struct Bullet;
@@ -281,63 +282,91 @@ struct Movable : QuadTreeCollider
 	//Launcher *launcher;
 };
 
+struct EnemyParams
+{
+	EnemyParams(int p_worldIndex,
+		int p_flashFrames, double p_speedBar,
+		int p_charge, int p_maxHealth)
+		:worldIndex(p_worldIndex),
+		flashFrames(p_flashFrames),
+		speedBar(p_speedBar),
+		charge(p_charge),
+		maxHealth( p_maxHealth )
+	{
+
+	}
+
+	int worldIndex;
+	int flashFrames;
+	double speedBar;
+	int charge;
+	int maxHealth;
+};
+
+enum EnemyType
+{
+	E_BASICEFFECT,
+	E_PATROLLER,
+	E_CRAWLER,
+	E_BASICTURRET,
+	E_FOOTTRAP,
+	E_BAT,
+	E_STAGBEETLE,
+	E_POISONFROG,
+	E_CURVETURRET,
+	E_PULSER,
+	E_BADGER,
+	E_CACTUS,
+	E_OWL,
+	E_TURTLE,
+	E_CHEETAH,
+	E_CORALNANOBOTS,
+	E_CORAL_BLOCK,
+	E_SPIDER,
+	E_GHOST,
+	E_OVERGROWTH,
+	E_OVERGROWTH_TREE,
+	E_SHARK,
+	E_SWARM,
+	E_COPYCAT,
+	E_GORILLA,
+	E_FLYINGHEAD,
+	E_SPECTER,
+	E_GOAL,
+	E_KEY,
+	E_BOSS_CRAWLER,
+	E_BOSS_BIRD,
+	E_BOSS_COYOTE,
+	E_BOSS_TIGER,
+	E_BOSS_ALLIGATOR,
+	E_BOSS_SKELETON,
+	E_BOSS_BEAR,
+	E_GATEMONITOR,
+	E_HEALTHFLY,
+	E_NEXUS,
+	E_SHIPPICKUP,
+	E_SHARD,
+	E_MINE,
+	E_BLOCKER,
+	E_BLOCKERCHAIN,
+	E_RACEFIGHTTARGET,
+	E_BOOSTER,
+	E_GRAVITYGRASS,
+	E_SPRING,
+	E_RAIL,
+	E_Count
+};
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant
 {
-	enum EnemyType
-	{
-		BASICEFFECT,
-		PATROLLER,
-		CRAWLER,
-		BASICTURRET,
-		FOOTTRAP,
-		BAT,
-		STAGBEETLE,
-		POISONFROG,
-		CURVETURRET,
-		PULSER,
-		BADGER,
-		CACTUS,
-		OWL,
-		TURTLE,
-		CHEETAH,
-		CORALNANOBOTS,
-		CORAL_BLOCK,
-		SPIDER,
-		GHOST,
-		OVERGROWTH,
-		OVERGROWTH_TREE,
-		SHARK,
-		SWARM,
-		COPYCAT,
-		GORILLA,
-		FLYINGHEAD,
-		SPECTER,
-		GOAL,
-		KEY,
-		BOSS_CRAWLER,
-		BOSS_BIRD,
-		BOSS_COYOTE,
-		BOSS_TIGER,
-		BOSS_ALLIGATOR,
-		BOSS_SKELETON,
-		BOSS_BEAR,
-		GATEMONITOR,
-		HEALTHFLY,
-		NEXUS,
-		SHIPPICKUP,
-		SHARD,
-		MINE,
-		BLOCKER,
-		BLOCKERCHAIN,
-		RACEFIGHTTARGET,
-		BOOSTER,
-		GRAVITYGRASS,
-		SPRING,
-		RAIL,
+	
 
-		Count
-	};
+private:
+	static EnemyParams * enemyTypeHitParams[Count];
+public:
+	static const EnemyParams * GetEnemyTypeHitParam( EnemyType et );
+	static void SetupEnemyTypeParams();
+	static void CleanupEnemyTypeParams();
 
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world );
@@ -374,7 +403,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 	bool spawned;
 	sf::Color auraColor;
 	sf::Rect<double> spawnRect;
-	HitboxInfo *receivedHit;
+	//HitboxInfo *receivedHit;
 	int slowMultiple;
 	int slowCounter;
 	EnemyType type;
@@ -418,6 +447,63 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant
 		int slowCounter;
 	};
 	Stored stored;
+};
+
+struct EnemyParamsManager
+{
+	EnemyParamsManager();
+	~EnemyParamsManager();
+	EnemyParams *GetHitParams(EnemyType et);
+	EnemyParams *params[E_Count];
+};
+
+struct HittableObject
+{
+	HittableObject():receivedHit( NULL ){}
+	virtual HitboxInfo * IsHit(Actor *player) = 0;
+	bool CheckHit(Actor *player, EnemyType et );
+	HitboxInfo *receivedHit;
+};
+
+struct SlowableObject
+{
+	int slowCounter;
+	int slowMultiple;
+	virtual bool IsSlowed() = 0;
+	void ResetSlow()
+	{
+		slowCounter = 1;
+		slowMultiple = 1;
+	}
+	void SlowCheck()
+	{
+		if (IsSlowed())
+		{
+			if (slowMultiple == 1)
+			{
+				slowCounter = 1;
+				slowMultiple = 5;
+			}
+		}
+		else
+		{
+			slowCounter = 1;
+			slowMultiple = 1;
+		}
+	}
+	bool UpdateAccountingForSlow()
+	{
+		if (slowCounter == slowMultiple)
+		{
+			slowCounter = 1;
+			return true;
+		}
+		else
+		{
+			slowCounter++;
+			return false;
+		}
+	}
 };
 
 struct EnterNexus1Seq;

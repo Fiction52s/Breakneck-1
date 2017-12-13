@@ -3,20 +3,29 @@
 
 #include "Enemy.h"
 
-struct Patroller : Enemy
+struct Patroller : Enemy, LauncherEnemy
 {
 	enum Action
 	{
 		FLAP,
 		TRANSFORM,
-		CHARGEDFLAP
+		CHARGEDFLAP,
+		WAITINGFORBULLETS,
+		DEAD,
 	};
 
 	Action action;
-
-	int chargeFrames;
-	int maxChargeFrames;
-	bool charging;
+	
+	void BulletHitTerrain(BasicBullet *b,
+		Edge *edge, sf::Vector2<double> &pos);
+	void BulletHitPlayer(BasicBullet *b);
+	Launcher *launcher;
+	int fireCounter;
+	/*virtual void BulletHitTarget(BasicBullet *b) {};
+	virtual void BulletTTLDeath(BasicBullet *b) {};
+	virtual int GetAttackIndex() { return -1; };*/
+	
+	int actionLength[CHARGEDFLAP + 1];
 	Patroller(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	//void HandleEdge( Edge *e );

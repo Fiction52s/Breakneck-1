@@ -21,8 +21,6 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	position.x = pos.x;
 	position.y = pos.y;
 
-	chargeFrames = 0;
-	maxChargeFrames = 180;
 	initHealth = 80;
 	health = initHealth;
 
@@ -101,12 +99,21 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	deathVector = V2d( 1, -1 );
 
 	facingRight = true;
-	charging = false;
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
+
+	actionLength[FLAP] = 12 * animationFactor;
+	actionLength[TRANSFORM] = 240;
+	actionLength[CHARGEDFLAP] = 12 * animationFactor;
+
+	fireCounter = 0;
+
+	launcher = new Launcher(this, BasicBullet::BAT, owner, 16, 1, position, V2d(1, 0), 0, 300);
+	launcher->SetBulletSpeed(10);
+	launcher->hitboxInfo->damage = 18;
 }
 
 void Patroller::HandleEntrant( QuadTreeEntrant *qte )
@@ -120,8 +127,8 @@ void Patroller::HandleEntrant( QuadTreeEntrant *qte )
 
 void Patroller::ResetEnemy()
 {
-	chargeFrames = 0;
-	charging = false;
+	launcher->Reset();
+	fireCounter = 0;
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
 	targetNode = 1;
@@ -144,9 +151,41 @@ void Patroller::ResetEnemy()
 
 void Patroller::UpdatePrePhysics()
 {
-	if( frame == 12 * animationFactor )
+	if (frame == actionLength[action])
 	{
-		frame = 0;
+		switch (action)
+		{
+		case FLAP:
+			frame = 0;
+			break;
+		case TRANSFORM:
+			action = CHARGEDFLAP;
+			frame = 0;
+			fireCounter = 0;
+			break;
+		case CHARGEDFLAP:
+			frame = 0;
+			break;
+		}
+	}
+
+	launcher->UpdatePrePhysics();
+
+	switch (action)
+	{
+	case FLAP:
+		if (length(position - owner->GetPlayer(0)->position) < 1000 )
+		{
+			action = TRANSFORM;
+			frame = 0;
+		}
+		break;
+	case TRANSFORM:
+		
+		break;
+	case CHARGEDFLAP:
+		break;
+
 	}
 
 	if( !dead && receivedHit != NULL )
@@ -155,6 +194,7 @@ void Patroller::UpdatePrePhysics()
 		
 		//gotta factor in getting hit by a clone
 		health -= 20;
+		fireCounter = 0;
 
 		//cout << "health now: " << health << endl;
 
@@ -173,12 +213,22 @@ void Patroller::UpdatePrePhysics()
 
 		receivedHit = NULL;
 	}
+
+	if ( action == CHARGEDFLAP && fireCounter == 60 )// frame == 0 && slowCounter == 1 )
+	{
+		launcher->position = position;
+		V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
+		launcher->facingDir = normalize(owner->GetPlayer(0)->position - position);//normalize(position - targetPoint);//normalize(owner->GetPlayer(0)->position - position);
+		//cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
+		//	launcher->facingDir.y << endl;
+		launcher->Fire();
+		fireCounter = 0;
+		//testLauncher->Fire();
+	}
 }
 
 void Patroller::UpdatePhysics()
 {
-	//cout << "setting to targetnode: " << targetNode << endl;
-	//position = V2d( path[targetNode].x, path[targetNode].y );
 	specterProtected = false;
 
 	double movement = speed / NUM_STEPS;
@@ -196,6 +246,8 @@ void Patroller::UpdatePhysics()
 		slowMultiple = 1;
 		slowCounter = 1;
 	}
+
+	launcher->UpdatePhysics();
 
 	if( dead )
 		return;
@@ -307,6 +359,7 @@ void Patroller::AdvanceTargetNode()
 
 void Patroller::UpdatePostPhysics()
 {
+	launcher->UpdatePostPhysics();
 	if( deathFrame == 30 )
 	{
 		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
@@ -334,13 +387,19 @@ void Patroller::UpdatePostPhysics()
 	
 
 	UpdateSprite();
-
+	launcher->UpdateSprites();
 	
 	
 
 	if( slowCounter == slowMultiple )
 	{
 		++frame;
+		//if( chargeFrames < maxChargeFrames )
+		//	++chargeFrames;
+		if (action == CHARGEDFLAP)
+		{
+			++fireCounter;
+		}
 		slowCounter = 1;
 	
 		if( dead )
@@ -375,7 +434,16 @@ void Patroller::UpdateSprite()
 	}
 	else
 	{
-		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+		if (action == FLAP || action == CHARGEDFLAP)
+		{
+			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+		}
+		else
+		{
+			int f = frame / (actionLength[TRANSFORM] / 5);
+			sprite.setTextureRect(ts->GetSubRect( 0 ) );
+		}
+		
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
@@ -612,4 +680,27 @@ void Patroller::LoadEnemyState()
 	hitstunFrames = stored.hitstunFrames;
 	position = stored.position;
 	targetNode = stored.targetNode;
+}
+
+void Patroller::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
+{
+	//V2d vel = b->velocity;
+	//double angle = atan2( vel.y, vel.x );
+	V2d norm = edge->Normal();
+	double angle = atan2(norm.y, -norm.x);
+
+	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
+	b->launcher->DeactivateBullet(b);
+}
+
+void Patroller::BulletHitPlayer(BasicBullet *b)
+{
+	//if you dont deactivate the bullet it will hit constantly and make weird fx
+
+	//cout << "hit player??" << endl;
+	V2d vel = b->velocity;
+	double angle = atan2(vel.y, vel.x);
+	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+	owner->GetPlayer(0)->ApplyHit(b->launcher->hitboxInfo);
+	b->launcher->DeactivateBullet(b);
 }

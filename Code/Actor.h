@@ -145,6 +145,7 @@ struct AbsorbParticles
 struct Booster;
 struct Spring;
 struct EffectPool;
+struct EnemyParams;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -396,8 +397,7 @@ struct Actor : QuadTreeCollider,
 	int actorIndex;
 	void UpdateSprite();
 	void ConfirmEnemyNoKill( Enemy *e );
-	void ConfirmHit( int worldIndex, 
-		int flashFrames, double speedBar, int charge );
+	void ConfirmHit(EnemyParams * hitParams);
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

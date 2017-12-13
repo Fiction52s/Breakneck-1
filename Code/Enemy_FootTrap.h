@@ -5,6 +5,21 @@
 
 struct FootTrap : Enemy
 {
+	enum Action
+	{
+		LATENT,
+		CHOMPING,
+		DYING,
+		ROOTPREPARE,
+		ROOTWAIT,
+		ROOTSTRIKE,
+		ROOTSPIKEWAIT,
+		ROOTSPIKEDYING
+	};
+
+	Action action;
+	int actionLength[ROOTSTRIKE + 1];
+
 	FootTrap(GameSession *owner, bool hasMonitor,
 		Edge *ground, double quantity);
 	void HandleEntrant(QuadTreeEntrant *qte);

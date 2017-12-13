@@ -128,6 +128,7 @@ Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
 	ts_grass(p_ts_grass), A(pA), B(pB), C(pC), D(pD), owner(p_owner), poly( p_poly )
 {
+
 	explosion.isCircle = true;
 	explosion.rw = 64;
 	explosion.rh = 64;
@@ -770,7 +771,7 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_filePath.string() ),
-	filePath( p_filePath )
+	filePath( p_filePath ), eHitParamsMan( NULL )
 {	
 	mainMenu = p_mainMenu;
 
@@ -782,6 +783,12 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 void GameSession::Cleanup()
 {
 	TerrainRender::CleanupLayers();
+
+	if (eHitParamsMan != NULL)
+	{
+		delete eHitParamsMan;
+		eHitParamsMan = NULL;
+	}
 
 	if (absorbParticles != NULL)
 	{
@@ -1386,7 +1393,7 @@ int GameSession::CountActiveEnemies()
 	int counter = 0;
 	while( currEnemy != NULL )
 	{
-		if( currEnemy->type != currEnemy->BASICEFFECT )
+		if( currEnemy->type != E_BASICEFFECT )
 		{
 			counter++;	
 		}
@@ -5634,6 +5641,8 @@ bool GameSession::Load()
 		Cleanup();
 		return false;
 	}
+
+	eHitParamsMan = new EnemyParamsManager;
 
 	absorbParticles = new AbsorbParticles;
 
