@@ -24,6 +24,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void SetActionDash();
 	void ProcessState();
 	bool TryDash();
+	void HandleNoHealth();
 	void IncrementFrame();
 	bool IsPlayerChasingMe();
 	void AttemptRunAwayBoost();
@@ -36,7 +37,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	bool ShouldDash();
 	bool PlayerInFront();
 	void UpdatePhysics();
-	void UpdatePostPhysics();
 	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
 	bool IHitPlayer(int index = 0);

@@ -24,6 +24,16 @@ BasicEffect::BasicEffect ( GameSession *owner )
 	stored_frame = 0;
 }
 
+void BasicEffect::HandleNoHealth()
+{
+
+}
+
+void BasicEffect::ProcessState()
+{
+
+}
+
 void BasicEffect::ResetEnemy()
 {
 	frame = 0;

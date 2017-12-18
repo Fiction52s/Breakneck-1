@@ -14,7 +14,7 @@ struct HitboxManager
 	};
 
 	std::map<std::string, std::map<int,std::list<CollisionBox>>> hitboxMap;
-	const std::map<int, std::list<CollisionBox>> & GetHitboxList( const std::string & str );
+	std::map<int, std::list<CollisionBox>> & GetHitboxList( const std::string & str );
 
 private:
 	CollisionBox LoadHitShape(std::ifstream &is);

@@ -412,21 +412,21 @@ pair<bool, bool> ShipPickup::PlayerHitMe( int index )
 	return pair<bool, bool>(false,false);
 }
 
-bool ShipPickup::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
+//bool ShipPickup::PlayerSlowingMe()
+//{
+//	Actor *player = owner->GetPlayer( 0 );
+//	for( int i = 0; i < player->maxBubbles; ++i )
+//	{
+//		if( player->bubbleFramesToLive[i] > 0 )
+//		{
+//			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+//			{
+//				return true;
+//			}
+//		}
+//	}
+//	return false;
+//}
 
 void ShipPickup::UpdateSprite()
 {

@@ -642,7 +642,7 @@ bool MeetCoyoteSeq::Update()
 		}
 	case 90:
 		{
-			coy->Start_IllTestYou();
+			//coy->Start_IllTestYou();
 		}
 		
 	}

@@ -11,7 +11,7 @@ using namespace sf;
 
 
 Goal::Goal( GameSession *owner, Edge *g, double q )
-		:Enemy( owner, EnemyType::GOAL, false, 0 ), ground( g ), edgeQuantity( q ), dead( false )
+		:Enemy( owner, EnemyType::EN_GOAL, false, 0 ), ground( g ), edgeQuantity( q ), dead( false )
 {
 	
 	double width = 288;
@@ -131,51 +131,56 @@ void Goal::HandleEntrant( QuadTreeEntrant *qte )
 	}
 }
 
-void Goal::UpdatePrePhysics()
+void Goal::ProcessState()
 {
-	if( kinKilling )
+	if (kinKilling)
 	{
-		if( frame == 1 )
+		if (frame == 1)
 		{
 			owner->cam.manual = true;
 			goalKillStartZoom = owner->cam.zoomFactor;
 			goalKillStartPos = owner->cam.pos;
 			//
 		}
-		if( frame <= 31 )
+		if (frame <= 31)
 		{
-			CubicBezier bez( 0, 0, 1, 1 );
-			float z = bez.GetValue( (double)(frame-1) / 30 );
+			CubicBezier bez(0, 0, 1, 1);
+			float z = bez.GetValue((double)(frame - 1) / 30);
 
-			Vector2f po = goalKillStartPos * ( 1.f - z ) + Vector2f( owner->goalNodePos.x,
-				owner->goalNodePos.y ) * z;
+			Vector2f po = goalKillStartPos * (1.f - z) + Vector2f(owner->goalNodePos.x,
+				owner->goalNodePos.y) * z;
 
-			CubicBezier bez1( 0, 0, 1, 1 );
-			float z1 = bez1.GetValue( (double)(frame-1) / 30 );
+			CubicBezier bez1(0, 0, 1, 1);
+			float z1 = bez1.GetValue((double)(frame - 1) / 30);
 
-			float zoom = goalKillStartZoom * ( 1.f - z ) + 1.f * z;
-			owner->cam.Set( po, zoom, 0 );
+			float zoom = goalKillStartZoom * (1.f - z) + 1.f * z;
+			owner->cam.Set(po, zoom, 0);
 			///Vector2f trueSpot = dropSpot + extra0;
 			//owner->cam.Set( ( //trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
 			//	1, 0 );
 
 		}
-		if( frame == 46 * 2 )
+		if (frame == 46 * 2)
 		{
 			exploding = true;
 			kinKilling = false;
 			frame = 0;
 		}
 	}
-	else if( exploding )
+	else if (exploding)
 	{
-		if( frame == 15 * 2 )
+		if (frame == 15 * 2)
 		{
 			destroyed = true;
 			exploding = false;
 			//dead = true;
 		}
 	}
+}
+
+void Goal::HandleNoHealth()
+{
+
 }
 
 void Goal::UpdatePhysics()
@@ -213,45 +218,6 @@ void Goal::UpdatePhysics()
 		}
 	}
 
-}
-
-void Goal::UpdatePostPhysics()
-{
-	
-	UpdateSprite();
-
-	if( slowCounter == slowMultiple )
-	{
-		++frame;
-		slowCounter = 1;
-	
-		if( dead )
-		{
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
-	}
-
-	//if( frame == 4 * animationFactor )
-	//{
-	//frame = 0;
-	//}
-
-	if( dead )
-	{
-		/*if( owner->GetPlayer( 0 )->record == 0 )
-		{
-			cout << "GAME OVER" << endl;
-			owner->goalDestroyed = true;
-		}*/
-		owner->RemoveEnemy( this );
-	}
-
-	
 }
 
 void Goal::Draw(sf::RenderTarget *target )

@@ -1925,17 +1925,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> color;
 				
 				HealthFly::FlyType fType = (HealthFly::FlyType)color;
-				//Patroller *enemy = new Patroller( this, Vector2i( xPos, yPos ), localPath, loop, speed );
-				//enemy->Monitor::MonitorType
 				
-				HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
+				/*HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
 				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+				
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "poi" )
 			{
@@ -6656,7 +6654,7 @@ int GameSession::Run()
 				Enemy *currFX = activeEnemyList;
 				while( currFX != NULL )
 				{
-					if( currFX->type == Enemy::BASICEFFECT )
+					if( currFX->type == EnemyType::EN_BASICEFFECT )
 					{
 						BasicEffect * be = (BasicEffect*)currFX;
 						if( be->pauseImmune )
@@ -9831,7 +9829,7 @@ void GameSession::KillAllEnemies()
 	{
 		Enemy *next = curr->next;
 
-		if( curr->type != Enemy::GOAL )
+		if( curr->type != EnemyType::EN_GOAL )
 		{
 			curr->DirectKill();
 			//curr->health = 0;
@@ -10102,7 +10100,7 @@ void GameSession::ClearFX()
 		while( curr != NULL )
 		{
 			Enemy *next = curr->next;
-			assert( curr->type == Enemy::BASICEFFECT );
+			assert( curr->type == EnemyType::EN_BASICEFFECT );
 			DeactivateEffect( (BasicEffect*)curr );
 
 			curr = next;

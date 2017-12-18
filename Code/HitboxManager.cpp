@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string & str )
+std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string & str )
 {
 	if (hitboxMap.count(str) == 0)
 	{
@@ -17,7 +17,7 @@ const std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const st
 		if (is.is_open())
 		{
 			string tilesetName;
-			is >> tilesetName;
+			getline(is, tilesetName);
 
 			int numPopulatedFrames;
 			is >> numPopulatedFrames;
@@ -32,9 +32,12 @@ const std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const st
 					myMap[frameIndex].push_back( LoadHitShape(is) );
 				}
 			}
+
+			return myMap;
 		}
 		else
 		{
+
 			assert(0);
 		}
 	}

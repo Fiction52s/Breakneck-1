@@ -1171,7 +1171,7 @@ void Boss_Crawler::PhysicsResponse()
 			{
 				//cout << "hit here!" << endl;
 				//triggers multiple times per frame? bad?
-				owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
+				//owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
 
 				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
 				{

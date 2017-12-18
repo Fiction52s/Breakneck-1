@@ -129,7 +129,8 @@ struct CollisionBox
 	};
 
 	CollisionBox( BoxType bType = BoxType::Hit )
-		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ), type(bType)
+		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ), type(bType),
+		hitboxInfo(NULL)
 	{
 
 	}
@@ -148,6 +149,7 @@ struct CollisionBox
 	bool isCircle;
 	BoxType type;
 
+	HitboxInfo *hitboxInfo;
 };
 
 struct Hitbox : CollisionBox

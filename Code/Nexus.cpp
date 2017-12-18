@@ -156,7 +156,7 @@ void Nexus::UpdatePrePhysics()
 void Nexus::UpdatePhysics()
 {
 	specterProtected = false;
-	if( PlayerSlowingMe() )
+	/*if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
 		{
@@ -168,7 +168,7 @@ void Nexus::UpdatePhysics()
 	{
 		slowMultiple = 1;
 		slowCounter = 1;
-	}
+	}*/
 
 	if( action == NORMAL && length( owner->GetPlayer( 0 )->position - entrancePos ) < 30.0 )
 	{
@@ -401,21 +401,21 @@ pair<bool, bool> Nexus::PlayerHitMe( int index )
 	return pair<bool, bool>(false,false);
 }
 
-bool Nexus::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
+//bool Nexus::PlayerSlowingMe()
+//{
+//	Actor *player = owner->GetPlayer( 0 );
+//	for( int i = 0; i < player->maxBubbles; ++i )
+//	{
+//		if( player->bubbleFramesToLive[i] > 0 )
+//		{
+//			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+//			{
+//				return true;
+//			}
+//		}
+//	}
+//	return false;
+//}
 
 void Nexus::UpdateSprite()
 {

@@ -528,26 +528,26 @@ void BasicBullet::ResetSprite()
 	bva[index*4+3].position = Vector2f( 0, 0 );
 }
 
-bool BasicBullet::PlayerSlowingMe()
-{
-	Actor *player = launcher->owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
+//bool BasicBullet::PlayerSlowingMe()
+//{
+//	Actor *player = launcher->owner->GetPlayer( 0 );
+//	for( int i = 0; i < player->maxBubbles; ++i )
+//	{
+//		if( player->bubbleFramesToLive[i] > 0 )
+//		{
+//			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+//			{
+//				return true;
+//			}
+//		}
+//	}
+//	return false;
+//}
 
 void BasicBullet::UpdatePrePhysics()
 {
 	
-	if( PlayerSlowingMe() )
+	/*if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
 		{
@@ -559,7 +559,7 @@ void BasicBullet::UpdatePrePhysics()
 	{
 		slowMultiple = 1;
 		slowCounter = 1;
-	}
+	}*/
 
 	velocity += gravity / (double)slowMultiple;
 
@@ -841,7 +841,7 @@ SinBullet::SinBullet( int indexVA, Launcher *launcher )
 
 void SinBullet::UpdatePrePhysics()
 {
-	if( PlayerSlowingMe() )
+	/*if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
 		{
@@ -853,7 +853,7 @@ void SinBullet::UpdatePrePhysics()
 	{
 		slowMultiple = 1;
 		slowCounter = 1;
-	}
+	}*/
 
 	//cout << "framestolive: " << framesToLive << endl;
 	//cout << "position: " << position.x << ", " << position.y << endl;
@@ -946,7 +946,7 @@ CopycatBullet::CopycatBullet( int indexVA, Launcher *launcher )
 
 void CopycatBullet::UpdatePrePhysics()
 {
-	if( PlayerSlowingMe() )
+	/*if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
 		{
@@ -958,7 +958,7 @@ void CopycatBullet::UpdatePrePhysics()
 	{
 		slowMultiple = 1;
 		slowCounter = 1;
-	}
+	}*/
 }
 
 void CopycatBullet::UpdatePhysics()
@@ -1047,28 +1047,28 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	auraColor = Color( 0, 0, 0, 0 );
 	switch( t )
 	{
-		case PATROLLER:
+	case EnemyType::EN_PATROLLER:
 			auraColor = Color( 0x55, 0xbb, 0xff );
 			break;
-		case CRAWLER:
+		case EnemyType::EN_CRAWLER:
 			auraColor = Color( 0x77, 0xcc, 0xff );
 			break;
-		case BASICTURRET:
+		case EnemyType::EN_BASICTURRET:
 			auraColor = Color( 0x66, 0x99, 0xff );
 			break;
-		case FOOTTRAP:
+		case EnemyType::EN_FOOTTRAP:
 			auraColor = Color( 0xaa, 0xcc, 0xff );
 			break;
-		case BAT:
+		case EnemyType::EN_BAT:
 			auraColor = Color( 0x99, 0xff, 0xcc );
 			break;
-		case STAGBEETLE:
+		case EnemyType::EN_STAGBEETLE:
 			auraColor = Color( 0xaa, 0xff, 0x99 );
 			break;
-		case POISONFROG:
+		case EnemyType::EN_POISONFROG:
 			auraColor = Color( 0x66, 0xff, 0xee );
 			break;
-		case CURVETURRET:
+		case EnemyType::EN_CURVETURRET:
 			auraColor = Color( 0x99, 0xff, 0x99 );
 			break;
 		default:
@@ -1400,33 +1400,37 @@ bool Enemy::IHitPlayer(int index)
 		{
 			if ((*it).Intersects(player->hurtBody))
 			{
-				player->ApplyHit(hitboxInfo);
+				assert((*it).hitboxInfo != NULL);
+				player->ApplyHit((*it).hitboxInfo);
+				return true;
 			}
 		}
 	}
 
-	if (action != UNDERGROUND && player->invincibleFrames == 0 && )
-	{
-		if (player->position.x < position.x)
-		{
-			hitboxInfo->kbDir.x = -abs(hitboxInfo->kbDir.x);
-			//cout << "left" << endl;
-		}
-		else if (player->position.x > position.x)
-		{
-			//cout << "right" << endl;
-			hitboxInfo->kbDir.x = abs(hitboxInfo->kbDir.x);
-		}
-		else
-		{
-			//dont change it
-		}
-		attackFrame = 0;
-		
-		return true;
-	}
-
 	return false;
+
+	//if (action != UNDERGROUND && player->invincibleFrames == 0 && )
+	//{
+	//	if (player->position.x < position.x)
+	//	{
+	//		hitboxInfo->kbDir.x = -abs(hitboxInfo->kbDir.x);
+	//		//cout << "left" << endl;
+	//	}
+	//	else if (player->position.x > position.x)
+	//	{
+	//		//cout << "right" << endl;
+	//		hitboxInfo->kbDir.x = abs(hitboxInfo->kbDir.x);
+	//	}
+	//	else
+	//	{
+	//		//dont change it
+	//	}
+	//	attackFrame = 0;
+	//	
+	//	return true;
+	//}
+
+	//return false;
 }
 
 EnemyParamsManager::EnemyParamsManager()
@@ -1478,6 +1482,9 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 	if (receivedHit == NULL)
 	{
 		receivedHit = IsHit(player);
+		if (receivedHit == NULL)
+			return false;
+
 		if (receivedHit->hType < HitboxInfo::HitboxType::WIREHITRED)
 		{
 			player->ConfirmHit(player->owner->eHitParamsMan->GetHitParams(et));

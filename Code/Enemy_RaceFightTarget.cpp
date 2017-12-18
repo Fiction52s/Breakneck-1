@@ -188,7 +188,7 @@ void RaceFightTarget::PhysicsResponse()
 		{
 			//triggers multiple times per frame? bad?
 			//instead of 6
-			owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 0 );
+			//owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 0 );
 
 			if( result.first )
 			{

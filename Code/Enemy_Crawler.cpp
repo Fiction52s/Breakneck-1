@@ -841,24 +841,21 @@ HitboxInfo * Crawler::IsHit(Actor *player)
 {
 	if (player->currHitboxes != NULL)
 	{
-		bool hit = false;
-
 		for (list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it)
 		{
 			if (hurtBody.Intersects((*it)))
 			{
-				hit = true;
-				break;
+				return (*it).hitboxInfo;
 			}
-		}
-
-		if (hit)
-		{
-			return true;
 		}
 	}
 
 	return false;
+}
+
+void Crawler::HandleNoHealth()
+{
+
 }
 
  pair<bool, bool> Crawler::PlayerHitMe( int index )

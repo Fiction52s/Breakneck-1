@@ -7,9 +7,9 @@ struct Goal : Enemy
 {
 	Goal(GameSession *owner, Edge *ground, double quantity);
 	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
+	//void UpdatePrePhysics();
 	void UpdatePhysics();
-	void UpdatePostPhysics();
+	//void UpdatePostPhysics();
 	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
 	bool IHitPlayer(int index = 0);
@@ -22,6 +22,8 @@ struct Goal : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
+	void HandleNoHealth();
+	void ProcessState();
 
 	bool exploding;
 	bool kinKilling;

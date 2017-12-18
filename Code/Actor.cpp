@@ -603,14 +603,24 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 		//for( int j = 4; j < 10; ++j )
 
-		const std::map<int, std::list<CollisionBox>> & fairAList = 
-			owner->hitboxManager->GetHitboxList("fairahitboxes.hit");
+		std::map<int, std::list<CollisionBox>> & fairAList = 
+			owner->hitboxManager->GetHitboxList("fairahitboxes");
 		for( int j = 0; j < 8 *2; ++j )
 		{
-			list<CollisionBox> &bList = fairAList[j];
-			fairHitboxes[j] = new list<CollisionBox>;
-			
-			fairHitboxes[j]->push_back( cb );
+			if (fairAList.count(j/2) == 0)
+			{
+				continue;
+			}
+			else
+			{
+				list<CollisionBox> &bList = fairAList[j/2];
+
+				fairHitboxes[j] = new list<CollisionBox>;
+				for (auto it = bList.begin(); it != bList.end(); ++it )
+				{
+					fairHitboxes[j]->push_back(CollisionBox( (*it) ));
+				}
+			}	
 		}
 
 
@@ -14917,7 +14927,7 @@ void Actor::PhysicsResponse()
 		if( IHitPlayer( target ) )
 		{
 			pTarget->ApplyHit( currHitboxInfo );
-			ConfirmHit( 2, 5, .8, 6 );
+			//ConfirmHit( ,2, 5, .8, 6 );
 
 			if( owner->raceFight != NULL )
 				owner->raceFight->PlayerHitByPlayer( actorIndex, target );
@@ -17648,15 +17658,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if (queryMode == "activeitem")
 	{
 		Enemy *en = (Enemy*)qte;
-		if (en->type == Enemy::BOOSTER)
+		if (en->type == EnemyType::EN_BOOSTER)
 		{
 
 		}
-		else if (en->type == Enemy::GRAVITYGRASS)
+		else if (en->type == EnemyType::EN_GRAVITYGRASS)
 		{
 
 		}
-		else if (en->type == Enemy::SPRING)
+		else if (en->type == EnemyType::EN_SPRING)
 		{
 			Spring *spr = (Spring*)qte;
 			if (currSpring == NULL)

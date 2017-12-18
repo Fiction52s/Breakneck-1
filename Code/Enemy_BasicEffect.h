@@ -21,6 +21,8 @@ struct BasicEffect : Enemy
 	void SaveEnemyState();
 	void LoadEnemyState();
 	void ResetEnemy();
+	void HandleNoHealth();
+	void ProcessState();
 
 	void Init(Tileset *ts,
 		sf::Vector2<double> position,
