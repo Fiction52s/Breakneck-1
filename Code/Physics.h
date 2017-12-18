@@ -77,30 +77,6 @@ struct MovingTerrain
 	int numTris;
 };
 
-struct CollisionBox
-{
-	enum BoxType
-	{
-		Physics,
-		Hit,
-		Hurt
-	};
-
-	
-	bool Intersects( CollisionBox &c );
-	//double offsetAngle;
-	sf::Vector2<double> globalPosition;
-	double globalAngle;
-
-	sf::Vector2<double> offset;
-	void DebugDraw( sf::RenderTarget *target );
-
-	double rw; //radius or half width
-	double rh; //radius or half height
-	bool isCircle;
-	BoxType type;	
-};
-
 struct HitboxInfo
 {
 	enum HitboxType
@@ -119,9 +95,9 @@ struct HitboxInfo
 	};
 
 	HitboxInfo()
-		:knockback( 0 ), kbDir( 0, 0 ),
-		drainX( 0 ), drainY( 0 ), hitstunFrames( 1 ), hitlagFrames( 1 ), damage( 10 ),
-		freezeDuringStun( false ), hType( NORMAL )
+		:knockback(0), kbDir(0, 0),
+		drainX(0), drainY(0), hitstunFrames(1), hitlagFrames(1), damage(10),
+		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true)
 	{
 	};
 
@@ -131,11 +107,57 @@ struct HitboxInfo
 	//double drain; //0-1
 	double drainX;
 	double drainY;
-	int hitstunFrames; 
+	int hitstunFrames;
 	int hitlagFrames;
 	int damage;
 	bool freezeDuringStun;
+	bool hitToSidePlayerIsOn;
 };
+
+struct CollisionBox
+{
+	enum BoxType
+	{
+		Physics,
+		Hit,
+		Hurt
+	};
+
+	enum Shape
+	{
+
+	};
+
+	CollisionBox( BoxType bType = BoxType::Hit )
+		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ), type(bType)
+	{
+
+	}
+	bool Intersects( CollisionBox &c );
+	sf::Vector2<double> GetQuadVertex(int index);
+	//double offsetAngle;
+	sf::Vector2<double> globalPosition;
+	double globalAngle;
+	double localAngle;
+
+	sf::Vector2<double> offset;
+	void DebugDraw( sf::RenderTarget *target );
+
+	double rw; //radius or half width
+	double rh; //radius or half height
+	bool isCircle;
+	BoxType type;
+
+};
+
+struct Hitbox : CollisionBox
+{
+	Hitbox() 
+		:CollisionBox( BoxType::Hit )
+	{}
+};
+
+
 
 struct Contact
 {

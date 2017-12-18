@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Nexus::Nexus( GameSession *owner, Edge *g, double q, int nexusIndex )
-		:Enemy( owner, EnemyType::NEXUS, false, 1 ), ground( g ), edgeQuantity( q )
+		:Enemy( owner, EnemyType::EN_NEXUS, false, 1 ), ground( g ), edgeQuantity( q )
 {
 	enterNexus1Seq = new EnterNexus1Seq( owner );
 

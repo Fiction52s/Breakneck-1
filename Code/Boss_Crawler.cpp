@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
-	:Enemy( owner, EnemyType::STAGBEETLE, false, 1 ), facingRight( false ),
+	:Enemy( owner, EnemyType::EN_STAGBEETLE, false, 1 ), facingRight( false ),
 	markerVA( sf::Quads, 5 * 4 )
 	//moveBezTest( .22,.85,.3,.91 )
 {

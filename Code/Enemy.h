@@ -129,6 +129,9 @@ struct CopycatBullet : BasicBullet
 	//CollisionBox hurtBody;
 };
 
+
+
+
 struct Launcher
 {
 	
@@ -305,85 +308,179 @@ struct EnemyParams
 
 enum EnemyType
 {
-	E_BASICEFFECT,
-	E_PATROLLER,
-	E_CRAWLER,
-	E_BASICTURRET,
-	E_FOOTTRAP,
-	E_BAT,
-	E_STAGBEETLE,
-	E_POISONFROG,
-	E_CURVETURRET,
-	E_PULSER,
-	E_BADGER,
-	E_CACTUS,
-	E_OWL,
-	E_TURTLE,
-	E_CHEETAH,
-	E_CORALNANOBOTS,
-	E_CORAL_BLOCK,
-	E_SPIDER,
-	E_GHOST,
-	E_OVERGROWTH,
-	E_OVERGROWTH_TREE,
-	E_SHARK,
-	E_SWARM,
-	E_COPYCAT,
-	E_GORILLA,
-	E_FLYINGHEAD,
-	E_SPECTER,
-	E_GOAL,
-	E_KEY,
-	E_BOSS_CRAWLER,
-	E_BOSS_BIRD,
-	E_BOSS_COYOTE,
-	E_BOSS_TIGER,
-	E_BOSS_ALLIGATOR,
-	E_BOSS_SKELETON,
-	E_BOSS_BEAR,
-	E_GATEMONITOR,
-	E_HEALTHFLY,
-	E_NEXUS,
-	E_SHIPPICKUP,
-	E_SHARD,
-	E_MINE,
-	E_BLOCKER,
-	E_BLOCKERCHAIN,
-	E_RACEFIGHTTARGET,
-	E_BOOSTER,
-	E_GRAVITYGRASS,
-	E_SPRING,
-	E_RAIL,
-	E_Count
+	EN_BASICEFFECT,
+	EN_PATROLLER,
+	EN_CRAWLER,
+	EN_BASICTURRET,
+	EN_FOOTTRAP,
+	EN_BAT,
+	EN_STAGBEETLE,
+	EN_POISONFROG,
+	EN_CURVETURRET,
+	EN_PULSER,
+	EN_BADGER,
+	EN_CACTUS,
+	EN_OWL,
+	EN_TURTLE,
+	EN_CHEETAH,
+	EN_CORALNANOBOTS,
+	EN_CORAL_BLOCK,
+	EN_SPIDER,
+	EN_GHOST,
+	EN_OVERGROWTH,
+	EN_OVERGROWTH_TREE,
+	EN_SHARK,
+	EN_SWARM,
+	EN_COPYCAT,
+	EN_GORILLA,
+	EN_FLYINGHEAD,
+	EN_SPECTER,
+	EN_GOAL,
+	EN_KEY,
+	EN_BOSS_CRAWLER,
+	EN_BOSS_BIRD,
+	EN_BOSS_COYOTE,
+	EN_BOSS_TIGER,
+	EN_BOSS_ALLIGATOR,
+	EN_BOSS_SKELETON,
+	EN_BOSS_BEAR,
+	EN_GATEMONITOR,
+	EN_HEALTHFLY,
+	EN_NEXUS,
+	EN_SHIPPICKUP,
+	EN_SHARD,
+	EN_MINE,
+	EN_BLOCKER,
+	EN_BLOCKERCHAIN,
+	EN_RACEFIGHTTARGET,
+	EN_BOOSTER,
+	EN_GRAVITYGRASS,
+	EN_SPRING,
+	EN_RAIL,
+	EN_Count
 };
 
-struct Enemy : QuadTreeCollider, QuadTreeEntrant
+struct SlowableObject
 {
-	
+	int slowCounter;
+	int slowMultiple;
+	virtual bool IsSlowed() = 0;
+	void ResetSlow()
+	{
+		slowCounter = 1;
+		slowMultiple = 1;
+	}
+	void SlowCheck()
+	{
+		if (IsSlowed())
+		{
+			if (slowMultiple == 1)
+			{
+				slowCounter = 1;
+				slowMultiple = 5;
+			}
+		}
+		else
+		{
+			slowCounter = 1;
+			slowMultiple = 1;
+		}
+	}
+	bool UpdateAccountingForSlow()
+	{
+		if (slowCounter == slowMultiple)
+		{
+			slowCounter = 1;
+			return true;
+		}
+		else
+		{
+			slowCounter++;
+			return false;
+		}
+	}
+};
 
+struct HittableObject
+{
+	HittableObject() :receivedHit(NULL) {}
+	virtual HitboxInfo * IsHit(Actor *player) = 0;
+	const bool ReceivedHit() { return receivedHit; }
+	bool CheckHit(Actor *player, EnemyType et);
+	virtual void ProcessHit() = 0;
+	HitboxInfo *receivedHit;
+	int numHealth;
+};
+
+struct CuttableObject
+{
+	CuttableObject();
+	sf::Vertex quads[2 * 4];
+	sf::Vector2f splitDir;
+	int separateFrame;
+	int totalSeparateFrames;
+	float separateSpeed;
+	bool active;
+	
+	void SetCutRootPos(sf::Vector2f &p_rPos )
+	{
+		rootPos = p_rPos;
+	}
+	bool DoneSeparatingCut()
+	{
+		return active 
+			&& separateFrame == totalSeparateFrames;
+	}
+	void IncrementFrame();
+	void UpdateCutObject( int slowCounter );
+	void Draw( sf::RenderTarget *target );
+
+private:
+	sf::Vector2f rootPos;
+};
+
+struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
+	SlowableObject, HittableObject
+{
 private:
 	static EnemyParams * enemyTypeHitParams[Count];
 public:
+
+	CuttableObject *cutObject;
+	Launcher **launchers;
+	std::list<CollisionBox> *activeHitboxes;
+	std::list<CollisionBox> *activeHurtboxes;
+	CollisionBox *physicsBox;
+
+	int numLaunchers;
+	bool LaunchersAreDone();
 	static const EnemyParams * GetEnemyTypeHitParam( EnemyType et );
 	static void SetupEnemyTypeParams();
 	static void CleanupEnemyTypeParams();
-
+	virtual bool IsSlowed() { return false; }
+	virtual HitboxInfo * IsHit(Actor *player) { return false; }
 	Enemy( GameSession *owner, EnemyType t,
-		bool hasMonitor, int world );
+		bool hasMonitor, int world, bool cuttable = true );
+	virtual void HandleNoHealth() = 0;
 	virtual void Init(){};
 	virtual void Setup() {};
-
+	virtual void ProcessHit();
+	virtual void ConfirmHitNoKill();
+	virtual void ConfirmKill();
 	void Record( int enemyIndex );
 	virtual void RecordEnemy();
 	virtual void DirectKill();
+	virtual void ProcessState() = 0;
 	//virtual void HandleEdge( Edge *e ) = 0;
-	virtual void HandleEntrant( QuadTreeEntrant *qte ) = 0;
-	virtual void UpdatePrePhysics() = 0;
+	virtual void HandleEntrant(QuadTreeEntrant *qte) {}
+	virtual void UpdatePrePhysics();
 	virtual void UpdatePhysics() = 0;
-	virtual void UpdatePostPhysics() = 0;
+	virtual void UpdatePostPhysics();
+	virtual void UpdateSprite() {}
+	virtual void FrameIncrement(){}
 	virtual void Draw( sf::RenderTarget *target) = 0;
 	virtual void DrawMinimap( sf::RenderTarget *target ){};
-	virtual bool IHitPlayer(int index = 0) = 0;
+	virtual bool IHitPlayer(int index = 0);
 	virtual void UpdateHitboxes() = 0;
 	virtual std::pair<bool,bool> PlayerHitMe(int index = 0) = 0;
 	bool RightWireHitMe( CollisionBox hurtBox );
@@ -403,9 +500,10 @@ public:
 	bool spawned;
 	sf::Color auraColor;
 	sf::Rect<double> spawnRect;
+	int frame;
 	//HitboxInfo *receivedHit;
-	int slowMultiple;
-	int slowCounter;
+	//int slowMultiple;
+	//int slowCounter;
 	EnemyType type;
 	bool spawnedByClone;
 	int initHealth;
@@ -454,57 +552,9 @@ struct EnemyParamsManager
 	EnemyParamsManager();
 	~EnemyParamsManager();
 	EnemyParams *GetHitParams(EnemyType et);
-	EnemyParams *params[E_Count];
+	EnemyParams *params[EN_Count];
 };
 
-struct HittableObject
-{
-	HittableObject():receivedHit( NULL ){}
-	virtual HitboxInfo * IsHit(Actor *player) = 0;
-	bool CheckHit(Actor *player, EnemyType et );
-	HitboxInfo *receivedHit;
-};
-
-struct SlowableObject
-{
-	int slowCounter;
-	int slowMultiple;
-	virtual bool IsSlowed() = 0;
-	void ResetSlow()
-	{
-		slowCounter = 1;
-		slowMultiple = 1;
-	}
-	void SlowCheck()
-	{
-		if (IsSlowed())
-		{
-			if (slowMultiple == 1)
-			{
-				slowCounter = 1;
-				slowMultiple = 5;
-			}
-		}
-		else
-		{
-			slowCounter = 1;
-			slowMultiple = 1;
-		}
-	}
-	bool UpdateAccountingForSlow()
-	{
-		if (slowCounter == slowMultiple)
-		{
-			slowCounter = 1;
-			return true;
-		}
-		else
-		{
-			slowCounter++;
-			return false;
-		}
-	}
-};
 
 struct EnterNexus1Seq;
 struct Nexus : Enemy
@@ -518,6 +568,7 @@ struct Nexus : Enemy
 	};
 
 	Action action;
+
 	Nexus( GameSession *owner,
 		Edge *ground, double quantity,
 		int nexusIndex );

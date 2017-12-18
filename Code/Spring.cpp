@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_moveFrames )
-	:Enemy(owner, EnemyType::SPRING, false, 3)
+	:Enemy(owner, EnemyType::EN_SPRING, false, 3)
 {
 	
 	initHealth = 60;

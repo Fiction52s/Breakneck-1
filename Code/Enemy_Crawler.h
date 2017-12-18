@@ -3,8 +3,7 @@
 
 #include "Enemy.h"
 
-struct Crawler : Enemy, SurfaceMoverHandler, HittableObject,
-	SlowableObject
+struct Crawler : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
@@ -23,7 +22,9 @@ struct Crawler : Enemy, SurfaceMoverHandler, HittableObject,
 	int actionLength[DYING+1];
 	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
 	void SetActionDash();
+	void ProcessState();
 	bool TryDash();
+	void IncrementFrame();
 	bool IsPlayerChasingMe();
 	void AttemptRunAwayBoost();
 	double dashAccel;
@@ -34,9 +35,7 @@ struct Crawler : Enemy, SurfaceMoverHandler, HittableObject,
 	void HandleEntrant(QuadTreeEntrant *qte);
 	bool ShouldDash();
 	bool PlayerInFront();
-	void UpdatePrePhysics();
 	void UpdatePhysics();
-	void PhysicsResponse();
 	void UpdatePostPhysics();
 	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
@@ -46,7 +45,6 @@ struct Crawler : Enemy, SurfaceMoverHandler, HittableObject,
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics(sf::Vector2<double> vel);
 	void ResetEnemy();
 	//void DirectKill();
 	void SaveEnemyState();

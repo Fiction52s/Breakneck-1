@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
-	:Enemy( p_owner, EnemyType::SHARD, false, p_owner->mh->envType + 1 ), deathFrame( 0 )
+	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envType + 1 ), deathFrame( 0 )
 {
 	shardIndex = p_shardIndex;
 	assert( shardIndex < 3 );

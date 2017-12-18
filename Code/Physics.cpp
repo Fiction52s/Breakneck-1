@@ -341,6 +341,43 @@ void MovingTerrain::Draw( RenderTarget *target )
 //	target->draw( *polygonVA, &owner->polyShader );
 }
 
+sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
+{
+	double w = 0;
+	double h = 0;
+
+	switch (index)
+	{
+	case 0:
+		w = -rw;
+		h = -rh;
+		break;
+	case 1:
+		w = rw;
+		h = -rh;
+		break;
+	case 2:
+		w = rw;
+		h = rh;
+		break;
+	case 3:
+		w = -rw;
+		h = rh;
+		break;
+	}
+	assert(w != 0 && h != 0);
+	//RotateCCW
+
+	V2d localPos(w, h);
+	RotateCCW(localPos, localAngle);
+
+	localPos += V2d(offset);
+	RotateCCW(localPos, globalAngle);
+
+	return globalPosition + localPos;
+	//return (globalPosition + V2d(w * cos(globalAngle) + h * -sin(globalAngle), w * sin(globalAngle) + h * cos(globalAngle)));
+}
+
 bool CollisionBox::Intersects( CollisionBox &c )
 {
 	//first, box with box aabb. can adjust it later
@@ -353,10 +390,10 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else if( c.isCircle && !this->isCircle )
 	{
-		V2d pA = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pB = globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pC = globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d pD = globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d pA = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pB = GetQuadVertex(1);//globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d pC = GetQuadVertex(2);//globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d pD = GetQuadVertex(3);//globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
 		
 		double A = cross( c.globalPosition - pA, normalize(pB - pA) );
 		double B = cross( c.globalPosition - pB, normalize(pC - pB) );
@@ -373,10 +410,10 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	}
 	else if( !c.isCircle && this->isCircle )
 	{
-		V2d pA = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pB = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pC = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d pD = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pA = c.GetQuadVertex(0);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pB = c.GetQuadVertex(1);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pC = c.GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pD = c.GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 		
 		double A = cross( globalPosition - pA, normalize(pB - pA) );
 		double B = cross( globalPosition - pB, normalize(pC - pB) );
@@ -420,18 +457,18 @@ bool CollisionBox::Intersects( CollisionBox &c )
 		V2d pC1( transC.x, transC.y );
 		V2d pD1( transD.x, transD.y );*/
 		//V2d pA0 = globalPosition + test.transformPoint( 
-		V2d A0 = globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d B0 = globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d C0 = globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d D0 = globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d A0 = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d B0 = GetQuadVertex(1);//globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		V2d C0 = GetQuadVertex(2);//globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		V2d D0 = GetQuadVertex(3);//globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
 
 		//cout << "rw: " << rw << ", rh: " << rh << ", axis: " << length( pB0 - pA0 ) << ", axis2: " << length( pD0 - pA0 ) << endl;
 		
 
-		V2d A1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d B1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d C1 = c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d D1 = c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d A1 = c.GetQuadVertex(0);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d B1 = c.GetQuadVertex(1);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d C1 = c.GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d D1 = c.GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 
 		//cout << "c.rw: " << c.rw << ", c.rh: " << c.rh << endl;
 

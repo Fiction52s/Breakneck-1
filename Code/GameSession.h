@@ -334,6 +334,8 @@ struct GhostEntry;
 struct ResultsScreen;
 struct RaceFightTarget;
 struct BasicEffect;
+struct EnemyParamsManager;
+struct HitboxManager;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -423,6 +425,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int raceWinnerIndex;
 	};
 
+
+	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;
 	EnemyParamsManager *eHitParamsMan;
 
@@ -430,6 +434,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool Load();	
 	RaceFight *raceFight;
 
+	
 	bool continueLoading;
 	void SetContinueLoading( bool cont );
 	bool ShouldContinueLoading();

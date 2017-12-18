@@ -1024,12 +1024,16 @@ void CopycatBullet::Reset( sf::Vector2<double> &pos0,
 }
 
 Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
-	int world )
-	:owner( own ), prev( NULL ), next( NULL ), spawned( false ), slowMultiple( 1 ), slowCounter( 1 ),
-	spawnedByClone( false ), type( t ),zone( NULL ), dead( false ),
+	int world, bool cuttable )
+	:owner( own ), prev( NULL ), next( NULL ), spawned( false ),
+	type( t ),zone( NULL ), dead( false ),
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	if (cuttable)
+	{
+		cutObject = new CuttableObject;
+	}
 	hasMonitor = p_hasMonitor;
 	if( world == 0 )
 	{
@@ -1128,7 +1132,6 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		keyShader = NULL;
 		keySprite = NULL;
 	}
-
 
 
 	stringstream ss;
@@ -1289,6 +1292,143 @@ void Enemy::RecordEnemy()
 	//stub
 }
 
+void Enemy::UpdatePrePhysics()
+{
+	if ( dead )
+		return;
+
+	ProcessState();
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->UpdatePrePhysics();
+	}
+}
+
+bool Enemy::LaunchersAreDone()
+{
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		if (launchers[i]->activeBullets != NULL)
+			return false;
+	}
+
+	return true;
+}
+
+void Enemy::UpdatePostPhysics()
+{
+	//cout << "suppress: " << (int)suppressMonitor << endl;
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->UpdatePostPhysics();
+	}
+	
+	ProcessHit();
+
+	if (numHealth == 0 && LaunchersAreDone() 
+		&& ( ( cutObject != NULL && cutObject->DoneSeparatingCut() ) 
+			|| cutObject == NULL && dead ) )
+	{
+		dead = true;
+		owner->RemoveEnemy(this);
+	}
+
+	UpdateSprite();
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->UpdateSprites();
+	}
+
+	if (UpdateAccountingForSlow())
+	{
+		++frame;
+		if (cutObject != NULL)
+			cutObject->IncrementFrame();
+		
+
+		FrameIncrement();
+	}
+}
+
+void Enemy::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 0 )
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				owner->keyMarker->CollectKey();
+			}
+
+			owner->GetPlayer(0)->ConfirmEnemyKill(this);
+			ConfirmKill();
+		}
+		else
+		{
+			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+			ConfirmHitNoKill();
+		}
+
+		receivedHit = NULL;
+	}
+}
+
+void Enemy::ConfirmHitNoKill()
+{
+	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_hitSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
+	owner->Pause(5);
+}
+
+void Enemy::ConfirmKill()
+{
+	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true);
+	owner->Pause(7);
+}
+
+bool Enemy::IHitPlayer(int index)
+{
+	Actor *player = owner->GetPlayer(0);
+
+	if (activeHitboxes != NULL)
+	{
+		for (auto it = activeHitboxes->begin(); it != activeHitboxes->end(); ++it)
+		{
+			if ((*it).Intersects(player->hurtBody))
+			{
+				player->ApplyHit(hitboxInfo);
+			}
+		}
+	}
+
+	if (action != UNDERGROUND && player->invincibleFrames == 0 && )
+	{
+		if (player->position.x < position.x)
+		{
+			hitboxInfo->kbDir.x = -abs(hitboxInfo->kbDir.x);
+			//cout << "left" << endl;
+		}
+		else if (player->position.x > position.x)
+		{
+			//cout << "right" << endl;
+			hitboxInfo->kbDir.x = abs(hitboxInfo->kbDir.x);
+		}
+		else
+		{
+			//dont change it
+		}
+		attackFrame = 0;
+		
+		return true;
+	}
+
+	return false;
+}
+
 EnemyParamsManager::EnemyParamsManager()
 {
 	memset(params, 0, sizeof(params));
@@ -1301,16 +1441,16 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 	{
 		switch (et)
 		{
-		case E_CRAWLER:
+		case EnemyType::EN_CRAWLER:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
-		case E_PATROLLER:
+		case EnemyType::EN_PATROLLER:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
-		case E_FOOTTRAP:
+		case EnemyType::EN_FOOTTRAP:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
-		case E_BASICTURRET:
+		case EnemyType::EN_BASICTURRET:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		default:
@@ -1348,4 +1488,46 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 		}
 	}
 	return false;
+}
+
+CuttableObject::CuttableObject()
+{
+	splitDir = Vector2f(1, 0);
+	separateFrame = 0;
+	totalSeparateFrames = 60;
+}
+
+void CuttableObject::UpdateCutObject( int slowCounter )
+{
+	Vector2f root[2];
+	root[0] = rootPos + splitDir
+		* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
+	root[1] = rootPos - splitDir
+		* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
+
+	for (int i = 0; i < 2; ++i)
+	{
+		quads[i * 4 + 0].position = root[i] + Vector2f(-16, -16);
+		quads[i * 4 + 1].position = root[i] + Vector2f(16, -16);
+		quads[i * 4 + 2].position = root[i] + Vector2f(16, 16);
+		quads[i * 4 + 3].position = root[i] + Vector2f(-16, 16);
+
+		quads[i * 4 + 0].color = Color::Blue;
+		quads[i * 4 + 1].color = Color::Blue;
+		quads[i * 4 + 2].color = Color::Blue;
+		quads[i * 4 + 3].color = Color::Blue;
+	}
+}
+
+void CuttableObject::Draw(sf::RenderTarget *target)
+{
+	target->draw(quads, 8, sf::Quads);
+}
+
+void CuttableObject::IncrementFrame()
+{
+	if (separateFrame < totalSeparateFrames)
+	{
+		++separateFrame;
+	}
 }

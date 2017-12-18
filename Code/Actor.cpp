@@ -15,6 +15,7 @@
 #include "Enemy.h"
 #include "Enemy_Booster.h"
 #include "Enemy_Spring.h"
+#include "HitboxManager.h"
 
 using namespace sf;
 using namespace std;
@@ -584,7 +585,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		velocity = Vector2<double>( 0, 0 );
 		
-		CollisionBox cb;
+		CollisionBox cb(CollisionBox::BoxType::Hit );
 		cb.type = CollisionBox::Hit;
 		cb.isCircle = true;
 		cb.offset.x = 32;
@@ -601,17 +602,15 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//setup hitboxes
 		{
 		//for( int j = 4; j < 10; ++j )
+
+		const std::map<int, std::list<CollisionBox>> & fairAList = 
+			owner->hitboxManager->GetHitboxList("fairahitboxes.hit");
 		for( int j = 0; j < 8 *2; ++j )
 		{
+			list<CollisionBox> &bList = fairAList[j];
 			fairHitboxes[j] = new list<CollisionBox>;
+			
 			fairHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->fairHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->fairHitboxes[j]->push_back( cb );			
-			}
 		}
 
 

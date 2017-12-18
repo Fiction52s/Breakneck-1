@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
-	:Enemy( owner, EnemyType::RACEFIGHTTARGET, false, 1 )
+	:Enemy( owner, EnemyType::EN_RACEFIGHTTARGET, false, 1 )
 {
 	initHealth = 60;
 	health = initHealth;

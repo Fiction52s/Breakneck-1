@@ -18,7 +18,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRight )
-		:Enemy( owner, EnemyType::SHIPPICKUP, false, 1 ), ground( g ), edgeQuantity( q ),
+		:Enemy( owner, EnemyType::EN_SHIPPICKUP, false, 1 ), ground( g ), edgeQuantity( q ),
 		facingRight( p_facingRight )
 {
 

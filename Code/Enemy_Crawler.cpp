@@ -19,7 +19,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
-	:Enemy( owner, EnemyType::CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
 	//owner- >GetPlayer(0)->ConfirmHit(1, 5, .8, 6);
 	//pHitParams = new PlayerHitParams(1, 5, .8, 6);
@@ -527,40 +527,13 @@ void Crawler::UpdateHitboxes()
 	physBody.globalPosition = mover->physBody.globalPosition;//position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
 }
 
-void Crawler::UpdatePrePhysics()
+//void Crawler::HandleNoHealth()
+
+void Crawler::ProcessState()
 {
-	if( action == DYING )
-		return;
-
-	if( !dead && receivedHit != NULL )
-	{	
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			if( hasMonitor && !suppressMonitor )
-			{
-				owner->keyMarker->CollectKey();
-				///
-				//owner->GetPlayer( 0 )->CaptureMonitor( monitor );
-			}
-			//AttemptSpawnMonitor();
-			dead = true;
-			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
-		}
-		else
-		{
-			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
-		}
-			
-		receivedHit = NULL;
-	}
 	V2d en = mover->ground->Normal();
 
-	if (action != BURROW && action != UNDERGROUND )
+	if (action != BURROW && action != UNDERGROUND)
 	{
 		if (framesUntilBurrow == 0)
 		{
@@ -571,7 +544,7 @@ void Crawler::UpdatePrePhysics()
 	}
 
 	if (frame == actionLength[action])
-	//if( false )
+		//if( false )
 	{
 		switch (action)
 		{
@@ -623,7 +596,7 @@ void Crawler::UpdatePrePhysics()
 			mover->roll = false;
 			mover->UpdateGroundPos();
 			break;
-		case UNDERGROUND:			
+		case UNDERGROUND:
 			action = UNBURROW;
 			framesUntilBurrow = maxFramesUntilBurrow;
 			frame = 0;
@@ -637,7 +610,7 @@ void Crawler::UpdatePrePhysics()
 			break;
 		}
 	}
-	
+
 
 	switch (action)
 	{
@@ -653,7 +626,7 @@ void Crawler::UpdatePrePhysics()
 		break;
 	}
 
-	
+
 	switch (action)
 	{
 	case UNBURROW:
@@ -671,8 +644,8 @@ void Crawler::UpdatePrePhysics()
 		{
 			V2d gn = mover->ground->Normal();
 			double acc = .08;
-			
-			if ((mover->groundSpeed > 0 && gn.x < 0) || (mover->groundSpeed < 0 && gn.x > 0) )
+
+			if ((mover->groundSpeed > 0 && gn.x < 0) || (mover->groundSpeed < 0 && gn.x > 0))
 			{
 				Accelerate(acc);
 			}
@@ -690,7 +663,6 @@ void Crawler::UpdatePrePhysics()
 	case DYING:
 		break;
 	}
-
 }
 
 void Crawler::UpdatePhysics()
@@ -704,105 +676,19 @@ void Crawler::UpdatePhysics()
 	mover->Move(slowMultiple);
 	position = mover->physBody.globalPosition;
 
-	PhysicsResponse();
+	UpdateHitboxes();
+
+	SlowCheck();
+
+	CheckHit(owner->GetPlayer(0), type);
+
+	IHitPlayer();
 }
 
-bool Crawler::ResolvePhysics( V2d vel )
+void Crawler::IncrementFrame()
 {
-	possibleEdgeCount = 0;
-
-	Rect<double> oldR( position.x + physBody.offset.x - physBody.rw, 
-		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
-	position += vel;
-	
-	Rect<double> newR( position.x + physBody.offset.x - physBody.rw, 
-		position.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh );
-	//minContact.collisionPriority = 1000000;
-	
-	double oldRight = oldR.left + oldR.width;
-	double right = newR.left + newR.width;
-
-	double oldBottom = oldR.top + oldR.height;
-	double bottom = newR.top + newR.height;
-
-	double maxRight = max( right, oldRight );
-	double maxBottom = max( oldBottom, bottom );
-	double minLeft = min( oldR.left, newR.left );
-	double minTop = min( oldR.top, newR.top );
-	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
-	Rect<double> r( minLeft , minTop, maxRight - minLeft, maxBottom - minTop );
-
-	
-	minContact.collisionPriority = 1000000;
-
-	
-
-	tempVel = vel;
-
-	col = false;
-	minContact.edge = NULL;
-
-	queryMode = "resolve";
-	owner->terrainTree->Query( this, r );
-	//Query( this, owner->testTree, r );
-
-	return col;
-}
-
-void Crawler::PhysicsResponse()
-{
-	if( !dead  )
-	{
-		UpdateHitboxes();
-
-		SlowCheck();
-
-		CheckHit(owner->GetPlayer(0), type);
-		
-		IHitPlayer();
-
-		deathVector = V2d(0, 0);
-	}
-}
-
-void Crawler::UpdatePostPhysics()
-{
-	if( deathFrame == 30 )
-	{
-		//owner->ActivateEffect( ts_testBlood, position, true, 0, 15, 2, true );
-		owner->RemoveEnemy( this );
-		return;
-	}
-
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
-	}
-
-	if( deathFrame == 0 && dead )
-	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
-	}
-
-	UpdateSprite();
-
-	if (UpdateAccountingForSlow())
-	{
-		++frame;
-		if (framesUntilBurrow > 0)
-			--framesUntilBurrow;
-
-		if (dead)
-		{
-			deathFrame++;
-		}
-		else
-		{
-			if (attackFrame >= 0)
-				++attackFrame;
-		}
-	}
+	if (framesUntilBurrow > 0)
+		--framesUntilBurrow;
 }
 
 bool Crawler::IsSlowed()
@@ -948,6 +834,8 @@ bool Crawler::IHitPlayer( int index )
 	
 	return false;
 }
+
+
 
 HitboxInfo * Crawler::IsHit(Actor *player)
 {

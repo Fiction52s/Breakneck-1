@@ -20,7 +20,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
-	:Enemy(owner, EnemyType::BOOSTER, false, 3), strength( p_strength )
+	:Enemy(owner, EnemyType::EN_BOOSTER, false, 3), strength( p_strength )
 {
 
 	action = NEUTRAL;

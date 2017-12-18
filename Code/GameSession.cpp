@@ -78,6 +78,7 @@
 #include "Enemy_StagBeetle.h"
 #include "Enemy_Swarm.h"
 #include "Enemy_Turtle.h"
+#include "HitboxManager.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -1164,7 +1165,7 @@ void GameSession::UpdateEnemiesDraw()
 	while( current != NULL )
 	{
 	//	cout << "draw" << endl;
-		if( current->type != Enemy::BASICEFFECT && ( pauseFrames < 2 || current->receivedHit == NULL ) )
+		if( current->type != EnemyType::EN_BASICEFFECT && ( pauseFrames < 2 || current->receivedHit == NULL ) )
 		{
 			current->Draw( preScreenTex );
 		}
@@ -1237,7 +1238,7 @@ void GameSession::AddEnemy( Enemy *e )
 {
 	//assert( e->spawned );
 //	cout << "ADD ENEMY:" << (int)e << ", type: " << (int)e->type << endl;
-	if( e->type == Enemy::BOSS_BIRD )
+	if( e->type == EnemyType::EN_BOSS_BIRD )
 	{
 		//probably will not actually use this and will use a separate spacial trigger or a gate
 
@@ -1393,7 +1394,7 @@ int GameSession::CountActiveEnemies()
 	int counter = 0;
 	while( currEnemy != NULL )
 	{
-		if( currEnemy->type != E_BASICEFFECT )
+		if( currEnemy->type != EnemyType::EN_BASICEFFECT )
 		{
 			counter++;	
 		}
@@ -2070,18 +2071,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				poiMap[pname] = pi;
 				//poiMap
 			}
-			else if( typeName == "key" )
-			{
-				Vector2i pos;
-				
-				is >> pos.x;
-				is >> pos.y;
-
-				int numKeys;
-				is >> numKeys;
-
-				keyNumberObjects.push_back( new KeyNumberObj( pos, numKeys ) );
-			}
 			else if( typeName == "shard" )
 			{
 				int xPos,yPos;
@@ -2091,17 +2080,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), shardsLoadedCounter );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
+				/*Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), shardsLoadedCounter );
 				shardsLoadedCounter++;
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if (typeName == "blocker")
 			{
@@ -2134,15 +2119,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int spacing;
 				is >> spacing;
 
-				BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
-				//Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
-				//enemy->Monitor::MonitorType
-
+				/*BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
-				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
+				enemyTree->Insert(enemy);*/
 			}
 			else if (typeName == "booster")
 			{
@@ -2156,17 +2138,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int strength;
 				is >> strength;
 
-				Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
-				//activeItemTree->Insert(enemy);
+				/*Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
-				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
+				enemyTree->Insert(enemy);*/
 			}
 			else if (typeName == "spring")
 			{
@@ -2186,17 +2163,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				
 				
-				Spring *enemy = new Spring(this, Vector2i( xPos, yPos ), other, moveFrames );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
-				//activeItemTree->Insert(enemy);
+				/*Spring *enemy = new Spring(this, Vector2i( xPos, yPos ), other, moveFrames );
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
-				enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
+				enemyTree->Insert(enemy);*/
 			}
 			else if (typeName == "rail")
 			{
@@ -2223,14 +2195,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int energized;
 				is >> energized;
 
-				Rail *r = new Rail(this, Vector2i( xPos, yPos ), localPath, energized);
-				//BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
-				
-				
-				/*fullEnemyList.push_back(enemy);
-				enem = enemy;
-
-				enemyTree->Insert(enemy);*/
+				//Rail *r = new Rail(this, Vector2i( xPos, yPos ), localPath, energized);
 			}
 
 
@@ -2280,18 +2245,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					assert( false && "should be a boolean" );
 				}
 
-
 				int speed;
 				is >> speed;
-				Patroller *enemy = new Patroller( this, hasMonitor, Vector2i( xPos, yPos ), localPath, loop, speed );
-				//Specter *enemy = new Specter( this, Vector2i( xPos, yPos ) );
-				//enemy->Monitor::MonitorType
-				
+				/*Patroller *enemy = new Patroller( this, hasMonitor, Vector2i( xPos, yPos ), localPath, loop, speed );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "bosscrawler" )
 			{
@@ -2306,12 +2267,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
+				/*Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
 
-				b_crawler = enemy;
+				b_crawler = enemy;*/
 			}
 			else if( typeName == "basicturret" )
 			{
@@ -2335,14 +2296,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int framesWait;
 				is >> framesWait;
 
-				BasicTurret *enemy = new BasicTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
-				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
-				//cout << "player pos: " << player->position.x << ", " << player->position.y << endl;
-				//enemyTree = Insert( enemyTree, enemy );
+				/*BasicTurret *enemy = new BasicTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "crawler" )
 			{
@@ -2422,15 +2380,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;
 
-				FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				//int nexusIndex = 1;
-				//Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-				//	nexusIndex );				
+				/*FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 
 			//w2
@@ -2487,52 +2442,17 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int framesBetweenNodes;
 				is >> framesBetweenNodes;
-				//int speed;
-				//is >> speed;
-				Bat *enemy = new Bat( this, hasMonitor, Vector2i( xPos, yPos ), localPath, 
+
+				/*Bat *enemy = new Bat( this, hasMonitor, Vector2i( xPos, yPos ), localPath, 
 					bulletSpeed, framesBetweenNodes, loop );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
-				//Boss_Skeleton *enemy 
-				//	= new Boss_Skeleton( this, Vector2i( xPos, yPos ) );
-
-				//Turtle *enemy = new Turtle( this, Vector2i( xPos, yPos ) );
-
-				//Pulser *enemy = new Pulser( this, Vector2i( xPos, yPos ), localPath,
-				//	framesBetweenNodes, loop );
-				//Ghost *enemy = new Ghost( this, Vector2i( xPos, yPos ), 10 );//framesBetweenNodes );
-				//Shark * enemy = new Shark( this, Vector2i( xPos, yPos ), 10 );
-				
-				//specterTree->in
-				//CoralNanobots *enemy = new CoralNanobots( this, Vector2i( xPos, yPos ), 10 );
-				//Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ) );
-				//Owl *enemy = new Owl( this, Vector2i( xPos, yPos ), 10, 60, true );//bulletSpeed, framesBetweenNodes, true );
-				//enemy->Monitor::MonitorType
-				
-				
-				//b_bird
-				/*Boss_Bird *enemy 
-					= new Boss_Bird( this, Vector2i( xPos, yPos ) );
-				b_bird = enemy;*/
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
-				//fullEnemyList.push_back( enemy );
-				//enem = enemy;
-
-				//enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "poisonfrog" )
 			{
-				//always grounded
-
-			/*	of << (int)monitorType << endl;
-	of << gravFactor << endl;
-	of << jumpStrength.x << " " << jumpStrength.y << endl;
-	of << jumpWaitFrames << endl;*/
-
 				int terrainIndex;
 				is >> terrainIndex;
 
@@ -2557,33 +2477,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int jumpFramesWait;
 				is >> jumpFramesWait;
 
-				/*bool clockwise;
-				string cwStr;
-				is >> cwStr;
+				/*PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );
 
-				if( cwStr == "+clockwise" )
-					clockwise = true;
-				else if( cwStr == "-clockwise" )
-					clockwise = false;
-				else
-				{
-					assert( false && "boolean problem" );
-				}*/
-
-				//float speed;
-				//is >> speed;
-
-				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );//, clockwise );//, speed );
-
-				
-
-				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "stagbeetle" )
 			{
@@ -2617,30 +2517,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float speed;
 				is >> speed;
 
-				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				StagBeetle *enemy = new StagBeetle( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, clockwise, speed );
-				//Boss_Coyote *enemy = new Boss_Coyote( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity );
-				//Boss_Tiger *enemy = new Boss_Tiger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity );
-
-				//Badger *enemy = new Badger( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity, clockwise, speed, 10 );
-
-			//	Cheetah *enemy = new Cheetah( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-			//		edgeQuantity, clockwise );
-
-				//Spider *enemy = new Spider( this, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity );
-
 				
-
-				//enemyTree = Insert( enemyTree, enemy );
+				/*StagBeetle *enemy = new StagBeetle( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "curveturret" )
 			{
@@ -2678,20 +2561,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					relative = true;
 				}
 
-				//Cactus *enemy = new Cactus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
-				//	Vector2i( xGravFactor, yGravFactor ), relative );
-				//Overgrowth *enemy = new Overgrowth( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 10, 60 );
-				CurveTurret *enemy = new CurveTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+				/*CurveTurret *enemy = new CurveTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
 					Vector2i( xGravFactor, yGravFactor ), relative );
 
-				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
-				//cout << "player pos: " << player->position.x << ", " << player->position.y << endl;
-				
-				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "bossbird" )
 			{
@@ -2701,13 +2577,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 
-				Boss_Bird *enemy = new Boss_Bird( this, Vector2i ( xPos, yPos ) );
+				/*Boss_Bird *enemy = new Boss_Bird( this, Vector2i ( xPos, yPos ) );
 
 				fullEnemyList.push_back( enemy );
 
 				b_bird = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 
 			//w3
@@ -2759,17 +2635,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int framesBetweenNodes;
 				is >> framesBetweenNodes;
 
-				Pulser *enemy = new Pulser( this,hasMonitor, Vector2i( xPos, yPos ), localPath,
+				/*Pulser *enemy = new Pulser( this,hasMonitor, Vector2i( xPos, yPos ), localPath,
 					framesBetweenNodes, loop );
-				
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "cactus" )
 			{
@@ -2796,20 +2668,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int amplitude;
 				is >> amplitude;
 
-				//CurveTurret *enemy = new CurveTurret( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
-				//	Vector2i( xGravFactor, yGravFactor ), relative );
-				//Overgrowth *enemy = new Overgrowth( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, 10, 60 );
-				Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, rhythm,
+				/*Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, rhythm,
 					amplitude );
 
-				//cout << "turret pos: " << enemy->position.x << ", " << enemy->position.y << endl;
-				//cout << "player pos: " << player->position.x << ", " << player->position.y << endl;
-				
-				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "owl" )
 			{
@@ -2835,17 +2700,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> rhythmFrames;
 				
 
-				Owl *enemy = new Owl( this, hasMonitor, Vector2i( xPos, yPos ), moveSpeed,
+				/*Owl *enemy = new Owl( this, hasMonitor, Vector2i( xPos, yPos ), moveSpeed,
 					bulletSpeed, rhythmFrames );
-				
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "badger" )
 			{
@@ -2869,15 +2730,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int jumpStrength;
 				is >> jumpStrength;
 				
-				Badger *enemy = new Badger( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, true,
-					speed, jumpStrength );
+				//Badger *enemy = new Badger( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, true,
+				//	speed, jumpStrength );
 
-				
-				//enemyTree = Insert( enemyTree, enemy );
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
+				//fullEnemyList.push_back( enemy );
+				//enem = enemy;
 
-				enemyTree->Insert( enemy );
+				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bosscoyote" )
 			{
@@ -2888,10 +2747,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> pos.x;
 				is >> pos.y;
 
-				Boss_Coyote *enemy = new Boss_Coyote( this, pos );
+				/*Boss_Coyote *enemy = new Boss_Coyote( this, pos );
 				b_coyote = enemy;
 
-				fullEnemyList.push_back( enemy );
+				fullEnemyList.push_back( enemy );*/
 			}
 
 			//w4
@@ -2911,17 +2770,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				Vector2i delta( 1000, -1000 );
 				Vector2i pos( xPos, yPos );
-				Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
-				//Narwhal *enemy = new Narwhal( this, hasMonitor, pos, pos + delta, 20 ); 
-				//Copycat *enemy = new Copycat( this, hasMonitor, pos );	
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
+				/*Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "coral" )
 			{
@@ -2940,19 +2793,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int moveFrames;
 				is >> moveFrames;
 
-				//CoralNanobots *enemy = new CoralNanobots( this, hasMonitor, 
-				//	Vector2i( xPos, yPos ), moveFrames );
-				SecurityWeb * enemy = new SecurityWeb( this,
+				/*SecurityWeb * enemy = new SecurityWeb( this,
 					hasMonitor, Vector2i( xPos, yPos ), 8, 0, 10 );
 				
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "cheetah" )
 			{
@@ -2970,15 +2818,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;
 				
-				Cheetah *enemy = new Cheetah( this, hasMonitor,
+				/*Cheetah *enemy = new Cheetah( this, hasMonitor,
 					edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-
-				
-				//enemyTree = Insert( enemyTree, enemy );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "spider" )
 			{
@@ -2999,15 +2844,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int speed;
 				is >> speed;
 				
-				Spider *enemy = new Spider( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-					speed );
+				//Spider *enemy = new Spider( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+				//	speed );
 
-				
-				//enemyTree = Insert( enemyTree, enemy );
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				//fullEnemyList.push_back( enemy );
+				//enem = enemy;
+
+				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bosstiger" )
 			{
@@ -3016,13 +2860,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 
-				Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
+				/*Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
 
 				fullEnemyList.push_back( enemy );
 
 				b_tiger = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 
 			//w5
@@ -3043,16 +2887,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int liveFrames;
 				is >> liveFrames;
 
-				Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), liveFrames );
-				
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
+				/*Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), liveFrames );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "shark" )
 			{
@@ -3071,16 +2910,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int circleFrames;
 				is >> circleFrames;
 
-				Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), circleFrames );
-				
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
+				/*Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), circleFrames );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "ghost" )
 			{
@@ -3099,18 +2933,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int speed;
 				is >> speed;
 
-				Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 60, 1 );
-
-				
-				
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+				/*Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "overgrowth" )
 			{
@@ -3128,24 +2956,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;
 
-//				Overgrowth *enemy = new Overgrowth( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-	//				10, 60 );
-				/*GrowingTree *enemy = new GrowingTree( this,
-					hasMonitor, 
-					edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, 
-					400 );*/
+				//GrowingTree * enemy = new GrowingTree( this, hasMonitor,
+				//	edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity, 32, 0, 1000 );
 
-				GrowingTree * enemy = new GrowingTree( this, hasMonitor,
-					edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, 32, 0, 1000 );
+				//
+				//fullEnemyList.push_back( enemy );
+				//enem = enemy;
 
-				
-				//enemyTree = Insert( enemyTree, enemy );
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );
+				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bossgator" )
 			{
@@ -3155,13 +2974,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 
-				Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
+				/*Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
 
 				fullEnemyList.push_back( enemy );
 
 				b_gator = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 
 			//w6
@@ -3180,15 +2999,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> hasMonitor;				
 
 				//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-				Mine *enemy = new Mine( this, hasMonitor, Vector2i( xPos, yPos ) );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+				//fullEnemyList.push_back( enemy );
+				//enem = enemy;
 
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				//enemyTree->Insert( enemy );
 			}
 			else if( typeName == "narwhal" )
 			{
@@ -3209,17 +3023,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int moveFrames;
 				is >> moveFrames;
 
-				//Narwhal *enemy = new Narwhal( this, hasMonitor, 
-				//	Vector2i( xPos, yPos ),	dest, moveFrames );
-				Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
+				
+				/*Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "copycat" )
 			{
@@ -3235,15 +3044,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;				
 
-				Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
-				//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-				//	400, 50, 60, 1 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+				/*Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
+				
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "gorilla" )
 			{
@@ -3265,40 +3072,27 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int followFrames;
 				is >> followFrames;
 
-				//Gorilla *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-				Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
+				
+				/*Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
 					wallWidth, followFrames );
-					//400, 60 );
-				//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
-
+				
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );// = Insert( enemyTree, enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "bossskeleton" )
 			{
-				//always grounded
-
-				/*int terrainIndex;
-				is >> terrainIndex;
-
-				int edgeIndex;
-				is >> edgeIndex;
-
-				double edgeQuantity;
-				is >> edgeQuantity;*/
-
 				int xPos,yPos;
 
 				is >> xPos;
 				is >> yPos;
 
-				Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
+				/*Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
 
 				fullEnemyList.push_back( enemy );
 
-				b_skeleton = enemy;
+				b_skeleton = enemy;*/
 			}
 
 
@@ -3318,13 +3112,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int nexusIndex;
 				is >> nexusIndex;
 
-				Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+				/*Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
 					nexusIndex );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "shippickup" )
 			{
@@ -3340,7 +3134,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int facingRight;
 				is >> facingRight;
 
-				ShipPickup *enemy = new ShipPickup( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+				/*ShipPickup *enemy = new ShipPickup( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
 					facingRight );
 
 				fullEnemyList.push_back( enemy );
@@ -3351,7 +3145,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				if( shipExitSeq == NULL )
 				{
 					shipExitSeq = new ShipExitSeq( this );
-				}
+				}*/
 			}
 			//w6
 			else if( typeName == "racefighttarget" )
@@ -3367,17 +3161,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				{
 					raceFight->numTargets++;
 
-					//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-
-					RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
-					//Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-					//	400, 50, 60, 1 );
-					//give the enemy the monitor inside it. create a new monitor and store it inside the enemy
+					/*RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
 
 					fullEnemyList.push_back(enemy);
 					enem = enemy;
 
-					enemyTree->Insert(enemy);// = Insert( enemyTree, enemy );
+					enemyTree->Insert(enemy);*/
 				}
 				else
 				{
@@ -5632,6 +5421,8 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
+	hitboxManager = new HitboxManager;
+
 	if( progressDisplay != NULL )
 		progressDisplay->SetProgressString("started loading!", 0);
 
@@ -13337,7 +13128,7 @@ void GameSession::ResetEnemies()
 		while( curr != NULL )
 		{
 			Enemy *next = curr->next;
-			assert( curr->type == Enemy::BASICEFFECT );
+			assert( curr->type == EnemyType::EN_BASICEFFECT );
 			DeactivateEffect( (BasicEffect*)curr );
 
 			curr = next;

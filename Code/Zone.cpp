@@ -435,7 +435,7 @@ void Zone::Init()
 
 	for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
 	{
-		if( (*it)->type == Enemy::NEXUS )
+		if( (*it)->type == EN_NEXUS )
 		{
 			active = true;
 			//owner->ActivateZone( this );
