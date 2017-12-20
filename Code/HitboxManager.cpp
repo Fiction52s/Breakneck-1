@@ -63,6 +63,19 @@ CollisionBox HitboxManager::LoadHitShape(std::ifstream &is)
 	}
 	case SH_RECT:
 	{
+		int centerX, centerY, width, height, angle;
+		is >> centerX;
+		is >> centerY;
+		is >> width;
+		is >> height;
+		is >> angle;
+		CollisionBox cb;
+		cb.offset = V2d(centerX, centerY);
+		cb.localAngle = angle / 180.0 * PI;
+		cb.isCircle = false;
+		cb.rw = width;
+		cb.rh = height;
+		return cb;
 		break;
 	}
 	case SH_CIRCLE:

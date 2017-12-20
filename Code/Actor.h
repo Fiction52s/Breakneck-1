@@ -487,6 +487,9 @@ struct Actor : QuadTreeCollider,
 	bool collision;
 	sf::Sprite *sprite;
 	Tileset *tileset[Count];
+
+		//std::map<int, 
+	void SetupAction(Action a);
 	Tileset *orbTS[Count];
 	sf::Sprite orbSprite;
 	bool showOrbs;
@@ -708,18 +711,18 @@ struct Actor : QuadTreeCollider,
 	std::list<CollisionBox> *currHitboxes;
 	//int numCurrHitboxes;
 	HitboxInfo *currHitboxInfo;
-	std::map<int, std::list<CollisionBox>*> fairHitboxes;
-	std::map<int, std::list<CollisionBox>*> uairHitboxes;
-	std::map<int, std::list<CollisionBox>*> dairHitboxes;
-	std::map<int, std::list<CollisionBox>*> standHitboxes;
-	std::map<int, std::list<CollisionBox>*> dashHitboxes;
-	std::map<int, std::list<CollisionBox>*> wallHitboxes;
-	std::map<int, std::list<CollisionBox>*> steepClimbHitboxes;
-	std::map<int, std::list<CollisionBox>*> steepSlideHitboxes;
-	std::map<int, std::list<CollisionBox>*> diagUpHitboxes;
-	std::map<int, std::list<CollisionBox>*> diagDownHitboxes;
-	std::map<int, std::list<CollisionBox>*> shockwaveHitboxes;
-	std::map<int, std::list<CollisionBox>*> grindHitboxes;
+	CollisionBody *fairHitboxes;
+	CollisionBody *uairHitboxes;
+	CollisionBody *dairHitboxes;
+	CollisionBody *standHitboxes;
+	CollisionBody *dashHitboxes;
+	CollisionBody *wallHitboxes;
+	CollisionBody *steepClimbHitboxes;
+	CollisionBody *steepSlideHitboxes;
+	CollisionBody *diagUpHitboxes;
+	CollisionBody *diagDownHitboxes;
+	CollisionBody *shockwaveHitboxes;
+	CollisionBody *grindHitboxes;
 	//CollisionBox grindHitbox;
 
 

@@ -508,7 +508,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		soundBuffers[S_LAND] = owner->soundManager->GetSound("Audio/Sounds/land.ogg");
 
 
-
+		currHitboxInfo = new HitboxInfo();
+		currHitboxInfo->damage = 20;
+		currHitboxInfo->drainX = .5;
+		currHitboxInfo->drainY = .5;
+		currHitboxInfo->hitlagFrames = 0;
+		currHitboxInfo->hitstunFrames = 30;
+		currHitboxInfo->knockback = 0;
+		currHitboxInfo->freezeDuringStun = true;
 		
 
 		/*if( !fairBuffer.loadFromFile( "fair.ogg" ) )
@@ -605,23 +612,27 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		std::map<int, std::list<CollisionBox>> & fairAList = 
 			owner->hitboxManager->GetHitboxList("fairahitboxes");
-		for( int j = 0; j < 8 *2; ++j )
+
+		fairHitboxes = new CollisionBody(16, fairAList, currHitboxInfo );
+		/*for( int j = 0; j < 16; ++j )
 		{
-			if (fairAList.count(j/2) == 0)
+			if (fairAList.count(j) == 0)
 			{
 				continue;
 			}
 			else
 			{
-				list<CollisionBox> &bList = fairAList[j/2];
+				list<CollisionBox> &bList = fairAList[j];
 
 				fairHitboxes[j] = new list<CollisionBox>;
 				for (auto it = bList.begin(); it != bList.end(); ++it )
 				{
-					fairHitboxes[j]->push_back(CollisionBox( (*it) ));
+					CollisionBox tBox((*it));
+					tBox.hitboxInfo = currHitboxInfo;
+					fairHitboxes[j]->push_back(tBox);
 				}
 			}	
-		}
+		}*/
 
 
 		cb.offset.x = 0;
@@ -1066,17 +1077,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 
 		currHitboxes = NULL;
-		currHitboxInfo = NULL;
-
-		currHitboxInfo = new HitboxInfo();
-		currHitboxInfo->damage = 20;
-		currHitboxInfo->drainX = .5;
-		currHitboxInfo->drainY = .5;
-		currHitboxInfo->hitlagFrames = 0;
-		currHitboxInfo->hitstunFrames = 30;
-		currHitboxInfo->knockback = 0;
-		currHitboxInfo->freezeDuringStun = true;
-
+		//currHitboxInfo = NULL;
+		
 		 
 		wireChargeInfo = new HitboxInfo();
 		wireChargeInfo->damage = 20;
@@ -1085,7 +1087,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		wireChargeInfo->hitlagFrames = 0;
 		wireChargeInfo->hitstunFrames = 30;//30;
 		wireChargeInfo->knockback = 0;
-		currHitboxInfo->freezeDuringStun = true;
+		wireChargeInfo->freezeDuringStun = true;
 
 		receivedHit = NULL;
 		hitlagFrames = 0;
@@ -15001,8 +15003,10 @@ void Actor::UpdateHitboxes()
 			double offX = (*it).offset.x;
 			double offY = (*it).offset.y;
 
-			if( ( !facingRight && !reversed ) || ( facingRight && reversed ) )
-				offX = -offX;
+			(*it).flipHorizontal = ((!facingRight && !reversed) 
+				|| (facingRight && reversed));
+				
+				//offX = -offX;
 
 			//if( reversed )
 			//	offY = -offY;
@@ -15022,7 +15026,7 @@ void Actor::UpdateHitboxes()
 			}
 			else
 			{
-				pos += V2d( offX, offY );// + V2d( offsetX, 0 );
+				//pos += V2d( offX, offY );// + V2d( offsetX, 0 );
 			}
 
 			(*it).globalPosition = pos;
@@ -21705,6 +21709,74 @@ void Actor::LoadState()
 	groundedWallBounce = stored.groundedWallBounce;
 
 	framesGrinding = stored.framesGrinding;
+}
+
+void Actor::SetupAction(Action a)
+{
+	//actionLength[WALLATTACK] = 8 * 2;
+	//actionLength[DAIR] = 16;
+	//actionLength[DASH] = 45;
+	//actionLength[DOUBLE] = 28 + 10;
+	//actionLength[BACKWARDSDOUBLE] = 40;
+	//actionLength[FAIR] = 8 * 2;
+	//actionLength[DIAGUPATTACK] = 14 * 2;
+	//actionLength[DIAGDOWNATTACK] = 15 * 2;
+	//actionLength[JUMP] = 2;
+	//actionLength[SEQ_WAIT] = 2;
+	//actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
+	//actionLength[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = 2;
+	//actionLength[LAND] = 1;
+	//actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
+	//actionLength[LAND2] = 1;
+	//actionLength[RUN] = 10 * 4;
+	//actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
+	//actionLength[SLIDE] = 1;
+	//actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
+	//actionLength[SPRINT] = 8 * 4;
+	//actionLength[STAND] = 20 * 8;
+	//actionLength[SPRINGSTUN] = 8;
+	//actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
+	//actionLength[DASHATTACK] = 8 * 2;
+	//actionLength[STANDN] = 4 * 4;
+	//actionLength[UAIR] = 16;
+	//actionLength[GRINDATTACK] = 1;
+	//actionLength[STEEPSLIDE] = 1;
+	//actionLength[WALLCLING] = 1;
+	//actionLength[WALLJUMP] = 9 * 2;
+	//actionLength[GRINDBALL] = 1;
+	//actionLength[GRINDLUNGE] = 20;
+	//actionLength[GRINDSLASH] = 16;
+	//actionLength[STEEPCLIMBATTACK] = 4 * 4;
+	//actionLength[SKYDIVETOFALL] = 10 * 4;
+	//actionLength[WAITFORSHIP] = 60 * 1;
+	//actionLength[GRABSHIP] = 4 * 4 + 20;
+	//actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
+	//actionLength[RIDESHIP] = 1;
+	//actionLength[SKYDIVE] = 9 * 2;
+	//actionLength[EXIT] = 27 * 2;
+	//actionLength[GRAVREVERSE] = 20;
+	//actionLength[JUMPSQUAT] = 3;
+	//actionLength[INTRO] = 10 * 4;
+	//actionLength[AIRDASH] = 33;//27;
+	//actionLength[STEEPSLIDEATTACK] = 6 * 3;
+	//actionLength[AIRHITSTUN] = 1;
+	//actionLength[STEEPCLIMB] = 8 * 4;
+	//actionLength[GROUNDHITSTUN] = 1;
+	//actionLength[WIREHOLD] = 1;
+	//actionLength[BOUNCEAIR] = 1;
+	//actionLength[BOUNCEGROUND] = 15;
+	//actionLength[BOUNCEGROUNDEDWALL] = 30;
+	//actionLength[DEATH] = 44 * 2;
+	//actionLength[GETPOWER_AIRDASH_FLIP] = 20 * 5;
+	//actionLength[GOALKILL] = 72 * 2;
+	//actionLength[ENTERNEXUS1] = 10 * 4;
+	//actionLength[GOALKILLWAIT] = 2;
+	//actionLength[SPAWNWAIT] = 120;
+	//actionLength[RAILDASH] = 20;
+	//switch (a)
+	//{
+	//	//case 
+	//}
 }
 
 void Actor::AirMovement()

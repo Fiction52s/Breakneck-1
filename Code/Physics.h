@@ -130,7 +130,16 @@ struct CollisionBox
 
 	CollisionBox( BoxType bType = BoxType::Hit )
 		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ), type(bType),
-		hitboxInfo(NULL)
+		hitboxInfo(NULL), flipHorizontal( false ), flipVertical( false )
+		, localAngle( 0 )
+	{
+
+	}
+
+	CollisionBox( HitboxInfo *hInfo, BoxType bType = BoxType::Hit )
+		:globalAngle(0), rw(0), rh(0), isCircle(true), type(bType),
+		hitboxInfo(NULL), flipHorizontal(false), flipVertical(false),
+		localAngle( 0 )
 	{
 
 	}
@@ -140,16 +149,38 @@ struct CollisionBox
 	sf::Vector2<double> globalPosition;
 	double globalAngle;
 	double localAngle;
+	V2d GetOffset();
+	V2d GetTrueCenter();
 
 	sf::Vector2<double> offset;
 	void DebugDraw( sf::RenderTarget *target );
+	sf::Rect<double> GetAABB();
 
 	double rw; //radius or half width
 	double rh; //radius or half height
 	bool isCircle;
+	bool flipHorizontal;
+	bool flipVertical;
 	BoxType type;
 
 	HitboxInfo *hitboxInfo;
+};
+
+struct CollisionBody
+{
+	CollisionBody(int p_numFrames);
+	CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hList,
+		HitboxInfo *hInfo );
+	~CollisionBody();
+	
+	std::list<CollisionBox> *GetCollisionBoxes(int frame);
+	void AddCollisionBox(int frame, CollisionBox &cb);
+	int GetNumFrames() { return numFrames; }
+	sf::Rect<double> GetAABB( int frame );
+
+private:
+	int numFrames;
+	std::list<CollisionBox> **collisionBoxLists;
 };
 
 struct Hitbox : CollisionBox

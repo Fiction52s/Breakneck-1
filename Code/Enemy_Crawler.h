@@ -25,7 +25,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void ProcessState();
 	bool TryDash();
 	void HandleNoHealth();
-	void IncrementFrame();
+	void FrameIncrement();
 	bool IsPlayerChasingMe();
 	void AttemptRunAwayBoost();
 	double dashAccel;
@@ -87,7 +87,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	Edge *startGround;
 	double startQuant;
 	sf::Vector2<double> offset;
-	int frame;
 	bool roll;
 
 	int deathFrame;

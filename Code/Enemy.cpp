@@ -1030,6 +1030,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	numHealth = 4;
 	if (cuttable)
 	{
 		cutObject = new CuttableObject;

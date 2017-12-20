@@ -21,9 +21,7 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
 	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
-	//owner- >GetPlayer(0)->ConfirmHit(1, 5, .8, 6);
-	//pHitParams = new PlayerHitParams(1, 5, .8, 6);
-
+	numHealth = 4;
 	clockwise = true;
 	maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
@@ -31,27 +29,14 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 	dashAccel = 3;
 	currDistTravelled = 0;
-	//cout << "inside crawler" << endl;
-	//if( hasMonitor )
-	//{
-	//	cout << "HAS MONMITOR NOW" << endl;
-	//}
-	//else
-	//{
-	//	cout << "no monitor" << endl;
-	//}
 	mover = new SurfaceMover(owner, g, q, 32 );
 	mover->surfaceHandler = this;
-	//testMover->gravity = V2d( 0, .5 );
 	mover->SetSpeed(0);
 
 	initHealth = 60;
 	health = initHealth;
-	//lastReverser = false;
 	dead = false;
 	deathFrame = 0;
-	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
-	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 	attackFrame = -1;
 	attackMult = 3;
 
@@ -70,9 +55,6 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	roll = false;
 	position = gPoint + gNorm * height / 2.0;
 	
-
-
-
 	receivedHit = NULL;
 
 	double size = max( width, height );
@@ -131,25 +113,11 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 	action = UNDERGROUND;
 	frame = actionLength[UNDERGROUND];
-	/*if( hasMonitor )
-	{
-		cout << "HAS MONMITOR NOW END" << endl;
-	}
-	else
-	{
-		cout << "no monitor END" << endl;
-	}*/
-	//
-	//hasMonitor = false;
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	//ts_testBlood = owner->GetTileset( "fx_blood_1_256x256.png", 256, 256 );
-	//bloodSprite.setTexture( *ts_testBlood->texture );
-
-	//ts_hitSpack = owner->GetTileset( "hit_spack_1_128x128.png", 128, 128 );
 }
 
 void Crawler::ResetEnemy()
 {
+	numHealth = 4;
 	framesUntilBurrow = maxFramesUntilBurrow;
 	
 	mover->ground = startGround;
@@ -685,7 +653,7 @@ void Crawler::UpdatePhysics()
 	IHitPlayer();
 }
 
-void Crawler::IncrementFrame()
+void Crawler::FrameIncrement()
 {
 	if (framesUntilBurrow > 0)
 		--framesUntilBurrow;
@@ -843,6 +811,9 @@ HitboxInfo * Crawler::IsHit(Actor *player)
 	{
 		for (list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it)
 		{
+			if ((*it).hitboxInfo == NULL)
+				continue;
+
 			if (hurtBody.Intersects((*it)))
 			{
 				return (*it).hitboxInfo;
@@ -855,7 +826,7 @@ HitboxInfo * Crawler::IsHit(Actor *player)
 
 void Crawler::HandleNoHealth()
 {
-
+	int x = 5;
 }
 
  pair<bool, bool> Crawler::PlayerHitMe( int index )

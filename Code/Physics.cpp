@@ -63,7 +63,7 @@ bool Edge::IsTouchingBox( const sf::Rect<double> &r )
 	return IsEdgeTouchingBox( this, r );
 }
 
-//pathparam is local. pointsParam is local
+//pathparam 12is local. pointsParam is local
 MovingTerrain::MovingTerrain( GameSession *own, Vector2i pos, list<Vector2i> &pathParam, list<Vector2i> &pointsParam,
 	bool loopP, float pspeed )
 	:quadTree( NULL ), numEdges( 0 ), edgeArray( NULL ), loop( loopP ), speed( pspeed ), 
@@ -369,13 +369,54 @@ sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
 	//RotateCCW
 
 	V2d localPos(w, h);
-	RotateCCW(localPos, localAngle);
+	if (flipHorizontal)
+	{
+		RotateCCW(localPos, localAngle);
+	}
+	else
+	{
+		RotateCW(localPos, localAngle);
+	}
+	
+	if (type == CollisionBox::BoxType::Hurt)
+	{
+		int x = 4;
+	}
 
-	localPos += V2d(offset);
-	RotateCCW(localPos, globalAngle);
+	V2d off = GetOffset();
+
+	localPos += off;
+
+	if (flipHorizontal)
+	{
+		RotateCCW(localPos, globalAngle);
+	}
+	else
+	{
+		RotateCW(localPos, globalAngle);
+	}
+	
 
 	return globalPosition + localPos;
 	//return (globalPosition + V2d(w * cos(globalAngle) + h * -sin(globalAngle), w * sin(globalAngle) + h * cos(globalAngle)));
+}
+
+V2d CollisionBox::GetOffset()
+{
+	V2d realOffset = offset;
+	if (flipHorizontal)
+		realOffset.x = -realOffset.x;
+	if (flipVertical)
+		realOffset.y = -realOffset.y;
+
+	return realOffset;
+}
+
+V2d CollisionBox::GetTrueCenter()
+{
+	V2d off = GetOffset();
+	RotateCW(off, globalAngle);
+	return globalPosition + off;
 }
 
 bool CollisionBox::Intersects( CollisionBox &c )
@@ -383,22 +424,23 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	//first, box with box aabb. can adjust it later
 	if( c.isCircle && this->isCircle )
 	{
-		double dist = length( this->globalPosition - c.globalPosition );
+		double dist = length( GetTrueCenter() - c.GetTrueCenter() );
 		//cout << "dist: " << dist << endl;
 		if( dist <= this->rw + c.rw )
 			return true;
 	}
 	else if( c.isCircle && !this->isCircle )
 	{
+		V2d cCenterPos = c.GetTrueCenter();
 		V2d pA = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
 		V2d pB = GetQuadVertex(1);//globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
 		V2d pC = GetQuadVertex(2);//globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
 		V2d pD = GetQuadVertex(3);//globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
 		
-		double A = cross( c.globalPosition - pA, normalize(pB - pA) );
-		double B = cross( c.globalPosition - pB, normalize(pC - pB) );
-		double C = cross( c.globalPosition - pC, normalize(pD - pC) );
-		double D = cross( c.globalPosition - pD, normalize(pA - pD) );
+		double A = cross(cCenterPos - pA, normalize(pB - pA) );
+		double B = cross(cCenterPos - pB, normalize(pC - pB) );
+		double C = cross(cCenterPos - pC, normalize(pD - pC) );
+		double D = cross(cCenterPos - pD, normalize(pA - pD) );
 
 		if( A <= c.rw && B <= c.rw && C <= c.rw && D <= c.rw )
 		{
@@ -591,9 +633,11 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 			cs.setFillColor( Color( 0, 0, 255, 100 ) );
 		}
 
+		V2d off = GetOffset();
+
 		cs.setRadius( rw );
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( globalPosition.x, globalPosition.y );
+		cs.setPosition( globalPosition.x + off.x, globalPosition.y + off.y );
 
 		target->draw( cs );
 
@@ -604,26 +648,34 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 		double angle = globalAngle;
 		//cout << "Angle?: " << angle << endl;
 		sf::RectangleShape r;
+		Color col;
 		if( type == Physics )
 		{
-			r.setFillColor( Color( 255, 0, 0, 100 ) );
+			col = Color(255, 0, 0, 100);
 		}
 		else if( type == Hit )
 		{
-			r.setFillColor( Color( 0, 255, 0, 100 ) );
+			col = Color(0, 255, 0, 100);
 		}
 		else if( type == Hurt )
 		{
-			r.setFillColor( Color( 0, 0, 255, 100 ) );
+			col = Color(0, 0, 255, 100);
+		}
+
+		sf::Vertex quad[4];
+		for (int i = 0; i < 4; ++i)
+		{
+			quad[i].position = Vector2f(GetQuadVertex(i));
+			quad[i].color = col;
 		}
 		
-		r.setSize( sf::Vector2f( rw * 2, rh * 2 ) );
+		/*r.setSize( sf::Vector2f( rw * 2, rh * 2 ) );
 		r.setOrigin( r.getLocalBounds().width / 2, r.getLocalBounds().height / 2 );
 		r.setRotation( angle / PI * 180 );
-		r.setPosition( globalPosition.x, globalPosition.y );
+		r.setPosition( globalPosition.x, globalPosition.y );*/
 
 
-		target->draw( r );
+		target->draw( quad, 4, sf::Quads );
 
 	}
 }
@@ -2128,26 +2180,166 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 
 		if( IsEdgeTouchingBox( &e, nodeBox ) )
 		{
-			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
+		for (list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it)
+		{
+			LineIntersection li = SegmentIntersect(startPoint, endPoint, ((Edge*)(*it))->v0, ((Edge*)(*it))->v1);
+			if (!li.parallel)
 			{
-				LineIntersection li = SegmentIntersect( startPoint, endPoint, ((Edge*)(*it))->v0, ((Edge*)(*it))->v1 );	
-				if( !li.parallel )
-				{
-					handler->HandleRayCollision( ((Edge*)(*it)), ((Edge*)(*it))->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
-				}
+				handler->HandleRayCollision(((Edge*)(*it)), ((Edge*)(*it))->GetQuantity(li.position),
+					dot(V2d(li.position - startPoint), normalize(endPoint - startPoint)));
 			}
+		}
 
-			for( int i = 0; i < 4; ++i )
-			{
-				RayCast( handler, n->children[i], startPoint, endPoint );
-			}
+		for (int i = 0; i < 4; ++i)
+		{
+			RayCast(handler, n->children[i], startPoint, endPoint);
+		}
 		}
 	}
 }
 
-void Edge::HandleQuery( QuadTreeCollider * qtc )
+void Edge::HandleQuery(QuadTreeCollider * qtc)
 {
-	qtc->HandleEntrant( this );
+	qtc->HandleEntrant(this);
 }
+
+sf::Rect<double> CollisionBox::GetAABB()
+{
+	if (isCircle)
+	{
+		V2d truePos = GetTrueCenter();
+		return sf::Rect<double>(truePos.x - rw, truePos.y - rw, rw * 2, rh * 2);
+	}
+	else
+	{
+		V2d quads[4];
+		for (int i = 0; i < 4; ++i)
+		{
+			quads[i] = GetQuadVertex(i);
+		}
+
+		double temp;
+		double left = quads[0].x;
+		double right = left;
+		double top = quads[0].y;
+		double bot = top;
+
+		for (int i = 1; i < 4; ++i)
+		{
+			temp = quads[i].x;
+			if (temp < left)
+				left = temp;
+			if (temp > right)
+				right = temp;
+			temp = quads[i].y;
+			if (temp < top)
+				top = temp;
+			if (temp > bot)
+				bot = temp;
+		}
+		return sf::Rect<double>(left, top, right - left, bot - top);
+	}
+}
+
+CollisionBody::CollisionBody(int p_numFrames)
+	:numFrames( p_numFrames ), collisionBoxLists( NULL )
+{
+	collisionBoxLists = new std::list<CollisionBox>*[numFrames];
+	memset(collisionBoxLists, 0, sizeof(collisionBoxLists));
+}
+
+CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hListMap,
+	HitboxInfo *hInfo )
+	:numFrames(p_numFrames)
+{
+	collisionBoxLists = new std::list<CollisionBox>*[numFrames];
+	memset(collisionBoxLists, 0, sizeof(collisionBoxLists));
+
+	for (auto it = hListMap.begin(); it != hListMap.end(); ++it)
+	{
+		int frame = (*it).first;
+
+		collisionBoxLists[frame] = new std::list<CollisionBox>;
+		std::list<CollisionBox> & cbList = *(collisionBoxLists[frame]);
+
+		std::list<CollisionBox> &hList = (*it).second;
+		for (auto hit = hList.begin(); hit != hList.end(); ++hit)
+		{
+			cbList.push_back((*hit));
+			cbList.back().hitboxInfo = hInfo;
+		}
+	}
+}
+
+CollisionBody::~CollisionBody()
+{
+	for (int i = 0; i < numFrames; ++i)
+	{
+		if (collisionBoxLists[i] != NULL)
+		{
+			delete collisionBoxLists[i];
+		}
+	}
+	delete[] collisionBoxLists;
+}
+
+sf::Rect<double> CollisionBody::GetAABB( int frame )
+{
+	bool first = true;
+	double left, right, top, bot;
+
+	std::list<CollisionBox> *cbList = collisionBoxLists[frame];
+
+	if (cbList == NULL)
+		return sf::Rect<double>();
+	
+	for (auto bList = cbList->begin(); bList != cbList->end(); ++bList)
+	{
+		//aabb = newAABB;
+		sf::Rect<double> tAABB = (*bList).GetAABB();
+		if (first)
+		{
+			first = false;
+			left = tAABB.left;
+			top = tAABB.top;
+			right = tAABB.left + tAABB.width;
+			bot = tAABB.top + tAABB.height;
+			//aabb = tAABB;
+			//newAABB = tAABB;
+		}
+		else
+		{
+			if (tAABB.left < left)
+			{
+				left = tAABB.left;
+			}
+			if (tAABB.top < top)
+			{
+				top = tAABB.top;
+			}
+			if (tAABB.left + tAABB.width > right)
+			{
+				right = tAABB.left + tAABB.width;
+			}
+			if (tAABB.top + tAABB.height > bot )
+			{
+				bot = tAABB.top + tAABB.height;
+			}
+		}
+	}
+	
+
+	return sf::Rect<double>(left, top, right - left, bot - top);
+}
+
+void CollisionBody::AddCollisionBox(int frame, CollisionBox &cb)
+{
+	collisionBoxLists[frame]->push_back(cb);
+}
+
+std::list<CollisionBox> *CollisionBody::GetCollisionBoxes(int frame)
+{
+	return collisionBoxLists[frame];
+}
+
 
