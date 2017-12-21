@@ -79,7 +79,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	hurtBox.rw = 32;
 	hurtBox.rh = 32;
 	hurtBody->AddCollisionBox( 0, hurtBox);
-
+	
 	
 	hitBody = new CollisionBody(1);
 	CollisionBox hitBox;
@@ -92,6 +92,10 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	hitBox.rh = 32;
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = hitboxInfo;
+
+
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
 
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
@@ -126,6 +130,9 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 void Crawler::ResetEnemy()
 {
+
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
 	numHealth = 4;
 	framesUntilBurrow = maxFramesUntilBurrow;
 	

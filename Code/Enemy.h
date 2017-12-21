@@ -449,6 +449,16 @@ public:
 	CuttableObject *cutObject;
 	Launcher **launchers;
 	CollisionBody *currHitboxes;
+	void SetHitboxes(CollisionBody *cb, int frame);
+	void ClearHitboxes() { 
+		currHitboxes = NULL;
+		currHitboxFrame = -1;
+	}
+	void ClearHurtboxes() {
+		currHurtboxes = NULL;
+		currHurtboxFrame = -1;
+	}
+	void SetHurtboxes(CollisionBody *cb, int frame);
 	//CollisionBox physBox;
 	int currHitboxFrame;
 	CollisionBody *currHurtboxes;

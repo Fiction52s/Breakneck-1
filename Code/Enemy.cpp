@@ -1192,6 +1192,18 @@ void Enemy::Reset()
 	//cout << "resetting enemy!" << endl;
 }
 
+void Enemy::SetHitboxes(CollisionBody *cb, int frame)
+{
+	currHitboxes = cb;
+	currHitboxFrame = frame;
+}
+
+void Enemy::SetHurtboxes(CollisionBody *cb, int frame)
+{
+	currHurtboxes = cb;
+	currHurtboxFrame = frame;
+}
+
 void Enemy::HandleQuery( QuadTreeCollider * qtc )
 {
 	if( !spawned )
