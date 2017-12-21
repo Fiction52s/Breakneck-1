@@ -107,7 +107,6 @@ struct Copycat : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
 	std::pair<bool, bool> PlayerHitMe(int index = 0);
 	void UpdateSprite();
 	void UpdateHitboxes();

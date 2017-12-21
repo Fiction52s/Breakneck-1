@@ -30,7 +30,6 @@ struct Blocker : Enemy, QuadTreeEntrant
 	void DrawMinimap(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
 	void ClearSprite();
-	bool IHitPlayer(int index);
 	std::pair<bool, bool> PlayerHitMe(int index);
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -88,7 +87,6 @@ struct BlockerChain : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool IHitPlayer(int index = 0);
 	std::pair<bool, bool> PlayerHitMe(int index = 0);
 	bool PlayerSlowingMe();
 

@@ -160,7 +160,6 @@ struct Boss_Crawler : Enemy, LauncherEnemy,
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -472,7 +471,6 @@ struct Boss_Bird0 : Enemy, LauncherEnemy, RayCastHandler
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -683,7 +681,6 @@ struct Boss_Bird : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -966,7 +963,6 @@ struct Boss_Coyote : Enemy, GroundMoverHandler,
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -1066,7 +1062,7 @@ struct Boss_Tiger0 : Enemy, LauncherEnemy,
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer( int index = 0 );
+//	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -1367,7 +1363,7 @@ struct Boss_Tiger : Enemy, LauncherEnemy,
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer( int index = 0 );
+//	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -1553,7 +1549,7 @@ struct Boss_Gator : Enemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer( int index = 0 );
+//	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -1735,7 +1731,7 @@ struct Boss_Skeleton : Enemy, LauncherEnemy
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
 	void DebugDraw(sf::RenderTarget *target);
-	bool IHitPlayer( int index = 0 );
+//	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void UpdateHitboxes();

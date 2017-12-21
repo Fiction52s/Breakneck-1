@@ -192,12 +192,12 @@ void Spring::UpdatePhysics()
 void Spring::PhysicsResponse()
 {
 	Actor *p = owner->GetPlayer(0);
-	if (IHitPlayer(0))
+	//if (IHitPlayer(0))
 	{
-		if (p->currSpring == NULL)
+		/*if (p->currSpring == NULL)
 		{
 			p->currSpring = this;
-		}
+		}*/
 	}
 	//if (action == NEUTRAL && !dead && receivedHit == NULL)
 	//{
@@ -328,18 +328,18 @@ void Spring::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
-bool Spring::IHitPlayer(int index)
-{
-	Actor *player = owner->GetPlayer(0);
-
-	if (hitBody.Intersects(player->hurtBody))
-	{
-		//player->ApplyHit(hitboxInfo);
-		return true;
-	}
-
-	return false;
-}
+//bool Spring::IHitPlayer(int index)
+//{
+//	Actor *player = owner->GetPlayer(0);
+//
+//	if (hitBody.Intersects(player->hurtBody))
+//	{
+//		//player->ApplyHit(hitboxInfo);
+//		return true;
+//	}
+//
+//	return false;
+//}
 
 void Spring::UpdateHitboxes()
 {

@@ -143,7 +143,7 @@ struct AbsorbParticles
 };
 
 struct Booster;
-struct Spring;
+//struct Spring;
 struct EffectPool;
 struct EnemyParams;
 
@@ -582,7 +582,7 @@ struct Actor : QuadTreeCollider,
 	bool scorpOn;
 	bool scorpSet;
 
-	Spring *currSpring;
+//	Spring *currSpring;
 	Booster *currBooster;
 	sf::Vector2<double> springVel;
 	int springStunFrames;
@@ -708,8 +708,27 @@ struct Actor : QuadTreeCollider,
 	CollisionBox b;
 	CollisionBox hurtBody;
 	//CollisionBox grindHurtBody;
-	std::list<CollisionBox> *currHitboxes;
+	CollisionBody *currHitboxes;
+	int currHitboxFrame;
+	void SetCurrHitboxes(CollisionBody *cBody,
+		int p_frame)
+	{
+		currHitboxes = cBody;
+		currHitboxFrame = p_frame;
+	}
+
 	//int numCurrHitboxes;
+
+	CollisionBody *currHurtboxes;
+	int currHurtboxFrame;
+	std::map<Action, CollisionBody*> hurtboxMap;
+	bool IntersectMyHurtboxes(CollisionBody *cb,
+		int cbFrame );
+	bool IntersectMyHitboxes(CollisionBody *cb,
+		int cbFrame);
+	bool IntersectMySlowboxes(CollisionBody *cb,
+		int cbFrame );
+
 	HitboxInfo *currHitboxInfo;
 	CollisionBody *fairHitboxes;
 	CollisionBody *uairHitboxes;
@@ -927,12 +946,15 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite bubbleSprite;
 	//--
 	
-	
+	CollisionBody * GetBubbleHitbox(int index);
 	sf::Vector2<double> *bubblePos;//[maxBubbles];
 	int *bubbleFramesToLive;//[maxBubbles];
 	int *bubbleRadiusSize;//[maxBubbles];
 	float *fBubbleRadiusSize;
 	sf::Vector2f *fBubblePos;
+	CollisionBody **bubbleHitboxes;
+	HitboxInfo *hInfo;
+
 	float *fBubbleFrame;
 
 	int currBubble;

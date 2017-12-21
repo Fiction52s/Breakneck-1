@@ -1030,6 +1030,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	currHitboxes = NULL;
+	currHurtboxes = NULL;
 	numHealth = 4;
 	if (cuttable)
 	{
@@ -1182,6 +1184,8 @@ void Enemy::Reset()
 	prev = NULL;
 	next = NULL;
 	spawnedByClone = false;
+	currHitboxes = NULL;
+	currHurtboxes = NULL;
 
 	ResetEnemy();
 
@@ -1197,30 +1201,6 @@ void Enemy::HandleQuery( QuadTreeCollider * qtc )
 bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( spawnRect, r );//r.intersects( spawnRect );// 
-}
-
-void Enemy::SaveState()
-{
-	stored.next = next;
-	stored.prev = prev;
-	stored.receivedHit = receivedHit;
-	stored.slowCounter = slowCounter;
-	stored.slowMultiple = slowMultiple;
-	stored.spawned = spawned;
-
-	SaveEnemyState();
-}
-
-void Enemy::LoadState()
-{
-	next = stored.next;
-	prev = stored.prev;
-	receivedHit = stored.receivedHit;
-	slowCounter = stored.slowCounter;
-	slowMultiple = stored.slowMultiple;
-	spawned = stored.spawned;
-
-	LoadEnemyState();
 }
 	
 void Enemy::DirectKill()
@@ -1391,20 +1371,90 @@ void Enemy::ConfirmKill()
 	owner->Pause(7);
 }
 
-bool Enemy::IHitPlayer(int index)
+void Enemy::DrawMinimap(sf::RenderTarget *target)
 {
-	Actor *player = owner->GetPlayer(0);
-
-	if (activeHitboxes != NULL)
+	if (!dead)
 	{
-		for (auto it = activeHitboxes->begin(); it != activeHitboxes->end(); ++it)
+		if (hasMonitor && !suppressMonitor)
 		{
-			if ((*it).Intersects(player->hurtBody))
-			{
-				assert((*it).hitboxInfo != NULL);
-				player->ApplyHit((*it).hitboxInfo);
-				return true;
-			}
+			CircleShape cs;
+			cs.setRadius(50);
+			cs.setFillColor(Color::White);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			cs.setPosition(position.x, position.y);
+			target->draw(cs);
+		}
+		else
+		{
+			CircleShape cs;
+			cs.setRadius(40);
+			cs.setFillColor(Color::Red);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			cs.setPosition(position.x, position.y);
+			target->draw(cs);
+		}
+	}
+}
+
+void Enemy::DebugDraw(sf::RenderTarget *target)
+{
+	if (!dead)
+	{
+		if( currHitboxes != NULL )
+			currHitboxes->DebugDraw( currHitboxFrame, target);
+		if( currHurtboxes != NULL )
+			currHurtboxes->DebugDraw( currHurtboxFrame, target);
+	}
+}
+
+void Enemy::UpdatePhysics()
+{
+	specterProtected = false;
+	if (dead)
+	{
+		return;
+	}
+
+	UpdateEnemyPhysics();
+
+	UpdateHitboxes();
+
+	SlowCheck(0);
+
+	CheckHit(owner->GetPlayer(0), type);
+
+	if (CheckHitPlayer(0))
+	{
+		IHitPlayer(0);
+	}
+}
+
+bool Enemy::IsSlowed( int index )
+{
+	Actor *player = owner->GetPlayer(index);
+	return (player->IntersectMySlowboxes(currHurtboxes, currHurtboxFrame));
+}
+
+HitboxInfo * Enemy::IsHit(Actor *player)
+{
+	if (player->IntersectMyHitboxes(currHurtboxes, currHurtboxFrame))
+	{
+		return player->currHitboxes->hitboxInfo;
+	}
+	
+	return NULL;
+}
+
+bool Enemy::CheckHitPlayer(int index)
+{
+	Actor *player = owner->GetPlayer(index);
+
+	if (currHitboxes != NULL)
+	{
+		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
+		{
+			player->ApplyHit(currHitboxes->hitboxInfo);
+			return true;
 		}
 	}
 

@@ -14,7 +14,7 @@
 #include "VisualEffects.h"
 #include "Enemy.h"
 #include "Enemy_Booster.h"
-#include "Enemy_Spring.h"
+//#include "Enemy_Spring.h"
 #include "HitboxManager.h"
 
 using namespace sf;
@@ -233,6 +233,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		currHurtboxes = NULL;
+		currHitboxes = NULL;
+
 		standNDashBoostCooldown = 10;
 		standNDashBoostCurr = 0;
 		ClearPauseBufferedActions();
@@ -322,7 +325,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		regrindOffMax = 3;
 		regrindOffCount = 3;
 
-		currSpring = NULL;
+		//currSpring = NULL;
 		currBooster = NULL;
 
 		railTest.setSize(Vector2f(64, 64));
@@ -614,6 +617,17 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			owner->hitboxManager->GetHitboxList("fairahitboxes");
 
 		fairHitboxes = new CollisionBody(16, fairAList, currHitboxInfo );
+		uairHitboxes = NULL;
+		dairHitboxes = NULL;
+		standHitboxes = NULL;
+		dashHitboxes = NULL;
+		wallHitboxes = NULL;
+		steepClimbHitboxes = NULL;
+		steepSlideHitboxes = NULL;
+		diagUpHitboxes = NULL;
+		diagDownHitboxes = NULL;
+		shockwaveHitboxes = NULL;
+		grindHitboxes = NULL;
 		/*for( int j = 0; j < 16; ++j )
 		{
 			if (fairAList.count(j) == 0)
@@ -635,174 +649,174 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		}*/
 
 
-		cb.offset.x = 0;
-		cb.offset.y = -14;
+		//cb.offset.x = 0;
+		//cb.offset.y = -14;
 
-		for( int j = 0; j <= 12; ++j )
-		{
-			uairHitboxes[j] = new list<CollisionBox>;
-			uairHitboxes[j]->push_back( cb );
+		//for( int j = 0; j <= 12; ++j )
+		//{
+		//	uairHitboxes[j] = new list<CollisionBox>;
+		//	uairHitboxes[j]->push_back( cb );
 
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->uairHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->uairHitboxes[j]->push_back( cb );			
-			}
-		}
-
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 0;
-		cb.offset.y = 32;
-		for( int j = 2; j <= 9; ++j )
-		{
-			dairHitboxes[j] = new list<CollisionBox>;
-			dairHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->dairHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->dairHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 36;
-		cb.offset.y = -6;
-		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j < 6 * 4; ++j )
-		{
-			standHitboxes[j] = new list<CollisionBox>;
-			standHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->standHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->standHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 0;
-		cb.offset.y = 0;
-		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j < 8; ++j )
-		{
-			shockwaveHitboxes[j] = new list<CollisionBox>;
-			shockwaveHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				//ghosts[i]->shockwaveHitboxes[j] = new list<CollisionBox>;
-				//ghosts[i]->shockwaveHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 36;
-		cb.offset.y = -6;
-		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j < 8; ++j )
-		{
-			dashHitboxes[j] = new list<CollisionBox>;
-			dashHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->dashHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->dashHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 36;
-		cb.offset.y = -6;
-		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j < 4 * 4; ++j )
-		{
-			steepClimbHitboxes[j] = new list<CollisionBox>;
-			steepClimbHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->steepClimbHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->steepClimbHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 36;
-		cb.offset.y = -6;
-		//for( int j = 1; j <= 4; ++j )
-		for( int j = 0; j < 6 * 3; ++j )
-		{
-			steepSlideHitboxes[j] = new list<CollisionBox>;
-			steepSlideHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				ghosts[i]->steepSlideHitboxes[j] = new list<CollisionBox>;
-				ghosts[i]->steepSlideHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 14;
-		cb.offset.y = -14;
-
-		for( int j = 0; j < 11 * 2; ++j )
-		{
-			diagUpHitboxes[j] = new list<CollisionBox>;
-			diagUpHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
-				//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
-			}
-		}
-
-		cb.rw = 64;
-		cb.rh = 64;
-		cb.offset.x = 14;
-		cb.offset.y = 14;
-
-		for( int j = 0; j < 11 * 2; ++j )
-		{
-			diagDownHitboxes[j] = new list<CollisionBox>;
-			diagDownHitboxes[j]->push_back( cb );
-
-			for( int i = 0; i < MAX_GHOSTS; ++i )
-			{
-				//ghosts[i] = new PlayerGhost;
-				//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
-				//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
-			}
-		}
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		ghosts[i]->uairHitboxes[j] = new list<CollisionBox>;
+		//		ghosts[i]->uairHitboxes[j]->push_back( cb );			
+		//	}
+		//}
 
 
-		cb.rw = 90;
-		cb.rh = 90;
-		cb.offset.x = 0;
-		cb.offset.y = 0;
-		grindHitboxes[0] = new list<CollisionBox>;
-		grindHitboxes[0]->push_back( cb );
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 0;
+		//cb.offset.y = 32;
+		//for( int j = 2; j <= 9; ++j )
+		//{
+		//	dairHitboxes[j] = new list<CollisionBox>;
+		//	dairHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		ghosts[i]->dairHitboxes[j] = new list<CollisionBox>;
+		//		ghosts[i]->dairHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 36;
+		//cb.offset.y = -6;
+		////for( int j = 1; j <= 4; ++j )
+		//for( int j = 0; j < 6 * 4; ++j )
+		//{
+		//	standHitboxes[j] = new list<CollisionBox>;
+		//	standHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		ghosts[i]->standHitboxes[j] = new list<CollisionBox>;
+		//		ghosts[i]->standHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 0;
+		//cb.offset.y = 0;
+		////for( int j = 1; j <= 4; ++j )
+		//for( int j = 0; j < 8; ++j )
+		//{
+		//	shockwaveHitboxes[j] = new list<CollisionBox>;
+		//	shockwaveHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		//ghosts[i]->shockwaveHitboxes[j] = new list<CollisionBox>;
+		//		//ghosts[i]->shockwaveHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 36;
+		//cb.offset.y = -6;
+		////for( int j = 1; j <= 4; ++j )
+		//for( int j = 0; j < 8; ++j )
+		//{
+		//	dashHitboxes[j] = new list<CollisionBox>;
+		//	dashHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		ghosts[i]->dashHitboxes[j] = new list<CollisionBox>;
+		//		ghosts[i]->dashHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 36;
+		//cb.offset.y = -6;
+		////for( int j = 1; j <= 4; ++j )
+		//for( int j = 0; j < 4 * 4; ++j )
+		//{
+		//	steepClimbHitboxes[j] = new list<CollisionBox>;
+		//	steepClimbHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		ghosts[i]->steepClimbHitboxes[j] = new list<CollisionBox>;
+		//		ghosts[i]->steepClimbHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 36;
+		//cb.offset.y = -6;
+		////for( int j = 1; j <= 4; ++j )
+		//for( int j = 0; j < 6 * 3; ++j )
+		//{
+		//	steepSlideHitboxes[j] = new list<CollisionBox>;
+		//	steepSlideHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		ghosts[i]->steepSlideHitboxes[j] = new list<CollisionBox>;
+		//		ghosts[i]->steepSlideHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 14;
+		//cb.offset.y = -14;
+
+		//for( int j = 0; j < 11 * 2; ++j )
+		//{
+		//	diagUpHitboxes[j] = new list<CollisionBox>;
+		//	diagUpHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
+		//		//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+		//cb.rw = 64;
+		//cb.rh = 64;
+		//cb.offset.x = 14;
+		//cb.offset.y = 14;
+
+		//for( int j = 0; j < 11 * 2; ++j )
+		//{
+		//	diagDownHitboxes[j] = new list<CollisionBox>;
+		//	diagDownHitboxes[j]->push_back( cb );
+
+		//	for( int i = 0; i < MAX_GHOSTS; ++i )
+		//	{
+		//		//ghosts[i] = new PlayerGhost;
+		//		//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
+		//		//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
+		//	}
+		//}
+
+
+		//cb.rw = 90;
+		//cb.rh = 90;
+		//cb.offset.x = 0;
+		//cb.offset.y = 0;
+		//grindHitboxes[0] = new list<CollisionBox>;
+		//grindHitboxes[0]->push_back( cb );
 		
 
 		queryMode = "";
@@ -1291,29 +1305,6 @@ void Actor::ActionEnded()
 			}
 			frame = 0;
 			break;
-		case DASHATTACK:
-			if (currInput.LLeft() || currInput.LRight())
-			{
-				if (currInput.B)
-				{
-					//action = DASH;
-					SetActionExpr(DASH);
-					//re->Reset();
-					//re1->Reset();
-				}
-				else
-				{
-					SetActionExpr(RUN);
-				}
-				facingRight = currInput.LRight();
-			}
-			else
-			{
-				SetActionExpr(STAND);
-			}
-			frame = 0;
-			break;
-
 		case FAIR:
 		{
 			//currLockedFairFX->ClearLockPos();
@@ -1652,6 +1643,9 @@ void Actor::CreateAttackLightning()
 
 void Actor::Respawn()
 {
+	currHurtboxes = NULL;
+	currHitboxes = NULL;
+
 	standNDashBoostCurr = 0;
 	ClearPauseBufferedActions();
 	currLockedFairFX = NULL;
@@ -1667,7 +1661,7 @@ void Actor::Respawn()
 
 	testGrassCount = 0;
 	gravityGrassCount = 0;
-	currSpring = NULL;
+	//currSpring = NULL;
 	currBooster = NULL;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
@@ -3346,10 +3340,9 @@ void Actor::UpdatePrePhysics()
 				assert( 0 && "should be reversed here" );
 			}
 
-			if( shockwaveHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = shockwaveHitboxes[frame];
-			}
+			
+			SetCurrHitboxes(shockwaveHitboxes, frame);
+			
 
 			break;
 		}
@@ -4326,82 +4319,6 @@ void Actor::UpdatePrePhysics()
 					}
 					SetActionExpr(DASH);
 					frame = 0;
-					break;
-				}
-			}
-			break;
-		}
-	case DASHATTACK:
-		{
-			if( currAttackHit && frame > 0 )
-			{
-				if( hasPowerBounce && currInput.X && !bounceFlameOn )
-				{
-					BounceFlameOn();
-				}
-				else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
-				{
-					//bounceGrounded = false;
-					BounceFlameOff();
-				}
-
-				if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
-				{
-					BounceFlameOff();
-					SetActionGrind();
-					//dashStartSound.setLoop( false );
-					////runTappingSound.stop();
-					break;
-				}
-
-				if( reversed )
-				{
-					if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-					{
-						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-						{
-							action = STEEPCLIMB;
-							frame = 0;
-							break;
-						}
-						else
-						{
-							action = STEEPSLIDE;
-							frame = 0;
-							break;
-						}
-					}
-				}
-				else
-				{
-					if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-					{
-						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-						{
-							//cout << "steep clzzzimb" << endl;
-							action = STEEPCLIMB;
-							frame = 0;
-							break;
-						}
-						else
-						{
-							action = STEEPSLIDE;
-							frame = 0;
-							break;
-						}
-					}
-				}
-
-				if( currInput.A && !prevInput.A )
-				{
-					SetActionExpr( JUMPSQUAT );
-					frame = 0;
-					break;
-				}
-
-				if( currInput.rightShoulder && !prevInput.rightShoulder )
-				{
-					GroundAttack();
 					break;
 				}
 			}
@@ -6681,13 +6598,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLATTACK:
 		{
-			//CheckHoldJump();
-
-			//currHitboxes = fairHitboxes;
-			if( wallHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = wallHitboxes[frame];
-			}
+			SetCurrHitboxes(wallHitboxes, frame);
 
 			if( frame == 0 )
 			{
@@ -6716,11 +6627,8 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			//currHitboxes = fairHitboxes;
-			if( fairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = fairHitboxes[frame];
-			}
+			
+			SetCurrHitboxes(fairHitboxes, frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6741,10 +6649,7 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			if( dairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = dairHitboxes[frame];
-			}
+			SetCurrHitboxes(dairHitboxes, frame);
 
 			if( frame == 0 && slowCounter == 1 )
 			{
@@ -6772,10 +6677,7 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			if( uairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = uairHitboxes[frame];
-			}
+			SetCurrHitboxes(uairHitboxes, frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6791,13 +6693,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGUPATTACK:
 		{
-			//CheckHoldJump();
-
-			//currHitboxes = fairHitboxes;
-			if( diagUpHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = diagUpHitboxes[frame];
-			}
+			SetCurrHitboxes(diagUpHitboxes, frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6816,13 +6712,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGDOWNATTACK:
 		{
-			//CheckHoldJump();
-
-			//currHitboxes = fairHitboxes;
-			if( diagDownHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = diagDownHitboxes[frame];
-			}
+			SetCurrHitboxes(diagDownHitboxes, frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -7121,10 +7011,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			if( standHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = standHitboxes[frame];
-			}
+			SetCurrHitboxes(standHitboxes, frame);
 
 			if( frame == 0 && slowCounter == slowMultiple )
 			{
@@ -7138,10 +7025,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMBATTACK:
 		{
-			if( steepClimbHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = steepClimbHitboxes[frame];
-			}
+			SetCurrHitboxes(steepClimbHitboxes, frame);
 
 			if( frame == 0 )
 			{
@@ -7207,10 +7091,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDEATTACK:
 		{
-			if( steepSlideHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = steepSlideHitboxes[frame];
-			}
+			SetCurrHitboxes(steepSlideHitboxes, frame);
 
 			if( frame == 0 )
 			{
@@ -7239,21 +7120,6 @@ void Actor::UpdatePrePhysics()
 			//AttackMovement();
 			break;
 
-		}
-	case DASHATTACK:
-		{
-			if( dashHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = dashHitboxes[frame];
-			}
-
-			if( frame == 0 )
-			{
-				currAttackHit = false;
-			}
-
-			AttackMovement();
-			break;
 		}
 	case GRINDBALL:
 		{
@@ -7424,16 +7290,13 @@ void Actor::UpdatePrePhysics()
 			//if( grindHitboxes.count( frame ) > 0 )
 			if( abs( grindSpeed ) > dSpeed )
 			{
-				currHitboxes = grindHitboxes[0];
+				SetCurrHitboxes(grindHitboxes, 0);
 			}
 			break;
 		}
 	case GRINDSLASH:
 		{
-			if( uairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = uairHitboxes[frame];
-			}
+			SetCurrHitboxes(uairHitboxes, frame);
 		}
 		break;
 	case GRAVREVERSE:
@@ -8575,6 +8438,11 @@ void Actor::UpdatePrePhysics()
 				if( !cloneBubbleCreated )
 				{
 					bubblePos[currBubble] = position;
+
+					CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0)->front();
+					bHitbox.globalPosition = position;
+					bHitbox.rw = bubbleRadiusSize[currBubble];
+					bHitbox.rh = bHitbox.rw;
 					fBubblePos[currBubble].x = position.x;
 					fBubblePos[currBubble].y = position.y;
 				}
@@ -8732,13 +8600,19 @@ void Actor::InitAfterEnemies()
 		maxBubbles = 5;
 	}
 
+	bubbleHitboxes = new CollisionBody*[maxBubbles];
+	CollisionBox genericBox;
+	genericBox.isCircle = true;
+	for (int i = 0; i < maxBubbles; ++i)
+	{
+		bubbleHitboxes[i] = new CollisionBody(1);
+		bubbleHitboxes[i]->AddCollisionBox( 0, genericBox);
+	}
+	//memset(bubbleHitboxes, 0, sizeof(bubbleHitboxes));
+
 	bubblePos = new V2d[maxBubbles];
 	bubbleFramesToLive = new int[maxBubbles];
 	bubbleRadiusSize = new int[maxBubbles];
-	/*fBubbleFrame = new float[maxBubbles];
-	fBubblePos = new sf::Vector2f[maxBubbles];
-	fBubbleRadiusSize = new float[maxBubbles];*/
-	
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -10608,6 +10482,43 @@ double Actor::GetDashSpeed()
 		return dashSpeed2;
 		break;
 	}
+}
+
+bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )
+{
+	if ( cb == NULL || currHurtboxes == NULL)
+		return false;
+
+	return currHurtboxes->Intersects(currHurtboxFrame, cb, cbFrame);
+}
+
+bool Actor::IntersectMyHitboxes(CollisionBody *cb,
+	int cbFrame)
+{
+	if (cb == NULL || currHitboxes == NULL )
+		return false;
+
+	return currHitboxes->Intersects(currHitboxFrame, cb, cbFrame);
+}
+
+bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
+{
+	if (cb == NULL )
+		return false;
+
+	CollisionBody *bubbleBody;
+	for (int i = 0; i < maxBubbles; ++i)
+	{
+		bubbleBody = GetBubbleHitbox(i);
+		if (bubbleBody != NULL)
+		{
+			if (bubbleBody->Intersects(0, cb, cbFrame))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 double Actor::GetAirDashSpeed()
@@ -14593,14 +14504,14 @@ void Actor::PhysicsResponse()
 	}
 	else
 	{
-		if (currSpring != NULL)
+		/*if (currSpring != NULL)
 		{
 			springVel = currSpring->dir * (double)currSpring->speed;
 			springStunFrames = currSpring->stunFrames;
 			currSpring = NULL;
 			action = SPRINGSTUN;
 			frame = 0;
-		}
+		}*/
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -14987,9 +14898,13 @@ void Actor::UpdateHitboxes()
 		}
 	}
 
+
+
 	if( currHitboxes != NULL )
 	{
-		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+		list<CollisionBox> *cList = (currHitboxes->GetCollisionBoxes(currHitboxFrame));
+		if( cList != NULL )
+		for( list<CollisionBox>::iterator it = cList->begin(); it != cList->end(); ++it )
 		{
 			if( ground != NULL )
 			{
@@ -17500,7 +17415,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if( currHitboxes != NULL )
 			{
-				for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+				list<CollisionBox> *cList = (currHitboxes->GetCollisionBoxes(currHitboxFrame));
+				if (cList != NULL)
+				for( list<CollisionBox>::iterator it = cList->begin(); it != cList->end(); ++it )
 				{
 					if( (*it).Intersects( c->box ) )
 					{
@@ -17672,18 +17589,18 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_SPRING)
 		{
-			Spring *spr = (Spring*)qte;
-			if (currSpring == NULL)
-			{
-				if (spr->hurtBody.Intersects(hurtBody))
-				{
-					currSpring = spr;
-				}
-			}
-			else
-			{
-				//some replacement formula later
-			}
+			//Spring *spr = (Spring*)qte;
+			//if (currSpring == NULL)
+			//{
+			//	if (spr->hurtBody.Intersects(hurtBody))
+			//	{
+			//		currSpring = spr;
+			//	}
+			//}
+			//else
+			//{
+			//	//some replacement formula later
+			//}
 		}
 	}
 	
@@ -17785,6 +17702,15 @@ void Actor::ApplyHit( HitboxInfo *info )
 			receivedHit = info;
 		}
 	}
+}
+
+CollisionBody * Actor::GetBubbleHitbox(int index)
+{
+	if (bubbleFramesToLive[index] > 0)
+	{
+		return bubbleHitboxes[index];
+	}
+	return NULL;
 }
 
 void Actor::Draw( sf::RenderTarget *target )
@@ -18156,14 +18082,6 @@ void Actor::Draw( sf::RenderTarget *target )
 					target->draw(standingNSword);
 				break;
 			}
-			case DASHATTACK:
-			{
-				if (flashFrames > 0)
-					target->draw(dashAttackSword, &swordSh);
-				else
-					target->draw(dashAttackSword);
-				break;
-			}
 			case WALLATTACK:
 				if (flashFrames > 0)
 					target->draw(wallAttackSword, &swordSh);
@@ -18378,10 +18296,11 @@ void Actor::DebugDraw( RenderTarget *target )
 {
 	if( currHitboxes != NULL )
 	{
-		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
-		{
-			(*it).DebugDraw( target );
-		}
+		currHitboxes->DebugDraw( currHitboxFrame, target);
+	}
+	if (currHurtboxes != NULL)
+	{
+		currHurtboxes->DebugDraw( currHurtboxFrame, target);
 	}
 
 	sf::CircleShape cs;
@@ -18393,9 +18312,6 @@ void Actor::DebugDraw( RenderTarget *target )
 	cs.setPosition( position.x, position.y );
 	//target->draw( cs );
 	
-	
-	hurtBody.DebugDraw( target );
-	//b.DebugDraw( target );
 
 	for( int i = 0; i < recordedGhosts; ++i )
 	{
@@ -22094,7 +22010,7 @@ void Actor::SetActionGrind()
 
 
 	double grindHitRadius[] = { 90, 100, 110 };
-	CollisionBox &gh = grindHitboxes[0]->front();
+	CollisionBox &gh = grindHitboxes->GetCollisionBoxes(0)->front();
 	gh.rw = gh.rh = grindHitRadius[speedLevel];
 	
 
@@ -22338,7 +22254,9 @@ bool Actor::IHitPlayer( int otherPlayerIndex )
 		{
 			bool hit = false;
 
-			for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+			list<CollisionBox> *cList = (currHitboxes->GetCollisionBoxes(currHitboxFrame));
+			if( cList != NULL )
+			for( list<CollisionBox>::iterator it = cList->begin(); it != cList->end(); ++it )
 			{
 				if( player->hurtBody.Intersects( (*it) ) )
 				{
@@ -22447,16 +22365,17 @@ void Actor::UpdateInHitlag()
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+
+		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
 			}
-		}
+		}*/
 		
-		receivedHit = player->currHitboxInfo;
+		//receivedHit = player->currHitboxInfo;
 		return pair<bool, bool>(true,false);
 	}
 
@@ -22511,7 +22430,7 @@ void PlayerGhost::DebugDraw( sf::RenderTarget *target )
 void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 {
 	
-	Action action = states[ghostFrame].action;
+	/*Action action = states[ghostFrame].action;
 	int frame = states[ghostFrame].frame;
 	double angle = states[ghostFrame].angle;
 	V2d position = states[ghostFrame].position;
@@ -22540,10 +22459,7 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 		}
 	case DAIR:
 		{
-			if( dairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = dairHitboxes[frame];
-			}
+			
 			break;
 		}
 	case STANDN:
@@ -22551,14 +22467,6 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 			if( standHitboxes.count( frame ) > 0 )
 			{
 				currHitboxes = standHitboxes[frame];
-			}
-			break;
-		}
-	case DASHATTACK:
-		{
-			if( dashHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = dashHitboxes[frame];
 			}
 			break;
 		}
@@ -22587,7 +22495,7 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 			break;
 		}
 	
-	}
+	}*/
 	/*case DIAGUPATTACK:
 		{
 			if( diagUpHitboxes.count( frame ) > 0 )
@@ -22606,19 +22514,19 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 		}
 	}
 */
-	if( currHitboxes != NULL )
-	{
-		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
-		{
-			(*it).globalAngle = angle;
+	//if( currHitboxes != NULL )
+	//{
+	//	for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
+	//	{
+	//		(*it).globalAngle = angle;
 
-			(*it).globalPosition = position + V2d( (*it).offset.x * cos( (*it).globalAngle ) + (*it).offset.y * sin( (*it).globalAngle ), 
-				(*it).offset.x * -sin( (*it).globalAngle ) + (*it).offset.y * cos( (*it).globalAngle ) );
+	//		(*it).globalPosition = position + V2d( (*it).offset.x * cos( (*it).globalAngle ) + (*it).offset.y * sin( (*it).globalAngle ), 
+	//			(*it).offset.x * -sin( (*it).globalAngle ) + (*it).offset.y * cos( (*it).globalAngle ) );
 
-			//(*it).globalPosition = position ;//+ (*it).offset;
-		
-		}
-	}
+	//		//(*it).globalPosition = position ;//+ (*it).offset;
+	//	
+	//	}
+	//}
 
 	
 }

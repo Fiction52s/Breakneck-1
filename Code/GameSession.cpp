@@ -42,42 +42,42 @@
 #include "TerrainRender.h"
 #include "Enemy.h"
 
-#include "Enemy_Badger.h"
+//#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
-#include "Enemy_BasicTurret.h"
-#include "Enemy_Bat.h"
+//#include "Enemy_BasicTurret.h"
+//#include "Enemy_Bat.h"
 #include "Enemy_Blocker.h"
 #include "Enemy_Booster.h"
-#include "Enemy_Cactus.h"
-#include "Enemy_Cheetah.h"
-#include "Enemy_Copycat.h"
-#include "Enemy_CoralNanobots.h"
+//#include "Enemy_Cactus.h"
+//#include "Enemy_Cheetah.h"
+//#include "Enemy_Copycat.h"
+//#include "Enemy_CoralNanobots.h"
 #include "Enemy_Crawler.h"
-#include "Enemy_CurveTurret.h"
+//#include "Enemy_CurveTurret.h"
 #include "Enemy_FootTrap.h"
-#include "Enemy_Ghost.h"
+//#include "Enemy_Ghost.h"
 #include "Enemy_Goal.h"
-#include "Enemy_Gorilla.h"
-#include "Enemy_GrowingTree.h"
-#include "Enemy_HealthFly.h"
-#include "Enemy_Jay.h"
-#include "Enemy_Mine.h"
-#include "Enemy_Narwhal.h"
-#include "Enemy_Overgrowth.h"
-#include "Enemy_Owl.h"
+//#include "Enemy_Gorilla.h"
+//#include "Enemy_GrowingTree.h"
+//#include "Enemy_HealthFly.h"
+//#include "Enemy_Jay.h"
+//#include "Enemy_Mine.h"
+//#include "Enemy_Narwhal.h"
+//#include "Enemy_Overgrowth.h"
+//#include "Enemy_Owl.h"
 #include "Enemy_Patroller.h"
-#include "Enemy_PoisonFrog.h"
-#include "Enemy_Pulser.h"
+//#include "Enemy_PoisonFrog.h"
+//#include "Enemy_Pulser.h"
 #include "Enemy_RaceFightTarget.h"
-#include "Enemy_SecurityWeb.h"
+//#include "Enemy_SecurityWeb.h"
 #include "Enemy_Shard.h"
-#include "Enemy_Shark.h"
-#include "Enemy_Specter.h"
-#include "Enemy_Spider.h"
-#include "Enemy_Spring.h"
-#include "Enemy_StagBeetle.h"
-#include "Enemy_Swarm.h"
-#include "Enemy_Turtle.h"
+//#include "Enemy_Shark.h"
+//#include "Enemy_Specter.h"
+//#include "Enemy_Spider.h"
+//#include "Enemy_Spring.h"
+//#include "Enemy_StagBeetle.h"
+//#include "Enemy_Swarm.h"
+//#include "Enemy_Turtle.h"
 #include "HitboxManager.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -1924,7 +1924,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int color;
 				is >> color;
 				
-				HealthFly::FlyType fType = (HealthFly::FlyType)color;
+				//HealthFly::FlyType fType = (HealthFly::FlyType)color;
 				
 				/*HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
 				
@@ -12690,7 +12690,7 @@ int GameSession::IsWall( sf::Vector2<double> &normal )
 //save state to enter clone world
 void GameSession::SaveState()
 {
-	stored.activeEnemyList = activeEnemyList;
+	/*stored.activeEnemyList = activeEnemyList;
 	cloneInactiveEnemyList = NULL;
 
 	Enemy *currEnemy = activeEnemyList;
@@ -12698,65 +12698,65 @@ void GameSession::SaveState()
 	{
 		currEnemy->SaveState();
 		currEnemy = currEnemy->next;
-	}
+	}*/
 }
 
 //reset from clone world
 void GameSession::LoadState()
 {
-	Enemy *test = cloneInactiveEnemyList;
-	int listSize = 0;
-	while( test != NULL )
-	{
-		listSize++;
-		test = test->next;
-	}
+	//Enemy *test = cloneInactiveEnemyList;
+	//int listSize = 0;
+	//while( test != NULL )
+	//{
+	//	listSize++;
+	//	test = test->next;
+	//}
 
-	cout << "there are " << listSize << " enemies killed during the last clone process" << endl;
+	//cout << "there are " << listSize << " enemies killed during the last clone process" << endl;
 
 
-	//enemies killed while in the clone world
-	Enemy *deadEnemy = cloneInactiveEnemyList;
-	while( deadEnemy != NULL )
-	{
-		
-		Enemy *next = deadEnemy->next;
-		if( deadEnemy->spawnedByClone )
-		{
-			deadEnemy->Reset();
-			//cout << "resetting dead enemy: " << deadEnemy << endl;
-		}
-		else
-		{
-			deadEnemy->LoadState();
-			//cout << "loading dead enemy: " << deadEnemy << endl;
-		}
-		deadEnemy = next;
-	}
+	////enemies killed while in the clone world
+	//Enemy *deadEnemy = cloneInactiveEnemyList;
+	//while( deadEnemy != NULL )
+	//{
+	//	
+	//	Enemy *next = deadEnemy->next;
+	//	if( deadEnemy->spawnedByClone )
+	//	{
+	//		deadEnemy->Reset();
+	//		//cout << "resetting dead enemy: " << deadEnemy << endl;
+	//	}
+	//	else
+	//	{
+	//		deadEnemy->LoadState();
+	//		//cout << "loading dead enemy: " << deadEnemy << endl;
+	//	}
+	//	deadEnemy = next;
+	//}
 
-	//enemies that are still alive
-	Enemy *currEnemy = activeEnemyList;
-	while( currEnemy != NULL )
-	{		
-		Enemy *next = currEnemy->next;
-		if( currEnemy->spawnedByClone )
-		{
-			//cout << "resetting enemy: " << currEnemy << endl;
-			currEnemy->Reset();
-		}
-		else
-		{
-			currEnemy->LoadState();
-			//cout << "loading enemy: " << currEnemy << endl;
-		}
+	////enemies that are still alive
+	//Enemy *currEnemy = activeEnemyList;
+	//while( currEnemy != NULL )
+	//{		
+	//	Enemy *next = currEnemy->next;
+	//	if( currEnemy->spawnedByClone )
+	//	{
+	//		//cout << "resetting enemy: " << currEnemy << endl;
+	//		currEnemy->Reset();
+	//	}
+	//	else
+	//	{
+	//		currEnemy->LoadState();
+	//		//cout << "loading enemy: " << currEnemy << endl;
+	//	}
 
-		currEnemy = next;
-	}
+	//	currEnemy = next;
+	//}
 
-	//restore them all to their original state and then reset the list pointer
+	////restore them all to their original state and then reset the list pointer
 
-	//cloneInactiveEnemyList = NULL;
-	activeEnemyList = stored.activeEnemyList;
+	////cloneInactiveEnemyList = NULL;
+	//activeEnemyList = stored.activeEnemyList;
 }
 
 void GameSession::Pause( int frames )

@@ -1194,7 +1194,7 @@ void Boss_Crawler::PhysicsResponse()
 			}
 		}
 
-		if( IHitPlayer() )
+		//if( IHitPlayer() )
 		{
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
@@ -1321,33 +1321,33 @@ void Boss_Crawler::DrawMinimap( sf::RenderTarget *target )
 	}*/
 }
 
-bool Boss_Crawler::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
-	{
-		if( player->position.x < position.x )
-		{
-			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
-			//cout << "left" << endl;
-		}
-		else if( player->position.x > position.x )
-		{
-			//cout << "right" << endl;
-			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
-		}
-		else
-		{
-			//dont change it
-		}
-		attackFrame = 0;
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
-	
-	return false;
-}
+//bool Boss_Crawler::IHitPlayer( int index )
+//{
+//	Actor *player = owner->GetPlayer( 0 );
+//	
+//	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
+//	{
+//		if( player->position.x < position.x )
+//		{
+//			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
+//			//cout << "left" << endl;
+//		}
+//		else if( player->position.x > position.x )
+//		{
+//			//cout << "right" << endl;
+//			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
+//		}
+//		else
+//		{
+//			//dont change it
+//		}
+//		attackFrame = 0;
+//		player->ApplyHit( hitboxInfo );
+//		return true;
+//	}
+//	
+//	return false;
+//}
 
  pair<bool, bool> Boss_Crawler::PlayerHitMe( int index )
 {
@@ -1357,14 +1357,14 @@ bool Boss_Crawler::IHitPlayer( int index )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
 			}
-		}
+		}*/
 		
 
 		if( hit )

@@ -18,7 +18,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		DYING
 	};
 
-	HitboxInfo * IsHit(Actor *player);
 	int actionLength[DYING+1];
 	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
 	void SetActionDash();
@@ -32,29 +31,20 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void Accelerate(double amount);
 	void SetForwardSpeed( double speed );
 	void TransferEdge(Edge *);
-	//	void HandleEdge( Edge *e );
-	void HandleEntrant(QuadTreeEntrant *qte);
+
 	bool ShouldDash();
 	bool PlayerInFront();
-	void UpdatePhysics();
-	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	bool IsSlowed();
+	void IHitPlayer(int index = 0);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	void ResetEnemy();
-	//void DirectKill();
-	void SaveEnemyState();
-	void LoadEnemyState();
+	void UpdateEnemyPhysics();
 	sf::Sprite sprite;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;
 	Tileset *ts;
-	//Tileset *ts_walk;
-	//Tileset *ts_roll;
 
 	int maxFramesUntilBurrow;
 	int framesUntilBurrow;
@@ -64,14 +54,13 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	Edge *ground;
 
 	SurfaceMover *mover;
-	//sf::Vector2<double> offset;
 	double edgeQuantity;
 
 	Action action;
 
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	CollisionBox physBody;
+	CollisionBody *hurtBody;
+	CollisionBody *hitBody;
+
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
 
@@ -86,7 +75,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	Edge *startGround;
 	double startQuant;
-	sf::Vector2<double> offset;
+	//sf::Vector2<double> offset;
 	bool roll;
 
 	int deathFrame;

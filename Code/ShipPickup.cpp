@@ -340,20 +340,20 @@ void ShipPickup::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool ShipPickup::IHitPlayer( int index )
-{
-	return false;
-
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
-	
-	return false;
-}
+//bool ShipPickup::IHitPlayer( int index )
+//{
+//	return false;
+//
+//	Actor *player = owner->GetPlayer( 0 );
+//	
+//	if( hitBody.Intersects( player->hurtBody ) )
+//	{
+//		player->ApplyHit( hitboxInfo );
+//		return true;
+//	}
+//	
+//	return false;
+//}
 
 pair<bool, bool> ShipPickup::PlayerHitMe( int index )
 {
@@ -364,14 +364,14 @@ pair<bool, bool> ShipPickup::PlayerHitMe( int index )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
 			}
-		}
+		}*/
 		
 
 		if( hit )

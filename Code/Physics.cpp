@@ -2242,18 +2242,19 @@ sf::Rect<double> CollisionBox::GetAABB()
 }
 
 CollisionBody::CollisionBody(int p_numFrames)
-	:numFrames( p_numFrames ), collisionBoxLists( NULL )
+	:numFrames( p_numFrames ), collisionBoxLists( NULL ), hitboxInfo(NULL)
 {
 	collisionBoxLists = new std::list<CollisionBox>*[numFrames];
-	memset(collisionBoxLists, 0, sizeof(collisionBoxLists));
+	memset(collisionBoxLists, 0, sizeof(collisionBoxLists) * numFrames);
 }
 
 CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hListMap,
 	HitboxInfo *hInfo )
-	:numFrames(p_numFrames)
+	:numFrames(p_numFrames), hitboxInfo( hInfo )
 {
 	collisionBoxLists = new std::list<CollisionBox>*[numFrames];
-	memset(collisionBoxLists, 0, sizeof(collisionBoxLists));
+	
+	memset(collisionBoxLists, 0, sizeof(collisionBoxLists) * numFrames);
 
 	for (auto it = hListMap.begin(); it != hListMap.end(); ++it)
 	{
@@ -2266,7 +2267,7 @@ CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionB
 		for (auto hit = hList.begin(); hit != hList.end(); ++hit)
 		{
 			cbList.push_back((*hit));
-			cbList.back().hitboxInfo = hInfo;
+			//cbList.back().hitboxInfo = hInfo;
 		}
 	}
 }
@@ -2334,12 +2335,67 @@ sf::Rect<double> CollisionBody::GetAABB( int frame )
 
 void CollisionBody::AddCollisionBox(int frame, CollisionBox &cb)
 {
+	if (collisionBoxLists[frame] == NULL)
+	{
+		collisionBoxLists[frame] = new std::list<CollisionBox>;
+	}
 	collisionBoxLists[frame]->push_back(cb);
 }
 
 std::list<CollisionBox> *CollisionBody::GetCollisionBoxes(int frame)
 {
 	return collisionBoxLists[frame];
+}
+
+int CollisionBody::GetNumBoxes(int frame)
+{
+	if (collisionBoxLists[frame] == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		std::list<CollisionBox> &cbList = *(collisionBoxLists[frame]);
+		return cbList.size();
+	}
+}
+
+void CollisionBody::DebugDraw( int frame, sf::RenderTarget *target)
+{
+	list<CollisionBox> *cbList;
+	
+	cbList = collisionBoxLists[frame];
+	if (cbList == NULL)
+		return;
+
+	for (auto it = cbList->begin(); it != cbList->end(); ++it)
+	{
+		(*it).DebugDraw(target);
+	}
+}
+
+bool CollisionBody::Intersects( int frame, CollisionBody *other, int otherFrame )
+{
+	if (!GetAABB(frame ).intersects(other->GetAABB( otherFrame )))
+		return false;
+
+	list<CollisionBox> *myList = GetCollisionBoxes(frame);
+	list<CollisionBox> *otherList = other->GetCollisionBoxes(otherFrame);
+	if (myList == NULL || otherList == NULL)
+		return false;
+
+	for (auto it = myList->begin(); it != myList->end(); ++it)
+	{
+		for (auto oit = otherList->begin(); oit != otherList->end(); ++oit)
+		{
+			if ((*it).Intersects((*oit)))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 

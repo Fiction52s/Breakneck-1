@@ -16,7 +16,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void UpdatePostPhysics();
 	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
 	bool IHitPlayerWithBullets();
 	std::pair<bool, bool> PlayerHitMe(int index = 0);
 	std::pair<bool, bool> PlayerHitMyBullets();

@@ -120,7 +120,8 @@ struct CollisionBox
 	{
 		Physics,
 		Hit,
-		Hurt
+		Hurt,
+		Slow
 	};
 
 	enum Shape
@@ -130,7 +131,7 @@ struct CollisionBox
 
 	CollisionBox( BoxType bType = BoxType::Hit )
 		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ), type(bType),
-		hitboxInfo(NULL), flipHorizontal( false ), flipVertical( false )
+		flipHorizontal( false ), flipVertical( false )
 		, localAngle( 0 )
 	{
 
@@ -138,7 +139,7 @@ struct CollisionBox
 
 	CollisionBox( HitboxInfo *hInfo, BoxType bType = BoxType::Hit )
 		:globalAngle(0), rw(0), rh(0), isCircle(true), type(bType),
-		hitboxInfo(NULL), flipHorizontal(false), flipVertical(false),
+		flipHorizontal(false), flipVertical(false),
 		localAngle( 0 )
 	{
 
@@ -162,8 +163,6 @@ struct CollisionBox
 	bool flipHorizontal;
 	bool flipVertical;
 	BoxType type;
-
-	HitboxInfo *hitboxInfo;
 };
 
 struct CollisionBody
@@ -172,14 +171,22 @@ struct CollisionBody
 	CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hList,
 		HitboxInfo *hInfo );
 	~CollisionBody();
+
+	void DebugDraw( int frame, sf::RenderTarget *target);
 	
 	std::list<CollisionBox> *GetCollisionBoxes(int frame);
 	void AddCollisionBox(int frame, CollisionBox &cb);
 	int GetNumFrames() { return numFrames; }
+	int GetNumBoxes(int frame);
 	sf::Rect<double> GetAABB( int frame );
-
+	bool Intersects( int frame, CollisionBody *other, 
+		int otherFrame );
+	HitboxInfo *hitboxInfo;
+	//bool Intersects( int frame, CollisionBox *box);
 private:
 	int numFrames;
+	
+	//BoxType type;
 	std::list<CollisionBox> **collisionBoxLists;
 };
 

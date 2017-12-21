@@ -364,15 +364,15 @@ struct SlowableObject
 {
 	int slowCounter;
 	int slowMultiple;
-	virtual bool IsSlowed() = 0;
+	virtual bool IsSlowed(int playerIndex) = 0;
 	void ResetSlow()
 	{
 		slowCounter = 1;
 		slowMultiple = 1;
 	}
-	void SlowCheck()
+	void SlowCheck( int playerIndex )
 	{
-		if (IsSlowed())
+		if (IsSlowed(playerIndex))
 		{
 			if (slowMultiple == 1)
 			{
@@ -448,28 +448,27 @@ public:
 
 	CuttableObject *cutObject;
 	Launcher **launchers;
-	std::list<CollisionBox> *activeHitboxes;
-	std::list<CollisionBox> *activeHurtboxes;
+	CollisionBody *currHitboxes;
+	//CollisionBox physBox;
+	int currHitboxFrame;
+	CollisionBody *currHurtboxes;
+	int currHurtboxFrame;
+	virtual void UpdateEnemyPhysics() {};
+	//std::list<CollisionBox> *activeHurtboxes;
 	CollisionBox *physicsBox;
-
+	virtual void UpdatePhysics();
 	int numLaunchers;
 	bool LaunchersAreDone();
-	static const EnemyParams * GetEnemyTypeHitParam( EnemyType et );
-	static void SetupEnemyTypeParams();
-	static void CleanupEnemyTypeParams();
-	virtual bool IsSlowed() { return false; }
-	virtual HitboxInfo * IsHit(Actor *player) { return false; }
+	virtual bool IsSlowed( int index );
+	virtual HitboxInfo * IsHit(Actor *player);
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world, bool cuttable = true );
 	virtual void HandleNoHealth() = 0;
 	virtual void ProcessState() = 0;
 	virtual void Draw(sf::RenderTarget *target) = 0;
-	virtual std::pair<bool, bool> PlayerHitMe(int index = 0) = 0;
-	virtual void DebugDraw(sf::RenderTarget *target) = 0;
+	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes() = 0;
 	virtual void ResetEnemy() = 0;
-	virtual void SaveEnemyState() = 0;
-	virtual void LoadEnemyState() = 0;
 
 	virtual void Init(){};
 	virtual void Setup() {};
@@ -481,12 +480,12 @@ public:
 	virtual void DirectKill();
 	virtual void HandleEntrant(QuadTreeEntrant *qte) {}
 	virtual void UpdatePrePhysics();
-	virtual void UpdatePhysics() = 0;
 	virtual void UpdatePostPhysics();
 	virtual void UpdateSprite() {}
 	virtual void FrameIncrement(){}
-	virtual void DrawMinimap( sf::RenderTarget *target ){};
-	virtual bool IHitPlayer(int index = 0);
+	virtual void DrawMinimap( sf::RenderTarget *target );
+	virtual void IHitPlayer(int index = 0) {}
+	virtual bool CheckHitPlayer(int index = 0);
 	virtual int NumTotalBullets();
 	virtual void HandleQuery(QuadTreeCollider * qtc);
 	virtual bool IsTouchingBox(const sf::Rect<double> &r);
@@ -494,10 +493,6 @@ public:
 	void Record(int enemyIndex);
 	bool RightWireHitMe( CollisionBox hurtBox );
 	bool LeftWireHitMe( CollisionBox hurtBox );
-
-	
-	void SaveState();
-	void LoadState();
 
 	void Reset();
 	
@@ -576,7 +571,6 @@ struct Nexus : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -639,7 +633,6 @@ struct ShipPickup : Enemy
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target );
 	void DrawMinimap( sf::RenderTarget *target );
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	//bool PlayerSlowingMe();
 	void UpdateSprite();
@@ -757,7 +750,6 @@ struct BossCrawler : Enemy
 	void UpdatePostPhysics();
 	void DrawMinimap( sf::RenderTarget *target );
 	void Draw(sf::RenderTarget *target );
-	bool IHitPlayer( int index = 0 );
 	std::pair<bool,bool> PlayerHitMe( int index = 0 );
 	//bool PlayerSlowingMe();
 	void UpdateSprite();

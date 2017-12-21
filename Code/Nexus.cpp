@@ -332,18 +332,18 @@ void Nexus::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool Nexus::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
-	
-	return false;
-}
+//bool Nexus::IHitPlayer( int index )
+//{
+//	Actor *player = owner->GetPlayer( 0 );
+//	
+//	if( hitBody.Intersects( player->hurtBody ) )
+//	{
+//		player->ApplyHit( hitboxInfo );
+//		return true;
+//	}
+//	
+//	return false;
+//}
 
 pair<bool, bool> Nexus::PlayerHitMe( int index )
 {
@@ -353,14 +353,14 @@ pair<bool, bool> Nexus::PlayerHitMe( int index )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
 			}
-		}
+		}*/
 		
 
 		if( hit )

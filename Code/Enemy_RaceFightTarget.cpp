@@ -317,10 +317,10 @@ void RaceFightTarget::DrawMinimap( sf::RenderTarget *target )
 	}
 }
 
-bool RaceFightTarget::IHitPlayer( int index )
-{
-	return false;
-}
+//bool RaceFightTarget::IHitPlayer( int index )
+//{
+//	return false;
+//}
 
 void RaceFightTarget::UpdateHitboxes()
 {
@@ -342,14 +342,14 @@ pair<bool,bool> RaceFightTarget::PlayerHitMe( int index )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
 			}
-		}
+		}*/
 		
 		
 

@@ -187,7 +187,7 @@ void Booster::UpdatePhysics()
 
 void Booster::PhysicsResponse()
 {
-	if (action == NEUTRAL)
+	/*if (action == NEUTRAL)
 	{
 		Actor *p = owner->GetPlayer(0);
 		if (IHitPlayer(0))
@@ -199,7 +199,9 @@ void Booster::PhysicsResponse()
 				frame = 0;
 			}
 		}
-	}
+	}*/
+
+
 	//if (action == NEUTRAL && !dead && receivedHit == NULL)
 	//{
 	//	UpdateHitboxes();
@@ -329,18 +331,18 @@ void Booster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
-bool Booster::IHitPlayer(int index)
-{
-	Actor *player = owner->GetPlayer(0);
-
-	if (hitBody.Intersects(player->hurtBody))
-	{
-		//player->ApplyHit(hitboxInfo);
-		return true;
-	}
-
-	return false;
-}
+//bool Booster::IHitPlayer(int index)
+//{
+//	Actor *player = owner->GetPlayer(0);
+//
+//	if (hitBody.Intersects(player->hurtBody))
+//	{
+//		//player->ApplyHit(hitboxInfo);
+//		return true;
+//	}
+//
+//	return false;
+//}
 
 void Booster::UpdateHitboxes()
 {

@@ -82,9 +82,9 @@ void BasicEffect::UpdatePrePhysics()
 {
 }
 
-void BasicEffect::UpdatePhysics()
-{
-}
+//void BasicEffect::UpdateEnemyPhysics()
+//{
+//}
 
 void BasicEffect::UpdatePostPhysics()
 {
@@ -140,11 +140,11 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 	target->draw( s );	
 	target->setView(oldView);
 }
-
-bool BasicEffect::IHitPlayer( int index )
-{
-	return false;
-}
+//
+//bool BasicEffect::IHitPlayer( int index )
+//{
+//	return false;
+//}
 
  pair<bool, bool> BasicEffect::PlayerHitMe( int index )
 {

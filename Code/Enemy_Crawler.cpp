@@ -60,21 +60,6 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
 
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
-
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = 32;
-	hitBody.rh = 32;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -84,14 +69,38 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 32;
+	hurtBox.rh = 32;
+	hurtBody->AddCollisionBox( 0, hurtBox);
+
+	
+	hitBody = new CollisionBody(1);
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = 32;
+	hitBox.rh = 32;
+	hitBody->AddCollisionBox(0, hitBox);
+	hitBody->hitboxInfo = hitboxInfo;
+
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
-	physBody.isCircle = true;
-	physBody.offset.x = 0;
-	physBody.offset.y = 0;
+	//mover->physBody.isCircle = true;
+	//mover->physBody.offset.x = 0;
+	/*physBody.offset.y = 0;
 	physBody.rw = 32;
 	physBody.rh = 32;
-	physBody.type = CollisionBox::BoxType::Physics;
+	physBody.type = CollisionBox::BoxType::Physics;*/
 
 	startGround = ground;
 	startQuant = edgeQuantity;
@@ -139,8 +148,8 @@ void Crawler::ResetEnemy()
 	sprite.setPosition( gPoint.x, gPoint.y );
 	frame = 0;
 	position = gPoint + ground->Normal() * 64.0 / 2.0;
-
 	V2d gn = mover->ground->Normal();
+	/*
 	if( gn.x > 0 )
 		offset.x = physBody.rw;
 	else if( gn.x < 0 )
@@ -148,7 +157,7 @@ void Crawler::ResetEnemy()
 	if( gn.y > 0 )
 		offset.y = physBody.rh;
 	else if( gn.y < 0 )
-		offset.y = -physBody.rh;
+		offset.y = -physBody.rh;*/
 
 	//position = gPoint + offset;
 
@@ -157,7 +166,6 @@ void Crawler::ResetEnemy()
 
 	//----update the sprite
 	double angle = 0;
-	//position = gPoint + gn * 32.0;
 	angle = atan2( gn.x, -gn.y );
 		
 	//sprite.setTexture( *ts_walk->texture );
@@ -166,7 +174,6 @@ void Crawler::ResetEnemy()
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation( angle / PI * 180 );
 	sprite.setPosition( pp.x, pp.y );
-	//----
 
 	UpdateHitboxes();
 
@@ -174,300 +181,20 @@ void Crawler::ResetEnemy()
 	frame = actionLength[UNDERGROUND];
 }
 
-void Crawler::HandleEntrant( QuadTreeEntrant *qte )
-{
-	//needs to be redone
-	assert( queryMode != "" );
-
-	if( queryMode == "resolve" )
-	{
-		Edge *e = (Edge*)qte;
-
-
-		if( ground == e )
-			return;
-
-		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
-		{
-			Gate *g = (Gate*)ground->info;
-			Edge *edgeA = g->edgeA;
-			Edge *edgeB = g->edgeB;
-			if( ground == g->edgeA )
-			{
-				if( e == edgeB->edge0 
-					|| e == edgeB->edge1
-					|| e == edgeB )
-				{
-					return;
-				}
-
-				
-			}
-			else if( ground == g->edgeB )
-			{
-				if( e == edgeA->edge0 
-					|| e == edgeA->edge1
-					|| e == edgeA )
-				{
-					return;
-				}
-			}
-		}
-		if( ground != NULL )
-		{
-			if( ground->edge0->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *g = (Gate*)ground->edge0->info;
-				Edge *e0 = ground->edge0;
-				if( e0 == g->edgeA )
-				{
-					Edge *edgeB = g->edgeB;
-					if( e == edgeB->edge0 
-						|| e == edgeB->edge1
-						|| e == edgeB )
-					{
-						return;
-					}
-				}
-				else if( e0 == g->edgeB )
-				{
-					Edge *edgeA = g->edgeA;
-					if( e == edgeA->edge0 
-						|| e == edgeA->edge1
-						|| e == edgeA )
-					{
-						return;
-					}
-				}
-			}
-			
-			
-			if( ground->edge1->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *g = (Gate*)ground->edge1->info;
-				Edge *e1 = ground->edge1;
-				if( e1 == g->edgeA )
-				{
-					Edge *edgeB = g->edgeB;
-					if( e == edgeB->edge0 
-						|| e == edgeB->edge1
-						|| e == edgeB )
-					{
-						return;
-					}
-				}
-				else if( e1 == g->edgeB )
-				{
-					Edge *edgeA = g->edgeA;
-					if( e == edgeA->edge0 
-						|| e == edgeA->edge1
-						|| e == edgeA )
-					{
-						return;
-					}
-				}
-			}
-		}
-
-		Contact *c = owner->coll.collideEdge( position + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
-
-
-
-
-		if( c != NULL )
-		{
-
-			//cout << "testing" << endl;
-			double len0 = length( c->position - e->v0 );
-			double len1 = length( c->position - e->v1 );
-
-			if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
-			{
-				V2d pVec = normalize( position - e->v0 );
-				double pAngle = atan2( -pVec.y, pVec.x );
-
-				if( pAngle < 0 )
-				{
-					pAngle += 2 * PI;
-				}
-
-				Edge *e0 = e->edge0;
-				Gate *g = (Gate*)e0->info;
-
-				V2d startVec = normalize( e0->v0 - e->v0 );
-				V2d endVec = normalize( e->v1 - e->v0 );
-
-				double startAngle = atan2( -startVec.y, startVec.x );
-				if( startAngle < 0 )
-				{
-					startAngle += 2 * PI;
-				}
-				double endAngle = atan2( -endVec.y, endVec.x );
-				if( endAngle < 0 )
-				{
-					endAngle += 2 * PI;
-				}
-
-				double temp = startAngle;
-				startAngle = endAngle;
-				endAngle = temp;
-
-				if( endAngle < startAngle )
-				{
-					if( pAngle >= endAngle || pAngle <= startAngle )
-					{
-					
-					}
-					else
-					{
-						return;
-					}
-				}
-				else
-				{
-					if( pAngle >= startAngle && pAngle <= endAngle )
-					{
-					}
-					else
-					{
-						return;
-					}
-				}
-			
-
-			}
-			else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
-			{
-				V2d pVec = normalize( position - e->v1 );
-				double pAngle = atan2( -pVec.y, pVec.x );
-
-				if( pAngle < 0 )
-				{
-					pAngle += 2 * PI;
-				}
-
-				Edge *e1 = e->edge1;
-				Gate *g = (Gate*)e1->info;
-
-				V2d startVec = normalize( e->v0 - e->v1 );
-				V2d endVec = normalize( e1->v1 - e->v1 );
-
-				double startAngle = atan2( -startVec.y, startVec.x );
-				if( startAngle < 0 )
-				{
-					startAngle += 2 * PI;
-				}
-				double endAngle = atan2( -endVec.y, endVec.x );
-				if( endAngle < 0 )
-				{
-					endAngle += 2 * PI;
-				}
-			
-				double temp = startAngle;
-				startAngle = endAngle;
-				endAngle = temp;
-
-				//double temp = startAngle;
-				//startAngle = endAngle;
-				//endAngle = temp;
-
-				if( endAngle < startAngle )
-				{
-					/*if( pAngle > startAngle && pAngle < endAngle )
-					{
-						return;
-					}*/
-
-
-					if( pAngle >= endAngle || pAngle <= startAngle )
-					{
-					}
-					else
-					{
-						return;
-					}
-				}
-				else
-				{
-					/*if( pAngle < startAngle || pAngle > endAngle )
-					{
-						cout << "crawler edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-						return;
-					}*/
-				
-					if( pAngle >= startAngle && pAngle <= endAngle )
-					{
-					}
-					else
-					{	
-						return;
-					}
-				}
-			}
-
-			if( !col || (minContact.collisionPriority < 0 ) || (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
-
-				if( groundSpeed > 0 && e == ground->edge1 && ( c->normal.x == 0 && c->normal.y == 0 ) )
-				{
-
-					//WHY DO I HAVE THIS WTF
-
-					//cout << "blah" << endl;
-					//return;
-				}
-				//else if( groundSpeed < 0 && e == ground->edge0 && ( c->normal.x == 0 && c->normal.y == 0 ) )
-				//{
-				//	//cout << "blah" << endl;
-				//	return;
-				//}
-
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if(( c->normal.x == 0 && c->normal.y == 0 ) )
-					{
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = e;
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						minContact.normal = c->normal;
-						minContact.movingPlat = NULL;
-						col = true;
-					}
-				}
-				else
-				{
-					minContact.collisionPriority = c->collisionPriority;
-					minContact.edge = e;
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					minContact.normal = c->normal;
-					minContact.movingPlat = NULL;
-					col = true;
-					
-				}
-			}
-		}
-	}
-	++possibleEdgeCount;
-}
-
 void Crawler::UpdateHitboxes()
 {
-	if( ground != NULL )
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hurtBody->GetCollisionBoxes(0)->front();
+	if( mover->ground != NULL )
 	{
 		V2d gn = ground->Normal();
 		double angle = 0;
-		if( !approxEquals( abs(offset.x), physBody.rw ) )
-		{
-			//this should never happen
-		}
-		else
-		{
-			angle = atan2( gn.x, -gn.y );
-		}
-		hitBody.globalAngle = angle;
-		hurtBody.globalAngle = angle;
+		
+		
+		angle = atan2( gn.x, -gn.y );
+		
+		hitBox.globalAngle = angle;
+		hurtBox.globalAngle = angle;
 
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
@@ -484,18 +211,13 @@ void Crawler::UpdateHitboxes()
 	}
 	else
 	{
-		hitBody.globalAngle = 0;
-		hurtBody.globalAngle = 0;
+		hitBox.globalAngle = 0;
+		hurtBox.globalAngle = 0;
 	}
-
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	hitBody.globalPosition = mover->physBody.globalPosition;
-	hurtBody.globalPosition = mover->physBody.globalPosition;//position;
-	physBody.globalPosition = mover->physBody.globalPosition;//position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	hitBox.globalPosition = mover->physBody.globalPosition;
+	hurtBox.globalPosition = mover->physBody.globalPosition;
+	//mover->ph.globalPosition = mover->physBody.globalPosition;
 }
-
-//void Crawler::HandleNoHealth()
 
 void Crawler::ProcessState()
 {
@@ -633,46 +355,16 @@ void Crawler::ProcessState()
 	}
 }
 
-void Crawler::UpdatePhysics()
+void Crawler::UpdateEnemyPhysics()
 {
-	specterProtected = false;
-	if( dead )
-	{
-		return;
-	}
-
 	mover->Move(slowMultiple);
 	position = mover->physBody.globalPosition;
-
-	UpdateHitboxes();
-
-	SlowCheck();
-
-	CheckHit(owner->GetPlayer(0), type);
-
-	IHitPlayer();
 }
 
 void Crawler::FrameIncrement()
 {
 	if (framesUntilBurrow > 0)
 		--framesUntilBurrow;
-}
-
-bool Crawler::IsSlowed()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 void Crawler::Draw(sf::RenderTarget *target )
@@ -722,165 +414,19 @@ void Crawler::Draw(sf::RenderTarget *target )
 	else
 	{
 		target->draw( botDeathSprite );
-
-		if( deathFrame / 3 < 6 )
-		{
-			
-			//bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			//bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			//bloodSprite.setPosition( position.x, position.y );
-			//bloodSprite.setScale( 2, 2 );
-			//target->draw( bloodSprite );
-		}
 		
 		target->draw( topDeathSprite );
 	}
 }
 
-void Crawler::DrawMinimap( sf::RenderTarget *target )
+void Crawler::IHitPlayer( int index )
 {
-	/*CircleShape cs;
-	cs.setRadius( 50 );
-	cs.setFillColor( COLOR_BLUE );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
-
-	if( hasMonitor && !suppressMonitor )
-	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
-	}*/
-
-	if( !dead )
-	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			CircleShape cs;
-			cs.setRadius( 50 );
-			cs.setFillColor( Color::White );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-		else
-		{
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( Color::Red );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-	}
-}
-
-bool Crawler::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
 	
-	if( action != UNDERGROUND && player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
-	{
-		if( player->position.x < position.x )
-		{
-			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
-			//cout << "left" << endl;
-		}
-		else if( player->position.x > position.x )
-		{
-			//cout << "right" << endl;
-			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
-		}
-		else
-		{
-			//dont change it
-		}
-		attackFrame = 0;
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
-	
-	return false;
-}
-
-
-
-HitboxInfo * Crawler::IsHit(Actor *player)
-{
-	if (player->currHitboxes != NULL)
-	{
-		for (list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it)
-		{
-			if ((*it).hitboxInfo == NULL)
-				continue;
-
-			if (hurtBody.Intersects((*it)))
-			{
-				return (*it).hitboxInfo;
-			}
-		}
-	}
-
-	return false;
 }
 
 void Crawler::HandleNoHealth()
 {
 	int x = 5;
-}
-
- pair<bool, bool> Crawler::PlayerHitMe( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-		if( hit )
-		{
-			return pair<bool, bool>(true,false);
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-	return pair<bool, bool>(false,false);
 }
 
 void Crawler::UpdateSprite()
@@ -912,8 +458,6 @@ void Crawler::UpdateSprite()
 		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
 			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
 		topDeathSprite.setRotation( sprite.getRotation() );
-
-		
 	}
 	else
 	{
@@ -957,19 +501,7 @@ void Crawler::UpdateSprite()
 
 		if (!mover->roll)
 		{
-			//position = gPoint + gn * 32.0;
 			angle = atan2(gn.x, -gn.y);
-
-			//			sprite.setTexture( *ts_walk->texture );
-			/*IntRect r = ts->GetSubRect(frame / crawlAnimationFactor);
-			if (!clockwise)
-			{
-				sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
-			}
-			else
-			{
-				sprite.setTextureRect(r);
-			}*/
 
 			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
@@ -984,16 +516,6 @@ void Crawler::UpdateSprite()
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 
-				/*IntRect r = ts->GetSubRect(frame / rollAnimationFactor + 35);
-				if (clockwise)
-				{
-					sprite.setTextureRect(r);
-				}
-				else
-				{
-					sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
-				}*/
-
 				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation(angle / PI * 180);
 				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
@@ -1005,71 +527,20 @@ void Crawler::UpdateSprite()
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 
-				/*IntRect r = ts->GetSubRect(frame / rollAnimationFactor + 35);
-				if (clockwise)
-				{
-					sprite.setTextureRect(r);
-				}
-				else
-				{
-					sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
-				}*/
-
 				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 				sprite.setRotation(angle / PI * 180);
 				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
 				sprite.setPosition(pp.x, pp.y);
 			}
 		}
-
-
-		//if( attackFrame >= 0 )
-		//{
-		//	IntRect r = ts->GetSubRect( 54 + attackFrame / attackMult );
-		//	if( !clockwise )
-		//	{
-		//		r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
-		//	}
-		//	sprite.setTextureRect( r );
-		//}
-
-		//if( keySprite != NULL && hasMonitor && !suppressMonitor )
-		//{
-		//	//cout << "frame: " << keyFrame / 2 << endl;
-		//	keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-		//	keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-		//		keySprite->getLocalBounds().height / 2 );
-		//	keySprite->setPosition( position.x, position.y );
-		//}
 	}
 }
 
-void Crawler::DebugDraw( RenderTarget *target )
+void Crawler::DebugDraw(RenderTarget *target)
 {
-	if( !dead )
-	{
-
-		CircleShape cs;
-		cs.setFillColor( Color::Cyan );
-		cs.setRadius( 10 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		V2d g = ground->GetPoint( edgeQuantity );
-		cs.setPosition( g.x, g.y );
-
-		//owner->window->draw( cs );
-		//UpdateHitboxes();
-		physBody.DebugDraw( target );
-	}
-//	hurtBody.DebugDraw( target );
-//	hitBody.DebugDraw( target );
-}
-
-void Crawler::SaveEnemyState()
-{
-}
-
-void Crawler::LoadEnemyState()
-{
+	Enemy::DebugDraw(target);
+	if (!dead)
+		mover->physBody.DebugDraw(target);
 }
 
 void Crawler::TransferEdge(Edge *e)
@@ -1088,16 +559,6 @@ void Crawler::TransferEdge(Edge *e)
 	{
 		action = ENDROLL;
 		frame = 0;
-
-		//mover->SetSpeed(groundSpeed);
-		/*if (mover->groundSpeed > 0)
-		{
-			mover->SetSpeed(groundSpeed);
-		}
-		else if (mover->groundSpeed < 0)
-		{
-			mover->SetSpeed(-groundSpeed);
-		}*/
 	}
 }
 

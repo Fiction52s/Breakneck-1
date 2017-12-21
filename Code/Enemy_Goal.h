@@ -8,11 +8,10 @@ struct Goal : Enemy
 	Goal(GameSession *owner, Edge *ground, double quantity);
 	void HandleEntrant(QuadTreeEntrant *qte);
 	//void UpdatePrePhysics();
-	void UpdatePhysics();
+	void UpdateEnemyPhysics();
 	//void UpdatePostPhysics();
 	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
 	std::pair<bool, bool> PlayerHitMe(int index = 0);
 	bool PlayerSlowingMe();
 	void UpdateSprite();

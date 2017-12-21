@@ -183,7 +183,7 @@ void Goal::HandleNoHealth()
 
 }
 
-void Goal::UpdatePhysics()
+void Goal::UpdateEnemyPhysics()
 {
 	specterProtected = false;
 	if( !dead && !kinKilling && !exploding && !destroyed )
@@ -212,7 +212,7 @@ void Goal::UpdatePhysics()
 			
 		}
 
-		if( IHitPlayer() )
+		//if( IHitPlayer() )
 		{
 		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
 		}
@@ -235,20 +235,20 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 	target->draw( miniSprite );
 }
 
-bool Goal::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-
-	/*if( currBullet->hitBody.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( bulletHitboxInfo );
-			return true;
-		}
-	*/
-	
-	return false;
-}
+//bool Goal::IHitPlayer( int index )
+//{
+//	Actor *player = owner->GetPlayer( 0 );
+//	
+//
+//	/*if( currBullet->hitBody.Intersects( player->hurtBody ) )
+//		{
+//			player->ApplyHit( bulletHitboxInfo );
+//			return true;
+//		}
+//	*/
+//	
+//	return false;
+//}
 
 pair<bool, bool> Goal::PlayerHitMe( int index )
 {
@@ -257,14 +257,14 @@ pair<bool, bool> Goal::PlayerHitMe( int index )
 	{
 		bool hit = false;
 
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
+		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
 		{
 			if( hurtBody.Intersects( (*it) ) )
 			{
 				hit = true;
 				break;
 			}
-		}
+		}*/
 		
 
 		if( hit )

@@ -8,10 +8,9 @@ struct BasicEffect : Enemy
 	BasicEffect(GameSession *owner);
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void UpdatePrePhysics();
-	void UpdatePhysics();
+	//void UpdatePhysics();
 	void UpdatePostPhysics();
 	void Draw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
 	std::pair<bool, bool> PlayerHitMe(int index = 0);
 	bool PlayerSlowingMe();
 	void UpdateSprite();
