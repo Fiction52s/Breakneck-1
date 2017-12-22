@@ -660,7 +660,7 @@ bool EditSession::OpenFile()
 		
 		leftBound = mh->leftBounds;
 		topBound = mh->topBounds;
-		boundWidth = mh->boundsHeight;
+		boundWidth = mh->boundsWidth;
 		boundHeight  = mh->boundsHeight;
 
 		int numPoints = mh->numVertices;
@@ -6356,7 +6356,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		testPoint.x = worldPos.x;
 		testPoint.y = worldPos.y;
-		
+		int borderMove = 1000;
 		sf::Event ev;
 		while( w->pollEvent( ev ) )
 		{
@@ -7919,6 +7919,58 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									selectedBrush, tempGridX, tempGridY );
 								action->Perform();
 								doneActionStack.push_back( action );
+							}
+							else if (ev.key.code == Keyboard::I)
+							{
+								if (ev.key.shift)
+								{
+									topBound += borderMove;
+									boundHeight -= borderMove;
+								}
+								else
+								{
+									topBound -= borderMove;
+									boundHeight += borderMove;
+								}
+								UpdateFullBounds();
+							}
+							else if (ev.key.code == Keyboard::J)
+							{
+								if (ev.key.shift)
+								{
+									leftBound += borderMove;
+									boundWidth -= borderMove;
+								}
+								else
+								{
+									leftBound -= borderMove;
+									boundWidth += borderMove;
+								}
+								UpdateFullBounds();
+							}
+							else if (ev.key.code == Keyboard::L)
+							{
+								if (ev.key.shift)
+								{
+									boundWidth -= borderMove;
+								}
+								else
+								{
+									boundWidth += borderMove;
+								}
+								UpdateFullBounds();
+							}
+							else if (ev.key.code == Keyboard::K)
+							{
+								if (ev.key.shift)
+								{
+									boundHeight -= borderMove;
+								}
+								else
+								{
+									boundHeight += borderMove;
+								}
+								UpdateFullBounds();
 							}
 							break;
 						}

@@ -3894,10 +3894,19 @@ bool GameSession::OpenFile( string fileName )
 
 
 			double extra = 100;
-			mh->topBounds = inversePoly->aabb.top - extra;
-			mh->leftBounds = inversePoly->aabb.left - extra;
-			mh->boundsWidth = inversePoly->aabb.width + extra * 2;
-			mh->boundsHeight = inversePoly->aabb.height * extra * 2;
+
+			int trueTop = mh->topBounds;
+			int possibleTop = inversePoly->aabb.top - extra;
+			if (possibleTop > trueTop)
+				trueTop = possibleTop;
+
+
+
+			//mh->topBounds = ;
+			//mh->leftBounds = inversePoly->aabb.left - extra;
+			//mh->boundsWidth = inversePoly->aabb.width + extra * 2;
+			mh->topBounds = trueTop;
+			mh->boundsHeight = (inversePoly->aabb.top + inversePoly->aabb.height + extra ) - trueTop;
 
 
 			if (poiMap.count("stormceiling") > 0)
@@ -4027,7 +4036,45 @@ void GameSession::SetGlobalBorders()
 	V2d topRight(mh->leftBounds + mh->boundsWidth, mh->topBounds );
 	V2d bottomRight(mh->leftBounds + mh->boundsWidth, mh->topBounds + mh->boundsHeight );
 	V2d bottomLeft(mh->leftBounds, mh->topBounds + mh->boundsHeight );
+	
+	Edge *left = new Edge;
+	left->v0 = topLeft;
+	left->v1 = bottomLeft;
+	left->edgeType = Edge::BORDER;
 
+	Edge *right = new Edge;
+	right->v0 = bottomRight;
+	right->v1 = topRight;
+	right->edgeType = Edge::BORDER;
+
+	Edge *top = new Edge;
+	top->v0 = topRight;
+	top->v1 = topLeft;
+	top->edgeType = Edge::BORDER;
+
+	Edge *bot = new Edge;
+	bot->v0 = bottomLeft;
+	bot->v1 = bottomRight;
+	bot->edgeType = Edge::BORDER;
+
+	left->edge0 = top;
+	left->edge1 = bot;
+
+	top->edge0 = right;
+	top->edge1 = left;
+
+	right->edge0 = bot;
+	right->edge1 = top;
+
+	bot->edge0 = left;
+	bot->edge1 = right;
+	
+	terrainTree->Insert(left);
+	terrainTree->Insert(right);
+	terrainTree->Insert(top);
+	terrainTree->Insert(bot);
+
+	return;
 	//get intersections with top row
 	list<pair<double,int>> inters;
 	list<Edge*> topEdges;
@@ -4130,6 +4177,14 @@ void GameSession::SetGlobalBorders()
 		topEdges.push_back( newSeg );
 		borderEdge = newSeg;
 	}
+
+	Edge *newSeg = new Edge;
+	newSeg->v0 = topRight;
+	newSeg->v1 = topLeft;
+	newSeg->edgeType = Edge::BORDER;
+
+	topEdges.push_back(newSeg);
+	borderEdge = newSeg;
 
 	if( inters.empty() )
 	{

@@ -811,10 +811,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//}
 
 
-		//cb.rw = 90;
-		//cb.rh = 90;
-		//cb.offset.x = 0;
-		//cb.offset.y = 0;
+		cb.rw = 90;
+		cb.rh = 90;
+		cb.offset.x = 0;
+		cb.offset.y = 0;
+		grindHitboxes = new CollisionBody(1);
+		grindHitboxes->AddCollisionBox(0, cb);
 		//grindHitboxes[0] = new list<CollisionBox>;
 		//grindHitboxes[0]->push_back( cb );
 		
@@ -997,6 +999,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		airAccel = 1.5;
 		
 		gravity = 1;//1.9; // 1 
+		wallClimbGravityFactor = .7;
+		wallClimbGravityOn = false;
 		jumpStrength = 21.5;//18;//25;//27.5; // 2 
 		doubleJumpStrength = 20;//17;//23;//26.5;
 		backDoubleJumpStrength = 22;
@@ -1643,6 +1647,7 @@ void Actor::CreateAttackLightning()
 
 void Actor::Respawn()
 {
+	wallClimbGravityOn = false;
 	currHurtboxes = NULL;
 	currHitboxes = NULL;
 
@@ -8693,7 +8698,7 @@ bool Actor::CheckWall( bool right )
 	}
 
 	bool wally = false;
-	if( minContact.edge != NULL )
+	if( minContact.edge != NULL && minContact.edge->edgeType != Edge::BORDER )
 	{
 		V2d oldv0 = minContact.edge->v0;
 		V2d oldv1 = minContact.edge->v1;
@@ -8713,7 +8718,6 @@ bool Actor::CheckWall( bool right )
 			minContact.edge->v1 = oldv1;
 		}
 
-		
 		bool zero = false;
 		bool one = false;
 		if( quant <= 0 )
@@ -8737,16 +8741,6 @@ bool Actor::CheckWall( bool right )
 		Edge *e0 = e->edge0;
 		Edge *e1 = e->edge1;
 
-	//	cout << "here: " << test.position.x << ", " << test.position.y << " .. " << e->v0.x << ", " << e->v0.y << endl;	
-
-		/*CircleShape cs;
-		cs.setFillColor( Color::Cyan );
-		cs.setRadius( 10 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( e->GetPoint( quant ).x, e->GetPoint( quant ).y );
-
-		owner->window->draw( cs );*/
-
 
 		if( approxEquals(en.x,1) || approxEquals(en.x,-1) )
 		{
@@ -8761,19 +8755,8 @@ bool Actor::CheckWall( bool right )
 			return true;
 		}
 
-		//if( (zero && en.x < 0 && en.y < 0 ) )
-		//{
-		//	//cout << "?>>>>>" << endl;
-		//	V2d te = e0->v0 - e0->v1;
-		//	if( te.x > 0 )
-		//	{
-		//		return true;
-		//	}
-		//}
-		
 		if( (one && en.x < 0 && en.y > 0 ) )
 		{
-			//cout << "%%%%%" << endl;
 			V2d te = e1->v1 - e1->v0;
 			if( te.x > 0 )
 			{
@@ -8781,32 +8764,6 @@ bool Actor::CheckWall( bool right )
 			}
 		}
 
-		/*if( (one && en.x < 0 && en.y < 0 ) )
-		{
-			V2d te = e1->v1 - e1->v0;
-			if( te.x < 0 )
-			{
-				return true;
-			}
-		}*/
-		
-		/*if( (zero && en.x > 0 && en.y < 0 ) )
-		{
-			V2d te = e0->v0 - e0->v1;
-			if( te.x > 0 )
-			{	
-				return true;
-			}
-		}*/
-	
-		/*if( ( one && en.x > 0 && en.y < 0 ) )
-		{
-			V2d te = e1->v1 - e1->v0;
-			if( te.x < 0 )
-			{
-				return true;
-			}
-		}*/
 		if( (zero && en.x > 0 && en.y > 0 ) )
 		{
 			V2d te = e0->v0 - e0->v1;
@@ -8814,12 +8771,6 @@ bool Actor::CheckWall( bool right )
 			{
 				return true;
 			}
-		}
-		
-
-		{
-		//	cout << en.x << ", " << en.y << endl;
-		//	cout << "misery" << endl;
 		}
 	}
 	return false;
@@ -8908,6 +8859,34 @@ bool Actor::ResolvePhysics( V2d vel )
 	possibleEdgeCount = 0;
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	
+	//if ( ground == NULL && vel.x < 0 && position.x + vel.x < owner->mh->leftBounds )
+	//{
+	//	LineIntersection li = lineIntersection(position, position + vel,
+	//		V2d(owner->mh->leftBounds, owner->mh->topBounds),
+	//		V2d(owner->mh->leftBounds, owner->mh->topBounds + owner->mh->boundsHeight));
+	//	
+	//	if (!li.parallel)
+	//	{
+	//		V2d newVel = (normalize(vel) * (length(position - li.position) - 1.0));
+	//		if (ground == NULL)
+	//		{
+	//			vel.x = newVel.x;
+	//		}
+	//		else
+	//		{
+	//			vel = newVel;
+	//		}
+	//			
+	//		//else if (ground != NULL)
+	//		//{
+	//		//	groundSpeed = 0;
+	//		//}
+	//		
+	//		//groundSpeed = 0;
+	//		//grindSpeed = 0;
+	//	}
+	//}
+
 	position += vel;
 	
 	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -9081,6 +9060,7 @@ V2d Actor::UpdateReversePhysics()
 	V2d lastExtra( 100000, 100000 );
 	wallNormal.x = 0;
 	wallNormal.y = 0;
+	currWall = NULL;
 	if( grindEdge != NULL )
 	{
 		movement = grindSpeed / (double)slowMultiple / NUM_STEPS;
@@ -10689,6 +10669,7 @@ void Actor::UpdateFullPhysics()
 		if( abs(minContact.edge->Normal().x) > wallThresh )
 		{
 			wallNormal = minContact.edge->Normal();
+			currWall = minContact.edge;
 		}
 
 
@@ -11448,6 +11429,16 @@ void Actor::UpdatePhysics()
 			double q = edgeQuantity;
 
 			V2d gNormal = ground->Normal();
+
+			/*LineIntersection li = SegmentIntersect(ground->v0, ground->v1,
+				V2d(owner->mh->leftBounds, owner->mh->topBounds),
+				V2d(owner->mh->leftBounds, owner->mh->topBounds + owner->mh->boundsHeight));*/
+
+			/*double cantPushPastQuant = -1;
+			if (!li.parallel)
+			{
+				cantPushPastQuant = ground->GetQuantity(li.position);
+			}*/
 
 
 			double m = movement;
@@ -12357,6 +12348,7 @@ void Actor::UpdatePhysics()
 					V2d resMove = normalize( ground->v1 - ground->v0 ) * m;
 					bool hit = ResolvePhysics( resMove );
 
+
 					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 						//cout << "totally hit" << endl;
@@ -12657,6 +12649,14 @@ void Actor::UpdatePhysics()
 					
 			}
 
+			/*if (groundSpeed < 0 && cantPushPastQuant >= 0 )
+			{
+				if (q < cantPushPastQuant + 1.0)
+				{
+					q = cantPushPastQuant + 1.0;
+				}
+			}*/
+
 			if( movement == extra )
 				movement += steal;
 			else
@@ -12718,6 +12718,7 @@ void Actor::UpdatePhysics()
 				if( abs(minContact.edge->Normal().x) > wallThresh )
 				{
 					wallNormal = minContact.edge->Normal();
+					currWall = minContact.edge;
 				}
 
 
@@ -13450,10 +13451,6 @@ void Actor::UpdatePhysics()
 		}
 	}
 	while( (ground != NULL && !approxEquals( movement, 0 ) ) || ( ground == NULL && length( movementVec ) > 0 ) );
-	/*if( ground == NULL )
-	{
-		cout << "not grounded now" << endl;
-	}*/
 
 
 
@@ -14159,6 +14156,7 @@ void Actor::PhysicsResponse()
 		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	}
 
+	wallClimbGravityOn = false;
 	if( grindEdge != NULL )
 	{
 		//e = grindEdge;
@@ -14538,7 +14536,9 @@ void Actor::PhysicsResponse()
 
 				//	//cout << "grinding" << endl;
 				//}
-				if( length( wallNormal ) > 0 && oldVelocity.y >= 0 )
+				if( length( wallNormal ) > 0 
+					&& (currWall == NULL || currWall->edgeType != Edge::BORDER) 
+					&& oldVelocity.y >= 0 )
 				{
 					if( wallNormal.x > 0)
 					{
@@ -14605,6 +14605,16 @@ void Actor::PhysicsResponse()
 				SetActionExpr( JUMP );
 				frame = 1;
 				holdJump = false;
+			}
+		}
+		else if (action != AIRHITSTUN && action != WALLATTACK && action != AIRDASH)
+		{
+			if (collision)
+			{
+				if (length(wallNormal) > 0 && oldVelocity.y <= 0)
+				{
+					wallClimbGravityOn = true;
+				}
 			}
 		}
 	}
@@ -16089,27 +16099,26 @@ bool Actor::IsBeingSlowed()
 
 sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 {
+	double normalGravity;
 	if( vel.y >= maxFallSpeedSlow )
 	{
-		vel += V2d( 0, gravity * .4 / slowMultiple );
+		normalGravity = gravity * .4 / slowMultiple;
 	}
 	else if( vel.y < 0 )
 	{
-		vel += V2d( 0, gravity * 1.2 / slowMultiple );
+		normalGravity = gravity * 1.2 / slowMultiple;
 	}
 	else
 	{
-		vel += V2d( 0, gravity / slowMultiple );
+		normalGravity = gravity / slowMultiple;
 	}
-	//else if( abs( vel.y ) < 4 && action != AIRDASH )
-	//{
-	//	vel += V2d( 0, gravity / slowMultiple );
-	//	//velocity += V2d( 0, gravity / slowMultiple * .4 );
-	//}
-	//else
-	//{
-	//	vel += V2d( 0, gravity / slowMultiple );
-	//}
+
+	if (wallClimbGravityOn)
+	{
+		normalGravity *= wallClimbGravityFactor;
+	}
+
+	vel += V2d(0, normalGravity );
 
 	return vel;
 }
@@ -21020,6 +21029,22 @@ void Actor::UpdateSprite()
 		runeSprite.setPosition( position.x, position.y );
 		runeSprite.setColor( Color( 255, 255, 255, ((1.0 - ((double)runeStep / runeLength)) * 255) ) );
 	}
+
+
+	//write this tomorrow along with the grind section
+	//will need to be in update physics for sure and just affect velocity and not position
+	/*if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
+	{
+		if (position.x < owner->mh->leftBounds)
+		{
+			position.x = owner->mh->leftBounds;
+			velocity.x = 0;
+		}
+	}
+	else if (ground != NULL)
+	{
+		
+	}*/
 }
 
 void Actor::ConfirmEnemyKill( Enemy *e )

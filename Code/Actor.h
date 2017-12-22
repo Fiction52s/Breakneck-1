@@ -893,6 +893,7 @@ struct Actor : QuadTreeCollider,
 	int slowCounter;
 
 	sf::Vector2<double> wallNormal;
+	Edge *currWall;
 	int testGrassCount;
 	int gravityGrassCount;
 	Action action;
@@ -928,7 +929,8 @@ struct Actor : QuadTreeCollider,
 	bool boostBounce;
 	
 	void InitAfterEnemies();
-
+	bool wallClimbGravityFactor;
+	bool wallClimbGravityOn;
 	
 	//dont need to store these
 	//const static int MAX_BUBBLES = 5;
@@ -1071,6 +1073,7 @@ struct Actor : QuadTreeCollider,
 		int slowCounter;
 
 		sf::Vector2<double> wallNormal;
+		
 
 		Action action;
 		int frame;
