@@ -426,6 +426,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	};
 
 
+	sf::Vertex blackBorderQuads[4 * 2];
+
 	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;
 	EnemyParamsManager *eHitParamsMan;

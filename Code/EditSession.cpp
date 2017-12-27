@@ -2533,6 +2533,8 @@ bool EditSession::OpenFile()
 			}
 			for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 			{
+				if ((*it)->inverse) continue;
+
 				if( terrain0 != NULL && terrain1 != NULL )
 					break;
 

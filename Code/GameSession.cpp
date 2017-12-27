@@ -3239,6 +3239,9 @@ bool GameSession::OpenFile( string fileName )
 		is >> originalPos.x;
 		is >> originalPos.y;
 
+		Actor *p0 = GetPlayer(0);
+		p0->position = originalPos;
+
 		is >> goalPos.x;
 		is >> goalPos.y;
 
@@ -3888,15 +3891,15 @@ bool GameSession::OpenFile( string fileName )
 
 
 
-
+		double extraBorder = 100;
 		if (inversePoly != NULL)
 		{
 
 
-			double extra = 100;
+			
 
 			int trueTop = mh->topBounds;
-			int possibleTop = inversePoly->aabb.top - extra;
+			int possibleTop = inversePoly->aabb.top - extraBorder;
 			if (possibleTop > trueTop)
 				trueTop = possibleTop;
 
@@ -3906,20 +3909,56 @@ bool GameSession::OpenFile( string fileName )
 			//mh->leftBounds = inversePoly->aabb.left - extra;
 			//mh->boundsWidth = inversePoly->aabb.width + extra * 2;
 			mh->topBounds = trueTop;
-			mh->boundsHeight = (inversePoly->aabb.top + inversePoly->aabb.height + extra ) - trueTop;
-
-
-			if (poiMap.count("stormceiling") > 0)
-			{
-				stormCeilingOn = true;
-				stormCeilingHeight = poiMap["stormceiling"]->pos.y;
-
-				int oldBottom = mh->topBounds + mh->boundsHeight - extra;
-				mh->topBounds = stormCeilingHeight;
-				mh->boundsHeight = oldBottom - stormCeilingHeight;
-				assert(mh->boundsHeight > 0);
-			}
+			mh->boundsHeight = (inversePoly->aabb.top + inversePoly->aabb.height + extraBorder) - trueTop;
 		}
+
+		for (int i = 0; i < 8; ++i)
+		{
+			//blackBorderQuads[i].color = Color::Black;
+			blackBorderQuads[i].position.y = mh->topBounds;
+		}
+
+		int quadWidth = 200;
+		blackBorderQuads[0].position.x = mh->leftBounds;
+		blackBorderQuads[3].position.x = mh->leftBounds;
+
+		blackBorderQuads[1].position.x += quadWidth;
+		blackBorderQuads[2].position.x += quadWidth;
+
+		blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
+		blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
+
+		blackBorderQuads[4].position.x = blackBorderQuads[5].position.x - quadWidth;
+		blackBorderQuads[7].position.x = blackBorderQuads[5].position.x - quadWidth;
+
+		blackBorderQuads[2].position.y += mh->boundsHeight;
+		blackBorderQuads[3].position.y += mh->boundsHeight;
+		blackBorderQuads[6].position.y += mh->boundsHeight;
+		blackBorderQuads[7].position.y += mh->boundsHeight;
+
+		for (int i = 0; i < 8; ++i)
+		{
+			blackBorderQuads[i].color = Color::Black;
+			//blackBorderQuads[i].color.a = 200;
+		}
+
+		blackBorderQuads[1].color.a = 0;
+		blackBorderQuads[2].color.a = 0;
+
+		blackBorderQuads[4].color.a = 0;
+		blackBorderQuads[7].color.a = 0;
+
+		if (poiMap.count("stormceiling") > 0)
+		{
+			stormCeilingOn = true;
+			stormCeilingHeight = poiMap["stormceiling"]->pos.y;
+
+			int oldBottom = mh->topBounds + mh->boundsHeight - extraBorder;
+			mh->topBounds = stormCeilingHeight;
+			mh->boundsHeight = oldBottom - stormCeilingHeight;
+			assert(mh->boundsHeight > 0);
+		}
+	
 		
 
 		//loading done. now setup
@@ -4072,534 +4111,7 @@ void GameSession::SetGlobalBorders()
 	terrainTree->Insert(left);
 	terrainTree->Insert(right);
 	terrainTree->Insert(top);
-	terrainTree->Insert(bot);
-
-	return;
-	//get intersections with top row
-	list<pair<double,int>> inters;
-	list<Edge*> topEdges;
-	list<Edge*> rightEdges;
-	list<Edge*> bottomEdges;
-	list<Edge*> leftEdges;
-	bool segInProcess;
-	double segStart;
-	int prevIndex;
-	bool first;
-	
-
-	//top section-----------------
-	{
-	for( int i = 0; i < mh->numVertices; ++i )
-	{
-		LineIntersection li = SegmentIntersect( topLeft, topRight, edges[i]->v0, edges[i]->v1 );
-		if( !li.parallel ) //or no intersection
-		{
-			inters.push_back( pair<double, int>( li.position.x, i ) );	
-		}
-	}
-
-	segInProcess = false;
-	segStart = mh->leftBounds;
-	first = true;
-
-	inters.sort( cmpPairs );
-
-	for( list<pair<double,int>>::iterator it = inters.begin(); it != inters.end(); ++it )
-	{
-		int index = (*it).second;
-		double xInter = (*it).first;
-		Edge *edge = edges[index];
-		V2d v0 = edge->v0;
-		V2d v1 = edge->v1;
-
-		cout << "processing intersection at: " << xInter << endl;
-		
-		if( v0.y > mh->topBounds )
-		{
-			if( first || segInProcess )
-			{
-				//cout << "a" << endl;
-				Edge *newSeg = new Edge;
-				newSeg->v0 = V2d( xInter, mh->topBounds );
-				newSeg->v1 = V2d( segStart, mh->topBounds );
-				newSeg->edgeType = Edge::BORDER;
-				
-				edge->v1 = newSeg->v0;
-				edge->edge1 = newSeg;
-				newSeg->edge0 = edge;
-
-				if( segInProcess )
-				{
-					edges[prevIndex]->edge0 = newSeg;
-					newSeg->edge1 = edges[prevIndex];
-				}
-
-
-				topEdges.push_back( newSeg );
-				borderEdge = newSeg;
-
-
-				first = false;
-				segInProcess = false;
-			}
-			
-			//corner is outside
-		}
-		else
-		{
-
-			//corner is inside
-			first = false;
-
-			segInProcess = true;
-			segStart = xInter;
-			edge->v0 = V2d( xInter, mh->topBounds );
-			prevIndex = index;
-			
-		}
-		
-		
-		//cout << "intersection at: " << (*it).second << endl;
-	}
-	
-	if( segInProcess )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = topRight;
-		newSeg->v1 = V2d( segStart, mh->topBounds );
-		newSeg->edgeType = Edge::BORDER;
-		
-		Edge *edge = edges[prevIndex];
-		edge->edge0 = newSeg;
-		newSeg->edge1 = edge;
-
-		//cout << "creating final seg!!!" << endl;
-		topEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	Edge *newSeg = new Edge;
-	newSeg->v0 = topRight;
-	newSeg->v1 = topLeft;
-	newSeg->edgeType = Edge::BORDER;
-
-	topEdges.push_back(newSeg);
-	borderEdge = newSeg;
-
-	if( inters.empty() )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = topRight;
-		newSeg->v1 = topLeft;
-		newSeg->edgeType = Edge::BORDER;
-
-		topEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	}
-	//right section-------------------
-	{
-	inters.clear();
-
-	for( int i = 0; i < mh->numVertices; ++i )
-	{
-		LineIntersection li = SegmentIntersect( topRight, bottomRight, edges[i]->v0, edges[i]->v1 );
-		if( !li.parallel ) //or no intersection
-		{
-			inters.push_back( pair<double, int>( li.position.y, i ) );	
-		}
-	}
-
-	segInProcess = false;
-	segStart = mh->topBounds;
-	prevIndex;
-	first = true;
-
-	inters.sort( cmpPairs );
-
-	for( list<pair<double,int>>::iterator it = inters.begin(); it != inters.end(); ++it )
-	{
-		int index = (*it).second;
-		double yInter = (*it).first;
-		Edge *edge = edges[index];
-		V2d v0 = edge->v0;
-		V2d v1 = edge->v1;
-
-		//cout << "processing intersection at: " << yInter << endl;
-		
-		if( v0.x < topRight.x )
-		{
-			if( first || segInProcess )
-			{
-				//cout << "a" << endl;
-				Edge *newSeg = new Edge;
-				newSeg->v0 = V2d( topRight.x, yInter );
-				newSeg->v1 = V2d( topRight.x, segStart );
-				newSeg->edgeType = Edge::BORDER;
-				
-				edge->v1 = newSeg->v0;
-				edge->edge1 = newSeg;
-				newSeg->edge0 = edge;
-
-				if( segInProcess )
-				{
-					edges[prevIndex]->edge0 = newSeg;
-					newSeg->edge1 = edges[prevIndex];
-				}
-
-
-				rightEdges.push_back( newSeg );
-				borderEdge = newSeg;
-
-
-				first = false;
-				segInProcess = false;
-			}
-			
-			//corner is outside
-		}
-		else
-		{
-
-			//corner is inside
-			first = false;
-
-			segInProcess = true;
-			segStart = yInter;
-			edge->v0 = V2d( topRight.x, yInter );
-			prevIndex = index;
-			
-		}		
-	}
-	
-	if( segInProcess )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = bottomRight;
-		newSeg->v1 = V2d( topRight.x, segStart );
-		newSeg->edgeType = Edge::BORDER;
-		
-		Edge *edge = edges[prevIndex];
-		edge->edge0 = newSeg;
-		newSeg->edge1 = edge;
-
-		rightEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	if( inters.empty() )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = bottomRight;
-		newSeg->v1 = topRight;
-		newSeg->edgeType = Edge::BORDER;
-
-		rightEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	}
-	//bottom section
-	{
-	inters.clear();
-
-	for( int i = 0; i < mh->numVertices; ++i )
-	{
-		LineIntersection li = SegmentIntersect( bottomRight, bottomLeft, edges[i]->v0, edges[i]->v1 );
-		if( !li.parallel ) //or no intersection
-		{
-			inters.push_back( pair<double, int>( li.position.x, i ) );	
-		}
-	}
-
-	segInProcess = false;
-	segStart = bottomRight.x;
-	prevIndex;
-	first = true;
-
-	inters.sort( cmpPairsDesc );
-
-	for( list<pair<double,int>>::iterator it = inters.begin(); it != inters.end(); ++it )
-	{
-		int index = (*it).second;
-		double xInter = (*it).first;
-		Edge *edge = edges[index];
-		V2d v0 = edge->v0;
-		V2d v1 = edge->v1;
-
-		//cout << "processing intersection at: " << yInter << endl;
-		
-		if( v0.y < bottomRight.y )
-		{
-			if( first || segInProcess )
-			{
-				//cout << "a" << endl;
-				Edge *newSeg = new Edge;
-				newSeg->v0 = V2d( xInter, bottomRight.y );
-				newSeg->v1 = V2d( segStart, bottomRight.y );
-				newSeg->edgeType = Edge::BORDER;
-				
-				edge->v1 = newSeg->v0;
-				edge->edge1 = newSeg;
-				newSeg->edge0 = edge;
-
-				if( segInProcess )
-				{
-					edges[prevIndex]->edge0 = newSeg;
-					newSeg->edge1 = edges[prevIndex];
-				}
-
-
-				bottomEdges.push_back( newSeg );
-				borderEdge = newSeg;
-
-				first = false;
-				segInProcess = false;
-			}
-			
-			//corner is outside
-		}
-		else
-		{
-
-			//corner is inside
-			first = false;
-
-			segInProcess = true;
-			segStart = xInter;
-			edge->v0 = V2d( xInter, bottomRight.y );
-			prevIndex = index;
-			
-		}		
-	}
-	
-	if( segInProcess )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = bottomLeft;
-		newSeg->v1 = V2d( segStart, bottomRight.y );
-		newSeg->edgeType = Edge::BORDER;
-		
-		Edge *edge = edges[prevIndex];
-		edge->edge0 = newSeg;
-		newSeg->edge1 = edge;
-
-		bottomEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	if( inters.empty() )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = bottomLeft;
-		newSeg->v1 = bottomRight;
-		newSeg->edgeType = Edge::BORDER;
-
-		bottomEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	}
-	//left section--------------------
-	{
-	inters.clear();
-
-	for( int i = 0; i < mh->numVertices; ++i )
-	{
-		LineIntersection li = SegmentIntersect( bottomLeft, topLeft, edges[i]->v0, edges[i]->v1 );
-		if( !li.parallel ) //or no intersection
-		{
-			inters.push_back( pair<double, int>( li.position.y, i ) );	
-		}
-	}
-
-	segInProcess = false;
-	segStart = bottomLeft.y;
-	prevIndex;
-	first = true;
-
-	inters.sort( cmpPairsDesc );
-
-	for( list<pair<double,int>>::iterator it = inters.begin(); it != inters.end(); ++it )
-	{
-		int index = (*it).second;
-		double yInter = (*it).first;
-		Edge *edge = edges[index];
-		V2d v0 = edge->v0;
-		V2d v1 = edge->v1;
-
-		//cout << "processing intersection at: " << yInter << endl;
-		
-		if( v0.x > mh->leftBounds )
-		{
-			if( first || segInProcess )
-			{
-				//cout << "a" << endl;
-				Edge *newSeg = new Edge;
-				newSeg->v0 = V2d( mh->leftBounds, yInter );
-				newSeg->v1 = V2d( mh->leftBounds, segStart );
-				newSeg->edgeType = Edge::BORDER;
-				
-				edge->v1 = newSeg->v0;
-				edge->edge1 = newSeg;
-				newSeg->edge0 = edge;
-
-				if( segInProcess )
-				{
-					edges[prevIndex]->edge0 = newSeg;
-					newSeg->edge1 = edges[prevIndex];
-				}
-
-
-				leftEdges.push_back( newSeg );
-				borderEdge = newSeg;
-
-
-				first = false;
-				segInProcess = false;
-			}
-			
-			//corner is outside
-		}
-		else
-		{
-
-			//corner is inside
-			first = false;
-
-			segInProcess = true;
-			segStart = yInter;
-			edge->v0 = V2d(mh->leftBounds, yInter );
-			prevIndex = index;
-			
-		}		
-	}
-	
-	if( segInProcess )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = topLeft;
-		newSeg->v1 = V2d( mh->leftBounds, segStart );
-		newSeg->edgeType = Edge::BORDER;
-		
-		Edge *edge = edges[prevIndex];
-		edge->edge0 = newSeg;
-		newSeg->edge1 = edge;
-
-		leftEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	if( inters.empty() )
-	{
-		Edge *newSeg = new Edge;
-		newSeg->v0 = topLeft;
-		newSeg->v1 = bottomLeft;
-		newSeg->edgeType = Edge::BORDER;
-
-		leftEdges.push_back( newSeg );
-		borderEdge = newSeg;
-	}
-
-	}
-	//bringing it all together
-	int topEdgesSize = topEdges.size();
-	int rightEdgesSize = rightEdges.size();
-	int bottomEdgesSize = bottomEdges.size();
-	int leftEdgesSize = leftEdges.size();
-
-	if( topEdgesSize > 0 && rightEdgesSize > 0 )
-	{
-		if( topEdges.back()->v0 == rightEdges.front()->v1 )
-		{
-			topEdges.back()->edge0 = rightEdges.front();
-			rightEdges.front()->edge1 = topEdges.back();
-		}
-	}
-	if( rightEdgesSize > 0 && bottomEdgesSize > 0 )
-	{
-		if( rightEdges.back()->v0 == bottomEdges.front()->v1 )
-		{
-			rightEdges.back()->edge0 = bottomEdges.front();
-			bottomEdges.front()->edge1 = rightEdges.back();
-		}
-	}
-	if( bottomEdgesSize > 0 && leftEdgesSize > 0 )
-	{
-		if( bottomEdges.back()->v0 == leftEdges.front()->v1 )
-		{
-			bottomEdges.back()->edge0 = leftEdges.front();
-			leftEdges.front()->edge1 = bottomEdges.back();
-		}
-	}
-	if( leftEdgesSize > 0 && topEdgesSize > 0 )
-	{
-		if( leftEdges.back()->v0 == topEdges.front()->v1 )
-		{
-			leftEdges.back()->edge0 = topEdges.front();
-			topEdges.front()->edge1 = leftEdges.back();
-		}
-	}
-
-	int debugBorderCount = ( topEdges.size() + rightEdges.size() + bottomEdges.size() + leftEdges.size() ) * 2;
-	debugBorders = new VertexArray( sf::Lines, debugBorderCount );
-	
-	cout << "debugBorderCount: " << debugBorderCount << endl;
-
-	VertexArray &db = *debugBorders;
-	int i = 0;
-	for( list<Edge*>::iterator it = topEdges.begin(); it != topEdges.end(); ++it )
-	{
-		db[i * 2].color = Color::Red;
-		db[i * 2 + 1].color = Color::Red;
-		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
-		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
-
-		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
-		terrainTree->Insert( (*it) );
-
-		++i;
-	}
-
-	for( list<Edge*>::iterator it = rightEdges.begin(); it != rightEdges.end(); ++it )
-	{
-		db[i * 2].color = Color::Red;
-		db[i * 2 + 1].color = Color::Red;
-		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
-		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
-
-		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
-		terrainTree->Insert( (*it) );
-
-		++i;
-	}
-
-	for( list<Edge*>::iterator it = bottomEdges.begin(); it != bottomEdges.end(); ++it )
-	{
-		db[i * 2].color = Color::Red;
-		db[i * 2 + 1].color = Color::Red;
-		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
-		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
-
-		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
-		terrainTree->Insert( (*it) );
-
-		++i;
-	}
-
-	for( list<Edge*>::iterator it = leftEdges.begin(); it != leftEdges.end(); ++it )
-	{
-		db[i * 2].color = Color::Red;
-		db[i * 2 + 1].color = Color::Red;
-		db[i * 2].position = Vector2f( (*it)->v0.x, (*it)->v0.y );
-		db[i * 2 + 1].position = Vector2f( (*it)->v1.x, (*it)->v1.y );
-
-		//cout << "adding edge: " << (*it)->v0.x << ", " << (*it)->v0.y << " to " << (*it)->v1.x << ", " << (*it)->v1.y << endl;
-		terrainTree->Insert( (*it) );
-
-		++i;
-	}
+	//terrainTree->Insert(bot);
 
 }
 
@@ -5042,8 +4554,9 @@ void GameSession::CreateZones()
 	}
 
 	//cout << "numoutside gates!!: " << numOutsideGates << endl;
-
-	if( numOutsideGates > 0 )
+	//wish i knew what this was supposed to do. you turned this off because
+	//borderEdge is always null now.
+	if( numOutsideGates > 0 && borderEdge != NULL )
 	{
 		assert( borderEdge != NULL );
 
@@ -5802,6 +5315,9 @@ bool GameSession::Load()
 
 	players[0] = new Actor( this, 0 );
 
+	
+
+	
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
@@ -5821,6 +5337,15 @@ bool GameSession::Load()
 	players[2] = NULL;
 	players[3] = NULL;
 
+	Actor *tempP = NULL;;
+	for (int i = 1; i < 4; ++i)
+	{
+		tempP = GetPlayer(i);
+		if (tempP != NULL)
+		{
+			tempP->position = GetPlayer(0)->position;
+		}
+	}
 
 	m_numActivePlayers = 0;
 	Actor *activePlayer = NULL;
@@ -5870,23 +5395,15 @@ bool GameSession::Load()
 
 	
 
-	Actor *p0 = GetPlayer( 0 );
-	p0->position = originalPos;
+	
 
 	if( mh->gameMode == MapHeader::MapType::T_STANDARD )
 	{ 
-		recGhost = new RecordGhost(p0);
+		recGhost = new RecordGhost(GetPlayer(0));
 	}
 	
 
-	for( int i = 1; i < 4; ++i )
-	{
-		p = GetPlayer( i );
-		if( p != NULL )
-		{
-			p->position = p0->position;
-		}
-	}
+	
 
 	pauseMenu = new PauseMenu( this );
 	pauseMenu->SetTab( PauseMenu::Tab::KIN );
@@ -5968,8 +5485,8 @@ bool GameSession::Load()
 	groundTrans = Transform::Identity;
 	groundTrans.translate( 0, 0 );
 
-	cam.pos.x = p0->position.x;
-	cam.pos.y = p0->position.y;
+	cam.pos.x = GetPlayer(0)->position.x;
+	cam.pos.y = GetPlayer(0)->position.y;
 
 	if (!ShouldContinueLoading())
 	{
@@ -7595,6 +7112,7 @@ int GameSession::Run()
 
 		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		
+		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
 	
 		DrawEffects( EffectLayer::BEHIND_TERRAIN );
 		
@@ -12592,8 +12110,13 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 			penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
 			diffPenMax = (int)penLimit - minDistanceApart;
 		}
-
-		rPen = rand() % diffPenMax;
+		if (diffPenMax == 0)
+			rPen = 0;
+		else
+		{
+			rPen = rand() % diffPenMax;
+		}
+		
 		penDistance = minPen + rPen;
 		
 		pos = curr->GetPoint( quant ) - curr->Normal() * penDistance;

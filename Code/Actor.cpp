@@ -233,6 +233,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		currWall = NULL;
 		currHurtboxes = NULL;
 		currHitboxes = NULL;
 
@@ -1647,6 +1648,7 @@ void Actor::CreateAttackLightning()
 
 void Actor::Respawn()
 {
+	currWall = NULL;
 	wallClimbGravityOn = false;
 	currHurtboxes = NULL;
 	currHitboxes = NULL;
@@ -2293,7 +2295,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) || grindEdge->edgeType == Edge::BORDER )
 						{
 							framesNotGrinding = 0;
 							if( reversed )
@@ -4618,7 +4620,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || j )//|| !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || j || grindEdge->edgeType == Edge::BORDER )//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
 							{
@@ -5119,7 +5121,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) )//|| !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || grindEdge->edgeType == Edge::BORDER )//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
 							{
@@ -12512,7 +12514,7 @@ void Actor::UpdatePhysics()
 								//if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
 
 								//might cause some weird stuff w/ bounce but i can figure it out later
-								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 && !bounceFlameOn )
+								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 && !bounceFlameOn && minContact.edge->edgeType != Edge::BORDER )
 								{
 									assert( abs(eNorm.x ) > wallThresh );
 							//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
@@ -13225,7 +13227,12 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( ( hasPowerGravReverse || gravityGrassCount > 0 )/*&& hasGravReverse */&& tempCollision && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs( minContact.normal.x ) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1 )
+			else if( (hasPowerGravReverse || gravityGrassCount > 0 ) 
+				&& tempCollision && currInput.B && currInput.LUp() 
+				&& minContact.normal.y > 0 
+				&& abs( minContact.normal.x ) < wallThresh 
+				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
+				&& minContact.edge->edgeType != Edge::BORDER )
 			{
 				prevRail = NULL;
 				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
