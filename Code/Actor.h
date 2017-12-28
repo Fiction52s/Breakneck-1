@@ -321,6 +321,8 @@ struct Actor : QuadTreeCollider,
 
 	bool updateAura;
 
+	bool ExitGrind(bool jump);
+
 	/*enum SeqType
 	{
 		SEQ_NOTHING,

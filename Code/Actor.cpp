@@ -271,11 +271,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		for (int i = 0; i < 3; ++i)
 		{
-			fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+			fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
 			fairLightningPool[i]->ts = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256);
-			dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+			dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
 			dairLightningPool[i]->ts = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256);
-			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
 			uairLightningPool[i]->ts = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256);
 		}
 
@@ -1635,13 +1635,13 @@ void Actor::CreateAttackLightning()
 	switch (action)
 	{
 	case FAIR:
-	//	currLockedFairFX = (RelEffectInstance*)fairLightningPool[0]->ActivateEffect(&params);
+		currLockedFairFX = (RelEffectInstance*)fairLightningPool[0]->ActivateEffect(&params);
 		break;
 	case DAIR:
-	//	currLockedDairFX = (RelEffectInstance*)dairLightningPool[0]->ActivateEffect(&params);
+		currLockedDairFX = (RelEffectInstance*)dairLightningPool[0]->ActivateEffect(&params);
 		break;
 	case UAIR:
-	//	currLockedUairFX = (RelEffectInstance*)uairLightningPool[0]->ActivateEffect(&params);
+		currLockedUairFX = (RelEffectInstance*)uairLightningPool[0]->ActivateEffect(&params);
 		break;
 	}
 }
@@ -4598,8 +4598,7 @@ void Actor::UpdatePrePhysics()
 
 				}
 				else if( grindNorm.y > 0 )
-				{
-					
+				{	
 					if( grindNorm.x > 0 )
 					{
 						position.x += b.rw + .1;
@@ -4618,8 +4617,6 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						//abs( e0n.x ) < wallThresh )
-
 						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || j || grindEdge->edgeType == Edge::BORDER )//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
@@ -4652,7 +4649,6 @@ void Actor::UpdatePrePhysics()
 						}
 						else
 						{
-						//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 							if( grindNorm.x > 0 )
 							{
 								offsetX = b.rw;
@@ -4686,30 +4682,6 @@ void Actor::UpdatePrePhysics()
 							edgeQuantity = grindQuantity;
 							reversed = true;
 							grindEdge = NULL;
-							
-							//hasGravReverse = false;
-
-								
-							//if( currInput.LRight() )
-							//{
-							//	if( groundSpeed < 0 )
-							//	{
-							//		//cout << "bleh2" << endl;
-							//		groundSpeed = 0;
-							//	}
-							//	facingRight = true;
-							////	groundSpeed = abs( groundSpeed );
-							//}
-							//else if( currInput.LLeft() )
-							//{
-							//	facingRight = false;
-							//	if( groundSpeed > 0 )
-							//	{
-							//		//cout << "bleh1" << endl;
-							//		groundSpeed = 0;
-							//	}
-							////	groundSpeed = -abs( groundSpeed );
-							//}
 
 							action = LAND2;
 							framesNotGrinding = 0;
@@ -10467,6 +10439,218 @@ V2d Actor::UpdateReversePhysics()
 	return leftGroundExtra;
 }
 
+bool Actor::ExitGrind(bool jump)
+{
+	
+	V2d op = position;
+
+	V2d grindNorm = grindEdge->Normal();
+
+	if (grindNorm.y < 0)
+	{
+		double extra = 0;
+		if (grindNorm.x > 0)
+		{
+			offsetX = b.rw;
+			extra = .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			offsetX = -b.rw;
+			extra = -.1;
+		}
+		else
+		{
+			offsetX = 0;
+		}
+
+		position.x += offsetX + extra;
+
+		position.y -= normalHeight + .1;
+
+		if (!CheckStandUp())
+		{
+			position = op;
+		}
+		else
+		{
+			if (grindSpeed > 0)
+			{
+				facingRight = true;
+			}
+			else
+			{
+				facingRight = false;
+			}
+
+			framesNotGrinding = 0;
+			hasAirDash = true;
+			hasGravReverse = true;
+			hasDoubleJump = true;
+			lastWire = 0;
+
+			if (!jump)
+			{
+				ground = grindEdge;
+				movingGround = grindMovingTerrain;
+				edgeQuantity = grindQuantity;
+				action = LAND;
+				frame = 0;
+				groundSpeed = grindSpeed;
+
+				if (currInput.LRight())
+				{
+					facingRight = true;
+					if (groundSpeed < 0)
+					{
+						groundSpeed = 0;
+					}
+				}
+				else if (currInput.LLeft())
+				{
+					facingRight = false;
+					if (groundSpeed > 0)
+					{
+						groundSpeed = 0;
+					}
+				}
+			}
+			else
+			{
+				ground = grindEdge;
+				movingGround = grindMovingTerrain;
+				edgeQuantity = grindQuantity;
+				groundSpeed = grindSpeed;
+				SetActionExpr(JUMPSQUAT);
+				frame = 0;
+			}
+
+
+			grindEdge = NULL;
+			reversed = false;
+		}
+
+	}
+	else if (grindNorm.y > 0)
+	{
+		if (grindNorm.x > 0)
+		{
+			position.x += b.rw + .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			position.x += -b.rw - .1;
+		}
+
+		if (grindNorm.y > 0)
+			position.y += normalHeight + .1;
+
+		if (!CheckStandUp())
+		{
+			position = op;
+		}
+		else
+		{
+			if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->edgeType == Edge::BORDER)//|| !hasGravReverse ) )
+			{
+				if (grindSpeed < 0)
+				{
+					facingRight = true;
+				}
+				else
+				{
+					facingRight = false;
+				}
+
+
+				framesNotGrinding = 0;
+				if (reversed)
+				{
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
+				}
+				else
+				{
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+				}
+
+				SetActionExpr(JUMP);
+				frame = 1;
+				ground = NULL;
+				movingGround = NULL;
+				grindEdge = NULL;
+				grindMovingTerrain = NULL;
+				reversed = false;
+			}
+			else
+			{
+				if (grindNorm.x > 0)
+				{
+					offsetX = b.rw;
+				}
+				else if (grindNorm.x < 0)
+				{
+					offsetX = -b.rw;
+				}
+				else
+				{
+					offsetX = 0;
+				}
+
+				if (grindSpeed < 0)
+				{
+					facingRight = true;
+				}
+				else
+				{
+					facingRight = false;
+				}
+
+				hasAirDash = true;
+				hasGravReverse = true;
+				hasDoubleJump = true;
+				lastWire = 0;
+
+				ground = grindEdge;
+				movingGround = grindMovingTerrain;
+				groundSpeed = -grindSpeed;
+				edgeQuantity = grindQuantity;
+				reversed = true;
+				grindEdge = NULL;
+
+				action = LAND2;
+				framesNotGrinding = 0;
+				frame = 0;
+
+
+				double angle = GroundedAngle();
+
+				owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+				owner->soundNodeList->ActivateSound(soundBuffers[S_GRAVREVERSE]);
+			}
+		}
+	}
+	else
+	{
+		framesInAir = 0;
+		SetActionExpr(DOUBLE);
+		frame = 0;
+		grindEdge = NULL;
+		ground = NULL;
+
+		//TODO: this might glitch grind areas? test it with the range of your get out of grind query
+		if (grindNorm.x > 0)
+		{
+			position.x += b.rw + .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			position.x += -b.rw - .1;
+		}
+	}
+
+	return true;
+}
+
 double Actor::GetDashSpeed()
 {
 	switch( speedLevel )
@@ -11117,6 +11301,8 @@ void Actor::UpdatePhysics()
 		V2d e1n = e1->Normal();
 		
 		double q = grindQuantity;
+		double hitBorderSpeed = GetDashSpeed() / 2;
+
 		while( !approxEquals(movement, 0 ) )
 		{
 			//cout << "movement: " << movement << endl;
@@ -11124,6 +11310,16 @@ void Actor::UpdatePhysics()
 			if( movement > 0 )
 			{
 				double extra = q + movement - gLen;
+				V2d gPoint = grindEdge->GetPoint(q + movement);
+				if (extra <= 0 && 
+					((gPoint.x < owner->mh->leftBounds)
+					||( gPoint.y < owner->mh->topBounds )) )
+				{
+					grindSpeed = max(-grindSpeed, -hitBorderSpeed);
+					//grindSpeed = -grindSpeed;
+					return;
+				}
+
 				if( extra > 0 )
 				{
 					movement -= gLen - q;
@@ -11171,49 +11367,7 @@ void Actor::UpdatePhysics()
 							lastWire = 0;
 						}
 					}
-					//if( IsSlopedGround( 
 					q = 0;
-					//sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
-					//sf::Rect<double> r( ( v0.x + v1.x ) / 2 - 1, ( v0.y + v1.y ) / 2 - 1, 2, 2 );
-					//queryMode = "gate";
-					//owner->testGateCount = 0;
-					//owner->gateTree->Query( this, r );
-
-					//Gate *currg = owner->gateList;
-					//while( currg != NULL )
-					//{
-					//	if( CanUnlockGate( currg ) )
-					//	{
-					//		cout << "unlock gate" << endl;
-					//		owner->UnlockGate( currg );
-
-					//		if( e0 == currg->edgeA )
-					//		{
-					//			gateTouched = currg->edgeB;
-
-					//			//owner->ActivateZone( g->zoneB );
-					//		}
-					//		else
-					//		{
-					//			gateTouched = currg->edgeA;
-					//			//owner->ActivateZone( g->zoneA );
-					//		}
-					//		//break;
-					//	}
-					//	currg = currg->next;
-					//}
-					
-						/*action = DEATH;
-						rightWire->Reset();
-						leftWire->Reset();
-						slowCounter = 1;
-						frame = 0;
-						owner->deathWipe = true;
-
-						owner->powerBar.Damage( 1000000 );*/
-						//return;
-					
-					
 				}
 				else
 				{
@@ -11224,6 +11378,23 @@ void Actor::UpdatePhysics()
 			else if( movement < 0 )
 			{
 				double extra = q + movement;
+
+				V2d gPoint = grindEdge->GetPoint(q + movement);
+				if (extra >= 0 &&
+					((gPoint.x < owner->mh->leftBounds)
+						|| (gPoint.y < owner->mh->topBounds)))
+				{
+					grindSpeed = min( -grindSpeed, hitBorderSpeed);
+					
+					return;
+				}
+
+			/*	if (extra >= 0 && grindEdge->GetPoint( q ).x < owner->mh->leftBounds )
+				{
+					grindSpeed = -grindSpeed;
+					return;
+				}*/
+
 				if( extra < 0 )
 				{
 					movement -= movement - extra;
@@ -11231,6 +11402,9 @@ void Actor::UpdatePhysics()
 					V2d v0 = grindEdge->v0;
 					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
 
+					
+					//CheckStandUp();
+					//if( )
 
 					if( e0->edgeType == Edge::CLOSED_GATE )
 					{
