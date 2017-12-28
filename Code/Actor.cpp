@@ -11311,9 +11311,10 @@ void Actor::UpdatePhysics()
 			{
 				double extra = q + movement - gLen;
 				V2d gPoint = grindEdge->GetPoint(q + movement);
-				if (extra <= 0 && 
-					((gPoint.x < owner->mh->leftBounds)
-					||( gPoint.y < owner->mh->topBounds )) )
+				if (((gPoint.x < owner->mh->leftBounds)
+					||( gPoint.y < owner->mh->topBounds )
+					||( gPoint.x > owner->mh->leftBounds + owner->mh->boundsWidth)
+					||( gPoint.y > owner->mh->topBounds + owner->mh->boundsHeight ) ) )
 				{
 					grindSpeed = max(-grindSpeed, -hitBorderSpeed);
 					//grindSpeed = -grindSpeed;
@@ -11380,9 +11381,10 @@ void Actor::UpdatePhysics()
 				double extra = q + movement;
 
 				V2d gPoint = grindEdge->GetPoint(q + movement);
-				if (extra >= 0 &&
-					((gPoint.x < owner->mh->leftBounds)
-						|| (gPoint.y < owner->mh->topBounds)))
+				if (((gPoint.x < owner->mh->leftBounds)
+						|| (gPoint.y < owner->mh->topBounds)
+						|| (gPoint.x > owner->mh->leftBounds + owner->mh->boundsWidth)
+						|| (gPoint.y > owner->mh->topBounds + owner->mh->boundsHeight)))
 				{
 					grindSpeed = min( -grindSpeed, hitBorderSpeed);
 					
