@@ -9152,6 +9152,7 @@ V2d Actor::UpdateReversePhysics()
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
 			bool changeOffset = offsetLeft || offsetRight;
 			
+			
 			//cout << "a: " << a << " b: " << c << endl;
 			if( transferLeft )
 			{
@@ -9196,7 +9197,7 @@ V2d Actor::UpdateReversePhysics()
 				//{
 
 				bool jumpOff = false;
-				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh )
+				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh || e0->edgeType == Edge::BORDER)
 				{
 					jumpOff = true;
 				}
@@ -9514,7 +9515,7 @@ V2d Actor::UpdateReversePhysics()
 				//{
 
 				bool jumpOff = false;
-				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh )
+				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh || e1->edgeType == Edge::BORDER )
 				{
 					jumpOff = true;
 				}
@@ -10063,7 +10064,7 @@ V2d Actor::UpdateReversePhysics()
 						double yDist = abs( gNormal.x ) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if( e0->edgeType != Edge::BORDER && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -10107,7 +10108,7 @@ V2d Actor::UpdateReversePhysics()
 								cout << "possible bug reversed. solved secret??" << endl;
 							}
 						}
-						else if( abs( e0n.x ) >= wallThresh )
+						else if( abs( e0n.x ) >= wallThresh && e0->edgeType != Edge::BORDER)
 						{
 							if( e0->edgeType == Edge::CLOSED_GATE )
 							{
@@ -10162,7 +10163,7 @@ V2d Actor::UpdateReversePhysics()
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						if( e1->edgeType != Edge::BORDER && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 						{
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
@@ -10207,7 +10208,7 @@ V2d Actor::UpdateReversePhysics()
 								//q = 0;
 							}
 						}
-						else if( abs( e1n.x ) >= wallThresh )
+						else if(e1->edgeType != Edge::BORDER && abs( e1n.x ) >= wallThresh )
 						{
 							//attemping to fix reverse secret issues on gates
 							if( e1->edgeType == Edge::CLOSED_GATE )
@@ -10281,148 +10282,164 @@ V2d Actor::UpdateReversePhysics()
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
-						V2d eNorm = minContact.normal;//minContact.edge->Normal();
-						eNorm = -eNorm;
-						
-						
-						//cout<< "blah" << endl;
-						if( eNorm.y < 0 )
+						if ( minContact.edge->edgeType == Edge::BORDER )
 						{
-							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh)
-									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh);
+							velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
+							velocity.y = 0;
+							movementVec = normalize(ground->v1 - ground->v0) * extra;
 
-						
-							if( minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
+							leftGround = true;
+							reversed = false;
+							ground = NULL;
+							movingGround = NULL;
+							return V2d( 0, 0 );
+						}
+						else
+						{
+
+							V2d eNorm = minContact.normal;//minContact.edge->Normal();
+							eNorm = -eNorm;
+
+
+							//cout<< "blah" << endl;
+							if (eNorm.y < 0)
 							{
-								double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
-								double sum = position.x + minContact.resolution.x;
-								double diff = sum - minContact.position.x;
-								
-								if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
+								bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh)
+									|| (eNorm.x > 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh);
+
+
+								if (minContact.position.y <= position.y + minContact.resolution.y - b.rh + b.offset.y + 5 && !speedTransfer)
 								{
-									//this is for corner border cases
-									cout << "REVERSED CORNER BORDER CASE: " << test << endl;
+									double test = position.x + b.offset.x + minContact.resolution.x - minContact.position.x;
+									double sum = position.x + minContact.resolution.x;
+									double diff = sum - minContact.position.x;
+
+									if ((test < -b.rw && !approxEquals(test, -b.rw)) || (test > b.rw && !approxEquals(test, b.rw)))
+									{
+										//this is for corner border cases
+										cout << "REVERSED CORNER BORDER CASE: " << test << endl;
+										V2d oldv0 = ground->v0;
+										V2d oldv1 = ground->v1;
+
+										if (movingGround != NULL)
+										{
+											ground->v0 += movingGround->position;
+											ground->v1 += movingGround->position;
+										}
+
+										q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
+
+										if (movingGround != NULL)
+										{
+											ground->v0 = oldv0;
+											ground->v1 = oldv1;
+										}
+
+
+										groundSpeed = 0;
+										edgeQuantity = q;
+										offsetX = -offsetX;
+										break;
+									}
+									else
+									{
+										//cout << "c" << endl;   
+										//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
+										ground = minContact.edge;
+										movingGround = minContact.movingPlat;
+
+										V2d oldv0 = ground->v0;
+										V2d oldv1 = ground->v1;
+
+										if (movingGround != NULL)
+										{
+											ground->v0 += movingGround->position;
+											ground->v1 += movingGround->position;
+										}
+
+										q = ground->GetQuantity(minContact.position);
+
+										if (movingGround != NULL)
+										{
+											ground->v0 = oldv0;
+											ground->v1 = oldv1;
+										}
+
+										V2d eNorm = minContact.edge->Normal();
+										offsetX = position.x + minContact.resolution.x - minContact.position.x;
+										offsetX = -offsetX;
+
+
+										//wtf is this doing?
+										//edgeQuantity = 0;
+										//groundSpeed = 0;
+										//break;
+
+									}
+								}
+								else
+								{
+									cout << "xx" << endl;
+
+
 									V2d oldv0 = ground->v0;
 									V2d oldv1 = ground->v1;
 
-									if( movingGround != NULL )
+									if (movingGround != NULL)
 									{
 										ground->v0 += movingGround->position;
 										ground->v1 += movingGround->position;
 									}
 
-									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+									q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
 
-									if( movingGround != NULL )
+									if (movingGround != NULL)
 									{
 										ground->v0 = oldv0;
 										ground->v1 = oldv1;
 									}
 
-								
+
 									groundSpeed = 0;
 									edgeQuantity = q;
 									offsetX = -offsetX;
 									break;
 								}
-								else
-								{	
-									//cout << "c" << endl;   
-									//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
-									ground = minContact.edge;
-									movingGround = minContact.movingPlat;
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
-
-									q = ground->GetQuantity( minContact.position );
-
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
-
-									V2d eNorm = minContact.edge->Normal();			
-									offsetX = position.x + minContact.resolution.x - minContact.position.x;
-									offsetX = -offsetX;
-
-
-									//wtf is this doing?
-									//edgeQuantity = 0;
-									//groundSpeed = 0;
-									//break;
-
-								}
 							}
 							else
 							{
-								cout << "xx" << endl;
+								if (bounceFlameOn && abs(groundSpeed) > 1)
+								{
+									storedBounceGroundSpeed = groundSpeed * slowMultiple;
+									groundedWallBounce = true;
+								}
 
-								
+
+								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
+
 								V2d oldv0 = ground->v0;
 								V2d oldv1 = ground->v1;
 
-								if( movingGround != NULL )
+								if (movingGround != NULL)
 								{
 									ground->v0 += movingGround->position;
 									ground->v1 += movingGround->position;
 								}
 
-								q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
+								q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
 
-								if( movingGround != NULL )
+								if (movingGround != NULL)
 								{
 									ground->v0 = oldv0;
 									ground->v1 = oldv1;
 								}
 
-								
 								groundSpeed = 0;
-								edgeQuantity = q;
 								offsetX = -offsetX;
+								edgeQuantity = q;
 								break;
 							}
 						}
-						else
-						{
-							if( bounceFlameOn && abs( groundSpeed ) > 1 )
-							{
-								storedBounceGroundSpeed = groundSpeed * slowMultiple;
-								groundedWallBounce = true;
-							}
-
-
-							//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
-
-							V2d oldv0 = ground->v0;
-							V2d oldv1 = ground->v1;
-
-							if( movingGround != NULL )
-							{
-								ground->v0 += movingGround->position;
-								ground->v1 += movingGround->position;
-							}
-
-							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-
-							if( movingGround != NULL )
-							{
-								ground->v0 = oldv0;
-								ground->v1 = oldv1;
-							}
-
-							groundSpeed = 0;
-							offsetX = -offsetX;
-							edgeQuantity = q;
-							break;
-						}						
 					}
 					else
 					{

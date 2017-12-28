@@ -616,6 +616,9 @@ void Camera::Update( Actor *player )
 	float halfw = 960 / 2;
 	float halfh = 540 / 2;
 
+	int topBoundsCamExtra = 50;
+	int topBounds = owner->mh->topBounds + topBoundsCamExtra;
+
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
 
 	float left = pos.x - halfw * zoomFactor;
@@ -633,7 +636,7 @@ void Camera::Update( Actor *player )
 		xChangeNeg = -tdiff;
 	}
 	float top = pos.y - halfh * zoomFactor;
-	tdiff = owner->mh->topBounds - top;
+	tdiff = topBounds - top;
 	if( tdiff > 0 )
 	{
 		yChangePos = tdiff;
