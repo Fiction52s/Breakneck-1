@@ -1614,6 +1614,9 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
+
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -17369,26 +17372,37 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 {
 	tempActors.clear();
 
-	//cout << "subtracting!" << endl;
 	Brush orig;
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
 	list<boost::shared_ptr<GateInfo>> gateInfoList;
 
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
-		//list<Inter> inters = (*it)->GetIntersections( polygonInProgress.get() );
-		//cout << "inters size: " << inters.size() << endl;
-		//addedPointsMap[(*it).get()] = InsertTemporaryPoints( (*it).get(), inters );
-
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		orig.AddObject( sp );
 
 		TerrainPoint *pCurr = (*it)->pointStart;
+		bool okGate = true;
 		while (pCurr != NULL)
 		{
+			okGate = true;
 			if (pCurr->gate != NULL)
 			{
-				gateInfoList.push_back(pCurr->gate);
+				for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+				{
+					if ((*it) == pCurr->gate)
+					{
+						okGate = false;
+						break;
+					}
+				}
+				if (okGate)
+				{
+					SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(pCurr->gate);
+					orig.AddObject(sp1);
+					gateInfoList.push_back(pCurr->gate);
+				}
+					
 			}
 			pCurr = pCurr->next;
 		}
@@ -17408,7 +17422,6 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	list<PolyPtr> results;
 	Sub( polygonInProgress, intersectingPolys, results );
 
-	//cout << "results size: " << results.size() << endl;
 	Brush resultBrush;
 	for( list<PolyPtr>::iterator it = results.begin(); 
 		it != results.end(); ++it )
@@ -17416,17 +17429,6 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 		resultBrush.AddObject( sp );
 	}
-
-	//for (auto it = actorList.begin(); it != actorList.end(); ++it)
-	//{
-	//	//ActorPtr newActor((*it)->Copy());
-	//	//newActor->UnAnchor(newActor);
-	//	//bool res = AttachActorToPolygon(newActor, polygonInProgress.get() );
-	//	AttachActorToPolygon((*it), polygonInProgress.get());
-	//	//newActor->AnchorToGround( )
-	//	//newActor->groundInfo
-	//	//newActor->groundInfo->edgeStart
-	//}
 
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
@@ -17468,55 +17470,53 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		}
 	}
 
-	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	for (list<PolyPtr>::iterator rit = results.begin();
+		rit != results.end(); ++rit)
 	{
 		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 		{
-			for (list<PolyPtr>::iterator rit = results.begin();
-				rit != results.end(); ++rit)
+			TerrainPoint *test = NULL;
+			TerrainPoint * outTest = NULL;
+
+			TerrainPoint *p0 = (*rit)->GetSamePoint((*it)->point0->pos);
+			TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
+
+			if (p0 == NULL && p1 == NULL)
+				continue;
+
+			GateInfoPtr gi(new GateInfo(*((*it).get())));
+			gi->edit = NULL;
+
+			if (p0 != NULL)
 			{
-				TerrainPoint *test = NULL;
-				TerrainPoint * outTest = NULL;
-
-				TerrainPoint *p0 = (*rit)->GetSamePoint((*it)->point0->pos);
-				TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
-
-				GateInfoPtr gi(new GateInfo(*((*it).get())));
-				gi->edit = NULL;
-
-				if (p0 != NULL)
-				{
-					gi->point0 = p0;
-					gi->poly0 = (*rit);
-					p0->gate = gi;
-				}
-				else
-				{
-					gi->point0 = (*it)->point0;
-					gi->poly0 = (*it)->poly0;
-				}
-				if (p1 != NULL)
-				{
-					gi->point1 = p1;
-					gi->poly1 = (*rit);
-					p1->gate = gi;
-				}
-				else
-				{
-					gi->point1 = (*it)->point1;
-					gi->poly1 = (*it)->poly1;
-				}
+				gi->point0 = p0;
+				gi->poly0 = (*rit);
+				p0->gate = gi;
 			}
+			else
+			{
+				gi->point0 = (*it)->point0;
+				gi->poly0 = (*it)->poly0;
+				gi->point0->gate = gi;
+			}
+			if (p1 != NULL)
+			{
+				gi->point1 = p1;
+				gi->poly1 = (*rit);
+				p1->gate = gi;
+
+			}
+			else
+			{
+				gi->point1 = (*it)->point1;
+				gi->poly1 = (*it)->poly1;
+				gi->point1->gate = gi;
+			}
+
+			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
+			resultBrush.AddObject(sp1);
 		}
 	}
-
-	/*for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
-	{
-		SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-		resultBrush.AddObject( tempsp );
-	}*/
-
-	//cout << "replace: " << orig.objects.size() << ", " << resultBrush.objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, &resultBrush );
 	action->Perform();
 	doneActionStack.push_back( action );
@@ -17547,7 +17547,6 @@ void EditSession::PointSelectPoint( V2d &worldPos,
 			if( dist <= rad )
 			{
 				bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
-				//cout << "close enough" << endl;
 				if( !tp->selected )
 				{
 					if( !shift )

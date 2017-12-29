@@ -21341,8 +21341,9 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 		runeSprite.getLocalBounds().height / 2 );
 	
 	
-
-	switch (action)
+	hasDoubleJump = true;
+	hasAirDash = true;
+	/*switch (action)
 	{
 	case UAIR:
 		if( velocity.y <= 0 )
@@ -21351,7 +21352,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 	case DAIR:
 		dairBoostedDouble = true;
 		break;
-	}
+	}*/
 
 	double slowDownFall = 14;
 	if (velocity.y > slowDownFall)

@@ -4739,7 +4739,8 @@ void GameSession::SetupZones()
 	if( originalZone != NULL )
 	{
 		cout << "setting original zone to active: " << originalZone << endl;
-		originalZone->active = true;
+		//originalZone->active = true;
+		ActivateZone(originalZone);
 		currentZone = originalZone;
 		keyMarker->SetStartKeys( currentZone->requiredKeys );
 	}
