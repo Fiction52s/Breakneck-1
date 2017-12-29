@@ -3079,7 +3079,7 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 		aNext.x = nextActorPoint->pos.x;
 		aNext.y = nextActorPoint->pos.y;
 
-		actorPos = aCurr + normalize( aNext - aCurr ) * actorQuant;
+		actorPos = aCurr + normalize(aNext - aCurr) * actorQuant;//V2d( actor->image.getPosition() );//
 		bool onLine = PointOnLine( actorPos, currPos, nextPos );
 
 		double finalQuant = dot( actorPos - currPos, normalize( nextPos - currPos ) );
@@ -3801,37 +3801,6 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 			//samePointMap[same] = tp;
 		}
 	}
-
-	/*list<Inter> polyInters = poly->GetIntersections(brush.get());
-
-	for (auto it = polyInters.begin(); it != polyInters.end(); ++it)
-	{
-		for (TerrainPoint *tp = brush->pointStart; tp != NULL; tp = tp->next)
-		{
-			TerrainPoint *tpNext = tp->next;
-			if (itNext == NULL)
-				itNext = poly->pointStart;
-		}
-		
-
-		if (length((*it).position - V2d((*it).point->pos)) < 1.0)
-		{
-			pointInterMapFromPoly[(*it).point] = (*it);
-		}
-	}*/
-	/*for (auto it = inters.begin(); it != inters.end(); ++it)
-	{
-		for (TerrainPoint *tp = brush->pointStart; tp != NULL; tp = tp->next)
-		{
-			if (length((*it).position - V2d(tp->pos.x, tp->pos.y)) < 1.0)
-			{
-				
-			}
-		}
-		
-	}*/
-
-
 	outPoly = NULL;
 	brush->FixWinding();
 	poly->FixWinding();
@@ -3883,6 +3852,24 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 		//outPoly->inverse = inverse;
 		outPoly->Finalize();
+
+		if (brush->inverse)
+		{
+			brush->FixWindingInverse();
+		}
+		else
+		{
+			brush->FixWinding();
+		}
+
+		if (poly->inverse)
+		{
+			poly->FixWindingInverse();
+		}
+		else
+		{
+			poly->FixWinding();
+		}
 		return AddResult::ADD_SUCCESS;
 	}
 
@@ -4368,6 +4355,26 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 	outPoly->inverse = inverse;
 	outPoly->Finalize();
+
+	if (brush->inverse)
+	{
+		brush->FixWindingInverse();
+	}
+	else
+	{
+		brush->FixWinding();
+	}
+
+	if (poly->inverse)
+	{
+		poly->FixWindingInverse();
+	}
+	else
+	{
+		poly->FixWinding();
+	}
+	
+	//poly->FixWinding();
 
 	return AddResult::ADD_SUCCESS;
 }
@@ -4925,6 +4932,24 @@ EditSession::AddResult EditSession::InverseAdd(PolyPtr brush, PolyPtr poly, list
 
 	outPoly->inverse = inverse;
 	outPoly->Finalize();
+
+	if (brush->inverse)
+	{
+		brush->FixWindingInverse();
+	}
+	else
+	{
+		brush->FixWinding();
+	}
+
+	if (poly->inverse)
+	{
+		poly->FixWindingInverse();
+	}
+	else
+	{
+		poly->FixWinding();
+	}
 
 	return AddResult::ADD_SUCCESS;
 }
@@ -6594,6 +6619,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									//if(  )
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
+										bool pressF1 = Keyboard::isKeyPressed(Keyboard::F1);
+										if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
+											continue;
 										if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
 										{
 
@@ -10949,7 +10977,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								TerrainPoint *prev = (*it)->pointEnd;
 								TerrainPoint *curr = (*it)->pointStart;
 
-								if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+								bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
+
+								if( ( contains && !(*it)->inverse ) || ( !contains && (*it)->inverse ) )
 								{
 									//prev is starting at 0. start normally at 1
 									int edgeIndex = 0;
@@ -17172,14 +17202,6 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		}
 
 	}
-	//cout << "tempActors size: " << tempActors.size() << endl;
-	//for( list<ActorPtr>::iterator it = tempActors.begin(); it != tempActors.end(); ++it )
-	//{
-
-	//	SelectPtr tempsp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-	//	//progressBrush->AddObject( tempsp );
-	//}
-
 	
 	//cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
 	Action * action = new ReplaceBrushAction( &orig, progressBrush );
@@ -17318,45 +17340,6 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 
 	list<PolyPtr> results;
 	Sub( polygonInProgress, intersectingPolys, results );
-	 
-	//before deleting the points, need to remove and delete the points of the new polygons
-	//that have the same values
-
-	//for( list<PolyPtr>::iterator rit = results.begin(); 
-	//	rit != results.end(); ++rit )
-	//{
-	//	TerrainPolygon *resPoly = (*rit).get();
-
-	//	for( map<TerrainPolygon*,list<TerrainPoint*>>::iterator it = addedPointsMap.begin(); it != addedPointsMap.end(); ++it )
-	//	{
-	//		list<TerrainPoint*> &points = (*it).second;
-	//		for( list<TerrainPoint*>::iterator tit = points.begin(); tit != points.end(); ++tit )
-	//		{
-	//			Vector2i pos = (*tit)->pos;
-
-	//			TerrainPoint *has = resPoly->HasPointPos( pos );
-	//			if( has != NULL )
-	//			{
-	//				//delete the unneeded temp point
-	//				resPoly->RemovePoint( has );
-	//				delete has;
-	//			}
-	//		}
-
-	//	}
-	//}
-
-
-	////remove and delete points from the intersecting polys
-	//for( map<TerrainPolygon*,list<TerrainPoint*>>::iterator it = addedPointsMap.begin(); it != addedPointsMap.end(); ++it )
-	//{
-	//	RemoveTemporaryPoints( (*it).first, (*it).second );
-	//}
-
-	/*for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-	{
-
-	}*/
 
 	//cout << "results size: " << results.size() << endl;
 	Brush resultBrush;

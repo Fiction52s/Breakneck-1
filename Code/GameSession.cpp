@@ -7647,25 +7647,8 @@ int GameSession::Run()
 		minimapTex->display();
 		const Texture &miniTex = minimapTex->getTexture();
 		minimapShader.setUniform( "u_texture", minimapTex->getTexture() );
-		//minimapShader.setUniform( "u_texture", minimapTex->getTexture() );
 
 		minimapSprite.setTexture( miniTex );
-		
-		//Sprite minimapSprite( miniTex );
-		//minimapSprite.setTexture( miniTex );
-		//minimapSprite.set
-		//minimapSprite.setPosition( preScreenTex->getSize().x - 300, preScreenTex->getSize().y - 300 );
-		
-		//minimapSprite.setPosition( 0, preScreenTex->getSize().y - 300 );
-		
-		//minimapSprite.setScale( .5, .5 );
-		//minimapSprite.setColor( Color( 255, 255, 255, 200 ) );
-		//minimapSprite.setColor( Color( 255, 255, 255, 255 ) );
-
-
-		
-		//for post processing
-		//preScreenTex->display();
 
 		if( false )
 		{

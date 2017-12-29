@@ -86,14 +86,18 @@ bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
 bool TerrainPolygon::CanApply()
 {
 	bool applyOkay = true;
+	bool linesNotOkay = true;
+	bool containsNotOkay = true;
 	for(list<PolyPtr>::iterator it = session->polygons.begin() ; it != session->polygons.end(); ++it )
 	{
 		if( (*it).get() == this )
 			continue;
 		
+		linesNotOkay = this->LinesTooClose((*it).get(), session->minimumEdgeLength) || this->LinesIntersect((*it).get());
+		containsNotOkay = this->Contains((*it).get()) || (*it)->Contains(this);
 
-		if( this->LinesTooClose( (*it).get(), session->minimumEdgeLength ) || this->LinesIntersect( (*it).get() ) 
-			|| this->Contains( (*it).get() ) || (*it)->Contains( this ) )
+		//fail if intersecting others. ignore containment when dealing w/ inverses for now
+		if( linesNotOkay || ( containsNotOkay && !((*it)->inverse || this->inverse )) )
 		{
 			applyOkay = false;
 			break;
