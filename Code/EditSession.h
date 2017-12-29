@@ -30,21 +30,30 @@ struct ISelectable
 	//is a move valid
 	//execute move
 	ISelectable( ISelectableType type );
-	virtual bool ContainsPoint( sf::Vector2f test ) = 0;
-	virtual bool Intersects( sf::IntRect rect ) = 0;
-	virtual bool IsPlacementOkay() = 0;
-	virtual void Move( boost::shared_ptr<ISelectable> me,
-		sf::Vector2i delta ) = 0;
-	virtual void BrushDraw( sf::RenderTarget *target, 
-		bool valid ) = 0;
-	virtual void Draw( sf::RenderTarget *target ) = 0;
+	virtual bool ContainsPoint(sf::Vector2f test)
+	{
+		return false;
+	}
+	virtual bool Intersects(sf::IntRect rect)
+	{
+		return false;
+	}
+	virtual bool IsPlacementOkay()
+	{
+		return true;
+	}
+	virtual void Move(boost::shared_ptr<ISelectable> me,
+		sf::Vector2i delta) {}
+	virtual void BrushDraw(sf::RenderTarget *target,
+		bool valid) {}
+	virtual void Draw(sf::RenderTarget *target) {}
 	virtual void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select ) = 0;
-	virtual void Activate( EditSession *edit,
 		boost::shared_ptr<ISelectable> select) = 0;
-	virtual bool CanApply() = 0;
-	virtual bool CanAdd() = 0;
-	virtual void SetSelected( bool select ) = 0;
+	virtual void Activate(EditSession *edit,
+		boost::shared_ptr<ISelectable> select) = 0;
+	virtual bool CanApply() { return true; }
+	virtual bool CanAdd() { return true; }
+	virtual void SetSelected(bool select) {}
 	//virtual bool CanSubtract() = 0;
 
 	ISelectableType selectableType;
@@ -346,7 +355,7 @@ struct TerrainPolygon : ISelectable
 
 typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 
-struct GateInfo
+struct GateInfo : ISelectable
 {
 	enum GateTypes
 	{
@@ -362,6 +371,10 @@ struct GateInfo
 	void SetType( const std::string &gType );
 	TerrainPoint *point0;
 	TerrainPoint *point1;
+	void Deactivate(EditSession *edit,
+		boost::shared_ptr<ISelectable> select);
+	void Activate(EditSession *edit,
+		boost::shared_ptr<ISelectable> select);
 	boost::shared_ptr<TerrainPolygon> poly0;
 	int vertexIndex0;
 	boost::shared_ptr<TerrainPolygon> poly1;

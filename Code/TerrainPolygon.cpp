@@ -423,8 +423,8 @@ void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
 		{
 			if( curr->gate->edit != NULL )
 			{
-				curr->gate->edit = NULL;
-				edit->gates.remove( curr->gate );
+				//curr->gate->edit = NULL;
+				//edit->gates.remove( curr->gate );
 			}
 		}
 	}
@@ -460,8 +460,8 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 		{
 			if( curr->gate->edit == NULL )
 			{
-				curr->gate->edit = edit;
-				edit->gates.push_back( curr->gate );
+				//curr->gate->edit = edit;
+				//edit->gates.push_back( curr->gate );
 			}
 		}
 	}

@@ -21,6 +21,7 @@ struct Brush
 	void SetSelected( bool select );
 	bool CanApply();
 	bool CanAdd();
+	bool Has(SelectPtr sp);
 	bool terrainOnly;
 	static EditSession *session;
 	//bool activated;

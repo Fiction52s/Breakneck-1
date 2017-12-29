@@ -40,6 +40,17 @@ Brush::Brush()
 {
 }
 
+bool Brush::Has(SelectPtr sp)
+{
+	for (SelectIter it = objects.begin(); it != objects.end(); ++it)
+	{
+		if (sp == (*it))
+			return true;
+	}
+
+	return false;
+}
+
 void Brush::SetSelected( bool select )
 {
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
