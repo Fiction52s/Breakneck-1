@@ -5417,6 +5417,14 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 	//check for duplicate point, this means a polygon is not just sharing a point, but is totally invalid and shouldn't count
 
+	for (list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt)
+	{
+		if ((*polyIt)->inverse)
+		{
+			(*polyIt)->FixWindingInverse();
+		}
+	}
+
 	return;
 	//for( list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt )
 	//{
@@ -17336,6 +17344,17 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 			}
 			pCurr = pCurr->next;
 		}
+		
+		for (map<TerrainPoint*, std::list<ActorPtr>>::iterator
+			mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit)
+		{
+			for (auto eit = (*mit).second.begin(); eit != (*mit).second.end(); ++eit)
+			{
+				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit));
+				orig.AddObject(sp1);
+			}
+		}
+			
 	}
 
 	list<PolyPtr> results;
@@ -17350,15 +17369,53 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 		resultBrush.AddObject( sp );
 	}
 
+	//for (auto it = actorList.begin(); it != actorList.end(); ++it)
+	//{
+	//	//ActorPtr newActor((*it)->Copy());
+	//	//newActor->UnAnchor(newActor);
+	//	//bool res = AttachActorToPolygon(newActor, polygonInProgress.get() );
+	//	AttachActorToPolygon((*it), polygonInProgress.get());
+	//	//newActor->AnchorToGround( )
+	//	//newActor->groundInfo
+	//	//newActor->groundInfo->edgeStart
+	//}
+
 	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
 	{
 		for( map<TerrainPoint*,std::list<ActorPtr>>::iterator 
 			mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
 		{
-			for( list<PolyPtr>::iterator rit = results.begin(); 
-				rit != results.end(); ++rit )
+			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
 			{
-				AttachActorsToPolygon( (*mit).second, (*rit).get()  );
+				for (list<PolyPtr>::iterator rit = results.begin();
+					rit != results.end(); ++rit)
+				{
+					AttachActorToPolygon((*bit), (*rit).get());
+					//AttachActorsToPolygon((*mit).second, (*rit).get());
+					
+					/*for (auto eit = polygonInProgress->enemies.begin();
+						eit != polygonInProgress->enemies.end(); ++eit)
+					{
+						for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+						{
+							
+						}
+
+					}*/
+				}
+			}
+		}
+	}
+
+	for (list<PolyPtr>::iterator rit = results.begin();
+		rit != results.end(); ++rit)
+	{
+		for (auto eit = (*rit)->enemies.begin(); eit != (*rit)->enemies.end(); ++eit)
+		{
+			for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+			{
+				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
+				resultBrush.AddObject(sp1);
 			}
 		}
 	}
