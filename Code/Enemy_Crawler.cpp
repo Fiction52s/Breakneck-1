@@ -50,6 +50,13 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	sprite.setPosition( gPoint.x, gPoint.y );
 	V2d gNorm = mover->ground->Normal();
 
+	//30 is front
+	//cutObject->ts = ts;
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(61);
+	cutObject->SetSubRectBack(62);
+	
+
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
 	roll = false;

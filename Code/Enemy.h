@@ -421,12 +421,25 @@ struct CuttableObject
 	int totalSeparateFrames;
 	float separateSpeed;
 	bool active;
-	void SetCutRootPos(sf::Vector2f &p_rPos);
+	void SetCutRootPos(sf::Vector2f &p_rPos,
+		bool flipHoriz = false, 
+		bool flipVert = false);
 	void Reset();
 	bool DoneSeparatingCut();
 	void IncrementFrame();
 	void UpdateCutObject( int slowCounter );
+	int rectWidth;
+	int rectHeight;
+
+	bool flipHoriz;
+	bool flipVert;
 	void Draw( sf::RenderTarget *target );
+	Tileset *ts;
+	int tIndexFront;
+	int tIndexBack;
+	void SetSubRectFront( int fIndex );
+	void SetSubRectBack( int bIndex );
+	void SetTileset(Tileset *ts);
 
 private:
 	sf::Vector2f rootPos;

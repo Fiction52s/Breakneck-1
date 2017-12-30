@@ -1581,13 +1581,72 @@ CuttableObject::CuttableObject()
 {
 	Reset();
 	separateSpeed = 1.f;
+	ts = NULL;
+	rectWidth = 32;
+	rectHeight = 32;
+
+	for (int i = 0; i < 2; ++i)
+	{
+		quads[i * 4 + 0].color = Color::Blue;
+		quads[i * 4 + 1].color = Color::Blue;
+		quads[i * 4 + 2].color = Color::Blue;
+		quads[i * 4 + 3].color = Color::Blue;
+	}
 }
 
-void CuttableObject::SetCutRootPos(sf::Vector2f &p_rPos)
+void CuttableObject::SetSubRectFront( int fIndex )
 {
+	if (ts != NULL)
+	{
+		tIndexFront = fIndex;
+		IntRect fr = ts->GetSubRect(tIndexFront);
+		quads[4].texCoords = Vector2f(fr.left, fr.top);
+		quads[5].texCoords = Vector2f(fr.left + fr.width, fr.top);
+		quads[6].texCoords = Vector2f(fr.left + fr.width, fr.top + fr.height);
+		quads[7].texCoords = Vector2f(fr.left, fr.top + fr.height);
+
+		quads[4].color = Color::White;
+		quads[5].color = Color::White;
+		quads[6].color = Color::White;
+		quads[7].color = Color::White;
+	}
+}
+
+void CuttableObject::SetTileset(Tileset *p_ts)
+{
+	ts = p_ts;
+	rectWidth = ts->tileWidth;
+	rectHeight = ts->tileHeight;
+}
+
+void CuttableObject::SetSubRectBack( int bIndex )
+{
+	if (ts != NULL)
+	{
+		tIndexBack = bIndex;
+
+		IntRect fr = ts->GetSubRect(tIndexBack);
+		quads[0].texCoords = Vector2f(fr.left, fr.top);
+		quads[1].texCoords = Vector2f(fr.left + fr.width, fr.top);
+		quads[2].texCoords = Vector2f(fr.left + fr.width, fr.top + fr.height);
+		quads[3].texCoords = Vector2f(fr.left, fr.top + fr.height);
+
+		quads[0].color = Color::White;
+		quads[1].color = Color::White;
+		quads[2].color = Color::White;
+		quads[3].color = Color::White;
+	}
+}
+
+void CuttableObject::SetCutRootPos(sf::Vector2f &p_rPos, bool flipH, bool flipV )
+{
+	flipHoriz = flipH;
+	flipVert = flipV;
 	separateFrame = 0;
 	rootPos = p_rPos;
 	active = true;
+	flipHoriz = false;
+	flipVert = false;
 }
 bool CuttableObject::DoneSeparatingCut()
 {
@@ -1607,30 +1666,46 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 {
 	if (active)
 	{
+		int halfWidth = rectWidth / 2;
+		int halfHeight = rectHeight / 2;
+
 		Vector2f root[2];
 		root[0] = rootPos + splitDir
 			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
 		root[1] = rootPos - splitDir
 			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
 
+		Vector2f temp;
 		for (int i = 0; i < 2; ++i)
 		{
-			quads[i * 4 + 0].position = root[i] + Vector2f(-16, -16);
-			quads[i * 4 + 1].position = root[i] + Vector2f(16, -16);
-			quads[i * 4 + 2].position = root[i] + Vector2f(16, 16);
-			quads[i * 4 + 3].position = root[i] + Vector2f(-16, 16);
+			quads[i * 4 + 0].position = root[i] + Vector2f(-halfWidth, -halfHeight);
+			quads[i * 4 + 1].position = root[i] + Vector2f(halfWidth, -halfHeight);
+			quads[i * 4 + 2].position = root[i] + Vector2f(halfWidth, halfHeight);
+			quads[i * 4 + 3].position = root[i] + Vector2f(-halfWidth, halfHeight);
 
-			quads[i * 4 + 0].color = Color::Blue;
-			quads[i * 4 + 1].color = Color::Blue;
-			quads[i * 4 + 2].color = Color::Blue;
-			quads[i * 4 + 3].color = Color::Blue;
+			/*if (flipHoriz)
+			{
+				temp = quads[i * 4 + 0].position;
+				quads[i * 4 + 0].position = quads[i * 4 + 1].position;
+				quads[i * 4 + 1].position = temp;
+
+				temp = quads[i * 4 + 3].position;
+				quads[i * 4 + 3].position = quads[i * 4 + 2].position;
+				quads[i * 4 + 2].position = temp;
+			}*/
+			
+
+			
 		}
 	}
 }
 
 void CuttableObject::Draw(sf::RenderTarget *target)
 {
-	target->draw(quads, 8, sf::Quads);
+	if( ts != NULL )
+		target->draw(quads, 8, sf::Quads, ts->texture);
+	else
+		target->draw(quads, 8, sf::Quads);
 }
 
 void CuttableObject::IncrementFrame()
