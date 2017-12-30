@@ -421,16 +421,9 @@ struct CuttableObject
 	int totalSeparateFrames;
 	float separateSpeed;
 	bool active;
-	
-	void SetCutRootPos(sf::Vector2f &p_rPos )
-	{
-		rootPos = p_rPos;
-	}
-	bool DoneSeparatingCut()
-	{
-		return active 
-			&& separateFrame == totalSeparateFrames;
-	}
+	void SetCutRootPos(sf::Vector2f &p_rPos);
+	void Reset();
+	bool DoneSeparatingCut();
 	void IncrementFrame();
 	void UpdateCutObject( int slowCounter );
 	void Draw( sf::RenderTarget *target );

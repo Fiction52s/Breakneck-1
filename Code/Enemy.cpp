@@ -1311,6 +1311,8 @@ bool Enemy::LaunchersAreDone()
 
 void Enemy::UpdatePostPhysics()
 {
+
+
 	//cout << "suppress: " << (int)suppressMonitor << endl;
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -1319,15 +1321,19 @@ void Enemy::UpdatePostPhysics()
 	
 	ProcessHit();
 
-	if (numHealth == 0 && LaunchersAreDone() 
+	if (numHealth == 0 && LaunchersAreDone()
 		&& ( ( cutObject != NULL && cutObject->DoneSeparatingCut() ) 
 			|| cutObject == NULL && dead ) )
 	{
 		dead = true;
 		owner->RemoveEnemy(this);
+		return;
 	}
 
-	UpdateSprite();
+	if( !dead )
+		UpdateSprite();
+	else
+		cutObject->UpdateCutObject( slowCounter );
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -1340,8 +1346,8 @@ void Enemy::UpdatePostPhysics()
 		if (cutObject != NULL)
 			cutObject->IncrementFrame();
 		
-
-		FrameIncrement();
+		if( !dead )
+			FrameIncrement();
 	}
 }
 
@@ -1381,6 +1387,17 @@ void Enemy::ConfirmKill()
 {
 	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true);
 	owner->Pause(7);
+
+	dead = true;
+
+	HandleNoHealth();
+
+	if (cutObject != NULL)
+	{
+		cutObject->SetCutRootPos(Vector2f(position.x, position.y));
+	}
+
+	
 }
 
 void Enemy::DrawMinimap(sf::RenderTarget *target)
@@ -1562,30 +1579,52 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 
 CuttableObject::CuttableObject()
 {
+	Reset();
+	separateSpeed = 1.f;
+}
+
+void CuttableObject::SetCutRootPos(sf::Vector2f &p_rPos)
+{
+	separateFrame = 0;
+	rootPos = p_rPos;
+	active = true;
+}
+bool CuttableObject::DoneSeparatingCut()
+{
+	return active
+		&& separateFrame == totalSeparateFrames;
+}
+
+void CuttableObject::Reset()
+{
 	splitDir = Vector2f(1, 0);
 	separateFrame = 0;
 	totalSeparateFrames = 60;
+	active = false;
 }
 
 void CuttableObject::UpdateCutObject( int slowCounter )
 {
-	Vector2f root[2];
-	root[0] = rootPos + splitDir
-		* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
-	root[1] = rootPos - splitDir
-		* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
-
-	for (int i = 0; i < 2; ++i)
+	if (active)
 	{
-		quads[i * 4 + 0].position = root[i] + Vector2f(-16, -16);
-		quads[i * 4 + 1].position = root[i] + Vector2f(16, -16);
-		quads[i * 4 + 2].position = root[i] + Vector2f(16, 16);
-		quads[i * 4 + 3].position = root[i] + Vector2f(-16, 16);
+		Vector2f root[2];
+		root[0] = rootPos + splitDir
+			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
+		root[1] = rootPos - splitDir
+			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
 
-		quads[i * 4 + 0].color = Color::Blue;
-		quads[i * 4 + 1].color = Color::Blue;
-		quads[i * 4 + 2].color = Color::Blue;
-		quads[i * 4 + 3].color = Color::Blue;
+		for (int i = 0; i < 2; ++i)
+		{
+			quads[i * 4 + 0].position = root[i] + Vector2f(-16, -16);
+			quads[i * 4 + 1].position = root[i] + Vector2f(16, -16);
+			quads[i * 4 + 2].position = root[i] + Vector2f(16, 16);
+			quads[i * 4 + 3].position = root[i] + Vector2f(-16, 16);
+
+			quads[i * 4 + 0].color = Color::Blue;
+			quads[i * 4 + 1].color = Color::Blue;
+			quads[i * 4 + 2].color = Color::Blue;
+			quads[i * 4 + 3].color = Color::Blue;
+		}
 	}
 }
 
@@ -1596,8 +1635,15 @@ void CuttableObject::Draw(sf::RenderTarget *target)
 
 void CuttableObject::IncrementFrame()
 {
-	if (separateFrame < totalSeparateFrames)
+	if (active)
 	{
-		++separateFrame;
+		if (separateFrame < totalSeparateFrames)
+		{
+			++separateFrame;
+		}
+		else
+		{
+			active = false;
+		}
 	}
 }

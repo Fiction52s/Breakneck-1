@@ -122,7 +122,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	actionLength[DASH] = 7 * crawlAnimationFactor;
 	actionLength[BURROW] = 20;//3 * crawlAnimationFactor;
 	actionLength[UNDERGROUND] = 20;//3 * crawlAnimationFactor;
-	actionLength[DYING] = 1;//3 * crawlAnimationFactor;
+	//actionLength[DYING] = 1;//3 * crawlAnimationFactor;
 
 	action = UNDERGROUND;
 	frame = actionLength[UNDERGROUND];
@@ -302,9 +302,6 @@ void Crawler::ProcessState()
 				clockwise = !clockwise;
 			}
 			break;
-		case DYING:
-			assert(0);
-			break;
 		}
 	}
 
@@ -318,8 +315,6 @@ void Crawler::ProcessState()
 	case DASH:
 		break;
 	case BURROW:
-		break;
-	case DYING:
 		break;
 	}
 
@@ -357,15 +352,16 @@ void Crawler::ProcessState()
 		break;
 	case BURROW:
 		break;
-	case DYING:
-		break;
 	}
 }
 
 void Crawler::UpdateEnemyPhysics()
 {
-	mover->Move(slowMultiple);
-	position = mover->physBody.globalPosition;
+	if (!dead)
+	{
+		mover->Move(slowMultiple);
+		position = mover->physBody.globalPosition;
+	}
 }
 
 void Crawler::FrameIncrement()
@@ -420,9 +416,9 @@ void Crawler::Draw(sf::RenderTarget *target )
 	}
 	else
 	{
-		target->draw( botDeathSprite );
-		
-		target->draw( topDeathSprite );
+		//target->draw( botDeathSprite );
+		cutObject->Draw(target);
+		//target->draw( topDeathSprite );
 	}
 }
 
@@ -433,40 +429,16 @@ void Crawler::IHitPlayer( int index )
 
 void Crawler::HandleNoHealth()
 {
-	int x = 5;
+	//cutObject->SetCutRootPos(Vector2f(position.x, position.y));
+	//action = DYING;
+	//dead = true;
+	//frame = 0;
+	//int x = 5;
 }
 
 void Crawler::UpdateSprite()
 {
-	if( dead )
-	{
-		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
-		botDeathSprite.setTexture( *ts->texture );
-		IntRect ir = ts->GetSubRect( 62 );
-		if( !clockwise )
-		{
-			ir = IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
-		}
-
-		botDeathSprite.setTextureRect( ir );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-		botDeathSprite.setRotation( sprite.getRotation() );
-
-		topDeathSprite.setTexture( *ts->texture );
-		ir = ts->GetSubRect( 61 );
-		if( !clockwise )
-		{
-			ir = IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
-		}
-		topDeathSprite.setTextureRect( ir );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-		topDeathSprite.setRotation( sprite.getRotation() );
-	}
-	else
+	if( !dead )
 	{
 		//cout << "response" << endl;
 		double spaceNeeded = 0;
