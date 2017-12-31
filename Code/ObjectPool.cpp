@@ -71,6 +71,8 @@ PoolMember *ObjectPool::ActivatePoolMember( bool front )
 
 void ObjectPool::DeactivatePoolMember(PoolMember *pm)
 {
+	DeactivateMember( pm );
+
 	if (activeListStart == NULL)
 	{
 		assert(0);

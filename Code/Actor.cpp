@@ -18243,6 +18243,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	else
 	{
+		flashFrames = owner->pauseFrames;
 		target->draw(*sprite, &sh);
 		if (showSword)
 		{
@@ -21272,7 +21273,7 @@ void Actor::ConfirmEnemyNoKill( Enemy *e )
 
 void Actor::ConfirmHit( EnemyParams *hitParams )
 {
-	owner->cam.SetRumble(3, 3, 5);
+	//owner->cam.SetRumble(3, 3, 5);
 
 	if (ground == NULL && velocity.y > 0)
 	{
@@ -21319,7 +21320,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 
 
 	flashColor = c;	
-	flashFrames = hitParams->flashFrames;
+	//flashFrames = hitParams->flashFrames + 1;
 	for( int i = 0; i < 3; ++i )
 	{
 		swordShaders[i].setUniform( "toColor", ColorGL( flashColor ) );

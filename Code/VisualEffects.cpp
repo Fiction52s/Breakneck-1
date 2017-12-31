@@ -46,6 +46,12 @@ void EffectPool::Reset()
 	ResetPool();
 }
 
+void EffectPool::DeactivateMember(PoolMember *pm)
+{
+	EffectInstance *ei = (EffectInstance*)pm;
+	ei->Clear();
+}
+
 void EffectPool::Update()
 {
 	switch (eType)

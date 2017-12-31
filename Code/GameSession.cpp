@@ -6223,21 +6223,38 @@ int GameSession::Run()
 						p->flashFrames--;
 				}
 				
-				//view fx that are outside of hitlag pausing
-				Enemy *currFX = activeEnemyList;
-				while( currFX != NULL )
+				for (int i = 0; i < EffectLayer::Count; ++i)
 				{
-					if( currFX->type == EnemyType::EN_BASICEFFECT )
+					Enemy *& fxList = effectLists[i];
+					BasicEffect *c = (BasicEffect*)fxList;
+					BasicEffect *tNext;
+					while (c != NULL)
 					{
-						BasicEffect * be = (BasicEffect*)currFX;
-						if( be->pauseImmune )
+						tNext = (BasicEffect*)c->next;
+						if (c->pauseImmune)
 						{
-							currFX->UpdatePostPhysics();
+							c->UpdatePostPhysics();
 						}
+						c = tNext;
 					}
-					
-					currFX = currFX->next;
 				}
+				
+
+				////view fx that are outside of hitlag pausing
+				//Enemy *currFX = activeEnemyList;
+				//while( currFX != NULL )
+				//{
+				//	if( currFX->type == EnemyType::EN_BASICEFFECT )
+				//	{
+				//		BasicEffect * be = (BasicEffect*)currFX;
+				//		if( be->pauseImmune )
+				//		{
+				//			currFX->UpdatePostPhysics();
+				//		}
+				//	}
+				//	
+				//	currFX = currFX->next;
+				//}
 
 				UpdateFade();
 				//powerWheel->UpdateHide();

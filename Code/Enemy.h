@@ -421,12 +421,18 @@ struct CuttableObject
 	int totalSeparateFrames;
 	float separateSpeed;
 	bool active;
-	void SetCutRootPos(sf::Vector2f &p_rPos,
-		bool flipHoriz = false, 
-		bool flipVert = false);
+	void SetCutRootPos(sf::Vector2f &p_rPos);
 	void Reset();
 	bool DoneSeparatingCut();
 	void IncrementFrame();
+	void SetFlipHoriz(bool h)
+	{
+		flipHoriz = h;
+	}
+	void SetFlipVert(bool v)
+	{
+		flipVert = v;
+	}
 	void UpdateCutObject( int slowCounter );
 	int rectWidth;
 	int rectHeight;
@@ -440,6 +446,7 @@ struct CuttableObject
 	void SetSubRectFront( int fIndex );
 	void SetSubRectBack( int bIndex );
 	void SetTileset(Tileset *ts);
+	int rotateAngle;
 
 private:
 	sf::Vector2f rootPos;

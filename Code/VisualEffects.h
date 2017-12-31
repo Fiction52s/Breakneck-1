@@ -79,7 +79,7 @@ struct EffectPool : ObjectPool
 	EffectPool( EffectType et, int maxNumFX, float depth = 1.f );
 	void Reset();
 	void Update();
-	
+	void DeactivateMember(PoolMember *pm);
 	void SetTileset(Tileset *ts);
 	virtual EffectInstance * ActivateEffect( EffectInstance *params );
 	void Draw( sf::RenderTarget *target );

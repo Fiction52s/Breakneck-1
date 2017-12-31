@@ -21,8 +21,9 @@ using namespace sf;
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
 	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
+	origCW = cw;
 	numHealth = 4;
-	clockwise = true;
+	//clockwise = cw;
 	maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
 	framesUntilBurrow = maxFramesUntilBurrow;
@@ -56,13 +57,14 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	cutObject->SetSubRectFront(61);
 	cutObject->SetSubRectBack(62);
 	
+	
 
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
 	roll = false;
 	position = gPoint + gNorm * height / 2.0;
 	
-	receivedHit = NULL;
+	//receivedHit = NULL;
 
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
@@ -137,7 +139,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 void Crawler::ResetEnemy()
 {
-
+	clockwise = origCW;
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
 	numHealth = 4;
@@ -436,6 +438,10 @@ void Crawler::IHitPlayer( int index )
 
 void Crawler::HandleNoHealth()
 {
+	
+	//cutObject->flipHoriz = !clockwise;
+	cutObject->SetFlipHoriz(!clockwise);
+	cutObject->rotateAngle = sprite.getRotation();
 	//cutObject->SetCutRootPos(Vector2f(position.x, position.y));
 	//action = DYING;
 	//dead = true;

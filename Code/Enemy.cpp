@@ -1290,6 +1290,8 @@ void Enemy::UpdatePrePhysics()
 	if ( dead )
 		return;
 
+	receivedHit = NULL;
+
 	ProcessState();
 
 	for (int i = 0; i < numLaunchers; ++i)
@@ -1373,19 +1375,19 @@ void Enemy::ProcessHit()
 			ConfirmHitNoKill();
 		}
 
-		receivedHit = NULL;
+		//receivedHit = NULL;
 	}
 }
 
 void Enemy::ConfirmHitNoKill()
 {
-	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_hitSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
+	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_hitSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
 	owner->Pause(5);
 }
 
 void Enemy::ConfirmKill()
 {
-	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true);
+	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, position, true, 0, 10, 2, true);
 	owner->Pause(7);
 
 	dead = true;
@@ -1638,15 +1640,11 @@ void CuttableObject::SetSubRectBack( int bIndex )
 	}
 }
 
-void CuttableObject::SetCutRootPos(sf::Vector2f &p_rPos, bool flipH, bool flipV )
+void CuttableObject::SetCutRootPos(sf::Vector2f &p_rPos )
 {
-	flipHoriz = flipH;
-	flipVert = flipV;
 	separateFrame = 0;
 	rootPos = p_rPos;
 	active = true;
-	flipHoriz = false;
-	flipVert = false;
 }
 bool CuttableObject::DoneSeparatingCut()
 {
@@ -1660,12 +1658,27 @@ void CuttableObject::Reset()
 	separateFrame = 0;
 	totalSeparateFrames = 60;
 	active = false;
+	rotateAngle = 0;
+	flipHoriz = false;
+	flipVert = false;
 }
 
 void CuttableObject::UpdateCutObject( int slowCounter )
 {
 	if (active)
 	{
+		Transform sprT;
+		sprT.rotate(rotateAngle);
+		
+		if (flipHoriz)
+		{
+			sprT.scale(-1, 1);
+		}
+		if (flipVert)
+		{
+			sprT.scale(1, -1);
+		}
+
 		int halfWidth = rectWidth / 2;
 		int halfHeight = rectHeight / 2;
 
@@ -1678,10 +1691,10 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 		Vector2f temp;
 		for (int i = 0; i < 2; ++i)
 		{
-			quads[i * 4 + 0].position = root[i] + Vector2f(-halfWidth, -halfHeight);
-			quads[i * 4 + 1].position = root[i] + Vector2f(halfWidth, -halfHeight);
-			quads[i * 4 + 2].position = root[i] + Vector2f(halfWidth, halfHeight);
-			quads[i * 4 + 3].position = root[i] + Vector2f(-halfWidth, halfHeight);
+			quads[i * 4 + 0].position = root[i] + sprT.transformPoint(Vector2f(-halfWidth, -halfHeight));
+			quads[i * 4 + 1].position = root[i] + sprT.transformPoint(Vector2f(halfWidth, -halfHeight));
+			quads[i * 4 + 2].position = root[i] + sprT.transformPoint(Vector2f(halfWidth, halfHeight));
+			quads[i * 4 + 3].position = root[i] + sprT.transformPoint( Vector2f(-halfWidth, halfHeight) );
 
 			/*if (flipHoriz)
 			{
