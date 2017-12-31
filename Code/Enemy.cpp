@@ -1030,6 +1030,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	numLaunchers = 0;
+	launchers = NULL;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	numHealth = 4;
@@ -1382,13 +1384,25 @@ void Enemy::ProcessHit()
 void Enemy::ConfirmHitNoKill()
 {
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_hitSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
+	//owner->cam.SetRumble(1, 1, 5);
 	owner->Pause(5);
+	//owner->cam.SetRumble(3, 3, 5);
 }
 
 void Enemy::ConfirmKill()
 {
 	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, position, true, 0, 10, 2, true);
 	owner->Pause(7);
+	owner->cam.SetRumble(1, 1, 7 );
+	if (hasMonitor)
+	{
+		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position, true);
+	}
+	else
+	{
+		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position, false);
+	}
+	
 
 	dead = true;
 
@@ -1582,7 +1596,7 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 CuttableObject::CuttableObject()
 {
 	Reset();
-	separateSpeed = 1.f;
+	separateSpeed = -1.f;
 	ts = NULL;
 	rectWidth = 32;
 	rectHeight = 32;

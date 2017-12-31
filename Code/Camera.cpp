@@ -244,11 +244,12 @@ void Camera::UpdateRumble()
 		rumbling = false;
 		return;
 	}
-
-	int f = ( rumbleFrame % 3 ) - 1;
+	//this needs to be random?
+	int fx = ( rand() % 3 ) - 1;
+	int fy = (rand() % 3) - 1;
 	
-	rX = f * rumbleX;
-	rY = f * rumbleY;
+	rX = fx * rumbleX;
+	rY = fy * rumbleY;
 
 	//pos += sf::Vector2f( rX, rY );
 

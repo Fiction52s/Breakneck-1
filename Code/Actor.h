@@ -112,6 +112,7 @@ struct AbsorbParticles
 		int frame;
 		int tileIndex;
 		sf::Vector2f velocity;
+		
 		AbsorbParticles *parent;
 
 		SingleEnergyParticle *next;
@@ -122,10 +123,12 @@ struct AbsorbParticles
 
 	AbsorbParticles();
 	~AbsorbParticles();
+	bool hasMonitor;
 	void Reset();
 	sf::Vertex *va;
 	int maxNumParticles;
 	void Activate( Actor *playerTarget, int storedHits, V2d &pos,
+		bool monitorActive = false,
 		float startAngle = 0 );
 	void Update();
 	void Draw(sf::RenderTarget *rt);

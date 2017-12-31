@@ -617,16 +617,28 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & fairAList = 
 			owner->hitboxManager->GetHitboxList("fairahitboxes");
 
+		std::map<int, std::list<CollisionBox>> & dairAList =
+			owner->hitboxManager->GetHitboxList("dairahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & uairAList =
+			owner->hitboxManager->GetHitboxList("uairahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adUpAList =
+			owner->hitboxManager->GetHitboxList("airdashupahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adDownAList =
+			owner->hitboxManager->GetHitboxList("airdashdownahitboxes");
+
 		fairHitboxes = new CollisionBody(16, fairAList, currHitboxInfo );
-		uairHitboxes = NULL;
-		dairHitboxes = NULL;
+		uairHitboxes = new CollisionBody(16, uairAList, currHitboxInfo);
+		dairHitboxes = new CollisionBody(16, dairAList, currHitboxInfo);
 		standHitboxes = NULL;
 		dashHitboxes = NULL;
 		wallHitboxes = NULL;
 		steepClimbHitboxes = NULL;
 		steepSlideHitboxes = NULL;
-		diagUpHitboxes = NULL;
-		diagDownHitboxes = NULL;
+		diagUpHitboxes = new CollisionBody(12, adUpAList, currHitboxInfo);
+		diagDownHitboxes = new CollisionBody(12, adDownAList, currHitboxInfo);
 		shockwaveHitboxes = NULL;
 		grindHitboxes = NULL;
 		/*for( int j = 0; j < 16; ++j )
@@ -22834,13 +22846,13 @@ AbsorbParticles::~AbsorbParticles()
 }
 
 void AbsorbParticles::Activate( Actor *p_playerTarget, int storedHits, V2d &p_pos,
-	float p_startAngle )
+	bool p_hasMonitor, float p_startAngle )
 {
 	playerTarget = p_playerTarget;
 	float startSpeed = 4;
 
 	int numProjectiles = storedHits;
-
+	hasMonitor = p_hasMonitor;
 	pos = Vector2f(round(p_pos.x), round(p_pos.y));
 	startAngle = p_startAngle;
 
@@ -22848,6 +22860,23 @@ void AbsorbParticles::Activate( Actor *p_playerTarget, int storedHits, V2d &p_po
 	t.rotate(p_startAngle / PI * 180.f );
 
 	Vector2f vel(0, -startSpeed);
+
+	Vector2f pPos;
+	if (hasMonitor)
+	{
+		pPos = playerTarget->owner->preScreenTex->mapPixelToCoords(
+			Vector2i(200, 200));
+	}
+	else
+	{
+		pPos = Vector2f(playerTarget->position);
+	}
+
+	if (numProjectiles == 1)
+	{
+		t = Transform::Identity;
+		vel = normalize(pPos - Vector2f(p_pos)) * startSpeed;
+	}
 	//Vector2f currVel = vel;
 
 	SingleEnergyParticle *sp = NULL;
@@ -22892,17 +22921,31 @@ void AbsorbParticles::SingleEnergyParticle::Clear()
 void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 {
 	IntRect sub;
-	sub.width = 16;
-	sub.height = 16;
+	
 
 	sf::Vertex *va = parent->va;
 
-	
+	if (parent->hasMonitor)
+	{
+		sub.width = 32;
+		sub.height = 32;
+		va[tileIndex * 4 + 0].color = Color::Black;
+		va[tileIndex * 4 + 1].color = Color::Black;
+		va[tileIndex * 4 + 2].color = Color::Black;
+		va[tileIndex * 4 + 3].color = Color::Black;
+
+	}
+	else
+	{
+		sub.width = 12;
+		sub.height = 12;
+		va[tileIndex * 4].color = Color::Red;
+		va[tileIndex * 4 + 1].color = Color::Blue;
+		va[tileIndex * 4 + 2].color = Color::Green;
+		va[tileIndex * 4 + 3].color = Color::Cyan;
+	}
 		
-	va[tileIndex * 4].color = Color::Red;
-	va[tileIndex * 4 + 1].color = Color::Blue;
-	va[tileIndex * 4 + 2].color = Color::Green;
-	va[tileIndex * 4 + 3].color = Color::Cyan;
+	
 
 	va[tileIndex * 4].position = pos + Vector2f(-sub.width/2, -sub.height/2);
 	va[tileIndex * 4+1].position = pos + Vector2f(sub.width/2, -sub.height/2);
@@ -22922,10 +22965,22 @@ void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f 
 
 bool AbsorbParticles::SingleEnergyParticle::Update()
 {
+	assert(parent->playerTarget != NULL);
+
 	float accel = 1;
 	V2d playerPos = parent->playerTarget->position;
-	Vector2f pPos(playerPos);
-	assert(parent->playerTarget != NULL);
+	
+	Vector2f pPos;
+	if (parent->hasMonitor)
+	{
+		pPos = parent->playerTarget->owner->preScreenTex->mapPixelToCoords(
+			Vector2i(100, 100));
+	}
+	else
+	{
+		pPos = Vector2f(playerPos);
+	}
+	
 	pos += velocity;
 	
 	if (length(velocity) > parent->maxSpeed)
@@ -22963,7 +23018,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	//velocity = (length(velocity) * normalize(pPos - pos)) * blahFactor + (1.f - blahFactor) * velocity;
 
 
-	if (length(pPos - pos) < 16.f )
+	if (length(pPos - pos) < 16.f && frame > 30 )
 	{
 		return false;
 	}
@@ -22990,6 +23045,8 @@ AbsorbParticles::SingleEnergyParticle *AbsorbParticles::GetInactiveParticle()
 
 void AbsorbParticles::DeactivateParticle(AbsorbParticles::SingleEnergyParticle *sp)
 {
+	sp->Clear();
+
 	if (activeList == NULL)
 		assert(0);
 

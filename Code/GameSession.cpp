@@ -797,6 +797,12 @@ void GameSession::Cleanup()
 		absorbParticles = NULL;
 	}
 
+	if (absorbDarkParticles != NULL)
+	{
+		delete absorbDarkParticles;
+		absorbDarkParticles = NULL;
+	}
+
 	if (testPar != NULL)
 	{
 		delete testPar;
@@ -5003,6 +5009,7 @@ bool GameSession::Load()
 	eHitParamsMan = new EnemyParamsManager;
 
 	absorbParticles = new AbsorbParticles;
+	absorbDarkParticles = new AbsorbParticles;
 
 	soundNodeList = new SoundNodeList(10);
 	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().volume);
@@ -6238,6 +6245,8 @@ int GameSession::Run()
 						c = tNext;
 					}
 				}
+
+				cam.UpdateRumble();
 				
 
 				////view fx that are outside of hitlag pausing
@@ -6401,6 +6410,7 @@ int GameSession::Run()
 					powerRing->Update();
 
 				absorbParticles->Update();
+				absorbDarkParticles->Update();
 
 				UpdateEffects();
 
@@ -8117,6 +8127,8 @@ int GameSession::Run()
 
 		DrawEffects(EffectLayer::UI_FRONT);
 
+		absorbDarkParticles->Draw(preScreenTex);
+
 		preScreenTex->display();
 
 		const Texture &preTex0 = preScreenTex->getTexture();
@@ -8997,6 +9009,7 @@ void GameSession::Init()
 	edges = NULL;
 
 	absorbParticles = NULL;
+	absorbDarkParticles = NULL;
 }
 
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
@@ -9766,6 +9779,7 @@ void GameSession::RestartLevel()
 	}
 
 	absorbParticles->Reset();
+	absorbDarkParticles->Reset();
 	//player->Respawn();
 	
 	cam.pos.x = GetPlayer( 0 )->position.x;
