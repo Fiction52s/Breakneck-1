@@ -734,19 +734,24 @@ struct Actor : QuadTreeCollider,
 	bool IntersectMySlowboxes(CollisionBody *cb,
 		int cbFrame );
 
+	sf::Vector2f fairSwordOffset[3];
+	sf::Vector2f dairSwordOffset[3];
+	sf::Vector2f diagUpSwordOffset[3];
+	sf::Vector2f diagDownSwordOffset[3];
+
 	HitboxInfo *currHitboxInfo;
-	CollisionBody *fairHitboxes;
-	CollisionBody *uairHitboxes;
-	CollisionBody *dairHitboxes;
-	CollisionBody *standHitboxes;
-	CollisionBody *dashHitboxes;
-	CollisionBody *wallHitboxes;
-	CollisionBody *steepClimbHitboxes;
-	CollisionBody *steepSlideHitboxes;
-	CollisionBody *diagUpHitboxes;
-	CollisionBody *diagDownHitboxes;
+	CollisionBody *fairHitboxes[3];
+	CollisionBody *uairHitboxes[3];
+	CollisionBody *dairHitboxes[3];
+	CollisionBody *standHitboxes[3];
+	CollisionBody *dashHitboxes[3];
+	CollisionBody *wallHitboxes[3];
+	CollisionBody *steepClimbHitboxes[3];
+	CollisionBody *steepSlideHitboxes[3];
+	CollisionBody *diagUpHitboxes[3];
+	CollisionBody *diagDownHitboxes[3];
 	CollisionBody *shockwaveHitboxes;
-	CollisionBody *grindHitboxes;
+	CollisionBody *grindHitboxes[3];
 	//CollisionBox grindHitbox;
 
 

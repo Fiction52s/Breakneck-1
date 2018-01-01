@@ -1191,6 +1191,8 @@ void Enemy::Reset()
 
 	ResetEnemy();
 
+	UpdateHitboxes();
+
 	//cout << "resetting enemy!" << endl;
 }
 

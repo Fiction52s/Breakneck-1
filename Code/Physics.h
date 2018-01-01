@@ -181,8 +181,10 @@ struct CollisionBody
 	sf::Rect<double> GetAABB( int frame );
 	bool Intersects( int frame, CollisionBody *other, 
 		int otherFrame );
+	void OffsetFrame(int frame, sf::Vector2f &offset);
+	void OffsetAllFrames(sf::Vector2f &offset);
 	HitboxInfo *hitboxInfo;
-	//bool Intersects( int frame, CollisionBox *box);
+	bool Intersects( int frame, CollisionBox *box);
 private:
 	int numFrames;
 	

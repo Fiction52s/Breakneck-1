@@ -74,8 +74,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->hitlagFrames = 6;
+	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
 	hurtBody = new CollisionBody(1);
@@ -200,7 +200,7 @@ void Crawler::ResetEnemy()
 void Crawler::UpdateHitboxes()
 {
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	if( mover->ground != NULL )
 	{
 		V2d gn = ground->Normal();
@@ -214,15 +214,16 @@ void Crawler::UpdateHitboxes()
 
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
-		if( groundSpeed > 0 )
+		double maxExtraKB = 15.0;
+		if( mover->groundSpeed > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
+			hitboxInfo->knockback = 15 + max( abs( mover->groundSpeed )/2, maxExtraKB);
 		}
 		else
 		{
 			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-			hitboxInfo->knockback = 15;
+			hitboxInfo->knockback = 15 + max(abs(mover->groundSpeed)/2, maxExtraKB);
 		}
 	}
 	else
@@ -313,7 +314,6 @@ void Crawler::ProcessState()
 			break;
 		}
 	}
-
 
 	switch (action)
 	{

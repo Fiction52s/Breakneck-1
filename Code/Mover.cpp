@@ -210,7 +210,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 
 		//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
 
-		if( ground == e )
+		if (ground == e || e->edgeType == Edge::BORDER )
 			return;
 
 		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )

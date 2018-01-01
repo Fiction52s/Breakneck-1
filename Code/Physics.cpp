@@ -2248,6 +2248,32 @@ CollisionBody::CollisionBody(int p_numFrames)
 	memset(collisionBoxLists, 0, sizeof(collisionBoxLists) * numFrames);
 }
 
+void CollisionBody::OffsetFrame(int frame, Vector2f &offset)
+{
+	auto *li = GetCollisionBoxes(0);
+	for (auto it = li->begin(); it != li->end(); ++it)
+	{
+		(*it).offset += V2d( offset );
+	}
+}
+
+void CollisionBody::OffsetAllFrames(Vector2f &offset)
+{
+	for (int i = 0; i < numFrames; ++i)
+	{
+		auto boxList = collisionBoxLists[i];
+		if (boxList == NULL)
+			continue;
+		else
+		{
+			for (auto it = boxList->begin(); it != boxList->end(); ++it)
+			{
+				(*it).offset += V2d(offset);
+			}
+		}
+	}
+}
+
 CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hListMap,
 	HitboxInfo *hInfo )
 	:numFrames(p_numFrames), hitboxInfo( hInfo )
@@ -2398,4 +2424,23 @@ bool CollisionBody::Intersects( int frame, CollisionBody *other, int otherFrame 
 	return false;
 }
 
+bool CollisionBody::Intersects( int frame, CollisionBox *box)
+{
+	if (!GetAABB(frame).intersects(box->GetAABB()) )
+		return false;
+
+	list<CollisionBox> *myList = GetCollisionBoxes(frame);
+	if (myList == NULL )
+		return false;
+
+	for (auto it = myList->begin(); it != myList->end(); ++it)
+	{
+		if ((*it).Intersects(*box))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 

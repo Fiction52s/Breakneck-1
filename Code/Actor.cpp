@@ -614,6 +614,24 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 		//for( int j = 4; j < 10; ++j )
 
+		diagDownSwordOffset[0] = Vector2f(32, 24);
+		diagDownSwordOffset[1] = Vector2f(32, 24);
+		diagDownSwordOffset[2] = Vector2f(32, 24);
+		//Vector2f(16, 32)
+		//Vector2f(16, 64)
+
+		Vector2i offsets[3];//( 0, 0 );
+		offsets[0] = Vector2i(40, -32);
+		
+
+		diagUpSwordOffset[0] = Vector2f(40, -32);
+		diagUpSwordOffset[1] = Vector2f(40, -32);
+		diagUpSwordOffset[2] = Vector2f(40, -32);
+		/*offsets[1] = Vector2i(16, -40);
+		offsets[2] = Vector2i(32, -48);*/
+
+		
+
 		std::map<int, std::list<CollisionBox>> & fairAList = 
 			owner->hitboxManager->GetHitboxList("fairahitboxes");
 
@@ -629,18 +647,31 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & adDownAList =
 			owner->hitboxManager->GetHitboxList("airdashdownahitboxes");
 
-		fairHitboxes = new CollisionBody(16, fairAList, currHitboxInfo );
-		uairHitboxes = new CollisionBody(16, uairAList, currHitboxInfo);
-		dairHitboxes = new CollisionBody(16, dairAList, currHitboxInfo);
-		standHitboxes = NULL;
-		dashHitboxes = NULL;
-		wallHitboxes = NULL;
-		steepClimbHitboxes = NULL;
-		steepSlideHitboxes = NULL;
-		diagUpHitboxes = new CollisionBody(12, adUpAList, currHitboxInfo);
-		diagDownHitboxes = new CollisionBody(12, adDownAList, currHitboxInfo);
+		fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo );
+		uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
+		dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
+		standHitboxes[0] = NULL;
+		dashHitboxes[0] = NULL;
+		wallHitboxes[0] = NULL;
+		steepClimbHitboxes[0] = NULL;
+		steepSlideHitboxes[0] = NULL;
+		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
+		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
+
+		for (int i = 0; i < 1; ++i)
+		{
+			diagDownHitboxes[i]->OffsetAllFrames(diagDownSwordOffset[i]);
+			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
+		}
+		
+
+		//up
+		
+
 		shockwaveHitboxes = NULL;
-		grindHitboxes = NULL;
+		grindHitboxes[0] = NULL;
+
+
 		/*for( int j = 0; j < 16; ++j )
 		{
 			if (fairAList.count(j) == 0)
@@ -828,8 +859,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		cb.rh = 90;
 		cb.offset.x = 0;
 		cb.offset.y = 0;
-		grindHitboxes = new CollisionBody(1);
-		grindHitboxes->AddCollisionBox(0, cb);
+		grindHitboxes[0] = new CollisionBody(1);
+		grindHitboxes[0]->AddCollisionBox(0, cb);
 		//grindHitboxes[0] = new list<CollisionBox>;
 		//grindHitboxes[0]->push_back( cb );
 		
@@ -857,8 +888,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//CreateAura(auraPoints[DOUBLE], tileset[DOUBLE]);
 		actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
 		actionLength[FAIR] = 8 * 2;
-		actionLength[DIAGUPATTACK] = 14 * 2;
-		actionLength[DIAGDOWNATTACK] = 15 * 2;
+		actionLength[DIAGUPATTACK] = 11 * 2;
+		actionLength[DIAGDOWNATTACK] = 11 * 2;
 		actionLength[JUMP] = 2;
 		actionLength[SEQ_WAIT] = 2;
 		actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
@@ -1096,13 +1127,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		b.type = b.Physics;
 
-		
+		//hurtboxMap[STAND] = new CollisionBody(1);
 		hurtBody.offset.x = 0;
 		hurtBody.offset.y = 0;
 		hurtBody.isCircle = false;
 		hurtBody.rw = 7;//10;
 		hurtBody.rh = 15;//normalHeight - 5;//normalHeight;
 		hurtBody.type = CollisionBox::BoxType::Hurt;
+		//hurtboxMap[STAND]->AddCollisionBox(0, hurtBody);
 
 		
 
@@ -2169,7 +2201,7 @@ void Actor::UpdatePrePhysics()
 		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
-		owner->Pause( 6 );
+		owner->Pause( hitlagFrames );
 
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HURT] );
 
@@ -2179,6 +2211,16 @@ void Actor::UpdatePrePhysics()
 		//cout << "damaging player with: " << receivedHit->damage << endl;
 		int dmgRet = 0;//owner->powerRing->Drain(receivedHit->damage);
 		//bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
+
+		if (ground != NULL)
+		{
+			ground = NULL;
+			action = JUMP;
+			frame = 1;
+			//velocity = V2d(0, 0);
+			//velocity = normalize( ground->v)
+		}
+
 		if( true )
 		{
 			if( grindEdge != NULL )
@@ -2236,26 +2278,6 @@ void Actor::UpdatePrePhysics()
 						hurtBody.isCircle = false;
 						hurtBody.rw = 7;
 						hurtBody.rh = normalHeight;
-						/*action = LAND;
-						frame = 0;
-						
-
-						if( currInput.LRight() )
-						{
-							facingRight = true;
-							if( groundSpeed < 0 )
-							{
-								groundSpeed = 0;
-							}
-						}
-						else if( currInput.LLeft() )
-						{
-							facingRight = false;
-							if( groundSpeed > 0 )
-							{
-								groundSpeed = 0;
-							}
-						}*/
 
 						action = GROUNDHITSTUN;
 						frame = 0;
@@ -6589,7 +6611,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLATTACK:
 		{
-			SetCurrHitboxes(wallHitboxes, frame);
+			SetCurrHitboxes(wallHitboxes[0], frame);
 
 			if( frame == 0 )
 			{
@@ -6619,7 +6641,7 @@ void Actor::UpdatePrePhysics()
 			CheckHoldJump();
 
 			
-			SetCurrHitboxes(fairHitboxes, frame);
+			SetCurrHitboxes(fairHitboxes[0], frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6640,7 +6662,7 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			SetCurrHitboxes(dairHitboxes, frame);
+			SetCurrHitboxes(dairHitboxes[0], frame);
 
 			if( frame == 0 && slowCounter == 1 )
 			{
@@ -6668,7 +6690,7 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			SetCurrHitboxes(uairHitboxes, frame);
+			SetCurrHitboxes(uairHitboxes[0], frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6684,7 +6706,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGUPATTACK:
 		{
-			SetCurrHitboxes(diagUpHitboxes, frame);
+			SetCurrHitboxes(diagUpHitboxes[0], frame / 2);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6703,7 +6725,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGDOWNATTACK:
 		{
-			SetCurrHitboxes(diagDownHitboxes, frame);
+			SetCurrHitboxes(diagDownHitboxes[0], frame / 2);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -7002,7 +7024,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			SetCurrHitboxes(standHitboxes, frame);
+			SetCurrHitboxes(standHitboxes[0], frame);
 
 			if( frame == 0 && slowCounter == slowMultiple )
 			{
@@ -7016,7 +7038,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMBATTACK:
 		{
-			SetCurrHitboxes(steepClimbHitboxes, frame);
+			SetCurrHitboxes(steepClimbHitboxes[0], frame);
 
 			if( frame == 0 )
 			{
@@ -7082,7 +7104,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDEATTACK:
 		{
-			SetCurrHitboxes(steepSlideHitboxes, frame);
+			SetCurrHitboxes(steepSlideHitboxes[0], frame);
 
 			if( frame == 0 )
 			{
@@ -7281,13 +7303,13 @@ void Actor::UpdatePrePhysics()
 			//if( grindHitboxes.count( frame ) > 0 )
 			if( abs( grindSpeed ) > dSpeed )
 			{
-				SetCurrHitboxes(grindHitboxes, 0);
+				SetCurrHitboxes(grindHitboxes[0], 0);
 			}
 			break;
 		}
 	case GRINDSLASH:
 		{
-			SetCurrHitboxes(uairHitboxes, frame);
+			SetCurrHitboxes(uairHitboxes[0], frame);
 		}
 		break;
 	case GRAVREVERSE:
@@ -7475,24 +7497,24 @@ void Actor::UpdatePrePhysics()
 					{
 						velocity.x = min( startAirDashVel.x, -aSpeed );
 					}
-					facingRight = false;
-				
+facingRight = false;
+
 				}
-				else if( currInput.LRight() )
+				else if (currInput.LRight())
 				{
-					if( startAirDashVel.x < 0 )
+					if (startAirDashVel.x < 0)
 					{
 						startAirDashVel.x = 0;
 						velocity.x = aSpeed;
 					}
 					else
 					{
-						velocity.x = max( startAirDashVel.x, aSpeed );
+						velocity.x = max(startAirDashVel.x, aSpeed);
 					}
 					facingRight = true;
 				}
-			
-				if( velocity.x == 0 && velocity.y == 0 )
+
+				if (velocity.x == 0 && velocity.y == 0)
 				{
 					/*if( isDoubleWiring )
 					{
@@ -7500,11 +7522,11 @@ void Actor::UpdatePrePhysics()
 					}
 					else*/
 					{
-						startAirDashVel = V2d( 0, 0 );
+						startAirDashVel = V2d(0, 0);
 						extraAirDashY = 0;
-						velocity = AddGravity( velocity );
+						velocity = AddGravity(velocity);
 					}
-					
+
 				}
 
 				}
@@ -7514,7 +7536,7 @@ void Actor::UpdatePrePhysics()
 
 				dWireAirDashOld = dWireAirDash;
 			}
-			
+
 			if (currBooster != NULL)
 			{
 				velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
@@ -7533,40 +7555,58 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case STEEPCLIMB:
+	{
+		//if( groundSpeed > 0 )
+
+		//the factor is just to make you climb a little farther
+		float factor = steepClimbGravFactor;//.7 ;
+		if (currInput.LUp())
 		{
-			//if( groundSpeed > 0 )
-
-			//the factor is just to make you climb a little farther
-			float factor = steepClimbGravFactor;//.7 ;
-			if( currInput.LUp() )
-			{
-				//cout << "speeding up climb!" << endl;
-				factor = steepClimbFastFactor;//.5;
-			}
-
-			if( reversed )
-			{
-				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
-			}
-			else
-			{
-				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
-			}
-
-			//cout << "groundspeed: " << groundSpeed << endl;
-			
-			break;
+			//cout << "speeding up climb!" << endl;
+			factor = steepClimbFastFactor;//.5;
 		}
+
+		if (reversed)
+		{
+			groundSpeed += dot(V2d(0, gravity * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+		}
+		else
+		{
+			groundSpeed += dot(V2d(0, gravity * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+		}
+
+		//cout << "groundspeed: " << groundSpeed << endl;
+
+		break;
+	}
 	case AIRHITSTUN:
-		{
-			hitstunFrames--;
-			break;
-		}
+	{
+		hitstunFrames--;
+		break;
+	}
 	case GROUNDHITSTUN:
+	{
+		hitstunFrames--;
+		int slowDown = 1;
+		if (groundSpeed > 0)
 		{
-			hitstunFrames--;
-			break;
+			groundSpeed -= slowDown;
+			if (groundSpeed < 0)
+			{
+				groundSpeed = 0;
+			}
 		}
+		else if (groundSpeed < 0)
+		{
+			groundSpeed += slowDown;
+			if (groundSpeed > 0)
+			{
+				groundSpeed = 0;
+			}
+		}
+		
+		break;
+	}
 	case BOUNCEAIR:
 		{
 			if( framesInAir > 8 ) //to prevent you from clinging to walls awkwardly
@@ -10681,10 +10721,15 @@ double Actor::GetDashSpeed()
 
 bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )
 {
-	if ( cb == NULL || currHurtboxes == NULL)
+	//just for the demo. more detailed hurtboxes later
+	if (cb == NULL)
 		return false;
 
-	return currHurtboxes->Intersects(currHurtboxFrame, cb, cbFrame);
+	return cb->Intersects( cbFrame, &hurtBody); 
+	//if ( cb == NULL || currHurtboxes == NULL)
+	//	return false;
+
+	//return currHurtboxes->Intersects(currHurtboxFrame, cb, cbFrame);
 }
 
 bool Actor::IntersectMyHitboxes(CollisionBody *cb,
@@ -19721,12 +19766,12 @@ void Actor::UpdateSprite()
 
 			if( showSword )
 			{
-				Vector2i offsets[3];//( 0, 0 );
-				offsets[0] = Vector2i( 40, -32 );
-				offsets[1] = Vector2i( 16, -40 );
-				offsets[2] = Vector2i( 32, -48 );
+				//Vector2i offsets[3];//( 0, 0 );
+				//offsets[0] = Vector2i( 40, -32 );
+				//offsets[1] = Vector2i( 16, -40 );
+				//offsets[2] = Vector2i( 32, -48 );
 
-				Vector2i offset = offsets[speedLevel];
+				Vector2f offset = diagUpSwordOffset[speedLevel];
 
 				if( facingRight )
 				{
@@ -19784,12 +19829,12 @@ void Actor::UpdateSprite()
 			if( showSword )
 			{
 
-				Vector2i offsets[3];//( 0, 0 );
-				offsets[0] = Vector2i( 32, 24 );
-				offsets[1] = Vector2i( 16, 32 );
-				offsets[2] = Vector2i( 16, 64 );
+				//Vector2i offsets[3];//( 0, 0 );
+				//offsets[0] = Vector2i( 32, 24 );
+				//offsets[1] = Vector2i( 16, 32 );
+				//offsets[2] = Vector2i( 16, 64 );
 
-				Vector2i offset = offsets[speedLevel];
+				Vector2f offset = diagDownSwordOffset[speedLevel];
 
 				if( facingRight )
 				{
@@ -22249,7 +22294,7 @@ void Actor::SetActionGrind()
 
 
 	double grindHitRadius[] = { 90, 100, 110 };
-	CollisionBox &gh = grindHitboxes->GetCollisionBoxes(0)->front();
+	CollisionBox &gh = grindHitboxes[0]->GetCollisionBoxes(0)->front();
 	gh.rw = gh.rh = grindHitRadius[speedLevel];
 	
 
