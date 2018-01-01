@@ -1005,6 +1005,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Gate *unlockedGateList;
 
 	sf::Sprite kinMinimapIcon;
+	sf::CircleShape kinMinimapTemp;
 	Tileset *ts_miniIcons;
 	sf::Sprite kinMapSpawnIcon;
 	Tileset *ts_mapIcons;

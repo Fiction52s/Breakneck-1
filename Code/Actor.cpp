@@ -630,6 +630,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		/*offsets[1] = Vector2i(16, -40);
 		offsets[2] = Vector2i(32, -48);*/
 
+		standSwordOffset[0] = Vector2f(0, -64);
 		
 
 		std::map<int, std::list<CollisionBox>> & fairAList = 
@@ -647,10 +648,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & adDownAList =
 			owner->hitboxManager->GetHitboxList("airdashdownahitboxes");
 
+		::map<int, std::list<CollisionBox>> & standAList =
+			owner->hitboxManager->GetHitboxList("standahitboxes");
+
 		fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo );
 		uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
 		dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
-		standHitboxes[0] = NULL;
+		standHitboxes[0] = new CollisionBody(4, standAList, currHitboxInfo);
 		dashHitboxes[0] = NULL;
 		wallHitboxes[0] = NULL;
 		steepClimbHitboxes[0] = NULL;
@@ -664,7 +668,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
 		}
 		
-
+		for (int i = 0; i < 1; ++i)
+		{
+			standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
+		}
 		//up
 		
 
@@ -7024,7 +7031,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			SetCurrHitboxes(standHitboxes[0], frame);
+			SetCurrHitboxes(standHitboxes[0], frame / 4);
 
 			if( frame == 0 && slowCounter == slowMultiple )
 			{
@@ -15203,7 +15210,8 @@ void Actor::UpdateHitboxes()
 			//	V2d gn = ground->Normal();
 				pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
 
-				pos += gd * offX + gn * -offY + gn * (double)sprite->getLocalBounds().height / 2.0;
+				//pos = position;
+				//pos += gd * offX + gn * -offY + gn * (double)sprite->getLocalBounds().height / 2.0;
 				//pos += gd * offX + gn * -offY; //+ V2d( offsetX, 0 );
 			}
 			else
@@ -19251,7 +19259,7 @@ void Actor::UpdateSprite()
 			int startFrame = 0;
 			showSword = true;
 
-			Tileset *curr_ts = ts_standingNSword[speedLevel];
+			Tileset *curr_ts = ts_standingNSword[0];
 
 			if( showSword )
 			{
@@ -19325,8 +19333,16 @@ void Actor::UpdateSprite()
 			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
 			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
 
+			if (r)
+			{
+				pos += truDir * (double)offset.x;
+			}
+			else
+			{
+				pos += truDir * (double)-offset.x;
+			}
 			pos += trueNormal * (double)offset.y;
-			pos += truDir * (double)offset.x;
+			
 
 			standingNSword.setPosition( pos.x, pos.y );
 

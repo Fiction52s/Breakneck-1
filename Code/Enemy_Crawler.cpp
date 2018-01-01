@@ -215,15 +215,16 @@ void Crawler::UpdateHitboxes()
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
 		double maxExtraKB = 15.0;
+		double baseKB = 8;
 		if( mover->groundSpeed > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15 + max( abs( mover->groundSpeed )/2, maxExtraKB);
+			hitboxInfo->knockback = baseKB + max( abs( mover->groundSpeed ), maxExtraKB);
 		}
 		else
 		{
 			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-			hitboxInfo->knockback = 15 + max(abs(mover->groundSpeed)/2, maxExtraKB);
+			hitboxInfo->knockback = baseKB + max(abs(mover->groundSpeed), maxExtraKB);
 		}
 	}
 	else

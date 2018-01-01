@@ -389,7 +389,7 @@ sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
 
 	if (flipHorizontal)
 	{
-		RotateCCW(localPos, globalAngle);
+		RotateCW(localPos, globalAngle);
 	}
 	else
 	{
@@ -636,8 +636,9 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 		V2d off = GetOffset();
 
 		cs.setRadius( rw );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( globalPosition.x + off.x, globalPosition.y + off.y );
+		cs.setOrigin( cs.getLocalBounds().width / 2 - off.x, cs.getLocalBounds().height / 2 - off.y );
+		cs.setRotation(globalAngle / PI * 180);
+		cs.setPosition( globalPosition.x, globalPosition.y );
 
 		target->draw( cs );
 
