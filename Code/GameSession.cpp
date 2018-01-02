@@ -6243,6 +6243,7 @@ int GameSession::Run()
 						tNext = (BasicEffect*)c->next;
 						if (c->pauseImmune)
 						{
+							c->UpdatePrePhysics();
 							c->UpdatePostPhysics();
 						}
 						c = tNext;

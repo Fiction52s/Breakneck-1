@@ -82,6 +82,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	hitBox.rh = 16;
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
+	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -90,6 +91,8 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+
+	hitBody->hitboxInfo = hitboxInfo;
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -121,7 +124,8 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	fireCounter = 0;
 
-	launchers = new Launcher*[1];
+	numLaunchers = 1;
+	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher(this, BasicBullet::BAT, owner, 16, 1, position, V2d(1, 0), 0, 300);
 	launchers[0]->SetBulletSpeed(10);
 	launchers[0]->hitboxInfo->damage = 18;

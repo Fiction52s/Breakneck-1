@@ -1193,6 +1193,8 @@ int Enemy::NumTotalBullets()
 void Enemy::Reset()
 {
 	numHealth = owner->eHitParamsMan->GetHitParams(type)->maxHealth;
+	if (cutObject != NULL)
+		cutObject->Reset();
 	ResetSlow();
 	suppressMonitor = false;
 	spawned = false;
@@ -1201,6 +1203,11 @@ void Enemy::Reset()
 	spawnedByClone = false;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->Reset();
+	}
 
 	ResetEnemy();
 
@@ -1341,7 +1348,7 @@ void Enemy::UpdatePostPhysics()
 	ProcessHit();
 
 	if (numHealth == 0 && LaunchersAreDone()
-		&& ( ( cutObject != NULL && cutObject->DoneSeparatingCut() ) 
+		&& ( ( cutObject != NULL && !cutObject->active ) 
 			|| cutObject == NULL && dead ) )
 	{
 		dead = true;
@@ -1351,7 +1358,7 @@ void Enemy::UpdatePostPhysics()
 
 	if( !dead )
 		UpdateSprite();
-	else
+	else if( cutObject != NULL )
 		cutObject->UpdateCutObject( slowCounter );
 
 	for (int i = 0; i < numLaunchers; ++i)
@@ -1436,11 +1443,11 @@ void Enemy::Draw(sf::RenderTarget *target)
 {
 	if (cutObject != NULL)
 	{
-		if (dead)
+		if (dead && cutObject->active )
 		{
 			cutObject->Draw(target);
 		}
-		else
+		else if( !dead )
 		{
 			EnemyDraw( target );
 		}
@@ -1490,6 +1497,12 @@ void Enemy::DebugDraw(sf::RenderTarget *target)
 void Enemy::UpdatePhysics()
 {
 	specterProtected = false;
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->UpdatePhysics();
+	}
+
 	if (dead)
 	{
 		return;
@@ -1634,7 +1647,7 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 CuttableObject::CuttableObject()
 {
 	Reset();
-	separateSpeed = -1.f;
+	separateSpeed = .4;
 	ts = NULL;
 	rectWidth = 32;
 	rectHeight = 32;

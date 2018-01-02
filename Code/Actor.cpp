@@ -1360,6 +1360,8 @@ void Actor::ActionEnded()
 				SetActionExpr(STAND);
 			}
 			frame = 0;
+
+			
 			break;
 		case FAIR:
 		{
@@ -4350,14 +4352,14 @@ void Actor::UpdatePrePhysics()
 					}
 				}
 
-				if( currInput.A && !prevInput.A )
+				if( (currInput.A && !prevInput.A) || pauseBufferedJump )
 				{
 					SetActionExpr( JUMPSQUAT );
 					frame = 0;
 					break;
 				}
 
-				if( currInput.rightShoulder && !prevInput.rightShoulder )
+				if( (currInput.rightShoulder && !prevInput.rightShoulder) || pauseBufferedAttack )
 				{
 					GroundAttack();
 					break;
@@ -22690,7 +22692,7 @@ void Actor::UpdateInHitlag()
 			}
 		}
 
-		if (ground == NULL && !pauseBufferedJump && currInput.A && !prevInput.A )
+		if (!pauseBufferedJump && currInput.A && !prevInput.A )
 		{
 			pauseBufferedJump = true;
 		}
