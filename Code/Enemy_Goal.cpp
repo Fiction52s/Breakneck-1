@@ -11,7 +11,8 @@ using namespace sf;
 
 
 Goal::Goal( GameSession *owner, Edge *g, double q )
-		:Enemy( owner, EnemyType::EN_GOAL, false, 0 ), ground( g ), edgeQuantity( q ), dead( false )
+		:Enemy( owner, EnemyType::EN_GOAL, false, 0, false ), 
+	ground( g ), edgeQuantity( q ), dead( false )
 {	
 	double width = 288;
 	double height = 256;
@@ -67,20 +68,20 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
-	currHurtboxes = new CollisionBody(1);
-	CollisionBox hurtBody;
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 40;
-	hurtBody.rh = 40;
-	hurtBody.globalAngle = angle;
-	hurtBody.globalPosition = position;
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 40;
+	hurtBox.rh = 40;
+	hurtBox.globalAngle = angle;
+	hurtBox.globalPosition = position;
 
-	currHurtboxes->AddCollisionBox(0, hurtBody);
-	SetHurtboxes(currHurtboxes, 0);
+	hurtBody->AddCollisionBox(0, hurtBox);
+	SetHurtboxes(hurtBody, 0);
 	//currHurtboxes->GetCollisionBoxes(0)->front().globalPosition = position;
 	double angle = 0;
 		
@@ -114,6 +115,7 @@ void Goal::ResetEnemy()
 {
 	frame = 0;
 	action = A_SITTING;
+	SetHurtboxes(hurtBody, 0);
 	//numHealth = 1;
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
@@ -186,7 +188,7 @@ void Goal::HandleNoHealth()
 	owner->goalPulse->show = true;
 }
 
-void Goal::Draw(sf::RenderTarget *target )
+void Goal::EnemyDraw(sf::RenderTarget *target )
 {
 	target->draw( sprite );
 }

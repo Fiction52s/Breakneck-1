@@ -22,7 +22,6 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
 {
 	origCW = cw;
-	numHealth = 4;
 	//clockwise = cw;
 	maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
@@ -142,7 +141,6 @@ void Crawler::ResetEnemy()
 	clockwise = origCW;
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
-	numHealth = 4;
 	framesUntilBurrow = maxFramesUntilBurrow;
 	
 	mover->ground = startGround;
@@ -380,56 +378,48 @@ void Crawler::FrameIncrement()
 		--framesUntilBurrow;
 }
 
-void Crawler::Draw(sf::RenderTarget *target )
+void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
-	if( !dead )
+	if (action != UNBURROW && action != BURROW && action != UNDERGROUND)
 	{
-		if (action != UNBURROW && action != BURROW && action != UNDERGROUND)
+		if (hasMonitor && !suppressMonitor)
 		{
-			if (hasMonitor && !suppressMonitor)
+			if (owner->pauseFrames < 2 || receivedHit == NULL)
 			{
-				if (owner->pauseFrames < 2 || receivedHit == NULL)
-				{
-					target->draw(sprite, keyShader);
-				}
-				else
-				{
-					target->draw(sprite, hurtShader);
-				}
-				target->draw(*keySprite);
+				target->draw(sprite, keyShader);
 			}
 			else
 			{
-				if (owner->pauseFrames < 2 || receivedHit == NULL)
-				{
-					target->draw(sprite);
-				}
-				else
-				{
-					target->draw(sprite, hurtShader);
-				}
-
+				target->draw(sprite, hurtShader);
 			}
+			target->draw(*keySprite);
 		}
 		else
 		{
-			if (action != UNDERGROUND)
+			if (owner->pauseFrames < 2 || receivedHit == NULL)
 			{
-				sf::RectangleShape rs;
-				rs.setFillColor(Color::Red);
-				rs.setSize(Vector2f(64, 64));
-				rs.setOrigin(rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2);
-				rs.setPosition(Vector2f(mover->physBody.globalPosition));
-				target->draw(rs);
+				target->draw(sprite);
 			}
+			else
+			{
+				target->draw(sprite, hurtShader);
+			}
+
 		}
 	}
 	else
 	{
-		//target->draw( botDeathSprite );
-		cutObject->Draw(target);
-		//target->draw( topDeathSprite );
+		if (action != UNDERGROUND)
+		{
+			sf::RectangleShape rs;
+			rs.setFillColor(Color::Red);
+			rs.setSize(Vector2f(64, 64));
+			rs.setOrigin(rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2);
+			rs.setPosition(Vector2f(mover->physBody.globalPosition));
+			target->draw(rs);
+		}
 	}
+	
 }
 
 void Crawler::IHitPlayer( int index )
@@ -452,79 +442,76 @@ void Crawler::HandleNoHealth()
 
 void Crawler::UpdateSprite()
 {
-	if( !dead )
+	//cout << "response" << endl;
+	double spaceNeeded = 0;
+	V2d gn = mover->ground->Normal();
+	V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
+
+	//return;
+
+	double angle = 0;
+
+	IntRect ir;
+	switch (action)
 	{
-		//cout << "response" << endl;
-		double spaceNeeded = 0;
-		V2d gn = mover->ground->Normal();
-		V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
+	case CRAWL:
+		ir = ts->GetSubRect(frame / crawlAnimationFactor);
+		break;
+	case STARTROLL:
+		ir = ts->GetSubRect(frame / crawlAnimationFactor + 35);
+		break;
+	case ROLL:
+		ir = ts->GetSubRect(frame / crawlAnimationFactor + 38 );
+		break;
+	case ENDROLL:
+		ir = ts->GetSubRect(frame / crawlAnimationFactor + 50);
+		break;
+	case DASH:
+		ir = ts->GetSubRect(frame / crawlAnimationFactor + 54);
+		break;
+	}
 
-		//return;
+	if (!clockwise)
+	{
+		sprite.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
+	}
+	else
+	{
+		sprite.setTextureRect(ir);
+	}
 
-		double angle = 0;
+	if (!mover->roll)
+	{
+		angle = atan2(gn.x, -gn.y);
 
-		IntRect ir;
-		switch (action)
+		V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+		sprite.setRotation(angle / PI * 180);
+		sprite.setPosition(pp.x, pp.y);
+	}
+	else
+	{
+		if (clockwise)
 		{
-		case CRAWL:
-			ir = ts->GetSubRect(frame / crawlAnimationFactor);
-			break;
-		case STARTROLL:
-			ir = ts->GetSubRect(frame / crawlAnimationFactor + 35);
-			break;
-		case ROLL:
-			ir = ts->GetSubRect(frame / crawlAnimationFactor + 38 );
-			break;
-		case ENDROLL:
-			ir = ts->GetSubRect(frame / crawlAnimationFactor + 50);
-			break;
-		case DASH:
-			ir = ts->GetSubRect(frame / crawlAnimationFactor + 54);
-			break;
-		}
+			V2d vec = normalize(position - mover->ground->v1);
+			angle = atan2(vec.y, vec.x);
+			angle += PI / 2.0;
 
-		if (!clockwise)
-		{
-			sprite.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
-		}
-		else
-		{
-			sprite.setTextureRect(ir);
-		}
-
-		if (!mover->roll)
-		{
-			angle = atan2(gn.x, -gn.y);
-
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 			sprite.setRotation(angle / PI * 180);
+			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
 			sprite.setPosition(pp.x, pp.y);
 		}
 		else
 		{
-			if (clockwise)
-			{
-				V2d vec = normalize(position - mover->ground->v1);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
+			V2d vec = normalize(position - mover->ground->v0);
+			angle = atan2(vec.y, vec.x);
+			angle += PI / 2.0;
 
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-				sprite.setPosition(pp.x, pp.y);
-			}
-			else
-			{
-				V2d vec = normalize(position - mover->ground->v0);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
-				sprite.setPosition(pp.x, pp.y);
-			}
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setRotation(angle / PI * 180);
+			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
+			sprite.setPosition(pp.x, pp.y);
 		}
 	}
 }

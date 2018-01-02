@@ -6,23 +6,13 @@
 struct BasicEffect : Enemy
 {
 	BasicEffect(GameSession *owner);
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	//void UpdatePhysics();
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	bool PlayerSlowingMe();
+	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics(sf::Vector2<double> vel);
-	void SaveEnemyState();
-	void LoadEnemyState();
 	void ResetEnemy();
 	void HandleNoHealth();
 	void ProcessState();
-
 	void Init(Tileset *ts,
 		sf::Vector2<double> position,
 		double angle, int frameCount,
@@ -32,7 +22,6 @@ struct BasicEffect : Enemy
 	int frameCount;
 	sf::Sprite s;
 	Tileset *ts;
-	int frame;
 	bool pauseImmune;
 	bool activated;
 	int animationFactor;

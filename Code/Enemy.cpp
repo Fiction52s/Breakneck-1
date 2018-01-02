@@ -1034,10 +1034,23 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	launchers = NULL;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
-	numHealth = 4;
+	EnemyParams *ep = own->eHitParamsMan->GetHitParams(t);
+	if (ep == NULL)
+	{
+		numHealth = 1;
+	}
+	else
+	{
+		numHealth = ep->maxHealth;
+	}
+	
 	if (cuttable)
 	{
 		cutObject = new CuttableObject;
+	}
+	else
+	{
+		cutObject = NULL;
 	}
 	hasMonitor = p_hasMonitor;
 	if( world == 0 )
@@ -1179,9 +1192,9 @@ int Enemy::NumTotalBullets()
 
 void Enemy::Reset()
 {
+	numHealth = owner->eHitParamsMan->GetHitParams(type)->maxHealth;
+	ResetSlow();
 	suppressMonitor = false;
-	slowMultiple = 1;
-	slowCounter = 1;
 	spawned = false;
 	prev = NULL;
 	next = NULL;
@@ -1388,6 +1401,7 @@ void Enemy::ConfirmHitNoKill()
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_hitSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
 	//owner->cam.SetRumble(1, 1, 5);
 	owner->Pause(5);
+	HandleHitAndSurvive();
 	//owner->cam.SetRumble(3, 3, 5);
 }
 
@@ -1416,6 +1430,25 @@ void Enemy::ConfirmKill()
 	}
 
 	
+}
+
+void Enemy::Draw(sf::RenderTarget *target)
+{
+	if (cutObject != NULL)
+	{
+		if (dead)
+		{
+			cutObject->Draw(target);
+		}
+		else
+		{
+			EnemyDraw( target );
+		}
+	}
+	else
+	{
+		EnemyDraw( target );
+	}
 }
 
 void Enemy::DrawMinimap(sf::RenderTarget *target)
@@ -1544,13 +1577,13 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		switch (et)
 		{
 		case EnemyType::EN_CRAWLER:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, 6, 4);
 			break;
 		case EnemyType::EN_GOAL:
-			ep = new EnemyParams(1, 5, .8, 6, 1);
+			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_PATROLLER:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, 6, 4);
 			break;
 		case EnemyType::EN_FOOTTRAP:
 			ep = new EnemyParams(1, 5, .8, 6, 3);

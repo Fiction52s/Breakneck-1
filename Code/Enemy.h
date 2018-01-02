@@ -476,7 +476,8 @@ public:
 	int currHitboxFrame;
 	CollisionBody *currHurtboxes;
 	int currHurtboxFrame;
-	virtual void UpdateEnemyPhysics() {};
+	virtual void UpdateEnemyPhysics() {}
+	virtual void HandleHitAndSurvive() {}
 	//std::list<CollisionBox> *activeHurtboxes;
 	CollisionBox *physicsBox;
 	virtual void UpdatePhysics();
@@ -488,7 +489,6 @@ public:
 		bool hasMonitor, int world, bool cuttable = true );
 	virtual void HandleNoHealth() = 0;
 	virtual void ProcessState() = 0;
-	virtual void Draw(sf::RenderTarget *target) = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes() {}
 	virtual void ResetEnemy() = 0;
@@ -516,6 +516,9 @@ public:
 	void Record(int enemyIndex);
 	bool RightWireHitMe( CollisionBox hurtBox );
 	bool LeftWireHitMe( CollisionBox hurtBox );
+
+	virtual void EnemyDraw(sf::RenderTarget *target) {}
+	void Draw(sf::RenderTarget *target);
 
 	void Reset();
 	

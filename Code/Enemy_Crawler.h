@@ -34,7 +34,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	bool ShouldDash();
 	bool PlayerInFront();
-	void Draw(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);

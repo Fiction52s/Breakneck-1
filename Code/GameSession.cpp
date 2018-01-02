@@ -1043,6 +1043,8 @@ void GameSession::UpdateEnemiesPrePhysics()
 		current->UpdatePrePhysics();
 		current = current->next;
 	}
+
+	
 }
 
 void GameSession::UpdateEnemiesPhysics()
@@ -1157,8 +1159,9 @@ void GameSession::UpdateEffects()
 		{
 			next = curr->next;
 
-			curr->UpdatePostPhysics();
-		
+			curr->UpdatePrePhysics();
+			if( !curr->dead )
+				curr->UpdatePostPhysics();
 			curr = next;
 		}
 	}
@@ -2251,12 +2254,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int speed;
 				is >> speed;
-				/*Patroller *enemy = new Patroller( this, hasMonitor, Vector2i( xPos, yPos ), localPath, loop, speed );
+				Patroller *enemy = new Patroller( this, hasMonitor, Vector2i( xPos, yPos ), localPath, loop, speed );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bosscrawler" )
 			{

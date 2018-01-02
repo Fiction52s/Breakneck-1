@@ -15,16 +15,16 @@ struct Goal : Enemy
 
 	Goal(GameSession *owner, Edge *ground, double quantity);
 	void DrawMinimap(sf::RenderTarget *target);
-	void Draw(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
 	void ProcessState();
 	void ConfirmKill();
+
+	CollisionBody *hurtBody;
+
 	Action action;
-	//bool exploding;
-	//bool kinKilling;
-	//bool destroyed;
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;
 	Tileset *ts;

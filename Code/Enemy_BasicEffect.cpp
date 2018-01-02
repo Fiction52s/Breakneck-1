@@ -11,7 +11,7 @@ using namespace sf;
 
 
 BasicEffect::BasicEffect ( GameSession *owner )
-	:Enemy( owner, EnemyType::EN_BASICEFFECT, false, 0 )
+	:Enemy( owner, EnemyType::EN_BASICEFFECT, false, 0, false )
 {
 	affectCameraZoom = false;
 	spawned = true;
@@ -31,7 +31,11 @@ void BasicEffect::HandleNoHealth()
 
 void BasicEffect::ProcessState()
 {
-
+	if (frame / animationFactor == frameCount)
+	{
+		owner->DeactivateEffect(this);
+		dead = true;
+	}
 }
 
 void BasicEffect::ResetEnemy()
@@ -65,6 +69,8 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	s.setPosition( pos.x, pos.y );
 	s.setRotation( angle / PI * 180 );
 
+	ResetSlow();
+
 	animationFactor = af;
 	ts = t;
 	frameCount = fc;
@@ -72,64 +78,11 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	frame = 0;
 	activated = true;
 	position = pos;
+	dead = false;
 }
 
-void BasicEffect::HandleEntrant( QuadTreeEntrant *qte )
+void BasicEffect::EnemyDraw(sf::RenderTarget *target )
 {
-}
-
-void BasicEffect::UpdatePrePhysics()
-{
-}
-
-//void BasicEffect::UpdateEnemyPhysics()
-//{
-//}
-
-void BasicEffect::UpdatePostPhysics()
-{
-	//if( ts == NULL )
-	//{
-	//	cout << "problem with: " << this << endl;
-	//}
-	//float depth = 1.f;
-
-	//Vector2f spritePos = Vector2f(position) * depth;
-	//s.setPosition(pos.x * depth, pos.y * depth);
-
-	sf::IntRect ir = ts->GetSubRect( frame / animationFactor );
-
-	if( facingRight )
-	{
-		s.setTextureRect( ir );
-	}
-	else
-	{
-		s.setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
-	}
-	//s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
-	//s.setPosition( pos.x, pos.y );
-	//s.setRotation( angle / PI * 180 );
-
-	frame++;
-	if( frame / animationFactor == frameCount )
-	{
-		owner->DeactivateEffect( this );
-	}
-}
-
-void BasicEffect::Draw(sf::RenderTarget *target )
-{
-/*	sf::CircleShape cs;
-	cs.setFillColor( Color::Blue );
-	cs.setRadius( 100 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( s.getPosition().x, s.getPosition().y );
-	target->draw( cs );*/
-
-	//cout << ts->sourceName << ": " << target->endl;
-
-	//target->draw(s);
 	sf::View oldView = target->getView();
 	sf::View newView = oldView;
 	newView.setCenter(oldView.getCenter() / depth);
@@ -140,24 +93,19 @@ void BasicEffect::Draw(sf::RenderTarget *target )
 	target->draw( s );	
 	target->setView(oldView);
 }
-//
-//bool BasicEffect::IHitPlayer( int index )
-//{
-//	return false;
-//}
-
- pair<bool, bool> BasicEffect::PlayerHitMe( int index )
-{
-	return pair<bool, bool>(false,false);
-}
-
-bool BasicEffect::PlayerSlowingMe()
-{
-	return false;
-}
 
 void BasicEffect::UpdateSprite()
 {
+	sf::IntRect ir = ts->GetSubRect(frame / animationFactor);
+
+	if (facingRight)
+	{
+		s.setTextureRect(ir);
+	}
+	else
+	{
+		s.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
+	}
 }
 
 void BasicEffect::DebugDraw(sf::RenderTarget *target)
@@ -166,19 +114,4 @@ void BasicEffect::DebugDraw(sf::RenderTarget *target)
 
 void BasicEffect::UpdateHitboxes()
 {
-}
-
-bool BasicEffect::ResolvePhysics( sf::Vector2<double> vel )
-{
-	return false;
-}
-
-void BasicEffect::SaveEnemyState()
-{
-	stored_frame = frame;
-}
-
-void BasicEffect::LoadEnemyState()
-{
-	frame = stored_frame;
 }
