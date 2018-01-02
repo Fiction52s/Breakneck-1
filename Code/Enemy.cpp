@@ -1546,6 +1546,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_CRAWLER:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
+		case EnemyType::EN_GOAL:
+			ep = new EnemyParams(1, 5, .8, 6, 1);
+			break;
 		case EnemyType::EN_PATROLLER:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;

@@ -8752,7 +8752,7 @@ int GameSession::Run()
 			<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
 			<< now.tm_min << "_" << now.tm_sec << ".bghst";
 
-		recGhost->WriteToFile(fss.str());
+		//recGhost->WriteToFile(fss.str());
 	}
 
 	if (levelMusic != NULL)
@@ -9648,6 +9648,7 @@ void GameSession::RespawnPlayer( int index )
 	cam.pos.y = player->position.y;
 	cam.offset = Vector2f( 0, 0 );
 	cam.manual = false;
+	cam.easing = false;
 	cam.rumbling = false;
 
 	player->hasDoubleJump = true;
@@ -9763,6 +9764,7 @@ void GameSession::RestartLevel()
 	cam.offset = Vector2f( 0, 0 );
 	cam.manual = false;
 	cam.rumbling = false;
+	cam.easing = false;
 
 	if( !cam.bossCrawler )
 	{

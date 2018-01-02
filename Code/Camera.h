@@ -2,10 +2,12 @@
 #define __CAMERA_H__
 
 #include <SFML/Graphics.hpp>
+#include "Movement.h"
 //#include "Actor.h"
 
 struct MovementSequence;
 struct Actor;
+
 struct Camera
 {
 	Camera();
@@ -18,6 +20,11 @@ struct Camera
 	void SetManual( bool man );
 	void SetMovementSeq( MovementSequence *move,
 		bool relative );
+	void Ease(sf::Vector2f &pos, float zFactor,
+		int numFrames, CubicBezier &bez );
+	void UpdateEase();
+	
+
 	sf::Vector2f GetPos();
 	sf::Vector2f manualPos;
 	sf::Vector2f startManualPos;
@@ -62,7 +69,7 @@ struct Camera
 	float testZoom;
 
 	bool manual;
-
+	bool easing;
 	//new
 	double left;
 	double top;
@@ -76,6 +83,16 @@ struct Camera
 	void Update( Actor *a );
 	void UpdateVS( Actor *a, 
 		Actor *a2 );
+
+private:
+	
+	int easeFrame;
+	sf::Vector2f startEase;
+	sf::Vector2f endEase;
+	float startEaseZFactor;
+	float endEaseZFactor;
+	int numEaseFrames;
+	CubicBezier easeBez;
 };
 
 #endif

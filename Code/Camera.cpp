@@ -11,6 +11,7 @@ using namespace sf;
 
 Camera::Camera()
 {
+	easing = false;
 	manual = false;
 	bossCrawler = false;
 	rumbling = false;
@@ -227,6 +228,20 @@ void Camera::SetRumble( int xFactor, int yFactor, int duration )
 	rumbleFrame = 0;
 }
 
+void Camera::Ease( Vector2f &p_pos, float zFactor, int numFrames, CubicBezier &bez)
+{
+	assert(manual);
+
+	easeFrame = 0;
+	numEaseFrames = numFrames;
+	startEase = pos;
+	endEase = p_pos;
+	easeBez = bez;
+	startEaseZFactor = zoomFactor;
+	endEaseZFactor = zFactor;
+	easing = true;
+}
+
 //make sure to rumble off when you reset the level
 void Camera::UpdateRumble()
 {
@@ -259,6 +274,10 @@ void Camera::UpdateRumble()
 
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 {
+	if (!manual)
+	{
+		int x = 5;
+	}
 	assert( manual );
 	pos.x = p.x;
 	pos.y = p.y;
@@ -268,6 +287,25 @@ void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 	zoomFactor = zFactor;
 	zoomLevel = zLevel;
 	
+}
+
+void Camera::UpdateEase()
+{
+	if (easing)
+	{
+		if (easeFrame > numEaseFrames)
+		{
+			easing = false;
+			return;
+		}
+
+		float a = (float)easeFrame / numEaseFrames;
+		float f = easeBez.GetValue(a);
+		pos = startEase * (1.f - f) + endEase * f;
+		zoomFactor = startEaseZFactor *(1. - f) + endEaseZFactor * f;
+
+		++easeFrame;
+	}
 }
 
 void Camera::Update( Actor *player )
@@ -299,6 +337,10 @@ void Camera::Update( Actor *player )
 			
 		}
 		UpdateRumble();
+
+		UpdateEase();
+		
+		//UpdateEase();
 	//	UpdateRumble();
 		return;
 	}

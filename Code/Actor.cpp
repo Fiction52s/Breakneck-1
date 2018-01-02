@@ -1464,6 +1464,10 @@ void Actor::ActionEnded()
 			break;
 		case AIRHITSTUN:
 			frame = 0;
+			if (hitstunFrames <= setHitstunFrames / 2)
+			{
+				AirAttack();
+			}
 			break;
 		case GROUNDHITSTUN:
 			frame = 0;
@@ -2205,6 +2209,7 @@ void Actor::UpdatePrePhysics()
 	{
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
+		setHitstunFrames = hitstunFrames;
 		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
@@ -3697,7 +3702,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )
 			{
 			
 			
@@ -3726,7 +3731,7 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )
 			{
 			
 			
@@ -4921,7 +4926,8 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				action = DOUBLE;
+				hasDoubleJump = true;
+				TryDoubleJump();
 				grindEdge = NULL;
 			}
 			//if( abs( grindEdge->Normal().y ) )
@@ -6855,10 +6861,7 @@ void Actor::UpdatePrePhysics()
 					velocity.y = -doubleJumpStrength;
 				}
 
-				if (dairBoostedDouble)
-				{
-					velocity.y -= dairBoostVel;
-				}
+				
 				hasDoubleJump = false;
 
 				if( currInput.LLeft() )
@@ -6878,6 +6881,45 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					velocity.x = 0;
+				}
+
+				if (aerialHitCancelDouble)
+				{
+					if (cancelAttack == FAIR)
+					{
+						if (facingRight && currInput.LLeft()
+							|| (!facingRight && currInput.LRight()))
+						{
+							if (facingRight)
+							{
+								velocity.x = -GetDashSpeed();
+							}
+							else
+							{
+								velocity.x = GetDashSpeed();
+							}
+							facingRight = !facingRight;
+						}
+					}
+					else if (cancelAttack == DAIR || cancelAttack == DIAGDOWNATTACK)
+					{
+						velocity.y -= dairBoostVel;
+						if (cancelAttack == DIAGDOWNATTACK)
+						{
+							if (facingRight && currInput.LLeft()
+								|| (!facingRight && currInput.LRight()))
+							{
+								if (facingRight)
+								{
+									velocity.x = -GetDashSpeed();
+								}
+								else
+								{
+									velocity.x = GetDashSpeed();
+								}
+							}
+						}
+					}
 				}
 			}
 			else
@@ -21348,7 +21390,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 {
 	//owner->cam.SetRumble(3, 3, 5);
 
-	if (ground == NULL && velocity.y > 0)
+	if (ground == NULL && velocity.y > 0 && action == DAIR )
 	{
 		velocity.y = 4;//.5;
 	}
@@ -22397,7 +22439,14 @@ Actor::Action Actor::GetDoubleJump()
 {
 	if( (facingRight && currInput.LLeft()) || ( !facingRight && currInput.LRight() ) )
 	{
-		return BACKWARDSDOUBLE;
+		if (action == FAIR)
+		{
+			return DOUBLE;
+		}
+		else
+		{
+			return BACKWARDSDOUBLE;
+		}
 	}
 	else
 	{
@@ -22419,6 +22468,11 @@ bool Actor::TryDoubleJump()
 {
 	if( CanDoubleJump() )
 	{
+		aerialHitCancelDouble = IsAttackAction(action);
+		if (aerialHitCancelDouble)
+		{
+			cancelAttack = action;
+		}
 		dairBoostedDouble = (action == DAIR);
 		SetActionExpr( DOUBLE );
 		return true;
@@ -22602,7 +22656,8 @@ void Actor::ClearPauseBufferedActions()
 
 bool Actor::IsAttackAction( Action a )
 {
-	return (a == FAIR || a == DAIR || a == UAIR || a == STANDN);
+	return (a == FAIR || a == DAIR || a == UAIR || a == STANDN || a == DIAGDOWNATTACK
+		|| a == DIAGUPATTACK || a == WALLATTACK );
 }
 
 void Actor::UpdateInHitlag()

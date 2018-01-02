@@ -5,29 +5,26 @@
 
 struct Goal : Enemy
 {
+	enum Action
+	{
+		A_SITTING,
+		A_KINKILLING,
+		A_EXPLODING,
+		A_DESTROYED
+	};
+
 	Goal(GameSession *owner, Edge *ground, double quantity);
-	void HandleEntrant(QuadTreeEntrant *qte);
-	//void UpdatePrePhysics();
-	void UpdateEnemyPhysics();
-	//void UpdatePostPhysics();
 	void DrawMinimap(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *target);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	bool PlayerSlowingMe();
 	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	bool ResolvePhysics(sf::Vector2<double> vel);
-	void SaveEnemyState();
-	void LoadEnemyState();
 	void ResetEnemy();
 	void HandleNoHealth();
 	void ProcessState();
-
-	bool exploding;
-	bool kinKilling;
-	bool destroyed;
-	//int kinKillFrame;
+	void ConfirmKill();
+	Action action;
+	//bool exploding;
+	//bool kinKilling;
+	//bool destroyed;
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;
 	Tileset *ts;
@@ -39,18 +36,11 @@ struct Goal : Enemy
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBox hurtBody;
-	//CollisionBox hitBody;
-	//HitboxInfo *hitboxInfo;
+	
 
 	double angle;
 
-	//Contact minContact;
-	//bool col;
-	//std::string queryMode;
-	//int possibleEdgeCount;
-
-	int frame;
+	//int frame;
 	int deathFrame;
 	int animationFactor;
 	bool dead;

@@ -490,7 +490,7 @@ public:
 	virtual void ProcessState() = 0;
 	virtual void Draw(sf::RenderTarget *target) = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
-	virtual void UpdateHitboxes() = 0;
+	virtual void UpdateHitboxes() {}
 	virtual void ResetEnemy() = 0;
 
 	virtual void Init(){};

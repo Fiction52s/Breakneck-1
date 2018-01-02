@@ -291,6 +291,8 @@ struct Actor : QuadTreeCollider,
 
 	sf::Vector2<double> spriteCenter;
 	bool dairBoostedDouble;
+	bool aerialHitCancelDouble;
+	Action cancelAttack;
 	double dairBoostVel;
 	bool standNDashBoost;
 	double standNDashBoostQuant;
@@ -915,6 +917,7 @@ struct Actor : QuadTreeCollider,
 
 	int hitlagFrames;
 	int hitstunFrames;
+	int setHitstunFrames;
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
 

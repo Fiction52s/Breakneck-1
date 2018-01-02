@@ -12,8 +12,7 @@ using namespace sf;
 
 Goal::Goal( GameSession *owner, Edge *g, double q )
 		:Enemy( owner, EnemyType::EN_GOAL, false, 0 ), ground( g ), edgeQuantity( q ), dead( false )
-{
-	
+{	
 	double width = 288;
 	double height = 256;
 	ts = owner->GetTileset( "goal_w02_a_288x256.png", width, height );
@@ -68,15 +67,8 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
-	
-	/*hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 100;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 0;*/
-
+	currHurtboxes = new CollisionBody(1);
+	CollisionBox hurtBody;
 	hurtBody.type = CollisionBox::Hurt;
 	hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
@@ -84,140 +76,114 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	hurtBody.offset.y = 0;
 	hurtBody.rw = 40;
 	hurtBody.rh = 40;
+	hurtBody.globalAngle = angle;
+	hurtBody.globalPosition = position;
 
+	currHurtboxes->AddCollisionBox(0, hurtBody);
+	SetHurtboxes(currHurtboxes, 0);
+	//currHurtboxes->GetCollisionBoxes(0)->front().globalPosition = position;
 	double angle = 0;
 		
 	angle = atan2( gn.x, -gn.y );
 		
-	hurtBody.globalAngle = angle;
-
-	hurtBody.globalPosition = position;// + 
+	
 		//V2d( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
 		//hitBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 
 	frame = 0;
-	deathFrame = 0;
 	animationFactor = 7;
 	slowCounter = 1;
 	slowMultiple = 1;
 
 	spawnRect = sf::Rect<double>( gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160 );
 
-	exploding = false;
-	kinKilling = false;
-	destroyed = false;
+	//health = 1;
+	//numHealth = 1;
+
+	action = A_SITTING;
 	//kinKillFrame = 0;
+}
+
+void Goal::ConfirmKill()
+{
+	dead = true;
+	HandleNoHealth();
 }
 
 void Goal::ResetEnemy()
 {
 	frame = 0;
-	exploding = false;
-	kinKilling = false;
-	destroyed = false;
-	//kinKillFrame = 0;
-	deathFrame = 0;
-
+	action = A_SITTING;
+	//numHealth = 1;
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 }
 
-void Goal::HandleEntrant( QuadTreeEntrant *qte )
-{
-	SpecterArea *sa = (SpecterArea*)qte;
-	if( sa->barrier.Intersects( hurtBody ) )
-	{
-		specterProtected = true;
-	}
-}
-
 void Goal::ProcessState()
 {
-	if (kinKilling)
+	if (action == A_KINKILLING )
 	{
 		if (frame == 1)
 		{
 			owner->cam.manual = true;
-			goalKillStartZoom = owner->cam.zoomFactor;
-			goalKillStartPos = owner->cam.pos;
-			//
+			owner->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
 		}
-		if (frame <= 31)
-		{
-			CubicBezier bez(0, 0, 1, 1);
-			float z = bez.GetValue((double)(frame - 1) / 30);
 
-			Vector2f po = goalKillStartPos * (1.f - z) + Vector2f(owner->goalNodePos.x,
-				owner->goalNodePos.y) * z;
+		//if (frame == 1)
+		//{
+		//	//owner->cam.manual = true;
+		//	goalKillStartZoom = owner->cam.zoomFactor;
+		//	goalKillStartPos = owner->cam.pos;
+		//	//
+		//}
+		//if (frame <= 31 && frame > 1)
+		//{
+		//	CubicBezier bez(0, 0, 1, 1);
+		//	float z = bez.GetValue((double)(frame - 1) / 30);
 
-			CubicBezier bez1(0, 0, 1, 1);
-			float z1 = bez1.GetValue((double)(frame - 1) / 30);
+		//	Vector2f po = goalKillStartPos * (1.f - z) + Vector2f(owner->goalNodePos.x,
+		//		owner->goalNodePos.y) * z;
 
-			float zoom = goalKillStartZoom * (1.f - z) + 1.f * z;
-			owner->cam.Set(po, zoom, 0);
-			///Vector2f trueSpot = dropSpot + extra0;
-			//owner->cam.Set( ( //trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
-			//	1, 0 );
+		//	CubicBezier bez1(0, 0, 1, 1);
+		//	float z1 = bez1.GetValue((double)(frame - 1) / 30);
 
-		}
+		//	float zoom = goalKillStartZoom * (1.f - z) + 1.f * z;
+
+		//	owner->cam.manual = true;
+		//	
+		//	//owner->cam.manual = true;
+		//	//owner->cam.Set(po, zoom, 0);
+		//	///Vector2f trueSpot = dropSpot + extra0;
+		//	//owner->cam.Set( ( //trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
+		//	//	1, 0 );
+
+		//}
 		if (frame == 46 * 2)
 		{
-			exploding = true;
-			kinKilling = false;
+			action = A_EXPLODING;
+			//exploding = true;
+			//kinKilling = false;
 			frame = 0;
 		}
 	}
-	else if (exploding)
+	else if (action == A_EXPLODING )
 	{
 		if (frame == 15 * 2)
 		{
-			destroyed = true;
-			exploding = false;
-			//dead = true;
+			action = A_DESTROYED;
 		}
 	}
 }
 
 void Goal::HandleNoHealth()
 {
+	owner->KillAllEnemies();
+	frame = 0;
+	owner->GetPlayer(0)->hitGoal = true;
+	SetHurtboxes(NULL, 0);
+	action = A_KINKILLING;
 
-}
-
-void Goal::UpdateEnemyPhysics()
-{
-	specterProtected = false;
-	if( !dead && !kinKilling && !exploding && !destroyed )
-	{
-		UpdateHitboxes();
-
-		pair<bool, bool> result = PlayerHitMe();
-		if( result.first )
-		{
-			if( !result.second )
-			{
-				owner->Pause( 6 );
-			}
-
-			kinKilling = true;
-			owner->KillAllEnemies();
-			//kinKillFrame = 0;
-			frame = 0;
-			owner->GetPlayer( 0 )->hitGoal = true;
-
-			owner->goalPulse->show = true;
-
-			//dead = true;
-			receivedHit = NULL;
-
-			
-		}
-
-		//if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-	}
-
+	owner->goalPulse->show = true;
 }
 
 void Goal::Draw(sf::RenderTarget *target )
@@ -227,93 +193,13 @@ void Goal::Draw(sf::RenderTarget *target )
 
 void Goal::DrawMinimap( sf::RenderTarget *target )
 {
-	/*CircleShape cs;
-	cs.setRadius( 80 );
-	cs.setFillColor(  );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );*/
 	target->draw( miniSprite );
-}
-
-//bool Goal::IHitPlayer( int index )
-//{
-//	Actor *player = owner->GetPlayer( 0 );
-//	
-//
-//	/*if( currBullet->hitBody.Intersects( player->hurtBody ) )
-//		{
-//			player->ApplyHit( bulletHitboxInfo );
-//			return true;
-//		}
-//	*/
-//	
-//	return false;
-//}
-
-pair<bool, bool> Goal::PlayerHitMe( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}*/
-		
-
-		if( hit )
-		{
-			receivedHit = player->currHitboxInfo;
-			return pair<bool, bool>(true,false);
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-	return pair<bool, bool>(false,false);
-}
-
-bool Goal::PlayerSlowingMe()
-{
-	return false;
 }
 
 void Goal::UpdateSprite()
 {
 	int trueFrame = 0;
-	if( kinKilling )
+	if( action == A_KINKILLING )
 	{
 		if( frame / 2 < 12 )
 		{
@@ -331,20 +217,16 @@ void Goal::UpdateSprite()
 		{
 			trueFrame = 4;
 		}
-		//else if( frame == 3 )
-		//{
-			
-		//}
 		sprite.setTexture( *ts->texture );
 		sprite.setTextureRect( ts->GetSubRect( trueFrame ) );
 	}
-	else if( exploding )
+	else if( action == A_EXPLODING )
 	{
 		trueFrame = frame / 2;
 		sprite.setTexture( *ts_explosion->texture );
 		sprite.setTextureRect( ts_explosion->GetSubRect( trueFrame ) );
 	}
-	else if( destroyed )
+	else if( action == A_DESTROYED )
 	{
 		trueFrame = 14;
 		sprite.setTexture( *ts_explosion->texture );
@@ -354,25 +236,3 @@ void Goal::UpdateSprite()
 	
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 }
-
-void Goal::DebugDraw(sf::RenderTarget *target)
-{
-}
-
-void Goal::UpdateHitboxes()
-{
-}
-
-bool Goal::ResolvePhysics( sf::Vector2<double> vel )
-{
-	return false;
-}
-
-void Goal::SaveEnemyState()
-{
-}
-
-void Goal::LoadEnemyState()
-{
-}
-
