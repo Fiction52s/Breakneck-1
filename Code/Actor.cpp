@@ -136,23 +136,23 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	orbTS[WALLJUMP] = owner->GetTileset("Orbs/walljump_orb_64x64.png", 64, 64, skin);
 
 	ts_fairSword[0] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[1] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[2] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[1] = owner->GetTileset("fair_swordb_288x288.png", 256, 256, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[2] = owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
 
 	ts_fairSwordLightning[0] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_fairSwordLightning[1] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_fairSwordLightning[2] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
 	ts_dairSword[0] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dairSword[1] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dairSword[2] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_dairSword[1] = owner->GetTileset("dair_swordb_288x288.png", 288, 288, swordSkin);
+	ts_dairSword[2] = owner->GetTileset("dair_swordc_384x384.png", 384, 384, swordSkin);
 
 	ts_dairSwordLightning[0] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_dairSwordLightning[1] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_dairSwordLightning[2] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
 	ts_uairSword[0] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_uairSword[1] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_uairSword[1] = owner->GetTileset("uair_swordb_288x288.png", 288, 288, swordSkin);
 	ts_uairSword[2] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
 
 	ts_uairSwordLightning[0] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
@@ -373,7 +373,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
-		level1SpeedThresh = 30;//22;//22;//32;
+		level1SpeedThresh = 25;	//30;//22;//22;//32;
 		level2SpeedThresh = 45; 
 		speedChangeUp = .5;//03;//.5;
 		speedChangeDown = .03;//.005;//.07;
@@ -3578,7 +3578,7 @@ void Actor::UpdatePrePhysics()
 
 			
 
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )// && frame > 0 )
 			{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
@@ -4359,7 +4359,7 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( (currInput.rightShoulder && !prevInput.rightShoulder) || pauseBufferedAttack )
+				if( (currInput.rightShoulder && !prevInput.rightShoulder) )// || pauseBufferedAttack )
 				{
 					GroundAttack();
 					break;
@@ -6315,6 +6315,8 @@ void Actor::UpdatePrePhysics()
 					{
 						velocity.y -= jumpStrength;
 					}
+
+					velocity.x = (velocity.x + groundSpeed) / 2.0;
 
 					V2d pp = ground->GetPoint( edgeQuantity );
 					double ang = GroundedAngle();
@@ -19652,7 +19654,7 @@ void Actor::UpdateSprite()
 	case FAIR:
 		{
 
-			Tileset *curr_ts = ts_fairSword[speedLevel];
+			Tileset *curr_ts = ts_fairSword[0];
 			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
 			showSword = true;//frame >= startFrame && frame / 2 <= 9;
@@ -19719,7 +19721,7 @@ void Actor::UpdateSprite()
 
 			Vector2i offsetArr[3];
 			offsetArr[0] = Vector2i( 0, 0 );
-			offsetArr[1] = Vector2i( 0, 48 );
+			offsetArr[1] = Vector2i(0, 0);//Vector2i( 0, 48 );
 			offsetArr[2] = Vector2i( 0, 72 );
 
 			Vector2i offset = offsetArr[speedLevel];

@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, double speed,int wait )
-		:Enemy( owner, EnemyType::BASICTURRET, p_hasMonitor, 1 ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
-		edgeQuantity( q ), bulletVA( sf::Quads, maxBullets * 4 )
+		:Enemy( owner, EnemyType::EN_BASICTURRET, p_hasMonitor, 1 ), framesWait( wait), bulletSpeed( speed ), firingCounter( 0 ), ground( g ),
+		edgeQuantity( q )
 {
 	receivedHit = NULL;
 	//keyFrame = 0;
@@ -54,26 +54,6 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
-	
-	ts_bullet = owner->GetTileset( "basicbullet_32x32.png", 32, 32 );
-
-
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
-
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = 32;
-	hitBody.rh = 32;
-	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -82,36 +62,37 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 32;
+	hurtBox.rh = 32;
+	hurtBody->AddCollisionBox(0, hurtBox);
 
-	activeBullets = NULL;
-	inactiveBullets = NULL;
+	hitBody = new CollisionBody(1);
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = 32;
+	hitBox.rh = 32;
+	hitBody->hitboxInfo = hitboxInfo;
+	hitBody->AddCollisionBox(0, hitBox);
 
 
-	/*for( int i = 0; i < maxBullets; ++i )
-	{
-		AddBullet();
-	}*/
-
-	
-	bulletHitboxInfo = new HitboxInfo;
-	bulletHitboxInfo->damage = 40;
-	bulletHitboxInfo->drainX = 0;
-	bulletHitboxInfo->drainY = 0;
-	bulletHitboxInfo->hitlagFrames = 0;
-	bulletHitboxInfo->hitstunFrames = 10;
-	bulletHitboxInfo->knockback = 0;
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
 
 	frame = 0;
-	deathFrame = 0;
 	animationFactor = 3;
-	//slowCounter = 1;
-	//slowMultiple = 1;
-
-	//bulletSpeed = 5;
 
 	dead = false;
-	dying = false;
 
 	double size = max( width, height );
 
@@ -122,9 +103,21 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
 	deathVector = V2d( newPoint.x, newPoint.y );
 
-	launcher = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16 * 3, 3, position, gn, PI, 300 );
-	launcher->SetBulletSpeed( bulletSpeed );
-	launcher->hitboxInfo->damage = 18;
+	V2d along = normalize(ground->v1 - ground->v0);
+
+	numLaunchers = 3;
+	launchers = new Launcher*[numLaunchers];
+	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, gn, 0, 300 );
+	launchers[0]->SetBulletSpeed( bulletSpeed );
+	launchers[0]->hitboxInfo->damage = 18;
+
+	launchers[1] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, along, 0, 300);
+	launchers[1]->SetBulletSpeed(bulletSpeed);
+	launchers[1]->hitboxInfo->damage = 18;
+
+	launchers[2] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, -along, 0, 300);
+	launchers[2]->SetBulletSpeed(bulletSpeed);
+	launchers[2]->hitboxInfo->damage = 18;
 	//launcher->Reset();
 	
 	
@@ -135,44 +128,12 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 void BasicTurret::ResetEnemy()
 {
 	health = initHealth;
-	launcher->Reset();
-	dying = false;
+	//launchers[0]->Reset();
 	dead = false;
 	frame = 0;
-	deathFrame = 0;
-	while( activeBullets != NULL )
-	{
-		DeactivateBullet( activeBullets );
-	}
-}
 
-void BasicTurret::HandleEntrant( QuadTreeEntrant *qte )
-{
-	//basic turret needs to be redone so add in the specter stuff then
-	//cout << "handling entrant" << endl;
-	Edge *e = (Edge*)qte;
-
-	if( e == ground )
-		return;
-
-	Contact *c = owner->coll.collideEdge( queryBullet->position + tempVel, queryBullet->physBody, e, tempVel, V2d( 0, 0 ) );
-	
-
-	if( c != NULL )
-	{
-		//cout << "touched something at all" << endl;
-		if( !col )
-		{
-			minContact = *c;
-			col = true;
-		}
-		else if( c->collisionPriority < minContact.collisionPriority )
-		{
-			minContact = *c;
-		}
-	}
-	//Contact *c = owner->coll.collideEdge( queryBullet->position, queryBullet->physBody, e, tempVel, owner->window );
-
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
 }
 
 void BasicTurret::BulletHitTerrain( BasicBullet *b,
@@ -183,8 +144,9 @@ void BasicTurret::BulletHitTerrain( BasicBullet *b,
 
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
-	if( launcher->def_e == NULL )
-		launcher->SetDefaultCollision(b->framesToLive, testSubstep , edge, pos);
+
+	if( b->launcher->def_e == NULL )
+		b->launcher->SetDefaultCollision(b->framesToLive, testSubstep , edge, pos);
 }
 
 void BasicTurret::BulletHitPlayer( BasicBullet *b )
@@ -199,867 +161,165 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 	b->launcher->DeactivateBullet( b );
 }
 
-void BasicTurret::UpdatePrePhysics()
+void BasicTurret::ProcessState()
 {
-	launcher->UpdatePrePhysics();
-
-	if( !dead && !dying )
-	{
-
-	if( frame == 22 * animationFactor )
+	if (frame == 22 * animationFactor)
 	{
 		frame = 0;
 	}
 
-	if( receivedHit != NULL )
-	{	
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			//AttemptSpawnMonitor();
-			dying = true;
-			owner->GetPlayer( 0 )->ConfirmEnemyKill( this );
-			//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
-		}
-		else
-		{
-			owner->GetPlayer( 0 )->ConfirmEnemyNoKill( this );
-		}
-
-		receivedHit = NULL;
-	}
-
-
-//	DeactivateBullet( currBullet );
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
+	if (frame == 0 && slowCounter == 1)
 	{
-		Bullet *next = currBullet->next;
-		if( currBullet->framesToLive == 0 )
-		{
-			//put this in post physics too?
-			DeactivateBullet( currBullet );
-		}
-		else
-		{
-			//if( currBullet->frame == 12 )
-			//	currBullet->frame = 0;
-		}
-		currBullet = next;
-	}
-	
-
-	//if( frame == 12 * animationFactor && slowCounter == 1 )
-	if( frame == 0 && slowCounter == 1 )
-	{
-		launcher->Fire();
-	}
-
+		launchers[0]->Fire();
+		launchers[1]->Fire();
+		launchers[2]->Fire();
 	}
 }
 
-void BasicTurret::UpdatePhysics()
+void BasicTurret::UpdatePreLauncherPhysics()
 {
-	if (!prelimBox.Intersects(owner->players[0]->hurtBody))
+	for (int i = 0; i < 3; ++i)
 	{
-		launcher->skipPlayerCollideForSubstep = true;
-	}
-
-	launcher->UpdatePhysics();
-	specterProtected = false;
-	Bullet *currBullet = activeBullets;
-	int i = 0;
-	while( currBullet != NULL )
-	{
-
-		Bullet *next = currBullet->next;
-		//cout << "moving bullet" << endl;
-
-		double movement = bulletSpeed / (double)currBullet->slowMultiple / NUM_STEPS;
-		//cout << "movement at bullet " << i << ": "  << movement << endl;
-		double speed;
-		while( movement > 0 )
+		if (!prelimBox[i].Intersects(owner->players[0]->hurtBody))
 		{
-			if( movement > 8 )
-			{
-				movement -= 8;
-				speed = 8;
-			}
-			else
-			{
-				speed = movement;
-				movement = 0;
-			}
-
-			if( ResolvePhysics( currBullet, gn * speed ) )
-			{
-				DeactivateBullet( currBullet );
-				break;
-			}
+			launchers[i]->skipPlayerCollideForSubstep = true;
 		}
-
-		//currBullet->position += gn * bulletSpeed;
-
-		currBullet = next;
-		++i;
-	}
-
-	PhysicsResponse();
-}
-
-void BasicTurret::PhysicsResponse()
-{
-	PlayerSlowingMe();
-
-	UpdateBulletHitboxes();
-	
-
-	pair<bool, bool> bulletResult = PlayerHitMyBullets(); //not needed for now
-
-	if( !dead && !dying )
-	{
-		UpdateHitboxes();
-
-		
-		if( receivedHit == NULL )
-		{
-			pair<bool, bool> result = PlayerHitMe();
-			if( result.first )
-			{
-									//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 6 );
-				dead = true;
-				receivedHit = NULL;
-			}*/
-
-				owner->GetPlayer( 0 )->ConfirmHit( 1, 5, .8, 6 );
-
-
-				//if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-				//{
-				//	owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-				//}
-				//	dead = true;
-		//	receivedHit = NULL;
-			}
-		}
-
-		
-
-		if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-
-		
-	}
-
-	if( IHitPlayerWithBullets() )
-	{
-	}
-}
-
-void BasicTurret::UpdatePostPhysics()
-{
-	launcher->UpdatePostPhysics();
-
-	if (deathFrame == 0 && dying)
-	{
-		//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true);
-		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, position, true, 0, 10, 3, true);
-		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position);
-	}
-	else if( receivedHit != NULL && health > 20 )
-	{
-		//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
-		owner->Pause( 5 );
-	}
-
-	
-
-	if( deathFrame == 30 && dying )
-	{
-		dying = false;
-		dead = true;
-	}
-
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		if( currBullet->slowCounter == currBullet->slowMultiple )
-		{
-			currBullet->frame++;
-			if( currBullet->frame == 12 )
-			{
-				currBullet->frame = 0;
-			}
-			currBullet->framesToLive--;
-			currBullet->slowCounter = 1;
-		}
-		else
-		{
-			currBullet->slowCounter++;
-		}
-
-			
-		//++frame;
-		
-
-		currBullet = currBullet->next;
-	}
-	
-	UpdateSprite();
-	launcher->UpdateSprites();
-
-	//cout << "slowcounter: " << slowCounter << endl;
-	if( slowCounter == slowMultiple )
-	{
-		//++keyFrame;
-		++frame;		
-	//	cout << "frame" << endl;
-		slowCounter = 1;
-	
-		if( dying )
-		{
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
-	}
-
-	if( dead && launcher->GetActiveCount() == 0 )
-	{
-		owner->RemoveEnemy( this );
-	}
-}
-
-
-void BasicTurret::DirectKill()
-{
-	BasicBullet *b = launcher->activeBullets;
-	while( b != NULL )
-	{
-		BasicBullet *next = b->next;
-		double angle = atan2( b->velocity.y, -b->velocity.x );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-		b->launcher->DeactivateBullet( b );
-
-		b = next;
-	}
-
-	dying = true;
-	health = 0;
-	receivedHit = NULL;
-}
-
-void BasicTurret::Draw(sf::RenderTarget *target )
-{
-	if( !dead && !dying )
-	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			if( owner->pauseFrames < 2 || receivedHit == NULL )
-			{
-				target->draw( sprite, keyShader );
-			}
-			else
-			{
-				target->draw( sprite, hurtShader );
-			}
-			target->draw( *keySprite );
-		}
-		else
-		{
-			if( owner->pauseFrames < 2 || receivedHit == NULL )
-			{
-				target->draw( sprite );
-			}
-			else
-			{
-				target->draw( sprite, hurtShader );
-			}
-			
-		}
-	}
-	else if( !dead )
-	{
-		target->draw( botDeathSprite );
-
-		if( deathFrame / 3 < 6 )
-		{
-			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );*/
-		}
-		
-		target->draw( topDeathSprite );
-	}
-	
-
-	if( activeBullets != NULL )
-	{
-		target->draw( bulletVA, ts_bullet->texture );
-	}
-
-	/*sf::CircleShape cs;
-	cs.setFillColor(Color::Magenta);
-	cs.setRadius(20);
-	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-	if (launcher->def_e != NULL)
-	{
-		cs.setPosition(launcher->def_pos.x, launcher->def_pos.y);
-	}
-
-	target->draw(cs);*/
-	
-}
-
-void BasicTurret::DrawMinimap( sf::RenderTarget *target )
-{
-	if( !dead && !dying && hasMonitor && !suppressMonitor )
-	{
-		CircleShape cs;
-		cs.setRadius( 50 );
-		cs.setFillColor( Color::White );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
-	}
-}
-
-bool BasicTurret::IHitPlayerWithBullets()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		if( currBullet->hitBody.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( bulletHitboxInfo );
-			return true;
-		}
-		currBullet = currBullet->next;
-	}
-
-	
-	return false;
-}
-
-bool BasicTurret::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		if( player->position.x < position.x )
-		{
-			hitboxInfo->kbDir = V2d( -1, -1 );
-			//cout << "left" << endl;
-		}
-		else if( player->position.x > position.x )
-		{
-			//cout << "right" << endl;
-			hitboxInfo->kbDir = V2d( 1, -1 );
-		}
-		else
-		{
-			//dont change it
-		}
-
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
-}
-
- pair<bool, bool> BasicTurret::PlayerHitMe( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-
-		if( hit )
-		{
-			receivedHit = player->currHitboxInfo;
-			return pair<bool, bool>(true,false);
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-	return pair<bool, bool>(false,false);
-}
-
- pair<bool, bool> BasicTurret::PlayerHitMyBullets()
- {
-	 	return pair<bool, bool>(false,false);
- }
-
-bool BasicTurret::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		bool slowed = false;
-		for( int i = 0; i < player->maxBubbles; ++i )
-		{
-			if( player->bubbleFramesToLive[i] > 0 )
-			{
-				if( length( currBullet->position - player->bubblePos[i] ) 
-					<= player->bubbleRadius + currBullet->hurtBody.rw )
-				{
-					if( currBullet->slowMultiple == 1 )
-					{
-						currBullet->slowCounter = 1;
-						currBullet->slowMultiple = 5;
-					}
-
-					slowed = true;
-					break;
-				}
-			}
-		}
-		if( !slowed )
-		{
-			currBullet->slowCounter = 1;
-			currBullet->slowMultiple = 1;
-		}
-		currBullet = currBullet->next;
-	}
-
-	//Actor *player = owner->GetPlayer( 0 );
-	bool found = false;
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				found = true;
-				if( slowMultiple == 1 )
-				{
-					slowCounter = 1;
-					slowMultiple = 5;
-				}
-				break;
-			}
-		}
-	}
-
-	if( !found )
-	{
-		slowCounter = 1;
-		slowMultiple = 1;
-	}
-
-	/*for( int i = 0; i < player->maxBubbles; ++i )
-		{
-			if( player->bubbleFramesToLive[i] > 0 )
-			{
-				if( length( currBullet->position - player->bubblePos[i] ) 
-					<= player->bubbleRadius + currBullet->hurtBody.rw )
-				{*/
-
-	
-	
-	return false;
-}
-
-void BasicTurret::UpdateSprite()
-{
-	//sprite.setTextureRect( ts->GetSubRect( frame / animationFactor / 14 ) );//frame / animationFactor ) );
-	//frame / animationFactor ) );
-
-
-	int i = 0;
-	Bullet *currBullet = activeBullets;
-	int rad = 16;
-	while( currBullet != NULL )
-	{	
-		bulletVA[i*4].position = Vector2f( currBullet->position.x - rad, currBullet->position.y - rad );
-		bulletVA[i*4+1].position = Vector2f( currBullet->position.x + rad, currBullet->position.y - rad );
-		bulletVA[i*4+2].position = Vector2f( currBullet->position.x + rad, currBullet->position.y + rad );
-		bulletVA[i*4+3].position = Vector2f( currBullet->position.x - rad, currBullet->position.y + rad );
-
-		sf::IntRect rect = ts_bullet->GetSubRect( currBullet->frame );
-
-		bulletVA[i*4].texCoords = Vector2f( rect.left, rect.top );
-		bulletVA[i*4+1].texCoords = Vector2f( rect.left + rect.width, rect.top );
-		bulletVA[i*4+2].texCoords = Vector2f( rect.left + rect.width, rect.top + rect.height );
-		bulletVA[i*4+3].texCoords = Vector2f( rect.left, rect.top + rect.height );
-		
-		currBullet = currBullet->next;
-		++i;
-	}
-
-	Bullet *notBullet = inactiveBullets;
-	//i = 0;
-	while( notBullet != NULL )
-	{
-		bulletVA[i*4].position = Vector2f( 0,0 );
-		bulletVA[i*4+1].position = Vector2f( 0,0 );
-		bulletVA[i*4+2].position = Vector2f( 0,0 );
-		bulletVA[i*4+3].position = Vector2f( 0,0 );
-
-		bulletVA[i*4].texCoords = Vector2f( 0,0 );
-		bulletVA[i*4+1].texCoords = Vector2f( 0,0 );
-		bulletVA[i*4+2].texCoords = Vector2f( 0,0 );
-		bulletVA[i*4+3].texCoords = Vector2f( 0,0 );
-
-		++i;
-		notBullet = notBullet->next;
-	}
-
-	if( dying && !dead )
-	{
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 23 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, 
-			botDeathSprite.getLocalBounds().height / 2  );
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-		botDeathSprite.setRotation( sprite.getRotation() );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 22 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, 
-			topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-		topDeathSprite.setRotation( sprite.getRotation() );
-	}
-	else
-	{
-		if (!dying && !dead)
-			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
-
-		if( hasMonitor && !suppressMonitor )
-		{
-			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-				keySprite->getLocalBounds().height / 2 );
-			keySprite->setPosition( position.x, position.y );
-
-		}
-
-		
 	}
 }
 
 void BasicTurret::DebugDraw(sf::RenderTarget *target)
 {
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
+	Enemy::DebugDraw(target);
+
+	for (int i = 0; i < 3; ++i)
 	{
-		currBullet->hitBody.DebugDraw( target );
-		//currBullet->hurtBody.DebugDraw( target );
-
-		currBullet = currBullet->next;
+		prelimBox[i].DebugDraw(target);
 	}
+	//
+	//prelimBody->DebugDraw( 0, target);
+}
 
-	/*sf::CircleShape cs;
-	cs.setFillColor( Color( 0, 255, 0, 100 ) );
-	cs.setRadius( 15 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );*/
-	
-	//target->draw( cs );
+void BasicTurret::DirectKill()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		BasicBullet *b = launchers[i]->activeBullets;
+		while (b != NULL)
+		{
+			BasicBullet *next = b->next;
+			double angle = atan2(b->velocity.y, -b->velocity.x);
+			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+			b->launcher->DeactivateBullet(b);
 
-	//hitBody.DebugDraw( target );
-	//hurtBody.DebugDraw( target );
+			b = next;
+		}
+	}
+	health = 0;
+	receivedHit = NULL;
+}
 
-	prelimBox.DebugDraw(target);
+void BasicTurret::EnemyDraw(sf::RenderTarget *target )
+{
+	if( hasMonitor && !suppressMonitor )
+	{
+		if( owner->pauseFrames < 2 || receivedHit == NULL )
+		{
+			target->draw( sprite, keyShader );
+		}
+		else
+		{
+			target->draw( sprite, hurtShader );
+		}
+		target->draw( *keySprite );
+	}
+	else
+	{
+		if( owner->pauseFrames < 2 || receivedHit == NULL )
+		{
+			target->draw( sprite );
+		}
+		else
+		{
+			target->draw( sprite, hurtShader );
+		}	
+	}
+}
+
+void BasicTurret::UpdateSprite()
+{
+	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 }
 
 void BasicTurret::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position;// + gn * 8.0;
-	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position;// + gn * 8.0;
-	hitBody.globalAngle = 0;
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;// + gn * 8.0;
+	hurtBox.globalAngle = 0;
+	hitBox.globalPosition = position;// + gn * 8.0;
+	hitBox.globalAngle = 0;
 }
 
-void BasicTurret::UpdateBulletHitboxes()
+void BasicTurret::SetupPreCollision()
 {
-	Bullet *currBullet = activeBullets;
-	while( currBullet != NULL )
-	{
-		currBullet->hurtBody.globalPosition = currBullet->position;
-		currBullet->hurtBody.globalAngle = 0;
-		currBullet->hitBody.globalPosition = currBullet->position;
-		currBullet->hitBody.globalAngle = 0;
 
-		currBullet = currBullet->next;
-	}
-}
-
-bool BasicTurret::ResolvePhysics( BasicTurret::Bullet * bullet, sf::Vector2<double> vel )
-{
-	possibleEdgeCount = 0;
-	bullet->position += vel;
-	
-	Rect<double> r( bullet->position.x - 16, bullet->position.y - 16, 
-		2 * 16, 2 * 16 );
-	minContact.collisionPriority = 1000000;
-
-	col = false;
-
-	tempVel = vel;
-	minContact.edge = NULL;
-
-	//queryMode = "resolve";
-//	Query( this, owner->testTree, r );
-	queryBullet = bullet;
-	owner->terrainTree->Query( this, r );
-
-	return col;
-}
-
-void BasicTurret::SaveEnemyState()
-{
-}
-
-void BasicTurret::LoadEnemyState()
-{
-}
-
-void BasicTurret::AddBullet()
-{
-	if( inactiveBullets == NULL )
-	{
-		inactiveBullets = new Bullet;
-		inactiveBullets->prev = NULL;
-		inactiveBullets->next = NULL;
-	}
-	else
-	{
-		Bullet *b = new Bullet;
-		b->next = inactiveBullets;
-		inactiveBullets->prev = b;
-		//b = inactiveBullets;
-		inactiveBullets = b;
-	}
-
-	double rad = Launcher::GetRadius(launcher->bulletType);
-	inactiveBullets->hurtBody.isCircle = true;
-	inactiveBullets->hurtBody.globalAngle = 0;
-	inactiveBullets->hurtBody.offset.x = 0;
-	inactiveBullets->hurtBody.offset.y = 0;
-	inactiveBullets->hurtBody.rw = rad;
-	inactiveBullets->hurtBody.rh = rad;
-
-	inactiveBullets->hitBody.type = CollisionBox::Hit;
-	inactiveBullets->hitBody.isCircle = true;
-	inactiveBullets->hitBody.globalAngle = 0;
-	inactiveBullets->hitBody.offset.x = 0;
-	inactiveBullets->hitBody.offset.y = 0;
-	inactiveBullets->hitBody.rw = rad;
-	inactiveBullets->hitBody.rh = rad;
-
-	inactiveBullets->physBody.type = CollisionBox::Physics;
-	inactiveBullets->physBody.isCircle = true;
-	inactiveBullets->physBody.globalAngle = 0;
-	inactiveBullets->physBody.offset.x = 0;
-	inactiveBullets->physBody.offset.y = 0;
-	inactiveBullets->physBody.rw = rad;
-	inactiveBullets->physBody.rh = rad;
-}
-
-void BasicTurret::DeactivateBullet( Bullet *b )
-{
-	//cout << "deactivating" << endl;
-	Bullet *prev = b->prev;
-	Bullet *next = b->next;
-
-	if( prev == NULL && next == NULL )
-	{
-		activeBullets = NULL;
-	}
-	else
-	{
-		if( b == activeBullets )
-		{
-			if( next != NULL )
-			{
-				next->prev = NULL;
-			}
-			
-			activeBullets = next;
-		}
-		else
-		{
-			if( prev != NULL )
-			{
-				prev->next = next;
-			}
-
-			if( next != NULL )
-			{
-				next->prev = prev;
-			}
-		}
-		
-	}
-
-
-	if( inactiveBullets == NULL )
-	{
-		b->next = NULL;
-		b->prev = NULL;
-		inactiveBullets = b;
-	}
-	else
-	{
-		b->prev = NULL;
-		b->next = inactiveBullets;
-		inactiveBullets->prev = b;
-		inactiveBullets = b;
-	}
-}
-
-BasicTurret::Bullet * BasicTurret::ActivateBullet()
-{
-	if( inactiveBullets == NULL )
-	{
-		return NULL;
-	}
-	else
-	{
-		Bullet *oldStart = inactiveBullets;
-		Bullet *newStart = inactiveBullets->next;
-
-		if( newStart != NULL )
-		{
-			newStart->prev = NULL;	
-		}
-		inactiveBullets = newStart;
-
-		
-
-		if( activeBullets == NULL )
-		{
-			activeBullets = oldStart;
-			//oldStart->prev = NULL;
-			oldStart->next = NULL;
-		}
-		else
-		{
-			//oldStart->prev = NULL;
-			oldStart->next = activeBullets;
-			activeBullets->prev = oldStart;
-			activeBullets = oldStart;
-		}
-
-		
-		return oldStart;
-	}
-}
-
-BasicTurret::Bullet::Bullet()
-	:prev( NULL ), next( NULL ), frame( 0 ), slowCounter( 1 ), slowMultiple( 1 ), maxFramesToLive( 120 )
-{
-	//framesToLive = maxFramesToLive;
 }
 
 void BasicTurret::Setup()
 {
-	frameTestCounter = 0;
-
-	launcher->Reset();
-	launcher->Fire();
-	BasicBullet *bb = launcher->activeBullets;
-	V2d finalPos;
-	bool collide = true;
-	while (launcher->GetActiveCount() > 0)
+	for (int li = 0; li < 3; ++li)
 	{
-		launcher->UpdatePrePhysics();
-		for (int i = 0; i < NUM_STEPS; ++i)
+		launchers[li]->Reset();
+		launchers[li]->Fire();
+		BasicBullet *bb = launchers[li]->activeBullets;
+		V2d finalPos;
+		bool collide = true;
+		while (launchers[li]->GetActiveCount() > 0)
 		{
-			testSubstep = i;
-			launcher->UpdatePhysics();
+			launchers[li]->UpdatePrePhysics();
+			for (int i = 0; i < NUM_STEPS; ++i)
+			{
+				testSubstep = i;
+				launchers[li]->UpdatePhysics();
+			}
+
+			if (bb->framesToLive == 0)
+			{
+				finalPos = bb->position;
+				collide = false;
+			}
+
+			launchers[li]->UpdatePostPhysics();
 		}
 
-		if (bb->framesToLive == 0)
+		if (collide)
 		{
-			finalPos = bb->position;
-			collide = false;
+			finalPos = launchers[li]->def_pos;
+		}
+
+		launchers[li]->interactWithTerrain = false;
+
+		double rad = Launcher::GetRadius(launchers[li]->bulletType);
+		double width = length(finalPos - launchers[li]->position) + rad * 2;
+
+		prelimBox[li].type = CollisionBox::Hit;
+		prelimBox[li].isCircle = false;
+		prelimBox[li].rw = width / 2;
+		prelimBox[li].rh = rad;
+
+		V2d norm = ground->Normal();
+
+
+		V2d along = normalize(ground->v1 - ground->v0);
+		if (li == 0)
+		{
+			prelimBox[li].globalAngle = atan2(norm.y, norm.x);
+		}
+		else
+		{
+			prelimBox[li].globalAngle = atan2(along.y, along.x);
 		}
 		
-		launcher->UpdatePostPhysics();
-		
-		frameTestCounter++;
+		prelimBox[li].globalPosition = (finalPos + launchers[li]->position) / 2.0;
 	}
-
-	if (collide)
-	{
-		finalPos = launcher->def_pos;
-	}
-
-	launcher->interactWithTerrain = false;
-
-	double rad = Launcher::GetRadius(launcher->bulletType);
-	double width = length(finalPos - launcher->position) + rad * 2;
-
-	prelimBox.type = CollisionBox::Hit;
-	prelimBox.isCircle = false;
-	prelimBox.rw = width / 2;
-	prelimBox.rh = rad;
-
-	V2d norm = ground->Normal();
-
-	prelimBox.globalAngle = atan2(norm.y, norm.x);
-	prelimBox.globalPosition = (finalPos + launcher->position) / 2.0;
 }

@@ -1035,6 +1035,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	EnemyParams *ep = own->eHitParamsMan->GetHitParams(t);
+	ResetSlow();
 	if (ep == NULL)
 	{
 		numHealth = 1;
@@ -1494,10 +1495,12 @@ void Enemy::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
+
 void Enemy::UpdatePhysics()
 {
 	specterProtected = false;
 
+	UpdatePreLauncherPhysics();
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		launchers[i]->UpdatePhysics();

@@ -69,7 +69,7 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	s.setPosition( pos.x, pos.y );
 	s.setRotation( angle / PI * 180 );
 
-	ResetSlow();
+	//ResetSlow();
 
 	animationFactor = af;
 	ts = t;

@@ -8,89 +8,43 @@ struct BasicTurret : Enemy, LauncherEnemy
 	BasicTurret(GameSession *owner, bool hasMonitor, Edge *ground, double quantity,
 		double bulletSpeed,
 		int framesWait);
-	//	void HandleEdge( Edge *e );
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap(sf::RenderTarget *target);
-	void Draw(sf::RenderTarget *target);
-	bool IHitPlayerWithBullets();
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	std::pair<bool, bool> PlayerHitMyBullets();
-	bool PlayerSlowingMe();
+	void ProcessState();
+	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	void UpdateBulletHitboxes();
 	void Setup();
 	Tileset *ts_bulletExplode;
 	int testSubstep;
 	int frameTestCounter;
-
+	void UpdatePreLauncherPhysics();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);
 
-	CollisionBox prelimBox;
+	CollisionBox prelimBox[3];
 	bool playerPrelimHit[4];
 
-	void SaveEnemyState();
-	void LoadEnemyState();
 	void ResetEnemy();
 
 	sf::Sprite sprite;
 	Tileset *ts;
 
 	const static int maxBullets = 16;
-	sf::Vector2<double> bulletPositions[maxBullets];
-	sf::Vector2<double> tempVel;
 
-	Launcher *launcher;
 	void DirectKill();
 
-
-	sf::VertexArray bulletVA;
-	CollisionBox bulletHurtBody[maxBullets];
-	CollisionBox bulletHitBody[maxBullets];
-	struct Bullet
-	{
-		Bullet();
-		Bullet *prev;
-		Bullet *next;
-		sf::Vector2<double> position;
-		CollisionBox hurtBody;
-		CollisionBox hitBody;
-		CollisionBox physBody;
-		int frame;
-		int slowCounter;
-		int slowMultiple;
-		int maxFramesToLive;
-		int framesToLive;
-	};
-	Bullet *queryBullet;
-	bool ResolvePhysics(Bullet *b, sf::Vector2<double> vel);
-
-	void AddBullet();
-	void DeactivateBullet(Bullet *bullet);
-	Bullet * ActivateBullet();
-	Tileset * ts_bullet;
-
-	Bullet *activeBullets;
-	Bullet *inactiveBullets;
 	HitboxInfo *bulletHitboxInfo;
-
-	bool dying;
-
 
 	int framesWait;
 	int firingCounter;
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
+	void SetupPreCollision();
+	CollisionBody *prelimBody;
+	CollisionBody *hurtBody;
+	CollisionBody *hitBody;
 	HitboxInfo *hitboxInfo;
 
 	double angle;
@@ -100,8 +54,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 	std::string queryMode;
 	int possibleEdgeCount;
 
-	int frame;
-	int deathFrame;
 	int animationFactor;
 	sf::Vector2<double> gn;
 	double bulletSpeed;

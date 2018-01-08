@@ -82,6 +82,10 @@ void Camera::UpdateReal( Actor *player )
 	//double xLimit = 
 
 	//double maxDistance = 0;
+
+	int testRadius = 1200;//900
+	int extra = 200;
+
 	Enemy *curr = owner->activeEnemyList;
 	while( curr != NULL )
 	{
@@ -90,7 +94,8 @@ void Camera::UpdateReal( Actor *player )
 		//bool extra = (curr->type == Enemy::GHOST || curr->type == Enemy::GORILLA );
 		//have stuff here for relative movers so 
 		//bool sometimesExclude = curr->type == Enemy::GHOST
-		if( length( playerPos - curr->position ) > 900 || !curr->affectCameraZoom )
+
+		if( length( playerPos - curr->position ) > testRadius || !curr->affectCameraZoom )
 		{
 			curr = curr->next;
 			continue;
@@ -106,15 +111,15 @@ void Camera::UpdateReal( Actor *player )
 	//		maxDistance = len;
 		V2d dir = normalize( curr->position - vPos );
 		
-		if( curr->position.x < minX )
-			minX = curr->position.x;
-		else if( curr->position.x > maxX )
-			maxX = curr->position.x;
+		if( curr->position.x - extra < minX )
+			minX = curr->position.x - extra;
+		else if( curr->position.x + extra > maxX )
+			maxX = curr->position.x + extra;
 
-		if( curr->position.y < minY )
-			minY = curr->position.y;
-		else if( curr->position.y > maxY )
-			maxY = curr->position.y;
+		if( curr->position.y - extra < minY )
+			minY = curr->position.y - extra;
+		else if( curr->position.y + extra > maxY )
+			maxY = curr->position.y + extra;
 		
 		//diffSum += dir * len;
 		//cout << "len: " << len << endl;

@@ -44,7 +44,7 @@
 
 //#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
-//#include "Enemy_BasicTurret.h"
+#include "Enemy_BasicTurret.h"
 //#include "Enemy_Bat.h"
 #include "Enemy_Blocker.h"
 #include "Enemy_Booster.h"
@@ -2303,11 +2303,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int framesWait;
 				is >> framesWait;
 
-				/*BasicTurret *enemy = new BasicTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
+				BasicTurret *enemy = new BasicTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "crawler" )
 			{

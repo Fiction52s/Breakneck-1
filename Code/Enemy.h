@@ -458,7 +458,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 private:
 	static EnemyParams * enemyTypeHitParams[Count];
 public:
-
+	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;
 	CollisionBody *currHitboxes;
@@ -487,7 +487,7 @@ public:
 	virtual HitboxInfo * IsHit(Actor *player);
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world, bool cuttable = true );
-	virtual void HandleNoHealth() = 0;
+	virtual void HandleNoHealth() {}
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes() {}
