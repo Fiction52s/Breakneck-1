@@ -233,6 +233,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+		currBooster = NULL;
+		oldBooster = NULL;
 		currWall = NULL;
 		currHurtboxes = NULL;
 		currHitboxes = NULL;
@@ -1705,6 +1707,8 @@ void Actor::CreateAttackLightning()
 
 void Actor::Respawn()
 {
+	currBooster = NULL;
+	oldBooster = NULL;
 	currWall = NULL;
 	wallClimbGravityOn = false;
 	currHurtboxes = NULL;
@@ -7590,7 +7594,7 @@ facingRight = false;
 				dWireAirDashOld = dWireAirDash;
 			}
 
-			if (currBooster != NULL)
+			if (currBooster != NULL && oldBooster == NULL )
 			{
 				velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
 				startAirDashVel.x = velocity.x;//normalize(velocity).x * ( length( velocity ) + currBooster->strength);
@@ -7603,7 +7607,6 @@ facingRight = false;
 				{
 					extraAirDashY = extraAirDashY + aSpeed;
 				}
-				currBooster = NULL;
 			}
 			break;
 		}
@@ -7782,7 +7785,7 @@ facingRight = false;
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
-	if (currBooster != NULL)
+	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH )
 	{	
 		if (ground == NULL && bounceEdge == NULL && (grindEdge == NULL || action == RAILGRIND))
 		{
@@ -7810,7 +7813,8 @@ facingRight = false;
 				groundSpeed -= currBooster->strength;
 			}
 		}
-		currBooster = NULL;
+		//currBooster = NULL;
+		//boostUsed = false;
 	}
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
@@ -8670,6 +8674,9 @@ facingRight = false;
 	{
 		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
 	}*/
+
+	oldBooster = currBooster;
+
 	ClearPauseBufferedActions();
 }
 
@@ -9101,8 +9108,10 @@ bool Actor::ResolvePhysics( V2d vel )
 		owner->railEdgeTree->Query(this, r);
 	}
 
-	/*queryMode = "activeitem";
-	owner->activeItemTree->Query(this, r);*/
+
+	currBooster = NULL;
+	queryMode = "activeitem";
+	owner->activeItemTree->Query(this, r);
 
 	//queryMode = "gate";
 	//owner->testGateCount = 0;
@@ -17901,7 +17910,9 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Enemy *en = (Enemy*)qte;
 		if (en->type == EnemyType::EN_BOOSTER)
 		{
-
+			Booster *boost = (Booster*)qte;
+			currBooster = boost;
+			//booster priority later
 		}
 		else if (en->type == EnemyType::EN_GRAVITYGRASS)
 		{
@@ -22477,7 +22488,7 @@ bool Actor::TryDoubleJump()
 		{
 			cancelAttack = action;
 		}
-		dairBoostedDouble = (action == DAIR);
+		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
 		SetActionExpr( DOUBLE );
 		return true;
 	}

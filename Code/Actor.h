@@ -591,6 +591,7 @@ struct Actor : QuadTreeCollider,
 
 //	Spring *currSpring;
 	Booster *currBooster;
+	Booster *oldBooster;
 	sf::Vector2<double> springVel;
 	int springStunFrames;
 

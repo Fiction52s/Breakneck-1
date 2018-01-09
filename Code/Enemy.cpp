@@ -1193,7 +1193,16 @@ int Enemy::NumTotalBullets()
 
 void Enemy::Reset()
 {
-	numHealth = owner->eHitParamsMan->GetHitParams(type)->maxHealth;
+	EnemyParams *eInfo = owner->eHitParamsMan->GetHitParams(type);
+	if (eInfo != NULL)
+	{
+		numHealth = eInfo->maxHealth;
+	}
+	else
+	{
+		numHealth = 1;
+	}
+	
 	if (cutObject != NULL)
 		cutObject->Reset();
 	ResetSlow();
@@ -1231,8 +1240,8 @@ void Enemy::SetHurtboxes(CollisionBody *cb, int frame)
 
 void Enemy::HandleQuery( QuadTreeCollider * qtc )
 {
-	if( !spawned )
-		qtc->HandleEntrant( this );
+	//if( !spawned )
+	qtc->HandleEntrant( this );
 }
 
 bool Enemy::IsTouchingBox( const sf::Rect<double> &r )

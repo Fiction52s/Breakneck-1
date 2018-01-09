@@ -2145,12 +2145,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int strength;
 				is >> strength;
 
-				/*Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
+				Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
 
-				fullEnemyList.push_back(enemy);
+				activeItemTree->Insert(enemy);
+				//fullEnemyList.push_back(enemy);
 				enem = enemy;
 
-				enemyTree->Insert(enemy);*/
+				enemyTree->Insert(enemy);
 			}
 			else if (typeName == "spring")
 			{
@@ -9021,7 +9022,8 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	if( queryMode == "enemy" )
 	{
 		Enemy *e = (Enemy*)qte;
-
+		if (e->spawned)
+			return;
 		
 
 		bool a = e->spawnRect.intersects( tempSpawnRect );
