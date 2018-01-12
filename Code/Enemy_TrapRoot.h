@@ -1,20 +1,22 @@
-#ifndef __ENEMY_FOOTTRAP_H__
-#define __ENEMY_FOOTTRAP_H__
+#ifndef __ENEMY_TRAPROOT_H__
+#define __ENEMY_TRAPROOT_H__
 
 #include "Enemy.h"
 
-struct FootTrap : Enemy
+struct TrapRoot : Enemy
 {
 	enum Action
 	{
 		LATENT,
-		CHOMPING,
+		EMERGE,
+		IDLE,
+		ENRAGED
 	};
 
 	Action action;
-	int actionLength[CHOMPING + 1];
+	int actionLength[ENRAGED+ 1];
 
-	FootTrap(GameSession *owner, bool hasMonitor,
+	TrapRoot(GameSession *owner, bool hasMonitor,
 		Edge *ground, double quantity);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

@@ -164,15 +164,15 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_grindLungeSword[2] = owner->GetTileset("grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
 
 	ts_standingNSword[0] = owner->GetTileset("stand_sworda_272x160.png", 272, 160, swordSkin);
-	ts_standingNSword[1] = owner->GetTileset("stand_swordb_304x160.png", 304, 160, swordSkin);
-	ts_standingNSword[2] = owner->GetTileset("stand_swordc_336x160.png", 336, 160, swordSkin);
+	ts_standingNSword[1] = owner->GetTileset("stand_swordb_384x160.png", 384, 160, swordSkin);
+	ts_standingNSword[2] = owner->GetTileset("stand_swordc_384x192.png", 384, 192, swordSkin);
 
 	ts_dashAttackSword[0] = owner->GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
 	ts_dashAttackSword[1] = owner->GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
 	ts_dashAttackSword[2] = owner->GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);
 
 	ts_wallAttackSword[0] = owner->GetTileset("wall_sworda_128x256.png", 128, 256, swordSkin);
-	ts_wallAttackSword[1] = owner->GetTileset("wall_swordb_128x288.png", 128, 288, swordSkin);
+	ts_wallAttackSword[1] = owner->GetTileset("wall_swordb_240x352.png", 128, 288, swordSkin);
 	ts_wallAttackSword[2] = owner->GetTileset("wall_swordc_160x384.png", 160, 384, swordSkin);
 
 	ts_steepSlideAttackSword[0] = owner->GetTileset("steep_att_sworda_288x128.png", 288, 128, swordSkin);
@@ -616,9 +616,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		{
 		//for( int j = 4; j < 10; ++j )
 
-		diagDownSwordOffset[0] = Vector2f(32, 24);
+		/*diagDownSwordOffset[0] = Vector2f(32, 24);
 		diagDownSwordOffset[1] = Vector2f(32, 24);
-		diagDownSwordOffset[2] = Vector2f(32, 24);
+		diagDownSwordOffset[2] = Vector2f(32, 24);*/
+
+		diagDownSwordOffset[0] = Vector2f(32, 24);
+		diagDownSwordOffset[1] = Vector2f(16, 32);
+		diagDownSwordOffset[2] = Vector2f(16, 64);
 		//Vector2f(16, 32)
 		//Vector2f(16, 64)
 
@@ -626,9 +630,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		offsets[0] = Vector2i(40, -32);
 		
 
-		diagUpSwordOffset[0] = Vector2f(40, -32);
+		/*diagUpSwordOffset[0] = Vector2f(40, -32);
 		diagUpSwordOffset[1] = Vector2f(40, -32);
-		diagUpSwordOffset[2] = Vector2f(40, -32);
+		diagUpSwordOffset[2] = Vector2f(40, -32);*/
+
+		diagUpSwordOffset[0] = Vector2f(40, -32);
+		diagUpSwordOffset[1] = Vector2f(16, -40);
+		diagUpSwordOffset[2] = Vector2f(32, -48);
 		/*offsets[1] = Vector2i(16, -40);
 		offsets[2] = Vector2i(32, -48);*/
 
@@ -647,8 +655,20 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & adUpAList =
 			owner->hitboxManager->GetHitboxList("airdashupahitboxes");
 
+		std::map<int, std::list<CollisionBox>> & adUpBList =
+			owner->hitboxManager->GetHitboxList("airdashupbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adUpPList =
+			owner->hitboxManager->GetHitboxList("airdashupphitboxes");
+
 		std::map<int, std::list<CollisionBox>> & adDownAList =
 			owner->hitboxManager->GetHitboxList("airdashdownahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adDownBList =
+			owner->hitboxManager->GetHitboxList("airdashdownbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adDownPList =
+			owner->hitboxManager->GetHitboxList("airdashdownphitboxes");
 
 		::map<int, std::list<CollisionBox>> & standAList =
 			owner->hitboxManager->GetHitboxList("standahitboxes");
@@ -664,7 +684,15 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
 		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
 
-		for (int i = 0; i < 1; ++i)
+		diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
+		diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
+
+		diagUpHitboxes[2] = new CollisionBody(12, adUpPList, currHitboxInfo);
+		diagDownHitboxes[2] = new CollisionBody(12, adDownPList, currHitboxInfo);
+
+		
+
+		for (int i = 0; i < 3; ++i)
 		{
 			diagDownHitboxes[i]->OffsetAllFrames(diagDownSwordOffset[i]);
 			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
@@ -5534,6 +5562,11 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
+			if (AirAttack())
+				break;
+
+			if (TryDoubleJump()) break;
+
 			if( !currInput.B )//|| ( oldInBubble && !inBubble ) )
 			{
 				SetActionExpr( JUMP );
@@ -5551,9 +5584,9 @@ void Actor::UpdatePrePhysics()
 			}
 			//else if( currInput.A && !prevInput.A && hasDoubleJump )
 
-			if( TryDoubleJump() ) break;
+			
 
-			AirAttack();
+			
 			break;
 		}
 	case STEEPCLIMB:
@@ -6746,7 +6779,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGDOWNATTACK:
 		{
-			SetCurrHitboxes(diagDownHitboxes[0], frame / 2);
+			SetCurrHitboxes(diagDownHitboxes[speedLevel], frame / 2);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -10825,6 +10858,7 @@ bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
 
 double Actor::GetAirDashSpeed()
 {
+	//return 45;
 	switch( speedLevel )
 	{
 	case 0:
@@ -10837,6 +10871,8 @@ double Actor::GetAirDashSpeed()
 		return airDashSpeed2;
 		break;
 	}
+
+	
 }
 
 int Actor::GetBubbleRadius()
@@ -19316,7 +19352,7 @@ void Actor::UpdateSprite()
 			int startFrame = 0;
 			showSword = true;
 
-			Tileset *curr_ts = ts_standingNSword[0];
+			Tileset *curr_ts = ts_standingNSword[speedLevel];
 
 			if( showSword )
 			{
@@ -19665,7 +19701,7 @@ void Actor::UpdateSprite()
 	case FAIR:
 		{
 
-			Tileset *curr_ts = ts_fairSword[0];
+			Tileset *curr_ts = ts_fairSword[speedLevel];
 			//cout << "fair frame : " << frame / 2 << endl;
 			int startFrame = 0;
 			showSword = true;//frame >= startFrame && frame / 2 <= 9;
@@ -19733,7 +19769,7 @@ void Actor::UpdateSprite()
 			Vector2i offsetArr[3];
 			offsetArr[0] = Vector2i( 0, 0 );
 			offsetArr[1] = Vector2i(0, 0);//Vector2i( 0, 48 );
-			offsetArr[2] = Vector2i( 0, 72 );
+			offsetArr[2] = Vector2i( 0, 0 );
 
 			Vector2i offset = offsetArr[speedLevel];
 

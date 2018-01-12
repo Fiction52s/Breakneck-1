@@ -2388,12 +2388,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;
 
-				/*FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 
 			//w2

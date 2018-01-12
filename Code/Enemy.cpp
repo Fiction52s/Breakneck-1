@@ -1419,6 +1419,7 @@ void Enemy::ConfirmHitNoKill()
 	//owner->cam.SetRumble(1, 1, 5);
 	owner->Pause(5);
 	HandleHitAndSurvive();
+	owner->cam.SetRumble(.5, .5, 5);
 	//owner->cam.SetRumble(3, 3, 5);
 }
 

@@ -5445,6 +5445,14 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 		}
 	}
 
+	for (list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt)
+	{
+		if ((*polyIt)->inverse)
+		{
+			(*polyIt)->FixWindingInverse();
+		}
+	}
+
 	//finalize now that we've found our inverse
 	for (auto it = results.begin(); it != results.end(); ++it)
 	{
@@ -5453,13 +5461,7 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 	//check for duplicate point, this means a polygon is not just sharing a point, but is totally invalid and shouldn't count
 
-	for (list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt)
-	{
-		if ((*polyIt)->inverse)
-		{
-			(*polyIt)->FixWindingInverse();
-		}
-	}
+	
 
 	return;
 	//for( list<PolyPtr>::iterator polyIt = orig.begin(); polyIt != orig.end(); ++polyIt )
@@ -7770,12 +7772,65 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 									if( perform )
 									{
+
+										//these big loops add the terrain's actors to the
+										//selected brush just on deletion, but not ones 
+										//that are already selected
+										SelectList actorsList;
+										for (auto it = selectedBrush->objects.begin();
+											it != selectedBrush->objects.end(); ++it)
+										{
+											if ((*it)->selectableType == ISelectable::ACTOR)
+											{
+												actorsList.push_back((*it));
+											}
+										}
+										SelectList addedActorsList;
+										for (auto it = selectedBrush->objects.begin();
+											it != selectedBrush->objects.end(); ++it)
+										{
+											if ((*it)->selectableType == ISelectable::TERRAIN)
+											{
+												PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+
+												for (auto objs = poly->enemies.begin(); objs != poly->enemies.end(); ++objs)
+												{
+													list<ActorPtr> &ap = (*objs).second;
+													for (auto api = ap.begin(); api != ap.end(); ++api)
+													{
+														bool alreadyHere = false;
+														for (auto ita = actorsList.begin();
+															ita != actorsList.end(); ++ita)
+														{
+															if ((*api) == (*ita))
+															{
+																alreadyHere = true;
+															}
+														}
+														if( !alreadyHere )
+														{
+															addedActorsList.push_back((*api));
+														}
+													}
+												}
+
+												
+											}
+										}
+
+										for (auto it = addedActorsList.begin(); it != addedActorsList.end(); ++it)
+										{
+											selectedBrush->AddObject((*it));
+										}
 										Action *remove = new RemoveBrushAction( selectedBrush );
 										remove->Perform();
 
 										doneActionStack.push_back( remove );
 									
 										ClearUndoneActions();
+
+										selectedBrush->SetSelected(false);
+										selectedBrush->Clear();
 									}
 
 									/*int erasedGates = 0;
@@ -8034,7 +8089,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 								UpdateFullBounds();
 							}
-							else if (ev.key.code == Keyboard::K)
+							/*else if (ev.key.code == Keyboard::K)
 							{
 								if (ev.key.shift)
 								{
@@ -8045,7 +8100,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									boundHeight += borderMove;
 								}
 								UpdateFullBounds();
-							}
+							}*/
 							break;
 						}
 					case Event::KeyReleased:

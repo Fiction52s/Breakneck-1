@@ -3,7 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_FootTrap.h"
+#include "Enemy_TrapRoot.h"
 
 using namespace std;
 using namespace sf;
@@ -18,30 +18,30 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
-		:Enemy( owner, EnemyType::EN_FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
+TrapRoot::TrapRoot(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
+	:Enemy(owner, EnemyType::EN_FOOTTRAP, p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
 	action = LATENT;
 	initHealth = 40;
 	health = initHealth;
 
 	double height = 128;
-	ts = owner->GetTileset( "foottrap_160x128.png", 160, height );
-	sprite.setTexture( *ts->texture );
-	
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	ts = owner->GetTileset("TrapRoot_160x128.png", 160, height);
+	sprite.setTexture(*ts->texture);
+
+	V2d gPoint = g->GetPoint(edgeQuantity);
 
 	receivedHit = NULL;
 
 	gn = g->Normal();
-	angle = atan2( gn.x, -gn.y );
+	angle = atan2(gn.x, -gn.y);
 
 	position = gPoint + gn * height / 2.0;
 
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	sprite.setRotation( angle / PI * 180 );
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(gPoint.x, gPoint.y);
+	sprite.setRotation(angle / PI * 180);
 
 	hurtBody = new CollisionBody(1); //this wille ventually match animation
 	CollisionBox hurtBox;
@@ -78,10 +78,10 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	//deathFrame = 0;
 	animationFactor = 2;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
+	spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
 
-	actionLength[LATENT] = 25 * animationFactor;
-	actionLength[CHOMPING] = 25 * animationFactor;
+	//actionLength[LATENT] = 25 * animationFactor;
+	//actionLength[CHOMPING] = 25 * animationFactor;
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -92,10 +92,10 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	actionLength[ROOTWAIT] = 20;
 	actionLength[ROOTSTRIKE] = 20;
 	actionLength[ROOTSPIKEDYING] = 30;*/
-		//deathVector = V2d( 1, -1 );
+	//deathVector = V2d( 1, -1 );
 }
 
-void FootTrap::ResetEnemy()
+void TrapRoot::ResetEnemy()
 {
 	action = LATENT;
 	//cout << "reset" << endl;
@@ -111,7 +111,7 @@ void FootTrap::ResetEnemy()
 	SetHurtboxes(hurtBody, 0);
 }
 
-void FootTrap::ProcessState()
+void TrapRoot::ProcessState()
 {
 	if (frame == actionLength[action])
 	{
@@ -120,103 +120,103 @@ void FootTrap::ProcessState()
 		case LATENT:
 			frame = 0;
 			break;
-		case CHOMPING:
+		/*case CHOMPING:
 			frame = 0;
-			break;
-		//case DYING:
-		//	action = ROOTPREPARE;
-		//	frame = 0;
-		//	break;
-		//case ROOTPREPARE:
-		//	action = ROOTWAIT;
-		//	frame = 0;
-		//	break;
-		//case ROOTWAIT:
-		//	frame = 0;
-		//	break;
-		//case ROOTSTRIKE:
-		//	action = ROOTSPIKEWAIT;
-		//	frame = 0;
-		//	break;
-		//case ROOTSPIKEWAIT:
-		//	frame = 0;
-		//	break;
-		//case ROOTSPIKEDYING:
-		//	owner->RemoveEnemy(this);
-		//	return;
-		//	//actually dead
-		//	break;
+			break;*/
+			//case DYING:
+			//	action = ROOTPREPARE;
+			//	frame = 0;
+			//	break;
+			//case ROOTPREPARE:
+			//	action = ROOTWAIT;
+			//	frame = 0;
+			//	break;
+			//case ROOTWAIT:
+			//	frame = 0;
+			//	break;
+			//case ROOTSTRIKE:
+			//	action = ROOTSPIKEWAIT;
+			//	frame = 0;
+			//	break;
+			//case ROOTSPIKEWAIT:
+			//	frame = 0;
+			//	break;
+			//case ROOTSPIKEDYING:
+			//	owner->RemoveEnemy(this);
+			//	return;
+			//	//actually dead
+			//	break;
 		}
 	}
 
-	switch (action)
-	{
-	case LATENT:
-		if (length(owner->GetPlayer(0)->position - position) < 450)
-		{
-			action = CHOMPING;
-			frame = 0;
-		}
-		break;
-	case CHOMPING:
-		if (length(owner->GetPlayer(0)->position - position) > 450)
-		{
-			action = LATENT;
-			frame = 0;
-		}
-		break;
-	/*case DYING:
-		break;
-	case ROOTPREPARE:
-		break;
-	case ROOTWAIT:
-		if (length(owner->GetPlayer(0)->position - position) < 200)
-		{
-			action = ROOTSTRIKE;
-			frame = 0;
-		}
-		break;
-	case ROOTSTRIKE:
-		break;
-	case ROOTSPIKEWAIT:
-		break;
-	case ROOTSPIKEDYING:
-		break;*/
-	}
+	//switch (action)
+	//{
+	//case LATENT:
+	//	if (length(owner->GetPlayer(0)->position - position) < 450)
+	//	{
+	//		action = CHOMPING;
+	//		frame = 0;
+	//	}
+	//	break;
+	//case CHOMPING:
+	//	if (length(owner->GetPlayer(0)->position - position) > 450)
+	//	{
+	//		action = LATENT;
+	//		frame = 0;
+	//	}
+	//	break;
+	//	/*case DYING:
+	//	break;
+	//	case ROOTPREPARE:
+	//	break;
+	//	case ROOTWAIT:
+	//	if (length(owner->GetPlayer(0)->position - position) < 200)
+	//	{
+	//	action = ROOTSTRIKE;
+	//	frame = 0;
+	//	}
+	//	break;
+	//	case ROOTSTRIKE:
+	//	break;
+	//	case ROOTSPIKEWAIT:
+	//	break;
+	//	case ROOTSPIKEDYING:
+	//	break;*/
+	//}
 	//cout << "dead: " << dead << endl;
 }
 
-void FootTrap::EnemyDraw(sf::RenderTarget *target )
+void TrapRoot::EnemyDraw(sf::RenderTarget *target)
 {
-	if( hasMonitor && !suppressMonitor )
+	if (hasMonitor && !suppressMonitor)
 	{
-		if( owner->pauseFrames < 2 || receivedHit == NULL )
-		{ 
-			target->draw( sprite, keyShader );
+		if (owner->pauseFrames < 2 || receivedHit == NULL)
+		{
+			target->draw(sprite, keyShader);
 		}
 		else
 		{
-			target->draw( sprite, hurtShader );
+			target->draw(sprite, hurtShader);
 		}
-		target->draw( *keySprite );
+		target->draw(*keySprite);
 	}
 	else
 	{
-		if( owner->pauseFrames < 2 || receivedHit == NULL )
+		if (owner->pauseFrames < 2 || receivedHit == NULL)
 		{
-			target->draw( sprite );
+			target->draw(sprite);
 		}
 		else
 		{
-			target->draw( sprite, hurtShader );
+			target->draw(sprite, hurtShader);
 		}
-			
+
 	}
 }
 
-void FootTrap::UpdateSprite()
+void TrapRoot::UpdateSprite()
 {
-	switch (action)
+	/*switch (action)
 	{
 	case LATENT:
 		sprite.setTextureRect(ts->GetSubRect((frame / animationFactor) % 3));
@@ -226,7 +226,7 @@ void FootTrap::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 		sprite.setPosition(position.x, position.y);
 		break;
-	}
+	}*/
 	//if( action == ROOTSPIKEDYING )
 	//{
 	//	
@@ -272,21 +272,21 @@ void FootTrap::UpdateSprite()
 	//	}
 	//	
 
-		if( hasMonitor && !suppressMonitor )
-		{
-			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-				keySprite->getLocalBounds().height / 2 );
-			keySprite->setPosition( position.x, position.y );
-		}
+	if (hasMonitor && !suppressMonitor)
+	{
+		//keySprite.setTexture( *ts_key->texture );
+		keySprite->setTextureRect(ts_key->GetSubRect(owner->keyFrame / 5));
+		keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
+			keySprite->getLocalBounds().height / 2);
+		keySprite->setPosition(position.x, position.y);
+	}
 	//}
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 }
 
 
 
-void FootTrap::UpdateHitboxes()
+void TrapRoot::UpdateHitboxes()
 {
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
