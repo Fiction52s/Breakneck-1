@@ -15,7 +15,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void UpdateHitboxes();
 	void Setup();
 	Tileset *ts_bulletExplode;
-	int testSubstep;
 	int frameTestCounter;
 	void UpdatePreLauncherPhysics();
 	void BulletHitTerrain(BasicBullet *b,

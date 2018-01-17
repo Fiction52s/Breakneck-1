@@ -127,7 +127,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher(this, BasicBullet::BAT, owner, 16, 1, position, V2d(1, 0), 0, 300);
-	launchers[0]->SetBulletSpeed(10);
+	launchers[0]->SetBulletSpeed(70);
 	launchers[0]->hitboxInfo->damage = 18;
 }
 
@@ -219,7 +219,7 @@ void Patroller::HandleNoHealth()
 
 void Patroller::UpdateEnemyPhysics()
 {
-	double movement = speed / NUM_STEPS;
+	double movement = speed / numPhysSteps;
 
 	if( pathLength > 1 )
 	{

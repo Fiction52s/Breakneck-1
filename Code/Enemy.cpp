@@ -174,10 +174,9 @@ Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
 	skipPlayerCollideForSubstep = false;
 }
 
-void Launcher::SetDefaultCollision(int framesToLive, int substep, Edge*e, V2d &pos)
+void Launcher::SetDefaultCollision(int framesToLive, Edge*e, V2d &pos)
 {
 	def_framesToLive = framesToLive;
-	def_substep = substep;
 	def_e = e;
 	def_pos = pos;
 }
@@ -216,15 +215,22 @@ void Launcher::UpdatePrePhysics()
 	CapBulletVel( maxBulletSpeed );
 }
 
-void Launcher::UpdatePhysics()
+void Launcher::UpdatePhysics( int substep, bool lowRes )
 {
 	BasicBullet *curr = activeBullets;
 	BasicBullet *temp;
 	while( curr != NULL )
 	{
+		if (lowRes)
+		{
+			curr->numPhysSteps = NUM_STEPS;
+		}
 		temp = curr->next;
 	//	cout << "updating bullet physics" << endl;
-		curr->UpdatePhysics();
+		if (substep < curr->numPhysSteps)
+		{
+			curr->UpdatePhysics();
+		}
 		curr = temp;
 	}
 
@@ -562,11 +568,12 @@ void BasicBullet::UpdatePrePhysics()
 	}*/
 
 	velocity += gravity / (double)slowMultiple;
+	V2d playerPos = launcher->owner->GetPlayer(0)->position;
 
 	if( launcher->bulletType == BasicBullet::BOSS_BIRD )
 	{
 		int f = launcher->maxFramesToLive - framesToLive;
-		V2d playerPos = launcher->owner->GetPlayer( 0 )->position;
+		
 		//V2d endFly = launcher->owner->b_bird->endFly;
 		V2d dir = normalize( velocity );
 		V2d norm( dir.y, -dir.x );
@@ -585,30 +592,17 @@ void BasicBullet::UpdatePrePhysics()
 		//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 		//velocity += 
 	}
-	
-	//if( gravTowardsPlayer )
-	//{
-	//	double len = gravity.y;//length( gravity );
-	//	V2d diff = launcher->owner->GetPlayer( 0 )->position - position;
-	//	int t = 100;
-	//	diff += V2d( (rand() % t) - t / 2, (rand() % t) - t / 2);
-	//	V2d towards = normalize( diff );
-	//	V2d other( towards.y, -towards.x );
 
-	//	double off = dot( velocity, other );
-	//	double on = dot( velocity, towards );
-	//	//off *= .99;//1.0/2.0;//7.0 / 8.0;
-
-	//	velocity = on * towards + off * other;
-	//	
-	//	//double to = 
-
-	//	velocity += (towards * len ) / (double) slowMultiple;
-	//}
-	//else
-	//{
-	//	
-	//}
+	double len = length(position - playerPos);
+	if (len > MAX_VELOCITY * 2)
+	{
+		numPhysSteps = NUM_STEPS;
+	}
+	else
+	{
+		numPhysSteps = NUM_MAX_STEPS;
+		launcher->owner->GetPlayer(0)->highAccuracyHitboxes = true;
+	}
 }
 
 void BasicBullet::UpdatePostPhysics()
@@ -652,7 +646,7 @@ void BasicBullet::UpdatePostPhysics()
 
 void BasicBullet::UpdatePhysics()
 {
-	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
+	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
 
 	double movementLen = length( movement );
 	V2d moveDir = normalize( movement );
@@ -697,8 +691,7 @@ void BasicBullet::UpdatePhysics()
 	}
 	while( movementLen > 0 );
 
-	if (launcher->def_e != NULL && framesToLive == launcher->def_framesToLive
-		&& launcher->owner->substep == launcher->def_substep)
+	if (launcher->def_e != NULL && framesToLive == launcher->def_framesToLive )
 	{
 		launcher->handler->BulletHitTerrain(this,
 			launcher->def_e, launcher->def_pos);
@@ -889,7 +882,7 @@ void SinBullet::UpdatePrePhysics()
 
 void SinBullet::UpdatePhysics()
 {
-	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
+	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
 
 	double movementLen = length( movement );
 	V2d moveDir = normalize( movement );
@@ -963,7 +956,7 @@ void CopycatBullet::UpdatePrePhysics()
 
 void CopycatBullet::UpdatePhysics()
 {
-	V2d movement = velocity / NUM_STEPS / (double)slowMultiple;
+	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
 
 	double movementLen = length( movement );
 	V2d moveDir = normalize( movement );
@@ -1332,6 +1325,19 @@ void Enemy::UpdatePrePhysics()
 	{
 		launchers[i]->UpdatePrePhysics();
 	}
+
+
+	double len = length(position - owner->GetPlayer( 0 )->position );
+	if (len > MAX_VELOCITY * 2)
+	{
+		numPhysSteps = NUM_STEPS;
+	}
+	else
+	{
+		numPhysSteps = NUM_MAX_STEPS;
+		owner->GetPlayer(0)->highAccuracyHitboxes = true;
+	}
+	
 }
 
 bool Enemy::LaunchersAreDone()
@@ -1505,18 +1511,22 @@ void Enemy::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
-
-void Enemy::UpdatePhysics()
+void Enemy::UpdatePhysics( int substep )
 {
 	specterProtected = false;
+	bool validSubstep = (substep < numPhysSteps);
 
-	UpdatePreLauncherPhysics();
+	if (validSubstep)
+	{
+		UpdatePreLauncherPhysics();
+	}
+	
 	for (int i = 0; i < numLaunchers; ++i)
 	{
-		launchers[i]->UpdatePhysics();
+		launchers[i]->UpdatePhysics( substep );
 	}
 
-	if (dead)
+	if (dead || !validSubstep )
 	{
 		return;
 	}

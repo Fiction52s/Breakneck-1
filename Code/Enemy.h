@@ -83,6 +83,8 @@ struct BasicBullet : QuadTreeCollider
 	int index;
 	int frame;
 	int bounceCount;
+
+	double numPhysSteps;
 	//sf::Vector2<double> tempadd;
 
 	bool col;
@@ -162,7 +164,8 @@ struct Launcher
 	BasicBullet *activeBullets;
 	void DeactivateBullet( BasicBullet *b );
 	void UpdatePrePhysics();
-	void UpdatePhysics();
+	void UpdatePhysics( int substep, 
+		bool lowRes = false );
 	void UpdatePostPhysics();
 	void UpdateSprites();
 	
@@ -191,9 +194,8 @@ struct Launcher
 	double maxBulletSpeed;
 
 	void SetDefaultCollision( int framesToLive,
-		int substep, Edge *e, sf::Vector2<double> &pos);
+		Edge *e, sf::Vector2<double> &pos);
 	int def_framesToLive;
-	int def_substep;
 	Edge* def_e;
 	bool skipPlayerCollideForSubstep;
 	sf::Vector2<double> def_pos;
@@ -480,7 +482,7 @@ public:
 	virtual void HandleHitAndSurvive() {}
 	//std::list<CollisionBox> *activeHurtboxes;
 	CollisionBox *physicsBox;
-	virtual void UpdatePhysics();
+	virtual void UpdatePhysics( int substep );
 	int numLaunchers;
 	bool LaunchersAreDone();
 	virtual bool IsSlowed( int index );
@@ -522,6 +524,7 @@ public:
 
 	void Reset();
 	
+	double numPhysSteps;
 	Enemy *prev;
 	Enemy *next;
 	GameSession *owner;

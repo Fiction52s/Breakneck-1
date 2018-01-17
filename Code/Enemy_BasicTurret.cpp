@@ -146,7 +146,7 @@ void BasicTurret::BulletHitTerrain( BasicBullet *b,
 	b->launcher->DeactivateBullet( b );
 
 	if( b->launcher->def_e == NULL )
-		b->launcher->SetDefaultCollision(b->framesToLive, testSubstep , edge, pos);
+		b->launcher->SetDefaultCollision(b->framesToLive, edge, pos);
 }
 
 void BasicTurret::BulletHitPlayer( BasicBullet *b )
@@ -277,11 +277,7 @@ void BasicTurret::Setup()
 		while (launchers[li]->GetActiveCount() > 0)
 		{
 			launchers[li]->UpdatePrePhysics();
-			for (int i = 0; i < NUM_STEPS; ++i)
-			{
-				testSubstep = i;
-				launchers[li]->UpdatePhysics();
-			}
+			launchers[li]->UpdatePhysics(0, true);
 
 			if (bb->framesToLive == 0)
 			{

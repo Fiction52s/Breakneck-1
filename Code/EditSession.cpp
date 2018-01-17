@@ -3129,7 +3129,7 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 			//GroundInfo *oldGI = actor->groundInfo;
 
 			//GroundInfo old = *actor->groundInfo;
-
+			assert(gi.edgeStart != NULL);
 			assert( newActor.get() != NULL );
 
 			//newActor->UnAnchor( newActor );

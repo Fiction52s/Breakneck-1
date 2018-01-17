@@ -579,7 +579,7 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 	return false;
 }
 
-void SurfaceMover::Move( int slowMultiple )
+void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 {
 	if( ground != NULL )
 	{
@@ -587,7 +587,7 @@ void SurfaceMover::Move( int slowMultiple )
 		double maxMovement = min( physBody.rw, physBody.rh ); //circle so this might be unnecessary
 		movement = groundSpeed;
 
-		movement /= slowMultiple * NUM_STEPS;
+		movement /= slowMultiple * numPhysSteps;
 
 		if( abs( movement ) < .0001 )
 		{
@@ -757,7 +757,7 @@ void SurfaceMover::Move( int slowMultiple )
 		//cout << "move through the air" << endl;
 
 		V2d movementVec = velocity;
-		movementVec /= slowMultiple * NUM_STEPS;
+		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		//cout << "before moving air position: " << physBody.globalPosition.x 
 		//	<< ", " << physBody.globalPosition.y << endl;

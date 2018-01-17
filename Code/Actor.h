@@ -600,7 +600,8 @@ struct Actor : QuadTreeCollider,
 	double scorpAdditionalCapMax;
 	double scorpAdditionalAccel;
 	double maxVelocity;
-
+	bool highAccuracyHitboxes;
+	double GetNumSteps();
 
 	double CalcLandingSpeed( sf::Vector2<double> &testVel,
 		sf::Vector2<double> &alongVel, 

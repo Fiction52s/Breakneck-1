@@ -35,7 +35,7 @@ struct SurfaceMover : QuadTreeCollider
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Update();
 	void SetSpeed( double speed );
-	void Move( int slowMultiple );
+	void Move( int slowMultiple, int numPhysSteps );
 	bool RollClockwise( double &q,
 		double &m );
 	bool RollCounterClockwise( double &q,

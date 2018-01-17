@@ -1064,26 +1064,26 @@ void GameSession::UpdateEnemiesPhysics()
 	}
 
 
-	for( substep = 0; substep < NUM_STEPS; ++substep )
+	for( int substep = 0; substep < NUM_MAX_STEPS; ++substep )
 	{
-		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
+		/*for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
 			(*it)->UpdatePhysics();
-		}
-
+		}*/
 		for( int i = 0; i < 4; ++i )
 		{
 			p = GetPlayer( i );
-			if( p != NULL )
-				p->UpdatePhysics();
+			if (p != NULL)
+			{
+				if( substep == 0 || p->highAccuracyHitboxes )
+					p->UpdatePhysics();
+			}
 		}
 
 		Enemy *current = activeEnemyList;
 		while( current != NULL )
 		{
-			
-			current->UpdatePhysics();
-		
+			current->UpdatePhysics( substep );
 			current = current->next;
 		}
 	}

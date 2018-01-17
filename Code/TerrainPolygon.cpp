@@ -1677,6 +1677,7 @@ void TerrainPolygon::Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, P
 
 				//extending is broken right now. this line above needs to be uncommented!^
 				(*it)->groundInfo->edgeStart = tp;
+				assert(tp != NULL);
 			}
 		}
 

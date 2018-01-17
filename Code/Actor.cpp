@@ -8710,7 +8710,21 @@ facingRight = false;
 
 	oldBooster = currBooster;
 
+	highAccuracyHitboxes = false;
+
 	ClearPauseBufferedActions();
+}
+
+double Actor::GetNumSteps()
+{
+	if (highAccuracyHitboxes)
+	{
+		return NUM_MAX_STEPS;
+	}
+	else
+	{ 
+		return NUM_STEPS;
+	}
 }
 
 void Actor::InitAfterEnemies()
@@ -9184,15 +9198,15 @@ V2d Actor::UpdateReversePhysics()
 	currWall = NULL;
 	if( grindEdge != NULL )
 	{
-		movement = grindSpeed / (double)slowMultiple / NUM_STEPS;
+		movement = grindSpeed / (double)slowMultiple / GetNumSteps();
 	}
 	else if( ground != NULL )
 	{
-		movement = groundSpeed / (double)slowMultiple / NUM_STEPS;
+		movement = groundSpeed / (double)slowMultiple / GetNumSteps();
 	}
 	else
 	{
-		movementVec = velocity / (double)slowMultiple / NUM_STEPS;
+		movementVec = velocity / (double)slowMultiple / GetNumSteps();
 	}
 
 	movement = -movement;
@@ -9499,7 +9513,7 @@ V2d Actor::UpdateReversePhysics()
 
 									if( movingGround != NULL )
 									{
-										movementVec += currMovingTerrain->vel / (double)slowMultiple / NUM_STEPS;
+										movementVec += currMovingTerrain->vel / (double)slowMultiple / GetNumSteps();
 										cout << "7 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
 											", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
 									}
@@ -11413,12 +11427,12 @@ void Actor::UpdatePhysics()
 			reversed = false;
 			grindSpeed = -grindSpeed;
 		}
-		movement = temp_grindSpeed / NUM_STEPS;
+		movement = temp_grindSpeed / GetNumSteps();
 	}
 	else if( ground != NULL )
 	{
 
-		movement = temp_groundSpeed / NUM_STEPS;
+		movement = temp_groundSpeed / GetNumSteps();
 		if( movement != 0 && abs( movement ) < .00001 )
 		{
 			//maybe here I should reduce the groundspeed to 0? 
@@ -11436,7 +11450,7 @@ void Actor::UpdatePhysics()
 	}
 	else
 	{
-		movementVec = temp_velocity / NUM_STEPS;
+		movementVec = temp_velocity / GetNumSteps();
 		//cout << "movelength: " << moveLength << endl;
 		//cout << "movevec: " << movementVec.x << ", " << movementVec.y << endl;
 	}

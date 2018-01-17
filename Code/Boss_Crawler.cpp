@@ -752,7 +752,7 @@ void Boss_Crawler::UpdatePrePhysics()
 
 void Boss_Crawler::UpdatePhysics()
 {
-	launcher->UpdatePhysics();
+	//launcher->UpdatePhysics();
 	specterProtected = false;
 
 	if( dead )
@@ -804,7 +804,7 @@ void Boss_Crawler::UpdatePhysics()
 		beforeDistance = GetDistanceCCW( travelIndex );
 	}*/
 
-	mover->Move( slowMultiple );
+	mover->Move( slowMultiple, numPhysSteps );
 
 	
 	if( action == BOOST )

@@ -367,7 +367,7 @@ void Crawler::UpdateEnemyPhysics()
 {
 	if (!dead)
 	{
-		mover->Move(slowMultiple);
+		mover->Move(slowMultiple, numPhysSteps );
 		position = mover->physBody.globalPosition;
 	}
 }

@@ -743,7 +743,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		//	}
 		//}
 		//else?
-		if( d && dist >= 0 && dist <= radius )
+		//if( d && dist >= 0 && dist <= radius )
+		if (d && dist <= radius) //changed when i did timestep change. hope everything is fine
 		{
 			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
 			{
