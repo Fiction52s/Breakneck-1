@@ -9,6 +9,34 @@
 
 struct MainMenu;
 struct SaveFile;
+
+struct MapNode
+{
+	MapNode();
+	int GetNextIndex(ControllerState &curr, 
+		ControllerState &prev);
+	void Draw(sf::RenderTarget *target);
+	void StartMap();
+
+	std::string mapName;
+	sf::Vector2i pos;
+	int leftLinkIndex;
+	int rightLinkIndex;
+	int upLinkIndex;
+	int downLinkIndex;
+	int index;
+};
+
+struct ColonyMap
+{
+	int numNodes;
+	MapNode **nodes;
+	int currNodeIndex;
+	void Load(std::ifstream &is);
+	void Update(ControllerState &curr, ControllerState &prev );
+	void Draw(sf::RenderTarget *target);
+};
+
 struct WorldMap
 {
 	enum State
@@ -23,7 +51,7 @@ struct WorldMap
 		COLONY
 	};
 
-
+	ColonyMap testMap;
 	sf::Shader zoomShader;
 	WorldMap( MainMenu *mainMenu );
 	void Reset( SaveFile *sf );

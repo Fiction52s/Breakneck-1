@@ -12370,7 +12370,7 @@ void Actor::UpdatePhysics()
 							&& currInput.LUp() )
 						{
 
-							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							velocity = normalize(ground->v1 - ground->v0) * groundSpeed + V2d(0, -gravity * 2);
 							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 							movementVec.y -= .01;
@@ -12395,7 +12395,7 @@ void Actor::UpdatePhysics()
 							if( gNormal.x < 0 && gNormal.y > -steepThresh && e1n.x >= 0
 								&& abs( e1n.x ) < wallThresh && groundSpeed > 5 )
 							{
-								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed + V2d(0, -gravity * 2);;
 								movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 								movementVec.y -= .01;
@@ -12434,7 +12434,7 @@ void Actor::UpdatePhysics()
 							&& currInput.LUp() )
 						{
 
-							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed + V2d(0, -gravity * 2);
 							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 							movementVec.y -= .01;
@@ -12458,7 +12458,7 @@ void Actor::UpdatePhysics()
 							if( gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0
 								&& abs( e0n.x ) < wallThresh && groundSpeed < -5 )
 							{
-								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
+								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed + V2d(0, -gravity * 2);
 								movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 
 								movementVec.y -= .01;

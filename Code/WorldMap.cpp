@@ -9,6 +9,103 @@ using namespace boost::filesystem;
 using namespace sf;
 using namespace std;
 
+MapNode::MapNode()
+	:leftLinkIndex(-1),rightLinkIndex(-1),upLinkIndex(-1),downLinkIndex(-1),index(-1)
+{
+
+}
+
+int MapNode::GetNextIndex(ControllerState &curr,
+	ControllerState &prev)
+{
+	if (curr.LLeft() && !prev.LLeft())
+	{
+		if (leftLinkIndex >= 0)
+		{
+			return leftLinkIndex;
+		}
+	}
+	else if (curr.LRight() && !prev.LRight())
+	{
+		if (rightLinkIndex >= 0)
+		{
+			return rightLinkIndex;
+		}
+	}
+	else if (curr.LUp() && !prev.LUp())
+	{
+		if (upLinkIndex >= 0)
+		{
+			return upLinkIndex;
+		}
+	}
+	else if (curr.LDown() && !prev.LDown())
+	{
+		if (downLinkIndex >= 0)
+		{
+			return downLinkIndex;
+		}
+	}
+
+	return index;
+}
+
+void ColonyMap::Update(ControllerState &curr, ControllerState &prev )
+{
+	if (curr.A && !prev.A)
+	{
+		nodes[currNodeIndex]->StartMap();
+		return;
+	}
+
+	currNodeIndex = nodes[currNodeIndex]->GetNextIndex(curr, prev);
+}
+
+void ColonyMap::Draw(sf::RenderTarget *target)
+{
+	for (int i = 0; i < numNodes; ++i)
+	{
+		nodes[i]->Draw(target);
+	}
+}
+
+void ColonyMap::Load(std::ifstream &is)
+{
+	is >> numNodes;
+	nodes = new MapNode*[numNodes];
+	for (int i = 0; i < numNodes; ++i)
+	{
+		MapNode *mn = new MapNode();
+		is >> mn->mapName;
+		is >> mn->pos.x;
+		is >> mn->pos.y;
+		is >> mn->index;
+		is >> mn->leftLinkIndex;
+		is >> mn->rightLinkIndex;
+		is >> mn->upLinkIndex;
+		is >> mn->downLinkIndex;
+		nodes[i] = mn;
+	}
+}
+
+void MapNode::Draw(sf::RenderTarget *target)
+{
+	//just for debug
+
+	//draw node
+	sf::CircleShape cs;
+	cs.setPosition(pos.x, pos.y);
+	cs.setFillColor(Color::Blue);
+	cs.setRadius(100);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	target->draw(cs);
+}
+
+void MapNode::StartMap()
+{
+
+}
+
 WorldMap::WorldMap( MainMenu *mainMenu )
 	:font( mainMenu->arial )
 {
