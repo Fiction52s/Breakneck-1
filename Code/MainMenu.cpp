@@ -1274,7 +1274,7 @@ void MainMenu::Run()
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
-	assert( sh.loadFromFile("test.frag", sf::Shader::Fragment ) );
+	assert( sh.loadFromFile("Shader/test.frag", sf::Shader::Fragment ) );
 	
 	sf::Vertex ff[4] = {
 		sf::Vertex( Vector2f( 0, 0 ) ),

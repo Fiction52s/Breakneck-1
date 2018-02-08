@@ -5082,7 +5082,7 @@ bool GameSession::Load()
 	lifeBarSprite.setTexture(lifeBarTex);
 	lifeBarSprite.setPosition(30, 200);
 
-	if (!minimapShader.loadFromFile("minimap_shader.frag", sf::Shader::Fragment))
+	if (!minimapShader.loadFromFile("Shader/minimap_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0 && "minimap shader not loaded");
@@ -5096,38 +5096,38 @@ bool GameSession::Load()
 	minimapSprite.setPosition(Vector2f(200, preScreenTex->getSize().y - 200));
 	minimapSprite.setScale(1, -1);
 
-	if (!speedBarShader.loadFromFile("speedbar_shader.frag", sf::Shader::Fragment))
+	if (!speedBarShader.loadFromFile("Shader/speedbar_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 	speedBarShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
-	if (!glowShader.loadFromFile("glow_shader.frag", sf::Shader::Fragment))
+	if (!glowShader.loadFromFile("Shader/glow_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	glowShader.setUniform("texSize", Vector2f(1920, 1080));
 
-	if (!hBlurShader.loadFromFile("hblur_shader.frag", sf::Shader::Fragment))
+	if (!hBlurShader.loadFromFile("Shader/hblur_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	hBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
 
-	if (!vBlurShader.loadFromFile("vblur_shader.frag", sf::Shader::Fragment))
+	if (!vBlurShader.loadFromFile("Shader/vblur_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	vBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
 
-	if (!motionBlurShader.loadFromFile("motionblur_shader.frag", sf::Shader::Fragment))
+	if (!motionBlurShader.loadFromFile("Shader/motionblur_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
 
-	if (!shockwaveShader.loadFromFile("shockwave_shader.frag", sf::Shader::Fragment))
+	if (!shockwaveShader.loadFromFile("Shader/shockwave_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -5140,13 +5140,13 @@ bool GameSession::Load()
 	keyHolderSprite.setTexture(*ts_keyHolder->texture);
 	keyHolderSprite.setPosition(10, 50);
 
-	if (!onTopShader.loadFromFile("ontop_shader.frag", sf::Shader::Fragment))
+	if (!onTopShader.loadFromFile("Shader/ontop_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	if (!flowShader.loadFromFile("flow_shader.frag", sf::Shader::Fragment))
+	if (!flowShader.loadFromFile("Shader/flow_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -5156,7 +5156,7 @@ bool GameSession::Load()
 	flowShader.setUniform("flowSpacing", flowSpacing);
 	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
 
-	if (!mountainShader.loadFromFile("mountain_shader.frag", sf::Shader::Fragment))
+	if (!mountainShader.loadFromFile("Shader/mountain_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "mountain SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
@@ -5164,7 +5164,7 @@ bool GameSession::Load()
 
 	mountainShader.setUniform("u_texture", *GetTileset("w1mountains.png", 1920, 512)->texture);
 
-	if (!mountainShader1.loadFromFile("mountain_shader.frag", sf::Shader::Fragment))
+	if (!mountainShader1.loadFromFile("Shader/mountain_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "mountain SHADER 1 NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
@@ -5174,13 +5174,13 @@ bool GameSession::Load()
 
 	onTopShader.setUniform("u_texture", *GetTileset("w1undertrans.png", 1920, 540)->texture);
 
-	if (!underShader.loadFromFile("under_shader.frag", sf::Shader::Fragment))
+	if (!underShader.loadFromFile("Shader/under_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "under shader not loading correctly!" << endl;
 		assert(false);
 	}
 
-	if (!cloneShader.loadFromFile("clone_shader.frag", sf::Shader::Fragment))
+	if (!cloneShader.loadFromFile("Shader/clone_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -5576,7 +5576,7 @@ bool GameSession::Load()
 	int index = 0;
 	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
 	{
-		if (!polyShaders[index].loadFromFile("mat_shader2.frag", sf::Shader::Fragment ) )
+		if (!polyShaders[index].loadFromFile("Shader/mat_shader2.frag", sf::Shader::Fragment ) )
 		{
 			cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "polygon shader not loaded" );
@@ -5612,7 +5612,7 @@ bool GameSession::Load()
 		//polyShaders[tType]->setUniform( "u_texture", *(ts_poly->texture) );
 		polyShaders[index].setUniform( "Resolution", Vector2f( 1920, 1080 ) );
 		polyShaders[index].setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
-		polyShaders[index].setUniform( "u_normals", *undergroundTilesetNormal->texture );
+		//polyShaders[index].setUniform( "u_normals", *undergroundTilesetNormal->texture );
 		
 		++index;
 	}
@@ -13853,7 +13853,7 @@ void GameSession::SetUndergroundParAndDraw()
 	preScreenTex->setView( view );
 
 	underShader.setUniform( "u_texture", *GetTileset( "underground01.png" , 128, 128 )->texture );
-	underShader.setUniform( "u_normals", *GetTileset( "underground01_NORMALS.png", 128, 128 )->texture );
+	//underShader.setUniform( "u_normals", *GetTileset( "underground01_NORMALS.png", 128, 128 )->texture );
 	//underShader.setUniform( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
 
 	underShader.setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
@@ -14846,7 +14846,7 @@ MomentumBar::MomentumBar(GameSession *owner)
 	purp.setTexture(*ts_bar->texture);
 	purp.setTextureRect(ts_bar->GetSubRect(2));
 
-	if (!partShader.loadFromFile("momentum_shader.frag", sf::Shader::Fragment))
+	if (!partShader.loadFromFile("Shader/momentum_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "momentum bar SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);

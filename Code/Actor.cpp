@@ -63,133 +63,120 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tsgstripurp = owner->GetTileset("tripurp_128x128.png", 128, 128);
 	tsgstrirgb = owner->GetTileset("trirgb_128x128.png", 128, 128);
 
-	tileset[STAND] = owner->GetTileset("stand_64x64.png", 64, 64, skin);
-	tileset[WALLATTACK] = owner->GetTileset("wallattack_64x128.png", 64, 128, skin);
-	tileset[DAIR] = owner->GetTileset("dair_80x80.png", 80, 80, skin);
-	tileset[DASH] = owner->GetTileset("dash_96x48.png", 96, 48, skin);
-	tileset[DOUBLE] = owner->GetTileset("double_64x64.png", 64, 64, skin);
-	tileset[BACKWARDSDOUBLE] = owner->GetTileset("double_back_96x96.png", 96, 96, skin);
-	tileset[FAIR] = owner->GetTileset("fair_64x64.png", 64, 64, skin);
-	tileset[DIAGUPATTACK] = owner->GetTileset("airdash_attack_up_96x80.png", 96, 80, skin);
-	tileset[DIAGDOWNATTACK] = owner->GetTileset("airdash_attack_down_64x64.png", 64, 64, skin);
-	tileset[JUMP] = owner->GetTileset("jump_64x64_02.png", 64, 64, skin);
-	tileset[LAND] = owner->GetTileset("land_64x64.png", 64, 64, skin);
-	tileset[LAND2] = owner->GetTileset("land_64x64.png", 64, 64, skin);
-	tileset[RUN] = owner->GetTileset("run_2_64x64.png", 64, 64, skin);
-	tileset[SPRINGSTUN] = owner->GetTileset("double_64x64.png", 64, 64, skin);
-	tileset[SLIDE] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
-	tileset[SPRINT] = owner->GetTileset("sprint_80x48.png", 80, 48, skin);	
+	tileset[STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
+	tileset[WALLATTACK] = owner->GetTileset("Kin/wallattack_64x128.png", 64, 128, skin);
+	tileset[DAIR] = owner->GetTileset("Kin/dair_80x80.png", 80, 80, skin);
+	tileset[DASH] = owner->GetTileset("Kin/dash_96x48.png", 96, 48, skin);
+	tileset[DOUBLE] = owner->GetTileset("Kin/double_64x64.png", 64, 64, skin);
+	tileset[BACKWARDSDOUBLE] = owner->GetTileset("Kin/double_back_96x96.png", 96, 96, skin);
+	tileset[FAIR] = owner->GetTileset("Kin/fair_80x80.png", 80, 80, skin);
+	tileset[DIAGUPATTACK] = owner->GetTileset("Kin/airdash_attack_up_96x80.png", 96, 80, skin);
+	tileset[DIAGDOWNATTACK] = owner->GetTileset("Kin/airdash_attack_down_64x64.png", 64, 64, skin);
+	tileset[JUMP] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[LAND] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
+	tileset[LAND2] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
+	tileset[RUN] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
+	tileset[SPRINGSTUN] = owner->GetTileset("Kin/double_64x64.png", 64, 64, skin);
+	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
+	tileset[SPRINT] = owner->GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
 	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
-	tileset[STANDN] = owner->GetTileset("standn_96x64.png", 96, 64, skin);
-	tileset[UAIR] = owner->GetTileset("uair_96x96.png", 96, 96, skin);
-	tileset[WALLCLING] = owner->GetTileset("wallcling_64x64.png", 64, 64, skin);
-	tileset[WALLJUMP] = owner->GetTileset("walljump_64x64.png", 64, 64, skin);
-	tileset[GRINDBALL] = owner->GetTileset("grindball_64x64.png", 64, 64, skin);
-	tileset[GRINDLUNGE] = owner->GetTileset("airdash_80x80.png", 80, 80, skin);
-	tileset[GRINDSLASH] = owner->GetTileset("grind_lunge_96x128.png", 96, 128, skin);
-	tileset[GRINDATTACK] = owner->GetTileset("grindball_64x64.png", 64, 64, skin);
-	tileset[STEEPSLIDE] = owner->GetTileset("steepslide_80x48.png", 80, 48, skin);
-	tileset[STEEPCLIMBATTACK] = owner->GetTileset("climb_att_128x48.png", 128, 48, skin);
-	tileset[STEEPSLIDEATTACK] = owner->GetTileset("steep_att_80x64.png", 80, 64, skin);
-	tileset[AIRDASH] = owner->GetTileset("airdash_80x80.png", 80, 80, skin);
-	tileset[STEEPCLIMB] = owner->GetTileset("steepclimb_96x32.png", 96, 32, skin);
-	tileset[AIRHITSTUN] = owner->GetTileset("hurt_64x64.png", 64, 64, skin);
-	tileset[GROUNDHITSTUN] = owner->GetTileset("hurt_64x64.png", 64, 64, skin);
-	tileset[WIREHOLD] = owner->GetTileset("steepslide_80x48.png", 80, 48, skin);
-	tileset[BOUNCEAIR] = owner->GetTileset("bounce_224x224.png", 224, 224, skin);
-	tileset[BOUNCEGROUND] = owner->GetTileset("bounce_224x224.png", 224, 224, skin);
-	tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset("bounce_wall_224x224.png", 224, 224, skin);
-	tileset[DEATH] = owner->GetTileset("death_128x96.png", 128, 96, skin);
-	tileset[JUMPSQUAT] = owner->GetTileset("jump_64x64.png", 64, 64, skin);
-	tileset[INTRO] = owner->GetTileset("intro_0_160x80.png", 160, 80, skin);
-	tileset[EXIT] = owner->GetTileset("exit_0_128x160.png", 128, 160, skin);
-	tileset[GRAVREVERSE] = owner->GetTileset("grav_64x64.png", 64, 64, skin);
-	tileset[RIDESHIP] = owner->GetTileset("dive_80x80.png", 80, 80, skin);
-	tileset[SKYDIVE] = owner->GetTileset("walljump_64x64.png", 64, 64, skin);
-	tileset[SKYDIVETOFALL] = owner->GetTileset("intro_0_160x80.png", 160, 80, skin);
-	tileset[WAITFORSHIP] = owner->GetTileset("ship_exit_128x96.png", 128, 96, skin);
-	tileset[GRABSHIP] = owner->GetTileset("ship_exit_128x96.png", 128, 96, skin);
-	tileset[ENTERNEXUS1] = owner->GetTileset("intro_0_160x80.png", 160, 80, skin);
+	tileset[STANDN] = owner->GetTileset("Kin/standn_96x64.png", 96, 64, skin);
+	tileset[UAIR] = owner->GetTileset("Kin/uair_96x96.png", 96, 96, skin);
+	tileset[WALLCLING] = owner->GetTileset("Kin/wallcling_64x64.png", 64, 64, skin);
+	tileset[WALLJUMP] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
+	tileset[GRINDBALL] = owner->GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
+	tileset[GRINDLUNGE] = owner->GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
+	tileset[GRINDSLASH] = owner->GetTileset("Kin/grind_lunge_96x128.png", 96, 128, skin);
+	tileset[GRINDATTACK] = owner->GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
+	tileset[STEEPSLIDE] = owner->GetTileset("Kin/steepslide_64x64.png", 64, 64, skin);
+	tileset[STEEPCLIMBATTACK] = owner->GetTileset("Kin/climb_att_128x64.png", 128, 64, skin);
+	tileset[STEEPSLIDEATTACK] = owner->GetTileset("Kin/steep_att_80x64.png", 80, 64, skin);
+	tileset[AIRDASH] = owner->GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
+	tileset[STEEPCLIMB] = owner->GetTileset("Kin/steepclimb_96x32.png", 96, 32, skin);
+	tileset[AIRHITSTUN] = owner->GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
+	tileset[GROUNDHITSTUN] = owner->GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
+	tileset[WIREHOLD] = owner->GetTileset("Kin/steepslide_80x48.png", 80, 48, skin);
+	tileset[BOUNCEAIR] = owner->GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
+	tileset[BOUNCEGROUND] = owner->GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
+	tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset("Kin/bounce_wall_224x224.png", 224, 224, skin);
+	tileset[DEATH] = owner->GetTileset("Kin/death_128x96.png", 128, 96, skin);
+	tileset[JUMPSQUAT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[INTRO] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
+	tileset[EXIT] = owner->GetTileset("Kin/exit_0_128x160.png", 128, 160, skin);
+	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
+	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_80x80.png", 80, 80, skin);
+	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
+	tileset[SKYDIVETOFALL] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
+	tileset[WAITFORSHIP] = owner->GetTileset("Kin/ship_exit_128x96.png", 128, 96, skin);
+	tileset[GRABSHIP] = owner->GetTileset("Kin/ship_exit_128x96.png", 128, 96, skin);
+	tileset[ENTERNEXUS1] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
 
-	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("w1_airdashget_128x128.png", 128, 128, skin);
-	tileset[GETPOWER_AIRDASH_FLIP] = owner->GetTileset("w1_airdashget_128x128.png", 128, 128, skin);
+	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
+	tileset[GETPOWER_AIRDASH_FLIP] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
 
-	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("stand_64x64.png", 64, 64, skin);
-	tileset[SEQ_WAIT] = owner->GetTileset("jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset("jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = owner->GetTileset("jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_LAND] = owner->GetTileset("land_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset("run_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("slide_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
+	tileset[SEQ_WAIT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_LAND] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 
-	orbTS[DAIR] = owner->GetTileset("Orbs/dair_orb_80x80.png", 80, 80, skin);
-	orbTS[DOUBLE] = owner->GetTileset("Orbs/double_orb_64x64.png", 64, 64, skin);
-	orbTS[FAIR] = owner->GetTileset("Orbs/fair_orb_80x80.png", 80, 80, skin);
-	orbTS[LAND] = owner->GetTileset("Orbs/land_orb_64x64.png", 64, 64, skin);
-	orbTS[LAND2] = owner->GetTileset("Orbs/land_orb_64x64.png", 64, 64, skin);
-	orbTS[SLIDE] = owner->GetTileset("Orbs/slide_orb_64x64.png", 64, 64, skin);
-	orbTS[STAND] = owner->GetTileset("Orbs/stand_orb_64x64.png", 64, 64, skin);
-	orbTS[STEEPSLIDE] = owner->GetTileset("Orbs/steepslide_orb_64x64.png", 64, 64, skin);
-	orbTS[STEEPCLIMB] = owner->GetTileset("Orbs/steepclimb_orb_96x32.png", 96, 32, skin);
-	orbTS[UAIR] = owner->GetTileset("Orbs/uair_orb_96x96.png", 96, 96, skin);
-	orbTS[WALLCLING] = owner->GetTileset("Orbs/wallcling_orb_64x64.png", 64, 64, skin);
-	orbTS[WALLJUMP] = owner->GetTileset("Orbs/walljump_orb_64x64.png", 64, 64, skin);
-
-	ts_fairSword[0] = owner->GetTileset("fair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[1] = owner->GetTileset("fair_swordb_288x288.png", 256, 256, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[2] = owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
+	ts_fairSword[0] = owner->GetTileset("Sword/fair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[1] = owner->GetTileset("Sword/fair_swordb_288x288.png", 288, 288, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[2] = owner->GetTileset("Sword/fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
 
 	ts_fairSwordLightning[0] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_fairSwordLightning[1] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_fairSwordLightning[2] = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
-	ts_dairSword[0] = owner->GetTileset("dair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dairSword[1] = owner->GetTileset("dair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_dairSword[2] = owner->GetTileset("dair_swordc_384x384.png", 384, 384, swordSkin);
+	ts_dairSword[0] = owner->GetTileset("Sword/dair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_dairSword[1] = owner->GetTileset("Sword/dair_swordb_288x288.png", 288, 288, swordSkin);
+	ts_dairSword[2] = owner->GetTileset("Sword/dair_swordc_384x384.png", 384, 384, swordSkin);
 
 	ts_dairSwordLightning[0] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_dairSwordLightning[1] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_dairSwordLightning[2] = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
-	ts_uairSword[0] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_uairSword[1] = owner->GetTileset("uair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_uairSword[2] = owner->GetTileset("uair_swordc_320x320.png", 320, 320, swordSkin);
+	ts_uairSword[0] = owner->GetTileset("Sword/uair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_uairSword[1] = owner->GetTileset("Sword/uair_swordb_288x288.png", 288, 288, swordSkin);
+	ts_uairSword[2] = owner->GetTileset("Sword/uair_swordc_320x320.png", 320, 320, swordSkin);
 
 	ts_uairSwordLightning[0] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_uairSwordLightning[1] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_uairSwordLightning[2] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
-	ts_grindLungeSword[0] = owner->GetTileset("grind_lunge_sworda_160x160.png", 160, 160, swordSkin);
-	ts_grindLungeSword[1] = owner->GetTileset("grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
-	ts_grindLungeSword[2] = owner->GetTileset("grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
+	ts_grindLungeSword[0] = owner->GetTileset("Sword/grind_lunge_sworda_160x160.png", 160, 160, swordSkin);
+	ts_grindLungeSword[1] = owner->GetTileset("Sword/grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
+	ts_grindLungeSword[2] = owner->GetTileset("Sword/grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
 
-	ts_standingNSword[0] = owner->GetTileset("stand_sworda_272x160.png", 272, 160, swordSkin);
-	ts_standingNSword[1] = owner->GetTileset("stand_swordb_384x160.png", 384, 160, swordSkin);
-	ts_standingNSword[2] = owner->GetTileset("stand_swordc_384x192.png", 384, 192, swordSkin);
+	ts_standingNSword[0] = owner->GetTileset("Sword/stand_sworda_272x160.png", 272, 160, swordSkin);
+	ts_standingNSword[1] = owner->GetTileset("Sword/stand_swordb_384x160.png", 384, 160, swordSkin);
+	ts_standingNSword[2] = owner->GetTileset("Sword/stand_swordc_384x192.png", 384, 192, swordSkin);
 
-	ts_dashAttackSword[0] = owner->GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
+	/*ts_dashAttackSword[0] = owner->GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
 	ts_dashAttackSword[1] = owner->GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
-	ts_dashAttackSword[2] = owner->GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);
+	ts_dashAttackSword[2] = owner->GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);*/
 
-	ts_wallAttackSword[0] = owner->GetTileset("wall_sworda_128x256.png", 128, 256, swordSkin);
-	ts_wallAttackSword[1] = owner->GetTileset("wall_swordb_240x352.png", 128, 288, swordSkin);
-	ts_wallAttackSword[2] = owner->GetTileset("wall_swordc_160x384.png", 160, 384, swordSkin);
+	ts_wallAttackSword[0] = owner->GetTileset("Sword/wall_sworda_128x256.png", 128, 256, swordSkin);
+	ts_wallAttackSword[1] = owner->GetTileset("Sword/wall_swordb_240x352.png", 128, 288, swordSkin);
+	ts_wallAttackSword[2] = owner->GetTileset("Sword/wall_swordc_160x384.png", 160, 384, swordSkin);
 
-	ts_steepSlideAttackSword[0] = owner->GetTileset("steep_att_sworda_480x176.png", 480, 176, swordSkin);
-	ts_steepSlideAttackSword[1] = owner->GetTileset("steep_att_swordb_352x192.png", 352, 192, swordSkin);
-	ts_steepSlideAttackSword[2] = owner->GetTileset("steep_att_swordc_560x256.png", 560, 256, swordSkin);
+	ts_steepSlideAttackSword[0] = owner->GetTileset("Sword/steep_att_sworda_480x176.png", 480, 176, swordSkin);
+	ts_steepSlideAttackSword[1] = owner->GetTileset("Sword/steep_att_swordb_352x192.png", 352, 192, swordSkin);
+	ts_steepSlideAttackSword[2] = owner->GetTileset("Sword/steep_att_swordc_560x256.png", 560, 256, swordSkin);
 
-	ts_steepClimbAttackSword[0] = owner->GetTileset("climb_att_sworda_352x128.png", 256, 80, swordSkin);
-	ts_steepClimbAttackSword[1] = owner->GetTileset("climb_att_swordb_416x320.png", 416, 320, swordSkin);
-	ts_steepClimbAttackSword[2] = owner->GetTileset("climb_att_swordc_496x208.png", 496, 208, swordSkin);
+	ts_steepClimbAttackSword[0] = owner->GetTileset("Sword/climb_att_sworda_352x128.png", 256, 80, swordSkin);
+	ts_steepClimbAttackSword[1] = owner->GetTileset("Sword/climb_att_swordb_416x320.png", 416, 320, swordSkin);
+	ts_steepClimbAttackSword[2] = owner->GetTileset("Sword/climb_att_swordc_496x208.png", 496, 208, swordSkin);
 
-	ts_diagUpSword[0] = owner->GetTileset("airdash_u_sword_144x208.png", 144, 208, swordSkin);
-	ts_diagUpSword[1] = owner->GetTileset("airdash_u_sword_b_224x240.png", 224, 240, swordSkin);
-	ts_diagUpSword[2] = owner->GetTileset("airdash_u_sword_p_320x384.png", 320, 384, swordSkin);
+	ts_diagUpSword[0] = owner->GetTileset("Sword/airdash_u_sword_144x208.png", 144, 208, swordSkin);
+	ts_diagUpSword[1] = owner->GetTileset("Sword/airdash_u_sword_b_224x240.png", 224, 240, swordSkin);
+	ts_diagUpSword[2] = owner->GetTileset("Sword/airdash_u_sword_p_320x384.png", 320, 384, swordSkin);
 
-	ts_diagDownSword[0] = owner->GetTileset("airdash_sword_128x208.png", 128, 208, swordSkin);
-	ts_diagDownSword[1] = owner->GetTileset("airdash_sword_b_224x240.png", 224, 240, swordSkin);
-	ts_diagDownSword[2] = owner->GetTileset("airdash_sword_p_320x384.png", 320, 384, swordSkin);
+	ts_diagDownSword[0] = owner->GetTileset("Sword/airdash_sword_128x208.png", 128, 208, swordSkin);
+	ts_diagDownSword[1] = owner->GetTileset("Sword/airdash_sword_b_224x240.png", 224, 240, swordSkin);
+	ts_diagDownSword[2] = owner->GetTileset("Sword/airdash_sword_p_320x384.png", 320, 384, swordSkin);
 
 	ts_fx_hurtSpack = owner->GetTileset("hurt_spack_128x160.png", 128, 160);
 	ts_fx_dashStart = owner->GetTileset("fx_dashstart_160x160.png", 160, 160);
@@ -226,8 +213,6 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_goalKillArray[2] = owner->GetTileset("goal_w02_killc_384x256.png", 384, 256);
 	ts_goalKillArray[3] = owner->GetTileset("goal_w02_killd_384x256.png", 384, 256);
 	ts_goalKillArray[4] = owner->GetTileset("goal_w02_kille_384x256.png", 384, 256);
-
-	
 }
 
 Actor::Actor( GameSession *gs, int p_actorIndex )
@@ -242,10 +227,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		standNDashBoostCooldown = 10;
 		standNDashBoostCurr = 0;
 		ClearPauseBufferedActions();
-		for (int i = 0; i < Count; ++i)
-		{
-			orbTS[i] = NULL;
-		}
 		standNDashBoostQuant = 3;
 		dairBoostVel = 4;
 		fairAirDashBoostQuant = 2;
@@ -447,14 +428,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
 		assert( Shader::isAvailable() && "help me" );
-		if (!sh.loadFromFile("player_shader.frag", sf::Shader::Fragment))
+		if (!sh.loadFromFile("Shader/player_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
 			cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "player shader not loaded" );
 		}
 
-		if (!despFaceShader.loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		if (!despFaceShader.loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
 			cout << "desp face SHADER NOT LOADING CORRECTLY" << endl;
@@ -465,7 +446,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		Color c( 0x66, 0xee, 0xff );
 		despFaceShader.setUniform( "fromColor", ColorGL( c ) );
 
-		if (!motionGhostShader.loadFromFile("motionghost_shader.frag", sf::Shader::Fragment))
+		if (!motionGhostShader.loadFromFile("Shader/motionghost_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "motion ghost SHADER NOT LOADING CORRECTLY" << endl;
 			assert(0 && "desp shader not loaded");
@@ -478,7 +459,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
-		/*if( !timeSlowShader.loadFromFile( "timeslow_shader.frag", sf::Shader::Fragment ) )
+		/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
 		{
 			cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "time slow shader not loaded" );
@@ -994,7 +975,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 
 
-		if (!swordShaders[0].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		if (!swordShaders[0].loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
@@ -1002,7 +983,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
 		swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShaders[1] = swordShaders[0];
-		if (!swordShaders[1].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		if (!swordShaders[1].loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
@@ -1010,7 +991,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
 		swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShaders[2] = swordShaders[0];
-		if (!swordShaders[2].loadFromFile("colorswap_shader.frag", sf::Shader::Fragment))
+		if (!swordShaders[2].loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
@@ -15713,13 +15694,6 @@ void Actor::UpdatePostPhysics()
 	
 	UpdateSprite();
 	
-	
-
-	orbSprite.setScale(sprite->getScale());
-	orbSprite.setOrigin(sprite->getOrigin());
-	orbSprite.setRotation(sprite->getRotation());
-	orbSprite.setPosition(sprite->getPosition());
-	
 	risingAuraPool->Update();
 	CreateAttackLightning();
 
@@ -18628,10 +18602,6 @@ void Actor::Draw( sf::RenderTarget *target )
 	testBuffer->SetPosition(0, Vector2f(position));
 	testBuffer->UpdateVertices();
 
-	if (showOrbs)
-	{
-		target->draw(orbSprite);
-	}
 	//testBuffer->Draw(target);
 }
 
@@ -19498,7 +19468,7 @@ void Actor::UpdateSprite()
 			int startFrame = 0;
 			showSword = true;//frame / 2 >= startFrame && frame / 2 <= 7;
 			Tileset *curr_ts = ts_steepClimbAttackSword[speedLevel];
-			int animFactor = 4;
+			int animFactor = 2;
 
 			if( showSword )
 			{
@@ -21710,16 +21680,6 @@ void Actor::SetSpriteTexture( Action a )
 {
 	spriteAction = a;
 	sprite->setTexture( *tileset[a]->texture );
-	Tileset *orb = orbTS[a];
-	if (orb != NULL)
-	{
-		orbSprite.setTexture(*orb->texture);
-		showOrbs = true;
-	}
-	else
-	{
-		showOrbs = false;
-	}
 	//orbSprite.setTexture( )
 	motionGhostBuffer->SetTileset(tileset[a]);
 	for (int i = 0; i < 3; ++i)
@@ -21816,24 +21776,6 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 	}
 	
 	sprite->setTextureRect( ir );
-
-	if (showOrbs)
-	{
-		IntRect oir = orbTS[spriteAction]->GetSubRect(currTileIndex);
-		if (!noFlipX)
-		{
-			oir.left += oir.width;
-			oir.width = -oir.width;
-		}
-
-		if (!noFlipY)
-		{
-			oir.top += oir.height;
-			oir.height = -oir.height;
-		}
-
-		orbSprite.setTextureRect( oir );
-	}
 }
 
 void Actor::SetSpriteTile( sf::Sprite *spr, 

@@ -1119,7 +1119,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 		//cout << "doing the add monitor thing" << endl;
 		keyShader = new Shader();
-		if( !keyShader->loadFromFile( "key_shader.frag", sf::Shader::Fragment ) )
+		if( !keyShader->loadFromFile( "Shader/key_shader.frag", sf::Shader::Fragment ) )
 		{
 			cout << "couldnt load enemy key shader" << endl;
 			assert( false );
@@ -1167,7 +1167,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 
 	hurtShader = new Shader();
-	if( !hurtShader->loadFromFile( "enemyhurt_shader.frag", sf::Shader::Fragment ) )
+	if( !hurtShader->loadFromFile( "Shader/enemyhurt_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "couldnt load enemy enemyhurt shader" << endl;
 		assert( false );

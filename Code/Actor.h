@@ -500,9 +500,6 @@ struct Actor : QuadTreeCollider,
 
 		//std::map<int, 
 	void SetupAction(Action a);
-	Tileset *orbTS[Count];
-	sf::Sprite orbSprite;
-	bool showOrbs;
 
 	Tileset *ts_dodecaSmall;
 	Tileset *ts_dodecaBig;

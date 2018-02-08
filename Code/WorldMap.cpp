@@ -98,7 +98,7 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	colonySelectSprite.setTexture( *ts_colonySelect->texture );
 	
 	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
-	if (!zoomShader.loadFromFile("zoomblur_shader.frag", sf::Shader::Fragment))
+	if (!zoomShader.loadFromFile("Shader/zoomblur_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "zoom blur SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);
