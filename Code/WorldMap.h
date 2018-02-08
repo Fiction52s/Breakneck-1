@@ -6,36 +6,37 @@
 #include "LevelSelector.h"
 #include "Input.h"
 #include "Tileset.h"
+#include "ItemSelector.h"
 
 struct MainMenu;
 struct SaveFile;
 
-struct MapNode
+enum MapNodeState
 {
-	MapNode();
-	int GetNextIndex(ControllerState &curr, 
+	NS_DEACTIVATED,
+	NS_ACTIVATED,
+	NS_PARTIALLY_BEATEN,
+	NS_FULLY_BEATEN
+};
+
+struct MapSelector
+{
+	MapSelector( MainMenu *mm, const sf::Vector2f &pos );
+	int numNodeColumns;
+	int nodeSelectorWidth;
+	sf::Vector2f centerPos;
+	MapNodeState *nodeStates[3];
+	void UpdateSprites();
+	void Update(ControllerState &curr,
 		ControllerState &prev);
+	sf::Vertex *nodes;
+	sf::Vertex *paths;
+	sf::Vertex thumbnail[4];
+	sf::RectangleShape bottomBGRect;
 	void Draw(sf::RenderTarget *target);
-	void StartMap();
-
-	std::string mapName;
-	sf::Vector2i pos;
-	int leftLinkIndex;
-	int rightLinkIndex;
-	int upLinkIndex;
-	int downLinkIndex;
-	int index;
+	SingleAxisSelector *saSelector;
 };
 
-struct ColonyMap
-{
-	int numNodes;
-	MapNode **nodes;
-	int currNodeIndex;
-	void Load(std::ifstream &is);
-	void Update(ControllerState &curr, ControllerState &prev );
-	void Draw(sf::RenderTarget *target);
-};
 
 struct WorldMap
 {
@@ -51,7 +52,6 @@ struct WorldMap
 		COLONY
 	};
 
-	ColonyMap testMap;
 	sf::Shader zoomShader;
 	WorldMap( MainMenu *mainMenu );
 	void Reset( SaveFile *sf );
@@ -76,6 +76,7 @@ struct WorldMap
 	float oldZoomCurvePos;
 	float zoomCurvePos;
 	sf::View zoomView;
+	sf::View uiView;
 
 	Tileset *ts_planetAndSpace;
 	Tileset *ts_planet;
@@ -111,6 +112,8 @@ struct WorldMap
 
 	bool moveDown;
 	bool moveUp;
+
+	MapSelector *testSelector;
 
 	//ControllerState currInput;
 	//ControllerState prevInput;

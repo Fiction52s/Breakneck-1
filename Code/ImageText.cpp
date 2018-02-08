@@ -12,22 +12,25 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	vert = new Vertex[numVertices];
 	value = 0;
 	
-	
+	positionCenter = false;
 	numShowZeroes = 0;
 	activeDigits = 1;
-	
+}
+
+void ImageText::SetCenter(sf::Vector2f &p_center)
+{
+	center = p_center;
+	positionCenter = true;
+}
+
+void ImageText::SetTopRight(sf::Vector2f &p_topRight)
+{
+	topRight = p_topRight;
+	positionCenter = false;
 }
 
 void ImageText::UpdateSprite()
 {
-	for( int i = 0; i < maxDigits; ++i )
-	{
-		vert[i*4 + 0].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( -ts->tileWidth, 0 );
-		vert[i*4 + 1].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight;
-		vert[i*4 + 2].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( 0, ts->tileHeight );
-		vert[i*4 + 3].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( -ts->tileWidth, ts->tileHeight );
-	}
-
 	int div = 10;
 	int val = value;
 	int ind = 0;
@@ -62,6 +65,25 @@ void ImageText::UpdateSprite()
 	}
 
 	activeDigits = ind;
+
+	Vector2f currTopRight;
+	if (positionCenter)
+	{
+		currTopRight = Vector2f(center.x + (ts->tileWidth * activeDigits) / 2, center.y - ts->tileHeight / 2);
+	}
+	else
+	{
+		currTopRight = topRight;
+	}
+	
+
+	for (int i = 0; i < activeDigits; ++i)
+	{
+		vert[i * 4 + 0].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight + Vector2f(-ts->tileWidth, 0);
+		vert[i * 4 + 1].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight;
+		vert[i * 4 + 2].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight + Vector2f(0, ts->tileHeight);
+		vert[i * 4 + 3].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight + Vector2f(-ts->tileWidth, ts->tileHeight);
+	}
 }
 
 void ImageText::Draw( sf::RenderTarget *target )

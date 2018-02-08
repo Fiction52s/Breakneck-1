@@ -310,3 +310,20 @@ LineIntersection SegmentIntersect( sf::Vector2<double> a,
 	li.parallel = true;
 	return li;
 }
+
+void SetRectCenter(sf::Vertex *v, int width, int height,
+	sf::Vector2f &origin)
+{
+	v[0].position = origin + Vector2f(-width / 2, -height / 2);
+	v[1].position = origin + Vector2f(width / 2, -height / 2);
+	v[2].position = origin + Vector2f(width / 2, height / 2);
+	v[3].position = origin + Vector2f(-width / 2, height / 2);
+}
+
+void SetRectColor(sf::Vertex *v, sf::Color &c)
+{
+	v[0].color = c;
+	v[1].color = c;
+	v[2].color = c;
+	v[3].color = c;
+}

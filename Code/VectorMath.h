@@ -48,5 +48,8 @@ LineIntersection SegmentIntersect( sf::Vector2<double> a,
 	sf::Vector2<double> b, sf::Vector2<double> c, 
 	sf::Vector2<double> d );
 
+void SetRectCenter(sf::Vertex *v, int width, int height,
+	sf::Vector2f &origin);
+void SetRectColor(sf::Vertex *v, sf::Color &c);
 
 #endif

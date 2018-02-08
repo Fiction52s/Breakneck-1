@@ -31,6 +31,9 @@ struct Config;
 struct RaceFightHUD;
 struct Rail;
 
+struct ImageText;
+struct TimerText;
+
 struct AbsorbParticles;
 struct KinSkin;
 struct Tileset;
@@ -192,30 +195,46 @@ struct GameSession;
 
 struct KeyMarker
 {
-	enum State
-	{
-		ZERO,
-		NONZERO,
-		TOZERO,
-		FROMZERO
-	};
 
 	int frame;
-	State state;
+//	State state;
 	int keysRequired;
 	int startKeys;
 	GameSession *owner;
 	KeyMarker( GameSession *owner );
-	void SetStartKeys( int sKeys );
+	void SetStartKeys( int neededKeys,
+		int totalKeys );
+	void SetStartKeysZone(Zone *z);
 	void Update();
 	void CollectKey();
-	void SetEnergySprite();
+	void SetPosition(sf::Vector2f &pos);
+	//void SetEnergySprite();
 	void Draw( sf::RenderTarget *target );
-	Tileset *ts_keys;
-	Tileset *ts_keyEnergy;
-	sf::Sprite backSprite;
-	sf::Sprite energySprite;
+	//Tileset *ts_keys;
+	//Tileset *ts_keyEnergy;
+	//sf::Sprite backSprite;
+	//sf::Sprite energySprite;
+
+	sf::Sprite keyNumberHUDBG;
+	sf::Sprite keyNumberSpecialSpr;
+	ImageText *keyNumberNeededHUD;
+	ImageText *keyNumberTotalHUD;
 	//GameSession *owner;
+};
+
+struct MomentumBar
+{
+	MomentumBar( GameSession *owner );
+	sf::Sprite teal;
+	sf::Sprite blue;
+	sf::Sprite purp;
+	void SetTopLeft(sf::Vector2f &pos);
+	int level;
+	float part;
+	void SetMomentumInfo(int level, float part);
+	Tileset *ts_bar;
+	void Draw(sf::RenderTarget *target);
+	sf::Shader partShader;
 };
 
 struct KeyNumberObj
@@ -320,8 +339,7 @@ struct ShipExitSeq;
 
 
 
-struct ImageText;
-struct TimerText;
+
 struct VictoryScreen;
 struct VictoryScreen2PlayerVS;
 struct UIWindow;
@@ -425,6 +443,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int raceWinnerIndex;
 	};
 
+	
+	MomentumBar *momentumBar;
 
 	sf::Vertex blackBorderQuads[4 * 2];
 

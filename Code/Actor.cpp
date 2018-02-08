@@ -153,7 +153,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 
 	ts_uairSword[0] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_uairSword[1] = owner->GetTileset("uair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_uairSword[2] = owner->GetTileset("uair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_uairSword[2] = owner->GetTileset("uair_swordc_320x320.png", 320, 320, swordSkin);
 
 	ts_uairSwordLightning[0] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 	ts_uairSwordLightning[1] = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
@@ -175,13 +175,13 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_wallAttackSword[1] = owner->GetTileset("wall_swordb_240x352.png", 128, 288, swordSkin);
 	ts_wallAttackSword[2] = owner->GetTileset("wall_swordc_160x384.png", 160, 384, swordSkin);
 
-	ts_steepSlideAttackSword[0] = owner->GetTileset("steep_att_sworda_288x128.png", 288, 128, swordSkin);
-	ts_steepSlideAttackSword[1] = owner->GetTileset("steep_att_swordb_320x144.png", 320, 144, swordSkin);
-	ts_steepSlideAttackSword[2] = owner->GetTileset("steep_att_swordc_352x156.png", 352, 156, swordSkin);
+	ts_steepSlideAttackSword[0] = owner->GetTileset("steep_att_sworda_480x176.png", 480, 176, swordSkin);
+	ts_steepSlideAttackSword[1] = owner->GetTileset("steep_att_swordb_352x192.png", 352, 192, swordSkin);
+	ts_steepSlideAttackSword[2] = owner->GetTileset("steep_att_swordc_560x256.png", 560, 256, swordSkin);
 
-	ts_steepClimbAttackSword[0] = owner->GetTileset("climb_att_sworda_256x80.png", 256, 80, swordSkin);
-	ts_steepClimbAttackSword[1] = owner->GetTileset("climb_att_swordb_320x96.png", 320, 96, swordSkin);
-	ts_steepClimbAttackSword[2] = owner->GetTileset("climb_att_swordc_352x112.png", 352, 112, swordSkin);
+	ts_steepClimbAttackSword[0] = owner->GetTileset("climb_att_sworda_352x128.png", 256, 80, swordSkin);
+	ts_steepClimbAttackSword[1] = owner->GetTileset("climb_att_swordb_416x320.png", 416, 320, swordSkin);
+	ts_steepClimbAttackSword[2] = owner->GetTileset("climb_att_swordc_496x208.png", 496, 208, swordSkin);
 
 	ts_diagUpSword[0] = owner->GetTileset("airdash_u_sword_144x208.png", 144, 208, swordSkin);
 	ts_diagUpSword[1] = owner->GetTileset("airdash_u_sword_b_224x240.png", 224, 240, swordSkin);
@@ -8782,6 +8782,37 @@ void Actor::SetAction( Action a )
 	}
 
 
+}
+
+float Actor::GetSpeedBarPart()
+{
+	float quant = 0;
+	if (speedLevel == 0)
+	{
+		quant = (float)(currentSpeedBar / level1SpeedThresh);
+	}
+	else if (speedLevel == 1)
+	{
+		quant = (float)((currentSpeedBar - level1SpeedThresh) / (level2SpeedThresh - level1SpeedThresh));
+	}
+	else
+	{
+		quant = (float)((currentSpeedBar - level2SpeedThresh) / (maxGroundSpeed - level2SpeedThresh));
+	}
+
+	return quant;
+	/*if (currentSpeedBar >= level2SpeedThresh)
+	{
+		speedLevel = 2;
+	}
+	else if (currentSpeedBar >= level1SpeedThresh)
+	{
+		speedLevel = 1;
+	}
+	else
+	{
+		speedLevel = 0;
+	}*/
 }
 
 bool Actor::CheckWall( bool right )

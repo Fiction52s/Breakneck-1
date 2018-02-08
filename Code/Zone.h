@@ -34,6 +34,7 @@ struct Zone
 	std::list<Enemy*> allEnemies;
 	bool active;
 	int requiredKeys;
+	int totalStartingKeys;
 
 	bool showShadow;
 	GameSession *owner;

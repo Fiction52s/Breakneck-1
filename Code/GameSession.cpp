@@ -642,19 +642,41 @@ void Barrier::SetPositive()
 KeyMarker::KeyMarker( GameSession *p_owner )
 {
 	owner = p_owner;
-	ts_keys = owner->GetTileset( "keys_256x256.png", 256, 256 );
-	ts_keyEnergy = owner->GetTileset( "keys_energy_256x256.png", 256, 256 );
+	//ts_keys = owner->GetTileset( "keys_256x256.png", 256, 256 );
+	//ts_keyEnergy = owner->GetTileset( "keys_energy_256x256.png", 256, 256 );
 
-	backSprite.setTexture( *ts_keys->texture );
-	energySprite.setTexture( *ts_keyEnergy->texture );
+	//backSprite.setTexture( *ts_keys->texture );
+	//energySprite.setTexture( *ts_keyEnergy->texture );
 
-	backSprite.setPosition( 1920 - 256 - 40, 1080 - 256 - 40 );
-	energySprite.setPosition( backSprite.getPosition() );
+	//backSprite.setPosition( 1920 - 256 - 40, 1080 - 256 - 40 );
+	//energySprite.setPosition( backSprite.getPosition() );
 
-	state = ZERO;
+	
+
+	//state = ZERO;
 	startKeys = 0;
 	keysRequired = 0;
 	frame = 0;
+
+	Tileset *scoreTS = owner->GetTileset("number_score_80x80.png", 80, 80);
+	keyNumberNeededHUD = new ImageText(2, scoreTS);
+	keyNumberTotalHUD = new ImageText(2, scoreTS);
+
+	Tileset *keyBGTS = owner->GetTileset("keyframe_81x81.png", 81, 81);
+
+	keyNumberHUDBG.setTexture(*keyBGTS->texture);
+
+	SetPosition(Vector2f(226, 141));
+	//keyNumberNeededHUD->SetCenter(Vector2f(400, 400));
+	//keyNumberTotalHUD->SetCenter(Vector2f(600, 400));
+	
+}
+
+void KeyMarker::SetPosition(Vector2f &pos)
+{
+	keyNumberHUDBG.setPosition(pos);
+	keyNumberNeededHUD->SetCenter(Vector2f(62, 33) + pos);
+	keyNumberTotalHUD->SetCenter(Vector2f(27, 70) + pos);
 }
 
 void KeyMarker::CollectKey()
@@ -675,62 +697,71 @@ void KeyMarker::CollectKey()
 	{
 		int soundIndex = GameSession::SoundType::S_KEY_COMPLETE_W1 + ( startKeys - 1 );
 		owner->soundNodeList->ActivateSound( owner->gameSoundBuffers[soundIndex] );
-		state = TOZERO;
+		//state = TOZERO;
 		frame = 0;
 	}
 	else
 	{
-		SetEnergySprite();
+		//SetEnergySprite();
 	}
+
+	keyNumberNeededHUD->SetNumber(keyNumberNeededHUD->value - 1);
+	keyNumberTotalHUD->SetNumber(keyNumberTotalHUD->value - 1);
+
+	keyNumberNeededHUD->UpdateSprite();
+	keyNumberTotalHUD->UpdateSprite();
 }
 
-void KeyMarker::SetEnergySprite()
+void KeyMarker::SetStartKeysZone(Zone *z)
 {
-	if( state != NONZERO )
-		return;
-
-	int starts[] = { 0, 1, 3, 6, 10, 15 };
-	int trueStart = starts[startKeys-1];
-
-	int f = trueStart + (startKeys - keysRequired);
-	energySprite.setTextureRect( ts_keyEnergy->GetSubRect( f ) );
+	SetStartKeys(z->requiredKeys, z->totalStartingKeys);
 }
 
-void KeyMarker::SetStartKeys( int sKeys )
+void KeyMarker::SetStartKeys( int neededKeys, int totalKeys )
 {
-	//assert( state == ZERO || state == TOZERO );
-	startKeys = sKeys;
-	keysRequired = startKeys;
+	if (neededKeys > totalKeys)
+		neededKeys = totalKeys;
+
+	startKeys = neededKeys;
+	keysRequired = neededKeys;
 	
+	keyNumberNeededHUD->SetNumber(neededKeys);
+	keyNumberTotalHUD->SetNumber(totalKeys);
 
+
+	keyNumberNeededHUD->UpdateSprite();
+	keyNumberTotalHUD->UpdateSprite();
 	//set bg sprite
 	
-	if( sKeys > 0 )
+	if(neededKeys > 0 )
 	{
-		state = FROMZERO;
-		frame = 0;
+		//state = FROMZERO;
+		//frame = 0;
 	}
 	else
 	{
-		state = ZERO;
-		backSprite.setTextureRect( ts_keys->GetSubRect( 24 ) );
+		//state = ZERO;
+		//backSprite.setTextureRect( ts_keys->GetSubRect( 24 ) );
 	}
 
-	SetEnergySprite();
+	//SetEnergySprite();
 }
 
 void KeyMarker::Draw( sf::RenderTarget *target )
 {
-	target->draw( backSprite );
-	if( state == NONZERO )
-	{
-		target->draw( energySprite );
-	}
+	target->draw(keyNumberHUDBG);
+	keyNumberNeededHUD->Draw(target);
+	keyNumberTotalHUD->Draw(target);
+	//target->draw( backSprite );
+	//if( state == NONZERO )
+	//{
+	//	target->draw( energySprite );
+	//}
 }
 
 void KeyMarker::Update()
 {
-	int growMult = 8;
+	/*int growMult = 8;
 	int shrinkMult = 8;
 	switch( state )
 	{
@@ -763,7 +794,7 @@ void KeyMarker::Update()
 			++frame;
 			break;
 		}
-	}
+	}*/
 }
 
 GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
@@ -775,8 +806,6 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	filePath( p_filePath ), eHitParamsMan( NULL )
 {	
 	mainMenu = p_mainMenu;
-
-	
 
 	Init();
 }
@@ -2152,6 +2181,17 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enem = enemy;
 
 				enemyTree->Insert(enemy);
+			}
+			else if (typeName == "key")
+			{
+				int xPos, yPos;
+				is >> xPos;
+				is >> yPos;
+
+				int numKeys;
+				is >> numKeys;
+
+				keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys));
 			}
 			else if (typeName == "spring")
 			{
@@ -4746,13 +4786,27 @@ void GameSession::SetupZones()
 		}
 	}
 
+	
+	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	{
+		int numTotalKeys = 0;
+		for (auto it = (*zit)->allEnemies.begin(); it != (*zit)->allEnemies.end(); ++it)
+		{
+			if ((*it)->hasMonitor)
+			{
+				++numTotalKeys;
+			}
+		}
+		(*zit)->totalStartingKeys = numTotalKeys;
+	}
+
 	if( originalZone != NULL )
 	{
 		cout << "setting original zone to active: " << originalZone << endl;
 		//originalZone->active = true;
 		ActivateZone(originalZone);
 		currentZone = originalZone;
-		keyMarker->SetStartKeys( currentZone->requiredKeys );
+		keyMarker->SetStartKeysZone(currentZone);
 	}
 	
 	cout << "3: numgates: " << numGates << endl;
@@ -5000,6 +5054,9 @@ bool GameSession::Load()
 {
 	hitboxManager = new HitboxManager;
 
+	momentumBar = new MomentumBar(this);
+	momentumBar->SetTopLeft(Vector2f(202, 117));
+
 	if( progressDisplay != NULL )
 		progressDisplay->SetProgressString("started loading!", 0);
 
@@ -5009,6 +5066,8 @@ bool GameSession::Load()
 		Cleanup();
 		return false;
 	}
+	
+
 
 	eHitParamsMan = new EnemyParamsManager;
 
@@ -5279,6 +5338,7 @@ bool GameSession::Load()
 	activatedZoneList = NULL;
 
 	ts_leftHUD = GetTileset( "lefthud_560x1080.png", 560, 1080 );
+	ts_speedBar = GetTileset("momentumbar_105x105.png", 105, 105);
 	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
 	speedBarSprite.setTexture( *ts_speedBar->texture );
 
@@ -6666,7 +6726,6 @@ int GameSession::Run()
 				else 
 				{
 					quant = (float)((p0->currentSpeedBar-p0->level2SpeedThresh) / ( p0->maxGroundSpeed - p0->level2SpeedThresh) );
-					
 				}
 
 				//cout << "quant: " << quant << endl;
@@ -7863,8 +7922,15 @@ int GameSession::Run()
 			else
 			{
 				preScreenTex->draw(p0->kinFace);
+				//preScreenTex->draw(keyNumberHUDBG);
+				//if( )
+				//keyNumberNeededHUD->Draw(preScreenTex);
+				
 			}
 		}
+
+		momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
+		momentumBar->Draw(preScreenTex);
 		
 		//else 
 
@@ -7943,7 +8009,7 @@ int GameSession::Run()
 		{
 			powerRing->Draw(preScreenTex);
 		}
-		//keyMarker->Draw( preScreenTex );
+		keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
 		//preScreenTex->draw( leftHUDSprite );
 
@@ -9566,7 +9632,7 @@ void GameSession::RespawnPlayer( int index )
 	player->hitGoal = false;
 	currentZone = originalZone;
 	if( currentZone != NULL )
-		keyMarker->SetStartKeys( currentZone->requiredKeys );
+		keyMarker->SetStartKeysZone(currentZone);
 	if( player->currentCheckPoint == NULL )
 	{
 		player->position = originalPos;
@@ -9758,7 +9824,7 @@ void GameSession::RestartLevel()
 
 	currentZone = originalZone;
 	if( currentZone != NULL )
-		keyMarker->SetStartKeys( currentZone->requiredKeys );
+		keyMarker->SetStartKeysZone(currentZone);
 
 	if( poiMap.count( "ship" ) > 0 )
 	{
@@ -14076,7 +14142,7 @@ void GameSession::ActivateZone( Zone *z )
 
 	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
 	currentZone = z;
-	keyMarker->SetStartKeys( currentZone->requiredKeys );
+	keyMarker->SetStartKeysZone(currentZone);
 	int soundIndex = SoundType::S_KEY_ENTER_0 + ( currentZone->requiredKeys );
 	soundNodeList->ActivateSound( gameSoundBuffers[soundIndex] );
 }
@@ -14096,8 +14162,6 @@ void GameSession::UnlockGate( Gate *g )
 		g->activeNext = unlockedGateList;
 		unlockedGateList = g;
 	}
-
-	//if( player->rightWire != NULL && player->rightWire->a
 
 	if( currentZone != NULL )
 	{
@@ -14767,5 +14831,59 @@ void GameSession::RaceFight::TickFrame()
 	else
 	{
 		++frameCounter;
+	}
+}
+
+MomentumBar::MomentumBar(GameSession *owner)
+{
+	ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
+	teal.setTexture(*ts_bar->texture);
+	teal.setTextureRect(ts_bar->GetSubRect(0));
+
+	blue.setTexture(*ts_bar->texture);
+	blue.setTextureRect(ts_bar->GetSubRect(1));
+
+	purp.setTexture(*ts_bar->texture);
+	purp.setTextureRect(ts_bar->GetSubRect(2));
+
+	if (!partShader.loadFromFile("momentum_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "momentum bar SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0);
+	}
+
+	partShader.setUniform("barTex", sf::Shader::CurrentTexture);
+}
+
+void MomentumBar::SetTopLeft(sf::Vector2f &pos)
+{
+	teal.setPosition(pos);
+	blue.setPosition(pos);
+	purp.setPosition(pos);
+}
+
+void MomentumBar::SetMomentumInfo(int p_level, float p_part)
+{
+	level = p_level;
+	part = p_part;
+	partShader.setUniform("tile", (float)level);
+	partShader.setUniform("factor", part);
+}
+
+void MomentumBar::Draw(sf::RenderTarget *target)
+{
+	if (level == 0)
+	{
+		target->draw(teal, &partShader);
+	}
+	else if (level == 1)
+	{
+		target->draw(teal);
+		target->draw(blue, &partShader);
+	}
+	else if (level == 2)
+	{
+		target->draw(blue);
+		target->draw(purp, &partShader);
 	}
 }

@@ -9,102 +9,66 @@ using namespace boost::filesystem;
 using namespace sf;
 using namespace std;
 
-MapNode::MapNode()
-	:leftLinkIndex(-1),rightLinkIndex(-1),upLinkIndex(-1),downLinkIndex(-1),index(-1)
-{
+//MapNode::MapNode()
+//	:leftLinkIndex(-1),rightLinkIndex(-1),upLinkIndex(-1),downLinkIndex(-1),index(-1)
+//{
+//
+//}
+//
+//int MapNode::GetNextIndex(ControllerState &curr,
+//	ControllerState &prev)
+//{
+//	if (curr.LLeft() && !prev.LLeft())
+//	{
+//		if (leftLinkIndex >= 0)
+//		{
+//			return leftLinkIndex;
+//		}
+//	}
+//	else if (curr.LRight() && !prev.LRight())
+//	{
+//		if (rightLinkIndex >= 0)
+//		{
+//			return rightLinkIndex;
+//		}
+//	}
+//	else if (curr.LUp() && !prev.LUp())
+//	{
+//		if (upLinkIndex >= 0)
+//		{
+//			return upLinkIndex;
+//		}
+//	}
+//	else if (curr.LDown() && !prev.LDown())
+//	{
+//		if (downLinkIndex >= 0)
+//		{
+//			return downLinkIndex;
+//		}
+//	}
+//
+//	return index;
+//}
 
-}
 
-int MapNode::GetNextIndex(ControllerState &curr,
-	ControllerState &prev)
-{
-	if (curr.LLeft() && !prev.LLeft())
-	{
-		if (leftLinkIndex >= 0)
-		{
-			return leftLinkIndex;
-		}
-	}
-	else if (curr.LRight() && !prev.LRight())
-	{
-		if (rightLinkIndex >= 0)
-		{
-			return rightLinkIndex;
-		}
-	}
-	else if (curr.LUp() && !prev.LUp())
-	{
-		if (upLinkIndex >= 0)
-		{
-			return upLinkIndex;
-		}
-	}
-	else if (curr.LDown() && !prev.LDown())
-	{
-		if (downLinkIndex >= 0)
-		{
-			return downLinkIndex;
-		}
-	}
 
-	return index;
-}
-
-void ColonyMap::Update(ControllerState &curr, ControllerState &prev )
-{
-	if (curr.A && !prev.A)
-	{
-		nodes[currNodeIndex]->StartMap();
-		return;
-	}
-
-	currNodeIndex = nodes[currNodeIndex]->GetNextIndex(curr, prev);
-}
-
-void ColonyMap::Draw(sf::RenderTarget *target)
-{
-	for (int i = 0; i < numNodes; ++i)
-	{
-		nodes[i]->Draw(target);
-	}
-}
-
-void ColonyMap::Load(std::ifstream &is)
-{
-	is >> numNodes;
-	nodes = new MapNode*[numNodes];
-	for (int i = 0; i < numNodes; ++i)
-	{
-		MapNode *mn = new MapNode();
-		is >> mn->mapName;
-		is >> mn->pos.x;
-		is >> mn->pos.y;
-		is >> mn->index;
-		is >> mn->leftLinkIndex;
-		is >> mn->rightLinkIndex;
-		is >> mn->upLinkIndex;
-		is >> mn->downLinkIndex;
-		nodes[i] = mn;
-	}
-}
-
-void MapNode::Draw(sf::RenderTarget *target)
-{
-	//just for debug
-
-	//draw node
-	sf::CircleShape cs;
-	cs.setPosition(pos.x, pos.y);
-	cs.setFillColor(Color::Blue);
-	cs.setRadius(100);
-	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-	target->draw(cs);
-}
-
-void MapNode::StartMap()
-{
-
-}
+//void MapNode::Draw(sf::RenderTarget *target)
+//{
+//	//just for debug
+//
+//	//draw node
+//	sf::CircleShape cs;
+//	cs.setPosition(pos.x, pos.y);
+//	cs.setFillColor(Color::Blue);
+//	cs.setRadius(100);
+//	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+//	target->draw(cs);
+//}
+//
+//void MapNode::StartMap()
+//{
+//
+//}
 
 WorldMap::WorldMap( MainMenu *mainMenu )
 	:font( mainMenu->arial )
@@ -129,6 +93,8 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	zoomedMapSpr.setPosition(1920 + 1400, 250);
 	zoomedMapSpr.setScale(.2, .2);
 
+	testSelector = new MapSelector( mainMenu, Vector2f( 960, 540) );
+
 	colonySelectSprite.setTexture( *ts_colonySelect->texture );
 	
 	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
@@ -145,6 +111,11 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	//zoomShader.setUniform("sampleStregth", 5.f);
 	//zoomShader.setUniform("texSize", Vector3f(1920, 1080, 0));
 	//zoomShader.setUniform("texSize", Vector3f(1920, 1080, 0));
+
+
+	int width = 1920;//1920 - w->getSize().x;
+	int height = 1080; //1080 - w->getSize().y;
+	uiView = View(sf::Vector2f(width / 2, height / 2), sf::Vector2f(width, height));
 
 	for( int i = 0; i < 6; ++i )
 	{
@@ -470,8 +441,10 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	case PLANET:
 	{
 		int limit = 120 / 2;
-		if (frame == limit)
-			frame = 0;
+		if (frame >= limit)
+		{
+			break;
+		}
 		
 
 		float a = frame / (float)(limit-1);
@@ -543,8 +516,8 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}*/
 		if (currInput.A && !prevInput.A)
 		{
-			state = COLONY_TRANSITION;//SECTION_TRANSITION;
-			frame = 0;
+			//state = COLONY_TRANSITION;//SECTION_TRANSITION;
+			//frame = 0;
 			break;
 		}
 		else if (currInput.B && !prevInput.B)
@@ -782,6 +755,10 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(back);
 		rt->draw(zoomedMapSpr);
 		rt->draw( colonySelectSprite );
+		
+		rt->setView(uiView);
+		testSelector->Draw(rt);
+		rt->setView(zoomView);
 	}
 
 	rt->display();
@@ -798,4 +775,75 @@ void WorldMap::Draw( RenderTarget *target )
 	//zoomView.setCenter(1920, 0);
 	//target->setView(zoomView);
 	target->draw(extraPassSpr, &zoomShader);
+}
+
+MapSelector::MapSelector( MainMenu *mm, const sf::Vector2f &pos )
+	:centerPos( pos )
+{
+	numNodeColumns = 10;
+	nodeSelectorWidth = 400;
+	bottomBGRect.setSize( Vector2f(nodeSelectorWidth, 200 ) );
+	bottomBGRect.setOrigin(bottomBGRect.getLocalBounds().width / 2,
+		bottomBGRect.getLocalBounds().height / 2);
+	bottomBGRect.setPosition(centerPos + Vector2f(0, 300));
+	bottomBGRect.setFillColor(Color(0, 0, 0, 100));
+
+	SetRectCenter(thumbnail, 256, 256, centerPos);
+	SetRectColor(thumbnail, Color(Color::Red));
+
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+
+	int numLevelsInWorld = 7;
+
+	saSelector = new SingleAxisSelector(numLevelsInWorld, waitFrames, 2, waitModeThresh, 0, 0);
+
+	//Tileset *ts_thumb = mm->tilesetManager.GetTileset("WorldMap/thumbnail01.png", 256, 256);
+	//thumbnailSpr.setTexture(ts_thumb);
+
+	nodes = new Vertex[numNodeColumns * 4 * 3];
+
+	for (int i = 0; i < numNodeColumns; ++i)
+	{
+		nodes[i * 4 + 0].color = Color::Red;
+		nodes[i * 4 + 1].color = Color::Red;
+		nodes[i * 4 + 2].color = Color::Red;
+		nodes[i * 4 + 3].color = Color::Red;
+	}
+
+	for (int i = 0; i < numNodeColumns; ++i)
+	{
+		nodes[numNodeColumns + i * 4 + 0].color = Color::Blue;
+		nodes[numNodeColumns + i * 4 + 1].color = Color::Blue;
+		nodes[numNodeColumns + i * 4 + 2].color = Color::Blue;
+		nodes[numNodeColumns + i * 4 + 3].color = Color::Blue;
+	}
+
+	for (int i = 0; i < numNodeColumns; ++i)
+	{
+		nodes[numNodeColumns * 2 + i * 4 + 0].color = Color::Yellow;
+		nodes[numNodeColumns * 2 + i * 4 + 1].color = Color::Yellow;
+		nodes[numNodeColumns * 2 + i * 4 + 2].color = Color::Yellow;
+		nodes[numNodeColumns * 2 + i * 4 + 3].color = Color::Yellow;
+	}
+}
+
+void MapSelector::UpdateSprites()
+{
+
+}
+
+void MapSelector::Draw(sf::RenderTarget *target)
+{
+	target->draw(bottomBGRect);
+	target->draw(thumbnail, 4, sf::Quads);
+}
+
+void MapSelector::Update(ControllerState &curr,
+	ControllerState &prev)
+{
+	bool left = curr.LLeft();
+	bool right = curr.LRight();
+
+	int changed = saSelector->UpdateIndex(left, right);
 }

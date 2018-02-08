@@ -377,6 +377,9 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite kinBlueOutline;
 	sf::Sprite kinPurpleOutline;
 	sf::Color currentDespColor;
+	float GetSpeedBarPart();
+
+
 
 	Tileset *ts_fx_rightWire;
 	Tileset *ts_fx_leftWire;

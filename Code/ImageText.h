@@ -9,6 +9,10 @@ struct ImageText
 	ImageText( int maxDigits, 
 		Tileset *ts_tex );
 	sf::Vector2f topRight;
+	sf::Vector2f center;
+	bool positionCenter;
+	void SetCenter(sf::Vector2f &p_center);
+	void SetTopRight(sf::Vector2f &p_topRight);
 	virtual void UpdateSprite();
 	void Draw( sf::RenderTarget *target );
 	//in a timer this sets number of seconds
