@@ -658,6 +658,14 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 	keysRequired = 0;
 	frame = 0;
 
+	ts_keyRing = owner->GetTileset("keyring_40x40.png", 40, 40);
+	keyRingSpr.setTexture(*ts_keyRing->texture);
+	keyRingSpr.setTextureRect(ts_keyRing->GetSubRect(0));
+	keyRingSpr.setOrigin(keyRingSpr.getLocalBounds().width / 2, 
+		keyRingSpr.getLocalBounds().height / 2);
+	
+
+
 	Tileset *scoreTS = owner->GetTileset("number_score_80x80.png", 80, 80);
 	keyNumberNeededHUD = new ImageText(2, scoreTS);
 	keyNumberTotalHUD = new ImageText(2, scoreTS);
@@ -675,7 +683,10 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 void KeyMarker::SetPosition(Vector2f &pos)
 {
 	keyNumberHUDBG.setPosition(pos);
-	keyNumberNeededHUD->SetCenter(Vector2f(62, 33) + pos);
+	Vector2f neededCenter = Vector2f(62, 33) + pos;
+	keyNumberNeededHUD->SetCenter(neededCenter );
+	keyRingSpr.setPosition(neededCenter);
+
 	keyNumberTotalHUD->SetCenter(Vector2f(27, 70) + pos);
 }
 
@@ -750,8 +761,17 @@ void KeyMarker::SetStartKeys( int neededKeys, int totalKeys )
 void KeyMarker::Draw( sf::RenderTarget *target )
 {
 	target->draw(keyNumberHUDBG);
-	keyNumberNeededHUD->Draw(target);
+
 	keyNumberTotalHUD->Draw(target);
+
+	keyNumberNeededHUD->Draw(target);
+	
+	int val = keyNumberNeededHUD->value;
+	if ( val >= 1 && val <= 3)
+	{
+		keyRingSpr.setTextureRect(ts_keyRing->GetSubRect(val -1));
+		target->draw(keyRingSpr);
+	}
 	//target->draw( backSprite );
 	//if( state == NONZERO )
 	//{

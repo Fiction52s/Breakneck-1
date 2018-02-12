@@ -51,5 +51,6 @@ LineIntersection SegmentIntersect( sf::Vector2<double> a,
 void SetRectCenter(sf::Vertex *v, int width, int height,
 	sf::Vector2f &origin);
 void SetRectColor(sf::Vertex *v, sf::Color &c);
+void SetRectSubRect(sf::Vertex *v, sf::IntRect &sub);
 
 #endif

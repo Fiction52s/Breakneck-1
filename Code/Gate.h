@@ -45,12 +45,17 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	bool locked;
 	int frame;
 	sf::Color c;
+	sf::Vertex testLine[4];
+	sf::Vertex centerLine[4];
 	sf::VertexArray thickLine;
 	sf::VertexArray *gQuads;
 	Tileset *ts;
 	void UpdateLine();
 	void SetLocked( bool on );
 	void Update();
+
+	sf::Shader gateShader;
+	sf::Shader centerShader;
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );

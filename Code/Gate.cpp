@@ -40,6 +40,17 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	}
 	
+	if (!gateShader.loadFromFile("Shader/gate_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "failed to load gate shader" << endl;
+		assert(0);
+	}
+
+	if (!centerShader.loadFromFile("Shader/gatecenter_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "failed to load gate center shader" << endl;
+		assert(0);
+	}
 
 	gQuads = NULL;
 	frame = 0;
@@ -104,7 +115,9 @@ void Gate::Draw( sf::RenderTarget *target )
 	{
 		if( gState != OPEN )
 		{
-			target->draw( thickLine );
+			target->draw(centerLine, 4, sf::Quads, &centerShader);
+			target->draw(testLine, 4, sf::Quads , &gateShader);
+			//target->draw(thickLine, &gateShader);
 		}
 	}
 
@@ -164,6 +177,16 @@ void Gate::UpdateLine()
 			break;
 		}
 		
+		//ts = owner->GetTileset("gate_32x64.png", 32, 64);
+		//Tileset *tts = owner->GetTileset("gatetest_32x64.png", 32, 64);
+		Tileset *tts = owner->GetTileset("gates_32x64.png", 32, 64);
+		gateShader.setUniform("u_texture", *tts->texture );
+		gateShader.setUniform("tile", 1.f);
+
+		centerShader.setUniform("u_texture", *tts->texture);
+		frame = 0;
+		
+
 		tileHeight = 128;
 		}
 		break;
@@ -183,12 +206,12 @@ void Gate::UpdateLine()
 		tileHeight = 128;
 		break;
 	}
-	thickLine[0].color = c;
+	/*thickLine[0].color = c;
 	thickLine[1].color = c;
 	thickLine[2].color = c;
-	thickLine[3].color = c;
+	thickLine[3].color = c;*/
 
-	double width = 5;
+	double width = 16; //5
 	V2d dv0( edgeA->v0.x, edgeA->v0.y );
 	V2d dv1( edgeA->v1.x, edgeA->v1.y );
 	V2d along = normalize( dv1 - dv0 );
@@ -206,6 +229,32 @@ void Gate::UpdateLine()
 	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
 	thickLine[3].position = Vector2f( rightv0.x, rightv0.y );
 
+	testLine[0].position = Vector2f(rightv0.x, rightv0.y); 
+	testLine[1].position = Vector2f(leftv0.x, leftv0.y); 
+	testLine[2].position = Vector2f(leftv1.x, leftv1.y); 
+	testLine[3].position = Vector2f(rightv1.x, rightv1.y);
+
+	centerLine[0].position = Vector2f(rightv0.x, rightv0.y);
+	centerLine[1].position = Vector2f(leftv0.x, leftv0.y);
+	centerLine[2].position = Vector2f(leftv1.x, leftv1.y);
+	centerLine[3].position = Vector2f(rightv1.x, rightv1.y);
+
+	/*testLine[0].color = Color::Red;
+	testLine[1].color = Color::Blue;
+	testLine[2].color = Color::Blue;
+	testLine[3].color = Color::Red;*/
+
+
+	IntRect ir;
+	ir.left = 0;
+	ir.top = 0;
+	ir.width = 1.0;//length(leftv0 - rightv0);
+	ir.height = 10.0;//10.0;//1.0;//length(leftv0 - leftv1);
+
+	SetRectSubRect(testLine, ir);
+
+	SetRectSubRect(centerLine, ir);
+
 	
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
@@ -221,7 +270,7 @@ void Gate::UpdateLine()
 	//{
 		if( gQuads == NULL )
 		{
-			gQuads = new VertexArray( sf::Quads, numVertices );
+			//gQuads = new VertexArray( sf::Quads, numVertices );
 		}
 	//}
 	//cout << "giving gquads value!" << endl;
@@ -229,10 +278,10 @@ void Gate::UpdateLine()
 
 void Gate::Update()
 {
-	
 
 	//gates can be timeslowed? don't worry about it just yet. 
-	if( type != BLACK )
+	//if( type != BLACK )
+	if( false )
 	{
 		switch( gState )
 		{
@@ -314,7 +363,8 @@ void Gate::Update()
 	}
 	else
 	{
-		frame = 0;
+
+		//frame = 0;
 	}
 	double radius = 300;
 	
@@ -474,59 +524,65 @@ void Gate::Update()
 
 	assert( realFrame >= 0 );
 
-	IntRect subRect = ts->GetSubRect( realFrame );
-	for( int i = 0; i < numTiles - 1; ++i )
-	{
-			
-		gq[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );//Vector2f( 0, frame * tileHeight + 0 );
-		gq[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );//Vector2f( tileWidth, frame * tileHeight + 0 );
-		gq[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );//Vector2f( tileWidth, frame * tileHeight + tileHeight );
-		gq[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );//Vector2f( 0, frame * tileHeight + tileHeight );
+	//IntRect subRect = ts->GetSubRect( realFrame );
+	//for( int i = 0; i < numTiles - 1; ++i )
+	//{
+	//		
+	//	gq[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );//Vector2f( 0, frame * tileHeight + 0 );
+	//	gq[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );//Vector2f( tileWidth, frame * tileHeight + 0 );
+	//	gq[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );//Vector2f( tileWidth, frame * tileHeight + tileHeight );
+	//	gq[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );//Vector2f( 0, frame * tileHeight + tileHeight );
 
-		V2d lv0 = leftv0 + along * (double)(tileHeight * i);
-		V2d lv1 = leftv0 + along * (double)(tileHeight * (i+1));
-		V2d rv1 = rightv0 + along * (double)(tileHeight * (i+1));
-		V2d rv0 = rightv0 + along * (double)(tileHeight * i);
-		gq[i*4+3].position = Vector2f( lv0.x, lv0.y );
-		gq[i*4+0].position = Vector2f( lv1.x, lv1.y );
-		gq[i*4+1].position = Vector2f( rv1.x, rv1.y );
-		gq[i*4+2].position = Vector2f( rv0.x, rv0.y );
-	}
+	//	V2d lv0 = leftv0 + along * (double)(tileHeight * i);
+	//	V2d lv1 = leftv0 + along * (double)(tileHeight * (i+1));
+	//	V2d rv1 = rightv0 + along * (double)(tileHeight * (i+1));
+	//	V2d rv0 = rightv0 + along * (double)(tileHeight * i);
+	//	gq[i*4+3].position = Vector2f( lv0.x, lv0.y );
+	//	gq[i*4+0].position = Vector2f( lv1.x, lv1.y );
+	//	gq[i*4+1].position = Vector2f( rv1.x, rv1.y );
+	//	gq[i*4+2].position = Vector2f( rv0.x, rv0.y );
+	//}
 
-	double fullHeight =  (double)(tileHeight * (numTiles-1));
-	
-	V2d lv0 = leftv0 + along * fullHeight;
-	V2d lv1 = leftv1;
-	V2d rv1 = rightv1;
-	V2d rv0 = rightv0 + along * fullHeight;
-	
-	double thisHeight = length( lv1 - lv0 );
+	//double fullHeight =  (double)(tileHeight * (numTiles-1));
+	//
+	//V2d lv0 = leftv0 + along * fullHeight;
+	//V2d lv1 = leftv1;
+	//V2d rv1 = rightv1;
+	//V2d rv0 = rightv0 + along * fullHeight;
+	//
+	//double thisHeight = length( lv1 - lv0 );
 
-	//remainder
-	
-	double h = subRect.height - thisHeight;
-	
-	gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, h );
-	gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, h  );
-	gq[(numTiles-1) * 4 + 2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	gq[(numTiles-1) * 4 + 3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	////remainder
+	//
+	//double h = subRect.height - thisHeight;
+	//
+	//gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, h );
+	//gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, h  );
+	//gq[(numTiles-1) * 4 + 2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	//gq[(numTiles-1) * 4 + 3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 
-	gq[(numTiles-1) * 4 + 3].position = Vector2f( lv0.x, lv0.y );
-	gq[(numTiles-1) * 4 + 0].position = Vector2f( lv1.x, lv1.y );
-	gq[(numTiles-1) * 4 + 1].position = Vector2f( rv1.x, rv1.y );
-	gq[(numTiles-1) * 4 + 2].position = Vector2f( rv0.x, rv0.y );
-	
-	switch( type )
-	{
-	case BLACK:
-		break;
-	case KEYGATE:
-		break;
-	}
+	//gq[(numTiles-1) * 4 + 3].position = Vector2f( lv0.x, lv0.y );
+	//gq[(numTiles-1) * 4 + 0].position = Vector2f( lv1.x, lv1.y );
+	//gq[(numTiles-1) * 4 + 1].position = Vector2f( rv1.x, rv1.y );
+	//gq[(numTiles-1) * 4 + 2].position = Vector2f( rv0.x, rv0.y );
+	//
+	//switch( type )
+	//{
+	//case BLACK:
+	//	break;
+	//case KEYGATE:
+	//	break;
+	//}
 
-
-	
+	float ff = frame / 60.f;
+	gateShader.setUniform("quant", ff );
+	centerShader.setUniform("quant", ff);
 	++frame;
+
+	if (frame > 60)
+	{
+		frame = 0;
+	}
 }
 
 void Gate::SetLocked( bool on )

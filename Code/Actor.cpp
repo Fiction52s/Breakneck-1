@@ -64,7 +64,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tsgstrirgb = owner->GetTileset("trirgb_128x128.png", 128, 128);
 
 	tileset[STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
-	tileset[WALLATTACK] = owner->GetTileset("Kin/wallattack_64x128.png", 64, 128, skin);
+	tileset[WALLATTACK] = owner->GetTileset("Kin/wall_att_64x128.png", 64, 128, skin);
 	tileset[DAIR] = owner->GetTileset("Kin/dair_80x80.png", 80, 80, skin);
 	tileset[DASH] = owner->GetTileset("Kin/dash_96x48.png", 96, 48, skin);
 	tileset[DOUBLE] = owner->GetTileset("Kin/double_64x64.png", 64, 64, skin);
@@ -90,7 +90,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[GRINDATTACK] = owner->GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
 	tileset[STEEPSLIDE] = owner->GetTileset("Kin/steepslide_64x64.png", 64, 64, skin);
 	tileset[STEEPCLIMBATTACK] = owner->GetTileset("Kin/climb_att_128x64.png", 128, 64, skin);
-	tileset[STEEPSLIDEATTACK] = owner->GetTileset("Kin/steep_att_80x64.png", 80, 64, skin);
+	tileset[STEEPSLIDEATTACK] = owner->GetTileset("Kin/steep_att_128x64.png", 128, 64, skin);
 	tileset[AIRDASH] = owner->GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
 	tileset[STEEPCLIMB] = owner->GetTileset("Kin/steepclimb_96x32.png", 96, 32, skin);
 	tileset[AIRHITSTUN] = owner->GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
@@ -158,9 +158,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_dashAttackSword[1] = owner->GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
 	ts_dashAttackSword[2] = owner->GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);*/
 
-	ts_wallAttackSword[0] = owner->GetTileset("Sword/wall_sworda_128x256.png", 128, 256, swordSkin);
-	ts_wallAttackSword[1] = owner->GetTileset("Sword/wall_swordb_240x352.png", 128, 288, swordSkin);
-	ts_wallAttackSword[2] = owner->GetTileset("Sword/wall_swordc_160x384.png", 160, 384, swordSkin);
+	ts_wallAttackSword[0] = owner->GetTileset("Sword/wall_sworda_144x256.png", 144, 256, swordSkin);
+	ts_wallAttackSword[1] = owner->GetTileset("Sword/wall_swordb_240x352.png", 240, 352, swordSkin);
+	ts_wallAttackSword[2] = owner->GetTileset("Sword/wall_swordc_298x400.png", 298, 400, swordSkin);
 
 	ts_steepSlideAttackSword[0] = owner->GetTileset("Sword/steep_att_sworda_480x176.png", 480, 176, swordSkin);
 	ts_steepSlideAttackSword[1] = owner->GetTileset("Sword/steep_att_swordb_352x192.png", 352, 192, swordSkin);
@@ -945,7 +945,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[JUMPSQUAT] = 3;
 		actionLength[INTRO] = 10 * 4;
 		actionLength[AIRDASH] = 33;//27;
-		actionLength[STEEPSLIDEATTACK] = 6 * 3;
+		actionLength[STEEPSLIDEATTACK] = 16;
 		actionLength[AIRHITSTUN] = 1;
 		actionLength[STEEPCLIMB] = 8 * 4;
 		actionLength[GROUNDHITSTUN] = 1;
@@ -19575,7 +19575,7 @@ void Actor::UpdateSprite()
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( frame / 3, r );
+			SetSpriteTile( frame / 2, r );
 			
 
 			Vector2i offset( 0, 0 );
@@ -19587,7 +19587,7 @@ void Actor::UpdateSprite()
 			{
 				if( r )
 				{
-					steepSlideAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 3 - startFrame ) );
+					steepSlideAttackSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
 				}
 				else
 				{

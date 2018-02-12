@@ -219,6 +219,9 @@ struct KeyMarker
 	sf::Sprite keyNumberSpecialSpr;
 	ImageText *keyNumberNeededHUD;
 	ImageText *keyNumberTotalHUD;
+
+	Tileset *ts_keyRing;
+	sf::Sprite keyRingSpr;
 	//GameSession *owner;
 };
 
