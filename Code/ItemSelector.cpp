@@ -72,6 +72,7 @@ int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 		else
 		{
 			++framesWaiting;
+			return 0;
 		}
 
 	}
@@ -111,6 +112,7 @@ int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 		else
 		{
 			++framesWaiting;
+			return 0;
 		}
 
 	}

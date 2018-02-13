@@ -5,23 +5,13 @@
 
 using namespace std;
 
-Level::Level()
-	:completed( false )
-{
-	for( int i = 0; i < 3; ++i )
-	{
-		shards[i] = false;
-	}
-}
-
 SaveFile::SaveFile( const std::string &name )
-	:iconVA( sf::Quads, 4 )
 {
-	worlds[0] = new Level[6];
-	for( int i = 1; i < 6; ++i )
+	//worlds = new World[8];
+	/*for( int i = 1; i < 6; ++i )
 	{
 		worlds[i] = NULL;
-	}
+	}*/
 
 	stringstream ss;
 	ss << "Data/" << name << ".kin";
@@ -31,24 +21,27 @@ SaveFile::SaveFile( const std::string &name )
 
 SaveFile::~SaveFile()
 {
-	for( int i = 0; i < 6; ++i )
+	/*for( int i = 0; i < 6; ++i )
 	{
 		if( worlds[i] != NULL )
 		{
 			delete [] worlds[i];
 		}
-	}
+	}*/
 }
 
 void SaveFile::LoadFromFile()
 {
 	ifstream is;
 	
-	
 	is.open( fileName );
 
 	if( is.is_open() )
 	{
+		for (int i = 0; i < NUM_WORLDS; ++i)
+		{
+			worlds[i].Load(is);
+		}
 	}
 	else
 	{
@@ -74,4 +67,97 @@ void SaveFile::SaveCurrent()
 		cout << "error saving file: " << fileName << endl;
 		assert( false );
 	}
+}
+
+World::World()
+{
+	sectors = NULL;
+	numSectors = 0;
+}
+
+World::~World()
+{
+	if (sectors != NULL)
+	{
+		delete[] sectors;
+	}
+}
+
+Sector::Sector()
+{
+	numLevels = 0;
+	levels = NULL;
+}
+
+bool Sector::Load(std::ifstream &is)
+{
+	numLevels = 6;
+	levels = new Level[numLevels];
+
+	bool res = true;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		res = levels[i].Load(is);
+		assert(res);
+	}
+
+	levels[4].completed = true;
+	levels[2].completed = true;
+	
+	return true;
+}
+
+Sector::~Sector()
+{
+	if (levels != NULL)
+	{
+		delete[] levels;
+	}
+}
+
+Level::Level()
+{
+	completed = false;
+	optionField = 0;
+}
+
+void Level::SetOption(int index, bool value)
+{
+	unsigned int check = (1 << index);
+	if (value)
+	{
+		optionField |= check;
+	}
+	else
+	{
+		optionField &= ~check;
+	}
+}
+void Level::SetCompleted( bool comp )
+{
+	completed = comp;
+}
+void Level::Reset()
+{
+	completed = false;
+	optionField = 0;
+}
+
+bool Level::Load(std::ifstream &is)
+{
+	completed = false;
+	optionField = 0;
+	return true;
+}
+
+bool World::Load(std::ifstream &is)
+{
+	numSectors = 7;
+	sectors = new Sector[numSectors];
+
+	for (int i = 0; i < numSectors; ++i)
+	{
+		sectors[i].Load(is);
+	}
+	return true;
 }

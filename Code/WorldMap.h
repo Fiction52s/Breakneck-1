@@ -10,6 +10,8 @@
 
 struct MainMenu;
 struct SaveFile;
+struct MapSelector;
+struct MapSector;
 
 enum MapNodeState
 {
@@ -19,11 +21,52 @@ enum MapNodeState
 	NS_FULLY_BEATEN
 };
 
+struct SectorNode
+{
+	//shard info
+	//completion info
+};
+
+struct Sector;
+struct MapSector
+{
+	MapSector(MapSelector *ms);
+	Tileset *ts_thumb;
+	
+	void Init(Sector *sec);
+	Sector *sec;
+	void UpdateNodePosition();
+	//shard stuff
+	int numLevels;
+	void Load();
+	SingleAxisSelector *saSelector;
+	int selectedYIndex;
+	sf::Vertex *nodes;
+	sf::Vertex *paths;
+	void Update(ControllerState &curr,
+		ControllerState &prev);
+	void Draw(sf::RenderTarget *target);
+	MapSelector *ms;
+	void UpdateNodes();
+	bool HasTopBonus(int node);
+	bool HasBotBonus(int node);
+	int GetNodeSubIndex(int node);
+	int GetNodeBonusIndexTop(int node);
+	int GetNodeBonusIndexBot(int node);
+	
+};
+
 struct MapSelector
 {
-	MapSelector( MainMenu *mm, const sf::Vector2f &pos );
-	int numNodeColumns;
-	int nodeSelectorWidth;
+	MapSelector( MainMenu *mm, sf::Vector2f &pos );
+	MapSector **sectors;
+	int numSectors;
+	sf::Vector2f sectorCenter;
+	int currSectorIndex;
+	void UpdateAllInfo();
+	MainMenu *mainMenu;
+	//int numNodeColumns;
+	//int nodeSelectorWidth;
 	sf::Vector2f centerPos;
 	MapNodeState *nodeStates[3];
 	void UpdateSprites();
@@ -31,10 +74,17 @@ struct MapSelector
 		ControllerState &prev);
 	sf::Vertex *nodes;
 	sf::Vertex *paths;
-	sf::Vertex thumbnail[4];
-	sf::RectangleShape bottomBGRect;
+	//sf::Vertex thumbnail[4];
+	sf::Sprite thumbnail;
+	//sf::RectangleShape bottomBGRect;
+	sf::Sprite bottomBG;
+	sf::Sprite thumbnailBG;
+	sf::Sprite shardBG;
 	void Draw(sf::RenderTarget *target);
 	SingleAxisSelector *saSelector;
+	Tileset *ts_node;
+	bool sectorSelected;
+	int worldIndex;
 };
 
 

@@ -7,10 +7,32 @@
 struct Level
 {
 	Level();
+	
 	bool completed;
-	bool shards[3];
+	unsigned int optionField;
+	bool Load(std::ifstream &is);
+	void SetOption(int index, bool value);
+	void SetCompleted( bool comp );
+	void Reset();
 };
 
+struct Sector
+{
+	Sector();
+	~Sector();
+	int numLevels;
+	Level *levels;
+	bool Load(std::ifstream &is);
+};
+
+struct World
+{
+	World();
+	~World();
+	int numSectors;
+	Sector *sectors;
+	bool Load(std::ifstream &is);
+};
 
 struct SaveFile
 {
@@ -20,14 +42,9 @@ struct SaveFile
 	void LoadFromFile();
 	std::string fileName;
 
-	sf::VertexArray iconVA;
-
-	int currentWorld;
-	Level* worlds[6];
-	//Level levels[6][6];
-	//bool levelsComplete[6 * 6];
-
-	
+	void SetCompleted(bool comp);
+	const static int NUM_WORLDS = 8;
+	World worlds[NUM_WORLDS];	
 };
 
 #endif

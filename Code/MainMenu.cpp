@@ -769,6 +769,11 @@ MainMenu::MainMenu()
 	testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
+SaveFile *MainMenu::GetCurrentProgress()
+{
+	return saveMenu->files[saveMenu->selectedSaveIndex];
+}
+
 MainMenu::~MainMenu()
 {
 	window->close();
@@ -1799,6 +1804,7 @@ void MainMenu::Run()
 							worldMap->state = WorldMap::PLANET;
 							worldMap->frame = 0;
 							worldMap->UpdateMapList();
+							worldMap->testSelector->UpdateAllInfo();
 						}
 						else if( result == 2 )
 						{
@@ -1857,6 +1863,7 @@ void MainMenu::Run()
 			case TRANS_SAVE_TO_WORLDMAP:
 				{
 					menuMode = WORLDMAP;
+					worldMap->testSelector->UpdateAllInfo();
 					break;
 					//saveTexture->clear();
 					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )

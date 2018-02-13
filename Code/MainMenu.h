@@ -538,6 +538,7 @@ struct MainMenu
 		S_Count
 	};
 
+	SaveFile *GetCurrentProgress();
 	ControlProfileManager *cpm;
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	MapSelectionMenu *mapSelectionMenu;
