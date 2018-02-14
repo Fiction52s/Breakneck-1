@@ -565,7 +565,7 @@ MainMenu::MainMenu()
 	int waitModeThresh[] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
 
-	Vector2f textBase(500, 500);
+	Vector2f textBase(300, 300);
 	int textOptionSpacing = 10;
 	int charHeight = 40;
 
@@ -766,7 +766,7 @@ MainMenu::MainMenu()
 		sf::Color::Blue,
 		5, 300, 0) };
 
-	testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
+	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
 SaveFile *MainMenu::GetCurrentProgress()
@@ -794,11 +794,7 @@ MainMenu::~MainMenu()
 
 void MainMenu::Init()
 {
-
 	cout << "init started" << endl;
-
-	
-
 	
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
@@ -812,7 +808,8 @@ void MainMenu::Init()
 	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );
 	
 	ts_breakneckTitle = tilesetManager.GetTileset( "Title/kin_title_1920x416.png", 1920, 416 );
-	ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
+	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
+	ts_backgroundTitle = tilesetManager.GetTileset("Title/menutitle02.png", 1920, 1080);
 
 	
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
@@ -2067,7 +2064,7 @@ void MainMenu::Run()
 		case MAINMENU:
 			{
 				preScreenTexture->setView( v );
-				//preScreenTexture->draw( backgroundTitleSprite );
+				preScreenTexture->draw( backgroundTitleSprite );
 				//preScreenTexture->draw( kinTitleSprite );
 				//preScreenTexture->draw( breakneckTitleSprite );
 
@@ -2088,7 +2085,9 @@ void MainMenu::Run()
 					preScreenTexture->draw( fadeRect );
 				}
 				
-				testRing->Draw(preScreenTexture);
+				//testRing->Draw(preScreenTexture);
+
+
 				//for( int i = 0; i < 5; ++i )
 				//{
 				//	if( i == currentMenuSelect )

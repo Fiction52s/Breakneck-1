@@ -1033,7 +1033,7 @@ void MapSector::Update(ControllerState &curr,
 		if (selectedYIndex == 1)
 		{
 			string level = sec->levels[saSelector->currIndex].GetFullName();// name;
-
+			View oldView = ms->mainMenu->window->getView();
 
 			GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
 			GameSession::sLoad(gs);
@@ -1041,6 +1041,8 @@ void MapSector::Update(ControllerState &curr,
 			int result = gs->Run();
 
 			delete gs;
+
+			ms->mainMenu->window->setView(oldView);
 		}
 	}
 
