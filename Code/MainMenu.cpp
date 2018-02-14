@@ -317,7 +317,7 @@ MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 {
 	
 	int quarter = 1920 / 4;
-	menuOffset = Vector2f(-1920 * 2, 0);
+	menuOffset = Vector2f(0, 0);
 	for( int i = 0; i < 4; ++i )
 	{
 		Vector2f topMid = Vector2f(quarter * i + quarter / 2, 1080 - 400) + menuOffset;
@@ -1835,26 +1835,28 @@ void MainMenu::Run()
 				}
 			case TRANS_MAIN_TO_SAVE:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = SAVEMENU;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
-					menuMode = SAVEMENU;
+					
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 			case TRANS_SAVE_TO_MAIN:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = MAINMENU;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAINMENU;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 			case TRANS_SAVE_TO_WORLDMAP:
@@ -1923,38 +1925,41 @@ void MainMenu::Run()
 				}
 			case TRANS_MAPSELECT_TO_MULTIPREVIEW:
 				{
-					if (slideCurrFrame > numSlideFrames)
+					menuMode = MULTIPREVIEW;
+					/*if (slideCurrFrame > numSlideFrames)
 					{
 						menuMode = MULTIPREVIEW;
 					}
 					else
 					{
 						Slide();
-					}
+					}*/
 					break;
 				}
 			case TRANS_MULTIPREVIEW_TO_MAPSELECT:
 				{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = MAPSELECT;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAPSELECT;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 					break;
 				}
 			case TRANS_MAIN_TO_MAPSELECT:
 				{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = MAPSELECT;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAPSELECT;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 					break;
 				}
 			case MAPSELECT:
@@ -1964,19 +1969,24 @@ void MainMenu::Run()
 				}
 			case TRANS_MAPSELECT_TO_MAIN:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = MAINMENU;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAINMENU;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 			case TRANS_MAIN_TO_OPTIONS:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = OPTIONS;
+				config->WaitForLoad();
+
+				optionsMenu->Load();
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = OPTIONS;
 					config->WaitForLoad();
@@ -1986,7 +1996,7 @@ void MainMenu::Run()
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 			case OPTIONS:
@@ -1996,26 +2006,28 @@ void MainMenu::Run()
 			}
 			case TRANS_OPTIONS_TO_MAIN:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = MAINMENU;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAINMENU;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 			case TRANS_MAIN_TO_CREDITS:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = CREDITS;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = CREDITS;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 			case CREDITS:
@@ -2025,14 +2037,15 @@ void MainMenu::Run()
 			}
 			case TRANS_CREDITS_TO_MAIN:
 			{
-				if (slideCurrFrame > numSlideFrames)
+				menuMode = MAINMENU;
+				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAINMENU;
 				}
 				else
 				{
 					Slide();
-				}
+				}*/
 				break;
 			}
 		}
@@ -2386,7 +2399,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
 
-	menuOffset = Vector2f(-1920, 0);
+	menuOffset = Vector2f(0, 0);
 	topMid = p_pos + Vector2f( BOX_WIDTH / 2, 0 ) + menuOffset;
 
 	SetupBoxes();
@@ -3800,7 +3813,7 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 {
 	int width = 500;
 	int height = 500;
-	Vector2f menuOffset(0, -1080);
+	Vector2f menuOffset(0, 0);
 
 	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
 			Vector2f(width, height));
@@ -3924,7 +3937,7 @@ void OptionsMenuScreen::Draw(RenderTarget *target)
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
-	menuOffset = Vector2f(1920, 0);
+	menuOffset = Vector2f(0, 0);
 
 	TilesetManager &tsMan = mainMenu->tilesetManager;
 
@@ -4277,7 +4290,7 @@ void SaveMenuScreen::UpdateClouds()
 CreditsMenuScreen::CreditsMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
-	menuOffset = Vector2f(0, 1080);
+	menuOffset = Vector2f(0, 0);
 	ts_test = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
 	testSprite.setTexture(*ts_test->texture);
 	testSprite.setPosition(menuOffset + Vector2f(500, 500));
