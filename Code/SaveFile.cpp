@@ -7,6 +7,10 @@ using namespace std;
 
 SaveFile::SaveFile( const std::string &name )
 {
+	for (int i = 0; i < 8; ++i)
+	{
+		worlds[i].index = i;
+	}
 	//worlds = new World[8];
 	/*for( int i = 1; i < 6; ++i )
 	{
@@ -97,6 +101,8 @@ bool Sector::Load(std::ifstream &is)
 	bool res = true;
 	for (int i = 0; i < numLevels; ++i)
 	{
+		levels[i].sec = this;
+		levels[i].index = i;
 		res = levels[i].Load(is);
 		assert(res);
 	}
@@ -115,7 +121,7 @@ Sector::~Sector()
 	}
 }
 
-Level::Level()
+Level::Level( )
 {
 	completed = false;
 	optionField = 0;
@@ -163,6 +169,8 @@ bool World::Load(std::ifstream &is)
 
 	for (int i = 0; i < numSectors; ++i)
 	{
+		sectors[i].world = this;
+		sectors[i].index = i;
 		sectors[i].Load(is);
 	}
 	return true;

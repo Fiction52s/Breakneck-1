@@ -8,6 +8,7 @@
 #include "Tileset.h"
 #include "ItemSelector.h"
 
+
 struct MainMenu;
 struct SaveFile;
 struct MapSelector;
@@ -85,6 +86,7 @@ struct MapSelector
 	Tileset *ts_node;
 	bool sectorSelected;
 	int worldIndex;
+	//boost::thread *loadThread;
 };
 
 
@@ -99,7 +101,7 @@ struct WorldMap
 		SECTION_TRANSITION,
 		SECTION, 
 		COLONY_TRANSITION,
-		COLONY
+		COLONY,
 	};
 
 	sf::Shader zoomShader;

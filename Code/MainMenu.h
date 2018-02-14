@@ -271,6 +271,7 @@ struct MapSelectionMenu
 		S_SELECTING_SKIN,
 		S_TO_MULTI_TRANS,
 		S_FROM_MULTI_TRANS,
+		S_LOADING,
 		S_MULTI_SCREEN
 	};
 
@@ -489,6 +490,8 @@ struct Parallax;
 struct SingleAxisSelector;
 struct MusicManager;
 struct FillRing;
+struct Level;
+
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
@@ -511,6 +514,8 @@ struct MainMenu
 		SPLASH_TRANS,
 		MAINMENU,
 		WORLDMAP,
+		LOADINGMAP,
+		RUNNINGMAP,
 		SAVEMENU,
 		TRANS_MAIN_TO_SAVE,
 		TRANS_SAVE_TO_MAIN,
@@ -605,8 +610,9 @@ struct MainMenu
 	void CustomMapOption();
 	
 	Mode menuMode;
-
-	
+	void AdventureLoadLevel( Level *lev );
+	boost::thread *loadThread;
+	GameSession *currLevel;
 
 	//ControllerState currInput;
 	//ControllerState prevInput;

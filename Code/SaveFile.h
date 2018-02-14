@@ -4,10 +4,12 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 
+struct Sector;
+struct World;
 struct Level
 {
 	Level();
-	
+	Sector *sec;
 	bool completed;
 	unsigned int optionField;
 	std::string name;
@@ -15,6 +17,7 @@ struct Level
 	void SetOption(int index, bool value);
 	void SetCompleted( bool comp );
 	void Reset();
+	int index;
 	std::string GetFullName();
 };
 
@@ -24,6 +27,8 @@ struct Sector
 	~Sector();
 	int numLevels;
 	Level *levels;
+	int index;
+	World *world;
 	bool Load(std::ifstream &is);
 };
 
@@ -33,6 +38,7 @@ struct World
 	~World();
 	int numSectors;
 	Sector *sectors;
+	int index;
 	bool Load(std::ifstream &is);
 };
 
@@ -43,8 +49,6 @@ struct SaveFile
 	void SaveCurrent();
 	void LoadFromFile();
 	std::string fileName;
-
-	void SetCompleted(bool comp);
 	const static int NUM_WORLDS = 8;
 	World worlds[NUM_WORLDS];	
 };

@@ -478,7 +478,7 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 
 		if( frame == 0 )
-			zoomShader.setUniform("sampleStrength", 0);
+			zoomShader.setUniform("sampleStrength", 0.f);
 
 		Vector2f endPos(1920 + 1400, 250);
 		float endScale = .2f;
@@ -773,7 +773,7 @@ void WorldMap::Draw( RenderTarget *target )
 	
 	zoomShader.setUniform("zoomTex", sf::Shader::CurrentTexture );
 	//extraPassSpr.setFillColor(Color::White);
-	extraPassSpr.setPosition(1920, 0);
+	extraPassSpr.setPosition(0, 0);
 	//extraPassSpr.setSize(Vector2f(1920, 1080));
 	//zoomView.setCenter(1920, 0);
 	//target->setView(zoomView);
@@ -1032,17 +1032,23 @@ void MapSector::Update(ControllerState &curr,
 	{
 		if (selectedYIndex == 1)
 		{
-			string level = sec->levels[saSelector->currIndex].GetFullName();// name;
-			View oldView = ms->mainMenu->window->getView();
+			//string levelPath = sec->levels[saSelector->currIndex].GetFullName();// name;
+			//View oldView = ms->mainMenu->window->getView();
 
-			GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
-			GameSession::sLoad(gs);
+			//GameSession *gs = new GameSession(NULL, ms->mainMenu, levelPath);
 
-			int result = gs->Run();
+			//ms->mainMenu->menuMode = MainMenu::LOADINGMAP;
 
-			delete gs;
+			//ms->loadThread = new boost::thread(GameSession::sLoad, gs);
 
-			ms->mainMenu->window->setView(oldView);
+			//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
+			//GameSession::sLoad(gs);
+			//int result = gs->Run();
+
+			//delete gs;
+
+			//ms->mainMenu->window->setView(oldView);
+			ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
 		}
 	}
 
