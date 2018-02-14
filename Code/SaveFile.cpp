@@ -147,7 +147,13 @@ bool Level::Load(std::ifstream &is)
 {
 	completed = false;
 	optionField = 0;
+	name = "testgates33";
 	return true;
+}
+
+std::string Level::GetFullName()
+{
+	return "maps/" + name + ".brknk";
 }
 
 bool World::Load(std::ifstream &is)

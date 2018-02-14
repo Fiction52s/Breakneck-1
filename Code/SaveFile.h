@@ -10,10 +10,12 @@ struct Level
 	
 	bool completed;
 	unsigned int optionField;
+	std::string name;
 	bool Load(std::ifstream &is);
 	void SetOption(int index, bool value);
 	void SetCompleted( bool comp );
 	void Reset();
+	std::string GetFullName();
 };
 
 struct Sector

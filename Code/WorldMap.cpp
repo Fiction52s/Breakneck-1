@@ -1028,6 +1028,22 @@ void MapSector::Update(ControllerState &curr,
 		//	SetRectSubRect( n, )
 	}
 
+	if (curr.A && !prev.A)
+	{
+		if (selectedYIndex == 1)
+		{
+			string level = sec->levels[saSelector->currIndex].GetFullName();// name;
+
+
+			GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
+			GameSession::sLoad(gs);
+
+			int result = gs->Run();
+
+			delete gs;
+		}
+	}
+
 }
 
 bool MapSector::HasTopBonus(int node)
@@ -1109,14 +1125,6 @@ int MapSector::GetNodeBonusIndexBot(int node)
 	{
 		return 64;
 	}
-	/*if (sec->levels[node].completed)
-	{
-		return 64;
-	}
-	else
-	{
-		return 65;
-	}*/
 }
 
 void MapSector::Init(Sector *m_sec)
