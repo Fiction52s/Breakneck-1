@@ -1,0 +1,238 @@
+﻿  Action.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  Actor.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  ActorParams.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  ActorParams1.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  ActorParams2.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  ActorParams3.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  ActorParams4.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  ActorParams5.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  ActorParams6.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  AirParticles.cpp
+d:\users\shephard\programming\breakneck-1\code\AirParticles.h(3): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Aura.cpp
+d:\users\shephard\programming\breakneck-1\code\Aura.h(4): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+  Booster.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Boss.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Boss_Bird.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Boss_Coyote.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Boss_Crawler.cpp
+d:\users\shephard\programming\breakneck-1\code\Physics.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Boss_Gator.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Boss_Skeleton.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Boss_Tiger.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Buf.cpp
+d:\users\shephard\programming\breakneck-1\code\Buf.h(3): fatal error C1083: Cannot open include file: 'boost\thread.hpp': No such file or directory
+  Compiling...
+  Camera.cpp
+d:\users\shephard\programming\breakneck-1\code\Camera.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  CharacterAnimator.cpp
+d:\users\shephard\programming\breakneck-1\code\EditSession.h(5): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  Config.cpp
+d:\users\shephard\programming\breakneck-1\code\Config.h(4): fatal error C1083: Cannot open include file: 'boost/thread.hpp': No such file or directory
+  ControlProfile.cpp
+d:\users\shephard\programming\breakneck-1\code\Input.h(6): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  EditSession.cpp
+d:\users\shephard\programming\breakneck-1\code\GUI.h(3): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Enemy.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  EnemyQuadTree.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Badger.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_BasicEffect.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_BasicTurret.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Bat.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Blocker.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Boss_Crawler.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Cactus.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Cheetah.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Copycat.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_CoralNanobots.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Crawler.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_CurveTurret.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_FootTrap.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Compiling...
+  Enemy_Ghost.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Goal.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Gorilla.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_GrowingTree.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_HealthFly.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Jay.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Mine.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Narwhal.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Overgrowth.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Owl.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Patroller.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_PoisonFrog.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Pulser.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_RaceFightTarget.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_SecurityWeb.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Shard.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Shark.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Specter.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Spider.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_StagBeetle.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Compiling...
+  Enemy_Swarm.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Enemy_Turtle.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  EnvEffects.cpp
+d:\users\shephard\programming\breakneck-1\code\EnvEffects.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Feedback.cpp
+d:\users\shephard\programming\breakneck-1\code\Feedback.h(4): fatal error C1083: Cannot open include file: 'sfml/Graphics.hpp': No such file or directory
+  flow.cpp
+d:\users\shephard\programming\breakneck-1\code\flow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  FPoint.cpp
+  GameSession.cpp
+d:\users\shephard\programming\breakneck-1\code\Physics.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Gate.cpp
+d:\users\shephard\programming\breakneck-1\code\Physics.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  GoalExplosion.cpp
+d:\users\shephard\programming\breakneck-1\code\GoalExplosion.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  GPUFlow.cpp
+d:\users\shephard\programming\breakneck-1\code\flow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  GUI.cpp
+d:\users\shephard\programming\breakneck-1\code\GUI.h(3): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  HUD.cpp
+d:\users\shephard\programming\breakneck-1\code\ImageText.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  ImageText.cpp
+d:\users\shephard\programming\breakneck-1\code\ImageText.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Input.cpp
+d:\users\shephard\programming\breakneck-1\code\Input.h(6): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  ItemSelector.cpp
+d:\users\shephard\programming\breakneck-1\code\ItemSelector.h(3): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+  LevelSelector.cpp
+d:\users\shephard\programming\breakneck-1\code\LevelSelector.h(4): fatal error C1083: Cannot open include file: 'boost/filesystem.hpp': No such file or directory
+  LevelServer.cpp
+d:\users\shephard\programming\breakneck-1\code\LevelServer.h(3): fatal error C1083: Cannot open include file: 'SFML/Network.hpp': No such file or directory
+  Light.cpp
+d:\users\shephard\programming\breakneck-1\code\Light.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  MacInput.cpp
+  main.cpp
+..\..\..\..\..\Programming\Breakneck-1\Code\main.cpp(4): fatal error C1083: Cannot open include file: 'SFML/System.hpp': No such file or directory
+  Compiling...
+  MainMenu.cpp
+d:\users\shephard\programming\breakneck-1\code\MainMenu.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Movable.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Movement.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Mover.cpp
+d:\users\shephard\programming\breakneck-1\code\Physics.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  MusicSelector.cpp
+d:\users\shephard\programming\breakneck-1\code\MusicSelector.h(5): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+  Nexus.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Parallax.cpp
+d:\users\shephard\programming\breakneck-1\code\Tileset.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  PauseMenu.cpp
+d:\users\shephard\programming\breakneck-1\code\PauseMenu.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Physics.cpp
+d:\users\shephard\programming\breakneck-1\code\Physics.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  PlayerChar.cpp
+  PlayerRecord.cpp
+d:\users\shephard\programming\breakneck-1\code\PlayerRecord.h(4): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+  shapes.cc
+  advancing_front.cc
+  cdt.cc
+d:\users\shephard\programming\breakneck-1\code\poly2tri\sweep\sweep_context.h(161): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  sweep.cc
+d:\users\shephard\programming\breakneck-1\code\poly2tri\sweep\sweep_context.h(161): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  sweep_context.cc
+d:\users\shephard\programming\breakneck-1\code\poly2tri\sweep\sweep_context.h(161): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep_context.cc(105): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  PowerOrbs.cpp
+d:\users\shephard\programming\breakneck-1\code\PowerOrbs.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Primitive3D.cpp
+d:\users\shephard\programming\breakneck-1\code\Primitive3D.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  QuadTree.cpp
+d:\users\shephard\programming\breakneck-1\code\QuadTree.h(4): fatal error C1083: Cannot open include file: 'SFML\Graphics.hpp': No such file or directory
+  Rail.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Compiling...
+  SaveFile.cpp
+d:\users\shephard\programming\breakneck-1\code\SaveFile.h(5): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Sequence.cpp
+d:\users\shephard\programming\breakneck-1\code\Physics.h(1): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  ShipPickup.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  SoundManager.cpp
+d:\users\shephard\programming\breakneck-1\code\SoundManager.h(3): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  Spring.cpp
+d:\users\shephard\programming\breakneck-1\code\Actor.h(6): fatal error C1083: Cannot open include file: 'SFML/Audio.hpp': No such file or directory
+  SurfaceMover.cpp
+  TerrainPolygon.cpp
+d:\users\shephard\programming\breakneck-1\code\GUI.h(3): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Tileset.cpp
+d:\users\shephard\programming\breakneck-1\code\Tileset.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  UIButton.cpp
+d:\users\shephard\programming\breakneck-1\code\UIWindow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  UICheckbox.cpp
+d:\users\shephard\programming\breakneck-1\code\UIWindow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  UIControlGrid.cpp
+d:\users\shephard\programming\breakneck-1\code\UIWindow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  UIHorizChooser.cpp
+d:\users\shephard\programming\breakneck-1\code\UIWindow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  UIVerticalControlList.cpp
+d:\users\shephard\programming\breakneck-1\code\UIWindow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  UIWindow.cpp
+d:\users\shephard\programming\breakneck-1\code\UIWindow.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  VectorMath.cpp
+d:\users\shephard\programming\breakneck-1\code\VectorMath.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  VictoryScreen.cpp
+d:\users\shephard\programming\breakneck-1\code\VictoryScreen.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Wire.cpp
+d:\users\shephard\programming\breakneck-1\code\Wire.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  WorldMap.cpp
+d:\users\shephard\programming\breakneck-1\code\WorldMap.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory
+  Zone.cpp
+d:\users\shephard\programming\breakneck-1\code\Zone.h(4): fatal error C1083: Cannot open include file: 'SFML/Graphics.hpp': No such file or directory

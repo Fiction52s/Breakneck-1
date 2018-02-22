@@ -1,0 +1,297 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{85C2EB8A-E16F-465F-9BFE-F092B2252A49}</ProjectGuid>
+    <RootNamespace>BreakneckEmergence</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\include;D:\Users\Shephard\Libraries\boost_1_59_0;D:\Users\Shephard\Libraries\sfeMovie\Include;C:\Program Files (x86)\Windows Kits\10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\lib;D:\Users\Shephard\Libraries\boost_1_59_0\stage\win32\lib;D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;D:\Users\Shephard\Libraries\sfeMovie\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-system-d.lib;sfml-network-d.lib;openal32.lib;opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfeMovie-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\include;D:\Users\Shephard\Libraries\boost_1_59_0;D:\Users\Shephard\Libraries\sfeMovie\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\lib;D:\Users\Shephard\Libraries\boost_1_59_0\stage\win32\lib;D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;D:\Users\Shephard\Libraries\sfeMovie\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-audio.lib;sfml-system.lib;sfml-network.lib;openal32.lib;opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfeMovie.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Action.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Actor.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams1.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams2.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams3.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams4.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams5.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams6.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\AirParticles.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Aura.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Booster.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Boss.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Boss_Crawler.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Buf.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Camera.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\CharacterAnimator.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Config.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ControlProfile.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EditSession.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnemyQuadTree.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicEffect.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicTurret.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Crawler.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_FootTrap.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Goal.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Patroller.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_RaceFightTarget.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_TrapRoot.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnvEffects.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Feedback.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\flow.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\FPoint.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GameSession.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Gate.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GoalExplosion.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GPUFlow.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GUI.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\HitboxManager.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\HUD.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ImageText.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Input.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ItemSelector.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Julia.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelSelector.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelServer.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Light.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\MacInput.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\main.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\MainMenu.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Movable.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Movement.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Mover.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\MusicSelector.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Nexus.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ObjectPool.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Parallax.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PauseMenu.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Physics.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerChar.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerRecord.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\common\shapes.cc" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\advancing_front.cc" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\cdt.cc" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep.cc" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep_context.cc" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PowerOrbs.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Primitive3D.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\QuadTree.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Rail.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SaveFile.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Sequence.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShaderTester.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShipPickup.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SoundManager.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Spring.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SurfaceMover.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainPolygon.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainRender.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Tileset.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIButton.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UICheckbox.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIControlGrid.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIHorizChooser.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIVerticalControlList.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIWindow.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\VectorMath.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\VictoryScreen.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\VisualEffects.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Wire.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\WorldMap.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Zone.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Action.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Actor.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\AirParticles.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Aura.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\BarrierReactions.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Boss.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Buf.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Camera.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Config.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ControlProfile.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EditSession.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EffectLayer.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicEffect.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicTurret.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Booster.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Crawler.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_FootTrap.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Goal.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Patroller.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_RaceFightTarget.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_TrapRoot.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnvEffects.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Feedback.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\flow.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\FPoint.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\GameSession.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Gate.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\globals.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\GoalExplosion.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\GUI.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\HitboxManager.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\HUD.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ImageText.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Input.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ItemSelector.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Julia.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelSelector.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelServer.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Light.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\MacInput.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\MainMenu.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Movement.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Mover.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\MusicSelector.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ObjectPool.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Parallax.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PauseMenu.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Physics.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerChar.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerRecord.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\common\shapes.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\common\utils.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\poly2tri.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\advancing_front.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\cdt.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep_context.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PowerOrbs.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Primitive3D.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\QuadTree.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Rail.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SaveFile.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Sequence.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShaderTester.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SoundManager.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SurfaceMover.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainRender.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Tileset.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIWindow.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\VectorMath.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\VictoryScreen.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\VisualEffects.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Wire.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\WorldMap.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Zone.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
