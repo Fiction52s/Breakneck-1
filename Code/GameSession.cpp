@@ -5693,27 +5693,35 @@ bool GameSession::Load()
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
 		GetTileset( pStr + string( "c" ) + eStr, 1920, 1080 ), 0, 3 ) );
+	scrollingBackgrounds.push_back(
+		new ScrollingBackground(
+		GetTileset("Parallax/w1_02_cloud_1.png", 1920, 1080), 0, 4, 10));
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
 		GetTileset(pStr + string("b") + eStr, 1920, 1080 ), 0, 5 ) );
+	scrollingBackgrounds.push_back(
+		new ScrollingBackground(
+			GetTileset("Parallax/w1_02_cloud_2.png", 1920, 1080), 0, 8, 10));
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
 		GetTileset(pStr + string("a") + eStr, 1920, 1080 ), 0, 10 ) );
 
+
 	//this is outdated!
 	testPar = new Parallax();
 
-	Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
-	Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
-	Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 80 );
-	testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 80 );
+	//Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
+	//Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
+	//Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
 
-	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 150 );
-	testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 150 );
+	//testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 80 );
+	//testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 80 );
 
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 250 );
-	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 250 );
+	//testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 150 );
+	//testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 150 );
+
+	//testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 250 );
+	//testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 250 );
 
 	
 	cout << "last one" << endl;

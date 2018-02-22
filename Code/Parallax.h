@@ -13,13 +13,15 @@ struct RepeatingSprite
 	RepeatingSprite( Parallax *parent, 
 		Tileset *ts, int index,
 		sf::Vector2f &offset, int repeatWidth,
-		int depthLevel );
+		int depthLevel,
+		float p_scrollSpeedX = 0);
 	sf::Sprite spr;
 	void Update( sf::Vector2f &camPos );
 	sf::Vector2f relPos;
 	int repeatWidth;
 	float depth;// depthLevel;
 	Parallax *parent;
+	float scrollSpeedX;
 	void Draw( sf::RenderTarget *target );
 };
 
@@ -60,7 +62,7 @@ struct Parallax
 struct ScrollingBackground
 {
 	ScrollingBackground( Tileset *ts, int index,
-		int depthLevel );
+		int depthLevel, float p_scrollSpeedX = 0.f );
 	Tileset *ts;
 	int tsIndex;
 	sf::Vector2f relPos;
@@ -70,6 +72,8 @@ struct ScrollingBackground
 	sf::View oldView;
 	sf::View newView;
 	float depth;
+	float scrollSpeedX;
+	float scrollOffset;
 	void Update( sf::Vector2f &camPos );
 	void SetTileIndex( int index );
 	void Draw( sf::RenderTarget *target );

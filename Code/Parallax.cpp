@@ -6,13 +6,14 @@ using namespace std;
 using namespace sf;
 
 RepeatingSprite::RepeatingSprite( Parallax *p_parent, Tileset *ts, int index,
-	Vector2f &offset, int p_repeatWidth, int p_depthLevel )
+	Vector2f &offset, int p_repeatWidth, int p_depthLevel, float p_scrollSpeedX)
 	:parent( p_parent ), relPos( offset ), repeatWidth( p_repeatWidth ),
-	depth( p_depthLevel * .01f )
+	depth( p_depthLevel * .01f ), scrollSpeedX( p_scrollSpeedX )
 {
 	spr.setTexture( *ts->texture );
 	spr.setTextureRect( ts->GetSubRect( index ) );
 	spr.setOrigin( spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
+
 	//relPos = Vector2f( 0, 0 );
 	//repeatWidth = 1920 * 2;
 }
@@ -21,6 +22,7 @@ RepeatingSprite::RepeatingSprite( Parallax *p_parent, Tileset *ts, int index,
 
 void RepeatingSprite::Update( Vector2f &camPos )
 {
+	//relPos.x += 10; //scrollSpeedX * depth;
 	int p = floor( camPos.x * depth + relPos.x + .5f );
 	int px = abs( p );
 	int pxx = (px % repeatWidth) - repeatWidth / 2;
@@ -159,23 +161,32 @@ Parallax::~Parallax()
 
 
 ScrollingBackground::ScrollingBackground( Tileset *p_ts, int index,
-		int p_depthLevel )
+		int p_depthLevel, float p_scrollSpeedX )
 		:ts( p_ts ), va( sf::Quads, 2 * 4 ), depthLevel( p_depthLevel ),
-		depth( p_depthLevel * .01f ), tsIndex( index )
+		depth( p_depthLevel * .01f ), tsIndex( index ), scrollSpeedX( p_scrollSpeedX )
 {
 	SetTileIndex( tsIndex );
 	SetLeftPos( Vector2f( 0, 0 ) );
+	scrollOffset = 0;
 }
 
 void ScrollingBackground::Update( Vector2f &camPos )
 {
+	Vector2f cPos = camPos;
+	cPos.x -= scrollOffset;
+	if (scrollOffset * depth > 1920)
+		scrollOffset = 0;
+	if (scrollOffset * depth < -1920)
+	{
+		scrollOffset = 0;
+	}
 	int repeatWidth = 1920 * 2;
-	int p = floor( camPos.x * depth + .5f );
+	int p = floor(cPos.x * depth + .5f );
 
 	int px = abs( p );
 	int pxx = (px % repeatWidth) - repeatWidth / 2;
 
-	float camXAbs = abs( camPos.x * depth );
+	float camXAbs = abs(cPos.x * depth );
 	int m = 0;
 	while( camXAbs > 1920 )
 	{
@@ -185,9 +196,9 @@ void ScrollingBackground::Update( Vector2f &camPos )
 	
 	float off = camXAbs;
 
-	if( camPos.x > 0 )
+	if(cPos.x > 0 )
 		off = -off;
-	else if( camPos.x < 0 )
+	else if(cPos.x < 0 )
 	{
 		off = off - 1920;
 	}
@@ -200,11 +211,14 @@ void ScrollingBackground::Update( Vector2f &camPos )
 	if( p > 0 )
 		pxx = -pxx;
 
+
+	scrollOffset += scrollSpeedX;
+	
 	//cout << "pxx: " << pxx << ", modified:  " << (pxx / .5f) << endl;
 	//pxx = floor( pxx * .5 + .5 );
 
 	//Vector2f realPos( camPos.x + pxx, camPos.y + relPos.y );
-	Vector2f realPos( camPos.x + off, camPos.y );
+	Vector2f realPos(camPos.x + off, camPos.y );
 	//realPos = camPos;
 	realPos.x -= 960;
 	SetLeftPos( realPos );//camPos.x );//realPos.x );
