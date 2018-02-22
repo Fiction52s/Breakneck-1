@@ -308,12 +308,8 @@ void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileInd
 			//for (int x = sub.left; x < right; ++x)
 			for (int x = 0; x < xSize; ++x)
 			{
-
-				
 				col = currIm.getPixel(x, y);
 				//currently use every pixel that isnt transparent
-
-
 				if (col.a == 0)//&& col.r == 250 && col.g == 0 && col.b == 158 )
 				{
 
@@ -381,7 +377,6 @@ void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileInd
 			}
 		}
 		currIm.copy(otherIm, 0, 0, IntRect(), true);
-		
 	}
 
 }

@@ -20,7 +20,9 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
-
+	
+	//breakFrame = 0;
+	flowFrame = 0;
 	//this could just be temporary
 	int t = (int)p_type;
 
@@ -36,7 +38,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	}
 	else
 	{
-		gState = HARD;
+		gState = LOCKFOREVER;
 
 	}
 	
@@ -45,12 +47,14 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 		cout << "failed to load gate shader" << endl;
 		assert(0);
 	}
+	gateShader.setUniform("fadeQuant", 0.f);
 
 	if (!centerShader.loadFromFile("Shader/gatecenter_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate center shader" << endl;
 		assert(0);
 	}
+	centerShader.setUniform("breakQuant", 0.f);
 
 	gQuads = NULL;
 	frame = 0;
@@ -82,61 +86,54 @@ Gate::~Gate()
 	delete gQuads;
 }
 
+void Gate::Reset()
+{
+	centerShader.setUniform("breakQuant", 0.f);
+	gateShader.setUniform("fadeQuant", 0.f);
+	flowFrame = 0;
+	frame = 0;
+
+	SetLocked(true);
+	if (type != Gate::BLACK)
+		gState = Gate::HARD;
+}
+
 void Gate::Draw( sf::RenderTarget *target )
 {
-	//draw quads
-	CircleShape cs( 5 );
-	cs.setFillColor( c );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-
-	cs.setPosition( edgeA->v0.x, edgeA->v0.y );
-	target->draw( cs );
-
-	cs.setPosition( edgeA->v1.x, edgeA->v1.y );
-	target->draw( cs );
-
-	if( locked )
-	{
-	//	target->draw( thickLine );
-	}
-
 	if( gQuads != NULL )
 	{
 		if( gState != OPEN )
 		{
 			target->draw( *gQuads, ts->texture );
 		}
-		//if( locked )
-		//{
-			
-		//}
 	}
 	else
 	{
 		if( gState != OPEN )
 		{
 			target->draw(centerLine, 4, sf::Quads, &centerShader);
-			target->draw(testLine, 4, sf::Quads , &gateShader);
-			//target->draw(thickLine, &gateShader);
+
+			if (gState != SOFT)
+			{
+				target->draw(testLine, 4, sf::Quads, &gateShader);
+			}
 		}
+
+		target->draw(nodes, 8, sf::Quads, ts_node->texture);
 	}
 
 }
 
 void Gate::UpdateLine()
 {
-
-	int tileHeight;// = 32;
-	//Color c( Color::White );
+	dissolveLength = 20 * max( 1.0, length(edgeA->v1 - edgeA->v0) / 400.0 );
+	float tileHeight = 64;
 
 	switch( type )
 	{
 	case BLACK:
 		{
 		c = Color( 150, 150, 150 );
-
-		
-		//ts = owner->GetTileset( "gateblack_64x64.png", 64, 64 );
 		ts = owner->GetTileset( "gate_black_128x128.png", 128, 128 );
 		tileHeight = 128;
 		}
@@ -182,6 +179,7 @@ void Gate::UpdateLine()
 		Tileset *tts = owner->GetTileset("gates_32x64.png", 32, 64);
 		gateShader.setUniform("u_texture", *tts->texture );
 		gateShader.setUniform("tile", 1.f);
+		//gateShader.setUniform("fadeQuant", 1.f);
 
 		centerShader.setUniform("u_texture", *tts->texture);
 		frame = 0;
@@ -223,7 +221,16 @@ void Gate::UpdateLine()
 	V2d leftv1 = dv1 - other * width;
 	V2d rightv1 = dv1 + other * width;
 
+	V2d nodeALeftv0 = leftv0 - along * 32.0;
+	V2d nodeARightv0 = rightv0 - along * 32.0;
+	V2d nodeALeftv1 = leftv0 + along * 32.0;
+	V2d nodeARightv1 = rightv0 + along * 32.0;
 	
+	V2d nodeBLeftv0 = leftv1 + along * 32.0;
+	V2d nodeBRightv0 = rightv1 + along * 32.0;
+	V2d nodeBLeftv1 = leftv1 - along * 32.0;
+	V2d nodeBRightv1 = rightv1 - along * 32.0;
+
 	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
 	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
 	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
@@ -239,22 +246,32 @@ void Gate::UpdateLine()
 	centerLine[2].position = Vector2f(leftv1.x, leftv1.y);
 	centerLine[3].position = Vector2f(rightv1.x, rightv1.y);
 
-	/*testLine[0].color = Color::Red;
-	testLine[1].color = Color::Blue;
-	testLine[2].color = Color::Blue;
-	testLine[3].color = Color::Red;*/
+	nodes[0].position = Vector2f(nodeALeftv0);
+	nodes[1].position = Vector2f(nodeARightv0);
+	nodes[2].position = Vector2f(nodeARightv1);
+	nodes[3].position = Vector2f(nodeALeftv1);
 
+	nodes[4].position = Vector2f(nodeBRightv0);
+	nodes[5].position = Vector2f(nodeBLeftv0);
+	nodes[6].position = Vector2f(nodeBLeftv1);
+	nodes[7].position = Vector2f(nodeBRightv1);
 
-	IntRect ir;
+	ts_node = owner->GetTileset("gatenode_32x64.png", 32, 64);
+
+	SetRectSubRect(nodes, ts_node->GetSubRect(0) );
+	SetRectSubRect((nodes+4), ts_node->GetSubRect(0));
+
+	FloatRect ir;
 	ir.left = 0;
 	ir.top = 0;
-	ir.width = 1.0;//length(leftv0 - rightv0);
-	ir.height = 10.0;//10.0;//1.0;//length(leftv0 - leftv1);
+	ir.width = 1.0;
+	double edgeLen = length(leftv0 - leftv1);
+	ir.height = edgeLen / tileHeight;
+	centerShader.setUniform("numReps", ir.height);
+	gateShader.setUniform("numReps", ir.height);
 
 	SetRectSubRect(testLine, ir);
-
 	SetRectSubRect(centerLine, ir);
-
 	
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
 	double numT = gateLength / tileHeight; //rounded down
@@ -276,53 +293,59 @@ void Gate::UpdateLine()
 	//cout << "giving gquads value!" << endl;
 }
 
+void Gate::SetNodeSprite(bool active)
+{
+	//SetRectSubRect( nodes, ts)
+}
+
 void Gate::Update()
 {
-
 	//gates can be timeslowed? don't worry about it just yet. 
-	//if( type != BLACK )
-	if( false )
+	if( type != BLACK )
 	{
 		switch( gState )
 		{
-		case HARDEN:
-			{
-				if( frame == 0 )
-				{
-					gState = LOCKFOREVER;
-					frame = 0;
-				}
-			}
-			break;
 		case HARD:
 			{
-				if( frame == 1 )
-				{
-					frame = 0;
-				}
+			if (frame == 60)
+			{
+				
+				frame = 0;
+			}
+				//frame = 0;
+				break;
+			}
+		case TOTALDISSOLVE:
+		{
+			if (frame == 60)
+			{
+				gState = OPEN;
+				frame = 0;
 			}
 			break;
+		}
+			
 		case SOFTEN:
 			{
-				if( frame == 0 )
+				if( frame == 60 )
 				{
 					gState = SOFT;
 					frame = 0;
 				}
+				break;
 			}
-			break;
+			
 		case SOFT:
 			{
-				if( frame == 1 )
-				{
-					frame = 0;
-				}
+			if( frame == 60)
+				frame = 0;
+				break;
 			}
-			break;
+			
 		case DISSOLVE:
 			{
 				//whatever length
-				if( frame == 3 * 4 )
+				if(frame == dissolveLength)
 				{
 					if( reformBehindYou )
 					{
@@ -335,73 +358,42 @@ void Gate::Update()
 						frame = 0;
 					}
 				}
+				break;
 			}
-			break;
+			
 		case REFORM:
 			{
-				//cout << "reforming " << endl;
-				//whatever length
 				if( frame == 10 )
 				{
 					gState = LOCKFOREVER;
 				}
+				break;
 			}
-			break;
+			
 		case LOCKFOREVER:
 			{
-				//cout << "locked foreverrrr" << endl;
-				//whatever the last frame of lockforever is
-				frame = 10;
+				frame = 0;
+				break;
 			}
-			break;
+			
 		case OPEN:
 			{
 				frame = 0;
+				break;
 			}
-			break;
 		}
 	}
 	else
 	{
-
-		//frame = 0;
+		frame = 0;
 	}
-	double radius = 300;
-	
-	//if( keyGate )
-	//{
 
-	//	if( owner->GetPlayer( 0 )->numKeys < requiredKeys && IsEdgeTouchingCircle( edgeA->v0, edgeA->v1, owner->GetPlayer( 0 )->position, radius ) )
-	//	{
-	//		//cout << "HARDENING: " << type << endl;
-	//		if( gState == SOFTEN )
-	//		{
-	//			gState = HARDEN;
-	//			frame = 0;
-	//			//frame should be the inverse so that it can get harder while from its partially softened state.
-	//		}
-	//		else if( gState == SOFT )
-	//		{
-	//			gState = HARDEN;
-	//			frame = 0;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		//cout << "SOFTENING: " << type << endl;
-	//		if( gState == HARDEN )
-	//		{
-	//			gState = SOFTEN;
-	//			frame = 0;
-	//			//inverse frame;
-	//		}
-	//		else if( gState == HARD )
-	//		{
-	//			gState = SOFTEN;
-	//			frame = 0;
-	//		}
-	//	}
-	//}
+	double radius = 300;
+
+	if (flowFrame > 60)
+	{
+		flowFrame = 0;
+	}
 
 	if( type != BLACK )
 	{
@@ -409,9 +401,19 @@ void Gate::Update()
 		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
 
 		if( gState == HARD && enoughKeys && 
-			( currZone == NULL || ( currZone == zoneA || currZone == zoneB ) ) )
+			( currZone == NULL || ( currZone == zoneA || currZone == zoneB ) ))
 		{
-			gState = SOFT; //SOFTEN
+			if ( zoneA == zoneB && zoneA == currZone )
+			{
+				gState = TOTALDISSOLVE;
+				SetLocked(false);
+				centerShader.setUniform("breakPosQuant", .5f);
+			}
+			else
+			{
+				gState = SOFTEN; //SOFTEN
+			}
+			
 			frame = 0;
 
 			Wire *rw = owner->GetPlayer( 0 )->rightWire;
@@ -457,132 +459,27 @@ void Gate::Update()
 	Vector2f rightv1f( rightv1.x, rightv1.y );
 	Vector2f rightv0f( rightv0.x, rightv0.y );
 	int f = frame / 3;
-	//cout << "gq: " << gq.getVertexCount() << endl;
+
 
 	
-	int realFrame = 0;
-
-	if( type != BLACK )
-	{
-		switch( gState )
-		{
-		case HARDEN:
-			{
-				realFrame = frame;
-			}
-			break;
-		case HARD:
-			{
-				realFrame = 1;
-			}
-			break;
-		case SOFTEN:
-			{
-				realFrame = 10 + frame;
-			}
-			break;
-		case SOFT:
-			{
-				realFrame = 2;// + frame / 3;
-			}
-			break;
-		case DISSOLVE:
-			{
-				realFrame = 3 + frame / 4;
-			}
-			break;
-		case REFORM:
-			{
-				realFrame = 0;
-			}
-			break;
-		case LOCKFOREVER:
-			{
-				realFrame  = 0;
-			}
-			break;
-		case OPEN:
-			{
-				realFrame = 0;
-			}
-			break;
-		}
-	}
-	else if( type == BLACK )
-	{
-	}
-
-		
-	//IntRect subRect = ts->GetSubRect( realFrame );
-		
-
-	if( realFrame < 0 )
-	{
-		cout << "type: " << type << endl;
-		cout << "gState: " << gState << endl;
-	}
-
-	assert( realFrame >= 0 );
-
-	//IntRect subRect = ts->GetSubRect( realFrame );
-	//for( int i = 0; i < numTiles - 1; ++i )
-	//{
-	//		
-	//	gq[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );//Vector2f( 0, frame * tileHeight + 0 );
-	//	gq[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );//Vector2f( tileWidth, frame * tileHeight + 0 );
-	//	gq[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );//Vector2f( tileWidth, frame * tileHeight + tileHeight );
-	//	gq[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );//Vector2f( 0, frame * tileHeight + tileHeight );
-
-	//	V2d lv0 = leftv0 + along * (double)(tileHeight * i);
-	//	V2d lv1 = leftv0 + along * (double)(tileHeight * (i+1));
-	//	V2d rv1 = rightv0 + along * (double)(tileHeight * (i+1));
-	//	V2d rv0 = rightv0 + along * (double)(tileHeight * i);
-	//	gq[i*4+3].position = Vector2f( lv0.x, lv0.y );
-	//	gq[i*4+0].position = Vector2f( lv1.x, lv1.y );
-	//	gq[i*4+1].position = Vector2f( rv1.x, rv1.y );
-	//	gq[i*4+2].position = Vector2f( rv0.x, rv0.y );
-	//}
-
-	//double fullHeight =  (double)(tileHeight * (numTiles-1));
-	//
-	//V2d lv0 = leftv0 + along * fullHeight;
-	//V2d lv1 = leftv1;
-	//V2d rv1 = rightv1;
-	//V2d rv0 = rightv0 + along * fullHeight;
-	//
-	//double thisHeight = length( lv1 - lv0 );
-
-	////remainder
-	//
-	//double h = subRect.height - thisHeight;
-	//
-	//gq[(numTiles-1) * 4 + 0].texCoords = Vector2f( subRect.left, h );
-	//gq[(numTiles-1) * 4 + 1].texCoords = Vector2f( subRect.left + subRect.width, h  );
-	//gq[(numTiles-1) * 4 + 2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	//gq[(numTiles-1) * 4 + 3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-
-	//gq[(numTiles-1) * 4 + 3].position = Vector2f( lv0.x, lv0.y );
-	//gq[(numTiles-1) * 4 + 0].position = Vector2f( lv1.x, lv1.y );
-	//gq[(numTiles-1) * 4 + 1].position = Vector2f( rv1.x, rv1.y );
-	//gq[(numTiles-1) * 4 + 2].position = Vector2f( rv0.x, rv0.y );
-	//
-	//switch( type )
-	//{
-	//case BLACK:
-	//	break;
-	//case KEYGATE:
-	//	break;
-	//}
-
-	float ff = frame / 60.f;
+	float ff = flowFrame / 60.f;
 	gateShader.setUniform("quant", ff );
 	centerShader.setUniform("quant", ff);
-	++frame;
+	
+	float dLen = dissolveLength;
 
-	if (frame > 60)
+	if (gState == DISSOLVE || gState == TOTALDISSOLVE )
 	{
-		frame = 0;
+		centerShader.setUniform("breakQuant", (frame / dLen));
 	}
+	if (gState == SOFTEN || gState == TOTALDISSOLVE)
+	{
+		float gg = (frame / 60.f);
+		gateShader.setUniform("fadeQuant", gg);
+		//(frame / 60.f));
+	}
+	++frame;
+	++flowFrame;
 }
 
 void Gate::SetLocked( bool on )
@@ -599,12 +496,6 @@ void Gate::SetLocked( bool on )
 
 		edgeA->edge1 = temp1next;
 		temp1next->edge0 = edgeA;
-
-		//edgeB->edge0 = temp0prev;
-		//temp0prev->edge1 = edgeB;
-
-	//	edgeB->edge1 = temp1next;
-	//	temp1next->edge0 = edgeB;
 
 		edgeB->edge0 = temp1prev;
 		temp1prev->edge1 = edgeB;
@@ -624,20 +515,15 @@ void Gate::SetLocked( bool on )
 
 		temp1next->edge0 = temp1prev;
 		temp1prev->edge1 = temp1next;
-		//locked = false;
-		//edge0->edge1 = edge1;
-		//edge1->edge0 = edge0;
 	}
 }
 
 void Gate::HandleQuery( QuadTreeCollider *qtc )
 {
 	qtc->HandleEntrant( this );
-	//edgeA->HandleQuery( qtc );
 }
 
 bool Gate::IsTouchingBox( const sf::Rect<double> &r )
 {
-	
-	return IsBoxTouchingBox( aabb, r );//edgeA->IsTouchingBox( r );//IsBoxTouchingBox( aabb, r );//r.intersects( aabb );//edgeA->IsTouchingBox( r );
+	return IsBoxTouchingBox(aabb, r);
 }

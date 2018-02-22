@@ -218,6 +218,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	cout << "Start player" << endl;
 		currBooster = NULL;
 		oldBooster = NULL;
 		currWall = NULL;
@@ -371,7 +372,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
-		Vector2f facePos( 24, 0 );
+		Vector2f facePos( 0, 0 );
 		
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
@@ -999,14 +1000,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 145, 255 )) );
 		swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
+		cout << "Start aura" << endl;
 		//sh.setUniform( "u_texture", *tileset[action]->texture ); 
-		for (int j = 0; j < Action::Count; ++j)
-		{
-			CreateAura(auraPoints[0][j], tileset[j], 0);
-			CreateAura(auraPoints[1][j], tileset[j], 0, 0, 2);
-			CreateAura(auraPoints[2][j], tileset[j], 0, 0, 4);
-			//CreateAura(auraPoints[2][j], tileset[j], 2);
-		}
+
+		LoadAllAuras();
+		
+		cout << "end aura" << endl;
 
 		
 		
@@ -1303,6 +1302,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//{
 		//	motionGhosts[i] = 
 		//}
+
+		cout << "end player" << endl;
 }
 
 void Actor::ActionEnded()
@@ -8708,6 +8709,150 @@ double Actor::GetNumSteps()
 	}
 }
 
+void Actor::LoadAllAuras()
+{
+	ifstream is;
+	is.open("kinaura", ios::in|ios::binary );
+
+	if (is.is_open())
+	{
+		sf::Uint32 totalSize;
+		is.read((char*)&totalSize, sizeof(sf::Uint32));
+
+		sf::Uint32 *iList = new sf::Uint32[totalSize];
+
+		is.read((char*)iList, totalSize * sizeof( sf::Uint32) );
+
+		int currIndex = 0;
+		sf::Uint32 size;
+
+		sf::Uint32 numT;
+
+		list<Vector2f> *fListArr;
+		list<Vector2f> *listPtr;
+
+		Vector2f curr;
+
+		for (int j = 0; j < Action::Count; ++j)
+		{
+			numT = iList[currIndex++];
+				
+			for (int f = 0; f < 3; ++f)
+			{
+				fListArr = new list<Vector2f>[numT];
+				auraPoints[f][j] = fListArr;
+					
+				for (int t = 0; t < numT; ++t)
+				{
+					listPtr = &(fListArr[t]);
+					size = iList[currIndex++];
+					for (int s = 0; s < size; ++s)
+					{
+						curr.x = iList[currIndex++];
+						curr.y = iList[currIndex++];
+						listPtr->push_back(curr);
+					}
+				}
+			}
+		}
+		
+		
+		cout << "finished reading auras" << endl;
+	}
+	else
+	{
+		int totalCounter = 0;
+		int totalSize = 0;
+		int numTA[Action::Count];
+		int sizeExtra = 0;
+		int numT;
+
+		for (int j = 0; j < Action::Count; ++j)
+		{
+			numT = CreateAura(auraPoints[0][j], tileset[j], 0);
+			numTA[j] = numT;
+			for (int z = 0; z < numT; ++z)
+			{
+				totalSize += auraPoints[0][j][z].size();
+			}
+			
+			//++totalSize; //num tiles
+
+			CreateAura(auraPoints[1][j], tileset[j], 0, 0, 2);
+			for (int z = 0; z < numT; ++z)
+			{
+				totalSize += auraPoints[1][j][z].size();
+			}
+			//++totalSize;
+
+			CreateAura(auraPoints[2][j], tileset[j], 0, 0, 4);
+			for (int z = 0; z < numT; ++z)
+			{
+				totalSize += auraPoints[2][j][z].size();
+			}
+
+			sizeExtra += numT * 3;
+			//++totalSize;
+			//totalSize += auraPoints[0][j]->size() + auraPoints[1][j]->size() + auraPoints[2][j]->size();
+		}
+		//outPointList = new list<Vector2f>[numTiles];
+		totalSize *= 2; //because there are 2 position values for each value
+		totalSize += Action::Count; //number of tiles
+
+		totalSize += sizeExtra;
+		//totalSize +=  //for sizes
+		totalSize++; //putting total size at the front
+
+		ofstream os;
+		os.open("kinaura", ios::out | ios::binary);
+
+		cout << "no aura file found. generating one now." << endl;
+		if (!os.is_open())
+		{
+			cout << "couldn't open aura file for writing" << endl;
+			assert(0);
+			return;
+		}
+
+		sf::Uint32 *viList = new sf::Uint32[totalSize];
+		list<Vector2f>::iterator begin;
+		list<Vector2f>::iterator end;
+		sf::Uint32 size;
+		list<Vector2f> *aList;
+
+		viList[totalCounter++] = totalSize - 1; //doesn't count itself
+
+		for (int j = 0; j < Action::Count; ++j)
+		{
+			numT = numTA[j];
+			viList[totalCounter++] = numT;
+			for (int f = 0; f < 3; ++f)
+			{
+				aList = auraPoints[f][j];
+				for (int s = 0; s < numT; ++s)
+				{
+					begin = aList[s].begin();
+					end = aList[s].end();
+					size = aList[s].size();
+					
+					viList[totalCounter++] = size;
+
+					for (auto it = begin; it != end; ++it)
+					{
+						viList[totalCounter++] = (*it).x;
+						viList[totalCounter++] = (*it).y;
+					}
+				}
+			}
+		}
+
+		os.write((char*)viList, sizeof(sf::Uint32) * totalSize);
+		os.close();
+		cout << "finished creating aura file" << endl;
+	}
+	
+}
+
 void Actor::InitAfterEnemies()
 {
 	if( owner->raceFight != NULL )
@@ -15044,6 +15189,10 @@ void Actor::PhysicsResponse()
 		double crossC = cross( C - edge->v0, nEdge );
 		double crossD = cross( D - edge->v0, nEdge );
 
+		//double crossCenter = cross(b.globalPosition - edge->v0, nEdge);
+		double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
+		alongAmount /= length(edge->v1 - edge->v0);
+		alongAmount = 1.0 - alongAmount;
 		bool activate = crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0;
 		 
 
@@ -15087,11 +15236,6 @@ void Actor::PhysicsResponse()
 		if( activate )
 		{
 			//lock all the gates from this zone now that I chose one
-			
-			
-
-
-
 			owner->SuppressEnemyKeys( g->type );			
 
 			if( edge == g->edgeA )
@@ -15107,7 +15251,6 @@ void Actor::PhysicsResponse()
 							continue;
 						if( (og->gState == Gate::HARD
 							|| og->gState == Gate::SOFT
-							|| og->gState == Gate::HARDEN
 							|| og->gState == Gate::SOFTEN ) )
 						{
 							og->gState = Gate::LOCKFOREVER;
@@ -15129,7 +15272,6 @@ void Actor::PhysicsResponse()
 							continue;
 						if( (og->gState == Gate::HARD
 							|| og->gState == Gate::SOFT
-							|| og->gState == Gate::HARDEN
 							|| og->gState == Gate::SOFTEN ) )
 						{
 							og->gState = Gate::LOCKFOREVER;
@@ -15153,6 +15295,10 @@ void Actor::PhysicsResponse()
 			{
 				g->gState = Gate::DISSOLVE;
 				g->frame = 0;
+				float aa = alongAmount;
+				g->centerShader.setUniform("breakPosQuant", aa);
+				//g->centerShader.setUniform("breakPosQuant", .5f);
+				//g->gateShader.setUniform( "breakPosQuant")
 			}
 
 
@@ -22924,7 +23070,7 @@ void PlayerGhost::UpdatePrePhysics( int ghostFrame )
 	
 }
 
-void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
+int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	Tileset *ts, int startTile, int numTiles, int layer )
 {
 	//auraPoints[WALLATTACK] = 8;
@@ -22932,7 +23078,7 @@ void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	if (ts == NULL)
 	{
 		outPointList = NULL;
-		return;
+		return 0;
 	}
 
 	//int endTile = startTile + numTiles;
@@ -22949,6 +23095,8 @@ void Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	{
 		Aura::CreateParticlePointList( owner->mainMenu->auraCheckTexture, ts, i + startTile, outPointList[i], layer);
 	}
+
+	return numTiles;
 }
 
 AbsorbParticles::AbsorbParticles()

@@ -512,6 +512,7 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
+
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();
@@ -766,6 +767,10 @@ MainMenu::MainMenu()
 		sf::Color::Blue,
 		5, 300, 0) };
 
+	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_160x160.png", 160, 160);
+	testLoadIcon.setTexture( *ts_loadIcon->texture );
+	testLoadIcon.setOrigin(testLoadIcon.getLocalBounds().width / 2, testLoadIcon.getLocalBounds().height / 2);
+	testLoadIcon.setPosition(1920 - 200, 1080 - 200);
 	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
@@ -1888,6 +1893,10 @@ void MainMenu::Run()
 
 
 				}
+				else
+				{
+					testLoadIcon.rotate(2);
+				}
 				//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
 				//GameSession::sLoad(gs);
 				//int result = gs->Run();
@@ -2232,6 +2241,11 @@ void MainMenu::Run()
 				multiLoadingScreen->Draw( preScreenTexture );
 				break;
 			}
+		case LOADINGMAP:
+		{
+			preScreenTexture->draw(testLoadIcon);
+			break;
+		}
 		case TRANS_MAIN_TO_MAPSELECT:
 		{
 			preScreenTexture->setView(v);

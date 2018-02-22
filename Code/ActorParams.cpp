@@ -167,6 +167,23 @@ GroundInfo::GroundInfo()
 
 }
 
+V2d GroundInfo::GetPosition()
+{
+	V2d start = V2d( edgeStart->pos );
+	V2d end;
+	if (edgeStart->next == NULL)
+	{
+		end = V2d( ground->pointStart->pos);
+	}
+	else
+	{
+		end = V2d(edgeStart->next->pos );
+	}
+
+	V2d dir = normalize(end - start);
+	return start + dir * groundQuantity;
+}
+
 int GroundInfo::GetEdgeIndex()
 {
 	int index = 0;

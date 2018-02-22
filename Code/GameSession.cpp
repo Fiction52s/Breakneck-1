@@ -79,6 +79,7 @@
 //#include "Enemy_Swarm.h"
 //#include "Enemy_Turtle.h"
 #include "HitboxManager.h"
+#include "ShaderTester.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -666,7 +667,7 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 	
 
 
-	Tileset *scoreTS = owner->GetTileset("number_score_80x80.png", 80, 80);
+	Tileset *scoreTS = owner->GetTileset("keynum_32x32.png", 32, 32);
 	keyNumberNeededHUD = new ImageText(2, scoreTS);
 	keyNumberTotalHUD = new ImageText(2, scoreTS);
 
@@ -674,7 +675,7 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 
 	keyNumberHUDBG.setTexture(*keyBGTS->texture);
 
-	SetPosition(Vector2f(226, 141));
+	SetPosition(Vector2f(226 + 10, 141 + 10));
 	//keyNumberNeededHUD->SetCenter(Vector2f(400, 400));
 	//keyNumberTotalHUD->SetCenter(Vector2f(600, 400));
 	
@@ -4611,7 +4612,19 @@ void GameSession::CreateZones()
 	for( int i = 0; i < numGates; ++i )
 	{
 		Gate *g = gates[i];
-		if( g->zoneA == NULL )
+		if (g->zoneA == NULL || g->zoneB == NULL)
+		{
+			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+			{
+				if ((*zit)->ContainsPoint(g->edgeA->v0))
+				{
+					g->zoneA = (*zit);
+					g->zoneB = (*zit);
+				}
+			}
+			
+		}
+		/*if( g->zoneA == NULL )
 		{
 			outsideGates.push_back( g->edgeA );
 			numOutsideGates++;
@@ -4620,8 +4633,25 @@ void GameSession::CreateZones()
 		{
 			outsideGates.push_back( g->edgeB );
 			numOutsideGates++;
-		}
+		}*/
 	}
+
+	/*for (auto it = outsideGates.begin(); it != outsideGates.end();)
+	{
+		for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+		{
+			if ((*zit)->ContainsPoint((*it)->edge0->v0))
+			{
+				(*it)->zoneA = (*zit);
+				(*it)->zoneB = (*zit);
+				outsideGates.erase(it++);
+			}
+			else
+			{
+				++it;
+			}
+		}
+	}*/
 
 	//cout << "numoutside gates!!: " << numOutsideGates << endl;
 	//wish i knew what this was supposed to do. you turned this off because
@@ -5072,6 +5102,7 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
+	cout << "start load" << endl;
 	hitboxManager = new HitboxManager;
 
 	momentumBar = new MomentumBar(this);
@@ -5254,6 +5285,7 @@ bool GameSession::Load()
 
 	activeItemTree = new QuadTree(1000000, 1000000);
 
+	cout << "weird timing 1" << endl;
 
 	//sets up fx so that they can be used
 	for (int i = 0; i < MAX_EFFECTS; ++i)
@@ -5330,6 +5362,8 @@ bool GameSession::Load()
 		return false;
 	}
 
+	cout << "weird timing 2" << endl;
+
 	soundManager = new SoundManager;
 
 	gameSoundBuffers[S_KEY_COMPLETE_W1] = soundManager->GetSound( "Audio/Sounds/key_complete_w1.ogg" );
@@ -5358,7 +5392,7 @@ bool GameSession::Load()
 	activatedZoneList = NULL;
 
 	ts_leftHUD = GetTileset( "lefthud_560x1080.png", 560, 1080 );
-	ts_speedBar = GetTileset("momentumbar_105x105.png", 105, 105);
+	ts_speedBar = GetTileset("momentumbar_115x115.png", 115, 115);
 	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
 	speedBarSprite.setTexture( *ts_speedBar->texture );
 
@@ -5387,7 +5421,7 @@ bool GameSession::Load()
 	window->setMouseCursorVisible( true );
 
 	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
-	
+	cout << "weird timing 3" << endl;
 
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
@@ -5396,7 +5430,7 @@ bool GameSession::Load()
 
 	//recPlayer = new RecordPlayer( player );
 	//repPlayer = new ReplayPlayer( player );
-		
+	cout << "weird timing 3" << endl;
 	if (!ShouldContinueLoading())
 	{
 		cout << "cleanup B" << endl;
@@ -5404,16 +5438,18 @@ bool GameSession::Load()
 		
 		return false;
 	}
-
+	cout << "weird timing 4" << endl;
 	players[0] = new Actor( this, 0 );
 
 	
-
+	cout << "about to open file" << endl;
 	
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
+
+	cout << "done opening file" << endl;
 	int maxBubbles = 5;
 
 	if( raceFight != NULL )
@@ -5592,6 +5628,8 @@ bool GameSession::Load()
 
 	ts_polyShaders = new Tileset*[numPolyTypes];
 
+	cout << "progress more" << endl;
+
 	map<pair<int,int>, int> indexConvert;
 	int index = 0;
 	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
@@ -5678,14 +5716,14 @@ bool GameSession::Load()
 	testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 250 );
 
 	
-
+	cout << "last one" << endl;
 	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
 	{
 		(*it)->Setup();
 	}
 
 
-
+	cout << "done loading" << endl;
 
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("done loading!", 0);
@@ -5710,6 +5748,21 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 
 int GameSession::Run()
 {
+	ShaderTester shaderTester(ShaderTester::FIRE, this);
+	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
+	//Tileset *ts_grad = GetTileset("Shader/gradient01.png", 400, 400);
+	//sf::Shader fireShader;
+	//if (!fireShader.loadFromFile("Shader/fire.frag", sf::Shader::Fragment))
+	//{
+	//	assert(0);
+	//}
+	//fireShader.setUniform("u_noiseTex", *ts_perlin->texture);
+	//fireShader.setUniform("u_gradTex", *ts_grad->texture);
+
+	//sf::Vertex fireV[4];
+	//fireV.
+	
+
 	//rain = new Rain(this);
 
 	preScreenTex->setView(view);
@@ -6420,6 +6473,9 @@ int GameSession::Run()
 				//cout << "-----------updating total frames------" << endl;
 				//cout << "before count: " << CountActiveEnemies() << endl;
 				//testBuf.Send( totalGameFrames );
+				int blafah = totalGameFrames % 60;
+				float fafa = blafah / 60.f;
+				shaderTester.Update();
 
 				totalGameFrames++;
 				for( int i = 0; i < 4; ++i )
@@ -7815,6 +7871,8 @@ int GameSession::Run()
 
 		preScreenTex->setView( uiView );
 
+		shaderTester.Draw( preScreenTex );
+
 		if( raceFight != NULL )
 		{
 			raceFight->DrawScore( preScreenTex );
@@ -7918,7 +7976,7 @@ int GameSession::Run()
 		
 		if (mh->gameMode == MapHeader::MapType::T_STANDARD)
 		{
-			if (p0->speedLevel == 0)
+			/*if (p0->speedLevel == 0)
 			{
 				preScreenTex->draw(p0->kinUnderOutline);
 				preScreenTex->draw(p0->kinTealOutline, &speedBarShader);
@@ -7932,7 +7990,7 @@ int GameSession::Run()
 			{
 				preScreenTex->draw(p0->kinBlueOutline);
 				preScreenTex->draw(p0->kinPurpleOutline, &speedBarShader);
-			}
+			}*/
 
 
 			if (p0->desperationMode)
@@ -9897,9 +9955,7 @@ void GameSession::RestartLevel()
 	//later don't relock gates in a level unless there is a "level reset"
 	for( int i = 0; i < numGates; ++i )
 	{
-		gates[i]->SetLocked( true );
-		if( gates[i]->type != Gate::BLACK )
-			gates[i]->gState = Gate::HARD;
+		gates[i]->Reset();
 	}
 
 	inactiveEnemyList = NULL;
@@ -14857,6 +14913,12 @@ void GameSession::RaceFight::TickFrame()
 MomentumBar::MomentumBar(GameSession *owner)
 {
 	ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
+	ts_container = owner->GetTileset("momentumbar_115x115.png", 115, 115);
+	ts_num = owner->GetTileset("momentumnum_48x48.png", 48, 48);
+
+	levelNumSpr.setTexture(*ts_num->texture);
+	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));
+
 	teal.setTexture(*ts_bar->texture);
 	teal.setTextureRect(ts_bar->GetSubRect(0));
 
@@ -14865,6 +14927,12 @@ MomentumBar::MomentumBar(GameSession *owner)
 
 	purp.setTexture(*ts_bar->texture);
 	purp.setTextureRect(ts_bar->GetSubRect(2));
+
+	container.setTexture(*ts_container->texture);
+	container.setTextureRect(ts_container->GetSubRect(0));
+
+	levelNumSpr.setTexture(*ts_num->texture);
+	levelNumSpr.setTextureRect(ts_num->GetSubRect(0));
 
 	if (!partShader.loadFromFile("Shader/momentum_shader.frag", sf::Shader::Fragment))
 	{
@@ -14877,9 +14945,12 @@ MomentumBar::MomentumBar(GameSession *owner)
 
 void MomentumBar::SetTopLeft(sf::Vector2f &pos)
 {
-	teal.setPosition(pos);
-	blue.setPosition(pos);
-	purp.setPosition(pos);
+	Vector2f extra(5, 5);
+	teal.setPosition(pos + extra);
+	blue.setPosition(pos + extra);
+	purp.setPosition(pos + extra);
+	container.setPosition(pos);
+	levelNumSpr.setPosition(pos + Vector2f(76, -50));
 }
 
 void MomentumBar::SetMomentumInfo(int p_level, float p_part)
@@ -14888,22 +14959,29 @@ void MomentumBar::SetMomentumInfo(int p_level, float p_part)
 	part = p_part;
 	partShader.setUniform("tile", (float)level);
 	partShader.setUniform("factor", part);
+
+	container.setTextureRect(ts_container->GetSubRect(level));
+	levelNumSpr.setTextureRect(ts_num->GetSubRect(level));
 }
 
 void MomentumBar::Draw(sf::RenderTarget *target)
 {
+	target->draw(container);
+
 	if (level == 0)
 	{
 		target->draw(teal, &partShader);
 	}
 	else if (level == 1)
 	{
-		target->draw(teal);
+		//target->draw(teal);
 		target->draw(blue, &partShader);
 	}
 	else if (level == 2)
 	{
-		target->draw(blue);
+		//target->draw(blue);
 		target->draw(purp, &partShader);
 	}
+
+	target->draw(levelNumSpr);
 }

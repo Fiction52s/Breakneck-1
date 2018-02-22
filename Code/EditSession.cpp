@@ -6088,15 +6088,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	ActorType *shipPickupType = new ActorType( "shippickup", shipPickupPanel );
 
 	types["shippickup"] = shipPickupType;
-	/*types["nexus2"] = nexus2;
-	types["nexus3"] = nexus3;
-	types["nexus4"] = nexus4;
-	types["nexus5"] = nexus5;
-	types["nexus6"] = nexus6;*/
-	
-
-
-
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
 	messagePopup = CreatePopupPanel( "message" );
@@ -6104,9 +6095,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
 	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 10, 10, 32, 32, false, true );
-	//gs->selectedX = -1;
-	//gs->selectedY = -1;
-	//GridSelector gs( 3, 2, 32, 32, this );
 	gs->active = false;
 
 	gs->Set( 0, 0, Sprite( goalType->iconTexture ), "goal" );
@@ -11062,12 +11050,57 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 					if( groundType )
 					{
+						//if (worldPosGround.ground != NULL)
+						//{
+						//	enemyEdgeIndex = worldPosGround.GetEdgeIndex();
+
+						//	enemyEdgeQuantity = worldPosGround.groundQuantity;
+
+						//	enemyEdgePolygon = worldPosGround.ground;
+
+						//	if (name != "poi")
+						//	{
+						//		enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
+						//		enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
+						//	}
+						//	/*else
+						//	{
+						//		enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2 );
+						//	}*/
+						//	V2d ppos = worldPosGround.GetPosition();
+						//	enemySprite.setPosition( Vector2f(ppos) );
+						//	V2d pr;
+						//	if (worldPosGround.edgeStart->prev == NULL)
+						//	{
+						//		pr = V2d(worldPosGround.ground->pointEnd->pos);
+						//	}
+						//	else
+						//	{
+						//		pr = V2d(worldPosGround.edgeStart->prev->pos);
+						//	}
+						//	V2d cu(worldPosGround.edgeStart->pos);
+
+						//	enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
+
+						//							
+						//	enemyQuad.setRotation( enemySprite.getRotation() );
+						//	enemyQuad.setPosition( enemySprite.getPosition() );
+						//	//actor->AnchorToGround(worldPosGround);
+						//	//worldPosGround.ground->enemies[worldPosGround.edgeStart].push_back(actor);
+						//	//worldPosGround.ground->UpdateBounds();
+
+						//	//editStartMove = false;
+						//}
+						//else
+						//{
+						//	enemyEdgePolygon = NULL;
+						//}
+						
 						enemyEdgePolygon = NULL;
+						
 				
 						double testRadius = 200;
-						
-						/*if( inversePolygon != NULL )
-							polygons.push_back( inversePolygon );*/
+
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
 							if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
@@ -11166,8 +11199,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 							}
 						}
-						/*if( inversePolygon != NULL )
-							polygons.pop_back();*/
+
 					}
 				}
 
@@ -16695,10 +16727,13 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 	/*if( inversePolygon != NULL )
 		polygons.push_back( inversePolygon );*/
-
+	bool contains;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
+		contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
+
+		if ((contains && !(*it)->inverse) || (!contains && (*it)->inverse))
+		//if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
 		{
 			TerrainPoint *prev = (*it)->pointEnd;
 			TerrainPoint *curr = (*it)->pointStart;

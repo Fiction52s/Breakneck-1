@@ -335,3 +335,11 @@ void SetRectSubRect(sf::Vertex *v, sf::IntRect &sub)
 	v[2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
 	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
 }
+
+void SetRectSubRect(sf::Vertex *v, sf::FloatRect &sub)
+{
+	v[0].texCoords = Vector2f(sub.left, sub.top);
+	v[1].texCoords = Vector2f(sub.left + sub.width, sub.top);
+	v[2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+}

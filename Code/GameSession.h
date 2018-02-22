@@ -231,11 +231,15 @@ struct MomentumBar
 	sf::Sprite teal;
 	sf::Sprite blue;
 	sf::Sprite purp;
+	sf::Sprite container;
+	sf::Sprite levelNumSpr;
 	void SetTopLeft(sf::Vector2f &pos);
 	int level;
 	float part;
 	void SetMomentumInfo(int level, float part);
 	Tileset *ts_bar;
+	Tileset *ts_container;
+	Tileset *ts_num;
 	void Draw(sf::RenderTarget *target);
 	sf::Shader partShader;
 };

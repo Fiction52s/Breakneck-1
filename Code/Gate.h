@@ -22,11 +22,13 @@ struct Gate : public QuadTreeEntrant//: public Edge
 
 	enum GateState
 	{
-		HARDEN,
 		HARD,
 		SOFTEN,
 		SOFT,
 		DISSOLVE,
+		//for gates that need to unlock 
+		//and dissolve at the same time
+		TOTALDISSOLVE, 
 		REFORM,
 		LOCKFOREVER,
 		OPEN,
@@ -38,21 +40,27 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	bool reformBehindYou;
 	Gate( GameSession *owner, GateType type,
 		bool reformBehindYou );
+	int dissolveLength;
 	~Gate();
+	void Reset();
 	GateType type;
 	GameSession *owner;
 	GateState gState;
 	bool locked;
 	int frame;
+	int flowFrame;
 	sf::Color c;
 	sf::Vertex testLine[4];
 	sf::Vertex centerLine[4];
 	sf::VertexArray thickLine;
 	sf::VertexArray *gQuads;
+	sf::Vertex nodes[8];
+	Tileset *ts_node;
 	Tileset *ts;
 	void UpdateLine();
 	void SetLocked( bool on );
 	void Update();
+	void SetNodeSprite(bool active);
 
 	sf::Shader gateShader;
 	sf::Shader centerShader;

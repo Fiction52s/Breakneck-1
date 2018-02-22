@@ -429,6 +429,7 @@ struct GroundInfo
 	TerrainPolygon *ground;
 	//boost::shared_ptr<TerrainPolygon> ground;
 	int GetEdgeIndex();
+	V2d GetPosition();
 	//int edgeIndex;
 };
 

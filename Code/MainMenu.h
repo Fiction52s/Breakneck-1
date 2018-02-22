@@ -572,6 +572,8 @@ struct MainMenu
 	sf::RenderWindow *window;
 	sf::View v;
 	sf::View uiView;
+
+	sf::Sprite testLoadIcon;
 	//GameController controller;
 	//GameController controller2;
 	GameController *controllers[4];
