@@ -149,6 +149,7 @@ struct Booster;
 //struct Spring;
 struct EffectPool;
 struct EnemyParams;
+struct SoundNode;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -231,6 +232,9 @@ struct Actor : QuadTreeCollider,
 		S_SPRINT_STEP2,
 		S_DASH_START,
 		S_HIT,
+		S_CLIMB_STEP1,
+		S_CLIMB_STEP2,
+		S_HITCEILING,
 		S_HURT,
 		S_HIT_AND_KILL,
 		S_HIT_AND_KILL_KEY,
@@ -242,6 +246,7 @@ struct Actor : QuadTreeCollider,
 		S_UAIR,
 		S_LAND,
 		S_STANDATTACK,
+		S_CLIMBATTACK,
 		S_WALLJUMP,
 		S_WALLATTACK,
 		S_GRAVREVERSE,
@@ -251,6 +256,13 @@ struct Actor : QuadTreeCollider,
 		S_EXIT,
 		S_DIAGUPATTACK,
 		S_DIAGDOWNATTACK,
+		S_DOUBLE,
+		S_DOUBLEBACK,
+		S_JUMP,
+		S_SLIDE,
+		S_STEEPSLIDE,
+		S_STEEPSLIDEATTACK,
+		S_WALLSLIDE,
 		S_Count
 	};
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
@@ -279,7 +291,9 @@ struct Actor : QuadTreeCollider,
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
 
-	
+	SoundNode *repeatingSound;
+	//int hitCeilingCounter;
+	//int hitCeilingLockoutFrames;
 	
 
 	Team team;

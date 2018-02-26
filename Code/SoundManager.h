@@ -59,7 +59,8 @@ struct SoundNodeList
 	int GetInactiveCount();
 	SoundNode *activeList;
 	SoundNode *inactiveList;
-	void ActivateSound( sf::SoundBuffer *buffer );
+	SoundNode * ActivateSound( sf::SoundBuffer *buffer,
+		bool loop = false);
 	void Pause( bool p );
 	bool paused;
 	int globalVolume;

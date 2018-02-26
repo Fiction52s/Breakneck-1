@@ -63,8 +63,10 @@ SoundNodeList::~SoundNodeList()
 	}
 }
 
-void SoundNodeList::ActivateSound( SoundBuffer *buffer )
+SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 {
+	if (buffer == NULL)
+		return NULL;
 	//return;
 	//cout << "Activate sound!" << endl;
 	//SoundNode *node;
@@ -79,7 +81,10 @@ void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 
 		curr->sound.stop();
 		curr->sound.setBuffer( *buffer );
+		curr->sound.setLoop(loop);
 		curr->sound.play();
+		return curr;
+		
 	}
 	else
 	{
@@ -91,7 +96,9 @@ void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 			inactiveList = NULL;
 
 			activeList->sound.setBuffer( *buffer );
+			activeList->sound.setLoop(loop);
 			activeList->sound.play();
+			return activeList;
 			//activeList->sound.get
 		}
 		else
@@ -108,8 +115,9 @@ void SoundNodeList::ActivateSound( SoundBuffer *buffer )
 			next->prev = NULL;
 
 			activeList->sound.setBuffer( *buffer );
+			activeList->sound.setLoop(loop);
 			activeList->sound.play();
-			
+			return activeList;
 		}
 	}
 	//assert( activeList->prev == NULL );
@@ -433,13 +441,23 @@ sf::SoundBuffer * SoundManager::GetSound( const std::string &name )
 	sounds.push_back( si );
 	//SoundInfo &info = sounds.back();
 	
+
+	string fullName = "Audio/Sounds/";
+	fullName += name + ".ogg";
+
 	si->name = name;
 	si->buffer = new SoundBuffer;
-	bool res = si->buffer->loadFromFile( name );
+	bool res = si->buffer->loadFromFile(fullName);
 
 	if( !res )
 	{
-		assert( false );
+		cout << "failed to load sound: " << fullName << endl;
+		delete si->buffer;
+		delete si;
+		sounds.pop_back();
+
+		return NULL;
+		//assert( false );
 	}
 	
 

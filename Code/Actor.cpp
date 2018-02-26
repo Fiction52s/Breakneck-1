@@ -14,7 +14,6 @@
 #include "VisualEffects.h"
 #include "Enemy.h"
 #include "Enemy_Booster.h"
-//#include "Enemy_Spring.h"
 #include "HitboxManager.h"
 
 using namespace sf;
@@ -218,7 +217,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	//hitCeilingLockoutFrames = 20;
 	cout << "Start player" << endl;
+	repeatingSound = NULL;
 		currBooster = NULL;
 		oldBooster = NULL;
 		currWall = NULL;
@@ -465,35 +466,48 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "time slow shader not loaded" );
 		}*/
-
+		int sizeofsoundbuf = sizeof(soundBuffers);
+		memset(soundBuffers, 0, sizeofsoundbuf );
 		
+		soundBuffers[S_HITCEILING] = owner->soundManager->GetSound("Kin/ceiling");
+		soundBuffers[S_CLIMB_STEP1] = owner->soundManager->GetSound("Kin/climb_01a");
+		soundBuffers[S_CLIMB_STEP2] = owner->soundManager->GetSound("Kin/climb_02a");
+		soundBuffers[S_DAIR] = owner->soundManager->GetSound("Kin/dair");
+		soundBuffers[S_DOUBLE] = owner->soundManager->GetSound("Kin/doublejump");
+		soundBuffers[S_DOUBLEBACK] = owner->soundManager->GetSound("Kin/doublejump_back");
+		soundBuffers[S_FAIR1] = owner->soundManager->GetSound("Kin/fair");
+		soundBuffers[S_JUMP] = owner->soundManager->GetSound("Kin/jump");
+		soundBuffers[S_LAND] = owner->soundManager->GetSound("Kin/land");
+		soundBuffers[S_RUN_STEP1] = owner->soundManager->GetSound( "Kin/run_01a" );
+		soundBuffers[S_RUN_STEP2] = owner->soundManager->GetSound( "Kin/run_01b" );
+		soundBuffers[S_SLIDE] = owner->soundManager->GetSound("Kin/slide");
+		soundBuffers[S_SPRINT_STEP1] = owner->soundManager->GetSound( "Kin/sprint_01a" );
+		soundBuffers[S_SPRINT_STEP2] = owner->soundManager->GetSound( "Kin/sprint_01b" );
+		soundBuffers[S_STANDATTACK] = owner->soundManager->GetSound("Kin/stand");
+		soundBuffers[S_STEEPSLIDE] = owner->soundManager->GetSound("Kin/steep");
+		soundBuffers[S_STEEPSLIDEATTACK] = owner->soundManager->GetSound("Kin/steep_att");
+		soundBuffers[S_UAIR] = owner->soundManager->GetSound("Kin/uair");
+		soundBuffers[S_WALLATTACK] = owner->soundManager->GetSound("Kin/wall_att");
+		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound("Kin/walljump");
+		soundBuffers[S_WALLSLIDE] = owner->soundManager->GetSound("Kin/wallslide");
 
-		soundBuffers[S_RUN_STEP1] = owner->soundManager->GetSound( "Audio/Sounds/run1.ogg" );
-		soundBuffers[S_RUN_STEP2] = owner->soundManager->GetSound( "Audio/Sounds/run2.ogg" );
-		soundBuffers[S_SPRINT_STEP1] = owner->soundManager->GetSound( "Audio/Sounds/sprint1.ogg" );
-		soundBuffers[S_SPRINT_STEP2] = owner->soundManager->GetSound( "Audio/Sounds/sprint2.ogg" );
-		soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Audio/Sounds/dash_02.ogg" );
 
-		soundBuffers[S_HIT] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack_short.ogg" );
-		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Audio/Sounds/hit_1b.ogg" );
-		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Audio/Sounds/kin_hitspack.ogg" );
-		soundBuffers[S_HIT_AND_KILL_KEY] = owner->soundManager->GetSound( "Audio/Sounds/key_kill.ogg" );
-		soundBuffers[S_FAIR1] = owner->soundManager->GetSound( "Audio/Sounds/fair_1.ogg" );
-		soundBuffers[S_DAIR] = owner->soundManager->GetSound( "Audio/Sounds/dair.ogg" );
-		soundBuffers[S_DAIR_B] = owner->soundManager->GetSound("Audio/Sounds/dair_b.ogg");
-		soundBuffers[S_UAIR] = owner->soundManager->GetSound( "Audio/Sounds/uair.ogg" );
-		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound( "Audio/Sounds/walljump.ogg" );
-		soundBuffers[S_WALLATTACK] = owner->soundManager->GetSound( "Audio/Sounds/wallattack.ogg" );
-		soundBuffers[S_GRAVREVERSE] = owner->soundManager->GetSound( "Audio/Sounds/gravreverse.ogg" );
-		soundBuffers[S_BOUNCEJUMP] = owner->soundManager->GetSound( "Audio/Sounds/bounce.ogg" );
-		soundBuffers[S_STANDATTACK] = owner->soundManager->GetSound( "Audio/Sounds/standattack.ogg" );
-		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Audio/Sounds/time_slow_1.ogg" );
-		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Audio/Sounds/enter.ogg" );
-		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Audio/Sounds/exit.ogg" );
+		/*soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Kin/dash_02" );
+		soundBuffers[S_HIT] = owner->soundManager->GetSound( "kin_hitspack_short" );
+		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Kin/hit_1b" );
+		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Kin/kin_hitspack" );
+		soundBuffers[S_HIT_AND_KILL_KEY] = owner->soundManager->GetSound( "Kin/key_kill" );
+		
+		
+		soundBuffers[S_GRAVREVERSE] = owner->soundManager->GetSound( "Kin/gravreverse" );
+		soundBuffers[S_BOUNCEJUMP] = owner->soundManager->GetSound( "Kin/bounce" );
+		
+		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Kin/time_slow_1" );
+		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Kin/enter" );
+		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Kin/exit" );
 
 		soundBuffers[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
-		soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];
-		soundBuffers[S_LAND] = owner->soundManager->GetSound("Audio/Sounds/land.ogg");
+		soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
 
 
 		currHitboxInfo = new HitboxInfo();
@@ -1342,7 +1356,7 @@ void Actor::ActionEnded()
 			holdJump = false;
 			break;
 		case GRAVREVERSE:
-			action = STAND;
+			SetAction(STAND);
 			frame = 0;
 			break;
 		case SPRINGSTUN:
@@ -1444,15 +1458,15 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case GRINDLUNGE:
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 			break;
 		case GRINDSLASH:
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 			break;
 		case GRINDATTACK:
-			action = GRINDATTACK;
+			SetAction(GRINDATTACK);
 			frame = 0;
 			break;
 		case AIRDASH:
@@ -1496,12 +1510,12 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case BOUNCEGROUNDEDWALL:
-			action = STAND;
+			SetAction(STAND);
 			frame = 0;
 			break;
 		case INTRO:
 			//cout << "intro over" << endl;
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 			break;
 		case EXIT:
@@ -1510,11 +1524,11 @@ void Actor::ActionEnded()
 			//frame = 0;
 			break;
 		case SPAWNWAIT:
-			action = INTRO;
+			SetAction(INTRO);
 			frame = 0;
 			break;
 		case GOALKILL:
-			action = GOALKILLWAIT;
+			SetAction(GOALKILLWAIT);
 			frame = 0;
 			owner->scoreDisplay->Activate();
 			break;
@@ -1533,7 +1547,7 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_CRAWLERFIGHT_LAND:
 			frame = 0;
-			action = SEQ_CRAWLERFIGHT_STAND;
+			SetAction(SEQ_CRAWLERFIGHT_STAND);
 			break;
 		case SEQ_CRAWLERFIGHT_STAND:
 			//action = SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
@@ -1551,12 +1565,12 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case GETPOWER_AIRDASH_MEDITATE:
-			action = GETPOWER_AIRDASH_FLIP;
+			SetAction(GETPOWER_AIRDASH_FLIP);
 			frame = 0;
 			break;
 		case GETPOWER_AIRDASH_FLIP:
 			hasPowerAirDash = true;
-			action = STAND;
+			SetAction(STAND);
 			frame = 0;
 			//owner->cam.manualZoom = 1;
 			//owner->cam.manualPos
@@ -1717,6 +1731,7 @@ void Actor::CreateAttackLightning()
 
 void Actor::Respawn()
 {
+	repeatingSound = NULL;
 	currBooster = NULL;
 	oldBooster = NULL;
 	currWall = NULL;
@@ -1771,7 +1786,7 @@ void Actor::Respawn()
 
 	if( !owner->poiMap.count( "ship" ) > 0 )
 	{
-		action = INTRO;
+		SetAction(INTRO);
 		frame = 0;
 	}
 
@@ -1937,7 +1952,7 @@ void Actor::UpdatePrePhysics()
 		frame = 1; //so it doesnt use the jump frame when just dropping
 		reversed = false;
 		framesInAir = 0;
-		action = JUMP;
+		SetAction(JUMP);
 		frame = 1;
 
 	}
@@ -2067,7 +2082,7 @@ void Actor::UpdatePrePhysics()
 			desperationMode = false;
 			if (owner->powerRing->IsEmpty())
 			{
-				action = DEATH;
+				SetAction(DEATH);
 				rightWire->Reset();
 				leftWire->Reset();
 				slowCounter = 1;
@@ -2200,7 +2215,7 @@ void Actor::UpdatePrePhysics()
 		
 		if( !owner->scoreDisplay->active )
 		{
-			action = EXIT;
+			SetAction(EXIT);
 			frame = 0;
 		}
 		return;
@@ -2243,7 +2258,7 @@ void Actor::UpdatePrePhysics()
 		if (ground != NULL)
 		{
 			ground = NULL;
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 			//velocity = V2d(0, 0);
 			//velocity = normalize( ground->v)
@@ -2307,7 +2322,7 @@ void Actor::UpdatePrePhysics()
 						hurtBody.rw = 7;
 						hurtBody.rh = normalHeight;
 
-						action = GROUNDHITSTUN;
+						SetAction(GROUNDHITSTUN);
 						frame = 0;
 
 						if( receivedHit->knockback > 0 )
@@ -2371,7 +2386,7 @@ void Actor::UpdatePrePhysics()
 							
 
 							//SetActionExpr( JUMP );
-							action = AIRHITSTUN;
+							SetAction(AIRHITSTUN);
 							frame = 0;
 							if( receivedHit->knockback > 0 )
 							{
@@ -2456,8 +2471,7 @@ void Actor::UpdatePrePhysics()
 
 							//action = LAND2;
 
-
-							action = GROUNDHITSTUN;
+							SetAction(GROUNDHITSTUN);
 							frame = 0;
 
 							if( toggleGrindInput )
@@ -2490,7 +2504,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( ground == NULL )
 			{
-				action = AIRHITSTUN;
+				SetAction(AIRHITSTUN);
 				frame = 0;
 				if( receivedHit->knockback > 0 )
 				{
@@ -2505,7 +2519,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				action = GROUNDHITSTUN;
+				SetAction(GROUNDHITSTUN);
 				frame = 0;
 
 				if( receivedHit->knockback > 0 )
@@ -2635,8 +2649,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( (groundSpeed > 0 && gNorm.x < 0) || (groundSpeed < 0 && gNorm.x > 0) )
 					{
-
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
@@ -2652,7 +2665,7 @@ void Actor::UpdatePrePhysics()
 							facingRight = false;
 						else
 							facingRight = true;
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -2664,7 +2677,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( (groundSpeed > 0 && gNorm.x < 0) || (groundSpeed < 0 && gNorm.x > 0) )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
@@ -2679,7 +2692,8 @@ void Actor::UpdatePrePhysics()
 							facingRight = false;
 						else 
 							facingRight = true;*/
-						action = STEEPSLIDE;
+						
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -2745,7 +2759,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.LDown() || currInput.LUp() )
 			{
-				action = SLIDE;
+				SetAction(SLIDE);
 				frame = 0;
 			}
 			
@@ -2787,14 +2801,14 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						////runTappingSound.stop();
 						break;
 					}
 					else
 					{
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						////runTappingSound.stop();
 						break;
@@ -2807,14 +2821,14 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						////runTappingSound.stop();
 						break;
 					}
 					else
 					{
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						////runTappingSound.stop();
 						break;
@@ -2849,7 +2863,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LDown() || currInput.LUp() )
 				{
-					action = SLIDE;
+					SetAction(SLIDE);
 					frame = 0;
 
 				}
@@ -2974,7 +2988,7 @@ void Actor::UpdatePrePhysics()
 				//cout << "special walljump right" << endl;
 				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
-					action = WALLJUMP;
+					SetAction(WALLJUMP);
 					frame = 0;
 					facingRight = true;
 
@@ -2997,7 +3011,7 @@ void Actor::UpdatePrePhysics()
 				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
 				{
 					
-					action = WALLJUMP;
+					SetAction(WALLJUMP);
 					frame = 0;
 					facingRight = false;
 
@@ -3071,7 +3085,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
-					action = WALLJUMP;
+					SetAction(WALLJUMP);
 					frame = 0;
 					facingRight = true;
 
@@ -3092,7 +3106,7 @@ void Actor::UpdatePrePhysics()
 			{				
 				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
 				{
-					action = WALLJUMP;
+					SetAction(WALLJUMP);
 					frame = 0;
 					facingRight = false;
 
@@ -3152,8 +3166,8 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-							
-						action = STEEPCLIMB;
+						
+						SetAction(STEEPCLIMB);
 
 						frame = 0;
 						break;
@@ -3164,7 +3178,7 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -3192,7 +3206,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LDown() || currInput.LUp() )
 					{
-						action = SLIDE;
+						SetAction(SLIDE);
 						frame = 0;
 					}
 					else
@@ -3213,7 +3227,7 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
@@ -3235,7 +3249,7 @@ void Actor::UpdatePrePhysics()
 						{
 							if( g
 						}*/
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -3300,7 +3314,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LDown() || currInput.LUp() )
 					{
-						action = SLIDE;
+						SetAction(SLIDE);
 						frame = 0;
 					}
 					else
@@ -3342,7 +3356,7 @@ void Actor::UpdatePrePhysics()
 						else
 							facingRight = false;
 							
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 
 						frame = 0;
 						break;
@@ -3353,7 +3367,7 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -3388,7 +3402,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( !currInput.LDown() )
 					{
-						action = STAND;
+						SetAction(STAND);
 						frame = 0;
 						/*bool okay = false;
 						if( frame > 0 && !prevInput.LUp() )
@@ -3421,7 +3435,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
 			{
-				action = WALLJUMP;
+				SetAction(WALLJUMP);
 				frame = 0;
 				facingRight = true;
 
@@ -3442,7 +3456,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if (!currInput.LDown() && currInput.LLeft() && !prevInput.LLeft())
 			{
-				action = WALLJUMP;
+				SetAction(WALLJUMP);
 				frame = 0;
 				facingRight = false;
 
@@ -3460,7 +3474,7 @@ void Actor::UpdatePrePhysics()
 
 		if (springStunFrames == 0)
 		{
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 		}
 		break;
@@ -3469,7 +3483,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( !currInput.LDown() && ( (facingRight && currInput.LRight()) || (!facingRight && currInput.LLeft() ) ) )
 			{
-				action = WALLJUMP;
+				SetAction(WALLJUMP);
 				frame = 0;
 
 				/*if( currInput.A )
@@ -3512,7 +3526,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
 				{
-					action = WALLJUMP;
+					SetAction(WALLJUMP);
 
 					if( currInput.A )
 					{
@@ -3534,7 +3548,7 @@ void Actor::UpdatePrePhysics()
 			{				
 				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
 				{
-					action = WALLJUMP;
+					SetAction(WALLJUMP);
 					frame = 0;
 					facingRight = false;
 
@@ -3563,7 +3577,7 @@ void Actor::UpdatePrePhysics()
 			{
 			if( currInput.LDown() )
 			{
-				action = JUMP;
+				SetAction(JUMP);
 				frame = 1;
 				break;
 			}
@@ -3573,7 +3587,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( currInput.LLeft() )
 					{
-						action = WALLJUMP;
+						SetAction(WALLJUMP);
 						frame = 0;
 						break;
 					}
@@ -3582,7 +3596,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( currInput.LRight() )
 					{
-						action = WALLJUMP;
+						SetAction(WALLJUMP);
 						frame = 0;
 						break;
 					}
@@ -3791,13 +3805,13 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
 					else
 					{
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -3810,13 +3824,13 @@ void Actor::UpdatePrePhysics()
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
 						//cout << "steep clzzzimb" << endl;
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
 					else
 					{
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -3847,12 +3861,12 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LDown() || currInput.LUp() )
 					{
-						action = SLIDE;
+						SetAction(SLIDE);
 						frame = 0;
 					}
 					else
 					{
-						action = STAND;
+						SetAction(STAND);
 						frame = 0;
 					}
 				}
@@ -3893,7 +3907,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				action = STANDN;
+				SetAction(STANDN);
 				frame = 0;
 				break;
 			}
@@ -3909,8 +3923,8 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-							
-						action = STEEPCLIMB;
+						
+						SetAction(STEEPCLIMB);
 
 						frame = 0;
 						break;
@@ -3921,7 +3935,8 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-						action = STEEPSLIDE;
+						
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -3984,12 +3999,12 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LDown() || currInput.LUp() )
 					{
-						action = SLIDE;
+						SetAction(SLIDE);
 						frame = 0;
 					}
 					else
 					{
-						action = STAND;
+						SetAction(STAND);
 						frame = 0;
 					}
 				}
@@ -4006,7 +4021,7 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
@@ -4016,7 +4031,7 @@ void Actor::UpdatePrePhysics()
 							facingRight = true;
 						else
 							facingRight = false;
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -4079,12 +4094,12 @@ void Actor::UpdatePrePhysics()
 					}
 					else if( currInput.LDown() || currInput.LUp() )
 					{
-						action = SLIDE;
+						SetAction(SLIDE);
 						frame = 0;
 					}
 					else
 					{
-						action = STAND;
+						SetAction(STAND);
 						frame = 0;
 					}
 				}
@@ -4166,13 +4181,13 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
 					else
 					{
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -4184,13 +4199,13 @@ void Actor::UpdatePrePhysics()
 				{
 					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 0;
 						break;
 					}
 					else
 					{
-						action = STEEPSLIDE;
+						SetAction(STEEPSLIDE);
 						frame = 0;
 						break;
 					}
@@ -4225,7 +4240,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( currInput.LDown() || currInput.LUp() )
 				{
-					action = SLIDE;
+					SetAction(SLIDE);
 					frame = 0;
 				}
 				else if( currInput.LUp() && ( (gNorm.x < 0 && facingRight) || (gNorm.x > 0 && !facingRight) ) )
@@ -4234,7 +4249,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					action = STAND;
+					SetAction(STAND);
 					frame = 0;
 				}
 				break;
@@ -4334,13 +4349,13 @@ void Actor::UpdatePrePhysics()
 					{
 						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 						{
-							action = STEEPCLIMB;
+							SetAction(STEEPCLIMB);
 							frame = 0;
 							break;
 						}
 						else
 						{
-							action = STEEPSLIDE;
+							SetAction(STEEPSLIDE);
 							frame = 0;
 							break;
 						}
@@ -4353,13 +4368,13 @@ void Actor::UpdatePrePhysics()
 						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
 						{
 							//cout << "steep clzzzimb" << endl;
-							action = STEEPCLIMB;
+							SetAction(STEEPCLIMB);
 							frame = 0;
 							break;
 						}
 						else
 						{
-							action = STEEPSLIDE;
+							SetAction(STEEPSLIDE);
 							frame = 0;
 							break;
 						}
@@ -4422,7 +4437,7 @@ void Actor::UpdatePrePhysics()
 
 				if( currInput.rightShoulder && !prevInput.rightShoulder )
 				{
-					action = STEEPSLIDEATTACK;
+					SetAction(STEEPSLIDEATTACK);
 					frame = 0;
 					break;
 				}
@@ -4432,14 +4447,14 @@ void Actor::UpdatePrePhysics()
 				{
 					if( gNorm.x < 0 && currInput.LRight() )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						facingRight = true;
 						groundSpeed = 10;
 						frame = 0;
 					}
 					else if( gNorm.x > 0 && currInput.LLeft() )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						facingRight = false;
 						groundSpeed = -10;
 						frame = 0;
@@ -4451,7 +4466,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 					{
-						action = LAND2;
+						SetAction(LAND2);
 						frame = 0;
 					}
 				}
@@ -4460,7 +4475,7 @@ void Actor::UpdatePrePhysics()
 					if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 					{
 						cout << "is it really this wtf" << endl;
-						action = LAND2;
+						SetAction(LAND2);
 						frame = 0;
 						//not steep
 					}
@@ -4469,7 +4484,7 @@ void Actor::UpdatePrePhysics()
 						//is steep
 						if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
 						{
-							action = STEEPCLIMB;
+							SetAction(STEEPCLIMB);
 							frame = 1;
 						}
 					}
@@ -4506,7 +4521,7 @@ void Actor::UpdatePrePhysics()
 
 				if( currInput.rightShoulder && !prevInput.rightShoulder )
 				{
-					action = STEEPCLIMBATTACK;
+					SetAction(STEEPCLIMBATTACK);
 					frame = 0;
 					break;
 				}
@@ -4535,7 +4550,7 @@ void Actor::UpdatePrePhysics()
 				{
 					if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 					{
-						action = LAND2;
+						SetAction(LAND2);
 						frame = 0;
 					}
 				}
@@ -4544,7 +4559,7 @@ void Actor::UpdatePrePhysics()
 					if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 					{
 						cout << "is it really this wtf" << endl;
-						action = LAND2;
+						SetAction(LAND2);
 						frame = 0;
 						//not steep
 					}
@@ -4553,7 +4568,7 @@ void Actor::UpdatePrePhysics()
 						//is steep
 						if( ( gNorm.x < 0 && groundSpeed < 0 ) || (gNorm.x > 0 && groundSpeed > 0 ) )
 						{
-							action = STEEPSLIDE;
+							SetAction(STEEPSLIDE);
 							frame = 0;
 							//frame = 1;
 						}
@@ -4622,7 +4637,7 @@ void Actor::UpdatePrePhysics()
 							ground = grindEdge;
 							movingGround = grindMovingTerrain;
 							edgeQuantity = grindQuantity;
-							action = LAND;
+							SetAction(LAND);
 							frame = 0;
 							groundSpeed = grindSpeed;
 
@@ -4745,7 +4760,7 @@ void Actor::UpdatePrePhysics()
 							reversed = true;
 							grindEdge = NULL;
 
-							action = LAND2;
+							SetAction(LAND2);
 							framesNotGrinding = 0;
 							frame = 0;
 							
@@ -4813,7 +4828,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = GRINDLUNGE;
+						SetAction(GRINDLUNGE);
 						frame = 0;
 
 						V2d grindNorm = grindEdge->Normal();
@@ -4880,7 +4895,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = GRINDLUNGE;
+						SetAction(GRINDLUNGE);
 						frame = 0;
 
 						V2d grindNorm = grindEdge->Normal();
@@ -4915,7 +4930,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				action = GRINDATTACK;
+				SetAction(GRINDATTACK);
 				frame = 0;
 			}
 			
@@ -4955,13 +4970,13 @@ void Actor::UpdatePrePhysics()
 		}
 		else if (currInput.B && !prevInput.B)
 		{
-			action = RAILDASH;
+			SetAction(RAILDASH);
 			frame = 0;
 			grindEdge = NULL;
 		}
 		if ( currInput.Y && !prevInput.Y && framesGrinding > 1)
 		{
-			action = JUMP;
+			SetAction(JUMP);
 			grindEdge = NULL;
 			frame = 1;
 			regrindOffCount = 0;
@@ -5043,7 +5058,7 @@ void Actor::UpdatePrePhysics()
 
 		if (!currInput.B)
 		{
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 		}
 		
@@ -5103,7 +5118,7 @@ void Actor::UpdatePrePhysics()
 						ground = grindEdge;
 						movingGround = grindMovingTerrain;
 						edgeQuantity = grindQuantity;
-						action = LAND;
+						SetAction(LAND);
 						frame = 0;
 						groundSpeed = grindSpeed;
 
@@ -5248,7 +5263,7 @@ void Actor::UpdatePrePhysics()
 							//	groundSpeed = -abs( groundSpeed );
 							}
 
-							action = LAND2;
+							SetAction(LAND2);
 							frame = 0;
 							framesNotGrinding = 0;
 
@@ -5297,7 +5312,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = GRINDLUNGE;
+						SetAction(GRINDLUNGE);
 						frame = 0;
 
 						V2d grindNorm = grindEdge->Normal();
@@ -5364,7 +5379,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						action = GRINDLUNGE;
+						SetAction(GRINDLUNGE);
 						frame = 0;
 
 						V2d grindNorm = grindEdge->Normal();
@@ -5399,7 +5414,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( !currInput.rightShoulder )
 			{
-				action = GRINDBALL;
+				SetAction(GRINDBALL);
 				frame = 0;
 			}
 				//movingGround = NULL;
@@ -5418,12 +5433,12 @@ void Actor::UpdatePrePhysics()
 		{
 			if( !currInput.B )
 			{
-				action = JUMP;//GRINDSLASH;
+				SetAction(JUMP);
 				frame = 1;
 			}
 			else if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				action = GRINDSLASH;
+				SetAction(GRINDSLASH);
 				frame = 0;
 			}
 			break;
@@ -5481,7 +5496,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				action = STEEPSLIDEATTACK;
+				SetAction(STEEPSLIDEATTACK);
 				frame = 0;
 				break;
 			}
@@ -5491,14 +5506,14 @@ void Actor::UpdatePrePhysics()
 			{
 				if( gNorm.x < 0 && (currInput.LRight() || currInput.LUp() ) )
 				{
-					action = STEEPCLIMB;
+					SetAction(STEEPCLIMB);
 					facingRight = true;
 					groundSpeed = 10;
 					frame = 0;
 				}
 				else if( gNorm.x > 0 && (currInput.LLeft() || currInput.LUp()) )
 				{
-					action = STEEPCLIMB;
+					SetAction(STEEPCLIMB);
 					facingRight = false;
 					groundSpeed = -10;
 					frame = 0;
@@ -5516,7 +5531,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
-					action = LAND2;
+					SetAction(LAND2);
 					frame = 0;
 				}
 			}
@@ -5525,7 +5540,7 @@ void Actor::UpdatePrePhysics()
 				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
 					cout << "is it really this wtf" << endl;
-					action = LAND2;
+					SetAction(LAND2);
 					frame = 0;
 					//not steep
 				}
@@ -5534,7 +5549,7 @@ void Actor::UpdatePrePhysics()
 					//is steep
 					if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
 					{
-						action = STEEPCLIMB;
+						SetAction(STEEPCLIMB);
 						frame = 1;
 					}
 				}
@@ -5599,7 +5614,7 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				action = STEEPCLIMBATTACK;
+				SetAction(STEEPCLIMBATTACK);
 				frame = 0;
 				break;
 			}
@@ -5676,19 +5691,19 @@ void Actor::UpdatePrePhysics()
 			{
 				if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
-					action = LAND2;
+					SetAction(LAND2);
 					frame = 0;
 				}
 
 				if( gNorm.x > 0 && groundSpeed >= 0 )
 				{
-					action = STEEPSLIDE;
+					SetAction(STEEPSLIDE);
 					frame = 0;
 					facingRight = true;
 				}
 				else if( gNorm.x < 0 && groundSpeed <= 0 )
 				{
-					action = STEEPSLIDE;
+					SetAction(STEEPSLIDE);
 					frame = 0;
 					facingRight = false;	
 				}
@@ -5698,20 +5713,20 @@ void Actor::UpdatePrePhysics()
 				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
 				{
 					//cout << "blahzzz" << endl;
-					action = LAND2;
+					SetAction(LAND2);
 					frame = 0;
 					//not steep
 				}
 
 				if( gNorm.x > 0 && groundSpeed >= 0 )
 				{
-					action = STEEPSLIDE;
+					SetAction(STEEPSLIDE);
 					frame = 0;
 					facingRight = true;
 				}
 				else if( gNorm.x < 0 && groundSpeed <= 0 )
 				{
-					action = STEEPSLIDE;
+					SetAction(STEEPSLIDE);
 					frame = 0;
 					facingRight = false;	
 				}
@@ -5771,7 +5786,7 @@ void Actor::UpdatePrePhysics()
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_BOUNCEJUMP] );
 				framesInAir = 0;
-				action = BOUNCEAIR;
+				SetAction(BOUNCEAIR);
 				oldBounceEdge = bounceEdge;
 				oldBounceNorm  = bounceNorm;
 				frame = 0;
@@ -6075,7 +6090,7 @@ void Actor::UpdatePrePhysics()
 					else
 					{
 					}
-					action = LAND;
+					SetAction(LAND);
 					frame = 0;
 
 					bounceFlameOn = true;
@@ -6140,7 +6155,7 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					action = JUMP;
+					SetAction(JUMP);
 					frame = 1;
 					velocity = storedBounceVel;
 					bounceEdge = NULL;
@@ -6573,9 +6588,9 @@ void Actor::UpdatePrePhysics()
 		}
 	case JUMPSQUAT:
 		{
-			if( frame == 0 )
+			if( frame == 0 && slowCounter == 1 )
 			{
-				
+				owner->soundNodeList->ActivateSound(soundBuffers[S_JUMP]);
 				storedGroundSpeed = groundSpeed;
 				/*if( reversed )
 					storedGroundSpeed = -storedGroundSpeed;*/
@@ -6661,7 +6676,17 @@ void Actor::UpdatePrePhysics()
 				//cout << "running wallcling" << endl;
 				velocity.y = clingSpeed;
 			}
-			AirMovement();
+
+			double constantWallCling = 5;
+			if (facingRight)
+			{
+				velocity.x = -constantWallCling;
+			}
+			else
+			{
+				velocity.x = constantWallCling;
+			}
+			//AirMovement();
 
 			//if( wallJumpFrameCounter >= wallJumpMovementLimit )
 			//{
@@ -6703,14 +6728,15 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 && slowCounter == 1 )
 			{
 
+				owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR]);
 				if( speedLevel == 0 ) 
 				{
-					owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR]);
+					
 				}
-				else if (speedLevel == 1)
+				/*else if (speedLevel == 1)
 				{
 					owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR_B]);
-				}
+				}*/
 				
 				currAttackHit = false;
 			}
@@ -7098,7 +7124,7 @@ void Actor::UpdatePrePhysics()
 		{
 			SetCurrHitboxes(standHitboxes[0], frame / 4);
 
-			if( frame == 0 && slowCounter == slowMultiple )
+			if( frame == 0 && slowCounter == 1 )
 			{
 				owner->soundNodeList->ActivateSound( soundBuffers[S_STANDATTACK] );
 				currAttackHit = false;
@@ -8896,11 +8922,33 @@ void Actor::SetAction( Action a )
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
 
 	action = a;
+
+	if (repeatingSound != NULL)
+	{
+		owner->soundNodeList->DeactivateSound(repeatingSound);
+		repeatingSound = NULL;
+	}
+
+	switch (action)
+	{
+	case STEEPSLIDE:
+	{
+		repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_STEEPSLIDE], true);
+		break;
+	}
+	case SLIDE:
+	{
+		repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_SLIDE], true);
+		break;
+	}
+	}
 	//shouldnt this be slow counter?
 	/*if( slowMultiple > 1 )
 	{
 		slowMultiple = 1;
 	}*/
+
+	
 
 	if( slowCounter > 1 )
 	{
@@ -9034,7 +9082,6 @@ bool Actor::CheckWall( bool right )
 
 		if( approxEquals(en.x,1) || approxEquals(en.x,-1) )
 		{
-			//wallNormal = minContact.edge->Normal();
 			return true;
 		}
 
@@ -9693,7 +9740,7 @@ V2d Actor::UpdateReversePhysics()
 								else
 								{
 									facingRight = true;
-									action = STEEPSLIDE;
+									SetAction(STEEPSLIDE);
 									frame = 0;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -9704,7 +9751,7 @@ V2d Actor::UpdateReversePhysics()
 							else if( e0n.x > 0 )
 							{
 								facingRight = false;
-								action = STEEPCLIMB;
+								SetAction(STEEPCLIMB);
 								frame = 0;
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10013,7 +10060,7 @@ V2d Actor::UpdateReversePhysics()
 								else
 								{
 									facingRight = false;
-									action = STEEPSLIDE;
+									SetAction(STEEPSLIDE);
 									frame = 0;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10025,7 +10072,7 @@ V2d Actor::UpdateReversePhysics()
 							{
 								//cout << "setting to climb??" << endl;
 								facingRight = true;
-								action = STEEPCLIMB;
+								SetAction(STEEPCLIMB);
 								frame = 0;
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10812,7 +10859,7 @@ bool Actor::ExitGrind(bool jump)
 				ground = grindEdge;
 				movingGround = grindMovingTerrain;
 				edgeQuantity = grindQuantity;
-				action = LAND;
+				SetAction(LAND);
 				frame = 0;
 				groundSpeed = grindSpeed;
 
@@ -10935,7 +10982,7 @@ bool Actor::ExitGrind(bool jump)
 				reversed = true;
 				grindEdge = NULL;
 
-				action = LAND2;
+				SetAction(LAND2);
 				framesNotGrinding = 0;
 				frame = 0;
 
@@ -11817,7 +11864,7 @@ void Actor::UpdatePhysics()
 					}
 					else
 					{
-						action = JUMP;
+						SetAction(JUMP);
 						frame = 1;
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
@@ -11837,7 +11884,7 @@ void Actor::UpdatePhysics()
 					if (col)
 					{
 						position = posOld;
-						action = JUMP;
+						SetAction(JUMP);
 						frame = 1;
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
@@ -11865,7 +11912,7 @@ void Actor::UpdatePhysics()
 					}
 					else
 					{
-						action = JUMP;
+						SetAction(JUMP);
 						frame = 1;
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 						grindEdge = NULL;
@@ -11887,7 +11934,7 @@ void Actor::UpdatePhysics()
 					if (col)
 					{
 						position = posOld;
-						action = JUMP;
+						SetAction(JUMP);
 						frame = 1;
 						framesNotGrinding = 0;
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
@@ -12132,7 +12179,7 @@ void Actor::UpdatePhysics()
 								{
 								//	cout << "this steep" << endl;
 									facingRight = false;
-									action = STEEPSLIDE;
+									SetAction(STEEPSLIDE);
 									frame = 0;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -12144,7 +12191,7 @@ void Actor::UpdatePhysics()
 							{
 							//	cout << "this steepclimb" << endl;
 								facingRight = false;
-								action = STEEPCLIMB;
+								SetAction(STEEPCLIMB);
 								frame = 0;
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -12289,7 +12336,7 @@ void Actor::UpdatePhysics()
 						//			cout << "this steep 1" << endl;
 									//cout << "slidin" << endl;
 									facingRight = true;
-									action = STEEPSLIDE;
+									SetAction(STEEPSLIDE);
 									frame = 0;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -12301,7 +12348,7 @@ void Actor::UpdatePhysics()
 							{
 						//		cout << "this here??" << endl;
 								facingRight = true;
-								action = STEEPCLIMB;
+								SetAction(STEEPCLIMB);
 								frame = 0;
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -13204,7 +13251,7 @@ void Actor::UpdatePhysics()
 			V2d oldPos = position;
 
 			bool tempCollision = ResolvePhysics( movementVec );
-
+			
 			V2d extraVel(0, 0);
 			if( tempCollision  )
 			{
@@ -13369,6 +13416,15 @@ void Actor::UpdatePhysics()
 				movementVec.x = 0;
 				movementVec.y = 0;
 			}
+
+			/*if (collision)
+			{
+				cout << "collide move test: " << movementVec.x << ", " << movementVec.y << endl;
+			}
+			else
+			{
+				cout << "non move test: " << movementVec.x << ", " << movementVec.y << endl;
+			}*/
 
 			V2d wVel = position - oldPos;
 
@@ -14671,10 +14727,12 @@ void Actor::PhysicsResponse()
 	V2d gn;
 	//Edge *e;
 
+	
+
 	if (action == RAILGRIND && collision )
 	{
 		grindEdge = NULL;
-		action = JUMP;
+		SetAction(JUMP);
 		frame = 1;
 		framesNotGrinding = 0;
 		
@@ -14726,7 +14784,7 @@ void Actor::PhysicsResponse()
 			//BounceFlameOff();
 			//bounceFlameOn = false;
 
-			action = BOUNCEGROUND;
+			SetAction(BOUNCEGROUND);
 			boostBounce = false;
 			frame = 0;
 
@@ -14768,7 +14826,7 @@ void Actor::PhysicsResponse()
 					BounceFlameOn();
 					runBounceFrame = 4 * 3;
 					
-					action = LAND;
+					SetAction(LAND);
 					frame = 0;
 					//bounceEdge = NULL;
 					ground = bounceEdge;
@@ -14890,7 +14948,7 @@ void Actor::PhysicsResponse()
 			if( action == AIRHITSTUN )
 			{
 				//cout << "setting to ground hitstun!!!" << endl;
-				action = GROUNDHITSTUN;
+				SetAction(GROUNDHITSTUN);
 				frame = 0;
 			}
 			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
@@ -14902,7 +14960,7 @@ void Actor::PhysicsResponse()
 			//	cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
 				{
-					action = LAND2;
+					SetAction(LAND2);
 					owner->soundNodeList->ActivateSound(soundBuffers[S_LAND]);
 					//rightWire->UpdateAnchors(V2d( 0, 0 ));
 					//leftWire->UpdateAnchors(V2d( 0, 0 ));
@@ -14917,7 +14975,7 @@ void Actor::PhysicsResponse()
 						//cout << "THIS GRAV REVERSE" << endl;
 						//cout << "frames in air: " << framesInAir << endl;
 						//cout << "frame: " << frame << endl;
-						action = GRAVREVERSE;
+						SetAction(GRAVREVERSE);
 
 						if( currInput.LLeft() || currInput.LRight() )
 						{
@@ -14937,7 +14995,7 @@ void Actor::PhysicsResponse()
 					}
 					else
 					{
-						action = LAND;
+						SetAction(LAND);
 						owner->soundNodeList->ActivateSound(soundBuffers[S_LAND]);
 					}
 					//rightWire->UpdateAnchors(V2d( 0, 0 ));
@@ -14956,7 +15014,7 @@ void Actor::PhysicsResponse()
 			else if( action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK )
 			{
 				//cout << "action = 41" << endl;
-				action = SEQ_CRAWLERFIGHT_LAND;
+				SetAction(SEQ_CRAWLERFIGHT_LAND);
 				frame = 0;
 				groundSpeed = 0;
 			}
@@ -15004,7 +15062,7 @@ void Actor::PhysicsResponse()
 		{
 			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (-gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
 			{
-				action = LAND2;
+				SetAction(LAND2);
 				frame = 0;
 			}
 		}
@@ -15014,7 +15072,7 @@ void Actor::PhysicsResponse()
 			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
 			{
 				//cout << "here no: " << action << ", " << offsetX << endl;
-				action = LAND2;
+				SetAction(LAND2);
 				frame = 0;
 			}
 			else
@@ -15039,14 +15097,16 @@ void Actor::PhysicsResponse()
 
 		if( action == GROUNDHITSTUN )
 		{
-			action = AIRHITSTUN;
+			SetAction(AIRHITSTUN);
 			frame = 0;
 		}
 
-		if( action != AIRHITSTUN && action != WALLATTACK && action != AIRDASH )
+		
+
+		if( action != AIRHITSTUN && action != AIRDASH )
 		{
 			//oldAction = action;
-			if( collision )
+			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
 				//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
 				//	&& action == AIRDASH && length( wallNormal ) > 0 )
@@ -15064,7 +15124,8 @@ void Actor::PhysicsResponse()
 				//}
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || currWall->edgeType != Edge::BORDER) 
-					&& oldVelocity.y >= 0 )
+					&& oldVelocity.y >= 0/* && rightWire->state != Wire::PULLING
+					&& leftWire->state != Wire::PULLING*/ )
 				{
 					if( wallNormal.x > 0)
 					{
@@ -15072,7 +15133,8 @@ void Actor::PhysicsResponse()
 						{
 							//cout << "setting to wallcling" << endl;
 							facingRight = true;
-							action = WALLCLING;
+							SetAction(WALLCLING);
+							repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_WALLSLIDE], true);
 							frame = 0;
 						}
 					}
@@ -15082,7 +15144,9 @@ void Actor::PhysicsResponse()
 						{
 							//cout << "setting to wallcling" << endl;
 							facingRight = false;
-							action = WALLCLING;
+							SetAction(WALLCLING);
+							repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_WALLSLIDE], true);
+							
 							frame = 0;
 						}
 					
@@ -15099,14 +15163,14 @@ void Actor::PhysicsResponse()
 					{
 						if( !currInput.LLeft() || currInput.LDown() )
 						{
-							stopWallClinging = true;
+							//stopWallClinging = true;
 						}
 					}
 					else
 					{
 						if( !currInput.LRight() || currInput.LDown() )
 						{
-							stopWallClinging = true;
+							//stopWallClinging = true;
 						}
 					}
 				}
@@ -15143,11 +15207,19 @@ void Actor::PhysicsResponse()
 				}
 			}
 		}
+
+		if (collision && minContact.normal.y > 0 && !reversed && action != WALLCLING 
+			&& rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING )
+			//&& hitCeilingCounter == 0 )
+		{
+			//hitCeilingCounter = hitCeilingLockoutFrames;
+			owner->soundNodeList->ActivateSound(soundBuffers[S_HITCEILING]);
+		}
 	}
 
 	if( groundedWallBounce )
 	{
-		action = BOUNCEGROUNDEDWALL;
+		SetAction(BOUNCEGROUNDEDWALL);
 		frame = 0;
 
 		//already bounced by here i think
@@ -16389,7 +16461,8 @@ void Actor::UpdatePostPhysics()
 			framesNotGrinding++;
 		}
 			
-
+		//if (hitCeilingCounter > 0)
+		//	--hitCeilingCounter;
 
 		if( action == BOUNCEAIR && oldBounceEdge != NULL )
 		{
@@ -18075,7 +18148,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				if ((c >= 0 && preC <= 0) || (c <= 0 && preC >= 0))
 				{
 					//cout << "HIT IT" << endl;
-					action = RAILGRIND;
+					SetAction(RAILGRIND);
 					hasAirDash = true;
 					hasDoubleJump = true;
 					frame = 0;
@@ -18605,7 +18678,6 @@ void Actor::Draw( sf::RenderTarget *target )
 			}
 			case STANDN:
 			{
-
 				if (flashFrames > 0)
 				{
 					target->draw(standingNSword, &swordSh);
@@ -18753,7 +18825,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 void Actor::GrabShipWire()
 {
-	action = GRABSHIP;
+	SetAction(GRABSHIP);
 	ground = NULL;
 	frame = 0;
 }
@@ -18762,7 +18834,7 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
-		action = WAITFORSHIP;
+		SetAction(WAITFORSHIP);
 		frame = 0;
 		assert( ground != NULL );
 		edgeQuantity = eq;
@@ -18783,7 +18855,7 @@ void Actor::EnterNexus( int nexusIndex, sf::Vector2<double> &pos )
 {
 	if( nexusIndex == 0 )
 	{
-		action = ENTERNEXUS1;
+		SetAction(ENTERNEXUS1);
 		frame = 0;
 		position = pos;
 		velocity = V2d( 0, 0 );
@@ -20740,6 +20812,16 @@ void Actor::UpdateSprite()
 
 			sprite->setPosition( pp.x, pp.y );
 
+
+			if (frame == 0 * 4 && slowCounter == 1)
+			{
+				owner->soundNodeList->ActivateSound(soundBuffers[S_CLIMB_STEP1]);
+			}
+			else if (frame == 4 * 4 && slowCounter == 1)
+			{
+				owner->soundNodeList->ActivateSound(soundBuffers[S_CLIMB_STEP1]);
+			}
+
 			if (scorpOn)
 			{
 				scorpSprite.setTexture(*ts_scorpClimb->texture);
@@ -22528,7 +22610,7 @@ void Actor::SetActionGrind()
 		leftWire->Retract();
 	//rightWire->Reset();
 	//leftWire->Reset();
-	action = GRINDBALL;
+	SetAction(GRINDBALL);
 	grindEdge = ground;
 	grindMovingTerrain = movingGround;
 	frame = 0;

@@ -820,9 +820,9 @@ void MainMenu::Init()
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
 	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
 
-	soundBuffers[S_DOWN] = soundManager.GetSound( "Audio/Sounds/menu_down.ogg" );
-	soundBuffers[S_UP] = soundManager.GetSound( "Audio/Sounds/menu_up.ogg" );
-	soundBuffers[S_SELECT] = soundManager.GetSound( "Audio/Sounds/menu_select.ogg" );
+	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
+	soundBuffers[S_UP] = soundManager.GetSound( "menu_up.ogg" );
+	soundBuffers[S_SELECT] = soundManager.GetSound( "menu_select.ogg" );
 
 	
 
