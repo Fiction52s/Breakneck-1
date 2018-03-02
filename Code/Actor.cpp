@@ -8941,6 +8941,18 @@ void Actor::SetAction( Action a )
 		repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_SLIDE], true);
 		break;
 	}
+	case DOUBLE:
+	{
+		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLE]);
+		break;
+	}
+	case BACKWARDSDOUBLE:
+	{
+		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLEBACK]);
+		break;
+	}
+		
+		
 	}
 	//shouldnt this be slow counter?
 	/*if( slowMultiple > 1 )
@@ -11577,6 +11589,8 @@ void Actor::UpdatePhysics()
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP )
 		return;
+
+	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 	/*if( blah == 0 )
 	{
 		blah = 1;
@@ -12401,8 +12415,6 @@ void Actor::UpdatePhysics()
 			}
 			else if( changeOffset || (( gNormal.x == 0 && movement > 0 && offsetX < b.rw ) || ( gNormal.x == 0 && movement < 0 && offsetX > -b.rw ) )  )
 			{
-				//cout << "co: " << changeOffset << endl;
-				//cout << "slide: " << q << ", " << offsetX << endl;
 				if( movement > 0 )
 					extra = (offsetX + movement) - b.rw;
 				else 
@@ -13242,7 +13254,7 @@ void Actor::UpdatePhysics()
 			if( moveLength > maxMovement )
 			{
 				stealVec = velDir * ( moveLength - maxMovement);
-				//cout << "stealVecset: " << stealVec.x << ", " << stealVec.y << ", movelength: "
+				//cout << "setting steal vec: " << stealVec.x << ", " << stealVec.y << endl;
 				//	<< moveLength << endl;
 				movementVec = velDir * maxMovement;
 			}
@@ -13250,6 +13262,7 @@ void Actor::UpdatePhysics()
 			V2d newVel( 0, 0 );
 			V2d oldPos = position;
 
+			//cout << "movement: " << movementVec.x << ", " << movementVec.y << endl;
 			bool tempCollision = ResolvePhysics( movementVec );
 			
 			V2d extraVel(0, 0);
@@ -13390,6 +13403,7 @@ void Actor::UpdatePhysics()
 				//might still need some more work
 				extraVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
 				
+				//cout << "extraVel: " << extraVel.x << ", " << extraVel.y << endl;
 				if( length(extraVel) < .01 )
 					extraVel = V2d( 0, 0 );
 
@@ -13398,7 +13412,8 @@ void Actor::UpdatePhysics()
 				
 				if( length( stealVec ) > 0 )
 				{
-					stealVec = length( stealVec ) * normalize( extraDir );
+					stealVec = length( stealVec ) * normalize( extraVel );
+					//cout << "modify steal: " << stealVec.x << ", " << stealVec.y << endl;
 				}
 				if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 				{
@@ -13416,15 +13431,6 @@ void Actor::UpdatePhysics()
 				movementVec.x = 0;
 				movementVec.y = 0;
 			}
-
-			/*if (collision)
-			{
-				cout << "collide move test: " << movementVec.x << ", " << movementVec.y << endl;
-			}
-			else
-			{
-				cout << "non move test: " << movementVec.x << ", " << movementVec.y << endl;
-			}*/
 
 			V2d wVel = position - oldPos;
 
@@ -14011,6 +14017,7 @@ void Actor::UpdatePhysics()
 				//cout << "no temp collision" << endl;
 			}
 
+			cout << "steal: " << stealVec.x << ", " << stealVec.y << endl;
 			if( length( extraVel ) > 0 )
 			{
 				movementVec = stealVec + extraVel;
@@ -14038,6 +14045,8 @@ void Actor::UpdatePhysics()
 
 	
 	PhysicsResponse();
+
+	//cout << "post vel: " << velocity.x << ", " << velocity.y << endl;
 
 	if ( reversed && ( action == STANDN || action == STEEPCLIMBATTACK || action == STEEPSLIDEATTACK ) && currHitboxes != NULL)
 	{
