@@ -22,9 +22,20 @@ struct Zone
 	bool ContainsPoint( sf::Vector2<double> point );
 	bool ContainsZone( Zone *z );
 	void SetShadowColor( sf::Color c );
-	//bool ContainsPlayer();
+	//bool ContainsPlayer(); super 
 	Zone * ContainsPointMostSpecific( 
 		sf::Vector2i test );
+	void Update( float zoom, sf::Vector2f &botLeft,
+		sf::Vector2f &playertest );
+
+	enum ZoneType
+	{
+		NORMAL,
+		NEXUS,
+		EXTRA
+	};
+	void SetZoneType( ZoneType zt );
+	ZoneType zType;
 
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;
@@ -39,6 +50,9 @@ struct Zone
 	bool showShadow;
 	GameSession *owner;
 	Zone *activeNext;
+
+	sf::Shader *zShader;
+	Tileset *ts_z;
 };
 
 

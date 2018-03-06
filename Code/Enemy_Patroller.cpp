@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Patroller.h"
+#include "Eye.h"
 
 using namespace std;
 using namespace sf;
@@ -16,10 +17,13 @@ using namespace sf;
 Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
 	:Enemy( owner, EnemyType::EN_PATROLLER, p_hasMonitor, 1 )
 {
+	eye = new PatrollerEye(owner);
+	
 	action = FLAP;
 	//receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
+	eye->SetPosition(Vector2f(pos));
 
 	initHealth = 80;
 	health = initHealth;
@@ -133,6 +137,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 void Patroller::ResetEnemy()
 {
+	eye->Reset();
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
 	fireCounter = 0;
@@ -157,6 +162,7 @@ void Patroller::ResetEnemy()
 
 void Patroller::ProcessState()
 {
+	eye->ProcessState(Vector2f(owner->GetPlayer(0)->position));
 	if (frame == actionLength[action])
 	{
 		switch (action)
@@ -180,16 +186,25 @@ void Patroller::ProcessState()
 	switch (action)
 	{
 	case FLAP:
-		if (length(position - owner->GetPlayer(0)->position) < 1000)
+		if (eye->IsEyeActivated() )
 		{
 			action = TRANSFORM;
 			frame = 0;
 		}
 		break;
 	case TRANSFORM:
-
+		if (!eye->IsEyeActivated())
+		{
+			action = FLAP;
+			frame = 0;
+		}
 		break;
 	case CHARGEDFLAP:
+		if (!eye->IsEyeActivated())
+		{
+			action = FLAP;
+			frame = 0;
+		}
 		break;
 	}
 
@@ -287,6 +302,8 @@ void Patroller::FrameIncrement()
 
 void Patroller::UpdateSprite()
 {
+	eye->SetPosition(Vector2f(position));
+	eye->UpdateSprite();
 	sprite.setPosition( position.x, position.y );
 
 	if (action == FLAP || action == CHARGEDFLAP)
@@ -326,6 +343,8 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		}
 			
 	}
+
+	eye->Draw(target);
 }
 
 void Patroller::UpdateHitboxes()

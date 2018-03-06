@@ -2212,7 +2212,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int numKeys;
 				is >> numKeys;
 
-				keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys));
+				int zType;
+				is >> zType;
+
+				keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
 			}
 			else if (typeName == "spring")
 			{
@@ -4801,6 +4804,8 @@ void GameSession::SetupZones()
 		if( assignZone != NULL )
 		{
 			assignZone->requiredKeys = (*it)->numKeys;
+			if( (*it)->zoneType > 0 )
+				assignZone->SetZoneType((Zone::ZoneType)(*it)->zoneType);
 		}
 
 		delete (*it);
@@ -5756,7 +5761,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 
 int GameSession::Run()
 {
-	ShaderTester shaderTester(ShaderTester::FIRE, this);
+	//ShaderTester shaderTester(ShaderTester::FIRE, this);
+	
 	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
 	//Tileset *ts_grad = GetTileset("Shader/gradient01.png", 400, 400);
 	//sf::Shader fireShader;
@@ -6483,7 +6489,7 @@ int GameSession::Run()
 				//testBuf.Send( totalGameFrames );
 				int blafah = totalGameFrames % 60;
 				float fafa = blafah / 60.f;
-				shaderTester.Update();
+				//shaderTester.Update();
 
 				totalGameFrames++;
 				for( int i = 0; i < 4; ++i )
@@ -7247,6 +7253,11 @@ int GameSession::Run()
 			polyShaders[i].setUniform( "topLeft", botLeft ); //just need to change the name topleft eventually
 			polyShaders[i].setUniform( "playertest", playertest );
 		}
+
+		for (auto it = zones.begin(); it != zones.end(); ++it)
+		{
+			(*it)->Update(cam.GetZoom(), botLeft, playertest);
+		}
 		
 		//polyShader.setUniform( "zoom", cam.GetZoom() );
 		//polyShader.setUniform( "topLeft", view.getCenter().x - view.getSize().x / 2, 
@@ -7879,7 +7890,7 @@ int GameSession::Run()
 
 		preScreenTex->setView( uiView );
 
-		shaderTester.Draw( preScreenTex );
+		//shaderTester.Draw( preScreenTex );
 
 		if( raceFight != NULL )
 		{

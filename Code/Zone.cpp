@@ -34,11 +34,26 @@ Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	}
 
 	activeNext = NULL;
+
+	zShader = NULL;
+
+	zType = NORMAL;
+
+	ts_z = NULL;
 }
 
 Zone::~Zone()
 {
 	delete definedArea;
+	if (zShader != NULL)
+	{
+		zShader = NULL;
+	}
+}
+
+void Zone::SetZoneType( ZoneType zt )
+{
+	zType = zt;
 }
 
 void Zone::Init()
@@ -406,7 +421,7 @@ void Zone::Init()
 	definedArea = new VertexArray( sf::Triangles , vaSize );
 	
 	VertexArray & v = *definedArea;
-	Color shadowColor( 50, 50, 50, 200 );
+	
 	//Color testColor( 0x75, 0x70, 0x90 );
 	//Color selectCol( 0x77, 0xBB, 0xDD );
 
@@ -415,10 +430,57 @@ void Zone::Init()
 		p2t::Point *p = tris[i]->GetPoint( 0 );	
 		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
 		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		v[i*3] = Vertex( Vector2f( p->x, p->y ), shadowColor );
-		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), shadowColor );
-		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), shadowColor );
+		v[i * 3] = Vertex(Vector2f(p->x, p->y));// , shadowColor );
+		v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y));// , shadowColor );
+		v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y));// , shadowColor );
 	}
+
+	switch (zType)
+	{
+	case NORMAL:
+	{
+		if (zShader != NULL)
+		{
+			delete zShader;
+			zShader = NULL;
+			ts_z = NULL;
+		}
+
+		Color shadowColor(50, 50, 50, 200);
+		SetShadowColor(shadowColor);
+		//SetShadowColor(Color::White);
+		break;
+	}
+	case NEXUS:
+	{
+		if (zShader == NULL)
+		{
+			zShader = new sf::Shader;
+			if (!zShader->loadFromFile("Shader/mat_shader2.frag", sf::Shader::Fragment))
+			{
+				cout << "zone shader not loading correctly!" << endl;
+				assert(false);
+			}
+			ts_z = owner->GetTileset("terrain_1_01_512x512.png", 512, 512);
+			zShader->setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+			zShader->setUniform("Resolution", Vector2f(1920, 1080));
+			zShader->setUniform("u_texture", ts_z->texture);
+
+
+			SetShadowColor(Color::White);
+			//ts_polyShaders[index] = GetTileset(ss1.str(), 512, 512); //1024, 1024 );
+			//polyShaders[index].setUniform("u_texture",*GetTileset(ss1.str(), 512, 512)->texture);
+			//polyShaders[index].setUniform("Resolution", Vector2f(1920, 1080));
+			//polyShaders[index].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+
+			//if( !zShader->loadFromFile( "Shader/terrain"))
+		}
+		break;
+	}
+
+	}
+	//Color shadowColor(50, 50, 50, 200);
+	//SetShadowColor(shadowColor);
 
 	//assert( tris.size() * 3 == points.size() );
 	delete cdt;
@@ -471,6 +533,21 @@ void Zone::AddHoles( p2t::CDT *cdt )
 	}
 }
 
+void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
+{
+	switch (zType)
+	{
+	case NORMAL:
+		break;
+	case NEXUS:
+		zShader->setUniform("zoom", zoom);
+		zShader->setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+		zShader->setUniform("playertest", playertest);
+		break;
+	}
+	
+}
+
 void Zone::Draw( RenderTarget *target )
 {
 	//target->draw( *definedArea );
@@ -480,7 +557,17 @@ void Zone::Draw( RenderTarget *target )
 		if( showShadow )
 		{
 			//cout << "drawing area " << this << endl;
-			target->draw( *definedArea );
+			switch (zType)
+			{
+			case NORMAL:
+				target->draw(*definedArea);
+				break;
+			case NEXUS:
+
+				assert(zShader != NULL);
+				target->draw(*definedArea, zShader );
+				break;
+			}
 		}
 	}
 }

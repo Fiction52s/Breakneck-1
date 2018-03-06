@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 
+struct PatrollerEye;
 struct Patroller : Enemy, LauncherEnemy
 {
 	enum Action
@@ -13,6 +14,8 @@ struct Patroller : Enemy, LauncherEnemy
 		WAITINGFORBULLETS,
 		DEAD,
 	};
+
+	PatrollerEye *eye;
 
 	Patroller(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);

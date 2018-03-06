@@ -42,7 +42,7 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	animationFactor = 10;
 
 	//ts = owner->GetTileset( "Booster.png", 80, 80 );
-	ts = owner->GetTileset("booster_64x64.png", 64, 64);
+	ts = owner->GetTileset("Enemies/booster_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -102,7 +102,7 @@ void Booster::ProcessState()
 	}
 	case BOOST:
 	{
-		if (frame == 10)
+		if (frame == 11)
 		{
 			action = REFRESH;
 			frame = 0;
@@ -123,7 +123,20 @@ void Booster::ProcessState()
 
 void Booster::UpdateSprite()
 {
-	IntRect ir = ts->GetSubRect(0);
+	int tile = 0;
+	switch (action)
+	{
+	case NEUTRAL:
+		tile = 0;
+		break;
+	case BOOST:
+		tile = frame;
+		break;
+	case REFRESH:
+		tile = 0;
+		break;
+	}
+	IntRect ir = ts->GetSubRect(tile);
 	sprite.setTextureRect(ir);
 }
 

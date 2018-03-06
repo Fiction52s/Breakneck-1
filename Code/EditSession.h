@@ -639,7 +639,8 @@ struct PoiParams : public ActorParams
 struct KeyParams : public ActorParams
 {
 	KeyParams( EditSession *edit,
-		sf::Vector2i &pos, int numKeys );
+		sf::Vector2i &pos, int numKeys,
+		int zoneType );
 	KeyParams( EditSession *edit,
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
@@ -650,6 +651,7 @@ struct KeyParams : public ActorParams
 	bool CanApply();
 	ActorParams *Copy();
 	int numKeys;
+	int zoneType;
 };
 
 struct ShardParams : public ActorParams

@@ -246,13 +246,15 @@ struct MomentumBar
 
 struct KeyNumberObj
 {
-	KeyNumberObj( sf::Vector2i &p_pos, 
-		int nKeys )
-		:pos( p_pos ), numKeys( nKeys )
+	KeyNumberObj(sf::Vector2i &p_pos,
+		int nKeys, int zt)
+		:pos(p_pos), numKeys(nKeys),
+		zoneType(zt)
 	{
 	}
 	sf::Vector2i pos;
 	int numKeys;
+	int zoneType;
 };
 
 struct ScoreDisplay

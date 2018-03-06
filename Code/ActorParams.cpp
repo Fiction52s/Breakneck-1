@@ -917,10 +917,11 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos )
 
 	
 	numKeys = 3;
+	zoneType = 0;
 }
 
 KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos,
-	int p_numKeys)
+	int p_numKeys, int p_zoneType )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
@@ -934,11 +935,13 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos,
 
 	
 	numKeys = p_numKeys;
+	zoneType = p_zoneType;
 }
 
 void KeyParams::WriteParamFile( std::ofstream &of )
 {
 	of << numKeys << endl;
+	of << zoneType << endl;
 }
 
 void KeyParams::SetParams()
@@ -949,7 +952,8 @@ void KeyParams::SetParams()
 
 	stringstream ss;
 	string numkeysString = p->textBoxes["numkeys"]->text.getString().toAnsiString();
-	
+	string zoneTypeString =p->textBoxes["zonetype"]->text.getString().toAnsiString();
+
 	ss << numkeysString;
 
 	int numK;
@@ -959,6 +963,19 @@ void KeyParams::SetParams()
 	{
 		numKeys = numK;
 	}
+
+	ss.clear();
+
+	ss << zoneTypeString;
+
+	int zt;
+	ss >> zt;
+
+	if (!ss.fail())
+	{
+		zoneType = zt;
+	}
+	
 }
 
 void KeyParams::SetPanelInfo()
@@ -972,6 +989,8 @@ void KeyParams::SetPanelInfo()
 	}
 
 	p->textBoxes["numkeys"]->text.setString( boost::lexical_cast<string>( numKeys ) );
+
+	p->textBoxes["zonetype"]->text.setString(boost::lexical_cast<string>(zoneType));
 }
 
 bool KeyParams::CanApply()

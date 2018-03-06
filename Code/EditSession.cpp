@@ -1182,11 +1182,14 @@ bool EditSession::OpenFile()
 
 					int numKeys;
 					is >> numKeys;
+
+					int zType;
+					is >> zType;
 					//int hasMonitor;
 					//is >> hasMonitor;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset( new KeyParams( this, pos, numKeys ) );
+					a.reset( new KeyParams( this, pos, numKeys, zType ) );
 					
 
 					//a->hasMonitor = false;//(bool)hasMonitor;
@@ -15642,6 +15645,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 		p->AddTextBox( "numkeys", Vector2i( 20, 150 ), 200, 20, "3" );
+		p->AddTextBox("zonetype", Vector2i(20, 200), 200, 20, "0" );
 
 		return p;
 	}
