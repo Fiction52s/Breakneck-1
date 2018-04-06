@@ -344,13 +344,37 @@ void SetRectSubRect(sf::Vertex *v, sf::FloatRect &sub)
 	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
 }
 
-void SetRectRotation(sf::Vertex *v, float angleRad, int width, int height, sf::Vector2f &origin )
+void SetRectRotation(sf::Vertex *v, float angleRad, int width, int height, sf::Vector2f &origin, bool flipHoriz,
+	bool flipVert )
 {
 	SetRectCenter(v, width, height, origin);
 	v[0].position = Vector2f(-width / 2, -height / 2);
 	v[1].position = Vector2f(width / 2, -height / 2);
 	v[2].position = Vector2f(width / 2, height / 2);
 	v[3].position = Vector2f(-width / 2, height / 2);
+
+	if (flipHoriz)
+	{
+		Vector2f temp = v[0].position;
+		v[0].position = v[1].position;
+		v[1].position = temp;
+
+		temp = v[2].position;
+		v[2].position = v[3].position;
+		v[3].position = temp;
+	}
+
+	if (flipVert)
+	{
+		Vector2f temp = v[0].position;
+		v[0].position = v[3].position;
+		v[3].position = temp;
+
+		temp = v[1].position;
+		v[1].position = v[2].position;
+		v[2].position = temp;
+	}
+
 	for (int i = 0; i < 4; ++i)
 	{
 		RotateCW(v[i].position, angleRad);

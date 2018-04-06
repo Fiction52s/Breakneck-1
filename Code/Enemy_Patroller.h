@@ -8,11 +8,11 @@ struct Patroller : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		FLAP,
-		TRANSFORM,
-		CHARGEDFLAP,
-		WAITINGFORBULLETS,
-		DEAD,
+		S_FLAP,
+		S_BEAKOPEN,
+		S_BEAKHOLDOPEN,
+		S_BEAKCLOSE,
+		S_Count
 	};
 
 	PatrollerEye *eye;
@@ -33,9 +33,22 @@ struct Patroller : Enemy, LauncherEnemy
 	void HandleNoHealth();
 	void AdvanceTargetNode();
 
+	int turnFrame;
+	int turnAnimFactor;
+	bool currFacingRight;
+
+	int aimingFrames;
+	int maxAimingFrames;
+
+
+	float targetAngle;
+	float currentAngle;
+	float beakTurnSpeed;
+
 	Action action;
 	int fireCounter;
-	int actionLength[CHARGEDFLAP + 1];
+	int actionLength[S_Count];
+	int animFactor[S_Count];
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
 	sf::Vector2i *path; //global
@@ -47,9 +60,10 @@ struct Patroller : Enemy, LauncherEnemy
 	double speed;
 	int nodeWaitFrames;
 	sf::Sprite sprite;
+
+	sf::Vertex bodyVA[4 * 2];
 	Tileset *ts;
 	HitboxInfo *hitboxInfo;
-	int animationFactor;
 	bool facingRight;
 };
 

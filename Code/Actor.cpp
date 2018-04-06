@@ -14017,7 +14017,7 @@ void Actor::UpdatePhysics()
 				//cout << "no temp collision" << endl;
 			}
 
-			cout << "steal: " << stealVec.x << ", " << stealVec.y << endl;
+			//cout << "steal: " << stealVec.x << ", " << stealVec.y << endl;
 			if( length( extraVel ) > 0 )
 			{
 				movementVec = stealVec + extraVel;

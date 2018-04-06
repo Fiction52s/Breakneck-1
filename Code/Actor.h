@@ -303,6 +303,8 @@ struct Actor : QuadTreeCollider,
 	bool flipTileX;
 	bool flipTileY;
 
+	
+
 	sf::Vector2<double> spriteCenter;
 	bool dairBoostedDouble;
 	bool aerialHitCancelDouble;

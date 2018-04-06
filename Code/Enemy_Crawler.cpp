@@ -19,10 +19,9 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
-	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q ), clockwise( cw ), groundSpeed( s )
+	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( cw ), groundSpeed( s )
 {
 	origCW = cw;
-	//clockwise = cw;
 	maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
 	framesUntilBurrow = maxFramesUntilBurrow;
@@ -36,9 +35,6 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	initHealth = 60;
 	health = initHealth;
 	dead = false;
-	deathFrame = 0;
-	attackFrame = -1;
-	attackMult = 3;
 
 	double height = 128;
 	double width = 128;
@@ -46,24 +42,17 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = mover->ground->GetPoint( edgeQuantity );
+	V2d gPoint = mover->ground->GetPoint( q );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	V2d gNorm = mover->ground->Normal();
 
-	//30 is front
-	//cutObject->ts = ts;
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(61);
 	cutObject->SetSubRectBack(62);
 	
-	
-
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
-	roll = false;
 	position = gPoint + gNorm * height / 2.0;
-	
-	//receivedHit = NULL;
 
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
@@ -107,20 +96,10 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
-	//mover->physBody.isCircle = true;
-	//mover->physBody.offset.x = 0;
-	/*physBody.offset.y = 0;
-	physBody.rw = 32;
-	physBody.rh = 32;
-	physBody.type = CollisionBox::BoxType::Physics;*/
 
-	startGround = ground;
-	startQuant = edgeQuantity;
+	startGround = g;
+	startQuant = q;
 	frame = 0;
-
-	deathPartingSpeed = .4;
-	//mover->SetSpeed(groundSpeed);
-	//action = CRAWL;
 
 	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35 * crawlAnimationFactor;
@@ -148,41 +127,23 @@ void Crawler::ResetEnemy()
 	mover->roll = false;
 	mover->UpdateGroundPos();
 	mover->SetSpeed(0);
-	//mover->SetSpeed(groundSpeed);
 
 	position = mover->physBody.globalPosition;
 
 	currDistTravelled = 0;
 	health = initHealth;
-	attackFrame = -1;
-	roll = false;
-	ground = startGround;
-	edgeQuantity = startQuant;
-	V2d gPoint = ground->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
+
 	frame = 0;
-	position = gPoint + ground->Normal() * 64.0 / 2.0;
+	V2d gPoint = mover->ground->GetPoint( startQuant );
+	sprite.setPosition( gPoint.x, gPoint.y );
+	
+	position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
 	V2d gn = mover->ground->Normal();
-	/*
-	if( gn.x > 0 )
-		offset.x = physBody.rw;
-	else if( gn.x < 0 )
-		offset.x = -physBody.rw;
-	if( gn.y > 0 )
-		offset.y = physBody.rh;
-	else if( gn.y < 0 )
-		offset.y = -physBody.rh;*/
-
-	//position = gPoint + offset;
-
-	deathFrame = 0;
 	dead = false;
 
-	//----update the sprite
 	double angle = 0;
 	angle = atan2( gn.x, -gn.y );
-		
-	//sprite.setTexture( *ts_walk->texture );
+
 	sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
 	V2d pp = mover->ground->GetPoint(mover->edgeQuantity );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
@@ -201,7 +162,7 @@ void Crawler::UpdateHitboxes()
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	if( mover->ground != NULL )
 	{
-		V2d gn = ground->Normal();
+		V2d gn = mover->ground->Normal();
 		double angle = 0;
 		
 		
@@ -291,7 +252,6 @@ void Crawler::ProcessState()
 			{
 				action = CRAWL;
 				frame = 0;
-				//mover->SetSpeed(groundSpeed);
 			}
 			break;
 		case BURROW:
@@ -442,8 +402,6 @@ void Crawler::HandleNoHealth()
 
 void Crawler::UpdateSprite()
 {
-	//cout << "response" << endl;
-	double spaceNeeded = 0;
 	V2d gn = mover->ground->Normal();
 	V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
 

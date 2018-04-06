@@ -1215,8 +1215,6 @@ void Enemy::Reset()
 	ResetEnemy();
 
 	UpdateHitboxes();
-
-	//cout << "resetting enemy!" << endl;
 }
 
 void Enemy::SetHitboxes(CollisionBody *cb, int frame)
@@ -1421,8 +1419,6 @@ void Enemy::ProcessHit()
 
 void Enemy::ConfirmHitNoKill()
 {
-	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_hitSpack, (owner->GetPlayer(0)->position + position) / 2.0, true, 0, 10, 2, true);
-	//owner->cam.SetRumble(1, 1, 5);
 	owner->Pause(5);
 	HandleHitAndSurvive();
 	owner->cam.SetRumble(.5, .5, 5);
@@ -1431,7 +1427,7 @@ void Enemy::ConfirmHitNoKill()
 
 void Enemy::ConfirmKill()
 {
-	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_killSpack, position, true, 0, 10, 2, true);
+	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 2, true);
 	owner->Pause(7);
 	owner->cam.SetRumble(1, 1, 7 );
 	if (hasMonitor)
@@ -1625,6 +1621,12 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_BASICTURRET:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_SHROOM:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_SHROOMJELLY:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		default:

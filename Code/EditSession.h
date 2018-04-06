@@ -1501,6 +1501,7 @@ struct EditSession : GUIHandler
 	bool PolyIntersectGate( TerrainPolygon &poly );
 
 	void SetInversePoly();
+	sf::Sprite scaleSprite;
 
 	static void s_CreatePreview( EditSession *session, 
 		sf::Vector2i imageSize );
@@ -1644,6 +1645,9 @@ struct EditSession : GUIHandler
 	
 	sf::Font arialFont;
 	sf::Text cursorLocationText;
+	sf::Text scaleText;
+	sf::RectangleShape scaleSpriteBGRect;
+
 	//sf::Text polygonTimeoutText;
 	//int polygonTimeoutTextTimer;
 	//int polygonTimeoutTextLength;

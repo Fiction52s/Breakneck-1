@@ -71,6 +71,7 @@
 #include "Enemy_RaceFightTarget.h"
 //#include "Enemy_SecurityWeb.h"
 #include "Enemy_Shard.h"
+#include "Enemy_Shroom.h"
 //#include "Enemy_Shark.h"
 //#include "Enemy_Specter.h"
 //#include "Enemy_Spider.h"
@@ -2452,7 +2453,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int hasMonitor;
 				is >> hasMonitor;
 
-				FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				//FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				Shroom *enemy = new Shroom( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
@@ -7509,7 +7511,7 @@ int GameSession::Run()
 
 		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
-
+		
 		
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
@@ -7545,7 +7547,20 @@ int GameSession::Run()
 			preScreenTex->draw( shipSprite );
 		}
 
+		Enemy *current = activeEnemyList;
+		while (current != NULL)
+		{
+			//	cout << "draw" << endl;
+			if ((pauseFrames >= 2 && current->receivedHit != NULL))
+			{
+				current->Draw(preScreenTex);
+			}
+			current = current->next;
+		}
+
 		absorbParticles->Draw(preScreenTex);
+
+
 
 		for( int i = 0; i < 4; ++i )
 		{
@@ -7553,7 +7568,7 @@ int GameSession::Run()
 			if( p != NULL )
 			{
 				p->Draw( preScreenTex );
-
+			
 				/*if( repGhost != NULL && i == 0 )
 					repGhost->Draw( preScreenTex );*/
 				
@@ -7573,16 +7588,7 @@ int GameSession::Run()
 		}
 
 		//whited out hit enemies
-		Enemy *current = activeEnemyList;
-		while( current != NULL )
-		{
-		//	cout << "draw" << endl;
-			if( ( pauseFrames >= 2 && current->receivedHit != NULL ) )
-			{
-				current->Draw( preScreenTex );
-			}
-			current = current->next;
-		}
+		
 
 		DrawEffects( EffectLayer::IN_FRONT );
 

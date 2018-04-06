@@ -3,33 +3,28 @@
 
 #include "Enemy.h"
 
-struct Crawler : Enemy, SurfaceMoverHandler
+struct CrawlerQueen : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
 		UNBURROW,
-		CRAWL,
-		STARTROLL,
-		ROLL,
-		ENDROLL,
-		DASH,
 		BURROW,
-		UNDERGROUND,
+		STAND,
+		SHOOT,
+		BOOST,
+		JUMP,
+		BURROWEDTHROW,
 		DYING
 	};
 
-	int actionLength[DYING+1];
-	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
-	void SetActionDash();
+	int actionLength[DYING + 1];
+	CrawlerQueen(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise );
 	void ProcessState();
-	bool TryDash();
 	void HandleNoHealth();
 	void FrameIncrement();
-	bool IsPlayerChasingMe();
-	void AttemptRunAwayBoost();
 	double dashAccel;
 	void Accelerate(double amount);
-	void SetForwardSpeed( double speed );
+	void SetForwardSpeed(double speed);
 	void TransferEdge(Edge *);
 
 	bool ShouldDash();
@@ -41,7 +36,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void UpdateHitboxes();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
-
 	sf::Sprite sprite;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;
@@ -51,24 +45,46 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	int maxFramesUntilBurrow;
 	int framesUntilBurrow;
 
+	bool clockwise;
 	double groundSpeed;
+	Edge *ground;
 
 	SurfaceMover *mover;
+	double edgeQuantity;
 
 	Action action;
-	bool clockwise;
 
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
 
 	HitboxInfo *hitboxInfo;
-	
+	sf::Vector2<double> tempVel;
+
+	int attackFrame;
+	int attackMult;
+
+	double rollFactor;
+	Contact minContact;
+	bool col;
+	std::string queryMode;
+	int possibleEdgeCount;
 
 	Edge *startGround;
 	double startQuant;
+	//sf::Vector2<double> offset;
+	bool roll;
 
+	int deathFrame;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
+
+	sf::Vector2<double> deathVector;
+	double deathPartingSpeed;
+	sf::Sprite botDeathSprite;
+	sf::Sprite topDeathSprite;
+	Tileset *ts_testBlood;
+	sf::Sprite bloodSprite;
+	int bloodFrame;
 };
 
 #endif

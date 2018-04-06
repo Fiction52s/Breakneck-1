@@ -19,7 +19,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 {
 	eye = new PatrollerEye(owner);
 	
-	action = FLAP;
+	action = S_FLAP;
 	//receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
@@ -54,11 +54,9 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	//speed = 2;
 	frame = 0;
-
-	animationFactor = 2;
-
+	beakTurnSpeed = .1;
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
-	ts = owner->GetTileset( "patroller_224x272.png", 224, 272 );
+	ts = owner->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -116,27 +114,44 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	cutObject->SetSubRectBack(13);
 
 	facingRight = true;
+	
 	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
 	
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	UpdateHitboxes();
 
-	actionLength[FLAP] = 12 * animationFactor;
-	actionLength[TRANSFORM] = 240;
-	actionLength[CHARGEDFLAP] = 12 * animationFactor;
+	actionLength[S_FLAP] = 18;
+	actionLength[S_BEAKOPEN] = 3;
+	actionLength[S_BEAKHOLDOPEN] = 20;
+	actionLength[S_BEAKCLOSE] = 3;
+
+	animFactor[S_FLAP] = 2;
+	animFactor[S_BEAKOPEN] = 6;
+	animFactor[S_BEAKHOLDOPEN] = 1;
+	animFactor[S_BEAKCLOSE] = 6;
 
 	fireCounter = 0;
-
+	turnAnimFactor = 4;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher(this, BasicBullet::BAT, owner, 16, 1, position, V2d(1, 0), 0, 300);
 	launchers[0]->SetBulletSpeed(70);
 	launchers[0]->hitboxInfo->damage = 18;
+	maxAimingFrames = 60;
+
+	ResetEnemy();
 }
 
 void Patroller::ResetEnemy()
 {
+	currFacingRight = facingRight;
+	aimingFrames = 0;
+	if (currFacingRight)
+	{
+		turnFrame = 6;
+	}
+
 	eye->Reset();
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -146,7 +161,7 @@ void Patroller::ResetEnemy()
 	targetNode = 1;
 	forward = true;
 	dead = false;
-	action = FLAP;
+	action = S_FLAP;
 	frame = 0;
 	position.x = path[0].x;
 	position.y = path[0].y;
@@ -157,68 +172,177 @@ void Patroller::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
-	
+
+	targetAngle = 0;
+	currentAngle = targetAngle;	
 }
 
 void Patroller::ProcessState()
 {
 	eye->ProcessState(Vector2f(owner->GetPlayer(0)->position));
-	if (frame == actionLength[action])
+
+	if (frame == actionLength[action] * animFactor[action])
 	{
+		frame = 0;
 		switch (action)
 		{
-		case FLAP:
-			frame = 0;
+		case S_FLAP:
 			break;
-		case TRANSFORM:
-			action = CHARGEDFLAP;
-			frame = 0;
-			fireCounter = 0;
+		case S_BEAKOPEN:
+			action = S_BEAKHOLDOPEN;
 			break;
-		case CHARGEDFLAP:
-			frame = 0;
+		case S_BEAKHOLDOPEN:
+			action = S_BEAKCLOSE;
+			break;
+		case S_BEAKCLOSE:
+			action = S_FLAP;
+			aimingFrames = 0;
 			break;
 		}
 	}
+	V2d playerPos = owner->GetPlayer(0)->position;
 
-	//launcher->UpdatePrePhysics();
+	
 
 	switch (action)
 	{
-	case FLAP:
-		if (eye->IsEyeActivated() )
+	case S_FLAP:
+	{
+		sf::Vector2f dir = Vector2f(normalize(playerPos - position));
+		float dist = length(playerPos - position);
+		targetAngle = -atan2(dir.y, -dir.x) + PI / 2;
+		if (targetAngle < 0)
+			targetAngle += 2 * PI;
+		else if (targetAngle > 2 * PI)
 		{
-			action = TRANSFORM;
-			frame = 0;
+			targetAngle -= 2 * PI;
+		}
+
+		if (playerPos.x < position.x)
+		{
+			if (turnFrame > 0)
+				--turnFrame;
+		}
+		else if (playerPos.x > position.x)
+		{
+			if (turnFrame < 6 * turnAnimFactor)
+				++turnFrame;
+		}
+
+		
+		
+
+		if (eye->IsEyeActivated())
+		{
+			if (aimingFrames == maxAimingFrames)
+			{
+				if (turnFrame == 0 || turnFrame == 6 * turnAnimFactor
+					&& abs( targetAngle - currentAngle ) < .3)
+				{
+					action = S_BEAKOPEN;
+					frame = 0;
+				}
+			}
+			else
+			{
+				aimingFrames++;
+			}
 		}
 		break;
-	case TRANSFORM:
-		if (!eye->IsEyeActivated())
-		{
-			action = FLAP;
-			frame = 0;
-		}
+	}
+	case S_BEAKOPEN:
 		break;
-	case CHARGEDFLAP:
-		if (!eye->IsEyeActivated())
-		{
-			action = FLAP;
-			frame = 0;
-		}
+	case S_BEAKHOLDOPEN:
+		
 		break;
+	case S_BEAKCLOSE:
+		break;
+
 	}
 
-	if (action == CHARGEDFLAP && fireCounter == 60)// frame == 0 && slowCounter == 1 )
+
+	if (action != S_BEAKHOLDOPEN)
 	{
-		launchers[0]->position = position;
-		V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
-		launchers[0]->facingDir = normalize(owner->GetPlayer(0)->position - position);//normalize(position - targetPoint);//normalize(owner->GetPlayer(0)->position - position);
-																				  //cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-																				  //	launcher->facingDir.y << endl;
-		launchers[0]->Fire();
-		fireCounter = 0;
-		//testLauncher->Fire();
+		
+
+		if (currentAngle > targetAngle)
+		{
+			float diff = currentAngle - targetAngle;
+			float revDiff = (2 * PI - currentAngle) + targetAngle;
+			if (diff >= revDiff)
+			{
+				currentAngle += beakTurnSpeed;
+				if (currentAngle >= 2 * PI)
+				{
+					currentAngle -= 2 * PI;
+				}
+			}
+			else
+			{
+				currentAngle -= beakTurnSpeed;
+				if (currentAngle < 0)
+					currentAngle += 2 * PI;
+			}
+		}
+		else 
+		{
+			float diff = targetAngle - currentAngle;
+			float revDiff = (2 * PI - targetAngle) + currentAngle;
+
+			if (diff >= revDiff)
+			{
+				currentAngle -= beakTurnSpeed;
+				if (currentAngle < 0)
+					currentAngle += 2 * PI;
+			}
+			else
+			{
+				currentAngle += beakTurnSpeed;
+				if (currentAngle >= 2 * PI)
+				{
+					currentAngle -= 2 * PI;
+				}
+			}
+		}
+
+		if (abs(targetAngle - currentAngle) < beakTurnSpeed * 2)
+		{
+			currentAngle = targetAngle;
+		}
 	}
+		//case FLAP:
+	/*		if (eye->IsEyeActivated())
+			{
+				action = TRANSFORM;
+				frame = 0;
+			}
+			break;
+		case TRANSFORM:
+			if (!eye->IsEyeActivated())
+			{
+				action = FLAP;
+				frame = 0;
+			}
+			break;
+		case CHARGEDFLAP:
+			if (!eye->IsEyeActivated())
+			{
+				action = FLAP;
+				frame = 0;
+			}
+			break;*/
+
+	//if (action == CHARGEDFLAP && fireCounter == 60)// frame == 0 && slowCounter == 1 )
+	//{
+	//	launchers[0]->position = position;
+	//	V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
+	//	launchers[0]->facingDir = normalize(owner->GetPlayer(0)->position - position);//normalize(position - targetPoint);//normalize(owner->GetPlayer(0)->position - position);
+	//																			  //cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
+	//																			  //	launcher->facingDir.y << endl;
+	//	launchers[0]->Fire();
+	//	fireCounter = 0;
+	//	//testLauncher->Fire();
+	//}
 }
 
 void Patroller::HandleHitAndSurvive()
@@ -294,19 +418,71 @@ void Patroller::AdvanceTargetNode()
 
 void Patroller::FrameIncrement()
 {
-	if (action == CHARGEDFLAP)
+	/*if (action == CHARGEDFLAP)
 	{
 		++fireCounter;
-	}
+	}*/
 }
 
 void Patroller::UpdateSprite()
 {
 	eye->SetPosition(Vector2f(position));
 	eye->UpdateSprite();
-	sprite.setPosition( position.x, position.y );
 
-	if (action == FLAP || action == CHARGEDFLAP)
+	SetRectCenter(bodyVA, ts->tileWidth, ts->tileHeight, Vector2f( position ) );
+	SetRectCenter(bodyVA + 4, ts->tileWidth, ts->tileHeight, Vector2f(position));
+	
+	bool turnedLeft;
+	if (turnFrame == 0)
+		turnedLeft = true;
+	else
+		turnedLeft = false;
+	
+
+	if (action == S_FLAP)
+	{
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+			Vector2f(position));
+		
+
+		SetRectSubRect(bodyVA, ts->GetSubRect(frame / animFactor[S_FLAP]));
+		SetRectSubRect(bodyVA + 4, ts->GetSubRect(27 + turnFrame / turnAnimFactor));
+	}
+	else if (action == S_BEAKOPEN)
+	{
+		SetRectRotation(bodyVA, 0, ts->tileWidth, ts->tileHeight,
+			Vector2f(position), !turnedLeft);
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+			Vector2f(position), !turnedLeft);
+		SetRectSubRect(bodyVA, ts->GetSubRect(24 + frame / animFactor[S_BEAKOPEN]));
+		SetRectSubRect(bodyVA + 4, ts->GetSubRect(34 + frame / animFactor[S_BEAKOPEN]));
+	}
+	else if (action == S_BEAKCLOSE)
+	{
+		SetRectRotation(bodyVA, 0, ts->tileWidth, ts->tileHeight,
+			Vector2f(position), !turnedLeft);
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+			Vector2f(position), !turnedLeft);
+		SetRectSubRect(bodyVA, ts->GetSubRect(24 + ( (actionLength[S_BEAKCLOSE]-1)
+			- frame / animFactor[S_BEAKOPEN]) ) );
+		SetRectSubRect(bodyVA + 4, ts->GetSubRect(
+			34 + ( (actionLength[S_BEAKCLOSE]-1) - frame / animFactor[S_BEAKOPEN]) ));
+	}
+	else if (action == S_BEAKHOLDOPEN)
+	{
+		SetRectRotation(bodyVA, 0, ts->tileWidth, ts->tileHeight,
+			Vector2f(position), !turnedLeft);
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+			Vector2f(position), !turnedLeft);
+		SetRectSubRect(bodyVA, ts->GetSubRect(26));
+		SetRectSubRect(bodyVA + 4, ts->GetSubRect(36));
+	}
+	
+	
+
+	//sprite.setPosition( position.x, position.y );
+
+	/*if (action == FLAP || action == CHARGEDFLAP)
 	{
 		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 	}
@@ -314,11 +490,12 @@ void Patroller::UpdateSprite()
 	{
 		int f = frame / (actionLength[TRANSFORM] / 5);
 		sprite.setTextureRect(ts->GetSubRect( 0 ) );
-	}
+	}*/
 }
 
 void Patroller::EnemyDraw( sf::RenderTarget *target )
 {
+	eye->Draw(target);
 	if( hasMonitor && !suppressMonitor )
 	{
 		if( owner->pauseFrames < 2 || receivedHit == NULL )
@@ -335,7 +512,8 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 	{
 		if( owner->pauseFrames < 2 || receivedHit == NULL )
 		{
-			target->draw( sprite );
+			//target->draw( sprite );
+			target->draw(bodyVA, 8, sf::Quads, ts->texture);
 		}
 		else
 		{
@@ -344,7 +522,7 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 			
 	}
 
-	eye->Draw(target);
+	
 }
 
 void Patroller::UpdateHitboxes()

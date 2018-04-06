@@ -53,8 +53,10 @@ void SetRectCenter(sf::Vertex *v, int width, int height,
 void SetRectColor(sf::Vertex *v, sf::Color &c);
 void SetRectSubRect(sf::Vertex *v, sf::IntRect &sub);
 void SetRectSubRect(sf::Vertex *v, sf::FloatRect &sub);
-void SetRectRotation(sf::Vertex *v, 
-	float angleRad, int width, int height, 
-	sf::Vector2f &origin);
+void SetRectRotation(sf::Vertex *v,
+	float angleRad, int width, int height,
+	sf::Vector2f &origin,
+	bool flipHoriz = false,
+	bool flipVert = false );
 
 #endif

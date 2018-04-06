@@ -484,6 +484,21 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	cursorLocationText.setCharacterSize( 16 );
 	cursorLocationText.setFillColor( Color::White );
 	cursorLocationText.setPosition( 0, 0 );
+	
+	scaleSprite.setPosition(0, 100);
+	scaleSpriteBGRect.setPosition(0, 100);
+	scaleSpriteBGRect.setFillColor(Color::Cyan);
+	scaleSpriteBGRect.setSize(Vector2f( 80, 100 ));
+	
+
+	scaleText.setFont(mainMenu->arial);
+	scaleText.setCharacterSize(16);
+	scaleText.setFillColor(Color::White);
+	scaleText.setPosition(100, 100);
+
+	Tileset *ts_kinScale = p_mainMenu->tilesetManager.GetTileset("Kin/stand_64x64.png", 64, 64);
+	scaleSprite.setTexture(*ts_kinScale->texture);
+	scaleSprite.setTextureRect(ts_kinScale->GetSubRect(0));
 
 	PoiParams::font = &mainMenu->arial;
 	
@@ -1503,6 +1518,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -12278,6 +12295,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		preScreenTex->setView( uiView );
 
 		stringstream cursorPosSS;
+		stringstream scaleTextSS;
 		if( mode == CREATE_PATROL_PATH || mode == CREATE_BLOCKER_CHAIN || mode == SET_DIRECTION )
 		{
 			V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
@@ -12288,10 +12306,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		{
 			cursorPosSS << (int)worldPos.x << ", " << (int)worldPos.y;
 		}
-		
 
+		
+		
+		scaleSprite.setScale( 1.f / zoomMultiple * 2, 1.f / zoomMultiple * 2);
+		scaleTextSS << "scale: x" << scaleSprite.getScale().x;
+		scaleSpriteBGRect.setSize(Vector2f( scaleSprite.getLocalBounds().width, 
+			scaleSprite.getLocalBounds().height ) );
+		preScreenTex->draw(scaleSpriteBGRect);
+		preScreenTex->draw(scaleSprite);
 		cursorLocationText.setString( cursorPosSS.str() );
 		preScreenTex->draw( cursorLocationText );
+		scaleText.setString(scaleTextSS.str());
+		
+		preScreenTex->draw(scaleText);
 
 		switch( mode )
 		{
