@@ -110,8 +110,8 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(12);
-	cutObject->SetSubRectBack(13);
+	cutObject->SetSubRectFront(38);
+	cutObject->SetSubRectBack(37);
 
 	facingRight = true;
 	
@@ -136,7 +136,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher(this, BasicBullet::BAT, owner, 16, 1, position, V2d(1, 0), 0, 300);
-	launchers[0]->SetBulletSpeed(70);
+	launchers[0]->SetBulletSpeed(20);//70);
 	launchers[0]->hitboxInfo->damage = 18;
 	maxAimingFrames = 60;
 
@@ -149,8 +149,10 @@ void Patroller::ResetEnemy()
 	aimingFrames = 0;
 	if (currFacingRight)
 	{
-		turnFrame = 6;
+		turnFrame = (7 * turnAnimFactor) - 1;
 	}
+	targetAngle = 0;
+	currentAngle = targetAngle;
 
 	eye->Reset();
 	SetHitboxes(hitBody, 0);
@@ -174,7 +176,7 @@ void Patroller::ResetEnemy()
 	health = initHealth;
 
 	targetAngle = 0;
-	currentAngle = targetAngle;	
+	currentAngle = targetAngle;
 }
 
 void Patroller::ProcessState()
@@ -189,8 +191,14 @@ void Patroller::ProcessState()
 		case S_FLAP:
 			break;
 		case S_BEAKOPEN:
+		{
 			action = S_BEAKHOLDOPEN;
+			launchers[0]->position = position;
+			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
+			launchers[0]->facingDir = normalize(targetPos - position);
+			launchers[0]->Fire();
 			break;
+		}
 		case S_BEAKHOLDOPEN:
 			action = S_BEAKCLOSE;
 			break;
@@ -210,6 +218,7 @@ void Patroller::ProcessState()
 	{
 		sf::Vector2f dir = Vector2f(normalize(playerPos - position));
 		float dist = length(playerPos - position);
+		targetPos = playerPos;
 		targetAngle = -atan2(dir.y, -dir.x) + PI / 2;
 		if (targetAngle < 0)
 			targetAngle += 2 * PI;
@@ -352,7 +361,7 @@ void Patroller::HandleHitAndSurvive()
 
 void Patroller::HandleNoHealth()
 {
-	cutObject->SetFlipHoriz(!facingRight);
+	cutObject->SetFlipHoriz( sin( currentAngle ) < 0 );
 	cutObject->SetCutRootPos(Vector2f( position ));
 }
 

@@ -42,6 +42,7 @@ struct Patroller : Enemy, LauncherEnemy
 
 
 	float targetAngle;
+	V2d targetPos;
 	float currentAngle;
 	float beakTurnSpeed;
 
