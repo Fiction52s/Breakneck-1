@@ -1744,7 +1744,7 @@ bool CuttableObject::DoneSeparatingCut()
 
 void CuttableObject::Reset()
 {
-	splitDir = Vector2f(1, 0);
+	splitDir = Vector2f(-1, 0);
 	separateFrame = 0;
 	totalSeparateFrames = 60;
 	active = false;

@@ -8,24 +8,28 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	enum Action
 	{
 		UNBURROW,
+		DECIDE,
 		CRAWL,
-		STARTROLL,
 		ROLL,
-		ENDROLL,
 		DASH,
 		BURROW,
-		UNDERGROUND,
-		DYING
+		ATTACK,
+		UNDERGROUND
 	};
 
-	int actionLength[DYING+1];
+	int animFactor[UNDERGROUND + 1];
+	int actionLength[UNDERGROUND +1];
 	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
 	void SetActionDash();
 	void ProcessState();
 	bool TryDash();
 	void HandleNoHealth();
+	void DecideMovement();
 	void FrameIncrement();
 	bool IsPlayerChasingMe();
+	bool ShouldAttack();
+	bool TryAttack();
+	bool TryDashAndAttack();
 	void AttemptRunAwayBoost();
 	double dashAccel;
 	void Accelerate(double amount);

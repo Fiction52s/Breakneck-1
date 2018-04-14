@@ -26,7 +26,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	maxFramesUntilBurrow = 200;
 	framesUntilBurrow = maxFramesUntilBurrow;
 
-	dashAccel = 3;
+	dashAccel = .3;
 	currDistTravelled = 0;
 	mover = new SurfaceMover(owner, g, q, 32 );
 	mover->surfaceHandler = this;
@@ -36,9 +36,9 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	health = initHealth;
 	dead = false;
 
-	double height = 128;
-	double width = 128;
-	ts = owner->GetTileset( "crawler_128x128.png", width, height );
+	double height = 160;
+	double width = 160;
+	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
@@ -47,8 +47,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	V2d gNorm = mover->ground->Normal();
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(61);
-	cutObject->SetSubRectBack(62);
+	cutObject->SetSubRectFront(86);
+	cutObject->SetSubRectBack(87);
 	
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
@@ -57,6 +57,13 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
 
+	animFactor[UNBURROW] = 2;
+	animFactor[CRAWL] = 1;
+	animFactor[ATTACK] = 4;
+	animFactor[ROLL] = 4;
+	animFactor[DASH] = 1;
+	animFactor[BURROW] = 2;
+	animFactor[UNDERGROUND] = 1;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -102,12 +109,11 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	frame = 0;
 
 	actionLength[UNBURROW] = 20;
-	actionLength[CRAWL] = 35 * crawlAnimationFactor;
-	actionLength[STARTROLL] = 3 * crawlAnimationFactor;
-	actionLength[ROLL] = 13 * crawlAnimationFactor;
-	actionLength[ENDROLL] = 4 * crawlAnimationFactor;
-	actionLength[DASH] = 7 * crawlAnimationFactor;
-	actionLength[BURROW] = 20;//3 * crawlAnimationFactor;
+	actionLength[CRAWL] = 35;
+	actionLength[ROLL] = 5;
+	actionLength[DASH] = 7;
+	actionLength[ATTACK] = 6;
+	actionLength[BURROW] = 19;//3 * crawlAnimationFactor;
 	actionLength[UNDERGROUND] = 20;//3 * crawlAnimationFactor;
 	//actionLength[DYING] = 1;//3 * crawlAnimationFactor;
 
@@ -210,13 +216,12 @@ void Crawler::ProcessState()
 		}
 	}
 
-	if (frame == actionLength[action])
-		//if( false )
+	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
 		case UNBURROW:
-			action = CRAWL;
+			action = DECIDE;
 			frame = 0;
 			if (clockwise)
 			{
@@ -230,29 +235,16 @@ void Crawler::ProcessState()
 		case CRAWL:
 			frame = 0;
 			break;
-		case STARTROLL:
-			action = ROLL;
+		case ATTACK:
+			action = DECIDE;
 			frame = 0;
 			break;
 		case ROLL:
 			frame = 0;
 			break;
-		case ENDROLL:
-			action = CRAWL;
-			frame = 0;
-			break;
 		case DASH:
-			if (mover->groundSpeed > 0 && (en.x > 0 && en.y < 0)
-				|| (mover->groundSpeed < 0 && en.x < 0 && en.y < 0))
-			{
-				action = STARTROLL;
-				frame = 0;
-			}
-			else
-			{
-				action = CRAWL;
-				frame = 0;
-			}
+			action = DECIDE;
+			frame = 0;
 			break;
 		case BURROW:
 			action = UNDERGROUND;
@@ -286,14 +278,43 @@ void Crawler::ProcessState()
 		break;
 	}
 
+	if (action == DECIDE)
+	{
+		DecideMovement();
+	}
+
+	TryDashAndAttack();
+	AttemptRunAwayBoost();
 
 	switch (action)
+	{
+	case ROLL:
+	{
+		V2d gn = mover->ground->Normal();
+		double rollacc = .08;
+
+		if ((mover->groundSpeed > 0 && gn.x < 0) || (mover->groundSpeed < 0 && gn.x > 0))
+		{
+			Accelerate(rollacc);
+		break;
+		}
+	}
+	case DASH:
+		Accelerate(dashAccel);
+		break;
+	case ATTACK:
+		Accelerate(dashAccel);
+		break;
+	}
+
+	//cout << "action: " << action << ", frame: " << frame << endl;
+	/*switch (action)
 	{
 	case UNBURROW:
 		break;
 	case CRAWL:
 		TryDash();
-		AttemptRunAwayBoost();
+		
 		break;
 	case STARTROLL:
 		TryDash();
@@ -302,13 +323,7 @@ void Crawler::ProcessState()
 	case ROLL:
 		TryDash();
 		{
-			V2d gn = mover->ground->Normal();
-			double acc = .08;
-
-			if ((mover->groundSpeed > 0 && gn.x < 0) || (mover->groundSpeed < 0 && gn.x > 0))
-			{
-				Accelerate(acc);
-			}
+			
 		}
 		AttemptRunAwayBoost();
 		break;
@@ -320,7 +335,7 @@ void Crawler::ProcessState()
 		break;
 	case BURROW:
 		break;
-	}
+	}*/
 }
 
 void Crawler::UpdateEnemyPhysics()
@@ -340,51 +355,71 @@ void Crawler::FrameIncrement()
 
 void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
-	if (action != UNBURROW && action != BURROW && action != UNDERGROUND)
+	if (action == UNDERGROUND)
+		return; 
+
+	
+	if (hasMonitor && !suppressMonitor)
 	{
-		if (hasMonitor && !suppressMonitor)
+		if (owner->pauseFrames < 2 || receivedHit == NULL)
 		{
-			if (owner->pauseFrames < 2 || receivedHit == NULL)
-			{
-				target->draw(sprite, keyShader);
-			}
-			else
-			{
-				target->draw(sprite, hurtShader);
-			}
-			target->draw(*keySprite);
+			target->draw(sprite, keyShader);
 		}
 		else
 		{
-			if (owner->pauseFrames < 2 || receivedHit == NULL)
-			{
-				target->draw(sprite);
-			}
-			else
-			{
-				target->draw(sprite, hurtShader);
-			}
-
+			target->draw(sprite, hurtShader);
 		}
+		target->draw(*keySprite);
 	}
 	else
 	{
-		if (action != UNDERGROUND)
+		if (owner->pauseFrames < 2 || receivedHit == NULL)
 		{
-			sf::RectangleShape rs;
-			rs.setFillColor(Color::Red);
-			rs.setSize(Vector2f(64, 64));
-			rs.setOrigin(rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2);
-			rs.setPosition(Vector2f(mover->physBody.globalPosition));
-			target->draw(rs);
+			target->draw(sprite);
 		}
+		else
+		{
+			target->draw(sprite, hurtShader);
+		}
+
 	}
-	
 }
 
 void Crawler::IHitPlayer( int index )
 {
 	
+}
+
+void Crawler::DecideMovement()
+{
+	V2d en = mover->ground->Normal();
+	if (mover->groundSpeed > 0 && (en.x > 0 && en.y < 0)
+		|| (mover->groundSpeed < 0 && en.x < 0 && en.y < 0))
+	{
+		if (action != ROLL)
+		{
+			action = ROLL;
+			frame = 0;
+		}
+	}
+	else
+	{
+		if (action != CRAWL)
+		{
+			action = CRAWL;
+			frame = 0;
+		}
+	}
+}
+
+bool Crawler::TryDashAndAttack()
+{
+	if (TryAttack())
+	{
+		return true;
+	}
+
+	return TryDash();
 }
 
 void Crawler::HandleNoHealth()
@@ -406,6 +441,7 @@ void Crawler::UpdateSprite()
 	V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
 
 	//return;
+	float extraVert = 34;
 
 	double angle = 0;
 
@@ -413,19 +449,22 @@ void Crawler::UpdateSprite()
 	switch (action)
 	{
 	case CRAWL:
-		ir = ts->GetSubRect(frame / crawlAnimationFactor);
-		break;
-	case STARTROLL:
-		ir = ts->GetSubRect(frame / crawlAnimationFactor + 35);
+		ir = ts->GetSubRect(frame / animFactor[CRAWL]);
 		break;
 	case ROLL:
-		ir = ts->GetSubRect(frame / crawlAnimationFactor + 38 );
-		break;
-	case ENDROLL:
-		ir = ts->GetSubRect(frame / crawlAnimationFactor + 50);
+		ir = ts->GetSubRect(frame / animFactor[ROLL]+ 35 );
 		break;
 	case DASH:
-		ir = ts->GetSubRect(frame / crawlAnimationFactor + 54);
+		ir = ts->GetSubRect(79);
+		break;
+	case BURROW:
+		ir = ts->GetSubRect(frame / animFactor[BURROW] + 40);
+		break;
+	case UNBURROW:
+		ir = ts->GetSubRect(frame / animFactor[UNBURROW] + 59);
+		break;
+	case ATTACK:
+		ir = ts->GetSubRect(frame / animFactor[ATTACK] + 80);
 		break;
 	}
 
@@ -443,7 +482,7 @@ void Crawler::UpdateSprite()
 		angle = atan2(gn.x, -gn.y);
 
 		V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 		sprite.setRotation(angle / PI * 180);
 		sprite.setPosition(pp.x, pp.y);
 	}
@@ -455,7 +494,7 @@ void Crawler::UpdateSprite()
 			angle = atan2(vec.y, vec.x);
 			angle += PI / 2.0;
 
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 			sprite.setRotation(angle / PI * 180);
 			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
 			sprite.setPosition(pp.x, pp.y);
@@ -466,7 +505,7 @@ void Crawler::UpdateSprite()
 			angle = atan2(vec.y, vec.x);
 			angle += PI / 2.0;
 
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 			sprite.setRotation(angle / PI * 180);
 			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
 			sprite.setPosition(pp.x, pp.y);
@@ -483,25 +522,54 @@ void Crawler::DebugDraw(RenderTarget *target)
 
 void Crawler::TransferEdge(Edge *e)
 {
-	V2d en = e->Normal();
-	if ( mover->groundSpeed > 0 && (en.x > 0 && en.y < 0) 
-		|| ( mover->groundSpeed < 0 && en.x < 0 && en.y < 0))
+	DecideMovement();
+}
+
+bool Crawler::ShouldAttack()
+{
+	if (action != CRAWL && action != ROLL && action != DASH && action != DECIDE )
 	{
-		if (action != ROLL && action != DASH )
-		{
-			action = ROLL;
-			frame = 0;
-		}
+		return false;
 	}
-	else if (action == ROLL)
+
+	V2d dir;
+	if (clockwise)
 	{
-		action = ENDROLL;
+		dir = normalize(mover->ground->v1 - mover->ground->v0);
+	}
+	else if (!clockwise)
+	{
+		dir = normalize(mover->ground->v0 - mover->ground->v1);
+	}
+	double heightOff = cross(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	if (abs(heightOff) > 150)
+		return false;
+
+	if (length(owner->GetPlayer(0)->position - position) < 200)
+	{
+		if (PlayerInFront())
+			return true;
+	}
+
+	return false;
+}
+
+bool Crawler::TryAttack()
+{
+	if (ShouldAttack())
+	{
+		action = ATTACK;
 		frame = 0;
+		return true;
 	}
+
+	return false;
 }
 
 bool Crawler::ShouldDash()
 {
+	if (action != CRAWL && action != ROLL && action != DECIDE )
+		return false;
 	V2d dir;
 	if (clockwise)
 	{
@@ -515,7 +583,7 @@ bool Crawler::ShouldDash()
 	if (abs(heightOff) > 150 )
 		return false;
 
-	if (length(owner->GetPlayer(0)->position - position) < 350)
+	if (length(owner->GetPlayer(0)->position - position) < 320)
 	{
 		if (PlayerInFront())
 			return true;
@@ -551,7 +619,15 @@ void Crawler::Accelerate(double amount)
 	{
 		amount = -abs(amount);
 	}
-	mover->SetSpeed( mover->groundSpeed + amount );
+
+	double max = 35.0;
+	double am = mover->groundSpeed + amount;
+	if (am > max)
+		am = max;
+	if (am < -max)
+		am = -max;
+	cout << "speed: " << am << endl;
+	mover->SetSpeed( am );
 }
 
 void Crawler::SetForwardSpeed( double speed )
@@ -594,6 +670,9 @@ bool Crawler::IsPlayerChasingMe()
 
 void Crawler::AttemptRunAwayBoost()
 {
+	if (action != ROLL && action != CRAWL && action != DASH && action != ATTACK)
+		return;
+
 	if (IsPlayerChasingMe())
 	{
 		Accelerate(.1);

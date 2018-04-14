@@ -70,6 +70,8 @@ struct ShroomJelly : Enemy
 	sf::Sprite sprite;
 	Tileset *ts;
 
+	V2d orig;
+
 	int cycleLimit;
 	int currentCycle;
 

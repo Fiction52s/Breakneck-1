@@ -27,8 +27,8 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	initHealth = 40;
 	health = initHealth;
 
-	double height = 160;
-	ts = owner->GetTileset("Enemies/shroom_160x160.png", 160, 160);
+	double height = 192;
+	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
 	sprite.setTexture(*ts->texture);
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
@@ -93,9 +93,9 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	SetHurtboxes(hurtBody, 0);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(30);
-	cutObject->SetSubRectBack(29);
-	cutObject->SetFlipHoriz(true);
+	cutObject->SetSubRectFront(29);
+	cutObject->SetSubRectBack(30);
+	//cutObject->SetFlipHoriz(false);
 	cutObject->rotateAngle = sprite.getRotation();
 	cutObject->SetCutRootPos( Vector2f( position ) );
 
@@ -104,12 +104,14 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 
 void Shroom::ResetEnemy()
 {
+	jelly->Reset();
 	action = LATENT;
 	health = initHealth;
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;
 	slowCounter = 1;
+
 	slowMultiple = 1;
 
 	SetHitboxes(hitBody, 0);
@@ -134,7 +136,7 @@ void Shroom::ProcessState()
 	switch (action)
 	{
 	case LATENT:
-		if (length(owner->GetPlayer(0)->position - position) < 100)
+		if (length(owner->GetPlayer(0)->position - position) < 60)
 		{
 			action = HITTING;
 			frame = 0;
@@ -152,7 +154,7 @@ void Shroom::ProcessState()
 
 void Shroom::EnemyDraw(sf::RenderTarget *target)
 {
-	cout << "shroomdraw" << endl;
+	//cout << "shroomdraw" << endl;
 	if (hasMonitor && !suppressMonitor)
 	{
 		if (owner->pauseFrames < 2 || receivedHit == NULL)
@@ -222,6 +224,7 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	:Enemy(owner, EnemyType::EN_SHROOMJELLY, 0, 1, false )
 {
 	position = pos;
+	orig = position;
 	action = RISING;
 	initHealth = 40;
 	health = initHealth;
@@ -306,6 +309,7 @@ HitboxInfo * ShroomJelly::IsHit(Actor *player)
 
 void ShroomJelly::ResetEnemy()
 {
+	position = orig;
 	action = WAIT;
 	currentCycle = 0;
 	health = initHealth;
@@ -314,6 +318,7 @@ void ShroomJelly::ResetEnemy()
 	receivedHit = NULL;
 	slowCounter = 1;
 	slowMultiple = 1;
+	velocity = V2d(0, 0);
 }
 
 void ShroomJelly::UpdateEnemyPhysics()
@@ -324,6 +329,8 @@ void ShroomJelly::UpdateEnemyPhysics()
 
 void ShroomJelly::ProcessState()
 {
+	
+	V2d playerPos = owner->GetPlayer(0)->position;
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
@@ -355,7 +362,7 @@ void ShroomJelly::ProcessState()
 		}
 	}
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	
 
 
 
@@ -388,7 +395,6 @@ void ShroomJelly::ProcessState()
 	{
 		velocity.y = 5;
 	}
-
 }
 
 void ShroomJelly::EnemyDraw(sf::RenderTarget *target)

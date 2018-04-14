@@ -1042,6 +1042,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 
 	Enemy *activeEnemyList;
+	Enemy *activeEnemyListTail;
 	Enemy *inactiveEnemyList;
 	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;

@@ -1309,7 +1309,19 @@ void GameSession::AddEnemy( Enemy *e )
 	//	cout << "ADDING BASIC TURRET NOW: " << endl;
 //	}
 	//cout << "adding enemy: " << e->type << endl;
-	if( activeEnemyList != NULL )
+
+	if (activeEnemyList == NULL)
+	{
+		activeEnemyList = e;
+		activeEnemyListTail = e;
+	}
+	else
+	{
+		activeEnemyListTail->next = e;
+		e->prev = activeEnemyListTail;
+		activeEnemyListTail = e;
+	}
+	/*if( activeEnemyList != NULL )
 	{
 		activeEnemyList->prev = e;
 		e->next = activeEnemyList;
@@ -1318,7 +1330,7 @@ void GameSession::AddEnemy( Enemy *e )
 	else
 	{
 		activeEnemyList = e;
-	}
+	}*/
 
 	/*if( player->record > 0 )
 	{
@@ -1349,11 +1361,35 @@ void GameSession::RemoveEnemy( Enemy *e )
 	{
 		//cout << "etype: " << (int)e->type << ", activelist: " << (int)activeEnemyList->type << endl;
 		activeEnemyList = NULL;
+		activeEnemyListTail = NULL;
 		
 	}
 	else
 	{
-		if( e == activeEnemyList )
+		if (e == activeEnemyListTail)
+		{
+			assert(next != NULL);
+
+			prev->next = NULL;
+
+			activeEnemyList = prev;
+		}
+		else
+		{
+			if (next != NULL)
+			{
+				next->prev = prev;
+			}
+
+			if (prev != NULL)
+			{
+				prev->next = next;
+			}
+		}
+
+
+
+		/*if( e == activeEnemyList )
 		{
 			assert( next != NULL );
 			
@@ -1372,7 +1408,7 @@ void GameSession::RemoveEnemy( Enemy *e )
 			{
 				next->prev = prev;
 			}
-		}
+		}*/
 		
 	}
 
@@ -9071,6 +9107,7 @@ void GameSession::Init()
 	va = NULL;
 	edges = NULL;
 	activeEnemyList = NULL;
+	activeEnemyListTail = NULL;
 	pauseFrames = 0;
 
 	raceFight = NULL;
@@ -12888,6 +12925,7 @@ void GameSession::ResetEnemies()
 	}
 	activeEnemyList = NULL;*/
 	activeEnemyList = NULL;
+	activeEnemyListTail = NULL;
 	for( int i = 0; i < EffectLayer::Count; ++i )
 	{
 		Enemy *curr = effectLists[i];
