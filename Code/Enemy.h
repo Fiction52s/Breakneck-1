@@ -317,6 +317,8 @@ enum EnemyType
 	EN_SHROOMJELLY,
 	EN_BASICTURRET,
 	EN_FOOTTRAP,
+	EN_CRAWLERQUEEN,
+	EN_FLOATINGBOMB,
 	EN_BAT,
 	EN_STAGBEETLE,
 	EN_POISONFROG,
@@ -502,6 +504,9 @@ public:
 	virtual void ProcessHit();
 	virtual void ConfirmHitNoKill();
 	virtual void ConfirmKill();
+	void MovePos(V2d &vel,
+		int slowMult,
+		int numPhysSteps);
 	
 	virtual void RecordEnemy();
 	virtual void DirectKill();

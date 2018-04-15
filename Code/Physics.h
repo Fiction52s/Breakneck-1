@@ -28,7 +28,7 @@ struct Edge : QuadTreeEntrant
 
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
-
+	double GetLength();
 	sf::Vector2<double> v0;
 	sf::Vector2<double> v1;
 	Edge * GetEdge0();

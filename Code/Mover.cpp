@@ -771,13 +771,6 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 
 			
 		}
-
-		//cout << "final air position to: " << physBody.globalPosition.x 
-		//	<< ", " << physBody.globalPosition.y << endl;
-		//else
-		//{
-		//	testMover->physBody.globalPosition = position;
-		//}
 	}
 	
 

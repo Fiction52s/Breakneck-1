@@ -58,6 +58,11 @@ double Edge::GetQuantityGivenX( double x )
 	return 0;
 }
 
+double Edge::GetLength()
+{
+	return length(v1 - v0);
+}
+
 bool Edge::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsEdgeTouchingBox( this, r );

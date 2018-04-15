@@ -438,8 +438,7 @@ double Boss_Crawler::GetDistanceClockwise( int index )
 
 	while( curr != e )
 	{
-		sum += length( curr->v1 - curr->v0 );	
-		//cout << "sum clockwise: " << sum << ", " << curr << endl;
+		sum += length( curr->v1 - curr->v0 );
 		curr = curr->edge1;
 	}
 
@@ -478,18 +477,14 @@ bool Boss_Crawler::GetClockwise( int index )
 		double ccw = GetDistanceCCW( index );
 		if( distanceClockwise >= ccw )
 		{
-			cout << "clockwise is greater: " << distanceClockwise << ", " << ccw << endl;
-			cout << "sum: " << distanceClockwise + ccw << endl;
-			//cout << "distance clock: " << distanceClockwise << ", " <<
-			//	totalDistanceAround / 2 << endl;
+			//cout << "clockwise is greater: " << distanceClockwise << ", " << ccw << endl;
+			//cout << "sum: " << distanceClockwise + ccw << endl;
 			return true;
 		}
 		else
 		{
-			//cout << "distance clock false: " << distanceClockwise << ", blah: " << blah << ", "
-			//	<< totalDistanceAround / 2 << endl;
-			cout << "ccw is greater: " << distanceClockwise << ", " << ccw <<endl;
-			cout << "sum: " << distanceClockwise + ccw << endl;
+			//cout << "ccw is greater: " << distanceClockwise << ", " << ccw <<endl;
+			//cout << "sum: " << distanceClockwise + ccw << endl;
 			return false;
 		}
 	}

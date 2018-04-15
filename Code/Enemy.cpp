@@ -1416,6 +1416,14 @@ void Enemy::ProcessHit()
 		//receivedHit = NULL;
 	}
 }
+void Enemy::MovePos(V2d &vel,
+	int slowMult,
+	int numPhysSteps)
+{
+	V2d movementVec = vel;
+	movementVec /= slowMultiple * (double)numPhysSteps;
+	position += movementVec;
+}
 
 void Enemy::ConfirmHitNoKill()
 {
