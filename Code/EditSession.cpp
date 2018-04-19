@@ -17106,7 +17106,7 @@ void EditSession::ExecuteTerrainCompletion()
 		{
 			bool empty = intersectingPolys.empty();
 
-			if( empty && Keyboard::isKeyPressed(Keyboard::F1))
+			if( empty && Keyboard::isKeyPressed(Keyboard::LAlt))
 			{
 				polygonInProgress->inverse = true;
 			}

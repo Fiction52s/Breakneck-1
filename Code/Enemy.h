@@ -481,6 +481,7 @@ public:
 	//CollisionBox physBox;
 	int currHitboxFrame;
 	CollisionBody *currHurtboxes;
+	bool highResPhysics;
 	int currHurtboxFrame;
 	virtual void UpdateEnemyPhysics() {}
 	virtual void HandleHitAndSurvive() {}

@@ -62,7 +62,7 @@ void EffectPool::Update()
 		EffectInstance *tNext = NULL;
 		while (ei != NULL)
 		{
-			tNext = (EffectInstance*)ei->next;
+			tNext = (EffectInstance*)ei->pmnext;
 
 			ei->Update();
 
@@ -76,7 +76,7 @@ void EffectPool::Update()
 		RelEffectInstance *tNext = NULL;
 		while (ei != NULL)
 		{
-			tNext = (RelEffectInstance*)ei->next;
+			tNext = (RelEffectInstance*)ei->pmnext;
 
 			ei->Update();
 

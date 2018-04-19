@@ -1023,6 +1023,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	highResPhysics = false;
 	numLaunchers = 0;
 	launchers = NULL;
 	currHitboxes = NULL;
@@ -1335,6 +1336,11 @@ void Enemy::UpdatePrePhysics()
 		numPhysSteps = NUM_MAX_STEPS;
 		owner->GetPlayer(0)->highAccuracyHitboxes = true;
 	}
+
+	if (highResPhysics)
+	{
+		numPhysSteps = NUM_MAX_STEPS;
+	}
 	
 }
 
@@ -1635,6 +1641,15 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_SHROOMJELLY:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_CRAWLERQUEEN:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_FLOATINGBOMB:
+			ep = new EnemyParams(1, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_BLOCKER:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		default:

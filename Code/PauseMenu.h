@@ -7,7 +7,7 @@
 #include "Movement.h"
 
 struct GameSession;
-
+struct ShardMenu;
 struct OptionSelector
 {
 	static sf::Font *font;	
@@ -88,7 +88,7 @@ struct OptionsMenu
 		SETTINGS
 	};
 
-	
+
 	sf::Vector2f basePos;
 	Mode mode;
 	OptionsMenu( MainMenu *mainMenu );
@@ -207,7 +207,7 @@ struct PauseMenu
 	Tileset *ts_background[Count];
 	Tileset *ts_select;
 	
-	
+	ShardMenu *shardMenu;
 
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;

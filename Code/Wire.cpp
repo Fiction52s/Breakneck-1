@@ -246,7 +246,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 					/*fireDir.x = cos( currInput.leftStickRadians );
 					fireDir.y = -sin( currInput.leftStickRadians );*/
-
 					double angle = currInput.leftStickRadians;
 
 					double degs = angle / PI * 180.0;

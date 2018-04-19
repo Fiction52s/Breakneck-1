@@ -433,7 +433,6 @@ struct Actor : QuadTreeCollider,
 	void UpdatePhysics();
 	void UpdateFullPhysics();
 	void PhysicsResponse();
-	bool physicsOver;
 	void GroundAttack();
 	void ConfirmEnemyKill( Enemy *e );
 	bool IHitPlayer( int otherPlayerIndex );
@@ -443,7 +442,7 @@ struct Actor : QuadTreeCollider,
 		bool facingRight );
 	void GrabShipWire();
 
-
+	bool physicsOver;
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
 	bool CheckStandUp();

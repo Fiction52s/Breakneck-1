@@ -2,11 +2,7 @@
 #define __ENEMY_CRAWLERQUEEN_H__
 
 #include "Enemy.h"
-
-#ifndef __ENEMY_CRAWLER_H__
-#define __ENEMY_CRAWLER_H__
-
-#include "Enemy.h"
+#include "ObjectPool.h"
 
 
 struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
@@ -19,7 +15,7 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	};
 
 	Action action;
-	FloatingBomb(GameSession *owner );
+	FloatingBomb(GameSession *owner, ObjectPool *myPool, int index );
 	int actionLength[Count];
 	int animFactor[Count];
 	CollisionBody *hurtBody;
@@ -28,6 +24,7 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	Tileset *ts;
 	HitboxInfo *hitboxInfo;
 	sf::Sprite sprite;
+	ObjectPool *myPool;
 	void Init( V2d pos, V2d vel );
 	void ProcessState();
 	void HandleNoHealth();
@@ -62,7 +59,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 
 	enum Decision
 	{
-		D_DASH,
+		D_BOOST,
 		D_JUMP,
 		D_DIG,
 		D_Count
@@ -73,16 +70,22 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		Edge *edge;
 		double quantity;
 		int index;
+		//might need roll info?
 	};
 
 
 	~CrawlerQueen();
+	void HitTerrainAerial(Edge *e, double q);
+	void Boost();
+	void Jump();
+	void Popout();
+	EdgeInfo digInfo;
 	int currDigAttacks;
 	int digAttackCounter;
 	double baseSpeed;
 	double multSpeed;
-
 	ObjectPool *bombPool;
+	double bombSpeed;
 	int animFactor[Count];
 	int actionLength[Count];
 	CrawlerQueen(GameSession *owner, Edge *ground, double quantity, bool clockwise );
@@ -103,13 +106,19 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void UpdateHitboxes();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
-	void DecideMovement();
+	void DecidePoints();
 	void InitEdgeInfo();
+	void SetDecisions();
+	void DecideAction();
+	void DecideNextAction( );
 	
+	bool redecide;
+
 	Edge **edgeRef;
 	int numTotalEdges;
 
 	std::map<Edge*, int> edgeIndexMap;
+
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -132,16 +141,19 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 
 	int decideDelayFrames;
 	int decideIndex;
+	int travelIndex;
 	EdgeInfo *decidePoints;
+	EdgeInfo startTravelPoint;
 	Decision *decisions;
+	const static int MAX_DECISIONS = 6;
+
+	sf::CircleShape decDebugDraw[MAX_DECISIONS];
 
 	int numDecisions;
 
 	EffectPool *decMarkerPool;
 
-	const static int MAX_DECISIONS = 6;
+	
 };
-
-#endif
 
 #endif

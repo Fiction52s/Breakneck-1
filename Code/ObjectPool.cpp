@@ -32,17 +32,17 @@ PoolMember *ObjectPool::ActivatePoolMember( bool front )
 
 
 		
-		if (inactiveListStart->next != NULL)
+		if (inactiveListStart->pmnext != NULL)
 		{
-			inactiveListStart->next->prev = NULL;
+			inactiveListStart->pmnext->pmprev = NULL;
 		}
 
-		inactiveListStart = inactiveListStart->next;
+		inactiveListStart = inactiveListStart->pmnext;
 
 		++numActiveMembers;
 
-		newActiveMember->prev = NULL;
-		newActiveMember->next = NULL;
+		newActiveMember->pmprev = NULL;
+		newActiveMember->pmnext = NULL;
 
 		if (activeListStart == NULL)
 		{
@@ -51,14 +51,14 @@ PoolMember *ObjectPool::ActivatePoolMember( bool front )
 		}
 		else if (front)
 		{
-			activeListStart->prev = newActiveMember;
-			newActiveMember->next = activeListStart;
+			activeListStart->pmprev = newActiveMember;
+			newActiveMember->pmnext = activeListStart;
 			activeListStart = newActiveMember;
 		}
 		else
 		{
-			activeListEnd->next = newActiveMember;
-			newActiveMember->prev = activeListEnd;
+			activeListEnd->pmnext = newActiveMember;
+			newActiveMember->pmprev = activeListEnd;
 			activeListEnd = newActiveMember;
 		}
 
@@ -79,25 +79,25 @@ void ObjectPool::DeactivatePoolMember(PoolMember *pm)
 		return;
 	}
 
-	if (pm->prev == NULL && pm->next == NULL)
+	if (pm->pmprev == NULL && pm->pmnext == NULL)
 	{
 		activeListStart = NULL;
 		activeListEnd = NULL;
 	}
-	else if (pm->prev == NULL)
+	else if (pm->pmprev == NULL)
 	{
-		pm->next->prev = NULL;
-		activeListStart = pm->next;
+		pm->pmnext->pmprev = NULL;
+		activeListStart = pm->pmnext;
 	}
-	else if (pm->next == NULL)
+	else if (pm->pmnext == NULL)
 	{
-		pm->prev->next = NULL;
-		activeListEnd = pm->prev;
+		pm->pmprev->pmnext = NULL;
+		activeListEnd = pm->pmprev;
 	}
 	else
 	{
-		pm->prev->next = pm->next;
-		pm->next->prev = pm->prev;
+		pm->pmprev->pmnext = pm->pmnext;
+		pm->pmnext->pmprev = pm->pmprev;
 	}
 
 	AddToInactiveList(pm);
@@ -109,13 +109,13 @@ void ObjectPool::DeactivatePoolMember(PoolMember *pm)
 
 void ObjectPool::AddToInactiveList( PoolMember *pm )
 {
-	pm->prev = NULL;
-	pm->next = NULL;
+	pm->pmprev = NULL;
+	pm->pmnext = NULL;
 
 	if (inactiveListStart != NULL)
 	{	
-		pm->next = inactiveListStart;
-		inactiveListStart->prev = pm;
+		pm->pmnext = inactiveListStart;
+		inactiveListStart->pmprev = pm;
 	}
 	inactiveListStart = pm;
 }
@@ -126,7 +126,7 @@ void ObjectPool::DeactivateAll()
 	PoolMember *tNext = NULL;
 	while (curr != NULL)
 	{
-		tNext = curr->next;
+		tNext = curr->pmnext;
 		DeactivatePoolMember(curr);
 		curr = tNext;
 	}

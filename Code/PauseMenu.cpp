@@ -5,6 +5,7 @@
 #include <iostream>
 #include "SaveFile.h"
 #include <fstream>
+#include "ShardMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -1181,7 +1182,7 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
-	
+	shardMenu = new ShardMenu();
 
 	//cout << "MIDDLE this initialization" << endl;
 
@@ -1419,6 +1420,10 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 
 		
 	}
+	else if (currentTab == SHARDS)
+	{
+		shardMenu->Draw(target);
+	}
 }
 
 void PauseMenu::ApplyVideoSettings()
@@ -1632,6 +1637,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case SHARDS:
 		{
+			shardMenu->Update();
 			break;
 		}
 	case OPTIONS:

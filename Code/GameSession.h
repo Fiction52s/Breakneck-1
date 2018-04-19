@@ -30,6 +30,7 @@ struct ReplayGhost;
 struct Config;
 struct RaceFightHUD;
 struct Rail;
+struct InputVisualizer;
 
 struct ImageText;
 struct TimerText;
@@ -655,6 +656,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::VertexArray *bigBulletVA;
 	Tileset *ts_basicBullets;
 
+	InputVisualizer *inputVis;
 	GoalPulse *goalPulse;
 	sf::VertexArray *debugBorders;
 

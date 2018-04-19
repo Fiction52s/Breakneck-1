@@ -41,6 +41,7 @@
 #include "Rail.h"
 #include "TerrainRender.h"
 #include "Enemy.h"
+#include "InputVisualizer.h"
 
 //#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
@@ -72,6 +73,7 @@
 //#include "Enemy_SecurityWeb.h"
 #include "Enemy_Shard.h"
 #include "Enemy_Shroom.h"
+#include "Enemy_CrawlerQueen.h"
 //#include "Enemy_Shark.h"
 //#include "Enemy_Specter.h"
 //#include "Enemy_Spider.h"
@@ -1296,6 +1298,14 @@ void GameSession::AddEffect( EffectLayer layer, Enemy *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
+	//debugging only
+	Enemy *c = activeEnemyList;
+	while (c != NULL)
+	{
+		assert(c != e);
+		c = c->next;
+	}
+
 	//assert( e->spawned );
 //	cout << "ADD ENEMY:" << (int)e << ", type: " << (int)e->type << endl;
 	if( e->type == EnemyType::EN_BOSS_BIRD )
@@ -1353,6 +1363,7 @@ void GameSession::AddEnemy( Enemy *e )
 
 void GameSession::RemoveEnemy( Enemy *e )
 {
+	cout << "removing enemy: " << e << endl;
 	assert( activeEnemyList != NULL );
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;
@@ -1368,11 +1379,18 @@ void GameSession::RemoveEnemy( Enemy *e )
 	{
 		if (e == activeEnemyListTail)
 		{
-			assert(next != NULL);
+			assert(prev != NULL);
 
 			prev->next = NULL;
 
-			activeEnemyList = prev;
+			activeEnemyListTail = prev;
+		}
+		else if (e == activeEnemyList)
+		{
+			assert(next != NULL);
+
+			next->prev = NULL;
+			activeEnemyList = next;
 		}
 		else
 		{
@@ -2213,12 +2231,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int spacing;
 				is >> spacing;
 
-				/*BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
+				BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
-				enemyTree->Insert(enemy);*/
+				enemyTree->Insert(enemy);
 			}
 			else if (typeName == "booster")
 			{
@@ -2376,6 +2394,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
+				CrawlerQueen *enemy = new CrawlerQueen( this, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity, false);
+
+				fullEnemyList.push_back(enemy);
+
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
 				/*Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
 					edgeQuantity );
 
@@ -5161,6 +5187,8 @@ bool GameSession::Load()
 		return false;
 	}
 	
+	inputVis = new InputVisualizer;
+
 
 
 	eHitParamsMan = new EnemyParamsManager;
@@ -6536,6 +6564,8 @@ int GameSession::Run()
 					if( p != NULL )
 						p->UpdatePrePhysics();
 				}
+
+				inputVis->Update(GetPlayer(0)->currInput);
 
 				UpdateEnemiesPrePhysics();
 
@@ -8071,6 +8101,8 @@ int GameSession::Run()
 		momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
 		momentumBar->Draw(preScreenTex);
 		
+
+
 		//else 
 
 		/*sf::Vertex blah[] = 
@@ -8173,6 +8205,8 @@ int GameSession::Run()
 			preScreenTex->draw( frameRate );
 		}
 		
+		inputVis->Draw(preScreenTex);
+
 
 		preScreenTex->setView( view );
 		//window->setView( view );
@@ -9039,7 +9073,7 @@ void GameSession::Init()
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;
 
-
+	inputVis = NULL;
 
 	mh = NULL;
 	goalPulse = NULL;

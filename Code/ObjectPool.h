@@ -6,10 +6,10 @@
 struct PoolMember
 {
 	PoolMember(int p_index)
-		:prev(NULL), next(NULL), index( p_index )
+		:pmprev(NULL), pmnext(NULL), index( p_index )
 	{}
-	PoolMember *next;
-	PoolMember *prev;
+	PoolMember *pmnext;
+	PoolMember *pmprev;
 	int index;
 };
 

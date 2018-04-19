@@ -505,15 +505,21 @@ void Patroller::UpdateSprite()
 void Patroller::EnemyDraw( sf::RenderTarget *target )
 {
 	eye->Draw(target);
+	RenderStates rs;
+	rs.texture = ts->texture;
 	if( hasMonitor && !suppressMonitor )
-	{
+	{			
 		if( owner->pauseFrames < 2 || receivedHit == NULL )
 		{
-			target->draw( sprite, keyShader );
+			rs.shader = keyShader;
+			//target->draw( sprite, keyShader );
+			target->draw(bodyVA, 8, sf::Quads, rs);
 		}
 		else
 		{
-			target->draw( sprite, hurtShader );
+			rs.shader = hurtShader;
+			//target->draw( sprite, hurtShader );
+			target->draw(bodyVA, 8, sf::Quads, rs);
 		}
 		target->draw( *keySprite );
 	}
@@ -522,14 +528,17 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		if( owner->pauseFrames < 2 || receivedHit == NULL )
 		{
 			//target->draw( sprite );
-			target->draw(bodyVA, 8, sf::Quads, ts->texture);
+			target->draw(bodyVA, 8, sf::Quads, rs);
 		}
 		else
 		{
-			target->draw( sprite, hurtShader );
+			rs.shader = hurtShader;
+			//target->draw( sprite, hurtShader );
+			target->draw(bodyVA, 8, sf::Quads, rs);
 		}
 			
 	}
+	
 
 	
 }

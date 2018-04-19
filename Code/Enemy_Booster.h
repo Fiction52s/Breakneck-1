@@ -25,11 +25,9 @@ struct Booster : Enemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
-	//CollisionBox hurtBody;
 	CollisionBody *hitBody;
 
 	int strength;
-	//HitboxInfo *hitboxInfo;
 
 	int animationFactor;
 };
