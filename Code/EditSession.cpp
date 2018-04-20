@@ -1470,6 +1470,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);

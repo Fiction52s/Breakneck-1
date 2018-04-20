@@ -48,23 +48,9 @@ struct BasicTurret : Enemy, LauncherEnemy
 
 	double angle;
 
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
 	int animationFactor;
 	sf::Vector2<double> gn;
 	double bulletSpeed;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 };
 
 #endif

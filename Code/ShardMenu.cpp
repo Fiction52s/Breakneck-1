@@ -11,10 +11,7 @@ using namespace sf;
 
 ShardMenu::ShardMenu()
 {
-	currentMovie.scale(.5, .5);
-	currentMovie.openFromFile("Movie/Untitled.ogv");
-	currentMovie.setPosition(500, 500);
-	//currentMovie.play();
+	//currentMovie.scale(.5, .5);
 
 	numShardsTotal = 1;
 	shardQuads = new Vertex[numShardsTotal * 4];
@@ -28,19 +25,9 @@ void ShardMenu::SetupShardImages()
 
 void ShardMenu::Update()
 {
-	//if( currentMovie.getStatus() == sfe::Stopped )
-	if (currentMovie.getDuration().asMilliseconds() - currentMovie.getPlayingOffset().asMilliseconds() < 400 )
-	{
-		//currentMovie.stop();
-		//currentMovie.play();
-		currentMovie.setPlayingOffset(sf::Time::Zero);
-		//currentMovie.play();
-	}
-
-	currentMovie.update();
 }
 
 void ShardMenu::Draw(sf::RenderTarget *target)
 {
-	target->draw(currentMovie);
+	//target->draw(currentMovie);
 }

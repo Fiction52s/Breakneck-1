@@ -279,8 +279,6 @@ void Launcher::Fire()
 		dirAngle += angleSpread / (perShot-1);
 		//dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
-
-	
 }
 
 void Launcher::Fire( double gravStrength )
@@ -374,6 +372,7 @@ BasicBullet * Launcher::ActivateBullet( )
 		if( inactiveBullets != NULL )
 			inactiveBullets->prev = NULL;
 		//cout << "c" << endl;
+
 		return activeBullets;
 	}
 }
@@ -646,6 +645,7 @@ void BasicBullet::UpdatePostPhysics()
 
 void BasicBullet::UpdatePhysics()
 {
+
 	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
 
 	double movementLen = length( movement );
@@ -691,7 +691,7 @@ void BasicBullet::UpdatePhysics()
 	}
 	while( movementLen > 0 );
 
-	if (launcher->def_e != NULL && framesToLive == launcher->def_framesToLive )
+	if (!col && launcher->def_e != NULL && framesToLive == launcher->def_framesToLive )
 	{
 		launcher->handler->BulletHitTerrain(this,
 			launcher->def_e, launcher->def_pos);
@@ -716,7 +716,7 @@ void BasicBullet::HitPlayer()
 
 bool BasicBullet::ResolvePhysics( V2d vel )
 {
-	if (launcher->interactWithTerrain)
+	if (launcher->interactWithTerrain && !col )
 	{
 		Rect<double> oldR(position.x - physBody.rw, position.y - physBody.rw,
 			2 * physBody.rw, 2 * physBody.rw);

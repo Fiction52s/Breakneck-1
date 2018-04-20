@@ -1,8 +1,17 @@
 #ifndef __SHARDMENU_H__
 #define __SHARDMENU_H__
 
-#include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics.hpp>
+
+struct TutorialMovie
+{
+	TutorialMovie(
+		const std::string &folderPath);
+	int frame;
+	//sf::Texture *
+	//sf::Sprite spr;
+	void Draw(sf::RenderTarget *target);
+};
 
 struct ShardMenu
 {
@@ -16,7 +25,6 @@ struct ShardMenu
 	ShardMenu();
 	void Update();
 	void Draw(sf::RenderTarget *target);
-	sfe::Movie currentMovie;
 
 	sf::Vertex *shardQuads;
 	int numShardsTotal;

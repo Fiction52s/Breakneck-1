@@ -26,15 +26,13 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	//keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
 
-	//launcher = new Launcher( this, 
-
 	initHealth = 60;
 	health = initHealth;
 
-	double width = 128;
-	double height = 80;
+	double width = 160;
+	double height = 240;
 
-	ts = owner->GetTileset( "basicturret_128x80.png", width, height );
+	ts = owner->GetTileset("Enemies/turret_160x240.png", width, height);//"basicturret_128x80.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -53,6 +51,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	//V2d gPoint = ground->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
+	cutObject->rotateAngle = sprite.getRotation();
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -90,18 +89,11 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	SetHitboxes(hitBody, 0);
 
 	frame = 0;
-	animationFactor = 3;
+	animationFactor = 8;
 
 	dead = false;
 
 	double size = max( width, height );
-
-	deathPartingSpeed = .4;
-
-	Transform t;
-	t.rotate( angle / PI * 180 );
-	Vector2f newPoint = t.transformPoint( Vector2f( -1, -1 ) );
-	deathVector = V2d( newPoint.x, newPoint.y );
 
 	V2d along = normalize(ground->v1 - ground->v0);
 
@@ -123,6 +115,10 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
+
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(5);
+	cutObject->SetSubRectBack(4);
 }
 
 void BasicTurret::ResetEnemy()
@@ -163,7 +159,7 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 
 void BasicTurret::ProcessState()
 {
-	if (frame == 22 * animationFactor)
+	if (frame == 4 * animationFactor)
 	{
 		frame = 0;
 	}
