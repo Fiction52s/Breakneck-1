@@ -24,6 +24,7 @@ using namespace boost::filesystem;
 const int LoadingMapProgressDisplay::NUM_LOAD_THREADS = 5;
 
 sf::RenderTexture *MainMenu::preScreenTexture = NULL;
+sf::RenderTexture *MainMenu::lastFrameTexture = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture1 = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture2 = NULL;
@@ -603,6 +604,13 @@ MainMenu::MainMenu()
 		preScreenTexture->clear();
 	}
 
+	if (lastFrameTexture == NULL)
+	{
+		lastFrameTexture = new RenderTexture;
+		lastFrameTexture->create(1920, 1080);
+		lastFrameTexture->clear();
+	}
+
 	if ( extraScreenTexture == NULL)
 	{
 		extraScreenTexture = new RenderTexture;
@@ -788,6 +796,7 @@ MainMenu::~MainMenu()
 	delete window;
 	
 	delete preScreenTexture;
+	delete lastFrameTexture;
 	delete postProcessTexture;
 	delete postProcessTexture1;
 	delete postProcessTexture2;

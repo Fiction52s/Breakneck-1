@@ -42,7 +42,7 @@
 #include "TerrainRender.h"
 #include "Enemy.h"
 #include "InputVisualizer.h"
-
+#include "ScreenRecorder.h"
 //#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
 #include "Enemy_BasicTurret.h"
@@ -5933,6 +5933,8 @@ int GameSession::Run()
 
 	goalDestroyed = false;
 
+	ScreenRecorder screenRecorder("testanim");
+	//#define SYNCEDDRAWWITHPHYSICS
 
 	//lights.push_back( new Light( this ) );
 
@@ -5940,6 +5942,7 @@ int GameSession::Run()
 	v.setCenter(0, 0);
 	v.setSize(1920 / 2, 1080 / 2);
 	window->setView(v);
+	lastFrameTex->setView(v);
 
 	//stringstream ss;
 	//ss.clear(); //needed?
@@ -6156,6 +6159,8 @@ int GameSession::Run()
 		
 		accumulator += frameTime;
 
+		
+
 		window->clear(Color::Red);
 		preScreenTex->clear(Color::Red);
 		postProcessTex->clear(Color::Red);
@@ -6163,9 +6168,13 @@ int GameSession::Run()
 		postProcessTex2->clear(Color::Red);
 		
 		
-		coll.ClearDebug();		
+		coll.ClearDebug();
 
+#if defined SYNCEDDRAWWITHPHYSICS
+		if( accumulator >= TIMESTEP )
+#else
 		while ( accumulator >= TIMESTEP  )
+#endif
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
@@ -6306,6 +6315,9 @@ int GameSession::Run()
 				break;
 			}
 			
+			//lastFrameTex->display();
+			
+
 			if( pauseFrames == 0 )
 			{
 				for( int i = 0; i < 4; ++i )
@@ -7049,6 +7061,7 @@ int GameSession::Run()
 
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
+			screenRecorder.StartRecording();
 			//player->maxFallSpeedSlo += maxFallSpeedFactor;
 			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
@@ -7105,8 +7118,9 @@ int GameSession::Run()
 			Sprite preTexSprite( preTex );
 			preTexSprite.setPosition( -960 / 2, -540 / 2 );
 			//preTexSprite.setScale( .5, .5 );		
-
+			screenRecorder.Update(preTex);
 			window->draw( preTexSprite  );
+			
 		}
 		else
 		{
@@ -8380,9 +8394,12 @@ int GameSession::Run()
 		preTexSprite.setPosition(-960 / 2, -540 / 2);
 		preTexSprite.setScale(.5, .5);
 		preTexSprite.setTexture( preTex0 );
+		
+		//screenRecorder.Update( preTex0 );
 		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
 		//preTexSprite.setScale( .5, .5 );
-
+		//lastFrameTex->draw(preTexSprite);
+		screenRecorder.Update(preTex0);
 		window->draw( preTexSprite );//, &cloneShader );
 		}
 		}
@@ -9171,6 +9188,7 @@ void GameSession::Init()
 	
 	window = mainMenu->window;
 	preScreenTex = mainMenu->preScreenTexture;
+	lastFrameTex = mainMenu->lastFrameTexture;
 	postProcessTex = mainMenu->postProcessTexture;
 	postProcessTex1 = mainMenu->postProcessTexture1;
 	postProcessTex2 = mainMenu->postProcessTexture2;

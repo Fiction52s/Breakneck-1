@@ -806,6 +806,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<sf::VertexArray*> polygons;
 	std::list<sf::VertexArray*> polygonBorders;
 
+	sf::RenderTexture *lastFrameTex;
 	sf::RenderTexture *preScreenTex;
 	sf::RenderTexture *postProcessTex;
 	sf::RenderTexture *postProcessTex1;

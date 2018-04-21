@@ -2,15 +2,36 @@
 #define __SHARDMENU_H__
 
 #include <SFML/Graphics.hpp>
+#include <list>
+#include "Tileset.h"
 
+struct TilesetManager;
 struct TutorialMovie
 {
 	TutorialMovie(
 		const std::string &folderPath);
-	int frame;
-	//sf::Texture *
-	//sf::Sprite spr;
+	
+};
+
+struct Tileset;
+struct PNGSeq
+{
+	PNGSeq(const
+		std::string &seqName,
+		std::list<Tileset*> &tList);// , Tileset *ts);
+	~PNGSeq();
+	Tileset **tSets;
+
+	int tileIndex;
+	int setIndex;
+	std::string seqName;
+	int numSets;
+	void Reset();
+	int numFrames;
+	void Load();
 	void Draw(sf::RenderTarget *target);
+	void Update();
+	sf::Sprite spr;
 };
 
 struct ShardMenu
@@ -26,10 +47,15 @@ struct ShardMenu
 	void Update();
 	void Draw(sf::RenderTarget *target);
 
+	bool LoadPNGSequences();
 	sf::Vertex *shardQuads;
 	int numShardsTotal;
+	PNGSeq *testSeq;
 
 	void SetupShardImages();
+	TilesetManager tMan;
+	PNGSeq * GetSequence(const std::string &str);
+	
 };
 
 #endif

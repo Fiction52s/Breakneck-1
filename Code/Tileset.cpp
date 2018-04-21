@@ -107,7 +107,7 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	if( !im.loadFromFile( s ) )
 	{
 		cout << "failed to load IM: " << s << endl;
-		assert( false );
+		//assert( false );
 
 		return NULL;
 	}
