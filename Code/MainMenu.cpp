@@ -1938,7 +1938,7 @@ void MainMenu::Run()
 							if (lev.GetFullName() == currLevel->fileName)
 							{
 								lev.SetComplete(true);
-								currFile->SaveCurrent();
+								currFile->Save();
 								doneCheck = true;
 							}
 						}
@@ -4423,9 +4423,9 @@ void SaveMenuScreen::Reset()
 	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
 	kinJump.setPosition(Vector2f( 1920, 0 ) + menuOffset);
 
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
-		files[i]->LoadFromFile();
+		files[i]->Load();
 	}
 }
 

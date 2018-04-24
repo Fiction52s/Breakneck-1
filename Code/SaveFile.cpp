@@ -73,7 +73,7 @@ void BitField::Save(std::ofstream &of)
 {
 	for (int i = 0; i < numFields; ++i)
 	{
-		of << optionField[i];
+		of << optionField[i] << endl;
 	}
 }
 
@@ -141,6 +141,7 @@ void SaveFile::Save()
 
 	if( of.is_open() )
 	{
+		of << numWorlds << endl;
 		//save worlds, then save shards
 		for (int i = 0; i < numWorlds; ++i)
 		{
@@ -208,7 +209,7 @@ Sector::~Sector()
 
 void Sector::Save(std::ofstream &of)
 {
-	of << numLevels;
+	of << numLevels << endl;
 	for (int i = 0; i < numLevels; ++i)
 	{
 		levels[i].Save(of);
@@ -240,7 +241,7 @@ bool Level::Load(std::ifstream &is)
 
 void Level::Save(std::ofstream &of)
 {
-	of << name;
+	of << name << endl;
 	optionField.Save(of);
 }
 
@@ -275,7 +276,7 @@ bool World::Load(std::ifstream &is)
 
 bool World::Save(std::ofstream &of)
 {
-	of << numSectors;
+	of << numSectors << endl;
 	for (int i = 0; i < numSectors; ++i)
 	{
 		sectors[i].Save( of );
