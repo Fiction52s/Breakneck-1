@@ -5923,7 +5923,7 @@ int GameSession::Run()
 	bool s = t;
 	t = false;
 
-	int returnVal = 0;
+	int returnVal = GR_EXITLEVEL;
 
 	Texture & borderTex = *GetTileset("borders.png", 16, 16)->texture;
 
@@ -6170,11 +6170,7 @@ int GameSession::Run()
 		
 		coll.ClearDebug();
 
-#if defined SYNCEDDRAWWITHPHYSICS
-		if( accumulator >= TIMESTEP )
-#else
 		while ( accumulator >= TIMESTEP  )
-#endif
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
@@ -6303,7 +6299,7 @@ int GameSession::Run()
 
 
 				quit = true;
-				returnVal = 1;
+				returnVal = GR_EXITLEVEL;
 
 				break;
 			}
@@ -6311,7 +6307,7 @@ int GameSession::Run()
 			if( goalDestroyed )
 			{
 				quit = true;
-				returnVal = 1;
+				returnVal = GR_WIN;
 				break;
 			}
 			
@@ -6608,7 +6604,7 @@ int GameSession::Run()
 				if( goalDestroyed )
 				{
 					quit = true;
-					returnVal = 1;
+					returnVal = GR_WIN;
 
 					
 					/*recGhost->StopRecording();
@@ -7044,20 +7040,6 @@ int GameSession::Run()
 
 			accumulator -= TIMESTEP;
 		}
-
-		//cout << "every time" << endl;
-		//gravity = 1.9;//1.9; // 1 
-		//jumpStrength = 27.5; // 2 
-		//dashSpeed = 9;//12; // 3
-		//airDashSpeed = dashSpeed;
-		//maxFallSpeed = 40;//100; // 4
-
-		double gravFactor = .01;
-		double jumpStrengthFactor = .01;
-		double dashSpeedFactor = .01;
-		double maxFallSpeedFactor = .01;
-
-		
 
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
@@ -8469,19 +8451,19 @@ int GameSession::Run()
 			case PauseMenu::R_P_EXITLEVEL:
 				{
 					quit = true;
-					returnVal = 1;
+					returnVal = GR_EXITLEVEL;
 					break;
 				}
 			case PauseMenu::R_P_EXITTITLE:
 				{
 					quit = true;
-					returnVal = 2;
+					returnVal = GR_EXITTITLE;
 					break;
 				}
 			case PauseMenu::R_P_EXITGAME:
 				{
 					quit = true;
-					returnVal = 3;
+					returnVal = GR_EXITGAME;
 					break;
 				}
 
@@ -8961,7 +8943,7 @@ int GameSession::Run()
 			if (raceFight->victoryScreen->IsDone())
 			{
 				quit = true;
-				returnVal = 1;
+				returnVal = GR_EXITLEVEL;
 				break;
 			}
 			//raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
@@ -9084,6 +9066,7 @@ int GameSession::Run()
 
 	return returnVal;
 }
+
 
 void GameSession::Init()
 {

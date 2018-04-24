@@ -1919,15 +1919,48 @@ void MainMenu::Run()
 			{
 				View oldView = window->getView();
 				
-				int result = currLevel->Run();
+				GameSession::GameResultType result = 
+					(GameSession::GameResultType)currLevel->Run();
+
+				switch (result)
+				{
+				case GameSession::GR_WIN:
+				{
+					SaveFile *currFile = GetCurrentProgress();
+					World & world = currFile->worlds[currLevel->mh->envType];
+					bool doneCheck = false;
+					for (int i = 0; i < world.numSectors && !doneCheck; ++i)
+					{
+						Sector &sec = world.sectors[i];
+						for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
+						{
+							Level &lev = sec.levels[j];
+							if (lev.GetFullName() == currLevel->fileName)
+							{
+								lev.SetComplete(true);
+								currFile->SaveCurrent();
+								doneCheck = true;
+							}
+						}
+					}
+					break;
+				}
+				case GameSession::GR_EXITLEVEL:
+					break;
+				case GameSession::GR_EXITTITLE:
+					break;
+				case GameSession::GR_EXITGAME:
+					break;
+				}
 
 				delete currLevel;
 				currLevel = NULL;
-				
+
 				window->setView(oldView);
 
 				menuMode = MainMenu::WORLDMAP;
 				break;
+				
 			}
 			case SAVEMENU:
 				{

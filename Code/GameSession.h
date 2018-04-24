@@ -367,6 +367,14 @@ struct HitboxManager;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
+	enum GameResultType
+	{
+		GR_WIN,
+		GR_EXITLEVEL,
+		GR_EXITTITLE,
+		GR_EXITGAME
+	};
+
 	enum State
 	{
 		RUN,
