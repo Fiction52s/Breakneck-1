@@ -13,6 +13,7 @@
 #include <map>
 #include <boost/filesystem.hpp>
 #include "MainMenu.h"
+#include "ShardTypes.h"
 
 struct EditSession;
 struct ISelectable
@@ -665,6 +666,12 @@ struct ShardParams : public ActorParams
 
 	bool CanApply();
 	ActorParams *Copy();
+
+	void SetType( std::string &str );
+
+	ShardType sType;
+	std::string shardStr;
+
 };
 
 struct RaceFightTargetParams : public ActorParams

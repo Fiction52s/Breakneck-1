@@ -3,9 +3,12 @@
 
 #include <fstream>
 #include <SFML/Graphics.hpp>
+#include "ShardTypes.h"
 
 struct Sector;
 struct World;
+
+
 
 
 struct BitField
@@ -21,6 +24,8 @@ struct BitField
 	int numOptions;
 	int numFields;
 };
+
+
 
 //struct Shard
 //{
@@ -92,7 +97,9 @@ struct SaveFile
 	void Save();
 	void Load();
 	BitField shardField;
+	BitField newShardField; //for unviewed shards
 	std::string fileName;
+	bool ShardIsCaptured(ShardType sType);
 	World *worlds;
 	int numWorlds;
 };

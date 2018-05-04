@@ -158,10 +158,12 @@ struct MapHeader
 		description("no description"), gameMode(T_STANDARD),
 		envType(0), envLevel(0), leftBounds(0),
 		topBounds(0), boundsWidth(0), boundsHeight(0),
-		numVertices(-1), songLevelsModified(false)
+		numVertices(-1), songLevelsModified(false), numShards( 0 )
 	{
 
 	}
+
+	void Save(std::ofstream &of);
 
 	int ver1;
 	int ver2;
@@ -175,6 +177,8 @@ struct MapHeader
 	int boundsWidth;
 	int boundsHeight;
 	int numVertices;
+	int numShards;
+	std::list<std::string> shardNameList;
 
 	std::map < std::string,int > songLevels;
 

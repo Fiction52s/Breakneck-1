@@ -9,6 +9,11 @@ BitField::BitField(int p_numOptions)
 {
 	numOptions = p_numOptions;
 	numFields = numOptions / 32;
+	if (numFields == 0)
+	{
+		int x = 5;
+	}
+	numFields = max(numFields, 1);
 	optionField = new sf::Uint32[numFields];
 	Reset();
 }
@@ -37,8 +42,9 @@ bool BitField::GetBit(int index)
 {
 	int trueIndex = index % 32;
 	int fieldIndex = index / 32;
-	int test = (1 << trueIndex);
-	if (optionField[fieldIndex] & test)
+	sf::Uint32 test = (1 << trueIndex);
+	sf::Uint32 field = optionField[fieldIndex];
+	if (field & test)
 	{
 		return true;
 	}
@@ -87,7 +93,7 @@ void BitField::Save(std::ofstream &of)
 //}
 
 SaveFile::SaveFile( const std::string &name )
-	:shardField( 32 * 4 )
+	:shardField( 32 * 4 ), newShardField( 32 * 4 )
 {
 	stringstream ss;
 	ss << "Data/" << name << ".kin";
@@ -104,6 +110,11 @@ SaveFile::~SaveFile()
 			delete [] worlds[i];
 		}
 	}*/
+}
+
+bool SaveFile::ShardIsCaptured(ShardType sType)
+{
+	return shardField.GetBit(sType);
 }
 
 void SaveFile::Load()
@@ -123,6 +134,7 @@ void SaveFile::Load()
 		}
 
 		shardField.Load(is);
+		newShardField.Load(is);
 	}
 	else
 	{
@@ -149,6 +161,7 @@ void SaveFile::Save()
 		}
 
 		shardField.Save(of);
+		newShardField.Save(of);
 	}
 	else
 	{

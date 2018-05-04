@@ -21693,6 +21693,9 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 {
 	//owner->cam.SetRumble(3, 3, 5);
 
+	if (hitParams == NULL)
+		return;
+
 	if (ground == NULL && velocity.y > 0 && action == DAIR )
 	{
 		velocity.y = 4;//.5;

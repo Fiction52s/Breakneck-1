@@ -2691,30 +2691,40 @@ void EditSession::WriteFile(string fileName)
 		return;
 	}
 
+	mapHeader.leftBounds = leftBound;
+	mapHeader.topBounds = topBound;
+	mapHeader.boundsWidth = boundWidth;
+	mapHeader.boundsHeight = boundHeight;
+
+	
+	/*int totalPoints = 0;
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		totalPoints += (*it)->numPoints;
+	}*/
+	
+
+
+	int numShards = 0;
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		std::list<ActorPtr> &aList = (*it).second->actors;
+		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+		{
+			if ((*ait)->type->name == "shard")
+			{
+				numShards++;
+			}
+		}
+	}
+
+	mapHeader.numShards = numShards;
 
 
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
 
-
-	//this is wrong when someone changes these values
-	of << mapHeader.ver1 << "." << mapHeader.ver2 << "\n";
-	of << mapHeader.description << "<>\n";
-
-	of << mapHeader.songLevels.size() << "\n";
-	for (auto it = mapHeader.songLevels.begin(); it != mapHeader.songLevels.end(); ++it)
-	{
-		of << (*it).first << " " << (*it).second << "\n";
-	}
-
-	of << mapHeader.collectionName << "\n";
-	of << mapHeader.gameMode << "\n";
-	//of << (int)numPlayerInfoByte << "\n"; //eventually don't cast this when you make this a binary file
-
-	of << (int)environmentType << " " << envLevel << endl;
-
-	of << leftBound << " " << topBound << " " << boundWidth << " " << boundHeight << endl;
-
+	mapHeader.Save(of);
 
 	int pointCount = 0;
 	int movingPlatCount = 0;
@@ -2737,25 +2747,6 @@ void EditSession::WriteFile(string fileName)
 		else
 			movingPlatCount++;
 	}
-
-	/*if( inversePolygon != NULL )
-	{
-		pointCount += inversePolygon->numPoints;
-	}*/
-
-	/*int inversePointCount;
-	if( inversePolygon == NULL )
-	{
-		inversePointCount = 0;
-	}
-	else
-	{
-		inversePointCount = inversePolygon->numPoints;
-	}
-
-	of << inversePointCount << endl;
-	*/
-
 	of << pointCount << endl;
 	of << player->position.x << " " << player->position.y << endl;
 
@@ -5926,7 +5917,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *keyPanel = CreateOptionsPanel( "key" );
 	ActorType *keyType = new ActorType( "key", keyPanel );
 
-	Panel *shardPanel = NULL;
+	Panel *shardPanel = CreateOptionsPanel("shard");;
 	ActorType *shardType = new ActorType( "shard", shardPanel );
 
 	Panel *raceFightTargetPanel = NULL;
@@ -8538,12 +8529,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									}
 									else if( trackingEnemy->name == "shard" )
 									{
-										trackingEnemy = NULL;
-										ActorPtr shard( new ShardParams( this, Vector2i( worldPos.x, 
-											worldPos.y ) ) );
-										shard->group = groups["--"];
-										CreateActor( shard );
-										showPanel = enemySelectPanel;
+										tempActor = new ShardParams(this, Vector2i(worldPos.x,
+												worldPos.y ) );
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
 									}
 									else if( trackingEnemy->name == "racefighttarget" )
 									{
@@ -15700,6 +15689,13 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 		//p->
+	}
+	else if (name == "shard")
+	{
+		Panel *p = new Panel("shard_options", 200, 500, this);
+		p->AddTextBox("shardtype", Vector2i(20, 200), 200, 20, "SHARD_W1_TEACH_JUMP");
+
+		return p;
 	}
 	else if (name == "rail")
 	{

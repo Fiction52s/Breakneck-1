@@ -5,79 +5,42 @@
 
 struct Shard : Enemy
 {
+	enum Action
+	{
+		FLOAT,
+		DISSIPATE,
+		Count
+	};
 
+	int actionLength[Count];
+	int animFactor[Count];
+	Action action;
 	//MovementSequence testSeq;
 	Shard(GameSession *owner, sf::Vector2i pos,
-		int shardsLoaded);
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	bool physicsOver;
-
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target);
+		int shardsLoaded, ShardType p_sType );
+	void ProcessState();
+	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
-	void DebugDraw(sf::RenderTarget *target);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
 	void UpdateSprite();
+	void IHitPlayer(int index);
+	void ProcessHit();
 	void UpdateHitboxes();
-	bool PlayerSlowingMe();
 	void ResetEnemy();
+	void DissipateOnCapture();
 
-	void SaveEnemyState();
-	void LoadEnemyState();
+	CollisionBody *hitBody;
+	CollisionBody *hurtBody;
 
 	int shardIndex;
 
-	int deathFrame;
-
 	int radius;
-
-	//sf::Vector2<double> deathVector;
-	//double deathPartingSpeed;
-	//sf::Sprite botDeathSprite;
-	//sf::Sprite topDeathSprite;
-	//Tileset * ts_death;
-	//std::list<sf::Vector2i> path;
-
-	//int targetNode;
-	//bool forward;
-	//sf::Vector2<double>
-	int frame;
 
 	sf::Sprite sprite;
 	Tileset *ts;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	HitboxInfo *hitboxInfo;
+
+	ShardType shardType;
 
 	bool caught;
-
-	int hitlagFrames;
-	int hitstunFrames;
-	int animationFactor;
-
-	//Tileset *ts_testBlood;
-	//sf::Sprite bloodSprite;
-	//int bloodFrame;
-	//bool facingRight;
-
-	struct Stored
-	{
-		bool dead;
-		int deathFrame;
-		//sf::Vector2<double> deathVector;
-		//double deathPartingSpeed;
-		int targetNode;
-		bool forward;
-		int frame;
-		sf::Vector2<double> position;
-
-		int hitlagFrames;
-		int hitstunFrames;
-	};
-	Stored stored;
 };
 
 #endif

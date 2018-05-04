@@ -1637,7 +1637,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case SHARDS:
 		{
-			shardMenu->Update();
+			shardMenu->Update( currInput );
 			break;
 		}
 	case OPTIONS:

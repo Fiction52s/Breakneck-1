@@ -1148,30 +1148,37 @@ ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
+
+	sType = ShardType::SHARD_W1_TEACH_JUMP;
+	shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
 }
 
 void ShardParams::WriteParamFile( std::ofstream &of )
 {
+	of << sType << endl;
+}
+
+void ShardParams::SetType(std::string &str)
+{
+	//this is temporary. figure out a better way on editor polish
+	if (str == "SHARD_W1_TEACH_JUMP")
+	{
+		sType = ShardType::SHARD_W1_TEACH_JUMP;
+	}
 }
 
 void ShardParams::SetParams()
 {
-	//Panel *p = type->panel;
+	Panel *p = type->panel;
 
-	//hasMonitor = p->checkBoxes["monitor"]->checked;
+	shardStr = p->textBoxes["shardtype"]->text.getString();
 }
 
 void ShardParams::SetPanelInfo()
 {
-	//Panel *p = type->panel;
+	Panel *p = type->panel;
 
-	/*p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
-	p->checkBoxes["monitor"]->checked = hasMonitor;*/
+	p->textBoxes["shardtype"]->text.setString( shardStr );
 }
 
 bool ShardParams::CanApply()

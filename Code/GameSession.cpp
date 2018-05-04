@@ -1298,6 +1298,23 @@ void GameSession::AddEffect( EffectLayer layer, Enemy *e )
 
 void GameSession::AddEnemy( Enemy *e )
 {
+	//do not spawn shards that are already captured in the file.
+	if (e->type == EnemyType::EN_SHARD)
+	{
+		Shard *sh = (Shard*)e;
+		if (saveFile->ShardIsCaptured(sh->shardType))
+		{
+			return;
+		}
+		//see if the shard is spawnable!
+	}
+	
+	cout << "spawning enemy! of type: " << e->type << endl;
+	assert(e->spawned == false);
+	e->spawned = true;
+
+
+	//^^note remove this later
 	//debugging only
 	Enemy *c = activeEnemyList;
 	while (c != NULL)
@@ -1331,34 +1348,6 @@ void GameSession::AddEnemy( Enemy *e )
 		e->prev = activeEnemyListTail;
 		activeEnemyListTail = e;
 	}
-	/*if( activeEnemyList != NULL )
-	{
-		activeEnemyList->prev = e;
-		e->next = activeEnemyList;
-		activeEnemyList = e;
-	}
-	else
-	{
-		activeEnemyList = e;
-	}*/
-
-	/*if( player->record > 0 )
-	{
-		e->spawnedByClone = true;
-	}*/
-	
-
-	/*int counter = 0;
-	Enemy *curr = activeEnemyList;
-	while( curr != NULL )
-	{
-		if( counter > 100 && counter < 150 )
-		{
-			cout << "e: " << (int)e << ", type: " << (int)e->type << endl;
-		}
-		curr = curr->next;
-		++counter;
-	}*/
 }
 
 void GameSession::RemoveEnemy( Enemy *e )
@@ -2192,13 +2181,17 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				/*Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), shardsLoadedCounter );
+				int stype;
+				is >> stype;
+				ShardType sType = (ShardType)stype;
+
+				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), shardsLoadedCounter, sType );
 				shardsLoadedCounter++;
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if (typeName == "blocker")
 			{
@@ -5492,7 +5485,7 @@ bool GameSession::Load()
 	window->setMouseCursorVisible( true );
 
 	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
-	cout << "weird timing 3" << endl;
+	//cout << "weird timing 3" << endl;
 
 	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
 
@@ -9283,12 +9276,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		if( a && b )
 		{
-			cout << "spawning enemy! of type: " << e->type << endl;
-			assert( e->spawned == false );
-			e->spawned = true;
-
-			
-
 			AddEnemy( e );
 		}
 	}

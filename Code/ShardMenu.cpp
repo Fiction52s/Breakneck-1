@@ -10,6 +10,8 @@
 #include <list>
 #include <assert.h>
 #include <iostream>
+#include "ItemSelector.h"
+#include "VectorMath.h"
 
 using namespace sf;
 using namespace std;
@@ -22,7 +24,35 @@ ShardMenu::ShardMenu()
 	shardQuads = new Vertex[numShardsTotal * 4];
 
 	testSeq = GetSequence("testanim");
-	testSeq->spr.setPosition(600, 600);
+	testSeq->spr.setPosition(900, 100);
+
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	int xSize = 16;
+	int ySize = 16;
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
+	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
+
+	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
+
+	int index = 0;
+	int rectSize = 20;
+	int spacing = 20;
+	Vector2f gridStart(100, 100);
+	for (int i = 0; i < xSelector->totalItems; ++i)
+	{
+		for (int j = 0; j < ySelector->totalItems; ++j)
+		{
+			index = (i * ySelector->totalItems + j) * 4;
+			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + spacing * i, j * rectSize + spacing * j) + gridStart);
+		}
+	}
+}
+
+ShardMenu::~ShardMenu()
+{
+	delete xSelector;
+	delete ySelector;
 }
 
 PNGSeq * ShardMenu::GetSequence(const std::string &str)
@@ -66,14 +96,38 @@ void ShardMenu::SetupShardImages()
 
 }
 
-void ShardMenu::Update()
+void ShardMenu::UpdateShardSelectQuads()
 {
+	int index = 0;
+	Color c = Color::Red;
+	for (int i = 0; i < xSelector->totalItems; ++i)
+	{
+		for (int j = 0; j < ySelector->totalItems; ++j)
+		{
+			index = (i * ySelector->totalItems + j) * 4;
+			
+			SetRectColor(shardSelectQuads + index, c);
+		}
+	}
+
+	Color selectedColor = Color::White;
+	index = (xSelector->currIndex * ySelector->totalItems + ySelector->currIndex) * 4;
+	SetRectColor(shardSelectQuads + index, selectedColor);
+}
+
+void ShardMenu::Update( ControllerState &currInput )
+{
+	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
+	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 	testSeq->Update();
+	UpdateShardSelectQuads();
 }
 
 void ShardMenu::Draw(sf::RenderTarget *target)
 {
 	testSeq->Draw(target);
+	target->draw(shardSelectQuads, xSelector->totalItems * ySelector->totalItems * 4,
+		sf::Quads);
 	//target->draw(currentMovie);
 }
 

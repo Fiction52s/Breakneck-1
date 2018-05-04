@@ -2465,8 +2465,7 @@ void MainMenu::AdventureLoadLevel( Level *lev )
 	string levelPath = lev->GetFullName();// name;
 	//View oldView = window->getView();
 
-	currLevel = new GameSession(NULL, this, levelPath);
-
+	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
 	menuMode = MainMenu::LOADINGMAP;
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
@@ -2802,6 +2801,18 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 		}
 	}
 
+	int numShards;
+	is >> numShards;
+
+	mh->numShards = numShards;
+	string temp;
+	for (int i = 0; i < numShards; ++i)
+	{
+		is >> temp;
+		mh->shardNameList.push_back(temp);
+	}
+
+
 	int numSongValues;
 	is >> numSongValues;
 
@@ -2983,6 +2994,12 @@ bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
 {
 	of << mh->ver1 << "." << mh->ver2 << "\n";
 	of << mh->description << "<>\n";
+
+	of << mh->numShards << "\n";
+	for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
+	{
+		of << (*it) << "\n";
+	}
 
 	of << mh->songLevels.size() << "\n";
 	for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
@@ -4536,4 +4553,29 @@ void LoadingMapProgressDisplay::Draw(sf::RenderTarget *target)
 	}
 }
 
+void MapHeader::Save(std::ofstream &of)
+{
+	of << ver1 << "." << ver2 << "\n";
+	of << description << "<>\n";
 
+	of << numShards << "\n";
+	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+		of << (*it) << "\n";
+	}
+
+	of << songLevels.size() << "\n";
+	for (auto it = songLevels.begin(); it != songLevels.end(); ++it)
+	{
+		of << (*it).first << " " << (*it).second << "\n";
+	}
+
+	of << collectionName << "\n";
+	of << gameMode << "\n";
+
+	of << (int)envType << " " << envLevel << endl;
+
+	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
+
+	//of << numVertices << endl;
+}

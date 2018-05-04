@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Shard.h"
+#include "SaveFile.h"
 
 using namespace std;
 using namespace sf;
@@ -18,11 +19,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
-	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envType + 1 ), deathFrame( 0 )
+Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex, ShardType p_sType )
+	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envType + 1 ), shardType( p_sType )
 {
 	shardIndex = p_shardIndex;
-	assert( shardIndex < 3 );
+	//assert( shardIndex < 3 );
 	initHealth = 60;
 	health = initHealth;
 
@@ -33,8 +34,6 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
 	position.x = pos.x;
 	position.y = pos.y;
 
-	deathFrame = 0;
-
 	initHealth = 20;
 	health = initHealth;
 
@@ -43,8 +42,6 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
 	spawnRect = sf::Rect<double>( pos.x - 32, pos.y - 32, 32 * 2, 32 * 2 );
 	
 	frame = 0;
-
-	animationFactor = 10;
 
 	//cout << "world: " << world << endl;
 	switch( p_owner->mh->envType )
@@ -71,449 +68,142 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex )
 		ts = owner->GetTileset( "shards_w7_64x64.png", 64, 64 );
 		break;
 	}
-	//ts = owner->GetTileset( "Shard.png", 80, 80 );
-	//ts = owner->GetTileset( "Shard_256x256.png", 256, 256 );
+
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( shardIndex ) );
+	sprite.setTextureRect( ts->GetSubRect( shardType ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
-	//position.x = 0;
-	//position.y = 0;
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
 
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = 32;
-	hitBody.rh = 32;
 
-	/*hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;*/
-	//hitboxInfo->kbDir;
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 32;
+	hurtBox.rh = 32;
+	hurtBody->AddCollisionBox(0, hurtBox);
 
-	
 
-	dead = false;
+	hitBody = new CollisionBody(1);
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = 32;
+	hitBox.rh = 32;
+	hitBody->AddCollisionBox(0, hitBox);
+	hitBody->hitboxInfo = NULL;
 
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
+	actionLength[FLOAT] = 2;
+	actionLength[DISSIPATE] = 20;
 
-	//deathPartingSpeed = .4;
-	//deathVector = V2d( 1, -1 );
+	animFactor[FLOAT] = 1;
+	animFactor[DISSIPATE] = 1;
 
-	//facingRight = true;
-	 
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	//bloodSprite.setTexture( *ts_testBlood->texture );
-
-	UpdateHitboxes();
-
-	//spawnRect = sf::Rect<double>( position.x - 200, position.y - 200,
-	//	400, 400 );
-
-	//cout << "finish init" << endl;
+	ResetEnemy();
 }
 
-void Shard::HandleEntrant( QuadTreeEntrant *qte )
+
+void Shard::IHitPlayer(int index)
 {
-	//Shard 
+	if (!dead && ReceivedHit() && action == FLOAT)
+	{
+		DissipateOnCapture();
+	}
+}
+
+void Shard::DissipateOnCapture()
+{
+	action = DISSIPATE;
+	frame = 0;
+	assert(!owner->saveFile->shardField.GetBit(shardType));
+
+	//both give you the shard and mark it as a new shard
+	owner->saveFile->shardField.SetBit(shardType, true);
+	owner->saveFile->newShardField.SetBit(shardType, true);
+
+	SetHitboxes(NULL, 0);
+	SetHurtboxes(NULL, 0);
 }
 
 
 void Shard::ResetEnemy()
 {
-//	fireCounter = 0;
-//	testSeq.Reset();
-//	launcher->Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	//targetNode = 1;
-	//forward = true;
-	dead = true;
-	spawned = true;
-//	dying = false;
-	deathFrame = 0;
+	
+	action = FLOAT;
 	frame = 0;
-//	position.x = path[0].x;
-//	position.y = path[0].y;
 	receivedHit = NULL;
 	
-
+	dead = false;
 	UpdateHitboxes();
 
 	UpdateSprite();
 	health = initHealth;
-	
+
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
 }
 
-void Shard::UpdatePrePhysics()
+void Shard::ProcessState()
 {
-	if( frame == 11 * animationFactor )
+	if( frame == actionLength[action] * animFactor[action])
 	{
+		switch (action)
+		{
+		case FLOAT:
+			frame = 0;
+			break;
+		case DISSIPATE:
+			numHealth = 0;
+			dead = true;
+			break;
+		}
+	}
+}
+
+void Shard::ProcessHit()
+{
+	if (!dead && ReceivedHit() && action == FLOAT)
+	{
+		action = DISSIPATE;
 		frame = 0;
+		assert(!owner->saveFile->shardField.GetBit(shardType));
+
+		//both give you the shard and mark it as a new shard
+		owner->saveFile->shardField.SetBit(shardType, true);
+		owner->saveFile->newShardField.SetBit(shardType, true);
 	}
-
-	
-
-	//if( !dead && receivedHit != NULL )
-	//{	
-	//	//gotta factor in getting hit by a clone
-	//	health -= 20;
-
-	//	//cout << "health now: " << health << endl;
-
-	//	if( health <= 0 )
-	//	{
-	//		if( hasMonitor && !suppressMonitor )
-	//			owner->keyMarker->CollectKey();
-	//		dead = true;
-	//	}
-
-	//	receivedHit = NULL;
-	//}
-}
-
-void Shard::UpdatePhysics()
-{	
-	/*if( PlayerSlowingMe() )
-	{
-		if( slowMultiple == 1 )
-		{
-			slowCounter = 1;
-			slowMultiple = 5;
-		}
-	}
-	else
-	{
-		slowMultiple = 1;
-		slowCounter = 1;
-	}*/
-
-	UpdateHitboxes();
-	pair<bool,bool> hitMe = PlayerHitMe();
-	bool ihit = IHitPlayer();
-	if( ihit || hitMe.first )
-	{
-		if( !caught )
-		{
-			caught = true;
-		}
-	}
-
-	PhysicsResponse();
-}
-
-void Shard::PhysicsResponse()
-{
-	if( !dead && receivedHit == NULL )
-	{
-		UpdateHitboxes();
-
-		pair<bool,bool> result = PlayerHitMe();
-		if( result.first )
-		{
-			//cout << "color blue" << endl;
-			//triggers multiple times per frame? bad?
-			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
-
-
-			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-			{
-				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-			}
-
-		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
-
-			//owner->GetPlayer( 0 )->frame--;
-			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, true );
-			
-		//	cout << "Shard received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "Shard just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-	}
-}
-
-void Shard::UpdatePostPhysics()
-{
-	if( caught )
-	{
-		//should the one in patroller be in post or pre physics?
-		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
-		owner->RemoveEnemy( this );
-	}
-
-	/*if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-	}*/
-
-	
-	UpdateSprite();
-
-	++frame;
-	//if( slowCounter == slowMultiple )
-	//{
-	//	//cout << "fireCounter: " << fireCounter << endl;
-	//	++frame;
-	//	slowCounter = 1;
-	//
-	//
-	//	if( dead )
-	//	{
-	//		//cout << "deathFrame: " << deathFrame << endl;
-	//		deathFrame++;
-	//	}
-
-	//}
-	//else
-	//{
-	//	slowCounter++;
-	//}
-
-	
-
-	//if( deathFrame == 60 )
-	//{
-	//	//cout << "switching dead" << endl;
-	//	//dying = false;
-	//	//dead = true;
-	//	//cout << "REMOVING" << endl;
-	//	//testLauncher->Reset();
-	//	owner->RemoveEnemy( this );
-	//	//return;
-	//}
-
-	
 }
 
 void Shard::UpdateSprite()
 {
-	if( !dead )
-	{
-		sprite.setTextureRect( ts->GetSubRect( shardIndex ) );
-		sprite.setPosition( position.x, position.y );
-	}
-	else
-	{
+	int tile = 0;
 
-		/*botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 13 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 12 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );*/
-	}
+	sprite.setTextureRect(ts->GetSubRect(tile));
+	sprite.setPosition(position.x, position.y);
 }
 
-void Shard::Draw( sf::RenderTarget *target )
+void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	//cout << "draw" << endl;
-	if( !caught )
-	{
-		target->draw( sprite );
-	}
-	else
-	{
-		//target->draw( botDeathSprite );
-
-		//if( deathFrame / 3 < 6 )
-		//{
-		//	
-		//	/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-		//	bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-		//	bloodSprite.setPosition( position.x, position.y );
-		//	bloodSprite.setScale( 2, 2 );
-		//	target->draw( bloodSprite );*/
-		//}
-		//
-		//target->draw( topDeathSprite );
-	}
+	target->draw(sprite);
 }
 
 void Shard::DrawMinimap( sf::RenderTarget *target )
 {
-	if( !caught )
-	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor( COLOR_TEAL );
-		enemyCircle.setRadius( 50 );
-		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-		enemyCircle.setPosition( position.x, position.y );
-		target->draw( enemyCircle );
-
-		/*if( hasMonitor && !suppressMonitor )
-		{
-			monitor->miniSprite.setPosition( position.x, position.y );
-			target->draw( monitor->miniSprite );
-		}*/
-	}
-}
-
-bool Shard::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		//player->ApplyHit( hitboxInfo );
-		return true;
-	}
-	return false;
 }
 
 void Shard::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position;
-	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position;
-	hitBody.globalAngle = 0;
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
 
-	/*if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}*/
-}
-
-//return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Shard::PlayerHitMe( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-		
-
-		if( hit )
-		{
-			receivedHit = player->currHitboxInfo;
-			return pair<bool, bool>(true,false);
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-
-	return pair<bool, bool>(false,false);
-}
-
-bool Shard::PlayerSlowingMe()
-{
-	/*Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}*/
-	return false;
-}
-
-void Shard::DebugDraw( RenderTarget *target )
-{
-	if( !dead )
-	{
-		hurtBody.DebugDraw( target );
-		hitBody.DebugDraw( target );
-	}
-}
-
-void Shard::SaveEnemyState()
-{
-	//stored.dead = dead;
-	//stored.deathFrame = deathFrame;
-	//stored.frame = frame;
-	//stored.hitlagFrames = hitlagFrames;
-	//stored.hitstunFrames = hitstunFrames;
-	//stored.position = position;
-}
-
-void Shard::LoadEnemyState()
-{
-	//dead = stored.dead;
-	//deathFrame = stored.deathFrame;
-	//frame = stored.frame;
-	//hitlagFrames = stored.hitlagFrames;
-	//hitstunFrames = stored.hitstunFrames;
-	//position = stored.position;
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = 0;
 }

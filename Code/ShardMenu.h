@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 #include "Tileset.h"
+#include "Input.h"
 
 struct TilesetManager;
 struct TutorialMovie
@@ -34,6 +35,7 @@ struct PNGSeq
 	sf::Sprite spr;
 };
 
+struct SingleAxisSelector;
 struct ShardMenu
 {
 	//looping movie that plays
@@ -44,7 +46,8 @@ struct ShardMenu
 	//this is the basic one for world 1
 	//
 	ShardMenu();
-	void Update();
+	~ShardMenu();
+	void Update( ControllerState &currInput );
 	void Draw(sf::RenderTarget *target);
 
 	bool LoadPNGSequences();
@@ -55,7 +58,12 @@ struct ShardMenu
 	void SetupShardImages();
 	TilesetManager tMan;
 	PNGSeq * GetSequence(const std::string &str);
-	
+	 
+	SingleAxisSelector *xSelector;
+	SingleAxisSelector *ySelector;
+
+	sf::Vertex *shardSelectQuads;
+	void UpdateShardSelectQuads();
 };
 
 #endif
