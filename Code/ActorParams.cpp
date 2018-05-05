@@ -1149,22 +1149,12 @@ ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
 
 	SetBoundingQuad();
 
-	sType = ShardType::SHARD_W1_TEACH_JUMP;
 	shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
 }
 
 void ShardParams::WriteParamFile( std::ofstream &of )
 {
-	of << sType << endl;
-}
-
-void ShardParams::SetType(std::string &str)
-{
-	//this is temporary. figure out a better way on editor polish
-	if (str == "SHARD_W1_TEACH_JUMP")
-	{
-		sType = ShardType::SHARD_W1_TEACH_JUMP;
-	}
+	of << shardStr << endl;
 }
 
 void ShardParams::SetParams()

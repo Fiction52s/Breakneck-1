@@ -653,9 +653,13 @@ void Camera::Update( Actor *player )
 	else if( offset.y > 125 * zoomFactor )
 		offset.y = 125 * zoomFactor;
 	
-	offset.x = 0;
-	offset.y = 0;
-	zoomFactor = 1;
+	if (owner->debugScreenRecorder != NULL)
+	{
+		offset.x = 0;
+		offset.y = 0;
+		zoomFactor = 1;
+	}
+	
 
 	pos.x += offset.x;
 	pos.y += offset.y;

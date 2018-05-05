@@ -43,6 +43,7 @@
 #include "Enemy.h"
 #include "InputVisualizer.h"
 #include "ScreenRecorder.h"
+#include "ShardMenu.h"
 //#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
 #include "Enemy_BasicTurret.h"
@@ -2181,12 +2182,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				int stype;
-				is >> stype;
-				ShardType sType = (ShardType)stype;
+				string shardStr;
+				is >> shardStr;
 
-				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), shardsLoadedCounter, sType );
-				shardsLoadedCounter++;
+				ShardType sType = Shard::GetShardType(shardStr);
+
+				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), sType );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
@@ -5926,7 +5927,11 @@ int GameSession::Run()
 
 	goalDestroyed = false;
 
-	ScreenRecorder screenRecorder("testanim");
+
+	debugScreenRecorder = NULL;
+
+	debugScreenRecorder = new ScreenRecorder("SHARD_W1_TEACH_JUMP");
+	
 	//#define SYNCEDDRAWWITHPHYSICS
 
 	//lights.push_back( new Light( this ) );
@@ -6163,7 +6168,7 @@ int GameSession::Run()
 		
 		coll.ClearDebug();
 
-		while ( accumulator >= TIMESTEP  )
+		while ( accumulator >= TIMESTEP )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
@@ -7032,11 +7037,17 @@ int GameSession::Run()
 			
 
 			accumulator -= TIMESTEP;
+
+			if (debugScreenRecorder != NULL)
+			{
+				break; //for recording stuff
+			}
 		}
 
+		if( debugScreenRecorder != NULL )
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
-			screenRecorder.StartRecording();
+			debugScreenRecorder->StartRecording();
 			//player->maxFallSpeedSlo += maxFallSpeedFactor;
 			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
@@ -7092,8 +7103,7 @@ int GameSession::Run()
 		
 			Sprite preTexSprite( preTex );
 			preTexSprite.setPosition( -960 / 2, -540 / 2 );
-			//preTexSprite.setScale( .5, .5 );		
-			screenRecorder.Update(preTex);
+			//preTexSprite.setScale( .5, .5 );	
 			window->draw( preTexSprite  );
 			
 		}
@@ -8374,7 +8384,9 @@ int GameSession::Run()
 		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
 		//preTexSprite.setScale( .5, .5 );
 		//lastFrameTex->draw(preTexSprite);
-		screenRecorder.Update(preTex0);
+		if (debugScreenRecorder != NULL)
+			debugScreenRecorder->Update(preTex0);
+
 		window->draw( preTexSprite );//, &cloneShader );
 		}
 		}
@@ -8427,6 +8439,7 @@ int GameSession::Run()
 				{
 					state = GameSession::RUN;
 					soundNodeList->Pause( false );
+					pauseMenu->shardMenu->StopMusic();
 					break;
 				}
 			case PauseMenu::R_P_RESPAWN:

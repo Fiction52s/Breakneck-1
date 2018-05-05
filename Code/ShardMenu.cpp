@@ -12,24 +12,51 @@
 #include <iostream>
 #include "ItemSelector.h"
 #include "VectorMath.h"
+#include "Enemy_Shard.h"
+#include "MainMenu.h"
+#include "MusicSelector.h"
 
 using namespace sf;
 using namespace std;
 
-ShardMenu::ShardMenu()
+ShardMenu::ShardMenu(MainMenu *mm)
+	:mainMenu( mm )
 {
+	currShardMusic = NULL;
+	testSeq = NULL;
 	//currentMovie.scale(.5, .5);
 
 	numShardsTotal = 1;
 	shardQuads = new Vertex[numShardsTotal * 4];
+	currButtonState = S_NEUTRAL;
+	imagePos = Vector2f(900, 100);
 
-	testSeq = GetSequence("testanim");
-	testSeq->spr.setPosition(900, 100);
+	
+
+
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	int xSize = 16;
 	int ySize = 16;
+
+	shardNames = new string*[xSize];
+	for (int i = 0; i < xSize; ++i)
+	{
+		shardNames[i] = new string[ySize];
+	}
+
+	for (int x = 0; x < xSize; ++x)
+	{
+		for (int y = 0; y < ySize; ++y)
+		{
+			shardNames[x][y] = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
+		}
+	}
+
+	shardNames[4][4] = "testanim";
+	shardNames[0][4] = "Crawler_Pose";
+
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
 
@@ -47,23 +74,76 @@ ShardMenu::ShardMenu()
 			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + spacing * i, j * rectSize + spacing * j) + gridStart);
 		}
 	}
+
+	//SetCurrSequence();
+}
+
+void ShardMenu::SetCurrMusic()
+{
+	std::string &name = shardNames[xSelector->currIndex][ySelector->currIndex];
+	assert(currShardMusic == NULL);
+	currShardMusic = GetShardMusic(name);
+	if (currShardMusic != NULL)
+	{
+		bool loaded = currShardMusic->music != NULL;
+		if (currShardMusic->music == NULL)
+			loaded = currShardMusic->Load();
+		assert(loaded);
+		currShardMusic->music->setVolume(100);
+		currShardMusic->music->play();
+	}
+}
+
+void ShardMenu::SetCurrSequence()
+{
+	std::string &name = shardNames[xSelector->currIndex][ySelector->currIndex];
+	testSeq = GetSequence(name);//GetSequence("testanim");
+	testSeq->spr.setPosition(imagePos);
+}
+
+MusicInfo *ShardMenu::GetShardMusic(const std::string &str)
+{
+	//stringstream ss;
+	
+	//ss.str("");
+	//ss << "Shard/" << str << "_" << counter << ".png";
+	//cout << "test: " << ss.str() << endl;
+	return mainMenu->musicManager->songMap["w02_Glade"];
+	//sf::Music *m = mainMenu->musicManager->//LoadSong("Audio/Music/.ogg");
 }
 
 ShardMenu::~ShardMenu()
 {
+	for (int i = 0; i < xSelector->totalItems; ++i)
+	{
+		delete[] shardNames[i];
+	}
+	delete[] shardNames;
+
 	delete xSelector;
 	delete ySelector;
+
+	
 }
 
 PNGSeq * ShardMenu::GetSequence(const std::string &str)
 {
+	
+	if ( seqMap.count( str ) > 0 )
+	{
+		PNGSeq *cSeq = seqMap[str];
+		cSeq->Reset();
+		return cSeq;
+	}
+
+
 	stringstream ss;
 	int counter = 0;
 	list<Tileset*> tList;
 	while (true)
 	{
 		ss.str("");
-		ss << "seqrecord/" << str << "_" << counter << ".png";
+		ss << "Shard/" << str << "_" << counter << ".png";
 		cout << "test: " << ss.str() << endl;
 		Tileset *t = tMan.GetTileset(ss.str(), 512, 512);
 		if (t == NULL)
@@ -85,7 +165,12 @@ PNGSeq * ShardMenu::GetSequence(const std::string &str)
 	}
 	else
 	{
-		PNGSeq *newSeq = new PNGSeq(str, tList);
+
+		bool single = tList.size() == 1 && tList.front()->texture->getSize().x == 512;
+		
+		PNGSeq *newSeq = new PNGSeq(str, tList, single);
+
+		seqMap[str] = newSeq;
 
 		return newSeq;
 	}
@@ -93,7 +178,7 @@ PNGSeq * ShardMenu::GetSequence(const std::string &str)
 
 void ShardMenu::SetupShardImages()
 {
-
+	
 }
 
 void ShardMenu::UpdateShardSelectQuads()
@@ -110,22 +195,87 @@ void ShardMenu::UpdateShardSelectQuads()
 		}
 	}
 
-	Color selectedColor = Color::White;
+	Color currColor;
+	switch (currButtonState)
+	{
+	case S_NEUTRAL:
+		currColor = Color::White;
+		break;
+	case S_PRESSED:
+		currColor = Color::Blue;
+		break;
+	case S_UNPRESSED:
+		currColor = Color::Green;
+		break;
+	case S_SELECTED:
+		currColor = Color::Magenta;
+		break;
+	}
+
 	index = (xSelector->currIndex * ySelector->totalItems + ySelector->currIndex) * 4;
-	SetRectColor(shardSelectQuads + index, selectedColor);
+	SetRectColor(shardSelectQuads + index, currColor);
+}
+
+void ShardMenu::StopMusic()
+{
+	if (currShardMusic != NULL)
+	{
+		currShardMusic->music->stop();
+		currShardMusic = NULL;
+	}
 }
 
 void ShardMenu::Update( ControllerState &currInput )
 {
 	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
 	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
-	testSeq->Update();
+
+	if (xchanged != 0 || ychanged != 0 )
+	{
+		currButtonState = S_NEUTRAL;
+		StopMusic();
+		SetCurrSequence();
+	}
+	bool A = currInput.A;
+	switch (currButtonState)
+	{
+	case S_NEUTRAL:
+		if (A)
+		{
+			currButtonState = S_PRESSED;
+		}
+		break;
+	case S_PRESSED:
+		if (!A)
+		{
+			currButtonState = S_SELECTED;
+			SetCurrSequence();
+			SetCurrMusic();
+		}
+		break;
+	case S_SELECTED:
+		if (A)
+		{
+			currButtonState = S_UNPRESSED;
+		}
+		break;
+	case S_UNPRESSED:
+		if (!A)
+		{
+			currButtonState = S_NEUTRAL;
+			StopMusic();
+		}
+		break;
+	}
+	if( testSeq != NULL && currButtonState == S_SELECTED )
+		testSeq->Update();
 	UpdateShardSelectQuads();
 }
 
 void ShardMenu::Draw(sf::RenderTarget *target)
 {
-	testSeq->Draw(target);
+	if( testSeq != NULL )
+		testSeq->Draw(target);
 	target->draw(shardSelectQuads, xSelector->totalItems * ySelector->totalItems * 4,
 		sf::Quads);
 	//target->draw(currentMovie);
@@ -137,10 +287,18 @@ bool ShardMenu::LoadPNGSequences()
 }
 
 PNGSeq::PNGSeq(const
-	std::string &p_seqName, list<Tileset*> &tList )
-	:seqName(p_seqName)
+	std::string &p_seqName, list<Tileset*> &tList, bool p_singleImage )
+	:seqName(p_seqName), singleImage( p_singleImage )
 {
-	numFrames = tList.size() * 16;
+	if (singleImage)
+	{
+		numFrames = tList.size();
+	}
+	else
+	{
+		numFrames = tList.size() * 16;
+	}
+	
 	numSets = tList.size();
 	tSets = new Tileset*[numSets];
 	int index = 0;
@@ -177,7 +335,11 @@ void PNGSeq::Update()
 	}
 
 	spr.setTextureRect(tSets[setIndex]->GetSubRect(tileIndex));
-	tileIndex++;
+
+	if (!singleImage)
+	{
+		tileIndex++;
+	}
 }
 
 void PNGSeq::Reset()

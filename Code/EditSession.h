@@ -667,9 +667,6 @@ struct ShardParams : public ActorParams
 	bool CanApply();
 	ActorParams *Copy();
 
-	void SetType( std::string &str );
-
-	ShardType sType;
 	std::string shardStr;
 
 };

@@ -13,6 +13,7 @@
 #include "MusicSelector.h"
 #include "PlayerRecord.h"
 #include "PowerOrbs.h"
+#include "Enemy_Shard.h"
 
 using namespace std;
 using namespace sf;
@@ -513,7 +514,7 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
-
+	Shard::SetupShardMaps();
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();

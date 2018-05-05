@@ -2,6 +2,7 @@
 #define __ENEMY_SHARD_H__
 
 #include "Enemy.h"
+#include <map>
 
 struct Shard : Enemy
 {
@@ -12,12 +13,14 @@ struct Shard : Enemy
 		Count
 	};
 
+	static ShardType GetShardType(const std::string &str);
+	static std::string GetShardString(ShardType st);
+	static void SetupShardMaps();
 	int actionLength[Count];
 	int animFactor[Count];
 	Action action;
 	//MovementSequence testSeq;
-	Shard(GameSession *owner, sf::Vector2i pos,
-		int shardsLoaded, ShardType p_sType );
+	Shard(GameSession *owner, sf::Vector2i pos, ShardType p_sType );
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
@@ -31,8 +34,6 @@ struct Shard : Enemy
 	CollisionBody *hitBody;
 	CollisionBody *hurtBody;
 
-	int shardIndex;
-
 	int radius;
 
 	sf::Sprite sprite;
@@ -41,6 +42,10 @@ struct Shard : Enemy
 	ShardType shardType;
 
 	bool caught;
+
+private:
+	static std::map<std::string, ShardType> shardTypeMap;
+	static std::map<ShardType, std::string> shardStrMap;
 };
 
 #endif

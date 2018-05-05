@@ -9,7 +9,6 @@
 using namespace std;
 using namespace sf;
 
-
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
@@ -19,11 +18,22 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex, ShardType p_sType )
+std::map<std::string, ShardType> Shard::shardTypeMap;
+std::map<ShardType, std::string> Shard::shardStrMap;
+
+
+void Shard::SetupShardMaps()
+{
+	shardTypeMap["SHARD_W1_TEACH_JUMP"] = SHARD_W1_TEACH_JUMP;
+	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
+	{
+		shardStrMap[(*it).second] = (*it).first;
+	}
+}
+
+Shard::Shard( GameSession *p_owner, Vector2i pos, ShardType p_sType )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envType + 1 ), shardType( p_sType )
 {
-	shardIndex = p_shardIndex;
-	//assert( shardIndex < 3 );
 	initHealth = 60;
 	health = initHealth;
 
@@ -43,8 +53,20 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex, ShardType p_
 	
 	frame = 0;
 
+	switch (shardType)
+	{
+	case ShardType::SHARD_W1_TEACH_JUMP:
+		ts = owner->GetTileset("shards_w1_64x64.png", 64, 64);
+		sprite.setTexture(*ts->texture);
+		sprite.setTextureRect(ts->GetSubRect(shardType));
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
 	//cout << "world: " << world << endl;
-	switch( p_owner->mh->envType )
+	/*switch( p_owner->mh->envType )
 	{
 	case 0:
 		ts = owner->GetTileset( "shards_w1_64x64.png", 64, 64 );
@@ -67,10 +89,8 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex, ShardType p_
 	case 6:
 		ts = owner->GetTileset( "shards_w7_64x64.png", 64, 64 );
 		break;
-	}
+	}*/
 
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( shardType ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 
@@ -108,6 +128,15 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int p_shardIndex, ShardType p_
 	ResetEnemy();
 }
 
+ShardType Shard::GetShardType(const std::string &str)
+{
+	return shardTypeMap[str];
+}
+
+std::string Shard::GetShardString(ShardType st)
+{
+	return shardStrMap[st];
+}
 
 void Shard::IHitPlayer(int index)
 {

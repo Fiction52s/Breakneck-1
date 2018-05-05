@@ -22,6 +22,8 @@
 #include "Actor.h"
 #include "EffectLayer.h"
 
+struct ScreenRecorder;
+
 struct TerrainRender;
 struct RecordPlayer;
 struct ReplayPlayer;
@@ -403,7 +405,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 	
-
+	ScreenRecorder *debugScreenRecorder;
 	struct RaceFight
 	{
 		RaceFight( GameSession *owner, 

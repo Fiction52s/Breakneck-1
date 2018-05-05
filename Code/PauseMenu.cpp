@@ -6,6 +6,7 @@
 #include "SaveFile.h"
 #include <fstream>
 #include "ShardMenu.h"
+#include "MusicSelector.h"
 
 using namespace sf;
 using namespace std;
@@ -1182,7 +1183,7 @@ PauseMenu::PauseMenu( GameSession *p_owner )
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
-	shardMenu = new ShardMenu();
+	shardMenu = new ShardMenu( owner->mainMenu );
 
 	//cout << "MIDDLE this initialization" << endl;
 
@@ -1297,20 +1298,13 @@ PauseMenu::~PauseMenu()
 
 
 
-
-
-
-
-
 void PauseMenu::TabLeft()
 {
 	int index = (int)currentTab;
 	index--;
 	if( index < 0 )
-		index = 4;
-
-	currentTab = (Tab)index;
-	SetTab( currentTab );
+		index = 4;	
+	SetTab((Tab)index);
 }
 
 void PauseMenu::TabRight()
@@ -1319,13 +1313,18 @@ void PauseMenu::TabRight()
 	index++;
 	if( index > 4 )
 		index = 0;
-
-	currentTab = (Tab)index;
-	SetTab( currentTab );
+	SetTab((Tab)index );
 }
 
 void PauseMenu::SetTab( Tab t )
 {
+	switch (currentTab)
+	{
+	case SHARDS:
+		shardMenu->StopMusic();
+		break;
+	}
+
 	currentTab = t;
 	bgSprite.setTexture( *ts_background[currentTab]->texture );
 
@@ -1339,6 +1338,8 @@ void PauseMenu::SetTab( Tab t )
 	case KIN:
 		break;
 	case SHARDS:
+		shardMenu->SetCurrSequence();
+		shardMenu->currButtonState = ShardMenu::S_NEUTRAL;
 		break;
 	case OPTIONS:
 		//LoadControlOptions();

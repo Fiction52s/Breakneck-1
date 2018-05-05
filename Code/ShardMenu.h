@@ -5,6 +5,9 @@
 #include <list>
 #include "Tileset.h"
 #include "Input.h"
+#include "ShardTypes.h"
+#include <SFML\Audio.hpp>
+#include <map>
 
 struct TilesetManager;
 struct TutorialMovie
@@ -19,10 +22,11 @@ struct PNGSeq
 {
 	PNGSeq(const
 		std::string &seqName,
-		std::list<Tileset*> &tList);// , Tileset *ts);
+		std::list<Tileset*> &tList, bool singleImage = false );// , Tileset *ts);
 	~PNGSeq();
 	Tileset **tSets;
 
+	bool singleImage;
 	int tileIndex;
 	int setIndex;
 	std::string seqName;
@@ -36,6 +40,8 @@ struct PNGSeq
 };
 
 struct SingleAxisSelector;
+struct MainMenu;
+struct MusicInfo;
 struct ShardMenu
 {
 	//looping movie that plays
@@ -45,22 +51,42 @@ struct ShardMenu
 	//leave room open for other types, but
 	//this is the basic one for world 1
 	//
-	ShardMenu();
+	enum ShardButtonState
+	{
+		S_NEUTRAL,
+		S_PRESSED,
+		S_UNPRESSED,
+		S_SELECTED,
+	};
+
+	ShardMenu( MainMenu *mm );
 	~ShardMenu();
 	void Update( ControllerState &currInput );
 	void Draw(sf::RenderTarget *target);
 
+	ShardButtonState currButtonState;
 	bool LoadPNGSequences();
 	sf::Vertex *shardQuads;
+	MainMenu *mainMenu;
 	int numShardsTotal;
-	PNGSeq *testSeq;
-
+	PNGSeq *testSeq;	
+	sf::Vector2f imagePos;
+	void SetCurrSequence();
 	void SetupShardImages();
 	TilesetManager tMan;
 	PNGSeq * GetSequence(const std::string &str);
-	 
+	MusicInfo *GetShardMusic(const std::string &str);
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
+	std::map<std::string, PNGSeq*> seqMap;
+	std::string **shardNames;
+	MusicInfo *currShardMusic;
+	void SetCurrMusic();
+	void StopMusic();
+	
+
+	
+
 
 	sf::Vertex *shardSelectQuads;
 	void UpdateShardSelectQuads();
