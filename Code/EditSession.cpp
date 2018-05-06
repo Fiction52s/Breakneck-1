@@ -2705,6 +2705,8 @@ void EditSession::WriteFile(string fileName)
 	
 
 
+	mapHeader.shardNameList.clear();
+	ShardParams *sp = NULL;
 	int numShards = 0;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -2714,11 +2716,14 @@ void EditSession::WriteFile(string fileName)
 			if ((*ait)->type->name == "shard")
 			{
 				numShards++;
+				sp = (ShardParams*)(ait->get());
+				mapHeader.shardNameList.push_back(sp->shardStr);
 			}
 		}
 	}
 
 	mapHeader.numShards = numShards;
+
 
 
 	ofstream of;

@@ -1922,12 +1922,12 @@ void MainMenu::Run()
 				
 				GameSession::GameResultType result = 
 					(GameSession::GameResultType)currLevel->Run();
+				SaveFile *currFile = GetCurrentProgress();
 
 				switch (result)
 				{
 				case GameSession::GR_WIN:
 				{
-					SaveFile *currFile = GetCurrentProgress();
 					World & world = currFile->worlds[currLevel->mh->envType];
 					bool doneCheck = false;
 					for (int i = 0; i < world.numSectors && !doneCheck; ++i)
@@ -1939,7 +1939,7 @@ void MainMenu::Run()
 							if (lev.GetFullName() == currLevel->fileName)
 							{
 								lev.SetComplete(true);
-								currFile->Save();
+								
 								doneCheck = true;
 							}
 						}
@@ -1947,12 +1947,17 @@ void MainMenu::Run()
 					break;
 				}
 				case GameSession::GR_EXITLEVEL:
+					currFile->Save();
 					break;
 				case GameSession::GR_EXITTITLE:
+					currFile->Save();
 					break;
 				case GameSession::GR_EXITGAME:
+					currFile->Save();
 					break;
 				}
+
+				currFile->Save();
 
 				delete currLevel;
 				currLevel = NULL;
@@ -2810,7 +2815,7 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	for (int i = 0; i < numShards; ++i)
 	{
 		is >> temp;
-		mh->shardNameList.push_back(temp);
+		//mh->shardNameList.push_back(temp);
 	}
 
 

@@ -100,19 +100,27 @@ struct MotionGhostEffect
 //eventually make this an objectpool but don't need to for now
 struct AbsorbParticles
 {
+	enum AbsorbType
+	{
+		ENERGY,
+		DARK,
+		SHARD,
+	};
+
+	
 	struct SingleEnergyParticle
 	{
+		AbsorbType abType;
 		SingleEnergyParticle(AbsorbParticles *parent,
 			int tileIndex );
 		void UpdateSprite();
 		bool Update();
-		void Activate(sf::Vector2f &pos, sf::Vector2f &vel);
+		void Activate(sf::Vector2f &pos, sf::Vector2f &vel, AbsorbType abType);
 		void Clear();
 		sf::Vector2f pos;
 		int frame;
 		int tileIndex;
 		sf::Vector2f velocity;
-		
 		AbsorbParticles *parent;
 
 		SingleEnergyParticle *next;
@@ -121,14 +129,14 @@ struct AbsorbParticles
 		//Vector2f accel;
 	};
 
+	sf::Vector2f GetTargetPos(AbsorbType ab);
 	AbsorbParticles();
-	~AbsorbParticles();
-	bool hasMonitor;
+	~AbsorbParticles();	
 	void Reset();
 	sf::Vertex *va;
 	int maxNumParticles;
 	void Activate( Actor *playerTarget, int storedHits, V2d &pos,
-		bool monitorActive = false,
+		AbsorbType aType,
 		float startAngle = 0 );
 	void Update();
 	void Draw(sf::RenderTarget *rt);

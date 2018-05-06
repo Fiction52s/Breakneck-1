@@ -23206,6 +23206,25 @@ AbsorbParticles::AbsorbParticles()
 	//particlePos = new Vector2f[maxNumParticles];
 }
 
+sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
+{
+	switch (abType)
+	{
+	case ENERGY:
+	{
+		V2d playerPos = playerTarget->position;
+		return Vector2f(playerPos);
+		break;
+	}
+	case DARK:
+		return Vector2f(100, 100);
+		break;
+	case SHARD:
+		return Vector2f(200, 100);
+		break;
+	}
+}
+
 void AbsorbParticles::AllocateParticle( int tileIndex )
 {
 	SingleEnergyParticle *sp = new SingleEnergyParticle(this, tileIndex );
@@ -23241,39 +23260,62 @@ AbsorbParticles::~AbsorbParticles()
 	}
 }
 
-void AbsorbParticles::Activate( Actor *p_playerTarget, int storedHits, V2d &p_pos,
-	bool p_hasMonitor, float p_startAngle )
+void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos,
+	AbsorbType p_abType, float p_startAngle )
 {
 	playerTarget = p_playerTarget;
 	float startSpeed = 4;
 
 	int numProjectiles = storedHits;
-	hasMonitor = p_hasMonitor;
-	pos = Vector2f(round(p_pos.x), round(p_pos.y));
+	
 	startAngle = p_startAngle;
 
 	Transform t;
 	t.rotate(p_startAngle / PI * 180.f );
 
 	Vector2f vel(0, -startSpeed);
+	Vector2f startPos;
+	Vector2f targetPos;
+	V2d startVel;
 
-	Vector2f pPos;
-	if (hasMonitor)
+	switch( p_abType )
 	{
-		pPos = playerTarget->owner->preScreenTex->mapPixelToCoords(
-			Vector2i(200, 200));
+	case ENERGY:
+	{
+		startPos = Vector2f(p_pos);//Vector2f(round(p_pos.x), round(p_pos.y));
+		//targetPos = Vector2f(playerTarget->position);
+		break;
 	}
-	else
+	case DARK:
 	{
-		pPos = Vector2f(playerTarget->position);
-	}
-
-	if (numProjectiles == 1)
-	{
+		startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
+		targetPos = GetTargetPos(DARK);
 		t = Transform::Identity;
-		vel = normalize(pPos - Vector2f(p_pos)) * startSpeed;
+		vel = normalize(Vector2f(startPos) - targetPos ) * startSpeed;
+		break;
 	}
-	//Vector2f currVel = vel;
+	case SHARD:
+	{
+		startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
+		targetPos = GetTargetPos(SHARD);
+		//pos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
+		//startPos = Vector2f(400, 200);
+		t = Transform::Identity;
+		vel = normalize(Vector2f(startPos) - targetPos) * startSpeed;
+		//vel = normalize(Vector2f(targetPos) - pos) * startSpeed;
+		break;
+	}
+	}
+
+	switch (p_abType)
+	{
+	case ENERGY:
+		break;
+	case DARK:
+		break;
+	case SHARD:
+		break;
+	}
 
 	SingleEnergyParticle *sp = NULL;
 	for (int i = 0; i < numProjectiles; ++i)
@@ -23281,7 +23323,7 @@ void AbsorbParticles::Activate( Actor *p_playerTarget, int storedHits, V2d &p_po
 		sp = GetInactiveParticle();
 		assert(sp != NULL);
 
-		sp->Activate(pos, t.transformPoint(vel));
+		sp->Activate(startPos, t.transformPoint(vel), p_abType);
 
 		if (activeList == NULL)
 		{
@@ -23320,18 +23362,10 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	
 
 	sf::Vertex *va = parent->va;
-
-	if (parent->hasMonitor)
+	
+	switch (abType)
 	{
-		sub.width = 32;
-		sub.height = 32;
-		va[tileIndex * 4 + 0].color = Color::Black;
-		va[tileIndex * 4 + 1].color = Color::Black;
-		va[tileIndex * 4 + 2].color = Color::Black;
-		va[tileIndex * 4 + 3].color = Color::Black;
-
-	}
-	else
+	case ENERGY:
 	{
 		sub.width = 12;
 		sub.height = 12;
@@ -23339,22 +23373,43 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 		va[tileIndex * 4 + 1].color = Color::Blue;
 		va[tileIndex * 4 + 2].color = Color::Green;
 		va[tileIndex * 4 + 3].color = Color::Cyan;
+		break;
 	}
-		
+	case DARK:
+	{
+		sub.width = 32;
+		sub.height = 32;
+		va[tileIndex * 4 + 0].color = Color::Black;
+		va[tileIndex * 4 + 1].color = Color::Black;
+		va[tileIndex * 4 + 2].color = Color::Black;
+		va[tileIndex * 4 + 3].color = Color::Black;
+		break;
+	}	
+	case SHARD:
+	{
+		sub.width = 32;
+		sub.height = 32;
+		va[tileIndex * 4 + 0].color = Color::Red;
+		va[tileIndex * 4 + 1].color = Color::Red;
+		va[tileIndex * 4 + 2].color = Color::Red;
+		va[tileIndex * 4 + 3].color = Color::Red;
+		break;
+	}
 	
+	}
 
-	va[tileIndex * 4].position = pos + Vector2f(-sub.width/2, -sub.height/2);
-	va[tileIndex * 4+1].position = pos + Vector2f(sub.width/2, -sub.height/2);
-	va[tileIndex * 4+2].position = pos + Vector2f(sub.width/2, sub.height/2);
-	va[tileIndex * 4+3].position = pos + Vector2f(-sub.width/2, sub.height/2);
-	
+	//cout << "pos: " << pos.x << ", " << pos.y << "   targetPos" << targetPos.x << ", " << targetPos.y << endl;
+	SetRectCenter(va + tileIndex * 4, sub.width, sub.height, pos);
 }
 
-void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel)
+void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel,
+	AbsorbParticles::AbsorbType p_abType )
 {
+	abType = p_abType;
 	frame = 0;
 	velocity = vel;
 	pos = p_pos;
+	
 	next = NULL;
 	prev = NULL;
 }
@@ -23364,24 +23419,16 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	assert(parent->playerTarget != NULL);
 
 	float accel = 1;
-	V2d playerPos = parent->playerTarget->position;
+	Vector2f targetPos = parent->GetTargetPos(abType);
 	
-	Vector2f pPos;
-	if (parent->hasMonitor)
+
+	if (length(targetPos - pos) < 60 && frame > 30 )
 	{
-		pPos = parent->playerTarget->owner->preScreenTex->mapPixelToCoords(
-			Vector2i(100, 100));
+		pos = (pos + targetPos) / 2.f;
 	}
 	else
 	{
-		pPos = Vector2f(playerPos);
-	}
-	
-	pos += velocity;
-	
-	if (length(velocity) > parent->maxSpeed)
-	{
-		velocity = normalize(velocity) * (float)parent->maxSpeed;
+		pos += velocity;
 	}
 
 	float blahFactor = 0;
@@ -23389,32 +23436,25 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	if (frame < 20)
 	{
 		accel = .01;
-		
-		//blahFactor = 0;
-		//velocity = length(velocity) * normalize(pPos - pos);
 	}
 	else 
 	{
 		accel = 1.f;
 	}
-	velocity += normalize(pPos - pos) * accel;
+	velocity += normalize(targetPos - pos) * accel;
 
 	if (frame > 30)
 	{
-		velocity = (length(velocity) * normalize(pPos - pos));
+		velocity = (length(velocity) * normalize(targetPos - pos));
 	}
-	/*else if (frame < 120) 
-	{
-		blahFactor = 0;
-	}
-	else
-	{
-		blahFactor = 1.0;
-	}*/
-	//velocity = (length(velocity) * normalize(pPos - pos)) * blahFactor + (1.f - blahFactor) * velocity;
 
 
-	if (length(pPos - pos) < 16.f && frame > 30 )
+	if (length(velocity) > parent->maxSpeed)
+	{
+		velocity = normalize(velocity) * (float)parent->maxSpeed;
+	}
+
+	if ( length(targetPos - pos) < 1.f && frame > 30 )
 	{
 		return false;
 	}

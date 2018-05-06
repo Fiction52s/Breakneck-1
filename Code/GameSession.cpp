@@ -8370,7 +8370,11 @@ int GameSession::Run()
 
 		DrawEffects(EffectLayer::UI_FRONT);
 
+		preScreenTex->setView(uiView);
+
 		absorbDarkParticles->Draw(preScreenTex);
+
+		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
 
 		preScreenTex->display();
 

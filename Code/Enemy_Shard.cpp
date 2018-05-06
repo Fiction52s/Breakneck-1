@@ -140,10 +140,8 @@ std::string Shard::GetShardString(ShardType st)
 
 void Shard::IHitPlayer(int index)
 {
-	if (!dead && ReceivedHit() && action == FLOAT)
-	{
+	if( action == FLOAT )
 		DissipateOnCapture();
-	}
 }
 
 void Shard::DissipateOnCapture()
@@ -158,6 +156,10 @@ void Shard::DissipateOnCapture()
 
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
+
+	owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position, AbsorbParticles::SHARD);
+
+	owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
 }
 
 
@@ -199,13 +201,7 @@ void Shard::ProcessHit()
 {
 	if (!dead && ReceivedHit() && action == FLOAT)
 	{
-		action = DISSIPATE;
-		frame = 0;
-		assert(!owner->saveFile->shardField.GetBit(shardType));
-
-		//both give you the shard and mark it as a new shard
-		owner->saveFile->shardField.SetBit(shardType, true);
-		owner->saveFile->newShardField.SetBit(shardType, true);
+		DissipateOnCapture();
 	}
 }
 

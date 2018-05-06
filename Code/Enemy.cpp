@@ -1444,13 +1444,14 @@ void Enemy::ConfirmKill()
 	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 2, true);
 	owner->Pause(7);
 	owner->cam.SetRumble(1, 1, 7 );
+	
 	if (hasMonitor)
 	{
-		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position, true);
+		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position, AbsorbParticles::DARK);
 	}
 	else
 	{
-		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position, false);
+		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position, AbsorbParticles::ENERGY);
 	}
 	
 
