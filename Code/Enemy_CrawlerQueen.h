@@ -74,6 +74,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	};
 
 
+	Tileset *ts[Count];
+
 	~CrawlerQueen();
 	void HitTerrainAerial(Edge *e, double q);
 	void Boost();
@@ -121,7 +123,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 
 
 	sf::Sprite sprite;
-	Tileset *ts;
+	
 	bool origCW;
 
 	double groundSpeed;

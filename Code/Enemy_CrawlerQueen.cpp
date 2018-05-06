@@ -40,12 +40,46 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	health = initHealth;
 	dead = false;
 
-	double width = 128;
-	double height = 144;
+
 	
-	ts = owner->GetTileset("Enemies/bosscrawler_128x144.png", width, height);
-	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
+	actionLength[DECIDE] = 1;
+	actionLength[BOOST] = 1;
+	actionLength[TURNAROUNDBOOST] = 4;
+	actionLength[STOPBOOST] = 1;
+	actionLength[WAIT] = 1;
+	actionLength[JUMP] = 3;
+	actionLength[BURROW] = 22;
+	actionLength[RUMBLE] = 20;
+	actionLength[POPOUT] = 27;
+	actionLength[UNBURROW] = 12;
+
+	animFactor[DECIDE] = 2;
+	animFactor[BOOST] = 1;
+	animFactor[TURNAROUNDBOOST] = 2;
+	animFactor[STOPBOOST] = 2;
+	animFactor[WAIT] = 1;
+	animFactor[JUMP] = 2;
+	animFactor[BURROW] = 2;
+	animFactor[RUMBLE] = 1;
+	animFactor[POPOUT] = 2;
+	animFactor[UNBURROW] = 2;
+
+	double width = 320;
+	double height = 320;
+
+	ts[WAIT] = owner->GetTileset("Bosses/Crawler/crawler_queen_stand_320x320.png", 320, 320);
+	ts[DECIDE] = owner->GetTileset("Bosses/Crawler/crawler_queen_stand_320x320.png", 320, 320);
+	ts[BOOST] = owner->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
+	ts[TURNAROUNDBOOST] = owner->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
+	ts[STOPBOOST] = owner->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
+	ts[JUMP] = owner->GetTileset("Bosses/Crawler/crawler_queen_jump_320x320.png", 320, 320);
+	ts[BURROW] = owner->GetTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png", 320, 320);
+	ts[RUMBLE] = NULL;//owner->GetTileset("Bosses/crawler_queen_dash_320x320.png", 320, 320);
+	ts[POPOUT] = owner->GetTileset("Bosses/Crawler/crawler_queen_slash_320x320.png", 320, 320);
+	ts[UNBURROW] = owner->GetTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png", 320, 320);
+
+	sprite.setTexture(*ts[WAIT]->texture);
+	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = mover->ground->GetPoint(q);
 	sprite.setPosition(gPoint.x, gPoint.y);
@@ -102,27 +136,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	startQuant = q;
 	frame = 0;
 
-	actionLength[DECIDE] = 1;
-	actionLength[BOOST] = 1;
-	actionLength[TURNAROUNDBOOST] = 5;
-	actionLength[STOPBOOST] = 7;
-	actionLength[WAIT] = 6;
-	actionLength[JUMP] = 19;
-	actionLength[BURROW] = 20;
-	actionLength[RUMBLE] = 20;
-	actionLength[POPOUT] = 20;
-	actionLength[UNBURROW] = 20;
-
-	animFactor[DECIDE] = 2;
-	animFactor[BOOST] = 1;
-	animFactor[TURNAROUNDBOOST] = 4;
-	animFactor[STOPBOOST] = 4;
-	animFactor[WAIT] = 1;
-	animFactor[JUMP] = 2;
-	animFactor[BURROW] = 1;
-	animFactor[RUMBLE] = 1;
-	animFactor[POPOUT] = 1;
-	animFactor[UNBURROW] = 1;
+	
 
 	action = DECIDE;
 	frame = 0;
@@ -210,7 +224,7 @@ void CrawlerQueen::ResetEnemy()
 	double angle = 0;
 	angle = atan2(gn.x, -gn.y);
 
-	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
 	V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation(angle / PI * 180);
@@ -501,7 +515,10 @@ void CrawlerQueen::HitTerrainAerial(Edge *e, double q)
 
 void CrawlerQueen::UpdateSprite()
 {
-	
+	if (action == RUMBLE)
+	{
+		return;
+	}
 	//V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
 
 	//return;
@@ -510,7 +527,47 @@ void CrawlerQueen::UpdateSprite()
 	double angle = 0;
 
 	IntRect ir;
-	ir = ts->GetSubRect(0);
+
+	Tileset *currTS = NULL;
+
+	currTS = ts[action];
+	sprite.setTexture(*currTS->texture);
+
+	int currTile = 0;
+
+
+	switch (action)
+	{
+	case WAIT:
+		currTile = 0;
+		break;
+	case DECIDE:
+		currTile = 0;
+		break;
+	case BOOST:
+		currTile = 0;
+		break;
+	case TURNAROUNDBOOST:
+		currTile = frame / animFactor[action] + 1;
+		break;
+	case STOPBOOST:
+		currTile = 10;
+		break;
+	case JUMP:
+		currTile = 1;
+		break;
+	case BURROW:
+		currTile = frame / animFactor[action];
+		break;
+	case POPOUT:
+		currTile = frame / animFactor[action];
+		break;
+	case UNBURROW:
+		currTile = frame / animFactor[action];
+		break;
+	}
+
+	ir = currTS->GetSubRect(currTile);
 
 	if (clockwise)
 	{
